@@ -3123,6 +3123,7 @@ void read_config(struct ui* const i, struct task* const t,
 }
 
 extern struct ui* I;
+static int remove_signals(void); 
 
 int hundmain(int argc, char* argv[]) {
 	static const char* const help = 	"Usage: hund [OPTION...] [left panel] [right panel]\n"
@@ -3246,7 +3247,6 @@ int hundmain(int argc, char* argv[]) {
 	while (i.run || t.ts != TS_CLEAN) {
 		ui_draw(&i);
 		if (i.run) {// TODO
-
 			process_input(&i, &t, &m);
 		}
 		task_execute(&i, &t);
@@ -3258,6 +3258,7 @@ int hundmain(int argc, char* argv[]) {
 	marks_free(&m);
 	task_clean(&t);
 	ui_end(&i);
+	remove_signals();
 	memset(fvs, 0, sizeof(fvs));
 	memset(&t, 0, sizeof(struct task));
 	return 0;
@@ -3904,6 +3905,20 @@ static int setup_signals(void) {
 	return 0;
 }
 
+static int remove_signals(void) {
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_handler = SIG_DFL;
+	if (sigaction(SIGTERM, &sa, NULL)
+	|| sigaction(SIGINT, &sa, NULL)
+	|| sigaction(SIGTSTP, &sa, NULL)
+	|| sigaction(SIGCONT, &sa, NULL)
+	|| sigaction(SIGWINCH, &sa, NULL)) {
+		return errno;
+	}
+	return 0;
+}
+
 void ui_init(struct ui* const i, struct panel* const pv,
 		struct panel* const sv) {
 	setlocale(LC_ALL, "");
@@ -3936,7 +3951,7 @@ void ui_init(struct ui* const i, struct panel* const pv,
 
 	global_i = i;
 	int err;
-		if ((err = start_raw_mode(&i->T)) || (err = setup_signals())) {
+	if ((err = start_raw_mode(&i->T)) || (err = setup_signals())) {
 		fprintf(stderr, "failed to initalize screen: (%d) %s\n",
 				err, strerror(err));
 		exit(EXIT_FAILURE);
