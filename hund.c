@@ -16,7 +16,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-// 18 "hund.c" 2
 #ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE
 #endif /* _DEFAULT_SOURCE */
