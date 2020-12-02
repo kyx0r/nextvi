@@ -82,29 +82,6 @@ A minimalistic terminal file manager.
 | $HOME | user's home directory | /etc/passwd |
 | $SHELL | shell used by `:sh` | sh |
 | $OPEN | file opener | (none) |
-#### Planned features
-- Calculate volume of directories
-- Filter files
-- ACLs (at least detection)
-- Color schemes
-- man page
-- Packaging for some popular distros + installation scripts
-#### Architecture/OS Support
-- x86-64
-	- Arch Linux - works
-	- Alpine Linux - works
-	- FreeBSD - works
-	- OpenBSD - works
-	- NetBSD - works
-- aarch64 (Raspberry PI 3)
-	- Arch Linux ARM 64-bit - works
-#### Dependencies & Requirements
-- c99-compatible C compiler (`gcc`, `clang`, `tcc` were tested)
-	- For `tcc` you need to overwrite CFLAGS. "tcc: error: invalid option -- '--std=c99'"
-- libc of choice (`glibc` and `musl` were tested)
-- `make`
-- A pager (`less` by default)
-- A text editor (`vi` by default)
 #### Commands
 Type `?` while in hund for help.
 #### License
