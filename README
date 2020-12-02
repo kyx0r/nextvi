@@ -1,0 +1,192 @@
+NEATVI
+======
+
+Neatvi is a vi/ex editor.  It can edit bidirectional UTF-8 text.
+
+FORK CHANGES
+------------
+1. Added unindent keybind: ^q 
+2. Added quickexit to insert mode keybind: kj   
+3. Added linenumbers, keybind: # 
+4. Added invisible character view, keybind: V   
+5. Added regex for changing spaces to tabs, keybind: ^i   
+6. Added regex for removing /r in dos files, keybind: ^ii 
+7. Changed behavior of ^a to change search direction when no more match 
+8. Added fssearch, searches what is under the cursor 
+in every file in the opened directory keybind: ^]   
+By default it only checks for .c and .h files. 
+for code navigation between files, jump to definitions / etc.
+9. fssearch but going in reverse keybind: ^p
+10. Added key to change the mark origin which ^p will return to keybind: ^t
+11. Added ex command "ea" which opens file case insensitive and ignores the path,
+setting an extra number parameter after filename will skip that many matches with
+similar path. So for example file might be named "file123.c" but you can open it
+just by "ea fi" if this is a uniquely matched filename
+12. Added ex command "dir" to set the directory for fssearch or "ea" ex command
+13. Added numbered buffers to vi, max 8 and ex "b" command to switch
+14. Added key to show buffers and switch buffer keybind: ^s 
+15. Added key to exit vi keybind: qq 
+16. Added key to goto line 0 keybind: gg 
+17. Added key to delete everything inside (cursor outside) "" keybind: di" 
+18. Added key to delete everything inside () keybind: di) 
+19. Added key to delete everything inside (cursor outside) () keybind: di( 
+20. Added key to change . to -> on cursor line keybind: vh
+21. Added key to change -> to . on cursor line keybind: vg
+22. Added ex command "z" it does the same thing "!" does but the shell is
+launched in interactive mode, so stuff like aliases work. But it will cause
+vi to suspend.
+23. Changed the colors for C language in conf.h to be sane
+24. Added extra highlight keywords for C
+25. Added key that splits the line (opposite of J) keybind: K
+26. Added key that line wraps text to 80 line limit keybind: gq 
+27. Added key that deletes relative line 
+without moving the cursor (down) keybind: arg+I (up) keybind arg+R
+28. Added ability to view the numbers for arguments that keys e,w,E,W,b,B
+may take. keybind: ^v Pressing again will change the key mode, specifying
+any arguments will exit the mode. This is a major step up to how navigation
+works in vi, it makes it so much easier to use because now you can see where 
+you are going. If not anything else I suggest you to try out this distro
+just to see it in action.
+29. Added ability to change highlight dynamically.
+30. New ex option "hww" which highlights every instance of word under the
+cursor when enabled. Useful for when studying source code, currently only
+works in C files, but can be made to work in other places too.
+31. Added autocomplete in insert mode. Press ^g to index the current opened
+file. Then you can press ^n to cycle though the options, results are based on
+the contents of the file and the closest match to what you typed.
+32. Added ex command "inc" which sets the filename filter for the feature
+mentioned in (8.)
+33. Added hund file manager (hund.c) keybind: \
+
+# Hund
+A minimalistic terminal file manager.
+#### Features
+- Vim-inspired hotkeys
+- Dual-panel, Vim-like, minimalistic UI
+- UTF-8 + wide character support
+- Move/remove/copy/rename/chmod/chown selected files
+- Recursive chmod with set/unset masks
+- Find file in current directory (find as you type)
+- Multiple key sorting
+- One column at a time (none, size, perm, user, group, atime, ctime, mtime...)
+- Marks
+- Quick access to shell via `:sh`
+- Can be statically linked
+- Licensed under GPL-3.0
+#### Environment Variables (which Hund uses)
+| Variable | Usage | Default/Fallback |
+|-|-|-|
+| $VISUAL | text editor | $EDITOR |
+| $EDITOR | text editor | vi |
+| $PAGER | pager | less |
+| $HOME | user's home directory | /etc/passwd |
+| $SHELL | shell used by `:sh` | sh |
+| $OPEN | file opener | (none) |
+#### Planned features
+- Calculate volume of directories
+- Filter files
+- ACLs (at least detection)
+- Color schemes
+- man page
+- Packaging for some popular distros + installation scripts
+#### Architecture/OS Support
+- x86-64
+	- Arch Linux - works
+	- Alpine Linux - works
+	- FreeBSD - works
+	- OpenBSD - works
+	- NetBSD - works
+- aarch64 (Raspberry PI 3)
+	- Arch Linux ARM 64-bit - works
+#### Dependencies & Requirements
+- c99-compatible C compiler (`gcc`, `clang`, `tcc` were tested)
+	- For `tcc` you need to overwrite CFLAGS. "tcc: error: invalid option -- '--std=c99'"
+- libc of choice (`glibc` and `musl` were tested)
+- `make`
+- A pager (`less` by default)
+- A text editor (`vi` by default)
+#### Commands
+Type `?` while in hund for help.
+#### License
+Hund is licensed under GPL-3.0.
+Type `?` while in hund for copyright notice.
+#### Name
+_Hund_ is a German word for _dog_.
+
+CONFIGURATION
+-------------
+
+Edit conf.h to adjust syntax highlighting rules and text direction
+patterns.  To define a new keymap, create a new array in kmap.h, like
+kmap_fa, and add it to kmaps array in the same header (the first entry
+of the new array specifies its name).  The current keymap may be
+changed with :cm ex command.  When in input mode, ^e activates the
+English kaymap and ^f switches to the alternate keymap (the last
+keymap specified with :cm).
+
+COMMANDS
+--------
+
+Commands not available in ex(1):
+
+:cm[ap][!] [kmap]
+  Without kmap, prints the current keymap name.
+  When kmap is specified, sets the alternate keymap to
+  kmap and, unless ! is given, switches to this keymap.
+:ft [filetype]
+  Without filetype, prints the current file type.
+  When filetype is specified, sets the file type of the
+  current ex buffer.
+
+New key mappings:
+^a in normal mode: searches for the word under the cursor.
+^p in insert mode: inserts the contents of the default yank buffer.
+zL, zl, zr, and zR in normal mode: change the value of td option.
+^e and ^f in insert mode: switch to the English and alternate keymap.
+ze and zf in normal mode: switch to the English and alternate keymap.
+gu, gU, and g~ in normal mode: switch character case.
+^l in normal mode: updates terminal dimensions (after resizing it).
+
+OPTIONS
+-------
+
+To improve neatvi's performance, shaping, character reordering, and
+syntax highlighting can be disabled by defining the EXINIT environment
+variable as "set noshape | set noorder | set nohl | set td=+2".
+
+Options supported in neatvi:
+
+td, textdirection
+  Current direction context.  The following values are meaningful:
+  * +2: always left-to-right.
+  * +1: follow conf.h's dircontexts[]; left-to-right for others.
+  * -1: follow conf.h's dircontexts[]; right-to-left for others.
+  * -2: always right-to-left.
+shape
+  If set (default), performs Arabic/Farsi letter shaping.
+order
+  If set, reorder characters based on the rules defined
+  in conf.h.
+hl, highlight
+  If set (default), text will be highlighted based on syntax
+  highlighting rules in conf.h.
+hll, highlightline
+  If set, highlight current line.
+ai, autoindent
+  As in vi(1).
+aw, autowrite
+  As in vi(1).
+ic, ignorecase
+  As in vi(1).
+
+MARKS AND BUFFERS
+-----------------
+
+Special marks:
+* the position of the previous change
+[ the first line of the previous change
+] the last line of the previous change
+
+Special yank buffers:
+/ the previous search keyword
+: the previous ex command
