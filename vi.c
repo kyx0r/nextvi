@@ -1027,15 +1027,10 @@ static void vi_splitln(int row, int linepos, int nextln)
 		s = lbuf_get(xb, crow);
 		if (!s)
 			return;
-		len = strlen(s);
+		len = uc_slen(s);
 		if (len > linepos)
 		{
 			part = uc_sub(s, linepos, len);
-			if (!*part)
-			{
-				free(part);
-				part = uc_sub(s, linepos, len-1);
-			}
 			char buf[linepos+2];
 			memcpy(buf, s, linepos);
 			buf[linepos] = '\n';
