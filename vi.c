@@ -1031,8 +1031,13 @@ static void vi_splitln(int row, int linepos, int nextln)
 		if (len > linepos)
 		{
 			part = uc_sub(s, linepos, len);
+			if (!*part)
+			{
+				free(part);
+				part = uc_sub(s, linepos, len-1);
+			}
 			char buf[linepos+2];
-			memcpy(buf, s, linepos+2);
+			memcpy(buf, s, linepos);
 			buf[linepos] = '\n';
 			buf[linepos+1] = 0;
 			//needed to make operation undoable

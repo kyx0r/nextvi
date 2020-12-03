@@ -6,6 +6,7 @@
 #define MAX(a, b)	((a) < (b) ? (b) : (a))
 int isescape(char ch);
 char *substr(const char *s1, const char *s2);
+int dstrlen(const char *s, char delim);
 
 /* hund file manager */
 int hundmain(int argc, char* argv[]);

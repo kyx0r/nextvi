@@ -180,7 +180,7 @@ static void add_line(char* line)
 	insert_node(line, ROOT);
 }
 
-static int dstrlen (const char *s, char delim)
+int dstrlen (const char *s, char delim)
 {
         register const char* i;
         for(i=s; *i && *i != delim; ++i);
