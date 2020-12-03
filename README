@@ -14,6 +14,9 @@ FORK CHANGES
 7. Changed behavior of ^a to change search direction when no more match 
 8. Added fssearch, searches what is under the cursor 
 in every file in the opened directory keybind: ^]   
+Beware that it will brute force open files into buffers and
+perform the search. I usually save really often so this isn't 
+a problem, but being careless might reload file with unsaved changes.
 By default it only checks for .c and .h files. 
 for code navigation between files, jump to definitions / etc.
 9. fssearch but going in reverse keybind: ^p
@@ -23,8 +26,10 @@ setting an extra number parameter after filename will skip that many matches wit
 similar path. So for example file might be named "file123.c" but you can open it
 just by "ea fi" if this is a uniquely matched filename
 12. Added ex command "dir" to set the directory for fssearch or "ea" ex command
-13. Added numbered buffers to vi, max 8 and ex "b" command to switch
-14. Added key to show buffers and switch buffer keybind: ^s 
+13. Added numbered buffers to vi, max 10 and ex "b" command to show buffers
+and "b%d" to switch (where %d is the buffer number).
+14. Added key to show buffers and switch buffer 
+(to switch press corresponding 0-9 number) keybind: ^s 
 15. Added key to exit vi keybind: qq 
 16. Added key to goto line 0 keybind: gg 
 17. Added key to delete everything inside (cursor outside) "" keybind: di" 
@@ -57,6 +62,7 @@ the contents of the file and the closest match to what you typed.
 32. Added ex command "inc" which sets the filename filter for the feature
 mentioned in (8.)
 33. Added hund file manager (hund.c) keybind: \
+34. Added key to save current file keybind: ^k
 
 # Hund
 A minimalistic terminal file manager.

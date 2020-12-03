@@ -409,8 +409,9 @@ int ex_edit(char *path)
 	int fd;
 	if (path[0] == '.' && path[1] == '/')
 		path += 2;
-	if (path[0] && bufs_find(path) >= 0) {
-		bufs_switch(bufs_find(path));
+	fd = bufs_find(path);
+	if (path[0] && fd >= 0) {
+		bufs_switch(fd);
 		return 0;
 	}
 	if (path[0] || !bufs[0].path)

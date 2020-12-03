@@ -1607,9 +1607,11 @@ static void vi(void)
 				ex_command("b");
 				vi_arg1 = vi_digit();
 				if (vi_arg1 > -1)
+				{
 					ec_bufferi(&vi_arg1);
+					vc_status();
+				}
 				vi_printed = 0;
-				vc_status();
 				mod = 1;
 				break;
 			case 'u':
