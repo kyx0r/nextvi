@@ -599,7 +599,13 @@ static char *led_line(char *pref, char *post, char *ai,
 			if((difftime(time(0), quickexit) * 1000) < 1000)
 			{
 				if (sbuf_len(sb))
-					sbuf_cut(sb, led_lastchar(sbuf_buf(sb)));
+				{
+					cs = sbuf_buf(sb);
+					i = led_lastchar(cs);
+					if (cs[i] != 'k')
+						goto _default;
+					sbuf_cut(sb, i);
+				}
 				*key = TK_ESC;
 				goto leave;
 			}
