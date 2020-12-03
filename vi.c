@@ -385,6 +385,16 @@ static int vi_prefix(void)
 	return n;
 }
 
+static int vi_digit(void)
+{
+	int c = vi_read();
+	if ((c >= '0' && c <= '9')) {
+		if (isdigit(c))
+			return c - '0';
+	}
+	return -1;
+}
+
 static int vi_col2off(struct lbuf *lb, int row, int col)
 {
 	char *ln = lbuf_get(lb, row);
@@ -1595,8 +1605,11 @@ static void vi(void)
 				break;
 			case TK_CTL('s'):
 				ex_command("b");
-				vi_arg1 = vi_prefix();
-				ec_bufferi(&vi_arg1);
+				vi_arg1 = vi_digit();
+				if (vi_arg1 > -1)
+					ec_bufferi(&vi_arg1);
+				vi_printed = 0;
+				vc_status();
 				mod = 1;
 				break;
 			case 'u':

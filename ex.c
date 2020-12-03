@@ -36,7 +36,7 @@ static struct buf {
 	int row, off, top;
 	short id, td;           /* buffer id and text direction */
 	long mtime;             /* modification time */
-} bufs[8];
+} bufs[10];
 
 static int bufs_find(char *path)
 {
@@ -70,7 +70,7 @@ static int bufs_open(char *path)
 		if (!bufs[i].lb)
 			break;
 	if (!bufs[i].lb)
-		bufs[i].id = i + 1;
+		bufs[i].id = i;
 	bufs_free(i);
 	bufs[i].path = uc_dup(path);
 	bufs[i].lb = lbuf_make();
@@ -353,8 +353,8 @@ static int ex_modifiedbuffer(char *msg)
 
 void ec_bufferi(int *id)
 {
-	if (*id > LEN(bufs) || !id)
-		*id = 1;
+	if (*id > LEN(bufs))
+		*id = 0;
 	int i;
 	for (i = 0; i < LEN(bufs) && bufs[i].lb; i++) {
 		if (*id == bufs[i].id)
@@ -369,11 +369,11 @@ static int ec_buffer(char *ec)
 	int i;
 	char ln[EXLEN];
 	char arg[EXLEN];
-	unsigned char id;
+	char id;
 	ex_arg(ec, arg);
-	id = arg[0] ? atoi(arg) : 0;
+	id = arg[0] ? atoi(arg) : -1;
 	for (i = 0; i < LEN(bufs) && bufs[i].lb; i++) {
-		if (id) {
+		if (id != -1) {
 			if (id == bufs[i].id)
 				break;
 		} else {
@@ -383,7 +383,7 @@ static int ec_buffer(char *ec)
 			ex_print(ln);
 		}
 	}
-	if (id) {
+	if (id != -1) {
 		if (i < LEN(bufs) && bufs[i].lb)
 			bufs_switch(i);
 		else
