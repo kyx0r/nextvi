@@ -187,22 +187,19 @@ int dstrlen (const char *s, char delim)
         return (i-s);
 }
 
-static void file_ternary(char *path)
+static void file_ternary(struct lbuf* buf)
 {
 	char delim[] = "\t\n ;:,`.<>^%$#@*!?+-|/=\\{}[]&()'\"";
-	char* line = NULL;
 	char* ptr;
 	int len;
-	size_t line_length;
-	size_t bytes_read;
+	char **ss = lbuf_buf(buf);
+	int ln_n = lbuf_len(buf);
 
-	FILE* f = fopen(path, "r");
-	if(f == NULL) {
-		fprintf(stderr, "Unable to open file\n");
-	}
-
-	// Read until we run out of lines
-	while((bytes_read = getline(&line, &line_length, f)) != -1) {
+	for (int i = 0; i < ln_n; i++)
+	{
+		len = strlen(ss[i])+1;
+		char line[len];
+		memcpy(line, ss[i], len);
 		ptr = strtok(line, delim);
 		while(ptr != NULL)
 		{
@@ -223,8 +220,6 @@ static void file_ternary(char *path)
 			ptr = strtok(NULL, delim);
 		}
 	}
-	free(line);
-	fclose(f);
 }
 
 static char *kmap_map(int kmap, int c)
@@ -560,7 +555,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbuf_str(sb, reg_get(0, &lnmode));
 			break;
 		case TK_CTL('g'):
-			file_ternary(ex_path());		
+			file_ternary(xb);		
 			break;
 		case TK_CTL('n'):
 			if (_sug)

@@ -269,6 +269,11 @@ char *lbuf_get(struct lbuf *lb, int pos)
 	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
 }
 
+char **lbuf_buf(struct lbuf *lb)
+{
+	return lb->ln; 
+}
+
 int lbuf_len(struct lbuf *lb)
 {
 	return lb->ln_n;

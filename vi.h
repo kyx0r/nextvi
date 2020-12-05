@@ -19,6 +19,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
 void lbuf_edit(struct lbuf *lbuf, char *s, int beg, int end);
 char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
 char *lbuf_get(struct lbuf *lbuf, int pos);
+char **lbuf_buf(struct lbuf *lb);
 int lbuf_len(struct lbuf *lbuf);
 void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
 int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off);
