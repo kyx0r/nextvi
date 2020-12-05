@@ -102,16 +102,16 @@ int isescape(char ch)
 
 static void vi_drawwordnumend(int skip, int dir, char* tmp, int nrow, int noff)
 {
-	int l, i = 0;
+	int l, l1, i = 0;
 	char *c;
 	char snum[10];
 	for (int k = nrow; k == nrow; i++)
 	{
 		l = isescape(tmp[noff]);
 		c = itoa(i, snum);
-		//check if in 1-9, don't change indentation chars
-		if (c - snum == 1 && !l && i > 0)
-			tmp[noff] = *snum;
+		l1 = c - snum;
+		if (!l)
+			tmp[noff] = *(snum+l1-1 - !(i%10));
 		if (lbuf_wordend(xb, skip, dir, &nrow, &noff))
 			break;
 	}
@@ -119,16 +119,16 @@ static void vi_drawwordnumend(int skip, int dir, char* tmp, int nrow, int noff)
 
 static void vi_drawwordnumbeg(int skip, int dir, char* tmp, int nrow, int noff)
 {
-	int l, i = 0;
+	int l, l1, i = 0;
 	char *c;
 	char snum[10];
 	for (int k = nrow; k == nrow; i++)
 	{
 		l = isescape(tmp[noff]);
 		c = itoa(i, snum);
-		//check if in 1-9, don't change indentation chars
-		if (c - snum == 1 && !l && i > 0)
-			tmp[noff] = *snum;
+		l1 = c - snum;
+		if (!l)
+			tmp[noff] = *(snum+l1-1 - !(i%10));
 		if (lbuf_wordbeg(xb, skip, dir, &nrow, &noff))
 			break;
 	}
@@ -186,8 +186,6 @@ static void vi_drawrow(int row)
 				tmp[i] = ' ';
 		}
 		i = 0;
-		if (!isescape(tmp[noff]))
-			tmp[noff] = *vi_word;
 		switch (*vi_word)
 		{
 		case 'e':
@@ -205,6 +203,8 @@ static void vi_drawrow(int row)
 			vi_drawwordnumbeg(1, +1, tmp, nrow, noff);
 			break;
 		}
+		if (!isescape(tmp[noff]))
+			tmp[noff] = *vi_word;
 		movedown = 1;
 		led_print(tmp, row - xtop, ex_filetype());
 	} else
