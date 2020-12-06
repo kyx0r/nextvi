@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
@@ -1902,8 +1903,22 @@ static void vi(void)
 	term_kill();
 }
 
+static void vi_sigresize(int sig)
+{
+	switch (sig)
+	{
+	case SIGWINCH:
+		vi_back(TK_CTL('l'));
+		break;	
+	}
+}
+
 int main(int argc, char *argv[])
 {
+	struct sigaction sa = {0};
+	sa.sa_handler = vi_sigresize;
+	if (sigaction(SIGWINCH, &sa, NULL)) 
+		return -1;
 	int i;
 	char *prog = strchr(argv[0], '/') ? strrchr(argv[0], '/') + 1 : argv[0];
 	xvis = strcmp("ex", prog) && strcmp("neatex", prog);
@@ -1933,5 +1948,7 @@ int main(int argc, char *argv[])
 	dir_done();
 	if (fslink)
 		free(fslink);
+	sa.sa_handler = SIG_DFL; 
+	sigaction(SIGWINCH, &sa, NULL);
 	return 0;
 }

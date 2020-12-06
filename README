@@ -70,6 +70,8 @@ mentioned in (8.)
 35. The new special character "/" for ft in conf.h now signifies that 
 the regex will be applied on any file. The reason "/" was 
 chosen because it's forbidden filename character on unix. 
+36. Added a window size signal handler for vi to
+redraw the screen automatically
 
 # Hund
 A minimalistic terminal file manager.
