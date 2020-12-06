@@ -303,6 +303,16 @@ static char *vi_prompt(char *msg, int *kmap)
 	return r;
 }
 
+static void vi_sigresize(int sig)
+{
+	switch (sig)
+	{
+	case SIGWINCH:
+		vi_back(TK_CTL('l'));
+		break;	
+	}
+}
+
 /* read an ex input line */
 char *ex_read(char *msg)
 {
@@ -944,6 +954,10 @@ static int vi_motion(int *row, int *off)
 		break;
 	case '\\':
 		hundmain(1, NULL);
+		struct sigaction sa = {0};
+		sa.sa_handler = vi_sigresize;
+		if (sigaction(SIGWINCH, &sa, NULL)) 
+			return -1;
 		break;
 	default:
 		vi_back(mv);
@@ -1901,16 +1915,6 @@ static void vi(void)
 	}
 	term_pos(xrows, 0);
 	term_kill();
-}
-
-static void vi_sigresize(int sig)
-{
-	switch (sig)
-	{
-	case SIGWINCH:
-		vi_back(TK_CTL('l'));
-		break;	
-	}
 }
 
 int main(int argc, char *argv[])
