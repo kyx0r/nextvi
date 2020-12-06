@@ -27,7 +27,7 @@ static tern_t* insert_node(const char* string, tern_t* node);
 //finds the node where the given prefix ends. Helper function for 'search'
 static tern_t* find_node(const char* string, int l, tern_t* node);
 //frees allocated memory. Note: Does not free the root node of the tree.
-static void delete(tern_t* root, tern_t* node);
+//static void delete(tern_t* root, tern_t* node);
 //finds the words with prefix 'pattern' and prints out the results to 'out'.
 static int search(const char* pattern, int l, tern_t* node);
 
@@ -143,6 +143,7 @@ static int search(const char* pattern, int l, tern_t* node)
 	return -1;
 }
 
+/*
 static void delete(tern_t* root, tern_t* node)
 {
 	if (node != NULL) {
@@ -166,6 +167,7 @@ static void delete(tern_t* root, tern_t* node)
 		}
 	}
 }
+*/
 
 int dstrlen (const char *s, char delim)
 {
@@ -576,6 +578,19 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			break;
 		case TK_CTL('b'):
+			if (ai_max > 0)
+				break;
+			hist_write(sbuf_buf(sb));
+			hist_switch();
+			vi();
+			hist_switch();
+			cs = hist_curstr();
+			if (cs)
+			{
+				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
+				sbuf_str(sb, cs);  
+			}
+			xquit = 2;
 			break;
 		case 'j':
 			if((difftime(time(0), quickexit) * 1000) < 1000)
@@ -619,9 +634,11 @@ char *led_prompt(char *pref, char *post, int *kmap, char *syn)
 {
 	int key;
 	int td = td_set(+2);
+	hist_open();
 	char *s = led_line(pref, post, "", 0, &key, kmap, syn);
 	td_set(td);
 	if (key == '\n') {
+		hist_write(s);
 		struct sbuf *sb = sbuf_make();
 		if (pref)
 			sbuf_str(sb, pref);
@@ -630,9 +647,7 @@ char *led_prompt(char *pref, char *post, int *kmap, char *syn)
 			sbuf_str(sb, post);
 		free(s);
 		return sbuf_done(sb);
-	} else if (key == TK_ESC) {
-	
-	}
+	} 
 	free(s);
 	return NULL;
 }

@@ -10,6 +10,7 @@ int dstrlen(const char *s, char delim);
 
 /* hund file manager */
 int hundmain(int argc, char* argv[]);
+void vi();
 
 /* line buffer, managing a number of lines */
 struct lbuf *lbuf_make(void);
@@ -147,6 +148,10 @@ char *led_readchar(int c, int kmap);
 int led_pos(char *s, int pos);
 
 /* ex commands */
+void hist_open();
+void hist_switch();
+void hist_write(char *str);
+char *hist_curstr();
 void ex(void);
 void ex_command(char *cmd);
 char *ex_read(char *msg);

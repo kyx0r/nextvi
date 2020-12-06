@@ -1494,7 +1494,7 @@ static void vc_execute(void)
 			term_push(buf, strlen(buf));
 }
 
-static void vi(void)
+void vi(void)
 {
 	int xcol;
 	int mark;
@@ -1694,6 +1694,11 @@ static void vi(void)
 					mod = 1;
 				}
 				free(ln);
+				if (xquit == 2)
+				{
+					xquit = 0;
+					mod = 1;
+				}
 				if (xquit)
 					continue;
 				break;
