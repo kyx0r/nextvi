@@ -168,7 +168,6 @@ static void vi_drawrow(int row)
 		memcpy(c, s, l1+l2);
 		led_print(tmp, row - xtop, ex_filetype());
 	} else if (*vi_word && row == xrow+1) {
-		int i;
 		int noff = xoff;
 		int nrow = xrow;
 		c = lbuf_get(xb, xrow);
@@ -180,12 +179,11 @@ static void vi_drawrow(int row)
 		l1 = strlen(c)+1;
 		char tmp[l1];
 		memcpy(tmp, c, l1);
-		for (i = 0; i < l1; i++)
+		for (int i = 0; i < l1; i++)
 		{
 			if (!isescape(tmp[i]))
 				tmp[i] = ' ';
 		}
-		i = 0;
 		switch (*vi_word)
 		{
 		case 'e':

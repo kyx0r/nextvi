@@ -25,7 +25,7 @@ static struct highlight {
 	char *pat;		/* regular expression */
 	int end;		/* the group ending this pattern */
 } highlights[] = {
-	{"c", {9}, NULL},
+	{"/", {9}, NULL},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 		|enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
 		|u64|s64|f64|u8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t)\\>"},

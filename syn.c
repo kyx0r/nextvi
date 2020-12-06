@@ -76,7 +76,7 @@ static void syn_initft(char *name)
 	char *ft, *pat;
 	int i, n;
 	for (i = 0; !conf_highlight(i, &ft, NULL, &pat, NULL) && i < LEN(pats); i++)
-		if (!strcmp(ft, name))
+		if (*ft == '/' || !strcmp(ft, name))
 			pats[i] = pat;
 	n = i;
 	for (i = 0; i < LEN(ftmap); i++) {
@@ -94,7 +94,7 @@ char *syn_filetype(char *path)
 	char *ft;
 	if (!conf_filetype(hl, &ft, NULL))
 		return ft;
-	return "";
+	return "/";
 }
 
 void syn_init(void)

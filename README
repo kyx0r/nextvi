@@ -59,8 +59,7 @@ you are going. If not anything else I suggest you to try out this distro
 just to see it in action.
 29. Added ability to change highlight dynamically.
 30. New ex option "hww" which highlights every instance of word under the
-cursor when enabled. Useful for when studying source code, currently only
-works in C files, but can be made to work in other places too.
+cursor when enabled. Useful for when studying source code.
 31. Added autocomplete in insert mode. Press ^g to index the current opened
 file. Then you can press ^n to cycle though the options, results are based on
 the contents of the file and the closest match to what you typed.
@@ -68,6 +67,9 @@ the contents of the file and the closest match to what you typed.
 mentioned in (8.)
 33. Added hund file manager (hund.c) keybind: \
 34. Added key to save current file keybind: ^k
+35. The new special character "/" for ft in conf.h now signifies that 
+the regex will be applied on any file. The reason "/" was 
+chosen because it's forbidden filename character on unix. 
 
 # Hund
 A minimalistic terminal file manager.

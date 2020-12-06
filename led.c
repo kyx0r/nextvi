@@ -167,19 +167,6 @@ static void delete(tern_t* root, tern_t* node)
 	}
 }
 
-static void add_line(char* line)
-{
-	int i;
-	//getting rid of all the newline characters.
-	for (i=0; i<strlen(line); i++) {
-		if (line[i] == '\n') {
-			line[i] = '\0';
-		}
-	}
-	//adding the words to the tree
-	insert_node(line, ROOT);
-}
-
 int dstrlen (const char *s, char delim)
 {
         register const char* i;
@@ -213,7 +200,7 @@ static void file_ternary(struct lbuf* buf)
 						if (dstrlen(suggestbuf, '\n') == len)
 							goto skip;
 					}
-					add_line(ptr);
+					insert_node(ptr, ROOT);
 				}
 			}
 			skip:
@@ -295,7 +282,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 			for (j = 0; j < curwid; j++)
 				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
 	}
-	att = syn_highlight(xhl ? syn : "", s0);
+	att = syn_highlight(xhl ? syn : "/", s0);
 	/* the attribute of \n character is used for blanks */
 	for (i = 0; i < n; i++)
 		if (chrs[i][0] == '\n')
