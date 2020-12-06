@@ -580,6 +580,7 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('b'):
 			if (ai_max > 0)
 				break;
+			xquit = 0;
 			hist_write(sbuf_buf(sb));
 			hist_switch();
 			vi();
