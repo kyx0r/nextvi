@@ -64,24 +64,9 @@ cursor when enabled. Useful for when studying source code.
 file. Then you can press ^n to cycle though the options, results are based on
 the contents of the file and the closest match to what you typed.
 32. Added ex command "inc" which sets the filename filter for the feature
-mentioned in (8.)
-33. Added hund file manager (hund.c) keybind: \
-34. Added key to save current file keybind: ^k
-35. The new special character "/" for ft in conf.h now signifies that 
-the regex will be applied on any file. The reason "/" was 
-chosen because it's forbidden filename character on unix. 
-36. Added a window size signal handler for vi to
-redraw the screen automatically
-37. Added history buffer for ex commands when in vi prompt.
-keybind: ^b will open the buffer with all previous commands
-move the cursor to wanted command and exit buffer with qq  
-will copy the command into prompt. You can also use this
-when half way through some command and need to access normal
-mode to edit the command more efficiently.
-38. Added key to grab the current word under the cursor into 
-ex prompt like so :%s/.../ keybind: vr
-
-# Hund
+mentioned in (8.) This is not limited to one argument, 
+separate entries by space.
+33. Added hund keybind: \
 A minimalistic terminal file manager.
 #### Features
 - Vim-inspired hotkeys
@@ -95,7 +80,6 @@ A minimalistic terminal file manager.
 - Marks
 - Quick access to shell via `:sh`
 - Can be statically linked
-- Licensed under GPL-3.0
 #### Environment Variables (which Hund uses)
 | Variable | Usage | Default/Fallback |
 |-|-|-|
@@ -107,11 +91,52 @@ A minimalistic terminal file manager.
 | $OPEN | file opener | (none) |
 #### Commands
 Type `?` while in hund for help.
-#### License
-Hund is licensed under GPL-3.0.
-Type `?` while in hund for copyright notice.
 #### Name
 _Hund_ is a German word for _dog_.
+34. Added key to save current file keybind: ^k
+35. The new special character "/" for ft in conf.h now signifies that 
+the regex will be applied on any file. The reason "/" was 
+chosen because it's forbidden filename character on unix. It used 
+to be "" but in C will make a ptr value of 0, which breaks strcmp
+which is used to match highlights.
+36. Added a window size signal handler for vi to
+redraw the screen automatically.
+37. Added history buffer for ex commands when in vi prompt.
+keybind: ^b will open the buffer with all previous commands
+move the cursor to wanted command and exit buffer with qq  
+will copy the command into prompt. You can also use this
+when half way through some command and need to access normal
+mode to edit the command more efficiently.
+38. Added key to grab the current word under the cursor into 
+prompt like so :%s/.../ keybind: vr
+
+
+FAQ:
+----
+Q: Why neatvi instead of vim?
+A: Because it's just too damn difficult to do customization in source code. There
+is lots of baggage like python (+100MB++) ugly vimscript, dependency hell and I
+know that my brain is only extent of my skull. So this fork is not really meant
+to make clone version of vim, but more like a repo of specific patches so that
+if anybody wants to add features to their neatvi they might find it implemented
+here and save brain cycles thinking on how to do something.
+
+Q: Why not let user choose filemanager
+A: Because hund is integrated in vi's source code. And anything else will have
+to be launched as separate program, which would not work very well because 
+would not be able to call back into vi for opening files. Feel free to edit
+the source code.
+
+Q: Why not distribute as patches, like on suckless.org?
+A:  It's hard to maintain, say this repo have 35 patches, so it will
+be 35+ diffs. And each time something will mess up because one file change
+will require to change every patch offset, etc.
+
+Q: General philosophy?
+A: User is programmer, hacker culture.
+
+Q: Help! ^s locks up my terminal!
+A: This is normal, you have to disable it in your shell.
 
 CONFIGURATION
 -------------
