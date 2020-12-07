@@ -146,11 +146,13 @@ void led_printmsg(char *s, int row, char *syn);
 char *led_read(int *kmap);
 char *led_readchar(int c, int kmap);
 int led_pos(char *s, int pos);
+void led_done();
 
 /* ex commands */
 void hist_open();
 void hist_switch();
 void hist_write(char *str);
+void hist_done();
 char *hist_curstr();
 void ex(void);
 void ex_command(char *cmd);

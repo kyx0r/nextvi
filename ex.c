@@ -135,6 +135,15 @@ char *hist_curstr()
 	return lbuf_get(histbuf.lb, histbuf.row);
 }
 
+void hist_done()
+{
+	if (histbuf.lb)
+	{
+		free(histbuf.path);
+		lbuf_free(histbuf.lb);
+	}
+}
+
 static void bufs_switch(int idx)
 {
 	struct buf tmp;

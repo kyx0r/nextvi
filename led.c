@@ -27,7 +27,7 @@ static tern_t* insert_node(const char* string, tern_t* node);
 //finds the node where the given prefix ends. Helper function for 'search'
 static tern_t* find_node(const char* string, int l, tern_t* node);
 //frees allocated memory. Note: Does not free the root node of the tree.
-//static void delete(tern_t* root, tern_t* node);
+static void delete(tern_t* root, tern_t* node);
 //finds the words with prefix 'pattern' and prints out the results to 'out'.
 static int search(const char* pattern, int l, tern_t* node);
 
@@ -97,7 +97,6 @@ static tern_t* find_node(const char* string, int l, tern_t* node)
 
 static void deep_search(const char* pattern, tern_t* start)
 {
-	//printf("%s\n", pattern);
 	if(start->type != NO)
 	{
 		char *off = suggestbuf+suggestlen;
@@ -143,7 +142,6 @@ static int search(const char* pattern, int l, tern_t* node)
 	return -1;
 }
 
-/*
 static void delete(tern_t* root, tern_t* node)
 {
 	if (node != NULL) {
@@ -167,7 +165,6 @@ static void delete(tern_t* root, tern_t* node)
 		}
 	}
 }
-*/
 
 int dstrlen (const char *s, char delim)
 {
@@ -591,7 +588,9 @@ static char *led_line(char *pref, char *post, char *ai,
 			cs = hist_curstr();
 			if (cs)
 			{
-				sbuf_done(sb);
+				i = dstrlen(cs, '\n');
+				cs[i] = '\0';
+				sbuf_free(sb);
 				sb = sbuf_make();
 				sbuf_str(sb, cs);  
 			}
@@ -714,4 +713,9 @@ char *led_input(char *pref, char *post, int *kmap, char *syn)
 	return NULL;
 }
 
+void led_done()
+{
+	delete(ROOT, ROOT);
+	hist_done();
+}
 

@@ -1966,6 +1966,7 @@ int main(int argc, char *argv[])
 	reg_done();
 	syn_done();
 	dir_done();
+	led_done();
 	if (fslink)
 		free(fslink);
 	sa.sa_handler = SIG_DFL;
