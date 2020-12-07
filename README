@@ -78,6 +78,8 @@ move the cursor to wanted command and exit buffer with qq
 will copy the command into prompt. You can also use this
 when half way through some command and need to access normal
 mode to edit the command more efficiently.
+38. Added key to grab the current word under the cursor into 
+ex prompt like so :%s/.../ keybind: vr
 
 # Hund
 A minimalistic terminal file manager.

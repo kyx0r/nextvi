@@ -483,7 +483,8 @@ char* skipindent(char* str, int* len)
 
 /* read a line from the terminal */
 static char *led_line(char *pref, char *post, char *ai,
-		int ai_max, int *key, int *kmap, char *syn)
+		int ai_max, int *key, int *kmap, char *syn,
+		char *insert)
 {
 	struct sbuf *sb;
 	int ai_len = strlen(ai);
@@ -492,6 +493,8 @@ static char *led_line(char *pref, char *post, char *ai,
 	char *cs, *_sug = 0;
 	time_t quickexit = 0;
 	sb = sbuf_make();
+	if (insert)
+		sbuf_str(sb, insert);
 	if (!pref)
 		pref = "";
 	if (!post)
@@ -588,7 +591,8 @@ static char *led_line(char *pref, char *post, char *ai,
 			cs = hist_curstr();
 			if (cs)
 			{
-				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
+				sbuf_done(sb);
+				sb = sbuf_make();
 				sbuf_str(sb, cs);  
 			}
 			xquit = 2;
@@ -631,12 +635,13 @@ leave:
 }
 
 /* read an ex command */
-char *led_prompt(char *pref, char *post, int *kmap, char *syn)
+char *led_prompt(char *pref, char *post, char *insert, 
+		int *kmap, char *syn)
 {
 	int key;
 	int td = td_set(+2);
 	hist_open();
-	char *s = led_line(pref, post, "", 0, &key, kmap, syn);
+	char *s = led_line(pref, post, "", 0, &key, kmap, syn, insert);
 	td_set(td);
 	if (key == '\n') {
 		hist_write(s);
@@ -665,7 +670,7 @@ char *led_input(char *pref, char *post, int *kmap, char *syn)
 		ai[n++] = *pref++;
 	ai[n] = '\0';
 	while (1) {
-		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, syn);
+		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, syn, NULL);
 		int ln_sp = 0;	/* number of initial spaces in ln */
 		while (ln[ln_sp] && (ln[ln_sp] == ' ' || ln[ln_sp] == '\t'))
 			ln_sp++;

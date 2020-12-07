@@ -290,12 +290,12 @@ static char *vi_char(void)
 	return vi_buflen ? led_readchar(vi_buf[vi_buflen-1], xkmap) : led_read(&xkmap);
 }
 
-static char *vi_prompt(char *msg, int *kmap)
+static char *vi_prompt(char *msg, char *insert, int *kmap)
 {
 	char *r, *s;
 	term_pos(xrows, led_pos(msg, 0));
 	term_kill();
-	s = led_prompt(msg, "", kmap, "---");
+	s = led_prompt(msg, "", insert, kmap, "---");
 	if (!s)
 		return NULL;
 	r = uc_dup(strlen(s) >= strlen(msg) ? s + strlen(msg) : s);
@@ -320,7 +320,7 @@ char *ex_read(char *msg)
 	char c;
 	if (xled) {
 		int oleft = xleft;
-		char *s = led_prompt(msg, "", &xkmap, "---");
+		char *s = led_prompt(msg, "", NULL, &xkmap, "---");
 		xleft = oleft;
 		if (s)
 			term_chr('\n');
@@ -449,7 +449,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
 		struct sbuf *sb;
-		char *kw = vi_prompt(sign, &xkmap);
+		char *kw = vi_prompt(sign, 0, &xkmap);
 		char *re;
 		if (!kw)
 			return 1;
@@ -956,7 +956,7 @@ static int vi_motion(int *row, int *off)
 		hundmain(1, NULL);
 		struct sigaction sa = {0};
 		sa.sa_handler = vi_sigresize;
-		if (sigaction(SIGWINCH, &sa, NULL)) 
+		if (sigaction(SIGWINCH, &sa, NULL))
 			return -1;
 		break;
 	default:
@@ -1165,7 +1165,7 @@ static void vi_pipe(int r1, int r2)
 	char *text;
 	char *rep;
 	int kmap = 0;
-	char *cmd = vi_prompt("!", &kmap);
+	char *cmd = vi_prompt("!", 0, &kmap);
 	if (!cmd)
 		return;
 	text = lbuf_cp(xb, r1, r2 + 1);
@@ -1498,7 +1498,7 @@ void vi(void)
 {
 	int xcol;
 	int mark;
-	char *ln;
+	char *ln, *cs;
 	int kmap = 0;
 	xtop = MAX(0, xrow - xrows / 2);
 	xoff = 0;
@@ -1668,6 +1668,16 @@ void vi(void)
 				} else if (k == 'g') {
 					ex_command(".s/->/\\./");
 					break;
+				} else if (k == 'r') {
+					if (!(cs = vi_curword(xb, xrow, xoff)))
+						break;
+					char buf[strlen(cs)+10];
+					strcpy(buf, "%s/");
+					strcat(buf, cs);
+					strcat(buf, "/");
+					ln = vi_prompt(":", buf, &kmap);
+					free(cs);
+					goto do_excmd;
 				}
 				vi_back(k);
 				xai = !xai;
@@ -1688,7 +1698,8 @@ void vi(void)
 				mod = 1;
 				break;
 			case ':':
-				ln = vi_prompt(":", &kmap);
+				ln = vi_prompt(":", 0, &kmap);
+				do_excmd:
 				if (ln && ln[0]) {
 					ex_command(ln);
 					mod = 1;
@@ -1926,7 +1937,7 @@ int main(int argc, char *argv[])
 {
 	struct sigaction sa = {0};
 	sa.sa_handler = vi_sigresize;
-	if (sigaction(SIGWINCH, &sa, NULL)) 
+	if (sigaction(SIGWINCH, &sa, NULL))
 		return -1;
 	int i;
 	char *prog = strchr(argv[0], '/') ? strrchr(argv[0], '/') + 1 : argv[0];
@@ -1957,7 +1968,7 @@ int main(int argc, char *argv[])
 	dir_done();
 	if (fslink)
 		free(fslink);
-	sa.sa_handler = SIG_DFL; 
+	sa.sa_handler = SIG_DFL;
 	sigaction(SIGWINCH, &sa, NULL);
 	return 0;
 }

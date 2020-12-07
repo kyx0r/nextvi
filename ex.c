@@ -29,6 +29,7 @@ static int xkwddir;		/* the last search direction */
 static int xgdep;		/* global command recursion depth */
 int intershell;			/* interactive shell*/
 
+#define NUM_BUFS 10
 static struct buf {
 	char ft[32];            /* file type */
 	char *path;             /* file path */
@@ -36,13 +37,13 @@ static struct buf {
 	int row, off, top;
 	short id, td;           /* buffer id and text direction */
 	long mtime;             /* modification time */
-} bufs[10];
+} bufs[NUM_BUFS];
 static struct buf histbuf;
 
 static int bufs_find(char *path)
 {
 	int i;
-	for (i = 0; i < LEN(bufs); i++)
+	for (i = 0; i < NUM_BUFS; i++)
 		if (bufs[i].lb && !strcmp(bufs[i].path, path))
 			return i;
 	return -1;
@@ -67,7 +68,7 @@ static long mtime(char *path)
 static int bufs_open(char *path)
 {
 	int i;
-	for (i = 0; i < LEN(bufs) - 1; i++)
+	for (i = 0; i < NUM_BUFS - 1; i++)
 		if (!bufs[i].lb)
 			break;
 	if (!bufs[i].lb)
@@ -404,14 +405,14 @@ static int ex_modifiedbuffer(char *msg)
 
 void ec_bufferi(int *id)
 {
-	if (*id > LEN(bufs))
+	if (*id > NUM_BUFS)
 		*id = 0;
 	int i;
-	for (i = 0; i < LEN(bufs) && bufs[i].lb; i++) {
+	for (i = 0; i < NUM_BUFS && bufs[i].lb; i++) {
 		if (*id == bufs[i].id)
 			break;
 	}
-	if (i < LEN(bufs) && bufs[i].lb)
+	if (i < NUM_BUFS && bufs[i].lb)
 		bufs_switch(i);
 }
 
@@ -423,7 +424,7 @@ static int ec_buffer(char *ec)
 	char id;
 	ex_arg(ec, arg);
 	id = arg[0] ? atoi(arg) : -1;
-	for (i = 0; i < LEN(bufs) && bufs[i].lb; i++) {
+	for (i = 0; i < NUM_BUFS && bufs[i].lb; i++) {
 		if (id != -1) {
 			if (id == bufs[i].id)
 				break;
@@ -435,7 +436,7 @@ static int ec_buffer(char *ec)
 		}
 	}
 	if (id != -1) {
-		if (i < LEN(bufs) && bufs[i].lb)
+		if (i < NUM_BUFS && bufs[i].lb)
 			bufs_switch(i);
 		else
 			ex_show("no such buffer\n");
@@ -460,8 +461,7 @@ int ex_edit(char *path)
 	int fd;
 	if (path[0] == '.' && path[1] == '/')
 		path += 2;
-	fd = bufs_find(path);
-	if (path[0] && fd >= 0) {
+	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
 		bufs_switch(fd);
 		return 0;
 	}
@@ -498,8 +498,8 @@ static int ec_edit(char *ec)
 	if (!strchr(cmd, '!'))
 		if (xb && ex_modifiedbuffer("buffer modified\n"))
 			return 1;
-	if (path[0] && bufs_find(path) >= 0) {
-		bufs_switch(bufs_find(path));
+	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
+		bufs_switch(fd);
 		return 0;
 	}
 	if (path[0] || !bufs[0].path)
@@ -1057,6 +1057,7 @@ static int ec_set(char *ec)
 	ex_arg(ec, arg);
 	if (*s) {
 		s = cutword(s, tok);
+		/* this means if prefix "no" before option */
 		if (tok[0] == 'n' && tok[1] == 'o') {
 			strcpy(opt, tok + 2);
 			val = 0;
@@ -1245,6 +1246,6 @@ int ex_init(char **files)
 void ex_done(void)
 {
 	int i;
-	for (i = 0; i < LEN(bufs); i++)
+	for (i = 0; i < NUM_BUFS; i++)
 		bufs_free(i);
 }
