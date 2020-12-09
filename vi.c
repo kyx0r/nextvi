@@ -1492,6 +1492,8 @@ static void vc_execute(void)
 	if (buf)
 		for (i = 0; i < MAX(1, vi_arg1); i++)
 			term_push(buf, strlen(buf));
+	else
+		snprintf(vi_msg, sizeof(vi_msg), "exec buffer empty\n");
 }
 
 void vi(void)

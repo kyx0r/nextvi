@@ -171,6 +171,8 @@ zL, zl, zr, and zR in normal mode: change the value of td option.
 ze and zf in normal mode: switch to the English and alternate keymap.
 gu, gU, and g~ in normal mode: switch character case.
 ^l in normal mode: updates terminal dimensions (after resizing it).
+@ in normal mode: will execute the sequence of normal commands placed in 
+yank buffer. Specify yank buffer 0-9 or hit @ again for 0.
 
 OPTIONS
 -------
