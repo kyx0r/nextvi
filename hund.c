@@ -40,11 +40,11 @@
 #include <termios.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#include <stdint.h>
 #include "vi.h"
 #ifndef LOGIN_NAME_MAX
 #define LOGIN_NAME_MAX _SC_LOGIN_NAME_MAX
 #endif
-
 
 #define PATH_BUF_SIZE (PATH_MAX)
 #define PATH_MAX_LEN (PATH_MAX-1)
@@ -180,11 +180,7 @@ bool duplicates_on_list(const struct string_list* const);
  * or here:
  * http://www.unicode.org/terms_of_use.html
  */
-#ifndef WIDECHARS_H
-// 12 "widechars.h"
-#define WIDECHARS_H
 // A sorted list of ranges of Unicode codepoints of double-width characters
-
 static const unsigned int double_width[][2] = {
 	{0x1100, 0x115F},
 	{0x231A, 0x231B},
@@ -769,8 +765,6 @@ static const unsigned int zero_width[][2] = {
 	{0xE0020, 0xE007F},
 };
 static const size_t zero_width_len = sizeof(zero_width)/sizeof(zero_width[0]);
-#endif /* WIDECHARS_H */
-// 27 "utf8.h" 2
 
 typedef unsigned int codepoint_t;
 
@@ -790,7 +784,6 @@ size_t utf8_remove(char* const, const size_t);
 unsigned cut_unwanted(const char*, char*, const char, size_t);
 
 bool cp_in(const codepoint_t [][2], size_t, const codepoint_t);
-// 25 "panel.h" 2
 
 static const char compare_values[] = "nsacmdpxiugUG";
 #define FV_ORDER_SIZE (sizeof(compare_values)-1)
@@ -905,9 +898,7 @@ bool conflicts_with_existing(struct panel* const,
 		const struct string_list* const);
 
 void remove_conflicting(struct panel* const, struct string_list* const);
-// 34 "ui.h" 2
 
-// 38 "terminal.h"
 #define ESC_TIMEOUT_MS 125
 
 #define CTRL_KEY(K) ((K) & 0x1f)
@@ -943,7 +934,6 @@ struct s2i {// Sequence to Input
 	enum input_type t : 8;
 };
 // Sequence -> Key Mapping
-
 
 static const struct s2i SKM[] = {
 	{ "\x1b[@", I_INSERT },
@@ -1553,9 +1543,6 @@ struct ui {
 
 // [0] = old value
 // [1] = new/edited value
-
-
-
 	mode_t perm[2];// permissions of chmodded file
 
 	mode_t plus, minus;
@@ -1579,7 +1566,6 @@ static const draw_t do_draw[] = {
 	[BUF_STATUSBAR] = ui_statusbar,
 	[BUF_BOTTOMBAR] = ui_bottombar,
 };
-
 
 void ui_init(struct ui* const, struct panel* const,
 		struct panel* const);
@@ -1622,12 +1608,8 @@ size_t append_theme(struct append_buffer* const, const enum theme_element);
 // TODO
 	#define HAS_FALLOCATE 0
 #else
-// 30 "task.h"
 #define HAS_FALLOCATE 1
 #endif
-#include <stdint.h>
-#include <time.h>
-// 39 "task.h"
 typedef unsigned long long xtime_ms_t;
 
 xtime_ms_t xtime(void);
@@ -1769,7 +1751,6 @@ int tree_walk_start(struct tree_walk* const, const char* const,
 		const char* const, const size_t);
 void tree_walk_end(struct tree_walk* const);
 int tree_walk_step(struct tree_walk* const);
-// 33 "hund.c" 2
 /*
  * GENERAL TODO
  * - Dir scanning via task?
@@ -1782,7 +1763,6 @@ int tree_walk_step(struct tree_walk* const);
  * - Change symlink target
  * - simplify empty dir handling - maybe show . or .. ?
  */
-// 47 "hund.c"
 static char* ed[] = {"$VISUAL", "$EDITOR", "vi", NULL};
 static char* pager[] = {"$PAGER", "less", NULL};
 static char* sh[] = {"$SHELL", "sh", NULL};
@@ -2032,17 +2012,12 @@ static void cmd_find(struct ui* const i) {
 	i->dirty |= DIRTY_PANELS | DIRTY_STATUSBAR | DIRTY_BOTTOMBAR;
 	i->prompt = NULL;
 }
+
 /*
  * Returns:
  * true - success and there are files to work with (skipping may empty list)
  * false - failure or aborted
  */
-
-
-
-
-
-
 inline static bool _solve_name_conflicts_if_any(struct ui* const i,
 		struct string_list* const s, struct string_list* const r) {
 	static const char* const question = "Conflicting names.";
@@ -2066,20 +2041,15 @@ inline static bool _solve_name_conflicts_if_any(struct ui* const i,
 			}
 			break;
 		case 1:// merge
-
 // merge policy is chosen after estimating
 // (if there are any conflicts in the tree)
-
-
 			list_free(r);
 			return true;
 		case 2:// skip
-
 			remove_conflicting(i->sv, s);
 			list_copy(r, s);
 			return s->len != 0;
 		case 3:// abort
-
 		default:
 			return false;
 		}
@@ -2123,19 +2093,13 @@ static void prepare_task(struct ui* const i, struct task* const t,
 		chmod_close(i);
 	}
 }
+
 /*
  * op = Old Path
  * np = New Path
  * on = Old Name
  * nn = New Name
  */
-
-
-
-
-
-
-
 static int _rename(char* const op, size_t* const opl,
 		char* const np, size_t* const npl,
 		const struct string* const on,
@@ -2155,10 +2119,6 @@ static int _rename(char* const op, size_t* const opl,
 	popd(op, opl);
 	return err;
 }
-/*
- */
-
-
 
 static int rename_trivial(const char* const wd, const size_t wdl,
 		struct string_list* const S, struct string_list* const R) {
@@ -2314,8 +2274,6 @@ static void cmd_rename(struct ui* const i) {
 inline static void cmd_cd(struct ui* const i) {
 // TODO
 // TODO buffers
-
-
 	int err = 0;
 	struct stat s;
 	char* path = malloc(PATH_BUF_SIZE);
@@ -2366,8 +2324,6 @@ inline static void cmd_mkdir(struct ui* const i) {
 
 inline static void cmd_change_sorting(struct ui* const i) {
 // TODO cursor
-
-
 	char old[FV_ORDER_SIZE];
 	memcpy(old, i->pv->order, FV_ORDER_SIZE);
 	char* buf = i->pv->order;
@@ -2409,9 +2365,6 @@ static void cmd_mklnk(struct ui* const i) {
 // TODO conflicts
 //char tmpn[] = "/tmp/hund.XXXXXXXX";
 //int tmpfd = mkstemp(tmpn);
-
-
-
 	int err;
 	struct string_list sf = { NULL, 0 };
 	panel_selected_to_list(i->pv, &sf);
@@ -2435,8 +2388,6 @@ static void cmd_mklnk(struct ui* const i) {
 	free(slpath);
 //close(tmpfd);
 //unlink(tmpn);
-
-
 	ui_rescan(i, i->sv, NULL);
 	select_from_list(i->sv, &sf);
 	list_free(&sf);
@@ -2544,13 +2495,7 @@ static void _perm(struct ui* const i, const bool unset, const int mask) {
 	bool minus;
 	struct input in = get_input(i->timeout);
 	if (in.t != I_UTF8) return;
-
-
-
 #define REL(M) do { *m[0] |= (mask & (M)); *m[1] &= ~(mask & (M)); } while (0);
-
-
-
 #define SET(M) do { *m[0] = (~mask & *m[0]) | (mask & (M)); *m[1] = (~mask & *m[1]) | (mask & ~(M)); } while (0);
 	minus = in.utf[0] == '-';
 	if (in.utf[0] == '+' || in.utf[0] == '-') {
@@ -3262,6 +3207,7 @@ int hundmain(int argc, char* argv[]) {
 	memset(&t, 0, sizeof(struct task));
 	return 0;
 }
+
 /* Similar to strlcpy;
  * Copies string pointed by src to dest.
  * Assumes that dest is n bytes long,
@@ -3273,7 +3219,6 @@ int hundmain(int argc, char* argv[]) {
  * Written after compiler started to whine about strncpy()
  * (specified bound N equals destination size [-Wstringop-truncation])
  */
-// 1490 "hund.c"
 char* xstrlcpy(char* dest, const char* src, size_t n)
 {
 	size_t srcl = strnlen(src, n-1);
@@ -3296,12 +3241,12 @@ char* get_home(void) {
 	struct passwd* pwd = getpwuid(geteuid());
 	return (pwd ? pwd->pw_dir : NULL);
 }
+
 /*
  * Chmods given file using plus and minus masks
  * The following should be true: (plus & minus) == 0
  * (it's not checked)
  */
-
 int relative_chmod(const char* const file,
 		const mode_t plus, const mode_t minus) {
 	struct stat s;
@@ -3311,20 +3256,20 @@ int relative_chmod(const char* const file,
 	p &= ~minus;
 	return (chmod(file, p) ? errno : 0);
 }
+
 /*
  * Checks of two files are on the same filesystem.
  * If they are, moving files (and even whole directories)
  * can be done with just rename() function.
  */
-
 bool same_fs(const char* const a, const char* const b) {
 	struct stat sa, sb;
 	return !stat(a, &sa) && !stat(b, &sb) && (sa.st_dev == sb.st_dev);
 }
+
 /*
  * Cleans up list created by scan_dir()
  */
-
 void file_list_clean(struct file*** const fl, fnum_t* const nf) {
 	if (!*nf) return;
 	for (fnum_t i = 0; i < *nf; ++i) {
@@ -3334,6 +3279,7 @@ void file_list_clean(struct file*** const fl, fnum_t* const nf) {
 	*fl = NULL;
 	*nf = 0;
 }
+
 /*
  * Cleans up old data and scans working directory,
  * putting data into variables passed in arguments.
@@ -3346,7 +3292,6 @@ void file_list_clean(struct file*** const fl, fnum_t* const nf) {
  * nf = Number of Files
  * nhf = Number of Hidden Files
  */
-// 1564 "hund.c"
 struct node {
 	struct node* next;
 	struct file* file;
@@ -3420,12 +3365,6 @@ int scan_dir(const char* const wd, struct file*** const fl,
 	closedir(dir);
 	return err;
 }
-/*
- * TODO
- */
-
-
-
 
 int link_copy_recalculate(const char* const wd,
 		const char* const src, const char* const dst) {
@@ -3448,17 +3387,12 @@ int link_copy_recalculate(const char* const wd,
 	memcpy(tpath+wdlen+1, lpath, lpathlen+1);
 	return (symlink(tpath, dst) ? errno : 0);
 }
+
 /*
  * Copies link without recalculating path
  * Allows dangling pointers
  * TODO TEST
  */
-
-
-
-
-
-
 int link_copy_raw(const char* const src, const char* const dst) {
 	char lpath[PATH_BUF_SIZE];
 	const ssize_t ll = readlink(src, lpath, sizeof(lpath));
@@ -3504,13 +3438,10 @@ void pretty_size(off_t s, char* const buf) {
 	}
 	buf[top] = *unit;
 }
+
 /*
  * Push Directory
  */
-
-
-
-
 int pushd(char* const P, size_t* const Pl, const char* const D, size_t Dl) {
 	if (memcmp(P, "/", 2)) {
 		if (*Pl+1+Dl > PATH_MAX_LEN) return ENAMETOOLONG;
@@ -3522,13 +3453,10 @@ int pushd(char* const P, size_t* const Pl, const char* const D, size_t Dl) {
 	*Pl += Dl;
 	return 0;
 }
+
 /*
  * Pop directory
  */
-
-
-
-
 void popd(char* const P, size_t* const Pl) {
 	while (*Pl > 1 && P[*Pl-1] != '/') {
 		P[*Pl-1] = 0;
@@ -3539,6 +3467,7 @@ void popd(char* const P, size_t* const Pl) {
 		*Pl -= 1;
 	}
 }
+
 /*
  * cd - Change Directory
  * Does not change current working directory,
@@ -3570,7 +3499,6 @@ void popd(char* const P, size_t* const Pl) {
  * Multiple consecutive '/' will be shortened to only one '/'
  * e.g. cd("/", "a///b////c") -> "/a/b/c"
  */
-// 1774 "hund.c"
 int cd(char* const current, size_t* const cl,
 		const char* const dest, size_t rem) {
 	char B[PATH_BUF_SIZE];
@@ -3637,13 +3565,13 @@ int cd(char* const current, size_t* const cl,
 	*cl = Bl;
 	return 0;
 }
+
 /*
  * Returns place in buffer, where path after ~ starts
  * So that pretty path is just
  * printf("~%s", path+prettify_path_i(path));
  * If cannot be prettified, returns 0
  */
-
 int prettify_path_i(const char* const path) {
 	const char* const home = get_home();
 	const size_t hlen = strnlen(home, PATH_MAX_LEN);
@@ -3652,12 +3580,12 @@ int prettify_path_i(const char* const path) {
 	}
 	return 0;
 }
+
 /*
  * Instead of populating another buffer,
  * it just points to place in buffer,
  * where current dir's name starts
  */
-
 int current_dir_i(const char* const path) {
 	const int plen = strnlen(path, PATH_MAX_LEN);
 	int i = plen-1;// i will point last slash in path
@@ -3668,9 +3596,8 @@ int current_dir_i(const char* const path) {
 	return i+1;// i will point last slash in path
 
 }
+
 /* Initial Matching Bytes */
-
-
 size_t imb(const char* a, const char* b) {
 	size_t m = 0;
 	while (*a && *b && *a == *b) {
@@ -3680,9 +3607,8 @@ size_t imb(const char* a, const char* b) {
 	}
 	return m;
 }
+
 /* Checks if STRing contains SUBString */
-
-
 bool contains(const char* const str, const char* const subs) {
 	const size_t subs_len = strnlen(subs, PATH_MAX_LEN);
 	const size_t str_len = strnlen(str, PATH_MAX_LEN);
@@ -3732,6 +3658,7 @@ void list_free(struct string_list* const list) {
 	list->arr = NULL;
 	list->len = 0;
 }
+
 /*
  * Reads file from fd and forms a list of lines
  * Blank line encountered: string_list is not allocated. Pointer is set to NULL.
@@ -3741,7 +3668,6 @@ void list_free(struct string_list* const list) {
  * TODO support for other line endings
  * TODO redo
  */
-// 1941 "hund.c"
 int file_to_list(const int fd, struct string_list* const list) {
 	list_free(list);
 	char name[NAME_BUF_SIZE];
@@ -3818,11 +3744,11 @@ fnum_t blank_lines(const struct string_list* const list) {
 	}
 	return n;
 }
+
 /*
  * Tells if there are duplicates on list
  * TODO optimize
  */
-
 bool duplicates_on_list(const struct string_list* const list) {
 	for (fnum_t f = 0; f < list->len; ++f) {
 		for (fnum_t g = 0; g < list->len; ++g) {
@@ -3835,11 +3761,11 @@ bool duplicates_on_list(const struct string_list* const list) {
 	}
 	return false;
 }
+
 /* This file contains UI-related functions
  * These functions are supposed to draw elements of UI.
  * They are supposed to read panel contents, but never modify it.
  */
-// 2060 "hund.c"
 static enum theme_element mode2theme(const mode_t m) {
 	if (EXECUTABLE(m)) return THEME_ENTRY_REG_EXE_UNS;
 	static const enum theme_element tm[] = {
@@ -3855,9 +3781,7 @@ static enum theme_element mode2theme(const mode_t m) {
 }
 
 struct ui* global_i;
-
 static int setup_signals(void);
-
 static void sighandler(int sig) {
 	switch (sig) {
 	case SIGTERM:
@@ -4038,8 +3962,6 @@ static void _column(const enum column C, const struct file* const cfr,
 		char* const buf, const size_t bufsize, size_t* const buflen) {
 // TODO adjust width of columns
 // TODO inode, longsize, shortsize: length may be very different
-
-
 	struct tm T;
 	time_t t;
 	const char* tfmt;
@@ -4139,8 +4061,6 @@ static void _entry(struct ui* const i, const struct panel* const fv,
 
 	const struct file* const cfr = fv->file_list[e];
 // File SYMbol
-
-
 	enum theme_element fsym = mode2theme(cfr->s.st_mode);
 
 	char name[NAME_BUF_SIZE];
@@ -4188,6 +4108,7 @@ static void _entry(struct ui* const i, const struct panel* const fv,
 	fill(ab, close, 1);
 	append_attr(ab, ATTR_NORMAL, NULL);
 }
+
 /*
  * - Max Entries = how many entries I need to fill
  * all available space in file view
@@ -4210,21 +4131,15 @@ static void _entry(struct ui* const i, const struct panel* const fv,
  * At which index should I start looking
  * for visible entries to catch all that can be displayed
  */
-// 2411 "hund.c"
 static fnum_t _start_search_index(const struct panel* const s,
 		const fnum_t nhf, const fnum_t me) {
 	fnum_t eo = 0;// Entries Over
-
 	fnum_t oi = 1;// Over Index
-
 	fnum_t bi = 0;// Begin Index
-
 	fnum_t eu = 0;// Entries Under
-
 	fnum_t ui = 1;// Under Index
 
 /* How many entries are under selection? */
-
 	while (s->num_files-nhf && s->selection+ui < s->num_files && eu < me/2) {
 		if (visible(s, s->selection+ui)) eu += 1;
 		ui += 1;
@@ -4232,9 +4147,6 @@ static fnum_t _start_search_index(const struct panel* const s,
 /* How many entries are over selection?
 	 * (If there are few entries under, then use up all remaining space)
 	 */
-
-
-
 	while (s->num_files-nhf && s->selection >= oi && eo + 1 + eu <= me) {
 		if (visible(s, s->selection-oi)) eo += 1;
 		bi = s->selection-oi;
@@ -4245,7 +4157,6 @@ static fnum_t _start_search_index(const struct panel* const s,
 
 void ui_statusbar(struct ui* const i, struct append_buffer* const ab) {
 // TODO now that there are columns...
-
 	const struct file* const _hfr = hfr(i->pv);
 	struct tm T;
 	if (!_hfr || !localtime_r(&(_hfr->s.st_mtim.tv_sec), &T)) {
@@ -4308,8 +4219,6 @@ void ui_statusbar(struct ui* const i, struct append_buffer* const ab) {
 static void _keyname(const struct input* const in, char* const buf) {
 // TODO
 // TODO strncpy
-
-
 	static const char* const N[] = {
 		[I_ARROW_UP] = "up",
 		[I_ARROW_DOWN] = "down",
@@ -4377,12 +4286,9 @@ int help_to_fd(struct ui* const i, const int tmpfd) {
 	int err = 0;
 	for (size_t m = 0; m < MODE_NUM; ++m) {
 /* MODE TITLE */
-
 		write(tmpfd, mode_strings[m], strlen(mode_strings[m]));
 		write(tmpfd, "\n", 1);
 /* LIST OF AVAILABLE KEYS */
-
-
 		const struct input2cmd* k[4];
 		size_t ki = 0;
 		for (size_t c = CMD_NONE+1; c < CMD_NUM; ++c) {
@@ -4492,7 +4398,6 @@ void ui_bottombar(struct ui* const i, struct append_buffer* const ab) {
 	}
 	else {
 // TODO input buffer
-
 	}
 }
 
@@ -4600,12 +4505,12 @@ int ui_ask(struct ui* const i, const char* const q,
 		}
 	}
 }
+
 /*
  * Find matching mappings
  * If there are a few, do nothing, wait longer.
  * If there is only one, send it.
  */
-
 enum command get_cmd(struct ui* const i) {
 #define ISIZE (sizeof(struct input)*INPUT_LIST_LENGTH)
 	int Kn = 0;
@@ -4642,6 +4547,7 @@ enum command get_cmd(struct ui* const i) {
 	return CMD_NONE;
 #undef ISIZE
 }
+
 /*
  * Gets input to buffer
  * Responsible for cursor movement (buftop) and guarding buffer bounds (bsize)
@@ -4650,7 +4556,6 @@ enum command get_cmd(struct ui* const i) {
  * If keeps gathering, returns 1.
  * Unhandled inputs are put into 'o' (if not NULL) and 2 is returned
  */
-// 2832 "hund.c"
 int fill_textbox(struct ui* const I, char* const buf, char** const buftop,
 		const size_t bsize, struct input* const o) {
 	const struct input i = get_input(I->timeout);
@@ -4661,7 +4566,6 @@ int fill_textbox(struct ui* const I, char* const buf, char** const buftop,
 /* If empty, abort.
 		 * Otherwise ready.
 		 */
-
 		return (*buftop == buf ? -1 : 0);
 	}
 	else if (i.t == I_UTF8 && strlen(buf)+utf8_g2nb(i.utf) <= bsize) {
@@ -4731,10 +4635,6 @@ int prompt(struct ui* const i, char* const t,
 	i->prompt_cursor_pos = -1;
 	return r;
 }
-/*
- * success = true
- * failure = false
- */
 
 bool ui_rescan(struct ui* const i, struct panel* const a,
 		struct panel* const b) {
@@ -4800,6 +4700,7 @@ size_t append_theme(struct append_buffer* const ab,
 			theme_scheme[te].bg_color);
 	return n;
 }
+
 /*
  * Checks if file is visible at the moment.
  * Invalid selections are assumed to be invisible.
@@ -4811,14 +4712,12 @@ size_t append_theme(struct append_buffer* const ab,
  * show_hidden = 1 |1|1|
  * show_hidden = 0 |1|0|
  */
-// 3012 "hund.c"
 bool visible(const struct panel* const fv, const fnum_t i) {
 	return fv->num_files && i < fv->num_files
 		&& (fv->show_hidden || fv->file_list[i]->name[0] != '.');
 }
+
 /* Highlighted File Record */
-
-
 struct file* hfr(const struct panel* const fv) {
 	return (visible(fv, fv->selection)
 		? fv->file_list[fv->selection] : NULL);
@@ -4857,13 +4756,10 @@ inline void delete_file_list(struct panel* const fv) {
 	file_list_clean(&fv->file_list, &fv->num_files);
 	fv->selection = fv->num_hidden = 0;
 }
+
 /*
  * Returns index of given file on list or -1 if not present
  */
-
-
-
-
 fnum_t file_on_list(const struct panel* const fv, const char* const name) {
 	fnum_t i = 0;
 	while (i < fv->num_files && strcmp(fv->file_list[i]->name, name)) {
@@ -4871,9 +4767,8 @@ fnum_t file_on_list(const struct panel* const fv, const char* const name) {
 	}
 	return (i == fv->num_files ? (fnum_t)-1 : i);
 }
+
 /* Finds and highlighs file with given name */
-
-
 void file_highlight(struct panel* const fv, const char* const N) {
 	fnum_t i = 0;
 	while (i < fv->num_files && strcmp(fv->file_list[i]->name, N)) {
@@ -4970,6 +4865,7 @@ int panel_scan_dir(struct panel* const fv) {
 	}
 	return 0;
 }
+
 /*
  * Return:
  * -1: a < b
@@ -4977,7 +4873,6 @@ int panel_scan_dir(struct panel* const fv) {
  *  1: a > b
  *  ...just like memcmp, strcmp
  */
-// 3173 "hund.c"
 static int frcmp(const enum key cmp,
 		const struct file* const a,
 		const struct file* const b) {
@@ -5029,11 +4924,11 @@ static int frcmp(const enum key cmp,
 	}
 	return 0;
 }
+
 /*
  * D = destination
  * S = source
  */
-
 inline static void merge(const enum key cmp, const int scending,
 		struct file** D, struct file** S,
 		const fnum_t beg, const fnum_t mid, const fnum_t end) {
@@ -5063,7 +4958,6 @@ inline static void merge(const enum key cmp, const int scending,
 
 void merge_sort(struct panel* const fv, const enum key cmp) {
 // TODO inplace if possible
-
 	struct file** tmp;
 	struct file** A = fv->file_list;
 	struct file** B = calloc(fv->num_files,
@@ -5109,13 +5003,10 @@ void panel_sorting_changed(struct panel* const fv) {
 	panel_sort(fv);
 	file_highlight(fv, before);
 }
+
 /*
  * If there is no selection, the highlighted file is selected
  */
-
-
-
-
 void panel_selected_to_list(struct panel* const fv,
 		struct string_list* const L) {
 	fnum_t start = 0;
@@ -5163,6 +5054,7 @@ void panel_unselect_all(struct panel* const fv) {
 		fv->file_list[f]->selected = false;
 	}
 }
+
 /*
  * Needed by rename operation.
  * Checks conflicts with existing files and allows complicated swaps.
@@ -5181,7 +5073,6 @@ void panel_unselect_all(struct panel* const fv) {
  * TODO inline it (?); only needed once
  * TODO code repetition
  */
-// 3372 "hund.c"
 bool rename_prepare(const struct panel* const fv,
 		struct string_list* const S,
 		struct string_list* const R,
@@ -5189,13 +5080,11 @@ bool rename_prepare(const struct panel* const fv,
 		struct assign** const a, fnum_t* const at) {
 	*at = 0;
 //          vvvvvv TODO calculate size
-
 	*a = calloc(S->len, sizeof(struct assign));
 	bool* tofree = calloc(S->len, sizeof(bool));
 	for (fnum_t f = 0; f < R->len; ++f) {
 		if (memchr(R->arr[f]->str, '/', R->arr[f]->len)) {
 // TODO signal what is wrong
-
 			free(*a);
 			*a = NULL;
 			*at = 0;
@@ -5289,7 +5178,6 @@ void remove_conflicting(struct panel* const fv,
 }
 
 /* CodePoint To Bytes */
-// 3497 "hund.c"
 void utf8_cp2b(char* const b, codepoint_t cp) {
 #if 1
 
@@ -5321,11 +5209,9 @@ void utf8_cp2b(char* const b, codepoint_t cp) {
 		b[3] = 0x80 | (cp & 0x00003f);
 	}
 #endif
-// 3526 "hund.c"
 }
+
 /* Bytes To CodePoint */
-
-
 codepoint_t utf8_b2cp(const char* const b) {
 	register codepoint_t cp = 0;
 #if 1
@@ -5364,9 +5250,9 @@ codepoint_t utf8_b2cp(const char* const b) {
 		cp |= (b[3] & 0x3f);
 	}
 #endif
-// 3565 "hund.c"
 	return cp;
 }
+
 /* Glyph To Number of Bytes
  * how long the current glyph is (in bytes)
  * returns 0 if initial byte is invalid
@@ -5391,10 +5277,8 @@ codepoint_t utf8_b2cp(const char* const b) {
  * 1 x 4 bytes
  * 11111xxx -> invalid (see impementation)
  */
-// 3593 "hund.c"
 size_t utf8_g2nb(const char* const g) {
 // Top 5 bits To Length
-
 	static const char t2l[32] = {
 		1, 1, 1, 1, 1, 1, 1, 1,//00000xxx - 00111xxx
 
@@ -5406,12 +5290,10 @@ size_t utf8_g2nb(const char* const g) {
 
 	};
 /* This cast is very important */
-
 	return t2l[(unsigned char)(*g) >> 3];
 }
+
 /* CodePoint To Number of Bytes */
-
-
 size_t utf8_cp2nb(const codepoint_t cp) {
 	if (cp < (codepoint_t) 0x80) return 1;
 	if (cp < (codepoint_t) 0x0800) return 2;
@@ -5419,9 +5301,8 @@ size_t utf8_cp2nb(const codepoint_t cp) {
 	if (cp < (codepoint_t) 0x200000) return 4;
 	return 0;
 }
+
 /* Glyph to width */
-
-
 size_t utf8_g2w(const codepoint_t cp) {
 	if (cp < 0x20) return 0;
 	if (cp < 0x7f) return 1;
@@ -5429,9 +5310,8 @@ size_t utf8_g2w(const codepoint_t cp) {
 	if (cp_in(double_width, double_width_len-1, cp)) return 2;
 	return 1;
 }
+
 /* Apparent width */
-
-
 size_t utf8_width(const char* b) {
 	size_t g = 0;
 	size_t s;
@@ -5441,15 +5321,11 @@ size_t utf8_width(const char* b) {
 	}
 	return g;
 }
+
 /*
  * Width To Number of Bytes
  * Calculates how much bytes will fill given width
  */
-
-
-
-
-
 size_t utf8_w2nb(const char* const b, size_t w) {
 	size_t r = 0;
 	while (*(b+r) && w > 0) {
@@ -5458,13 +5334,10 @@ size_t utf8_w2nb(const char* const b, size_t w) {
 	}
 	return r;
 }
+
 /*
  * Width till some address in that string
  */
-
-
-
-
 size_t utf8_wtill(const char* a, const char* const b) {
 	size_t w = 0;
 	while (b - a > 0) {
@@ -5483,9 +5356,6 @@ bool utf8_validate(const char* const b) {
 /* Now check if bytes following the
 		 * inital byte are like 10xxxxxx
 		 */
-
-
-
 		if (s > 1) {
 			const char* v = b+i+1;
 			while (v < b+i+s) {
@@ -5506,15 +5376,11 @@ void utf8_insert(char* a, const char* const b, const size_t pos) {
 	memmove(a+bl, a, strlen(a));
 	memcpy(a, b, bl);
 }
+
 /*
  * Remove glyph at index
  * returns length in bytes of removed glyph
  */
-
-
-
-
-
 size_t utf8_remove(char* const a, const size_t j) {
 	char* t = a;
 	for (size_t i = 0; i < j; ++i) {
@@ -5525,13 +5391,10 @@ size_t utf8_remove(char* const a, const size_t j) {
 	memmove(t, t+rl, strlen(t));
 	return rl;
 }
+
 /*
  * Copies only valid utf8 characters and non-control ascii to buf
  */
-
-
-
-
 unsigned cut_unwanted(const char* str, char* buf, const char c, size_t n) {
 	unsigned u = 0;
 	while (*str && n) {
@@ -5553,13 +5416,10 @@ unsigned cut_unwanted(const char* str, char* buf, const char c, size_t n) {
 
 	return u;
 }
+
 /*
  * Binary search. Determines if the codepoint is in given list.
  */
-
-
-
-
 bool cp_in(const codepoint_t r[][2], size_t Z, const codepoint_t cp) {
 	if (cp < r[0][0] || r[Z][1] < cp) return false;
 	size_t A = 0;
@@ -5578,25 +5438,7 @@ bool cp_in(const codepoint_t r[][2], size_t Z, const codepoint_t cp) {
 	}
 	return false;
 }
-/*
- *  Copyright (C) 2017-2018 by Michał Czarnecki <czarnecky@va.pl>
- *
- *  This file is part of the Hund.
- *
- *  The Hund is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  The Hund is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-// 3769 "hund.c"
+
 xtime_ms_t xtime(void) {
 	struct timespec t;
 	clock_gettime(CLOCK_REALTIME, &t);
@@ -5648,8 +5490,6 @@ void task_clean(struct task* const t) {
 int task_build_path(const struct task* const t, char* R) {
 // TODO
 // TODO be smarter about checking the length
-
-
 	const char* S = NULL;
 	const char* D = NULL;
 	size_t D_len = 0;
@@ -5840,8 +5680,6 @@ static int _copy(struct task* const t, const char* const src,
 	char buf[BUFSIZ];
 // TODO if it fails at any point it should se\k back
 // to enable retrying
-
-
 	int e = 0;
 	if (!_files_opened(t) && (e = _open_files(t, dst, src))) {
 		return e;
@@ -5871,18 +5709,13 @@ static int _copy(struct task* const t, const char* const src,
 	}
 	return 0;
 }
+
 /*
  * No effects on failure
  */
-
-
-
-
 static int _stat_file(struct tree_walk* const tw) {
 // lstat/stat can errno:
 // ENOENT, EACCES, ELOOP, ENAMETOOLONG, ENOMEM, ENOTDIR, EOVERFLOW
-
-
 	const struct stat old_cs = tw->cs;
 	const enum tree_walk_state old_tws = tw->tws;
 	if (lstat(tw->path, &tw->cs)) {
@@ -5947,10 +5780,8 @@ void tree_walk_end(struct tree_walk* const tw) {
 	free(tw->path);
 	memset(tw, 0, sizeof(struct tree_walk));
 }
+
 //TODO: void tree_walk_skip(struct tree_walk* const tw) {}
-
-
-
 int tree_walk_step(struct tree_walk* const tw) {
 	struct dirtree *new_dt, *up;
 	switch (tw->tws)  {
@@ -5964,7 +5795,6 @@ int tree_walk_step(struct tree_walk* const tw) {
 		break;
 	case AT_DIR:
 /* Go deeper */
-
 		new_dt = calloc(1, sizeof(struct dirtree));
 		new_dt->up = tw->dt;
 		tw->dt = new_dt;
@@ -5977,7 +5807,6 @@ int tree_walk_step(struct tree_walk* const tw) {
 		break;
 	case AT_DIR_END:
 /* Go back */
-
 		if (tw->dt->cd) closedir(tw->dt->cd);
 		up = tw->dt->up;
 		free(tw->dt);
@@ -6001,8 +5830,6 @@ int tree_walk_step(struct tree_walk* const tw) {
 		ce = readdir(tw->dt->cd);
 	} while (ce && DOTDOT(ce->d_name));
 // TODO errno
-
-
 	if (!ce) {
 		tw->tws = AT_DIR_END;
 		return errno;
@@ -6015,16 +5842,12 @@ int tree_walk_step(struct tree_walk* const tw) {
 inline static int _copyremove_step(struct task* const t, int* const c) {
 // TODO absolute mess; simplify
 // TODO skipped counter
-
-
 	char np[PATH_BUF_SIZE];
 	const bool cp = t->t & (TASK_COPY | TASK_MOVE);
 	const bool rm = t->t & (TASK_MOVE | TASK_REMOVE);
 	const bool ov = t->tf & TF_OVERWRITE_CONFLICTS;
 	int err = 0;
 /* QUICK MOVE */
-
-
 	if ((t->t & TASK_MOVE) && same_fs(t->src, t->dst)) {
 		task_build_path(t, np);
 		if (rename(t->tw.path, np)) {
@@ -6037,19 +5860,13 @@ inline static int _copyremove_step(struct task* const t, int* const c) {
 		return 0;
 	}
 /* SKIP LINKS FLAG */
-
-
 	if ((t->tw.tws & AT_LINK) && (t->tf & TF_SKIP_LINKS)) {
 		return 0;
 	}
 /* COPYING */
-
-
 	if (cp) {
 		task_build_path(t, np);
 /* IF DESTINATION EXISTS */
-
-
 		if (!access(np, F_OK)) {
 			if (t->tf & TF_SKIP_CONFLICTS) return 0;
 			if (ov || (t->tf & TF_OVERWRITE_ONCE)) {
@@ -6093,10 +5910,6 @@ inline static int _copyremove_step(struct task* const t, int* const c) {
 				 * One cannot remove non-empty directory
 				 * to prevent EEXIST error on overwrite flag
 				 */
-
-
-
-
 				err = errno;
 				if (ov && err == EEXIST) {
 					err = 0;
@@ -6194,15 +6007,10 @@ struct input get_input(int timeout_us) {
 	}
 	else if (seq[0] == 0x7f) {
 #if defined(__linux__) || defined(__linux) || defined(linux)
-
 		i.t = I_BACKSPACE;
 #else
-
 		i.t = I_DELETE;
 #endif
-
-
-
 	}
 	else if (!(seq[0] & 0x60)) {
 		i.t = I_CTRL;
@@ -6236,12 +6044,9 @@ int start_raw_mode(struct termios* const before) {
 	cfmakeraw(&raw);
 //raw.c_cc[VINTR] = 0x03;
 //raw.c_cc[VSUSP] = 0x1a;
-
-
 	raw.c_iflag &= ~(BRKINT);
 	raw.c_lflag |= ISIG;
 	write(STDOUT_FILENO, CSI_CURSOR_HIDE);// TODO
-
 	return (tcsetattr(fd, TCSAFLUSH, &raw) ? errno : 0);
 }
 
