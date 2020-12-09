@@ -135,7 +135,6 @@ int link_copy_raw(const char* const, const char* const);
  * X.XU
  * X.XXU
  */
-// 132 "fs.h"
 void pretty_size(off_t, char* buf);
 
 int pushd(char* const, size_t* const, const char* const, size_t);
@@ -900,7 +899,6 @@ bool conflicts_with_existing(struct panel* const,
 void remove_conflicting(struct panel* const, struct string_list* const);
 
 #define ESC_TIMEOUT_MS 125
-
 #define CTRL_KEY(K) ((K) & 0x1f)
 
 enum input_type {
@@ -1031,12 +1029,10 @@ size_t fill(struct append_buffer* const, const char, const size_t);
 #define CSI_SCREEN_ALTERNATIVE "\x1b[?47h", 6
 #define CSI_SCREEN_NORMAL "\x1b[?47l", 6
 #define CSI_CURSOR_HIDE_TOP_LEFT "\x1b[?25l\x1b[H", 9
-// 36 "ui.h" 2
 
 #define MSG_BUFFER_SIZE 128
 #define KEYNAME_BUF_SIZE 16
 // TODO adjust KEYNAME_BUF_SIZE
-
 
 enum mode {
 	MODE_MANAGER = 0,
@@ -1478,7 +1474,6 @@ enum msg_type {
 	MSG_NONE = 0,
 	MSG_INFO = 1<<0,
 //MSG_WARNING,
-
 	MSG_ERROR = 1<<1,
 };
 
@@ -2408,10 +2403,8 @@ static void cmd_quick_chmod_plus_x(struct ui* const i) {
 static void interpreter(struct ui* const i, struct task* const t,
 		struct marks* const m, char* const line, size_t linesize) {
 /* TODO document it */
-
-	static char* anykey = 		"; read -n1 -r -p \"Press any key to continue...\" key\n"
-
-		"if [ \"$key\" != '' ]; then echo; fi";
+	static char* anykey = "; read -n1 -r -p \"Press any key to continue...\" key\n"
+	"if [ \"$key\" != '' ]; then echo; fi";
 	int e;
 	(void)(t);
 	const size_t line_len = strlen(line);
@@ -2426,7 +2419,6 @@ static void interpreter(struct ui* const i, struct task* const t,
 	}
 	else if (!strcmp(line, "+x")) {
 		i->dirty |= DIRTY_STATUSBAR;// TODO
-
 		cmd_quick_chmod_plus_x(i);
 	}
 	else if (!strcmp(line, "lm")) {
@@ -2458,7 +2450,6 @@ static void interpreter(struct ui* const i, struct task* const t,
 
 		if (line[6] != ' ') {
 			failed(i, "mark", "");// TODO
-
 			return;
 		}
 		char* path = line+7;
@@ -2485,7 +2476,6 @@ static void interpreter(struct ui* const i, struct task* const t,
 	}
 	else {
 		failed(i, "interpreter", "Unrecognized command");// TODO
-
 	}
 }
 
@@ -3161,7 +3151,7 @@ int hundmain(int argc, char* argv[]) {
 	memset(&m, 0, sizeof(struct marks));
 
 	i.mt = MSG_INFO;
-	xstrlcpy(i.msg, "Type ? for help and license notice.", MSG_BUFFER_SIZE);
+	xstrlcpy(i.msg, "Type ? for help.", MSG_BUFFER_SIZE);
 
 	static const char* const config_paths[] = {
 		"~/.hundrc",
@@ -3190,9 +3180,8 @@ int hundmain(int argc, char* argv[]) {
 
 	while (i.run || t.ts != TS_CLEAN) {
 		ui_draw(&i);
-		if (i.run) {// TODO
+		if (i.run)
 			process_input(&i, &t, &m);
-		}
 		task_execute(&i, &t);
 	}
 
