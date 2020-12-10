@@ -1032,7 +1032,7 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode, int move)
 static void vi_splitln(int row, int linepos, int nextln)
 {
 	char *s, *part;
-	int len, crow;
+	int len, crow, bytelen = 0;
 	int c = !vi_arg1 ? 1 : vi_arg1;
 	for (int i = 0; i < c; i++)
 	{
@@ -1041,13 +1041,15 @@ static void vi_splitln(int row, int linepos, int nextln)
 		if (!s)
 			return;
 		len = uc_slen(s);
+		for (int z = 0; z < linepos; z++)
+			bytelen += uc_len(&s[bytelen]);	
 		if (len > linepos)
 		{
 			part = uc_sub(s, linepos, len);
-			char buf[linepos+2];
-			memcpy(buf, s, linepos);
-			buf[linepos] = '\n';
-			buf[linepos+1] = 0;
+			char buf[bytelen+2];
+			memcpy(buf, s, bytelen);
+			buf[bytelen] = '\n';
+			buf[bytelen+1] = 0;
 			//needed to make operation undoable
 			lbuf_edit(xb, buf, crow, crow+1);
 			lbuf_edit(xb, part, crow+1, crow+1);
