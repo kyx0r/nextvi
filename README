@@ -83,12 +83,9 @@ A minimalistic terminal file manager.
 #### Environment Variables (which Hund uses)
 | Variable | Usage | Default/Fallback |
 |-|-|-|
-| $VISUAL | text editor | $EDITOR |
-| $EDITOR | text editor | vi |
-| $PAGER | pager | less |
+| $VISUAL | $EDITOR | text editor | vi |
 | $HOME | user's home directory | /etc/passwd |
 | $SHELL | shell used by `:sh` | sh |
-| $OPEN | file opener | (none) |
 #### Commands
 Type `?` while in hund for help.
 #### Name
