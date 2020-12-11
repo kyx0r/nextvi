@@ -38,7 +38,8 @@ static struct buf {
 	short id, td;           /* buffer id and text direction */
 	long mtime;             /* modification time */
 } bufs[NUM_BUFS];
-static struct buf histbuf;
+static struct buf histbufs[2];
+static struct buf *histbuf = &histbufs[0];
 
 static int bufs_find(char *path)
 {
@@ -85,18 +86,30 @@ static int bufs_open(char *path)
 	return i;
 }
 
+void hist_set(int i)
+{
+	histbuf = &histbufs[i];
+}
+
 void hist_open()
 {
-	if (histbuf.lb)
+	if (histbuf->lb)
 		return;
-	histbuf.path = uc_dup("hist");
-	histbuf.lb = lbuf_make();
-	histbuf.row = 0;
-	histbuf.off = 0;
-	histbuf.top = 0;
-	histbuf.td = +1;
-	histbuf.mtime = -1;
-	histbuf.ft[0] = '/';
+	histbuf->path = uc_dup("hist");
+	histbuf->lb = lbuf_make();
+	histbuf->row = 0;
+	histbuf->off = 0;
+	histbuf->top = 0;
+	histbuf->td = +1;
+	histbuf->mtime = -1;
+	histbuf->ft[0] = '/';
+}
+
+void hist_pos(int row, int off, int top)
+{
+	histbuf->row = 0;
+	histbuf->off = 0;
+	histbuf->top = 0;
 }
 
 void hist_switch()
@@ -107,8 +120,8 @@ void hist_switch()
 	bufs[0].top = xtop;
 	bufs[0].td = xtd;
 	memcpy(&tmp, &bufs[0], sizeof(tmp));
-	memcpy(&bufs[0], &histbuf, sizeof(tmp));
-	memcpy(&histbuf, &tmp, sizeof(tmp));
+	memcpy(&bufs[0], histbuf, sizeof(tmp));
+	memcpy(histbuf, &tmp, sizeof(tmp));
 	xrow = bufs[0].row;
 	xoff = bufs[0].off;
 	xtop = bufs[0].top;
@@ -117,30 +130,31 @@ void hist_switch()
 
 void hist_write(char *str)
 {
-	if (!*str || strcmp(histbuf.path, "hist"))
+	if (!*str || strcmp(histbuf->path, "hist"))
 		return;
 	struct sbuf *sb = sbuf_make();
-	struct lbuf *lb = histbuf.lb;
+	struct lbuf *lb = histbuf->lb;
 	sbuf_str(sb, str);
 	if (!lbuf_len(lb))
 		lbuf_edit(lb, "\n", 0, 0);
-	histbuf.row++;
-	lbuf_edit(lb, sbuf_buf(sb), histbuf.row, histbuf.row);
-	histbuf.off = lbuf_indents(lb, histbuf.row);
+	histbuf->row++;
+	lbuf_edit(lb, sbuf_buf(sb), histbuf->row, histbuf->row);
+	histbuf->off = lbuf_indents(lb, histbuf->row);
 	sbuf_free(sb);
 }
 
 char *hist_curstr()
 {
-	return lbuf_get(histbuf.lb, histbuf.row);
+	return lbuf_get(histbuf->lb, histbuf->row);
 }
 
 void hist_done()
 {
-	if (histbuf.lb)
+	if (histbuf->lb)
 	{
-		free(histbuf.path);
-		lbuf_free(histbuf.lb);
+		free(histbuf->path);
+		lbuf_free(histbuf->lb);
+		histbuf->lb = NULL;
 	}
 }
 

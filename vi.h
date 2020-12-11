@@ -149,11 +149,13 @@ int led_pos(char *s, int pos);
 void led_done();
 
 /* ex commands */
+void hist_set(int i);
 void hist_open();
 void hist_switch();
 void hist_write(char *str);
 void hist_done();
 char *hist_curstr();
+void hist_pos(int row, int off, int top);
 void ex(void);
 void ex_command(char *cmd);
 char *ex_read(char *msg);

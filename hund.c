@@ -1462,14 +1462,6 @@ static const char* const more_help[] = {
 	NULL,
 };
 
-static const char* const copyright_notice[] = {
-	"Hund  Copyright (C) 2017-2018  Michał Czarnecki",
-	"Hund comes with ABSOLUTELY NO WARRANTY.",
-	"This is free software, and you are welcome to",
-	"redistribute it under terms of GNU General Public License.",
-	NULL,
-};
-
 enum msg_type {
 	MSG_NONE = 0,
 	MSG_INFO = 1<<0,
@@ -1759,7 +1751,6 @@ int tree_walk_step(struct tree_walk* const);
  * - simplify empty dir handling - maybe show . or .. ?
  */
 static char* ed[] = {"$VISUAL", "$EDITOR", "vi", NULL};
-static char* pager[] = {"$PAGER", "less", NULL};
 static char* sh[] = {"$SHELL", "sh", NULL};
 
 char* xgetenv(char* q[]) {
@@ -1774,29 +1765,6 @@ char* xgetenv(char* q[]) {
 		q += 1;
 	}
 	return r;
-}
-
-int pager_spawn(int* const fd, pid_t* const pid) {
-	int pipefd[2];
-	if (pipe(pipefd) || (*pid = fork()) == -1) {
-		return errno;
-	}
-	if (*pid == 0) {
-		close(pipefd[1]);
-		dup2(pipefd[0], STDIN_FILENO);
-		close(pipefd[0]);
-		char* arg[] = { xgetenv(pager), "-", NULL };
-		execvp(arg[0], arg);
-		exit(EXIT_FAILURE);
-	}
-	*fd = pipefd[1];
-	return 0;
-}
-
-void pager_done(int fd, const pid_t pid) {
-	int status;
-	close(fd);
-	waitpid(pid, &status, 0);
 }
 
 struct mark_path {
@@ -1893,29 +1861,24 @@ void marks_jump(struct ui* const i, struct marks* const m) {
 	}
 }
 
-int marks_to_fd(struct marks* const m, const int fd) {
+static inline void list_marks(struct ui* const i, struct marks* const m) {
 	struct mark_path** mp;
+	hist_set(1);
+	hist_open();
 	for (int i = ' '; i < 0x7f; ++i) {
 		if (!(mp = marks_get(m, i)) || !*mp) continue;
-		char H[2] = { i, ' ' };
-		if (write(fd, H, 2) == -1
-		|| write(fd, (*mp)->data, (*mp)->len) == -1
-		|| write(fd, "\n", 1) == -1) {
-			return errno;
-		}
+		char h[(*mp)->len+3];
+		h[0] = i;
+		h[1] = ' ';
+		memcpy(&h[2], (*mp)->data, (*mp)->len+1);
+		hist_write(h);
 	}
-	return 0;
-}
-
-static inline void list_marks(struct ui* const i, struct marks* const m) {
-	int fd, e;
-	pid_t p;
-	if ((e = pager_spawn(&fd, &p))
-	|| (e = marks_to_fd(m, fd))) {
-		failed(i, "pager", strerror(e));
-		return;
-	}
-	pager_done(fd, p);
+	hist_switch();
+	vi();
+	hist_switch();
+	hist_done();
+	hist_set(0);
+	xquit = 0;
 }
 
 static int open_file_with(char* const p, char* const f) {
@@ -1924,15 +1887,109 @@ static int open_file_with(char* const p, char* const f) {
 	return spawn(arg, 0);
 }
 
-static void open_help(struct ui* const i) {
-	int e, fd = -1;
-	pid_t p;
-	if ((e = pager_spawn(&fd, &p))) {
-		failed(i, "help", strerror(e));
-		return;
+static void _keyname(const struct input* const in, char* const buf) {
+// TODO
+// TODO strncpy
+	static const char* const N[] = {
+		[I_ARROW_UP] = "up",
+		[I_ARROW_DOWN] = "down",
+		[I_ARROW_RIGHT] = "right",
+		[I_ARROW_LEFT] = "left",
+		[I_HOME] = "home",
+		[I_END] = "end",
+		[I_PAGE_UP] = "pgup",
+		[I_PAGE_DOWN] = "pgdn",
+		[I_INSERT] = "ins",
+		[I_BACKSPACE] = "bsp",
+		[I_DELETE] = "del",
+		[I_ESCAPE] = "esc"
+	};
+	switch (in->t) {
+	case I_NONE:
+		strcpy(buf, "??");
+		break;
+	case I_UTF8:
+		if (in->utf[0] == ' ') {
+			strcpy(buf, "spc");
+		}
+		else {
+			strcpy(buf, in->utf);
+		}
+		break;
+	case I_CTRL:
+		switch (in->utf[0]) {
+		case 'I':
+			strcpy(buf, "tab");
+			break;
+		case 'M':
+			strcpy(buf, "enter");
+			break;
+		default:
+			buf[0] = '^';
+			strcpy(buf+1, in->utf);
+			break;
+		}
+		break;
+	default:
+		strcpy(buf, N[in->t]);
+		break;
 	}
-	help_to_fd(i, fd);
-	pager_done(fd, p);
+}
+
+inline static void _find_all_keyseqs4cmd(const struct ui* const i,
+		const enum command c, const enum mode m,
+		const struct input2cmd* ic[], size_t* const ki) {
+	*ki = 0;
+	for (size_t k = 0; k < i->kml; ++k) {
+		if (i->kmap[k].c != c || i->kmap[k].m != m) continue;
+		ic[*ki] = &i->kmap[k];
+		*ki += 1;
+	}
+}
+
+static void open_help(struct ui* const i) {
+	int l;
+	hist_set(1);
+	hist_open();
+	for (size_t m = 0; m < MODE_NUM; ++m) {
+		hist_write((char*)mode_strings[m]);
+		const struct input2cmd* k[4];
+		size_t ki = 0;
+		for (size_t c = CMD_NONE+1; c < CMD_NUM; ++c) {
+			_find_all_keyseqs4cmd(i, c, m, k, &ki);
+			if (!ki) continue;// ^^^ may output empty array
+
+			size_t maxsequences = 4;
+			char key[KEYNAME_BUF_SIZE];
+			char out[4096] = {0};
+			for (size_t s = 0; s < ki; ++s) {
+				unsigned j = 0;
+				while (k[s]->i[j].t != I_NONE) {
+					_keyname(&k[s]->i[j], key);
+					strcat(out, key);
+					j += 1;
+				}
+				maxsequences -= 1;
+				strcat(out, "\t");
+			}
+			for (unsigned s = 0; s < maxsequences; ++s)
+				strcat(out, "\t");
+			strcat(out, cmd_help[c]);
+			hist_write(out);
+		}
+	}
+	l = 0;
+	while (more_help[l]) {
+		hist_write((char*)more_help[l]);
+		l += 1;
+	}
+	hist_pos(0, 0, 0); 
+	hist_switch();
+	vi();
+	hist_switch();
+	hist_done();
+	hist_set(0);
+	xquit = 0;
 }
 
 static int edit_list(struct string_list* const in,
@@ -4205,122 +4262,6 @@ void ui_statusbar(struct ui* const i, struct append_buffer* const ab) {
 	append(ab, "\r\n", 2);
 }
 
-static void _keyname(const struct input* const in, char* const buf) {
-// TODO
-// TODO strncpy
-	static const char* const N[] = {
-		[I_ARROW_UP] = "up",
-		[I_ARROW_DOWN] = "down",
-		[I_ARROW_RIGHT] = "right",
-		[I_ARROW_LEFT] = "left",
-		[I_HOME] = "home",
-		[I_END] = "end",
-		[I_PAGE_UP] = "pgup",
-		[I_PAGE_DOWN] = "pgdn",
-		[I_INSERT] = "ins",
-		[I_BACKSPACE] = "bsp",
-		[I_DELETE] = "del",
-		[I_ESCAPE] = "esc"
-	};
-	switch (in->t) {
-	case I_NONE:
-		strcpy(buf, "??");
-		break;
-	case I_UTF8:
-		if (in->utf[0] == ' ') {
-			strcpy(buf, "spc");
-		}
-		else {
-			strcpy(buf, in->utf);
-		}
-		break;
-	case I_CTRL:
-		switch (in->utf[0]) {
-		case 'I':
-			strcpy(buf, "tab");
-			break;
-		case 'M':
-			strcpy(buf, "enter");
-			break;
-		default:
-			buf[0] = '^';
-			strcpy(buf+1, in->utf);
-			break;
-		}
-		break;
-	default:
-		strcpy(buf, N[in->t]);
-		break;
-	}
-}
-
-inline static void _find_all_keyseqs4cmd(const struct ui* const i,
-		const enum command c, const enum mode m,
-		const struct input2cmd* ic[], size_t* const ki) {
-	*ki = 0;
-	for (size_t k = 0; k < i->kml; ++k) {
-		if (i->kmap[k].c != c || i->kmap[k].m != m) continue;
-		ic[*ki] = &i->kmap[k];
-		*ki += 1;
-	}
-}
-/*
- * TODO errors
- * TODO tab (8 spaces) may not be enough
- * TODO ambiguity: there is no difference between tab (3 ascii keys)
- *      and tab (1 special key) + others
- */
-
-int help_to_fd(struct ui* const i, const int tmpfd) {
-	int err = 0;
-	for (size_t m = 0; m < MODE_NUM; ++m) {
-/* MODE TITLE */
-		write(tmpfd, mode_strings[m], strlen(mode_strings[m]));
-		write(tmpfd, "\n", 1);
-/* LIST OF AVAILABLE KEYS */
-		const struct input2cmd* k[4];
-		size_t ki = 0;
-		for (size_t c = CMD_NONE+1; c < CMD_NUM; ++c) {
-			_find_all_keyseqs4cmd(i, c, m, k, &ki);
-			if (!ki) continue;// ^^^ may output empty array
-
-			size_t maxsequences = 4;
-			char key[KEYNAME_BUF_SIZE];
-			for (size_t s = 0; s < ki; ++s) {
-				unsigned j = 0;
-				while (k[s]->i[j].t != I_NONE) {
-					_keyname(&k[s]->i[j], key);
-					write(tmpfd, key, strlen(key));
-					j += 1;
-				}
-				maxsequences -= 1;
-				write(tmpfd, "\t", 1);
-			}
-			for (unsigned s = 0; s < maxsequences; ++s) {
-				write(tmpfd, "\t", 1);
-			}
-			write(tmpfd, cmd_help[c], strlen(cmd_help[c]));
-			write(tmpfd, "\n", 1);
-		}
-		write(tmpfd, "\n", 1);
-	}
-
-	int L = 0;
-	while (more_help[L]) {
-		write(tmpfd, more_help[L], strlen(more_help[L]));
-		write(tmpfd, "\n", 1);
-		L += 1;
-	}
-	write(tmpfd, "\n", 1);
-	L = 0;
-	while (copyright_notice[L]) {
-		write(tmpfd, copyright_notice[L], strlen(copyright_notice[L]));
-		write(tmpfd, "\n", 1);
-		L += 1;
-	}
-	return err;
-}
-
 void ui_panels(struct ui* const i, struct append_buffer* const ab) {
 	fnum_t e[2] = {
 		_start_search_index(i->fvs[0], i->fvs[0]->num_hidden, i->ph-1),
@@ -5264,7 +5205,7 @@ codepoint_t utf8_b2cp(const char* const b) {
  * 11101xxx -> 3 bytes
  * 11110xxx -> 4 bytes
  * 1 x 4 bytes
- * 11111xxx -> invalid (see impementation)
+ * 11111xxx -> invalid (see implementation)
  */
 size_t utf8_g2nb(const char* const g) {
 // Top 5 bits To Length

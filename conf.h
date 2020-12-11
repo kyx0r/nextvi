@@ -104,7 +104,7 @@ static struct highlight {
 #define SYN_LINE		12
 
 /* how to hightlight text in the reverse direction */
-#define SYN_REVDIR		(SYN_BGMK(7))
+#define SYN_REVDIR		7
 
 /* right-to-left characters (used only in dircontexts[] and dirmarks[]) */
 #define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْ"
