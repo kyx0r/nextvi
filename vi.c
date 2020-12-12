@@ -152,7 +152,6 @@ static void vi_drawrow(int row)
 			free(c);
 		}
 	}
-
 	if (!s) {
 		led_print(row ? "~" : "", row - xtop, ex_filetype());
 		return;
@@ -275,19 +274,9 @@ static void vi_back(int c)
 		vi_buf[vi_buflen++] = c;
 }
 
-/* will be executed backwards */
-static void vi_strback(char* str)
-{
-	while(*str)
-	{
-		vi_back(*str);
-		str++;
-	}
-}
-
 static char *vi_char(void)
 {
-	return vi_buflen ? led_readchar(vi_buf[vi_buflen-1], xkmap) : led_read(&xkmap);
+	return led_read(&xkmap);
 }
 
 static char *vi_prompt(char *msg, char *insert, int *kmap)
@@ -1638,17 +1627,15 @@ void vi(void)
 				if (!lbuf_undo(xb)) {
 					lbuf_jump(xb, '*', &xrow, &xoff);
 					mod = 1;
-				} else {
+				} else 
 					snprintf(vi_msg, sizeof(vi_msg), "undo failed\n");
-				}
 				break;
 			case TK_CTL('r'):
 				if (!lbuf_redo(xb)) {
 					lbuf_jump(xb, '*', &xrow, &xoff);
 					mod = 1;
-				} else {
+				} else 
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed\n");
-				}
 				break;
 			case TK_CTL('g'):
 				vc_status();
@@ -1685,6 +1672,35 @@ void vi(void)
 					ln = vi_prompt(":", buf, &kmap);
 					free(cs);
 					goto do_excmd;
+				} else if (k == '.') {
+					while (vi_arg1)
+					{
+						term_push("j", 1);
+						term_push(rep_cmd, rep_len);
+						switch (rep_cmd[0])
+						{
+						case 'i':
+						case 'o':
+						case 'O':
+						case 'a':
+						case 'A':
+						case 's':
+							/*
+							go to the left to restore
+							previous position of what
+							was inserted.
+							*/
+							term_push("0", 1);
+							char str[10];
+							cs = itoa(noff, str);
+							*cs = 'l';
+							*(cs+1) = '\0';
+							term_push(str, cs-str+1);
+							break;
+						}
+						vi_arg1--;
+					}
+					break;
 				}
 				vi_back(k);
 				xai = !xai;
@@ -1735,14 +1751,13 @@ void vi(void)
 					switch(k)
 					{
 					case ')':
-						vi_strback(")tdl(F");
+						term_push("F(ldt)", 6);
 						break;
 					case '(':
-						vi_strback(")tdl(f");
+						term_push("f(ldt)", 6);
 						break;
 					case '"':
-						//"ll" because vi_yankbuf will skip one of the '"'
-						vi_strback("\"tdll\"f");
+						term_push("f\"ldt\"", 6);
 						break;
 					}
 					break;
@@ -1757,12 +1772,8 @@ void vi(void)
 					mod = 1;
 				break;
 			case 'I':
-				vi_delete(vi_arg1+xrow, 0, vi_arg1+xrow, 0, 1, 0);
-				mod = 1;
 				break;
 			case 'R':
-				vi_delete(abs(vi_arg1-xrow), 0, abs(vi_arg1-xrow), 0, 1, 0);
-				mod = 1;
 				break;
 			case 'i':
 			case 'a':

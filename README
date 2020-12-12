@@ -50,8 +50,12 @@ vi to suspend.
 24. Added extra highlight keywords for C
 25. Added key that splits the line (opposite of J) keybind: K
 26. Added key that line wraps text to 80 line limit keybind: gq 
-27. Added key that deletes relative line 
-without moving the cursor (down) keybind: arg+I (up) keybind arg+R
+27. Added key that does multiline repeated edits keybind: v.
+This is based on your last commands and insertions and reqires and
+argument for how many lines to repeat said operation. When last
+operation was 'i' or other commands that enter insert mode
+and some text, that text will be placed at the same offset on 
+N number of lines specified by the vi_arg1. Direction: top to bottom
 28. Added ability to view the numbers for arguments that keys e,w,E,W,b,B
 may take. keybind: ^v Pressing again will change the key mode, specifying
 any arguments will exit the mode. This is a major step up to how navigation
