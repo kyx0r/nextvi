@@ -12,6 +12,7 @@ input comes too fast, for example a paste from terminal and
 the sequence has "kj" in it, insert mode will be cancelled mid way
 and paste will be wrong. Luckly this almost never happens because
 such letter combination is extremely rare.
+Can be disabled via :se noqe
 3. Added linenumbers, keybind: # 
 4. Added invisible character view, keybind: V   
 5. Added regex for changing spaces to tabs, keybind: ^i   
@@ -106,7 +107,9 @@ when half way through some command and need to access normal
 mode to edit the command more efficiently.
 38. Added key to grab the current word under the cursor into 
 prompt like so :%s/.../ keybind: vr
-
+39. Added ex option to change number of spaces in a tab (\t)
+default is set to 8. use :se tbs=N  (N is number of spaces)
+This will also affect how feature in (5.) works.
 
 FAQ:
 ----

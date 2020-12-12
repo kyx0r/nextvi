@@ -1615,7 +1615,10 @@ void vi(void)
 				if (k == 'i')
 					ex_command("%s/\x0d//g");
 				else {
-					ex_command("%s/^ {8}/	/g");
+					char str[] = "%s/^ {8}/	/g";
+					if (xtabspc < 10)
+						str[6] = xtabspc + '0';
+					ex_command(str);
 					ex_command("%s/ +$//g");
 				}
 				mod = 1;

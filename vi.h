@@ -234,6 +234,8 @@ extern int xhll;
 extern int xhww;
 extern int xkmap;
 extern int xkmap_alt;
+extern int xtabspc;
+extern int xqexit;
 extern int intershell;
 extern char* fslink;
 extern char fsincl[128];

@@ -311,7 +311,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 				{
 					for (j = i; j < cend && off[j - cbeg] == o; j++)
 					{
-						char mark = j % 8 == 0 ? '>' : '-';
+						char mark = j % xtabspc == 0 ? '>' : '-';
 						sbuf_chr(out, *chrs[o] == '\n' ? '\\' : mark);
 					}
 				} else {
@@ -597,7 +597,8 @@ static char *led_line(char *pref, char *post, char *ai,
 			xquit = 2;
 			break;
 		case 'j':
-			if((difftime(time(0), quickexit) * 1000) < 1000)
+			if(xqexit && 
+				(difftime(time(0), quickexit) * 1000) < 1000)
 			{
 				if (sbuf_len(sb))
 				{

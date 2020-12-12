@@ -150,7 +150,7 @@ int ren_cwid(char *s, int pos)
 	char *src, *dst;
 	int wid, i;
 	if (s[0] == '\t')
-		return 8 - (pos & 7);
+		return xtabspc - (pos & (xtabspc-1));
 	for (i = 0; !conf_placeholder(i, &src, &dst, &wid); i++)
 		if (uc_code(src) == uc_code(s))
 			return wid;
