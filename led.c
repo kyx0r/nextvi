@@ -546,9 +546,25 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('g'):
 			file_ternary(xb);		
 			break;
+		case TK_CTL('r'):
+			for (i = 0; sug != suggestbuf; sug--)
+			{
+				if (!*sug)
+				{
+					i++;
+					if (i == 3)
+					{
+						sug++;
+						goto redo_suggest;
+					} else
+						*sug = '\n';
+				}
+			}
+			goto redo_suggest;
 		case TK_CTL('n'):
 			if (_sug)
 			{
+				redo_suggest:
 				_sug = strchr(sug, '\n');
 				if (!_sug)
 				{
@@ -568,7 +584,6 @@ static char *led_line(char *pref, char *post, char *ai,
 			i = led_lastword(cs);
 			cs += i;
 			l -= i;
-			//cs = skipindent(cs, &l);
 			if (search(cs, l, ROOT))
 			{
 				_sug = strchr(sug, '\n');
@@ -621,7 +636,7 @@ _default:
 			if ((cs = led_readchar(c, *kmap)))
 				sbuf_str(sb, cs);
 		}
-		if (c != TK_CTL('n'))
+		if (c != TK_CTL('n') && c != TK_CTL('r'))
 		{
 			sug = suggestbuf;
 			_sug = 0;

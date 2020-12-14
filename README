@@ -67,7 +67,8 @@ just to see it in action.
 cursor when enabled. Useful for when studying source code.
 31. Added autocomplete in insert mode. Press ^g to index the current opened
 file. Then you can press ^n to cycle though the options, results are based on
-the contents of the file and the closest match to what you typed.
+the contents of the file and the closest match to what you typed. Use ^r to
+cycle in reverse.
 32. Added ex command "inc" which sets the filename filter for the feature
 mentioned in (8.) This is not limited to one argument, 
 separate entries by space.
