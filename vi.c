@@ -1487,6 +1487,15 @@ static void vc_execute(void)
 		snprintf(vi_msg, sizeof(vi_msg), "exec buffer empty\n");
 }
 
+static void vi_argcmd(int arg, char cmd)
+{
+	char str[10];
+	char *cs = itoa(arg, str);
+	*cs = cmd;
+	*(cs+1) = '\0';
+	term_push(str, cs-str+1);
+}
+
 void vi(void)
 {
 	int xcol;
@@ -1691,11 +1700,7 @@ void vi(void)
 							was inserted.
 							*/
 							term_push("0", 1);
-							char str[10];
-							cs = itoa(noff, str);
-							*cs = 'l';
-							*(cs+1) = '\0';
-							term_push(str, cs-str+1);
+							vi_argcmd(noff, 'l');
 							break;
 						}
 						vi_arg1--;
