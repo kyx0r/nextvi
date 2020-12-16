@@ -488,7 +488,7 @@ int ex_edit(char *path)
 		path += 2;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
 		bufs_switch(fd);
-		return 0;
+		return 1;
 	}
 	if (path[0] || !bufs[0].path)
 		bufs_switch(bufs_open(path));

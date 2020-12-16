@@ -666,7 +666,10 @@ static int fs_search(char *ex_path, char* cs, int cnt, int *row, int *off)
 		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
 		if (!substr(path, ex_path))
 		{
-			ex_edit(path);
+			if(ex_edit(path))
+			{
+				*row = xrow; *off = xoff-1;
+			}
 			ex_kwdset(cs, +1);
 			if (!vi_search('n', cnt, row, off))
 				return 1;
@@ -701,7 +704,10 @@ static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
 		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
 		if (!substr(ex_path, path))
 		{
-			ex_edit(path);
+			if(ex_edit(path))
+			{
+				*row = xrow; *off = xoff-1;
+			}
 			ex_kwdset(cs, +1);
 			if (!vi_search('n', cnt, row, off))
 				return 1;
