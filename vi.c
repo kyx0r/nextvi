@@ -658,7 +658,6 @@ static int fs_search(char *ex_path, char* cs, int cnt, int *row, int *off)
 {
 	char *path;
 	int again = 0;
-	*row = 0; *off = 0;
 	redo:
 	for (;fspos < fstlen;)
 	{
@@ -669,6 +668,8 @@ static int fs_search(char *ex_path, char* cs, int cnt, int *row, int *off)
 			if(ex_edit(path))
 			{
 				*row = xrow; *off = xoff-1;
+			} else {
+				*row = 0; *off = 0;
 			}
 			ex_kwdset(cs, +1);
 			if (!vi_search('n', cnt, row, off))
@@ -691,7 +692,6 @@ static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
 	int tlen = 0;
 	int count = fscount;
 	char *paths[count];
-	*row = 0; *off = 0;
 	for (; tlen < fspos;)
 	{
 		path = &fslink[tlen+sizeof(int)];
@@ -707,6 +707,8 @@ static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
 			if(ex_edit(path))
 			{
 				*row = xrow; *off = xoff-1;
+			} else {
+				*row = 0; *off = 0;
 			}
 			ex_kwdset(cs, +1);
 			if (!vi_search('n', cnt, row, off))
