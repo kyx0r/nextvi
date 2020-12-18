@@ -203,7 +203,8 @@ void syn_done(void);
 int conf_dirmark(int idx, char **pat, int *ctx, int *dir, int *grp);
 int conf_dircontext(int idx, char **pat, int *ctx);
 int conf_placeholder(int idx, char **s, char **d, int *wid);
-int conf_highlight(int idx, char **ft, int **att, char **pat, int *end);
+int conf_highlight(int idx, char **ft, int **att, 
+			char **pat, int *end, int *patend);
 int conf_filetype(int idx, char **ft, char **pat);
 int conf_hlrev(void);
 int conf_hlline(void);

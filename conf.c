@@ -43,7 +43,8 @@ int conf_placeholder(int idx, char **s, char **d, int *wid)
 	return 0;
 }
 
-int conf_highlight(int idx, char **ft, int **att, char **pat, int *end)
+int conf_highlight(int idx, char **ft, int **att, 
+			char **pat, int *end, int *patend)
 {
 	if (idx < 0 || idx >= LEN(highlights))
 		return 1;
@@ -55,6 +56,8 @@ int conf_highlight(int idx, char **ft, int **att, char **pat, int *end)
 		*pat = highlights[idx].pat;
 	if (end)
 		*end = highlights[idx].end;
+	if (patend)
+		*patend = highlights[idx].patend;
 	return 0;
 }
 

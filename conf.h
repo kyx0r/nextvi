@@ -24,6 +24,7 @@ static struct highlight {
 	int att[16];		/* attributes of the matched groups */
 	char *pat;		/* regular expression */
 	int end;		/* the group ending this pattern */
+	int patend;		/* the ending regex for multi-line patterns */
 } highlights[] = {
 	{"/", {9}, NULL},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
@@ -33,6 +34,8 @@ static struct highlight {
 	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
 	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*+[^*/])*\\*+/"},
+	{"c", {4 | SYN_IT}, "\\*/"},
+	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*)*", 0, 6},
 	{"c", {6}, "^#[ \t]*[a-zA-Z0-9_]+"},
 	{"c", {0, SYN_BD}, "([a-zA-Z][a-zA-Z0-9_]+)\\(", 1},
 	{"c", {5}, "\"([^\"]|\\\\\")*\""},

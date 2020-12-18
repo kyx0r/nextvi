@@ -44,16 +44,29 @@ int *syn_highlight(char *ft, char *s)
 	struct rset *rs = syn_find(ft);
 	int flg = 0;
 	int hl, j, i;
+	static int blockpat;
 	memset(att, 0, n * sizeof(att[0]));
 	if (!rs)
 		return att;
 	for (i = 0; i < n; i++)
 		att[i] = syn_ctx;
-	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0) {
+	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0
+		|| blockpat) {
 		int grp = 0;
 		int cend = 1;
 		int *catt;
-		conf_highlight(hl, NULL, &catt, NULL, &grp);
+		int patend;
+		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
+		if (blockpat)
+		{
+			conf_highlight(blockpat, NULL, &catt, NULL, &grp, NULL);
+			for (j = 0; j < n; j++)
+				att[j] = *catt;
+			if (hl == blockpat)
+				blockpat = 0;
+			return att;
+		} else if (patend)
+			blockpat = patend;
 		for (i = 0; i < LEN(subs) / 2; i++) {
 			if (subs[i * 2] >= 0) {
 				int beg = uc_off(s, sidx + subs[i * 2 + 0]);
@@ -75,7 +88,8 @@ static void syn_initft(char *name)
 	char *pats[128] = {NULL};
 	char *ft, *pat;
 	int i, n;
-	for (i = 0; !conf_highlight(i, &ft, NULL, &pat, NULL) && i < LEN(pats); i++)
+	for (i = 0; !conf_highlight(i, &ft, NULL, &pat, NULL, NULL) 
+		&& i < LEN(pats); i++)
 		if (*ft == '/' || !strcmp(ft, name))
 			pats[i] = pat;
 	n = i;
@@ -102,7 +116,7 @@ void syn_init(void)
 	char *pats[128] = {NULL};
 	char *pat, *ft;
 	int i;
-	for (i = 0; !conf_highlight(i, &ft, NULL, NULL, NULL); i++)
+	for (i = 0; !conf_highlight(i, &ft, NULL, NULL, NULL, NULL); i++)
 		if (!syn_find(ft))
 			syn_initft(ft);
 	for (i = 0; !conf_filetype(i, NULL, &pat) && i < LEN(pats); i++)
