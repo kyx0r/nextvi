@@ -34,7 +34,7 @@ static struct highlight {
 	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
 	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*+[^*/])*\\*+/"},
-	{"c", {4 | SYN_IT}, "[^\\*/]+\\*/"},
+	{"c", {4 | SYN_IT}, "[^\\*/]*\\*/"},
 	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*)*", 0, 6},
 	{"c", {6}, "^#[ \t]*[a-zA-Z0-9_]+"},
 	{"c", {0, SYN_BD}, "([a-zA-Z][a-zA-Z0-9_]+)\\(", 1},
