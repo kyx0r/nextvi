@@ -13,6 +13,7 @@ static struct ftmap {
 
 static struct rset *syn_ftrs;
 static int syn_ctx;
+int blockpat;
 
 static struct rset *syn_find(char *ft)
 {
@@ -44,7 +45,6 @@ int *syn_highlight(char *ft, char *s)
 	struct rset *rs = syn_find(ft);
 	int flg = 0;
 	int hl, j, i;
-	static int blockpat;
 	memset(att, 0, n * sizeof(att[0]));
 	if (!rs)
 		return att;
