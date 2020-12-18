@@ -1533,7 +1533,7 @@ void vi(void)
 			vi_lnnum = 0;
 			mod = 1;
 		}
-		if (*vi_word || xhww)
+		if (*vi_word || xhww || blockpat)
 		 	mod = 1;	
 		if (!vi_ybuf)
 			vi_ybuf = vi_yankbuf();

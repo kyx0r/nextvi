@@ -4,6 +4,11 @@
 #define LEN(a)		(sizeof(a) / sizeof((a)[0]))
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 #define MAX(a, b)	((a) < (b) ? (b) : (a))
+#define p(s, ...)\
+	FILE *f = fopen("file", "a");\
+	fprintf(f, s, ##__VA_ARGS__);\
+	fclose(f);\
+
 int isescape(char ch);
 char *substr(const char *s1, const char *s2);
 int dstrlen(const char *s, char delim);

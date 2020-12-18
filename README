@@ -115,6 +115,8 @@ prompt like so :%s/.../ keybind: vr
 39. Added ex option to change number of spaces in a tab (\t)
 default is set to 8. use :se tbs=N  (N is number of spaces)
 This will also affect how feature in (5.) works.
+40. Added partial support for multiline block regex, for
+example C multiline comments syntax highlight.
 
 FAQ:
 ----
