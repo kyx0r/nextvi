@@ -44,7 +44,7 @@ int *syn_highlight(char *ft, char *s)
 	int sidx = 0;
 	struct rset *rs = syn_find(ft);
 	int flg = 0;
-	int hl, j, i;
+	int hl, j, i, bpat = 0;
 	memset(att, 0, n * sizeof(att[0]));
 	if (!rs)
 		return att;
@@ -59,14 +59,18 @@ int *syn_highlight(char *ft, char *s)
 		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
 		if (blockpat)
 		{
+			if (hl == blockpat)
+			{
+				blockpat = 0;
+				goto skip_last;
+			}
 			conf_highlight(blockpat, NULL, &catt, NULL, &grp, NULL);
 			for (j = 0; j < n; j++)
 				att[j] = *catt;
-			if (hl == blockpat)
-				blockpat = 0;
 			return att;
 		} else if (patend)
-			blockpat = patend;
+			bpat = patend;
+		skip_last:
 		for (i = 0; i < LEN(subs) / 2; i++) {
 			if (subs[i * 2] >= 0) {
 				int beg = uc_off(s, sidx + subs[i * 2 + 0]);
@@ -80,6 +84,8 @@ int *syn_highlight(char *ft, char *s)
 		sidx += cend;
 		flg = RE_NOTBOL;
 	}
+	if (bpat)
+		blockpat = bpat;
 	return att;
 }
 
