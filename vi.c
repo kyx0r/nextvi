@@ -111,10 +111,12 @@ static void vi_drawwordnumend(int skip, int dir, char* tmp, int nrow, int noff)
 	for (int k = nrow; k == nrow; i++)
 	{
 		l = isescape(tmp[noff]);
-		c = itoa(i, snum);
-		l1 = c - snum;
 		if (!l)
+		{
+			c = itoa(i, snum);
+			l1 = c - snum;
 			tmp[noff] = *(snum+l1-1 - !(i%10));
+		}
 		if (lbuf_wordend(xb, skip, dir, &nrow, &noff))
 			break;
 	}
@@ -128,10 +130,12 @@ static void vi_drawwordnumbeg(int skip, int dir, char* tmp, int nrow, int noff)
 	for (int k = nrow; k == nrow; i++)
 	{
 		l = isescape(tmp[noff]);
-		c = itoa(i, snum);
-		l1 = c - snum;
 		if (!l)
+		{
+			c = itoa(i, snum);
+			l1 = c - snum;
 			tmp[noff] = *(snum+l1-1 - !(i%10));
+		}
 		if (lbuf_wordbeg(xb, skip, dir, &nrow, &noff))
 			break;
 	}
@@ -202,7 +206,7 @@ static void vi_drawrow(int row)
 			vi_drawwordnumbeg(1, +1, tmp, nrow, noff);
 			break;
 		}
-		if (!isescape(tmp[noff]))
+		if (!isescape(c[noff]))
 			tmp[noff] = *vi_word;
 		movedown = 1;
 		led_print(tmp, row - xtop, ex_filetype());
