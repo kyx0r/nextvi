@@ -1025,6 +1025,8 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	} else {
 		lbuf_edit(xb, NULL, r1, r2 + 1);
 	}
+	xrow = r1;
+	xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
 	free(pref);
 	free(post);
 }
