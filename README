@@ -117,6 +117,14 @@ default is set to 8. use :se tbs=N  (N is number of spaces)
 This will also affect how feature in (5.) works.
 40. Added partial support for multiline block regex, for
 example C multiline comments syntax highlight.
+41. Made lowest row to not waste any space when there
+are no messages and actually display the row.
+42. Search via '/' or '?' automatically centers and redraws
+screen. This partly because change in 41 makes the bottom row
+behave dynamically and you might get search result on displayed
+on that row, which will be covered by search message instead. 
+Also, centering is nice because you always know where to expect
+the result to be with your eyes.
 
 FAQ:
 ----

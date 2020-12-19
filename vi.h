@@ -118,7 +118,7 @@ char *uc_shape(char *beg, char *s);
 char *uc_lastline(char *s);
 
 /* managing the terminal */
-#define xrows		(term_rows() - 1)
+#define xrows		(term_rows())
 #define xcols		(term_cols())
 
 void term_init(void);

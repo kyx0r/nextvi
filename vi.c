@@ -77,11 +77,13 @@ static void vi_wait(void)
 
 static void vi_drawmsg(void)
 {
-	int oleft = xleft;
-	xleft = 0;
-	led_printmsg(vi_msg, xrows, "---");
-	vi_msg[0] = '\0';
-	xleft = oleft;
+	if (vi_msg[0])
+	{
+		int oleft = xleft;
+		xleft = 0;
+		led_printmsg(vi_msg, xrows, "---");
+		xleft = oleft;
+	}
 }
 
 int isescape(char ch)
@@ -134,7 +136,6 @@ static void vi_drawwordnumbeg(int skip, int dir, char* tmp, int nrow, int noff)
 			break;
 	}
 }
-
 
 static void vi_drawrow(int row)
 {
@@ -284,12 +285,17 @@ static char *vi_char(void)
 static char *vi_prompt(char *msg, char *insert, int *kmap)
 {
 	char *r, *s;
+	int l1;
+	int l2 = strlen(msg);
+	memcpy(vi_msg, msg, l2);
 	term_pos(xrows, led_pos(msg, 0));
 	term_kill();
 	s = led_prompt(msg, "", insert, kmap, "---");
 	if (!s)
 		return NULL;
-	r = uc_dup(strlen(s) >= strlen(msg) ? s + strlen(msg) : s);
+	l1 = strlen(s);
+	r = uc_dup(l1 >= l2 ? s + l2 : s);
+	memcpy(vi_msg+l2, r, l1);
 	free(s);
 	return r;
 }
@@ -1001,7 +1007,7 @@ static void vi_yank(int r1, int o1, int r2, int o2, int lnmode)
 	xoff = lnmode ? xoff : o1;
 }
 
-static void vi_delete(int r1, int o1, int r2, int o2, int lnmode, int move)
+static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 {
 	char *pref, *post;
 	char *region;
@@ -1018,11 +1024,6 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode, int move)
 		sbuf_free(sb);
 	} else {
 		lbuf_edit(xb, NULL, r1, r2 + 1);
-	}
-	if (move)
-	{
-		xrow = r1;
-		xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
 	}
 	free(pref);
 	free(post);
@@ -1264,7 +1265,7 @@ static int vc_motion(int cmd)
 	if (cmd == 'y')
 		vi_yank(r1, o1, r2, o2, lnmode);
 	if (cmd == 'd')
-		vi_delete(r1, o1, r2, o2, lnmode, 1);
+		vi_delete(r1, o1, r2, o2, lnmode);
 	if (cmd == 'c')
 		vi_change(r1, o1, r2, o2, lnmode);
 	if (cmd == '~' || cmd == 'u' || cmd == 'U')
@@ -1535,6 +1536,11 @@ void vi(void)
 		}
 		if (*vi_word || xhww || blockpat)
 		 	mod = 1;	
+		if (vi_msg[0])
+		{
+			vi_msg[0] = '\0';
+			vi_drawrow(otop + xrows - 1);
+		}
 		if (!vi_ybuf)
 			vi_ybuf = vi_yankbuf();
 		mv = vi_motion(&nrow, &noff);
@@ -1552,14 +1558,20 @@ void vi(void)
 			xoff = ren_noeol(lbuf_get(xb, xrow), noff);
 			if (!strchr("|jk", mv))
 				xcol = vi_off2col(xb, xrow, xoff);
-			if (mv == '|')
-				xcol = vi_pcol;
-			if (mv == TK_CTL(']') || mv == TK_CTL('p')
-				|| mv == '\\')
+			switch (mv)
 			{
-				xtop = MAX(0, xrow - xrows / 2);
+			case '|':
+				xcol = vi_pcol;
+				break;
+			case '\\':
+			case TK_CTL(']'):
+			case TK_CTL('p'):
 				vc_status();
+			case '/':
+			case '?':
+				xtop = MAX(0, xrow - xrows / 2);
 				mod = 1;
+				break;
 			}
 		} else if (mv == 0) {
 			char *cmd;
@@ -1956,8 +1968,7 @@ void vi(void)
 			if (xhll && xrow != orow)
 				vi_drawrow(xrow);
 		}
-		if (vi_msg[0])
-			vi_drawmsg();
+		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
 				ren_cursor(lbuf_get(xb, xrow), xcol)));
 		lbuf_modified(xb);
