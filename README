@@ -125,6 +125,7 @@ behave dynamically and you might get search result on displayed
 on that row, which will be covered by search message instead. 
 Also, centering is nice because you always know where to expect
 the result to be with your eyes.
+43. Added terminal clean up on exit
 
 FAQ:
 ----

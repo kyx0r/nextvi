@@ -16,13 +16,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE
-#endif /* _DEFAULT_SOURCE */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <getopt.h>
 #include <string.h>
 #include <limits.h>
 #include <locale.h>
@@ -33,12 +29,10 @@
 #include <grp.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <stdbool.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <errno.h>
 #include <termios.h>
-#include <sys/select.h>
 #include <sys/ioctl.h>
 #include <stdint.h>
 #include "vi.h"
@@ -108,11 +102,11 @@ char* get_home(void);
 
 int relative_chmod(const char* const, const mode_t, const mode_t);
 
-bool same_fs(const char* const, const char* const);
+int same_fs(const char* const, const char* const);
 
 struct file {
 	struct stat s;
-	bool selected;
+	int selected;
 	unsigned char nl;
 	char name[];
 };
@@ -146,7 +140,7 @@ int prettify_path_i(const char* const);
 int current_dir_i(const char* const);
 
 size_t imb(const char*, const char*);
-bool contains(const char* const, const char* const);
+int contains(const char* const, const char* const);
 
 
 struct string {
@@ -167,7 +161,7 @@ int file_to_list(const int, struct string_list* const);
 int list_to_file(const struct string_list* const, int);
 fnum_t string_on_list(const struct string_list* const, const char* const, size_t);
 fnum_t blank_lines(const struct string_list* const);
-bool duplicates_on_list(const struct string_list* const);
+int duplicates_on_list(const struct string_list* const);
 
 // 1 "widechars.h" 1
 /*
@@ -775,14 +769,14 @@ size_t utf8_g2w(const codepoint_t);
 size_t utf8_width(const char*);
 size_t utf8_w2nb(const char* const, size_t);
 size_t utf8_wtill(const char*, const char* const);
-bool utf8_validate(const char* const);
+int utf8_validate(const char* const);
 
 void utf8_insert(char*, const char* const, const size_t);
 size_t utf8_remove(char* const, const size_t);
 
 unsigned cut_unwanted(const char*, char*, const char, size_t);
 
-bool cp_in(const codepoint_t [][2], size_t, const codepoint_t);
+int cp_in(const codepoint_t [][2], size_t, const codepoint_t);
 
 static const char compare_values[] = "nsacmdpxiugUG";
 #define FV_ORDER_SIZE (sizeof(compare_values)-1)
@@ -843,10 +837,10 @@ struct panel {
 
 	char order[FV_ORDER_SIZE];
 	enum column column;
-	bool show_hidden;
+	int show_hidden;
 };
 
-bool visible(const struct panel* const, const fnum_t);
+int visible(const struct panel* const, const fnum_t);
 struct file* hfr(const struct panel* const);
 
 void first_entry(struct panel* const);
@@ -858,7 +852,7 @@ void delete_file_list(struct panel* const);
 fnum_t file_on_list(const struct panel* const, const char* const);
 void file_highlight(struct panel* const, const char* const);
 
-bool file_find(struct panel* const, const char* const,
+int file_find(struct panel* const, const char* const,
 		const fnum_t, const fnum_t);
 
 struct file* panel_select_file(struct panel* const);
@@ -889,11 +883,11 @@ struct assign {
 	fnum_t from, to;
 };
 
-bool rename_prepare(const struct panel* const, struct string_list* const,
+int rename_prepare(const struct panel* const, struct string_list* const,
 		struct string_list* const, struct string_list* const,
 		struct assign** const, fnum_t* const);
 
-bool conflicts_with_existing(struct panel* const,
+int conflicts_with_existing(struct panel* const,
 		const struct string_list* const);
 
 void remove_conflicting(struct panel* const, struct string_list* const);
@@ -1021,15 +1015,6 @@ size_t append_attr(struct append_buffer* const, const int,
 		const unsigned char* const);
 size_t fill(struct append_buffer* const, const char, const size_t);
 
-#define CSI_CLEAR_ALL "\x1b[2J", 4
-#define CSI_CLEAR_LINE "\x1b[K", 3
-#define CSI_CURSOR_TOP_LEFT "\x1b[H", 3
-#define CSI_CURSOR_SHOW "\x1b[?25h", 6
-#define CSI_CURSOR_HIDE "\x1b[?25l", 6
-#define CSI_SCREEN_ALTERNATIVE "\x1b[?47h", 6
-#define CSI_SCREEN_NORMAL "\x1b[?47l", 6
-#define CSI_CURSOR_HIDE_TOP_LEFT "\x1b[?25l\x1b[H", 9
-
 #define MSG_BUFFER_SIZE 128
 #define KEYNAME_BUF_SIZE 16
 // TODO adjust KEYNAME_BUF_SIZE
@@ -1038,7 +1023,6 @@ enum mode {
 	MODE_MANAGER = 0,
 	MODE_CHMOD,
 	MODE_WAIT,
-
 	MODE_NUM
 };
 
@@ -1498,7 +1482,7 @@ struct ui {
 	int pxoff[2];// Panel X OFFset
 
 
-	bool run;
+	int run;
 
 	enum mode m;
 
@@ -1580,7 +1564,7 @@ int fill_textbox(struct ui* const, char* const,
 int prompt(struct ui* const, char* const, char*, const size_t);
 
 void failed(struct ui* const, const char* const, const char* const);
-bool ui_rescan(struct ui* const, struct panel* const,
+int ui_rescan(struct ui* const, struct panel* const,
 		struct panel* const);
 
 enum spawn_flags {
@@ -1609,9 +1593,9 @@ enum task_type {
 	TASK_CHMOD = 1<<3,
 };
 /*
- * If Link Transparency is true in tree_walk,
+ * If Link Transparency is 1 in tree_walk,
  * tree_walk_step will output AT_FILE or AT_DIR,
- * If LT is false, then AT_LINK is outputted
+ * If LT is 0, then AT_LINK is outputted
  */
 
 enum tree_walk_state {
@@ -1643,7 +1627,7 @@ struct dirtree {
 
 struct tree_walk {
 	enum tree_walk_state tws;
-	bool tl;// Transparent Links
+	int tl;// Transparent Links
 
 	struct dirtree* dt;
 
@@ -2067,10 +2051,10 @@ static void cmd_find(struct ui* const i) {
 
 /*
  * Returns:
- * true - success and there are files to work with (skipping may empty list)
- * false - failure or aborted
+ * 1 - success and there are files to work with (skipping may empty list)
+ * 0 - failure or aborted
  */
-inline static bool _solve_name_conflicts_if_any(struct ui* const i,
+inline static int _solve_name_conflicts_if_any(struct ui* const i,
 		struct string_list* const s, struct string_list* const r) {
 	static const char* const question = "Conflicting names.";
 	static const struct select_option o[] = {
@@ -2080,36 +2064,36 @@ inline static bool _solve_name_conflicts_if_any(struct ui* const i,
 		{ KUTF8("a"), "abort" }
 	};
 	int err;
-	bool was_conflict = false;
+	int was_conflict = 0;
 	list_copy(r, s);
 	while (conflicts_with_existing(i->sv, r)) {
-		was_conflict = true;
+		was_conflict = 1;
 		switch (ui_ask(i, question, o, 4)) {
 		case 0:// rename
 
 			if ((err = edit_list(r, r))) {
 				failed(i, "editor", strerror(err));
-				return false;
+				return 0;
 			}
 			break;
 		case 1:// merge
 // merge policy is chosen after estimating
 // (if there are any conflicts in the tree)
 			list_free(r);
-			return true;
+			return 1;
 		case 2:// skip
 			remove_conflicting(i->sv, s);
 			list_copy(r, s);
 			return s->len != 0;
 		case 3:// abort
 		default:
-			return false;
+			return 0;
 		}
 	}
 	if (!was_conflict) {
 		list_free(r);
 	}
-	return true;
+	return 1;
 }
 
 static void prepare_task(struct ui* const i, struct task* const t,
@@ -2279,7 +2263,7 @@ static void cmd_rename(struct ui* const i) {
 		{ KUTF8("n"), "no" },
 		{ KUTF8("a"), "abort" }
 	};
-	bool ok = true;
+	int ok = 1;
 	panel_selected_to_list(i->pv, &S);
 	do {
 		if ((err = edit_list(&S, &R))) {
@@ -2291,16 +2275,16 @@ static void cmd_rename(struct ui* const i) {
 		const char* msg = "There are conflicts. Retry?";
 		if (blank_lines(&R)) {
 			msg = "File contains blank lines. Retry?";
-			ok = false;
+			ok = 0;
 		}
 		else if (S.len > R.len) {
 			msg = "File does not contain enough lines. Retry?";
-			ok = false;
+			ok = 0;
 
 		}
 		else if (S.len < R.len) {
 			msg = "File contains too much lines. Retry?";
-			ok = false;
+			ok = 0;
 		}
 		if ((!ok || !(ok = rename_prepare(i->pv, &S, &R, &N, &a, &al)))
 		&& ui_ask(i, msg, o, 2) == 1) {
@@ -2397,7 +2381,7 @@ inline static void cmd_change_sorting(struct ui* const i) {
 		ui_draw(i);
 	}
 	for (size_t j = 0; j < FV_ORDER_SIZE; ++j) {
-		bool v = false;
+		int v = 0;
 		for (size_t k = 0; k < strlen(compare_values); ++k) {
 			v = v || (compare_values[k] == i->pv->order[j]);
 		}
@@ -2469,7 +2453,7 @@ static void interpreter(struct ui* const i, struct task* const t,
 		return;
 	}
 	if (!strcmp(line, "q")) {
-		i->run = false;
+		i->run = 0;
 	}
 	else if (!strcmp(line, "h") || !strcmp(line, "help")) {
 		open_help(i);
@@ -2536,10 +2520,10 @@ static void interpreter(struct ui* const i, struct task* const t,
 	}
 }
 
-static void _perm(struct ui* const i, const bool unset, const int mask) {
+static void _perm(struct ui* const i, const int unset, const int mask) {
 	mode_t* m[2] = { &i->plus, &i->minus, };
 	mode_t* tmp;
-	bool minus;
+	int minus;
 	struct input in = get_input(i->timeout);
 	if (in.t != I_UTF8) return;
 #define REL(M) do { *m[0] |= (mask & (M)); *m[1] &= ~(mask & (M)); } while (0);
@@ -2708,17 +2692,17 @@ static void process_input(struct ui* const i, struct task* const t,
 		}
 		free(s);
 		break;
-	case CMD_A: _perm(i, false, 00777); break;
-	case CMD_U: _perm(i, false, S_ISUID | 0700); break;
-	case CMD_G: _perm(i, false, S_ISGID | 0070); break;
-	case CMD_O: _perm(i, false, S_ISVTX | 0007); break;
-	case CMD_PL: _perm(i, false, 0777); break;
-	case CMD_MI: _perm(i, true, 0777); break;
+	case CMD_A: _perm(i, 0, 00777); break;
+	case CMD_U: _perm(i, 0, S_ISUID | 0700); break;
+	case CMD_G: _perm(i, 0, S_ISGID | 0070); break;
+	case CMD_O: _perm(i, 0, S_ISVTX | 0007); break;
+	case CMD_PL: _perm(i, 0, 0777); break;
+	case CMD_MI: _perm(i, 1, 0777); break;
 /* WAIT */
 
 
 	case CMD_TASK_QUIT:
-//t->done = true; // TODO
+//t->done = 1; // TODO
 
 		break;
 	case CMD_TASK_PAUSE:
@@ -2730,7 +2714,7 @@ static void process_input(struct ui* const i, struct task* const t,
 /* MANAGER */
 
 	case CMD_QUIT:
-		i->run = false;
+		i->run = 0;
 		break;
 	case CMD_HELP:
 		open_help(i);
@@ -2777,7 +2761,7 @@ static void process_input(struct ui* const i, struct task* const t,
 			if ((path = panel_path_to_selected(i->pv))) {
 				ex_edit(path);
 				free(path);
-				i->run = false;
+				i->run = 0;
 			}
 		}
 		break;
@@ -2836,7 +2820,7 @@ static void process_input(struct ui* const i, struct task* const t,
 		i->pv->num_selected = 0;
 		for (fnum_t f = 0; f < i->pv->num_files; ++f) {
 			if (visible(i->pv, f)) {
-				i->pv->file_list[f]->selected = true;
+				i->pv->file_list[f]->selected = 1;
 				i->pv->num_selected += 1;
 			}
 		}
@@ -3091,84 +3075,12 @@ static void task_execute(struct ui* const i, struct task* const t) {
 	}
 }
 
-void read_config(struct ui* const i, struct task* const t,
-		struct marks* const m, const char* const path) {
-	char buf[BUFSIZ];
-	size_t linelen;
-	ssize_t rem = 0;
-	char* z;
-	int fd = open(path, O_RDONLY);
-	if (fd == -1) return;
-	while ((rem = read(fd, buf, sizeof(buf))), rem && rem != -1) {
-		buf[rem] = '\n';
-		while (rem) {
-			z = memchr(buf, '\n', rem);
-			*z = 0;
-			linelen = z - buf;
-			interpreter(i, t, m, buf, sizeof(buf));
-			memmove(buf, z+1, rem-linelen);
-			rem -= linelen+1;
-		}
-	}
-	close(fd);
-}
-
 extern struct ui* I;
 static int remove_signals(void); 
 
-int hundmain(int argc, char* argv[]) {
-	static const char* const help = 	"Usage: hund [OPTION...] [left panel] [right panel]\n"
-
-	"Options:\n"
-	"  -c, --config          use suppiled file as a config\n"
-	"  --no-config           do not load any config files\n"
-	"  -h, --help            display this help message\n"
-	"Type `?` while in hund for more help\n";
-	int o, opti = 0, err;
-	int no_config = 0;
-	const char* config = NULL;
-	static const char sopt[] = "hc:";
-	struct option lopt[] = {
-		{"no-config", no_argument, &no_config, 1},
-		{"config", required_argument, 0, 'c'},
-		{"help", no_argument, 0, 'h'},
-		{0, 0, 0, 0}
-	};
-	while ((o = getopt_long(argc, argv, sopt, lopt, &opti)) != -1) {
-		switch (o) {
-		case 0:
-			break;
-		case 'c':
-			config = optarg;
-			break;
-		case 'h':
-			printf("%s", help);
-			exit(EXIT_SUCCESS);
-		default:
-			exit(EXIT_FAILURE);
-		}
-	}
-/* If user passed initial directories in cmdline,
-	 * save these paths for later
-	 */
-
+int hund() {
+	int err;
 	char* init_wd[2] = { NULL, NULL };
-	int init_wd_top = 0;
-	while (optind < argc) {
-		if (init_wd_top < 2) {
-			init_wd[init_wd_top] = argv[optind];
-			init_wd_top += 1;
-		}
-		else {
-// Only two panels, only two paths allowed
-
-			fprintf(stderr, "invalid argument:"
-					" '%s'\n", argv[optind]);
-			exit(EXIT_FAILURE);
-		}
-		optind += 1;
-	}
-
 	struct panel fvs[2];
 	memset(fvs, 0, sizeof(fvs));
 	fvs[0].scending = 1;
@@ -3203,37 +3115,11 @@ int hundmain(int argc, char* argv[]) {
 	struct task t;
 	memset(&t, 0, sizeof(struct task));
 	t.in = t.out = -1;
-
 	struct marks m;
 	memset(&m, 0, sizeof(struct marks));
 
 	i.mt = MSG_INFO;
 	xstrlcpy(i.msg, "Type ? for help.", MSG_BUFFER_SIZE);
-
-	static const char* const config_paths[] = {
-		"~/.hundrc",
-		"~/.config/hund/hundrc",
-		NULL
-	};
-	if (!no_config && !config) {
-		char* p = malloc(PATH_BUF_SIZE);
-		p[0] = 0;
-		size_t plen = 0;
-		int cp = 0;
-		while (config_paths[cp]) {
-			const size_t cpl = strlen(config_paths[cp]);
-			cd(p, &plen, config_paths[cp], cpl);
-			if (!access(p, F_OK)) {
-				read_config(&i, &t, &m, p);
-				break;
-			}
-			cp += 1;
-		}
-		free(p);
-	}
-	else if (!no_config) {
-		read_config(&i, &t, &m, config);
-	}
 
 	while (i.run || t.ts != TS_CLEAN) {
 		ui_draw(&i);
@@ -3308,7 +3194,7 @@ int relative_chmod(const char* const file,
  * If they are, moving files (and even whole directories)
  * can be done with just rename() function.
  */
-bool same_fs(const char* const a, const char* const b) {
+int same_fs(const char* const a, const char* const b) {
 	struct stat sa, sb;
 	return !stat(a, &sa) && !stat(b, &sb) && (sa.st_dev == sb.st_dev);
 }
@@ -3384,7 +3270,7 @@ int scan_dir(const char* const wd, struct file*** const fl,
 		if (de->d_name[0] == '.') {
 			*nhf += 1;
 		}
-		nfr->selected = false;
+		nfr->selected = 0;
 		nfr->nl = (unsigned char)nl;
 		memcpy(nfr->name, de->d_name, nl+1);
 
@@ -3655,15 +3541,15 @@ size_t imb(const char* a, const char* b) {
 }
 
 /* Checks if STRing contains SUBString */
-bool contains(const char* const str, const char* const subs) {
+int contains(const char* const str, const char* const subs) {
 	const size_t subs_len = strnlen(subs, PATH_MAX_LEN);
 	const size_t str_len = strnlen(str, PATH_MAX_LEN);
-	if (subs_len > str_len) return false;
+	if (subs_len > str_len) return 0;
 	if (subs_len == str_len) return !memcmp(str, subs, str_len);
 	for (size_t j = 0; strnlen(str+j, PATH_MAX_LEN) >= subs_len; ++j) {
-		if (subs_len == imb(str+j, subs)) return true;
+		if (subs_len == imb(str+j, subs)) return 1;
 	}
-	return false;
+	return 0;
 }
 
 fnum_t list_push(struct string_list* const L, const char* const s, size_t sl) {
@@ -3795,17 +3681,17 @@ fnum_t blank_lines(const struct string_list* const list) {
  * Tells if there are duplicates on list
  * TODO optimize
  */
-bool duplicates_on_list(const struct string_list* const list) {
+int duplicates_on_list(const struct string_list* const list) {
 	for (fnum_t f = 0; f < list->len; ++f) {
 		for (fnum_t g = 0; g < list->len; ++g) {
 			if (f == g) continue;
 			const char* const a = list->arr[f]->str;
 			const char* const b = list->arr[g]->str;
 			size_t s = 1+MIN(list->arr[f]->len, list->arr[g]->len);
-			if (a && b && !memcmp(a, b, s)) return true;
+			if (a && b && !memcmp(a, b, s)) return 1;
 		}
 	}
-	return false;
+	return 0;
 }
 
 /* This file contains UI-related functions
@@ -3832,8 +3718,7 @@ static void sighandler(int sig) {
 	switch (sig) {
 	case SIGTERM:
 	case SIGINT:
-		global_i->run = false;// TODO
-
+		global_i->run = 0;// TODO
 		break;
 	case SIGTSTP:
 		stop_raw_mode(&global_i->T);
@@ -3893,7 +3778,7 @@ void ui_init(struct ui* const i, struct panel* const pv,
 	setlocale(LC_ALL, "");
 	i->scrh = i->scrw = i->pw[0] = i->pw[1] = 0;
 	i->ph = i->pxoff[0] = i->pxoff[1] = 0;
-	i->run = true;
+	i->run = 1;
 
 	i->m = MODE_MANAGER;
 	i->mt = MSG_NONE;
@@ -3929,8 +3814,6 @@ void ui_init(struct ui* const i, struct panel* const pv,
 }
 
 void ui_end(struct ui* const i) {
-	write(STDOUT_FILENO, CSI_CLEAR_ALL);
-	write(STDOUT_FILENO, CSI_CURSOR_SHOW);
 	for (int b = 0; b < BUF_NUM; ++b) {
 		if (i->B[b].buf) free(i->B[b].buf);
 	}
@@ -4466,7 +4349,7 @@ enum command get_cmd(struct ui* const i) {
 			memset(i->K, 0, ISIZE);
 			return i->kmap[m].c;
 		}
-		bool M = true;
+		int M = 1;
 		for (int t = 0; t < Kn+1; ++t) {
 			M = M && !memcmp(&i->kmap[m].i[t],
 				&i->K[t], sizeof(struct input));
@@ -4566,19 +4449,19 @@ int prompt(struct ui* const i, char* const t,
 	return r;
 }
 
-bool ui_rescan(struct ui* const i, struct panel* const a,
+int ui_rescan(struct ui* const i, struct panel* const a,
 		struct panel* const b) {
 	int err;
 	i->dirty = DIRTY_ALL;
 	if (a && (err = panel_scan_dir(a))) {
 		failed(i, "directory scan", strerror(err));
-		return false;
+		return 0;
 	}
 	if (b && (err = panel_scan_dir(b))) {
 		failed(i, "directory scan", strerror(err));
-		return false;
+		return 0;
 	}
-	return true;
+	return 1;
 }
 
 void failed(struct ui* const i, const char* const what,
@@ -4642,7 +4525,7 @@ size_t append_theme(struct append_buffer* const ab,
  * show_hidden = 1 |1|1|
  * show_hidden = 0 |1|0|
  */
-bool visible(const struct panel* const fv, const fnum_t i) {
+int visible(const struct panel* const fv, const fnum_t i) {
 	return fv->num_files && i < fv->num_files
 		&& (fv->show_hidden || fv->file_list[i]->name[0] != '.');
 }
@@ -4713,17 +4596,17 @@ void file_highlight(struct panel* const fv, const char* const N) {
 	}
 }
 
-bool file_find(struct panel* const fv, const char* const name,
+int file_find(struct panel* const fv, const char* const name,
 		const fnum_t start, const fnum_t end) {
 	const int d = start <= end ? 1 : -1;
 	for (fnum_t i = start; (d > 0 ? i <= end : i >= end); i += d) {
 		if (visible(fv, i) && contains(fv->file_list[i]->name, name)) {
 			fv->selection = i;
-			return true;
+			return 1;
 		}
 		if (i == end) break;
 	}
-	return false;
+	return 0;
 }
 
 struct file* panel_select_file(struct panel* const fv) {
@@ -4772,7 +4655,7 @@ void panel_toggle_hidden(struct panel* const fv) {
 	if (fv->show_hidden) return;
 	for (fnum_t f = 0; f < fv->num_files; ++f) {
 		if (fv->file_list[f]->selected && !visible(fv, f)) {
-			fv->file_list[f]->selected = false;
+			fv->file_list[f]->selected = 0;
 			fv->num_selected -= 1;
 		}
 	}
@@ -4970,7 +4853,7 @@ void select_from_list(struct panel* const fv,
 		if (!L->arr[i]) continue;
 		for (fnum_t s = 0; s < fv->num_files; ++s) {
 			if (!strcmp(L->arr[i]->str, fv->file_list[s]->name)) {
-				fv->file_list[s]->selected = true;
+				fv->file_list[s]->selected = 1;
 				fv->num_selected += 1;
 				break;
 			}
@@ -4981,7 +4864,7 @@ void select_from_list(struct panel* const fv,
 void panel_unselect_all(struct panel* const fv) {
 	fv->num_selected = 0;
 	for (fnum_t f = 0; f < fv->num_files; ++f) {
-		fv->file_list[f]->selected = false;
+		fv->file_list[f]->selected = 0;
 	}
 }
 
@@ -4989,7 +4872,7 @@ void panel_unselect_all(struct panel* const fv) {
  * Needed by rename operation.
  * Checks conflicts with existing files and allows complicated swaps.
  * Pointless renames ('A' -> 'A') are removed from S and R.
- * On unsolvable conflict false is retured and no data is modified.
+ * On unsolvable conflict 0 is retured and no data is modified.
  *
  * S - selected files
  * R - new names for selected files
@@ -5003,7 +4886,7 @@ void panel_unselect_all(struct panel* const fv) {
  * TODO inline it (?); only needed once
  * TODO code repetition
  */
-bool rename_prepare(const struct panel* const fv,
+int rename_prepare(const struct panel* const fv,
 		struct string_list* const S,
 		struct string_list* const R,
 		struct string_list* const N,
@@ -5011,7 +4894,7 @@ bool rename_prepare(const struct panel* const fv,
 	*at = 0;
 //          vvvvvv TODO calculate size
 	*a = calloc(S->len, sizeof(struct assign));
-	bool* tofree = calloc(S->len, sizeof(bool));
+	int* tofree = calloc(S->len, sizeof(int));
 	for (fnum_t f = 0; f < R->len; ++f) {
 		if (memchr(R->arr[f]->str, '/', R->arr[f]->len)) {
 // TODO signal what is wrong
@@ -5019,7 +4902,7 @@ bool rename_prepare(const struct panel* const fv,
 			*a = NULL;
 			*at = 0;
 			free(tofree);
-			return false;
+			return 0;
 		}
 		struct string* Rs = R->arr[f];
 		struct string* Ss = S->arr[f];
@@ -5042,19 +4925,19 @@ bool rename_prepare(const struct panel* const fv,
 				(*a)[(*at)].to = NRi;
 			}
 			*at += 1;
-			tofree[f] = true;
+			tofree[f] = 1;
 		}
 		else {
 			free(*a);
 			*a = NULL;
 			*at = 0;
 			free(tofree);
-			return false;
+			return 0;
 		}
 	}
 	for (fnum_t f = 0; f < R->len; ++f) {
 		if (!strcmp(S->arr[f]->str, R->arr[f]->str)) {
-			tofree[f] = true;
+			tofree[f] = 1;
 		}
 	}
 	for (fnum_t f = 0; f < *at; ++f) {
@@ -5066,7 +4949,7 @@ bool rename_prepare(const struct panel* const fv,
 				*a = NULL;
 				*at = 0;
 				free(tofree);
-				return false;
+				return 0;
 			}
 		}
 	}
@@ -5082,17 +4965,17 @@ bool rename_prepare(const struct panel* const fv,
 		S->arr[f] = R->arr[f] = NULL;
 	}
 	free(tofree);
-	return true;
+	return 1;
 }
 
-bool conflicts_with_existing(struct panel* const fv,
+int conflicts_with_existing(struct panel* const fv,
 		const struct string_list* const list) {
 	for (fnum_t f = 0; f < list->len; ++f) {
 		if (file_on_list(fv, list->arr[f]->str) != (fnum_t)-1) {
-			return true;
+			return 1;
 		}
 	}
-	return false;
+	return 0;
 }
 
 void remove_conflicting(struct panel* const fv,
@@ -5277,7 +5160,7 @@ size_t utf8_wtill(const char* a, const char* const b) {
 	return w;
 }
 
-bool utf8_validate(const char* const b) {
+int utf8_validate(const char* const b) {
 	const size_t bl = strlen(b);
 	size_t i = 0;
 	while (i < bl) {
@@ -5289,7 +5172,7 @@ bool utf8_validate(const char* const b) {
 		if (s > 1) {
 			const char* v = b+i+1;
 			while (v < b+i+s) {
-				if ((*v & 0xc0) != 0x80) return false;
+				if ((*v & 0xc0) != 0x80) return 0;
 				v += 1;
 			}
 		}
@@ -5350,8 +5233,8 @@ unsigned cut_unwanted(const char* str, char* buf, const char c, size_t n) {
 /*
  * Binary search. Determines if the codepoint is in given list.
  */
-bool cp_in(const codepoint_t r[][2], size_t Z, const codepoint_t cp) {
-	if (cp < r[0][0] || r[Z][1] < cp) return false;
+int cp_in(const codepoint_t r[][2], size_t Z, const codepoint_t cp) {
+	if (cp < r[0][0] || r[Z][1] < cp) return 0;
 	size_t A = 0;
 	size_t I;
 	while (A <= Z) {
@@ -5363,10 +5246,10 @@ bool cp_in(const codepoint_t r[][2], size_t Z, const codepoint_t cp) {
 			A = I+1;
 		}
 		else {
-			return true;
+			return 1;
 		}
 	}
-	return false;
+	return 0;
 }
 
 xtime_ms_t xtime(void) {
@@ -5519,7 +5402,7 @@ void task_action_estimate(struct task* const t, int* const c) {
 		t->specials += 1;
 		break;
 	}
-	const bool Q = t->tw.tws & (AT_DIR | AT_LINK | AT_FILE);
+	const int Q = t->tw.tws & (AT_DIR | AT_LINK | AT_FILE);
 	if ((t->t == TASK_COPY || t->t == TASK_MOVE) && Q) {
 		char new_path[PATH_BUF_SIZE];
 		task_build_path(t, new_path);
@@ -5554,7 +5437,7 @@ void task_do(struct task* const t, task_action ta,
 		}
 	}
 	if (t->tf & TF_DEREF_LINKS) {
-		t->tw.tl = true;
+		t->tw.tl = 1;
 	}
 	while (t->tw.tws != AT_EXIT && !t->err && c > 0) {
 		ta(t, &c);
@@ -5573,7 +5456,7 @@ void task_do(struct task* const t, task_action ta,
 	}
 }
 
-static bool _files_opened(const struct task* const t) {
+static int _files_opened(const struct task* const t) {
 	return t->out != -1 && t->in != -1;
 }
 
@@ -5694,7 +5577,7 @@ int tree_walk_start(struct tree_walk* const tw,
 	tw->path = malloc(PATH_BUF_SIZE);
 	memcpy(tw->path, path, tw->pathlen+1);
 	pushd(tw->path, &tw->pathlen, file, file_len);
-	tw->tl = false;
+	tw->tl = 0;
 	if (tw->dt) free(tw->dt);
 	tw->dt = calloc(1, sizeof(struct dirtree));
 	return _stat_file(tw);
@@ -5773,9 +5656,9 @@ inline static int _copyremove_step(struct task* const t, int* const c) {
 // TODO absolute mess; simplify
 // TODO skipped counter
 	char np[PATH_BUF_SIZE];
-	const bool cp = t->t & (TASK_COPY | TASK_MOVE);
-	const bool rm = t->t & (TASK_MOVE | TASK_REMOVE);
-	const bool ov = t->tf & TF_OVERWRITE_CONFLICTS;
+	const int cp = t->t & (TASK_COPY | TASK_MOVE);
+	const int rm = t->t & (TASK_MOVE | TASK_REMOVE);
+	const int ov = t->tf & TF_OVERWRITE_CONFLICTS;
 	int err = 0;
 /* QUICK MOVE */
 	if ((t->t & TASK_MOVE) && same_fs(t->src, t->dst)) {

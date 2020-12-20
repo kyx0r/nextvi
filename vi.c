@@ -962,7 +962,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		hundmain(1, NULL);
+		hund();
 		struct sigaction sa = {0};
 		sa.sa_handler = vi_sigresize;
 		if (sigaction(SIGWINCH, &sa, NULL))
@@ -2013,6 +2013,7 @@ int main(int argc, char *argv[])
 	}
 	if (xled || xvis)
 		term_done();
+	term_clean();
 	reg_done();
 	syn_done();
 	dir_done();

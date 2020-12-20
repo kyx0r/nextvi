@@ -14,7 +14,7 @@ char *substr(const char *s1, const char *s2);
 int dstrlen(const char *s, char delim);
 
 /* hund file manager */
-int hundmain(int argc, char* argv[]);
+int hund();
 void vi();
 
 /* line buffer, managing a number of lines */
@@ -121,8 +121,18 @@ char *uc_lastline(char *s);
 #define xrows		(term_rows())
 #define xcols		(term_cols())
 
+#define CSI_CLEAR_ALL "\x1b[2J", 4
+#define CSI_CLEAR_LINE "\x1b[K", 3
+#define CSI_CURSOR_TOP_LEFT "\x1b[H", 3
+#define CSI_CURSOR_SHOW "\x1b[?25h", 6
+#define CSI_CURSOR_HIDE "\x1b[?25l", 6
+#define CSI_SCREEN_ALTERNATIVE "\x1b[?47h", 6
+#define CSI_SCREEN_NORMAL "\x1b[?47l", 6
+#define CSI_CURSOR_HIDE_TOP_LEFT "\x1b[?25l\x1b[H", 9
+
 void term_init(void);
 void term_done(void);
+void term_clean(void);
 void term_suspend(void);
 void term_str(char *s);
 void term_chr(int ch);

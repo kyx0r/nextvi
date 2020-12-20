@@ -40,6 +40,12 @@ void term_done(void)
 	tcsetattr(0, 0, &termios);
 }
 
+void term_clean(void)
+{
+	write(1, CSI_CLEAR_ALL);
+	write(1, CSI_CURSOR_TOP_LEFT);
+}
+
 void term_suspend(void)
 {
 	term_done();
