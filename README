@@ -126,6 +126,10 @@ on that row, which will be covered by search message instead.
 Also, centering is nice because you always know where to expect
 the result to be with your eyes.
 43. Added terminal clean up on exit
+44. Added a key to perform relative word replacements keybind: vt
+Specify arg and the word under the cursor will be placed into prompt,
+for example :.,.+5s/\<word\>/ where 5 is the arg.
+
 
 FAQ:
 ----

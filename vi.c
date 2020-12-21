@@ -1709,6 +1709,18 @@ void vi(void)
 					ln = vi_prompt(":", buf, &kmap);
 					free(cs);
 					goto do_excmd;
+				} else if (k == 't') {
+					if (!(cs = vi_curword(xb, xrow, xoff)))
+						break;
+					char buf[strlen(cs)+30];
+					strcpy(buf, ".,.+");
+					char *buf1 = itoa(vi_arg1, buf+4);
+					strcat(buf1, "s/");
+					strcat(buf1, cs);
+					strcat(buf1, "/");
+					ln = vi_prompt(":", buf, &kmap);
+					free(cs);
+					goto do_excmd;
 				} else if (k == '.') {
 					while (vi_arg1)
 					{
@@ -1722,13 +1734,16 @@ void vi(void)
 						case 'a':
 						case 'A':
 						case 's':
+						case 'c':
+						case 'C':
 							/*
 							go to the left to restore
 							previous position of what
 							was inserted.
 							*/
 							term_push("0", 1);
-							vi_argcmd(noff, 'l');
+							if (noff)
+								vi_argcmd(noff, 'l');
 							break;
 						}
 						vi_arg1--;
