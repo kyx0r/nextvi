@@ -158,6 +158,8 @@ static void vi_drawrow(int row)
 		}
 	}
 	if (!s) {
+		if (*vi_word && row == xrow+1)
+			goto last_row;
 		led_print(row ? "~" : "", row - xtop, ex_filetype());
 		return;
 	}
@@ -173,6 +175,7 @@ static void vi_drawrow(int row)
 		memcpy(c, s, l1+l2);
 		led_print(tmp, row - xtop, ex_filetype());
 	} else if (*vi_word && row == xrow+1) {
+		last_row:;
 		int noff = xoff;
 		int nrow = xrow;
 		c = lbuf_get(xb, xrow);
@@ -212,7 +215,7 @@ static void vi_drawrow(int row)
 		led_print(tmp, row - xtop, ex_filetype());
 	} else
 		led_print(s, row - xtop, ex_filetype());
-	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)-1+movedown))
+	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
 		movedown = 0;
 	syn_context(0);
 }
