@@ -158,9 +158,10 @@ static void vi_drawrow(int row)
 		}
 	}
 	if (!s) {
+		s = "~";
 		if (*vi_word && row == xrow+1)
 			goto last_row;
-		led_print(row ? "~" : "", row - xtop, ex_filetype());
+		led_print(row ? s : "", row - xtop, ex_filetype());
 		return;
 	}
 	if (vi_lnnum)
