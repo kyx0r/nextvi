@@ -70,7 +70,7 @@ void rset_free(struct rset *re);
 char *re_read(char **src);
 
 /* rendering lines */
-int *ren_position(char *s);
+int *ren_position(char *s, char ***c, int *n);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
 int ren_pos(char *s, int off);
@@ -208,7 +208,7 @@ char* xgetenv(char* q[]);
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
 
 extern int blockpat;
-int *syn_highlight(char *ft, char *s);
+int *syn_highlight(char *ft, char *s, int n);
 char *syn_filetype(char *path);
 void syn_context(int att);
 int syn_merge(int old, int new);

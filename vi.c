@@ -782,12 +782,12 @@ static int vi_motion(int *row, int *off)
 		break;
 	case 'h':
 		for (i = 0; i < cnt; i++)
-			if (vi_nextcol(xb, -1 * dir, row, off))
+			if (vi_nextcol(xb, -dir, row, off))
 				break;
 		break;
 	case 'l':
 		for (i = 0; i < cnt; i++)
-			if (vi_nextcol(xb, +1 * dir, row, off))
+			if (vi_nextcol(xb, dir, row, off))
 				break;
 		break;
 	case 't':

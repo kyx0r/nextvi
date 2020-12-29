@@ -267,8 +267,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	int i, j;
 	int ctx = dir_context(s0);
 	int att_blank = 0;		/* the attribute of blank space */
-	chrs = uc_chop(s0, &n);
-	pos = ren_position(s0);
+	pos = ren_position(s0, &chrs, &n);
 	off = malloc((cend - cbeg) * sizeof(off[0]));
 	memset(off, 0xff, (cend - cbeg) * sizeof(off[0]));
 	/* initialise off[] using pos[] */
@@ -281,7 +280,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 			for (j = 0; j < curwid; j++)
 				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
 	}
-	att = syn_highlight(xhl ? syn : "/", s0);
+	att = syn_highlight(xhl ? syn : "/", s0, cend);
 	/* the attribute of \n character is used for blanks */
 	for (i = 0; i < n; i++)
 		if (chrs[i][0] == '\n')

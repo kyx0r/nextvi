@@ -6,34 +6,36 @@
 #include "vi.h"
 
 /* specify the screen position of the characters in s */
-int *ren_position(char *s)
+int *ren_position(char *s, char ***chrs, int *n)
 {
-	int i, n;
-	char **chrs = uc_chop(s, &n);
+	int i; 
+	*chrs = uc_chop(s, n);
+	int nn = *n;
 	int *off, *pos;
 	int cpos = 0;
-	pos = malloc((n + 1) * sizeof(pos[0]));
-	for (i = 0; i < n; i++)
+	pos = malloc((nn + 1) * sizeof(pos[0]));
+	for (i = 0; i < nn; i++)
 		pos[i] = i;
 	if (xorder)
 		dir_reorder(s, pos);
-	off = malloc(n * sizeof(off[0]));
-	for (i = 0; i < n; i++)
+	off = malloc(nn * sizeof(off[0]));
+	for (i = 0; i < nn; i++)
 		off[pos[i]] = i;
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < nn; i++) {
 		pos[off[i]] = cpos;
-		cpos += ren_cwid(chrs[off[i]], cpos);
+		cpos += ren_cwid(*chrs[off[i]], cpos);
 	}
-	pos[n] = cpos;
-	free(chrs);
+	pos[nn] = cpos;
+	free(*chrs);
 	free(off);
 	return pos;
 }
 
 int ren_wid(char *s)
 {
-	int *pos = ren_position(s);
-	int n = uc_slen(s);
+	int n;
+	char **c;
+	int *pos = ren_position(s, &c, &n);
 	int ret = pos[n];
 	free(pos);
 	return ret;
@@ -62,8 +64,9 @@ static int pos_prev(int *pos, int n, int p, int cur)
 /* convert character offset to visual position */
 int ren_pos(char *s, int off)
 {
-	int n = uc_slen(s);
-	int *pos = ren_position(s);
+	int n;
+	char **c;
+	int *pos = ren_position(s, &c, &n);
 	int ret = off < n ? pos[off] : 0;
 	free(pos);
 	return ret;
@@ -73,8 +76,9 @@ int ren_pos(char *s, int off)
 int ren_off(char *s, int p)
 {
 	int off = -1;
-	int n = uc_slen(s);
-	int *pos = ren_position(s);
+	int n;
+	char **c;
+	int *pos = ren_position(s, &c, &n);
 	int i;
 	p = pos_prev(pos, n, p, 1);
 	for (i = 0; i < n; i++)
@@ -89,10 +93,10 @@ int ren_cursor(char *s, int p)
 {
 	int n, next;
 	int *pos;
+	char **c;
 	if (!s)
 		return 0;
-	n = uc_slen(s);
-	pos = ren_position(s);
+	pos = ren_position(s, &c, &n);
 	p = pos_prev(pos, n, p, 1);
 	if (uc_code(uc_chr(s, ren_off(s, p))) == '\n')
 		p = pos_prev(pos, n, p, 0);
@@ -114,8 +118,9 @@ int ren_noeol(char *s, int o)
 /* the position of the next character */
 int ren_next(char *s, int p, int dir)
 {
-	int n = uc_slen(s);
-	int *pos = ren_position(s);
+	int n;
+	char **c;
+	int *pos = ren_position(s &c, &n);
 	p = pos_prev(pos, n, p, 1);
 	if (dir >= 0)
 		p = pos_next(pos, n, p, 0);

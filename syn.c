@@ -36,20 +36,21 @@ void syn_context(int att)
 	syn_ctx = att;
 }
 
-int *syn_highlight(char *ft, char *s)
+int *syn_highlight(char *ft, char *s, int n)
 {
 	int subs[16 * 2];
-	int n = uc_slen(s);
 	int *att = malloc(n * sizeof(att[0]));
 	int sidx = 0;
 	struct rset *rs = syn_find(ft);
 	int flg = 0;
 	int hl, j, i, bpat = 0;
+	char ctmp = s[n];
 	memset(att, 0, n * sizeof(att[0]));
 	if (!rs)
 		return att;
 	for (i = 0; i < n; i++)
 		att[i] = syn_ctx;
+	s[n] = '\0';
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0
 		|| blockpat) {
 		int grp = 0;
@@ -67,7 +68,7 @@ int *syn_highlight(char *ft, char *s)
 			conf_highlight(blockpat, NULL, &catt, NULL, &grp, NULL);
 			for (j = 0; j < n; j++)
 				att[j] = *catt;
-			return att;
+			goto ret;
 		} else if (patend)
 			bpat = patend;
 		skip_last:
@@ -86,6 +87,8 @@ int *syn_highlight(char *ft, char *s)
 	}
 	if (bpat)
 		blockpat = bpat;
+	ret:
+	s[n] = ctmp;
 	return att;
 }
 
