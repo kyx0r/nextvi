@@ -36,21 +36,27 @@ void syn_context(int att)
 	syn_ctx = att;
 }
 
-int *syn_highlight(char *ft, char *s, int n)
+int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
 {
-	int subs[16 * 2];
-	int *att = malloc(n * sizeof(att[0]));
-	int sidx = 0;
 	struct rset *rs = syn_find(ft);
-	int flg = 0;
-	int hl, j, i, bpat = 0;
-	char ctmp = s[n];
+	int *att = malloc(n * sizeof(att[0]));
 	memset(att, 0, n * sizeof(att[0]));
 	if (!rs)
 		return att;
-	for (i = 0; i < n; i++)
+	int sidx = 0;
+	int subs[16 * 2];
+	int flg = 0;
+	int hl, j, i, bpat = 0;
+	char ctmp = 0;
+	int xright;
+	for (i = cbeg; i < n; i++)
 		att[i] = syn_ctx;
-	s[n] = '\0';
+	if (n > cend)
+	{
+		xright = utf8_w2nb(s, cend);
+		ctmp = s[xright];
+		s[xright] = '\0';
+	}
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0
 		|| blockpat) {
 		int grp = 0;
@@ -65,8 +71,8 @@ int *syn_highlight(char *ft, char *s, int n)
 				blockpat = 0;
 				goto skip_last;
 			}
-			conf_highlight(blockpat, NULL, &catt, NULL, &grp, NULL);
-			for (j = 0; j < n; j++)
+			conf_highlight(blockpat, NULL, &catt, NULL, NULL, NULL);
+			for (j = cbeg; j < n; j++)
 				att[j] = *catt;
 			goto ret;
 		} else if (patend)
@@ -77,7 +83,7 @@ int *syn_highlight(char *ft, char *s, int n)
 				int beg = uc_off(s, sidx + subs[i * 2 + 0]);
 				int end = uc_off(s, sidx + subs[i * 2 + 1]);
 				for (j = beg; j < end; j++)
-					att[j] = syn_merge(att[j], catt[i]);
+					att[j+cbeg] = syn_merge(att[j+cbeg], catt[i]);
 				if (i == grp)
 					cend = MAX(cend, subs[i * 2 + 1]);
 			}
@@ -88,7 +94,8 @@ int *syn_highlight(char *ft, char *s, int n)
 	if (bpat)
 		blockpat = bpat;
 	ret:
-	s[n] = ctmp;
+	if (ctmp)
+		s[xright] = ctmp;
 	return att;
 }
 

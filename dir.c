@@ -82,17 +82,18 @@ int dir_context(char *s)
 }
 
 /* reorder the characters in s */
-void dir_reorder(char *s, int *ord)
+void dir_reorder(char *s, int *ord, char **chrs, int n)
 {
-	int n;
-	char **chrs = uc_chop(s, &n);
 	int dir = dir_context(s);
+	int xright = xleft + xcols;
 	if (n && chrs[n - 1][0] == '\n') {
 		ord[n - 1] = n - 1;
 		n--;
 	}
-	dir_fix(chrs, ord, dir, 0, n);
-	free(chrs);
+	if (dir > 0)
+		dir_fix(chrs, ord, dir, 0, n > xright ? xright : n);
+	else
+		dir_fix(chrs, ord, dir, 0, n);
 }
 
 void dir_init(void)

@@ -24,7 +24,7 @@ int xorder = 1;			/* change the order of characters */
 int xkmap = 0;			/* the current keymap */
 int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
-int xqexit = 1;			/* number of spaces for tab */
+int xqexit = 1;			/* exit insert via kj */
 static char xkwd[EXLEN];	/* the last searched keyword */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */

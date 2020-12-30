@@ -84,7 +84,7 @@ int ren_cwid(char *s, int pos);
 
 /* text direction */
 int dir_context(char *s);
-void dir_reorder(char *s, int *ord);
+void dir_reorder(char *s, int *ord, char **chrs, int n);
 void dir_init(void);
 void dir_done(void);
 
@@ -100,6 +100,7 @@ int uc_slen(char *s);
 int uc_code(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
+size_t utf8_w2nb(const char* const b, size_t w); 
 char *uc_sub(char *s, int beg, int end);
 char *uc_dup(char *s);
 int uc_isspace(char *s);
@@ -208,7 +209,7 @@ char* xgetenv(char* q[]);
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
 
 extern int blockpat;
-int *syn_highlight(char *ft, char *s, int n);
+int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend);
 char *syn_filetype(char *path);
 void syn_context(int att);
 int syn_merge(int old, int new);

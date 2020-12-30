@@ -17,16 +17,15 @@ int *ren_position(char *s, char ***chrs, int *n)
 	for (i = 0; i < nn; i++)
 		pos[i] = i;
 	if (xorder)
-		dir_reorder(s, pos);
+		dir_reorder(s, pos, *chrs, nn);
 	off = malloc(nn * sizeof(off[0]));
 	for (i = 0; i < nn; i++)
 		off[pos[i]] = i;
 	for (i = 0; i < nn; i++) {
 		pos[off[i]] = cpos;
-		cpos += ren_cwid(*chrs[off[i]], cpos);
+		cpos += ren_cwid(chrs[0][off[i]], cpos);
 	}
 	pos[nn] = cpos;
-	free(*chrs);
 	free(off);
 	return pos;
 }
@@ -38,6 +37,7 @@ int ren_wid(char *s)
 	int *pos = ren_position(s, &c, &n);
 	int ret = pos[n];
 	free(pos);
+	free(c);
 	return ret;
 }
 
@@ -69,6 +69,7 @@ int ren_pos(char *s, int off)
 	int *pos = ren_position(s, &c, &n);
 	int ret = off < n ? pos[off] : 0;
 	free(pos);
+	free(c);
 	return ret;
 }
 
@@ -85,6 +86,7 @@ int ren_off(char *s, int p)
 		if (pos[i] == p)
 			off = i;
 	free(pos);
+	free(c);
 	return off >= 0 ? off : 0;
 }
 
@@ -103,6 +105,7 @@ int ren_cursor(char *s, int p)
 	next = pos_next(pos, n, p, 0);
 	p = (next >= 0 ? next : pos[n]) - 1;
 	free(pos);
+	free(c);
 	return p >= 0 ? p : 0;
 }
 
@@ -120,13 +123,14 @@ int ren_next(char *s, int p, int dir)
 {
 	int n;
 	char **c;
-	int *pos = ren_position(s &c, &n);
+	int *pos = ren_position(s, &c, &n);
 	p = pos_prev(pos, n, p, 1);
 	if (dir >= 0)
 		p = pos_next(pos, n, p, 0);
 	else
 		p = pos_prev(pos, n, p, 0);
 	free(pos);
+	free(c);
 	return s && uc_chr(s, ren_off(s, p))[0] != '\n' ? p : -1;
 }
 

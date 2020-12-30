@@ -254,41 +254,12 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 	}
 }
 
-/* render and highlight a line */
-static char *led_render(char *s0, int cbeg, int cend, char *syn)
+void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
+		int att_blank, int cbeg, int cend)
 {
-	int n;
-	int *pos;	/* pos[i]: the screen position of the i-th character */
-	int *off;	/* off[i]: the character at screen position i */
-	int *att;	/* att[i]: the attributes of i-th character */
-	char **chrs;	/* chrs[i]: the i-th character in s1 */
 	int att_old = 0;
-	struct sbuf *out;
-	int i, j;
-	int ctx = dir_context(s0);
-	int att_blank = 0;		/* the attribute of blank space */
-	pos = ren_position(s0, &chrs, &n);
-	off = malloc((cend - cbeg) * sizeof(off[0]));
-	memset(off, 0xff, (cend - cbeg) * sizeof(off[0]));
-	/* initialise off[] using pos[] */
-	for (i = 0; i < n; i++) {
-		int curwid = ren_cwid(chrs[i], pos[i]);
-		int curbeg = led_posctx(ctx, pos[i], cbeg, cend);
-		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
-		if (curbeg >= 0 && curbeg < (cend - cbeg) &&
-				curend >= 0 && curend < (cend - cbeg))
-			for (j = 0; j < curwid; j++)
-				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
-	}
-	att = syn_highlight(xhl ? syn : "/", s0, cend);
-	/* the attribute of \n character is used for blanks */
-	for (i = 0; i < n; i++)
-		if (chrs[i][0] == '\n')
-			att_blank = att[i];
-	led_markrev(n, chrs, pos, att);
-	/* generate term output */
-	out = sbuf_make();
-	i = cbeg;
+	int i = cbeg;
+	int j;
 	while (i < cend) {
 		int o = off[i - cbeg];
 		int att_new = o >= 0 ? att[o] : att_blank;
@@ -298,24 +269,42 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 			if (ren_translate(chrs[o], s0))
 				sbuf_str(out, ren_translate(chrs[o], s0));
 			else if (uc_isprint(chrs[o]))
-				if (vi_hidch)
-				{
-					sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
-				}
-				else
-					sbuf_mem(out, chrs[o], uc_len(chrs[o]));
+				sbuf_mem(out, chrs[o], uc_len(chrs[o]));
+			else
+				for (j = i; j < cend && off[j - cbeg] == o; j++)
+					sbuf_chr(out, ' ');
+			while (i < cend && off[i - cbeg] == o)
+				i++;
+		} else {
+			sbuf_chr(out, ' ');
+			i++;
+		}
+	}
+	sbuf_str(out, term_att(0, att_old));
+}
+
+void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
+		int att_blank, int cbeg, int cend)
+{
+	int att_old = 0;
+	int i = cbeg;
+	int j;
+	while (i < cend) {
+		int o = off[i - cbeg];
+		int att_new = o >= 0 ? att[o] : att_blank;
+		sbuf_str(out, term_att(att_new, att_old));
+		att_old = att_new;
+		if (o >= 0) {
+			if (ren_translate(chrs[o], s0))
+				sbuf_str(out, ren_translate(chrs[o], s0));
+			else if (uc_isprint(chrs[o]))
+				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
 			else
 			{
-				if (vi_hidch)
+				for (j = i; j < cend && off[j - cbeg] == o; j++)
 				{
-					for (j = i; j < cend && off[j - cbeg] == o; j++)
-					{
-						char mark = j % xtabspc == 0 ? '>' : '-';
-						sbuf_chr(out, *chrs[o] == '\n' ? '\\' : mark);
-					}
-				} else {
-					for (j = i; j < cend && off[j - cbeg] == o; j++)
-						sbuf_chr(out, ' ');
+					char mark = j % xtabspc == 0 ? '>' : '-';
+					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : mark);
 				}
 			}
 			while (i < cend && off[i - cbeg] == o)
@@ -326,9 +315,49 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		}
 	}
 	sbuf_str(out, term_att(0, att_old));
+}
+
+/* render and highlight a line */
+static char *led_render(char *s0, int cbeg, int cend, char *syn)
+{
+	int n;
+	int *pos;	/* pos[i]: the screen position of the i-th character */
+	int *att;	/* att[i]: the attributes of i-th character */
+	char **chrs;	/* chrs[i]: the i-th character in s1 */
+	int off[cend - cbeg];	/* off[i]: the character at screen position i */
+	struct sbuf *out;
+	int i, j;
+	int att_blank = 0;		/* the attribute of blank space */
+	int cut = 0;
+	if (cbeg)
+		cut = utf8_w2nb(s0, cbeg);
+	int ctx = dir_context(s0);
+	pos = ren_position(s0, &chrs, &n);
+	memset(off, 0xff, (cend - cbeg) * sizeof(off[0]));
+	att = syn_highlight(xhl ? syn : "/", s0+cut, n, cbeg, cend);
+
+	/* initialise off[] using pos[] */
+	for (i = 0; i < n; i++) {
+		/* the attribute of \n character is used for blanks */
+		if (chrs[i][0] == '\n')
+			att_blank = att[i];
+		int curwid = ren_cwid(chrs[i], pos[i]);
+		int curbeg = led_posctx(ctx, pos[i], cbeg, cend);
+		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
+		if (curbeg >= 0 && curbeg < (cend - cbeg) &&
+				curend >= 0 && curend < (cend - cbeg))
+			for (j = 0; j < curwid; j++)
+				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
+	}
+	led_markrev(n, chrs, pos, att);
+	/* generate term output */
+	out = sbuf_make();
+	if (vi_hidch)
+		ledhidch_out(out, off, att, chrs, s0, att_blank, cbeg, cend);
+	else
+		led_out(out, off, att, chrs, s0, att_blank, cbeg, cend);
 	free(att);
 	free(pos);
-	free(off);
 	free(chrs);
 	return sbuf_done(out);
 }
