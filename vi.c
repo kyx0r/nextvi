@@ -1051,8 +1051,7 @@ static void vi_splitln(int row, int linepos, int nextln)
 		if (!s)
 			return;
 		len = uc_slen(s);
-		for (int z = 0; z < linepos; z++)
-			bytelen += uc_len(&s[bytelen]);	
+		bytelen = utf8_w2nb(s, linepos);
 		if (len > linepos)
 		{
 			part = uc_sub(s, linepos, len);
