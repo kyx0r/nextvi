@@ -8,7 +8,7 @@ static struct filetype {
 	char *ft;		/* file type */
 	char *pat;		/* file name pattern */
 } filetypes[] = {
-	{"c", "\\.[hc]|cpp$"},				/* C */
+	{"c", "\\.[hc]|cpp|hpp|cc|cs$"},		/* C */
 	{"roff", "\\.(ms|tr|roff|tmac|txt|[1-9])$"},	/* troff */
 	{"tex", "\\.tex$"},				/* tex */
 	{"msg", "letter$|mbox$|mail$"},			/* email */
@@ -17,6 +17,27 @@ static struct filetype {
 	{"py", "\\.py$"},				/* python */
 	{"nm", "\\.nm$"},				/* neatmail */
 };
+
+/*
+colors 0-15 
+0 = black | inverse
+1 = red3
+2 = green3
+3 = yellow3
+4 = blue2
+5 = magenta3
+6 = cyan3
+7 = gray90
+bright colors 
+8 = gray50
+9 = red
+10 = green
+11 = yellow
+12 = blue
+13 = magenta
+14 = cyan
+15 = white
+*/
 
 /* syntax highlighting patterns */
 static struct highlight {
@@ -29,9 +50,12 @@ static struct highlight {
 	{"/", {9}, NULL},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 		|enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
-		|u64|s64|f64|u8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t)\\>"},
-	{"c", {12 | SYN_BD}, "\\<(true|false|asm|__asm|__asm__|memset|memcpy|malloc|free|realloc|NULL|stdin|stdout|errno)\\>"},
-	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|default|break|continue)\\>"},
+		|u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
+		|int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t)\\>"},
+	{"c", {12 | SYN_BD}, "\\<(true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
+				|free|realloc|NULL|stdin|stdout|errno)\\>"},
+	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
+			|default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
 	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*+[^*/])*\\*+/"},
 	{"c", {4 | SYN_IT}, "[^\\*/]*\\*/"},
@@ -41,7 +65,6 @@ static struct highlight {
 	{"c", {5}, "\"([^\"]|\\\\\")*\""},
 	{"c", {5}, "'([^\\]|\\\\.)'"},
 	{"c", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
-
 
 	{"roff", {4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD},
 		"^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\]{2,}))?.*$", 1},
