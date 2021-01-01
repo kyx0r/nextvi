@@ -9,16 +9,17 @@
 int *ren_position(char *s, char ***chrs, int *n)
 {
 	int i; 
-	*chrs = uc_chop(s, n);
+	chrs[0] = uc_chop(s, n);
 	int nn = *n;
 	int *off, *pos;
 	int cpos = 0;
-	pos = malloc((nn + 1) * sizeof(pos[0]));
+	int size = (nn + 1) * sizeof(pos[0]);
+	pos = malloc(size*2);
+	off = pos + nn+1;
 	for (i = 0; i < nn; i++)
 		pos[i] = i;
 	if (xorder)
 		dir_reorder(s, pos, *chrs, nn);
-	off = malloc(nn * sizeof(off[0]));
 	for (i = 0; i < nn; i++)
 		off[pos[i]] = i;
 	for (i = 0; i < nn; i++) {
@@ -26,7 +27,6 @@ int *ren_position(char *s, char ***chrs, int *n)
 		cpos += ren_cwid(chrs[0][off[i]], cpos);
 	}
 	pos[nn] = cpos;
-	free(off);
 	return pos;
 }
 

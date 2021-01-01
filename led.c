@@ -329,11 +329,12 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	int i, j;
 	int att_blank = 0;		/* the attribute of blank space */
 	int cut = 0;
+	int cterm = cend - cbeg;
 	if (cbeg)
 		cut = utf8_w2nb(s0, cbeg);
 	int ctx = dir_context(s0);
 	pos = ren_position(s0, &chrs, &n);
-	memset(off, 0xff, (cend - cbeg) * sizeof(off[0]));
+	memset(off, 0xff, cterm * sizeof(off[0]));
 	att = syn_highlight(xhl ? syn : "/", s0+cut, n, cbeg, cend);
 
 	/* initialise off[] using pos[] */
@@ -344,8 +345,8 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		int curwid = ren_cwid(chrs[i], pos[i]);
 		int curbeg = led_posctx(ctx, pos[i], cbeg, cend);
 		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
-		if (curbeg >= 0 && curbeg < (cend - cbeg) &&
-				curend >= 0 && curend < (cend - cbeg))
+		if (curbeg >= 0 && curbeg < cterm &&
+				curend >= 0 && curend < cterm)
 			for (j = 0; j < curwid; j++)
 				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
 	}
