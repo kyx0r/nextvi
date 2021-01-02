@@ -19,7 +19,7 @@ int *ren_position(char *s, char ***chrs, int *n)
 	for (i = 0; i < nn; i++)
 		pos[i] = i;
 	if (xorder)
-		dir_reorder(s, pos, *chrs, nn);
+		dir_reorder(s, pos, chrs[0], nn);
 	for (i = 0; i < nn; i++)
 		off[pos[i]] = i;
 	for (i = 0; i < nn; i++) {
@@ -28,17 +28,6 @@ int *ren_position(char *s, char ***chrs, int *n)
 	}
 	pos[nn] = cpos;
 	return pos;
-}
-
-int ren_wid(char *s)
-{
-	int n;
-	char **c;
-	int *pos = ren_position(s, &c, &n);
-	int ret = pos[n];
-	free(pos);
-	free(c);
-	return ret;
 }
 
 /* find the next character after visual position p; if cur, start from p itself */

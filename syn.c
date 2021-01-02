@@ -36,7 +36,7 @@ void syn_context(int att)
 	syn_ctx = att;
 }
 
-int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
+int *syn_highlight(char *ft, char *s, int n, int cbeg)
 {
 	struct rset *rs = syn_find(ft);
 	int *att = malloc(n * sizeof(att[0]));
@@ -47,16 +47,8 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
 	int subs[16 * 2];
 	int flg = 0;
 	int hl, j, i, bpat = 0;
-	char ctmp = 0;
-	int xright;
 	for (i = cbeg; i < n; i++)
 		att[i] = syn_ctx;
-	if (n > cend)
-	{
-		xright = utf8_w2nb(s, cend);
-		ctmp = s[xright];
-		s[xright] = '\0';
-	}
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0
 		|| blockpat) {
 		int grp = 0;
@@ -74,7 +66,7 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
 			conf_highlight(blockpat, NULL, &catt, NULL, NULL, NULL);
 			for (j = cbeg; j < n; j++)
 				att[j] = *catt;
-			goto ret;
+			return att;
 		} else if (patend)
 			bpat = patend;
 		skip_last:
@@ -93,9 +85,6 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
 	}
 	if (bpat)
 		blockpat = bpat;
-	ret:
-	if (ctmp)
-		s[xright] = ctmp;
 	return att;
 }
 

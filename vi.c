@@ -147,6 +147,8 @@ static void vi_drawrow(int row)
 	static int movedown;
 	char *c;
 	char *s = lbuf_get(xb, row-movedown);
+	char ch1[1] = "~";
+	char ch2[1] = "";
 	if (xhll && row == xrow)
 		syn_context(conf_hlline());
 	if (xhww && row == xtop)
@@ -158,10 +160,10 @@ static void vi_drawrow(int row)
 		}
 	}
 	if (!s) {
-		s = "~";
+		s = ch1; 
 		if (*vi_word && row == xrow+1)
 			goto last_row;
-		led_print(row ? s : "", row - xtop, ex_filetype());
+		led_print(row ? s : ch2, row - xtop, ex_filetype());
 		return;
 	}
 	if (vi_lnnum)

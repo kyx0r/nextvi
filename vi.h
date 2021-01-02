@@ -77,7 +77,6 @@ int ren_pos(char *s, int off);
 int ren_cursor(char *s, int pos);
 int ren_noeol(char *s, int p);
 int ren_off(char *s, int pos);
-int ren_wid(char *s);
 int ren_region(char *s, int c1, int c2, int *l1, int *l2, int closed);
 char *ren_translate(char *s, char *ln);
 int ren_cwid(char *s, int pos);
@@ -209,7 +208,7 @@ char* xgetenv(char* q[]);
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
 
 extern int blockpat;
-int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend);
+int *syn_highlight(char *ft, char *s, int n, int cbeg);
 char *syn_filetype(char *path);
 void syn_context(int att);
 int syn_merge(int old, int new);
