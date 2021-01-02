@@ -320,20 +320,31 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 /* render and highlight a line */
 static char *led_render(char *s0, int cbeg, int cend, char *syn)
 {
-	int n;
+	int i, j, n;
 	int *pos;	/* pos[i]: the screen position of the i-th character */
 	int *att;	/* att[i]: the attributes of i-th character */
 	char **chrs;	/* chrs[i]: the i-th character in s1 */
 	struct sbuf *out;
-	int i, j;
 	int att_blank = 0; /* the attribute of blank space */
-	int cut = 0, end = 0;
+	int cut = 0, end = 0, _cbeg = 0;
 	int cterm = cend - cbeg;
 	int off[cterm];	/* off[i]: the character at screen position i */
 	int ctx = dir_context(s0);
 	char tmpch;
-	pos = ren_position(s0, &chrs, &n);
 	memset(off, 0xff, cterm * sizeof(off[0]));
+	if (cbeg)
+	{
+		i = xoff;
+		pos = ren_position(s0, &chrs, &n, &i);
+		if (i == xoff)
+			i = 0;
+		if (i >= _cbeg + xcols)
+			_cbeg = i - xcols / 2;
+		if (i < _cbeg)
+			_cbeg = i < xcols ? 0 : i - xcols / 2;
+	}
+	else
+		pos = ren_position(s0, &chrs, &n, 0);
 
 	/* initialise off[] using pos[] */
 	for (i = 0; i < n; i++) {
@@ -343,16 +354,13 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		int curwid = ren_cwid(chrs[i], pos[i]);
 		int curbeg = led_posctx(ctx, pos[i], cbeg, cend);
 		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
-		if (cbeg > i)
+		if (_cbeg > i)
 		{
-			if (chrs[i][0] == '\t')
-				cut += 1;
-			else
-				cut += curwid;
+			cut += chrs[i][0] == '\t' ? 1 : curwid;
 			end = cut;
 		}
-		else if (cend > i)
-			end += curwid;
+		else if (_cbeg + xcols > i)
+			end += chrs[i][0] == '\t' ? 1 : curwid;
 		if (curbeg >= 0 && curbeg < cterm &&
 				curend >= 0 && curend < cterm)
 			for (j = 0; j < curwid; j++)
@@ -360,8 +368,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	}
 	tmpch = s0[end];
 	s0[end] = '\0';
-	//HACK because of tabs breaking the assumption
-	att = syn_highlight(xhl ? syn : "/", s0 + cut, n, cbeg < n ? cbeg : 0);
+	att = syn_highlight(xhl ? syn : "/", s0 + cut, n, _cbeg);
 	s0[end] = tmpch;
 	att_blank = att[att_blank];
 	led_markrev(n, chrs, pos, att);

@@ -129,6 +129,7 @@ the result to be with your eyes.
 44. Added a key to perform relative word replacements keybind: vt
 Specify arg and the word under the cursor will be placed into prompt,
 for example :.,.+5s/\<word\>/ where 5 is the arg.
+45. Improved single line performance by roughly 3x
 
 
 FAQ:

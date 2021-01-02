@@ -6,7 +6,7 @@
 #include "vi.h"
 
 /* specify the screen position of the characters in s */
-int *ren_position(char *s, char ***chrs, int *n)
+int *ren_position(char *s, char ***chrs, int *n, int *noff)
 {
 	int i; 
 	chrs[0] = uc_chop(s, n);
@@ -22,9 +22,28 @@ int *ren_position(char *s, char ***chrs, int *n)
 		dir_reorder(s, pos, chrs[0], nn);
 	for (i = 0; i < nn; i++)
 		off[pos[i]] = i;
-	for (i = 0; i < nn; i++) {
-		pos[off[i]] = cpos;
-		cpos += ren_cwid(chrs[0][off[i]], cpos);
+	if (noff)
+	{
+		int _cpos, notab = 0, done = 0;
+		for (i = 0; i < nn; i++) {
+			pos[off[i]] = cpos;
+			_cpos = ren_cwid(chrs[0][off[i]], cpos);
+			if (chrs[0][off[i]][0] == '\t')
+				notab++;
+			else
+				notab += _cpos;
+			if (!done && *noff == off[i])
+			{
+				*noff = notab;
+				done = 1;
+			}
+			cpos += _cpos;
+		}
+	} else {
+		for (i = 0; i < nn; i++) {
+			pos[off[i]] = cpos;
+			cpos += ren_cwid(chrs[0][off[i]], cpos);
+		}
 	}
 	pos[nn] = cpos;
 	return pos;
@@ -55,7 +74,7 @@ int ren_pos(char *s, int off)
 {
 	int n;
 	char **c;
-	int *pos = ren_position(s, &c, &n);
+	int *pos = ren_position(s, &c, &n, 0);
 	int ret = off < n ? pos[off] : 0;
 	free(pos);
 	free(c);
@@ -68,7 +87,7 @@ int ren_off(char *s, int p)
 	int off = -1;
 	int n;
 	char **c;
-	int *pos = ren_position(s, &c, &n);
+	int *pos = ren_position(s, &c, &n, 0);
 	int i;
 	p = pos_prev(pos, n, p, 1);
 	for (i = 0; i < n; i++)
@@ -87,7 +106,7 @@ int ren_cursor(char *s, int p)
 	char **c;
 	if (!s)
 		return 0;
-	pos = ren_position(s, &c, &n);
+	pos = ren_position(s, &c, &n, 0);
 	p = pos_prev(pos, n, p, 1);
 	if (uc_code(uc_chr(s, ren_off(s, p))) == '\n')
 		p = pos_prev(pos, n, p, 0);
@@ -112,7 +131,7 @@ int ren_next(char *s, int p, int dir)
 {
 	int n;
 	char **c;
-	int *pos = ren_position(s, &c, &n);
+	int *pos = ren_position(s, &c, &n, 0);
 	p = pos_prev(pos, n, p, 1);
 	if (dir >= 0)
 		p = pos_next(pos, n, p, 0);
