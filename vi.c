@@ -298,7 +298,6 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	char *r, *s;
 	int l1;
 	int l2 = strlen(msg);
-	vi_mod = 1;
 	memcpy(vi_msg, msg, l2);
 	term_pos(xrows, led_pos(msg, 0));
 	term_kill();
@@ -1990,7 +1989,6 @@ void vi(void)
 			if (xhll && xrow != orow)
 				vi_drawrow(xrow);
 		}
-		vi_mod = 0;
 		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
 				ren_cursor(lbuf_get(xb, xrow), xcol)));
