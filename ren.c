@@ -5,9 +5,27 @@
 #include <string.h>
 #include "vi.h"
 
+static char *last_str;
+static char **last_chrs;
+static int *last_pos;
+static int last_n;
+
+void ren_done()
+{
+	free(last_pos);
+	free(last_chrs);
+}
+
 /* specify the screen position of the characters in s */
 int *ren_position(char *s, char ***chrs, int *n)
 {
+	if (last_str == s && !vi_mod)
+	{
+		chrs[0] = last_chrs;
+		*n = last_n;
+		return last_pos;
+	} else 
+		ren_done();
 	int i; 
 	chrs[0] = uc_chop(s, n);
 	int nn = *n;
@@ -27,11 +45,22 @@ int *ren_position(char *s, char ***chrs, int *n)
 		cpos += ren_cwid(chrs[0][off[i]], cpos);
 	}
 	pos[nn] = cpos;
+	last_str = s;
+	last_pos = pos;
+	last_chrs = chrs[0];
+	last_n = *n;
 	return pos;
 }
 
 int *ren_posoff(char *s, char ***chrs, int *n, int *noff)
 {
+	if (last_str == s && !vi_mod)
+	{
+		chrs[0] = last_chrs;
+		*n = last_n;
+		return last_pos;
+	} else 
+		ren_done();
 	int i; 
 	chrs[0] = uc_chop(s, n);
 	int nn = *n;
@@ -62,6 +91,10 @@ int *ren_posoff(char *s, char ***chrs, int *n, int *noff)
 		cpos += _cpos;
 	}
 	pos[nn] = cpos;
+	last_str = s;
+	last_pos = pos;
+	last_chrs = chrs[0];
+	last_n = *n;
 	return pos;
 }
 
@@ -92,8 +125,6 @@ int ren_pos(char *s, int off)
 	char **c;
 	int *pos = ren_position(s, &c, &n);
 	int ret = off < n ? pos[off] : 0;
-	free(pos);
-	free(c);
 	return ret;
 }
 
@@ -109,8 +140,6 @@ int ren_off(char *s, int p)
 	for (i = 0; i < n; i++)
 		if (pos[i] == p)
 			off = i;
-	free(pos);
-	free(c);
 	return off >= 0 ? off : 0;
 }
 
@@ -122,14 +151,14 @@ int ren_cursor(char *s, int p)
 	char **c;
 	if (!s)
 		return 0;
+	vi_mod = 0;
 	pos = ren_position(s, &c, &n);
 	p = pos_prev(pos, n, p, 1);
 	if (uc_code(uc_chr(s, ren_off(s, p))) == '\n')
 		p = pos_prev(pos, n, p, 0);
 	next = pos_next(pos, n, p, 0);
 	p = (next >= 0 ? next : pos[n]) - 1;
-	free(pos);
-	free(c);
+	vi_mod = 1;
 	return p >= 0 ? p : 0;
 }
 
@@ -153,8 +182,6 @@ int ren_next(char *s, int p, int dir)
 		p = pos_next(pos, n, p, 0);
 	else
 		p = pos_prev(pos, n, p, 0);
-	free(pos);
-	free(c);
 	return s && uc_chr(s, ren_off(s, p))[0] != '\n' ? p : -1;
 }
 
@@ -195,3 +222,4 @@ char *ren_translate(char *s, char *ln)
 	char *p = ren_placeholder(s);
 	return p || !xshape ? p : uc_shape(ln, s);
 }
+

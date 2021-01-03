@@ -379,8 +379,6 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	else
 		led_out(out, off, att, chrs, s0, att_blank, cbeg, cend);
 	free(att);
-	free(pos);
-	free(chrs);
 	return sbuf_done(out);
 }
 
