@@ -336,11 +336,14 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	if (cbeg)
 	{
 		i = xoff;
+		j = vi_mod;
+		vi_mod = 2;
 		pos = ren_posoff(s0, &chrs, &n, &i);
+		vi_mod = j;
 		if (i >= _cbeg + xcols)
 		        _cbeg = i - xcols / 2;
 	        if (i < _cbeg)
-	                _cbeg = i < xcols ? 0 : i - xcols / 2;
+	                _cbeg = i - xcols / 2;
 	} else {
 		pos = ren_position(s0, &chrs, &n);
 		_cbeg = 0;
@@ -459,7 +462,7 @@ static void led_printparts(char *ai, char *pref, char *main,
 		xleft = pos - xcols / 2;
 	if (pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
-	vi_mod = 1;
+	vi_mod = 2;
 	led_print(sbuf_buf(ln), -1, syn);
 	term_pos(-1, led_pos(sbuf_buf(ln), pos + idir));
 	sbuf_free(ln);
@@ -660,6 +663,8 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			xquit = 2;
 			break;
+		case TK_CTL('x'):
+			goto leave;
 		case 'j':
 			if(xqexit && 
 				(difftime(time(0), quickexit) * 1000) < 1000)
