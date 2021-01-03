@@ -326,7 +326,8 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	char **chrs;	/* chrs[i]: the i-th character in s1 */
 	struct sbuf *out;
 	int att_blank = 0; /* the attribute of blank space */
-	int cut = 0, end = 0, _cbeg = 0;
+	int cut = 0, end = 0;
+	static int _cbeg;
 	int cterm = cend - cbeg;
 	int off[cterm];	/* off[i]: the character at screen position i */
 	int ctx = dir_context(s0);
@@ -335,16 +336,15 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	if (cbeg)
 	{
 		i = xoff;
-		pos = ren_position(s0, &chrs, &n, &i);
-		if (i == xoff)
-			i = 0;
+		pos = ren_posoff(s0, &chrs, &n, &i);
 		if (i >= _cbeg + xcols)
-			_cbeg = i - xcols / 2;
-		if (i < _cbeg)
-			_cbeg = i < xcols ? 0 : i - xcols / 2;
+		        _cbeg = i - xcols / 2;
+	        if (i < _cbeg)
+	                _cbeg = i < xcols ? 0 : i - xcols / 2;
+	} else {
+		pos = ren_position(s0, &chrs, &n);
+		_cbeg = 0;
 	}
-	else
-		pos = ren_position(s0, &chrs, &n, 0);
 
 	/* initialise off[] using pos[] */
 	for (i = 0; i < n; i++) {
@@ -356,11 +356,11 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
 		if (_cbeg > i)
 		{
-			cut += chrs[i][0] == '\t' ? 1 : curwid;
+			cut += uc_len(chrs[i]);
 			end = cut;
 		}
 		else if (_cbeg + xcols > i)
-			end += chrs[i][0] == '\t' ? 1 : curwid;
+			end += uc_len(chrs[i]);
 		if (curbeg >= 0 && curbeg < cterm &&
 				curend >= 0 && curend < cterm)
 			for (j = 0; j < curwid; j++)
