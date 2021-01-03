@@ -1538,7 +1538,6 @@ void vi(void)
 		int oleft = xleft;
 		int orow = xrow;
 		int mv, n;
-		vi_mod = 0;
 		term_cmd(&n);
 		vi_arg2 = 0;
 		vi_ybuf = vi_yankbuf();
@@ -1991,6 +1990,7 @@ void vi(void)
 			if (xhll && xrow != orow)
 				vi_drawrow(xrow);
 		}
+		vi_mod = 0;
 		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
 				ren_cursor(lbuf_get(xb, xrow), xcol)));

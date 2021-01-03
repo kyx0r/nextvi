@@ -8,7 +8,7 @@ static struct filetype {
 	char *ft;		/* file type */
 	char *pat;		/* file name pattern */
 } filetypes[] = {
-	{"c", "\\.[hc]|cpp|hpp|cc|cs$"},		/* C */
+	{"c", "\\.[hc]|\\.cpp|\\.hpp|\\.cc|\\.cs$"},	/* C */
 	{"roff", "\\.(ms|tr|roff|tmac|txt|[1-9])$"},	/* troff */
 	{"tex", "\\.tex$"},				/* tex */
 	{"msg", "letter$|mbox$|mail$"},			/* email */

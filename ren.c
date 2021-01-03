@@ -158,7 +158,6 @@ int ren_cursor(char *s, int p)
 		p = pos_prev(pos, n, p, 0);
 	next = pos_next(pos, n, p, 0);
 	p = (next >= 0 ? next : pos[n]) - 1;
-	vi_mod = 1;
 	return p >= 0 ? p : 0;
 }
 
