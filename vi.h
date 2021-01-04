@@ -101,7 +101,6 @@ int uc_slen(char *s);
 int uc_code(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
-size_t utf8_w2nb(const char* const b, size_t w); 
 char *uc_sub(char *s, int beg, int end);
 char *uc_dup(char *s);
 int uc_isspace(char *s);
@@ -187,6 +186,7 @@ int ex_kwd(char **kwd, int *dir);
 void ex_kwdset(char *kwd, int dir);
 int ex_edit(char *path);
 void ec_bufferi(int *id);
+char* xgetenv(char* q[]);
 
 #define EXLEN	512		/* ex line length */
 #define xb 	ex_lbuf()

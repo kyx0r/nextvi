@@ -308,6 +308,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	r = uc_dup(l1 >= l2 ? s + l2 : s);
 	memcpy(vi_msg+l2, r, l1);
 	free(s);
+	vi_mod = 1;
 	return r;
 }
 
@@ -1045,7 +1046,7 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 static void vi_splitln(int row, int linepos, int nextln)
 {
 	char *s, *part;
-	int len, crow, bytelen = 0;
+	int len, crow, bytelen;
 	int c = !vi_arg1 ? 1 : vi_arg1;
 	for (int i = 0; i < c; i++)
 	{
@@ -1054,7 +1055,9 @@ static void vi_splitln(int row, int linepos, int nextln)
 		if (!s)
 			return;
 		len = uc_slen(s);
-		bytelen = utf8_w2nb(s, linepos);
+		bytelen = 0;
+		for (int z = 0; z < linepos; z++)
+			bytelen += uc_len(&s[bytelen]);
 		if (len > linepos)
 		{
 			part = uc_sub(s, linepos, len);

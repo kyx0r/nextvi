@@ -1737,20 +1737,6 @@ int tree_walk_step(struct tree_walk* const);
 static char* ed[] = {"$VISUAL", "$EDITOR", "vi", NULL};
 static char* sh[] = {"$SHELL", "sh", NULL};
 
-char* xgetenv(char* q[]) {
-	char* r = NULL;
-	while (*q && !r) {
-		if (**q == '$') {
-			r = getenv(*q+1);
-		}
-		else {
-			return *q;
-		}
-		q += 1;
-	}
-	return r;
-}
-
 struct mark_path {
 	size_t len;
 	char data[];

@@ -51,6 +51,20 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
 	return pid;
 }
 
+char* xgetenv(char* q[]) {
+	char* r = NULL;
+	while (*q && !r) {
+		if (**q == '$') {
+			r = getenv(*q+1);
+		}
+		else {
+			return *q;
+		}
+		q += 1;
+	}
+	return r;
+}
+
 /* execute a command; process input if iproc and process output if oproc */
 char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 {

@@ -144,10 +144,11 @@ if anybody wants to add features to their neatvi they might find it implemented
 here and save brain cycles thinking on how to do something.
 
 Q: Why not let user choose filemanager
-A: Because hund is integrated in vi's source code. And anything else will have
-to be launched as separate program, which would not work very well because 
-would not be able to call back into vi for opening files. Feel free to edit
-the source code.
+A: If you are here only for the editor, you can remove hund
+by removing hund.o in Makefile and remove line of code in
+vi.c that is hund(); This is trivial because there are no
+direct vi -> hund dependencies, only hund -> vi. That should
+also free up about 80K of memory from the executable.
 
 Q: Why not distribute as patches, like on suckless.org?
 A:  It's hard to maintain, say this repo have 35 patches, so it will
