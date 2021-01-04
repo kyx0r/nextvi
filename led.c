@@ -328,6 +328,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	int att_blank = 0; /* the attribute of blank space */
 	int cut = 0, end = 0;
 	static int _cbeg;
+	int _cend;
 	int cterm = cend - cbeg;
 	int off[cterm];	/* off[i]: the character at screen position i */
 	int ctx = dir_context(s0);
@@ -344,11 +345,13 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		        _cbeg = i - xcols / 2;
 	        if (i < _cbeg)
 	                _cbeg = i - xcols / 2;
+		if (_cbeg < 0)
+			_cbeg = 0;
 	} else {
 		pos = ren_position(s0, &chrs, &n);
 		_cbeg = 0;
 	}
-
+	_cend = _cbeg + xcols;
 	/* initialise off[] using pos[] */
 	for (i = 0; i < n; i++) {
 		/* the attribute of \n character is used for blanks */
@@ -362,17 +365,23 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 			cut += uc_len(chrs[i]);
 			end = cut;
 		}
-		else if (_cbeg + xcols > i)
+		else if (_cend > i)
 			end += uc_len(chrs[i]);
 		if (curbeg >= 0 && curbeg < cterm &&
 				curend >= 0 && curend < cterm)
 			for (j = 0; j < curwid; j++)
 				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
 	}
-	tmpch = s0[end];
-	s0[end] = '\0';
-	att = syn_highlight(xhl ? syn : "/", s0 + cut, n, _cbeg);
-	s0[end] = tmpch;
+	if (ctx < 0)
+		//TODO: optimize for right to left
+		att = syn_highlight(xhl ? syn : "/", s0, n, 0); 
+	else
+	{
+		tmpch = s0[end];
+		s0[end] = '\0';
+		att = syn_highlight(xhl ? syn : "/", s0 + cut, n, _cbeg);
+		s0[end] = tmpch;
+	}
 	att_blank = att[att_blank];
 	led_markrev(n, chrs, pos, att);
 	/* generate term output */
