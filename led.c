@@ -345,8 +345,6 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		        _cbeg = i - xcols / 2;
 	        if (i < _cbeg)
 	                _cbeg = i - xcols / 2;
-		if (_cbeg < 0)
-			_cbeg = 0;
 	} else {
 		pos = ren_position(s0, &chrs, &n);
 		_cbeg = 0;

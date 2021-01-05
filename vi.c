@@ -1882,6 +1882,10 @@ void vi(void)
 				case 'f':
 					xkmap = k == 'e' ? 0 : xkmap_alt;
 					break;
+				case '1':
+				case '2':
+					xkmap_alt = k - '0';
+					break;
 				}
 				vi_mod = 1;
 				break;
