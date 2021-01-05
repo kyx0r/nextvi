@@ -1658,6 +1658,7 @@ void vi(void)
 				vi_mod = 1;
 				break;
 			case TK_CTL('s'):
+				vi_mod = 1;
 				ex_command("b");
 				vi_arg1 = vi_digit();
 				if (vi_arg1 > -1)
@@ -1666,7 +1667,6 @@ void vi(void)
 					vc_status();
 				}
 				vi_printed = 0;
-				vi_mod = 1;
 				break;
 			case 'u':
 				if (!lbuf_undo(xb)) {
