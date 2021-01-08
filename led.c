@@ -380,7 +380,8 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		att = syn_highlight(xhl ? syn : "/", s0 + cut, n, _cbeg);
 		s0[end] = tmpch;
 	}
-	att_blank = att[att_blank];
+	if (att_blank)
+		att_blank = att[att_blank];
 	led_markrev(n, chrs, pos, att);
 	/* generate term output */
 	out = sbuf_make();

@@ -1665,6 +1665,7 @@ void vi(void)
 				{
 					ec_bufferi(&vi_arg1);
 					vc_status();
+					vi_mod = 1;
 				}
 				vi_printed = 0;
 				break;
