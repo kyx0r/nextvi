@@ -168,9 +168,9 @@ static void delete(tern_t* root, tern_t* node)
 
 int dstrlen (const char *s, char delim)
 {
-        register const char* i;
-        for(i=s; *i && *i != delim; ++i);
-        return (i-s);
+	register const char* i;
+	for(i=s; *i && *i != delim; ++i);
+	return (i-s);
 }
 
 static void file_ternary(struct lbuf* buf)
@@ -317,27 +317,19 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 	sbuf_str(out, term_att(0, att_old));
 }
 
-/* render and highlight a line */
-static char *led_render(char *s0, int cbeg, int cend, char *syn)
+void led_forward(int *off, int **att, char **chrs, int n, int *pos,
+		char *s0, int *att_blank, int cbeg, int cend,
+		int cterm, int ctx, char *syn)
 {
-	int i, j, n;
-	int *pos;	/* pos[i]: the screen position of the i-th character */
-	int *att;	/* att[i]: the attributes of i-th character */
-	char **chrs;	/* chrs[i]: the i-th character in s1 */
-	struct sbuf *out;
-	int att_blank = 0; /* the attribute of blank space */
+	int i, j;
 	int obeg = 0;
 	int oend = 0;
 	int notab_cbeg = 0;
 	int notab_cend = 0;
 	int delim = 0;
 	int *pbound = &notab_cbeg;
-	int cterm = cend - cbeg;
-	int off[cterm];	/* off[i]: the character at screen position i */
-	int ctx = dir_context(s0);
 	char tmpch;
-	memset(off, 0xff, cterm * sizeof(off[0]));
-	pos = ren_position(s0, &chrs, &n);
+
 	for (i = 0; i < n; i++) {
 		int curwid = ren_cwid(chrs[i], pos[i]);
 		delim += curwid;
@@ -354,10 +346,10 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 			*pbound += curwid;
 	}
 	/* initialise off[] using pos[] */
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < notab_cend; i++) {
 		/* the attribute of \n character is used for blanks */
 		if (chrs[i][0] == '\n')
-			att_blank = i;
+			*att_blank = i;
 		int curwid = ren_cwid(chrs[i], pos[i]);
 		int curbeg = led_posctx(ctx, pos[i], cbeg, cend);
 		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
@@ -366,7 +358,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		        obeg += uc_len(chrs[i]);
 		        oend = obeg;
 		}
-		else if (notab_cend > i)
+		else
 		        oend += uc_len(chrs[i]);
 		if (curbeg >= 0 && curbeg < cterm &&
 				curend >= 0 && curend < cterm)
@@ -375,8 +367,51 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	}
 	tmpch = s0[oend];
 	s0[oend] = '\0';
-	att = syn_highlight(xhl ? syn : "/", s0+obeg, n, notab_cbeg);
+	*att = syn_highlight(xhl ? syn : "/", s0+obeg, n, notab_cbeg);
 	s0[oend] = tmpch;
+}
+
+void led_backward(int *off, int **att, char **chrs, int n, int *pos,
+		char *s0, int *att_blank, int cbeg, int cend,
+		int cterm, int ctx, char *syn)
+{
+	int i, j;
+	/* initialise off[] using pos[] */
+	for (i = 0; i < n; i++) {
+		/* the attribute of \n character is used for blanks */
+		if (chrs[i][0] == '\n')
+			*att_blank = i;
+		int curwid = ren_cwid(chrs[i], pos[i]);
+		int curbeg = led_posctx(ctx, pos[i], cbeg, cend);
+		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
+		if (curbeg >= 0 && curbeg < cterm &&
+				curend >= 0 && curend < cterm)
+			for (j = 0; j < curwid; j++)
+				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
+	}
+	*att = syn_highlight(xhl ? syn : "/", s0, n, 0);
+}
+
+/* render and highlight a line */
+static char *led_render(char *s0, int cbeg, int cend, char *syn)
+{
+	int n;
+	int *pos;	/* pos[i]: the screen position of the i-th character */
+	int *att;	/* att[i]: the attributes of i-th character */
+	char **chrs;	/* chrs[i]: the i-th character in s1 */
+	struct sbuf *out;
+	int att_blank = 0; /* the attribute of blank space */
+	int cterm = cend - cbeg;
+	int off[cterm];	/* off[i]: the character at screen position i */
+	int ctx = dir_context(s0);
+	memset(off, 0xff, cterm * sizeof(off[0]));
+	pos = ren_position(s0, &chrs, &n);
+	if (ctx < 0)
+		led_backward(off, &att, chrs, n, pos, s0,
+				&att_blank, cbeg, cend, cterm, ctx, syn);
+	else
+		led_forward(off, &att, chrs, n, pos, s0,
+				&att_blank, cbeg, cend, cterm, ctx, syn);
 	if (att_blank)
 		att_blank = att[att_blank];
 	led_markrev(n, chrs, pos, att);
@@ -542,7 +577,7 @@ static char *led_line(char *pref, char *post, char *ai,
 {
 	struct sbuf *sb;
 	int ai_len = strlen(ai);
-	int c, lnmode, l, i; 
+	int c, lnmode, l, i;
 	char *sug = suggestbuf;
 	char *cs, *_sug = 0;
 	time_t quickexit = 0;
@@ -664,14 +699,14 @@ static char *led_line(char *pref, char *post, char *ai,
 				cs[i] = '\0';
 				sbuf_free(sb);
 				sb = sbuf_make();
-				sbuf_str(sb, cs);  
+				sbuf_str(sb, cs);
 			}
 			xquit = 2;
 			break;
 		case TK_CTL('x'):
 			goto leave;
 		case 'j':
-			if(xqexit && 
+			if(xqexit &&
 				(difftime(time(0), quickexit) * 1000) < 1000)
 			{
 				if (sbuf_len(sb))
@@ -709,7 +744,7 @@ leave:
 }
 
 /* read an ex command */
-char *led_prompt(char *pref, char *post, char *insert, 
+char *led_prompt(char *pref, char *post, char *insert,
 		int *kmap, char *syn)
 {
 	int key;
@@ -727,7 +762,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 			sbuf_str(sb, post);
 		free(s);
 		return sbuf_done(sb);
-	} 
+	}
 	free(s);
 	return NULL;
 }
