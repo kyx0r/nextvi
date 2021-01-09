@@ -72,7 +72,6 @@ char *re_read(char **src);
 /* rendering lines */
 void ren_done();
 int *ren_position(char *s, char ***c, int *n);
-int *ren_posoff(char *s, char ***c, int *n, int *noff);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
 int ren_pos(char *s, int off);

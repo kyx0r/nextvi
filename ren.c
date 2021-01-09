@@ -52,52 +52,6 @@ int *ren_position(char *s, char ***chrs, int *n)
 	return pos;
 }
 
-int *ren_posoff(char *s, char ***chrs, int *n, int *noff)
-{
-	if (last_str == s && !vi_mod)
-	{
-		chrs[0] = last_chrs;
-		*n = last_n;
-		return last_pos;
-	} else 
-		ren_done();
-	int i; 
-	chrs[0] = uc_chop(s, n);
-	int nn = *n;
-	int *off, *pos;
-	int cpos = 0;
-	int size = (nn + 1) * sizeof(pos[0]);
-	pos = malloc(size*2);
-	off = pos + nn+1;
-	for (i = 0; i < nn; i++)
-		pos[i] = i;
-	if (xorder)
-		dir_reorder(s, pos, chrs[0], nn);
-	for (i = 0; i < nn; i++)
-		off[pos[i]] = i;
-	int _cpos, notab = 0, done = 0;
-	for (i = 0; i < nn; i++) {
-		pos[off[i]] = cpos;
-		_cpos = ren_cwid(chrs[0][off[i]], cpos);
-		if (chrs[0][off[i]][0] == '\t')
-			notab++;
-		else
-			notab += _cpos;
-		if (!done && *noff == off[i])
-		{
-			*noff = notab;
-			done = 1;
-		}
-		cpos += _cpos;
-	}
-	pos[nn] = cpos;
-	last_str = s;
-	last_pos = pos;
-	last_chrs = chrs[0];
-	last_n = *n;
-	return pos;
-}
-
 /* find the next character after visual position p; if cur, start from p itself */
 static int pos_next(int *pos, int n, int p, int cur)
 {
