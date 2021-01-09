@@ -266,8 +266,9 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 		sbuf_str(out, term_att(att_new, att_old));
 		att_old = att_new;
 		if (o >= 0) {
-			if (ren_translate(chrs[o], s0))
-				sbuf_str(out, ren_translate(chrs[o], s0));
+			char *s = ren_translate(chrs[o], s0);
+			if (s)
+				sbuf_str(out, s);
 			else if (uc_isprint(chrs[o]))
 				sbuf_mem(out, chrs[o], uc_len(chrs[o]));
 			else
@@ -295,8 +296,9 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 		sbuf_str(out, term_att(att_new, att_old));
 		att_old = att_new;
 		if (o >= 0) {
-			if (ren_translate(chrs[o], s0))
-				sbuf_str(out, ren_translate(chrs[o], s0));
+			char *s = ren_translate(chrs[o], s0);
+			if (s)
+				sbuf_str(out, s);
 			else if (uc_isprint(chrs[o]))
 				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
 			else
