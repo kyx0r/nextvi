@@ -323,7 +323,7 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 		char *s0, int *att_blank, int cbeg, int cend,
 		int cterm, int ctx, char *syn)
 {
-	int i, j;
+	int i, j, z;
 	int obeg = 0;
 	int oend = 0;
 	int notab_cbeg = 0;
@@ -332,8 +332,8 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 	int *pbound = &notab_cbeg;
 	char tmpch;
 
-	for (i = 0; i < n; i++) {
-		int curwid = ren_cwid(chrs[i], pos[i]);
+	for (z = 0; z < n; z++) {
+		int curwid = ren_cwid(chrs[z], pos[z]);
 		delim += curwid;
 		if (delim > cbeg && pbound != &notab_cend)
 		{
@@ -342,13 +342,13 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 		}
 		else if (delim > cend)
 			break;
-		if (chrs[i][0] == '\t')
+		if (chrs[z][0] == '\t')
 			*pbound += 1;
 		else
 			*pbound += curwid;
 	}
 	/* initialise off[] using pos[] */
-	for (i = 0; i < notab_cend; i++) {
+	for (i = 0; i < z; i++) {
 		/* the attribute of \n character is used for blanks */
 		if (chrs[i][0] == '\n')
 			*att_blank = i;
