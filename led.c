@@ -321,9 +321,9 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 
 void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 		char *s0, int *att_blank, int cbeg, int cend,
-		int cterm, int ctx, char *syn)
+		int cterm, char *syn)
 {
-	int i, j, z;
+	int i, j;
 	int obeg = 0;
 	int oend = 0;
 	int notab_cbeg = 0;
@@ -332,40 +332,36 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 	int *pbound = &notab_cbeg;
 	char tmpch;
 
-	for (z = 0; z < n; z++) {
-		int curwid = ren_cwid(chrs[z], pos[z]);
-		delim += curwid;
-		if (delim > cbeg && pbound != &notab_cend)
-		{
-			pbound = &notab_cend;
-			notab_cend = notab_cbeg;
-		}
-		else if (delim > cend)
-			break;
-		if (chrs[z][0] == '\t')
-			*pbound += 1;
-		else
-			*pbound += curwid;
-	}
-	/* initialise off[] using pos[] */
-	for (i = 0; i < z; i++) {
+	for (i = 0; i < n; i++) {
+		int curwid = ren_cwid(chrs[i], pos[i]);
+		int curbeg = pos[i] - cbeg;
+		int curend = (pos[i] + curwid - 1) - cbeg;
 		/* the attribute of \n character is used for blanks */
 		if (chrs[i][0] == '\n')
 			*att_blank = i;
-		int curwid = ren_cwid(chrs[i], pos[i]);
-		int curbeg = led_posctx(ctx, pos[i], cbeg, cend);
-		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
-		if (notab_cbeg > i)
-		{
-		        obeg += uc_len(chrs[i]);
-		        oend = obeg;
-		}
-		else
-		        oend += uc_len(chrs[i]);
+		/* initialise off[] using pos[] */
 		if (curbeg >= 0 && curbeg < cterm &&
 				curend >= 0 && curend < cterm)
 			for (j = 0; j < curwid; j++)
-				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
+				off[pos[i] + j - cbeg] = i;
+		delim += curwid;
+		if (delim < cend)
+		{
+			if (delim > cbeg && pbound != &notab_cend)
+			{
+				pbound = &notab_cend;
+				notab_cend = notab_cbeg;
+			        oend = obeg+1;
+			}
+			if (chrs[i][0] == '\t')
+				*pbound += 1;
+			else
+				*pbound += curwid;
+			if (notab_cbeg > i)
+			        obeg += uc_len(chrs[i]);
+			else
+			        oend += uc_len(chrs[i]);
+		}
 	}
 	tmpch = s0[oend];
 	s0[oend] = '\0';
@@ -375,7 +371,7 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 
 void led_backward(int *off, int **att, char **chrs, int n, int *pos,
 		char *s0, int *att_blank, int cbeg, int cend,
-		int cterm, int ctx, char *syn)
+		int cterm, char *syn)
 {
 	int i, j;
 	/* initialise off[] using pos[] */
@@ -384,12 +380,12 @@ void led_backward(int *off, int **att, char **chrs, int n, int *pos,
 		if (chrs[i][0] == '\n')
 			*att_blank = i;
 		int curwid = ren_cwid(chrs[i], pos[i]);
-		int curbeg = led_posctx(ctx, pos[i], cbeg, cend);
-		int curend = led_posctx(ctx, pos[i] + curwid - 1, cbeg, cend);
+		int curbeg = cend - pos[i] - 1;
+		int curend = cend - (pos[i] + curwid - 2);
 		if (curbeg >= 0 && curbeg < cterm &&
 				curend >= 0 && curend < cterm)
 			for (j = 0; j < curwid; j++)
-				off[led_posctx(ctx, pos[i] + j, cbeg, cend)] = i;
+				off[cend - pos[i] + j - 1] = i;
 	}
 	*att = syn_highlight(xhl ? syn : "/", s0, n, 0);
 }
@@ -410,10 +406,10 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0)
 		led_backward(off, &att, chrs, n, pos, s0,
-				&att_blank, cbeg, cend, cterm, ctx, syn);
+				&att_blank, cbeg, cend, cterm, syn);
 	else
 		led_forward(off, &att, chrs, n, pos, s0,
-				&att_blank, cbeg, cend, cterm, ctx, syn);
+				&att_blank, cbeg, cend, cterm, syn);
 	if (att_blank)
 		att_blank = att[att_blank];
 	led_markrev(n, chrs, pos, att);

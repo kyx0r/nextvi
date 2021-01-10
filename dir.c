@@ -85,15 +85,11 @@ int dir_context(char *s)
 void dir_reorder(char *s, int *ord, char **chrs, int n)
 {
 	int dir = dir_context(s);
-	int xright = xleft + xcols;
 	if (n && chrs[n - 1][0] == '\n') {
 		ord[n - 1] = n - 1;
 		n--;
 	}
-	if (dir > 0)
-		dir_fix(chrs, ord, dir, 0, n > xright ? xright : n);
-	else
-		dir_fix(chrs, ord, dir, 0, n);
+	dir_fix(chrs, ord, dir, 0, n);
 }
 
 void dir_init(void)
