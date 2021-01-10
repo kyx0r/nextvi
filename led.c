@@ -345,13 +345,13 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 			for (j = 0; j < curwid; j++)
 				off[pos[i] + j - cbeg] = i;
 		delim += curwid;
-		if (delim < cend)
+		if (delim <= cend)
 		{
 			if (delim > cbeg && pbound != &notab_cend)
 			{
 				pbound = &notab_cend;
 				notab_cend = notab_cbeg;
-			        oend = obeg+1;
+			        oend = obeg;
 			}
 			if (chrs[i][0] == '\t')
 				*pbound += 1;
