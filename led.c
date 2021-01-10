@@ -324,10 +324,10 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 		int cterm, char *syn)
 {
 	int i, j;
-	int obeg = 0;
+	int obeg = 0; /* string offset */
 	int oend = 0;
-	int notab_cbeg = 0;
-	int notab_cend = 0;
+	int notab_cbeg = 0; /* cbeg computed with tab width = 1 */
+	int notab_cend = 0; /* cend computed with tab width = 1 */
 	int delim = 0;
 	int *pbound = &notab_cbeg;
 	char tmpch;
@@ -353,10 +353,7 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 				notab_cend = notab_cbeg;
 			        oend = obeg;
 			}
-			if (chrs[i][0] == '\t')
-				*pbound += 1;
-			else
-				*pbound += curwid;
+			*pbound += 1;
 			if (notab_cbeg > i)
 			        obeg += uc_len(chrs[i]);
 			else
