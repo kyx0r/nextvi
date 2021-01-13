@@ -72,6 +72,7 @@ static void vi_wait(void)
 	if (vi_printed > 1) {
 		free(ex_read("[enter to continue]"));
 		vi_msg[0] = '\0';
+		vi_mod = 1;
 	}
 	vi_printed = 0;
 }
