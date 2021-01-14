@@ -80,7 +80,7 @@ struct rset *rset_make(int n, char **re, int flg)
 /* return the index of the matching regular expression or -1 if none matches */
 int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 {
-	int found, i, set = -1;
+	int i, set = -1;
 	int regex_flg = 0;
 	if (rs->grpcnt <= 2)
 		return -1;
@@ -89,19 +89,21 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 	if (flg & RE_NOTEOL)
 		regex_flg |= REG_NOTEOL;
 	regmatch_t subs[rs->grpcnt];
-	found = !regexec(&rs->regex, s, rs->grpcnt, subs, regex_flg);
-	for (i = 0; found && i < rs->n; i++)
-		if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so >= 0)
-			set = i;
-	if (found && set >= 0) {
-		for (i = 0; i < n; i++) {
-			int grp = rs->grp[set] + i;
-			if (i < rs->setgrpcnt[set] + 1) {
-				grps[i * 2] = subs[grp].rm_so;
-				grps[i * 2 + 1] = subs[grp].rm_eo;
-			} else {
-				grps[i * 2 + 0] = -1;
-				grps[i * 2 + 1] = -1;
+	if (!regexec(&rs->regex, s, rs->grpcnt, subs, regex_flg))
+	{
+		for (i = 0; i < rs->n; i++)
+			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so >= 0)
+				set = i;
+		if (set >= 0) {
+			for (i = 0; i < n; i++) {
+				int grp = rs->grp[set] + i;
+				if (i < rs->setgrpcnt[set] + 1) {
+					grps[i * 2] = subs[grp].rm_so;
+					grps[i * 2 + 1] = subs[grp].rm_eo;
+				} else {
+					grps[i * 2 + 0] = -1;
+					grps[i * 2 + 1] = -1;
+				}
 			}
 		}
 	}

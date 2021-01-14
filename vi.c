@@ -264,8 +264,6 @@ static void vi_drawupdate(int xcol, int otop)
 	term_pos(xrow, led_pos(lbuf_get(xb, i), xcol));
 }
 
-static void vc_status(void);
-
 /* update the screen by removing lines r1 to r2 before an input command */
 static void vi_drawrm(int r1, int r2, int newln)
 {

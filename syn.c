@@ -55,19 +55,20 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg)
 		int cend = 1;
 		int *catt;
 		int patend;
-		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
 		if (blockpat)
 		{
+			conf_highlight(blockpat, NULL, &catt, NULL, &grp, &patend);
 			if (hl == blockpat)
 			{
 				blockpat = 0;
 				goto skip_last;
 			}
-			conf_highlight(blockpat, NULL, &catt, NULL, NULL, NULL);
 			for (j = cbeg; j < n; j++)
 				att[j] = *catt;
 			return att;
-		} else if (patend)
+		}
+		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
+		if (patend)
 			bpat = patend;
 		skip_last:
 		for (i = 0; i < LEN(subs) / 2; i++) {
