@@ -65,7 +65,7 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
 			catt = blockatt;
 			rset_free(blockrs);
 			blockrs = NULL;
-		} else if (patend) {
+		} else if (patend && !brs) {
 			char *pat;
 			conf_highlight(patend, NULL, &blockatt, &pat, NULL, NULL);
 			brs = rset_make(1, &pat, 0);
