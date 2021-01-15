@@ -36,7 +36,7 @@ void syn_context(int att)
 	syn_ctx = att;
 }
 
-int *syn_highlight(char *ft, char *s, int n, int cbeg)
+int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
 {
 	struct rset *rs = syn_find(ft);
 	int *att = malloc(n * sizeof(att[0]));
@@ -47,12 +47,13 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg)
 	int subs[16 * 2];
 	int flg = 0;
 	int hl, j, i, bpat = 0;
-	for (i = cbeg; i < n; i++)
-		att[i] = syn_ctx;
+	if (xhll)
+		for (i = cbeg; i < cend; i++)
+			att[i] = syn_ctx;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0
 		|| blockpat) {
 		int grp = 0;
-		int cend = 1;
+		int _cend = 1;
 		int *catt;
 		int patend;
 		if (blockpat)
@@ -63,7 +64,7 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg)
 				blockpat = 0;
 				goto skip_last;
 			}
-			for (j = cbeg; j < n; j++)
+			for (j = cbeg; j < cend; j++)
 				att[j] = *catt;
 			return att;
 		}
@@ -78,10 +79,10 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg)
 				for (j = beg; j < end; j++)
 					att[j+cbeg] = syn_merge(att[j+cbeg], catt[i]);
 				if (i == grp)
-					cend = MAX(cend, subs[i * 2 + 1]);
+					_cend = MAX(_cend, subs[i * 2 + 1]);
 			}
 		}
-		sidx += cend;
+		sidx += _cend;
 		flg = RE_NOTBOL;
 	}
 	if (bpat)

@@ -127,7 +127,7 @@ static struct highlight {
 };
 
 /* how to hightlight current line (hll option) */
-#define SYN_LINE		12
+#define SYN_LINE		14 | SYN_BD
 
 /* how to hightlight text in the reverse direction */
 #define SYN_REVDIR		7

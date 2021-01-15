@@ -209,7 +209,7 @@ char* xgetenv(char* q[]);
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
 
 extern int blockpat;
-int *syn_highlight(char *ft, char *s, int n, int cbeg);
+int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend);
 char *syn_filetype(char *path);
 void syn_context(int att);
 int syn_merge(int old, int new);

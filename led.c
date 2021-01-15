@@ -362,7 +362,7 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 	}
 	tmpch = s0[oend];
 	s0[oend] = '\0';
-	*att = syn_highlight(xhl ? syn : "/", s0+obeg, n, notab_cbeg);
+	*att = syn_highlight(xhl ? syn : "/", s0+obeg, n, notab_cbeg, notab_cend);
 	s0[oend] = tmpch;
 }
 
@@ -384,7 +384,7 @@ void led_backward(int *off, int **att, char **chrs, int n, int *pos,
 			for (j = 0; j < curwid; j++)
 				off[cend - pos[i] + j - 1] = i;
 	}
-	*att = syn_highlight(xhl ? syn : "/", s0, n, 0);
+	*att = syn_highlight(xhl ? syn : "/", s0, n, 0, n);
 }
 
 /* render and highlight a line */
