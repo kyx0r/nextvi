@@ -39,14 +39,14 @@ static int vi_scroll;			/* scroll amount for ^f and ^d*/
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
 static char *vi_curword(struct lbuf *lb, int row, int off);
 
-void reverse(char s[])
+void reverse_in_place(char *str, int len)
 {
-	int i, j;
-	char c;
-	for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
-		c = s[i];
-		s[i] = s[j];
-		s[j] = c;
+	char *p1 = str;
+	char *p2 = str + len - 1;
+	while (p1 < p2) {
+		char tmp = *p1;
+		*p1++ = *p2;
+		*p2-- = tmp;
 	}
 }
 
@@ -63,7 +63,7 @@ char *itoa(int n, char s[])
 	if (sign < 0)
 		s[i++] = '-';
 	s[i] = '\0';
-	reverse(s);
+	reverse_in_place(s, i);
 	return &s[i];
 }
 
@@ -162,7 +162,7 @@ static void vi_drawrow(int row)
 		}
 	}
 	if (!s) {
-		s = ch1; 
+		s = ch1;
 		if (*vi_word && row == xrow+1)
 			goto last_row;
 		led_print(row ? s : ch2, row - xtop, ex_filetype());
@@ -1672,14 +1672,14 @@ void vi(void)
 				if (!lbuf_undo(xb)) {
 					lbuf_jump(xb, '*', &xrow, &xoff);
 					vi_mod = 1;
-				} else 
+				} else
 					snprintf(vi_msg, sizeof(vi_msg), "undo failed\n");
 				break;
 			case TK_CTL('r'):
 				if (!lbuf_redo(xb)) {
 					lbuf_jump(xb, '*', &xrow, &xoff);
 					vi_mod = 1;
-				} else 
+				} else
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed\n");
 				break;
 			case TK_CTL('g'):
