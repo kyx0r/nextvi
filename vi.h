@@ -208,7 +208,7 @@ char* xgetenv(char* q[]);
 #define SYN_FG(a)	((a) & 0xff)
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
 
-extern int blockpat;
+extern struct rset *blockrs;
 int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend);
 char *syn_filetype(char *path);
 void syn_context(int att);

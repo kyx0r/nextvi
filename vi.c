@@ -229,7 +229,7 @@ static void vi_drawrow(int row)
 static void vi_drawagain(int xcol, int lineonly)
 {
 	int i;
-	blockpat = 0;
+	blockrs = NULL;
 	term_record();
 	for (i = xtop; i < xtop + xrows; i++)
 		if (!lineonly || i == xrow)
@@ -243,7 +243,7 @@ static void vi_drawagain(int xcol, int lineonly)
 static void vi_drawupdate(int xcol, int otop)
 {
 	int i = 0;
-	blockpat = 0;
+	blockrs = NULL;
 	if (otop != xtop) {
 		term_record();
 		term_pos(0, 0);
@@ -1547,7 +1547,7 @@ void vi(void)
 			vi_lnnum = 0;
 			vi_mod = 1;
 		}
-		if (*vi_word || xhww || blockpat)
+		if (*vi_word || xhww || blockrs)
 		 	vi_mod = 1;	
 		if (vi_msg[0])
 		{

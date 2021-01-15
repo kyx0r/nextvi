@@ -13,7 +13,8 @@ static struct ftmap {
 
 static struct rset *syn_ftrs;
 static int syn_ctx;
-int blockpat;
+static int *blockatt;
+struct rset *blockrs;
 
 static struct rset *syn_find(char *ft)
 {
@@ -46,32 +47,29 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
 	int sidx = 0;
 	int subs[16 * 2];
 	int flg = 0;
-	int hl, j, i, bpat = 0;
+	int hl, j, i;
+	struct rset *brs = NULL;
 	if (xhll)
 		for (i = cbeg; i < cend; i++)
 			att[i] = syn_ctx;
-	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0
-		|| blockpat) {
+	if (blockrs)
+		rs = blockrs;
+	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0) {
 		int grp = 0;
 		int _cend = 1;
 		int *catt;
 		int patend;
-		if (blockpat)
-		{
-			conf_highlight(blockpat, NULL, &catt, NULL, &grp, &patend);
-			if (hl == blockpat)
-			{
-				blockpat = 0;
-				goto skip_last;
-			}
-			for (j = cbeg; j < cend; j++)
-				att[j] = *catt;
-			return att;
-		}
 		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
-		if (patend)
-			bpat = patend;
-		skip_last:
+		if (blockrs)
+		{
+			catt = blockatt;
+			rset_free(blockrs);
+			blockrs = NULL;
+		} else if (patend) {
+			char *pat;
+			conf_highlight(patend, NULL, &blockatt, &pat, NULL, NULL);
+			brs = rset_make(1, &pat, 0);
+		}
 		for (i = 0; i < LEN(subs) / 2; i++) {
 			if (subs[i * 2] >= 0) {
 				int beg = uc_off(s, sidx + subs[i * 2 + 0]);
@@ -85,8 +83,14 @@ int *syn_highlight(char *ft, char *s, int n, int cbeg, int cend)
 		sidx += _cend;
 		flg = RE_NOTBOL;
 	}
-	if (bpat)
-		blockpat = bpat;
+	if (blockrs)
+	{
+		for (j = cbeg; j < cend; j++)
+			att[j] = *blockatt;
+		return att;
+	}
+	if (brs)
+		blockrs = brs;
 	return att;
 }
 
