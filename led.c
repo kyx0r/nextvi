@@ -326,10 +326,10 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 	int i, j;
 	int obeg = 0; /* string offset */
 	int oend = 0;
-	int notab_cbeg = 0; /* cbeg computed with tab width = 1 */
-	int notab_cend = 0; /* cend computed with tab width = 1 */
+	int nchrs_cbeg = 0; /* number of chrs till cbeg */
+	int nchrs_cend = 0; /* number of chrs till cend */
 	int delim = 0;
-	int *pbound = &notab_cbeg;
+	int *pbound = &nchrs_cbeg;
 	char tmpch;
 
 	for (i = 0; i < n; i++) {
@@ -347,14 +347,14 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 		delim += curwid;
 		if (delim <= cend)
 		{
-			if (delim > cbeg && pbound != &notab_cend)
+			if (delim > cbeg && pbound != &nchrs_cend)
 			{
-				pbound = &notab_cend;
-				notab_cend = notab_cbeg;
+				pbound = &nchrs_cend;
+				nchrs_cend = nchrs_cbeg;
 			        oend = obeg;
 			}
 			*pbound += 1;
-			if (notab_cbeg > i)
+			if (nchrs_cbeg > i)
 			        obeg += uc_len(chrs[i]);
 			else
 			        oend += uc_len(chrs[i]);
@@ -362,7 +362,7 @@ void led_forward(int *off, int **att, char **chrs, int n, int *pos,
 	}
 	tmpch = s0[oend];
 	s0[oend] = '\0';
-	*att = syn_highlight(xhl ? syn : "/", s0+obeg, n, notab_cbeg, notab_cend);
+	*att = syn_highlight(xhl ? syn : "/", s0+obeg, n, nchrs_cbeg, nchrs_cend);
 	s0[oend] = tmpch;
 }
 
