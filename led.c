@@ -254,7 +254,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 	}
 }
 
-void led_bounds(struct sbuf *out, int *off,
+int led_bounds(struct sbuf *out, int *off, int n,
 		char **chrs, char *s0, int cbeg, int cend)
 {
 	int i = cbeg;
@@ -266,18 +266,21 @@ void led_bounds(struct sbuf *out, int *off,
 				i++;
 		} else
 			i++;
+		if (i > n)
+			return 0;
 	}
+	return 1;
 }
 
 void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
-		int att_blank, int cbeg, int cend)
+		int cbeg, int cend)
 {
 	int att_old = 0;
 	int i = cbeg;
 	int j;
 	while (i < cend) {
 		int o = off[i - cbeg];
-		int att_new = att_blank;
+		int att_new = 0;
 		if (o >= 0) {
 			att_new = att[o];
 			sbuf_str(out, term_att(att_new, att_old));
@@ -302,14 +305,14 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 }
 
 void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
-		int att_blank, int cbeg, int cend)
+			int cbeg, int cend)
 {
 	int att_old = 0;
 	int i = cbeg;
 	int j;
 	while (i < cend) {
 		int o = off[i - cbeg];
-		int att_new = att_blank;
+		int att_new = 0;
 		if (o >= 0) {
 			att_new = att[o];
 			sbuf_str(out, term_att(att_new, att_old));
@@ -350,21 +353,6 @@ for (i = 0; i < n; i++) { \
 			off[pos[i] + j - cbeg] = i; \
 } \
 
-#define _off_for()\
-for (i = 0; i < n; i++) { \
-	/* the attribute of \n character is used for blanks */ \
-	if (chrs[i][0] == '\n') \
-		att_blank = i; \
-	int curwid = ren_cwid(chrs[i], pos[i]); \
-	int curbeg = pos[i] - cbeg; \
-	int curend = (pos[i] + curwid - 1) - cbeg; \
-	/* initialise off[] using pos[] */ \
-	if (curbeg >= 0 && curbeg < cterm && \
-			curend >= 0 && curend < cterm) \
-		for (j = 0; j < curwid; j++) \
-			off[pos[i] + j - cbeg] = i; \
-} \
-
 #define off_rev()\
 for (i = 0; i < n; i++) { \
 	int curwid = ren_cwid(chrs[i], pos[i]); \
@@ -377,22 +365,6 @@ for (i = 0; i < n; i++) { \
 		       off[cend - pos[i] + j - 1] = i; \
 } \
 
-#define _off_rev()\
-for (i = 0; i < n; i++) { \
-	/* the attribute of \n character is used for blanks */ \
-	if (chrs[i][0] == '\n') \
-		att_blank = i; \
-	int curwid = ren_cwid(chrs[i], pos[i]); \
-	int curbeg = cend - pos[i] - 1; \
-	int curend = cend - (pos[i] + curwid - 2); \
-	/* initialise off[] using pos[] */ \
-	if (curbeg >= 0 && curbeg < cterm && \
-		       curend >= 0 && curend < cterm) \
-	       for (j = 0; j < curwid; j++) \
-		       off[cend - pos[i] + j - 1] = i; \
-} \
-
-
 /* render and highlight a line */
 static char *led_render(char *s0, int cbeg, int cend, char *syn)
 {
@@ -401,39 +373,36 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	int *att;	/* att[i]: the attributes of i-th character */
 	char **chrs;	/* chrs[i]: the i-th character in s1 */
 	struct sbuf *out;
-	struct sbuf *bound = 0;
-	int att_blank = 0; /* the attribute of blank space */
+	struct sbuf *bound = sbuf_make();
 	int cterm = cend - cbeg;
 	int off[cterm];	/* off[i]: the character at screen position i */
 	int ctx = dir_context(s0);
 	memset(off, 0xff, cterm * sizeof(off[0]));
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
-		_off_rev()
+		off_rev()
 	} else {
 		off_for()
-		bound = sbuf_make();
-		led_bounds(bound, off, chrs, s0, cbeg, cend);
-		s0 = sbuf_buf(bound);
-		cbeg = 0;
-		cend = cterm;
-		memset(off, 0xff, cterm * sizeof(off[0]));
-		pos = ren_position(s0, &chrs, &n);
-		_off_for()
+		if (led_bounds(bound, off, n, chrs, s0, cbeg, cend))
+		{
+			s0 = sbuf_buf(bound);
+			cbeg = 0;
+			cend = cterm;
+			memset(off, 0xff, cterm * sizeof(off[0]));
+			pos = ren_position(s0, &chrs, &n);
+			off_for()
+		}
 	}
 	att = syn_highlight(xhl ? syn : "/", s0, n);
-	if (att_blank)
-		att_blank = att[att_blank];
 	led_markrev(n, chrs, pos, att);
 	/* generate term output */
 	out = sbuf_make();
 	if (vi_hidch)
-		ledhidch_out(out, off, att, chrs, s0, att_blank, cbeg, cend);
+		ledhidch_out(out, off, att, chrs, s0, cbeg, cend);
 	else
-		led_out(out, off, att, chrs, s0, att_blank, cbeg, cend);
+		led_out(out, off, att, chrs, s0, cbeg, cend);
 	free(att);
-	if (bound)
-		sbuf_free(bound);
+	sbuf_free(bound);
 	return sbuf_done(out);
 }
 
