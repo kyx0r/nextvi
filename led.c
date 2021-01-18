@@ -254,7 +254,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 	}
 }
 
-void led_bounds(struct sbuf *out, int *att_blank, int *off, 
+void led_bounds(struct sbuf *out, int *off,
 		char **chrs, char *s0, int cbeg, int cend)
 {
 	int i = cbeg;
@@ -309,10 +309,10 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 	int j;
 	while (i < cend) {
 		int o = off[i - cbeg];
-		int att_new = o >= 0 ? att[o] : att_blank;
-		sbuf_str(out, term_att(att_new, att_old));
-		att_old = att_new;
+		int att_new = att_blank;
 		if (o >= 0) {
+			att_new = att[o];
+			sbuf_str(out, term_att(att_new, att_old));
 			char *s = ren_translate(chrs[o], s0);
 			if (s)
 				sbuf_str(out, s);
@@ -329,14 +329,28 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 			while (i < cend && off[i - cbeg] == o)
 				i++;
 		} else {
+			sbuf_str(out, term_att(att_new, att_old));
 			sbuf_chr(out, ' ');
 			i++;
 		}
+		att_old = att_new;
 	}
 	sbuf_str(out, term_att(0, att_old));
 }
 
 #define off_for()\
+for (i = 0; i < n; i++) { \
+	int curwid = ren_cwid(chrs[i], pos[i]); \
+	int curbeg = pos[i] - cbeg; \
+	int curend = (pos[i] + curwid - 1) - cbeg; \
+	/* initialise off[] using pos[] */ \
+	if (curbeg >= 0 && curbeg < cterm && \
+			curend >= 0 && curend < cterm) \
+		for (j = 0; j < curwid; j++) \
+			off[pos[i] + j - cbeg] = i; \
+} \
+
+#define _off_for()\
 for (i = 0; i < n; i++) { \
 	/* the attribute of \n character is used for blanks */ \
 	if (chrs[i][0] == '\n') \
@@ -353,6 +367,18 @@ for (i = 0; i < n; i++) { \
 
 #define off_rev()\
 for (i = 0; i < n; i++) { \
+	int curwid = ren_cwid(chrs[i], pos[i]); \
+	int curbeg = cend - pos[i] - 1; \
+	int curend = cend - (pos[i] + curwid - 2); \
+	/* initialise off[] using pos[] */ \
+	if (curbeg >= 0 && curbeg < cterm && \
+		       curend >= 0 && curend < cterm) \
+	       for (j = 0; j < curwid; j++) \
+		       off[cend - pos[i] + j - 1] = i; \
+} \
+
+#define _off_rev()\
+for (i = 0; i < n; i++) { \
 	/* the attribute of \n character is used for blanks */ \
 	if (chrs[i][0] == '\n') \
 		att_blank = i; \
@@ -363,7 +389,7 @@ for (i = 0; i < n; i++) { \
 	if (curbeg >= 0 && curbeg < cterm && \
 		       curend >= 0 && curend < cterm) \
 	       for (j = 0; j < curwid; j++) \
-			       off[cend - pos[i] + j - 1] = i; \
+		       off[cend - pos[i] + j - 1] = i; \
 } \
 
 
@@ -375,31 +401,26 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	int *att;	/* att[i]: the attributes of i-th character */
 	char **chrs;	/* chrs[i]: the i-th character in s1 */
 	struct sbuf *out;
-	struct sbuf *bound;
-	int att_blank; /* the attribute of blank space */
+	struct sbuf *bound = 0;
+	int att_blank = 0; /* the attribute of blank space */
 	int cterm = cend - cbeg;
 	int off[cterm];	/* off[i]: the character at screen position i */
 	int ctx = dir_context(s0);
 	memset(off, 0xff, cterm * sizeof(off[0]));
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
-		off_rev()
+		_off_rev()
 	} else {
 		off_for()
+		bound = sbuf_make();
+		led_bounds(bound, off, chrs, s0, cbeg, cend);
+		s0 = sbuf_buf(bound);
+		cbeg = 0;
+		cend = cterm;
+		memset(off, 0xff, cterm * sizeof(off[0]));
+		pos = ren_position(s0, &chrs, &n);
+		_off_for()
 	}
-	bound = sbuf_make();
-	led_bounds(bound, &att_blank, off, chrs, s0, cbeg, cend);
-	s0 = sbuf_buf(bound);
-	cbeg = 0;
-	cend = cterm;
-	att_blank = 0;
-	memset(off, 0xff, cterm * sizeof(off[0]));
-	pos = ren_position(s0, &chrs, &n);
-	if (ctx < 0) {
-		off_rev()
-	} else {
-		off_for()
-	}	
 	att = syn_highlight(xhl ? syn : "/", s0, n);
 	if (att_blank)
 		att_blank = att[att_blank];
@@ -411,7 +432,8 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	else
 		led_out(out, off, att, chrs, s0, att_blank, cbeg, cend);
 	free(att);
-	sbuf_free(bound);
+	if (bound)
+		sbuf_free(bound);
 	return sbuf_done(out);
 }
 

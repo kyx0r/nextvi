@@ -12,6 +12,7 @@
 int isescape(char ch);
 char *substr(const char *s1, const char *s2);
 int dstrlen(const char *s, char delim);
+void reverse_in_place(char *str, int len);
 
 /* hund file manager */
 int hund();
