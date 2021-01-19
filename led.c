@@ -254,7 +254,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 	}
 }
 
-int led_bounds(struct sbuf *out, int *off, int n,
+void led_bounds(struct sbuf *out, int *off, int n,
 		char **chrs, char *s0, int cbeg, int cend)
 {
 	int i = cbeg;
@@ -266,10 +266,7 @@ int led_bounds(struct sbuf *out, int *off, int n,
 				i++;
 		} else
 			i++;
-		if (i > n)
-			return 0;
 	}
-	return 1;
 }
 
 void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
@@ -373,7 +370,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	int *att;	/* att[i]: the attributes of i-th character */
 	char **chrs;	/* chrs[i]: the i-th character in s1 */
 	struct sbuf *out;
-	struct sbuf *bound = sbuf_make();
+	struct sbuf *bound = NULL;
 	int cterm = cend - cbeg;
 	int off[cterm];	/* off[i]: the character at screen position i */
 	int ctx = dir_context(s0);
@@ -383,8 +380,10 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		off_rev()
 	} else {
 		off_for()
-		if (led_bounds(bound, off, n, chrs, s0, cbeg, cend))
+		if (n > xcols)
 		{
+			bound = sbuf_make();
+			led_bounds(bound, off, n, chrs, s0, cbeg, cend);
 			s0 = sbuf_buf(bound);
 			cbeg = 0;
 			cend = cterm;
@@ -402,7 +401,8 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	else
 		led_out(out, off, att, chrs, s0, cbeg, cend);
 	free(att);
-	sbuf_free(bound);
+	if (bound)
+		sbuf_free(bound);
 	return sbuf_done(out);
 }
 
