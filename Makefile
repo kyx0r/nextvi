@@ -1,5 +1,5 @@
 CC = cc
-CFLAGS = -Wall -O2
+CFLAGS := -Wall $(CFLAGS) 
 LDFLAGS =
 
 OBJS = vi.o ex.o lbuf.o mot.o sbuf.o ren.o dir.o syn.o reg.o led.o \
