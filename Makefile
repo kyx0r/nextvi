@@ -12,7 +12,7 @@ conf.o: conf.h
 %.o: %.c
 	$(CC) -c $(CFLAGS) $<
 vi: $(OBJS)
-	$(CC) -o $@ $(OBJS) $(LDFLAGS)
+	$(CC) -o $@ $(OBJS) $(LDFLAGS) $(CFLAGS)
 clean:
 	rm -f *.o vi
 install: vi

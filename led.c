@@ -690,6 +690,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			break;
 		case TK_CTL('x'):
+			*key = c;
 			goto leave;
 		case 'j':
 			if(xqexit &&

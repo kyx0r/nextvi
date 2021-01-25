@@ -177,14 +177,14 @@ static void vi_drawrow(int row)
 		*c++ = ' ';
 		c = itoa(abs(xrow-row), tmp+l2);
 		*c++ = ' ';
-		memcpy(c, s, l1+l2);
+		memcpy(c, s, l1);
 		led_print(tmp, row - xtop, ex_filetype());
 	} else if (*vi_word && row == xrow+1) {
 		last_row:;
 		int noff = xoff;
 		int nrow = xrow;
 		c = lbuf_get(xb, xrow);
-		if (*c == '\n')
+		if (!c || *c == '\n')
 		{
 			led_print(s, row - xtop, ex_filetype());
 			return;
