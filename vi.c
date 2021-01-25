@@ -309,6 +309,11 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	term_pos(xrows, led_pos(msg, 0));
 	term_kill();
 	s = led_prompt(msg, "", insert, kmap, "---");
+	if (xquit == 2)
+	{
+		vi_mod = 1;
+		xquit = 0;
+	}
 	if (!s)
 		return NULL;
 	l1 = strlen(s);
@@ -1790,8 +1795,6 @@ void vi(void)
 				if (ln && ln[0])
 					ex_command(ln);
 				free(ln);
-				if (xquit == 2)
-					xquit = 0;
 				if (xquit)
 					continue;
 				break;

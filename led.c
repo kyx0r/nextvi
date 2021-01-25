@@ -673,6 +673,12 @@ static char *led_line(char *pref, char *post, char *ai,
 			hist_switch();
 			vi();
 			hist_switch();
+			xquit = 2;
+			goto cur_histstr;
+		case TK_CTL('v'):
+			if (ai_max > 0)
+				break;
+			cur_histstr:
 			cs = hist_curstr();
 			if (cs)
 			{
@@ -682,7 +688,6 @@ static char *led_line(char *pref, char *post, char *ai,
 				sb = sbuf_make();
 				sbuf_str(sb, cs);
 			}
-			xquit = 2;
 			break;
 		case TK_CTL('x'):
 			goto leave;

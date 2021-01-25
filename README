@@ -137,6 +137,14 @@ for example :.,.+5s/\<word\>/ where 5 is the arg.
 z + arg in normal mode will switch what keymap ^f key changes,
 so for example 1 = fa 2 = ru. If you need some other language
 kmap just make one yourself. Look into kmap.h it's really simple.
+48. Improvement to change 37. Now when in the prompt ^v will bring
+up the latest command from history. Also the history works for
+searches via / or ? the same way. 
+49. While in insert mode or in prompt ^x will exit the mode but
+any change done on the line will be discarded, however it does not
+work if multiple lines were edited so probably you will still
+need to pair ESC+u to discard in that case.
+That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
 
 
 FAQ:
