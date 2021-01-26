@@ -12,15 +12,16 @@ static int dir_match(char **chrs, int beg, int end, int ctx, int *rec,
 {
 	int subs[16 * 2];
 	struct rset *rs = ctx < 0 ? dir_rsrl : dir_rslr;
-	struct sbuf *str = sbuf_make();
 	int grp;
 	int flg = (beg ? RE_NOTBOL : 0) | (chrs[end][0] ? RE_NOTEOL : 0);
 	int found = -1;
-	sbuf_mem(str, chrs[beg], chrs[end] - chrs[beg]);
+	int l = chrs[end] - chrs[beg];
+	char s[l];
+	memcpy(s, chrs[beg], l);
+	s[l] = '\0';
 	if (rs)
-		found = rset_find(rs, sbuf_buf(str), LEN(subs) / 2, subs, flg);
+		found = rset_find(rs, s, LEN(subs) / 2, subs, flg);
 	if (found >= 0 && r_beg && r_end && c_beg && c_end) {
-		char *s = sbuf_buf(str);
 		conf_dirmark(found, NULL, NULL, dir, &grp);
 		*r_beg = beg + uc_off(s, subs[0]);
 		*r_end = beg + uc_off(s, subs[1]);
@@ -30,7 +31,6 @@ static int dir_match(char **chrs, int beg, int end, int ctx, int *rec,
 			beg + uc_off(s, subs[grp * 2 + 1]) : *r_end;
 		*rec = grp > 0;
 	}
-	sbuf_free(str);
 	return found < 0;
 }
 
