@@ -16,7 +16,7 @@ static int dir_match(char **chrs, int beg, int end, int ctx, int *rec,
 	int flg = (beg ? RE_NOTBOL : 0) | (chrs[end][0] ? RE_NOTEOL : 0);
 	int found = -1;
 	int l = chrs[end] - chrs[beg];
-	char s[l];
+	char s[l+1];
 	memcpy(s, chrs[beg], l);
 	s[l] = '\0';
 	if (rs)
