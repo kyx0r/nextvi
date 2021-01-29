@@ -370,6 +370,14 @@ for (i = 0; i < n; i++) { \
 		       off[cend - (pos[i] + j - 1) - 2] = i; \
 } \
 
+#define cull_line(name)\
+	led_bounds(name, off, n, chrs, s0, cbeg, cend); \
+	s0 = sbuf_buf(name); \
+	cbeg = 0; \
+	cend = cterm; \
+	memset(off, 0xff, cterm * sizeof(off[0])); \
+	pos = ren_position(s0, &chrs, &n); \
+
 /* render and highlight a line */
 static char *led_render(char *s0, int cbeg, int cend, char *syn)
 {
@@ -385,33 +393,23 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	memset(off, 0xff, cterm * sizeof(off[0]));
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
+		off_rev()
 		if (n > xcols)
 		{
-			off_for()
-			bound = sbuf_make();
-			led_bounds(bound, off, n, chrs, s0, cbeg, cend);
-			s0 = sbuf_buf(bound);
-			cbeg = 0;
-			cend = cterm;
-			memset(off, 0xff, cterm * sizeof(off[0]));
-			int lasttd = td_set(2);
-			pos = ren_position(s0, &chrs, &n);
-			td_set(lasttd);
-			off_rev() /* solve this: is not right when xorder */
-		} else {
+			out = sbuf_make();
+			cull_line(out)
 			off_rev()
+			bound = sbuf_make();
+			cull_line(bound)
+			off_rev()
+			sbuf_free(out);
 		}
 	} else {
 		off_for()
 		if (n > xcols)
 		{
 			bound = sbuf_make();
-			led_bounds(bound, off, n, chrs, s0, cbeg, cend);
-			s0 = sbuf_buf(bound);
-			cbeg = 0;
-			cend = cterm;
-			memset(off, 0xff, cterm * sizeof(off[0]));
-			pos = ren_position(s0, &chrs, &n);
+			cull_line(bound)
 			off_for()
 		}
 	}
