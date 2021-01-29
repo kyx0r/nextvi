@@ -338,6 +338,14 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 	sbuf_str(out, term_att(0, att_old));
 }
 
+/* set xtd and return its old value */
+static int td_set(int td)
+{
+	int old = xtd;
+	xtd = td;
+	return old;
+}
+
 #define off_for()\
 for (i = 0; i < n; i++) { \
 	int curwid = ren_cwid(chrs[i], pos[i]); \
@@ -354,12 +362,12 @@ for (i = 0; i < n; i++) { \
 for (i = 0; i < n; i++) { \
 	int curwid = ren_cwid(chrs[i], pos[i]); \
 	int curbeg = cend - pos[i] - 1; \
-	int curend = cend - (pos[i] + curwid - 2); \
+	int curend = cend - (pos[i] + curwid - 1) - 1; \
 	/* initialise off[] using pos[] */ \
 	if (curbeg >= 0 && curbeg < cterm && \
 		       curend >= 0 && curend < cterm) \
 	       for (j = 0; j < curwid; j++) \
-		       off[cend - pos[i] + j - 1] = i; \
+		       off[cend - (pos[i] + j - 1) - 2] = i; \
 } \
 
 /* render and highlight a line */
@@ -377,7 +385,22 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	memset(off, 0xff, cterm * sizeof(off[0]));
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
-		off_rev()
+		if (n > xcols)
+		{
+			off_for()
+			bound = sbuf_make();
+			led_bounds(bound, off, n, chrs, s0, cbeg, cend);
+			s0 = sbuf_buf(bound);
+			cbeg = 0;
+			cend = cterm;
+			memset(off, 0xff, cterm * sizeof(off[0]));
+			int lasttd = td_set(2);
+			pos = ren_position(s0, &chrs, &n);
+			td_set(lasttd);
+			off_rev() /* solve this: is not right when xorder */
+		} else {
+			off_rev()
+		}
 	} else {
 		off_for()
 		if (n > xcols)
@@ -414,14 +437,6 @@ void led_print(char *s, int row, char *syn)
 	term_kill();
 	term_str(r);
 	free(r);
-}
-
-/* set xtd and return its old value */
-static int td_set(int td)
-{
-	int old = xtd;
-	xtd = td;
-	return old;
 }
 
 /* print a line on the screen; for ex messages */
