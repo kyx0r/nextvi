@@ -270,13 +270,13 @@ void led_bounds(struct sbuf *out, int *off, int n,
 }
 
 void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
-		int cbeg, int cend)
+		int cend)
 {
 	int att_old = 0;
-	int i = cbeg;
+	int i = 0;
 	int j;
 	while (i < cend) {
-		int o = off[i - cbeg];
+		int o = off[i];
 		int att_new = 0;
 		if (o >= 0) {
 			att_new = att[o];
@@ -287,9 +287,9 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 			else if (uc_isprint(chrs[o]))
 				sbuf_mem(out, chrs[o], uc_len(chrs[o]));
 			else
-				for (j = i; j < cend && off[j - cbeg] == o; j++)
+				for (j = i; j < cend && off[j] == o; j++)
 					sbuf_chr(out, ' ');
-			while (i < cend && off[i - cbeg] == o)
+			while (i < cend && off[i] == o)
 				i++;
 		} else {
 			sbuf_str(out, term_att(att_new, att_old));
@@ -302,13 +302,13 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 }
 
 void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
-			int cbeg, int cend)
+			int cend)
 {
 	int att_old = 0;
-	int i = cbeg;
+	int i = 0;
 	int j;
 	while (i < cend) {
-		int o = off[i - cbeg];
+		int o = off[i];
 		int att_new = 0;
 		if (o >= 0) {
 			att_new = att[o];
@@ -320,13 +320,13 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
 			else
 			{
-				for (j = i; j < cend && off[j - cbeg] == o; j++)
+				for (j = i; j < cend && off[j] == o; j++)
 				{
 					char mark = j % xtabspc == 0 ? '>' : '-';
 					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : mark);
 				}
 			}
-			while (i < cend && off[i - cbeg] == o)
+			while (i < cend && off[i] == o)
 				i++;
 		} else {
 			sbuf_str(out, term_att(att_new, att_old));
@@ -394,7 +394,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
 		off_rev()
-		if (n > xcols)
+		if (n > xcols || cbeg)
 		{
 			out = sbuf_make();
 			cull_line(out)
@@ -406,7 +406,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		}
 	} else {
 		off_for()
-		if (n > xcols)
+		if (n > xcols || cbeg)
 		{
 			bound = sbuf_make();
 			cull_line(bound)
@@ -418,9 +418,9 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	/* generate term output */
 	out = sbuf_make();
 	if (vi_hidch)
-		ledhidch_out(out, off, att, chrs, s0, cbeg, cend);
+		ledhidch_out(out, off, att, chrs, s0, cend);
 	else
-		led_out(out, off, att, chrs, s0, cbeg, cend);
+		led_out(out, off, att, chrs, s0, cend);
 	free(att);
 	if (bound)
 		sbuf_free(bound);

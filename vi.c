@@ -1771,7 +1771,6 @@ void vi(void)
 					}
 					break;
 				}
-				vi_back(k);
 				xai = !xai;
 				char str[] = "autoindent  ";
 				str[11] = xai + '0';
