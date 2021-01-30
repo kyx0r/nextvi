@@ -254,13 +254,20 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 	}
 }
 
-void led_bounds(struct sbuf *out, int *off, int n,
-		char **chrs, char *s0, int cbeg, int cend)
+void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 {
 	int i = cbeg;
+	int pad = 1;
 	while (i < cend) {
 		int o = off[i - cbeg];
 		if (o >= 0) {
+			if (pad)
+			{
+				char pd[i - cbeg];
+				memset(pd, ' ', i - cbeg);
+				sbuf_mem(out, pd, i - cbeg);
+			}
+			pad = 0;
 			sbuf_mem(out, chrs[o], uc_len(chrs[o]));
 			while (i < cend && off[i - cbeg] == o)
 				i++;
@@ -371,7 +378,7 @@ for (i = 0; i < n; i++) { \
 } \
 
 #define cull_line(name)\
-	led_bounds(name, off, n, chrs, s0, cbeg, cend); \
+	led_bounds(name, off, chrs, cbeg, cend); \
 	s0 = sbuf_buf(name); \
 	cbeg = 0; \
 	cend = cterm; \
