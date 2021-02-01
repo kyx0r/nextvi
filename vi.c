@@ -150,8 +150,8 @@ static void vi_drawrow(int row)
 	static int movedown;
 	char *c;
 	char *s = lbuf_get(xb, row-movedown);
-	char ch1[1] = "~";
-	char ch2[1] = "";
+	static char ch1[1] = "~";
+	static char ch2[1] = "";
 	if (xhll && row == xrow)
 		syn_context(conf_hlline());
 	if (xhww && row == xtop)
