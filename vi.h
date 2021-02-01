@@ -17,7 +17,6 @@ void reverse_in_place(char *str, int len);
 /* hund file manager */
 int hund();
 void vi();
-int vc_insert(int cmd);
 
 /* line buffer, managing a number of lines */
 struct lbuf *lbuf_make(void);

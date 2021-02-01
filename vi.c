@@ -1307,7 +1307,7 @@ static int vc_motion(int cmd)
 	return 0;
 }
 
-int vc_insert(int cmd)
+static int vc_insert(int cmd)
 {
 	char *pref, *post;
 	char *ln = lbuf_get(xb, xrow);
