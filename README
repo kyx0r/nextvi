@@ -145,7 +145,11 @@ any change done on the line will be discarded, however it does not
 work if multiple lines were edited so probably you will still
 need to pair ESC+u to discard in that case.
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
-
+50. Added ability to edit the line while in insert mode (not change mode)
+such that backspace can delete all the characters on the line,
+when no more characters left the line will be wrapped onto the next
+one. This is behavior you can expect from 95% of editors, now neatvi
+is not an exeption. The same change was done for ^w keybind. 
 
 FAQ:
 ----

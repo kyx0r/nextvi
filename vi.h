@@ -5,9 +5,9 @@
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 #define MAX(a, b)	((a) < (b) ? (b) : (a))
 #define p(s, ...)\
-	FILE *f = fopen("file", "a");\
+	{FILE *f = fopen("file", "a");\
 	fprintf(f, s, ##__VA_ARGS__);\
-	fclose(f);\
+	fclose(f);}\
 
 int isescape(char ch);
 char *substr(const char *s1, const char *s2);
@@ -17,6 +17,7 @@ void reverse_in_place(char *str, int len);
 /* hund file manager */
 int hund();
 void vi();
+int vc_insert(int cmd);
 
 /* line buffer, managing a number of lines */
 struct lbuf *lbuf_make(void);
@@ -264,3 +265,4 @@ extern int fscount;
 extern int vi_lnnum;
 extern int vi_hidch;
 extern int vi_mod;
+extern int vi_insmov;

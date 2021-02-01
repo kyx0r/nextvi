@@ -582,6 +582,7 @@ static char *led_line(char *pref, char *post, char *ai,
 	char *sug = suggestbuf;
 	char *cs, *_sug = 0;
 	time_t quickexit = 0;
+	vi_insmov = 0;
 	sb = sbuf_make();
 	if (insert)
 		sbuf_str(sb, insert);
@@ -603,6 +604,12 @@ static char *led_line(char *pref, char *post, char *ai,
 		case 127:
 			if (sbuf_len(sb))
 				sbuf_cut(sb, led_lastchar(sbuf_buf(sb)));
+			else 
+			{
+				vi_insmov = 1;
+				*key = c;
+				goto leave;
+			}
 			break;
 		case TK_CTL('u'):
 			sbuf_cut(sb, 0);
@@ -610,6 +617,12 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('w'):
 			if (sbuf_len(sb))
 				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
+			else 
+			{
+				vi_insmov = 2;
+				*key = c;
+				goto leave;
+			}
 			break;
 		case TK_CTL('t'):
 			if (ai_len < ai_max)

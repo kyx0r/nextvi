@@ -27,6 +27,7 @@
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars*/
 int vi_mod;		/* screen should be redrawn (1: the whole screen, 2: the current line) */
+int vi_insmov;		/* moving in insert with backspace */
 static char *vi_word = "\0eEwW0";	/* line word navigation*/
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN];		/* current message */
@@ -1306,7 +1307,7 @@ static int vc_motion(int cmd)
 	return 0;
 }
 
-static int vc_insert(int cmd)
+int vc_insert(int cmd)
 {
 	char *pref, *post;
 	char *ln = lbuf_get(xb, xrow);
@@ -1833,9 +1834,6 @@ void vi(void)
 					vi_mod = 1;
 				break;
 			case 'I':
-				break;
-			case 'R':
-				break;
 			case 'i':
 			case 'a':
 			case 'A':
@@ -1843,6 +1841,31 @@ void vi(void)
 			case 'O':
 				if (!vc_insert(c))
 					vi_mod = 1;
+				switch (vi_insmov)
+				{
+				case 1:;
+					k = lbuf_eol(xb, xrow);	
+					if (!xoff && xrow)
+					{
+						if (k == 1)
+						{
+							vi_back(' ');
+							vc_motion('d');
+						}
+						xoff = lbuf_eol(xb, --xrow);
+						k = xoff+1;
+						if (k > 0)
+							term_push("J", 1);
+					}
+					char push[2];
+					push[0] = (k-1 == xoff) ? 'x' : 'X';
+					push[1] = 'i';
+					term_push(push, 2);
+					break;
+				case 2:
+					term_push("bdwi", 4);
+					break;
+				}
 				break;
 			case 'J':
 				if (!vc_join())
@@ -1951,6 +1974,8 @@ void vi(void)
 			case 'Y':
 				vi_back('y');
 				vc_motion('y');
+				break;
+			case 'R':
 				break;
 			case 'Z':
 				k = vi_read();
