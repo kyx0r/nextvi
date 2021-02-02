@@ -141,9 +141,7 @@ kmap just make one yourself. Look into kmap.h it's really simple.
 up the latest command from history. Also the history works for
 searches via / or ? the same way. 
 49. While in insert mode or in prompt ^x will exit the mode but
-any change done on the line will be discarded, however it does not
-work if multiple lines were edited so probably you will still
-need to pair ESC+u to discard in that case.
+any change done on the line will be discarded. 
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
 50. Added ability to edit the line while in insert mode (not change mode)
 such that backspace can delete all the characters on the line,

@@ -795,6 +795,7 @@ char *led_input(char *pref, char *post, int *kmap, char *syn)
 	int ai_max = sizeof(ai) - 1;
 	int n = 0;
 	int key;
+	int cln = 0;
 	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
 		ai[n++] = *pref++;
 	ai[n] = '\0';
@@ -835,9 +836,10 @@ char *led_input(char *pref, char *post, int *kmap, char *syn)
 		while (xai && (post[n] == ' ' || post[n] == '\t'))
 			n++;
 		memmove(post, post + n, strlen(post) - n + 1);
+		cln++;
 	}
 	sbuf_str(sb, post);
-	if (TK_INT(key))
+	if (TK_INT(key) || (cln && key != TK_CTL('x')))
 		return sbuf_done(sb);
 	sbuf_free(sb);
 	return NULL;

@@ -1313,6 +1313,7 @@ static int vc_insert(int cmd)
 	char *ln = lbuf_get(xb, xrow);
 	int row, off = 0;
 	char *rep;
+	int noto;
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
 	if (cmd == 'A')
@@ -1326,21 +1327,22 @@ static int vc_insert(int cmd)
 		off = xoff + 1;
 	if (ln && ln[0] == '\n')
 		off = 0;
-	pref = ln && cmd != 'o' && cmd != 'O' ? uc_sub(ln, 0, off) : vi_indents(ln);
-	post = ln && cmd != 'o' && cmd != 'O' ? uc_sub(ln, off, -1) : uc_dup("\n");
-	vi_drawrm(xrow, xrow, cmd == 'o' || cmd == 'O');
+	noto = cmd != 'o' && cmd != 'O';
+	pref = ln && noto ? uc_sub(ln, 0, off) : vi_indents(ln);
+	post = ln && noto ? uc_sub(ln, off, -1) : uc_dup("\n");
+	vi_drawrm(xrow, xrow, !noto);
 	rep = vi_input(pref, post, &row, &off);
-	if ((cmd == 'o' || cmd == 'O') && !lbuf_len(xb))
+	if (!noto && !lbuf_len(xb))
 		lbuf_edit(xb, "\n", 0, 0);
 	if (rep) {
-		lbuf_edit(xb, rep, xrow, xrow + (cmd != 'o' && cmd != 'O'));
+		lbuf_edit(xb, rep, xrow, xrow + (noto));
 		xrow += row - 1;
 		xoff = off;
 		free(rep);
 	}
 	free(pref);
 	free(post);
-	return !rep;
+	return (!rep && cmd != 'O');
 }
 
 static int vc_put(int cmd)
