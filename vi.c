@@ -1861,7 +1861,7 @@ void vi(void)
 					}
 					char push[2];
 					push[0] = (k-1 == xoff) ? 'x' : 'X';
-					push[1] = 'i';
+					push[1] = (k-1 == xoff) ? 'a' : 'i';
 					term_push(push, 2);
 					break;
 				case 2:
