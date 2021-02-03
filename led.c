@@ -415,9 +415,12 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		off_for()
 		if (n > xcols || cbeg)
 		{
+			int xord = xorder;
+			xorder = 0;
 			bound = sbuf_make();
 			cull_line(bound)
 			off_for()
+			xorder = xord;
 		}
 	}
 	att = syn_highlight(xhl ? syn : "/", s0, n);
