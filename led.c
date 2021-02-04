@@ -281,7 +281,6 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
-	int j;
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -294,10 +293,9 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 			else if (uc_isprint(chrs[o]))
 				sbuf_mem(out, chrs[o], uc_len(chrs[o]));
 			else
-				for (j = i; j < cend && off[j] == o; j++)
+				for (; off[i] == o && i < cend; i++)
 					sbuf_chr(out, ' ');
-			while (i < cend && off[i] == o)
-				i++;
+			for (; off[i] == o && i < cend; i++){}
 		} else {
 			sbuf_str(out, term_att(att_new, att_old));
 			sbuf_chr(out, ' ');
@@ -313,7 +311,6 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
-	int j;
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -327,14 +324,13 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
 			else
 			{
-				for (j = i; j < cend && off[j] == o; j++)
+				for (; off[i] == o && i < cend; i++)
 				{
-					char mark = j % xtabspc == 0 ? '>' : '-';
+					char mark = i % xtabspc == 0 ? '>' : '-';
 					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : mark);
 				}
 			}
-			while (i < cend && off[i] == o)
-				i++;
+			for (; off[i] == o && i < cend; i++){}
 		} else {
 			sbuf_str(out, term_att(att_new, att_old));
 			sbuf_chr(out, ' ');
