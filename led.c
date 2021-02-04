@@ -269,8 +269,7 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 			}
 			pad = 0;
 			sbuf_mem(out, chrs[o], uc_len(chrs[o]));
-			while (i < cend && off[i - cbeg] == o)
-				i++;
+			for (; off[i] == o && i < cend; i++){}
 		} else
 			i++;
 	}

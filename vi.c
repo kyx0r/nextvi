@@ -1847,6 +1847,7 @@ void vi(void)
 				{
 				case 1:;
 					k = lbuf_eol(xb, xrow);	
+					int ko = k;
 					if (!xoff && xrow)
 					{
 						if (k == 1)
@@ -1857,16 +1858,20 @@ void vi(void)
 						xoff = lbuf_eol(xb, --xrow);
 						k = xoff+1;
 						if (k > 0)
-							term_push("J", 1);
-						if (*uc_chr(lbuf_get(xb, xrow), 0) == '\n')
 						{
-							term_push("i", 1);
-							break;
+							if (*uc_chr(lbuf_get(xb, xrow), 0) == '\n')
+							{
+								vc_join();
+								term_push("i", 1);
+								break;
+							}
+							vc_join();
+							ko = lbuf_eol(xb, xrow);
 						}
 					}
 					char push[2];
-					push[0] = (k-1 == xoff) ? 'x' : 'X';
-					push[1] = (k-1 == xoff) ? 'a' : 'i';
+					push[0] = k-1 == xoff ? 'x' : 'X';
+					push[1] = (ko-1 == xoff) ? 'a' : 'i';
 					term_push(push, 2);
 					break;
 				case 2:
