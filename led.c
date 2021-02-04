@@ -368,9 +368,9 @@ for (i = 0; i < n; i++) { \
 	int curend = cend - (pos[i] + curwid - 1) - 1; \
 	/* initialise off[] using pos[] */ \
 	if (curbeg >= 0 && curbeg < cterm && \
-		       curend >= 0 && curend < cterm) \
-	       for (j = 0; j < curwid; j++) \
-		       off[cend - (pos[i] + j - 1) - 2] = i; \
+			curend >= 0 && curend < cterm) \
+		for (j = 0; j < curwid; j++) \
+			off[cend - (pos[i] + j - 1) - 2] = i; \
 } \
 
 #define cull_line(name)\

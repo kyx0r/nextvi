@@ -27,7 +27,7 @@
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars*/
 int vi_mod;		/* screen should be redrawn (1: the whole screen, 2: the current line) */
-int vi_insmov;		/* moving in insert with backspace */
+int vi_insmov;		/* moving in insert outside of insertion sbuf*/
 static char *vi_word = "\0eEwW0";	/* line word navigation*/
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN];		/* current message */
@@ -1858,6 +1858,11 @@ void vi(void)
 						k = xoff+1;
 						if (k > 0)
 							term_push("J", 1);
+						if (*uc_chr(lbuf_get(xb, xrow), 0) == '\n')
+						{
+							term_push("i", 1);
+							break;
+						}
 					}
 					char push[2];
 					push[0] = (k-1 == xoff) ? 'x' : 'X';
