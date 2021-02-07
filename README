@@ -148,6 +148,7 @@ such that backspace can delete all the characters on the line,
 when no more characters left the line will be wrapped onto the next
 one. This is behavior you can expect from 95% of editors, now neatvi
 is not an exception. The same change was done for ^w keybind. 
+51. Added key to show the registers and their contents. keybind: R
 
 FAQ:
 ----

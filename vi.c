@@ -1988,6 +1988,10 @@ void vi(void)
 				vc_motion('y');
 				break;
 			case 'R':
+				vi_mod = 1;
+				reg_print();
+				vi_digit();
+				vi_printed = 0;
 				break;
 			case 'Z':
 				k = vi_read();

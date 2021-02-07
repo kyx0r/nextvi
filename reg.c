@@ -45,12 +45,13 @@ void reg_done(void)
 
 void reg_print()
 {
-	char buf[xcols*5];
 	for (int i = 0; i < LEN(bufs); i++)
 	{
 		if (bufs[i])
 		{
-			snprintf(buf, xcols*5, "%c %s", i, bufs[i]); 
+			int len = strlen(bufs[i]);
+			char buf[len+2];
+			snprintf(buf, len+2, "%c %s", i, bufs[i]); 
 			ex_print(buf);
 		}
 	}
