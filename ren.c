@@ -9,6 +9,7 @@ static char *last_str;
 static char **last_chrs;
 static int *last_pos;
 static int last_n;
+int torg; /* compute tab width from this position origin */
 
 void ren_done()
 {
@@ -170,21 +171,7 @@ int ren_cwid(char *s, int pos)
 	char *src, *dst;
 	int wid, i;
 	if (s[0] == '\t')
-	{
-		/*
-			Unfortunate workaround because tabs need to be consistent
-			when the screen moves right to determine the cursor position
-			but everything is tied to expensive computation of ren_position
-			Feeling sad to kill off this feature because of the constraints
-			left it still working for small lines. But the tab alignment 
-			will not be working past the terminal cells limit. Don't even
-			try solving this, I don't think it's possible to recompute 
-			it fast enough.
-		*/	
-		if (xleft)
-			return xtabspc;
-		return xtabspc - (pos & (xtabspc-1));
-	}
+		return (xtabspc - ((pos + torg) & (xtabspc-1)));
 	for (i = 0; !conf_placeholder(i, &src, &dst, &wid); i++)
 		if (uc_code(src) == uc_code(s))
 			return wid;
