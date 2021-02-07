@@ -34,15 +34,22 @@ int *ren_position(char *s, char ***chrs, int *n)
 	int size = (nn + 1) * sizeof(pos[0]);
 	pos = malloc(size*2);
 	off = pos + nn+1;
-	for (i = 0; i < nn; i++)
-		pos[i] = i;
 	if (xorder)
+	{
+		for (i = 0; i < nn; i++)
+			pos[i] = i;
 		dir_reorder(s, pos, chrs[0], nn);
-	for (i = 0; i < nn; i++)
-		off[pos[i]] = i;
-	for (i = 0; i < nn; i++) {
-		pos[off[i]] = cpos;
-		cpos += ren_cwid(chrs[0][off[i]], cpos);
+		for (i = 0; i < nn; i++)
+			off[pos[i]] = i;
+		for (i = 0; i < nn; i++) {
+			pos[off[i]] = cpos;
+			cpos += ren_cwid(chrs[0][off[i]], cpos);
+		}
+	} else {
+		for (i = 0; i < nn; i++) {
+			pos[i] = cpos;
+			cpos += ren_cwid(chrs[0][i], cpos);
+		}
 	}
 	pos[nn] = cpos;
 	last_str = s;
