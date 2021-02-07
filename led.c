@@ -610,9 +610,8 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbuf_cut(sb, led_lastchar(sbuf_buf(sb)));
 			else 
 			{
-				vi_insmov = 1;
-				*key = c;
-				goto leave;
+				vi_insmov = c;
+				goto kleave;
 			}
 			break;
 		case TK_CTL('u'):
@@ -623,9 +622,8 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
 			else 
 			{
-				vi_insmov = 2;
-				*key = c;
-				goto leave;
+				vi_insmov = c;
+				goto kleave;
 			}
 			break;
 		case TK_CTL('t'):
@@ -727,8 +725,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			break;
 		case TK_CTL('x'):
-			*key = c;
-			goto leave;
+			goto kleave;
 		case 'j':
 			if(xqexit &&
 				(difftime(time(0), quickexit) * 1000) < 1000)
@@ -762,6 +759,7 @@ _default:
 		if (c == '\n' || TK_INT(c))
 			break;
 	}
+kleave:
 	*key = c;
 leave:
 	return sbuf_done(sb);

@@ -109,9 +109,9 @@ void hist_open()
 
 void hist_pos(int row, int off, int top)
 {
-	histbuf->row = 0;
-	histbuf->off = 0;
-	histbuf->top = 0;
+	histbuf->row = row;
+	histbuf->off = off;
+	histbuf->top = top;
 }
 
 void hist_switch()

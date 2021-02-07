@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "vi.h"
 
 static char *bufs[256];
@@ -38,7 +39,19 @@ void reg_put(int c, char *s, int ln)
 
 void reg_done(void)
 {
-	int i;
-	for (i = 0; i < LEN(bufs); i++)
+	for (int i = 0; i < LEN(bufs); i++)
 		free(bufs[i]);
+}
+
+void reg_print()
+{
+	char buf[xcols*5];
+	for (int i = 0; i < LEN(bufs); i++)
+	{
+		if (bufs[i])
+		{
+			snprintf(buf, xcols*5, "%c %s", i, bufs[i]); 
+			ex_print(buf);
+		}
+	}
 }

@@ -1845,7 +1845,7 @@ void vi(void)
 					vi_mod = 1;
 				switch (vi_insmov)
 				{
-				case 1:;
+				case 127:;
 					k = lbuf_eol(xb, xrow);	
 					int ko = k;
 					if (!xoff && xrow)
@@ -1874,7 +1874,7 @@ void vi(void)
 					push[1] = (ko-1 == xoff) ? 'a' : 'i';
 					term_push(push, 2);
 					break;
-				case 2:
+				case TK_CTL('w'):
 					term_push("bdwi", 4);
 					break;
 				}

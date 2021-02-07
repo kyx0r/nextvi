@@ -93,6 +93,7 @@ void dir_done(void);
 char *reg_get(int c, int *lnmode);
 void reg_put(int c, char *s, int lnmode);
 void reg_done(void);
+void reg_print(void);
 
 /* utf-8 helper functions */
 int uc_len(char *s);
