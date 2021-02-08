@@ -15,7 +15,7 @@ struct sbuf {
 	int s_sz;		/* size of memory allocated for s[] */
 };
 
-static void sbuf_extend(struct sbuf *sbuf, int newsz)
+void sbuf_extend(struct sbuf *sbuf, int newsz)
 {
 	char *s = sbuf->s;
 	sbuf->s_sz = newsz;

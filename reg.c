@@ -49,9 +49,9 @@ void reg_print()
 	{
 		if (bufs[i])
 		{
-			int len = strlen(bufs[i]);
-			char buf[len+2];
-			snprintf(buf, len+2, "%c %s", i, bufs[i]); 
+			int len = strlen(bufs[i])+3;
+			char buf[len];
+			snprintf(buf, len, "%c %s", i, bufs[i]); 
 			ex_print(buf);
 		}
 	}

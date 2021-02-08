@@ -49,6 +49,7 @@ int lbuf_pair(struct lbuf *lb, int *row, int *off);
 
 /* string buffer, variable-sized string */
 struct sbuf *sbuf_make(void);
+void sbuf_extend(struct sbuf *sbuf, int newsz);
 void sbuf_free(struct sbuf *sb);
 char *sbuf_done(struct sbuf *sb);
 char *sbuf_buf(struct sbuf *sb);

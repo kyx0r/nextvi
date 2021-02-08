@@ -260,6 +260,7 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 {
 	int i = cbeg;
 	int pad = 1;
+	sbuf_extend(out, cend);
 	while (i < cend) {
 		int o = off[i - cbeg];
 		if (o >= 0) {
@@ -271,7 +272,7 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 			}
 			pad = 0;
 			sbuf_mem(out, chrs[o], uc_len(chrs[o]));
-			for (; i < cend && off[i - cbeg] == o; i++){}
+			for (; off[i - cbeg] == o; i++){}
 		} else
 			i++;
 	}
@@ -282,6 +283,7 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
+	sbuf_extend(out, cend);
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -294,9 +296,9 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 			else if (uc_isprint(chrs[o]))
 				sbuf_mem(out, chrs[o], uc_len(chrs[o]));
 			else
-				for (; i < cend && off[i] == o; i++)
+				for (; off[i] == o; i++)
 					sbuf_chr(out, ' ');
-			for (; i < cend && off[i] == o; i++){}
+			for (; off[i] == o; i++){}
 		} else {
 			sbuf_str(out, term_att(att_new, att_old));
 			sbuf_chr(out, ' ');
@@ -312,6 +314,7 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
+	sbuf_extend(out, cend);
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -325,13 +328,13 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
 			else
 			{
-				for (; i < cend && off[i] == o; i++)
+				for (; off[i] == o; i++)
 				{
 					char mark = i % xtabspc == 0 ? '>' : '-';
 					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : mark);
 				}
 			}
-			for (; i < cend && off[i] == o; i++){}
+			for (; off[i] == o; i++){}
 		} else {
 			sbuf_str(out, term_att(att_new, att_old));
 			sbuf_chr(out, ' ');
@@ -379,7 +382,7 @@ for (i = 0; i < n; i++) { \
 	s0 = sbuf_buf(name); \
 	cbeg = 0; \
 	cend = cterm; \
-	memset(off, 0xff, cterm * sizeof(off[0])); \
+	memset(off, -1, (cterm+1) * sizeof(off[0])); \
 	pos = ren_position(s0, &chrs, &n); \
 
 /* render and highlight a line */
@@ -392,13 +395,13 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	struct sbuf *out;
 	struct sbuf *bound = NULL;
 	int cterm = cend - cbeg;
-	int off[cterm];	/* off[i]: the character at screen position i */
+	int off[cterm+1];	/* off[i]: the character at screen position i */
 	int ctx = dir_context(s0);
-	memset(off, 0xff, cterm * sizeof(off[0]));
+	memset(off, -1, (cterm+1) * sizeof(off[0]));
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
 		off_rev()
-		if (n > xcols || cbeg)
+		if (pos[n] > xcols || cbeg)
 		{
 			torg = cbeg;
 			out = sbuf_make();
@@ -412,7 +415,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 		}
 	} else {
 		off_for()
-		if (n > xcols || cbeg)
+		if (pos[n] > xcols || cbeg)
 		{
 			torg = cbeg;
 			int xord = xorder;
