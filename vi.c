@@ -1674,6 +1674,8 @@ void vi(void)
 				break;
 			case TK_CTL('s'):
 				vi_mod = 1;
+				term_pos(xrows, led_pos(vi_msg, 0));
+				term_kill();
 				ex_command("b");
 				vi_arg1 = vi_digit();
 				if (vi_arg1 > -1)
@@ -1989,6 +1991,8 @@ void vi(void)
 				break;
 			case 'R':
 				vi_mod = 1;
+				term_pos(xrows, led_pos(vi_msg, 0));
+				term_kill();
 				reg_print();
 				vi_digit();
 				vi_printed = 0;
