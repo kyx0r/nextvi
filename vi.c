@@ -1660,17 +1660,6 @@ void vi(void)
 				vi_mod = 1;
 				break;
 			case TK_CTL('i'):
-				k = vi_read();
-				if (k == 'i')
-					ex_command("%s/\x0d//g");
-				else {
-					char str[] = "%s/^ {8}/	/g";
-					if (xtabspc < 10)
-						str[6] = xtabspc + '0';
-					ex_command(str);
-					ex_command("%s/ +$//g");
-				}
-				vi_mod = 1;
 				break;
 			case TK_CTL('s'):
 				vi_mod = 1;
@@ -1726,21 +1715,15 @@ void vi(void)
 					strcat(buf1, "s/");
 					ln = vi_prompt(":", buf, &kmap);
 					goto do_excmd;
-				} else if (k == 'h') {
-					ex_command(".s/\\./->/");
-					break;
-				} else if (k == 'g') {
-					ex_command(".s/->/\\./");
-					break;
 				} else if (k == 'r') {
 					if (!(cs = vi_curword(xb, xrow, xoff)))
 						break;
-					char buf[strlen(cs)+10];
+					char buf[strlen(cs)+30];
 					strcpy(buf, "%s/");
 					strcat(buf, cs);
 					strcat(buf, "/");
-					ln = vi_prompt(":", buf, &kmap);
 					free(cs);
+					ln = vi_prompt(":", buf, &kmap);
 					goto do_excmd;
 				} else if (k == 't') {
 					if (!(cs = vi_curword(xb, xrow, xoff)))
@@ -1751,10 +1734,19 @@ void vi(void)
 					strcat(buf1, "s/");
 					strcat(buf1, cs);
 					strcat(buf1, "/");
-					ln = vi_prompt(":", buf, &kmap);
 					free(cs);
+					ln = vi_prompt(":", buf, &kmap);
 					goto do_excmd;
-				} else if (k == '.') {
+				} 
+				switch (k)
+				{
+				case 'h':
+					ex_command(".s/\\./->/");
+					break;
+				case 'g':
+					ex_command(".s/->/\\./");
+					break;
+				case '.':
 					while (vi_arg1)
 					{
 						term_push("j", 1);
@@ -1782,11 +1774,25 @@ void vi(void)
 						vi_arg1--;
 					}
 					break;
+				case 'a':
+					xai = !xai;
+					char aistr[] = "autoindent  ";
+					aistr[11] = xai + '0';
+					snprintf(vi_msg, sizeof(vi_msg), aistr);
+					break;
+				case 'i':
+					ex_command("%s/\x0d//g");
+					break;
+				case 'o':;
+					char regstr[] = "%s/^ {8}/	/g";
+					if (xtabspc < 10)
+						regstr[6] = xtabspc + '0';
+					ex_command(regstr);
+					ex_command("%s/ +$//g");
+					break;
+				default:
+					vi_back(k);
 				}
-				xai = !xai;
-				char str[] = "autoindent  ";
-				str[11] = xai + '0';
-				snprintf(vi_msg, sizeof(vi_msg), str);
 				break;
 			case 'V':
 				vi_hidch = !vi_hidch;

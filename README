@@ -17,8 +17,8 @@ such letter combination is extremely rare.
 Can be disabled via :se noqe
 3. Added linenumbers, keybind: # 
 4. Added invisible character view, keybind: V   
-5. Added regex for changing spaces to tabs, keybind: ^i   
-6. Added regex for removing /r in dos files, keybind: ^ii 
+5. Added regex for changing spaces to tabs, keybind: vo   
+6. Added regex for removing /r in dos files, keybind: vi 
 7. Changed behavior of ^a to change search direction when no more match 
 8. Added fssearch, searches what is under the cursor 
 in every file in the opened directory keybind: ^]   
