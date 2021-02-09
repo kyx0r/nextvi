@@ -260,7 +260,7 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 {
 	int i = cbeg;
 	int pad = 1;
-	sbuf_extend(out, cend);
+	sbuf_extend(out, xcols);
 	while (i < cend) {
 		int o = off[i - cbeg];
 		if (o >= 0) {
@@ -283,7 +283,7 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
-	sbuf_extend(out, cend);
+	sbuf_extend(out, cend * 2);
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -314,7 +314,7 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
-	sbuf_extend(out, cend);
+	sbuf_extend(out, cend * 2);
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;

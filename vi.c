@@ -1754,11 +1754,13 @@ void vi(void)
 						switch (rep_cmd[0])
 						{
 						case 'i':
+						case 'I':
 						case 'o':
 						case 'O':
 						case 'a':
 						case 'A':
 						case 's':
+						case 'S':
 						case 'c':
 						case 'C':
 							/*
@@ -1780,10 +1782,10 @@ void vi(void)
 					aistr[11] = xai + '0';
 					snprintf(vi_msg, sizeof(vi_msg), aistr);
 					break;
-				case 'i':
+				case 'o':
 					ex_command("%s/\x0d//g");
 					break;
-				case 'o':;
+				case 'i':;
 					char regstr[] = "%s/^ {8}/	/g";
 					if (xtabspc < 10)
 						regstr[6] = xtabspc + '0';
@@ -2007,7 +2009,7 @@ void vi(void)
 				term_pos(xrows, led_pos(vi_msg, 0));
 				term_kill();
 				reg_print();
-				vi_digit();
+				vi_back(vi_read());
 				vi_printed = 0;
 				break;
 			case 'Z':

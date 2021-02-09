@@ -17,8 +17,8 @@ such letter combination is extremely rare.
 Can be disabled via :se noqe
 3. Added linenumbers, keybind: # 
 4. Added invisible character view, keybind: V   
-5. Added regex for changing spaces to tabs, keybind: vo   
-6. Added regex for removing /r in dos files, keybind: vi 
+5. Added regex for changing spaces to tabs, keybind: vi
+6. Added regex for removing /r in dos files, keybind: vo
 7. Changed behavior of ^a to change search direction when no more match 
 8. Added fssearch, searches what is under the cursor 
 in every file in the opened directory keybind: ^]   
@@ -152,6 +152,8 @@ is not an exception. The same change was done for ^w keybind.
 52. Added a key to perform relative replacement. keybind: ve
 Specify arg and the prompt will be for example :.,+5s/ where 5 is
 the argument.
+53. Added a key to disable autoindent. keybind: va
+This is necessary sometimes if you want to paste into the terminal.
 
 FAQ:
 ----
