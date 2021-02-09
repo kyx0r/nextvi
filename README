@@ -23,7 +23,7 @@ Can be disabled via :se noqe
 8. Added fssearch, searches what is under the cursor 
 in every file in the opened directory keybind: ^]   
 Beware that it will brute force open files into buffers and
-perform the search. I usually save really often so this isn't 
+Perform the search. I usually save really often so this isn't 
 a problem, but being careless might reload file with unsaved changes.
 By default it only checks for .c and .h files. 
 for code navigation between files, jump to definitions / etc.
@@ -149,6 +149,9 @@ when no more characters left the line will be wrapped onto the next
 one. This is behavior you can expect from 95% of editors, now neatvi
 is not an exception. The same change was done for ^w keybind. 
 51. Added key to show the registers and their contents. keybind: R
+52. Added a key to perform relative replacement. keybind: ve
+Specify arg and the prompt will be for example :.,+5s/ where 5 is
+the argument.
 
 FAQ:
 ----

@@ -1718,8 +1718,15 @@ void vi(void)
 			case 'v':
 				vi_mod = 2;
 				k = vi_read();
-				if (k == 'h')
+				if (k == 'e')
 				{
+					char buf[10];
+					strcpy(buf, ".,.+");
+					char *buf1 = itoa(vi_arg1, buf+4);
+					strcat(buf1, "s/");
+					ln = vi_prompt(":", buf, &kmap);
+					goto do_excmd;
+				} else if (k == 'h') {
 					ex_command(".s/\\./->/");
 					break;
 				} else if (k == 'g') {
