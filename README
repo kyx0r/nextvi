@@ -23,7 +23,7 @@ Can be disabled via :se noqe
 8. Added fssearch, searches what is under the cursor 
 in every file in the opened directory keybind: ^]   
 Beware that it will brute force open files into buffers and
-Perform the search. I usually save really often so this isn't 
+perform the search. I usually save really often so this isn't 
 a problem, but being careless might reload file with unsaved changes.
 By default it only checks for .c and .h files. 
 for code navigation between files, jump to definitions / etc.
