@@ -21,7 +21,7 @@ Can be disabled via :se noqe
 6. Added regex for removing /r in dos files, keybind: vo
 7. Changed behavior of ^a to change search direction when no more match 
 8. Added fssearch, searches what is under the cursor 
-in every file in the opened directory keybind: ^]   
+in every file in the opened directory keybind: ^] or ^5
 Beware that it will brute force open files into buffers and
 perform the search. I usually save really often so this isn't 
 a problem, but being careless might reload file with unsaved changes.
@@ -37,7 +37,7 @@ just by "ea fi" if this is a uniquely matched filename
 13. Added numbered buffers to vi, max 10 and ex "b" command to show buffers
 and "b%d" to switch (where %d is the buffer number).
 14. Added key to show buffers and switch buffer 
-(to switch press corresponding 0-9 number) keybind: ^s 
+(to switch press corresponding 0-9 number) keybind: ^7
 15. Added key to exit vi keybind: qq 
 16. Added key to goto line 0 keybind: gg 
 17. Added key to delete everything inside (cursor outside) "" keybind: di" 
@@ -153,7 +153,7 @@ is not an exception. The same change was done for ^w keybind.
 Specify arg and the prompt will be for example :.,+5s/ where 5 is
 the argument.
 53. Added a key to disable autoindent. keybind: va
-This is necessary sometimes if you want to paste into the terminal.
+This is necessary sometimes if you want to paste from system clipboard.
 
 FAQ:
 ----
@@ -179,9 +179,6 @@ will require to change every patch offset, etc.
 
 Q: General philosophy?
 A: User is programmer, hacker culture.
-
-Q: Help! ^s locks up my terminal!
-A: This is normal, you have to disable it in your shell.
 
 CONFIGURATION
 -------------

@@ -168,10 +168,9 @@ static char *ren_placeholder(char *s, int *wid)
 
 int ren_cwid(char *s, int pos)
 {
-	int wid;
 	if (s[0] == '\t')
-		return (xtabspc - ((pos + torg) & (xtabspc-1)));
-	wid = 1;
+		return xtabspc - ((pos + torg) & (xtabspc-1));
+	int wid = 1;
 	if (ren_placeholder(s, &wid))
 	        return wid;
 	return uc_wid(s);

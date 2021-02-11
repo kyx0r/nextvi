@@ -873,7 +873,7 @@ static int vi_motion(int *row, int *off)
 			if (lbuf_sectionbeg(xb, +1, row, off))
 				break;
 		break;
-	case TK_CTL(']'):
+	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
 		if (!(cs = vi_curword(xb, *row, *off)))
 			return -1;
 		if(!fslink)
@@ -1661,7 +1661,7 @@ void vi(void)
 				break;
 			case TK_CTL('i'):
 				break;
-			case TK_CTL('s'):
+			case TK_CTL('_'): /* note: this is also ^7 per ascii */
 				vi_mod = 1;
 				term_pos(xrows, led_pos(vi_msg, 0));
 				term_kill();
