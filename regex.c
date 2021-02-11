@@ -95,34 +95,6 @@ static void rnode_free(struct rnode *rnode)
 	free(rnode);
 }
 
-static int uc_len(char *s)
-{
-	int c = (unsigned char) s[0];
-	if (~c & 0xc0)		/* ASCII or invalid */
-		return c > 0;
-	if (~c & 0x20)
-		return 2;
-	if (~c & 0x10)
-		return 3;
-	if (~c & 0x08)
-		return 4;
-	return 1;
-}
-
-static int uc_dec(char *s)
-{
-	int c = (unsigned char) s[0];
-	if (~c & 0xc0)		/* ASCII or invalid */
-		return c;
-	if (~c & 0x20)
-		return ((c & 0x1f) << 6) | (s[1] & 0x3f);
-	if (~c & 0x10)
-		return ((c & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f);
-	if (~c & 0x08)
-		return ((c & 0x07) << 18) | ((s[1] & 0x3f) << 12) | ((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
-	return c;
-}
-
 static void ratom_copy(struct ratom *dst, struct ratom *src)
 {
 	dst->ra = src->ra;
@@ -245,12 +217,12 @@ static int brk_match(char *brk, int c, int flg)
 			p += brk_len(p);
 			continue;
 		}
-		beg = uc_dec(p);
+		beg = uc_code(p);
 		p += uc_len(p);
 		end = beg;
 		if (p[0] == '-' && p[1] && p[1] != ']') {
 			p++;
-			end = uc_dec(p);
+			end = uc_code(p);
 			p += uc_len(p);
 		}
 		if (flg & REG_ICASE && beg < 128 && isupper(beg))
@@ -266,8 +238,8 @@ static int brk_match(char *brk, int c, int flg)
 static int ratom_match(struct ratom *ra, struct rstate *rs)
 {
 	if (ra->ra == RA_CHR) {
-		int c1 = uc_dec(ra->s);
-		int c2 = uc_dec(rs->s);
+		int c1 = uc_code(ra->s);
+		int c2 = uc_code(rs->s);
 		if (rs->flg & REG_ICASE && c1 < 128 && isupper(c1))
 			c1 = tolower(c1);
 		if (rs->flg & REG_ICASE && c2 < 128 && isupper(c2))
@@ -284,7 +256,7 @@ static int ratom_match(struct ratom *ra, struct rstate *rs)
 		return 0;
 	}
 	if (ra->ra == RA_BRK) {
-		int c = uc_dec(rs->s);
+		int c = uc_code(rs->s);
 		if (!c || (c == '\n' && !(rs->flg & REG_NOTEOL)))
 			return 1;
 		rs->s += uc_len(rs->s);

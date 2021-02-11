@@ -11,6 +11,8 @@ typedef struct {
 } regmatch_t;
 
 typedef struct regex *regex_t;
+extern int uc_len(char *s);
+extern int uc_code(char *s);
 
 int regcomp(regex_t *preg, char *regex, int cflags);
 int regexec(regex_t *preg, char *str, int nmatch, regmatch_t pmatch[], int eflags);

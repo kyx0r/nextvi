@@ -146,14 +146,14 @@ int ren_next(char *s, int p, int dir)
 	return s && uc_chr(s, ren_off(s, p))[0] != '\n' ? p : -1;
 }
 
-static char *ren_placeholder(char *s)
+static char *ren_placeholder(char *s, int *wid)
 {
 	char *src, *dst;
-	int wid, i;
+	int i;
 	int c = uc_code(s);
-	for (i = 0; !conf_placeholder(i, &src, &dst, &wid); i++)
-		if (uc_code(src) == c)
-			return dst;
+	for (i = 0; !conf_placeholder(i, &src, &dst, wid); i++)
+	        if (src[0] == s[0] && uc_code(src) == c)
+	                return dst;
 	if (uc_iscomb(s)) {
 		static char buf[16];
 		char cbuf[8] = "";
@@ -168,19 +168,18 @@ static char *ren_placeholder(char *s)
 
 int ren_cwid(char *s, int pos)
 {
-	char *src, *dst;
-	int wid, i;
+	int wid;
 	if (s[0] == '\t')
 		return (xtabspc - ((pos + torg) & (xtabspc-1)));
-	for (i = 0; !conf_placeholder(i, &src, &dst, &wid); i++)
-		if (uc_code(src) == uc_code(s))
-			return wid;
+	wid = 1;
+	if (ren_placeholder(s, &wid))
+	        return wid;
 	return uc_wid(s);
 }
 
 char *ren_translate(char *s, char *ln)
 {
-	char *p = ren_placeholder(s);
+	char *p = ren_placeholder(s, NULL);
 	return p || !xshape ? p : uc_shape(ln, s);
 }
 
