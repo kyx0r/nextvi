@@ -152,8 +152,8 @@ static char *ren_placeholder(char *s, int *wid)
 	int i;
 	int c = uc_code(s);
 	for (i = 0; !conf_placeholder(i, &src, &dst, wid); i++)
-	        if (src[0] == s[0] && uc_code(src) == c)
-	                return dst;
+		if (src[0] == s[0] && uc_code(src) == c)
+			return dst;
 	if (uc_iscomb(s)) {
 		static char buf[16];
 		char cbuf[8] = "";
@@ -172,7 +172,7 @@ int ren_cwid(char *s, int pos)
 		return xtabspc - ((pos + torg) & (xtabspc-1));
 	int wid = 1;
 	if (ren_placeholder(s, &wid))
-	        return wid;
+		return wid;
 	return uc_wid(s);
 }
 

@@ -314,6 +314,7 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
+	int tabend;
 	sbuf_extend(out, cend * 2);
 	while (i < cend) {
 		int o = off[i];
@@ -328,9 +329,10 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
 			else
 			{
+				tabend = (xtabspc - ((i + torg) & (xtabspc-1))) + i - 1;
 				for (; off[i] == o; i++)
 				{
-					char mark = i % xtabspc == 0 ? '>' : '-';
+					char mark = i == tabend ? '>' : '-';
 					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : mark);
 				}
 			}
