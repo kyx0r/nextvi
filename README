@@ -154,6 +154,7 @@ Specify arg and the prompt will be for example :.,+5s/ where 5 is
 the argument.
 53. Added a key to disable autoindent. keybind: va
 This is necessary sometimes if you want to paste from system clipboard.
+54. Added minimal syntax highlight for js and html
 
 FAQ:
 ----

@@ -16,10 +16,12 @@ static struct filetype {
 	{"sh", "\\.sh$"},				/* shell script */
 	{"py", "\\.py$"},				/* python */
 	{"nm", "\\.nm$"},				/* neatmail */
+	{"js", "\\.js$"},				/* javascript */
+	{"html", "\\.html$"},				/* html */
 };
 
 /*
-colors 0-15 
+colors 0-15
 0 = black | inverse
 1 = red3
 2 = green3
@@ -28,7 +30,7 @@ colors 0-15
 5 = magenta3
 6 = cyan3
 7 = gray90
-bright colors 
+bright colors
 8 = gray50
 9 = red
 10 = green
@@ -46,6 +48,7 @@ static struct highlight {
 	char *pat;		/* regular expression */
 	int end;		/* the group ending this pattern */
 	int patend;		/* the ending regex for multi-line patterns */
+	/* patend is relative index from the parent index */
 } highlights[] = {
 	{"/", {9}, NULL},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
@@ -59,7 +62,7 @@ static struct highlight {
 	{"c", {4 | SYN_IT}, "//.*$"},
 	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*+[^*/])*\\*+/"},
 	{"c", {4 | SYN_IT}, "[^\\*/]*\\*/"},
-	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*)*", 0, 6},
+	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*)*", 0, -1},
 	{"c", {6}, "^#[ \t]*[a-zA-Z0-9_]+"},
 	{"c", {0, SYN_BD}, "([a-zA-Z][a-zA-Z0-9_]+)\\(", 1},
 	{"c", {5}, "\"([^\"]|\\\\\")*\""},
@@ -120,6 +123,79 @@ static struct highlight {
 	{"nm", {0 | SYN_BD | SYN_BGMK(7)}, "^[F].*$"},
 	{"nm", {7 | SYN_IT}, "^\t.*$"},
 	{"nm", {SYN_BD}, "^:.*$"},
+
+	/* javascript */
+	{"js", {12}, "\\<(abstract|arguments|await|boolean|\
+			|break|byte|case|catch|\
+			|char|class|const|continue|\
+			|debugger|default|delete|do|\
+			|double|else|enum|eval|\
+			|export|extends|false|final|\
+			|finally|float|for|function|\
+			|goto|if|implements|import|\
+			|in|instanceof|int|interface|\
+			|let|long|native|new|\
+			|null|package|private|protected|\
+			|public|return|short|static|\
+			|super|switch|synchronized|this|\
+			|throw|throws|transient|true|\
+			|try|typeof|var|void|\
+			|volatile|while|with|yield)\\>"},
+	{"js", {6 | SYN_BD}, "\\<(Array|Date|eval|hasOwnProperty|Infinity|isFinite|isNaN|\
+			|isPrototypeOf|length|Math|NaN|\
+			|name|Number|Object|prototype|\
+			|String|toString|undefined|valueOf)\\>"},
+	{"js", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
+	{"js", {10 | SYN_IT}, "//.*$"},
+	{"js", {10 | SYN_IT}, "/\\*([^*]|\\*+[^*/])*\\*+/"},
+	{"js", {10 | SYN_IT}, "[^\\*/]*\\*/"},
+	{"js", {10 | SYN_IT}, "/\\*([^*]|\\*)*", 0, -1},
+	{"js", {5}, "\"([^\"]|\\\\\")*\""},
+	{"js", {5}, "\'([^\']|\\\\\")*\'"},
+
+	/* html */
+	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
+			auto(capitalize|complete|focus|play)|background|\
+			|bgcolor|border|buffered|challenge|charset|checked|cite|\
+			|class|code(base)?|color|cols|colspan|content(\
+			|editable)?|contextmenu|controls|coords|crossorigin|\
+			|csp|data|datetime|decoding|def(ault|er)|dir|dirname|\
+			|disabled|download|draggable|dropzone|enctype|enterkeyhint|\
+			|equiv|for|form(action|novalidate)?|headers|height|\
+			|hidden|high|href(lang)?|http|icon|id|importance|\
+			|inputmode|integrity|intrinsicsize|ismap|itemprop|keytype|\
+			|kind|label|lang|language|list|loading|loop|low|manifest|\
+			|max|maxlength|media|method|min|minlength|multiple|muted|\
+			|name|novalidate|open|optimum|pattern|ping|placeholder|\
+			|poster|preload|property|radiogroup|readonly|referrerpolicy|\
+			|rel|required|reversed|rows|rowspan|sandbox|scope|scoped|\
+			|selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
+			|srclang|srcset|start|step|style|summary|tabindex|target|\
+			|title|translate|type|usemap|value|width|wrap)\\>"},
+        {"html", {6}, "\\<(html|base|head|link|meta|style|title|body|address|article|\
+			|aside|footer|header|h\\d|hgroup|main|nav|section|blockquote|dd|\
+			|dir|div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
+			|b|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
+			|ruby|s|samp|small|span|strong|sub|sup|time|tt|u|var|wbr|area|\
+			|audio|img|map|track|video|applet|embed|iframe|noembed|object|\
+			|param|picture|source|canvas|noscript|script|del|ins|caption|\
+			|col|colgroup|table|tbody|td|tfoot|th|thead|tr|button|datalist|\
+			|fieldset|form|input|label|legend|meter|optgroup|option|output|\
+			|progress|select|textarea|details|dialog|menu|menuitem|summary|\
+			|content|element|shadow|slot|template|acronym|applet|basefont|\
+			|bgsound|big|blink|center|command|content|dir|element|font|\
+			|frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
+			|multicol|nextid|nobr|noembed|noframes|plaintext|shadow|spacer|\
+			|strike|tt|xmp|doctype)\\>"},
+	{"html", {12}, "\"([^\"]|\\\\\")*\""},
+	{"html", {9}, "#\\<[A-Fa-f0-9]+\\>"},
+	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9+px]+)\\>"},
+	{"html", {0 | SYN_BD}, "#[ \t]*[a-zA-Z0-9_]+"},
+	{"html", {13}, "/"},
+	{"html", {3}, "[<|>]"},
+	{"html", {5}, "&[a-zA-Z0-9_]+"},
+	//{"html", {8 | SYN_BD}, ">([^\"]|\\\\\")*<"},
+	{"html", {3, SYN_BD}, "^[^<:]*:", 1},
 
 	/* status bar */
 	{"---", {8 | SYN_BD, 4, 1}, "^(\".*\").*(\\[[wr]\\]).*$"},

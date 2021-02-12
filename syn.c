@@ -81,6 +81,7 @@ int *syn_highlight(char *ft, char *s, int n)
 			setatt()
 			break;
 		} else if (patend && !brs) {
+			patend += hl;
 			char *pat;
 			conf_highlight(patend, NULL, &blockatt, &pat, NULL, NULL);
 			brs = rset_make(1, &pat, 0);
