@@ -300,11 +300,10 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 }
 
 void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
-			int cend)
+			int cend, int ctx)
 {
 	int att_old = 0;
 	int i = 0;
-	int tabend;
 	sbuf_extend(out, cend * 2);
 	while (i < cend) {
 		int o = off[i];
@@ -319,12 +318,13 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
 			else
 			{
-				tabend = (xtabspc - ((i + torg) & (xtabspc-1))) + i - 1;
+				int pre = sbuf_len(out);
 				for (; off[i] == o; i++)
-				{
-					char mark = i == tabend ? '>' : '-';
-					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : mark);
-				}
+					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : '-');
+				if (ctx > 0 && *chrs[o] == '\t')
+					sbuf_buf(out)[sbuf_len(out)-1] = '>';
+				else if (*chrs[o] == '\t')
+					sbuf_buf(out)[pre] = '<';
 			}
 			for (; off[i] == o; i++){}
 		} else {
@@ -424,7 +424,7 @@ static char *led_render(char *s0, int cbeg, int cend, char *syn)
 	/* generate term output */
 	out = sbuf_make();
 	if (vi_hidch)
-		ledhidch_out(out, off, att, chrs, s0, cend);
+		ledhidch_out(out, off, att, chrs, s0, cend, ctx);
 	else
 		led_out(out, off, att, chrs, s0, cend);
 	free(att);
