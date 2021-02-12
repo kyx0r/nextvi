@@ -51,16 +51,12 @@ static tern_t* create_node (char w, enum ntype t)
 static tern_t* insert_node (const char* string, tern_t* node)
 {
 	int i = strlen(string);
-
 	if(NULL == node)
 		node = create_node(string[0], NO);
-
 	if(string[0] < node->word)
 		node->lChild = insert_node(string, node->lChild);
-
 	else if(string[0] > node->word)
 		node->rChild = insert_node(string, node->rChild);
-
 	else {
 		//go one level down the tree if the word has not been found here.
 		if(i == 1) {
@@ -76,7 +72,6 @@ static tern_t* find_node(const char* string, int l, tern_t* node)
 {
 	int i = 0;
 	tern_t* currentNode = node;
-
 	while(i < l) {
 		if(currentNode == NULL)
 			break;
@@ -110,13 +105,10 @@ static void deep_search(const char* pattern, tern_t* start)
 		off[len+1] = '\n';
 		suggestlen += len+2;
 	}
-
 	if(start->lChild != NULL)
 		deep_search(pattern, start->lChild);
-
 	if(start->rChild != NULL)
 		deep_search(pattern, start->rChild);
-
 	if(start->mChild != NULL) {
 		int l = strlen(pattern + 2);
 		char _pattern[l];
@@ -130,7 +122,6 @@ static int search(const char* pattern, int l, tern_t* node)
 	suggestlen = 0;
 	//finds the node where the prefix ends.
 	tern_t* current = find_node(pattern, l, node);
-
 	if(NULL == current)
 		return 0;
 	else {
@@ -182,7 +173,6 @@ static void file_ternary(struct lbuf* buf)
 	int len;
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf);
-
 	for (int i = 0; i < ln_n; i++)
 	{
 		len = strlen(ss[i])+1;
@@ -657,7 +647,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbuf_str(sb, reg_get(0, &lnmode));
 			break;
 		case TK_CTL('g'):
-			file_ternary(xb);		
+			file_ternary(xb);
 			break;
 		case TK_CTL('r'):
 			for (i = 0; sug != suggestbuf; sug--)
