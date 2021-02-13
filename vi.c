@@ -154,15 +154,6 @@ static void vi_drawrow(int row)
 	static char ch2[1] = "";
 	if (xhll && row == xrow)
 		syn_context(conf_hlline());
-	if (xhww && row == xtop)
-	{
-		if ((c = vi_curword(xb, xrow, xoff)))
-		{
-			syn_reloadft(ex_filetype(), "/", 0, c);
-			vi_mod = 1;
-			free(c);
-		}
-	}
 	if (!s) {
 		s = ch1;
 		if (*vi_word && row == xrow+1)
@@ -378,9 +369,10 @@ void ex_print(char *line)
 	if (xvis) {
 		vi_printed += line ? 1 : 2;
 		if (line)
+		{
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
-		if (line)
-			led_print(line, -1, "/");
+			led_print(line, -1, "---");
+		}
 		term_chr('\n');
 	} else {
 		if (line)
@@ -1555,7 +1547,7 @@ void vi(void)
 			vi_lnnum = 0;
 			vi_mod = 1;
 		}
-		if (blockrs || *vi_word || xhww)
+		if (blockrs || *vi_word)
 		 	vi_mod = 1;	
 		if (vi_msg[0])
 		{
@@ -2032,6 +2024,15 @@ void vi(void)
 					memcpy(rep_cmd, cmd, n);
 					rep_len = n;
 				}
+			}
+		}
+		if (xhww)
+		{
+			if ((cs = vi_curword(xb, xrow, xoff)))
+			{
+				syn_reloadft(ex_filetype(), "/", 0, cs);
+				free(cs);
+				vi_mod = 1;
 			}
 		}
 		if (xrow < 0 || xrow >= lbuf_len(xb))
