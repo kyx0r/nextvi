@@ -158,7 +158,8 @@ static void vi_drawrow(int row)
 	{
 		if ((c = vi_curword(xb, xrow, xoff)))
 		{
-			conf_changereg(0, c);
+			syn_reloadft(ex_filetype(), "/", 0, c);
+			vi_mod = 1;
 			free(c);
 		}
 	}
@@ -379,7 +380,7 @@ void ex_print(char *line)
 		if (line)
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 		if (line)
-			led_print(line, -1, "");
+			led_print(line, -1, "/");
 		term_chr('\n');
 	} else {
 		if (line)
@@ -932,17 +933,8 @@ static int vi_motion(int *row, int *off)
 		vi_pcol = cnt - 1;
 		break;
 	case '/':
-		if (vi_search(mv, cnt, row, off))
-			return -1;
-		break;
 	case '?':
-		if (vi_search(mv, cnt, row, off))
-			return -1;
-		break;
 	case 'n':
-		if (vi_search(mv, cnt, row, off))
-			return -1;
-		break;
 	case 'N':
 		if (vi_search(mv, cnt, row, off))
 			return -1;
@@ -1563,7 +1555,7 @@ void vi(void)
 			vi_lnnum = 0;
 			vi_mod = 1;
 		}
-		if (*vi_word || xhww || blockrs)
+		if (blockrs || *vi_word || xhww)
 		 	vi_mod = 1;	
 		if (vi_msg[0])
 		{
@@ -1598,6 +1590,8 @@ void vi(void)
 				vc_status();
 			case '/':
 			case '?':
+			case 'n':
+			case 'N':
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;

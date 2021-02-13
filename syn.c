@@ -16,13 +16,13 @@ static int syn_ctx;
 static int *blockatt;
 struct rset *blockrs;
 
-static struct rset *syn_find(char *ft)
+static int syn_find(char *ft)
 {
 	int i;
 	for (i = 0; i < LEN(ftmap); i++)
 		if (!strcmp(ft, ftmap[i].ft))
-			return ftmap[i].rs;
-	return NULL;
+			return i;
+	return -1;
 }
 
 int syn_merge(int old, int new)
@@ -51,11 +51,12 @@ for (i = 0; i < LEN(subs) / 2; i++) {\
 
 int *syn_highlight(char *ft, char *s, int n)
 {
-	struct rset *rs = syn_find(ft);
+	int idx = syn_find(ft);
 	int *att = malloc(n * sizeof(att[0]));
 	memset(att, 0, n * sizeof(att[0]));
-	if (!rs)
+	if (idx < 0)
 		return att;
+	struct rset *rs = ftmap[idx].rs;
 	int sidx = 0;
 	int subs[16 * 2];
 	int flg = 0;
@@ -101,14 +102,14 @@ int *syn_highlight(char *ft, char *s, int n)
 	return att;
 }
 
-static void syn_initft(char *name)
+static void syn_initft(char *name, char *inject)
 {
 	char *pats[128] = {NULL};
 	char *ft, *pat;
 	int i, n;
 	for (i = 0; !conf_highlight(i, &ft, NULL, &pat, NULL, NULL)
 		&& i < LEN(pats); i++)
-		if (*ft == '/' || !strcmp(ft, name))
+		if (!strcmp(ft, inject) || !strcmp(ft, name))
 			pats[i] = pat;
 	n = i;
 	for (i = 0; i < LEN(ftmap); i++) {
@@ -129,14 +130,30 @@ char *syn_filetype(char *path)
 	return "/";
 }
 
+void syn_reloadft(char *ft, char *injectft, int i, char *reg)
+{
+	int idx;
+	if ((idx = syn_find(injectft)) >= 0)
+	{
+		conf_changereg(i + idx, reg);
+		if ((idx = syn_find(ft)) >= 0)
+		{
+	                if (ftmap[idx].rs)
+	                        rset_free(ftmap[idx].rs);
+	                ftmap[idx].ft[0] = 0;
+			syn_initft(ft, injectft);
+		}
+	}
+}
+
 void syn_init(void)
 {
 	char *pats[128] = {NULL};
 	char *pat, *ft;
 	int i;
 	for (i = 0; !conf_highlight(i, &ft, NULL, NULL, NULL, NULL); i++)
-		if (!syn_find(ft))
-			syn_initft(ft);
+		if (syn_find(ft) < 0)
+			syn_initft(ft, "");
 	for (i = 0; !conf_filetype(i, NULL, &pat) && i < LEN(pats); i++)
 		pats[i] = pat;
 	syn_ftrs = rset_make(i, pats, 0);

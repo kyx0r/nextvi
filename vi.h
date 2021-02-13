@@ -216,6 +216,7 @@ int *syn_highlight(char *ft, char *s, int n);
 char *syn_filetype(char *path);
 void syn_context(int att);
 int syn_merge(int old, int new);
+void syn_reloadft(char *ft, char *injectft, int i, char *reg);
 void syn_init(void);
 void syn_done(void);
 

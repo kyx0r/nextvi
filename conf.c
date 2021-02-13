@@ -112,8 +112,6 @@ char *conf_digraph(int c1, int c2)
 
 void conf_changereg(int i, char *reg)
 {
-	highlights[i].pat = reg;
-	syn_done();
-	syn_init();
+       highlights[i].pat = reg;
 }
 
