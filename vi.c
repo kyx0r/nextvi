@@ -298,7 +298,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	char *r, *s;
 	int l1;
 	int l2 = strlen(msg);
-	memcpy(vi_msg, msg, l2);
+	memcpy(vi_msg, msg, l2+1);
 	term_pos(xrows, led_pos(msg, 0));
 	term_kill();
 	s = led_prompt(msg, "", insert, kmap, "---");
@@ -1783,6 +1783,11 @@ void vi(void)
 					ex_command(regstr);
 					ex_command("%s/ +$//g");
 					break;
+				case ';':;
+					char cmd[1] = {TK_CTL('v')};
+					term_push(cmd, 1);
+					ln = vi_prompt(":", 0, &kmap);
+					goto do_excmd;
 				default:
 					vi_back(k);
 				}
