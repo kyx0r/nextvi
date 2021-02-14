@@ -195,23 +195,23 @@ static char *brk_classes[][2] = {
 	{":word:", "a-zA-Z0-9_"},
 	{":xdigit:", "a-fA-F0-9"},
 };
+/* length of brk_classes[i][0] */
+static int cl_lens[] = {7,7,7,7,7,7,7,7,7,6,8};
 
-static int brk_match(char *brk, int c, int flg)
+static int brk_match(char *brk, int c, int icase)
 {
 	int beg, end;
 	int i;
 	int not = brk[0] == '^';
 	char *p = not ? brk + 1 : brk;
 	char *p0 = p;
-	if (flg & REG_ICASE && c < 128 && isupper(c))
+	if (icase && c < 128 && isupper(c))
 		c = tolower(c);
 	while (*p && (p == p0 || *p != ']')) {
 		if (p[0] == '[' && p[1] == ':') {
 			for (i = 0; i < LEN(brk_classes); i++) {
-				char *cc = brk_classes[i][0];
-				char *cp = brk_classes[i][1];
-				if (!strncmp(cc, p + 1, strlen(cc)))
-					if (!brk_match(cp, c, flg))
+				if (!strncmp(brk_classes[i][0], p + 1, cl_lens[i]))
+					if (!brk_match(brk_classes[i][1], c, icase))
 						return not;
 			}
 			p += brk_len(p);
@@ -225,10 +225,13 @@ static int brk_match(char *brk, int c, int flg)
 			end = uc_code(p);
 			p += uc_len(p);
 		}
-		if (flg & REG_ICASE && beg < 128 && isupper(beg))
-			beg = tolower(beg);
-		if (flg & REG_ICASE && end < 128 && isupper(end))
-			end = tolower(end);
+		if (icase)
+		{
+			if (beg < 128 && isupper(beg))
+				beg = tolower(beg);
+			if (end < 128 && isupper(end))
+				end = tolower(end);
+		}
 		if (c >= beg && c <= end)
 			return not;
 	}
@@ -237,41 +240,50 @@ static int brk_match(char *brk, int c, int flg)
 
 static int ratom_match(struct ratom *ra, struct rstate *rs)
 {
-	if (ra->ra == RA_CHR) {
+	switch (ra->ra)
+	{
+	case RA_CHR:;
 		int c1 = uc_code(ra->s);
 		int c2 = uc_code(rs->s);
-		if (rs->flg & REG_ICASE && c1 < 128 && isupper(c1))
-			c1 = tolower(c1);
-		if (rs->flg & REG_ICASE && c2 < 128 && isupper(c2))
-			c2 = tolower(c2);
+		if (rs->flg & REG_ICASE)
+		{
+			if (c1 < 128 && isupper(c1))
+				c1 = tolower(c1);
+			if (c2 < 128 && isupper(c2))
+				c2 = tolower(c2);
+		}
 		if (c1 != c2)
 			return 1;
 		rs->s += uc_len(ra->s);
 		return 0;
-	}
-	if (ra->ra == RA_ANY) {
+	case RA_ANY:
 		if (!rs->s[0] || (rs->s[0] == '\n' && !(rs->flg & REG_NOTEOL)))
 			return 1;
 		rs->s += uc_len(rs->s);
 		return 0;
-	}
-	if (ra->ra == RA_BRK) {
+	case RA_BRK:;
 		int c = uc_code(rs->s);
 		if (!c || (c == '\n' && !(rs->flg & REG_NOTEOL)))
 			return 1;
 		rs->s += uc_len(rs->s);
-		return brk_match(ra->s + 1, c, rs->flg);
-	}
-	if (ra->ra == RA_BEG && !(rs->flg & REG_NOTBOL))
-		return !(rs->s == rs->o || rs->s[-1] == '\n');
-	if (ra->ra == RA_END && !(rs->flg & REG_NOTEOL))
-		return rs->s[0] != '\0' && rs->s[0] != '\n';
-	if (ra->ra == RA_WBEG)
+		return brk_match(ra->s + 1, c, rs->flg & REG_ICASE);
+	case RA_BEG:
+		if (rs->flg & REG_NOTBOL)
+			return 1;
+		else
+			return !(rs->s == rs->o || rs->s[-1] == '\n');
+	case RA_END:
+		if (rs->flg & REG_NOTBOL)
+			return 1;
+		else
+			return rs->s[0] != '\0' && rs->s[0] != '\n';
+	case RA_WBEG:
 		return !((rs->s == rs->o || !isword(uc_beg(rs->o, rs->s - 1))) &&
 			isword(rs->s));
-	if (ra->ra == RA_WEND)
+	case RA_WEND:
 		return !(rs->s != rs->o && isword(uc_beg(rs->o, rs->s - 1)) &&
 			(!rs->s[0] || !isword(rs->s)));
+	}
 	return 1;
 }
 
@@ -523,23 +535,22 @@ static int re_rec(struct regex *re, struct rstate *rs)
 		return 1;
 	while (1) {
 		ri = &re->p[rs->pc];
-		if (ri->ri == RI_ATOM) {
+		switch (ri->ri)
+		{
+		case RI_ATOM:
 			if (ratom_match(&ri->ra, rs))
 				return 1;
 			rs->pc++;
 			continue;
-		}
-		if (ri->ri == RI_MARK) {
+		case RI_MARK:
 			if (ri->mark < NGRPS)
 				rs->mark[ri->mark] = rs->s - rs->o;
 			rs->pc++;
 			continue;
-		}
-		if (ri->ri == RI_JUMP) {
+		case RI_JUMP:
 			rs->pc = ri->a1;
 			continue;
-		}
-		if (ri->ri == RI_FORK) {
+		case RI_FORK:;
 			struct rstate base = *rs;
 			rs->pc = ri->a1;
 			if (!re_rec(re, rs))
@@ -577,10 +588,11 @@ int regexec(regex_t *preg, char *s, int nsub, regmatch_t psub[], int flg)
 	memset(&rs, 0, sizeof(rs));
 	rs.flg = re->flg | flg;
 	rs.o = s;
+	nsub = flg & REG_NOSUB ? 0 : nsub;
 	while (*s) {
 		rs.s = s;
 		s += uc_len(s);
-		if (!re_recmatch(re, &rs, flg & REG_NOSUB ? 0 : nsub, psub))
+		if (!re_recmatch(re, &rs, nsub, psub))
 			return 0;
 	}
 	return 1;
