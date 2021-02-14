@@ -270,7 +270,7 @@ static int ratom_match(struct ratom *ra, struct rstate *rs)
 	case RA_BEG:
 		return rs->flg & REG_NOTBOL ? 1 : !(rs->s == rs->o || rs->s[-1] == '\n');
 	case RA_END:
-		return rs->flg & REG_NOTBOL ? 1 : rs->s[0] != '\0' && rs->s[0] != '\n';
+		return rs->flg & REG_NOTEOL ? 1 : rs->s[0] != '\0' && rs->s[0] != '\n';
 	case RA_WBEG:
 		return !((rs->s == rs->o || !isword(uc_beg(rs->o, rs->s - 1))) &&
 			isword(rs->s));
