@@ -172,7 +172,7 @@ static struct highlight {
 			|selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
 			|srclang|srcset|start|step|style|summary|tabindex|target|\
 			|title|translate|type|usemap|value|width|wrap)\\>"},
-        {"html", {6}, "\\<(html|base|head|link|meta|style|title|body|address|article|\
+	{"html", {6}, "\\<(html|base|head|link|meta|style|title|body|address|article|\
 			|aside|footer|header|h\\d|hgroup|main|nav|section|blockquote|dd|\
 			|dir|div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
 			|b|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\

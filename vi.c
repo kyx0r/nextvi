@@ -600,10 +600,8 @@ int fstlen;
 int fspos;
 int fscount;
 
-char *substr(const char *s1, const char *s2)
+char *substr(const char *s1, const char *s2, int len1, int len2)
 {
-	int len1 = strlen(s1);
-	int len2 = strlen(s2);
 	if (len2 > len1)
 		return strstr(s2, s1);	
 	return strstr(s1, s2);	
@@ -626,10 +624,11 @@ static void file_calc(char *path, char *basePath)
 		{
 			s = fsincl;
 			sprev = s;
+			len1 = strlen(dp->d_name);
 			while ((s = strchr(s, ' ')))
 			{
 				*s = '\0';
-				if (substr(dp->d_name, sprev))
+				if (substr(dp->d_name, sprev, len1, strlen(sprev)))
 					break;
 				*s = ' ';
 				s++;
@@ -638,7 +637,7 @@ static void file_calc(char *path, char *basePath)
 			if (!s)
 				continue;
 			*s = ' ';
-			len1 = strlen(dp->d_name)+1;
+			len1++;
 			path[pathlen] = '/';
 			memcpy(&path[pathlen+1], dp->d_name, len1);
 			len = pathlen + len1 + 1;
@@ -680,16 +679,19 @@ void dir_calc(char *cur_dir)
 	closedir(dp);
 }
 
-static int fs_search(char *ex_path, char* cs, int cnt, int *row, int *off)
+static int fs_search(char *ex_path, int ex_len, char* cs,
+			 int cnt, int *row, int *off)
 {
 	char *path;
 	int again = 0;
+	int len;
 	redo:
 	for (;fspos < fstlen;)
 	{
 		path = &fslink[fspos+sizeof(int)];
-		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
-		if (!substr(path, ex_path))
+		len = *(int*)((char*)fslink+fspos) + sizeof(int);
+		fspos += len;
+		if (!substr(path, ex_path, len, ex_len))
 		{
 			if(ex_edit(path))
 			{
@@ -712,7 +714,8 @@ static int fs_search(char *ex_path, char* cs, int cnt, int *row, int *off)
 	return 0;
 }
 
-static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
+static int fs_searchback(char *ex_path, int ex_len, char* cs,
+			int cnt, int *row, int *off)
 {
 	char *path;
 	int tlen = 0;
@@ -727,8 +730,9 @@ static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
 	for (int i = count; i < fscount; i++)
 	{
 		path = paths[i];
-		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
-		if (!substr(ex_path, path))
+		tlen = *(int*)((char*)path-sizeof(int))+sizeof(int);
+		fspos -= tlen;
+		if (!substr(path, ex_path, tlen, ex_len))
 		{
 			if(ex_edit(path))
 			{
@@ -882,7 +886,7 @@ static int vi_motion(int *row, int *off)
 			memcpy(savepath, ex_path(), i);
 		}
 		_row = *row; _off = *off;
-		if(!fs_search(ex, cs, cnt, row, off))
+		if(!fs_search(ex, i-1, cs, cnt, row, off))
 		{
 			*row = _row; *off = _off;
 		}
@@ -891,8 +895,9 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('p'):
 		if (!(cs = vi_curword(xb, *row, *off)) || !fslink)
 			return -1;
-		memcpy(ex, ex_path(), strlen(ex_path())+1);
-		if(!fs_searchback(ex, cs, cnt, row, off))
+		i = strlen(ex_path())+1;
+		memcpy(ex, ex_path(), i);
+		if(!fs_searchback(ex, i-1, cs, cnt, row, off))
 		{
 			if(*savepath)
 			{
