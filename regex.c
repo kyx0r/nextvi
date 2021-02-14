@@ -196,7 +196,7 @@ static char *brk_classes[][2] = {
 	{":xdigit:", "a-fA-F0-9"},
 };
 /* length of brk_classes[i][0] */
-static int cl_lens[] = {7,7,7,7,7,7,7,7,7,6,8};
+static char cl_lens[] = {7,7,7,7,7,7,7,7,7,6,8};
 
 static int brk_match(char *brk, int c, int icase)
 {
@@ -268,15 +268,9 @@ static int ratom_match(struct ratom *ra, struct rstate *rs)
 		rs->s += uc_len(rs->s);
 		return brk_match(ra->s + 1, c, rs->flg & REG_ICASE);
 	case RA_BEG:
-		if (rs->flg & REG_NOTBOL)
-			return 1;
-		else
-			return !(rs->s == rs->o || rs->s[-1] == '\n');
+		return rs->flg & REG_NOTBOL ? 1 : !(rs->s == rs->o || rs->s[-1] == '\n');
 	case RA_END:
-		if (rs->flg & REG_NOTBOL)
-			return 1;
-		else
-			return rs->s[0] != '\0' && rs->s[0] != '\n';
+		return rs->flg & REG_NOTBOL ? 1 : rs->s[0] != '\0' && rs->s[0] != '\n';
 	case RA_WBEG:
 		return !((rs->s == rs->o || !isword(uc_beg(rs->o, rs->s - 1))) &&
 			isword(rs->s));
@@ -311,29 +305,38 @@ static struct rnode *rnode_grp(char **pat)
 static struct rnode *rnode_atom(char **pat)
 {
 	struct rnode *rnode;
-	if (!**pat)
+	switch ((*pat)[0])
+	{
+	case '|':
+	case ')':
+	case 0:
 		return NULL;
-	if ((*pat)[0] == '|' || (*pat)[0] == ')')
-		return NULL;
-	if ((*pat)[0] == '(') {
+	case '(':
 		rnode = rnode_grp(pat);
-	} else {
+		if (!rnode)
+			return NULL;
+		break;
+	default:
 		rnode = rnode_make(RN_ATOM, NULL, NULL);
+		if (!rnode)
+			return NULL;
 		ratom_read(&rnode->ra, pat);
+		break;
 	}
-	if (!rnode)
-		return NULL;
-	if ((*pat)[0] == '*' || (*pat)[0] == '?') {
+	switch ((*pat)[0])
+	{
+	case '*':
+	case '?':
 		rnode->mincnt = 0;
 		rnode->maxcnt = (*pat)[0] == '*' ? -1 : 1;
 		*pat += 1;
-	}
-	if ((*pat)[0] == '+') {
+		break;
+	case '+':
 		rnode->mincnt = 1;
 		rnode->maxcnt = -1;
 		*pat += 1;
-	}
-	if ((*pat)[0] == '{') {
+		break;
+	case '{':
 		rnode->mincnt = 0;
 		rnode->maxcnt = 0;
 		*pat += 1;
@@ -353,6 +356,7 @@ static struct rnode *rnode_atom(char **pat)
 			rnode_free(rnode);
 			return NULL;
 		}
+		break;
 	}
 	return rnode;
 }
@@ -427,7 +431,9 @@ static void rnode_emit(struct rnode *n, struct regex *p);
 static void rnode_emitnorep(struct rnode *n, struct regex *p)
 {
 	int fork, done, mark;
-	if (n->rn == RN_ALT) {
+	switch (n->rn)
+	{
+	case RN_ALT:
 		fork = re_insert(p, RI_FORK);
 		p->p[fork].a1 = p->n;
 		rnode_emit(n->c1, p);
@@ -435,21 +441,22 @@ static void rnode_emitnorep(struct rnode *n, struct regex *p)
 		p->p[fork].a2 = p->n;
 		rnode_emit(n->c2, p);
 		p->p[done].a1 = p->n;
-	}
-	if (n->rn == RN_CAT) {
+		break;
+	case RN_CAT:
 		rnode_emit(n->c1, p);
 		rnode_emit(n->c2, p);
-	}
-	if (n->rn == RN_GRP) {
+		break;
+	case RN_GRP:
 		mark = re_insert(p, RI_MARK);
 		p->p[mark].mark = 2 * n->grp;
 		rnode_emit(n->c1, p);
 		mark = re_insert(p, RI_MARK);
 		p->p[mark].mark = 2 * n->grp + 1;
-	}
-	if (n->rn == RN_ATOM) {
+		break;
+	case RN_ATOM:;
 		int atom = re_insert(p, RI_ATOM);
 		ratom_copy(&p->p[atom].ra, &n->ra);
+		break;
 	}
 }
 
@@ -591,9 +598,9 @@ int regexec(regex_t *preg, char *s, int nsub, regmatch_t psub[], int flg)
 	nsub = flg & REG_NOSUB ? 0 : nsub;
 	while (*s) {
 		rs.s = s;
-		s += uc_len(s);
 		if (!re_recmatch(re, &rs, nsub, psub))
 			return 0;
+		s += uc_len(s);
 	}
 	return 1;
 }
