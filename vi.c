@@ -753,16 +753,16 @@ static int fs_searchback(char *ex_path, int ex_len, char* cs,
 static int vi_motion(int *row, int *off)
 {
 	static char sdirection;
+	static char ex[1024];
+	static char savepath[1024];
+	static int _row, _off, srow, soff;
+	char path[1024];
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
 	int dir = dir_context(ln ? ln : "");
 	int mark, mark_row, mark_off;
-	static char ex[1024];
-	static char savepath[1024];
-	char path[1024];
 	char *cs;
 	int mv, i;
-	static int _row, _off, srow, soff;
 
 	if ((mv = vi_motionln(row, 0))) {
 		*off = -1;
@@ -770,46 +770,24 @@ static int vi_motion(int *row, int *off)
 	}
 	mv = vi_read();
 	switch (mv) {
-	case 'f':
-		if (!(cs = vi_char()))
-			return -1;
-		if (vi_findchar(xb, cs, mv, cnt, row, off))
-			return -1;
-		break;
-	case 'F':
-		if (!(cs = vi_char()))
-			return -1;
-		if (vi_findchar(xb, cs, mv, cnt, row, off))
-			return -1;
-		break;
+	case ',':
+		cnt = -cnt;
 	case ';':
 		if (!vi_charlast[0])
 			return -1;
 		if (vi_findchar(xb, vi_charlast, vi_charcmd, cnt, row, off))
 			return -1;
 		break;
-	case ',':
-		if (!vi_charlast[0])
-			return -1;
-		if (vi_findchar(xb, vi_charlast, vi_charcmd, -cnt, row, off))
-			return -1;
-		break;
 	case 'h':
-		for (i = 0; i < cnt; i++)
-			if (vi_nextcol(xb, -dir, row, off))
-				break;
-		break;
+		dir = -dir;
 	case 'l':
 		for (i = 0; i < cnt; i++)
 			if (vi_nextcol(xb, dir, row, off))
 				break;
 		break;
+	case 'f':
+	case 'F':
 	case 't':
-		if (!(cs = vi_char()))
-			return -1;
-		if (vi_findchar(xb, cs, mv, cnt, row, off))
-			return -1;
-		break;
 	case 'T':
 		if (!(cs = vi_char()))
 			return -1;
@@ -826,11 +804,6 @@ static int vi_motion(int *row, int *off)
 			if (lbuf_wordend(xb, 1, +1, row, off))
 				break;
 		break;
-	case 'W':
-		for (i = 0; i < cnt; i++)
-			if (lbuf_wordbeg(xb, 1, +1, row, off))
-				break;
-		break;
 	case 'b':
 		for (i = 0; i < cnt; i++)
 			if (lbuf_wordend(xb, 0, -1, row, off))
@@ -839,6 +812,11 @@ static int vi_motion(int *row, int *off)
 	case 'e':
 		for (i = 0; i < cnt; i++)
 			if (lbuf_wordend(xb, 0, +1, row, off))
+				break;
+		break;
+	case 'W':
+		for (i = 0; i < cnt; i++)
+			if (lbuf_wordbeg(xb, 1, +1, row, off))
 				break;
 		break;
 	case 'w':
