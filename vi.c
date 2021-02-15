@@ -1783,11 +1783,12 @@ void vi(void)
 					ex_command(regstr);
 					ex_command("%s/ +$//g");
 					break;
-				case ';':;
-					char cmd[1] = {TK_CTL('v')};
-					term_push(cmd, 1);
-					ln = vi_prompt(":", 0, &kmap);
-					goto do_excmd;
+				case 'b':
+					term_push("\x02", 1); //^b
+					goto prompt;
+				case ';':
+					term_push("\x16", 1); //^v
+					goto prompt;
 				default:
 					vi_back(k);
 				}
@@ -1805,6 +1806,7 @@ void vi(void)
 				vi_mod = 1;
 				break;
 			case ':':
+				prompt:
 				ln = vi_prompt(":", 0, &kmap);
 				do_excmd:
 				if (ln && ln[0])
