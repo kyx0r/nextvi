@@ -338,11 +338,10 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 }
 
 /* set xtd and return its old value */
-static int td_set(int td)
+static void td_set(int td)
 {
-	int old = xtd;
+	xotd = xtd;
 	xtd = td;
-	return old;
 }
 
 #define off_for()\
@@ -446,9 +445,9 @@ void led_print(char *s, int row, char *syn)
 /* print a line on the screen; for ex messages */
 void led_printmsg(char *s, int row, char *syn)
 {
-	int td = td_set(+2);
+	td_set(+2);
 	char *r = led_render(s, xleft, xleft + xcols, syn);
-	td_set(td);
+	td_set(xotd);
 	term_pos(row, 0);
 	term_kill();
 	term_str(r);
@@ -558,16 +557,6 @@ char *led_read(int *kmap)
 		c = term_read();
 	}
 	return NULL;
-}
-
-char* skipindent(char* str, int* len)
-{
-	while (*str && (*str == ' ' || *str == '\t'))
-	{
-		str++;
-		*len = *len - 1;
-	}
-	return str;
 }
 
 /* read a line from the terminal */
@@ -699,11 +688,13 @@ static char *led_line(char *pref, char *post, char *ai,
 			if (ai_max > 0)
 				break;
 			xquit = 0;
+			td_set(xotd);
 			hist_write(sbuf_buf(sb));
 			hist_switch();
 			vi();
 			hist_switch();
 			vi(); //redraw past screen
+			td_set(+2);
 			xquit = 2;
 			goto cur_histstr;
 		case TK_CTL('v'):
@@ -766,10 +757,10 @@ char *led_prompt(char *pref, char *post, char *insert,
 		int *kmap, char *syn)
 {
 	int key;
-	int td = td_set(+2);
+	td_set(+2);
 	hist_open();
 	char *s = led_line(pref, post, "", 0, &key, kmap, syn, insert);
-	td_set(td);
+	td_set(xotd);
 	if (key == '\n') {
 		hist_write(s);
 		struct sbuf *sb = sbuf_make();

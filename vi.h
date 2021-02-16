@@ -249,6 +249,7 @@ extern int xquit;
 extern int xic;
 extern int xai;
 extern int xtd;
+extern int xotd;
 extern int xshape;
 extern int xorder;
 extern int xhl;
