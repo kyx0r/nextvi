@@ -132,6 +132,11 @@ static char icmd[4096];		/* read after the last term_cmd() */
 static int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
 static int icmd_pos;		/* icmd[] position */
 
+void term_clear()
+{
+	ibuf_cnt = 0;
+}
+
 /* read s before reading from the terminal */
 void term_push(char *s, int n)
 {

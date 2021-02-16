@@ -52,6 +52,8 @@ vi to suspend.
 24. Added extra highlight keywords for C
 25. Added key that splits the line (opposite of J) keybind: K
 26. Added key that line wraps text to 80 line limit keybind: gq 
+keybind: gw does the same but floors to the last word and is also
+much slower.
 27. Added key that does multiline repeated edits keybind: v.
 This is based on your last commands and insertions and reqires and
 argument for how many lines to repeat said operation. When last

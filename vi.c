@@ -1707,7 +1707,7 @@ void vi(void)
 					free(cs);
 					ln = vi_prompt(":", buf, &kmap);
 					goto do_excmd;
-				} 
+				}
 				switch (k)
 				{
 				case 'h':
@@ -1934,6 +1934,13 @@ void vi(void)
 					xrow = 0;
 				else if (k == 'a')
 					vc_charinfo();
+				else if (k == 'w')
+				{
+					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n')
+						term_push("080lgwbhKj", 10);
+					else
+						term_clear();
+				}
 				else if (k == 'q')
 				{
 					vi_splitln(xrow, 80, 1);
@@ -2009,7 +2016,7 @@ void vi(void)
 				continue;
 			}
 			cmd = term_cmd(&n);
-			if (strchr("!<>ACDIJOPRSXYacdioprsxy~", c) ||
+			if (strchr("!<>ACDIJKOPRSXYacdioprsxy~", c) ||
 					(c == 'g' && strchr("uU~", k))) {
 				if (n < sizeof(rep_cmd)) {
 					memcpy(rep_cmd, cmd, n);
