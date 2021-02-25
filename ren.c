@@ -156,9 +156,12 @@ static char *ren_placeholder(char *s, int *wid)
 			return dst;
 	if (uc_iscomb(s)) {
 		static char buf[16];
-		char cbuf[8] = "";
-		memcpy(cbuf, s, uc_len(s));
-		sprintf(buf, "ـ%s", cbuf);
+		if (!wid)
+		{
+			char cbuf[8] = "";
+			memcpy(cbuf, s, uc_len(s));
+			sprintf(buf, "ـ%s", cbuf);
+		}
 		return buf;
 	}
 	if (uc_isbell(s))
@@ -168,9 +171,9 @@ static char *ren_placeholder(char *s, int *wid)
 
 int ren_cwid(char *s, int pos)
 {
+	int wid = 1;
 	if (s[0] == '\t')
 		return xtabspc - ((pos + torg) & (xtabspc-1));
-	int wid = 1;
 	if (ren_placeholder(s, &wid))
 		return wid;
 	return uc_wid(s);
