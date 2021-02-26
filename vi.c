@@ -1940,9 +1940,7 @@ void vi(void)
 						term_push("080lgwbhKj", 10);
 					else
 						term_clear();
-				}
-				else if (k == 'q')
-				{
+				} else if (k == 'q') {
 					vi_splitln(xrow, 80, 1);
 					vi_mod = 1;
 				}

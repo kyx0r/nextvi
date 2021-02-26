@@ -158,6 +158,7 @@ the argument.
 53. Added a key to disable autoindent. keybind: va
 This is necessary sometimes if you want to paste from system clipboard.
 54. Added minimal syntax highlight for js and html
+55. Substitute commands now have a proper redo-undo savepoint
 
 FAQ:
 ----

@@ -281,7 +281,6 @@ static char *ex_filearg(char *s, char *arg, int spaceallowed)
 	return s;
 }
 
-
 static char *ex_argeol(char *ec)
 {
 	char arg[EXLEN];
@@ -902,10 +901,16 @@ static int ec_substitute(char *ec)
 		free(rep);
 		return 1;
 	}
+	// if the change is bigger than display size
+	// set savepoint where command was issued.
+	if (end - beg > xcols)
+		lbuf_edit(xb, lbuf_get(xb, xrow), xrow, xrow+1);
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
-		struct sbuf *r = sbuf_make();
+		struct sbuf *r = NULL;
 		while (rset_find(re, ln, LEN(offs) / 2, offs, 0) >= 0) {
+			if (!r)
+				r = sbuf_make();
 			sbuf_mem(r, ln, offs[0]);
 			replace(r, rep, ln, offs);
 			ln += offs[1];
@@ -914,10 +919,15 @@ static int ec_substitute(char *ec)
 			if (offs[1] <= 0)	/* zero-length match */
 				sbuf_chr(r, (unsigned char) *ln++);
 		}
-		sbuf_str(r, ln);
-		lbuf_edit(xb, sbuf_buf(r), i, i + 1);
-		sbuf_free(r);
+		if (r)
+		{
+			sbuf_str(r, ln);
+			lbuf_edit(xb, sbuf_buf(r), i, i + 1);
+			sbuf_free(r);
+		}
 	}
+	if (end - beg > xcols)
+		lbuf_edit(xb, lbuf_get(xb, xrow), xrow, xrow+1);
 	rset_free(re);
 	free(rep);
 	return 0;
