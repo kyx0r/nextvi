@@ -903,7 +903,7 @@ static int ec_substitute(char *ec)
 	}
 	// if the change is bigger than display size
 	// set savepoint where command was issued.
-	if (end - beg > xcols)
+	if (end - beg > xrows)
 		lbuf_edit(xb, lbuf_get(xb, xrow), xrow, xrow+1);
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
@@ -926,7 +926,7 @@ static int ec_substitute(char *ec)
 			sbuf_free(r);
 		}
 	}
-	if (end - beg > xcols)
+	if (end - beg > xrows)
 		lbuf_edit(xb, lbuf_get(xb, xrow), xrow, xrow+1);
 	rset_free(re);
 	free(rep);
