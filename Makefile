@@ -1,4 +1,4 @@
-CFLAGS := -Wall $(CFLAGS) 
+CFLAGS := -Wall -std=c99 -D_POSIX_C_SOURCE $(CFLAGS) 
 
 OBJS = vi.o ex.o lbuf.o mot.o sbuf.o ren.o dir.o syn.o reg.o led.o \
 	uc.o term.o rset.o regex.o cmd.o conf.o hund.o

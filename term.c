@@ -153,17 +153,17 @@ char *term_cmd(int *n)
 	return icmd;
 }
 
-int term_read(void)
+int term_read(int fd, int timeout)
 {
 	struct pollfd ufds[1];
 	int n, c;
 	if (ibuf_pos >= ibuf_cnt) {
 		ufds[0].fd = 0;
 		ufds[0].events = POLLIN;
-		if (poll(ufds, 1, -1) <= 0)
+		if (poll(ufds, 1, timeout) <= 0)
 			return -1;
 		/* read a single input character */
-		if ((n = read(0, ibuf, 1)) <= 0)
+		if ((n = read(fd, ibuf, 1)) <= 0)
 			return -1;
 		ibuf_cnt = n;
 		ibuf_pos = 0;

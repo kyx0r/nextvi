@@ -145,7 +145,7 @@ void term_kill(void);
 void term_room(int n);
 int term_rows(void);
 int term_cols(void);
-int term_read(void);
+int term_read(int fd, int timeout);
 void term_record(void);
 void term_commit(void);
 char *term_att(int att, int old);

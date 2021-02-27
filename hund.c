@@ -24,7 +24,6 @@
 #include <locale.h>
 #include <time.h>
 #include <sys/wait.h>
-#include <signal.h>
 #include <pwd.h>
 #include <grp.h>
 #include <sys/types.h>
@@ -40,11 +39,11 @@
 #define LOGIN_NAME_MAX _SC_LOGIN_NAME_MAX
 #endif
 
-#define PATH_BUF_SIZE (PATH_MAX)
-#define PATH_MAX_LEN (PATH_MAX-1)
+#define PATH_BUF_SIZE 4096
+#define PATH_MAX_LEN 4096-1
 
-#define NAME_BUF_SIZE (NAME_MAX+1)
-#define NAME_MAX_LEN (NAME_MAX)
+#define NAME_BUF_SIZE 1024+1
+#define NAME_MAX_LEN 1024
 
 #define LOGIN_BUF_SIZE (LOGIN_NAME_MAX+1)
 #define LOGIN_MAX_LEN (LOGIN_NAME_MAX)
@@ -959,7 +958,6 @@ static const struct s2i SKM[] = {
 	{ NULL, I_NONE },
 };
 
-ssize_t xread(int, void*, ssize_t, int);
 int start_raw_mode(struct termios* const);
 int stop_raw_mode(struct termios* const);
 struct input get_input(int);
@@ -1928,7 +1926,6 @@ static void open_help(struct ui* const i) {
 		for (size_t c = CMD_NONE+1; c < CMD_NUM; ++c) {
 			_find_all_keyseqs4cmd(i, c, m, k, &ki);
 			if (!ki) continue;// ^^^ may output empty array
-
 			size_t maxsequences = 4;
 			char key[KEYNAME_BUF_SIZE];
 			char out[4096] = {0};
@@ -1953,9 +1950,11 @@ static void open_help(struct ui* const i) {
 		hist_write((char*)more_help[l]);
 		l += 1;
 	}
-	hist_pos(0, 0, 0); 
+	hist_pos(0, 0, 0);
 	hist_switch();
+	stop_raw_mode(&i->T);
 	vi();
+	start_raw_mode(&i->T);
 	hist_switch();
 	hist_done();
 	hist_set(0);
@@ -3062,7 +3061,6 @@ static void task_execute(struct ui* const i, struct task* const t) {
 }
 
 extern struct ui* I;
-static int remove_signals(void); 
 
 int hund() {
 	int err;
@@ -3120,7 +3118,6 @@ int hund() {
 	marks_free(&m);
 	task_clean(&t);
 	ui_end(&i);
-	remove_signals();
 	memset(fvs, 0, sizeof(fvs));
 	memset(&t, 0, sizeof(struct task));
 	return 0;
@@ -3699,65 +3696,6 @@ static enum theme_element mode2theme(const mode_t m) {
 }
 
 struct ui* global_i;
-static int setup_signals(void);
-static void sighandler(int sig) {
-	switch (sig) {
-	case SIGTERM:
-	case SIGINT:
-		global_i->run = 0;// TODO
-		break;
-	case SIGTSTP:
-		stop_raw_mode(&global_i->T);
-		signal(SIGTSTP, SIG_DFL);
-		kill(getpid(), SIGTSTP);
-		break;
-	case SIGCONT:
-		start_raw_mode(&global_i->T);
-		global_i->dirty |= DIRTY_ALL;
-		ui_draw(global_i);
-		setup_signals();
-		break;
-	case SIGWINCH:
-		for (int b = 0; b < BUF_NUM; ++b) {
-			free(global_i->B[b].buf);
-			global_i->B[b].top = global_i->B[b].capacity = 0;
-			global_i->B[b].buf = NULL;
-		}
-		global_i->dirty |= DIRTY_ALL;
-		ui_draw(global_i);
-		break;
-	default:
-		break;
-	}
-}
-
-static int setup_signals(void) {
-	struct sigaction sa;
-	memset(&sa, 0, sizeof(struct sigaction));
-	sa.sa_handler = sighandler;
-	if (sigaction(SIGTERM, &sa, NULL)
-	|| sigaction(SIGINT, &sa, NULL)
-	|| sigaction(SIGTSTP, &sa, NULL)
-	|| sigaction(SIGCONT, &sa, NULL)
-	|| sigaction(SIGWINCH, &sa, NULL)) {
-		return errno;
-	}
-	return 0;
-}
-
-static int remove_signals(void) {
-	struct sigaction sa;
-	memset(&sa, 0, sizeof(struct sigaction));
-	sa.sa_handler = SIG_DFL;
-	if (sigaction(SIGTERM, &sa, NULL)
-	|| sigaction(SIGINT, &sa, NULL)
-	|| sigaction(SIGTSTP, &sa, NULL)
-	|| sigaction(SIGCONT, &sa, NULL)
-	|| sigaction(SIGWINCH, &sa, NULL)) {
-		return errno;
-	}
-	return 0;
-}
 
 void ui_init(struct ui* const i, struct panel* const pv,
 		struct panel* const sv) {
@@ -3791,7 +3729,7 @@ void ui_init(struct ui* const i, struct panel* const pv,
 
 	global_i = i;
 	int err;
-	if ((err = start_raw_mode(&i->T)) || (err = setup_signals())) {
+	if ((err = start_raw_mode(&i->T))) {
 		fprintf(stderr, "failed to initalize screen: (%d) %s\n",
 				err, strerror(err));
 		exit(EXIT_FAILURE);
@@ -5755,29 +5693,6 @@ void task_action_copyremove(struct task* const t, int* const c) {
 	}
 }
 
-ssize_t xread(int fd, void* buf, ssize_t count, int timeout_us) {
-	struct timespec T = { 0, (suseconds_t)timeout_us*1000 };
-	fd_set rfds;
-	int retval;
-	if (timeout_us > 0) {
-		FD_ZERO(&rfds);
-		FD_SET(fd, &rfds);
-	}
-	ssize_t rd;
-	do {
-		if (timeout_us > 0) {
-			retval = pselect(fd+1, &rfds, NULL, NULL, &T, NULL);
-			if (retval == -1 || !retval) {
-				FD_CLR(fd, &rfds);
-				return 0;
-			}
-		}
-		rd = read(fd, buf, count);
-	} while (rd < 0 && errno == EINTR && errno == EAGAIN);
-	FD_CLR(fd, &rfds);
-	return rd;
-}
-
 static enum input_type which_key(char* const seq) {
 	int i = 0;
 	while (SKM[i].seq != NULL && SKM[i].t != I_NONE) {
@@ -5792,19 +5707,16 @@ struct input get_input(int timeout_us) {
 	struct input i;
 	memset(&i, 0, sizeof(struct input));
 	int utflen;
-	char seq[7];
-	memset(seq, 0, sizeof(seq));
-	if (xread(fd, seq, 1, timeout_us) == 1 && seq[0] == '\x1b') {
-		if (xread(fd, seq+1, 1, ESC_TIMEOUT_MS*1000) == 1
-		&& (seq[1] == '[' || seq[1] == 'O')) {
-			if (xread(fd, seq+2, 1, 0) == 1
-			&& '0' <= seq[2] && seq[2] <= '9') {
-				xread(fd, seq+3, 1, 0);
-			}
-		}
+	int ch;
+	char *seq = term_cmd(&ch);
+	ch = term_read(fd, timeout_us);
+	if (ch != -1 && ch == '\x1b') {
+		ch = term_read(fd, ESC_TIMEOUT_MS*1000);
+		if (ch != -1 && (ch == '[' || ch == 'O'))	
+			if ((ch = term_read(fd, -1)) != -1 && '0' <= ch && ch <= '9')
+				term_read(fd, -1);
 		i.t = which_key(seq);
-	}
-	else if (seq[0] == 0x7f) {
+	} else if (seq[0] == 0x7f) {
 #if defined(__linux__) || defined(__linux) || defined(linux)
 		i.t = I_BACKSPACE;
 #else
@@ -5820,7 +5732,8 @@ struct input get_input(int timeout_us) {
 		i.utf[0] = seq[0];
 		int b;
 		for (b = 1; b < utflen; ++b) {
-			if (xread(fd, i.utf+b, 1, 0) != 1) {
+			if ((ch = term_read(fd, -1)) != 1) {
+				*(i.utf+b) = ch;
 				i.t = I_NONE;
 				memset(i.utf, 0, 5);
 				return i;
@@ -5840,9 +5753,12 @@ int start_raw_mode(struct termios* const before) {
 		return errno;
 	}
 	struct termios raw = *before;
-	cfmakeraw(&raw);
-//raw.c_cc[VINTR] = 0x03;
-//raw.c_cc[VSUSP] = 0x1a;
+	raw.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP
+			|INLCR|IGNCR|ICRNL|IXON);
+	raw.c_oflag &= ~OPOST;
+	raw.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+	raw.c_cflag &= ~(CSIZE|PARENB);
+	raw.c_cflag |= CS8;
 	raw.c_iflag &= ~(BRKINT);
 	raw.c_lflag |= ISIG;
 	write(STDOUT_FILENO, CSI_CURSOR_HIDE);// TODO
@@ -5854,7 +5770,6 @@ int stop_raw_mode(struct termios* const before) {
 		return errno;
 	}
 	write(STDOUT_FILENO, CSI_SCREEN_NORMAL);// TODO
-
 	write(STDOUT_FILENO, CSI_CURSOR_SHOW);
 	write(STDOUT_FILENO, "\r\n", 2);
 	return 0;

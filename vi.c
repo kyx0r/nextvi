@@ -18,10 +18,10 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #include "vi.h"
 
 int vi_lnnum;		/* line numbers */
@@ -279,7 +279,7 @@ static int vi_buflen;
 
 static int vi_read(void)
 {
-	return vi_buflen ? vi_buf[--vi_buflen] : term_read();
+	return vi_buflen ? vi_buf[--vi_buflen] : term_read(0, -1);
 }
 
 static void vi_back(int c)
@@ -315,16 +315,6 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	free(s);
 	vi_mod = 1;
 	return r;
-}
-
-static void vi_sigresize(int sig)
-{
-	switch (sig)
-	{
-	case SIGWINCH:
-		vi_back(TK_CTL('l'));
-		break;	
-	}
 }
 
 /* read an ex input line */
@@ -607,20 +597,19 @@ char *substr(const char *s1, const char *s2, int len1, int len2)
 	return strstr(s1, s2);	
 }
 
-static void file_calc(char *path, char *basePath)
+static void file_calc(char *path, char *basepath)
 {
 	struct dirent *dp;
+	struct stat statbuf;
 	char *s, *sprev;
 	int len, _len, len1;
-	DIR *dir = opendir(basePath);
+	DIR *dir = opendir(basepath);
 	int pathlen = strlen(path);
-
 	if (!dir)
 		return;
-
 	while ((dp = readdir(dir)) != NULL)
 	{
-		if (dp->d_type == DT_REG)
+		if (lstat(dp->d_name, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
 		{
 			s = fsincl;
 			sprev = s;
@@ -656,22 +645,22 @@ static void file_calc(char *path, char *basePath)
 void dir_calc(char *cur_dir)
 {
 	struct dirent *dirp;
+	struct stat statbuf;
 	DIR *dp;
 	char *ptr;
-
 	file_calc(cur_dir, cur_dir);
 	ptr = cur_dir + strlen(cur_dir);
 	*ptr++ = '/';
 	*ptr = 0;
-
 	if ((dp = opendir(cur_dir)) == NULL)
 		return ;
 
 	while ((dirp = readdir(dp)) != NULL)
 	{
-		if (dirp->d_type != DT_DIR ||
-			strcmp(dirp->d_name, ".") == 0 ||
-			strcmp(dirp->d_name, "..") == 0)
+		if (strcmp(dirp->d_name, ".") == 0 ||
+			strcmp(dirp->d_name, "..") == 0 ||
+			lstat(dirp->d_name, &statbuf) < 0 ||
+			S_ISDIR(statbuf.st_mode) == 0)
 			continue;
 		strcpy(ptr, dirp->d_name);
 		dir_calc(cur_dir);
@@ -951,10 +940,6 @@ static int vi_motion(int *row, int *off)
 		break;
 	case '\\':
 		hund();
-		struct sigaction sa = {0};
-		sa.sa_handler = vi_sigresize;
-		if (sigaction(SIGWINCH, &sa, NULL))
-			return -1;
 		break;
 	default:
 		vi_back(mv);
@@ -2068,10 +2053,6 @@ void vi(void)
 
 int main(int argc, char *argv[])
 {
-	struct sigaction sa = {0};
-	sa.sa_handler = vi_sigresize;
-	if (sigaction(SIGWINCH, &sa, NULL))
-		return -1;
 	int i;
 	char *prog = strchr(argv[0], '/') ? strrchr(argv[0], '/') + 1 : argv[0];
 	xvis = strcmp("ex", prog) && strcmp("neatex", prog);
@@ -2104,7 +2085,5 @@ int main(int argc, char *argv[])
 	ren_done();
 	if (fslink)
 		free(fslink);
-	sa.sa_handler = SIG_DFL;
-	sigaction(SIGWINCH, &sa, NULL);
 	return 0;
 }
