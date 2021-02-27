@@ -1269,7 +1269,7 @@ static int vc_motion(int cmd)
 		vi_pipe(r1, r2);
 	if (cmd == '>' || cmd == '<')
 		vi_shift(r1, r2, cmd == '>' ? +1 : -1);
-	if (cmd == TK_CTL('q'))
+	if (cmd == TK_CTL('w'))
 		vi_unindent(r1, r2);		
 	return 0;
 }
@@ -1825,7 +1825,7 @@ void vi(void)
 			case '!':
 			case '>':
 			case '<':
-			case TK_CTL('q'):
+			case TK_CTL('w'):
 				if (!vc_motion(c))
 					vi_mod = 1;
 				break;

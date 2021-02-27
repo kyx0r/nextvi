@@ -7,7 +7,7 @@ https://github.com/aligrudi/neatvi
 
 FORK CHANGES
 ------------
-1. Added unindent keybind: ^q 
+1. Added unindent keybind: ^w 
 2. Added quickexit to insert mode keybind: kj   
 It's important to understand that this has a caveat, if
 input comes too fast, for example a paste from terminal and
