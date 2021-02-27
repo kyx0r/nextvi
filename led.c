@@ -515,15 +515,15 @@ char *led_readchar(int c, int kmap)
 	int c1, c2;
 	int i, n;
 	if (c == TK_CTL('v')) {		/* literal character */
-		buf[0] = term_read(0, -1);
+		buf[0] = term_read();
 		buf[1] = '\0';
 		return buf;
 	}
 	if (c == TK_CTL('k')) {		/* digraph */
-		c1 = term_read(0, -1);
+		c1 = term_read();
 		if (TK_INT(c1))
 			return NULL;
-		c2 = term_read(0, -1);
+		c2 = term_read();
 		if (TK_INT(c2))
 			return NULL;
 		return conf_digraph(c1, c2);
@@ -532,7 +532,7 @@ char *led_readchar(int c, int kmap)
 		buf[0] = c;
 		n = uc_len(buf);
 		for (i = 1; i < n; i++)
-			buf[i] = term_read(0, -1);
+			buf[i] = term_read();
 		buf[n] = '\0';
 		return buf;
 	}
@@ -542,7 +542,7 @@ char *led_readchar(int c, int kmap)
 /* read a character from the terminal */
 char *led_read(int *kmap)
 {
-	int c = term_read(0, -1);
+	int c = term_read();
 	while (!TK_INT(c)) {
 		switch (c) {
 		case TK_CTL('f'):
@@ -554,7 +554,7 @@ char *led_read(int *kmap)
 		default:
 			return led_readchar(c, *kmap);
 		}
-		c = term_read(0, -1);
+		c = term_read();
 	}
 	return NULL;
 }
@@ -580,7 +580,7 @@ static char *led_line(char *pref, char *post, char *ai,
 		post = "";
 	while (1) {
 		led_printparts(ai, pref, sbuf_buf(sb), post, *kmap, syn);
-		c = term_read(0, -1);
+		c = term_read();
 		switch (c) {
 		case TK_CTL('f'):
 			*kmap = xkmap_alt;

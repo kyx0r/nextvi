@@ -106,7 +106,8 @@ the regex will be applied on any file. The reason "/" was
 chosen because it's forbidden filename character on unix. It used 
 to be "" but in C will make a ptr value of 0, which breaks strcmp
 which is used to match highlights.
-36. PLACEHOLDER (deleted feature) 
+36. Added a window size signal handler for vi to
+redraw the screen automatically.
 37. Added history buffer for ex commands when in vi prompt.
 keybind: ^b or vb (from normal) will open the buffer with all previous 
 commands move the cursor to wanted command and exit buffer with qq  

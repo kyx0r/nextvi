@@ -23,28 +23,27 @@
 #include <limits.h>
 #include <locale.h>
 #include <time.h>
-#include <sys/wait.h>
 #include <pwd.h>
 #include <grp.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <errno.h>
 #include <termios.h>
-#include <sys/ioctl.h>
 #include <stdint.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/select.h>
+#include <sys/wait.h>
+#include <sys/ioctl.h>
 #include "vi.h"
 #ifndef LOGIN_NAME_MAX
 #define LOGIN_NAME_MAX _SC_LOGIN_NAME_MAX
 #endif
 
-#define PATH_BUF_SIZE 4096
-#define PATH_MAX_LEN 4096-1
-
-#define NAME_BUF_SIZE 1024+1
-#define NAME_MAX_LEN 1024
-
+#define PATH_BUF_SIZE (PATH_MAX)
+#define PATH_MAX_LEN (PATH_MAX-1)
+#define NAME_BUF_SIZE (NAME_MAX+1)
+#define NAME_MAX_LEN (NAME_MAX)
 #define LOGIN_BUF_SIZE (LOGIN_NAME_MAX+1)
 #define LOGIN_MAX_LEN (LOGIN_NAME_MAX)
 
@@ -95,14 +94,6 @@ static const char* const perm2rwx[] = {
 	[07] = "rwx",
 };
 
-char* xstrlcpy(char*, const char*, size_t);
-
-char* get_home(void);
-
-int relative_chmod(const char* const, const mode_t, const mode_t);
-
-int same_fs(const char* const, const char* const);
-
 struct file {
 	struct stat s;
 	int selected;
@@ -110,11 +101,13 @@ struct file {
 	char name[];
 };
 
+char* xstrlcpy(char*, const char*, size_t);
+char* get_home(void);
+int relative_chmod(const char* const, const mode_t, const mode_t);
+int same_fs(const char* const, const char* const);
 void file_list_clean(struct file*** const, fnum_t* const);
 int scan_dir(const char* const, struct file*** const,
 		fnum_t* const, fnum_t* const);
-
-
 int link_copy_recalculate(const char* const,
 		const char* const, const char* const);
 int link_copy_raw(const char* const, const char* const);
@@ -129,18 +122,13 @@ int link_copy_raw(const char* const, const char* const);
  * X.XXU
  */
 void pretty_size(off_t, char* buf);
-
 int pushd(char* const, size_t* const, const char* const, size_t);
 void popd(char* const, size_t* const);
-
 int cd(char* const, size_t* const, const char* const, size_t);
-
 int prettify_path_i(const char* const);
 int current_dir_i(const char* const);
-
 size_t imb(const char*, const char*);
 int contains(const char* const, const char* const);
-
 
 struct string {
 	unsigned char len;
@@ -155,7 +143,6 @@ struct string_list {
 fnum_t list_push(struct string_list* const, const char* const, size_t);
 void list_copy(struct string_list* const, const struct string_list* const);
 void list_free(struct string_list* const);
-
 int file_to_list(const int, struct string_list* const);
 int list_to_file(const struct string_list* const, int);
 fnum_t string_on_list(const struct string_list* const, const char* const, size_t);
@@ -841,42 +828,28 @@ struct panel {
 
 int visible(const struct panel* const, const fnum_t);
 struct file* hfr(const struct panel* const);
-
 void first_entry(struct panel* const);
 void last_entry(struct panel* const);
-
 void jump_n_entries(struct panel* const, const int);
-
 void delete_file_list(struct panel* const);
 fnum_t file_on_list(const struct panel* const, const char* const);
 void file_highlight(struct panel* const, const char* const);
-
 int file_find(struct panel* const, const char* const,
 		const fnum_t, const fnum_t);
-
 struct file* panel_select_file(struct panel* const);
 int panel_enter_selected_dir(struct panel* const);
 int panel_up_dir(struct panel* const);
-
 void panel_toggle_hidden(struct panel* const);
-
 int panel_scan_dir(struct panel* const);
 void panel_sort(struct panel* const);
-
 char* panel_path_to_selected(struct panel* const);
-
 void panel_sorting_changed(struct panel* const);
-
 void panel_selected_to_list(struct panel* const, struct string_list* const);
-
 void select_from_list(struct panel* const, const struct string_list* const);
-
 void panel_unselect_all(struct panel* const);
 /*
  * TODO find a better name
  */
-
-
 
 struct assign {
 	fnum_t from, to;
@@ -885,10 +858,8 @@ struct assign {
 int rename_prepare(const struct panel* const, struct string_list* const,
 		struct string_list* const, struct string_list* const,
 		struct assign** const, fnum_t* const);
-
 int conflicts_with_existing(struct panel* const,
 		const struct string_list* const);
-
 void remove_conflicting(struct panel* const, struct string_list* const);
 
 #define ESC_TIMEOUT_MS 125
@@ -997,7 +968,6 @@ enum char_attr {
 
 int char_attr(char* const, const size_t, const int,
 		const unsigned char* const);
-
 int move_cursor(const unsigned int, const unsigned int);
 int window_size(int* const, int* const);
 
@@ -1192,14 +1162,12 @@ struct input2cmd {
 };
 
 #define IS_CTRL(I,K) (((I).t == I_CTRL) && ((I).utf[0] == (K)))
-
 #define KUTF8(K) { .t = I_UTF8, .utf = K }
 #define KSPEC(K) { .t = (K) }
 #define KCTRL(K) { .t = I_CTRL, .utf[0] = (K) }
 
 static struct input2cmd default_mapping[] = {
 /* MODE MANGER */
-
 	{ { KUTF8("q"), KUTF8("q") }, MODE_MANAGER, CMD_QUIT },
 
 	{ { KUTF8("g"), KUTF8("g") }, MODE_MANAGER, CMD_ENTRY_FIRST },
@@ -1245,8 +1213,6 @@ static struct input2cmd default_mapping[] = {
 	{ { KCTRL('J') }, MODE_MANAGER, CMD_ENTER_DIR },
 	{ { KUTF8("l") }, MODE_MANAGER, CMD_ENTER_DIR },
 /* <TODO> */
-
-
 	{ { KUTF8("v") }, MODE_MANAGER, CMD_SELECT_FILE },
 	{ { KUTF8("V") }, MODE_MANAGER, CMD_SELECT_ALL },
 	{ { KUTF8("0") }, MODE_MANAGER, CMD_SELECT_NONE },
@@ -1254,8 +1220,6 @@ static struct input2cmd default_mapping[] = {
 	{ { KUTF8(".") }, MODE_MANAGER, CMD_SELECTED_NEXT },
 	{ { KUTF8(",") }, MODE_MANAGER, CMD_SELECTED_PREV },
 /* </TODO> */
-
-
 	{ { KUTF8("m") }, MODE_MANAGER, CMD_MARK_NEW },
 	{ { KUTF8("'") }, MODE_MANAGER, CMD_MARK_JUMP },
 
@@ -1276,8 +1240,6 @@ static struct input2cmd default_mapping[] = {
 
 	{ { KUTF8("t") }, MODE_MANAGER, CMD_COL, },
 /* MODE CHMOD */
-
-
 	{ { KUTF8("q"), KUTF8("q") }, MODE_CHMOD, CMD_RETURN },
 	{ { KUTF8("c"), KUTF8("c") }, MODE_CHMOD, CMD_CHANGE },
 
@@ -1291,8 +1253,6 @@ static struct input2cmd default_mapping[] = {
 	{ { KUTF8("+") }, MODE_CHMOD, CMD_PL, },
 	{ { KUTF8("-") }, MODE_CHMOD, CMD_MI, },
 /* MODE WAIT */
-
-
 	{ { KUTF8("q"), KUTF8("q") }, MODE_WAIT, CMD_TASK_QUIT },
 	{ { KUTF8("p"), KUTF8("p") }, MODE_WAIT, CMD_TASK_PAUSE },
 	{ { KUTF8("r"), KUTF8("r") }, MODE_WAIT, CMD_TASK_RESUME },
@@ -1472,48 +1432,30 @@ enum dirty_flag {
 
 struct ui {
 	int scrh, scrw;// Last window dimensions
-
 	int pw[2];// Panel Width
-
 	int ph;// Panel Height
-
 	int pxoff[2];// Panel X OFFset
-
-
 	int run;
-
 	enum mode m;
-
 	enum msg_type mt;
 	char msg[MSG_BUFFER_SIZE];
-
 	char prch[16];// TODO adjust size
-
 	char* prompt;
 	int prompt_cursor_pos;
-
 	int timeout;// microseconds
-
-
 	struct append_buffer B[BUF_NUM];
 	enum dirty_flag dirty;
 	struct termios T;
-
 	struct panel* fvs[2];
 	struct panel* pv;
 	struct panel* sv;
-
 	struct input2cmd* kmap;
 	size_t kml;// Key Mapping Length
-
 	struct input K[INPUT_LIST_LENGTH];
-
 	char* path;// path of chmodded file
-
 // [0] = old value
 // [1] = new/edited value
 	mode_t perm[2];// permissions of chmodded file
-
 	mode_t plus, minus;
 	uid_t o[2];
 	gid_t g[2];
@@ -1542,7 +1484,6 @@ void ui_end(struct ui* const);
 int help_to_fd(struct ui* const, const int);
 void ui_draw(struct ui* const);
 void ui_update_geometry(struct ui* const);
-
 int chmod_open(struct ui* const, char* const);
 void chmod_close(struct ui* const);
 
@@ -1554,13 +1495,10 @@ struct select_option {
 
 int ui_ask(struct ui* const, const char* const q,
 		const struct select_option*, const size_t);
-
 enum command get_cmd(struct ui* const);
 int fill_textbox(struct ui* const, char* const,
 		char** const, const size_t, struct input* const);
-
 int prompt(struct ui* const, char* const, char*, const size_t);
-
 void failed(struct ui* const, const char* const, const char* const);
 int ui_rescan(struct ui* const, struct panel* const,
 		struct panel* const);
@@ -1570,12 +1508,10 @@ enum spawn_flags {
 };
 
 int spawn(char* const[], const enum spawn_flags);
-
 size_t append_theme(struct append_buffer* const, const enum theme_element);
 
-#if defined(__OpenBSD__) // TODO
-// TODO
-	#define HAS_FALLOCATE 0
+#if defined(__OpenBSD__)
+#define HAS_FALLOCATE 0
 #else
 #define HAS_FALLOCATE 1
 #endif
@@ -1599,22 +1535,16 @@ enum task_type {
 enum tree_walk_state {
 	AT_NOWHERE = 0,
 	AT_EXIT = 1<<0,// finished reading tree
-
 	AT_FILE = 1<<1,
 	AT_LINK = 1<<2,
 	AT_DIR = 1<<3,// on dir (will enter this dir)
-
 	AT_DIR_END = 1<<4,// finished reading dir (will go up)
-
 	AT_SPECIAL = 1<<5,// anything other than link, dir or regular file
-
 };
 
 struct dirtree {
 	struct dirtree* up;// ..
-
 	DIR* cd;// Current Directory
-
 };
 /*
  * It's basically an iterative directory tree walker
@@ -1626,11 +1556,8 @@ struct dirtree {
 struct tree_walk {
 	enum tree_walk_state tws;
 	int tl;// Transparent Links
-
 	struct dirtree* dt;
-
 	struct stat cs;// Current Stat
-
 	char* path;
 	size_t pathlen;
 };
@@ -1654,16 +1581,11 @@ enum task_flags {
 enum task_state {
 	TS_CLEAN = 0,
 	TS_ESTIMATE = 1<<0,// after task_new; runs task_estimate
-
 	TS_CONFIRM = 1<<1,// after task_estimate is finished; task configuration
-
 	TS_RUNNING = 1<<2,// task runs
-
 	TS_PAUSED = 1<<3,
 	TS_FAILED = 1<<4,// if something went wrong. on some errors task can retry
-
 	TS_FINISHED = 1<<5// task succesfully finished; cleans up, returns to TS_CLEAN
-
 };
 
 struct task {
@@ -1671,32 +1593,20 @@ struct task {
 	enum task_state ts;
 	enum task_flags tf;
 //    vvv basically pointers to panel->wd; to not free
-
-
 	char* src;// Source directory path
-
 	char* dst;// Destination directory path
-
 	struct string_list sources;// Files to be copied
-
 	struct string_list renamed;// Same size as sources,
-
 	fnum_t current_source;
 // NULL == no conflict, use origial name
 // NONNULL = conflict, contains pointer to name replacement
-
-
-
 	int err;// Last errno
-
 	struct tree_walk tw;
 	int in, out;
-
 	fnum_t conflicts, symlinks, specials;
 	ssize_t size_total, size_done;
 	fnum_t files_total, files_done;
 	fnum_t dirs_total, dirs_done;
-
 	mode_t chp, chm;
 	uid_t cho;
 	gid_t chg;
@@ -1709,13 +1619,11 @@ void task_new(struct task* const, const enum task_type,
 		const struct string_list* const);
 void task_clean(struct task* const);
 int task_build_path(const struct task* const, char*);
-
 typedef void (*task_action)(struct task* const, int* const);
 void task_action_chmod(struct task* const, int* const);
 void task_action_estimate(struct task* const, int* const);
 void task_action_copyremove(struct task* const, int* const);
 void task_do(struct task* const, task_action, const enum task_state);
-
 int tree_walk_start(struct tree_walk* const, const char* const,
 		const char* const, const size_t);
 void tree_walk_end(struct tree_walk* const);
@@ -1842,7 +1750,9 @@ static inline void list_marks(struct ui* const i, struct marks* const m) {
 		hist_write(h);
 	}
 	hist_switch();
+	stop_raw_mode(&i->T);
 	vi();
+	start_raw_mode(&i->T);
 	hist_switch();
 	hist_done();
 	hist_set(0);
@@ -2000,7 +1910,6 @@ static void cmd_find(struct ui* const i) {
 	const fnum_t N = i->pv->num_files;
 	struct input o;
 	fnum_t s = 0;// Start
-
 	fnum_t e = N-1;// End
 
 	for (;;) {
@@ -2794,7 +2703,6 @@ static void process_input(struct ui* const i, struct task* const t,
 		break;
 	case CMD_DIR_VOLUME:
 //estimate_volume_for_selected(i->pv);
-
 		break;
 	case CMD_SELECT_FILE:
 		if (panel_select_file(i->pv)) {
@@ -2856,9 +2764,8 @@ static void process_input(struct ui* const i, struct task* const t,
 			i->dirty = DIRTY_STATUSBAR | DIRTY_BOTTOMBAR;
 			chmod_open(i, s);
 		}
-		else {
+		else 
 			failed(i, "chmod", strerror(ENAMETOOLONG));
-		}
 		break;
 	case CMD_TOGGLE_HIDDEN:
 		panel_toggle_hidden(i->pv);
@@ -3696,6 +3603,36 @@ static enum theme_element mode2theme(const mode_t m) {
 }
 
 struct ui* global_i;
+void sig_hund(int sig) {
+	switch (sig) {
+	case SIGTERM:
+	case SIGINT:
+		global_i->run = 0;// TODO
+		break;
+	case SIGTSTP:
+		stop_raw_mode(&global_i->T);
+		signal(SIGTSTP, SIG_DFL);
+		kill(getpid(), SIGTSTP);
+		break;
+	case SIGCONT:
+		start_raw_mode(&global_i->T);
+		global_i->dirty |= DIRTY_ALL;
+		ui_draw(global_i);
+		//setup_signals();
+		break;
+	case SIGWINCH:
+		for (int b = 0; b < BUF_NUM; ++b) {
+			free(global_i->B[b].buf);
+			global_i->B[b].top = global_i->B[b].capacity = 0;
+			global_i->B[b].buf = NULL;
+		}
+		global_i->dirty |= DIRTY_ALL;
+		ui_draw(global_i);
+		break;
+	default:
+		break;
+	}
+}
 
 void ui_init(struct ui* const i, struct panel* const pv,
 		struct panel* const sv) {
@@ -3734,7 +3671,6 @@ void ui_init(struct ui* const i, struct panel* const pv,
 				err, strerror(err));
 		exit(EXIT_FAILURE);
 	}
-	write(STDOUT_FILENO, CSI_CURSOR_HIDE);
 }
 
 void ui_end(struct ui* const i) {
@@ -4266,7 +4202,6 @@ enum command get_cmd(struct ui* const i) {
 		return CMD_NONE;
 	}
 	int pm = 0;// partial match
-
 	for (size_t m = 0; m < i->kml; ++m) {
 		if (i->kmap[m].m != i->m) continue;
 		if (!memcmp(i->K, i->kmap[m].i, ISIZE)) {
@@ -5335,7 +5270,6 @@ void task_action_estimate(struct task* const t, int* const c) {
 		}
 	}
 	t->size_total += t->tw.cs.st_size;// TODO
-
 	*c -= 1;
 	if ((t->err = tree_walk_step(&t->tw))) {
 		t->ts = TS_FAILED;
@@ -5408,7 +5342,6 @@ static int _open_files(struct task* const t,
 		if (e != EOPNOTSUPP && e != ENOSYS) return e;
 	}
 #endif
-
 	return 0;
 }
 
@@ -5554,13 +5487,11 @@ int tree_walk_step(struct tree_walk* const tw) {
 		break;
 	}
 	if (!tw->dt || !tw->dt->up) {// last dir
-
 		free(tw->dt);
 		tw->dt = NULL;
 		tw->tws = AT_EXIT;
 		return 0;
 	}
-
 	struct dirent* ce;
 	do {
 		errno = 0;
@@ -5693,6 +5624,29 @@ void task_action_copyremove(struct task* const t, int* const c) {
 	}
 }
 
+ssize_t xread(int fd, void* buf, ssize_t count, int timeout_us) {
+	struct timespec T = { 0, (suseconds_t)timeout_us*1000 };
+	fd_set rfds;
+	int retval;
+	if (timeout_us > 0) {
+		FD_ZERO(&rfds);
+		FD_SET(fd, &rfds);
+	}
+	ssize_t rd;
+	do {
+		if (timeout_us > 0) {
+			retval = pselect(fd+1, &rfds, NULL, NULL, &T, NULL);
+			if (retval == -1 || !retval) {
+				FD_CLR(fd, &rfds);
+				return 0;
+			}
+		}
+		rd = read(fd, buf, count);
+	} while (rd < 0 && errno == EINTR && errno == EAGAIN);
+	FD_CLR(fd, &rfds);
+	return rd;
+}
+
 static enum input_type which_key(char* const seq) {
 	int i = 0;
 	while (SKM[i].seq != NULL && SKM[i].t != I_NONE) {
@@ -5707,14 +5661,16 @@ struct input get_input(int timeout_us) {
 	struct input i;
 	memset(&i, 0, sizeof(struct input));
 	int utflen;
-	int ch;
-	char *seq = term_cmd(&ch);
-	ch = term_read(fd, timeout_us);
-	if (ch != -1 && ch == '\x1b') {
-		ch = term_read(fd, ESC_TIMEOUT_MS*1000);
-		if (ch != -1 && (ch == '[' || ch == 'O'))	
-			if ((ch = term_read(fd, -1)) != -1 && '0' <= ch && ch <= '9')
-				term_read(fd, -1);
+	char seq[7];
+	memset(seq, 0, sizeof(seq));
+	if (xread(fd, seq, 1, timeout_us) == 1 && seq[0] == '\x1b') {
+		if (xread(fd, seq+1, 1, ESC_TIMEOUT_MS*1000) == 1
+		&& (seq[1] == '[' || seq[1] == 'O')) {
+			if (xread(fd, seq+2, 1, 0) == 1
+			&& '0' <= seq[2] && seq[2] <= '9') {
+				xread(fd, seq+3, 1, 0);
+			}
+		}
 		i.t = which_key(seq);
 	} else if (seq[0] == 0x7f) {
 #if defined(__linux__) || defined(__linux) || defined(linux)
@@ -5732,8 +5688,7 @@ struct input get_input(int timeout_us) {
 		i.utf[0] = seq[0];
 		int b;
 		for (b = 1; b < utflen; ++b) {
-			if ((ch = term_read(fd, -1)) != 1) {
-				*(i.utf+b) = ch;
+			if (xread(fd, i.utf+b, 1, 0) != 1) {
 				i.t = I_NONE;
 				memset(i.utf, 0, 5);
 				return i;
@@ -5761,7 +5716,7 @@ int start_raw_mode(struct termios* const before) {
 	raw.c_cflag |= CS8;
 	raw.c_iflag &= ~(BRKINT);
 	raw.c_lflag |= ISIG;
-	write(STDOUT_FILENO, CSI_CURSOR_HIDE);// TODO
+	write(STDOUT_FILENO, CSI_CURSOR_HIDE);
 	return (tcsetattr(fd, TCSAFLUSH, &raw) ? errno : 0);
 }
 
@@ -5769,7 +5724,7 @@ int stop_raw_mode(struct termios* const before) {
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, before)) {
 		return errno;
 	}
-	write(STDOUT_FILENO, CSI_SCREEN_NORMAL);// TODO
+	write(STDOUT_FILENO, CSI_SCREEN_NORMAL);
 	write(STDOUT_FILENO, CSI_CURSOR_SHOW);
 	write(STDOUT_FILENO, "\r\n", 2);
 	return 0;

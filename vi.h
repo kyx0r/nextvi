@@ -16,6 +16,7 @@ void reverse_in_place(char *str, int len);
 
 /* hund file manager */
 int hund();
+void sig_hund(int sig);
 void vi();
 
 /* line buffer, managing a number of lines */
@@ -145,7 +146,7 @@ void term_kill(void);
 void term_room(int n);
 int term_rows(void);
 int term_cols(void);
-int term_read(int fd, int timeout);
+int term_read(void);
 void term_record(void);
 void term_commit(void);
 char *term_att(int att, int old);

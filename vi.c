@@ -22,6 +22,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <signal.h>
 #include "vi.h"
 
 int vi_lnnum;		/* line numbers */
@@ -38,6 +39,7 @@ static int vi_pcol;			/* the column requested by | command */
 static int vi_printed;			/* ex_print() calls since the last command */
 static int vi_scroll;			/* scroll amount for ^f and ^d*/
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
+static int is_hund;			/* is hund active */
 static char *vi_curword(struct lbuf *lb, int row, int off);
 
 void reverse_in_place(char *str, int len)
@@ -279,7 +281,7 @@ static int vi_buflen;
 
 static int vi_read(void)
 {
-	return vi_buflen ? vi_buf[--vi_buflen] : term_read(0, -1);
+	return vi_buflen ? vi_buf[--vi_buflen] : term_read();
 }
 
 static void vi_back(int c)
@@ -939,7 +941,9 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
+		is_hund = 1;
 		hund();
+		is_hund = 0;
 		break;
 	default:
 		vi_back(mv);
@@ -2051,6 +2055,28 @@ void vi(void)
 	term_kill();
 }
 
+static void sighandler(int sig)
+{
+	if (is_hund)
+		sig_hund(sig);
+	else
+		if (sig == SIGWINCH)
+			vi_back(TK_CTL('l'));
+}
+
+static int setup_signals(void) {
+	struct sigaction sa = {0};
+	sa.sa_handler = sighandler;
+	if (sigaction(SIGTERM, &sa, NULL)
+	|| sigaction(SIGINT, &sa, NULL)
+	|| sigaction(SIGTSTP, &sa, NULL)
+	|| sigaction(SIGCONT, &sa, NULL)
+	|| sigaction(SIGWINCH, &sa, NULL)) {
+		return 0;
+	}
+	return 1;
+}
+
 int main(int argc, char *argv[])
 {
 	int i;
@@ -2070,7 +2096,11 @@ int main(int argc, char *argv[])
 		term_init();
 	if (!ex_init(argv + i)) {
 		if (xvis)
+		{
+			if (!setup_signals())
+				return -1;
 			vi();
+		}
 		else
 			ex();
 		ex_done();
