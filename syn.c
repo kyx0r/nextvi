@@ -11,6 +11,12 @@ static struct ftmap {
 	struct rset *rs;
 } ftmap[NFTS];
 
+static struct bmap {
+	int id;
+	struct rset *rs;
+} bmap[NFTS];
+static int bidx;
+
 static struct rset *syn_ftrs;
 static int syn_ctx;
 static int *blockatt;
@@ -61,7 +67,6 @@ int *syn_highlight(char *ft, char *s, int n)
 	int subs[16 * 2];
 	int flg = 0;
 	int hl, j, i;
-	struct rset *brs = NULL;
 	if (xhll)
 		for (i = 0; i < n; i++)
 			att[i] = syn_ctx;
@@ -77,15 +82,21 @@ int *syn_highlight(char *ft, char *s, int n)
 		if (blockrs)
 		{
 			catt = blockatt;
-			rset_free(blockrs);
 			blockrs = NULL;
 			setatt()
-			break;
-		} else if (patend && !brs) {
+			return att;
+		} else if (patend) {
 			patend += hl;
-			char *pat;
-			conf_highlight(patend, NULL, &blockatt, &pat, NULL, NULL);
-			brs = rset_make(1, &pat, 0);
+			conf_highlight(patend, NULL, &blockatt, NULL, NULL, NULL);
+			for (i = 0; i < bidx; i++)
+			{
+				if (patend == bmap[i].id)
+				{
+					blockrs = bmap[i].rs;
+					setatt()
+					return att;
+				}
+			}
 		}
 		setatt()
 		sidx += cend;
@@ -95,10 +106,7 @@ int *syn_highlight(char *ft, char *s, int n)
 	{
 		for (j = 0; j < n; j++)
 			att[j] = *blockatt;
-		return att;
 	}
-	if (brs)
-		blockrs = brs;
 	return att;
 }
 
@@ -150,10 +158,20 @@ void syn_init(void)
 {
 	char *pats[128] = {NULL};
 	char *pat, *ft;
-	int i;
-	for (i = 0; !conf_highlight(i, &ft, NULL, NULL, NULL, NULL); i++)
+	int i, patend;
+	bidx = 0;
+	for (i = 0; !conf_highlight(i, &ft, NULL, NULL, NULL, &patend); i++)
+	{
 		if (syn_find(ft) < 0)
 			syn_initft(ft, "");
+		if (patend)
+		{
+			conf_highlight(i+patend, NULL, NULL, &pat, NULL, NULL);
+			bmap[bidx].id = i+patend;
+			bmap[bidx].rs = rset_make(1, &pat, 0); 
+			bidx++;
+		}
+	}
 	for (i = 0; !conf_filetype(i, NULL, &pat) && i < LEN(pats); i++)
 		pats[i] = pat;
 	syn_ftrs = rset_make(i, pats, 0);
@@ -170,6 +188,6 @@ void syn_done(void)
 		memset(&ftmap[i].ft, 0, 32);
 	}
 	rset_free(syn_ftrs);
-	if (blockrs)
-		rset_free(blockrs);	
+	for (i = 0; i < bidx; i++)
+		rset_free(bmap[i].rs);
 }
