@@ -610,26 +610,26 @@ static void file_calc(char *path, char *basepath)
 		return;
 	while ((dp = readdir(dir)) != NULL)
 	{
-		if (lstat(dp->d_name, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
+		s = fsincl;
+		sprev = s;
+		len1 = dp->d_reclen;
+		while ((s = strchr(s, ' ')))
 		{
-			s = fsincl;
-			sprev = s;
-			len1 = strlen(dp->d_name);
-			while ((s = strchr(s, ' ')))
-			{
-				*s = '\0';
-				if (substr(dp->d_name, sprev, len1, strlen(sprev)))
-					break;
-				*s = ' ';
-				s++;
-				sprev = s;
-			}
-			if (!s)
-				continue;
+			*s = '\0';
+			if (substr(dp->d_name, sprev, len1, strlen(sprev)))
+				break;
 			*s = ' ';
-			len1++;
-			path[pathlen] = '/';
-			memcpy(&path[pathlen+1], dp->d_name, len1);
+			s++;
+			sprev = s;
+		}
+		if (!s)
+			continue;
+		*s = ' ';
+		len1++;
+		path[pathlen] = '/';
+		memcpy(&path[pathlen+1], dp->d_name, len1);
+		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
+		{
 			len = pathlen + len1 + 1;
 			_len = len + sizeof(int);
 			fslink = realloc(fslink, _len+fstlen);
@@ -659,12 +659,12 @@ void dir_calc(char *cur_dir)
 	while ((dirp = readdir(dp)) != NULL)
 	{
 		if (strcmp(dirp->d_name, ".") == 0 ||
-			strcmp(dirp->d_name, "..") == 0 ||
-			lstat(dirp->d_name, &statbuf) < 0 ||
-			S_ISDIR(statbuf.st_mode) == 0)
+			strcmp(dirp->d_name, "..") == 0)
 			continue;
 		strcpy(ptr, dirp->d_name);
-		dir_calc(cur_dir);
+		if (lstat(cur_dir, &statbuf) >= 0 && 
+			S_ISDIR(statbuf.st_mode))
+			dir_calc(cur_dir);
 	}
 	closedir(dp);
 }
