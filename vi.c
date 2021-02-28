@@ -111,7 +111,7 @@ static void vi_drawwordnumend(int skip, int dir, char* tmp, int nrow, int noff)
 {
 	int l, l1, i = 0;
 	char *c;
-	char snum[10];
+	char snum[30];
 	for (int k = nrow; k == nrow; i++)
 	{
 		l = isescape(tmp[noff]);
@@ -130,7 +130,7 @@ static void vi_drawwordnumbeg(int skip, int dir, char* tmp, int nrow, int noff)
 {
 	int l, l1, i = 0;
 	char *c;
-	char snum[10];
+	char snum[30];
 	for (int k = nrow; k == nrow; i++)
 	{
 		l = isescape(tmp[noff]);
@@ -1478,7 +1478,7 @@ static void vc_execute(void)
 
 static void vi_argcmd(int arg, char cmd)
 {
-	char str[10];
+	char str[30];
 	char *cs = itoa(arg, str);
 	*cs = cmd;
 	*(cs+1) = '\0';
@@ -1659,7 +1659,7 @@ void vi(void)
 				k = vi_read();
 				if (k == 'e')
 				{
-					char buf[10];
+					char buf[30];
 					strcpy(buf, ".,.+");
 					char *buf1 = itoa(vi_arg1, buf+4);
 					strcat(buf1, "s/");
