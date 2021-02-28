@@ -606,7 +606,7 @@ static void file_calc(char *path, char *basepath)
 	{
 		s = fsincl;
 		sprev = s;
-		len1 = dp->d_reclen;
+		len1 = strlen(dp->d_name);
 		while ((s = strchr(s, ' ')))
 		{
 			*s = '\0';
