@@ -39,7 +39,6 @@ static int vi_pcol;			/* the column requested by | command */
 static int vi_printed;			/* ex_print() calls since the last command */
 static int vi_scroll;			/* scroll amount for ^f and ^d*/
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
-static int is_hund;			/* is hund active */
 static char *vi_curword(struct lbuf *lb, int row, int off);
 
 void reverse_in_place(char *str, int len)
@@ -941,9 +940,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		is_hund = 1;
 		hund();
-		is_hund = 0;
 		break;
 	default:
 		vi_back(mv);
@@ -2057,14 +2054,12 @@ void vi(void)
 
 static void sighandler(int sig)
 {
-	if (is_hund)
-		sig_hund(sig);
-	else
+	if (!sig_hund(sig))
 		if (sig == SIGWINCH)
 			vi_back(TK_CTL('l'));
 }
 
-static int setup_signals(void) {
+int setup_signals(void) {
 	struct sigaction sa = {0};
 	sa.sa_handler = sighandler;
 	if (sigaction(SIGTERM, &sa, NULL)

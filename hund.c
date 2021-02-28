@@ -1464,6 +1464,7 @@ struct ui {
 	char user[LOGIN_BUF_SIZE];
 	char group[LOGIN_BUF_SIZE];
 };
+struct ui* global_i;
 
 typedef void (*draw_t)(struct ui* const, struct append_buffer* const);
 void ui_pathbar(struct ui* const, struct append_buffer* const);
@@ -1737,6 +1738,18 @@ void marks_jump(struct ui* const i, struct marks* const m) {
 	}
 }
 
+#define vi_swap() \
+hist_switch(); \
+stop_raw_mode(&i->T); \
+global_i->run = 0; \
+vi(); \
+global_i->run = 1; \
+start_raw_mode(&i->T); \
+hist_switch(); \
+hist_done(); \
+hist_set(0); \
+xquit = 0; \
+
 static inline void list_marks(struct ui* const i, struct marks* const m) {
 	struct mark_path** mp;
 	hist_set(1);
@@ -1749,14 +1762,7 @@ static inline void list_marks(struct ui* const i, struct marks* const m) {
 		memcpy(&h[2], (*mp)->data, (*mp)->len+1);
 		hist_write(h);
 	}
-	hist_switch();
-	stop_raw_mode(&i->T);
-	vi();
-	start_raw_mode(&i->T);
-	hist_switch();
-	hist_done();
-	hist_set(0);
-	xquit = 0;
+	vi_swap()
 }
 
 static int open_file_with(char* const p, char* const f) {
@@ -1861,14 +1867,7 @@ static void open_help(struct ui* const i) {
 		l += 1;
 	}
 	hist_pos(0, 0, 0);
-	hist_switch();
-	stop_raw_mode(&i->T);
-	vi();
-	start_raw_mode(&i->T);
-	hist_switch();
-	hist_done();
-	hist_set(0);
-	xquit = 0;
+	vi_swap()
 }
 
 static int edit_list(struct string_list* const in,
@@ -3602,8 +3601,9 @@ static enum theme_element mode2theme(const mode_t m) {
 	return tm[(m & S_IFMT) >> S_IFMT_TZERO];
 }
 
-struct ui* global_i;
-void sig_hund(int sig) {
+int sig_hund(int sig) {
+	if (!global_i || !global_i->run)
+		return 0;
 	switch (sig) {
 	case SIGTERM:
 	case SIGINT:
@@ -3618,7 +3618,7 @@ void sig_hund(int sig) {
 		start_raw_mode(&global_i->T);
 		global_i->dirty |= DIRTY_ALL;
 		ui_draw(global_i);
-		//setup_signals();
+		setup_signals();
 		break;
 	case SIGWINCH:
 		for (int b = 0; b < BUF_NUM; ++b) {
@@ -3632,6 +3632,7 @@ void sig_hund(int sig) {
 	default:
 		break;
 	}
+	return 1;
 }
 
 void ui_init(struct ui* const i, struct panel* const pv,
@@ -3683,6 +3684,7 @@ void ui_end(struct ui* const i) {
 				err, strerror(err));
 		exit(EXIT_FAILURE);
 	}
+	global_i = NULL;
 	free(i->kmap);
 	memset(i, 0, sizeof(struct ui));
 }

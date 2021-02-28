@@ -13,10 +13,11 @@ int isescape(char ch);
 char *substr(const char *s1, const char *s2, int len1, int len2);
 int dstrlen(const char *s, char delim);
 void reverse_in_place(char *str, int len);
+int setup_signals(void);
 
 /* hund file manager */
 int hund();
-void sig_hund(int sig);
+int sig_hund(int sig);
 void vi();
 
 /* line buffer, managing a number of lines */
