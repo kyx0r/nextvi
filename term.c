@@ -183,25 +183,29 @@ char *term_att(int att, int old)
 	int bg = SYN_BG(att);
 	if (att == old)
 		return "";
-	s += sprintf(s, "\33[");
+	*s++ = '\x1b';
+	*s++ = '[';
 	if (att & SYN_BD)
-		s += sprintf(s, ";1");
+		{*s++ = ';'; *s++ = '1';}
 	if (att & SYN_IT)
-		s += sprintf(s, ";3");
+		{*s++ = ';'; *s++ = '3';}
 	else if (att & SYN_RV)
-		s += sprintf(s, ";7");
+		{*s++ = ';'; *s++ = '7';}
 	if (SYN_FGSET(att)) {
+		*s++ = ';';
 		if ((fg & 0xff) < 8)
-			s += sprintf(s, ";%d", 30 + (fg & 0xff));
+			s = itoa(30 + (fg & 0xff), s);
 		else
-			s += sprintf(s, ";38;5;%d", (fg & 0xff));
+			s = itoa(fg & 0xff, memcpy(s, "38;5;", 5)+5);
 	}
 	if (SYN_BGSET(att)) {
+		*s++ = ';';
 		if ((bg & 0xff) < 8)
-			s += sprintf(s, ";%d", 40 + (bg & 0xff));
+			s = itoa(40 + (fg & 0xff), s);
 		else
-			s += sprintf(s, ";48;5;%d", (bg & 0xff));
+			s = itoa(bg & 0xff, memcpy(s, "48;5;", 5)+5);
 	}
-	s += sprintf(s, "m");
+	s[0] = 'm';
+	s[1] = '\0';
 	return buf;
 }
