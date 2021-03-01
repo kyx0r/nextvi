@@ -2122,7 +2122,7 @@ int setup_signals(void) {
 
 int main(int argc, char *argv[])
 {
-	int i;
+	int i, ii;
 	char *prog = strchr(argv[0], '/') ? strrchr(argv[0], '/') + 1 : argv[0];
 	struct stat statbuf;
 	xvis = strcmp("ex", prog) && strcmp("neatex", prog);
@@ -2141,9 +2141,9 @@ int main(int argc, char *argv[])
 	if (xled || xvis)
 	{
 		term_init();
-		for (; i < argc; i++)
-			if (lstat(&argv[i][0], &statbuf) >= 0 && S_ISDIR(statbuf.st_mode))
-				return hund(argc - i, &argv[i]);
+		for (ii = i; ii < argc; ii++)
+			if (lstat(&argv[ii][0], &statbuf) >= 0 && S_ISDIR(statbuf.st_mode))
+				return hund(argc - ii, &argv[ii]);
 	}
 	if (!ex_init(argv + i)) {
 		if (xvis)
