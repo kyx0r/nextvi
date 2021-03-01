@@ -9,19 +9,22 @@
 	fprintf(f, s, ##__VA_ARGS__);\
 	fclose(f);}\
 
+/* utility funcs */
 int isescape(char ch);
 char *substr(const char *s1, const char *s2, int len1, int len2);
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
 void reverse_in_place(char *str, int len);
-int setup_signals(void);
 
-/* hund file manager */
+/* main functions */
 int hund();
-int sig_hund(int sig);
 void vi();
 
-/* line buffer, managing a number of lines */
+/* signals */
+int setup_signals(void);
+int sig_hund(int sig);
+
+/* lbuf.c line buffer, managing a number of lines */
 struct lbuf *lbuf_make(void);
 void lbuf_free(struct lbuf *lbuf);
 int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end);
@@ -50,7 +53,7 @@ int lbuf_wordbeg(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_pair(struct lbuf *lb, int *row, int *off);
 
-/* string buffer, variable-sized string */
+/* sbuf.c string buffer, variable-sized string */
 struct sbuf *sbuf_make(void);
 void sbuf_extend(struct sbuf *sbuf, int newsz);
 void sbuf_free(struct sbuf *sb);
@@ -64,17 +67,32 @@ void sbuf_printf(struct sbuf *sbuf, char *s, ...);
 int sbuf_len(struct sbuf *sb);
 void sbuf_cut(struct sbuf *s, int len);
 
-/* regular expression sets */
+/* regex.c regular expression sets */
+#define REG_EXTENDED		0x01
+#define REG_NOSUB		0x02
+#define REG_ICASE		0x04
+#define REG_NEWLINE		0x08
+#define REG_NOTBOL		0x10
+#define REG_NOTEOL		0x20
+typedef struct {
+	long rm_so;
+	long rm_eo;
+} regmatch_t;
+typedef struct regex *regex_t;
+int regcomp(regex_t *preg, char *regex, int cflags);
+int regexec(regex_t *preg, char *str, int nmatch, regmatch_t pmatch[], int eflags);
+int regerror(int errcode, regex_t *preg, char *errbuf, int errbuf_size);
+void regfree(regex_t *preg);
+/* rset */
 #define RE_ICASE		1
 #define RE_NOTBOL		2
 #define RE_NOTEOL		4
-
 struct rset *rset_make(int n, char **pat, int flg);
 int rset_find(struct rset *re, char *s, int n, int *grps, int flg);
 void rset_free(struct rset *re);
 char *re_read(char **src);
 
-/* rendering lines */
+/* ren.c rendering lines */
 void ren_done();
 int *ren_position(char *s, char ***c, int *n);
 int ren_next(char *s, int p, int dir);
@@ -86,20 +104,32 @@ int ren_off(char *s, int pos);
 int ren_region(char *s, int c1, int c2, int *l1, int *l2, int closed);
 char *ren_translate(char *s, char *ln);
 int ren_cwid(char *s, int pos);
-
 /* text direction */
 int dir_context(char *s);
 void dir_reorder(char *s, int *ord, char **chrs, int n);
 void dir_init(void);
 void dir_done(void);
+/* syntax highlighting */
+#define SYN_BD		0x010000
+#define SYN_IT		0x020000
+#define SYN_RV		0x040000
+#define SYN_FGMK(f)	(0x100000 | (f))
+#define SYN_BGMK(b)	(0x200000 | ((b) << 8))
+#define SYN_FLG		0xff0000
+#define SYN_FGSET(a)	((a) & 0x1000ff)
+#define SYN_BGSET(a)	((a) & 0x20ff00)
+#define SYN_FG(a)	((a) & 0xff)
+#define SYN_BG(a)	(((a) >> 8) & 0xff)
+extern struct rset *blockrs;
+int *syn_highlight(char *ft, char *s, int n);
+char *syn_filetype(char *path);
+void syn_context(int att);
+int syn_merge(int old, int new);
+void syn_reloadft(char *ft, char *injectft, int i, char *reg);
+void syn_init(void);
+void syn_done(void);
 
-/* string registers */
-char *reg_get(int c, int *lnmode);
-void reg_put(int c, char *s, int lnmode);
-void reg_done(void);
-void reg_print(void);
-
-/* utf-8 helper functions */
+/* uc.c utf-8 helper functions */
 int uc_len(char *s);
 int uc_wid(char *s);
 int uc_slen(char *s);
@@ -123,10 +153,9 @@ char *uc_end(char *s);
 char *uc_shape(char *beg, char *s);
 char *uc_lastline(char *s);
 
-/* managing the terminal */
+/* term.c managing the terminal */
 #define xrows		(term_rows())
 #define xcols		(term_cols())
-
 #define CSI_CLEAR_ALL "\x1b[2J", 4
 #define CSI_CLEAR_LINE "\x1b[K", 3
 #define CSI_CURSOR_TOP_LEFT "\x1b[H", 3
@@ -135,7 +164,6 @@ char *uc_lastline(char *s);
 #define CSI_SCREEN_ALTERNATIVE "\x1b[?47h", 6
 #define CSI_SCREEN_NORMAL "\x1b[?47l", 6
 #define CSI_CURSOR_HIDE_TOP_LEFT "\x1b[?25l\x1b[H", 9
-
 void term_init(void);
 void term_done(void);
 void term_clean(void);
@@ -154,12 +182,16 @@ void term_commit(void);
 char *term_att(int att, int old);
 void term_push(char *s, int n);
 char *term_cmd(int *n);
+/* process management */
+char *cmd_pipe(char *cmd, char *s, int iproc, int oproc);
+int cmd_exec(char *cmd);
+char* xgetenv(char* q[]); 
 
 #define TK_CTL(x)	((x) & 037)
 #define TK_INT(c)	((c) < 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
 #define TK_ESC		(TK_CTL('['))
 
-/* line-oriented input and output */
+/* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap, char *syn);
 char *led_input(char *pref, char *post, int *kmap, char *syn);
 void led_print(char *msg, int row, char *syn);
@@ -169,7 +201,7 @@ char *led_readchar(int c, int kmap);
 int led_pos(char *s, int pos);
 void led_done();
 
-/* ex commands */
+/* ex.c ex commands */
 void hist_set(int i);
 void hist_open();
 void hist_switch();
@@ -196,34 +228,7 @@ char* xgetenv(char* q[]);
 #define EXLEN	512		/* ex line length */
 #define xb 	ex_lbuf()
 
-/* process management */
-char *cmd_pipe(char *cmd, char *s, int iproc, int oproc);
-int cmd_exec(char *cmd);
-char* xgetenv(char* q[]); 
-
-/* syntax highlighting */
-#define SYN_BD		0x010000
-#define SYN_IT		0x020000
-#define SYN_RV		0x040000
-#define SYN_FGMK(f)	(0x100000 | (f))
-#define SYN_BGMK(b)	(0x200000 | ((b) << 8))
-
-#define SYN_FLG		0xff0000
-#define SYN_FGSET(a)	((a) & 0x1000ff)
-#define SYN_BGSET(a)	((a) & 0x20ff00)
-#define SYN_FG(a)	((a) & 0xff)
-#define SYN_BG(a)	(((a) >> 8) & 0xff)
-
-extern struct rset *blockrs;
-int *syn_highlight(char *ft, char *s, int n);
-char *syn_filetype(char *path);
-void syn_context(int att);
-int syn_merge(int old, int new);
-void syn_reloadft(char *ft, char *injectft, int i, char *reg);
-void syn_init(void);
-void syn_done(void);
-
-/* configuration variables */
+/* conf.c configuration variables */
 int conf_dirmark(int idx, char **pat, int *ctx, int *dir, int *grp);
 int conf_dircontext(int idx, char **pat, int *ctx);
 int conf_placeholder(int idx, char **s, char **d, int *wid);
@@ -238,9 +243,11 @@ int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
 void conf_changereg(int i, char *reg);
 
+/* vi.c */
+char *reg_get(int c, int *lnmode);
+void reg_put(int c, char *s, int lnmode);
 /* file system */
 void dir_calc(char *cur_dir);
-
 /* global variables */
 extern int xrow;
 extern int xoff;

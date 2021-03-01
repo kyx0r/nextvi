@@ -1312,7 +1312,7 @@ static const char* const cmd_help[] = {
 
 	[CMD_MARK_NEW] = "Set mark at highlighted file",
 	[CMD_MARK_JUMP] = "Jump to a mark",
-	[CMD_FIND] = "Search for files in current directory",
+	[CMD_FIND] = "Search for files in current directory (note: ^P and ^N moves up and down ^V can select)",
 
 	[CMD_CHMOD] = "Change permissions of selected files",
 	[CMD_CHANGE] = "Apply changes and return",
@@ -1904,6 +1904,7 @@ static void cmd_find(struct ui* const i) {
 	memset(t, 0, sizeof(t));
 	memcpy(i->prch, "/", 2);
 	i->prompt = t;
+	i->prompt_cursor_pos = 1;
 	int r;
 	const fnum_t S = i->pv->selection;
 	const fnum_t N = i->pv->num_files;
@@ -1996,9 +1997,7 @@ static void prepare_task(struct ui* const i, struct task* const t,
 		{ KUTF8("n"), "no" },
 	};
 	struct string_list S = { NULL, 0 };// Selected
-
 	struct string_list R = { NULL, 0 };// Renamed
-
 	panel_selected_to_list(i->pv, &S);
 	if (!S.len) return;
 	if (tt & (TASK_MOVE | TASK_COPY)) {
@@ -2096,7 +2095,6 @@ static int rename_interdependent(const char* const wd, const size_t wdl,
 	struct string* tn = malloc(sizeof(struct string)+tmpnl+8+1);
 	tn->len = tmpnl+8;
 	snprintf(tn->str, tmpnl+8+1, "%s%08x", tmpn, getpid());
-
 	fnum_t tc;// Temponary file Content
 
 	for (;;) {
@@ -2145,9 +2143,7 @@ static int rename_interdependent(const char* const wd, const size_t wdl,
 static void cmd_rename(struct ui* const i) {
 	int err;
 	struct string_list S = { NULL, 0 };// Selected files
-
 	struct string_list R = { NULL, 0 };// Renamed files
-
 	struct string_list N = { NULL, 0 };
 	struct assign* a = NULL;
 	fnum_t al = 0;
@@ -2393,24 +2389,14 @@ static void interpreter(struct ui* const i, struct task* const t,
 		const size_t fl = strlen(path+f);
 		if (!marks_set(m, line[5], path, wdl, path+f, fl)) {
 			failed(i, "mark", "");// TODO
-
 		}
-	}
-	else if (!memcmp(line, "map ", 4)) {
-// ...
-
-	}
-	else if (!memcmp(line, "set ", 4)) {
-// ...
-
 	}
 	else if (!strcmp(line, "noh") || !strcmp(line, "nos")) {
 		i->dirty |= DIRTY_PANELS | DIRTY_STATUSBAR;
 		panel_unselect_all(i->pv);
 	}
-	else {
+	else
 		failed(i, "interpreter", "Unrecognized command");// TODO
-	}
 }
 
 static void _perm(struct ui* const i, const int unset, const int mask) {
@@ -2541,7 +2527,6 @@ static void process_input(struct ui* const i, struct task* const t,
 	}
 	switch (get_cmd(i)) {
 /* CHMOD */
-
 	case CMD_RETURN:
 		chmod_close(i);
 		break;
@@ -2551,7 +2536,6 @@ static void process_input(struct ui* const i, struct task* const t,
 		break;
 	case CMD_CHOWN:
 /* TODO in $VISUAL */
-
 		s = calloc(LOGIN_BUF_SIZE, sizeof(char));
 		if (!prompt(i, s, s, LOGIN_MAX_LEN)) {
 			errno = 0;
@@ -2569,7 +2553,6 @@ static void process_input(struct ui* const i, struct task* const t,
 		break;
 	case CMD_CHGRP:
 /* TODO in $VISUAL */
-
 		s = calloc(LOGIN_BUF_SIZE, sizeof(char));
 		if (!prompt(i, s, s, LOGIN_BUF_SIZE)) {
 			errno = 0;
@@ -2592,11 +2575,8 @@ static void process_input(struct ui* const i, struct task* const t,
 	case CMD_PL: _perm(i, 0, 0777); break;
 	case CMD_MI: _perm(i, 1, 0777); break;
 /* WAIT */
-
-
 	case CMD_TASK_QUIT:
 //t->done = 1; // TODO
-
 		break;
 	case CMD_TASK_PAUSE:
 		t->ts = TS_PAUSED;
@@ -2605,7 +2585,6 @@ static void process_input(struct ui* const i, struct task* const t,
 		t->ts = TS_RUNNING;
 		break;
 /* MANAGER */
-
 	case CMD_QUIT:
 		i->run = 0;
 		break;
@@ -2965,8 +2944,6 @@ static void task_execute(struct ui* const i, struct task* const t) {
 		break;
 	}
 }
-
-extern struct ui* I;
 
 int hund() {
 	int err;
@@ -4853,8 +4830,6 @@ void remove_conflicting(struct panel* const fv,
 
 /* CodePoint To Bytes */
 void utf8_cp2b(char* const b, codepoint_t cp) {
-#if 1
-
 	const size_t nb = utf8_cp2nb(cp);
 	static const unsigned char p[] = { 0x00, 0x7f, 0x1f, 0x0f, 0x07 };
 	static const unsigned char o[] = { 0x00, 0x00, 0xc0, 0xe0, 0xf0 };
@@ -4862,34 +4837,11 @@ void utf8_cp2b(char* const b, codepoint_t cp) {
 		b[i] = 0x80 | (cp & 0x3f);
 	}
 	b[0] = (codepoint_t)o[nb] | (cp & (codepoint_t)p[nb]);
-#else
-
-	if (cp < (codepoint_t) 0x80) {
-		b[0] = 0x7f & cp;
-	}
-	else if (cp < (codepoint_t) 0x0800) {
-		b[0] = 0xc0 | ((cp >> 6) & 0x1f);
-		b[1] = 0x80 | (cp & 0x3f);
-	}
-	else if (cp < (codepoint_t) 0x010000) {
-		b[0] = 0xe0 | ((cp >> 12) & 0x000f);
-		b[1] = 0x80 | ((cp >> 6) & 0x003f);
-		b[2] = 0x80 | (cp & 0x003f);
-	}
-	else if (cp < (codepoint_t) 0x0200000) {
-		b[0] = 0xf0 | ((cp >> 18) & 0x000007);
-		b[1] = 0x80 | ((cp >> 12) & 0x00003f);
-		b[2] = 0x80 | ((cp >> 6) & 0x00003f);
-		b[3] = 0x80 | (cp & 0x00003f);
-	}
-#endif
 }
 
 /* Bytes To CodePoint */
 codepoint_t utf8_b2cp(const char* const b) {
 	register codepoint_t cp = 0;
-#if 1
-
 	const size_t nb = utf8_g2nb(b);
 	static const unsigned char p[5] = { 0x00, 0x7f, 0x1f, 0x0f, 0x07 };
 	cp = b[0] & p[nb];
@@ -4897,33 +4849,6 @@ codepoint_t utf8_b2cp(const char* const b) {
 		cp <<= 6;
 		cp |= b[i] & 0x3f;
 	}
-#else
-
-	if ((b[0] & 0x80) == 0) {
-		cp = b[0];
-	}
-	else if ((b[0] & 0xe0) == 0xc0) {
-		cp |= (b[0] & 0x1f);
-		cp <<= 6;
-		cp |= (b[1] & 0x3f);
-	}
-	else if ((b[0] & 0xf0) == 0xe0) {
-		cp |= (b[0] & 0x0f);
-		cp <<= 6;
-		cp |= (b[1] & 0x3f);
-		cp <<= 6;
-		cp |= (b[2] & 0x3f);
-	}
-	else if ((b[0] & 0xf8) == 0xf0) {
-		cp |= (b[0] & 0x07);
-		cp <<= 6;
-		cp |= (b[1] & 0x3f);
-		cp <<= 6;
-		cp |= (b[2] & 0x3f);
-		cp <<= 6;
-		cp |= (b[3] & 0x3f);
-	}
-#endif
 	return cp;
 }
 
@@ -4955,11 +4880,8 @@ size_t utf8_g2nb(const char* const g) {
 // Top 5 bits To Length
 	static const char t2l[32] = {
 		1, 1, 1, 1, 1, 1, 1, 1,//00000xxx - 00111xxx
-
 		1, 1, 1, 1, 1, 1, 1, 1,//01000xxx - 01111xxx
-
 		0, 0, 0, 0, 0, 0, 0, 0,//10000xxx - 10111xxx
-
 		2, 2, 2, 2, 3, 3, 4, 0//11000xxx - 11111xxx
 
 	};

@@ -98,8 +98,8 @@ A minimalistic terminal file manager.
 | $SHELL | shell used by `:sh` | sh |
 #### Commands
 Type `?` while in hund for help.
-#### Name
-_Hund_ is a German word for _dog_.
+Original software by Michał Czarnecki <czarnecky@va.pl>
+https://github.com/miahuoe/hund.git
 34. Added key to save current file keybind: ^k
 35. The new special character "/" for ft in conf.h now signifies that 
 the regex will be applied on any file. The reason "/" was 
@@ -169,6 +169,8 @@ know that my brain is only extent of my skull. So this fork is not really meant
 to make clone version of vim, but more like a repo of specific patches so that
 if anybody wants to add features to their neatvi they might find it implemented
 here and save brain cycles thinking on how to do something.
+(NOTE: as of right now there is very little code left that wasn't changed in some
+way)
 
 Q: Why not let user choose filemanager
 A: If you are here only for the editor, you can remove hund

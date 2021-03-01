@@ -579,6 +579,60 @@ static char *vi_curword(struct lbuf *lb, int row, int off)
 	return sbuf_done(sb);
 }
 
+/* string registers */
+static char *bufs[256];
+static int lnmode[256];
+
+char *reg_get(int c, int *ln)
+{
+	*ln = lnmode[c];
+	return bufs[c];
+}
+
+static void reg_putraw(int c, char *s, int ln)
+{
+	char *pre = isupper(c) && bufs[tolower(c)] ? bufs[tolower(c)] : "";
+	char *buf = malloc(strlen(pre) + strlen(s) + 1);
+	strcpy(buf, pre);
+	strcat(buf, s);
+	free(bufs[tolower(c)]);
+	bufs[tolower(c)] = buf;
+	lnmode[tolower(c)] = ln;
+}
+
+void reg_put(int c, char *s, int ln)
+{
+	int i, i_ln;
+	char *i_s;
+	if (ln || strchr(s, '\n')) {
+		for (i = 8; i > 0; i--)
+			if ((i_s = reg_get('0' + i, &i_ln)))
+				reg_putraw('0' + i + 1, i_s, i_ln);
+		reg_putraw('1', s, ln);
+	}
+	reg_putraw(c, s, ln);
+}
+
+static void reg_done(void)
+{
+	for (int i = 0; i < LEN(bufs); i++)
+		free(bufs[i]);
+}
+
+static void reg_print()
+{
+	for (int i = 0; i < LEN(bufs); i++)
+	{
+		if (bufs[i])
+		{
+			int len = strlen(bufs[i])+3;
+			char buf[len];
+			snprintf(buf, len, "%c %s", i, bufs[i]); 
+			ex_print(buf);
+		}
+	}
+}
+
 char *fslink;
 char fsincl[128] = ".c .h ";
 int fstlen;
