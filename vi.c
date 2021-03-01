@@ -2138,14 +2138,23 @@ int main(int argc, char *argv[])
 		if (argv[i][1] == 'v')
 			xvis = 1;
 	}
+	ii = i;
 	if (xled || xvis)
 	{
 		term_init();
-		for (ii = i; ii < argc; ii++)
+		for (; ii < argc; ii++)
+		{
 			if (lstat(&argv[ii][0], &statbuf) >= 0 && S_ISDIR(statbuf.st_mode))
-				return hund(argc - ii, &argv[ii]);
+			{
+				ii = hund(argc - ii, &argv[ii]);
+				if (ii < 0)
+					break;
+				else
+					return ii;
+			}
+		}
 	}
-	if (!ex_init(argv + i)) {
+	if (ii < 0 || !ex_init(argv + i)) {
 		if (xvis)
 			vi();
 		else

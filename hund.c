@@ -2026,11 +2026,8 @@ static void process_input(struct ui* const i, struct task* const t,
 		err = panel_enter_selected_dir(i->pv);
 		if (err == ENOTDIR) {
 			if ((path = panel_path_to_selected(i->pv))) {
-				if (xb)
-				{
-					ex_edit(path);
-					i->run = 0;
-				}
+				ex_edit(path);
+				i->run = -1;
 				free(path);
 			}
 		}
@@ -2387,21 +2384,22 @@ int hund(int argc, char **argv) {
 	i.mt = MSG_INFO;
 	xstrlcpy(i.msg, "Type ? for help.", MSG_BUFFER_SIZE);
 
-	while (i.run || t.ts != TS_CLEAN) {
+	while (i.run > 0 || t.ts != TS_CLEAN) {
 		ui_draw(&i);
-		if (i.run)
+		if (i.run > 0)
 			process_input(&i, &t, &m);
 		task_execute(&i, &t);
 	}
 	for (int v = 0; v < 2; ++v) {
 		delete_file_list(&fvs[v]);
 	}
+	err = i.run;
 	marks_free(&m);
 	task_clean(&t);
 	ui_end(&i);
 	memset(fvs, 0, sizeof(fvs));
 	memset(&t, 0, sizeof(struct task));
-	return 0;
+	return err;
 }
 
 /* Similar to strlcpy;
@@ -2977,7 +2975,7 @@ static enum theme_element mode2theme(const mode_t m) {
 }
 
 int sig_hund(int sig) {
-	if (!global_i || !global_i->run)
+	if (!global_i || global_i->run <= 0)
 		return 0;
 	switch (sig) {
 	case SIGTERM:
