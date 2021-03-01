@@ -2128,26 +2128,23 @@ int main(int argc, char *argv[])
 	xvis = strcmp("ex", prog) && strcmp("neatex", prog);
 	if (!setup_signals())
 		return 1;
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-')
-		{
-			if (argv[i][1] == 's')
-				xled = 0;
-			if (argv[i][1] == 'e')
-				xvis = 0;
-			if (argv[i][1] == 'v')
-				xvis = 1;
-		}
-		else if (lstat(&argv[i][0], &statbuf) >= 0 &&
-				S_ISDIR(statbuf.st_mode))
-			return hund(argc - i, &argv[i]);
-		else	
-			break;
-	}
 	dir_init();
 	syn_init();
+	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
+		if (argv[i][1] == 's')
+			xled = 0;
+		if (argv[i][1] == 'e')
+			xvis = 0;
+		if (argv[i][1] == 'v')
+			xvis = 1;
+	}
 	if (xled || xvis)
+	{
 		term_init();
+		for (; i < argc; i++)
+			if (lstat(&argv[i][0], &statbuf) >= 0 && S_ISDIR(statbuf.st_mode))
+				return hund(argc - i, &argv[i]);
+	}
 	if (!ex_init(argv + i)) {
 		if (xvis)
 			vi();
