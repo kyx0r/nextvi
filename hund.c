@@ -2026,9 +2026,12 @@ static void process_input(struct ui* const i, struct task* const t,
 		err = panel_enter_selected_dir(i->pv);
 		if (err == ENOTDIR) {
 			if ((path = panel_path_to_selected(i->pv))) {
-				ex_edit(path);
+				if (xb)
+				{
+					ex_edit(path);
+					i->run = 0;
+				}
 				free(path);
-				i->run = 0;
 			}
 		}
 		break;
@@ -2340,9 +2343,10 @@ static void task_execute(struct ui* const i, struct task* const t) {
 	}
 }
 
-int hund() {
+int hund(int argc, char **argv) {
 	int err;
-	char* init_wd[2] = { NULL, NULL };
+	char* init_wd[2] = {argc >= 1 ? argv[0] : NULL,
+				argc >= 2 ? argv[1] : NULL};
 	struct panel fvs[2];
 	memset(fvs, 0, sizeof(fvs));
 	fvs[0].scending = 1;
@@ -2389,7 +2393,6 @@ int hund() {
 			process_input(&i, &t, &m);
 		task_execute(&i, &t);
 	}
-
 	for (int v = 0; v < 2; ++v) {
 		delete_file_list(&fvs[v]);
 	}

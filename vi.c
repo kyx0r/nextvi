@@ -988,7 +988,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		hund();
+		hund(0, NULL);
 		break;
 	default:
 		vi_back(mv);
@@ -2124,14 +2124,25 @@ int main(int argc, char *argv[])
 {
 	int i;
 	char *prog = strchr(argv[0], '/') ? strrchr(argv[0], '/') + 1 : argv[0];
+	struct stat statbuf;
 	xvis = strcmp("ex", prog) && strcmp("neatex", prog);
-	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
-		if (argv[i][1] == 's')
-			xled = 0;
-		if (argv[i][1] == 'e')
-			xvis = 0;
-		if (argv[i][1] == 'v')
-			xvis = 1;
+	if (!setup_signals())
+		return 1;
+	for (i = 1; i < argc; i++) {
+		if (argv[i][0] == '-')
+		{
+			if (argv[i][1] == 's')
+				xled = 0;
+			if (argv[i][1] == 'e')
+				xvis = 0;
+			if (argv[i][1] == 'v')
+				xvis = 1;
+		}
+		else if (lstat(&argv[i][0], &statbuf) >= 0 &&
+				S_ISDIR(statbuf.st_mode))
+			return hund(argc - i, &argv[i]);
+		else	
+			break;
 	}
 	dir_init();
 	syn_init();
@@ -2139,11 +2150,7 @@ int main(int argc, char *argv[])
 		term_init();
 	if (!ex_init(argv + i)) {
 		if (xvis)
-		{
-			if (!setup_signals())
-				return -1;
 			vi();
-		}
 		else
 			ex();
 		ex_done();

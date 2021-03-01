@@ -480,6 +480,25 @@ static int ec_quit(char *ec)
 	return 0;
 }
 
+#define readfile() \
+fd = open(ex_path(), O_RDONLY); \
+if (fd >= 0) { \
+	int rd = lbuf_rd(xb, fd, 0, lbuf_len(xb)); \
+	close(fd); \
+	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]\n", \
+			ex_path(), lbuf_len(xb)); \
+	if (rd) \
+		ex_show("read failed\n"); \
+	else \
+		ex_show(msg); \
+} \
+lbuf_saved(xb, path[0] != '\0'); \
+bufs[0].mtime = mtime(ex_path()); \
+xrow = MAX(0, MIN(xrow, lbuf_len(xb) - 1)); \
+xoff = 0; \
+xtop = MAX(0, MIN(xtop, lbuf_len(xb) - 1)); \
+return 0; \
+
 int ex_edit(char *path)
 {
 	char msg[128];
@@ -492,23 +511,7 @@ int ex_edit(char *path)
 	}
 	if (path[0] || !bufs[0].path)
 		bufs_switch(bufs_open(path));
-	fd = open(ex_path(), O_RDONLY);
-	if (fd >= 0) {
-		int rd = lbuf_rd(xb, fd, 0, lbuf_len(xb));
-		close(fd);
-		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]\n",
-				ex_path(), lbuf_len(xb));
-		if (rd)
-			ex_show("read failed\n");
-		else
-			ex_show(msg);
-	}
-	lbuf_saved(xb, path[0] != '\0');
-	bufs[0].mtime = mtime(ex_path());
-	xrow = MAX(0, MIN(xrow, lbuf_len(xb) - 1));
-	xoff = 0;
-	xtop = MAX(0, MIN(xtop, lbuf_len(xb) - 1));
-	return 0;
+	readfile()
 }
 
 static int ec_edit(char *ec)
@@ -529,23 +532,7 @@ static int ec_edit(char *ec)
 	}
 	if (path[0] || !bufs[0].path)
 		bufs_switch(bufs_open(path));
-	fd = open(ex_path(), O_RDONLY);
-	if (fd >= 0) {
-		int rd = lbuf_rd(xb, fd, 0, lbuf_len(xb));
-		close(fd);
-		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]\n",
-				ex_path(), lbuf_len(xb));
-		if (rd)
-			ex_show("read failed\n");
-		else
-			ex_show(msg);
-	}
-	lbuf_saved(xb, path[0] != '\0');
-	bufs[0].mtime = mtime(ex_path());
-	xrow = MAX(0, MIN(xrow, lbuf_len(xb) - 1));
-	xoff = 0;
-	xtop = MAX(0, MIN(xtop, lbuf_len(xb) - 1));
-	return 0;
+	readfile()
 }
 
 static int ec_editapprox(char *ec)
