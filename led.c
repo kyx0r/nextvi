@@ -632,8 +632,8 @@ static char *led_line(char *pref, char *post, char *ai,
 				ai[--ai_len] = '\0';
 			break;
 		case TK_CTL('p'):
-			if (reg_get(0, &lnmode))
-				sbuf_str(sb, reg_get(0, &lnmode));
+			if (vi_regget(0, &lnmode))
+				sbuf_str(sb, vi_regget(0, &lnmode));
 			break;
 		case TK_CTL('g'):
 			file_ternary(xb);

@@ -223,7 +223,6 @@ int ex_kwd(char **kwd, int *dir);
 void ex_kwdset(char *kwd, int dir);
 int ex_edit(char *path);
 void ec_bufferi(int *id);
-char* xgetenv(char* q[]);
 
 #define EXLEN	512		/* ex line length */
 #define xb 	ex_lbuf()
@@ -244,8 +243,8 @@ char *conf_digraph(int c1, int c2);
 void conf_changereg(int i, char *reg);
 
 /* vi.c */
-char *reg_get(int c, int *lnmode);
-void reg_put(int c, char *s, int lnmode);
+char *vi_regget(int c, int *lnmode);
+void vi_regput(int c, char *s, int lnmode);
 /* file system */
 void dir_calc(char *cur_dir);
 /* global variables */

@@ -583,13 +583,13 @@ static char *vi_curword(struct lbuf *lb, int row, int off)
 static char *bufs[256];
 static int lnmode[256];
 
-char *reg_get(int c, int *ln)
+char *vi_regget(int c, int *ln)
 {
 	*ln = lnmode[c];
 	return bufs[c];
 }
 
-static void reg_putraw(int c, char *s, int ln)
+static void vi_regputraw(int c, char *s, int ln)
 {
 	char *pre = isupper(c) && bufs[tolower(c)] ? bufs[tolower(c)] : "";
 	char *buf = malloc(strlen(pre) + strlen(s) + 1);
@@ -600,26 +600,26 @@ static void reg_putraw(int c, char *s, int ln)
 	lnmode[tolower(c)] = ln;
 }
 
-void reg_put(int c, char *s, int ln)
+void vi_regput(int c, char *s, int ln)
 {
 	int i, i_ln;
 	char *i_s;
 	if (ln || strchr(s, '\n')) {
 		for (i = 8; i > 0; i--)
-			if ((i_s = reg_get('0' + i, &i_ln)))
-				reg_putraw('0' + i + 1, i_s, i_ln);
-		reg_putraw('1', s, ln);
+			if ((i_s = vi_regget('0' + i, &i_ln)))
+				vi_regputraw('0' + i + 1, i_s, i_ln);
+		vi_regputraw('1', s, ln);
 	}
-	reg_putraw(c, s, ln);
+	vi_regputraw(c, s, ln);
 }
 
-static void reg_done(void)
+static void vi_regdone(void)
 {
 	for (int i = 0; i < LEN(bufs); i++)
 		free(bufs[i]);
 }
 
-static void reg_print()
+static void vi_regprint()
 {
 	for (int i = 0; i < LEN(bufs); i++)
 	{
@@ -1027,7 +1027,7 @@ static void vi_yank(int r1, int o1, int r2, int o2, int lnmode)
 {
 	char *region;
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
-	reg_put(vi_ybuf, region, lnmode);
+	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
 	xrow = r1;
 	xoff = lnmode ? xoff : o1;
@@ -1038,7 +1038,7 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	char *pref, *post;
 	char *region;
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
-	reg_put(vi_ybuf, region, lnmode);
+	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
@@ -1138,7 +1138,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	char *rep;
 	char *pref, *post;
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
-	reg_put(vi_ybuf, region, lnmode);
+	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
 	pref = lnmode ? vi_indents(lbuf_get(xb, r1)) : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
@@ -1350,7 +1350,7 @@ static int vc_put(int cmd)
 {
 	int cnt = MAX(1, vi_arg1);
 	int lnmode;
-	char *buf = reg_get(vi_ybuf, &lnmode);
+	char *buf = vi_regget(vi_ybuf, &lnmode);
 	int i;
 	if (!buf) {
 		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty\n");
@@ -1522,7 +1522,7 @@ static void vc_execute(void)
 		c = exec_buf;
 	exec_buf = c;
 	if (exec_buf >= 0)
-		buf = reg_get(exec_buf, &lnmode);
+		buf = vi_regget(exec_buf, &lnmode);
 	if (buf)
 		for (i = 0; i < MAX(1, vi_arg1); i++)
 			term_push(buf, strlen(buf));
@@ -2024,7 +2024,7 @@ void vi(void)
 				vi_mod = 1;
 				term_pos(xrows, led_pos(vi_msg, 0));
 				term_kill();
-				reg_print();
+				vi_regprint();
 				vi_back(vi_read());
 				vi_printed = 0;
 				break;
@@ -2151,7 +2151,7 @@ int main(int argc, char *argv[])
 	if (xled || xvis)
 		term_done();
 	term_clean();
-	reg_done();
+	vi_regdone();
 	syn_done();
 	dir_done();
 	led_done();

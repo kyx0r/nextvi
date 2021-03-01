@@ -305,7 +305,7 @@ void ex_kwdset(char *kwd, int dir)
 {
 	if (kwd) {
 		snprintf(xkwd, sizeof(xkwd), "%s", kwd);
-		reg_put('/', kwd, 0);
+		vi_regput('/', kwd, 0);
 	}
 	xkwddir = dir;
 }
@@ -765,7 +765,7 @@ static int ec_null(char *ec)
 static void ex_yank(int reg, int beg, int end)
 {
 	char *buf = lbuf_cp(xb, beg, end);
-	reg_put(reg, buf, 1);
+	vi_regput(reg, buf, 1);
 	free(buf);
 }
 
@@ -807,7 +807,7 @@ static int ec_put(char *ec)
 	int n = lbuf_len(xb);
 	ex_loc(ec, loc);
 	ex_arg(ec, arg);
-	buf = reg_get(arg[0], &lnmode);
+	buf = vi_regget(arg[0], &lnmode);
 	if (!buf || ex_region(loc, &beg, &end))
 		return 1;
 	lbuf_edit(xb, buf, end, end);
@@ -1247,7 +1247,7 @@ void ex_command(char *ln)
 {
 	ex_exec(ln);
 	lbuf_modified(xb);
-	reg_put(':', ln, 0);
+	vi_regput(':', ln, 0);
 }
 
 /* ex main loop */
