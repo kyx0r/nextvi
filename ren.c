@@ -294,12 +294,9 @@ void dir_init(void)
 
 void dir_done(void)
 {
-	if (dir_rslr)
-		rset_free(dir_rslr);
-	if (dir_rsrl)
-		rset_free(dir_rsrl);
-	if (dir_rsctx)
-		rset_free(dir_rsctx);
+	rset_free(dir_rslr);
+	rset_free(dir_rsrl);
+	rset_free(dir_rsctx);
 }
 
 #define NFTS		16
@@ -444,8 +441,7 @@ void syn_reloadft(char *ft, char *injectft, int i, char *reg)
 		conf_changereg(i + idx, reg);
 		if ((idx = syn_find(ft)) >= 0)
 		{
-	                if (ftmap[idx].rs)
-	                        rset_free(ftmap[idx].rs);
+                        rset_free(ftmap[idx].rs);
 	                ftmap[idx].ft[0] = 0;
 			syn_initft(ft, injectft);
 		}
@@ -480,8 +476,7 @@ void syn_done(void)
 	int i;
 	for (i = 0; i < LEN(ftmap); i++)
 	{
-		if (ftmap[i].rs)
-			rset_free(ftmap[i].rs);
+		rset_free(ftmap[i].rs);
 		ftmap[i].rs = NULL;
 		memset(&ftmap[i].ft, 0, 32);
 	}

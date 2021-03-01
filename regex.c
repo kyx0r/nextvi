@@ -711,6 +711,8 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 
 void rset_free(struct rset *rs)
 {
+	if (!rs)
+		return;
 	regfree(&rs->regex);
 	free(rs->setgrpcnt);
 	free(rs->grp);
