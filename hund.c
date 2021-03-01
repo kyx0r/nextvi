@@ -1608,6 +1608,7 @@ inline static void cmd_cd(struct ui* const i) {
 		if (err) failed(i, "cd", strerror(err));
 	}
 	else {
+		chdir(path);
 		xstrlcpy(i->pv->wd, path, PATH_BUF_SIZE);
 		i->pv->wdlen = pathlen;
 		ui_rescan(i, i->pv, NULL);
@@ -1730,7 +1731,6 @@ static void interpreter(struct ui* const i, struct task* const t,
 /* TODO document it */
 	static char* anykey = "; read -n1 -r -p \"Press any key to continue...\" key\n"
 	"if [ \"$key\" != '' ]; then echo; fi";
-	int e;
 	(void)(t);
 	const size_t line_len = strlen(line);
 	if (!line[0] || line[0] == '\n' || line[0] == '#') {
@@ -1751,8 +1751,7 @@ static void interpreter(struct ui* const i, struct task* const t,
 	}
 	else if (!strcmp(line, "sh")) {
 		if (chdir(i->pv->wd)) {
-			e = errno;
-			failed(i, "chdir", strerror(e));
+			failed(i, "chdir", strerror(errno));
 			return;
 		}
 		char* const arg[] = { xgetenv(sh), "-i", NULL };
@@ -1760,8 +1759,7 @@ static void interpreter(struct ui* const i, struct task* const t,
 	}
 	else if (!memcmp(line, "sh ", 3)) {
 		if (chdir(i->pv->wd)) {
-			e = errno;
-			failed(i, "chdir", strerror(e));
+			failed(i, "chdir", strerror(errno));
 			return;
 		}
 		xstrlcpy(line+line_len, anykey, linesize-line_len);
@@ -1772,7 +1770,6 @@ static void interpreter(struct ui* const i, struct task* const t,
 		open_selected_with(i, line+2);
 	}
 	else if (!memcmp(line, "mark ", 5)) {// TODO
-
 		if (line[6] != ' ') {
 			failed(i, "mark", "");// TODO
 			return;
@@ -2374,7 +2371,9 @@ int hund(int argc, char **argv) {
 		}
 		first_entry(&fvs[v]);
 	}
-
+	if (init_wd[0])
+		if(chdir(init_wd[0]))
+			return 1;
 	struct task t;
 	memset(&t, 0, sizeof(struct task));
 	t.in = t.out = -1;

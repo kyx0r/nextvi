@@ -547,11 +547,9 @@ static int ec_editapprox(char *ec)
 		strcpy(path, ".");
 		dir_calc(path);
 	}
-	s = ex_arg(ec, arg);
-	if (!s)
+	if (!(s = ex_arg(ec, arg)))
 		return 0;
-	if (s)
-		inst = atoi(s);
+	inst = atoi(s);
 	for(int pos = 0; pos < fstlen;)
 	{
 		path = &fslink[pos+sizeof(int)];
@@ -1110,6 +1108,15 @@ static int ec_set(char *ec)
 	return 0;
 }
 
+static int ec_chdir(char *ec)
+{
+	char arg[1024];
+	ex_arg(ec, arg);
+	if(*arg && chdir(arg))
+		return 1;
+	return 0;
+}
+
 static int ec_setdir(char *ec)
 {
 	char arg[1024];
@@ -1186,7 +1193,8 @@ static struct excmd {
 	{"ft", "filetype", ec_ft},
 	{"cm", "cmap", ec_cmap},
 	{"cm!", "cmap!", ec_cmap},
-	{"dir", "dir", ec_setdir},
+	{"fd", "fsdir", ec_setdir},
+	{"cd", "chdir", ec_chdir},
 	{"inc", "inc", ec_setincl},
 	{"", "", ec_null},
 };
