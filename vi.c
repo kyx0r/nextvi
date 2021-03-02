@@ -717,48 +717,36 @@ void dir_calc(char *cur_dir)
 	closedir(dp);
 }
 
-static int fs_search(char *ex_path, int ex_len, char* cs,
-			 int cnt, int *row, int *off)
+static int fs_search(char *ex_path, char* cs,int cnt, int *row, int *off)
 {
 	char *path;
-	int again = 0;
-	int len;
-	redo:
+	struct lbuf *prevxb;
 	for (;fspos < fstlen;)
 	{
 		path = &fslink[fspos+sizeof(int)];
-		len = *(int*)((char*)fslink+fspos) + sizeof(int);
-		fspos += len;
-		if (!substr(path, ex_path, len, ex_len))
-		{
-			if(ex_edit(path))
-			{
-				*row = xrow; *off = xoff-1;
-			} else {
-				*row = 0; *off = 0;
-			}
-			ex_kwdset(cs, +1);
-			if (!vi_search('n', cnt, row, off))
-				return 1;
-		}
-	}
-	if (fspos == fstlen && !again)
-	{
-		again = 1;
-		fspos = 0;
-		goto redo;
+		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
+		prevxb = xb;
+		if(ex_edit(path))
+			{*row = xrow; *off = xoff-1;} 
+		else 
+			{*row = 0; *off = 0;}
+		if (prevxb == xb)
+			continue;
+		ex_kwdset(cs, +1);
+		if (!vi_search('n', cnt, row, off))
+			return 1;
 	}
 	ex_edit(ex_path);
 	return 0;
 }
 
-static int fs_searchback(char *ex_path, int ex_len, char* cs,
-			int cnt, int *row, int *off)
+static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
 {
 	char *path;
 	int tlen = 0;
 	int count = fscount;
 	char *paths[count];
+	struct lbuf *prevxb;
 	for (; tlen < fspos;)
 	{
 		path = &fslink[tlen+sizeof(int)];
@@ -768,20 +756,17 @@ static int fs_searchback(char *ex_path, int ex_len, char* cs,
 	for (int i = count; i < fscount; i++)
 	{
 		path = paths[i];
-		tlen = *(int*)((char*)path-sizeof(int))+sizeof(int);
-		fspos -= tlen;
-		if (!substr(path, ex_path, tlen, ex_len))
-		{
-			if(ex_edit(path))
-			{
-				*row = xrow; *off = xoff-1;
-			} else {
-				*row = 0; *off = 0;
-			}
-			ex_kwdset(cs, +1);
-			if (!vi_search('n', cnt, row, off))
-				return 1;
-		}
+		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
+		prevxb = xb;
+		if(ex_edit(path))
+			{*row = xrow; *off = xoff-1;} 
+		else 
+			{*row = 0; *off = 0;}
+		if (prevxb == xb)
+			continue;
+		ex_kwdset(cs, +1);
+		if (!vi_search('n', cnt, row, off))
+			return 1;
 	}
 	ex_edit(ex_path);
 	return 0;
@@ -902,7 +887,7 @@ static int vi_motion(int *row, int *off)
 			memcpy(savepath, ex_path(), i);
 		}
 		_row = *row; _off = *off;
-		if(!fs_search(ex, i-1, cs, cnt, row, off))
+		if(!fs_search(ex, cs, cnt, row, off))
 		{
 			*row = _row; *off = _off;
 		}
@@ -911,9 +896,8 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('p'):
 		if (!(cs = vi_curword(xb, *row, *off)) || !fslink)
 			return -1;
-		i = strlen(ex_path())+1;
-		memcpy(ex, ex_path(), i);
-		if(!fs_searchback(ex, i-1, cs, cnt, row, off))
+		memcpy(ex, ex_path(), strlen(ex_path())+1);
+		if(!fs_searchback(ex, cs, cnt, row, off))
 		{
 			if(*savepath)
 			{
