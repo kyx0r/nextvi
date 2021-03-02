@@ -720,6 +720,7 @@ static int fs_search(char* cs,int cnt, int *row, int *off)
 {
 	char *path;
 	struct lbuf *prevxb;
+	int again = 0;
 	redo:
 	for (;fspos < fstlen;)
 	{
@@ -736,9 +737,10 @@ static int fs_search(char* cs,int cnt, int *row, int *off)
 		if (!vi_search('n', cnt, row, off))
 			return 1;
 	}
-	if (fspos == fstlen)
+	if (fspos == fstlen && !again)
 	{
 		fspos = 0;
+		again = 1;
 		goto redo;
 	}
 	return 0;
