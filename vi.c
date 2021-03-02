@@ -702,8 +702,7 @@ void dir_calc(char *cur_dir)
 	*ptr++ = '/';
 	*ptr = 0;
 	if ((dp = opendir(cur_dir)) == NULL)
-		return ;
-
+		return;
 	while ((dirp = readdir(dp)) != NULL)
 	{
 		if (strcmp(dirp->d_name, ".") == 0 ||
@@ -717,10 +716,11 @@ void dir_calc(char *cur_dir)
 	closedir(dp);
 }
 
-static int fs_search(char *ex_path, char* cs,int cnt, int *row, int *off)
+static int fs_search(char* cs,int cnt, int *row, int *off)
 {
 	char *path;
 	struct lbuf *prevxb;
+	redo:
 	for (;fspos < fstlen;)
 	{
 		path = &fslink[fspos+sizeof(int)];
@@ -736,11 +736,15 @@ static int fs_search(char *ex_path, char* cs,int cnt, int *row, int *off)
 		if (!vi_search('n', cnt, row, off))
 			return 1;
 	}
-	ex_edit(ex_path);
+	if (fspos == fstlen)
+	{
+		fspos = 0;
+		goto redo;
+	}
 	return 0;
 }
 
-static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
+static int fs_searchback(char* cs, int cnt, int *row, int *off)
 {
 	char *path;
 	int tlen = 0;
@@ -768,7 +772,6 @@ static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
 		if (!vi_search('n', cnt, row, off))
 			return 1;
 	}
-	ex_edit(ex_path);
 	return 0;
 }
 
@@ -776,7 +779,6 @@ static int fs_searchback(char *ex_path, char* cs, int cnt, int *row, int *off)
 static int vi_motion(int *row, int *off)
 {
 	static char sdirection;
-	static char ex[1024];
 	static char savepath[1024];
 	static int _row, _off, srow, soff;
 	char path[1024];
@@ -879,15 +881,13 @@ static int vi_motion(int *row, int *off)
 			strcpy(path, ".");
 			dir_calc(path);
 		}
-		i = strlen(ex_path())+1;
-		memcpy(ex, ex_path(), i);
 		if(!*savepath)
 		{
 			srow = *row; soff = *off;
-			memcpy(savepath, ex_path(), i);
+			memcpy(savepath, ex_path(), strlen(ex_path())+1);
 		}
 		_row = *row; _off = *off;
-		if(!fs_search(ex, cs, cnt, row, off))
+		if(!fs_search(cs, cnt, row, off))
 		{
 			*row = _row; *off = _off;
 		}
@@ -896,8 +896,7 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('p'):
 		if (!(cs = vi_curword(xb, *row, *off)) || !fslink)
 			return -1;
-		memcpy(ex, ex_path(), strlen(ex_path())+1);
-		if(!fs_searchback(ex, cs, cnt, row, off))
+		if(!fs_searchback(cs, cnt, row, off))
 		{
 			if(*savepath)
 			{
