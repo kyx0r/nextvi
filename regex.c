@@ -603,15 +603,6 @@ int regerror(int errcode, regex_t *preg, char *errbuf, int errbuf_size)
 	return 0;
 }
 
-/* regular expression set */
-struct rset {
-	regex_t regex;		/* the combined regular expression */
-	int n;			/* number of regular expressions in this set */
-	int *grp;		/* the group assigned to each subgroup */
-	int *setgrpcnt;		/* number of groups in each regular expression */
-	int grpcnt;		/* group count */
-};
-
 static int re_groupcount(char *s)
 {
 	int n = 0;

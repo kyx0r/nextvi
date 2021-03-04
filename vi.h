@@ -87,6 +87,14 @@ void regfree(regex_t *preg);
 #define RE_ICASE		1
 #define RE_NOTBOL		2
 #define RE_NOTEOL		4
+/* regular expression set */
+struct rset {
+	regex_t regex;		/* the combined regular expression */
+	int n;			/* number of regular expressions in this set */
+	int *grp;		/* the group assigned to each subgroup */
+	int *setgrpcnt;		/* number of groups in each regular expression */
+	int grpcnt;		/* group count */
+};
 struct rset *rset_make(int n, char **pat, int flg);
 int rset_find(struct rset *re, char *s, int n, int *grps, int flg);
 void rset_free(struct rset *re);
@@ -241,6 +249,7 @@ char **conf_kmap(int id);
 int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
 void conf_changereg(int i, char *reg);
+void conf_changepatend(int i, int patend);
 
 /* vi.c */
 char *vi_regget(int c, int *lnmode);
@@ -278,3 +287,4 @@ extern int vi_lnnum;
 extern int vi_hidch;
 extern int vi_mod;
 extern int vi_insmov;
+extern int vi_scdir;

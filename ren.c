@@ -25,9 +25,9 @@ int *ren_position(char *s, char ***chrs, int *n)
 		chrs[0] = last_chrs;
 		*n = last_n;
 		return last_pos;
-	} else 
+	} else
 		ren_done();
-	int i; 
+	int i;
 	chrs[0] = uc_chop(s, n);
 	int nn = *n;
 	int *off, *pos;
@@ -307,7 +307,10 @@ static struct ftmap {
 } ftmap[NFTS];
 
 static struct bmap {
-	int id;
+	int id1;
+	int id2;
+	int id3;
+	int mapidx;
 	struct rset *rs;
 } bmap[NFTS];
 static int bidx;
@@ -315,7 +318,7 @@ static int bidx;
 static struct rset *syn_ftrs;
 static int syn_ctx;
 static int *blockatt;
-struct rset *blockrs;
+struct bmap *blockmap;
 
 static int syn_find(char *ft)
 {
@@ -365,8 +368,20 @@ int *syn_highlight(char *ft, char *s, int n)
 	if (xhll)
 		for (i = 0; i < n; i++)
 			att[i] = syn_ctx;
-	if (blockrs)
-		rs = blockrs;
+	if (blockmap)
+	{
+		for (i = 0; i < bidx; i++)
+		{
+			if (bmap[i].id2 > idx + rs->n)
+				break;
+			if ((bmap[i].id3 > 0 && vi_scdir <= 0) ||
+					(bmap[i].id3 < 0 && vi_scdir > 0))
+				conf_changepatend(bmap[i].id2, 0);
+			else
+				conf_changepatend(bmap[i].id2, bmap[i].id3);
+		}
+		rs = blockmap->rs;
+	}
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
 		int grp = 0;
@@ -374,10 +389,10 @@ int *syn_highlight(char *ft, char *s, int n)
 		int *catt;
 		int patend;
 		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
-		if (blockrs)
+		if (blockmap)
 		{
 			catt = blockatt;
-			blockrs = NULL;
+			blockmap = NULL;
 			setatt()
 			return att;
 		} else if (patend) {
@@ -385,9 +400,12 @@ int *syn_highlight(char *ft, char *s, int n)
 			conf_highlight(patend, NULL, &blockatt, NULL, NULL, NULL);
 			for (i = 0; i < bidx; i++)
 			{
-				if (patend == bmap[i].id)
+				if (patend == bmap[i].id1)
 				{
-					blockrs = bmap[i].rs;
+					if (vi_scdir > 0)
+						blockmap = &bmap[bmap[i].mapidx];
+					else
+						blockmap = &bmap[i];
 					setatt()
 					return att;
 				}
@@ -397,11 +415,9 @@ int *syn_highlight(char *ft, char *s, int n)
 		sidx += cend;
 		flg = RE_NOTBOL;
 	}
-	if (blockrs)
-	{
+	if (blockmap)
 		for (j = 0; j < n; j++)
 			att[j] = *blockatt;
-	}
 	return att;
 }
 
@@ -441,7 +457,7 @@ void syn_reloadft(char *ft, char *injectft, int i, char *reg)
 		conf_changereg(i + idx, reg);
 		if ((idx = syn_find(ft)) >= 0)
 		{
-                        rset_free(ftmap[idx].rs);
+			rset_free(ftmap[idx].rs);
 	                ftmap[idx].ft[0] = 0;
 			syn_initft(ft, injectft);
 		}
@@ -452,7 +468,7 @@ void syn_init(void)
 {
 	char *pats[128] = {NULL};
 	char *pat, *ft;
-	int i, patend;
+	int i, e, patend, patend1;
 	bidx = 0;
 	for (i = 0; !conf_highlight(i, &ft, NULL, NULL, NULL, &patend); i++)
 	{
@@ -460,9 +476,16 @@ void syn_init(void)
 			syn_initft(ft, "");
 		if (patend)
 		{
-			conf_highlight(i+patend, NULL, NULL, &pat, NULL, NULL);
-			bmap[bidx].id = i+patend;
-			bmap[bidx].rs = rset_make(1, &pat, 0); 
+			bmap[bidx].id1 = i+patend;
+			bmap[bidx].id2 = i;
+			bmap[bidx].id3 = patend;
+			bmap[bidx].mapidx = bidx;
+			conf_highlight(i+patend, NULL, NULL, &pat, NULL, &patend1);
+			if (patend < 0)
+				for (e = 0; e < bidx; e++)
+					if (bmap[e].id1 == patend + i + patend1)
+						{bmap[bidx].mapidx = e; break;}
+			bmap[bidx].rs = rset_make(1, &pat, 0);
 			bidx++;
 		}
 	}

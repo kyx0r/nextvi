@@ -43,7 +43,7 @@ int conf_placeholder(int idx, char **s, char **d, int *wid)
 	return 0;
 }
 
-int conf_highlight(int idx, char **ft, int **att, 
+int conf_highlight(int idx, char **ft, int **att,
 			char **pat, int *end, int *patend)
 {
 	if (idx < 0 || idx >= LEN(highlights))
@@ -112,6 +112,10 @@ char *conf_digraph(int c1, int c2)
 
 void conf_changereg(int i, char *reg)
 {
-       highlights[i].pat = reg;
+	highlights[i].pat = reg;
 }
 
+void conf_changepatend(int i, int patend)
+{
+	highlights[i].patend = patend;
+}

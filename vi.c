@@ -29,6 +29,7 @@ int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars*/
 int vi_mod;		/* screen should be redrawn (1: the whole screen, 2: the current line) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf*/
+int vi_scdir;		/* scroll direction, +- */
 static char *vi_word = "\0eEwW0";	/* line word navigation*/
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN];		/* current message */
@@ -223,9 +224,8 @@ static void vi_drawrow(int row)
 static void vi_drawagain(int xcol, int lineonly)
 {
 	int i;
-	if (blockrs)
-		blockrs = NULL;
 	term_record();
+	vi_scdir = 0;
 	for (i = xtop; i < xtop + xrows; i++)
 		if (!lineonly || i == xrow)
 			vi_drawrow(i);
@@ -237,25 +237,22 @@ static void vi_drawagain(int xcol, int lineonly)
 /* update the screen */
 static void vi_drawupdate(int xcol, int otop)
 {
-	int i = 0;
-	if (blockrs)
-		blockrs = NULL;
-	if (otop != xtop) {
-		term_record();
-		term_pos(0, 0);
-		term_room(otop - xtop);
-		if (xtop > otop) {
-			int n = MIN(xtop - otop, xrows);
-			for (i = 0; i < n; i++)
-				vi_drawrow(xtop + xrows - n + i);
-		} else {
-			int n = MIN(otop - xtop, xrows);
-			for (i = 0; i < n; i++)
-				vi_drawrow(xtop + i);
-		}
-		term_pos(xrow, led_pos(lbuf_get(xb, i), xcol));
-		term_commit();
+	int i = otop - xtop;
+	vi_scdir = i > 1 ? -1 : i;
+	term_record();
+	term_pos(0, 0);
+	term_room(i);
+	if (i < 0) {
+		int n = MIN(-i, xrows);
+		for (i = 0; i < n; i++)
+			vi_drawrow(xtop + xrows - n + i);
+	} else {
+		int n = MIN(i, xrows);
+		for (i = 0; i < n; i++)
+			vi_drawrow(xtop + i);
 	}
+	term_pos(xrow, led_pos(lbuf_get(xb, i), xcol));
+	term_commit();
 	vi_drawmsg();
 	term_pos(xrow, led_pos(lbuf_get(xb, i), xcol));
 }
@@ -1550,7 +1547,7 @@ void vi(void)
 			vi_lnnum = 0;
 			vi_mod = 1;
 		}
-		if (blockrs || *vi_word)
+		if (*vi_word)
 		 	vi_mod = 1;	
 		if (vi_msg[0])
 		{
