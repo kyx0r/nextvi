@@ -305,7 +305,7 @@ static struct ftmap {
 	char ft[32];
 	struct rset *rs;
 } ftmap[NFTS];
-static int ftidx = -1;
+static int ftidx;
 
 static struct bmap {
 	int tid;		/* target pattern idx */
@@ -356,8 +356,7 @@ for (i = 0; i < LEN(subs) / 2; i++) {\
 
 void syn_setft(char *ft)
 {
-	if ((ftidx = syn_find(ft)) < 0)
-		return;
+	ftidx = syn_find(ft);
 }
 
 void syn_blswap(int scdir, int scdiff)
