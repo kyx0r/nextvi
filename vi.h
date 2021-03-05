@@ -128,7 +128,7 @@ void dir_done(void);
 #define SYN_BGSET(a)	((a) & 0x20ff00)
 #define SYN_FG(a)	((a) & 0xff)
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
-extern struct rset *blockrs;
+extern struct bmap *blockmap;
 void syn_setft(char *ft);
 void syn_blswap(int scdir, int scdiff);
 int *syn_highlight(char *s, int n);
