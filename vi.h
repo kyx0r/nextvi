@@ -129,7 +129,9 @@ void dir_done(void);
 #define SYN_FG(a)	((a) & 0xff)
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
 extern struct rset *blockrs;
-int *syn_highlight(char *ft, char *s, int n);
+void syn_setft(char *ft);
+void syn_blswap(int scdir);
+int *syn_highlight(char *s, int n);
 char *syn_filetype(char *path);
 void syn_context(int att);
 int syn_merge(int old, int new);
@@ -200,10 +202,10 @@ char* xgetenv(char* q[]);
 #define TK_ESC		(TK_CTL('['))
 
 /* led.c line-oriented input and output */
-char *led_prompt(char *pref, char *post, char *insert, int *kmap, char *syn);
-char *led_input(char *pref, char *post, int *kmap, char *syn);
-void led_print(char *msg, int row, char *syn);
-void led_printmsg(char *s, int row, char *syn);
+char *led_prompt(char *pref, char *post, char *insert, int *kmap);
+char *led_input(char *pref, char *post, int *kmap);
+void led_print(char *msg, int row);
+void led_printmsg(char *s, int row);
 char *led_read(int *kmap);
 char *led_readchar(int c, int kmap);
 int led_pos(char *s, int pos);
@@ -287,4 +289,3 @@ extern int vi_lnnum;
 extern int vi_hidch;
 extern int vi_mod;
 extern int vi_insmov;
-extern int vi_scdir;

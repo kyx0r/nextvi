@@ -305,6 +305,7 @@ static struct ftmap {
 	char ft[32];
 	struct rset *rs;
 } ftmap[NFTS];
+static int ftidx = -1;
 
 static struct bmap {
 	int id1;
@@ -318,7 +319,7 @@ static int bidx;
 static struct rset *syn_ftrs;
 static int syn_ctx;
 static int *blockatt;
-struct bmap *blockmap;
+struct rset *blockrs;
 
 static int syn_find(char *ft)
 {
@@ -353,14 +354,37 @@ for (i = 0; i < LEN(subs) / 2; i++) {\
 	}\
 }\
 
-int *syn_highlight(char *ft, char *s, int n)
+void syn_setft(char *ft)
 {
-	int idx = syn_find(ft);
+	if ((ftidx = syn_find(ft)) < 0)
+		return;
+}
+
+void syn_blswap(int scdir)
+{
+	if (ftidx < 0)
+		return;
+	struct rset *rs = ftmap[ftidx].rs;
+	for (int i = 0; i < bidx; i++)
+	{
+		if (bmap[i].id2 > ftidx + rs->n)
+			break;
+		if ((bmap[i].id3 > 0 && scdir <= 0) ||
+				(bmap[i].id3 < 0 && scdir > 0))
+			conf_changepatend(bmap[i].id2, 0);
+		else
+			conf_changepatend(bmap[i].id2, bmap[i].id3);
+	}
+
+}
+
+int *syn_highlight(char *s, int n)
+{
 	int *att = malloc(n * sizeof(att[0]));
 	memset(att, 0, n * sizeof(att[0]));
-	if (idx < 0)
+	if (ftidx < 0)
 		return att;
-	struct rset *rs = ftmap[idx].rs;
+	struct rset *rs = ftmap[ftidx].rs;
 	int sidx = 0;
 	int subs[16 * 2];
 	int flg = 0;
@@ -368,20 +392,8 @@ int *syn_highlight(char *ft, char *s, int n)
 	if (xhll)
 		for (i = 0; i < n; i++)
 			att[i] = syn_ctx;
-	if (blockmap)
-	{
-		for (i = 0; i < bidx; i++)
-		{
-			if (bmap[i].id2 > idx + rs->n)
-				break;
-			if ((bmap[i].id3 > 0 && vi_scdir <= 0) ||
-					(bmap[i].id3 < 0 && vi_scdir > 0))
-				conf_changepatend(bmap[i].id2, 0);
-			else
-				conf_changepatend(bmap[i].id2, bmap[i].id3);
-		}
-		rs = blockmap->rs;
-	}
+	if (blockrs)
+		rs = blockrs;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
 		int grp = 0;
@@ -389,10 +401,10 @@ int *syn_highlight(char *ft, char *s, int n)
 		int *catt;
 		int patend;
 		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
-		if (blockmap)
+		if (blockrs)
 		{
 			catt = blockatt;
-			blockmap = NULL;
+			blockrs = NULL;
 			setatt()
 			return att;
 		} else if (patend) {
@@ -402,10 +414,7 @@ int *syn_highlight(char *ft, char *s, int n)
 			{
 				if (patend == bmap[i].id1)
 				{
-					if (vi_scdir > 0)
-						blockmap = &bmap[bmap[i].mapidx];
-					else
-						blockmap = &bmap[i];
+					blockrs = bmap[i].rs;
 					setatt()
 					return att;
 				}
@@ -415,7 +424,7 @@ int *syn_highlight(char *ft, char *s, int n)
 		sidx += cend;
 		flg = RE_NOTBOL;
 	}
-	if (blockmap)
+	if (blockrs)
 		for (j = 0; j < n; j++)
 			att[j] = *blockatt;
 	return att;

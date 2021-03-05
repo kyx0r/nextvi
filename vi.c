@@ -29,7 +29,6 @@ int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars*/
 int vi_mod;		/* screen should be redrawn (1: the whole screen, 2: the current line) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf*/
-int vi_scdir;		/* scroll direction, +- */
 static char *vi_word = "\0eEwW0";	/* line word navigation*/
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN];		/* current message */
@@ -86,7 +85,9 @@ static void vi_drawmsg(void)
 	{
 		int oleft = xleft;
 		xleft = 0;
-		led_printmsg(vi_msg, xrows, "---");
+		syn_setft("---");
+		led_printmsg(vi_msg, xrows);
+		syn_setft(xhl ? ex_filetype() : "/");
 		xleft = oleft;
 	}
 }
@@ -160,7 +161,7 @@ static void vi_drawrow(int row)
 		s = ch1;
 		if (*vi_word && row == xrow+1)
 			goto last_row;
-		led_print(row ? s : ch2, row - xtop, ex_filetype());
+		led_print(row ? s : ch2, row - xtop);
 		return;
 	}
 	if (vi_lnnum)
@@ -173,7 +174,7 @@ static void vi_drawrow(int row)
 		c = itoa(abs(xrow-row), tmp+l2);
 		*c++ = ' ';
 		memcpy(c, s, l1);
-		led_print(tmp, row - xtop, ex_filetype());
+		led_print(tmp, row - xtop);
 	} else if (*vi_word && row == xrow+1) {
 		last_row:;
 		int noff = xoff;
@@ -181,7 +182,7 @@ static void vi_drawrow(int row)
 		c = lbuf_get(xb, xrow);
 		if (!c || *c == '\n')
 		{
-			led_print(s, row - xtop, ex_filetype());
+			led_print(s, row - xtop);
 			return;
 		}
 		l1 = strlen(c)+1;
@@ -212,9 +213,9 @@ static void vi_drawrow(int row)
 		if (!isescape(c[noff]))
 			tmp[noff] = *vi_word;
 		movedown = 1;
-		led_print(tmp, row - xtop, ex_filetype());
+		led_print(tmp, row - xtop);
 	} else
-		led_print(s, row - xtop, ex_filetype());
+		led_print(s, row - xtop);
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
 		movedown = 0;
 	syn_context(0);
@@ -225,7 +226,8 @@ static void vi_drawagain(int xcol, int lineonly)
 {
 	int i;
 	term_record();
-	vi_scdir = 0;
+	syn_setft(xhl ? ex_filetype() : "/");
+	syn_blswap(0);
 	for (i = xtop; i < xtop + xrows; i++)
 		if (!lineonly || i == xrow)
 			vi_drawrow(i);
@@ -238,10 +240,11 @@ static void vi_drawagain(int xcol, int lineonly)
 static void vi_drawupdate(int xcol, int otop)
 {
 	int i = otop - xtop;
-	vi_scdir = i > 1 ? -1 : i;
 	term_record();
 	term_pos(0, 0);
 	term_room(i);
+	syn_setft(xhl ? ex_filetype() : "/");
+	syn_blswap(i > 1 ? -1 : i);
 	if (i < 0) {
 		int n = MIN(-i, xrows);
 		for (i = 0; i < n; i++)
@@ -293,7 +296,9 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	memcpy(vi_msg, msg, l2+1);
 	term_pos(xrows, led_pos(msg, 0));
 	term_kill();
-	s = led_prompt(msg, "", insert, kmap, "---");
+	syn_setft("---");
+	s = led_prompt(msg, "", insert, kmap);
+	syn_setft(xhl ? ex_filetype() : "/");
 	if (xquit == 2)
 	{
 		vi_mod = 1;
@@ -316,10 +321,12 @@ char *ex_read(char *msg)
 	char c;
 	if (xled) {
 		int oleft = xleft;
-		char *s = led_prompt(msg, "", NULL, &xkmap, "---");
+		syn_setft("---");
+		char *s = led_prompt(msg, "", NULL, &xkmap);
 		xleft = oleft;
 		if (s)
 			term_chr('\n');
+		syn_setft(xhl ? ex_filetype() : "/");
 		return s;
 	}
 	sb = sbuf_make();
@@ -338,8 +345,10 @@ void ex_show(char *msg)
 	if (xvis) {
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (xled) {
-		led_print(msg, -1, "---");
+		syn_setft("---");
+		led_print(msg, -1);
 		term_chr('\n');
+		syn_setft(xhl ? ex_filetype() : "/");
 	} else {
 		printf("%s", msg);
 	}
@@ -353,7 +362,9 @@ void ex_print(char *line)
 		if (line)
 		{
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
-			led_print(line, -1, "---");
+			syn_setft("---");
+			led_print(line, -1);
+			syn_setft(xhl ? ex_filetype() : "/");
 		}
 		term_chr('\n');
 	} else {
@@ -1095,7 +1106,7 @@ static int charcount(char *text, char *post)
 
 static char *vi_input(char *pref, char *post, int *row, int *off)
 {
-	char *rep = led_input(pref, post, &xkmap, ex_filetype());
+	char *rep = led_input(pref, post, &xkmap);
 	if (!rep)
 		return NULL;
 	*row = linecount(rep) - 1;
