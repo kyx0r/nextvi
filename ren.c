@@ -308,11 +308,11 @@ static struct ftmap {
 static int ftidx = -1;
 
 static struct bmap {
-	int id1;
-	int id2;
-	int id3;
-	int mapidx;
-	struct rset *rs;
+	int tid;		/* target pattern idx */
+	int sid;		/* self pattern idx */
+	int pid;		/* tid - sid, patend */
+	int mapidx;		/* self idx in bmap */
+	struct rset *rs;	/* target rset */
 } bmap[NFTS];
 static int bidx;
 
@@ -365,18 +365,18 @@ void syn_blswap(int scdir, int scdiff)
 	if (ftidx < 0)
 		return;
 	if (blockmap)
-		if (scdiff >= 0 && blockmap->id3 < 0)
+		if (scdiff >= 0 && blockmap->pid < 0)
 			blockmap = NULL;
 	struct rset *rs = ftmap[ftidx].rs;
 	for (int i = 0; i < bidx; i++)
 	{
-		if (bmap[i].id2 > ftidx + rs->n)
+		if (bmap[i].sid > ftidx + rs->n)
 			break;
-		if ((bmap[i].id3 > 0 && scdir <= 0) ||
-				(bmap[i].id3 < 0 && scdir > 0))
-			conf_changepatend(bmap[i].id2, 0);
+		if ((bmap[i].pid > 0 && scdir <= 0) ||
+				(bmap[i].pid < 0 && scdir > 0))
+			conf_changepatend(bmap[i].sid, 0);
 		else
-			conf_changepatend(bmap[i].id2, bmap[i].id3);
+			conf_changepatend(bmap[i].sid, bmap[i].pid);
 	}
 
 }
@@ -415,7 +415,7 @@ int *syn_highlight(char *s, int n)
 			conf_highlight(patend, NULL, &blockatt, NULL, NULL, NULL);
 			for (i = 0; i < bidx; i++)
 			{
-				if (patend == bmap[i].id1)
+				if (patend == bmap[i].tid)
 				{
 					blockmap = &bmap[i];
 					setatt()
@@ -488,14 +488,14 @@ void syn_init(void)
 			syn_initft(ft, "");
 		if (patend)
 		{
-			bmap[bidx].id1 = i+patend;
-			bmap[bidx].id2 = i;
-			bmap[bidx].id3 = patend;
+			bmap[bidx].tid = i+patend;
+			bmap[bidx].sid = i;
+			bmap[bidx].pid = patend;
 			bmap[bidx].mapidx = bidx;
 			conf_highlight(i+patend, NULL, NULL, &pat, NULL, &patend1);
 			if (patend < 0)
 				for (e = 0; e < bidx; e++)
-					if (bmap[e].id1 == patend + i + patend1)
+					if (bmap[e].tid == patend + i + patend1)
 						{bmap[bidx].mapidx = e; break;}
 			bmap[bidx].rs = rset_make(1, &pat, 0);
 			bidx++;
