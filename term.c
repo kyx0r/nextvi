@@ -198,14 +198,14 @@ char *term_att(int att, int old)
 		if ((fg & 0xff) < 8)
 			s = itoa(30 + (fg & 0xff), s);
 		else
-			s = itoa(fg & 0xff, memcpy(s, "38;5;", 5)+5);
+			s = itoa(fg & 0xff, (char*)memcpy(s, "38;5;", 5)+5);
 	}
 	if (SYN_BGSET(att)) {
 		*s++ = ';';
 		if ((bg & 0xff) < 8)
 			s = itoa(40 + (fg & 0xff), s);
 		else
-			s = itoa(bg & 0xff, memcpy(s, "48;5;", 5)+5);
+			s = itoa(bg & 0xff, (char*)memcpy(s, "48;5;", 5)+5);
 	}
 	s[0] = 'm';
 	s[1] = '\0';
