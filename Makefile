@@ -1,4 +1,4 @@
-CFLAGS := -pedantic -Wall -std=c99 -D_POSIX_C_SOURCE $(CFLAGS) 
+CFLAGS := -pedantic -Wall -std=c99 -D_POSIX_C_SOURCE=200809L $(CFLAGS) 
 
 OBJS = vi.o ex.o lbuf.o sbuf.o ren.o led.o \
 	uc.o term.o regex.o conf.o hund.o
