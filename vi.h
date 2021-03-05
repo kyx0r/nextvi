@@ -130,7 +130,7 @@ void dir_done(void);
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
 extern struct rset *blockrs;
 void syn_setft(char *ft);
-void syn_blswap(int scdir);
+void syn_blswap(int scdir, int scdiff);
 int *syn_highlight(char *s, int n);
 char *syn_filetype(char *path);
 void syn_context(int att);

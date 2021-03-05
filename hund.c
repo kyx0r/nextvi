@@ -2362,7 +2362,7 @@ int hund(int argc, char **argv) {
 				fprintf(stderr, "failed to initalize:"
 					" (%d) %s\n", err, strerror(err));
 				ui_end(&i);
-				exit(EXIT_FAILURE);
+				return 1;
 			}
 		}
 		else {

@@ -227,7 +227,7 @@ static void vi_drawagain(int xcol, int lineonly)
 	int i;
 	term_record();
 	syn_setft(xhl ? ex_filetype() : "/");
-	syn_blswap(0);
+	syn_blswap(0, 0);
 	for (i = xtop; i < xtop + xrows; i++)
 		if (!lineonly || i == xrow)
 			vi_drawrow(i);
@@ -244,7 +244,7 @@ static void vi_drawupdate(int xcol, int otop)
 	term_pos(0, 0);
 	term_room(i);
 	syn_setft(xhl ? ex_filetype() : "/");
-	syn_blswap(i > 1 ? -1 : i);
+	syn_blswap(i > 1 ? -1 : i, i);
 	if (i < 0) {
 		int n = MIN(-i, xrows);
 		for (i = 0; i < n; i++)

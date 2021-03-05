@@ -319,7 +319,7 @@ static int bidx;
 static struct rset *syn_ftrs;
 static int syn_ctx;
 static int *blockatt;
-struct rset *blockrs;
+struct bmap *blockmap;
 
 static int syn_find(char *ft)
 {
@@ -360,10 +360,13 @@ void syn_setft(char *ft)
 		return;
 }
 
-void syn_blswap(int scdir)
+void syn_blswap(int scdir, int scdiff)
 {
 	if (ftidx < 0)
 		return;
+	if (blockmap)
+		if (scdiff >= 0 && blockmap->id3 < 0)
+			blockmap = NULL;
 	struct rset *rs = ftmap[ftidx].rs;
 	for (int i = 0; i < bidx; i++)
 	{
@@ -392,8 +395,8 @@ int *syn_highlight(char *s, int n)
 	if (xhll)
 		for (i = 0; i < n; i++)
 			att[i] = syn_ctx;
-	if (blockrs)
-		rs = blockrs;
+	if (blockmap)
+		rs = blockmap->rs;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
 		int grp = 0;
@@ -401,10 +404,10 @@ int *syn_highlight(char *s, int n)
 		int *catt;
 		int patend;
 		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
-		if (blockrs)
+		if (blockmap)
 		{
 			catt = blockatt;
-			blockrs = NULL;
+			blockmap = NULL;
 			setatt()
 			return att;
 		} else if (patend) {
@@ -414,7 +417,7 @@ int *syn_highlight(char *s, int n)
 			{
 				if (patend == bmap[i].id1)
 				{
-					blockrs = bmap[i].rs;
+					blockmap = &bmap[i];
 					setatt()
 					return att;
 				}
@@ -424,7 +427,7 @@ int *syn_highlight(char *s, int n)
 		sidx += cend;
 		flg = RE_NOTBOL;
 	}
-	if (blockrs)
+	if (blockmap)
 		for (j = 0; j < n; j++)
 			att[j] = *blockatt;
 	return att;
