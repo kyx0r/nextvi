@@ -141,7 +141,7 @@ void syn_done(void);
 
 /* uc.c utf-8 helper functions */
 int uc_len(char *s);
-int uc_wid(char *s);
+int uc_wid(char *s, int cp);
 int uc_slen(char *s);
 int uc_code(char *s);
 char *uc_chr(char *s, int off);
@@ -153,8 +153,8 @@ int uc_isprint(char *s);
 int uc_isdigit(char *s);
 int uc_isalpha(char *s);
 int uc_kind(char *c);
-int uc_isbell(char *c);
-int uc_iscomb(char *c);
+int uc_isbell(char *c, int cp);
+int uc_iscomb(char *c, int cp);
 char **uc_chop(char *s, int *n);
 char *uc_next(char *s);
 char *uc_prev(char *beg, char *s);

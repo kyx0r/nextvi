@@ -4275,7 +4275,7 @@ size_t utf8_width(const char* b) {
 	size_t g = 0;
 	size_t s;
 	while (*b && (s = utf8_g2nb(b)) != 0) {
-		g += uc_wid((char*)b);
+		g += uc_wid((char*)b, uc_code((char*)b));
 		b += s;
 	}
 	return g;
@@ -4289,7 +4289,7 @@ size_t utf8_w2nb(const char* const b, size_t w) {
 	size_t r = 0;
 	while (*(b+r) && w > 0) {
 		r += utf8_g2nb(b+r);
-		w -= uc_wid((char*)b+r);
+		w -= uc_wid((char*)b+r, uc_code((char*)b+r));
 	}
 	return r;
 }
@@ -4300,7 +4300,7 @@ size_t utf8_w2nb(const char* const b, size_t w) {
 size_t utf8_wtill(const char* a, const char* const b) {
 	size_t w = 0;
 	while (b - a > 0) {
-		w += uc_wid((char*)a);
+		w += uc_wid((char*)a, uc_code((char*)a));
 		a += utf8_g2nb(a);
 	}
 	return w;

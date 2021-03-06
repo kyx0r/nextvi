@@ -153,14 +153,14 @@ static char *ren_placeholder(char *s)
 	for (i = 0; i < placeholderslen; i++)
 		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)
 			return placeholders[i].d;
-	if (uc_iscomb(s)) {
+	if (uc_iscomb(s, c)) {
 		static char buf[16];
 		char cbuf[8] = "";
 		memcpy(cbuf, s, uc_len(s));
 		sprintf(buf, "ـ%s", cbuf);
 		return buf;
 	}
-	if (uc_isbell(s))
+	if (uc_isbell(s, c))
 		return "�";
 	return NULL;
 }
@@ -173,7 +173,7 @@ int ren_cwid(char *s, int pos)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)
 			return placeholders[i].wid;
-	return uc_iscomb(s) || uc_isbell(s) ? 1 : uc_wid(s);
+	return uc_wid(s, c);
 }
 
 char *ren_translate(char *s, char *ln)

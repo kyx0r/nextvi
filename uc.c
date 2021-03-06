@@ -582,29 +582,27 @@ static int uc_iszw(int c)
 	return c >= 0x0300 && find(c, zwchars, LEN(zwchars));
 }
 
-int uc_wid(char *s)
+int uc_wid(char *s, int cp)
 {
-	int c = uc_code(s);
-	if (uc_iszw(c))
+	if (uc_iszw(cp))
 		return 0;
-	return uc_isdw(c) ? 2 : 1;
+	return uc_isdw(cp) ? 2 : 1;
 }
 
 /* nonprintable characters */
-int uc_isbell(char *s)
+int uc_isbell(char *s, int cp)
 {
 	int c = (unsigned char) *s;
 	if (c == ' ' || c == '\t' || c == '\n' || (c <= 0x7f && isprint(c)))
 		return 0;
-	c = uc_code(s);
-	return uc_iszw(c) || find(c, bchars, LEN(bchars));
+	return uc_iszw(cp) || find(cp, bchars, LEN(bchars));
 }
 
 /* nonprintable characters */
-int uc_iscomb(char *s)
+int uc_iscomb(char *s, int cp)
 {
 	int c = (unsigned char) *s;
 	if (c == ' ' || c == '\t' || c == '\n' || (c <= 0x7f && isprint(c)))
 		return 0;
-	return uc_acomb(uc_code(s));
+	return uc_acomb(cp);
 }
