@@ -238,20 +238,54 @@ void ec_bufferi(int *id);
 #define xb 	ex_lbuf()
 
 /* conf.c configuration variables */
-int conf_dirmark(int idx, char **pat, int *ctx, int *dir, int *grp);
-int conf_dircontext(int idx, char **pat, int *ctx);
-int conf_placeholder(int idx, char **s, char **d, int *wid);
-int conf_highlight(int idx, char **ft, int **att, 
-			char **pat, int *end, int *patend);
-int conf_filetype(int idx, char **ft, char **pat);
+/* map file names to file types */
+struct filetype {
+	char *ft;		/* file type */
+	char *pat;		/* file name pattern */
+};
+extern struct filetype fts[];
+extern int ftslen;
+/* syntax highlighting patterns */
+struct highlight {
+	char *ft;		/* the filetype of this pattern */
+	int att[16];		/* attributes of the matched groups */
+	char *pat;		/* regular expression */
+	int end;		/* the group ending this pattern */
+	int patend;		/* the ending regex for multi-line patterns */
+	/* patend is relative index from the parent index */
+};
+extern struct highlight hls[];
+extern int hlslen;
+/* direction context patterns; specifies the direction of a whole line */
+struct dircontext {
+	int dir;
+	char *pat;
+};
+extern struct dircontext dctxs[];
+extern int dctxlen;
+/* direction marks; the direction of a few words in a line */
+struct dirmark {
+	int ctx;	/* the direction context for this mark; 0 means any */
+	int dir;	/* the direction of the matched text */
+	int grp;	/* the nested subgroup; 0 means no groups */
+	char *pat;
+};
+extern struct dirmark dmarks[];
+extern int dmarkslen;
+/* character placeholders */
+struct placeholder {
+	char *s;	/* the source character */
+	char *d;	/* the placeholder */
+	int wid;	/* the width of the placeholder */
+};
+extern struct placeholder placeholders[];
+extern int placeholderslen;
 int conf_hlrev(void);
 int conf_hlline(void);
 int conf_mode(void);
 char **conf_kmap(int id);
 int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
-void conf_changereg(int i, char *reg);
-void conf_changepatend(int i, int patend);
 
 /* vi.c */
 char *vi_regget(int c, int *lnmode);

@@ -1,11 +1,9 @@
-CFLAGS := -pedantic -Wall -std=c99 -D_POSIX_C_SOURCE=200809L $(CFLAGS) 
+CFLAGS := -pedantic -Wall -Wfatal-errors -std=c99 -D_POSIX_C_SOURCE=200809L $(CFLAGS) 
 
 OBJS = vi.o ex.o lbuf.o sbuf.o ren.o led.o \
 	uc.o term.o regex.o conf.o hund.o
 
 all: vi
-
-conf.o: conf.h
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $<

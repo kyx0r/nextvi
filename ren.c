@@ -146,22 +146,18 @@ int ren_next(char *s, int p, int dir)
 	return s && uc_chr(s, ren_off(s, p))[0] != '\n' ? p : -1;
 }
 
-static char *ren_placeholder(char *s, int *wid)
+static char *ren_placeholder(char *s)
 {
-	char *src, *dst;
 	int i;
 	int c = uc_code(s);
-	for (i = 0; !conf_placeholder(i, &src, &dst, wid); i++)
-		if (src[0] == s[0] && uc_code(src) == c)
-			return dst;
+	for (i = 0; i < placeholderslen; i++)
+		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)
+			return placeholders[i].d;
 	if (uc_iscomb(s)) {
 		static char buf[16];
-		if (!wid)
-		{
-			char cbuf[8] = "";
-			memcpy(cbuf, s, uc_len(s));
-			sprintf(buf, "ـ%s", cbuf);
-		}
+		char cbuf[8] = "";
+		memcpy(cbuf, s, uc_len(s));
+		sprintf(buf, "ـ%s", cbuf);
 		return buf;
 	}
 	if (uc_isbell(s))
@@ -171,17 +167,18 @@ static char *ren_placeholder(char *s, int *wid)
 
 int ren_cwid(char *s, int pos)
 {
-	int wid = 1;
 	if (s[0] == '\t')
 		return xtabspc - ((pos + torg) & (xtabspc-1));
-	if (ren_placeholder(s, &wid))
-		return wid;
+	int c = uc_code(s);
+	for (int i = 0; i < placeholderslen; i++)
+		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)
+			return placeholders[i].wid;
 	return uc_wid(s);
 }
 
 char *ren_translate(char *s, char *ln)
 {
-	char *p = ren_placeholder(s, NULL);
+	char *p = ren_placeholder(s);
 	return p || !xshape ? p : uc_shape(ln, s);
 }
 
@@ -204,7 +201,8 @@ static int dir_match(char **chrs, int beg, int end, int ctx, int *rec,
 	if (rs)
 		found = rset_find(rs, s, LEN(subs) / 2, subs, flg);
 	if (found >= 0 && r_beg && r_end && c_beg && c_end) {
-		conf_dirmark(found, NULL, NULL, dir, &grp);
+		*dir = dmarks[found].dir;
+		grp = dmarks[found].grp;
 		*r_beg = beg + uc_off(s, subs[0]);
 		*r_end = beg + uc_off(s, subs[1]);
 		*c_beg = subs[grp * 2 + 0] >= 0 ?
@@ -250,16 +248,14 @@ static void dir_fix(char **chrs, int *ord, int dir, int beg, int end)
 /* return the direction context of the given line */
 int dir_context(char *s)
 {
-	int found = -1;
-	int dir;
+	int found;
 	if (xtd > +1)
 		return +1;
 	if (xtd < -1)
 		return -1;
 	if (dir_rsctx)
-		found = rset_find(dir_rsctx, s ? s : "", 0, NULL, 0);
-	if (!conf_dircontext(found, NULL, &dir))
-		return dir;
+		if ((found = rset_find(dir_rsctx, s ? s : "", 0, NULL, 0)) >= 0)
+			return dctxs[found].dir;
 	return xtd < 0 ? -1 : +1;
 }
 
@@ -279,16 +275,15 @@ void dir_init(void)
 	char *relr[128];
 	char *rerl[128];
 	char *ctx[128];
-	int curctx, i;
-	char *pat;
-	for (i = 0; !conf_dirmark(i, &pat, &curctx, NULL, NULL); i++) {
-		relr[i] = curctx >= 0 ? pat : NULL;
-		rerl[i] = curctx <= 0 ? pat : NULL;
+	int i;
+	for (i = 0; i < dmarkslen; i++) {
+		relr[i] = dmarks[i].ctx >= 0 ? dmarks[i].pat : NULL;
+		rerl[i] = dmarks[i].ctx <= 0 ? dmarks[i].pat : NULL;
 	}
 	dir_rslr = rset_make(i, relr, 0);
 	dir_rsrl = rset_make(i, rerl, 0);
-	for (i = 0; !conf_dircontext(i, &pat, NULL); i++)
-		ctx[i] = pat;
+	for (i = 0; i < dctxlen; i++)
+		ctx[i] = dctxs[i].pat;
 	dir_rsctx = rset_make(i, ctx, 0);
 }
 
@@ -373,9 +368,9 @@ void syn_blswap(int scdir, int scdiff)
 			break;
 		if ((bmap[i].pid < 0 && scdir <= 0) ||
 				(bmap[i].pid > 0 && scdir > 0))
-			conf_changepatend(bmap[i].sid, 0);
+			hls[bmap[i].sid].patend = 0;
 		else
-			conf_changepatend(bmap[i].sid, bmap[i].pid);
+			hls[bmap[i].sid].patend = bmap[i].pid;
 	}
 
 }
@@ -398,11 +393,10 @@ int *syn_highlight(char *s, int n)
 		rs = blockmap->rs;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
-		int grp = 0;
 		int cend = 1;
-		int *catt;
-		int patend;
-		conf_highlight(hl, NULL, &catt, NULL, &grp, &patend);
+		int grp = hls[hl].end;
+		int *catt = hls[hl].att;
+		int patend = hls[hl].patend;
 		if (blockmap)
 		{
 			catt = blockatt;
@@ -411,7 +405,7 @@ int *syn_highlight(char *s, int n)
 			return att;
 		} else if (patend) {
 			patend += hl;
-			conf_highlight(patend, NULL, &blockatt, NULL, NULL, NULL);
+			blockatt = hls[patend].att;
 			for (i = 0; i < bidx; i++)
 			{
 				if (patend == bmap[i].tid)
@@ -435,12 +429,10 @@ int *syn_highlight(char *s, int n)
 static void syn_initft(char *name, char *inject)
 {
 	char *pats[128] = {NULL};
-	char *ft, *pat;
 	int i, n;
-	for (i = 0; !conf_highlight(i, &ft, NULL, &pat, NULL, NULL)
-		&& i < LEN(pats); i++)
-		if (!strcmp(ft, inject) || !strcmp(ft, name))
-			pats[i] = pat;
+	for (i = 0; i < hlslen && i < LEN(pats); i++)
+		if (!strcmp(hls[i].ft, inject) || !strcmp(hls[i].ft, name))
+			pats[i] = hls[i].pat;
 	n = i;
 	for (i = 0; i < LEN(ftmap); i++) {
 		if (!ftmap[i].ft[0]) {
@@ -454,9 +446,8 @@ static void syn_initft(char *name, char *inject)
 char *syn_filetype(char *path)
 {
 	int hl = rset_find(syn_ftrs, path, 0, NULL, 0);
-	char *ft;
-	if (!conf_filetype(hl, &ft, NULL))
-		return ft;
+	if (hl >= 0 && hl < ftslen)
+		return fts[hl].ft;
 	return "/";
 }
 
@@ -465,7 +456,7 @@ void syn_reloadft(char *ft, char *injectft, int i, char *reg)
 	int idx;
 	if ((idx = syn_find(injectft)) >= 0)
 	{
-		conf_changereg(i + idx, reg);
+		hls[i + idx].pat = reg;
 		if ((idx = syn_find(ft)) >= 0)
 		{
 			rset_free(ftmap[idx].rs);
@@ -478,30 +469,28 @@ void syn_reloadft(char *ft, char *injectft, int i, char *reg)
 void syn_init(void)
 {
 	char *pats[128] = {NULL};
-	char *pat, *ft;
-	int i, e, patend, patend1;
+	int i, e, patend;
 	bidx = 0;
-	for (i = 0; !conf_highlight(i, &ft, NULL, NULL, NULL, &patend); i++)
+	for (i = 0; i < hlslen; i++)
 	{
-		if (syn_find(ft) < 0)
-			syn_initft(ft, "");
-		if (patend)
+		if (syn_find(hls[i].ft) < 0)
+			syn_initft(hls[i].ft, "");
+		if ((patend = hls[i].patend))
 		{
 			bmap[bidx].tid = i+patend;
 			bmap[bidx].sid = i;
 			bmap[bidx].pid = patend;
 			bmap[bidx].mapidx = bidx;
-			conf_highlight(i+patend, NULL, NULL, &pat, NULL, &patend1);
 			if (patend > 0)
 				for (e = 0; e < bidx; e++)
-					if (bmap[e].tid == patend + i + patend1)
+					if (bmap[e].tid == patend + i + hls[i+patend].patend)
 						{bmap[bidx].mapidx = e; break;}
-			bmap[bidx].rs = rset_make(1, &pat, 0);
+			bmap[bidx].rs = rset_make(1, &hls[i+patend].pat, 0);
 			bidx++;
 		}
 	}
-	for (i = 0; !conf_filetype(i, NULL, &pat) && i < LEN(pats); i++)
-		pats[i] = pat;
+	for (i = 0; i < ftslen && i < LEN(pats); i++)
+		pats[i] = fts[i].pat;
 	syn_ftrs = rset_make(i, pats, 0);
 }
 
