@@ -61,14 +61,14 @@ static struct highlight {
 			|default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
 	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*+[^*/])*\\*+/"},
-	{"c", {4 | SYN_IT}, "[^\\*/]*\\*/", 0, 1},
-	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*)*", 0, -1},
+	{"c", {4 | SYN_IT}, "/\\*([^*]|\\*)*", 0, 1},
+	{"c", {4 | SYN_IT}, "[^/]*\\*/", 0, -1},
 	{"c", {6}, "^#[ \t]*[a-zA-Z0-9_]+"},
 	{"c", {0, SYN_BD}, "([a-zA-Z][a-zA-Z0-9_]+)\\(", 1},
 	{"c", {5}, "\"([^\"]|\\\\\")*\""},
 	{"c", {5}, "'([^\\]|\\\\.)'"},
 	{"c", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
-	{"c", {14}, "[^\\\\]*\\\\$", 1},
+	{"c", {14}, "[^\n]*\\\\$", 1},
 
 	{"roff", {4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD},
 		"^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\]{2,}))?.*$", 1},
@@ -148,8 +148,8 @@ static struct highlight {
 	{"js", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
 	{"js", {10 | SYN_IT}, "//.*$"},
 	{"js", {10 | SYN_IT}, "/\\*([^*]|\\*+[^*/])*\\*+/"},
-	{"js", {10 | SYN_IT}, "[^\\*/]*\\*/"},
-	{"js", {10 | SYN_IT}, "/\\*([^*]|\\*)*", 0, -1},
+	{"js", {10 | SYN_IT}, "/\\*([^*]|\\*)*", 0, 1},
+	{"js", {10 | SYN_IT}, "[^/]*\\*/", 0, -1},
 	{"js", {5}, "\"([^\"]|\\\\\")*\""},
 	{"js", {5}, "\'([^\']|\\\\\")*\'"},
 
@@ -173,7 +173,7 @@ static struct highlight {
 			|srclang|srcset|start|step|style|summary|tabindex|target|\
 			|title|translate|type|usemap|value|width|wrap)\\>"},
 	{"html", {6}, "\\<(html|base|head|link|meta|style|title|body|address|article|\
-			|aside|footer|header|h\\d|hgroup|main|nav|section|blockquote|dd|\
+			|aside|footer|header|hgroup|main|nav|section|blockquote|dd|\
 			|dir|div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
 			|b|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
 			|ruby|s|samp|small|span|strong|sub|sup|time|tt|u|var|wbr|area|\
@@ -186,16 +186,14 @@ static struct highlight {
 			|bgsound|big|blink|center|command|content|dir|element|font|\
 			|frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
 			|multicol|nextid|nobr|noembed|noframes|plaintext|shadow|spacer|\
-			|strike|tt|xmp|doctype)\\>"},
+			|strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
 	{"html", {12}, "\"([^\"]|\\\\\")*\""},
 	{"html", {9}, "#\\<[A-Fa-f0-9]+\\>"},
 	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9+px]+)\\>"},
 	{"html", {0 | SYN_BD}, "#[ \t]*[a-zA-Z0-9_]+"},
 	{"html", {13}, "/"},
-	{"html", {3}, "[<|>]"},
+	{"html", {3}, "<[^<>]+>", 1},
 	{"html", {5}, "&[a-zA-Z0-9_]+"},
-	//{"html", {8 | SYN_BD}, ">([^\"]|\\\\\")*<"},
-	{"html", {3, SYN_BD}, "^[^<:]*:", 1},
 
 	/* status bar */
 	{"---", {8 | SYN_BD, 4, 1}, "^(\".*\").*(\\[[wr]\\]).*$"},
