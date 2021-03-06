@@ -39,14 +39,11 @@ int uc_code(char *s)
 		return c;
 	if (cnot & 0x20)
 		return ((c & 0x1f) << 6) | (s[1] & 0x3f);
-	if (s[1])
-	{
-		if (cnot & 0x10)
-			return ((c & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f);
-		if (cnot & 0x08 && s[2])
-			return ((c & 0x07) << 18) | ((s[1] & 0x3f) << 12) |
-				((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
-	}
+	if (cnot & 0x10)
+		return ((c & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f);
+	if (cnot & 0x08)
+		return ((c & 0x07) << 18) | ((s[1] & 0x3f) << 12) |
+			((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
 	return 0;
 }
 
