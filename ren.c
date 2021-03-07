@@ -360,8 +360,7 @@ void syn_blswap(int scdir, int scdiff)
 	if (ftidx >= 0 && last_scdir != scdir)
 	{
 		last_scdir = scdir;
-		if (scdir != scdiff)
-			blockmap = NULL;
+		blockmap = NULL;
 		struct rset *rs = ftmap[ftidx].rs;
 		for (int i = 0; i < bidx; i++)
 		{
