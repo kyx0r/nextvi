@@ -85,6 +85,7 @@ static void vi_drawmsg(void)
 	{
 		int oleft = xleft;
 		xleft = 0;
+		blockmap = NULL;
 		syn_setft("---");
 		led_printmsg(vi_msg, xrows);
 		syn_setft(xhl ? ex_filetype() : "/");
@@ -244,7 +245,7 @@ static void vi_drawupdate(int xcol, int otop)
 	term_pos(0, 0);
 	term_room(i);
 	syn_setft(xhl ? ex_filetype() : "/");
-	syn_blswap(i > 1 ? -1 : i, i);
+	syn_blswap(i > 1 || i < -1 ? -1 : i, i);
 	if (i < 0) {
 		int n = MIN(-i, xrows);
 		for (i = 0; i < n; i++)
@@ -321,6 +322,7 @@ char *ex_read(char *msg)
 	char c;
 	if (xled) {
 		int oleft = xleft;
+		blockmap = NULL;
 		syn_setft("---");
 		char *s = led_prompt(msg, "", NULL, &xkmap);
 		xleft = oleft;
@@ -357,6 +359,7 @@ void ex_show(char *msg)
 /* print an ex output line */
 void ex_print(char *line)
 {
+	blockmap = NULL;
 	if (xvis) {
 		vi_printed += line ? 1 : 2;
 		if (line)

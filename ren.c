@@ -356,23 +356,25 @@ void syn_setft(char *ft)
 
 void syn_blswap(int scdir, int scdiff)
 {
-	if (ftidx < 0)
-		return;
-	if (blockmap)
-		if (scdiff >= 0 && blockmap->pid > 0)
-			blockmap = NULL;
-	struct rset *rs = ftmap[ftidx].rs;
-	for (int i = 0; i < bidx; i++)
+	static int last_scdir;
+	if (ftidx >= 0 && last_scdir != scdir)
 	{
-		if (bmap[i].sid > ftidx + rs->n)
-			break;
-		if ((bmap[i].pid < 0 && scdir <= 0) ||
-				(bmap[i].pid > 0 && scdir > 0))
-			hls[bmap[i].sid].patend = 0;
-		else
-			hls[bmap[i].sid].patend = bmap[i].pid;
-	}
-
+		last_scdir = scdir;
+		if (scdir != scdiff)
+			blockmap = NULL;
+		struct rset *rs = ftmap[ftidx].rs;
+		for (int i = 0; i < bidx; i++)
+		{
+			if (bmap[i].sid > ftidx + rs->n)
+				break;
+			if ((bmap[i].pid < 0 && scdir <= 0) ||
+					(bmap[i].pid > 0 && scdir > 0))
+				hls[bmap[i].sid].patend = 0;
+			else
+				hls[bmap[i].sid].patend = bmap[i].pid;
+		}
+	} else if (scdiff >= 0 && blockmap && blockmap->pid > 0)
+		blockmap = NULL;
 }
 
 int *syn_highlight(char *s, int n)
@@ -482,9 +484,12 @@ void syn_init(void)
 			bmap[bidx].pid = patend;
 			bmap[bidx].mapidx = bidx;
 			if (patend > 0)
+			{
 				for (e = 0; e < bidx; e++)
 					if (bmap[e].tid == patend + i + hls[i+patend].patend)
 						{bmap[bidx].mapidx = e; break;}
+			} else 
+				hls[i].patend = 0;
 			bmap[bidx].rs = rset_make(1, &hls[i+patend].pat, 0);
 			bidx++;
 		}
