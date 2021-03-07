@@ -173,7 +173,7 @@ int ren_cwid(char *s, int pos)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)
 			return placeholders[i].wid;
-	return uc_wid(s, c);
+	return (c = uc_wid(s, c)) ? c : 1;
 }
 
 char *ren_translate(char *s, char *ln)
