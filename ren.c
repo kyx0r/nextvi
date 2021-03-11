@@ -148,9 +148,8 @@ int ren_next(char *s, int p, int dir)
 
 static char *ren_placeholder(char *s)
 {
-	int i;
 	int c = uc_code(s);
-	for (i = 0; i < placeholderslen; i++)
+	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)
 			return placeholders[i].d;
 	if (uc_iscomb(s, c)) {
@@ -337,18 +336,6 @@ void syn_context(int att)
 	syn_ctx = att;
 }
 
-#define setatt()\
-for (i = 0; i < LEN(subs) / 2; i++) {\
-	if (subs[i * 2] >= 0) {\
-		int beg = uc_off(s, sidx + subs[i * 2 + 0]);\
-		int end = uc_off(s, sidx + subs[i * 2 + 1]);\
-		for (j = beg; j < end; j++)\
-			att[j] = syn_merge(att[j], catt[i]);\
-		if (i == grp)\
-			cend = MAX(cend, subs[i * 2 + 1]);\
-	}\
-}\
-
 void syn_setft(char *ft)
 {
 	ftidx = syn_find(ft);
@@ -402,22 +389,23 @@ int *syn_highlight(char *s, int n)
 		{
 			catt = blockatt;
 			blockmap = NULL;
-			setatt()
-			return att;
 		} else if (patend) {
 			patend += hl;
 			blockatt = hls[patend].att;
 			for (i = 0; i < bidx; i++)
-			{
 				if (patend == bmap[i].tid)
-				{
 					blockmap = &bmap[i];
-					setatt()
-					return att;
-				}
+		}
+		for (i = 0; i < LEN(subs) / 2; i++) {
+			if (subs[i * 2] >= 0) {
+				int beg = uc_off(s, sidx + subs[i * 2 + 0]);
+				int end = uc_off(s, sidx + subs[i * 2 + 1]);
+				for (j = beg; j < end; j++)
+					att[j] = syn_merge(att[j], catt[i]);
+				if (i == grp)
+					cend = MAX(cend, subs[i * 2 + 1]);
 			}
 		}
-		setatt()
 		sidx += cend;
 		flg = RE_NOTBOL;
 	}

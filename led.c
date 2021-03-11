@@ -379,13 +379,11 @@ for (i = 0; i < n; i++) { \
 /* render and highlight a line */
 static char *led_render(char *s0, int cbeg, int cend)
 {
-	int i, j, n;
+	int i, j, n, cterm = cend - cbeg;
 	int *pos;	/* pos[i]: the screen position of the i-th character */
 	int *att;	/* att[i]: the attributes of i-th character */
 	char **chrs;	/* chrs[i]: the i-th character in s1 */
-	struct sbuf *out;
-	struct sbuf *bound = NULL;
-	int cterm = cend - cbeg;
+	struct sbuf *out, *bound = NULL;
 	int off[cterm+1];	/* off[i]: the character at screen position i */
 	int ctx = dir_context(s0);
 	memset(off, -1, (cterm+1) * sizeof(off[0]));

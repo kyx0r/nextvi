@@ -204,7 +204,7 @@ static int brk_match(char *brk, int c, char* s, int icase)
 		if (p[0] == '[' && p[1] == ':') {
 			for (i = 0; i < LEN(brk_classes); i++) {
 				if (!strncmp(brk_classes[i][0], p + 1, cl_lens[i]))
-					if (brk_match(brk_classes[i][1], c, s, icase) <= 0)
+					if (!brk_match(brk_classes[i][1], c, s, icase))
 						return not;
 			}
 			p += brk_len(p);
@@ -236,7 +236,6 @@ static int brk_match(char *brk, int c, char* s, int icase)
 					continue;
 				}
 				return c == oc ? !not : not;
-
 			}
 			return not;
 		}
