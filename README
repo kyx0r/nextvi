@@ -161,6 +161,9 @@ This is necessary sometimes if you want to paste from system clipboard.
 54. Added minimal syntax highlight for js and html
 55. Substitute undo-redo point return to where command was issued initially
 if the affected area is greater than terminal rows.
+56. Modified regex engine to support more than 1 character in negated
+char expressions. For example [^&abc] where ^& is the not+and. This will
+treat "abc" as !(a && b && c) logically.
 
 FAQ:
 ----

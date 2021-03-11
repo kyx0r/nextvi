@@ -191,20 +191,20 @@ static char *brk_classes[][2] = {
 /* length of brk_classes[i][0] */
 static char cl_lens[] = {7,7,7,7,7,7,7,7,7,6,8};
 
-static int brk_match(char *brk, int c, int icase)
+static int brk_match(char *brk, int c, char* s, int icase)
 {
 	int beg, end;
-	int i;
+	int i, oc = c;
 	int not = brk[0] == '^';
-	char *p = not ? brk + 1 : brk;
-	char *p0 = p;
+	int and = not && brk[1] == '&' && brk[2] != ']';
+	char *p = not ? brk + not + and : brk;
 	if (icase && c < 128 && isupper(c))
 		c = tolower(c);
-	while (*p && (p == p0 || *p != ']')) {
+	while (*p && *p != ']') {
 		if (p[0] == '[' && p[1] == ':') {
 			for (i = 0; i < LEN(brk_classes); i++) {
 				if (!strncmp(brk_classes[i][0], p + 1, cl_lens[i]))
-					if (!brk_match(brk_classes[i][1], c, icase))
+					if (brk_match(brk_classes[i][1], c, s, icase) <= 0)
 						return not;
 			}
 			p += brk_len(p);
@@ -226,7 +226,20 @@ static int brk_match(char *brk, int c, int icase)
 				end = tolower(end);
 		}
 		if (c >= beg && c <= end)
+		{
+			if (and)
+			{
+				if (*p != ']')
+				{
+					c = uc_code(s);
+					s += uc_len(s);
+					continue;
+				}
+				return c == oc ? !not : not;
+
+			}
 			return not;
+		}
 	}
 	return !not;
 }
@@ -259,7 +272,7 @@ static int ratom_match(struct ratom *ra, struct rstate *rs)
 		if (!c || (c == '\n' && !(rs->flg & REG_NOTEOL)))
 			return 1;
 		rs->s += uc_len(rs->s);
-		return brk_match(ra->s + 1, c, rs->flg & REG_ICASE);
+		return brk_match(ra->s + 1, c, rs->s, rs->flg & REG_ICASE);
 	case RA_BEG:
 		return rs->flg & REG_NOTBOL ? 1 : !(rs->s == rs->o || rs->s[-1] == '\n');
 	case RA_END:
