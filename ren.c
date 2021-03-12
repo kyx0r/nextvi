@@ -410,8 +410,15 @@ int *syn_highlight(char *s, int n)
 		flg = RE_NOTBOL;
 	}
 	if (blockmap)
-		for (j = 0; j < n; j++)
-			att[j] = *blockatt;
+	{
+		if (blockmap->rs != rs) {
+			if (rset_find(blockmap->rs, s, LEN(subs) / 2, subs, flg) >= 0)
+				blockmap = NULL; /* handling single line pattern */
+		} else {
+			for (j = 0; j < n; j++)
+				att[j] = *blockatt;
+		}
+	}
 	return att;
 }
 
