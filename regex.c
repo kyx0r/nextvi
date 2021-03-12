@@ -4,13 +4,6 @@
 #include <string.h>
 #include "vi.h"
 
-#define NGRPS		64	/* maximum number of groups */
-#define NREPS		128	/* maximum repetitions */
-#define NDEPT		256	/* re_rec() recursion depth limit */
-
-#define MAX(a, b)	((a) < (b) ? (b) : (a))
-#define LEN(a)		(sizeof(a) / sizeof((a)[0]))
-
 /* regular expressions atoms */
 #define RA_CHR		'\0'	/* character literal */
 #define RA_BEG		'^'	/* string start */
@@ -32,46 +25,6 @@
 #define RI_JUMP		'j'	/* jump to the given instruction */
 #define RI_MARK		'm'	/* mark the current position */
 #define RI_MATCH	'q'	/* the pattern is matched */
-
-/* regular expression atom */
-struct ratom {
-	int ra;			/* atom type (RA_*) */
-	char *s;		/* atom argument */
-};
-
-/* regular expression instruction */
-struct rinst {
-	struct ratom ra;	/* regular expression atom (RI_ATOM) */
-	int ri;			/* instruction type (RI_*) */
-	int a1, a2;		/* destination of RI_FORK and RI_JUMP */
-	int mark;		/* mark (RI_MARK) */
-};
-
-/* regular expression program */
-struct regex {
-	struct rinst *p;	/* the program */
-	int n;			/* number of instructions */
-	int flg;		/* regcomp() flags */
-};
-
-/* regular expression matching state */
-struct rstate {
-	char *s;		/* the current position in the string */
-	char *o;		/* the beginning of the string */
-	int mark[NGRPS * 2];	/* marks for RI_MARK */
-	int pc;			/* program counter */
-	int flg;		/* flags passed to regcomp() and regexec() */
-	int dep;		/* re_rec() depth */
-};
-
-/* regular expression tree; used for parsing */
-struct rnode {
-	struct ratom ra;	/* regular expression atom (RN_ATOM) */
-	struct rnode *c1, *c2;	/* children */
-	int mincnt, maxcnt;	/* number of repetitions */
-	int grp;		/* group number */
-	int rn;			/* node type (RN_*) */
-};
 
 static struct rnode *rnode_make(int rn, struct rnode *c1, struct rnode *c2)
 {
@@ -425,15 +378,15 @@ static int rnode_grpnum(struct rnode *rnode, int num)
 	return cur;
 }
 
-static int re_insert(struct regex *p, int ri)
+static int re_insert(regex_t *re, int ri)
 {
-	p->p[p->n++].ri = ri;
-	return p->n - 1;
+	re->p[re->n++].ri = ri;
+	return re->n - 1;
 }
 
-static void rnode_emit(struct rnode *n, struct regex *p);
+static void rnode_emit(struct rnode *n, regex_t *p);
 
-static void rnode_emitnorep(struct rnode *n, struct regex *p)
+static void rnode_emitnorep(struct rnode *n, regex_t *p)
 {
 	int fork, done, mark;
 	switch (n->rn)
@@ -465,7 +418,7 @@ static void rnode_emitnorep(struct rnode *n, struct regex *p)
 	}
 }
 
-static void rnode_emit(struct rnode *n, struct regex *p)
+static void rnode_emit(struct rnode *n, regex_t *p)
 {
 	int last;
 	int jmpend[NREPS];
@@ -504,17 +457,15 @@ static void rnode_emit(struct rnode *n, struct regex *p)
 		p->p[jmpend[i]].a2 = p->n;
 }
 
-int regcomp(regex_t *preg, char *pat, int flg)
+int regcomp(regex_t *re, char *pat, int flg)
 {
 	struct rnode *rnode = rnode_parse(&pat);
-	struct regex *re;
 	int n = rnode_count(rnode) + 3;
 	int mark;
 	if (!rnode)
 		return 1;
 	rnode_grpnum(rnode, 1);
-	re = malloc(sizeof(*re));
-	memset(re, 0, sizeof(*re));
+	re->n = 0;
 	re->p = malloc(n * sizeof(re->p[0]));
 	memset(re->p, 0, n * sizeof(re->p[0]));
 	mark = re_insert(re, RI_MARK);
@@ -525,22 +476,19 @@ int regcomp(regex_t *preg, char *pat, int flg)
 	mark = re_insert(re, RI_MATCH);
 	rnode_free(rnode);
 	re->flg = flg;
-	*preg = re;
 	return 0;
 }
 
-void regfree(regex_t *preg)
+void regfree(regex_t *re)
 {
-	struct regex *re = *preg;
 	int i;
 	for (i = 0; i < re->n; i++)
 		if (re->p[i].ri == RI_ATOM)
 			free(re->p[i].ra.s);
 	free(re->p);
-	free(re);
 }
 
-static int re_rec(struct regex *re, struct rstate *rs)
+static int re_rec(regex_t *re, struct rstate *rs)
 {
 	struct rinst *ri = NULL;
 	if (++(rs->dep) >= NDEPT)
@@ -576,7 +524,7 @@ static int re_rec(struct regex *re, struct rstate *rs)
 	return ri->ri != RI_MATCH;
 }
 
-static int re_recmatch(struct regex *re, struct rstate *rs, int nsub, regmatch_t *psub)
+static int re_recmatch(regex_t *re, struct rstate *rs, int nsub, regmatch_t *psub)
 {
 	int i;
 	for (i = 0; i < LEN(rs->mark); i++)
@@ -593,9 +541,8 @@ static int re_recmatch(struct regex *re, struct rstate *rs, int nsub, regmatch_t
 	return 1;
 }
 
-int regexec(regex_t *preg, char *s, int nsub, regmatch_t psub[], int flg)
+int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
-	struct regex *re = *preg;
 	struct rstate rs;
 	rs.flg = re->flg | flg;
 	rs.o = s;
@@ -642,9 +589,9 @@ struct rset *rset_make(int n, char **re, int flg)
 {
 	struct rset *rs = malloc(sizeof(*rs));
 	struct sbuf *sb = sbuf_make();
+	sbuf_extend(sb, 1024);
 	int regex_flg = REG_EXTENDED | (flg & RE_ICASE ? REG_ICASE : 0);
 	int i;
-	memset(rs, 0, sizeof(*rs));
 	rs->grp = malloc((n + 1) * sizeof(rs->grp[0]));
 	rs->setgrpcnt = malloc((n + 1) * sizeof(rs->setgrpcnt[0]));
 	rs->grpcnt = 2;

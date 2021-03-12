@@ -1562,7 +1562,7 @@ void vi(void)
 			vi_mod = 1;
 		}
 		if (*vi_word)
-		 	vi_mod = 1;	
+			vi_mod = 1;
 		if (vi_msg[0])
 		{
 			vi_msg[0] = '\0';
@@ -2152,9 +2152,9 @@ int main(int argc, char *argv[])
 			vi();
 		else
 			ex();
+		cleanup:
+		ex_done();
 	}
-	cleanup:
-	ex_done();
 	if (xled || xvis)
 		term_done();
 	term_clean();

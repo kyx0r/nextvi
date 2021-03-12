@@ -74,15 +74,53 @@ void sbuf_cut(struct sbuf *s, int len);
 #define REG_NEWLINE		0x08
 #define REG_NOTBOL		0x10
 #define REG_NOTEOL		0x20
+#define NGRPS		64	/* maximum number of groups */
+#define NREPS		128	/* maximum repetitions */
+#define NDEPT		256	/* re_rec() recursion depth limit */
 typedef struct {
 	long rm_so;
 	long rm_eo;
 } regmatch_t;
-typedef struct regex *regex_t;
-int regcomp(regex_t *preg, char *regex, int cflags);
-int regexec(regex_t *preg, char *str, int nmatch, regmatch_t pmatch[], int eflags);
-int regerror(int errcode, regex_t *preg, char *errbuf, int errbuf_size);
-void regfree(regex_t *preg);
+/* regular expression atom */
+struct ratom {
+	int ra;			/* atom type (RA_*) */
+	char *s;		/* atom argument */
+};
+/* regular expression instruction */
+struct rinst {
+	struct ratom ra;	/* regular expression atom (RI_ATOM) */
+	int ri;			/* instruction type (RI_*) */
+	int a1, a2;		/* destination of RI_FORK and RI_JUMP */
+	int mark;		/* mark (RI_MARK) */
+};
+/* regular expression program */
+struct regex {
+	struct rinst *p;	/* the program */
+	int n;			/* number of instructions */
+	int flg;		/* regcomp() flags */
+};
+typedef struct regex regex_t;
+/* regular expression matching state */
+struct rstate {
+	char *s;		/* the current position in the string */
+	char *o;		/* the beginning of the string */
+	int mark[NGRPS * 2];	/* marks for RI_MARK */
+	int pc;			/* program counter */
+	int flg;		/* flags passed to regcomp() and regexec() */
+	int dep;		/* re_rec() depth */
+};
+/* regular expression tree; used for parsing */
+struct rnode {
+	struct ratom ra;	/* regular expression atom (RN_ATOM) */
+	struct rnode *c1, *c2;	/* children */
+	int mincnt, maxcnt;	/* number of repetitions */
+	int grp;		/* group number */
+	int rn;			/* node type (RN_*) */
+};
+int regcomp(regex_t *re, char *regex, int cflags);
+int regexec(regex_t *re, char *str, int nmatch, regmatch_t pmatch[], int eflags);
+int regerror(int errcode, regex_t *re, char *errbuf, int errbuf_size);
+void regfree(regex_t *re);
 /* rset */
 #define RE_ICASE		1
 #define RE_NOTBOL		2
