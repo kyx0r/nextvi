@@ -1848,6 +1848,8 @@ void vi(void)
 						term_push("f\"ldt\"", 6);
 						break;
 					}
+					if (c == 'c')
+						term_push("i", 1);
 					break;
 				}
 				vi_back(k);

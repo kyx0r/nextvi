@@ -40,9 +40,9 @@ and "b%d" to switch (where %d is the buffer number).
 (to switch press corresponding 0-9 number) keybind: ^7
 15. Added key to exit vi keybind: qq 
 16. Added key to goto line 0 keybind: gg 
-17. Added key to delete everything inside (cursor outside) "" keybind: di" 
-18. Added key to delete everything inside () keybind: di) 
-19. Added key to delete everything inside (cursor outside) () keybind: di( 
+17. Added key to delete everything inside (cursor outside) "" keybind: di" or dc"
+18. Added key to delete everything inside () keybind: di) or dc)
+19. Added key to delete everything inside (cursor outside) () keybind: di( or dc(
 20. Added key to change . to -> on cursor line keybind: vh
 21. Added key to change -> to . on cursor line keybind: vg
 22. Added ex command "z" it does the same thing "!" does but the shell is
