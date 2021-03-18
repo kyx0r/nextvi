@@ -169,7 +169,7 @@ void dir_done(void);
 extern struct bmap *blockmap;
 void syn_setft(char *ft);
 void syn_blswap(int scdir, int scdiff);
-int *syn_highlight(char *s, int n);
+void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 void syn_context(int att);
 int syn_merge(int old, int new);

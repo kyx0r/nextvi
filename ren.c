@@ -363,12 +363,10 @@ void syn_blswap(int scdir, int scdiff)
 		blockmap = NULL;
 }
 
-int *syn_highlight(char *s, int n)
+void syn_highlight(int *att, char *s, int n)
 {
-	int *att = malloc(n * sizeof(att[0]));
-	memset(att, 0, n * sizeof(att[0]));
 	if (ftidx < 0)
-		return att;
+		return;
 	struct rset *rs = ftmap[ftidx].rs;
 	int sidx = 0;
 	int subs[16 * 2];
@@ -413,13 +411,12 @@ int *syn_highlight(char *s, int n)
 	{
 		if (blockmap->rs != rs) {
 			if (rset_find(blockmap->rs, s, LEN(subs) / 2, subs, flg) >= 0)
-				blockmap = NULL; /* handling single line pattern */
+				blockmap = NULL; /* handle single line pattern */
 		} else {
 			for (j = 0; j < n; j++)
 				att[j] = *blockatt;
 		}
 	}
-	return att;
 }
 
 static void syn_initft(char *name, char *inject)
@@ -482,7 +479,7 @@ void syn_init(void)
 				for (e = 0; e < bidx; e++)
 					if (bmap[e].tid == patend + i + hls[i+patend].patend)
 						{bmap[bidx].mapidx = e; break;}
-			} else 
+			} else
 				hls[i].patend = 0;
 			bmap[bidx].rs = rset_make(1, &hls[i+patend].pat, 0);
 			bidx++;

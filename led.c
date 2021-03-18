@@ -381,12 +381,13 @@ static char *led_render(char *s0, int cbeg, int cend)
 {
 	int i, j, n, cterm = cend - cbeg;
 	int *pos;	/* pos[i]: the screen position of the i-th character */
-	int *att;	/* att[i]: the attributes of i-th character */
 	char **chrs;	/* chrs[i]: the i-th character in s1 */
 	struct sbuf *out, *bound = NULL;
 	int off[cterm+1];	/* off[i]: the character at screen position i */
+	int att[cterm+1];	/* att[i]: the attributes of i-th character */
 	int ctx = dir_context(s0);
 	memset(off, -1, (cterm+1) * sizeof(off[0]));
+	memset(att, 0, (cterm+1) * sizeof(att[0]));
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
 		off_rev()
@@ -416,7 +417,7 @@ static char *led_render(char *s0, int cbeg, int cend)
 			torg = cbeg;
 		}
 	}
-	att = syn_highlight(s0, n);
+	syn_highlight(att, s0, n);
 	led_markrev(n, chrs, pos, att);
 	/* generate term output */
 	out = sbuf_make();
@@ -424,7 +425,6 @@ static char *led_render(char *s0, int cbeg, int cend)
 		ledhidch_out(out, off, att, chrs, s0, cend, ctx);
 	else
 		led_out(out, off, att, chrs, s0, cend);
-	free(att);
 	if (bound)
 		sbuf_free(bound);
 	return sbuf_done(out);
