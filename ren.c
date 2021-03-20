@@ -371,6 +371,7 @@ void syn_highlight(int *att, char *s, int n)
 	int sidx = 0;
 	int subs[16 * 2];
 	int flg = 0;
+	int blk = 0;
 	int hl, j, i;
 	if (xhll)
 		for (i = 0; i < n; i++)
@@ -383,16 +384,25 @@ void syn_highlight(int *att, char *s, int n)
 		int grp = hls[hl].end;
 		int *catt = hls[hl].att;
 		int patend = hls[hl].patend;
-		if (blockmap)
+		if (blockmap && !blk)
 		{
 			catt = blockatt;
 			blockmap = NULL;
+			rs = ftmap[ftidx].rs;
+			sidx = 0;
+			continue;
 		} else if (patend) {
+			blk = 1;
 			patend += hl;
 			blockatt = hls[patend].att;
 			for (i = 0; i < bidx; i++)
 				if (patend == bmap[i].tid)
+				{
 					blockmap = &bmap[i];
+					if (rset_find(blockmap->rs, s, 0, NULL, flg) >= 0)
+						blockmap = NULL; /* handle single line pattern */
+					break;
+				}
 		}
 		for (i = 0; i < LEN(subs) / 2; i++) {
 			if (subs[i * 2] >= 0) {
@@ -407,16 +417,9 @@ void syn_highlight(int *att, char *s, int n)
 		sidx += cend;
 		flg = RE_NOTBOL;
 	}
-	if (blockmap)
-	{
-		if (blockmap->rs != rs) {
-			if (rset_find(blockmap->rs, s, LEN(subs) / 2, subs, flg) >= 0)
-				blockmap = NULL; /* handle single line pattern */
-		} else {
-			for (j = 0; j < n; j++)
-				att[j] = *blockatt;
-		}
-	}
+	if (blockmap && blockmap->rs == rs)
+		for (j = 0; j < n; j++)
+			att[j] = *blockatt;
 }
 
 static void syn_initft(char *name, char *inject)

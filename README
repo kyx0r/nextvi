@@ -195,7 +195,7 @@ A: User is programmer, hacker culture.
 CONFIGURATION
 -------------
 
-Edit conf.h to adjust syntax highlighting rules and text direction
+Edit conf.c to adjust syntax highlighting rules and text direction
 patterns.  To define a new keymap, create a new array in kmap.h, like
 kmap_fa, and add it to kmaps array in the same header (the first entry
 of the new array specifies its name).  The current keymap may be
