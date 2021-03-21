@@ -456,7 +456,7 @@ void syn_reloadft(char *ft, char *injectft, int i, char *reg)
 		if ((idx = syn_find(ft)) >= 0)
 		{
 			rset_free(ftmap[idx].rs);
-	                ftmap[idx].ft[0] = 0;
+			ftmap[idx].ft[0] = 0;
 			syn_initft(ft, injectft);
 		}
 	}

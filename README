@@ -5,6 +5,13 @@ Neatvi is a vi/ex editor.  It can edit bidirectional UTF-8 text.
 Original software by Ali Gholami Rudi:
 https://github.com/aligrudi/neatvi
 
+NOTICE
+======
+As of 2021-03-21 neatvi is feature complete & solid stable.
+No major updates to be expected.
+Only small fixes & optimizations.
+Code is|(will|must be) perfect.
+
 FORK CHANGES
 ------------
 1. Added unindent keybind: ^w 

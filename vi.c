@@ -2,6 +2,7 @@
  * NEATVI Editor
  *
  * Copyright (C) 2015-2019 Ali Gholami Rudi <ali at rudi dot ir>
+ * Copyright (C) 2020-2021 Kyryl Melekhin <k dot melekhin at gmail dot com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -54,14 +55,12 @@ void reverse_in_place(char *str, int len)
 
 char *itoa(int n, char s[])
 {
-	int i, sign;
-
-	if ((sign = n) < 0)  /* record sign */
-		n = -n;          /* make n positive */
-	i = 0;
-	do {       /* generate digits in reverse order */
-		s[i++] = n % 10 + '0';   /* get next digit */
-	} while ((n /= 10) > 0);     /* delete it */
+	int i = 0, sign;
+	if ((sign = n) < 0)		/* record sign */
+		n = -n;			/* make n positive */
+	do {				/* generate digits in reverse order */
+		s[i++] = n % 10 + '0';	/* get next digit */
+	} while ((n /= 10) > 0);	/* delete it */
 	if (sign < 0)
 		s[i++] = '-';
 	s[i] = '\0';
