@@ -175,26 +175,16 @@ treat "abc" as !(a && b && c) logically.
 FAQ:
 ----
 Q: Why neatvi instead of vim?
-A: Because it's just too damn difficult to do customization in source code. There
-is lots of baggage like python (+100MB++) ugly vimscript, dependency hell and I
-know that my brain is only extent of my skull. So this fork is not really meant
-to make clone version of vim, but more like a repo of specific patches so that
-if anybody wants to add features to their neatvi they might find it implemented
-here and save brain cycles thinking on how to do something.
-(NOTE: as of right now there is very little code left that wasn't changed in some
-way)
+A: I prefer customization in source code, Vim is considered harmful.
 
-Q: Why not let user choose filemanager
-A: If you are here only for the editor, you can remove hund
-by removing hund.o in Makefile and remove line of code in
-vi.c that is hund(); This is trivial because there are no
-direct vi -> hund dependencies, only hund -> vi. That should
-also free up about 80K of memory from the executable.
+Q: Why not let user choose filemanager (why is hund builtin?)
+A: It's impossible to keep the program state between text editor
+and filemanager if they are a separate program.
+Hund can easily be removed if desired.
 
 Q: Why not distribute as patches, like on suckless.org?
-A:  It's hard to maintain, say this repo have 35 patches, so it will
-be 35+ diffs. And each time something will mess up because one file change
-will require to change every patch offset, etc.
+A: It's hard to maintain. Simply put, there are too many changes
+to keep track of.
 
 Q: General philosophy?
 A: User is programmer, hacker culture.
