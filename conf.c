@@ -44,6 +44,8 @@ bright colors
 
 struct highlight hls[] = {
 	{"/", {9}, NULL},
+	{"c", {4 | SYN_IT}, "/\\*[^&*/]*", 0, 1},
+	{"c", {4 | SYN_IT}, "[^&/*]*\\*/", 0, -1},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 		|enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
 		|u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
@@ -53,8 +55,6 @@ struct highlight hls[] = {
 	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
 			|default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
-	{"c", {4 | SYN_IT}, "/\\*[^&*/]*", 0, 1},
-	{"c", {4 | SYN_IT}, "[^&/*]*\\*/", 0, -1},
 	{"c", {6}, "^#[ \t]*[a-zA-Z0-9_]+"},
 	{"c", {0, SYN_BD}, "([a-zA-Z][a-zA-Z0-9_]+)\\(", 1},
 	{"c", {5}, "\"([^\"]|\\\\\")*\""},
@@ -117,6 +117,8 @@ struct highlight hls[] = {
 	{"nm", {SYN_BD}, "^:.*$"},
 
 	/* javascript */
+	{"js", {10 | SYN_IT}, "/\\*[^&*/]*", 0, 1},
+	{"js", {10 | SYN_IT}, "[^&/*]*\\*/", 0, -1},
 	{"js", {12}, "\\<(abstract|arguments|await|boolean|\
 			|break|byte|case|catch|\
 			|char|class|const|continue|\
@@ -139,12 +141,12 @@ struct highlight hls[] = {
 			|String|toString|undefined|valueOf)\\>"},
 	{"js", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
 	{"js", {10 | SYN_IT}, "//.*$"},
-	{"js", {10 | SYN_IT}, "/\\*[^&*/]*", 0, 1},
-	{"js", {10 | SYN_IT}, "[^&/*]*\\*/", 0, -1},
 	{"js", {5}, "\"([^\"]|\\\\\")*\""},
 	{"js", {5}, "\'([^\']|\\\\\")*\'"},
 
 	/* html */
+	{"html", {5 | SYN_IT}, "<!--[^&-->]*", 0, 1},
+	{"html", {5 | SYN_IT}, "[^&<!--]*-->", 0, -1},
 	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
 			auto(capitalize|complete|focus|play)|background|\
 			|bgcolor|border|buffered|challenge|charset|checked|cite|\
@@ -185,8 +187,6 @@ struct highlight hls[] = {
 	{"html", {13}, "/"},
 	{"html", {3}, "<[^<>]+>", 1},
 	{"html", {5}, "&[a-zA-Z0-9_]+"},
-	{"html", {5 | SYN_IT}, "<!--[^&-->]*", 0, 1},
-	{"html", {5 | SYN_IT}, "[^&<!--]*-->", 0, -1},
 
 	/* status bar */
 	{"---", {8 | SYN_BD, 4, 1}, "^(\".*\").*(\\[[wr]\\]).*$"},
