@@ -394,6 +394,7 @@ enum command {
 	CMD_NONE = 0,
 
 	CMD_QUIT,
+	CMD_QQUIT,
 	CMD_HELP,
 
 	CMD_COPY,
@@ -565,6 +566,7 @@ struct input2cmd {
 static struct input2cmd default_mapping[] = {
 /* MODE MANGER */
 	{ { KUTF8("q"), KUTF8("q") }, MODE_MANAGER, CMD_QUIT },
+	{ { KUTF8("Q") }, MODE_MANAGER, CMD_QQUIT },
 
 	{ { KUTF8("g"), KUTF8("g") }, MODE_MANAGER, CMD_ENTRY_FIRST },
 	{ { KSPEC(I_HOME) }, MODE_MANAGER, CMD_ENTRY_FIRST },
@@ -660,6 +662,7 @@ static const size_t default_mapping_length =
 
 static const char* const cmd_help[] = {
 	[CMD_QUIT] = "Quit hund",
+	[CMD_QQUIT] = "Quit hund but retain state",
 	[CMD_HELP] = "Display help",
 
 	[CMD_COPY] = "Copy selected file to the other directory",
@@ -1059,14 +1062,14 @@ void marks_jump(struct ui* const, struct marks* const);
 
 void marks_free(struct marks* const M) {
 	struct mark_path** mp;
-	for (char c = ' '; c < 0x7f; ++c) {// TODO
+	for (char c = ' '; c < 0x7f; ++c) {
 
 		mp = marks_get(M, c);
 		if (!mp || !*mp) continue;
 		free(*mp);
 		*mp = NULL;
 	}
-	memset(M, 0, sizeof(struct marks));
+	free(M);
 }
 
 struct mark_path** marks_get(struct marks* const M, const char C) {
@@ -1981,6 +1984,9 @@ static void process_input(struct ui* const i, struct task* const t,
 	case CMD_QUIT:
 		i->run = 0;
 		break;
+	case CMD_QQUIT:
+		i->run = -1;
+		break;
 	case CMD_HELP:
 		open_help(i);
 		break;
@@ -2378,8 +2384,9 @@ int hund(int argc, char **argv) {
 	struct task t;
 	memset(&t, 0, sizeof(struct task));
 	t.in = t.out = -1;
-	struct marks m;
-	memset(&m, 0, sizeof(struct marks));
+	static struct marks *m;
+	if (!m)
+		m = calloc(1, sizeof(struct marks));
 
 	i.mt = MSG_INFO;
 	xstrlcpy(i.msg, "Type ? for help.", MSG_BUFFER_SIZE);
@@ -2387,18 +2394,21 @@ int hund(int argc, char **argv) {
 	while (i.run > 0 || t.ts != TS_CLEAN) {
 		ui_draw(&i);
 		if (i.run > 0)
-			process_input(&i, &t, &m);
+			process_input(&i, &t, m);
 		task_execute(&i, &t);
 	}
 	for (int v = 0; v < 2; ++v) {
 		delete_file_list(&fvs[v]);
 	}
 	err = i.run;
-	marks_free(&m);
+	term_done();
+	term_init();
+	if (!err) {
+		marks_free(m);
+		m = NULL;
+	}
 	task_clean(&t);
 	ui_end(&i);
-	memset(fvs, 0, sizeof(fvs));
-	memset(&t, 0, sizeof(struct task));
 	return err;
 }
 
@@ -2980,7 +2990,7 @@ int sig_hund(int sig) {
 	switch (sig) {
 	case SIGTERM:
 	case SIGINT:
-		global_i->run = 0;// TODO
+		global_i->run = 0;
 		break;
 	case SIGTSTP:
 		stop_raw_mode(&global_i->T);
