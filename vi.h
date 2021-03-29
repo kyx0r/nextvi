@@ -241,7 +241,7 @@ char* xgetenv(char* q[]);
 
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
-char *led_input(char *pref, char *post, int *kmap);
+char *led_input(char *pref, char *post, int *kmap, int cln);
 void led_print(char *msg, int row);
 void led_printmsg(char *s, int row);
 char *led_read(int *kmap);

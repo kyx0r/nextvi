@@ -1106,9 +1106,9 @@ static int charcount(char *text, char *post)
 	return uc_slen(nl) - uc_slen(post);
 }
 
-static char *vi_input(char *pref, char *post, int *row, int *off)
+static char *vi_input(char *pref, char *post, int *row, int *off, int cln)
 {
-	char *rep = led_input(pref, post, &xkmap);
+	char *rep = led_input(pref, post, &xkmap, cln);
 	if (!rep)
 		return NULL;
 	*row = linecount(rep) - 1;
@@ -1138,7 +1138,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	pref = lnmode ? vi_indents(lbuf_get(xb, r1)) : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
 	vi_drawrm(r1, r2, 0);
-	rep = vi_input(pref, post, &row, &off);
+	rep = vi_input(pref, post, &row, &off, 1);
 	if (rep) {
 		lbuf_edit(xb, rep, r1, r2 + 1);
 		xrow = r1 + row - 1;
@@ -1327,7 +1327,7 @@ static int vc_insert(int cmd)
 	pref = ln && noto ? uc_sub(ln, 0, off) : vi_indents(ln);
 	post = ln && noto ? uc_sub(ln, off, -1) : uc_dup("\n");
 	vi_drawrm(xrow, xrow, !noto);
-	rep = vi_input(pref, post, &row, &off);
+	rep = vi_input(pref, post, &row, &off, 0);
 	if (!noto && !lbuf_len(xb))
 		lbuf_edit(xb, "\n", 0, 0);
 	if (rep) {
@@ -1859,6 +1859,7 @@ void vi(void)
 			case TK_CTL('w'):
 				if (!vc_motion(c))
 					vi_mod = 1;
+				if (c == 'c' && vi_insmov) { vi_back('l'); goto ins; }
 				break;
 			case 'I':
 			case 'i':
@@ -1868,6 +1869,7 @@ void vi(void)
 			case 'O':
 				if (!vc_insert(c))
 					vi_mod = 1;
+				ins:
 				switch (vi_insmov)
 				{
 				case 127:;

@@ -73,7 +73,7 @@ any arguments will exit the mode. This is a major step up to how navigation
 works in vi, it makes it so much easier to use because now you can see where 
 you are going. If not anything else I suggest you to try out this distro
 just to see it in action.
-29. Added ability to change highlight dynamically.
+29. Added ability to change highlight dynamically. (via syn_reloadft();)
 30. New ex option "hww" which highlights every instance of word under the
 cursor when enabled. Useful for when studying source code.
 31. Added autocomplete in insert mode. Press ^g to index the current opened
@@ -154,7 +154,7 @@ normal mode, to save time.
 49. While in insert mode or in prompt ^x will exit the mode but
 any change done on the line will be discarded. 
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
-50. Added ability to edit the line while in insert mode (not change mode)
+50. Added ability to edit the line while in insert mode
 such that backspace can delete all the characters on the line,
 when no more characters left the line will be wrapped onto the next
 one. This is behavior you can expect from 95% of editors, now neatvi

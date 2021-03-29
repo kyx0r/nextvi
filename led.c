@@ -776,14 +776,13 @@ char *led_prompt(char *pref, char *post, char *insert,
 }
 
 /* read visual command input */
-char *led_input(char *pref, char *post, int *kmap)
+char *led_input(char *pref, char *post, int *kmap, int cln)
 {
 	struct sbuf *sb = sbuf_make();
 	char ai[128];
 	int ai_max = sizeof(ai) - 1;
 	int n = 0;
 	int key;
-	int cln = 0;
 	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
 		ai[n++] = *pref++;
 	ai[n] = '\0';
