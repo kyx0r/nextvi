@@ -1124,12 +1124,12 @@ void marks_jump(struct ui* const i, struct marks* const m) {
 		if (ui_rescan(i, i->pv, NULL)) {
 			first_entry(i->pv);
 		}
-	}
-	else {
+	} else {
 		char* const file = (*mp)->data+current_dir_i((*mp)->data);
 		const size_t flen = strlen(file);
 		const size_t wdlen = (*mp)->len-flen-1;
 		memcpy(i->pv->wd, (*mp)->data, wdlen);
+		i->pv->wd[wdlen] = '\0';
 		i->pv->wdlen = wdlen;
 		if (ui_rescan(i, i->pv, NULL)) {
 			file_highlight(i->pv, file);
@@ -2793,12 +2793,9 @@ int prettify_path_i(const char* const path) {
 int current_dir_i(const char* const path) {
 	const int plen = strnlen(path, PATH_MAX_LEN);
 	int i = plen-1;// i will point last slash in path
-
-	while (path[i] != '/' && i >= 0) {
+	while (path[i] != '/' && i >= 0)
 		i -= 1;
-	}
 	return i+1;// i will point last slash in path
-
 }
 
 /* Initial Matching Bytes */
