@@ -7,8 +7,6 @@
 #include <time.h>
 #include "vi.h"
 
-extern int torg; 
-
 enum ntype {NO,YES};
 typedef struct tern {
 	char word;
@@ -393,7 +391,7 @@ static char *led_render(char *s0, int cbeg, int cend)
 		off_rev()
 		if (pos[n] > xcols || cbeg)
 		{
-			torg = cbeg;
+			ren_torg = cbeg;
 			out = sbuf_make();
 			cull_line(out)
 			off_rev()
@@ -401,20 +399,20 @@ static char *led_render(char *s0, int cbeg, int cend)
 			cull_line(bound)
 			off_rev()
 			sbuf_free(out);
-			torg = cbeg;
+			ren_torg = cbeg;
 		}
 	} else {
 		off_for()
 		if (pos[n] > xcols || cbeg)
 		{
-			torg = cbeg;
+			ren_torg = cbeg;
 			int xord = xorder;
 			xorder = 0;
 			bound = sbuf_make();
 			cull_line(bound)
 			off_for()
 			xorder = xord;
-			torg = cbeg;
+			ren_torg = cbeg;
 		}
 	}
 	syn_highlight(att, s0, n);

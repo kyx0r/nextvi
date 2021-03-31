@@ -109,47 +109,28 @@ int isescape(char ch)
 	return 0;
 }
 
-static void vi_drawwordnumend(int skip, int dir, char* tmp, int nrow, int noff)
-{
-	int l, l1, i = 0;
-	char *c;
-	char snum[30];
-	for (int k = nrow; k == nrow; i++)
-	{
-		l = isescape(tmp[noff]);
-		if (!l)
-		{
-			c = itoa(i, snum);
-			l1 = c - snum;
-			tmp[noff] = *(snum+l1-1 - !(i%10));
-		}
-		if (lbuf_wordend(xb, skip, dir, &nrow, &noff))
-			break;
-	}
-}
-
-static void vi_drawwordnumbeg(int skip, int dir, char* tmp, int nrow, int noff)
-{
-	int l, l1, i = 0;
-	char *c;
-	char snum[30];
-	for (int k = nrow; k == nrow; i++)
-	{
-		l = isescape(tmp[noff]);
-		if (!l)
-		{
-			c = itoa(i, snum);
-			l1 = c - snum;
-			tmp[noff] = *(snum+l1-1 - !(i%10));
-		}
-		if (lbuf_wordbeg(xb, skip, dir, &nrow, &noff))
-			break;
-	}
-}
+#define vi_drawwordnum(lbuf_word, skip, dir, tmp, nrow, noff) \
+{ int l, l1, i = 0; \
+char *c; \
+char snum[30]; \
+int _nrow = nrow; \
+int _noff = noff; \
+for (int k = _nrow; k == _nrow; i++) \
+{ \
+	l = isescape(tmp[_noff]); \
+	if (!l) \
+	{ \
+		c = itoa(i, snum); \
+		l1 = c - snum; \
+		tmp[_noff] = *(snum+l1-1 - !(i%10)); \
+	} \
+	if (lbuf_word(xb, skip, dir, &_nrow, &_noff)) \
+		break; \
+} } \
 
 static void vi_drawrow(int row)
 {
-	int l1, l2;
+	int l1, l2, i;
 	static int movedown;
 	char *c;
 	char *s = lbuf_get(xb, row-movedown);
@@ -171,9 +152,17 @@ static void vi_drawrow(int row)
 		c = itoa(row+1, tmp);
 		l2 = strlen(tmp)+1;
 		*c++ = ' ';
-		c = itoa(abs(xrow-row), tmp+l2);
+		for (i = 0; i < l1; i++)
+		{
+			if (!isescape(s[i]) || s[i] == ' ')
+				break;
+		}
+		if (!s[i])
+			i = 0;
+		memcpy(c, s, i);
+		c = itoa(abs(xrow-row), tmp+l2+i);
 		*c++ = ' ';
-		memcpy(c, s, l1);
+		memcpy(c, s+i, l1-i);
 		led_print(tmp, row - xtop);
 	} else if (*vi_word && row == xrow+1) {
 		last_row:;
@@ -188,7 +177,7 @@ static void vi_drawrow(int row)
 		l1 = strlen(c)+1;
 		char tmp[l1];
 		memcpy(tmp, c, l1);
-		for (int i = 0; i < l1; i++)
+		for (i = 0; i < l1; i++)
 		{
 			if (!isescape(tmp[i]))
 				tmp[i] = ' ';
@@ -196,18 +185,18 @@ static void vi_drawrow(int row)
 		switch (*vi_word)
 		{
 		case 'e':
-			vi_drawwordnumend(0, +1, tmp, nrow, noff);
-			vi_drawwordnumend(0, -1, tmp, nrow, noff);
+			vi_drawwordnum(lbuf_wordend, 0, 1, tmp, nrow, noff)
+			vi_drawwordnum(lbuf_wordend, 0, -1, tmp, nrow, noff)
 			break;
 		case 'E':
-			vi_drawwordnumend(1, +1, tmp, nrow, noff);
-			vi_drawwordnumend(1, -1, tmp, nrow, noff);
+			vi_drawwordnum(lbuf_wordend, 1, 1, tmp, nrow, noff)
+			vi_drawwordnum(lbuf_wordend, 1, -1, tmp, nrow, noff)
 			break;
 		case 'w':
-			vi_drawwordnumbeg(0, +1, tmp, nrow, noff);
+			vi_drawwordnum(lbuf_wordbeg, 0, 1, tmp, nrow, noff)
 			break;
 		case 'W':
-			vi_drawwordnumbeg(1, +1, tmp, nrow, noff);
+			vi_drawwordnum(lbuf_wordbeg, 1, 1, tmp, nrow, noff)
 			break;
 		}
 		if (!isescape(c[noff]))

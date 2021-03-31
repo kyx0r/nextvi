@@ -9,7 +9,7 @@ static char *last_str;
 static char **last_chrs;
 static int *last_pos;
 static int last_n;
-int torg; /* compute tab width from this position origin */
+int ren_torg; /* compute tab width from this position origin */
 
 void ren_done()
 {
@@ -167,7 +167,7 @@ static char *ren_placeholder(char *s)
 int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
-		return xtabspc - ((pos + torg) & (xtabspc-1));
+		return xtabspc - ((pos + ren_torg) & (xtabspc-1));
 	int c = uc_code(s);
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)

@@ -139,6 +139,7 @@ void rset_free(struct rset *re);
 char *re_read(char **src);
 
 /* ren.c rendering lines */
+extern int ren_torg;
 void ren_done();
 int *ren_position(char *s, char ***c, int *n);
 int ren_next(char *s, int p, int dir);

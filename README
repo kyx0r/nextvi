@@ -22,7 +22,7 @@ the sequence has "kj" in it, insert mode will be cancelled mid way
 and paste will be wrong. Luckly this almost never happens because
 such letter combination is extremely rare.
 Can be disabled via :se noqe
-3. Added linenumbers, keybind: # 
+3. Added linenumbers, keybind: # (relative numbers are placed after indent)
 4. Added invisible character view, keybind: V   
 5. Added regex for changing spaces to tabs, keybind: vi
 6. Added regex for removing /r in dos files, keybind: vo
