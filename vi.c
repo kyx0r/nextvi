@@ -154,7 +154,7 @@ static void vi_drawrow(int row)
 		*c++ = ' ';
 		for (i = 0; i < l1; i++)
 		{
-			if (!isescape(s[i]) || s[i] == ' ')
+			if (!isescape(s[i]) && s[i] != ' ')
 				break;
 		}
 		if (!s[i])
