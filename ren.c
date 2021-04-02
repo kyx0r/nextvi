@@ -64,7 +64,7 @@ int *ren_position(char *s, char ***chrs, int *n)
 static int pos_next(int *pos, int n, int p, int cur)
 {
 	int i, ret = -1;
-	for (i = 0; i < n; i++)
+	for (i = xleft ? xleft-1 : 0; i < n; i++)
 		if (pos[i] - !cur >= p && (ret < 0 || pos[i] < pos[ret]))
 			ret = i;
 	return ret >= 0 ? pos[ret] : -1;
@@ -74,7 +74,7 @@ static int pos_next(int *pos, int n, int p, int cur)
 static int pos_prev(int *pos, int n, int p, int cur)
 {
 	int i, ret = -1;
-	for (i = 0; i < n; i++)
+	for (i = xleft ? xleft-1 : 0; i < n; i++)
 		if (pos[i] + !cur <= p && (ret < 0 || pos[i] > pos[ret]))
 			ret = i;
 	return ret >= 0 ? pos[ret] : -1;
