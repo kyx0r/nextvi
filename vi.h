@@ -104,7 +104,6 @@ typedef struct regex regex_t;
 struct rstate {
 	char *s;		/* the current position in the string */
 	char *o;		/* the beginning of the string */
-	int mark[NGRPS * 2];	/* marks for RI_MARK */
 	int pc;			/* program counter */
 	int flg;		/* flags passed to regcomp() and regexec() */
 	int dep;		/* re_rec() depth */

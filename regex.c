@@ -488,7 +488,7 @@ void regfree(regex_t *re)
 	free(re->p);
 }
 
-static int re_rec(regex_t *re, struct rstate *rs, int *mmax)
+static int re_rec(regex_t *re, struct rstate *rs, int *mark, int *mmax)
 {
 	struct rinst *ri;
 	if (++(rs->dep) >= NDEPT)
@@ -505,7 +505,7 @@ static int re_rec(regex_t *re, struct rstate *rs, int *mmax)
 		case RI_MARK:
 			if (ri->mark < NGRPS)
 			{
-				rs->mark[ri->mark] = rs->s - rs->o;
+				mark[ri->mark] = rs->s - rs->o;
 				if (*mmax < ri->mark)
 					*mmax = ri->mark+1;
 			}
@@ -515,9 +515,13 @@ static int re_rec(regex_t *re, struct rstate *rs, int *mmax)
 			rs->pc = ri->a1;
 			continue;
 		case RI_FORK:;
-			struct rstate base = *rs;
+			struct rstate base;
+			base.s = rs->s;
+			base.o = rs->o;
 			base.pc = ri->a1;
-			if (!re_rec(re, &base, mmax))
+			base.flg = rs->flg;
+			base.dep = rs->dep;
+			if (!re_rec(re, &base, mark, mmax))
 			{
 				*rs = base;
 				return 0;
@@ -533,7 +537,8 @@ static int re_rec(regex_t *re, struct rstate *rs, int *mmax)
 int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
 	struct rstate rs;
-	int i, mmax = LEN(rs.mark);
+	int mark[NGRPS * 2];
+	int i, mmax = LEN(mark);
 	rs.flg = re->flg | flg;
 	rs.o = s;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
@@ -542,13 +547,13 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 		rs.pc = 0;
 		rs.dep = 0;
 		for (i = 0; i < mmax; i++)
-			rs.mark[i] = -1;
+			mark[i] = -1;
 		mmax = 0;
-		if (!re_rec(re, &rs, &mmax))
+		if (!re_rec(re, &rs, mark, &mmax))
 		{
 			for (i = 0; i < nsub; i++) {
-				psub[i].rm_so = i * 2 < LEN(rs.mark) ? rs.mark[i * 2] : -1;
-				psub[i].rm_eo = i * 2 < LEN(rs.mark) ? rs.mark[i * 2 + 1] : -1;
+				psub[i].rm_so = i * 2 < LEN(mark) ? mark[i * 2] : -1;
+				psub[i].rm_eo = i * 2 < LEN(mark) ? mark[i * 2 + 1] : -1;
 			}
 			return 0;
 		}
