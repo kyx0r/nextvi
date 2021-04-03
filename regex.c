@@ -488,9 +488,9 @@ void regfree(regex_t *re)
 	free(re->p);
 }
 
-static int re_rec(regex_t *re, struct rstate *rs)
+static int re_rec(regex_t *re, struct rstate *rs, int *mmax)
 {
-	struct rinst *ri = NULL;
+	struct rinst *ri;
 	if (++(rs->dep) >= NDEPT)
 		return 1;
 	while (1) {
@@ -504,7 +504,11 @@ static int re_rec(regex_t *re, struct rstate *rs)
 			continue;
 		case RI_MARK:
 			if (ri->mark < NGRPS)
+			{
 				rs->mark[ri->mark] = rs->s - rs->o;
+				if (*mmax < ri->mark)
+					*mmax = ri->mark+1;
+			}
 			rs->pc++;
 			continue;
 		case RI_JUMP:
@@ -512,10 +516,12 @@ static int re_rec(regex_t *re, struct rstate *rs)
 			continue;
 		case RI_FORK:;
 			struct rstate base = *rs;
-			rs->pc = ri->a1;
-			if (!re_rec(re, rs))
+			base.pc = ri->a1;
+			if (!re_rec(re, &base, mmax))
+			{
+				*rs = base;
 				return 0;
-			*rs = base;
+			}
 			rs->pc = ri->a2;
 			continue;
 		}
@@ -524,33 +530,28 @@ static int re_rec(regex_t *re, struct rstate *rs)
 	return ri->ri != RI_MATCH;
 }
 
-static int re_recmatch(regex_t *re, struct rstate *rs, int nsub, regmatch_t *psub)
-{
-	int i;
-	for (i = 0; i < LEN(rs->mark); i++)
-		rs->mark[i] = -1;
-	rs->pc = 0;
-	rs->dep = 0;
-	if (!re_rec(re, rs)) {
-		for (i = 0; i < nsub; i++) {
-			psub[i].rm_so = i * 2 < LEN(rs->mark) ? rs->mark[i * 2] : -1;
-			psub[i].rm_eo = i * 2 < LEN(rs->mark) ? rs->mark[i * 2 + 1] : -1;
-		}
-		return 0;
-	}
-	return 1;
-}
-
 int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
 	struct rstate rs;
+	int i, mmax = LEN(rs.mark);
 	rs.flg = re->flg | flg;
 	rs.o = s;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
 	while (*s) {
 		rs.s = s;
-		if (!re_recmatch(re, &rs, nsub, psub))
+		rs.pc = 0;
+		rs.dep = 0;
+		for (i = 0; i < mmax; i++)
+			rs.mark[i] = -1;
+		mmax = 0;
+		if (!re_rec(re, &rs, &mmax))
+		{
+			for (i = 0; i < nsub; i++) {
+				psub[i].rm_so = i * 2 < LEN(rs.mark) ? rs.mark[i * 2] : -1;
+				psub[i].rm_eo = i * 2 < LEN(rs.mark) ? rs.mark[i * 2 + 1] : -1;
+			}
 			return 0;
+		}
 		s += uc_len(s);
 	}
 	return 1;
