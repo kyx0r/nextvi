@@ -45,6 +45,7 @@ static void rnode_free(struct rnode *rnode)
 	if (rnode->c2)
 		rnode_free(rnode->c2);
 	free(rnode->ra.s);
+	//free(rnode->ra.rbrk);
 	free(rnode);
 }
 
@@ -53,9 +54,10 @@ static void ratom_copy(struct ratom *dst, struct ratom *src)
 	dst->ra = src->ra;
 	dst->s = NULL;
 	if (src->s) {
-		int len = strlen(src->s);
-		dst->s = malloc(len + 1);
-		memcpy(dst->s, src->s, len + 1);
+		int len = strlen(src->s) + 1;
+		dst->s = malloc(len);
+		memcpy(dst->s, src->s, len);
+		dst->rbrk = src->rbrk;
 	}
 }
 
@@ -92,6 +94,19 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 	rbrk->and = rbrk->not && p[1] == '&' && p[2] != ']';
 	p = rbrk->not ? p + rbrk->not + rbrk->and : p;
 	int i = 0, end;
+	int icase = 0; //todo
+	/*
+	while (*p && *p != ']') {
+		if (p[0] == '[' && p[1] == ':') {
+			for (i = 0; i < LEN(brk_classes); i++) {
+				if (!strncmp(brk_classes[i][0], p + 1, cl_lens[i]))
+					if (!brk_match(brk_classes[i][1], c, s, icase))
+						return not;
+			}
+			p += brk_len(p);
+			continue;
+		}
+	*/
 	while (*p && *p != ']') {
 		rbrk->begs[i] = uc_code(p);
 		p += uc_len(p);
@@ -100,6 +115,13 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			p++;
 			end = uc_code(p);
 			p += uc_len(p);
+		}
+		if (icase)
+		{
+			if (rbrk->begs[i] < 128 && isupper(rbrk->begs[i]))
+				rbrk->begs[i] = tolower(rbrk->begs[i]);
+			if (rbrk->ends[i] < 128 && isupper(rbrk->ends[i]))
+				rbrk->ends[i] = tolower(rbrk->ends[i]);
 		}
 		rbrk->offs[i] = p;
 		rbrk->ends[i] = end;
@@ -169,11 +191,6 @@ static char cl_lens[] = {7,7,7,7,7,7,7,7,7,6,8};
 static int brk_match(struct rbrkinfo *brki, char *brk, int c, char* s, int icase)
 {
 	int i, oc = c;
-	/*
-	int not = brk[0] == '^';
-	int and = not && brk[1] == '&' && brk[2] != ']';
-	char *p = not ? brk + not + and : brk;
-	*/
 	int not = brki->not;
 	int and = brki->and;
 	int len = brki->len;
@@ -185,7 +202,7 @@ static int brk_match(struct rbrkinfo *brki, char *brk, int c, char* s, int icase
 		{
 			if (and)
 			{
-				if (i < len)
+				if (i < len-1)
 				{
 					c = uc_code(s);
 					s += uc_len(s);
@@ -196,48 +213,6 @@ static int brk_match(struct rbrkinfo *brki, char *brk, int c, char* s, int icase
 			return not;
 		}
 	}
-	/*
-	while (*p && *p != ']') {
-		if (p[0] == '[' && p[1] == ':') {
-			for (i = 0; i < LEN(brk_classes); i++) {
-				if (!strncmp(brk_classes[i][0], p + 1, cl_lens[i]))
-					if (!brk_match(brk_classes[i][1], c, s, icase))
-						return not;
-			}
-			p += brk_len(p);
-			continue;
-		}
-		beg = uc_code(p);
-		p += uc_len(p);
-		end = beg;
-		if (p[0] == '-' && p[1] && p[1] != ']') {
-			p++;
-			end = uc_code(p);
-			p += uc_len(p);
-		}
-		if (icase)
-		{
-			if (beg < 128 && isupper(beg))
-				beg = tolower(beg);
-			if (end < 128 && isupper(end))
-				end = tolower(end);
-		}
-		if (c >= beg && c <= end)
-		{
-			if (and)
-			{
-				if (*p != ']')
-				{
-					c = uc_code(s);
-					s += uc_len(s);
-					continue;
-				}
-				return c == oc ? !not : not;
-			}
-			return not;
-		}
-	}
-	*/
 	return !not;
 }
 
