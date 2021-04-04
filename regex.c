@@ -84,6 +84,28 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 	memcpy(ra->s, *pat, len);
 	ra->s[len] = '\0';
 	*pat += len;
+
+	char *p = ra->s + 1;
+	ra->rbrk = malloc(sizeof(struct rbrkinfo));
+	struct rbrkinfo *rbrk = ra->rbrk;
+	rbrk->not = p[0] == '^';
+	rbrk->and = rbrk->not && p[1] == '&' && p[2] != ']';
+	p = rbrk->not ? p + rbrk->not + rbrk->and : p;
+	int i = 0, end;
+	while (*p && *p != ']') {
+		rbrk->begs[i] = uc_code(p);
+		p += uc_len(p);
+		end = rbrk->begs[i];
+		if (p[0] == '-' && p[1] && p[1] != ']') {
+			p++;
+			end = uc_code(p);
+			p += uc_len(p);
+		}
+		rbrk->offs[i] = p;
+		rbrk->ends[i] = end;
+		i++;
+	}
+	rbrk->len = i;
 }
 
 static void ratom_read(struct ratom *ra, char **pat)
@@ -144,15 +166,37 @@ static char *brk_classes[][2] = {
 /* length of brk_classes[i][0] */
 static char cl_lens[] = {7,7,7,7,7,7,7,7,7,6,8};
 
-static int brk_match(char *brk, int c, char* s, int icase)
+static int brk_match(struct rbrkinfo *brki, char *brk, int c, char* s, int icase)
 {
-	int beg, end;
 	int i, oc = c;
+	/*
 	int not = brk[0] == '^';
 	int and = not && brk[1] == '&' && brk[2] != ']';
 	char *p = not ? brk + not + and : brk;
+	*/
+	int not = brki->not;
+	int and = brki->and;
+	int len = brki->len;
 	if (icase && c < 128 && isupper(c))
 		c = tolower(c);
+	for (i = 0; i < len; i++)
+	{
+		if (c >= brki->begs[i] && c <= brki->ends[i])
+		{
+			if (and)
+			{
+				if (i < len)
+				{
+					c = uc_code(s);
+					s += uc_len(s);
+					continue;
+				}
+				return c == oc ? !not : not;
+			}
+			return not;
+		}
+	}
+	/*
 	while (*p && *p != ']') {
 		if (p[0] == '[' && p[1] == ':') {
 			for (i = 0; i < LEN(brk_classes); i++) {
@@ -193,6 +237,7 @@ static int brk_match(char *brk, int c, char* s, int icase)
 			return not;
 		}
 	}
+	*/
 	return !not;
 }
 
@@ -224,7 +269,7 @@ static int ratom_match(struct ratom *ra, struct rstate *rs)
 		if (!c || (c == '\n' && !(rs->flg & REG_NOTEOL)))
 			return 1;
 		rs->s += uc_len(rs->s);
-		return brk_match(ra->s + 1, c, rs->s, rs->flg & REG_ICASE);
+		return brk_match(ra->rbrk, ra->s + 1, c, rs->s, rs->flg & REG_ICASE);
 	case RA_BEG:
 		return rs->flg & REG_NOTBOL ? 1 : !(rs->s == rs->o || rs->s[-1] == '\n');
 	case RA_END:

@@ -77,13 +77,24 @@ void sbuf_cut(struct sbuf *s, int len);
 #define NGRPS		64	/* maximum number of groups */
 #define NREPS		128	/* maximum repetitions */
 #define NDEPT		256	/* re_rec() recursion depth limit */
+#define NBRK		1024	/* maximum bracket exp length */
 typedef struct {
 	long rm_so;
 	long rm_eo;
 } regmatch_t;
+/* braket info */
+struct rbrkinfo {
+	int len;
+	int not;
+	int and;
+	int begs[NBRK];
+	int ends[NBRK];
+	char *offs[NBRK];
+};
 /* regular expression atom */
 struct ratom {
 	int ra;			/* atom type (RA_*) */
+	struct rbrkinfo *rbrk;	/* atom brk info */
 	char *s;		/* atom argument */
 };
 /* regular expression instruction */
