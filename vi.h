@@ -114,8 +114,6 @@ struct rstate {
 	char *s;		/* the current position in the string */
 	char *o;		/* the beginning of the string */
 	int pc;			/* program counter */
-	int flg;		/* flags passed to regcomp() and regexec() */
-	int dep;		/* re_rec() depth */
 };
 /* regular expression tree; used for parsing */
 struct rnode {
