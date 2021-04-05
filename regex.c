@@ -57,8 +57,8 @@ static void ratom_copy(struct ratom *dst, struct ratom *src)
 		int len = strlen(src->s) + 1;
 		dst->s = malloc(len);
 		memcpy(dst->s, src->s, len);
-		dst->rbrk = src->rbrk;
 	}
+	dst->rbrk = src->rbrk;
 }
 
 static int brk_len(char *s)
@@ -78,36 +78,63 @@ static int brk_len(char *s)
 	return s[n] == ']' ? n + 1 : n;
 }
 
+static char *brk_classes[][2] = {
+	{":alnum:", "a-zA-Z0-9"},
+	{":alpha:", "a-zA-Z"},
+	{":blank:", " \t"},
+	{":digit:", "0-9"},
+	{":lower:", "a-z"},
+	{":print:", "\x20-\x7e"},
+	{":punct:", "][!\"#$%&'()*+,./:;<=>?@\\^_`{|}~-"},
+	{":space:", " \t\r\n\v\f"},
+	{":upper:", "A-Z"},
+	{": word:", "a-zA-Z0-9_"},
+	{":hexit:", "a-fA-F0-9"},
+};
+
 static void ratom_readbrk(struct ratom *ra, char **pat)
 {
 	int len = brk_len(*pat);
-	ra->ra = RA_BRK;
-	ra->s = malloc(len + 1);
-	memcpy(ra->s, *pat, len);
-	ra->s[len] = '\0';
+	char *p = *pat + 1;
 	*pat += len;
-
-	char *p = ra->s + 1;
+	ra->ra = RA_BRK;
 	ra->rbrk = malloc(sizeof(struct rbrkinfo));
 	struct rbrkinfo *rbrk = ra->rbrk;
+	rbrk->begs = malloc(sizeof(rbrk->begs[0])*len);
+	rbrk->ends = malloc(sizeof(rbrk->ends[0])*len);
 	rbrk->not = p[0] == '^';
 	rbrk->and = rbrk->not && p[1] == '&' && p[2] != ']';
 	p = rbrk->not ? p + rbrk->not + rbrk->and : p;
 	int i = 0, end;
 	int icase = 0; //todo
-	/*
-	while (*p && *p != ']') {
-		if (p[0] == '[' && p[1] == ':') {
-			for (i = 0; i < LEN(brk_classes); i++) {
-				if (!strncmp(brk_classes[i][0], p + 1, cl_lens[i]))
-					if (!brk_match(brk_classes[i][1], c, s, icase))
-						return not;
-			}
-			p += brk_len(p);
-			continue;
+	char *ptmp = NULL;
+	char *pnext = NULL;
+	while (*p != ']') {
+		if (!*p)
+		{
+			if (pnext)
+			{
+				p = pnext;
+				pnext = NULL;
+			} else
+				break;
+		} else if (ptmp) {
+			pnext = p;
+			p = ptmp;
+			ptmp = NULL;
 		}
-	*/
-	while (*p && *p != ']') {
+		if (p[0] == '[' && p[1] == ':') {
+			for (int c = 0; c < LEN(brk_classes); c++) {
+				if (!strncmp(brk_classes[c][0], p + 1, 7))
+				{
+					end = strlen(brk_classes[0][c]);
+					rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*(len-7+end));
+					rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*(len-7+end));
+					ptmp = brk_classes[0][c];
+					break;
+				}
+			}
+		}
 		rbrk->begs[i] = uc_code(p);
 		p += uc_len(p);
 		end = rbrk->begs[i];
@@ -123,7 +150,6 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			if (rbrk->ends[i] < 128 && isupper(rbrk->ends[i]))
 				rbrk->ends[i] = tolower(rbrk->ends[i]);
 		}
-		rbrk->offs[i] = p;
 		rbrk->ends[i] = end;
 		i++;
 	}
@@ -172,33 +198,19 @@ static int isword(char *s)
 	return isalnum(c) || c == '_' || c > 127;
 }
 
-static char *brk_classes[][2] = {
-	{":alnum:", "a-zA-Z0-9"},
-	{":alpha:", "a-zA-Z"},
-	{":blank:", " \t"},
-	{":digit:", "0-9"},
-	{":lower:", "a-z"},
-	{":print:", "\x20-\x7e"},
-	{":punct:", "][!\"#$%&'()*+,./:;<=>?@\\^_`{|}~-"},
-	{":space:", " \t\r\n\v\f"},
-	{":upper:", "A-Z"},
-	{":word:", "a-zA-Z0-9_"},
-	{":xdigit:", "a-fA-F0-9"},
-};
-/* length of brk_classes[i][0] */
-static char cl_lens[] = {7,7,7,7,7,7,7,7,7,6,8};
-
 static int brk_match(struct rbrkinfo *brki, char *brk, int c, char* s, int icase)
 {
 	int i, oc = c;
 	int not = brki->not;
 	int and = brki->and;
 	int len = brki->len;
+	int *begs = brki->begs;
+	int *ends = brki->ends;
 	if (icase && c < 128 && isupper(c))
 		c = tolower(c);
 	for (i = 0; i < len; i++)
 	{
-		if (c >= brki->begs[i] && c <= brki->ends[i])
+		if (c >= begs[i] && c <= ends[i])
 		{
 			if (and)
 			{
