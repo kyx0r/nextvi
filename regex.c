@@ -204,7 +204,7 @@ static int isword(char *s)
 	return isalnum(c) || c == '_' || c > 127;
 }
 
-static int brk_match(struct rbrkinfo *brki, char *brk, int c, char* s, int icase)
+static int brk_match(struct rbrkinfo *brki, int c, char* s)
 {
 	int i, oc = c;
 	int not = brki->not;
@@ -212,8 +212,6 @@ static int brk_match(struct rbrkinfo *brki, char *brk, int c, char* s, int icase
 	int len = brki->len;
 	int *begs = brki->begs;
 	int *ends = brki->ends;
-	if (icase && c < 128 && isupper(c))
-		c = tolower(c);
 	for (i = 0; i < len; i++)
 	{
 		if (c >= begs[i] && c <= ends[i])
@@ -262,7 +260,9 @@ static int ratom_match(struct ratom *ra, struct rstate *rs)
 		if (!c || (c == '\n' && !(rs->flg & REG_NOTEOL)))
 			return 1;
 		rs->s += uc_len(rs->s);
-		return brk_match(ra->rbrk, ra->s + 1, c, rs->s, rs->flg & REG_ICASE);
+		if (rs->flg & REG_ICASE && c < 128 && isupper(c))
+			c = tolower(c);
+		return brk_match(ra->rbrk, c, rs->s);
 	case RA_BEG:
 		return rs->flg & REG_NOTBOL ? 1 : !(rs->s == rs->o || rs->s[-1] == '\n');
 	case RA_END:
