@@ -45,7 +45,12 @@ static void rnode_free(struct rnode *rnode)
 	if (rnode->c2)
 		rnode_free(rnode->c2);
 	free(rnode->ra.s);
-	//free(rnode->ra.rbrk);
+	if (rnode->ra.rbrk) {
+		free(rnode->ra.rbrk->begs);
+		free(rnode->ra.rbrk->ends);
+		free(rnode->ra.rbrk);
+		rnode->ra.rbrk = NULL;
+	}
 	free(rnode);
 }
 
@@ -57,8 +62,10 @@ static void ratom_copy(struct ratom *dst, struct ratom *src)
 		int len = strlen(src->s) + 1;
 		dst->s = malloc(len);
 		memcpy(dst->s, src->s, len);
+	} else {
+		dst->rbrk = src->rbrk;
+		src->rbrk = NULL;
 	}
-	dst->rbrk = src->rbrk;
 }
 
 static int brk_len(char *s)
@@ -119,18 +126,17 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			} else
 				break;
 		} else if (ptmp) {
-			pnext = p;
+			pnext = p+7;
 			p = ptmp;
 			ptmp = NULL;
-		}
-		if (p[0] == '[' && p[1] == ':') {
+		} else if (p[0] == '[' && p[1] == ':') {
 			for (int c = 0; c < LEN(brk_classes); c++) {
 				if (!strncmp(brk_classes[c][0], p + 1, 7))
 				{
-					end = strlen(brk_classes[0][c]);
+					end = strlen(brk_classes[c][1]);
 					rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*(len-7+end));
 					rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*(len-7+end));
-					ptmp = brk_classes[0][c];
+					ptmp = brk_classes[c][1];
 					break;
 				}
 			}
@@ -143,6 +149,7 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			end = uc_code(p);
 			p += uc_len(p);
 		}
+		rbrk->ends[i] = end;
 		if (icase)
 		{
 			if (rbrk->begs[i] < 128 && isupper(rbrk->begs[i]))
@@ -150,7 +157,6 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			if (rbrk->ends[i] < 128 && isupper(rbrk->ends[i]))
 				rbrk->ends[i] = tolower(rbrk->ends[i]);
 		}
-		rbrk->ends[i] = end;
 		i++;
 	}
 	rbrk->len = i;
