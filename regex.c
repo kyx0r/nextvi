@@ -45,12 +45,6 @@ static void rnode_free(struct rnode *rnode)
 	if (rnode->c2)
 		rnode_free(rnode->c2);
 	free(rnode->ra.s);
-	if (rnode->ra.rbrk) {
-		free(rnode->ra.rbrk->begs);
-		free(rnode->ra.rbrk->ends);
-		free(rnode->ra.rbrk);
-		rnode->ra.rbrk = NULL;
-	}
 	free(rnode);
 }
 
@@ -521,8 +515,15 @@ void regfree(regex_t *re)
 {
 	int i;
 	for (i = 0; i < re->n; i++)
+	{
 		if (re->p[i].ri == RI_ATOM)
 			free(re->p[i].ra.s);
+		if (re->p[i].ra.rbrk) {
+			free(re->p[i].ra.rbrk->begs);
+			free(re->p[i].ra.rbrk->ends);
+			free(re->p[i].ra.rbrk);
+		}
+	}
 	free(re->p);
 }
 
