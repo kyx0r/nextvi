@@ -232,13 +232,13 @@ static int brk_match(struct rbrkinfo *brki, int c, char* s)
 	return !not;
 }
 
-static int ratom_match(struct ratom *ra, struct rstate *rs, int flg)
+static int ratom_match(struct ratom *ra, char **sp, char *s, char *o, int flg)
 {
 	switch (ra->ra)
 	{
 	case RA_CHR:;
 		int c1 = uc_code(ra->s);
-		int c2 = uc_code(rs->s);
+		int c2 = uc_code(s);
 		if (flg & REG_ICASE)
 		{
 			if (c1 < 128 && isupper(c1))
@@ -248,31 +248,31 @@ static int ratom_match(struct ratom *ra, struct rstate *rs, int flg)
 		}
 		if (c1 != c2)
 			return 1;
-		rs->s += uc_len(ra->s);
+		*sp += uc_len(ra->s);
 		return 0;
 	case RA_ANY:
-		if (!rs->s[0] || (rs->s[0] == '\n' && !(flg & REG_NOTEOL)))
+		if (!s[0] || (s[0] == '\n' && !(flg & REG_NOTEOL)))
 			return 1;
-		rs->s += uc_len(rs->s);
+		*sp += uc_len(s);
 		return 0;
 	case RA_BRK:;
-		int c = uc_code(rs->s);
+		int c = uc_code(s);
 		if (!c || (c == '\n' && !(flg & REG_NOTEOL)))
 			return 1;
-		rs->s += uc_len(rs->s);
+		*sp += uc_len(s);
 		if (flg & REG_ICASE && c < 128 && isupper(c))
 			c = tolower(c);
-		return brk_match(ra->rbrk, c, rs->s);
+		return brk_match(ra->rbrk, c, *sp);
 	case RA_BEG:
-		return flg & REG_NOTBOL ? 1 : !(rs->s == rs->o || rs->s[-1] == '\n');
+		return flg & REG_NOTBOL ? 1 : !(s == o || s[-1] == '\n');
 	case RA_END:
-		return flg & REG_NOTEOL ? 1 : rs->s[0] != '\0' && rs->s[0] != '\n';
+		return flg & REG_NOTEOL ? 1 : s[0] != '\0' && s[0] != '\n';
 	case RA_WBEG:
-		return !((rs->s == rs->o || !isword(uc_beg(rs->o, rs->s - 1))) &&
-			isword(rs->s));
+		return !((s == o || !isword(uc_beg(o, s - 1))) &&
+			isword(s));
 	case RA_WEND:
-		return !(rs->s != rs->o && isword(uc_beg(rs->o, rs->s - 1)) &&
-			(!rs->s[0] || !isword(rs->s)));
+		return !(s != o && isword(uc_beg(o, s - 1)) &&
+			(!s[0] || !isword(s)));
 	}
 	return 1;
 }
@@ -526,18 +526,16 @@ void regfree(regex_t *re)
 	free(re->p);
 }
 
-static int re_match(regex_t *re, struct rstate *rs, int *mark, int *mmax, int flg)
+static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax, char *o, int flg)
 {
 	struct rinst *ri;
-	struct rinst *p = re->p;
-	struct rstate *prs;
 	struct rstate *brs = rs;
 	next:
 	ri = &p[rs->pc];
 	switch (ri->ri)
 	{
 	case RI_ATOM:
-		if (ratom_match(&ri->ra, rs, flg))
+		if (ratom_match(&ri->ra, &rs->s, rs->s, o, flg))
 		{
 			if (brs == rs)
 				return 1;
@@ -550,17 +548,15 @@ static int re_match(regex_t *re, struct rstate *rs, int *mark, int *mmax, int fl
 		rs->pc++;
 		goto next;
 	case RI_FORK:
-		prs = rs;
+		(rs+1)->s = rs->s;
 		rs++;
-		rs->s = prs->s;
-		rs->o = prs->o;
 	case RI_JUMP:
 		rs->pc = ri->a1;
 		goto next;
 	case RI_MARK:
 		if (ri->mark < NGRPS)
 		{
-			mark[ri->mark] = rs->s - rs->o;
+			mark[ri->mark] = rs->s - o;
 			if (*mmax < ri->mark)
 				*mmax = ri->mark+1;
 		}
@@ -576,8 +572,8 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	struct rstate *prs = rs;
 	int mark[NGRPS * 2];
 	int i, mmax = LEN(mark);
+	char *o = s;
 	flg = re->flg | flg;
-	prs->o = s;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
 	while (*s) {
 		prs->s = s;
@@ -585,7 +581,7 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 		for (i = 0; i < mmax; i++)
 			mark[i] = -1;
 		mmax = 0;
-		if (!re_match(re, prs, mark, &mmax, flg))
+		if (!re_match(re->p, prs, mark, &mmax, o, flg))
 		{
 			for (i = 0; i < nsub; i++) {
 				psub[i].rm_so = i * 2 < LEN(mark) ? mark[i * 2] : -1;
