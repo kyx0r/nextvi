@@ -889,7 +889,7 @@ static int ec_substitute(char *ec)
 	// if the change is bigger than display size
 	// set savepoint where command was issued.
 	if (end - beg > xrows)
-		lbuf_edit(xb, lbuf_get(xb, xrow), xrow, xrow+1);
+		lbuf_opt(xb, NULL, xrow, 0);
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		struct sbuf *r = NULL;
@@ -912,7 +912,7 @@ static int ec_substitute(char *ec)
 		}
 	}
 	if (end - beg > xrows)
-		lbuf_edit(xb, lbuf_get(xb, xrow), xrow, xrow+1);
+		lbuf_opt(xb, NULL, xrow, 0);
 	rset_free(re);
 	free(rep);
 	return 0;

@@ -178,7 +178,7 @@ static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del)
 }
 
 /* append undo/redo history */
-static void lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
+void lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 {
 	struct lopt *lo;
 	int i;
