@@ -530,7 +530,7 @@ static int re_match(regex_t *re, struct rstate *rs, int *mark, int *mmax, int fl
 {
 	struct rinst *ri;
 	struct rinst *p = re->p;
-	struct rstate *prs = rs;
+	struct rstate *prs;
 	struct rstate *brs = rs;
 	next:
 	ri = &p[rs->pc];
@@ -543,8 +543,7 @@ static int re_match(regex_t *re, struct rstate *rs, int *mark, int *mmax, int fl
 				return 1;
 			else {
 				rs--;
-				ri = &p[rs->pc];
-				rs->pc = ri->a2;
+				rs->pc = (&p[rs->pc])->a2;
 				goto next;
 			}
 		}
@@ -555,6 +554,7 @@ static int re_match(regex_t *re, struct rstate *rs, int *mark, int *mmax, int fl
 		rs++;
 		rs->s = prs->s;
 		rs->o = prs->o;
+	case RI_JUMP:
 		rs->pc = ri->a1;
 		goto next;
 	case RI_MARK:
@@ -565,9 +565,6 @@ static int re_match(regex_t *re, struct rstate *rs, int *mark, int *mmax, int fl
 				*mmax = ri->mark+1;
 		}
 		rs->pc++;
-		goto next;
-	case RI_JUMP:
-		rs->pc = ri->a1;
 		goto next;
 	}
 	return ri->ri != RI_MATCH;
