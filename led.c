@@ -108,7 +108,7 @@ static void deep_search(const char* pattern, tern_t* start)
 	if(start->rChild != NULL)
 		deep_search(pattern, start->rChild);
 	if(start->mChild != NULL) {
-		int l = strlen(pattern + 2);
+		int l = strlen(pattern) + 2;
 		char _pattern[l];
 		sprintf(_pattern, "%s%c", pattern, start->word);
 		deep_search(_pattern, start->mChild);
