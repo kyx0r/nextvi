@@ -26,6 +26,8 @@
 #define RI_MARK		'm'	/* mark the current position */
 #define RI_MATCH	'q'	/* the pattern is matched */
 
+static int regcompflg; /* regcomp flags */
+
 static struct rnode *rnode_make(int rn, struct rnode *c1, struct rnode *c2)
 {
 	struct rnode *rnode = malloc(sizeof(*rnode));
@@ -44,22 +46,16 @@ static void rnode_free(struct rnode *rnode)
 		rnode_free(rnode->c1);
 	if (rnode->c2)
 		rnode_free(rnode->c2);
-	free(rnode->ra.s);
 	free(rnode);
 }
 
 static void ratom_copy(struct ratom *dst, struct ratom *src)
 {
 	dst->ra = src->ra;
-	dst->s = NULL;
-	if (src->s) {
-		int len = strlen(src->s) + 1;
-		dst->s = malloc(len);
-		memcpy(dst->s, src->s, len);
-	} else {
-		dst->rbrk = src->rbrk;
-		src->rbrk = NULL;
-	}
+	dst->cp = src->cp;
+	dst->len = src->len;
+	dst->rbrk = src->rbrk;
+	src->rbrk = NULL;
 }
 
 static int brk_len(char *s)
@@ -107,7 +103,7 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 	rbrk->and = rbrk->not && p[1] == '&' && p[2] != ']';
 	p = rbrk->not ? p + rbrk->not + rbrk->and : p;
 	int i = 0, end;
-	int icase = 0; //todo
+	int icase = regcompflg & REG_ICASE;
 	char *ptmp = NULL;
 	char *pnext = NULL;
 	while (*p != ']') {
@@ -158,7 +154,6 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 
 static void ratom_read(struct ratom *ra, char **pat)
 {
-	int len;
 	switch ((unsigned char) **pat) {
 	case '.':
 		ra->ra = RA_ANY;
@@ -184,11 +179,11 @@ static void ratom_read(struct ratom *ra, char **pat)
 		(*pat)++;
 	default:
 		ra->ra = RA_CHR;
-		len = uc_len(*pat);
-		ra->s = malloc(8);
-		memcpy(ra->s, *pat, len);
-		ra->s[len] = '\0';
-		*pat += len;
+		ra->cp = uc_code(*pat);
+		if (regcompflg & REG_ICASE && ra->cp < 128 && isupper(ra->cp))
+			ra->cp = tolower(ra->cp);
+		ra->len = uc_len(*pat);
+		*pat += ra->len;
 	}
 }
 
@@ -231,18 +226,12 @@ static int ratom_match(struct ratom *ra, char **sp, char *s, char *o, int flg)
 	switch (ra->ra)
 	{
 	case RA_CHR:;
-		int c1 = uc_code(ra->s);
-		int c2 = uc_code(s);
-		if (flg & REG_ICASE)
-		{
-			if (c1 < 128 && isupper(c1))
-				c1 = tolower(c1);
-			if (c2 < 128 && isupper(c2))
-				c2 = tolower(c2);
-		}
-		if (c1 != c2)
+		int cp = uc_code(s);
+		if (flg & REG_ICASE && cp < 128 && isupper(cp))
+			cp = tolower(cp);
+		if (ra->cp != cp)
 			return 1;
-		*sp += uc_len(ra->s);
+		*sp += ra->len;
 		return 0;
 	case RA_ANY:
 		if (!s[0] || (s[0] == '\n' && !(flg & REG_NOTEOL)))
@@ -491,6 +480,7 @@ static void rnode_emit(struct rnode *n, regex_t *p)
 
 int regcomp(regex_t *re, char *pat, int flg)
 {
+	regcompflg = flg;
 	struct rnode *rnode = rnode_parse(&pat);
 	int n = rnode_count(rnode) + 3;
 	int mark;
@@ -508,6 +498,7 @@ int regcomp(regex_t *re, char *pat, int flg)
 	mark = re_insert(re, RI_MATCH);
 	rnode_free(rnode);
 	re->flg = flg;
+	regcompflg = 0;
 	return 0;
 }
 
@@ -516,8 +507,6 @@ void regfree(regex_t *re)
 	int i;
 	for (i = 0; i < re->n; i++)
 	{
-		if (re->p[i].ri == RI_ATOM)
-			free(re->p[i].ra.s);
 		if (re->p[i].ra.rbrk) {
 			free(re->p[i].ra.rbrk->begs);
 			free(re->p[i].ra.rbrk->ends);

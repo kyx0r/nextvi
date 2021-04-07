@@ -92,9 +92,10 @@ struct rbrkinfo {
 };
 /* regular expression atom */
 struct ratom {
-	int ra;			/* atom type (RA_*) */
 	struct rbrkinfo *rbrk;	/* atom brk info */
-	char *s;		/* atom argument */
+	int ra;			/* atom type (RA_*) */
+	int cp;			/* atom codepoint */
+	int len;		/* atom len */
 };
 /* regular expression instruction */
 struct rinst {
