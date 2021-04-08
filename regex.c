@@ -123,9 +123,9 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			for (int c = 0; c < LEN(brk_classes); c++) {
 				if (!strncmp(brk_classes[c][0], p + 1, 7))
 				{
-					end = strlen(brk_classes[c][1]);
-					rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*(len-7+end));
-					rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*(len-7+end));
+					len = uc_slen(brk_classes[c][1])-7+len;
+					rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*len);
+					rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*len);
 					ptmp = brk_classes[c][1];
 					break;
 				}
@@ -150,6 +150,8 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 		i++;
 	}
 	rbrk->len = i;
+	rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*i);
+	rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*i);
 }
 
 static void ratom_read(struct ratom *ra, char **pat)
