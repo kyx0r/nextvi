@@ -94,7 +94,7 @@ void hist_set(int i)
 	histbuf = &histbufs[i];
 }
 
-void hist_open()
+void hist_open(void)
 {
 	if (histbuf->lb)
 		return;
@@ -115,7 +115,7 @@ void hist_pos(int row, int off, int top)
 	histbuf->top = top;
 }
 
-void hist_switch()
+void hist_switch(void)
 {
 	struct buf tmp;
 	bufs[0].row = xrow;
@@ -146,12 +146,12 @@ void hist_write(char *str)
 	sbuf_free(sb);
 }
 
-char *hist_curstr()
+char *hist_curstr(void)
 {
 	return lbuf_get(histbuf->lb, histbuf->row);
 }
 
-void hist_done()
+void hist_done(void)
 {
 	if (histbuf->lb)
 	{

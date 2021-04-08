@@ -830,7 +830,7 @@ char *led_input(char *pref, char *post, int *kmap, int cln)
 	return NULL;
 }
 
-void led_done()
+void led_done(void)
 {
 	delete(ROOT, ROOT);
 	hist_done();

@@ -18,7 +18,7 @@ void reverse_in_place(char *str, int len);
 
 /* main functions */
 int hund(int argc, char **argv);
-void vi();
+void vi(void);
 
 /* signals */
 int setup_signals(void);
@@ -147,7 +147,7 @@ char *re_read(char **src);
 
 /* ren.c rendering lines */
 extern int ren_torg;
-void ren_done();
+void ren_done(void);
 int *ren_position(char *s, char ***c, int *n);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
@@ -255,15 +255,15 @@ void led_printmsg(char *s, int row);
 char *led_read(int *kmap);
 char *led_readchar(int c, int kmap);
 int led_pos(char *s, int pos);
-void led_done();
+void led_done(void);
 
 /* ex.c ex commands */
 void hist_set(int i);
-void hist_open();
-void hist_switch();
+void hist_open(void);
+void hist_switch(void);
 void hist_write(char *str);
-void hist_done();
-char *hist_curstr();
+void hist_done(void);
+char *hist_curstr(void);
 void hist_pos(int row, int off, int top);
 void ex(void);
 void ex_command(char *cmd);

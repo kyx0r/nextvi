@@ -11,7 +11,7 @@ static int *last_pos;
 static int last_n;
 int ren_torg; /* compute tab width from this position origin */
 
-void ren_done()
+void ren_done(void)
 {
 	free(last_pos);
 	free(last_chrs);
