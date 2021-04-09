@@ -55,7 +55,7 @@ and "b%d" to switch (where %d is the buffer number).
 22. Added ex command "z" it does the same thing "!" does but the shell is
 launched in interactive mode, so stuff like aliases work. But it will cause
 vi to suspend.
-23. Changed the colors for C language in conf.h to be sane
+23. Changed the colors for C language in conf.c to be sane
 24. Added extra highlight keywords for C
 25. Added key that splits the line (opposite of J) keybind: K
 26. Added key that line wraps text to 80 line limit keybind: gq 
@@ -109,7 +109,7 @@ Type `?` while in hund for help.
 Original software by Michał Czarnecki <czarnecky@va.pl>
 https://github.com/miahuoe/hund.git
 34. Added key to save current file keybind: ^k
-35. The new special character "/" for ft in conf.h now signifies that 
+35. The new special character "/" for ft in conf.c now signifies that 
 the regex will be applied on any file. The reason "/" was 
 chosen because it's forbidden filename character on unix. It used 
 to be "" but in C will make a ptr value of 0, which breaks strcmp
@@ -235,17 +235,17 @@ Options supported in neatvi:
 td, textdirection
   Current direction context.  The following values are meaningful:
   * +2: always left-to-right.
-  * +1: follow conf.h's dircontexts[]; left-to-right for others.
-  * -1: follow conf.h's dircontexts[]; right-to-left for others.
+  * +1: follow conf.c's dircontexts[]; left-to-right for others.
+  * -1: follow conf.c's dircontexts[]; right-to-left for others.
   * -2: always right-to-left.
 shape
   If set (default), performs Arabic/Farsi letter shaping.
 order
   If set, reorder characters based on the rules defined
-  in conf.h.
+  in conf.c.
 hl, highlight
   If set (default), text will be highlighted based on syntax
-  highlighting rules in conf.h.
+  highlighting rules in conf.c.
 hll, highlightline
   If set, highlight current line.
 ai, autoindent

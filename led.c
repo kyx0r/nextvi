@@ -636,6 +636,12 @@ static char *led_line(char *pref, char *post, char *ai,
 			file_ternary(xb);
 			break;
 		case TK_CTL('r'):
+			if (suggestlen == sug-suggestbuf)
+			{
+				sug--;
+				while (sug != suggestbuf && *sug)
+					sug--;
+			}
 			for (i = 0; sug != suggestbuf; sug--)
 			{
 				if (!*sug)
@@ -653,9 +659,10 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('n'):
 			if (_sug)
 			{
+				if (suggestlen == sug-suggestbuf)
+					break;
 				redo_suggest:
-				_sug = strchr(sug, '\n');
-				if (!_sug)
+				if (!(_sug = strchr(sug, '\n')))
 				{
 					sug = suggestbuf;
 					goto lookup;
@@ -675,8 +682,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			l -= i;
 			if (search(cs, l, ROOT))
 			{
-				_sug = strchr(sug, '\n');
-				if (!_sug)
+				if (!(_sug = strchr(sug, '\n')))
 					break;
 				goto suggest;
 			}
