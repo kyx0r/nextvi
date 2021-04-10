@@ -637,11 +637,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			break;
 		case TK_CTL('r'):
 			if (suggestlen == sug-suggestbuf)
-			{
 				sug--;
-				while (sug != suggestbuf && *sug)
-					sug--;
-			}
 			for (i = 0; sug != suggestbuf; sug--)
 			{
 				if (!*sug)
