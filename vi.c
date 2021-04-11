@@ -2091,7 +2091,7 @@ void vi(void)
 static void sighandler(int sig)
 {
 	if (!sig_hund(sig))
-		if (sig == SIGWINCH)
+		if (sig == SIGWINCH || sig == SIGCONT)
 			vi_back(TK_CTL('l'));
 }
 
