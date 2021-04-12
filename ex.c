@@ -443,10 +443,9 @@ void ec_bufferi(int *id)
 
 static int ec_buffer(char *ec)
 {
-	int i;
+	int i, id;
 	char ln[EXLEN];
 	char arg[EXLEN];
-	char id;
 	ex_arg(ec, arg);
 	id = arg[0] ? atoi(arg) : -1;
 	for (i = 0; i < NUM_BUFS && bufs[i].lb; i++) {
