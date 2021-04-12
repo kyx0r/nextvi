@@ -456,7 +456,7 @@ static int ec_buffer(char *ec)
 		} else {
 			char c = i < 2 ? "%#"[i] : ' ';
 			snprintf(ln, LEN(ln), "%i %c %s",
-			(int)bufs[i].id, c, bufs[i].path);
+				(int)bufs[i].id, c, bufs[i].path);
 			ex_print(ln);
 		}
 	}

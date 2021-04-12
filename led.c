@@ -693,6 +693,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			vi();
 			hist_switch();
 			vi(); //redraw past screen
+			syn_setft("---");
 			td_set(+2);
 			xquit = 2;
 			goto cur_histstr;
