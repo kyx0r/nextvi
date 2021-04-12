@@ -146,9 +146,9 @@ void hist_write(char *str)
 	sbuf_free(sb);
 }
 
-char *hist_curstr(void)
+char *hist_curstr(int sub)
 {
-	return lbuf_get(histbuf->lb, histbuf->row);
+	return lbuf_get(histbuf->lb, histbuf->row - sub);
 }
 
 void hist_done(void)

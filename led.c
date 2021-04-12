@@ -563,7 +563,7 @@ static char *led_line(char *pref, char *post, char *ai,
 {
 	struct sbuf *sb;
 	int ai_len = strlen(ai);
-	int c, lnmode, l, i;
+	int c, lnmode, l, i = 0;
 	char *sug = suggestbuf;
 	char *cs, *_sug = 0;
 	time_t quickexit = 0;
@@ -696,19 +696,23 @@ static char *led_line(char *pref, char *post, char *ai,
 			syn_setft("---");
 			td_set(+2);
 			xquit = 2;
+			i = 0;
 			goto cur_histstr;
 		case TK_CTL('v'):
 			if (ai_max > 0)
 				break;
 			cur_histstr:
-			cs = hist_curstr();
+			cs = hist_curstr(i);
 			if (cs)
 			{
-				i = dstrlen(cs, '\n');
-				cs[i] = '\0';
+				cs[dstrlen(cs, '\n')] = '\0';
 				sbuf_free(sb);
 				sb = sbuf_make();
 				sbuf_str(sb, cs);
+				i++;
+			} else {
+				i = 0;
+				goto cur_histstr;
 			}
 			break;
 		case TK_CTL('x'):

@@ -263,7 +263,7 @@ void hist_open(void);
 void hist_switch(void);
 void hist_write(char *str);
 void hist_done(void);
-char *hist_curstr(void);
+char *hist_curstr(int sub);
 void hist_pos(int row, int off, int top);
 void ex(void);
 void ex_command(char *cmd);
