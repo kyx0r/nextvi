@@ -713,6 +713,9 @@ static char *led_line(char *pref, char *post, char *ai,
 			break;
 		case TK_CTL('x'):
 			goto kleave;
+		case TK_CTL('l'):
+			term_clean();
+			break;
 		case 'j':
 			if(xqexit &&
 				(difftime(time(0), quickexit) * 1000) < 1000)
