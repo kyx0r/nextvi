@@ -223,45 +223,6 @@ static int brk_match(struct rbrkinfo *brki, int c, char* s)
 	return !not;
 }
 
-static int ratom_match(struct ratom *ra, char **sp, char *s, char *o, int flg)
-{
-	switch (ra->ra)
-	{
-	case RA_CHR:;
-		int cp = uc_code(s);
-		if (flg & REG_ICASE && cp < 128 && isupper(cp))
-			cp = tolower(cp);
-		if (ra->cp != cp)
-			return 1;
-		*sp += ra->len;
-		return 0;
-	case RA_ANY:
-		if (!s[0] || (s[0] == '\n' && !(flg & REG_NOTEOL)))
-			return 1;
-		*sp += uc_len(s);
-		return 0;
-	case RA_BRK:;
-		int c = uc_code(s);
-		if (!c || (c == '\n' && !(flg & REG_NOTEOL)))
-			return 1;
-		*sp += uc_len(s);
-		if (flg & REG_ICASE && c < 128 && isupper(c))
-			c = tolower(c);
-		return brk_match(ra->rbrk, c, *sp);
-	case RA_BEG:
-		return flg & REG_NOTBOL ? 1 : !(s == o || s[-1] == '\n');
-	case RA_END:
-		return flg & REG_NOTEOL ? 1 : s[0] != '\0' && s[0] != '\n';
-	case RA_WBEG:
-		return !((s == o || !isword(uc_beg(o, s - 1))) &&
-			isword(s));
-	case RA_WEND:
-		return !(s != o && isword(uc_beg(o, s - 1)) &&
-			(!s[0] || !isword(s)));
-	}
-	return 1;
-}
-
 static struct rnode *rnode_parse(char **pat);
 
 static struct rnode *rnode_grp(char **pat)
@@ -522,20 +483,62 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax, ch
 {
 	struct rinst *ri;
 	struct rstate *brs = rs;
+	int cp;
 	next:
 	ri = &p[rs->pc];
 	switch (ri->ri)
 	{
 	case RI_ATOM:
-		if (ratom_match(&ri->ra, &rs->s, rs->s, o, flg))
+		switch (ri->ra.ra)
 		{
+		case RA_CHR:
+			cp = uc_code(rs->s);
+			if (flg & REG_ICASE && cp < 128 && isupper(cp))
+				cp = tolower(cp);
+			if (ri->ra.cp != cp)
+				goto _default;
+			rs->s += ri->ra.len;
+			break;
+		case RA_ANY:
+			if (!*rs->s || (*rs->s == '\n' && !(flg & REG_NOTEOL)))
+				goto _default;
+			rs->s += uc_len(rs->s);
+			break;
+		case RA_BRK:
+			cp = uc_code(rs->s);
+			if (!cp || (cp == '\n' && !(flg & REG_NOTEOL)))
+				goto _default;
+			rs->s += uc_len(rs->s);
+			if (flg & REG_ICASE && cp < 128 && isupper(cp))
+				cp = tolower(cp);
+			if (brk_match(ri->ra.rbrk, cp, rs->s))
+				goto _default;
+			break;
+		case RA_BEG:
+			if (flg & REG_NOTBOL ? 1 : !(rs->s == o || rs->s[-1] == '\n'))
+				goto _default;
+			break;
+		case RA_END:
+			if (flg & REG_NOTEOL ? 1 : *rs->s != '\0' && *rs->s != '\n')
+				goto _default;
+			break;
+		case RA_WBEG:
+			if (!((rs->s == o || !isword(uc_beg(o, rs->s - 1))) 
+					&& isword(rs->s)))
+				goto _default;
+			break;
+		case RA_WEND:
+			if (!(rs->s != o && isword(uc_beg(o, rs->s - 1))
+					&& (!*rs->s || !isword(rs->s))))
+				goto _default;
+			break;
+		default:
+		_default:
 			if (brs == rs)
 				return 1;
-			else {
-				rs--;
-				rs->pc = (&p[rs->pc])->a2;
-				goto next;
-			}
+			rs--;
+			rs->pc = (&p[rs->pc])->a2;
+			goto next;
 		}
 		rs->pc++;
 		goto next;
