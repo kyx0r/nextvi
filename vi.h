@@ -127,10 +127,6 @@ int regcomp(regex_t *re, char *regex, int cflags);
 int regexec(regex_t *re, char *str, int nmatch, regmatch_t pmatch[], int eflags);
 int regerror(int errcode, regex_t *re, char *errbuf, int errbuf_size);
 void regfree(regex_t *re);
-/* rset */
-#define RE_ICASE		1
-#define RE_NOTBOL		2
-#define RE_NOTEOL		4
 /* regular expression set */
 struct rset {
 	regex_t regex;		/* the combined regular expression */

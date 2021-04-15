@@ -191,7 +191,7 @@ static int dir_match(char **chrs, int beg, int end, int ctx, int *rec,
 	int subs[16 * 2];
 	struct rset *rs = ctx < 0 ? dir_rsrl : dir_rslr;
 	int grp;
-	int flg = (beg ? RE_NOTBOL : 0) | (chrs[end][0] ? RE_NOTEOL : 0);
+	int flg = (beg ? REG_NOTBOL : 0) | (chrs[end][0] ? REG_NOTEOL : 0);
 	int found = -1;
 	int l = chrs[end] - chrs[beg];
 	char s[l+1];
@@ -415,7 +415,7 @@ void syn_highlight(int *att, char *s, int n)
 			}
 		}
 		sidx += cend;
-		flg = RE_NOTBOL;
+		flg = REG_NOTBOL;
 	}
 	if (blockmap && blockmap->rs == rs)
 		for (j = 0; j < n; j++)

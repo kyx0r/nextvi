@@ -332,7 +332,7 @@ static int ex_search(char **pat)
 	*pat = *e ? e + 1 : e;
 	if (ex_kwd(&pats[0], &dir))
 		return -1;
-	re = rset_make(1, pats, xic ? RE_ICASE : 0);
+	re = rset_make(1, pats, xic ? REG_ICASE : 0);
 	if (!re)
 		return -1;
 	row = xrow + dir;
@@ -880,7 +880,7 @@ static int ec_substitute(char *ec)
 	free(pat);
 	if (ex_kwd(&pats[0], NULL))
 		return 1;
-	re = rset_make(1, pats, xic ? RE_ICASE : 0);
+	re = rset_make(1, pats, xic ? REG_ICASE : 0);
 	if (!re) {
 		free(rep);
 		return 1;
@@ -1014,7 +1014,7 @@ static int ec_glob(char *ec)
 	free(pat);
 	if (ex_kwd(&pats[0], NULL))
 		return 1;
-	if (!(re = rset_make(1, pats, xic ? RE_ICASE : 0)))
+	if (!(re = rset_make(1, pats, xic ? REG_ICASE : 0)))
 		return 1;
 	xgdep++;
 	for (i = beg + 1; i < end; i++)

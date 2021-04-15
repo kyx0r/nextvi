@@ -422,14 +422,14 @@ int lbuf_search(struct lbuf *lb, char *kw, int dir, int *r, int *o, int *len)
 	int found = 0;
 	int r0 = *r, o0 = *o;
 	int i;
-	struct rset *re = rset_make(1, &kw, xic ? RE_ICASE : 0);
+	struct rset *re = rset_make(1, &kw, xic ? REG_ICASE : 0);
 	if (!re)
 		return 1;
 	for (i = r0; !found && i >= 0 && i < lbuf_len(lb); i += dir) {
 		char *s = lbuf_get(lb, i);
 		int off = dir > 0 && r0 == i ? uc_chr(s, o0 + 1) - s : 0;
 		while (rset_find(re, s + off, 1, offs,
-				off ? RE_NOTBOL : 0) >= 0) {
+				off ? REG_NOTBOL : 0) >= 0) {
 			if (dir < 0 && r0 == i &&
 					uc_off(s, off + offs[0]) >= o0)
 				break;

@@ -630,7 +630,7 @@ struct rset *rset_make(int n, char **re, int flg)
 	struct rset *rs = malloc(sizeof(*rs));
 	struct sbuf *sb = sbuf_make();
 	sbuf_extend(sb, 1024);
-	int regex_flg = REG_EXTENDED | (flg & RE_ICASE ? REG_ICASE : 0);
+	int regex_flg = REG_EXTENDED | (flg & REG_ICASE ? REG_ICASE : 0);
 	int i;
 	rs->grp = malloc((n + 1) * sizeof(rs->grp[0]));
 	rs->setgrpcnt = malloc((n + 1) * sizeof(rs->setgrpcnt[0]));
@@ -669,15 +669,10 @@ struct rset *rset_make(int n, char **re, int flg)
 int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 {
 	int i, grp, set = -1;
-	int regex_flg = 0;
 	if (rs->grpcnt <= 2)
 		return set;
-	if (flg & RE_NOTBOL)
-		regex_flg |= REG_NOTBOL;
-	if (flg & RE_NOTEOL)
-		regex_flg |= REG_NOTEOL;
 	regmatch_t subs[rs->grpcnt];
-	if (!regexec(&rs->regex, s, rs->grpcnt, subs, regex_flg))
+	if (!regexec(&rs->regex, s, rs->grpcnt, subs, flg))
 	{
 		for (i = rs->n-1; i >= 0; i--)
 			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so >= 0)
