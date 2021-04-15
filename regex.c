@@ -53,7 +53,6 @@ static void ratom_copy(struct ratom *dst, struct ratom *src)
 {
 	dst->ra = src->ra;
 	dst->cp = src->cp;
-	dst->len = src->len;
 	dst->rbrk = src->rbrk;
 	src->rbrk = NULL;
 }
@@ -184,8 +183,7 @@ static void ratom_read(struct ratom *ra, char **pat)
 		ra->cp = uc_code(*pat);
 		if (regcompflg & REG_ICASE && ra->cp < 128 && isupper(ra->cp))
 			ra->cp = tolower(ra->cp);
-		ra->len = uc_len(*pat);
-		*pat += ra->len;
+		*pat += uc_len(*pat);
 	}
 }
 
@@ -479,11 +477,11 @@ void regfree(regex_t *re)
 	free(re->p);
 }
 
-static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax, char *o, int flg)
+static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax, 
+			int *cps, char *lens, char *o, int flg)
 {
 	struct rinst *ri;
 	struct rstate *brs = rs;
-	int cp;
 	next:
 	ri = &p[rs->pc];
 	switch (ri->ri)
@@ -492,34 +490,29 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax, ch
 		switch (ri->ra.ra)
 		{
 		case RA_CHR:
-			cp = uc_code(rs->s);
-			if (flg & REG_ICASE && cp < 128 && isupper(cp))
-				cp = tolower(cp);
-			if (ri->ra.cp != cp)
+			if (ri->ra.cp != cps[rs->s - o])
 				goto _default;
-			rs->s += ri->ra.len;
+			rs->s += lens[rs->s - o];
 			break;
 		case RA_ANY:
 			if (!*rs->s || (*rs->s == '\n' && !(flg & REG_NOTEOL)))
 				goto _default;
-			rs->s += uc_len(rs->s);
+			rs->s += lens[rs->s - o];
 			break;
-		case RA_BRK:
-			cp = uc_code(rs->s);
+		case RA_BRK:;
+			int cp = cps[rs->s - o];
 			if (!cp || (cp == '\n' && !(flg & REG_NOTEOL)))
 				goto _default;
-			rs->s += uc_len(rs->s);
-			if (flg & REG_ICASE && cp < 128 && isupper(cp))
-				cp = tolower(cp);
+			rs->s += lens[rs->s - o];
 			if (brk_match(ri->ra.rbrk, cp, rs->s))
 				goto _default;
 			break;
 		case RA_BEG:
-			if (flg & REG_NOTBOL ? 1 : !(rs->s == o || rs->s[-1] == '\n'))
+			if (flg & REG_NOTBOL || !(rs->s == o || rs->s[-1] == '\n'))
 				goto _default;
 			break;
 		case RA_END:
-			if (flg & REG_NOTEOL ? 1 : *rs->s != '\0' && *rs->s != '\n')
+			if (flg & REG_NOTEOL || (*rs->s != '\0' && *rs->s != '\n'))
 				goto _default;
 			break;
 		case RA_WBEG:
@@ -567,16 +560,30 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	struct rstate *prs = rs;
 	int mark[NGRPS * 2];
 	int i, mmax = LEN(mark);
-	char *o = s;
+	char *o = s, *se;
 	flg = re->flg | flg;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
+	int len = strlen(s);
+	int cps[len];
+	char lens[len];
 	while (*s) {
+		i = s - o;
+		cps[i] = uc_code(s);
+		if (flg & REG_ICASE && cps[i] < 128 && isupper(cps[i]))
+			cps[i] = tolower(cps[i]);
+		lens[i] = uc_len(s);
+		s += lens[i];
+	}
+	cps[len] = 0;
+	se = s;
+	s = o;
+	while (s < se) {
 		prs->s = s;
 		prs->pc = 0;
 		for (i = 0; i < mmax; i++)
 			mark[i] = -1;
 		mmax = 0;
-		if (!re_match(re->p, prs, mark, &mmax, o, flg))
+		if (!re_match(re->p, prs, mark, &mmax, cps, lens, o, flg))
 		{
 			for (i = 0; i < nsub; i++) {
 				psub[i].rm_so = i * 2 < LEN(mark) ? mark[i * 2] : -1;
@@ -584,7 +591,7 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 			}
 			return 0;
 		}
-		s += uc_len(s);
+		s += lens[s - o];
 	}
 	return 1;
 }
