@@ -54,7 +54,6 @@ static void ratom_copy(struct ratom *dst, struct ratom *src)
 	dst->ra = src->ra;
 	dst->cp = src->cp;
 	dst->rbrk = src->rbrk;
-	src->rbrk = NULL;
 }
 
 static int brk_len(char *s)
@@ -466,13 +465,17 @@ int regcomp(regex_t *re, char *pat, int flg)
 
 void regfree(regex_t *re)
 {
-	int i;
+	int i, c;
 	for (i = 0; i < re->n; i++)
 	{
 		if (re->p[i].ra.rbrk) {
 			free(re->p[i].ra.rbrk->begs);
 			free(re->p[i].ra.rbrk->ends);
 			free(re->p[i].ra.rbrk);
+			struct rbrkinfo *brki = re->p[i].ra.rbrk;
+			for (c = 0; c < re->n; c++)
+				if (brki == re->p[c].ra.rbrk)
+					re->p[c].ra.rbrk = NULL;
 		}
 	}
 	free(re->p);
