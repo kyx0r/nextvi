@@ -77,7 +77,7 @@ void sbuf_cut(struct sbuf *s, int len);
 #define REG_NOTEOL		0x20
 #define NGRPS		64	/* maximum number of groups */
 #define NREPS		128	/* maximum repetitions */
-#define NDEPT		4096	/* re_match() depth limit */
+#define NDEPT		256	/* re_match() depth limit */
 typedef struct {
 	long rm_so;
 	long rm_eo;

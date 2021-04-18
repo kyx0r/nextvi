@@ -485,7 +485,8 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 			int *cps, char *lens, char *o, int flg)
 {
 	struct rinst *ri;
-	struct rstate *brs = rs;
+	const struct rstate *brs = rs;
+	const struct rstate *ers = &rs[NDEPT-1];
 	next:
 	ri = &p[rs->pc];
 	switch (ri->ri)
@@ -531,7 +532,7 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 			break;
 		default:
 		_default:
-			if (brs == rs)
+			if (rs == brs)
 				return 1;
 			rs--;
 			rs->pc = (&p[rs->pc])->a2;
@@ -540,6 +541,8 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 		rs->pc++;
 		goto next;
 	case RI_FORK:
+		if (rs == ers)
+			return 1;
 		(rs+1)->s = rs->s;
 		rs++;
 	case RI_JUMP:
