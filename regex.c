@@ -193,7 +193,8 @@ static int isword(char *s)
 	return isalnum(c) || c == '_' || c > 127;
 }
 
-static int brk_match(struct rbrkinfo *brki, int c, char* s)
+static int brk_match(struct rbrkinfo *brki, int c, int o,
+			int *cps, char *lens)
 {
 	int i, oc = c;
 	int not = brki->not;
@@ -209,8 +210,8 @@ static int brk_match(struct rbrkinfo *brki, int c, char* s)
 			{
 				if (i < len-1)
 				{
-					c = uc_code(s);
-					s += uc_len(s);
+					c = cps[o];
+					o += lens[o];
 					continue;
 				}
 				return c == oc ? !not : not;
@@ -504,7 +505,7 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 			if (!cp || (cp == '\n' && !(flg & REG_NOTEOL)))
 				goto _default;
 			rs->s += lens[rs->s - o];
-			if (brk_match(ri->ra.rbrk, cp, rs->s))
+			if (brk_match(ri->ra.rbrk, cp, rs->s - o, cps, lens))
 				goto _default;
 			break;
 		case RA_BEG:

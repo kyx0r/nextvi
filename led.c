@@ -257,8 +257,8 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 				char pd[i - cbeg];
 				memset(pd, ' ', i - cbeg);
 				sbuf_mem(out, pd, i - cbeg);
+				pad = 0;
 			}
-			pad = 0;
 			sbuf_mem(out, chrs[o], uc_len(chrs[o]));
 			for (; off[i - cbeg] == o; i++){}
 		} else
@@ -378,9 +378,9 @@ for (i = 0; i < n; i++) { \
 static char *led_render(char *s0, int cbeg, int cend)
 {
 	int i, j, n, cterm = cend - cbeg;
-	int *pos;	/* pos[i]: the screen position of the i-th character */
-	char **chrs;	/* chrs[i]: the i-th character in s1 */
 	struct sbuf *out, *bound = NULL;
+	int *pos;		/* pos[i]: the screen position of the i-th character */
+	char **chrs;		/* chrs[i]: the i-th character in s1 */
 	int off[cterm+1];	/* off[i]: the character at screen position i */
 	int att[cterm+1];	/* att[i]: the attributes of i-th character */
 	int ctx = dir_context(s0);
