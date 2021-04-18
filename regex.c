@@ -570,7 +570,7 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	char *o = s, *se;
 	flg = re->flg | flg;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
-	int len = strlen(s);
+	int len = strlen(s)+6;
 	int cps[len];
 	char lens[len];
 	while (*s) {
@@ -581,7 +581,7 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 		lens[i] = uc_len(s);
 		s += lens[i];
 	}
-	cps[len] = 0;
+	memset(&cps[i+1], 0, 5*sizeof(int));
 	se = s;
 	s = o;
 	while (s < se) {
