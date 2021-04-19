@@ -500,34 +500,34 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 			rs->s += lens[rs->s - o];
 			break;
 		case RA_ANY:
-			if (!*rs->s || (*rs->s == '\n' && !(flg & REG_NOTEOL)))
+			if (!cps[rs->s - o])
 				goto _default;
 			rs->s += lens[rs->s - o];
 			break;
 		case RA_BRK:;
 			int cp = cps[rs->s - o];
-			if (!cp || (cp == '\n' && !(flg & REG_NOTEOL)))
+			if (!cp)
 				goto _default;
 			rs->s += lens[rs->s - o];
 			if (brk_match(ri->ra.rbrk, cp, rs->s - o, cps, lens))
 				goto _default;
 			break;
 		case RA_BEG:
-			if (flg & REG_NOTBOL || !(rs->s == o || rs->s[-1] == '\n'))
+			if (flg & REG_NOTBOL || (rs->s != o && rs->s[-1] != '\n'))
 				goto _default;
 			break;
 		case RA_END:
-			if (flg & REG_NOTEOL || (*rs->s != '\0' && *rs->s != '\n'))
+			if (flg & REG_NOTEOL || cps[rs->s - o])
 				goto _default;
 			break;
 		case RA_WBEG:
-			if (!((rs->s == o || !isword(uc_beg(o, rs->s - 1))) 
-					&& isword(rs->s)))
+			if ((rs->s != o && isword(uc_beg(o, rs->s - 1))) 
+					|| !isword(rs->s))
 				goto _default;
 			break;
 		case RA_WEND:
-			if (!(rs->s != o && isword(uc_beg(o, rs->s - 1))
-					&& (!*rs->s || !isword(rs->s))))
+			if (rs->s == o || !isword(uc_beg(o, rs->s - 1))
+					|| (*rs->s && isword(rs->s)))
 				goto _default;
 			break;
 		default:
@@ -576,7 +576,9 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	while (*s) {
 		i = s - o;
 		cps[i] = uc_code(s);
-		if (flg & REG_ICASE && cps[i] < 128 && isupper(cps[i]))
+		if (cps[i] == '\n' && !(flg & REG_NOTEOL))
+			cps[i] = 0;
+		else if (flg & REG_ICASE && cps[i] < 128 && isupper(cps[i]))
 			cps[i] = tolower(cps[i]);
 		lens[i] = uc_len(s);
 		s += lens[i];
