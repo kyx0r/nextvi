@@ -567,13 +567,13 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	struct rstate *prs = rs;
 	int mark[NGRPS * 2];
 	int i, mmax = LEN(mark);
-	char *o = s, *se;
+	int len = strlen(s)+6;
+	char *o = s, *se = &s[len-6];
 	flg = re->flg | flg;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
-	int len = strlen(s)+6;
 	int cps[len];
 	char lens[len];
-	while (*s) {
+	while (s < se) {
 		i = s - o;
 		cps[i] = uc_code(s);
 		if (cps[i] == '\n' && !(flg & REG_NOTEOL))
@@ -584,7 +584,6 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 		s += lens[i];
 	}
 	memset(&cps[i+1], 0, 5*sizeof(int));
-	se = s;
 	s = o;
 	while (s < se) {
 		prs->s = s;
