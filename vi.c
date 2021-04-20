@@ -1586,6 +1586,7 @@ void vi(void)
 			case '?':
 			case 'n':
 			case 'N':
+			case 1: //^a
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
