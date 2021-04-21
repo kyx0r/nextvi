@@ -1583,12 +1583,12 @@ void vi(void)
 			case TK_CTL('p'):
 				vc_status();
 			case 1: //^a
-				if (xrow < otop + xrows - 1)
-					break;
 			case '/':
 			case '?':
 			case 'n':
 			case 'N':
+				if (mv == 1 && xrow < otop + xrows - 1)
+					break;
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
