@@ -710,7 +710,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				sb = sbuf_make();
 				sbuf_str(sb, cs);
 				i++;
-			} else {
+			} else if (i) {
 				i = 0;
 				goto cur_histstr;
 			}
