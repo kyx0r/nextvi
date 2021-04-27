@@ -1296,20 +1296,25 @@ static int vc_insert(int cmd)
 {
 	char *pref, *post;
 	char *ln = lbuf_get(xb, xrow);
-	int row, off = 0;
+	int row, off;
 	char *rep;
 	int noto;
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
-	if (cmd == 'A')
+	else if (cmd == 'A')
 		xoff = lbuf_eol(xb, xrow);
-	xoff = ren_noeol(ln, xoff);
-	if (cmd == 'o')
+	else if (cmd == 'o') {
 		xrow += 1;
-	if (cmd == 'i' || cmd == 'I')
-		off = xoff;
+		if (xrow - xtop == xrows && xrow < lbuf_len(xb))
+		{
+			term_push("ko", 2);
+			return 1;
+		}
+	}
+	xoff = ren_noeol(ln, xoff);
+	off = xoff;
 	if (cmd == 'a' || cmd == 'A')
-		off = xoff + 1;
+		off++;
 	if (ln && ln[0] == '\n')
 		off = 0;
 	noto = cmd != 'o' && cmd != 'O';
