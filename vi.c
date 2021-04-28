@@ -1304,11 +1304,11 @@ static int vc_insert(int cmd)
 	else if (cmd == 'A')
 		xoff = lbuf_eol(xb, xrow);
 	else if (cmd == 'o') {
-		xrow += 1;
-		if (xrow - xtop == xrows && xrow < lbuf_len(xb))
+		xrow++;
+		if (xrow - xtop == xrows)
 		{
-			term_push("ko", 2);
-			return 1;
+			xtop++;
+			vi_drawagain(0, 0);
 		}
 	}
 	xoff = ren_noeol(ln, xoff);
