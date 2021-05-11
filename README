@@ -191,6 +191,14 @@ to keep track of.
 Q: General philosophy?
 A: User is programmer, hacker culture.
 
+Q: Keybind with CTRL does not work?
+A: vi is reading ASCII codes sent by the terminal. Depending on the
+keyboard, the ASCII code could be another key combination. It was
+reported that "^^" (Ctrl + ^) can be achieved on some system with "^6".
+If something doesn't work, have a look at the layout of an
+american/british keyboard and try to reproduce the keybind as if you
+have an american/british keyboard.
+
 CONFIGURATION
 -------------
 
