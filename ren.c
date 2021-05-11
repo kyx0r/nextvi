@@ -442,9 +442,7 @@ static void syn_initft(char *name, char *inject)
 char *syn_filetype(char *path)
 {
 	int hl = rset_find(syn_ftrs, path, 0, NULL, 0);
-	if (hl >= 0 && hl < ftslen)
-		return fts[hl].ft;
-	return "/";
+	return hl >= 0 && hl < ftslen ? fts[hl].ft : "/";
 }
 
 void syn_reloadft(char *ft, char *injectft, int i, char *reg)
@@ -464,9 +462,8 @@ void syn_reloadft(char *ft, char *injectft, int i, char *reg)
 
 void syn_init(void)
 {
-	char *pats[128] = {NULL};
+	char *pats[128];
 	int i, e, patend;
-	bidx = 0;
 	for (i = 0; i < hlslen; i++)
 	{
 		if (syn_find(hls[i].ft) < 0)
@@ -505,4 +502,5 @@ void syn_done(void)
 	rset_free(syn_ftrs);
 	for (i = 0; i < bidx; i++)
 		rset_free(bmap[i].rs);
+	bidx = 0;
 }
