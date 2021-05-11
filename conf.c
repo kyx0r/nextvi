@@ -49,14 +49,14 @@ struct highlight hls[] = {
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 		|enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
 		|u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
-		|int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t)\\>"},
+		|int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline)\\>"},
 	{"c", {12 | SYN_BD}, "\\<(true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
 				|free|realloc|NULL|stdin|stdout|errno)\\>"},
 	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
 			|default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
 	{"c", {6}, "^#[ \t]*[a-zA-Z0-9_]+"},
-	{"c", {0, SYN_BD}, "([a-zA-Z][a-zA-Z0-9_]+)\\(", 1},
+	{"c", {0, SYN_BD}, "([a-zA-Z0-9_]+)\\(", 1},
 	{"c", {5}, "\"([^\"]|\\\\\")*\""},
 	{"c", {5}, "'([^\\]|\\\\.)'"},
 	{"c", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
@@ -80,11 +80,11 @@ struct highlight hls[] = {
 	{"msg", {6 | SYN_BD, 2 | SYN_BD}, "^From: (.*)$"},
 	{"msg", {6 | SYN_BD, 5 | SYN_BD}, "^To: (.*)$"},
 	{"msg", {6 | SYN_BD, 5 | SYN_BD}, "^Cc: (.*)$"},
-	{"msg", {6 | SYN_BD}, "^[A-Z][-A-Za-z]+: .+$"},
+	{"msg", {6 | SYN_BD}, "^[-A-Za-z]+: .+$"},
 	{"msg", {2 | SYN_IT}, "^> .*$"},
 
 	/* makefile */
-	{"mk", {0, 3}, "([A-Za-z_][A-Za-z0-9_]*)[ \t]*="},
+	{"mk", {0, 3}, "([A-Za-z0-9_]*)[ \t]*="},
 	{"mk", {3}, "\\$\\([a-zA-Z0-9_]+\\)"},
 	{"mk", {2 | SYN_IT}, "#.*$"},
 	{"mk", {0, SYN_BD}, "([A-Za-z_%.]+):"},
@@ -96,13 +96,13 @@ struct highlight hls[] = {
 	{"sh", {4}, "'[^']*'"},
 	{"sh", {4}, "`([^`\\]|\\\\.)*`"},
 	{"sh", {1}, "\\$(\\{[^}]+\\}|[a-zA-Z_0-9]+)"},
-	{"sh", {0, SYN_BD}, "^([a-zA-Z_][a-zA-Z_0-9]*\\(\\)).*\\{"},
+	{"sh", {0, SYN_BD}, "^([a-zA-Z_0-9]*\\(\\)).*\\{"},
 
 	/* python */
 	{"py", {2}, "^#.*$"},
 	{"py", {5}, "\\<(and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>"},
 	{"py", {5}, "\\<(if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>"},
-	{"py", {0, 0 | SYN_BD}, "([a-zA-Z][a-zA-Z0-9_]+)\\(", 1},
+	{"py", {0, 0 | SYN_BD}, "([a-zA-Z0-9_]+)\\(", 1},
 	{"py", {4}, "[\"']([^\"']|\\\\\")*[\"']"},
 
 	/* neatmail */
