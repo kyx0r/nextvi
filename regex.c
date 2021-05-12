@@ -549,12 +549,8 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 		rs->pc = ri->a1;
 		goto next;
 	case RI_MARK:
-		if (ri->mark < NGRPS)
-		{
-			mark[ri->mark] = rs->s - o;
-			if (*mmax < ri->mark)
-				*mmax = ri->mark+1;
-		}
+		*mmax = ri->mark;
+		mark[*mmax] = rs->s - o;
 		rs->pc++;
 		goto next;
 	}
@@ -565,14 +561,15 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
 	struct rstate rs[NDEPT];
 	struct rstate *prs = rs;
-	int mark[NGRPS * 2];
-	int i, mmax = LEN(mark);
-	int len = strlen(s)+6;
-	char *o = s, *se = &s[len-6];
+	int i, mmax = NGRPS;
+	int mark[mmax * 2];
+	int len = strlen(s);
+	char *o = s, *se = &s[len];
+	char lens[len];
+	int cps[len+5];
+	memset(&cps[len], 0, 5*sizeof(cps[0]));
 	flg = re->flg | flg;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
-	int cps[len];
-	char lens[len];
 	while (s < se) {
 		i = s - o;
 		cps[i] = uc_code(s);
@@ -583,14 +580,12 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 		lens[i] = uc_len(s);
 		s += lens[i];
 	}
-	memset(&cps[i+1], 0, 5*sizeof(int));
 	s = o;
 	while (s < se) {
 		prs->s = s;
 		prs->pc = 0;
-		for (i = 0; i < mmax; i++)
+		for (i = 0; i < mmax+1; i++)
 			mark[i] = -1;
-		mmax = 0;
 		if (!re_match(re->p, prs, mark, &mmax, cps, lens, o, flg))
 		{
 			for (i = 0; i < nsub; i++) {
