@@ -424,11 +424,13 @@ void syn_highlight(int *att, char *s, int n)
 
 static void syn_initft(char *name, char *inject)
 {
-	char *pats[128] = {NULL};
+	char *pats[128];
 	int i, n;
 	for (i = 0; i < hlslen && i < LEN(pats); i++)
 		if (!strcmp(hls[i].ft, inject) || !strcmp(hls[i].ft, name))
 			pats[i] = hls[i].pat;
+		else
+			pats[i] = NULL;
 	n = i;
 	for (i = 0; i < LEN(ftmap); i++) {
 		if (!ftmap[i].ft[0]) {
