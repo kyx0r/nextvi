@@ -61,6 +61,7 @@ struct highlight hls[] = {
 	{"c", {5}, "'([^\\]|\\\\.)'"},
 	{"c", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
 	{"c", {14}, "[^\n]*\\\\$", 1},
+	{"c", {5}, "\"", 0, -11},
 
 	{"roff", {4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD},
 		"^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\]{2,}))?.*$", 1},
@@ -143,19 +144,20 @@ struct highlight hls[] = {
 	{"js", {10 | SYN_IT}, "//.*$"},
 	{"js", {5}, "\"([^\"]|\\\\\")*\""},
 	{"js", {5}, "\'([^\']|\\\\\")*\'"},
+	{"js", {5}, "\"", 0, -7},
 
 	/* html */
 	{"html", {5 | SYN_IT}, "<!--[^&-->]*", 0, 1},
 	{"html", {5 | SYN_IT}, "[^&<!--]*-->", 0, -1},
 	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
-			auto(capitalize|complete|focus|play)|background|\
+			|auto(capitalize|complete|focus|play)|background|\
 			|bgcolor|border|buffered|challenge|charset|checked|cite|\
-			|class|code(base)?|color|cols|colspan|content(\
-			|editable)?|contextmenu|controls|coords|crossorigin|\
+			|class|code(base)|color|cols|colspan|content(\
+			|editable)|contextmenu|controls|coords|crossorigin|\
 			|csp|data|datetime|decoding|def(ault|er)|dir|dirname|\
 			|disabled|download|draggable|dropzone|enctype|enterkeyhint|\
-			|equiv|for|form(action|novalidate)?|headers|height|\
-			|hidden|high|href(lang)?|http|icon|id|importance|\
+			|equiv|for|form|action|novalidate|headers|height|\
+			|hidden|high|href|lang|http|icon|id|importance|\
 			|inputmode|integrity|intrinsicsize|ismap|itemprop|keytype|\
 			|kind|label|lang|language|list|loading|loop|low|manifest|\
 			|max|maxlength|media|method|min|minlength|multiple|muted|\
@@ -165,18 +167,18 @@ struct highlight hls[] = {
 			|selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
 			|srclang|srcset|start|step|style|summary|tabindex|target|\
 			|title|translate|type|usemap|value|width|wrap)\\>"},
-	{"html", {6}, "\\<(html|base|head|link|meta|style|title|body|address|article|\
+	{"html", {6}, "\\<(html|base|head|link|meta|body|address|article|\
 			|aside|footer|header|hgroup|main|nav|section|blockquote|dd|\
-			|dir|div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
-			|b|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
-			|ruby|s|samp|small|span|strong|sub|sup|time|tt|u|var|wbr|area|\
+			|div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
+			|b|bdi|bdo|br|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
+			|ruby|s|samp|small|strong|sub|sup|time|tt|u|var|wbr|area|\
 			|audio|img|map|track|video|applet|embed|iframe|noembed|object|\
 			|param|picture|source|canvas|noscript|script|del|ins|caption|\
 			|col|colgroup|table|tbody|td|tfoot|th|thead|tr|button|datalist|\
-			|fieldset|form|input|label|legend|meter|optgroup|option|output|\
-			|progress|select|textarea|details|dialog|menu|menuitem|summary|\
-			|content|element|shadow|slot|template|acronym|applet|basefont|\
-			|bgsound|big|blink|center|command|content|dir|element|font|\
+			|fieldset|input|legend|meter|optgroup|option|output|\
+			|progress|select|textarea|details|dialog|menu|menuitem|\
+			|element|shadow|template|acronym|applet|basefont|\
+			|bgsound|big|blink|center|command|element|font|\
 			|frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
 			|multicol|nextid|nobr|noembed|noframes|plaintext|shadow|spacer|\
 			|strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
