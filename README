@@ -169,10 +169,11 @@ This is necessary sometimes if you want to paste from system clipboard.
 55. Substitute undo-redo point return to where command was issued initially
 if the affected area is greater than terminal rows.
 56. Modified regex engine to support more than 1 character in negated
-char expressions. For example [^&abc] where ^& is the not+and. This will
-treat "abc" as !(a && b && c) logically.
+char expressions. For example [^&&abc] where ^&& is the not+and. This will
+treat "abc" as !(a && b && c) logically. Everything in brackets preceding
+&& will be processed according to standard posix negated char.
 57. Added ^l key in insert to clean the terminal and start at line 0, 
-remove distrations and focus on typing.
+remove distrations and focus on typing. Useful when running ex via vi -e
 
 FAQ:
 ----

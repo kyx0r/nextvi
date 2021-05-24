@@ -98,8 +98,8 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 	rbrk->begs = malloc(sizeof(rbrk->begs[0])*len);
 	rbrk->ends = malloc(sizeof(rbrk->ends[0])*len);
 	rbrk->not = p[0] == '^';
-	rbrk->and = rbrk->not && p[1] == '&' && p[2] != ']';
-	p = rbrk->not ? p + rbrk->not + rbrk->and : p;
+	rbrk->and = -1;
+	p = rbrk->not ? p + rbrk->not : p;
 	int i = 0, end;
 	int icase = regcompflg & REG_ICASE;
 	char *ptmp = NULL;
@@ -128,6 +128,10 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 					break;
 				}
 			}
+		} else if (rbrk->not && rbrk->and < 0 && p[0] == '&' && p[1] == '&') {
+			rbrk->and = i+1;
+			p+=2;
+			continue;
 		}
 		rbrk->begs[i] = uc_code(p);
 		p += uc_len(p);
@@ -147,6 +151,8 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 		}
 		i++;
 	}
+	if (rbrk->and < 0)
+		rbrk->and = i;
 	rbrk->len = i;
 	rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*i);
 	rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*i);
@@ -195,9 +201,7 @@ static int isword(char *s)
 static int brk_match(struct rbrkinfo *brki, int c, int o,
 			int *cps, char *lens)
 {
-	int i, oc = c;
-	int not = brki->not;
-	int and = brki->and;
+	int i, oc;
 	int len = brki->len;
 	int *begs = brki->begs;
 	int *ends = brki->ends;
@@ -205,20 +209,18 @@ static int brk_match(struct rbrkinfo *brki, int c, int o,
 	{
 		if (c >= begs[i] && c <= ends[i])
 		{
-			if (and)
+			if (i >= brki->and)
 			{
-				if (i < len-1)
-				{
-					c = cps[o];
-					o += lens[o];
-					continue;
-				}
-				return c == oc ? !not : not;
-			}
-			return not;
+				oc = c;
+				if (i >= len-1)
+					return c == oc ? !brki->not : brki->not;
+				c = cps[o];
+				o += lens[o];
+			} else
+				return brki->not;
 		}
 	}
-	return !not;
+	return !brki->not;
 }
 
 static struct rnode *rnode_parse(char **pat);
