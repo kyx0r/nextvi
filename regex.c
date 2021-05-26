@@ -129,7 +129,7 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 				}
 			}
 		} else if (rbrk->not && rbrk->and < 0 && p[0] == '&' && p[1] == '&') {
-			rbrk->and = i+1;
+			rbrk->and = i;
 			p+=2;
 			continue;
 		}
@@ -201,7 +201,7 @@ static int isword(char *s)
 static int brk_match(struct rbrkinfo *brki, int c, int o,
 			int *cps, char *lens)
 {
-	int i, oc;
+	int i, oc = c;
 	int len = brki->len;
 	int *begs = brki->begs;
 	int *ends = brki->ends;
@@ -211,7 +211,6 @@ static int brk_match(struct rbrkinfo *brki, int c, int o,
 		{
 			if (i >= brki->and)
 			{
-				oc = c;
 				if (i >= len-1)
 					return c == oc ? !brki->not : brki->not;
 				c = cps[o];
@@ -395,19 +394,17 @@ static void rnode_emitnorep(struct rnode *n, regex_t *p)
 		mark = re_insert(p, RI_MARK);
 		p->p[mark].mark = 2 * n->grp + 1;
 		break;
-	case RN_ATOM:;
-		int atom = re_insert(p, RI_ATOM);
-		ratom_copy(&p->p[atom].ra, &n->ra);
+	case RN_ATOM:
+		mark = re_insert(p, RI_ATOM);
+		ratom_copy(&p->p[mark].ra, &n->ra);
 		break;
 	}
 }
 
 static void rnode_emit(struct rnode *n, regex_t *p)
 {
-	int last;
 	int jmpend[NREPS];
-	int jmpend_cnt = 0;
-	int i;
+	int last, i, fork, jmpend_cnt = 0;
 	if (!n)
 		return;
 	if (n->mincnt == 0 && n->maxcnt == 0)
@@ -417,7 +414,7 @@ static void rnode_emit(struct rnode *n, regex_t *p)
 		return;
 	}
 	if (n->mincnt == 0) {
-		int fork = re_insert(p, RI_FORK);
+		fork = re_insert(p, RI_FORK);
 		p->p[fork].a1 = p->n;
 		jmpend[jmpend_cnt++] = fork;
 	}
@@ -426,13 +423,12 @@ static void rnode_emit(struct rnode *n, regex_t *p)
 		rnode_emitnorep(n, p);
 	}
 	if (n->maxcnt < 0) {
-		int fork;
 		fork = re_insert(p, RI_FORK);
 		p->p[fork].a1 = last;
 		p->p[fork].a2 = p->n;
 	}
 	for (i = MAX(1, n->mincnt); i < n->maxcnt; i++) {
-		int fork = re_insert(p, RI_FORK);
+		fork = re_insert(p, RI_FORK);
 		p->p[fork].a1 = p->n;
 		jmpend[jmpend_cnt++] = fork;
 		rnode_emitnorep(n, p);
@@ -445,7 +441,7 @@ int regcomp(regex_t *re, char *pat, int flg)
 {
 	regcompflg = flg;
 	struct rnode *rnode = rnode_parse(&pat);
-	int n = rnode_count(rnode) + 3;
+	int n = rnode_count(rnode) + 4;
 	int mark;
 	if (!rnode)
 		return 1;
@@ -453,12 +449,15 @@ int regcomp(regex_t *re, char *pat, int flg)
 	re->n = 0;
 	re->p = malloc(n * sizeof(re->p[0]));
 	memset(re->p, 0, n * sizeof(re->p[0]));
+	re->p[re->n].ri = 'b'; /* break; pattern not matched */
+	re->p[re->n].a2 = -1;
+	re->p++;
 	mark = re_insert(re, RI_MARK);
 	re->p[mark].mark = 0;
 	rnode_emit(rnode, re);
 	mark = re_insert(re, RI_MARK);
 	re->p[mark].mark = 1;
-	mark = re_insert(re, RI_MATCH);
+	re_insert(re, RI_MATCH);
 	rnode_free(rnode);
 	re->flg = flg;
 	regcompflg = 0;
@@ -480,14 +479,13 @@ void regfree(regex_t *re)
 					re->p[c].ra.rbrk = NULL;
 		}
 	}
-	free(re->p);
+	free(re->p-1);
 }
 
 static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax, 
 			int *cps, char *lens, char *o, int flg)
 {
 	struct rinst *ri;
-	const struct rstate *brs = rs;
 	const struct rstate *ers = &rs[NDEPT-1];
 	next:
 	ri = &p[rs->pc];
@@ -534,8 +532,6 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 			break;
 		default:
 		_default:
-			if (rs == brs)
-				return 1;
 			rs--;
 			rs->pc = (&p[rs->pc])->a2;
 			goto next;
@@ -561,8 +557,8 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 
 int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
-	struct rstate rs[NDEPT];
-	struct rstate *prs = rs;
+	struct rstate rs[NDEPT+1];
+	struct rstate *prs = rs+1;
 	int i, mmax = NGRPS;
 	int mark[mmax * 2];
 	int len = strlen(s);
@@ -570,6 +566,7 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	char lens[len];
 	int cps[len+5];
 	memset(&cps[len], 0, 5*sizeof(cps[0]));
+	rs[0].pc = -1;
 	flg = re->flg | flg;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
 	while (s < se) {
