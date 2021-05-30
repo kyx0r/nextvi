@@ -25,7 +25,7 @@ Can be disabled via :se noqe
 3. Added linenumbers, keybind: # (relative numbers are placed after indent)
 4. Added invisible character view, keybind: V   
 5. Added regex for changing spaces to tabs, keybind: vi
-6. Added regex for removing /r in dos files, keybind: vo
+6. Added regex for removing /r in dos files and trail space/tab, keybind: vo
 7. Changed behavior of ^a to change search direction when no more match 
 8. Added fssearch, searches what is under the cursor 
 in every file in the opened directory keybind: ^] or ^5
@@ -126,7 +126,6 @@ mode to edit the command more efficiently.
 prompt like so :%s/.../ keybind: vr
 39. Added ex option to change number of spaces in a tab (\t)
 default is set to 8. use :se tbs=N  (N is number of spaces)
-This will also affect how feature in (5.) works.
 40. Added partial support for multiline block regex, for
 example C multiline comments syntax highlight.
 41. Made lowest row to not waste any space when there

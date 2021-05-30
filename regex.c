@@ -485,6 +485,7 @@ void regfree(regex_t *re)
 static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax, 
 			int *cps, char *lens, char *o, int flg)
 {
+	int cp;
 	struct rinst *ri;
 	const struct rstate *ers = &rs[NDEPT-1];
 	next:
@@ -504,9 +505,8 @@ static int re_match(struct rinst *p, struct rstate *rs, int *mark, int *mmax,
 				goto _default;
 			rs->s += lens[rs->s - o];
 			break;
-		case RA_BRK:;
-			int cp = cps[rs->s - o];
-			if (!cp)
+		case RA_BRK:
+			if (!(cp = cps[rs->s - o]))
 				goto _default;
 			rs->s += lens[rs->s - o];
 			if (brk_match(ri->ra.rbrk, cp, rs->s - o, cps, lens))

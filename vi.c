@@ -626,7 +626,7 @@ static void vi_regprint()
 		{
 			int len = strlen(bufs[i])+3;
 			char buf[len];
-			snprintf(buf, len, "%c %s", i, bufs[i]); 
+			snprintf(buf, len, "%c %s", i, bufs[i]);
 			ex_print(buf);
 		}
 	}
@@ -641,8 +641,8 @@ int fscount;
 char *substr(const char *s1, const char *s2, int len1, int len2)
 {
 	if (len2 > len1)
-		return strstr(s2, s1);	
-	return strstr(s1, s2);	
+		return strstr(s2, s1);
+	return strstr(s1, s2);
 }
 
 static void file_calc(char *path, char *basepath)
@@ -708,7 +708,7 @@ void dir_calc(char *cur_dir)
 			strcmp(dirp->d_name, "..") == 0)
 			continue;
 		strcpy(ptr, dirp->d_name);
-		if (lstat(cur_dir, &statbuf) >= 0 && 
+		if (lstat(cur_dir, &statbuf) >= 0 &&
 			S_ISDIR(statbuf.st_mode))
 			dir_calc(cur_dir);
 	}
@@ -727,8 +727,8 @@ static int fs_search(char* cs,int cnt, int *row, int *off)
 		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
 		prevxb = xb;
 		if(ex_edit(path))
-			{*row = xrow; *off = xoff-1;} 
-		else 
+			{*row = xrow; *off = xoff-1;}
+		else
 			{*row = 0; *off = 0;}
 		if (prevxb == xb)
 			continue;
@@ -764,8 +764,8 @@ static int fs_searchback(char* cs, int cnt, int *row, int *off)
 		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
 		prevxb = xb;
 		if(ex_edit(path))
-			{*row = xrow; *off = xoff-1;} 
-		else 
+			{*row = xrow; *off = xoff-1;}
+		else
 			{*row = 0; *off = 0;}
 		if (prevxb == xb)
 			continue;
@@ -945,7 +945,7 @@ static int vi_motion(int *row, int *off)
 		{
 			sdirection = !sdirection;
 			if (vi_search(sdirection ? 'N' : 'n', cnt, row, off))
-			        return -1;		
+			        return -1;
 		}
 		break;
 	case ' ':
@@ -1230,7 +1230,7 @@ static void vi_unindent(int r1, int r2)
 				ln++;
 			else
 			{
-				endleft++;	
+				endleft++;
 				continue;
 			}
 			sbuf_str(sb, ln);
@@ -1288,7 +1288,7 @@ static int vc_motion(int cmd)
 	if (cmd == '>' || cmd == '<')
 		vi_shift(r1, r2, cmd == '>' ? +1 : -1);
 	if (cmd == TK_CTL('w'))
-		vi_unindent(r1, r2);		
+		vi_unindent(r1, r2);
 	return 0;
 }
 
@@ -1780,14 +1780,12 @@ void vi(void)
 					break;
 				case 'o':
 					ex_command("%s/\x0d//g");
+					ex_command("%s/[ \t]+$//g");
+					vi_mod = 1;
 					break;
-				case 'i':;
-					char regstr[] = "%s/^ {8}/	/g";
-					if (xtabspc < 10)
-						regstr[6] = xtabspc + '0';
-					ex_command(regstr);
-					ex_command("%s/ +$//g");
-					break;
+				case 'i':
+					ln = vi_prompt(":", "%s/^ {8}/\t/g", &kmap);
+					goto do_excmd;
 				case 'b':
 					term_push("\x02", 1); //^b
 					goto prompt;
@@ -1805,7 +1803,7 @@ void vi(void)
 			case TK_CTL('v'):
 				vi_word++;
 				if (*vi_word == '0')
-					vi_word -= 5;	
+					vi_word -= 5;
 				if (vi_arg1)
 					while (*vi_word) vi_word--;
 				vi_mod = 1;
@@ -1870,7 +1868,7 @@ void vi(void)
 				switch (vi_insmov)
 				{
 				case 127:;
-					k = lbuf_eol(xb, xrow);	
+					k = lbuf_eol(xb, xrow);
 					int ko = k;
 					if (!xoff && xrow)
 					{
