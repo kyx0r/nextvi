@@ -112,7 +112,7 @@ int isescape(char ch)
 #define vi_drawwordnum(lbuf_word, skip, dir, tmp, nrow, noff) \
 { int l, l1, i = 0; \
 char *c; \
-char snum[30]; \
+char snum[100]; \
 int _nrow = nrow; \
 int _noff = noff; \
 for (int k = _nrow; k == _nrow; i++) \
@@ -1521,7 +1521,7 @@ static void vc_execute(void)
 
 static void vi_argcmd(int arg, char cmd)
 {
-	char str[30];
+	char str[100];
 	char *cs = itoa(arg, str);
 	*cs = cmd;
 	*(cs+1) = '\0';
