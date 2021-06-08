@@ -247,7 +247,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 {
 	int i = cbeg;
-	int pad = 1;
+	int pad = ren_torg;
 	sbuf_extend(out, xcols);
 	while (i < cend) {
 		int o = off[i - cbeg];
@@ -391,6 +391,7 @@ static char *led_render(char *s0, int cbeg, int cend)
 		off_rev()
 		if (pos[n] > xcols || cbeg)
 		{
+			td_set(-2);
 			ren_torg = cbeg;
 			out = sbuf_make();
 			cull_line(out)
@@ -400,6 +401,7 @@ static char *led_render(char *s0, int cbeg, int cend)
 			off_rev()
 			sbuf_free(out);
 			ren_torg = cbeg;
+			td_set(xotd);
 		}
 	} else {
 		off_for()
