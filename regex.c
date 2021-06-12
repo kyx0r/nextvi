@@ -198,8 +198,7 @@ static int isword(char *s)
 	return isalnum(c) || c == '_' || c > 127;
 }
 
-static int brk_match(struct rbrkinfo *brki, int c, int o,
-			int *cps, char *lens)
+static int brk_match(struct rbrkinfo *brki, int c, char *s)
 {
 	int i, oc = c;
 	int len = brki->len;
@@ -213,8 +212,8 @@ static int brk_match(struct rbrkinfo *brki, int c, int o,
 			{
 				if (i >= len-1)
 					return c == oc ? !brki->not : brki->not;
-				c = cps[o];
-				o += lens[o];
+				c = uc_code(s);
+				s += uc_len(s);
 			} else
 				return brki->not;
 		}
@@ -482,108 +481,113 @@ void regfree(regex_t *re)
 	free(re->p-1);
 }
 
+#define match(n, cpn, neol) \
+while (*s) \
+{ \
+	prs = rs+1; \
+	prs->pc = 0; \
+	prs->s = s; \
+	cp = cpn; \
+	for (i = 0; i < mmax+1; i++) \
+		mark[i] = -1; \
+	next##n: \
+	ri = &p[prs->pc]; \
+	switch (ri->ri) \
+	{ \
+	case RI_ATOM: \
+		switch (ri->ra.ra) \
+		{ \
+		case RA_CHR: \
+			if (ri->ra.cp != cp) \
+				goto default##n; \
+			prs->s += uc_len(prs->s); \
+			cp = cpn; \
+			break; \
+		case RA_ANY: \
+			if (neol) \
+				goto default##n; \
+			prs->s += uc_len(prs->s); \
+			cp = cpn; \
+			break; \
+		case RA_BRK: \
+			if (neol) \
+				goto default##n; \
+			prs->s += uc_len(prs->s); \
+			if (brk_match(ri->ra.rbrk, cp, prs->s)) \
+				goto default##n; \
+			cp = cpn; \
+			break; \
+		case RA_BEG: \
+			if (flg & REG_NOTBOL || (prs->s-o && prs->s[-1] != '\n')) \
+				goto default##n; \
+			break; \
+		case RA_END: \
+			if (flg & REG_NOTEOL || (cp && cp != '\n')) \
+				goto default##n; \
+			break; \
+		case RA_WBEG: \
+			if ((prs->s-o && isword(uc_beg(o, prs->s-1))) \
+					|| !isword(prs->s)) \
+				goto default##n; \
+			break; \
+		case RA_WEND: \
+			if (prs->s == o || !isword(uc_beg(o, prs->s - 1)) \
+					|| (*prs->s && isword(prs->s))) \
+				goto default##n; \
+			break; \
+		default: \
+		default##n: \
+			prs--; \
+			prs->pc = (&p[prs->pc])->a2; \
+			cp = cpn; \
+			goto next##n; \
+		} \
+		prs->pc++; \
+		goto next##n; \
+	case RI_FORK: \
+		if (prs == &rs[NDEPT]) \
+			break; \
+		(prs+1)->s = prs->s; \
+		prs++; \
+	case RI_JUMP: \
+		prs->pc = ri->a1; \
+		goto next##n; \
+	case RI_MARK: \
+		mmax = ri->mark; \
+		mark[mmax] = prs->s - o; \
+		prs->pc++; \
+		goto next##n; \
+	case RI_MATCH: \
+		for (i = 0; i < nsub; i++) { \
+			psub[i].rm_so = i * 2 < LEN(mark) ? mark[i * 2] : -1; \
+			psub[i].rm_eo = i * 2 < LEN(mark) ? mark[i * 2 + 1] : -1; \
+		} \
+		return 0; \
+	} \
+	s += uc_len(s); \
+} \
+
 int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
 	struct rstate rs[NDEPT+1], *prs;
 	struct rinst *ri, *p = re->p;
-	int i, mmax = NGRPS, len = strlen(s);
+	int i, cp, mmax = NGRPS;
 	int mark[mmax * 2];
-	char *o = s, *se = &s[len];
-	char lens[len];
-	int cps[len+5];
-	memset(&cps[len], 0, 5*sizeof(cps[0]));
+	char *o = s;
 	rs[0].pc = -1;
+	rs[0].s = s;
 	flg = re->flg | flg;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
-	while (s < se) {
-		i = s - o;
-		cps[i] = uc_code(s);
-		if (cps[i] == '\n' && !(flg & REG_NOTEOL))
-			cps[i] = 0;
-		else if (flg & REG_ICASE && cps[i] < 128 && isupper(cps[i]))
-			cps[i] = tolower(cps[i]);
-		lens[i] = uc_len(s);
-		s += lens[i];
-	}
-	s = o;
-	while (s < se) {
-		prs = rs+1;
-		prs->pc = 0;
-		prs->of = s - o;
-		s += lens[prs->of];
-		for (i = 0; i < mmax+1; i++)
-			mark[i] = -1;
-		next:
-		ri = &p[prs->pc];
-		switch (ri->ri)
-		{
-		case RI_ATOM:
-			switch (ri->ra.ra)
-			{
-			case RA_CHR:
-				if (ri->ra.cp != cps[prs->of])
-					goto _default;
-				prs->of += lens[prs->of];
-				break;
-			case RA_ANY:
-				if (!cps[prs->of])
-					goto _default;
-				prs->of += lens[prs->of];
-				break;
-			case RA_BRK:
-				if (!(i = cps[prs->of]))
-					goto _default;
-				prs->of += lens[prs->of];
-				if (brk_match(ri->ra.rbrk, i, prs->of, cps, lens))
-					goto _default;
-				break;
-			case RA_BEG:
-				if (flg & REG_NOTBOL || (prs->of && o[prs->of-1] != '\n'))
-					goto _default;
-				break;
-			case RA_END:
-				if (flg & REG_NOTEOL || cps[prs->of])
-					goto _default;
-				break;
-			case RA_WBEG:
-				if ((prs->of && isword(uc_beg(o, &o[prs->of] - 1))) 
-						|| !isword(&o[prs->of]))
-					goto _default;
-				break;
-			case RA_WEND:
-				if (!prs->of || !isword(uc_beg(o, &o[prs->of] - 1))
-						|| (o[prs->of] && isword(&o[prs->of])))
-					goto _default;
-				break;
-			default:
-			_default:
-				prs--;
-				prs->pc = (&p[prs->pc])->a2;
-				goto next;
-			}
-			prs->pc++;
-			goto next;
-		case RI_FORK:
-			if (prs == &rs[NDEPT])
-				break;
-			(prs+1)->of = prs->of;
-			prs++;
-		case RI_JUMP:
-			prs->pc = ri->a1;
-			goto next;
-		case RI_MARK:
-			mmax = ri->mark;
-			mark[mmax] = prs->of;
-			prs->pc++;
-			goto next;
-		case RI_MATCH:
-			for (i = 0; i < nsub; i++) {
-				psub[i].rm_so = i * 2 < LEN(mark) ? mark[i * 2] : -1;
-				psub[i].rm_eo = i * 2 < LEN(mark) ? mark[i * 2 + 1] : -1;
-			}
-			return 0;
-		}
-	}
+	if (flg & REG_ICASE)
+		if (flg & REG_NOTEOL)
+			match(1, tolower(uc_code(prs->s)), !cp)
+		else
+			match(2, tolower(uc_code(prs->s)), !cp || cp == '\n')
+	else
+		if (flg & REG_NOTEOL)
+			match(3, uc_code(prs->s), !cp)
+		else
+			match(4, uc_code(prs->s), !cp || cp == '\n')
 	return 1;
 }
 
