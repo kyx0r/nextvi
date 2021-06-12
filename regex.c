@@ -186,7 +186,7 @@ static void ratom_read(struct ratom *ra, char **pat)
 	default:
 		ra->ra = RA_CHR;
 		ra->cp = uc_code(*pat);
-		if (regcompflg & REG_ICASE && ra->cp < 128 && isupper(ra->cp))
+		if (regcompflg & REG_ICASE)
 			ra->cp = tolower(ra->cp);
 		*pat += uc_len(*pat);
 	}
@@ -198,7 +198,7 @@ static int isword(char *s)
 	return isalnum(c) || c == '_' || c > 127;
 }
 
-static int brk_match(struct rbrkinfo *brki, int c, char *s)
+inline int brk_match(struct rbrkinfo *brki, int c, char *s)
 {
 	int i, oc = c;
 	int len = brki->len;
@@ -211,7 +211,7 @@ static int brk_match(struct rbrkinfo *brki, int c, char *s)
 			if (i >= brki->and)
 			{
 				if (i >= len-1)
-					return c == oc ? !brki->not : brki->not;
+					return c == oc ? 0 : 1;
 				c = uc_code(s);
 				s += uc_len(s);
 			} else
@@ -487,7 +487,7 @@ while (*s) \
 	prs = rs+1; \
 	prs->pc = 0; \
 	prs->s = s; \
-	cp = cpn; \
+	prs->cp = cpn; \
 	for (i = 0; i < mmax+1; i++) \
 		mark[i] = -1; \
 	next##n: \
@@ -498,31 +498,31 @@ while (*s) \
 		switch (ri->ra.ra) \
 		{ \
 		case RA_CHR: \
-			if (ri->ra.cp != cp) \
+			if (ri->ra.cp != prs->cp) \
 				goto default##n; \
 			prs->s += uc_len(prs->s); \
-			cp = cpn; \
+			prs->cp = cpn; \
 			break; \
 		case RA_ANY: \
 			if (neol) \
 				goto default##n; \
 			prs->s += uc_len(prs->s); \
-			cp = cpn; \
+			prs->cp = cpn; \
 			break; \
 		case RA_BRK: \
 			if (neol) \
 				goto default##n; \
 			prs->s += uc_len(prs->s); \
-			if (brk_match(ri->ra.rbrk, cp, prs->s)) \
+			if (brk_match(ri->ra.rbrk, prs->cp, prs->s)) \
 				goto default##n; \
-			cp = cpn; \
+			prs->cp = cpn; \
 			break; \
 		case RA_BEG: \
 			if (flg & REG_NOTBOL || (prs->s-o && prs->s[-1] != '\n')) \
 				goto default##n; \
 			break; \
 		case RA_END: \
-			if (flg & REG_NOTEOL || (cp && cp != '\n')) \
+			if (flg & REG_NOTEOL || (prs->cp && prs->cp != '\n')) \
 				goto default##n; \
 			break; \
 		case RA_WBEG: \
@@ -539,7 +539,6 @@ while (*s) \
 		default##n: \
 			prs--; \
 			prs->pc = (&p[prs->pc])->a2; \
-			cp = cpn; \
 			goto next##n; \
 		} \
 		prs->pc++; \
@@ -548,6 +547,7 @@ while (*s) \
 		if (prs == &rs[NDEPT]) \
 			break; \
 		(prs+1)->s = prs->s; \
+		(prs+1)->cp = prs->cp; \
 		prs++; \
 	case RI_JUMP: \
 		prs->pc = ri->a1; \
@@ -571,23 +571,24 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
 	struct rstate rs[NDEPT+1], *prs;
 	struct rinst *ri, *p = re->p;
-	int i, cp, mmax = NGRPS;
+	int i, mmax = NGRPS;
 	int mark[mmax * 2];
 	char *o = s;
 	rs[0].pc = -1;
 	rs[0].s = s;
+	rs[0].cp = 0;
 	flg = re->flg | flg;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
 	if (flg & REG_ICASE)
 		if (flg & REG_NOTEOL)
-			match(1, tolower(uc_code(prs->s)), !cp)
+			match(1, tolower(uc_code(prs->s)), !prs->cp)
 		else
-			match(2, tolower(uc_code(prs->s)), !cp || cp == '\n')
+			match(2, tolower(uc_code(prs->s)), !prs->cp || prs->cp == '\n')
 	else
 		if (flg & REG_NOTEOL)
-			match(3, uc_code(prs->s), !cp)
+			match(3, uc_code(prs->s), !prs->cp)
 		else
-			match(4, uc_code(prs->s), !cp || cp == '\n')
+			match(4, uc_code(prs->s), !prs->cp || prs->cp == '\n')
 	return 1;
 }
 

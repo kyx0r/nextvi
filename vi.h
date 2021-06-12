@@ -113,6 +113,7 @@ typedef struct regex regex_t;
 /* regular expression matching state */
 struct rstate {
 	char *s;		/* the current string */
+	int cp;			/* cached codepoint */
 	int pc;			/* program counter */
 };
 /* regular expression tree; used for parsing */
