@@ -567,16 +567,24 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	end = beg;
 	while (beg > ln && uc_kind(uc_beg(ln, beg - 1)) == 1)
 		beg = uc_beg(ln, beg - 1);
-	for (; *end && n > 0; end++, n--) {
+	for (int i = n; *end && i > 0; end++, i--) {
 		while (*end && uc_kind(end) == 1)
 			end = uc_next(end);
 	}
 	if (beg >= --end)
 		return NULL;
 	sb = sbuf_make();
-	sbuf_str(sb, "\\<");
-	sbuf_mem(sb, beg, end - beg);
-	sbuf_str(sb, "\\>");
+	if (n > 1) {
+		for (; beg != end; beg++) {
+			if (strchr("[]().?\\^$|*/+", *beg))
+				sbuf_str(sb, "\\");
+			sbuf_chr(sb, *beg);
+		}
+	} else {
+		sbuf_str(sb, "\\<");
+		sbuf_mem(sb, beg, end - beg);
+		sbuf_str(sb, "\\>");
+	}
 	return sbuf_done(sb);
 }
 

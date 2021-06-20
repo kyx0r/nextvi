@@ -152,7 +152,7 @@ up the latest command from history. Also the history works for
 searches via / or ? the same way. keybind vv does the same but from
 normal mode, to save time. Pressing ^v again goes to next string.
 49. Added ability to get more than 1 word for keybinds ^a ^] ^p vr v/
-specified by number (vi_arg1). Note: punctuation chars will not be escaped.
+specified by number (vi_arg1). Regex control chars will be escaped.
 50. Added ability to edit the line while in insert mode
 such that backspace can delete all the characters on the line,
 when no more characters left the line will be wrapped onto the next
