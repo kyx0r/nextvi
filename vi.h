@@ -55,8 +55,7 @@ int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_pair(struct lbuf *lb, int *row, int *off);
 
 /* sbuf.c string buffer, variable-sized string */
-struct sbuf *sbuf_make(void);
-void sbuf_extend(struct sbuf *sbuf, int newsz);
+struct sbuf *sbuf_make(int newsz);
 void sbuf_free(struct sbuf *sb);
 char *sbuf_done(struct sbuf *sb);
 char *sbuf_buf(struct sbuf *sb);

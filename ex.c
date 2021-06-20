@@ -135,7 +135,7 @@ void hist_write(char *str)
 {
 	if (!*str || strcmp(histbuf->path, "hist"))
 		return;
-	struct sbuf *sb = sbuf_make();
+	struct sbuf *sb = sbuf_make(256);
 	struct lbuf *lb = histbuf->lb;
 	sbuf_str(sb, str);
 	if (!lbuf_len(lb))
@@ -318,7 +318,7 @@ static int ex_search(char **pat)
 	char *pats[1];
 	struct rset *re;
 	int dir, row;
-	kw = sbuf_make();
+	kw = sbuf_make(64);
 	while (*++e) {
 		if (*e == **pat)
 			break;
@@ -691,7 +691,7 @@ static int ec_insert(char *ec)
 	ex_loc(ec, loc);
 	if (ex_region(loc, &beg, &end) && (beg != 0 || end != 0))
 		return 1;
-	sb = sbuf_make();
+	sb = sbuf_make(64);
 	while ((s = ex_read(""))) {
 		if (!strcmp(".", s)) {
 			free(s);
@@ -894,7 +894,7 @@ static int ec_substitute(char *ec)
 		struct sbuf *r = NULL;
 		while (rset_find(re, ln, LEN(offs) / 2, offs, 0) >= 0) {
 			if (!r)
-				r = sbuf_make();
+				r = sbuf_make(offs[0]+offs[1]+1);
 			sbuf_mem(r, ln, offs[0]);
 			replace(r, rep, ln, offs);
 			ln += offs[1];

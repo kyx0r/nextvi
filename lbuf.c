@@ -214,7 +214,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
 	char buf[1 << 10];
 	struct sbuf *sb;
 	long nr;
-	sb = sbuf_make();
+	sb = sbuf_make(64);
 	while ((nr = read(fd, buf, sizeof(buf))) > 0)
 		sbuf_mem(sb, buf, nr);
 	if (!nr)
@@ -257,7 +257,7 @@ char *lbuf_cp(struct lbuf *lb, int beg, int end)
 {
 	struct sbuf *sb;
 	int i;
-	sb = sbuf_make();
+	sb = sbuf_make(64);
 	for (i = beg; i < end; i++)
 		if (i < lb->ln_n)
 			sbuf_str(sb, lb->ln[i]);

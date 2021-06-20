@@ -319,7 +319,7 @@ char *ex_read(char *msg)
 		syn_setft(xhl ? ex_filetype() : "/");
 		return s;
 	}
-	sb = sbuf_make();
+	sb = sbuf_make(xcols);
 	while ((c = getchar()) != EOF && c != '\n')
 		sbuf_chr(sb, c);
 	if (c == EOF) {
@@ -452,7 +452,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 		char *re;
 		if (!kw)
 			return 1;
-		sb = sbuf_make();
+		sb = sbuf_make(1024);
 		sbuf_chr(sb, cmd);
 		sbuf_str(sb, kw);
 		free(kw);
@@ -573,7 +573,7 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	}
 	if (beg >= --end)
 		return NULL;
-	sb = sbuf_make();
+	sb = sbuf_make((end - beg)+64);
 	if (n > 1) {
 		for (; beg != end; beg++) {
 			if (strchr("[]().?\\^$|*/+", *beg))
@@ -1004,7 +1004,7 @@ static char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
 	char *s1, *s2, *s3;
 	if (r1 == r2)
 		return uc_sub(lbuf_get(lb, r1), o1, o2);
-	sb = sbuf_make();
+	sb = sbuf_make(1024);
 	s1 = uc_sub(lbuf_get(lb, r1), o1, -1);
 	s3 = uc_sub(lbuf_get(lb, r2), 0, o2);
 	s2 = lbuf_cp(lb, r1 + 1, r2);
@@ -1037,7 +1037,7 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
 	if (!lnmode) {
-		struct sbuf *sb = sbuf_make();
+		struct sbuf *sb = sbuf_make(1024);
 		sbuf_str(sb, pref);
 		sbuf_str(sb, post);
 		lbuf_edit(xb, sbuf_buf(sb), r1, r2 + 1);
@@ -1119,7 +1119,7 @@ static char *vi_input(char *pref, char *post, int *row, int *off, int cln)
 
 static char *vi_indents(char *ln)
 {
-	struct sbuf *sb = sbuf_make();
+	struct sbuf *sb = sbuf_make(256);
 	while (xai && ln && (*ln == ' ' || *ln == '\t'))
 		sbuf_chr(sb, *ln++);
 	return sbuf_done(sb);
@@ -1169,7 +1169,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
 	if (!lnmode) {
-		struct sbuf *sb = sbuf_make();
+		struct sbuf *sb = sbuf_make(256);
 		sbuf_str(sb, pref);
 		sbuf_str(sb, region);
 		sbuf_str(sb, post);
@@ -1210,7 +1210,7 @@ static void vi_shift(int r1, int r2, int dir)
 	for (i = r1; i <= r2; i++) {
 		if (!(ln = lbuf_get(xb, i)))
 			continue;
-		sb = sbuf_make();
+		sb = sbuf_make(1024);
 		if (dir > 0)
 			sbuf_chr(sb, '\t');
 		else
@@ -1235,7 +1235,7 @@ static void vi_unindent(int r1, int r2)
 		for (i = r1; i <= r2; i++) {
 			if (!(ln = lbuf_get(xb, i)))
 				continue;
-			sb = sbuf_make();
+			sb = sbuf_make(1024);
 			if (ln[0] == ' ' || ln[0] == '\t')
 				ln++;
 			else
@@ -1356,7 +1356,7 @@ static int vc_put(int cmd)
 		return 1;
 	}
 	if (lnmode) {
-		struct sbuf *sb = sbuf_make();
+		struct sbuf *sb = sbuf_make(1024);
 		for (i = 0; i < cnt; i++)
 			sbuf_str(sb, buf);
 		if (!lbuf_len(xb))
@@ -1367,7 +1367,7 @@ static int vc_put(int cmd)
 		xoff = lbuf_indents(xb, xrow);
 		sbuf_free(sb);
 	} else {
-		struct sbuf *sb = sbuf_make();
+		struct sbuf *sb = sbuf_make(1024);
 		char *ln = xrow < lbuf_len(xb) ? lbuf_get(xb, xrow) : "\n";
 		int off = ren_noeol(ln, xoff) + (ln[0] != '\n' && cmd == 'p');
 		char *s = uc_sub(ln, 0, off);
@@ -1405,7 +1405,7 @@ static int vc_join(void)
 	int i;
 	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
 		return 1;
-	sb = sbuf_make();
+	sb = sbuf_make(1024);
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		char *lnend = strchr(ln, '\n');
@@ -1484,7 +1484,7 @@ static int vc_replace(void)
 		return 1;
 	pref = uc_sub(ln, 0, off);
 	post = uc_sub(ln, off + cnt, -1);
-	sb = sbuf_make();
+	sb = sbuf_make(1024);
 	sbuf_str(sb, pref);
 	for (i = 0; i < cnt; i++)
 		sbuf_str(sb, cs);

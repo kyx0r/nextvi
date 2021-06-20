@@ -58,7 +58,7 @@ void term_suspend(void)
 void term_record(void)
 {
 	if (!term_sbuf)
-		term_sbuf = sbuf_make();
+		term_sbuf = sbuf_make(256);
 }
 
 void term_commit(void)
@@ -292,7 +292,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	if (pid <= 0)
 		return NULL;
 	if (oproc)
-		sb = sbuf_make();
+		sb = sbuf_make(64);
 	if (!iproc) {
 		signal(SIGINT, SIG_IGN);
 		term_done();

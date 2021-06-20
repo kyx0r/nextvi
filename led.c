@@ -248,7 +248,6 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 {
 	int i = cbeg;
 	int pad = ren_torg;
-	sbuf_extend(out, xcols);
 	while (i < cend) {
 		int o = off[i - cbeg];
 		if (o >= 0) {
@@ -271,7 +270,6 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
-	sbuf_extend(out, cend * 2);
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -302,7 +300,6 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 {
 	int att_old = 0;
 	int i = 0;
-	sbuf_extend(out, cend * 2);
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -393,10 +390,10 @@ static char *led_render(char *s0, int cbeg, int cend)
 		{
 			td_set(-2);
 			ren_torg = cbeg;
-			out = sbuf_make();
+			out = sbuf_make(xcols);
 			cull_line(out)
 			off_rev()
-			bound = sbuf_make();
+			bound = sbuf_make(xcols);
 			cull_line(bound)
 			off_rev()
 			sbuf_free(out);
@@ -410,7 +407,7 @@ static char *led_render(char *s0, int cbeg, int cend)
 			ren_torg = cbeg;
 			int xord = xorder;
 			xorder = 0;
-			bound = sbuf_make();
+			bound = sbuf_make(xcols);
 			cull_line(bound)
 			off_for()
 			xorder = xord;
@@ -420,7 +417,7 @@ static char *led_render(char *s0, int cbeg, int cend)
 	syn_highlight(att, s0, n);
 	led_markrev(n, chrs, pos, att);
 	/* generate term output */
-	out = sbuf_make();
+	out = sbuf_make(cend * 2);
 	if (vi_hidch)
 		ledhidch_out(out, off, att, chrs, s0, cend, ctx);
 	else
@@ -478,7 +475,7 @@ static void led_printparts(char *ai, char *pref, char *main,
 	struct sbuf *ln;
 	int off, pos;
 	int idir = 0;
-	ln = sbuf_make();
+	ln = sbuf_make(xcols);
 	sbuf_str(ln, ai);
 	sbuf_str(ln, pref);
 	sbuf_str(ln, main);
@@ -570,7 +567,7 @@ static char *led_line(char *pref, char *post, char *ai,
 	char *cs, *_sug = 0;
 	time_t quickexit = 0;
 	vi_insmov = 0;
-	sb = sbuf_make();
+	sb = sbuf_make(xcols);
 	if (insert)
 		sbuf_str(sb, insert);
 	if (!pref)
@@ -709,7 +706,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			{
 				cs[dstrlen(cs, '\n')] = '\0';
 				sbuf_free(sb);
-				sb = sbuf_make();
+				sb = sbuf_make(1024);
 				sbuf_str(sb, cs);
 				i++;
 			} else if (i) {
@@ -772,7 +769,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 	td_set(xotd);
 	if (key == '\n') {
 		hist_write(s);
-		struct sbuf *sb = sbuf_make();
+		struct sbuf *sb = sbuf_make(1024);
 		if (pref)
 			sbuf_str(sb, pref);
 		sbuf_str(sb, s);
@@ -788,7 +785,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 /* read visual command input */
 char *led_input(char *pref, char *post, int *kmap, int cln)
 {
-	struct sbuf *sb = sbuf_make();
+	struct sbuf *sb = sbuf_make(1024);
 	char ai[128];
 	int ai_max = sizeof(ai) - 1;
 	int n = 0;

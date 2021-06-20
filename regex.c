@@ -624,8 +624,7 @@ static int re_groupcount(char *s)
 struct rset *rset_make(int n, char **re, int flg)
 {
 	struct rset *rs = malloc(sizeof(*rs));
-	struct sbuf *sb = sbuf_make();
-	sbuf_extend(sb, 1024);
+	struct sbuf *sb = sbuf_make(1024);
 	int regex_flg = REG_EXTENDED | (flg & REG_ICASE ? REG_ICASE : 0);
 	int i;
 	rs->grp = malloc((n + 1) * sizeof(rs->grp[0]));
@@ -704,7 +703,7 @@ void rset_free(struct rset *rs)
 /* read a regular expression enclosed in a delimiter */
 char *re_read(char **src)
 {
-	struct sbuf *sbuf = sbuf_make();
+	struct sbuf *sbuf = sbuf_make(1024);
 	char *s = *src;
 	int delim = (unsigned char) *s++;
 	if (!delim)

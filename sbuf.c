@@ -15,7 +15,7 @@ struct sbuf {
 	int s_sz;		/* size of memory allocated for s[] */
 };
 
-void sbuf_extend(struct sbuf *sbuf, int newsz)
+static void sbuf_extend(struct sbuf *sbuf, int newsz)
 {
 	char *s = sbuf->s;
 	sbuf->s_sz = newsz;
@@ -25,17 +25,17 @@ void sbuf_extend(struct sbuf *sbuf, int newsz)
 	free(s);
 }
 
-struct sbuf *sbuf_make(void)
+struct sbuf *sbuf_make(int newsz)
 {
 	struct sbuf *sb = malloc(sizeof(*sb));
-	memset(sb, 0, sizeof(*sb));
+	sb->s = NULL;
+	sb->s_n = 0;
+	sbuf_extend(sb, newsz+1);
 	return sb;
 }
 
 char *sbuf_buf(struct sbuf *sb)
 {
-	if (!sb->s)
-		sbuf_extend(sb, 1);
 	sb->s[sb->s_n] = '\0';
 	return sb->s;
 }
