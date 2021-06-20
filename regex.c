@@ -198,7 +198,7 @@ static int isword(char *s)
 	return isalnum(c) || c == '_' || c > 127;
 }
 
-inline int brk_match(struct rbrkinfo *brki, int c, char *s)
+static inline int brk_match(struct rbrkinfo *brki, int c, char *s)
 {
 	int i, oc = c;
 	int len = brki->len;
