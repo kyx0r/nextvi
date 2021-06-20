@@ -122,7 +122,7 @@ commands move the cursor to wanted command and exit buffer with qq
 will copy the command into prompt. You can also use this
 when half way through some command and need to access normal
 mode to edit the command more efficiently.
-38. Added key to grab the current word under the cursor into 
+38. Added key to grab the current word(s) under the cursor into 
 prompt like so :%s/.../ keybind: vr
 39. Added ex option to change number of spaces in a tab (\t)
 default is set to 8. use :se tbs=N  (N is number of spaces)
@@ -141,7 +141,8 @@ the result to be with your eyes.
 Specify arg and the word under the cursor will be placed into prompt,
 for example :.,.+5s/\<word\>/ where 5 is the arg.
 45. Improved single line performance by roughly 3x
-46. Added key to abondon insert discarding any changes keybind: ^x
+46. Added key to abandon insert discarding any changes keybind: ^x
+That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
 47. Added Russian keymap, and changed how xkmap_alt works, now
 z + arg in normal mode will switch what keymap ^f key changes,
 so for example 1 = fa 2 = ru. If you need some other language
@@ -150,9 +151,8 @@ kmap just make one yourself. Look into kmap.h it's really simple.
 up the latest command from history. Also the history works for
 searches via / or ? the same way. keybind vv does the same but from
 normal mode, to save time. Pressing ^v again goes to next string.
-49. While in insert mode or in prompt ^x will exit the mode but
-any change done on the line will be discarded. 
-That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
+49. Added ability to get more than 1 word for keybinds ^a ^] ^p vr v/
+specified by number (vi_arg1). Note: punctuation chars will not be escaped.
 50. Added ability to edit the line while in insert mode
 such that backspace can delete all the characters on the line,
 when no more characters left the line will be wrapped onto the next
@@ -173,6 +173,8 @@ treat "abc" as !(a && b && c) logically. Everything in brackets preceding
 && will be processed according to standard posix negated char.
 57. Added ^l key in insert to clean the terminal and start at line 0, 
 remove distrations and focus on typing. Useful when running ex via vi -e
+58. Added v/ key in normal, grabs the current word(s) under the cursor into 
+prompt. If valid, the input will be used for searches using N and n keys.
 
 FAQ:
 ----

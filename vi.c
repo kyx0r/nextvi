@@ -40,7 +40,7 @@ static int vi_pcol;			/* the column requested by | command */
 static int vi_printed;			/* ex_print() calls since the last command */
 static int vi_scroll;			/* scroll amount for ^f and ^d*/
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
-static char *vi_curword(struct lbuf *lb, int row, int off);
+static char *vi_curword(struct lbuf *lb, int row, int off, int n);
 
 void reverse_in_place(char *str, int len)
 {
@@ -556,7 +556,7 @@ static int vi_motionln(int *row, int cmd)
 	return c;
 }
 
-static char *vi_curword(struct lbuf *lb, int row, int off)
+static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 {
 	struct sbuf *sb;
 	char *ln = lbuf_get(lb, row);
@@ -565,11 +565,13 @@ static char *vi_curword(struct lbuf *lb, int row, int off)
 		return NULL;
 	beg = uc_chr(ln, ren_noeol(ln, off));
 	end = beg;
-	while (*end && uc_kind(end) == 1)
-		end = uc_next(end);
 	while (beg > ln && uc_kind(uc_beg(ln, beg - 1)) == 1)
 		beg = uc_beg(ln, beg - 1);
-	if (beg >= end)
+	for (; *end && n > 0; end++, n--) {
+		while (*end && uc_kind(end) == 1)
+			end = uc_next(end);
+	}
+	if (beg >= --end)
 		return NULL;
 	sb = sbuf_make();
 	sbuf_str(sb, "\\<");
@@ -875,7 +877,7 @@ static int vi_motion(int *row, int *off)
 				break;
 		break;
 	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
-		if (!(cs = vi_curword(xb, *row, *off)))
+		if (!(cs = vi_curword(xb, *row, *off, cnt)))
 			return -1;
 		if(!fslink)
 		{
@@ -895,7 +897,7 @@ static int vi_motion(int *row, int *off)
 		free(cs);
 		break;
 	case TK_CTL('p'):
-		if (!(cs = vi_curword(xb, *row, *off)) || !fslink)
+		if (!(cs = vi_curword(xb, *row, *off, cnt)) || !fslink)
 			return -1;
 		if(!fs_searchback(cs, cnt, row, off))
 		{
@@ -937,7 +939,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case TK_CTL('a'):
-		if (!(cs = vi_curword(xb, *row, *off)))
+		if (!(cs = vi_curword(xb, *row, *off, cnt)))
 			return -1;
 		ex_kwdset(cs, +1);
 		free(cs);
@@ -1712,7 +1714,7 @@ void vi(void)
 					ln = vi_prompt(":", buf, &kmap);
 					goto do_excmd;
 				} else if (k == 'r') {
-					if (!(cs = vi_curword(xb, xrow, xoff)))
+					if (!(cs = vi_curword(xb, xrow, xoff, vi_arg1 ? vi_arg1 : 1)))
 						break;
 					char buf[strlen(cs)+30];
 					strcpy(buf, "%s/");
@@ -1721,8 +1723,16 @@ void vi(void)
 					free(cs);
 					ln = vi_prompt(":", buf, &kmap);
 					goto do_excmd;
+				} else if (k == '/') {
+					if (!(cs = vi_curword(xb, xrow, xoff, vi_arg1 ? vi_arg1 : 1)))
+						break;
+					ln = vi_prompt("(Nn) kwd:", cs, &kmap);
+					ex_kwdset(ln, +1);
+					free(cs);
+					free(ln);
+					break;
 				} else if (k == 't') {
-					if (!(cs = vi_curword(xb, xrow, xoff)))
+					if (!(cs = vi_curword(xb, xrow, xoff, 1)))
 						break;
 					char buf[strlen(cs)+30];
 					strcpy(buf, ".,.+");
@@ -2052,7 +2062,7 @@ void vi(void)
 		}
 		if (xhww)
 		{
-			if ((cs = vi_curword(xb, xrow, xoff)))
+			if ((cs = vi_curword(xb, xrow, xoff, 1)))
 			{
 				syn_reloadft(ex_filetype(), "/", 0, cs);
 				free(cs);
