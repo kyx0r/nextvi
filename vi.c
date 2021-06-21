@@ -358,10 +358,10 @@ void ex_print(char *line)
 			syn_setft(xhl ? ex_filetype() : "/");
 		}
 		term_chr('\n');
-	} else {
-		if (line)
-			ex_show(line);
-	}
+		return;
+	} 
+	if (line)
+		ex_show(line);
 }
 
 static int vi_yankbuf(void)
@@ -576,15 +576,15 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	sb = sbuf_make((end - beg)+64);
 	if (n > 1) {
 		for (; beg != end; beg++) {
-			if (strchr("[]().?\\^$|*/+", *beg))
+			if (strchr("{}[]().?\\^$|*/+", *beg))
 				sbuf_str(sb, "\\");
 			sbuf_chr(sb, *beg);
 		}
-	} else {
-		sbuf_str(sb, "\\<");
-		sbuf_mem(sb, beg, end - beg);
-		sbuf_str(sb, "\\>");
+		return sbuf_done(sb);
 	}
+	sbuf_str(sb, "\\<");
+	sbuf_mem(sb, beg, end - beg);
+	sbuf_str(sb, "\\>");
 	return sbuf_done(sb);
 }
 
@@ -1042,9 +1042,8 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 		sbuf_str(sb, post);
 		lbuf_edit(xb, sbuf_buf(sb), r1, r2 + 1);
 		sbuf_free(sb);
-	} else {
+	} else
 		lbuf_edit(xb, NULL, r1, r2 + 1);
-	}
 	xrow = r1;
 	xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
 	free(pref);
@@ -1175,9 +1174,8 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 		sbuf_str(sb, post);
 		lbuf_edit(xb, sbuf_buf(sb), r1, r2 + 1);
 		sbuf_free(sb);
-	} else {
+	} else
 		lbuf_edit(xb, region, r1, r2 + 1);
-	}
 	xrow = r2;
 	xoff = lnmode ? lbuf_indents(xb, r2) : o2;
 	free(region);
@@ -1366,22 +1364,22 @@ static int vc_put(int cmd)
 		lbuf_edit(xb, sbuf_buf(sb), xrow, xrow);
 		xoff = lbuf_indents(xb, xrow);
 		sbuf_free(sb);
-	} else {
-		struct sbuf *sb = sbuf_make(1024);
-		char *ln = xrow < lbuf_len(xb) ? lbuf_get(xb, xrow) : "\n";
-		int off = ren_noeol(ln, xoff) + (ln[0] != '\n' && cmd == 'p');
-		char *s = uc_sub(ln, 0, off);
-		sbuf_str(sb, s);
-		free(s);
-		for (i = 0; i < cnt; i++)
-			sbuf_str(sb, buf);
-		s = uc_sub(ln, off, -1);
-		sbuf_str(sb, s);
-		free(s);
-		lbuf_edit(xb, sbuf_buf(sb), xrow, xrow + 1);
-		xoff = off + uc_slen(buf) * cnt - 1;
-		sbuf_free(sb);
+		return 0;
 	}
+	struct sbuf *sb = sbuf_make(1024);
+	char *ln = xrow < lbuf_len(xb) ? lbuf_get(xb, xrow) : "\n";
+	int off = ren_noeol(ln, xoff) + (ln[0] != '\n' && cmd == 'p');
+	char *s = uc_sub(ln, 0, off);
+	sbuf_str(sb, s);
+	free(s);
+	for (i = 0; i < cnt; i++)
+		sbuf_str(sb, buf);
+	s = uc_sub(ln, off, -1);
+	sbuf_str(sb, s);
+	free(s);
+	lbuf_edit(xb, sbuf_buf(sb), xrow, xrow + 1);
+	xoff = off + uc_slen(buf) * cnt - 1;
+	sbuf_free(sb);
 	return 0;
 }
 
@@ -1503,8 +1501,7 @@ static int rep_len;
 
 static void vc_repeat(void)
 {
-	int i;
-	for (i = 0; i < MAX(1, vi_arg1); i++)
+	for (int i = 0; i < MAX(1, vi_arg1); i++)
 		term_push(rep_cmd, rep_len);
 }
 

@@ -1192,15 +1192,16 @@ static struct excmd {
 static void ex_line(int (*ec)(char *s), char *dst, char **src)
 {
 	if (!ec || (ec != ec_glob && ec != ec_exec)) {
-		while (**src && **src != '|' && **src != '\n')
+		while (**src && (**src != '|' || *(*src-1) == '\\')
+				&& **src != '\n')
 			*dst++ = *(*src)++;
 		*dst = '\0';
 		if (**src)
 			(*src)++;
-	} else {	/* the rest of the line for :g and :! */
-		strcpy(dst, *src);
-		*src = strchr(*src, '\0');
+		return;
 	}
+	strcpy(dst, *src);	/* the rest of the line for :g and :! */
+	*src = strchr(*src, '\0');
 }
 
 /* execute a single ex command */
