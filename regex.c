@@ -198,29 +198,6 @@ static int isword(char *s)
 	return isalnum(c) || c == '_' || c > 127;
 }
 
-static inline int brk_match(struct rbrkinfo *brki, int c, char *s)
-{
-	int i, oc = c;
-	int len = brki->len;
-	int *begs = brki->begs;
-	int *ends = brki->ends;
-	for (i = 0; i < len; i++)
-	{
-		if (c >= begs[i] && c <= ends[i])
-		{
-			if (i >= brki->and)
-			{
-				if (i >= len-1)
-					return c == oc ? 0 : 1;
-				c = uc_code(s);
-				s += uc_len(s);
-			} else
-				return brki->not;
-		}
-	}
-	return !brki->not;
-}
-
 static struct rnode *rnode_parse(char **pat);
 
 static struct rnode *rnode_grp(char **pat)
@@ -513,7 +490,27 @@ while (*s) \
 			if (neol) \
 				goto default##n; \
 			prs->s += uc_len(prs->s); \
-			if (brk_match(ri->ra.rbrk, prs->cp, prs->s)) \
+			ts = prs->s; c = prs->cp; \
+			len = ri->ra.rbrk->len; \
+			not = ri->ra.rbrk->not; \
+			begs = ri->ra.rbrk->begs; \
+			ends = ri->ra.rbrk->ends; \
+			for (i = 0; i < len; i++) \
+			{ \
+				if (c >= begs[i] && c <= ends[i]) \
+				{ \
+					if (i < ri->ra.rbrk->and) \
+						{not = !not; break;} \
+					if (i >= len-1) {\
+						if (ts == prs->s) \
+							break; \
+						goto default##n; \
+					} \
+					c = uc_code(ts); \
+					ts += uc_len(ts); \
+				} \
+			} \
+			if (!not) \
 				goto default##n; \
 			prs->cp = cpn; \
 			break; \
@@ -571,9 +568,9 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
 	struct rstate rs[NDEPT+1], *prs;
 	struct rinst *ri, *p = re->p;
-	int i, mmax = NGRPS;
+	int i, mmax = NGRPS, c, len, not, *begs, *ends;
 	int mark[mmax * 2];
-	char *o = s;
+	char *o = s, *ts;
 	rs[0].pc = -1;
 	rs[0].s = s;
 	rs[0].cp = 0;
