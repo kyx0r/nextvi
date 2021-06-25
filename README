@@ -138,7 +138,7 @@ Also, centering is nice because you always know where to expect
 the result to be with your eyes.
 43. Added terminal clean up on exit
 44. Added a key to perform relative word replacements keybind: vt
-Specify arg and the word under the cursor will be placed into prompt,
+Specify arg and the word(s) under the cursor will be placed into prompt,
 for example :.,.+5s/\<word\>/ where 5 is the arg.
 45. Improved single line performance by roughly 3x
 46. Added key to abandon insert discarding any changes keybind: ^x
@@ -151,7 +151,7 @@ kmap just make one yourself. Look into kmap.h it's really simple.
 up the latest command from history. Also the history works for
 searches via / or ? the same way. keybind vv does the same but from
 normal mode, to save time. Pressing ^v again goes to next string.
-49. Added ability to get more than 1 word for keybinds ^a ^] ^p vr v/
+49. Added ability to get more than 1 word for keybinds ^a ^] ^p vr vt v/
 specified by number (vi_arg1). Regex control chars will be escaped.
 50. Added ability to edit the line while in insert mode
 such that backspace can delete all the characters on the line,

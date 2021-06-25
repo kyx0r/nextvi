@@ -1737,7 +1737,10 @@ void vi(void)
 					free(ln);
 					break;
 				} else if (k == 't') {
-					if (!(cs = vi_curword(xb, xrow, xoff, 1)))
+					strcpy(vi_msg, "arg2:(1|#)");
+					vi_drawmsg();
+					k = vi_prefix();
+					if (!(cs = vi_curword(xb, xrow, xoff, k ? k : 1)))
 						break;
 					char buf[strlen(cs)+30];
 					strcpy(buf, ".,.+");
