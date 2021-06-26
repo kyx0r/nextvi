@@ -1446,10 +1446,10 @@ static void vc_status(void)
 {
 	int col = vi_off2col(xb, xrow, xoff);
 	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%c %d lines  L%d C%d\n",
+		"\"%s\"%c %d lines %d%% L%d C%d\n",
 		ex_path()[0] ? ex_path() : "unnamed",
-		lbuf_modified(xb) ? '*' : ' ',
-		lbuf_len(xb), xrow + 1,
+		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
+		xrow * 100 / MAX(0, lbuf_len(xb)-1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1);
 }
 
