@@ -481,14 +481,12 @@ while (*s) \
 			prs->cp = cpn; \
 			break; \
 		case RA_ANY: \
-			if (neol) \
+			if (!prs->cp neol) \
 				goto default##n; \
 			prs->s += uc_len(prs->s); \
 			prs->cp = cpn; \
 			break; \
 		case RA_BRK: \
-			if (neol) \
-				goto default##n; \
 			prs->s += uc_len(prs->s); \
 			ts = prs->s; c = prs->cp; \
 			len = ri->ra.rbrk->len; \
@@ -510,7 +508,7 @@ while (*s) \
 					ts += uc_len(ts); \
 				} \
 			} \
-			if (!not) \
+			if (!not || !prs->cp neol) \
 				goto default##n; \
 			prs->cp = cpn; \
 			break; \
@@ -578,14 +576,14 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	nsub = flg & REG_NOSUB ? 0 : nsub;
 	if (flg & REG_ICASE)
 		if (flg & REG_NOTEOL)
-			match(1, tolower(uc_code(prs->s)), !prs->cp)
+			match(1, tolower(uc_code(prs->s)), /*nop*/)
 		else
-			match(2, tolower(uc_code(prs->s)), !prs->cp || prs->cp == '\n')
+			match(2, tolower(uc_code(prs->s)), || prs->cp == '\n')
 	else
 		if (flg & REG_NOTEOL)
-			match(3, uc_code(prs->s), !prs->cp)
+			match(3, uc_code(prs->s), /*nop*/)
 		else
-			match(4, uc_code(prs->s), !prs->cp || prs->cp == '\n')
+			match(4, uc_code(prs->s), || prs->cp == '\n')
 	return 1;
 }
 
