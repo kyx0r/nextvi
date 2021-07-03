@@ -4,21 +4,6 @@
 #include <string.h>
 #include "vi.h"
 
-/* return the length of a utf-8 character */
-int uc_len(char *s)
-{
-	int c = (unsigned char) s[0];
-	if (~c & 0xc0)		/* ASCII or invalid */
-		return c > 0;
-	if (~c & 0x20)
-		return 2;
-	if (~c & 0x10)
-		return 3;
-	if (~c & 0x08)
-		return 4;
-	return 1;
-}
-
 /* the number of utf-8 characters in s */
 int uc_slen(char *s)
 {
@@ -26,23 +11,6 @@ int uc_slen(char *s)
 	for (n = 0; *s; n++)
 		s = uc_end(s) + 1;
 	return n;
-}
-
-/* the unicode codepoint of the given utf-8 character */
-int uc_code(char *s)
-{
-	int c = (unsigned char) s[0];
-	int cnot = ~c;
-	if (cnot & 0xc0)	/* ASCII or invalid */
-		return c;
-	if (cnot & 0x20)
-		return ((c & 0x1f) << 6) | (s[1] & 0x3f);
-	if (cnot & 0x10)
-		return ((c & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f);
-	if (cnot & 0x08)
-		return ((c & 0x07) << 18) | ((s[1] & 0x3f) << 12) |
-			((s[2] & 0x3f) << 6) | (s[3] & 0x3f);
-	return 0;
 }
 
 /* find the beginning of the character at s[i] */
@@ -324,24 +292,23 @@ char *uc_shape(char *beg, char *s)
 {
 	static char out[16];
 	char *r;
-	int prev = 0;
-	int next = 0;
-	int curr = uc_code(s);
+	int tmp, curr, prev = 0, next = 0;
+	uc_code(curr, s)
 	if (!curr || !UC_R2L(curr))
 		return NULL;
 	r = s;
 	while (r > beg) {
-		r = uc_beg(beg, r - 1);
-		if (!uc_acomb(uc_code(r))) {
-			prev = uc_code(r);
+		r = uc_beg(beg, r - 1); uc_code(tmp, r)
+		if (!uc_acomb(tmp)) {
+			uc_code(prev, r)
 			break;
 		}
 	}
 	r = s;
 	while (*r) {
-		r = uc_next(r);
-		if (!uc_acomb(uc_code(r))) {
-			next = uc_code(r);
+		r = uc_next(r); uc_code(tmp, r)
+		if (!uc_acomb(tmp)) {
+			uc_code(next, r)
 			break;
 		}
 	}

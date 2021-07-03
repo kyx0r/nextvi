@@ -116,7 +116,7 @@ int ren_cursor(char *s, int p)
 	vi_mod = 0;
 	pos = ren_position(s, &c, &n);
 	p = pos_prev(pos, n, p, 1);
-	if (uc_code(uc_chr(s, ren_off(s, p))) == '\n')
+	if (*uc_chr(s, ren_off(s, p)) == '\n')
 		p = pos_prev(pos, n, p, 0);
 	next = pos_next(pos, n, p, 0);
 	p = (next >= 0 ? next : pos[n]) - 1;
@@ -148,14 +148,14 @@ int ren_next(char *s, int p, int dir)
 
 static char *ren_placeholder(char *s)
 {
-	int c = uc_code(s);
 	for (int i = 0; i < placeholderslen; i++)
-		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)
+		if (!strncmp(s, placeholders[i].s, strlen(placeholders[i].s)))
 			return placeholders[i].d;
+	int c; uc_code(c, s)
 	if (uc_iscomb(s, c)) {
 		static char buf[16];
-		char cbuf[8] = "";
-		memcpy(cbuf, s, uc_len(s));
+		char cbuf[8] = ""; uc_len(c, s)
+		memcpy(cbuf, s, c);
 		sprintf(buf, "ـ%s", cbuf);
 		return buf;
 	}
@@ -168,10 +168,10 @@ int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
 		return xtabspc - ((pos + ren_torg) & (xtabspc-1));
-	int c = uc_code(s);
 	for (int i = 0; i < placeholderslen; i++)
-		if (placeholders[i].s[0] == s[0] && uc_code(placeholders[i].s) == c)
+		if (!strncmp(s, placeholders[i].s, strlen(placeholders[i].s)))
 			return placeholders[i].wid;
+	int c; uc_code(c, s)
 	return (c = uc_wid(s, c)) ? c : 1;
 }
 

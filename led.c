@@ -246,7 +246,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 
 void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 {
-	int i = cbeg;
+	int l, i = cbeg;
 	int pad = ren_torg;
 	while (i < cend) {
 		int o = off[i - cbeg];
@@ -258,7 +258,8 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 				sbuf_mem(out, pd, i - cbeg);
 				pad = 0;
 			}
-			sbuf_mem(out, chrs[o], uc_len(chrs[o]));
+			uc_len(l, chrs[o])
+			sbuf_mem(out, chrs[o], l);
 			for (; off[i - cbeg] == o; i++){}
 		} else
 			i++;
@@ -268,8 +269,7 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 		int cend)
 {
-	int att_old = 0;
-	int i = 0;
+	int l, att_old = 0, i = 0;
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -279,9 +279,10 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 			char *s = ren_translate(chrs[o], s0);
 			if (s)
 				sbuf_str(out, s);
-			else if (uc_isprint(chrs[o]))
-				sbuf_mem(out, chrs[o], uc_len(chrs[o]));
-			else
+			else if (uc_isprint(chrs[o])) {
+				uc_len(l, chrs[o])
+				sbuf_mem(out, chrs[o], l);
+			} else
 				for (; off[i] == o; i++)
 					sbuf_chr(out, ' ');
 			for (; off[i] == o; i++){}
@@ -298,8 +299,7 @@ void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 			int cend, int ctx)
 {
-	int att_old = 0;
-	int i = 0;
+	int l, att_old = 0, i = 0;
 	while (i < cend) {
 		int o = off[i];
 		int att_new = 0;
@@ -309,10 +309,10 @@ void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
 			char *s = ren_translate(chrs[o], s0);
 			if (s)
 				sbuf_str(out, s);
-			else if (uc_isprint(chrs[o]))
-				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], uc_len(chrs[o]));
-			else
-			{
+			else if (uc_isprint(chrs[o])) {
+				uc_len(l, chrs[o])
+				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l);
+			} else {
 				int pre = sbuf_len(out);
 				for (; off[i] == o; i++)
 					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : '-');
@@ -526,7 +526,7 @@ char *led_readchar(int c, int kmap)
 	}
 	if ((c & 0xc0) == 0xc0) {	/* utf-8 character */
 		buf[0] = c;
-		n = uc_len(buf);
+		uc_len(n, buf)
 		for (i = 1; i < n; i++)
 			buf[i] = term_read();
 		buf[n] = '\0';

@@ -4280,9 +4280,10 @@ size_t utf8_cp2nb(const unsigned int cp) {
 /* Apparent width */
 size_t utf8_width(const char* b) {
 	size_t g = 0;
-	size_t s;
+	size_t s, c;
 	while (*b && (s = utf8_g2nb(b)) != 0) {
-		g += uc_wid((char*)b, uc_code((char*)b));
+		uc_code(c, b)
+		g += uc_wid((char*)b, c);
 		b += s;
 	}
 	return g;
@@ -4293,10 +4294,11 @@ size_t utf8_width(const char* b) {
  * Calculates how much bytes will fill given width
  */
 size_t utf8_w2nb(const char* const b, size_t w) {
-	size_t r = 0;
+	size_t c, r = 0;
 	while (*(b+r) && w > 0) {
 		r += utf8_g2nb(b+r);
-		w -= uc_wid((char*)b+r, uc_code((char*)b+r));
+		uc_code(c, (b+r))
+		w -= uc_wid((char*)b+r, c);
 	}
 	return r;
 }
@@ -4305,9 +4307,10 @@ size_t utf8_w2nb(const char* const b, size_t w) {
  * Width till some address in that string
  */
 size_t utf8_wtill(const char* a, const char* const b) {
-	size_t w = 0;
+	size_t c, w = 0;
 	while (b - a > 0) {
-		w += uc_wid((char*)a, uc_code((char*)a));
+		uc_code(c, a)
+		w += uc_wid((char*)a, c);
 		a += utf8_g2nb(a);
 	}
 	return w;

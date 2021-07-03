@@ -181,10 +181,37 @@ void syn_init(void);
 void syn_done(void);
 
 /* uc.c utf-8 helper functions */
-int uc_len(char *s);
+
+/* return the length of a utf-8 character */
+#define uc_len(dst, s) \
+dst = (unsigned char) s[0]; \
+if (~dst & 0xc0) \
+	dst = dst > 0; \
+else if (~dst & 0x20) \
+	dst = 2; \
+else if (~dst & 0x10) \
+	dst = 3; \
+else if (~dst & 0x08) \
+	dst = 4; \
+else \
+	dst = 1; \
+
+/* the unicode codepoint of the given utf-8 character */
+#define uc_code(dst, s) \
+dst = (unsigned char) s[0]; \
+if (~dst & 0xc0); \
+else if (~dst & 0x20) \
+	dst = ((dst & 0x1f) << 6) | (s[1] & 0x3f); \
+else if (~dst & 0x10) \
+	dst = ((dst & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f); \
+else if (~dst & 0x08) \
+	dst = ((dst & 0x07) << 18) | ((s[1] & 0x3f) << 12) | \
+		((s[2] & 0x3f) << 6) | (s[3] & 0x3f); \
+else \
+	dst = 0; \
+
 int uc_wid(char *s, int cp);
 int uc_slen(char *s);
-int uc_code(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
 char *uc_sub(char *s, int beg, int end);

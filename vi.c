@@ -1030,7 +1030,7 @@ static void vi_splitln(int row, int linepos, int nextln)
 {
 	char *s, *part;
 	int len, crow, bytelen;
-	int c = !vi_arg1 ? 1 : vi_arg1;
+	int l, c = !vi_arg1 ? 1 : vi_arg1;
 	for (int i = 0; i < c; i++)
 	{
 		crow = row + i;
@@ -1040,7 +1040,7 @@ static void vi_splitln(int row, int linepos, int nextln)
 		len = uc_slen(s);
 		bytelen = 0;
 		for (int z = 0; z < linepos; z++)
-			bytelen += uc_len(&s[bytelen]);
+			{ uc_len(l, (s+bytelen)) bytelen += l; }
 		if (len > linepos)
 		{
 			part = uc_sub(s, linepos, len);
@@ -1434,8 +1434,10 @@ static void vc_charinfo(void)
 	char *c = uc_chr(lbuf_get(xb, xrow), xoff);
 	if (c) {
 		char cbuf[8] = "";
-		memcpy(cbuf, c, uc_len(c));
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %04x\n", cbuf, uc_code(c));
+		int l; uc_len(l, c)
+		memcpy(cbuf, c, l);
+		uc_code(l, c)
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> %04x\n", cbuf, l);
 	}
 }
 

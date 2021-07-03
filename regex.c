@@ -100,7 +100,7 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 	rbrk->not = p[0] == '^';
 	rbrk->and = -1;
 	p = rbrk->not ? p + rbrk->not : p;
-	int i = 0, end;
+	int i = 0, end, c;
 	int icase = regcompflg & REG_ICASE;
 	char *ptmp = NULL;
 	char *pnext = NULL;
@@ -118,7 +118,7 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			p = ptmp;
 			ptmp = NULL;
 		} else if (p[0] == '[' && p[1] == ':') {
-			for (int c = 0; c < LEN(brk_classes); c++) {
+			for (c = 0; c < LEN(brk_classes); c++) {
 				if (!strncmp(brk_classes[c][0], p + 1, 7))
 				{
 					len = uc_slen(brk_classes[c][1])-7+len;
@@ -133,13 +133,13 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			p+=2;
 			continue;
 		}
-		rbrk->begs[i] = uc_code(p);
-		p += uc_len(p);
+		uc_code(rbrk->begs[i], p)
+		uc_len(c, p) p += c;
 		end = rbrk->begs[i];
 		if (p[0] == '-' && p[1] && p[1] != ']') {
 			p++;
-			end = uc_code(p);
-			p += uc_len(p);
+			uc_code(end, p)
+			uc_len(c, p) p += c;
 		}
 		rbrk->ends[i] = end;
 		if (icase)
@@ -183,12 +183,12 @@ static void ratom_read(struct ratom *ra, char **pat)
 			break;
 		}
 		(*pat)++;
-	default:
+	default:;
 		ra->ra = RA_CHR;
-		ra->cp = uc_code(*pat);
+		uc_code(ra->cp, pat[0])
 		if (regcompflg & REG_ICASE)
 			ra->cp = tolower(ra->cp);
-		*pat += uc_len(*pat);
+		int l; uc_len(l, pat[0]) *pat += l;
 	}
 }
 
@@ -458,13 +458,18 @@ void regfree(regex_t *re)
 	free(re->p-1);
 }
 
+#define backtrack(n) \
+{ prs--; prs->pc = (&p[prs->pc])->a2; goto next##n; } \
+
+#define incpc(n) prs->pc++; goto next##n; \
+
 #define match(n, cpn, neol) \
 while (*s) \
 { \
 	prs = rs+1; \
 	prs->pc = 0; \
 	prs->s = s; \
-	prs->cp = cpn; \
+	uc_code(prs->cp, prs->s) cpn \
 	for (i = 0; i < mmax+1; i++) \
 		mark[i] = -1; \
 	next##n: \
@@ -476,18 +481,18 @@ while (*s) \
 		{ \
 		case RA_CHR: \
 			if (ri->ra.cp != prs->cp) \
-				goto default##n; \
-			prs->s += uc_len(prs->s); \
-			prs->cp = cpn; \
-			break; \
+				backtrack(n) \
+			uc_len(l, prs->s) prs->s += l; \
+			uc_code(prs->cp, prs->s) cpn \
+			incpc(n) \
 		case RA_ANY: \
 			if (!prs->cp neol) \
-				goto default##n; \
-			prs->s += uc_len(prs->s); \
-			prs->cp = cpn; \
-			break; \
+				backtrack(n) \
+			uc_len(l, prs->s) prs->s += l; \
+			uc_code(prs->cp, prs->s) cpn \
+			incpc(n) \
 		case RA_BRK: \
-			prs->s += uc_len(prs->s); \
+			uc_len(l, prs->s) prs->s += l; \
 			ts = prs->s; c = prs->cp; \
 			len = ri->ra.rbrk->len; \
 			not = ri->ra.rbrk->not; \
@@ -502,42 +507,37 @@ while (*s) \
 					if (i >= len-1) {\
 						if (ts == prs->s) \
 							break; \
-						goto default##n; \
+						backtrack(n) \
 					} \
-					c = uc_code(ts); \
-					ts += uc_len(ts); \
+					uc_code(c, ts) \
+					uc_len(l, ts) ts += l;\
 				} \
 			} \
 			if (!not || !prs->cp neol) \
-				goto default##n; \
-			prs->cp = cpn; \
-			break; \
+				backtrack(n) \
+			uc_code(prs->cp, prs->s) cpn \
+			incpc(n) \
 		case RA_BEG: \
 			if (flg & REG_NOTBOL || (prs->s-o && prs->s[-1] != '\n')) \
-				goto default##n; \
-			break; \
+				backtrack(n) \
+			incpc(n) \
 		case RA_END: \
 			if (flg & REG_NOTEOL || (prs->cp && prs->cp != '\n')) \
-				goto default##n; \
-			break; \
+				backtrack(n) \
+			incpc(n) \
 		case RA_WBEG: \
 			if ((prs->s-o && isword(uc_beg(o, prs->s-1))) \
 					|| !isword(prs->s)) \
-				goto default##n; \
-			break; \
+				backtrack(n) \
+			incpc(n) \
 		case RA_WEND: \
 			if (prs->s == o || !isword(uc_beg(o, prs->s - 1)) \
 					|| (*prs->s && isword(prs->s))) \
-				goto default##n; \
-			break; \
+				backtrack(n) \
+			incpc(n) \
 		default: \
-		default##n: \
-			prs--; \
-			prs->pc = (&p[prs->pc])->a2; \
-			goto next##n; \
+			backtrack(n) \
 		} \
-		prs->pc++; \
-		goto next##n; \
 	case RI_FORK: \
 		if (prs == &rs[NDEPT]) \
 			break; \
@@ -550,8 +550,7 @@ while (*s) \
 	case RI_MARK: \
 		mmax = ri->mark; \
 		mark[mmax] = prs->s - o; \
-		prs->pc++; \
-		goto next##n; \
+		incpc(n) \
 	case RI_MATCH: \
 		for (i = 0; i < nsub; i++) { \
 			psub[i].rm_so = i * 2 < LEN(mark) ? mark[i * 2] : -1; \
@@ -559,14 +558,14 @@ while (*s) \
 		} \
 		return 0; \
 	} \
-	s += uc_len(s); \
+	uc_len(l, s) s += l; \
 } \
 
 int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 {
 	struct rstate rs[NDEPT+1], *prs;
 	struct rinst *ri, *p = re->p;
-	int i, mmax = NGRPS, c, len, not, *begs, *ends;
+	int mmax = NGRPS, i, l, c, len, not, *begs, *ends;
 	int mark[mmax * 2];
 	char *o = s, *ts;
 	rs[0].pc = -1;
@@ -576,14 +575,14 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	nsub = flg & REG_NOSUB ? 0 : nsub;
 	if (flg & REG_ICASE)
 		if (flg & REG_NOTEOL)
-			match(1, tolower(uc_code(prs->s)), /*nop*/)
+			match(1, prs->cp = tolower(prs->cp);, /*nop*/)
 		else
-			match(2, tolower(uc_code(prs->s)), || prs->cp == '\n')
+			match(2, prs->cp = tolower(prs->cp);, || prs->cp == '\n')
 	else
 		if (flg & REG_NOTEOL)
-			match(3, uc_code(prs->s), /*nop*/)
+			match(3, /*nop*/, /*nop*/)
 		else
-			match(4, uc_code(prs->s), || prs->cp == '\n')
+			match(4, /*nop*/, || prs->cp == '\n')
 	return 1;
 }
 
