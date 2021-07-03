@@ -92,37 +92,17 @@ static void vi_drawmsg(void)
 	}
 }
 
-int isescape(char ch)
-{
-	switch (ch)
-	{
-	case '\n':
-	case '\r':
-	case '\t':
-	case '\v':
-	case '\f':
-	case '\b':
-	case '\a':
-	case '\0':
-		return 1;
-	}
-	return 0;
-}
-
 #define vi_drawwordnum(lbuf_word, skip, dir, tmp, nrow, noff) \
-{ int l, l1, i = 0; \
-char *c; \
+{ int i = 0; \
 char snum[100]; \
 int _nrow = nrow; \
 int _noff = noff; \
 for (int k = _nrow; k == _nrow; i++) \
 { \
-	l = isescape(tmp[_noff]); \
-	if (!l) \
+	if (tmp[_noff] == ' ') \
 	{ \
-		c = itoa(i, snum); \
-		l1 = c - snum; \
-		tmp[_noff] = *(snum+l1-1 - !(i%10)); \
+		c = itoa(i%10 ? i%10 : i, snum); \
+		tmp[_noff] = *snum; \
 	} \
 	if (lbuf_word(xb, skip, dir, &_nrow, &_noff)) \
 		break; \
@@ -153,10 +133,8 @@ static void vi_drawrow(int row)
 		l2 = strlen(tmp)+1;
 		*c++ = ' ';
 		for (i = 0; i < l1; i++)
-		{
 			if (s[i] != '\t' && s[i] != ' ')
 				break;
-		}
 		if (!s[i])
 			i = 0;
 		memcpy(c, s, i);
@@ -177,11 +155,11 @@ static void vi_drawrow(int row)
 		l1 = strlen(c)+1;
 		char tmp[l1];
 		memcpy(tmp, c, l1);
-		for (i = 0; i < l1; i++)
-		{
-			if (!isescape(tmp[i]))
+		for (i = 0; i < l1-1; i++)
+			if (tmp[i] != '\t' && tmp[i] != '\n')
 				tmp[i] = ' ';
-		}
+		if (tmp[noff] == ' ') 
+			tmp[noff] = *vi_word;
 		switch (*vi_word)
 		{
 		case 'e':
@@ -199,8 +177,6 @@ static void vi_drawrow(int row)
 			vi_drawwordnum(lbuf_wordbeg, 1, 1, tmp, nrow, noff)
 			break;
 		}
-		if (!isescape(c[noff]))
-			tmp[noff] = *vi_word;
 		movedown = 1;
 		led_print(tmp, row - xtop);
 	} else
