@@ -45,8 +45,7 @@ bright colors
 
 struct highlight hls[] = {
 	{"/", {9}, NULL},
-	{"c", {4 | SYN_IT}, "/\\*[^&&*/]*", 0, 1},
-	{"c", {4 | SYN_IT}, "[^\"&&/*]*\\*/", 0, -1},
+	{"c", {4 | SYN_IT}, "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", 0, 2},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 		|enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
 		|u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
@@ -118,8 +117,7 @@ struct highlight hls[] = {
 	{"nm", {SYN_BD}, "^:.*$"},
 
 	/* javascript */
-	{"js", {10 | SYN_IT}, "/\\*[^&&*/]*", 0, 1},
-	{"js", {10 | SYN_IT}, "[^`'\"&&/*]*\\*/", 0, -1},
+	{"js", {10 | SYN_IT}, "(/\\*[^&&*/]*)|([^`'\"&&/*]*\\*/)", 0, 2},
 	{"js", {12}, "\\<(abstract|arguments|await|boolean|\
 			|break|byte|case|catch|\
 			|char|class|const|continue|\
@@ -147,8 +145,7 @@ struct highlight hls[] = {
 	{"js", {5}, "`([^`]|\\`)*`"},
 
 	/* html */
-	{"html", {5 | SYN_IT}, "<!--[^&&-->]*", 0, 1},
-	{"html", {5 | SYN_IT}, "[^&&<!--]*-->", 0, -1},
+	{"html", {5 | SYN_IT}, "(<!--[^&&-->]*)|([^&&<!--]*-->)", 0, 2},
 	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
 			|auto(capitalize|complete|focus|play)|background|\
 			|bgcolor|border|buffered|challenge|charset|checked|cite|\

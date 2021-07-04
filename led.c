@@ -497,7 +497,7 @@ static void led_printparts(char *ai, char *pref, char *main,
 	if (pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
 	vi_mod = 2;
-	blockmap = NULL;
+	blockhl = 0;
 	led_print(sbuf_buf(ln), -1);
 	term_pos(-1, led_pos(sbuf_buf(ln), pos + idir));
 	sbuf_free(ln);

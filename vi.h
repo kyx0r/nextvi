@@ -169,9 +169,9 @@ void dir_done(void);
 #define SYN_BGSET(a)	((a) & 0x20ff00)
 #define SYN_FG(a)	((a) & 0xff)
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
-extern struct bmap *blockmap;
+extern int blockhl;
 void syn_setft(char *ft);
-void syn_blswap(int scdir, int scdiff);
+void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 void syn_context(int att);
@@ -319,8 +319,7 @@ struct highlight {
 	int att[16];		/* attributes of the matched groups */
 	char *pat;		/* regular expression */
 	int end;		/* the group ending this pattern */
-	int patend;		/* the ending regex for multi-line patterns */
-	/* patend is relative index from the parent index */
+	int blkend;		/* the ending group for multi-line patterns */
 };
 extern struct highlight hls[];
 extern int hlslen;

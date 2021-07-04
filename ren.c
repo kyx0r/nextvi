@@ -301,19 +301,11 @@ static struct ftmap {
 } ftmap[NFTS];
 static int ftidx;
 
-static struct bmap {
-	int tid;		/* target pattern idx */
-	int sid;		/* self pattern idx */
-	int pid;		/* tid - sid, patend */
-	int mapidx;		/* self idx in bmap */
-	struct rset *rs;	/* target rset */
-} bmap[NFTS];
-static int bidx;
-
 static struct rset *syn_ftrs;
 static int syn_ctx;
+static int last_scdir;
 static int *blockatt;
-struct bmap *blockmap;
+int blockhl;
 
 static int syn_find(char *ft)
 {
@@ -341,26 +333,10 @@ void syn_setft(char *ft)
 	ftidx = syn_find(ft);
 }
 
-void syn_blswap(int scdir, int scdiff)
+void syn_scdir(int scdir)
 {
-	static int last_scdir;
-	if (ftidx >= 0 && last_scdir != scdir)
-	{
+	if (last_scdir != scdir)
 		last_scdir = scdir;
-		blockmap = NULL;
-		struct rset *rs = ftmap[ftidx].rs;
-		for (int i = 0; i < bidx; i++)
-		{
-			if (bmap[i].sid > ftidx + rs->n)
-				break;
-			if ((bmap[i].pid < 0 && scdir <= 0) ||
-					(bmap[i].pid > 0 && scdir > 0))
-				hls[bmap[i].sid].patend = 0;
-			else
-				hls[bmap[i].sid].patend = bmap[i].pid;
-		}
-	} else if (scdiff >= 0 && blockmap && blockmap->pid > 0)
-		blockmap = NULL;
 }
 
 void syn_highlight(int *att, char *s, int n)
@@ -368,41 +344,31 @@ void syn_highlight(int *att, char *s, int n)
 	if (ftidx < 0)
 		return;
 	struct rset *rs = ftmap[ftidx].rs;
-	int sidx = 0;
 	int subs[16 * 2];
-	int flg = 0;
-	int blk = 0;
-	int hl, j, i;
+	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
 	if (xhll)
 		for (i = 0; i < n; i++)
 			att[i] = syn_ctx;
-	if (blockmap)
-		rs = blockmap->rs;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
 		int cend = 1;
 		int grp = hls[hl].end;
 		int *catt = hls[hl].att;
-		int patend = hls[hl].patend;
-		if (blockmap && !blk)
-		{
-			catt = blockatt;
-			blockmap = NULL;
-			rs = ftmap[ftidx].rs;
-			sidx = 0;
-			continue;
-		} else if (patend) {
-			blk = 1;
-			patend += hl;
-			blockatt = hls[patend].att;
-			for (i = 0; i < bidx; i++)
-				if (patend == bmap[i].tid)
-				{
-					blockmap = &bmap[i];
-					if (rset_find(blockmap->rs, s, 0, NULL, flg) >= 0)
-						blockmap = NULL; /* handle single line pattern */
-					break;
-				}
+		int blkend = hls[hl].blkend;
+		if (blkend) {
+			for (i = 0; i < LEN(subs) / 2; i++)
+				if (subs[i * 2] >= 0)
+					blk = i;
+			blkm++;
+			if (blkm != hls[hl].blkend && last_scdir > 0)
+				blkend = 1;
+			if (blockhl == hl && blk == blkend)
+				blockhl = 0;	
+			else if (!blockhl && blk != blkend) {
+				blockhl = hl;
+				blockatt = hls[hl].att;
+			} else
+				blk = 0;
 		}
 		for (i = 0; i < LEN(subs) / 2; i++) {
 			if (subs[i * 2] >= 0) {
@@ -417,7 +383,7 @@ void syn_highlight(int *att, char *s, int n)
 		sidx += cend;
 		flg = REG_NOTBOL;
 	}
-	if (blockmap && blockmap->rs == rs)
+	if (blockhl && !blk)
 		for (j = 0; j < n; j++)
 			att[j] = *blockatt;
 }
@@ -465,28 +431,10 @@ void syn_reloadft(char *ft, char *injectft, int i, char *reg)
 void syn_init(void)
 {
 	char *pats[128];
-	int i, e, patend;
+	int i;
 	for (i = 0; i < hlslen; i++)
-	{
 		if (syn_find(hls[i].ft) < 0)
 			syn_initft(hls[i].ft, "");
-		if ((patend = hls[i].patend))
-		{
-			bmap[bidx].tid = i+patend;
-			bmap[bidx].sid = i;
-			bmap[bidx].pid = patend;
-			bmap[bidx].mapidx = bidx;
-			if (patend > 0)
-			{
-				for (e = 0; e < bidx; e++)
-					if (bmap[e].tid == patend + i + hls[i+patend].patend)
-						{bmap[bidx].mapidx = e; break;}
-			} else
-				hls[i].patend = 0;
-			bmap[bidx].rs = rset_make(1, &hls[i+patend].pat, 0);
-			bidx++;
-		}
-	}
 	for (i = 0; i < ftslen && i < LEN(pats); i++)
 		pats[i] = fts[i].pat;
 	syn_ftrs = rset_make(i, pats, 0);
@@ -502,7 +450,4 @@ void syn_done(void)
 		memset(&ftmap[i].ft, 0, 32);
 	}
 	rset_free(syn_ftrs);
-	for (i = 0; i < bidx; i++)
-		rset_free(bmap[i].rs);
-	bidx = 0;
 }
