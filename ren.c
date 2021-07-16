@@ -361,7 +361,7 @@ void syn_highlight(int *att, char *s, int n)
 			for (i = 0; i < LEN(subs) / 2; i++)
 				if (subs[i * 2] >= 0)
 					blk = i;
-			blkm++;
+			blkm += blkm > hls[hl].blkend ? -1 : 1;
 			if (blkm != hls[hl].blkend && last_scdir > 0)
 				blkend = 1;
 			if (blockhl == hl && blk == blkend)
