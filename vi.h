@@ -182,19 +182,10 @@ void syn_done(void);
 
 /* uc.c utf-8 helper functions */
 
+extern const unsigned char utf8_length[256];
 /* return the length of a utf-8 character */
 #define uc_len(dst, s) \
-dst = (unsigned char) s[0]; \
-if (~dst & 0xc0) \
-	dst = dst > 0; \
-else if (~dst & 0x20) \
-	dst = 2; \
-else if (~dst & 0x10) \
-	dst = 3; \
-else if (~dst & 0x08) \
-	dst = 4; \
-else \
-	dst = 1; \
+dst = utf8_length[(unsigned char)s[0]]; \
 
 /* the unicode codepoint of the given utf-8 character */
 #define uc_code(dst, s) \
