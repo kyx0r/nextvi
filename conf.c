@@ -228,8 +228,8 @@ struct dirmark dmarks[] = {
 int dmarkslen = LEN(dmarks);
 
 struct placeholder placeholders[] = {
-	{"‌", "-", 1},
-	{"‍", "-", 1},
+	{0x200c, "-", 1}, // ‌
+	{0x200d, "-", 1}, // ‍
 };
 int placeholderslen = LEN(placeholders);
 

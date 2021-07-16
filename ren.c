@@ -148,10 +148,10 @@ int ren_next(char *s, int p, int dir)
 
 static char *ren_placeholder(char *s)
 {
-	for (int i = 0; i < placeholderslen; i++)
-		if (!strncmp(s, placeholders[i].s, strlen(placeholders[i].s)))
-			return placeholders[i].d;
 	int c; uc_code(c, s)
+	for (int i = 0; i < placeholderslen; i++)
+		if (placeholders[i].cp == c)
+			return placeholders[i].d;
 	if (uc_iscomb(s, c)) {
 		static char buf[16];
 		char cbuf[8] = ""; uc_len(c, s)
@@ -168,10 +168,10 @@ int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
 		return xtabspc - ((pos + ren_torg) & (xtabspc-1));
-	for (int i = 0; i < placeholderslen; i++)
-		if (!strncmp(s, placeholders[i].s, strlen(placeholders[i].s)))
-			return placeholders[i].wid;
 	int c; uc_code(c, s)
+	for (int i = 0; i < placeholderslen; i++)
+		if (placeholders[i].cp == c)
+			return placeholders[i].wid;
 	return (c = uc_wid(s, c)) ? c : 1;
 }
 
@@ -335,8 +335,10 @@ void syn_setft(char *ft)
 
 void syn_scdir(int scdir)
 {
-	if (last_scdir != scdir)
+	if (last_scdir != scdir) {
 		last_scdir = scdir;
+		blockhl = 0;
+	}
 }
 
 void syn_highlight(int *att, char *s, int n)

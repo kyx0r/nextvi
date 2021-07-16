@@ -332,7 +332,7 @@ extern struct dirmark dmarks[];
 extern int dmarkslen;
 /* character placeholders */
 struct placeholder {
-	char *s;	/* the source character */
+	int cp;		/* the source character codepoint */
 	char *d;	/* the placeholder */
 	int wid;	/* the width of the placeholder */
 };
