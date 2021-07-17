@@ -110,12 +110,13 @@ for (int k = _nrow; k == _nrow; i++) \
 
 static void vi_drawrow(int row)
 {
-	int l1, l2, i;
+	int l1, l2, i, lnnum = 0;
 	static int movedown;
 	char *c;
 	char *s = lbuf_get(xb, row-movedown);
 	static char ch1[1] = "~";
 	static char ch2[1] = "";
+	syn_context(0);
 	if (xhll && row == xrow)
 		syn_context(conf_hlline());
 	if (!s) {
@@ -125,11 +126,12 @@ static void vi_drawrow(int row)
 		led_print(row ? s : ch2, row - xtop);
 		return;
 	}
-	if (vi_lnnum)
+	if (vi_lnnum == 1 || (vi_lnnum == 2 && row != xrow))
 	{
+		lnnum = 1;
 		l1 = strlen(s)+1;
 		char tmp[l1+100];
-		c = itoa(row+1, tmp);
+		c = itoa(row+1-movedown, tmp);
 		l2 = strlen(tmp)+1;
 		*c++ = ' ';
 		for (i = 0; i < l1; i++)
@@ -138,11 +140,12 @@ static void vi_drawrow(int row)
 		if (!s[i])
 			i = 0;
 		memcpy(c, s, i);
-		c = itoa(abs(xrow-row), tmp+l2+i);
+		c = itoa(abs(xrow-row+movedown), tmp+l2+i);
 		*c++ = ' ';
 		memcpy(c, s+i, l1-i);
 		led_print(tmp, row - xtop);
-	} else if (*vi_word && row == xrow+1) {
+	}
+	if (*vi_word && row == xrow+1) {
 		last_row:;
 		int noff = xoff;
 		int nrow = xrow;
@@ -179,11 +182,10 @@ static void vi_drawrow(int row)
 		}
 		movedown = 1;
 		led_print(tmp, row - xtop);
-	} else
+	} else if (!lnnum)
 		led_print(s, row - xtop);
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
 		movedown = 0;
-	syn_context(0);
 }
 
 /* redraw the screen */
@@ -1537,12 +1539,10 @@ void vi(void)
 		vi_arg2 = 0;
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
-		if (vi_lnnum) {
+		if (*vi_word || vi_lnnum)
+			vi_mod = 1;
+		if (vi_lnnum == 1)
 			vi_lnnum = 0;
-			vi_mod = 1;
-		}
-		if (*vi_word)
-			vi_mod = 1;
 		if (vi_msg[0])
 		{
 			vi_msg[0] = '\0';
@@ -1790,6 +1790,10 @@ void vi(void)
 				case 'v':
 					term_push("\x16", 1); //^v
 					goto prompt;
+				case '#':
+					vi_lnnum = 2;
+					vi_mod = 1;
+					break;
 				default:
 					vi_back(k);
 				}
