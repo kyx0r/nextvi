@@ -535,8 +535,6 @@ while (*s) \
 					|| (*prs->s && isword(prs->s))) \
 				backtrack(n) \
 			incpc(n) \
-		default: \
-			backtrack(n) \
 		} \
 	case RI_FORK: \
 		if (prs == &rs[NDEPT]) \
