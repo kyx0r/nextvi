@@ -145,7 +145,7 @@ struct highlight hls[] = {
 	{"js", {5}, "`([^`]|\\`)*`"},
 
 	/* html */
-	{"html", {5 | SYN_IT}, "(<!--[^&&-->]*)|([^&&<!--]*-->)", 0, 2},
+	{"html", {5 | SYN_IT}, "(<!--[^&&------>]*)|([^&&<!------]*-->)", 0, 2},
 	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
 			|auto(capitalize|complete|focus|play)|background|\
 			|bgcolor|border|buffered|challenge|charset|checked|cite|\
