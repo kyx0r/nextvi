@@ -18,7 +18,7 @@ struct filetype fts[] = {
 	{"nm", "\\.nm$"},				/* neatmail */
 	{"js", "\\.js$"},				/* javascript */
 	{"html", "\\.html$"},				/* html */
-	{"diff", "\\.(patch|diff)$"}                    /* diff */
+	{"diff", "\\.(patch|diff)$"}			/* diff */
 };
 int ftslen = LEN(fts);
 
@@ -47,13 +47,13 @@ struct highlight hls[] = {
 	{"/", {9}, NULL},
 	{"c", {4 | SYN_IT}, "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", 0, 2},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
-		|enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
-		|u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
-		|int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline)\\>"},
+enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
+u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
+int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline)\\>"},
 	{"c", {12 | SYN_BD}, "\\<(true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
-				|free|realloc|NULL|stdin|stdout|errno)\\>"},
+free|realloc|NULL|stdin|stdout|errno)\\>"},
 	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
-			|default|break|continue)\\>"},
+default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
 	{"c", {6}, "^#[ \t]*[a-zA-Z0-9_]+"},
 	{"c", {0, SYN_BD}, "([a-zA-Z0-9_]+)\\(", 1},
@@ -119,25 +119,14 @@ struct highlight hls[] = {
 	/* javascript */
 	{"js", {10 | SYN_IT}, "(/\\*[^&&*/]*)|([^`'\"&&/*]*\\*/)", 0, 2},
 	{"js", {12}, "\\<(abstract|arguments|await|boolean|\
-			|break|byte|case|catch|\
-			|char|class|const|continue|\
-			|debugger|default|delete|do|\
-			|double|else|enum|eval|\
-			|export|extends|false|final|\
-			|finally|float|for|function|\
-			|goto|if|implements|import|\
-			|in|instanceof|int|interface|\
-			|let|long|native|new|\
-			|null|package|private|protected|\
-			|public|return|short|static|\
-			|super|switch|synchronized|this|\
-			|throw|throws|transient|true|\
-			|try|typeof|var|void|\
-			|volatile|while|with|yield)\\>"},
-	{"js", {6 | SYN_BD}, "\\<(Array|Date|eval|hasOwnProperty|Infinity|isFinite|isNaN|\
-			|isPrototypeOf|length|Math|NaN|\
-			|name|Number|Object|prototype|\
-			|String|toString|undefined|valueOf)\\>"},
+break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
+double|else|enum|eval|export|extends|false|final|finally|float|for|function|\
+goto|if|implements|import|in|instanceof|int|interface|let|long|native|new|\
+null|package|private|protected|public|return|short|static|super|switch|synchronized|\
+this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|yield)\\>"},
+	{"js", {6 | SYN_BD}, "\\<(Array|Date|hasOwnProperty|Infinity|isFinite|isNaN|\
+isPrototypeOf|length|Math|NaN|name|Number|Object|prototype|\
+String|toString|undefined|valueOf)\\>"},
 	{"js", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
 	{"js", {10 | SYN_IT}, "//.*$"},
 	{"js", {5}, "\"([^\"]|\\\\\")*\""},
@@ -147,38 +136,38 @@ struct highlight hls[] = {
 	/* html */
 	{"html", {5 | SYN_IT}, "(<!--[^&&------>]*)|([^&&<!------]*-->)", 0, 2},
 	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
-			|auto(capitalize|complete|focus|play)|background|\
-			|bgcolor|border|buffered|challenge|charset|checked|cite|\
-			|class|code(base)|color|cols|colspan|content(\
-			|editable)|contextmenu|controls|coords|crossorigin|\
-			|csp|data|datetime|decoding|def(ault|er)|dir|dirname|\
-			|disabled|download|draggable|dropzone|enctype|enterkeyhint|\
-			|equiv|for|form|action|novalidate|headers|height|\
-			|hidden|high|href|lang|http|icon|id|importance|\
-			|inputmode|integrity|intrinsicsize|ismap|itemprop|keytype|\
-			|kind|label|lang|language|list|loading|loop|low|manifest|\
-			|max|maxlength|media|method|min|minlength|multiple|muted|\
-			|name|novalidate|open|optimum|pattern|ping|placeholder|\
-			|poster|preload|property|radiogroup|readonly|referrerpolicy|\
-			|rel|required|reversed|rows|rowspan|sandbox|scope|scoped|\
-			|selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
-			|srclang|srcset|start|step|style|summary|tabindex|target|\
-			|title|translate|type|usemap|value|width|wrap)\\>"},
+auto(capitalize|complete|focus|play)|background|\
+bgcolor|border|buffered|challenge|charset|checked|cite|\
+class|code(base)|color|cols|colspan|content(\
+editable)|contextmenu|controls|coords|crossorigin|\
+csp|data|datetime|decoding|def(ault|er)|dir|dirname|\
+disabled|download|draggable|dropzone|enctype|enterkeyhint|\
+equiv|for|form|action|novalidate|headers|height|\
+hidden|high|href|lang|http|icon|id|importance|\
+inputmode|integrity|intrinsicsize|ismap|itemprop|keytype|\
+kind|label|lang|language|list|loading|loop|low|manifest|\
+max|maxlength|media|method|min|minlength|multiple|muted|\
+name|novalidate|open|optimum|pattern|ping|placeholder|\
+poster|preload|property|radiogroup|readonly|referrerpolicy|\
+rel|required|reversed|rows|rowspan|sandbox|scope|scoped|\
+selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
+srclang|srcset|start|step|style|summary|tabindex|target|\
+title|translate|type|usemap|value|width|wrap)\\>"},
 	{"html", {6}, "\\<(html|base|head|link|meta|body|address|article|\
-			|aside|footer|header|hgroup|main|nav|section|blockquote|dd|\
-			|div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
-			|b|bdi|bdo|br|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
-			|ruby|s|samp|small|strong|sub|sup|time|tt|u|var|wbr|area|\
-			|audio|img|map|track|video|applet|embed|iframe|noembed|object|\
-			|param|picture|source|canvas|noscript|script|del|ins|caption|\
-			|col|colgroup|table|tbody|td|tfoot|th|thead|tr|button|datalist|\
-			|fieldset|input|legend|meter|optgroup|option|output|\
-			|progress|select|textarea|details|dialog|menu|menuitem|\
-			|element|shadow|template|acronym|applet|basefont|\
-			|bgsound|big|blink|center|command|element|font|\
-			|frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
-			|multicol|nextid|nobr|noembed|noframes|plaintext|shadow|spacer|\
-			|strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
+aside|footer|header|hgroup|main|nav|section|blockquote|dd|\
+div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
+b|bdi|bdo|br|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
+ruby|s|samp|small|strong|sub|sup|time|tt|u|var|wbr|area|\
+audio|img|map|track|video|applet|embed|iframe|noembed|object|\
+param|picture|source|canvas|noscript|script|del|ins|caption|\
+col|colgroup|table|tbody|td|tfoot|th|thead|tr|button|datalist|\
+fieldset|input|legend|meter|optgroup|option|output|\
+progress|select|textarea|details|dialog|menu|menuitem|\
+element|shadow|template|acronym|applet|basefont|\
+bgsound|big|blink|center|command|element|font|\
+frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
+multicol|nextid|nobr|noembed|noframes|plaintext|shadow|spacer|\
+strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
 	{"html", {12}, "\"([^\"]|\\\\\")*\""},
 	{"html", {9}, "#\\<[A-Fa-f0-9]+\\>"},
 	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9+px]+)\\>"},
