@@ -74,62 +74,23 @@ void sbuf_cut(struct sbuf *s, int len);
 #define REG_NEWLINE		0x08
 #define REG_NOTBOL		0x10
 #define REG_NOTEOL		0x20
-#define NGRPS		64	/* maximum number of groups */
-#define NREPS		128	/* maximum repetitions */
-#define NDEPT		256	/* re_match() depth limit */
 typedef struct {
-	long rm_so;
-	long rm_eo;
+	char *rm_so;
+	char *rm_eo;
 } regmatch_t;
-/* braket info */
-struct rbrkinfo {
+typedef struct rcode rcode;
+struct rcode
+{
+	int unilen;
 	int len;
-	int not;
-	int and;
-	int *begs;
-	int *ends;
+	int sub;
+	int splits;
+	int gen;
+	int insts[];
 };
-/* regular expression atom */
-struct ratom {
-	struct rbrkinfo *rbrk;	/* atom brk info */
-	int ra;			/* atom type (RA_*) */
-	int cp;			/* atom codepoint */
-};
-/* regular expression instruction */
-struct rinst {
-	struct ratom ra;	/* regular expression atom (RI_ATOM) */
-	int ri;			/* instruction type (RI_*) */
-	int a1, a2;		/* destination of RI_FORK and RI_JUMP */
-	int mark;		/* mark (RI_MARK) */
-};
-/* regular expression program */
-struct regex {
-	struct rinst *p;	/* the program */
-	int n;			/* number of instructions */
-	int flg;		/* regcomp() flags */
-};
-typedef struct regex regex_t;
-/* regular expression matching state */
-struct rstate {
-	char *s;		/* the current string */
-	int cp;			/* cached codepoint */
-	int pc;			/* program counter */
-};
-/* regular expression tree; used for parsing */
-struct rnode {
-	struct ratom ra;	/* regular expression atom (RN_ATOM) */
-	struct rnode *c1, *c2;	/* children */
-	int mincnt, maxcnt;	/* number of repetitions */
-	int grp;		/* group number */
-	int rn;			/* node type (RN_*) */
-};
-int regcomp(regex_t *re, char *regex, int cflags);
-int regexec(regex_t *re, char *str, int nmatch, regmatch_t pmatch[], int eflags);
-int regerror(int errcode, regex_t *re, char *errbuf, int errbuf_size);
-void regfree(regex_t *re);
 /* regular expression set */
 struct rset {
-	regex_t regex;		/* the combined regular expression */
+	rcode *regex;		/* the combined regular expression */
 	int n;			/* number of regular expressions in this set */
 	int *grp;		/* the group assigned to each subgroup */
 	int *setgrpcnt;		/* number of groups in each regular expression */

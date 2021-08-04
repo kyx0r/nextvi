@@ -4,589 +4,484 @@
 #include <string.h>
 #include "vi.h"
 
-/* regular expressions atoms */
-#define RA_CHR		'\0'	/* character literal */
-#define RA_BEG		'^'	/* string start */
-#define RA_END		'$'	/* string end */
-#define RA_ANY		'.'	/* any character */
-#define RA_BRK		'['	/* bracket expression */
-#define RA_WBEG		'<'	/* word start */
-#define RA_WEND		'>'	/* word end */
-
-/* regular expression node types */
-#define RN_ATOM		'\0'	/* regular expression */
-#define RN_CAT		'c'	/* concatenation */
-#define RN_ALT		'|'	/* alternate expressions */
-#define RN_GRP		'('	/* pattern group */
-
-/* regular expression program instructions */
-#define RI_ATOM		'\0'	/* regular expression */
-#define RI_FORK		'f'	/* fork the execution */
-#define RI_JUMP		'j'	/* jump to the given instruction */
-#define RI_MARK		'm'	/* mark the current position */
-#define RI_MATCH	'q'	/* the pattern is matched */
-
-static int regcompflg; /* regcomp flags */
-
-static struct rnode *rnode_make(int rn, struct rnode *c1, struct rnode *c2)
+enum
 {
-	struct rnode *rnode = malloc(sizeof(*rnode));
-	memset(rnode, 0, sizeof(*rnode));
-	rnode->rn = rn;
-	rnode->c1 = c1;
-	rnode->c2 = c2;
-	rnode->mincnt = 1;
-	rnode->maxcnt = 1;
-	return rnode;
-}
-
-static void rnode_free(struct rnode *rnode)
-{
-	if (rnode->c1)
-		rnode_free(rnode->c1);
-	if (rnode->c2)
-		rnode_free(rnode->c2);
-	free(rnode);
-}
-
-static void ratom_copy(struct ratom *dst, struct ratom *src)
-{
-	dst->ra = src->ra;
-	dst->cp = src->cp;
-	dst->rbrk = src->rbrk;
-}
-
-static int brk_len(char *s)
-{
-	int n = 1;
-	if (s[n] == '^')	/* exclusion mark */
-		n++;
-	if (s[n] == ']')	/* handling []a] */
-		n++;
-	while (s[n] && s[n] != ']') {
-		if (s[n] == '[' && (s[n + 1] == ':' || s[n + 1] == '='))
-			while (s[n] && s[n] != ']')
-				n++;
-		if (s[n])
-			n++;
-	}
-	return s[n] == ']' ? n + 1 : n;
-}
-
-static char *brk_classes[][2] = {
-	{":alnum:", "a-zA-Z0-9"},
-	{":alpha:", "a-zA-Z"},
-	{":blank:", " \t"},
-	{":digit:", "0-9"},
-	{":lower:", "a-z"},
-	{":print:", "\x20-\x7e"},
-	{":punct:", "][!\"#$%&'()*+,./:;<=>?@\\^_`{|}~-"},
-	{":space:", " \t\r\n\v\f"},
-	{":upper:", "A-Z"},
-	{": word:", "a-zA-Z0-9_"},
-	{":hexit:", "a-fA-F0-9"},
+	// Instructions which consume input bytes (and thus fail if none left)
+	CHAR = 1,
+	ANY,
+	CLASS,
+	MATCH,
+	// Assert position
+	ASSERT,
+	BOL,
+	EOL,
+	WBEG,
+	WEND,
+	// Instructions which take relative offset as arg
+	JMP,
+	SPLIT,
+	RSPLIT,
+	// Other (special) instructions
+	SAVE,
 };
 
-static void ratom_readbrk(struct ratom *ra, char **pat)
-{
-	int len = brk_len(*pat);
-	char *p = *pat + 1;
-	*pat += len;
-	ra->ra = RA_BRK;
-	ra->rbrk = malloc(sizeof(struct rbrkinfo));
-	struct rbrkinfo *rbrk = ra->rbrk;
-	rbrk->begs = malloc(sizeof(rbrk->begs[0])*len);
-	rbrk->ends = malloc(sizeof(rbrk->ends[0])*len);
-	rbrk->not = p[0] == '^';
-	rbrk->and = -1;
-	p = rbrk->not ? p + rbrk->not : p;
-	int i = 0, end, c;
-	int icase = regcompflg & REG_ICASE;
-	char *ptmp = NULL;
-	char *pnext = NULL;
-	while (*p != ']') {
-		if (!*p)
-		{
-			if (pnext)
-			{
-				p = pnext;
-				pnext = NULL;
-			} else
-				break;
-		} else if (ptmp) {
-			pnext = p+7;
-			p = ptmp;
-			ptmp = NULL;
-		} else if (p[0] == '[' && p[1] == ':') {
-			for (c = 0; c < LEN(brk_classes); c++) {
-				if (!strncmp(brk_classes[c][0], p + 1, 7))
-				{
-					len = uc_slen(brk_classes[c][1])-7+len;
-					rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*len);
-					rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*len);
-					ptmp = brk_classes[c][1];
-					break;
-				}
-			}
-		} else if (rbrk->not && rbrk->and < 0 && p[0] == '&' && p[1] == '&') {
-			rbrk->and = i;
-			p+=2;
-			continue;
-		}
-		uc_code(rbrk->begs[i], p)
-		uc_len(c, p) p += c;
-		end = rbrk->begs[i];
-		if (p[0] == '-' && p[1] && p[1] != ']') {
-			p++;
-			uc_code(end, p)
-			uc_len(c, p) p += c;
-		}
-		rbrk->ends[i] = end;
-		if (icase)
-		{
-			if (rbrk->begs[i] < 128 && isupper(rbrk->begs[i]))
-				rbrk->begs[i] = tolower(rbrk->begs[i]);
-			if (rbrk->ends[i] < 128 && isupper(rbrk->ends[i]))
-				rbrk->ends[i] = tolower(rbrk->ends[i]);
-		}
-		i++;
-	}
-	if (rbrk->and < 0)
-		rbrk->and = i;
-	rbrk->len = i;
-	rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*i);
-	rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*i);
-}
+// Return codes for re_sizecode() and re_comp()
+enum {
+	RE_SUCCESS = 0,
+	RE_SYNTAX_ERROR = -2,
+	RE_UNSUPPORTED_ESCAPE = -3,
+	RE_UNSUPPORTED_SYNTAX = -4,
+};
 
-static void ratom_read(struct ratom *ra, char **pat)
+typedef struct rsub rsub;
+struct rsub
 {
-	switch ((unsigned char) **pat) {
-	case '.':
-		ra->ra = RA_ANY;
-		(*pat)++;
-		break;
-	case '^':
-		ra->ra = RA_BEG;
-		(*pat)++;
-		break;
-	case '$':
-		ra->ra = RA_END;
-		(*pat)++;
-		break;
-	case '[':
-		ratom_readbrk(ra, pat);
-		break;
-	case '\\':
-		if ((*pat)[1] == '<' || (*pat)[1] == '>') {
-			ra->ra = (*pat)[1] == '<' ? RA_WBEG : RA_WEND;
-			*pat += 2;
-			break;
-		}
-		(*pat)++;
-	default:;
-		ra->ra = RA_CHR;
-		uc_code(ra->cp, pat[0])
-		if (regcompflg & REG_ICASE)
-			ra->cp = tolower(ra->cp);
-		int l; uc_len(l, pat[0]) *pat += l;
-	}
-}
+	int ref;
+	const char *sub[];
+};
 
-static int isword(char *s)
+typedef struct rthread rthread;
+struct rthread
+{
+	int *pc;
+	rsub *sub;
+};
+
+#define INSERT_CODE(at, num, pc) \
+if (code) \
+	memmove(code + at + num, code + at, (pc - at)*sizeof(int)); \
+pc += num; 
+#define REL(at, to) (to - at - 2)
+#define EMIT(at, byte) (code ? (code[at] = byte) : at)
+#define PC (prog->unilen)
+
+static int isword(const char *s)
 {
 	int c = (unsigned char) s[0];
 	return isalnum(c) || c == '_' || c > 127;
 }
 
-static struct rnode *rnode_parse(char **pat);
-
-static struct rnode *rnode_grp(char **pat)
+int re_classmatch(const int *pc, int c)
 {
-	struct rnode *rnode = NULL;
-	if ((*pat)[0] != '(')
-		return NULL;
-	*pat += 1;
-	if ((*pat)[0] != ')') {
-		rnode = rnode_parse(pat);
-		if (!rnode)
-			return NULL;
+	// pc points to "classnot" byte after opcode
+	int is_positive = *pc++;
+	int cnt = *pc++;
+	while (cnt--) {
+		if (c >= *pc && c <= pc[1]) return is_positive;
+		pc += 2;
 	}
-	if ((*pat)[0] != ')') {
-		rnode_free(rnode);
-		return NULL;
-	}
-	*pat += 1;
-	return rnode_make(RN_GRP, rnode, NULL);
+	return !is_positive;
 }
 
-static struct rnode *rnode_atom(char **pat)
+static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 {
-	struct rnode *rnode;
-	switch ((*pat)[0])
-	{
-	case '|':
-	case ')':
-	case 0:
-		return NULL;
-	case '(':
-		rnode = rnode_grp(pat);
-		if (!rnode)
-			return NULL;
-		break;
-	default:
-		rnode = rnode_make(RN_ATOM, NULL, NULL);
-		if (!rnode)
-			return NULL;
-		ratom_read(&rnode->ra, pat);
-		break;
-	}
-	switch ((*pat)[0])
-	{
-	case '*':
-	case '?':
-		rnode->mincnt = 0;
-		rnode->maxcnt = (*pat)[0] == '*' ? -1 : 1;
-		*pat += 1;
-		break;
-	case '+':
-		rnode->mincnt = 1;
-		rnode->maxcnt = -1;
-		*pat += 1;
-		break;
-	case '{':
-		rnode->mincnt = 0;
-		rnode->maxcnt = 0;
-		*pat += 1;
-		while (isdigit((unsigned char) **pat))
-			rnode->mincnt = rnode->mincnt * 10 + *(*pat)++ - '0';
-		if (**pat == ',') {
-			(*pat)++;
-			if ((*pat)[0] == '}')
-				rnode->maxcnt = -1;
-			while (isdigit((unsigned char) **pat))
-				rnode->maxcnt = rnode->maxcnt * 10 + *(*pat)++ - '0';
-		} else {
-			rnode->maxcnt = rnode->mincnt;
+	const char *re = *re_loc;
+	int *code = sizecode ? NULL : prog->insts;
+	int start = PC, term = PC;
+	int alt_label = 0, c;
+
+	for (; *re && *re != ')';) {
+		switch (*re) {
+		case '\\':
+			re++;
+			if (!*re) goto syntax_error; // Trailing backslash
+			if (*re == '<' || *re == '>') {
+				EMIT(PC++, ASSERT);
+				EMIT(PC++, *re == '<' ? WBEG : WEND);
+				prog->len++;
+				term = PC;
+				break;
+			}
+		default:
+			term = PC;
+			EMIT(PC++, CHAR);
+			uc_code(c, re) EMIT(PC++, c);
+			prog->len++;
+			break;
+		case '.':
+			term = PC;
+			EMIT(PC++, ANY);
+			prog->len++;
+			break;
+		case '[':;
+			int cnt;
+			term = PC;
+			re++;
+			EMIT(PC++, CLASS);
+			if (*re == '^') {
+				EMIT(PC++, 0);
+				re++;
+			} else
+				EMIT(PC++, 1);
+			PC++; // Skip "# of pairs" byte
+			prog->len++;
+			for (cnt = 0; *re != ']'; cnt++) {
+				if (!*re) goto syntax_error;
+				if (*re == '\\') {
+					re++;
+					if (!*re) goto syntax_error;
+					if (*re != '\\' && *re != ']')
+						goto unsupported_escape;
+				}
+				uc_code(c, re) EMIT(PC++, c);
+				uc_len(c, re)
+				if (re[c] == '-' && re[c+1] != ']')
+					re += c+1;
+				uc_code(c, re) EMIT(PC++, c);
+				uc_len(c, re) re += c;
+			}
+			EMIT(term + 2, cnt);
+			break;
+		case '(':;
+			term = PC;
+			int sub;
+			int capture = 1;
+			re++;
+			if (*re == '?') {
+				re++;
+				if (*re == ':') {
+					capture = 0;
+					re++;
+				} else {
+					*re_loc = re;
+					return RE_UNSUPPORTED_SYNTAX;
+				}
+			}
+			if (capture) {
+				sub = ++prog->sub;
+				EMIT(PC++, SAVE);
+				EMIT(PC++, 2 * sub);
+				prog->len++;
+			}
+			int res = _compilecode(&re, prog, sizecode);
+			*re_loc = re;
+			if (res < 0) return res;
+			if (*re != ')') return RE_SYNTAX_ERROR;
+			if (capture) {
+				EMIT(PC++, SAVE);
+				EMIT(PC++, 2 * sub + 1);
+				prog->len++;
+			}
+			break;
+		case '{':;
+			int maxcnt = 0, mincnt = 0,
+			i = 0, icnt = 0, size, split;
+			re++;
+			while (isdigit((unsigned char) *re))
+				mincnt = mincnt * 10 + *re++ - '0';
+			if (*re == ',') {
+				re++;
+				if (*re == '}')
+					maxcnt = 256;
+				while (isdigit((unsigned char) *re))
+					maxcnt = maxcnt * 10 + *re++ - '0';
+			} else
+				maxcnt = mincnt;
+			for (size = PC - term; i < mincnt-1; i++) {
+				if (code)
+					memcpy(&code[PC], &code[term], size*sizeof(int));
+				PC += size;
+			}
+			split = *(re+1) == '[' ? RSPLIT : SPLIT;
+			for (i = maxcnt-mincnt; i > 0; i--)
+			{
+				prog->splits++;
+				EMIT(PC++, split);
+				EMIT(PC++, REL(PC, PC+((size+2)*i)));
+				if (code)
+					memcpy(&code[PC], &code[term], size*sizeof(int));
+				PC += size;
+			}
+			if (code) {
+				for (i = 0; i < size; i++)
+					switch (code[term+i]) {
+					case CLASS:
+						i += code[term+i+2] * 2 + 1;
+					case JMP:
+					case SPLIT:
+					case RSPLIT:
+					case SAVE:
+					case CHAR:
+						i++;
+						icnt++;	
+					}
+			}
+			prog->len += maxcnt * icnt;
+			break;
+		case '?':
+			if (PC == term) goto syntax_error; // nothing to repeat
+			INSERT_CODE(term, 2, PC);
+			if (re[1] == '?') {
+				EMIT(term, RSPLIT);
+				re++;
+			} else {
+				EMIT(term, SPLIT);
+			}
+			EMIT(term + 1, REL(term, PC));
+			prog->len++;
+			prog->splits++;
+			term = PC;
+			break;
+		case '*':
+			if (PC == term) goto syntax_error; // nothing to repeat
+			INSERT_CODE(term, 2, PC);
+			EMIT(PC, JMP);
+			EMIT(PC + 1, REL(PC, term));
+			PC += 2;
+			if (re[1] == '?') {
+				EMIT(term, RSPLIT);
+				re++;
+			} else {
+				EMIT(term, SPLIT);
+			}
+			EMIT(term + 1, REL(term, PC));
+			prog->splits++;
+			prog->len += 2;
+			term = PC;
+			break;
+		case '+':
+			if (PC == term) goto syntax_error; // nothing to repeat
+			if (re[1] == '?') {
+				EMIT(PC, SPLIT);
+				re++;
+			} else {
+				EMIT(PC, RSPLIT);
+			}
+			EMIT(PC + 1, REL(PC, term));
+			PC += 2;
+			prog->splits++;
+			prog->len++;
+			term = PC;
+			break;
+		case '|':
+			if (alt_label) {
+				EMIT(alt_label, REL(alt_label, PC) + 1);
+			}
+			INSERT_CODE(start, 2, PC);
+			EMIT(PC++, JMP);
+			alt_label = PC++;
+			EMIT(start, SPLIT);
+			EMIT(start + 1, REL(start, PC));
+			prog->splits++;
+			prog->len += 2;
+			term = PC;
+			break;
+		case '^':
+			EMIT(PC++, ASSERT);
+			EMIT(PC++, BOL);
+			prog->len++;
+			term = PC;
+			break;
+		case '$':
+			EMIT(PC++, ASSERT);
+			EMIT(PC++, EOL);
+			prog->len++;
+			term = PC;
+			break;
 		}
-		*pat += 1;
-		if (rnode->mincnt > NREPS || rnode->maxcnt > NREPS) {
-			rnode_free(rnode);
-			return NULL;
-		}
-		break;
+		uc_len(c, re) re += c;
 	}
-	return rnode;
-}
-
-static struct rnode *rnode_seq(char **pat)
-{
-	struct rnode *c1 = rnode_atom(pat);
-	struct rnode *c2;
-	if (!c1)
-		return NULL;
-	c2 = rnode_seq(pat);
-	return c2 ? rnode_make(RN_CAT, c1, c2) : c1;
-}
-
-static struct rnode *rnode_parse(char **pat)
-{
-	struct rnode *c1 = rnode_seq(pat);
-	struct rnode *c2;
-	if ((*pat)[0] != '|')
-		return c1;
-	*pat += 1;
-	c2 = rnode_parse(pat);
-	return c2 ? rnode_make(RN_ALT, c1, c2) : c1;
-}
-
-static int rnode_count(struct rnode *rnode)
-{
-	int n = 1;
-	if (!rnode)
-		return 0;
-	if (rnode->rn == RN_CAT)
-		n = rnode_count(rnode->c1) + rnode_count(rnode->c2);
-	if (rnode->rn == RN_ALT)
-		n = rnode_count(rnode->c1) + rnode_count(rnode->c2) + 2;
-	if (rnode->rn == RN_GRP)
-		n = rnode_count(rnode->c1) + 2;
-	if (rnode->mincnt == 0 && rnode->maxcnt == 0)
-		return 0;
-	if (rnode->mincnt == 1 && rnode->maxcnt == 1)
-		return n;
-	if (rnode->maxcnt < 0) {
-		n = (rnode->mincnt + 1) * n + 1;
-	} else {
-		n = (rnode->mincnt + rnode->maxcnt) * n +
-			rnode->maxcnt - rnode->mincnt;
+	if (alt_label) {
+		EMIT(alt_label, REL(alt_label, PC) + 1);
 	}
-	if (!rnode->mincnt)
-		n++;
-	return n;
+	*re_loc = re;
+	return RE_SUCCESS;
+syntax_error:
+	*re_loc = re;
+	return RE_SYNTAX_ERROR;
+unsupported_escape:
+	*re_loc = re;
+	return RE_UNSUPPORTED_ESCAPE;
 }
 
-static int rnode_grpnum(struct rnode *rnode, int num)
+int re_sizecode(const char *re)
 {
-	int cur = 0;
-	if (!rnode)
-		return 0;
-	if (rnode->rn == RN_GRP)
-		rnode->grp = num + cur++;
-	cur += rnode_grpnum(rnode->c1, num + cur);
-	cur += rnode_grpnum(rnode->c2, num + cur);
-	return cur;
+	rcode dummyprog;
+	dummyprog.unilen = 3;
+
+	int res = _compilecode(&re, &dummyprog, /*sizecode*/1);
+	if (res < 0) return res;
+	// If unparsed chars left
+	if (*re) return RE_SYNTAX_ERROR;
+
+	return dummyprog.unilen;
 }
 
-static int re_insert(regex_t *re, int ri)
+int re_comp(rcode *prog, const char *re)
 {
-	re->p[re->n++].ri = ri;
-	return re->n - 1;
+	prog->len = 0;
+	prog->unilen = 0;
+	prog->sub = 0;
+	prog->splits = 0;
+	prog->gen = 1;
+
+	int res = _compilecode(&re, prog, /*sizecode*/0);
+	if (res < 0) return res;
+	// If unparsed chars left
+	if (*re) return RE_SYNTAX_ERROR;
+
+	prog->insts[prog->unilen++] = SAVE;
+	prog->insts[prog->unilen++] = 1;
+	prog->insts[prog->unilen++] = MATCH;
+	prog->len += 2;
+
+	return RE_SUCCESS;
 }
 
-static void rnode_emit(struct rnode *n, regex_t *p);
+#define _return(state) \
+{ prog->gen = gen + 1; return state; } \
 
-static void rnode_emitnorep(struct rnode *n, regex_t *p)
-{
-	int fork, done, mark;
-	switch (n->rn)
-	{
-	case RN_ALT:
-		fork = re_insert(p, RI_FORK);
-		p->p[fork].a1 = p->n;
-		rnode_emit(n->c1, p);
-		done = re_insert(p, RI_JUMP);
-		p->p[fork].a2 = p->n;
-		rnode_emit(n->c2, p);
-		p->p[done].a1 = p->n;
-		break;
-	case RN_CAT:
-		rnode_emit(n->c1, p);
-		rnode_emit(n->c2, p);
-		break;
-	case RN_GRP:
-		mark = re_insert(p, RI_MARK);
-		p->p[mark].mark = 2 * n->grp;
-		rnode_emit(n->c1, p);
-		mark = re_insert(p, RI_MARK);
-		p->p[mark].mark = 2 * n->grp + 1;
-		break;
-	case RN_ATOM:
-		mark = re_insert(p, RI_ATOM);
-		ratom_copy(&p->p[mark].ra, &n->ra);
-		break;
-	}
-}
+#define newsub() \
+s1 = freesub; \
+if (s1) \
+	freesub = (rsub*)s1->sub[0]; \
+else \
+	s1 = (rsub*)&nsubs[rsubsize * subidx++]; \
 
-static void rnode_emit(struct rnode *n, regex_t *p)
-{
-	int jmpend[NREPS];
-	int last, i, fork, jmpend_cnt = 0;
-	if (!n)
-		return;
-	if (n->mincnt == 0 && n->maxcnt == 0)
-		return;
-	if (n->mincnt == 1 && n->maxcnt == 1) {
-		rnode_emitnorep(n, p);
-		return;
-	}
-	if (n->mincnt == 0) {
-		fork = re_insert(p, RI_FORK);
-		p->p[fork].a1 = p->n;
-		jmpend[jmpend_cnt++] = fork;
-	}
-	for (i = 0; i < MAX(1, n->mincnt); i++) {
-		last = p->n;
-		rnode_emitnorep(n, p);
-	}
-	if (n->maxcnt < 0) {
-		fork = re_insert(p, RI_FORK);
-		p->p[fork].a1 = last;
-		p->p[fork].a2 = p->n;
-	}
-	for (i = MAX(1, n->mincnt); i < n->maxcnt; i++) {
-		fork = re_insert(p, RI_FORK);
-		p->p[fork].a1 = p->n;
-		jmpend[jmpend_cnt++] = fork;
-		rnode_emitnorep(n, p);
-	}
-	for (i = 0; i < jmpend_cnt; i++)
-		p->p[jmpend[i]].a2 = p->n;
-}
-
-int regcomp(regex_t *re, char *pat, int flg)
-{
-	regcompflg = flg;
-	struct rnode *rnode = rnode_parse(&pat);
-	int n = rnode_count(rnode) + 4;
-	int mark;
-	if (!rnode)
-		return 1;
-	rnode_grpnum(rnode, 1);
-	re->n = 0;
-	re->p = malloc(n * sizeof(re->p[0]));
-	memset(re->p, 0, n * sizeof(re->p[0]));
-	re->p[re->n].ri = 'b'; /* break; pattern not matched */
-	re->p[re->n].a2 = -1;
-	re->p++;
-	mark = re_insert(re, RI_MARK);
-	re->p[mark].mark = 0;
-	rnode_emit(rnode, re);
-	mark = re_insert(re, RI_MARK);
-	re->p[mark].mark = 1;
-	re_insert(re, RI_MATCH);
-	rnode_free(rnode);
-	re->flg = flg;
-	regcompflg = 0;
-	return 0;
-}
-
-void regfree(regex_t *re)
-{
-	int i, c;
-	for (i = 0; i < re->n; i++)
-	{
-		if (re->p[i].ra.rbrk) {
-			free(re->p[i].ra.rbrk->begs);
-			free(re->p[i].ra.rbrk->ends);
-			free(re->p[i].ra.rbrk);
-			struct rbrkinfo *brki = re->p[i].ra.rbrk;
-			for (c = 0; c < re->n; c++)
-				if (brki == re->p[c].ra.rbrk)
-					re->p[c].ra.rbrk = NULL;
-		}
-	}
-	free(re->p-1);
-}
-
-#define backtrack(n) \
-{ prs--; prs->pc = (&p[prs->pc])->a2; goto next##n; } \
-
-#define incpc(n) prs->pc++; goto next##n; \
-
-#define match(n, cpn, neol) \
-while (*s) \
-{ \
-	prs = rs+1; \
-	prs->pc = 0; \
-	prs->s = s; \
-	uc_code(prs->cp, prs->s) cpn \
-	for (i = 0; i < mmax+1; i++) \
-		mark[i] = -1; \
-	next##n: \
-	ri = &p[prs->pc]; \
-	switch (ri->ri) \
-	{ \
-	case RI_ATOM: \
-		switch (ri->ra.ra) \
-		{ \
-		case RA_CHR: \
-			if (ri->ra.cp != prs->cp) \
-				backtrack(n) \
-			uc_len(l, prs->s) prs->s += l; \
-			uc_code(prs->cp, prs->s) cpn \
-			incpc(n) \
-		case RA_ANY: \
-			if (!prs->cp neol) \
-				backtrack(n) \
-			uc_len(l, prs->s) prs->s += l; \
-			uc_code(prs->cp, prs->s) cpn \
-			incpc(n) \
-		case RA_BRK: \
-			uc_len(l, prs->s) prs->s += l; \
-			ts = prs->s; c = prs->cp; \
-			len = ri->ra.rbrk->len; \
-			not = ri->ra.rbrk->not; \
-			begs = ri->ra.rbrk->begs; \
-			ends = ri->ra.rbrk->ends; \
-			for (i = 0; i < len; i++) \
-			{ \
-				if (c >= begs[i] && c <= ends[i]) \
-				{ \
-					if (i < ri->ra.rbrk->and) \
-						{not = !not; break;} \
-					if (i >= len-1) {\
-						if (ts == prs->s) \
-							break; \
-						backtrack(n) \
-					} \
-					uc_code(c, ts) \
-					uc_len(l, ts) ts += l;\
-				} \
-			} \
-			if (!not || !prs->cp neol) \
-				backtrack(n) \
-			uc_code(prs->cp, prs->s) cpn \
-			incpc(n) \
-		case RA_BEG: \
-			if (flg & REG_NOTBOL || (prs->s-o && prs->s[-1] != '\n')) \
-				backtrack(n) \
-			incpc(n) \
-		case RA_END: \
-			if (flg & REG_NOTEOL || (prs->cp && prs->cp != '\n')) \
-				backtrack(n) \
-			incpc(n) \
-		case RA_WBEG: \
-			if ((prs->s-o && isword(uc_beg(o, prs->s-1))) \
-					|| !isword(prs->s)) \
-				backtrack(n) \
-			incpc(n) \
-		case RA_WEND: \
-			if (prs->s == o || !isword(uc_beg(o, prs->s - 1)) \
-					|| (*prs->s && isword(prs->s))) \
-				backtrack(n) \
-			incpc(n) \
-		} \
-	case RI_FORK: \
-		if (prs == &rs[NDEPT]) \
-			break; \
-		(prs+1)->s = prs->s; \
-		(prs+1)->cp = prs->cp; \
-		prs++; \
-	case RI_JUMP: \
-		prs->pc = ri->a1; \
-		goto next##n; \
-	case RI_MARK: \
-		mmax = ri->mark; \
-		mark[mmax] = prs->s - o; \
-		incpc(n) \
-	case RI_MATCH: \
-		for (i = 0; i < nsub; i++) { \
-			psub[i].rm_so = i * 2 < LEN(mark) ? mark[i * 2] : -1; \
-			psub[i].rm_eo = i * 2 < LEN(mark) ? mark[i * 2 + 1] : -1; \
-		} \
-		return 0; \
-	} \
-	uc_len(l, s) s += l; \
+#define decref(csub) \
+if (--csub->ref == 0) { \
+	csub->sub[0] = (char*)freesub; \
+	freesub = csub; \
 } \
 
-int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
-{
-	struct rstate rs[NDEPT+1], *prs;
-	struct rinst *ri, *p = re->p;
-	int mmax = NGRPS, i, l, c, len, not, *begs, *ends;
-	int mark[mmax * 2];
-	char *o = s, *ts;
-	rs[0].pc = -1;
-	rs[0].s = s;
-	rs[0].cp = 0;
-	flg = re->flg | flg;
-	nsub = flg & REG_NOSUB ? 0 : nsub;
-	if (flg & REG_ICASE)
-		if (flg & REG_NOTEOL)
-			match(1, prs->cp = tolower(prs->cp);, /*nop*/)
-		else
-			match(2, prs->cp = tolower(prs->cp);, || prs->cp == '\n')
-	else
-		if (flg & REG_NOTEOL)
-			match(3, /*nop*/, /*nop*/)
-		else
-			match(4, /*nop*/, || prs->cp == '\n')
-	return 1;
-}
+#define addthread(nn, list, listidx, _pc, _sub) \
+{ \
+	int i = 0, *pc = _pc; \
+	const char *_sp = sp+l; \
+	rsub *sub = _sub; \
+	rec##nn: \
+	if (*pc < ASSERT) { \
+		list[listidx].sub = sub; \
+		list[listidx++].pc = pc; \
+		goto rec_check##nn; \
+	} \
+	if(plist[pc - insts] == gen) { \
+		dec_check##nn: \
+		decref(sub) \
+		rec_check##nn: \
+		if (i) { \
+			pc = pcs[--i]; \
+			sub = subs[i]; \
+			goto rec##nn; \
+		} \
+		continue; \
+	} \
+	plist[pc - insts] = gen; \
+	switch(*pc) { \
+	case JMP: \
+		pc += 2 + pc[1]; \
+		goto rec##nn; \
+	case SPLIT: \
+		subs[i] = sub; \
+		sub->ref++; \
+		pc += 2; \
+		pcs[i++] = pc + pc[-1]; \
+		goto rec##nn; \
+	case RSPLIT: \
+		subs[i] = sub; \
+		sub->ref++; \
+		pc += 2; \
+		pcs[i++] = pc; \
+		pc += pc[-1]; \
+		goto rec##nn; \
+	case SAVE: \
+		if (sub->ref > 1) { \
+			sub->ref--; \
+			newsub() \
+			for (j = 0; j < nsubp; j++) \
+				s1->sub[j] = sub->sub[j]; \
+			sub = s1; \
+			sub->ref = 1; \
+		} \
+		sub->sub[pc[1]] = _sp; \
+		pc += 2; \
+		goto rec##nn; \
+	case ASSERT: \
+		pc++; \
+		if (*pc == BOL && _sp != s) { \
+			if (!i && !listidx) \
+				_return(0) \
+			goto dec_check##nn; \
+		} \
+		if (*pc == EOL && *_sp) \
+			goto dec_check##nn; \
+		if (*pc == WBEG && (!isword(_sp) || isword(sp)) \
+				&& !(sp == s && isword(sp))) \
+			goto dec_check##nn; \
+		if (*pc == WEND && isword(_sp)) \
+			goto dec_check##nn; \
+		pc++; goto rec##nn; \
+	} \
+} \
 
-int regerror(int errcode, regex_t *preg, char *errbuf, int errbuf_size)
+int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp)
 {
-	return 0;
+	int i, j, c, l = 0, gen, subidx = 1, *npc;
+	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
+	int clistidx = 0, nlistidx = 0;
+	const char *sp = s;
+	int *insts = prog->insts, *plist = insts+prog->unilen;
+	int *pcs[prog->splits];
+	rsub *subs[prog->splits];
+	char nsubs[rsubsize * (prog->len - prog->splits)];
+	rsub *nsub = (rsub*)nsubs, *matched = NULL, *s1;
+	rsub *freesub = NULL;
+	rthread _clist[prog->len]; 
+	rthread _nlist[prog->len]; 
+	rthread *clist = _clist, *nlist = _nlist, *tmp;
+	for(i = 0; i < nsubp; i++)
+		subp[i] = NULL;
+	gen = prog->gen;
+	goto jmp_start;
+	for(;; sp += l) {
+		gen++; uc_len(l, sp) uc_code(c, sp)
+		for(i = 0; i < clistidx; i++) {
+			npc = clist[i].pc;
+			nsub = clist[i].sub;
+			switch(*npc++) {
+			case CHAR:
+				if(c != *npc++)
+					break;
+			case ANY:
+			addthread:
+				addthread(2, nlist, nlistidx, npc, nsub)
+			case CLASS:
+				if (!re_classmatch(npc, c))
+					break;
+				npc += *(npc+1) * 2 + 2;
+				goto addthread;
+			case MATCH:
+				matched = nsub;
+				subidx = 0;
+				goto break_for;
+			}
+			decref(nsub)
+		}
+		break_for:
+		if (!c)
+			break;
+		tmp = clist;
+		clist = nlist;
+		nlist = tmp;
+		clistidx = nlistidx;
+		nlistidx = 0;
+		if (!matched) {
+			jmp_start:
+			newsub()
+			s1->ref = 1;
+			for (i = 1; i < nsubp; i++)
+				s1->sub[i] = NULL;
+			s1->sub[0] = sp + l;
+			addthread(1, clist, clistidx, insts, s1)
+		} else if (!clistidx)
+			break;
+	}
+	if(matched) {
+		for(i = 0; i < nsubp; i++)
+			subp[i] = matched->sub[i];
+		_return(1)
+	}
+	_return(0)
 }
 
 static int re_groupcount(char *s)
@@ -641,13 +536,21 @@ struct rset *rset_make(int n, char **re, int flg)
 	}
 	rs->grp[n] = rs->grpcnt;
 	sbuf_chr(sb, ')');
-	if (regcomp(&rs->regex, sbuf_buf(sb), regex_flg)) {
+	char *s = sbuf_buf(sb);
+	int sz = re_sizecode(s) * sizeof(int);
+	if (sz <= 3)
+		goto error;	
+	char *code = malloc((sizeof(rcode)+sz) * 2);
+	memset(code+sizeof(rcode)+sz, 0, sizeof(rcode)+sz);
+	if (re_comp((rcode*)code, s)) {
+		error:
 		free(rs->grp);
 		free(rs->setgrpcnt);
 		free(rs);
 		sbuf_free(sb);
 		return NULL;
 	}
+	rs->regex = (rcode*)code;
 	sbuf_free(sb);
 	return rs;
 }
@@ -656,21 +559,23 @@ struct rset *rset_make(int n, char **re, int flg)
 int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 {
 	int i, grp, set = -1;
-	if (rs->grpcnt <= 2)
+	if (rs->grpcnt <= 2 || !*s)
 		return set;
-	regmatch_t subs[rs->grpcnt];
-	if (!regexec(&rs->regex, s, rs->grpcnt, subs, flg))
+	int sub_els = (rs->regex->sub + 1) * 2;
+	const char *sub[sub_els];
+	regmatch_t *subs = (regmatch_t*)sub;
+	if (re_pikevm(rs->regex, s, sub, sub_els))
 	{
-		for (i = rs->n-1; i >= 0; i--)
-			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so >= 0)
+		for (i = rs->n-1; i >= 0; i--) {
+			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so != 0)
 			{ 
 				set = i;
 				int sgrp = rs->setgrpcnt[set] + 1;
 				for (i = 0; i < n; i++) {
 					if (i < sgrp) {
 						grp = rs->grp[set] + i;
-						grps[i * 2] = subs[grp].rm_so;
-						grps[i * 2 + 1] = subs[grp].rm_eo;
+						grps[i * 2] = subs[grp].rm_so - s;
+						grps[i * 2 + 1] = subs[grp].rm_eo - s;
 					} else {
 						grps[i * 2 + 0] = -1;
 						grps[i * 2 + 1] = -1;
@@ -678,6 +583,7 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 				}
 				break;
 			}
+		}
 	}
 	return set;
 }
@@ -686,7 +592,7 @@ void rset_free(struct rset *rs)
 {
 	if (!rs)
 		return;
-	regfree(&rs->regex);
+	free(rs->regex);
 	free(rs->setgrpcnt);
 	free(rs->grp);
 	free(rs);
