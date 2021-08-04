@@ -561,19 +561,18 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 	int i, grp, set = -1;
 	if (rs->grpcnt <= 2 || !*s)
 		return set;
-	int sub_els = (rs->regex->sub + 1) * 2;
-	const char *sub[sub_els];
+	const char *sub[rs->grpcnt * 2];
 	regmatch_t *subs = (regmatch_t*)sub;
-	if (re_pikevm(rs->regex, s, sub, sub_els))
+	if (re_pikevm(rs->regex, s, sub, rs->grpcnt * 2))
 	{
 		for (i = rs->n-1; i >= 0; i--) {
-			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so != 0)
+			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so)
 			{ 
 				set = i;
 				int sgrp = rs->setgrpcnt[set] + 1;
 				for (i = 0; i < n; i++) {
-					if (i < sgrp) {
-						grp = rs->grp[set] + i;
+					grp = rs->grp[set] + i;
+					if (i < sgrp && subs[grp].rm_so) {
 						grps[i * 2] = subs[grp].rm_so - s;
 						grps[i * 2 + 1] = subs[grp].rm_eo - s;
 					} else {
