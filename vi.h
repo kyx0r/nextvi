@@ -86,6 +86,7 @@ struct rcode
 	int sub;
 	int splits;
 	int gen;
+	int flg;
 	int insts[];
 };
 /* regular expression set */

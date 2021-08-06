@@ -34,8 +34,7 @@ enum
 enum {
 	RE_SUCCESS = 0,
 	RE_SYNTAX_ERROR = -2,
-	RE_UNSUPPORTED_ESCAPE = -3,
-	RE_UNSUPPORTED_SYNTAX = -4,
+	RE_UNSUPPORTED_SYNTAX = -3,
 };
 
 typedef struct rsub rsub;
@@ -72,7 +71,7 @@ static int re_classmatch(const int *pc, int c)
 	return !is_positive;
 }
 
-static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
+static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flags)
 {
 	const char *re = *re_loc;
 	int *code = sizecode ? NULL : prog->insts;
@@ -93,7 +92,10 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 		default:
 			term = PC;
 			EMIT(PC++, CHAR);
-			uc_code(c, re) EMIT(PC++, c);
+			uc_code(c, re) 
+			if (flags & REG_ICASE)
+				c = tolower(c);
+			EMIT(PC++, c);
 			prog->len++;
 			break;
 		case '.':
@@ -115,17 +117,17 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 			prog->len++;
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (!*re) goto syntax_error;
-				if (*re == '\\') {
-					re++;
-					if (!*re) goto syntax_error;
-					if (*re != '\\' && *re != ']')
-						goto unsupported_escape;
-				}
-				uc_code(c, re) EMIT(PC++, c);
+				uc_code(c, re)
+				if (flags & REG_ICASE)
+					c = tolower(c);
+				EMIT(PC++, c);
 				uc_len(c, re)
 				if (re[c] == '-' && re[c+1] != ']')
 					re += c+1;
-				uc_code(c, re) EMIT(PC++, c);
+				uc_code(c, re)
+				if (flags & REG_ICASE)
+					c = tolower(c);
+				EMIT(PC++, c);
 				uc_len(c, re) re += c;
 			}
 			EMIT(term + 2, cnt);
@@ -151,7 +153,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 				EMIT(PC++, 2 * sub);
 				prog->len++;
 			}
-			int res = _compilecode(&re, prog, sizecode);
+			int res = _compilecode(&re, prog, sizecode, flags);
 			*re_loc = re;
 			if (res < 0) return res;
 			if (*re != ')') return RE_SYNTAX_ERROR;
@@ -284,9 +286,6 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 syntax_error:
 	*re_loc = re;
 	return RE_SYNTAX_ERROR;
-unsupported_escape:
-	*re_loc = re;
-	return RE_UNSUPPORTED_ESCAPE;
 }
 
 int re_sizecode(const char *re)
@@ -294,7 +293,7 @@ int re_sizecode(const char *re)
 	rcode dummyprog;
 	dummyprog.unilen = 3;
 
-	int res = _compilecode(&re, &dummyprog, /*sizecode*/1);
+	int res = _compilecode(&re, &dummyprog, /*sizecode*/1, 0);
 	if (res < 0) return res;
 	// If unparsed chars left
 	if (*re) return RE_SYNTAX_ERROR;
@@ -302,15 +301,16 @@ int re_sizecode(const char *re)
 	return dummyprog.unilen;
 }
 
-int re_comp(rcode *prog, const char *re)
+int re_comp(rcode *prog, const char *re, int flags)
 {
 	prog->len = 0;
 	prog->unilen = 0;
 	prog->sub = 0;
 	prog->splits = 0;
 	prog->gen = 1;
+	prog->flg = flags;
 
-	int res = _compilecode(&re, prog, /*sizecode*/0);
+	int res = _compilecode(&re, prog, /*sizecode*/0, flags);
 	if (res < 0) return res;
 	// If unparsed chars left
 	if (*re) return RE_SYNTAX_ERROR;
@@ -355,7 +355,6 @@ goto next##nn; \
 #define addthread(nn, list, listidx, _pc, _sub) \
 { \
 	int i = 0, *pc = _pc; \
-	const char *_sp = sp+l; \
 	rsub *sub = _sub; \
 	rec##nn: \
 	if (*pc < WBEG) { \
@@ -412,25 +411,72 @@ goto next##nn; \
 			deccheck(nn) \
 		pc++; goto rec##nn; \
 	case BOL: \
-		if (_sp != s) { \
+		if (flg & REG_NOTBOL || (_sp != s && *sp != '\n')) { \
 			if (!i && !listidx) \
 				_return(0) \
 			deccheck(nn) \
 		} \
 		pc++; goto rec##nn; \
 	case EOL: \
-		if (*_sp) \
+		if (flg & REG_NOTEOL || (*_sp && *_sp != '\n')) \
 			deccheck(nn) \
 		pc++; goto rec##nn; \
 	} \
 } \
 
-int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp)
+#define match(n, cpn, neol) \
+for(;; sp = _sp) { \
+	gen++; uc_len(l, sp) uc_code(c, sp) cpn \
+	_sp = sp+l;\
+	for(i = 0; i < clistidx; i++) { \
+		npc = clist[i].pc; \
+		nsub = clist[i].sub; \
+		switch(*npc++) { \
+		case CHAR: \
+			if(c != *npc++) \
+				break; \
+		case ANY: \
+		addthread##n: \
+			addthread(2##n, nlist, nlistidx, npc, nsub) \
+		case CLASS: \
+			if (!re_classmatch(npc, c)) \
+				break; \
+			npc += *(npc+1) * 2 + 2; \
+			goto addthread##n; \
+		case MATCH: \
+			matched = nsub; \
+			subidx = 0; \
+			goto break_for##n; \
+		} \
+		decref(nsub) \
+	} \
+	break_for##n: \
+	if (neol !c) \
+		break; \
+	tmp = clist; \
+	clist = nlist; \
+	nlist = tmp; \
+	clistidx = nlistidx; \
+	nlistidx = 0; \
+	if (!matched) { \
+		jmp_start##n: \
+		newsub() \
+		s1->ref = 1; \
+		for (i = 1; i < nsubp; i++) \
+			s1->sub[i] = NULL; \
+		s1->sub[0] = _sp; \
+		addthread(1##n, clist, clistidx, insts, s1) \
+	} else if (!clistidx) \
+		break; \
+} \
+
+int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
 	int i, j, c, l = 0, gen, subidx = 1, *npc;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int clistidx = 0, nlistidx = 0;
 	const char *sp = s;
+	const char *_sp = s;
 	int *insts = prog->insts, *plist = insts+prog->unilen;
 	int *pcs[prog->splits];
 	rsub *subs[prog->splits];
@@ -443,49 +489,23 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp)
 	for(i = 0; i < nsubp; i++)
 		subp[i] = NULL;
 	gen = prog->gen;
-	goto jmp_start;
-	for(;; sp += l) {
-		gen++; uc_len(l, sp) uc_code(c, sp)
-		for(i = 0; i < clistidx; i++) {
-			npc = clist[i].pc;
-			nsub = clist[i].sub;
-			switch(*npc++) {
-			case CHAR:
-				if(c != *npc++)
-					break;
-			case ANY:
-			addthread:
-				addthread(2, nlist, nlistidx, npc, nsub)
-			case CLASS:
-				if (!re_classmatch(npc, c))
-					break;
-				npc += *(npc+1) * 2 + 2;
-				goto addthread;
-			case MATCH:
-				matched = nsub;
-				subidx = 0;
-				goto break_for;
-			}
-			decref(nsub)
+	flg = prog->flg | flg;
+	if (flg & REG_ICASE) {
+		if (flg & REG_NOTEOL) {
+			goto jmp_start1;
+			match(1, c = tolower(c);, /*nop*/)
+		} else {
+			goto jmp_start2;
+			match(2, c = tolower(c);, c == '\n' ||)
 		}
-		break_for:
-		if (!c)
-			break;
-		tmp = clist;
-		clist = nlist;
-		nlist = tmp;
-		clistidx = nlistidx;
-		nlistidx = 0;
-		if (!matched) {
-			jmp_start:
-			newsub()
-			s1->ref = 1;
-			for (i = 1; i < nsubp; i++)
-				s1->sub[i] = NULL;
-			s1->sub[0] = sp + l;
-			addthread(1, clist, clistidx, insts, s1)
-		} else if (!clistidx)
-			break;
+	} else {
+		if (flg & REG_NOTEOL) {
+			goto jmp_start3;
+			match(3, /*nop*/, /*nop*/)
+		} else {
+			goto jmp_start4;
+			match(4, /*nop*/, c == '\n' ||)
+		}
 	}
 	if(matched) {
 		for(i = 0; i < nsubp; i++)
@@ -553,7 +573,7 @@ struct rset *rset_make(int n, char **re, int flg)
 		goto error;	
 	char *code = malloc((sizeof(rcode)+sz) * 2);
 	memset(code+sizeof(rcode)+sz, 0, sizeof(rcode)+sz);
-	if (re_comp((rcode*)code, s)) {
+	if (re_comp((rcode*)code, s, regex_flg)) {
 		error:
 		free(rs->grp);
 		free(rs->setgrpcnt);
@@ -574,7 +594,7 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 		return set;
 	const char *sub[rs->grpcnt * 2];
 	regmatch_t *subs = (regmatch_t*)sub;
-	if (re_pikevm(rs->regex, s, sub, rs->grpcnt * 2))
+	if (re_pikevm(rs->regex, s, sub, rs->grpcnt * 2, flg))
 	{
 		for (i = rs->n-1; i >= 0; i--) {
 			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so)
