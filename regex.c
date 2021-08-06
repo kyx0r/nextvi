@@ -59,18 +59,6 @@ pc += num;
 #define EMIT(at, byte) (code ? (code[at] = byte) : at)
 #define PC (prog->unilen)
 
-static int re_classmatch(const int *pc, int c)
-{
-	// pc points to "classnot" byte after opcode
-	int is_positive = *pc++;
-	int cnt = *pc++;
-	while (cnt--) {
-		if (c >= *pc && c <= pc[1]) return is_positive;
-		pc += 2;
-	}
-	return !is_positive;
-}
-
 static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flags)
 {
 	const char *re = *re_loc;
@@ -104,32 +92,36 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			prog->len++;
 			break;
 		case '[':;
-			int cnt;
+			int cnt, l, not = 0;
 			term = PC;
 			re++;
 			EMIT(PC++, CLASS);
 			if (*re == '^') {
-				EMIT(PC++, 0);
+				not = -1;
 				re++;
-			} else
-				EMIT(PC++, 1);
-			PC++; // Skip "# of pairs" byte
+			}
+			PC += 2; 
 			prog->len++;
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (!*re) goto syntax_error;
+				uc_len(l, re)
+				if (not && *re == '&' && re[l] == '&') {
+					not = -(cnt+2); re += 2;
+				}
 				uc_code(c, re)
 				if (flags & REG_ICASE)
 					c = tolower(c);
 				EMIT(PC++, c);
-				uc_len(c, re)
-				if (re[c] == '-' && re[c+1] != ']')
-					re += c+1;
+				if (re[l] == '-' && re[l+1] != ']')
+					re += l+1;
 				uc_code(c, re)
 				if (flags & REG_ICASE)
 					c = tolower(c);
 				EMIT(PC++, c);
 				uc_len(c, re) re += c;
 			}
+			not = not < -1 ? -(not+cnt+2) : not;
+			EMIT(term + 1, not < 0 ? not : 1);
 			EMIT(term + 2, cnt);
 			break;
 		case '(':;
@@ -438,8 +430,27 @@ for(;; sp = _sp) { \
 		case ANY: \
 		addthread##n: \
 			addthread(2##n, nlist, nlistidx, npc, nsub) \
-		case CLASS: \
-			if (!re_classmatch(npc, c)) \
+		case CLASS:; \
+			const char *s = _sp; \
+			int cp = c; \
+			int *pc = npc; \
+			int is_positive = *pc++; \
+			int cnt = *pc++; \
+			while (cnt--) { \
+				if (cp >= *pc && cp <= pc[1]) { \
+					if (is_positive < -1 && cnt <= -(is_positive+2)) \
+					{ \
+						uc_len(j, s) s += j; \
+						uc_code(cp, s) \
+						pc += 2; \
+						continue; \
+					} \
+					is_positive -= is_positive * 2; \
+					break; \
+				} \
+				pc += 2; \
+			} \
+			if (is_positive > 0) \
 				break; \
 			npc += *(npc+1) * 2 + 2; \
 			goto addthread##n; \
@@ -478,7 +489,7 @@ _return(0) \
 
 int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
-	int i, j, c, l = 0, gen, subidx = 1, *npc;
+	int i, j, c, l, gen, subidx = 1, *npc;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int clistidx = 0, nlistidx = 0;
 	const char *sp = s;
