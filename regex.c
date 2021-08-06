@@ -4,6 +4,12 @@
 #include <string.h>
 #include "vi.h"
 
+static int isword(const char *s)
+{
+	int c = (unsigned char) s[0];
+	return isalnum(c) || c == '_' || c > 127;
+}
+
 enum
 {
 	// Instructions which consume input bytes (and thus fail if none left)
@@ -12,11 +18,10 @@ enum
 	CLASS,
 	MATCH,
 	// Assert position
-	ASSERT,
-	BOL,
-	EOL,
 	WBEG,
 	WEND,
+	BOL,
+	EOL,
 	// Instructions which take relative offset as arg
 	JMP,
 	SPLIT,
@@ -55,13 +60,7 @@ pc += num;
 #define EMIT(at, byte) (code ? (code[at] = byte) : at)
 #define PC (prog->unilen)
 
-static int isword(const char *s)
-{
-	int c = (unsigned char) s[0];
-	return isalnum(c) || c == '_' || c > 127;
-}
-
-int re_classmatch(const int *pc, int c)
+static int re_classmatch(const int *pc, int c)
 {
 	// pc points to "classnot" byte after opcode
 	int is_positive = *pc++;
@@ -86,7 +85,6 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 			re++;
 			if (!*re) goto syntax_error; // Trailing backslash
 			if (*re == '<' || *re == '>') {
-				EMIT(PC++, ASSERT);
 				EMIT(PC++, *re == '<' ? WBEG : WEND);
 				prog->len++;
 				term = PC;
@@ -165,7 +163,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 			break;
 		case '{':;
 			int maxcnt = 0, mincnt = 0,
-			i = 0, icnt = 0, size, split;
+			i = 0, icnt = 0, size;
 			re++;
 			while (isdigit((unsigned char) *re))
 				mincnt = mincnt * 10 + *re++ - '0';
@@ -182,11 +180,10 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 					memcpy(&code[PC], &code[term], size*sizeof(int));
 				PC += size;
 			}
-			split = *(re+1) == '[' ? RSPLIT : SPLIT;
 			for (i = maxcnt-mincnt; i > 0; i--)
 			{
 				prog->splits++;
-				EMIT(PC++, split);
+				EMIT(PC++, SPLIT);
 				EMIT(PC++, REL(PC, PC+((size+2)*i)));
 				if (code)
 					memcpy(&code[PC], &code[term], size*sizeof(int));
@@ -267,13 +264,11 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode)
 			term = PC;
 			break;
 		case '^':
-			EMIT(PC++, ASSERT);
 			EMIT(PC++, BOL);
 			prog->len++;
 			term = PC;
 			break;
 		case '$':
-			EMIT(PC++, ASSERT);
 			EMIT(PC++, EOL);
 			prog->len++;
 			term = PC;
@@ -344,20 +339,28 @@ if (--csub->ref == 0) { \
 	freesub = csub; \
 } \
 
+#define deccheck(nn) \
+{ decref(sub) goto rec_check##nn; } \
+
+#define fastrec(nn, list, listidx) \
+if (*pc < WBEG) { \
+	list[listidx].sub = sub; \
+	list[listidx++].pc = pc; \
+	pc = pcs[i]; \
+	goto rec##nn; \
+} \
+subs[i++] = sub; \
+goto next##nn; \
+
 #define addthread(nn, list, listidx, _pc, _sub) \
 { \
 	int i = 0, *pc = _pc; \
 	const char *_sp = sp+l; \
 	rsub *sub = _sub; \
 	rec##nn: \
-	if (*pc < ASSERT) { \
+	if (*pc < WBEG) { \
 		list[listidx].sub = sub; \
 		list[listidx++].pc = pc; \
-		goto rec_check##nn; \
-	} \
-	if(plist[pc - insts] == gen) { \
-		dec_check##nn: \
-		decref(sub) \
 		rec_check##nn: \
 		if (i) { \
 			pc = pcs[--i]; \
@@ -366,24 +369,28 @@ if (--csub->ref == 0) { \
 		} \
 		continue; \
 	} \
-	plist[pc - insts] = gen; \
+	next##nn: \
 	switch(*pc) { \
 	case JMP: \
 		pc += 2 + pc[1]; \
 		goto rec##nn; \
 	case SPLIT: \
-		subs[i] = sub; \
+		if(plist[pc - insts] == gen) \
+			deccheck(nn) \
+		plist[pc - insts] = gen; \
 		sub->ref++; \
 		pc += 2; \
-		pcs[i++] = pc + pc[-1]; \
-		goto rec##nn; \
+		pcs[i] = pc + pc[-1]; \
+		fastrec(nn, list, listidx) \
 	case RSPLIT: \
-		subs[i] = sub; \
+		if(plist[pc - insts] == gen) \
+			deccheck(nn) \
+		plist[pc - insts] = gen; \
 		sub->ref++; \
 		pc += 2; \
-		pcs[i++] = pc; \
+		pcs[i] = pc; \
 		pc += pc[-1]; \
-		goto rec##nn; \
+		fastrec(nn, list, listidx) \
 	case SAVE: \
 		if (sub->ref > 1) { \
 			sub->ref--; \
@@ -396,20 +403,24 @@ if (--csub->ref == 0) { \
 		sub->sub[pc[1]] = _sp; \
 		pc += 2; \
 		goto rec##nn; \
-	case ASSERT: \
-		pc++; \
-		if (*pc == BOL && _sp != s) { \
+	case WBEG: \
+		if ((sp != s && isword(sp)) || !isword(_sp)) \
+			deccheck(nn) \
+		pc++; goto rec##nn; \
+	case WEND: \
+		if (isword(_sp)) \
+			deccheck(nn) \
+		pc++; goto rec##nn; \
+	case BOL: \
+		if (_sp != s) { \
 			if (!i && !listidx) \
 				_return(0) \
-			goto dec_check##nn; \
+			deccheck(nn) \
 		} \
-		if (*pc == EOL && *_sp) \
-			goto dec_check##nn; \
-		if (*pc == WBEG && (!isword(_sp) || isword(sp)) \
-				&& !(sp == s && isword(sp))) \
-			goto dec_check##nn; \
-		if (*pc == WEND && isword(_sp)) \
-			goto dec_check##nn; \
+		pc++; goto rec##nn; \
+	case EOL: \
+		if (*_sp) \
+			deccheck(nn) \
 		pc++; goto rec##nn; \
 	} \
 } \
