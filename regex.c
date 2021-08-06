@@ -469,6 +469,12 @@ for(;; sp = _sp) { \
 	} else if (!clistidx) \
 		break; \
 } \
+if(matched) { \
+	for(i = 0; i < nsubp; i++) \
+		subp[i] = matched->sub[i]; \
+	_return(1) \
+} \
+_return(0) \
 
 int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
@@ -490,29 +496,17 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 		subp[i] = NULL;
 	gen = prog->gen;
 	flg = prog->flg | flg;
-	if (flg & REG_ICASE) {
-		if (flg & REG_NOTEOL) {
-			goto jmp_start1;
-			match(1, c = tolower(c);, /*nop*/)
-		} else {
-			goto jmp_start2;
-			match(2, c = tolower(c);, c == '\n' ||)
-		}
-	} else {
-		if (flg & REG_NOTEOL) {
-			goto jmp_start3;
-			match(3, /*nop*/, /*nop*/)
-		} else {
-			goto jmp_start4;
-			match(4, /*nop*/, c == '\n' ||)
-		}
-	}
-	if(matched) {
-		for(i = 0; i < nsubp; i++)
-			subp[i] = matched->sub[i];
-		_return(1)
-	}
-	_return(0)
+	if (flg & REG_ICASE && flg & REG_NOTEOL)
+		goto jmp_start1;
+	if (flg & REG_ICASE)
+		goto jmp_start2;
+	if (flg & REG_NOTEOL)
+		goto jmp_start3;
+	goto jmp_start4;
+	match(1, c = tolower(c);, /*nop*/)
+	match(2, c = tolower(c);, c == '\n' ||)
+	match(3, /*nop*/, /*nop*/)
+	match(4, /*nop*/, c == '\n' ||)
 }
 
 static int re_groupcount(char *s)
