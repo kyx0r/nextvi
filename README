@@ -177,6 +177,14 @@ remove distrations and focus on typing. Useful when running ex via vi -e
 58. Added v/ key in normal, grabs the current word(s) under the cursor into 
 prompt. If valid, the input will be used for searches using N and n keys.
 
+PIKEVM:
+-------
+A complete rewrite of neatvi's regex engine for the purposes to get
+rid of backtracking and severe performance and memory constrants is 
+now complete and ready to use. 
+Checkout: https://github.com/kyx0r/neatvi/tree/pikevm
+See FAQ below for more info.
+
 FAQ:
 ----
 Q: Why neatvi instead of vim?
@@ -201,6 +209,37 @@ reported that "^^" (Ctrl + ^) can be achieved on some system with "^6".
 If something doesn't work, have a look at the layout of an
 american/british keyboard and try to reproduce the keybind as if you
 have an american/british keyboard.
+
+Q: Something, something - pikevm
+A: Pikevm guarantees that all regular expressions are computed in
+constant space and O(n+k) time where n is size of the string and
+k is some constant for the complexity of the regex ie. how big it is.
+Q: What are the other benefits?
+A: For example, now it is possible to compute a C comment /* n */ 
+where n can be an infinite number of characters. Of course this
+extends to every other valid regular expression.
+Q: What's wrong with original implementation?
+A: Nothing. The backtracker is as good as pikevm when n is small and
+usually n is small. That is why it was feasible in the first place.
+Q: NFA vs DFA (identify)
+A: pikevm = NFA backtrack = DFA
+Q: Performance?
+A: Both my NFA and DFA implementations are very well written and
+optimized, some may even say overly optimized because they are
+just one big C macro. As benchmarked the DFA implementation is 2X 
+faster than original Ali's implementation and about 15% faster than 
+my pikevm NFA. Partly the reason for NFA to be slightly worse is 
+because the algorithm itself is a bit fancier and tests performed 
+with low N, 30-60 characters. Still, these are very impressive 
+results considering the benefits provided by pikevm.
+A: Compatibility?
+Q: 100% compatible, with exception of posix macros like [:punct:].
+I don't use them so I did not bother. DFA has them, they are easy
+to implement in pikevm if needed. Any future commits will be done
+on both branches if applicable.
+A: Minimalism?
+Q: Both implementations (regex.c) are ~700 lines of C code, that
+includes both the compilation and execution. 
 
 CONFIGURATION
 -------------
