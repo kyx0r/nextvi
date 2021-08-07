@@ -584,11 +584,6 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	return 1;
 }
 
-int regerror(int errcode, regex_t *preg, char *errbuf, int errbuf_size)
-{
-	return 0;
-}
-
 static int re_groupcount(char *s)
 {
 	int n = 0;

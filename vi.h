@@ -123,10 +123,6 @@ struct rnode {
 	int grp;		/* group number */
 	int rn;			/* node type (RN_*) */
 };
-int regcomp(regex_t *re, char *regex, int cflags);
-int regexec(regex_t *re, char *str, int nmatch, regmatch_t pmatch[], int eflags);
-int regerror(int errcode, regex_t *re, char *errbuf, int errbuf_size);
-void regfree(regex_t *re);
 /* regular expression set */
 struct rset {
 	regex_t regex;		/* the combined regular expression */
