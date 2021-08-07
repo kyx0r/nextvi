@@ -455,6 +455,8 @@ for(;; sp = _sp) { \
 			npc += *(npc+1) * 2 + 2; \
 			goto addthread##n; \
 		case MATCH: \
+			if (matched) \
+				decref(matched) \
 			matched = nsub; \
 			subidx = 0; \
 			goto break_for##n; \
@@ -492,12 +494,11 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	int i, j, c, l, gen, subidx = 1, *npc;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int clistidx = 0, nlistidx = 0;
-	const char *sp = s;
-	const char *_sp = s;
+	const char *sp = s, *_sp = s;
 	int *insts = prog->insts, *plist = insts+prog->unilen;
 	int *pcs[prog->splits];
 	rsub *subs[prog->splits];
-	char nsubs[rsubsize * (prog->len - prog->splits)];
+	char nsubs[rsubsize * (prog->len+3 - prog->splits)];
 	rsub *nsub = (rsub*)nsubs, *matched = NULL, *s1;
 	rsub *freesub = NULL;
 	rthread _clist[prog->len]; 
@@ -602,13 +603,13 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 	if (re_pikevm(rs->regex, s, sub, rs->grpcnt * 2, flg))
 	{
 		for (i = rs->n-1; i >= 0; i--) {
-			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_so)
+			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_eo)
 			{ 
 				set = i;
 				int sgrp = rs->setgrpcnt[set] + 1;
 				for (i = 0; i < n; i++) {
 					grp = rs->grp[set] + i;
-					if (i < sgrp && subs[grp].rm_so) {
+					if (i < sgrp && subs[grp].rm_eo) {
 						grps[i * 2] = subs[grp].rm_so - s;
 						grps[i * 2 + 1] = subs[grp].rm_eo - s;
 					} else {
