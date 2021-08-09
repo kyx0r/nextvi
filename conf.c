@@ -56,7 +56,7 @@ free|realloc|NULL|stdin|stdout|errno)\\>"},
 	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
-	{"c", {6}, "^#[ \t]*[a-zA-Z0-9_]+"},
+	{"c", {6}, "#[ \t]*[a-zA-Z0-9_]+"},
 	{"c", {0, SYN_BD}, "([a-zA-Z0-9_]+)\\(", 1},
 	{"c", {5}, "\"([^\"]|\\\\\")*\""},
 	{"c", {5}, "'([^\\]|\\\\.)'"},
