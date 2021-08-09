@@ -353,7 +353,7 @@ void syn_highlight(int *att, char *s, int n)
 			att[i] = syn_ctx;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
-		int cend = 1;
+		int cend = 0;
 		int grp = hls[hl].end;
 		int *catt = hls[hl].att;
 		int blkend = hls[hl].blkend;
@@ -379,7 +379,7 @@ void syn_highlight(int *att, char *s, int n)
 				for (j = beg; j < end; j++)
 					att[j] = syn_merge(att[j], catt[i]);
 				if (i == grp)
-					cend = MAX(cend, subs[i * 2 + 1]);
+					cend = MAX(cend ? cend : 1, subs[i * 2 + 1]);
 			}
 		}
 		sidx += cend;
