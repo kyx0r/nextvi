@@ -455,10 +455,11 @@ for(;; sp = _sp) { \
 			npc += *(npc+1) * 2 + 2; \
 			goto addthread##n; \
 		case MATCH: \
-			if (matched) \
+			if (matched) { \
 				decref(matched) \
+				subidx = 0; \
+			} \
 			matched = nsub; \
-			subidx = 0; \
 			goto break_for##n; \
 		} \
 		decref(nsub) \
