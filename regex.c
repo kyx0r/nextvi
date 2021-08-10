@@ -54,7 +54,7 @@ struct rthread
 #define INSERT_CODE(at, num, pc) \
 if (code) \
 	memmove(code + at + num, code + at, (pc - at)*sizeof(int)); \
-pc += num; 
+pc += num;
 #define REL(at, to) (to - at - 2)
 #define EMIT(at, byte) (code ? (code[at] = byte) : at)
 #define PC (prog->unilen)
@@ -80,7 +80,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 		default:
 			term = PC;
 			EMIT(PC++, CHAR);
-			uc_code(c, re) 
+			uc_code(c, re)
 			if (flags & REG_ICASE)
 				c = tolower(c);
 			EMIT(PC++, c);
@@ -100,7 +100,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 				not = -1;
 				re++;
 			}
-			PC += 2; 
+			PC += 2;
 			prog->len++;
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (!*re) goto syntax_error;
@@ -194,27 +194,26 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 					case SAVE:
 					case CHAR:
 						i++;
-						icnt++;	
+						icnt++;
 					}
 			}
 			prog->len += maxcnt * icnt;
 			break;
 		case '?':
-			if (PC == term) goto syntax_error; // nothing to repeat
+			if (PC == term) goto syntax_error;
 			INSERT_CODE(term, 2, PC);
 			if (re[1] == '?') {
 				EMIT(term, RSPLIT);
 				re++;
-			} else {
+			} else
 				EMIT(term, SPLIT);
-			}
 			EMIT(term + 1, REL(term, PC));
 			prog->len++;
 			prog->splits++;
 			term = PC;
 			break;
 		case '*':
-			if (PC == term) goto syntax_error; // nothing to repeat
+			if (PC == term) goto syntax_error;
 			INSERT_CODE(term, 2, PC);
 			EMIT(PC, JMP);
 			EMIT(PC + 1, REL(PC, term));
@@ -222,22 +221,20 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			if (re[1] == '?') {
 				EMIT(term, RSPLIT);
 				re++;
-			} else {
+			} else
 				EMIT(term, SPLIT);
-			}
 			EMIT(term + 1, REL(term, PC));
 			prog->splits++;
 			prog->len += 2;
 			term = PC;
 			break;
 		case '+':
-			if (PC == term) goto syntax_error; // nothing to repeat
+			if (PC == term) goto syntax_error;
 			if (re[1] == '?') {
 				EMIT(PC, SPLIT);
 				re++;
-			} else {
+			} else
 				EMIT(PC, RSPLIT);
-			}
 			EMIT(PC + 1, REL(PC, term));
 			PC += 2;
 			prog->splits++;
@@ -245,9 +242,8 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			term = PC;
 			break;
 		case '|':
-			if (alt_label) {
+			if (alt_label)
 				EMIT(alt_label, REL(alt_label, PC) + 1);
-			}
 			INSERT_CODE(start, 2, PC);
 			EMIT(PC++, JMP);
 			alt_label = PC++;
@@ -270,9 +266,8 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 		}
 		uc_len(c, re) re += c;
 	}
-	if (alt_label) {
+	if (alt_label)
 		EMIT(alt_label, REL(alt_label, PC) + 1);
-	}
 	*re_loc = re;
 	return RE_SUCCESS;
 syntax_error:
@@ -418,8 +413,8 @@ goto next##nn; \
 
 #define match(n, cpn, neol) \
 for(;; sp = _sp) { \
-	gen++; uc_len(l, sp) uc_code(c, sp) cpn \
-	_sp = sp+l;\
+	gen++; uc_len(i, sp) uc_code(c, sp) cpn \
+	_sp = sp+i;\
 	for(i = 0; i < clistidx; i++) { \
 		npc = clist[i].pc; \
 		nsub = clist[i].sub; \
@@ -492,7 +487,7 @@ _return(0) \
 
 int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
-	int i, j, c, l, gen, subidx = 1, *npc;
+	int i, j, c, gen, subidx = 1, *npc;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int clistidx = 0, nlistidx = 0;
 	const char *sp = s, *_sp = s;
@@ -500,10 +495,8 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	int *pcs[prog->splits];
 	rsub *subs[prog->splits];
 	char nsubs[rsubsize * (prog->len+3 - prog->splits)];
-	rsub *nsub = (rsub*)nsubs, *matched = NULL, *s1;
-	rsub *freesub = NULL;
-	rthread _clist[prog->len]; 
-	rthread _nlist[prog->len]; 
+	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
+	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
 	gen = prog->gen;
 	flg = prog->flg | flg;
@@ -575,7 +568,7 @@ struct rset *rset_make(int n, char **re, int flg)
 	char *s = sbuf_buf(sb);
 	int sz = re_sizecode(s) * sizeof(int);
 	if (sz <= 3)
-		goto error;	
+		goto error;
 	char *code = malloc((sizeof(rcode)+sz) * 2);
 	memset(code+sizeof(rcode)+sz, 0, sizeof(rcode)+sz);
 	if (re_comp((rcode*)code, s, regex_flg)) {
@@ -603,7 +596,7 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 	{
 		for (i = rs->n-1; i >= 0; i--) {
 			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_eo)
-			{ 
+			{
 				set = i;
 				int sgrp = rs->setgrpcnt[set] + 1;
 				for (i = 0; i < n; i++) {
