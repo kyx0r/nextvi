@@ -348,6 +348,7 @@ void syn_highlight(int *att, char *s, int n)
 	struct rset *rs = ftmap[ftidx].rs;
 	int subs[16 * 2];
 	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
+	int pcend = 1;
 	if (xhll)
 		for (i = 0; i < n; i++)
 			att[i] = syn_ctx;
@@ -379,9 +380,12 @@ void syn_highlight(int *att, char *s, int n)
 				for (j = beg; j < end; j++)
 					att[j] = syn_merge(att[j], catt[i]);
 				if (i == grp)
-					cend = MAX(cend ? cend : 1, subs[i * 2 + 1]);
+					cend = MAX(cend, subs[i * 2 + 1]);
 			}
-		}
+		} 
+		if (!cend && !pcend)
+			cend = 1;
+		pcend = cend;
 		sidx += cend;
 		flg = REG_NOTBOL;
 	}
