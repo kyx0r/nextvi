@@ -45,7 +45,7 @@ bright colors
 
 struct highlight hls[] = {
 	{"/", {9}, NULL},
-	{"c", {14}, "^.*\\\\$", 1},
+	{"c", {14}, "^.+\\\\$", 1},
 	{"c", {4 | SYN_IT}, "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", 0, 2},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
@@ -56,8 +56,8 @@ free|realloc|NULL|stdin|stdout|errno)\\>"},
 	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue)\\>"},
 	{"c", {4 | SYN_IT}, "//.*$"},
-	{"c", {6}, "#[ \t]*[a-zA-Z0-9_]+"},
-	{"c", {0, SYN_BD}, "([a-zA-Z0-9_]+)\\(", 1},
+	{"c", {6, 6, 5}, "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)"},
+	{"c", {0, SYN_BD}, "([a-zA-Z0-9_]+)\\("},
 	{"c", {5}, "\"([^\"]|\\\\\")*\""},
 	{"c", {5}, "'([^\\]|\\\\.)'"},
 	{"c", {9}, "[-+]?\\<(0[xX][0-9a-fA-FUL]+|[0-9.]{1,}[0-9eEfFuULl]+|[0-9]+)\\>"},
@@ -99,10 +99,10 @@ default|break|continue)\\>"},
 	{"sh", {0, SYN_BD}, "^([a-zA-Z_0-9]*\\(\\)).*\\{"},
 
 	/* python */
-	{"py", {2}, "^#.*$"},
+	{"py", {2}, "#.*$"},
 	{"py", {5}, "\\<(and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>"},
 	{"py", {5}, "\\<(if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>"},
-	{"py", {0, 0 | SYN_BD}, "([a-zA-Z0-9_]+)\\(", 1},
+	{"py", {0, SYN_BD}, "([a-zA-Z0-9_]+)\\("},
 	{"py", {4}, "[\"']([^\"']|\\\\\")*[\"']"},
 
 	/* neatmail */
@@ -129,9 +129,7 @@ isPrototypeOf|length|Math|NaN|name|Number|Object|prototype|\
 String|toString|undefined|valueOf)\\>"},
 	{"js", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
 	{"js", {10 | SYN_IT}, "//.*$"},
-	{"js", {5}, "\"([^\"]|\\\\\")*\""},
-	{"js", {5}, "'([^']|\\')*'"},
-	{"js", {5}, "`([^`]|\\`)*`"},
+	{"js", {5}, "[\"'`]([^\"'`]|\\\\[\"'`])*[\"'`]"},
 
 	/* html */
 	{"html", {5 | SYN_IT}, "(<!--[^&&------>]*)|([^&&<!------]*-->)", 0, 2},
@@ -171,9 +169,8 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
 	{"html", {12}, "\"([^\"]|\\\\\")*\""},
 	{"html", {9}, "#\\<[A-Fa-f0-9]+\\>"},
 	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9+px]+)\\>"},
-	{"html", {0 | SYN_BD}, "#[ \t]*[a-zA-Z0-9_]+"},
-	{"html", {13}, "/"},
-	{"html", {3}, "<[^<>]+>", 1},
+	{"html", {3, 13}, "<(/)?[^>]+>", 1},
+	{"html", {SYN_BD}, "#[ \t]*[a-zA-Z0-9_]+"},
 	{"html", {5}, "&[a-zA-Z0-9_]+"},
 
 	/* diff */
