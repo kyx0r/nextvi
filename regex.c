@@ -361,7 +361,7 @@ goto next##nn; \
 		pc += 2 + pc[1]; \
 		goto rec##nn; \
 	case SPLIT: \
-		if(plist[pc - insts] == gen) \
+		if (plist[pc - insts] == gen) \
 			deccheck(nn) \
 		plist[pc - insts] = gen; \
 		sub->ref++; \
@@ -369,7 +369,7 @@ goto next##nn; \
 		pcs[i] = pc + pc[-1]; \
 		fastrec(nn, list, listidx) \
 	case RSPLIT: \
-		if(plist[pc - insts] == gen) \
+		if (plist[pc - insts] == gen) \
 			deccheck(nn) \
 		plist[pc - insts] = gen; \
 		sub->ref++; \
@@ -379,10 +379,10 @@ goto next##nn; \
 		fastrec(nn, list, listidx) \
 	case SAVE: \
 		if (sub->ref > 1) { \
+			sub->ref--; \
 			newsub() \
 			for (j = 0; j < nsubp; j++) \
 				s1->sub[j] = sub->sub[j]; \
-			sub->ref--; \
 			sub = s1; \
 			sub->ref = 1; \
 		} \
@@ -412,15 +412,15 @@ goto next##nn; \
 } \
 
 #define match(n, cpn, neol) \
-for(;; sp = _sp) { \
+for (;; sp = _sp) { \
 	gen++; uc_len(i, sp) uc_code(c, sp) cpn \
 	_sp = sp+i;\
-	for(i = 0; i < clistidx; i++) { \
+	for (i = 0; i < clistidx; i++) { \
 		npc = clist[i].pc; \
 		nsub = clist[i].sub; \
 		switch(*npc++) { \
 		case CHAR: \
-			if(c != *npc++) \
+			if (c != *npc++) \
 				break; \
 		case ANY: \
 		addthread##n: \
@@ -478,8 +478,8 @@ for(;; sp = _sp) { \
 	} else if (!clistidx) \
 		break; \
 } \
-if(matched) { \
-	for(i = 0; i < nsubp; i++) \
+if (matched) { \
+	for (i = 0; i < nsubp; i++) \
 		subp[i] = matched->sub[i]; \
 	_return(1) \
 } \
