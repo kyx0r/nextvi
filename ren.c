@@ -252,8 +252,8 @@ int dir_context(char *s)
 		return +1;
 	if (xtd < -1)
 		return -1;
-	if (dir_rsctx)
-		if ((found = rset_find(dir_rsctx, s ? s : "", 0, NULL, 0)) >= 0)
+	if (dir_rsctx && s)
+		if ((found = rset_find(dir_rsctx, s, 0, NULL, 0)) >= 0)
 			return dctxs[found].dir;
 	return xtd < 0 ? -1 : +1;
 }

@@ -463,7 +463,7 @@ void regfree(regex_t *re)
 
 #define incpc(n) prs->pc++; goto next##n; \
 
-#define match(n, cpn, neol) \
+#define match(n, cpn) \
 while (*s) \
 { \
 	prs = rs+1; \
@@ -486,7 +486,7 @@ while (*s) \
 			uc_code(prs->cp, prs->s) cpn \
 			incpc(n) \
 		case RA_ANY: \
-			if (!prs->cp neol) \
+			if (!prs->cp) \
 				backtrack(n) \
 			uc_len(l, prs->s) prs->s += l; \
 			uc_code(prs->cp, prs->s) cpn \
@@ -513,7 +513,7 @@ while (*s) \
 					uc_len(l, ts) ts += l;\
 				} \
 			} \
-			if (!not || !prs->cp neol) \
+			if (!not || !prs->cp) \
 				backtrack(n) \
 			uc_code(prs->cp, prs->s) cpn \
 			incpc(n) \
@@ -572,15 +572,9 @@ int regexec(regex_t *re, char *s, int nsub, regmatch_t psub[], int flg)
 	flg = re->flg | flg;
 	nsub = flg & REG_NOSUB ? 0 : nsub;
 	if (flg & REG_ICASE)
-		if (flg & REG_NOTEOL)
-			match(1, prs->cp = tolower(prs->cp);, /*nop*/)
-		else
-			match(2, prs->cp = tolower(prs->cp);, || prs->cp == '\n')
+		match(1, prs->cp = tolower(prs->cp);)
 	else
-		if (flg & REG_NOTEOL)
-			match(3, /*nop*/, /*nop*/)
-		else
-			match(4, /*nop*/, || prs->cp == '\n')
+		match(2, /*nop*/)
 	return 1;
 }
 
