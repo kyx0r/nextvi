@@ -45,6 +45,7 @@ bright colors
 
 struct highlight hls[] = {
 	{"/", {9}, NULL},
+	{"c", {9}, NULL},
 	{"c", {14}, "^.+\\\\$", 1},
 	{"c", {4 | SYN_IT}, "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", 0, 2},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
@@ -62,6 +63,7 @@ default|break|continue)\\>"},
 	{"c", {5}, "'([^\\]|\\\\.)'"},
 	{"c", {9}, "[-+]?\\<(0[xX][0-9a-fA-FUL]+|[0-9.]{1,}[0-9eEfFuULl]+|[0-9]+)\\>"},
 
+	{"roff", {9}, NULL},
 	{"roff", {4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD},
 		"^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\]{2,}))?.*$", 1},
 	{"roff", {2 | SYN_IT}, "\\\\\".*$"},
@@ -75,6 +77,7 @@ default|break|continue)\\>"},
 	{"tex", {2 | SYN_IT}, "%.*$"},
 
 	/* mail */
+	{"msg", {9}, NULL},
 	{"msg", {6 | SYN_BD}, "^From .*20..$"},
 	{"msg", {6 | SYN_BD, 4 | SYN_BD}, "^Subject: (.*)$"},
 	{"msg", {6 | SYN_BD, 2 | SYN_BD}, "^From: (.*)$"},
@@ -84,12 +87,14 @@ default|break|continue)\\>"},
 	{"msg", {2 | SYN_IT}, "^> .*$"},
 
 	/* makefile */
+	{"mk", {9}, NULL},
 	{"mk", {0, 3}, "([A-Za-z0-9_]*)[ \t]*="},
 	{"mk", {3}, "\\$\\([a-zA-Z0-9_]+\\)"},
 	{"mk", {2 | SYN_IT}, "#.*$"},
 	{"mk", {0, SYN_BD}, "([A-Za-z_%.]+):"},
 
 	/* shell script */
+	{"sh", {9}, NULL},
 	{"sh", {5 | SYN_BD}, "\\<(break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>"},
 	{"sh", {2 | SYN_IT}, "#.*$"},
 	{"sh", {4}, "\"([^\"\\]|\\\\.)*\""},
@@ -99,6 +104,7 @@ default|break|continue)\\>"},
 	{"sh", {0, SYN_BD}, "^([a-zA-Z_0-9]*\\(\\)).*\\{"},
 
 	/* python */
+	{"py", {9}, NULL},
 	{"py", {2}, "#.*$"},
 	{"py", {5}, "\\<(and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>"},
 	{"py", {5}, "\\<(if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>"},
@@ -106,6 +112,7 @@ default|break|continue)\\>"},
 	{"py", {4}, "[\"']([^\"']|\\\\\")*[\"']"},
 
 	/* neatmail */
+	{"nm", {9}, NULL},
 	{"nm", {0 | SYN_BGMK(15), 6 | SYN_BD, 12 | SYN_BD, 5, 8 | SYN_BD},
 		"^([ROU])([0-9]+)\t([^\t]*)\t([^\t]*)"},
 	{"nm", {0 | SYN_BD | SYN_BGMK(6)}, "^[N].*$"},
@@ -117,6 +124,7 @@ default|break|continue)\\>"},
 	{"nm", {SYN_BD}, "^:.*$"},
 
 	/* javascript */
+	{"js", {9}, NULL},
 	{"js", {10 | SYN_IT}, "(/\\*[^&&*/]*)|([^`'\"&&/*]*\\*/)", 0, 2},
 	{"js", {12}, "\\<(abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
@@ -132,6 +140,7 @@ String|toString|undefined|valueOf)\\>"},
 	{"js", {5}, "[\"'`]([^\"'`]|\\\\[\"'`])*[\"'`]"},
 
 	/* html */
+	{"html", {9}, NULL},
 	{"html", {5 | SYN_IT}, "(<!--[^&&------>]*)|([^&&<!------]*-->)", 0, 2},
 	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
 auto(capitalize|complete|focus|play)|background|\
@@ -174,6 +183,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
 	{"html", {5}, "&[a-zA-Z0-9_]+"},
 
 	/* diff */
+	{"diff", {9}, NULL},
 	{"diff", {1}, "^-.*$"},
 	{"diff", {2}, "^\\+.*$"},
 	{"diff", {6}, "^@.*$"},

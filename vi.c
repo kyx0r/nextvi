@@ -2056,7 +2056,7 @@ void vi(void)
 		{
 			if ((cs = vi_curword(xb, xrow, xoff, 1)))
 			{
-				syn_reloadft(ex_filetype(), "/", 0, cs);
+				syn_reloadft(0, cs);
 				free(cs);
 				vi_mod = 1;
 			}
