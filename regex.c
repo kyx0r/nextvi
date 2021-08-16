@@ -591,9 +591,9 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 	if (rs->grpcnt <= 2 || !*s)
 		return set;
 	const char *sub[rs->grpcnt * 2];
-	regmatch_t *subs = (regmatch_t*)sub;
 	if (re_pikevm(rs->regex, s, sub, rs->grpcnt * 2, flg))
 	{
+		regmatch_t *subs = (regmatch_t*)sub;
 		for (i = rs->n-1; i >= 0; i--) {
 			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_eo)
 			{
