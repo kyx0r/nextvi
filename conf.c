@@ -44,8 +44,9 @@ bright colors
 */
 
 struct highlight hls[] = {
-	{"/", {9}, NULL},
-	{"c", {9}, NULL},
+	{"/", {9}, NULL}, /* <-- required, do not remove */
+
+	{"c", {9}, NULL}, /* <-- optional, used by hww if set */
 	{"c", {14}, "^.+\\\\$", 1},
 	{"c", {4 | SYN_IT}, "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", 0, 2},
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\

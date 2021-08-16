@@ -331,7 +331,8 @@ void syn_context(int att)
 
 void syn_setft(char *ft)
 {
-	ftidx = syn_find(ft);
+	if ((ftidx = syn_find(ft)) < 0)
+		ftidx = 0;
 }
 
 void syn_scdir(int scdir)
@@ -344,8 +345,6 @@ void syn_scdir(int scdir)
 
 void syn_highlight(int *att, char *s, int n)
 {
-	if (ftidx < 0)
-		return;
 	struct rset *rs = ftmap[ftidx].rs;
 	int subs[16 * 2];
 	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
