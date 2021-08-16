@@ -411,7 +411,7 @@ goto next##nn; \
 	} \
 } \
 
-#define match(n, cpn, neol) \
+#define match(n, cpn) \
 for (;; sp = _sp) { \
 	gen++; uc_len(i, sp) uc_code(c, sp) cpn \
 	_sp = sp+i;\
@@ -460,7 +460,7 @@ for (;; sp = _sp) { \
 		decref(nsub) \
 	} \
 	break_for##n: \
-	if (neol !c) \
+	if (!c) \
 		break; \
 	tmp = clist; \
 	clist = nlist; \
@@ -500,17 +500,11 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
 	gen = prog->gen;
 	flg = prog->flg | flg;
-	if (flg & REG_ICASE && flg & REG_NOTEOL)
-		goto jmp_start1;
 	if (flg & REG_ICASE)
-		goto jmp_start2;
-	if (flg & REG_NOTEOL)
-		goto jmp_start3;
-	goto jmp_start4;
-	match(1, c = tolower(c);, /*nop*/)
-	match(2, c = tolower(c);, c == '\n' ||)
-	match(3, /*nop*/, /*nop*/)
-	match(4, /*nop*/, c == '\n' ||)
+		goto jmp_start1;
+	goto jmp_start2;
+	match(1, c = tolower(c);)
+	match(2, /*nop*/)
 }
 
 static int re_groupcount(char *s)
@@ -588,7 +582,7 @@ struct rset *rset_make(int n, char **re, int flg)
 int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 {
 	int i, grp, set = -1;
-	if (rs->grpcnt <= 2 || !*s)
+	if (rs->grpcnt <= 2)
 		return set;
 	const char *sub[rs->grpcnt * 2];
 	if (re_pikevm(rs->regex, s, sub, rs->grpcnt * 2, flg))
