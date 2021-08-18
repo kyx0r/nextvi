@@ -27,10 +27,10 @@
 #include "vi.h"
 
 int vi_lnnum;		/* line numbers */
-int vi_hidch;		/* show hidden chars*/
+int vi_hidch;		/* show hidden chars */
 int vi_mod;		/* screen should be redrawn (1: the whole screen, 2: the current line) */
-int vi_insmov;		/* moving in insert outside of insertion sbuf*/
-static char *vi_word = "\0eEwW0";	/* line word navigation*/
+int vi_insmov;		/* moving in insert outside of insertion sbuf */
+static char *vi_word = "\0eEwW0";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN];		/* current message */
 static char vi_charlast[8];		/* the last character searched via f, t, F, or T */
@@ -38,7 +38,7 @@ static int vi_charcmd;			/* the character finding command */
 static int vi_ybuf;			/* current yank buffer */
 static int vi_pcol;			/* the column requested by | command */
 static int vi_printed;			/* ex_print() calls since the last command */
-static int vi_scroll;			/* scroll amount for ^f and ^d*/
+static int vi_scroll;			/* scroll amount for ^f and ^d */
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
 static char *vi_curword(struct lbuf *lb, int row, int off, int n);
 
@@ -201,7 +201,6 @@ static void vi_drawagain(int xcol, int lineonly)
 			vi_drawrow(i);
 	blockhl = 0;
 	vi_drawmsg();
-	term_pos(xrow, led_pos(lbuf_get(xb, i), xcol));
 	term_commit();
 }
 
@@ -223,10 +222,8 @@ static void vi_drawupdate(int xcol, int otop)
 		for (i = 0; i < n; i++)
 			vi_drawrow(xtop + i);
 	}
-	term_pos(xrow, led_pos(lbuf_get(xb, i), xcol));
 	term_commit();
 	vi_drawmsg();
-	term_pos(xrow, led_pos(lbuf_get(xb, i), xcol));
 }
 
 /* update the screen by removing lines r1 to r2 before an input command */
@@ -1216,8 +1213,7 @@ static void vi_unindent(int r1, int r2)
 			sb = sbuf_make(1024);
 			if (ln[0] == ' ' || ln[0] == '\t')
 				ln++;
-			else
-			{
+			else {
 				endleft++;
 				continue;
 			}
@@ -1973,8 +1969,7 @@ void vi(void)
 				} else if (k == 'q') {
 					vi_splitln(xrow, 80, 1);
 					vi_mod = 1;
-				}
-				else if (k == '~' || k == 'u' || k == 'U')
+				} else if (k == '~' || k == 'u' || k == 'U')
 					if (!vc_motion(k))
 						vi_mod = 2;
 				break;
