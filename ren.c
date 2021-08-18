@@ -382,6 +382,8 @@ void syn_highlight(int *att, char *s, int n)
 					att[j] = syn_merge(att[j], catt[i]);
 				if (i == grp)
 					cend = MAX(cend, subs[i * 2 + 1]);
+				else
+					cend = MAX(cend, subs[i * 2]);
 			}
 		} 
 		if (!cend && !pcend)
