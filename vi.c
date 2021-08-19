@@ -28,7 +28,8 @@
 
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
-int vi_mod;		/* screen should be redrawn (1: the whole screen, 2: the current line) */
+int vi_mod;		/* screen should be redrawn: 
+			(1: the whole screen, -1: not updating xcol, 2: the current line) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
 static char *vi_word = "\0eEwW0";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
@@ -38,7 +39,8 @@ static int vi_charcmd;			/* the character finding command */
 static int vi_ybuf;			/* current yank buffer */
 static int vi_pcol;			/* the column requested by | command */
 static int vi_printed;			/* ex_print() calls since the last command */
-static int vi_scroll;			/* scroll amount for ^f and ^d */
+static int vi_scrollud;			/* scroll amount for ^u and ^d */
+static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
 static char *vi_curword(struct lbuf *lb, int row, int off, int n);
 
@@ -1602,19 +1604,25 @@ void vi(void)
 				vi_mod = 1;
 				break;
 			case TK_CTL('e'):
-				vi_scrollforeward(MAX(1, vi_arg1));
+				vi_scrolley = vi_arg1 ? vi_arg1 : vi_scrolley;
+				vi_scrollforeward(MAX(1, vi_scrolley));
 				xoff = vi_col2off(xb, xrow, xcol);
+				if (vi_scrolley > 1 || vi_mod)
+					vi_mod = -1;
 				break;
 			case TK_CTL('y'):
-				vi_scrollbackward(MAX(1, vi_arg1));
+				vi_scrolley = vi_arg1 ? vi_arg1 : vi_scrolley;
+				vi_scrollbackward(MAX(1, vi_scrolley));
 				xoff = vi_col2off(xb, xrow, xcol);
+				if (vi_scrolley > 1 || vi_mod)
+					vi_mod = -1;
 				break;
 			case TK_CTL('u'):
 				if (xrow == 0)
 					break;
 				if (vi_arg1)
-					vi_scroll = vi_arg1;
-				n = vi_scroll ? vi_scroll : xrows / 2;
+					vi_scrollud = vi_arg1;
+				n = vi_scrollud ? vi_scrollud : xrows / 2;
 				xrow = MAX(0, xrow - n);
 				if (xtop > 0)
 					xtop = MAX(0, xtop - n);
@@ -1625,8 +1633,8 @@ void vi(void)
 				if (xrow == lbuf_len(xb) - 1)
 					break;
 				if (vi_arg1)
-					vi_scroll = vi_arg1;
-				n = vi_scroll ? vi_scroll : xrows / 2;
+					vi_scrollud = vi_arg1;
+				n = vi_scrollud ? vi_scrollud : xrows / 2;
 				xrow = MIN(MAX(0, lbuf_len(xb) - 1), xrow + n);
 				if (xtop < lbuf_len(xb) - xrows)
 					xtop = MIN(lbuf_len(xb) - xrows, xtop + n);
@@ -2065,7 +2073,7 @@ void vi(void)
 			xtop = xtop + xrows + xrows / 2 <= xrow ?
 					xrow - xrows / 2 : xrow - xrows + 1;
 		xoff = ren_noeol(lbuf_get(xb, xrow), xoff);
-		if (vi_mod)
+		if (vi_mod > 0)
 			xcol = vi_off2col(xb, xrow, xoff);
 		if (xcol >= xleft + xcols)
 			xleft = xcol - xcols / 2;
