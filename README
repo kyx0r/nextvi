@@ -179,7 +179,7 @@ prompt. If valid, the input will be used for searches using N and n keys.
 59. Added ability to remember scroll amount for ^e and ^y keys (specified by vi_arg1).
 I felt like they were underused, and unlike ^u and ^d they keep the same 
 xcol position, allowing for different use case when you don't want to 
-lose cursor pos and the scroll amount scales by n lines.
+lose cursor pos.
 
 PIKEVM:
 -------

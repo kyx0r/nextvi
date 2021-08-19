@@ -1402,7 +1402,7 @@ static int vc_join(void)
 	return 0;
 }
 
-static int vi_scrollforeward(int cnt)
+static int vi_scrollforward(int cnt)
 {
 	if (xtop >= lbuf_len(xb) - 1)
 		return 1;
@@ -1598,14 +1598,14 @@ void vi(void)
 				vi_mod = 1;
 				break;
 			case TK_CTL('f'):
-				if (vi_scrollforeward(MAX(1, vi_arg1) * (xrows - 1)))
+				if (vi_scrollforward(MAX(1, vi_arg1) * (xrows - 1)))
 					break;
 				xoff = lbuf_indents(xb, xrow);
 				vi_mod = 1;
 				break;
 			case TK_CTL('e'):
 				vi_scrolley = vi_arg1 ? vi_arg1 : vi_scrolley;
-				vi_scrollforeward(MAX(1, vi_scrolley));
+				vi_scrollforward(MAX(1, vi_scrolley));
 				xoff = vi_col2off(xb, xrow, xcol);
 				if (vi_scrolley > 1 || vi_mod)
 					vi_mod = -1;
