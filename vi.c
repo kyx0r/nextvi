@@ -1602,12 +1602,12 @@ void vi(void)
 				vi_mod = 1;
 				break;
 			case TK_CTL('e'):
-				if (vi_scrollforeward(MAX(1, vi_arg1)))
-					break;
+				vi_scrollforeward(MAX(1, vi_arg1));
+				xoff = vi_col2off(xb, xrow, xcol);
 				break;
 			case TK_CTL('y'):
-				if (vi_scrollbackward(MAX(1, vi_arg1)))
-					break;
+				vi_scrollbackward(MAX(1, vi_arg1));
+				xoff = vi_col2off(xb, xrow, xcol);
 				break;
 			case TK_CTL('u'):
 				if (xrow == 0)
