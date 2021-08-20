@@ -1681,6 +1681,7 @@ void vi(void)
 				break;
 			case TK_CTL('^'):
 				ex_command("e #");
+				vc_status();
 				vi_mod = 1;
 				break;
 			case TK_CTL('k'):
