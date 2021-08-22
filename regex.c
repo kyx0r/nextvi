@@ -426,18 +426,19 @@ for (;; sp = _sp) { \
 		addthread##n: \
 			addthread(2##n, nlist, nlistidx, npc, nsub) \
 		case CLASS:; \
-			const char *s = _sp; \
+			const char *s = sp; \
 			int cp = c; \
 			int *pc = npc; \
 			int is_positive = *pc++; \
 			int cnt = *pc++; \
 			while (cnt--) { \
 				if (cp >= *pc && cp <= pc[1]) { \
-					if (is_positive < -1 && cnt <= -(is_positive+2)) \
+					if (is_positive < -1 && cnt < -is_positive) \
 					{ \
 						uc_len(j, s) s += j; \
 						uc_code(cp, s) \
 						pc += 2; \
+						is_positive++; \
 						continue; \
 					} \
 					is_positive -= is_positive * 2; \
