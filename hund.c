@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <termios.h>
 #include <stdint.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/select.h>
