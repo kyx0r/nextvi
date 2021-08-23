@@ -313,12 +313,12 @@ int re_comp(rcode *prog, const char *re, int flags)
 #define _return(state) \
 { prog->gen = gen + 1; return state; } \
 
-#define newsub() \
+#define newsub(init) \
 s1 = freesub; \
 if (s1) \
 	freesub = (rsub*)s1->sub[0]; \
 else \
-	s1 = (rsub*)&nsubs[rsubsize * subidx++]; \
+	{ s1 = (rsub*)&nsubs[rsubsize * subidx++]; init } \
 
 #define decref(csub) \
 if (--csub->ref == 0) { \
@@ -380,7 +380,7 @@ goto next##nn; \
 	case SAVE: \
 		if (sub->ref > 1) { \
 			sub->ref--; \
-			newsub() \
+			newsub(/*nop*/) \
 			for (j = 0; j < nsubp; j++) \
 				s1->sub[j] = sub->sub[j]; \
 			sub = s1; \
@@ -470,10 +470,8 @@ for (;; sp = _sp) { \
 	nlistidx = 0; \
 	if (!matched) { \
 		jmp_start##n: \
-		newsub() \
+		newsub(for(i = 1; i < nsubp; i++) s1->sub[i] = NULL;) \
 		s1->ref = 1; \
-		for (i = 1; i < nsubp; i++) \
-			s1->sub[i] = NULL; \
 		s1->sub[0] = _sp; \
 		addthread(1##n, clist, clistidx, insts, s1) \
 	} else if (!clistidx) \
