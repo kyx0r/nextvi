@@ -428,7 +428,6 @@ enum command {
 	CMD_DUP_PANEL,
 	CMD_SWAP_PANELS,
 
-	CMD_DIR_VOLUME,
 	CMD_TOGGLE_HIDDEN,
 
 	CMD_SORT_REVERSE,
@@ -623,7 +622,6 @@ static struct input2cmd default_mapping[] = {
 	{ { KUTF8("'") }, MODE_MANAGER, CMD_MARK_JUMP },
 
 	{ { KUTF8("/") }, MODE_MANAGER, CMD_FIND },
-	{ { KCTRL('V') }, MODE_MANAGER, CMD_DIR_VOLUME },
 
 	{ { KUTF8("x") }, MODE_MANAGER, CMD_TOGGLE_HIDDEN },
 
@@ -663,7 +661,7 @@ static const size_t default_mapping_length =
 
 static const char* const cmd_help[] = {
 	[CMD_QUIT] = "Quit hund",
-	[CMD_QQUIT] = "Quit hund but retain state",
+	[CMD_QQUIT] = "Quit hund but retain saved marks",
 	[CMD_HELP] = "Display help",
 
 	[CMD_COPY] = "Copy selected file to the other directory",
@@ -689,13 +687,12 @@ static const char* const cmd_help[] = {
 
 	[CMD_COMMAND] = "Open command line",
 
-	[CMD_CD] = "Jump to some directory",
+	[CMD_CD] = "Jump to some directory (also sets working dir for whole program)",
 	[CMD_REFRESH] = "Rescan directories and redraw UI",
 	[CMD_SWITCH_PANEL] = "Switch active panel",
 	[CMD_DUP_PANEL] = "Open current directory in the other panel",
 	[CMD_SWAP_PANELS] = "Swap panels",
 
-	[CMD_DIR_VOLUME] = "Calcualte volume of selected directory",
 	[CMD_TOGGLE_HIDDEN] = "Toggle between hiding/showing hidden files",
 
 	[CMD_SORT_REVERSE] = "Switch between ascending/descending sorting",
@@ -795,12 +792,8 @@ static const char* const more_help[] = {
 	"m<letter>\tSet mark",
 	"'<letter>\tGoto mark",
 	"[a-z]\tSave path to highlighted file.",
-	"[A-Z]\tSave only the working directory.",
-	"     \tJump to the working directory and highlight first entry.",
+	"[A-Z]\tSave selected directory.",
 	"",
-	"CHMOD",
-	"",// TODO
-
 	NULL,
 };
 
@@ -1753,16 +1746,14 @@ static void interpreter(struct ui* const i, struct task* const t,
 	}
 	else if (!strcmp(line, "lm")) {
 		list_marks(i, m);
-	}
-	else if (!strcmp(line, "sh")) {
+	} else if (!strcmp(line, "sh")) {
 		if (chdir(i->pv->wd)) {
 			failed(i, "chdir", strerror(errno));
 			return;
 		}
 		char* const arg[] = { xgetenv(sh), "-i", NULL };
 		spawn(arg, 0);
-	}
-	else if (!memcmp(line, "sh ", 3)) {
+	} else if (!memcmp(line, "sh ", 3)) {
 		if (chdir(i->pv->wd)) {
 			failed(i, "chdir", strerror(errno));
 			return;
@@ -1770,11 +1761,9 @@ static void interpreter(struct ui* const i, struct task* const t,
 		xstrlcpy(line+line_len, anykey, linesize-line_len);
 		char* const arg[] = { xgetenv(sh), "-i", "-c", line+3, NULL };
 		spawn(arg, 0);
-	}
-	else if (!memcmp(line, "o ", 2)) {
+	} else if (!memcmp(line, "o ", 2)) {
 		open_selected_with(i, line+2);
-	}
-	else if (!memcmp(line, "mark ", 5)) {// TODO
+	} else if (!memcmp(line, "mark ", 5)) {// TODO
 		if (line[6] != ' ') {
 			failed(i, "mark", "");// TODO
 			return;
@@ -1787,8 +1776,7 @@ static void interpreter(struct ui* const i, struct task* const t,
 		if (!marks_set(m, line[5], path, wdl, path+f, fl)) {
 			failed(i, "mark", "");// TODO
 		}
-	}
-	else if (!strcmp(line, "noh") || !strcmp(line, "nos")) {
+	} else if (!strcmp(line, "noh") || !strcmp(line, "nos")) {
 		i->dirty |= DIRTY_PANELS | DIRTY_STATUSBAR;
 		panel_unselect_all(i->pv);
 	}
@@ -2078,9 +2066,6 @@ static void process_input(struct ui* const i, struct task* const t,
 		break;
 	case CMD_LINK:
 		cmd_mklnk(i);
-		break;
-	case CMD_DIR_VOLUME:
-//estimate_volume_for_selected(i->pv);
 		break;
 	case CMD_SELECT_FILE:
 		if (panel_select_file(i->pv)) {
