@@ -182,7 +182,7 @@ static void file_ternary(struct lbuf* buf)
 			len = strlen(ptr);
 			if (len > 1)
 			{
-				if (search(ptr, len, ROOT) != -1)	
+				if (search(ptr, len, ROOT) != -1)
 				{
 					if (suggestlen)
 					{
@@ -588,7 +588,7 @@ static char *led_line(char *pref, char *post, char *ai,
 		case 127:
 			if (sbuf_len(sb))
 				sbuf_cut(sb, led_lastchar(sbuf_buf(sb)));
-			else 
+			else
 			{
 				vi_insmov = c;
 				goto kleave;
@@ -600,7 +600,7 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('w'):
 			if (sbuf_len(sb))
 				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
-			else 
+			else
 			{
 				vi_insmov = c;
 				goto kleave;

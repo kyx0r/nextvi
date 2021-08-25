@@ -312,6 +312,7 @@ char *ex_read(char *msg)
 void ex_show(char *msg)
 {
 	if (xvis) {
+		vi_printed = 1;
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (xled) {
 		syn_setft("---");
@@ -1681,12 +1682,12 @@ void vi(void)
 				break;
 			case TK_CTL('^'):
 				ex_command("e #");
-				vc_status();
+				if (!vi_printed)
+					vc_status();
 				vi_mod = 1;
 				break;
 			case TK_CTL('k'):
 				ex_command("w");
-				vi_mod = 1;
 				break;
 			case '#':
 				vi_lnnum = 1;
