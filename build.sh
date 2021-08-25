@@ -1,51 +1,31 @@
-#!/bin/sh
+#!/bin/sh -e
 CFLAGS="-pedantic -Wall -Wfatal-errors -std=c99 -D_POSIX_C_SOURCE=200809L $CFLAGS"
 SRCS="vi.c ex.c lbuf.c sbuf.c ren.c led.c uc.c term.c regex.c conf.c hund.c"
 OBJS="vi.o ex.o lbuf.o sbuf.o ren.o led.o uc.o term.o regex.o conf.o hund.o"
 OS="$(uname)"
-case ${CC:-0} in
-	0) CC="gcc";;
-	*) :
-esac
-if [ "$OS" = "FreeBSD" ]; then
-	CFLAGS="$CFLAGS -D_BSD_SOURCE"
-fi
-if [ "$OS" = "OpenBSD" ]; then
-	CFLAGS="$CFLAGS -D_BSD_SOURCE"
-fi
+: ${CC:=$(command -v cc)}
+: ${PREFIX:=/usr/local}
+case "$OS" in *BSD*) CFLAGS="$CFLAGS -D_BSD_SOURCE" ;; esac
 
-split() {
-	set -f
-	old_ifs=$IFS
-	IFS=$2
-	set -- $1
-	printf '%s\n' "$@"
-	IFS=$old_ifs
-	set +f
+run() {
+	printf '%s\n' "$*"
+	"$@"
 }
 
-cls() {
-	rm *.o vi
-	exit 0
+clean() {
+	run rm -f $OBJS vi
 }
 
-ins() {
-	cp -f vi /bin
-	exit 0
+install() {
+	[ -x vi ] || build
+	run cp -f vi "$DESTDIR$PREFIX/bin/vi"
 }
 
 build() {
-	split "$SRCS" " " | while read src; do
-		$CC -c $CFLAGS $src &
-		printf '%s\n' "$CC -c $CFLAGS $src"
+	for src in $SRCS; do
+		run "$CC" -c $CFLAGS $src
 	done
-	split "$OBJS" " " | while read obj; do
-		while [ ! -f "$obj" ]; do sleep 1; done
-	done
-	$CC $CFLAGS $OBJS -o vi
-	printf '%s\n' "$CC $CFLAGS $OBJS -o vi"
-	exit 0
+	run "$CC" $CFLAGS $OBJS -o vi
 }
 
-"$@"
-build
+"${@:-build}"
