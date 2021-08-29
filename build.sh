@@ -18,6 +18,7 @@ clean() {
 
 install() {
 	[ -x vi ] || build
+	run mkdir -p "$DESTDIR$PREFIX/bin/"
 	run cp -f vi "$DESTDIR$PREFIX/bin/vi"
 }
 
