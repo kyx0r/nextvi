@@ -524,6 +524,16 @@ static int re_groupcount(char *s)
 	return n;
 }
 
+void rset_free(struct rset *rs)
+{
+	if (!rs)
+		return;
+	free(rs->regex);
+	free(rs->setgrpcnt);
+	free(rs->grp);
+	free(rs);
+}
+
 struct rset *rset_make(int n, char **re, int flg)
 {
 	struct rset *rs = malloc(sizeof(*rs));
@@ -558,15 +568,12 @@ struct rset *rset_make(int n, char **re, int flg)
 		goto error;
 	char *code = malloc((sizeof(rcode)+sz) * 2);
 	memset(code+sizeof(rcode)+sz, 0, sizeof(rcode)+sz);
+	rs->regex = (rcode*)code;
 	if (re_comp((rcode*)code, s, regex_flg)) {
 		error:
-		free(rs->grp);
-		free(rs->setgrpcnt);
-		free(rs);
-		sbuf_free(sb);
-		return NULL;
+		rset_free(rs);
+		rs = NULL;
 	}
-	rs->regex = (rcode*)code;
 	sbuf_free(sb);
 	return rs;
 }
@@ -601,16 +608,6 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 		}
 	}
 	return set;
-}
-
-void rset_free(struct rset *rs)
-{
-	if (!rs)
-		return;
-	free(rs->regex);
-	free(rs->setgrpcnt);
-	free(rs->grp);
-	free(rs);
 }
 
 /* read a regular expression enclosed in a delimiter */
