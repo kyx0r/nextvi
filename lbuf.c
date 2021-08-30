@@ -1,10 +1,3 @@
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include "vi.h"
-
 #define NMARKS_BASE		('z' - 'a' + 2)
 #define NMARKS			32
 
@@ -121,7 +114,7 @@ static int linelength(char *s)
 	return r ? r - s + 1 : strlen(s);
 }
 
-static int linecount(char *s)
+static int lbuf_linecount(char *s)
 {
 	int n;
 	for (n = 0; s && *s; n++)
@@ -132,7 +125,7 @@ static int linecount(char *s)
 /* low-level line replacement */
 static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del)
 {
-	int n_ins = linecount(s);
+	int n_ins = lbuf_linecount(s);
 	int i;
 	while (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_sz + 512;
@@ -200,7 +193,7 @@ void lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 	lo->pos = pos;
 	lo->n_del = n_del;
 	lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
-	lo->n_ins = buf ? linecount(buf) : 0;
+	lo->n_ins = buf ? lbuf_linecount(buf) : 0;
 	lo->ins = buf ? uc_dup(buf) : NULL;
 	lo->seq = lb->useq;
 	lbuf_savepos(lb, lo);

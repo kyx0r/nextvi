@@ -1,7 +1,4 @@
 /* neatvi configuration file */
-#include <stdio.h>
-#include <string.h>
-#include "vi.h"
 #include "kmap.h"
 
 /* access mode of new files */

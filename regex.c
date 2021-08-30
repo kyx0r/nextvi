@@ -1,9 +1,3 @@
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "vi.h"
-
 /* regular expressions atoms */
 #define RA_CHR		'\0'	/* character literal */
 #define RA_BEG		'^'	/* string start */

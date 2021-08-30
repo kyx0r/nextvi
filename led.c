@@ -1,11 +1,4 @@
 /* line editing and drawing */
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include "vi.h"
 
 enum ntype {NO,YES};
 typedef struct tern {

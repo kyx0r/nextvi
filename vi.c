@@ -19,12 +19,29 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <sys/stat.h>
 #include <signal.h>
+#include <unistd.h>
+#include <time.h>
+#include <poll.h>
+#include <termios.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
 #include "vi.h"
+#include "conf.c"
+#include "ex.c"
+#include "lbuf.c"
+#include "led.c"
+#include "regex.c"
+#include "ren.c"
+#include "sbuf.c"
+#include "term.c"
+#include "uc.c"
+#include "hund.c"
 
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
@@ -33,7 +50,7 @@ int vi_mod;		/* screen should be redrawn:
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
 static char *vi_word = "\0eEwW0";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
-static char vi_msg[EXLEN];		/* current message */
+static char vi_msg[EXLEN+128];		/* current message */
 static char vi_charlast[8];		/* the last character searched via f, t, F, or T */
 static int vi_charcmd;			/* the character finding command */
 static int vi_ybuf;			/* current yank buffer */
@@ -569,23 +586,23 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 }
 
 /* string registers */
-static char *bufs[256];
+static char *regs[256];
 static int lnmode[256];
 
 char *vi_regget(int c, int *ln)
 {
 	*ln = lnmode[c];
-	return bufs[c];
+	return regs[c];
 }
 
 static void vi_regputraw(int c, char *s, int ln)
 {
-	char *pre = isupper(c) && bufs[tolower(c)] ? bufs[tolower(c)] : "";
+	char *pre = isupper(c) && regs[tolower(c)] ? regs[tolower(c)] : "";
 	char *buf = malloc(strlen(pre) + strlen(s) + 1);
 	strcpy(buf, pre);
 	strcat(buf, s);
-	free(bufs[tolower(c)]);
-	bufs[tolower(c)] = buf;
+	free(regs[tolower(c)]);
+	regs[tolower(c)] = buf;
 	lnmode[tolower(c)] = ln;
 }
 
@@ -604,19 +621,19 @@ void vi_regput(int c, char *s, int ln)
 
 static void vi_regdone(void)
 {
-	for (int i = 0; i < LEN(bufs); i++)
-		free(bufs[i]);
+	for (int i = 0; i < LEN(regs); i++)
+		free(regs[i]);
 }
 
 static void vi_regprint()
 {
-	for (int i = 0; i < LEN(bufs); i++)
+	for (int i = 0; i < LEN(regs); i++)
 	{
-		if (bufs[i])
+		if (regs[i])
 		{
-			int len = strlen(bufs[i])+3;
+			int len = strlen(regs[i])+3;
 			char buf[len];
-			snprintf(buf, len, "%c %s", i, bufs[i]);
+			snprintf(buf, len, "%c %s", i, regs[i]);
 			ex_print(buf);
 		}
 	}
