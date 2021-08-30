@@ -1,9 +1,4 @@
 /* variable length string buffer */
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "vi.h"
 
 #define SBUFSZ		128
 #define ALIGN(n, a)	(((n) + (a) - 1) & ~((a) - 1))

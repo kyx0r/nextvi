@@ -1,9 +1,4 @@
 /* rendering strings */
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "vi.h"
 
 static char *last_str;
 static char **last_chrs;

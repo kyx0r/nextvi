@@ -1,15 +1,3 @@
-#include <poll.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include "vi.h"
-
 static struct sbuf *term_sbuf;
 static int rows, cols;
 static struct termios termios;

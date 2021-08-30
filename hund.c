@@ -17,27 +17,16 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #define _XOPEN_SOURCE 700
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <limits.h>
 #include <locale.h>
-#include <time.h>
 #include <pwd.h>
 #include <grp.h>
-#include <fcntl.h>
 #include <dirent.h>
 #include <errno.h>
 #include <termios.h>
 #include <stdint.h>
-#include <signal.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/select.h>
-#include <sys/wait.h>
-#include <sys/ioctl.h>
-#include "vi.h"
 #ifndef LOGIN_NAME_MAX
 #define LOGIN_NAME_MAX _SC_LOGIN_NAME_MAX
 #endif
@@ -1790,8 +1779,8 @@ static void _perm(struct ui* const i, const int unset, const int mask) {
 	int minus;
 	struct input in = get_input(i->timeout);
 	if (in.t != I_UTF8) return;
-#define REL(M) do { *m[0] |= (mask & (M)); *m[1] &= ~(mask & (M)); } while (0);
-#define SET(M) do { *m[0] = (~mask & *m[0]) | (mask & (M)); *m[1] = (~mask & *m[1]) | (mask & ~(M)); } while (0);
+#define _REL(M) do { *m[0] |= (mask & (M)); *m[1] &= ~(mask & (M)); } while (0);
+#define _SET(M) do { *m[0] = (~mask & *m[0]) | (mask & (M)); *m[1] = (~mask & *m[1]) | (mask & ~(M)); } while (0);
 	minus = in.utf[0] == '-';
 	if (in.utf[0] == '+' || in.utf[0] == '-') {
 		in = get_input(i->timeout);
@@ -1802,18 +1791,18 @@ static void _perm(struct ui* const i, const int unset, const int mask) {
 			m[1] = tmp;
 		}
 		switch (in.utf[0]) {
-		case '0': REL(00000); break;
+		case '0': _REL(00000); break;
 		case 'x':
-		case '1': REL(00111); break;
+		case '1': _REL(00111); break;
 		case 'w':
-		case '2': REL(00222); break;
-		case '3': REL(00333); break;
+		case '2': _REL(00222); break;
+		case '3': _REL(00333); break;
 		case 'r':
-		case '4': REL(00444); break;
-		case '5': REL(00555); break;
-		case '6': REL(00666); break;
-		case '7': REL(00777); break;
-		case 't': REL(07000); break;
+		case '4': _REL(00444); break;
+		case '5': _REL(00555); break;
+		case '6': _REL(00666); break;
+		case '7': _REL(00777); break;
+		case 't': _REL(07000); break;
 		}
 	}
 	else {
@@ -1823,22 +1812,20 @@ static void _perm(struct ui* const i, const int unset, const int mask) {
 			m[1] = tmp;
 		}
 		switch (in.utf[0]) {
-		case '0': SET(00000); break;
-		case '1': SET(00111); break;
-		case '2': SET(00222); break;
-		case '3': SET(00333); break;
-		case '4': SET(00444); break;
-		case '5': SET(00555); break;
-		case '6': SET(00666); break;
-		case '7': SET(00777); break;
-		case 'r': REL(00444); break;
-		case 'w': REL(00222); break;
-		case 'x': REL(00111); break;
-		case 't': REL(07000); break;
+		case '0': _SET(00000); break;
+		case '1': _SET(00111); break;
+		case '2': _SET(00222); break;
+		case '3': _SET(00333); break;
+		case '4': _SET(00444); break;
+		case '5': _SET(00555); break;
+		case '6': _SET(00666); break;
+		case '7': _SET(00777); break;
+		case 'r': _REL(00444); break;
+		case 'w': _REL(00222); break;
+		case 'x': _REL(00111); break;
+		case 't': _REL(07000); break;
 		}
 	}
-#undef REL
-#undef SET
 }
 
 static void chg_column(struct ui* const i) {

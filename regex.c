@@ -1,9 +1,3 @@
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "vi.h"
-
 static int isword(const char *s)
 {
 	int c = (unsigned char) s[0];
