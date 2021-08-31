@@ -14,7 +14,7 @@ struct filetype fts[] = {
 	{"py", "\\.py$"},				/* python */
 	{"nm", "\\.nm$"},				/* neatmail */
 	{"js", "\\.js$"},				/* javascript */
-	{"html", "\\.html$"},				/* html */
+	{"html", "\\.(html|css)$"},			/* html,css */
 	{"diff", "\\.(patch|diff)$"}			/* diff */
 };
 int ftslen = LEN(fts);
@@ -179,7 +179,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
 	{"html", {9}, "#\\<[A-Fa-f0-9]+\\>"},
 	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+(px)?)\\>"},
 	{"html", {3, 13}, "<(/)?[^>]+>", 1},
-	{"html", {8}, "[^\t -,.-@[-^{-~]*:"},
+	{"html", {8}, "[^\t -,.-/:-@[-^{-~]*:"},
 	{"html", {SYN_BD}, "#[ \t]*[a-zA-Z0-9_]+"},
 	{"html", {5}, "&[a-zA-Z0-9_]+"},
 
