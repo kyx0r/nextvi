@@ -1797,7 +1797,7 @@ void vi(void)
 					xai = !xai;
 					char aistr[] = "autoindent  ";
 					aistr[11] = xai + '0';
-					snprintf(vi_msg, sizeof(vi_msg), aistr);
+					snprintf(vi_msg, sizeof(vi_msg), "%s", aistr);
 					break;
 				case 'o':
 					ex_command("%s/\x0d//g");

@@ -140,6 +140,7 @@ String|toString|undefined|valueOf)\\>"},
 
 	/* html */
 	{"html", {9}, NULL},
+	{"html", {5 | SYN_IT}, "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", 0, 2},
 	{"html", {5 | SYN_IT}, "(<!--[^&&------>]*)|([^&&<!------]*-->)", 0, 2},
 	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
 auto(capitalize|complete|focus|play)|background|\
@@ -176,8 +177,9 @@ multicol|nextid|nobr|noembed|noframes|plaintext|shadow|spacer|\
 strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
 	{"html", {12}, "\"([^\"]|\\\\\")*\""},
 	{"html", {9}, "#\\<[A-Fa-f0-9]+\\>"},
-	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9+px]+)\\>"},
+	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+(px)?)\\>"},
 	{"html", {3, 13}, "<(/)?[^>]+>", 1},
+	{"html", {8}, "[^\t -,.-@[-^{-~]*:"},
 	{"html", {SYN_BD}, "#[ \t]*[a-zA-Z0-9_]+"},
 	{"html", {5}, "&[a-zA-Z0-9_]+"},
 
