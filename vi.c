@@ -1420,22 +1420,16 @@ static int vc_join(void)
 	return 0;
 }
 
-static int vi_scrollforward(int cnt)
+static void vi_scrollforward(int cnt)
 {
-	if (xtop >= lbuf_len(xb) - 1)
-		return 1;
 	xtop = MIN(lbuf_len(xb) - 1, xtop + cnt);
 	xrow = MAX(xrow, xtop);
-	return 0;
 }
 
-static int vi_scrollbackward(int cnt)
+static void vi_scrollbackward(int cnt)
 {
-	if (xtop == 0)
-		return 1;
 	xtop = MAX(0, xtop - cnt);
 	xrow = MIN(xrow, xtop + xrows - 1);
-	return 0;
 }
 
 static void vc_status(void)
@@ -1610,14 +1604,12 @@ void vi(void)
 			lbuf_mark(xb, '*', xrow, xoff);
 			switch (c) {
 			case TK_CTL('b'):
-				if (vi_scrollbackward(MAX(1, vi_arg1) * (xrows - 1)))
-					break;
+				vi_scrollbackward(MAX(1, vi_arg1) * (xrows - 1));
 				xoff = lbuf_indents(xb, xrow);
 				vi_mod = 1;
 				break;
 			case TK_CTL('f'):
-				if (vi_scrollforward(MAX(1, vi_arg1) * (xrows - 1)))
-					break;
+				vi_scrollforward(MAX(1, vi_arg1) * (xrows - 1));
 				xoff = lbuf_indents(xb, xrow);
 				vi_mod = 1;
 				break;
