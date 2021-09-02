@@ -84,6 +84,7 @@ struct rcode
 	int unilen;
 	int len;
 	int sub;
+	int presub;
 	int splits;
 	int gen;
 	int flg;
