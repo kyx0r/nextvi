@@ -308,10 +308,10 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 #define _return(state) \
 { prog->gen = gen + 1; return state; } \
 
-#define newsub(init) \
+#define newsub(init, copy) \
 s1 = freesub; \
 if (s1) \
-	freesub = (rsub*)s1->sub[0]; \
+	{ freesub = (rsub*)s1->sub[0]; copy } \
 else \
 	{ s1 = (rsub*)&nsubs[rsubsize * subidx++]; init } \
 
@@ -335,12 +335,11 @@ subs[i++] = sub; \
 goto next##nn; \
 
 #define save11()\
-newsub(for (j = nsubp / 2; j < nsubp; j++) s1->sub[j] = NULL;) \
-for (j = 0; j < nsubp / 2; j++) \
-	s1->sub[j] = sub->sub[j]; \
+newsub(for (j = 0; j < nsubp; j++) s1->sub[j] = sub->sub[j];, \
+for (j = 0; j < nsubp / 2; j++) s1->sub[j] = sub->sub[j];) \
 
 #define save21()\
-newsub(/*nop*/) \
+newsub(/*nop*/, /*nop*/) \
 for (j = 0; j < nsubp; j++) \
 	s1->sub[j] = sub->sub[j]; \
 
@@ -476,7 +475,7 @@ for (;; sp = _sp) { \
 	nlistidx = 0; \
 	if (!matched) { \
 		jmp_start##n: \
-		newsub(for (i = 1; i < nsubp; i++) s1->sub[i] = NULL;) \
+		newsub(for (i = 1; i < nsubp; i++) s1->sub[i] = NULL;, /*nop*/) \
 		s1->ref = 1; \
 		s1->sub[0] = _sp; \
 		addthread(1##n, clist, clistidx, insts, s1) \
