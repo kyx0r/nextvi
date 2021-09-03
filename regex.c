@@ -334,17 +334,13 @@ if (*pc < WBEG) { \
 subs[i++] = sub; \
 goto next##nn; \
 
-#define save11()\
+#define saveclist()\
 newsub(for (j = 0; j < nsubp; j++) s1->sub[j] = sub->sub[j];, \
-for (j = 0; j < nsubp / 2; j++) s1->sub[j] = sub->sub[j];) \
+for (j = 0; j < nsubp / 2 - 1; j++) s1->sub[j] = sub->sub[j];) \
 
-#define save21()\
+#define savenlist()\
 newsub(/*nop*/, /*nop*/) \
-for (j = 0; j < nsubp; j++) \
-	s1->sub[j] = sub->sub[j]; \
-
-#define save12 save11
-#define save22 save21
+for (j = 0; j < nsubp; j++) s1->sub[j] = sub->sub[j]; \
 
 #define addthread(nn, list, listidx, _pc, _sub) \
 { \
@@ -387,7 +383,7 @@ for (j = 0; j < nsubp; j++) \
 	case SAVE: \
 		if (sub->ref > 1) { \
 			sub->ref--; \
-			save##nn() \
+			save##list() \
 			sub = s1; \
 			sub->ref = 1; \
 		} \
@@ -485,7 +481,7 @@ for (;; sp = _sp) { \
 if (matched) { \
 	for (i = 0, j = i; i < nsubp; i+=2, j++) { \
 		subp[i] = matched->sub[j]; \
-		subp[i+1] = matched->sub[j+(nsubp/2)]; \
+		subp[i+1] = matched->sub[nsubp / 2 + j]; \
 	} \
 	_return(1) \
 } \
