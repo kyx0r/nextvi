@@ -1,5 +1,5 @@
 #!/bin/sh -e
-CFLAGS="-pedantic -Wall -Wfatal-errors -std=c99 -D_POSIX_C_SOURCE=200809L $CFLAGS"
+CFLAGS="-pedantic -Wall -Wfatal-errors -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 $CFLAGS"
 OS="$(uname)"
 : ${CC:=$(command -v cc)}
 : ${PREFIX:=/usr/local}
