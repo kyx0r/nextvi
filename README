@@ -230,12 +230,15 @@ A: pikevm = NFA backtrack = DFA
 Q: Performance?
 A: Both my NFA and DFA implementations are very well written and
 optimized, some may even say overly optimized because they are
-just one big C macro. As benchmarked the DFA implementation is 2X 
-faster than original Ali's implementation and about 15% faster than 
-my pikevm NFA. Partly the reason for NFA to be slightly worse is 
-because the algorithm itself is a bit fancier and tests performed 
-with low N, 30-60 characters. Still, these are very impressive 
-results considering the benefits provided by pikevm.
+just one big C macro. As benchmarked the my DFA implementation is 2X 
+faster than original Ali's implementation and my NFA is neck in neck 
+even with my DFA, tested with arbitary regex complexity, meaning that
+large number of groups and alternations allowed. The difference
+is within the margin of error, but considering the benefits
+provided by pikevm makes it an obvious choice for me. I believe there
+is still some room for improvement as to make pikevm even faster, with
+some clever tricks to be invented, whereas in DFA there is nothing
+left to optimize.
 A: Compatibility?
 Q: 100% compatible, with exception of posix macros like [:punct:].
 I don't use them so I did not bother. DFA has them, they are easy
