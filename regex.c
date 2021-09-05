@@ -172,7 +172,8 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			{
 				prog->splits++;
 				EMIT(PC++, SPLIT);
-				EMIT(PC++, REL(PC, PC+((size+2)*i)));
+				EMIT(PC++, REL(PC-1, PC+((size+3)*i)));
+				EMIT(PC++, 0);
 				if (code)
 					memcpy(&code[PC], &code[term], size*sizeof(int));
 				PC += size;
@@ -195,20 +196,21 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			break;
 		case '?':
 			if (PC == term) goto syntax_error;
-			INSERT_CODE(term, 2, PC);
+			INSERT_CODE(term, 3, PC);
 			if (re[1] == '?') {
 				EMIT(term, RSPLIT);
 				re++;
 			} else
 				EMIT(term, SPLIT);
-			EMIT(term + 1, REL(term, PC));
+			EMIT(term + 1, REL(term, PC-1));
+			EMIT(term + 2, 0);
 			prog->len++;
 			prog->splits++;
 			term = PC;
 			break;
 		case '*':
 			if (PC == term) goto syntax_error;
-			INSERT_CODE(term, 2, PC);
+			INSERT_CODE(term, 3, PC);
 			EMIT(PC, JMP);
 			EMIT(PC + 1, REL(PC, term));
 			PC += 2;
@@ -217,7 +219,8 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 				re++;
 			} else
 				EMIT(term, SPLIT);
-			EMIT(term + 1, REL(term, PC));
+			EMIT(term + 1, REL(term, PC-1));
+			EMIT(term + 2, 0);
 			prog->splits++;
 			prog->len += 2;
 			term = PC;
@@ -229,8 +232,9 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 				re++;
 			} else
 				EMIT(PC, RSPLIT);
-			EMIT(PC + 1, REL(PC, term));
-			PC += 2;
+			EMIT(PC + 1, REL(PC-1, term));
+			EMIT(PC + 2, 0);
+			PC += 3;
 			prog->splits++;
 			prog->len++;
 			term = PC;
@@ -238,11 +242,12 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 		case '|':
 			if (alt_label)
 				EMIT(alt_label, REL(alt_label, PC) + 1);
-			INSERT_CODE(start, 2, PC);
+			INSERT_CODE(start, 3, PC);
 			EMIT(PC++, JMP);
 			alt_label = PC++;
 			EMIT(start, SPLIT);
-			EMIT(start + 1, REL(start, PC));
+			EMIT(start + 1, REL(start, PC-1));
+			EMIT(start + 2, 0);
 			prog->splits++;
 			prog->len += 2;
 			term = PC;
@@ -322,93 +327,91 @@ if (--csub->ref == 0) { \
 } \
 
 #define deccheck(nn) \
-{ decref(sub) goto rec_check##nn; } \
+{ decref(nsub) goto rec_check##nn; } \
 
 #define fastrec(nn, list, listidx) \
-if (*pc < WBEG) { \
-	list[listidx].sub = sub; \
-	list[listidx++].pc = pc; \
-	pc = pcs[i]; \
+nsub->ref++; \
+if (*npc < WBEG) { \
+	list[listidx].sub = nsub; \
+	list[listidx++].pc = npc; \
+	npc = pcs[i]; \
 	goto rec##nn; \
 } \
-subs[i++] = sub; \
+subs[i++] = nsub; \
 goto next##nn; \
 
-#define saveclist()\
-newsub(for (j = 0; j < nsubp; j++) s1->sub[j] = sub->sub[j];, \
-for (j = 0; j < nsubp / 2 - 1; j++) s1->sub[j] = sub->sub[j];) \
+#define saveclist() \
+newsub(for (j = 0; j < nsubp; j++) s1->sub[j] = nsub->sub[j];, \
+for (j = 0; j < nsubp / 2 - 1; j++) s1->sub[j] = nsub->sub[j];) \
 
 #define savenlist()\
 newsub(/*nop*/, /*nop*/) \
-for (j = 0; j < nsubp; j++) s1->sub[j] = sub->sub[j]; \
+for (j = 0; j < nsubp; j++) s1->sub[j] = nsub->sub[j]; \
 
-#define addthread(nn, list, listidx, _pc, _sub) \
+#define addthread(nn, list, listidx) \
 { \
-	int i = 0, *pc = _pc; \
-	rsub *sub = _sub; \
+	int i = 0; \
 	rec##nn: \
-	if (*pc < WBEG) { \
-		list[listidx].sub = sub; \
-		list[listidx++].pc = pc; \
+	if (*npc < WBEG) { \
+		list[listidx].sub = nsub; \
+		list[listidx++].pc = npc; \
 		rec_check##nn: \
 		if (i) { \
-			pc = pcs[--i]; \
-			sub = subs[i]; \
+			npc = pcs[--i]; \
+			nsub = subs[i]; \
 			goto rec##nn; \
 		} \
 		continue; \
 	} \
 	next##nn: \
-	switch(*pc) { \
+	switch(*npc) { \
 	case JMP: \
-		pc += 2 + pc[1]; \
+		npc += 2 + npc[1]; \
 		goto rec##nn; \
 	case SPLIT: \
-		if (plist[pc - insts] == gen) \
+		if (npc[2] == gen) \
 			deccheck(nn) \
-		plist[pc - insts] = gen; \
-		sub->ref++; \
-		pc += 2; \
-		pcs[i] = pc + pc[-1]; \
+		npc[2] = gen; \
+		npc += 3; \
+		pcs[i] = npc + npc[-2]; \
 		fastrec(nn, list, listidx) \
 	case RSPLIT: \
-		if (plist[pc - insts] == gen) \
+		if (npc[2] == gen) \
 			deccheck(nn) \
-		plist[pc - insts] = gen; \
-		sub->ref++; \
-		pc += 2; \
-		pcs[i] = pc; \
-		pc += pc[-1]; \
+		npc[2] = gen; \
+		npc += 3; \
+		pcs[i] = npc; \
+		npc += npc[-2]; \
 		fastrec(nn, list, listidx) \
 	case SAVE: \
-		if (sub->ref > 1) { \
-			sub->ref--; \
+		if (nsub->ref > 1) { \
+			nsub->ref--; \
 			save##list() \
-			sub = s1; \
-			sub->ref = 1; \
+			nsub = s1; \
+			nsub->ref = 1; \
 		} \
-		sub->sub[pc[1]] = _sp; \
-		pc += 2; \
+		nsub->sub[npc[1]] = _sp; \
+		npc += 2; \
 		goto rec##nn; \
 	case WBEG: \
 		if ((sp != s && isword(sp)) || !isword(_sp)) \
 			deccheck(nn) \
-		pc++; goto rec##nn; \
+		npc++; goto rec##nn; \
 	case WEND: \
 		if (isword(_sp)) \
 			deccheck(nn) \
-		pc++; goto rec##nn; \
+		npc++; goto rec##nn; \
 	case BOL: \
 		if (flg & REG_NOTBOL || (_sp != s && *sp != '\n')) { \
 			if (!i && !listidx) \
 				_return(0) \
 			deccheck(nn) \
 		} \
-		pc++; goto rec##nn; \
+		npc++; goto rec##nn; \
 	case EOL: \
 		if (flg & REG_NOTEOL || (*_sp && *_sp != '\n')) \
 			deccheck(nn) \
-		pc++; goto rec##nn; \
+		npc++; goto rec##nn; \
 	} \
 } \
 
@@ -425,7 +428,7 @@ for (;; sp = _sp) { \
 				break; \
 		case ANY: \
 		addthread##n: \
-			addthread(2##n, nlist, nlistidx, npc, nsub) \
+			addthread(2##n, nlist, nlistidx) \
 		case CLASS:; \
 			const char *s = sp; \
 			int cp = c; \
@@ -474,7 +477,8 @@ for (;; sp = _sp) { \
 		newsub(for (i = 1; i < nsubp; i++) s1->sub[i] = NULL;, /*nop*/) \
 		s1->ref = 1; \
 		s1->sub[0] = _sp; \
-		addthread(1##n, clist, clistidx, insts, s1) \
+		npc = insts; nsub = s1; \
+		addthread(1##n, clist, clistidx) \
 	} else if (!clistidx) \
 		break; \
 } \
@@ -493,7 +497,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int clistidx = 0, nlistidx = 0;
 	const char *sp = s, *_sp = s;
-	int *insts = prog->insts, *plist = insts+prog->unilen;
+	int *insts = prog->insts;
 	int *pcs[prog->splits];
 	rsub *subs[prog->splits];
 	char nsubs[rsubsize * (prog->len+3 - prog->splits)];
@@ -575,8 +579,7 @@ struct rset *rset_make(int n, char **re, int flg)
 	int sz = re_sizecode(s) * sizeof(int);
 	if (sz <= 3)
 		goto error;
-	char *code = malloc((sizeof(rcode)+sz) * 2);
-	memset(code+sizeof(rcode)+sz, 0, sizeof(rcode)+sz);
+	char *code = malloc(sizeof(rcode)+sz);
 	rs->regex = (rcode*)code;
 	if (re_comp((rcode*)code, s, rs->grpcnt-1, regex_flg)) {
 		error:
