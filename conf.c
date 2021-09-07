@@ -49,7 +49,7 @@ struct highlight hls[] = {
 	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
 u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
-int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline)\\>"},
+int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline|restrict)\\>"},
 	{"c", {12 | SYN_BD}, "\\<(true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
 free|realloc|NULL|stdin|stdout|errno)\\>"},
 	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
@@ -179,7 +179,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
 	{"html", {9}, "#\\<[A-Fa-f0-9]+\\>"},
 	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+(px)?)\\>"},
 	{"html", {3, 13}, "<(/)?[^>]+>", 1},
-	{"html", {8}, "[^\t -,.-/:-@[-^{-~]*:"},
+	{"html", {8, 5, 5, 5}, "(\\{)[^}]*|(^[^{]*)?(\\})", 3, 3},
 	{"html", {SYN_BD}, "#[ \t]*[a-zA-Z0-9_]+"},
 	{"html", {5}, "&[a-zA-Z0-9_]+"},
 

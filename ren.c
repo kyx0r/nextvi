@@ -302,6 +302,7 @@ static struct rset *syn_ftrs;
 static int syn_ctx;
 static int last_scdir;
 static int *blockatt;
+static int blockcont;
 int blockhl;
 
 static int syn_find(char *ft)
@@ -343,18 +344,18 @@ void syn_highlight(int *att, char *s, int n)
 	struct rset *rs = ftmap[ftidx].rs;
 	int subs[16 * 2];
 	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
-	int pcend = 1;
+	int bend = 0;
 	if (xhll)
 		for (i = 0; i < n; i++)
 			att[i] = syn_ctx;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
 		hl += ftmap[ftidx].setidx;
-		int cend = 0;
+		int cend = flg ? 1 : 0;
 		int grp = hls[hl].end;
 		int *catt = hls[hl].att;
 		int blkend = hls[hl].blkend;
-		if (blkend) {
+		if (blkend && sidx >= bend) {
 			for (i = 0; i < LEN(subs) / 2; i++)
 				if (subs[i * 2] >= 0)
 					blk = i;
@@ -365,7 +366,8 @@ void syn_highlight(int *att, char *s, int n)
 				blockhl = 0;	
 			else if (!blockhl && blk != blkend) {
 				blockhl = hl;
-				blockatt = hls[hl].att;
+				blockatt = catt;
+				blockcont = grp;
 			} else
 				blk = 0;
 		}
@@ -377,19 +379,18 @@ void syn_highlight(int *att, char *s, int n)
 					att[j] = syn_merge(att[j], catt[i]);
 				if (i == grp)
 					cend = MAX(cend, subs[i * 2 + 1]);
-				else
+				else {
+					bend = MAX(cend, subs[i * 2 + 1]) + sidx;
 					cend = MAX(cend, subs[i * 2]);
+				}
 			}
 		} 
-		if (!cend && !pcend)
-			cend = 1;
-		pcend = cend;
 		sidx += cend;
 		flg = REG_NOTBOL;
 	}
 	if (blockhl && !blk)
 		for (j = 0; j < n; j++)
-			att[j] = *blockatt;
+			att[j] = blockcont && att[j] ? att[j] : *blockatt;
 }
 
 static void syn_initft(int fti, int *n, char *name)
