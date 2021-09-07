@@ -314,9 +314,8 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 { prog->gen = gen + 1; return state; } \
 
 #define newsub(init, copy) \
-s1 = freesub; \
-if (s1) \
-	{ freesub = (rsub*)s1->sub[0]; copy } \
+if (freesub) \
+	{ s1 = freesub; freesub = (rsub*)s1->sub[0]; copy } \
 else \
 	{ s1 = (rsub*)&nsubs[rsubsize * subidx++]; init } \
 
