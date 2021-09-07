@@ -494,12 +494,13 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
 	int i, j, c, gen, subidx = 1, *npc;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
+	int nsubssize = rsubsize * (prog->len+3 - prog->splits);
 	int clistidx = 0, nlistidx = 0;
 	const char *sp = s, *_sp = s;
 	int *insts = prog->insts;
 	int *pcs[prog->splits];
 	rsub *subs[prog->splits];
-	char nsubs[rsubsize * (prog->len+3 - prog->splits)];
+	char nsubs[nsubssize > 500000 ? 500000 : nsubssize];
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
