@@ -305,7 +305,8 @@ struct highlight {
 	char *ft;		/* the filetype of this pattern */
 	int att[16];		/* attributes of the matched groups */
 	char *pat;		/* regular expression */
-	int end;		/* the group ending this pattern */
+	int end;		/* the group ending this pattern;
+				if set on multi-line the block emits all other matches in a set */
 	int blkend;		/* the ending group for multi-line patterns */
 };
 extern struct highlight hls[];
