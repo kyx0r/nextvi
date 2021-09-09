@@ -472,11 +472,10 @@ for (;; sp = _sp) { \
 	clistidx = nlistidx; \
 	nlistidx = 0; \
 	if (clistidx != 1 && !matched) { \
-		if (!clistidx && pclistidx) { \
-			sp = sp; \
-			pclistidx = 0; \
-		} \
+		if (!clistidx && pclistidx) \
+			_sp = sp; \
 		jmp_start##n: \
+		pclistidx = nlistidx; \
 		newsub(for (i = 1; i < nsubp; i++) s1->sub[i] = NULL;, /*nop*/) \
 		s1->ref = 1; \
 		s1->sub[0] = _sp; \
@@ -499,7 +498,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
 	int i, j, c, gen, subidx = 1, *npc;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
-	int clistidx = 0, nlistidx = 0, pclistidx = 0;
+	int clistidx = 0, nlistidx = 0, pclistidx;
 	const char *sp = s, *_sp = s;
 	int *insts = prog->insts;
 	int *pcs[prog->splits];
@@ -611,7 +610,8 @@ int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 				int sgrp = rs->setgrpcnt[set] + 1;
 				for (i = 0; i < n; i++) {
 					grp = rs->grp[set] + i;
-					if (i < sgrp && subs[grp].rm_eo) {
+					if (i < sgrp && subs[grp].rm_eo
+							&& subs[grp].rm_so) {
 						grps[i * 2] = subs[grp].rm_so - s;
 						grps[i * 2 + 1] = subs[grp].rm_eo - s;
 					} else {
