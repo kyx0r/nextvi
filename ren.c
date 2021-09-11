@@ -344,14 +344,13 @@ void syn_highlight(int *att, char *s, int n)
 	struct rset *rs = ftmap[ftidx].rs;
 	int subs[16 * 2];
 	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
-	int bend = 0;
+	int bend = 0, cend = 0;
 	if (xhll)
 		for (i = 0; i < n; i++)
 			att[i] = syn_ctx;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
 		hl += ftmap[ftidx].setidx;
-		int cend = flg ? 1 : 0;
 		int grp = hls[hl].end;
 		int *catt = hls[hl].att;
 		int blkend = hls[hl].blkend;
@@ -380,12 +379,14 @@ void syn_highlight(int *att, char *s, int n)
 				if (i == grp)
 					cend = MAX(cend, subs[i * 2 + 1]);
 				else {
-					bend = MAX(cend, subs[i * 2 + 1]) + sidx;
+					if (blkend)
+						bend = MAX(cend, subs[i * 2 + 1]) + sidx;
 					cend = MAX(cend, subs[i * 2]);
 				}
 			}
 		} 
 		sidx += cend;
+		cend = 1;
 		flg = REG_NOTBOL;
 	}
 	if (blockhl && !blk)
