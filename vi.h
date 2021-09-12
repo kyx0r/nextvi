@@ -140,6 +140,7 @@ char *syn_filetype(char *path);
 void syn_context(int att);
 int syn_merge(int old, int new);
 void syn_reloadft(int i, char *reg);
+void syn_addhl(char *reg);
 void syn_init(void);
 void syn_done(void);
 
@@ -272,13 +273,13 @@ struct highlight {
 	char *ft;		/* the filetype of this pattern */
 	char *pat;		/* regular expression */
 	int att[16];		/* attributes of the matched groups */
-	int end[16];		/* the group ending this pattern;
+	char end[16];		/* the group ending this pattern;
 				if set on multi-line the block emits all other matches in a set 
 				else defines hl continuation for the group:
 				positive value - continue at rm_so
 				zero (default) - continue at rm_eo
 				negative value - continue at sp+1 */
-	int blkend;		/* the ending group for multi-line patterns */
+	char blkend;		/* the ending group for multi-line patterns */
 };
 extern struct highlight hls[];
 extern int hlslen;

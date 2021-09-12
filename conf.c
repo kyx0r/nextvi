@@ -43,8 +43,8 @@ bright colors
 struct highlight hls[] = {
 	{"/", NULL, {9}}, /* <-- required, do not remove */
 
-	{"c", NULL, {9}}, /* <-- optional, used by hww if set */
 	{"c", "^.+\\\\$", {14}, {1}},
+	{"c", NULL, {9}}, /* <-- optional, used by hww if set */
 	{"c", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
 	{"c", "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
@@ -140,8 +140,8 @@ String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
 	{"js", "[\"'`]([^\"'`]|\\\\[\"'`])*[\"'`]", {5}},
 
 	/* html */
-	{"html", NULL, {9}},
 	{"html", "(\\{)[^}]*|(^[^{]*)?(\\})", {8, 5, 8, 5}, {1, 1, -1, -1}, 3},
+	{"html", NULL, {9}},
 	{"html", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {5 | SYN_IT}, {0}, 2},
 	{"html", "(<!--[^&&------>]*)|([^&&<!------]*-->)", {5 | SYN_IT}, {0}, 2},
 	{"html", "([^\t -,.-/:-@[-^{-~]+:).+;", {0, 3}, {1, 1}},
@@ -216,7 +216,7 @@ struct dircontext dctxs[] = {
 int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
-	{+0, +1, 1, "\\\\\\*\\[([^]]+)\\]"},
+	{+0, +1, 1, "\\\\\\*\\[([^\\]]+)\\]"},
 	{+1, -1, 0, "[" CR2L "][" CNEUT CR2L "]*[" CR2L "]"},
 	{-1, +1, 0, "[a-zA-Z0-9_][^" CR2L "\\\\`$']*[a-zA-Z0-9_]"},
 	{+0, +1, 0, "\\$([^$]+)\\$"},

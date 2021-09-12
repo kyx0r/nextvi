@@ -2070,7 +2070,7 @@ void vi(void)
 		{
 			if ((cs = vi_curword(xb, xrow, xoff, 1)))
 			{
-				syn_reloadft(0, cs);
+				syn_addhl(cs);
 				free(cs);
 				vi_mod = 1;
 			}
