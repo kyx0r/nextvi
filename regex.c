@@ -99,6 +99,7 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 	char *ptmp = NULL;
 	char *pnext = NULL;
 	while (*p != ']') {
+		if (*p == '\\') p++;
 		if (!*p)
 		{
 			if (pnext)
