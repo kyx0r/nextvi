@@ -97,6 +97,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			PC += 2;
 			prog->len++;
 			for (cnt = 0; *re != ']'; cnt++) {
+				if (*re == '\\') re++;
 				if (!*re) goto syntax_error;
 				uc_len(l, re)
 				if (not && *re == '&' && re[l] == '&') {
