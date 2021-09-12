@@ -282,8 +282,8 @@ int re_sizecode(const char *re)
 	int res = _compilecode(&re, &dummyprog, /*sizecode*/1, 0);
 	if (res < 0) return res;
 	// If unparsed chars left
-	if (*re) return RE_SYNTAX_ERROR;
-
+	if (*re) 
+		return RE_SYNTAX_ERROR;
 	return dummyprog.unilen;
 }
 
@@ -565,12 +565,9 @@ struct rset *rset_make(int n, char **re, int flg)
 	sbuf_chr(sb, ')');
 	char *s = sbuf_buf(sb);
 	int sz = re_sizecode(s) * sizeof(int);
-	if (sz <= 3)
-		goto error;
-	char *code = malloc(sizeof(rcode)+sz);
+	char *code = malloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
-	if (re_comp((rcode*)code, s, rs->grpcnt-1, regex_flg)) {
-		error:
+	if (sz <= 3 || re_comp((rcode*)code, s, rs->grpcnt-1, regex_flg)) {
 		rset_free(rs);
 		rs = NULL;
 	}
