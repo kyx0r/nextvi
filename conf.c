@@ -145,38 +145,37 @@ String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
 	{"html", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {5 | SYN_IT}, {0}, 2},
 	{"html", "(<!--[^&&------>]*)|([^&&<!------]*-->)", {5 | SYN_IT}, {0}, 2},
 	{"html", "([^\t -,.-/:-@[-^{-~]+:).+;", {0, 3}, {1, 1}},
-	{"html", "\\<(accept|accesskey|action|align|allow|alt|async|\
+	{"html", "\\<(accept|accesskey|align|allow|alt|async|\
 auto(capitalize|complete|focus|play)|background|\
 bgcolor|border|buffered|challenge|charset|checked|cite|\
 class|code(base)|color|cols|colspan|content(\
 editable)|contextmenu|controls|coords|crossorigin|\
 csp|data|datetime|decoding|def(ault|er)|dir|dirname|\
 disabled|download|draggable|dropzone|enctype|enterkeyhint|\
-equiv|for|form|action|novalidate|headers|height|\
-hidden|high|href|lang|http|icon|id|importance|\
-inputmode|integrity|intrinsicsize|ismap|itemprop|keytype|\
-kind|label|lang|language|list|loading|loop|low|manifest|\
+equiv|for|form|action|headers|height|hidden|high|href|http|\
+icon|id|importance|inputmode|integrity|intrinsicsize|ismap|\
+itemprop|keytype|kind|label|lang|language|list|loading|loop|\
 max|maxlength|media|method|min|minlength|multiple|muted|\
 name|novalidate|open|optimum|pattern|ping|placeholder|\
 poster|preload|property|radiogroup|readonly|referrerpolicy|\
 rel|required|reversed|rows|rowspan|sandbox|scope|scoped|\
 selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
 srclang|srcset|start|step|style|summary|tabindex|target|\
-title|translate|type|usemap|value|width|wrap)\\>", {2}},
+title|translate|type|usemap|value|width|wrap|low|manifest)\\>", {2}},
 	{"html", "\\<(html|base|head|link|meta|body|address|article|\
-aside|footer|header|hgroup|main|nav|section|blockquote|dd|\
+aside|footer|header|hgroup|nav|section|blockquote|dd|\
 div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
 b|bdi|bdo|br|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
 ruby|s|samp|small|strong|sub|sup|time|tt|u|var|wbr|area|\
-audio|img|map|track|video|applet|embed|iframe|noembed|object|\
+audio|img|map|track|video|embed|iframe|object|\
 param|picture|source|canvas|noscript|script|del|ins|caption|\
 col|colgroup|table|tbody|td|tfoot|th|thead|tr|button|datalist|\
 fieldset|input|legend|meter|optgroup|option|output|\
-progress|select|textarea|details|dialog|menu|menuitem|\
-element|shadow|template|acronym|applet|basefont|\
+progress|select|textarea|details|dialog|menu|\
+shadow|template|acronym|applet|basefont|\
 bgsound|big|blink|center|command|element|font|\
 frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
-multicol|nextid|nobr|noembed|noframes|plaintext|shadow|spacer|\
+multicol|nextid|nobr|noembed|noframes|plaintext|spacer|\
 strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
 	{"html", "\"([^\"]|\\\\\")*\"", {12}},
 	{"html", "#\\<[A-Fa-f0-9]+\\>", {9}},
