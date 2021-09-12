@@ -292,7 +292,8 @@ void dir_done(void)
 /* mapping filetypes to regular expression sets */
 static struct ftmap {
 	char ft[32];
-	int setidx;
+	int setbidx;
+	int seteidx;
 	struct rset *rs;
 } ftmap[NFTS];
 static int ftmidx;
@@ -350,7 +351,7 @@ void syn_highlight(int *att, char *s, int n)
 			att[i] = syn_ctx;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
-		hl += ftmap[ftidx].setidx;
+		hl += ftmap[ftidx].setbidx;
 		int *catt = hls[hl].att;
 		int blkend = hls[hl].blkend;
 		if (blkend && sidx >= bend) {
@@ -398,15 +399,13 @@ static void syn_initft(int fti, int *n, char *name)
 {
 	int i = *n;
 	char *pats[hlslen];
-	for (; i < hlslen; i++)
-		if (!strcmp(hls[i].ft, name))
-			pats[i - *n] = hls[i].pat;
-		else
-			break;
-	ftmap[fti].setidx = *n;
+	for (; i < hlslen && !strcmp(hls[i].ft, name); i++)
+		pats[i - *n] = hls[i].pat;
+	ftmap[fti].setbidx = *n;
 	strcpy(ftmap[fti].ft, name);
 	ftmap[fti].rs = rset_make(i - *n, pats, 0);
 	*n += i - *n;
+	ftmap[fti].seteidx = *n;
 }
 
 char *syn_filetype(char *path)
@@ -417,10 +416,19 @@ char *syn_filetype(char *path)
 
 void syn_reloadft(int i, char *reg)
 {
-	int hlset = ftmap[ftidx].setidx;
-	hls[hlset + i].pat = reg;
+	int hlset = ftmap[ftidx].setbidx;
+	char *p = hls[i].pat;
+	hls[i].pat = reg;
 	rset_free(ftmap[ftidx].rs);
 	syn_initft(ftidx, &hlset, ftmap[ftidx].ft);
+	hls[i].pat = p;
+}
+
+void syn_addhl(char *reg)
+{
+	for (int i = ftmap[ftidx].setbidx; i < ftmap[ftidx].seteidx; i++)
+		if (!hls[i].pat)
+			syn_reloadft(i, reg);
 }
 
 void syn_init(void)
