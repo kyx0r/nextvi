@@ -270,10 +270,14 @@ extern int ftslen;
 /* syntax highlighting patterns */
 struct highlight {
 	char *ft;		/* the filetype of this pattern */
-	int att[16];		/* attributes of the matched groups */
 	char *pat;		/* regular expression */
-	int end;		/* the group ending this pattern;
-				if set on multi-line the block emits all other matches in a set */
+	int att[16];		/* attributes of the matched groups */
+	int end[16];		/* the group ending this pattern;
+				if set on multi-line the block emits all other matches in a set 
+				else defines hl continuation for the group:
+				positive value - continue at rm_so
+				zero (default) - continue at rm_eo
+				negative value - continue at sp+1 */
 	int blkend;		/* the ending group for multi-line patterns */
 };
 extern struct highlight hls[];

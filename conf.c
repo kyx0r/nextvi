@@ -41,109 +41,111 @@ bright colors
 */
 
 struct highlight hls[] = {
-	{"/", {9}, NULL}, /* <-- required, do not remove */
+	{"/", NULL, {9}}, /* <-- required, do not remove */
 
-	{"c", {9}, NULL}, /* <-- optional, used by hww if set */
-	{"c", {14}, "^.+\\\\$", 1},
-	{"c", {4 | SYN_IT}, "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", 0, 2},
-	{"c", {10}, "\\<(signed|unsigned|char|short|int|long|float|double|void|\
+	{"c", NULL, {9}}, /* <-- optional, used by hww if set */
+	{"c", "^.+\\\\$", {14}, {1}},
+	{"c", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
+	{"c", "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
 u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
-int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline|restrict)\\>"},
-	{"c", {12 | SYN_BD}, "\\<(true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
-free|realloc|NULL|stdin|stdout|errno)\\>"},
-	{"c", {11}, "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
-default|break|continue)\\>"},
-	{"c", {4 | SYN_IT}, "//.*$"},
-	{"c", {6, 6, 5}, "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)"},
-	{"c", {0, SYN_BD}, "([a-zA-Z0-9_]+)\\("},
-	{"c", {5}, "\"([^\"]|\\\\\")*\""},
-	{"c", {5}, "'([^\\\\]|\\\\.)'"},
-	{"c", {9}, "[-+]?\\<(0[xX][0-9a-fA-FUL]+|[0-9.]{1,}[0-9eEfFuULl]+|[0-9]+)\\>"},
+int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline|restrict)\\>", {10}},
+	{"c", "\\<(true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
+free|realloc|NULL|stdin|stdout|errno)\\>", {12 | SYN_BD}},
+	{"c", "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
+default|break|continue)\\>", {11}},
+	{"c", "//.*$", {4 | SYN_IT}},
+	{"c", "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", {6, 6, 5}},
+	{"c", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
+	{"c", "\"([^\"]|\\\\\")*\"", {5}},
+	{"c", "'([^\\\\]|\\\\.)'", {5}},
+	{"c", "[-+]?\\<(0[xX][0-9a-fA-FUL]+|[0-9.]{1,}[0-9eEfFuULl]+|[0-9]+)\\>", {9}},
 
-	{"roff", {9}, NULL},
-	{"roff", {4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD},
-		"^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\\\]{2,}))?.*$", 1},
-	{"roff", {2 | SYN_IT}, "\\\\\".*$"},
-	{"roff", {3}, "\\\\{1,2}[*$fgkmns]([^[\\(]|\\(..|\\[[^]]*\\])"},
-	{"roff", {3}, "\\\\([^[(*$fgkmns]|\\(..|\\[[^\\]]*\\])"},
-	{"roff", {3}, "\\$[^$]+\\$"},
+	{"roff", NULL, {9}},
+	{"roff", "^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\\\]{2,}))?.*$",
+		{4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD}, {1}},
+	{"roff", "\\\\\".*$", {2 | SYN_IT}},
+	{"roff", "\\\\{1,2}[*$fgkmns]([^[\\(]|\\(..|\\[[^]]*\\])", {3}},
+	{"roff", "\\\\([^[(*$fgkmns]|\\(..|\\[[^\\]]*\\])", {3}},
+	{"roff", "\\$[^$]+\\$", {3}},
 
-	{"tex", {9}, NULL},
-	{"tex", {4 | SYN_BD, 0, 3, 0, 5},
-		"\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)\\})?"},
-	{"tex", {3}, "\\$[^$]+\\$"},
-	{"tex", {2 | SYN_IT}, "%.*$"},
+	{"tex", NULL, {9}},
+	{"tex", "\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)\\})?",
+		{4 | SYN_BD, 0, 3, 0, 5}},
+	{"tex", "\\$[^$]+\\$", {3}},
+	{"tex", "%.*$", {2 | SYN_IT}},
 
 	/* mail */
-	{"msg", {9}, NULL},
-	{"msg", {6 | SYN_BD}, "^From .*20..$"},
-	{"msg", {6 | SYN_BD, 4 | SYN_BD}, "^Subject: (.*)$"},
-	{"msg", {6 | SYN_BD, 2 | SYN_BD}, "^From: (.*)$"},
-	{"msg", {6 | SYN_BD, 5 | SYN_BD}, "^To: (.*)$"},
-	{"msg", {6 | SYN_BD, 5 | SYN_BD}, "^Cc: (.*)$"},
-	{"msg", {6 | SYN_BD}, "^[-A-Za-z]+: .+$"},
-	{"msg", {2 | SYN_IT}, "^> .*$"},
+	{"msg", NULL, {9}},
+	{"msg", "^From .*20..$", {6 | SYN_BD}},
+	{"msg", "^Subject: (.*)$", {6 | SYN_BD, 4 | SYN_BD}},
+	{"msg", "^From: (.*)$", {6 | SYN_BD, 2 | SYN_BD}},
+	{"msg", "^To: (.*)$", {6 | SYN_BD, 5 | SYN_BD}},
+	{"msg", "^Cc: (.*)$", {6 | SYN_BD, 5 | SYN_BD}},
+	{"msg", "^[-A-Za-z]+: .+$", {6 | SYN_BD}},
+	{"msg", "^> .*$", {2 | SYN_IT}},
 
 	/* makefile */
-	{"mk", {9}, NULL},
-	{"mk", {0, 3}, "([A-Za-z0-9_]*)[ \t]*="},
-	{"mk", {3}, "\\$\\([a-zA-Z0-9_]+\\)"},
-	{"mk", {2 | SYN_IT}, "#.*$"},
-	{"mk", {0, SYN_BD}, "([A-Za-z_%.]+):"},
+	{"mk", NULL, {9}},
+	{"mk", "([A-Za-z0-9_]*)[ \t]*=", {0, 3}},
+	{"mk", "\\$\\([a-zA-Z0-9_]+\\)", {3}},
+	{"mk", "#.*$", {2 | SYN_IT}},
+	{"mk", "([A-Za-z_%.]+):", {0, SYN_BD}},
 
 	/* shell script */
-	{"sh", {9}, NULL},
-	{"sh", {5 | SYN_BD}, "\\<(break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>"},
-	{"sh", {2 | SYN_IT}, "#.*$"},
-	{"sh", {4}, "\"([^\"\\\\]|\\\\.)*\""},
-	{"sh", {4}, "'[^']*'"},
-	{"sh", {4}, "`([^`\\\\]|\\\\.)*`"},
-	{"sh", {1}, "\\$(\\{[^}]+\\}|[a-zA-Z_0-9]+)"},
-	{"sh", {0, SYN_BD}, "^([a-zA-Z_0-9]*\\(\\)).*\\{"},
+	{"sh", NULL, {9}},
+	{"sh", "\\<(break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>",
+		{5 | SYN_BD}},
+	{"sh", "#.*$", {2 | SYN_IT}},
+	{"sh", "\"([^\"\\\\]|\\\\.)*\"", {4}},
+	{"sh", "'[^']*'", {4}},
+	{"sh", "`([^`\\\\]|\\\\.)*`", {4}},
+	{"sh", "\\$(\\{[^}]+\\}|[a-zA-Z_0-9]+)", {1}},
+	{"sh", "^([a-zA-Z_0-9]*\\(\\)).*\\{", {0, SYN_BD}},
 
 	/* python */
-	{"py", {9}, NULL},
-	{"py", {2}, "#.*$"},
-	{"py", {5}, "\\<(and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>"},
-	{"py", {5}, "\\<(if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>"},
-	{"py", {0, SYN_BD}, "([a-zA-Z0-9_]+)\\("},
-	{"py", {4}, "[\"']([^\"']|\\\\\")*[\"']"},
+	{"py", NULL, {9}},
+	{"py", "#.*$", {2}},
+	{"py", "\\<(and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>", {5}},
+	{"py", "\\<(if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
+	{"py", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
+	{"py", "[\"']([^\"']|\\\\\")*[\"']", {4}},
 
 	/* neatmail */
-	{"nm", {9}, NULL},
-	{"nm", {0 | SYN_BGMK(15), 6 | SYN_BD, 12 | SYN_BD, 5, 8 | SYN_BD},
-		"^([ROU])([0-9]+)\t([^\t]*)\t([^\t]*)"},
-	{"nm", {0 | SYN_BD | SYN_BGMK(6)}, "^[N].*$"},
-	{"nm", {0 | SYN_BD | SYN_BGMK(13)}, "^[A-Z][HT].*$"},
-	{"nm", {0 | SYN_BD | SYN_BGMK(11)}, "^[A-Z][MI].*$"},
-	{"nm", {7 | SYN_BGMK(15)}, "^[A-Z][LJ].*$"},
-	{"nm", {0 | SYN_BD | SYN_BGMK(7)}, "^[F].*$"},
-	{"nm", {7 | SYN_IT}, "^\t.*$"},
-	{"nm", {SYN_BD}, "^:.*$"},
+	{"nm", NULL, {9}},
+	{"nm", "^([ROU])([0-9]+)\t([^\t]*)\t([^\t]*)",
+		{0 | SYN_BGMK(15), 6 | SYN_BD, 12 | SYN_BD, 5, 8 | SYN_BD}},
+	{"nm", "^[N].*$", {0 | SYN_BD | SYN_BGMK(6)}},
+	{"nm", "^[A-Z][HT].*$", {0 | SYN_BD | SYN_BGMK(13)}},
+	{"nm", "^[A-Z][MI].*$", {0 | SYN_BD | SYN_BGMK(11)}},
+	{"nm", "^[A-Z][LJ].*$", {7 | SYN_BGMK(15)}},
+	{"nm", "^[F].*$", {0 | SYN_BD | SYN_BGMK(7)}},
+	{"nm", "^\t.*$", {7 | SYN_IT}},
+	{"nm", "^:.*$", {SYN_BD}},
 
 	/* javascript */
-	{"js", {9}, NULL},
-	{"js", {10 | SYN_IT}, "(/\\*[^&&*/]*)|([^`'\"&&/*]*\\*/)", 0, 2},
-	{"js", {12}, "\\<(abstract|arguments|await|boolean|\
+	{"js", NULL, {9}},
+	{"js", "(/\\*[^&&*/]*)|([^`'\"&&/*]*\\*/)", {10 | SYN_IT}, {0}, 2},
+	{"js", "\\<(abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
 double|else|enum|eval|export|extends|false|final|finally|float|for|function|\
 goto|if|implements|import|in|instanceof|int|interface|let|long|native|new|\
 null|package|private|protected|public|return|short|static|super|switch|synchronized|\
-this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|yield)\\>"},
-	{"js", {6 | SYN_BD}, "\\<(Array|Date|hasOwnProperty|Infinity|isFinite|isNaN|\
+this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|yield)\\>", {12}},
+	{"js", "\\<(Array|Date|hasOwnProperty|Infinity|isFinite|isNaN|\
 isPrototypeOf|length|Math|NaN|name|Number|Object|prototype|\
-String|toString|undefined|valueOf)\\>"},
-	{"js", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>"},
-	{"js", {10 | SYN_IT}, "//.*$"},
-	{"js", {5}, "[\"'`]([^\"'`]|\\\\[\"'`])*[\"'`]"},
+String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
+	{"js", "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>", {9}},
+	{"js", "//.*$", {10 | SYN_IT}},
+	{"js", "[\"'`]([^\"'`]|\\\\[\"'`])*[\"'`]", {5}},
 
 	/* html */
-	{"html", {9}, NULL},
-	{"html", {5 | SYN_IT}, "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", 0, 2},
-	{"html", {5 | SYN_IT}, "(<!--[^&&------>]*)|([^&&<!------]*-->)", 0, 2},
-	{"html", {0, 3}, "([^\t -,.-/:-@\\[-^{-~]+:).+;", 1},
-	{"html", {2}, "\\<(accept|accesskey|action|align|allow|alt|async|\
+	{"html", NULL, {9}},
+	{"html", "(\\{)[^}]*|(^[^{]*)?(\\})", {8, 5, 8, 5}, {1, 1, -1, -1}, 3},
+	{"html", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {5 | SYN_IT}, {0}, 2},
+	{"html", "(<!--[^&&------>]*)|([^&&<!------]*-->)", {5 | SYN_IT}, {0}, 2},
+	{"html", "([^\t -,.-/:-@[-^{-~]+:).+;", {0, 3}, {1, 1}},
+	{"html", "\\<(accept|accesskey|action|align|allow|alt|async|\
 auto(capitalize|complete|focus|play)|background|\
 bgcolor|border|buffered|challenge|charset|checked|cite|\
 class|code(base)|color|cols|colspan|content(\
@@ -160,8 +162,8 @@ poster|preload|property|radiogroup|readonly|referrerpolicy|\
 rel|required|reversed|rows|rowspan|sandbox|scope|scoped|\
 selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
 srclang|srcset|start|step|style|summary|tabindex|target|\
-title|translate|type|usemap|value|width|wrap)\\>"},
-	{"html", {6}, "\\<(html|base|head|link|meta|body|address|article|\
+title|translate|type|usemap|value|width|wrap)\\>", {2}},
+	{"html", "\\<(html|base|head|link|meta|body|address|article|\
 aside|footer|header|hgroup|main|nav|section|blockquote|dd|\
 div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
 b|bdi|bdo|br|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
@@ -175,26 +177,25 @@ element|shadow|template|acronym|applet|basefont|\
 bgsound|big|blink|center|command|element|font|\
 frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
 multicol|nextid|nobr|noembed|noframes|plaintext|shadow|spacer|\
-strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>"},
-	{"html", {12}, "\"([^\"]|\\\\\")*\""},
-	{"html", {9}, "#\\<[A-Fa-f0-9]+\\>"},
-	{"html", {9}, "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+(px)?)\\>"},
-	{"html", {3, 13}, "<(/)?[^>]+>", 1},
-	{"html", {8, 5, 8, 5}, "(\\{)[^}]*|(^[^{]*)?(\\})", 3, 3},
-	{"html", {SYN_BD}, "#[ \t]*[a-zA-Z0-9_]+"},
-	{"html", {5}, "&[a-zA-Z0-9_]+"},
+strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
+	{"html", "\"([^\"]|\\\\\")*\"", {12}},
+	{"html", "#\\<[A-Fa-f0-9]+\\>", {9}},
+	{"html", "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+(px)?)\\>", {9}},
+	{"html", "<(/)?[^>]+>", {3, 13}, {1}},
+	{"html", "#[ \t]*[a-zA-Z0-9_]+", {SYN_BD}},
+	{"html", "&[a-zA-Z0-9_]+", {5}},
 
 	/* diff */
-	{"diff", {9}, NULL},
-	{"diff", {1}, "^-.*$"},
-	{"diff", {2}, "^\\+.*$"},
-	{"diff", {6}, "^@.*$"},
-	{"diff", {SYN_BD}, "^diff .*$"},
+	{"diff", NULL, {9}},
+	{"diff", "^-.*$", {1}},
+	{"diff", "^\\+.*$", {2}},
+	{"diff", "^@.*$", {6}},
+	{"diff", "^diff .*$", {SYN_BD}},
 
 	/* status bar */
-	{"---", {8 | SYN_BD, 4, 1}, "^(\".*\").*(\\[[wr]\\]).*$"},
-	{"---", {8 | SYN_BD, 4, 9, 4, 11}, "^(\".*\").*( [0-9]{1,3}%) +(L[0-9]+) +(C[0-9]+).*$"},
-	{"---", {8 | SYN_BD}, "^.*$"},
+	{"---", "^(\".*\").*(\\[[wr]\\]).*$", {8 | SYN_BD, 4, 1}},
+	{"---", "^(\".*\").*( [0-9]{1,3}%) +(L[0-9]+) +(C[0-9]+).*$", {8 | SYN_BD, 4, 9, 4, 11}},
+	{"---", "^.*$", {8 | SYN_BD}},
 };
 int hlslen = LEN(hls);
 
@@ -207,7 +208,7 @@ int hlslen = LEN(hls);
 /* right-to-left characters (used only in dctxs[] and dmarks[]) */
 #define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْ"
 /* neutral characters (used only in dctxs[] and dmarks[]) */
-#define CNEUT		"-!\"#$%&'\\(\\)*+,./:;<=>?@^_`{|}~ "
+#define CNEUT		"-!\"#$%&'\\()*+,./:;<=>?@^_`{|}~ "
 
 struct dircontext dctxs[] = {
 	{-1, "^[" CR2L "]"},
@@ -216,9 +217,9 @@ struct dircontext dctxs[] = {
 int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
-	{+0, +1, 1, "\\\\\\*\\[([^\\]]+)\\]"},
+	{+0, +1, 1, "\\\\\\*\\[([^]]+)\\]"},
 	{+1, -1, 0, "[" CR2L "][" CNEUT CR2L "]*[" CR2L "]"},
-	{-1, +1, 0, "[a-zA-Z0-9_][^" CR2L "`$']*[a-zA-Z0-9_]"},
+	{-1, +1, 0, "[a-zA-Z0-9_][^" CR2L "\\\\`$']*[a-zA-Z0-9_]"},
 	{+0, +1, 0, "\\$([^$]+)\\$"},
 	{+0, +1, 1, "\\\\[a-zA-Z0-9_]+\\{([^}]+)\\}"},
 	{-1, +1, 0, "\\\\[^ \t" CR2L "]+"},

@@ -351,7 +351,6 @@ void syn_highlight(int *att, char *s, int n)
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
 		hl += ftmap[ftidx].setidx;
-		int grp = hls[hl].end;
 		int *catt = hls[hl].att;
 		int blkend = hls[hl].blkend;
 		if (blkend && sidx >= bend) {
@@ -366,7 +365,7 @@ void syn_highlight(int *att, char *s, int n)
 			else if (!blockhl && blk != blkend) {
 				blockhl = hl;
 				blockatt = catt;
-				blockcont = grp;
+				blockcont = hls[hl].end[blk];
 			} else
 				blk = 0;
 		}
@@ -376,12 +375,13 @@ void syn_highlight(int *att, char *s, int n)
 				int end = uc_off(s, sidx + subs[i * 2 + 1]);
 				for (j = beg; j < end; j++)
 					att[j] = syn_merge(att[j], catt[i]);
-				if (i == grp)
+				if (!hls[hl].end[i])
 					cend = MAX(cend, subs[i * 2 + 1]);
 				else {
 					if (blkend)
 						bend = MAX(cend, subs[i * 2 + 1]) + sidx;
-					cend = MAX(cend, subs[i * 2]);
+					if (hls[hl].end[i] > 0)
+						cend = MAX(cend, subs[i * 2]);
 				}
 			}
 		} 
