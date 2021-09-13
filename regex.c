@@ -53,18 +53,12 @@ static void ratom_copy(struct ratom *dst, struct ratom *src)
 static int brk_len(char *s)
 {
 	int n = 1;
-	if (s[n] == '^')	/* exclusion mark */
-		n++;
-	if (s[n] == ']')	/* handling []a] */
-		n++;
-	while (s[n] && s[n] != ']') {
-		if (s[n] == '[' && (s[n + 1] == ':' || s[n + 1] == '='))
-			while (s[n] && s[n] != ']')
-				n++;
-		if (s[n])
-			n++;
+	for (; *s != ']'; n++) {
+		if (*s == '\\') { n++; s++; }
+		if (!*s) break;
+		s++;
 	}
-	return s[n] == ']' ? n + 1 : n;
+	return n;
 }
 
 static void ratom_readbrk(struct ratom *ra, char **pat)
@@ -100,17 +94,16 @@ static void ratom_readbrk(struct ratom *ra, char **pat)
 			uc_len(c, p) p += c;
 		}
 		rbrk->ends[i] = end;
-		if (icase)
-		{
-			if (rbrk->begs[i] < 128 && isupper(rbrk->begs[i]))
-				rbrk->begs[i] = tolower(rbrk->begs[i]);
-			if (rbrk->ends[i] < 128 && isupper(rbrk->ends[i]))
-				rbrk->ends[i] = tolower(rbrk->ends[i]);
+		if (icase) {
+			rbrk->begs[i] = tolower(rbrk->begs[i]);
+			rbrk->ends[i] = tolower(rbrk->ends[i]);
 		}
 		i++;
 	}
 	if (rbrk->and < 0)
 		rbrk->and = i;
+	rbrk->begs = realloc(rbrk->begs, sizeof(rbrk->begs[0])*i);
+	rbrk->ends = realloc(rbrk->ends, sizeof(rbrk->ends[0])*i);
 	rbrk->len = i;
 }
 
