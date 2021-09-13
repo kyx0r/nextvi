@@ -180,6 +180,9 @@ prompt. If valid, the input will be used for searches using N and n keys.
 I felt like they were underused, and unlike ^u and ^d they keep the same 
 xcol position, allowing for different use case when you don't want to 
 lose cursor pos.
+60. Removed bracket classes from regex. Not useful, hard to customize,
+buggy, error prone mess. Doesn't add any new functionality to the regex engine 
+that can't be achieved without it.
 
 PIKEVM:
 -------
@@ -240,10 +243,7 @@ is still some room for improvement as to make pikevm even faster, with
 some clever tricks to be invented, whereas in DFA there is nothing
 left to optimize.
 A: Compatibility?
-Q: 100% compatible, with exception of posix macros like [:punct:].
-I don't use them so I did not bother. DFA has them, they are easy
-to implement in pikevm if needed. Any future commits will be done
-on both branches if applicable.
+Q: 100% compatible.
 A: Minimalism?
 Q: Both implementations (regex.c) are ~700 lines of C code, that
 includes both the compilation and execution. 
