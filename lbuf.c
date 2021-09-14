@@ -141,10 +141,12 @@ static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del)
 	}
 	for (i = 0; i < n_del; i++)
 		free(lb->ln[pos + i]);
-	memmove(lb->ln + pos + n_ins, lb->ln + pos + n_del,
-		(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
-	memmove(lb->ln_glob + pos + n_ins, lb->ln_glob + pos + n_del,
-		(lb->ln_n - pos - n_del) * sizeof(lb->ln_glob[0]));
+	if (n_ins != n_del) {
+		memmove(lb->ln + pos + n_ins, lb->ln + pos + n_del,
+			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
+		memmove(lb->ln_glob + pos + n_ins, lb->ln_glob + pos + n_del,
+			(lb->ln_n - pos - n_del) * sizeof(lb->ln_glob[0]));
+	}
 	lb->ln_n += n_ins - n_del;
 	for (i = 0; i < n_ins; i++) {
 		int l = s ? linelength(s) : 0;
