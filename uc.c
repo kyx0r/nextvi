@@ -577,7 +577,7 @@ int uc_isbell(char *s, int cp)
 	return uc_iszw(cp) || find(cp, bchars, LEN(bchars));
 }
 
-/* nonprintable characters */
+/* combining characters */
 int uc_iscomb(char *s, int cp)
 {
 	int c = (unsigned char) *s;

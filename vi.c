@@ -1345,10 +1345,10 @@ static int vc_put(int cmd)
 	int lnmode;
 	char *buf = vi_regget(vi_ybuf, &lnmode);
 	int i;
-	if (!buf) {
+	if (!buf)
 		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty\n");
+	if (!buf || !buf[0])
 		return 1;
-	}
 	if (lnmode) {
 		struct sbuf *sb = sbuf_make(1024);
 		for (i = 0; i < cnt; i++)
