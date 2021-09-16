@@ -128,7 +128,7 @@ static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del)
 	int n_ins = lbuf_linecount(s);
 	int i;
 	while (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
-		int nsz = lb->ln_sz + 512;
+		int nsz = lb->ln_sz + (lb->ln_sz ? lb->ln_sz : 512);
 		char **nln = malloc(nsz * sizeof(nln[0]));
 		char *nln_glob = malloc(nsz * sizeof(nln_glob[0]));
 		memcpy(nln, lb->ln, lb->ln_n * sizeof(lb->ln[0]));
@@ -181,7 +181,7 @@ void lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 		lopt_done(&lb->hist[i]);
 	lb->hist_n = lb->hist_u;
 	if (lb->hist_n == lb->hist_sz) {
-		int sz = lb->hist_sz + 128;
+		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
 		struct lopt *hist = malloc(sz * sizeof(hist[0]));
 		memcpy(hist, lb->hist, lb->hist_n * sizeof(hist[0]));
 		free(lb->hist);
