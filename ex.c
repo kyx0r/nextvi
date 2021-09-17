@@ -540,19 +540,17 @@ static int ec_editapprox(char *ec)
 	if (!(s = ex_arg(ec, arg)))
 		return 0;
 	inst = atoi(s);
-	for(int pos = 0; pos < fstlen;)
+	for (int pos = 0; pos < fstlen;)
 	{
 		path = &fslink[pos+sizeof(int)];
 		len = *(int*)((char*)fslink+pos) + sizeof(int);
 		pos += len;
 		len -= sizeof(int)+2;
-		for(i = len; i > 0 && path[i] != '/'; i--){}
-		if(!i)
+		for (i = len; i > 0 && path[i] != '/'; i--){}
+		if (!i)
 			return 0;
-		if(strstr(&path[i+1], arg))
-		{
-			if (!inst)
-			{
+		if (strstr(&path[i+1], arg)) {
+			if (!inst) {
 				ex_edit(path);
 				break;
 			}

@@ -428,7 +428,7 @@ static int vi_nextcol(struct lbuf *lb, int dir, int *row, int *off)
 
 static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 {
-	if(vi_charlast != cs)
+	if (vi_charlast != cs)
 		strcpy(vi_charlast, cs);
 	vi_charcmd = cmd;
 	return lbuf_findchar(lb, cs, cmd, n, row, off);
@@ -733,7 +733,7 @@ static int fs_search(char* cs,int cnt, int *row, int *off)
 		path = &fslink[fspos+sizeof(int)];
 		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
 		prevxb = xb;
-		if(ex_edit(path))
+		if (ex_edit(path))
 			{*row = xrow; *off = xoff-1;}
 		else
 			{*row = 0; *off = 0;}
@@ -770,7 +770,7 @@ static int fs_searchback(char* cs, int cnt, int *row, int *off)
 		path = paths[i];
 		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
 		prevxb = xb;
-		if(ex_edit(path))
+		if (ex_edit(path))
 			{*row = xrow; *off = xoff-1;}
 		else
 			{*row = 0; *off = 0;}
@@ -884,18 +884,18 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
 		if (!(cs = vi_curword(xb, *row, *off, cnt)))
 			return -1;
-		if(!fslink)
+		if (!fslink)
 		{
 			strcpy(path, ".");
 			dir_calc(path);
 		}
-		if(!*savepath)
+		if (!*savepath)
 		{
 			srow = *row; soff = *off;
 			memcpy(savepath, ex_path(), strlen(ex_path())+1);
 		}
 		_row = *row; _off = *off;
-		if(!fs_search(cs, cnt, row, off))
+		if (!fs_search(cs, cnt, row, off))
 		{
 			*row = _row; *off = _off;
 		}
@@ -904,9 +904,9 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('p'):
 		if (!(cs = vi_curword(xb, *row, *off, cnt)) || !fslink)
 			return -1;
-		if(!fs_searchback(cs, cnt, row, off))
+		if (!fs_searchback(cs, cnt, row, off))
 		{
-			if(*savepath)
+			if (*savepath)
 			{
 				*row = srow; *off = soff;
 				ex_edit(savepath);
@@ -1583,7 +1583,7 @@ void vi(void)
 			case '\\':
 			case TK_CTL(']'):
 			case TK_CTL('p'):
-				vc_status();
+				vi_back(TK_CTL('g'));
 			case 1: //^a
 			case '/':
 			case '?':
@@ -1837,14 +1837,14 @@ void vi(void)
 				break;
 			case 'q':
 				k = vi_read();
-				if(k == 'q')
+				if (k == 'q')
 					xquit = 1;
 				vi_back(k);
 				continue;
 			case 'c':
 			case 'd':
 				k = vi_read();
-				if(k == 'i')
+				if (k == 'i')
 				{
 					k = vi_read();
 					switch(k)
