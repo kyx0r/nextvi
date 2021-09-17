@@ -1,16 +1,28 @@
-NEATVI
+NEXTVI
 ======
 
-Neatvi is a vi/ex editor.  It can edit bidirectional UTF-8 text.
-Original software by Ali Gholami Rudi:
+Nextvi is a vi/ex editor.  It can edit bidirectional UTF-8 text.
+Based on original software by Ali Gholami Rudi:
 https://github.com/aligrudi/neatvi
 
 NOTICE
 ======
-As of 2021-03-21 neatvi is feature complete & solid stable.
+Nextvi is mostly feature complete & solid stable.
 No major updates to be expected.
 Only small fixes & optimizations.
 Code is|(will|must be) perfect.
+
+NAME
+======
+I believe that this fork has grew to be mature enough to get
+it's own name. The project has taken lot of different design
+decisions and tends to favor clean implementations over 100%
+adhering to POSIX like neatvi does. Thus the name "next", to
+signify that we are thinking outside the box. The notable
+changes that I am refering to (see below): 56, 60, 61.
+Some keybinds specified my posix were not implemented in
+original neatvi, nextvi might use them for some features
+below.
 
 FORK CHANGES
 ------------
@@ -107,7 +119,7 @@ A minimalistic terminal file manager.
 | $SHELL | shell used by `:sh` | sh |
 #### Commands
 Type `?` while in hund for help.
-Original software by Michał Czarnecki <czarnecky@va.pl>
+Based on original software by Michał Czarnecki <czarnecky@va.pl>
 https://github.com/miahuoe/hund.git
 34. Added key to save current file keybind: ^k
 35. The new special character "/" for ft in conf.c now signifies that 
@@ -157,7 +169,7 @@ specified by number (vi_arg1). Regex control chars will be escaped.
 50. Added ability to edit the line while in insert mode
 such that backspace can delete all the characters on the line,
 when no more characters left the line will be wrapped onto the next
-one. This is behavior you can expect from 95% of editors, now neatvi
+one. This is behavior you can expect from 95% of editors, now nextvi
 is not an exception. The same change was done for ^w keybind. 
 51. Added key to show the registers and their contents. keybind: R
 52. Added a key to perform relative replacement. keybind: ve
@@ -181,20 +193,29 @@ I felt like they were underused, and unlike ^u and ^d they keep the same
 xcol position, allowing for different use case when you don't want to 
 lose cursor pos.
 60. Removed bracket classes from regex. Not useful, hard to customize,
-buggy, error prone mess. Doesn't add any new functionality to the regex engine 
+buggy, error prone mess. Doesn't add any new functionality to the regex engine
 that can't be achieved without it.
+61. Added escapes to bracket expressions in regex. This isn't posix but it
+solves couple of issues that were bugged previously, like escaping | in
+ex substitution command, properly counting number of groups in rset.
+Note: rset_make() requires for ( to be escaped if used inside [] brackets.
+62. Added syntax highlighting continuation options. See the struct
+highlight in vi.h. The ^ anchor in the regular expression has an important
+property of being able to efficiently exclude some sub expression from
+being recomputed during the continuation. Take advantage of it when you
+can.
 
 PIKEVM:
 -------
-A complete rewrite of neatvi's regex engine for the purposes to get
+A complete rewrite of nextvi's regex engine for the purposes to get
 rid of backtracking and severe performance and memory constrants is 
 now complete and ready to use. 
-Checkout: https://github.com/kyx0r/neatvi/tree/pikevm
+Checkout: https://github.com/kyx0r/nextvi/tree/pikevm
 See FAQ below for more info.
 
 FAQ:
 ----
-Q: Why neatvi instead of vim?
+Q: Why nextvi instead of vim?
 A: I prefer customization in source code, Vim is considered harmful.
 
 Q: Why not let user choose filemanager (why is hund builtin?)
@@ -285,11 +306,11 @@ gu, gU, and g~ in normal mode: switch character case.
 OPTIONS
 -------
 
-To improve neatvi's performance, shaping, character reordering, and
+To improve nextvi's performance, shaping, character reordering, and
 syntax highlighting can be disabled by defining the EXINIT environment
 variable as "set noshape | set noorder | set nohl | set td=+2".
 
-Options supported in neatvi:
+Options supported in nextvi:
 
 td, textdirection
   Current direction context.  The following values are meaningful:
