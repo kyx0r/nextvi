@@ -394,7 +394,8 @@ for (j = 0; j < nsubp; j++) s1->sub[j] = nsub->sub[j]; \
 		npc += 2; \
 		goto rec##nn; \
 	case WBEG: \
-		if ((sp != s && isword(sp)) || !isword(_sp)) \
+		if (((sp != s || sp != _sp) && isword(sp)) \
+				|| !isword(_sp)) \
 			deccheck(nn) \
 		npc++; goto rec##nn; \
 	case WEND: \
