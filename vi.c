@@ -41,7 +41,6 @@
 #include "sbuf.c"
 #include "term.c"
 #include "uc.c"
-#include "hund.c"
 
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
@@ -979,7 +978,6 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		hund(0, NULL);
 		break;
 	default:
 		vi_back(mv);
@@ -2112,21 +2110,15 @@ void vi(void)
 
 static void sighandler(int sig)
 {
-	if (!sig_hund(sig))
-		if (sig == SIGWINCH || sig == SIGCONT)
-			vi_back(TK_CTL('l'));
+	vi_back(TK_CTL('l'));
 }
 
 int setup_signals(void) {
 	struct sigaction sa = {0};
 	sa.sa_handler = sighandler;
-	if (sigaction(SIGTERM, &sa, NULL)
-	|| sigaction(SIGINT, &sa, NULL)
-	|| sigaction(SIGTSTP, &sa, NULL)
-	|| sigaction(SIGCONT, &sa, NULL)
-	|| sigaction(SIGWINCH, &sa, NULL)) {
+	if (sigaction(SIGCONT, &sa, NULL) ||
+			sigaction(SIGWINCH, &sa, NULL))
 		return 0;
-	}
 	return 1;
 }
 
@@ -2155,8 +2147,6 @@ int main(int argc, char *argv[])
 		{
 			if (lstat(&argv[ii][0], &statbuf) >= 0 && S_ISDIR(statbuf.st_mode))
 			{
-				if (hund(argc - ii, &argv[ii]) < 0)
-					vi();
 				goto cleanup;
 			}
 		}

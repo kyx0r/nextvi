@@ -17,7 +17,6 @@ char *itoa(int n, char s[]);
 void reverse_in_place(char *str, int len);
 
 /* main functions */
-int hund(int argc, char **argv);
 void vi(void);
 
 /* signals */
