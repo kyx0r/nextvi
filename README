@@ -96,31 +96,18 @@ cycle in reverse.
 32. Added ex command "inc" which sets the filename filter for the feature
 mentioned in (8.) This is not limited to one argument, 
 separate entries by space.
-33. Added hund keybind: \
-Can also be used from if directories provided in command line args, max 2
-A minimalistic terminal file manager.
-#### Features
-- Vim-inspired hotkeys
-- Dual-panel, Vim-like, minimalistic UI
-- UTF-8 + wide character support
-- Move/remove/copy/rename/chmod/chown selected files
-- Recursive chmod with set/unset masks
-- Find file in current directory (find as you type)
-- Multiple key sorting
-- One column at a time (none, size, perm, user, group, atime, ctime, mtime...)
-- Marks
-- Quick access to shell via `:sh`
-- Can be statically linked
-#### Environment Variables (which Hund uses)
-| Variable | Usage | Default/Fallback |
-|-|-|-|
-| $VISUAL | $EDITOR | text editor | vi |
-| $HOME | user's home directory | /etc/passwd |
-| $SHELL | shell used by `:sh` | sh |
-#### Commands
-Type `?` while in hund for help.
-Based on original software by Michał Czarnecki <czarnecky@va.pl>
-https://github.com/miahuoe/hund.git
+33. Added file manager keybind: \
+Until commit 382c65b nextvi had a full filemanager
+called hund built in. It acted as temporary workaround,
+until I got to properly implement file management in vi
+itself. This should be a lot cleaner and a more flexible
+than having hund. As time goes on there will be added
+some new ex commands to help working with files. All
+done from a vi buffer. Commands listed below under (33.)
+will also work everywhere in vi.
+ - Added key that opens the file based on text from the cursor.
+   keybind: ^i
+ - New ex command "cd" changes working directory according to 1st arg.
 34. Added key to save current file keybind: ^k
 35. The new special character "/" for ft in conf.c now signifies that 
 the regex will be applied on any file. The reason "/" was 
@@ -209,11 +196,6 @@ FAQ:
 ----
 Q: Why nextvi instead of vim?
 A: I prefer customization in source code, Vim is considered harmful.
-
-Q: Why not let user choose filemanager (why is hund builtin?)
-A: It's impossible to keep the program state between text editor
-and filemanager if they are a separate program.
-Hund can easily be removed if desired.
 
 Q: Why not distribute as patches, like on suckless.org?
 A: It's hard to maintain. Simply put, there are too many changes

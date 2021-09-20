@@ -1095,10 +1095,8 @@ static int ec_setdir(char *ec)
 {
 	char arg[1024];
 	ex_arg(ec, arg);
-	if (*arg)
-	{
-		if (fslink)
-		{
+	if (*arg) {
+		if (fslink) {
 			free(fslink);
 			fslink = NULL;
 			fstlen = 0;
@@ -1110,14 +1108,23 @@ static int ec_setdir(char *ec)
 	return 0;
 }
 
+static int ec_chdir(char *ec)
+{
+	char arg[1024];
+	ex_arg(ec, arg);
+	if (*arg)
+		if (chdir(arg))
+			ex_show("chdir error");
+	return 0;
+}
+
 static int ec_setincl(char *ec)
 {
 	int l = strlen(&ec[4]);
 	memcpy(fsincl, &ec[4], l);
 	fsincl[l] = ' ';
 	fsincl[l+1] = '\0';
-	if (fslink)
-	{
+	if (fslink) {
 		free(fslink);
 		fslink = NULL;
 		fstlen = 0;
@@ -1168,6 +1175,7 @@ static struct excmd {
 	{"cm", "cmap", ec_cmap},
 	{"cm!", "cmap!", ec_cmap},
 	{"fd", "fsdir", ec_setdir},
+	{"cd", "chdir", ec_chdir},
 	{"inc", "inc", ec_setincl},
 	{"", "", ec_null},
 };
