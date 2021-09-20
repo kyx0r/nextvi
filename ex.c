@@ -32,8 +32,7 @@ static struct buf {
 	short id, td;           /* buffer id and text direction */
 	long mtime;             /* modification time */
 } bufs[NUM_BUFS];
-static struct buf histbufs[2];
-static struct buf *histbuf = &histbufs[0];
+static struct buf tempbufs[2];
 
 static int bufs_find(char *path)
 {
@@ -80,75 +79,71 @@ static int bufs_open(char *path)
 	return i;
 }
 
-void hist_set(int i)
+void temp_open(int i, char *name, char *ft)
 {
-	histbuf = &histbufs[i];
-}
-
-void hist_open(void)
-{
-	if (histbuf->lb)
+	if (tempbufs[i].lb)
 		return;
-	histbuf->path = uc_dup("hist");
-	histbuf->lb = lbuf_make();
-	histbuf->row = 0;
-	histbuf->off = 0;
-	histbuf->top = 0;
-	histbuf->td = +1;
-	histbuf->mtime = -1;
-	histbuf->ft[0] = '/';
+	tempbufs[i].path = uc_dup(name);
+	tempbufs[i].lb = lbuf_make();
+	tempbufs[i].row = 0;
+	tempbufs[i].off = 0;
+	tempbufs[i].top = 0;
+	tempbufs[i].td = +1;
+	tempbufs[i].mtime = -1;
+	strcpy(tempbufs[i].ft, ft);
 }
 
-void hist_pos(int row, int off, int top)
+void temp_pos(int i, int row, int off, int top)
 {
-	histbuf->row = row;
-	histbuf->off = off;
-	histbuf->top = top;
+	tempbufs[i].row = row;
+	tempbufs[i].off = off;
+	tempbufs[i].top = top;
 }
 
-void hist_switch(void)
+void temp_switch(int i)
 {
 	struct buf tmp;
 	bufs[0].row = xrow;
 	bufs[0].off = xoff;
 	bufs[0].top = xtop;
 	bufs[0].td = xtd;
-	memcpy(&tmp, &bufs[0], sizeof(tmp));
-	memcpy(&bufs[0], histbuf, sizeof(tmp));
-	memcpy(histbuf, &tmp, sizeof(tmp));
+	memcpy(&tmp, bufs, sizeof(tmp));
+	memcpy(bufs, &tempbufs[i], sizeof(tmp));
+	memcpy(&tempbufs[i], &tmp, sizeof(tmp));
 	xrow = bufs[0].row;
 	xoff = bufs[0].off;
 	xtop = bufs[0].top;
 	xtd = bufs[0].td;
 }
 
-void hist_write(char *str)
+void temp_write(int i, char *str)
 {
-	if (!*str || strcmp(histbuf->path, "hist"))
+	if (!*str)
 		return;
 	struct sbuf *sb = sbuf_make(256);
-	struct lbuf *lb = histbuf->lb;
+	struct lbuf *lb = tempbufs[i].lb;
 	sbuf_str(sb, str);
 	if (!lbuf_len(lb))
 		lbuf_edit(lb, "\n", 0, 0);
-	histbuf->row++;
-	lbuf_edit(lb, sbuf_buf(sb), histbuf->row, histbuf->row);
-	histbuf->off = lbuf_indents(lb, histbuf->row);
+	tempbufs[i].row++;
+	lbuf_edit(lb, sbuf_buf(sb), tempbufs[i].row, tempbufs[i].row);
+	tempbufs[i].off = lbuf_indents(lb, tempbufs[i].row);
+	lbuf_saved(lb, 1);
 	sbuf_free(sb);
 }
 
-char *hist_curstr(int sub)
+char *temp_curstr(int i, int sub)
 {
-	return lbuf_get(histbuf->lb, histbuf->row - sub);
+	return lbuf_get(tempbufs[i].lb, tempbufs[i].row - sub);
 }
 
-void hist_done(void)
+void temp_done(int i)
 {
-	if (histbuf->lb)
+	if (tempbufs[i].lb)
 	{
-		free(histbuf->path);
-		lbuf_free(histbuf->lb);
-		histbuf->lb = NULL;
+		free(tempbufs[i].path);
+		lbuf_free(tempbufs[i].lb);
+		tempbufs[i].lb = NULL;
 	}
 }
 
