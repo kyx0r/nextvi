@@ -581,7 +581,7 @@ struct rset *rset_make(int n, char **re, int flg)
 int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
 {
 	int i, grp, set = -1;
-	if (rs->grpcnt <= 2)
+	if (rs->grpcnt <= 2 || !*s)
 		return set;
 	const char *sub[rs->grpcnt * 2];
 	if (re_pikevm(rs->regex, s, sub, rs->grpcnt * 2, flg))

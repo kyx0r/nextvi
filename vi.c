@@ -639,7 +639,7 @@ static void vi_regprint()
 }
 
 char *fslink;
-char fsincl[128] = ".c .h ";
+char fsincl[128] = " ";
 int fstlen;
 int fspos;
 int fscount;
@@ -978,6 +978,25 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
+		if (!strcmp(ex_path(), "/fm/"))
+			return 0;
+		if (!fslink)
+		{
+			strcpy(path, ".");
+			dir_calc(path);
+		}
+		temp_open(1, "/fm/", "fm");
+		for (int pos = 0; pos < fstlen;)
+		{
+			cs = &fslink[pos+sizeof(int)];
+			pos += *(int*)((char*)fslink+pos) + sizeof(int);
+			temp_write(1, cs);
+		}
+		temp_switch(1);
+	        vi();
+	        temp_switch(1);
+		temp_done(1);
+		xquit = 0;
 		break;
 	default:
 		vi_back(mv);
@@ -1654,8 +1673,18 @@ void vi(void)
 				term_suspend();
 				vi_mod = 1;
 				break;
-			case TK_CTL('i'):
-				break;
+			case TK_CTL('i'): {
+				cs = lbuf_get(xb, xrow) + xoff;
+				char buf[strlen(cs)+3];
+				buf[0] = ':';
+				buf[1] = 'e';
+				buf[2] = ' ';
+				strcpy(buf+3, cs);
+				term_push(buf, strlen(cs)+3);
+				if (!strcmp(ex_path(), "/fm/"))
+					xquit = 1;
+				vi_mod = 1;
+				break; }
 			case TK_CTL('_'): /* note: this is also ^7 per ascii */
 				vi_mod = 1;
 				term_pos(xrows, led_pos(vi_msg, 0));
@@ -2104,6 +2133,7 @@ void vi(void)
 				ren_cursor(lbuf_get(xb, xrow), xcol)));
 		lbuf_modified(xb);
 	}
+	vi_buflen = 0;
 	term_pos(xrows, 0);
 	term_kill();
 }

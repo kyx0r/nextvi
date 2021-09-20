@@ -234,13 +234,12 @@ int led_pos(char *s, int pos);
 void led_done(void);
 
 /* ex.c ex commands */
-void hist_set(int i);
-void hist_open(void);
-void hist_switch(void);
-void hist_write(char *str);
-void hist_done(void);
-char *hist_curstr(int sub);
-void hist_pos(int row, int off, int top);
+void temp_open(int i, char *name, char *ft);
+void temp_switch(int i);
+void temp_write(int i, char *str);
+void temp_done(int i);
+char *temp_curstr(int i, int sub);
+void temp_pos(int i, int row, int off, int top);
 void ex(void);
 void ex_command(char *cmd);
 char *ex_read(char *msg);

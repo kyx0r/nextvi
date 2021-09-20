@@ -680,10 +680,10 @@ static char *led_line(char *pref, char *post, char *ai,
 				break;
 			xquit = 0;
 			td_set(xotd);
-			hist_write(sbuf_buf(sb));
-			hist_switch();
+			temp_write(0, sbuf_buf(sb));
+			temp_switch(0);
 			vi();
-			hist_switch();
+			temp_switch(0);
 			vi(); //redraw past screen
 			syn_setft("---");
 			td_set(+2);
@@ -694,7 +694,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			if (ai_max > 0)
 				break;
 			cur_histstr:
-			cs = hist_curstr(i);
+			cs = temp_curstr(0, i);
 			if (cs)
 			{
 				cs[dstrlen(cs, '\n')] = '\0';
@@ -757,11 +757,11 @@ char *led_prompt(char *pref, char *post, char *insert,
 {
 	int key;
 	td_set(+2);
-	hist_open();
+	temp_open(0, "/hist/", "/");
 	char *s = led_line(pref, post, "", 0, &key, kmap, insert);
 	td_set(xotd);
 	if (key == '\n') {
-		hist_write(s);
+		temp_write(0, s);
 		struct sbuf *sb = sbuf_make(1024);
 		if (pref)
 			sbuf_str(sb, pref);
@@ -835,6 +835,6 @@ char *led_input(char *pref, char *post, int *kmap, int cln)
 void led_done(void)
 {
 	delete(ROOT, ROOT);
-	hist_done();
+	temp_done(0);
 }
 
