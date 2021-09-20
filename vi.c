@@ -2154,9 +2154,8 @@ int setup_signals(void) {
 
 int main(int argc, char *argv[])
 {
-	int i, ii;
+	int i;
 	char *prog = strchr(argv[0], '/') ? strrchr(argv[0], '/') + 1 : argv[0];
-	struct stat statbuf;
 	xvis = strcmp("ex", prog) && strcmp("neatex", prog);
 	if (!setup_signals())
 		return 1;
@@ -2171,22 +2170,12 @@ int main(int argc, char *argv[])
 			xvis = 1;
 	}
 	if (xled || xvis)
-	{
 		term_init();
-		for (ii = i; ii < argc; ii++)
-		{
-			if (lstat(&argv[ii][0], &statbuf) >= 0 && S_ISDIR(statbuf.st_mode))
-			{
-				goto cleanup;
-			}
-		}
-	}
 	if (!ex_init(argv + i)) {
 		if (xvis)
 			vi();
 		else
 			ex();
-		cleanup:
 		ex_done();
 	}
 	if (xled || xvis)

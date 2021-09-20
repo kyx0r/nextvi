@@ -45,7 +45,7 @@ in every file in the opened directory keybind: ^] or ^5
 Beware that it will brute force open files into buffers and
 perform the search. I usually save really often so this isn't 
 a problem, but being careless might reload file with unsaved changes.
-By default it only checks for .c and .h files. 
+By default it only checks every file, else filter is specified by :inc (see 32.)
 for code navigation between files, jump to definitions / etc.
 9. fssearch but going in reverse keybind: ^p
 10. Added key to change the mark origin which ^p will return to keybind: ^t
@@ -105,9 +105,10 @@ than having hund. As time goes on there will be added
 some new ex commands to help working with files. All
 done from a vi buffer. Commands listed below under (33.)
 will also work everywhere in vi.
+ - New ex command "cd" changes working directory according to 1st arg.
+ - (32.), (12.) and ex "cd" affect how/what dirs & files are listed.
  - Added key that opens the file based on text from the cursor.
    keybind: ^i
- - New ex command "cd" changes working directory according to 1st arg.
 34. Added key to save current file keybind: ^k
 35. The new special character "/" for ft in conf.c now signifies that 
 the regex will be applied on any file. The reason "/" was 
