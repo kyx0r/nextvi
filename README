@@ -193,6 +193,12 @@ property of being able to efficiently exclude some sub expression from
 being recomputed during the continuation. Take advantage of it when you
 can.
 
+PIKEVM:
+-------
+A complete rewrite of nextvi's regex engine for the purposes to get
+rid of backtracking and severe performance and memory constrants is 
+now complete. See FAQ below.
+
 FAQ:
 ----
 Q: Why nextvi instead of vim?
@@ -212,6 +218,36 @@ reported that "^^" (Ctrl + ^) can be achieved on some system with "^6".
 If something doesn't work, have a look at the layout of an
 american/british keyboard and try to reproduce the keybind as if you
 have an american/british keyboard.
+
+Q: Something, something - pikevm
+A: Pikevm guarantees that all regular expressions are computed in
+constant space and O(n+k) time where n is size of the string and
+k is some constant for the complexity of the regex ie. how big it is.
+Q: What are the other benefits?
+A: For example, now it is possible to compute a C comment /* n */ 
+where n can be an infinite number of characters. Of course this
+extends to every other valid regular expression.
+A: Minimalism?
+Q: Implementation (regex.c) is ~630 lines of C code, that
+includes both the compilation and execution. 
+Q: NFA vs DFA (identify)
+A: pikevm = NFA backtrack = DFA
+Q: What's wrong with original implementation?
+A: Nothing except it being slow and limited. My improved version
+of Ali's DFA implementation ran 2X faster in any case, however 
+I found a bug with it where quested "?" nested groups compute 
+wrong submatch results. To fix this problem, it would require
+to undo a lot of optimization work already done, basically 
+going back to how slow Ali's implementation would be. The 
+reason this was spoted so late was because this kind of
+regex wasn't used before, so I never tested it. Other than
+that I think submatch extraction is correct on other cases.
+Pikevm does not have this bug, so it will be used as main
+regex engine from now on, unless dfa ever finds a proper fix.
+Honestly, this change isn't so suprising, as I was working
+on pikevm a few months prior, to favor a superior algorithm.
+You can still find that code here (likely with no updates):
+https://github.com/kyx0r/nextvi/tree/dfa_dead
 
 CONFIGURATION
 -------------
