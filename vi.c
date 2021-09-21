@@ -984,18 +984,23 @@ static int vi_motion(int *row, int *off)
 		{
 			strcpy(path, ".");
 			dir_calc(path);
+			temp_done(1);
 		}
 		temp_open(1, "/fm/", "fm");
-		for (int pos = 0; pos < fstlen;)
-		{
-			cs = &fslink[pos+sizeof(int)];
-			pos += *(int*)((char*)fslink+pos) + sizeof(int);
-			temp_write(1, cs);
+		cs = temp_get(1, 1);
+		if (!cs || strncmp(&fslink[sizeof(int)], cs, (*(int*)fslink)-1)) {
+			temp_done(1);
+			temp_open(1, "/fm/", "fm");
+			for (i = 0; i < fstlen;)
+			{
+				cs = &fslink[i+sizeof(int)];
+				i += *(int*)((char*)fslink+i) + sizeof(int);
+				temp_write(1, cs);
+			}
 		}
 		temp_switch(1);
 	        vi();
 	        temp_switch(1);
-		temp_done(1);
 		xquit = 0;
 		break;
 	default:

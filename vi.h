@@ -239,6 +239,7 @@ void temp_switch(int i);
 void temp_write(int i, char *str);
 void temp_done(int i);
 char *temp_curstr(int i, int sub);
+char *temp_get(int i, int row);
 void temp_pos(int i, int row, int off, int top);
 void ex(void);
 void ex_command(char *cmd);

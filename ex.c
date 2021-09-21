@@ -137,6 +137,11 @@ char *temp_curstr(int i, int sub)
 	return lbuf_get(tempbufs[i].lb, tempbufs[i].row - sub);
 }
 
+char *temp_get(int i, int row)
+{
+	return lbuf_get(tempbufs[i].lb, row);
+}
+
 void temp_done(int i)
 {
 	if (tempbufs[i].lb)
