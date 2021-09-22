@@ -318,7 +318,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 if (freesub) \
 	{ s1 = freesub; freesub = (rsub*)s1->sub[0]; copy } \
 else \
-	{ s1 = (rsub*)&nsubs[rsubsize * subidx++]; init } \
+	{ s1 = (rsub*)&nsubs[suboff+=rsubsize]; init } \
 
 #define decref(csub) \
 if (--csub->ref == 0) { \
@@ -458,7 +458,7 @@ for (;; sp = _sp) { \
 		case MATCH: \
 			if (matched) { \
 				decref(matched) \
-				subidx = 0; \
+				suboff = 0; \
 			} \
 			matched = nsub; \
 			goto break_for##n; \
@@ -473,11 +473,8 @@ for (;; sp = _sp) { \
 	nlist = tmp; \
 	clistidx = nlistidx; \
 	nlistidx = 0; \
-	if (clistidx != 1 && !matched) { \
-		if (!clistidx && pclistidx) \
-			_sp = sp; \
+	if (!matched) { \
 		jmp_start##n: \
-		pclistidx = nlistidx; \
 		newsub(for (i = 1; i < nsubp; i++) s1->sub[i] = NULL;, /*nop*/) \
 		s1->ref = 1; \
 		s1->sub[0] = _sp; \
@@ -485,7 +482,6 @@ for (;; sp = _sp) { \
 		addthread(1##n, clist, clistidx) \
 	} else if (!clistidx) \
 		break; \
-	pclistidx = clistidx; \
 } \
 if (matched) { \
 	for (i = 0, j = i; i < nsubp; i+=2, j++) { \
@@ -498,14 +494,14 @@ _return(0) \
 
 int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
-	int i, j, c, gen, subidx = 1, *npc;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
-	int clistidx = 0, nlistidx = 0, pclistidx;
+	int i, j, c, gen, suboff = rsubsize, *npc;
+	int clistidx = 0, nlistidx = 0;
 	const char *sp = s, *_sp = s;
 	int *insts = prog->insts;
 	int *pcs[prog->splits];
 	rsub *subs[prog->splits];
-	char nsubs[rsubsize * 512];
+	char nsubs[500000];
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
