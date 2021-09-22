@@ -21,7 +21,7 @@ void term_init(void)
 	}
 	cols = cols ? cols : 80;
 	rows = rows ? rows : 25;
-	term_str("\33[m");
+	term_out("\33[m");
 }
 
 void term_done(void)
@@ -46,7 +46,7 @@ void term_suspend(void)
 void term_record(void)
 {
 	if (!term_sbuf)
-		term_sbuf = sbuf_make(256);
+		term_sbuf = sbuf_make(2048);
 }
 
 void term_commit(void)
@@ -58,17 +58,12 @@ void term_commit(void)
 	}
 }
 
-static void term_out(char *s)
+void term_out(char *s)
 {
 	if (term_sbuf)
 		sbuf_str(term_sbuf, s);
 	else
 		write(1, s, strlen(s));
-}
-
-void term_str(char *s)
-{
-	term_out(s);
 }
 
 void term_chr(int ch)

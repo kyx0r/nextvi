@@ -426,7 +426,7 @@ void led_print(char *s, int row)
 	char *r = led_render(s, xleft, xleft + xcols);
 	term_pos(row, 0);
 	term_kill();
-	term_str(r);
+	term_out(r);
 	free(r);
 }
 
@@ -438,7 +438,7 @@ void led_printmsg(char *s, int row)
 	td_set(xotd);
 	term_pos(row, 0);
 	term_kill();
-	term_str(r);
+	term_out(r);
 	free(r);
 }
 
