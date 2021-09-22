@@ -1,4 +1,4 @@
-/* neatvi main header */
+/* nextvi main header */
 
 /* helper macros */
 #define LEN(a)		(sizeof(a) / sizeof((a)[0]))

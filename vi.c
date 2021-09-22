@@ -1,5 +1,5 @@
 /*
- * NEATVI Editor
+ * NEXTVI Editor
  *
  * Copyright (C) 2015-2019 Ali Gholami Rudi <ali at rudi dot ir>
  * Copyright (C) 2020-2021 Kyryl Melekhin <k dot melekhin at gmail dot com>
