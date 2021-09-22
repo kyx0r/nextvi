@@ -10,8 +10,6 @@
 	fclose(f);}\
 
 /* utility funcs */
-int isescape(char ch);
-char *substr(const char *s1, const char *s2, int len1, int len2);
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
 void reverse_in_place(char *str, int len);
@@ -77,9 +75,7 @@ typedef struct {
 	char *rm_so;
 	char *rm_eo;
 } regmatch_t;
-typedef struct rcode rcode;
-struct rcode
-{
+typedef struct {
 	int unilen;
 	int len;
 	int sub;
@@ -88,18 +84,18 @@ struct rcode
 	int gen;
 	int flg;
 	int insts[];
-};
+} rcode;
 /* regular expression set */
-struct rset {
+typedef struct {
 	rcode *regex;		/* the combined regular expression */
 	int n;			/* number of regular expressions in this set */
 	int *grp;		/* the group assigned to each subgroup */
 	int *setgrpcnt;		/* number of groups in each regular expression */
 	int grpcnt;		/* group count */
-};
-struct rset *rset_make(int n, char **pat, int flg);
-int rset_find(struct rset *re, char *s, int n, int *grps, int flg);
-void rset_free(struct rset *re);
+} rset;
+rset *rset_make(int n, char **pat, int flg);
+int rset_find(rset *re, char *s, int n, int *grps, int flg);
+void rset_free(rset *re);
 char *re_read(char **src);
 
 /* ren.c rendering lines */
@@ -340,8 +336,8 @@ extern int xkmap_alt;
 extern int xtabspc;
 extern int xqexit;
 extern int intershell;
-extern char* fslink;
-extern char fsincl[128];
+extern rset *fsincl;
+extern char *fslink;
 extern int fstlen;
 extern int fspos;
 extern int fscount;

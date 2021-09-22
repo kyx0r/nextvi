@@ -307,7 +307,7 @@ static int ex_search(char **pat)
 	char *b = *pat;
 	char *e = b;
 	char *pats[1];
-	struct rset *re;
+	rset *re;
 	int dir, row;
 	kw = sbuf_make(64);
 	while (*++e) {
@@ -845,7 +845,7 @@ static void replace(struct sbuf *dst, char *rep, char *ln, int *offs)
 static int ec_substitute(char *ec)
 {
 	char loc[EXLEN];
-	struct rset *re;
+	rset *re;
 	int offs[32];
 	int beg, end;
 	char *pats[1];
@@ -983,7 +983,7 @@ static int ex_exec(char *ln);
 static int ec_glob(char *ec)
 {
 	char loc[EXLEN], cmd[EXLEN];
-	struct rset *re;
+	rset *re;
 	int offs[32];
 	int beg, end, not;
 	char *pats[1];
@@ -1125,10 +1125,8 @@ static int ec_chdir(char *ec)
 
 static int ec_setincl(char *ec)
 {
-	int l = strlen(&ec[4]);
-	memcpy(fsincl, &ec[4], l);
-	fsincl[l] = ' ';
-	fsincl[l+1] = '\0';
+	rset_free(fsincl);
+	fsincl = rset_make(1, (char*[]){&ec[4]}, 0);
 	if (fslink) {
 		free(fslink);
 		fslink = NULL;

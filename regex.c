@@ -523,7 +523,7 @@ static int re_groupcount(char *s)
 	return n;
 }
 
-void rset_free(struct rset *rs)
+void rset_free(rset *rs)
 {
 	if (!rs)
 		return;
@@ -533,9 +533,9 @@ void rset_free(struct rset *rs)
 	free(rs);
 }
 
-struct rset *rset_make(int n, char **re, int flg)
+rset *rset_make(int n, char **re, int flg)
 {
-	struct rset *rs = malloc(sizeof(*rs));
+	rset *rs = malloc(sizeof(*rs));
 	struct sbuf *sb = sbuf_make(1024);
 	int regex_flg = REG_EXTENDED | (flg & REG_ICASE ? REG_ICASE : 0);
 	int i;
@@ -574,7 +574,7 @@ struct rset *rset_make(int n, char **re, int flg)
 }
 
 /* return the index of the matching regular expression or -1 if none matches */
-int rset_find(struct rset *rs, char *s, int n, int *grps, int flg)
+int rset_find(rset *rs, char *s, int n, int *grps, int flg)
 {
 	int i, grp, set = -1;
 	if (rs->grpcnt <= 2 || !*s)

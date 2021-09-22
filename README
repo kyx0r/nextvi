@@ -93,9 +93,10 @@ cursor when enabled. Useful for when studying source code.
 file. Then you can press ^n to cycle though the options, results are based on
 the contents of the file and the closest match to what you typed. Use ^r to
 cycle in reverse.
-32. Added ex command "inc" which sets the filename filter for the feature
-mentioned in (8.) This is not limited to one argument, 
-separate entries by space.
+32. Added ex command "inc" which sets the path filter using regex. For
+example we want to get only files in submodule directory that end
+with .c extension, use: :inc submodule.*\.c$
+Full filtering freedom at your will.
 33. Added file manager keybind: \
 Until commit 382c65b nextvi had a full filemanager
 called hund built in. It acted as temporary workaround,

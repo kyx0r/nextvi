@@ -419,7 +419,7 @@ int lbuf_search(struct lbuf *lb, char *kw, int dir, int *r, int *o, int *len)
 	int found = 0;
 	int r0 = *r, o0 = *o;
 	int i;
-	struct rset *re = rset_make(1, &kw, xic ? REG_ICASE : 0);
+	rset *re = rset_make(1, &kw, xic ? REG_ICASE : 0);
 	if (!re)
 		return 1;
 	for (i = r0; !found && i >= 0 && i < lbuf_len(lb); i += dir) {

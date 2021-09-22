@@ -638,24 +638,16 @@ static void vi_regprint()
 	}
 }
 
+rset *fsincl;
 char *fslink;
-char fsincl[128] = " ";
 int fstlen;
 int fspos;
 int fscount;
-
-char *substr(const char *s1, const char *s2, int len1, int len2)
-{
-	if (len2 > len1)
-		return strstr(s2, s1);
-	return strstr(s1, s2);
-}
 
 static void file_calc(char *path, char *basepath)
 {
 	struct dirent *dp;
 	struct stat statbuf;
-	char *s, *sprev;
 	int len, _len, len1;
 	DIR *dir = opendir(basepath);
 	int pathlen = strlen(path);
@@ -663,24 +655,12 @@ static void file_calc(char *path, char *basepath)
 		return;
 	while ((dp = readdir(dir)) != NULL)
 	{
-		s = fsincl;
-		sprev = s;
-		len1 = strlen(dp->d_name);
-		while ((s = strchr(s, ' ')))
-		{
-			*s = '\0';
-			if (substr(dp->d_name, sprev, len1, strlen(sprev)))
-				break;
-			*s = ' ';
-			s++;
-			sprev = s;
-		}
-		if (!s)
-			continue;
-		*s = ' ';
-		len1++;
+		len1 = strlen(dp->d_name)+1;
 		path[pathlen] = '/';
 		memcpy(&path[pathlen+1], dp->d_name, len1);
+		if (fsincl)
+			if (rset_find(fsincl, path, 0, 0, 0) < 0)
+				continue;
 		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
 		{
 			len = pathlen + len1 + 1;

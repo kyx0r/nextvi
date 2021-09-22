@@ -176,15 +176,15 @@ char *ren_translate(char *s, char *ln)
 	return p || !xshape ? p : uc_shape(ln, s);
 }
 
-static struct rset *dir_rslr;	/* pattern of marks for left-to-right strings */
-static struct rset *dir_rsrl;	/* pattern of marks for right-to-left strings */
-static struct rset *dir_rsctx;	/* direction context patterns */
+static rset *dir_rslr;	/* pattern of marks for left-to-right strings */
+static rset *dir_rsrl;	/* pattern of marks for right-to-left strings */
+static rset *dir_rsctx;	/* direction context patterns */
 
 static int dir_match(char **chrs, int beg, int end, int ctx, int *rec,
 		int *r_beg, int *r_end, int *c_beg, int *c_end, int *dir)
 {
 	int subs[16 * 2];
-	struct rset *rs = ctx < 0 ? dir_rsrl : dir_rslr;
+	rset *rs = ctx < 0 ? dir_rsrl : dir_rslr;
 	int grp;
 	int flg = (beg ? REG_NOTBOL : 0) | (chrs[end][0] ? REG_NOTEOL : 0);
 	int found = -1;
@@ -294,12 +294,12 @@ static struct ftmap {
 	char ft[32];
 	int setbidx;
 	int seteidx;
-	struct rset *rs;
+	rset *rs;
 } ftmap[NFTS];
 static int ftmidx;
 static int ftidx;
 
-static struct rset *syn_ftrs;
+static rset *syn_ftrs;
 static int syn_ctx;
 static int last_scdir;
 static int *blockatt;
@@ -342,7 +342,7 @@ void syn_scdir(int scdir)
 
 void syn_highlight(int *att, char *s, int n)
 {
-	struct rset *rs = ftmap[ftidx].rs;
+	rset *rs = ftmap[ftidx].rs;
 	int subs[16 * 2];
 	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
 	int bend = 0, cend = 0;
