@@ -20,7 +20,7 @@ decisions and tends to favor clean implementations over 100%
 adhering to POSIX like neatvi does. Thus the name "next", to
 signify that we are thinking outside the box. The notable
 changes that I am refering to (see below): 56, 60, 61.
-Some keybinds specified my posix were not implemented in
+Some keybinds specified by posix were not implemented in
 original neatvi, nextvi might use them for some features
 below.
 
@@ -96,7 +96,7 @@ cycle in reverse.
 32. Added ex command "inc" which sets the path filter using regex. For
 example we want to get only files in submodule directory that end
 with .c extension, use: :inc submodule.*\.c$
-Full filtering freedom at your will.
+Running "inc" without an arg will disable all filters.
 33. Added file manager keybind: \
 Until commit 382c65b nextvi had a full filemanager
 called hund built in. It acted as temporary workaround,

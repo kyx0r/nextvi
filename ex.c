@@ -1125,8 +1125,6 @@ static int ec_chdir(char *ec)
 
 static int ec_setincl(char *ec)
 {
-	rset_free(fsincl);
-	fsincl = rset_make(1, (char*[]){&ec[4]}, 0);
 	if (fslink) {
 		free(fslink);
 		fslink = NULL;
@@ -1134,6 +1132,11 @@ static int ec_setincl(char *ec)
 		fspos = 0;
 		fscount = 0;
 	}
+	rset_free(fsincl);
+	if (!ec[3])
+		fsincl = NULL;
+	else
+		fsincl = rset_make(1, (char*[]){&ec[4]}, 0);
 	return 0;
 }
 
