@@ -1717,50 +1717,7 @@ void vi(void)
 			case 'v':
 				vi_mod = 2;
 				k = vi_read();
-				if (k == 'e')
-				{
-					char buf[30];
-					strcpy(buf, ".,.+");
-					char *buf1 = itoa(vi_arg1, buf+4);
-					strcat(buf1, "s/");
-					ln = vi_prompt(":", buf, &kmap);
-					goto do_excmd;
-				} else if (k == 'r') {
-					if (!(cs = vi_curword(xb, xrow, xoff, vi_arg1 ? vi_arg1 : 1)))
-						break;
-					char buf[strlen(cs)+30];
-					strcpy(buf, "%s/");
-					strcat(buf, cs);
-					strcat(buf, "/");
-					free(cs);
-					ln = vi_prompt(":", buf, &kmap);
-					goto do_excmd;
-				} else if (k == '/') {
-					if (!(cs = vi_curword(xb, xrow, xoff, vi_arg1 ? vi_arg1 : 1)))
-						break;
-					ln = vi_prompt("(Nn) kwd:", cs, &kmap);
-					ex_kwdset(ln, +1);
-					free(cs);
-					free(ln);
-					break;
-				} else if (k == 't') {
-					strcpy(vi_msg, "arg2:(1|#)");
-					vi_drawmsg();
-					k = vi_prefix();
-					if (!(cs = vi_curword(xb, xrow, xoff, k ? k : 1)))
-						break;
-					char buf[strlen(cs)+30];
-					strcpy(buf, ".,.+");
-					char *buf1 = itoa(vi_arg1, buf+4);
-					strcat(buf1, "s/");
-					strcat(buf1, cs);
-					strcat(buf1, "/");
-					free(cs);
-					ln = vi_prompt(":", buf, &kmap);
-					goto do_excmd;
-				}
-				switch (k)
-				{
+				switch (k) {
 				case 'h':
 					ex_command(".s/\\./->/");
 					break;
@@ -1821,6 +1778,39 @@ void vi(void)
 					vi_lnnum = 2;
 					vi_mod = 1;
 					break;
+				case '/':
+					cs = vi_curword(xb, xrow, xoff, vi_arg1);
+					ln = vi_prompt("(Nn) kwd:", cs, &kmap);
+					ex_kwdset(ln, +1);
+					free(cs);
+					free(ln);
+					break;
+				case 't': {
+					strcpy(vi_msg, "arg2:(0|#)");
+					vi_drawmsg();
+					cs = vi_curword(xb, xrow, xoff, vi_prefix());
+					char buf[cs ? strlen(cs)+30 : 30];
+					strcpy(buf, ".,.+");
+					char *buf1 = itoa(vi_arg1, buf+4);
+					strcat(buf1, "s/");
+					if (cs) {
+						strcat(buf1, cs);
+						strcat(buf1, "/");
+						free(cs);
+					}
+					ln = vi_prompt(":", buf, &kmap);
+					goto do_excmd; }
+				case 'r': {
+					cs = vi_curword(xb, xrow, xoff, vi_arg1);
+					char buf[cs ? strlen(cs)+30 : 30];
+					strcpy(buf, "%s/");
+					if (cs) {
+						strcat(buf, cs);
+						strcat(buf, "/");
+						free(cs);
+					}
+					ln = vi_prompt(":", buf, &kmap);
+					goto do_excmd; }
 				default:
 					vi_back(k);
 				}
