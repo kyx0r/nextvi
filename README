@@ -211,6 +211,17 @@ to keep track of.
 
 Q: General philosophy?
 A: User is programmer, hacker culture.
+In most texteditors, flexibility is a minor or irrelevant design goal.
+Nextvi is designed to be flexible where the editor adapts to the user
+needs. This flexibility is achieved by heavily chaining basic
+commands and allowing them to create new ones with completely
+different functionality. Command reuse keeps the editor small without
+infringing on your freedom to quickly get a good grasp on the code.
+If you want to customize anything, you should be able to do it using
+the only core commands or a mix with some specific C code for
+more difficult tasks. Simple and flexible design allows for
+straight forward solutions to any problem long term and filters
+bad inconsistent ideas.
 
 Q: Keybind with CTRL does not work?
 A: vi is reading ASCII codes sent by the terminal. Depending on the
