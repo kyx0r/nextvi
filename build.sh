@@ -1,5 +1,5 @@
 #!/bin/sh -e
-CFLAGS="-pedantic -Wall -Wfatal-errors -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 $CFLAGS"
+CFLAGS="-pedantic -Wall -Wfatal-errors -std=c99 -D_POSIX_C_SOURCE=200809L $CFLAGS"
 OS="$(uname)"
 : ${CC:=$(command -v cc)}
 : ${PREFIX:=/usr/local}
@@ -20,4 +20,8 @@ build() {
 	run "$CC" "vi.c" $CFLAGS -o vi
 }
 
-"${@:-build}"
+if [ "$#" -gt 0 ]; then
+	"$@"
+else
+	build
+fi
