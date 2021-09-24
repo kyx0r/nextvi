@@ -240,8 +240,8 @@ static void vi_drawupdate(int xcol, int otop)
 		for (i = 0; i < n; i++)
 			vi_drawrow(xtop + i);
 	}
-	term_commit();
 	vi_drawmsg();
+	term_commit();
 }
 
 /* update the screen by removing lines r1 to r2 before an input command */

@@ -1,11 +1,12 @@
 static struct sbuf *term_sbuf;
-static int rows, cols;
+static int rows, cols, record;
 static struct termios termios;
 
 void term_init(void)
 {
 	struct winsize win;
 	struct termios newtermios;
+	term_sbuf = sbuf_make(2048);
 	tcgetattr(0, &termios);
 	newtermios = termios;
 	newtermios.c_lflag &= ~(ICANON | ISIG);
@@ -27,6 +28,7 @@ void term_init(void)
 void term_done(void)
 {
 	term_commit();
+	sbuf_free(term_sbuf);
 	tcsetattr(0, 0, &termios);
 }
 
@@ -45,22 +47,19 @@ void term_suspend(void)
 
 void term_record(void)
 {
-	if (!term_sbuf)
-		term_sbuf = sbuf_make(2048);
+	record = 1;
 }
 
 void term_commit(void)
 {
-	if (term_sbuf) {
-		write(1, sbuf_buf(term_sbuf), sbuf_len(term_sbuf));
-		sbuf_free(term_sbuf);
-		term_sbuf = NULL;
-	}
+	write(1, sbuf_buf(term_sbuf), sbuf_len(term_sbuf));
+	sbuf_cut(term_sbuf, 0);
+	record = 0;
 }
 
 void term_out(char *s)
 {
-	if (term_sbuf)
+	if (record)
 		sbuf_str(term_sbuf, s);
 	else
 		write(1, s, strlen(s));
