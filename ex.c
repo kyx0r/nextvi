@@ -509,11 +509,11 @@ static int ec_edit(char *ec)
 	char path[EXLEN];
 	int fd;
 	ex_cmd(ec, cmd);
-	if (!ex_filearg(ec, path, 0))
-		return 1;
 	if (!strchr(cmd, '!'))
 		if (xb && ex_modifiedbuffer("buffer modified\n"))
 			return 1;
+	if (!ex_filearg(ec, path, 0))
+		return 1;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
 		bufs_switch(fd);
 		return 0;

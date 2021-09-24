@@ -40,13 +40,14 @@ keybind: v# enables permanent line numbers
 5. Added regex for changing spaces to tabs, keybind: vi
 6. Added regex for removing /r in dos files and trail space/tab, keybind: vo
 7. Changed behavior of ^a to change search direction when no more match 
-8. Added fssearch, searches what is under the cursor 
+8. Added fssearch, searches what is under the cursor or (last search kwd)
 in every file in the opened directory keybind: ^] or ^5
 Beware that it will brute force open files into buffers and
 perform the search. I usually save really often so this isn't 
 a problem, but being careless might reload file with unsaved changes.
 By default it only checks every file, else filter is specified by :inc (see 32.)
-for code navigation between files, jump to definitions / etc.
+This works in compliance with other changes (see 49. 58.) 
+Use it for code navigation between files, jump to definitions / etc.
 9. fssearch but going in reverse keybind: ^p
 10. Added key to change the mark origin which ^p will return to keybind: ^t
 11. Added ex command "ea" which opens file case insensitive and ignores the path,
@@ -155,7 +156,8 @@ searches via / or ? the same way. keybind vv does the same but from
 normal mode, to save time. Pressing ^v again goes to next string.
 49. Added ability to get more than 1 word for keybinds ^a ^] ^p vr vt v/
 specified by number (vi_arg1). Regex control chars will be escaped.
-vr vt v/ will grab word(s) only if vi_arg1 > 1
+vr vt v/ ^] ^p will grab word(s) only if vi_arg1 >= 1 otherwise
+the keybind will perform a default cursor independent action.
 50. Added ability to edit the line while in insert mode
 such that backspace can delete all the characters on the line,
 when no more characters left the line will be wrapped onto the next

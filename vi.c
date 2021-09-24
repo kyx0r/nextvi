@@ -701,7 +701,7 @@ void dir_calc(char *cur_dir)
 	closedir(dp);
 }
 
-static int fs_search(char* cs,int cnt, int *row, int *off)
+static int fs_search(int cnt, int *row, int *off)
 {
 	char *path;
 	struct lbuf *prevxb;
@@ -718,7 +718,6 @@ static int fs_search(char* cs,int cnt, int *row, int *off)
 			{*row = 0; *off = 0;}
 		if (prevxb == xb)
 			continue;
-		ex_kwdset(cs, +1);
 		if (!vi_search('n', cnt, row, off))
 			return 1;
 	}
@@ -731,7 +730,7 @@ static int fs_search(char* cs,int cnt, int *row, int *off)
 	return 0;
 }
 
-static int fs_searchback(char* cs, int cnt, int *row, int *off)
+static int fs_searchback(int cnt, int *row, int *off)
 {
 	char *path;
 	int tlen = 0;
@@ -755,7 +754,6 @@ static int fs_searchback(char* cs, int cnt, int *row, int *off)
 			{*row = 0; *off = 0;}
 		if (prevxb == xb)
 			continue;
-		ex_kwdset(cs, +1);
 		if (!vi_search('n', cnt, row, off))
 			return 1;
 	}
@@ -861,29 +859,30 @@ static int vi_motion(int *row, int *off)
 				break;
 		break;
 	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
-		if (!(cs = vi_curword(xb, *row, *off, cnt)))
-			return -1;
-		if (!fslink)
-		{
+		cs = vi_curword(xb, *row, *off, vi_arg1);
+		if (!fslink) {
 			strcpy(path, ".");
 			dir_calc(path);
 		}
-		if (!*savepath)
-		{
+		if (!*savepath) {
 			srow = *row; soff = *off;
 			memcpy(savepath, ex_path(), strlen(ex_path())+1);
 		}
 		_row = *row; _off = *off;
-		if (!fs_search(cs, cnt, row, off))
-		{
+		if (vi_arg1 && cs)
+			ex_kwdset(cs, +1);
+		if (!fs_search(cnt, row, off)) {
 			*row = _row; *off = _off;
 		}
 		free(cs);
 		break;
 	case TK_CTL('p'):
-		if (!(cs = vi_curword(xb, *row, *off, cnt)) || !fslink)
+		if (!fslink)
 			return -1;
-		if (!fs_searchback(cs, cnt, row, off))
+		cs = vi_curword(xb, *row, *off, vi_arg1);
+		if (vi_arg1 && cs)
+			ex_kwdset(cs, +1);
+		if (!fs_searchback(cnt, row, off))
 		{
 			if (*savepath)
 			{
@@ -1780,7 +1779,7 @@ void vi(void)
 					break;
 				case '/':
 					cs = vi_curword(xb, xrow, xoff, vi_arg1);
-					ln = vi_prompt("(Nn) kwd:", cs, &kmap);
+					ln = vi_prompt("(search) kwd:", cs, &kmap);
 					ex_kwdset(ln, +1);
 					free(cs);
 					free(ln);
