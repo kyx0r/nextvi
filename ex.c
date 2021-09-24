@@ -186,7 +186,7 @@ char *ex_filetype(void)
 /* read ex command location */
 static char *ex_loc(char *s, char *loc)
 {
-	while (*s == ':' || isspace((unsigned char) *s))
+	while (*s == ':' || *s == ' ' || *s == '\t')
 		s++;
 	while (*s && !isalpha((unsigned char) *s) && *s != '=' && *s != '!') {
 		if (*s == '\'')
@@ -212,7 +212,7 @@ static char *ex_cmd(char *s, char *cmd)
 {
 	char *cmd0 = cmd;
 	s = ex_loc(s, cmd);
-	while (isspace((unsigned char) *s))
+	while (*s == ' ' || *s == '\t')
 		s++;
 	while (isalpha((unsigned char) *s))
 		if ((*cmd++ = *s++) == 'k' && cmd == cmd0 + 1)
@@ -227,9 +227,9 @@ static char *ex_cmd(char *s, char *cmd)
 static char *ex_arg(char *s, char *arg)
 {
 	s = ex_cmd(s, arg);
-	while (isspace((unsigned char) *s))
+	while (*s == ' ' || *s == '\t')
 		s++;
-	while (*s && !isspace((unsigned char) *s)) {
+	while (*s && !(*s == ' ' || *s == '\t')) {
 		if (*s == '\\' && s[1])
 			s++;
 		*arg++ = *s++;
@@ -253,20 +253,18 @@ static char *ex_filearg(char *s, char *arg, int spaceallowed)
 			}
 			strcpy(arg, bufs[0].path);
 			arg = strchr(arg, '\0');
-			continue;
-		}
-		if (c == '#') {
+		} else if (c == '#') {
 			if (!bufs[1].path || !bufs[1].path[0]) {
 				ex_show("\"#\" is unset\n");
 				return NULL;
 			}
 			strcpy(arg, bufs[1].path);
 			arg = strchr(arg, '\0');
-			continue;
+		} else {
+			if (c == '\\')
+				c = *s++;
+			*arg++ = c;
 		}
-		if (c == '\\')
-			c = *s++;
-		*arg++ = c;
 	}
 	*arg = '\0';
 	return s;
@@ -1168,7 +1166,7 @@ static struct excmd {
 	{"wq", "wq", ec_write},
 	{"wq!", "wq!", ec_write},
 	{"u", "undo", ec_undo},
-	{"r", "redo", ec_redo},
+	{"rd", "redo", ec_redo},
 	{"se", "set", ec_set},
 	{"s", "substitute", ec_substitute},
 	{"x", "xit", ec_write},
