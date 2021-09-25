@@ -283,8 +283,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	syn_setft("---");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(xhl ? ex_filetype() : "/");
-	if (xquit == 2)
-	{
+	if (xquit == 2) {
 		vi_mod = 1;
 		xquit = 0;
 	}
@@ -721,8 +720,7 @@ static int fs_search(int cnt, int *row, int *off)
 		if (!vi_search('n', cnt, row, off))
 			return 1;
 	}
-	if (fspos == fstlen && !again)
-	{
+	if (fspos == fstlen && !again) {
 		fspos = 0;
 		again = 1;
 		goto redo;
@@ -737,8 +735,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 	int count = fscount;
 	char *paths[count];
 	struct lbuf *prevxb;
-	for (; tlen < fspos;)
-	{
+	for (; tlen < fspos;) {
 		path = &fslink[tlen+sizeof(int)];
 		tlen += *(int*)((char*)fslink+tlen) + sizeof(int);
 		paths[--count] = path;
@@ -959,15 +956,15 @@ static int vi_motion(int *row, int *off)
 	case '\\':
 		if (!strcmp(ex_path(), "/fm/"))
 			return 0;
-		if (!fslink)
-		{
+		if (!fslink) {
 			strcpy(path, ".");
 			dir_calc(path);
 			temp_done(1);
 		}
 		temp_open(1, "/fm/", "fm");
 		cs = temp_get(1, 1);
-		if (!cs || strncmp(&fslink[sizeof(int)], cs, (*(int*)fslink)-1)) {
+		if (!cs || strncmp(&fslink[sizeof(int)], cs, (*(int*)fslink)-1))
+		{
 			temp_done(1);
 			temp_open(1, "/fm/", "fm");
 			for (i = 0; i < fstlen;)

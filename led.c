@@ -820,4 +820,5 @@ void led_done(void)
 {
 	delete(ROOT, ROOT);
 	temp_done(0);
+	temp_done(1);
 }

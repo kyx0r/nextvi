@@ -144,8 +144,7 @@ char *temp_get(int i, int row)
 
 void temp_done(int i)
 {
-	if (tempbufs[i].lb)
-	{
+	if (tempbufs[i].lb) {
 		free(tempbufs[i].path);
 		lbuf_free(tempbufs[i].lb);
 		tempbufs[i].lb = NULL;
