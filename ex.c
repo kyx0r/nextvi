@@ -764,12 +764,9 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	snprintf(xrep, sizeof(xrep), "%s", rep);
 	free(pat);
 	if (ex_kwd(&pats[0], NULL))
-		return 1;
-	re = rset_make(1, pats, xic ? REG_ICASE : 0);
-	if (!re) {
-		free(rep);
-		return 1;
-	}
+		{free(rep); return 1;}
+	if (!(re = rset_make(1, pats, xic ? REG_ICASE : 0)))
+		{free(rep); return 1;}
 	// if the change is bigger than display size
 	// set savepoint where command was issued.
 	if (end - beg > xrows)
@@ -985,7 +982,7 @@ static int ec_set(char *loc, char *cmd, char *arg)
 
 static int ec_setdir(char *loc, char *cmd, char *arg)
 {
-	if (arg) {
+	if (*arg) {
 		if (fslink) {
 			free(fslink);
 			fslink = NULL;
@@ -1000,7 +997,7 @@ static int ec_setdir(char *loc, char *cmd, char *arg)
 
 static int ec_chdir(char *loc, char *cmd, char *arg)
 {
-	if (arg)
+	if (*arg)
 		if (chdir(arg))
 			ex_show("chdir error");
 	return 0;
@@ -1016,10 +1013,10 @@ static int ec_setincl(char *loc, char *cmd, char *arg)
 		fscount = 0;
 	}
 	rset_free(fsincl);
-	if (!loc[3])
+	if (!*arg)
 		fsincl = NULL;
 	else
-		fsincl = rset_make(1, (char*[]){&loc[4]}, 0);
+		fsincl = rset_make(1, (char*[]){arg}, 0);
 	return 0;
 }
 
@@ -1124,36 +1121,15 @@ static char *ex_arg(char *src, char *dst, char *excmd)
 	int c0 = excmd[0];
 	while (*src == ' ' || *src == '\t')
 		src++;
-	if (c0 == '!' || c0 == 'g' || c0 == 'v' ||
-			((c0 == 'r' || c0 == 'w') && src[0] == '!')) {
-		while (*src && *src != '\n') {
-			if (*src == '\\' && src[1])
-				*dst++ = *src++;
+	if (c0 == 's')
+		while (*src && (*src != '|' || src[-1] == '\\'))
 			*dst++ = *src++;
-		}
-	} else if (c0 == 's') {
-		int delim = *src;
-		int cnt = 2;
-		*dst++ = *src++;
-		while (*src && *src != '\n' && cnt > 0) {
-			if (*src == delim)
-				cnt--;
-			if (*src == '\\' && src[1])
-				*dst++ = *src++;
-			*dst++ = *src++;
-		}
-	}
-	while (*src && *src != '\n' && *src != '|' && *src != '"') {
-		if (*src == '\\' && src[1])
-			*dst++ = *src++;
-		*dst++ = *src++;
-	}
-	if (*src == '"') {
-		while (*src != '\n')
+	while (*src && *src != '|')
+	{
+		if (*src == '\\' && src[1] && src[1] != '\\')
 			src++;
+		*dst++ = *src++;
 	}
-	if (*src == '\n' || *src == '|')
-		src++;
 	*dst = '\0';
 	return src;
 }
