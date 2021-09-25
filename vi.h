@@ -205,7 +205,6 @@ void term_room(int n);
 int term_rows(void);
 int term_cols(void);
 int term_read(void);
-void term_record(void);
 void term_commit(void);
 char *term_att(int att, int old);
 void term_push(char *s, int n);
@@ -222,7 +221,8 @@ char* xgetenv(char* q[]);
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 char *led_input(char *pref, char *post, int *kmap, int cln);
-void led_print(char *msg, int row);
+void led_render(char *s0, int row, int cbeg, int cend);
+#define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
 void led_printmsg(char *s, int row);
 char *led_read(int *kmap);
 char *led_readchar(int c, int kmap);
@@ -345,3 +345,5 @@ extern int vi_lnnum;
 extern int vi_hidch;
 extern int vi_mod;
 extern int vi_insmov;
+extern struct sbuf *term_sbuf;
+extern int term_record;

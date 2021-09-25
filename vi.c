@@ -210,7 +210,7 @@ static void vi_drawrow(int row)
 static void vi_drawagain(int xcol, int lineonly)
 {
 	int i;
-	term_record();
+	term_record = 1;
 	syn_setft(xhl ? ex_filetype() : "/");
 	syn_scdir(0);
 	blockhl = 0;
@@ -226,7 +226,7 @@ static void vi_drawagain(int xcol, int lineonly)
 static void vi_drawupdate(int xcol, int otop)
 {
 	int i = otop - xtop;
-	term_record();
+	term_record = 1;
 	term_pos(0, 0);
 	term_room(i);
 	syn_setft(xhl ? ex_filetype() : "/");

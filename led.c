@@ -24,9 +24,9 @@ static void delete(tern_t* root, tern_t* node);
 //finds the words with prefix 'pattern' and prints out the results to 'out'.
 static int search(const char* pattern, int l, tern_t* node);
 
-static tern_t* create_node (char w, enum ntype t)
+static tern_t* create_node(char w, enum ntype t)
 {
-	tern_t *node = (tern_t*)malloc(sizeof (tern_t));
+	tern_t *node = (tern_t*)malloc(sizeof(tern_t));
 	if (node == NULL) {
 		perror("Error");
 		exit(1);
@@ -39,18 +39,18 @@ static tern_t* create_node (char w, enum ntype t)
 	return node;
 }
 
-static tern_t* insert_node (const char* string, tern_t* node)
+static tern_t* insert_node(const char* string, tern_t* node)
 {
 	int i = strlen(string);
-	if(NULL == node)
+	if (NULL == node)
 		node = create_node(string[0], NO);
-	if(string[0] < node->word)
+	if (string[0] < node->word)
 		node->lChild = insert_node(string, node->lChild);
-	else if(string[0] > node->word)
+	else if (string[0] > node->word)
 		node->rChild = insert_node(string, node->rChild);
 	else {
 		//go one level down the tree if the word has not been found here.
-		if(i == 1) {
+		if (i == 1) {
 			node->type = YES;
 			return node;
 		} else
@@ -63,18 +63,18 @@ static tern_t* find_node(const char* string, int l, tern_t* node)
 {
 	int i = 0;
 	tern_t* currentNode = node;
-	while(i < l) {
-		if(currentNode == NULL)
+	while (i < l) {
+		if (currentNode == NULL)
 			break;
 		//look to the left of word
-		if(string[i] < currentNode->word)
+		if (string[i] < currentNode->word)
 			currentNode = currentNode->lChild;
 		//look to the right of word
-		else if(string[i] > currentNode->word)
+		else if (string[i] > currentNode->word)
 			currentNode = currentNode->rChild;
 		//if out of characters, prefix ends on the current node. Now start search
 		else {
-			if(i++ == l - 1)
+			if (i++ == l - 1)
 				return currentNode;
 			else
 				currentNode = currentNode->mChild;
@@ -85,7 +85,7 @@ static tern_t* find_node(const char* string, int l, tern_t* node)
 
 static void deep_search(const char* pattern, tern_t* start)
 {
-	if(start->type != NO)
+	if (start->type != NO)
 	{
 		char *off = suggestbuf+suggestlen;
 		int len = strlen(pattern);
@@ -96,11 +96,11 @@ static void deep_search(const char* pattern, tern_t* start)
 		off[len+1] = '\n';
 		suggestlen += len+2;
 	}
-	if(start->lChild != NULL)
+	if (start->lChild != NULL)
 		deep_search(pattern, start->lChild);
-	if(start->rChild != NULL)
+	if (start->rChild != NULL)
 		deep_search(pattern, start->rChild);
-	if(start->mChild != NULL) {
+	if (start->mChild != NULL) {
 		int l = strlen(pattern) + 2;
 		char _pattern[l];
 		sprintf(_pattern, "%s%c", pattern, start->word);
@@ -113,7 +113,7 @@ static int search(const char* pattern, int l, tern_t* node)
 	suggestlen = 0;
 	//finds the node where the prefix ends.
 	tern_t* current = find_node(pattern, l, node);
-	if(NULL == current)
+	if (NULL == current)
 		return 0;
 	else {
 		if (current->mChild != NULL)
@@ -141,7 +141,7 @@ static void delete(tern_t* root, tern_t* node)
 			delete(root, node->mChild);
 			node->mChild = NULL;
 		}
-		if((node->lChild == NULL) && (node->rChild==NULL) && (node->mChild==NULL)) {
+		if ((node->lChild == NULL) && (node->rChild==NULL) && (node->mChild==NULL)) {
 			if (node!=root) {
 				free(node);
 			}
@@ -150,10 +150,10 @@ static void delete(tern_t* root, tern_t* node)
 	}
 }
 
-int dstrlen (const char *s, char delim)
+int dstrlen(const char *s, char delim)
 {
 	register const char* i;
-	for(i=s; *i && *i != delim; ++i);
+	for (i=s; *i && *i != delim; ++i);
 	return (i-s);
 }
 
@@ -170,7 +170,7 @@ static void file_ternary(struct lbuf* buf)
 		char line[len];
 		memcpy(line, ss[i], len);
 		ptr = strtok(line, delim);
-		while(ptr != NULL)
+		while (ptr != NULL)
 		{
 			len = strlen(ptr);
 			if (len > 1)
@@ -244,8 +244,7 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 	while (i < cend) {
 		int o = off[i - cbeg];
 		if (o >= 0) {
-			if (pad)
-			{
+			if (pad) {
 				char pd[i - cbeg];
 				memset(pd, ' ', i - cbeg);
 				sbuf_mem(out, pd, i - cbeg);
@@ -365,7 +364,7 @@ for (i = 0; i < n; i++) { \
 	pos = ren_position(s0, &chrs, &n); \
 
 /* render and highlight a line */
-static char *led_render(char *s0, int cbeg, int cend)
+void led_render(char *s0, int row, int cbeg, int cend)
 {
 	int i, j, n, cterm = cend - cbeg;
 	struct sbuf *out, *bound = NULL;
@@ -410,36 +409,24 @@ static char *led_render(char *s0, int cbeg, int cend)
 	syn_highlight(att, s0, n);
 	led_markrev(n, chrs, pos, att);
 	/* generate term output */
-	out = sbuf_make(cend * 2);
-	if (vi_hidch)
-		ledhidch_out(out, off, att, chrs, s0, cend, ctx);
-	else
-		led_out(out, off, att, chrs, s0, cend);
-	if (bound)
-		sbuf_free(bound);
-	return sbuf_done(out);
-}
-
-/* print a line on the screen */
-void led_print(char *s, int row)
-{
-	char *r = led_render(s, xleft, xleft + xcols);
 	term_pos(row, 0);
 	term_kill();
-	term_out(r);
-	free(r);
+	if (vi_hidch)
+		ledhidch_out(term_sbuf, off, att, chrs, s0, cend, ctx);
+	else
+		led_out(term_sbuf, off, att, chrs, s0, cend);
+	if (bound)
+		sbuf_free(bound);
+	if (!term_record)
+		term_commit();
 }
 
 /* print a line on the screen; for ex messages */
 void led_printmsg(char *s, int row)
 {
 	td_set(+2);
-	char *r = led_render(s, xleft, xleft + xcols);
+	led_print(s, row);
 	td_set(xotd);
-	term_pos(row, 0);
-	term_kill();
-	term_out(r);
-	free(r);
 }
 
 static int led_lastchar(char *s)
@@ -482,7 +469,7 @@ static void led_printparts(char *ai, char *pref, char *main,
 			ren_pos(sbuf_buf(ln), off - 1) < 0 ? -1 : +1;
 		sbuf_cut(ln, len);
 	}
-	term_record();
+	term_record = 1;
 	sbuf_str(ln, post);
 	pos = ren_cursor(sbuf_buf(ln), ren_pos(sbuf_buf(ln), MAX(0, off - 1)));
 	if (pos >= xleft + xcols)
@@ -581,8 +568,7 @@ static char *led_line(char *pref, char *post, char *ai,
 		case 127:
 			if (sbuf_len(sb))
 				sbuf_cut(sb, led_lastchar(sbuf_buf(sb)));
-			else
-			{
+			else {
 				vi_insmov = c;
 				goto kleave;
 			}
@@ -593,15 +579,13 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('w'):
 			if (sbuf_len(sb))
 				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
-			else
-			{
+			else {
 				vi_insmov = c;
 				goto kleave;
 			}
 			break;
 		case TK_CTL('t'):
-			if (ai_len < ai_max)
-			{
+			if (ai_len < ai_max) {
 				ai[ai_len++] = '\t';
 				ai[ai_len] = '\0';
 			}
@@ -713,7 +697,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			term_clean();
 			break;
 		case 'j':
-			if(xqexit &&
+			if (xqexit &&
 				(difftime(time(0), quickexit) * 1000) < 1000)
 			{
 				if (sbuf_len(sb))
@@ -837,4 +821,3 @@ void led_done(void)
 	delete(ROOT, ROOT);
 	temp_done(0);
 }
-

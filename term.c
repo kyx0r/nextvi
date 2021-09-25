@@ -1,5 +1,6 @@
-static struct sbuf *term_sbuf;
-static int rows, cols, record;
+struct sbuf *term_sbuf;
+int term_record;
+static int rows, cols;
 static struct termios termios;
 
 void term_init(void)
@@ -45,21 +46,16 @@ void term_suspend(void)
 	term_init();
 }
 
-void term_record(void)
-{
-	record = 1;
-}
-
 void term_commit(void)
 {
 	write(1, sbuf_buf(term_sbuf), sbuf_len(term_sbuf));
 	sbuf_cut(term_sbuf, 0);
-	record = 0;
+	term_record = 0;
 }
 
 void term_out(char *s)
 {
-	if (record)
+	if (term_record)
 		sbuf_str(term_sbuf, s);
 	else
 		write(1, s, strlen(s));
