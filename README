@@ -142,7 +142,7 @@ the result to be with your eyes.
 43. Added terminal clean up on exit
 44. Added a key to perform relative word replacements keybind: vt
 Specify arg and the word(s) under the cursor will be placed into prompt,
-for example :.,.+5s/\<word\>/ where 5 is the arg.
+for example :.,.+5s/\<word\>/ where 5 is the arg. (see also 49.)
 45. Improved single line performance by roughly 3x
 46. Added key to abandon insert discarding any changes keybind: ^x
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
@@ -164,9 +164,7 @@ when no more characters left the line will be wrapped onto the next
 one. This is behavior you can expect from 95% of editors, now nextvi
 is not an exception. The same change was done for ^w keybind. 
 51. Added key to show the registers and their contents. keybind: R
-52. Added a key to perform relative replacement. keybind: ve
-Specify arg and the prompt will be for example :.,+5s/ where 5 is
-the argument.
+52.
 53. Added a key to disable autoindent. keybind: va
 This is necessary sometimes if you want to paste from system clipboard.
 54. Added minimal syntax highlight for js and html
