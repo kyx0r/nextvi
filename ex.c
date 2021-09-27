@@ -759,14 +759,14 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		s--;
 		rep = re_read(&s);
 	}
-	if (!rep)
-		rep = uc_dup(pat ? "" : xrep);
-	snprintf(xrep, sizeof(xrep), "%s", rep);
+	if (pat || rep)
+		snprintf(xrep, sizeof(xrep), "%s", rep ? rep : "");
 	free(pat);
+	free(rep);
 	if (ex_kwd(&pats[0], NULL))
-		{free(rep); return 1;}
+		return 1;
 	if (!(re = rset_make(1, pats, xic ? REG_ICASE : 0)))
-		{free(rep); return 1;}
+		return 1;
 	// if the change is bigger than display size
 	// set savepoint where command was issued.
 	if (end - beg > xrows)
@@ -778,7 +778,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 			if (!r)
 				r = sbuf_make(offs[0]+offs[1]+1);
 			sbuf_mem(r, ln, offs[0]);
-			replace(r, rep, ln, offs);
+			replace(r, xrep, ln, offs);
 			ln += offs[1];
 			if (!*ln || !strchr(s, 'g'))
 				break;
@@ -795,7 +795,6 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	if (end - beg > xrows)
 		lbuf_opt(xb, NULL, xrow, 0);
 	rset_free(re);
-	free(rep);
 	return 0;
 }
 
@@ -833,7 +832,7 @@ static int ec_exec_inter(char *loc, char *cmd, char *arg)
 	return ec_exec(loc, cmd, arg);
 }
 
-static int ec_make(char *log, char *cmd, char *arg)
+static int ec_make(char *loc, char *cmd, char *arg)
 {
 	char make[EXLEN];
 	char *target;
