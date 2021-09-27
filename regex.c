@@ -547,7 +547,6 @@ rset *rset_make(int n, char **re, int flg)
 	for (i = 0; i < n; i++) {
 		if (!re[i]) {
 			rs->grp[i] = -1;
-			rs->setgrpcnt[i] = 0;
 			continue;
 		}
 		if (sbuf_len(sb) > 1)
@@ -579,21 +578,22 @@ int rset_find(rset *rs, char *s, int n, int *grps, int flg)
 	int i, grp, set = -1;
 	if (rs->grpcnt <= 2 || !*s)
 		return set;
-	const char *sub[rs->grpcnt * 2];
-	if (re_pikevm(rs->regex, s, sub, rs->grpcnt * 2, flg))
+	regmatch_t subs[rs->grpcnt+1];
+	regmatch_t *sub = subs+1;
+	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg))
 	{
-		regmatch_t *subs = (regmatch_t*)sub;
+		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
 		for (i = rs->n-1; i >= 0; i--) {
-			if (rs->grp[i] >= 0 && subs[rs->grp[i]].rm_eo)
+			if (sub[rs->grp[i]].rm_eo)
 			{
 				set = i;
 				int sgrp = rs->setgrpcnt[set] + 1;
 				for (i = 0; i < n; i++) {
 					grp = rs->grp[set] + i;
-					if (i < sgrp && subs[grp].rm_eo
-							&& subs[grp].rm_so) {
-						grps[i * 2] = subs[grp].rm_so - s;
-						grps[i * 2 + 1] = subs[grp].rm_eo - s;
+					if (i < sgrp && sub[grp].rm_eo
+							&& sub[grp].rm_so) {
+						grps[i * 2] = sub[grp].rm_so - s;
+						grps[i * 2 + 1] = sub[grp].rm_eo - s;
 					} else {
 						grps[i * 2 + 0] = -1;
 						grps[i * 2 + 1] = -1;
