@@ -17,10 +17,6 @@ void reverse_in_place(char *str, int len);
 /* main functions */
 void vi(void);
 
-/* signals */
-int setup_signals(void);
-int sig_hund(int sig);
-
 /* lbuf.c line buffer, managing a number of lines */
 struct lbuf *lbuf_make(void);
 void lbuf_free(struct lbuf *lbuf);
@@ -192,6 +188,8 @@ char *uc_lastline(char *s);
 #define CSI_SCREEN_ALTERNATIVE "\x1b[?47h", 6
 #define CSI_SCREEN_NORMAL "\x1b[?47l", 6
 #define CSI_CURSOR_HIDE_TOP_LEFT "\x1b[?25l\x1b[H", 9
+extern struct sbuf *term_sbuf;
+extern int term_record;
 void term_init(void);
 void term_done(void);
 void term_clean(void);
@@ -345,5 +343,3 @@ extern int vi_lnnum;
 extern int vi_hidch;
 extern int vi_mod;
 extern int vi_insmov;
-extern struct sbuf *term_sbuf;
-extern int term_record;

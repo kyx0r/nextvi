@@ -613,7 +613,7 @@ char *re_read(char **src)
 	int delim = (unsigned char) *s++;
 	if (!delim)
 		return NULL;
-	struct sbuf *sbuf = sbuf_make(1024);
+	struct sbuf *sbuf = sbuf_make(256);
 	while (*s && *s != delim) {
 		if (s[0] == '\\' && s[1])
 			if (*(++s) != delim)

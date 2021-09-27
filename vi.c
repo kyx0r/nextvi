@@ -2114,7 +2114,7 @@ static void sighandler(int sig)
 	vi_back(TK_CTL('l'));
 }
 
-int setup_signals(void) {
+static int setup_signals(void) {
 	struct sigaction sa = {0};
 	sa.sa_handler = sighandler;
 	if (sigaction(SIGCONT, &sa, NULL) ||
@@ -2157,6 +2157,7 @@ int main(int argc, char *argv[])
 	dir_done();
 	led_done();
 	ren_done();
+	temp_done(1);
 	if (fslink)
 		free(fslink);
 	return 0;

@@ -185,8 +185,8 @@ char *ex_filetype(void)
 /* replace % and # in paths and commands with current and alternate path names */
 static char *ex_pathexpand(char *src, int spaceallowed)
 {
-	struct sbuf *sb = sbuf_make(128);
-	while (*src && *src != '\n' && (spaceallowed || (*src != ' ' && *src != '\t')))
+	struct sbuf *sb = sbuf_make(1024);
+	while (*src && (spaceallowed || (*src != ' ' && *src != '\t')))
 	{
 		if (*src == '%') {
 			if (!bufs[0].path || !bufs[0].path[0]) {
