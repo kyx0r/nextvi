@@ -128,10 +128,9 @@ void syn_setft(char *ft);
 void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
-void syn_context(int att);
 int syn_merge(int old, int new);
-void syn_reloadft(int i, char *reg);
-void syn_addhl(char *reg);
+void syn_reloadft();
+int syn_addhl(char *reg, int func, int selfcheck);
 void syn_init(void);
 void syn_done(void);
 
@@ -273,6 +272,7 @@ struct highlight {
 				zero (default) - continue at rm_eo
 				negative value - continue at sp+1 */
 	char blkend;		/* the ending group for multi-line patterns */
+	char func;		/* if func > 0 some function will use this hl based on this id */
 };
 extern struct highlight hls[];
 extern int hlslen;

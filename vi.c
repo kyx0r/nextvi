@@ -134,9 +134,12 @@ static void vi_drawrow(int row)
 	char *s = lbuf_get(xb, row-movedown);
 	static char ch1[1] = "~";
 	static char ch2[1] = "";
-	syn_context(0);
-	if (xhll && row == xrow)
-		syn_context(conf_hlline());
+	if (xhll) {
+		if (row == xrow)
+			syn_addhl("^.+$", 2, 1);
+		else 
+			syn_addhl(NULL, 2, 1);
+	}
 	if (!s) {
 		s = ch1;
 		if (*vi_word && row == xrow+1)
@@ -1547,12 +1550,11 @@ void vi(void)
 		vi_arg2 = 0;
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
-		if (*vi_word || vi_lnnum)
+		if (*vi_word || vi_lnnum || xhll)
 			vi_mod = 1;
 		if (vi_lnnum == 1)
 			vi_lnnum = 0;
-		if (vi_msg[0])
-		{
+		if (vi_msg[0]) {
 			vi_msg[0] = '\0';
 			vi_drawrow(otop + xrows - 1);
 		}
@@ -1655,13 +1657,13 @@ void vi(void)
 				vi_mod = 1;
 				break;
 			case TK_CTL('i'): {
-				cs = lbuf_get(xb, xrow) + xoff;
-				char buf[strlen(cs)+3];
+				ln = lbuf_get(xb, xrow) + xoff;
+				char buf[strlen(ln)+3];
 				buf[0] = ':';
 				buf[1] = 'e';
 				buf[2] = ' ';
-				strcpy(buf+3, cs);
-				term_push(buf, strlen(cs)+3);
+				strcpy(buf+3, ln);
+				term_push(buf, strlen(ln)+3);
 				if (!strcmp(ex_path(), "/fm/"))
 					xquit = 1;
 				vi_mod = 1;
@@ -1778,8 +1780,8 @@ void vi(void)
 					cs = vi_curword(xb, xrow, xoff, vi_arg1);
 					ln = vi_prompt("(search) kwd:", cs, &kmap);
 					ex_kwdset(ln, +1);
-					free(cs);
 					free(ln);
+					free(cs);
 					break;
 				case 't': {
 					strcpy(vi_msg, "arg2:(0|#)");
@@ -2064,13 +2066,15 @@ void vi(void)
 				}
 			}
 		}
-		if (xhww)
-		{
-			if ((cs = vi_curword(xb, xrow, xoff, 1)))
-			{
-				syn_addhl(cs);
-				free(cs);
-				vi_mod = 1;
+		if (xhww) {
+			static char *word;
+			if ((cs = vi_curword(xb, xrow, xoff, 1))) {
+				if (!word || strcmp(word, cs)) {
+					syn_addhl(cs, 1, 0);
+					free(word);
+					word = cs;
+					vi_mod = 1;
+				}
 			}
 		}
 		if (xrow < 0 || xrow >= lbuf_len(xb))
@@ -2094,10 +2098,6 @@ void vi(void)
 		} else {
 			if (xtop != otop)
 				vi_drawupdate(xcol, otop);
-			if (xhll && xrow != orow && orow >= xtop && orow < xtop + xrows)
-				vi_drawrow(orow);
-			if (xhll && xrow != orow)
-				vi_drawrow(xrow);
 		}
 		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),

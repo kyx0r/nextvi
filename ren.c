@@ -300,7 +300,6 @@ static int ftmidx;
 static int ftidx;
 
 static rset *syn_ftrs;
-static int syn_ctx;
 static int last_scdir;
 static int *blockatt;
 static int blockcont;
@@ -319,11 +318,6 @@ int syn_merge(int old, int new)
 	int fg = SYN_FGSET(new) ? SYN_FG(new) : SYN_FG(old);
 	int bg = SYN_BGSET(new) ? SYN_BG(new) : SYN_BG(old);
 	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
-}
-
-void syn_context(int att)
-{
-	syn_ctx = att;
 }
 
 void syn_setft(char *ft)
@@ -346,9 +340,6 @@ void syn_highlight(int *att, char *s, int n)
 	int subs[16 * 2];
 	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
 	int bend = 0, cend = 0;
-	if (xhll)
-		for (i = 0; i < n; i++)
-			att[i] = syn_ctx;
 	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
 	{
 		hl += ftmap[ftidx].setbidx;
@@ -414,21 +405,24 @@ char *syn_filetype(char *path)
 	return hl >= 0 && hl < ftslen ? fts[hl].ft : "/";
 }
 
-void syn_reloadft(int i, char *reg)
+void syn_reloadft()
 {
 	int hlset = ftmap[ftidx].setbidx;
-	char *p = hls[i].pat;
-	hls[i].pat = reg;
 	rset_free(ftmap[ftidx].rs);
 	syn_initft(ftidx, &hlset, ftmap[ftidx].ft);
-	hls[i].pat = p;
 }
 
-void syn_addhl(char *reg)
+int syn_addhl(char *reg, int func, int selfcheck)
 {
 	for (int i = ftmap[ftidx].setbidx; i < ftmap[ftidx].seteidx; i++)
-		if (!hls[i].pat)
-			syn_reloadft(i, reg);
+		if (hls[i].func == func) {
+			if (selfcheck && hls[i].pat == reg)
+				return i;
+			hls[i].pat = reg;
+			syn_reloadft();
+			return i;
+		}
+	return -1;
 }
 
 void syn_init(void)

@@ -41,11 +41,14 @@ bright colors
 */
 
 struct highlight hls[] = {
-	{"/", NULL, {9}}, /* <-- required, do not remove */
+	/* "/" is default hl, must have at least 1 entry for fallback */
+	{"/", NULL, {14 | SYN_BD}, {1}, 0, 2},  /* <-- optional, used by hll if set */
+	{"/", NULL, {9}, {0}, 0, 1}, /* <-- optional, used by hww if set */
 
+	{"c", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"c", "^.+\\\\$", {14}, {1}},
-	{"c", NULL, {9}}, /* <-- optional, used by hww if set */
 	{"c", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
+	{"c", NULL, {9}, {0}, 0, 1},
 	{"c", "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
 u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
@@ -58,10 +61,11 @@ default|break|continue)\\>", {11}},
 	{"c", "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", {6, 6, 5}},
 	{"c", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
 	{"c", "\"([^\"]|\\\\\")*\"", {5}},
-	{"c", "'([^\\\\]|\\\\.)'", {5}},
+	{"c", "'([^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2})'", {5}},
 	{"c", "[-+]?\\<(0[xX][0-9a-fA-FUL]+|[0-9.]{1,}[0-9eEfFuULl]+|[0-9]+)\\>", {9}},
 
-	{"roff", NULL, {9}},
+	{"roff", NULL, {14 | SYN_BD}, {1}, 0, 2},
+	{"roff", NULL, {9}, {0}, 0, 1},
 	{"roff", "^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\\\]{2,}))?.*$",
 		{4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD}, {1}},
 	{"roff", "\\\\\".*$", {2 | SYN_IT}},
@@ -69,14 +73,16 @@ default|break|continue)\\>", {11}},
 	{"roff", "\\\\([^[(*$fgkmns]|\\(..|\\[[^\\]]*\\])", {3}},
 	{"roff", "\\$[^$]+\\$", {3}},
 
-	{"tex", NULL, {9}},
+	{"tex", NULL, {14 | SYN_BD}, {1}, 0, 2},
+	{"tex", NULL, {9}, {0}, 0, 1},
 	{"tex", "\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)\\})?",
 		{4 | SYN_BD, 0, 3, 0, 5}},
 	{"tex", "\\$[^$]+\\$", {3}},
 	{"tex", "%.*$", {2 | SYN_IT}},
 
 	/* mail */
-	{"msg", NULL, {9}},
+	{"msg", NULL, {14 | SYN_BD}, {1}, 0, 2},
+	{"msg", NULL, {9}, {0}, 0, 1},
 	{"msg", "^From .*20..$", {6 | SYN_BD}},
 	{"msg", "^Subject: (.*)$", {6 | SYN_BD, 4 | SYN_BD}},
 	{"msg", "^From: (.*)$", {6 | SYN_BD, 2 | SYN_BD}},
@@ -86,14 +92,16 @@ default|break|continue)\\>", {11}},
 	{"msg", "^> .*$", {2 | SYN_IT}},
 
 	/* makefile */
-	{"mk", NULL, {9}},
+	{"mk", NULL, {14 | SYN_BD}, {1}, 0, 2},
+	{"mk", NULL, {9}, {0}, 0, 1},
 	{"mk", "([A-Za-z0-9_]*)[ \t]*=", {0, 3}},
 	{"mk", "\\$\\([a-zA-Z0-9_]+\\)", {3}},
 	{"mk", "#.*$", {2 | SYN_IT}},
 	{"mk", "([A-Za-z_%.]+):", {0, SYN_BD}},
 
 	/* shell script */
-	{"sh", NULL, {9}},
+	{"sh", NULL, {14 | SYN_BD}, {1}, 0, 2},
+	{"sh", NULL, {9}, {0}, 0, 1},
 	{"sh", "\\<(break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>",
 		{5 | SYN_BD}},
 	{"sh", "#.*$", {2 | SYN_IT}},
@@ -104,7 +112,8 @@ default|break|continue)\\>", {11}},
 	{"sh", "^([a-zA-Z_0-9]*\\(\\)).*\\{", {0, SYN_BD}},
 
 	/* python */
-	{"py", NULL, {9}},
+	{"py", NULL, {14 | SYN_BD}, {1}, 0, 2},
+	{"py", NULL, {9}, {0}, 0, 1},
 	{"py", "#.*$", {2}},
 	{"py", "\\<(and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>", {5}},
 	{"py", "\\<(if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
@@ -112,7 +121,8 @@ default|break|continue)\\>", {11}},
 	{"py", "[\"']([^\"']|\\\\\")*[\"']", {4}},
 
 	/* neatmail */
-	{"nm", NULL, {9}},
+	{"nm", NULL, {14 | SYN_BD}, {1}, 0, 2},
+	{"nm", NULL, {9}, {0}, 0, 1},
 	{"nm", "^([ROU])([0-9]+)\t([^\t]*)\t([^\t]*)",
 		{0 | SYN_BGMK(15), 6 | SYN_BD, 12 | SYN_BD, 5, 8 | SYN_BD}},
 	{"nm", "^[N].*$", {0 | SYN_BD | SYN_BGMK(6)}},
@@ -124,7 +134,8 @@ default|break|continue)\\>", {11}},
 	{"nm", "^:.*$", {SYN_BD}},
 
 	/* javascript */
-	{"js", NULL, {9}},
+	{"js", NULL, {14 | SYN_BD}, {1}, 0, 2},
+	{"js", NULL, {9}, {0}, 0, 1},
 	{"js", "(/\\*[^&&*/]*)|([^`'\"&&/*]*\\*/)", {10 | SYN_IT}, {0}, 2},
 	{"js", "\\<(abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
@@ -140,8 +151,9 @@ String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
 	{"js", "[\"'`]([^\"'`]|\\\\[\"'`])*[\"'`]", {5}},
 
 	/* html */
+	{"html", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"html", "(\\{)[^}]*|(^[^{]*)?(\\})", {8, 5, 8, 5}, {1, 1, -1, -1}, 3},
-	{"html", NULL, {9}},
+	{"html", NULL, {9}, {0}, 0, 1},
 	{"html", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {5 | SYN_IT}, {0}, 2},
 	{"html", "(<!--[^&&------>]*)|([^&&<!------]*-->)", {5 | SYN_IT}, {0}, 2},
 	{"html", "([^\t -,.-/:-@[-^{-~]+:).+;", {0, 3}, {1, 1}},
@@ -185,7 +197,6 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
 	{"html", "&[a-zA-Z0-9_]+", {5}},
 
 	/* diff */
-	{"diff", NULL, {9}},
 	{"diff", "^-.*$", {1}},
 	{"diff", "^\\+.*$", {2}},
 	{"diff", "^@.*$", {6}},
@@ -204,9 +215,6 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
 	{"---", "^.*$", {8 | SYN_BD}},
 };
 int hlslen = LEN(hls);
-
-/* how to hightlight current line (hll option) */
-#define SYN_LINE		14 | SYN_BD
 
 /* how to hightlight text in the reverse direction */
 #define SYN_REVDIR		7
@@ -241,11 +249,6 @@ int placeholderslen = LEN(placeholders);
 int conf_hlrev(void)
 {
 	return SYN_REVDIR;
-}
-
-int conf_hlline(void)
-{
-	return SYN_LINE;
 }
 
 int conf_mode(void)
