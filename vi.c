@@ -1550,7 +1550,7 @@ void vi(void)
 		vi_arg2 = 0;
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
-		if (*vi_word || vi_lnnum || xhll)
+		if (*vi_word || vi_lnnum)
 			vi_mod = 1;
 		if (vi_lnnum == 1)
 			vi_lnnum = 0;
@@ -2098,6 +2098,12 @@ void vi(void)
 		} else {
 			if (xtop != otop)
 				vi_drawupdate(xcol, otop);
+			if (xhll && xrow != orow) {
+				if (orow >= xtop && orow < xtop + xrows)
+					vi_drawrow(orow);
+				vi_drawrow(xrow);
+				blockhl = 0;
+			}
 		}
 		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
