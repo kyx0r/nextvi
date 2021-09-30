@@ -277,7 +277,6 @@ static char *vi_char(void)
 static char *vi_prompt(char *msg, char *insert, int *kmap)
 {
 	char *r, *s;
-	int l1;
 	int l2 = strlen(msg);
 	memcpy(vi_msg, msg, l2+1);
 	term_pos(xrows, led_pos(msg, 0));
@@ -291,9 +290,8 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	}
 	if (!s)
 		return NULL;
-	l1 = strlen(s);
-	r = uc_dup(l1 >= l2 ? s + l2 : s);
-	memcpy(vi_msg+l2, r, l1);
+	r = uc_dup(s + l2);
+	strcpy(vi_msg+l2, r);
 	free(s);
 	vi_mod = 1;
 	return r;
