@@ -7,7 +7,8 @@ int xic = 1;			/* ignorecase option */
 int xaw;			/* autowrite option */
 int xhl = 1;			/* syntax highlight option */
 int xhll;			/* highlight current line */
-int xhww;			/* highlight current word*/
+int xhlw;			/* highlight current word */
+int xhlp;			/* highlight {} pair */
 int xled = 1;			/* use the line editor */
 int xtd = +1;			/* current text direction */
 int xotd;			/* old text direction */
@@ -21,7 +22,7 @@ static char xkwd[EXLEN];	/* the last searched keyword */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */
 static int xgdep;		/* global command recursion depth */
-int intershell;			/* interactive shell*/
+int intershell;			/* interactive shell */
 
 #define NUM_BUFS 10
 static struct buf {
@@ -925,7 +926,8 @@ static struct option {
 	{"order", "xorder", &xorder},
 	{"hl", "highlight", &xhl},
 	{"hll", "highlightline", &xhll},
-	{"hww", "highlightword", &xhww},
+	{"hlw", "highlightword", &xhlw},
+	{"hlp", "highlightpair", &xhlp},
 	{"tbs", "tabspace", &xtabspc},
 	{"qe", "quickexit", &xqexit},
 };

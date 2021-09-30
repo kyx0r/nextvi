@@ -43,11 +43,14 @@ bright colors
 struct highlight hls[] = {
 	/* "/" is default hl, must have at least 1 entry for fallback */
 	{"/", NULL, {14 | SYN_BD}, {1}, 0, 2},  /* <-- optional, used by hll if set */
-	{"/", NULL, {9}, {0}, 0, 1}, /* <-- optional, used by hww if set */
+	/* optional, used by hlp if set */
+	{"/", NULL, {0, 9 | SYN_BGMK(8), 9 | SYN_BGMK(8)}, {1, -1, -1}, 0, 3},
+	{"/", NULL, {9}, {0}, 0, 1}, /* <-- optional, used by hlw if set */
 
 	{"c", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"c", "^.+\\\\$", {14}, {1}},
 	{"c", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
+	{"c", NULL, {0, 9 | SYN_BGMK(8), 9 | SYN_BGMK(8)}, {1, -1, -1}, 0, 3},
 	{"c", NULL, {9}, {0}, 0, 1},
 	{"c", "\\<(signed|unsigned|char|short|int|long|float|double|void|\
 enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\

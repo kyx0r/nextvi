@@ -171,8 +171,7 @@ static void vi_drawrow(int row)
 		int noff = xoff;
 		int nrow = xrow;
 		c = lbuf_get(xb, xrow);
-		if (!c || *c == '\n')
-		{
+		if (!c || *c == '\n') {
 			led_print(s, row - xtop);
 			return;
 		}
@@ -1844,8 +1843,7 @@ void vi(void)
 			case 'c':
 			case 'd':
 				k = vi_read();
-				if (k == 'i')
-				{
+				if (k == 'i') {
 					k = vi_read();
 					switch(k)
 					{
@@ -1887,10 +1885,8 @@ void vi(void)
 				case 127:;
 					k = lbuf_eol(xb, xrow);
 					int ko = k;
-					if (!xoff && xrow)
-					{
-						if (k == 1)
-						{
+					if (!xoff && xrow) {
+						if (k == 1) {
 							vi_back(' ');
 							vc_motion('d');
 						}
@@ -2066,7 +2062,7 @@ void vi(void)
 				}
 			}
 		}
-		if (xhww) {
+		if (xhlw) {
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, 1))) {
 				if (!word || strcmp(word, cs)) {
@@ -2074,6 +2070,51 @@ void vi(void)
 					free(word);
 					word = cs;
 					vi_mod = 1;
+				}
+			}
+		}
+		if (xhlp && (cs = lbuf_get(xb, xrow))) {
+			char pairs[] = "{([})]{([})]";
+			cs = uc_chr(cs, xoff);
+			int start = uc_off(cs, strcspn(cs, pairs));
+			int ch = dstrlen(pairs, *uc_chr(cs, start));
+			start += xoff;
+			if (ch < 9) {
+				static struct sbuf *sb;
+				char buf[100];
+				int row = xrow, off = start;
+				if (!lbuf_pair(xb, &row, &off)) {
+					if (sb)
+						sbuf_free(sb);
+					sb = sbuf_make(128);
+					if (off && row == xrow && off - start - 1 < 0)
+					{
+						ch += 3;
+						swap(&start, &off);
+					}
+					if (start) {
+						sbuf_str(sb, "^.{");
+						itoa(start, buf);
+						sbuf_str(sb, buf);
+						sbuf_str(sb, "}(\\{)");
+					} else
+						sbuf_str(sb, "^(\\{)");
+					sbuf_buf(sb)[sbuf_len(sb)-2] = pairs[ch];
+					if (off && row == xrow) {
+						sbuf_str(sb, ".{");	
+						itoa(abs(off - start - 1), buf);
+						sbuf_str(sb, buf);
+						sbuf_str(sb, "}(\\})");
+					} else if (off) {
+						sbuf_str(sb, "|^.{");
+						itoa(off, buf);
+						sbuf_str(sb, buf);
+						sbuf_str(sb, "}(\\})");
+					} else
+						sbuf_str(sb, "|^(\\})");
+					sbuf_buf(sb)[sbuf_len(sb)-2] = pairs[ch+3];
+					syn_addhl(sbuf_buf(sb), 3, 0);
+					vi_mod = vi_mod == 1 ? 1 : 2;
 				}
 			}
 		}
