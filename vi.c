@@ -2085,12 +2085,14 @@ void vi(void)
 			cs = uc_chr(cs, xoff);
 			int start = uc_off(cs, strcspn(cs, "{([})]"));
 			int ch = dstrlen(pairs, *uc_chr(cs, start));
-			start += xoff;
 			if (ch < 9) {
 				static struct sbuf *sb;
 				char buf[100];
-				int row = xrow, off = start;
+				int pos = xleft ? ren_off(lbuf_get(xb, xrow), xleft) : 0;
+				start += xoff - pos;
+				int row = xrow, off = start + pos;
 				if (!lbuf_pair(xb, &row, &off)) {
+					off -= pos;
 					if (sb)
 						sbuf_free(sb);
 					sb = sbuf_make(128);

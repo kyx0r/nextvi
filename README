@@ -196,9 +196,7 @@ being recomputed during the continuation. Take advantage of it when you
 can.
 63. New ex option "hlp", will highlight closest pair of symbols {([
 from the cursor, the same way % key works.
-Notes: It will not work if the cursor goes beyond number of terminal
-columns because the led_render() will cut off out of view parts of
-the string, and for simplicity offsets are computed one way.
+Notes:
 This feature wasn't really supposed to be getting into nextvi
 and was a product of me testing out the synatax highlighting capabilities.
 The fact that this is possible in the first place is quite impressive,
