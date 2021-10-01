@@ -102,7 +102,7 @@ static void vi_drawmsg(void)
 	{
 		int oleft = xleft;
 		xleft = 0;
-		blockhl = 0;
+		syn_blockhl = 0;
 		syn_setft("---");
 		led_printmsg(vi_msg, xrows);
 		syn_setft(xhl ? ex_filetype() : "/");
@@ -134,12 +134,6 @@ static void vi_drawrow(int row)
 	char *s = lbuf_get(xb, row-movedown);
 	static char ch1[1] = "~";
 	static char ch2[1] = "";
-	if (xhll) {
-		if (row == xrow)
-			syn_addhl("^.+$", 2, 1);
-		else 
-			syn_addhl(NULL, 2, 1);
-	}
 	if (!s) {
 		s = ch1;
 		if (*vi_word && row == xrow+1)
@@ -209,23 +203,22 @@ static void vi_drawrow(int row)
 }
 
 /* redraw the screen */
-static void vi_drawagain(int xcol, int lineonly)
+static void vi_drawagain()
 {
 	int i;
 	term_record = 1;
 	syn_setft(xhl ? ex_filetype() : "/");
 	syn_scdir(0);
-	blockhl = 0;
+	syn_blockhl = 0;
 	for (i = xtop; i < xtop + xrows; i++)
-		if (!lineonly || i == xrow)
-			vi_drawrow(i);
-	blockhl = 0;
+		vi_drawrow(i);
+	syn_blockhl = 0;
 	vi_drawmsg();
 	term_commit();
 }
 
 /* update the screen */
-static void vi_drawupdate(int xcol, int otop)
+static void vi_drawupdate(int otop)
 {
 	int i = otop - xtop;
 	term_record = 1;
@@ -304,7 +297,7 @@ char *ex_read(char *msg)
 	char c;
 	if (xled) {
 		int oleft = xleft;
-		blockhl = 0;
+		syn_blockhl = 0;
 		syn_setft("---");
 		char *s = led_prompt(msg, "", NULL, &xkmap);
 		xleft = oleft;
@@ -342,7 +335,7 @@ void ex_show(char *msg)
 /* print an ex output line */
 void ex_print(char *line)
 {
-	blockhl = 0;
+	syn_blockhl = 0;
 	if (xvis) {
 		vi_printed += line ? 1 : 2;
 		if (line)
@@ -1310,7 +1303,7 @@ static int vc_insert(int cmd)
 		if (xrow - xtop == xrows)
 		{
 			xtop++;
-			vi_drawagain(0, 0);
+			vi_drawagain();
 		}
 	}
 	xoff = ren_noeol(ln, xoff);
@@ -1534,7 +1527,7 @@ void vi(void)
 	xtop = MAX(0, xrow - xrows / 2);
 	xoff = 0;
 	xcol = vi_off2col(xb, xrow, xoff);
-	vi_drawagain(xcol, 0);
+	vi_drawagain();
 	term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), xcol));
 	while (!xquit) {
 		int nrow = xrow;
@@ -2060,11 +2053,27 @@ void vi(void)
 				}
 			}
 		}
+		if (xrow < 0 || xrow >= lbuf_len(xb))
+			xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0;
+		if (xtop > xrow)
+			xtop = xtop - xrows / 2 > xrow ?
+					MAX(0, xrow - xrows / 2) : xrow;
+		if (xtop + xrows <= xrow)
+			xtop = xtop + xrows + xrows / 2 <= xrow ?
+					xrow - xrows / 2 : xrow - xrows + 1;
+		xoff = ren_noeol(lbuf_get(xb, xrow), xoff);
+		if (vi_mod > 0)
+			xcol = vi_off2col(xb, xrow, xoff);
+		if (xcol >= xleft + xcols)
+			xleft = xcol - xcols / 2;
+		if (xcol < xleft)
+			xleft = xcol < xcols ? 0 : xcol - xcols / 2;
+		vi_wait();
 		if (xhlw) {
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, 1))) {
 				if (!word || strcmp(word, cs)) {
-					syn_addhl(cs, 1, 0);
+					syn_addhl(cs, 1, 1);
 					free(word);
 					word = cs;
 					vi_mod = 1;
@@ -2074,7 +2083,7 @@ void vi(void)
 		if (xhlp && (cs = lbuf_get(xb, xrow))) {
 			char pairs[] = "{([})]{([})]";
 			cs = uc_chr(cs, xoff);
-			int start = uc_off(cs, strcspn(cs, pairs));
+			int start = uc_off(cs, strcspn(cs, "{([})]"));
 			int ch = dstrlen(pairs, *uc_chr(cs, start));
 			start += xoff;
 			if (ch < 9) {
@@ -2111,39 +2120,27 @@ void vi(void)
 					} else
 						sbuf_str(sb, "|^(\\})");
 					sbuf_buf(sb)[sbuf_len(sb)-2] = pairs[ch+3];
-					syn_addhl(sbuf_buf(sb), 3, 0);
-					vi_mod = vi_mod == 1 ? 1 : 2;
+					syn_addhl(sbuf_buf(sb), 3, 1);
+					vi_mod = 1;
 				}
 			}
 		}
-		if (xrow < 0 || xrow >= lbuf_len(xb))
-			xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0;
-		if (xtop > xrow)
-			xtop = xtop - xrows / 2 > xrow ?
-					MAX(0, xrow - xrows / 2) : xrow;
-		if (xtop + xrows <= xrow)
-			xtop = xtop + xrows + xrows / 2 <= xrow ?
-					xrow - xrows / 2 : xrow - xrows + 1;
-		xoff = ren_noeol(lbuf_get(xb, xrow), xoff);
-		if (vi_mod > 0)
-			xcol = vi_off2col(xb, xrow, xoff);
-		if (xcol >= xleft + xcols)
-			xleft = xcol - xcols / 2;
-		if (xcol < xleft)
-			xleft = xcol < xcols ? 0 : xcol - xcols / 2;
-		vi_wait();
-		if (vi_mod || xleft != oleft) {
-			vi_drawagain(xcol, vi_mod == 2 && xleft == oleft && xrow == orow);
-		} else {
-			if (xtop != otop)
-				vi_drawupdate(xcol, otop);
-			if (xhll && xrow != orow) {
-				if (orow >= xtop && orow < xtop + xrows)
+		syn_reloadft();
+		if (abs(vi_mod) == 1 || xleft != oleft)
+			vi_drawagain();
+		else if (xtop != otop)
+			vi_drawupdate(otop);
+		if (xhll) {
+			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
+				if (!vi_mod)
 					vi_drawrow(orow);
-				vi_drawrow(xrow);
-				blockhl = 0;
-			}
-		}
+			syn_addhl("^.+$", 2, 1);
+			syn_reloadft();
+			vi_drawrow(xrow);
+			syn_addhl(NULL, 2, 1);
+			syn_blockhl = 0;
+		} else if (vi_mod == 2)
+			vi_drawrow(xrow);
 		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
 				ren_cursor(lbuf_get(xb, xrow), xcol)));

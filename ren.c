@@ -303,7 +303,8 @@ static rset *syn_ftrs;
 static int last_scdir;
 static int *blockatt;
 static int blockcont;
-int blockhl;
+static int syn_reload;
+int syn_blockhl;
 
 static int syn_find(char *ft)
 {
@@ -330,7 +331,7 @@ void syn_scdir(int scdir)
 {
 	if (last_scdir != scdir) {
 		last_scdir = scdir;
-		blockhl = 0;
+		syn_blockhl = 0;
 	}
 }
 
@@ -352,10 +353,10 @@ void syn_highlight(int *att, char *s, int n)
 			blkm += blkm > hls[hl].blkend ? -1 : 1;
 			if (blkm != hls[hl].blkend && last_scdir > 0)
 				blkend = 1;
-			if (blockhl == hl && blk == blkend)
-				blockhl = 0;	
-			else if (!blockhl && blk != blkend) {
-				blockhl = hl;
+			if (syn_blockhl == hl && blk == blkend)
+				syn_blockhl = 0;	
+			else if (!syn_blockhl && blk != blkend) {
+				syn_blockhl = hl;
 				blockatt = catt;
 				blockcont = hls[hl].end[blk];
 			} else
@@ -381,7 +382,7 @@ void syn_highlight(int *att, char *s, int n)
 		cend = 1;
 		flg = REG_NOTBOL;
 	}
-	if (blockhl && !blk)
+	if (syn_blockhl && !blk)
 		for (j = 0; j < n; j++)
 			att[j] = blockcont && att[j] ? att[j] : *blockatt;
 }
@@ -407,21 +408,23 @@ char *syn_filetype(char *path)
 
 void syn_reloadft()
 {
-	int hlset = ftmap[ftidx].setbidx;
-	rset_free(ftmap[ftidx].rs);
-	syn_initft(ftidx, &hlset, ftmap[ftidx].ft);
+	if (syn_reload) {
+		int hlset = ftmap[ftidx].setbidx;
+		rset_free(ftmap[ftidx].rs);
+		syn_initft(ftidx, &hlset, ftmap[ftidx].ft);
+		syn_reload = 0;
+	}
 }
 
-int syn_addhl(char *reg, int func, int selfcheck)
+int syn_addhl(char *reg, int func, int reload)
 {
+	syn_reload = reload;
 	for (int i = ftmap[ftidx].setbidx; i < ftmap[ftidx].seteidx; i++)
 		if (hls[i].func == func) {
-			if (selfcheck && hls[i].pat == reg)
-				return i;
 			hls[i].pat = reg;
-			syn_reloadft();
 			return i;
 		}
+	syn_reload = 0;
 	return -1;
 }
 

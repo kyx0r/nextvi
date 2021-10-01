@@ -123,14 +123,14 @@ void dir_done(void);
 #define SYN_BGSET(a)	((a) & 0x20ff00)
 #define SYN_FG(a)	((a) & 0xff)
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
-extern int blockhl;
+extern int syn_blockhl;
 void syn_setft(char *ft);
 void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 int syn_merge(int old, int new);
 void syn_reloadft();
-int syn_addhl(char *reg, int func, int selfcheck);
+int syn_addhl(char *reg, int func, int reload);
 void syn_init(void);
 void syn_done(void);
 
