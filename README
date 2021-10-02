@@ -185,10 +185,29 @@ lose cursor pos.
 60. Removed bracket classes from regex. Not useful, hard to customize,
 buggy, error prone mess. Doesn't add any new functionality to the regex engine
 that can't be achieved without it.
-61. Added escapes to bracket expressions in regex. This isn't posix but it
+61. Nextvi special character escapes work mostly the same way
+everywhere except the following situations:
+ - Escapes in regex bracket expressions. This isn't posix but it
 solves couple of issues that were bugged previously, like escaping | in
 ex substitution command, properly counting number of groups in rset.
-Note: rset_make() requires for ( to be escaped if used inside [] brackets.
+ - A single slash requires 2 slashes, and so on.
+ - rset_make() requires for ( to be escaped if used inside [] brackets.
+ - In ex prompt the only separator is "|" character and there is some
+   counter intuivite handling of escapes done that has to be explained.
+	1: to use ex separator input "|"
+	2: to get "|" into the result string input = "\\|"
+	3: to get "\|" into the result string input = "\|" or "\\\|"
+	4: to get "\\|" into the result string input = "\\\\|"
+	5: to get "\\\|" into the result string input = "\\\\\|"
+   A careful reader will spot that the rules above don't exactly
+   follow the well established rule - "2 slashes make one". This is
+   because to allow any combination of "|" and "\" one would have to
+   force a "4 slashes make one" rule. Imagine having to type "\\("
+   to escape "(" instead of "\(" everywhere if we want to be consistent.
+   The latter sucks, so instead we make this special case for ex prompt
+   that applies only to "|" and "\". In summary, just remeber what clauses
+   (2:) and (3:) state, for cases where there are lots of slashes the
+   rule is input minus 2 of the "\" equals the output string.
 62. Added syntax highlighting continuation options. See the struct
 highlight in vi.h. The ^ anchor in the regular expression has an important
 property of being able to efficiently exclude some sub expression from

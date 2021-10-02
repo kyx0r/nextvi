@@ -1117,18 +1117,14 @@ static char *ex_cmd(char *src, char *cmd)
 }
 
 /* read ex command argument for excmd command */
-static char *ex_arg(char *src, char *dst, char *excmd)
+static char *ex_arg(char *src, char *dst)
 {
-	int c0 = excmd[0];
 	while (*src == ' ' || *src == '\t')
 		src++;
-	if (c0 == 's')
-		while (*src && (*src != '|' || src[-1] == '\\'))
-			*dst++ = *src++;
-	while (*src && *src != '|')
+	while (*src && (*src != '|' || src[-1] == '\\'))
 	{
-		if (*src == '\\' && src[1] && src[1] != '\\')
-			src++;
+		if (!strncmp(src, "\\\\|", 3))
+			src += 2;
 		*dst++ = *src++;
 	}
 	*dst = '\0';
@@ -1149,7 +1145,7 @@ static int ex_exec(char *ln)
 		ln = ex_loc(ln, loc);
 		ln = ex_cmd(ln, cmd);
 		idx = ex_idx(cmd);
-		ln = ex_arg(ln, arg, idx >= 0 ? excmds[idx].abbr : "unknown");
+		ln = ex_arg(ln, arg);
 		if (idx >= 0)
 			ret = excmds[idx].ec(loc, cmd, arg);
 	}
