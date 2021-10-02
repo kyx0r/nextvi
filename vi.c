@@ -549,7 +549,7 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	struct sbuf *sb;
 	char *ln = lbuf_get(lb, row);
 	char *beg, *end;
-	if (!ln)
+	if (!ln || !n)
 		return NULL;
 	beg = uc_chr(ln, ren_noeol(ln, off));
 	end = beg;
