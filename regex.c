@@ -523,9 +523,9 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 
 static int re_groupcount(char *s)
 {
-	int n = *s == '(' ? 1 : 0;
+	int n = *s == '(' && s[1] != '?' ? 1 : 0;
 	while (*s++)
-		if (s[0] == '(' && s[-1] != '\\')
+		if (s[0] == '(' && s[-1] != '\\' && s[1] != '?')
 			n++;
 	return n;
 }

@@ -52,20 +52,20 @@ struct highlight hls[] = {
 	{"c", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
 	{"c", NULL, {0, 9 | SYN_BGMK(12), 9 | SYN_BGMK(12)}, {1, -1, -1}, 0, 3},
 	{"c", NULL, {9}, {0}, 0, 1},
-	{"c", "\\<(signed|unsigned|char|short|int|long|float|double|void|\
+	{"c", "\\<(?:signed|unsigned|char|short|int|long|float|double|void|\
 enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
 u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
 int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline|restrict)\\>", {10}},
-	{"c", "\\<(true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
+	{"c", "\\<(?:true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
 free|realloc|NULL|stdin|stdout|errno)\\>", {12 | SYN_BD}},
-	{"c", "\\<(return|for|while|if|else|do|sizeof|goto|switch|case|\
+	{"c", "\\<(?:return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue)\\>", {11}},
 	{"c", "//.*$", {4 | SYN_IT}},
 	{"c", "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", {6, 6, 5}},
 	{"c", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
-	{"c", "\"([^\"]|\\\\\")*\"", {5}},
-	{"c", "'([^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2})'", {5}},
-	{"c", "[-+]?\\<(0[xX][0-9a-fA-FUL]+|[0-9.]{1,}[0-9eEfFuULl]+|[0-9]+)\\>", {9}},
+	{"c", "\"(?:[^\"]|\\\\\")*\"", {5}},
+	{"c", "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2})'", {5}},
+	{"c", "[-+]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9.]{1,}[0-9eEfFuULl]+|[0-9]+)\\>", {9}},
 
 	{"roff", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"roff", NULL, {9}, {0}, 0, 1},
@@ -98,14 +98,14 @@ default|break|continue)\\>", {11}},
 	{"mk", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"mk", NULL, {9}, {0}, 0, 1},
 	{"mk", "([A-Za-z0-9_]*)[ \t]*=", {0, 3}},
-	{"mk", "\\$\\([a-zA-Z0-9_]+\\)", {3}},
+	{"mk", "\\$\\(?:[a-zA-Z0-9_]+\\)", {3}},
 	{"mk", "#.*$", {2 | SYN_IT}},
 	{"mk", "([A-Za-z_%.]+):", {0, SYN_BD}},
 
 	/* shell script */
 	{"sh", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"sh", NULL, {9}, {0}, 0, 1},
-	{"sh", "\\<(break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>",
+	{"sh", "\\<(?:break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>",
 		{5 | SYN_BD}},
 	{"sh", "#.*$", {2 | SYN_IT}},
 	{"sh", "\"([^\"\\\\]|\\\\.)*\"", {4}},
@@ -118,8 +118,8 @@ default|break|continue)\\>", {11}},
 	{"py", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"py", NULL, {9}, {0}, 0, 1},
 	{"py", "#.*$", {2}},
-	{"py", "\\<(and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>", {5}},
-	{"py", "\\<(if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
+	{"py", "\\<(?:and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>", {5}},
+	{"py", "\\<(?:if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
 	{"py", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
 	{"py", "[\"']([^\"']|\\\\\")*[\"']", {4}},
 
@@ -140,18 +140,18 @@ default|break|continue)\\>", {11}},
 	{"js", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"js", NULL, {9}, {0}, 0, 1},
 	{"js", "(/\\*[^&&*/]*)|([^`'\"&&/*]*\\*/)", {10 | SYN_IT}, {0}, 2},
-	{"js", "\\<(abstract|arguments|await|boolean|\
+	{"js", "\\<(?:abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
 double|else|enum|eval|export|extends|false|final|finally|float|for|function|\
 goto|if|implements|import|in|instanceof|int|interface|let|long|native|new|\
 null|package|private|protected|public|return|short|static|super|switch|synchronized|\
 this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|yield)\\>", {12}},
-	{"js", "\\<(Array|Date|hasOwnProperty|Infinity|isFinite|isNaN|\
+	{"js", "\\<(?:Array|Date|hasOwnProperty|Infinity|isFinite|isNaN|\
 isPrototypeOf|length|Math|NaN|name|Number|Object|prototype|\
 String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
-	{"js", "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+)\\>", {9}},
+	{"js", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+)\\>", {9}},
 	{"js", "//.*$", {10 | SYN_IT}},
-	{"js", "[\"'`]([^\"'`]|\\\\[\"'`])*[\"'`]", {5}},
+	{"js", "[\"'`](?:[^\"'`]|\\\\[\"'`])*[\"'`]", {5}},
 
 	/* html */
 	{"html", NULL, {14 | SYN_BD}, {1}, 0, 2},
@@ -160,7 +160,7 @@ String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
 	{"html", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {5 | SYN_IT}, {0}, 2},
 	{"html", "(<!--[^&&------>]*)|([^&&<!------]*-->)", {5 | SYN_IT}, {0}, 2},
 	{"html", "([^\t -,.-/:-@[-^{-~]+:).+;", {0, 3}, {1, 1}},
-	{"html", "\\<(accept|accesskey|align|allow|alt|async|\
+	{"html", "\\<(?:accept|accesskey|align|allow|alt|async|\
 auto(capitalize|complete|focus|play)|background|\
 bgcolor|border|buffered|challenge|charset|checked|cite|\
 class|code(base)|color|cols|colspan|content(\
@@ -177,7 +177,7 @@ rel|required|reversed|rows|rowspan|sandbox|scope|scoped|\
 selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
 srclang|srcset|start|step|style|summary|tabindex|target|\
 title|translate|type|usemap|value|width|wrap|low|manifest)\\>", {2}},
-	{"html", "\\<(html|base|head|link|meta|body|address|article|\
+	{"html", "\\<(?:html|base|head|link|meta|body|address|article|\
 aside|footer|header|hgroup|nav|section|blockquote|dd|\
 div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
 b|bdi|bdo|br|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
@@ -192,9 +192,9 @@ bgsound|big|blink|center|command|element|font|\
 frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
 multicol|nextid|nobr|noembed|noframes|plaintext|spacer|\
 strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
-	{"html", "\"([^\"]|\\\\\")*\"", {12}},
+	{"html", "\"(?:[^\"]|\\\\\")*\"", {12}},
 	{"html", "#\\<[A-Fa-f0-9]+\\>", {9}},
-	{"html", "[-+]?\\<(0[xX][0-9a-fA-F]+|[0-9]+(px)?)\\>", {9}},
+	{"html", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(px)?)\\>", {9}},
 	{"html", "<(/)?[^>]+>", {3, 13}, {1}},
 	{"html", "#[ \t]*[a-zA-Z0-9_]+", {SYN_BD}},
 	{"html", "&[a-zA-Z0-9_]+", {5}},
@@ -206,9 +206,9 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
 	{"diff", "^diff .*$", {SYN_BD}},
 
 	/* file manager */
-	{"fm", "^\\.+(((/)\\.\\.+)+)?", {4, 4, 4, 6}},
+	{"fm", "^\\.+(?:(?:(/)\\.\\.+)+)?", {4, 6}},
 	{"fm", "[^/]*\\.sh$", {2}},
-	{"fm", "[^/]*(\\.c|\\.h|\\.cpp)$", {5, 5}},
+	{"fm", "[^/]*(?:\\.c|\\.h|\\.cpp)$", {5}},
 	{"fm", "/.+/([^/]+$)?", {6, 8}, {1, 1}},
 	{"fm", "(/).+[^/]+$", {8, 6}, {1, 1}},
 
