@@ -323,6 +323,10 @@ int syn_merge(int old, int new)
 
 void syn_setft(char *ft)
 {
+	if (!strcmp(ftmap[ftidx].ft, ft))
+		return;
+	for (int i = 1; i < 4; i++)
+		syn_addhl(NULL, i, 0);
 	if ((ftidx = syn_find(ft)) < 0)
 		ftidx = 0;
 }
