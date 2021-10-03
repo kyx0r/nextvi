@@ -265,7 +265,7 @@ struct highlight {
 	char *ft;		/* the filetype of this pattern */
 	char *pat;		/* regular expression */
 	int att[16];		/* attributes of the matched groups */
-	char end[16];		/* the group ending this pattern;
+	signed char end[16];	/* the group ending this pattern;
 				if set on multi-line the block emits all other matches in a set 
 				else defines hl continuation for the group:
 				positive value - continue at rm_so
