@@ -301,7 +301,6 @@ struct placeholder {
 extern struct placeholder placeholders[];
 extern int placeholderslen;
 int conf_hlrev(void);
-int conf_hlline(void);
 int conf_mode(void);
 char **conf_kmap(int id);
 int conf_kmapfind(char *name);

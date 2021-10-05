@@ -2140,6 +2140,7 @@ void vi(void)
 			syn_reloadft();
 			vi_drawrow(xrow);
 			syn_addhl(NULL, 2, 1);
+			syn_reloadft();
 			syn_blockhl = 0;
 		} else if (vi_mod == 2)
 			vi_drawrow(xrow);
