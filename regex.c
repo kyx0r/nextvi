@@ -355,6 +355,13 @@ for (j = 0; j < nsubp / 2 - 1; j++) s1->sub[j] = nsub->sub[j];) \
 newsub(/*nop*/, /*nop*/) \
 for (j = 0; j < nsubp; j++) s1->sub[j] = nsub->sub[j]; \
 
+#define onnlist(nn) \
+if (npc[2] == gen) \
+	deccheck(nn) \
+npc[2] = gen; \
+
+#define onclist(nn) /* nop */ \
+
 #define addthread(nn, list, listidx) \
 { \
 	int i = 0; \
@@ -376,16 +383,12 @@ for (j = 0; j < nsubp; j++) s1->sub[j] = nsub->sub[j]; \
 		npc += 2 + npc[1]; \
 		goto rec##nn; \
 	case SPLIT: \
-		if (npc[2] == gen) \
-			deccheck(nn) \
-		npc[2] = gen; \
+		on##list(nn) \
 		npc += 3; \
 		pcs[i] = npc + npc[-2]; \
 		fastrec(nn, list, listidx) \
 	case RSPLIT: \
-		if (npc[2] == gen) \
-			deccheck(nn) \
-		npc[2] = gen; \
+		on##list(nn) \
 		npc += 3; \
 		pcs[i] = npc; \
 		npc += npc[-2]; \
