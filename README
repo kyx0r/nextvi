@@ -26,8 +26,9 @@ below.
 
 FORK CHANGES
 ------------
-1. Added unindent keybind: ^w 
-2. Added quickexit to insert mode keybind: kj   
+1. Added unindent keybind: ^w
+^w may also take vi_arg1, in which case it will repeat the operation on next line.
+2. Added quickexit to insert mode keybind: kj
 It's important to understand that this has a caveat, if
 input comes too fast, for example a paste from terminal and
 the sequence has "kj" in it, insert mode will be cancelled mid way
@@ -36,31 +37,32 @@ such letter combination is extremely rare.
 Can be disabled via :se noqe
 3. Added linenumbers, keybind: # (relative numbers are placed after indent)
 keybind: v# enables permanent line numbers
-4. Added invisible character view, keybind: V   
+4. Added invisible character view, keybind: V
 5. Added regex for changing spaces to tabs, keybind: vi
 6. Added regex for removing /r in dos files and trail space/tab, keybind: vo
-7. Changed behavior of ^a to change search direction when no more match 
+7. Changed behavior of ^a to change search direction when no more match
 8. Added fssearch, searches what is under the cursor or (last search kwd)
 in every file in the opened directory keybind: ^] or ^5
 Beware that it will brute force open files into buffers and
-perform the search. I usually save really often so this isn't 
+perform the search. I usually save really often so this isn't
 a problem, but being careless might reload file with unsaved changes.
-By default it only checks every file, else filter is specified by :inc (see 32.)
-This works in compliance with other changes (see 49. 58.) 
+By default it checks every file, else filter is specified by :inc (see 32.)
+This works in compliance with other changes (see 49. 58.)
 Use it for code navigation between files, jump to definitions / etc.
 9. fssearch but going in reverse keybind: ^p
 10. Added key to change the mark origin which ^p will return to keybind: ^t
-11. Added ex command "ea" which opens file case insensitive and ignores the path,
-setting an extra number parameter after filename will skip that many matches with
-similar path. So for example file might be named "file123.c" but you can open it
-just by "ea fi" if this is a uniquely matched filename
+11. Added ex command "ea" which opens file ignoring the path,
+setting an extra parameter in form of a number will tell how many matches with
+similar filename to skip.
+For example file might be named "./path/bla/bla/file123.c" but you can open it
+just by "ea fi" if this is a uniquely matched filename.
 12. Added ex command "fd" to set the directory for fssearch or "ea" ex command
 13. Added numbered buffers to vi, max 10 and ex "b" command to show buffers
 and "b%d" to switch (where %d is the buffer number).
-14. Added key to show buffers and switch buffer 
+14. Added key to show buffers and switch buffer
 (to switch press corresponding 0-9 number) keybind: ^7
-15. Added key to exit vi keybind: qq 
-16. Added key to goto line 0 keybind: gg 
+15. Added key to exit vi keybind: qq
+16. Added key to goto line 0 keybind: gg
 17. Added key to delete everything inside (cursor outside) "" keybind: di" or dc"
 18. Added key to delete everything inside () keybind: di) or dc)
 19. Added key to delete everything inside (cursor outside) () keybind: di( or dc(
@@ -69,22 +71,24 @@ and "b%d" to switch (where %d is the buffer number).
 22. Added ex command "z" it does the same thing "!" does but the shell is
 launched in interactive mode, so stuff like aliases work. But it will cause
 vi to suspend.
-23. Changed the colors for C language in conf.c to be sane
-24. Added extra highlight keywords for C
+23. Changed the colors to be based on standard ASCII 16 colors desc in conf.c
+Colors can be customized up to 256 colors if your terminal supports it.
+24. Added new syntax highlighting for C, js, html, css, diff...
 25. Added key that splits the line (opposite of J) keybind: K
-26. Added key that line wraps text to 80 line limit keybind: gq 
+K may also take vi_arg1, in which case it will repeat the operation on next line.
+26. Added key that line wraps text to 80 line limit keybind: gq
 keybind: gw does the same but floors to the last word and is also
 much slower.
 27. Added key that does multiline repeated edits keybind: v.
-This is based on your last commands and insertions and reqires and
-argument for how many lines to repeat said operation. When last
+This is based on your last commands and insertions and requires
+vi_arg1 for how many lines to repeat said operation. When last
 operation was 'i' or other commands that enter insert mode
-and some text, that text will be placed at the same offset on 
+and some text, that text will be placed at the same offset on
 N number of lines specified by the vi_arg1. Direction: top to bottom
 28. Added ability to view the numbers for arguments that keys e,w,E,W,b,B
 may take. keybind: ^v Pressing again will change the key mode, specifying
-any arguments will exit the mode. This is a major step up to how navigation
-works in vi, it makes it so much easier to use because now you can see where 
+any vi_arg1 will exit the mode. This is a major step up to how navigation
+works in vi, it makes it so much easier to use because now you can see where
 you are going. If not anything else I suggest you to try out this distro
 just to see it in action.
 29. Added ability to change highlight dynamically. (via syn_reloadft();)
@@ -112,21 +116,21 @@ will also work everywhere in vi.
  - Added key that opens the file based on text from the cursor.
    keybind: ^i
 34. Added key to save current file keybind: ^k
-35. The new special character "/" for ft in conf.c now signifies that 
-the regex will be applied on any file. The reason "/" was 
-chosen because it's forbidden filename character on unix. It used 
+35. The new special character "/" for ft in conf.c now signifies that
+the regex will be applied on any file. The reason "/" was
+chosen because it's forbidden filename character on unix. It used
 to be "" but in C will make a ptr value of 0, which breaks strcmp
 which is used to match highlights.
 36. Added a window size signal handler for vi to
 redraw the screen automatically.
 37. Added history buffer for ex commands when in vi prompt.
-keybind: ^b or vb (from normal) will open the buffer with all previous 
-commands move the cursor to wanted command and exit buffer with qq  
+keybind: ^b or vb (from normal) will open the buffer with all previous
+commands move the cursor to wanted command and exit buffer with qq
 will copy the command into prompt. You can also use this
 when half way through some command and need to access normal
 mode to edit the command more efficiently.
-38. Added key to grab the current word(s) under the cursor into 
-prompt like so :%s/.../ keybind: vr
+38. Added key to grab the current word(s) under the cursor into
+prompt like so :%s/.../ keybind: vr (see also 49.)
 39. Added ex option to change number of spaces in a tab (\t)
 default is set to 8. use :se tbs=N  (N is number of spaces)
 40. Added partial support for multiline block regex, for
@@ -136,35 +140,35 @@ are no messages and actually display the row.
 42. Search via '/' or '?' automatically centers and redraws
 screen. This partly because change in 41 makes the bottom row
 behave dynamically and you might get search result on displayed
-on that row, which will be covered by search message instead. 
+on that row, which will be covered by search message instead.
 Also, centering is nice because you always know where to expect
 the result to be with your eyes.
 43. Added terminal clean up on exit
 44. Added a key to perform relative word replacements keybind: vt
-Specify arg and the word(s) under the cursor will be placed into prompt,
-for example :.,.+5s/\<word\>/ where 5 is the arg. (see also 49.)
+Specify vi_arg1 and the word(s) under the cursor will be placed into prompt,
+for example :.,.+5s/\<word\>/ where 5 is vi_arg1. (see also 49.)
 45. Improved single line performance by roughly 3x. Syntax hilight
 will not render anything beyond the terminal colums.
 If there is a line in the file that has say 200K characters, the
 performance will not degrade. This was extremely difficult to get
 right and took me 3 weeks of refactors because we also have to
 take into account:
-	1. Bidi text direction. 
+	1. Bidi text direction.
 	2. Multibyte UTF-8. Double width chars.
 	3. Variable width tabulations that can change
 	throughout the line based on suroundings.
 	4. Reordering of characters.
 46. Added key to abandon insert discarding any changes keybind: ^x
-That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
+That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj
 47. Added Russian keymap, and changed how xkmap_alt works, now
-z + arg in normal mode will switch what keymap ^f key changes,
+z + vi_arg1 in normal mode will switch what keymap ^f key changes,
 so for example 1 = fa 2 = ru. If you need some other language
 kmap just make one yourself. Look into kmap.h it's really simple.
 kmap also has digraph support, that list has been expanded to
 include non printing characters. Naming resembles how ASCII keys
 are named, so for example 03 is key ctrl+c to be able to type 03
 enter insert, use ^k to go into digraph mode, type then " c" (space+c)
-Notice how the letter after space is consistent with ASCII ctrl+c, 
+Notice how the letter after space is consistent with ASCII ctrl+c,
 essentially space is like representing typeable ctrl key.
 The reason this is useful is if you are using @ key to make macros
 there has to be a way to type these control characters.
@@ -180,7 +184,7 @@ the keybind will perform a default cursor independent action.
 such that backspace can delete all the characters on the line,
 when no more characters left the line will be wrapped onto the next
 one. This is behavior you can expect from 95% of editors, now nextvi
-is not an exception. The same change was done for ^w keybind. 
+is not an exception. The same change was done for ^w keybind.
 51. Added key to show the registers and their contents. keybind: R
 52.
 53. Added a key to disable autoindent. keybind: va
@@ -192,13 +196,13 @@ if the affected area is greater than terminal rows.
 char expressions. For example [^&&abc] where ^&& is the not+and. This will
 treat "abc" as !(a && b && c) logically. Everything in brackets preceding
 && will be processed according to standard posix negated char.
-57. Added ^l key in insert to clean the terminal and start at line 0, 
+57. Added ^l key in insert to clean the terminal and start at line 0,
 remove distrations and focus on typing. Useful when running ex via vi -e
-58. Added v/ key in normal, grabs the current word(s) under the cursor into 
+58. Added v/ key in normal, grabs the current word(s) under the cursor into
 prompt. If valid, the input will be used for searches using N and n keys.
 59. Added ability to remember scroll amount for ^e and ^y keys (specified by vi_arg1).
-I felt like they were underused, and unlike ^u and ^d they keep the same 
-xcol position, allowing for different use case when you don't want to 
+I felt like they were underused, and unlike ^u and ^d they keep the same
+xcol position, allowing for different use case when you don't want to
 lose cursor pos.
 60. Removed bracket classes from regex. Not useful, hard to customize,
 buggy, error prone mess. Doesn't add any new functionality to the regex engine
@@ -250,7 +254,7 @@ feature will not work on that ft, regardless of ex options being set.
 PIKEVM:
 -------
 A complete rewrite of nextvi's regex engine for the purposes to get
-rid of backtracking and severe performance and memory constrants is 
+rid of backtracking and severe performance and memory constrants is
 now complete. See FAQ below.
 
 FAQ:
@@ -289,21 +293,21 @@ A: Pikevm guarantees that all regular expressions are computed in
 constant space and O(n+k) time where n is size of the string and
 k is some constant for the complexity of the regex ie. how big it is.
 Q: What are the other benefits?
-A: For example, now it is possible to compute a C comment /* n */ 
+A: For example, now it is possible to compute a C comment /* n */
 where n can be an infinite number of characters. Of course this
 extends to every other valid regular expression.
 A: Minimalism?
 Q: Implementation (regex.c) is ~630 lines of C code, that
-includes both the compilation and execution. 
+includes both the compilation and execution.
 Q: NFA vs DFA (identify)
 A: pikevm = NFA backtrack = DFA
 Q: What's wrong with original implementation?
 A: Nothing except it being slow and limited. My improved version
-of Ali's DFA implementation ran 2X faster in any case, however 
-I found a bug with it where quested "?" nested groups compute 
+of Ali's DFA implementation ran 2X faster in any case, however
+I found a bug with it where quested "?" nested groups compute
 wrong submatch results. To fix this problem, it would require
-to undo a lot of optimization work already done, basically 
-going back to how slow Ali's implementation would be. The 
+to undo a lot of optimization work already done, basically
+going back to how slow Ali's implementation would be. The
 reason this was spoted so late was because this kind of
 regex wasn't used before, so I never tested it. Other than
 that I think submatch extraction is correct on other cases.
