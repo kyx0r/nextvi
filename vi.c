@@ -1205,35 +1205,7 @@ static void vi_shift(int r1, int r2, int dir)
 		lbuf_edit(xb, sbuf_buf(sb), i, i + 1);
 		sbuf_free(sb);
 	}
-	xrow = r1;
-	xoff = lbuf_indents(xb, xrow);
-}
-
-static void vi_unindent(int r1, int r2)
-{
-	struct sbuf *sb;
-	char *ln;
-	int i;
-	int endleft;
-	do
-	{
-		endleft = r1;
-		for (i = r1; i <= r2; i++) {
-			if (!(ln = lbuf_get(xb, i)))
-				continue;
-			sb = sbuf_make(1024);
-			if (ln[0] == ' ' || ln[0] == '\t')
-				ln++;
-			else {
-				endleft++;
-				continue;
-			}
-			sbuf_str(sb, ln);
-			lbuf_edit(xb, sbuf_buf(sb), i, i + 1);
-			sbuf_free(sb);
-		}
-		xrow = r1;
-	} while(endleft <= r2);
+	xoff = lbuf_indents(xb, r1);
 }
 
 static int vc_motion(int cmd)
@@ -1283,7 +1255,12 @@ static int vc_motion(int cmd)
 	if (cmd == '>' || cmd == '<')
 		vi_shift(r1, r2, cmd == '>' ? +1 : -1);
 	if (cmd == TK_CTL('w'))
-		vi_unindent(r1, r2);
+		for (int lc = r1; lc <= r2; lc++) {
+			xoff = 2;
+			while (xoff > 1)
+				vi_shift(lc, lc, -1);
+			vi_shift(lc, lc, -1);
+		}
 	return 0;
 }
 

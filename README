@@ -27,7 +27,7 @@ below.
 FORK CHANGES
 ------------
 1. Added unindent keybind: ^w
-^w may also take vi_arg1, in which case it will repeat the operation on next line.
+^w may also take vi_arg1 or motions as a region.
 2. Added quickexit to insert mode keybind: kj
 It's important to understand that this has a caveat, if
 input comes too fast, for example a paste from terminal and
