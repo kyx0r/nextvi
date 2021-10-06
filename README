@@ -143,13 +143,31 @@ the result to be with your eyes.
 44. Added a key to perform relative word replacements keybind: vt
 Specify arg and the word(s) under the cursor will be placed into prompt,
 for example :.,.+5s/\<word\>/ where 5 is the arg. (see also 49.)
-45. Improved single line performance by roughly 3x
+45. Improved single line performance by roughly 3x. Syntax hilight
+will not render anything beyond the terminal colums.
+If there is a line in the file that has say 200K characters, the
+performance will not degrade. This was extremely difficult to get
+right and took me 3 weeks of refactors because we also have to
+take into account:
+	1. Bidi text direction. 
+	2. Multibyte UTF-8. Double width chars.
+	3. Variable width tabulations that can change
+	throughout the line based on suroundings.
+	4. Reordering of characters.
 46. Added key to abandon insert discarding any changes keybind: ^x
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj 
 47. Added Russian keymap, and changed how xkmap_alt works, now
 z + arg in normal mode will switch what keymap ^f key changes,
 so for example 1 = fa 2 = ru. If you need some other language
 kmap just make one yourself. Look into kmap.h it's really simple.
+kmap also has digraph support, that list has been expanded to
+include non printing characters. Naming resembles how ASCII keys
+are named, so for example 03 is key ctrl+c to be able to type 03
+enter insert, use ^k to go into digraph mode, type then " c" (space+c)
+Notice how the letter after space is consistent with ASCII ctrl+c, 
+essentially space is like representing typeable ctrl key.
+The reason this is useful is if you are using @ key to make macros
+there has to be a way to type these control characters.
 48. Improvement to change 37. Now when in the prompt ^v will bring
 up the latest command from history. Also the history works for
 searches via / or ? the same way. keybind vv does the same but from
