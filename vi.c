@@ -46,7 +46,7 @@ int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
 int vi_mod;		/* screen should be redrawn: 
 			(1: whole screen, -1: whole screen not updating xcol,
-			2: current line or from current line to last line) */
+			2: current line, or whole screen) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
 static char *vi_word = "\0eEwW0";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
@@ -1044,6 +1044,7 @@ static void vi_splitln(int row, int linepos, int nextln)
 	char *s, *part;
 	int len, crow, bytelen;
 	int l, c = !vi_arg1 ? 1 : vi_arg1;
+	vi_mod = 1;
 	for (int i = 0; i < c; i++)
 	{
 		crow = row + i;
@@ -1358,16 +1359,15 @@ static int join_spaces(char *prev, char *next)
 	return prev[prevlen - 1] == '.' ? 2 : 1;
 }
 
-static int vc_join(void)
+static void vc_join(void)
 {
 	struct sbuf *sb;
 	int cnt = vi_arg1 <= 1 ? 2 : vi_arg1;
 	int beg = xrow;
 	int end = xrow + cnt;
-	int off = 0;
-	int i;
+	int off = 0, i;
 	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
-		return 1;
+		return;
 	sb = sbuf_make(1024);
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
@@ -1386,7 +1386,7 @@ static int vc_join(void)
 	lbuf_edit(xb, sbuf_buf(sb), beg, end);
 	xoff = off;
 	sbuf_free(sb);
-	return 0;
+	vi_mod = 1;
 }
 
 static void vi_scrollforward(int cnt)
@@ -1863,7 +1863,7 @@ void vi(void)
 						k = xoff+1;
 						if (k > 0)
 						{
-							if (*uc_chr(lbuf_get(xb, xrow), 0) == '\n')
+							if (*lbuf_get(xb, xrow) == '\n')
 							{
 								vc_join();
 								term_push("i", 1);
@@ -1875,7 +1875,7 @@ void vi(void)
 					}
 					char push[2];
 					push[0] = k-1 == xoff ? 'x' : 'X';
-					push[1] = (ko-1 == xoff) ? 'a' : 'i';
+					push[1] = ko-1 == xoff ? 'a' : 'i';
 					term_push(push, 2);
 					break;
 				case TK_CTL('w'):
@@ -1884,12 +1884,10 @@ void vi(void)
 				}
 				break;
 			case 'J':
-				if (!vc_join())
-					vi_mod = 1;
+				vc_join();
 				break;
 			case 'K':
 				vi_splitln(xrow, xoff+1, 0);
-				vi_mod = 1;
 				break;
 			case TK_CTL('l'):
 				term_done();
@@ -1945,15 +1943,14 @@ void vi(void)
 				else if (k == 'a')
 					vc_charinfo();
 				else if (k == 'w')
-				{
-					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n')
+					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n' &&
+						*lbuf_get(xb, xrow) != '\n')
 						term_push("080lgwbhKj", 10);
 					else
 						term_clear();
-				} else if (k == 'q') {
+				else if (k == 'q')
 					vi_splitln(xrow, 80, 1);
-					vi_mod = 1;
-				} else if (k == '~' || k == 'u' || k == 'U')
+				else if (k == '~' || k == 'u' || k == 'U')
 					if (!vc_motion(k))
 						vi_mod = 2;
 				break;
@@ -2122,9 +2119,8 @@ void vi(void)
 			syn_blockhl = 0;
 		} else if (vi_mod == 2)
 			vi_drawrow(xrow);
-		if (vi_mod == 2 && xrow < orow)
-			while (orow != xtop + xrows)
-				vi_drawrow(orow++);
+		if (vi_mod == 2 && xrow != orow)
+			vi_drawagain();
 		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
 				ren_cursor(lbuf_get(xb, xrow), xcol)));
