@@ -1852,6 +1852,8 @@ void vi(void)
 				switch (vi_insmov)
 				{
 				case 127:;
+					if (c == 'a' || c == 's')
+						xoff++;
 					k = lbuf_eol(xb, xrow);
 					int ko = k;
 					if (!xoff && xrow) {
@@ -1875,7 +1877,7 @@ void vi(void)
 					}
 					char push[2];
 					push[0] = k-1 == xoff ? 'x' : 'X';
-					push[1] = ko-1 == xoff ? 'a' : 'i';
+					push[1] = ko-1 == xoff ? 'A' : 'i';
 					term_push(push, 2);
 					break;
 				case TK_CTL('w'):
@@ -1982,7 +1984,7 @@ void vi(void)
 				vi_back(' ');
 				if (!vc_motion('c'))
 					vi_mod = 1;
-				break;
+				goto ins;
 			case 'S':
 				vi_back('c');
 				if (!vc_motion('c'))
