@@ -189,21 +189,14 @@ static char *ex_pathexpand(char *src, int spaceallowed)
 	struct sbuf *sb = sbuf_make(1024);
 	while (*src && (spaceallowed || (*src != ' ' && *src != '\t')))
 	{
-		if (*src == '%') {
-			if (!bufs[0].path || !bufs[0].path[0]) {
-				ex_show("\"%\" is unset\n");
+		if (*src == '%' || *src == '#') {
+			int idx = *src == '#';
+			if (!bufs[idx].path || !bufs[idx].path[0]) {
+				ex_show("pathname \"%\" or \"#\" is not set\n");
 				sbuf_free(sb);
 				return NULL;
 			}
-			sbuf_str(sb, bufs[0].path);
-			src++;
-		} else if (*src == '#') {
-			if (!bufs[1].path || !bufs[1].path[0]) {
-				ex_show("\"#\" is unset\n");
-				sbuf_free(sb);
-				return NULL;
-			}
-			sbuf_str(sb, bufs[1].path);
+			sbuf_str(sb, bufs[idx].path);
 			src++;
 		} else {
 			if (*src == '\\' && src[1])
