@@ -156,7 +156,7 @@ take into account:
 	1. Bidi text direction.
 	2. Multibyte UTF-8. Double width chars.
 	3. Variable width tabulations that can change
-	throughout the line based on suroundings.
+	throughout the line based on surroundings.
 	4. Reordering of characters.
 46. Added key to abandon insert discarding any changes keybind: ^x
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj
@@ -189,7 +189,7 @@ is not an exception. The same change was done for ^w keybind.
 52.
 53. Added a key to disable autoindent. keybind: va
 This is necessary sometimes if you want to paste from system clipboard.
-54. Added minimal syntax highlight for js and html
+54.
 55. Substitute undo-redo point return to where command was issued initially
 if the affected area is greater than terminal rows.
 56. Modified regex engine to support more than 1 character in negated

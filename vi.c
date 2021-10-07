@@ -2121,6 +2121,9 @@ void vi(void)
 			syn_blockhl = 0;
 		} else if (vi_mod == 2)
 			vi_drawrow(xrow);
+		if (vi_mod == 2 && xrow != orow)
+			while (orow != xtop + xrows)
+				vi_drawrow(orow++);
 		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
 				ren_cursor(lbuf_get(xb, xrow), xcol)));
