@@ -1876,8 +1876,8 @@ void vi(void)
 						}
 					}
 					char push[2];
-					push[0] = k-1 == xoff ? 'x' : 'X';
-					push[1] = ko-1 == xoff ? 'A' : 'i';
+					push[0] = xoff >= k-1 ? 'x' : 'X';
+					push[1] = xoff >= ko-1 ? 'A' : 'i';
 					term_push(push, 2);
 					break;
 				case TK_CTL('w'):
