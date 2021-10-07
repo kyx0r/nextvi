@@ -45,7 +45,8 @@
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
 int vi_mod;		/* screen should be redrawn: 
-			(1: the whole screen, -1: not updating xcol, 2: the current line) */
+			(1: whole screen, -1: whole screen not updating xcol,
+			2: current line or from current line to last line) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
 static char *vi_word = "\0eEwW0";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
@@ -2121,7 +2122,7 @@ void vi(void)
 			syn_blockhl = 0;
 		} else if (vi_mod == 2)
 			vi_drawrow(xrow);
-		if (vi_mod == 2 && xrow != orow)
+		if (vi_mod == 2 && xrow < orow)
 			while (orow != xtop + xrows)
 				vi_drawrow(orow++);
 		vi_drawmsg();
