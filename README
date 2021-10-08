@@ -78,7 +78,7 @@ Colors can be customized up to 256 colors if your terminal supports it.
 K may also take vi_arg1, in which case it will repeat the operation on next line.
 26. Added key that line wraps text to 80 line limit keybind: gq
 keybind: gw does the same but floors to the last word and is also
-much slower.
+much slower. gw is a macro, so set td=2 if there is bidi text, it makes a difference.
 27. Added key that does multiline repeated edits keybind: v.
 This is based on your last commands and insertions and requires
 vi_arg1 for how many lines to repeat said operation. When last
@@ -239,7 +239,7 @@ can.
 from the cursor, the same way % key works.
 Notes:
 This feature wasn't really supposed to be getting into nextvi
-and was a product of me testing out the synatax highlighting capabilities.
+and was a product of me testing out the syntax highlighting capabilities.
 The fact that this is possible in the first place is quite impressive,
 remember that %100 of hl is computed using 1 regular expression. There
 isn't any extra logic involved except change (29.). In no way would

@@ -153,14 +153,14 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			break;
 		case '{':;
 			int maxcnt = 0, mincnt = 0,
-			i = 0, icnt = 0, size;
+			i = 0, icnt = 0, inf = 0, size;
 			re++;
 			while (isdigit((unsigned char) *re))
 				mincnt = mincnt * 10 + *re++ - '0';
 			if (*re == ',') {
 				re++;
 				if (*re == '}')
-					maxcnt = 256;
+					inf = 1;
 				while (isdigit((unsigned char) *re))
 					maxcnt = maxcnt * 10 + *re++ - '0';
 			} else
@@ -170,12 +170,22 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 					memcpy(&code[PC], &code[term], size*sizeof(int));
 				PC += size;
 			}
+			if (inf) {
+				EMIT(PC, RSPLIT);
+				EMIT(PC+1, REL(PC, PC - size -1));
+				EMIT(PC+2, 0);
+				PC += 3;
+				prog->len++;
+				prog->splits++;
+				maxcnt = mincnt;
+			}
 			for (i = maxcnt-mincnt; i > 0; i--)
 			{
-				prog->splits++;
 				EMIT(PC++, SPLIT);
 				EMIT(PC++, REL(PC-1, PC+((size+3)*i)));
 				EMIT(PC++, 0);
+				prog->splits++;
+				prog->len++;
 				if (code)
 					memcpy(&code[PC], &code[term], size*sizeof(int));
 				PC += size;
@@ -190,11 +200,11 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 					case RSPLIT:
 					case SAVE:
 					case CHAR:
-					case ANY:
 						i++;
+					case ANY:
 						icnt++;
 					}
-				prog->len += maxcnt * icnt;
+				prog->len += (maxcnt-1) * icnt;
 			}
 			break;
 		case '?':
