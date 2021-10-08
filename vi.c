@@ -755,7 +755,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 static int vi_motion(int *row, int *off)
 {
 	static char sdirection;
-	static char savepath[1024];
+	static struct sbuf *savepath;
 	static int _row, _off, srow, soff;
 	char path[1024];
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
@@ -855,10 +855,6 @@ static int vi_motion(int *row, int *off)
 			strcpy(path, ".");
 			dir_calc(path);
 		}
-		if (!*savepath) {
-			srow = *row; soff = *off;
-			memcpy(savepath, ex_path(), strlen(ex_path())+1);
-		}
 		_row = *row; _off = *off;
 		if (vi_arg1 && cs)
 			ex_kwdset(cs, +1);
@@ -873,24 +869,20 @@ static int vi_motion(int *row, int *off)
 		cs = vi_curword(xb, *row, *off, vi_arg1);
 		if (vi_arg1 && cs)
 			ex_kwdset(cs, +1);
-		if (!fs_searchback(cnt, row, off))
-		{
-			if (*savepath)
-			{
+		if (!fs_searchback(cnt, row, off)) {
+			if (savepath) {
 				*row = srow; *off = soff;
-				ex_edit(savepath);
-				*savepath = 0;
-			} else {
-				free(cs);
-				return -1;
+				ex_edit(sbuf_buf(savepath));
 			}
 		}
 		free(cs);
 		break;
 	case TK_CTL('t'):
-		i = strlen(ex_path())+1;
+		if (!savepath)
+			savepath = sbuf_make(1024);
+		sbuf_cut(savepath, 0);
+		sbuf_str(savepath, ex_path());
 		srow = *row; soff = *off;
-		memcpy(savepath, ex_path(), i);
 		break;
 	case '0':
 		*off = 0;
@@ -1551,7 +1543,7 @@ void vi(void)
 			case '\\':
 			case TK_CTL(']'):
 			case TK_CTL('p'):
-				vi_back(TK_CTL('g'));
+				vi_drawmsg();
 			case 1: //^a
 			case '/':
 			case '?':
