@@ -358,12 +358,12 @@ subs[i++] = nsub; \
 goto next##nn; \
 
 #define saveclist() \
-newsub(for (j = 0; j < nsubp; j++) s1->sub[j] = nsub->sub[j];, \
-for (j = 0; j < nsubp / 2 - 1; j++) s1->sub[j] = nsub->sub[j];) \
+newsub(memcpy(s1->sub, nsub->sub, osubp);, \
+memcpy(s1->sub, nsub->sub, osubp / 2);) \
 
-#define savenlist()\
+#define savenlist() \
 newsub(/*nop*/, /*nop*/) \
-for (j = 0; j < nsubp; j++) s1->sub[j] = nsub->sub[j]; \
+memcpy(s1->sub, nsub->sub, osubp); \
 
 #define onnlist(nn) \
 if (npc[2] == gen) \
@@ -495,7 +495,7 @@ for (;; sp = _sp) { \
 	nlistidx = 0; \
 	if (!matched) { \
 		jmp_start##n: \
-		newsub(for (i = 1; i < nsubp; i++) s1->sub[i] = NULL;, /*nop*/) \
+		newsub(memset(s1->sub, 0, osubp);, /*nop*/) \
 		s1->ref = 1; \
 		s1->sub[0] = _sp; \
 		npc = insts; nsub = s1; \
@@ -516,7 +516,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int i, j, c, gen, suboff = rsubsize, *npc;
-	int clistidx = 0, nlistidx = 0;
+	int clistidx = 0, nlistidx = 0, osubp = nsubp * sizeof(char*);
 	const char *sp = s, *_sp = s;
 	int *insts = prog->insts;
 	int *pcs[prog->splits];
