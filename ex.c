@@ -18,7 +18,7 @@ int xkmap = 0;			/* the current keymap */
 int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
-static char xkwd[EXLEN];	/* the last searched keyword */
+static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */
 static int xgdep;		/* global command recursion depth */
@@ -207,21 +207,22 @@ static char *ex_pathexpand(char *src, int spaceallowed)
 	return sbuf_done(sb);
 }
 
-/* the previous search keyword */
-int ex_kwd(char **kwd, int *dir)
+/* the previous search keyword rset */
+int ex_krs(rset **krs, int *dir)
 {
-	if (kwd)
-		*kwd = xkwd;
+	if (krs)
+		*krs = xkwdrs;
 	if (dir)
 		*dir = xkwddir;
-	return xkwddir == 0;
+	return xkwddir == 0 || !xkwdrs;
 }
 
-/* set the previous search keyword */
-void ex_kwdset(char *kwd, int dir)
+/* set the previous search keyword rset */
+void ex_krsset(char *kwd, int dir)
 {
 	if (kwd) {
-		snprintf(xkwd, sizeof(xkwd), "%s", kwd);
+		rset_free(xkwdrs);
+		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
 		vi_regput('/', kwd, 0);
 	}
 	xkwddir = dir;
@@ -232,7 +233,6 @@ static int ex_search(char **pat)
 	struct sbuf *kw;
 	char *b = *pat;
 	char *e = b;
-	char *pats[1];
 	rset *re;
 	int dir, row;
 	kw = sbuf_make(64);
@@ -244,13 +244,10 @@ static int ex_search(char **pat)
 			e++;
 	}
 	if (sbuf_len(kw))
-		ex_kwdset(sbuf_buf(kw), **pat == '/' ? 1 : -1);
+		ex_krsset(sbuf_buf(kw), **pat == '/' ? 1 : -1);
 	sbuf_free(kw);
 	*pat = *e ? e + 1 : e;
-	if (ex_kwd(&pats[0], &dir))
-		return -1;
-	re = rset_make(1, pats, xic ? REG_ICASE : 0);
-	if (!re)
+	if (ex_krs(&re, &dir))
 		return -1;
 	row = xrow + dir;
 	while (row >= 0 && row < lbuf_len(xb)) {
@@ -258,7 +255,6 @@ static int ex_search(char **pat)
 			break;
 		row += dir;
 	}
-	rset_free(re);
 	return row >= 0 && row < lbuf_len(xb) ? row : -1;
 }
 
@@ -740,7 +736,6 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	rset *re;
 	int offs[32];
 	int beg, end;
-	char *pats[1];
 	char *pat = NULL, *rep = NULL;
 	char *s = arg;
 	int i;
@@ -748,7 +743,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		return 1;
 	pat = re_read(&s);
 	if (pat && pat[0])
-		ex_kwdset(pat, +1);
+		ex_krsset(pat, +1);
 	if (pat && *s) {
 		s--;
 		rep = re_read(&s);
@@ -757,9 +752,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		snprintf(xrep, sizeof(xrep), "%s", rep ? rep : "");
 	free(pat);
 	free(rep);
-	if (ex_kwd(&pats[0], NULL))
-		return 1;
-	if (!(re = rset_make(1, pats, xic ? REG_ICASE : 0)))
+	if (ex_krs(&re, NULL))
 		return 1;
 	// if the change is bigger than display size
 	// set savepoint where command was issued.
@@ -788,7 +781,6 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	if (end - beg > xrows)
 		lbuf_opt(xb, NULL, xrow, 0);
-	rset_free(re);
 	return 0;
 }
 
@@ -868,7 +860,6 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	rset *re;
 	int offs[32];
 	int beg, end, not;
-	char *pats[1];
 	char *pat, *s = arg;
 	int i;
 	if (!loc[0] && !xgdep)
@@ -878,11 +869,9 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	not = strchr(cmd, '!') || cmd[0] == 'v';
 	pat = re_read(&s);
 	if (pat && pat[0])
-		ex_kwdset(pat, +1);
+		ex_krsset(pat, +1);
 	free(pat);
-	if (ex_kwd(&pats[0], NULL))
-		return 1;
-	if (!(re = rset_make(1, pats, xic ? REG_ICASE : 0)))
+	if (ex_krs(&re, NULL))
 		return 1;
 	xgdep++;
 	for (i = beg + 1; i < end; i++)
@@ -902,7 +891,6 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	for (i = 0; i < lbuf_len(xb); i++)
 		lbuf_globget(xb, i, xgdep);
 	xgdep--;
-	rset_free(re);
 	return 0;
 }
 
@@ -1010,7 +998,7 @@ static int ec_setincl(char *loc, char *cmd, char *arg)
 	if (!*arg)
 		fsincl = NULL;
 	else
-		fsincl = rset_make(1, (char*[]){arg}, 0);
+		fsincl = rset_make(1, (char*[]){arg}, xic ? REG_ICASE : 0);
 	return 0;
 }
 
@@ -1184,7 +1172,7 @@ int ex_init(char **files)
 
 void ex_done(void)
 {
-	int i;
-	for (i = 0; i < NUM_BUFS; i++)
+	for (int i = 0; i < NUM_BUFS; i++)
 		bufs_free(i);
+	rset_free(xkwdrs);
 }

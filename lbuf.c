@@ -413,15 +413,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 	return n != 0;
 }
 
-int lbuf_search(struct lbuf *lb, char *kw, int dir, int *r, int *o, int *len)
+int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
 {
 	int offs[2];
-	int found = 0;
+	int found = 0, i;
 	int r0 = *r, o0 = *o;
-	int i;
-	rset *re = rset_make(1, &kw, xic ? REG_ICASE : 0);
-	if (!re)
-		return 1;
 	for (i = r0; !found && i >= 0 && i < lbuf_len(lb); i += dir) {
 		char *s = lbuf_get(lb, i);
 		int off = dir > 0 && r0 == i ? uc_chr(s, o0 + 1) - s : 0;
@@ -439,15 +435,14 @@ int lbuf_search(struct lbuf *lb, char *kw, int dir, int *r, int *o, int *len)
 				break;
 		}
 	}
-	rset_free(re);
 	return !found;
 }
 
 int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 {
-	while (*row >= 0 && *row < lbuf_len(lb) && !strcmp("\n", lbuf_get(lb, *row)))
+	while (*row >= 0 && *row < lbuf_len(lb) && *lbuf_get(lb, *row) == '\n')
 		*row += dir;
-	while (*row >= 0 && *row < lbuf_len(lb) && strcmp("\n", lbuf_get(lb, *row)))
+	while (*row >= 0 && *row < lbuf_len(lb) && *lbuf_get(lb, *row) != '\n')
 		*row += dir;
 	*row = MAX(0, MIN(*row, lbuf_len(lb) - 1));
 	*off = 0;
@@ -457,7 +452,7 @@ int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off)
 {
 	*row += dir;
-	while (*row >= 0 && *row < lbuf_len(lb) && lbuf_get(lb, *row)[0] != '{')
+	while (*row >= 0 && *row < lbuf_len(lb) && *lbuf_get(lb, *row) != '{')
 		*row += dir;
 	*row = MAX(0, MIN(*row, lbuf_len(lb) - 1));
 	*off = 0;

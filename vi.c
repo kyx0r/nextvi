@@ -59,6 +59,8 @@ static int vi_printed;			/* ex_print() calls since the last command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
+static char *regs[256];			/* string registers */
+static int lnmode[256];
 static char *vi_curword(struct lbuf *lb, int row, int off, int n);
 
 void reverse_in_place(char *str, int len)
@@ -428,7 +430,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int 
 
 static int vi_search(int cmd, int cnt, int *row, int *off)
 {
-	char *kwd;
+	rset *rs;
 	int r = *row;
 	int o = *off;
 	int failed = 0;
@@ -447,7 +449,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 		free(kw);
 		kw = sbuf_buf(sb);
 		if ((re = re_read(&kw))) {
-			ex_kwdset(re[0] ? re : NULL, cmd == '/' ? +1 : -1);
+			ex_krsset(re[0] ? re : NULL, cmd == '/' ? +1 : -1);
 			while (isspace(*kw))
 				kw++;
 			vi_soset = !!kw[0];
@@ -456,12 +458,12 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 		}
 		sbuf_free(sb);
 	}
-	if (!lbuf_len(xb) || ex_kwd(&kwd, &dir))
+	if (!lbuf_len(xb) || ex_krs(&rs, &dir))
 		return 1;
 	dir = cmd == 'N' ? -dir : dir;
 	o = *off;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, kwd, dir, &r, &o, &len)) {
+		if (lbuf_search(xb, rs, dir, &r, &o, &len)) {
 			failed = 1;
 			break;
 		}
@@ -480,7 +482,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 		}
 	}
 	if (failed)
-		snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found\n", kwd);
+		snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found\n", regs['/']);
 	return failed;
 }
 
@@ -576,10 +578,6 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	sbuf_str(sb, "\\>");
 	return sbuf_done(sb);
 }
-
-/* string registers */
-static char *regs[256];
-static int lnmode[256];
 
 char *vi_regget(int c, int *ln)
 {
@@ -857,7 +855,7 @@ static int vi_motion(int *row, int *off)
 		}
 		_row = *row; _off = *off;
 		if (vi_arg1 && cs)
-			ex_kwdset(cs, +1);
+			ex_krsset(cs, +1);
 		if (!fs_search(cnt, row, off)) {
 			*row = _row; *off = _off;
 		}
@@ -868,7 +866,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		cs = vi_curword(xb, *row, *off, vi_arg1);
 		if (vi_arg1 && cs)
-			ex_kwdset(cs, +1);
+			ex_krsset(cs, +1);
 		if (!fs_searchback(cnt, row, off)) {
 			if (savepath) {
 				*row = srow; *off = soff;
@@ -907,7 +905,7 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('a'):
 		if (!(cs = vi_curword(xb, *row, *off, cnt)))
 			return -1;
-		ex_kwdset(cs, +1);
+		ex_krsset(cs, +1);
 		free(cs);
 		if (vi_search(sdirection ? 'N' : 'n', cnt, row, off))
 		{
@@ -1063,6 +1061,7 @@ static void vi_splitln(int row, int linepos, int nextln)
 		}
 	}
 }
+
 static int linecount(char *s)
 {
 	int n;
@@ -1739,7 +1738,7 @@ void vi(void)
 				case '/':
 					cs = vi_curword(xb, xrow, xoff, vi_arg1);
 					ln = vi_prompt("(search) kwd:", cs, &kmap);
-					ex_kwdset(ln, +1);
+					ex_krsset(ln, +1);
 					free(ln);
 					free(cs);
 					break;
@@ -1806,8 +1805,7 @@ void vi(void)
 				k = vi_read();
 				if (k == 'i') {
 					k = vi_read();
-					switch(k)
-					{
+					switch(k) {
 					case ')':
 						term_push("F(ldt)", 6);
 						break;
@@ -1937,8 +1935,7 @@ void vi(void)
 				else if (k == 'a')
 					vc_charinfo();
 				else if (k == 'w')
-					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n' &&
-						*lbuf_get(xb, xrow) != '\n')
+					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n')
 						term_push("080lgwbhKj", 10);
 					else
 						term_clear();

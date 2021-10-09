@@ -17,36 +17,6 @@ void reverse_in_place(char *str, int len);
 /* main functions */
 void vi(void);
 
-/* lbuf.c line buffer, managing a number of lines */
-struct lbuf *lbuf_make(void);
-void lbuf_free(struct lbuf *lbuf);
-int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end);
-int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
-void lbuf_edit(struct lbuf *lbuf, char *s, int beg, int end);
-char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
-char *lbuf_get(struct lbuf *lbuf, int pos);
-char **lbuf_buf(struct lbuf *lb);
-int lbuf_len(struct lbuf *lbuf);
-void lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
-void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
-int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off);
-int lbuf_undo(struct lbuf *lbuf);
-int lbuf_redo(struct lbuf *lbuf);
-int lbuf_modified(struct lbuf *lb);
-void lbuf_saved(struct lbuf *lb, int clear);
-int lbuf_indents(struct lbuf *lb, int r);
-int lbuf_eol(struct lbuf *lb, int r);
-void lbuf_globset(struct lbuf *lb, int pos, int dep);
-int lbuf_globget(struct lbuf *lb, int pos, int dep);
-/* motions */
-int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
-int lbuf_search(struct lbuf *lb, char *kw, int dir, int *r, int *o, int *len);
-int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
-int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
-int lbuf_wordbeg(struct lbuf *lb, int big, int dir, int *row, int *off);
-int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
-int lbuf_pair(struct lbuf *lb, int *row, int *off);
-
 /* sbuf.c string buffer, variable-sized string */
 struct sbuf *sbuf_make(int newsz);
 void sbuf_free(struct sbuf *sb);
@@ -93,6 +63,36 @@ rset *rset_make(int n, char **pat, int flg);
 int rset_find(rset *re, char *s, int n, int *grps, int flg);
 void rset_free(rset *re);
 char *re_read(char **src);
+
+/* lbuf.c line buffer, managing a number of lines */
+struct lbuf *lbuf_make(void);
+void lbuf_free(struct lbuf *lbuf);
+int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end);
+int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
+void lbuf_edit(struct lbuf *lbuf, char *s, int beg, int end);
+char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
+char *lbuf_get(struct lbuf *lbuf, int pos);
+char **lbuf_buf(struct lbuf *lb);
+int lbuf_len(struct lbuf *lbuf);
+void lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
+void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
+int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off);
+int lbuf_undo(struct lbuf *lbuf);
+int lbuf_redo(struct lbuf *lbuf);
+int lbuf_modified(struct lbuf *lb);
+void lbuf_saved(struct lbuf *lb, int clear);
+int lbuf_indents(struct lbuf *lb, int r);
+int lbuf_eol(struct lbuf *lb, int r);
+void lbuf_globset(struct lbuf *lb, int pos, int dep);
+int lbuf_globget(struct lbuf *lb, int pos, int dep);
+int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
+int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len);
+/* motions */
+int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
+int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
+int lbuf_wordbeg(struct lbuf *lb, int big, int dir, int *row, int *off);
+int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
+int lbuf_pair(struct lbuf *lb, int *row, int *off);
 
 /* ren.c rendering lines */
 extern int ren_torg;
@@ -244,8 +244,8 @@ void ex_done(void);
 char *ex_path(void);
 char *ex_filetype(void);
 struct lbuf *ex_lbuf(void);
-int ex_kwd(char **kwd, int *dir);
-void ex_kwdset(char *kwd, int dir);
+int ex_krs(rset **krs, int *dir);
+void ex_krsset(char *kwd, int dir);
 int ex_edit(char *path);
 void ec_bufferi(int *id);
 
