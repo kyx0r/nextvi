@@ -186,10 +186,11 @@ when no more characters left the line will be wrapped onto the next
 one. This is behavior you can expect from 95% of editors, now nextvi
 is not an exception. The same change was done for ^w keybind.
 51. Added key to show the registers and their contents. keybind: R
-52.
+52. Made feature of reverse text highlight toggleable via new ex option "hlr"
 53. Added a key to disable autoindent. keybind: va
 This is necessary sometimes if you want to paste from system clipboard.
-54.
+54. Removed full names of ex commands and options, (seriously, who uses that?)
+now only short and fast to type abbreviations work.
 55. Substitute undo-redo point return to where command was issued initially
 if the affected area is greater than terminal rows.
 56. Modified regex engine to support more than 1 character in negated
@@ -361,7 +362,7 @@ variable as "set noshape | set noorder | set nohl | set td=+2".
 
 Options supported in nextvi:
 
-td, textdirection
+td
   Current direction context.  The following values are meaningful:
   * +2: always left-to-right.
   * +1: follow conf.c's dircontexts[]; left-to-right for others.
@@ -372,16 +373,16 @@ shape
 order
   If set, reorder characters based on the rules defined
   in conf.c.
-hl, highlight
+hl
   If set (default), text will be highlighted based on syntax
   highlighting rules in conf.c.
-hll, highlightline
+hll
   If set, highlight current line.
-ai, autoindent
+ai
   As in vi(1).
-aw, autowrite
+aw
   As in vi(1).
-ic, ignorecase
+ic
   As in vi(1).
 
 MARKS AND BUFFERS

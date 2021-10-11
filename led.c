@@ -407,7 +407,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		}
 	}
 	syn_highlight(att, s0, n);
-	led_markrev(n, chrs, pos, att);
+	if (xhlr)
+		led_markrev(n, chrs, pos, att);
 	/* generate term output */
 	term_pos(row, 0);
 	term_kill();

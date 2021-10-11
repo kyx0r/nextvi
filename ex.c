@@ -8,7 +8,8 @@ int xaw;			/* autowrite option */
 int xhl = 1;			/* syntax highlight option */
 int xhll;			/* highlight current line */
 int xhlw;			/* highlight current word */
-int xhlp;			/* highlight {} pair */
+int xhlp;			/* highlight {}[]() pair */
+int xhlr;			/* highlight text in reverse direction */
 int xled = 1;			/* use the line editor */
 int xtd = +1;			/* current text direction */
 int xotd;			/* old text direction */
@@ -895,22 +896,22 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 }
 
 static struct option {
-	char *abbr;
 	char *name;
 	int *var;
 } options[] = {
-	{"ai", "autoindent", &xai},
-	{"aw", "autowrite", &xaw},
-	{"ic", "ignorecase", &xic},
-	{"td", "textdirection", &xtd},
-	{"shape", "shape", &xshape},
-	{"order", "xorder", &xorder},
-	{"hl", "highlight", &xhl},
-	{"hll", "highlightline", &xhll},
-	{"hlw", "highlightword", &xhlw},
-	{"hlp", "highlightpair", &xhlp},
-	{"tbs", "tabspace", &xtabspc},
-	{"qe", "quickexit", &xqexit},
+	{"ai", &xai},
+	{"aw", &xaw},
+	{"ic", &xic},
+	{"td", &xtd},
+	{"shape", &xshape},
+	{"order", &xorder},
+	{"hl", &xhl},
+	{"hll", &xhll},
+	{"hlw", &xhlw},
+	{"hlp", &xhlp},
+	{"hlr", &xhlr},
+	{"tbs", &xtabspc},
+	{"qe", &xqexit},
 };
 
 static char *cutword(char *s, char *d)
@@ -951,7 +952,7 @@ static int ec_set(char *loc, char *cmd, char *arg)
 		}
 		for (i = 0; i < LEN(options); i++) {
 			struct option *o = &options[i];
-			if (!strcmp(o->abbr, opt) || !strcmp(o->name, opt)) {
+			if (!strcmp(o->name, opt)) {
 				*o->var = val;
 				return 0;
 			}
@@ -1003,56 +1004,54 @@ static int ec_setincl(char *loc, char *cmd, char *arg)
 }
 
 static struct excmd {
-	char *abbr;
 	char *name;
 	int (*ec)(char *loc, char *cmd, char *arg);
 } excmds[] = {
-	{"b", "buffer", ec_buffer},
-	{"p", "print", ec_print},
-	{"a", "append", ec_insert},
-	{"ea", "ea", ec_editapprox},
-	{"i", "insert", ec_insert},
-	{"d", "delete", ec_delete},
-	{"c", "change", ec_insert},
-	{"e", "edit", ec_edit},
-	{"e!", "edit!", ec_edit},
-	{"g", "global", ec_glob},
-	{"g!", "global!", ec_glob},
-	{"=", "=", ec_lnum},
-	{"k", "mark", ec_mark},
-	{"pu", "put", ec_put},
-	{"q", "quit", ec_quit},
-	{"q!", "quit!", ec_quit},
-	{"r", "read", ec_read},
-	{"v", "vglobal", ec_glob},
-	{"w", "write", ec_write},
-	{"w!", "write!", ec_write},
-	{"wq", "wq", ec_write},
-	{"wq!", "wq!", ec_write},
-	{"u", "undo", ec_undo},
-	{"rd", "redo", ec_redo},
-	{"se", "set", ec_set},
-	{"s", "substitute", ec_substitute},
-	{"x", "xit", ec_write},
-	{"x!", "xit!", ec_write},
-	{"ya", "yank", ec_yank},
-	{"z", "z", ec_exec_inter},
-	{"!", "!", ec_exec},
-	{"make", "make", ec_make},
-	{"ft", "filetype", ec_ft},
-	{"cm", "cmap", ec_cmap},
-	{"cm!", "cmap!", ec_cmap},
-	{"fd", "fsdir", ec_setdir},
-	{"cd", "chdir", ec_chdir},
-	{"inc", "inc", ec_setincl},
-	{"", "", ec_null},
+	{"b", ec_buffer},
+	{"p", ec_print},
+	{"a", ec_insert},
+	{"ea", ec_editapprox},
+	{"i", ec_insert},
+	{"d", ec_delete},
+	{"c", ec_insert},
+	{"e", ec_edit},
+	{"e!", ec_edit},
+	{"g", ec_glob},
+	{"g!", ec_glob},
+	{"=", ec_lnum},
+	{"k", ec_mark},
+	{"pu", ec_put},
+	{"q", ec_quit},
+	{"q!", ec_quit},
+	{"r", ec_read},
+	{"v", ec_glob},
+	{"w", ec_write},
+	{"w!", ec_write},
+	{"wq", ec_write},
+	{"wq!", ec_write},
+	{"u", ec_undo},
+	{"rd", ec_redo},
+	{"se", ec_set},
+	{"s", ec_substitute},
+	{"x", ec_write},
+	{"x!", ec_write},
+	{"ya", ec_yank},
+	{"z", ec_exec_inter},
+	{"!", ec_exec},
+	{"make", ec_make},
+	{"ft", ec_ft},
+	{"cm", ec_cmap},
+	{"cm!", ec_cmap},
+	{"fd", ec_setdir},
+	{"cd", ec_chdir},
+	{"inc", ec_setincl},
+	{"", ec_null},
 };
 
 static int ex_idx(char *cmd)
 {
-	int i;
-	for (i = 0; i < LEN(excmds); i++)
-		if (!strcmp(excmds[i].abbr, cmd) || !strcmp(excmds[i].name, cmd))
+	for (int i = 0; i < LEN(excmds); i++)
+		if (!strcmp(excmds[i].name, cmd))
 			return i;
 	return -1;
 }

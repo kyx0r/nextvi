@@ -220,7 +220,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
 int hlslen = LEN(hls);
 
 /* how to hightlight text in the reverse direction */
-#define SYN_REVDIR		7
+#define SYN_REVDIR		SYN_BGMK(8)
 
 /* right-to-left characters (used only in dctxs[] and dmarks[]) */
 #define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْ"
@@ -266,8 +266,7 @@ char **conf_kmap(int id)
 
 int conf_kmapfind(char *name)
 {
-	int i;
-	for (i = 0; i < LEN(kmaps); i++)
+	for (int i = 0; i < LEN(kmaps); i++)
 		if (name && kmaps[i][0] && !strcmp(name, kmaps[i][0]))
 			return i;
 	return 0;
@@ -275,8 +274,7 @@ int conf_kmapfind(char *name)
 
 char *conf_digraph(int c1, int c2)
 {
-	int i;
-	for (i = 0; i < LEN(digraphs); i++)
+	for (int i = 0; i < LEN(digraphs); i++)
 		if (digraphs[i][0][0] == c1 && digraphs[i][0][1] == c2)
 			return digraphs[i][1];
 	return NULL;
