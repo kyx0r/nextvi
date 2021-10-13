@@ -447,18 +447,18 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 
 static int ec_editapprox(char *loc, char *cmd, char *arg)
 {
-	int len, i;
-	int inst = 0;
-	char *path;
-	if (!fslink)
-	{
+	int len, i, inst;
+	char *path, *arg1;
+	if (!fslink) {
 		char path[1024];
 		strcpy(path, ".");
 		dir_calc(path);
 	}
 	if (!arg)
 		return 0;
-	inst = atoi(arg);
+	arg1 = arg+dstrlen(arg, ' ');
+	inst = atoi(arg1);
+	*arg1 = '\0';
 	for (int pos = 0; pos < fstlen;)
 	{
 		path = &fslink[pos+sizeof(int)];
