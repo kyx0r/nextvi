@@ -813,21 +813,6 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static int ec_make(char *loc, char *cmd, char *arg)
-{
-	char make[EXLEN];
-	char *target;
-	ex_modifiedbuffer(NULL);
-	if (!(target = ex_pathexpand(arg, 0)))
-		return 1;
-	sprintf(make, "make %s", target);
-	free(target);
-	ex_print(NULL);
-	if (cmd_exec(make))
-		return 1;
-	return 0;
-}
-
 static int ec_ft(char *loc, char *cmd, char *arg)
 {
 	if (arg[0])
@@ -1025,7 +1010,6 @@ static struct excmd {
 	{"x!", ec_write},
 	{"ya", ec_yank},
 	{"!", ec_exec},
-	{"make", ec_make},
 	{"ft", ec_ft},
 	{"cm", ec_cmap},
 	{"cm!", ec_cmap},

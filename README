@@ -260,6 +260,10 @@ be created in the future are fully customizeable in conf.c the same
 way you customize per ft highlighting. They must have highlight->func
 struct member set. If ft does not provide a spot in hl, the latter
 feature will not work on that ft, regardless of ex options being set.
+65. Added a key to quickly access :! prompt. keybind: v;
+Removed "make" ex command. Commands like these are not wanted, nextvi
+shall provide a more general purpose solution for the user, like the
+keybind v; for example.
 
 PIKEVM:
 -------

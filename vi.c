@@ -1734,6 +1734,9 @@ void vi(void)
 					vi_lnnum = 2;
 					vi_mod = 1;
 					break;
+				case ';':
+					ln = vi_prompt(":", "!", &kmap);
+					goto do_excmd;
 				case '/':
 					cs = vi_curword(xb, xrow, xoff, vi_arg1);
 					ln = vi_prompt("(search) kwd:", cs, &kmap);

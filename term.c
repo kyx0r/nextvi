@@ -233,15 +233,14 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
 	return pid;
 }
 
-char* xgetenv(char* q[]) {
+char* xgetenv(char* q[]) 
+{
 	char* r = NULL;
 	while (*q && !r) {
-		if (**q == '$') {
+		if (**q == '$')
 			r = getenv(*q+1);
-		}
-		else {
+		else
 			return *q;
-		}
 		q += 1;
 	}
 	return r;
