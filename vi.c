@@ -1615,7 +1615,9 @@ void vi(void)
 				vi_mod = 1;
 				break;
 			case TK_CTL('i'): {
-				ln = lbuf_get(xb, xrow) + xoff;
+				if (!(ln = lbuf_get(xb, xrow)))
+					break;
+				ln += xoff;
 				char buf[strlen(ln)+3];
 				buf[0] = ':';
 				buf[1] = 'e';
