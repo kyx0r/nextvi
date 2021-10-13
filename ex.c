@@ -19,11 +19,11 @@ int xkmap = 0;			/* the current keymap */
 int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
+int xish = 1;			/* interactive shell */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */
 static int xgdep;		/* global command recursion depth */
-int intershell;			/* interactive shell */
 
 #define NUM_BUFS 10
 static struct buf {
@@ -813,12 +813,6 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static int ec_exec_inter(char *loc, char *cmd, char *arg)
-{
-	intershell = 1;
-	return ec_exec(loc, cmd, arg);
-}
-
 static int ec_make(char *loc, char *cmd, char *arg)
 {
 	char make[EXLEN];
@@ -912,6 +906,7 @@ static struct option {
 	{"hlr", &xhlr},
 	{"tbs", &xtabspc},
 	{"qe", &xqexit},
+	{"ish", &xish},
 };
 
 static char *cutword(char *s, char *d)
@@ -1036,7 +1031,6 @@ static struct excmd {
 	{"x", ec_write},
 	{"x!", ec_write},
 	{"ya", ec_yank},
-	{"z", ec_exec_inter},
 	{"!", ec_exec},
 	{"make", ec_make},
 	{"ft", ec_ft},

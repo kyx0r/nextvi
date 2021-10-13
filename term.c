@@ -251,14 +251,13 @@ char* xgetenv(char* q[]) {
 char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 {
 	static char* sh[] = {"$SHELL", "sh", NULL};
-	char *argv[4+intershell]; 
+	char *argv[4+xish]; 
 	argv[0] = xgetenv(sh);
-	if (intershell) 
-		argv[intershell] = "-i";
-	argv[1+intershell] = "-c";
-	argv[2+intershell] = cmd; 
-	argv[3+intershell] = NULL;
-	intershell = 0;
+	if (xish) 
+		argv[xish] = "-i";
+	argv[1+xish] = "-c";
+	argv[2+xish] = cmd; 
+	argv[3+xish] = NULL;
 
 	struct pollfd fds[3];
 	struct sbuf *sb = NULL;
@@ -316,6 +315,9 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	close(ifd);
 	close(ofd);
 	waitpid(pid, NULL, 0);
+	signal(SIGTTOU, SIG_IGN);
+	tcsetpgrp(STDIN_FILENO, getpid());
+	signal(SIGTTOU, SIG_DFL);
 	if (!iproc) {
 		term_init();
 		signal(SIGINT, SIG_DFL);

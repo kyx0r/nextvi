@@ -68,9 +68,10 @@ and "b%d" to switch (where %d is the buffer number).
 19. Added key to delete everything inside (cursor outside) () keybind: di( or dc(
 20. Added key to change . to -> on cursor line keybind: vh
 21. Added key to change -> to . on cursor line keybind: vg
-22. Added ex command "z" it does the same thing "!" does but the shell is
-launched in interactive mode, so stuff like aliases work. But it will cause
-vi to suspend.
+22. Added new ex option "ish", this makes every "!" pipe command
+run though interactive shell so that stuff like aliases work. By
+default it is enabled, can be disabled if you need to for some
+odd reason via :se noish
 23. Changed the colors to be based on standard ASCII 16 colors desc in conf.c
 Colors can be customized up to 256 colors if your terminal supports it.
 24. Added new syntax highlighting for C, js, html, css, diff...

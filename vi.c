@@ -1166,8 +1166,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 
 static void vi_pipe(int r1, int r2)
 {
-	char *text;
-	char *rep;
+	char *text, *rep;
 	int kmap = 0;
 	char *cmd = vi_prompt("!", 0, &kmap);
 	if (!cmd)
