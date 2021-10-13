@@ -235,10 +235,10 @@ ex substitution command, properly counting number of groups in rset.
    that various ex functions, for example regex will consume extra slashes
    internally if there is more than 1 after another.
    If we wanted to match string "\\|" input will be: "\\\\\\|"
-   String "\\\|" is required to make "\|" literal in regex, but the input
+   "\\\|" will get us "\\|" into regex, but the input
    needs 3 more slashes because +1 rule (5:) +2 rule 2 slashes make 1.
-   timeline: "\\\\\\|" -> rule(5:) "\\\\\|" -> rule(ex:2 = 1) "\\\|" ->
-   rule(regex:2 = 1) "\\|" = this what we wanted to match!
+   timeline: "\\\\\\|" -> rule(5:) "\\\\\|" -> rule(regex:2 = 1) "\\\|" = 
+   rule(regex:"\|" = "|") "\\|" = this is the literal we wanted to match!
 62. Added syntax highlighting continuation options. See the struct
 highlight in vi.h. The ^ anchor in the regular expression has an important
 property of being able to efficiently exclude some sub expression from
