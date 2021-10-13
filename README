@@ -57,6 +57,7 @@ similar filename to skip.
 For example file might be named "./path/bla/bla/file123.c" but you can open it
 just by "ea fi" if this is a uniquely matched filename.
 12. Added ex command "fd" to set the directory for fssearch or "ea" ex command
+Running "fd" without an arg will recalculate directory info at current working dir.
 13. Added numbered buffers to vi, max 10 and ex "b" command to show buffers
 and "b%d" to switch (where %d is the buffer number).
 14. Added key to show buffers and switch buffer

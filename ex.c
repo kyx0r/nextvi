@@ -960,16 +960,15 @@ static int ec_set(char *loc, char *cmd, char *arg)
 
 static int ec_setdir(char *loc, char *cmd, char *arg)
 {
-	if (*arg) {
-		if (fslink) {
-			free(fslink);
-			fslink = NULL;
-			fstlen = 0;
-			fspos = 0;
-			fscount = 0;
-		}
-		dir_calc(arg);
+	if (fslink) {
+		free(fslink);
+		fslink = NULL;
+		fstlen = 0;
+		fspos = 0;
+		fscount = 0;
 	}
+	if (arg && *arg)
+		dir_calc(arg);
 	return 0;
 }
 
@@ -983,13 +982,7 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
 
 static int ec_setincl(char *loc, char *cmd, char *arg)
 {
-	if (fslink) {
-		free(fslink);
-		fslink = NULL;
-		fstlen = 0;
-		fspos = 0;
-		fscount = 0;
-	}
+	ec_setdir(NULL, NULL, NULL);
 	rset_free(fsincl);
 	if (!*arg)
 		fsincl = NULL;
