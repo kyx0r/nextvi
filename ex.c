@@ -1098,7 +1098,7 @@ static char *ex_arg(char *src, char *dst)
 	while (*src && (*src != '|' || src[-1] == '\\'))
 	{
 		if (!strncmp(src, "\\\\|", 3))
-			src += 2;
+			src += src[-1] == '\\' ? 1 : 2;
 		*dst++ = *src++;
 	}
 	*dst = '\0';
