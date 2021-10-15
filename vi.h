@@ -47,7 +47,6 @@ typedef struct {
 	int sub;
 	int presub;
 	int splits;
-	int gen;
 	int flg;
 	int insts[];
 } rcode;

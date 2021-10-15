@@ -172,9 +172,8 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			}
 			if (inf) {
 				EMIT(PC, RSPLIT);
-				EMIT(PC+1, REL(PC, PC - size -1));
-				EMIT(PC+2, 0);
-				PC += 3;
+				EMIT(PC+1, REL(PC, PC - size));
+				PC += 2;
 				prog->len++;
 				prog->splits++;
 				maxcnt = mincnt;
@@ -182,8 +181,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			for (i = maxcnt-mincnt; i > 0; i--)
 			{
 				EMIT(PC++, SPLIT);
-				EMIT(PC++, REL(PC-1, PC+((size+3)*i)));
-				EMIT(PC++, 0);
+				EMIT(PC++, REL(PC, PC+((size+2)*i)));
 				prog->splits++;
 				prog->len++;
 				if (code)
@@ -191,39 +189,41 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 				PC += size;
 			}
 			if (code) {
+				mincnt = 0;
 				for (i = 0; i < size; i++)
 					switch (code[term+i]) {
+					case SPLIT:
+					case RSPLIT:
+						mincnt++;
 					case CLASS:
 						i += code[term+i+2] * 2 + 1;
 					case JMP:
-					case SPLIT:
-					case RSPLIT:
 					case SAVE:
 					case CHAR:
 						i++;
 					case ANY:
 						icnt++;
 					}
+				prog->splits += mincnt * icnt;
 				prog->len += (maxcnt-1) * icnt;
 			}
 			break;
 		case '?':
 			if (PC == term) goto syntax_error;
-			INSERT_CODE(term, 3, PC);
+			INSERT_CODE(term, 2, PC);
 			if (re[1] == '?') {
 				EMIT(term, RSPLIT);
 				re++;
 			} else
 				EMIT(term, SPLIT);
-			EMIT(term + 1, REL(term, PC-1));
-			EMIT(term + 2, 0);
+			EMIT(term + 1, REL(term, PC));
 			prog->len++;
 			prog->splits++;
 			term = PC;
 			break;
 		case '*':
 			if (PC == term) goto syntax_error;
-			INSERT_CODE(term, 3, PC);
+			INSERT_CODE(term, 2, PC);
 			EMIT(PC, JMP);
 			EMIT(PC + 1, REL(PC, term));
 			PC += 2;
@@ -232,8 +232,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 				re++;
 			} else
 				EMIT(term, SPLIT);
-			EMIT(term + 1, REL(term, PC-1));
-			EMIT(term + 2, 0);
+			EMIT(term + 1, REL(term, PC));
 			prog->splits++;
 			prog->len += 2;
 			term = PC;
@@ -245,9 +244,8 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 				re++;
 			} else
 				EMIT(PC, RSPLIT);
-			EMIT(PC + 1, REL(PC-1, term));
-			EMIT(PC + 2, 0);
-			PC += 3;
+			EMIT(PC + 1, REL(PC, term));
+			PC += 2;
 			prog->splits++;
 			prog->len++;
 			term = PC;
@@ -255,12 +253,11 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 		case '|':
 			if (alt_label)
 				alt_stack[altc++] = alt_label;
-			INSERT_CODE(start, 3, PC);
+			INSERT_CODE(start, 2, PC);
 			EMIT(PC++, JMP);
 			alt_label = PC++;
 			EMIT(start, SPLIT);
-			EMIT(start + 1, REL(start, PC-1));
-			EMIT(start + 2, 0);
+			EMIT(start + 1, REL(start, PC));
 			prog->splits++;
 			prog->len += 2;
 			term = PC;
@@ -281,7 +278,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 	if (code && alt_label) {
 		EMIT(alt_label, REL(alt_label, PC) + 1);
 		for (int alts = altc; altc; altc--) {
-			int at = alt_stack[alts-altc]+altc*3;
+			int at = alt_stack[alts-altc]+altc*2;
 			EMIT(at, REL(at, PC) + 1);
 		}
 	}
@@ -312,7 +309,6 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->sub = 0;
 	prog->presub = nsubs;
 	prog->splits = 0;
-	prog->gen = 1;
 	prog->flg = flags;
 
 	int res = _compilecode(&re, prog, /*sizecode*/0, flags);
@@ -328,14 +324,19 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	return RE_SUCCESS;
 }
 
-#define _return(state) \
-{ prog->gen = gen + 1; return state; } \
-
 #define newsub(init, copy) \
 if (freesub) \
 	{ s1 = freesub; freesub = (rsub*)s1->sub[0]; copy } \
 else \
 	{ s1 = (rsub*)&nsubs[suboff+=rsubsize]; init } \
+
+#define onnlist(nn) \
+for (j = 0; j < plistidx; j++) \
+	if (npc == plist[j]) \
+		deccheck(nn) \
+plist[plistidx++] = npc; \
+
+#define onclist(nn) \
 
 #define decref(csub) \
 if (--csub->ref == 0) { \
@@ -365,13 +366,6 @@ memcpy(s1->sub, nsub->sub, osubp / 2);) \
 newsub(/*nop*/, /*nop*/) \
 memcpy(s1->sub, nsub->sub, osubp); \
 
-#define onnlist(nn) \
-if (npc[2] == gen) \
-	deccheck(nn) \
-npc[2] = gen; \
-
-#define onclist(nn) /* nop */ \
-
 #define addthread(nn, list, listidx) \
 { \
 	int i = 0; \
@@ -394,14 +388,14 @@ npc[2] = gen; \
 		goto rec##nn; \
 	case SPLIT: \
 		on##list(nn) \
-		npc += 3; \
-		pcs[i] = npc + npc[-2]; \
+		npc += 2; \
+		pcs[i] = npc + npc[-1]; \
 		fastrec(nn, list, listidx) \
 	case RSPLIT: \
 		on##list(nn) \
-		npc += 3; \
+		npc += 2; \
 		pcs[i] = npc; \
-		npc += npc[-2]; \
+		npc += npc[-1]; \
 		fastrec(nn, list, listidx) \
 	case SAVE: \
 		if (nsub->ref > 1) { \
@@ -425,7 +419,7 @@ npc[2] = gen; \
 	case BOL: \
 		if (flg & REG_NOTBOL || (_sp != s && *sp != '\n')) { \
 			if (!i && !listidx) \
-				_return(0) \
+				return 0; \
 			deccheck(nn) \
 		} \
 		npc++; goto rec##nn; \
@@ -438,7 +432,7 @@ npc[2] = gen; \
 
 #define match(n, cpn) \
 for (;; sp = _sp) { \
-	gen++; uc_len(i, sp) uc_code(c, sp) cpn \
+	uc_len(i, sp) uc_code(c, sp) cpn \
 	_sp = sp+i;\
 	for (i = 0; i < clistidx; i++) { \
 		npc = clist[i].pc; \
@@ -492,7 +486,7 @@ for (;; sp = _sp) { \
 	clist = nlist; \
 	nlist = tmp; \
 	clistidx = nlistidx; \
-	nlistidx = 0; \
+	nlistidx = 0, plistidx = 0;\
 	if (!matched) { \
 		jmp_start##n: \
 		newsub(memset(s1->sub, 0, osubp);, /*nop*/) \
@@ -508,24 +502,23 @@ if (matched) { \
 		subp[i] = matched->sub[j]; \
 		subp[i+1] = matched->sub[nsubp / 2 + j]; \
 	} \
-	_return(1) \
+	return 1; \
 } \
-_return(0) \
+return 0; \
 
 int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
-	int i, j, c, gen, suboff = rsubsize, *npc;
-	int clistidx = 0, nlistidx = 0, osubp = nsubp * sizeof(char*);
+	int i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
+	int clistidx = 0, nlistidx = 0, plistidx = 0;
 	const char *sp = s, *_sp = s;
 	int *insts = prog->insts;
-	int *pcs[prog->splits];
+	int *pcs[prog->splits], *plist[prog->splits];
 	rsub *subs[prog->splits];
 	char nsubs[500000];
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
-	gen = prog->gen;
 	flg = prog->flg | flg;
 	if (flg & REG_ICASE)
 		goto jmp_start1;
