@@ -30,11 +30,8 @@ int *ren_position(char *s, char ***chrs, int *n)
 	int size = (nn + 1) * sizeof(pos[0]);
 	pos = malloc(size*2);
 	off = pos + nn+1;
-	if (xorder)
+	if (xorder && dir_reorder(chrs[0], pos, nn))
 	{
-		for (i = 0; i < nn; i++)
-			pos[i] = i;
-		dir_reorder(s, pos, chrs[0], nn);
 		for (i = 0; i < nn; i++)
 			off[pos[i]] = i;
 		for (i = 0; i < nn; i++) {
@@ -180,34 +177,6 @@ static rset *dir_rslr;	/* pattern of marks for left-to-right strings */
 static rset *dir_rsrl;	/* pattern of marks for right-to-left strings */
 static rset *dir_rsctx;	/* direction context patterns */
 
-static int dir_match(char **chrs, int beg, int end, int ctx, int *rec,
-		int *r_beg, int *r_end, int *c_beg, int *c_end, int *dir)
-{
-	int subs[16 * 2];
-	rset *rs = ctx < 0 ? dir_rsrl : dir_rslr;
-	int grp;
-	int flg = (beg ? REG_NOTBOL : 0) | (chrs[end][0] ? REG_NOTEOL : 0);
-	int found = -1;
-	int l = chrs[end] - chrs[beg];
-	char s[l+1];
-	memcpy(s, chrs[beg], l);
-	s[l] = '\0';
-	if (rs)
-		found = rset_find(rs, s, LEN(subs) / 2, subs, flg);
-	if (found >= 0 && r_beg && r_end && c_beg && c_end) {
-		*dir = dmarks[found].dir;
-		grp = dmarks[found].grp;
-		*r_beg = beg + uc_off(s, subs[0]);
-		*r_end = beg + uc_off(s, subs[1]);
-		*c_beg = subs[grp * 2 + 0] >= 0 ?
-			beg + uc_off(s, subs[grp * 2 + 0]) : *r_beg;
-		*c_end = subs[grp * 2 + 1] >= 0 ?
-			beg + uc_off(s, subs[grp * 2 + 1]) : *r_end;
-		*rec = grp > 0;
-	}
-	return found < 0;
-}
-
 static void dir_reverse(int *ord, int beg, int end)
 {
 	end--;
@@ -221,22 +190,39 @@ static void dir_reverse(int *ord, int beg, int end)
 }
 
 /* reorder the characters based on direction marks and characters */
-static void dir_fix(char **chrs, int *ord, int dir, int beg, int end)
+int dir_reorder(char **chrs, int *ord, int end)
 {
-	int r_beg, r_end, c_beg, c_end;
-	int c_dir, c_rec;
-	while (beg < end && !dir_match(chrs, beg, end, dir, &c_rec,
-				&r_beg, &r_end, &c_beg, &c_end, &c_dir)) {
-		if (dir < 0)
-			dir_reverse(ord, r_beg, r_end);
-		if (c_dir < 0)
-			dir_reverse(ord, c_beg, c_end);
-		if (c_beg == r_beg)
-			c_beg++;
-		if (c_rec)
-			dir_fix(chrs, ord, c_dir, c_beg, c_end);
-		beg = r_end;
+	int dir = dir_context(chrs[0]);
+	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
+	if (!rs)
+		return 0;
+	int beg = 0, end1 = end, r_beg, r_end, c_beg, c_end;
+	int subs[16 * 2], grp, found;
+	if (end && *chrs[end-1] == '\n')
+		*chrs[end-1] = '\0';
+	while (beg < end) {
+		char *s = chrs[beg];
+		found = rset_find(rs, s, LEN(subs) / 2, subs, 0);
+		if (found >= 0) {
+			for (int i = 0; i < end1; i++)
+				ord[i] = i;
+			end1 = -1;
+			grp = dmarks[found].grp;
+			r_beg = uc_off(s, subs[0]);
+			r_end = uc_off(s, subs[1]);
+			c_beg = subs[grp * 2 + 0] >= 0 ? uc_off(s, subs[grp * 2 + 0]) : r_beg;
+			c_end = subs[grp * 2 + 1] >= 0 ? uc_off(s, subs[grp * 2 + 1]) : r_end;
+			if (dir < 0)
+				dir_reverse(ord, r_beg+beg, r_end+beg);
+			if (dmarks[found].dir < 0)
+				dir_reverse(ord, c_beg+beg, c_end+beg);
+			beg = r_end+beg;
+		} else
+			break;
 	}
+	if (end && *chrs[end-1] == '\0')
+		*chrs[end-1] = '\n';
+	return end1 < 0;
 }
 
 /* return the direction context of the given line */
@@ -251,17 +237,6 @@ int dir_context(char *s)
 		if ((found = rset_find(dir_rsctx, s, 0, NULL, 0)) >= 0)
 			return dctxs[found].dir;
 	return xtd < 0 ? -1 : +1;
-}
-
-/* reorder the characters in s */
-void dir_reorder(char *s, int *ord, char **chrs, int n)
-{
-	int dir = dir_context(s);
-	if (n && chrs[n - 1][0] == '\n') {
-		ord[n - 1] = n - 1;
-		n--;
-	}
-	dir_fix(chrs, ord, dir, 0, n);
 }
 
 void dir_init(void)
