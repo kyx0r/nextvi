@@ -160,6 +160,7 @@ take into account:
 	3. Variable width tabulations that can change
 	throughout the line based on surroundings.
 	4. Reordering of characters.
+See also PERFORMANCE section at the end of the file
 46. Added key to abandon insert discarding any changes keybind: ^x
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj
 47. Added Russian keymap, and changed how xkmap_alt works, now
@@ -409,3 +410,100 @@ Special marks:
 Special yank buffers:
 / the previous search keyword
 : the previous ex command
+
+PERFORMANCE
+-----------
+Stress test:
+1. Compile both versions with gcc -O2 -g (no customizations done)
+2. Open Nextvi's vi.c and hold ^d until the end of the file
+3. Capture the results with callgrind:
+
+ORIGINAL NEATVI:
+--------------------------------------------------------------------------------
+946,225,583 (100.0%)  PROGRAM TOTALS
+--------------------------------------------------------------------------------
+230,747,588 (24.39%)  /root/neatvi/regex.c:re_rec [/root/neatvi/vi]
+195,074,946 (20.62%)  /root/neatvi/regex.c:brk_match [/root/neatvi/vi]
+168,208,863 (17.78%)  /root/neatvi/regex.c:re_rec'2 [/root/neatvi/vi]
+111,678,587 (11.80%)  /root/neatvi/regex.c:uc_dec [/root/neatvi/vi]
+ 35,003,154 ( 3.70%)  /root/neatvi/regex.c:regexec [/root/neatvi/vi]
+ 24,628,543 ( 2.60%)  /root/neatvi/ren.c:ren_placeholder [/root/neatvi/vi]
+ 20,150,872 ( 2.13%)  /root/neatvi/conf.c:conf_placeholder [/root/neatvi/vi]
+ 19,378,205 ( 2.05%)  /root/neatvi/led.c:led_render [/root/neatvi/vi]
+ 13,641,419 ( 1.44%)  /root/neatvi/sbuf.c:sbuf_str [/root/neatvi/vi]
+ 12,868,164 ( 1.36%)  ???:free [/usr/lib/libc.so]
+ 12,858,050 ( 1.36%)  ???:malloc [/usr/lib/libc.so]
+  9,644,510 ( 1.02%)  /root/neatvi/sbuf.c:sbuf_chr [/root/neatvi/vi]
+  7,026,325 ( 0.74%)  ???:0x0000000000089f92 [/usr/lib/libc.so]
+  6,360,882 ( 0.67%)  ???:0x000000000006efe0 [/usr/lib/libc.so]
+  5,848,125 ( 0.62%)  /root/neatvi/rset.c:rset_find [/root/neatvi/vi]
+  5,661,671 ( 0.60%)  /root/neatvi/uc.c:uc_chop [/root/neatvi/vi]
+  4,446,822 ( 0.47%)  ???:strlen [/usr/lib/libc.so]
+  4,347,048 ( 0.46%)  ???:isalnum [/usr/lib/libc.so]
+  4,160,890 ( 0.44%)  /root/neatvi/syn.c:syn_highlight [/root/neatvi/vi]
+  3,956,440 ( 0.42%)  ???:0x00000000000304b0 [/usr/lib/libc.so]
+  3,791,697 ( 0.40%)  /root/neatvi/ren.c:ren_cwid [/root/neatvi/vi]
+  3,594,095 ( 0.38%)  /root/neatvi/uc.c:uc_off [/root/neatvi/vi]
+  3,254,840 ( 0.34%)  /root/neatvi/ren.c:ren_position [/root/neatvi/vi]
+  3,145,714 ( 0.33%)  /root/neatvi/uc.c:uc_shape [/root/neatvi/vi]
+  3,061,707 ( 0.32%)  /root/neatvi/uc.c:uc_isbell [/root/neatvi/vi]
+  3,061,707 ( 0.32%)  /root/neatvi/uc.c:uc_iscomb [/root/neatvi/vi]
+  2,771,280 ( 0.29%)  /root/neatvi/led.c:led_offdir [/root/neatvi/vi]
+  2,441,124 ( 0.26%)  /root/neatvi/uc.c:uc_code [/root/neatvi/vi]
+  2,292,221 ( 0.24%)  /root/neatvi/sbuf.c:sbuf_mem [/root/neatvi/vi]
+  2,192,667 ( 0.23%)  /root/neatvi/term.c:term_att [/root/neatvi/vi]
+  2,077,899 ( 0.22%)  ???:0x0000000000069ce0 [/usr/lib/libc.so]
+  2,069,693 ( 0.22%)  ???:0x000000000002f610 [/usr/lib/libc.so]
+  1,665,378 ( 0.18%)  /root/neatvi/ren.c:ren_translate [/root/neatvi/vi]
+  1,533,978 ( 0.16%)  /root/neatvi/uc.c:uc_wid [/root/neatvi/vi]
+  1,110,650 ( 0.12%)  ???:0x00000000000313a0 [/usr/lib/libc.so]
+  1,110,252 ( 0.12%)  /root/neatvi/uc.c:uc_isprint [/root/neatvi/vi]
+  1,048,437 ( 0.11%)  ???:vfprintf [/usr/lib/libc.so]
+    995,326 ( 0.11%)  ???:calloc [/usr/lib/libc.so]
+--------------------------------------------------------------------------------
+
+NEXTVI:
+--------------------------------------------------------------------------------
+504,341,293 (100.0%)  PROGRAM TOTALS
+--------------------------------------------------------------------------------
+363,771,348 (72.13%)  regex.c:re_pikevm [/root/klec/cprogs/nextvi/vi]
+ 51,251,396 (10.16%)  ???:0x0000000000089f92 [/usr/lib/libc.so]
+ 14,066,479 ( 2.79%)  sbuf.c:sbuf_mem [/root/klec/cprogs/nextvi/vi]
+  9,539,553 ( 1.89%)  sbuf.c:sbuf_chr [/root/klec/cprogs/nextvi/vi]
+  8,859,662 ( 1.76%)  led.c:led_out [/root/klec/cprogs/nextvi/vi]
+  6,291,108 ( 1.25%)  ???:isalnum [/usr/lib/libc.so]
+  4,276,914 ( 0.85%)  ren.c:ren_cwid [/root/klec/cprogs/nextvi/vi]
+  4,122,195 ( 0.82%)  ren.c:ren_translate [/root/klec/cprogs/nextvi/vi]
+  4,040,797 ( 0.80%)  led.c:led_render [/root/klec/cprogs/nextvi/vi]
+  3,702,787 ( 0.73%)  ???:0x000000000006efe0 [/usr/lib/libc.so]
+  3,041,662 ( 0.60%)  regex.c:rset_find [/root/klec/cprogs/nextvi/vi]
+  2,534,918 ( 0.50%)  uc.c:uc_off [/root/klec/cprogs/nextvi/vi]
+  2,396,549 ( 0.48%)  ren.c:syn_highlight [/root/klec/cprogs/nextvi/vi]
+  1,880,412 ( 0.37%)  ???:0x0000000000089fe9 [/usr/lib/libc.so]
+  1,723,027 ( 0.34%)  ???:malloc [/usr/lib/libc.so]
+  1,657,890 ( 0.33%)  ???:free [/usr/lib/libc.so]
+  1,475,840 ( 0.29%)  sbuf.c:led_out
+  1,475,670 ( 0.29%)  ???:0x0000000000089fc4 [/usr/lib/libc.so]
+  1,326,738 ( 0.26%)  ???:0x0000000000069ce0 [/usr/lib/libc.so]
+  1,301,083 ( 0.26%)  ???:strlen [/usr/lib/libc.so]
+  1,139,251 ( 0.23%)  ren.c:ren_position [/root/klec/cprogs/nextvi/vi]
+  1,113,182 ( 0.22%)  ???:0x00000000000304b0 [/usr/lib/libc.so]
+  1,073,535 ( 0.21%)  uc.c:uc_chop [/root/klec/cprogs/nextvi/vi]
+  1,068,049 ( 0.21%)  term.c:led_out
+    915,342 ( 0.18%)  uc.c:uc_isbell [/root/klec/cprogs/nextvi/vi]
+    889,800 ( 0.18%)  uc.c:uc_wid [/root/klec/cprogs/nextvi/vi]
+    862,785 ( 0.17%)  uc.c:uc_shape [/root/klec/cprogs/nextvi/vi]
+    819,477 ( 0.16%)  uc.c:uc_iscomb [/root/klec/cprogs/nextvi/vi]
+    807,510 ( 0.16%)  uc.c:uc_slen [/root/klec/cprogs/nextvi/vi]
+    735,706 ( 0.15%)  term.c:term_att [/root/klec/cprogs/nextvi/vi]
+    655,718 ( 0.13%)  ???:strchrnul [/usr/lib/libc.so]
+    640,797 ( 0.13%)  ???:0x000000000002f610 [/usr/lib/libc.so]
+
+- Given more fair conditions the gap would be even wider. 
+- Always look to see the kind of software you use.
+- Use this as a baseline to compare performance across other text
+editors.
+
+"It’s possible that I understand better what’s going on, or
+it’s equally possible that I just think I do."
+	— Russ Cox
