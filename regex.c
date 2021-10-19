@@ -366,6 +366,39 @@ memcpy(s1->sub, nsub->sub, osubp / 2);) \
 newsub(/*nop*/, /*nop*/) \
 memcpy(s1->sub, nsub->sub, osubp); \
 
+#define instclist(nn) \
+case WBEG: \
+	if (((sp != s || sp != _sp) && isword(sp)) \
+			|| !isword(_sp)) \
+		deccheck(nn) \
+	npc++; goto rec##nn; \
+case BOL: \
+	if (flg & REG_NOTBOL || (_sp != s && *sp != '\n')) { \
+		if (!i && !clistidx) \
+			return 0; \
+		deccheck(nn) \
+	} \
+	npc++; goto rec##nn; \
+
+#define instnlist(nn) \
+case JMP: \
+	npc += 2 + npc[1]; \
+	goto rec##nn; \
+case RSPLIT: \
+	onnlist(nn) \
+	npc += 2; \
+	pcs[i] = npc; \
+	npc += npc[-1]; \
+	fastrec(nn, nlist, nlistidx) \
+case WEND: \
+	if (isword(_sp)) \
+		deccheck(nn) \
+	npc++; goto rec##nn; \
+case EOL: \
+	if (flg & REG_NOTEOL || (*_sp && *_sp != '\n')) \
+		deccheck(nn) \
+	npc++; goto rec##nn; \
+
 #define addthread(nn, list, listidx) \
 { \
 	int i = 0; \
@@ -383,19 +416,10 @@ memcpy(s1->sub, nsub->sub, osubp); \
 	} \
 	next##nn: \
 	switch(*npc) { \
-	case JMP: \
-		npc += 2 + npc[1]; \
-		goto rec##nn; \
 	case SPLIT: \
 		on##list(nn) \
 		npc += 2; \
 		pcs[i] = npc + npc[-1]; \
-		fastrec(nn, list, listidx) \
-	case RSPLIT: \
-		on##list(nn) \
-		npc += 2; \
-		pcs[i] = npc; \
-		npc += npc[-1]; \
 		fastrec(nn, list, listidx) \
 	case SAVE: \
 		if (nsub->ref > 1) { \
@@ -407,27 +431,9 @@ memcpy(s1->sub, nsub->sub, osubp); \
 		nsub->sub[npc[1]] = _sp; \
 		npc += 2; \
 		goto rec##nn; \
-	case WBEG: \
-		if (((sp != s || sp != _sp) && isword(sp)) \
-				|| !isword(_sp)) \
-			deccheck(nn) \
-		npc++; goto rec##nn; \
-	case WEND: \
-		if (isword(_sp)) \
-			deccheck(nn) \
-		npc++; goto rec##nn; \
-	case BOL: \
-		if (flg & REG_NOTBOL || (_sp != s && *sp != '\n')) { \
-			if (!i && !listidx) \
-				return 0; \
-			deccheck(nn) \
-		} \
-		npc++; goto rec##nn; \
-	case EOL: \
-		if (flg & REG_NOTEOL || (*_sp && *_sp != '\n')) \
-			deccheck(nn) \
-		npc++; goto rec##nn; \
+	inst##list(nn) \
 	} \
+	deccheck(nn) \
 } \
 
 #define match(n, cpn) \
