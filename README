@@ -312,7 +312,7 @@ A: For example, now it is possible to compute a C comment /* n */
 where n can be an infinite number of characters. Of course this
 extends to every other valid regular expression.
 A: Minimalism?
-Q: Implementation (regex.c) is ~630 lines of C code, that
+Q: Implementation (regex.c) is ~650 lines of C code, that
 includes both the compilation and execution.
 Q: NFA vs DFA (identify)
 A: pikevm = NFA backtrack = DFA

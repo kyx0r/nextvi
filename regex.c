@@ -35,6 +35,7 @@ typedef struct rsub rsub;
 struct rsub
 {
 	int ref;
+	rsub *freesub;
 	const char *sub[];
 };
 
@@ -189,14 +190,16 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 				PC += size;
 			}
 			if (code) {
-				mincnt = 0;
+				inf = 0;
 				for (i = 0; i < size; i++)
 					switch (code[term+i]) {
+					case CLASS:
+						i += code[term+i+2] * 2 + 2;
+						icnt++;
+						break;
 					case SPLIT:
 					case RSPLIT:
-						mincnt++;
-					case CLASS:
-						i += code[term+i+2] * 2 + 1;
+						inf++;
 					case JMP:
 					case SAVE:
 					case CHAR:
@@ -204,7 +207,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 					case ANY:
 						icnt++;
 					}
-				prog->splits += mincnt * icnt;
+				prog->splits += inf * icnt;
 				prog->len += (maxcnt-1) * icnt;
 			}
 			break;
@@ -326,7 +329,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 
 #define newsub(init, copy) \
 if (freesub) \
-	{ s1 = freesub; freesub = (rsub*)s1->sub[0]; copy } \
+	{ s1 = freesub; freesub = s1->freesub; copy } \
 else \
 	{ s1 = (rsub*)&nsubs[suboff+=rsubsize]; init } \
 
@@ -338,9 +341,13 @@ plist[plistidx++] = npc; \
 
 #define onclist(nn) \
 
+#define endnlist() if (*npc == MATCH) nmatch = 1; \
+
+#define endclist() \
+
 #define decref(csub) \
 if (--csub->ref == 0) { \
-	csub->sub[0] = (char*)freesub; \
+	csub->freesub = freesub; \
 	freesub = csub; \
 } \
 
@@ -412,6 +419,7 @@ case EOL: \
 			nsub = subs[i]; \
 			goto rec##nn; \
 		} \
+		end##list() \
 		continue; \
 	} \
 	next##nn: \
@@ -440,6 +448,7 @@ case EOL: \
 for (;; sp = _sp) { \
 	uc_len(i, sp) uc_code(c, sp) cpn \
 	_sp = sp+i;\
+	nlistidx = 0, plistidx = 0, nmatch = 0; \
 	for (i = 0; i < clistidx; i++) { \
 		npc = clist[i].pc; \
 		nsub = clist[i].sub; \
@@ -449,6 +458,8 @@ for (;; sp = _sp) { \
 				break; \
 		case ANY: \
 		addthread##n: \
+			if (nmatch) \
+				break; \
 			addthread(2##n, nlist, nlistidx) \
 		case CLASS:; \
 			const char *s = sp; \
@@ -492,7 +503,6 @@ for (;; sp = _sp) { \
 	clist = nlist; \
 	nlist = tmp; \
 	clistidx = nlistidx; \
-	nlistidx = 0, plistidx = 0;\
 	if (!matched) { \
 		jmp_start##n: \
 		newsub(memset(s1->sub, 0, osubp);, /*nop*/) \
@@ -516,7 +526,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
-	int clistidx = 0, nlistidx = 0, plistidx = 0;
+	int clistidx = 0, nlistidx, plistidx, nmatch;
 	const char *sp = s, *_sp = s;
 	int *insts = prog->insts;
 	int *pcs[prog->splits], *plist[prog->splits];
