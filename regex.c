@@ -68,6 +68,8 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			re++;
 			if (!*re) goto syntax_error; // Trailing backslash
 			if (*re == '<' || *re == '>') {
+				if (re - *re_loc > 2 && re[-2] == '\\')
+					break;
 				EMIT(PC++, *re == '<' ? WBEG : WEND);
 				prog->len++;
 				term = PC;
