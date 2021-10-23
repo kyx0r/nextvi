@@ -343,7 +343,7 @@ plist[plistidx++] = npc; \
 
 #define onclist(nn) \
 
-#define endnlist() if (*npc == MATCH) nmatch = sp; \
+#define endnlist() if (spc == MATCH) nmatch = sp; \
 
 #define endclist() \
 
@@ -358,13 +358,14 @@ if (--csub->ref == 0) { \
 
 #define fastrec(nn, list, listidx) \
 nsub->ref++; \
-if (*npc < WBEG) { \
+spc = *npc; \
+if (spc < WBEG) { \
 	list[listidx].sub = nsub; \
 	list[listidx++].pc = npc; \
-	npc = pcs[i]; \
+	npc = pcs[si]; \
 	goto rec##nn; \
 } \
-subs[i++] = nsub; \
+subs[si++] = nsub; \
 goto next##nn; \
 
 #define saveclist() \
@@ -376,75 +377,74 @@ newsub(/*nop*/, /*nop*/) \
 memcpy(s1->sub, nsub->sub, osubp); \
 
 #define instclist(nn) \
-case BOL: \
+else if (spc == BOL) { \
 	if (flg & REG_NOTBOL || (_sp != s && *sp != '\n')) { \
-		if (!i && !clistidx) \
+		if (!si && !clistidx) \
 			return 0; \
 		deccheck(nn) \
 	} \
 	npc++; goto rec##nn; \
+} \
 
 #define instnlist(nn) \
-case JMP: \
+else if (spc == JMP) { \
 	npc += 2 + npc[1]; \
 	goto rec##nn; \
+} \
 
 #define addthread(nn, list, listidx) \
-{ \
-	int i = 0; \
-	rec##nn: \
-	if (*npc < WBEG) { \
-		list[listidx].sub = nsub; \
-		list[listidx++].pc = npc; \
-		rec_check##nn: \
-		if (i) { \
-			npc = pcs[--i]; \
-			nsub = subs[i]; \
-			goto rec##nn; \
-		} \
-		end##list() \
-		continue; \
-	} \
-	next##nn: \
-	switch(*npc) { \
-	case SPLIT: \
-		on##list(nn) \
-		npc += 2; \
-		pcs[i] = npc + npc[-1]; \
-		fastrec(nn, list, listidx) \
-	case RSPLIT: \
-		on##list(nn) \
-		npc += 2; \
-		pcs[i] = npc; \
-		npc += npc[-1]; \
-		fastrec(nn, list, listidx) \
-	case SAVE: \
-		if (nsub->ref > 1) { \
-			nsub->ref--; \
-			save##list() \
-			nsub = s1; \
-			nsub->ref = 1; \
-		} \
-		nsub->sub[npc[1]] = _sp; \
-		npc += 2; \
+si = 0; \
+rec##nn: \
+spc = *npc; \
+if (spc < WBEG) { \
+	list[listidx].sub = nsub; \
+	list[listidx++].pc = npc; \
+	rec_check##nn: \
+	if (si) { \
+		npc = pcs[--si]; \
+		nsub = subs[si]; \
 		goto rec##nn; \
-	case WBEG: \
-		if (((sp != s || sp != _sp) && isword(sp)) \
-				|| !isword(_sp)) \
-			deccheck(nn) \
-		npc++; goto rec##nn; \
-	case WEND: \
-		if (isword(_sp)) \
-			deccheck(nn) \
-		npc++; goto rec##nn; \
-	case EOL: \
-		if (flg & REG_NOTEOL || (*_sp && *_sp != '\n')) \
-			deccheck(nn) \
-		npc++; goto rec##nn; \
-	inst##list(nn) \
 	} \
-	deccheck(nn) \
+	end##list() \
+	continue; \
 } \
+next##nn: \
+if (spc == SPLIT) { \
+	on##list(nn) \
+	npc += 2; \
+	pcs[si] = npc + npc[-1]; \
+	fastrec(nn, list, listidx) \
+} else if (spc == SAVE) { \
+	if (nsub->ref > 1) { \
+		nsub->ref--; \
+		save##list() \
+		nsub = s1; \
+		nsub->ref = 1; \
+	} \
+	nsub->sub[npc[1]] = _sp; \
+	npc += 2; \
+	goto rec##nn; \
+} else if (spc == WBEG) { \
+	if (((sp != s || sp != _sp) && isword(sp)) \
+			|| !isword(_sp)) \
+		deccheck(nn) \
+	npc++; goto rec##nn; \
+} else if (spc == RSPLIT) { \
+	on##list(nn) \
+	npc += 2; \
+	pcs[si] = npc; \
+	npc += npc[-1]; \
+	fastrec(nn, list, listidx) \
+} else if (spc == WEND) { \
+	if (isword(_sp)) \
+		deccheck(nn) \
+	npc++; goto rec##nn; \
+} else if (spc == EOL) { \
+	if (flg & REG_NOTEOL || (*_sp && *_sp != '\n')) \
+		deccheck(nn) \
+	npc++; goto rec##nn; \
+} inst##list(nn) \
+deccheck(nn) \
 
 #define match(n, cpn) \
 for (;; sp = _sp) { \
@@ -527,8 +527,8 @@ return 0; \
 int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
-	int i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
-	int clistidx = 0, nlistidx, plistidx;
+	int si, i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
+	int clistidx = 0, nlistidx, plistidx, spc;
 	const char *sp = s, *_sp = s, *nmatch = NULL;
 	int *insts = prog->insts;
 	int *pcs[prog->splits], *plist[prog->splits];
