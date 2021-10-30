@@ -27,19 +27,18 @@ static int xgdep;		/* global command recursion depth */
 
 #define NUM_BUFS 10
 static struct buf {
-	char ft[32];            /* file type */
-	char *path;             /* file path */
+	char ft[32];		/* file type */
+	char *path;		/* file path */
 	struct lbuf *lb;
 	int row, off, top;
-	short id, td;           /* buffer id and text direction */
-	long mtime;             /* modification time */
+	long mtime;			/* modification time */
+	signed char id, td, tmpid;	/* buffer id, text direction, is temp? */
 } bufs[NUM_BUFS];
 static struct buf tempbufs[2];
 
 static int bufs_find(char *path)
 {
-	int i;
-	for (i = 0; i < NUM_BUFS; i++)
+	for (int i = 0; i < NUM_BUFS; i++)
 		if (bufs[i].lb && !strcmp(bufs[i].path, path))
 			return i;
 	return -1;
@@ -76,6 +75,7 @@ static int bufs_open(char *path)
 	bufs[i].off = 0;
 	bufs[i].top = 0;
 	bufs[i].td = +1;
+	bufs[i].tmpid = -1;
 	bufs[i].mtime = -1;
 	strcpy(bufs[i].ft, syn_filetype(path));
 	return i;
@@ -91,6 +91,7 @@ void temp_open(int i, char *name, char *ft)
 	tempbufs[i].off = 0;
 	tempbufs[i].top = 0;
 	tempbufs[i].td = +1;
+	tempbufs[i].tmpid = i;
 	tempbufs[i].mtime = -1;
 	strcpy(tempbufs[i].ft, ft);
 }
@@ -120,18 +121,15 @@ void temp_switch(int i)
 
 void temp_write(int i, char *str)
 {
-	if (!*str)
+	if (!*str || tempbufs[i].tmpid != i)
 		return;
-	struct sbuf *sb = sbuf_make(256);
 	struct lbuf *lb = tempbufs[i].lb;
-	sbuf_str(sb, str);
 	if (!lbuf_len(lb))
 		lbuf_edit(lb, "\n", 0, 0);
 	tempbufs[i].row++;
-	lbuf_edit(lb, sbuf_buf(sb), tempbufs[i].row, tempbufs[i].row);
+	lbuf_edit(lb, str, tempbufs[i].row, tempbufs[i].row);
 	tempbufs[i].off = lbuf_indents(lb, tempbufs[i].row);
 	lbuf_saved(lb, 1);
-	sbuf_free(sb);
 }
 
 char *temp_curstr(int i, int sub)
@@ -347,10 +345,9 @@ void ec_bufferi(int *id)
 	if (*id > NUM_BUFS)
 		*id = 0;
 	int i;
-	for (i = 0; i < NUM_BUFS && bufs[i].lb; i++) {
+	for (i = 0; i < NUM_BUFS && bufs[i].lb; i++)
 		if (*id == bufs[i].id)
 			break;
-	}
 	if (i < NUM_BUFS && bufs[i].lb)
 		bufs_switch(i);
 }
