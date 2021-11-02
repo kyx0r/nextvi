@@ -2175,6 +2175,7 @@ int main(int argc, char *argv[])
 	led_done();
 	ren_done();
 	temp_done(1);
+	temp_done(0);
 	if (fslink)
 		free(fslink);
 	return 0;

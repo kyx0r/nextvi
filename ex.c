@@ -20,6 +20,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
+struct sbuf *xacreg;		/* autocomplete db filter regex */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */
@@ -973,6 +974,19 @@ static int ec_setincl(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
+static int ec_setacreg(char *loc, char *cmd, char *arg)
+{
+	if (xacreg)
+		sbuf_free(xacreg);
+	if (!*arg)
+		xacreg = NULL;
+	else {
+		xacreg = sbuf_make(128);
+		sbuf_str(xacreg, arg);
+	}
+	return 0;
+}
+
 static struct excmd {
 	char *name;
 	int (*ec)(char *loc, char *cmd, char *arg);
@@ -1013,6 +1027,7 @@ static struct excmd {
 	{"fd", ec_setdir},
 	{"cd", ec_chdir},
 	{"inc", ec_setincl},
+	{"ac", ec_setacreg},
 	{"", ec_null},
 };
 

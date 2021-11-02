@@ -1,20 +1,19 @@
 /* line editing and drawing */
 
-enum ntype {NO,YES};
 typedef struct tern {
 	char word;
-	struct tern* lChild;
-	struct tern* rChild;
-	struct tern* mChild;
-	enum ntype type;
+	char type;
+	struct tern* l_child;
+	struct tern* r_child;
+	struct tern* m_child;
 } tern_t;
-static tern_t* ROOT = &(tern_t){ .word= 'a', .lChild = NULL, .mChild = NULL, .rChild = NULL };
+static tern_t* ROOT = &(tern_t){.word= 'a'};
 #define SUGGESTMAX 4096
 static int suggestlen;
 static char suggestbuf[SUGGESTMAX];
 
 //creats a tern_t, allocates memory, and initializes it.
-static tern_t* create_node (char w, enum ntype t);
+static tern_t* create_node(char w);
 //inserts a null-terminated word into the tree.
 static tern_t* insert_node(const char* string, tern_t* node);
 //finds the node where the given prefix ends. Helper function for 'search'
@@ -24,37 +23,35 @@ static void delete(tern_t* root, tern_t* node);
 //finds the words with prefix 'pattern' and prints out the results to 'out'.
 static int search(const char* pattern, int l, tern_t* node);
 
-static tern_t* create_node(char w, enum ntype t)
+static tern_t* create_node(char w)
 {
 	tern_t *node = (tern_t*)malloc(sizeof(tern_t));
-	if (node == NULL) {
-		perror("Error");
-		exit(1);
-	}
+	if (!node)
+		abort();
 	node->word = w;
-	node->lChild = NULL;
-	node->mChild = NULL;
-	node->rChild= NULL;
-	node->type = t;
+	node->l_child = NULL;
+	node->m_child = NULL;
+	node->r_child= NULL;
+	node->type = 0;
 	return node;
 }
 
 static tern_t* insert_node(const char* string, tern_t* node)
 {
 	int i = strlen(string);
-	if (NULL == node)
-		node = create_node(string[0], NO);
+	if (!node)
+		node = create_node(string[0]);
 	if (string[0] < node->word)
-		node->lChild = insert_node(string, node->lChild);
+		node->l_child = insert_node(string, node->l_child);
 	else if (string[0] > node->word)
-		node->rChild = insert_node(string, node->rChild);
+		node->r_child = insert_node(string, node->r_child);
 	else {
 		//go one level down the tree if the word has not been found here.
 		if (i == 1) {
-			node->type = YES;
+			node->type = 1;
 			return node;
 		} else
-			node->mChild = insert_node(++string, node->mChild);
+			node->m_child = insert_node(++string, node->m_child);
 	}
 	return node;
 }
@@ -64,31 +61,29 @@ static tern_t* find_node(const char* string, int l, tern_t* node)
 	int i = 0;
 	tern_t* currentNode = node;
 	while (i < l) {
-		if (currentNode == NULL)
+		if (!currentNode)
 			break;
 		//look to the left of word
 		if (string[i] < currentNode->word)
-			currentNode = currentNode->lChild;
+			currentNode = currentNode->l_child;
 		//look to the right of word
 		else if (string[i] > currentNode->word)
-			currentNode = currentNode->rChild;
+			currentNode = currentNode->r_child;
 		//if out of characters, prefix ends on the current node. Now start search
 		else {
 			if (i++ == l - 1)
 				return currentNode;
 			else
-				currentNode = currentNode->mChild;
+				currentNode = currentNode->m_child;
 		}
 	}
 	return NULL;
 }
 
-static void deep_search(const char* pattern, tern_t* start)
+static void deep_search(const char* pattern, int len, tern_t* start)
 {
-	if (start->type != NO)
-	{
+	if (start->type) {
 		char *off = suggestbuf+suggestlen;
-		int len = strlen(pattern);
 		if (off+len+1 >= suggestbuf+SUGGESTMAX)
 			return;
 		memcpy(off, pattern, len);
@@ -96,15 +91,14 @@ static void deep_search(const char* pattern, tern_t* start)
 		off[len+1] = '\n';
 		suggestlen += len+2;
 	}
-	if (start->lChild != NULL)
-		deep_search(pattern, start->lChild);
-	if (start->rChild != NULL)
-		deep_search(pattern, start->rChild);
-	if (start->mChild != NULL) {
-		int l = strlen(pattern) + 2;
-		char _pattern[l];
+	if (start->l_child)
+		deep_search(pattern, len, start->l_child);
+	if (start->r_child)
+		deep_search(pattern, len, start->r_child);
+	if (start->m_child) {
+		char _pattern[++len];
 		sprintf(_pattern, "%s%c", pattern, start->word);
-		deep_search(_pattern, start->mChild);
+		deep_search(_pattern, len, start->m_child);
 	}
 }
 
@@ -113,12 +107,11 @@ static int search(const char* pattern, int l, tern_t* node)
 	suggestlen = 0;
 	//finds the node where the prefix ends.
 	tern_t* current = find_node(pattern, l, node);
-	if (NULL == current)
+	if (!current)
 		return 0;
 	else {
-		if (current->mChild != NULL)
-		{
-			deep_search(pattern, current->mChild);
+		if (current->m_child) {
+			deep_search(pattern, l, current->m_child);
 			suggestbuf[suggestlen] = '\0';
 			return 1;
 		}
@@ -128,23 +121,22 @@ static int search(const char* pattern, int l, tern_t* node)
 
 static void delete(tern_t* root, tern_t* node)
 {
-	if (node != NULL) {
-		if (node->lChild != NULL) {
-			delete(root, node->lChild);
-			node->lChild = NULL;
+	if (node) {
+		if (node->l_child) {
+			delete(root, node->l_child);
+			node->l_child = NULL;
 		}
-		if (node->rChild != NULL) {
-			delete(root, node->rChild);
-			node->rChild = NULL;
+		if (node->r_child) {
+			delete(root, node->r_child);
+			node->r_child = NULL;
 		}
-		if (node->mChild != NULL) {
-			delete(root, node->mChild);
-			node->mChild = NULL;
+		if (node->m_child) {
+			delete(root, node->m_child);
+			node->m_child = NULL;
 		}
-		if ((node->lChild == NULL) && (node->rChild==NULL) && (node->mChild==NULL)) {
-			if (node!=root) {
+		if (!node->l_child && !node->r_child && !node->m_child) {
+			if (node != root)
 				free(node);
-			}
 			return;
 		}
 	}
@@ -154,39 +146,32 @@ int dstrlen(const char *s, char delim)
 {
 	register const char* i;
 	for (i=s; *i && *i != delim; ++i);
-	return (i-s);
+	return i-s;
 }
 
 static void file_ternary(struct lbuf* buf)
 {
-	char delim[] = "\t\n ;:,`.<>^%$#@*!?+-|/=\\{}[]&()'\"";
-	char* ptr;
-	int len;
+	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"\n]*";
+	int len, sidx;
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf);
-	for (int i = 0; i < ln_n; i++)
-	{
-		len = strlen(ss[i])+1;
-		char line[len];
-		memcpy(line, ss[i], len);
-		ptr = strtok(line, delim);
-		while (ptr != NULL)
-		{
-			len = strlen(ptr);
-			if (len > 1)
-			{
-				if (search(ptr, len, ROOT) != -1)
-				{
-					if (suggestlen)
-					{
-						if (dstrlen(suggestbuf, '\n') == len)
-							goto skip;
-					}
-					insert_node(ptr, ROOT);
-				}
+	int subs[2];
+	rset *rs = rset_make(1, (char*[]){xacreg ? sbuf_buf(xacreg) : reg}, xic ? REG_ICASE : 0);
+	if (!rs)
+		return;
+	for (int i = 0; i < ln_n; i++) {
+		sidx = 0;
+		while (rset_find(rs, ss[i]+sidx, 1, subs, 0) >= 0) {
+			len = subs[1] - subs[0];
+			if (len > 1) {
+				char part[len];
+				memcpy(part, ss[i]+sidx+subs[0], len);
+				part[len] = '\0';
+				if (search(part, len-1, ROOT) != -1)
+					if (!(suggestlen && dstrlen(suggestbuf, '\n') == len))
+						insert_node(part, ROOT);
 			}
-			skip:
-			ptr = strtok(NULL, delim);
+			sidx += subs[1] > 0 ? subs[1] : 1;
 		}
 	}
 }
@@ -542,10 +527,10 @@ static char *led_line(char *pref, char *post, char *ai,
 		char *insert)
 {
 	struct sbuf *sb;
-	int ai_len = strlen(ai);
-	int c, lnmode, l, i = 0;
+	int ai_len = strlen(ai), len;
+	int c, lnmode, last_sug = 0, i = 0;
 	char *sug = suggestbuf;
-	char *cs, *_sug = 0;
+	char *cs, *_sug = NULL;
 	time_t quickexit = 0;
 	vi_insmov = 0;
 	sb = sbuf_make(xcols);
@@ -557,6 +542,7 @@ static char *led_line(char *pref, char *post, char *ai,
 		post = "";
 	while (1) {
 		led_printparts(ai, pref, sbuf_buf(sb), post, *kmap);
+		len = sbuf_len(sb);
 		c = term_read();
 		switch (c) {
 		case TK_CTL('f'):
@@ -567,7 +553,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			continue;
 		case TK_CTL('h'):
 		case 127:
-			if (sbuf_len(sb))
+			if (len)
 				sbuf_cut(sb, led_lastchar(sbuf_buf(sb)));
 			else {
 				vi_insmov = c;
@@ -578,7 +564,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			sbuf_cut(sb, 0);
 			break;
 		case TK_CTL('w'):
-			if (sbuf_len(sb))
+			if (len)
 				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
 			else {
 				vi_insmov = c;
@@ -612,16 +598,16 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('g'):
 			file_ternary(xb);
 			break;
+		case TK_CTL('y'):
+			led_done();
+			break;
 		case TK_CTL('r'):
 			if (suggestlen == sug-suggestbuf)
 				sug--;
-			for (i = 0; sug != suggestbuf; sug--)
-			{
-				if (!*sug)
-				{
+			for (i = 0; sug != suggestbuf; sug--) {
+				if (!*sug) {
 					i++;
-					if (i == 3)
-					{
+					if (i == 3) {
 						sug++;
 						goto redo_suggest;
 					} else
@@ -630,30 +616,32 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			goto redo_suggest;
 		case TK_CTL('n'):
-			if (_sug)
+			if (_sug) 
 			{
 				if (suggestlen == sug-suggestbuf)
 					break;
 				redo_suggest:
-				if (!(_sug = strchr(sug, '\n')))
-				{
+				if (!(_sug = strchr(sug, '\n'))) {
 					sug = suggestbuf;
 					goto lookup;
 				}
 				suggest:
 				*_sug = '\0';
-				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
+				if ((i = led_lastword(sbuf_buf(sb))) > last_sug)
+					i = last_sug;
+				sbuf_cut(sb, i);
+				last_sug = sbuf_len(sb);
 				sbuf_str(sb, sug);
 				sug = _sug+1;
 				break;
 			}
 			lookup:
 			cs = sbuf_buf(sb);
-			l = sbuf_len(sb);
-			i = led_lastword(cs);
+			if ((i = led_lastword(cs)) > last_sug)
+				i = last_sug;
 			cs += i;
-			l -= i;
-			if (search(cs, l, ROOT))
+			len -= i;
+			if (search(cs, len, ROOT))
 			{
 				if (!(_sug = strchr(sug, '\n')))
 					break;
@@ -722,8 +710,9 @@ _default:
 			if ((cs = led_readchar(c, *kmap)))
 				sbuf_str(sb, cs);
 		}
-		if (c != TK_CTL('n') && c != TK_CTL('r'))
-		{
+		if (c != TK_CTL('n') && c != TK_CTL('r')) {
+			if (sbuf_len(sb) > len)
+				last_sug = sbuf_len(sb);
 			sug = suggestbuf;
 			_sug = 0;
 		}
@@ -820,5 +809,4 @@ char *led_input(char *pref, char *post, int *kmap, int cln)
 void led_done(void)
 {
 	delete(ROOT, ROOT);
-	temp_done(0);
 }

@@ -197,12 +197,12 @@ int dir_reorder(char **chrs, int *ord, int end)
 	if (!rs)
 		return 0;
 	int beg = 0, end1 = end, r_beg, r_end, c_beg, c_end;
-	int subs[16 * 2], grp, found;
+	int subs[32], grp, found;
 	if (end && *chrs[end-1] == '\n')
 		*chrs[end-1] = '\0';
 	while (beg < end) {
 		char *s = chrs[beg];
-		found = rset_find(rs, s, LEN(subs) / 2, subs, 0);
+		found = rset_find(rs, s, 16, subs, 0);
 		if (found >= 0) {
 			for (int i = 0; i < end1; i++)
 				ord[i] = i;

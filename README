@@ -100,6 +100,27 @@ screen based on cursor position. Useful for when studying source code.
 file. Then you can press ^n to cycle though the options, results are based on
 the contents of the file and the closest match to what you typed. Use ^r to
 cycle in reverse.
+By default it will use big regex like [^;...]* to sort out all the punctuation
+chars from words and build a database of words. But in order to take full
+advantage out of the completion system, you can change this regex at runtime
+using new ex command "ac". For example say we don't want word completion
+and we want entire line completion instead, run :ac .*  You will notice
+that it works as expected, however sometimes it requires you to press ^n
+again because the line becomes empty. This is due to the fact that our
+database entries have included the '\n' character, and that has a special
+meaning in the datastructure. To prevent this we need to modify that regex
+to not grab the '\n', but doing so is not possible normally as there is no
+way to type '\n' at the ex prompt. But because of change (47.) we can type
+'\n' using ^k j keybind. Therefore our regex becomes .*[^\n] and full
+line completion works as expected. 
+Next, you will find that the autocomplete db is persistent throughout
+all buffers and it also has data duplication and redundancy checking
+such that you can index multiple files as you need in your workflow,
+maybe even using different filter rules.
+Like ^g used to index file in insert mode you can use ^y from insert
+to out clear the completion db. 
+Running ex command "ac" with no argument will reset back to the default
+word filtering regex. You can find it's string in led.c as a reference.
 32. Added ex command "inc" which sets the path filter using regex. For
 example we want to get only files in submodule directory that end
 with .c extension, use: :inc submodule.*\.c$
