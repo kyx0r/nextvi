@@ -266,7 +266,7 @@ char *lbuf_get(struct lbuf *lb, int pos)
 
 char **lbuf_buf(struct lbuf *lb)
 {
-	return lb->ln; 
+	return lb->ln;
 }
 
 int lbuf_len(struct lbuf *lb)

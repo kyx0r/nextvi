@@ -302,7 +302,7 @@ int re_sizecode(const char *re)
 	int res = _compilecode(&re, &dummyprog, /*sizecode*/1, 0);
 	if (res < 0) return res;
 	// If unparsed chars left
-	if (*re) 
+	if (*re)
 		return RE_SYNTAX_ERROR;
 	return dummyprog.unilen;
 }

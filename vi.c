@@ -44,7 +44,7 @@
 
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
-int vi_mod;		/* screen should be redrawn: 
+int vi_mod;		/* screen should be redrawn:
 			(1: whole screen, -1: whole screen not updating xcol,
 			2: current line, or whole screen) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
@@ -63,7 +63,7 @@ static char *regs[256];			/* string registers */
 static int lnmode[256];
 static char *vi_curword(struct lbuf *lb, int row, int off, int n);
 
-void reverse_in_place(char *str, int len)
+static void reverse_in_place(char *str, int len)
 {
 	char *p1 = str;
 	char *p2 = str + len - 1;
@@ -178,7 +178,7 @@ static void vi_drawrow(int row)
 		for (i = 0; i < l1-1; i++)
 			if (tmp[i] != '\t' && tmp[i] != '\n')
 				tmp[i] = ' ';
-		if (tmp[noff] == ' ') 
+		if (tmp[noff] == ' ')
 			tmp[noff] = *vi_word;
 		switch (*vi_word)
 		{
@@ -350,7 +350,7 @@ void ex_print(char *line)
 		}
 		term_chr('\n');
 		return;
-	} 
+	}
 	if (line)
 		ex_show(line);
 }
@@ -2080,7 +2080,7 @@ void vi(void)
 						sbuf_str(sb, "^(\\{)");
 					sbuf_buf(sb)[sbuf_len(sb)-2] = pairs[ch];
 					if (off && row == xrow) {
-						sbuf_str(sb, ".{");	
+						sbuf_str(sb, ".{");
 						itoa(abs(off - start - 1), buf);
 						sbuf_str(sb, buf);
 						sbuf_str(sb, "}(\\})");

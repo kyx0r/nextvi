@@ -618,7 +618,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			goto redo_suggest;
 		case TK_CTL('n'):
-			if (_sug) 
+			if (_sug)
 			{
 				if (suggestlen == sug-suggestbuf)
 					break;

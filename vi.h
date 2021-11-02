@@ -1,9 +1,19 @@
-/* nextvi main header */
+/*
+Nextvi main header
+==================
+The purpose of this file is to provide high level overview
+of entire Nextvi. Due to absence of any build system some of
+these definitions may not be required to successfully compile
+Nextvi. They are kept here for your benefit and organization.
+If something is listed here, it must be used across multiple
+files and thus is never static.
+*/
 
 /* helper macros */
 #define LEN(a)		(sizeof(a) / sizeof((a)[0]))
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 #define MAX(a, b)	((a) < (b) ? (b) : (a))
+/* for debug; printf() but to file */
 #define p(s, ...)\
 	{FILE *f = fopen("file", "a");\
 	fprintf(f, s, ##__VA_ARGS__);\
@@ -12,7 +22,6 @@
 /* utility funcs */
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
-void reverse_in_place(char *str, int len);
 
 /* main functions */
 void vi(void);
@@ -178,14 +187,6 @@ char *uc_lastline(char *s);
 /* term.c managing the terminal */
 #define xrows		(term_rows())
 #define xcols		(term_cols())
-#define CSI_CLEAR_ALL "\x1b[2J", 4
-#define CSI_CLEAR_LINE "\x1b[K", 3
-#define CSI_CURSOR_TOP_LEFT "\x1b[H", 3
-#define CSI_CURSOR_SHOW "\x1b[?25h", 6
-#define CSI_CURSOR_HIDE "\x1b[?25l", 6
-#define CSI_SCREEN_ALTERNATIVE "\x1b[?47h", 6
-#define CSI_SCREEN_NORMAL "\x1b[?47l", 6
-#define CSI_CURSOR_HIDE_TOP_LEFT "\x1b[?25l\x1b[H", 9
 extern struct sbuf *term_sbuf;
 extern int term_record;
 void term_init(void);
@@ -208,7 +209,7 @@ char *term_cmd(int *n);
 /* process management */
 char *cmd_pipe(char *cmd, char *s, int iproc, int oproc);
 int cmd_exec(char *cmd);
-char* xgetenv(char* q[]); 
+char* xgetenv(char* q[]);
 
 #define TK_CTL(x)	((x) & 037)
 #define TK_INT(c)	((c) < 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
@@ -265,7 +266,7 @@ struct highlight {
 	char *pat;		/* regular expression */
 	int att[16];		/* attributes of the matched groups */
 	signed char end[16];	/* the group ending this pattern;
-				if set on multi-line the block emits all other matches in a set 
+				if set on multi-line the block emits all other matches in a set
 				else defines hl continuation for the group:
 				positive value - continue at rm_so
 				zero (default) - continue at rm_eo
@@ -326,12 +327,15 @@ extern int xshape;
 extern int xorder;
 extern int xhl;
 extern int xhll;
-extern int xhww;
+extern int xhlw;
+extern int xhlp;
+extern int xhlr;
 extern int xkmap;
 extern int xkmap_alt;
 extern int xtabspc;
 extern int xqexit;
-extern int intershell;
+extern int xish;
+extern struct sbuf *xacreg;
 extern rset *fsincl;
 extern char *fslink;
 extern int fstlen;

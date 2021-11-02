@@ -35,8 +35,8 @@ void term_done(void)
 
 void term_clean(void)
 {
-	write(1, CSI_CLEAR_ALL);
-	write(1, CSI_CURSOR_TOP_LEFT);
+	write(1, "\x1b[2J", 4); /* clear screen */
+	write(1, "\x1b[H", 3); /* cursor topleft */
 }
 
 void term_suspend(void)
@@ -233,7 +233,7 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
 	return pid;
 }
 
-char* xgetenv(char* q[]) 
+char* xgetenv(char* q[])
 {
 	char* r = NULL;
 	while (*q && !r) {
@@ -250,12 +250,12 @@ char* xgetenv(char* q[])
 char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 {
 	static char* sh[] = {"$SHELL", "sh", NULL};
-	char *argv[4+xish]; 
+	char *argv[4+xish];
 	argv[0] = xgetenv(sh);
-	if (xish) 
+	if (xish)
 		argv[xish] = "-i";
 	argv[1+xish] = "-c";
-	argv[2+xish] = cmd; 
+	argv[2+xish] = cmd;
 	argv[3+xish] = NULL;
 
 	struct pollfd fds[3];

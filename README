@@ -112,13 +112,13 @@ meaning in the datastructure. To prevent this we need to modify that regex
 to not grab the '\n', but doing so is not possible normally as there is no
 way to type '\n' at the ex prompt. But because of change (47.) we can type
 '\n' using ^k j keybind. Therefore our regex becomes .*[^\n] and full
-line completion works as expected. 
+line completion works as expected.
 Next, you will find that the autocomplete db is persistent throughout
 all buffers and it also has data duplication and redundancy checking
 such that you can index multiple files as you need in your workflow,
 maybe even using different filter rules.
 Like ^g used to index file in insert mode you can use ^y from insert
-to out clear the completion db. 
+to out clear the completion db.
 Running ex command "ac" with no argument will reset back to the default
 word filtering regex. You can find it's string in led.c as a reference.
 32. Added ex command "inc" which sets the path filter using regex. For
@@ -260,7 +260,7 @@ ex substitution command, properly counting number of groups in rset.
    If we wanted to match string "\\|" input will be: "\\\\\\|"
    "\\\|" will get us "\\|" into regex, but the input
    needs 3 more slashes because +1 rule (5:) +2 rule 2 slashes make 1.
-   timeline: "\\\\\\|" -> rule(5:) "\\\\\|" -> rule(regex:2 = 1) "\\\|" = 
+   timeline: "\\\\\\|" -> rule(5:) "\\\\\|" -> rule(regex:2 = 1) "\\\|" =
    rule(regex:"\|" = "|") "\\|" = this is the literal we wanted to match!
 62. Added syntax highlighting continuation options. See the struct
 highlight in vi.h. The ^ anchor in the regular expression has an important
@@ -520,7 +520,7 @@ NEXTVI:
     655,718 ( 0.13%)  ???:strchrnul [/usr/lib/libc.so]
     640,797 ( 0.13%)  ???:0x000000000002f610 [/usr/lib/libc.so]
 
-- Given more fair conditions the gap would be even wider. 
+- Given more fair conditions the gap would be even wider.
 - Always look to see the kind of software you use.
 - Use this as a baseline to compare performance across other text
 editors.

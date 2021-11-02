@@ -333,7 +333,7 @@ void syn_highlight(int *att, char *s, int n)
 			if (blkm != hls[hl].blkend && last_scdir > 0)
 				blkend = 1;
 			if (syn_blockhl == hl && blk == blkend)
-				syn_blockhl = 0;	
+				syn_blockhl = 0;
 			else if (!syn_blockhl && blk != blkend) {
 				syn_blockhl = hl;
 				blockatt = catt;
@@ -356,7 +356,7 @@ void syn_highlight(int *att, char *s, int n)
 						cend = MAX(cend, subs[i * 2]);
 				}
 			}
-		} 
+		}
 		sidx += cend;
 		cend = 1;
 		flg = REG_NOTBOL;
