@@ -97,7 +97,9 @@ static void deep_search(const char* pattern, int len, tern_t* start)
 		deep_search(pattern, len, start->r_child);
 	if (start->m_child) {
 		char _pattern[++len];
-		sprintf(_pattern, "%s%c", pattern, start->word);
+		memcpy(_pattern, pattern, len);
+		_pattern[len-1] = start->word;
+		_pattern[len] = '\0';
 		deep_search(_pattern, len, start->m_child);
 	}
 }
@@ -167,7 +169,7 @@ static void file_ternary(struct lbuf* buf)
 				char part[len];
 				memcpy(part, ss[i]+sidx+subs[0], len);
 				part[len] = '\0';
-				if (search(part, len-1, ROOT) != -1)
+				if (search(part, len > 2 ? len-1 : len, ROOT) != -1)
 					if (!(suggestlen && dstrlen(suggestbuf, '\n') == len))
 						insert_node(part, ROOT);
 			}
