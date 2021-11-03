@@ -154,8 +154,8 @@ int term_read(void)
 	return c;
 }
 
-/* return a static string that changes text attributes from old to att */
-char *term_att(int att, int old)
+/* return a static string that changes text attributes to att */
+char *term_att(int att)
 {
 	static char buf[128];
 	char *s = buf;

@@ -266,7 +266,7 @@ while (i < cend) { \
 		for (l = i; off[i] == o; i++); \
 		att_new = att[o]; \
 		if (att_new != att_old) \
-			sbuf_str(out, term_att(att_new, att_old)); \
+			sbuf_str(out, term_att(att_new)); \
 		char *s = ren_translate(chrs[o], s0); \
 		if (s) \
 			sbuf_str(out, s); \
@@ -277,14 +277,12 @@ while (i < cend) { \
 			hid_ch##n(out) \
 		} \
 	} else { \
-		if (att_new != att_old) \
-			sbuf_str(out, term_att(att_new, att_old)); \
 		if (ctx < 0) \
 			sbuf_chr(out, ' '); \
 		i++; \
 	} \
 	att_old = att_new; \
-} } \
+} sbuf_str(out, term_att(0)); } \
 
 /* set xtd and return its old value */
 static void td_set(int td)

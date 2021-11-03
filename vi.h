@@ -204,7 +204,7 @@ int term_rows(void);
 int term_cols(void);
 int term_read(void);
 void term_commit(void);
-char *term_att(int att, int old);
+char *term_att(int att);
 void term_push(char *s, int n);
 char *term_cmd(int *n);
 /* process management */
