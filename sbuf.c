@@ -55,6 +55,14 @@ void sbuf_chr(struct sbuf *sbuf, int c)
 	sbuf->s[sbuf->s_n++] = c;
 }
 
+void sbuf_set(struct sbuf *sbuf, char ch, int len)
+{
+	if (sbuf->s_n + len + 1 >= sbuf->s_sz)
+		sbuf_extend(sbuf, NEXTSZ(sbuf->s_sz, len + 1));
+	memset(sbuf->s + sbuf->s_n, ch, len);
+	sbuf->s_n += len;
+}
+
 void sbuf_mem(struct sbuf *sbuf, char *s, int len)
 {
 	if (sbuf->s_n + len + 1 >= sbuf->s_sz)

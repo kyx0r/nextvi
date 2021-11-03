@@ -239,77 +239,52 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 			}
 			uc_len(l, chrs[o])
 			sbuf_mem(out, chrs[o], l);
-			for (; off[i - cbeg] == o; i++){}
+			for (; off[i - cbeg] == o; i++);
 		} else
 			i++;
 	}
 }
 
-void led_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
-		int cend)
-{
-	int l, att_old = 0, i = 0;
-	while (i < cend) {
-		int o = off[i];
-		int att_new = 0;
-		if (o >= 0) {
-			att_new = att[o];
-			sbuf_str(out, term_att(att_new, att_old));
-			char *s = ren_translate(chrs[o], s0);
-			if (s)
-				sbuf_str(out, s);
-			else if (uc_isprint(chrs[o])) {
-				uc_len(l, chrs[o])
-				sbuf_mem(out, chrs[o], l);
-			} else
-				for (; off[i] == o; i++)
-					sbuf_chr(out, ' ');
-			for (; off[i] == o; i++){}
-		} else {
-			sbuf_str(out, term_att(att_new, att_old));
-			sbuf_chr(out, ' ');
-			i++;
-		}
-		att_old = att_new;
-	}
-	sbuf_str(out, term_att(0, att_old));
-}
+#define print_ch1(out) sbuf_mem(out, chrs[o], l);
+#define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l);
 
-void ledhidch_out(struct sbuf *out, int *off, int *att, char **chrs, char *s0,
-			int cend, int ctx)
-{
-	int l, att_old = 0, i = 0;
-	while (i < cend) {
-		int o = off[i];
-		int att_new = 0;
-		if (o >= 0) {
-			att_new = att[o];
-			sbuf_str(out, term_att(att_new, att_old));
-			char *s = ren_translate(chrs[o], s0);
-			if (s)
-				sbuf_str(out, s);
-			else if (uc_isprint(chrs[o])) {
-				uc_len(l, chrs[o])
-				sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l);
-			} else {
-				int pre = sbuf_len(out);
-				for (; off[i] == o; i++)
-					sbuf_chr(out, *chrs[o] == '\n' ? '\\' : '-');
-				if (ctx > 0 && *chrs[o] == '\t')
-					sbuf_buf(out)[sbuf_len(out)-1] = '>';
-				else if (*chrs[o] == '\t')
-					sbuf_buf(out)[pre] = '<';
-			}
-			for (; off[i] == o; i++){}
-		} else {
-			sbuf_str(out, term_att(att_new, att_old));
-			sbuf_chr(out, ' ');
-			i++;
-		}
-		att_old = att_new;
-	}
-	sbuf_str(out, term_att(0, att_old));
-}
+#define hid_ch1(out) sbuf_set(out, ' ', i - l);
+#define hid_ch2(out) \
+int pre = sbuf_len(out); \
+sbuf_set(out, *chrs[o] == '\n' ? '\\' : '-', i - l); \
+if (ctx > 0 && *chrs[o] == '\t') \
+sbuf_buf(out)[sbuf_len(out)-1] = '>'; \
+else if (*chrs[o] == '\t') \
+sbuf_buf(out)[pre] = '<'; \
+
+#define led_out(out, n) \
+{ int l, att_old = 0, i = 0; \
+while (i < cend) { \
+	int o = off[i]; \
+	int att_new = 0; \
+	if (o >= 0) { \
+		for (l = i; off[i] == o; i++); \
+		att_new = att[o]; \
+		if (att_new != att_old) \
+			sbuf_str(out, term_att(att_new, att_old)); \
+		char *s = ren_translate(chrs[o], s0); \
+		if (s) \
+			sbuf_str(out, s); \
+		else if (uc_isprint(chrs[o])) { \
+			uc_len(l, chrs[o]) \
+			print_ch##n(out) \
+		} else { \
+			hid_ch##n(out) \
+		} \
+	} else { \
+		if (att_new != att_old) \
+			sbuf_str(out, term_att(att_new, att_old)); \
+		if (ctx < 0) \
+			sbuf_chr(out, ' '); \
+		i++; \
+	} \
+	att_old = att_new; \
+} } \
 
 /* set xtd and return its old value */
 static void td_set(int td)
@@ -354,7 +329,7 @@ for (i = 0; i < n; i++) { \
 void led_render(char *s0, int row, int cbeg, int cend)
 {
 	int i, j, n, cterm = cend - cbeg;
-	struct sbuf *out, *bound = NULL;
+	struct sbuf *bsb, *bound = NULL;
 	int *pos;		/* pos[i]: the screen position of the i-th character */
 	char **chrs;		/* chrs[i]: the i-th character in s1 */
 	int off[cterm+1];	/* off[i]: the character at screen position i */
@@ -369,13 +344,13 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		{
 			td_set(-2);
 			ren_torg = cbeg;
-			out = sbuf_make(xcols);
-			cull_line(out)
+			bsb = sbuf_make(xcols);
+			cull_line(bsb)
 			off_rev()
 			bound = sbuf_make(xcols);
 			cull_line(bound)
 			off_rev()
-			sbuf_free(out);
+			sbuf_free(bsb);
 			ren_torg = cbeg;
 			td_set(xotd);
 		}
@@ -400,9 +375,9 @@ void led_render(char *s0, int row, int cbeg, int cend)
 	term_pos(row, 0);
 	term_kill();
 	if (vi_hidch)
-		ledhidch_out(term_sbuf, off, att, chrs, s0, cend, ctx);
+		led_out(term_sbuf, 2)
 	else
-		led_out(term_sbuf, off, att, chrs, s0, cend);
+		led_out(term_sbuf, 1)
 	if (bound)
 		sbuf_free(bound);
 	if (!term_record)

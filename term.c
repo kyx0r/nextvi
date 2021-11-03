@@ -161,8 +161,6 @@ char *term_att(int att, int old)
 	char *s = buf;
 	int fg = SYN_FG(att);
 	int bg = SYN_BG(att);
-	if (att == old)
-		return "";
 	*s++ = '\x1b';
 	*s++ = '[';
 	if (att & SYN_BD)
