@@ -170,6 +170,7 @@ static void file_ternary(struct lbuf* buf)
 			sidx += subs[1] > 0 ? subs[1] : 1;
 		}
 	}
+	rset_free(rs);
 }
 
 static char *kmap_map(int kmap, int c)
