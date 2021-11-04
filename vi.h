@@ -26,19 +26,61 @@ char *itoa(int n, char s[]);
 /* main functions */
 void vi(void);
 
-/* sbuf.c string buffer, variable-sized string */
-struct sbuf *sbuf_make(int newsz);
-void sbuf_free(struct sbuf *sb);
-char *sbuf_done(struct sbuf *sb);
-char *sbuf_buf(struct sbuf *sb);
-void sbuf_chr(struct sbuf *sb, int c);
-void sbuf_str(struct sbuf *sb, char *s);
-char *sbuf_s(struct sbuf *sb);
-void sbuf_set(struct sbuf *sb, char ch, int len);
-void sbuf_mem(struct sbuf *sb, char *s, int len);
-void sbuf_printf(struct sbuf *sbuf, char *s, ...);
-int sbuf_len(struct sbuf *sb);
-void sbuf_cut(struct sbuf *s, int len);
+/* sbuf string buffer, variable-sized string */
+#define SBUFSZ		128
+#define ALIGN(n, a)	(((n) + (a) - 1) & ~((a) - 1))
+#define NEXTSZ(o, r)	ALIGN(MAX((o) * 2, (o) + (r)), SBUFSZ)
+typedef struct sbuf {
+	char *s;		/* allocated buffer */
+	int s_n;		/* length of the string stored in s[] */
+	int s_sz;		/* size of memory allocated for s[] */
+} sbuf;
+
+#define sbuf_extend(sb, newsz) \
+{ \
+	char *s = sb->s; \
+	sb->s_sz = newsz; \
+	sb->s = malloc(sb->s_sz); \
+	if (sb->s_n) \
+		memcpy(sb->s, s, sb->s_n); \
+	free(s); \
+} \
+
+#define sbuf_make(sb, newsz) \
+{ \
+	sb = malloc(sizeof(*sb)); \
+	sb->s = NULL; \
+	sb->s_n = 0; \
+	sbuf_extend(sb, newsz); \
+} \
+
+#define sbuf_chr(sb, c) \
+{ \
+	if (sb->s_n + 2 >= sb->s_sz) \
+		sbuf_extend(sb, NEXTSZ(sb->s_sz, 1)); \
+	sb->s[sb->s_n++] = c; \
+} \
+
+#define sbuf_(sb, x, len, func) \
+if (sb->s_n + len + 1 >= sb->s_sz) \
+	sbuf_extend(sb, NEXTSZ(sb->s_sz, len + 1)); \
+mem##func(sb->s + sb->s_n, x, len); \
+sb->s_n += len; \
+
+#define sbuf_free(sb) { free(sb->s); free(sb); }
+#define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
+#define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
+#define sbuf_str(sb, s) { sbuf_(sb, s, strlen(s), cpy) }
+#define sbuf_cut(sb, len) { if (sb->s_n > len) sb->s_n = len; }
+/* sbuf functions that NULL terminate strings */
+#define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
+#define sbufn_done(sb) { char *s = sb->s; sbuf_null(sb) free(sb); return s; }
+#define sbufn_make(sb, newsz) { sbuf_make(sb, newsz) sbuf_null(sb) }
+#define sbufn_set(sb, ch, len) { sbuf_(sb, ch, len, set) sbuf_null(sb) }
+#define sbufn_mem(sb, s, len) { sbuf_(sb, s, len, cpy) sbuf_null(sb) }
+#define sbufn_str(sb, s) { sbuf_(sb, s, strlen(s), cpy) sbuf_null(sb) }
+#define sbufn_cut(sb, len) { if (sb->s_n > len) sb->s_n = len; sbuf_null(sb) }
+#define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_null(sb) }
 
 /* regex.c regular expression sets */
 #define REG_EXTENDED		0x01
@@ -83,7 +125,7 @@ char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
 char *lbuf_get(struct lbuf *lbuf, int pos);
 char **lbuf_buf(struct lbuf *lb);
 int lbuf_len(struct lbuf *lbuf);
-void lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
+int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
 void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
 int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off);
 int lbuf_undo(struct lbuf *lbuf);
@@ -188,7 +230,7 @@ char *uc_lastline(char *s);
 /* term.c managing the terminal */
 #define xrows		(term_rows())
 #define xcols		(term_cols())
-extern struct sbuf *term_sbuf;
+extern sbuf *term_sbuf;
 extern int term_record;
 void term_init(void);
 void term_done(void);
@@ -336,7 +378,7 @@ extern int xkmap_alt;
 extern int xtabspc;
 extern int xqexit;
 extern int xish;
-extern struct sbuf *xacreg;
+extern sbuf *xacreg;
 extern rset *fsincl;
 extern char *fslink;
 extern int fstlen;

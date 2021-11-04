@@ -563,7 +563,7 @@ void rset_free(rset *rs)
 rset *rset_make(int n, char **re, int flg)
 {
 	rset *rs = malloc(sizeof(*rs));
-	struct sbuf *sb = sbuf_make(1024);
+	sbuf *sb; sbuf_make(sb, 1024);
 	int regex_flg = REG_EXTENDED | (flg & REG_ICASE ? REG_ICASE : 0);
 	int i;
 	rs->grp = malloc((n + 1) * sizeof(rs->grp[0]));
@@ -576,7 +576,7 @@ rset *rset_make(int n, char **re, int flg)
 			rs->grp[i] = -1;
 			continue;
 		}
-		if (sbuf_len(sb) > 1)
+		if (sb->s_n > 1)
 			sbuf_chr(sb, '|');
 		sbuf_chr(sb, '(');
 		sbuf_str(sb, re[i]);
@@ -586,12 +586,11 @@ rset *rset_make(int n, char **re, int flg)
 		rs->grpcnt += 1 + rs->setgrpcnt[i];
 	}
 	rs->grp[n] = rs->grpcnt;
-	sbuf_chr(sb, ')');
-	char *s = sbuf_buf(sb);
-	int sz = re_sizecode(s) * sizeof(int);
+	sbufn_chr(sb, ')');
+	int sz = re_sizecode(sb->s) * sizeof(int);
 	char *code = malloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
-	if (sz <= 3 || re_comp((rcode*)code, s, rs->grpcnt-1, regex_flg)) {
+	if (sz <= 3 || re_comp((rcode*)code, sb->s, rs->grpcnt-1, regex_flg)) {
 		rset_free(rs);
 		rs = NULL;
 	}
@@ -640,13 +639,13 @@ char *re_read(char **src)
 	int delim = (unsigned char) *s++;
 	if (!delim)
 		return NULL;
-	struct sbuf *sbuf = sbuf_make(256);
+	sbuf *sb; sbuf_make(sb, 256);
 	while (*s && *s != delim) {
 		if (s[0] == '\\' && s[1])
 			if (*(++s) != delim)
-				sbuf_chr(sbuf, '\\');
-		sbuf_chr(sbuf, (unsigned char) *s++);
+				sbuf_chr(sb, '\\');
+		sbuf_chr(sb, (unsigned char) *s++);
 	}
 	*src = *s ? s + 1 : s;
-	return sbuf_done(sbuf);
+	sbufn_done(sb)
 }

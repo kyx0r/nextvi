@@ -8,9 +8,7 @@ typedef struct tern {
 	struct tern* m_child;
 } tern_t;
 static tern_t* ROOT = &(tern_t){.word= 'a'};
-#define SUGGESTMAX 4096
-static int suggestlen;
-static char suggestbuf[SUGGESTMAX];
+static sbuf *suggestsb;
 
 //creats a tern_t, allocates memory, and initializes it.
 static tern_t* create_node(char w);
@@ -83,13 +81,9 @@ static tern_t* find_node(const char* string, int l, tern_t* node)
 static void deep_search(const char* pattern, int len, tern_t* start)
 {
 	if (start->type) {
-		char *off = suggestbuf+suggestlen;
-		if (off+len+1 >= suggestbuf+SUGGESTMAX)
-			return;
-		memcpy(off, pattern, len);
-		off[len] = start->word;
-		off[len+1] = '\n';
-		suggestlen += len+2;
+		sbuf_mem(suggestsb, pattern, len)
+		sbuf_chr(suggestsb, start->word)
+		sbuf_chr(suggestsb, '\n')
 	}
 	if (start->l_child)
 		deep_search(pattern, len, start->l_child);
@@ -106,7 +100,7 @@ static void deep_search(const char* pattern, int len, tern_t* start)
 
 static int search(const char* pattern, int l, tern_t* node)
 {
-	suggestlen = 0;
+	sbuf_cut(suggestsb, 0)
 	//finds the node where the prefix ends.
 	tern_t* current = find_node(pattern, l, node);
 	if (!current)
@@ -114,7 +108,7 @@ static int search(const char* pattern, int l, tern_t* node)
 	else {
 		if (current->m_child) {
 			deep_search(pattern, l, current->m_child);
-			suggestbuf[suggestlen] = '\0';
+			sbuf_null(suggestsb)
 			return 1;
 		}
 	}
@@ -158,7 +152,7 @@ static void file_ternary(struct lbuf* buf)
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf);
 	int subs[2];
-	rset *rs = rset_make(1, (char*[]){xacreg ? sbuf_buf(xacreg) : reg}, xic ? REG_ICASE : 0);
+	rset *rs = rset_make(1, (char*[]){xacreg ? xacreg->s : reg}, xic ? REG_ICASE : 0);
 	if (!rs)
 		return;
 	for (int i = 0; i < ln_n; i++) {
@@ -170,7 +164,7 @@ static void file_ternary(struct lbuf* buf)
 				memcpy(part, ss[i]+sidx+subs[0], len);
 				part[len] = '\0';
 				if (search(part, len > 2 ? len-1 : len, ROOT) != -1)
-					if (!(suggestlen && dstrlen(suggestbuf, '\n') == len))
+					if (!(suggestsb->s_n && dstrlen(suggestsb->s, '\n') == len))
 						insert_node(part, ROOT);
 			}
 			sidx += subs[1] > 0 ? subs[1] : 1;
@@ -224,7 +218,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 	}
 }
 
-void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
+void led_bounds(sbuf *out, int *off, char **chrs, int cbeg, int cend)
 {
 	int l, i = cbeg;
 	int pad = ren_torg;
@@ -234,28 +228,29 @@ void led_bounds(struct sbuf *out, int *off, char **chrs, int cbeg, int cend)
 			if (pad) {
 				char pd[i - cbeg];
 				memset(pd, ' ', i - cbeg);
-				sbuf_mem(out, pd, i - cbeg);
+				sbuf_mem(out, pd, i - cbeg)
 				pad = 0;
 			}
 			uc_len(l, chrs[o])
-			sbuf_mem(out, chrs[o], l);
+			sbuf_mem(out, chrs[o], l)
 			for (; off[i - cbeg] == o; i++);
 		} else
 			i++;
 	}
+	sbuf_null(out)
 }
 
-#define print_ch1(out) sbuf_mem(out, chrs[o], l);
-#define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l);
+#define print_ch1(out) sbuf_mem(out, chrs[o], l)
+#define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
 
-#define hid_ch1(out) sbuf_set(out, ' ', i - l);
+#define hid_ch1(out) sbuf_set(out, ' ', i - l)
 #define hid_ch2(out) \
-int pre = sbuf_len(out); \
-sbuf_set(out, *chrs[o] == '\n' ? '\\' : '-', i - l); \
+int pre = out->s_n; \
+sbuf_set(out, *chrs[o] == '\n' ? '\\' : '-', i - l) \
 if (ctx > 0 && *chrs[o] == '\t') \
-sbuf_buf(out)[sbuf_len(out)-1] = '>'; \
+out->s[out->s_n-1] = '>'; \
 else if (*chrs[o] == '\t') \
-sbuf_buf(out)[pre] = '<'; \
+out->s[pre] = '<'; \
 
 #define led_out(out, n) \
 { int l, att_old = 0, i = 0; \
@@ -266,10 +261,10 @@ while (i < cend) { \
 		for (l = i; off[i] == o; i++); \
 		att_new = att[o]; \
 		if (att_new != att_old) \
-			sbuf_str(out, term_att(att_new)); \
+			sbuf_str(out, term_att(att_new)) \
 		char *s = ren_translate(chrs[o], s0); \
 		if (s) \
-			sbuf_str(out, s); \
+			sbuf_str(out, s) \
 		else if (uc_isprint(chrs[o])) { \
 			uc_len(l, chrs[o]) \
 			print_ch##n(out) \
@@ -278,11 +273,11 @@ while (i < cend) { \
 		} \
 	} else { \
 		if (ctx < 0) \
-			sbuf_chr(out, ' '); \
+			sbuf_chr(out, ' ') \
 		i++; \
 	} \
 	att_old = att_new; \
-} sbuf_str(out, term_att(0)); } \
+} sbufn_str(out, term_att(0)) } \
 
 /* set xtd and return its old value */
 static void td_set(int td)
@@ -317,7 +312,7 @@ for (i = 0; i < n; i++) { \
 
 #define cull_line(name)\
 	led_bounds(name, off, chrs, cbeg, cend); \
-	s0 = sbuf_buf(name); \
+	s0 = name->s; \
 	cbeg = 0; \
 	cend = cterm; \
 	memset(off, -1, (cterm+1) * sizeof(off[0])); \
@@ -327,7 +322,7 @@ for (i = 0; i < n; i++) { \
 void led_render(char *s0, int row, int cbeg, int cend)
 {
 	int i, j, n, cterm = cend - cbeg;
-	struct sbuf *bsb, *bound = NULL;
+	sbuf *bsb, *bound = NULL;
 	int *pos;		/* pos[i]: the screen position of the i-th character */
 	char **chrs;		/* chrs[i]: the i-th character in s1 */
 	int off[cterm+1];	/* off[i]: the character at screen position i */
@@ -342,13 +337,13 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		{
 			td_set(-2);
 			ren_torg = cbeg;
-			bsb = sbuf_make(xcols);
+			sbuf_make(bsb, xcols)
 			cull_line(bsb)
 			off_rev()
-			bound = sbuf_make(xcols);
+			sbuf_make(bound, xcols)
 			cull_line(bound)
 			off_rev()
-			sbuf_free(bsb);
+			sbuf_free(bsb)
 			ren_torg = cbeg;
 			td_set(xotd);
 		}
@@ -359,7 +354,7 @@ void led_render(char *s0, int row, int cbeg, int cend)
 			ren_torg = cbeg;
 			int xord = xorder;
 			xorder = 0;
-			bound = sbuf_make(xcols);
+			sbuf_make(bound, xcols)
 			cull_line(bound)
 			off_for()
 			xorder = xord;
@@ -377,7 +372,7 @@ void led_render(char *s0, int row, int cbeg, int cend)
 	else
 		led_out(term_sbuf, 1)
 	if (bound)
-		sbuf_free(bound);
+		sbuf_free(bound)
 	if (!term_record)
 		term_commit();
 }
@@ -413,35 +408,35 @@ static int led_lastword(char *s)
 static void led_printparts(char *ai, char *pref, char *main,
 		char *post, int kmap)
 {
-	struct sbuf *ln;
+	sbuf *ln;
 	int off, pos;
 	int idir = 0;
-	ln = sbuf_make(xcols);
-	sbuf_str(ln, ai);
-	sbuf_str(ln, pref);
-	sbuf_str(ln, main);
-	off = uc_slen(sbuf_buf(ln));
+	sbuf_make(ln, xcols)
+	sbuf_str(ln, ai)
+	sbuf_str(ln, pref)
+	sbufn_str(ln, main)
+	off = uc_slen(ln->s);
 	/* cursor position for inserting the next character */
 	if (*pref || *main || *ai) {
-		int len = sbuf_len(ln);
-		sbuf_str(ln, kmap_map(kmap, 'a'));
-		sbuf_str(ln, post);
-		idir = ren_pos(sbuf_buf(ln), off) -
-			ren_pos(sbuf_buf(ln), off - 1) < 0 ? -1 : +1;
-		sbuf_cut(ln, len);
+		int len = ln->s_n;
+		sbuf_str(ln, kmap_map(kmap, 'a'))
+		sbufn_str(ln, post)
+		idir = ren_pos(ln->s, off) -
+			ren_pos(ln->s, off - 1) < 0 ? -1 : +1;
+		sbuf_cut(ln, len)
 	}
 	term_record = 1;
-	sbuf_str(ln, post);
-	pos = ren_cursor(sbuf_buf(ln), ren_pos(sbuf_buf(ln), MAX(0, off - 1)));
+	sbufn_str(ln, post)
+	pos = ren_cursor(ln->s, ren_pos(ln->s, MAX(0, off - 1)));
 	if (pos >= xleft + xcols)
 		xleft = pos - xcols / 2;
 	if (pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
 	vi_mod = 2;
 	syn_blockhl = 0;
-	led_print(sbuf_buf(ln), -1);
-	term_pos(-1, led_pos(sbuf_buf(ln), pos + idir));
-	sbuf_free(ln);
+	led_print(ln->s, -1);
+	term_pos(-1, led_pos(ln->s, pos + idir));
+	sbuf_free(ln)
 	term_commit();
 }
 
@@ -501,23 +496,22 @@ static char *led_line(char *pref, char *post, char *ai,
 		int ai_max, int *key, int *kmap,
 		char *insert)
 {
-	struct sbuf *sb;
+	sbuf *sb;
 	int ai_len = strlen(ai), len;
 	int c, lnmode, last_sug = 0, i = 0;
-	char *sug = suggestbuf;
-	char *cs, *_sug = NULL;
+	char *cs, *sug = NULL, *_sug = NULL;
 	time_t quickexit = 0;
 	vi_insmov = 0;
-	sb = sbuf_make(xcols);
+	sbufn_make(sb, xcols)
 	if (insert)
-		sbuf_str(sb, insert);
+		sbufn_str(sb, insert)
 	if (!pref)
 		pref = "";
 	if (!post)
 		post = "";
 	while (1) {
-		led_printparts(ai, pref, sbuf_buf(sb), post, *kmap);
-		len = sbuf_len(sb);
+		led_printparts(ai, pref, sb->s, post, *kmap);
+		len = sb->s_n;
 		c = term_read();
 		switch (c) {
 		case TK_CTL('f'):
@@ -529,18 +523,18 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('h'):
 		case 127:
 			if (len)
-				sbuf_cut(sb, led_lastchar(sbuf_buf(sb)));
+				sbufn_cut(sb, led_lastchar(sb->s))
 			else {
 				vi_insmov = c;
 				goto kleave;
 			}
 			break;
 		case TK_CTL('u'):
-			sbuf_cut(sb, 0);
+			sbufn_cut(sb, 0)
 			break;
 		case TK_CTL('w'):
 			if (len)
-				sbuf_cut(sb, led_lastword(sbuf_buf(sb)));
+				sbufn_cut(sb, led_lastword(sb->s))
 			else {
 				vi_insmov = c;
 				goto kleave;
@@ -555,12 +549,9 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('d'):
 			/* when ai and pref are empty, remove the first space of sb */
 			if (ai_len == 0 && !pref[0]) {
-				char *buf = sbuf_buf(sb);
-				if (buf[0] == ' ' || buf[0] == '\t') {
-					char *dup = uc_dup(buf + 1);
-					sbuf_cut(sb, 0);
-					sbuf_str(sb, dup);
-					free(dup);
+				if (sb->s[0] == ' ' || sb->s[0] == '\t') {
+					sbuf_cut(sb, 0)
+					sbufn_str(sb, sb->s+1)
 				}
 			}
 			if (ai_len > 0)
@@ -568,18 +559,26 @@ static char *led_line(char *pref, char *post, char *ai,
 			break;
 		case TK_CTL('p'):
 			if (vi_regget(0, &lnmode))
-				sbuf_str(sb, vi_regget(0, &lnmode));
+				sbufn_str(sb, vi_regget(0, &lnmode))
 			break;
 		case TK_CTL('g'):
+			if (!suggestsb)
+				sbuf_make(suggestsb, 1)
+			sug = NULL;
 			file_ternary(xb);
 			break;
 		case TK_CTL('y'):
 			led_done();
+			suggestsb = NULL; sug = NULL;
 			break;
 		case TK_CTL('r'):
-			if (suggestlen == sug-suggestbuf)
+			if (!suggestsb)
+				break;
+			if (!sug)
+				sug = suggestsb->s;
+			if (suggestsb->s_n == sug - suggestsb->s)
 				sug--;
-			for (i = 0; sug != suggestbuf; sug--) {
+			for (i = 0; sug != suggestsb->s; sug--) {
 				if (!*sug) {
 					i++;
 					if (i == 3) {
@@ -591,32 +590,34 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			goto redo_suggest;
 		case TK_CTL('n'):
+			if (!suggestsb)
+				break;
+			if (!sug)
+				sug = suggestsb->s;
 			if (_sug)
 			{
-				if (suggestlen == sug-suggestbuf)
+				if (suggestsb->s_n == sug - suggestsb->s)
 					break;
 				redo_suggest:
 				if (!(_sug = strchr(sug, '\n'))) {
-					sug = suggestbuf;
+					sug = suggestsb->s;
 					goto lookup;
 				}
 				suggest:
 				*_sug = '\0';
-				if ((i = led_lastword(sbuf_buf(sb))) > last_sug)
+				if ((i = led_lastword(sb->s)) > last_sug)
 					i = last_sug;
-				sbuf_cut(sb, i);
-				last_sug = sbuf_len(sb);
-				sbuf_str(sb, sug);
+				sbuf_cut(sb, i)
+				last_sug = sb->s_n;
+				sbufn_str(sb, sug)
 				sug = _sug+1;
 				break;
 			}
 			lookup:
-			cs = sbuf_buf(sb);
+			cs = sb->s;
 			if ((i = led_lastword(cs)) > last_sug)
 				i = last_sug;
-			cs += i;
-			len -= i;
-			if (search(cs, len, ROOT))
+			if (search(cs + i, len - i, ROOT))
 			{
 				if (!(_sug = strchr(sug, '\n')))
 					break;
@@ -628,7 +629,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				break;
 			xquit = 0;
 			td_set(xotd);
-			temp_write(0, sbuf_buf(sb));
+			temp_write(0, sb->s);
 			temp_switch(0);
 			vi();
 			temp_switch(0);
@@ -643,12 +644,10 @@ static char *led_line(char *pref, char *post, char *ai,
 				break;
 			cur_histstr:
 			cs = temp_curstr(0, i);
-			if (cs)
-			{
+			if (cs) {
 				cs[dstrlen(cs, '\n')] = '\0';
-				sbuf_free(sb);
-				sb = sbuf_make(1024);
-				sbuf_str(sb, cs);
+				sbuf_cut(sb, 0)
+				sbufn_str(sb, cs)
 				i++;
 			} else if (i) {
 				i = 0;
@@ -664,13 +663,11 @@ static char *led_line(char *pref, char *post, char *ai,
 			if (xqexit &&
 				(difftime(time(0), quickexit) * 1000) < 1000)
 			{
-				if (sbuf_len(sb))
-				{
-					cs = sbuf_buf(sb);
-					i = led_lastchar(cs);
-					if (cs[i] != 'k')
+				if (sb->s_n) {
+					i = led_lastchar(sb->s);
+					if (sb->s[i] != 'k')
 						goto _default;
-					sbuf_cut(sb, i);
+					sbuf_cut(sb, i)
 				}
 				*key = TK_ESC;
 				goto leave;
@@ -683,13 +680,13 @@ _default:
 			if (c == '\n' || TK_INT(c))
 				break;
 			if ((cs = led_readchar(c, *kmap)))
-				sbuf_str(sb, cs);
+				sbufn_str(sb, cs)
 		}
-		if (c != TK_CTL('n') && c != TK_CTL('r')) {
-			if (sbuf_len(sb) > len)
-				last_sug = sbuf_len(sb);
-			sug = suggestbuf;
-			_sug = 0;
+		if (sug && c != TK_CTL('n') && c != TK_CTL('r')) {
+			if (sb->s_n > len)
+				last_sug = sb->s_n;
+			sug = suggestsb->s;
+			_sug = NULL;
 		}
 		if (c == '\n' || TK_INT(c))
 			break;
@@ -697,7 +694,7 @@ _default:
 kleave:
 	*key = c;
 leave:
-	return sbuf_done(sb);
+	sbufn_done(sb)
 }
 
 /* read an ex command */
@@ -711,14 +708,14 @@ char *led_prompt(char *pref, char *post, char *insert,
 	td_set(xotd);
 	if (key == '\n') {
 		temp_write(0, s);
-		struct sbuf *sb = sbuf_make(1024);
+		sbuf *sb; sbuf_make(sb, 256)
 		if (pref)
-			sbuf_str(sb, pref);
-		sbuf_str(sb, s);
+			sbuf_str(sb, pref)
+		sbuf_str(sb, s)
 		if (post)
-			sbuf_str(sb, post);
+			sbuf_str(sb, post)
 		free(s);
-		return sbuf_done(sb);
+		sbufn_done(sb)
 	}
 	free(s);
 	return NULL;
@@ -727,7 +724,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 /* read visual command input */
 char *led_input(char *pref, char *post, int *kmap, int cln)
 {
-	struct sbuf *sb = sbuf_make(1024);
+	sbuf *sb; sbuf_make(sb, 256)
 	char ai[128];
 	int ai_max = sizeof(ai) - 1;
 	int n = 0;
@@ -743,12 +740,12 @@ char *led_input(char *pref, char *post, int *kmap, int cln)
 		/* append the auto-indent only if there are other characters */
 		if (ln[ln_sp] || (pref && pref[0]) ||
 				(key != '\n' && post[0] && post[0] != '\n'))
-			sbuf_str(sb, ai);
+			sbuf_str(sb, ai)
 		if (pref)
-			sbuf_str(sb, pref);
-		sbuf_str(sb, ln);
+			sbuf_str(sb, pref)
+		sbuf_str(sb, ln)
 		if (key == '\n')
-			sbuf_chr(sb, '\n');
+			sbuf_chr(sb, '\n')
 		led_printparts(ai, pref ? pref : "", uc_lastline(ln),
 				key == '\n' ? "" : post, *kmap);
 		if (key == '\n')
@@ -774,14 +771,16 @@ char *led_input(char *pref, char *post, int *kmap, int cln)
 		memmove(post, post + n, strlen(post) - n + 1);
 		cln++;
 	}
-	sbuf_str(sb, post);
+	sbuf_str(sb, post)
 	if (TK_INT(key) || (cln && key != TK_CTL('x')))
-		return sbuf_done(sb);
-	sbuf_free(sb);
+		sbufn_done(sb)
+	sbuf_free(sb)
 	return NULL;
 }
 
 void led_done(void)
 {
+	if (suggestsb)
+		sbuf_free(suggestsb)
 	delete(ROOT, ROOT);
 }

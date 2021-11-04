@@ -38,7 +38,6 @@
 #include "led.c"
 #include "regex.c"
 #include "ren.c"
-#include "sbuf.c"
 #include "term.c"
 #include "uc.c"
 
@@ -296,7 +295,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 /* read an ex input line */
 char *ex_read(char *msg)
 {
-	struct sbuf *sb;
+	sbuf *sb;
 	char c;
 	if (xled) {
 		int oleft = xleft;
@@ -309,14 +308,14 @@ char *ex_read(char *msg)
 		syn_setft(xhl ? ex_filetype() : "/");
 		return s;
 	}
-	sb = sbuf_make(xcols);
+	sbuf_make(sb, xcols)
 	while ((c = getchar()) != EOF && c != '\n')
-		sbuf_chr(sb, c);
+		sbuf_chr(sb, c)
 	if (c == EOF) {
-		sbuf_free(sb);
+		sbuf_free(sb)
 		return NULL;
 	}
-	return sbuf_done(sb);
+	sbufn_done(sb)
 }
 
 /* show an ex message */
@@ -438,16 +437,16 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 	int i, dir;
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
-		struct sbuf *sb;
+		sbuf *sb;
 		char *kw = vi_prompt(sign, 0, &xkmap);
 		char *re;
 		if (!kw)
 			return 1;
-		sb = sbuf_make(1024);
-		sbuf_chr(sb, cmd);
-		sbuf_str(sb, kw);
+		sbuf_make(sb, 1024)
+		sbuf_chr(sb, cmd)
+		sbufn_str(sb, kw)
 		free(kw);
-		kw = sbuf_buf(sb);
+		kw = sb->s;
 		if ((re = re_read(&kw))) {
 			ex_krsset(re[0] ? re : NULL, cmd == '/' ? +1 : -1);
 			while (isspace(*kw))
@@ -456,7 +455,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 			vi_so = atoi(kw);
 			free(re);
 		}
-		sbuf_free(sb);
+		sbuf_free(sb)
 	}
 	if (!lbuf_len(xb) || ex_krs(&rs, &dir))
 		return 1;
@@ -549,7 +548,7 @@ static int vi_motionln(int *row, int cmd)
 
 static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 {
-	struct sbuf *sb;
+	sbuf *sb;
 	char *ln = lbuf_get(lb, row);
 	char *beg, *end;
 	if (!ln || !n)
@@ -564,19 +563,19 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	}
 	if (beg >= --end)
 		return NULL;
-	sb = sbuf_make((end - beg)+64);
+	sbuf_make(sb, (end - beg)+64)
 	if (n > 1) {
 		for (; beg != end; beg++) {
 			if (strchr("{}[]().?\\^$|*/+", *beg))
-				sbuf_str(sb, "\\");
-			sbuf_chr(sb, *beg);
+				sbuf_str(sb, "\\")
+			sbuf_chr(sb, *beg)
 		}
-		return sbuf_done(sb);
+		sbufn_done(sb)
 	}
-	sbuf_str(sb, "\\<");
-	sbuf_mem(sb, beg, end - beg);
-	sbuf_str(sb, "\\>");
-	return sbuf_done(sb);
+	sbuf_str(sb, "\\<")
+	sbuf_mem(sb, beg, end - beg)
+	sbuf_str(sb, "\\>")
+	sbufn_done(sb)
 }
 
 char *vi_regget(int c, int *ln)
@@ -753,7 +752,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 static int vi_motion(int *row, int *off)
 {
 	static char sdirection;
-	static struct sbuf *savepath;
+	static sbuf *savepath;
 	static int _row, _off, srow, soff;
 	char path[1024];
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
@@ -870,16 +869,16 @@ static int vi_motion(int *row, int *off)
 		if (!fs_searchback(cnt, row, off)) {
 			if (savepath) {
 				*row = srow; *off = soff;
-				ex_edit(sbuf_buf(savepath));
+				ex_edit(savepath->s);
 			}
 		}
 		free(cs);
 		break;
 	case TK_CTL('t'):
 		if (!savepath)
-			savepath = sbuf_make(1024);
-		sbuf_cut(savepath, 0);
-		sbuf_str(savepath, ex_path());
+			sbuf_make(savepath, 1024)
+		sbuf_cut(savepath, 0)
+		sbufn_str(savepath, ex_path())
 		srow = *row; soff = *off;
 		break;
 	case '0':
@@ -979,21 +978,21 @@ static void swap(int *a, int *b)
 
 static char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
 {
-	struct sbuf *sb;
+	sbuf *sb;
 	char *s1, *s2, *s3;
 	if (r1 == r2)
 		return uc_sub(lbuf_get(lb, r1), o1, o2);
-	sb = sbuf_make(1024);
+	sbuf_make(sb, 1024)
 	s1 = uc_sub(lbuf_get(lb, r1), o1, -1);
 	s3 = uc_sub(lbuf_get(lb, r2), 0, o2);
 	s2 = lbuf_cp(lb, r1 + 1, r2);
-	sbuf_str(sb, s1);
-	sbuf_str(sb, s2);
-	sbuf_str(sb, s3);
+	sbuf_str(sb, s1)
+	sbuf_str(sb, s2)
+	sbuf_str(sb, s3)
 	free(s1);
 	free(s2);
 	free(s3);
-	return sbuf_done(sb);
+	sbufn_done(sb)
 }
 
 static void vi_yank(int r1, int o1, int r2, int o2, int lnmode)
@@ -1016,11 +1015,11 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
 	if (!lnmode) {
-		struct sbuf *sb = sbuf_make(1024);
-		sbuf_str(sb, pref);
-		sbuf_str(sb, post);
-		lbuf_edit(xb, sbuf_buf(sb), r1, r2 + 1);
-		sbuf_free(sb);
+		sbuf *sb; sbuf_make(sb, 1024)
+		sbuf_str(sb, pref)
+		sbufn_str(sb, post)
+		lbuf_edit(xb, sb->s, r1, r2 + 1);
+		sbuf_free(sb)
 	} else
 		lbuf_edit(xb, NULL, r1, r2 + 1);
 	xrow = r1;
@@ -1099,10 +1098,10 @@ static char *vi_input(char *pref, char *post, int *row, int *off, int cln)
 
 static char *vi_indents(char *ln)
 {
-	struct sbuf *sb = sbuf_make(256);
+	sbuf *sb; sbuf_make(sb, 256)
 	while (xai && ln && (*ln == ' ' || *ln == '\t'))
-		sbuf_chr(sb, *ln++);
-	return sbuf_done(sb);
+		sbuf_chr(sb, *ln++)
+	sbufn_done(sb)
 }
 
 static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
@@ -1149,12 +1148,12 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
 	if (!lnmode) {
-		struct sbuf *sb = sbuf_make(256);
-		sbuf_str(sb, pref);
-		sbuf_str(sb, region);
-		sbuf_str(sb, post);
-		lbuf_edit(xb, sbuf_buf(sb), r1, r2 + 1);
-		sbuf_free(sb);
+		sbuf *sb; sbuf_make(sb, 256)
+		sbuf_str(sb, pref)
+		sbuf_str(sb, region)
+		sbufn_str(sb, post)
+		lbuf_edit(xb, sb->s, r1, r2 + 1);
+		sbuf_free(sb)
 	} else
 		lbuf_edit(xb, region, r1, r2 + 1);
 	xrow = r2;
@@ -1182,22 +1181,22 @@ static void vi_pipe(int r1, int r2)
 
 static void vi_shift(int r1, int r2, int dir)
 {
-	struct sbuf *sb;
+	sbuf *sb; sbuf_make(sb, 1024)
 	char *ln;
 	int i;
 	for (i = r1; i <= r2; i++) {
 		if (!(ln = lbuf_get(xb, i)))
 			continue;
-		sb = sbuf_make(1024);
 		if (dir > 0)
-			sbuf_chr(sb, '\t');
+			sbuf_chr(sb, '\t')
 		else
 			ln = ln[0] == ' ' || ln[0] == '\t' ? ln + 1 : ln;
-		sbuf_str(sb, ln);
-		lbuf_edit(xb, sbuf_buf(sb), i, i + 1);
-		sbuf_free(sb);
+		sbufn_str(sb, ln)
+		lbuf_edit(xb, sb->s, i, i + 1);
+		sbuf_cut(sb, 0)
 	}
 	xoff = lbuf_indents(xb, r1);
+	sbuf_free(sb)
 }
 
 static int vc_motion(int cmd)
@@ -1309,33 +1308,32 @@ static int vc_put(int cmd)
 		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty\n");
 	if (!buf || !buf[0])
 		return 1;
+	sbuf *sb; sbuf_make(sb, 1024)
 	if (lnmode) {
-		struct sbuf *sb = sbuf_make(1024);
 		for (i = 0; i < cnt; i++)
-			sbuf_str(sb, buf);
+			sbufn_str(sb, buf)
 		if (!lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
 		if (cmd == 'p')
 			xrow++;
-		lbuf_edit(xb, sbuf_buf(sb), xrow, xrow);
+		lbuf_edit(xb, sb->s, xrow, xrow);
 		xoff = lbuf_indents(xb, xrow);
-		sbuf_free(sb);
+		sbuf_free(sb)
 		return 0;
 	}
-	struct sbuf *sb = sbuf_make(1024);
 	char *ln = xrow < lbuf_len(xb) ? lbuf_get(xb, xrow) : "\n";
 	int off = ren_noeol(ln, xoff) + (ln[0] != '\n' && cmd == 'p');
 	char *s = uc_sub(ln, 0, off);
-	sbuf_str(sb, s);
+	sbuf_str(sb, s)
 	free(s);
 	for (i = 0; i < cnt; i++)
-		sbuf_str(sb, buf);
+		sbuf_str(sb, buf)
 	s = uc_sub(ln, off, -1);
-	sbuf_str(sb, s);
+	sbufn_str(sb, s)
 	free(s);
-	lbuf_edit(xb, sbuf_buf(sb), xrow, xrow + 1);
+	lbuf_edit(xb, sb->s, xrow, xrow + 1);
 	xoff = off + uc_slen(buf) * cnt - 1;
-	sbuf_free(sb);
+	sbuf_free(sb)
 	return 0;
 }
 
@@ -1351,14 +1349,14 @@ static int join_spaces(char *prev, char *next)
 
 static void vc_join(void)
 {
-	struct sbuf *sb;
+	sbuf *sb;
 	int cnt = vi_arg1 <= 1 ? 2 : vi_arg1;
 	int beg = xrow;
 	int end = xrow + cnt;
 	int off = 0, i;
 	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
 		return;
-	sb = sbuf_make(1024);
+	sbufn_make(sb, 1024)
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		char *lnend = strchr(ln, '\n');
@@ -1366,16 +1364,16 @@ static void vc_join(void)
 		if (i > beg)
 			while (ln[0] == ' ' || ln[0] == '\t')
 				ln++;
-		spaces = i > beg ? join_spaces(sbuf_buf(sb), ln) : 0;
-		off = uc_slen(sbuf_buf(sb));
+		spaces = i > beg ? join_spaces(sb->s, ln) : 0;
+		off = uc_slen(sb->s);
 		while (spaces--)
-			sbuf_chr(sb, ' ');
-		sbuf_mem(sb, ln, lnend - ln);
+			sbuf_chr(sb, ' ')
+		sbufn_mem(sb, ln, lnend - ln)
 	}
-	sbuf_chr(sb, '\n');
-	lbuf_edit(xb, sbuf_buf(sb), beg, end);
+	sbufn_chr(sb, '\n')
+	lbuf_edit(xb, sb->s, beg, end);
 	xoff = off;
-	sbuf_free(sb);
+	sbuf_free(sb)
 	vi_mod = 1;
 }
 
@@ -1419,7 +1417,7 @@ static int vc_replace(void)
 	int cnt = MAX(1, vi_arg1);
 	char *cs = vi_char();
 	char *ln = lbuf_get(xb, xrow);
-	struct sbuf *sb;
+	sbuf *sb;
 	char *pref, *post;
 	char *s;
 	int off, i;
@@ -1433,15 +1431,15 @@ static int vc_replace(void)
 		return 1;
 	pref = uc_sub(ln, 0, off);
 	post = uc_sub(ln, off + cnt, -1);
-	sb = sbuf_make(1024);
-	sbuf_str(sb, pref);
+	sbuf_make(sb, 1024)
+	sbuf_str(sb, pref)
 	for (i = 0; i < cnt; i++)
-		sbuf_str(sb, cs);
-	sbuf_str(sb, post);
-	lbuf_edit(xb, sbuf_buf(sb), xrow, xrow + 1);
+		sbuf_str(sb, cs)
+	sbufn_str(sb, post)
+	lbuf_edit(xb, sb->s, xrow, xrow + 1);
 	off += cnt - 1;
 	xoff = off;
-	sbuf_free(sb);
+	sbuf_free(sb)
 	free(pref);
 	free(post);
 	return 0;
@@ -2056,7 +2054,7 @@ void vi(void)
 			int start = uc_off(cs, strcspn(cs, "{([})]"));
 			int ch = dstrlen(pairs, *uc_chr(cs, start));
 			if (ch < 9) {
-				static struct sbuf *sb;
+				static sbuf *sb;
 				char buf[100];
 				int pos = xleft ? ren_off(lbuf_get(xb, xrow), xleft) : 0;
 				start += xoff - pos;
@@ -2064,35 +2062,36 @@ void vi(void)
 				if (!lbuf_pair(xb, &row, &off)) {
 					off -= pos;
 					if (sb)
-						sbuf_free(sb);
-					sb = sbuf_make(128);
+						sbuf_free(sb)
+					sbuf_make(sb, 128)
 					if (off && row == xrow && off - start - 1 < 0)
 					{
 						ch += 3;
 						swap(&start, &off);
 					}
 					if (start) {
-						sbuf_str(sb, "^.{");
+						sbuf_str(sb, "^.{")
 						itoa(start, buf);
-						sbuf_str(sb, buf);
-						sbuf_str(sb, "}(\\{)");
+						sbuf_str(sb, buf)
+						sbuf_str(sb, "}(\\{)")
 					} else
-						sbuf_str(sb, "^(\\{)");
-					sbuf_buf(sb)[sbuf_len(sb)-2] = pairs[ch];
+						sbuf_str(sb, "^(\\{)")
+					sb->s[sb->s_n-2] = pairs[ch];
 					if (off && row == xrow) {
-						sbuf_str(sb, ".{");
+						sbuf_str(sb, ".{")
 						itoa(abs(off - start - 1), buf);
-						sbuf_str(sb, buf);
-						sbuf_str(sb, "}(\\})");
+						sbuf_str(sb, buf)
+						sbuf_str(sb, "}(\\})")
 					} else if (off) {
-						sbuf_str(sb, "|^.{");
+						sbuf_str(sb, "|^.{")
 						itoa(off, buf);
-						sbuf_str(sb, buf);
-						sbuf_str(sb, "}(\\})");
+						sbuf_str(sb, buf)
+						sbuf_str(sb, "}(\\})")
 					} else
-						sbuf_str(sb, "|^(\\})");
-					sbuf_buf(sb)[sbuf_len(sb)-2] = pairs[ch+3];
-					syn_addhl(sbuf_buf(sb), 3, 1);
+						sbuf_str(sb, "|^(\\})")
+					sb->s[sb->s_n-2] = pairs[ch+3];
+					sbuf_null(sb)
+					syn_addhl(sb->s, 3, 1);
 					vi_mod = 1;
 				}
 			}

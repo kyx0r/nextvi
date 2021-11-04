@@ -1,4 +1,4 @@
-struct sbuf *term_sbuf;
+sbuf *term_sbuf;
 int term_record;
 static int rows, cols;
 static struct termios termios;
@@ -7,7 +7,7 @@ void term_init(void)
 {
 	struct winsize win;
 	struct termios newtermios;
-	term_sbuf = sbuf_make(2048);
+	sbufn_make(term_sbuf, 2048)
 	tcgetattr(0, &termios);
 	newtermios = termios;
 	newtermios.c_lflag &= ~(ICANON | ISIG);
@@ -48,15 +48,15 @@ void term_suspend(void)
 
 void term_commit(void)
 {
-	write(1, sbuf_buf(term_sbuf), sbuf_len(term_sbuf));
-	sbuf_cut(term_sbuf, 0);
+	write(1, term_sbuf->s, term_sbuf->s_n);
+	sbuf_cut(term_sbuf, 0)
 	term_record = 0;
 }
 
 void term_out(char *s)
 {
 	if (term_record)
-		sbuf_str(term_sbuf, s);
+		sbufn_str(term_sbuf, s)
 	else
 		write(1, s, strlen(s));
 }
@@ -257,7 +257,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	argv[3+xish] = NULL;
 
 	struct pollfd fds[3];
-	struct sbuf *sb = NULL;
+	sbuf *sb;
 	char buf[512];
 	int ifd = -1, ofd = -1;
 	int slen = iproc ? strlen(ibuf) : 0;
@@ -266,7 +266,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	if (pid <= 0)
 		return NULL;
 	if (oproc)
-		sb = sbuf_make(64);
+		sbuf_make(sb, 64)
 	if (!iproc) {
 		signal(SIGINT, SIG_IGN);
 		term_done();
@@ -281,8 +281,8 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
 		if (fds[0].revents & POLLIN) {
 			int ret = read(fds[0].fd, buf, sizeof(buf));
-			if (ret > 0)
-				sbuf_mem(sb, buf, ret);
+			if (ret > 0 && oproc)
+				sbuf_mem(sb, buf, ret)
 			if (ret <= 0)
 				close(fds[0].fd);
 			continue;
@@ -320,7 +320,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 		signal(SIGINT, SIG_DFL);
 	}
 	if (oproc)
-		return sbuf_done(sb);
+		sbufn_done(sb)
 	return NULL;
 }
 

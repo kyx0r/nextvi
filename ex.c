@@ -20,7 +20,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
-struct sbuf *xacreg;		/* autocomplete db filter regex */
+sbuf *xacreg;		/* autocomplete db filter regex */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */
@@ -186,25 +186,25 @@ char *ex_filetype(void)
 /* replace % and # in paths and commands with current and alternate path names */
 static char *ex_pathexpand(char *src, int spaceallowed)
 {
-	struct sbuf *sb = sbuf_make(1024);
+	sbuf *sb; sbuf_make(sb, 1024)
 	while (*src && (spaceallowed || (*src != ' ' && *src != '\t')))
 	{
 		if (*src == '%' || *src == '#') {
 			int idx = *src == '#';
 			if (!bufs[idx].path || !bufs[idx].path[0]) {
 				ex_show("pathname \"%\" or \"#\" is not set\n");
-				sbuf_free(sb);
+				sbuf_free(sb)
 				return NULL;
 			}
-			sbuf_str(sb, bufs[idx].path);
+			sbuf_str(sb, bufs[idx].path)
 			src++;
 		} else {
 			if (*src == '\\' && src[1])
 				src++;
-			sbuf_chr(sb, *src++);
+			sbuf_chr(sb, *src++)
 		}
 	}
-	return sbuf_done(sb);
+	sbufn_done(sb)
 }
 
 /* the previous search keyword rset */
@@ -230,22 +230,22 @@ void ex_krsset(char *kwd, int dir)
 
 static int ex_search(char **pat)
 {
-	struct sbuf *kw;
+	sbuf *kw;
 	char *b = *pat;
 	char *e = b;
 	rset *re;
 	int dir, row;
-	kw = sbuf_make(64);
+	sbuf_make(kw, 64)
 	while (*++e) {
 		if (*e == **pat)
 			break;
-		sbuf_chr(kw, (unsigned char) *e);
+		sbufn_chr(kw, (unsigned char) *e)
 		if (*e == '\\' && e[1])
 			e++;
 	}
-	if (sbuf_len(kw))
-		ex_krsset(sbuf_buf(kw), **pat == '/' ? 1 : -1);
-	sbuf_free(kw);
+	if (kw->s_n)
+		ex_krsset(kw->s, **pat == '/' ? 1 : -1);
+	sbuf_free(kw)
 	*pat = *e ? e + 1 : e;
 	if (ex_krs(&re, &dir))
 		return -1;
@@ -584,20 +584,20 @@ static int ec_write(char *loc, char *cmd, char *arg)
 
 static int ec_insert(char *loc, char *cmd, char *arg)
 {
-	struct sbuf *sb;
+	sbuf *sb;
 	char *s;
 	int beg, end;
 	int n;
 	if (ex_region(loc, &beg, &end) && (beg != 0 || end != 0))
 		return 1;
-	sb = sbuf_make(64);
+	sbufn_make(sb, 64)
 	while ((s = ex_read(""))) {
 		if (!strcmp(".", s)) {
 			free(s);
 			break;
 		}
-		sbuf_str(sb, s);
-		sbuf_chr(sb, '\n');
+		sbuf_str(sb, s)
+		sbufn_chr(sb, '\n')
 		free(s);
 	}
 	if (cmd[0] == 'a')
@@ -606,9 +606,9 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 	if (cmd[0] != 'c')
 		end = beg;
 	n = lbuf_len(xb);
-	lbuf_edit(xb, sbuf_buf(sb), beg, end);
+	lbuf_edit(xb, sb->s, beg, end);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
-	sbuf_free(sb);
+	sbuf_free(sb)
 	return 0;
 }
 
@@ -711,21 +711,19 @@ static int ec_mark(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static void replace(struct sbuf *dst, char *rep, char *ln, int *offs)
+static void replace(sbuf *dst, char *rep, char *ln, int *offs)
 {
 	while (rep[0]) {
 		if (rep[0] == '\\' && rep[1]) {
 			if (rep[1] >= '0' && rep[1] <= '9') {
 				int grp = (rep[1] - '0') * 2;
 				int len = offs[grp + 1] - offs[grp];
-				sbuf_mem(dst, ln + offs[grp], len);
-			} else {
-				sbuf_chr(dst, (unsigned char) rep[1]);
-			}
+				sbuf_mem(dst, ln + offs[grp], len)
+			} else
+				sbuf_chr(dst, (unsigned char) rep[1])
 			rep++;
-		} else {
-			sbuf_chr(dst, (unsigned char) rep[0]);
-		}
+		} else
+			sbuf_chr(dst, (unsigned char) rep[0])
 		rep++;
 	}
 }
@@ -759,23 +757,22 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		lbuf_opt(xb, NULL, xrow, 0);
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
-		struct sbuf *r = NULL;
+		sbuf *r = NULL;
 		while (rset_find(re, ln, LEN(offs) / 2, offs, 0) >= 0) {
 			if (!r)
-				r = sbuf_make(offs[0]+offs[1]+1);
-			sbuf_mem(r, ln, offs[0]);
+				sbuf_make(r, offs[0]+offs[1]+1)
+			sbuf_mem(r, ln, offs[0])
 			replace(r, xrep, ln, offs);
 			ln += offs[1];
 			if (!*ln || !strchr(s, 'g'))
 				break;
 			if (offs[1] <= 0)	/* zero-length match */
-				sbuf_chr(r, (unsigned char) *ln++);
+				sbuf_chr(r, (unsigned char) *ln++)
 		}
-		if (r)
-		{
-			sbuf_str(r, ln);
-			lbuf_edit(xb, sbuf_buf(r), i, i + 1);
-			sbuf_free(r);
+		if (r) {
+			sbufn_str(r, ln)
+			lbuf_edit(xb, r->s, i, i + 1);
+			sbuf_free(r)
 		}
 	}
 	if (end - beg > xrows)
@@ -977,12 +974,12 @@ static int ec_setincl(char *loc, char *cmd, char *arg)
 static int ec_setacreg(char *loc, char *cmd, char *arg)
 {
 	if (xacreg)
-		sbuf_free(xacreg);
+		sbuf_free(xacreg)
 	if (!*arg)
 		xacreg = NULL;
 	else {
-		xacreg = sbuf_make(128);
-		sbuf_str(xacreg, arg);
+		sbuf_make(xacreg, 128)
+		sbufn_str(xacreg, arg)
 	}
 	return 0;
 }
