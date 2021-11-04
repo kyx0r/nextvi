@@ -163,7 +163,7 @@ static void file_ternary(struct lbuf* buf)
 				char part[len];
 				memcpy(part, ss[i]+sidx+subs[0], len);
 				part[len] = '\0';
-				if (search(part, len > 2 ? len-1 : len, ROOT) != -1)
+				if (search(part, len > 2 ? len-1 : len, ROOT) >= 0)
 					if (!(suggestsb->s_n && dstrlen(suggestsb->s, '\n') == len))
 						insert_node(part, ROOT);
 			}
@@ -564,16 +564,15 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('g'):
 			if (!suggestsb)
 				sbuf_make(suggestsb, 1)
-			sug = NULL;
 			file_ternary(xb);
 			break;
 		case TK_CTL('y'):
 			led_done();
-			suggestsb = NULL; sug = NULL;
+			suggestsb = NULL;
 			break;
 		case TK_CTL('r'):
-			if (!suggestsb)
-				break;
+			if (!suggestsb || !suggestsb->s_n)
+				continue;
 			if (!sug)
 				sug = suggestsb->s;
 			if (suggestsb->s_n == sug - suggestsb->s)
@@ -591,13 +590,10 @@ static char *led_line(char *pref, char *post, char *ai,
 			goto redo_suggest;
 		case TK_CTL('n'):
 			if (!suggestsb)
-				break;
-			if (!sug)
-				sug = suggestsb->s;
-			if (_sug)
-			{
+				continue;
+			if (_sug) {
 				if (suggestsb->s_n == sug - suggestsb->s)
-					break;
+					continue;
 				redo_suggest:
 				if (!(_sug = strchr(sug, '\n'))) {
 					sug = suggestsb->s;
@@ -611,22 +607,22 @@ static char *led_line(char *pref, char *post, char *ai,
 				last_sug = sb->s_n;
 				sbufn_str(sb, sug)
 				sug = _sug+1;
-				break;
+				continue;
 			}
 			lookup:
 			cs = sb->s;
 			if ((i = led_lastword(cs)) > last_sug)
 				i = last_sug;
-			if (search(cs + i, len - i, ROOT))
-			{
+			if (search(cs + i, len - i, ROOT) == 1) {
+				sug = suggestsb->s;
 				if (!(_sug = strchr(sug, '\n')))
-					break;
+					continue;
 				goto suggest;
 			}
-			break;
+			continue;
 		case TK_CTL('b'):
 			if (ai_max > 0)
-				break;
+				continue;
 			xquit = 0;
 			td_set(xotd);
 			temp_write(0, sb->s);
@@ -658,7 +654,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			goto kleave;
 		case TK_CTL('l'):
 			term_clean();
-			break;
+			continue;
 		case 'j':
 			if (xqexit &&
 				(difftime(time(0), quickexit) * 1000) < 1000)
@@ -682,12 +678,9 @@ _default:
 			if ((cs = led_readchar(c, *kmap)))
 				sbufn_str(sb, cs)
 		}
-		if (sug && c != TK_CTL('n') && c != TK_CTL('r')) {
-			if (sb->s_n > len)
-				last_sug = sb->s_n;
-			sug = suggestsb->s;
-			_sug = NULL;
-		}
+		if (sb->s_n > len)
+			last_sug = sb->s_n;
+		sug = NULL; _sug = NULL;
 		if (c == '\n' || TK_INT(c))
 			break;
 	}
