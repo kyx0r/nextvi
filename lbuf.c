@@ -212,14 +212,8 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
 	sbuf *sb; sbuf_make(sb, 1000000)
 	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
 		if (sb->s_n + nr >= sb->s_sz) {
-			int newsz = NEXTSZ(sb->s_sz, sb->s_sz + 1);
-			char buf[100]; itoa(newsz, buf);
-			/* We can't just do newsz < 0 because
-			gcc is bugged and decides to optimize the
-			condition, report will be filed. 
-			Same types and same condition happens in itoa yet
-			it works there. EPIC FAIL by GCC */
-			if (buf[0] == '-')
+			unsigned int newsz = NEXTSZ(sb->s_sz, sb->s_sz + 1);
+			if ((int)newsz < 0)
 				break; //can't read files > ~2GB
 			sb->s_n += nr;
 			sbuf_extend(sb, newsz)

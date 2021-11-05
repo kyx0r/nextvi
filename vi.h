@@ -32,8 +32,8 @@ void vi(void);
 #define NEXTSZ(o, r)	ALIGN(MAX((o) * 2, (o) + (r)), SBUFSZ)
 typedef struct sbuf {
 	char *s;		/* allocated buffer */
-	int s_n;		/* length of the string stored in s[] */
-	int s_sz;		/* size of memory allocated for s[] */
+	unsigned int s_n;	/* length of the string stored in s[] */
+	unsigned int s_sz;	/* size of memory allocated for s[] */
 } sbuf;
 
 #define sbuf_extend(sb, newsz) \
