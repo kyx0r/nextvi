@@ -1,5 +1,95 @@
 /* rendering strings */
 
+static rset *dir_rslr;	/* pattern of marks for left-to-right strings */
+static rset *dir_rsrl;	/* pattern of marks for right-to-left strings */
+static rset *dir_rsctx;	/* direction context patterns */
+
+static void dir_reverse(int *ord, int beg, int end)
+{
+	end--;
+	while (beg < end) {
+		int tmp = ord[beg];
+		ord[beg] = ord[end];
+		ord[end] = tmp;
+		beg++;
+		end--;
+	}
+}
+
+/* reorder the characters based on direction marks and characters */
+static int dir_reorder(char **chrs, int *ord, int end)
+{
+	int dir = dir_context(chrs[0]);
+	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
+	if (!rs)
+		return 0;
+	int beg = 0, end1 = end, r_beg, r_end, c_beg, c_end;
+	int subs[32], grp, found;
+	if (end && *chrs[end-1] == '\n')
+		*chrs[end-1] = '\0';
+	while (beg < end) {
+		char *s = chrs[beg];
+		found = rset_find(rs, s, 16, subs, 0);
+		if (found >= 0) {
+			for (int i = 0; i < end1; i++)
+				ord[i] = i;
+			end1 = -1;
+			grp = dmarks[found].grp;
+			r_beg = uc_off(s, subs[0]);
+			r_end = uc_off(s, subs[1]);
+			c_beg = subs[grp * 2 + 0] >= 0 ? uc_off(s, subs[grp * 2 + 0]) : r_beg;
+			c_end = subs[grp * 2 + 1] >= 0 ? uc_off(s, subs[grp * 2 + 1]) : r_end;
+			if (dir < 0)
+				dir_reverse(ord, r_beg+beg, r_end+beg);
+			if (dmarks[found].dir < 0)
+				dir_reverse(ord, c_beg+beg, c_end+beg);
+			beg = r_end+beg;
+		} else
+			break;
+	}
+	if (end && *chrs[end-1] == '\0')
+		*chrs[end-1] = '\n';
+	return end1 < 0;
+}
+
+/* return the direction context of the given line */
+int dir_context(char *s)
+{
+	int found;
+	if (xtd > +1)
+		return +1;
+	if (xtd < -1)
+		return -1;
+	if (dir_rsctx && s)
+		if ((found = rset_find(dir_rsctx, s, 0, NULL, 0)) >= 0)
+			return dctxs[found].dir;
+	return xtd < 0 ? -1 : +1;
+}
+
+void dir_init(void)
+{
+	char *relr[128];
+	char *rerl[128];
+	char *ctx[128];
+	int i;
+	for (i = 0; i < dmarkslen; i++) {
+		relr[i] = dmarks[i].ctx >= 0 ? dmarks[i].pat : NULL;
+		rerl[i] = dmarks[i].ctx <= 0 ? dmarks[i].pat : NULL;
+	}
+	dir_rslr = rset_make(i, relr, 0);
+	dir_rsrl = rset_make(i, rerl, 0);
+	for (i = 0; i < dctxlen; i++)
+		ctx[i] = dctxs[i].pat;
+	dir_rsctx = rset_make(i, ctx, 0);
+}
+
+void dir_done(void)
+{
+	rset_free(dir_rslr);
+	rset_free(dir_rsrl);
+	rset_free(dir_rsctx);
+}
+
 static char *last_str;
 static char **last_chrs;
 static int *last_pos;
@@ -171,96 +261,6 @@ char *ren_translate(char *s, char *ln)
 {
 	char *p = ren_placeholder(s);
 	return p || !xshape ? p : uc_shape(ln, s);
-}
-
-static rset *dir_rslr;	/* pattern of marks for left-to-right strings */
-static rset *dir_rsrl;	/* pattern of marks for right-to-left strings */
-static rset *dir_rsctx;	/* direction context patterns */
-
-static void dir_reverse(int *ord, int beg, int end)
-{
-	end--;
-	while (beg < end) {
-		int tmp = ord[beg];
-		ord[beg] = ord[end];
-		ord[end] = tmp;
-		beg++;
-		end--;
-	}
-}
-
-/* reorder the characters based on direction marks and characters */
-int dir_reorder(char **chrs, int *ord, int end)
-{
-	int dir = dir_context(chrs[0]);
-	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
-	if (!rs)
-		return 0;
-	int beg = 0, end1 = end, r_beg, r_end, c_beg, c_end;
-	int subs[32], grp, found;
-	if (end && *chrs[end-1] == '\n')
-		*chrs[end-1] = '\0';
-	while (beg < end) {
-		char *s = chrs[beg];
-		found = rset_find(rs, s, 16, subs, 0);
-		if (found >= 0) {
-			for (int i = 0; i < end1; i++)
-				ord[i] = i;
-			end1 = -1;
-			grp = dmarks[found].grp;
-			r_beg = uc_off(s, subs[0]);
-			r_end = uc_off(s, subs[1]);
-			c_beg = subs[grp * 2 + 0] >= 0 ? uc_off(s, subs[grp * 2 + 0]) : r_beg;
-			c_end = subs[grp * 2 + 1] >= 0 ? uc_off(s, subs[grp * 2 + 1]) : r_end;
-			if (dir < 0)
-				dir_reverse(ord, r_beg+beg, r_end+beg);
-			if (dmarks[found].dir < 0)
-				dir_reverse(ord, c_beg+beg, c_end+beg);
-			beg = r_end+beg;
-		} else
-			break;
-	}
-	if (end && *chrs[end-1] == '\0')
-		*chrs[end-1] = '\n';
-	return end1 < 0;
-}
-
-/* return the direction context of the given line */
-int dir_context(char *s)
-{
-	int found;
-	if (xtd > +1)
-		return +1;
-	if (xtd < -1)
-		return -1;
-	if (dir_rsctx && s)
-		if ((found = rset_find(dir_rsctx, s, 0, NULL, 0)) >= 0)
-			return dctxs[found].dir;
-	return xtd < 0 ? -1 : +1;
-}
-
-void dir_init(void)
-{
-	char *relr[128];
-	char *rerl[128];
-	char *ctx[128];
-	int i;
-	for (i = 0; i < dmarkslen; i++) {
-		relr[i] = dmarks[i].ctx >= 0 ? dmarks[i].pat : NULL;
-		rerl[i] = dmarks[i].ctx <= 0 ? dmarks[i].pat : NULL;
-	}
-	dir_rslr = rset_make(i, relr, 0);
-	dir_rsrl = rset_make(i, rerl, 0);
-	for (i = 0; i < dctxlen; i++)
-		ctx[i] = dctxs[i].pat;
-	dir_rsctx = rset_make(i, ctx, 0);
-}
-
-void dir_done(void)
-{
-	rset_free(dir_rslr);
-	rset_free(dir_rsrl);
-	rset_free(dir_rsctx);
 }
 
 #define NFTS		16

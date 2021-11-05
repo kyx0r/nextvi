@@ -7,25 +7,13 @@ typedef struct tern {
 	struct tern* r_child;
 	struct tern* m_child;
 } tern_t;
-static tern_t* ROOT = &(tern_t){.word= 'a'};
+static tern_t *ROOT = &(tern_t){.word= 'a'};
 static sbuf *suggestsb;
 
-//creats a tern_t, allocates memory, and initializes it.
-static tern_t* create_node(char w);
-//inserts a null-terminated word into the tree.
-static tern_t* insert_node(const char* string, tern_t* node);
-//finds the node where the given prefix ends. Helper function for 'search'
-static tern_t* find_node(const char* string, int l, tern_t* node);
-//frees allocated memory. Note: Does not free the root node of the tree.
-static void delete(tern_t* root, tern_t* node);
-//finds the words with prefix 'pattern' and prints out the results to 'out'.
-static int search(const char* pattern, int l, tern_t* node);
-
-static tern_t* create_node(char w)
+//create a ternary search tree
+static tern_t *create_node(char w)
 {
 	tern_t *node = (tern_t*)malloc(sizeof(tern_t));
-	if (!node)
-		abort();
 	node->word = w;
 	node->l_child = NULL;
 	node->m_child = NULL;
@@ -34,9 +22,9 @@ static tern_t* create_node(char w)
 	return node;
 }
 
-static tern_t* insert_node(const char* string, tern_t* node)
+// insert a null-terminated word into the tree.
+static tern_t *insert_node(const char *string, tern_t *node)
 {
-	int i = strlen(string);
 	if (!node)
 		node = create_node(string[0]);
 	if (string[0] < node->word)
@@ -45,7 +33,7 @@ static tern_t* insert_node(const char* string, tern_t* node)
 		node->r_child = insert_node(string, node->r_child);
 	else {
 		//go one level down the tree if the word has not been found here.
-		if (i == 1) {
+		if (!*(string+1)) {
 			node->type = 1;
 			return node;
 		} else
@@ -54,7 +42,7 @@ static tern_t* insert_node(const char* string, tern_t* node)
 	return node;
 }
 
-static tern_t* find_node(const char* string, int l, tern_t* node)
+static tern_t* find_node(const char *string, int l, tern_t *node)
 {
 	int i = 0;
 	tern_t* currentNode = node;
@@ -78,7 +66,7 @@ static tern_t* find_node(const char* string, int l, tern_t* node)
 	return NULL;
 }
 
-static void deep_search(const char* pattern, int len, tern_t* start)
+static void deep_search(const char *pattern, int len, tern_t *start)
 {
 	if (start->type) {
 		sbuf_mem(suggestsb, pattern, len)
@@ -98,11 +86,11 @@ static void deep_search(const char* pattern, int len, tern_t* start)
 	}
 }
 
-static int search(const char* pattern, int l, tern_t* node)
+static int search(const char *pattern, int l, tern_t *node)
 {
 	sbuf_cut(suggestsb, 0)
 	//finds the node where the prefix ends.
-	tern_t* current = find_node(pattern, l, node);
+	tern_t *current = find_node(pattern, l, node);
 	if (!current)
 		return 0;
 	else {
@@ -115,7 +103,8 @@ static int search(const char* pattern, int l, tern_t* node)
 	return -1;
 }
 
-static void delete(tern_t* root, tern_t* node)
+// Note: Does not free the root node of the tree.
+static void delete(tern_t *root, tern_t *node)
 {
 	if (node) {
 		if (node->l_child) {
@@ -145,7 +134,7 @@ int dstrlen(const char *s, char delim)
 	return i-s;
 }
 
-static void file_ternary(struct lbuf* buf)
+static void file_ternary(struct lbuf *buf)
 {
 	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"\n]*";
 	int len, sidx;
@@ -426,7 +415,6 @@ static void led_printparts(char *ai, char *pref, char *main,
 			ren_pos(ln->s, off - 1) < 0 ? -1 : +1;
 		sbuf_cut(ln, len)
 	}
-	term_record = 1;
 	sbufn_str(ln, post)
 	pos = ren_cursor(ln->s, ren_pos(ln->s, MAX(0, off - 1)));
 	if (pos >= xleft + xcols)
@@ -438,7 +426,6 @@ static void led_printparts(char *ai, char *pref, char *main,
 	led_print(ln->s, -1);
 	term_pos(-1, led_pos(ln->s, pos + idir));
 	sbuf_free(ln)
-	term_commit();
 }
 
 /* continue reading the character starting with c */

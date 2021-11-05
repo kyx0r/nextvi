@@ -160,7 +160,6 @@ char *ren_translate(char *s, char *ln);
 int ren_cwid(char *s, int pos);
 /* text direction */
 int dir_context(char *s);
-int dir_reorder(char **chrs, int *ord, int end);
 void dir_init(void);
 void dir_done(void);
 /* syntax highlighting */

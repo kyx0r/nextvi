@@ -211,9 +211,12 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
 	long nr;
 	sbuf *sb; sbuf_make(sb, 1000000)
 	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
-		sb->s_n += nr;
-		if (sb->s_n >= sb->s_sz)
+		if (sb->s_n + nr >= sb->s_sz) {
+			if (NEXTSZ(sb->s_sz, sb->s_sz + 1) < 0)
+				break; //can't read files > ~2GB
+			sb->s_n += nr;
 			sbuf_extend(sb, NEXTSZ(sb->s_sz, sb->s_sz + 1))
+		}
 	}
 	sbuf_null(sb)
 	lbuf_edit(lbuf, sb->s, beg, end);
