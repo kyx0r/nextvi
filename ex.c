@@ -20,7 +20,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
-sbuf *xacreg;		/* autocomplete db filter regex */
+sbuf *xacreg;			/* autocomplete db filter regex */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */

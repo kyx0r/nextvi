@@ -13,14 +13,14 @@ struct lopt {
 
 /* line buffers */
 struct lbuf {
-	int mark[NMARKS];	/* mark lines */
-	int mark_off[NMARKS];	/* mark line offsets */
 	char **ln;		/* buffer lines */
 	char *ln_glob;		/* line global mark */
+	struct lopt *hist;	/* buffer history */
+	int mark[NMARKS];	/* mark lines */
+	int mark_off[NMARKS];	/* mark line offsets */
 	int ln_n;		/* number of lines in ln[] */
 	int ln_sz;		/* size of ln[] */
 	int useq;		/* current operation sequence */
-	struct lopt *hist;	/* buffer history */
 	int hist_sz;		/* size of hist[] */
 	int hist_n;		/* current history head in hist[] */
 	int hist_u;		/* current undo head in hist[] */
@@ -111,7 +111,7 @@ void lbuf_free(struct lbuf *lb)
 static int linelength(char *s)
 {
 	char *r = strchr(s, '\n');
-	return r ? r - s + 1 : strlen(s);
+	return r ? r - s + 1 : (int)strlen(s);
 }
 
 static int lbuf_linecount(char *s)
@@ -212,8 +212,8 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
 	sbuf *sb; sbuf_make(sb, 1000000)
 	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
 		if (sb->s_n + nr >= sb->s_sz) {
-			unsigned int newsz = NEXTSZ(sb->s_sz, sb->s_sz + 1);
-			if ((int)newsz < 0)
+			int newsz = NEXTSZ((unsigned int)sb->s_sz, (unsigned int)sb->s_sz + 1);
+			if (newsz < 0)
 				break; //can't read files > ~2GB
 			sb->s_n += nr;
 			sbuf_extend(sb, newsz)

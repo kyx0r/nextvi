@@ -159,11 +159,11 @@ int uc_kind(char *c)
 
 /* sorted list of characters that can be shaped */
 static struct achar {
-	unsigned c;		/* utf-8 code */
-	unsigned s;		/* single form */
-	unsigned i;		/* initial form */
-	unsigned m;		/* medial form */
-	unsigned f;		/* final form */
+	unsigned int c;		/* utf-8 code */
+	unsigned int s;		/* single form */
+	unsigned int i;		/* initial form */
+	unsigned int m;		/* medial form */
+	unsigned int f;		/* final form */
 } achars[] = {
 	{0x0621, 0xfe80},				/* hamza */
 	{0x0622, 0xfe81, 0, 0, 0xfe82},			/* alef madda */
@@ -212,7 +212,7 @@ static struct achar {
 	{0x200d, 0, 0x200d, 0x200d},			/* ZWJ */
 };
 
-static struct achar *find_achar(int c)
+static struct achar *find_achar(unsigned int c)
 {
 	int h, m, l;
 	h = LEN(achars);
@@ -561,7 +561,7 @@ static int uc_iszw(int c)
 	return c >= 0x0300 && find(c, zwchars, LEN(zwchars));
 }
 
-int uc_wid(char *s, int cp)
+int uc_wid(int cp)
 {
 	if (uc_iszw(cp))
 		return 0;

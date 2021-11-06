@@ -254,7 +254,7 @@ int ren_cwid(char *s, int pos)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)
 			return placeholders[i].wid;
-	return (c = uc_wid(s, c)) ? c : 1;
+	return (c = uc_wid(c)) ? c : 1;
 }
 
 char *ren_translate(char *s, char *ln)

@@ -625,7 +625,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			goto cur_histstr;
 		case TK_CTL('v'):
 			if (ai_max > 0)
-				break;
+				continue;
 			cur_histstr:
 			cs = temp_curstr(0, i);
 			if (cs) {

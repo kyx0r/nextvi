@@ -1,5 +1,12 @@
 #!/bin/sh -e
-CFLAGS="-pedantic -Wall -Wfatal-errors -std=c99 -D_POSIX_C_SOURCE=200809L $CFLAGS"
+CFLAGS="\
+-pedantic -Wall -Wextra \
+-Wno-implicit-fallthrough \
+-Wno-missing-field-initializers \
+-Wno-unused-parameter \
+-Wfatal-errors -std=c99 \
+-D_POSIX_C_SOURCE=200809L $CFLAGS"
+
 OS="$(uname)"
 : ${CC:=$(command -v cc)}
 : ${PREFIX:=/usr/local}

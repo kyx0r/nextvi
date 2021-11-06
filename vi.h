@@ -10,7 +10,7 @@ files and thus is never static.
 */
 
 /* helper macros */
-#define LEN(a)		(sizeof(a) / sizeof((a)[0]))
+#define LEN(a)		(int)(sizeof(a) / sizeof((a)[0]))
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 #define MAX(a, b)	((a) < (b) ? (b) : (a))
 /* for debug; printf() but to file */
@@ -31,9 +31,9 @@ void vi(void);
 #define ALIGN(n, a)	(((n) + (a) - 1) & ~((a) - 1))
 #define NEXTSZ(o, r)	ALIGN(MAX((o) * 2, (o) + (r)), SBUFSZ)
 typedef struct sbuf {
-	char *s;		/* allocated buffer */
-	unsigned int s_n;	/* length of the string stored in s[] */
-	unsigned int s_sz;	/* size of memory allocated for s[] */
+	char *s;	/* allocated buffer */
+	int s_n;	/* length of the string stored in s[] */
+	int s_sz;	/* size of memory allocated for s[] */
 } sbuf;
 
 #define sbuf_extend(sb, newsz) \
@@ -41,8 +41,7 @@ typedef struct sbuf {
 	char *s = sb->s; \
 	sb->s_sz = newsz; \
 	sb->s = malloc(sb->s_sz); \
-	if (sb->s_n) \
-		memcpy(sb->s, s, sb->s_n); \
+	memcpy(sb->s, s, sb->s_n); \
 	free(s); \
 } \
 
@@ -51,35 +50,35 @@ typedef struct sbuf {
 	sb = malloc(sizeof(*sb)); \
 	sb->s = NULL; \
 	sb->s_n = 0; \
-	sbuf_extend(sb, newsz); \
+	sbuf_extend(sb, newsz) \
 } \
 
 #define sbuf_chr(sb, c) \
 { \
-	if (sb->s_n + 2 >= sb->s_sz) \
-		sbuf_extend(sb, NEXTSZ(sb->s_sz, 1)); \
+	if (sb->s_n + 1 == sb->s_sz) \
+		sbuf_extend(sb, NEXTSZ(sb->s_sz, 1)) \
 	sb->s[sb->s_n++] = c; \
 } \
 
 #define sbuf_(sb, x, len, func) \
-if (sb->s_n + len + 1 >= sb->s_sz) \
-	sbuf_extend(sb, NEXTSZ(sb->s_sz, len + 1)); \
+if (sb->s_n + len >= sb->s_sz) \
+	sbuf_extend(sb, NEXTSZ(sb->s_sz, len + 1)) \
 mem##func(sb->s + sb->s_n, x, len); \
 sb->s_n += len; \
 
 #define sbuf_free(sb) { free(sb->s); free(sb); }
 #define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
 #define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
-#define sbuf_str(sb, s) { sbuf_(sb, s, strlen(s), cpy) }
-#define sbuf_cut(sb, len) { if (sb->s_n > len) sb->s_n = len; }
+#define sbuf_str(sb, s) { sbuf_(sb, s, (int)strlen(s), cpy) }
+#define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that NULL terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
 #define sbufn_done(sb) { char *s = sb->s; sbuf_null(sb) free(sb); return s; }
 #define sbufn_make(sb, newsz) { sbuf_make(sb, newsz) sbuf_null(sb) }
-#define sbufn_set(sb, ch, len) { sbuf_(sb, ch, len, set) sbuf_null(sb) }
-#define sbufn_mem(sb, s, len) { sbuf_(sb, s, len, cpy) sbuf_null(sb) }
-#define sbufn_str(sb, s) { sbuf_(sb, s, strlen(s), cpy) sbuf_null(sb) }
-#define sbufn_cut(sb, len) { if (sb->s_n > len) sb->s_n = len; sbuf_null(sb) }
+#define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
+#define sbufn_mem(sb, s, len) { sbuf_mem(sb, s, len) sbuf_null(sb) }
+#define sbufn_str(sb, s) { sbuf_str(sb, s) sbuf_null(sb) }
+#define sbufn_cut(sb, len) { sbuf_cut(sb, len) sbuf_null(sb) }
 #define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_null(sb) }
 
 /* regex.c regular expression sets */
@@ -188,9 +187,7 @@ void syn_done(void);
 
 extern const unsigned char utf8_length[256];
 /* return the length of a utf-8 character */
-#define uc_len(dst, s) \
-dst = utf8_length[(unsigned char)s[0]]; \
-
+#define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
 /* the unicode codepoint of the given utf-8 character */
 #define uc_code(dst, s) \
 dst = (unsigned char) s[0]; \
@@ -205,7 +202,7 @@ else if (~dst & 0x08) \
 else \
 	dst = 0; \
 
-int uc_wid(char *s, int cp);
+int uc_wid(int cp);
 int uc_slen(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
@@ -246,7 +243,7 @@ int term_cols(void);
 int term_read(void);
 void term_commit(void);
 char *term_att(int att);
-void term_push(char *s, int n);
+void term_push(char *s, unsigned int n);
 char *term_cmd(int *n);
 /* process management */
 char *cmd_pipe(char *cmd, char *s, int iproc, int oproc);

@@ -29,7 +29,7 @@ void term_init(void)
 void term_done(void)
 {
 	term_commit();
-	sbuf_free(term_sbuf);
+	sbuf_free(term_sbuf)
 	tcsetattr(0, 0, &termios);
 }
 
@@ -107,10 +107,10 @@ int term_cols(void)
 	return cols;
 }
 
-static char ibuf[4096];		/* input character buffer */
-static char icmd[4096];		/* read after the last term_cmd() */
-static int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
-static int icmd_pos;		/* icmd[] position */
+static char ibuf[4096];			/* input character buffer */
+static char icmd[4096];			/* read after the last term_cmd() */
+static unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
+static unsigned int icmd_pos;		/* icmd[] position */
 
 void term_clear()
 {
@@ -118,7 +118,7 @@ void term_clear()
 }
 
 /* read s before reading from the terminal */
-void term_push(char *s, int n)
+void term_push(char *s, unsigned int n)
 {
 	n = MIN(n, sizeof(ibuf) - ibuf_cnt);
 	memcpy(ibuf + ibuf_cnt, s, n);
