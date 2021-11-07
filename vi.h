@@ -374,6 +374,7 @@ extern int xkmap_alt;
 extern int xtabspc;
 extern int xqexit;
 extern int xish;
+extern int xgrp;
 extern sbuf *xacreg;
 extern rset *fsincl;
 extern char *fslink;

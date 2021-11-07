@@ -649,7 +649,7 @@ static void file_calc(char *path, char *basepath)
 		path[pathlen] = '/';
 		memcpy(&path[pathlen+1], dp->d_name, len1);
 		if (fsincl)
-			if (rset_find(fsincl, path, 0, 0, 0) < 0)
+			if (rset_find(fsincl, path, 0, NULL, 0) < 0)
 				continue;
 		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
 		{

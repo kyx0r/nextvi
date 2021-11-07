@@ -136,27 +136,30 @@ int dstrlen(const char *s, char delim)
 
 static void file_ternary(struct lbuf *buf)
 {
-	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"\n]*";
-	int len, sidx;
+	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"\n]+";
+	int len, sidx, flg, grp = xgrp;
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf);
-	int subs[2];
+	int subs[grp];
 	rset *rs = rset_make(1, (char*[]){xacreg ? xacreg->s : reg}, xic ? REG_ICASE : 0);
 	if (!rs)
 		return;
 	for (int i = 0; i < ln_n; i++) {
-		sidx = 0;
-		while (rset_find(rs, ss[i]+sidx, 1, subs, 0) >= 0) {
-			len = subs[1] - subs[0];
+		sidx = 0; flg = 0;
+		while (rset_find(rs, ss[i]+sidx, grp / 2, subs, flg) >= 0) {
+			if (subs[grp - 1] < 0)
+				break;
+			len = subs[grp - 1] - subs[grp - 2];
 			if (len > 1) {
 				char part[len];
-				memcpy(part, ss[i]+sidx+subs[0], len);
+				memcpy(part, ss[i]+sidx+subs[grp - 2], len);
 				part[len] = '\0';
 				if (search(part, len > 2 ? len-1 : len, ROOT) >= 0)
 					if (!(suggestsb->s_n && dstrlen(suggestsb->s, '\n') == len))
 						insert_node(part, ROOT);
 			}
-			sidx += subs[1] > 0 ? subs[1] : 1;
+			sidx += subs[grp - 1] > 0 ? subs[grp - 1] : 1;
+			flg = REG_NOTBOL;
 		}
 	}
 	rset_free(rs);

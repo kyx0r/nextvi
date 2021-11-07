@@ -20,6 +20,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
+int xgrp = 2;			/* regex search group */
 sbuf *xacreg;			/* autocomplete db filter regex */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
@@ -833,7 +834,6 @@ static int ex_exec(char *ln);
 static int ec_glob(char *loc, char *cmd, char *arg)
 {
 	rset *re;
-	int offs[32];
 	int beg, end, not;
 	char *pat, *s = arg;
 	int i;
@@ -854,7 +854,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	i = beg;
 	while (i < lbuf_len(xb)) {
 		char *ln = lbuf_get(xb, i);
-		if ((rset_find(re, ln, LEN(offs) / 2, offs, 0) < 0) == not) {
+		if ((rset_find(re, ln, 0, NULL, 0) < 0) == not) {
 			xrow = i;
 			if (ex_exec(s))
 				break;
@@ -887,6 +887,7 @@ static struct option {
 	{"tbs", &xtabspc},
 	{"qe", &xqexit},
 	{"ish", &xish},
+	{"grp", &xgrp},
 };
 
 static char *cutword(char *s, char *d)

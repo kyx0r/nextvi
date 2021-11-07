@@ -286,6 +286,16 @@ feature will not work on that ft, regardless of ex options being set.
 Removed "make" ex command. Commands like these are not wanted, nextvi
 shall provide a more general purpose solution for the user, like the
 keybind v; for example.
+66. Added new ex option "grp". The following allows you to define the
+search group for / ? n N and (31.) autocomplete. This becomes necessary
+if you want the result of regex search to be based on some group rather
+than default match group. For example you want to search for the whole
+line but exclude the tabs at the beginning of the line, use regex like
+this: [	]+(.[^ ]+) since we only want the capture result for our search
+use the "grp" like this: :se grp=4 .The number 4 is important,
+it is calculated using: grpnum * 2, to get the second group number
+do: 2 * 2 = 4. The first group is always 2, 1 * 2 = 2, :se grp=2 gets you
+back to default behavior when you are done using it.
 
 PIKEVM:
 -------
@@ -500,7 +510,7 @@ NEXTVI:
 338,052,852 (75.49%)  regex.c:re_pikevm [/root/klec/cprogs/nextvi/vi]
 /* 70% of this time is taken up by bookkeeping the NFA states */
  45,392,967 (10.14%)  /string/x86_64/memcpy.s:0x0000000000079792 [/usr/lib/libc.so]
-/* this memcpy is the cost of submatch tracking, my improved version of 
+/* this memcpy is the cost of submatch tracking, my improved version of
 Cox's algorithm at work, pulling great stats */
  13,196,403 ( 2.95%)  led.c:led_render [/root/klec/cprogs/nextvi/vi]
   6,039,280 ( 1.35%)  /ctype/isalnum.c:isalnum [/usr/lib/libc.so]
@@ -547,10 +557,10 @@ apply needs to be computed only once. Planning to rework in the future.
 - Given more fair conditions the perf gap would be even wider.
 - Always check the quantitative quality of the software you use.
 - Original implementaion is riddled with redundant allocations
-and computations. Don't blame Ali for being sloppy, it's a 
+and computations. Don't blame Ali for being sloppy, it's a
 inefficiency by choice. In order for Nextvi to exist it has to be
 supercede neatvi, which is respectfully shown.
-- We produce less lines of code for equivalent execution and it 
+- We produce less lines of code for equivalent execution and it
 runs faster. It's easier for you to read, because we have everything
 in check, you will be able to read this code faster.
 

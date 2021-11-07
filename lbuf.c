@@ -420,27 +420,29 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
 {
-	int offs[2];
-	int found = 0, i;
-	int r0 = *r, o0 = *o;
-	for (i = r0; !found && i >= 0 && i < lbuf_len(lb); i += dir) {
-		char *s = lbuf_get(lb, i);
-		int off = dir > 0 && r0 == i ? uc_chr(s, o0 + 1) - s : 0;
-		while (rset_find(re, s + off, 1, offs,
+	int r0 = *r, o0 = *o, grp = xgrp;
+	int offs[grp], i = r0;
+	char *s = lb->ln[i];
+	int off = dir > 0 ? uc_chr(s, o0 + 1) - s : 0;
+	int ln_n = lbuf_len(lb);
+	for (; i >= 0 && i < ln_n; i += dir) {
+		s = lb->ln[i];
+		while (rset_find(re, s + off, grp / 2, offs,
 				off ? REG_NOTBOL : 0) >= 0) {
-			if (dir < 0 && r0 == i &&
-					uc_off(s, off + offs[0]) >= o0)
+			int g1 = offs[grp - 2], g2 = offs[grp - 1];
+			if (g1 < 0 || (dir < 0 && r0 == i && uc_off(s, off+g1) >= o0))
 				break;
-			found = 1;
-			*o = uc_off(s, off + offs[0]);
+			*o = uc_off(s, off + g1);
 			*r = i;
-			*len = uc_off(s + off + offs[0], offs[1] - offs[0]);
-			off += offs[1] > offs[0] ? offs[1] : offs[1] + 1;
+			*len = uc_off(s + off + g1, g2 - g1);
+			off += g2 > g1 ? g2 : g2 + 1;
 			if (dir > 0)
-				break;
+				return 0;
+			ln_n = -1; // break outer loop efficiently
 		}
+		off = 0;
 	}
-	return !found;
+	return ln_n < 0 ? 0 : 1;
 }
 
 int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
