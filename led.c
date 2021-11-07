@@ -137,7 +137,7 @@ int dstrlen(const char *s, char delim)
 static void file_ternary(struct lbuf *buf)
 {
 	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"\n]+";
-	int len, sidx, flg, grp = xgrp;
+	int len, sidx, grp = xgrp;
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf);
 	int subs[grp];
@@ -145,10 +145,15 @@ static void file_ternary(struct lbuf *buf)
 	if (!rs)
 		return;
 	for (int i = 0; i < ln_n; i++) {
-		sidx = 0; flg = 0;
-		while (rset_find(rs, ss[i]+sidx, grp / 2, subs, flg) >= 0) {
-			if (subs[grp - 1] < 0)
-				break;
+		sidx = 0;
+		while (rset_find(rs, ss[i]+sidx, grp / 2, subs,
+				sidx ? REG_NOTBOL : 0) >= 0) {
+			/* if target group not found, continue with group 1 
+			which will always be valid, otherwise there be no match */
+			if (subs[grp - 2] < 0) {
+				sidx += subs[1] > 0 ? subs[1] : 1;
+				continue;
+			}
 			len = subs[grp - 1] - subs[grp - 2];
 			if (len > 1) {
 				char part[len];
@@ -159,7 +164,6 @@ static void file_ternary(struct lbuf *buf)
 						insert_node(part, ROOT);
 			}
 			sidx += subs[grp - 1] > 0 ? subs[grp - 1] : 1;
-			flg = REG_NOTBOL;
 		}
 	}
 	rset_free(rs);

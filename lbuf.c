@@ -430,12 +430,16 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
 		while (rset_find(re, s + off, grp / 2, offs,
 				off ? REG_NOTBOL : 0) >= 0) {
 			int g1 = offs[grp - 2], g2 = offs[grp - 1];
-			if (g1 < 0 || (dir < 0 && r0 == i && uc_off(s, off+g1) >= o0))
+			if (g1 < 0) {
+				off += offs[1] > 0 ? offs[1] : 1;
+				continue;
+			}
+			if (dir < 0 && r0 == i && uc_off(s, off+g1) >= o0)
 				break;
 			*o = uc_off(s, off + g1);
 			*r = i;
 			*len = uc_off(s + off + g1, g2 - g1);
-			off += g2 > g1 ? g2 : g2 + 1;
+			off += g2 > 0 ? g2 : 1;
 			if (dir > 0)
 				return 0;
 			ln_n = -1; // break outer loop efficiently
