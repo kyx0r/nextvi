@@ -88,16 +88,6 @@ char *itoa(int n, char s[])
 	return &s[i];
 }
 
-static void vi_wait(void)
-{
-	if (vi_printed > 1) {
-		free(ex_read("[enter to continue]"));
-		vi_msg[0] = '\0';
-		vi_mod = 1;
-	}
-	vi_printed = 0;
-}
-
 static void vi_drawmsg(void)
 {
 	if (vi_msg[0])
@@ -269,6 +259,16 @@ static char *vi_char(void)
 	return led_read(&xkmap);
 }
 
+static void vi_wait(void)
+{
+	if (vi_printed > 1) {
+		vi_char();
+		vi_msg[0] = '\0';
+		vi_mod = 1;
+	}
+	vi_printed = 0;
+}
+
 static char *vi_prompt(char *msg, char *insert, int *kmap)
 {
 	char *r, *s;
@@ -340,17 +340,14 @@ void ex_print(char *line)
 	syn_blockhl = 0;
 	if (xvis) {
 		vi_printed += line ? 1 : 2;
-		if (line)
-		{
+		if (line) {
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 			syn_setft("---");
 			led_print(line, -1);
 			syn_setft(xhl ? ex_filetype() : "/");
 		}
 		term_chr('\n');
-		return;
-	}
-	if (line)
+	} else if (line)
 		ex_show(line);
 }
 
@@ -1632,8 +1629,7 @@ void vi(void)
 				term_kill();
 				ex_command("b");
 				vi_arg1 = vi_digit();
-				if (vi_arg1 > -1)
-				{
+				if (vi_arg1 > -1) {
 					ec_bufferi(&vi_arg1);
 					vc_status();
 					vi_mod = 1;
