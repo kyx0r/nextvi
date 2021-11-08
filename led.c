@@ -136,7 +136,7 @@ int dstrlen(const char *s, char delim)
 
 static void file_ternary(struct lbuf *buf)
 {
-	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"\n]+";
+	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"]+";
 	int len, sidx, grp = xgrp;
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf);

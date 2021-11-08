@@ -25,8 +25,6 @@ static int dir_reorder(char **chrs, int *ord, int end)
 		return 0;
 	int beg = 0, end1 = end, r_beg, r_end, c_beg, c_end;
 	int subs[32], grp, found;
-	if (end && *chrs[end-1] == '\n')
-		*chrs[end-1] = '\0';
 	while (beg < end) {
 		char *s = chrs[beg];
 		found = rset_find(rs, s, 16, subs, 0);
@@ -47,8 +45,6 @@ static int dir_reorder(char **chrs, int *ord, int end)
 		} else
 			break;
 	}
-	if (end && *chrs[end-1] == '\0')
-		*chrs[end-1] = '\n';
 	return end1 < 0;
 }
 

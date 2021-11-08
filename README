@@ -104,19 +104,18 @@ By default it will use big regex like [^;...]* to sort out all the punctuation
 chars from words and build a database of words. But in order to take full
 advantage out of the completion system, you can change this regex at runtime
 using new ex command "ac". For example say we don't want word completion
-and we want entire line completion instead, run :ac .*  You will notice
-that it works as expected, however sometimes it requires you to press ^n
-again because the line becomes empty. This is due to the fact that our
-database entries have included the '\n' character, and that has a special
-meaning in the datastructure. To prevent this we need to modify that regex
-to not grab the '\n', but doing so is not possible normally as there is no
-way to type '\n' at the ex prompt. But because of change (47.) we can type
-'\n' using ^k j keybind. Therefore our regex becomes .*[^\n] and full
-line completion works as expected.
-Next, you will find that the autocomplete db is persistent throughout
+and we want entire line completion instead, run :ac .*  
+You will find that the autocomplete db is persistent throughout
 all buffers and it also has data duplication and redundancy checking
 such that you can index multiple files as you need in your workflow,
-maybe even using different filter rules.
+maybe even using different filter rules. If your regex rule
+allows inclusion of nonalphanumeric characters like tab or space
+at the beginning of matched string it will work a bit differently,
+for example using entry "	word" you won't be able to retreive it if you
+type "	w", because it will try searching from the "w" character
+and not the tab, reasoning that the tab is next separator. Determining
+whether it's part of the completion or next entry is ambiguous.
+The only solution, is to simply not type the "w".
 Like ^g used to index file in insert mode you can use ^y from insert
 to out clear the completion db.
 Running ex command "ac" with no argument will reset back to the default
@@ -287,8 +286,8 @@ Removed "make" ex command. Commands like these are not wanted, nextvi
 shall provide a more general purpose solution for the user, like the
 keybind v; for example.
 66. Added new ex option "grp". The following allows you to define the
-search group for / ? n N and (31.) autocomplete. This becomes necessary
-if you want the result of regex search to be based on some group rather
+search group for / ? n N (31.) autocomplete and ex substitution. This becomes 
+necessary if you want the result of regex search to be based on some group rather
 than default match group. For example you want to search for the whole
 line but exclude the tabs at the beginning of the line, use regex like
 this: [	]+(.[^ ]+) since we only want the capture result for our search
@@ -326,37 +325,37 @@ more difficult tasks. Simple and flexible design allows for
 straight forward solutions to any problem long term and filters
 bad inconsistent ideas.
 You should never find yourself in a situation where feature "a"
-is only really usable under certain conditions and enviroment
+is only really usable under certain conditions / enviroment
 and has a specific implementation which can never
 be used for anything else - this is bloat. Unfortunately I have
 not seen a single text editor who's goal is to not crap pile in as many
 features as possible, but to only address the core nature of text
-manipulation and its logistics. Adding 4 new scripting languages 20 rust 
-dependencies, making gpu accelerated gui, nesting 100s of small files in a 5 
-level deep directory structure, waiting 5 minutes for git clone, compiling for 
-30 minutes, we've all seen it. NOBODY asked for that, yet they all do it, and 
-most either don't care or remain ignorant. Does all this help users to better 
-understand the software they use? Does this help users to be creative and 
-learn to do things themselves instead of relying on sucky implementations, 
-whence it's not even clear where they start or do they end? Developer might 
+manipulation and its logistics. Adding 4 new scripting languages, 20 rust
+dependencies, making gpu accelerated gui, nesting 100s of small files in a 5
+level deep directory structure, waiting 5 minutes for git clone, compiling for
+30 minutes, we've all seen it. NOBODY asked for that, yet they all do it, and
+most either don't care or remain ignorant. Does all this help users to better
+understand the software they use? Does this help users to be creative and
+learn to do things themselves instead of relying on sucky implementations,
+whence it's not even clear where they start or do they end? Developer might
 look smart, but the doctor was right - symptoms are of intergluteal cleft.
-"But they are developers they know better, right?" - False, they force you to 
-eat their shit which you can't opt out of or change easily. Even worse, often 
-they are incompetent to fix problems they created themselves. My goal is to 
-learn from past mistakes/successes, optimizing for the best featureset 
-effective yield ratio proven by time. Therefore, a lot more thought and 
-consideration is to be put into every feature. It would be too difficult to 
-define precise formula of "reasonableness", with simplification it comes down 
+"But they are developers they know better, right?" - False, they force you to
+eat their shit which you can't opt out of or change easily. Even worse, often
+they are incompetent to fix problems they created themselves. My goal is to
+learn from past mistakes/successes, optimizing for the best featureset
+effective yield ratio proven by time. Therefore, a lot more thought and
+consideration is to be put into every feature. It would be too difficult to
+define precise formula of "reasonableness", with simplification it comes down
 to a few of my rules in the order:
 	1. Number of cpu cycles taken * complexity of required result
 	2. How does the feature improve/affect other existing features
 	3. How does the feature address the main problem of the program,
 	universality, how often it will be used, number of cases covered
 	4. Number of lines of code in implementation (raw)
-Now assign some weight value to each of those points and multiply by 
+Now assign some weight value to each of those points and multiply by
 their order number and sum everything up. The final value would determine
-the "reasonableness", bigger means better. As the smartest programmer once 
-said that figuring out this "reasonableness" is the hardest question in 
+the "reasonableness", bigger means better. As the smartest programmer once
+said that figuring out this "reasonableness" is the hardest question in
 programming.
 
 Q: Keybind with CTRL does not work?
@@ -433,7 +432,7 @@ gu, gU, and g~ in normal mode: switch character case.
 
 LESSER KNOWN FEATURES
 ---------------------
-- "Ever tried reading the source code?" 
+- "Ever tried reading the source code?"
 Yes, that is a lesser known feature, what did you expect?
 Jokes aside (with a level of truth to it), these features exist
 in many other vi implementations but neither man pages cover their
@@ -459,10 +458,10 @@ same syntax as ex substitution command, but instead of replacement
 string it takes an ex command after the / / enclosed regex.
 Example: remove empty lines
 :g/^\n/d
-Try doing similar with substitution command - will result in a segfault
-as removing '\n' without deleting the line is invalid, but it will work
-with global command. Note: '\n' character used in example is not what it
-ought to be in the real command.
+Try doing similar with substitution command - will not work as removing '\n' 
+without deleting the line is invalid, but it will work with global command. 
+Note: '\n' character used in example is not what it ought to be in the real 
+command.
 
 OPTIONS
 -------

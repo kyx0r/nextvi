@@ -494,7 +494,7 @@ for (;; sp = _sp) { \
 		decref(nsub) \
 	} \
 	break_for##n: \
-	if (!c) \
+	if (c == '\n' || !c) \
 		break; \
 	tmp = clist; \
 	clist = nlist; \
