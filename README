@@ -325,6 +325,24 @@ the only core commands or a mix with some specific C code for
 more difficult tasks. Simple and flexible design allows for
 straight forward solutions to any problem long term and filters
 bad inconsistent ideas.
+You should never find yourself in a situation where feature "a"
+is only really usable under certain conditions and enviroment
+and has a specific implementation which can never
+be used for anything else - this is bloat, and unfortunately I have
+not seen a single text editor who's goal is to not crap in as many
+features as possible, but to only address the core nature and it's
+primary job - text manipulation. The rest is up to the user's creativity
+to decide how to use the software. Adding 4 new scripting languages
+20 rust dependencies, making gpu accelerated gui, deep nesting
+100s of small files in a 5 level deep directory structure, waiting
+5 minutes for git clone, compiling for 30 minutes, NOBODY
+asked for that, yet they all do it, and nobody cares (they are 
+developers they know better, right?). Does all this help your users
+to better understand the software they use? Does this help them to be
+creative and learn to do things themselves instead of relying
+on your sucky implementations, whence it's not even clear where
+they start or do they end. You might look smart, but the doctor
+was right - symptoms are of intergluteal cleft.
 
 Q: Keybind with CTRL does not work?
 A: vi is reading ASCII codes sent by the terminal. Depending on the
