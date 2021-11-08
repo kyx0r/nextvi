@@ -398,6 +398,39 @@ ze and zf in normal mode: switch to the English and alternate keymap.
 gu, gU, and g~ in normal mode: switch character case.
 ^l in normal mode: updates terminal dimensions (after resizing it).
 
+LESSER KNOWN FEATURES
+---------------------
+- "Ever tried reading the source code?" 
+Yes, that is a lesser known feature, what did you expect?
+Jokes aside (with a level of truth to it), these features exist
+in many other vi implementations but neither man pages cover their
+functionality in an understandable language, describe it here instead.
+
+- @@ macros:
+1. Type out the macro or load from file such that it is in some vi buffer.
+2. Use keybind "ayy on the macro, this will store it in register 'a'
+3. Use @a to play it back, where a stands for that 'a' register
+4. @@ repeats the last macro on next line
+
+- substitution backreference
+This inserts the text of matched group specified by \x where x is
+group number. Example:
+this is an example text for subs and has int or void
+:%s/(int)\\|(void)/pre\0after
+this is an example text for subs and has preintafter or void
+:%s/(int)\\|(void)/pre\2after/g
+this is an example text for subs and has prepreafterafter or prevoidafter
+
+- ex global command
+same syntax as ex substitution command, but instead of replacement
+string it takes an ex command after the / / enclosed regex.
+Example: remove empty lines
+:g/^\n/d
+Try doing similar with substitution command - will result in a segfault
+as removing '\n' without deleting the line is invalid, but it will work
+with global command. Note: '\n' character used in example is not what it
+ought to be in the real command.
+
 OPTIONS
 -------
 
