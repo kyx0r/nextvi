@@ -328,21 +328,36 @@ bad inconsistent ideas.
 You should never find yourself in a situation where feature "a"
 is only really usable under certain conditions and enviroment
 and has a specific implementation which can never
-be used for anything else - this is bloat, and unfortunately I have
-not seen a single text editor who's goal is to not crap in as many
-features as possible, but to only address the core nature and it's
-primary job - text manipulation. The rest is up to the user's creativity
-to decide how to use the software. Adding 4 new scripting languages
-20 rust dependencies, making gpu accelerated gui, deep nesting
-100s of small files in a 5 level deep directory structure, waiting
-5 minutes for git clone, compiling for 30 minutes, NOBODY
-asked for that, yet they all do it, and nobody cares (they are 
-developers they know better, right?). Does all this help your users
-to better understand the software they use? Does this help them to be
-creative and learn to do things themselves instead of relying
-on your sucky implementations, whence it's not even clear where
-they start or do they end. You might look smart, but the doctor
-was right - symptoms are of intergluteal cleft.
+be used for anything else - this is bloat. Unfortunately I have
+not seen a single text editor who's goal is to not crap pile in as many
+features as possible, but to only address the core nature of text
+manipulation and its logistics. Adding 4 new scripting languages 20 rust 
+dependencies, making gpu accelerated gui, nesting 100s of small files in a 5 
+level deep directory structure, waiting 5 minutes for git clone, compiling for 
+30 minutes, we've all seen it. NOBODY asked for that, yet they all do it, and 
+most either don't care or remain ignorant. Does all this help users to better 
+understand the software they use? Does this help users to be creative and 
+learn to do things themselves instead of relying on sucky implementations, 
+whence it's not even clear where they start or do they end? Developer might 
+look smart, but the doctor was right - symptoms are of intergluteal cleft.
+"But they are developers they know better, right?" - False, they force you to 
+eat their shit which you can't opt out of or change easily. Even worse, often 
+they are incompetent to fix problems they created themselves. My goal is to 
+learn from past mistakes/successes, optimizing for the best featureset 
+effective yield ratio proven by time. Therefore, a lot more thought and 
+consideration is to be put into every feature. It would be too difficult to 
+define precise formula of "reasonableness", with simplification it comes down 
+to a few of my rules in the order:
+	1. Number of cpu cycles taken * complexity of required result
+	2. How does the feature improve/affect other existing features
+	3. How does the feature address the main problem of the program,
+	universality, how often it will be used, number of cases covered
+	4. Number of lines of code in implementation (raw)
+Now assign some weight value to each of those points and multiply by 
+their order number and sum everything up. The final value would determine
+the "reasonableness", bigger means better. As the smartest programmer once 
+said that figuring out this "reasonableness" is the hardest question in 
+programming.
 
 Q: Keybind with CTRL does not work?
 A: vi is reading ASCII codes sent by the terminal. Depending on the
