@@ -179,7 +179,7 @@ char *term_att(int att)
 	if (SYN_BGSET(att)) {
 		*s++ = ';';
 		if ((bg & 0xff) < 8)
-			s = itoa(40 + (fg & 0xff), s);
+			s = itoa(40 + (bg & 0xff), s);
 		else
 			s = itoa(bg & 0xff, (char*)memcpy(s, "48;5;", 5)+5);
 	}

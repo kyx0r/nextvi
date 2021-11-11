@@ -41,7 +41,7 @@ bright colors
 */
 
 struct highlight hls[] = {
-	/* lbuf lines are *always "\n\0" terminated, for to work $ one needs to grab '\n' too */
+	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to grab '\n' too */
 	/* "/" is default hl, must have at least 1 entry for fallback */
 	{"/", NULL, {14 | SYN_BD}, {1}, 0, 2},  /* <-- optional, used by hll if set */
 	/* optional, used by hlp if set */
@@ -130,7 +130,7 @@ default|break|continue)\\>", {11}},
 	{"nm", NULL, {9}, {0}, 0, 1},
 	{"nm", "^([ROU])([0-9]+)\t([^\t]*)\t([^\t]*)",
 		{0 | SYN_BGMK(15), 6 | SYN_BD, 12 | SYN_BD, 5, 8 | SYN_BD}},
-	{"nm", "^[N].*$", {0 | SYN_BD | SYN_BGMK(6)}},
+	{"nm", "^[N].*", {0 | SYN_BD | SYN_BGMK(6)}},
 	{"nm", "^[A-Z][HT].*", {0 | SYN_BD | SYN_BGMK(13)}},
 	{"nm", "^[A-Z][MI].*", {0 | SYN_BD | SYN_BGMK(11)}},
 	{"nm", "^[A-Z][LJ].*", {7 | SYN_BGMK(15)}},
