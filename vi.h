@@ -82,12 +82,10 @@ sb->s_n += len; \
 #define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_null(sb) }
 
 /* regex.c regular expression sets */
-#define REG_EXTENDED		0x01
-#define REG_NOSUB		0x02
-#define REG_ICASE		0x04
-#define REG_NEWLINE		0x08
-#define REG_NOTBOL		0x10
-#define REG_NOTEOL		0x20
+#define REG_ICASE	0x01
+#define REG_NEWLINE	0x02 /* Unlike posix, controls termination by '\n' */
+#define REG_NOTBOL	0x04
+#define REG_NOTEOL	0x08
 typedef struct {
 	char *rm_so;
 	char *rm_eo;
@@ -172,6 +170,7 @@ void dir_done(void);
 #define SYN_BGSET(a)	((a) & 0x20ff00)
 #define SYN_FG(a)	((a) & 0xff)
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
+extern int syn_reload;
 extern int syn_blockhl;
 void syn_setft(char *ft);
 void syn_scdir(int scdir);

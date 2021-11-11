@@ -428,7 +428,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
 	for (; i >= 0 && i < ln_n; i += dir) {
 		s = lb->ln[i];
 		while (rset_find(re, s + off, grp / 2, offs,
-				off ? REG_NOTBOL : 0) >= 0) {
+				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
 			int g1 = offs[grp - 2], g2 = offs[grp - 1];
 			if (g1 < 0) {
 				off += offs[1] > 0 ? offs[1] : 1;

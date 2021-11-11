@@ -27,7 +27,8 @@ static int dir_reorder(char **chrs, int *ord, int end)
 	int subs[32], grp, found;
 	while (beg < end) {
 		char *s = chrs[beg];
-		found = rset_find(rs, s, 16, subs, 0);
+		found = rset_find(rs, s, 16, subs,
+				*chrs[end-1] == '\n' ? REG_NEWLINE : 0);
 		if (found >= 0) {
 			for (int i = 0; i < end1; i++)
 				ord[i] = i;
@@ -274,7 +275,7 @@ static rset *syn_ftrs;
 static int last_scdir;
 static int *blockatt;
 static int blockcont;
-static int syn_reload;
+int syn_reload;
 int syn_blockhl;
 
 static int syn_find(char *ft)
@@ -294,8 +295,6 @@ int syn_merge(int old, int new)
 
 void syn_setft(char *ft)
 {
-	if (!strcmp(ftmap[ftidx].ft, ft))
-		return;
 	for (int i = 1; i < 4; i++)
 		syn_addhl(NULL, i, 0);
 	if ((ftidx = syn_find(ft)) < 0)

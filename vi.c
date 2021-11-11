@@ -97,7 +97,7 @@ static void vi_drawmsg(void)
 		syn_blockhl = 0;
 		syn_setft("---");
 		led_printmsg(vi_msg, xrows);
-		syn_setft(xhl ? ex_filetype() : "/");
+		syn_setft(ex_filetype());
 		xleft = oleft;
 	}
 }
@@ -199,7 +199,6 @@ static void vi_drawagain()
 {
 	int i;
 	term_record = 1;
-	syn_setft(xhl ? ex_filetype() : "/");
 	syn_scdir(0);
 	syn_blockhl = 0;
 	for (i = xtop; i < xtop + xrows; i++)
@@ -216,7 +215,6 @@ static void vi_drawupdate(int otop)
 	term_record = 1;
 	term_pos(0, 0);
 	term_room(i);
-	syn_setft(xhl ? ex_filetype() : "/");
 	syn_scdir(i > 1 || i < -1 ? -1 : i);
 	if (i < 0) {
 		int n = MIN(-i, xrows);
@@ -262,6 +260,8 @@ static char *vi_char(void)
 static void vi_wait(void)
 {
 	if (vi_printed > 1) {
+		strcpy(vi_msg, "[any key to continue] ");
+		vi_drawmsg();
 		vi_char();
 		vi_msg[0] = '\0';
 		vi_mod = 1;
@@ -278,7 +278,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	term_kill();
 	syn_setft("---");
 	s = led_prompt(msg, "", insert, kmap);
-	syn_setft(xhl ? ex_filetype() : "/");
+	syn_setft(ex_filetype());
 	if (xquit == 2) {
 		vi_mod = 1;
 		xquit = 0;
@@ -305,7 +305,7 @@ char *ex_read(char *msg)
 		xleft = oleft;
 		if (s)
 			term_chr('\n');
-		syn_setft(xhl ? ex_filetype() : "/");
+		syn_setft(ex_filetype());
 		return s;
 	}
 	sbuf_make(sb, xcols)
@@ -328,7 +328,7 @@ void ex_show(char *msg)
 		syn_setft("---");
 		led_print(msg, -1);
 		term_chr('\n');
-		syn_setft(xhl ? ex_filetype() : "/");
+		syn_setft(ex_filetype());
 	} else {
 		printf("%s", msg);
 	}
@@ -344,7 +344,7 @@ void ex_print(char *line)
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 			syn_setft("---");
 			led_print(line, -1);
-			syn_setft(xhl ? ex_filetype() : "/");
+			syn_setft(ex_filetype());
 		}
 		term_chr('\n');
 	} else if (line)
@@ -478,7 +478,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 		}
 	}
 	if (failed)
-		snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found\n", regs['/']);
+		snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found", regs['/']);
 	return failed;
 }
 
@@ -1302,7 +1302,7 @@ static int vc_put(int cmd)
 	char *buf = vi_regget(vi_ybuf, &lnmode);
 	int i;
 	if (!buf)
-		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty\n");
+		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty");
 	if (!buf || !buf[0])
 		return 1;
 	sbuf *sb; sbuf_make(sb, 1024)
@@ -1390,7 +1390,7 @@ static void vc_status(void)
 {
 	int col = vi_off2col(xb, xrow, xoff);
 	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%c %d lines %d%% L%d C%d\n",
+		"\"%s\"%c %d lines %d%% L%d C%d",
 		ex_path()[0] ? ex_path() : "unnamed",
 		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
@@ -1405,7 +1405,7 @@ static void vc_charinfo(void)
 		int l; uc_len(l, c)
 		memcpy(cbuf, c, l);
 		uc_code(l, c)
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %04x\n", cbuf, l);
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> %04x", cbuf, l);
 	}
 }
 
@@ -1469,7 +1469,7 @@ static void vc_execute(void)
 		for (i = 0; i < MAX(1, vi_arg1); i++)
 			term_push(buf, strlen(buf));
 	else
-		snprintf(vi_msg, sizeof(vi_msg), "exec buffer empty\n");
+		snprintf(vi_msg, sizeof(vi_msg), "exec buffer empty");
 }
 
 static void vi_argcmd(int arg, char cmd)
@@ -1641,14 +1641,14 @@ void vi(void)
 					lbuf_jump(xb, '*', &xrow, &xoff);
 					vi_mod = 1;
 				} else
-					snprintf(vi_msg, sizeof(vi_msg), "undo failed\n");
+					snprintf(vi_msg, sizeof(vi_msg), "undo failed");
 				break;
 			case TK_CTL('r'):
 				if (!lbuf_redo(xb)) {
 					lbuf_jump(xb, '*', &xrow, &xoff);
 					vi_mod = 1;
 				} else
-					snprintf(vi_msg, sizeof(vi_msg), "redo failed\n");
+					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
 				break;
 			case TK_CTL('g'):
 				vc_status();

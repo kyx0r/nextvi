@@ -398,7 +398,6 @@ https://github.com/kyx0r/nextvi/tree/dfa_dead
 
 CONFIGURATION
 -------------
-
 Edit conf.c to adjust syntax highlighting rules and text direction
 patterns.  To define a new keymap, create a new array in kmap.h, like
 kmap_fa, and add it to kmaps array in the same header (the first entry
@@ -409,15 +408,14 @@ keymap specified with :cm).
 
 COMMANDS
 --------
-
-Commands not available in ex(1):
-
 :cm[ap][!] [kmap]
   Without kmap, prints the current keymap name.
   When kmap is specified, sets the alternate keymap to
   kmap and, unless ! is given, switches to this keymap.
 :ft [filetype]
-  Without filetype, prints the current file type.
+  Without filetype, prints the current file type and
+  reloads the highlight ft, makes it possible to reset
+  dynamic hilights created by options like "hlw".
   When filetype is specified, sets the file type of the
   current ex buffer.
 

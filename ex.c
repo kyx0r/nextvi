@@ -119,6 +119,7 @@ void temp_switch(int i)
 	xoff = bufs[0].off;
 	xtop = bufs[0].top;
 	xtd = bufs[0].td;
+	syn_setft(bufs[0].ft);
 }
 
 void temp_write(int i, char *str)
@@ -167,6 +168,7 @@ static void bufs_switch(int idx)
 	xoff = bufs[0].off;
 	xtop = bufs[0].top;
 	xtd = bufs[0].td;
+	syn_setft(bufs[0].ft);
 }
 
 char *ex_path(void)
@@ -193,7 +195,7 @@ static char *ex_pathexpand(char *src, int spaceallowed)
 		if (*src == '%' || *src == '#') {
 			int idx = *src == '#';
 			if (!bufs[idx].path || !bufs[idx].path[0]) {
-				ex_show("pathname \"%\" or \"#\" is not set\n");
+				ex_show("pathname \"%\" or \"#\" is not set");
 				sbuf_free(sb)
 				return NULL;
 			}
@@ -252,7 +254,7 @@ static int ex_search(char **pat)
 		return -1;
 	row = xrow + dir;
 	while (row >= 0 && row < lbuf_len(xb)) {
-		if (rset_find(re, lbuf_get(xb, row), 0, NULL, 0) >= 0)
+		if (rset_find(re, lbuf_get(xb, row), 0, NULL, REG_NEWLINE) >= 0)
 			break;
 		row += dir;
 	}
@@ -374,7 +376,7 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 		if (i < NUM_BUFS && bufs[i].lb)
 			bufs_switch(i);
 		else
-			ex_show("no such buffer\n");
+			ex_show("no such buffer");
 	}
 	return 0;
 }
@@ -382,7 +384,7 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 static int ec_quit(char *loc, char *cmd, char *arg)
 {
 	if (!strchr(cmd, '!'))
-		if (ex_modifiedbuffer("buffer modified\n"))
+		if (ex_modifiedbuffer("buffer modified"))
 			return 1;
 	xquit = 1;
 	return 0;
@@ -393,10 +395,10 @@ fd = open(ex_path(), O_RDONLY); \
 if (fd >= 0) { \
 	int rd = lbuf_rd(xb, fd, 0, lbuf_len(xb)); \
 	close(fd); \
-	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]\n", \
+	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]", \
 			ex_path(), lbuf_len(xb)); \
 	if (rd) \
-		ex_show("read failed\n"); \
+		ex_show("read failed"); \
 	else \
 		ex_show(msg); \
 } \
@@ -428,7 +430,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	char *path;
 	int fd;
 	if (!strchr(cmd, '!'))
-		if (xb && ex_modifiedbuffer("buffer modified\n"))
+		if (xb && ex_modifiedbuffer("buffer modified"))
 			return 1;
 	if (!(path = ex_pathexpand(arg, 0)))
 		return 1;
@@ -502,18 +504,18 @@ static int ec_read(char *loc, char *cmd, char *arg)
 		int fd = open(path, O_RDONLY);
 		int pos = lbuf_len(xb) ? end : 0;
 		if (fd < 0) {
-			ex_show("read failed\n");
+			ex_show("read failed");
 			return 1;
 		}
 		if (lbuf_rd(xb, fd, pos, pos)) {
-			ex_show("read failed\n");
+			ex_show("read failed");
 			close(fd);
 			return 1;
 		}
 		close(fd);
 	}
 	xrow = end + lbuf_len(xb) - n - 1;
-	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]\n",
+	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 			path, lbuf_len(xb) - n);
 	ex_show(msg);
 	return 0;
@@ -548,26 +550,26 @@ static int ec_write(char *loc, char *cmd, char *arg)
 		if (!strchr(cmd, '!') && bufs[0].path &&
 				!strcmp(bufs[0].path, path) &&
 				mtime(bufs[0].path) > bufs[0].mtime) {
-			ex_show("write failed: file changed\n");
+			ex_show("write failed: file changed");
 			return 1;
 		}
 		if (!strchr(cmd, '!') && arg[0] && mtime(arg) >= 0) {
-			ex_show("write failed: file exists\n");
+			ex_show("write failed: file exists");
 			return 1;
 		}
 		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode());
 		if (fd < 0) {
-			ex_show("write failed: cannot create file\n");
+			ex_show("write failed: cannot create file");
 			return 1;
 		}
 		if (lbuf_wr(xb, fd, beg, end)) {
-			ex_show("write failed\n");
+			ex_show("write failed");
 			close(fd);
 			return 1;
 		}
 		close(fd);
 	}
-	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [w]\n",
+	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [w]",
 			path, end - beg);
 	ex_show(msg);
 	if (!ex_path()[0]) {
@@ -688,7 +690,7 @@ static int ec_lnum(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end))
 		return 1;
-	sprintf(msg, "%d\n", end);
+	sprintf(msg, "%d", end);
 	ex_print(msg);
 	return 0;
 }
@@ -759,7 +761,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
-		while (rset_find(re, ln, grp / 2, offs, 0) >= 0) {
+		while (rset_find(re, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
 			if (offs[xgrp - 2] < 0) {
 				ln += offs[1] > 0 ? offs[1] : 1;
 				continue;
@@ -815,9 +817,11 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 static int ec_ft(char *loc, char *cmd, char *arg)
 {
 	if (arg[0])
-		snprintf(bufs[0].ft, sizeof(bufs[0].ft), "%s", arg);
+		strcpy(bufs[0].ft, arg);
 	else
 		ex_print(ex_filetype());
+	syn_setft(bufs[0].ft);
+	syn_reload = 1;
 	return 0;
 }
 
@@ -857,7 +861,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	i = beg;
 	while (i < lbuf_len(xb)) {
 		char *ln = lbuf_get(xb, i);
-		if ((rset_find(re, ln, 0, NULL, 0) < 0) == not) {
+		if ((rset_find(re, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
 			xrow = i;
 			if (ex_exec(s))
 				break;

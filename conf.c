@@ -41,6 +41,7 @@ bright colors
 */
 
 struct highlight hls[] = {
+	/* lbuf lines are *always "\n\0" terminated, for to work $ one needs to grab '\n' too */
 	/* "/" is default hl, must have at least 1 entry for fallback */
 	{"/", NULL, {14 | SYN_BD}, {1}, 0, 2},  /* <-- optional, used by hll if set */
 	/* optional, used by hlp if set */
@@ -48,7 +49,7 @@ struct highlight hls[] = {
 	{"/", NULL, {9}, {0}, 0, 1}, /* <-- optional, used by hlw if set */
 
 	{"c", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"c", "^.+\\\\$", {14}, {1}},
+	{"c", "^.+\\\\\n$", {14}, {1}},
 	{"c", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
 	{"c", NULL, {0, 9 | SYN_BGMK(12), 9 | SYN_BGMK(12)}, {1, -1, -1}, 0, 3},
 	{"c", NULL, {9}, {0}, 0, 1},
@@ -60,7 +61,7 @@ int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline|restrict)\\>", {10}},
 free|realloc|NULL|stdin|stdout|errno)\\>", {12 | SYN_BD}},
 	{"c", "\\<(?:return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue)\\>", {11}},
-	{"c", "//.*$", {4 | SYN_IT}},
+	{"c", "//.*", {4 | SYN_IT}},
 	{"c", "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", {6, 6, 5}},
 	{"c", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
 	{"c", "\"\"|\"(?:.*?(?:\\\\\\\\|[^\\\\])\")?", {5}},
@@ -69,9 +70,9 @@ default|break|continue)\\>", {11}},
 
 	{"roff", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"roff", NULL, {9}, {0}, 0, 1},
-	{"roff", "^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\\\]{2,}))?.*$",
+	{"roff", "^[.'][ \t]*((SH.*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
 		{4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD}, {1}},
-	{"roff", "\\\\\".*$", {2 | SYN_IT}},
+	{"roff", "\\\\\".*", {2 | SYN_IT}},
 	{"roff", "\\\\{1,2}[*$fgkmns]([^[\\(]|\\(..|\\[[^\\]]*\\])", {3}},
 	{"roff", "\\\\([^[(*$fgkmns]|\\(..|\\[[^\\]]*\\])", {3}},
 	{"roff", "\\$[^$]+\\$", {3}},
@@ -81,25 +82,25 @@ default|break|continue)\\>", {11}},
 	{"tex", "\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)\\})?",
 		{4 | SYN_BD, 0, 3, 0, 5}},
 	{"tex", "\\$[^$]+\\$", {3}},
-	{"tex", "%.*$", {2 | SYN_IT}},
+	{"tex", "%.*", {2 | SYN_IT}},
 
 	/* mail */
 	{"msg", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"msg", NULL, {9}, {0}, 0, 1},
-	{"msg", "^From .*20..$", {6 | SYN_BD}},
-	{"msg", "^Subject: (.*)$", {6 | SYN_BD, 4 | SYN_BD}},
-	{"msg", "^From: (.*)$", {6 | SYN_BD, 2 | SYN_BD}},
-	{"msg", "^To: (.*)$", {6 | SYN_BD, 5 | SYN_BD}},
-	{"msg", "^Cc: (.*)$", {6 | SYN_BD, 5 | SYN_BD}},
-	{"msg", "^[-A-Za-z]+: .+$", {6 | SYN_BD}},
-	{"msg", "^> .*$", {2 | SYN_IT}},
+	{"msg", "^From .*20..\n$", {6 | SYN_BD}},
+	{"msg", "^Subject: (.*)", {6 | SYN_BD, 4 | SYN_BD}},
+	{"msg", "^From: (.*)", {6 | SYN_BD, 2 | SYN_BD}},
+	{"msg", "^To: (.*)", {6 | SYN_BD, 5 | SYN_BD}},
+	{"msg", "^Cc: (.*)", {6 | SYN_BD, 5 | SYN_BD}},
+	{"msg", "^[-A-Za-z]+: .+", {6 | SYN_BD}},
+	{"msg", "^> .*", {2 | SYN_IT}},
 
 	/* makefile */
 	{"mk", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"mk", NULL, {9}, {0}, 0, 1},
 	{"mk", "([A-Za-z0-9_]*)[ \t]*=", {0, 3}},
 	{"mk", "\\$\\([a-zA-Z0-9_]+\\)", {3}},
-	{"mk", "#.*$", {2 | SYN_IT}},
+	{"mk", "#.*", {2 | SYN_IT}},
 	{"mk", "([A-Za-z_%.]+):", {0, SYN_BD}},
 
 	/* shell script */
@@ -113,12 +114,12 @@ default|break|continue)\\>", {11}},
 	{"sh", "'[^']*'", {4}},
 	{"sh", "\\$(?:\\{[^}]+\\}|[a-zA-Z_0-9]+|[!#$?*@-])", {1}},
 	{"sh", "^([a-zA-Z_0-9]* *\\(\\)) *\\{", {0, SYN_BD}},
-	{"sh", "^\\. .*$", {SYN_BD}},
+	{"sh", "^\\. .*", {SYN_BD}},
 
 	/* python */
 	{"py", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"py", NULL, {9}, {0}, 0, 1},
-	{"py", "#.*$", {2}},
+	{"py", "#.*", {2}},
 	{"py", "\\<(?:and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>", {5}},
 	{"py", "\\<(?:if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
 	{"py", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
@@ -130,12 +131,12 @@ default|break|continue)\\>", {11}},
 	{"nm", "^([ROU])([0-9]+)\t([^\t]*)\t([^\t]*)",
 		{0 | SYN_BGMK(15), 6 | SYN_BD, 12 | SYN_BD, 5, 8 | SYN_BD}},
 	{"nm", "^[N].*$", {0 | SYN_BD | SYN_BGMK(6)}},
-	{"nm", "^[A-Z][HT].*$", {0 | SYN_BD | SYN_BGMK(13)}},
-	{"nm", "^[A-Z][MI].*$", {0 | SYN_BD | SYN_BGMK(11)}},
-	{"nm", "^[A-Z][LJ].*$", {7 | SYN_BGMK(15)}},
-	{"nm", "^[F].*$", {0 | SYN_BD | SYN_BGMK(7)}},
-	{"nm", "^\t.*$", {7 | SYN_IT}},
-	{"nm", "^:.*$", {SYN_BD}},
+	{"nm", "^[A-Z][HT].*", {0 | SYN_BD | SYN_BGMK(13)}},
+	{"nm", "^[A-Z][MI].*", {0 | SYN_BD | SYN_BGMK(11)}},
+	{"nm", "^[A-Z][LJ].*", {7 | SYN_BGMK(15)}},
+	{"nm", "^[F].*", {0 | SYN_BD | SYN_BGMK(7)}},
+	{"nm", "^\t.*", {7 | SYN_IT}},
+	{"nm", "^:.*", {SYN_BD}},
 
 	/* javascript */
 	{"js", NULL, {14 | SYN_BD}, {1}, 0, 2},
@@ -151,7 +152,7 @@ this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|yield)\
 isPrototypeOf|length|Math|NaN|name|Number|Object|prototype|\
 String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
 	{"js", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+)\\>", {9}},
-	{"js", "//.*$", {10 | SYN_IT}},
+	{"js", "//.*", {10 | SYN_IT}},
 	{"js", "'(?:[^'\\\\]|\\\\.)*'", {5}},
 	{"js", "\"(?:[^\"\\\\]|\\\\.)*\"", {5}},
 	{"js", "`(?:[^`\\\\]|\\\\.)*`", {5}},
@@ -203,19 +204,19 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
 	{"html", "&[a-zA-Z0-9_]+", {5}},
 
 	/* diff */
-	{"diff", "^-.*$", {1}},
-	{"diff", "^\\+.*$", {2}},
-	{"diff", "^@.*$", {6}},
-	{"diff", "^diff .*$", {SYN_BD}},
+	{"diff", "^-.*", {1}},
+	{"diff", "^\\+.*", {2}},
+	{"diff", "^@.*", {6}},
+	{"diff", "^diff .*", {SYN_BD}},
 
 	/* file manager */
 	{"fm", "^\\.+(?:(?:(/)\\.\\.+)+)?", {4, 6}},
-	{"fm", "[^/]*\\.sh$", {2}},
-	{"fm", "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)$", {5}},
-	{"fm", "/.+/([^/]+$)?", {6, 8}, {1, 1}},
-	{"fm", "(/).+[^/]+$", {8, 6}, {1, 1}},
+	{"fm", "[^/]*\\.sh\n$", {2}},
+	{"fm", "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", {5}},
+	{"fm", "/.+/([^/]+\n$)?", {6, 8}, {1, 1}},
+	{"fm", "(/).+[^/]+\n$", {8, 6}, {1, 1}},
 
-	/* status bar */
+	/* status bar (is never '\n' terminated) */
 	{"---", "^(\".*\").*(\\[[wr]\\]).*$", {8 | SYN_BD, 4, 1}},
 	{"---", "^(\".*\").*( [0-9]{1,3}%) +(L[0-9]+) +(C[0-9]+).*$", {8 | SYN_BD, 4, 9, 4, 11}},
 	{"---", "^.*$", {8 | SYN_BD}},

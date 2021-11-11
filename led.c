@@ -147,7 +147,7 @@ static void file_ternary(struct lbuf *buf)
 	for (int i = 0; i < ln_n; i++) {
 		sidx = 0;
 		while (rset_find(rs, ss[i]+sidx, grp / 2, subs,
-				sidx ? REG_NOTBOL : 0) >= 0) {
+				sidx ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
 			/* if target group not found, continue with group 1 
 			which will always be valid, otherwise there be no match */
 			if (subs[grp - 2] < 0) {
@@ -307,9 +307,10 @@ for (i = 0; i < n; i++) { \
 			off[cend - (pos[i] + j - 1) - 2] = i; \
 } \
 
-#define cull_line(name)\
+#define cull_line(name, postfix)\
 	led_bounds(name, off, chrs, cbeg, cend); \
 	s0 = name->s; \
+	postfix \
 	cbeg = 0; \
 	cend = cterm; \
 	memset(off, -1, (cterm+1) * sizeof(off[0])); \
@@ -335,14 +336,15 @@ void led_render(char *s0, int row, int cbeg, int cend)
 			td_set(-2);
 			ren_torg = cbeg;
 			sbuf_make(bsb, xcols)
-			cull_line(bsb)
+			cull_line(bsb, if (strchr(s0, '\n')) *strchr(s0, '\n') = ' ';)
 			off_rev()
 			sbuf_make(bound, xcols)
-			cull_line(bound)
+			cull_line(bound, /**/)
 			off_rev()
 			sbuf_free(bsb)
 			ren_torg = cbeg;
 			td_set(xotd);
+			/* s0 would be padded, this is only partially right for syn hl */
 		}
 	} else {
 		off_for()
@@ -352,13 +354,14 @@ void led_render(char *s0, int row, int cbeg, int cend)
 			int xord = xorder;
 			xorder = 0;
 			sbuf_make(bound, xcols)
-			cull_line(bound)
+			cull_line(bound, /**/)
 			off_for()
 			xorder = xord;
 			ren_torg = cbeg;
 		}
 	}
-	syn_highlight(att, s0, n);
+	if (xhl)
+		syn_highlight(att, s0, n);
 	if (xhlr)
 		led_markrev(n, chrs, pos, att);
 	/* generate term output */

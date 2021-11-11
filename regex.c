@@ -374,7 +374,7 @@ memcpy(s1->sub, nsub->sub, osubp); \
 
 #define instclist(nn) \
 else if (spc == BOL) { \
-	if (flg & REG_NOTBOL || (_sp != s && *sp != '\n')) { \
+	if (flg & REG_NOTBOL || _sp != s) { \
 		if (!si && !clistidx) \
 			return 0; \
 		deccheck(nn) \
@@ -435,7 +435,7 @@ if (spc == SPLIT) { \
 		deccheck(nn) \
 	npc++; goto rec##nn; \
 } else if (spc == EOL) { \
-	if (flg & REG_NOTEOL || (*_sp && *_sp != '\n')) \
+	if (flg & REG_NOTEOL || *_sp != eol_ch) \
 		deccheck(nn) \
 	npc++; goto rec##nn; \
 } inst##list(nn) \
@@ -494,7 +494,7 @@ for (;; sp = _sp) { \
 		decref(nsub) \
 	} \
 	break_for##n: \
-	if (c == '\n' || !c) \
+	if (c == eol_ch) \
 		break; \
 	tmp = clist; \
 	clist = nlist; \
@@ -525,7 +525,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	int si, i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
 	int clistidx = 0, nlistidx, plistidx, spc;
 	const char *sp = s, *_sp = s;
-	int *insts = prog->insts;
+	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	int *pcs[prog->splits], *plist[prog->splits];
 	rsub *subs[prog->splits];
 	char nsubs[500000];
@@ -564,14 +564,12 @@ rset *rset_make(int n, char **re, int flg)
 {
 	rset *rs = malloc(sizeof(*rs));
 	sbuf *sb; sbuf_make(sb, 1024);
-	int regex_flg = REG_EXTENDED | (flg & REG_ICASE ? REG_ICASE : 0);
-	int i;
 	rs->grp = malloc((n + 1) * sizeof(rs->grp[0]));
 	rs->setgrpcnt = malloc((n + 1) * sizeof(rs->setgrpcnt[0]));
 	rs->grpcnt = 2;
 	rs->n = n;
 	sbuf_chr(sb, '(');
-	for (i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++) {
 		if (!re[i]) {
 			rs->grp[i] = -1;
 			continue;
@@ -590,7 +588,7 @@ rset *rset_make(int n, char **re, int flg)
 	int sz = re_sizecode(sb->s) * sizeof(int);
 	char *code = malloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
-	if (sz <= 3 || re_comp((rcode*)code, sb->s, rs->grpcnt-1, regex_flg)) {
+	if (sz <= 3 || re_comp((rcode*)code, sb->s, rs->grpcnt-1, flg)) {
 		rset_free(rs);
 		rs = NULL;
 	}
