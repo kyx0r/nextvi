@@ -461,6 +461,20 @@ without deleting the line is invalid, but it will work with global command.
 Note: '\n' character used in example is not what it ought to be in the real 
 command.
 
+- search motions
+? and / searches have the ability to be used as motions. This seems very
+counter intuitive and one would have never ever figure out that this
+feature even exists, unless noted. Even if you read the source code it's
+very easy to miss. How to use: optionally specify vi_arg1, specify the motion
+using it's keybind, then do / or ? and type out the search term.
+The motion ends on the first match by default (no vi_arg1 specified).
+The optional vi_arg1 one determines how many matches of the term to skip the 
+motions ends. Example: you see that the next 10 lines have the word "int" 
+which is included 3 times. You want to delete text until the 3rd
+instance of "int" keybind would be 3d/int . Likewise you can opt out
+of the "specify motion" part and just use / or ? with vi_arg1 to perform
+specific searches.
+
 OPTIONS
 -------
 
