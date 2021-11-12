@@ -127,7 +127,6 @@ default|break|continue)\\>", {11}},
 
 	/* neatmail */
 	{"nm", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"nm", NULL, {9}, {0}, 0, 1},
 	{"nm", "^([ROU])([0-9]+)\t([^\t]*)\t([^\t]*)",
 		{0 | SYN_BGMK(15), 6 | SYN_BD, 12 | SYN_BD, 5, 8 | SYN_BD}},
 	{"nm", "^[N].*", {0 | SYN_BD | SYN_BGMK(6)}},

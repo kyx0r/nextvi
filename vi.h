@@ -69,7 +69,7 @@ sb->s_n += len; \
 #define sbuf_free(sb) { free(sb->s); free(sb); }
 #define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
 #define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
-#define sbuf_str(sb, s) { sbuf_(sb, s, (int)strlen(s), cpy) }
+#define sbuf_str(sb, s) { char *p = s; while(*p) sbuf_chr(sb, *p++) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that NULL terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
@@ -184,7 +184,7 @@ void syn_done(void);
 
 /* uc.c utf-8 helper functions */
 
-extern const unsigned char utf8_length[256];
+extern unsigned char utf8_length[256];
 /* return the length of a utf-8 character */
 #define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
 /* the unicode codepoint of the given utf-8 character */

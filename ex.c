@@ -817,7 +817,7 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 static int ec_ft(char *loc, char *cmd, char *arg)
 {
 	if (arg[0])
-		strcpy(bufs[0].ft, arg);
+		strncpy(bufs[0].ft, arg, LEN(bufs[0].ft)-1);
 	else
 		ex_print(ex_filetype());
 	syn_setft(bufs[0].ft);

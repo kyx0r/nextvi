@@ -329,6 +329,8 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	return RE_SUCCESS;
 }
 
+#define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; return state; }\
+
 #define newsub(init, copy) \
 if (freesub) \
 	{ s1 = freesub; freesub = s1->freesub; copy } \
@@ -376,7 +378,7 @@ memcpy(s1->sub, nsub->sub, osubp); \
 else if (spc == BOL) { \
 	if (flg & REG_NOTBOL || _sp != s) { \
 		if (!si && !clistidx) \
-			return 0; \
+			_return(0) \
 		deccheck(nn) \
 	} \
 	npc++; goto rec##nn; \
@@ -494,7 +496,7 @@ for (;; sp = _sp) { \
 		decref(nsub) \
 	} \
 	break_for##n: \
-	if (c == eol_ch) \
+	if (sp == _sp) \
 		break; \
 	tmp = clist; \
 	clist = nlist; \
@@ -515,9 +517,9 @@ if (matched) { \
 		subp[i] = matched->sub[j]; \
 		subp[i+1] = matched->sub[nsubp / 2 + j]; \
 	} \
-	return 1; \
+	_return(1) \
 } \
-return 0; \
+_return(0) \
 
 int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
@@ -534,6 +536,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	_clist[0].pc = insts, _nlist[0].pc = insts;
 	rthread *clist = _clist+1, *nlist = _nlist+1, *tmp;
 	flg = prog->flg | flg;
+	if (eol_ch)
+		utf8_length[eol_ch] = 0;
+	if (!utf8_length[(unsigned char)*s])
+		_return(0)
 	if (flg & REG_ICASE)
 		goto jmp_start1;
 	goto jmp_start2;
@@ -600,8 +606,6 @@ rset *rset_make(int n, char **re, int flg)
 int rset_find(rset *rs, char *s, int n, int *grps, int flg)
 {
 	int i, grp, set = -1;
-	if (rs->grpcnt <= 2 || !*s)
-		return set;
 	regmatch_t subs[rs->grpcnt+1];
 	regmatch_t *sub = subs+1;
 	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg))

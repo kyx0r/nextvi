@@ -150,12 +150,12 @@ static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del, int n_ins
 	}
 	lb->ln_n += n_ins - n_del;
 	for (i = 0; i < n_ins; i++) {
-		int l = s ? linelength(s) : 0;
+		int l = linelength(s);
 		int l_nonl = l - (s[l - 1] == '\n');
-		char *n = malloc(l_nonl + 2);
+		char *n = malloc(l_nonl + 7);
 		memcpy(n, s, l_nonl);
-		n[l_nonl + 0] = '\n';
-		n[l_nonl + 1] = '\0';
+		memset(&n[l_nonl + 1], 0, 5); /* fault tolerance pad */
+		n[l_nonl] = '\n';
 		lb->ln[pos + i] = n;
 		s += l;
 	}
