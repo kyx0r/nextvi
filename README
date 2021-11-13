@@ -50,7 +50,7 @@ By default it checks every file, else filter is specified by :inc (see 32.)
 This works in compliance with other changes (see 49. 58.)
 Use it for code navigation between files, jump to definitions / etc.
 9. fssearch but going in reverse keybind: ^p
-10. Added key to change the mark origin which ^p will return to keybind: ^t
+10. Added key to change the mark origin which ^p will return to, keybind: ^t
 11. Added ex command "ea" which opens file ignoring the path,
 setting an extra parameter in form of a number will tell how many matches with
 similar filename to skip.
@@ -104,7 +104,7 @@ By default it will use big regex like [^;...]* to sort out all the punctuation
 chars from words and build a database of words. But in order to take full
 advantage out of the completion system, you can change this regex at runtime
 using new ex command "ac". For example say we don't want word completion
-and we want entire line completion instead, run :ac .*  
+and we want entire line completion instead, run :ac .*
 You will find that the autocomplete db is persistent throughout
 all buffers and it also has data duplication and redundancy checking
 such that you can index multiple files as you need in your workflow,
@@ -287,7 +287,7 @@ Removed "make" ex command. Commands like these are not wanted, nextvi
 shall provide a more general purpose solution for the user, like the
 keybind v; for example.
 66. Added new ex option "grp". The following allows you to define the
-search group for / ? n N (31.) autocomplete and ex substitution. This becomes 
+search group for / ? n N (31.) autocomplete and ex substitution. This becomes
 necessary if you want the result of regex search to be based on some group rather
 than default match group. For example you want to search for the whole
 line but exclude the tabs at the beginning of the line, use regex like
@@ -459,10 +459,10 @@ same syntax as ex substitution command, but instead of replacement
 string it takes an ex command after the / / enclosed regex.
 Example: remove empty lines
 :g/^\n/d
-Try doing similar with substitution command - will not work as removing '\n' 
-without deleting the line is invalid, but it will work with global command. 
-Note: '\n' character used in example is not what it ought to be in the real 
-command.
+Try doing similar with substitution command - will not work as removing '\n'
+without deleting the line is invalid, but it will work with global command.
+Note: '\n' character used in example is for illustration purpose only.
+Typing '\n' is possible, see (47.)
 
 - search motions
 ? and / searches have the ability to be used as motions. This seems very
@@ -471,8 +471,8 @@ feature even exists, unless noted. Even if you read the source code it's
 very easy to miss. How to use: optionally specify vi_arg1, specify the motion
 using it's keybind, then do / or ? and type out the search term.
 The motion ends on the first match by default (no vi_arg1 specified).
-The optional vi_arg1 one determines how many matches of the term to skip the 
-motions ends. Example: you see that the next 10 lines have the word "int" 
+The optional vi_arg1 determines how many matches of the term to skip until the
+motions ends. Example: you see that the next 10 lines have the word "int"
 which is included 3 times. You want to delete text until the 3rd
 instance of "int" keybind would be 3d/int . Likewise you can opt out
 of the "specify motion" part and just use / or ? with vi_arg1 to perform
@@ -627,7 +627,7 @@ apply needs to be computed only once. Planning to rework in the future.
     460,979 ( 0.10%)  /malloc/mallocng/malloc.c:__libc_malloc_impl
     460,611 ( 0.10%)  regex.c:_compilecode'2 [/root/klec/cprogs/nextvi/vi]
 /* not a big deal but factor out this recursion, 460,611 refs on startup compiles all regexps
-(not like you gonna notice the nanosecond difference this has, but we aim for perfection)
+(not like you gonna notice the nanosecond difference this has, but we aim for perfection) */
     401,174 ( 0.09%)  /malloc/mallocng/meta.h:__libc_free
     386,635 ( 0.09%)  term.c:term_att [/root/klec/cprogs/nextvi/vi]
     373,556 ( 0.08%)  uc.c:led_render
@@ -642,7 +642,7 @@ inefficiency by choice. In order for Nextvi to exist it has to be
 supercede neatvi, which is respectfully shown.
 - We produce less lines of code for equivalent execution and it
 runs faster. It's easier for you to read, because we have everything
-in check, you will be able to read this code faster.
+in check, you will be able to read and understand this code faster.
 
 "It’s possible that I understand better what’s going on, or
 it’s equally possible that I just think I do."
