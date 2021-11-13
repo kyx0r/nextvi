@@ -408,6 +408,8 @@ of the new array specifies its name).  The current keymap may be
 changed with :cm ex command.  When in input mode, ^e activates the
 English kaymap and ^f switches to the alternate keymap (the last
 keymap specified with :cm).
+Edit ex.c to set default ex variables or use EXINIT environment
+variable as shown under OPTIONS section.
 
 COMMANDS
 --------

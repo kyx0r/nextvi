@@ -10,7 +10,7 @@ typedef struct tern {
 static tern_t *ROOT = &(tern_t){.word= 'a'};
 static sbuf *suggestsb;
 
-//create a ternary search tree
+/* create a ternary search tree */
 static tern_t *create_node(char w)
 {
 	tern_t *node = (tern_t*)malloc(sizeof(tern_t));
@@ -22,7 +22,7 @@ static tern_t *create_node(char w)
 	return node;
 }
 
-// insert a null-terminated word into the tree.
+/* insert a null-terminated word into the tree. */
 static tern_t *insert_node(const char *string, tern_t *node)
 {
 	if (!node)
@@ -32,7 +32,7 @@ static tern_t *insert_node(const char *string, tern_t *node)
 	else if (string[0] > node->word)
 		node->r_child = insert_node(string, node->r_child);
 	else {
-		//go one level down the tree if the word has not been found here.
+		/* go one level down the tree if the word has not been found here. */
 		if (!*(string+1)) {
 			node->type = 1;
 			return node;
@@ -49,13 +49,13 @@ static tern_t* find_node(const char *string, int l, tern_t *node)
 	while (i < l) {
 		if (!currentNode)
 			break;
-		//look to the left of word
+		/* look to the left of word */
 		if (string[i] < currentNode->word)
 			currentNode = currentNode->l_child;
-		//look to the right of word
+		/* look to the right of word */
 		else if (string[i] > currentNode->word)
 			currentNode = currentNode->r_child;
-		//if out of characters, prefix ends on the current node. Now start search
+		/* if out of characters, prefix ends on the current node. Now start search */
 		else {
 			if (i++ == l - 1)
 				return currentNode;
@@ -89,7 +89,7 @@ static void deep_search(const char *pattern, int len, tern_t *start)
 static int search(const char *pattern, int l, tern_t *node)
 {
 	sbuf_cut(suggestsb, 0)
-	//finds the node where the prefix ends.
+	/* finds the node where the prefix ends. */
 	tern_t *current = find_node(pattern, l, node);
 	if (!current)
 		return 0;
@@ -103,7 +103,7 @@ static int search(const char *pattern, int l, tern_t *node)
 	return -1;
 }
 
-// Note: Does not free the root node of the tree.
+/* Note: Does not free the root node of the tree. */
 static void delete(tern_t *root, tern_t *node)
 {
 	if (node) {
@@ -627,7 +627,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			temp_switch(0);
 			vi();
 			temp_switch(0);
-			vi(); //redraw past screen
+			vi(); /* redraw past screen */
 			syn_setft("---");
 			td_set(+2);
 			xquit = 2;

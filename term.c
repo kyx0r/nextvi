@@ -35,8 +35,8 @@ void term_done(void)
 
 void term_clean(void)
 {
-	write(1, "\x1b[2J", 4); /* clear screen */
-	write(1, "\x1b[H", 3); /* cursor topleft */
+	write(1, "\x1b[2J", 4);	/* clear screen */
+	write(1, "\x1b[H", 3);	/* cursor topleft */
 }
 
 void term_suspend(void)

@@ -754,8 +754,8 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	free(rep);
 	if (ex_krs(&re, NULL))
 		return 1;
-	// if the change is bigger than display size
-	// set savepoint where command was issued.
+	/* if the change is bigger than display size
+	set savepoint where command was issued. */
 	if (end - beg > xrows)
 		lbuf_opt(xb, NULL, xrow, 0);
 	for (i = beg; i < end; i++) {

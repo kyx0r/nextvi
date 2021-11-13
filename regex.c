@@ -6,25 +6,25 @@ static int isword(const char *s)
 
 enum
 {
-	// Instructions which consume input bytes (and thus fail if none left)
+	/* Instructions which consume input bytes */
 	CHAR = 1,
 	ANY,
 	CLASS,
 	MATCH,
-	// Assert position
+	/* Assert position */
 	WBEG,
 	WEND,
 	BOL,
 	EOL,
-	// Instructions which take relative offset as arg
+	/* Instructions which take relative offset as arg */
 	JMP,
 	SPLIT,
 	RSPLIT,
-	// Other (special) instructions
+	/* Other (special) instructions */
 	SAVE,
 };
 
-// Return codes for re_sizecode() and re_comp()
+/* Return codes for re_sizecode() and re_comp() */
 enum {
 	RE_SUCCESS = 0,
 	RE_SYNTAX_ERROR = -2,
@@ -66,7 +66,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 		switch (*re) {
 		case '\\':
 			re++;
-			if (!*re) goto syntax_error; // Trailing backslash
+			if (!*re) goto syntax_error; /* Trailing backslash */
 			if (*re == '<' || *re == '>') {
 				if (re - *re_loc > 2 && re[-2] == '\\')
 					break;
@@ -299,9 +299,9 @@ int re_sizecode(const char *re)
 	rcode dummyprog;
 	dummyprog.unilen = 3;
 
-	int res = _compilecode(&re, &dummyprog, /*sizecode*/1, 0);
+	int res = _compilecode(&re, &dummyprog, 1, 0);
 	if (res < 0) return res;
-	// If unparsed chars left
+	/* If unparsed chars left */
 	if (*re)
 		return RE_SYNTAX_ERROR;
 	return dummyprog.unilen;
@@ -316,9 +316,9 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->splits = 0;
 	prog->flg = flags;
 
-	int res = _compilecode(&re, prog, /*sizecode*/0, flags);
+	int res = _compilecode(&re, prog, 0, flags);
 	if (res < 0) return res;
-	// If unparsed chars left
+	/* If unparsed chars left */
 	if (*re) return RE_SYNTAX_ERROR;
 
 	prog->insts[prog->unilen++] = SAVE;

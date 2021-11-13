@@ -1048,7 +1048,6 @@ static void vi_splitln(int row, int linepos, int nextln)
 			memcpy(buf, s, bytelen);
 			buf[bytelen] = '\n';
 			buf[bytelen+1] = 0;
-			//needed to make operation undoable
 			lbuf_edit(xb, buf, crow, crow+1);
 			lbuf_edit(xb, part, crow+1, crow+1);
 			free(part);
@@ -1537,7 +1536,7 @@ void vi(void)
 			case TK_CTL(']'):
 			case TK_CTL('p'):
 				vi_drawmsg();
-			case 1: //^a
+			case 1: /* ^a */
 			case '/':
 			case '?':
 			case 'n':
@@ -1727,10 +1726,10 @@ void vi(void)
 					ln = vi_prompt(":", "%s/^ {8}/\t/g", &kmap);
 					goto do_excmd;
 				case 'b':
-					term_push("\x02", 1); //^b
+					term_push("\x02", 1); /* ^b */
 					goto prompt;
 				case 'v':
-					term_push("\x16", 1); //^v
+					term_push("\x16", 1); /* ^v */
 					goto prompt;
 				case '#':
 					vi_lnnum = 2;

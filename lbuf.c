@@ -214,7 +214,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
 		if (sb->s_n + nr >= sb->s_sz) {
 			int newsz = NEXTSZ((unsigned int)sb->s_sz, (unsigned int)sb->s_sz + 1);
 			if (newsz < 0)
-				break; //can't read files > ~2GB
+				break; /* can't read files > ~2GB */
 			sb->s_n += nr;
 			sbuf_extend(sb, newsz)
 		} else
@@ -442,7 +442,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
 			off += g2 > 0 ? g2 : 1;
 			if (dir > 0)
 				return 0;
-			ln_n = -1; // break outer loop efficiently
+			ln_n = -1; /* break outer loop efficiently */
 		}
 		off = 0;
 	}
