@@ -259,8 +259,7 @@ char *led_input(char *pref, char *post, int *kmap, int cln);
 void led_render(char *s0, int row, int cbeg, int cend);
 #define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
 void led_printmsg(char *s, int row);
-char *led_read(int *kmap);
-char *led_readchar(int c, int kmap);
+char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
 

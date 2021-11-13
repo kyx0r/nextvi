@@ -148,7 +148,7 @@ static void file_ternary(struct lbuf *buf)
 		sidx = 0;
 		while (rset_find(rs, ss[i]+sidx, grp / 2, subs,
 				sidx ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
-			/* if target group not found, continue with group 1 
+			/* if target group not found, continue with group 1
 			which will always be valid, otherwise there be no match */
 			if (subs[grp - 2] < 0) {
 				sidx += subs[1] > 0 ? subs[1] : 1;
@@ -438,41 +438,11 @@ static void led_printparts(char *ai, char *pref, char *main,
 	sbuf_free(ln)
 }
 
-/* continue reading the character starting with c */
-char *led_readchar(int c, int kmap)
+/* read a character from the terminal */
+char *led_read(int *kmap, int c)
 {
 	static char buf[8];
-	int c1, c2;
-	int i, n;
-	if (c == TK_CTL('v')) {		/* literal character */
-		buf[0] = term_read();
-		buf[1] = '\0';
-		return buf;
-	}
-	if (c == TK_CTL('k')) {		/* digraph */
-		c1 = term_read();
-		if (TK_INT(c1))
-			return NULL;
-		c2 = term_read();
-		if (TK_INT(c2))
-			return NULL;
-		return conf_digraph(c1, c2);
-	}
-	if ((c & 0xc0) == 0xc0) {	/* utf-8 character */
-		buf[0] = c;
-		uc_len(n, buf)
-		for (i = 1; i < n; i++)
-			buf[i] = term_read();
-		buf[n] = '\0';
-		return buf;
-	}
-	return kmap_map(kmap, c);
-}
-
-/* read a character from the terminal */
-char *led_read(int *kmap)
-{
-	int c = term_read();
+	int c1, c2, i, n;
 	while (!TK_INT(c)) {
 		switch (c) {
 		case TK_CTL('f'):
@@ -481,8 +451,28 @@ char *led_read(int *kmap)
 		case TK_CTL('e'):
 			*kmap = 0;
 			break;
+		case TK_CTL('a'):	/* literal character */
+			buf[0] = term_read();
+			buf[1] = '\0';
+			return buf;
+		case TK_CTL('k'):	/* digraph */
+			c1 = term_read();
+			if (TK_INT(c1))
+				return NULL;
+			c2 = term_read();
+			if (TK_INT(c2))
+				return NULL;
+			return conf_digraph(c1, c2);
 		default:
-			return led_readchar(c, *kmap);
+			if ((c & 0xc0) == 0xc0) {	/* utf-8 character */
+				buf[0] = c;
+				uc_len(n, buf)
+				for (i = 1; i < n; i++)
+					buf[i] = term_read();
+				buf[n] = '\0';
+				return buf;
+			}
+			return kmap_map(*kmap, c);
 		}
 		c = term_read();
 	}
@@ -512,12 +502,6 @@ static char *led_line(char *pref, char *post, char *ai,
 		len = sb->s_n;
 		c = term_read();
 		switch (c) {
-		case TK_CTL('f'):
-			*kmap = xkmap_alt;
-			continue;
-		case TK_CTL('e'):
-			*kmap = 0;
-			continue;
 		case TK_CTL('h'):
 		case 127:
 			if (len)
@@ -634,8 +618,6 @@ static char *led_line(char *pref, char *post, char *ai,
 			i = 0;
 			goto cur_histstr;
 		case TK_CTL('v'):
-			if (ai_max > 0)
-				continue;
 			cur_histstr:
 			cs = temp_curstr(0, i);
 			if (cs) {
@@ -674,7 +656,7 @@ static char *led_line(char *pref, char *post, char *ai,
 _default:
 			if (c == '\n' || TK_INT(c))
 				break;
-			if ((cs = led_readchar(c, *kmap)))
+			if ((cs = led_read(kmap, c)))
 				sbufn_str(sb, cs)
 		}
 		if (sb->s_n > len)

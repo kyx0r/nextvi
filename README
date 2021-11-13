@@ -196,7 +196,12 @@ Notice how the letter after space is consistent with ASCII ctrl+c,
 essentially space is like representing typeable ctrl key.
 The reason this is useful is if you are using @ key to make macros
 there has to be a way to type these control characters.
-48. Improvement to change 37. Now when in the prompt ^v will bring
+Alternatively, it's possible to type the character literal using
+^a + whatever the key represents it. In neatvi this was binded to
+^v, currently ^v is used for 48. Nextvi shall keep both, the digraph
+way and ^a for clarity and better user reference, no more searching
+ascii keycodes online if kmap has it in the clear.
+48. Improvement to change 37. Now when in prompt/insert ^v will bring
 up the latest command from history. Also the history works for
 searches via / or ? the same way. keybind vv does the same but from
 normal mode, to save time. Pressing ^v again goes to next string.
@@ -223,7 +228,7 @@ treat "abc" as !(a && b && c) logically. Everything in brackets preceding
 && will be processed according to standard posix negated char.
 57. Added ^l key in insert to clean the terminal and start at line 0,
 remove distrations and focus on typing. Useful when running ex via vi -e
-58. Added v/ key in normal, which can grab the current word(s) under the 
+58. Added v/ key in normal, which can grab the current word(s) under the
 cursor into prompt and set the current search string. If valid, the input
 will be used for all search related operations in vi. (see 49.)
 59. Added ability to remember scroll amount for ^e and ^y keys (specified by vi_arg1).
@@ -475,7 +480,7 @@ very easy to miss. How to use: optionally specify vi_arg1, specify the motion
 using it's keybind, then do / or ? and type out the search term.
 The motion ends on the first match by default (no vi_arg1 specified).
 The optional vi_arg1 determines how many matches of the term to skip until the
-motions ends. Example: you see that the next 10 lines have the word "int"
+motion ends. Example: you see that the next 10 lines have the word "int"
 which is included 3 times. You want to delete text until the 3rd
 instance of "int" keybind would be 3d/int . Likewise you can opt out
 of the "specify motion" part and just use / or ? with vi_arg1 to perform

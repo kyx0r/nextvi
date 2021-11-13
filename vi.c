@@ -254,7 +254,7 @@ static void vi_back(int c)
 
 static char *vi_char(void)
 {
-	return led_read(&xkmap);
+	return led_read(&xkmap, term_read());
 }
 
 static void vi_wait(void)
