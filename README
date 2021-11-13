@@ -223,8 +223,9 @@ treat "abc" as !(a && b && c) logically. Everything in brackets preceding
 && will be processed according to standard posix negated char.
 57. Added ^l key in insert to clean the terminal and start at line 0,
 remove distrations and focus on typing. Useful when running ex via vi -e
-58. Added v/ key in normal, grabs the current word(s) under the cursor into
-prompt. If valid, the input will be used for searches using N and n keys.
+58. Added v/ key in normal, which can grab the current word(s) under the 
+cursor into prompt and set the current search string. If valid, the input
+will be used for all search related operations in vi. (see 49.)
 59. Added ability to remember scroll amount for ^e and ^y keys (specified by vi_arg1).
 I felt like they were underused, and unlike ^u and ^d they keep the same
 xcol position, allowing for different use case when you don't want to

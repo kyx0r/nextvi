@@ -392,13 +392,12 @@ void syn_reloadft()
 
 int syn_addhl(char *reg, int func, int reload)
 {
-	syn_reload = reload;
 	for (int i = ftmap[ftidx].setbidx; i < ftmap[ftidx].seteidx; i++)
 		if (hls[i].func == func) {
 			hls[i].pat = reg;
+			syn_reload = reload;
 			return i;
 		}
-	syn_reload = 0;
 	return -1;
 }
 
