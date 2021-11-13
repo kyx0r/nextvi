@@ -524,7 +524,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbufn_cut(sb, led_lastchar(sb->s))
 			else {
 				vi_insmov = c;
-				goto kleave;
+				goto leave;
 			}
 			break;
 		case TK_CTL('u'):
@@ -535,7 +535,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbufn_cut(sb, led_lastword(sb->s))
 			else {
 				vi_insmov = c;
-				goto kleave;
+				goto leave;
 			}
 			break;
 		case TK_CTL('t'):
@@ -649,7 +649,8 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			break;
 		case TK_CTL('x'):
-			goto kleave;
+			term_push("u", 2);
+			break;
 		case TK_CTL('l'):
 			term_clean();
 			continue;
@@ -663,7 +664,7 @@ static char *led_line(char *pref, char *post, char *ai,
 						goto _default;
 					sbuf_cut(sb, i)
 				}
-				*key = TK_ESC;
+				c = TK_ESC;
 				goto leave;
 			}
 			goto _default;
@@ -682,9 +683,8 @@ _default:
 		if (c == '\n' || TK_INT(c))
 			break;
 	}
-kleave:
-	*key = c;
 leave:
+	*key = c;
 	sbufn_done(sb)
 }
 
@@ -763,7 +763,7 @@ char *led_input(char *pref, char *post, int *kmap, int cln)
 		cln++;
 	}
 	sbuf_str(sb, post)
-	if (TK_INT(key) || (cln && key != TK_CTL('x')))
+	if (TK_INT(key) || cln)
 		sbufn_done(sb)
 	sbuf_free(sb)
 	return NULL;

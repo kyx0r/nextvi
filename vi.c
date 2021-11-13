@@ -1637,17 +1637,23 @@ void vi(void)
 				vi_printed = 0;
 				break;
 			case 'u':
-				if (!lbuf_undo(xb)) {
+				undo:
+				if (vi_arg1 >= 0 && !lbuf_undo(xb)) {
 					lbuf_jump(xb, '*', &xrow, &xoff);
 					vi_mod = 1;
-				} else
+					vi_arg1--;
+					goto undo;
+				} else if (!vi_arg1)
 					snprintf(vi_msg, sizeof(vi_msg), "undo failed");
 				break;
 			case TK_CTL('r'):
-				if (!lbuf_redo(xb)) {
+				redo:
+				if (vi_arg1 >= 0 && !lbuf_redo(xb)) {
 					lbuf_jump(xb, '*', &xrow, &xoff);
 					vi_mod = 1;
-				} else
+					vi_arg1--;
+					goto redo;
+				} else if (!vi_arg1)
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
 				break;
 			case TK_CTL('g'):
@@ -1986,8 +1992,7 @@ void vi(void)
 				term_pos(xrows, led_pos(vi_msg, 0));
 				term_kill();
 				vi_regprint();
-				vi_back(vi_read());
-				vi_printed = 0;
+				vi_wait();
 				break;
 			case 'Z':
 				k = vi_read();
