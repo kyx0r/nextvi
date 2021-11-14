@@ -189,13 +189,13 @@ extern unsigned char utf8_length[256];
 #define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
 /* the unicode codepoint of the given utf-8 character */
 #define uc_code(dst, s) \
-dst = (unsigned char) s[0]; \
-if (~dst & 0xc0); \
-else if (~dst & 0x20) \
+dst = (unsigned char)s[0]; \
+if (dst < 192){} \
+else if (dst < 224) \
 	dst = ((dst & 0x1f) << 6) | (s[1] & 0x3f); \
-else if (~dst & 0x10) \
+else if (dst < 240) \
 	dst = ((dst & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f); \
-else if (~dst & 0x08) \
+else if (dst < 248) \
 	dst = ((dst & 0x07) << 18) | ((s[1] & 0x3f) << 12) | \
 		((s[2] & 0x3f) << 6) | (s[3] & 0x3f); \
 else \
