@@ -110,12 +110,13 @@ all buffers and it also has data duplication and redundancy checking
 such that you can index multiple files as you need in your workflow,
 maybe even using different filter rules. If your regex rule
 allows inclusion of nonalphanumeric characters like tab or space
-at the beginning of matched string it will work a bit differently,
-for example using entry "	word" you won't be able to retreive it if you
-type "	w", because it will try searching from the "w" character
-and not the tab, reasoning that the tab is next separator. Determining
-whether it's part of the completion or next entry is ambiguous.
-The only solution, is to simply not type the "w".
+you won't be able to retreive the string like it works with words by default.
+Automatically determening the position from which completion starts
+inside insert sbuf is ambiguous. More fine tuned control is needed and
+can be achieved using new keybind ^z in insert. Use ^z before you type out 
+search term, this will set start position for completion, such
+that the options can be looped over inplace. ^z is a toggle, to disable
+it (without exiting insert) press twice in same place.
 Like ^g used to index file in insert mode you can use ^y from insert
 to out clear the completion db.
 Running ex command "ac" with no argument will reset back to the default

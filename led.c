@@ -486,7 +486,7 @@ static char *led_line(char *pref, char *post, char *ai,
 {
 	sbuf *sb;
 	int ai_len = strlen(ai), len;
-	int c, lnmode, last_sug = 0, i = 0;
+	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	time_t quickexit = 0;
 	vi_insmov = 0;
@@ -570,9 +570,13 @@ static char *led_line(char *pref, char *post, char *ai,
 				}
 			}
 			goto redo_suggest;
+		case TK_CTL('z'):
+			sug_pt = sug_pt == len ? -1 : len;
+			break;
 		case TK_CTL('n'):
 			if (!suggestsb)
 				continue;
+			last_sug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
 			if (_sug) {
 				if (suggestsb->s_n == sug - suggestsb->s)
 					continue;
@@ -583,19 +587,13 @@ static char *led_line(char *pref, char *post, char *ai,
 				}
 				suggest:
 				*_sug = '\0';
-				if ((i = led_lastword(sb->s)) > last_sug)
-					i = last_sug;
-				sbuf_cut(sb, i)
-				last_sug = sb->s_n;
+				sbuf_cut(sb, last_sug)
 				sbufn_str(sb, sug)
 				sug = _sug+1;
 				continue;
 			}
 			lookup:
-			cs = sb->s;
-			if ((i = led_lastword(cs)) > last_sug)
-				i = last_sug;
-			if (search(cs + i, len - i, ROOT) == 1) {
+			if (search(sb->s + last_sug, len - last_sug, ROOT) == 1) {
 				sug = suggestsb->s;
 				if (!(_sug = strchr(sug, '\n')))
 					continue;
@@ -659,8 +657,6 @@ _default:
 			if ((cs = led_read(kmap, c)))
 				sbufn_str(sb, cs)
 		}
-		if (sb->s_n > len)
-			last_sug = sb->s_n;
 		sug = NULL; _sug = NULL;
 		if (c == '\n' || TK_INT(c))
 			break;
