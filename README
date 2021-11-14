@@ -105,18 +105,20 @@ chars from words and build a database of words. But in order to take full
 advantage out of the completion system, you can change this regex at runtime
 using new ex command "ac". For example say we don't want word completion
 and we want entire line completion instead, run :ac .*
-You will find that the autocomplete db is persistent throughout
-all buffers and it also has data duplication and redundancy checking
-such that you can index multiple files as you need in your workflow,
-maybe even using different filter rules. If your regex rule
-allows inclusion of nonalphanumeric characters like tab or space
+If the regex rule allows inclusion of nonalphanumeric or punctuation characters
 you won't be able to retreive the string like it works with words by default.
 Automatically determening the position from which completion starts
 inside insert sbuf is ambiguous. More fine tuned control is needed and
 can be achieved using new keybind ^z in insert. Use ^z before you type out 
 search term, this will set start position for completion, such
 that the options can be looped over inplace. ^z is a toggle, to disable
-it (without exiting insert) press twice in same place.
+it (without exiting insert) press twice in same place. When ^z is set
+^u keybind will delete everything until ^z mark first, otherwise ^u
+operates normally (deletes everything).
+You will find that the autocomplete db is persistent throughout
+all buffers and it also has data duplication and redundancy checking
+such that you can index multiple files as you need in your workflow,
+maybe even using different filter rules. 
 Like ^g used to index file in insert mode you can use ^y from insert
 to out clear the completion db.
 Running ex command "ac" with no argument will reset back to the default

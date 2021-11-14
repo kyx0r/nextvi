@@ -512,7 +512,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			break;
 		case TK_CTL('u'):
-			sbufn_cut(sb, 0)
+			sbufn_cut(sb, sug_pt > 0 && len > sug_pt ? sug_pt : 0)
 			break;
 		case TK_CTL('w'):
 			if (len)

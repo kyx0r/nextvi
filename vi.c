@@ -296,7 +296,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 char *ex_read(char *msg)
 {
 	sbuf *sb;
-	char c;
+	int c;
 	if (xled) {
 		int oleft = xleft;
 		syn_blockhl = 0;
