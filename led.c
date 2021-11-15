@@ -42,10 +42,10 @@ static tern_t *insert_node(const char *string, tern_t *node)
 	return node;
 }
 
-static tern_t* find_node(const char *string, int l, tern_t *node)
+static tern_t *find_node(const char *string, int l, tern_t *node)
 {
 	int i = 0;
-	tern_t* currentNode = node;
+	tern_t *currentNode = node;
 	while (i < l) {
 		if (!currentNode)
 			break;

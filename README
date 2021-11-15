@@ -494,7 +494,7 @@ OPTIONS
 
 To improve nextvi's performance, shaping, character reordering, and
 syntax highlighting can be disabled by defining the EXINIT environment
-variable as "set noshape | set noorder | set nohl | set td=+2".
+variable as "se noshape | se noorder | se nohl | set td=+2".
 
 Options supported in nextvi:
 
@@ -548,7 +548,17 @@ ORIGINAL NEATVI:
 194,719,965 (19.88%)  ???:brk_match [/root/neatvi/vi]
 /* brk_match is terrible, can be optimized down to a simple loop
 which is what was done in branch dfa_dead. Still recursion is
-utterly slow */
+utterly slow. For the curious reader, total cost of regex
+operations is 745,481,975. dfa_dead version of regex runs
+with total of 350,000,000 (including cost of extra 20+ alternations
+and extra backtracking patterns). If tested under the same default
+regex patterns of neatvi, the cost would be exactly 195,494,596.
+Imagine how much faster Ali's regex could of been if it was written
+free of bullshit. To put in perspective, on raspberry pi 3b+ the
+difference between 195,494,596 and 745,481,975 refs is maxing 
+the core cpu usage at ~20% VS 100%++ . If you are running hardware
+from 2000s take a shot each time you wanna scroll up or down, as
+words cannot even begin to describe the slideshow you would see. */
 171,305,604 (17.49%)  ???:re_rec'2 [/root/neatvi/vi]
 111,565,533 (11.39%)  ???:uc_dec [/root/neatvi/vi]
  35,046,082 ( 3.58%)  ???:regexec [/root/neatvi/vi]
@@ -613,7 +623,7 @@ more efficiently. */
 apply needs to be computed only once. Planning to rework in the future.
   4,015,727 ( 0.90%)  ren.c:ren_translate [/root/klec/cprogs/nextvi/vi]
   3,614,015 ( 0.81%)  /stdio/vfprintf.c:printf_core [/usr/lib/libc.so]
-/* who the f*ck calles printf, maybe ren_placeholder() */
+/* term_pos(), term_room() */
   2,966,279 ( 0.66%)  regex.c:rset_find [/root/klec/cprogs/nextvi/vi]
   2,659,889 ( 0.59%)  sbuf.c:sbuf_mem [/root/klec/cprogs/nextvi/vi]
   2,491,262 ( 0.56%)  uc.c:uc_off [/root/klec/cprogs/nextvi/vi]
