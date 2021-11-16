@@ -614,14 +614,13 @@ static char *led_line(char *pref, char *post, char *ai,
 			td_set(+2);
 			xquit = 2;
 			i = 0;
-			goto cur_histstr;
 		case TK_CTL('v'):
 			cur_histstr:
 			cs = temp_curstr(0, i);
 			if (cs) {
-				cs[dstrlen(cs, '\n')] = '\0';
 				sbuf_cut(sb, 0)
-				sbufn_str(sb, cs)
+				sbuf_str(sb, cs)
+				sb->s[--sb->s_n] = '\0';
 				i++;
 			} else if (i) {
 				i = 0;
@@ -704,7 +703,7 @@ char *led_input(char *pref, char *post, int *kmap, int cln)
 	while (1) {
 		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, NULL);
 		int ln_sp = 0;	/* number of initial spaces in ln */
-		while (ln[ln_sp] && (ln[ln_sp] == ' ' || ln[ln_sp] == '\t'))
+		while (ln[ln_sp] == ' ' || ln[ln_sp] == '\t')
 			ln_sp++;
 		/* append the auto-indent only if there are other characters */
 		if (ln[ln_sp] || (pref && pref[0]) ||
