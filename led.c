@@ -671,7 +671,6 @@ char *led_prompt(char *pref, char *post, char *insert,
 {
 	int key;
 	td_set(+2);
-	temp_open(0, "/hist/", "/");
 	char *s = led_line(pref, post, "", 0, &key, kmap, insert);
 	td_set(xotd);
 	if (key == '\n') {

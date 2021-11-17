@@ -2148,6 +2148,7 @@ int main(int argc, char *argv[])
 		return 1;
 	dir_init();
 	syn_init();
+	temp_open(0, "/hist/", "/");
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == 's')
 			xled = 0;
