@@ -613,19 +613,17 @@ static char *led_line(char *pref, char *post, char *ai,
 			syn_setft("---");
 			td_set(+2);
 			xquit = 2;
+			cur_histstr:
 			i = 0;
 		case TK_CTL('v'):
-			cur_histstr:
 			cs = temp_curstr(0, i);
 			if (cs) {
 				sbuf_cut(sb, 0)
 				sbuf_str(sb, cs)
 				sb->s[--sb->s_n] = '\0';
 				i++;
-			} else if (i) {
-				i = 0;
+			} else if (i)
 				goto cur_histstr;
-			}
 			break;
 		case TK_CTL('x'):
 			term_push("u", 2);

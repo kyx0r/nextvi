@@ -194,15 +194,14 @@ z + vi_arg1 in normal mode will switch what keymap ^f key changes,
 so for example 1 = fa 2 = ru. If you need some other language
 kmap just make one yourself. Look into kmap.h it's really simple.
 kmap also has digraph support, that list has been expanded to
-include non printing characters. Naming resembles how ASCII keys
-are named, so for example 03 is key ctrl+c to be able to type 03
+include non printing characters. Naming resembles ASCII caret
+notation, so for example 03 is key ^c to be able to type 03
 enter insert, use ^k to go into digraph mode, type then " c" (space+c)
-Notice how the letter after space is consistent with ASCII ctrl+c,
-essentially space is like representing typeable ctrl key.
+Essentially space is representing typeable ctrl key.
 The reason this is useful is if you are using @ key to make macros
 there has to be a way to type these control characters.
 Alternatively, it's possible to type the character literal using
-^a + whatever the key represents it. In neatvi this was binded to
+^a + ^(insertkeyhere). In neatvi this was binded to
 ^v, currently ^v is used for 48. Nextvi shall keep both, the digraph
 way and ^a for clarity and better user reference, no more searching
 ascii keycodes online if kmap has it in the clear.
