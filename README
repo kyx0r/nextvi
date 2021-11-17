@@ -153,7 +153,9 @@ keybind: ^b or vb (from normal) will open the buffer with all previous
 commands move the cursor to wanted command and exit buffer with qq
 will copy the command into prompt. You can also use this
 when half way through some command and need to access normal
-mode to edit the command more efficiently.
+mode to edit the command more efficiently. The filename is named 
+"/hist/" so that it can't be written to file with ^k (by accident).
+If you want to save history to file use :w yourfilename
 38. Added key to grab the current word(s) under the cursor into
 prompt like so :%s/.../ keybind: vr (see also 49.)
 39. Added ex option to change number of spaces in a tab (\t)
@@ -494,7 +496,7 @@ OPTIONS
 
 To improve nextvi's performance, shaping, character reordering, and
 syntax highlighting can be disabled by defining the EXINIT environment
-variable as "se noshape | se noorder | se nohl | set td=+2".
+variable as "se noshape | se noorder | se nohl | se td=+2".
 
 Options supported in nextvi:
 
