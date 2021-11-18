@@ -91,7 +91,8 @@ N number of lines specified by the vi_arg1. Direction: top to bottom
 may take. keybind: ^v Pressing again will change the key mode, specifying
 any vi_arg1 will exit the mode. This is a major step up to how navigation
 works in vi, it makes it so much easier to use because now you can see where
-you are going. If not anything else I suggest you to try out this distro
+you are going. These special numbers and their colors can be customized
+through conf.c. If not for anything else I suggest you to try out this distro
 just to see it in action.
 29. Added ability to change highlight dynamically. (via syn_reloadft();)
 30. New ex option "hlw" which highlights every instance of word on the
@@ -229,7 +230,7 @@ if the affected area is greater than terminal rows.
 56. Modified regex engine to support more than 1 character in negated
 char expressions. For example [^&&abc] where ^&& is the not+and. This will
 treat "abc" as !(a && b && c) logically. Everything in brackets preceding
-&& will be processed according to standard posix negated char.
+&& will be processed according to standard negated char exp.
 57. Added ^l key in insert to clean the terminal and start at line 0,
 remove distrations and focus on typing. Useful when running ex via vi -e
 58. Added v/ key in normal, which can grab the current word(s) under the
@@ -408,6 +409,16 @@ Honestly, this change isn't so suprising, as I was working
 on pikevm a few months prior, to favor a superior algorithm.
 You can still find that code here (likely with no updates):
 https://github.com/kyx0r/nextvi/tree/dfa_dead
+
+Q: What does it mean when I call feature X a macro?
+A: It's the kind of shortcut that does not change the core
+functionality, but rather reuses the core functionality.
+Usually macro features are implemented in 1 or a few lines
+of code. Notably, they tend to use function term_push(), but
+it's not required. Because they are macros they may run suboptimally
+or not handle every possible edge case.
+These features are considered a macro: 5. 6. 17. 18. 19. 20.
+21. 26. 27. 34. 46. 50. 65.
 
 CONFIGURATION
 -------------

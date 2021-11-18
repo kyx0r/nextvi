@@ -187,7 +187,9 @@ static void vi_drawrow(int row)
 			break;
 		}
 		movedown = 1;
+		syn_setft("#");
 		led_print(tmp, row - xtop);
+		syn_setft(ex_filetype());
 	} else if (!lnnum)
 		led_print(s, row - xtop);
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
