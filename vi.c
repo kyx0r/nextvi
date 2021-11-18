@@ -47,7 +47,7 @@ int vi_mod;		/* screen should be redrawn:
 			(1: whole screen, -1: whole screen not updating xcol,
 			2: current line, or whole screen) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
-static char *vi_word = "\0eEwW0";	/* line word navigation */
+static char *vi_word = "\0eEwW";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN+128];		/* current message */
 static char vi_charlast[8];		/* the last character searched via f, t, F, or T */
@@ -187,9 +187,12 @@ static void vi_drawrow(int row)
 			break;
 		}
 		movedown = 1;
+		i = syn_blockhl;
+		syn_blockhl = 0;
 		syn_setft("#");
 		led_print(tmp, row - xtop);
 		syn_setft(ex_filetype());
+		syn_blockhl = i;
 	} else if (!lnnum)
 		led_print(s, row - xtop);
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
@@ -199,13 +202,11 @@ static void vi_drawrow(int row)
 /* redraw the screen */
 static void vi_drawagain()
 {
-	int i;
 	term_record = 1;
 	syn_scdir(0);
 	syn_blockhl = 0;
-	for (i = xtop; i < xtop + xrows; i++)
+	for (int i = xtop; i < xtop + xrows; i++)
 		vi_drawrow(i);
-	syn_blockhl = 0;
 	vi_drawmsg();
 	term_commit();
 }
@@ -1783,7 +1784,7 @@ void vi(void)
 				break;
 			case TK_CTL('v'):
 				vi_word++;
-				if (*vi_word == '0')
+				if (!*vi_word)
 					vi_word -= 5;
 				if (vi_arg1)
 					while (*vi_word) vi_word--;
