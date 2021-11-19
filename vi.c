@@ -1950,7 +1950,7 @@ void vi(void)
 				vi_back('$');
 				if (!vc_motion('c'))
 					vi_mod = 1;
-				break;
+				goto ins;
 			case 'D':
 				vi_back('$');
 				if (!vc_motion('d'))
@@ -1969,7 +1969,7 @@ void vi(void)
 				vi_back('c');
 				if (!vc_motion('c'))
 					vi_mod = 1;
-				break;
+				goto ins;
 			case 'Y':
 				vi_back('y');
 				vc_motion('y');

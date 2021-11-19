@@ -489,7 +489,6 @@ static char *led_line(char *pref, char *post, char *ai,
 	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	time_t quickexit = 0;
-	vi_insmov = 0;
 	sbufn_make(sb, xcols)
 	if (insert)
 		sbufn_str(sb, insert)
@@ -506,10 +505,8 @@ static char *led_line(char *pref, char *post, char *ai,
 		case 127:
 			if (len)
 				sbufn_cut(sb, led_lastchar(sb->s))
-			else {
-				vi_insmov = c;
+			else
 				goto leave;
-			}
 			break;
 		case TK_CTL('u'):
 			sbufn_cut(sb, sug_pt > 0 && len > sug_pt ? sug_pt : 0)
@@ -517,10 +514,8 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('w'):
 			if (len)
 				sbufn_cut(sb, led_lastword(sb->s))
-			else {
-				vi_insmov = c;
+			else
 				goto leave;
-			}
 			break;
 		case TK_CTL('t'):
 			if (ai_len < ai_max) {
@@ -659,6 +654,7 @@ _default:
 			break;
 	}
 leave:
+	vi_insmov = c;
 	*key = c;
 	sbufn_done(sb)
 }
