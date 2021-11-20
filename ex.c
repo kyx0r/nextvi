@@ -26,17 +26,8 @@ static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */
 static int xgdep;		/* global command recursion depth */
-
-#define NUM_BUFS 10
-static struct buf {
-	char ft[32];		/* file type */
-	char *path;		/* file path */
-	struct lbuf *lb;
-	int row, off, top;
-	long mtime;			/* modification time */
-	signed char id, td, tmpid;	/* buffer id, text direction, is temp? */
-} bufs[NUM_BUFS];
-static struct buf tempbufs[2];
+struct buf bufs[NUM_BUFS];	/* main buffers */
+static struct buf tempbufs[2];	/* temporary buffers, for internal use */
 
 static int bufs_find(char *path)
 {
@@ -154,7 +145,7 @@ void temp_done(int i)
 	}
 }
 
-static void bufs_switch(int idx)
+static void bufs_switch(int idx, int setft)
 {
 	struct buf tmp;
 	bufs[0].row = xrow;
@@ -168,22 +159,8 @@ static void bufs_switch(int idx)
 	xoff = bufs[0].off;
 	xtop = bufs[0].top;
 	xtd = bufs[0].td;
-	syn_setft(bufs[0].ft);
-}
-
-char *ex_path(void)
-{
-	return bufs[0].path;
-}
-
-struct lbuf *ex_lbuf(void)
-{
-	return bufs[0].lb;
-}
-
-char *ex_filetype(void)
-{
-	return bufs[0].ft;
+	if (setft)
+		syn_setft(bufs[0].ft);
 }
 
 /* replace % and # in paths and commands with current and alternate path names */
@@ -337,7 +314,7 @@ static int ex_modifiedbuffer(char *msg)
 {
 	if (!lbuf_modified(xb))
 		return 0;
-	if (xaw && ex_path()[0])
+	if (xaw && ex_path[0])
 		return ec_write("", "w", "");
 	if (msg)
 		ex_show(msg);
@@ -353,7 +330,7 @@ void ec_bufferi(int *id)
 		if (*id == bufs[i].id)
 			break;
 	if (i < NUM_BUFS && bufs[i].lb)
-		bufs_switch(i);
+		bufs_switch(i, 1);
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)
@@ -374,7 +351,7 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 	}
 	if (id != -1) {
 		if (i < NUM_BUFS && bufs[i].lb)
-			bufs_switch(i);
+			bufs_switch(i, 1);
 		else
 			ex_show("no such buffer");
 	}
@@ -390,37 +367,33 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-#define readfile() \
-fd = open(ex_path(), O_RDONLY); \
+void ex_save(char *path)
+{
+	if (bufs[0].mtime == -1) {
+		bufs[0].mtime = mtime(ex_path);
+		lbuf_saved(xb, 1);
+	}
+}
+
+#define readfile(errchk) \
+fd = open(ex_path, O_RDONLY); \
 if (fd >= 0) { \
-	int rd = lbuf_rd(xb, fd, 0, lbuf_len(xb)); \
+	errchk lbuf_rd(xb, fd, 0, lbuf_len(xb)); \
 	close(fd); \
-	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]", \
-			ex_path(), lbuf_len(xb)); \
-	if (rd) \
-		ex_show("read failed"); \
-	else \
-		ex_show(msg); \
 } \
-lbuf_saved(xb, path[0] != '\0'); \
-bufs[0].mtime = mtime(ex_path()); \
-xrow = MAX(0, MIN(xrow, lbuf_len(xb) - 1)); \
-xoff = 0; \
-xtop = MAX(0, MIN(xtop, lbuf_len(xb) - 1)); \
 
 int ex_edit(char *path)
 {
-	char msg[128];
 	int fd;
 	if (path[0] == '.' && path[1] == '/')
 		path += 2;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
-		bufs_switch(fd);
+		bufs_switch(fd, 0);
 		return 1;
 	}
-	if (path[0] || !bufs[0].path)
-		bufs_switch(bufs_open(path));
-	readfile()
+	if (path[0] || !ex_path)
+		bufs_switch(bufs_open(path), 0);
+	readfile(/**/)
 	return 0;
 }
 
@@ -428,20 +401,27 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
 	char *path;
-	int fd;
+	int fd, rd = 0;
 	if (!strchr(cmd, '!'))
 		if (xb && ex_modifiedbuffer("buffer modified"))
 			return 1;
 	if (!(path = ex_pathexpand(arg, 0)))
 		return 1;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
-		bufs_switch(fd);
+		bufs_switch(fd, 1);
 		free(path);
 		return 0;
 	}
-	if (path[0] || !bufs[0].path)
-		bufs_switch(bufs_open(path));
-	readfile()
+	if (path[0] || !ex_path)
+		bufs_switch(bufs_open(path), 1);
+	readfile(rd =)
+	ex_save(ex_path);
+	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
+			*ex_path ? ex_path : "unnamed", lbuf_len(xb));
+	if (rd)
+		ex_show("read failed");
+	else
+		ex_show(msg);
 	free(path);
 	return 0;
 }
@@ -471,7 +451,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 			return 0;
 		if (strstr(&path[i+1], arg)) {
 			if (!inst) {
-				ex_edit(path);
+				ec_edit(loc, "!", path);
 				break;
 			}
 			inst--;
@@ -487,7 +467,7 @@ static int ec_read(char *loc, char *cmd, char *arg)
 	char *path;
 	char *obuf;
 	int n = lbuf_len(xb);
-	path = arg[0] ? arg : ex_path();
+	path = arg[0] ? arg : ex_path;
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	if (arg[0] == '!') {
@@ -527,7 +507,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 	char *path;
 	char *ibuf;
 	int beg, end;
-	path = arg[0] ? arg : ex_path();
+	path = arg[0] ? arg : ex_path;
 	if (cmd[0] == 'x' && !lbuf_modified(xb))
 		return ec_quit("", cmd, "");
 	if (ex_region(loc, &beg, &end))
@@ -547,9 +527,9 @@ static int ec_write(char *loc, char *cmd, char *arg)
 		free(ibuf);
 	} else {
 		int fd;
-		if (!strchr(cmd, '!') && bufs[0].path &&
-				!strcmp(bufs[0].path, path) &&
-				mtime(bufs[0].path) > bufs[0].mtime) {
+		if (!strchr(cmd, '!') && ex_path &&
+				!strcmp(ex_path, path) &&
+				mtime(ex_path) > bufs[0].mtime) {
 			ex_show("write failed: file changed");
 			return 1;
 		}
@@ -572,13 +552,13 @@ static int ec_write(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [w]",
 			path, end - beg);
 	ex_show(msg);
-	if (!ex_path()[0]) {
-		free(bufs[0].path);
-		bufs[0].path = uc_dup(path);
+	if (!ex_path[0]) {
+		free(ex_path);
+		ex_path = uc_dup(path);
 	}
-	if (!strcmp(ex_path(), path))
+	if (!strcmp(ex_path, path))
 		lbuf_saved(xb, 0);
-	if (!strcmp(ex_path(), path))
+	if (!strcmp(ex_path, path))
 		bufs[0].mtime = mtime(path);
 	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
 		ec_quit("", cmd, "");
@@ -819,7 +799,7 @@ static int ec_ft(char *loc, char *cmd, char *arg)
 	if (arg[0])
 		strncpy(bufs[0].ft, arg, LEN(bufs[0].ft)-1);
 	else
-		ex_print(ex_filetype());
+		ex_print(ex_filetype);
 	syn_setft(bufs[0].ft);
 	syn_reload = 1;
 	return 0;

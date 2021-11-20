@@ -264,6 +264,20 @@ int led_pos(char *s, int pos);
 void led_done(void);
 
 /* ex.c ex commands */
+struct buf {
+	char ft[32];			/* file type */
+	char *path;			/* file path */
+	struct lbuf *lb;
+	int row, off, top;
+	long mtime;			/* modification time */
+	signed char id, td, tmpid;	/* buffer id, text direction, is temp? */
+};
+#define NUM_BUFS 10
+#define EXLEN	512	/* ex line length */
+extern struct buf bufs[NUM_BUFS];
+#define ex_path bufs[0].path
+#define ex_filetype bufs[0].ft
+#define xb bufs[0].lb
 void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
 void temp_write(int i, char *str);
@@ -277,17 +291,12 @@ char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);
 int ex_init(char **files);
+void ex_save(char *path);
 void ex_done(void);
-char *ex_path(void);
-char *ex_filetype(void);
-struct lbuf *ex_lbuf(void);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
 int ex_edit(char *path);
 void ec_bufferi(int *id);
-
-#define EXLEN	512		/* ex line length */
-#define xb 	ex_lbuf()
 
 /* conf.c configuration variables */
 /* map file names to file types */

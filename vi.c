@@ -97,7 +97,7 @@ static void vi_drawmsg(void)
 		syn_blockhl = 0;
 		syn_setft("---");
 		led_printmsg(vi_msg, xrows);
-		syn_setft(ex_filetype());
+		syn_setft(ex_filetype);
 		xleft = oleft;
 	}
 }
@@ -191,7 +191,7 @@ static void vi_drawrow(int row)
 		syn_blockhl = 0;
 		syn_setft("#");
 		led_print(tmp, row - xtop);
-		syn_setft(ex_filetype());
+		syn_setft(ex_filetype);
 		syn_blockhl = i;
 	} else if (!lnnum)
 		led_print(s, row - xtop);
@@ -281,7 +281,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	term_kill();
 	syn_setft("---");
 	s = led_prompt(msg, "", insert, kmap);
-	syn_setft(ex_filetype());
+	syn_setft(ex_filetype);
 	if (xquit == 2) {
 		vi_mod = 1;
 		xquit = 0;
@@ -308,7 +308,7 @@ char *ex_read(char *msg)
 		xleft = oleft;
 		if (s)
 			term_chr('\n');
-		syn_setft(ex_filetype());
+		syn_setft(ex_filetype);
 		return s;
 	}
 	sbuf_make(sb, xcols)
@@ -331,7 +331,7 @@ void ex_show(char *msg)
 		syn_setft("---");
 		led_print(msg, -1);
 		term_chr('\n');
-		syn_setft(ex_filetype());
+		syn_setft(ex_filetype);
 	} else {
 		printf("%s", msg);
 	}
@@ -347,7 +347,7 @@ void ex_print(char *line)
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 			syn_setft("---");
 			led_print(line, -1);
-			syn_setft(ex_filetype());
+			syn_setft(ex_filetype);
 		}
 		term_chr('\n');
 	} else if (line)
@@ -876,7 +876,7 @@ static int vi_motion(int *row, int *off)
 		if (!savepath)
 			sbuf_make(savepath, 1024)
 		sbuf_cut(savepath, 0)
-		sbufn_str(savepath, ex_path())
+		sbufn_str(savepath, ex_path)
 		srow = *row; soff = *off;
 		break;
 	case '0':
@@ -935,7 +935,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		if (!strcmp(ex_path(), "/fm/"))
+		if (!strcmp(ex_path, "/fm/"))
 			return 0;
 		if (!fslink) {
 			strcpy(path, ".");
@@ -944,8 +944,7 @@ static int vi_motion(int *row, int *off)
 		}
 		temp_open(1, "/fm/", "fm");
 		cs = temp_get(1, 1);
-		if (!cs || strncmp(&fslink[sizeof(int)], cs, (*(int*)fslink)-1))
-		{
+		if (!cs) {
 			temp_done(1);
 			temp_open(1, "/fm/", "fm");
 			for (i = 0; i < fstlen;)
@@ -1391,7 +1390,7 @@ static void vc_status(void)
 	int col = vi_off2col(xb, xrow, xoff);
 	snprintf(vi_msg, sizeof(vi_msg),
 		"\"%s\"%c %d lines %d%% L%d C%d",
-		ex_path()[0] ? ex_path() : "unnamed",
+		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1);
@@ -1533,10 +1532,12 @@ void vi(void)
 			case '|':
 				xcol = vi_pcol;
 				break;
-			case '\\':
 			case TK_CTL(']'):
 			case TK_CTL('p'):
-				vi_drawmsg();
+				syn_setft(ex_filetype);
+				ex_save(ex_path);
+			case '\\':
+				vc_status();
 			case 1: /* ^a */
 			case '/':
 			case '?':
@@ -1619,7 +1620,7 @@ void vi(void)
 				buf[2] = ' ';
 				strcpy(buf+3, ln);
 				term_push(buf, strlen(ln)+3);
-				if (!strcmp(ex_path(), "/fm/"))
+				if (!strcmp(ex_path, "/fm/"))
 					xquit = 1;
 				vi_mod = 1;
 				break; }
