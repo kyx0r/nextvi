@@ -462,7 +462,8 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 	o = *off;
 	for (i = 0; i < cnt; i++) {
 		if (lbuf_search(xb, rs, dir, &r, &o, &len)) {
-			snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found", regs['/']);
+			snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found %d/%d",
+					regs['/'], i, cnt);
 			break;
 		}
 		if (i + 1 < cnt && cmd == '/')
