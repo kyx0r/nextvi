@@ -1535,7 +1535,8 @@ void vi(void)
 			case TK_CTL(']'):
 			case TK_CTL('p'):
 				syn_setft(ex_filetype);
-				ex_save();
+				for (n = 0; n < NUM_BUFS; n++)
+					ex_save(n);
 			case '\\':
 				vc_status();
 			case 1: /* ^a */

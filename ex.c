@@ -367,11 +367,11 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-void ex_save()
+void ex_save(int i)
 {
-	if (bufs[0].mtime == -1) {
-		bufs[0].mtime = mtime(ex_path);
-		lbuf_saved(xb, 1);
+	if (bufs[i].lb && bufs[i].mtime == -1) {
+		bufs[i].mtime = mtime(bufs[i].path);
+		lbuf_saved(bufs[i].lb, 1);
 	}
 }
 
@@ -413,7 +413,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	}
 	bufs_switch(bufs_open(path), ex_filetype);
 	readfile(rd =)
-	ex_save();
+	ex_save(0);
 	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 			*ex_path ? ex_path : "unnamed", lbuf_len(xb));
 	if (rd)
