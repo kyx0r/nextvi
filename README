@@ -40,7 +40,7 @@ keybind: v# enables permanent line numbers
 4. Added invisible character view, keybind: V
 5. Added regex for changing spaces to tabs, keybind: vi
 6. Added regex for removing /r in dos files and trail space/tab, keybind: vo
-7. Changed behavior of ^a to change search direction when no more match
+7. Changed behavior of ^a to change search direction when no more match. (see 49.)
 8. Added fssearch, searches what is under the cursor or (last search kwd)
 in every file in the opened directory keybind: ^] or ^5
 Beware that it will brute force open files into buffers and
@@ -309,6 +309,10 @@ do: 2 * 2 = 4. The first group is always 2, 1 * 2 = 2, :se grp=2 gets you
 back to default behavior when you are done using it.
 67. Undo and Redo commands (u,^r) may take optional vi_arg1 which
 repeats the operation N times.
+68. Search motions do not terminate with error if the count is greater than 
+number of instances found. Last possible match will be used. Important when
+you don't know exactly how many matches there are, does not mean there aren't
+any at all, greedy behavior opens up new use cases.
 
 PIKEVM:
 -------

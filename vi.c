@@ -432,7 +432,6 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 	rset *rs;
 	int r = *row;
 	int o = *off;
-	int failed = 0;
 	int len = 0;
 	int i, dir;
 	if (cmd == '/' || cmd == '?') {
@@ -463,26 +462,24 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 	o = *off;
 	for (i = 0; i < cnt; i++) {
 		if (lbuf_search(xb, rs, dir, &r, &o, &len)) {
-			failed = 1;
+			snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found", regs['/']);
 			break;
 		}
 		if (i + 1 < cnt && cmd == '/')
 			o += len;
 	}
-	if (!failed) {
+	if (i) {
 		*row = r;
 		*off = o;
 		if (vi_soset) {
 			*off = -1;
 			if (*row + vi_so < 0 || *row + vi_so >= lbuf_len(xb))
-				failed = 1;
+				i = 0;
 			else
 				*row += vi_so;
 		}
 	}
-	if (failed)
-		snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found", regs['/']);
-	return failed;
+	return !i;
 }
 
 /* read a line motion */
@@ -847,7 +844,7 @@ static int vi_motion(int *row, int *off)
 				break;
 		break;
 	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
-		cs = vi_curword(xb, *row, *off, vi_arg1);
+		cs = vi_curword(xb, *row, *off, cnt);
 		if (!fslink) {
 			strcpy(path, ".");
 			dir_calc(path);
@@ -855,7 +852,7 @@ static int vi_motion(int *row, int *off)
 		_row = *row; _off = *off;
 		if (vi_arg1 && cs)
 			ex_krsset(cs, +1);
-		if (!fs_search(cnt, row, off)) {
+		if (!fs_search(1, row, off)) {
 			*row = _row; *off = _off;
 		}
 		free(cs);
@@ -863,10 +860,10 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('p'):
 		if (!fslink)
 			return -1;
-		cs = vi_curword(xb, *row, *off, vi_arg1);
+		cs = vi_curword(xb, *row, *off, cnt);
 		if (vi_arg1 && cs)
 			ex_krsset(cs, +1);
-		if (!fs_searchback(cnt, row, off)) {
+		if (!fs_searchback(1, row, off)) {
 			if (savepath) {
 				*row = srow; *off = soff;
 				ex_edit(savepath->s);
@@ -906,10 +903,10 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		ex_krsset(cs, +1);
 		free(cs);
-		if (vi_search(sdirection ? 'N' : 'n', cnt, row, off))
+		if (vi_search(sdirection ? 'N' : 'n', 1, row, off))
 		{
 			sdirection = !sdirection;
-			if (vi_search(sdirection ? 'N' : 'n', cnt, row, off))
+			if (vi_search(sdirection ? 'N' : 'n', 1, row, off))
 			        return -1;
 		}
 		break;
