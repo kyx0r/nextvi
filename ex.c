@@ -145,7 +145,7 @@ void temp_done(int i)
 	}
 }
 
-static void bufs_switch(int idx, int setft)
+static void bufs_switch(int idx, char *ft)
 {
 	struct buf tmp;
 	bufs[0].row = xrow;
@@ -159,8 +159,8 @@ static void bufs_switch(int idx, int setft)
 	xoff = bufs[0].off;
 	xtop = bufs[0].top;
 	xtd = bufs[0].td;
-	if (setft)
-		syn_setft(bufs[0].ft);
+	if (ft)
+		syn_setft(ft);
 }
 
 /* replace % and # in paths and commands with current and alternate path names */
@@ -330,7 +330,7 @@ void ec_bufferi(int *id)
 		if (*id == bufs[i].id)
 			break;
 	if (i < NUM_BUFS && bufs[i].lb)
-		bufs_switch(i, 1);
+		bufs_switch(i, ex_filetype);
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)
@@ -351,7 +351,7 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 	}
 	if (id != -1) {
 		if (i < NUM_BUFS && bufs[i].lb)
-			bufs_switch(i, 1);
+			bufs_switch(i, ex_filetype);
 		else
 			ex_show("no such buffer");
 	}
@@ -367,7 +367,7 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-void ex_save(char *path)
+void ex_save()
 {
 	if (bufs[0].mtime == -1) {
 		bufs[0].mtime = mtime(ex_path);
@@ -388,11 +388,10 @@ int ex_edit(char *path)
 	if (path[0] == '.' && path[1] == '/')
 		path += 2;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
-		bufs_switch(fd, 0);
+		bufs_switch(fd, NULL);
 		return 1;
 	}
-	if (path[0] || !ex_path)
-		bufs_switch(bufs_open(path), 0);
+	bufs_switch(bufs_open(path), NULL);
 	readfile(/**/)
 	return 0;
 }
@@ -408,14 +407,13 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	if (!(path = ex_pathexpand(arg, 0)))
 		return 1;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
-		bufs_switch(fd, 1);
+		bufs_switch(fd, ex_filetype);
 		free(path);
 		return 0;
 	}
-	if (path[0] || !ex_path)
-		bufs_switch(bufs_open(path), 1);
+	bufs_switch(bufs_open(path), ex_filetype);
 	readfile(rd =)
-	ex_save(ex_path);
+	ex_save();
 	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 			*ex_path ? ex_path : "unnamed", lbuf_len(xb));
 	if (rd)
