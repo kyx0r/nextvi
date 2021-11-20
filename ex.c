@@ -21,28 +21,28 @@ int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
 int xgrp = 2;			/* regex search group */
+int xbufcur = 0;		/* number of active buffers */
+static int xbufsmax = 11;	/* number of buffers */
+struct buf *bufs;		/* main buffers */
 sbuf *xacreg;			/* autocomplete db filter regex */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
 static int xkwddir;		/* the last search direction */
 static int xgdep;		/* global command recursion depth */
-struct buf bufs[NUM_BUFS];	/* main buffers */
 static struct buf tempbufs[2];	/* temporary buffers, for internal use */
 
 static int bufs_find(char *path)
 {
-	for (int i = 0; i < NUM_BUFS; i++)
-		if (bufs[i].lb && !strcmp(bufs[i].path, path))
+	for (int i = 0; i < xbufcur; i++)
+		if (!strcmp(bufs[i].path, path))
 			return i;
 	return -1;
 }
 
 static void bufs_free(int idx)
 {
-	if (bufs[idx].lb) {
-		free(bufs[idx].path);
-		lbuf_free(bufs[idx].lb);
-	}
+	free(bufs[idx].path);
+	lbuf_free(bufs[idx].lb);
 }
 
 static long mtime(char *path)
@@ -55,13 +55,11 @@ static long mtime(char *path)
 
 static int bufs_open(char *path)
 {
-	int i;
-	for (i = 0; i < NUM_BUFS - 1; i++)
-		if (!bufs[i].lb)
-			break;
-	if (!bufs[i].lb)
-		bufs[i].id = i;
-	bufs_free(i);
+	int i = xbufcur;
+	if (i < xbufsmax - 1)
+		xbufcur++;
+	else
+		bufs_free(i - 1);
 	bufs[i].path = uc_dup(path);
 	bufs[i].lb = lbuf_make();
 	bufs[i].row = 0;
@@ -323,38 +321,25 @@ static int ex_modifiedbuffer(char *msg)
 
 void ec_bufferi(int *id)
 {
-	if (*id > NUM_BUFS)
+	if (*id > xbufcur)
 		*id = 0;
-	int i;
-	for (i = 0; i < NUM_BUFS && bufs[i].lb; i++)
-		if (*id == bufs[i].id)
-			break;
-	if (i < NUM_BUFS && bufs[i].lb)
-		bufs_switch(i, ex_filetype);
+	if (*id < xbufcur)
+		bufs_switch(*id, ex_filetype);
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)
 {
-	int i, id;
-	char ln[EXLEN];
-	id = arg[0] ? atoi(arg) : -1;
-	for (i = 0; i < NUM_BUFS && bufs[i].lb; i++) {
-		if (id != -1) {
-			if (id == bufs[i].id)
-				break;
-		} else {
+	if (!arg[0]) {
+		char ln[EXLEN];
+		for (int i = 0; i < xbufcur; i++) {
 			char c = i < 2 ? "%#"[i] : ' ';
-			snprintf(ln, LEN(ln), "%i %c %s",
-				(int)bufs[i].id, c, bufs[i].path);
+			snprintf(ln, LEN(ln), "%i %c %s", i, c, bufs[i].path);
 			ex_print(ln);
 		}
-	}
-	if (id != -1) {
-		if (i < NUM_BUFS && bufs[i].lb)
-			bufs_switch(i, ex_filetype);
-		else
-			ex_show("no such buffer");
-	}
+	} else if (atoi(arg) < xbufcur) {
+		bufs_switch(atoi(arg), ex_filetype);
+	} else
+		ex_show("no such buffer");
 	return 0;
 }
 
@@ -369,7 +354,7 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 
 void ex_save(int i)
 {
-	if (bufs[i].lb && bufs[i].mtime == -1) {
+	if (bufs[i].mtime == -1) {
 		bufs[i].mtime = mtime(bufs[i].path);
 		lbuf_saved(bufs[i].lb, 1);
 	}
@@ -402,7 +387,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	char *path;
 	int fd, rd = 0;
 	if (!strchr(cmd, '!'))
-		if (xb && ex_modifiedbuffer("buffer modified"))
+		if (ex_modifiedbuffer("buffer modified"))
 			return 1;
 	if (!(path = ex_pathexpand(arg, 0)))
 		return 1;
@@ -970,6 +955,15 @@ static int ec_setacreg(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
+static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+{
+	xbufsmax = *arg ? atoi(arg)+1 : 11;
+	for (; xbufcur > xbufsmax - 1; xbufcur--)
+		bufs_free(xbufcur - 1);
+	bufs = realloc(bufs, sizeof(struct buf) * xbufsmax);
+	return 0;
+}
+
 static struct excmd {
 	char *name;
 	int (*ec)(char *loc, char *cmd, char *arg);
@@ -1010,6 +1004,7 @@ static struct excmd {
 	{"fd", ec_setdir},
 	{"cd", ec_chdir},
 	{"inc", ec_setincl},
+	{"bx", ec_setbufsmax},
 	{"ac", ec_setacreg},
 	{"", ec_null},
 };
@@ -1128,7 +1123,8 @@ int ex_init(char **files)
 		*s++ = *r++;
 	}
 	*s = '\0';
-	if (ec_edit("", "e", arg))
+	bufs = malloc(sizeof(struct buf) * xbufsmax);
+	if (ec_edit("", "e!", arg))
 		return 1;
 	if (getenv("EXINIT"))
 		ex_command(getenv("EXINIT"));
@@ -1137,7 +1133,8 @@ int ex_init(char **files)
 
 void ex_done(void)
 {
-	for (int i = 0; i < NUM_BUFS; i++)
+	for (int i = 0; i < xbufcur; i++)
 		bufs_free(i);
 	rset_free(xkwdrs);
+	free(bufs);
 }

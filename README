@@ -58,8 +58,14 @@ For example file might be named "./path/bla/bla/file123.c" but you can open it
 just by "ea fi" if this is a uniquely matched filename.
 12. Added ex command "fd" to set the directory for fssearch or "ea" ex command
 Running "fd" without an arg will recalculate directory info at current working dir.
-13. Added numbered buffers to vi, max 10 and ex "b" command to show buffers
+13. Added numbered buffers to vi, default 10 and ex "b" command to show buffers
 and "b%d" to switch (where %d is the buffer number).
+Added new ex command "bx", where the argument will change the number of buffers
+allowed. If the number is lower than number of buffers currently in use they
+will be deallocated. Running bx without an arg will reset to default value of 10.
+Increasing the number of buffers results in a positive effect on performance of
+fssearch (8. 9.) if the search keyword does not change. This is because vi 
+will remember the position of previous match in the buffer avoiding redundant search.
 14. Added key to show buffers and switch buffer
 (to switch press corresponding 0-9 number) keybind: ^7
 15. Added key to exit vi keybind: qq

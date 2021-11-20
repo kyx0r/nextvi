@@ -270,11 +270,11 @@ struct buf {
 	struct lbuf *lb;
 	int row, off, top;
 	long mtime;			/* modification time */
-	signed char id, td, tmpid;	/* buffer id, text direction, is temp? */
+	signed char td, tmpid;		/* buffer id, text direction, is temp? */
 };
-#define NUM_BUFS 10
+extern int xbufcur;
+extern struct buf *bufs;
 #define EXLEN	512	/* ex line length */
-extern struct buf bufs[NUM_BUFS];
 #define ex_path bufs[0].path
 #define ex_filetype bufs[0].ft
 #define xb bufs[0].lb
