@@ -954,10 +954,10 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 	xbufsmax = *arg ? atoi(arg) : 10;
 	for (; xbufcur > xbufsmax; xbufcur--)
 		bufs_free(xbufcur - 1);
-	int bufidx = bufs - ex_buf;
+	int bufidx = ex_buf - bufs;
 	bufs = realloc(bufs, sizeof(struct buf) * xbufsmax);
-	ex_buf = bufidx > xbufsmax ? bufs : bufs+bufidx;
-	ex_pbuf = NULL;
+	ex_buf = bufidx > &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
+	ex_pbuf = bufs;
 	return 0;
 }
 
