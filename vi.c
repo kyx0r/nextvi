@@ -427,7 +427,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int 
 	return lbuf_findchar(lb, cs, cmd, n, row, off);
 }
 
-static int vi_search(int cmd, int cnt, int *row, int *off)
+static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
 	rset *rs;
 	int r = *row;
@@ -462,7 +462,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off)
 	o = *off;
 	for (i = 0; i < cnt; i++) {
 		if (lbuf_search(xb, rs, dir, &r, &o, &len)) {
-			snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found %d/%d",
+			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 					regs['/'], i, cnt);
 			break;
 		}
@@ -706,7 +706,7 @@ static int fs_search(int cnt, int *row, int *off)
 			{*row = 0; *off = 0;}
 		if (prevxb == xb)
 			continue;
-		if (!vi_search('n', cnt, row, off))
+		if (!vi_search('n', cnt, row, off, 0))
 			return 1;
 	}
 	if (fspos == fstlen && !again) {
@@ -740,7 +740,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 			{*row = 0; *off = 0;}
 		if (prevxb == xb)
 			continue;
-		if (!vi_search('n', cnt, row, off))
+		if (!vi_search('n', cnt, row, off, 0))
 			return 1;
 	}
 	return 0;
@@ -896,7 +896,7 @@ static int vi_motion(int *row, int *off)
 	case '?':
 	case 'n':
 	case 'N':
-		if (vi_search(mv, cnt, row, off))
+		if (vi_search(mv, cnt, row, off, sizeof(vi_msg)))
 			return -1;
 		break;
 	case TK_CTL('a'):
@@ -904,10 +904,10 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		ex_krsset(cs, +1);
 		free(cs);
-		if (vi_search(sdirection ? 'N' : 'n', 1, row, off))
+		if (vi_search(sdirection ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
 		{
 			sdirection = !sdirection;
-			if (vi_search(sdirection ? 'N' : 'n', 1, row, off))
+			if (vi_search(sdirection ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
 			        return -1;
 		}
 		break;
