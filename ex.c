@@ -55,19 +55,22 @@ static long mtime(char *path)
 	return -1;
 }
 
-static void bufs_switch(int idx, int ft)
+static void bufs_switch(int idx)
 {
 	ex_pbuf = ex_buf;
 	ex_buf = &bufs[idx];
+	ex_pbuf->row = xrow;
+	ex_pbuf->off = xoff;
+	ex_pbuf->top = xtop;
+	ex_pbuf->td = xtd;
 	xrow = ex_buf->row;
 	xoff = ex_buf->off;
 	xtop = ex_buf->top;
 	xtd = ex_buf->td;
-	if (ft)
-		syn_setft(ex_buf->ft);
 }
+#define bufs_switchwft(idx) { bufs_switch(idx); syn_setft(ex_buf->ft); }
 
-static void bufs_open(char *path, int ft)
+static int bufs_open(char *path)
 {
 	int i = xbufcur;
 	if (i < xbufsmax - 1)
@@ -82,10 +85,8 @@ static void bufs_open(char *path, int ft)
 	bufs[i].off = 0;
 	bufs[i].top = 0;
 	bufs[i].td = +1;
-	bufs[i].tmpid = -1;
 	bufs[i].mtime = -1;
-	strcpy(bufs[i].ft, syn_filetype(path));
-	bufs_switch(i, ft);
+	return i;
 }
 
 void temp_open(int i, char *name, char *ft)
@@ -98,7 +99,6 @@ void temp_open(int i, char *name, char *ft)
 	tempbufs[i].off = 0;
 	tempbufs[i].top = 0;
 	tempbufs[i].td = +1;
-	tempbufs[i].tmpid = i;
 	tempbufs[i].mtime = -1;
 	strcpy(tempbufs[i].ft, ft);
 }
@@ -125,7 +125,7 @@ void temp_switch(int i)
 
 void temp_write(int i, char *str)
 {
-	if (!*str || tempbufs[i].tmpid != i)
+	if (!*str)
 		return;
 	struct lbuf *lb = tempbufs[i].lb;
 	if (!lbuf_len(lb))
@@ -162,7 +162,7 @@ static char *ex_pathexpand(char *src, int spaceallowed)
 	while (*src && (spaceallowed || (*src != ' ' && *src != '\t')))
 	{
 		if (*src == '#') {
-			if (!ex_pbuf || !ex_pbuf->path[0]) {
+			if (!ex_pbuf->path[0]) {
 				ex_show("\"#\" is not set");
 				sbuf_free(sb)
 				return NULL;
@@ -317,7 +317,7 @@ void ec_bufferi(int *id)
 	if (*id > xbufcur)
 		*id = 0;
 	if (*id < xbufcur)
-		bufs_switch(*id, 1);
+		bufs_switchwft(*id)
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)
@@ -331,7 +331,7 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 			ex_print(ln);
 		}
 	} else if (atoi(arg) < xbufcur) {
-		bufs_switch(atoi(arg), 1);
+		bufs_switchwft(atoi(arg))
 	} else
 		ex_show("no such buffer");
 	return 0;
@@ -346,10 +346,11 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-void ex_save(int i)
+void ex_bufpostfix(int i)
 {
 	if (bufs[i].mtime == -1) {
 		bufs[i].mtime = mtime(bufs[i].path);
+		strcpy(bufs[i].ft, syn_filetype(bufs[i].path));
 		lbuf_saved(bufs[i].lb, 1);
 	}
 }
@@ -367,10 +368,10 @@ int ex_edit(char *path)
 	if (path[0] == '.' && path[1] == '/')
 		path += 2;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
-		bufs_switch(fd, 0);
+		bufs_switch(fd);
 		return 1;
 	}
-	bufs_open(path, 0);
+	bufs_switch(bufs_open(path));
 	readfile(/**/)
 	return 0;
 }
@@ -386,13 +387,14 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	if (!(path = ex_pathexpand(arg, 0)))
 		return 1;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
-		bufs_switch(fd, 1);
+		bufs_switchwft(fd)
 		free(path);
 		return 0;
 	}
-	bufs_open(path, 1);
+	bufs_switch(bufs_open(path));
 	readfile(rd =)
-	ex_save(ex_buf - bufs);
+	ex_bufpostfix(ex_buf - bufs);
+	syn_setft(ex_buf->ft);
 	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 			*ex_path ? ex_path : "unnamed", lbuf_len(xb));
 	if (rd)
@@ -506,7 +508,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 		int fd;
 		if (!strchr(cmd, '!') && ex_path &&
 				!strcmp(ex_path, path) &&
-				mtime(ex_path) > bufs[0].mtime) {
+				mtime(ex_path) > ex_buf->mtime) {
 			ex_show("write failed: file changed");
 			return 1;
 		}
@@ -536,7 +538,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 	if (!strcmp(ex_path, path))
 		lbuf_saved(xb, 0);
 	if (!strcmp(ex_path, path))
-		bufs[0].mtime = mtime(path);
+		ex_buf->mtime = mtime(path);
 	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
 		ec_quit("", cmd, "");
 	return 0;
@@ -774,10 +776,10 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 static int ec_ft(char *loc, char *cmd, char *arg)
 {
 	if (arg[0])
-		strncpy(bufs[0].ft, arg, LEN(bufs[0].ft)-1);
+		strncpy(ex_buf->ft, arg, LEN(ex_buf->ft)-1);
 	else
 		ex_print(ex_filetype);
-	syn_setft(bufs[0].ft);
+	syn_setft(ex_buf->ft);
 	syn_reload = 1;
 	return 0;
 }
@@ -912,7 +914,7 @@ static int ec_setdir(char *loc, char *cmd, char *arg)
 		fspos = 0;
 		fscount = 0;
 	}
-	if (arg && *arg)
+	if (*arg)
 		dir_calc(arg);
 	return 0;
 }
@@ -929,10 +931,10 @@ static int ec_setincl(char *loc, char *cmd, char *arg)
 {
 	ec_setdir(NULL, NULL, NULL);
 	rset_free(fsincl);
-	if (!*arg)
-		fsincl = NULL;
-	else
+	if (*arg)
 		fsincl = rset_make(1, (char*[]){arg}, xic ? REG_ICASE : 0);
+	else
+		fsincl = NULL;
 	return 0;
 }
 
@@ -940,12 +942,11 @@ static int ec_setacreg(char *loc, char *cmd, char *arg)
 {
 	if (xacreg)
 		sbuf_free(xacreg)
-	if (!*arg)
-		xacreg = NULL;
-	else {
+	if (*arg) {
 		sbuf_make(xacreg, 128)
 		sbufn_str(xacreg, arg)
-	}
+	} else
+		xacreg = NULL;
 	return 0;
 }
 
@@ -1121,6 +1122,7 @@ int ex_init(char **files)
 	}
 	*s = '\0';
 	bufs = malloc(sizeof(struct buf) * xbufsmax);
+	ex_buf = bufs;
 	if (ec_edit("", "e!", arg))
 		return 1;
 	if (getenv("EXINIT"))

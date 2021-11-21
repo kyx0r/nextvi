@@ -270,12 +270,12 @@ struct buf {
 	struct lbuf *lb;
 	int row, off, top;
 	long mtime;			/* modification time */
-	signed char td, tmpid;		/* buffer id, text direction, is temp? */
+	signed char td;			/* text direction */
 };
 extern int xbufcur;
 extern struct buf *ex_buf;
 extern struct buf *bufs;
-#define EXLEN	512	/* ex line length */
+#define EXLEN	4096	/* ex line length */
 #define ex_path ex_buf->path
 #define ex_filetype ex_buf->ft
 #define xb ex_buf->lb
@@ -292,7 +292,7 @@ char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);
 int ex_init(char **files);
-void ex_save(int i);
+void ex_bufpostfix(int i);
 void ex_done(void);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);

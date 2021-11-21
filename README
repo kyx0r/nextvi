@@ -149,6 +149,8 @@ will also work everywhere in vi.
  - (32.), (12.) and ex "cd" affect how/what dirs & files are listed.
  - Added key that opens the file based on text from the cursor.
    keybind: ^i or TAB
+ - when inside /fm/ presing keybind \ again will dynamically update the
+   directory info at current working dir.
 34. Added key to save current file keybind: ^k
 35. The new special character "/" for ft in conf.c now signifies that
 the regex will be applied on any file. The reason "/" was

@@ -692,20 +692,16 @@ void dir_calc(char *cur_dir)
 static int fs_search(int cnt, int *row, int *off)
 {
 	char *path;
-	struct lbuf *prevxb;
 	int again = 0;
 	redo:
 	for (;fspos < fstlen;)
 	{
 		path = &fslink[fspos+sizeof(int)];
 		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
-		prevxb = xb;
 		if (ex_edit(path))
 			{*row = xrow; *off = xoff-1;}
 		else
 			{*row = 0; *off = 0;}
-		if (prevxb == xb)
-			continue;
 		if (!vi_search('n', cnt, row, off, 0))
 			return 1;
 	}
@@ -723,7 +719,6 @@ static int fs_searchback(int cnt, int *row, int *off)
 	int tlen = 0;
 	int count = fscount;
 	char *paths[count];
-	struct lbuf *prevxb;
 	for (; tlen < fspos;) {
 		path = &fslink[tlen+sizeof(int)];
 		tlen += *(int*)((char*)fslink+tlen) + sizeof(int);
@@ -733,13 +728,10 @@ static int fs_searchback(int cnt, int *row, int *off)
 	{
 		path = paths[i];
 		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
-		prevxb = xb;
 		if (ex_edit(path))
 			{*row = xrow; *off = xoff-1;}
 		else
 			{*row = 0; *off = 0;}
-		if (prevxb == xb)
-			continue;
 		if (!vi_search('n', cnt, row, off, 0))
 			return 1;
 	}
@@ -752,7 +744,6 @@ static int vi_motion(int *row, int *off)
 	static char sdirection;
 	static sbuf *savepath;
 	static int _row, _off, srow, soff;
-	char path[1024];
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
 	int dir = dir_context(ln ? ln : "");
@@ -846,10 +837,8 @@ static int vi_motion(int *row, int *off)
 		break;
 	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
 		cs = vi_curword(xb, *row, *off, cnt);
-		if (!fslink) {
-			strcpy(path, ".");
-			dir_calc(path);
-		}
+		if (!fslink)
+			ex_command("fd .");
 		_row = *row; _off = *off;
 		if (vi_arg1 && cs)
 			ex_krsset(cs, +1);
@@ -935,11 +924,8 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		if (!strcmp(ex_path, "/fm/"))
-			return 0;
-		if (!fslink) {
-			strcpy(path, ".");
-			dir_calc(path);
+		if (!fslink || !strcmp(ex_path, "/fm/")) {
+			ex_command("fd .");
 			temp_done(1);
 		}
 		temp_open(1, "/fm/", "fm");
@@ -953,6 +939,8 @@ static int vi_motion(int *row, int *off)
 				i += *(int*)((char*)fslink+i) + sizeof(int);
 				temp_write(1, cs);
 			}
+			if (!strcmp(ex_path, "/fm/"))
+				break;
 		}
 		temp_switch(1);
 		vi();
@@ -1535,9 +1523,9 @@ void vi(void)
 				break;
 			case TK_CTL(']'):
 			case TK_CTL('p'):
-				syn_setft(ex_filetype);
 				for (n = 0; n < xbufcur; n++)
-					ex_save(n);
+					ex_bufpostfix(n);
+				syn_setft(ex_filetype);
 			case '\\':
 				vc_status();
 			case 1: /* ^a */
@@ -2168,7 +2156,6 @@ int main(int argc, char *argv[])
 	ren_done();
 	temp_done(1);
 	temp_done(0);
-	if (fslink)
-		free(fslink);
+	free(fslink);
 	return 0;
 }
