@@ -162,7 +162,7 @@ static char *ex_pathexpand(char *src, int spaceallowed)
 	while (*src && (spaceallowed || (*src != ' ' && *src != '\t')))
 	{
 		if (*src == '#') {
-			if (!ex_pbuf) {
+			if (!ex_pbuf || !ex_pbuf->path[0]) {
 				ex_show("\"#\" is not set");
 				sbuf_free(sb)
 				return NULL;
