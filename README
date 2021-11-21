@@ -68,6 +68,8 @@ fssearch (8. 9.) if the search keyword does not change. This is because vi
 will remember the position of previous match in the buffer avoiding redundant search.
 14. Added key to show buffers and switch buffer
 (to switch press corresponding 0-9 number) keybind: ^7
+If vi_arg1 is specified right before ^7 the buffer will be switched immediately
+which also happens to permit numbers > 9.
 15. Added key to exit vi keybind: qq
 16. Added key to goto line 0 keybind: gg
 17. Added key to delete everything inside (cursor outside) "" keybind: di" or dc"

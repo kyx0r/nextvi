@@ -600,9 +600,11 @@ static char *led_line(char *pref, char *post, char *ai,
 				continue;
 			xquit = 0;
 			td_set(xotd);
+			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s);
 			temp_switch(0);
 			vi();
+			temp_pos(0, xrow, xoff, xtop);
 			temp_switch(0);
 			vi(); /* redraw past screen */
 			syn_setft("---");

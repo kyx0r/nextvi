@@ -22,8 +22,10 @@ int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
 int xgrp = 2;			/* regex search group */
 int xbufcur = 0;		/* number of active buffers */
-static int xbufsmax = 11;	/* number of buffers */
+static int xbufsmax = 10;	/* number of buffers */
 struct buf *bufs;		/* main buffers */
+struct buf *ex_buf;		/* current buffer */
+static struct buf *ex_pbuf;	/* prev buffer */
 sbuf *xacreg;			/* autocomplete db filter regex */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
@@ -53,13 +55,27 @@ static long mtime(char *path)
 	return -1;
 }
 
-static int bufs_open(char *path)
+static void bufs_switch(int idx, int ft)
+{
+	ex_pbuf = ex_buf;
+	ex_buf = &bufs[idx];
+	xrow = ex_buf->row;
+	xoff = ex_buf->off;
+	xtop = ex_buf->top;
+	xtd = ex_buf->td;
+	if (ft)
+		syn_setft(ex_buf->ft);
+}
+
+static void bufs_open(char *path, int ft)
 {
 	int i = xbufcur;
 	if (i < xbufsmax - 1)
 		xbufcur++;
-	else
-		bufs_free(i - 1);
+	else if (i > xbufsmax - 1) {
+		bufs_free(--i);
+	} else
+		xbufcur++;
 	bufs[i].path = uc_dup(path);
 	bufs[i].lb = lbuf_make();
 	bufs[i].row = 0;
@@ -69,7 +85,7 @@ static int bufs_open(char *path)
 	bufs[i].tmpid = -1;
 	bufs[i].mtime = -1;
 	strcpy(bufs[i].ft, syn_filetype(path));
-	return i;
+	bufs_switch(i, ft);
 }
 
 void temp_open(int i, char *name, char *ft)
@@ -89,26 +105,22 @@ void temp_open(int i, char *name, char *ft)
 
 void temp_pos(int i, int row, int off, int top)
 {
-	tempbufs[i].row = row;
+	if (row < 0)
+		row = lbuf_len(tempbufs[i].lb)-1;
+	tempbufs[i].row = row < 0 ? 0 : row;
 	tempbufs[i].off = off;
 	tempbufs[i].top = top;
 }
 
 void temp_switch(int i)
 {
-	struct buf tmp;
-	bufs[0].row = xrow;
-	bufs[0].off = xoff;
-	bufs[0].top = xtop;
-	bufs[0].td = xtd;
-	memcpy(&tmp, bufs, sizeof(tmp));
-	memcpy(bufs, &tempbufs[i], sizeof(tmp));
-	memcpy(&tempbufs[i], &tmp, sizeof(tmp));
-	xrow = bufs[0].row;
-	xoff = bufs[0].off;
-	xtop = bufs[0].top;
-	xtd = bufs[0].td;
-	syn_setft(bufs[0].ft);
+	ex_pbuf = ex_buf == &tempbufs[i] ? ex_pbuf : ex_buf;
+	ex_buf = ex_buf == &tempbufs[i] ? ex_pbuf : &tempbufs[i];
+	xrow = ex_buf->row;
+	xoff = ex_buf->off;
+	xtop = ex_buf->top;
+	xtd = ex_buf->td;
+	syn_setft(ex_buf->ft);
 }
 
 void temp_write(int i, char *str)
@@ -143,38 +155,19 @@ void temp_done(int i)
 	}
 }
 
-static void bufs_switch(int idx, char *ft)
-{
-	struct buf tmp;
-	bufs[0].row = xrow;
-	bufs[0].off = xoff;
-	bufs[0].top = xtop;
-	bufs[0].td = xtd;
-	memcpy(&tmp, &bufs[idx], sizeof(tmp));
-	memmove(&bufs[1], &bufs[0], sizeof(tmp) * idx);
-	memcpy(&bufs[0], &tmp, sizeof(tmp));
-	xrow = bufs[0].row;
-	xoff = bufs[0].off;
-	xtop = bufs[0].top;
-	xtd = bufs[0].td;
-	if (ft)
-		syn_setft(ft);
-}
-
 /* replace % and # in paths and commands with current and alternate path names */
 static char *ex_pathexpand(char *src, int spaceallowed)
 {
 	sbuf *sb; sbuf_make(sb, 1024)
 	while (*src && (spaceallowed || (*src != ' ' && *src != '\t')))
 	{
-		if (*src == '%' || *src == '#') {
-			int idx = *src == '#';
-			if (!bufs[idx].path || !bufs[idx].path[0]) {
-				ex_show("pathname \"%\" or \"#\" is not set");
+		if (*src == '#') {
+			if (!ex_pbuf) {
+				ex_show("\"#\" is not set");
 				sbuf_free(sb)
 				return NULL;
 			}
-			sbuf_str(sb, bufs[idx].path)
+			sbuf_str(sb, ex_pbuf->path)
 			src++;
 		} else {
 			if (*src == '\\' && src[1])
@@ -324,7 +317,7 @@ void ec_bufferi(int *id)
 	if (*id > xbufcur)
 		*id = 0;
 	if (*id < xbufcur)
-		bufs_switch(*id, ex_filetype);
+		bufs_switch(*id, 1);
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)
@@ -332,12 +325,13 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 	if (!arg[0]) {
 		char ln[EXLEN];
 		for (int i = 0; i < xbufcur; i++) {
-			char c = i < 2 ? "%#"[i] : ' ';
+			char c = ex_buf == bufs+i ? '%' : ' ';
+			c = ex_pbuf == bufs+i ? '#' : c;
 			snprintf(ln, LEN(ln), "%i %c %s", i, c, bufs[i].path);
 			ex_print(ln);
 		}
 	} else if (atoi(arg) < xbufcur) {
-		bufs_switch(atoi(arg), ex_filetype);
+		bufs_switch(atoi(arg), 1);
 	} else
 		ex_show("no such buffer");
 	return 0;
@@ -373,10 +367,10 @@ int ex_edit(char *path)
 	if (path[0] == '.' && path[1] == '/')
 		path += 2;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
-		bufs_switch(fd, NULL);
+		bufs_switch(fd, 0);
 		return 1;
 	}
-	bufs_switch(bufs_open(path), NULL);
+	bufs_open(path, 0);
 	readfile(/**/)
 	return 0;
 }
@@ -392,13 +386,13 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	if (!(path = ex_pathexpand(arg, 0)))
 		return 1;
 	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
-		bufs_switch(fd, ex_filetype);
+		bufs_switch(fd, 1);
 		free(path);
 		return 0;
 	}
-	bufs_switch(bufs_open(path), ex_filetype);
+	bufs_open(path, 1);
 	readfile(rd =)
-	ex_save(0);
+	ex_save(ex_buf - bufs);
 	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 			*ex_path ? ex_path : "unnamed", lbuf_len(xb));
 	if (rd)
@@ -957,10 +951,13 @@ static int ec_setacreg(char *loc, char *cmd, char *arg)
 
 static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 {
-	xbufsmax = *arg ? atoi(arg)+1 : 11;
-	for (; xbufcur > xbufsmax - 1; xbufcur--)
+	xbufsmax = *arg ? atoi(arg) : 10;
+	for (; xbufcur > xbufsmax; xbufcur--)
 		bufs_free(xbufcur - 1);
+	int bufidx = bufs - ex_buf;
 	bufs = realloc(bufs, sizeof(struct buf) * xbufsmax);
+	ex_buf = bufidx > xbufsmax ? bufs : bufs+bufidx;
+	ex_pbuf = NULL;
 	return 0;
 }
 

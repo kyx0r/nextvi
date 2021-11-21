@@ -273,11 +273,12 @@ struct buf {
 	signed char td, tmpid;		/* buffer id, text direction, is temp? */
 };
 extern int xbufcur;
+extern struct buf *ex_buf;
 extern struct buf *bufs;
 #define EXLEN	512	/* ex line length */
-#define ex_path bufs[0].path
-#define ex_filetype bufs[0].ft
-#define xb bufs[0].lb
+#define ex_path ex_buf->path
+#define ex_filetype ex_buf->ft
+#define xb ex_buf->lb
 void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
 void temp_write(int i, char *str);

@@ -955,8 +955,9 @@ static int vi_motion(int *row, int *off)
 			}
 		}
 		temp_switch(1);
-	        vi();
-	        temp_switch(1);
+		vi();
+		temp_pos(1, xrow, xoff, xtop);
+		temp_switch(1);
 		xquit = 0;
 		break;
 	default:
@@ -1627,11 +1628,14 @@ void vi(void)
 				break; }
 			case TK_CTL('_'): /* note: this is also ^7 per ascii */
 				vi_mod = 1;
+				if (vi_arg1)
+					goto switchbuf;
 				term_pos(xrows, led_pos(vi_msg, 0));
 				term_kill();
 				ex_command("b");
 				vi_arg1 = vi_digit();
 				if (vi_arg1 > -1) {
+					switchbuf:
 					ec_bufferi(&vi_arg1);
 					vc_status();
 					vi_mod = 1;
