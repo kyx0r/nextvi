@@ -409,11 +409,8 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 {
 	int len, i, inst;
 	char *path, *arg1;
-	if (!fslink) {
-		char path[1024];
-		strcpy(path, ".");
-		dir_calc(path);
-	}
+	if (!fslink)
+		mdir_calc(fs_exdir ? fs_exdir : ".")
 	if (!arg)
 		return 0;
 	arg1 = arg+dstrlen(arg, ' ');
@@ -905,8 +902,14 @@ static int ec_set(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static int ec_setdir(char *loc, char *cmd, char *arg)
+int ec_setdir(char *loc, char *cmd, char *arg)
 {
+	if (arg) {
+		free(fs_exdir);
+		fs_exdir = NULL;
+		if (*arg)
+			fs_exdir = uc_dup(arg);
+	}
 	if (fslink) {
 		free(fslink);
 		fslink = NULL;
@@ -914,8 +917,6 @@ static int ec_setdir(char *loc, char *cmd, char *arg)
 		fspos = 0;
 		fscount = 0;
 	}
-	if (*arg)
-		dir_calc(arg);
 	return 0;
 }
 

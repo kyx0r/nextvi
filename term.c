@@ -309,8 +309,10 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 		if (fds[2].revents & (POLLERR | POLLHUP | POLLNVAL))
 			fds[2].fd = -1;
 	}
-	close(ifd);
-	close(ofd);
+	if (ifd >= 0)
+		close(ifd);
+	if (ifd >= 0)
+		close(ofd);
 	waitpid(pid, NULL, 0);
 	signal(SIGTTOU, SIG_IGN);
 	tcsetpgrp(STDIN_FILENO, getpid());

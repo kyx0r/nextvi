@@ -628,6 +628,7 @@ static void vi_regprint()
 
 rset *fsincl;
 char *fslink;
+char *fs_exdir;
 int fstlen;
 int fspos;
 int fscount;
@@ -668,8 +669,8 @@ void dir_calc(char *cur_dir)
 {
 	struct dirent *dirp;
 	struct stat statbuf;
-	DIR *dp;
 	char *ptr;
+	DIR *dp;
 	file_calc(cur_dir, cur_dir);
 	ptr = cur_dir + strlen(cur_dir);
 	*ptr++ = '/';
@@ -838,7 +839,7 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
 		cs = vi_curword(xb, *row, *off, cnt);
 		if (!fslink)
-			ex_command("fd .");
+			mdir_calc(fs_exdir ? fs_exdir : ".")
 		_row = *row; _off = *off;
 		if (vi_arg1 && cs)
 			ex_krsset(cs, +1);
@@ -925,7 +926,8 @@ static int vi_motion(int *row, int *off)
 		break;
 	case '\\':
 		if (!fslink || !strcmp(ex_path, "/fm/")) {
-			ex_command("fd .");
+			ec_setdir(NULL, NULL, NULL);
+			mdir_calc(fs_exdir ? fs_exdir : ".")
 			temp_done(1);
 		}
 		temp_open(1, "/fm/", "fm");

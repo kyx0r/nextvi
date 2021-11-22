@@ -275,7 +275,7 @@ struct buf {
 extern int xbufcur;
 extern struct buf *ex_buf;
 extern struct buf *bufs;
-#define EXLEN	4096	/* ex line length */
+#define EXLEN	512	/* ex line length */
 #define ex_path ex_buf->path
 #define ex_filetype ex_buf->ft
 #define xb ex_buf->lb
@@ -287,6 +287,7 @@ char *temp_curstr(int i, int sub);
 char *temp_get(int i, int row);
 void temp_pos(int i, int row, int off, int top);
 void ex(void);
+int ec_setdir(char *loc, char *cmd, char *arg);
 void ex_command(char *cmd);
 char *ex_read(char *msg);
 void ex_print(char *line);
@@ -358,6 +359,7 @@ char *vi_regget(int c, int *lnmode);
 void vi_regput(int c, char *s, int lnmode);
 /* file system */
 void dir_calc(char *cur_dir);
+#define mdir_calc(path) { char buf[4096]; strcpy(buf, path); dir_calc(buf); }
 /* global variables */
 extern int xrow;
 extern int xoff;
@@ -386,6 +388,7 @@ extern int xgrp;
 extern sbuf *xacreg;
 extern rset *fsincl;
 extern char *fslink;
+extern char *fs_exdir;
 extern int fstlen;
 extern int fspos;
 extern int fscount;
