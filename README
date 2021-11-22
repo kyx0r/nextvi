@@ -43,12 +43,12 @@ keybind: v# enables permanent line numbers
 7. Changed behavior of ^a to change search direction when no more match. (see 49.)
 8. Added fssearch, searches what is under the cursor or (last search kwd)
 in every file in the opened directory keybind: ^] or ^5
-Beware that it will brute force open files into buffers and
-perform the search. I usually save really often so this isn't
-a problem, but being careless might reload file with unsaved changes.
 By default it checks every file, else filter is specified by :inc (see 32.)
 This works in compliance with other changes (see 49. 58.)
-Use it for code navigation between files, jump to definitions / etc.
+If max number of available buffers reached, the last buffer will be reloaded;
+loosing potential unsaved changes. Use fssearch for code navigation between files, 
+jump to definitions / etc. fssearch runs 40% faster than busybox's grep,
+benchmark tested (time to find something that doesn't exist) on the linux kernel.
 9. fssearch but going in reverse keybind: ^p
 10. Added key to change the mark origin which ^p will return to, keybind: ^t
 11. Added ex command "ea" which opens file ignoring the path,
@@ -81,7 +81,7 @@ which also happens to permit numbers > 9.
 run though interactive shell so that stuff like aliases work. By
 default it is enabled, can be disabled if you need to for some
 odd reason via :se noish
-23. Changed the colors to be based on standard ASCII 16 colors desc in conf.c
+23. Changed the colors to be based on standard ANSI 16 colors desc in conf.c
 Colors can be customized up to 256 colors if your terminal supports it.
 24. Added new syntax highlighting for C, js, html, css, diff...
 25. Added key that splits the line (opposite of J) keybind: K
