@@ -397,7 +397,12 @@ have an american/british keyboard.
 Q: Something, something - pikevm
 A: Pikevm guarantees that all regular expressions are computed in
 constant space and O(n+k) time where n is size of the string and
-k is some constant for the complexity of the regex ie. how big it is.
+k is some constant for the complexity of the regex ie. number of
+state transitions. It is important to understand that it does not
+mean that we run at O(n) linear speed, but rather the amount of
+processing time & memory usage is distributed evenly and linearly
+throughout the string, the k constant plays a big role. If you are
+familiar with radix sort algorithms this follows the same idea.
 Q: What are the other benefits?
 A: For example, now it is possible to compute a C comment /* n */
 where n can be an infinite number of characters. Of course this
@@ -409,7 +414,7 @@ Q: NFA vs DFA (identify)
 A: pikevm = NFA backtrack = DFA
 Q: What's wrong with original implementation?
 A: Nothing except it being slow and limited. My improved version
-of Ali's DFA implementation ran 2X faster in any case, however
+of Ali's DFA implementation ran 3.5X faster in any case, however
 I found a bug with it where quested "?" nested groups compute
 wrong submatch results. To fix this problem, it would require
 to undo a lot of optimization work already done, basically
@@ -423,6 +428,17 @@ Honestly, this change isn't so suprising, as I was working
 on pikevm a few months prior, to favor a superior algorithm.
 You can still find that code here (likely with no updates):
 https://github.com/kyx0r/nextvi/tree/dfa_dead
+As a downside, NFA simulation looses the DFA property of being
+able to quickly short circuit a match, as everything runs
+linearly and at constant speed, incuring match time overhead.
+Well optimized DFA engine can outperform pikevm, but that
+is rather rare as they got problems of their own. For example
+as mentioned in PERFORMANCE section below, dfa_dead runs only
+13% faster than pikevm and that is stretching the limit of what
+is physically possible on a table based matcher. Can't cheat
+mother nature, and if you dare to try she's unforgiving at best.
+Supplementary reading by Russ Cox:
+https://swtch.com/~rsc/regexp/regexp1.html
 
 Q: What does it mean when I call feature X a macro?
 A: It's the kind of shortcut that does not change the core
