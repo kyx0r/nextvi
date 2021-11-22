@@ -595,7 +595,7 @@ operations is 745,481,975. dfa_dead version of regex runs
 with total of 350,000,000 (including cost of extra 20+ alternations
 and extra backtracking patterns). If tested under the same default
 regex patterns of neatvi, the cost would be exactly 195,494,596.
-Imagine how much faster Ali's regex could of been if it was written
+This is how much faster Ali's regex could of been if it was written
 free of bullshit. To put in perspective, on raspberry pi 3b+ the
 difference between 195,494,596 and 745,481,975 refs is maxing 
 the core cpu usage at ~20% VS 100%++ . If you are running hardware
@@ -645,6 +645,10 @@ words cannot even begin to describe the slideshow you would see. */
     807,400 ( 0.08%)  ???:uc_len [/root/neatvi/vi]
     673,855 ( 0.07%)  /stdio/vsnprintf.c:vsnprintf [/usr/lib/libc.so]
     652,657 ( 0.07%)  /string/strchrnul.c:strchrnul [/usr/lib/libc.so]
+
+- Original implementation is riddled with redundant allocations,
+redundant computations. Don't blame Ali for being sloppy, it's a
+inefficiency by choice.
 
 NEXTVI:
 --------------------------------------------------------------------------------
@@ -697,16 +701,19 @@ apply needs to be computed only once. Planning to rework in the future.
     365,040 ( 0.08%)  sbuf.c:sbuf_set [/root/klec/cprogs/nextvi/vi]
     342,438 ( 0.08%)  /malloc/mallocng/free.c:nontrivial_free [/usr/lib/libc.so]
 
-- Given more fair conditions the perf gap would be even wider.
 - Always check the quantitative quality of the software you use.
-- Original implementaion is riddled with redundant allocations
-and computations. Don't blame Ali for being sloppy, it's a
-inefficiency by choice. In order for Nextvi to exist it has to be
-supercede neatvi, which is respectfully shown.
-- We produce less lines of code for equivalent execution and it
-runs faster. It's easier for you to read, because we have everything
-in check, you will be able to read and understand this code faster.
 
 "It’s possible that I understand better what’s going on, or
 it’s equally possible that I just think I do."
 	— Russ Cox
+
+- We produce less lines of code for equivalent execution and it
+runs faster. It's easier for you to read, because we have everything
+in check, you will be able to read and understand this code faster.
+
+"Vigorous writing is concise. A sentence should contain no unnecessary words 
+[and] a paragraph no unnecessary sentences, for the same reason that a drawing 
+should have no unnecessary lines and a machine no unnecessary parts. This 
+requires not that the writer make all his sentences short, or that he avoid 
+all detail and treat his subjects only in outline, but that every word tell."
+	— Elements of Style, William Strunk, Jr. - 1918

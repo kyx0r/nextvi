@@ -1855,9 +1855,6 @@ void vi(void)
 					push[1] = xoff >= k-1 ? 'A' : 'i';
 					term_push(push, 2);
 					break;
-				case TK_CTL('w'):
-					term_push("bdwi", 4);
-					break;
 				}
 				break;
 			case 'J':

@@ -515,7 +515,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			if (len)
 				sbufn_cut(sb, led_lastword(sb->s))
 			else
-				goto leave;
+				term_push("bdwi", 5);
 			break;
 		case TK_CTL('t'):
 			if (ai_len < ai_max) {
