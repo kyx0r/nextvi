@@ -422,8 +422,8 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
 {
 	int r0 = *r, o0 = *o, grp = xgrp;
 	int offs[grp], i = r0;
-	char *s = lb->ln[i];
-	int off = dir > 0 ? uc_chr(s, o0 + 1) - s : 0;
+	char *s = lbuf_get(lb, i);
+	int off = dir > 0 && s ? uc_chr(s, o0 + 1) - s : 0;
 	int ln_n = lbuf_len(lb);
 	for (; i >= 0 && i < ln_n; i += dir) {
 		s = lb->ln[i];
