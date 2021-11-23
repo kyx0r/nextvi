@@ -329,7 +329,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	return RE_SUCCESS;
 }
 
-#define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; return state; }\
+#define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; return state; } \
 
 #define newsub(init, copy) \
 if (freesub) \
@@ -523,10 +523,12 @@ _return(0) \
 
 int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 {
+	if (!*s)
+		return 0;
+	const char *sp = s, *_sp = s;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int si, i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
 	int clistidx = 0, nlistidx, plistidx, spc;
-	const char *sp = s, *_sp = s;
 	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	int *pcs[prog->splits], *plist[prog->splits];
 	rsub *subs[prog->splits];
@@ -538,8 +540,6 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	flg = prog->flg | flg;
 	if (eol_ch)
 		utf8_length[eol_ch] = 0;
-	if (!utf8_length[(unsigned char)*s])
-		_return(0)
 	if (flg & REG_ICASE)
 		goto jmp_start1;
 	goto jmp_start2;

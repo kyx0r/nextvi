@@ -726,10 +726,10 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 			sbuf_mem(r, ln, offs[xgrp - 2])
 			replace(r, xrep, ln, offs);
 			ln += offs[xgrp - 1];
-			if (!*ln || !strchr(s, 'g'))
-				break;
 			if (!offs[xgrp - 1])	/* zero-length match */
-				sbuf_chr(r, (unsigned char) *ln++)
+				sbuf_chr(r, *ln++)
+			if (*ln == '\n' || !*ln || !strchr(s, 'g'))
+				break;
 		}
 		if (r) {
 			sbufn_str(r, ln)
