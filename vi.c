@@ -2084,7 +2084,7 @@ void vi(void)
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
 				if (!vi_mod)
 					vi_drawrow(orow);
-			syn_addhl("^.+$", 2, 1);
+			syn_addhl("^.+", 2, 1);
 			syn_reloadft();
 			vi_drawrow(xrow);
 			syn_addhl(NULL, 2, 1);
