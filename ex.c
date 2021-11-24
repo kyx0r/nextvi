@@ -73,12 +73,10 @@ static void bufs_switch(int idx)
 static int bufs_open(char *path)
 {
 	int i = xbufcur;
-	if (i < xbufsmax - 1)
+	if (i <= xbufsmax - 1)
 		xbufcur++;
-	else if (i > xbufsmax - 1) {
+	else 
 		bufs_free(--i);
-	} else
-		xbufcur++;
 	bufs[i].path = uc_dup(path);
 	bufs[i].lb = lbuf_make();
 	bufs[i].row = 0;

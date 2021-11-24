@@ -60,17 +60,18 @@ just by "ea fi" if this is a uniquely matched filename.
 Running "fd" without an arg will recalculate directory info at current working dir.
 13. Added numbered buffers to vi, default 10 and ex "b" command to show buffers
 and "b%d" to switch (where %d is the buffer number).
-Improved buffer pathname expansion shortcuts. If you use character % or # in ex
-they will substitute the buffer pathname. % substitutes current buffer and # last
-swapped buffer. Now it is possible to expand any arbitrary buffer by using
-% or # (no difference in this case) followed by the buffer number. % and # can be
-escaped normally if path expansion is not wanted.
 Added new ex command "bx", where the argument will change the number of buffers
 allowed. If the number is lower than number of buffers currently in use they
 will be deallocated. Running bx without an arg will reset to default value of 10.
 Increasing the number of buffers results in a positive effect on performance of
 fssearch (8. 9.) if the search keyword does not change. This is because vi 
 will remember the position of previous match in the buffer avoiding redundant search.
+Improved buffer pathname expansion shortcuts. If you use character % or # in ex prompt
+they will substitute the buffer pathname. % substitutes current buffer and # last
+swapped buffer. Now it is possible to expand any arbitrary buffer by using
+% or # (no difference in this case) followed by the buffer number. Example:
+:!echo "%69" prints the pathname for buffer 69 (if it exists).
+% and # can be escaped normally if path expansion is not wanted.
 14. Added key to show buffers and switch buffer
 (to switch press corresponding 0-9 number) keybind: ^7
 If vi_arg1 is specified right before ^7 the buffer will be switched immediately
@@ -503,7 +504,7 @@ functionality in an understandable language, describe it here instead.
 3. Use @a to play it back, where a stands for that 'a' register
 4. @@ repeats the last macro on next line
 
-- substitution backreference
+- substitution backreference:
 This inserts the text of matched group specified by \x where x is
 group number. Example:
 this is an example text for subs and has int or void
@@ -512,7 +513,7 @@ this is an example text for subs and has preintafter or void
 :%s/(int)\\|(void)/pre\2after/g
 this is an example text for subs and has prepreafterafter or prevoidafter
 
-- ex global command
+- ex global command:
 same syntax as ex substitution command, but instead of replacement
 string it takes an ex command after the / / enclosed regex.
 Example: remove empty lines
@@ -520,7 +521,7 @@ Example: remove empty lines
 Try doing similar with substitution command - will not work as removing '\n'
 without deleting the line is invalid, but it will work with global command.
 
-- search motions
+- search motions:
 ? and / searches have the ability to be used as motions. This seems very
 counter intuitive and one would have never ever figure out that this
 feature even exists, unless noted. Even if you read the source code it's
