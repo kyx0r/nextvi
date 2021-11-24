@@ -516,11 +516,9 @@ this is an example text for subs and has prepreafterafter or prevoidafter
 same syntax as ex substitution command, but instead of replacement
 string it takes an ex command after the / / enclosed regex.
 Example: remove empty lines
-:g/^\n/d
+:g/^$/d
 Try doing similar with substitution command - will not work as removing '\n'
 without deleting the line is invalid, but it will work with global command.
-Note: '\n' character used in example is for illustration purpose only.
-Typing '\n' is possible, see (47.)
 
 - search motions
 ? and / searches have the ability to be used as motions. This seems very
