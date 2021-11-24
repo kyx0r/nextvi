@@ -161,14 +161,18 @@ static char *ex_pathexpand(char *src, int spaceallowed)
 	sbuf *sb; sbuf_make(sb, 1024)
 	while (*src && (spaceallowed || (*src != ' ' && *src != '\t')))
 	{
-		if (*src == '#') {
-			if (!ex_pbuf->path[0]) {
-				ex_show("\"#\" is not set");
+		if (*src == '#' || *src == '%') {
+			int n = -1;
+			struct buf *pbuf = *src == '%' ? ex_buf : ex_pbuf;
+			if ((src[1] ^ '0') < 10)
+				pbuf = &bufs[n = atoi(&src[1])];
+			if (pbuf >= &bufs[xbufcur] || !pbuf->path[0]) {
+				ex_show("\"#\" or \"%\" is not set");
 				sbuf_free(sb)
 				return NULL;
 			}
-			sbuf_str(sb, ex_pbuf->path)
-			src++;
+			sbuf_str(sb, pbuf->path)
+			src += n >= 0 ? snprintf(0, 0, "%+d", n) : 1;
 		} else {
 			if (*src == '\\' && src[1])
 				src++;

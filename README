@@ -60,6 +60,11 @@ just by "ea fi" if this is a uniquely matched filename.
 Running "fd" without an arg will recalculate directory info at current working dir.
 13. Added numbered buffers to vi, default 10 and ex "b" command to show buffers
 and "b%d" to switch (where %d is the buffer number).
+Improved buffer pathname expansion shortcuts. If you use character % or # in ex
+they will substitute the buffer pathname. % is for current buffer and # does last
+swapped buffer. It's also now possible to expand any arbitary buffer by using
+% or # (no difference in this case) followed by the buffer number. % and # can be
+escaped normally if path expansion is not wanted.
 Added new ex command "bx", where the argument will change the number of buffers
 allowed. If the number is lower than number of buffers currently in use they
 will be deallocated. Running bx without an arg will reset to default value of 10.
