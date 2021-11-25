@@ -22,6 +22,7 @@ enum
 	RSPLIT,
 	/* Other (special) instructions */
 	SAVE,
+	MATCHCONT,
 };
 
 /* Return codes for re_sizecode() and re_comp() */
@@ -297,7 +298,7 @@ syntax_error:
 int re_sizecode(const char *re)
 {
 	rcode dummyprog;
-	dummyprog.unilen = 3;
+	dummyprog.unilen = 4;
 
 	int res = _compilecode(&re, &dummyprog, 1, 0);
 	if (res < 0) return res;
@@ -324,6 +325,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->insts[prog->unilen++] = SAVE;
 	prog->insts[prog->unilen++] = prog->sub + 1;
 	prog->insts[prog->unilen++] = MATCH;
+	prog->insts[prog->unilen] = MATCHCONT;
 	prog->len += 2;
 
 	return RE_SUCCESS;
@@ -443,6 +445,14 @@ if (spc == SPLIT) { \
 } inst##list(nn) \
 deccheck(nn) \
 
+#define swaplist() \
+tmp = clist; \
+clist = nlist; \
+nlist = tmp; \
+clistidx = nlistidx; \
+
+#define deccont() { decref(nsub) continue; }
+
 #define match(n, cpn) \
 for (;; sp = _sp) { \
 	uc_len(i, sp) uc_code(c, sp) cpn \
@@ -451,16 +461,11 @@ for (;; sp = _sp) { \
 	for (i = 0; i < clistidx; i++) { \
 		npc = clist[i].pc; \
 		nsub = clist[i].sub; \
-		switch(*npc++) { \
-		case CHAR: \
+		spc = *npc++; \
+		if (spc == CHAR) { \
 			if (c != *npc++) \
-				break; \
-		case ANY: \
-		addthread##n: \
-			if (*nlist[nlistidx-1].pc == MATCH) \
-				break; \
-			addthread(2##n, nlist, nlistidx) \
-		case CLASS:; \
+				deccont() \
+		} else if (spc == CLASS) { \
 			const char *s = sp; \
 			int cp = c; \
 			int *pc = npc; \
@@ -482,42 +487,42 @@ for (;; sp = _sp) { \
 				pc += 2; \
 			} \
 			if (is_positive > 0) \
-				break; \
+				deccont() \
 			npc += *(npc+1) * 2 + 2; \
-			goto addthread##n; \
-		case MATCH: \
+		} else if (spc == MATCH) { \
 			if (matched) { \
 				decref(matched) \
 				suboff = 0; \
 			} \
 			matched = nsub; \
-			goto break_for##n; \
+			goto cont##n; \
+		} else if (spc == MATCHCONT) { \
+			cont##n: \
+			if (sp == _sp || !nlistidx) { \
+				for (i = 0, j = i; i < nsubp; i+=2, j++) { \
+					subp[i] = matched->sub[j]; \
+					subp[i+1] = matched->sub[nsubp / 2 + j]; \
+				} \
+				_return(1) \
+			} \
+			nlist[nlistidx++].pc = &insts[prog->unilen]; \
+			swaplist() \
+			goto _continue##n; \
 		} \
-		decref(nsub) \
+		if (*nlist[nlistidx-1].pc == MATCH) \
+			deccont() \
+		addthread(2##n, nlist, nlistidx) \
 	} \
-	break_for##n: \
 	if (sp == _sp) \
 		break; \
-	tmp = clist; \
-	clist = nlist; \
-	nlist = tmp; \
-	clistidx = nlistidx; \
-	if (!matched) { \
-		jmp_start##n: \
-		newsub(memset(s1->sub, 0, osubp);, /*nop*/) \
-		s1->ref = 1; \
-		s1->sub[0] = _sp; \
-		npc = insts; nsub = s1; \
-		addthread(1##n, clist, clistidx) \
-	} else if (!clistidx) \
-		break; \
-} \
-if (matched) { \
-	for (i = 0, j = i; i < nsubp; i+=2, j++) { \
-		subp[i] = matched->sub[j]; \
-		subp[i+1] = matched->sub[nsubp / 2 + j]; \
-	} \
-	_return(1) \
+	swaplist() \
+	jmp_start##n: \
+	newsub(memset(s1->sub, 0, osubp);, /*nop*/) \
+	s1->ref = 1; \
+	s1->sub[0] = _sp; \
+	npc = insts; nsub = s1; \
+	addthread(1##n, clist, clistidx) \
+	_continue##n:; \
 } \
 _return(0) \
 
