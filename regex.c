@@ -8,9 +8,9 @@ enum
 {
 	/* Instructions which consume input bytes */
 	CHAR = 1,
-	ANY,
 	CLASS,
 	MATCH,
+	ANY,
 	/* Assert position */
 	WBEG,
 	WEND,
@@ -22,7 +22,6 @@ enum
 	RSPLIT,
 	/* Other (special) instructions */
 	SAVE,
-	MATCHCONT,
 };
 
 /* Return codes for re_sizecode() and re_comp() */
@@ -325,7 +324,6 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->insts[prog->unilen++] = SAVE;
 	prog->insts[prog->unilen++] = prog->sub + 1;
 	prog->insts[prog->unilen++] = MATCH;
-	prog->insts[prog->unilen] = MATCHCONT;
 	prog->len += 2;
 
 	return RE_SUCCESS;
@@ -339,13 +337,12 @@ if (freesub) \
 else \
 	{ s1 = (rsub*)&nsubs[suboff+=rsubsize]; init } \
 
+#define onclist(nn)
 #define onnlist(nn) \
 for (j = 0; j < plistidx; j++) \
 	if (npc == plist[j]) \
 		deccheck(nn) \
 plist[plistidx++] = npc; \
-
-#define onclist(nn) \
 
 #define decref(csub) \
 if (--csub->ref == 0) { \
@@ -461,14 +458,15 @@ for (;; sp = _sp) { \
 	for (i = 0; i < clistidx; i++) { \
 		npc = clist[i].pc; \
 		nsub = clist[i].sub; \
-		spc = *npc++; \
+		spc = *npc; \
 		if (spc == CHAR) { \
-			if (c != *npc++) \
+			if (c != *(npc+1)) \
 				deccont() \
+			npc += 2; \
 		} else if (spc == CLASS) { \
 			const char *s = sp; \
 			int cp = c; \
-			int *pc = npc; \
+			int *pc = npc+1; \
 			int is_positive = *pc++; \
 			int cnt = *pc++; \
 			while (cnt--) { \
@@ -488,16 +486,16 @@ for (;; sp = _sp) { \
 			} \
 			if (is_positive > 0) \
 				deccont() \
-			npc += *(npc+1) * 2 + 2; \
+			npc += *(npc+2) * 2 + 3; \
 		} else if (spc == MATCH) { \
-			if (matched) { \
-				decref(matched) \
-				suboff = 0; \
+			nlist[nlistidx++].pc = &mcont; \
+			if (npc != &mcont) { \
+				if (matched) { \
+					decref(matched) \
+					suboff = 0; \
+				} \
+				matched = nsub; \
 			} \
-			matched = nsub; \
-			goto cont##n; \
-		} else if (spc == MATCHCONT) { \
-			cont##n: \
 			if (sp == _sp || !nlistidx) { \
 				for (i = 0, j = i; i < nsubp; i+=2, j++) { \
 					subp[i] = matched->sub[j]; \
@@ -505,10 +503,10 @@ for (;; sp = _sp) { \
 				} \
 				_return(1) \
 			} \
-			nlist[nlistidx++].pc = &insts[prog->unilen]; \
 			swaplist() \
 			goto _continue##n; \
-		} \
+		} else \
+			npc++; \
 		if (*nlist[nlistidx-1].pc == MATCH) \
 			deccont() \
 		addthread(2##n, nlist, nlistidx) \
@@ -533,7 +531,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	const char *sp = s, *_sp = s;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
 	int si, i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
-	int clistidx = 0, nlistidx, plistidx, spc;
+	int clistidx = 0, nlistidx, plistidx, spc, mcont = MATCH;
 	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	int *pcs[prog->splits], *plist[prog->splits];
 	rsub *subs[prog->splits];
