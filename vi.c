@@ -1467,8 +1467,7 @@ static void vi_argcmd(int arg, char cmd)
 	char str[100];
 	char *cs = itoa(arg, str);
 	*cs = cmd;
-	*(cs+1) = '\0';
-	term_push(str, cs-str+1);
+	term_push(str, cs - str + 1);
 }
 
 void vi(void)
