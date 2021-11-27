@@ -44,8 +44,7 @@
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
 int vi_mod;		/* screen should be redrawn:
-			(1: whole screen, -1: whole screen not updating xcol,
-			2: current line, or whole screen) */
+			(1: whole screen, -1: whole screen not updating xcol, 2: current line) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
 static char *vi_word = "\0eEwW";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
@@ -107,10 +106,11 @@ static void vi_drawmsg(void)
 char snum[100]; \
 int _nrow = nrow; \
 int _noff = noff; \
-for (int k = _nrow; k == _nrow; i++) \
+int l1 = ren_off(tmp, xleft); \
+int l2 = ren_off(tmp, xleft+xcols); \
+for (int k = _nrow; k == _nrow && _noff >= l1 && _noff <= l2; i++) \
 { \
-	if (tmp[_noff] == ' ') \
-	{ \
+	if (tmp[_noff] == ' ') { \
 		c = itoa(i%10 ? i%10 : i, snum); \
 		tmp[_noff] = *snum; \
 	} \
@@ -329,7 +329,7 @@ void ex_show(char *msg)
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (xled) {
 		syn_setft("---");
-		led_print(msg, -1);
+		led_reprint(msg, -1);
 		term_chr('\n');
 		syn_setft(ex_filetype);
 	} else {
@@ -346,7 +346,7 @@ void ex_print(char *line)
 		if (line) {
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 			syn_setft("---");
-			led_print(line, -1);
+			led_reprint(line, -1);
 			syn_setft(ex_filetype);
 		}
 		term_chr('\n');
@@ -1242,7 +1242,7 @@ static int vc_motion(int cmd)
 	return 0;
 }
 
-static int vc_insert(int cmd)
+static void vc_insert(int cmd)
 {
 	char *pref, *post;
 	char *ln = lbuf_get(xb, xrow);
@@ -1282,7 +1282,6 @@ static int vc_insert(int cmd)
 	}
 	free(pref);
 	free(post);
-	return (!rep && cmd != 'O');
 }
 
 static int vc_put(int cmd)
@@ -1490,6 +1489,7 @@ void vi(void)
 		int mv, n;
 		term_cmd(&n);
 		vi_arg2 = 0;
+		vi_mod = 0;
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
 		if (*vi_word || vi_lnnum)
@@ -1834,8 +1834,8 @@ void vi(void)
 			case 'A':
 			case 'o':
 			case 'O':
-				if (!vc_insert(c))
-					vi_mod = 1;
+				vc_insert(c);
+				vi_mod = xrow == orow ? 2 : 1;
 				ins:
 				switch (vi_insmov)
 				{
@@ -1912,7 +1912,7 @@ void vi(void)
 			case 'g':
 				k = vi_read();
 				if (k == 'g')
-					xrow = 0;
+					term_push("1G", 2);
 				else if (k == 'a')
 					vc_charinfo();
 				else if (k == 'w')
@@ -2091,8 +2091,6 @@ void vi(void)
 			syn_blockhl = 0;
 		} else if (vi_mod == 2)
 			vi_drawrow(xrow);
-		if (vi_mod == 2 && xrow != orow)
-			vi_drawagain();
 		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
 				ren_cursor(lbuf_get(xb, xrow), xcol)));

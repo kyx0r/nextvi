@@ -143,6 +143,7 @@ int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_pair(struct lbuf *lb, int *row, int *off);
 
 /* ren.c rendering lines */
+extern char *ren_laststr;
 extern int ren_torg;
 void ren_done(void);
 int *ren_position(char *s, char ***c, int *n);
@@ -258,6 +259,7 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 char *led_input(char *pref, char *post, int *kmap, int cln);
 void led_render(char *s0, int row, int cbeg, int cend);
 #define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
+#define led_reprint(msg, row) { ren_laststr = NULL; led_print(msg, row); }
 void led_printmsg(char *s, int row);
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);

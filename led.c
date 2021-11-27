@@ -381,7 +381,7 @@ void led_render(char *s0, int row, int cbeg, int cend)
 void led_printmsg(char *s, int row)
 {
 	td_set(+2);
-	led_print(s, row);
+	led_reprint(s, row);
 	td_set(xotd);
 }
 
@@ -421,17 +421,17 @@ static void led_printparts(char *ai, char *pref, char *main,
 		int len = ln->s_n;
 		sbuf_str(ln, kmap_map(kmap, 'a'))
 		sbufn_str(ln, post)
-		idir = ren_pos(ln->s, off) -
-			ren_pos(ln->s, off - 1) < 0 ? -1 : +1;
+		ren_laststr = NULL;
+		idir = ren_pos(ln->s, off) - ren_pos(ln->s, off - 1) < 0 ? -1 : +1;
 		sbuf_cut(ln, len)
 	}
 	sbufn_str(ln, post)
+	ren_laststr = NULL;
 	pos = ren_cursor(ln->s, ren_pos(ln->s, MAX(0, off - 1)));
 	if (pos >= xleft + xcols)
 		xleft = pos - xcols / 2;
 	if (pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
-	vi_mod = 2;
 	syn_blockhl = 0;
 	led_print(ln->s, -1);
 	term_pos(-1, led_pos(ln->s, pos + idir));

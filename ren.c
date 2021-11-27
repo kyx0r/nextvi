@@ -87,26 +87,25 @@ void dir_done(void)
 	rset_free(dir_rsctx);
 }
 
-static char *last_str;
-static char **last_chrs;
-static int *last_pos;
-static int last_n;
-int ren_torg; /* compute tab width from this position origin */
+static char **ren_lastchrs;
+static int *ren_lastpos;
+static int ren_lastn;
+char *ren_laststr; 	/* prevent redundant computations, you must ensure pointer uniqueness */
+int ren_torg; 		/* compute tab width from this position origin */
 
 void ren_done(void)
 {
-	free(last_pos);
-	free(last_chrs);
+	free(ren_lastpos);
+	free(ren_lastchrs);
 }
 
 /* specify the screen position of the characters in s */
 int *ren_position(char *s, char ***chrs, int *n)
 {
-	if (last_str == s && !vi_mod)
-	{
-		chrs[0] = last_chrs;
-		*n = last_n;
-		return last_pos;
+	if (ren_laststr == s) {
+		chrs[0] = ren_lastchrs;
+		*n = ren_lastn;
+		return ren_lastpos;
 	} else
 		ren_done();
 	int i;
@@ -132,10 +131,10 @@ int *ren_position(char *s, char ***chrs, int *n)
 		}
 	}
 	pos[nn] = cpos;
-	last_str = s;
-	last_pos = pos;
-	last_chrs = chrs[0];
-	last_n = *n;
+	ren_laststr = s;
+	ren_lastpos = pos;
+	ren_lastchrs = chrs[0];
+	ren_lastn = *n;
 	return pos;
 }
 
@@ -192,7 +191,6 @@ int ren_cursor(char *s, int p)
 	char **c;
 	if (!s)
 		return 0;
-	vi_mod = 0;
 	pos = ren_position(s, &c, &n);
 	p = pos_prev(pos, n, p, 1);
 	if (*uc_chr(s, ren_off(s, p)) == '\n')
