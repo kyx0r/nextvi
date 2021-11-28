@@ -150,7 +150,7 @@ static void vi_drawrow(int row)
 		c = itoa(abs(xrow-row+movedown), tmp+l2+i);
 		*c++ = ' ';
 		memcpy(c, s+i, l1-i);
-		led_print(tmp, row - xtop);
+		led_reprint(tmp, row - xtop);
 	}
 	if (*vi_word && row == xrow+1) {
 		last_row:;
