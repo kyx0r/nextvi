@@ -396,5 +396,4 @@ extern int fspos;
 extern int fscount;
 extern int vi_lnnum;
 extern int vi_hidch;
-extern int vi_mod;
 extern int vi_insmov;

@@ -470,6 +470,7 @@ English kaymap and ^f switches to the alternate keymap (the last
 keymap specified with :cm).
 Edit ex.c to set default ex variables or use EXINIT environment
 variable as shown under OPTIONS section.
+Edit vi.c to remap normal mode keybinds and led.c for insert.
 
 COMMANDS
 --------

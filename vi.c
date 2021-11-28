@@ -43,9 +43,9 @@
 
 int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
-int vi_mod;		/* screen should be redrawn:
-			(1: whole screen, -1: whole screen not updating xcol, 2: current line) */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
+static int vi_mod;	/* screen should be redrawn:
+			(1: whole screen, -1: whole screen not updating xcol, 2: current line) */
 static char *vi_word = "\0eEwW";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN+128];		/* current message */
