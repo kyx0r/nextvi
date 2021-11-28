@@ -2014,6 +2014,7 @@ void vi(void)
 			xleft = xcol - xcols / 2;
 		if (xcol < xleft)
 			xleft = xcol < xcols ? 0 : xcol - xcols / 2;
+		n = led_pos(lbuf_get(xb, xrow), ren_cursor(lbuf_get(xb, xrow), xcol));
 		vi_wait();
 		if (xhlw) {
 			static char *word;
@@ -2092,8 +2093,7 @@ void vi(void)
 		} else if (vi_mod == 2)
 			vi_drawrow(xrow);
 		vi_drawmsg();
-		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow),
-				ren_cursor(lbuf_get(xb, xrow), xcol)));
+		term_pos(xrow - xtop, n);
 		lbuf_modified(xb);
 	}
 	vi_buflen = 0;
