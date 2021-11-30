@@ -125,6 +125,20 @@ void term_push(char *s, unsigned int n)
 	ibuf_cnt += n;
 }
 
+void term_exec(char *s, unsigned int n)
+{
+	int pbuf_cnt = ibuf_cnt;
+	int pbuf_pos = ibuf_pos;
+	ibuf_pos = pbuf_cnt;
+	term_push(s, n);
+	term_push("qq", 3);
+	vi();
+	ibuf_cnt = pbuf_cnt;
+	ibuf_pos = pbuf_pos;
+	term_push("", 1);
+	xquit = 0;
+}
+
 /* return a static buffer containing inputs read since the last term_cmd() */
 char *term_cmd(int *n)
 {
@@ -148,7 +162,7 @@ int term_read(void)
 		ibuf_cnt = n;
 		ibuf_pos = 0;
 	}
-	c = ibuf_pos < ibuf_cnt ? (unsigned char) ibuf[ibuf_pos++] : -1;
+	c = ibuf_pos < ibuf_cnt ? ibuf[ibuf_pos++] : -1;
 	if (icmd_pos < sizeof(icmd))
 		icmd[icmd_pos++] = c;
 	return c;

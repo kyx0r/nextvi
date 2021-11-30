@@ -243,6 +243,7 @@ int term_read(void);
 void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
+void term_exec(char *s, unsigned int n);
 char *term_cmd(int *n);
 /* process management */
 char *cmd_pipe(char *cmd, char *s, int iproc, int oproc);

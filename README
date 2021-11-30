@@ -329,6 +329,11 @@ repeats the operation N times.
 number of instances found. Last possible match will be used. Important when
 you don't know exactly how many matches there are, does not mean there aren't
 any at all, greedy behavior opens up new use cases.
+69. New ex command "tp", when arg given immediately executes the macro defined
+by arg. It can run any vi normal command and execute insert statements.
+The advantage of tp over traditional macros is in the ability to bypass the
+macro que and run independently. In a way, macro executed by tp exersizes
+the same causality as running C code directly.
 
 PIKEVM:
 -------
@@ -454,8 +459,7 @@ of code. Notably, they tend to use function term_push(), but
 it's not required. Because they are macros they may run suboptimally
 or not handle every possible edge case. When calling a macro feature
 from another macro, the results are pushed back, which means
-the macro feature will always execute last, you have to think of
-a different way to attain your goals.
+the macro feature will always execute last, see (69.).
 These features are considered a macro: 5. 6. 16. 17. 18. 19. 20.
 21. 26. 27. 34. 46. 50. 65.
 
@@ -538,6 +542,17 @@ which is included 3 times. You want to delete text until the 3rd
 instance of "int" keybind would be 3d/int . Likewise you can opt out
 of the "specify motion" part and just use / or ? with vi_arg1 to perform
 specific searches.
+
+- Majestic EXINIT environment variable
+At the zenith of your vi/nextvi education you'll find that EXINIT can be
+used to achieve arbitrary level of customization. Using new ex command "tp"
+any sequence of vi/ex commands can be performed at startup. This is where
+real "groking vi" starts.
+Here's an example using this retcon (69.):
+There is a dictionary file (assume vi.c), which we always want to have indexed 
+at startup for autocomplete feature in 31. Use EXINIT variable:
+export EXINIT="e ./vi.c|tp i�|u|bx 1|bx"
+The last bx commands delete the vi.c buffer.
 
 OPTIONS
 -------

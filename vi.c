@@ -1476,7 +1476,6 @@ void vi(void)
 	char *ln, *cs;
 	int kmap = 0;
 	xtop = MAX(0, xrow - xrows / 2);
-	xoff = 0;
 	xcol = vi_off2col(xb, xrow, xoff);
 	vi_drawagain();
 	term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), xcol));

@@ -282,16 +282,17 @@ static int ex_region(char *loc, int *beg, int *end)
 	}
 	while (*loc) {
 		int end0 = *end;
-		*end = ex_lineno(&loc) + 1;
-		*beg = naddr++ ? end0 - 1 : *end - 1;
+		*end = ex_lineno(&loc);
+		*end = *end < 0 ? 0 : *end;
+		*beg = naddr++ ? end0 : *end;
 		if (!naddr++)
-			*beg = *end - 1;
+			*beg = *end;
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 		if (!*loc)
 			break;
 		if (*loc == ';')
-			xrow = *end - 1;
+			xrow = *end;
 		loc++;
 	}
 	if (*beg < 0 || *beg >= lbuf_len(xb))
@@ -543,6 +544,13 @@ static int ec_write(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
+static int ec_termpush(char *loc, char *cmd, char *arg)
+{
+	if (*arg)
+		term_exec(arg, strlen(arg));
+	return 0;
+}
+
 static int ec_insert(char *loc, char *cmd, char *arg)
 {
 	sbuf *sb;
@@ -561,9 +569,8 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 		sbufn_chr(sb, '\n')
 		free(s);
 	}
-	if (cmd[0] == 'a')
-		if (beg + 1 <= lbuf_len(xb))
-			beg++;
+	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
+		beg++;
 	if (cmd[0] != 'c')
 		end = beg;
 	n = lbuf_len(xb);
@@ -960,7 +967,7 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 		bufs_free(xbufcur - 1);
 	int bufidx = ex_buf - bufs;
 	bufs = realloc(bufs, sizeof(struct buf) * xbufsmax);
-	ex_buf = bufidx > &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
+	ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
 	ex_pbuf = bufs;
 	return 0;
 }
@@ -982,6 +989,7 @@ static struct excmd {
 	{"g!", ec_glob},
 	{"=", ec_lnum},
 	{"k", ec_mark},
+	{"tp", ec_termpush},
 	{"pu", ec_put},
 	{"q", ec_quit},
 	{"q!", ec_quit},
@@ -1023,7 +1031,7 @@ static char *ex_loc(char *src, char *loc)
 {
 	while (*src == ':' || *src == ' ' || *src == '\t')
 		src++;
-	while (*src && !isalpha((unsigned char) *src) && *src != '=' && *src != '!')
+	while (*src && !isalpha(*src) && *src != '=' && *src != '!')
 	{
 		if (*src == '\'')
 			*loc++ = *src++;
