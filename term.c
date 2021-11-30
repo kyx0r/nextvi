@@ -231,9 +231,9 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
 	return pid;
 }
 
-char* xgetenv(char* q[])
+char *xgetenv(char **q)
 {
-	char* r = NULL;
+	char *r = NULL;
 	while (*q && !r) {
 		if (**q == '$')
 			r = getenv(*q+1);
@@ -247,7 +247,7 @@ char* xgetenv(char* q[])
 /* execute a command; process input if iproc and process output if oproc */
 char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 {
-	static char* sh[] = {"$SHELL", "sh", NULL};
+	static char *sh[] = {"$SHELL", "sh", NULL};
 	char *argv[4+xish];
 	argv[0] = xgetenv(sh);
 	if (xish)

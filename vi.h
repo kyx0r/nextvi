@@ -48,9 +48,9 @@ typedef struct sbuf {
 #define sbuf_make(sb, newsz) \
 { \
 	sb = malloc(sizeof(*sb)); \
-	sb->s = NULL; \
+	sb->s_sz = newsz; \
+	sb->s = malloc(newsz); \
 	sb->s_n = 0; \
-	sbuf_extend(sb, newsz) \
 } \
 
 #define sbuf_chr(sb, c) \
@@ -184,7 +184,6 @@ void syn_init(void);
 void syn_done(void);
 
 /* uc.c utf-8 helper functions */
-
 extern unsigned char utf8_length[256];
 /* return the length of a utf-8 character */
 #define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
@@ -248,7 +247,7 @@ char *term_cmd(int *n);
 /* process management */
 char *cmd_pipe(char *cmd, char *s, int iproc, int oproc);
 int cmd_exec(char *cmd);
-char* xgetenv(char* q[]);
+char *xgetenv(char* q[]);
 
 #define TK_CTL(x)	((x) & 037)
 #define TK_INT(c)	((c) < 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
@@ -316,7 +315,7 @@ struct highlight {
 	char *pat;		/* regular expression */
 	int att[16];		/* attributes of the matched groups */
 	signed char end[16];	/* the group ending this pattern;
-				if set on multi-line the block emits all other matches in a set
+				if set on multi-line the block emits all other matches in rset
 				else defines hl continuation for the group:
 				positive value - continue at rm_so
 				zero (default) - continue at rm_eo
