@@ -551,7 +551,7 @@ real "groking vi" starts.
 Here's an example using this retcon (69.):
 There is a dictionary file (assume vi.c), which we always want to have indexed 
 at startup for autocomplete feature in 31. Use EXINIT variable:
-export EXINIT="e ./vi.c|tp i�|u|bx 1|bx"
+export EXINIT="e ./vi.c|tp i|u|bx 1|bx"
 The last bx commands delete the vi.c buffer.
 
 OPTIONS

@@ -159,9 +159,7 @@ static void file_ternary(struct lbuf *buf)
 				char part[len];
 				memcpy(part, ss[i]+sidx+subs[grp - 2], len);
 				part[len] = '\0';
-				if (search(part, len > 2 ? len-1 : len, ROOT) >= 0)
-					if (!(suggestsb->s_n && dstrlen(suggestsb->s, '\n') == len))
-						insert_node(part, ROOT);
+				insert_node(part, ROOT);
 			}
 			sidx += subs[grp - 1] > 0 ? subs[grp - 1] : 1;
 		}
