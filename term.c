@@ -132,7 +132,7 @@ void term_exec(char *s, unsigned int n)
 	ibuf_pos = pbuf_cnt;
 	term_push(s, n);
 	term_push("qq", 3);
-	vi();
+	vi(0);
 	ibuf_cnt = pbuf_cnt;
 	ibuf_pos = pbuf_pos;
 	term_push("", 1);

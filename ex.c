@@ -55,18 +55,24 @@ static long mtime(char *path)
 	return -1;
 }
 
+#define exbuf_load(buf) \
+xrow = buf->row; \
+xoff = buf->off; \
+xtop = buf->top; \
+xtd = buf->td; \
+
+#define exbuf_save(buf) \
+buf->row = xrow; \
+buf->off = xoff; \
+buf->top = xtop; \
+buf->td = xtd; \
+
 static void bufs_switch(int idx)
 {
 	ex_pbuf = ex_buf;
 	ex_buf = &bufs[idx];
-	ex_pbuf->row = xrow;
-	ex_pbuf->off = xoff;
-	ex_pbuf->top = xtop;
-	ex_pbuf->td = xtd;
-	xrow = ex_buf->row;
-	xoff = ex_buf->off;
-	xtop = ex_buf->top;
-	xtd = ex_buf->td;
+	exbuf_save(ex_pbuf)
+	exbuf_load(ex_buf)
 }
 #define bufs_switchwft(idx) { bufs_switch(idx); syn_setft(ex_buf->ft); }
 
@@ -112,12 +118,15 @@ void temp_pos(int i, int row, int off, int top)
 
 void temp_switch(int i)
 {
-	ex_pbuf = ex_buf == &tempbufs[i] ? ex_pbuf : ex_buf;
-	ex_buf = ex_buf == &tempbufs[i] ? ex_pbuf : &tempbufs[i];
-	xrow = ex_buf->row;
-	xoff = ex_buf->off;
-	xtop = ex_buf->top;
-	xtd = ex_buf->td;
+	if (ex_buf == &tempbufs[i]) {
+		exbuf_save(ex_buf)
+		ex_buf = ex_pbuf;
+	} else {
+		ex_pbuf = ex_buf;
+		exbuf_save(ex_pbuf)
+		ex_buf = &tempbufs[i];
+	}
+	exbuf_load(ex_buf)
 	syn_setft(ex_buf->ft);
 }
 

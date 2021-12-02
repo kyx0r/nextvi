@@ -24,7 +24,7 @@ int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
 
 /* main functions */
-void vi(void);
+void vi(int init);
 
 /* sbuf string buffer, variable-sized string */
 #define SBUFSZ		128

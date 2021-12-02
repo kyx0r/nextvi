@@ -282,16 +282,12 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	syn_setft("---");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(ex_filetype);
-	if (xquit == 2) {
-		vi_mod = 1;
-		xquit = 0;
-	}
+	vi_mod = 1;
 	if (!s)
 		return NULL;
 	r = uc_dup(s + l2);
 	strcpy(vi_msg+l2, r);
 	free(s);
-	vi_mod = 1;
 	return r;
 }
 
@@ -945,8 +941,7 @@ static int vi_motion(int *row, int *off)
 				break;
 		}
 		temp_switch(1);
-		vi();
-		temp_pos(1, xrow, xoff, xtop);
+		vi(1);
 		temp_switch(1);
 		xquit = 0;
 		break;
@@ -1469,16 +1464,18 @@ static void vi_argcmd(int arg, char cmd)
 	term_push(str, cs - str + 1);
 }
 
-void vi(void)
+void vi(int init)
 {
 	int xcol;
 	int mark;
 	char *ln, *cs;
 	int kmap = 0;
-	xtop = MAX(0, xrow - xrows / 2);
-	xcol = vi_off2col(xb, xrow, xoff);
-	vi_drawagain();
-	term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), xcol));
+	if (init) {
+		xtop = MAX(0, xrow - xrows / 2);
+		xcol = vi_off2col(xb, xrow, xoff);
+		vi_drawagain();
+		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), xcol));
+	}
 	while (!xquit) {
 		int nrow = xrow;
 		int noff = ren_noeol(lbuf_get(xb, xrow), xoff);
@@ -1796,7 +1793,6 @@ void vi(void)
 				k = vi_read();
 				if (k == 'q')
 					xquit = 1;
-				vi_back(k);
 				continue;
 			case 'c':
 			case 'd':
@@ -2095,9 +2091,6 @@ void vi(void)
 		term_pos(xrow - xtop, n);
 		lbuf_modified(xb);
 	}
-	vi_buflen = 0;
-	term_pos(xrows, 0);
-	term_kill();
 }
 
 static void sighandler()
@@ -2136,7 +2129,7 @@ int main(int argc, char *argv[])
 		term_init();
 	if (!ex_init(argv + i)) {
 		if (xvis)
-			vi();
+			vi(1);
 		else
 			ex();
 		ex_done();

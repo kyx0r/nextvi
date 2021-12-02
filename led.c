@@ -596,18 +596,17 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('b'):
 			if (ai_max > 0)
 				continue;
-			xquit = 0;
 			td_set(xotd);
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s);
 			temp_switch(0);
-			vi();
-			temp_pos(0, xrow, xoff, xtop);
+			vi(1);
 			temp_switch(0);
-			vi(); /* redraw past screen */
+			vi(1); /* redraw past screen */
 			syn_setft("---");
+			term_pos(xrows, 0);
 			td_set(+2);
-			xquit = 2;
+			xquit = 0;
 			cur_histstr:
 			i = 0;
 		case TK_CTL('v'):
