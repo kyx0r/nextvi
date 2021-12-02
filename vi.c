@@ -45,14 +45,14 @@ int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
 static int vi_mod;	/* screen should be redrawn:
-			(1: whole screen, -1: whole screen not updating xcol, 2: current line) */
+			(1: whole screen, -1: whole screen not updating vi_col, 2: current line) */
 static char *vi_word = "\0eEwW";	/* line word navigation */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN+128];		/* current message */
 static char vi_charlast[8];		/* the last character searched via f, t, F, or T */
 static int vi_charcmd;			/* the character finding command */
 static int vi_ybuf;			/* current yank buffer */
-static int vi_pcol;			/* the column requested by | command */
+static int vi_col;			/* the column requested by | command */
 static int vi_printed;			/* ex_print() calls since the last command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
@@ -876,7 +876,7 @@ static int vi_motion(int *row, int *off)
 		break;
 	case '|':
 		*off = vi_col2off(xb, *row, cnt - 1);
-		vi_pcol = cnt - 1;
+		vi_col = cnt - 1;
 		break;
 	case '/':
 	case '?':
@@ -1466,15 +1466,13 @@ static void vi_argcmd(int arg, char cmd)
 
 void vi(int init)
 {
-	int xcol;
-	int mark;
+	int mark, kmap = 0;
 	char *ln, *cs;
-	int kmap = 0;
 	if (init) {
 		xtop = MAX(0, xrow - xrows / 2);
-		xcol = vi_off2col(xb, xrow, xoff);
+		vi_col = vi_off2col(xb, xrow, xoff);
 		vi_drawagain();
-		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), xcol));
+		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col));
 	}
 	while (!xquit) {
 		int nrow = xrow;
@@ -1508,16 +1506,13 @@ void vi(int init)
 			xrow = nrow;
 			if (noff < 0 && !strchr("jk", mv))
 				noff = lbuf_indents(xb, xrow);
-			if (strchr("jk", mv))
-				noff = vi_col2off(xb, xrow, xcol);
+			else if (strchr("jk", mv))
+				noff = vi_col2off(xb, xrow, vi_col);
 			xoff = ren_noeol(lbuf_get(xb, xrow), noff);
 			if (!strchr("|jk", mv))
-				xcol = vi_off2col(xb, xrow, xoff);
+				vi_col = vi_off2col(xb, xrow, xoff);
 			switch (mv)
 			{
-			case '|':
-				xcol = vi_pcol;
-				break;
 			case TK_CTL(']'):
 			case TK_CTL('p'):
 				for (n = 0; n < xbufcur; n++)
@@ -1557,14 +1552,14 @@ void vi(int init)
 			case TK_CTL('e'):
 				vi_scrolley = vi_arg1 ? vi_arg1 : vi_scrolley;
 				vi_scrollforward(MAX(1, vi_scrolley));
-				xoff = vi_col2off(xb, xrow, xcol);
+				xoff = vi_col2off(xb, xrow, vi_col);
 				if (vi_scrolley > 1 || vi_mod)
 					vi_mod = -1;
 				break;
 			case TK_CTL('y'):
 				vi_scrolley = vi_arg1 ? vi_arg1 : vi_scrolley;
 				vi_scrollbackward(MAX(1, vi_scrolley));
-				xoff = vi_col2off(xb, xrow, xcol);
+				xoff = vi_col2off(xb, xrow, vi_col);
 				if (vi_scrolley > 1 || vi_mod)
 					vi_mod = -1;
 				break;
@@ -2004,12 +1999,12 @@ void vi(int init)
 					xrow - xrows / 2 : xrow - xrows + 1;
 		xoff = ren_noeol(lbuf_get(xb, xrow), xoff);
 		if (vi_mod > 0)
-			xcol = vi_off2col(xb, xrow, xoff);
-		if (xcol >= xleft + xcols)
-			xleft = xcol - xcols / 2;
-		if (xcol < xleft)
-			xleft = xcol < xcols ? 0 : xcol - xcols / 2;
-		n = led_pos(lbuf_get(xb, xrow), ren_cursor(lbuf_get(xb, xrow), xcol));
+			vi_col = vi_off2col(xb, xrow, xoff);
+		if (vi_col >= xleft + xcols)
+			xleft = vi_col - xcols / 2;
+		if (vi_col < xleft)
+			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
+		n = led_pos(lbuf_get(xb, xrow), ren_cursor(lbuf_get(xb, xrow), vi_col));
 		vi_wait();
 		if (xhlw) {
 			static char *word;
