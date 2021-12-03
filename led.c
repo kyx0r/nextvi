@@ -31,14 +31,10 @@ static tern_t *insert_node(const char *string, tern_t *node)
 		node->l_child = insert_node(string, node->l_child);
 	else if (string[0] > node->word)
 		node->r_child = insert_node(string, node->r_child);
-	else {
-		/* go one level down the tree if the word has not been found here. */
-		if (!*(string+1)) {
-			node->type = 1;
-			return node;
-		} else
-			node->m_child = insert_node(++string, node->m_child);
-	}
+	else if (*(string+1))
+		node->m_child = insert_node(++string, node->m_child);
+	else
+		node->type = 1;
 	return node;
 }
 
@@ -156,10 +152,11 @@ static void file_ternary(struct lbuf *buf)
 			}
 			len = subs[grp - 1] - subs[grp - 2];
 			if (len > 1) {
-				char part[len];
-				memcpy(part, ss[i]+sidx+subs[grp - 2], len);
+				char *part = ss[i]+sidx+subs[grp - 2];
+				char ch = part[len];
 				part[len] = '\0';
 				insert_node(part, ROOT);
+				part[len] = ch;
 			}
 			sidx += subs[grp - 1] > 0 ? subs[grp - 1] : 1;
 		}
@@ -567,9 +564,14 @@ static char *led_line(char *pref, char *post, char *ai,
 				}
 			}
 			goto redo_suggest;
-		case TK_CTL('z'):
+		case TK_CTL('z'):;
+			char buf[100];
 			sug_pt = sug_pt == len ? -1 : len;
-			break;
+			itoa(sug_pt, buf);
+			led_print(buf, xtop+xrows);
+			if (ai_max)
+				term_pos(xrow - xtop, 0);
+			continue;
 		case TK_CTL('n'):
 			if (!suggestsb)
 				continue;
@@ -583,17 +585,6 @@ static char *led_line(char *pref, char *post, char *ai,
 					goto lookup;
 				}
 				suggest:
-				if (ai_max > 0) {
-					int r = xrow-xtop+1;
-					for (int c = 0, b = 0; r < xrows; r++) {
-						if (!(b = led_print(sug+c, r)))
-							break;
-						c += b;
-					}
-					for (r++; r < xrows; r++)
-						led_print(lbuf_get(xb, r+xtop), r);
-					term_pos(xrow - xtop, 0);
-				}
 				*_sug = '\0';
 				sbuf_cut(sb, last_sug)
 				sbufn_str(sb, sug)
@@ -609,8 +600,26 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			continue;
 		case TK_CTL('b'):
-			if (ai_max > 0)
+			if (ai_max) {
+				pac:;
+				int r = xrow-xtop+1;
+				c = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
+				if (suggestsb && search(sb->s + c, sb->s_n - c, ROOT) == 1) {
+					sug = suggestsb->s;
+					syn_setft("/ac");
+					for (int c = 0, b = 0; r < xrows; r++) {
+						if (!(b = led_print(sug+c, r)))
+							break;
+						c += b;
+					}
+					syn_setft(ex_filetype);
+					r++;
+				}
+				for (; r < xrows; r++)
+					led_print(lbuf_get(xb, r+xtop), r);
+				term_pos(xrow - xtop, 0);
 				continue;
+			}
 			td_set(xotd);
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s);
@@ -618,7 +627,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			vi(1);
 			temp_switch(0);
 			vi(1); /* redraw past screen */
-			syn_setft("---");
+			syn_setft("/-");
 			term_pos(xrows, 0);
 			td_set(+2);
 			xquit = 0;
@@ -666,6 +675,8 @@ _default:
 		sug = NULL; _sug = NULL;
 		if (c == '\n' || TK_INT(c))
 			break;
+		if (ai_max && xpac)
+			goto pac;
 	}
 leave:
 	vi_insmov = c;

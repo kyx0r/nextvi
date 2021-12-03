@@ -138,6 +138,9 @@ Like ^g used to index file in insert mode you can use ^y from insert
 to out clear the completion db.
 Running ex command "ac" with no argument will reset back to the default
 word filtering regex. You can find it's string in led.c as a reference.
+Using ^b from insert mode will display all possible autocomplete options.
+Added new ex command "pac". When enabled the autocomplete options will
+be automatically displayed.
 32. Added ex command "inc" which sets the path filter using regex. For
 example we want to get only files in submodule directory that end
 with .c extension, use: :inc submodule.*\.c$

@@ -94,7 +94,7 @@ static void vi_drawmsg(void)
 		int oleft = xleft;
 		xleft = 0;
 		syn_blockhl = 0;
-		syn_setft("---");
+		syn_setft("/-");
 		led_printmsg(vi_msg, xrows);
 		syn_setft(ex_filetype);
 		xleft = oleft;
@@ -189,7 +189,7 @@ static void vi_drawrow(int row)
 		movedown = 1;
 		i = syn_blockhl;
 		syn_blockhl = 0;
-		syn_setft("#");
+		syn_setft("/#");
 		led_print(tmp, row - xtop);
 		syn_setft(ex_filetype);
 		syn_blockhl = i;
@@ -279,7 +279,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	memcpy(vi_msg, msg, l2+1);
 	term_pos(xrows, led_pos(msg, 0));
 	term_kill();
-	syn_setft("---");
+	syn_setft("/-");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(ex_filetype);
 	vi_mod = 1;
@@ -299,7 +299,7 @@ char *ex_read(char *msg)
 	if (xled) {
 		int oleft = xleft;
 		syn_blockhl = 0;
-		syn_setft("---");
+		syn_setft("/-");
 		char *s = led_prompt(msg, "", NULL, &xkmap);
 		xleft = oleft;
 		if (s)
@@ -324,7 +324,7 @@ void ex_show(char *msg)
 		vi_printed = 1;
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (xled) {
-		syn_setft("---");
+		syn_setft("/-");
 		led_reprint(msg, -1);
 		term_chr('\n');
 		syn_setft(ex_filetype);
@@ -341,7 +341,7 @@ void ex_print(char *line)
 		vi_printed += line ? 1 : 2;
 		if (line) {
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
-			syn_setft("---");
+			syn_setft("/-");
 			led_reprint(line, -1);
 			syn_setft(ex_filetype);
 		}
@@ -926,11 +926,11 @@ static int vi_motion(int *row, int *off)
 			mdir_calc(fs_exdir ? fs_exdir : ".")
 			temp_done(1);
 		}
-		temp_open(1, "/fm/", "fm");
+		temp_open(1, "/fm/", "/fm");
 		cs = temp_get(1, 1);
 		if (!cs) {
 			temp_done(1);
-			temp_open(1, "/fm/", "fm");
+			temp_open(1, "/fm/", "/fm");
 			for (i = 0; i < fstlen;)
 			{
 				cs = &fslink[i+sizeof(int)];

@@ -21,6 +21,7 @@ int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
 int xgrp = 2;			/* regex search group */
+int xpac = 0;			/* print autocomplete options */
 int xbufcur = 0;		/* number of active buffers */
 static int xbufsmax = 10;	/* number of buffers */
 struct buf *bufs;		/* main buffers */
@@ -869,6 +870,7 @@ static struct option {
 	{"qe", &xqexit},
 	{"ish", &xish},
 	{"grp", &xgrp},
+	{"pac", &xpac},
 };
 
 static char *cutword(char *s, char *d)

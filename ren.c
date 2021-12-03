@@ -258,7 +258,7 @@ char *ren_translate(char *s, char *ln)
 	return p || !xshape ? p : uc_shape(ln, s);
 }
 
-#define NFTS		16
+#define NFTS		20
 /* mapping filetypes to regular expression sets */
 static struct ftmap {
 	char ft[32];
