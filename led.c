@@ -129,7 +129,7 @@ static void delete(tern_t *root, tern_t *node)
 
 int dstrlen(const char *s, char delim)
 {
-	register const char* i;
+	register const char *i;
 	for (i=s; *i && *i != delim; ++i);
 	return i-s;
 }
@@ -315,7 +315,7 @@ for (i = 0; i < n; i++) { \
 	pos = ren_position(s0, &chrs, &n); \
 
 /* render and highlight a line */
-void led_render(char *s0, int row, int cbeg, int cend)
+int led_render(char *s0, int row, int cbeg, int cend)
 {
 	int i, j, n, cterm = cend - cbeg;
 	sbuf *bsb, *bound = NULL;
@@ -369,10 +369,14 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		led_out(term_sbuf, 2)
 	else
 		led_out(term_sbuf, 1)
-	if (bound)
-		sbuf_free(bound)
 	if (!term_record)
 		term_commit();
+	if (bound) {
+		n = bound->s_n;	
+		sbuf_free(bound)
+		return n;
+	}
+	return 0;
 }
 
 /* print a line on the screen; for ex messages */
@@ -552,10 +556,10 @@ static char *led_line(char *pref, char *post, char *ai,
 				sug = suggestsb->s;
 			if (suggestsb->s_n == sug - suggestsb->s)
 				sug--;
-			for (i = 0; sug != suggestsb->s; sug--) {
+			for (c = 0; sug != suggestsb->s; sug--) {
 				if (!*sug) {
-					i++;
-					if (i == 3) {
+					c++;
+					if (c == 3) {
 						sug++;
 						goto redo_suggest;
 					} else
@@ -579,6 +583,17 @@ static char *led_line(char *pref, char *post, char *ai,
 					goto lookup;
 				}
 				suggest:
+				if (ai_max > 0) {
+					int r = xrow-xtop+1;
+					for (int c = 0, b = 0; r < xrows; r++) {
+						if (!(b = led_print(sug+c, r)))
+							break;
+						c += b;
+					}
+					for (r++; r < xrows; r++)
+						led_print(lbuf_get(xb, r+xtop), r);
+					term_pos(xrow - xtop, 0);
+				}
 				*_sug = '\0';
 				sbuf_cut(sb, last_sug)
 				sbufn_str(sb, sug)
@@ -682,13 +697,12 @@ char *led_prompt(char *pref, char *post, char *insert,
 }
 
 /* read visual command input */
-char *led_input(char *pref, char *post, int *kmap, int cln)
+char *led_input(char *pref, char *post, int *kmap, int row)
 {
 	sbuf *sb; sbuf_make(sb, 256)
 	char ai[128];
 	int ai_max = sizeof(ai) - 1;
-	int n = 0;
-	int key;
+	int n = 0, key; 
 	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
 		ai[n++] = *pref++;
 	ai[n] = '\0';
@@ -729,13 +743,13 @@ char *led_input(char *pref, char *post, int *kmap, int cln)
 		while (xai && (post[n] == ' ' || post[n] == '\t'))
 			n++;
 		memmove(post, post + n, strlen(post) - n + 1);
-		cln++;
+		xrow++;
 	}
-	sbuf_str(sb, post)
-	if (TK_INT(key) || cln)
-		sbufn_done(sb)
-	sbuf_free(sb)
-	return NULL;
+	if (TK_INT(key) || xrow != row)
+		sbuf_str(sb, post)
+	else
+		sbuf_cut(sb, 0)
+	sbufn_done(sb)
 }
 
 void led_done(void)

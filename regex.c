@@ -535,7 +535,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	int *pcs[prog->splits], *plist[prog->splits];
 	rsub *subs[prog->splits];
-	char nsubs[500000];
+	char nsubs[rsubsize * prog->len];
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len+1], _nlist[prog->len+1];
 	_clist[0].pc = insts, _nlist[0].pc = insts;

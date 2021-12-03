@@ -135,7 +135,6 @@ void term_exec(char *s, unsigned int n)
 	vi(0);
 	ibuf_cnt = pbuf_cnt;
 	ibuf_pos = pbuf_pos;
-	term_push("", 1);
 	xquit = 0;
 }
 

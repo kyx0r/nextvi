@@ -1043,15 +1043,6 @@ static void vi_splitln(int row, int linepos, int nextln)
 	}
 }
 
-static int linecount(char *s)
-{
-	int n;
-	for (n = 0; s; n++)
-		if ((s = strchr(s, '\n')))
-			s++;
-	return n;
-}
-
 static int charcount(char *text, char *post)
 {
 	int tlen = strlen(text);
@@ -1066,15 +1057,11 @@ static int charcount(char *text, char *post)
 	return uc_slen(nl) - uc_slen(post);
 }
 
-static char *vi_input(char *pref, char *post, int *row, int *off, int cln)
+static char *vi_input(char *pref, char *post, int row)
 {
-	char *rep = led_input(pref, post, &xkmap, cln);
-	if (!rep)
-		return NULL;
-	*row = linecount(rep) - 1;
-	*off = charcount(rep, post) - 1;
-	if (*off < 0)
-		*off = 0;
+	char *rep = led_input(pref, post, &xkmap, row);
+	int off = *rep ? charcount(rep, post) - 1 : xoff;
+	xoff = off < 0 ? 0 : off;
 	return rep;
 }
 
@@ -1088,23 +1075,17 @@ static char *vi_indents(char *ln)
 
 static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
-	char *region;
-	int row, off;
-	char *rep;
-	char *pref, *post;
+	char *region, *rep, *pref, *post;
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
 	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
 	pref = lnmode ? vi_indents(lbuf_get(xb, r1)) : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
 	vi_drawrm(r1, r2, 0);
-	rep = vi_input(pref, post, &row, &off, 1);
-	if (rep) {
+	rep = vi_input(pref, post, -1);
+	if (*rep)
 		lbuf_edit(xb, rep, r1, r2 + 1);
-		xrow = r1 + row - 1;
-		xoff = off;
-		free(rep);
-	}
+	free(rep);
 	free(pref);
 	free(post);
 }
@@ -1250,14 +1231,14 @@ static void vc_insert(int cmd)
 		xoff = lbuf_eol(xb, xrow);
 	else if (cmd == 'o') {
 		xrow++;
-		if (xrow - xtop == xrows)
-		{
+		if (xrow - xtop == xrows) {
 			xtop++;
 			vi_drawagain();
 		}
 	}
 	xoff = ren_noeol(ln, xoff);
 	off = xoff;
+	row = xrow;
 	if (cmd == 'a' || cmd == 'A')
 		off++;
 	if (ln && ln[0] == '\n')
@@ -1265,16 +1246,13 @@ static void vc_insert(int cmd)
 	noto = cmd != 'o' && cmd != 'O';
 	pref = ln && noto ? uc_sub(ln, 0, off) : vi_indents(ln);
 	post = ln && noto ? uc_sub(ln, off, -1) : uc_dup("\n");
-	vi_drawrm(xrow, xrow, !noto);
-	rep = vi_input(pref, post, &row, &off, 0);
+	vi_drawrm(row, row, !noto);
+	rep = vi_input(pref, post, row);
 	if (!noto && !lbuf_len(xb))
 		lbuf_edit(xb, "\n", 0, 0);
-	if (rep) {
-		lbuf_edit(xb, rep, xrow, xrow + (noto));
-		xrow += row - 1;
-		xoff = off;
-		free(rep);
-	}
+	if (*rep)
+		lbuf_edit(xb, rep, row, row + noto);
+	free(rep);
 	free(pref);
 	free(post);
 }

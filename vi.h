@@ -256,8 +256,8 @@ char *xgetenv(char* q[]);
 
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
-char *led_input(char *pref, char *post, int *kmap, int cln);
-void led_render(char *s0, int row, int cbeg, int cend);
+char *led_input(char *pref, char *post, int *kmap, int row);
+int led_render(char *s0, int row, int cbeg, int cend);
 #define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
 #define led_reprint(msg, row) { ren_laststr = NULL; led_print(msg, row); }
 void led_printmsg(char *s, int row);
