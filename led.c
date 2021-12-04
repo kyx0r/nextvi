@@ -52,12 +52,10 @@ static tern_t *find_node(const char *string, int l, tern_t *node)
 		else if (string[i] > currentNode->word)
 			currentNode = currentNode->r_child;
 		/* if out of characters, prefix ends on the current node. Now start search */
-		else {
-			if (i++ == l - 1)
-				return currentNode;
-			else
-				currentNode = currentNode->m_child;
-		}
+		else if (i++ == l - 1)
+			return currentNode;
+		else
+			currentNode = currentNode->m_child;
 	}
 	return NULL;
 }
@@ -89,12 +87,10 @@ static int search(const char *pattern, int l, tern_t *node)
 	tern_t *current = find_node(pattern, l, node);
 	if (!current)
 		return 0;
-	else {
-		if (current->m_child) {
-			deep_search(pattern, l, current->m_child);
-			sbuf_null(suggestsb)
-			return 1;
-		}
+	else if (current->m_child) {
+		deep_search(pattern, l, current->m_child);
+		sbuf_null(suggestsb)
+		return 1;
 	}
 	return -1;
 }
@@ -213,7 +209,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 void led_bounds(sbuf *out, int *off, char **chrs, int cbeg, int cend)
 {
 	int l, i = cbeg;
-	int pad = ren_torg;
+	int pad = rstate->ren_torg;
 	while (i < cend) {
 		int o = off[i - cbeg];
 		if (o >= 0) {
@@ -303,16 +299,16 @@ for (i = 0; i < n; i++) { \
 } \
 
 #define cull_line(name, postfix)\
-	led_bounds(name, off, chrs, cbeg, cend); \
-	s0 = name->s; \
-	postfix \
-	cbeg = 0; \
-	cend = cterm; \
-	memset(off, -1, (cterm+1) * sizeof(off[0])); \
-	pos = ren_position(s0, &chrs, &n); \
+led_bounds(name, off, chrs, cbeg, cend); \
+s0 = name->s; \
+postfix \
+cbeg = 0; \
+cend = cterm; \
+memset(off, -1, (cterm+1) * sizeof(off[0])); \
+pos = ren_position(s0, &chrs, &n); \
 
 /* render and highlight a line */
-int led_render(char *s0, int row, int cbeg, int cend)
+void led_render(char *s0, int row, int cbeg, int cend)
 {
 	int i, j, n, cterm = cend - cbeg;
 	sbuf *bsb, *bound = NULL;
@@ -329,7 +325,7 @@ int led_render(char *s0, int row, int cbeg, int cend)
 		if (pos[n] > xcols || cbeg)
 		{
 			td_set(-2);
-			ren_torg = cbeg;
+			ren_save(1, cbeg);
 			sbuf_make(bsb, xcols)
 			cull_line(bsb, if (strchr(s0, '\n')) *strchr(s0, '\n') = ' ';)
 			off_rev()
@@ -337,7 +333,6 @@ int led_render(char *s0, int row, int cbeg, int cend)
 			cull_line(bound, /**/)
 			off_rev()
 			sbuf_free(bsb)
-			ren_torg = cbeg;
 			td_set(xotd);
 			/* s0 would be padded, this is only partially right for syn hl */
 		}
@@ -345,14 +340,13 @@ int led_render(char *s0, int row, int cbeg, int cend)
 		off_for()
 		if (pos[n] > xcols || cbeg)
 		{
-			ren_torg = cbeg;
+			ren_save(1, cbeg);
 			int xord = xorder;
 			xorder = 0;
 			sbuf_make(bound, xcols)
 			cull_line(bound, /**/)
 			off_for()
 			xorder = xord;
-			ren_torg = cbeg;
 		}
 	}
 	if (xhl)
@@ -369,11 +363,9 @@ int led_render(char *s0, int row, int cbeg, int cend)
 	if (!term_record)
 		term_commit();
 	if (bound) {
-		n = bound->s_n;	
+		ren_save(0, 0);
 		sbuf_free(bound)
-		return n;
 	}
-	return 0;
 }
 
 /* print a line on the screen; for ex messages */
@@ -420,12 +412,12 @@ static void led_printparts(char *ai, char *pref, char *main,
 		int len = ln->s_n;
 		sbuf_str(ln, kmap_map(kmap, 'a'))
 		sbufn_str(ln, post)
-		ren_laststr = NULL;
+		rstate->ren_laststr = NULL;
 		idir = ren_pos(ln->s, off) - ren_pos(ln->s, off - 1) < 0 ? -1 : +1;
 		sbuf_cut(ln, len)
 	}
 	sbufn_str(ln, post)
-	ren_laststr = NULL;
+	rstate->ren_laststr = NULL;
 	pos = ren_cursor(ln->s, ren_pos(ln->s, MAX(0, off - 1)));
 	if (pos >= xleft + xcols)
 		xleft = pos - xcols / 2;
@@ -607,15 +599,16 @@ static char *led_line(char *pref, char *post, char *ai,
 				if (suggestsb && search(sb->s + c, sb->s_n - c, ROOT) == 1) {
 					sug = suggestsb->s;
 					syn_setft("/ac");
-					for (int c = 0, b = 0; r < xrows; r++) {
-						if (!(b = led_print(sug+c, r)))
+					for (int left = 0; r < xrows; r++) {
+						led_render(sug, r, left, left+xcols);
+						left += xcols;
+						if (left >= rstate->ren_lastpos[rstate->ren_lastn])
 							break;
-						c += b;
 					}
 					syn_setft(ex_filetype);
 					r++;
 				}
-				for (; r < xrows; r++)
+				for (; r < xrows && lbuf_len(xb) > r+xtop; r++)
 					led_print(lbuf_get(xb, r+xtop), r);
 				term_pos(xrow - xtop, 0);
 				continue;

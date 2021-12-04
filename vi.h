@@ -143,9 +143,16 @@ int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_pair(struct lbuf *lb, int *row, int *off);
 
 /* ren.c rendering lines */
-extern char *ren_laststr;
-extern int ren_torg;
+typedef struct {
+	char **ren_lastchrs;
+	int *ren_lastpos;
+	char *ren_laststr; 	/* to prevent redundant computations, ensure pointer uniqueness */
+	int ren_lastn;
+	int ren_torg; 		/* compute tab width from this position origin */
+} ren_state;
+extern ren_state *rstate;
 void ren_done(void);
+void ren_save(int nstate, int torg);
 int *ren_position(char *s, char ***c, int *n);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
@@ -257,9 +264,9 @@ char *xgetenv(char* q[]);
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 char *led_input(char *pref, char *post, int *kmap, int row);
-int led_render(char *s0, int row, int cbeg, int cend);
+void led_render(char *s0, int row, int cbeg, int cend);
 #define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
-#define led_reprint(msg, row) { ren_laststr = NULL; led_print(msg, row); }
+#define led_reprint(msg, row) { rstate->ren_laststr = NULL; led_print(msg, row); }
 void led_printmsg(char *s, int row);
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);

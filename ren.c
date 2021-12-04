@@ -87,25 +87,28 @@ void dir_done(void)
 	rset_free(dir_rsctx);
 }
 
-static char **ren_lastchrs;
-static int *ren_lastpos;
-static int ren_lastn;
-char *ren_laststr; 	/* prevent redundant computations, you must ensure pointer uniqueness */
-int ren_torg; 		/* compute tab width from this position origin */
+static ren_state rstates[2];
+ren_state *rstate = &rstates[0];
 
 void ren_done(void)
 {
-	free(ren_lastpos);
-	free(ren_lastchrs);
+	free(rstate->ren_lastpos);
+	free(rstate->ren_lastchrs);
+}
+
+void ren_save(int nstate, int torg)
+{
+	rstate = &rstates[nstate];
+	rstate->ren_torg = torg;
 }
 
 /* specify the screen position of the characters in s */
 int *ren_position(char *s, char ***chrs, int *n)
 {
-	if (ren_laststr == s) {
-		chrs[0] = ren_lastchrs;
-		*n = ren_lastn;
-		return ren_lastpos;
+	if (rstate->ren_laststr == s) {
+		chrs[0] = rstate->ren_lastchrs;
+		*n = rstate->ren_lastn;
+		return rstate->ren_lastpos;
 	} else
 		ren_done();
 	int i;
@@ -131,10 +134,10 @@ int *ren_position(char *s, char ***chrs, int *n)
 		}
 	}
 	pos[nn] = cpos;
-	ren_laststr = s;
-	ren_lastpos = pos;
-	ren_lastchrs = chrs[0];
-	ren_lastn = *n;
+	rstate->ren_laststr = s;
+	rstate->ren_lastpos = pos;
+	rstate->ren_lastchrs = chrs[0];
+	rstate->ren_lastn = *n;
 	return pos;
 }
 
@@ -244,7 +247,7 @@ static char *ren_placeholder(char *s)
 int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
-		return xtabspc - ((pos + ren_torg) & (xtabspc-1));
+		return xtabspc - ((pos + rstate->ren_torg) & (xtabspc-1));
 	int c; uc_code(c, s)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)

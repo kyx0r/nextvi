@@ -1165,7 +1165,7 @@ static void vi_shift(int r1, int r2, int dir)
 static int vc_motion(int cmd)
 {
 	int r1 = xrow, r2 = xrow;	/* region rows */
-	int o1 = xoff, o2 = xoff;	/* visual region columns */
+	int o1 = xoff, o2;		/* visual region columns */
 	int lnmode = 0;			/* line-based region */
 	int mv;
 	vi_arg2 = vi_prefix();
@@ -1246,12 +1246,14 @@ static void vc_insert(int cmd)
 	noto = cmd != 'o' && cmd != 'O';
 	pref = ln && noto ? uc_sub(ln, 0, off) : vi_indents(ln);
 	post = ln && noto ? uc_sub(ln, off, -1) : uc_dup("\n");
+	if (!noto)
+		lbuf_edit(xb, "\n", row, row + noto);
 	vi_drawrm(row, row, !noto);
 	rep = vi_input(pref, post, row);
-	if (!noto && !lbuf_len(xb))
-		lbuf_edit(xb, "\n", 0, 0);
 	if (*rep)
 		lbuf_edit(xb, rep, row, row + noto);
+	if (!noto)
+		lbuf_edit(xb, NULL, row + 1, row + 2);
 	free(rep);
 	free(pref);
 	free(post);

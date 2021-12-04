@@ -128,7 +128,7 @@ static int lbuf_linecount(char *s)
 static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del, int n_ins)
 {
 	int i;
-	ren_laststr = NULL; /* there is no guarantee malloc not giving same ptr back */
+	rstate->ren_laststr = NULL; /* there is no guarantee malloc not giving same ptr back */
 	while (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_sz + (lb->ln_sz ? lb->ln_sz : 512);
 		char **nln = malloc(nsz * sizeof(nln[0]));

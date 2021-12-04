@@ -292,22 +292,21 @@ static int ex_region(char *loc, int *beg, int *end)
 	}
 	while (*loc) {
 		int end0 = *end;
-		*end = ex_lineno(&loc);
-		*end = *end < 0 ? 0 : *end;
-		*beg = naddr++ ? end0 : *end;
+		*end = ex_lineno(&loc) + 1;
+		*beg = naddr++ ? end0 - 1 : *end - 1;
 		if (!naddr++)
-			*beg = *end;
+			*beg = *end - 1;
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 		if (!*loc)
 			break;
 		if (*loc == ';')
-			xrow = *end;
+			xrow = *end - 1;
 		loc++;
 	}
 	if (*beg < 0 || *beg >= lbuf_len(xb))
 		return 1;
-	if (*end < *beg || *end > lbuf_len(xb))
+	if (*end-1 < *beg || *end-1 > lbuf_len(xb))
 		return 1;
 	return 0;
 }
