@@ -276,26 +276,22 @@ static void td_set(int td)
 
 #define off_for()\
 for (i = 0; i < n; i++) { \
-	int curwid = ren_cwid(chrs[i], pos[i]); \
 	int curbeg = pos[i] - cbeg; \
-	int curend = (pos[i] + curwid - 1) - cbeg; \
-	/* initialise off[] using pos[] */ \
-	if (curbeg >= 0 && curbeg < cterm && \
-			curend >= 0 && curend < cterm) \
+	if (curbeg >= 0 && curbeg < cterm) { \
+		int curwid = ren_cwid(chrs[i], pos[i]); \
 		for (j = 0; j < curwid; j++) \
-			off[pos[i] + j - cbeg] = i; \
+			off[curbeg + j] = i; \
+	} \
 } \
 
 #define off_rev()\
 for (i = 0; i < n; i++) { \
-	int curwid = ren_cwid(chrs[i], pos[i]); \
 	int curbeg = cend - pos[i] - 1; \
-	int curend = cend - (pos[i] + curwid - 1) - 1; \
-	/* initialise off[] using pos[] */ \
-	if (curbeg >= 0 && curbeg < cterm && \
-			curend >= 0 && curend < cterm) \
+	if (curbeg >= 0 && curbeg < cterm) { \
+		int curwid = ren_cwid(chrs[i], pos[i]); \
 		for (j = 0; j < curwid; j++) \
 			off[cend - (pos[i] + j - 1) - 2] = i; \
+	} \
 } \
 
 #define cull_line(name, postfix)\
@@ -363,6 +359,7 @@ void led_render(char *s0, int row, int cbeg, int cend)
 	if (!term_record)
 		term_commit();
 	if (bound) {
+		rstate->ren_laststr = NULL;
 		ren_save(0, 0);
 		sbuf_free(bound)
 	}
@@ -560,7 +557,8 @@ static char *led_line(char *pref, char *post, char *ai,
 			char buf[100];
 			sug_pt = sug_pt == len ? -1 : len;
 			itoa(sug_pt, buf);
-			led_print(buf, xtop+xrows);
+			rstate->ren_laststr = NULL;
+			led_render(buf, xtop+xrows, 0, xcols);
 			if (ai_max)
 				term_pos(xrow - xtop, 0);
 			continue;

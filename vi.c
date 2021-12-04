@@ -1253,7 +1253,7 @@ static void vc_insert(int cmd)
 	if (*rep)
 		lbuf_edit(xb, rep, row, row + noto);
 	if (!noto)
-		lbuf_edit(xb, NULL, row + 1, row + 2);
+		lbuf_edit(xb, NULL, xrow + 1, xrow + 2);
 	free(rep);
 	free(pref);
 	free(post);

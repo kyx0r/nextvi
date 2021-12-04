@@ -644,12 +644,12 @@ char *re_read(char **src)
 	int delim = (unsigned char) *s++;
 	if (!delim)
 		return NULL;
-	sbuf *sb; sbuf_make(sb, 256);
+	sbuf *sb; sbuf_make(sb, 256)
 	while (*s && *s != delim) {
 		if (s[0] == '\\' && s[1])
 			if (*(++s) != delim)
-				sbuf_chr(sb, '\\');
-		sbuf_chr(sb, (unsigned char) *s++);
+				sbuf_chr(sb, '\\')
+		sbuf_chr(sb, (unsigned char) *s++)
 	}
 	*src = *s ? s + 1 : s;
 	sbufn_done(sb)
