@@ -161,7 +161,7 @@ int term_read(void)
 		ibuf_cnt = n;
 		ibuf_pos = 0;
 	}
-	c = ibuf_pos < ibuf_cnt ? ibuf[ibuf_pos++] : -1;
+	c = ibuf_pos < ibuf_cnt ? (unsigned char)ibuf[ibuf_pos++] : -1;
 	if (icmd_pos < sizeof(icmd))
 		icmd[icmd_pos++] = c;
 	return c;

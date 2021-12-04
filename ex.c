@@ -745,7 +745,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 			replace(r, xrep, ln, offs);
 			ln += offs[xgrp - 1];
 			if (!offs[xgrp - 1])	/* zero-length match */
-				sbuf_chr(r, *ln++)
+				sbuf_chr(r, (unsigned char)*ln++)
 			if (*ln == '\n' || !*ln || !strchr(s, 'g'))
 				break;
 		}
@@ -1041,7 +1041,7 @@ static char *ex_loc(char *src, char *loc)
 {
 	while (*src == ':' || *src == ' ' || *src == '\t')
 		src++;
-	while (*src && !isalpha(*src) && *src != '=' && *src != '!')
+	while (*src && !isalpha((unsigned char)*src) && *src != '=' && *src != '!')
 	{
 		if (*src == '\'')
 			*loc++ = *src++;
