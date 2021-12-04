@@ -1887,7 +1887,7 @@ void vi(int init)
 					vc_charinfo();
 				else if (k == 'w')
 					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n')
-						term_push("080lgwbhKj", 10);
+						term_push("080|gwbhKj", 10);
 					else
 						term_clear();
 				else if (k == 'q')
