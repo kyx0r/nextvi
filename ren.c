@@ -232,14 +232,14 @@ static char *ren_placeholder(char *s)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)
 			return placeholders[i].d;
-	if (uc_iscomb(s, c)) {
+	if (uc_acomb(c)) {
 		static char buf[16];
 		char cbuf[8] = ""; uc_len(c, s)
 		memcpy(cbuf, s, c);
 		sprintf(buf, "ـ%s", cbuf);
 		return buf;
 	}
-	if (uc_isbell(s, c))
+	if (uc_isbell(c))
 		return "�";
 	return NULL;
 }
@@ -252,7 +252,7 @@ int ren_cwid(char *s, int pos)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)
 			return placeholders[i].wid;
-	return (c = uc_wid(c)) ? c : 1;
+	return uc_wid(c);
 }
 
 char *ren_translate(char *s, char *ln)

@@ -208,7 +208,7 @@ else if (dst < 248) \
 else \
 	dst = 0; \
 
-int uc_wid(int cp);
+int uc_wid(int c);
 int uc_slen(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
@@ -219,8 +219,8 @@ int uc_isprint(char *s);
 int uc_isdigit(char *s);
 int uc_isalpha(char *s);
 int uc_kind(char *c);
-int uc_isbell(char *c, int cp);
-int uc_iscomb(char *c, int cp);
+int uc_isbell(int c);
+int uc_acomb(int c);
 char **uc_chop(char *s, int *n);
 char *uc_next(char *s);
 char *uc_prev(char *beg, char *s);

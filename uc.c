@@ -274,7 +274,7 @@ static int uc_cshape(int cur, int prev, int next)
  * + 0x0655: hamza below
  * + 0x0670: superscript alef
  */
-static int uc_acomb(int c)
+int uc_acomb(int c)
 {
 	return (c >= 0x064b && c <= 0x0655) ||		/* the standard diacritics */
 		(c >= 0xfc5e && c <= 0xfc63) ||		/* shadda ligatures */
@@ -532,11 +532,10 @@ static int bchars[][2] = {
 
 static int find(int c, int tab[][2], int n)
 {
-	int l = 0;
-	int h = n - 1;
-	int m;
 	if (c < tab[0][0])
 		return 0;
+	int m, l = 0;
+	int h = n - 1;
 	while (l <= h) {
 		m = (h + l) / 2;
 		if (c >= tab[m][0] && c <= tab[m][1])
@@ -552,36 +551,27 @@ static int find(int c, int tab[][2], int n)
 /* double-width characters */
 static int uc_isdw(int c)
 {
-	return c >= 0x1100 && find(c, dwchars, LEN(dwchars));
+	return find(c, dwchars, LEN(dwchars));
 }
 
 /* zero-width and combining characters */
 static int uc_iszw(int c)
 {
-	return c >= 0x0300 && find(c, zwchars, LEN(zwchars));
-}
-
-int uc_wid(int cp)
-{
-	if (uc_iszw(cp))
-		return 0;
-	return uc_isdw(cp) ? 2 : 1;
+	return find(c, zwchars, LEN(zwchars));
 }
 
 /* nonprintable characters */
-int uc_isbell(char *s, int cp)
+int uc_isbell(int c)
 {
-	int c = (unsigned char) *s;
 	if (c == ' ' || c == '\t' || c == '\n' || (c <= 0x7f && isprint(c)))
 		return 0;
-	return uc_iszw(cp) || find(cp, bchars, LEN(bchars));
+	return uc_iszw(c) || find(c, bchars, LEN(bchars));
 }
 
-/* combining characters */
-int uc_iscomb(char *s, int cp)
+/* printing width */
+int uc_wid(int c)
 {
-	int c = (unsigned char) *s;
-	if (c == ' ' || c == '\t' || c == '\n' || (c <= 0x7f && isprint(c)))
-		return 0;
-	return uc_acomb(cp);
+	if (uc_isbell(c) || uc_acomb(c))
+		return 1;
+	return uc_isdw(c) ? 2 : 1;
 }
