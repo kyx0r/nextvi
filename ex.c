@@ -306,7 +306,7 @@ static int ex_region(char *loc, int *beg, int *end)
 	}
 	if (*beg < 0 || *beg >= lbuf_len(xb))
 		return 1;
-	if (*end-1 < *beg || *end-1 > lbuf_len(xb))
+	if (*end < *beg || *end > lbuf_len(xb))
 		return 1;
 	return 0;
 }
@@ -1088,7 +1088,7 @@ static char *ex_arg(char *src, char *dst)
 		*dst++ = *src++;
 	}
 	*dst = '\0';
-	return src;
+	return *src == '|' ? src+1 : src;
 }
 
 /* execute a single ex command */

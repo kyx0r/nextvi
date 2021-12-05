@@ -279,6 +279,8 @@ for (i = 0; i < n; i++) { \
 	int curbeg = pos[i] - cbeg; \
 	if (curbeg >= 0 && curbeg < cterm) { \
 		int curwid = ren_cwid(chrs[i], pos[i]); \
+		if (curbeg + curwid > cterm) \
+			break; \
 		for (j = 0; j < curwid; j++) \
 			off[curbeg + j] = i; \
 	} \
@@ -289,6 +291,8 @@ for (i = 0; i < n; i++) { \
 	int curbeg = cend - pos[i] - 1; \
 	if (curbeg >= 0 && curbeg < cterm) { \
 		int curwid = ren_cwid(chrs[i], pos[i]); \
+		if (cend - (pos[i] + curwid - 1) - 2 > cterm) \
+			break; \
 		for (j = 0; j < curwid; j++) \
 			off[cend - (pos[i] + j - 1) - 2] = i; \
 	} \
@@ -470,7 +474,7 @@ char *led_read(int *kmap, int c)
 /* read a line from the terminal */
 static char *led_line(char *pref, char *post, char *ai,
 		int ai_max, int *key, int *kmap,
-		char *insert)
+		char *insert, int orow)
 {
 	sbuf *sb;
 	int ai_len = strlen(ai), len;
@@ -593,9 +597,12 @@ static char *led_line(char *pref, char *post, char *ai,
 			if (ai_max) {
 				pac:;
 				int r = xrow-xtop+1;
+				if (sug)
+					goto pac_;
 				c = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb->s + c, sb->s_n - c, ROOT) == 1) {
 					sug = suggestsb->s;
+					pac_:
 					syn_setft("/ac");
 					for (int left = 0; r < xrows; r++) {
 						led_render(sug, r, left, left+xcols);
@@ -606,8 +613,8 @@ static char *led_line(char *pref, char *post, char *ai,
 					syn_setft(ex_filetype);
 					r++;
 				}
-				for (; r < xrows && lbuf_len(xb) > r+xtop; r++)
-					led_print(lbuf_get(xb, r+xtop), r);
+				for (; r < xrows && lbuf_get(xb, (r-(xrow-orow))+xtop); r++)
+					led_print(lbuf_get(xb, (r-(xrow-orow))+xtop), r);
 				term_pos(xrow - xtop, 0);
 				continue;
 			}
@@ -681,7 +688,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 {
 	int key;
 	td_set(+2);
-	char *s = led_line(pref, post, "", 0, &key, kmap, insert);
+	char *s = led_line(pref, post, "", 0, &key, kmap, insert, 0);
 	td_set(xotd);
 	if (key == '\n') {
 		temp_write(0, s);
@@ -704,12 +711,12 @@ char *led_input(char *pref, char *post, int *kmap, int row)
 	sbuf *sb; sbuf_make(sb, 256)
 	char ai[128];
 	int ai_max = sizeof(ai) - 1;
-	int n = 0, key; 
+	int n = 0, key, orow = xrow;
 	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
 		ai[n++] = *pref++;
 	ai[n] = '\0';
 	while (1) {
-		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, NULL);
+		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, NULL, orow);
 		int ln_sp = 0;	/* number of initial spaces in ln */
 		while (ln[ln_sp] == ' ' || ln[ln_sp] == '\t')
 			ln_sp++;
