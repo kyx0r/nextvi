@@ -24,6 +24,10 @@ Some keybinds specified by posix were not implemented in
 original neatvi, nextvi might use them for some features
 below.
 
+BEGIN
+======
+Be sure to read Q1 in the FAQ section of this file before doing anything else.
+
 FORK CHANGES
 ------------
 1. Added unindent keybind: ^w
@@ -340,21 +344,78 @@ the same causality as running C code directly.
 
 PIKEVM:
 -------
-A complete rewrite of nextvi's regex engine for the purposes to get
+A complete rewrite of nextvi's regex engine for the purposes of getting
 rid of backtracking and severe performance and memory constrants is
-now complete. See FAQ below.
+now complete. See Q8 in the FAQ below.
 
 FAQ:
 ----
-Q: Why nextvi instead of vim?
-A: I prefer customization in source code, Vim is considered harmful.
 
-Q: Why not distribute as patches, like on suckless.org?
-A: It's hard to maintain. Simply put, there are too many changes
-to keep track of.
+Q1: What's the best way to learn vi/nextvi?
+A1: First ensure you know basic movements hjkl this would suffice.
+Start reading vi.c don't worry about the rest this readme until later.
+Running ./vi vi.c use / and n N keybinds for search and look for
+switch cases. The keybinds are encoded to be intuitive. Once you
+find some case that looks like a keybind read the code, if you
+don't understand try to reproduce the keybind to better understand
+what the code does. You have to do this, if you ommit this step you will
+never be able to realize the full potential that the software provides.
+I don't think you want to live in the dark using this software for
+the next 10 years only to find that for example ^p in insert mode exists
+and is very useful. If you can't figure how to use the keybind at least
+you would know at the back of your mind that there is something there,
+realization will come later. It's better to skim look though the switch
+cases than to never even open it. Come back to this readme regularly
+as it documents more advanced behavior. If you are not willing to go
+and do this basic task, you better go back to using that VSshittium
+or whatever. I presume you are here because you want BOLD(control). In the
+end you always want control, and this is what nextvi is all about.
 
-Q: General philosophy?
-A: User is programmer, hacker culture.
+Q2: What does it mean when I call feature X a macro?
+A2: It's the kind of shortcut that does not change the core
+functionality, but rather reuses the core functionality.
+Usually macro features are implemented in 1 or a few lines
+of code. Notably, they tend to use function term_push(), but
+it's not required. Because they are macros they may run suboptimally
+or not handle every possible edge case. When calling a macro feature
+from another macro, the results are pushed back, which means
+the macro feature will always execute last, see (69.).
+These features are considered a macro: 5. 6. 16. 17. 18. 19. 20.
+21. 26. 27. 34. 46. 50. 65.
+
+Q3: Keybind with CTRL does not work?
+A3: vi is reading ASCII codes sent by the terminal. Depending on the
+keyboard, the ASCII code could be another key combination. It was
+reported that "^^" (Ctrl + ^) can be achieved on some system with "^6".
+If something doesn't work, have a look at the layout of an
+american/british keyboard and try to reproduce the keybind as if you
+have an american/british keyboard.
+
+Q4: Why nextvi instead of vim?
+A4: I prefer customization in source code, Vim is considered harmful.
+
+Q5: Why not distribute as patches, like on suckless.org?
+A5: It's hard to maintain. Simply put, there are too many changes
+to keep track of if compared to original neatvi.
+
+Q6: Why are keybinds encoded as pure switch cases instead of
+more suckless.org style keybind function table dispatch?
+A6: Because we want small efficient code that is easy to write.
+In nextvi many keybinds interoperate so that they can do multiple
+tasks at various conditions. Use of goto is encouraged, it is
+simply impossible to achieve this behavior in a sensible way otherwise.
+Suckless code style philosophy crumples when requirements are as
+complex as what vi needs to be able to do. In other words, it depends -
+but if the standard of C provides means to implementing things
+cleaner and faster you should use the smallest form factor, and not
+listen to the incompetent idiots all around the internet. In retrospect,
+it may be harder to find the implementation itself, but once you do
+there is nothing else hidden from you. The result is unabstracted
+program control flow that can be easily read and modified reducing the
+risks of unforseen side effects.
+
+Q7: General philosophy?
+A7: User is programmer, hacker culture.
 In most texteditors, flexibility is a minor or irrelevant design goal.
 Nextvi is designed to be flexible where the editor adapts to the user
 needs. This flexibility is achieved by heavily chaining basic
@@ -400,16 +461,8 @@ the "reasonableness", bigger means better. As the smartest programmer once
 said that figuring out this "reasonableness" is the hardest question in
 programming.
 
-Q: Keybind with CTRL does not work?
-A: vi is reading ASCII codes sent by the terminal. Depending on the
-keyboard, the ASCII code could be another key combination. It was
-reported that "^^" (Ctrl + ^) can be achieved on some system with "^6".
-If something doesn't work, have a look at the layout of an
-american/british keyboard and try to reproduce the keybind as if you
-have an american/british keyboard.
-
-Q: Something, something - pikevm
-A: Pikevm guarantees that all regular expressions are computed in
+Q8: Something, something - pikevm
+A8: Pikevm guarantees that all regular expressions are computed in
 constant space and O(n+k) time where n is size of the string and
 k is some constant for the complexity of the regex ie. number of
 state transitions. It is important to understand that it does not
@@ -453,18 +506,6 @@ is physically possible on a table based matcher. Can't cheat
 mother nature, and if you dare to try she's unforgiving at best.
 Supplementary reading by Russ Cox:
 https://swtch.com/~rsc/regexp/regexp1.html
-
-Q: What does it mean when I call feature X a macro?
-A: It's the kind of shortcut that does not change the core
-functionality, but rather reuses the core functionality.
-Usually macro features are implemented in 1 or a few lines
-of code. Notably, they tend to use function term_push(), but
-it's not required. Because they are macros they may run suboptimally
-or not handle every possible edge case. When calling a macro feature
-from another macro, the results are pushed back, which means
-the macro feature will always execute last, see (69.).
-These features are considered a macro: 5. 6. 16. 17. 18. 19. 20.
-21. 26. 27. 34. 46. 50. 65.
 
 CONFIGURATION
 -------------
