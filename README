@@ -19,8 +19,8 @@ it's own name. The project has taken lot of different design
 decisions and tends to favor clean implementations over 100%
 adhering to POSIX like neatvi does. Thus the name "next", to
 signify that we are thinking outside the box. The notable
-changes that I am refering to (see below): 56, 60, 61.
-Some keybinds specified by posix were not implemented in
+changes that I am referring to (see below): 56, 60, 61.
+Some keybinds specified by POSIX were not implemented in
 original neatvi, nextvi might use them for some features
 below.
 
@@ -36,7 +36,7 @@ FORK CHANGES
 It's important to understand that this has a caveat, if
 input comes too fast, for example a paste from terminal and
 the sequence has "kj" in it, insert mode will be cancelled mid way
-and paste will be wrong. Luckly this almost never happens because
+and paste will be wrong. Luckily this almost never happens because
 such letter combination is extremely rare.
 Can be disabled via :se noqe
 3. Added linenumbers, keybind: # (relative numbers are placed after indent)
@@ -119,13 +119,13 @@ screen based on cursor position. Useful for when studying source code.
 file. Then you can press ^n to cycle though the options, results are based on
 the contents of the file and the closest match to what you typed. Use ^r to
 cycle in reverse.
-By default it will use big regex like [^;...]* to sort out all the punctuation
+By default, it will use big regex like [^;...]* to sort out all the punctuation
 chars from words and build a database of words. But in order to take full
 advantage out of the completion system, you can change this regex at runtime
 using new ex command "ac". For example say we don't want word completion
 and we want entire line completion instead, run :ac .*
 If the regex rule allows inclusion of nonalphanumeric or punctuation characters
-you won't be able to retreive the string like it works with words by default.
+you won't be able to retrieve the string like it works with words by default.
 Automatically determening the position from which completion starts
 inside insert sbuf is ambiguous. More fine tuned control is needed and
 can be achieved using new keybind ^z in insert. Use ^z before you type out 
@@ -162,7 +162,7 @@ will also work everywhere in vi.
  - (32.), (12.) and ex "cd" affect how/what dirs & files are listed.
  - Added key that opens the file based on text from the cursor.
    keybind: ^i or TAB
- - when inside /fm/ presing keybind \ again will dynamically update the
+ - when inside /fm/ using keybind \ again will dynamically update the
    directory info at current working dir.
 34. Added key to save current file keybind: ^k
 35. The new special character "/" for ft in conf.c now signifies that
@@ -176,7 +176,7 @@ redraw the screen automatically.
 keybind: ^b or vb (from normal) will open the buffer with all previous
 commands move the cursor to wanted command and exit buffer with qq
 will copy the command into prompt. You can also use this
-when half way through some command and need to access normal
+when half-way through some command and need to access normal
 mode to edit the command more efficiently. The filename is named 
 "/hist/" so that it can't be written to file with ^k (by accident).
 If you want to save history to file use :w yourfilename
@@ -186,7 +186,7 @@ prompt like so :%s/.../ keybind: vr (see also 49.)
 default is set to 8. use :se tbs=N  (N is number of spaces)
 40. Added partial support for multiline block regex, for
 example C multiline comments syntax highlight.
-41. Made lowest row to not waste any space when there
+41. Made the lowest row to not waste any space when there
 are no messages and actually display the row.
 42. Search via '/' or '?' automatically centers and redraws
 screen. This partly because change in 41 makes the bottom row
@@ -198,8 +198,8 @@ the result to be with your eyes.
 44. Added a key to perform relative word replacements keybind: vt
 Specify vi_arg1 and the word(s) under the cursor will be placed into prompt,
 for example :.,.+5s/\<word\>/ where 5 is vi_arg1. (see also 49.)
-45. Improved single line performance by roughly 3x. Syntax hilight
-will not render anything beyond the terminal colums.
+45. Improved single line performance by roughly 3x. Syntax highlight
+will not render anything beyond the terminal columns.
 If there is a line in the file that has say 200K characters, the
 performance will not degrade. This was extremely difficult to get
 right and took me 3 weeks of refactors because we also have to
@@ -209,6 +209,7 @@ take into account:
 	3. Variable width tabulations that can change
 	throughout the line based on surroundings.
 	4. Reordering of characters.
+	5. Syntax highlight.
 See also PERFORMANCE section at the end of the file
 46. Added key to abandon insert discarding any changes keybind: ^x
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj
@@ -274,7 +275,7 @@ ex substitution command, properly counting number of groups in rset.
  - A single slash requires 2 slashes, and so on.
  - rset_make() requires for ( to be escaped if used inside [] brackets.
  - In ex prompt the only separator is "|" character and there is some
-   counter intuivite handling of escapes done that has to be explained.
+   counter intuitive handling of escapes done that has to be explained.
 	1: to use ex separator input "|"
 	2: to get "|" into the result string input = "\\|"
 	3: to get "\|" into the result string input = "\|"
@@ -286,7 +287,7 @@ ex substitution command, properly counting number of groups in rset.
    force a "4 slashes make one" rule. Imagine having to type "\\("
    to escape "(" instead of "\(" everywhere if we want to be consistent.
    The latter sucks, so instead we make this special case for ex prompt
-   that applies only to "|" and "\". In summary, just remeber what clauses
+   that applies only to "|" and "\". In summary, just remember what clauses
    (2:) and (3:) state, for cases where there are lots of slashes the
    rule is input minus 1 of the "\" equals the output string. Keep in mind
    that various ex functions, for example regex will consume extra slashes
@@ -294,14 +295,14 @@ ex substitution command, properly counting number of groups in rset.
    If we wanted to match string "\\|" input will be: "\\\\\\|"
    "\\\|" will get us "\\|" into regex, but the input
    needs 3 more slashes because +1 rule (5:) +2 rule 2 slashes make 1.
-   timeline: "\\\\\\|" -> rule(5:) "\\\\\|" -> rule(regex:2 = 1) "\\\|" =
+   Timeline: "\\\\\\|" -> rule(5:) "\\\\\|" -> rule(regex:2 = 1) "\\\|" =
    rule(regex:"\|" = "|") "\\|" = this is the literal we wanted to match!
 62. Added syntax highlighting continuation options. See the struct
 highlight in vi.h. The ^ anchor in the regular expression has an important
 property of being able to efficiently exclude some sub expression from
 being recomputed during the continuation. Take advantage of it when you
 can.
-63. New ex option "hlp", will highlight closest pair of symbols {([
+63. New ex option "hlp", will highlight the closest pair of symbols {([
 from the cursor, the same way % key works.
 Notes:
 This feature wasn't really supposed to be getting into nextvi
@@ -312,7 +313,7 @@ isn't any extra logic involved except change (29.). In no way would
 I ever call this implementation efficient or optimal, but at least
 it will run fast enough on most chips and is fully optional.
 64. Ex options "hll", "hlw", "hlp" and any others that may or may not
-be created in the future are fully customizeable in conf.c the same
+be created in the future are fully customizable in conf.c the same
 way you customize per ft highlighting. They must have highlight->func
 struct member set. If ft does not provide a spot in hl, the latter
 feature will not work on that ft, regardless of ex options being set.
@@ -339,13 +340,13 @@ any at all, greedy behavior opens up new use cases.
 69. New ex command "tp", when arg given immediately executes the macro defined
 by arg. It can run any vi normal command and execute insert statements.
 The advantage of tp over traditional macros is in the ability to bypass the
-macro que and run independently. In a way, macro executed by tp exersizes
+macro queue and run independently. In a way, macro executed by tp exercises
 the same causality as running C code directly.
 
 PIKEVM:
 -------
 A complete rewrite of nextvi's regex engine for the purposes of getting
-rid of backtracking and severe performance and memory constrants is
+rid of backtracking and severe performance and memory constraints is
 now complete. See Q8 in the FAQ below.
 
 FAQ:
@@ -358,13 +359,13 @@ Running ./vi vi.c use / and n N keybinds for search and look for
 switch cases. The keybinds are encoded to be intuitive. Once you
 find some case that looks like a keybind read the code, if you
 don't understand try to reproduce the keybind to better understand
-what the code does. You have to do this, if you ommit this step you will
+what the code does. You have to do this, if you omit this step you will
 never be able to realize the full potential that the software provides.
 I don't think you want to live in the dark using this software for
 the next 10 years only to find that for example ^p in insert mode exists
 and is very useful. If you can't figure how to use the keybind at least
 you would know at the back of your mind that there is something there,
-realization will come later. It's better to skim look though the switch
+realization will come later. It's better to skim look through the switch
 cases than to never even open it. Come back to this readme regularly
 as it documents more advanced behavior. If you are not willing to go
 and do this basic task, you better go back to using that VSshittium
@@ -412,11 +413,11 @@ listen to the incompetent idiots all around the internet. In retrospect,
 it may be harder to find the implementation itself, but once you do
 there is nothing else hidden from you. The result is unabstracted
 program control flow that can be easily read and modified reducing the
-risks of unforseen side effects.
+risks of unforeseen side effects.
 
 Q7: General philosophy?
 A7: User is programmer, hacker culture.
-In most texteditors, flexibility is a minor or irrelevant design goal.
+In most text editors, flexibility is a minor or irrelevant design goal.
 Nextvi is designed to be flexible where the editor adapts to the user
 needs. This flexibility is achieved by heavily chaining basic
 commands and allowing them to create new ones with completely
@@ -431,7 +432,7 @@ You should never find yourself in a situation where feature "a"
 is only really usable under certain conditions / enviroment
 and has a specific implementation which can never
 be used for anything else - this is bloat. Unfortunately I have
-not seen a single text editor who's goal is to not crap pile in as many
+not seen a single text editor whose goal is to not crap pile in as many
 features as possible, but to only address the core nature of text
 manipulation and its logistics. Adding 4 new scripting languages, 20 rust
 dependencies, making gpu accelerated gui, nesting 100s of small files in a 5
@@ -486,7 +487,7 @@ I found a bug with it where quested "?" nested groups compute
 wrong submatch results. To fix this problem, it would require
 to undo a lot of optimization work already done, basically
 going back to how slow Ali's implementation would be. The
-reason this was spoted so late was because this kind of
+reason this was spotted so late was because this kind of
 regex wasn't used before, so I never tested it. Other than
 that I think submatch extraction is correct on other cases.
 Pikevm does not have this bug, so it will be used as main
@@ -497,7 +498,7 @@ You can still find that code here (likely with no updates):
 https://github.com/kyx0r/nextvi/tree/dfa_dead
 As a downside, NFA simulation looses the DFA property of being
 able to quickly short circuit a match, as everything runs
-linearly and at constant speed, incuring match time overhead.
+linearly and at constant speed, incurring match time overhead.
 Well optimized DFA engine can outperform pikevm, but that
 is rather rare as they got problems of their own. For example
 as mentioned in PERFORMANCE section below, dfa_dead runs only
@@ -529,7 +530,7 @@ COMMANDS
 :ft [filetype]
   Without filetype, prints the current file type and
   reloads the highlight ft, makes it possible to reset
-  dynamic hilights created by options like "hlw".
+  dynamic highlights created by options like "hlw".
   When filetype is specified, sets the file type of the
   current ex buffer.
 
@@ -656,13 +657,13 @@ ORIGINAL NEATVI:
 232,844,791 (23.77%)  ???:re_rec [/root/neatvi/vi]
 194,719,965 (19.88%)  ???:brk_match [/root/neatvi/vi]
 /* brk_match is terrible, can be optimized down to a simple loop
-which is what was done in branch dfa_dead. Still recursion is
+which is what was done in branch dfa_dead. Still, recursion is
 utterly slow. For the curious reader, total cost of regex
 operations is 745,481,975. dfa_dead version of regex runs
 with total of 350,000,000 (including cost of extra 20+ alternations
 and extra backtracking patterns). If tested under the same default
 regex patterns of neatvi, the cost would be exactly 195,494,596.
-This is how much faster Ali's regex could of been if it was written
+This is how much faster Ali's regex could've been if it was written
 free of bullshit. To put in perspective, on raspberry pi 3b+ the
 difference between 195,494,596 and 745,481,975 refs is maxing 
 the core cpu usage at ~20% VS 100%++ . If you are running hardware
