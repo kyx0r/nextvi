@@ -354,7 +354,7 @@ FAQ:
 
 Q1: What's the best way to learn vi/nextvi?
 A1: First ensure you know basic movements hjkl this would suffice.
-Start reading vi.c don't worry about the rest this readme until later.
+Start reading vi.c don't worry about the rest of this readme until later.
 Running ./vi vi.c use / and n N keybinds for search and look for
 switch cases. The keybinds are encoded to be intuitive. Once you
 find some case that looks like a keybind read the code, if you
@@ -598,6 +598,14 @@ There is a dictionary file (assume vi.c), which we always want to have indexed
 at startup for autocomplete feature in 31. Use EXINIT variable:
 export EXINIT="e ./vi.c|tp i|u|bx 1|bx"
 The last bx commands delete the vi.c buffer.
+
+- Uppercase registers
+In vi uppercase registers append to the lowercase register instead of 
+overwriting the register completely. This is very useful, for example,
+use global and yank ex commands together:
+:g/searchterm/ya A
+Now we can use "ap and paste all the lines matched by the regex. Depending
+on the usecase simply :g/searchterm/ya or :g/searchterm/p may also be enough.
 
 OPTIONS
 -------
