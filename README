@@ -368,11 +368,10 @@ the next 10 years only to find that for example ^p in insert mode exists
 and is very useful. If you can't figure how to use the keybind at least
 you would know at the back of your mind that there is something there,
 realization will come later. It's better to skim look through the switch
-cases than to never even open it. Come back to this readme regularly
-as it documents more advanced behavior. If you are not willing to go
-and do this basic task, you better go back to using that VSshittium
-or whatever. I presume you are here because you want BOLD(control). In the
-end you always want control, and this is what nextvi is all about.
+cases than to never even open it. This isn't an excuse, but a deliberate 
+design goal, where the user reads the code in order to achieve the full 
+control he/she desires. Come back to this readme regularly as it documents 
+more advanced behavior.
 
 Q2: What does it mean when I call feature X a macro?
 A2: It's the kind of shortcut that does not change the core
@@ -410,10 +409,9 @@ simply impossible to achieve this behavior in a sensible way otherwise.
 Suckless code style philosophy crumples when requirements are as
 complex as what vi needs to be able to do. In other words, it depends -
 but if the standard of C provides means to implementing things
-cleaner and faster you should use the smallest form factor, and not
-listen to the incompetent idiots all around the internet. In retrospect,
-it may be harder to find the implementation itself, but once you do
-there is nothing else hidden from you. The result is unabstracted
+cleaner and faster you should use the smallest form factor possible.
+In retrospect, it may be harder to find the implementation itself, but once 
+you do there is nothing else hidden from you. The result is unabstracted
 program control flow that can be easily read and modified reducing the
 risks of unforeseen side effects.
 
@@ -440,19 +438,12 @@ manipulation and its logistics. Adding 4 new scripting languages, 20 rust
 dependencies, making gpu accelerated gui, nesting 100s of small files in a 5
 level deep directory structure, waiting 5 minutes for git clone, compiling for
 30 minutes, we've all seen it. NOBODY asked for that, yet they all do it, and
-most either don't care or remain ignorant. Does all this help users to better
-understand the software they use? Does this help users to be creative and
-learn to do things themselves instead of relying on sucky implementations,
-whence it's not even clear where they start or do they end? Developer might
-look smart, but the doctor was right - symptoms are of intergluteal cleft.
-"But they are developers they know better, right?" - False, they force you to
-eat their shit which you can't opt out of or change easily. Even worse, often
-they are incompetent to fix problems they created themselves. My goal is to
-learn from past mistakes/successes, optimizing for the best featureset
-effective yield ratio proven by time. Therefore, a lot more thought and
-consideration is to be put into every feature. It would be too difficult to
-define precise formula of "reasonableness", with simplification it comes down
-to a few of my rules in the order:
+most either don't care or remain ignorant.
+My goal is to learn from past mistakes/successes, optimizing for the best 
+featureset effective yield ratio proven by time. Therefore, a lot more 
+thought and consideration is to be put into every feature. It would be too 
+difficult to define precise formula of "reasonableness", with simplification 
+it comes down to a few of my rules in the order:
 	1. Number of cpu cycles taken * complexity of required result
 	2. How does the feature improve/affect other existing features
 	3. How does the feature address the main problem of the program,
@@ -674,7 +665,7 @@ with total of 350,000,000 (including cost of extra 20+ alternations
 and extra backtracking patterns). If tested under the same default
 regex patterns of neatvi, the cost would be exactly 195,494,596.
 This is how much faster Ali's regex could've been if it was written
-free of bullshit. To put in perspective, on raspberry pi 3b+ the
+to the upmost quality. To put in perspective, on raspberry pi 3b+ the
 difference between 195,494,596 and 745,481,975 refs is maxing 
 the core cpu usage at ~20% VS 100%++ . If you are running hardware
 from 2000s take a shot each time you wanna scroll up or down, as
