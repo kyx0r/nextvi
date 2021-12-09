@@ -342,6 +342,8 @@ by arg. It can run any vi normal command and execute insert statements.
 The advantage of tp over traditional macros is in the ability to bypass the
 macro queue and run independently. In a way, macro executed by tp exercises
 the same causality as running C code directly.
+70. Added key to list through the buffers. keybind: ^n
+vi_arg1 changes the direction of ^n.
 
 PIKEVM:
 -------

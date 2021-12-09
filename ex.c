@@ -68,14 +68,13 @@ buf->off = xoff; \
 buf->top = xtop; \
 buf->td = xtd; \
 
-static void bufs_switch(int idx)
+void bufs_switch(int idx)
 {
 	ex_pbuf = ex_buf;
 	ex_buf = &bufs[idx];
 	exbuf_save(ex_pbuf)
 	exbuf_load(ex_buf)
 }
-#define bufs_switchwft(idx) { bufs_switch(idx); syn_setft(ex_buf->ft); }
 
 static int bufs_open(char *path)
 {
@@ -322,14 +321,6 @@ static int ex_modifiedbuffer(char *msg)
 	if (msg)
 		ex_show(msg);
 	return 1;
-}
-
-void ec_bufferi(int *id)
-{
-	if (*id > xbufcur)
-		*id = 0;
-	if (*id < xbufcur)
-		bufs_switchwft(*id)
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)

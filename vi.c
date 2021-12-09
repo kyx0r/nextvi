@@ -57,9 +57,9 @@ static int vi_printed;			/* ex_print() calls since the last command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
+static int vi_cndir = 1;		/* ^n direction */
 static char *regs[256];			/* string registers */
 static int lnmode[256];
-static char *vi_curword(struct lbuf *lb, int row, int off, int n);
 
 static void reverse_in_place(char *str, int len)
 {
@@ -1354,11 +1354,12 @@ static void vc_status(void)
 {
 	int col = vi_off2col(xb, xrow, xoff);
 	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%c %d lines %d%% L%d C%d",
+		"\"%s\"%c %d lines %d%% L%d C%d B%ld",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
-		ren_cursor(lbuf_get(xb, xrow), col) + 1);
+		ren_cursor(lbuf_get(xb, xrow), col) + 1,
+		abs((int)(ex_buf - bufs)) > xbufcur ? -1 : ex_buf - bufs);
 }
 
 static void vc_charinfo(void)
@@ -1586,20 +1587,22 @@ void vi(int init)
 					xquit = 1;
 				vi_mod = 1;
 				break; }
+			case TK_CTL('n'):
+				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
+				vi_arg1 = ex_buf - bufs + vi_cndir;
 			case TK_CTL('_'): /* note: this is also ^7 per ascii */
-				vi_mod = 1;
-				if (vi_arg1)
+				if (vi_arg1 > 0)
 					goto switchbuf;
 				term_pos(xrows, led_pos(vi_msg, 0));
 				term_kill();
 				ex_command("b");
 				vi_arg1 = vi_digit();
-				if (vi_arg1 > -1) {
+				if (vi_arg1 > -1 && vi_arg1 < xbufcur) {
 					switchbuf:
-					ec_bufferi(&vi_arg1);
+					bufs_switchwft(vi_arg1 < xbufcur ? vi_arg1 : 0)
 					vc_status();
-					vi_mod = 1;
 				}
+				vi_mod = 1;
 				vi_printed = 0;
 				break;
 			case 'u':
