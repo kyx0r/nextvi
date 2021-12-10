@@ -591,18 +591,27 @@ There is a dictionary file (assume vi.c), which we always want to have indexed
 at startup for autocomplete feature in 31.
 export EXINIT="e ./vi.c|tp i|u|bx 1|bx"
 The last bx commands delete the vi.c buffer. u can be used to unmark vi.c
-as being modified in case you wanna keep it around as a buffer (remove bx
-commands if so).
+as being modified. (in case you want to keep it around as a buffer remove bx
+commands.)
 Example 2:
 Load your shell's history into vi's history buffer and adjust the data such
 that it is usable by appending ! at the beginning of command and escaping the "|"
 pipes the way ex prompt expects them (see 61.)
 export EXINIT="e /root/.ash_history|tp yG:p:%s/^/!\\\|%s/ \\| / \\\\\\\| /g
 qq|bx 1|bx|ft"
-CRITICAL - the new line inside the EXINIT string is literal, it's best to store
-the export command in a .sh file and set it using:
-$ . ./init.sh
-Otherwise this example will not work!!!
+Congratulations, vi has unofficially replaced your shell's frontend.
+Example 3:
+Setup some custom @@ macros in your favorite registers.
+export EXINIT="e|tp io{
+}kA|tp 1G|tp 2\"ayy"
+This macro gets loaded into register a, when @a is executed the macro will 
+create { and closing } below the cursor leaving cursor in insert mode in 
+between the braces. This is something you would commonly do in C like
+programming language.
+ - CRITICAL - the new line inside the EXINIT string is literal, it's best to 
+   store the export command in a .sh file and set it using:
+   $ . ./init.sh
+   Otherwise this examples 2 and 3 may not work!!!
 
 - Uppercase registers
 In vi uppercase registers append to the lowercase register instead of 
