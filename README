@@ -586,11 +586,23 @@ At the zenith of your vi/nextvi education you'll find that EXINIT can be
 used to achieve arbitrary level of customization. Using new ex command "tp"
 any sequence of vi/ex commands can be performed at startup. This is where
 real "groking vi" starts.
-Here's an example using this retcon (69.):
+Example 1:
 There is a dictionary file (assume vi.c), which we always want to have indexed 
-at startup for autocomplete feature in 31. Use EXINIT variable:
+at startup for autocomplete feature in 31.
 export EXINIT="e ./vi.c|tp i|u|bx 1|bx"
-The last bx commands delete the vi.c buffer.
+The last bx commands delete the vi.c buffer. u can be used to unmark vi.c
+as being modified in case you wanna keep it around as a buffer (remove bx
+commands if so).
+Example 2:
+Load your shell's history into vi's history buffer and adjust the data such
+that it is usable by appending ! at the beginning of command and escaping the "|"
+pipes the way ex prompt expects them (see 61.)
+export EXINIT="e /root/.ash_history|tp yG:p:%s/^/!\\\|%s/ \\| / \\\\\\\| /g
+qq|bx 1|bx|ft"
+CRITICAL - the new line inside the EXINIT string is literal, it's best to store
+the export command in a .sh file and set it using:
+$ . ./init.sh
+Otherwise this example will not work!!!
 
 - Uppercase registers
 In vi uppercase registers append to the lowercase register instead of 

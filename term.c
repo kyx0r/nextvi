@@ -149,7 +149,7 @@ char *term_cmd(int *n)
 int term_read(void)
 {
 	struct pollfd ufds[1];
-	int n, c;
+	int n;
 	if (ibuf_pos >= ibuf_cnt) {
 		ufds[0].fd = STDIN_FILENO;
 		ufds[0].events = POLLIN;
@@ -161,10 +161,9 @@ int term_read(void)
 		ibuf_cnt = n;
 		ibuf_pos = 0;
 	}
-	c = ibuf_pos < ibuf_cnt ? (unsigned char)ibuf[ibuf_pos++] : -1;
 	if (icmd_pos < sizeof(icmd))
-		icmd[icmd_pos++] = c;
-	return c;
+		icmd[icmd_pos++] = (unsigned char)ibuf[ibuf_pos];
+	return (unsigned char)ibuf[ibuf_pos++];
 }
 
 /* return a static string that changes text attributes to att */
