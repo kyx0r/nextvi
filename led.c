@@ -236,9 +236,9 @@ void led_bounds(sbuf *out, int *off, char **chrs, int cbeg, int cend)
 int pre = out->s_n; \
 sbuf_set(out, *chrs[o] == '\n' ? '\\' : '-', i - l) \
 if (ctx > 0 && *chrs[o] == '\t') \
-out->s[out->s_n-1] = '>'; \
+	out->s[out->s_n-1] = '>'; \
 else if (*chrs[o] == '\t') \
-out->s[pre] = '<'; \
+	out->s[pre] = '<'; \
 
 #define led_out(out, n) \
 { int l, att_old = 0, i = 0; \
@@ -250,7 +250,7 @@ while (i < cend) { \
 		att_new = att[o]; \
 		if (att_new != att_old) \
 			sbuf_str(out, term_att(att_new)) \
-		char *s = ren_translate(chrs[o], s0); \
+		char *s = ren_translate(chrs[o], s0, i, cend-1); \
 		if (s) \
 			sbuf_str(out, s) \
 		else if (uc_isprint(chrs[o])) { \

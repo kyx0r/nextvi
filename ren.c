@@ -226,24 +226,6 @@ int ren_next(char *s, int p, int dir)
 	return s && uc_chr(s, ren_off(s, p))[0] != '\n' ? p : -1;
 }
 
-static char *ren_placeholder(char *s)
-{
-	int c; uc_code(c, s)
-	for (int i = 0; i < placeholderslen; i++)
-		if (placeholders[i].cp == c)
-			return placeholders[i].d;
-	if (uc_acomb(c)) {
-		static char buf[16];
-		char cbuf[8] = ""; uc_len(c, s)
-		memcpy(cbuf, s, c);
-		sprintf(buf, "ـ%s", cbuf);
-		return buf;
-	}
-	if (uc_isbell(c))
-		return "�";
-	return NULL;
-}
-
 int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
@@ -255,10 +237,21 @@ int ren_cwid(char *s, int pos)
 	return uc_wid(c);
 }
 
-char *ren_translate(char *s, char *ln)
+char *ren_translate(char *s, char *ln, int pos, int end)
 {
-	char *p = ren_placeholder(s);
-	return p || !xshape ? p : uc_shape(ln, s);
+	int c; uc_code(c, s)
+	for (int i = 0; i < placeholderslen; i++)
+		if (placeholders[i].cp == c)
+			return placeholders[i].d;
+	if (uc_acomb(c)) {
+		static char buf[16];
+		uc_len(c, s)
+		sprintf(buf, "ـ%.*s", pos > end ? 0 : c, s);
+		return buf;
+	}
+	if (uc_isbell(c))
+		return "�";
+	return !xshape ? NULL : uc_shape(ln, s);
 }
 
 #define NFTS		20
