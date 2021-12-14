@@ -368,7 +368,18 @@ else if (spc == JMP) { \
 	goto rec##nn; \
 } \
 
-#define addthread(nn, list, listidx) \
+#define clistmatch(n)
+#define nlistmatch(n) \
+if (*npc == MATCH) \
+	for (i++; i < clistidx; i++) { \
+		npc = clist[i].pc; \
+		nsub = clist[i].sub; \
+		if (*npc == MATCH) \
+			goto matched##n; \
+		decref(nsub) \
+	} \
+
+#define addthread(n, nn, list, listidx) \
 si = 0; \
 rec##nn: \
 spc = *npc; \
@@ -381,6 +392,7 @@ if ((unsigned int)spc < WBEG) { \
 		nsub = subs[si]; \
 		goto rec##nn; \
 	} \
+	list##match(n) \
 	continue; \
 } \
 next##nn: \
@@ -468,6 +480,7 @@ for (;; sp = _sp) { \
 				deccont() \
 			npc += *(npc+2) * 2 + 3; \
 		} else if (spc == MATCH) { \
+			matched##n: \
 			nlist[nlistidx++].pc = &mcont; \
 			if (npc != &mcont) { \
 				if (matched) { \
@@ -487,9 +500,7 @@ for (;; sp = _sp) { \
 			goto _continue##n; \
 		} else \
 			npc++; \
-		if (*nlist[nlistidx-1].pc == MATCH) \
-			deccont() \
-		addthread(2##n, nlist, nlistidx) \
+		addthread(n, 2##n, nlist, nlistidx) \
 	} \
 	if (sp == _sp) \
 		break; \
@@ -499,7 +510,7 @@ for (;; sp = _sp) { \
 	s1->ref = 1; \
 	s1->sub[0] = _sp; \
 	npc = insts; nsub = s1; \
-	addthread(1##n, clist, clistidx) \
+	addthread(n, 1##n, clist, clistidx) \
 	_continue##n:; \
 } \
 _return(0) \
@@ -518,9 +529,8 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	rsub *subs[prog->splits];
 	char nsubs[rsubsize * (prog->len-prog->splits+14)];
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
-	rthread _clist[prog->len+1], _nlist[prog->len+1];
-	_clist[0].pc = insts, _nlist[0].pc = insts;
-	rthread *clist = _clist+1, *nlist = _nlist+1, *tmp;
+	rthread _clist[prog->len], _nlist[prog->len];
+	rthread *clist = _clist, *nlist = _nlist, *tmp;
 	flg = prog->flg | flg;
 	if (eol_ch)
 		utf8_length[eol_ch] = 0;
