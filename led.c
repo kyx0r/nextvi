@@ -478,8 +478,7 @@ static char *led_line(char *pref, char *post, char *ai,
 {
 	sbuf *sb;
 	int ai_len = strlen(ai), len;
-	int c, lnmode, i = 0;
-	int last_sug = 0, sug_pt = -1;
+	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	time_t quickexit = 0;
 	sbufn_make(sb, xcols)
@@ -649,14 +648,11 @@ static char *led_line(char *pref, char *post, char *ai,
 			term_clean();
 			continue;
 		case TK_CTL(']'):
-			c = sug_pt >= 0 ? sug_pt : len;
-			term_exec(sb->s + c, len - c,
-			term_push("v/", 2);, term_push("\nNkqq", 5);)
-			continue;
 		case TK_CTL('o'):
-			c = sug_pt >= 0 ? sug_pt : len;
-			term_exec(sb->s + c, len - c,
-			term_push("v/", 2);, term_push("\nnjqq", 5);)
+			len = sug_pt >= 0 ? sug_pt : len;
+			ex_krsset(sb->s + len, 1);
+			term_exec(c == TK_CTL('o') ? "nj" : "Nk", 2,
+				/*nop*/, term_push("qq", 3);)
 			continue;
 		case 'j':
 			if (xqexit &&

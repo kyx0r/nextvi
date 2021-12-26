@@ -390,7 +390,7 @@ or not handle every possible edge case. When calling a macro feature
 from another macro, the results are pushed back, which means
 the macro feature will always execute last, see (69.).
 These features are considered a macro: 5. 6. 16. 17. 18. 19. 20.
-21. 26. 27. 34. 46. 50. 65.
+21. 26. 27. 34. 46. 50. 65. 71.
 
 Q3: Keybind with CTRL does not work?
 A3: vi is reading ASCII codes sent by the terminal. Depending on the
