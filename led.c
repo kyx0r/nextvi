@@ -478,7 +478,8 @@ static char *led_line(char *pref, char *post, char *ai,
 {
 	sbuf *sb;
 	int ai_len = strlen(ai), len;
-	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
+	int c, lnmode, i = 0;
+	int last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	time_t quickexit = 0;
 	sbufn_make(sb, xcols)
@@ -647,15 +648,24 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('l'):
 			term_clean();
 			continue;
+		case TK_CTL(']'):
+			c = sug_pt >= 0 ? sug_pt : len;
+			term_exec(sb->s + c, len - c,
+			term_push("v/", 2);, term_push("\nNkqq", 5);)
+			continue;
+		case TK_CTL('o'):
+			c = sug_pt >= 0 ? sug_pt : len;
+			term_exec(sb->s + c, len - c,
+			term_push("v/", 2);, term_push("\nnjqq", 5);)
+			continue;
 		case 'j':
 			if (xqexit &&
 				(difftime(time(0), quickexit) * 1000) < 1000)
 			{
 				if (sb->s_n) {
-					i = led_lastchar(sb->s);
-					if (sb->s[i] != 'k')
+					if (sb->s[led_lastchar(sb->s)] != 'k')
 						goto _default;
-					sbuf_cut(sb, i)
+					sbuf_cut(sb, led_lastchar(sb->s))
 				}
 				c = TK_ESC;
 				goto leave;
@@ -666,13 +676,11 @@ static char *led_line(char *pref, char *post, char *ai,
 		default:
 _default:
 			if (c == '\n' || TK_INT(c))
-				break;
+				goto leave;
 			if ((cs = led_read(kmap, c)))
 				sbufn_str(sb, cs)
 		}
 		sug = NULL; _sug = NULL;
-		if (c == '\n' || TK_INT(c))
-			break;
 		if (ai_max && xpac)
 			goto pac;
 	}
@@ -711,7 +719,7 @@ char *led_input(char *pref, char *post, int *kmap, int row)
 	sbuf *sb; sbuf_make(sb, 256)
 	char ai[128];
 	int ai_max = sizeof(ai) - 1;
-	int n = 0, key, orow = xrow;
+	int n = 0, key, orow = row >= 0 ? row : xrow;
 	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
 		ai[n++] = *pref++;
 	ai[n] = '\0';

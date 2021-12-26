@@ -344,6 +344,13 @@ macro queue and run independently. In a way, macro executed by tp exercises
 the same causality as running C code directly.
 70. Added key to list through the buffers. keybind: ^n
 vi_arg1 changes the direction of ^n.
+71. Added keybinds ^o and ^] in insert mode to allow up and down scrolling
+and quick regex searches without exiting insert. Use ^z to set the mark
+where the regex begins. This feature is implemented using functionality
+provided by 69. and exists to prove and demonstrate that vi is to some
+extent REENTRANT as in single threaded recursion case, where operations
+can be safely executed in a separate instance. Still, a great amount of care
+and understanding is needed when making such complicated macros.
 
 PIKEVM:
 -------
@@ -590,9 +597,8 @@ Example 1:
 There is a dictionary file (assume vi.c), which we always want to have indexed 
 at startup for autocomplete feature in 31.
 export EXINIT="e ./vi.c|tp i|u|bx 1|bx"
-The last bx commands delete the vi.c buffer. u can be used to unmark vi.c
-as being modified. (in case you want to keep it around as a buffer remove bx
-commands.)
+The last "bx" commands delete the vi.c buffer. "u" can be used to unmark vi.c
+as being modified. To keep it around as a buffer remove the "bx" commands.
 Example 2:
 Load your shell's history into vi's history buffer and adjust the data such
 that it is usable by appending ! at the beginning of command and escaping the "|"

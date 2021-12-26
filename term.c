@@ -109,13 +109,8 @@ int term_cols(void)
 
 static char ibuf[4096];			/* input character buffer */
 static char icmd[4096];			/* read after the last term_cmd() */
-static unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
-static unsigned int icmd_pos;		/* icmd[] position */
-
-void term_clear()
-{
-	ibuf_cnt = 0;
-}
+unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
+unsigned int icmd_pos;			/* icmd[] position */
 
 /* read s before reading from the terminal */
 void term_push(char *s, unsigned int n)
@@ -123,19 +118,6 @@ void term_push(char *s, unsigned int n)
 	n = MIN(n, sizeof(ibuf) - ibuf_cnt);
 	memcpy(ibuf + ibuf_cnt, s, n);
 	ibuf_cnt += n;
-}
-
-void term_exec(char *s, unsigned int n)
-{
-	int pbuf_cnt = ibuf_cnt;
-	int pbuf_pos = ibuf_pos;
-	ibuf_pos = pbuf_cnt;
-	term_push(s, n);
-	term_push("qq", 3);
-	vi(0);
-	ibuf_cnt = pbuf_cnt;
-	ibuf_pos = pbuf_pos;
-	xquit = 0;
 }
 
 /* return a static buffer containing inputs read since the last term_cmd() */

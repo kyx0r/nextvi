@@ -1224,7 +1224,7 @@ static void vc_insert(int cmd)
 	char *ln = lbuf_get(xb, xrow);
 	int row, off;
 	char *rep;
-	int noto;
+	int cmdo;
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
 	else if (cmd == 'A')
@@ -1243,17 +1243,13 @@ static void vc_insert(int cmd)
 		off++;
 	if (ln && ln[0] == '\n')
 		off = 0;
-	noto = cmd != 'o' && cmd != 'O';
-	pref = ln && noto ? uc_sub(ln, 0, off) : vi_indents(ln);
-	post = ln && noto ? uc_sub(ln, off, -1) : uc_dup("\n");
-	if (!noto)
-		lbuf_edit(xb, "\n", row, row + noto);
-	vi_drawrm(row, row, !noto);
-	rep = vi_input(pref, post, row);
+	cmdo = cmd == 'o' || cmd == 'O';
+	pref = ln && !cmdo ? uc_sub(ln, 0, off) : vi_indents(ln);
+	post = ln && !cmdo ? uc_sub(ln, off, -1) : uc_dup("\n");
+	vi_drawrm(row, row, cmdo);
+	rep = vi_input(pref, post, row - cmdo);
 	if (*rep)
-		lbuf_edit(xb, rep, row, row + noto);
-	if (!noto)
-		lbuf_edit(xb, NULL, xrow + 1, xrow + 2);
+		lbuf_edit(xb, rep, row, row + !cmdo);
 	free(rep);
 	free(pref);
 	free(post);
@@ -1892,7 +1888,7 @@ void vi(int init)
 					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n')
 						term_push("080|gwbhKj", 10);
 					else
-						term_clear();
+						ibuf_cnt = 0;
 				else if (k == 'q')
 					vi_splitln(xrow, 80, 1);
 				else if (k == '~' || k == 'u' || k == 'U')

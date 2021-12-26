@@ -170,8 +170,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 					memcpy(&code[PC], &code[term], size*sizeof(int));
 				PC += size;
 			}
-			for (i = maxcnt-mincnt; i > 0; i--)
-			{
+			for (i = maxcnt-mincnt; i > 0; i--) {
 				EMIT(PC++, SPLIT);
 				EMIT(PC++, REL(PC, PC+((size+2)*i)));
 				if (code)
@@ -370,7 +369,7 @@ else if (spc == JMP) { \
 
 #define clistmatch(n)
 #define nlistmatch(n) \
-if (*npc == MATCH) \
+if (spc == MATCH) \
 	for (i++; i < clistidx; i++) { \
 		npc = clist[i].pc; \
 		nsub = clist[i].sub; \
@@ -563,28 +562,28 @@ void rset_free(rset *rs)
 rset *rset_make(int n, char **re, int flg)
 {
 	rset *rs = malloc(sizeof(*rs));
-	sbuf *sb; sbuf_make(sb, 1024);
+	sbuf *sb; sbuf_make(sb, 1024)
 	rs->grp = malloc((n + 1) * sizeof(rs->grp[0]));
 	rs->setgrpcnt = malloc((n + 1) * sizeof(rs->setgrpcnt[0]));
 	rs->grpcnt = 2;
 	rs->n = n;
-	sbuf_chr(sb, '(');
+	sbuf_chr(sb, '(')
 	for (int i = 0; i < n; i++) {
 		if (!re[i]) {
 			rs->grp[i] = -1;
 			continue;
 		}
 		if (sb->s_n > 1)
-			sbuf_chr(sb, '|');
-		sbuf_chr(sb, '(');
-		sbuf_str(sb, re[i]);
-		sbuf_chr(sb, ')');
+			sbuf_chr(sb, '|')
+		sbuf_chr(sb, '(')
+		sbuf_str(sb, re[i])
+		sbuf_chr(sb, ')')
 		rs->grp[i] = rs->grpcnt;
 		rs->setgrpcnt[i] = re_groupcount(re[i]);
 		rs->grpcnt += 1 + rs->setgrpcnt[i];
 	}
 	rs->grp[n] = rs->grpcnt;
-	sbufn_chr(sb, ')');
+	sbufn_chr(sb, ')')
 	int sz = re_sizecode(sb->s) * sizeof(int);
 	char *code = malloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
@@ -592,40 +591,38 @@ rset *rset_make(int n, char **re, int flg)
 		rset_free(rs);
 		rs = NULL;
 	}
-	sbuf_free(sb);
+	sbuf_free(sb)
 	return rs;
 }
 
 /* return the index of the matching regular expression or -1 if none matches */
 int rset_find(rset *rs, char *s, int n, int *grps, int flg)
 {
-	int i, grp, set = -1;
 	regmatch_t subs[rs->grpcnt+1];
 	regmatch_t *sub = subs+1;
 	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg))
 	{
 		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
-		for (i = rs->n-1; i >= 0; i--) {
+		for (int i = rs->n-1; i >= 0; i--) {
 			if (sub[rs->grp[i]].rm_eo)
 			{
-				set = i;
-				int sgrp = rs->setgrpcnt[set] + 1;
-				for (i = 0; i < n; i++) {
-					grp = rs->grp[set] + i;
-					if (i < sgrp && sub[grp].rm_eo
+				int grp, sgrp = rs->setgrpcnt[i] + 1;
+				for (int gi = 0; gi < n; gi++) {
+					grp = rs->grp[i] + gi;
+					if (gi < sgrp && sub[grp].rm_eo
 							&& sub[grp].rm_so) {
-						grps[i * 2] = sub[grp].rm_so - s;
-						grps[i * 2 + 1] = sub[grp].rm_eo - s;
+						grps[gi * 2] = sub[grp].rm_so - s;
+						grps[gi * 2 + 1] = sub[grp].rm_eo - s;
 					} else {
-						grps[i * 2 + 0] = -1;
-						grps[i * 2 + 1] = -1;
+						grps[gi * 2] = -1;
+						grps[gi * 2 + 1] = -1;
 					}
 				}
-				break;
+				return i;
 			}
 		}
 	}
-	return set;
+	return -1;
 }
 
 /* read a regular expression enclosed in a delimiter */
