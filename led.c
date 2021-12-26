@@ -648,11 +648,14 @@ static char *led_line(char *pref, char *post, char *ai,
 			term_clean();
 			continue;
 		case TK_CTL(']'):
-		case TK_CTL('o'):
+		case TK_CTL('\\'):
 			len = sug_pt >= 0 ? sug_pt : len;
 			ex_krsset(sb->s + len, 1);
-			term_exec(c == TK_CTL('o') ? "nj" : "Nk", 2,
+			term_exec(c == TK_CTL('\\') ? "nj" : "Nk", 2,
 				/*nop*/, term_push("qq", 3);)
+			continue;
+		case TK_CTL('o'):
+			term_exec(":", 1, /*nop*/, /*nop*/)
 			continue;
 		case 'j':
 			if (xqexit &&

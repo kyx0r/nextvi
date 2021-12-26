@@ -143,7 +143,7 @@ to out clear the completion db.
 Running ex command "ac" with no argument will reset back to the default
 word filtering regex. You can find it's string in led.c as a reference.
 Using ^b from insert mode will display all possible autocomplete options.
-Added new ex command "pac". When enabled the autocomplete options will
+Added new ex option "pac". When enabled the autocomplete options will
 be automatically displayed.
 32. Added ex command "inc" which sets the path filter using regex. For
 example we want to get only files in submodule directory that end
@@ -344,13 +344,15 @@ macro queue and run independently. In a way, macro executed by tp exercises
 the same causality as running C code directly.
 70. Added key to list through the buffers. keybind: ^n
 vi_arg1 changes the direction of ^n.
-71. Added keybinds ^o and ^] in insert mode to allow up and down scrolling
+71. Added keybinds ^\ and ^] in insert mode to allow up and down scrolling
 and quick regex searches without exiting insert. Use ^z to set the mark
-where the regex begins. This feature is implemented using functionality
-provided by 69. and exists to prove and demonstrate that vi is to some
-extent REENTRANT as in single threaded recursion case, where operations
-can be safely executed in a separate instance. Still, a great amount of care
-and understanding is needed when making such complicated macros.
+where the regex begins. For reasons unspecified, keybind ^o allows access to 
+a secondary ex prompt or new vi instance.
+This feature is implemented using functionality provided by 69. and exists to 
+prove and demonstrate that vi is to some extent REENTRANT as in single 
+threaded recursion case, where operations can be safely executed in a 
+separate instance. Still, a great amount of care and understanding is needed 
+when making such complicated macros.
 
 PIKEVM:
 -------
