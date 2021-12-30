@@ -242,6 +242,12 @@ char *xgetenv(char **q)
 char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 {
 	static char *sh[] = {"$SHELL", "sh", NULL};
+	struct pollfd fds[3];
+	sbuf *sb;
+	char buf[512];
+	int ifd = -1, ofd = -1;
+	int slen = iproc ? strlen(ibuf) : 0;
+	int nw = 0;
 	char *argv[4+xish];
 	argv[0] = xgetenv(sh);
 	if (xish)
@@ -249,13 +255,6 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	argv[1+xish] = "-c";
 	argv[2+xish] = cmd;
 	argv[3+xish] = NULL;
-
-	struct pollfd fds[3];
-	sbuf *sb;
-	char buf[512];
-	int ifd = -1, ofd = -1;
-	int slen = iproc ? strlen(ibuf) : 0;
-	int nw = 0;
 	int pid = cmd_make(argv, iproc ? &ifd : NULL, oproc ? &ofd : NULL);
 	if (pid <= 0)
 		return NULL;
@@ -277,16 +276,20 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 			int ret = read(fds[0].fd, buf, sizeof(buf));
 			if (ret > 0 && oproc)
 				sbuf_mem(sb, buf, ret)
-			if (ret <= 0)
+			if (ret <= 0) {
 				close(fds[0].fd);
+				fds[0].fd = -1;
+			}
 			continue;
 		}
 		if (fds[1].revents & POLLOUT) {
 			int ret = write(fds[1].fd, ibuf + nw, slen - nw);
 			if (ret > 0)
 				nw += ret;
-			if (ret <= 0 || nw == slen)
+			if (ret <= 0 || nw == slen) {
 				close(fds[1].fd);
+				fds[1].fd = -1;
+			}
 			continue;
 		}
 		if (fds[2].revents & POLLIN) {
@@ -296,17 +299,19 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 				if ((unsigned char) buf[i] == TK_CTL('c'))
 					kill(pid, SIGINT);
 		}
-		if (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL))
+		if (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+			close(fds[0].fd);
 			fds[0].fd = -1;
-		if (fds[1].revents & (POLLERR | POLLHUP | POLLNVAL))
+		}
+		if (fds[1].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+			close(fds[1].fd);
 			fds[1].fd = -1;
+		}
 		if (fds[2].revents & (POLLERR | POLLHUP | POLLNVAL))
 			fds[2].fd = -1;
 	}
-	if (ifd >= 0)
-		close(ifd);
-	if (ifd >= 0)
-		close(ofd);
+	close(fds[0].fd);
+	close(fds[1].fd);
 	waitpid(pid, NULL, 0);
 	signal(SIGTTOU, SIG_IGN);
 	tcsetpgrp(STDIN_FILENO, getpid());
