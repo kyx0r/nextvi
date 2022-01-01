@@ -486,6 +486,30 @@ static int vi_motionln(int *row, int cmd)
 	int c = vi_read();
 	int mark, mark_row, mark_off;
 	switch (c) {
+	case '\033':	/* Arrow keys */
+		c = vi_read();
+		if (c == '[') {
+			c = vi_read();
+			switch (c) {
+			case 'A':	/* ↑ */
+				*row = MAX(*row - cnt, 0);
+				c = 'k';
+				break;
+			case 'B':	/* ↓ */
+				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
+				c = 'j';
+				break;
+			default:	/* Not a line motion so we put back all the arrow characters */
+				vi_back(c);
+				vi_back('[');
+				vi_back('\033');
+				return 0;
+			}
+		} else {	/* Not a 033[X command so we put back the characters in the buffer */
+			vi_back(c);
+			vi_back('\033');
+		}
+		break;
 	case '\n':
 	case '+':
 		*row = MIN(*row + cnt, lbuf_len(xb) - 1);
@@ -754,6 +778,29 @@ static int vi_motion(int *row, int *off)
 	}
 	mv = vi_read();
 	switch (mv) {
+	case '\033':	/* Arrow keys */
+		mv = vi_read();
+		if (mv == '[') {
+			mv = vi_read();
+			switch (mv) {
+			case 'D':    /* ← */
+				dir = -dir;
+			case 'C':    /* → */
+				for (i = 0; i < cnt; i++)
+					if (vi_nextcol(xb, dir, row, off))
+						break;
+				break;
+			default:	/* Not a motion managed by this function so we put back all the arrow characters */
+				vi_back(mv);
+				vi_back('[');
+				vi_back('\033');
+				return 0;
+			}
+		} else {	/* Not a 033[X command so we put back the characters in the buffer */
+			vi_back(mv);
+			vi_back('\033');
+		}
+		break;
 	case ',':
 		cnt = -cnt;
 	case ';':
