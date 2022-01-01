@@ -318,6 +318,7 @@ prove and demonstrate that vi is to some extent REENTRANT as in single
 threaded recursion case, where operations can be safely executed in a
 separate instance. Still, a great amount of care and understanding is needed
 when making such complicated macros.
+72. The arrow keys can be used as an alternative to hjkl for motion.
 
 FAQ:
 ----
@@ -345,10 +346,10 @@ LOC:
 | 644 regex.c|
 | 590 lbuf.c |
 | 1151 ex.c  |
-| 2123 vi.c  |
+| 2170 vi.c  |
 | 776 led.c  |
 | 414 ren.c  |
-| 6905 total |
+| 6952 total |
 --------------
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
