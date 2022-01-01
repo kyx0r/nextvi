@@ -578,7 +578,7 @@ char *vi_regget(int c, int *ln)
 	return regs[c];
 }
 
-static void vi_regputraw(int c, char *s, int ln)
+static void vi_regputraw(int c, const char *s, int ln)
 {
 	char *pre = isupper(c) && regs[tolower(c)] ? regs[tolower(c)] : "";
 	char *buf = malloc(strlen(pre) + strlen(s) + 1);
@@ -589,7 +589,7 @@ static void vi_regputraw(int c, char *s, int ln)
 	lnmode[tolower(c)] = ln;
 }
 
-void vi_regput(int c, char *s, int ln)
+void vi_regput(int c, const char *s, int ln)
 {
 	int i, i_ln;
 	char *i_s;
@@ -1355,7 +1355,7 @@ static void vc_status(void)
 		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1,
-		abs((int)(ex_buf - bufs)) > xbufcur ? -1 : ex_buf - bufs);
+		abs((int)(ex_buf - bufs)) > xbufcur ? (long)-1 : ex_buf - bufs);
 }
 
 static void vc_charinfo(void)

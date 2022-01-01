@@ -41,7 +41,7 @@ bright colors
 */
 
 struct highlight hls[] = {
-	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to grab '\n' too */
+	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 	/* "/" is default hl, must have at least 1 entry for fallback */
 	{"/", NULL, {14 | SYN_BD}, {1}, 0, 2},  /* <-- optional, used by hll if set */
 	/* optional, used by hlp if set */

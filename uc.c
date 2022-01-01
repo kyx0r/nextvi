@@ -112,7 +112,7 @@ char *uc_sub(char *s, int beg, int end)
 	return r;
 }
 
-char *uc_dup(char *s)
+char *uc_dup(const char *s)
 {
 	char *r = malloc(strlen(s) + 1);
 	return r ? strcpy(r, s) : NULL;

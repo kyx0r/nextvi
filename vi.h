@@ -69,7 +69,7 @@ sb->s_n += len; \
 #define sbuf_free(sb) { free(sb->s); free(sb); }
 #define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
 #define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
-#define sbuf_str(sb, s) { char *p = s; while(*p) sbuf_chr(sb, *p++) }
+#define sbuf_str(sb, s) { const char *p = s; while(*p) sbuf_chr(sb, *p++) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that NULL terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
@@ -197,7 +197,7 @@ extern unsigned char utf8_length[256];
 /* the unicode codepoint of the given utf-8 character */
 #define uc_code(dst, s) \
 dst = (unsigned char)s[0]; \
-if (dst < 192){} \
+if (dst < 192); \
 else if (dst < 224) \
 	dst = ((dst & 0x1f) << 6) | (s[1] & 0x3f); \
 else if (dst < 240) \
@@ -213,7 +213,7 @@ int uc_slen(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
 char *uc_sub(char *s, int beg, int end);
-char *uc_dup(char *s);
+char *uc_dup(const char *s);
 int uc_isspace(char *s);
 int uc_isprint(char *s);
 int uc_isdigit(char *s);
@@ -310,7 +310,7 @@ char *temp_get(int i, int row);
 void temp_pos(int i, int row, int off, int top);
 void ex(void);
 int ec_setdir(char *loc, char *cmd, char *arg);
-void ex_command(char *cmd);
+void ex_command(const char *cmd);
 char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);
@@ -319,7 +319,7 @@ void ex_bufpostfix(int i);
 void ex_done(void);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
-int ex_edit(char *path);
+int ex_edit(const char *path);
 void ec_bufferi(int id);
 void bufs_switch(int idx);
 #define bufs_switchwft(idx) { bufs_switch(idx); syn_setft(ex_buf->ft); }
@@ -380,7 +380,7 @@ char *conf_digraph(int c1, int c2);
 
 /* vi.c */
 char *vi_regget(int c, int *lnmode);
-void vi_regput(int c, char *s, int lnmode);
+void vi_regput(int c, const char *s, int lnmode);
 /* file system */
 void dir_calc(char *cur_dir);
 #define mdir_calc(path) { char buf[4096]; strcpy(buf, path); dir_calc(buf); }

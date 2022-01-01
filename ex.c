@@ -34,7 +34,7 @@ static int xkwddir;		/* the last search direction */
 static int xgdep;		/* global command recursion depth */
 static struct buf tempbufs[2];	/* temporary buffers, for internal use */
 
-static int bufs_find(char *path)
+static int bufs_find(const char *path)
 {
 	for (int i = 0; i < xbufcur; i++)
 		if (!strcmp(bufs[i].path, path))
@@ -76,12 +76,12 @@ void bufs_switch(int idx)
 	exbuf_load(ex_buf)
 }
 
-static int bufs_open(char *path)
+static int bufs_open(const char *path)
 {
 	int i = xbufcur;
 	if (i <= xbufsmax - 1)
 		xbufcur++;
-	else 
+	else
 		bufs_free(--i);
 	bufs[i].path = uc_dup(path);
 	bufs[i].lb = lbuf_make();
@@ -365,7 +365,7 @@ if (fd >= 0) { \
 	close(fd); \
 } \
 
-int ex_edit(char *path)
+int ex_edit(const char *path)
 {
 	int fd;
 	if (path[0] == '.' && path[1] == '/')
@@ -425,7 +425,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 		len = *(int*)((char*)fslink+pos) + sizeof(int);
 		pos += len;
 		len -= sizeof(int)+2;
-		for (i = len; i > 0 && path[i] != '/'; i--){}
+		for (i = len; i > 0 && path[i] != '/'; i--);
 		if (!i)
 			return 0;
 		if (strstr(&path[i+1], arg)) {
@@ -801,7 +801,7 @@ static int ec_cmap(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static int ex_exec(char *ln);
+static int ex_exec(const char *ln);
 
 static int ec_glob(char *loc, char *cmd, char *arg)
 {
@@ -810,7 +810,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	char *pat, *s = arg;
 	int i;
 	if (!loc[0] && !xgdep)
-		strcpy(loc, "%");
+		loc = "%";
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	not = strchr(cmd, '!') || cmd[0] == 'v';
@@ -1019,7 +1019,7 @@ static struct excmd {
 	{"", ec_null},
 };
 
-static int ex_idx(char *cmd)
+static int ex_idx(const char *cmd)
 {
 	for (int i = 0; i < LEN(excmds); i++)
 		if (!strcmp(excmds[i].name, cmd))
@@ -1028,7 +1028,7 @@ static int ex_idx(char *cmd)
 }
 
 /* read ex command addresses */
-static char *ex_loc(char *src, char *loc)
+static const char *ex_loc(const char *src, char *loc)
 {
 	while (*src == ':' || *src == ' ' || *src == '\t')
 		src++;
@@ -1053,7 +1053,7 @@ static char *ex_loc(char *src, char *loc)
 }
 
 /* read ex command name */
-static char *ex_cmd(char *src, char *cmd)
+static const char *ex_cmd(const char *src, char *cmd)
 {
 	char *cmd0 = cmd;
 	while (*src == ' ' || *src == '\t')
@@ -1068,7 +1068,7 @@ static char *ex_cmd(char *src, char *cmd)
 }
 
 /* read ex command argument for excmd command */
-static char *ex_arg(char *src, char *dst)
+static const char *ex_arg(const char *src, char *dst)
 {
 	while (*src == ' ' || *src == '\t')
 		src++;
@@ -1083,7 +1083,7 @@ static char *ex_arg(char *src, char *dst)
 }
 
 /* execute a single ex command */
-static int ex_exec(char *ln)
+static int ex_exec(const char *ln)
 {
 	char loc[EXLEN], cmd[EXLEN], arg[EXLEN];
 	int ret = 0;
@@ -1104,7 +1104,7 @@ static int ex_exec(char *ln)
 }
 
 /* execute a single ex command */
-void ex_command(char *ln)
+void ex_command(const char *ln)
 {
 	ex_exec(ln);
 	lbuf_modified(xb);
