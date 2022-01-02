@@ -505,9 +505,8 @@ static int vi_motionln(int *row, int cmd)
 				vi_back('\033');
 				return 0;
 			}
-		} else {	/* Not a 033[X command so we put back the characters in the buffer */
-			vi_back(c);
-			vi_back('\033');
+		} else { /* Not an arrow sequence so we abbort */
+			return 0;
 		}
 		break;
 	case '\n':
@@ -790,15 +789,11 @@ static int vi_motion(int *row, int *off)
 					if (vi_nextcol(xb, dir, row, off))
 						break;
 				break;
-			default:	/* Not a motion managed by this function so we put back all the arrow characters */
-				vi_back(mv);
-				vi_back('[');
-				vi_back('\033');
+			default:	/* Not a motion managed by this function so we abbort */
 				return 0;
 			}
-		} else {	/* Not a 033[X command so we put back the characters in the buffer */
-			vi_back(mv);
-			vi_back('\033');
+		} else {	/* Not a 033[X command so we abbort */
+			return 0;
 		}
 		break;
 	case ',':

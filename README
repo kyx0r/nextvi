@@ -346,10 +346,10 @@ LOC:
 | 644 regex.c|
 | 590 lbuf.c |
 | 1151 ex.c  |
-| 2170 vi.c  |
+| 2165 vi.c  |
 | 776 led.c  |
 | 414 ren.c  |
-| 6952 total |
+| 6947 total |
 --------------
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
