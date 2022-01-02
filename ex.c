@@ -1137,8 +1137,13 @@ int ex_init(char **files)
 	ex_buf = bufs;
 	if (ec_edit("", "e!", arg))
 		return 1;
-	if (getenv("EXINIT"))
-		ex_command(getenv("EXINIT"));
+	if (getenv("EXINIT")) {
+		const char* const_exinit = getenv("EXINIT");
+		char* used_exinit = malloc(sizeof(char) * strlen(const_exinit));
+		strcpy(used_exinit, const_exinit);
+		ex_command(used_exinit);
+		free(used_exinit);
+	}
 	return 0;
 }
 

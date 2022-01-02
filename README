@@ -344,11 +344,11 @@ LOC:
 | 296 conf.c |
 | 644 regex.c|
 | 590 lbuf.c |
-| 1151 ex.c  |
+| 1156 ex.c  |
 | 2123 vi.c  |
 | 776 led.c  |
 | 414 ren.c  |
-| 6905 total |
+| 6910 total |
 --------------
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
