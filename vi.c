@@ -292,7 +292,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 }
 
 /* read an ex input line */
-char *ex_read(char *msg)
+char *ex_read(const char *msg)
 {
 	sbuf *sb;
 	int c;

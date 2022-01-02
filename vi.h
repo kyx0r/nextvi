@@ -275,7 +275,7 @@ char *xgetenv(char* q[]);
 #define TK_ESC		(TK_CTL('['))
 
 /* led.c line-oriented input and output */
-char *led_prompt(char *pref, char *post, char *insert, int *kmap);
+char *led_prompt(const char *pref, char *post, char *insert, int *kmap);
 char *led_input(char *pref, char *post, int *kmap, int row);
 void led_render(char *s0, int row, int cbeg, int cend);
 #define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
@@ -309,9 +309,9 @@ char *temp_curstr(int i, int sub);
 char *temp_get(int i, int row);
 void temp_pos(int i, int row, int off, int top);
 void ex(void);
-int ec_setdir(char *loc, char *cmd, char *arg);
+int ec_setdir(const char *loc, char *cmd, char *arg);
 void ex_command(const char *cmd);
-char *ex_read(char *msg);
+char *ex_read(const char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);
 int ex_init(char **files);

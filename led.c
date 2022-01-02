@@ -397,7 +397,7 @@ static int led_lastword(char *s)
 	return r - s;
 }
 
-static void led_printparts(char *ai, char *pref, char *main,
+static void led_printparts(char *ai, const char *pref, char *main,
 		char *post, int kmap)
 {
 	sbuf *ln;
@@ -472,7 +472,7 @@ char *led_read(int *kmap, int c)
 }
 
 /* read a line from the terminal */
-static char *led_line(char *pref, char *post, char *ai,
+static char *led_line(const char *pref, char *post, char *ai,
 		int ai_max, int *key, int *kmap,
 		char *insert, int orow)
 {
@@ -690,7 +690,7 @@ leave:
 }
 
 /* read an ex command */
-char *led_prompt(char *pref, char *post, char *insert,
+char *led_prompt(const char *pref, char *post, char *insert,
 		int *kmap)
 {
 	int key;
