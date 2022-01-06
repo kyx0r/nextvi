@@ -275,7 +275,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	if (res < 0) return res;
 	/* If unparsed chars left */
 	if (*re) return RE_SYNTAX_ERROR;
-	int icnt = 0, scnt = SPLIT + 1;
+	int icnt = 0, scnt = SPLIT;
 	for (int i = 0; i < prog->unilen; i++)
 		switch (prog->insts[i]) {
 		case CLASS:
@@ -316,11 +316,10 @@ else \
 #define onclist(nn)
 #define onnlist(nn) \
 if (sdense[spc] < sparsesz) \
-	if (sdense[sdense[spc]] == (unsigned int)spc) \
+	if (sdense[sdense[spc] * 2] == (unsigned int)spc) \
 		deccheck(nn) \
 sdense[spc] = sparsesz; \
-sdense[sparsesz] = spc; \
-sparsesz += 2; \
+sdense[sparsesz++ * 2] = spc; \
 
 #define decref(csub) \
 if (--csub->ref == 0) { \
@@ -385,13 +384,13 @@ spc = *npc; \
 if ((unsigned int)spc < WBEG) { \
 	list[listidx].sub = nsub; \
 	list[listidx++].pc = npc; \
+	list##match(n) \
 	rec_check##nn: \
 	if (si) { \
 		npc = pcs[--si]; \
 		nsub = subs[si]; \
 		goto rec##nn; \
 	} \
-	list##match(n) \
 	continue; \
 } \
 next##nn: \
@@ -445,7 +444,7 @@ clistidx = nlistidx; \
 for (;; sp = _sp) { \
 	uc_len(i, sp) uc_code(c, sp) cpn \
 	_sp = sp+i;\
-	nlistidx = 0, sparsesz = SPLIT; \
+	nlistidx = 0, sparsesz = 0; \
 	for (i = 0; i < clistidx; i++) { \
 		npc = clist[i].pc; \
 		nsub = clist[i].sub; \

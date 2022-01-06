@@ -41,9 +41,9 @@
 #include "term.c"
 #include "uc.c"
 
-int vi_lnnum;		/* line numbers */
 int vi_hidch;		/* show hidden chars */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
+static int vi_lnnum;	/* line numbers */
 static int vi_mod;	/* screen should be redrawn:
 			(1: whole screen, -1: whole screen not updating vi_col, 2: current line) */
 static char *vi_word = "\0eEwW";	/* line word navigation */
@@ -169,6 +169,7 @@ static void vi_drawrow(int row)
 				tmp[i] = ' ';
 		if (tmp[noff] == ' ')
 			tmp[noff] = *vi_word;
+		rstate->ren_laststr = NULL;
 		switch (*vi_word)
 		{
 		case 'e':

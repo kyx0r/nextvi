@@ -15,14 +15,14 @@ int xtd = +1;			/* current text direction */
 int xotd;			/* old text direction */
 int xshape = 1;			/* perform letter shaping */
 int xorder = 1;			/* change the order of characters */
-int xkmap = 0;			/* the current keymap */
+int xkmap;			/* the current keymap */
 int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
 int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
 int xgrp = 2;			/* regex search group */
-int xpac = 0;			/* print autocomplete options */
-int xbufcur = 0;		/* number of active buffers */
+int xpac;			/* print autocomplete options */
+int xbufcur;			/* number of active buffers */
 static int xbufsmax = 10;	/* number of buffers */
 struct buf *bufs;		/* main buffers */
 struct buf *ex_buf;		/* current buffer */
