@@ -327,8 +327,14 @@ if (--csub->ref == 0) { \
 	freesub = csub; \
 } \
 
-#define deccheck(nn) \
-{ decref(nsub) goto rec_check##nn; } \
+#define rec_check(nn) \
+if (si) { \
+	npc = pcs[--si]; \
+	nsub = subs[si]; \
+	goto rec##nn; \
+} \
+
+#define deccheck(nn) { decref(nsub) rec_check(nn) continue; } \
 
 #define fastrec(nn, list, listidx) \
 nsub->ref++; \
@@ -378,19 +384,13 @@ if (spc == MATCH) \
 	} \
 
 #define addthread(n, nn, list, listidx) \
-si = 0; \
 rec##nn: \
 spc = *npc; \
 if ((unsigned int)spc < WBEG) { \
 	list[listidx].sub = nsub; \
 	list[listidx++].pc = npc; \
+	rec_check(nn) \
 	list##match(n) \
-	rec_check##nn: \
-	if (si) { \
-		npc = pcs[--si]; \
-		nsub = subs[si]; \
-		goto rec##nn; \
-	} \
 	continue; \
 } \
 next##nn: \
@@ -519,8 +519,8 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 		return 0;
 	const char *sp = s, *_sp = s;
 	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
-	int si, i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
-	int clistidx = 0, nlistidx, spc, mcont = MATCH;
+	int i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
+	int si = 0, clistidx = 0, nlistidx, spc, mcont = MATCH;
 	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	int *pcs[prog->splits];
 	unsigned int sdense[prog->splits * 2], sparsesz;
