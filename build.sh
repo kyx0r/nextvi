@@ -27,6 +27,13 @@ build() {
 	run "$CC" "vi.c" $CFLAGS -o vi
 }
 
+pgobuild() {
+	run "$CC" "vi.c" $CFLAGS -fprofile-generate=. -o vi
+	echo "qq" | ./vi -v ./vi.c >/dev/null
+	run "$CC" "vi.c" $CFLAGS -fprofile-use=. -o vi
+	rm *.gcda
+}
+
 if [ "$#" -gt 0 ]; then
 	"$@"
 else

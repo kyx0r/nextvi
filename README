@@ -342,10 +342,10 @@ LOC:
 | 579 uc.c   |
 | 332 term.c |
 | 296 conf.c |
-| 644 regex.c|
+| 643 regex.c|
 | 590 lbuf.c |
 | 1151 ex.c  |
-| 2123 vi.c  |
+| 2124 vi.c  |
 | 776 led.c  |
 | 414 ren.c  |
 | 6905 total |
@@ -618,6 +618,10 @@ Stress test:
 3. Capture the results with cachegrind
 4. To find out what these values mean see:
 https://valgrind.org/docs/manual/cg-manual.html
+5. To create the most optimal exe, enable PGO optimizations by compling via
+./build.sh pgobuild which can lead to a significant performance boost on some 
+application specific tasks. Feel free to adjust build.sh and the sample data
+on which it's being trained on, though default probably already good enough.
 
 NEATVI (5e1f787eec332dcdf9f3608c0745551d5de72ad4):
 --------------------------------------------------------------------------------
