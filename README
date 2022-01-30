@@ -136,9 +136,13 @@ word filtering regex. You can find it's string in led.c as a reference.
 Using ^b from insert mode will display all possible autocomplete options.
 Added new ex option "pac". When enabled the autocomplete options will
 be automatically displayed.
-32. Added ex command "inc" which sets the path filter using regex. For
-example we want to get only files in submodule directory that end
-with .c extension, use: :inc submodule.*\.c$
+32. Added ex command "inc" which sets the path filter using regex.
+Example 1:
+We want to get only files in submodule directory that end with .c extension:
+:inc submodule.*\.c$
+Example 2:
+Exclude the .git folder filled with useless clutter.
+:inc (^[^&&.git]+[^\/]+$)\\|(<optional branch for exceptions here>)
 Running "inc" without an arg will disable all filters.
 33. Added file manager keybind: \
 Commands listed below under (33.) will work everywhere in vi.
