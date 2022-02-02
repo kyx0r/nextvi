@@ -8,3 +8,6 @@ Apply: patch -p1 < name.patch
 +------------------------+-----------------------------------------------------+
 | arrowkeys_normal.patch | Adds arrows keys support in normal mode.            |
 +------------------------+-----------------------------------------------------+
+| longbuf.patch          | Overcome 2GB buffer size limitations. Fix all warns |
+|                        | Will be able to read very large files.              |
++------------------------+-----------------------------------------------------+

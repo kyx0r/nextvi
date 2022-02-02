@@ -1,0 +1,76 @@
+diff --git a/lbuf.c b/lbuf.c
+index 798be60..d8799b1 100644
+--- a/lbuf.c
++++ b/lbuf.c
+@@ -213,9 +213,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
+ 	sbuf *sb; sbuf_make(sb, 1000000)
+ 	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
+ 		if (sb->s_n + nr >= sb->s_sz) {
+-			int newsz = NEXTSZ((unsigned int)sb->s_sz, (unsigned int)sb->s_sz + 1);
+-			if (newsz < 0)
+-				break; /* can't read files > ~2GB */
++			int newsz = NEXTSZ(sb->s_sz, sb->s_sz + 1);
+ 			sb->s_n += nr;
+ 			sbuf_extend(sb, newsz)
+ 		} else
+diff --git a/led.c b/led.c
+index e5932ff..dda50f7 100644
+--- a/led.c
++++ b/led.c
+@@ -544,7 +544,7 @@ static char *led_line(char *pref, char *post, char *ai,
+ 				continue;
+ 			if (!sug)
+ 				sug = suggestsb->s;
+-			if (suggestsb->s_n == sug - suggestsb->s)
++			if (suggestsb->s_n == (u64)(sug - suggestsb->s))
+ 				sug--;
+ 			for (c = 0; sug != suggestsb->s; sug--) {
+ 				if (!*sug) {
+@@ -571,7 +571,7 @@ static char *led_line(char *pref, char *post, char *ai,
+ 				continue;
+ 			last_sug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
+ 			if (_sug) {
+-				if (suggestsb->s_n == sug - suggestsb->s)
++				if (suggestsb->s_n == (u64)(sug - suggestsb->s))
+ 					continue;
+ 				redo_suggest:
+ 				if (!(_sug = strchr(sug, '\n'))) {
+diff --git a/vi.c b/vi.c
+index 29c2524..5139388 100644
+--- a/vi.c
++++ b/vi.c
+@@ -25,6 +25,7 @@
+ #include <dirent.h>
+ #include <signal.h>
+ #include <unistd.h>
++#include <stdint.h>
+ #include <time.h>
+ #include <poll.h>
+ #include <termios.h>
+diff --git a/vi.h b/vi.h
+index a246d1b..ba593cb 100644
+--- a/vi.h
++++ b/vi.h
+@@ -30,10 +30,11 @@ void vi(int init);
+ #define SBUFSZ		128
+ #define ALIGN(n, a)	(((n) + (a) - 1) & ~((a) - 1))
+ #define NEXTSZ(o, r)	ALIGN(MAX((o) * 2, (o) + (r)), SBUFSZ)
++typedef uint64_t u64;
+ typedef struct sbuf {
+ 	char *s;	/* allocated buffer */
+-	int s_n;	/* length of the string stored in s[] */
+-	int s_sz;	/* size of memory allocated for s[] */
++	u64 s_n;	/* length of the string stored in s[] */
++	u64 s_sz;	/* size of memory allocated for s[] */
+ } sbuf;
+ 
+ #define sbuf_extend(sb, newsz) \
+@@ -61,7 +62,7 @@ typedef struct sbuf {
+ } \
+ 
+ #define sbuf_(sb, x, len, func) \
+-if (sb->s_n + len >= sb->s_sz) \
++if ((u64)(sb->s_n + len) >= sb->s_sz) \
+ 	sbuf_extend(sb, NEXTSZ(sb->s_sz, len + 1)) \
+ mem##func(sb->s + sb->s_n, x, len); \
+ sb->s_n += len; \
