@@ -466,6 +466,12 @@ use global and yank ex commands together:
 Now we can use "ap and paste all the lines matched by the regex. Depending
 on the usecase simply :g/searchterm/ya or :g/searchterm/p may also be enough.
 
+PATCHES
+-------
+New functionality can be obtained through optional patches provided in the 
+patches branch. If you have a meaningful contribution and would love to be
+made public the patch can be submitted via email or github pull request.
+
 FAQ:
 ----
 Q1: What's the best way to learn vi/nextvi?
@@ -494,11 +500,11 @@ LOC:
 | 296  conf.c  | hl/ft/td config     |
 | 643  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
-| 1151 ex.c    | ex options/commands |
+| 1149 ex.c    | ex options/commands |
 | 2124 vi.c    | normal mode/general |
 | 776  led.c   | insert mode/output  |
 | 414  ren.c   | positioning/syntax  |
-| 6905 total   | wc -l *.c           |
+| 6903 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
