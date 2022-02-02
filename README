@@ -11,3 +11,8 @@ Apply: patch -p1 < name.patch
 | longbuf.patch          | Overcome 2GB buffer size limitations. Fix all warns |
 |                        | Will be able to read very large files.              |
 +------------------------+-----------------------------------------------------+
+| threaded_search.patch  | Multithreaded version of lbuf_search(). Adjust the  |
+|                        | number of threads in use and buffer stepping in     |
+|                        | lbuf.c Ensure that your system supports posix       |
+|                        | threads, aka libpthread                             |
++------------------------+-----------------------------------------------------+
