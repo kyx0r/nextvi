@@ -9,7 +9,7 @@ index 798be60..d8799b1 100644
 -			int newsz = NEXTSZ((unsigned int)sb->s_sz, (unsigned int)sb->s_sz + 1);
 -			if (newsz < 0)
 -				break; /* can't read files > ~2GB */
-+			int newsz = NEXTSZ(sb->s_sz, sb->s_sz + 1);
++			u64 newsz = NEXTSZ(sb->s_sz, sb->s_sz + 1);
  			sb->s_n += nr;
  			sbuf_extend(sb, newsz)
  		} else
