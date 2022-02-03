@@ -11,10 +11,10 @@ index 0fab531..832aec6 100755
  
  OS="$(uname)"
 diff --git a/lbuf.c b/lbuf.c
-index 798be60..a207e74 100644
+index 798be60..e38778e 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -419,35 +419,98 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -419,35 +419,96 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -87,6 +87,7 @@ index 798be60..a207e74 100644
 +	int ln = lbuf_len(lb);
 +	int thread_step = ln / NUM_THREADS; /* number of lines assigned per thread */
 +	int step = 0, i = 0;
++	int rval = dir > 0 ? ln + 1 : -1;
 +	for (i = 0; i < NUM_THREADS; i++) {
 +		if (*r + step > ln || *r + step * dir < 0)
 +			break;
@@ -101,15 +102,12 @@ index 798be60..a207e74 100644
 +		else
 +			data[i].ln_n = MIN(rs[i] + thread_step, ln);
 +		os[i] = i ? 0 : *o;
-+		//p("rs: %d ln_n: %d\n", rs[i], data[i].ln_n);
 +		data[i].o = &os[i];
 +		data[i].len = &ls[i];
 +		pthread_create(&threads[i], NULL, lsearch, (void*) &data[i]);
 +	}
-+	for (i--, step = i; i >= 0; i--)
++	for (i--, step = i; i >= 0; i--) {
 +		pthread_join(threads[i], NULL);
-+	int rval = dir > 0 ? ln+1 : -1;
-+	for (i = step; i >= 0; i--) {
 +		if (data[i].ln_n < 0) {
 +			if (dir > 0)
 +				rval = MIN(rval, *data[i].r);
