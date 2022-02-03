@@ -11,10 +11,10 @@ index 0fab531..832aec6 100755
  
  OS="$(uname)"
 diff --git a/lbuf.c b/lbuf.c
-index 798be60..0b6adb7 100644
+index 798be60..a207e74 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -419,35 +419,85 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -419,35 +419,98 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -79,34 +79,47 @@ index 798be60..0b6adb7 100644
 +int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
 +{
 +	#define NUM_THREADS 4
-+	#define THREAD_STEP 5 /* number of lines assigned per thread */
 +	pthread_t threads[NUM_THREADS];
 +	struct lsparams data[NUM_THREADS];
 +	int rs[NUM_THREADS];
 +	int os[NUM_THREADS];
 +	int ls[NUM_THREADS];
 +	int ln = lbuf_len(lb);
-+	int step = 0;
-+	for (int i = 0; i < NUM_THREADS; i++) {
-+		if (*r + THREAD_STEP > ln)
++	int thread_step = ln / NUM_THREADS; /* number of lines assigned per thread */
++	int step = 0, i = 0;
++	for (i = 0; i < NUM_THREADS; i++) {
++		if (*r + step > ln || *r + step * dir < 0)
 +			break;
 +		data[i].lb = lb;
 +		data[i].re = re;
 +		data[i].dir = dir;
 +		rs[i] = *r + step * dir;
++		step += thread_step;
 +		data[i].r = &rs[i];
-+		data[i].ln_n = MIN(rs[i] + step, ln);
++		if (i == NUM_THREADS-1)
++			data[i].ln_n = ln;
++		else
++			data[i].ln_n = MIN(rs[i] + thread_step, ln);
 +		os[i] = i ? 0 : *o;
++		//p("rs: %d ln_n: %d\n", rs[i], data[i].ln_n);
 +		data[i].o = &os[i];
 +		data[i].len = &ls[i];
 +		pthread_create(&threads[i], NULL, lsearch, (void*) &data[i]);
-+		step += THREAD_STEP;
 +	}
-+	for (int i = 0; i < NUM_THREADS; i++)
++	for (i--, step = i; i >= 0; i--)
 +		pthread_join(threads[i], NULL);
-+	for (int i = 0; i < NUM_THREADS; i++) {
++	int rval = dir > 0 ? ln+1 : -1;
++	for (i = step; i >= 0; i--) {
 +		if (data[i].ln_n < 0) {
-+			*r = *data[i].r;
++			if (dir > 0)
++				rval = MIN(rval, *data[i].r);
++			else
++				rval = MAX(rval, *data[i].r);
++		}
++	}
++	for (i = step; i >= 0; i--) {
++		if (data[i].ln_n < 0 && rval == *data[i].r) {
++			*r = rval;
 +			*o = *data[i].o;
 +			*len = *data[i].len;
 +			return 0;
