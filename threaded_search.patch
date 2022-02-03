@@ -11,10 +11,10 @@ index 0fab531..832aec6 100755
  
  OS="$(uname)"
 diff --git a/lbuf.c b/lbuf.c
-index 798be60..e38778e 100644
+index 798be60..a47d6b7 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -419,35 +419,96 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -419,35 +419,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -80,6 +80,7 @@ index 798be60..e38778e 100644
 +{
 +	#define NUM_THREADS 4
 +	pthread_t threads[NUM_THREADS];
++	static unsigned char fake_ulen[256]; /* novelty: for fast thread termination */
 +	struct lsparams data[NUM_THREADS];
 +	int rs[NUM_THREADS];
 +	int os[NUM_THREADS];
@@ -87,7 +88,6 @@ index 798be60..e38778e 100644
 +	int ln = lbuf_len(lb);
 +	int thread_step = ln / NUM_THREADS; /* number of lines assigned per thread */
 +	int step = 0, i = 0;
-+	int rval = dir > 0 ? ln + 1 : -1;
 +	for (i = 0; i < NUM_THREADS; i++) {
 +		if (*r + step > ln || *r + step * dir < 0)
 +			break;
@@ -106,20 +106,19 @@ index 798be60..e38778e 100644
 +		data[i].len = &ls[i];
 +		pthread_create(&threads[i], NULL, lsearch, (void*) &data[i]);
 +	}
-+	for (i--, step = i; i >= 0; i--) {
++	for (step = i, i = 0; i < step; i++) {
 +		pthread_join(threads[i], NULL);
 +		if (data[i].ln_n < 0) {
-+			if (dir > 0)
-+				rval = MIN(rval, *data[i].r);
-+			else
-+				rval = MAX(rval, *data[i].r);
-+		}
-+	}
-+	for (i = step; i >= 0; i--) {
-+		if (data[i].ln_n < 0 && rval == *data[i].r) {
-+			*r = rval;
++			*r = *data[i].r;
 +			*o = *data[i].o;
 +			*len = *data[i].len;
++			for (int z = i+1; z < step; z++)
++				data[z].ln_n = -1;
++			/* force instant termination, regardless how long string is */
++			utf8_length = fake_ulen;
++			for (int z = i+1; z < step; z++)
++				pthread_join(threads[z], NULL);
++			utf8_length = _utf8_length;
 +			return 0;
 +		}
 +	}
@@ -127,6 +126,24 @@ index 798be60..e38778e 100644
  }
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
+diff --git a/uc.c b/uc.c
+index 1ecaad1..5a06d08 100644
+--- a/uc.c
++++ b/uc.c
+@@ -1,4 +1,4 @@
+-unsigned char utf8_length[256] = {
++unsigned char _utf8_length[256] = {
+ 	/*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+ 	/* 0 */ 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 	/* 1 */ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+@@ -17,6 +17,7 @@ unsigned char utf8_length[256] = {
+ 	/* E */ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+ 	/* F */ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
+ };
++unsigned char *utf8_length = _utf8_length;
+ 
+ /* the number of utf-8 characters in s */
+ int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
 index 29c2524..98cfa86 100644
 --- a/vi.c
@@ -139,3 +156,17 @@ index 29c2524..98cfa86 100644
  #include "vi.h"
  #include "conf.c"
  #include "ex.c"
+diff --git a/vi.h b/vi.h
+index a246d1b..112268d 100644
+--- a/vi.h
++++ b/vi.h
+@@ -191,7 +191,8 @@ void syn_init(void);
+ void syn_done(void);
+ 
+ /* uc.c utf-8 helper functions */
+-extern unsigned char utf8_length[256];
++extern unsigned char _utf8_length[256];
++extern unsigned char *utf8_length;
+ /* return the length of a utf-8 character */
+ #define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
+ /* the unicode codepoint of the given utf-8 character */
