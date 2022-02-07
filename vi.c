@@ -2109,9 +2109,10 @@ int main(int argc, char *argv[])
 			ex();
 		ex_done();
 	}
-	if (xled || xvis)
+	if (xvis) {
 		term_done();
-	term_clean();
+		term_clean();
+	}
 	vi_regdone();
 	syn_done();
 	dir_done();
