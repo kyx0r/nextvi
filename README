@@ -1,7 +1,7 @@
 NEXTVI PATCHES
 ==============
 Optional patches for Nextvi.
-Apply: patch -p1 < name.patch
+Apply: patch < name.patch
 
 +------------------------+-----------------------------------------------------+
 |         PATCH          |                     DESCRIPTION                     |
