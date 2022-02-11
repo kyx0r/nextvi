@@ -16,3 +16,10 @@ Apply: patch < name.patch
 |                        | lbuf.c Ensure that your system supports posix       |
 |                        | threads, aka libpthread                             |
 +------------------------+-----------------------------------------------------+
+| colors_lnum.patch      | Demonstrates the most simple way one could go about |
+|                        | customizing colors for linenumbers triggered by #   |
+|                        | keybind without breaking existing syntax highlights |
+|                        | on the c filetype. More complicated approach can be |
+|                        | to use syn_addhl() and a NULL pattern, however that |
+|                        | requires more modifications.                        |
++------------------------+-----------------------------------------------------+
