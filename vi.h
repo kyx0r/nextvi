@@ -83,7 +83,7 @@ sb->s_n += len; \
 
 /* regex.c regular expression sets */
 #define REG_ICASE	0x01
-#define REG_NEWLINE	0x02 /* Unlike posix, controls termination by '\n' */
+#define REG_NEWLINE	0x02	/* Unlike posix, controls termination by '\n' */
 #define REG_NOTBOL	0x04
 #define REG_NOTEOL	0x08
 typedef struct {
@@ -91,13 +91,14 @@ typedef struct {
 	char *rm_eo;
 } regmatch_t;
 typedef struct {
-	int unilen;
-	int len;
-	int sub;
-	int presub;
-	int splits;
-	int flg;
-	int insts[];
+	int unilen;	/* number of integers in insts */
+	int len;	/* number of atoms/instructions */
+	int sub;	/* interim val = save count; final val = nsubs size */
+	int presub;	/* interim val = save count; final val = 1 rsub size */
+	int splits;	/* number of split insts */
+	int sparsesz;	/* sdense size */
+	int flg;	/* stored flags */
+	int insts[];	/* re code */
 } rcode;
 /* regular expression set */
 typedef struct {
