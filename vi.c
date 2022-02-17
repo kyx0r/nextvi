@@ -1649,31 +1649,16 @@ void vi(int init)
 					ex_command(".s/->/\\./");
 					break;
 				case '.':
-					while (vi_arg1)
-					{
+					while (vi_arg1) {
 						term_push("j", 1);
 						term_push(rep_cmd, rep_len);
-						switch (rep_cmd[0])
-						{
-						case 'i':
-						case 'I':
-						case 'o':
-						case 'O':
-						case 'a':
-						case 'A':
-						case 's':
-						case 'S':
-						case 'c':
-						case 'C':
-							/*
-							go to the left to restore
+						if (strchr("iIoOaAsScC", rep_cmd[0])) {
+							/* go to the left to restore
 							previous position of what
-							was inserted.
-							*/
+							was inserted. */
 							term_push("0", 1);
 							if (noff)
 								vi_argcmd(noff, 'l');
-							break;
 						}
 						vi_arg1--;
 					}

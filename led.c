@@ -3,9 +3,9 @@
 typedef struct tern {
 	char word;
 	char type;
-	struct tern* l_child;
-	struct tern* r_child;
-	struct tern* m_child;
+	struct tern *l_child;
+	struct tern *r_child;
+	struct tern *m_child;
 } tern_t;
 static tern_t *ROOT = &(tern_t){.word= 'a'};
 static sbuf *suggestsb;
@@ -41,21 +41,21 @@ static tern_t *insert_node(const char *string, tern_t *node)
 static tern_t *find_node(const char *string, int l, tern_t *node)
 {
 	int i = 0;
-	tern_t *currentNode = node;
+	tern_t *cnode = node;
 	while (i < l) {
-		if (!currentNode)
+		if (!cnode)
 			break;
 		/* look to the left of word */
-		if (string[i] < currentNode->word)
-			currentNode = currentNode->l_child;
+		if (string[i] < cnode->word)
+			cnode = cnode->l_child;
 		/* look to the right of word */
-		else if (string[i] > currentNode->word)
-			currentNode = currentNode->r_child;
+		else if (string[i] > cnode->word)
+			cnode = cnode->r_child;
 		/* if out of characters, prefix ends on the current node. Now start search */
 		else if (i++ == l - 1)
-			return currentNode;
+			return cnode;
 		else
-			currentNode = currentNode->m_child;
+			cnode = cnode->m_child;
 	}
 	return NULL;
 }

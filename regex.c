@@ -253,10 +253,8 @@ int re_sizecode(const char *re)
 {
 	rcode dummyprog;
 	dummyprog.unilen = 4;
-
 	int res = _compilecode(&re, &dummyprog, 1, 0);
 	if (res < 0) return res;
-	/* If unparsed chars left */
 	if (*re)
 		return RE_SYNTAX_ERROR;
 	return dummyprog.unilen;
@@ -270,10 +268,8 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->presub = nsubs;
 	prog->splits = 0;
 	prog->flg = flags;
-
 	int res = _compilecode(&re, prog, 0, flags);
 	if (res < 0) return res;
-	/* If unparsed chars left */
 	if (*re) return RE_SYNTAX_ERROR;
 	int icnt = 0, scnt = SPLIT;
 	for (int i = 0; i < prog->unilen; i++)
@@ -300,8 +296,11 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->insts[prog->unilen++] = SAVE;
 	prog->insts[prog->unilen++] = prog->sub + 1;
 	prog->insts[prog->unilen++] = MATCH;
-	prog->splits = (scnt - SPLIT) / 2 + SPLIT;
-	prog->len = icnt+2;
+	prog->splits = (scnt - SPLIT) / 2;
+	prog->len = icnt + 2;
+	prog->presub = sizeof(rsub)+(sizeof(char*) * (nsubs + 1) * 2);
+	prog->sub = prog->presub * (prog->len - prog->splits + 4);
+	prog->sparsesz = (scnt - 2) * 2;
 	return RE_SUCCESS;
 }
 
@@ -518,17 +517,17 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	if (!*s)
 		return 0;
 	const char *sp = s, *_sp = s;
-	int rsubsize = sizeof(rsub)+(sizeof(char*)*nsubp);
-	int i, j, c, suboff = rsubsize, *npc, osubp = nsubp * sizeof(char*);
-	int si = 0, clistidx = 0, nlistidx, spc, mcont = MATCH;
+	int rsubsize = prog->presub, suboff = rsubsize;
+	int spc, i, j, c, *npc, osubp = nsubp * sizeof(char*);
+	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	int *pcs[prog->splits];
-	unsigned int sdense[prog->splits * 2], sparsesz;
 	rsub *subs[prog->splits];
-	char nsubs[rsubsize * (prog->len-prog->splits+14)];
+	unsigned int sdense[prog->sparsesz], sparsesz;
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
+	char nsubs[prog->sub];
 	flg = prog->flg | flg;
 	if (eol_ch)
 		utf8_length[eol_ch] = 0;
