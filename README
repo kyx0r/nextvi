@@ -374,8 +374,9 @@ the same causality as running C code directly.
 vi_arg1 changes the direction of ^n.
 71. Added keybinds ^\ and ^] in insert mode to allow up and down scrolling
 and quick regex searches without exiting insert. Use ^z to set the mark
-where the regex begins. For reasons unspecified, keybind ^o allows access to
-a secondary ex prompt or new vi instance.
+where the regex begins. keybind ^o allows access to a secondary ex prompt or 
+new vi instance so that it becomes possible to switch to vi from ex or postpone
+some operation, do something else and come back later.
 This feature is implemented using functionality provided by 69. and exists to
 prove and demonstrate that vi is to some extent REENTRANT as in single
 threaded recursion case, where operations can be safely executed in a
@@ -493,18 +494,18 @@ control he/she desires.
 LOC:
 +--------------+---------------------+
 | 569  kmap.h  | keymap translation  |
-| 421  vi.h    | definitions/aux     |
+| 422  vi.h    | definitions/aux     |
 +--------------+---------------------+
 | 579  uc.c    | UTF-8 support       |
 | 332  term.c  | low level IO        |
 | 296  conf.c  | hl/ft/td config     |
-| 643  regex.c | extended RE         |
+| 642  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
 | 1149 ex.c    | ex options/commands |
-| 2124 vi.c    | normal mode/general |
+| 2110 vi.c    | normal mode/general |
 | 776  led.c   | insert mode/output  |
 | 414  ren.c   | positioning/syntax  |
-| 6903 total   | wc -l *.c           |
+| 6888 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
