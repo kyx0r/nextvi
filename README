@@ -162,8 +162,8 @@ may take. keybind: ^v Pressing again will change the key mode, specifying
 any vi_arg1 will exit the mode. This is a major step up to how navigation
 works in vi, it makes it so much easier to use because now you can see where
 you are going. These special numbers and their colors can be customized
-through conf.c. For complexity reasons the feature does not work correctly
-if double width characters are present or text is set in reverse and reordered.
+through conf.c. As of the latest git version, the feature will work correctly
+even if there is bidi text, double width charaters and text reordering.
 29. Added ability to change highlight dynamically. (via syn_reloadft();)
 30. New ex option "hlw" which highlights every instance of word on the
 screen based on cursor position. Useful for when studying source code.
