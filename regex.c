@@ -298,9 +298,9 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->insts[prog->unilen++] = MATCH;
 	prog->splits = (scnt - SPLIT) / 2;
 	prog->len = icnt + 2;
-	prog->presub = sizeof(rsub)+(sizeof(char*) * (nsubs + 1) * 2);
+	prog->presub = sizeof(rsub) + (sizeof(char*) * (nsubs + 1) * 2);
 	prog->sub = prog->presub * (prog->len - prog->splits + 4);
-	prog->sparsesz = (scnt - 2) * 2;
+	prog->sparsesz = scnt;
 	return RE_SUCCESS;
 }
 

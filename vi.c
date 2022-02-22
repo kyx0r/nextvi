@@ -101,22 +101,19 @@ static void vi_drawmsg(void)
 	}
 }
 
-#define vi_drawwordnum(lbuf_word, skip, dir, tmp, nrow, noff) \
-{ int i = 0; \
-char snum[100]; \
-int _nrow = nrow; \
-int _noff = noff; \
-int l1 = ren_off(tmp, xleft); \
-int l2 = ren_off(tmp, xleft+xcols); \
-for (int k = _nrow; k == _nrow && _noff >= l1 && _noff <= l2; i++) \
+#define vi_drawwordnum(lbuf_word, skip, dir) \
+i = 0; \
+nrow = xrow; \
+noff = xoff; \
+for (int k = nrow; k == nrow; i++) \
 { \
-	if (tmp[_noff] == ' ') { \
-		c = itoa(i%10 ? i%10 : i, snum); \
-		tmp[_noff] = *snum; \
-	} \
-	if (lbuf_word(xb, skip, dir, &_nrow, &_noff)) \
+	itoa(i%10 ? i%10 : i, snum); \
+	l1 = ren_pos(c, noff) - xleft; \
+	if (l1 > xcols || l1 < 0 \
+		|| lbuf_word(xb, skip, dir, &nrow, &noff)) \
 		break; \
-} } \
+	tmp[l1] = *snum; \
+} \
 
 static void vi_drawrow(int row)
 {
@@ -161,38 +158,38 @@ static void vi_drawrow(int row)
 			led_print(s, row - xtop);
 			return;
 		}
-		l1 = strlen(c)+1;
-		char tmp[l1];
-		memcpy(tmp, c, l1);
-		for (i = 0; i < l1-1; i++)
-			if (tmp[i] != '\t' && tmp[i] != '\n')
-				tmp[i] = ' ';
-		if (tmp[noff] == ' ')
-			tmp[noff] = *vi_word;
-		rstate->ren_laststr = NULL;
+		char tmp[xcols+3];
+		char snum[100];
+		memset(tmp, ' ', xcols+1);
+		tmp[xcols+1] = '\n';
+		tmp[xcols+2] = '\0';
 		switch (*vi_word)
 		{
 		case 'e':
-			vi_drawwordnum(lbuf_wordend, 0, 1, tmp, nrow, noff)
-			vi_drawwordnum(lbuf_wordend, 0, -1, tmp, nrow, noff)
+			vi_drawwordnum(lbuf_wordend, 0, 1)
+			vi_drawwordnum(lbuf_wordend, 0, -1)
 			break;
 		case 'E':
-			vi_drawwordnum(lbuf_wordend, 1, 1, tmp, nrow, noff)
-			vi_drawwordnum(lbuf_wordend, 1, -1, tmp, nrow, noff)
+			vi_drawwordnum(lbuf_wordend, 1, 1)
+			vi_drawwordnum(lbuf_wordend, 1, -1)
 			break;
 		case 'w':
-			vi_drawwordnum(lbuf_wordbeg, 0, 1, tmp, nrow, noff)
+			vi_drawwordnum(lbuf_wordbeg, 0, 1)
 			break;
 		case 'W':
-			vi_drawwordnum(lbuf_wordbeg, 1, 1, tmp, nrow, noff)
+			vi_drawwordnum(lbuf_wordbeg, 1, 1)
 			break;
 		}
+		tmp[ren_pos(c, xoff) - xleft] = c[xoff] == '\t' ? ' ' : *vi_word;
+		l1 = xorder;
+		xorder = 0;
 		movedown = 1;
 		i = syn_blockhl;
 		syn_blockhl = 0;
 		syn_setft("/#");
-		led_print(tmp, row - xtop);
+		led_render(tmp, row - xtop, 0, xcols);
 		syn_setft(ex_filetype);
+		xorder = l1;
 		syn_blockhl = i;
 	} else if (!lnnum)
 		led_print(s, row - xtop);
