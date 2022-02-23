@@ -91,13 +91,11 @@ static void vi_drawmsg(void)
 {
 	if (vi_msg[0])
 	{
-		int oleft = xleft;
-		xleft = 0;
 		syn_blockhl = 0;
 		syn_setft("/-");
-		led_printmsg(vi_msg, xrows);
+		rstate->ren_laststr = NULL;
+		led_render(vi_msg, xrows, 0, xcols);
 		syn_setft(ex_filetype);
-		xleft = oleft;
 	}
 }
 
@@ -181,16 +179,16 @@ static void vi_drawrow(int row)
 			break;
 		}
 		tmp[ren_pos(c, xoff) - xleft] = c[xoff] == '\t' ? ' ' : *vi_word;
-		l1 = xorder;
-		xorder = 0;
+		preserve(int, xorder, 0)
+		preserve(int, syn_blockhl, 0)
+		preserve(int, xtd, dir_context(c) * 2)
 		movedown = 1;
-		i = syn_blockhl;
-		syn_blockhl = 0;
 		syn_setft("/#");
 		led_render(tmp, row - xtop, 0, xcols);
 		syn_setft(ex_filetype);
-		xorder = l1;
-		syn_blockhl = i;
+		restore(xorder)
+		restore(syn_blockhl)
+		restore(xtd)
 	} else if (!lnnum)
 		led_print(s, row - xtop);
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))

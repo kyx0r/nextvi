@@ -21,8 +21,6 @@ static int dir_reorder(char **chrs, int *ord, int end)
 {
 	int dir = dir_context(chrs[0]);
 	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
-	if (!rs)
-		return 0;
 	int beg = 0, end1 = end, r_beg, r_end, c_beg, c_end;
 	int subs[32], grp, found;
 	while (beg < end) {
