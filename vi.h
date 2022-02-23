@@ -18,6 +18,13 @@ files and thus is never static.
 	{FILE *f = fopen("file", "a");\
 	fprintf(f, s, ##__VA_ARGS__);\
 	fclose(f);}\
+/* ease up rediculous global stuffing */
+#define preserve(type, name, value) \
+type tmp##name = name; \
+name = value; \
+
+#define restore(name) \
+name = tmp##name; \
 
 /* utility funcs */
 int dstrlen(const char *s, char delim);
@@ -281,7 +288,6 @@ char *led_input(char *pref, char *post, int *kmap, int row);
 void led_render(char *s0, int row, int cbeg, int cend);
 #define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
 #define led_reprint(msg, row) { rstate->ren_laststr = NULL; led_print(msg, row); }
-void led_printmsg(char *s, int row);
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
@@ -396,7 +402,6 @@ extern int xquit;
 extern int xic;
 extern int xai;
 extern int xtd;
-extern int xotd;
 extern int xshape;
 extern int xorder;
 extern int xhl;

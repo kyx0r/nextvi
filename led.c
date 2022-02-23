@@ -267,13 +267,6 @@ while (i < cend) { \
 	att_old = att_new; \
 } sbufn_str(out, term_att(0)) } \
 
-/* set xtd and return its old value */
-static void td_set(int td)
-{
-	xotd = xtd;
-	xtd = td;
-}
-
 #define off_for()\
 for (i = 0; i < n; i++) { \
 	int curbeg = pos[i] - cbeg; \
@@ -324,7 +317,7 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		off_rev()
 		if (pos[n] > xcols || cbeg)
 		{
-			td_set(-2);
+			preserve(int, xtd, -2)
 			ren_save(1, cbeg);
 			sbuf_make(bsb, xcols)
 			cull_line(bsb, if (strchr(s0, '\n')) *strchr(s0, '\n') = ' ';)
@@ -333,7 +326,7 @@ void led_render(char *s0, int row, int cbeg, int cend)
 			cull_line(bound, /**/)
 			off_rev()
 			sbuf_free(bsb)
-			td_set(xotd);
+			restore(xtd)
 			/* s0 would be padded, this is only partially right for syn hl */
 		}
 	} else {
@@ -341,12 +334,11 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		if (pos[n] > xcols || cbeg)
 		{
 			ren_save(1, cbeg);
-			int xord = xorder;
-			xorder = 0;
+			preserve(int, xorder, 0)
 			sbuf_make(bound, xcols)
 			cull_line(bound, /**/)
 			off_for()
-			xorder = xord;
+			restore(xorder)
 		}
 	}
 	if (xhl)
@@ -367,14 +359,6 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		ren_save(0, 0);
 		sbuf_free(bound)
 	}
-}
-
-/* print a line on the screen; for ex messages */
-void led_printmsg(char *s, int row)
-{
-	td_set(+2);
-	led_reprint(s, row);
-	td_set(xotd);
 }
 
 static int led_lastchar(char *s)
@@ -618,7 +602,6 @@ static char *led_line(char *pref, char *post, char *ai,
 				term_pos(xrow - xtop, 0);
 				continue;
 			}
-			td_set(xotd);
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s);
 			temp_switch(0);
@@ -627,7 +610,6 @@ static char *led_line(char *pref, char *post, char *ai,
 			vi(1); /* redraw past screen */
 			syn_setft("/-");
 			term_pos(xrows, 0);
-			td_set(+2);
 			xquit = 0;
 			cur_histstr:
 			i = 0;
@@ -694,9 +676,9 @@ char *led_prompt(char *pref, char *post, char *insert,
 		int *kmap)
 {
 	int key;
-	td_set(+2);
+	preserve(int, xtd, +2)
 	char *s = led_line(pref, post, "", 0, &key, kmap, insert, 0);
-	td_set(xotd);
+	restore(xtd)
 	if (key == '\n') {
 		temp_write(0, s);
 		sbuf *sb; sbuf_make(sb, 256)
