@@ -94,7 +94,9 @@ static void vi_drawmsg(void)
 		syn_blockhl = 0;
 		syn_setft("/-");
 		rstate->ren_laststr = NULL;
+		preserve(int, xtd, 2)
 		led_render(vi_msg, xrows, 0, xcols);
+		restore(xtd)
 		syn_setft(ex_filetype);
 	}
 }
