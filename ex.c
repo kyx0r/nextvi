@@ -138,7 +138,6 @@ void temp_write(int i, char *str)
 		lbuf_edit(lb, "\n", 0, 0);
 	tempbufs[i].row++;
 	lbuf_edit(lb, str, tempbufs[i].row, tempbufs[i].row);
-	tempbufs[i].off = lbuf_indents(lb, tempbufs[i].row);
 	lbuf_saved(lb, 1);
 }
 
@@ -350,11 +349,9 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 
 void ex_bufpostfix(int i)
 {
-	if (bufs[i].mtime == -1) {
-		bufs[i].mtime = mtime(bufs[i].path);
-		strcpy(bufs[i].ft, syn_filetype(bufs[i].path));
-		lbuf_saved(bufs[i].lb, 1);
-	}
+	bufs[i].mtime = mtime(bufs[i].path);
+	strcpy(bufs[i].ft, syn_filetype(bufs[i].path));
+	lbuf_saved(bufs[i].lb, 1);
 }
 
 #define readfile(errchk) \
