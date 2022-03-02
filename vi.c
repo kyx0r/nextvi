@@ -738,7 +738,7 @@ static int vi_motion(int *row, int *off)
 {
 	static char sdirection;
 	static sbuf *savepath;
-	static int _row, _off, srow, soff;
+	static int  srow, soff;
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
 	int dir = dir_context(ln ? ln : "");
@@ -834,12 +834,9 @@ static int vi_motion(int *row, int *off)
 		cs = vi_curword(xb, *row, *off, cnt);
 		if (!fslink)
 			mdir_calc(fs_exdir ? fs_exdir : ".")
-		_row = *row; _off = *off;
 		if (vi_arg1 && cs)
 			ex_krsset(cs, +1);
-		if (!fs_search(1, row, off)) {
-			*row = _row; *off = _off;
-		}
+		fs_search(1, row, off);
 		free(cs);
 		break;
 	case TK_CTL('p'):
@@ -1490,7 +1487,7 @@ void vi(int init)
 			{
 			case TK_CTL(']'):
 			case TK_CTL('p'):
-				for (n = 0; n < xbufcur; n++)
+				for (n = xbufcur-1; n >= 0 && bufs[n].mtime == -1; n--)
 					ex_bufpostfix(n);
 				syn_setft(ex_filetype);
 			case '\\':
