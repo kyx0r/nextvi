@@ -153,14 +153,12 @@ int lbuf_pair(struct lbuf *lb, int *row, int *off);
 /* ren.c rendering lines */
 typedef struct {
 	char **ren_lastchrs;
+	char *ren_laststr;	/* to prevent redundant computations, ensure pointer uniqueness */
 	int *ren_lastpos;
-	char *ren_laststr; 	/* to prevent redundant computations, ensure pointer uniqueness */
 	int ren_lastn;
-	int ren_torg; 		/* compute tab width from this position origin */
 } ren_state;
 extern ren_state *rstate;
 void ren_done(void);
-void ren_save(int nstate, int torg);
 int *ren_position(char *s, char ***c, int *n);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
