@@ -85,19 +85,13 @@ void dir_done(void)
 	rset_free(dir_rsctx);
 }
 
-static ren_state rstates[2];
+static ren_state rstates[1];
 ren_state *rstate = &rstates[0];
 
 void ren_done(void)
 {
 	free(rstate->ren_lastpos);
 	free(rstate->ren_lastchrs);
-}
-
-void ren_save(int nstate, int torg)
-{
-	rstate = &rstates[nstate];
-	rstate->ren_torg = torg;
 }
 
 /* specify the screen position of the characters in s */
@@ -227,7 +221,7 @@ int ren_next(char *s, int p, int dir)
 int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
-		return xtabspc - ((pos + rstate->ren_torg) & (xtabspc-1));
+		return xtabspc - (pos & (xtabspc-1));
 	int c; uc_code(c, s)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)
