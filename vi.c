@@ -736,9 +736,9 @@ static int fs_searchback(int cnt, int *row, int *off)
 /* read a motion */
 static int vi_motion(int *row, int *off)
 {
-	static char sdirection;
+	static char ca_dir;
 	static sbuf *savepath;
-	static int  srow, soff;
+	static int srow, soff;
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
 	int dir = dir_context(ln ? ln : "");
@@ -885,10 +885,9 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		ex_krsset(cs, +1);
 		free(cs);
-		if (vi_search(sdirection ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
-		{
-			sdirection = !sdirection;
-			if (vi_search(sdirection ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
+		if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg))) {
+			ca_dir = !ca_dir;
+			if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
 			        return -1;
 		}
 		break;
