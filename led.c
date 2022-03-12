@@ -210,7 +210,7 @@ char *led_bounds(int *off, char **chrs, int cterm)
 {
 	int l, i = 0;
 	sbuf *out;
-	sbuf_make(out, xcols*4);
+	sbuf_make(out, cterm*4);
 	while (i < cterm) {
 		int o = off[i];
 		if (o >= 0) {
@@ -245,7 +245,7 @@ while (i < cterm) { \
 		att_new = ratt[o]; \
 		if (att_new != att_old) \
 			sbuf_str(out, term_att(att_new)) \
-		char *s = ren_translate(chrs[o], s0, i, cend-1); \
+		char *s = ren_translate(chrs[o], s0, i, cterm-1); \
 		if (s) \
 			sbuf_str(out, s) \
 		else if (uc_isprint(chrs[o])) { \
@@ -255,7 +255,8 @@ while (i < cterm) { \
 			hid_ch##n(out) \
 		} \
 	} else { \
-		sbuf_chr(out, ' ') \
+		if (cbeg || ctx < 0) \
+			sbuf_chr(out, ' ') \
 		i++; \
 	} \
 	att_old = att_new; \
@@ -276,32 +277,32 @@ void led_render(char *s0, int row, int cbeg, int cend)
 	memset(att, 0, (cterm+1) * sizeof(att[0]));
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
-		for (i = 0; i < n; i++) { 
-			int curbeg = cend - pos[i] - 1; 
-			if (curbeg >= 0 && curbeg < cterm) { 
-				int curwid = ren_cwid(chrs[i], pos[i]); 
-				if (cend - (pos[i] + curwid - 1) - 2 > cterm) 
-					break; 
-				for (j = 0; j < curwid; j++) 
-					off[cend - (pos[i] + j - 1) - 2] = i; 
-			} 
-		} 
+		for (i = 0; i < n; i++) {
+			int curbeg = cend - pos[i] - 1;
+			if (curbeg >= 0 && curbeg < cterm) {
+				int curwid = ren_cwid(chrs[i], pos[i]);
+				if (cend - (pos[i] + curwid - 1) - 2 > cterm)
+					break;
+				for (j = 0; j < curwid; j++)
+					off[cend - (pos[i] + j - 1) - 2] = i;
+			}
+		}
 	} else {
-		for (i = 0; i < n; i++) { 
-			int curbeg = pos[i] - cbeg; 
-			if (curbeg >= 0 && curbeg < cterm) { 
-				int curwid = ren_cwid(chrs[i], pos[i]); 
-				if (curbeg + curwid > cterm) 
-					break; 
-				for (j = 0; j < curwid; j++) 
-					off[curbeg + j] = i; 
-			} 
-		} 
+		for (i = 0; i < n; i++) {
+			int curbeg = pos[i] - cbeg;
+			if (curbeg >= 0 && curbeg < cterm) {
+				int curwid = ren_cwid(chrs[i], pos[i]);
+				if (curbeg + curwid > cterm)
+					break;
+				for (j = 0; j < curwid; j++)
+					off[curbeg + j] = i;
+			}
+		}
 	}
-	if (pos[n] > xcols || cbeg)
+	if (pos[n] > cterm || cbeg)
 		bound = led_bounds(off, chrs, cterm);
 	if (xhl)
-		syn_highlight(att, bound, cterm);
+		syn_highlight(att, bound, n < cterm ? n : cterm);
 	if (bound != s0) {
 		free(bound);
 		ratt = malloc(n * sizeof(att[0]));
