@@ -180,7 +180,7 @@ static void vi_drawrow(int row)
 			vi_drawwordnum(lbuf_wordbeg, 1, 1)
 			break;
 		}
-		tmp[ren_pos(c, xoff) - xleft] = c[xoff] == '\t' ? ' ' : *vi_word;
+		tmp[ren_pos(c, xoff) - xleft] = *uc_chr(c, xoff) == '\t' ? ' ' : *vi_word;
 		preserve(int, xorder, 0)
 		preserve(int, syn_blockhl, 0)
 		preserve(int, xtd, dir_context(c) * 2)

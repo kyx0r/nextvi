@@ -281,11 +281,11 @@ void led_render(char *s0, int row, int cbeg, int cend)
 			int curbeg = cend - pos[i] - 1;
 			if (curbeg >= 0 && curbeg < cterm) {
 				int curwid = ren_cwid(chrs[i], pos[i]);
+				if (o + curwid > cterm)
+					break;
 				if (cend - (pos[i] + curwid - 1) - 1 < 0)
 					continue;
 				o += curwid;
-				if (o > cterm)
-					break;
 				while (--curwid >= 0)
 					off[cend - (pos[i] + curwid - 1) - 2] = i;
 			}
@@ -295,9 +295,11 @@ void led_render(char *s0, int row, int cbeg, int cend)
 			int curbeg = pos[i] - cbeg;
 			if (curbeg >= 0 && curbeg < cterm) {
 				int curwid = ren_cwid(chrs[i], pos[i]);
-				o += curwid;
-				if (o > cterm)
+				if (o + curwid > cterm)
 					break;
+				if (curbeg + curwid > cterm)
+					continue;
+				o += curwid;
 				while (--curwid >= 0)
 					off[curbeg + curwid] = i;
 			}
@@ -559,12 +561,14 @@ static char *led_line(char *pref, char *post, char *ai,
 					sug = suggestsb->s;
 					pac_:
 					syn_setft("/ac");
+					preserve(int, xtd, 2)
 					for (int left = 0; r < xrows; r++) {
 						led_render(sug, r, left, left+xcols);
 						left += xcols;
 						if (left >= rstate->ren_lastpos[rstate->ren_lastn])
 							break;
 					}
+					restore(xtd)
 					syn_setft(ex_filetype);
 					r++;
 				}
