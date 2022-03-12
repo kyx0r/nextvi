@@ -265,7 +265,7 @@ while (i < cterm) { \
 /* render and highlight a line */
 void led_render(char *s0, int row, int cbeg, int cend)
 {
-	int i, j, o, n, cterm = cend - cbeg;
+	int j, n, i = 0, o = 0, cterm = cend - cbeg;
 	char *bound = s0;
 	int *pos;		/* pos[i]: the screen position of the i-th character */
 	char **chrs;		/* chrs[i]: the i-th character in s1 */
@@ -277,25 +277,29 @@ void led_render(char *s0, int row, int cbeg, int cend)
 	memset(att, 0, (cterm+1) * sizeof(att[0]));
 	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
-		for (i = 0; i < n; i++) {
+		for (; i < n; i++) {
 			int curbeg = cend - pos[i] - 1;
 			if (curbeg >= 0 && curbeg < cterm) {
 				int curwid = ren_cwid(chrs[i], pos[i]);
-				if (cend - (pos[i] + curwid - 1) - 2 > cterm)
+				if (cend - (pos[i] + curwid - 1) - 1 < 0)
+					continue;
+				o += curwid;
+				if (o > cterm)
 					break;
-				for (j = 0; j < curwid; j++)
-					off[cend - (pos[i] + j - 1) - 2] = i;
+				while (--curwid >= 0)
+					off[cend - (pos[i] + curwid - 1) - 2] = i;
 			}
 		}
 	} else {
-		for (i = 0; i < n; i++) {
+		for (; i < n; i++) {
 			int curbeg = pos[i] - cbeg;
 			if (curbeg >= 0 && curbeg < cterm) {
 				int curwid = ren_cwid(chrs[i], pos[i]);
-				if (curbeg + curwid > cterm)
+				o += curwid;
+				if (o > cterm)
 					break;
-				for (j = 0; j < curwid; j++)
-					off[curbeg + j] = i;
+				while (--curwid >= 0)
+					off[curbeg + curwid] = i;
 			}
 		}
 	}
