@@ -308,9 +308,11 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		ratt = &pos[n+1];
 		for (j = 0, i = 0; i < cterm;) {
 			o = off[i];
-			if (o >= 0)
+			if (o >= 0) {
 				ratt[o] = att[j++];
-			for (; off[i] == o; i++);
+				for (; off[i] == o; i++);
+			} else
+				i++;
 		}
 	}
 	if (xhlr)
