@@ -305,7 +305,7 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		syn_highlight(att, bound, n < cterm ? n : cterm);
 	if (bound != s0) {
 		free(bound);
-		ratt = malloc(n * sizeof(att[0]));
+		ratt = &pos[n+1];
 		for (j = 0, i = 0; i < cterm;) {
 			o = off[i];
 			if (o >= 0)
@@ -324,8 +324,6 @@ void led_render(char *s0, int row, int cbeg, int cend)
 		led_out(term_sbuf, 1)
 	if (!term_record)
 		term_commit();
-	if (ratt != att)
-		free(ratt);
 }
 
 static int led_lastchar(char *s)
