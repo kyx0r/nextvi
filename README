@@ -245,15 +245,21 @@ for example :.,.+5s/\<word\>/ where 5 is vi_arg1. (see also 49.)
 45. Improved single line performance by roughly 3x. Syntax highlight will not
 render anything beyond the terminal columns.
 If there is a line in the file that has say 200K characters, the performance
-will not degrade. This was extremely difficult to get right and took me 3
-weeks of refactors because we also have to take into account:
+will not degrade (except the order option set, which is by default). Please do
+not underestimate the difficulty of such endeavor, nextvi is required to take
+all these operations into account:
 	1. Bidi text direction.
 	2. Multibyte UTF-8. Double width chars.
 	3. Variable width tabulations that can change
 	throughout the line based on surroundings.
-	4. Reordering of characters.
+	4. Reordering of characters. (regex rules)
 	5. Syntax highlight.
-See also PERFORMANCE section at the end of the file
+No other text editor has ever done all these requirements at once, therefore
+come to appreciate what is provided here and the level of performance.
+See also PERFORMANCE section at the end of the file.
+Because syntax highlight is bounded to the terminal dimensions some patterns
+may not be possible to match without rendering past the screen. To address
+this problem you may need some extra patch, see PATCHES section below.
 46. Added key to abandon insert discarding any changes keybind: ^x
 That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj
 RATIONALE: unlike others, ^x will not leave file marked as modified.
@@ -374,7 +380,7 @@ the same causality as running C code directly.
 vi_arg1 changes the direction of ^n.
 71. Added keybinds ^\ and ^] in insert mode to allow up and down scrolling
 and quick regex searches without exiting insert. Use ^z to set the mark
-where the regex begins. keybind ^o allows access to a secondary ex prompt or 
+where the regex begins. keybind ^o allows access to a secondary ex prompt or
 new vi instance so that it becomes possible to switch to vi from ex or postpone
 some operation, do something else and come back later.
 This feature is implemented using functionality provided by 69. and exists to
@@ -469,7 +475,7 @@ on the usecase simply :g/searchterm/ya or :g/searchterm/p may also be enough.
 
 PATCHES
 -------
-New functionality can be obtained through optional patches provided in the 
+New functionality can be obtained through optional patches provided in the
 patches branch. If you have a meaningful contribution and would love to be
 made public the patch can be submitted via email or github pull request.
 
@@ -501,11 +507,11 @@ LOC:
 | 296  conf.c  | hl/ft/td config     |
 | 642  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
-| 1149 ex.c    | ex options/commands |
-| 2110 vi.c    | normal mode/general |
-| 776  led.c   | insert mode/output  |
-| 414  ren.c   | positioning/syntax  |
-| 6888 total   | wc -l *.c           |
+| 1145 ex.c    | ex options/commands |
+| 2103 vi.c    | normal mode/general |
+| 733  led.c   | insert mode/output  |
+| 396  ren.c   | positioning/syntax  |
+| 6816 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
