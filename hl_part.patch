@@ -1,0 +1,161 @@
+diff --git a/led.c b/led.c
+index 8794756..8072bfa 100644
+--- a/led.c
++++ b/led.c
+@@ -238,30 +238,66 @@ else if (*chrs[o] == '\t') \
+ #define led_out(out, n) \
+ { int l, att_old = 0, i = 0; \
+ while (i < cterm) { \
+-	int att_new = 0; \
+ 	o = off[i]; \
+-	if (o >= 0) { \
+-		for (l = i; off[i] == o; i++); \
+-		att_new = ratt[o]; \
+-		if (att_new != att_old) \
+-			sbuf_str(out, term_att(att_new)) \
+-		char *s = ren_translate(chrs[o], s0, i, cterm-1); \
+-		if (s) \
+-			sbuf_str(out, s) \
+-		else if (uc_isprint(chrs[o])) { \
+-			uc_len(l, chrs[o]) \
+-			print_ch##n(out) \
+-		} else { \
+-			hid_ch##n(out) \
+-		} \
+-	} else { \
++	if (o < 0) { \
+ 		if (cbeg || ctx < 0) \
+ 			sbuf_chr(out, ' ') \
+ 		i++; \
++		continue; \
++	} \
++	int att_new = 0; \
++	for (l = i; off[i] == o; i++); \
++	att_new = ratt[o]; \
++	if (att_new != att_old) \
++		sbuf_str(out, term_att(att_new)) \
++	char *s = ren_translate(chrs[o], s0, i, cterm-1); \
++	if (s) \
++		sbuf_str(out, s) \
++	else if (uc_isprint(chrs[o])) { \
++		uc_len(l, chrs[o]) \
++		print_ch##n(out) \
++	} else { \
++		hid_ch##n(out) \
+ 	} \
+ 	att_old = att_new; \
+ } sbufn_str(out, term_att(0)) } \
+ 
++#define LEDBACK 300
++#define LEDFORW 300
++
++#define off_comp(beg, end, term, ch) \
++if (ctx < 0) { \
++	for (; i < n; i++) { \
++		int curbeg = end - pos[i] - 1; \
++		if (curbeg >= 0 && curbeg < term) { \
++			int curwid = ren_cwid(chrs[i], pos[i]); \
++			if (o + curwid > term) \
++				break; \
++			if (end - (pos[i] + curwid - 1) - 1 < 0) \
++				continue; \
++			o += curwid; \
++			while (--curwid >= 0) \
++				off[end - (pos[i] + curwid - 1) - 2] = i; \
++			ch \
++		} \
++	} \
++} else { \
++	for (; i < n; i++) { \
++		int curbeg = pos[i] - beg; \
++		if (curbeg >= 0 && curbeg < term) { \
++			int curwid = ren_cwid(chrs[i], pos[i]); \
++			if (o + curwid > term) \
++				break; \
++			if (curbeg + curwid > term) \
++				continue; \
++			o += curwid; \
++			while (--curwid >= 0) \
++				off[curbeg + curwid] = i; \
++			ch \
++		} \
++	} \
++} \
++
+ /* render and highlight a line */
+ void led_render(char *s0, int row, int cbeg, int cend)
+ {
+@@ -269,50 +305,26 @@ void led_render(char *s0, int row, int cbeg, int cend)
+ 	char *bound = s0;
+ 	int *pos;		/* pos[i]: the screen position of the i-th character */
+ 	char **chrs;		/* chrs[i]: the i-th character in s1 */
+-	int off[cterm+1];	/* off[i]: the character at screen position i */
+-	int att[cterm+1];	/* att[i]: the attributes of i-th character */
+-	int *ratt = att;	/* att[i]: adjusted for terminal boundary */
+ 	int ctx = dir_context(s0);
+-	memset(off, -1, (cterm+1) * sizeof(off[0]));
+-	memset(att, 0, (cterm+1) * sizeof(att[0]));
+ 	pos = ren_position(s0, &chrs, &n);
+-	if (ctx < 0) {
+-		for (; i < n; i++) {
+-			int curbeg = cend - pos[i] - 1;
+-			if (curbeg >= 0 && curbeg < cterm) {
+-				int curwid = ren_cwid(chrs[i], pos[i]);
+-				if (o + curwid > cterm)
+-					break;
+-				if (cend - (pos[i] + curwid - 1) - 1 < 0)
+-					continue;
+-				o += curwid;
+-				while (--curwid >= 0)
+-					off[cend - (pos[i] + curwid - 1) - 2] = i;
+-			}
+-		}
+-	} else {
+-		for (; i < n; i++) {
+-			int curbeg = pos[i] - cbeg;
+-			if (curbeg >= 0 && curbeg < cterm) {
+-				int curwid = ren_cwid(chrs[i], pos[i]);
+-				if (o + curwid > cterm)
+-					break;
+-				if (curbeg + curwid > cterm)
+-					continue;
+-				o += curwid;
+-				while (--curwid >= 0)
+-					off[curbeg + curwid] = i;
+-			}
+-		}
+-	}
++	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
++	int fcend = cend + LEDFORW;
++	int fcterm = fcend - fcbeg; /* fake the render dimensions */
++	int off[fcterm+1];	/* off[i]: the character at screen position i */
++	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
++	int *ratt = att;	/* att[i]: adjusted for terminal boundary */
++	int firstch = -1; 	/* smth... optimize loop */
++	memset(off, -1, (fcterm+1) * sizeof(off[0]));
++	memset(att, 0, (fcterm+1) * sizeof(att[0]));
++	off_comp(fcbeg, fcend, fcterm, if (firstch != -1) firstch = i;)
+ 	if (pos[n] > cterm || cbeg)
+-		bound = led_bounds(off, chrs, cterm);
++		bound = led_bounds(off, chrs, fcterm);
+ 	if (xhl)
+-		syn_highlight(att, bound, n < cterm ? n : cterm);
++		syn_highlight(att, bound, n < fcterm ? n : fcterm);
+ 	if (bound != s0) {
+ 		free(bound);
+ 		ratt = &pos[n+1];
+-		for (j = 0, i = 0; i < cterm;) {
++		for (j = 0, i = 0; i < fcterm;) {
+ 			o = off[i];
+ 			if (o >= 0) {
+ 				ratt[o] = att[j++];
+@@ -323,6 +335,9 @@ void led_render(char *s0, int row, int cbeg, int cend)
+ 	}
+ 	if (xhlr)
+ 		led_markrev(n, chrs, pos, ratt);
++	i = firstch; o = 0;
++	memset(off, -1, (cterm+1) * sizeof(off[0]));
++	off_comp(cbeg, cend, cterm, /*nop*/)
+ 	/* generate term output */
+ 	term_pos(row, 0);
+ 	term_kill();

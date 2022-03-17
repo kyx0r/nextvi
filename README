@@ -23,3 +23,8 @@ Apply: patch < name.patch
 |                        | to use syn_addhl() and a NULL pattern, however that |
 |                        | requires more modifications.                        |
 +------------------------+-----------------------------------------------------+
+| hl_part.patch          | Allow syntax highlight to continue past the terminal|
+|                        | dimensions up to a certain limit.                   |
+|                        | To customize the depth, adjust LEDFORW and LEDBACK  |
+|                        | definitions in led.c                                |
++------------------------+-----------------------------------------------------+
