@@ -1,0 +1,86 @@
+diff --git a/led.c b/led.c
+index 8794756..4c76762 100644
+--- a/led.c
++++ b/led.c
+@@ -206,23 +206,6 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
+ 	}
+ }
+ 
+-char *led_bounds(int *off, char **chrs, int cterm)
+-{
+-	int l, i = 0;
+-	sbuf *out;
+-	sbuf_make(out, cterm*4);
+-	while (i < cterm) {
+-		int o = off[i];
+-		if (o >= 0) {
+-			uc_len(l, chrs[o])
+-			sbuf_mem(out, chrs[o], l)
+-			for (; off[i] == o; i++);
+-		} else
+-			i++;
+-	}
+-	sbufn_done(out)
+-}
+-
+ #define print_ch1(out) sbuf_mem(out, chrs[o], l)
+ #define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
+ 
+@@ -242,7 +225,7 @@ while (i < cterm) { \
+ 	o = off[i]; \
+ 	if (o >= 0) { \
+ 		for (l = i; off[i] == o; i++); \
+-		att_new = ratt[o]; \
++		att_new = att[o]; \
+ 		if (att_new != att_old) \
+ 			sbuf_str(out, term_att(att_new)) \
+ 		char *s = ren_translate(chrs[o], s0, i, cterm-1); \
+@@ -265,17 +248,16 @@ while (i < cterm) { \
+ /* render and highlight a line */
+ void led_render(char *s0, int row, int cbeg, int cend)
+ {
+-	int j, n, i = 0, o = 0, cterm = cend - cbeg;
+-	char *bound = s0;
++	int n, i = 0, o = 0, cterm = cend - cbeg;
+ 	int *pos;		/* pos[i]: the screen position of the i-th character */
+ 	char **chrs;		/* chrs[i]: the i-th character in s1 */
+ 	int off[cterm+1];	/* off[i]: the character at screen position i */
+-	int att[cterm+1];	/* att[i]: the attributes of i-th character */
+-	int *ratt = att;	/* att[i]: adjusted for terminal boundary */
++	int *att;		/* att[i]: the attributes of i-th character */
+ 	int ctx = dir_context(s0);
+ 	memset(off, -1, (cterm+1) * sizeof(off[0]));
+-	memset(att, 0, (cterm+1) * sizeof(att[0]));
+ 	pos = ren_position(s0, &chrs, &n);
++	att = &pos[n+1];
++	memset(att, 0, n * sizeof(att[0]));
+ 	if (ctx < 0) {
+ 		for (; i < n; i++) {
+ 			int curbeg = cend - pos[i] - 1;
+@@ -305,24 +287,10 @@ void led_render(char *s0, int row, int cbeg, int cend)
+ 			}
+ 		}
+ 	}
+-	if (pos[n] > cterm || cbeg)
+-		bound = led_bounds(off, chrs, cterm);
+ 	if (xhl)
+-		syn_highlight(att, bound, n < cterm ? n : cterm);
+-	if (bound != s0) {
+-		free(bound);
+-		ratt = &pos[n+1];
+-		for (j = 0, i = 0; i < cterm;) {
+-			o = off[i];
+-			if (o >= 0) {
+-				ratt[o] = att[j++];
+-				for (; off[i] == o; i++);
+-			} else
+-				i++;
+-		}
+-	}
++		syn_highlight(att, s0, n);
+ 	if (xhlr)
+-		led_markrev(n, chrs, pos, ratt);
++		led_markrev(n, chrs, pos, att);
+ 	/* generate term output */
+ 	term_pos(row, 0);
+ 	term_kill();
