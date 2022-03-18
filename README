@@ -50,5 +50,5 @@ Apply: patch < name.patch
 |                        | use of.                                             |
 |                        |                                                     |
 |                        | Patch is not compatible with hl_part.patch in any   |
-|                        | way, either pick one or another.                    |
+|                        | way, pick one or the other.                         |
 +------------------------+-----------------------------------------------------+
