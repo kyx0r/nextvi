@@ -53,14 +53,13 @@ struct highlight hls[] = {
 	{"c", "(/\\*[^&&*/]*)|([^\"&&/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
 	{"c", NULL, {0, 9 | SYN_BGMK(12), 9 | SYN_BGMK(12)}, {1, -1, -1}, 0, 3},
 	{"c", NULL, {9}, {0}, 0, 1},
-	{"c", "\\<(?:signed|unsigned|char|short|int|long|float|double|void|\
-enum|union|typedef|static|extern|register|struct|f32|u32|s32|u8|\
-u64|s64|f64|s8|u16|s16|b32|int32_t|uint32_t|bool|const|size_t|\
-int16_t|uint16_t|uint64_t|int64_t|uint8_t|int8_t|inline|restrict)\\>", {10}},
-	{"c", "\\<(?:true|false|asm|__asm|__asm__|memset|memcpy|malloc|\
-free|realloc|NULL|stdin|stdout|errno)\\>", {12 | SYN_BD}},
-	{"c", "\\<(?:return|for|while|if|else|do|sizeof|goto|switch|case|\
-default|break|continue)\\>", {11}},
+	{"c", "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|\
+long|f(?:loat|64|32)|double|void|enum|union|typedef|static|extern|register|struct|\
+s(?:64|32|16|8)|u(?:64|32|16|8)|b32|bool|const|size_t|inline|restrict|\
+(true|false|_?_?asm_?_?|mem(?:set|cpy)|malloc|free|realloc|NULL|std(?:in|\
+out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|\
+default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
+	{"c", "(\\?).+?(:)", {0, 3, 3}, {1, 0, -1}},
 	{"c", "//.*", {4 | SYN_IT}},
 	{"c", "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", {6, 6, 5}},
 	{"c", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
@@ -120,8 +119,8 @@ default|break|continue)\\>", {11}},
 	{"py", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"py", NULL, {9}, {0}, 0, 1},
 	{"py", "#.*", {2}},
-	{"py", "\\<(?:and|break|class|continue|def|del|elif|else|except|finally|for|from|global)\\>", {5}},
-	{"py", "\\<(?:if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
+	{"py", "\\<(?:and|break|class|continue|def|del|elif|else|except|finally|\
+for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
 	{"py", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
 	{"py", "[\"']([^\"']|\\\\\")*[\"']", {4}},
 
@@ -146,10 +145,9 @@ break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
 double|else|enum|eval|export|extends|false|final|finally|float|for|function|\
 goto|if|implements|import|in|instanceof|int|interface|let|long|native|new|\
 null|package|private|protected|public|return|short|static|super|switch|synchronized|\
-this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|yield)\\>", {12}},
-	{"js", "\\<(?:Array|Date|hasOwnProperty|Infinity|isFinite|isNaN|\
-isPrototypeOf|length|Math|NaN|name|Number|Object|prototype|\
-String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
+this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|yield|\
+(Array|Date|hasOwnProperty|Infinity|isFinite|isNaN|isPrototypeOf|length|Math|NaN|\
+name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", {12, 6 | SYN_BD}},
 	{"js", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+)\\>", {9}},
 	{"js", "//.*", {10 | SYN_IT}},
 	{"js", "'(?:[^'\\\\]|\\\\.)*'", {5}},
@@ -164,11 +162,11 @@ String|toString|undefined|valueOf)\\>", {6 | SYN_BD}},
 	{"html", "(<!--[^&&------>]*)|([^&&<!------]*-->)", {5 | SYN_IT}, {0}, 2},
 	{"html", "([^\t -,.-/:-@[-^{-~]+:).+;", {0, 3}, {1, 1}},
 	{"html", "\\<(?:accept|accesskey|align|allow|alt|async|\
-auto(capitalize|complete|focus|play)|background|\
+auto(?:capitalize|complete|focus|play)|background|\
 bgcolor|border|buffered|challenge|charset|checked|cite|\
-class|code(base)|color|cols|colspan|content(\
-editable)|contextmenu|controls|coords|crossorigin|\
-csp|data|datetime|decoding|def(ault|er)|dir|dirname|\
+class|code(?:base)|color|cols|colspan|content(?:editable)|\
+contextmenu|controls|coords|crossorigin|import|\
+csp|data|datetime|decoding|def(?:ault|er)|dir|dirname|\
 disabled|download|draggable|dropzone|enctype|enterkeyhint|\
 equiv|for|form|action|headers|height|hidden|high|href|http|\
 icon|id|importance|inputmode|integrity|intrinsicsize|ismap|\
@@ -179,8 +177,8 @@ poster|preload|property|radiogroup|readonly|referrerpolicy|\
 rel|required|reversed|rows|rowspan|sandbox|scope|scoped|\
 selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
 srclang|srcset|start|step|style|summary|tabindex|target|\
-title|translate|type|usemap|value|width|wrap|low|manifest)\\>", {2}},
-	{"html", "\\<(?:html|base|head|link|meta|body|address|article|\
+title|translate|type|usemap|value|width|wrap|low|manifest|\
+(html|base|head|link|meta|body|address|article|\
 aside|footer|header|hgroup|nav|section|blockquote|dd|\
 div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
 b|bdi|bdo|br|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
@@ -194,13 +192,15 @@ shadow|template|acronym|applet|basefont|\
 bgsound|big|blink|center|command|element|font|\
 frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
 multicol|nextid|nobr|noembed|noframes|plaintext|spacer|\
-strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6)\\>", {6}},
+strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
+(fixed;|absolute;|relative;)))\\>", {2, 6, 13}},
 	{"html", "\"(?:[^\"\\\\]|\\\\.)*\"", {12}},
+	{"html", "'(?:[^'\\\\]|\\\\.)*'", {5}},
 	{"html", "#\\<[A-Fa-f0-9]+\\>", {9}},
-	{"html", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(px)?)\\>", {9}},
+	{"html", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:px|vw|vh|%)?)\\>", {9}},
 	{"html", "<(/)?[^>]+>", {3, 13}, {1}},
-	{"html", "#[ \t]*[a-zA-Z0-9_]+", {SYN_BD}},
-	{"html", "&[a-zA-Z0-9_]+", {5}},
+	{"html", "([#.][ \t]*[a-zA-Z0-9_]+).{1,10}\\{", {0, SYN_BD}, {1}},
+	{"html", "&[a-zA-Z0-9_]+;", {5}},
 
 	/* diff */
 	{"diff", "^-.*", {1}},
