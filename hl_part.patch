@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 8794756..8072bfa 100644
+index 8794756..2d92f20 100644
 --- a/led.c
 +++ b/led.c
 @@ -238,30 +238,66 @@ else if (*chrs[o] == '\t') \
@@ -134,7 +134,7 @@ index 8794756..8072bfa 100644
 +	int firstch = -1; 	/* smth... optimize loop */
 +	memset(off, -1, (fcterm+1) * sizeof(off[0]));
 +	memset(att, 0, (fcterm+1) * sizeof(att[0]));
-+	off_comp(fcbeg, fcend, fcterm, if (firstch != -1) firstch = i;)
++	off_comp(fcbeg, fcend, fcterm, if (firstch == -1) firstch = i;)
  	if (pos[n] > cterm || cbeg)
 -		bound = led_bounds(off, chrs, cterm);
 +		bound = led_bounds(off, chrs, fcterm);
@@ -153,7 +153,7 @@ index 8794756..8072bfa 100644
  	}
  	if (xhlr)
  		led_markrev(n, chrs, pos, ratt);
-+	i = firstch; o = 0;
++	i = firstch < 0 ? n : firstch; o = 0;
 +	memset(off, -1, (cterm+1) * sizeof(off[0]));
 +	off_comp(cbeg, cend, cterm, /*nop*/)
  	/* generate term output */
