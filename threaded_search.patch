@@ -145,7 +145,7 @@ index 1ecaad1..5a06d08 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 29c2524..98cfa86 100644
+index f36706b..f3dd56c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -31,6 +31,7 @@
@@ -157,16 +157,17 @@ index 29c2524..98cfa86 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index a246d1b..112268d 100644
+index 08de684..c157529 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -191,7 +191,8 @@ void syn_init(void);
- void syn_done(void);
+@@ -195,7 +195,9 @@ int syn_addhl(char *reg, int func, int reload);
+ void syn_init(void);
  
  /* uc.c utf-8 helper functions */
 -extern unsigned char utf8_length[256];
 +extern unsigned char _utf8_length[256];
 +extern unsigned char *utf8_length;
++
  /* return the length of a utf-8 character */
  #define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
  /* the unicode codepoint of the given utf-8 character */
