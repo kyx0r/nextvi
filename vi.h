@@ -172,7 +172,6 @@ int ren_cwid(char *s, int pos);
 /* text direction */
 int dir_context(char *s);
 void dir_init(void);
-void dir_done(void);
 /* syntax highlighting */
 #define SYN_BD		0x010000
 #define SYN_IT		0x020000
@@ -194,7 +193,6 @@ int syn_merge(int old, int new);
 void syn_reloadft();
 int syn_addhl(char *reg, int func, int reload);
 void syn_init(void);
-void syn_done(void);
 
 /* uc.c utf-8 helper functions */
 extern unsigned char utf8_length[256];
@@ -321,7 +319,6 @@ void ex_print(char *line);
 void ex_show(char *msg);
 int ex_init(char **files);
 void ex_bufpostfix(int i);
-void ex_done(void);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
 int ex_edit(const char *path);

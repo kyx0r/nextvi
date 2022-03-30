@@ -78,13 +78,6 @@ void dir_init(void)
 	dir_rsctx = rset_make(i, ctx, 0);
 }
 
-void dir_done(void)
-{
-	rset_free(dir_rslr);
-	rset_free(dir_rsrl);
-	rset_free(dir_rsctx);
-}
-
 static ren_state rstates[1];
 ren_state *rstate = &rstates[0];
 
@@ -386,11 +379,4 @@ void syn_init(void)
 	for (i = 0; i < ftslen; i++)
 		pats[i] = fts[i].pat;
 	syn_ftrs = rset_make(i, pats, 0);
-}
-
-void syn_done(void)
-{
-	for (; ftmidx >= 0; ftmidx--)
-		rset_free(ftmap[ftmidx].rs);
-	rset_free(syn_ftrs);
 }
