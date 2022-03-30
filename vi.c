@@ -1827,6 +1827,9 @@ void vi(int init)
 			case 'z':
 				k = vi_read();
 				switch (k) {
+				case 'z':
+					term_push("qq\n", 3);
+					break;
 				case '\n':
 					xtop = vi_arg1 ? vi_arg1 : xrow;
 					break;
