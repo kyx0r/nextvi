@@ -1135,11 +1135,3 @@ int ex_init(char **files)
 		ex_command(getenv("EXINIT"));
 	return 0;
 }
-
-void ex_done(void)
-{
-	for (int i = 0; i < xbufcur; i++)
-		bufs_free(i);
-	rset_free(xkwdrs);
-	free(bufs);
-}

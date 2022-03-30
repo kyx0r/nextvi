@@ -600,12 +600,6 @@ void vi_regput(int c, const char *s, int ln)
 	vi_regputraw(c, s, ln);
 }
 
-static void vi_regdone(void)
-{
-	for (int i = 0; i < LEN(regs); i++)
-		free(regs[i]);
-}
-
 static void vi_regprint()
 {
 	for (int i = 0; i < LEN(regs); i++)
@@ -2088,19 +2082,10 @@ int main(int argc, char *argv[])
 			vi(1);
 		else
 			ex();
-		ex_done();
 	}
 	if (xvis) {
 		term_done();
 		term_clean();
 	}
-	vi_regdone();
-	syn_done();
-	dir_done();
-	led_done();
-	ren_done();
-	temp_done(1);
-	temp_done(0);
-	free(fslink);
 	return 0;
 }
