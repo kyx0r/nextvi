@@ -131,7 +131,7 @@ number. Example: :!echo "%69" prints the pathname for buffer 69 (if it exists).
 (to switch press corresponding 0-9 number) keybind: ^7
 If vi_arg1 is specified right before ^7 the buffer will be switched immediately
 which also happens to permit numbers > 9.
-15. Added key to exit vi keybind: qq
+15. Added key to exit vi (not saving changes) keybind: qq or zz
 16. Added key to goto line 0 keybind: gg
 17. Added key to delete everything inside (cursor outside) "" keybind: di" or dc"
 18. Added key to delete everything inside () keybind: di) or dc)
@@ -221,10 +221,11 @@ automatically.
 37. Added history buffer for ex commands when in vi prompt.
 keybind: ^b or vb (from normal) will open the buffer with all previous
 commands move the cursor to wanted command and exit buffer with qq
-will copy the command into prompt. You can also use this when half-way
-through some command and need to access normal mode to edit the command more
-efficiently. The filename is named "/hist/" so that it can't be written to
-file with ^k (by accident). To save history to file use :w yourfilename
+will copy the command into prompt. To immediately execute the command exit
+with zz. You can also use this when half-way through some command and need to
+access normal mode to edit the command more efficiently. The filename is
+named "/hist/" so that it can't be written to file with ^k (by accident). To
+save history to file use :w yourfilename
 38. Added key to grab the current word(s) under the cursor into prompt like
 so :%s/.../ keybind: vr (see also 49.)
 39. Added ex option to change number of spaces in a tab (\t) default is set
@@ -508,10 +509,10 @@ LOC:
 | 642  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
 | 1145 ex.c    | ex options/commands |
-| 2103 vi.c    | normal mode/general |
+| 2106 vi.c    | normal mode/general |
 | 733  led.c   | insert mode/output  |
 | 396  ren.c   | positioning/syntax  |
-| 6816 total   | wc -l *.c           |
+| 6819 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
