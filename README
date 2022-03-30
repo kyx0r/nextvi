@@ -52,3 +52,10 @@ Apply: patch < name.patch
 |                        | Patch is not compatible with hl_part.patch in any   |
 |                        | way, pick one or the other.                         |
 +------------------------+-----------------------------------------------------+
+| debug.patch            | Cleanup reachable memory upon termination.          |
+|                        | Use for debugging.                                  |
+|                        | Note: in some features leaks won't be freed -       |
+|                        | for example hlw (which is not enabled by default)   |
+|                        | Also initializes sdense in regex.c so that valgrind |
+|                        | stops freaking out.                                 |
++------------------------+-----------------------------------------------------+
