@@ -1,0 +1,122 @@
+diff --git a/ex.c b/ex.c
+index 5f4db49..18f606c 100644
+--- a/ex.c
++++ b/ex.c
+@@ -1135,3 +1135,11 @@ int ex_init(char **files)
+ 		ex_command(getenv("EXINIT"));
+ 	return 0;
+ }
++
++void ex_done(void)
++{
++	for (int i = 0; i < xbufcur; i++)
++		bufs_free(i);
++	rset_free(xkwdrs);
++	free(bufs);
++}
+diff --git a/regex.c b/regex.c
+index ed62e41..b22b246 100644
+--- a/regex.c
++++ b/regex.c
+@@ -524,6 +524,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+ 	int *pcs[prog->splits];
+ 	rsub *subs[prog->splits];
+ 	unsigned int sdense[prog->sparsesz], sparsesz;
++	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+ 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
+ 	rthread _clist[prog->len], _nlist[prog->len];
+ 	rthread *clist = _clist, *nlist = _nlist, *tmp;
+diff --git a/ren.c b/ren.c
+index 63a53f6..13daa21 100644
+--- a/ren.c
++++ b/ren.c
+@@ -78,6 +78,13 @@ void dir_init(void)
+ 	dir_rsctx = rset_make(i, ctx, 0);
+ }
+ 
++void dir_done(void)
++{
++	rset_free(dir_rslr);
++	rset_free(dir_rsrl);
++	rset_free(dir_rsctx);
++}
++
+ static ren_state rstates[1];
+ ren_state *rstate = &rstates[0];
+ 
+@@ -380,3 +387,10 @@ void syn_init(void)
+ 		pats[i] = fts[i].pat;
+ 	syn_ftrs = rset_make(i, pats, 0);
+ }
++
++void syn_done(void)
++{
++	for (; ftmidx >= 0; ftmidx--)
++		rset_free(ftmap[ftmidx].rs);
++	rset_free(syn_ftrs);
++}
+diff --git a/vi.c b/vi.c
+index f36706b..e9940cf 100644
+--- a/vi.c
++++ b/vi.c
+@@ -600,6 +600,12 @@ void vi_regput(int c, const char *s, int ln)
+ 	vi_regputraw(c, s, ln);
+ }
+ 
++static void vi_regdone(void)
++{
++	for (int i = 0; i < LEN(regs); i++)
++		free(regs[i]);
++}
++
+ static void vi_regprint()
+ {
+ 	for (int i = 0; i < LEN(regs); i++)
+@@ -2082,10 +2088,19 @@ int main(int argc, char *argv[])
+ 			vi(1);
+ 		else
+ 			ex();
++		ex_done();
+ 	}
+ 	if (xvis) {
+ 		term_done();
+ 		term_clean();
+ 	}
++	vi_regdone();
++	syn_done();
++	dir_done();
++	led_done();
++	ren_done();
++	temp_done(1);
++	temp_done(0);
++	free(fslink);
+ 	return 0;
+ }
+diff --git a/vi.h b/vi.h
+index 08de684..9000cb7 100644
+--- a/vi.h
++++ b/vi.h
+@@ -172,6 +172,7 @@ int ren_cwid(char *s, int pos);
+ /* text direction */
+ int dir_context(char *s);
+ void dir_init(void);
++void dir_done(void);
+ /* syntax highlighting */
+ #define SYN_BD		0x010000
+ #define SYN_IT		0x020000
+@@ -193,6 +194,7 @@ int syn_merge(int old, int new);
+ void syn_reloadft();
+ int syn_addhl(char *reg, int func, int reload);
+ void syn_init(void);
++void syn_done(void);
+ 
+ /* uc.c utf-8 helper functions */
+ extern unsigned char utf8_length[256];
+@@ -319,6 +321,7 @@ void ex_print(char *line);
+ void ex_show(char *msg);
+ int ex_init(char **files);
+ void ex_bufpostfix(int i);
++void ex_done(void);
+ int ex_krs(rset **krs, int *dir);
+ void ex_krsset(char *kwd, int dir);
+ int ex_edit(const char *path);
