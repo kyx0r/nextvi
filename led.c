@@ -255,8 +255,11 @@ while (i < cterm) { \
 			hid_ch##n(out) \
 		} \
 	} else { \
-		if (cbeg || ctx < 0) \
+		if (cbeg || ctx < 0) { \
+			if (att_new != att_old) \
+				sbuf_str(out, term_att(0)) \
 			sbuf_chr(out, ' ') \
+		} \
 		i++; \
 	} \
 	att_old = att_new; \
@@ -288,6 +291,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
 				o += curwid;
 				while (--curwid >= 0)
 					off[cend - (pos[i] + curwid - 1) - 2] = i;
+				if (o == cterm)
+					break;
 			}
 		}
 	} else {
@@ -302,6 +307,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
 				o += curwid;
 				while (--curwid >= 0)
 					off[curbeg + curwid] = i;
+				if (o == cterm)
+					break;
 			}
 		}
 	}

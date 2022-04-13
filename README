@@ -505,14 +505,14 @@ LOC:
 +--------------+---------------------+
 | 579  uc.c    | UTF-8 support       |
 | 332  term.c  | low level IO        |
-| 296  conf.c  | hl/ft/td config     |
+| 297  conf.c  | hl/ft/td config     |
 | 642  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
 | 1137 ex.c    | ex options/commands |
 | 2091 vi.c    | normal mode/general |
-| 733  led.c   | insert mode/output  |
+| 740  led.c   | insert mode/output  |
 | 382  ren.c   | positioning/syntax  |
-| 6782 total   | wc -l *.c           |
+| 6790 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
