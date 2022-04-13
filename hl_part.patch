@@ -1,12 +1,10 @@
 diff --git a/led.c b/led.c
-index 8794756..2d92f20 100644
+index 2960c5e..41fac43 100644
 --- a/led.c
 +++ b/led.c
-@@ -238,30 +238,66 @@ else if (*chrs[o] == '\t') \
- #define led_out(out, n) \
- { int l, att_old = 0, i = 0; \
+@@ -240,31 +240,71 @@ else if (*chrs[o] == '\t') \
  while (i < cterm) { \
--	int att_new = 0; \
+ 	int att_new = 0; \
  	o = off[i]; \
 -	if (o >= 0) { \
 -		for (l = i; off[i] == o; i++); \
@@ -24,12 +22,14 @@ index 8794756..2d92f20 100644
 -		} \
 -	} else { \
 +	if (o < 0) { \
- 		if (cbeg || ctx < 0) \
+ 		if (cbeg || ctx < 0) { \
+ 			if (att_new != att_old) \
+ 				sbuf_str(out, term_att(0)) \
  			sbuf_chr(out, ' ') \
+ 		} \
  		i++; \
 +		continue; \
 +	} \
-+	int att_new = 0; \
 +	for (l = i; off[i] == o; i++); \
 +	att_new = ratt[o]; \
 +	if (att_new != att_old) \
@@ -63,6 +63,8 @@ index 8794756..2d92f20 100644
 +			while (--curwid >= 0) \
 +				off[end - (pos[i] + curwid - 1) - 2] = i; \
 +			ch \
++			if (o == term) \
++				break; \
 +		} \
 +	} \
 +} else { \
@@ -78,6 +80,8 @@ index 8794756..2d92f20 100644
 +			while (--curwid >= 0) \
 +				off[curbeg + curwid] = i; \
 +			ch \
++			if (o == term) \
++				break; \
 +		} \
 +	} \
 +} \
@@ -85,7 +89,7 @@ index 8794756..2d92f20 100644
  /* render and highlight a line */
  void led_render(char *s0, int row, int cbeg, int cend)
  {
-@@ -269,50 +305,26 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -272,54 +312,26 @@ void led_render(char *s0, int row, int cbeg, int cend)
  	char *bound = s0;
  	int *pos;		/* pos[i]: the screen position of the i-th character */
  	char **chrs;		/* chrs[i]: the i-th character in s1 */
@@ -108,6 +112,8 @@ index 8794756..2d92f20 100644
 -				o += curwid;
 -				while (--curwid >= 0)
 -					off[cend - (pos[i] + curwid - 1) - 2] = i;
+-				if (o == cterm)
+-					break;
 -			}
 -		}
 -	} else {
@@ -122,6 +128,8 @@ index 8794756..2d92f20 100644
 -				o += curwid;
 -				while (--curwid >= 0)
 -					off[curbeg + curwid] = i;
+-				if (o == cterm)
+-					break;
 -			}
 -		}
 -	}
@@ -149,7 +157,7 @@ index 8794756..2d92f20 100644
  			o = off[i];
  			if (o >= 0) {
  				ratt[o] = att[j++];
-@@ -323,6 +335,9 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -330,6 +342,9 @@ void led_render(char *s0, int row, int cbeg, int cend)
  	}
  	if (xhlr)
  		led_markrev(n, chrs, pos, ratt);
