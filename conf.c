@@ -165,7 +165,7 @@ name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", {12, 6 | S
 auto(?:capitalize|complete|focus|play)|background|\
 bgcolor|border|buffered|challenge|charset|checked|cite|\
 class|code(?:base)|color|cols|colspan|content(?:editable)|\
-contextmenu|controls|coords|crossorigin|import|\
+contextmenu|controls|coords|crossorigin|import|url|\
 csp|data|datetime|decoding|def(?:ault|er)|dir|dirname|\
 disabled|download|draggable|dropzone|enctype|enterkeyhint|\
 equiv|for|form|action|headers|height|hidden|high|href|http|\
@@ -197,9 +197,10 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{"html", "\"(?:[^\"\\\\]|\\\\.)*\"", {12}},
 	{"html", "'(?:[^'\\\\]|\\\\.)*'", {5}},
 	{"html", "#\\<[A-Fa-f0-9]+\\>", {9}},
-	{"html", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:px|vw|vh|%)?)\\>", {9}},
+	{"html", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:px|vw|vh|%|s)?)\\>", {9}},
 	{"html", "<(/)?[^>]+>", {3, 13}, {1}},
-	{"html", "([#.][ \t]*[a-zA-Z0-9_]+).{1,10}\\{", {0, SYN_BD}, {1}},
+	{"html", "([#.][ \t]*[a-zA-Z0-9_\\-]+\
+(?:(?:[, \t]*[#.][a-zA-Z0-9_\\- \t]+)?){1,7}).{1,20}\\{", {0, SYN_BD}, {1}},
 	{"html", "&[a-zA-Z0-9_]+;", {5}},
 
 	/* diff */
