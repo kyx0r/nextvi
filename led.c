@@ -206,7 +206,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 	}
 }
 
-char *led_bounds(int *off, char **chrs, int cterm)
+static char *led_bounds(int *off, char **chrs, int cterm)
 {
 	int l, i = 0;
 	sbuf *out;

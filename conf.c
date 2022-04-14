@@ -199,8 +199,9 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{"html", "#\\<[A-Fa-f0-9]+\\>", {9}},
 	{"html", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:px|vw|vh|%|s)?)\\>", {9}},
 	{"html", "<(/)?[^>]+>", {3, 13}, {1}},
+	/* do not use this regex on DFA engines, causes catastrophic backtracking */
 	{"html", "([#.][ \t]*[a-zA-Z0-9_\\-]+\
-(?:(?:[, \t]*[#.][a-zA-Z0-9_\\- \t]+)?){1,7}).{1,20}\\{", {0, SYN_BD}, {1}},
+(?:(?:[, \t]*[#.][a-zA-Z0-9_\\-]+)?)+)(?:.?""?){1,20}\\{", {0, SYN_BD}, {1}},
 	{"html", "&[a-zA-Z0-9_]+;", {5}},
 
 	/* diff */
@@ -223,9 +224,9 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{"/#", "[1-9]", {9}},
 
 	/* autocomplete dropdown */
-	{"/ac", "[a-zA-Z0-9_]+(?:(\n$)|\n)|\n|([^\n]+(\n))",
+	{"/ac", "[^ \t-/:-@[-^{-~]+(?:(\n$)|\n)|\n|([^\n]+(\n))",
 		{0, SYN_BGMK(9), SYN_BGMK(8), SYN_BGMK(7)}},
-	{"/ac", "[a-zA-Z0-9_]+$|(.+$)", {0, SYN_BGMK(8)}},
+	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", {0, SYN_BGMK(8)}},
 
 	/* status bar (is never '\n' terminated) */
 	{"/-", "^(\".*\").*(\\[[wr]\\]).*$", {8 | SYN_BD, 4, 1}},
