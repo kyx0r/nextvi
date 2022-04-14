@@ -6,7 +6,7 @@ index 8794756..4c76762 100644
  	}
  }
  
--char *led_bounds(int *off, char **chrs, int cterm)
+-static char *led_bounds(int *off, char **chrs, int cterm)
 -{
 -	int l, i = 0;
 -	sbuf *out;
