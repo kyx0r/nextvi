@@ -36,23 +36,19 @@ hl_naive.patch
 Original approach to syntax highlight as in neatvi.
 Pros:
 1. simpler and shorter code in led_render()
-2. unlimited length, can highlight anything
-pikevm is willing to match.
-3. retains correct right to left highlight if option|
-order=0 and td=-2 are set. Base nextvi will always
-highlight left to right, unless the line does not
+2. unlimited length, can highlight anything pikevm is willing to match.
+3. retains correct right to left highlight if option order=0 and td=-2 are set.
+Base nextvi will always highlight left to right, unless the line does not
 extend past the terminal.
 4. Requires a bit less amount of memory to run.
 Cons:
-1. Terrible performance, need to disable syntax hl
-if working with lines 10K+ (You've been warned!)
-2. Cannot render lines like those by option pac=1
-efficiently. Will recompute the whole string every
-iteration.
-3. Difficult to adapt other kinds of codes to make
-use of.
-Note: Patch is not compatible with hl_part.patch in any
-way, pick one or the other.
+1. Terrible performance, need to disable syntax hl if working with lines 10K+
+(You've been warned!)
+2. Cannot render lines like those by option pac=1 efficiently. Will recompute
+the whole string every iteration.
+3. Difficult to adapt other kinds of codes to make use of.
+Note: Patch is not compatible with hl_part.patch in any way, pick one or the
+other.
 
 debug.patch
 --------------
@@ -63,7 +59,7 @@ enabled by default) Also initializes sdense in regex.c so that valgrind stops
 freaking out.
 
 grep.patch
-----------
+--------------
 Adds a special temporary buffer /grep/ much like the default /hist/ or /fm/.
 When new keybind ^x is executed vi performs fs_search on every file and
 stores the results in /grep/ buffer. At last, user will be switched to /grep/.
