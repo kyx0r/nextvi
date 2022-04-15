@@ -28,7 +28,7 @@ index 5f4db49..a399c5a 100644
  static int bufs_find(const char *path)
  {
 diff --git a/vi.c b/vi.c
-index f36706b..f83fd2c 100644
+index f36706b..b6c5dca 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -678,10 +678,9 @@ void dir_calc(char *cur_dir)
@@ -108,26 +108,28 @@ index f36706b..f83fd2c 100644
  			case TK_CTL('p'):
  				for (n = xbufcur-1; n >= 0 && bufs[n].mtime == -1; n--)
  					ex_bufpostfix(n);
-@@ -1566,7 +1607,17 @@ void vi(int init)
+@@ -1566,7 +1607,19 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
 -				term_push(buf, strlen(ln)+3);
 +				cs = NULL;
 +				if (!strcmp(ex_path, "/grep/")) {
-+					if ((cs = strchr(buf+3, ':')))
-+						if ((ln = strchr(cs+1, ':'))) {
-+							*cs = '|';
-+							*ln++ = '\n';
-+							*ln = '\0';
-+						}
++					int subs[2];
++					rset *rs = rset_make(1, (char*[]){":[0-9]+:"}, 0);
++					if (rset_find(rs, buf, 1, subs, 0) >= 0) {
++						buf[subs[0]] = '|';
++						buf[subs[1]-1] = '\n';
++						buf[subs[1]] = '\0';
++					}
++					rset_free(rs);
 +					xquit = 1;
 +				}
 +				term_push(buf, strlen(buf));
  				if (!strcmp(ex_path, "/fm/"))
  					xquit = 1;
  				vi_mod = 1;
-@@ -1710,6 +1761,14 @@ void vi(int init)
+@@ -1710,6 +1763,14 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
