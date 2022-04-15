@@ -28,7 +28,7 @@ index 5f4db49..a399c5a 100644
  static int bufs_find(const char *path)
  {
 diff --git a/vi.c b/vi.c
-index f36706b..a8f50eb 100644
+index f36706b..1393926 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -678,10 +678,9 @@ void dir_calc(char *cur_dir)
@@ -59,7 +59,7 @@ index f36706b..a8f50eb 100644
 +		if (mv == TK_CTL(']'))
 +			fs_search(0, 1, row, off);
 +		else {
-+			if (!strcmp(ex_path, "/grep"))
++			if (!strcmp(ex_path, "/grep/"))
 +				return -1;
 +			temp_done(2);
 +			term_exec("qq", 3, /*nop*/, /*nop*/)
