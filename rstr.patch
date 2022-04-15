@@ -127,10 +127,10 @@ index 798be60..e8a637b 100644
  			int g1 = offs[grp - 2], g2 = offs[grp - 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index ed62e41..b45cf38 100644
+index ed62e41..825add6 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -640,3 +640,103 @@ char *re_read(char **src)
+@@ -640,3 +640,135 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_done(sb)
  }
@@ -161,6 +161,7 @@ index ed62e41..b45cf38 100644
 +		rs->str = malloc(len + 1);
 +		memcpy(rs->str, beg, len);
 +		rs->str[len] = '\0';
++		rs->len = len;
 +		return 0;
 +	}
 +	return 1;
@@ -180,48 +181,79 @@ index ed62e41..b45cf38 100644
 +	return rs;
 +}
 +
-+static int match_case(char *s, char *r, int icase)
-+{
-+	for (; *r && *s; s++, r++) {
-+		if (!icase && *s != *r)
-+			return 1;
-+		if (icase && tolower((unsigned char) *s) != tolower((unsigned char) *r))
-+			return 1;
-+	}
-+	return *r;
-+}
++#define rstr_match(gen, both, wbeg, wend, cmpcase) \
++wbeg wend \
++m = rs->str; t = r; \
++for (; *m && *t; t++, m++) { \
++	if (cmpcase) \
++		goto break##gen; \
++} \
++if (!*m) { \
++	both \
++	if (n >= 1) { \
++		grps[0] = r - s; \
++		grps[1] = r - s + len; \
++	} \
++	return 0; \
++} \
++break##gen:; \
++
++#define rstr_match1(gen, wbeg, wend, cmpcase) \
++{ do { \
++	rstr_match(1##gen, if (rs->lend) break;, wbeg, wend, cmpcase) \
++} while (0); } \
++
++#define rstr_match2(gen, wbeg, wend, cmpcase) \
++{ for (r = beg; *r; r++) { \
++	rstr_match(2##gen, /*nop*/,  wbeg, wend, cmpcase) \
++} } \
++
++#define _wbeg if (r > s && (isword(r - 1) || !isword(r))) continue;
++#define _wend if (r[len] && (!isword(r + len - 1) || isword(r + len))) continue;
++#define _icase tolower((unsigned char) *t) != tolower((unsigned char) *m)
++
++#define template(func, gen, cmpcase) \
++if (!rs->wbeg && !rs->wend) \
++	rstr_match##func(1##gen, /*nop*/, /*nop*/, cmpcase) \
++else if (rs->wbeg && !rs->wend) \
++	rstr_match##func(2##gen, _wbeg, /*nop*/, cmpcase) \
++else if (!rs->wbeg && rs->wend) \
++	rstr_match##func(3##gen, /*nop*/, _wend, cmpcase) \
++else \
++	rstr_match##func(4##gen, _wbeg, _wend, cmpcase) \
 +
 +/* return zero if an occurrence is found */
 +int rstr_find(rstr *rs, char *s, int n, int *grps, int flg)
 +{
 +	int len;
-+	char *beg, *end;
-+	char *r;
++	char *beg, *r, *t, *m;
 +	if (rs->rs)
 +		return rset_find(rs->rs, s, n, grps, flg);
 +	if ((rs->lbeg && (flg & REG_NOTBOL)) || (rs->lend && (flg & REG_NOTEOL)))
 +		return -1;
-+	len = strlen(rs->str);
-+	beg = s;
-+	end = s + strlen(s) - len - 1;
-+	if (end < beg)
++	if (!*s)
 +		return -1;
-+	if (rs->lbeg)
-+		end = beg;
-+	if (rs->lend)
-+		beg = end;
-+	for (r = beg; r <= end; r++) {
-+		if (rs->wbeg && r > s && (isword(r - 1) || !isword(r)))
-+			continue;
-+		if (rs->wend && r[len] && (!isword(r + len - 1) || isword(r + len)))
-+			continue;
-+		if (!match_case(r, rs->str, rs->icase)) {
-+			if (n >= 1) {
-+				grps[0] = r - s;
-+				grps[1] = r - s + len;
-+			}
-+			return 0;
++	len = rs->len;
++	if (rs->lbeg) {
++		r = s;
++		if (!rs->icase) {
++			template(1, 1, *t != *m)
++		} else {
++			template(1, 2, _icase)
 +		}
++		if (!rs->lend)
++			return -1;
++	}
++	beg = s;
++	if (rs->lend) {
++		beg = s + strlen(s) - len - 1;
++		if (beg < s)
++			return -1;
++	}
++	if (!rs->icase) {
++		template(2, 3, *t != *m)
++	} else {
++		template(2, 4, _icase)
 +	}
 +	return -1;
 +}
@@ -266,16 +298,17 @@ index f36706b..1963f9b 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  		{
 diff --git a/vi.h b/vi.h
-index 08de684..5dad519 100644
+index 08de684..34f6192 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -115,10 +115,20 @@ typedef struct {
+@@ -115,10 +115,21 @@ typedef struct {
  	int *setgrpcnt;		/* number of groups in each regular expression */
  	int grpcnt;		/* group count */
  } rset;
 +typedef struct {
 +	rset *rs;		/* only for regex patterns */
 +	char *str;		/* for simple, non-regex patterns  */
++	int len;		/* str length */
 +	int icase;		/* ignore case */
 +	int lbeg, lend;		/* match line beg/end */
 +	int wbeg, wend;		/* match word beg/end */
@@ -290,7 +323,7 @@ index 08de684..5dad519 100644
  
  /* lbuf.c line buffer, managing a number of lines */
  struct lbuf *lbuf_make(void);
-@@ -142,7 +152,7 @@ int lbuf_eol(struct lbuf *lb, int r);
+@@ -142,7 +153,7 @@ int lbuf_eol(struct lbuf *lb, int r);
  void lbuf_globset(struct lbuf *lb, int pos, int dep);
  int lbuf_globget(struct lbuf *lb, int pos, int dep);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
@@ -299,7 +332,7 @@ index 08de684..5dad519 100644
  /* motions */
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
-@@ -319,7 +329,7 @@ void ex_print(char *line);
+@@ -319,7 +330,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  int ex_init(char **files);
  void ex_bufpostfix(int i);
@@ -308,7 +341,7 @@ index 08de684..5dad519 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path);
  void ec_bufferi(int id);
-@@ -412,7 +422,7 @@ extern int xish;
+@@ -412,7 +423,7 @@ extern int xish;
  extern int xgrp;
  extern int xpac;
  extern sbuf *xacreg;
