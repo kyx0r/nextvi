@@ -78,3 +78,8 @@ Adaptation from upstream neatvi, where simple operations are optimized by
 running a specialized search code instead of full regex engine. rstr can
 yeild up to 3X faster search on non regex patterns. This is not included in
 base nextvi due to underlying complexity.
+
+threaded_rstr.patch
+--------------
+Compatibility patch between rstr.patch and threaded_search.patch
+Unrivaled performance.

@@ -1,0 +1,462 @@
+diff --git a/build.sh b/build.sh
+index 0fab531..832aec6 100755
+--- a/build.sh
++++ b/build.sh
+@@ -5,6 +5,7 @@ CFLAGS="\
+ -Wno-missing-field-initializers \
+ -Wno-unused-parameter \
+ -Wfatal-errors -std=c99 \
++-lpthread \
+ -D_POSIX_C_SOURCE=200809L $CFLAGS"
+ 
+ OS="$(uname)"
+diff --git a/ex.c b/ex.c
+index 5f4db49..977409f 100644
+--- a/ex.c
++++ b/ex.c
+@@ -27,7 +27,7 @@ struct buf *bufs;		/* main buffers */
+ struct buf *ex_buf;		/* current buffer */
+ static struct buf *ex_pbuf;	/* prev buffer */
+ sbuf *xacreg;			/* autocomplete db filter regex */
+-static rset *xkwdrs;		/* the last searched keyword rset */
++static rstr *xkwdrs;		/* the last searched keyword rstr */
+ static char xrep[EXLEN];	/* the last replacement */
+ static int xkwddir;		/* the last search direction */
+ static int xgdep;		/* global command recursion depth */
+@@ -187,8 +187,8 @@ static char *ex_pathexpand(char *src, int spaceallowed)
+ 	sbufn_done(sb)
+ }
+ 
+-/* the previous search keyword rset */
+-int ex_krs(rset **krs, int *dir)
++/* the previous search keyword rstr */
++int ex_krs(rstr **krs, int *dir)
+ {
+ 	if (krs)
+ 		*krs = xkwdrs;
+@@ -197,12 +197,12 @@ int ex_krs(rset **krs, int *dir)
+ 	return xkwddir == 0 || !xkwdrs;
+ }
+ 
+-/* set the previous search keyword rset */
++/* set the previous search keyword rstr */
+ void ex_krsset(char *kwd, int dir)
+ {
+ 	if (kwd) {
+-		rset_free(xkwdrs);
+-		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
++		rstr_free(xkwdrs);
++		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
+ 		vi_regput('/', kwd, 0);
+ 	}
+ 	xkwddir = dir;
+@@ -213,7 +213,7 @@ static int ex_search(char **pat)
+ 	sbuf *kw;
+ 	char *b = *pat;
+ 	char *e = b;
+-	rset *re;
++	rstr *re;
+ 	int dir, row;
+ 	sbuf_make(kw, 64)
+ 	while (*++e) {
+@@ -231,7 +231,7 @@ static int ex_search(char **pat)
+ 		return -1;
+ 	row = xrow + dir;
+ 	while (row >= 0 && row < lbuf_len(xb)) {
+-		if (rset_find(re, lbuf_get(xb, row), 0, NULL, REG_NEWLINE) >= 0)
++		if (rstr_find(re, lbuf_get(xb, row), 0, NULL, REG_NEWLINE) >= 0)
+ 			break;
+ 		row += dir;
+ 	}
+@@ -692,7 +692,7 @@ static void replace(sbuf *dst, char *rep, char *ln, int *offs)
+ 
+ static int ec_substitute(char *loc, char *cmd, char *arg)
+ {
+-	rset *re;
++	rstr *re;
+ 	int beg, end, grp = xgrp != 2 ? xgrp : 32;
+ 	int offs[grp];
+ 	char *pat = NULL, *rep = NULL;
+@@ -720,7 +720,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+ 	for (i = beg; i < end; i++) {
+ 		char *ln = lbuf_get(xb, i);
+ 		sbuf *r = NULL;
+-		while (rset_find(re, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
++		while (rstr_find(re, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
+ 			if (offs[xgrp - 2] < 0) {
+ 				ln += offs[1] > 0 ? offs[1] : 1;
+ 				continue;
+@@ -799,7 +799,7 @@ static int ex_exec(const char *ln);
+ 
+ static int ec_glob(char *loc, char *cmd, char *arg)
+ {
+-	rset *re;
++	rstr *re;
+ 	int beg, end, not;
+ 	char *pat, *s = arg;
+ 	int i;
+@@ -820,7 +820,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+ 	i = beg;
+ 	while (i < lbuf_len(xb)) {
+ 		char *ln = lbuf_get(xb, i);
+-		if ((rset_find(re, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
++		if ((rstr_find(re, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
+ 			xrow = i;
+ 			if (ex_exec(s))
+ 				break;
+@@ -935,9 +935,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+ static int ec_setincl(char *loc, char *cmd, char *arg)
+ {
+ 	ec_setdir(NULL, NULL, NULL);
+-	rset_free(fsincl);
++	rstr_free(fsincl);
+ 	if (*arg)
+-		fsincl = rset_make(1, (char*[]){arg}, xic ? REG_ICASE : 0);
++		fsincl = rstr_make(arg, xic ? REG_ICASE : 0);
+ 	else
+ 		fsincl = NULL;
+ 	return 0;
+diff --git a/lbuf.c b/lbuf.c
+index 798be60..c85c26d 100644
+--- a/lbuf.c
++++ b/lbuf.c
+@@ -419,35 +419,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+ 	return n != 0;
+ }
+ 
+-int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
++struct lsparams
++{
++	struct lbuf *lb;
++	rstr *re;
++	int dir;
++	int ln_n;
++	int *r;
++	int *o;
++	int *len;
++};
++
++static void *lsearch(void *arg)
+ {
+-	int r0 = *r, o0 = *o, grp = xgrp;
++	struct lsparams *a = arg;
++	int r0 = *a->r, o0 = *a->o, grp = xgrp;
+ 	int offs[grp], i = r0;
+-	char *s = lbuf_get(lb, i);
+-	int off = dir > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
+-	int ln_n = lbuf_len(lb);
+-	for (; i >= 0 && i < ln_n; i += dir) {
+-		s = lb->ln[i];
+-		while (rset_find(re, s + off, grp / 2, offs,
++	char *s = lbuf_get(a->lb, i);
++	int off = a->dir > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
++	for (; i >= 0 && i < a->ln_n; i += a->dir) {
++		s = a->lb->ln[i];
++		while (rstr_find(a->re, s + off, grp / 2, offs,
+ 				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
+ 			int g1 = offs[grp - 2], g2 = offs[grp - 1];
+ 			if (g1 < 0) {
+ 				off += offs[1] > 0 ? offs[1] : 1;
+ 				continue;
+ 			}
+-			if (dir < 0 && r0 == i && uc_off(s, off+g1) >= o0)
++			if (a->dir < 0 && r0 == i && uc_off(s, off+g1) >= o0)
+ 				break;
+-			*o = uc_off(s, off + g1);
+-			*r = i;
+-			*len = uc_off(s + off + g1, g2 - g1);
++			*a->o = uc_off(s, off + g1);
++			*a->r = i;
++			*a->len = uc_off(s + off + g1, g2 - g1);
+ 			off += g2 > 0 ? g2 : 1;
+-			if (dir > 0)
+-				return 0;
+-			ln_n = -1; /* break outer loop efficiently */
++			a->ln_n = -1; /* break outer loop efficiently */
++			if (a->dir > 0)
++				return NULL;
+ 		}
+ 		off = 0;
+ 	}
+-	return ln_n < 0 ? 0 : 1;
++	return NULL;
++}
++
++int lbuf_search(struct lbuf *lb, rstr *re, int dir, int *r, int *o, int *len)
++{
++	#define NUM_THREADS 4
++	pthread_t threads[NUM_THREADS];
++	static unsigned char fake_ulen[256]; /* novelty: for fast thread termination */
++	struct lsparams data[NUM_THREADS];
++	int rs[NUM_THREADS];
++	int os[NUM_THREADS];
++	int ls[NUM_THREADS];
++	int ln = lbuf_len(lb);
++	int thread_step = ln / NUM_THREADS; /* number of lines assigned per thread */
++	int step = 0, i = 0;
++	for (i = 0; i < NUM_THREADS; i++) {
++		if (*r + step > ln || *r + step * dir < 0)
++			break;
++		data[i].lb = lb;
++		data[i].re = re;
++		data[i].dir = dir;
++		rs[i] = *r + step * dir;
++		step += thread_step;
++		data[i].r = &rs[i];
++		if (i == NUM_THREADS-1)
++			data[i].ln_n = ln;
++		else
++			data[i].ln_n = MIN(rs[i] + thread_step, ln);
++		os[i] = i ? 0 : *o;
++		data[i].o = &os[i];
++		data[i].len = &ls[i];
++		pthread_create(&threads[i], NULL, lsearch, (void*) &data[i]);
++	}
++	for (step = i, i = 0; i < step; i++) {
++		pthread_join(threads[i], NULL);
++		if (data[i].ln_n < 0) {
++			*r = *data[i].r;
++			*o = *data[i].o;
++			*len = *data[i].len;
++			for (int z = i+1; z < step; z++)
++				data[z].ln_n = -1;
++			/* force instant termination, regardless how long string is */
++			utf8_length = fake_ulen;
++			for (int z = i+1; z < step; z++)
++				pthread_join(threads[z], NULL);
++			utf8_length = _utf8_length;
++			return 0;
++		}
++	}
++	return 1;
+ }
+ 
+ int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
+diff --git a/regex.c b/regex.c
+index ed62e41..511259d 100644
+--- a/regex.c
++++ b/regex.c
+@@ -640,3 +640,103 @@ char *re_read(char **src)
+ 	*src = *s ? s + 1 : s;
+ 	sbufn_done(sb)
+ }
++
++/* return zero if a simple pattern is given */
++static int rstr_simple(rstr *rs, char *re)
++{
++	char *beg;
++	char *end;
++	rs->lbeg = re[0] == '^';
++	if (rs->lbeg)
++		re++;
++	rs->wbeg = re[0] == '\\' && re[1] == '<';
++	if (rs->wbeg)
++		re += 2;
++	beg = re;
++	while (re[0] && !strchr("\\.*+?[]{}()$", (unsigned char) re[0]))
++		re++;
++	end = re;
++	rs->wend = re[0] == '\\' && re[1] == '>';
++	if (rs->wend)
++		re += 2;
++	rs->lend = re[0] == '$';
++	if (rs->lend)
++		re++;
++	if (!re[0]) {
++		int len = end - beg;
++		rs->str = malloc(len + 1);
++		memcpy(rs->str, beg, len);
++		rs->str[len] = '\0';
++		return 0;
++	}
++	return 1;
++}
++
++rstr *rstr_make(char *re, int flg)
++{
++	rstr *rs = malloc(sizeof(*rs));
++	memset(rs, 0, sizeof(*rs));
++	rs->icase = flg & REG_ICASE;
++	if (rstr_simple(rs, re))
++		rs->rs = rset_make(1, &re, flg);
++	if (!rs->rs && !rs->str) {
++		free(rs);
++		return NULL;
++	}
++	return rs;
++}
++
++static int match_case(char *s, char *r, int icase)
++{
++	for (; *r && *s; s++, r++) {
++		if (!icase && *s != *r)
++			return 1;
++		if (icase && tolower((unsigned char) *s) != tolower((unsigned char) *r))
++			return 1;
++	}
++	return *r;
++}
++
++/* return zero if an occurrence is found */
++int rstr_find(rstr *rs, char *s, int n, int *grps, int flg)
++{
++	int len;
++	char *beg, *end;
++	char *r;
++	if (rs->rs)
++		return rset_find(rs->rs, s, n, grps, flg);
++	if ((rs->lbeg && (flg & REG_NOTBOL)) || (rs->lend && (flg & REG_NOTEOL)))
++		return -1;
++	len = strlen(rs->str);
++	beg = s;
++	end = s + strlen(s) - len - 1;
++	if (end < beg)
++		return -1;
++	if (rs->lbeg)
++		end = beg;
++	if (rs->lend)
++		beg = end;
++	for (r = beg; r <= end && utf8_length[(unsigned char)*r]; r++) {
++		if (rs->wbeg && r > s && (isword(r - 1) || !isword(r)))
++			continue;
++		if (rs->wend && r[len] && (!isword(r + len - 1) || isword(r + len)))
++			continue;
++		if (!match_case(r, rs->str, rs->icase)) {
++			if (n >= 1) {
++				grps[0] = r - s;
++				grps[1] = r - s + len;
++			}
++			return 0;
++		}
++	}
++	return -1;
++}
++
++void rstr_free(rstr *rs)
++{
++	if (!rs)
++		return;
++	rset_free(rs->rs);
++	free(rs->str);
++	free(rs);
++}
+diff --git a/uc.c b/uc.c
+index 1ecaad1..5a06d08 100644
+--- a/uc.c
++++ b/uc.c
+@@ -1,4 +1,4 @@
+-unsigned char utf8_length[256] = {
++unsigned char _utf8_length[256] = {
+ 	/*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+ 	/* 0 */ 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 	/* 1 */ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+@@ -17,6 +17,7 @@ unsigned char utf8_length[256] = {
+ 	/* E */ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+ 	/* F */ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
+ };
++unsigned char *utf8_length = _utf8_length;
+ 
+ /* the number of utf-8 characters in s */
+ int uc_slen(char *s)
+diff --git a/vi.c b/vi.c
+index f36706b..e338475 100644
+--- a/vi.c
++++ b/vi.c
+@@ -31,6 +31,7 @@
+ #include <sys/stat.h>
+ #include <sys/ioctl.h>
+ #include <sys/wait.h>
++#include <pthread.h>
+ #include "vi.h"
+ #include "conf.c"
+ #include "ex.c"
+@@ -423,7 +424,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int
+ 
+ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
+ {
+-	rset *rs;
++	rstr *rs;
+ 	int r = *row;
+ 	int o = *off;
+ 	int len = 0;
+@@ -614,7 +615,7 @@ static void vi_regprint()
+ 	}
+ }
+ 
+-rset *fsincl;
++rstr *fsincl;
+ char *fslink;
+ char *fs_exdir;
+ int fstlen;
+@@ -636,7 +637,7 @@ static void file_calc(char *path, char *basepath)
+ 		path[pathlen] = '/';
+ 		memcpy(&path[pathlen+1], dp->d_name, len1);
+ 		if (fsincl)
+-			if (rset_find(fsincl, path, 0, NULL, 0) < 0)
++			if (rstr_find(fsincl, path, 0, NULL, 0) < 0)
+ 				continue;
+ 		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
+ 		{
+diff --git a/vi.h b/vi.h
+index 08de684..5f09553 100644
+--- a/vi.h
++++ b/vi.h
+@@ -115,10 +115,20 @@ typedef struct {
+ 	int *setgrpcnt;		/* number of groups in each regular expression */
+ 	int grpcnt;		/* group count */
+ } rset;
++typedef struct {
++	rset *rs;		/* only for regex patterns */
++	char *str;		/* for simple, non-regex patterns  */
++	int icase;		/* ignore case */
++	int lbeg, lend;		/* match line beg/end */
++	int wbeg, wend;		/* match word beg/end */
++} rstr;
+ rset *rset_make(int n, char **pat, int flg);
+ int rset_find(rset *re, char *s, int n, int *grps, int flg);
+ void rset_free(rset *re);
+ char *re_read(char **src);
++rstr *rstr_make(char *re, int flg);
++int rstr_find(rstr *rs, char *s, int n, int *grps, int flg);
++void rstr_free(rstr *rs);
+ 
+ /* lbuf.c line buffer, managing a number of lines */
+ struct lbuf *lbuf_make(void);
+@@ -142,7 +152,7 @@ int lbuf_eol(struct lbuf *lb, int r);
+ void lbuf_globset(struct lbuf *lb, int pos, int dep);
+ int lbuf_globget(struct lbuf *lb, int pos, int dep);
+ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
+-int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len);
++int lbuf_search(struct lbuf *lb, rstr *re, int dir, int *r, int *o, int *len);
+ /* motions */
+ int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
+ int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
+@@ -195,7 +205,9 @@ int syn_addhl(char *reg, int func, int reload);
+ void syn_init(void);
+ 
+ /* uc.c utf-8 helper functions */
+-extern unsigned char utf8_length[256];
++extern unsigned char _utf8_length[256];
++extern unsigned char *utf8_length;
++
+ /* return the length of a utf-8 character */
+ #define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
+ /* the unicode codepoint of the given utf-8 character */
+@@ -319,7 +331,7 @@ void ex_print(char *line);
+ void ex_show(char *msg);
+ int ex_init(char **files);
+ void ex_bufpostfix(int i);
+-int ex_krs(rset **krs, int *dir);
++int ex_krs(rstr **krs, int *dir);
+ void ex_krsset(char *kwd, int dir);
+ int ex_edit(const char *path);
+ void ec_bufferi(int id);
+@@ -412,7 +424,7 @@ extern int xish;
+ extern int xgrp;
+ extern int xpac;
+ extern sbuf *xacreg;
+-extern rset *fsincl;
++extern rstr *fsincl;
+ extern char *fslink;
+ extern char *fs_exdir;
+ extern int fstlen;
