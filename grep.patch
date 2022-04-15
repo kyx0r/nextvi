@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index d106b59..7edea99 100644
+index d106b59..a7c49ab 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -228,6 +228,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
@@ -8,8 +8,8 @@ index d106b59..7edea99 100644
  
 +	/* grep buffer */
 +	/* I don't feel like making new ->func index so reuse 3 here */
-+	{"/grep", NULL, {7 | SYN_BGMK(9)}, {0}, 0, 3},
 +	{"/grep", "^(.+):([0-9]+):(.+)", {5, 10, 6, 8}, {1, 0, 0, 1}},
++	{"/grep", NULL, {7 | SYN_BGMK(9)}, {0}, 0, 3},
 +
  	/* status bar (is never '\n' terminated) */
  	{"/-", "^(\".*\").*(\\[[wr]\\]).*$", {8 | SYN_BD, 4, 1}},
