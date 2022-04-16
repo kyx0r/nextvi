@@ -127,7 +127,7 @@ index 798be60..e8a637b 100644
  			int g1 = offs[grp - 2], g2 = offs[grp - 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index ed62e41..825add6 100644
+index ed62e41..dc6ca65 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -640,3 +640,135 @@ char *re_read(char **src)
@@ -204,7 +204,7 @@ index ed62e41..825add6 100644
 +} while (0); } \
 +
 +#define rstr_match2(gen, wbeg, wend, cmpcase) \
-+{ for (r = beg; *r; r++) { \
++{ for (r = beg; r <= end; r++) { \
 +	rstr_match(2##gen, /*nop*/,  wbeg, wend, cmpcase) \
 +} } \
 +
@@ -226,7 +226,7 @@ index ed62e41..825add6 100644
 +int rstr_find(rstr *rs, char *s, int n, int *grps, int flg)
 +{
 +	int len;
-+	char *beg, *r, *t, *m;
++	char *beg, *end, *r, *t, *m;
 +	if (rs->rs)
 +		return rset_find(rs->rs, s, n, grps, flg);
 +	if ((rs->lbeg && (flg & REG_NOTBOL)) || (rs->lend && (flg & REG_NOTEOL)))
@@ -245,11 +245,11 @@ index ed62e41..825add6 100644
 +			return -1;
 +	}
 +	beg = s;
-+	if (rs->lend) {
-+		beg = s + strlen(s) - len - 1;
-+		if (beg < s)
-+			return -1;
-+	}
++	end = s + strlen(s) - len - 1;
++	if (end < beg)
++		return -1;
++	if (rs->lend)
++		beg = end;
 +	if (!rs->icase) {
 +		template(2, 3, *t != *m)
 +	} else {
