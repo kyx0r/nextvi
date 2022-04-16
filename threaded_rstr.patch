@@ -117,10 +117,10 @@ index 5f4db49..977409f 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/lbuf.c b/lbuf.c
-index 798be60..2840640 100644
+index 798be60..dc1504e 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -419,35 +419,97 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -419,35 +419,98 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -230,12 +230,13 @@ index 798be60..2840640 100644
 +			return 0;
 +		}
 +	}
++	utf8_length['\n'] = 1;
 +	return 1;
  }
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 diff --git a/regex.c b/regex.c
-index ed62e41..685d5ea 100644
+index ed62e41..bacb94d 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -304,7 +304,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -259,7 +260,7 @@ index ed62e41..685d5ea 100644
  	if (flg & REG_ICASE)
  		goto jmp_start1;
  	goto jmp_start2;
-@@ -640,3 +642,135 @@ char *re_read(char **src)
+@@ -640,3 +642,137 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_done(sb)
  }
@@ -269,6 +270,8 @@ index ed62e41..685d5ea 100644
 +{
 +	char *beg;
 +	char *end;
++	if (!strcmp(re, "^$") || !strcmp(re, "$"))
++		return 1;
 +	rs->lbeg = re[0] == '^';
 +	if (rs->lbeg)
 +		re++;
