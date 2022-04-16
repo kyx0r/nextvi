@@ -117,10 +117,10 @@ index 5f4db49..977409f 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/lbuf.c b/lbuf.c
-index 798be60..c85c26d 100644
+index 798be60..2840640 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -419,35 +419,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -419,35 +419,97 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -194,6 +194,7 @@ index 798be60..c85c26d 100644
 +	int ln = lbuf_len(lb);
 +	int thread_step = ln / NUM_THREADS; /* number of lines assigned per thread */
 +	int step = 0, i = 0;
++	utf8_length['\n'] = 0;
 +	for (i = 0; i < NUM_THREADS; i++) {
 +		if (*r + step > ln || *r + step * dir < 0)
 +			break;
@@ -225,6 +226,7 @@ index 798be60..c85c26d 100644
 +			for (int z = i+1; z < step; z++)
 +				pthread_join(threads[z], NULL);
 +			utf8_length = _utf8_length;
++			utf8_length['\n'] = 1;
 +			return 0;
 +		}
 +	}
@@ -233,10 +235,31 @@ index 798be60..c85c26d 100644
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 diff --git a/regex.c b/regex.c
-index ed62e41..511259d 100644
+index ed62e41..685d5ea 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -640,3 +640,103 @@ char *re_read(char **src)
+@@ -304,7 +304,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
+ 	return RE_SUCCESS;
+ }
+ 
+-#define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; return state; } \
++#define _return(state) { if (flg & REG_NEWLINE) utf8_length[eol_ch] = 1; return state; } \
+ 
+ #define newsub(init, copy) \
+ if (freesub) \
+@@ -529,8 +529,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+ 	rthread *clist = _clist, *nlist = _nlist, *tmp;
+ 	char nsubs[prog->sub];
+ 	flg = prog->flg | flg;
+-	if (eol_ch)
++	if (eol_ch && utf8_length[eol_ch])
+ 		utf8_length[eol_ch] = 0;
++	else
++		flg &= ~REG_NEWLINE;
+ 	if (flg & REG_ICASE)
+ 		goto jmp_start1;
+ 	goto jmp_start2;
+@@ -640,3 +642,135 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_done(sb)
  }
@@ -267,6 +290,7 @@ index ed62e41..511259d 100644
 +		rs->str = malloc(len + 1);
 +		memcpy(rs->str, beg, len);
 +		rs->str[len] = '\0';
++		rs->len = len;
 +		return 0;
 +	}
 +	return 1;
@@ -286,48 +310,79 @@ index ed62e41..511259d 100644
 +	return rs;
 +}
 +
-+static int match_case(char *s, char *r, int icase)
-+{
-+	for (; *r && *s; s++, r++) {
-+		if (!icase && *s != *r)
-+			return 1;
-+		if (icase && tolower((unsigned char) *s) != tolower((unsigned char) *r))
-+			return 1;
-+	}
-+	return *r;
-+}
++#define rstr_match(gen, both, wbeg, wend, cmpcase) \
++wbeg wend \
++m = rs->str; t = r; \
++for (; *m && *t; t++, m++) { \
++	if (cmpcase) \
++		goto break##gen; \
++} \
++if (!*m) { \
++	both \
++	if (n >= 1) { \
++		grps[0] = r - s; \
++		grps[1] = r - s + len; \
++	} \
++	return 0; \
++} \
++break##gen:; \
++
++#define rstr_match1(gen, wbeg, wend, cmpcase) \
++{ do { \
++	rstr_match(1##gen, if (rs->lend) break;, wbeg, wend, cmpcase) \
++} while (0); } \
++
++#define rstr_match2(gen, wbeg, wend, cmpcase) \
++{ for (r = beg; utf8_length[(unsigned char)*r]; r++) { \
++	rstr_match(2##gen, /*nop*/,  wbeg, wend, cmpcase) \
++} } \
++
++#define _wbeg if (r > s && (isword(r - 1) || !isword(r))) continue;
++#define _wend if (r[len] && (!isword(r + len - 1) || isword(r + len))) continue;
++#define _icase tolower((unsigned char) *t) != tolower((unsigned char) *m)
++
++#define template(func, gen, cmpcase) \
++if (!rs->wbeg && !rs->wend) \
++	rstr_match##func(1##gen, /*nop*/, /*nop*/, cmpcase) \
++else if (rs->wbeg && !rs->wend) \
++	rstr_match##func(2##gen, _wbeg, /*nop*/, cmpcase) \
++else if (!rs->wbeg && rs->wend) \
++	rstr_match##func(3##gen, /*nop*/, _wend, cmpcase) \
++else \
++	rstr_match##func(4##gen, _wbeg, _wend, cmpcase) \
 +
 +/* return zero if an occurrence is found */
 +int rstr_find(rstr *rs, char *s, int n, int *grps, int flg)
 +{
 +	int len;
-+	char *beg, *end;
-+	char *r;
++	char *beg, *r, *t, *m;
 +	if (rs->rs)
 +		return rset_find(rs->rs, s, n, grps, flg);
 +	if ((rs->lbeg && (flg & REG_NOTBOL)) || (rs->lend && (flg & REG_NOTEOL)))
 +		return -1;
-+	len = strlen(rs->str);
-+	beg = s;
-+	end = s + strlen(s) - len - 1;
-+	if (end < beg)
++	if (!*s)
 +		return -1;
-+	if (rs->lbeg)
-+		end = beg;
-+	if (rs->lend)
-+		beg = end;
-+	for (r = beg; r <= end && utf8_length[(unsigned char)*r]; r++) {
-+		if (rs->wbeg && r > s && (isword(r - 1) || !isword(r)))
-+			continue;
-+		if (rs->wend && r[len] && (!isword(r + len - 1) || isword(r + len)))
-+			continue;
-+		if (!match_case(r, rs->str, rs->icase)) {
-+			if (n >= 1) {
-+				grps[0] = r - s;
-+				grps[1] = r - s + len;
-+			}
-+			return 0;
++	len = rs->len;
++	if (rs->lbeg) {
++		r = s;
++		if (!rs->icase) {
++			template(1, 1, *t != *m)
++		} else {
++			template(1, 2, _icase)
 +		}
++		if (!rs->lend)
++			return -1;
++	}
++	beg = s;
++	if (rs->lend) {
++		beg = s + strlen(s) - len - 1;
++		if (beg < s)
++			return -1;
++	}
++	if (!rs->icase) {
++		template(2, 3, *t != *m)
++	} else {
++		template(2, 4, _icase)
 +	}
 +	return -1;
 +}
@@ -398,16 +453,17 @@ index f36706b..e338475 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  		{
 diff --git a/vi.h b/vi.h
-index 08de684..5f09553 100644
+index 08de684..764ba16 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -115,10 +115,20 @@ typedef struct {
+@@ -115,10 +115,21 @@ typedef struct {
  	int *setgrpcnt;		/* number of groups in each regular expression */
  	int grpcnt;		/* group count */
  } rset;
 +typedef struct {
 +	rset *rs;		/* only for regex patterns */
 +	char *str;		/* for simple, non-regex patterns  */
++	int len;		/* str length */
 +	int icase;		/* ignore case */
 +	int lbeg, lend;		/* match line beg/end */
 +	int wbeg, wend;		/* match word beg/end */
@@ -422,7 +478,7 @@ index 08de684..5f09553 100644
  
  /* lbuf.c line buffer, managing a number of lines */
  struct lbuf *lbuf_make(void);
-@@ -142,7 +152,7 @@ int lbuf_eol(struct lbuf *lb, int r);
+@@ -142,7 +153,7 @@ int lbuf_eol(struct lbuf *lb, int r);
  void lbuf_globset(struct lbuf *lb, int pos, int dep);
  int lbuf_globget(struct lbuf *lb, int pos, int dep);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
@@ -431,7 +487,7 @@ index 08de684..5f09553 100644
  /* motions */
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
-@@ -195,7 +205,9 @@ int syn_addhl(char *reg, int func, int reload);
+@@ -195,7 +206,9 @@ int syn_addhl(char *reg, int func, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */
@@ -442,7 +498,7 @@ index 08de684..5f09553 100644
  /* return the length of a utf-8 character */
  #define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
  /* the unicode codepoint of the given utf-8 character */
-@@ -319,7 +331,7 @@ void ex_print(char *line);
+@@ -319,7 +332,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  int ex_init(char **files);
  void ex_bufpostfix(int i);
@@ -451,7 +507,7 @@ index 08de684..5f09553 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path);
  void ec_bufferi(int id);
-@@ -412,7 +424,7 @@ extern int xish;
+@@ -412,7 +425,7 @@ extern int xish;
  extern int xgrp;
  extern int xpac;
  extern sbuf *xacreg;
