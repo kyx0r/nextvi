@@ -127,16 +127,16 @@ index 798be60..e8a637b 100644
  			int g1 = offs[grp - 2], g2 = offs[grp - 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index ed62e41..fe405f6 100644
+index b1ef9de..6ad8adb 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -640,3 +640,137 @@ char *re_read(char **src)
+@@ -640,3 +640,128 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_done(sb)
  }
 +
 +/* return zero if a simple pattern is given */
-+static int rstr_simple(rstr *rs, char *re)
++static int rstr_simple(rstr *rs, char *re, int icase)
 +{
 +	char *beg;
 +	char *end;
@@ -160,10 +160,14 @@ index ed62e41..fe405f6 100644
 +		re++;
 +	if (!re[0]) {
 +		int len = end - beg;
-+		rs->str = malloc(len + 1);
-+		memcpy(rs->str, beg, len);
-+		rs->str[len] = '\0';
 +		rs->len = len;
++		rs->str = malloc(len + 1);
++		if (icase) {
++			while (--len >= 0)
++				rs->str[len] = tolower(beg[len]);
++		} else
++			memcpy(rs->str, beg, len);
++		rs->str[rs->len] = '\0';
 +		return 0;
 +	}
 +	return 1;
@@ -174,7 +178,7 @@ index ed62e41..fe405f6 100644
 +	rstr *rs = malloc(sizeof(*rs));
 +	memset(rs, 0, sizeof(*rs));
 +	rs->icase = flg & REG_ICASE;
-+	if (rstr_simple(rs, re))
++	if (rstr_simple(rs, re, rs->icase))
 +		rs->rs = rset_make(1, &re, flg);
 +	if (!rs->rs && !rs->str) {
 +		free(rs);
@@ -201,28 +205,23 @@ index ed62e41..fe405f6 100644
 +break##gen:; \
 +
 +#define rstr_match1(gen, wbeg, wend, cmpcase) \
-+{ do { \
-+	rstr_match(1##gen, if (rs->lend) break;, wbeg, wend, cmpcase) \
-+} while (0); } \
-+
-+#define rstr_match2(gen, wbeg, wend, cmpcase) \
 +{ for (r = beg; r <= end; r++) { \
 +	rstr_match(2##gen, /*nop*/,  wbeg, wend, cmpcase) \
 +} } \
 +
 +#define _wbeg if (r > s && (isword(r - 1) || !isword(r))) continue;
 +#define _wend if (r[len] && (!isword(r + len - 1) || isword(r + len))) continue;
-+#define _icase tolower((unsigned char) *t) != tolower((unsigned char) *m)
++#define _icase tolower((unsigned char) *t) != *m
 +
-+#define template(func, gen, cmpcase) \
++#define template(gen, cmpcase) \
 +if (!rs->wbeg && !rs->wend) \
-+	rstr_match##func(1##gen, /*nop*/, /*nop*/, cmpcase) \
++	rstr_match1(1##gen, /*nop*/, /*nop*/, cmpcase) \
 +else if (rs->wbeg && !rs->wend) \
-+	rstr_match##func(2##gen, _wbeg, /*nop*/, cmpcase) \
++	rstr_match1(2##gen, _wbeg, /*nop*/, cmpcase) \
 +else if (!rs->wbeg && rs->wend) \
-+	rstr_match##func(3##gen, /*nop*/, _wend, cmpcase) \
++	rstr_match1(3##gen, /*nop*/, _wend, cmpcase) \
 +else \
-+	rstr_match##func(4##gen, _wbeg, _wend, cmpcase) \
++	rstr_match1(4##gen, _wbeg, _wend, cmpcase) \
 +
 +/* return zero if an occurrence is found */
 +int rstr_find(rstr *rs, char *s, int n, int *grps, int flg)
@@ -236,26 +235,18 @@ index ed62e41..fe405f6 100644
 +	if (!*s)
 +		return -1;
 +	len = rs->len;
-+	if (rs->lbeg) {
-+		r = s;
-+		if (!rs->icase) {
-+			template(1, 1, *t != *m)
-+		} else {
-+			template(1, 2, _icase)
-+		}
-+		if (!rs->lend)
-+			return -1;
-+	}
 +	beg = s;
 +	end = s + strlen(s) - len - 1;
 +	if (end < beg)
 +		return -1;
 +	if (rs->lend)
 +		beg = end;
++	if (rs->lbeg)
++		end = s;
 +	if (!rs->icase) {
-+		template(2, 3, *t != *m)
++		template(3, *t != *m)
 +	} else {
-+		template(2, 4, _icase)
++		template(4, _icase)
 +	}
 +	return -1;
 +}
