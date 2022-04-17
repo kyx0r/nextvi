@@ -236,7 +236,7 @@ index 798be60..dc1504e 100644
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 diff --git a/regex.c b/regex.c
-index ed62e41..bacb94d 100644
+index b1ef9de..e1bff94 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -304,7 +304,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -260,13 +260,13 @@ index ed62e41..bacb94d 100644
  	if (flg & REG_ICASE)
  		goto jmp_start1;
  	goto jmp_start2;
-@@ -640,3 +642,137 @@ char *re_read(char **src)
+@@ -640,3 +642,141 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_done(sb)
  }
 +
 +/* return zero if a simple pattern is given */
-+static int rstr_simple(rstr *rs, char *re)
++static int rstr_simple(rstr *rs, char *re, int icase)
 +{
 +	char *beg;
 +	char *end;
@@ -290,10 +290,14 @@ index ed62e41..bacb94d 100644
 +		re++;
 +	if (!re[0]) {
 +		int len = end - beg;
-+		rs->str = malloc(len + 1);
-+		memcpy(rs->str, beg, len);
-+		rs->str[len] = '\0';
 +		rs->len = len;
++		rs->str = malloc(len + 1);
++		if (icase) {
++			while (--len >= 0)
++				rs->str[len] = tolower(beg[len]);
++		} else
++			memcpy(rs->str, beg, len);
++		rs->str[rs->len] = '\0';
 +		return 0;
 +	}
 +	return 1;
@@ -304,7 +308,7 @@ index ed62e41..bacb94d 100644
 +	rstr *rs = malloc(sizeof(*rs));
 +	memset(rs, 0, sizeof(*rs));
 +	rs->icase = flg & REG_ICASE;
-+	if (rstr_simple(rs, re))
++	if (rstr_simple(rs, re, rs->icase))
 +		rs->rs = rset_make(1, &re, flg);
 +	if (!rs->rs && !rs->str) {
 +		free(rs);
@@ -342,7 +346,7 @@ index ed62e41..bacb94d 100644
 +
 +#define _wbeg if (r > s && (isword(r - 1) || !isword(r))) continue;
 +#define _wend if (r[len] && (!isword(r + len - 1) || isword(r + len))) continue;
-+#define _icase tolower((unsigned char) *t) != tolower((unsigned char) *m)
++#define _icase tolower((unsigned char) *t) != *m
 +
 +#define template(func, gen, cmpcase) \
 +if (!rs->wbeg && !rs->wend) \
