@@ -200,20 +200,16 @@ static void vi_drawrow(int row)
 /* redraw the screen */
 static void vi_drawagain()
 {
-	term_record = 1;
 	syn_scdir(0);
 	syn_blockhl = 0;
 	for (int i = xtop; i < xtop + xrows; i++)
 		vi_drawrow(i);
-	vi_drawmsg();
-	term_commit();
 }
 
 /* update the screen */
 static void vi_drawupdate(int otop)
 {
 	int i = otop - xtop;
-	term_record = 1;
 	term_pos(0, 0);
 	term_room(i);
 	syn_scdir(i > 1 || i < -1 ? -1 : i);
@@ -226,8 +222,6 @@ static void vi_drawupdate(int otop)
 		for (i = 0; i < n; i++)
 			vi_drawrow(xtop + i);
 	}
-	vi_drawmsg();
-	term_commit();
 }
 
 /* update the screen by removing lines r1 to r2 before an input command */
@@ -1437,6 +1431,7 @@ void vi(int init)
 		xtop = MAX(0, xrow - xrows / 2);
 		vi_col = vi_off2col(xb, xrow, xoff);
 		vi_drawagain();
+		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col));
 	}
 	while (!xquit) {
@@ -2021,11 +2016,13 @@ void vi(int init)
 			}
 		}
 		syn_reloadft();
+		term_record = 1;
 		if (abs(vi_mod) == 1 || xleft != oleft)
 			vi_drawagain();
 		else if (xtop != otop)
 			vi_drawupdate(otop);
 		if (xhll) {
+			syn_blockhl = 0;
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
 				if (!vi_mod)
 					vi_drawrow(orow);
@@ -2034,11 +2031,13 @@ void vi(int init)
 			vi_drawrow(xrow);
 			syn_addhl(NULL, 2, 1);
 			syn_reloadft();
+		} else if (vi_mod == 2) {
 			syn_blockhl = 0;
-		} else if (vi_mod == 2)
 			vi_drawrow(xrow);
+		}
 		vi_drawmsg();
 		term_pos(xrow - xtop, n);
+		term_commit();
 		lbuf_modified(xb);
 	}
 }
