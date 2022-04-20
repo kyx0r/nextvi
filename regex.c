@@ -299,7 +299,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->splits = (scnt - SPLIT) / 2;
 	prog->len = icnt + 2;
 	prog->presub = sizeof(rsub) + (sizeof(char*) * (nsubs + 1) * 2);
-	prog->sub = prog->presub * (prog->len - prog->splits + 4);
+	prog->sub = prog->presub * (prog->len - prog->splits + 3);
 	prog->sparsesz = scnt;
 	return RE_SUCCESS;
 }
@@ -310,7 +310,8 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 if (freesub) \
 	{ s1 = freesub; freesub = s1->freesub; copy } \
 else \
-	{ s1 = (rsub*)&nsubs[suboff+=rsubsize]; init } \
+	{ if (suboff == prog->sub) suboff = 0; \
+	s1 = (rsub*)&nsubs[suboff]; suboff += rsubsize; init } \
 
 #define onclist(nn)
 #define onnlist(nn) \
@@ -480,13 +481,11 @@ for (;; sp = _sp) { \
 			matched##n: \
 			nlist[nlistidx++].pc = &mcont; \
 			if (npc != &mcont) { \
-				if (matched) { \
+				if (matched) \
 					decref(matched) \
-					suboff = 0; \
-				} \
 				matched = nsub; \
 			} \
-			if ((sp == _sp || nlistidx == 1) && matched->sub[nsubp/2]) { \
+			if (sp == _sp || nlistidx == 1) { \
 				for (i = 0, j = i; i < nsubp; i+=2, j++) { \
 					subp[i] = matched->sub[j]; \
 					subp[i+1] = matched->sub[nsubp / 2 + j]; \
@@ -517,7 +516,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	if (!*s)
 		return 0;
 	const char *sp = s, *_sp = s;
-	int rsubsize = prog->presub, suboff = rsubsize;
+	int rsubsize = prog->presub, suboff = 0;
 	int spc, i, j, c, *npc, osubp = nsubp * sizeof(char*);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
