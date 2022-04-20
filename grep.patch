@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index d106b59..a7c49ab 100644
+index d106b59..ecf5f84 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -228,6 +228,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
@@ -8,7 +8,7 @@ index d106b59..a7c49ab 100644
  
 +	/* grep buffer */
 +	/* I don't feel like making new ->func index so reuse 3 here */
-+	{"/grep", "^(.+):([0-9]+):(.+)", {5, 10, 6, 8}, {1, 0, 0, 1}},
++	{"/grep", "^(.+?):([0-9]+):(.+)", {5, 10, 6, 8}, {1, 0, 0, 1}},
 +	{"/grep", NULL, {7 | SYN_BGMK(9)}, {0}, 0, 3},
 +
  	/* status bar (is never '\n' terminated) */
@@ -28,10 +28,10 @@ index 5f4db49..a399c5a 100644
  static int bufs_find(const char *path)
  {
 diff --git a/vi.c b/vi.c
-index f36706b..1393926 100644
+index 9b12623..40ccf06 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -678,10 +678,9 @@ void dir_calc(char *cur_dir)
+@@ -672,10 +672,9 @@ void dir_calc(char *cur_dir)
  	closedir(dp);
  }
  
@@ -43,7 +43,7 @@ index f36706b..1393926 100644
  	redo:
  	for (;fspos < fstlen;)
  	{
-@@ -824,14 +823,54 @@ static int vi_motion(int *row, int *off)
+@@ -818,14 +817,54 @@ static int vi_motion(int *row, int *off)
  			if (lbuf_sectionbeg(xb, +1, row, off))
  				break;
  		break;
@@ -99,7 +99,7 @@ index f36706b..1393926 100644
  		break;
  	case TK_CTL('p'):
  		if (!fslink)
-@@ -1479,6 +1518,7 @@ void vi(int init)
+@@ -1474,6 +1513,7 @@ void vi(int init)
  			switch (mv)
  			{
  			case TK_CTL(']'):
@@ -107,7 +107,7 @@ index f36706b..1393926 100644
  			case TK_CTL('p'):
  				for (n = xbufcur-1; n >= 0 && bufs[n].mtime == -1; n--)
  					ex_bufpostfix(n);
-@@ -1566,7 +1606,19 @@ void vi(int init)
+@@ -1561,7 +1601,19 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -128,7 +128,7 @@ index f36706b..1393926 100644
  				if (!strcmp(ex_path, "/fm/"))
  					xquit = 1;
  				vi_mod = 1;
-@@ -1710,6 +1762,14 @@ void vi(int init)
+@@ -1705,6 +1757,14 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
