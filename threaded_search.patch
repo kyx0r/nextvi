@@ -130,11 +130,11 @@ index 798be60..2b8b3d9 100644
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 diff --git a/regex.c b/regex.c
-index ed62e41..95e5fe2 100644
+index 93afc22..db0608b 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -304,7 +304,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
- 	return RE_SUCCESS;
+@@ -303,7 +303,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
+ 	return 0;
  }
  
 -#define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; return state; } \
@@ -142,7 +142,7 @@ index ed62e41..95e5fe2 100644
  
  #define newsub(init, copy) \
  if (freesub) \
-@@ -529,8 +529,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -527,8 +527,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
  	char nsubs[prog->sub];
  	flg = prog->flg | flg;
@@ -173,7 +173,7 @@ index 1ecaad1..5a06d08 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index f36706b..f3dd56c 100644
+index 9b12623..444f4c4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -31,6 +31,7 @@
