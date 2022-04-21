@@ -24,13 +24,6 @@ enum
 	RSPLIT,
 };
 
-/* Return codes for re_sizecode() and re_comp() */
-enum {
-	RE_SUCCESS = 0,
-	RE_SYNTAX_ERROR = -2,
-	RE_UNSUPPORTED_SYNTAX = -3,
-};
-
 typedef struct rsub rsub;
 struct rsub
 {
@@ -54,21 +47,22 @@ pc += num;
 #define EMIT(at, byte) (code ? (code[at] = byte) : at)
 #define PC (prog->unilen)
 
-static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flags)
+static int _compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 {
-	const char *re = *re_loc;
+	const char *re = re_loc;
 	int *code = sizecode ? NULL : prog->insts;
 	int start = PC, term = PC;
 	int alt_label = 0, c;
-	int alt_stack[5000], altc = 0;
+	int alt_stack[4096], altc = 0;
+	int cap_stack[4096 * 5], capc = 0;
 
-	for (; *re && *re != ')';) {
+	while (*re) {
 		switch (*re) {
 		case '\\':
 			re++;
-			if (!*re) goto syntax_error; /* Trailing backslash */
+			if (!*re) return -1; /* Trailing backslash */
 			if (*re == '<' || *re == '>') {
-				if (re - *re_loc > 2 && re[-2] == '\\')
+				if (re - re_loc > 2 && re[-2] == '\\')
 					break;
 				EMIT(PC++, *re == '<' ? WBEG : WEND);
 				term = PC;
@@ -78,7 +72,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			term = PC;
 			EMIT(PC++, CHAR);
 			uc_code(c, re)
-			if (flags & REG_ICASE)
+			if (flg & REG_ICASE)
 				c = tolower(c);
 			EMIT(PC++, c);
 			break;
@@ -98,19 +92,19 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			PC += 2;
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (*re == '\\') re++;
-				if (!*re) goto syntax_error;
+				if (!*re) return -1;
 				uc_len(l, re)
 				if (not && *re == '&' && re[l] == '&') {
 					not = -(cnt+2); re += 2;
 				}
 				uc_code(c, re)
-				if (flags & REG_ICASE)
+				if (flg & REG_ICASE)
 					c = tolower(c);
 				EMIT(PC++, c);
 				if (re[l] == '-' && re[l+1] != ']')
 					re += l+1;
 				uc_code(c, re)
-				if (flags & REG_ICASE)
+				if (flg & REG_ICASE)
 					c = tolower(c);
 				EMIT(PC++, c);
 				uc_len(c, re) re += c;
@@ -123,29 +117,42 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			term = PC;
 			int sub;
 			int capture = 1;
-			re++;
-			if (*re == '?') {
-				re++;
-				if (*re == ':') {
+			if (*(re+1) == '?') {
+				re += 2;
+				if (*re == ':')
 					capture = 0;
-					re++;
-				} else {
-					*re_loc = re;
-					return RE_UNSUPPORTED_SYNTAX;
-				}
+				else
+					return -1;
 			}
 			if (capture) {
 				sub = ++prog->sub;
 				EMIT(PC++, SAVE);
 				EMIT(PC++, sub);
 			}
-			int res = _compilecode(&re, prog, sizecode, flags);
-			*re_loc = re;
-			if (res < 0) return res;
-			if (*re != ')') return RE_SYNTAX_ERROR;
-			if (capture) {
+			cap_stack[capc++] = capture;
+			cap_stack[capc++] = term;
+			cap_stack[capc++] = alt_label;
+			cap_stack[capc++] = start;
+			cap_stack[capc++] = altc;
+			alt_label = 0;
+			start = PC;
+			break;
+		case ')':
+			if (--capc-4 < 0) return -1;
+			if (code && alt_label) {
+				EMIT(alt_label, REL(alt_label, PC) + 1);
+				int _altc = cap_stack[capc];
+				for (int alts = altc; altc > _altc; altc--) {
+					int at = alt_stack[_altc+alts-altc]+(altc-_altc)*2;
+					EMIT(at, REL(at, PC) + 1);
+				}
+			}
+			start = cap_stack[--capc];
+			alt_label = cap_stack[--capc];
+			term = cap_stack[--capc];
+			if (cap_stack[--capc]) {
 				EMIT(PC++, SAVE);
-				EMIT(PC++, sub + prog->presub + 1);
+				EMIT(PC++, code[term+1] + prog->presub + 1);
 			}
 			break;
 		case '{':;
@@ -179,7 +186,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			}
 			break;
 		case '?':
-			if (PC == term) goto syntax_error;
+			if (PC == term) return -1;
 			INSERT_CODE(term, 2, PC);
 			if (re[1] == '?') {
 				EMIT(term, RSPLIT);
@@ -190,7 +197,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			term = PC;
 			break;
 		case '*':
-			if (PC == term) goto syntax_error;
+			if (PC == term) return -1;
 			INSERT_CODE(term, 2, PC);
 			EMIT(PC, JMP);
 			EMIT(PC + 1, REL(PC, term));
@@ -204,7 +211,7 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			term = PC;
 			break;
 		case '+':
-			if (PC == term) goto syntax_error;
+			if (PC == term) return -1;
 			if (re[1] == '?') {
 				EMIT(PC, SPLIT);
 				re++;
@@ -242,22 +249,15 @@ static int _compilecode(const char **re_loc, rcode *prog, int sizecode, int flag
 			EMIT(at, REL(at, PC) + 1);
 		}
 	}
-	*re_loc = re;
-	return RE_SUCCESS;
-syntax_error:
-	*re_loc = re;
-	return RE_SYNTAX_ERROR;
+	return capc ? -1 : 0;
 }
 
 int re_sizecode(const char *re)
 {
 	rcode dummyprog;
 	dummyprog.unilen = 4;
-	int res = _compilecode(&re, &dummyprog, 1, 0);
-	if (res < 0) return res;
-	if (*re)
-		return RE_SYNTAX_ERROR;
-	return dummyprog.unilen;
+	int res = _compilecode(re, &dummyprog, 1, 0);
+	return res < 0 ? res : dummyprog.unilen;
 }
 
 int re_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -268,9 +268,8 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->presub = nsubs;
 	prog->splits = 0;
 	prog->flg = flags;
-	int res = _compilecode(&re, prog, 0, flags);
+	int res = _compilecode(re, prog, 0, flags);
 	if (res < 0) return res;
-	if (*re) return RE_SYNTAX_ERROR;
 	int icnt = 0, scnt = SPLIT;
 	for (int i = 0; i < prog->unilen; i++)
 		switch (prog->insts[i]) {
@@ -301,7 +300,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->presub = sizeof(rsub) + (sizeof(char*) * (nsubs + 1) * 2);
 	prog->sub = prog->presub * (prog->len - prog->splits + 3);
 	prog->sparsesz = scnt;
-	return RE_SUCCESS;
+	return 0;
 }
 
 #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; return state; } \
@@ -584,7 +583,7 @@ rset *rset_make(int n, char **re, int flg)
 	int sz = re_sizecode(sb->s) * sizeof(int);
 	char *code = malloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
-	if (sz <= 3 || re_comp((rcode*)code, sb->s, rs->grpcnt-1, flg)) {
+	if (sz < 0 || re_comp((rcode*)code, sb->s, rs->grpcnt-1, flg)) {
 		rset_free(rs);
 		rs = NULL;
 	}
