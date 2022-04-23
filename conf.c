@@ -100,7 +100,7 @@ default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 	{"mk", "([A-Za-z0-9_]*)[ \t]*=", {0, 3}},
 	{"mk", "\\$\\([a-zA-Z0-9_]+\\)", {3}},
 	{"mk", "#.*", {2 | SYN_IT}},
-	{"mk", "([A-Za-z_%.]+):", {0, SYN_BD}},
+	{"mk", "([A-Za-z_%.\\-]+):", {0, SYN_BD}},
 
 	/* shell script */
 	{"sh", NULL, {14 | SYN_BD}, {1}, 0, 2},
