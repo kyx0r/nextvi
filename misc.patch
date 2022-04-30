@@ -1,0 +1,17 @@
+diff --git a/vi.c b/vi.c
+index 9b12623..26e7e97 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1679,6 +1679,12 @@ void vi(int init)
+ 					free(ln);
+ 					free(cs);
+ 					break;
++				case 'n':
++					k = vi_read();
++					char buf[] = "i ";
++					buf[1] = k;
++					term_push(buf, 3);
++					break;
+ 				case 't': {
+ 					strcpy(vi_msg, "arg2:(0|#)");
+ 					vi_drawmsg();

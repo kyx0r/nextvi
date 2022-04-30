@@ -83,3 +83,29 @@ threaded_rstr.patch
 --------------
 Compatibility patch between rstr.patch and threaded_search.patch
 Unrivaled performance.
+
+misc.patch
+--------------
+Some misc macros and shortcuts would be added here -
+This provides a faster way to insert some single character. Keybind: vn
+followed by a character.
+
+Helper macros:
+--------------
+@q = creates structure like this:
+{
+	
+}
+@w = creates structure like this:
+whatever {
+	whatever
+	a
+}
+@e = creates ()
+@r = creates ""
+@a = creates a comment like this:
+/* whatever */
+
+export EXINIT="e|tp io{
+}kA
+	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp oa()i|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|bx 1|bx|ft|1"
