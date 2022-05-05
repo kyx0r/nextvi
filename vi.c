@@ -89,8 +89,7 @@ char *itoa(int n, char s[])
 
 static void vi_drawmsg(void)
 {
-	if (vi_msg[0])
-	{
+	if (vi_msg[0]) {
 		syn_blockhl = 0;
 		syn_setft("/-");
 		rstate->ren_laststr = NULL;
@@ -624,14 +623,12 @@ static void file_calc(char *path, char *basepath)
 	int pathlen = strlen(path);
 	if (!dir)
 		return;
-	while ((dp = readdir(dir)) != NULL)
-	{
+	while ((dp = readdir(dir)) != NULL) {
 		len1 = strlen(dp->d_name)+1;
 		path[pathlen] = '/';
 		memcpy(&path[pathlen+1], dp->d_name, len1);
-		if (fsincl)
-			if (rset_find(fsincl, path, 0, NULL, 0) < 0)
-				continue;
+		if (fsincl && rset_find(fsincl, path, 0, NULL, 0) < 0)
+			continue;
 		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
 		{
 			len = pathlen + len1 + 1;
@@ -659,8 +656,7 @@ void dir_calc(char *cur_dir)
 	*ptr = 0;
 	if ((dp = opendir(cur_dir)) == NULL)
 		return;
-	while ((dirp = readdir(dp)) != NULL)
-	{
+	while ((dirp = readdir(dp)) != NULL) {
 		if (strcmp(dirp->d_name, ".") == 0 ||
 			strcmp(dirp->d_name, "..") == 0)
 			continue;
@@ -677,8 +673,7 @@ static int fs_search(int cnt, int *row, int *off)
 	char *path;
 	int again = 0;
 	redo:
-	for (;fspos < fstlen;)
-	{
+	while (fspos < fstlen) {
 		path = &fslink[fspos+sizeof(int)];
 		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
 		if (ex_edit(path))
@@ -702,7 +697,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 	int tlen = 0;
 	int count = fscount;
 	char *paths[count];
-	for (; tlen < fspos;) {
+	while (tlen < fspos) {
 		path = &fslink[tlen+sizeof(int)];
 		tlen += *(int*)((char*)fslink+tlen) + sizeof(int);
 		paths[--count] = path;
