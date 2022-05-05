@@ -503,16 +503,16 @@ LOC:
 | 569  kmap.h  | keymap translation  |
 | 422  vi.h    | definitions/aux     |
 +--------------+---------------------+
-| 579  uc.c    | UTF-8 support       |
+| 577  uc.c    | UTF-8 support       |
 | 332  term.c  | low level IO        |
-| 297  conf.c  | hl/ft/td config     |
-| 642  regex.c | extended RE         |
+| 298  conf.c  | hl/ft/td config     |
+| 637  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
 | 1137 ex.c    | ex options/commands |
 | 2091 vi.c    | normal mode/general |
 | 740  led.c   | insert mode/output  |
 | 382  ren.c   | positioning/syntax  |
-| 6790 total   | wc -l *.c           |
+| 6778 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
@@ -622,51 +622,50 @@ Stress test:
 3. Capture the results with cachegrind
 4. To find out what these values mean see:
 https://valgrind.org/docs/manual/cg-manual.html
-5. To create the most optimal exe, enable PGO optimizations by compling via
-./build.sh pgobuild which can lead to a significant performance boost on some
-application specific tasks. Feel free to adjust build.sh and the sample data
-on which it's being trained on, though default probably already good enough.
-6. To improve nextvi's performance, shaping, character reordering, and
-syntax highlighting can be disabled by defining the EXINIT environment
-variable as "se noshape | se noorder | se nohl | se td=+2".
-
-NEATVI (5e1f787eec332dcdf9f3608c0745551d5de72ad4):
+NEATVI:
 --------------------------------------------------------------------------------
-| I   refs:      1,041,771,489
-| I1  misses:          151,693
-| LLi misses:            1,340
+| I   refs:      1,030,137,070
+| I1  misses:          122,660
+| LLi misses:            1,298
 | I1  miss rate:          0.01%
 | LLi miss rate:          0.00%
 |
-| D   refs:        679,943,343  (378,140,004 rd   + 301,803,339 wr)
-| D1  misses:          459,782  (    222,004 rd   +     237,778 wr)
-| LLd misses:            7,973  (      1,123 rd   +       6,850 wr)
+| D   refs:        672,331,702  (373,790,802 rd   + 298,540,900 wr)
+| D1  misses:          473,511  (    215,088 rd   +     258,423 wr)
+| LLd misses:            7,836  (      1,116 rd   +       6,720 wr)
 | D1  miss rate:           0.1% (        0.1%     +         0.1%  )
 | LLd miss rate:           0.0% (        0.0%     +         0.0%  )
 |
-| LL refs:             611,475  (    373,697 rd   +     237,778 wr)
-| LL misses:             9,313  (      2,463 rd   +       6,850 wr)
+| LL refs:             596,171  (    337,748 rd   +     258,423 wr)
+| LL misses:             9,134  (      2,414 rd   +       6,720 wr)
 | LL miss rate:            0.0% (        0.0%     +         0.0%  )
 --------------------------------------------------------------------------------
-
 NEXTVI:
 --------------------------------------------------------------------------------
-| I   refs:      440,620,805
-| I1  misses:         87,812
-| LLi misses:          1,261
-| I1  miss rate:        0.02%
+| I   refs:      364,197,180
+| I1  misses:         93,186
+| LLi misses:          1,228
+| I1  miss rate:        0.03%
 | LLi miss rate:        0.00%
 |
-| D   refs:      212,119,603  (141,695,629 rd   + 70,423,974 wr)
-| D1  misses:        116,061  (     57,181 rd   +     58,880 wr)
-| LLd misses:          6,257  (      1,890 rd   +      4,367 wr)
-| D1  miss rate:         0.1% (        0.0%     +        0.1%  )
+| D   refs:      142,125,211  (100,909,090 rd   + 41,216,121 wr)
+| D1  misses:        140,991  (     81,656 rd   +     59,335 wr)
+| LLd misses:          6,043  (      1,855 rd   +      4,188 wr)
+| D1  miss rate:         0.1% (        0.1%     +        0.1%  )
 | LLd miss rate:         0.0% (        0.0%     +        0.0%  )
 |
-| LL refs:           203,873  (    144,993 rd   +     58,880 wr)
-| LL misses:           7,518  (      3,151 rd   +      4,367 wr)
+| LL refs:           234,177  (    174,842 rd   +     59,335 wr)
+| LL misses:           7,271  (      3,083 rd   +      4,188 wr)
 | LL miss rate:          0.0% (        0.0%     +        0.0%  )
 --------------------------------------------------------------------------------
+Further optimization:
+1. To create the most optimal exe, enable PGO optimizations by compling via
+./build.sh pgobuild which can lead to a significant performance boost on some
+application specific tasks. Feel free to adjust build.sh and the sample data
+on which it's being trained on, though default probably already good enough.
+2. To improve nextvi's performance, shaping, character reordering, and
+syntax highlighting can be disabled by defining the EXINIT environment
+variable as "se noshape | se noorder | se nohl | se td=+2".
 
 Favorite quotes:
 --------------------------------------------------------------------------------
