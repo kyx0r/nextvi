@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5f4db49..977409f 100644
+index cf61de8..1351c5f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *bufs;		/* main buffers */
@@ -127,10 +127,10 @@ index 798be60..e8a637b 100644
  			int g1 = offs[grp - 2], g2 = offs[grp - 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 93afc22..62193ba 100644
+index d017e6e..b991cf2 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -638,3 +638,128 @@ char *re_read(char **src)
+@@ -635,3 +635,128 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_done(sb)
  }
@@ -260,10 +260,10 @@ index 93afc22..62193ba 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 9b12623..00afe31 100644
+index 32f915c..fe3edd7 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -417,7 +417,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int
+@@ -416,7 +416,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int
  
  static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
  {
@@ -272,7 +272,7 @@ index 9b12623..00afe31 100644
  	int r = *row;
  	int o = *off;
  	int len = 0;
-@@ -608,7 +608,7 @@ static void vi_regprint()
+@@ -607,7 +607,7 @@ static void vi_regprint()
  	}
  }
  
@@ -281,13 +281,13 @@ index 9b12623..00afe31 100644
  char *fslink;
  char *fs_exdir;
  int fstlen;
-@@ -630,7 +630,7 @@ static void file_calc(char *path, char *basepath)
+@@ -627,7 +627,7 @@ static void file_calc(char *path, char *basepath)
+ 		len1 = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len1);
- 		if (fsincl)
--			if (rset_find(fsincl, path, 0, NULL, 0) < 0)
-+			if (rstr_find(fsincl, path, 0, NULL, 0) < 0)
- 				continue;
+-		if (fsincl && rset_find(fsincl, path, 0, NULL, 0) < 0)
++		if (fsincl && rstr_find(fsincl, path, 0, NULL, 0) < 0)
+ 			continue;
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  		{
 diff --git a/vi.h b/vi.h
