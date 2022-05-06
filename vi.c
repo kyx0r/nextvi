@@ -269,7 +269,6 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	int l2 = strlen(msg);
 	memcpy(vi_msg, msg, l2+1);
 	term_pos(xrows, led_pos(msg, 0));
-	term_kill();
 	syn_setft("/-");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(ex_filetype);
@@ -298,7 +297,7 @@ char *ex_read(char *msg)
 		syn_setft(ex_filetype);
 		return s;
 	}
-	sbuf_make(sb, xcols)
+	sbuf_make(sb, 128)
 	while ((c = getchar()) != EOF && c != '\n')
 		sbuf_chr(sb, c)
 	if (c == EOF) {
@@ -320,7 +319,8 @@ void ex_show(char *msg)
 		term_chr('\n');
 		syn_setft(ex_filetype);
 	} else {
-		printf("%s", msg);
+		write(1, msg, dstrlen(msg, '\n'));
+		write(1, "\n", 1);
 	}
 }
 
@@ -1568,7 +1568,7 @@ void vi(int init)
 				if (vi_arg1 > 0)
 					goto switchbuf;
 				term_pos(xrows, led_pos(vi_msg, 0));
-				term_kill();
+				xleft = 0;
 				ex_command("b");
 				vi_arg1 = vi_digit();
 				if (vi_arg1 > -1 && vi_arg1 < xbufcur) {
@@ -1902,7 +1902,7 @@ void vi(int init)
 			case 'R':
 				vi_mod = 1;
 				term_pos(xrows, led_pos(vi_msg, 0));
-				term_kill();
+				xleft = (xcols / 2) * vi_arg1;
 				vi_regprint();
 				vi_wait();
 				break;
@@ -2069,17 +2069,15 @@ int main(int argc, char *argv[])
 		if (argv[i][1] == 'v')
 			xvis = 1;
 	}
-	if (xled || xvis)
-		term_init();
+	term_init();
 	if (!ex_init(argv + i)) {
 		if (xvis)
 			vi(1);
 		else
 			ex();
 	}
-	if (xvis) {
-		term_done();
+	term_done();
+	if (xvis)
 		term_clean();
-	}
 	return 0;
 }

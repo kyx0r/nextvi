@@ -292,6 +292,8 @@ line will be wrapped onto the next one. This is behavior you can expect from
 95% of editors, now nextvi is not an exception. The similar change was done for
 ^w keybind.
 51. Added key to show the registers and their contents. keybind: R
+If the length of a register is bigger than the terminal, specify vi_arg1 to
+to shift the printing position by half the screen size vi_arg1 times.
 52. Made feature of reverse text highlight toggleable via new ex option "hlr"
 53. Added a key to disable autoindent. keybind: va
 This is necessary sometimes if you want to paste from system clipboard.
@@ -504,15 +506,15 @@ LOC:
 | 422  vi.h    | definitions/aux     |
 +--------------+---------------------+
 | 577  uc.c    | UTF-8 support       |
-| 332  term.c  | low level IO        |
+| 336  term.c  | low level IO        |
 | 298  conf.c  | hl/ft/td config     |
 | 637  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
 | 1137 ex.c    | ex options/commands |
-| 2091 vi.c    | normal mode/general |
+| 2083 vi.c    | normal mode/general |
 | 740  led.c   | insert mode/output  |
 | 382  ren.c   | positioning/syntax  |
-| 6778 total   | wc -l *.c           |
+| 6780 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.

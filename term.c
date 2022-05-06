@@ -5,6 +5,8 @@ static struct termios termios;
 
 void term_init(void)
 {
+	if (!(xled || xvis))
+		return;
 	struct winsize win;
 	struct termios newtermios;
 	sbufn_make(term_sbuf, 2048)
@@ -28,6 +30,8 @@ void term_init(void)
 
 void term_done(void)
 {
+	if (!(xled || xvis))
+		return;
 	term_commit();
 	sbuf_free(term_sbuf)
 	tcsetattr(0, 0, &termios);
