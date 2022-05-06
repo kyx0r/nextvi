@@ -286,7 +286,7 @@ char *ex_read(char *msg)
 {
 	sbuf *sb;
 	int c;
-	if (xled) {
+	if (term_sbuf) {
 		int oleft = xleft;
 		syn_blockhl = 0;
 		syn_setft("/-");
@@ -313,7 +313,7 @@ void ex_show(char *msg)
 	if (xvis) {
 		vi_printed = 1;
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
-	} else if (xled) {
+	} else if (term_sbuf) {
 		syn_setft("/-");
 		led_reprint(msg, -1);
 		term_chr('\n');

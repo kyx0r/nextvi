@@ -1131,7 +1131,7 @@ int ex_init(char **files)
 	ex_buf = bufs;
 	if (ec_edit("", "e!", arg))
 		return 1;
-	if (getenv("EXINIT"))
+	if (xled && getenv("EXINIT"))
 		ex_command(getenv("EXINIT"));
 	return 0;
 }

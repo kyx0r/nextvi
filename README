@@ -467,6 +467,7 @@ programming language.
    store the export command in a .sh file and set it using:
    $ . ./init.sh
    Otherwise this examples 2 and 3 may not work!!!
+To suppress EXINIT varible use -s commandline flag.
 
 - Uppercase registers
 In vi uppercase registers append to the lowercase register instead of
