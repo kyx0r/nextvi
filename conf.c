@@ -56,7 +56,7 @@ struct highlight hls[] = {
 	{"c", "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|\
 long|f(?:loat|64|32)|double|void|enum|union|typedef|static|extern|register|struct|\
 s(?:64|32|16|8)|u(?:64|32|16|8)|b32|bool|const|size_t|inline|restrict|\
-(true|false|_?_?asm_?_?|mem(?:set|cpy)|malloc|free|realloc|NULL|std(?:in|\
+(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|malloc|free|realloc|NULL|std(?:in|\
 out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 	{"c", "(\\?).+?(:)", {0, 3, 3}, {1, 0, -1}},
@@ -64,7 +64,7 @@ default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 	{"c", "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", {6, 6, 5}},
 	{"c", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
 	{"c", "\"\"|\"(?:.*?(?:\\\\\\\\|[^\\\\])\")?", {5}},
-	{"c", "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2})'", {5}},
+	{"c", "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", {5}},
 	{"c", "[-+]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9.]+[0-9eEfFuULl]+|[0-9]+)\\>", {9}},
 
 	{"roff", NULL, {14 | SYN_BD}, {1}, 0, 2},
