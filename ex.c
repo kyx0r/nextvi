@@ -385,12 +385,14 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 			return 1;
 	if (!(path = ex_pathexpand(arg, 0)))
 		return 1;
-	if (path[0] && ((fd = bufs_find(path)) >= 0)) {
+	if (path[0] == '.' && path[1] == '/')
+		rd = 2;
+	if (path[0] && ((fd = bufs_find(path+rd)) >= 0)) {
 		bufs_switchwft(fd)
 		free(path);
 		return 0;
 	}
-	bufs_switch(bufs_open(path));
+	bufs_switch(bufs_open(path+rd));
 	readfile(rd =)
 	ex_bufpostfix(ex_buf - bufs);
 	syn_setft(ex_buf->ft);
