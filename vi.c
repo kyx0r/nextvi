@@ -676,11 +676,14 @@ static int fs_search(int cnt, int *row, int *off)
 	while (fspos < fstlen) {
 		path = &fslink[fspos+sizeof(int)];
 		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
-		if (ex_edit(path))
-			{*row = xrow; *off = xoff-1;}
-		else
-			{*row = 0; *off = 0;}
-		if (!vi_search('n', cnt, row, off, 0))
+		if (ex_edit(path) && xrow) {
+			*row = xrow; *off = xoff-1; /* short circuit */
+			if (!vi_search('n', cnt, row, off, 0))
+				return 1;
+		} else {
+			*row = 0; *off = 0;
+		}
+		if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0))
 			return 1;
 	}
 	if (fspos == fstlen && !again) {
@@ -706,11 +709,14 @@ static int fs_searchback(int cnt, int *row, int *off)
 	{
 		path = paths[i];
 		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
-		if (ex_edit(path))
-			{*row = xrow; *off = xoff-1;}
-		else
-			{*row = 0; *off = 0;}
-		if (!vi_search('n', cnt, row, off, 0))
+		if (ex_edit(path) && xrow) {
+			*row = xrow; *off = xoff-1; /* short circuit */
+			if (!vi_search('n', cnt, row, off, 0))
+				return 1;
+		} else {
+			*row = 0; *off = 0;
+		}
+		if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0))
 			return 1;
 	}
 	return 0;
