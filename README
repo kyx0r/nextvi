@@ -116,11 +116,7 @@ will be deallocated. Running bx without an arg will reset to default value of 10
 Increasing the number of buffers may result in a positive effect on performance of
 fssearch (8. 9.) if the search keyword does not change. This is because vi
 will remember the position of previous match in the buffer avoiding redundant
-search. Sometimes this may create a situation where something just refuses
-to be found even though it is present in a file and for a good reason. If
-keyword did not change, but the cursor was left below the matching term
-there is no way for fssearch to find it, as consequent searches will start
-from the last cursor position that was left in the buffer.
+search.
 Improved buffer pathname expansion shortcuts. If you use character % or # in
 ex prompt they will substitute the buffer pathname. % substitutes current
 buffer and # last swapped buffer. Now it is possible to expand any arbitrary
@@ -511,11 +507,11 @@ LOC:
 | 298  conf.c  | hl/ft/td config     |
 | 637  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
-| 1137 ex.c    | ex options/commands |
-| 2083 vi.c    | normal mode/general |
+| 1139 ex.c    | ex options/commands |
+| 2089 vi.c    | normal mode/general |
 | 740  led.c   | insert mode/output  |
 | 382  ren.c   | positioning/syntax  |
-| 6780 total   | wc -l *.c           |
+| 6788 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
