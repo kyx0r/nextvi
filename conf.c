@@ -236,7 +236,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 };
 int hlslen = LEN(hls);
 
-/* how to hightlight text in the reverse direction */
+/* how to highlight text in the reverse direction */
 #define SYN_REVDIR		SYN_BGMK(8)
 
 /* right-to-left characters (used only in dctxs[] and dmarks[]) */

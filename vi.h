@@ -18,7 +18,7 @@ files and thus is never static.
 	{FILE *f = fopen("file", "a");\
 	fprintf(f, s, ##__VA_ARGS__);\
 	fclose(f);}\
-/* ease up rediculous global stuffing */
+/* ease up ridiculous global stuffing */
 #define preserve(type, name, value) \
 type tmp##name = name; \
 name = value; \
