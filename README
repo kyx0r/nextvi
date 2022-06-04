@@ -96,7 +96,7 @@ in every file in the opened directory keybind: ^] or ^5
 By default it checks every file, else filter is specified by :inc (see 32.)
 This works in compliance with other changes (see 49. 58.)
 If max number of available buffers reached, the last buffer will be reloaded;
-loosing potential unsaved changes. Use fssearch for code navigation between files,
+losing potential unsaved changes. Use fssearch for code navigation between files,
 jump to definitions / etc. fssearch runs 40% faster than busybox's grep,
 benchmark tested (time to find something that doesn't exist) on the linux kernel.
 9. fssearch but going in reverse keybind: ^p
@@ -159,7 +159,7 @@ any vi_arg1 will exit the mode. This is a major step up to how navigation
 works in vi, it makes it so much easier to use because now you can see where
 you are going. These special numbers and their colors can be customized
 through conf.c. As of the latest git version, the feature will work correctly
-even if there is bidi text, double width charaters and text reordering.
+even if there is bidi text, double width characters and text reordering.
 29. Added ability to change highlight dynamically. (via syn_reloadft();)
 30. New ex option "hlw" which highlights every instance of word on the
 screen based on cursor position. Useful for when studying source code.
@@ -463,7 +463,7 @@ programming language.
    store the export command in a .sh file and set it using:
    $ . ./init.sh
    Otherwise this examples 2 and 3 may not work!!!
-To suppress EXINIT varible use -s commandline flag.
+To suppress EXINIT variable use -s commandline flag.
 
 - Uppercase registers
 In vi uppercase registers append to the lowercase register instead of
@@ -658,7 +658,7 @@ NEXTVI:
 | LL miss rate:          0.0% (        0.0%     +        0.0%  )
 --------------------------------------------------------------------------------
 Further optimization:
-1. To create the most optimal exe, enable PGO optimizations by compling via
+1. To create the most optimal exe, enable PGO optimizations by compiling via
 ./build.sh pgobuild which can lead to a significant performance boost on some
 application specific tasks. Feel free to adjust build.sh and the sample data
 on which it's being trained on, though default probably already good enough.
