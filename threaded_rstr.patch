@@ -1,5 +1,5 @@
 diff --git a/build.sh b/build.sh
-index 0fab531..832aec6 100755
+index 2cd0033..14f2408 100755
 --- a/build.sh
 +++ b/build.sh
 @@ -5,6 +5,7 @@ CFLAGS="\
@@ -9,9 +9,9 @@ index 0fab531..832aec6 100755
 +-lpthread \
  -D_POSIX_C_SOURCE=200809L $CFLAGS"
  
- OS="$(uname)"
+ : ${CC:=$(command -v cc)}
 diff --git a/ex.c b/ex.c
-index cf61de8..1351c5f 100644
+index acf05bb..02b88e8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *bufs;		/* main buffers */
@@ -68,7 +68,7 @@ index cf61de8..1351c5f 100644
  			break;
  		row += dir;
  	}
-@@ -692,7 +692,7 @@ static void replace(sbuf *dst, char *rep, char *ln, int *offs)
+@@ -694,7 +694,7 @@ static void replace(sbuf *dst, char *rep, char *ln, int *offs)
  
  static int ec_substitute(char *loc, char *cmd, char *arg)
  {
@@ -77,7 +77,7 @@ index cf61de8..1351c5f 100644
  	int beg, end, grp = xgrp != 2 ? xgrp : 32;
  	int offs[grp];
  	char *pat = NULL, *rep = NULL;
-@@ -720,7 +720,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -722,7 +722,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
@@ -86,7 +86,7 @@ index cf61de8..1351c5f 100644
  			if (offs[xgrp - 2] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -799,7 +799,7 @@ static int ex_exec(const char *ln);
+@@ -801,7 +801,7 @@ static int ex_exec(const char *ln);
  
  static int ec_glob(char *loc, char *cmd, char *arg)
  {
@@ -95,7 +95,7 @@ index cf61de8..1351c5f 100644
  	int beg, end, not;
  	char *pat, *s = arg;
  	int i;
-@@ -820,7 +820,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -822,7 +822,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	i = beg;
  	while (i < lbuf_len(xb)) {
  		char *ln = lbuf_get(xb, i);
@@ -104,7 +104,7 @@ index cf61de8..1351c5f 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -935,9 +935,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -937,9 +937,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
  	ec_setdir(NULL, NULL, NULL);
@@ -421,7 +421,7 @@ index 69fcbe4..6811ef4 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 32f915c..b3d2555 100644
+index 65a3cba..9b93f3a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -31,6 +31,7 @@
@@ -460,7 +460,7 @@ index 32f915c..b3d2555 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  		{
 diff --git a/vi.h b/vi.h
-index 08de684..764ba16 100644
+index 2ce410e..cadd4fd 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -115,10 +115,21 @@ typedef struct {
