@@ -1,5 +1,5 @@
 diff --git a/build.sh b/build.sh
-index 0fab531..832aec6 100755
+index 2cd0033..14f2408 100755
 --- a/build.sh
 +++ b/build.sh
 @@ -5,6 +5,7 @@ CFLAGS="\
@@ -9,7 +9,7 @@ index 0fab531..832aec6 100755
 +-lpthread \
  -D_POSIX_C_SOURCE=200809L $CFLAGS"
  
- OS="$(uname)"
+ : ${CC:=$(command -v cc)}
 diff --git a/lbuf.c b/lbuf.c
 index 798be60..2b8b3d9 100644
 --- a/lbuf.c
@@ -130,7 +130,7 @@ index 798be60..2b8b3d9 100644
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 diff --git a/regex.c b/regex.c
-index 93afc22..db0608b 100644
+index d017e6e..9a6b133 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -303,7 +303,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -142,7 +142,7 @@ index 93afc22..db0608b 100644
  
  #define newsub(init, copy) \
  if (freesub) \
-@@ -527,8 +527,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -524,8 +524,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
  	char nsubs[prog->sub];
  	flg = prog->flg | flg;
@@ -155,7 +155,7 @@ index 93afc22..db0608b 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 1ecaad1..5a06d08 100644
+index 69fcbe4..6811ef4 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -173,7 +173,7 @@ index 1ecaad1..5a06d08 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 9b12623..444f4c4 100644
+index 65a3cba..59dba2e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -31,6 +31,7 @@
@@ -185,7 +185,7 @@ index 9b12623..444f4c4 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 08de684..c157529 100644
+index 2ce410e..3f49cba 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -195,7 +195,9 @@ int syn_addhl(char *reg, int func, int reload);
