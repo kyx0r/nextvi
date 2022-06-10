@@ -523,18 +523,18 @@ static int ec_write(char *loc, char *cmd, char *arg)
 			return 1;
 		}
 		close(fd);
+		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [w]",
+				path, end - beg);
+		ex_show(msg);
 	}
-	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [w]",
-			path, end - beg);
-	ex_show(msg);
 	if (!ex_path[0]) {
 		free(ex_path);
 		ex_path = uc_dup(path);
 	}
-	if (!strcmp(ex_path, path))
+	if (!strcmp(ex_path, path)) {
 		lbuf_saved(xb, 0);
-	if (!strcmp(ex_path, path))
 		ex_buf->mtime = mtime(path);
+	}
 	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
 		ec_quit("", cmd, "");
 	return 0;
