@@ -208,7 +208,7 @@ index 798be60..dc1504e 100644
 +			data[i].ln_n = ln;
 +		else
 +			data[i].ln_n = MIN(rs[i] + thread_step, ln);
-+		os[i] = i ? 0 : *o;
++		os[i] = i ? -1 : *o;
 +		data[i].o = &os[i];
 +		data[i].len = &ls[i];
 +		pthread_create(&threads[i], NULL, lsearch, (void*) &data[i]);
