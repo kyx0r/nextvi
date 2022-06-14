@@ -247,7 +247,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 {
 	static char *sh[] = {"$SHELL", "sh", NULL};
 	struct pollfd fds[3];
-	sbuf *sb;
+	sbuf *sb = NULL; /* initialize, bogus gcc12 warn */
 	char buf[512];
 	int ifd = -1, ofd = -1;
 	int slen = iproc ? strlen(ibuf) : 0;
