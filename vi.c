@@ -417,8 +417,6 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int 
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
 	rset *rs;
-	int r = *row;
-	int o = *off;
 	int len = 0;
 	int i, dir;
 	if (cmd == '/' || cmd == '?') {
@@ -446,26 +444,21 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 	if (!lbuf_len(xb) || ex_krs(&rs, &dir))
 		return 1;
 	dir = cmd == 'N' ? -dir : dir;
-	o = *off;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, rs, dir, &r, &o, &len)) {
+		if (lbuf_search(xb, rs, dir, row, off, &len)) {
 			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 					regs['/'], i, cnt);
 			break;
 		}
 		if (i + 1 < cnt && cmd == '/')
-			o += len;
+			*off += len;
 	}
-	if (i) {
-		*row = r;
-		*off = o;
-		if (vi_soset) {
-			*off = -1;
-			if (*row + vi_so < 0 || *row + vi_so >= lbuf_len(xb))
-				i = 0;
-			else
-				*row += vi_so;
-		}
+	if (i && vi_soset) {
+		*off = -1;
+		if (*row + vi_so < 0 || *row + vi_so >= lbuf_len(xb))
+			i = 0;
+		else
+			*row += vi_so;
 	}
 	return !i;
 }
