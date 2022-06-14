@@ -508,10 +508,10 @@ LOC:
 | 637  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
 | 1139 ex.c    | ex options/commands |
-| 2089 vi.c    | normal mode/general |
+| 2084 vi.c    | normal mode/general |
 | 740  led.c   | insert mode/output  |
 | 382  ren.c   | positioning/syntax  |
-| 6788 total   | wc -l *.c           |
+| 6783 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
