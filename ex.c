@@ -1081,18 +1081,13 @@ static const char *ex_arg(const char *src, char *dst)
 /* execute a single ex command */
 static int ex_exec(const char *ln)
 {
-	char loc[EXLEN], cmd[EXLEN], arg[EXLEN];
-	int ret = 0;
-	if (strlen(ln) >= EXLEN) {
-		ex_show("command too long");
-		return 1;
-	}
+	int ret = 0, len = strlen(ln);
+	char loc[len], cmd[len], arg[len];
 	while (*ln) {
-		int idx;
 		ln = ex_loc(ln, loc);
 		ln = ex_cmd(ln, cmd);
-		idx = ex_idx(cmd);
 		ln = ex_arg(ln, arg);
+		int idx = ex_idx(cmd);
 		if (idx >= 0)
 			ret = excmds[idx].ec(loc, cmd, arg);
 	}
