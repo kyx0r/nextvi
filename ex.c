@@ -1081,7 +1081,7 @@ static const char *ex_arg(const char *src, char *dst)
 /* execute a single ex command */
 static int ex_exec(const char *ln)
 {
-	int ret = 0, len = strlen(ln);
+	int ret = 0, len = strlen(ln) + 1;
 	char loc[len], cmd[len], arg[len];
 	while (*ln) {
 		ln = ex_loc(ln, loc);
