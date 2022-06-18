@@ -7,7 +7,7 @@ typedef struct tern {
 	struct tern *r_child;
 	struct tern *m_child;
 } tern_t;
-static tern_t *ROOT = &(tern_t){.word= 'a'};
+static tern_t *ternroot = &(tern_t){.word= 'a'};
 static sbuf *suggestsb;
 
 /* create a ternary search tree */
@@ -136,7 +136,7 @@ static void file_ternary(struct lbuf *buf)
 				char *part = ss[i]+sidx+subs[grp - 2];
 				char ch = part[len];
 				part[len] = '\0';
-				insert_node(part, ROOT);
+				insert_node(part, ternroot);
 				part[len] = ch;
 			}
 			sidx += subs[grp - 1] > 0 ? subs[grp - 1] : 1;
@@ -535,7 +535,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				continue;
 			}
 			lookup:
-			if (search(sb->s + last_sug, len - last_sug, ROOT)) {
+			if (search(sb->s + last_sug, len - last_sug, ternroot)) {
 				sug = suggestsb->s;
 				if (!(_sug = strchr(sug, '\n')))
 					continue;
@@ -549,7 +549,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				if (sug)
 					goto pac_;
 				c = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
-				if (suggestsb && search(sb->s + c, sb->s_n - c, ROOT)) {
+				if (suggestsb && search(sb->s + c, sb->s_n - c, ternroot)) {
 					sug = suggestsb->s;
 					pac_:
 					syn_setft("/ac");
@@ -721,5 +721,8 @@ void led_done(void)
 {
 	if (suggestsb)
 		sbuf_free(suggestsb)
-	delete(ROOT, ROOT);
+	delete(ternroot, ternroot);
+	ternroot->l_child = NULL;
+	ternroot->r_child = NULL;
+	ternroot->m_child = NULL;
 }
