@@ -31,7 +31,7 @@ static tern_t *insert_node(const char *string, tern_t *node)
 		node->l_child = insert_node(string, node->l_child);
 	else if (string[0] > node->word)
 		node->r_child = insert_node(string, node->r_child);
-	else if (*(string+1))
+	else if (string[1])
 		node->m_child = insert_node(++string, node->m_child);
 	else
 		node->type = 1;
@@ -85,37 +85,22 @@ static int search(const char *pattern, int l, tern_t *node)
 	sbuf_cut(suggestsb, 0)
 	/* finds the node where the prefix ends. */
 	tern_t *current = find_node(pattern, l, node);
-	if (!current)
+	if (!current || !current->m_child)
 		return 0;
-	else if (current->m_child) {
-		deep_search(pattern, l, current->m_child);
-		sbuf_null(suggestsb)
-		return 1;
-	}
-	return -1;
+	deep_search(pattern, l, current->m_child);
+	sbuf_null(suggestsb)
+	return 1;
 }
 
 /* Note: Does not free the root node of the tree. */
 static void delete(tern_t *root, tern_t *node)
 {
 	if (node) {
-		if (node->l_child) {
-			delete(root, node->l_child);
-			node->l_child = NULL;
-		}
-		if (node->r_child) {
-			delete(root, node->r_child);
-			node->r_child = NULL;
-		}
-		if (node->m_child) {
-			delete(root, node->m_child);
-			node->m_child = NULL;
-		}
-		if (!node->l_child && !node->r_child && !node->m_child) {
-			if (node != root)
-				free(node);
-			return;
-		}
+		delete(root, node->l_child);
+		delete(root, node->r_child);
+		delete(root, node->m_child);
+		if (node != root)
+			free(node);
 	}
 }
 
@@ -550,7 +535,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				continue;
 			}
 			lookup:
-			if (search(sb->s + last_sug, len - last_sug, ROOT) == 1) {
+			if (search(sb->s + last_sug, len - last_sug, ROOT)) {
 				sug = suggestsb->s;
 				if (!(_sug = strchr(sug, '\n')))
 					continue;
@@ -564,7 +549,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				if (sug)
 					goto pac_;
 				c = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
-				if (suggestsb && search(sb->s + c, sb->s_n - c, ROOT) == 1) {
+				if (suggestsb && search(sb->s + c, sb->s_n - c, ROOT)) {
 					sug = suggestsb->s;
 					pac_:
 					syn_setft("/ac");
