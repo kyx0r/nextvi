@@ -353,8 +353,12 @@ void syn_reloadft()
 {
 	if (syn_reload) {
 		int hlset = ftmap[ftidx].setbidx;
-		rset_free(ftmap[ftidx].rs);
+		rset *rs = ftmap[ftidx].rs;
 		syn_initft(ftidx, &hlset, ftmap[ftidx].ft);
+		if (!ftmap[ftidx].rs) {
+			ftmap[ftidx].rs = rs;	
+		} else
+			rset_free(rs);
 		syn_reload = 0;
 	}
 }
