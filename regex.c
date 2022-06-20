@@ -576,7 +576,7 @@ rset *rset_make(int n, char **re, int flg)
 		rs->grpcnt += 1 + rs->setgrpcnt[i];
 	}
 	rs->grp[n] = rs->grpcnt;
-	sbufn_chr(sb, ')')
+	sbuf_mem(sb, ")\0\0\0\0", 5)
 	int sz = re_sizecode(sb->s) * sizeof(int);
 	char *code = malloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
