@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 4794386..33bb773 100644
+index 4794386..05367fb 100644
 --- a/led.c
 +++ b/led.c
 @@ -79,14 +79,57 @@ static void deep_search(const char *pattern, int len, tern_t *start)
@@ -33,7 +33,7 @@ index 4794386..33bb773 100644
 +	char *part = strstr(suggestsb->s, str);
 +	while (part) {
 +		char *part1 = part;
-+		while (*part != '\n' && part > suggestsb->s)
++		while (*part != '\n' && part >= suggestsb->s)
 +			part--;
 +		sbuf_mem(sb, part+1, dstrlen(part+1, '\n'))
 +		sbuf_chr(sb, '\n')
