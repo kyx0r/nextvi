@@ -1,0 +1,64 @@
+diff --git a/led.c b/led.c
+index 4794386..33bb773 100644
+--- a/led.c
++++ b/led.c
+@@ -79,14 +79,57 @@ static void deep_search(const char *pattern, int len, tern_t *start)
+ 		deep_search(_pattern, len, start->m_child);
+ 	}
+ }
++	
++/* preorder 3 leaf tree traversal
++sbuf_mem(sb, &node, (int)sizeof(tern_t*))
++while (sb->s_n) {
++	sb->s_n -= sizeof(tern_t*);
++	node = *(tern_t**)(sb->s + sb->s_n);
++	if (!node)
++		continue;
++	p("%c", node->word)
++	sbuf_mem(sb, &node->l_child, (int)sizeof(tern_t*))
++	sbuf_mem(sb, &node->r_child, (int)sizeof(tern_t*))
++	sbuf_mem(sb, &node->m_child, (int)sizeof(tern_t*))
++}
++sbuf_free(sb)
++p("\n")
++*/
++
++static void sug_strstr(tern_t *node, const char *str)
++{
++	if (!*str)
++		return;
++	sbuf *sb; sbuf_make(sb, 1)
++	deep_search("", 0, node);
++	sbuf_null(suggestsb)
++	char *part = strstr(suggestsb->s, str);
++	while (part) {
++		char *part1 = part;
++		while (*part != '\n' && part > suggestsb->s)
++			part--;
++		sbuf_mem(sb, part+1, dstrlen(part+1, '\n'))
++		sbuf_chr(sb, '\n')
++		part = strstr(part1+1, str);
++	}
++	sbuf_cut(suggestsb, 0)
++	if (sb->s_n) {
++		sbuf_null(sb)
++		sbuf_str(suggestsb, sb->s)
++	}
++	sbuf_free(sb)
++}
+ 
+ static int search(const char *pattern, int l, tern_t *node)
+ {
+ 	sbuf_cut(suggestsb, 0)
+ 	/* finds the node where the prefix ends. */
+ 	tern_t *current = find_node(pattern, l, node);
+-	if (!current || !current->m_child)
+-		return 0;
++	if (!current || !current->m_child) {
++		sug_strstr(node, pattern);
++		sbuf_null(suggestsb)
++		return suggestsb->s_n;
++	}
+ 	deep_search(pattern, l, current->m_child);
+ 	sbuf_null(suggestsb)
+ 	return 1;

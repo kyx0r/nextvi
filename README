@@ -90,6 +90,14 @@ Some misc macros and shortcuts would be added here -
 This provides a faster way to insert some single character. Keybind: vn
 followed by a character.
 
+ac_substr.patch
+--------------
+Improve autocomplete, instead of only working with prefixes the
+larger substrings are also taken into account when no prefix
+is matching. This is important because it is no longer necessary
+to know the prefix and becomes possible to get completion even
+with partial spelling.
+
 Helper macros:
 --------------
 @q = creates structure like this:
@@ -113,24 +121,10 @@ whatever {
 @f = bring !cp % %_|w|!diff %_ % macro into ex prompt.
 Use to create patch and diff files fast. It relies on
 you not saving the file prior to running the macro.
-@c = index /fm/ buffer for better pathname(s) completion
+@c = run ac command and reindex ac db
 
 export EXINIT="e|tp io{
 }kA
 	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp oa()i|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*
 2x/\*\/
-2x|tp 02k2\"dY2j\"Dy$|tp 0Go:1,\$d\\\\|r\\\\|1|tp \"zY|tp o>%<<\$%<<|tp 0\"xy$|tp o:!cp % %_\\\\|w\\\\|!git diff --no-index %_ %|tp 0\"fy$|tp o:ac .+
-\i:ac [^/.]+.+
-i:ac (?:\.\.?\\/)*(.+)\\\\|se grp=4
-i:ac ((?:.+?\\/){2}).+
-i:ac ((?:.+?\\/){3}).+
-i:ac ((?:.+?\\/){4}).+
-i:ac ((?:.+?\\/){5}).+
-i:ac ((?:.+?\\/){6}).+
-i:ac ((?:.+?\\/){7}).+
-i:ac ((?:.+?\\/){8}).+
-i:ac ((?:.+?\\/){9}).+
-i:ac ((?:.+?\\/){10}).+
-i:ac ((?:.+?\\/){11}).+
-i:ac\\\\|se grp=2
-15uqq|tp 14k\"c15Y14j|bx 1|bx|ft|1"
+2x|tp 02k2\"dY2j\"Dy$|tp 0Go:1,\$d\\\\|r\\\\|1|tp \"zY|tp o>%<<\$%<<|tp 0\"xy$|tp o:!cp % %_\\\\|w\\\\|!git diff --no-index %_ %|tp 0\"fy$|tp o:ac .*( ).*\\\\|tp i\\\\|u\\\\|ac6ls|tp 0\"cy$|bx 1|bx|ft|1"
