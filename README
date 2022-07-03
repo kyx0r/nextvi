@@ -98,6 +98,13 @@ is matching. This is important because it is no longer necessary
 to know the prefix and becomes possible to get completion even
 with partial spelling.
 
+stdin_pipe.patch
+--------------
+Allows the user to use vi like less except you need to specify
+- as command line arg (just like in vim).
+Example:
+$ dmesg | vi -
+
 Helper macros:
 --------------
 @q = creates structure like this:

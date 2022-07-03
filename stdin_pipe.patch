@@ -1,0 +1,79 @@
+diff --git a/term.c b/term.c
+index fa4f502..4db1204 100644
+--- a/term.c
++++ b/term.c
+@@ -1,5 +1,6 @@
+ sbuf *term_sbuf;
+ int term_record;
++int stdin_fd;
+ static int rows, cols;
+ static struct termios termios;
+ 
+@@ -10,16 +11,16 @@ void term_init(void)
+ 	struct winsize win;
+ 	struct termios newtermios;
+ 	sbufn_make(term_sbuf, 2048)
+-	tcgetattr(0, &termios);
++	tcgetattr(stdin_fd, &termios);
+ 	newtermios = termios;
+ 	newtermios.c_lflag &= ~(ICANON | ISIG);
+ 	newtermios.c_lflag &= ~ECHO;
+-	tcsetattr(0, TCSAFLUSH, &newtermios);
++	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
+ 	if (getenv("LINES"))
+ 		rows = atoi(getenv("LINES"));
+ 	if (getenv("COLUMNS"))
+ 		cols = atoi(getenv("COLUMNS"));
+-	if (!ioctl(0, TIOCGWINSZ, &win)) {
++	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
+ 		cols = win.ws_col;
+ 		rows = win.ws_row;
+ 	}
+@@ -137,12 +138,12 @@ int term_read(void)
+ 	struct pollfd ufds[1];
+ 	int n;
+ 	if (ibuf_pos >= ibuf_cnt) {
+-		ufds[0].fd = STDIN_FILENO;
++		ufds[0].fd = stdin_fd;
+ 		ufds[0].events = POLLIN;
+ 		if (poll(ufds, 1, -1) <= 0)
+ 			return -1;
+ 		/* read a single input character */
+-		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0)
++		if ((n = read(stdin_fd, ibuf, 1)) <= 0)
+ 			return -1;
+ 		ibuf_cnt = n;
+ 		ibuf_pos = 0;
+diff --git a/vi.c b/vi.c
+index 2174f99..c59f9e4 100644
+--- a/vi.c
++++ b/vi.c
+@@ -2058,13 +2058,17 @@ int main(int argc, char *argv[])
+ 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
+ 		if (argv[i][1] == 's')
+ 			xled = 0;
+-		if (argv[i][1] == 'e')
++		else if (argv[i][1] == 'e')
+ 			xvis = 0;
+-		if (argv[i][1] == 'v')
++		else if (argv[i][1] == 'v')
+ 			xvis = 1;
++		else
++			stdin_fd = open(ctermid(NULL), O_RDONLY);
+ 	}
+ 	term_init();
+ 	if (!ex_init(argv + i)) {
++		if (stdin_fd)
++			lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
+ 		if (xvis)
+ 			vi(1);
+ 		else
+diff --git a/vi.h b/vi.h
+index 2ce410e..92366e9 100644
+--- a/vi.h
++++ b/vi.h
+@@ -420,3 +420,4 @@ extern int fspos;
+ extern int fscount;
+ extern int vi_hidch;
+ extern int vi_insmov;
++extern int stdin_fd;
