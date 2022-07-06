@@ -73,9 +73,8 @@ static void deep_search(const char *pattern, int len, tern_t *start)
 		deep_search(pattern, len, start->r_child);
 	if (start->m_child) {
 		char _pattern[++len];
-		memcpy(_pattern, pattern, len);
+		memcpy(_pattern, pattern, len-1);
 		_pattern[len-1] = start->word;
-		_pattern[len] = '\0';
 		deep_search(_pattern, len, start->m_child);
 	}
 }
