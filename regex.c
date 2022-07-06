@@ -47,7 +47,7 @@ pc += num;
 #define EMIT(at, byte) (code ? (code[at] = byte) : at)
 #define PC (prog->unilen)
 
-static int _compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
+static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 {
 	const char *re = re_loc;
 	int *code = sizecode ? NULL : prog->insts;
@@ -256,11 +256,11 @@ int re_sizecode(const char *re)
 {
 	rcode dummyprog;
 	dummyprog.unilen = 4;
-	int res = _compilecode(re, &dummyprog, 1, 0);
+	int res = compilecode(re, &dummyprog, 1, 0);
 	return res < 0 ? res : dummyprog.unilen;
 }
 
-int re_comp(rcode *prog, const char *re, int nsubs, int flags)
+int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
 {
 	prog->len = 0;
 	prog->unilen = 0;
@@ -268,7 +268,7 @@ int re_comp(rcode *prog, const char *re, int nsubs, int flags)
 	prog->presub = nsubs;
 	prog->splits = 0;
 	prog->flg = flags;
-	int res = _compilecode(re, prog, 0, flags);
+	int res = compilecode(re, prog, 0, flags);
 	if (res < 0) return res;
 	int icnt = 0, scnt = SPLIT;
 	for (int i = 0; i < prog->unilen; i++)
@@ -576,11 +576,11 @@ rset *rset_make(int n, char **re, int flg)
 		rs->grpcnt += 1 + rs->setgrpcnt[i];
 	}
 	rs->grp[n] = rs->grpcnt;
-	sbufn_chr(sb, ')')
+	sbuf_mem(sb, ")\0\0\0\0", 5)
 	int sz = re_sizecode(sb->s) * sizeof(int);
 	char *code = malloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
-	if (sz < 0 || re_comp((rcode*)code, sb->s, rs->grpcnt-1, flg)) {
+	if (sz < 0 || reg_comp((rcode*)code, sb->s, rs->grpcnt-1, flg)) {
 		rset_free(rs);
 		rs = NULL;
 	}

@@ -417,8 +417,6 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int 
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
 	rset *rs;
-	int r = *row;
-	int o = *off;
 	int len = 0;
 	int i, dir;
 	if (cmd == '/' || cmd == '?') {
@@ -446,26 +444,21 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 	if (!lbuf_len(xb) || ex_krs(&rs, &dir))
 		return 1;
 	dir = cmd == 'N' ? -dir : dir;
-	o = *off;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, rs, dir, &r, &o, &len)) {
+		if (lbuf_search(xb, rs, dir, row, off, &len)) {
 			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 					regs['/'], i, cnt);
 			break;
 		}
 		if (i + 1 < cnt && cmd == '/')
-			o += len;
+			*off += len;
 	}
-	if (i) {
-		*row = r;
-		*off = o;
-		if (vi_soset) {
-			*off = -1;
-			if (*row + vi_so < 0 || *row + vi_so >= lbuf_len(xb))
-				i = 0;
-			else
-				*row += vi_so;
-		}
+	if (i && vi_soset) {
+		*off = -1;
+		if (*row + vi_so < 0 || *row + vi_so >= lbuf_len(xb))
+			i = 0;
+		else
+			*row += vi_so;
 	}
 	return !i;
 }
@@ -668,6 +661,18 @@ void dir_calc(char *cur_dir)
 	closedir(dp);
 }
 
+#define fssearch() \
+if (ex_edit(path) && xrow) { \
+	*row = xrow; *off = xoff-1; /* short circuit */ \
+	if (!vi_search('n', cnt, row, off, 0)) \
+		return 1; \
+	*off += 2; \
+} else { \
+	*row = 0; *off = 0; \
+} \
+if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
+	return 1; \
+
 static int fs_search(int cnt, int *row, int *off)
 {
 	char *path;
@@ -676,15 +681,7 @@ static int fs_search(int cnt, int *row, int *off)
 	while (fspos < fstlen) {
 		path = &fslink[fspos+sizeof(int)];
 		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
-		if (ex_edit(path) && xrow) {
-			*row = xrow; *off = xoff-1; /* short circuit */
-			if (!vi_search('n', cnt, row, off, 0))
-				return 1;
-		} else {
-			*row = 0; *off = 0;
-		}
-		if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0))
-			return 1;
+		fssearch()
 	}
 	if (fspos == fstlen && !again) {
 		fspos = 0;
@@ -705,19 +702,10 @@ static int fs_searchback(int cnt, int *row, int *off)
 		tlen += *(int*)((char*)fslink+tlen) + sizeof(int);
 		paths[--count] = path;
 	}
-	for (int i = count; i < fscount; i++)
-	{
+	for (int i = count; i < fscount; i++) {
 		path = paths[i];
 		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
-		if (ex_edit(path) && xrow) {
-			*row = xrow; *off = xoff-1; /* short circuit */
-			if (!vi_search('n', cnt, row, off, 0))
-				return 1;
-		} else {
-			*row = 0; *off = 0;
-		}
-		if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0))
-			return 1;
+		fssearch()
 	}
 	return 0;
 }

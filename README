@@ -507,11 +507,11 @@ LOC:
 | 298  conf.c  | hl/ft/td config     |
 | 637  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
-| 1139 ex.c    | ex options/commands |
-| 2089 vi.c    | normal mode/general |
-| 740  led.c   | insert mode/output  |
-| 382  ren.c   | positioning/syntax  |
-| 6788 total   | wc -l *.c           |
+| 1134 ex.c    | ex options/commands |
+| 2077 vi.c    | normal mode/general |
+| 728  led.c   | insert mode/output  |
+| 386  ren.c   | positioning/syntax  |
+| 6763 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
