@@ -509,9 +509,9 @@ LOC:
 | 590  lbuf.c  | file/line buffer    |
 | 1134 ex.c    | ex options/commands |
 | 2077 vi.c    | normal mode/general |
-| 727  led.c   | insert mode/output  |
+| 725  led.c   | insert mode/output  |
 | 386  ren.c   | positioning/syntax  |
-| 6762 total   | wc -l *.c           |
+| 6760 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
