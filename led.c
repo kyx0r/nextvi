@@ -354,19 +354,11 @@ static void led_printparts(char *ai, char *pref, char *main,
 	sbuf_make(ln, xcols)
 	sbuf_str(ln, ai)
 	sbuf_str(ln, pref)
-	sbufn_str(ln, main)
-	off = uc_slen(ln->s);
-	/* cursor position for inserting the next character */
-	if (*pref || *main || *ai) {
-		int len = ln->s_n;
-		sbuf_str(ln, kmap_map(kmap, 'a'))
-		sbufn_str(ln, post)
-		rstate->ren_laststr = NULL;
-		idir = ren_pos(ln->s, off) - ren_pos(ln->s, off - 1) < 0 ? -1 : +1;
-		sbuf_cut(ln, len)
-	}
+	sbuf_str(ln, main)
 	sbufn_str(ln, post)
 	rstate->ren_laststr = NULL;
+	ren_position(ln->s, &(char**){NULL}, &off);
+	off -= uc_slen(post);
 	pos = ren_cursor(ln->s, ren_pos(ln->s, MAX(0, off - 1)));
 	if (pos >= xleft + xcols)
 		xleft = pos - xcols / 2;
@@ -374,6 +366,12 @@ static void led_printparts(char *ai, char *pref, char *main,
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
 	syn_blockhl = 0;
 	led_print(ln->s, -1);
+	/* cursor position for inserting the next character */
+	if (*pref || *main || *ai) {
+		if (off - 2 >= 0)
+			idir = ren_pos(ln->s, off-1) - ren_pos(ln->s, off-2);
+		idir = idir < 0 ? -1 : 1;
+	}
 	term_pos(-1, led_pos(ln->s, pos + idir));
 	sbuf_free(ln)
 }
