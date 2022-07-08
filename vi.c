@@ -562,7 +562,7 @@ char *vi_regget(int c, int *ln)
 	return regs[c];
 }
 
-static void vi_regputraw(int c, const char *s, int ln)
+static void vi_regputraw(unsigned int c, const char *s, int ln)
 {
 	char *pre = isupper(c) && regs[tolower(c)] ? regs[tolower(c)] : "";
 	char *buf = malloc(strlen(pre) + strlen(s) + 1);
