@@ -1320,13 +1320,14 @@ static void vi_scrollbackward(int cnt)
 static void vc_status(void)
 {
 	int col = vi_off2col(xb, xrow, xoff);
+	long buf = ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
 		"\"%s\"%c %d lines %d%% L%d C%d B%ld",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1,
-		abs((int)(ex_buf - bufs)) > xbufcur ? (long)-1 : ex_buf - bufs);
+		buf >= xbufcur || buf < 0 ? (long)-1 : buf);
 }
 
 static void vc_charinfo(void)
@@ -1597,8 +1598,11 @@ void vi(int init)
 				vc_status();
 				break;
 			case TK_CTL('^'):
-				ex_command(xaw && ex_path[0] ? "e #" : "e! #");
-				if (!vi_printed)
+				if (xaw && ex_path[0] && lbuf_modified(xb))
+					ex_command("w");
+				if (ex_pbuf - bufs < xbufcur && ex_pbuf - bufs >= 0)
+					bufs_switchwft(ex_pbuf - bufs)
+				if (!vi_printed || !strstr(vi_msg, "failed"))
 					vc_status();
 				vi_mod = 1;
 				break;

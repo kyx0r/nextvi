@@ -299,6 +299,7 @@ struct buf {
 };
 extern int xbufcur;
 extern struct buf *ex_buf;
+extern struct buf *ex_pbuf;
 extern struct buf *bufs;
 #define EXLEN	512	/* ex line length */
 #define ex_path ex_buf->path

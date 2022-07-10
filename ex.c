@@ -25,7 +25,7 @@ int xbufcur;			/* number of active buffers */
 static int xbufsmax = 10;	/* number of buffers */
 struct buf *bufs;		/* main buffers */
 struct buf *ex_buf;		/* current buffer */
-static struct buf *ex_pbuf;	/* prev buffer */
+struct buf *ex_pbuf;		/* prev buffer */
 sbuf *xacreg;			/* autocomplete db filter regex */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
