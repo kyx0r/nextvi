@@ -314,7 +314,8 @@ char *temp_get(int i, int row);
 void temp_pos(int i, int row, int off, int top);
 void ex(void);
 int ec_setdir(char *loc, char *cmd, char *arg);
-void ex_command(const char *cmd);
+int ex_exec(const char *ln);
+#define ex_command(ln) { ex_exec(ln); lbuf_modified(xb); vi_regput(':', ln, 0); }
 char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);

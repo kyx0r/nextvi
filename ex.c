@@ -798,8 +798,6 @@ static int ec_cmap(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static int ex_exec(const char *ln);
-
 static int ec_glob(char *loc, char *cmd, char *arg)
 {
 	rset *re;
@@ -1080,7 +1078,7 @@ static const char *ex_arg(const char *src, char *dst)
 }
 
 /* execute a single ex command */
-static int ex_exec(const char *ln)
+int ex_exec(const char *ln)
 {
 	int ret = 0, len = strlen(ln) + 1;
 	char loc[len], cmd[len], arg[len];
@@ -1093,14 +1091,6 @@ static int ex_exec(const char *ln)
 			ret = excmds[idx].ec(loc, cmd, arg);
 	}
 	return ret;
-}
-
-/* execute a single ex command */
-void ex_command(const char *ln)
-{
-	ex_exec(ln);
-	lbuf_modified(xb);
-	vi_regput(':', ln, 0);
 }
 
 /* ex main loop */
