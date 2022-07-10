@@ -395,6 +395,7 @@ extern int xvis;
 extern int xled;
 extern int xquit;
 extern int xic;
+extern int xaw;
 extern int xai;
 extern int xtd;
 extern int xshape;

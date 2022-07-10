@@ -1597,7 +1597,7 @@ void vi(int init)
 				vc_status();
 				break;
 			case TK_CTL('^'):
-				ex_command("e #");
+				ex_command(xaw && ex_path[0] ? "e #" : "e! #");
 				if (!vi_printed)
 					vc_status();
 				vi_mod = 1;
