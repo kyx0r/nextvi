@@ -328,7 +328,8 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 		for (int i = 0; i < xbufcur; i++) {
 			char c = ex_buf == bufs+i ? '%' : ' ';
 			c = ex_pbuf == bufs+i ? '#' : c;
-			snprintf(ln, LEN(ln), "%i %c %s", i, c, bufs[i].path);
+			snprintf(ln, LEN(ln), "%i %c %s", i,
+				c + lbuf_modified(bufs[i].lb), bufs[i].path);
 			ex_print(ln);
 		}
 	} else if (atoi(arg) < xbufcur) {
