@@ -562,7 +562,7 @@ char *vi_regget(int c, int *ln)
 	return regs[c];
 }
 
-static void vi_regputraw(int c, const char *s, int ln)
+static void vi_regputraw(unsigned int c, const char *s, int ln)
 {
 	char *pre = isupper(c) && regs[tolower(c)] ? regs[tolower(c)] : "";
 	char *buf = malloc(strlen(pre) + strlen(s) + 1);
@@ -1320,13 +1320,14 @@ static void vi_scrollbackward(int cnt)
 static void vc_status(void)
 {
 	int col = vi_off2col(xb, xrow, xoff);
+	long buf = ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
 		"\"%s\"%c %d lines %d%% L%d C%d B%ld",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1,
-		abs((int)(ex_buf - bufs)) > xbufcur ? (long)-1 : ex_buf - bufs);
+		buf >= xbufcur || buf < 0 ? (long)-1 : buf);
 }
 
 static void vc_charinfo(void)
@@ -1563,7 +1564,7 @@ void vi(int init)
 					goto switchbuf;
 				term_pos(xrows, led_pos(vi_msg, 0));
 				xleft = 0;
-				ex_command("b");
+				ex_exec("b");
 				vi_arg1 = vi_digit();
 				if (vi_arg1 > -1 && vi_arg1 < xbufcur) {
 					switchbuf:
@@ -1597,13 +1598,16 @@ void vi(int init)
 				vc_status();
 				break;
 			case TK_CTL('^'):
-				ex_command("e #");
+				if (xaw && ex_path[0] && lbuf_modified(xb))
+					vi_printed = ex_exec("w");
+				if (ex_pbuf - bufs < xbufcur && ex_pbuf - bufs >= 0)
+					bufs_switchwft(ex_pbuf - bufs)
 				if (!vi_printed)
 					vc_status();
 				vi_mod = 1;
 				break;
 			case TK_CTL('k'):
-				ex_command("w");
+				ex_exec("w");
 				break;
 			case '#':
 				vi_lnnum = 1;
@@ -1614,10 +1618,10 @@ void vi(int init)
 				k = vi_read();
 				switch (k) {
 				case 'h':
-					ex_command(".s/\\./->/");
+					ex_command(".s/\\./->/")
 					break;
 				case 'g':
-					ex_command(".s/->/\\./");
+					ex_command(".s/->/\\./")
 					break;
 				case '.':
 					while (vi_arg1) {
@@ -1641,8 +1645,7 @@ void vi(int init)
 					snprintf(vi_msg, sizeof(vi_msg), "%s", aistr);
 					break;
 				case 'o':
-					ex_command("%s/\x0d//g");
-					ex_command("%s/[ \t]+$//g");
+					ex_command("%s/\x0d//g|%s/[ \t]+$//g")
 					vi_mod = 1;
 					break;
 				case 'i':
@@ -1715,7 +1718,7 @@ void vi(int init)
 				ln = vi_prompt(":", 0, &kmap);
 				do_excmd:
 				if (ln && ln[0])
-					ex_command(ln);
+					ex_command(ln)
 				free(ln);
 				if (xquit)
 					continue;
@@ -1903,7 +1906,7 @@ void vi(int init)
 			case 'Z':
 				k = vi_read();
 				if (k == 'Z')
-					ex_command("x");
+					ex_exec("x");
 				break;
 			case '~':
 				vi_back(' ');

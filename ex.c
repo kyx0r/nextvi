@@ -25,7 +25,7 @@ int xbufcur;			/* number of active buffers */
 static int xbufsmax = 10;	/* number of buffers */
 struct buf *bufs;		/* main buffers */
 struct buf *ex_buf;		/* current buffer */
-static struct buf *ex_pbuf;	/* prev buffer */
+struct buf *ex_pbuf;		/* prev buffer */
 sbuf *xacreg;			/* autocomplete db filter regex */
 static rset *xkwdrs;		/* the last searched keyword rset */
 static char xrep[EXLEN];	/* the last replacement */
@@ -328,7 +328,8 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 		for (int i = 0; i < xbufcur; i++) {
 			char c = ex_buf == bufs+i ? '%' : ' ';
 			c = ex_pbuf == bufs+i ? '#' : c;
-			snprintf(ln, LEN(ln), "%i %c %s", i, c, bufs[i].path);
+			snprintf(ln, LEN(ln), "%i %c %s", i,
+				c + lbuf_modified(bufs[i].lb), bufs[i].path);
 			ex_print(ln);
 		}
 	} else if (atoi(arg) < xbufcur) {
@@ -797,8 +798,6 @@ static int ec_cmap(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static int ex_exec(const char *ln);
-
 static int ec_glob(char *loc, char *cmd, char *arg)
 {
 	rset *re;
@@ -1079,7 +1078,7 @@ static const char *ex_arg(const char *src, char *dst)
 }
 
 /* execute a single ex command */
-static int ex_exec(const char *ln)
+int ex_exec(const char *ln)
 {
 	int ret = 0, len = strlen(ln) + 1;
 	char loc[len], cmd[len], arg[len];
@@ -1092,14 +1091,6 @@ static int ex_exec(const char *ln)
 			ret = excmds[idx].ec(loc, cmd, arg);
 	}
 	return ret;
-}
-
-/* execute a single ex command */
-void ex_command(const char *ln)
-{
-	ex_exec(ln);
-	lbuf_modified(xb);
-	vi_regput(':', ln, 0);
 }
 
 /* ex main loop */
