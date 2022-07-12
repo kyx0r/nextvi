@@ -34,9 +34,7 @@ char *itoa(int n, char s[]);
 void vi(int init);
 
 /* sbuf string buffer, variable-sized string */
-#define SBUFSZ		128
-#define ALIGN(n, a)	(((n) + (a) - 1) & ~((a) - 1))
-#define NEXTSZ(o, r)	ALIGN(MAX((o) * 2, (o) + (r)), SBUFSZ)
+#define NEXTSZ(o, r)	MAX(o * 2, o + r)
 typedef struct sbuf {
 	char *s;	/* allocated buffer */
 	int s_n;	/* length of the string stored in s[] */
@@ -315,7 +313,7 @@ void temp_pos(int i, int row, int off, int top);
 void ex(void);
 int ec_setdir(char *loc, char *cmd, char *arg);
 int ex_exec(const char *ln);
-#define ex_command(ln) { ex_exec(ln); lbuf_modified(xb); vi_regput(':', ln, 0); }
+#define ex_command(ln) { ex_exec(ln); vi_regput(':', ln, 0); }
 char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);

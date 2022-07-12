@@ -1098,9 +1098,11 @@ void ex(void)
 {
 	while (!xquit) {
 		char *ln = ex_read(":");
-		if (ln)
-			ex_command(ln);
-		free(ln);
+		if (ln) {
+			ex_command(ln)
+			free(ln);
+			lbuf_modified(xb);
+		}
 	}
 }
 
@@ -1119,7 +1121,7 @@ int ex_init(char **files)
 	ex_buf = bufs;
 	if (ec_edit("", "e!", arg))
 		return 1;
-	if (xled && getenv("EXINIT"))
-		ex_command(getenv("EXINIT"));
+	if (xled && (s = getenv("EXINIT")))
+		ex_command(s)
 	return 0;
 }
