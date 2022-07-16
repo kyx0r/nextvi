@@ -305,6 +305,8 @@ extern struct buf *bufs;
 #define xb ex_buf->lb
 void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
+#define temp_sswitch(i) preserve(struct buf*, ex_pbuf, ex_pbuf) temp_switch(i);
+#define temp_pswitch(i) temp_switch(i); restore(ex_pbuf)
 void temp_write(int i, char *str);
 void temp_done(int i);
 char *temp_curstr(int i, int sub);
