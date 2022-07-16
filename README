@@ -500,7 +500,7 @@ control he/she desires.
 LOC:
 +--------------+---------------------+
 | 569  kmap.h  | keymap translation  |
-| 423  vi.h    | definitions/aux     |
+| 425  vi.h    | definitions/aux     |
 +--------------+---------------------+
 | 577  uc.c    | UTF-8 support       |
 | 336  term.c  | low level IO        |
