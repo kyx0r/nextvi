@@ -14,10 +14,10 @@ index 798be60..0cb3cc0 100644
  			sbuf_extend(sb, newsz)
  		} else
 diff --git a/led.c b/led.c
-index 234b515..2df1f5f 100644
+index a5a6360..f112e88 100644
 --- a/led.c
 +++ b/led.c
-@@ -508,7 +508,7 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -490,7 +490,7 @@ static char *led_line(char *pref, char *post, char *ai,
  				continue;
  			if (!sug)
  				sug = suggestsb->s;
@@ -26,7 +26,7 @@ index 234b515..2df1f5f 100644
  				sug--;
  			for (c = 0; sug != suggestsb->s; sug--) {
  				if (!*sug) {
-@@ -535,7 +535,7 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -517,7 +517,7 @@ static char *led_line(char *pref, char *post, char *ai,
  				continue;
  			last_sug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
  			if (_sug) {
@@ -36,7 +36,7 @@ index 234b515..2df1f5f 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index 2174f99..bfb00b4 100644
+index 6acb401..85ced1a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -48,13 +48,13 @@ index 2174f99..bfb00b4 100644
  #include <poll.h>
  #include <termios.h>
 diff --git a/vi.h b/vi.h
-index 2ce410e..7b1c674 100644
+index d84c10d..829a73d 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -37,10 +37,11 @@ void vi(int init);
- #define SBUFSZ		128
- #define ALIGN(n, a)	(((n) + (a) - 1) & ~((a) - 1))
- #define NEXTSZ(o, r)	ALIGN(MAX((o) * 2, (o) + (r)), SBUFSZ)
+@@ -35,10 +35,11 @@ void vi(int init);
+ 
+ /* sbuf string buffer, variable-sized string */
+ #define NEXTSZ(o, r)	MAX(o * 2, o + r)
 +typedef uint64_t u64;
  typedef struct sbuf {
  	char *s;	/* allocated buffer */
@@ -65,12 +65,14 @@ index 2ce410e..7b1c674 100644
  } sbuf;
  
  #define sbuf_extend(sb, newsz) \
-@@ -68,7 +69,7 @@ typedef struct sbuf {
+@@ -66,8 +67,8 @@ typedef struct sbuf {
  } \
  
  #define sbuf_(sb, x, len, func) \
 -if (sb->s_n + len >= sb->s_sz) \
+-	sbuf_extend(sb, NEXTSZ(sb->s_sz, len + 1)) \
 +if ((u64)(sb->s_n + len) >= sb->s_sz) \
- 	sbuf_extend(sb, NEXTSZ(sb->s_sz, len + 1)) \
++	sbuf_extend(sb, NEXTSZ(sb->s_sz, (u64)(len + 1))) \
  mem##func(sb->s + sb->s_n, x, len); \
  sb->s_n += len; \
+ 
