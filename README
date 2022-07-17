@@ -500,18 +500,18 @@ control he/she desires.
 LOC:
 +--------------+---------------------+
 | 569  kmap.h  | keymap translation  |
-| 425  vi.h    | definitions/aux     |
+| 426  vi.h    | definitions/aux     |
 +--------------+---------------------+
 | 577  uc.c    | UTF-8 support       |
 | 336  term.c  | low level IO        |
 | 298  conf.c  | hl/ft/td config     |
 | 637  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
-| 1127 ex.c    | ex options/commands |
+| 1129 ex.c    | ex options/commands |
 | 2080 vi.c    | normal mode/general |
 | 725  led.c   | insert mode/output  |
 | 386  ren.c   | positioning/syntax  |
-| 6756 total   | wc -l *.c           |
+| 6758 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.

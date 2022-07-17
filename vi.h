@@ -326,7 +326,8 @@ void ex_krsset(char *kwd, int dir);
 int ex_edit(const char *path);
 void ec_bufferi(int id);
 void bufs_switch(int idx);
-#define bufs_switchwft(idx) { bufs_switch(idx); syn_setft(ex_buf->ft); }
+#define bufs_switchwft(idx) \
+{ if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(ex_buf->ft); } } \
 
 /* conf.c configuration variables */
 /* map file names to file types */
