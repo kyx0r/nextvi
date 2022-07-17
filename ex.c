@@ -69,9 +69,11 @@ buf->td = xtd; \
 
 void bufs_switch(int idx)
 {
-	ex_pbuf = ex_buf;
-	ex_buf = &bufs[idx];
-	exbuf_save(ex_pbuf)
+	if (ex_buf != &bufs[idx]) {
+		ex_pbuf = ex_buf;
+		ex_buf = &bufs[idx];
+		exbuf_save(ex_pbuf)
+	}
 	exbuf_load(ex_buf)
 }
 
