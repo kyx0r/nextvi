@@ -911,9 +911,9 @@ static int vi_motion(int *row, int *off)
 			if (!strcmp(ex_path, "/fm/"))
 				break;
 		}
-		temp_switch(1);
+		temp_sswitch(1)
 		vi(1);
-		temp_switch(1);
+		temp_pswitch(1)
 		xquit = 0;
 		break;
 	default:
