@@ -86,9 +86,11 @@ Unrivaled performance.
 
 misc.patch
 --------------
-Some misc macros and shortcuts would be added here -
+1. Some misc macros and shortcuts would be added here -
 This provides a faster way to insert some single character. Keybind: vn
 followed by a character.
+2. Path-expand the ~ character to your user's home directory
+just like it happens in shell
 
 ac_substr.patch
 --------------
