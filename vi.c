@@ -1466,7 +1466,7 @@ void vi(int init)
 			case TK_CTL(']'):
 			case TK_CTL('p'):
 				for (n = xbufcur-1; n >= 0 && bufs[n].mtime == -1; n--)
-					ex_bufpostfix(n);
+					ex_bufpostfix(n, 1);
 				syn_setft(ex_filetype);
 			case '\\':
 				vc_status();
