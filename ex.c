@@ -382,29 +382,29 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
 	char *path;
-	int fd, rd = 0;
+	int fd, rd = 0, cd = 0;
 	if (!strchr(cmd, '!'))
 		if (ex_modifiedbuffer("buffer modified"))
 			return 1;
 	if (!(path = ex_pathexpand(arg, 0)))
 		return 1;
 	if (path[0] == '.' && path[1] == '/')
-		rd = 2;
-	if (path[0] && ((fd = bufs_find(path+rd)) >= 0)) {
+		cd = 2;
+	if (path[0] && ((fd = bufs_find(path+cd)) >= 0)) {
 		bufs_switchwft(fd)
 		free(path);
 		return 0;
 	} else if (path[0] || !ex_path || !strchr(cmd, '!'))
-		bufs_switch(bufs_open(path+rd));
+		bufs_switch(bufs_open(path+cd));
 	readfile(rd =)
-	ex_bufpostfix(ex_buf - bufs, path[0]);
-	syn_setft(ex_buf->ft);
-	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
-			*ex_path ? ex_path : "unnamed", lbuf_len(xb));
-	if (rd)
-		ex_show("read failed");
-	else
+	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
+		ex_bufpostfix(ex_buf - bufs, path[0]);
+		syn_setft(ex_buf->ft);
+		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
+				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
 		ex_show(msg);
+	} else
+		ex_show("read failed");
 	free(path);
 	return 0;
 }
