@@ -350,11 +350,11 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-void ex_bufpostfix(int i)
+void ex_bufpostfix(int i, int clear)
 {
 	bufs[i].mtime = mtime(bufs[i].path);
 	strcpy(bufs[i].ft, syn_filetype(bufs[i].path));
-	lbuf_saved(bufs[i].lb, 1);
+	lbuf_saved(bufs[i].lb, clear);
 }
 
 #define readfile(errchk) \
@@ -394,10 +394,10 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 		bufs_switchwft(fd)
 		free(path);
 		return 0;
-	}
-	bufs_switch(bufs_open(path+rd));
+	} else if (path[0] || !ex_path || !strchr(cmd, '!'))
+		bufs_switch(bufs_open(path+rd));
 	readfile(rd =)
-	ex_bufpostfix(ex_buf - bufs);
+	ex_bufpostfix(ex_buf - bufs, path[0]);
 	syn_setft(ex_buf->ft);
 	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 			*ex_path ? ex_path : "unnamed", lbuf_len(xb));
