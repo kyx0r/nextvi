@@ -15,7 +15,7 @@ index 4d2b8a5..ee9b4c3 100644
  	{"/-", "^(\".*\").*(\\[[wr]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index a96aaf6..c0a3387 100644
+index 89f9c52..467b002 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -31,7 +31,7 @@ static rset *xkwdrs;		/* the last searched keyword rset */
@@ -28,7 +28,7 @@ index a96aaf6..c0a3387 100644
  static int bufs_find(const char *path)
  {
 diff --git a/vi.c b/vi.c
-index 6acb401..b824961 100644
+index fcf986a..c0c3dd3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -661,8 +661,8 @@ void dir_calc(char *cur_dir)
@@ -134,7 +134,7 @@ index 6acb401..b824961 100644
 +			case TK_CTL('x'):
  			case TK_CTL('p'):
  				for (n = xbufcur-1; n >= 0 && bufs[n].mtime == -1; n--)
- 					ex_bufpostfix(n);
+ 					ex_bufpostfix(n, 1);
 @@ -1551,7 +1593,19 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
