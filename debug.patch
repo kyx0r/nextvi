@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index a96aaf6..f7a3e2a 100644
+index 89f9c52..60a8b05 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1125,3 +1125,11 @@ int ex_init(char **files)
+@@ -1127,3 +1127,11 @@ int ex_init(char **files)
  		ex_command(s)
  	return 0;
  }
@@ -56,7 +56,7 @@ index 5b88b63..1aa7aa9 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 6acb401..6772a6c 100644
+index fcf986a..a326aab 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -586,6 +586,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -92,7 +92,7 @@ index 6acb401..6772a6c 100644
  	return 0;
  }
 diff --git a/vi.h b/vi.h
-index d84c10d..393f0a6 100644
+index 72238db..09098ff 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -170,6 +170,7 @@ int ren_cwid(char *s, int pos);
@@ -114,7 +114,7 @@ index d84c10d..393f0a6 100644
 @@ -321,6 +323,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  int ex_init(char **files);
- void ex_bufpostfix(int i);
+ void ex_bufpostfix(int i, int clear);
 +void ex_done(void);
  int ex_krs(rset **krs, int *dir);
  void ex_krsset(char *kwd, int dir);
