@@ -984,30 +984,23 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 
 static void vi_splitln(int row, int linepos, int nextln)
 {
-	char *s, *part;
-	int len, crow, bytelen;
-	int l, c = !vi_arg1 ? 1 : vi_arg1;
+	char *s, *part, *buf;
+	int slen, crow;
+	int c = !vi_arg1 ? 1 : vi_arg1;
 	vi_mod = 1;
-	for (int i = 0; i < c; i++)
-	{
+	for (int i = 0; i < c; i++) {
 		crow = row + i;
 		s = lbuf_get(xb, crow);
 		if (!s)
 			return;
-		len = uc_slen(s);
-		bytelen = 0;
-		for (int z = 0; z < linepos; z++)
-			{ uc_len(l, (s+bytelen)) bytelen += l; }
-		if (len > linepos)
-		{
-			part = uc_sub(s, linepos, len);
-			char buf[bytelen+2];
-			memcpy(buf, s, bytelen);
-			buf[bytelen] = '\n';
-			buf[bytelen+1] = 0;
+		slen = uc_slen(s);
+		if (slen > linepos) {
+			part = uc_sub(s, linepos, slen);
+			buf = uc_sub(s, 0, linepos);
 			lbuf_edit(xb, buf, crow, crow+1);
 			lbuf_edit(xb, part, crow+1, crow+1);
 			free(part);
+			free(buf);
 			if (nextln)
 				c++;
 		}
@@ -1219,6 +1212,8 @@ static void vc_insert(int cmd)
 	post = ln && !cmdo ? uc_sub(ln, off, -1) : uc_dup("\n");
 	vi_drawrm(row, row, cmdo);
 	rep = vi_input(pref, post, row - cmdo);
+	if (cmdo && !lbuf_len(xb))
+		lbuf_edit(xb, "\n", 0, 0);
 	if (*rep)
 		lbuf_edit(xb, rep, row, row + !cmdo);
 	free(rep);
