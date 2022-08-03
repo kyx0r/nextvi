@@ -320,7 +320,7 @@ char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);
 int ex_init(char **files);
-void ex_bufpostfix(int i);
+void ex_bufpostfix(int i, int clear);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
 int ex_edit(const char *path);
