@@ -21,6 +21,7 @@ int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
 int xgrp = 2;			/* regex search group */
 int xpac;			/* print autocomplete options */
+int xkwdcnt;			/* number of search kwd changes */
 int xbufcur;			/* number of active buffers */
 static int xbufsmax = 10;	/* number of buffers */
 struct buf *bufs;		/* main buffers */
@@ -205,6 +206,7 @@ void ex_krsset(char *kwd, int dir)
 	if (kwd) {
 		rset_free(xkwdrs);
 		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
+		xkwdcnt++;
 		vi_regput('/', kwd, 0);
 	}
 	xkwddir = dir;

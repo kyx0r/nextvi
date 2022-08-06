@@ -415,6 +415,7 @@ extern int xqexit;
 extern int xish;
 extern int xgrp;
 extern int xpac;
+extern int xkwdcnt;
 extern sbuf *xacreg;
 extern rset *fsincl;
 extern char *fslink;
