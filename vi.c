@@ -815,8 +815,8 @@ static int vi_motion(int *row, int *off)
 			ex_krsset(cs, +1);
 			free(cs);
 		}
-		if (lkwdcnt != xkwdcnt)	/* check if keyword changed */
-			ex_pbuf = ex_buf;
+		if (lkwdcnt != xkwdcnt && ex_buf != &bufs[xbufcur-1])
+			ex_pbuf = ex_buf;	/* check if keyword changed */
 		lkwdcnt = xkwdcnt;
 		{
 			preserve(struct buf*, ex_pbuf, ex_pbuf)
