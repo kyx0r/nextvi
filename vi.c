@@ -715,6 +715,7 @@ static int vi_motion(int *row, int *off)
 {
 	static char ca_dir;
 	static sbuf *savepath;
+	static sbuf *lkwd;
 	static int srow, soff;
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
@@ -807,32 +808,43 @@ static int vi_motion(int *row, int *off)
 			if (lbuf_sectionbeg(xb, +1, row, off))
 				break;
 		break;
-	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
-		cs = vi_curword(xb, *row, *off, cnt);
-		if (!fslink)
-			mdir_calc(fs_exdir ? fs_exdir : ".")
-		if (vi_arg1 && cs)
-			ex_krsset(cs, +1);
-		fs_search(1, row, off);
-		free(cs);
-		break;
+	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
 	case TK_CTL('p'):
 		if (!fslink)
-			return -1;
-		cs = vi_curword(xb, *row, *off, cnt);
-		if (vi_arg1 && cs)
+			mdir_calc(fs_exdir ? fs_exdir : ".")
+		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt))) {
 			ex_krsset(cs, +1);
-		if (!fs_searchback(1, row, off)) {
-			if (savepath) {
-				*row = srow; *off = soff;
-				ex_edit(savepath->s);
-			}
+			free(cs);
 		}
-		free(cs);
-		break;
+		if (!lkwd)
+			sbuf_make(lkwd, 128)
+		if (strcmp(lkwd->s, regs['/']))
+			ex_pbuf = ex_buf;
+		sbuf_cut(lkwd, 0)
+		sbufn_str(lkwd, regs['/'])
+		{
+			preserve(struct buf*, ex_pbuf, ex_pbuf)
+			if (mv == TK_CTL(']'))
+				fs_search(1, row, off);
+			else if (!fs_searchback(1, row, off)) {
+				if (savepath) {
+					open_saved:
+					*row = srow; *off = soff;
+					ex_edit(savepath->s);
+				}
+			}
+			if (mv != TK_CTL('t'))
+				restore(ex_pbuf)
+		}
+		for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
+			ex_bufpostfix(i, 1);
+		syn_setft(ex_filetype);
+		return '\\';
 	case TK_CTL('t'):
 		if (!savepath)
-			sbuf_make(savepath, 1024)
+			sbuf_make(savepath, 128)
+		else if (vi_arg1)
+			goto open_saved;
 		sbuf_cut(savepath, 0)
 		sbufn_str(savepath, ex_path)
 		srow = *row; soff = *off;
@@ -1458,11 +1470,6 @@ void vi(int init)
 				vi_col = vi_off2col(xb, xrow, xoff);
 			switch (mv)
 			{
-			case TK_CTL(']'):
-			case TK_CTL('p'):
-				for (n = xbufcur-1; n >= 0 && bufs[n].mtime == -1; n--)
-					ex_bufpostfix(n, 1);
-				syn_setft(ex_filetype);
 			case '\\':
 				vc_status();
 			case 1: /* ^a */
