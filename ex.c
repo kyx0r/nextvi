@@ -203,23 +203,23 @@ int ex_krs(rset **krs, int *dir)
 /* set the previous search keyword rset */
 void ex_krsset(char *kwd, int dir)
 {
-	if (kwd) {
+	if (kwd && *kwd) {
 		rset_free(xkwdrs);
 		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
 		xkwdcnt++;
 		vi_regput('/', kwd, 0);
-	}
-	xkwddir = dir;
+		xkwddir = dir;
+	} else if (dir == -2 || dir == 2)
+		xkwddir = dir / 2;
 }
 
 static int ex_search(char **pat)
 {
 	sbuf *kw;
-	char *b = *pat;
-	char *e = b;
 	rset *re;
 	int dir, row;
-	sbuf_make(kw, 64)
+	char *e = *pat;
+	sbufn_make(kw, 64)
 	while (*++e) {
 		if (*e == **pat)
 			break;
@@ -227,8 +227,7 @@ static int ex_search(char **pat)
 		if (*e == '\\' && e[1])
 			e++;
 	}
-	if (kw->s_n)
-		ex_krsset(kw->s, **pat == '/' ? 1 : -1);
+	ex_krsset(kw->s, **pat == '/' ? 2 : -2);
 	sbuf_free(kw)
 	*pat = *e ? e + 1 : e;
 	if (ex_krs(&re, &dir))
@@ -708,8 +707,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	pat = re_read(&s);
-	if (pat && pat[0])
-		ex_krsset(pat, +1);
+	ex_krsset(pat, +1);
 	if (pat && *s) {
 		s--;
 		rep = re_read(&s);
@@ -814,8 +812,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 		return 1;
 	not = strchr(cmd, '!') || cmd[0] == 'v';
 	pat = re_read(&s);
-	if (pat && pat[0])
-		ex_krsset(pat, +1);
+	ex_krsset(pat, +1);
 	free(pat);
 	if (ex_krs(&re, NULL))
 		return 1;

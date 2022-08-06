@@ -432,7 +432,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		free(kw);
 		kw = sb->s;
 		if ((re = re_read(&kw))) {
-			ex_krsset(re[0] ? re : NULL, cmd == '/' ? +1 : -1);
+			ex_krsset(re, cmd == '/' ? +2 : -2);
 			while (isspace(*kw))
 				kw++;
 			vi_soset = !!kw[0];
@@ -868,7 +868,7 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('a'):
 		if (!(cs = vi_curword(xb, *row, *off, cnt)))
 			return -1;
-		ex_krsset(cs, +1);
+		ex_krsset(!regs['/'] || strcmp(cs, regs['/']) ? cs : NULL, +1);
 		free(cs);
 		if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg))) {
 			ca_dir = !ca_dir;
