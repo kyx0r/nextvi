@@ -715,8 +715,7 @@ static int vi_motion(int *row, int *off)
 {
 	static char ca_dir;
 	static sbuf *savepath;
-	static sbuf *lkwd;
-	static int srow, soff;
+	static int srow, soff, lkwdcnt;
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
 	int dir = dir_context(ln ? ln : "");
@@ -816,12 +815,9 @@ static int vi_motion(int *row, int *off)
 			ex_krsset(cs, +1);
 			free(cs);
 		}
-		if (!lkwd)
-			sbuf_make(lkwd, 128)
-		if (strcmp(lkwd->s, regs['/']))
+		if (lkwdcnt != xkwdcnt)	/* check if keyword changed */
 			ex_pbuf = ex_buf;
-		sbuf_cut(lkwd, 0)
-		sbufn_str(lkwd, regs['/'])
+		lkwdcnt = xkwdcnt;
 		{
 			preserve(struct buf*, ex_pbuf, ex_pbuf)
 			if (mv == TK_CTL(']'))
