@@ -15,7 +15,7 @@ index 4d2b8a5..ee9b4c3 100644
  	{"/-", "^(\".*\").*(\\[[wr]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index 89f9c52..467b002 100644
+index 4b01806..8f606f4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -31,7 +31,7 @@ static rset *xkwdrs;		/* the last searched keyword rset */
@@ -28,7 +28,7 @@ index 89f9c52..467b002 100644
  static int bufs_find(const char *path)
  {
 diff --git a/vi.c b/vi.c
-index fcf986a..c0c3dd3 100644
+index 0f92291..71a88f1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -661,8 +661,8 @@ void dir_calc(char *cur_dir)
@@ -69,73 +69,82 @@ index fcf986a..c0c3dd3 100644
  	}
  	return 0;
  }
-@@ -807,14 +806,56 @@ static int vi_motion(int *row, int *off)
- 			if (lbuf_sectionbeg(xb, +1, row, off))
+@@ -809,6 +808,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
+ 	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
 +	case TK_CTL('x'):
- 	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
- 		cs = vi_curword(xb, *row, *off, cnt);
- 		if (!fslink)
- 			mdir_calc(fs_exdir ? fs_exdir : ".")
- 		if (vi_arg1 && cs)
- 			ex_krsset(cs, +1);
--		fs_search(1, row, off);
- 		free(cs);
-+		if (mv == TK_CTL(']'))
-+			fs_search(0, 1, row, off);
-+		else {
-+			if (!strcmp(ex_path, "/grep/"))
-+				return -1;
-+			temp_done(2);
-+			term_exec("qq", 3, /*nop*/, /*nop*/)
-+			temp_open(2, "/grep/", "/grep");
-+			sbuf *gstats; sbuf_make(gstats, 1024)
-+			char nbuf[100];
-+			int colpos = 0;
-+			fspos = 0;
-+			preserve(struct buf*, ex_pbuf, ex_pbuf)
-+			while (fs_search(2, 1, row, off)) {
-+				sbuf_str(gstats, ex_path)
-+				sbuf_chr(gstats, ':')
-+				colpos = gstats->s_n;
-+				#define nextrow() \
-+				itoa((*row)+1, nbuf); \
-+				sbuf_str(gstats, nbuf) \
-+				sbuf_chr(gstats, ':') \
-+				sbufn_str(gstats, lbuf_get(xb, *row)) \
-+				temp_write(2, gstats->s); \
-+				(*row)++; \
-+
-+				nextrow()
-+				while (!vi_search('n', cnt, row, off, 0)) {
-+					sbuf_cut(gstats, colpos)
-+					nextrow()
-+				}
-+				sbuf_cut(gstats, 0)
-+			}
-+			temp_switch(2);
-+			syn_addhl(regs['/'], 3, 1); /* see conf.c */
-+			syn_reloadft();
-+			vi(1);
-+			temp_switch(2);
-+			*row = srow; *off = soff;
-+			ex_edit(savepath->s);
-+			restore(ex_pbuf)
-+			xquit = 0;
-+		}
- 		break;
  	case TK_CTL('p'):
  		if (!fslink)
-@@ -1464,6 +1505,7 @@ void vi(int init)
- 			switch (mv)
- 			{
- 			case TK_CTL(']'):
-+			case TK_CTL('x'):
- 			case TK_CTL('p'):
- 				for (n = xbufcur-1; n >= 0 && bufs[n].mtime == -1; n--)
- 					ex_bufpostfix(n, 1);
-@@ -1551,7 +1593,19 @@ void vi(int init)
+ 			mdir_calc(fs_exdir ? fs_exdir : ".")
+@@ -816,17 +816,58 @@ static int vi_motion(int *row, int *off)
+ 			ex_krsset(cs, +1);
+ 			free(cs);
+ 		}
+-		if (!lkwd)
+-			sbuf_make(lkwd, 128)
+-		if (strcmp(lkwd->s, regs['/']))
+-			ex_pbuf = ex_buf;
+-		sbuf_cut(lkwd, 0)
+-		sbufn_str(lkwd, regs['/'])
++		if (mv != TK_CTL('x')) {
++			if (!lkwd)
++				sbuf_make(lkwd, 128)
++			if (strcmp(lkwd->s, regs['/']))
++				ex_pbuf = ex_buf;
++			sbuf_cut(lkwd, 0)
++			sbufn_str(lkwd, regs['/'])
++		}
+ 		{
+ 			preserve(struct buf*, ex_pbuf, ex_pbuf)
+ 			if (mv == TK_CTL(']'))
+-				fs_search(1, row, off);
+-			else if (!fs_searchback(1, row, off)) {
++				fs_search(0, 1, row, off);
++			else if (mv == TK_CTL('x')) {
++				if (!strcmp(ex_path, "/grep/"))
++					return -1;
++				temp_done(2);
++				term_exec("qq", 3, /*nop*/, /*nop*/)
++				temp_open(2, "/grep/", "/grep");
++				sbuf *gstats; sbuf_make(gstats, 1024)
++				char nbuf[100];
++				int colpos = 0;
++				fspos = 0;
++				while (fs_search(2, 1, row, off)) {
++					sbuf_str(gstats, ex_path)
++					sbuf_chr(gstats, ':')
++					colpos = gstats->s_n;
++					#define nextrow() \
++					itoa((*row)+1, nbuf); \
++					sbuf_str(gstats, nbuf) \
++					sbuf_chr(gstats, ':') \
++					sbufn_str(gstats, lbuf_get(xb, *row)) \
++					temp_write(2, gstats->s); \
++					(*row)++; \
++	
++					nextrow()
++					while (!vi_search('n', cnt, row, off, 0)) {
++						sbuf_cut(gstats, colpos)
++						nextrow()
++					}
++					sbuf_cut(gstats, 0)
++				}
++				for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
++					ex_bufpostfix(i, 1);
++				temp_switch(2);
++				syn_addhl(regs['/'], 3, 1); /* see conf.c */
++				syn_reloadft();
++				vi(1);
++				temp_switch(2);
++				*row = srow; *off = soff;
++				ex_edit(savepath->s);
++				xquit = 0;
++			} else if (!fs_searchback(1, row, off)) {
+ 				if (savepath) {
+ 					open_saved:
+ 					*row = srow; *off = soff;
+@@ -1553,7 +1594,19 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -156,7 +165,7 @@ index fcf986a..c0c3dd3 100644
  				if (!strcmp(ex_path, "/fm/"))
  					xquit = 1;
  				vi_mod = 1;
-@@ -1697,6 +1751,14 @@ void vi(int init)
+@@ -1699,6 +1752,14 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
