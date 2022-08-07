@@ -714,8 +714,8 @@ static int fs_searchback(int cnt, int *row, int *off)
 static int vi_motion(int *row, int *off)
 {
 	static char ca_dir;
-	static sbuf *savepath;
-	static int srow, soff, lkwdcnt;
+	static sbuf *savepath[2];
+	static int srow[2], soff[2], lkwdcnt;
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
 	int dir = dir_context(ln ? ln : "");
@@ -809,41 +809,44 @@ static int vi_motion(int *row, int *off)
 		break;
 	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
 	case TK_CTL('p'):
+		#define open_saved(n) \
+		if (savepath[n]) { \
+			*row = srow[n]; *off = soff[n]; \
+			ex_edit(savepath[n]->s); \
+		} \
+
 		if (!fslink)
 			mdir_calc(fs_exdir ? fs_exdir : ".")
 		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt))) {
 			ex_krsset(cs, +1);
 			free(cs);
 		}
-		if (lkwdcnt != xkwdcnt && ex_buf != &bufs[xbufcur-1])
-			ex_pbuf = ex_buf;	/* check if keyword changed */
+		if (lkwdcnt != xkwdcnt)
+			term_exec("1qq", 4, /*nop*/, /*nop*/)
 		lkwdcnt = xkwdcnt;
-		{
-			preserve(struct buf*, ex_pbuf, ex_pbuf)
-			if (mv == TK_CTL(']'))
-				fs_search(1, row, off);
-			else if (!fs_searchback(1, row, off)) {
-				if (savepath) {
-					open_saved:
-					*row = srow; *off = soff;
-					ex_edit(savepath->s);
-				}
-			}
-			if (mv != TK_CTL('t'))
-				restore(ex_pbuf)
+		preserve(struct buf*, ex_buf, ex_buf)
+		if (mv == TK_CTL(']'))
+			fs_search(1, row, off);
+		else if (!fs_searchback(1, row, off)) {
+			open_saved(1)
 		}
+		if (tmpex_buf != ex_buf)
+			ex_pbuf = tmpex_buf;
+		bsync_ret:
 		for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
 			ex_bufpostfix(i, 1);
 		syn_setft(ex_filetype);
 		return '\\';
 	case TK_CTL('t'):
-		if (!savepath)
-			sbuf_make(savepath, 128)
-		else if (vi_arg1)
-			goto open_saved;
-		sbuf_cut(savepath, 0)
-		sbufn_str(savepath, ex_path)
-		srow = *row; soff = *off;
+		if (vi_arg1 < 2 && !savepath[vi_arg1])
+			sbuf_make(savepath[vi_arg1], 128)
+		else if (vi_arg1 > 1) {
+			open_saved(vi_arg1 % 2)
+			goto bsync_ret;
+		}
+		sbuf_cut(savepath[vi_arg1], 0)
+		sbufn_str(savepath[vi_arg1], ex_path)
+		srow[vi_arg1] = *row; soff[vi_arg1] = *off;
 		break;
 	case '0':
 		*off = 0;
