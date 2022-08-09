@@ -15,7 +15,7 @@ index 4d2b8a5..ee9b4c3 100644
  	{"/-", "^(\".*\").*(\\[[wr]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index 66a055d..21760f5 100644
+index 806737a..2d5f60f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -32,7 +32,7 @@ static rset *xkwdrs;		/* the last searched keyword rset */
@@ -28,7 +28,7 @@ index 66a055d..21760f5 100644
  static int bufs_find(const char *path)
  {
 diff --git a/vi.c b/vi.c
-index e101a1b..e0406b0 100644
+index 49a9f9f..9b82a48 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -661,8 +661,8 @@ void dir_calc(char *cur_dir)
@@ -54,7 +54,7 @@ index e101a1b..e0406b0 100644
  	redo:
  	while (fspos < fstlen) {
  		path = &fslink[fspos+sizeof(int)];
- 		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
+ 		fspos += *(int*)(fslink+fspos) + sizeof(int);
 -		fssearch()
 +		fssearch(ex_edit(path) && xrow && again != 2)
  	}
@@ -63,7 +63,7 @@ index e101a1b..e0406b0 100644
 @@ -705,7 +704,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	for (int i = count; i < fscount; i++) {
  		path = paths[i];
- 		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
+ 		fspos -= *(int*)(path-sizeof(int))+sizeof(int);
 -		fssearch()
 +		fssearch(ex_edit(path) && xrow)
  	}
@@ -77,24 +77,13 @@ index e101a1b..e0406b0 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -821,13 +821,54 @@ static int vi_motion(int *row, int *off)
- 			ex_krsset(cs, +1);
- 			free(cs);
- 		}
--		if (lkwdcnt != xkwdcnt)
--			term_exec("1qq", 4, /*nop*/, /*nop*/)
--		lkwdcnt = xkwdcnt;
-+		if (mv != TK_CTL('x')) {
-+			if (lkwdcnt != xkwdcnt)
-+				term_exec("1qq", 4, /*nop*/, /*nop*/)
-+			lkwdcnt = xkwdcnt;
-+		}
- 		preserve(struct buf*, ex_buf, ex_buf)
- 		if (mv == TK_CTL(']'))
+@@ -826,7 +826,46 @@ static int vi_motion(int *row, int *off)
+ 			if (lkwdcnt != xkwdcnt)
+ 				term_exec("1qq", 4, /*nop*/, /*nop*/)
+ 			lkwdcnt = xkwdcnt;
 -			fs_search(1, row, off);
--		else if (!fs_searchback(1, row, off)) {
 +			fs_search(0, 1, row, off);
-+		else if (mv == TK_CTL('x')) {
++		} else if (mv == TK_CTL('x')) {
 +			if (!strcmp(ex_path, "/grep/"))
 +				return -1;
 +			temp_done(2);
@@ -133,11 +122,10 @@ index e101a1b..e0406b0 100644
 +			*row = srow[1]; *off = soff[1];
 +			ex_edit(savepath[1]->s);
 +			xquit = 0;
-+		} else if (!fs_searchback(1, row, off)) {
+ 		} else if (!fs_searchback(1, row, off)) {
  			open_saved(1)
  		}
- 		if (tmpex_buf != ex_buf)
-@@ -1552,7 +1593,19 @@ void vi(int init)
+@@ -1552,7 +1591,19 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -158,7 +146,7 @@ index e101a1b..e0406b0 100644
  				if (!strcmp(ex_path, "/fm/"))
  					xquit = 1;
  				vi_mod = 1;
-@@ -1698,6 +1751,14 @@ void vi(int init)
+@@ -1698,6 +1749,14 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
