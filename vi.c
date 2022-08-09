@@ -627,7 +627,7 @@ static void file_calc(char *path, char *basepath)
 			len = pathlen + len1 + 1;
 			_len = len + sizeof(int);
 			fslink = realloc(fslink, _len+fstlen);
-			*(int*)((char*)fslink+fstlen) = len;
+			*(int*)(fslink+fstlen) = len;
 			memcpy(fslink+fstlen+sizeof(int), path, len);
 			fstlen += _len;
 			fscount++;
@@ -680,7 +680,7 @@ static int fs_search(int cnt, int *row, int *off)
 	redo:
 	while (fspos < fstlen) {
 		path = &fslink[fspos+sizeof(int)];
-		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
+		fspos += *(int*)(fslink+fspos) + sizeof(int);
 		fssearch()
 	}
 	if (fspos == fstlen && !again) {
@@ -699,12 +699,12 @@ static int fs_searchback(int cnt, int *row, int *off)
 	char *paths[count];
 	while (tlen < fspos) {
 		path = &fslink[tlen+sizeof(int)];
-		tlen += *(int*)((char*)fslink+tlen) + sizeof(int);
+		tlen += *(int*)(fslink+tlen) + sizeof(int);
 		paths[--count] = path;
 	}
 	for (int i = count; i < fscount; i++) {
 		path = paths[i];
-		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
+		fspos -= *(int*)(path-sizeof(int))+sizeof(int);
 		fssearch()
 	}
 	return 0;
@@ -821,13 +821,13 @@ static int vi_motion(int *row, int *off)
 			ex_krsset(cs, +1);
 			free(cs);
 		}
-		if (lkwdcnt != xkwdcnt)
-			term_exec("1qq", 4, /*nop*/, /*nop*/)
-		lkwdcnt = xkwdcnt;
 		preserve(struct buf*, ex_buf, ex_buf)
-		if (mv == TK_CTL(']'))
+		if (mv == TK_CTL(']')) {
+			if (lkwdcnt != xkwdcnt)
+				term_exec("1qq", 4, /*nop*/, /*nop*/)
+			lkwdcnt = xkwdcnt;
 			fs_search(1, row, off);
-		else if (!fs_searchback(1, row, off)) {
+		} else if (!fs_searchback(1, row, off)) {
 			open_saved(1)
 		}
 		if (tmpex_buf != ex_buf)
@@ -916,7 +916,7 @@ static int vi_motion(int *row, int *off)
 			for (i = 0; i < fstlen;)
 			{
 				cs = &fslink[i+sizeof(int)];
-				i += *(int*)((char*)fslink+i) + sizeof(int);
+				i += *(int*)(fslink+i) + sizeof(int);
 				temp_write(1, cs);
 			}
 			if (!strcmp(ex_path, "/fm/"))

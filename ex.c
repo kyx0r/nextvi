@@ -209,7 +209,8 @@ void ex_krsset(char *kwd, int dir)
 		xkwdcnt++;
 		vi_regput('/', kwd, 0);
 		xkwddir = dir;
-	} else if (dir == -2 || dir == 2)
+	}
+	if (dir == -2 || dir == 2)
 		xkwddir = dir / 2;
 }
 
@@ -422,7 +423,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	for (int pos = 0; pos < fstlen;)
 	{
 		path = &fslink[pos+sizeof(int)];
-		len = *(int*)((char*)fslink+pos) + sizeof(int);
+		len = *(int*)(fslink+pos) + sizeof(int);
 		pos += len;
 		len -= sizeof(int)+2;
 		for (i = len; i > 0 && path[i] != '/'; i--);
@@ -620,7 +621,7 @@ static int ec_delete(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
-	ex_yank(arg[0], beg, end);
+	ex_yank((unsigned char) arg[0], beg, end);
 	lbuf_edit(xb, NULL, beg, end);
 	xrow = beg;
 	return 0;
@@ -631,7 +632,7 @@ static int ec_yank(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
-	ex_yank(arg[0], beg, end);
+	ex_yank((unsigned char) arg[0], beg, end);
 	return 0;
 }
 
@@ -641,7 +642,7 @@ static int ec_put(char *loc, char *cmd, char *arg)
 	int lnmode;
 	char *buf;
 	int n = lbuf_len(xb);
-	buf = vi_regget(arg[0], &lnmode);
+	buf = vi_regget((unsigned char) arg[0], &lnmode);
 	if (!buf || ex_region(loc, &beg, &end))
 		return 1;
 	lbuf_edit(xb, buf, end, end);
@@ -675,7 +676,7 @@ static int ec_mark(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end))
 		return 1;
-	lbuf_mark(xb, arg[0], end - 1, 0);
+	lbuf_mark(xb, (unsigned char) arg[0], end - 1, 0);
 	return 0;
 }
 
