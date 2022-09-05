@@ -23,7 +23,7 @@ int xgrp = 2;			/* regex search group */
 int xpac;			/* print autocomplete options */
 int xkwdcnt;			/* number of search kwd changes */
 int xbufcur;			/* number of active buffers */
-static int xbufsmax = 10;	/* number of buffers */
+static int xbufsmax;		/* number of buffers */
 struct buf *bufs;		/* main buffers */
 struct buf *ex_buf;		/* current buffer */
 struct buf *ex_pbuf;		/* prev buffer */
@@ -1120,8 +1120,7 @@ int ex_init(char **files)
 		*s++ = *r++;
 	}
 	*s = '\0';
-	bufs = malloc(sizeof(struct buf) * xbufsmax);
-	ex_buf = bufs;
+	ec_setbufsmax(NULL, NULL, "");
 	if (ec_edit("", "e!", arg))
 		return 1;
 	if (xled && (s = getenv("EXINIT")))
