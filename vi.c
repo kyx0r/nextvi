@@ -432,7 +432,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		free(kw);
 		kw = sb->s;
 		if ((re = re_read(&kw))) {
-			ex_krsset(re[0] ? re : NULL, cmd == '/' ? +1 : -1);
+			ex_krsset(re, cmd == '/' ? +2 : -2);
 			while (isspace(*kw))
 				kw++;
 			vi_soset = !!kw[0];
@@ -627,7 +627,7 @@ static void file_calc(char *path, char *basepath)
 			len = pathlen + len1 + 1;
 			_len = len + sizeof(int);
 			fslink = realloc(fslink, _len+fstlen);
-			*(int*)((char*)fslink+fstlen) = len;
+			*(int*)(fslink+fstlen) = len;
 			memcpy(fslink+fstlen+sizeof(int), path, len);
 			fstlen += _len;
 			fscount++;
@@ -680,7 +680,7 @@ static int fs_search(int cnt, int *row, int *off)
 	redo:
 	while (fspos < fstlen) {
 		path = &fslink[fspos+sizeof(int)];
-		fspos += *(int*)((char*)fslink+fspos) + sizeof(int);
+		fspos += *(int*)(fslink+fspos) + sizeof(int);
 		fssearch()
 	}
 	if (fspos == fstlen && !again) {
@@ -699,12 +699,12 @@ static int fs_searchback(int cnt, int *row, int *off)
 	char *paths[count];
 	while (tlen < fspos) {
 		path = &fslink[tlen+sizeof(int)];
-		tlen += *(int*)((char*)fslink+tlen) + sizeof(int);
+		tlen += *(int*)(fslink+tlen) + sizeof(int);
 		paths[--count] = path;
 	}
 	for (int i = count; i < fscount; i++) {
 		path = paths[i];
-		fspos -= *(int*)((char*)path-sizeof(int))+sizeof(int);
+		fspos -= *(int*)(path-sizeof(int))+sizeof(int);
 		fssearch()
 	}
 	return 0;
@@ -714,8 +714,8 @@ static int fs_searchback(int cnt, int *row, int *off)
 static int vi_motion(int *row, int *off)
 {
 	static char ca_dir;
-	static sbuf *savepath;
-	static int srow, soff;
+	static sbuf *savepath[2];
+	static int srow[2], soff[2], lkwdcnt;
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
 	int dir = dir_context(ln ? ln : "");
@@ -807,35 +807,46 @@ static int vi_motion(int *row, int *off)
 			if (lbuf_sectionbeg(xb, +1, row, off))
 				break;
 		break;
-	case TK_CTL(']'): /* note: this is also ^5 as per ascii */
-		cs = vi_curword(xb, *row, *off, cnt);
+	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
+	case TK_CTL('p'):
+		#define open_saved(n) \
+		if (savepath[n]) { \
+			*row = srow[n]; *off = soff[n]; \
+			ex_edit(savepath[n]->s); \
+		} \
+
 		if (!fslink)
 			mdir_calc(fs_exdir ? fs_exdir : ".")
-		if (vi_arg1 && cs)
+		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt))) {
 			ex_krsset(cs, +1);
-		fs_search(1, row, off);
-		free(cs);
-		break;
-	case TK_CTL('p'):
-		if (!fslink)
-			return -1;
-		cs = vi_curword(xb, *row, *off, cnt);
-		if (vi_arg1 && cs)
-			ex_krsset(cs, +1);
-		if (!fs_searchback(1, row, off)) {
-			if (savepath) {
-				*row = srow; *off = soff;
-				ex_edit(savepath->s);
-			}
+			free(cs);
 		}
-		free(cs);
-		break;
+		preserve(struct buf*, ex_buf, ex_buf)
+		if (mv == TK_CTL(']')) {
+			if (lkwdcnt != xkwdcnt)
+				term_exec("1qq", 4, /*nop*/, /*nop*/)
+			lkwdcnt = xkwdcnt;
+			fs_search(1, row, off);
+		} else if (!fs_searchback(1, row, off)) {
+			open_saved(1)
+		}
+		if (tmpex_buf != ex_buf)
+			ex_pbuf = tmpex_buf;
+		bsync_ret:
+		for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
+			ex_bufpostfix(i, 1);
+		syn_setft(ex_filetype);
+		return '\\';
 	case TK_CTL('t'):
-		if (!savepath)
-			sbuf_make(savepath, 1024)
-		sbuf_cut(savepath, 0)
-		sbufn_str(savepath, ex_path)
-		srow = *row; soff = *off;
+		if (vi_arg1 < 2 && !savepath[vi_arg1])
+			sbuf_make(savepath[vi_arg1], 128)
+		else if (vi_arg1 > 1) {
+			open_saved(vi_arg1 % 2)
+			goto bsync_ret;
+		}
+		sbuf_cut(savepath[vi_arg1], 0)
+		sbufn_str(savepath[vi_arg1], ex_path)
+		srow[vi_arg1] = *row; soff[vi_arg1] = *off;
 		break;
 	case '0':
 		*off = 0;
@@ -860,7 +871,7 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('a'):
 		if (!(cs = vi_curword(xb, *row, *off, cnt)))
 			return -1;
-		ex_krsset(cs, +1);
+		ex_krsset(!regs['/'] || strcmp(cs, regs['/']) ? cs : NULL, +1);
 		free(cs);
 		if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg))) {
 			ca_dir = !ca_dir;
@@ -905,7 +916,7 @@ static int vi_motion(int *row, int *off)
 			for (i = 0; i < fstlen;)
 			{
 				cs = &fslink[i+sizeof(int)];
-				i += *(int*)((char*)fslink+i) + sizeof(int);
+				i += *(int*)(fslink+i) + sizeof(int);
 				temp_write(1, cs);
 			}
 			if (!strcmp(ex_path, "/fm/"))
@@ -984,30 +995,23 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 
 static void vi_splitln(int row, int linepos, int nextln)
 {
-	char *s, *part;
-	int len, crow, bytelen;
-	int l, c = !vi_arg1 ? 1 : vi_arg1;
+	char *s, *part, *buf;
+	int slen, crow;
+	int c = !vi_arg1 ? 1 : vi_arg1;
 	vi_mod = 1;
-	for (int i = 0; i < c; i++)
-	{
+	for (int i = 0; i < c; i++) {
 		crow = row + i;
 		s = lbuf_get(xb, crow);
 		if (!s)
 			return;
-		len = uc_slen(s);
-		bytelen = 0;
-		for (int z = 0; z < linepos; z++)
-			{ uc_len(l, (s+bytelen)) bytelen += l; }
-		if (len > linepos)
-		{
-			part = uc_sub(s, linepos, len);
-			char buf[bytelen+2];
-			memcpy(buf, s, bytelen);
-			buf[bytelen] = '\n';
-			buf[bytelen+1] = 0;
+		slen = uc_slen(s);
+		if (slen > linepos) {
+			part = uc_sub(s, linepos, slen);
+			buf = uc_sub(s, 0, linepos);
 			lbuf_edit(xb, buf, crow, crow+1);
 			lbuf_edit(xb, part, crow+1, crow+1);
 			free(part);
+			free(buf);
 			if (nextln)
 				c++;
 		}
@@ -1219,6 +1223,8 @@ static void vc_insert(int cmd)
 	post = ln && !cmdo ? uc_sub(ln, off, -1) : uc_dup("\n");
 	vi_drawrm(row, row, cmdo);
 	rep = vi_input(pref, post, row - cmdo);
+	if (cmdo && !lbuf_len(xb))
+		lbuf_edit(xb, "\n", 0, 0);
 	if (*rep)
 		lbuf_edit(xb, rep, row, row + !cmdo);
 	free(rep);
@@ -1463,11 +1469,6 @@ void vi(int init)
 				vi_col = vi_off2col(xb, xrow, xoff);
 			switch (mv)
 			{
-			case TK_CTL(']'):
-			case TK_CTL('p'):
-				for (n = xbufcur-1; n >= 0 && bufs[n].mtime == -1; n--)
-					ex_bufpostfix(n, 1);
-				syn_setft(ex_filetype);
 			case '\\':
 				vc_status();
 			case 1: /* ^a */

@@ -21,8 +21,9 @@ int xqexit = 1;			/* exit insert via kj */
 int xish = 1;			/* interactive shell */
 int xgrp = 2;			/* regex search group */
 int xpac;			/* print autocomplete options */
+int xkwdcnt;			/* number of search kwd changes */
 int xbufcur;			/* number of active buffers */
-static int xbufsmax = 10;	/* number of buffers */
+static int xbufsmax;		/* number of buffers */
 struct buf *bufs;		/* main buffers */
 struct buf *ex_buf;		/* current buffer */
 struct buf *ex_pbuf;		/* prev buffer */
@@ -202,22 +203,24 @@ int ex_krs(rset **krs, int *dir)
 /* set the previous search keyword rset */
 void ex_krsset(char *kwd, int dir)
 {
-	if (kwd) {
+	if (kwd && *kwd) {
 		rset_free(xkwdrs);
 		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
+		xkwdcnt++;
 		vi_regput('/', kwd, 0);
+		xkwddir = dir;
 	}
-	xkwddir = dir;
+	if (dir == -2 || dir == 2)
+		xkwddir = dir / 2;
 }
 
 static int ex_search(char **pat)
 {
 	sbuf *kw;
-	char *b = *pat;
-	char *e = b;
 	rset *re;
 	int dir, row;
-	sbuf_make(kw, 64)
+	char *e = *pat;
+	sbufn_make(kw, 64)
 	while (*++e) {
 		if (*e == **pat)
 			break;
@@ -225,8 +228,7 @@ static int ex_search(char **pat)
 		if (*e == '\\' && e[1])
 			e++;
 	}
-	if (kw->s_n)
-		ex_krsset(kw->s, **pat == '/' ? 1 : -1);
+	ex_krsset(kw->s, **pat == '/' ? 2 : -2);
 	sbuf_free(kw)
 	*pat = *e ? e + 1 : e;
 	if (ex_krs(&re, &dir))
@@ -421,7 +423,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	for (int pos = 0; pos < fstlen;)
 	{
 		path = &fslink[pos+sizeof(int)];
-		len = *(int*)((char*)fslink+pos) + sizeof(int);
+		len = *(int*)(fslink+pos) + sizeof(int);
 		pos += len;
 		len -= sizeof(int)+2;
 		for (i = len; i > 0 && path[i] != '/'; i--);
@@ -619,7 +621,7 @@ static int ec_delete(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
-	ex_yank(arg[0], beg, end);
+	ex_yank((unsigned char) arg[0], beg, end);
 	lbuf_edit(xb, NULL, beg, end);
 	xrow = beg;
 	return 0;
@@ -630,7 +632,7 @@ static int ec_yank(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
-	ex_yank(arg[0], beg, end);
+	ex_yank((unsigned char) arg[0], beg, end);
 	return 0;
 }
 
@@ -640,7 +642,7 @@ static int ec_put(char *loc, char *cmd, char *arg)
 	int lnmode;
 	char *buf;
 	int n = lbuf_len(xb);
-	buf = vi_regget(arg[0], &lnmode);
+	buf = vi_regget((unsigned char) arg[0], &lnmode);
 	if (!buf || ex_region(loc, &beg, &end))
 		return 1;
 	lbuf_edit(xb, buf, end, end);
@@ -674,7 +676,7 @@ static int ec_mark(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end))
 		return 1;
-	lbuf_mark(xb, arg[0], end - 1, 0);
+	lbuf_mark(xb, (unsigned char) arg[0], end - 1, 0);
 	return 0;
 }
 
@@ -706,8 +708,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	pat = re_read(&s);
-	if (pat && pat[0])
-		ex_krsset(pat, +1);
+	ex_krsset(pat, +1);
 	if (pat && *s) {
 		s--;
 		rep = re_read(&s);
@@ -812,8 +813,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 		return 1;
 	not = strchr(cmd, '!') || cmd[0] == 'v';
 	pat = re_read(&s);
-	if (pat && pat[0])
-		ex_krsset(pat, +1);
+	ex_krsset(pat, +1);
 	free(pat);
 	if (ex_krs(&re, NULL))
 		return 1;
@@ -964,9 +964,10 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 	for (; xbufcur > xbufsmax; xbufcur--)
 		bufs_free(xbufcur - 1);
 	int bufidx = ex_buf - bufs;
+	int pbufidx = ex_pbuf - bufs;
 	bufs = realloc(bufs, sizeof(struct buf) * xbufsmax);
 	ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
-	ex_pbuf = bufs;
+	ex_pbuf = pbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+pbufidx;
 	return 0;
 }
 
@@ -1119,8 +1120,7 @@ int ex_init(char **files)
 		*s++ = *r++;
 	}
 	*s = '\0';
-	bufs = malloc(sizeof(struct buf) * xbufsmax);
-	ex_buf = bufs;
+	ec_setbufsmax(NULL, NULL, "");
 	if (ec_edit("", "e!", arg))
 		return 1;
 	if (xled && (s = getenv("EXINIT")))
