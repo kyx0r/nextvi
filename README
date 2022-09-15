@@ -107,6 +107,14 @@ Allows the user to use vi like less except you need to specify
 Example:
 $ dmesg | vi -
 
+ec_closebuf.patch
+--------------
+Allows the user to close the buffer using new ex command :cx
+Specify a number as an arg for what buffer to close.
+Specifying no argument(s) will close the current buffer.
+When the buffer is closed all buffers above will be shifted
+and renumbered.
+
 Helper macros:
 --------------
 @q = creates structure like this:
