@@ -1125,10 +1125,10 @@ static void vi_shift(int r1, int r2, int dir)
 	for (i = r1; i <= r2; i++) {
 		if (!(ln = lbuf_get(xb, i)))
 			continue;
-		if (dir > 0)
-			sbuf_chr(sb, '\t')
-		else
+		if (dir < 0)
 			ln = ln[0] == ' ' || ln[0] == '\t' ? ln + 1 : ln;
+		else if (ln[0] != '\n' || r1 == r2)
+			sbuf_chr(sb, '\t')
 		sbufn_str(sb, ln)
 		lbuf_edit(xb, sb->s, i, i + 1);
 		sbuf_cut(sb, 0)
