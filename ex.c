@@ -396,7 +396,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 		bufs_switchwft(fd)
 		free(path);
 		return 0;
-	} else if (path[0] || !ex_path || !strchr(cmd, '!'))
+	} else if (path[0] || !xbufcur || !strchr(cmd, '!'))
 		bufs_switch(bufs_open(path+cd));
 	readfile(rd =)
 	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
