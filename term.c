@@ -318,7 +318,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	close(fds[1].fd);
 	waitpid(pid, NULL, 0);
 	signal(SIGTTOU, SIG_IGN);
-	tcsetpgrp(STDIN_FILENO, getpid());
+	tcsetpgrp(STDIN_FILENO, getpgrp());
 	signal(SIGTTOU, SIG_DFL);
 	if (!iproc) {
 		term_init();
