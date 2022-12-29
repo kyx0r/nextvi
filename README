@@ -115,6 +115,12 @@ Specifying no argument(s) will close the current buffer.
 When the buffer is closed all buffers above will be shifted
 and renumbered.
 
+filetype_shebang.patch
+--------------
+Detect and set the corresponding filetype based on the shebang
+or specific data in the file. Currently supports only shell
+and python.
+
 Helper macros:
 --------------
 @q = creates structure like this:
