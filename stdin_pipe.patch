@@ -1,5 +1,5 @@
 diff --git a/term.c b/term.c
-index fa4f502..4db1204 100644
+index 2716c2d..6578f77 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,5 +1,6 @@
@@ -44,11 +44,20 @@ index fa4f502..4db1204 100644
  			return -1;
  		ibuf_cnt = n;
  		ibuf_pos = 0;
+@@ -318,7 +319,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
+ 	close(fds[1].fd);
+ 	waitpid(pid, NULL, 0);
+ 	signal(SIGTTOU, SIG_IGN);
+-	tcsetpgrp(STDIN_FILENO, getpgrp());
++	tcsetpgrp(stdin_fd, getpgrp());
+ 	signal(SIGTTOU, SIG_DFL);
+ 	if (!iproc) {
+ 		term_init();
 diff --git a/vi.c b/vi.c
-index 2174f99..c59f9e4 100644
+index 8f7ce6e..56b164a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2058,13 +2058,17 @@ int main(int argc, char *argv[])
+@@ -2062,13 +2062,17 @@ int main(int argc, char *argv[])
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == 's')
  			xled = 0;
@@ -69,10 +78,10 @@ index 2174f99..c59f9e4 100644
  			vi(1);
  		else
 diff --git a/vi.h b/vi.h
-index 2ce410e..92366e9 100644
+index d0bd2aa..041c768 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -420,3 +420,4 @@ extern int fspos;
+@@ -425,3 +425,4 @@ extern int fspos;
  extern int fscount;
  extern int vi_hidch;
  extern int vi_insmov;
