@@ -1547,7 +1547,7 @@ void vi(int init)
 				if (!(ln = lbuf_get(xb, xrow)))
 					break;
 				ln += xoff;
-				char buf[strlen(ln)+3];
+				char buf[strlen(ln)+4];
 				buf[0] = ':';
 				buf[1] = 'e';
 				buf[2] = ' ';
