@@ -73,7 +73,7 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 			EMIT(PC++, CHAR);
 			uc_code(c, re)
 			if (flg & REG_ICASE)
-				c = tolower(c);
+				c = tolower((unsigned char)c);
 			EMIT(PC++, c);
 			break;
 		case '.':
@@ -99,13 +99,13 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 				}
 				uc_code(c, re)
 				if (flg & REG_ICASE)
-					c = tolower(c);
+					c = tolower((unsigned char)c);
 				EMIT(PC++, c);
 				if (re[l] == '-' && re[l+1] != ']')
 					re += l+1;
 				uc_code(c, re)
 				if (flg & REG_ICASE)
-					c = tolower(c);
+					c = tolower((unsigned char)c);
 				EMIT(PC++, c);
 				uc_len(c, re) re += c;
 			}
@@ -529,7 +529,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
 	if (flg & REG_ICASE)
 		goto jmp_start1;
 	goto jmp_start2;
-	match(1, c = tolower(c);)
+	match(1, c = tolower((unsigned char)c);)
 	match(2, /*nop*/)
 }
 
