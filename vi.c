@@ -1443,7 +1443,7 @@ void vi(int init)
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
 		if (*vi_word || vi_lnnum)
-			vi_mod = 1;
+			vi_mod = -1;
 		if (vi_lnnum == 1)
 			vi_lnnum = 0;
 		if (vi_msg[0]) {
