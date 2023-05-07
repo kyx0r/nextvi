@@ -188,7 +188,7 @@ void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 int syn_merge(int old, int new);
-void syn_reloadft();
+void syn_reloadft(void);
 int syn_addhl(char *reg, int func, int reload);
 void syn_init(void);
 

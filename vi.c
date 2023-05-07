@@ -197,7 +197,7 @@ static void vi_drawrow(int row)
 }
 
 /* redraw the screen */
-static void vi_drawagain()
+static void vi_drawagain(void)
 {
 	syn_scdir(0);
 	syn_blockhl = 0;
@@ -586,7 +586,7 @@ void vi_regput(int c, const char *s, int ln)
 	vi_regputraw(c, s, ln);
 }
 
-static void vi_regprint()
+static void vi_regprint(void)
 {
 	for (int i = 0; i < LEN(regs); i++)
 	{
@@ -2035,7 +2035,7 @@ void vi(int init)
 	}
 }
 
-static void sighandler()
+static void sighandler(int signo)
 {
 	vi_back(TK_CTL('l'));
 }

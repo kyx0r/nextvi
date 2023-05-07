@@ -349,7 +349,7 @@ char *syn_filetype(char *path)
 	return hl >= 0 && hl < ftslen ? fts[hl].ft : "/";
 }
 
-void syn_reloadft()
+void syn_reloadft(void)
 {
 	if (syn_reload) {
 		int hlset = ftmap[ftidx].setbidx;
