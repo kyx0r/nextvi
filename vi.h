@@ -387,8 +387,7 @@ char *conf_digraph(int c1, int c2);
 char *vi_regget(int c, int *lnmode);
 void vi_regput(int c, const char *s, int lnmode);
 /* file system */
-void dir_calc(char *cur_dir);
-#define mdir_calc(path) { char buf[4096]; strcpy(buf, path); dir_calc(buf); }
+void dir_calc(char *path);
 /* global variables */
 extern int xrow;
 extern int xoff;

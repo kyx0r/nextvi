@@ -607,15 +607,15 @@ int fstlen;
 int fspos;
 int fscount;
 
-static void file_calc(char *path, char *basepath)
+static char *file_calc(char *path)
 {
 	struct dirent *dp;
 	struct stat statbuf;
 	int len, _len, len1;
-	DIR *dir = opendir(basepath);
+	DIR *dir = opendir(path);
 	int pathlen = strlen(path);
 	if (!dir)
-		return;
+		return path + pathlen;
 	while ((dp = readdir(dir)) != NULL) {
 		len1 = strlen(dp->d_name)+1;
 		path[pathlen] = '/';
@@ -633,30 +633,43 @@ static void file_calc(char *path, char *basepath)
 			fscount++;
 		}
 	}
-	path[pathlen] = 0;
 	closedir(dir);
+	path[pathlen] = '/';
+	path[pathlen+1] = '\0';
+	return path + pathlen + 1;
 }
 
-void dir_calc(char *cur_dir)
+void dir_calc(char *path)
 {
 	struct dirent *dirp;
 	struct stat statbuf;
 	char *ptr;
+	int i = 0;
+	char cur_dir[4096];
+	char *ptrs[1024];
+	DIR *dps[1024];
 	DIR *dp;
-	file_calc(cur_dir, cur_dir);
-	ptr = cur_dir + strlen(cur_dir);
-	*ptr++ = '/';
-	*ptr = 0;
-	if ((dp = opendir(cur_dir)) == NULL)
-		return;
-	while ((dirp = readdir(dp)) != NULL) {
-		if (strcmp(dirp->d_name, ".") == 0 ||
-			strcmp(dirp->d_name, "..") == 0)
-			continue;
-		strcpy(ptr, dirp->d_name);
-		if (lstat(cur_dir, &statbuf) >= 0 &&
-			S_ISDIR(statbuf.st_mode))
-			dir_calc(cur_dir);
+	strcpy(cur_dir, path);
+	goto start;
+	while (i > 0) {
+		while ((dirp = readdir(dp)) != NULL) {
+			if (strcmp(dirp->d_name, ".") == 0 ||
+				strcmp(dirp->d_name, "..") == 0)
+				continue;
+			strcpy(ptr, dirp->d_name);
+			if (lstat(cur_dir, &statbuf) >= 0 &&
+					S_ISDIR(statbuf.st_mode)) {
+				start:
+				ptr = file_calc(cur_dir);
+				if ((dp = opendir(cur_dir)) == NULL)
+					return;
+				dps[++i] = dp;
+				ptrs[i] = ptr;
+			}
+		}
+		closedir(dp);
+		dp = dps[--i];
+		ptr = ptrs[i];
 	}
 	closedir(dp);
 }
@@ -816,7 +829,7 @@ static int vi_motion(int *row, int *off)
 		} \
 
 		if (!fslink)
-			mdir_calc(fs_exdir ? fs_exdir : ".")
+			dir_calc(fs_exdir ? fs_exdir : ".");
 		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt))) {
 			ex_krsset(cs, +1);
 			free(cs);
@@ -905,7 +918,7 @@ static int vi_motion(int *row, int *off)
 	case '\\':
 		if (!fslink || !strcmp(ex_path, "/fm/")) {
 			ec_setdir(NULL, NULL, NULL);
-			mdir_calc(fs_exdir ? fs_exdir : ".")
+			dir_calc(fs_exdir ? fs_exdir : ".");
 			temp_done(1);
 		}
 		temp_open(1, "/fm/", "/fm");
