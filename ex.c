@@ -416,7 +416,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	int len, i, inst;
 	char *path, *arg1;
 	if (!fslink)
-		mdir_calc(fs_exdir ? fs_exdir : ".")
+		dir_calc(fs_exdir ? fs_exdir : ".");
 	arg1 = arg+dstrlen(arg, ' ');
 	inst = atoi(arg1);
 	*arg1 = '\0';
