@@ -260,7 +260,7 @@ index a849d1d..2116726 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index d6d562c..ae15b42 100644
+index c25271d..cddd889 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -416,7 +416,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int
