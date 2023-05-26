@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 806737a..79282ec 100644
+index fd946eb..4feaddd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -28,7 +28,7 @@ struct buf *bufs;		/* main buffers */
@@ -127,7 +127,7 @@ index 798be60..e8a637b 100644
  			int g1 = offs[grp - 2], g2 = offs[grp - 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 1fc95cb..a5e28ab 100644
+index a849d1d..2116726 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -635,3 +635,128 @@ char *re_read(char **src)
@@ -260,7 +260,7 @@ index 1fc95cb..a5e28ab 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 49a9f9f..c69509f 100644
+index d6d562c..ae15b42 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -416,7 +416,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int
@@ -272,7 +272,7 @@ index 49a9f9f..c69509f 100644
  	int len = 0;
  	int i, dir;
  	if (cmd == '/' || cmd == '?') {
-@@ -600,7 +600,7 @@ static void vi_regprint()
+@@ -600,7 +600,7 @@ static void vi_regprint(void)
  	}
  }
  
@@ -281,7 +281,7 @@ index 49a9f9f..c69509f 100644
  char *fslink;
  char *fs_exdir;
  int fstlen;
-@@ -620,7 +620,7 @@ static void file_calc(char *path, char *basepath)
+@@ -620,7 +620,7 @@ static char *file_calc(char *path)
  		len1 = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len1);
@@ -291,7 +291,7 @@ index 49a9f9f..c69509f 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  		{
 diff --git a/vi.h b/vi.h
-index d0bd2aa..3529c88 100644
+index 3eb749d..fad7398 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -113,10 +113,21 @@ typedef struct {
@@ -334,7 +334,7 @@ index d0bd2aa..3529c88 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path);
  void ec_bufferi(int id);
-@@ -417,7 +428,7 @@ extern int xgrp;
+@@ -416,7 +427,7 @@ extern int xgrp;
  extern int xpac;
  extern int xkwdcnt;
  extern sbuf *xacreg;

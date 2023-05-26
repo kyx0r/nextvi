@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 4794386..05367fb 100644
+index a5a6360..87b7065 100644
 --- a/led.c
 +++ b/led.c
-@@ -79,14 +79,57 @@ static void deep_search(const char *pattern, int len, tern_t *start)
+@@ -78,14 +78,57 @@ static void deep_search(const char *pattern, int len, tern_t *start)
  		deep_search(_pattern, len, start->m_child);
  	}
  }
