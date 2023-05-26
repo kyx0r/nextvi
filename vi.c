@@ -671,7 +671,6 @@ void dir_calc(char *path)
 		dp = dps[--i];
 		ptr = ptrs[i];
 	}
-	closedir(dp);
 }
 
 #define fssearch() \
