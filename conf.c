@@ -240,7 +240,7 @@ int hlslen = LEN(hls);
 #define SYN_REVDIR		SYN_BGMK(8)
 
 /* right-to-left characters (used only in dctxs[] and dmarks[]) */
-#define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْ"
+#define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْٔ"
 /* neutral characters (used only in dctxs[] and dmarks[]) */
 #define CNEUT		"-!\"#$%&'\\()*+,./:;<=>?@^_`{|}~ "
 
