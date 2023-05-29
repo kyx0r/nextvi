@@ -421,7 +421,7 @@ index 69fcbe4..6811ef4 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index c25271d..9c14c08 100644
+index ab7bbb4..96905db 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -31,6 +31,7 @@
@@ -432,7 +432,7 @@ index c25271d..9c14c08 100644
  #include "vi.h"
  #include "conf.c"
  #include "ex.c"
-@@ -416,7 +417,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int
+@@ -418,7 +419,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int
  
  static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
  {
@@ -441,7 +441,7 @@ index c25271d..9c14c08 100644
  	int len = 0;
  	int i, dir;
  	if (cmd == '/' || cmd == '?') {
-@@ -600,7 +601,7 @@ static void vi_regprint(void)
+@@ -602,7 +603,7 @@ static void vi_regprint(void)
  	}
  }
  
@@ -450,7 +450,7 @@ index c25271d..9c14c08 100644
  char *fslink;
  char *fs_exdir;
  int fstlen;
-@@ -620,7 +621,7 @@ static char *file_calc(char *path)
+@@ -622,7 +623,7 @@ static char *file_calc(char *path)
  		len1 = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len1);

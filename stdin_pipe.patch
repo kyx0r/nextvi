@@ -85,7 +85,7 @@ index 2716c2d..6578f77 100644
  	if (!iproc) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index c25271d..d73185a 100644
+index ab7bbb4..f61501b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2074,10 +2074,12 @@ int main(int argc, char *argv[])
