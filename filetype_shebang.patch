@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index fd946eb..4b1b853 100644
+index c5b722d..d53861e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -407,6 +407,19 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -398,6 +398,19 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_show(msg);
  	} else
  		ex_show("read failed");
@@ -22,3 +22,20 @@ index fd946eb..4b1b853 100644
  	free(path);
  	return 0;
  }
+diff --git a/reindex.sh b/reindex.sh
+index 0b047d8..a51e7f3 100755
+--- a/reindex.sh
++++ b/reindex.sh
+@@ -1,9 +1,11 @@
+ for p in *.patch
+ do
++	echo "PATCH: $p"
+ 	patch < $p
+ 	git diff > ./tmp
+-	patch -R < $p
++	patch -R < $p &>/dev/null
+ 	cp tmp $p
+ 	git add $p
++	echo "END PATCH: $p"
+ done
+ rm tmp *.orig

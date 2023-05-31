@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index fd946eb..f1c2770 100644
+index c5b722d..78a0c99 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -971,6 +971,29 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+@@ -960,6 +960,29 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -32,7 +32,7 @@ index fd946eb..f1c2770 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1013,6 +1036,7 @@ static struct excmd {
+@@ -1002,6 +1025,7 @@ static struct excmd {
  	{"cd", ec_chdir},
  	{"inc", ec_setincl},
  	{"bx", ec_setbufsmax},
@@ -40,3 +40,20 @@ index fd946eb..f1c2770 100644
  	{"ac", ec_setacreg},
  	{"", ec_null},
  };
+diff --git a/reindex.sh b/reindex.sh
+index 0b047d8..a51e7f3 100755
+--- a/reindex.sh
++++ b/reindex.sh
+@@ -1,9 +1,11 @@
+ for p in *.patch
+ do
++	echo "PATCH: $p"
+ 	patch < $p
+ 	git diff > ./tmp
+-	patch -R < $p
++	patch -R < $p &>/dev/null
+ 	cp tmp $p
+ 	git add $p
++	echo "END PATCH: $p"
+ done
+ rm tmp *.orig

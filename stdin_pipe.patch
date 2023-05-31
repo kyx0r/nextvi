@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index fd946eb..8beb32b 100644
+index c5b722d..f9de211 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -390,6 +390,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -381,6 +381,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  			return 1;
  	if (!(path = ex_pathexpand(arg, 0)))
  		return 1;
@@ -11,7 +11,7 @@ index fd946eb..8beb32b 100644
  	if (path[0] == '.' && path[1] == '/')
  		cd = 2;
  	if (path[0] && ((fd = bufs_find(path+cd)) >= 0)) {
-@@ -402,6 +404,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -393,6 +395,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
  		ex_bufpostfix(ex_buf - bufs, path[0]);
  		syn_setft(ex_buf->ft);
@@ -19,7 +19,7 @@ index fd946eb..8beb32b 100644
  		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
  				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
  		ex_show(msg);
-@@ -1125,5 +1128,9 @@ int ex_init(char **files)
+@@ -1114,5 +1117,9 @@ int ex_init(char **files)
  		return 1;
  	if (xled && (s = getenv("EXINIT")))
  		ex_command(s)
@@ -29,6 +29,23 @@ index fd946eb..8beb32b 100644
 +	}
  	return 0;
  }
+diff --git a/reindex.sh b/reindex.sh
+index 0b047d8..a51e7f3 100755
+--- a/reindex.sh
++++ b/reindex.sh
+@@ -1,9 +1,11 @@
+ for p in *.patch
+ do
++	echo "PATCH: $p"
+ 	patch < $p
+ 	git diff > ./tmp
+-	patch -R < $p
++	patch -R < $p &>/dev/null
+ 	cp tmp $p
+ 	git add $p
++	echo "END PATCH: $p"
+ done
+ rm tmp *.orig
 diff --git a/term.c b/term.c
 index 2716c2d..6578f77 100644
 --- a/term.c
@@ -85,10 +102,10 @@ index 2716c2d..6578f77 100644
  	if (!iproc) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index ab7bbb4..f61501b 100644
+index 69f2981..d4325e2 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2074,10 +2074,12 @@ int main(int argc, char *argv[])
+@@ -2073,10 +2073,12 @@ int main(int argc, char *argv[])
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == 's')
  			xled = 0;
@@ -104,10 +121,10 @@ index ab7bbb4..f61501b 100644
  	term_init();
  	if (!ex_init(argv + i)) {
 diff --git a/vi.h b/vi.h
-index 3eb749d..93b48f8 100644
+index c1485c1..755bd4b 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -424,3 +424,4 @@ extern int fspos;
+@@ -426,3 +426,4 @@ extern int fspos;
  extern int fscount;
  extern int vi_hidch;
  extern int vi_insmov;

@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index fd946eb..576bf46 100644
+index c5b722d..87e95ca 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1127,3 +1127,11 @@ int ex_init(char **files)
+@@ -1116,3 +1116,11 @@ int ex_init(char **files)
  		ex_command(s)
  	return 0;
  }
@@ -26,6 +26,23 @@ index a849d1d..6cc3bda 100644
  	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
+diff --git a/reindex.sh b/reindex.sh
+index 0b047d8..a51e7f3 100755
+--- a/reindex.sh
++++ b/reindex.sh
+@@ -1,9 +1,11 @@
+ for p in *.patch
+ do
++	echo "PATCH: $p"
+ 	patch < $p
+ 	git diff > ./tmp
+-	patch -R < $p
++	patch -R < $p &>/dev/null
+ 	cp tmp $p
+ 	git add $p
++	echo "END PATCH: $p"
+ done
+ rm tmp *.orig
 diff --git a/ren.c b/ren.c
 index 07fc947..202367b 100644
 --- a/ren.c
@@ -56,10 +73,10 @@ index 07fc947..202367b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index ab7bbb4..a6e9bbd 100644
+index 69f2981..198e9a6 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -588,6 +588,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -587,6 +587,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln);
  }
  
@@ -72,7 +89,7 @@ index ab7bbb4..a6e9bbd 100644
  static void vi_regprint(void)
  {
  	for (int i = 0; i < LEN(regs); i++)
-@@ -2085,9 +2091,18 @@ int main(int argc, char *argv[])
+@@ -2084,9 +2090,18 @@ int main(int argc, char *argv[])
  			vi(1);
  		else
  			ex();
@@ -92,7 +109,7 @@ index ab7bbb4..a6e9bbd 100644
  	return 0;
  }
 diff --git a/vi.h b/vi.h
-index 3eb749d..081eff0 100644
+index c1485c1..ad6c527 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -170,6 +170,7 @@ int ren_cwid(char *s, int pos);
