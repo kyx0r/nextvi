@@ -23,14 +23,14 @@ int xgrp = 2;			/* regex search group */
 int xpac;			/* print autocomplete options */
 int xkwdcnt;			/* number of search kwd changes */
 int xbufcur;			/* number of active buffers */
-static int xbufsmax;		/* number of buffers */
 struct buf *bufs;		/* main buffers */
 struct buf *ex_buf;		/* current buffer */
 struct buf *ex_pbuf;		/* prev buffer */
 sbuf *xacreg;			/* autocomplete db filter regex */
-static rset *xkwdrs;		/* the last searched keyword rset */
+rset *xkwdrs;			/* the last searched keyword rset */
+int xkwddir;			/* the last search direction */
+static int xbufsmax;		/* number of buffers */
 static char xrep[EXLEN];	/* the last replacement */
-static int xkwddir;		/* the last search direction */
 static int xgdep;		/* global command recursion depth */
 static struct buf tempbufs[2];	/* temporary buffers, for internal use */
 
@@ -190,20 +190,12 @@ static char *ex_pathexpand(char *src, int spaceallowed)
 	sbufn_done(sb)
 }
 
-/* the previous search keyword rset */
-int ex_krs(rset **krs, int *dir)
-{
-	if (krs)
-		*krs = xkwdrs;
-	if (dir)
-		*dir = xkwddir;
-	return xkwddir == 0 || !xkwdrs;
-}
-
-/* set the previous search keyword rset */
+/* set the current search keyword rset if the kwd or flags changed */
 void ex_krsset(char *kwd, int dir)
 {
-	if (kwd && *kwd) {
+	char *reg = vi_regget('/', &(int){0});
+	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
+		|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
 		rset_free(xkwdrs);
 		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
 		xkwdcnt++;
@@ -217,8 +209,7 @@ void ex_krsset(char *kwd, int dir)
 static int ex_search(char **pat)
 {
 	sbuf *kw;
-	rset *re;
-	int dir, row;
+	int row;
 	char *e = *pat;
 	sbufn_make(kw, 64)
 	while (*++e) {
@@ -231,13 +222,13 @@ static int ex_search(char **pat)
 	ex_krsset(kw->s, **pat == '/' ? 2 : -2);
 	sbuf_free(kw)
 	*pat = *e ? e + 1 : e;
-	if (ex_krs(&re, &dir))
+	if (!xkwddir || !xkwdrs)
 		return -1;
-	row = xrow + dir;
+	row = xrow + xkwddir;
 	while (row >= 0 && row < lbuf_len(xb)) {
-		if (rset_find(re, lbuf_get(xb, row), 0, NULL, REG_NEWLINE) >= 0)
+		if (rset_find(xkwdrs, lbuf_get(xb, row), 0, NULL, REG_NEWLINE) >= 0)
 			break;
-		row += dir;
+		row += xkwddir;
 	}
 	return row >= 0 && row < lbuf_len(xb) ? row : -1;
 }
@@ -699,7 +690,6 @@ static void replace(sbuf *dst, char *rep, char *ln, int *offs)
 
 static int ec_substitute(char *loc, char *cmd, char *arg)
 {
-	rset *re;
 	int beg, end, grp = xgrp != 2 ? xgrp : 32;
 	int offs[grp];
 	char *pat = NULL, *rep = NULL;
@@ -717,7 +707,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		snprintf(xrep, sizeof(xrep), "%s", rep ? rep : "");
 	free(pat);
 	free(rep);
-	if (ex_krs(&re, NULL))
+	if (!xkwddir || !xkwdrs)
 		return 1;
 	/* if the change is bigger than display size
 	set savepoint where command was issued. */
@@ -726,7 +716,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
-		while (rset_find(re, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
+		while (rset_find(xkwdrs, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
 			if (offs[xgrp - 2] < 0) {
 				ln += offs[1] > 0 ? offs[1] : 1;
 				continue;
@@ -803,7 +793,6 @@ static int ec_cmap(char *loc, char *cmd, char *arg)
 
 static int ec_glob(char *loc, char *cmd, char *arg)
 {
-	rset *re;
 	int beg, end, not;
 	char *pat, *s = arg;
 	int i;
@@ -815,7 +804,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	pat = re_read(&s);
 	ex_krsset(pat, +1);
 	free(pat);
-	if (ex_krs(&re, NULL))
+	if (!xkwddir || !xkwdrs)
 		return 1;
 	xgdep++;
 	for (i = beg + 1; i < end; i++)
@@ -823,7 +812,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	i = beg;
 	while (i < lbuf_len(xb)) {
 		char *ln = lbuf_get(xb, i);
-		if ((rset_find(re, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
+		if ((rset_find(xkwdrs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
 			xrow = i;
 			if (ex_exec(s))
 				break;
