@@ -26,23 +26,6 @@ index a849d1d..6cc3bda 100644
  	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
-diff --git a/reindex.sh b/reindex.sh
-index 0b047d8..a51e7f3 100755
---- a/reindex.sh
-+++ b/reindex.sh
-@@ -1,9 +1,11 @@
- for p in *.patch
- do
-+	echo "PATCH: $p"
- 	patch < $p
- 	git diff > ./tmp
--	patch -R < $p
-+	patch -R < $p &>/dev/null
- 	cp tmp $p
- 	git add $p
-+	echo "END PATCH: $p"
- done
- rm tmp *.orig
 diff --git a/ren.c b/ren.c
 index 07fc947..202367b 100644
 --- a/ren.c

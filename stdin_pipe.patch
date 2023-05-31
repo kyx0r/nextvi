@@ -29,23 +29,6 @@ index c5b722d..f9de211 100644
 +	}
  	return 0;
  }
-diff --git a/reindex.sh b/reindex.sh
-index 0b047d8..a51e7f3 100755
---- a/reindex.sh
-+++ b/reindex.sh
-@@ -1,9 +1,11 @@
- for p in *.patch
- do
-+	echo "PATCH: $p"
- 	patch < $p
- 	git diff > ./tmp
--	patch -R < $p
-+	patch -R < $p &>/dev/null
- 	cp tmp $p
- 	git add $p
-+	echo "END PATCH: $p"
- done
- rm tmp *.orig
 diff --git a/term.c b/term.c
 index 2716c2d..6578f77 100644
 --- a/term.c

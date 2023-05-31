@@ -62,20 +62,3 @@ index a5a6360..87b7065 100644
  	deep_search(pattern, l, current->m_child);
  	sbuf_null(suggestsb)
  	return 1;
-diff --git a/reindex.sh b/reindex.sh
-index 0b047d8..a51e7f3 100755
---- a/reindex.sh
-+++ b/reindex.sh
-@@ -1,9 +1,11 @@
- for p in *.patch
- do
-+	echo "PATCH: $p"
- 	patch < $p
- 	git diff > ./tmp
--	patch -R < $p
-+	patch -R < $p &>/dev/null
- 	cp tmp $p
- 	git add $p
-+	echo "END PATCH: $p"
- done
- rm tmp *.orig

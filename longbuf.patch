@@ -35,23 +35,6 @@ index a5a6360..f112e88 100644
  					continue;
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
-diff --git a/reindex.sh b/reindex.sh
-index 0b047d8..a51e7f3 100755
---- a/reindex.sh
-+++ b/reindex.sh
-@@ -1,9 +1,11 @@
- for p in *.patch
- do
-+	echo "PATCH: $p"
- 	patch < $p
- 	git diff > ./tmp
--	patch -R < $p
-+	patch -R < $p &>/dev/null
- 	cp tmp $p
- 	git add $p
-+	echo "END PATCH: $p"
- done
- rm tmp *.orig
 diff --git a/vi.c b/vi.c
 index 69f2981..55d3040 100644
 --- a/vi.c
