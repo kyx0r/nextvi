@@ -8,4 +8,4 @@ do
 	git add $p
 	echo "END PATCH: $p"
 done
-rm tmp *.orig
+rm tmp *.orig *.rej
