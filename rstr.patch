@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c5b722d..86c3e95 100644
+index c5b722d..6b9437d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *bufs;		/* main buffers */
@@ -11,6 +11,46 @@ index c5b722d..86c3e95 100644
  int xkwddir;			/* the last search direction */
  static int xbufsmax;		/* number of buffers */
  static char xrep[EXLEN];	/* the last replacement */
+@@ -195,9 +195,9 @@ void ex_krsset(char *kwd, int dir)
+ {
+ 	char *reg = vi_regget('/', &(int){0});
+ 	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
+-		|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
+-		rset_free(xkwdrs);
+-		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
++		|| (xkwdrs->icase != xic))) {
++		rstr_free(xkwdrs);
++		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
+ 		xkwdcnt++;
+ 		vi_regput('/', kwd, 0);
+ 		xkwddir = dir;
+@@ -226,7 +226,7 @@ static int ex_search(char **pat)
+ 		return -1;
+ 	row = xrow + xkwddir;
+ 	while (row >= 0 && row < lbuf_len(xb)) {
+-		if (rset_find(xkwdrs, lbuf_get(xb, row), 0, NULL, REG_NEWLINE) >= 0)
++		if (rstr_find(xkwdrs, lbuf_get(xb, row), 0, NULL, REG_NEWLINE) >= 0)
+ 			break;
+ 		row += xkwddir;
+ 	}
+@@ -716,7 +716,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+ 	for (i = beg; i < end; i++) {
+ 		char *ln = lbuf_get(xb, i);
+ 		sbuf *r = NULL;
+-		while (rset_find(xkwdrs, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
++		while (rstr_find(xkwdrs, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
+ 			if (offs[xgrp - 2] < 0) {
+ 				ln += offs[1] > 0 ? offs[1] : 1;
+ 				continue;
+@@ -812,7 +812,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+ 	i = beg;
+ 	while (i < lbuf_len(xb)) {
+ 		char *ln = lbuf_get(xb, i);
+-		if ((rset_find(xkwdrs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
++		if ((rstr_find(xkwdrs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
+ 			xrow = i;
+ 			if (ex_exec(s))
+ 				break;
 @@ -927,9 +927,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -199,7 +239,7 @@ index 69f2981..062968a 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  		{
 diff --git a/vi.h b/vi.h
-index c1485c1..8c97f6f 100644
+index c1485c1..91d4b20 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -113,10 +113,21 @@ typedef struct {
@@ -242,9 +282,12 @@ index c1485c1..8c97f6f 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path);
  void ec_bufferi(int id);
-@@ -418,7 +429,7 @@ extern int xkwdcnt;
+@@ -416,9 +427,9 @@ extern int xgrp;
+ extern int xpac;
+ extern int xkwdcnt;
  extern int xkwddir;
- extern rset *xkwdrs;
+-extern rset *xkwdrs;
++extern rstr *xkwdrs;
  extern sbuf *xacreg;
 -extern rset *fsincl;
 +extern rstr *fsincl;
