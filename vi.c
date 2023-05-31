@@ -418,9 +418,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int 
 
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
-	rset *rs;
-	int len = 0;
-	int i, dir;
+	int i, dir, len = 0;
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
 		sbuf *sb;
@@ -442,12 +440,13 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			free(re);
 		}
 		sbuf_free(sb)
-	}
-	if (!lbuf_len(xb) || ex_krs(&rs, &dir))
+	} else if (msg)
+		ex_krsset(regs['/'], xkwddir);
+	if (!lbuf_len(xb) || (!xkwddir || !xkwdrs))
 		return 1;
-	dir = cmd == 'N' ? -dir : dir;
+	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, rs, dir, row, off, &len)) {
+		if (lbuf_search(xb, xkwdrs, dir, row, off, &len)) {
 			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 					regs['/'], i, cnt);
 			break;
@@ -885,7 +884,7 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('a'):
 		if (!(cs = vi_curword(xb, *row, *off, cnt)))
 			return -1;
-		ex_krsset(!regs['/'] || strcmp(cs, regs['/']) ? cs : NULL, +1);
+		ex_krsset(cs, +1);
 		free(cs);
 		if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg))) {
 			ca_dir = !ca_dir;
