@@ -273,10 +273,10 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	syn_setft("/-");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(ex_filetype);
-	strncpy(vi_lastprompt, msg, sizeof(vi_lastprompt) - 1);
 	vi_mod = 1;
 	if (!s)
 		return NULL;
+	strncpy(vi_lastprompt, msg, sizeof(vi_lastprompt) - 1);
 	r = uc_dup(s + l2);
 	strcpy(vi_msg+l2, r);
 	free(s);
