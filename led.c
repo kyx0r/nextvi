@@ -59,13 +59,14 @@ static void file_ternary(struct lbuf *buf)
 			if (len > 1) {
 				char *part = ss[i]+sidx+subs[grp - 2];
 				char ch = part[len];
-				part[len] = '\n';
-				for (n = 0; n < acsb->s_n - len; n++)
-					if (!strncmp(acsb->s + n, part, len+1))
+				part[len++] = '\n';
+				for (n = 1; n < acsb->s_n - len; n++)
+					if (*(acsb->s + n - 1) == '\n' &&
+						!memcmp(acsb->s + n, part, len))
 						goto skip;
-				sbuf_mem(acsb, part, len+1)
+				sbuf_mem(acsb, part, len)
 				skip:
-				part[len] = ch;
+				part[len - 1] = ch;
 			}
 			sidx += subs[grp - 1] > 0 ? subs[grp - 1] : 1;
 		}
