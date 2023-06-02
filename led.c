@@ -10,7 +10,7 @@ int dstrlen(const char *s, char delim)
 	return i-s;
 }
 
-static int search(const char *pattern)
+static int search(const char *pattern, int l)
 {
 	if (!*pattern)
 		return 0;
@@ -22,11 +22,13 @@ static int search(const char *pattern)
 		char *part1 = part;
 		while (*part != '\n')
 			part--;
-		int len = dstrlen(++part, '\n') + 1;
-		if (part == part1)
-			sbuf_mem(suggestsb, part, len)
-		else
-			sbuf_mem(sylsb, part, len)
+		int len = dstrlen(++part, '\n');
+		if (len++ != l) {
+			if (part == part1)
+				sbuf_mem(suggestsb, part, len)
+			else
+				sbuf_mem(sylsb, part, len)
+		}
 		part = strstr(part+len, pattern);
 	}
 	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
@@ -466,7 +468,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				continue;
 			}
 			lookup:
-			if (search(sb->s + last_sug)) {
+			if (search(sb->s + last_sug, len - last_sug)) {
 				sug = suggestsb->s;
 				if (!(_sug = strchr(sug, '\n')))
 					continue;
@@ -480,7 +482,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				if (sug)
 					goto pac_;
 				c = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
-				if (suggestsb && search(sb->s + c)) {
+				if (suggestsb && search(sb->s + c, sb->s_n - c)) {
 					sug = suggestsb->s;
 					pac_:
 					syn_setft("/ac");
