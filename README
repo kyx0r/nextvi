@@ -87,14 +87,6 @@ followed by a character.
 2. Path-expand the ~ character to your user's home directory
 just like it happens in shell
 
-ac_substr.patch
---------------
-Improve autocomplete, instead of only working with prefixes the
-larger substrings are also taken into account when no prefix
-is matching. This is important because it is no longer necessary
-to know the prefix and becomes possible to get completion even
-with partial spelling.
-
 stdin_pipe.patch
 --------------
 Allows the user to use vi like less except you need to specify
