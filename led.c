@@ -37,7 +37,7 @@ static int search(const char *pattern, int l)
 	return suggestsb->s_n;
 }
 
-static void file_ternary(struct lbuf *buf)
+static void file_index(struct lbuf *buf)
 {
 	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"]+";
 	int len, sidx, grp = xgrp;
@@ -415,7 +415,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbuf_make(acsb, 1024)
 				sbuf_chr(acsb, '\n')
 			}
-			file_ternary(xb);
+			file_index(xb);
 			break;
 		case TK_CTL('y'):
 			led_done();
