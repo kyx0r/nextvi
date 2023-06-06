@@ -600,12 +600,12 @@ char *led_input(char *pref, char *post, int *kmap, int row)
 	sbuf *sb; sbuf_make(sb, 256)
 	char ai[128];
 	int ai_max = sizeof(ai) - 1;
-	int n = 0, key, orow = row >= 0 ? row : xrow;
+	int n = 0, key;
 	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
 		ai[n++] = *pref++;
 	ai[n] = '\0';
 	while (1) {
-		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, NULL, orow);
+		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, NULL, row);
 		int ln_sp = 0;	/* number of initial spaces in ln */
 		while (ln[ln_sp] == ' ' || ln[ln_sp] == '\t')
 			ln_sp++;

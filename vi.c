@@ -224,15 +224,6 @@ static void vi_drawupdate(int otop)
 	}
 }
 
-/* update the screen by removing lines r1 to r2 before an input command */
-static void vi_drawrm(int r1, int r2, int newln)
-{
-	r1 = MIN(MAX(r1, xtop), xtop + xrows);
-	r2 = MIN(MAX(r2, xtop), xtop + xrows);
-	term_pos(r1 - xtop, 0);
-	term_room(r1 - r2 + newln);
-}
-
 static int vi_buf[128];
 static unsigned int vi_buflen;
 
@@ -1069,8 +1060,12 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	free(region);
 	pref = lnmode ? vi_indents(lbuf_get(xb, r1)) : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
-	vi_drawrm(r1, r2, 0);
-	rep = vi_input(pref, post, -1);
+	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
+	term_room(r1 < xtop ? xtop - xrow : r1 - r2);
+	xrow = r1;
+	if (r1 < xtop)
+		xtop = r1;
+	rep = vi_input(pref, post, xrow - (r1 - r2));
 	if (*rep)
 		lbuf_edit(xb, rep, r1, r2 + 1);
 	free(rep);
@@ -1234,7 +1229,8 @@ static void vc_insert(int cmd)
 	cmdo = cmd == 'o' || cmd == 'O';
 	pref = ln && !cmdo ? uc_sub(ln, 0, off) : vi_indents(ln);
 	post = ln && !cmdo ? uc_sub(ln, off, -1) : uc_dup("\n");
-	vi_drawrm(row, row, cmdo);
+	term_pos(row - xtop, 0);
+	term_room(cmdo);
 	rep = vi_input(pref, post, row - cmdo);
 	if (cmdo && !lbuf_len(xb))
 		lbuf_edit(xb, "\n", 0, 0);
@@ -1776,7 +1772,7 @@ void vi(int init)
 			case 'o':
 			case 'O':
 				vc_insert(c);
-				vi_mod = xrow == orow ? 2 : 1;
+				vi_mod = !xpac && xrow == orow ? 2 : 1;
 				ins:
 				switch (vi_insmov)
 				{
