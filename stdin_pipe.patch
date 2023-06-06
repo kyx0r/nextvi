@@ -85,10 +85,10 @@ index 2716c2d..6578f77 100644
  	if (!iproc) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 64fc9a7..4bc75ac 100644
+index e3c641e..00555f9 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2073,10 +2073,12 @@ int main(int argc, char *argv[])
+@@ -2069,10 +2069,12 @@ int main(int argc, char *argv[])
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == 's')
  			xled = 0;

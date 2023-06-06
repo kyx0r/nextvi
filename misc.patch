@@ -13,10 +13,10 @@ index c5b722d..5139cd3 100644
  			if (*src == '\\' && src[1])
  				src++;
 diff --git a/vi.c b/vi.c
-index 64fc9a7..1322685 100644
+index e3c641e..b577f29 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1684,6 +1684,12 @@ void vi(int init)
+@@ -1680,6 +1680,12 @@ void vi(int init)
  					free(ln);
  					free(cs);
  					break;
