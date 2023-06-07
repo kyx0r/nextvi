@@ -28,7 +28,7 @@ index c5b722d..829a04f 100644
  static int bufs_find(const char *path)
  {
 diff --git a/vi.c b/vi.c
-index e3c641e..4c902ed 100644
+index 6644f3c..3542aec 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -665,8 +665,8 @@ void dir_calc(char *path)
