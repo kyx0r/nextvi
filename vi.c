@@ -1065,7 +1065,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
-	rep = vi_input(pref, post, xrow - (r1 - r2));
+	rep = vi_input(pref, post, r1 - r2 ? r1 - (r1 - r2) : -1);
 	if (*rep)
 		lbuf_edit(xb, rep, r1, r2 + 1);
 	free(rep);
@@ -1771,6 +1771,7 @@ void vi(int init)
 			case 'A':
 			case 'o':
 			case 'O':
+				reinsert:
 				vc_insert(c);
 				vi_mod = !xpac && xrow == orow ? 2 : 1;
 				ins:
@@ -1784,13 +1785,11 @@ void vi(int init)
 						term_push(lbuf_eol(xb, xrow) > xoff ? "i" : "a", 1);
 						break;
 					}
-					if (c == 'a' || c == 's' || c == 'c')
+					if (tolower(c) == 'a' || c == 's' || tolower(c) == 'c')
 						xoff++;
-					char push[2];
-					push[0] = xoff >= k-1 ? 'x' : 'X';
-					push[1] = xoff >= k-1 ? 'A' : 'i';
-					term_push(push, 2);
-					break;
+					vi_delete(xrow, xoff - 1, xrow, xoff, 0);
+					c = xoff != lbuf_eol(xb, xrow) ? 'i' : 'a';
+					goto reinsert;
 				}
 				break;
 			case 'J':
@@ -1872,7 +1871,7 @@ void vi(int init)
 					vi_mod = 2;
 				break;
 			case 'X':
-				vi_back(TK_CTL('h'));
+				vi_back('h');
 				if (!vc_motion('d'))
 					vi_mod = 2;
 				break;
