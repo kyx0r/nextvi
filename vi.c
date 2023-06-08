@@ -1871,7 +1871,7 @@ void vi(int init)
 					vi_mod = 2;
 				break;
 			case 'X':
-				vi_back('h');
+				vi_back(127);
 				if (!vc_motion('d'))
 					vi_mod = 2;
 				break;
