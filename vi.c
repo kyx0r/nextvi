@@ -1778,16 +1778,14 @@ void vi(int init)
 				switch (vi_insmov)
 				{
 				case 127:;
-					k = lbuf_eol(xb, xrow);
-					if (!xoff && xrow && k != 1) {
-						xoff = lbuf_eol(xb, --xrow);
-						vc_join(0);
-						term_push(lbuf_eol(xb, xrow) > xoff ? "i" : "a", 1);
-						break;
-					}
 					if (tolower(c) == 'a' || c == 's' || tolower(c) == 'c')
 						xoff++;
-					vi_delete(xrow, xoff - 1, xrow, xoff, 0);
+					if (xrow && !(xoff && lbuf_eol(xb, xrow))) {
+						xoff = lbuf_eol(xb, --xrow);
+						vc_join(0);
+						vi_drawagain();
+					} else
+						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					c = xoff != lbuf_eol(xb, xrow) ? 'i' : 'a';
 					goto reinsert;
 				}
