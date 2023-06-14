@@ -202,8 +202,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
 			close(pipefds0[1]);
 			close(pipefds0[0]);
 		}
-		if (ofd) {		/* setting up stdout */
+		if (ofd) {		/* setting up stdout and stderr */
 			close(1);
+			dup(pipefds1[1]);
+			close(2);
 			dup(pipefds1[1]);
 			close(pipefds1[0]);
 			close(pipefds1[1]);
@@ -278,13 +280,17 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
 		if (fds[0].revents & POLLIN) {
 			int ret = read(fds[0].fd, buf, sizeof(buf));
-			if (ret > 0 && oproc)
+			if (ret > 0 && oproc == 2)
+				write(1, buf, ret);
+			if (ret > 0)
 				sbuf_mem(sb, buf, ret)
 			if (ret <= 0) {
 				close(fds[0].fd);
 				fds[0].fd = -1;
 			}
-			continue;
+		} else if (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+			close(fds[0].fd);
+			fds[0].fd = -1;
 		}
 		if (fds[1].revents & POLLOUT) {
 			int ret = write(fds[1].fd, ibuf + nw, slen - nw);
@@ -294,7 +300,9 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 				close(fds[1].fd);
 				fds[1].fd = -1;
 			}
-			continue;
+		} else if (fds[1].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+			close(fds[1].fd);
+			fds[1].fd = -1;
 		}
 		if (fds[2].revents & POLLIN) {
 			int ret = read(fds[2].fd, buf, sizeof(buf));
@@ -302,16 +310,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 			for (i = 0; i < ret; i++)
 				if ((unsigned char) buf[i] == TK_CTL('c'))
 					kill(pid, SIGINT);
-		}
-		if (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL)) {
-			close(fds[0].fd);
-			fds[0].fd = -1;
-		}
-		if (fds[1].revents & (POLLERR | POLLHUP | POLLNVAL)) {
-			close(fds[1].fd);
-			fds[1].fd = -1;
-		}
-		if (fds[2].revents & (POLLERR | POLLHUP | POLLNVAL))
+		} else if (fds[2].revents & (POLLERR | POLLHUP | POLLNVAL))
 			fds[2].fd = -1;
 	}
 	close(fds[0].fd);
