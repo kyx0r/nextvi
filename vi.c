@@ -1039,8 +1039,7 @@ static int charcount(char *text, char *post)
 static char *vi_input(char *pref, char *post, int row)
 {
 	char *rep = led_input(pref, post, &xkmap, row);
-	int off = *rep ? charcount(rep, post) - 1 : xoff;
-	xoff = off < 0 ? 0 : off;
+	xoff = *rep ? charcount(rep, post) - 1 : xoff;
 	return rep;
 }
 
@@ -1780,7 +1779,7 @@ void vi(int init)
 				case 127:;
 					if (tolower(c) == 'a' || c == 's' || tolower(c) == 'c')
 						xoff++;
-					if (xrow && !(xoff && lbuf_eol(xb, xrow))) {
+					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
 						vc_join(0);
 						vi_drawagain();
