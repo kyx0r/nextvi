@@ -30,7 +30,7 @@ index c5b722d..f9de211 100644
  	return 0;
  }
 diff --git a/term.c b/term.c
-index 2716c2d..6578f77 100644
+index 55aa988..559cdbc 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,5 +1,6 @@
@@ -75,7 +75,7 @@ index 2716c2d..6578f77 100644
  			return -1;
  		ibuf_cnt = n;
  		ibuf_pos = 0;
-@@ -318,7 +319,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
+@@ -317,7 +318,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
  	close(fds[1].fd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -85,10 +85,10 @@ index 2716c2d..6578f77 100644
  	if (!iproc) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 6644f3c..f6b234c 100644
+index d4960c4..e2e5a9b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2068,10 +2068,12 @@ int main(int argc, char *argv[])
+@@ -2065,10 +2065,12 @@ int main(int argc, char *argv[])
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == 's')
  			xled = 0;

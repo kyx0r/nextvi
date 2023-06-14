@@ -28,7 +28,7 @@ index c5b722d..829a04f 100644
  static int bufs_find(const char *path)
  {
 diff --git a/vi.c b/vi.c
-index 6644f3c..3542aec 100644
+index d4960c4..aadaaa7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -665,8 +665,8 @@ void dir_calc(char *path)
@@ -126,7 +126,7 @@ index 6644f3c..3542aec 100644
  		} else if (!fs_searchback(1, row, off)) {
  			open_saved(1)
  		}
-@@ -1561,7 +1601,19 @@ void vi(int init)
+@@ -1560,7 +1600,19 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -147,7 +147,7 @@ index 6644f3c..3542aec 100644
  				if (!strcmp(ex_path, "/fm/"))
  					xquit = 1;
  				vi_mod = 1;
-@@ -1706,6 +1758,14 @@ void vi(int init)
+@@ -1705,6 +1757,14 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
