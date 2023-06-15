@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c5b722d..6b9437d 100644
+index 559410f..a12893c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *bufs;		/* main buffers */
@@ -42,16 +42,43 @@ index c5b722d..6b9437d 100644
  			if (offs[xgrp - 2] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -812,7 +812,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -796,7 +796,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+ 	int beg, end, not;
+ 	char *pat, *s = arg;
+ 	int i;
+-	rset *rs;
++	rstr *rs;
+ 	if (!loc[0] && !xgdep)
+ 		loc = "%";
+ 	if (ex_region(loc, &beg, &end))
+@@ -804,7 +804,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+ 	not = strchr(cmd, '!') || cmd[0] == 'v';
+ 	pat = re_read(&s);
+ 	if (pat)
+-		rs = rset_make(1, (char*[]){pat}, xic ? REG_ICASE : 0);
++		rs = rstr_make(pat, xic ? REG_ICASE : 0);
+ 	free(pat);
+ 	if (!pat || !rs)
+ 		return 1;
+@@ -814,7 +814,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	i = beg;
  	while (i < lbuf_len(xb)) {
  		char *ln = lbuf_get(xb, i);
--		if ((rset_find(xkwdrs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
-+		if ((rstr_find(xkwdrs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
+-		if ((rset_find(rs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
++		if ((rstr_find(rs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -927,9 +927,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -825,7 +825,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+ 	}
+ 	for (i = 0; i < lbuf_len(xb); i++)
+ 		lbuf_globget(xb, i, xgdep);
+-	rset_free(rs);
++	rstr_free(rs);
+ 	xgdep--;
+ 	return 0;
+ }
+@@ -930,9 +930,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
  	ec_setdir(NULL, NULL, NULL);
