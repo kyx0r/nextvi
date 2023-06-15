@@ -222,7 +222,7 @@ static int ex_search(char **pat)
 	ex_krsset(kw->s, **pat == '/' ? 2 : -2);
 	sbuf_free(kw)
 	*pat = *e ? e + 1 : e;
-	if (!xkwddir || !xkwdrs)
+	if (!xkwdrs)
 		return -1;
 	row = xrow + xkwddir;
 	while (row >= 0 && row < lbuf_len(xb)) {
@@ -707,7 +707,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		snprintf(xrep, sizeof(xrep), "%s", rep ? rep : "");
 	free(pat);
 	free(rep);
-	if (!xkwddir || !xkwdrs)
+	if (!xkwdrs)
 		return 1;
 	/* if the change is bigger than display size
 	set savepoint where command was issued. */
@@ -796,15 +796,17 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	int beg, end, not;
 	char *pat, *s = arg;
 	int i;
+	rset *rs;
 	if (!loc[0] && !xgdep)
 		loc = "%";
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	not = strchr(cmd, '!') || cmd[0] == 'v';
 	pat = re_read(&s);
-	ex_krsset(pat, +1);
+	if (pat)
+		rs = rset_make(1, (char*[]){pat}, xic ? REG_ICASE : 0);
 	free(pat);
-	if (!xkwddir || !xkwdrs)
+	if (!pat || !rs)
 		return 1;
 	xgdep++;
 	for (i = beg + 1; i < end; i++)
@@ -812,7 +814,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	i = beg;
 	while (i < lbuf_len(xb)) {
 		char *ln = lbuf_get(xb, i);
-		if ((rset_find(xkwdrs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
+		if ((rset_find(rs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
 			xrow = i;
 			if (ex_exec(s))
 				break;
@@ -823,6 +825,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	}
 	for (i = 0; i < lbuf_len(xb); i++)
 		lbuf_globget(xb, i, xgdep);
+	rset_free(rs);
 	xgdep--;
 	return 0;
 }
