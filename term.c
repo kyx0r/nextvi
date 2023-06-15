@@ -244,15 +244,15 @@ char *xgetenv(char **q)
 	return r;
 }
 
-/* execute a command; process input if iproc and process output if oproc */
-char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
+/* execute a command; pass in input if ibuf and process output if oproc */
+char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 {
 	static char *sh[] = {"$SHELL", "sh", NULL};
 	struct pollfd fds[3];
 	sbuf *sb = NULL; /* initialize, bogus gcc12 warn */
 	char buf[512];
 	int ifd = -1, ofd = -1;
-	int slen = iproc ? strlen(ibuf) : 0;
+	int slen = ibuf ? strlen(ibuf) : 0;
 	int nw = 0;
 	char *argv[4+xish];
 	argv[0] = xgetenv(sh);
@@ -261,12 +261,12 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	argv[1+xish] = "-c";
 	argv[2+xish] = cmd;
 	argv[3+xish] = NULL;
-	int pid = cmd_make(argv, iproc ? &ifd : NULL, oproc ? &ofd : NULL);
+	int pid = cmd_make(argv, ibuf ? &ifd : NULL, oproc ? &ofd : NULL);
 	if (pid <= 0)
 		return NULL;
 	if (oproc)
 		sbuf_make(sb, 64)
-	if (!iproc) {
+	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
 		term_done();
 	}
@@ -275,7 +275,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	fds[0].events = POLLIN;
 	fds[1].fd = ifd;
 	fds[1].events = POLLOUT;
-	fds[2].fd = iproc ? 0 : -1;
+	fds[2].fd = ibuf ? 0 : -1;
 	fds[2].events = POLLIN;
 	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
 		if (fds[0].revents & POLLIN) {
@@ -319,7 +319,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 	signal(SIGTTOU, SIG_IGN);
 	tcsetpgrp(STDIN_FILENO, getpgrp());
 	signal(SIGTTOU, SIG_DFL);
-	if (!iproc) {
+	if (!ibuf) {
 		term_init();
 		signal(SIGINT, SIG_DFL);
 	}
@@ -330,6 +330,6 @@ char *cmd_pipe(char *cmd, char *ibuf, int iproc, int oproc)
 
 int cmd_exec(char *cmd)
 {
-	cmd_pipe(cmd, NULL, 0, 0);
+	cmd_pipe(cmd, NULL, 0);
 	return 0;
 }
