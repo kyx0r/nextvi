@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c5b722d..5139cd3 100644
+index 559410f..2f4457e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -181,6 +181,9 @@ static char *ex_pathexpand(char *src, int spaceallowed)
