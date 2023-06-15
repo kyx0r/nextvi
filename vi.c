@@ -1116,7 +1116,7 @@ static void vi_pipe(int r1, int r2)
 	if (!cmd)
 		return;
 	text = lbuf_cp(xb, r1, r2 + 1);
-	rep = cmd_pipe(cmd, text, 1, 1);
+	rep = cmd_pipe(cmd, text, 1);
 	if (rep)
 		lbuf_edit(xb, rep, r1, r2 + 1);
 	free(cmd);

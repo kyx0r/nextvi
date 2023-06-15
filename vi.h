@@ -268,7 +268,7 @@ char *term_cmd(int *n);
 } \
 
 /* process management */
-char *cmd_pipe(char *cmd, char *s, int iproc, int oproc);
+char *cmd_pipe(char *cmd, char *ibuf, int oproc);
 int cmd_exec(char *cmd);
 char *xgetenv(char* q[]);
 

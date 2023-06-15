@@ -446,7 +446,7 @@ static int ec_read(char *loc, char *cmd, char *arg)
 		char *ecmd = ex_pathexpand(arg, 1);
 		if (!ecmd)
 			return 1;
-		obuf = cmd_pipe(ecmd + 1, NULL, 0, 1);
+		obuf = cmd_pipe(ecmd + 1, NULL, 1);
 		if (obuf)
 			lbuf_edit(xb, obuf, pos, pos);
 		free(obuf);
@@ -493,7 +493,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 			return 1;
 		ibuf = lbuf_cp(xb, beg, end);
 		ex_print(NULL);
-		cmd_pipe(ecmd + 1, ibuf, 1, 0);
+		cmd_pipe(ecmd + 1, ibuf, 0);
 		free(ecmd);
 		free(ibuf);
 	} else {
@@ -760,7 +760,7 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 		return 1;
 	}
 	text = lbuf_cp(xb, beg, end);
-	rep = cmd_pipe(ecmd, text, 1, 1);
+	rep = cmd_pipe(ecmd, text, 1);
 	if (rep)
 		lbuf_edit(xb, rep, beg, end);
 	free(ecmd);
