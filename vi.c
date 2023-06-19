@@ -1788,6 +1788,7 @@ void vi(int init)
 					c = xoff != lbuf_eol(xb, xrow) ? 'i' : 'a';
 					goto reinsert;
 				}
+				xoff = xoff < 0 ? 0 : xoff;
 				break;
 			case 'J':
 				vc_join(1);
