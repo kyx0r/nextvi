@@ -1774,23 +1774,18 @@ void vi(int init)
 			case 'A':
 			case 'o':
 			case 'O':
-				reinsert:
 				vc_insert(c);
 				vi_mod = !xpac && xrow == orow ? 2 : 1;
 				ins:
-				switch (vi_insmov)
-				{
-				case 127:;
+				if (vi_insmov == 127) {
 					if (tolower(c) == 'a' || c == 's' || tolower(c) == 'c')
 						xoff++;
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
 						vc_join(0);
-						vi_drawagain();
 					} else
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
-					c = xoff != lbuf_eol(xb, xrow) ? 'i' : 'a';
-					goto reinsert;
+					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
 				}
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
