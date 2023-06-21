@@ -113,7 +113,7 @@ index 798be60..e8a637b 100644
  			int g1 = offs[grp - 2], g2 = offs[grp - 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index a849d1d..a8240b2 100644
+index a849d1d..c8dddf3 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -635,3 +635,126 @@ char *re_read(char **src)
@@ -148,12 +148,12 @@ index a849d1d..a8240b2 100644
 +		int len = end - beg;
 +		rs->len = len;
 +		rs->str = malloc(len + 1);
++		rs->str[len] = '\0';
 +		if (icase) {
 +			while (--len >= 0)
 +				rs->str[len] = tolower((unsigned char)beg[len]);
 +		} else
 +			memcpy(rs->str, beg, len);
-+		rs->str[rs->len] = '\0';
 +		return 0;
 +	}
 +	return 1;
@@ -220,7 +220,7 @@ index a849d1d..a8240b2 100644
 +		return -1;
 +	len = rs->len;
 +	beg = s;
-+	end = s + strlen(s) - len - 1;
++	end = s + strlen(s) - len - (flg & REG_NEWLINE);
 +	if (end < beg)
 +		return -1;
 +	if (rs->lend)
@@ -244,7 +244,7 @@ index a849d1d..a8240b2 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index ea0b0a1..876039d 100644
+index c70f1a0..0f110df 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -592,7 +592,7 @@ static void vi_regprint(void)
