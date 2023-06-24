@@ -62,7 +62,7 @@ static void file_index(struct lbuf *buf)
 				char *part = ss[i]+sidx+subs[grp - 2];
 				char ch = part[len];
 				part[len++] = '\n';
-				for (n = 1; n < acsb->s_n - len; n++)
+				for (n = 1; n <= acsb->s_n - len; n++)
 					if (*(acsb->s + n - 1) == '\n' &&
 						!memcmp(acsb->s + n, part, len))
 						goto skip;
