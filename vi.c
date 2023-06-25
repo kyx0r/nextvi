@@ -574,7 +574,8 @@ void vi_regput(int c, const char *s, int ln)
 			if ((i_s = vi_regget('0' + i, &i_ln)))
 				vi_regputraw('0' + i + 1, i_s, i_ln);
 		vi_regputraw('1', s, ln);
-	}
+	} else if (vi_regget(c, &i))
+		vi_regputraw('0', vi_regget(c, &i), ln);
 	vi_regputraw(c, s, ln);
 }
 
