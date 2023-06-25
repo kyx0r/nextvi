@@ -582,10 +582,8 @@ void vi_regput(int c, const char *s, int ln)
 
 static void vi_regprint(void)
 {
-	for (int i = 0; i < LEN(regs); i++)
-	{
-		if (regs[i])
-		{
+	for (int i = 1; i < LEN(regs); i++) {
+		if (regs[i]) {
 			int len = strlen(regs[i])+3;
 			char buf[len];
 			snprintf(buf, len, "%c %s", i, regs[i]);
@@ -1188,8 +1186,12 @@ static int vc_motion(int cmd)
 		vi_change(r1, o1, r2, o2, lnmode);
 	if (cmd == '~' || cmd == 'u' || cmd == 'U')
 		vi_case(r1, o1, r2, o2, lnmode, cmd);
-	if (cmd == '!')
+	if (cmd == '!') {
+		if (mv == '{' || mv == '}')
+			if (lbuf_get(xb, r2) && *lbuf_get(xb, r2) == '\n' && r1 < r2)
+				r2--;
 		vi_pipe(r1, r2);
+	}
 	if (cmd == '>' || cmd == '<')
 		vi_shift(r1, r2, cmd == '>' ? +1 : -1);
 	if (cmd == TK_CTL('w'))
