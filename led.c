@@ -350,6 +350,14 @@ char *led_read(int *kmap, int c)
 	return NULL;
 }
 
+static void led_info(char *str, int ai_max)
+{
+	rstate->ren_laststr = NULL;
+	led_render(str, xtop+xrows, 0, xcols);
+	if (ai_max)
+		term_pos(xrow - xtop, 0);
+}
+
 /* read a line from the terminal */
 static char *led_line(char *pref, char *post, char *ai,
 		int ai_max, int *key, int *kmap,
@@ -359,6 +367,7 @@ static char *led_line(char *pref, char *post, char *ai,
 	int ai_len = strlen(ai), len;
 	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
+	static int p_reg;
 	time_t quickexit = 0;
 	sbufn_make(sb, xcols)
 	if (insert)
@@ -405,9 +414,28 @@ static char *led_line(char *pref, char *post, char *ai,
 			if (ai_len > 0)
 				ai[--ai_len] = '\0';
 			break;
+		case TK_CTL(']'):
+		case TK_CTL('\\'):
+			i = 0; 
+			retry:
+			if (c == TK_CTL(']')) {
+				if (!p_reg || p_reg == '9')
+					p_reg = '/';
+				while (p_reg < '9' && !vi_regget(++p_reg, &lnmode));
+			} else
+				p_reg = 0;
+			if ((cs = vi_regget(p_reg, &lnmode))) {
+				sbuf_chr(sb, p_reg ? p_reg : '~')
+				sbuf_chr(sb, ' ')
+				sbufn_str(sb, cs)
+				led_info(sb->s + len, ai_max);
+				sbufn_cut(sb, len)
+			} else if (!i++)
+				goto retry;
+			break;
 		case TK_CTL('p'):
-			if (vi_regget(0, &lnmode))
-				sbufn_str(sb, vi_regget(0, &lnmode))
+			if (vi_regget(p_reg, &lnmode))
+				sbufn_str(sb, vi_regget(p_reg, &lnmode))
 			break;
 		case TK_CTL('g'):
 			if (!suggestsb) {
@@ -439,14 +467,11 @@ static char *led_line(char *pref, char *post, char *ai,
 				}
 			}
 			goto redo_suggest;
-		case TK_CTL('z'):;
-			char buf[100];
+		case TK_CTL('z'):
 			sug_pt = sug_pt == len ? -1 : len;
+			char buf[100];
 			itoa(sug_pt, buf);
-			rstate->ren_laststr = NULL;
-			led_render(buf, xtop+xrows, 0, xcols);
-			if (ai_max)
-				term_pos(xrow - xtop, 0);
+			led_info(buf, ai_max);
 			continue;
 		case TK_CTL('n'):
 			if (!suggestsb)
@@ -528,13 +553,6 @@ static char *led_line(char *pref, char *post, char *ai,
 			break;
 		case TK_CTL('l'):
 			term_clean();
-			continue;
-		case TK_CTL(']'):
-		case TK_CTL('\\'):
-			len = sug_pt >= 0 ? sug_pt : len;
-			ex_krsset(sb->s + len, 1);
-			term_exec(c == TK_CTL('\\') ? "nj" : "Nk", 2,
-				/*nop*/, term_push("qq", 3);)
 			continue;
 		case TK_CTL('o'):
 			term_exec(":", 1, /*nop*/, /*nop*/)
