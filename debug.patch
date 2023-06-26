@@ -56,10 +56,10 @@ index 07fc947..202367b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index ea0b0a1..9a0edf9 100644
+index 1f96e78..b5e9c79 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -578,6 +578,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -579,6 +579,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln);
  }
  
@@ -72,7 +72,7 @@ index ea0b0a1..9a0edf9 100644
  static void vi_regprint(void)
  {
  	for (int i = 0; i < LEN(regs); i++)
-@@ -2076,9 +2082,18 @@ int main(int argc, char *argv[])
+@@ -2073,9 +2079,18 @@ int main(int argc, char *argv[])
  			vi(1);
  		else
  			ex();

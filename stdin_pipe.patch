@@ -85,10 +85,10 @@ index c03df1c..79f9866 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index ea0b0a1..f7544ff 100644
+index 1f96e78..3f48d5c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2065,10 +2065,12 @@ int main(int argc, char *argv[])
+@@ -2062,10 +2062,12 @@ int main(int argc, char *argv[])
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == 's')
  			xled = 0;

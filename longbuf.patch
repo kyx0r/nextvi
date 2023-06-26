@@ -14,10 +14,10 @@ index 798be60..0cb3cc0 100644
  			sbuf_extend(sb, newsz)
  		} else
 diff --git a/led.c b/led.c
-index 306ea06..2e1ff1a 100644
+index bb214c6..84b1351 100644
 --- a/led.c
 +++ b/led.c
-@@ -426,7 +426,7 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -454,7 +454,7 @@ static char *led_line(char *pref, char *post, char *ai,
  				continue;
  			if (!sug)
  				sug = suggestsb->s;
@@ -26,7 +26,7 @@ index 306ea06..2e1ff1a 100644
  				sug--;
  			for (c = 0; sug != suggestsb->s; sug--) {
  				if (!*sug) {
-@@ -453,7 +453,7 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -478,7 +478,7 @@ static char *led_line(char *pref, char *post, char *ai,
  				continue;
  			last_sug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
  			if (_sug) {
@@ -36,7 +36,7 @@ index 306ea06..2e1ff1a 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index ea0b0a1..260f22d 100644
+index 1f96e78..28b19df 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
