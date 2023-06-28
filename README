@@ -86,7 +86,7 @@ mode will be cancelled mid way and paste will be wrong. Luckily this almost
 never happens because such letter combination is extremely rare.
 Can be disabled via :se noqe
 3. Added linenumbers, keybind: # (relative numbers are placed after indent)
-keybind: v# enables permanent line numbers
+Passing vi_arg1 to # enables permanent line numbers.
 4. Added invisible character view, keybind: V
 5. Added regex for changing spaces to tabs, keybind: vi
 6. Added regex for removing /r in dos files and trail space/tab, keybind: vo
@@ -234,7 +234,7 @@ to 8. use :se tbs=N  (N is number of spaces)
 40. Added partial support for multiline block regex, for example C multiline
 comments syntax highlight.
 41. Made the lowest row to not waste any space when there are no messages and
-actually display the row.
+actually display the row. Passing vi_arg1 to ^g enables permanent status row.
 42. Search via '/' or '?' automatically centers and redraws screen. This
 partly because change in 41 makes the bottom row behave dynamically and you
 might get search result on displayed on that row, which will be covered by
