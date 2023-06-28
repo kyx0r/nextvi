@@ -59,6 +59,7 @@ static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
 static int vi_cndir = 1;		/* ^n direction */
+static int vi_status;			/* always show status */
 static char *regs[256];			/* string registers */
 static int lnmode[256];
 
@@ -1457,6 +1458,8 @@ void vi(int init)
 			vi_lnnum = 0;
 		if (vi_msg[0]) {
 			vi_msg[0] = '\0';
+			if (vi_status)
+				vc_status();
 			vi_drawrow(otop + xrows - 1);
 		}
 		if (!vi_ybuf)
@@ -1605,6 +1608,7 @@ void vi(int init)
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
 				break;
 			case TK_CTL('g'):
+				vi_status = vi_arg1;
 				vc_status();
 				break;
 			case TK_CTL('^'):
@@ -1620,7 +1624,7 @@ void vi(int init)
 				ex_exec("w");
 				break;
 			case '#':
-				vi_lnnum = 1;
+				vi_lnnum = !vi_arg1 ? 1 : 2;
 				vi_mod = 1;
 				break;
 			case 'v':
@@ -1665,10 +1669,6 @@ void vi(int init)
 				case 'v':
 					term_push(vi_lastprompt, strlen(vi_lastprompt));
 					term_push(k == 'v' ? "\x16" : "\x02", 1); /* ^v : ^b */
-					break;
-				case '#':
-					vi_lnnum = 2;
-					vi_mod = 1;
 					break;
 				case ';':
 					ln = vi_prompt(":", "!", &kmap);
