@@ -522,8 +522,10 @@ static char *led_line(char *pref, char *post, char *ai,
 					syn_setft(ex_filetype);
 					r++;
 				}
-				for (; r < xrows && lbuf_get(xb, (r-(xrow-orow))+xtop); r++)
-					led_print(lbuf_get(xb, (r-(xrow-orow))+xtop), r);
+				for (; r < xrows; r++) {
+					cs = lbuf_get(xb, (r-(xrow-orow))+xtop);
+					led_print(cs ? cs : "~", r);
+				}
 				term_pos(xrow - xtop, 0);
 				continue;
 			}
