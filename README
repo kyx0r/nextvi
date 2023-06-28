@@ -79,14 +79,6 @@ running a specialized search code instead of full regex engine. rstr can
 yeild up to 3X faster search on non regex patterns. This is not included in
 base nextvi due to underlying complexity.
 
-misc.patch
---------------
-1. Some misc macros and shortcuts would be added here -
-This provides a faster way to insert some single character. Keybind: vn
-followed by a character.
-2. Path-expand the ~ character to your user's home directory
-just like it happens in shell
-
 stdin_pipe.patch
 --------------
 Allows the user to use vi like less except you need to specify
