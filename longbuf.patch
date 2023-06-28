@@ -36,7 +36,7 @@ index bb214c6..84b1351 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index 1f96e78..28b19df 100644
+index 5cfdff3..ead4c57 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
