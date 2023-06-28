@@ -163,12 +163,11 @@ void temp_done(int i)
 	}
 }
 
-/* replace % and # in paths and commands with current and alternate path names */
-static char *ex_pathexpand(char *src, int spaceallowed)
+/* replace % and # with buffer names and !..! with command output */
+static char *ex_pathexpand(char *src)
 {
 	sbuf *sb; sbuf_make(sb, 1024)
-	while (*src && (spaceallowed || (*src != ' ' && *src != '\t')))
-	{
+	while (*src) {
 		if (*src == '#' || *src == '%') {
 			int n = -1;
 			struct buf *pbuf = *src == '%' ? ex_buf : ex_pbuf;
@@ -181,8 +180,24 @@ static char *ex_pathexpand(char *src, int spaceallowed)
 			}
 			sbuf_str(sb, pbuf->path)
 			src += n >= 0 ? snprintf(0, 0, "%+d", n) : 1;
+		} else if (*src == '!') {
+			int n = sb->s_n;
+			src++;
+			while (*src && *src != '!') {
+				if (*src == '\\' && src[1] == '!')
+					src++;
+				sbuf_chr(sb, *src++)
+			}
+			src += *src ? 1 : 0;
+			sbuf_null(sb)
+			char *str = cmd_pipe(sb->s + n, NULL, 1);
+			sbuf_cut(sb, n)
+			if (str)
+				sbuf_str(sb, str)
+			free(str);
 		} else {
-			if (*src == '\\' && src[1])
+			if (*src == '\\' &&
+				(src[1] == '#' || src[1] == '%' || src[1] == '!'))
 				src++;
 			sbuf_chr(sb, *src++)
 		}
@@ -374,31 +389,26 @@ int ex_edit(const char *path)
 static int ec_edit(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
-	char *path;
 	int fd, rd = 0, cd = 0;
 	if (!strchr(cmd, '!'))
 		if (ex_modifiedbuffer("buffer modified"))
 			return 1;
-	if (!(path = ex_pathexpand(arg, 0)))
-		return 1;
-	if (path[0] == '.' && path[1] == '/')
+	if (arg[0] == '.' && arg[1] == '/')
 		cd = 2;
-	if (path[0] && ((fd = bufs_find(path+cd)) >= 0)) {
+	if (arg[0] && ((fd = bufs_find(arg+cd)) >= 0)) {
 		bufs_switchwft(fd)
-		free(path);
 		return 0;
-	} else if (path[0] || !xbufcur || !strchr(cmd, '!'))
-		bufs_switch(bufs_open(path+cd));
+	} else if (arg[0] || !xbufcur || !strchr(cmd, '!'))
+		bufs_switch(bufs_open(arg+cd));
 	readfile(rd =)
 	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
-		ex_bufpostfix(ex_buf - bufs, path[0]);
+		ex_bufpostfix(ex_buf - bufs, arg[0]);
 		syn_setft(ex_buf->ft);
 		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
 		ex_show(msg);
 	} else
 		ex_show("read failed");
-	free(path);
 	return 0;
 }
 
@@ -443,14 +453,10 @@ static int ec_read(char *loc, char *cmd, char *arg)
 		return 1;
 	if (arg[0] == '!') {
 		int pos = MIN(xrow + 1, lbuf_len(xb));
-		char *ecmd = ex_pathexpand(arg, 1);
-		if (!ecmd)
-			return 1;
-		obuf = cmd_pipe(ecmd + 1, NULL, 1);
+		obuf = cmd_pipe(arg + 1, NULL, 1);
 		if (obuf)
 			lbuf_edit(xb, obuf, pos, pos);
 		free(obuf);
-		free(ecmd);
 	} else {
 		int fd = open(path, O_RDONLY);
 		int pos = lbuf_len(xb) ? end : 0;
@@ -488,13 +494,9 @@ static int ec_write(char *loc, char *cmd, char *arg)
 		end = lbuf_len(xb);
 	}
 	if (arg[0] == '!') {
-		char *ecmd = ex_pathexpand(arg, 1);
-		if (!ecmd)
-			return 1;
 		ibuf = lbuf_cp(xb, beg, end);
 		ex_print(NULL);
-		cmd_pipe(ecmd + 1, ibuf, 0);
-		free(ecmd);
+		cmd_pipe(arg + 1, ibuf, 0);
 		free(ibuf);
 	} else {
 		int fd;
@@ -744,26 +746,20 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 static int ec_exec(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
-	char *text, *rep, *ecmd;
+	char *text, *rep;
 	ex_modifiedbuffer(NULL);
-	if (!(ecmd = ex_pathexpand(arg, 1)))
-		return 1;
 	if (!loc[0]) {
 		int ret;
 		ex_print(NULL);
-		ret = cmd_exec(ecmd);
-		free(ecmd);
+		ret = cmd_exec(arg);
 		return ret;
 	}
-	if (ex_region(loc, &beg, &end)) {
-		free(ecmd);
+	if (ex_region(loc, &beg, &end))
 		return 1;
-	}
 	text = lbuf_cp(xb, beg, end);
-	rep = cmd_pipe(ecmd, text, 1);
+	rep = cmd_pipe(arg, text, 1);
 	if (rep)
 		lbuf_edit(xb, rep, beg, end);
-	free(ecmd);
 	free(text);
 	free(rep);
 	return 0;
@@ -1081,9 +1077,11 @@ int ex_exec(const char *ln)
 		ln = ex_loc(ln, loc);
 		ln = ex_cmd(ln, cmd);
 		ln = ex_arg(ln, arg);
+		char *ecmd = ex_pathexpand(arg);
 		int idx = ex_idx(cmd);
-		if (idx >= 0)
-			ret = excmds[idx].ec(loc, cmd, arg);
+		if (idx >= 0 && ecmd)
+			ret = excmds[idx].ec(loc, cmd, ecmd);
+		free(ecmd);
 	}
 	return ret;
 }

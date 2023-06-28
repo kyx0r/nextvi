@@ -143,6 +143,9 @@ which also happens to permit numbers > 9.
 run though interactive shell so that stuff like aliases work. By
 default it is enabled, can be disabled if you need to for some
 odd reason via :se noish
+Every ex command can use # % substitution (see 13). Added a special
+substitution character ! which runs a pipe command. If the closing !
+is not specified, the end of the line becomes a terminator.
 23. Changed the colors to be based on standard ANSI 16 colors desc in conf.c
 Colors can be customized up to 256 colors if the terminal supports it.
 24. Added new syntax highlighting for C, js, html, css, diff...
@@ -321,6 +324,7 @@ except the following situations:
  - Escapes in regex bracket expressions. This isn't posix but it solves
 couple of issues that were bugged previously, like escaping | in ex
 substitution command, properly counting number of groups in rset.
+ - # % and ! characters have to be escaped if they are part of an ex command
  - A single slash requires 2 slashes, and so on.
  - rset_make() requires for ( to be escaped if used inside [] brackets.
  - In ex prompt the only separator is "|" character and there is some
