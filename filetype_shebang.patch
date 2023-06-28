@@ -1,0 +1,24 @@
+diff --git a/ex.c b/ex.c
+index ff888d5..7791d79 100644
+--- a/ex.c
++++ b/ex.c
+@@ -409,6 +409,19 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+ 		ex_show(msg);
+ 	} else
+ 		ex_show("read failed");
++	if (lbuf_len(xb) > 0) {
++		int adv = 0;
++		while (lbuf_len(xb) >= adv && lbuf_buf(xb)[adv][0] == '\n')
++			adv++;
++		char *langs[] = {"/bin/sh", "/bin/python"};
++		char *types[] = {"sh", "py"};
++		for (int i = 0; i < LEN(langs); i++) {
++			if (strstr(lbuf_buf(xb)[adv], langs[i])) {
++				strcpy(ex_buf->ft, types[i]);
++				syn_setft(ex_buf->ft);
++			}
++		}
++	}
+ 	return 0;
+ }
+ 
