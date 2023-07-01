@@ -44,9 +44,14 @@ static void file_index(struct lbuf *buf)
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf);
 	int subs[grp], n;
+	sbuf *ibuf;
 	rset *rs = rset_make(1, (char*[]){xacreg ? xacreg->s : reg}, xic ? REG_ICASE : 0);
 	if (!rs)
 		return;
+	sbuf_make(ibuf, 1024)
+	for (n = 1; n <= acsb->s_n; n++)
+		if (acsb->s[n - 1] == '\n')
+			sbuf_mem(ibuf, &n, (int)sizeof(n))
 	for (int i = 0; i < ln_n; i++) {
 		sidx = 0;
 		while (rset_find(rs, ss[i]+sidx, grp / 2, subs,
@@ -62,11 +67,13 @@ static void file_index(struct lbuf *buf)
 				char *part = ss[i]+sidx+subs[grp - 2];
 				char ch = part[len];
 				part[len++] = '\n';
-				for (n = 1; n <= acsb->s_n - len; n++)
-					if (*(acsb->s + n - 1) == '\n' &&
-						!memcmp(acsb->s + n, part, len))
-						goto skip;
+				int *ip = (int*)(ibuf->s+sizeof(n));
+				for (; ip < (int*)&ibuf->s[ibuf->s_n]; ip++)
+					if (*ip - ip[-1] == len &&
+						!memcmp(acsb->s + ip[-1], part, len))
+							goto skip;
 				sbuf_mem(acsb, part, len)
+				sbuf_mem(ibuf, &acsb->s_n, (int)sizeof(n))
 				skip:
 				part[len - 1] = ch;
 			}
@@ -74,6 +81,7 @@ static void file_index(struct lbuf *buf)
 		}
 	}
 	sbuf_null(acsb)
+	sbuf_free(ibuf)
 	rset_free(rs);
 }
 
@@ -441,7 +449,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			if (!suggestsb) {
 				sbuf_make(suggestsb, 1)
 				sbuf_make(acsb, 1024)
-				sbuf_chr(acsb, '\n')
+				sbufn_chr(acsb, '\n')
 			}
 			file_index(xb);
 			break;
