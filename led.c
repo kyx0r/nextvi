@@ -65,18 +65,16 @@ static void file_index(struct lbuf *buf)
 			len = subs[grp - 1] - subs[grp - 2];
 			if (len > 1) {
 				char *part = ss[i]+sidx+subs[grp - 2];
-				char ch = part[len];
-				part[len++] = '\n';
 				int *ip = (int*)(ibuf->s+sizeof(n));
-				for (; ip < (int*)&ibuf->s[ibuf->s_n]; ip++)
-					if (*ip - ip[-1] == len &&
+				for (n = len+1; ip < (int*)&ibuf->s[ibuf->s_n]; ip++)
+					if (*ip - ip[-1] == n &&
 						!memcmp(acsb->s + ip[-1], part, len))
 							goto skip;
 				sbuf_mem(acsb, part, len)
+				sbuf_chr(acsb, '\n')
 				sbuf_mem(ibuf, &acsb->s_n, (int)sizeof(n))
-				skip:
-				part[len - 1] = ch;
 			}
+			skip:
 			sidx += subs[grp - 1] > 0 ? subs[grp - 1] : 1;
 		}
 	}
