@@ -38,8 +38,6 @@ hll
   If set, highlight current line.
 ai
   As in vi(1).
-aw
-  As in vi(1).
 ic
   As in vi(1).
 

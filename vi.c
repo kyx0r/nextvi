@@ -1614,8 +1614,6 @@ void vi(int init)
 				vc_status();
 				break;
 			case TK_CTL('^'):
-				if (xaw && ex_path[0] && lbuf_modified(xb))
-					vi_printed = ex_exec("w");
 				if (ex_pbuf - bufs < xbufcur && ex_pbuf - bufs >= 0)
 					bufs_switchwft(ex_pbuf - bufs)
 				if (!vi_printed)

@@ -4,7 +4,6 @@ int xquit;			/* exit if set */
 int xvis;			/* visual mode */
 int xai = 1;			/* autoindent option */
 int xic = 1;			/* ignorecase option */
-int xaw;			/* autowrite option */
 int xhl = 1;			/* syntax highlight option */
 int xhll;			/* highlight current line */
 int xhlw;			/* highlight current word */
@@ -318,19 +317,6 @@ static int ex_region(char *loc, int *beg, int *end)
 	return 0;
 }
 
-static int ec_write(char *loc, char *cmd, char *arg);
-
-static int ex_modifiedbuffer(char *msg)
-{
-	if (!lbuf_modified(xb))
-		return 0;
-	if (xaw && ex_path[0])
-		return ec_write("", "w", "");
-	if (msg)
-		ex_show(msg);
-	return 1;
-}
-
 static int ec_buffer(char *loc, char *cmd, char *arg)
 {
 	if (!arg[0]) {
@@ -351,9 +337,11 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 
 static int ec_quit(char *loc, char *cmd, char *arg)
 {
-	if (!strchr(cmd, '!'))
-		if (ex_modifiedbuffer("buffer modified"))
+	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
+		if (lbuf_modified(bufs[i].lb)) {
+			ex_show("buffers modified");
 			return 1;
+		}
 	xquit = 1;
 	return 0;
 }
@@ -390,14 +378,15 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
 	int fd, rd = 0, cd = 0;
-	if (!strchr(cmd, '!'))
-		if (ex_modifiedbuffer("buffer modified"))
-			return 1;
 	if (arg[0] == '.' && arg[1] == '/')
 		cd = 2;
 	if (arg[0] && ((fd = bufs_find(arg+cd)) >= 0)) {
 		bufs_switchwft(fd)
 		return 0;
+	} else if (xbufcur == xbufsmax && !strchr(cmd, '!') &&
+			lbuf_modified(bufs[xbufsmax - 1].lb)) {
+		ex_show("last buffer modified");
+		return 1;
 	} else if (arg[0] || !xbufcur || !strchr(cmd, '!'))
 		bufs_switch(bufs_open(arg+cd));
 	readfile(rd =)
@@ -747,7 +736,6 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
 	char *text, *rep;
-	ex_modifiedbuffer(NULL);
 	if (!loc[0]) {
 		int ret;
 		ex_print(NULL);
@@ -831,7 +819,6 @@ static struct option {
 	int *var;
 } options[] = {
 	{"ai", &xai},
-	{"aw", &xaw},
 	{"ic", &xic},
 	{"td", &xtd},
 	{"shape", &xshape},
@@ -1111,7 +1098,7 @@ int ex_init(char **files)
 	}
 	*s = '\0';
 	ec_setbufsmax(NULL, NULL, "");
-	if (ec_edit("", "e!", arg))
+	if (ec_edit("", "e", arg))
 		return 1;
 	if (xled && (s = getenv("EXINIT")))
 		ex_command(s)
