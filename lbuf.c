@@ -349,7 +349,7 @@ void lbuf_saved(struct lbuf *lb, int clear)
 	lbuf_modified(xb);
 }
 
-/* was the file modified since the last lbuf_modreset() */
+/* was the file modified since the last reset */
 int lbuf_modified(struct lbuf *lb)
 {
 	lb->useq++;
