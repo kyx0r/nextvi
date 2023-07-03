@@ -232,10 +232,9 @@ char *uc_shape(char *beg, char *s);
 char *uc_lastline(char *s);
 
 /* term.c managing the terminal */
-#define xrows		(term_rows())
-#define xcols		(term_cols())
 extern sbuf *term_sbuf;
 extern int term_record;
+extern int xrows, xcols;
 extern unsigned int ibuf_pos, ibuf_cnt, icmd_pos;
 void term_init(void);
 void term_done(void);
