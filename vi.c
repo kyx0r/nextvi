@@ -1614,8 +1614,7 @@ void vi(int init)
 			case TK_CTL('^'):
 				if (ex_pbuf - bufs < xbufcur && ex_pbuf - bufs >= 0)
 					bufs_switchwft(ex_pbuf - bufs)
-				if (!vi_printed)
-					vc_status();
+				vc_status();
 				vi_mod = 1;
 				break;
 			case TK_CTL('k'):
