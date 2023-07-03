@@ -1,5 +1,5 @@
 diff --git a/lbuf.c b/lbuf.c
-index 798be60..0cb3cc0 100644
+index 568caab..fb38c86 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -213,9 +213,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
@@ -14,10 +14,10 @@ index 798be60..0cb3cc0 100644
  			sbuf_extend(sb, newsz)
  		} else
 diff --git a/led.c b/led.c
-index 0b2ddc1..ffa8cd7 100644
+index 26805f0..f78bebf 100644
 --- a/led.c
 +++ b/led.c
-@@ -462,7 +462,7 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -460,7 +460,7 @@ static char *led_line(char *pref, char *post, char *ai,
  				continue;
  			if (!sug)
  				sug = suggestsb->s;
@@ -26,7 +26,7 @@ index 0b2ddc1..ffa8cd7 100644
  				sug--;
  			for (c = 0; sug != suggestsb->s; sug--) {
  				if (!*sug) {
-@@ -486,7 +486,7 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -484,7 +484,7 @@ static char *led_line(char *pref, char *post, char *ai,
  				continue;
  			last_sug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
  			if (_sug) {
@@ -36,7 +36,7 @@ index 0b2ddc1..ffa8cd7 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index bdf50da..ffec1ae 100644
+index d1059eb..a1f0e3b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -48,7 +48,7 @@ index bdf50da..ffec1ae 100644
  #include <poll.h>
  #include <termios.h>
 diff --git a/vi.h b/vi.h
-index 0d4bd75..34c0f41 100644
+index a93b1b1..c020131 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -35,10 +35,11 @@ void vi(int init);
