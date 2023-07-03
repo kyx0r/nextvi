@@ -1,17 +1,17 @@
 diff --git a/ex.c b/ex.c
-index ff888d5..adb81eb 100644
+index 41edf8c..a56f50a 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -393,6 +393,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
- 	if (!strchr(cmd, '!'))
- 		if (ex_modifiedbuffer("buffer modified"))
- 			return 1;
+@@ -378,6 +378,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+ {
+ 	char msg[128];
+ 	int fd, rd = 0, cd = 0;
 +	if (!loc)
 +		goto ret;
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	if (arg[0] && ((fd = bufs_find(arg+cd)) >= 0)) {
-@@ -404,6 +406,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -393,6 +395,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
  		ex_bufpostfix(ex_buf - bufs, arg[0]);
  		syn_setft(ex_buf->ft);
@@ -19,7 +19,7 @@ index ff888d5..adb81eb 100644
  		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
  				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
  		ex_show(msg);
-@@ -1115,5 +1118,9 @@ int ex_init(char **files)
+@@ -1102,5 +1105,9 @@ int ex_init(char **files)
  		return 1;
  	if (xled && (s = getenv("EXINIT")))
  		ex_command(s)
@@ -30,16 +30,17 @@ index ff888d5..adb81eb 100644
  	return 0;
  }
 diff --git a/term.c b/term.c
-index c03df1c..79f9866 100644
+index fc59ceb..eb2fd0d 100644
 --- a/term.c
 +++ b/term.c
-@@ -1,5 +1,6 @@
+@@ -1,6 +1,7 @@
  sbuf *term_sbuf;
  int term_record;
+ int xrows, xcols;
 +int stdin_fd;
- static int rows, cols;
  static struct termios termios;
  
+ void term_init(void)
 @@ -10,16 +11,16 @@ void term_init(void)
  	struct winsize win;
  	struct termios newtermios;
@@ -52,15 +53,15 @@ index c03df1c..79f9866 100644
 -	tcsetattr(0, TCSAFLUSH, &newtermios);
 +	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
  	if (getenv("LINES"))
- 		rows = atoi(getenv("LINES"));
+ 		xrows = atoi(getenv("LINES"));
  	if (getenv("COLUMNS"))
- 		cols = atoi(getenv("COLUMNS"));
+ 		xcols = atoi(getenv("COLUMNS"));
 -	if (!ioctl(0, TIOCGWINSZ, &win)) {
 +	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
- 		cols = win.ws_col;
- 		rows = win.ws_row;
+ 		xcols = win.ws_col;
+ 		xrows = win.ws_row;
  	}
-@@ -137,12 +138,12 @@ int term_read(void)
+@@ -127,12 +128,12 @@ int term_read(void)
  	struct pollfd ufds[1];
  	int n;
  	if (ibuf_pos >= ibuf_cnt) {
@@ -75,8 +76,8 @@ index c03df1c..79f9866 100644
  			return -1;
  		ibuf_cnt = n;
  		ibuf_pos = 0;
-@@ -317,7 +318,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
- 	close(fds[1].fd);
+@@ -300,7 +301,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+ 		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
 -	tcsetpgrp(STDIN_FILENO, getpgrp());
@@ -85,7 +86,7 @@ index c03df1c..79f9866 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index bdf50da..d7c803e 100644
+index d1059eb..5e3cd61 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2062,10 +2062,12 @@ int main(int argc, char *argv[])
@@ -104,10 +105,10 @@ index bdf50da..d7c803e 100644
  	term_init();
  	if (!ex_init(argv + i)) {
 diff --git a/vi.h b/vi.h
-index 0d4bd75..02abc82 100644
+index a93b1b1..8923c23 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -426,3 +426,4 @@ extern int fspos;
+@@ -424,3 +424,4 @@ extern int fspos;
  extern int fscount;
  extern int vi_hidch;
  extern int vi_insmov;
