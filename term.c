@@ -1,6 +1,6 @@
 sbuf *term_sbuf;
 int term_record;
-static int rows, cols;
+int xrows, xcols;
 static struct termios termios;
 
 void term_init(void)
@@ -16,15 +16,15 @@ void term_init(void)
 	newtermios.c_lflag &= ~ECHO;
 	tcsetattr(0, TCSAFLUSH, &newtermios);
 	if (getenv("LINES"))
-		rows = atoi(getenv("LINES"));
+		xrows = atoi(getenv("LINES"));
 	if (getenv("COLUMNS"))
-		cols = atoi(getenv("COLUMNS"));
+		xcols = atoi(getenv("COLUMNS"));
 	if (!ioctl(0, TIOCGWINSZ, &win)) {
-		cols = win.ws_col;
-		rows = win.ws_row;
+		xcols = win.ws_col;
+		xrows = win.ws_row;
 	}
-	cols = cols ? cols : 80;
-	rows = rows ? rows : 25;
+	xcols = xcols ? xcols : 80;
+	xrows = xrows ? xrows : 25;
 	term_out("\33[m");
 }
 
@@ -93,22 +93,12 @@ void term_pos(int r, int c)
 	if (c < 0)
 		c = 0;
 	if (c >= xcols)
-		c = cols - 1;
+		c = xcols - 1;
 	if (r < 0)
 		sprintf(buf, "\r\33[%d%c", abs(c), c > 0 ? 'C' : 'D');
 	else
 		sprintf(buf, "\33[%d;%dH", r + 1, c + 1);
 	term_out(buf);
-}
-
-int term_rows(void)
-{
-	return rows;
-}
-
-int term_cols(void)
-{
-	return cols;
 }
 
 static char ibuf[4096];			/* input character buffer */

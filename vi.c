@@ -1812,7 +1812,8 @@ void vi(int init)
 				k = vi_read();
 				switch (k) {
 				case 'z':
-					term_push("qq\n", 3);
+					xquit = 2;
+					term_push("\n", 1);
 					break;
 				case '\n':
 					xtop = vi_arg1 ? vi_arg1 : xrow;
@@ -2077,7 +2078,12 @@ int main(int argc, char *argv[])
 			ex();
 	}
 	term_done();
-	if (xvis)
+	if (!xvis)
+		return 0;
+	if (xquit == 2) {
+		term_pos(xrows - 1, 0);
+		term_kill();
+	} else
 		term_clean();
 	return 0;
 }
