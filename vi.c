@@ -98,7 +98,7 @@ static void vi_drawmsg(void)
 		preserve(int, xtd, 2)
 		led_render(vi_msg, xrows, 0, xcols);
 		restore(xtd)
-		syn_setft(ex_filetype);
+		syn_setft(ex_ft);
 	}
 }
 
@@ -188,7 +188,7 @@ static void vi_drawrow(int row)
 		movedown = 1;
 		syn_setft("/#");
 		led_render(tmp, row - xtop, 0, xcols);
-		syn_setft(ex_filetype);
+		syn_setft(ex_ft);
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
@@ -264,7 +264,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	term_pos(xrows, led_pos(msg, 0));
 	syn_setft("/-");
 	s = led_prompt(msg, "", insert, kmap);
-	syn_setft(ex_filetype);
+	syn_setft(ex_ft);
 	vi_mod = 1;
 	if (!s)
 		return NULL;
@@ -288,7 +288,7 @@ char *ex_read(char *msg)
 		xleft = oleft;
 		if (s)
 			term_chr('\n');
-		syn_setft(ex_filetype);
+		syn_setft(ex_ft);
 		return s;
 	}
 	sbuf_make(sb, 128)
@@ -311,7 +311,7 @@ void ex_show(char *msg)
 		syn_setft("/-");
 		led_reprint(msg, -1);
 		term_chr('\n');
-		syn_setft(ex_filetype);
+		syn_setft(ex_ft);
 	} else {
 		write(1, msg, dstrlen(msg, '\n'));
 		write(1, "\n", 1);
@@ -328,7 +328,7 @@ void ex_print(char *line)
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 			syn_setft("/-");
 			led_reprint(line, -1);
-			syn_setft(ex_filetype);
+			syn_setft(ex_ft);
 		}
 		term_chr('\n');
 	} else if (line)
@@ -839,7 +839,7 @@ static int vi_motion(int *row, int *off)
 		bsync_ret:
 		for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
 			ex_bufpostfix(i, 1);
-		syn_setft(ex_filetype);
+		syn_setft(ex_ft);
 		return '\\';
 	case TK_CTL('t'):
 		if (vi_arg1 < 2 && !savepath[vi_arg1])

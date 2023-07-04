@@ -525,7 +525,7 @@ static char *led_line(char *pref, char *post, char *ai,
 							break;
 					}
 					restore(xtd)
-					syn_setft(ex_filetype);
+					syn_setft(ex_ft);
 					r++;
 				}
 				for (; r < xrows; r++) {
