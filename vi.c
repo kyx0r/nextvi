@@ -305,7 +305,6 @@ char *ex_read(char *msg)
 void ex_show(char *msg)
 {
 	if (xvis) {
-		vi_printed = 1;
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (term_sbuf) {
 		syn_setft("/-");

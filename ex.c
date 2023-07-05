@@ -639,7 +639,7 @@ static int ec_lnum(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	sprintf(msg, "%d", end);
-	ex_print(msg);
+	ex_show(msg);
 	return 0;
 }
 
@@ -756,7 +756,7 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 static int ec_ft(char *loc, char *cmd, char *arg)
 {
 	ex_ft = syn_setft(arg[0] ? arg : ex_ft);
-	ex_print(ex_ft);
+	ex_show(ex_ft);
 	syn_reload = 1;
 	return 0;
 }
@@ -766,7 +766,7 @@ static int ec_cmap(char *loc, char *cmd, char *arg)
 	if (arg[0])
 		xkmap_alt = conf_kmapfind(arg);
 	else
-		ex_print(conf_kmap(xkmap)[0]);
+		ex_show(conf_kmap(xkmap)[0]);
 	if (arg[0] && !strchr(cmd, '!'))
 		xkmap = xkmap_alt;
 	return 0;
