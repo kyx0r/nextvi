@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2b5a0e1..3cee10c 100644
+index 2b5a0e1..ef54a50 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -398,6 +398,19 @@ static int ec_edit(char *loc, char *cmd, char *arg)
@@ -14,8 +14,8 @@ index 2b5a0e1..3cee10c 100644
 +		char *types[] = {"sh", "py"};
 +		for (int i = 0; i < LEN(langs); i++) {
 +			if (strstr(lbuf_buf(xb)[adv], langs[i])) {
-+				strcpy(ex_buf->ft, types[i]);
-+				syn_setft(ex_buf->ft);
++				ex_ft = syn_setft(types[i]);
++				syn_setft(ex_ft);
 +			}
 +		}
 +	}
