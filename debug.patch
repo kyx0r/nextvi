@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 41edf8c..93d29d6 100644
+index 2b5a0e1..e547a06 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1104,3 +1104,11 @@ int ex_init(char **files)
+@@ -1101,3 +1101,11 @@ int ex_init(char **files)
  		ex_command(s)
  	return 0;
  }
@@ -27,7 +27,7 @@ index a849d1d..6cc3bda 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index 07fc947..202367b 100644
+index ad41564..d25c009 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -78,6 +78,13 @@ void dir_init(void)
@@ -44,7 +44,7 @@ index 07fc947..202367b 100644
  static ren_state rstates[1];
  ren_state *rstate = &rstates[0];
  
-@@ -384,3 +391,10 @@ void syn_init(void)
+@@ -382,3 +389,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -56,10 +56,10 @@ index 07fc947..202367b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index d1059eb..3ce6c7b 100644
+index 77322aa..69ba8f4 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -580,6 +580,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -579,6 +579,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln);
  }
  
@@ -72,7 +72,7 @@ index d1059eb..3ce6c7b 100644
  static void vi_regprint(void)
  {
  	for (int i = 1; i < LEN(regs); i++) {
-@@ -2073,6 +2079,7 @@ int main(int argc, char *argv[])
+@@ -2072,6 +2078,7 @@ int main(int argc, char *argv[])
  			vi(1);
  		else
  			ex();
@@ -80,7 +80,7 @@ index d1059eb..3ce6c7b 100644
  	}
  	term_done();
  	if (!xvis)
-@@ -2082,5 +2089,13 @@ int main(int argc, char *argv[])
+@@ -2081,5 +2088,13 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
@@ -95,7 +95,7 @@ index d1059eb..3ce6c7b 100644
  	return 0;
  }
 diff --git a/vi.h b/vi.h
-index a93b1b1..3c97bc9 100644
+index d159855..9a8742e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -170,6 +170,7 @@ int ren_cwid(char *s, int pos);
