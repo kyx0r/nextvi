@@ -105,7 +105,7 @@ void temp_open(int i, char *name, char *ft)
 	tempbufs[i].top = 0;
 	tempbufs[i].td = +1;
 	tempbufs[i].mtime = -1;
-	strcpy(tempbufs[i].ft, ft);
+	tempbufs[i].ft = ft;
 }
 
 void temp_pos(int i, int row, int off, int top)
@@ -128,7 +128,7 @@ void temp_switch(int i)
 		ex_buf = &tempbufs[i];
 	}
 	exbuf_load(ex_buf)
-	syn_setft(ex_buf->ft);
+	syn_setft(ex_ft);
 }
 
 void temp_write(int i, char *str)
@@ -349,7 +349,7 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 void ex_bufpostfix(int i, int clear)
 {
 	bufs[i].mtime = mtime(bufs[i].path);
-	strcpy(bufs[i].ft, syn_filetype(bufs[i].path));
+	bufs[i].ft = syn_filetype(bufs[i].path);
 	lbuf_saved(bufs[i].lb, clear);
 }
 
@@ -392,7 +392,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	readfile(rd =)
 	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
 		ex_bufpostfix(ex_buf - bufs, arg[0]);
-		syn_setft(ex_buf->ft);
+		syn_setft(ex_ft);
 		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
 		ex_show(msg);
@@ -639,7 +639,7 @@ static int ec_lnum(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	sprintf(msg, "%d", end);
-	ex_print(msg);
+	ex_show(msg);
 	return 0;
 }
 
@@ -755,11 +755,8 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 
 static int ec_ft(char *loc, char *cmd, char *arg)
 {
-	if (arg[0])
-		strncpy(ex_buf->ft, arg, LEN(ex_buf->ft)-1);
-	else
-		ex_print(ex_filetype);
-	syn_setft(ex_buf->ft);
+	ex_ft = syn_setft(arg[0] ? arg : ex_ft);
+	ex_show(ex_ft);
 	syn_reload = 1;
 	return 0;
 }
@@ -769,7 +766,7 @@ static int ec_cmap(char *loc, char *cmd, char *arg)
 	if (arg[0])
 		xkmap_alt = conf_kmapfind(arg);
 	else
-		ex_print(conf_kmap(xkmap)[0]);
+		ex_show(conf_kmap(xkmap)[0]);
 	if (arg[0] && !strchr(cmd, '!'))
 		xkmap = xkmap_alt;
 	return 0;

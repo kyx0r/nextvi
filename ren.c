@@ -229,12 +229,12 @@ char *ren_translate(char *s, char *ln, int pos, int end)
 	return !xshape ? NULL : uc_shape(ln, s);
 }
 
-#define NFTS		20
+#define NFTS		30
 /* mapping filetypes to regular expression sets */
 static struct ftmap {
-	char ft[32];
 	int setbidx;
 	int seteidx;
+	char *ft;
 	rset *rs;
 } ftmap[NFTS];
 static int ftmidx;
@@ -247,27 +247,34 @@ static int blockcont;
 int syn_reload;
 int syn_blockhl;
 
-static int syn_find(char *ft)
+static void syn_initft(int fti, int n, char *name)
 {
-	for (int i = 0; i < ftmidx; i++)
-		if (!strcmp(ft, ftmap[i].ft))
-			return i;
-	return -1;
+	int i = n;
+	char *pats[hlslen];
+	for (; i < hlslen && !strcmp(hls[i].ft, name); i++)
+		pats[i - n] = hls[i].pat;
+	ftmap[fti].setbidx = n;
+	ftmap[fti].ft = name;
+	ftmap[fti].rs = rset_make(i - n, pats, 0);
+	ftmap[fti].seteidx = i;
 }
 
-int syn_merge(int old, int new)
-{
-	int fg = SYN_FGSET(new) ? SYN_FG(new) : SYN_FG(old);
-	int bg = SYN_BGSET(new) ? SYN_BG(new) : SYN_BG(old);
-	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
-}
-
-void syn_setft(char *ft)
+char *syn_setft(char *ft)
 {
 	for (int i = 1; i < 4; i++)
 		syn_addhl(NULL, i, 0);
-	if ((ftidx = syn_find(ft)) < 0)
-		ftidx = 0;
+	for (int i = 0; i < ftmidx; i++)
+		if (!strcmp(ft, ftmap[i].ft)) {
+			ftidx = i;
+			return ftmap[ftidx].ft;
+		}
+	for (int i = 0; i < hlslen; i++)
+		if (!strcmp(ft, hls[i].ft)) {
+			ftidx = ftmidx;
+			syn_initft(ftmidx++, i, hls[i].ft);
+			break;
+		}
+	return ftmap[ftidx].ft;
 }
 
 void syn_scdir(int scdir)
@@ -276,6 +283,13 @@ void syn_scdir(int scdir)
 		last_scdir = scdir;
 		syn_blockhl = 0;
 	}
+}
+
+int syn_merge(int old, int new)
+{
+	int fg = SYN_FGSET(new) ? SYN_FG(new) : SYN_FG(old);
+	int bg = SYN_BGSET(new) ? SYN_BG(new) : SYN_BG(old);
+	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
 }
 
 void syn_highlight(int *att, char *s, int n)
@@ -330,31 +344,17 @@ void syn_highlight(int *att, char *s, int n)
 			att[j] = blockcont && att[j] ? att[j] : *blockatt;
 }
 
-static void syn_initft(int fti, int *n, char *name)
-{
-	int i = *n;
-	char *pats[hlslen];
-	for (; i < hlslen && !strcmp(hls[i].ft, name); i++)
-		pats[i - *n] = hls[i].pat;
-	ftmap[fti].setbidx = *n;
-	strcpy(ftmap[fti].ft, name);
-	ftmap[fti].rs = rset_make(i - *n, pats, 0);
-	*n += i - *n;
-	ftmap[fti].seteidx = *n;
-}
-
 char *syn_filetype(char *path)
 {
 	int hl = rset_find(syn_ftrs, path, 0, NULL, 0);
-	return hl >= 0 && hl < ftslen ? fts[hl].ft : "/";
+	return hl >= 0 && hl < ftslen ? fts[hl].ft : hls[0].ft;
 }
 
 void syn_reloadft(void)
 {
 	if (syn_reload) {
-		int hlset = ftmap[ftidx].setbidx;
 		rset *rs = ftmap[ftidx].rs;
-		syn_initft(ftidx, &hlset, ftmap[ftidx].ft);
+		syn_initft(ftidx, ftmap[ftidx].setbidx, ftmap[ftidx].ft);
 		if (!ftmap[ftidx].rs) {
 			ftmap[ftidx].rs = rs;	
 		} else
@@ -377,10 +377,8 @@ int syn_addhl(char *reg, int func, int reload)
 void syn_init(void)
 {
 	char *pats[ftslen];
-	int i;
-	for (i = 0; i < hlslen; ftmidx++)
-		syn_initft(ftmidx, &i, hls[i].ft);
-	for (i = 0; i < ftslen; i++)
+	int i = 0;
+	for (; i < ftslen; i++)
 		pats[i] = fts[i].pat;
 	syn_ftrs = rset_make(i, pats, 0);
 }

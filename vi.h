@@ -183,7 +183,7 @@ void dir_init(void);
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
 extern int syn_reload;
 extern int syn_blockhl;
-void syn_setft(char *ft);
+char *syn_setft(char *ft);
 void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
@@ -287,7 +287,7 @@ void led_done(void);
 
 /* ex.c ex commands */
 struct buf {
-	char ft[32];			/* file type */
+	char *ft;			/* file type */
 	char *path;			/* file path */
 	struct lbuf *lb;
 	int row, off, top;
@@ -300,7 +300,7 @@ extern struct buf *ex_pbuf;
 extern struct buf *bufs;
 #define EXLEN	512	/* ex line length */
 #define ex_path ex_buf->path
-#define ex_filetype ex_buf->ft
+#define ex_ft ex_buf->ft
 #define xb ex_buf->lb
 void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
@@ -326,7 +326,7 @@ int ex_edit(const char *path);
 void ec_bufferi(int id);
 void bufs_switch(int idx);
 #define bufs_switchwft(idx) \
-{ if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(ex_buf->ft); } } \
+{ if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(ex_ft); } } \
 
 /* conf.c configuration variables */
 /* map file names to file types */
