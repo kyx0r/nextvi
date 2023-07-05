@@ -438,7 +438,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbufn_cut(sb, len)
 			} else if (!i++)
 				goto retry;
-			break;
+			continue;
 		case TK_CTL('p'):
 			if (vi_regget(p_reg, &lnmode))
 				sbufn_str(sb, vi_regget(p_reg, &lnmode))
