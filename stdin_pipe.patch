@@ -30,7 +30,7 @@ index 2b5a0e1..225764b 100644
  	return 0;
  }
 diff --git a/term.c b/term.c
-index fc59ceb..eb2fd0d 100644
+index fc59ceb..cbe135a 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,7 @@
@@ -61,6 +61,15 @@ index fc59ceb..eb2fd0d 100644
  		xcols = win.ws_col;
  		xrows = win.ws_row;
  	}
+@@ -34,7 +35,7 @@ void term_done(void)
+ 		return;
+ 	term_commit();
+ 	sbuf_free(term_sbuf)
+-	tcsetattr(0, 0, &termios);
++	tcsetattr(stdin_fd, 0, &termios);
+ }
+ 
+ void term_clean(void)
 @@ -127,12 +128,12 @@ int term_read(void)
  	struct pollfd ufds[1];
  	int n;
