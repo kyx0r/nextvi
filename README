@@ -131,7 +131,7 @@ number. Example: :!echo "%69" prints the pathname for buffer 69 (if it exists).
 If vi_arg1 is specified right before ^7 the buffer will be switched immediately
 which also happens to permit numbers > 9.
 15. Added key to exit vi (not saving changes) keybind: qq or zz
-16. Added key to goto line 0 keybind: gg
+16. Added key to goto first line keybind: gg
 17. Added key to delete everything inside (cursor outside) "" keybind: di" or dc"
 18. Added key to delete everything inside () keybind: di) or dc)
 19. Added key to delete everything inside (cursor outside) () keybind: di( or dc(
@@ -310,7 +310,7 @@ if the affected area is greater than terminal rows.
 expressions. For example [^&&abc] where ^&& is the not+and. This will treat
 "abc" as !(a && b && c) logically. Everything in brackets preceding && will
 be processed according to standard negated char exp.
-57. Added ^l key in insert to clean the terminal and start at line 0, remove
+57. Added ^l key in insert to clean the terminal and start at first line, remove
 distractions and focus on typing. Useful when running ex via vi -e
 58. Added v/ key in normal, which can grab the current word(s) under the
 cursor into prompt and set the current search string. If valid, the input
