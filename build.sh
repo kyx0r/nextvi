@@ -15,7 +15,7 @@ case "$OS" in *Darwin*) CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE" ;; esac
 
 run() {
 	printf '%s\n' "$*"
-	"$@"
+	eval "$@"
 }
 
 install() {
@@ -25,13 +25,13 @@ install() {
 }
 
 build() {
-	run "$CC" "vi.c" $CFLAGS -o vi
+	run "$CC vi.c -o vi $CFLAGS"
 }
 
 pgobuild() {
-	run "$CC" "vi.c" $CFLAGS -fprofile-generate=. -o vi
+	run "$CC vi.c -fprofile-generate=. -o vi $CFLAGS"
 	echo "qq" | ./vi -v ./vi.c >/dev/null
-	run "$CC" "vi.c" $CFLAGS -fprofile-use=. -o vi
+	run "$CC vi.c -fprofile-use=. -o vi $CFLAGS"
 	rm *.gcda
 }
 
