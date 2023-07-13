@@ -391,13 +391,13 @@ macro queue and run independently. In a way, macro executed by tp exercises
 the same causality as running C code directly.
 70. Added key to list through the buffers. keybind: ^n
 vi_arg1 changes the direction of ^n.
-71. In insert mode keybind ^o allows access to a secondary ex prompt or new 
-vi instance so that it becomes possible to switch to vi from ex or postpone 
-some operation, do something else and come back later.  This feature is 
-implemented using functionality provided by 69. and exists to prove and 
-demonstrate that vi is to some extent REENTRANT as in single threaded 
+71. In insert mode keybind ^o allows access to a secondary ex prompt or new
+vi instance so that it becomes possible to switch to vi from ex or postpone
+some operation, do something else and come back later.  This feature is
+implemented using functionality provided by 69. and exists to prove and
+demonstrate that vi is to some extent REENTRANT as in single threaded
 recursion case, where operations can be safely executed in a separate instance.
-Still, a great amount of care and understanding is needed when making such 
+Still, a great amount of care and understanding is needed when making such
 complicated macros.
 72. Added keybinds ^\ and ^] to control the default register for pasting
 (^p) in insert mode. ^\ resets to default yank register.
@@ -466,7 +466,7 @@ Example 2:
 Load your shell's history into vi's history buffer and adjust the data such
 that it is usable by appending ! at the beginning of command and escaping the "|"
 pipes the way ex prompt expects them (see 61.)
-export EXINIT="e /root/.ash_history|tp yG:p:%s/^/!\\\|%s/ \\| / \\\\\\\| /g
+export EXINIT="e /root/.ash_history|tp yG:p:%s/^/\!\\\|%s/ \\| / \\\\\\\| /g
 qq|bx 1|bx|ft"
 Congratulations, vi has unofficially replaced your shell's frontend.
 Example 3:
