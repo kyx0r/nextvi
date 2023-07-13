@@ -310,8 +310,8 @@ if the affected area is greater than terminal rows.
 For example [!abc] and [=abc] where ! is negated version of =. This will treat
 "abc" as (a && b && c) logically. It is possible to have multiple in
 one bracket expression as well. For example [!abc!cda!qwe] where each string
-delimited by the ! acts like a typical or operation i.e [acq] with only
-difference of testing the extra characters ahead. To combine both, standard bracket
+delimited by the ! acts like a typical or operation i.e. [acq] with only
+difference of testing the extra characters ahead. To combine both standard bracket
 expression and lookahead in one, use ^ or ^= where ^ is negated and ^= is default.
 For example: [!abc^=123] characters after ^= match exactly how [123] would.
 57. Added ^l key in insert to clean the terminal and start at first line, remove
@@ -523,13 +523,13 @@ LOC:
 | 577  uc.c    | UTF-8 support       |
 | 318  term.c  | low level IO        |
 | 298  conf.c  | hl/ft/td config     |
-| 637  regex.c | extended RE         |
+| 652  regex.c | extended RE         |
 | 590  lbuf.c  | file/line buffer    |
 | 1103 ex.c    | ex options/commands |
 | 2085 vi.c    | normal mode/general |
 | 685  led.c   | insert mode/output  |
 | 384  ren.c   | positioning/syntax  |
-| 6677 total   | wc -l *.c           |
+| 6692 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
