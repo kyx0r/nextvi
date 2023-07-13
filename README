@@ -206,8 +206,8 @@ Example 1:
 We want to get only files in submodule directory that end with .c extension:
 :inc submodule.*\.c$
 Example 2:
-Exclude the .git folder filled with useless clutter.
-:inc (^[^&&.git]+[^\/]+$)\\|(<optional branch for exceptions here>)
+Exclude the .git and submodule folders.
+:inc (^[\!.git\!submodule]+[^\/]+$)\\|(<optional branch for exceptions here>)
 Running "inc" without an arg will disable all filters.
 33. Added file manager keybind: \
 Commands listed below under (33.) will work everywhere in vi.
@@ -306,10 +306,14 @@ This is necessary sometimes if you want to paste from system clipboard.
 now only short and fast to type abbreviations work.
 55. Substitute undo-redo point return to where command was issued initially
 if the affected area is greater than terminal rows.
-56. Modified regex engine to support more than 1 character in negated char
-expressions. For example [^&&abc] where ^&& is the not+and. This will treat
-"abc" as !(a && b && c) logically. Everything in brackets preceding && will
-be processed according to standard negated char exp.
+56. Modified regex engine to support static lookahead expressions.
+For example [!abc] and [=abc] where ! is negated version of =. This will treat
+"abc" as (a && b && c) logically. It is possible to have multiple in
+one bracket expression as well. For example [!abc!cda!qwe] where each string
+delimited by the ! acts like a typical or operation i.e [acq] with only
+difference of testing the extra characters ahead. To combine both, standard bracket
+expression and lookahead in one, use ^ or ^= where ^ is negated and ^= is default.
+For example: [!abc^=123] characters after ^= match exactly how [123] would.
 57. Added ^l key in insert to clean the terminal and start at first line, remove
 distractions and focus on typing. Useful when running ex via vi -e
 58. Added v/ key in normal, which can grab the current word(s) under the
