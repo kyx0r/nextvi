@@ -95,8 +95,8 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 				if (!*re) return -1;
 				uc_len(l, re)
 				uc_code(c, re)
-				if ((c == '!' || c == '=' || c == '^')
-						&& re[l] != ']') {
+				if (re[-1] != '\\' && re[l] != ']' &&
+						(c == '!' || c == '=' || c == '^')) {
 					EMIT(PC-(cnt*2)-1, cnt);
 					if (c == '^' && re[l] == '=') {
 						EMIT(PC++, 1);

@@ -39,7 +39,7 @@ static int search(const char *pattern, int l)
 
 static void file_index(struct lbuf *buf)
 {
-	char reg[] = "[^\t ;:,`.<>[\\]^%$#@*!?+\\-|/=\\\\{}&\\()'\"]+";
+	char reg[] = "[^\t ;:,`.<>[\\]\\^%$#@*\\!?+\\-|/\\=\\\\{}&\\()'\"]+";
 	int len, sidx, grp = xgrp;
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf);
