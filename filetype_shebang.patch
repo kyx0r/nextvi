@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 2b5a0e1..ef54a50 100644
+index 2b5a0e1..4316a7d 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -398,6 +398,19 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -398,6 +398,16 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_show(msg);
  	} else
  		ex_show("read failed");
@@ -12,12 +12,9 @@ index 2b5a0e1..ef54a50 100644
 +			adv++;
 +		char *langs[] = {"/bin/sh", "/bin/python"};
 +		char *types[] = {"sh", "py"};
-+		for (int i = 0; i < LEN(langs); i++) {
-+			if (strstr(lbuf_buf(xb)[adv], langs[i])) {
++		for (int i = 0; i < LEN(langs); i++)
++			if (strstr(lbuf_buf(xb)[adv], langs[i]))
 +				ex_ft = syn_setft(types[i]);
-+				syn_setft(ex_ft);
-+			}
-+		}
 +	}
  	return 0;
  }
