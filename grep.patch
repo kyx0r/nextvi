@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 4e2c53c..cd7e64e 100644
+index 162e050..451f191 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -228,6 +228,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\

@@ -15,10 +15,10 @@ index 2b5a0e1..e547a06 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index a849d1d..6cc3bda 100644
+index feb536c..48bda92 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -519,6 +519,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -534,6 +534,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	int *pcs[prog->splits];
  	rsub *subs[prog->splits];
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
