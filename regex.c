@@ -81,23 +81,35 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 			EMIT(PC++, ANY);
 			break;
 		case '[':;
-			int cnt, l, not = 0;
+			int cnt, l;
 			term = PC;
 			re++;
 			EMIT(PC++, CLASS);
-			if (*re == '^') {
-				not = -1;
-				re++;
+			PC++;
+			if (*re != '!' && *re != '=' && *re != '^') {
+				EMIT(PC++, 1);
+				PC++;
 			}
-			PC += 2;
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (*re == '\\') re++;
 				if (!*re) return -1;
 				uc_len(l, re)
-				if (not && *re == '&' && re[l] == '&') {
-					not = -(cnt+2); re += 2;
-				}
 				uc_code(c, re)
+				if (re[-1] != '\\' && re[l] != ']' &&
+						(c == '!' || c == '=' || c == '^')) {
+					EMIT(PC-(cnt*2)-1, cnt);
+					if (c == '^' && re[l] == '=') {
+						EMIT(PC++, 1);
+						re++;
+					} else if (c == '^') {
+						EMIT(PC++, -1);
+					} else
+						EMIT(PC++, c == '!' ? -2 : 2);
+					PC++;
+					cnt = -1;
+					re++;
+					continue;
+				}
 				if (flg & REG_ICASE)
 					c = tolower((unsigned char)c);
 				EMIT(PC++, c);
@@ -109,9 +121,8 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 				EMIT(PC++, c);
 				uc_len(c, re) re += c;
 			}
-			not = not < -1 ? -(not+cnt+2) : not;
-			EMIT(term + 1, not < 0 ? not : 1);
-			EMIT(term + 2, cnt);
+			EMIT(PC-(cnt*2)-1, cnt);
+			EMIT(term+1, PC - term - 2);
 			break;
 		case '(':;
 			term = PC;
@@ -274,7 +285,7 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
 	for (int i = 0; i < prog->unilen; i++)
 		switch (prog->insts[i]) {
 		case CLASS:
-			i += prog->insts[i+2] * 2 + 2;
+			i += prog->insts[i+1]+1;
 			icnt++;
 			break;
 		case SPLIT:
@@ -450,29 +461,33 @@ for (;; sp = _sp) { \
 				deccont() \
 			npc += 2; \
 		} else if (spc == CLASS) { \
-			const char *s = sp; \
-			int cp = c; \
-			int *pc = npc+1; \
-			int is_positive = *pc++; \
-			int cnt = *pc++; \
-			while (cnt--) { \
-				if (cp >= *pc && cp <= pc[1]) { \
-					if (is_positive < -1 && cnt < -is_positive) \
-					{ \
-						uc_len(j, s) s += j; \
-						uc_code(cp, s) \
-						pc += 2; \
-						is_positive++; \
-						continue; \
-					} \
-					is_positive -= is_positive * 2; \
-					break; \
-				} \
+			int *pc = npc; \
+			int gcnt = pc[1]; \
+			int cnt, neq, _cnt; \
+			do { \
 				pc += 2; \
-			} \
-			if (is_positive > 0) \
+				const char *s = sp; \
+				int cp = c; \
+				neq = pc[0]; \
+				cnt = pc[1]; \
+				_cnt = cnt; \
+				while (cnt--) { \
+					pc += 2; \
+					if (cp >= *pc && cp <= pc[1]) { \
+						if (neq < -1 || neq > 1) { \
+							uc_len(j, s) s += j; \
+							uc_code(cp, s) \
+							_cnt--; \
+							continue; \
+						} \
+						_cnt = 0; \
+						break; \
+					} \
+				} \
+			} while (pc < npc + gcnt && _cnt); \
+			if ((_cnt && neq > 0) || (!_cnt && neq < 0)) \
 				deccont() \
-			npc += *(npc+2) * 2 + 3; \
+			npc += gcnt + 2; \
 		} else if (spc == MATCH) { \
 			matched##n: \
 			nlist[nlistidx++].pc = &mcont; \
