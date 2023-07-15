@@ -47,7 +47,6 @@ static int vi_lnnum;	/* line numbers */
 static int vi_mod;	/* screen should be redrawn:
 			(1: whole screen, -1: whole screen not updating vi_col, 2: current line) */
 static char *vi_word = "\0eEwW";	/* line word navigation */
-static char vi_lastprompt[3] = ":";	/* last prompt type */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN+128];		/* current message */
 static char vi_charlast[8];		/* the last character searched via f, t, F, or T */
@@ -268,7 +267,6 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	vi_mod = 1;
 	if (!s)
 		return NULL;
-	strncpy(vi_lastprompt, msg, sizeof(vi_lastprompt) - 1);
 	r = uc_dup(s + l2);
 	strcpy(vi_msg+l2, r);
 	free(s);
@@ -1109,18 +1107,18 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 
 static void vi_pipe(int r1, int r2)
 {
-	char *text, *rep;
 	int kmap = 0;
-	char *cmd = vi_prompt("!!", 0, &kmap);
+	char region[100];
+	char *p = itoa(r1+1, region);
+	*p++ = ',';
+	p = itoa(r2+1, p);
+	*p++ = '!';
+	*p = '\0';
+	char *cmd = vi_prompt(":", region, &kmap);
 	if (!cmd)
 		return;
-	text = lbuf_cp(xb, r1, r2 + 1);
-	rep = cmd_pipe(cmd, text, 1);
-	if (rep)
-		lbuf_edit(xb, rep, r1, r2 + 1);
+	ex_command(cmd)
 	free(cmd);
-	free(text);
-	free(rep);
 }
 
 static void vi_shift(int r1, int r2, int dir)
@@ -1665,7 +1663,7 @@ void vi(int init)
 					goto do_excmd;
 				case 'b':
 				case 'v':
-					term_push(vi_lastprompt, strlen(vi_lastprompt));
+					vi_back(':');
 					term_push(k == 'v' ? "\x16" : "\x02", 1); /* ^v : ^b */
 					break;
 				case ';':
