@@ -286,7 +286,7 @@ static int ex_lineno(char **num)
 static int ex_region(char *loc, int *beg, int *end)
 {
 	int naddr = 0;
-	if (!strcmp("%", loc)) {
+	if (!strcmp("%", loc) || !lbuf_len(xb)) {
 		*beg = 0;
 		*end = MAX(0, lbuf_len(xb));
 		return 0;
