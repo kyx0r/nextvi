@@ -1,3 +1,4 @@
+#!/bin/sh
 for p in *.patch
 do
 	echo "PATCH: $p"
