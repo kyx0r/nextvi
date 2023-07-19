@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2b5a0e1..27fc046 100644
+index 8f85bef..8488c53 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -26,7 +26,7 @@ struct buf *bufs;		/* main buffers */
@@ -33,7 +33,7 @@ index 2b5a0e1..27fc046 100644
  			break;
  		row += xkwddir;
  	}
-@@ -707,7 +707,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -709,7 +709,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
@@ -42,7 +42,7 @@ index 2b5a0e1..27fc046 100644
  			if (offs[xgrp - 2] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -777,7 +777,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -779,7 +779,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	int beg, end, not;
  	char *pat, *s = arg;
  	int i;
@@ -51,7 +51,7 @@ index 2b5a0e1..27fc046 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_region(loc, &beg, &end))
-@@ -785,7 +785,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -787,7 +787,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	not = strchr(cmd, '!') || cmd[0] == 'v';
  	pat = re_read(&s);
  	if (pat)
@@ -60,7 +60,7 @@ index 2b5a0e1..27fc046 100644
  	free(pat);
  	if (!pat || !rs)
  		return 1;
-@@ -795,7 +795,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -797,7 +797,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	i = beg;
  	while (i < lbuf_len(xb)) {
  		char *ln = lbuf_get(xb, i);
@@ -69,7 +69,7 @@ index 2b5a0e1..27fc046 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -806,7 +806,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -808,7 +808,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	}
  	for (i = 0; i < lbuf_len(xb); i++)
  		lbuf_globget(xb, i, xgdep);
@@ -78,7 +78,7 @@ index 2b5a0e1..27fc046 100644
  	xgdep--;
  	return 0;
  }
-@@ -910,9 +910,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -912,9 +912,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
  	ec_setdir(NULL, NULL, NULL);
@@ -244,10 +244,10 @@ index feb536c..2be5485 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 77322aa..e986fd5 100644
+index 866b5cc..975b7ec 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -591,7 +591,7 @@ static void vi_regprint(void)
+@@ -589,7 +589,7 @@ static void vi_regprint(void)
  	}
  }
  
@@ -256,7 +256,7 @@ index 77322aa..e986fd5 100644
  char *fslink;
  char *fs_exdir;
  int fstlen;
-@@ -611,7 +611,7 @@ static char *file_calc(char *path)
+@@ -609,7 +609,7 @@ static char *file_calc(char *path)
  		len1 = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len1);

@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 2b5a0e1..225764b 100644
+index 8f85bef..a5fdc41 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -378,6 +378,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -380,6 +380,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
  	int fd, rd = 0, cd = 0;
@@ -11,7 +11,7 @@ index 2b5a0e1..225764b 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	if (arg[0] && ((fd = bufs_find(arg+cd)) >= 0)) {
-@@ -393,6 +395,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -395,6 +397,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
  		ex_bufpostfix(ex_buf - bufs, arg[0]);
  		syn_setft(ex_ft);
@@ -19,7 +19,7 @@ index 2b5a0e1..225764b 100644
  		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
  				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
  		ex_show(msg);
-@@ -1099,5 +1102,9 @@ int ex_init(char **files)
+@@ -1101,5 +1104,9 @@ int ex_init(char **files)
  		return 1;
  	if (xled && (s = getenv("EXINIT")))
  		ex_command(s)
@@ -95,10 +95,10 @@ index fc59ceb..cbe135a 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 77322aa..0136ee6 100644
+index 866b5cc..c0aeffb 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2061,10 +2061,12 @@ int main(int argc, char *argv[])
+@@ -2059,10 +2059,12 @@ int main(int argc, char *argv[])
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == 's')
  			xled = 0;
