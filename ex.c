@@ -999,58 +999,38 @@ static int ex_idx(const char *cmd)
 	return -1;
 }
 
-/* read ex command addresses */
-static const char *ex_loc(const char *src, char *loc)
+/* parse ex command until | or eol. */
+static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 {
-	while (*src == ':' || *src == ' ' || *src == '\t')
+	while (*src == ' ' || *src == '\t')
 		src++;
-	while (*src && !isalpha((unsigned char)*src) && *src != '=' && *src != '!')
-	{
-		if (*src == '\'')
-			*loc++ = *src++;
+	while (*src && strchr(" \t0123456789+-.,/?$';%", *src)) {
 		if (*src == '/' || *src == '?') {
 			int d = *src;
-			*loc++ = *src++;
-			while (*src && *src != d) {
+			do {
 				if (*src == '\\' && src[1])
 					*loc++ = *src++;
 				*loc++ = *src++;
-			}
-		}
-		if (*src)
+			} while (*src && *src != d);
+			if (*src)
+				*loc++ = *src++;
+		} else
 			*loc++ = *src++;
 	}
-	*loc = '\0';
-	return src;
-}
-
-/* read ex command name */
-static const char *ex_cmd(const char *src, char *cmd)
-{
-	char *cmd0 = cmd;
-	while (*src == ' ' || *src == '\t')
-		src++;
-	while (isalpha((unsigned char) *src) && cmd < cmd0 + 16)
-		if ((*cmd++ = *src++) == 'k' && cmd == cmd0 + 1)
-			break;
+	while (*src && isalpha((unsigned char)*src))
+		*cmd++ = *src++;
 	if (*src == '!' || *src == '=')
 		*cmd++ = *src++;
-	*cmd = '\0';
-	return src;
-}
-
-/* read ex command argument for excmd command */
-static const char *ex_arg(const char *src, char *dst)
-{
 	while (*src == ' ' || *src == '\t')
 		src++;
-	while (*src && (*src != '|' || src[-1] == '\\'))
-	{
+	while (*src && (*src != '|' || src[-1] == '\\')) {
 		if (!strncmp(src, "\\\\|", 3))
 			src += src[-1] == '\\' ? 1 : 2;
-		*dst++ = *src++;
+		*arg++ = *src++;
 	}
-	*dst = '\0';
+	*loc = '\0';
+	*cmd = '\0';
+	*arg = '\0';
 	return *src == '|' ? src+1 : src;
 }
 
@@ -1060,9 +1040,7 @@ int ex_exec(const char *ln)
 	int ret = 0, len = strlen(ln) + 1;
 	char loc[len], cmd[len], arg[len];
 	while (*ln) {
-		ln = ex_loc(ln, loc);
-		ln = ex_cmd(ln, cmd);
-		ln = ex_arg(ln, arg);
+		ln = ex_parse(ln, loc, cmd, arg);
 		char *ecmd = ex_pathexpand(arg);
 		int idx = ex_idx(cmd);
 		if (idx >= 0 && ecmd)
