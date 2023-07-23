@@ -1023,9 +1023,9 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 		*cmd++ = *src++;
 	while (*src == ' ' || *src == '\t')
 		src++;
-	while (*src && (*src != '|' || src[-1] == '\\')) {
-		if (!strncmp(src, "\\\\|", 3))
-			src += src[-1] == '\\' ? 1 : 2;
+	while (*src && *src != '|') {
+		if (*src == '\\' && src[1] == '|')
+			src++;
 		*arg++ = *src++;
 	}
 	*loc = '\0';

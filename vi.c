@@ -514,7 +514,7 @@ static int vi_motionln(int *row, int cmd)
 	return c;
 }
 
-static char *vi_curword(struct lbuf *lb, int row, int off, int n)
+static char *vi_curword(struct lbuf *lb, int row, int off, int n, int x)
 {
 	sbuf *sb;
 	char *ln = lbuf_get(lb, row);
@@ -535,7 +535,7 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	if (n > 1) {
 		for (; beg != end; beg++) {
 			if (strchr("!#%{}[]().?\\^$|*/+", *beg))
-				sbuf_str(sb, "\\")
+				sbuf_str(sb, *beg == x ? "\\\\" : "\\")
 			sbuf_chr(sb, *beg)
 		}
 		sbufn_done(sb)
@@ -818,7 +818,7 @@ static int vi_motion(int *row, int *off)
 
 		if (!fslink)
 			dir_calc(fs_exdir ? fs_exdir : ".");
-		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt))) {
+		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt, 0))) {
 			ex_krsset(cs, +1);
 			free(cs);
 		}
@@ -870,7 +870,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case TK_CTL('a'):
-		if (!(cs = vi_curword(xb, *row, *off, cnt)))
+		if (!(cs = vi_curword(xb, *row, *off, cnt, 0)))
 			return -1;
 		ex_krsset(cs, +1);
 		free(cs);
@@ -1670,7 +1670,7 @@ void vi(int init)
 					ln = vi_prompt(":", "!", &kmap);
 					goto do_excmd;
 				case '/':
-					cs = vi_curword(xb, xrow, xoff, vi_arg1);
+					cs = vi_curword(xb, xrow, xoff, vi_arg1, 0);
 					ln = vi_prompt("v/ xkwd:", cs, &kmap);
 					ex_krsset(ln, +1);
 					free(ln);
@@ -1679,7 +1679,7 @@ void vi(int init)
 				case 't': {
 					strcpy(vi_msg, "arg2:(0|#)");
 					vi_drawmsg();
-					cs = vi_curword(xb, xrow, xoff, vi_prefix());
+					cs = vi_curword(xb, xrow, xoff, vi_prefix(), '|');
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, ".,.+");
 					char *buf1 = itoa(vi_arg1, buf+4);
@@ -1692,7 +1692,7 @@ void vi(int init)
 					ln = vi_prompt(":", buf, &kmap);
 					goto do_excmd; }
 				case 'r': {
-					cs = vi_curword(xb, xrow, xoff, vi_arg1);
+					cs = vi_curword(xb, xrow, xoff, vi_arg1, '|');
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, "%s/");
 					if (cs) {
@@ -1948,7 +1948,7 @@ void vi(int init)
 		vi_wait();
 		if (xhlw) {
 			static char *word;
-			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
+			if ((cs = vi_curword(xb, xrow, xoff, xhlw, 0))) {
 				if (!word || strcmp(word, cs)) {
 					syn_addhl(cs, 1, 1);
 					free(word);
