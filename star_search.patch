@@ -1,5 +1,5 @@
 diff --git a/vi.c b/vi.c
-index 866b5cc..0659416 100644
+index d918dba..7c3691d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -870,6 +870,7 @@ static int vi_motion(int *row, int *off)
@@ -7,6 +7,6 @@ index 866b5cc..0659416 100644
  		break;
  	case TK_CTL('a'):
 +	case '*':
- 		if (!(cs = vi_curword(xb, *row, *off, cnt)))
+ 		if (!(cs = vi_curword(xb, *row, *off, cnt, 0)))
  			return -1;
  		ex_krsset(cs, +1);
