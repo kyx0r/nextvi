@@ -258,17 +258,17 @@ static void vi_wait(void)
 static char *vi_prompt(char *msg, char *insert, int *kmap)
 {
 	char *r, *s;
-	int l2 = strlen(msg);
-	memcpy(vi_msg, msg, l2+1);
 	term_pos(xrows, led_pos(msg, 0));
 	syn_setft("/-");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(ex_ft);
-	vi_mod = 1;
 	if (!s)
 		return NULL;
-	r = uc_dup(s + l2);
-	strcpy(vi_msg+l2, r);
+	vi_mod = 1;
+	int mlen = strlen(msg);
+	r = uc_dup(s + mlen);
+	strncpy(vi_msg, msg, sizeof(vi_msg) - 1);
+	strncpy(vi_msg + mlen, r, sizeof(vi_msg) - 1);
 	free(s);
 	return r;
 }
