@@ -262,13 +262,14 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	syn_setft("/-");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(ex_ft);
+	vi_mod = 1;
 	if (!s)
 		return NULL;
-	vi_mod = 1;
-	int mlen = strlen(msg);
+	unsigned int mlen = strlen(msg);
 	r = uc_dup(s + mlen);
 	strncpy(vi_msg, msg, sizeof(vi_msg) - 1);
-	strncpy(vi_msg + mlen, r, sizeof(vi_msg) - 1);
+	mlen = MIN(mlen, sizeof(vi_msg) - 1);
+	strncpy(vi_msg + mlen, r, sizeof(vi_msg) - mlen - 1);
 	free(s);
 	return r;
 }
