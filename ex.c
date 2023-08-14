@@ -29,6 +29,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 int xkwddir;			/* the last search direction */
 static int xbufsmax;		/* number of buffers */
+static int xbufsalloc = 10;	/* initial number of buffers */
 static char xrep[EXLEN];	/* the last replacement */
 static int xgdep;		/* global command recursion depth */
 static struct buf tempbufs[2];	/* temporary buffers, for internal use */
@@ -934,7 +935,7 @@ static int ec_setacreg(char *loc, char *cmd, char *arg)
 
 static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 {
-	xbufsmax = *arg ? atoi(arg) : 10;
+	xbufsmax = *arg ? atoi(arg) : xbufsalloc;
 	for (; xbufcur > xbufsmax; xbufcur--)
 		bufs_free(xbufcur - 1);
 	int bufidx = ex_buf - bufs;
@@ -1063,21 +1064,15 @@ void ex(void)
 	}
 }
 
-int ex_init(char **files)
+void ex_init(char **files, int n)
 {
-	char arg[EXLEN];
-	char *s = arg;
-	char *r = files[0] ? files[0] : "";
-	while (*r && s + 2 < arg + sizeof(arg)) {
-		if (*r == ' ' || *r == '%' || *r == '#')
-			*s++ = '\\';
-		*s++ = *r++;
-	}
-	*s = '\0';
+	xbufsalloc = MAX(n, xbufsalloc);
 	ec_setbufsmax(NULL, NULL, "");
-	if (ec_edit("", "e", arg))
-		return 1;
+	char *s = files[0] ? files[0] : "";
+	do {
+		ec_edit("", "e", s);
+		s = *(++files);
+	} while (s);
 	if (xled && (s = getenv("EXINIT")))
 		ex_command(s)
-	return 0;
 }

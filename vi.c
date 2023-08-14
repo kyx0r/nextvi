@@ -2066,12 +2066,11 @@ int main(int argc, char *argv[])
 			xvis = 1;
 	}
 	term_init();
-	if (!ex_init(argv + i)) {
-		if (xvis)
-			vi(1);
-		else
-			ex();
-	}
+	ex_init(argv + i, argc - i);
+	if (xvis)
+		vi(1);
+	else
+		ex();
 	term_done();
 	if (!xvis)
 		return 0;
