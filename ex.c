@@ -393,15 +393,15 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	} else if (arg[0] || !xbufcur || !strchr(cmd, '!'))
 		bufs_switch(bufs_open(arg+cd));
 	readfile(rd =)
-	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
+	if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
 		ex_bufpostfix(ex_buf - bufs, arg[0]);
 		syn_setft(ex_ft);
 		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
 				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
-		ex_show(msg);
+		ex_show(rd ? "read failed" : msg);
 	} else
 		ex_show("read failed");
-	return 0;
+	return rd;
 }
 
 static int ec_editapprox(char *loc, char *cmd, char *arg)
