@@ -1072,7 +1072,7 @@ void ex_init(char **files, int n)
 	do {
 		ec_edit("", "e", s);
 		s = *(++files);
-	} while (s);
+	} while (--n > 0);
 	if (xled && (s = getenv("EXINIT")))
 		ex_command(s)
 }
