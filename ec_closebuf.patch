@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 57b642e..7154f99 100644
+index 57b642e..266dbb6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -946,6 +946,29 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
@@ -25,7 +25,7 @@ index 57b642e..7154f99 100644
 +	ex_buf = idx < ex_buf - bufs ? ex_buf - 1 : ex_buf;
 +	ex_buf = idx == ex_buf - bufs ? bufs : ex_buf;
 +	ex_pbuf = idx == ex_buf - bufs ? bufs : ex_pbuf;
-+	syn_setft(ex_filetype);
++	syn_setft(ex_ft);
 +	return 0;
 +}
 +
