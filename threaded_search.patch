@@ -173,7 +173,7 @@ index 69fcbe4..6811ef4 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 172062c..f32f165 100644
+index fa061ac..1bb79cf 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -31,6 +31,7 @@
@@ -185,7 +185,7 @@ index 172062c..f32f165 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index d159855..2feb367 100644
+index 4222f50..2f98464 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -193,7 +193,9 @@ int syn_addhl(char *reg, int func, int reload);

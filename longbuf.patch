@@ -36,7 +36,7 @@ index 4d1460f..372ae23 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index 172062c..4b1bc69 100644
+index fa061ac..4077126 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -48,7 +48,7 @@ index 172062c..4b1bc69 100644
  #include <poll.h>
  #include <termios.h>
 diff --git a/vi.h b/vi.h
-index d159855..573e5dc 100644
+index 4222f50..5499003 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -35,10 +35,11 @@ void vi(int init);

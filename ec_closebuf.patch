@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 9da4748..fb3ac14 100644
+index 57b642e..7154f99 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -945,6 +945,29 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+@@ -946,6 +946,29 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -32,7 +32,7 @@ index 9da4748..fb3ac14 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -987,6 +1010,7 @@ static struct excmd {
+@@ -988,6 +1011,7 @@ static struct excmd {
  	{"cd", ec_chdir},
  	{"inc", ec_setincl},
  	{"bx", ec_setbufsmax},

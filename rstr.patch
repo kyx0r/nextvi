@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 9da4748..2fd100f 100644
+index 57b642e..fa95222 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -26,7 +26,7 @@ struct buf *bufs;		/* main buffers */
@@ -10,8 +10,8 @@ index 9da4748..2fd100f 100644
 +rstr *xkwdrs;			/* the last searched keyword rstr */
  int xkwddir;			/* the last search direction */
  static int xbufsmax;		/* number of buffers */
- static char xrep[EXLEN];	/* the last replacement */
-@@ -209,9 +209,9 @@ void ex_krsset(char *kwd, int dir)
+ static int xbufsalloc = 10;	/* initial number of buffers */
+@@ -210,9 +210,9 @@ void ex_krsset(char *kwd, int dir)
  {
  	char *reg = vi_regget('/', &(int){0});
  	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
@@ -24,7 +24,7 @@ index 9da4748..2fd100f 100644
  		xkwdcnt++;
  		vi_regput('/', kwd, 0);
  		xkwddir = dir;
-@@ -240,7 +240,7 @@ static int ex_search(char **pat)
+@@ -241,7 +241,7 @@ static int ex_search(char **pat)
  		return -1;
  	row = xrow + xkwddir;
  	while (row >= 0 && row < lbuf_len(xb)) {
@@ -33,7 +33,7 @@ index 9da4748..2fd100f 100644
  			break;
  		row += xkwddir;
  	}
-@@ -709,7 +709,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -710,7 +710,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
@@ -42,7 +42,7 @@ index 9da4748..2fd100f 100644
  			if (offs[xgrp - 2] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -779,7 +779,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -780,7 +780,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	int beg, end, not;
  	char *pat, *s = arg;
  	int i;
@@ -51,7 +51,7 @@ index 9da4748..2fd100f 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_region(loc, &beg, &end))
-@@ -787,7 +787,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -788,7 +788,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	not = strchr(cmd, '!') || cmd[0] == 'v';
  	pat = re_read(&s);
  	if (pat)
@@ -60,7 +60,7 @@ index 9da4748..2fd100f 100644
  	free(pat);
  	if (!pat || !rs)
  		return 1;
-@@ -797,7 +797,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -798,7 +798,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	i = beg;
  	while (i < lbuf_len(xb)) {
  		char *ln = lbuf_get(xb, i);
@@ -69,7 +69,7 @@ index 9da4748..2fd100f 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -808,7 +808,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -809,7 +809,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	}
  	for (i = 0; i < lbuf_len(xb); i++)
  		lbuf_globget(xb, i, xgdep);
@@ -78,7 +78,7 @@ index 9da4748..2fd100f 100644
  	xgdep--;
  	return 0;
  }
-@@ -912,9 +912,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -913,9 +913,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
  	ec_setdir(NULL, NULL, NULL);
@@ -244,10 +244,10 @@ index feb536c..2be5485 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 172062c..d1d9df8 100644
+index fa061ac..dd9d17b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -589,7 +589,7 @@ static void vi_regprint(void)
+@@ -590,7 +590,7 @@ static void vi_regprint(void)
  	}
  }
  
@@ -256,7 +256,7 @@ index 172062c..d1d9df8 100644
  char *fslink;
  char *fs_exdir;
  int fstlen;
-@@ -609,7 +609,7 @@ static char *file_calc(char *path)
+@@ -610,7 +610,7 @@ static char *file_calc(char *path)
  		len1 = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len1);
@@ -266,7 +266,7 @@ index 172062c..d1d9df8 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  		{
 diff --git a/vi.h b/vi.h
-index d159855..3da5d40 100644
+index 4222f50..b5ada40 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -113,10 +113,21 @@ typedef struct {
@@ -302,7 +302,7 @@ index d159855..3da5d40 100644
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
 @@ -320,7 +331,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
- int ex_init(char **files);
+ void ex_init(char **files, int n);
  void ex_bufpostfix(int i, int clear);
 -int ex_krs(rset **krs, int *dir);
 +int ex_krs(rstr **krs, int *dir);
