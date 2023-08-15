@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 9da4748..542e0c3 100644
+index 57b642e..96bc2e3 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -380,6 +380,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -381,6 +381,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
  	int fd, rd = 0, cd = 0;
@@ -11,23 +11,22 @@ index 9da4748..542e0c3 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	if (arg[0] && ((fd = bufs_find(arg+cd)) >= 0)) {
-@@ -395,6 +397,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
- 	if (!rd && ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
+@@ -396,6 +398,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+ 	if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
  		ex_bufpostfix(ex_buf - bufs, arg[0]);
  		syn_setft(ex_ft);
 +		ret:
  		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
  				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
- 		ex_show(msg);
-@@ -1079,5 +1082,9 @@ int ex_init(char **files)
- 		return 1;
+ 		ex_show(rd ? "read failed" : msg);
+@@ -1075,4 +1078,8 @@ void ex_init(char **files, int n)
+ 	} while (--n > 0);
  	if (xled && (s = getenv("EXINIT")))
  		ex_command(s)
 +	if (stdin_fd) {
 +		lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
 +		ec_edit(NULL, "e!", "");
 +	}
- 	return 0;
  }
 diff --git a/term.c b/term.c
 index fc59ceb..cbe135a 100644
@@ -95,10 +94,10 @@ index fc59ceb..cbe135a 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 172062c..84354b3 100644
+index fa061ac..95ceec9 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2059,10 +2059,12 @@ int main(int argc, char *argv[])
+@@ -2060,10 +2060,12 @@ int main(int argc, char *argv[])
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == 's')
  			xled = 0;
@@ -112,9 +111,9 @@ index 172062c..84354b3 100644
 +			stdin_fd = open(ctermid(NULL), O_RDONLY);
  	}
  	term_init();
- 	if (!ex_init(argv + i)) {
+ 	ex_init(argv + i, argc - i);
 diff --git a/vi.h b/vi.h
-index d159855..027c155 100644
+index 4222f50..57f0964 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -424,3 +424,4 @@ extern int fspos;
