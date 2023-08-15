@@ -1,12 +1,12 @@
 diff --git a/ex.c b/ex.c
-index 9da4748..6e9649a 100644
+index 57b642e..95b2afb 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -400,6 +400,16 @@ static int ec_edit(char *loc, char *cmd, char *arg)
- 		ex_show(msg);
+@@ -401,6 +401,16 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+ 		ex_show(rd ? "read failed" : msg);
  	} else
  		ex_show("read failed");
-+	if (lbuf_len(xb) > 0) {
++	if (!rd && lbuf_len(xb) > 0) {
 +		int adv = 0;
 +		while (lbuf_len(xb) >= adv && lbuf_buf(xb)[adv][0] == '\n')
 +			adv++;
@@ -16,6 +16,6 @@ index 9da4748..6e9649a 100644
 +			if (strstr(lbuf_buf(xb)[adv], langs[i]))
 +				ex_ft = syn_setft(types[i]);
 +	}
- 	return 0;
+ 	return rd;
  }
  
