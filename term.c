@@ -244,14 +244,13 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 	int ifd = -1, ofd = -1;
 	int slen = ibuf ? strlen(ibuf) : 0;
 	int nw = 0;
-	char *argv[4+xish];
+	char *argv[5];
 	argv[0] = xgetenv(sh);
-	if (xish)
-		argv[xish] = "-i";
-	argv[1+xish] = "-c";
-	argv[2+xish] = cmd;
-	argv[3+xish] = NULL;
-	int pid = cmd_make(argv, ibuf ? &ifd : NULL, oproc ? &ofd : NULL);
+	argv[1] = xish ? "-i" : argv[0];
+	argv[2] = "-c";
+	argv[3] = cmd;
+	argv[4] = NULL;
+	int pid = cmd_make(argv+!xish, ibuf ? &ifd : NULL, oproc ? &ofd : NULL);
 	if (pid <= 0)
 		return NULL;
 	if (oproc)
@@ -274,18 +273,26 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 				write(1, buf, ret);
 			if (ret > 0)
 				sbuf_mem(sb, buf, ret)
-			else
+			else {
+				close(fds[0].fd);
 				fds[0].fd = -1;
-		} else if (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL))
+			}
+		} else if (fds[0].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+			close(fds[0].fd);
 			fds[0].fd = -1;
+		}
 		if (fds[1].revents & POLLOUT) {
 			int ret = write(fds[1].fd, ibuf + nw, slen - nw);
 			if (ret > 0)
 				nw += ret;
-			if (ret <= 0 || nw == slen)
+			if (ret <= 0 || nw == slen) {
+				close(fds[1].fd);
 				fds[1].fd = -1;
-		} else if (fds[1].revents & (POLLERR | POLLHUP | POLLNVAL))
+			}
+		} else if (fds[1].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+			close(fds[1].fd);
 			fds[1].fd = -1;
+		}
 		if (fds[2].revents & POLLIN) {
 			int ret = read(fds[2].fd, buf, sizeof(buf));
 			for (int i = 0; i < ret; i++)
@@ -294,9 +301,9 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 		} else if (fds[2].revents & (POLLERR | POLLHUP | POLLNVAL))
 			fds[2].fd = -1;
 	}
-	if (ofd >= 0)
+	if (fds[0].fd >= 0)
 		close(ofd);
-	if (ifd >= 0)
+	if (fds[1].fd >= 0)
 		close(ifd);
 	waitpid(pid, NULL, 0);
 	signal(SIGTTOU, SIG_IGN);
