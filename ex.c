@@ -983,7 +983,7 @@ static int ex_idx(const char *cmd)
 /* parse ex command until | or eol. */
 static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 {
-	while (*src == ' ' || *src == '\t')
+	while (*src == ':' || *src == ' ' || *src == '\t')
 		src++;
 	while (*src && strchr(" \t0123456789+-.,/?$';%", *src)) {
 		if (*src == '/' || *src == '?') {
@@ -1020,8 +1020,6 @@ int ex_exec(const char *ln)
 {
 	int ret = 0, len = strlen(ln) + 1;
 	char loc[len], cmd[len], arg[len];
-	while (*ln == ':')
-		ln++;
 	while (*ln) {
 		ln = ex_parse(ln, loc, cmd, arg);
 		char *ecmd = ex_pathexpand(arg);
