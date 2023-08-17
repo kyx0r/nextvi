@@ -99,7 +99,7 @@ void lbuf_free(struct lbuf *lb)
 {
 	int i;
 	for (i = 0; i < lb->ln_n; i++)
-		free(lb->ln[i]);
+		free(lb->ln[i] - sizeof(int));
 	for (i = 0; i < lb->hist_n; i++)
 		lopt_done(&lb->hist[i]);
 	free(lb->hist);
@@ -110,8 +110,8 @@ void lbuf_free(struct lbuf *lb)
 
 static int linelength(char *s)
 {
-	char *r = strchr(s, '\n');
-	return r ? r - s + 1 : (int)strlen(s);
+	int len = dstrlen(s, '\n');
+	return s[len] == '\n' ? len + 1 : len;
 }
 
 static int lbuf_linecount(char *s)
@@ -142,7 +142,7 @@ static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del, int n_ins
 		lb->ln_sz = nsz;
 	}
 	for (i = 0; i < n_del; i++)
-		free(lb->ln[pos + i]);
+		free(lb->ln[pos + i] - sizeof(int));
 	if (n_ins != n_del) {
 		memmove(lb->ln + pos + n_ins, lb->ln + pos + n_del,
 			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
@@ -152,10 +152,12 @@ static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del, int n_ins
 	lb->ln_n += n_ins - n_del;
 	for (i = 0; i < n_ins; i++) {
 		int l = linelength(s);
-		int l_nonl = l - (s[l - 1] == '\n');
-		char *n = malloc(l_nonl + 7);
+		int l_nonl = l - (s[l - !!l] == '\n');
+		char *n = malloc(l_nonl + 7 + sizeof(int));
+		*(int*)n = l_nonl;		/* store length */
+		n += sizeof(int);
 		memcpy(n, s, l_nonl);
-		memset(&n[l_nonl + 1], 0, 5); /* fault tolerance pad */
+		memset(&n[l_nonl + 1], 0, 5);	/* fault tolerance pad */
 		n[l_nonl] = '\n';
 		lb->ln[pos + i] = n;
 		s += l;

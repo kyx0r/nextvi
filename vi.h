@@ -298,6 +298,7 @@ extern int xbufcur;
 extern struct buf *ex_buf;
 extern struct buf *ex_pbuf;
 extern struct buf *bufs;
+extern struct buf tempbufs[2];
 #define EXLEN	512	/* ex line length */
 #define ex_path ex_buf->path
 #define ex_ft ex_buf->ft
@@ -308,8 +309,6 @@ void temp_switch(int i);
 #define temp_pswitch(i) temp_switch(i); restore(ex_pbuf)
 void temp_write(int i, char *str);
 void temp_done(int i);
-char *temp_curstr(int i, int sub);
-char *temp_get(int i, int row);
 void temp_pos(int i, int row, int off, int top);
 void ex(void);
 int ec_setdir(char *loc, char *cmd, char *arg);
@@ -417,10 +416,6 @@ extern int xkwddir;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;
-extern char *fslink;
 extern char *fs_exdir;
-extern int fstlen;
-extern int fspos;
-extern int fscount;
 extern int vi_hidch;
 extern int vi_insmov;
