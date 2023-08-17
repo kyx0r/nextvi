@@ -133,7 +133,7 @@ static void vi_drawrow(int row)
 	if (vi_lnnum == 1 || (vi_lnnum == 2 && row != xrow))
 	{
 		lnnum = 1;
-		l1 = strlen(s)+1;
+		l1 = *(int*)(s - sizeof(int)) + 2;
 		char tmp[l1+100];
 		c = itoa(row+1-movedown, tmp);
 		l2 = strlen(tmp)+1;
@@ -591,37 +591,26 @@ static void vi_regprint(void)
 }
 
 rset *fsincl;
-char *fslink;
 char *fs_exdir;
-int fstlen;
-int fspos;
-int fscount;
+static int fspos;
 
 static char *file_calc(char *path)
 {
 	struct dirent *dp;
 	struct stat statbuf;
-	int len, _len, len1;
+	int len;
 	DIR *dir = opendir(path);
 	int pathlen = strlen(path);
 	if (!dir)
 		return path + pathlen;
 	while ((dp = readdir(dir)) != NULL) {
-		len1 = strlen(dp->d_name)+1;
+		len = strlen(dp->d_name)+1;
 		path[pathlen] = '/';
-		memcpy(&path[pathlen+1], dp->d_name, len1);
+		memcpy(&path[pathlen+1], dp->d_name, len);
 		if (fsincl && rset_find(fsincl, path, 0, NULL, 0) < 0)
 			continue;
 		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
-		{
-			len = pathlen + len1 + 1;
-			_len = len + sizeof(int);
-			fslink = realloc(fslink, _len+fstlen);
-			*(int*)(fslink+fstlen) = len;
-			memcpy(fslink+fstlen+sizeof(int), path, len);
-			fstlen += _len;
-			fscount++;
-		}
+			temp_write(1, path);
 	}
 	closedir(dir);
 	path[pathlen] = '/';
@@ -640,6 +629,8 @@ void dir_calc(char *path)
 	DIR *dps[1024];
 	DIR *dp;
 	strcpy(cur_dir, path);
+	temp_open(1, "/fm/", "/fm");
+	fspos = 0;
 	goto start;
 	while (i > 0) {
 		while ((dirp = readdir(dp)) != NULL) {
@@ -664,7 +655,11 @@ void dir_calc(char *path)
 }
 
 #define fssearch() \
-if (ex_edit(path) && xrow) { \
+len = *(int*)(path - sizeof(int)); \
+path[len] = '\0'; \
+ret = ex_edit(path); \
+path[len] = '\n'; \
+if (ret && xrow) { \
 	*row = xrow; *off = xoff-1; /* short circuit */ \
 	if (!vi_search('n', cnt, row, off, 0)) \
 		return 1; \
@@ -678,17 +673,18 @@ if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
 static int fs_search(int cnt, int *row, int *off)
 {
 	char *path;
-	int again = 0;
-	redo:
-	while (fspos < fstlen) {
-		path = &fslink[fspos+sizeof(int)];
-		fspos += *(int*)(fslink+fspos) + sizeof(int);
+	int again = 0, ret, len;
+	fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
+	wrap:
+	while (fspos < lbuf_len(tempbufs[1].lb)) {
+		path = lbuf_get(tempbufs[1].lb, fspos);
+		fspos++;
 		fssearch()
 	}
-	if (fspos == fstlen && !again) {
+	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
 		fspos = 0;
 		again = 1;
-		goto redo;
+		goto wrap;
 	}
 	return 0;
 }
@@ -696,17 +692,11 @@ static int fs_search(int cnt, int *row, int *off)
 static int fs_searchback(int cnt, int *row, int *off)
 {
 	char *path;
-	int tlen = 0;
-	int count = fscount;
-	char *paths[count];
-	while (tlen < fspos) {
-		path = &fslink[tlen+sizeof(int)];
-		tlen += *(int*)(fslink+tlen) + sizeof(int);
-		paths[--count] = path;
-	}
-	for (int i = count; i < fscount; i++) {
-		path = paths[i];
-		fspos -= *(int*)(path-sizeof(int))+sizeof(int);
+	int ret, len;
+	if (fspos < 1)
+		return 0;
+	while (--fspos) {
+		path = lbuf_get(tempbufs[1].lb, fspos);
 		fssearch()
 	}
 	return 0;
@@ -817,7 +807,7 @@ static int vi_motion(int *row, int *off)
 			ex_edit(savepath[n]->s); \
 		} \
 
-		if (!fslink)
+		if (!tempbufs[1].lb)
 			dir_calc(fs_exdir ? fs_exdir : ".");
 		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt, 0))) {
 			ex_krsset(cs, +1);
@@ -905,22 +895,9 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		if (!fslink || !strcmp(ex_path, "/fm/")) {
+		if (!tempbufs[1].lb || !strcmp(ex_path, "/fm/")) {
 			ec_setdir(NULL, NULL, NULL);
 			dir_calc(fs_exdir ? fs_exdir : ".");
-			temp_done(1);
-		}
-		temp_open(1, "/fm/", "/fm");
-		cs = temp_get(1, 1);
-		if (!cs) {
-			temp_done(1);
-			temp_open(1, "/fm/", "/fm");
-			for (i = 0; i < fstlen;)
-			{
-				cs = &fslink[i+sizeof(int)];
-				i += *(int*)(fslink+i) + sizeof(int);
-				temp_write(1, cs);
-			}
 			if (!strcmp(ex_path, "/fm/"))
 				break;
 		}

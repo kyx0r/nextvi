@@ -547,7 +547,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			cur_histstr:
 			i = 0;
 		case TK_CTL('v'):
-			cs = temp_curstr(0, i);
+			cs = lbuf_get(tempbufs[0].lb, tempbufs[0].row - i);
 			if (cs) {
 				sbuf_cut(sb, 0)
 				sbuf_str(sb, cs)

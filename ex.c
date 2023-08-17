@@ -23,6 +23,7 @@ int xpac;			/* print autocomplete options */
 int xkwdcnt;			/* number of search kwd changes */
 int xbufcur;			/* number of active buffers */
 struct buf *bufs;		/* main buffers */
+struct buf tempbufs[2];		/* temporary buffers, for internal use */
 struct buf *ex_buf;		/* current buffer */
 struct buf *ex_pbuf;		/* prev buffer */
 sbuf *xacreg;			/* autocomplete db filter regex */
@@ -32,7 +33,6 @@ static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
 static char xrep[EXLEN];	/* the last replacement */
 static int xgdep;		/* global command recursion depth */
-static struct buf tempbufs[2];	/* temporary buffers, for internal use */
 
 static int bufs_find(const char *path)
 {
@@ -137,21 +137,10 @@ void temp_write(int i, char *str)
 	if (!*str)
 		return;
 	struct lbuf *lb = tempbufs[i].lb;
-	if (!lbuf_len(lb))
-		lbuf_edit(lb, "\n", 0, 0);
-	tempbufs[i].row++;
+	if (lbuf_get(lb, tempbufs[i].row))
+		tempbufs[i].row++;
 	lbuf_edit(lb, str, tempbufs[i].row, tempbufs[i].row);
 	lbuf_saved(lb, 1);
-}
-
-char *temp_curstr(int i, int sub)
-{
-	return lbuf_get(tempbufs[i].lb, tempbufs[i].row - sub);
-}
-
-char *temp_get(int i, int row)
-{
-	return lbuf_get(tempbufs[i].lb, row);
 }
 
 void temp_done(int i)
@@ -408,27 +397,27 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 {
 	int len, i, inst;
 	char *path, *arg1;
-	if (!fslink)
+	if (!tempbufs[1].lb)
 		dir_calc(fs_exdir ? fs_exdir : ".");
 	arg1 = arg+dstrlen(arg, ' ');
 	inst = atoi(arg1);
 	*arg1 = '\0';
-	for (int pos = 0; pos < fstlen;)
-	{
-		path = &fslink[pos+sizeof(int)];
-		len = *(int*)(fslink+pos) + sizeof(int);
-		pos += len;
-		len -= sizeof(int)+2;
+	for (int pos = 0; pos < lbuf_len(tempbufs[1].lb); pos++) {
+		path = lbuf_get(tempbufs[1].lb, pos);
+		len = *(int*)(path - sizeof(int));
 		for (i = len; i > 0 && path[i] != '/'; i--);
 		if (!i)
-			return 0;
+			continue;
+		path[len] = '\0';
 		if (strstr(&path[i+1], arg)) {
 			if (!inst) {
 				ec_edit(loc, "!", path);
+				path[len] = '\n';
 				break;
 			}
 			inst--;
 		}
+		path[len] = '\n';
 	}
 	return 1;
 }
@@ -892,13 +881,8 @@ int ec_setdir(char *loc, char *cmd, char *arg)
 		if (*arg)
 			fs_exdir = uc_dup(arg);
 	}
-	if (fslink) {
-		free(fslink);
-		fslink = NULL;
-		fstlen = 0;
-		fspos = 0;
-		fscount = 0;
-	}
+	if (!loc)
+		temp_done(1);
 	return 0;
 }
 
