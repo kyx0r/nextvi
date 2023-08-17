@@ -873,7 +873,7 @@ static int ec_set(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-int ec_setdir(char *loc, char *cmd, char *arg)
+static int ec_setdir(char *loc, char *cmd, char *arg)
 {
 	if (arg) {
 		free(fs_exdir);
@@ -881,22 +881,18 @@ int ec_setdir(char *loc, char *cmd, char *arg)
 		if (*arg)
 			fs_exdir = uc_dup(arg);
 	}
-	if (!loc)
-		temp_done(1);
 	return 0;
 }
 
 static int ec_chdir(char *loc, char *cmd, char *arg)
 {
-	if (*arg)
-		if (chdir(arg))
-			ex_show("chdir error");
+	if (*arg && chdir(arg))
+		ex_show("chdir error");
 	return 0;
 }
 
 static int ec_setincl(char *loc, char *cmd, char *arg)
 {
-	ec_setdir(NULL, NULL, NULL);
 	rset_free(fsincl);
 	if (*arg)
 		fsincl = rset_make(1, (char*[]){arg}, xic ? REG_ICASE : 0);

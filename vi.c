@@ -593,6 +593,7 @@ static void vi_regprint(void)
 rset *fsincl;
 char *fs_exdir;
 static int fspos;
+static int fsdir;
 
 static char *file_calc(char *path)
 {
@@ -674,11 +675,11 @@ static int fs_search(int cnt, int *row, int *off)
 {
 	char *path;
 	int again = 0, ret, len;
+	fsdir = 1;
 	fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
 	wrap:
 	while (fspos < lbuf_len(tempbufs[1].lb)) {
-		path = lbuf_get(tempbufs[1].lb, fspos);
-		fspos++;
+		path = lbuf_get(tempbufs[1].lb, fspos++);
 		fssearch()
 	}
 	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
@@ -693,12 +694,13 @@ static int fs_searchback(int cnt, int *row, int *off)
 {
 	char *path;
 	int ret, len;
-	if (fspos < 1)
-		return 0;
-	while (--fspos) {
+	fspos -= fsdir;
+	fsdir = 0;
+	while (--fspos >= 0) {
 		path = lbuf_get(tempbufs[1].lb, fspos);
 		fssearch()
 	}
+	fspos = MAX(fspos, 0);
 	return 0;
 }
 
@@ -896,7 +898,7 @@ static int vi_motion(int *row, int *off)
 		break;
 	case '\\':
 		if (!tempbufs[1].lb || !strcmp(ex_path, "/fm/")) {
-			ec_setdir(NULL, NULL, NULL);
+			temp_done(1);
 			dir_calc(fs_exdir ? fs_exdir : ".");
 			if (!strcmp(ex_path, "/fm/"))
 				break;
