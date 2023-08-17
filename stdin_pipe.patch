@@ -29,7 +29,7 @@ index 57b642e..96bc2e3 100644
 +	}
  }
 diff --git a/term.c b/term.c
-index fc59ceb..cbe135a 100644
+index be3dbab..b131396 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,7 @@
@@ -84,7 +84,7 @@ index fc59ceb..cbe135a 100644
  			return -1;
  		ibuf_cnt = n;
  		ibuf_pos = 0;
-@@ -300,7 +301,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -307,7 +308,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
