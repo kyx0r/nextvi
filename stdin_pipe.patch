@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 57b642e..96bc2e3 100644
+index 198b5a2..8e9ba5f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -381,6 +381,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -370,6 +370,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
  	int fd, rd = 0, cd = 0;
@@ -11,7 +11,7 @@ index 57b642e..96bc2e3 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	if (arg[0] && ((fd = bufs_find(arg+cd)) >= 0)) {
-@@ -396,6 +398,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -385,6 +387,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  	if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
  		ex_bufpostfix(ex_buf - bufs, arg[0]);
  		syn_setft(ex_ft);
@@ -19,7 +19,7 @@ index 57b642e..96bc2e3 100644
  		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
  				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
  		ex_show(rd ? "read failed" : msg);
-@@ -1075,4 +1078,8 @@ void ex_init(char **files, int n)
+@@ -1059,4 +1062,8 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	if (xled && (s = getenv("EXINIT")))
  		ex_command(s)
@@ -94,10 +94,10 @@ index be3dbab..b131396 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index fa061ac..95ceec9 100644
+index 906fec3..8abc254 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2060,10 +2060,12 @@ int main(int argc, char *argv[])
+@@ -2037,10 +2037,12 @@ int main(int argc, char *argv[])
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == 's')
  			xled = 0;
@@ -113,11 +113,11 @@ index fa061ac..95ceec9 100644
  	term_init();
  	ex_init(argv + i, argc - i);
 diff --git a/vi.h b/vi.h
-index 4222f50..57f0964 100644
+index d2d5f32..13c1873 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -424,3 +424,4 @@ extern int fspos;
- extern int fscount;
+@@ -419,3 +419,4 @@ extern rset *fsincl;
+ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
 +extern int stdin_fd;

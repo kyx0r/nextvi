@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 57b642e..95b2afb 100644
+index 198b5a2..b022117 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -401,6 +401,16 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -390,6 +390,16 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_show(rd ? "read failed" : msg);
  	} else
  		ex_show("read failed");

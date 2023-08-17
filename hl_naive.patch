@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 4d1460f..fd490fd 100644
+index 5d85189..7f9ff4f 100644
 --- a/led.c
 +++ b/led.c
 @@ -129,23 +129,6 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
