@@ -1020,6 +1020,8 @@ int ex_exec(const char *ln)
 {
 	int ret = 0, len = strlen(ln) + 1;
 	char loc[len], cmd[len], arg[len];
+	while (*ln == ':')
+		ln++;
 	while (*ln) {
 		ln = ex_parse(ln, loc, cmd, arg);
 		char *ecmd = ex_pathexpand(arg);
