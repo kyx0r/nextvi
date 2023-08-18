@@ -191,6 +191,8 @@ while (i < cterm) { \
 /* render and highlight a line */
 void led_render(char *s0, int row, int cbeg, int cend)
 {
+	if (!xled)
+		return;
 	int j, n, i = 0, o = 0, cterm = cend - cbeg;
 	char *bound = s0;
 	int *pos;		/* pos[i]: the screen position of the i-th character */
@@ -287,6 +289,8 @@ static int led_lastword(char *s)
 static void led_printparts(char *ai, char *pref, char *main,
 		char *post, int kmap)
 {
+	if (!xled)
+		return;
 	sbuf *ln;
 	int off, pos;
 	int idir = 0;

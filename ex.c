@@ -574,7 +574,7 @@ static int ec_print(char *loc, char *cmd, char *arg)
 static int ec_null(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
-	if (!xvis)
+	if (xvis & 4)
 		return ec_print(loc, cmd, arg);
 	if (ex_region(loc, &beg, &end))
 		return 1;
@@ -822,6 +822,7 @@ static struct option {
 	{"ish", &xish},
 	{"grp", &xgrp},
 	{"pac", &xpac},
+	{"led", &xled},
 };
 
 static char *cutword(char *s, char *d)
@@ -1053,6 +1054,6 @@ void ex_init(char **files, int n)
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
-	if (xled && (s = getenv("EXINIT")))
+	if (!(xvis & 2) && (s = getenv("EXINIT")))
 		ex_command(s)
 }

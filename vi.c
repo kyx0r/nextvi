@@ -279,7 +279,7 @@ char *ex_read(char *msg)
 {
 	sbuf *sb;
 	int c;
-	if (term_sbuf) {
+	if (term_sbuf && xled) {
 		int oleft = xleft;
 		syn_blockhl = 0;
 		syn_setft("/-");
@@ -303,7 +303,7 @@ char *ex_read(char *msg)
 /* show an ex message */
 void ex_show(char *msg)
 {
-	if (xvis) {
+	if (!(xvis & 4)) {
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (term_sbuf) {
 		syn_setft("/-");
@@ -320,7 +320,7 @@ void ex_show(char *msg)
 void ex_print(char *line)
 {
 	syn_blockhl = 0;
-	if (xvis) {
+	if (!(xvis & 4)) {
 		vi_printed += line ? 1 : 2;
 		if (line) {
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
@@ -2029,8 +2029,6 @@ static int setup_signals(void) {
 int main(int argc, char *argv[])
 {
 	int i;
-	char *prog = strchr(argv[0], '/') ? strrchr(argv[0], '/') + 1 : argv[0];
-	xvis = strcmp("ex", prog) && strcmp("neatex", prog);
 	if (!setup_signals())
 		return 1;
 	dir_init();
@@ -2038,20 +2036,20 @@ int main(int argc, char *argv[])
 	temp_open(0, "/hist/", "/");
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == 's')
-			xled = 0;
+			xvis |= 2;
 		if (argv[i][1] == 'e')
-			xvis = 0;
+			xvis |= 4;
 		if (argv[i][1] == 'v')
-			xvis = 1;
+			xvis = 0;
 	}
 	term_init();
 	ex_init(argv + i, argc - i);
-	if (xvis)
-		vi(1);
-	else
+	if (xvis & 4)
 		ex();
+	else
+		vi(1);
 	term_done();
-	if (!xvis)
+	if (xvis & 4)
 		return 0;
 	if (xquit == 2) {
 		term_pos(xrows - 1, 0);
