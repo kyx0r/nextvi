@@ -279,7 +279,7 @@ char *ex_read(char *msg)
 {
 	sbuf *sb;
 	int c;
-	if (term_sbuf) {
+	if (term_sbuf && xled) {
 		int oleft = xleft;
 		syn_blockhl = 0;
 		syn_setft("/-");
@@ -303,7 +303,7 @@ char *ex_read(char *msg)
 /* show an ex message */
 void ex_show(char *msg)
 {
-	if (xvis) {
+	if (!(xvis & 4)) {
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (term_sbuf) {
 		syn_setft("/-");
@@ -320,7 +320,7 @@ void ex_show(char *msg)
 void ex_print(char *line)
 {
 	syn_blockhl = 0;
-	if (xvis) {
+	if (!(xvis & 4)) {
 		vi_printed += line ? 1 : 2;
 		if (line) {
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
@@ -593,6 +593,7 @@ static void vi_regprint(void)
 rset *fsincl;
 char *fs_exdir;
 static int fspos;
+static int fsdir;
 
 static char *file_calc(char *path)
 {
@@ -674,11 +675,11 @@ static int fs_search(int cnt, int *row, int *off)
 {
 	char *path;
 	int again = 0, ret, len;
+	fsdir = 1;
 	fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
 	wrap:
 	while (fspos < lbuf_len(tempbufs[1].lb)) {
-		path = lbuf_get(tempbufs[1].lb, fspos);
-		fspos++;
+		path = lbuf_get(tempbufs[1].lb, fspos++);
 		fssearch()
 	}
 	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
@@ -693,12 +694,13 @@ static int fs_searchback(int cnt, int *row, int *off)
 {
 	char *path;
 	int ret, len;
-	if (fspos < 1)
-		return 0;
-	while (--fspos) {
+	fspos -= fsdir;
+	fsdir = 0;
+	while (--fspos >= 0) {
 		path = lbuf_get(tempbufs[1].lb, fspos);
 		fssearch()
 	}
+	fspos = MAX(fspos, 0);
 	return 0;
 }
 
@@ -896,7 +898,7 @@ static int vi_motion(int *row, int *off)
 		break;
 	case '\\':
 		if (!tempbufs[1].lb || !strcmp(ex_path, "/fm/")) {
-			ec_setdir(NULL, NULL, NULL);
+			temp_done(1);
 			dir_calc(fs_exdir ? fs_exdir : ".");
 			if (!strcmp(ex_path, "/fm/"))
 				break;
@@ -2027,8 +2029,6 @@ static int setup_signals(void) {
 int main(int argc, char *argv[])
 {
 	int i;
-	char *prog = strchr(argv[0], '/') ? strrchr(argv[0], '/') + 1 : argv[0];
-	xvis = strcmp("ex", prog) && strcmp("neatex", prog);
 	if (!setup_signals())
 		return 1;
 	dir_init();
@@ -2036,20 +2036,20 @@ int main(int argc, char *argv[])
 	temp_open(0, "/hist/", "/");
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == 's')
-			xled = 0;
+			xvis |= 2;
 		if (argv[i][1] == 'e')
-			xvis = 0;
+			xvis |= 4;
 		if (argv[i][1] == 'v')
-			xvis = 1;
+			xvis = 0;
 	}
 	term_init();
 	ex_init(argv + i, argc - i);
-	if (xvis)
-		vi(1);
-	else
+	if (xvis & 4)
 		ex();
+	else
+		vi(1);
 	term_done();
-	if (!xvis)
+	if (xvis & 4)
 		return 0;
 	if (xquit == 2) {
 		term_pos(xrows - 1, 0);

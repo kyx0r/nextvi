@@ -311,7 +311,6 @@ void temp_write(int i, char *str);
 void temp_done(int i);
 void temp_pos(int i, int row, int off, int top);
 void ex(void);
-int ec_setdir(char *loc, char *cmd, char *arg);
 int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regput(':', ln, 0); }
 char *ex_read(char *msg);

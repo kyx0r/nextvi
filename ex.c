@@ -574,7 +574,7 @@ static int ec_print(char *loc, char *cmd, char *arg)
 static int ec_null(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
-	if (!xvis)
+	if (xvis & 4)
 		return ec_print(loc, cmd, arg);
 	if (ex_region(loc, &beg, &end))
 		return 1;
@@ -822,6 +822,7 @@ static struct option {
 	{"ish", &xish},
 	{"grp", &xgrp},
 	{"pac", &xpac},
+	{"led", &xled},
 };
 
 static char *cutword(char *s, char *d)
@@ -873,7 +874,7 @@ static int ec_set(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-int ec_setdir(char *loc, char *cmd, char *arg)
+static int ec_setdir(char *loc, char *cmd, char *arg)
 {
 	if (arg) {
 		free(fs_exdir);
@@ -881,22 +882,18 @@ int ec_setdir(char *loc, char *cmd, char *arg)
 		if (*arg)
 			fs_exdir = uc_dup(arg);
 	}
-	if (!loc)
-		temp_done(1);
 	return 0;
 }
 
 static int ec_chdir(char *loc, char *cmd, char *arg)
 {
-	if (*arg)
-		if (chdir(arg))
-			ex_show("chdir error");
+	if (*arg && chdir(arg))
+		ex_show("chdir error");
 	return 0;
 }
 
 static int ec_setincl(char *loc, char *cmd, char *arg)
 {
-	ec_setdir(NULL, NULL, NULL);
 	rset_free(fsincl);
 	if (*arg)
 		fsincl = rset_make(1, (char*[]){arg}, xic ? REG_ICASE : 0);
@@ -987,7 +984,7 @@ static int ex_idx(const char *cmd)
 /* parse ex command until | or eol. */
 static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 {
-	while (*src == ' ' || *src == '\t')
+	while (*src == ':' || *src == ' ' || *src == '\t')
 		src++;
 	while (*src && strchr(" \t0123456789+-.,/?$';%", *src)) {
 		if (*src == '/' || *src == '?') {
@@ -1057,6 +1054,6 @@ void ex_init(char **files, int n)
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
-	if (xled && (s = getenv("EXINIT")))
+	if (!(xvis & 2) && (s = getenv("EXINIT")))
 		ex_command(s)
 }
