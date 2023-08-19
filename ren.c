@@ -307,9 +307,9 @@ void syn_highlight(int *att, char *s, int n)
 			for (i = 0; i < LEN(subs) / 2; i++)
 				if (subs[i * 2] >= 0)
 					blk = i;
-			blkm += blkm > hls[hl].blkend ? -1 : 1;
+			blkm += blkm > abs(hls[hl].blkend) ? -1 : 1;
 			if (blkm == 1 && last_scdir > 0)
-				blkend = 1;
+				blkend = blkend < 0 ? -1 : 1;
 			if (syn_blockhl == hl && blk == abs(blkend))
 				syn_blockhl = 0;
 			else if (!syn_blockhl && blk != blkend) {
