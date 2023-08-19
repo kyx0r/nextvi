@@ -345,7 +345,7 @@ struct highlight {
 				positive value - continue at rm_so
 				zero (default) - continue at rm_eo
 				negative value - continue at sp+1 */
-	char blkend;		/* the ending group for multi-line patterns */
+	signed char blkend;	/* the ending group for multi-line patterns */
 	char func;		/* if func > 0 some function will use this hl based on this id */
 };
 extern struct highlight hls[];

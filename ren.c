@@ -310,7 +310,7 @@ void syn_highlight(int *att, char *s, int n)
 			blkm += blkm > hls[hl].blkend ? -1 : 1;
 			if (blkm == 1 && last_scdir > 0)
 				blkend = 1;
-			if (syn_blockhl == hl && blk == blkend)
+			if (syn_blockhl == hl && blk == abs(blkend))
 				syn_blockhl = 0;
 			else if (!syn_blockhl && blk != blkend) {
 				syn_blockhl = hl;
