@@ -541,9 +541,12 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s);
-			temp_sswitch(0)
+			preserve(struct buf*, ex_pbuf, ex_pbuf)
+			ex_pbuf = ex_buf;
+			temp_switch(0);
 			vi(1);
-			temp_pswitch(0)
+			temp_switch(0);
+			restore(ex_pbuf)
 			vi(1); /* redraw past screen */
 			syn_setft("/-");
 			term_pos(xrows, 0);
@@ -566,8 +569,10 @@ static char *led_line(char *pref, char *post, char *ai,
 		case TK_CTL('l'):
 			term_clean();
 			continue;
-		case TK_CTL('o'):
+		case TK_CTL('o'):;
+			preserve(int, xvis, 0)
 			term_exec(":", 1, /*nop*/, /*nop*/)
+			restore(xvis)
 			continue;
 		case 'j':
 			if (xqexit &&

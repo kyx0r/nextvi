@@ -163,8 +163,7 @@ static void vi_drawrow(int row)
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
-		switch (*vi_word)
-		{
+		switch (*vi_word) {
 		case 'e':
 			vi_drawwordnum(lbuf_wordend, 0, 1)
 			vi_drawwordnum(lbuf_wordend, 0, -1)
@@ -675,8 +674,6 @@ static int fs_search(int cnt, int *row, int *off)
 {
 	char *path;
 	int again = 0, ret, len;
-	fsdir = 1;
-	fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
 	wrap:
 	while (fspos < lbuf_len(tempbufs[1].lb)) {
 		path = lbuf_get(tempbufs[1].lb, fspos++);
@@ -694,13 +691,10 @@ static int fs_searchback(int cnt, int *row, int *off)
 {
 	char *path;
 	int ret, len;
-	fspos -= fsdir;
-	fsdir = 0;
 	while (--fspos >= 0) {
 		path = lbuf_get(tempbufs[1].lb, fspos);
 		fssearch()
 	}
-	fspos = MAX(fspos, 0);
 	return 0;
 }
 
@@ -708,8 +702,8 @@ static int fs_searchback(int cnt, int *row, int *off)
 static int vi_motion(int *row, int *off)
 {
 	static char ca_dir;
-	static sbuf *savepath[2];
-	static int srow[2], soff[2], lkwdcnt;
+	static sbuf *savepath[10];
+	static int srow[10], soff[10], lkwdcnt;
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
 	char *ln = lbuf_get(xb, *row);
 	int dir = dir_context(ln ? ln : "");
@@ -809,8 +803,6 @@ static int vi_motion(int *row, int *off)
 			ex_edit(savepath[n]->s); \
 		} \
 
-		if (!tempbufs[1].lb)
-			dir_calc(fs_exdir ? fs_exdir : ".");
 		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt, 0))) {
 			ex_krsset(cs, +1);
 			free(cs);
@@ -818,11 +810,20 @@ static int vi_motion(int *row, int *off)
 		preserve(struct buf*, ex_buf, ex_buf)
 		if (mv == TK_CTL(']')) {
 			if (lkwdcnt != xkwdcnt)
-				term_exec("1qq", 4, /*nop*/, /*nop*/)
+				term_exec("qq", 4, /*nop*/, /*nop*/)
 			lkwdcnt = xkwdcnt;
+			fspos += fsdir < 0 ? 1 : 0;
+			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
 			fs_search(1, row, off);
-		} else if (!fs_searchback(1, row, off)) {
-			open_saved(1)
+			fsdir = 1;
+		} else {
+			fspos -= fsdir > 0 ? 1 : 0;
+			if (!fs_searchback(1, row, off)) {
+				open_saved(0)
+				fsdir = 0;
+			} else
+				fsdir = -1;
+			fspos = MAX(fspos, 0);
 		}
 		if (tmpex_buf != ex_buf)
 			ex_pbuf = tmpex_buf;
@@ -832,16 +833,17 @@ static int vi_motion(int *row, int *off)
 		syn_setft(ex_ft);
 		return '\\';
 	case TK_CTL('t'):
-		if (vi_arg1 < 2 && !savepath[vi_arg1])
-			sbuf_make(savepath[vi_arg1], 128)
-		else if (vi_arg1 > 1) {
-			open_saved(vi_arg1 % 2)
-			goto bsync_ret;
+		if (vi_arg1 % 2 == 0 && vi_arg1 < LEN(srow) * 2) {
+			vi_arg1 /= 2;
+			if (!savepath[vi_arg1])
+				sbuf_make(savepath[vi_arg1], 128)
+			sbuf_cut(savepath[vi_arg1], 0)
+			sbufn_str(savepath[vi_arg1], ex_path)
+			srow[vi_arg1] = *row; soff[vi_arg1] = *off;
+			break;
 		}
-		sbuf_cut(savepath[vi_arg1], 0)
-		sbufn_str(savepath[vi_arg1], ex_path)
-		srow[vi_arg1] = *row; soff[vi_arg1] = *off;
-		break;
+		open_saved(vi_arg1 / 2)
+		goto bsync_ret;
 	case '0':
 		*off = 0;
 		break;
@@ -897,16 +899,8 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		if (!tempbufs[1].lb || !strcmp(ex_path, "/fm/")) {
-			temp_done(1);
-			dir_calc(fs_exdir ? fs_exdir : ".");
-			if (!strcmp(ex_path, "/fm/"))
-				break;
-		}
-		temp_sswitch(1)
-		vi(1);
-		temp_pswitch(1)
-		xquit = 0;
+		ex_command("b-2");
+		*row = xrow; *off = xoff;
 		break;
 	default:
 		vi_back(mv);
@@ -1458,8 +1452,7 @@ void vi(int init)
 			xoff = ren_noeol(lbuf_get(xb, xrow), noff);
 			if (!strchr("|jk", mv))
 				vi_col = vi_off2col(xb, xrow, xoff);
-			switch (mv)
-			{
+			switch (mv) {
 			case '\\':
 				vc_status();
 			case 1: /* ^a */
@@ -1544,9 +1537,6 @@ void vi(int init)
 				buf[2] = ' ';
 				strcpy(buf+3, ln);
 				term_push(buf, strlen(ln)+3);
-				if (!strcmp(ex_path, "/fm/"))
-					xquit = 1;
-				vi_mod = 1;
 				break; }
 			case TK_CTL('n'):
 				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
@@ -2034,6 +2024,7 @@ int main(int argc, char *argv[])
 	dir_init();
 	syn_init();
 	temp_open(0, "/hist/", "/");
+	temp_open(1, "/fm/", "/fm");
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == 's')
 			xvis |= 2;

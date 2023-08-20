@@ -124,8 +124,9 @@ void temp_switch(int i)
 		exbuf_save(ex_buf)
 		ex_buf = ex_pbuf;
 	} else {
-		ex_pbuf = ex_buf;
-		exbuf_save(ex_pbuf)
+		if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0)
+			ex_pbuf = ex_buf;
+		exbuf_save(ex_buf)
 		ex_buf = &tempbufs[i];
 	}
 	exbuf_load(ex_buf)
@@ -320,6 +321,11 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 				c + lbuf_modified(bufs[i].lb), bufs[i].path);
 			ex_print(ln);
 		}
+	} else if (atoi(arg) < 0) {
+		if (abs(atoi(arg)) <= LEN(tempbufs))
+			temp_switch(abs(atoi(arg))-1);
+		else
+			ex_show("no such buffer");
 	} else if (atoi(arg) < xbufcur) {
 		bufs_switchwft(atoi(arg))
 	} else
@@ -397,8 +403,6 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 {
 	int len, i, inst;
 	char *path, *arg1;
-	if (!tempbufs[1].lb)
-		dir_calc(fs_exdir ? fs_exdir : ".");
 	arg1 = arg+dstrlen(arg, ' ');
 	inst = atoi(arg1);
 	*arg1 = '\0';
@@ -876,11 +880,12 @@ static int ec_set(char *loc, char *cmd, char *arg)
 
 static int ec_setdir(char *loc, char *cmd, char *arg)
 {
-	if (arg) {
+	if (*arg) {
 		free(fs_exdir);
-		fs_exdir = NULL;
-		if (*arg)
-			fs_exdir = uc_dup(arg);
+		fs_exdir = uc_dup(arg);
+	} else {
+		temp_done(1);
+		dir_calc(fs_exdir ? fs_exdir : ".");
 	}
 	return 0;
 }
@@ -917,6 +922,8 @@ static int ec_setacreg(char *loc, char *cmd, char *arg)
 static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 {
 	xbufsmax = *arg ? atoi(arg) : xbufsalloc;
+	if (xbufsmax <= 0)
+		return 1;
 	for (; xbufcur > xbufsmax; xbufcur--)
 		bufs_free(xbufcur - 1);
 	int bufidx = ex_buf - bufs;
