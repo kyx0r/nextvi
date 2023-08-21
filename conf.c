@@ -122,9 +122,10 @@ default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 	{"py", "\\<(?:and|break|class|continue|def|del|elif|else|except|finally|\
 for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
 	{"py", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
-	{"py", "\"{3}.*\"{3}", {6}},
+	{"py", "\"{3}.*?\"{3}", {6}},
 	{"py", "((?:[!\"\"\"]*\"{3}\n$)|(?:\"{3}[!\"\"\"]*)|\"{3})", {6}, {0}, -1},
-	{"py", "[\"']([^\"']|\\\\\")*[\"']", {4}},
+	{"py", "[\"](\\\\\"|[^\"])*?[\"]", {4}},
+	{"py", "['](\\\\'|[^'])*?[']", {4}},
 
 	/* neatmail */
 	{"nm", NULL, {14 | SYN_BD}, {1}, 0, 2},
