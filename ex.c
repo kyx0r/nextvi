@@ -26,6 +26,7 @@ struct buf *bufs;		/* main buffers */
 struct buf tempbufs[2];		/* temporary buffers, for internal use */
 struct buf *ex_buf;		/* current buffer */
 struct buf *ex_pbuf;		/* prev buffer */
+static struct buf *ex_tpbuf;	/* temp prev buffer */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 int xkwddir;			/* the last search direction */
@@ -72,8 +73,10 @@ void bufs_switch(int idx)
 {
 	if (ex_buf != &bufs[idx]) {
 		ex_pbuf = ex_buf;
-		ex_buf = &bufs[idx];
 		exbuf_save(ex_pbuf)
+		if (ex_buf - bufs >= xbufcur || ex_buf - bufs < 0)
+			ex_pbuf = ex_tpbuf;
+		ex_buf = &bufs[idx];
 	}
 	exbuf_load(ex_buf)
 }
@@ -123,9 +126,12 @@ void temp_switch(int i)
 	if (ex_buf == &tempbufs[i]) {
 		exbuf_save(ex_buf)
 		ex_buf = ex_pbuf;
+		ex_pbuf = ex_tpbuf;
 	} else {
-		if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0)
+		if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
+			ex_tpbuf = ex_pbuf;
 			ex_pbuf = ex_buf;
+		}
 		exbuf_save(ex_buf)
 		ex_buf = &tempbufs[i];
 	}
