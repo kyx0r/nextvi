@@ -1316,7 +1316,7 @@ static void vc_status(void)
 		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1,
-		buf >= xbufcur || buf < 0 ? (long)-1 : buf);
+		buf >= xbufcur || buf < 0 ? tempbufs - ex_buf - 1 : buf);
 }
 
 static void vc_charinfo(void)

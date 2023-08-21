@@ -72,10 +72,11 @@ buf->td = xtd; \
 void bufs_switch(int idx)
 {
 	if (ex_buf != &bufs[idx]) {
-		ex_pbuf = ex_buf;
-		exbuf_save(ex_pbuf)
+		exbuf_save(ex_buf)
 		if (ex_buf - bufs >= xbufcur || ex_buf - bufs < 0)
-			ex_pbuf = ex_tpbuf;
+			ex_pbuf = &bufs[idx] == ex_pbuf ? ex_tpbuf : ex_pbuf;
+		else
+			ex_pbuf = ex_buf;
 		ex_buf = &bufs[idx];
 	}
 	exbuf_load(ex_buf)
