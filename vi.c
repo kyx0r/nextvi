@@ -807,9 +807,9 @@ static int vi_motion(int *row, int *off)
 			ex_krsset(cs, +1);
 			free(cs);
 		}
-		preserve(struct buf*, ex_buf, ex_buf)
+		struct buf* tmpex_buf = istempbuf(ex_buf) ? ex_pbuf : ex_buf;
 		if (mv == TK_CTL(']')) {
-			if (lkwdcnt != xkwdcnt)
+			if (vi_arg1 || lkwdcnt != xkwdcnt)
 				term_exec("qq", 4, /*nop*/, /*nop*/)
 			lkwdcnt = xkwdcnt;
 			fspos += fsdir < 0 ? 1 : 0;
@@ -1581,8 +1581,7 @@ void vi(int init)
 				vc_status();
 				break;
 			case TK_CTL('^'):
-				if (ex_pbuf - bufs < xbufcur && ex_pbuf - bufs >= 0)
-					bufs_switchwft(ex_pbuf - bufs)
+				bufs_switchwft(ex_pbuf - bufs)
 				vc_status();
 				vi_mod = 1;
 				break;

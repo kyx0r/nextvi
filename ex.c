@@ -73,7 +73,7 @@ void bufs_switch(int idx)
 {
 	if (ex_buf != &bufs[idx]) {
 		exbuf_save(ex_buf)
-		if (ex_buf - bufs >= xbufcur || ex_buf - bufs < 0)
+		if (istempbuf(ex_buf))
 			ex_pbuf = &bufs[idx] == ex_pbuf ? ex_tpbuf : ex_pbuf;
 		else
 			ex_pbuf = ex_buf;
@@ -129,7 +129,7 @@ void temp_switch(int i)
 		ex_buf = ex_pbuf;
 		ex_pbuf = ex_tpbuf;
 	} else {
-		if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
+		if (!istempbuf(ex_buf)) {
 			ex_tpbuf = ex_pbuf;
 			ex_pbuf = ex_buf;
 		}
@@ -395,7 +395,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	} else if (arg[0] || !xbufcur || !strchr(cmd, '!'))
 		bufs_switch(bufs_open(arg+cd));
 	readfile(rd =)
-	if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
+	if (!istempbuf(ex_buf)) {
 		ex_bufpostfix(ex_buf - bufs, arg[0]);
 		syn_setft(ex_ft);
 		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
