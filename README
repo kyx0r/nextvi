@@ -83,7 +83,7 @@ It's important to understand that this has a caveat, if input comes too fast,
 for example a paste from terminal and the sequence has "kj" in it, insert
 mode will be cancelled mid way and paste will be wrong. Luckily this almost
 never happens because such letter combination is extremely rare.
-Can be disabled via :se noqe
+Delay time (in ms) can be set via :se qe=N or disabled by setting N to 0.
 3. Added linenumbers, keybind: # (relative numbers are placed after indent)
 Passing vi_arg1 to # enables permanent line numbers.
 4. Added invisible character view, keybind: V
