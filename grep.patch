@@ -1,8 +1,8 @@
 diff --git a/conf.c b/conf.c
-index 3590210..aa97cf7 100644
+index 7225346..770fbb4 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -228,6 +228,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
+@@ -231,6 +231,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
  		{0, SYN_BGMK(9), SYN_BGMK(8), SYN_BGMK(7)}},
  	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", {0, SYN_BGMK(8)}},
  
@@ -13,9 +13,9 @@ index 3590210..aa97cf7 100644
 +
  	/* status bar (is never '\n' terminated) */
  	{"/-", "^(\".*\").*(\\[[wr]\\]).*$", {8 | SYN_BD, 4, 1}},
- 	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B[0-9]+)?.*$",
+ 	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index 198b5a2..7bdcb4f 100644
+index 458c19a..f52dc97 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xpac;			/* print autocomplete options */
@@ -26,9 +26,9 @@ index 198b5a2..7bdcb4f 100644
 +struct buf tempbufs[3];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
  struct buf *ex_pbuf;		/* prev buffer */
- sbuf *xacreg;			/* autocomplete db filter regex */
+ static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 906fec3..7b0553e 100644
+index 3f15b9d..7005f0c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -654,12 +654,12 @@ void dir_calc(char *path)
@@ -46,7 +46,7 @@ index 906fec3..7b0553e 100644
  	*row = xrow; *off = xoff-1; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -670,16 +670,16 @@ if (ret && xrow) { \
+@@ -670,14 +670,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -56,26 +56,24 @@ index 906fec3..7b0553e 100644
  	char *path;
 -	int again = 0, ret, len;
 +	int ret, len;
- 	fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
  	wrap:
  	while (fspos < lbuf_len(tempbufs[1].lb)) {
- 		path = lbuf_get(tempbufs[1].lb, fspos);
- 		fspos++;
+ 		path = lbuf_get(tempbufs[1].lb, fspos++);
 -		fssearch()
 +		fssearch(ret && xrow && again != 2)
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -697,7 +697,7 @@ static int fs_searchback(int cnt, int *row, int *off)
- 		return 0;
- 	while (--fspos) {
+@@ -693,7 +693,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+ 	int ret, len;
+ 	while (--fspos >= 0) {
  		path = lbuf_get(tempbufs[1].lb, fspos);
 -		fssearch()
 +		fssearch(ret && xrow)
  	}
  	return 0;
  }
-@@ -800,6 +800,7 @@ static int vi_motion(int *row, int *off)
+@@ -796,6 +796,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -83,17 +81,18 @@ index 906fec3..7b0553e 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -818,7 +819,47 @@ static int vi_motion(int *row, int *off)
- 			if (lkwdcnt != xkwdcnt)
- 				term_exec("1qq", 4, /*nop*/, /*nop*/)
+@@ -814,8 +815,43 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
+ 			fspos += fsdir < 0 ? 1 : 0;
+ 			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
 -			fs_search(1, row, off);
 +			fs_search(0, 1, row, off);
+ 			fsdir = 1;
 +		} else if (mv == TK_CTL('x')) {
 +			if (!strcmp(ex_path, "/grep/"))
 +				return -1;
 +			temp_done(2);
-+			term_exec("1qq", 4, /*nop*/, /*nop*/)
++			term_exec("qq", 3, /*nop*/, /*nop*/)
 +			temp_open(2, "/grep/", "/grep");
 +			sbuf *gstats; sbuf_make(gstats, 1024)
 +			char nbuf[100];
@@ -124,20 +123,14 @@ index 906fec3..7b0553e 100644
 +			temp_switch(2);
 +			syn_addhl(regs['/'], 3, 1); /* see conf.c */
 +			syn_reloadft();
-+			vi(1);
-+			temp_switch(2);
-+			*row = srow[1]; *off = soff[1];
-+			ex_edit(savepath[1]->s);
-+			xquit = 0;
- 		} else if (!fs_searchback(1, row, off)) {
- 			open_saved(1)
- 		}
-@@ -1541,7 +1582,19 @@ void vi(int init)
+ 		} else {
+ 			fspos -= fsdir > 0 ? 1 : 0;
+ 			if (!fs_searchback(1, row, off)) {
+@@ -1536,7 +1572,17 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
 -				term_push(buf, strlen(ln)+3);
-+				cs = NULL;
 +				if (!strcmp(ex_path, "/grep/")) {
 +					int subs[2];
 +					rset *rs = rset_make(1, (char*[]){":[0-9]+:"}, 0);
@@ -147,29 +140,25 @@ index 906fec3..7b0553e 100644
 +						buf[subs[1]] = '\0';
 +					}
 +					rset_free(rs);
-+					xquit = 1;
 +				}
 +				term_push(buf, strlen(buf));
- 				if (!strcmp(ex_path, "/fm/"))
- 					xquit = 1;
- 				vi_mod = 1;
-@@ -1680,6 +1733,14 @@ void vi(int init)
+ 				break; }
+ 			case TK_CTL('n'):
+ 				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
+@@ -1671,6 +1717,11 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
 +				case 'x':
 +					temp_open(2, "/grep/", "/grep");
-+					temp_sswitch(2)
-+					vi(1);
-+					temp_pswitch(2)
-+					xquit = 0;
++					temp_switch(2);
 +					vi_mod = 1;
 +					break;
  				default:
  					vi_back(k);
  				}
 diff --git a/vi.h b/vi.h
-index d2d5f32..89a5c71 100644
+index 2e3685a..6683a6e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -298,7 +298,7 @@ extern int xbufcur;
@@ -178,6 +167,6 @@ index d2d5f32..89a5c71 100644
  extern struct buf *bufs;
 -extern struct buf tempbufs[2];
 +extern struct buf tempbufs[3];
+ #define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
  #define EXLEN	512	/* ex line length */
  #define ex_path ex_buf->path
- #define ex_ft ex_buf->ft
