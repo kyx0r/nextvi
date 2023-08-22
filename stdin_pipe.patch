@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 198b5a2..8e9ba5f 100644
+index 458c19a..aef8756 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -370,6 +370,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -383,6 +383,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
  	int fd, rd = 0, cd = 0;
@@ -11,17 +11,17 @@ index 198b5a2..8e9ba5f 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	if (arg[0] && ((fd = bufs_find(arg+cd)) >= 0)) {
-@@ -385,6 +387,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
- 	if (ex_buf - bufs < xbufcur && ex_buf - bufs >= 0) {
+@@ -398,6 +400,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+ 	if (!istempbuf(ex_buf)) {
  		ex_bufpostfix(ex_buf - bufs, arg[0]);
  		syn_setft(ex_ft);
 +		ret:
  		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
  				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
  		ex_show(rd ? "read failed" : msg);
-@@ -1059,4 +1062,8 @@ void ex_init(char **files, int n)
+@@ -1070,4 +1073,8 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
- 	if (xled && (s = getenv("EXINIT")))
+ 	if (!(xvis & 2) && (s = getenv("EXINIT")))
  		ex_command(s)
 +	if (stdin_fd) {
 +		lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
@@ -29,7 +29,7 @@ index 198b5a2..8e9ba5f 100644
 +	}
  }
 diff --git a/term.c b/term.c
-index be3dbab..b131396 100644
+index 1e149b5..a0b33a4 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,7 @@
@@ -94,29 +94,23 @@ index be3dbab..b131396 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 906fec3..8abc254 100644
+index 4555e10..139eba3 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2037,10 +2037,12 @@ int main(int argc, char *argv[])
- 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
- 		if (argv[i][1] == 's')
- 			xled = 0;
--		if (argv[i][1] == 'e')
-+		else if (argv[i][1] == 'e')
+@@ -2031,6 +2031,8 @@ int main(int argc, char *argv[])
+ 			xvis |= 4;
+ 		if (argv[i][1] == 'v')
  			xvis = 0;
--		if (argv[i][1] == 'v')
-+		else if (argv[i][1] == 'v')
- 			xvis = 1;
 +		else
 +			stdin_fd = open(ctermid(NULL), O_RDONLY);
  	}
  	term_init();
  	ex_init(argv + i, argc - i);
 diff --git a/vi.h b/vi.h
-index d2d5f32..13c1873 100644
+index 2e3685a..e58cff1 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -419,3 +419,4 @@ extern rset *fsincl;
+@@ -418,3 +418,4 @@ extern rset *fsincl;
  extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
