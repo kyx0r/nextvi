@@ -299,14 +299,13 @@ extern struct buf *ex_buf;
 extern struct buf *ex_pbuf;
 extern struct buf *bufs;
 extern struct buf tempbufs[2];
+#define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
 #define EXLEN	512	/* ex line length */
 #define ex_path ex_buf->path
 #define ex_ft ex_buf->ft
 #define xb ex_buf->lb
 void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
-#define temp_sswitch(i) preserve(struct buf*, ex_pbuf, ex_pbuf) temp_switch(i);
-#define temp_pswitch(i) temp_switch(i); restore(ex_pbuf)
 void temp_write(int i, char *str);
 void temp_done(int i);
 void temp_pos(int i, int row, int off, int top);
@@ -345,7 +344,8 @@ struct highlight {
 				positive value - continue at rm_so
 				zero (default) - continue at rm_eo
 				negative value - continue at sp+1 */
-	char blkend;		/* the ending group for multi-line patterns */
+	signed char blkend;	/* the ending group for multi-line patterns;
+				negative group is able to start and end itself */
 	char func;		/* if func > 0 some function will use this hl based on this id */
 };
 extern struct highlight hls[];
