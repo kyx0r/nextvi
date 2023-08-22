@@ -810,7 +810,7 @@ static int vi_motion(int *row, int *off)
 		struct buf* tmpex_buf = istempbuf(ex_buf) ? ex_pbuf : ex_buf;
 		if (mv == TK_CTL(']')) {
 			if (vi_arg1 || lkwdcnt != xkwdcnt)
-				term_exec("qq", 4, /*nop*/, /*nop*/)
+				term_exec("qq", 3, /*nop*/, /*nop*/)
 			lkwdcnt = xkwdcnt;
 			fspos += fsdir < 0 ? 1 : 0;
 			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -899,7 +899,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case '\\':
-		ex_command("b-2");
+		temp_switch(1);
 		*row = xrow; *off = xoff;
 		break;
 	default:
