@@ -104,6 +104,11 @@ star_search.patch
 --------------
 Alternative to ^a search but does not center the screen.
 
+kbd_layout.patch
+--------------
+Changes hjkl to work well with other keyboard layouts.
+In this example hjkl is changed to yneo (workman keyboard layout)
+
 Helper macros:
 --------------
 @q = creates structure like this:
@@ -128,9 +133,9 @@ Use to create patch and diff files fast. It relies on
 you not saving the file prior to running the macro.
 @c = run ac command and reindex ac db
 
-export EXINIT="e|tp io{
+export EXINIT="se noled|tp Oo{
 }kA
 	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp oa()i|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*
 2x/\*\/
-2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<\$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\\\|w\\\\|\!git diff --no-index \%_ \%|tp 0\"fy$|tp o:ac  \\\\|tp i\\\\|u\\\\|ac3ls|tp 0\"cy$|inc (^[\!.git]+[^\\/]+$)|bx 1|bx|ft|1"
+2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<\$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\|w\\|\!git diff --no-index \%_ \%|tp 0\"fy$|tp o:ac  \\|tp i\\|u\\|ac3ls|tp 0\"cy$|inc (^[\!.git]+[^\\/]+$)|tp 50u|se led"
 
