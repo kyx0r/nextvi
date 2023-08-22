@@ -1,9 +1,9 @@
 diff --git a/ex.c b/ex.c
-index 198b5a2..1581fc6 100644
+index 458c19a..9749c79 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1060,3 +1060,11 @@ void ex_init(char **files, int n)
- 	if (xled && (s = getenv("EXINIT")))
+@@ -1071,3 +1071,11 @@ void ex_init(char **files, int n)
+ 	if (!(xvis & 2) && (s = getenv("EXINIT")))
  		ex_command(s)
  }
 +
@@ -15,7 +15,7 @@ index 198b5a2..1581fc6 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index feb536c..48bda92 100644
+index a199943..b657dfb 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -534,6 +534,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
@@ -27,7 +27,7 @@ index feb536c..48bda92 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index ad41564..d25c009 100644
+index fe05f5c..6797f7c 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -78,6 +78,13 @@ void dir_init(void)
@@ -56,10 +56,10 @@ index ad41564..d25c009 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 906fec3..ea954af 100644
+index 3f15b9d..a1c49fe 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -578,6 +578,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -577,6 +577,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln);
  }
  
@@ -72,15 +72,15 @@ index 906fec3..ea954af 100644
  static void vi_regprint(void)
  {
  	for (int i = 1; i < LEN(regs); i++) {
-@@ -2048,6 +2054,7 @@ int main(int argc, char *argv[])
- 		vi(1);
- 	else
+@@ -2038,6 +2044,7 @@ int main(int argc, char *argv[])
  		ex();
+ 	else
+ 		vi(1);
 +	ex_done();
  	term_done();
- 	if (!xvis)
+ 	if (xvis & 4)
  		return 0;
-@@ -2056,5 +2063,13 @@ int main(int argc, char *argv[])
+@@ -2046,5 +2053,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
@@ -91,11 +91,10 @@ index 906fec3..ea954af 100644
 +	ren_done();
 +	temp_done(1);
 +	temp_done(0);
-+	free(fslink);
  	return 0;
  }
 diff --git a/vi.h b/vi.h
-index d2d5f32..7ff5ff9 100644
+index 2e3685a..03bb32a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -170,6 +170,7 @@ int ren_cwid(char *s, int pos);
@@ -114,7 +113,7 @@ index d2d5f32..7ff5ff9 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -319,6 +321,7 @@ void ex_print(char *line);
+@@ -317,6 +319,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  void ex_init(char **files, int n);
  void ex_bufpostfix(int i, int clear);
