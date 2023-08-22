@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 5d85189..7f9ff4f 100644
+index cc2f497..58a7049 100644
 --- a/led.c
 +++ b/led.c
 @@ -129,23 +129,6 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
@@ -35,10 +35,10 @@ index 5d85189..7f9ff4f 100644
  		if (att_new != att_old) \
  			sbuf_str(out, term_att(att_new)) \
  		char *s = ren_translate(chrs[o], s0, i, cterm-1); \
-@@ -191,17 +174,16 @@ while (i < cterm) { \
- /* render and highlight a line */
- void led_render(char *s0, int row, int cbeg, int cend)
+@@ -193,17 +176,16 @@ void led_render(char *s0, int row, int cbeg, int cend)
  {
+ 	if (!xled)
+ 		return;
 -	int j, n, i = 0, o = 0, cterm = cend - cbeg;
 -	char *bound = s0;
 +	int n, i = 0, o = 0, cterm = cend - cbeg;
@@ -57,7 +57,7 @@ index 5d85189..7f9ff4f 100644
  	if (ctx < 0) {
  		for (; i < n; i++) {
  			int curbeg = cend - pos[i] - 1;
-@@ -235,24 +217,10 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -237,24 +219,10 @@ void led_render(char *s0, int row, int cbeg, int cend)
  			}
  		}
  	}
