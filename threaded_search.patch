@@ -130,7 +130,7 @@ index bca08ba..6bd0749 100644
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 diff --git a/regex.c b/regex.c
-index feb536c..5d966db 100644
+index a199943..aa27240 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -314,7 +314,7 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -173,7 +173,7 @@ index 69fcbe4..6811ef4 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 906fec3..c11b7a6 100644
+index 4555e10..1e46037 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -31,6 +31,7 @@
@@ -185,7 +185,7 @@ index 906fec3..c11b7a6 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index d2d5f32..325cabe 100644
+index 2e3685a..02d0421 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -193,7 +193,9 @@ int syn_addhl(char *reg, int func, int reload);
