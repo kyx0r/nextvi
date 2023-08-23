@@ -368,17 +368,23 @@ static void led_info(char *str, int ai_max)
 		term_pos(xrow - xtop, 0);
 }
 
+static int get_time()
+{
+	struct timespec t;
+	clock_gettime(CLOCK_MONOTONIC, &t);
+	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
+}
+
 /* read a line from the terminal */
 static char *led_line(char *pref, char *post, char *ai,
 		int ai_max, int *key, int *kmap,
 		char *insert, int orow)
 {
 	sbuf *sb;
-	int ai_len = strlen(ai), len;
+	int ai_len = strlen(ai), len, p_reg = 0;
 	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
-	static int p_reg;
-	time_t quickexit = 0;
+	int quickexit = 0;
 	sbufn_make(sb, xcols)
 	if (insert)
 		sbufn_str(sb, insert)
@@ -572,9 +578,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			restore(xvis)
 			continue;
 		case 'j':
-			if (xqexit &&
-				(difftime(time(0), quickexit) * 1000) < 1000)
-			{
+			if (xqexit && (get_time() - quickexit) < xqexit) {
 				if (sb->s_n) {
 					if (sb->s[led_lastchar(sb->s)] != 'k')
 						goto _default;
@@ -585,7 +589,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			goto _default;
 		case 'k':
-			quickexit = time(0);
+			quickexit = get_time();
 		default:
 _default:
 			if (c == '\n' || TK_INT(c))

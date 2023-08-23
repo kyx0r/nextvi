@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 458c19a..aef8756 100644
+index fa7d9b3..8c0fd13 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -383,6 +383,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
