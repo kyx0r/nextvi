@@ -581,9 +581,8 @@ static void vi_regprint(void)
 {
 	for (int i = 1; i < LEN(regs); i++) {
 		if (regs[i]) {
-			int len = strlen(regs[i])+3;
-			char buf[len];
-			snprintf(buf, len, "%c %s", i, regs[i]);
+			char buf[xcols * 5 + 3];
+			snprintf(buf, xcols * 5 + 3, "%c %s", i, regs[i]);
 			ex_print(buf);
 		}
 	}
