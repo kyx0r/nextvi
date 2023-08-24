@@ -367,7 +367,7 @@ static void led_info(char *str, int ai_max)
 		term_pos(xrow - xtop, 0);
 }
 
-static int get_time()
+static int gettime_ms(void)
 {
 	struct timespec t;
 	clock_gettime(CLOCK_MONOTONIC, &t);
@@ -580,7 +580,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			restore(xvis)
 			continue;
 		case 'j':
-			if (xqexit && (get_time() - quickexit) < xqexit) {
+			if (xqexit && (gettime_ms() - quickexit) < xqexit) {
 				if (sb->s_n) {
 					if (sb->s[led_lastchar(sb->s)] != 'k')
 						goto _default;
@@ -591,7 +591,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			goto _default;
 		case 'k':
-			quickexit = get_time();
+			quickexit = gettime_ms();
 		default:
 _default:
 			if (c == '\n' || TK_INT(c))
