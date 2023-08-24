@@ -579,11 +579,13 @@ void vi_regput(int c, const char *s, int ln)
 
 static void vi_regprint(void)
 {
+	term_pos(xrows, led_pos(vi_msg, 0));
+	xleft = (xcols / 2) * vi_arg1;
 	for (int i = 1; i < LEN(regs); i++) {
 		if (regs[i]) {
 			char buf[xcols * 5 + 3];
 			snprintf(buf, xcols * 5 + 3, "%c %s", i, regs[i]);
-			ex_print(buf);
+			ex_print(xleft ? regs[i] : buf);
 		}
 	}
 }
@@ -1864,10 +1866,7 @@ void vi(int init)
 				break;
 			case 'R':
 				vi_mod = 1;
-				term_pos(xrows, led_pos(vi_msg, 0));
-				xleft = (xcols / 2) * vi_arg1;
 				vi_regprint();
-				vi_wait();
 				break;
 			case 'Z':
 				k = vi_read();
