@@ -286,8 +286,7 @@ static int led_lastword(char *s)
 	return r - s;
 }
 
-static void led_printparts(char *ai, char *pref, char *main,
-		char *post, int kmap)
+static void led_printparts(char *ai, char *pref, char *main, char *post)
 {
 	if (!xled)
 		return;
@@ -393,7 +392,7 @@ static char *led_line(char *pref, char *post, char *ai,
 	if (!post)
 		post = "";
 	while (1) {
-		led_printparts(ai, pref, sb->s, post, *kmap);
+		led_printparts(ai, pref, sb->s, post);
 		len = sb->s_n;
 		c = term_read();
 		switch (c) {
@@ -658,7 +657,7 @@ char *led_input(char *pref, char *post, int *kmap, int row)
 		if (key == '\n')
 			sbuf_chr(sb, '\n')
 		led_printparts(ai, pref ? pref : "", uc_lastline(ln),
-				key == '\n' ? "" : post, *kmap);
+				key == '\n' ? "" : post);
 		if (key == '\n')
 			term_chr('\n');
 		if (!pref || !pref[0]) {	/* updating autoindent */
