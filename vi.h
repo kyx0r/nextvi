@@ -290,7 +290,7 @@ struct buf {
 	char *ft;			/* file type */
 	char *path;			/* file path */
 	struct lbuf *lb;
-	int row, off, top;
+	int plen, row, off, top;
 	long mtime;			/* modification time */
 	signed char td;			/* text direction */
 };
@@ -316,10 +316,10 @@ char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);
 void ex_init(char **files, int n);
-void ex_bufpostfix(int i, int clear);
+void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
-int ex_edit(const char *path);
+int ex_edit(const char *path, int len);
 void ec_bufferi(int id);
 void bufs_switch(int idx);
 #define bufs_switchwft(idx) \

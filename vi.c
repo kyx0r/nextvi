@@ -658,7 +658,7 @@ void dir_calc(char *path)
 #define fssearch() \
 len = *(int*)(path - sizeof(int)); \
 path[len] = '\0'; \
-ret = ex_edit(path); \
+ret = ex_edit(path, len); \
 path[len] = '\n'; \
 if (ret && xrow) { \
 	*row = xrow; *off = xoff-1; /* short circuit */ \
@@ -801,7 +801,7 @@ static int vi_motion(int *row, int *off)
 		#define open_saved(n) \
 		if (savepath[n]) { \
 			*row = srow[n]; *off = soff[n]; \
-			ex_edit(savepath[n]->s); \
+			ex_edit(savepath[n]->s, savepath[n]->s_n); \
 		} \
 
 		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt, 0))) {
@@ -830,7 +830,7 @@ static int vi_motion(int *row, int *off)
 			ex_pbuf = tmpex_buf;
 		bsync_ret:
 		for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
-			ex_bufpostfix(i, 1);
+			ex_bufpostfix(&bufs[i], 1);
 		syn_setft(ex_ft);
 		return '\\';
 	case TK_CTL('t'):

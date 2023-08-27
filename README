@@ -130,6 +130,8 @@ buffer and # last swapped buffer. Now it is possible to expand any arbitrary
 buffer by using % or # (no difference in this case) followed by the buffer
 number. Example: :!echo "%69" prints the pathname for buffer 69 (if it exists).
 % and # can be escaped normally if path expansion is not wanted.
+Added new ex command "bp" which allows the user to change path pointed by current
+buffer. For example :bp vi.c|e! will repurpose the buffer for vi.c
 14. Added key to show buffers and switch buffer
 (to switch press corresponding 0-9 number) keybind: ^7 or ^_
 If vi_arg1 is specified right before ^7 the buffer will be switched immediately
