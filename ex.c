@@ -379,8 +379,10 @@ if (fd >= 0) { \
 int ex_edit(const char *path, int len)
 {
 	int fd;
-	if (path[0] == '.' && path[1] == '/')
+	if (path[0] == '.' && path[1] == '/') {
 		path += 2;
+		len -= 2;
+	}
 	if (path[0] && ((fd = bufs_find(path, len)) >= 0)) {
 		bufs_switch(fd);
 		return 1;
