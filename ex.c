@@ -406,17 +406,19 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 			lbuf_modified(bufs[xbufsmax - 1].lb)) {
 		ex_show("last buffer modified");
 		return 1;
-	} else if (len || !xbufcur || !strchr(cmd, '!'))
+	} else if (len || !xbufcur || !strchr(cmd, '!')) {
 		bufs_switch(bufs_open(arg+cd, len));
+		cd = 3; /* XXX: sigh... */
+	}
 	readfile(rd =)
-	if ((!len && !strchr(cmd, '!')) || (!rd && fd >= 0)) {
+	if (cd == 3 || (!rd && fd >= 0)) {
 		ex_bufpostfix(ex_buf, arg[0]);
 		syn_setft(ex_ft);
-		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
-				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
-		ex_show(msg);
-	} else
-		ex_show("read failed");
+	}
+	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
+			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
+			!rd && fd >= 0 ? 'r' : 'f');
+	ex_show(msg);
 	return rd;
 }
 
