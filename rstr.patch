@@ -263,7 +263,7 @@ index 85dca74..add2ec6 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 2e3685a..db44c94 100644
+index 08ee253..4c2a2cf 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -113,10 +113,21 @@ typedef struct {
@@ -300,13 +300,13 @@ index 2e3685a..db44c94 100644
 @@ -317,7 +328,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  void ex_init(char **files, int n);
- void ex_bufpostfix(int i, int clear);
+ void ex_bufpostfix(struct buf *p, int clear);
 -int ex_krs(rset **krs, int *dir);
 +int ex_krs(rstr **krs, int *dir);
  void ex_krsset(char *kwd, int dir);
- int ex_edit(const char *path);
+ int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -412,9 +423,9 @@ extern int xgrp;
+@@ -411,9 +422,9 @@ extern int xgrp;
  extern int xpac;
  extern int xkwdcnt;
  extern int xkwddir;
