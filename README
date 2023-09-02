@@ -109,6 +109,15 @@ kbd_layout.patch
 Changes hjkl to work well with other keyboard layouts.
 In this example hjkl is changed to yneo (workman keyboard layout)
 
+quickexit.patch
+--------------
+Added quickexit to insert mode keybind: kj
+It's important to understand that this has a caveat, if input comes too fast,
+for example a paste from terminal and the sequence has "kj" in it, insert
+mode will be cancelled mid way and paste will be wrong. Luckily this almost
+never happens because such letter combination is extremely rare.
+Delay time (in ms) can be set via :se qe=N or disabled by setting N to 0.
+
 Helper macros:
 --------------
 @q = creates structure like this:

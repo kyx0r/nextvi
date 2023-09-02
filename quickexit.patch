@@ -1,0 +1,92 @@
+diff --git a/ex.c b/ex.c
+index a23f3cd..c07e0f4 100644
+--- a/ex.c
++++ b/ex.c
+@@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
+ int xkmap;			/* the current keymap */
+ int xkmap_alt = 1;		/* the alternate keymap */
+ int xtabspc = 8;		/* number of spaces for tab */
++int xqexit = 1000;		/* exit insert via kj (delay in ms) */
+ int xish = 1;			/* interactive shell */
+ int xgrp = 2;			/* regex search group */
+ int xpac;			/* print autocomplete options */
+@@ -847,6 +848,7 @@ static struct option {
+ 	{"hlp", &xhlp},
+ 	{"hlr", &xhlr},
+ 	{"tbs", &xtabspc},
++	{"qe", &xqexit},
+ 	{"ish", &xish},
+ 	{"grp", &xgrp},
+ 	{"pac", &xpac},
+diff --git a/led.c b/led.c
+index 550f6d0..a73f107 100644
+--- a/led.c
++++ b/led.c
+@@ -367,6 +367,13 @@ static void led_info(char *str, int ai_max)
+ 		term_pos(xrow - xtop, 0);
+ }
+ 
++static int gettime_ms(void)
++{
++	struct timespec t;
++	clock_gettime(CLOCK_MONOTONIC, &t);
++	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
++}
++
+ /* read a line from the terminal */
+ static char *led_line(char *pref, char *post, char *ai,
+ 		int ai_max, int *key, int *kmap,
+@@ -376,6 +383,7 @@ static char *led_line(char *pref, char *post, char *ai,
+ 	int ai_len = strlen(ai), len, p_reg = 0;
+ 	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
+ 	char *cs, *sug = NULL, *_sug = NULL;
++	int quickexit = 0;
+ 	sbufn_make(sb, xcols)
+ 	if (insert)
+ 		sbufn_str(sb, insert)
+@@ -571,7 +579,21 @@ static char *led_line(char *pref, char *post, char *ai,
+ 			term_exec(":", 1, /*nop*/, /*nop*/)
+ 			restore(xvis)
+ 			continue;
++		case 'j':
++			if (xqexit && (gettime_ms() - quickexit) < xqexit) {
++				if (sb->s_n) {
++					if (sb->s[led_lastchar(sb->s)] != 'k')
++						goto _default;
++					sbuf_cut(sb, led_lastchar(sb->s))
++				}
++				c = TK_ESC;
++				goto leave;
++			}
++			goto _default;
++		case 'k':
++			quickexit = gettime_ms();
+ 		default:
++_default:
+ 			if (c == '\n' || TK_INT(c))
+ 				goto leave;
+ 			if ((cs = led_read(kmap, c)))
+diff --git a/vi.c b/vi.c
+index fca4480..85dca74 100644
+--- a/vi.c
++++ b/vi.c
+@@ -25,6 +25,7 @@
+ #include <dirent.h>
+ #include <signal.h>
+ #include <unistd.h>
++#include <time.h>
+ #include <poll.h>
+ #include <termios.h>
+ #include <sys/stat.h>
+diff --git a/vi.h b/vi.h
+index 08ee253..ef1a854 100644
+--- a/vi.h
++++ b/vi.h
+@@ -406,6 +406,7 @@ extern int xhlr;
+ extern int xkmap;
+ extern int xkmap_alt;
+ extern int xtabspc;
++extern int xqexit;
+ extern int xish;
+ extern int xgrp;
+ extern int xpac;

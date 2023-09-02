@@ -25,7 +25,6 @@
 #include <dirent.h>
 #include <signal.h>
 #include <unistd.h>
-#include <time.h>
 #include <poll.h>
 #include <termios.h>
 #include <sys/stat.h>
