@@ -17,7 +17,7 @@ index d9f602e..c0a6533 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index 1e149b5..b35622b 100644
+index 1b8d024..1631c83 100644
 --- a/term.c
 +++ b/term.c
 @@ -134,6 +134,8 @@ int term_read(void)
