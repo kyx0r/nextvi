@@ -406,7 +406,6 @@ extern int xhlr;
 extern int xkmap;
 extern int xkmap_alt;
 extern int xtabspc;
-extern int xqexit;
 extern int xish;
 extern int xgrp;
 extern int xpac;
