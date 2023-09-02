@@ -36,17 +36,17 @@ index 550f6d0..f6d2369 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index 85dca74..b5d8032 100644
+index fca4480..9e04e42 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -25,6 +25,7 @@
- #include <dirent.h>
- #include <signal.h>
- #include <unistd.h>
+@@ -16,6 +16,7 @@
+  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  */
 +#include <stdint.h>
- #include <time.h>
- #include <poll.h>
- #include <termios.h>
+ #include <ctype.h>
+ #include <fcntl.h>
+ #include <stdio.h>
 diff --git a/vi.h b/vi.h
 index 08ee253..7fe598d 100644
 --- a/vi.h
