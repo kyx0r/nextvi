@@ -94,7 +94,7 @@ index 85dca74..7fdb210 100644
  	return 0;
  }
 diff --git a/vi.h b/vi.h
-index 2e3685a..03bb32a 100644
+index 08ee253..4bb3437 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -170,6 +170,7 @@ int ren_cwid(char *s, int pos);
@@ -116,8 +116,8 @@ index 2e3685a..03bb32a 100644
 @@ -317,6 +319,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  void ex_init(char **files, int n);
- void ex_bufpostfix(int i, int clear);
+ void ex_bufpostfix(struct buf *p, int clear);
 +void ex_done(void);
  int ex_krs(rset **krs, int *dir);
  void ex_krsset(char *kwd, int dir);
- int ex_edit(const char *path);
+ int ex_edit(const char *path, int len);
