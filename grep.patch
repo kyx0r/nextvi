@@ -28,7 +28,7 @@ index a23f3cd..2a6eb7f 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index fca4480..791701d 100644
+index fca4480..c033feb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -654,12 +654,12 @@ void dir_calc(char *path)
@@ -119,7 +119,7 @@ index fca4480..791701d 100644
 +			}
 +			sbuf_free(gstats)
 +			for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
-+				ex_bufpostfix(i, 1);
++				ex_bufpostfix(&bufs[i], 1);
 +			temp_switch(2);
 +			syn_addhl(regs['/'], 3, 1); /* see conf.c */
 +			syn_reloadft();
