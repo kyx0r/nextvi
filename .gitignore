@@ -3,3 +3,5 @@
 tags
 vi
 file
+*.orig
+*.rej
