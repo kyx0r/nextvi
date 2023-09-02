@@ -48,7 +48,7 @@ index 85dca74..b5d8032 100644
  #include <poll.h>
  #include <termios.h>
 diff --git a/vi.h b/vi.h
-index 2e3685a..c883592 100644
+index 08ee253..7fe598d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -35,10 +35,11 @@ void vi(int init);

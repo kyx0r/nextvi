@@ -109,10 +109,10 @@ index 85dca74..60aba90 100644
  	term_init();
  	ex_init(argv + i, argc - i);
 diff --git a/vi.h b/vi.h
-index 2e3685a..e58cff1 100644
+index 08ee253..2f37fa6 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -418,3 +418,4 @@ extern rset *fsincl;
+@@ -417,3 +417,4 @@ extern rset *fsincl;
  extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
