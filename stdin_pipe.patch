@@ -1,25 +1,27 @@
 diff --git a/ex.c b/ex.c
-index fa7d9b3..8c0fd13 100644
+index a23f3cd..b81b041 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -383,6 +383,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -394,7 +394,9 @@ int ex_edit(const char *path, int len)
+ static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
- 	int fd, rd = 0, cd = 0;
+-	int fd, len, rd = 0, cd = 0;
++	int fd = 0, len, rd = 0, cd = 0;
 +	if (!loc)
 +		goto ret;
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
- 	if (arg[0] && ((fd = bufs_find(arg+cd)) >= 0)) {
-@@ -398,6 +400,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
- 	if (!istempbuf(ex_buf)) {
- 		ex_bufpostfix(ex_buf - bufs, arg[0]);
+ 	len = strlen(arg+cd);
+@@ -414,6 +416,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+ 		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
-+		ret:
- 		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
- 				*ex_path ? ex_path : "unnamed", lbuf_len(xb));
- 		ex_show(rd ? "read failed" : msg);
-@@ -1070,4 +1073,8 @@ void ex_init(char **files, int n)
+ 	}
++	ret:
+ 	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
+ 			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
+ 			!rd && fd >= 0 ? 'r' : 'f');
+@@ -1089,4 +1092,8 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	if (!(xvis & 2) && (s = getenv("EXINIT")))
  		ex_command(s)
@@ -29,7 +31,7 @@ index fa7d9b3..8c0fd13 100644
 +	}
  }
 diff --git a/term.c b/term.c
-index 1e149b5..a0b33a4 100644
+index 1b8d024..139fff6 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,7 @@
@@ -94,10 +96,10 @@ index 1e149b5..a0b33a4 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 4555e10..139eba3 100644
+index 85dca74..60aba90 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2031,6 +2031,8 @@ int main(int argc, char *argv[])
+@@ -2029,6 +2029,8 @@ int main(int argc, char *argv[])
  			xvis |= 4;
  		if (argv[i][1] == 'v')
  			xvis = 0;
