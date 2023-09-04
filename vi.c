@@ -2014,24 +2014,30 @@ static int setup_signals(void) {
 
 int main(int argc, char *argv[])
 {
-	int i;
+	int i, j;
 	if (!setup_signals())
-		return 1;
+		return EXIT_FAILURE;
 	dir_init();
 	syn_init();
 	temp_open(0, "/hist/", "/");
 	temp_open(1, "/fm/", "/fm");
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
-		if (argv[i][1] == 's' && !argv[i][2])
-			xvis |= 2;
-		else if (argv[i][1] == 'e' && !argv[i][2])
-			xvis |= 4;
-		else if (argv[i][1] == 'v' && !argv[i][2])
-			xvis = 0;
-		else {
-			fprintf(stderr, "Unknown option: %s\n", argv[i]);
-			fprintf(stderr, "Usage: %s [-e] [-s] [-v] [file ...]\n", argv[0]);
-			return 1;
+		if (argv[i][1] == '-' && !argv[i][2]) {
+			i++;
+			break;
+		}
+		for (j = 1; argv[i][j]; j++) {
+			if (argv[i][j] == 's')
+				xvis |= 2;
+			else if (argv[i][j] == 'e')
+				xvis |= 4;
+			else if (argv[i][j] == 'v')
+				xvis = 0;
+			else {
+				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+				fprintf(stderr, "Usage: %s [-esv] [file ...]\n", argv[0]);
+				return EXIT_FAILURE;
+			}
 		}
 	}
 	term_init();
@@ -2042,11 +2048,11 @@ int main(int argc, char *argv[])
 		vi(1);
 	term_done();
 	if (xvis & 4)
-		return 0;
+		return EXIT_SUCCESS;
 	if (xquit == 2) {
 		term_pos(xrows - 1, 0);
 		term_kill();
 	} else
 		term_clean();
-	return 0;
+	return EXIT_SUCCESS;
 }
