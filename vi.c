@@ -872,7 +872,7 @@ static int vi_motion(int *row, int *off)
 		if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg))) {
 			ca_dir = !ca_dir;
 			if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
-			        return -1;
+				return -1;
 		}
 		break;
 	case ' ':
@@ -2022,12 +2022,16 @@ int main(int argc, char *argv[])
 	temp_open(0, "/hist/", "/");
 	temp_open(1, "/fm/", "/fm");
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
-		if (argv[i][1] == 's')
+		if (argv[i][1] == 's' && !argv[i][2])
 			xvis |= 2;
-		if (argv[i][1] == 'e')
+		else if (argv[i][1] == 'e' && !argv[i][2])
 			xvis |= 4;
-		if (argv[i][1] == 'v')
+		else if (argv[i][1] == 'v' && !argv[i][2])
 			xvis = 0;
+		else {
+			fprintf(stderr, "Usage: %s -[esv] files\n", argv[0]);
+			return 1;
+		}
 	}
 	term_init();
 	ex_init(argv + i, argc - i);
