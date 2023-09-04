@@ -2029,7 +2029,8 @@ int main(int argc, char *argv[])
 		else if (argv[i][1] == 'v' && !argv[i][2])
 			xvis = 0;
 		else {
-			fprintf(stderr, "Usage: %s -[esv] files\n", argv[0]);
+			fprintf(stderr, "Unknown option: %s\n", argv[i]);
+			fprintf(stderr, "Usage: %s [-e] [-s] [-v] [file ...]\n", argv[0]);
 			return 1;
 		}
 	}
