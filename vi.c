@@ -2022,6 +2022,10 @@ int main(int argc, char *argv[])
 	temp_open(0, "/hist/", "/");
 	temp_open(1, "/fm/", "/fm");
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
+		if (argv[i][1] == '-' && !argv[i][2]) {
+			i++;
+			break;
+		}
 		for (j = 1; argv[i][j]; j++) {
 			if (argv[i][j] == 's')
 				xvis |= 2;
