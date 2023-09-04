@@ -2016,7 +2016,7 @@ int main(int argc, char *argv[])
 {
 	int i, j;
 	if (!setup_signals())
-		return 1;
+		return EXIT_FAILURE;
 	dir_init();
 	syn_init();
 	temp_open(0, "/hist/", "/");
@@ -2036,7 +2036,7 @@ int main(int argc, char *argv[])
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
 				fprintf(stderr, "Usage: %s [-esv] [file ...]\n", argv[0]);
-				return 1;
+				return EXIT_FAILURE;
 			}
 		}
 	}
@@ -2048,11 +2048,11 @@ int main(int argc, char *argv[])
 		vi(1);
 	term_done();
 	if (xvis & 4)
-		return 0;
+		return EXIT_SUCCESS;
 	if (xquit == 2) {
 		term_pos(xrows - 1, 0);
 		term_kill();
 	} else
 		term_clean();
-	return 0;
+	return EXIT_SUCCESS;
 }
