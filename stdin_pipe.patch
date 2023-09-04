@@ -96,18 +96,22 @@ index 1b8d024..139fff6 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index fca4480..2a1b06d 100644
+index 96d13d1..70b4f0f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2028,6 +2028,8 @@ int main(int argc, char *argv[])
+@@ -2028,9 +2028,11 @@ int main(int argc, char *argv[])
  			xvis |= 4;
- 		if (argv[i][1] == 'v')
+ 		else if (argv[i][1] == 'v' && !argv[i][2])
  			xvis = 0;
-+		else
++		else if (!argv[i][1])
 +			stdin_fd = open(ctermid(NULL), O_RDONLY);
+ 		else {
+ 			fprintf(stderr, "Unknown option: %s\n", argv[i]);
+-			fprintf(stderr, "Usage: %s [-e] [-s] [-v] [file ...]\n", argv[0]);
++			fprintf(stderr, "Usage: %s [-] [-e] [-s] [-v] [file ...]\n", argv[0]);
+ 			return 1;
+ 		}
  	}
- 	term_init();
- 	ex_init(argv + i, argc - i);
 diff --git a/vi.h b/vi.h
 index 08ee253..2f37fa6 100644
 --- a/vi.h
