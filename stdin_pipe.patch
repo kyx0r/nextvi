@@ -1,27 +1,23 @@
 diff --git a/ex.c b/ex.c
-index a23f3cd..22f59a4 100644
+index a23f3cd..4dedfae 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -394,7 +394,9 @@ int ex_edit(const char *path, int len)
- static int ec_edit(char *loc, char *cmd, char *arg)
- {
- 	char msg[128];
--	int fd, len, rd = 0, cd = 0;
-+	int fd = 0, len, rd = 0, cd = 0;
-+	if (!loc)
-+		goto ret;
- 	if (arg[0] == '.' && arg[1] == '/')
- 		cd = 2;
- 	len = strlen(arg+cd);
-@@ -414,6 +416,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -414,11 +414,13 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
  	}
-+	ret:
++	if (!loc)
++		return fd < 0 || rd;
  	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			!rd && fd >= 0 ? 'r' : 'f');
-@@ -1080,13 +1083,24 @@ void ex(void)
+ 	ex_show(msg);
+-	return rd;
++	return fd < 0 || rd;
+ }
+ 
+ static int ec_editapprox(char *loc, char *cmd, char *arg)
+@@ -1080,13 +1082,25 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -29,22 +25,24 @@ index a23f3cd..22f59a4 100644
 +	xbufsalloc = MAX(n + !!stdin_fd, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
  	char *s = files[0] ? files[0] : "";
++	char msg[128];
 +	int i = n;
  	do {
- 		ec_edit("", "e", s);
+-		ec_edit("", "e", s);
++		ec_edit(!n && stdin_fd ? NULL : "", "e", s);
  		s = *(++files);
  	} while (--n > 0);
  	if (!(xvis & 2) && (s = getenv("EXINIT")))
  		ex_command(s)
 +	if (stdin_fd) {
-+		if (i) {
-+			bufs_switch(bufs_open("", 0));
-+			ex_bufpostfix(ex_buf, 0);
-+			syn_setft(ex_ft);
-+		}
-+		lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
-+		ec_edit(NULL, "", "");
++		if (i)
++			ec_edit(NULL, "", "");
++		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
 +		lbuf_saved(xb, 1);
++		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
++				*ex_path ? ex_path : "unnamed", lbuf_len(xb),
++				!i ? 'r' : 'f');
++		ex_show(msg);
 +	}
  }
 diff --git a/term.c b/term.c
