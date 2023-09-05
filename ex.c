@@ -416,9 +416,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 	}
 	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
 			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
-			!rd && fd >= 0 ? 'r' : 'f');
+			fd < 0 || rd ? 'f' : 'r');
 	ex_show(msg);
-	return rd;
+	return fd < 0 || rd;
 }
 
 static int ec_editapprox(char *loc, char *cmd, char *arg)
