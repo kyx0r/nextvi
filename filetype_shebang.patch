@@ -1,10 +1,10 @@
 diff --git a/ex.c b/ex.c
-index a23f3cd..e1e4298 100644
+index e6613cd..6ad6dcb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -418,6 +418,16 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
- 			!rd && fd >= 0 ? 'r' : 'f');
+ 			fd < 0 || rd ? 'f' : 'r');
  	ex_show(msg);
 +	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 +		int adv = 0;
@@ -16,6 +16,6 @@ index a23f3cd..e1e4298 100644
 +			if (strstr(lbuf_buf(xb)[adv], langs[i]))
 +				ex_ft = syn_setft(types[i]);
 +	}
- 	return rd;
+ 	return fd < 0 || rd;
  }
  
