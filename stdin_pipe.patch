@@ -48,7 +48,7 @@ index e6613cd..7b1b27d 100644
 +	}
  }
 diff --git a/term.c b/term.c
-index 1b8d024..139fff6 100644
+index 4d2e41a..7ee8649 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,7 @@
@@ -113,10 +113,10 @@ index 1b8d024..139fff6 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 9aed588..f54b7d8 100644
+index cd29411..476fc80 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2025,7 +2025,8 @@ int main(int argc, char *argv[])
+@@ -2026,7 +2026,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;

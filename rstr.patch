@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index a23f3cd..683f94d 100644
+index e6613cd..4862122 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -244,7 +244,7 @@ index a199943..3700127 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 96d13d1..dee95bc 100644
+index cd29411..b73fd67 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -589,7 +589,7 @@ static void vi_regprint(void)
