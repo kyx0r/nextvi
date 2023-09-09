@@ -577,9 +577,11 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 		beg++;
 	if (cmd[0] != 'c')
 		end = beg;
-	n = lbuf_len(xb);
-	lbuf_edit(xb, sb->s, beg, end);
-	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
+	if (vi_insmov != TK_CTL('x')) {
+		n = lbuf_len(xb);
+		lbuf_edit(xb, sb->s, beg, end);
+		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
+	}
 	sbuf_free(sb)
 	return 0;
 }
