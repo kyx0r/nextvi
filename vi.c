@@ -289,7 +289,7 @@ char *ex_read(char *msg)
 		return s;
 	}
 	sbuf_make(sb, 128)
-	while ((c = getchar()) != EOF && c != '\n')
+	while ((c = term_read()) != EOF && c != '\n')
 		sbuf_chr(sb, c)
 	if (c == EOF) {
 		sbuf_free(sb)
