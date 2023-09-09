@@ -81,7 +81,7 @@ void term_room(int n)
 	char cmd[16];
 	if (n < 0)
 		sprintf(cmd, "\33[%dM", -n);
-	if (n > 0)
+	else if (n > 0)
 		sprintf(cmd, "\33[%dL", n);
 	if (n)
 		term_out(cmd);
@@ -89,10 +89,10 @@ void term_room(int n)
 
 void term_pos(int r, int c)
 {
-	char buf[32] = "\r";
+	char buf[32];
 	if (c < 0)
 		c = 0;
-	if (c >= xcols)
+	else if (c >= xcols)
 		c = xcols - 1;
 	if (r < 0)
 		sprintf(buf, "\r\33[%d%c", abs(c), c > 0 ? 'C' : 'D');

@@ -266,7 +266,7 @@ Because syntax highlight is bounded to the terminal dimensions some patterns
 may not be possible to match without rendering past the screen. To address
 this problem you may need some extra patch, see PATCHES section below.
 46. Added key to abandon insert discarding any changes keybind: ^x
-That means there are 4 ways to exit insert|prompt now: ^x, ^c, ESC, kj
+That means there are 3 ways to exit insert|prompt now: ^x, ^c, ESC
 RATIONALE: unlike others, ^x will not leave file marked as modified.
 47. Added Russian keymap, and changed how xkmap_alt works, now z + vi_arg1 in
 normal mode will switch what keymap ^f key changes, so for example 1 = fa 2 =
@@ -521,9 +521,9 @@ implemented in 1 or a few lines of code. Notably, they tend to use function
 term_push(), but it's not required. Because they are macros they may run
 suboptimally or not handle every possible edge case. When calling a macro
 feature from another macro, the results are pushed back, which means the
-macro feature will always execute last, see (69.).
+macro feature will always execute last, with the exception of feature 69.
 These features are considered a macro: 5. 6. 16. 17. 18. 19. 20.
-21. 26. 27. 34. 46. 50. 65. 71.
+21. 26. 27. 34. 65. 71.
 
 Q3: Keybind with CTRL does not work?
 A3: vi is reading ASCII codes sent by the terminal. Depending on the
