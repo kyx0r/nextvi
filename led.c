@@ -560,9 +560,6 @@ static char *led_line(char *pref, char *post, char *ai,
 			} else if (i)
 				goto cur_histstr;
 			break;
-		case TK_CTL('x'):
-			term_push("u", 2);
-			break;
 		case TK_CTL('l'):
 			term_clean();
 			continue;
@@ -572,7 +569,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			restore(xvis)
 			continue;
 		default:
-			if (c == '\n' || TK_INT(c))
+			if (c == '\n' || TK_INT(c) || c == TK_CTL('x'))
 				goto leave;
 			if ((cs = led_read(kmap, c)))
 				sbufn_str(sb, cs)
@@ -659,10 +656,11 @@ char *led_input(char *pref, char *post, int *kmap, int row)
 		memmove(post, post + n, strlen(post) - n + 1);
 		xrow++;
 	}
-	if (TK_INT(key) || xrow != row)
-		sbuf_str(sb, post)
-	else
+	if (key == TK_CTL('x')) {
 		sbuf_cut(sb, 0)
+		xrow = orow;
+	} else
+		sbuf_str(sb, post)
 	sbufn_done(sb)
 }
 

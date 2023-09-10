@@ -290,7 +290,7 @@ char *ex_read(char *msg)
 		return s;
 	}
 	sbuf_make(sb, 128)
-	while ((c = getchar()) != EOF && c != '\n')
+	while ((c = term_read()) != EOF && c != '\n')
 		sbuf_chr(sb, c)
 	if (c == EOF) {
 		sbuf_free(sb)
@@ -1749,7 +1749,8 @@ void vi(int init)
 					} else
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
-				}
+				} else if (vi_insmov == TK_CTL('x'))
+					vi_mod = 1;
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
 			case 'J':
