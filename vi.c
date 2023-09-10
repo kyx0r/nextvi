@@ -25,6 +25,7 @@
 #include <dirent.h>
 #include <signal.h>
 #include <unistd.h>
+#include <libgen.h>
 #include <poll.h>
 #include <termios.h>
 #include <sys/stat.h>
@@ -2022,6 +2023,8 @@ int main(int argc, char *argv[])
 	syn_init();
 	temp_open(0, "/hist/", "/");
 	temp_open(1, "/fm/", "/fm");
+	if (strcmp(basename(argv[0]), "ex") == 0)
+		xvis |= 4;
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == '-' && !argv[i][2]) {
 			i++;
