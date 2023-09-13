@@ -7,15 +7,17 @@ CFLAGS="\
 -Wfatal-errors -std=c99 \
 -D_POSIX_C_SOURCE=200809L $CFLAGS"
 
-: ${CC:=$(command -v cc)}
-: ${PREFIX:=/usr/local}
-OS="$(uname)"
-case "$OS" in *BSD*) CFLAGS="$CFLAGS -D_BSD_SOURCE" ;; esac
-case "$OS" in *Darwin*) CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE" ;; esac
+: "${CC:=cc}"
+: "${PREFIX:=/usr/local}"
+: "${OS:=$(uname)}"
+case "$OS" in
+    *BSD*)    CFLAGS="$CFLAGS -D_BSD_SOURCE"      ;;
+    *Darwin*) CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE" ;;
+esac
 
 run() {
 	printf '%s\n' "$*"
-	eval "$@"
+	eval "$*"
 }
 
 install() {
@@ -32,7 +34,7 @@ pgobuild() {
 	run "$CC vi.c -fprofile-generate=. -o vi $CFLAGS"
 	echo "qq" | ./vi -v ./vi.c >/dev/null
 	run "$CC vi.c -fprofile-use=. -o vi $CFLAGS"
-	rm *.gcda
+	rm ./*.gcda
 }
 
 if [ "$#" -gt 0 ]; then
