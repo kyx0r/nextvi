@@ -569,7 +569,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			restore(xvis)
 			continue;
 		default:
-			if (c == '\n' || TK_INT(c) || c == TK_CTL('x'))
+			if (c == '\n' || TK_INT(c))
 				goto leave;
 			if ((cs = led_read(kmap, c)))
 				sbufn_str(sb, cs)
@@ -656,11 +656,10 @@ char *led_input(char *pref, char *post, int *kmap, int row)
 		memmove(post, post + n, strlen(post) - n + 1);
 		xrow++;
 	}
-	if (key == TK_CTL('x')) {
-		sbuf_cut(sb, 0)
-		xrow = orow;
-	} else
+	if (TK_INT(key) || xrow != row)
 		sbuf_str(sb, post)
+	else
+		sbuf_cut(sb, 0)
 	sbufn_done(sb)
 }
 
