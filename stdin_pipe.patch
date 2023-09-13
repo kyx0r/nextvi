@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 450b839..f0932a4 100644
+index 5b39040..d839bb8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -394,7 +394,9 @@ int ex_edit(const char *path, int len)
@@ -113,10 +113,10 @@ index 4d2e41a..7ee8649 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index effbd92..e42a954 100644
+index f2470eb..83eedbc 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2026,7 +2026,8 @@ int main(int argc, char *argv[])
+@@ -2025,7 +2025,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
