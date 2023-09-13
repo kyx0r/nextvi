@@ -5,7 +5,7 @@ CFLAGS="\
 -Wno-missing-field-initializers \
 -Wno-unused-parameter \
 -Wfatal-errors -std=c99 \
--D_POSIX_C_SOURCE=200809L $CFLAGS"
+-D_POSIX_C_SOURCE=200809L -O2 $CFLAGS"
 
 : "${CC:=cc}"
 : "${PREFIX:=/usr/local}"
