@@ -1748,8 +1748,7 @@ void vi(int init)
 					} else
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
-				} else if (vi_insmov == TK_CTL('x'))
-					vi_mod = 1;
+				}
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
 			case 'J':

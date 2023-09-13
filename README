@@ -265,9 +265,7 @@ See also PERFORMANCE section at the end of the file.
 Because syntax highlight is bounded to the terminal dimensions some patterns
 may not be possible to match without rendering past the screen. To address
 this problem you may need some extra patch, see PATCHES section below.
-46. Added key to abandon insert discarding any changes keybind: ^x
-That means there are 3 ways to exit insert|prompt now: ^x, ^c, ESC
-RATIONALE: unlike others, ^x will not leave file marked as modified.
+46. When in ex insert mode, exiting with ^c will discard changes.
 47. Added Russian keymap, and changed how xkmap_alt works, now z + vi_arg1 in
 normal mode will switch what keymap ^f key changes, so for example 1 = fa 2 =
 ru. If you need some other language kmap just make one yourself. Look into
