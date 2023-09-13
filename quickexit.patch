@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 450b839..43a4567 100644
+index 5b39040..2a9d24c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -19,7 +19,7 @@ index 450b839..43a4567 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index da794b5..3f8b5b5 100644
+index baff690..35eea14 100644
 --- a/led.c
 +++ b/led.c
 @@ -367,6 +367,13 @@ static void led_info(char *str, int ai_max)
@@ -63,11 +63,11 @@ index da794b5..3f8b5b5 100644
 +			quickexit = gettime_ms();
  		default:
 +_default:
- 			if (c == '\n' || TK_INT(c) || c == TK_CTL('x'))
+ 			if (c == '\n' || TK_INT(c))
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index effbd92..aee1aa7 100644
+index f2470eb..f3faf2d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
