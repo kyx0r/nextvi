@@ -7,6 +7,12 @@ arrowkeys_normal.patch
 --------------
 Adds arrows keys support in normal mode.
 
+arrowkeys_insert.patch
+--------------
+Adds arrows keys support in insert mode.
+ESC waits for additional input, exiting insert with it requires 1 more key.
+Macroed feature, won't work well from macros.
+
 longbuf.patch
 --------------
 Overcome 2GB buffer size limitations. Fix all warns Will be able to read very

@@ -1,0 +1,32 @@
+diff --git a/led.c b/led.c
+index baff690..86d671d 100644
+--- a/led.c
++++ b/led.c
+@@ -568,6 +568,27 @@ static char *led_line(char *pref, char *post, char *ai,
+ 			term_exec(":", 1, /*nop*/, /*nop*/)
+ 			restore(xvis)
+ 			continue;
++		case '\033':	/* Arrow keys */
++			c = term_read();
++			if (c == '[') {
++				c = term_read();
++				switch (c) {
++				case 'A':	/* ↑ */
++					term_push("ki", 2);
++					break;
++				case 'B':	/* ↓ */
++					term_push("ji", 2);
++					break;
++				case 'D':	/* ← */
++					term_push("i", 1);
++					break;
++				case 'C':	/* → */
++					term_push("lli", 3);
++					break;
++				}
++			}
++			c = '\033';
++			goto leave;
+ 		default:
+ 			if (c == '\n' || TK_INT(c))
+ 				goto leave;
