@@ -1,10 +1,10 @@
 diff --git a/led.c b/led.c
-index baff690..86d671d 100644
+index baff690..17b967a 100644
 --- a/led.c
 +++ b/led.c
-@@ -568,6 +568,27 @@ static char *led_line(char *pref, char *post, char *ai,
- 			term_exec(":", 1, /*nop*/, /*nop*/)
- 			restore(xvis)
+@@ -563,6 +563,27 @@ static char *led_line(char *pref, char *post, char *ai,
+ 		case TK_CTL('l'):
+ 			term_clean();
  			continue;
 +		case '\033':	/* Arrow keys */
 +			c = term_read();
@@ -27,6 +27,6 @@ index baff690..86d671d 100644
 +			}
 +			c = '\033';
 +			goto leave;
- 		default:
- 			if (c == '\n' || TK_INT(c))
- 				goto leave;
+ 		case TK_CTL('o'):;
+ 			preserve(int, xvis, 0)
+ 			term_exec(":", 1, /*nop*/, /*nop*/)
