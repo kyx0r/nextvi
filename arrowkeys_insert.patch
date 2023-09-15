@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 3262a9d..947ff0a 100644
+index 3262a9d..9b22329 100644
 --- a/led.c
 +++ b/led.c
 @@ -563,6 +563,27 @@ static char *led_line(char *pref, char *post, char *ai,
@@ -12,10 +12,10 @@ index 3262a9d..947ff0a 100644
 +				c = term_read();
 +				switch (c) {
 +				case 'A':	/* ↑ */
-+					term_push("ki", 2);
++					term_push("lki", 3);
 +					break;
 +				case 'B':	/* ↓ */
-+					term_push("ji", 2);
++					term_push("lji", 3);
 +					break;
 +				case 'D':	/* ← */
 +					term_push("i", 1);
