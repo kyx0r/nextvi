@@ -113,7 +113,7 @@ index 4d2e41a..7ee8649 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index f2470eb..83eedbc 100644
+index 5da466b..8e16103 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2025,7 +2025,8 @@ int main(int argc, char *argv[])
@@ -127,7 +127,7 @@ index f2470eb..83eedbc 100644
  			if (argv[i][j] == 's')
  				xvis |= 2;
 diff --git a/vi.h b/vi.h
-index 08ee253..2f37fa6 100644
+index 603102c..2243964 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -417,3 +417,4 @@ extern rset *fsincl;

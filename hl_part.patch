@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index baff690..c222009 100644
+index 3262a9d..63efe76 100644
 --- a/led.c
 +++ b/led.c
 @@ -163,31 +163,71 @@ else if (*chrs[o] == '\t') \
