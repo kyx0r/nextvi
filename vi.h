@@ -277,7 +277,7 @@ char *xgetenv(char* q[]);
 
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
-char *led_input(char *pref, char *post, int *kmap, int row);
+sbuf *led_input(char *pref, char *post, int *kmap, int row);
 void led_render(char *s0, int row, int cbeg, int cend);
 #define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
 #define led_reprint(msg, row) { rstate->ren_laststr = NULL; led_print(msg, row); }

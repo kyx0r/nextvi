@@ -608,7 +608,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 }
 
 /* read visual command input */
-char *led_input(char *pref, char *post, int *kmap, int row)
+sbuf *led_input(char *pref, char *post, int *kmap, int row)
 {
 	sbuf *sb; sbuf_make(sb, 256)
 	char ai[128];
@@ -631,6 +631,13 @@ char *led_input(char *pref, char *post, int *kmap, int row)
 		sbuf_str(sb, ln)
 		if (key == '\n')
 			sbuf_chr(sb, '\n')
+		else if (!*ln) {
+			free(ln);
+			if (row != xrow)
+				break;
+			sbufn_cut(sb, 0)
+			return sb;
+		}
 		led_printparts(ai, pref ? pref : "", uc_lastline(ln),
 				key == '\n' ? "" : post);
 		if (key == '\n')
@@ -656,11 +663,8 @@ char *led_input(char *pref, char *post, int *kmap, int row)
 		memmove(post, post + n, strlen(post) - n + 1);
 		xrow++;
 	}
-	if (TK_INT(key) || xrow != row)
-		sbuf_str(sb, post)
-	else
-		sbuf_cut(sb, 0)
-	sbufn_done(sb)
+	sbufn_str(sb, post)
+	return sb;
 }
 
 void led_done(void)
