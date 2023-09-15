@@ -1748,8 +1748,7 @@ void vi(int init)
 					} else
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
-				}
-				if ((c == 'i' || c == 'I') && !k)
+				} else if ((c == 'i' || c == 'I') && !k)
 					xoff--;
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
