@@ -993,15 +993,13 @@ static void vi_splitln(int row, int linepos, int nextln)
 	}
 }
 
-static int charcount(char *text, char *post)
+static int charcount(char *text, int tlen, char *post)
 {
-	int tlen = strlen(text);
 	int plen = strlen(post);
 	char *nl = text;
-	int i;
 	if (tlen < plen)
 		return 0;
-	for (i = 0; i < tlen - plen; i++)
+	for (int i = 0; i < tlen - plen; i++)
 		if (text[i] == '\n')
 			nl = text + i + 1;
 	return uc_slen(nl) - uc_slen(post);
@@ -1009,9 +1007,9 @@ static int charcount(char *text, char *post)
 
 static char *vi_input(char *pref, char *post, int row)
 {
-	char *rep = led_input(pref, post, &xkmap, row);
-	xoff = *rep ? charcount(rep, post) - 1 : xoff;
-	return rep;
+	sbuf *rep = led_input(pref, post, &xkmap, row);
+	xoff = *rep->s ? charcount(rep->s, rep->s_n, post) - 1 : xoff;
+	sbufn_done(rep)
 }
 
 static char *vi_indents(char *ln)
@@ -1749,6 +1747,8 @@ void vi(int init)
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
 				}
+				if (tolower(c) == 'i' && !lbuf_modified(xb))
+					xoff--; /* move backward even if nothing was modified */
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
 			case 'J':
