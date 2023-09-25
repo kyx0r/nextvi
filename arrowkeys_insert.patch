@@ -1,8 +1,36 @@
 diff --git a/led.c b/led.c
-index 3262a9d..658a7ff 100644
+index 3262a9d..370ac8a 100644
 --- a/led.c
 +++ b/led.c
-@@ -563,6 +563,31 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -288,8 +288,6 @@ static int led_lastword(char *s)
+ 
+ static void led_printparts(char *ai, char *pref, char *main, char *post)
+ {
+-	if (!xled)
+-		return;
+ 	sbuf *ln;
+ 	int off, pos;
+ 	int idir = 0;
+@@ -376,6 +374,7 @@ static char *led_line(char *pref, char *post, char *ai,
+ 	int ai_len = strlen(ai), len, p_reg = 0;
+ 	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
+ 	char *cs, *sug = NULL, *_sug = NULL;
++	static int led_reins;
+ 	sbufn_make(sb, xcols)
+ 	if (insert)
+ 		sbufn_str(sb, insert)
+@@ -386,6 +385,10 @@ static char *led_line(char *pref, char *post, char *ai,
+ 	while (1) {
+ 		led_printparts(ai, pref, sb->s, post);
+ 		len = sb->s_n;
++		if (led_reins) {
++			xled = led_reins;
++			led_reins = 0;
++		}
+ 		c = term_read();
+ 		switch (c) {
+ 		case TK_CTL('h'):
+@@ -563,6 +566,51 @@ static char *led_line(char *pref, char *post, char *ai,
  		case TK_CTL('l'):
  			term_clean();
  			continue;
@@ -14,18 +42,38 @@ index 3262a9d..658a7ff 100644
 +			read(STDIN_FILENO, cbuf, 1);
 +			if (*cbuf == '[') {
 +				read(STDIN_FILENO, cbuf, 1);
++				int tmp = xled;
++				xled = led_reins;
++				led_reins = tmp;
 +				switch (*cbuf) {
 +				case 'A':	/* ↑ */
-+					term_push("lki", 4);
++					if (!xoff)
++						term_push("ki", 2);
++					else
++						term_push("lki", 3);
++					if (xrow - xtop == 0) {
++						xled = led_reins;
++						led_reins = 0;
++					}
 +					break;
 +				case 'B':	/* ↓ */
-+					term_push("lji", 4);
++					if (!xoff)
++						term_push("ji", 2);
++					else
++						term_push("lji", 3);
++					if (xrow - xtop == xrows - 1) {
++						xled = led_reins;
++						led_reins = 0;
++					}
 +					break;
 +				case 'D':	/* ← */
 +					term_push("i", 1);
 +					break;
 +				case 'C':	/* → */
-+					term_push("lli", 3);
++					if (!xoff)
++						term_push("li", 2);
++					else
++						term_push("lli", 3);
 +					break;
 +				}
 +			}
