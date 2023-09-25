@@ -1,21 +1,25 @@
 diff --git a/led.c b/led.c
-index 3262a9d..9b22329 100644
+index 3262a9d..658a7ff 100644
 --- a/led.c
 +++ b/led.c
-@@ -563,6 +563,27 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -563,6 +563,31 @@ static char *led_line(char *pref, char *post, char *ai,
  		case TK_CTL('l'):
  			term_clean();
  			continue;
-+		case '\033':	/* Arrow keys */
-+			c = term_read();
-+			if (c == '[') {
-+				c = term_read();
-+				switch (c) {
++		case '\033':;	/* Arrow keys */
++			char cbuf[1];
++			cbuf[0] = '\0';
++			int fl = fcntl(STDIN_FILENO, F_GETFL);
++			fcntl(STDIN_FILENO, F_SETFL, fl | O_NONBLOCK);
++			read(STDIN_FILENO, cbuf, 1);
++			if (*cbuf == '[') {
++				read(STDIN_FILENO, cbuf, 1);
++				switch (*cbuf) {
 +				case 'A':	/* ↑ */
-+					term_push("lki", 3);
++					term_push("lki", 4);
 +					break;
 +				case 'B':	/* ↓ */
-+					term_push("lji", 3);
++					term_push("lji", 4);
 +					break;
 +				case 'D':	/* ← */
 +					term_push("i", 1);
@@ -25,7 +29,7 @@ index 3262a9d..9b22329 100644
 +					break;
 +				}
 +			}
-+			c = '\033';
++			fcntl(STDIN_FILENO, F_SETFL, fl);
 +			goto leave;
  		case TK_CTL('o'):;
  			preserve(int, xvis, 0)
