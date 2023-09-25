@@ -1,25 +1,25 @@
 diff --git a/led.c b/led.c
-index 3262a9d..370ac8a 100644
+index 3262a9d..1903a92 100644
 --- a/led.c
 +++ b/led.c
-@@ -288,8 +288,6 @@ static int led_lastword(char *s)
+@@ -2,6 +2,7 @@
+ 
+ static sbuf *suggestsb;
+ static sbuf *acsb;
++static int led_reins;
+ 
+ int dstrlen(const char *s, char delim)
+ {
+@@ -288,7 +289,7 @@ static int led_lastword(char *s)
  
  static void led_printparts(char *ai, char *pref, char *main, char *post)
  {
 -	if (!xled)
--		return;
++	if (!xled && !led_reins)
+ 		return;
  	sbuf *ln;
  	int off, pos;
- 	int idir = 0;
-@@ -376,6 +374,7 @@ static char *led_line(char *pref, char *post, char *ai,
- 	int ai_len = strlen(ai), len, p_reg = 0;
- 	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
- 	char *cs, *sug = NULL, *_sug = NULL;
-+	static int led_reins;
- 	sbufn_make(sb, xcols)
- 	if (insert)
- 		sbufn_str(sb, insert)
-@@ -386,6 +385,10 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -386,6 +387,10 @@ static char *led_line(char *pref, char *post, char *ai,
  	while (1) {
  		led_printparts(ai, pref, sb->s, post);
  		len = sb->s_n;
@@ -30,7 +30,7 @@ index 3262a9d..370ac8a 100644
  		c = term_read();
  		switch (c) {
  		case TK_CTL('h'):
-@@ -563,6 +566,51 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -563,6 +568,51 @@ static char *led_line(char *pref, char *post, char *ai,
  		case TK_CTL('l'):
  			term_clean();
  			continue;
