@@ -1008,7 +1008,7 @@ static int charcount(char *text, int tlen, char *post)
 static char *vi_input(char *pref, char *post, int row)
 {
 	sbuf *rep = led_input(pref, post, &xkmap, row);
-	xoff = *rep->s ? charcount(rep->s, rep->s_n, post) - 1 : xoff;
+	xoff = *rep->s ? charcount(rep->s, rep->s_n, post) : xoff;
 	sbufn_done(rep)
 }
 
@@ -1173,7 +1173,7 @@ static int vc_motion(int cmd)
 	return 0;
 }
 
-static int vc_insert(int cmd)
+static void vc_insert(int cmd)
 {
 	char *pref, *post;
 	char *ln = lbuf_get(xb, xrow);
@@ -1206,13 +1206,11 @@ static int vc_insert(int cmd)
 	rep = vi_input(pref, post, row - cmdo);
 	if (cmdo && !lbuf_len(xb))
 		lbuf_edit(xb, "\n", 0, 0);
-	cmd = *rep;
-	if (cmd)
+	if (*rep)
 		lbuf_edit(xb, rep, row, row + !cmdo);
 	free(rep);
 	free(pref);
 	free(post);
-	return cmd;
 }
 
 static int vc_put(int cmd)
@@ -1736,11 +1734,11 @@ void vi(int init)
 			case 'A':
 			case 'o':
 			case 'O':
-				k = vc_insert(c);
+				vc_insert(c);
 				vi_mod = !xpac && xrow == orow ? 2 : 1;
 				ins:
 				if (vi_insmov == 127) {
-					if (tolower(c) == 'a' || c == 's' || tolower(c) == 'c')
+					if (tolower(c) == 'a')
 						xoff++;
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
@@ -1748,7 +1746,9 @@ void vi(int init)
 					} else
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
-				} else if ((c == 'i' || c == 'I') && !k)
+					break;
+				}
+				if ((c == 'i' || c == 'I') || noff != xoff)
 					xoff--;
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
