@@ -1262,10 +1262,9 @@ static int join_spaces(char *prev, char *next)
 	return prev[prevlen - 1] == '.' ? 2 : 1;
 }
 
-static void vc_join(int spc)
+static void vc_join(int spc, int cnt)
 {
 	sbuf *sb;
-	int cnt = vi_arg1 <= 1 ? 2 : vi_arg1;
 	int beg = xrow;
 	int end = xrow + cnt;
 	int off = 0, i;
@@ -1742,8 +1741,8 @@ void vi(int init)
 						xoff++;
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
-						vc_join(0);
-					} else
+						vc_join(0, 2);
+					} else if (xoff)
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
 					break;
@@ -1753,7 +1752,7 @@ void vi(int init)
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
 			case 'J':
-				vc_join(1);
+				vc_join(1, vi_arg1 <= 1 ? 2 : vi_arg1);
 				break;
 			case 'K':
 				vi_splitln(xrow, xoff+1, 0);
