@@ -1725,7 +1725,7 @@ void vi(int init)
 			case TK_CTL('w'):
 				if (!vc_motion(c))
 					vi_mod = 1;
-				if (c == 'c' || c == 'C')
+				if (c == 'c')
 					goto ins;
 				break;
 			case 'I':
