@@ -1726,7 +1726,9 @@ void vi(int init)
 			case TK_CTL('w'):
 				if (!vc_motion(c))
 					vi_mod = 1;
-				goto ins;
+				if (c == 'c' || c == 'C')
+					goto ins;
+				break;
 			case 'I':
 			case 'i':
 			case 'a':
@@ -1737,7 +1739,7 @@ void vi(int init)
 				vi_mod = !xpac && xrow == orow ? 2 : 1;
 				ins:
 				if (vi_insmov == 127) {
-					if (tolower(c) == 'a')
+					if (c == 'a' || c == 'A')
 						xoff++;
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
@@ -1747,7 +1749,7 @@ void vi(int init)
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
 					break;
 				}
-				if ((c == 'i' || c == 'I') || noff != xoff)
+				if (c != 'a' && c != 'A' && c != 'C')
 					xoff--;
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
