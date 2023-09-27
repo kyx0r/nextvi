@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 5b39040..222d3ce 100644
+index 5b39040..9aedaa6 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -418,6 +418,16 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -418,6 +418,20 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
  	ex_show(msg);
@@ -10,11 +10,15 @@ index 5b39040..222d3ce 100644
 +		int adv = 0;
 +		while (lbuf_len(xb) >= adv && lbuf_buf(xb)[adv][0] == '\n')
 +			adv++;
-+		char *langs[] = {"/bin/sh", "/bin/dash", "/bin/bash", "/bin/zsh", "/usr/bin/env sh", "/usr/bin/env dash", "/usr/bin/env bash", "/usr/bin/env zsh", "/bin/python", "/usr/bin/env python"};
-+		char *types[] = {"sh", "sh", "sh", "sh", "sh", "sh", "sh", "sh", "py", "py"};
-+		for (int i = 0; i < LEN(langs); i++)
-+			if (strstr(lbuf_buf(xb)[adv], langs[i]))
++		char *langs[] = {"sh", "dash", "bash", "zsh", "python"};
++		char *types[] = {"sh", "sh", "sh", "sh", "py"};
++		char check[2][32];
++		for (int i = 0; i < LEN(langs); i++) {
++			snprintf(check[0], 32, "/bin/%s", langs[i]);
++			snprintf(check[1], 32, "/bin/env %s", langs[i]);
++			if ((strstr(lbuf_buf(xb)[adv], check[0])) || (strstr(lbuf_buf(xb)[adv], check[1])))
 +				ex_ft = syn_setft(types[i]);
++		}
 +	}
  	return fd < 0 || rd;
  }
