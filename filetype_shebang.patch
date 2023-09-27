@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 5b39040..a85dafe 100644
+index 5b39040..2e6b59e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -418,6 +418,16 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -418,6 +418,23 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
  	ex_show(msg);
@@ -10,11 +10,18 @@ index 5b39040..a85dafe 100644
 +		int adv = 0;
 +		while (lbuf_len(xb) >= adv && lbuf_buf(xb)[adv][0] == '\n')
 +			adv++;
-+		char *langs[] = {"/bin/sh", "/bin/python"};
-+		char *types[] = {"sh", "py"};
-+		for (int i = 0; i < LEN(langs); i++)
-+			if (strstr(lbuf_buf(xb)[adv], langs[i]))
-+				ex_ft = syn_setft(types[i]);
++		struct filetype lfts[] = {
++			{"sh", "^#!/.*/(env )?(sh|bash|zsh|dash)$"},
++			{"py", "^#!/.*/(env )?(python)$"}
++		};
++		char *pats[ftslen];
++		for (int i = 0; i < LEN(lfts); i++)
++			pats[i] = lfts[i].pat;
++		rset *rs = rset_make(LEN(lfts), pats, 0);
++		int hl = rset_find(rs, lbuf_buf(xb)[adv], 0, NULL, REG_NEWLINE);
++		if (hl >= 0)
++			ex_ft = syn_setft(lfts[hl].ft);
++		rset_free(rs);
 +	}
  	return fd < 0 || rd;
  }
