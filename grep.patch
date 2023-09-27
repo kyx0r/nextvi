@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 46103cc..28c4643 100644
+index 463af0f..2dae05e 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -231,6 +231,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
@@ -28,7 +28,7 @@ index 5b39040..c355320 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 9003538..a9936aa 100644
+index 742872f..d5b0d0b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -654,12 +654,12 @@ void dir_calc(char *path)
@@ -126,7 +126,7 @@ index 9003538..a9936aa 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1536,7 +1572,17 @@ void vi(int init)
+@@ -1533,7 +1569,17 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -145,7 +145,7 @@ index 9003538..a9936aa 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1671,6 +1717,11 @@ void vi(int init)
+@@ -1668,6 +1714,11 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
