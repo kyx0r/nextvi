@@ -73,7 +73,7 @@ index 3262a9d..777c637 100644
  			term_chr('\n');
  		if (!pref || !pref[0]) {	/* updating autoindent */
 diff --git a/vi.c b/vi.c
-index 9fee3a7..cc2fe85 100644
+index 9fee3a7..003ac68 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1737,6 +1737,29 @@ void vi(int init)
@@ -82,13 +82,13 @@ index 9fee3a7..cc2fe85 100644
  				ins:
 +				switch (vi_insmov) {
 +				case 'A':	/* ↑ */
-+					vi_back('i');
++					vi_back(c == 'a' || c == 'A' ? c : 'i');
 +					xrow--;
 +					xrow = xrow < 0 ? 0 : xrow;
 +					xoff = vi_col2off(xb, xrow, vi_col);
 +					goto _break;
 +				case 'B':	/* ↓ */
-+					vi_back('i');
++					vi_back(c == 'a' || c == 'A' ? c : 'i');
 +					xrow++;
 +					xoff = vi_col2off(xb, xrow, vi_col);
 +					goto _break;
