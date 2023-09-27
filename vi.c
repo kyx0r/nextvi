@@ -1203,10 +1203,11 @@ static void vc_insert(int cmd)
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
 	rep = vi_input(pref, post, row - cmdo);
-	if (cmdo && !lbuf_len(xb))
-		lbuf_edit(xb, "\n", 0, 0);
-	if (*rep)
+	if (*rep) {
+		if (cmdo && !lbuf_len(xb))
+			lbuf_edit(xb, "\n", 0, 0);
 		lbuf_edit(xb, rep, row, row + !cmdo);
+	}
 	free(rep);
 	free(pref);
 	free(post);
@@ -1735,7 +1736,7 @@ void vi(int init)
 			case 'o':
 			case 'O':
 				vc_insert(c);
-				vi_mod = !xpac && xrow == orow ? 2 : 1;
+				vi_mod = !xpac && xrow == orow ? 3 : 1;
 				ins:
 				if (vi_insmov == 127) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
@@ -1744,6 +1745,7 @@ void vi(int init)
 					} else if (xoff)
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
+					vi_mod = !xpac && xrow == orow ? 2 : 1;
 					break;
 				}
 				if (c != 'A' && c != 'C')
