@@ -1177,7 +1177,7 @@ static void vc_insert(int cmd)
 {
 	char *pref, *post;
 	char *ln = lbuf_get(xb, xrow);
-	int row, off;
+	int row;
 	char *rep;
 	int cmdo;
 	if (cmd == 'I')
@@ -1192,15 +1192,14 @@ static void vc_insert(int cmd)
 		}
 	}
 	xoff = ren_noeol(ln, xoff);
-	off = xoff;
 	row = xrow;
 	if (cmd == 'a' || cmd == 'A')
-		off++;
+		xoff++;
 	if (ln && ln[0] == '\n')
-		off = 0;
+		xoff = 0;
 	cmdo = cmd == 'o' || cmd == 'O';
-	pref = ln && !cmdo ? uc_sub(ln, 0, off) : vi_indents(ln);
-	post = ln && !cmdo ? uc_sub(ln, off, -1) : uc_dup("\n");
+	pref = ln && !cmdo ? uc_sub(ln, 0, xoff) : vi_indents(ln);
+	post = ln && !cmdo ? uc_sub(ln, xoff, -1) : uc_dup("\n");
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
 	rep = vi_input(pref, post, row - cmdo);
@@ -1726,7 +1725,7 @@ void vi(int init)
 			case TK_CTL('w'):
 				if (!vc_motion(c))
 					vi_mod = 1;
-				if (c == 'c' || c == 'C')
+				if (c == 'c')
 					goto ins;
 				break;
 			case 'I':
@@ -1739,8 +1738,6 @@ void vi(int init)
 				vi_mod = !xpac && xrow == orow ? 2 : 1;
 				ins:
 				if (vi_insmov == 127) {
-					if (c == 'a' || c == 'A')
-						xoff++;
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
 						vc_join(0, 2);
@@ -1749,7 +1746,7 @@ void vi(int init)
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
 					break;
 				}
-				if (c != 'a' && c != 'A' && c != 'C')
+				if (c != 'A' && c != 'C')
 					xoff--;
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
