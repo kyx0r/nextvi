@@ -10,7 +10,7 @@ struct filetype fts[] = {
 	{"tex", "\\.tex$"},				/* tex */
 	{"msg", "letter$|mbox$|mail$"},			/* email */
 	{"mk", "Makefile$|makefile$|\\.mk$"},		/* makefile */
-	{"sh", "\\.sh$"},				/* shell script */
+	{"sh", "\\.(sh|bash|zsh)$"},			/* shell script */
 	{"py", "\\.py$"},				/* python */
 	{"nm", "\\.nm$"},				/* neatmail */
 	{"js", "\\.js$"},				/* javascript */

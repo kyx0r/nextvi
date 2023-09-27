@@ -234,7 +234,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
 	for (int i = beg; i < end; i++) {
 		char *ln = lbuf->ln[i];
 		long nw = 0;
-		long nl = strlen(ln);
+		long nl = *(int*)(ln - sizeof(int)) + 1;
 		while (nw < nl) {
 			long nc = write(fd, ln + nw, nl - nw);
 			if (nc < 0)

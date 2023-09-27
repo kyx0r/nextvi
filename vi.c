@@ -1008,7 +1008,7 @@ static int charcount(char *text, int tlen, char *post)
 static char *vi_input(char *pref, char *post, int row)
 {
 	sbuf *rep = led_input(pref, post, &xkmap, row);
-	xoff = *rep->s ? charcount(rep->s, rep->s_n, post) - 1 : xoff;
+	xoff = *rep->s ? charcount(rep->s, rep->s_n, post) : xoff;
 	sbufn_done(rep)
 }
 
@@ -1173,11 +1173,11 @@ static int vc_motion(int cmd)
 	return 0;
 }
 
-static int vc_insert(int cmd)
+static void vc_insert(int cmd)
 {
 	char *pref, *post;
 	char *ln = lbuf_get(xb, xrow);
-	int row, off;
+	int row;
 	char *rep;
 	int cmdo;
 	if (cmd == 'I')
@@ -1192,27 +1192,24 @@ static int vc_insert(int cmd)
 		}
 	}
 	xoff = ren_noeol(ln, xoff);
-	off = xoff;
 	row = xrow;
 	if (cmd == 'a' || cmd == 'A')
-		off++;
+		xoff++;
 	if (ln && ln[0] == '\n')
-		off = 0;
+		xoff = 0;
 	cmdo = cmd == 'o' || cmd == 'O';
-	pref = ln && !cmdo ? uc_sub(ln, 0, off) : vi_indents(ln);
-	post = ln && !cmdo ? uc_sub(ln, off, -1) : uc_dup("\n");
+	pref = ln && !cmdo ? uc_sub(ln, 0, xoff) : vi_indents(ln);
+	post = ln && !cmdo ? uc_sub(ln, xoff, -1) : uc_dup("\n");
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
 	rep = vi_input(pref, post, row - cmdo);
 	if (cmdo && !lbuf_len(xb))
 		lbuf_edit(xb, "\n", 0, 0);
-	cmd = *rep;
-	if (cmd)
+	if (*rep)
 		lbuf_edit(xb, rep, row, row + !cmdo);
 	free(rep);
 	free(pref);
 	free(post);
-	return cmd;
 }
 
 static int vc_put(int cmd)
@@ -1264,10 +1261,9 @@ static int join_spaces(char *prev, char *next)
 	return prev[prevlen - 1] == '.' ? 2 : 1;
 }
 
-static void vc_join(int spc)
+static void vc_join(int spc, int cnt)
 {
 	sbuf *sb;
-	int cnt = vi_arg1 <= 1 ? 2 : vi_arg1;
 	int beg = xrow;
 	int end = xrow + cnt;
 	int off = 0, i;
@@ -1729,31 +1725,33 @@ void vi(int init)
 			case TK_CTL('w'):
 				if (!vc_motion(c))
 					vi_mod = 1;
-				goto ins;
+				if (c == 'c')
+					goto ins;
+				break;
 			case 'I':
 			case 'i':
 			case 'a':
 			case 'A':
 			case 'o':
 			case 'O':
-				k = vc_insert(c);
+				vc_insert(c);
 				vi_mod = !xpac && xrow == orow ? 2 : 1;
 				ins:
 				if (vi_insmov == 127) {
-					if (tolower(c) == 'a' || c == 's' || tolower(c) == 'c')
-						xoff++;
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
-						vc_join(0);
-					} else
+						vc_join(0, 2);
+					} else if (xoff)
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
-				} else if ((c == 'i' || c == 'I') && !k)
+					break;
+				}
+				if (c != 'A' && c != 'C')
 					xoff--;
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
 			case 'J':
-				vc_join(1);
+				vc_join(1, vi_arg1 <= 1 ? 2 : vi_arg1);
 				break;
 			case 'K':
 				vi_splitln(xrow, xoff+1, 0);
