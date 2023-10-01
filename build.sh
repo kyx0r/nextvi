@@ -12,8 +12,8 @@ CFLAGS="\
 : "${PREFIX:=/usr/local}"
 : "${OS:=$(uname)}"
 case "$OS" in
-    *BSD*)    CFLAGS="$CFLAGS -D_BSD_SOURCE"      ;;
-    *Darwin*) CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE" ;;
+	*BSD*)		CFLAGS="$CFLAGS -D_BSD_SOURCE"		;;
+	*Darwin*)	CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"	;;
 esac
 
 run() {
@@ -34,8 +34,10 @@ build() {
 pgobuild() {
 	run "$CC vi.c -fprofile-generate=. -o vi $CFLAGS"
 	echo "qq" | ./vi -v ./vi.c >/dev/null
+	ccversion="$("$CC" --version)"
+	case "$ccversion" in *clang*) run llvm-profdata merge ./*.profraw -o default.profdata ;; esac
 	run "$CC vi.c -fprofile-use=. -o vi $CFLAGS"
-	rm ./*.gcda
+	rm -f ./*.gcda ./*.profraw ./default.profdata
 }
 
 if [ "$#" -gt 0 ]; then
