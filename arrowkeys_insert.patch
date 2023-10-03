@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 3262a9d..777c637 100644
+index 3262a9d..f2fa822 100644
 --- a/led.c
 +++ b/led.c
 @@ -286,7 +286,7 @@ static int led_lastword(char *s)
@@ -29,7 +29,7 @@ index 3262a9d..777c637 100644
  		post = "";
  	while (1) {
 -		led_printparts(ai, pref, sb->s, post);
-+		led_printparts(ai, pref, sb->s, post, !strchr("ABCD", vi_insmov));
++		led_printparts(ai, pref, sb->s, post, !memchr("ABCD", vi_insmov, 4));
 +		vi_insmov = -1;
  		len = sb->s_n;
  		c = term_read();
@@ -73,9 +73,18 @@ index 3262a9d..777c637 100644
  			term_chr('\n');
  		if (!pref || !pref[0]) {	/* updating autoindent */
 diff --git a/vi.c b/vi.c
-index 742872f..4e33b18 100644
+index 742872f..24bf679 100644
 --- a/vi.c
 +++ b/vi.c
+@@ -41,7 +41,7 @@
+ #include "uc.c"
+ 
+ int vi_hidch;		/* show hidden chars */
+-int vi_insmov;		/* moving in insert outside of insertion sbuf */
++int vi_insmov = -1;		/* moving in insert outside of insertion sbuf */
+ static int vi_lnnum;	/* line numbers */
+ static int vi_mod;	/* screen should be redrawn:
+ 			(1: whole screen, -1: whole screen not updating vi_col, 2: current line) */
 @@ -1738,6 +1738,29 @@ void vi(int init)
  				vc_insert(c);
  				vi_mod = !xpac && xrow == orow ? 3 : 1;
