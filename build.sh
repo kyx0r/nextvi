@@ -44,7 +44,7 @@ pgobuild() {
 	fi
 	run "$CC vi.c -fprofile-generate=. -o vi $CFLAGS"
 	echo "qq" | ./vi -v ./vi.c >/dev/null
-	[ "$clang" -eq 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
+	[ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
 	run "$CC vi.c -fprofile-use=. -o vi $CFLAGS"
 	rm -f ./*.gcda ./*.profraw ./default.profdata
 }
