@@ -113,10 +113,10 @@ index 4d2e41a..7ee8649 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 742872f..c360799 100644
+index 11f51c2..054f987 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2026,7 +2026,8 @@ int main(int argc, char *argv[])
+@@ -2027,7 +2027,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;

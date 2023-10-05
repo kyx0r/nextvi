@@ -1,5 +1,5 @@
 diff --git a/build.sh b/build.sh
-index c389483..41239aa 100755
+index 5cb68ed..15ec00b 100755
 --- a/build.sh
 +++ b/build.sh
 @@ -6,6 +6,7 @@ CFLAGS="\
@@ -173,7 +173,7 @@ index 69fcbe4..6811ef4 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 742872f..45a5943 100644
+index 11f51c2..51807bd 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
