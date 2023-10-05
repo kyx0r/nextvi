@@ -32,10 +32,19 @@ build() {
 }
 
 pgobuild() {
+	ccversion="$($CC --version)"
+	case "$ccversion" in *clang*) clang=1 ;; esac
+	if [ "$clang" = 1 ]; then
+		if command -v llvm-profdata >/dev/null 2>&1; then
+			PROFDATA=llvm-profdata
+		elif xcrun -f llvm-profdata >/dev/null 2>&1; then
+			PROFDATA="xcrun llvm-profdata"
+		fi
+		[ -z "$PROFDATA" ] && echo "pgobuild with clang requires llvm-profdata" && exit 1
+	fi
 	run "$CC vi.c -fprofile-generate=. -o vi $CFLAGS"
 	echo "qq" | ./vi -v ./vi.c >/dev/null
-	ccversion="$("$CC" --version)"
-	case "$ccversion" in *clang*) run llvm-profdata merge ./*.profraw -o default.profdata ;; esac
+	[ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
 	run "$CC vi.c -fprofile-use=. -o vi $CFLAGS"
 	rm -f ./*.gcda ./*.profraw ./default.profdata
 }
