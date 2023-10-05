@@ -2005,7 +2005,8 @@ static void sighandler(int signo)
 }
 
 static int setup_signals(void) {
-	struct sigaction sa = {0};
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = sighandler;
 	if (sigaction(SIGCONT, &sa, NULL) ||
 			sigaction(SIGWINCH, &sa, NULL))
