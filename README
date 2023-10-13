@@ -114,7 +114,7 @@ switch to temp buffers.
 Added new ex command "bx", where the argument will change the number of buffers
 allowed. If the number is lower than number of buffers currently in use they
 will be deallocated. Running bx without an arg will reset to default value.
-The default value is 10 or larger depending on the number of files specified 
+The default value is 10 or larger depending on the number of files specified
 in commandline arguments.
 Increasing the number of buffers may result in a positive effect on performance of
 fssearch (8. 9.) if the search keyword does not change. This is because vi
@@ -400,13 +400,33 @@ this is an example text for subs and has preintafter or void
 :%s/(int)\|(void)/pre\2after/g
 this is an example text for subs and has prepreafterafter or prevoidafter
 
+- ex ranges:
+Some ex commands can be prefixed with ranges.
+Example: print lines 1,5
+:1,5p
+Example: print 5 lines around xrow
+:.-5,.+5p
+Example: print until int is found
+:.,/int/p
+Example: print until int is found in reverse
+:?int?,.p
+Note: in some cases . can be dropped but is kept for readability.
+
 - ex global command:
-same syntax as ex substitution command, but instead of replacement
+Same syntax as ex substitution command, but instead of replacement
 string it takes an ex command after the / / enclosed regex.
 Example: remove empty lines
 :g/^$/d
 Try doing similar with substitution command - will not work as removing '\n'
 without deleting the line is invalid, but it will work with global command.
+Multiple ex commands can be chained in one global command.
+In this case the ex separator has to be escaped once.
+Example: yank matches and print them out.
+:g/int/ya A\|p
+If you wanted to get really fancy, it is possible to nest global commands
+inside of global commands.
+Example: find all lines with int and a semicolon and append "has a semicolon"
+g/int/:.g/;/tp A has a semicolon
 
 - search motions:
 ? and / searches have the ability to be used as motions. This seems very
