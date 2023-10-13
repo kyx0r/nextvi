@@ -593,6 +593,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 	char *s = led_line(pref, post, "", 0, &key, kmap, insert, 0);
 	restore(xtd)
 	if (key == '\n') {
+		temp_pos(0, -1, 0, 0);
 		temp_write(0, s);
 		sbuf *sb; sbuf_make(sb, 256)
 		if (pref)
