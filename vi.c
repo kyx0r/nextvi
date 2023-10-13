@@ -1737,13 +1737,13 @@ void vi(int init)
 				vi_mod = !xpac && xrow == orow ? 3 : 1;
 				ins:
 				if (vi_insmov == 127) {
+					vi_mod = vi_mod == 3 ? 2 : 1;
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
 						vc_join(0, 2);
 					} else if (xoff)
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
 					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
-					vi_mod = !xpac && xrow == orow ? 2 : 1;
 					break;
 				}
 				if (c != 'A' && c != 'C')
