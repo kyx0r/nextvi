@@ -58,6 +58,7 @@ static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
 static int vi_cndir = 1;		/* ^n direction */
 static int vi_status;			/* always show status */
+static int vi_joinmode = 1;		/* 1: insert extra space for pad 0: raw line join */
 static char *regs[256];			/* string registers */
 static int lnmode[256];
 
@@ -1614,6 +1615,9 @@ void vi(int init)
 					aistr[11] = xai + '0';
 					snprintf(vi_msg, sizeof(vi_msg), "%s", aistr);
 					break;
+				case 'j':
+					vi_joinmode = !vi_joinmode;
+					break;
 				case 'o':
 					ex_command("%s/\x0d//g|%s/[ \t]+$//g")
 					vi_mod = 1;
@@ -1747,7 +1751,7 @@ void vi(int init)
 				xoff = xoff < 0 ? 0 : xoff;
 				break;
 			case 'J':
-				vc_join(1, vi_arg1 <= 1 ? 2 : vi_arg1);
+				vc_join(vi_joinmode, vi_arg1 <= 1 ? 2 : vi_arg1);
 				break;
 			case 'K':
 				vi_splitln(xrow, xoff+1, 0);
