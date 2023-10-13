@@ -147,8 +147,7 @@ you not saving the file prior to running the macro.
 @c = run ac command and reindex ac db
 
 export EXINIT="se noled|tp Oo{
-}kA
-	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp oa()i|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*
+}kA
+	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp oa()i|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*
 2x/\*\/
-2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<\$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\|w\\|\!git diff --no-index \%_ \%|tp 0\"fy$|tp o:ac  \\|tp i\\|u\\|ac3ls|tp 0\"cy$|inc (^[\!.git]+[^\\/]+$)|tp 50u|se led"
-
+2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<\$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\|w\\|\!git diff --no-index \%_ \%|tp 0\"fy$|tp o:ac  \\|tp i\\|u\\|ac3ls|tp 0\"cy$|inc (^[\!.git]+[^\\/]+$)|tp 50u|se led"
