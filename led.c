@@ -331,7 +331,7 @@ char *led_read(int *kmap, int c)
 		case TK_CTL('e'):
 			*kmap = 0;
 			break;
-		case TK_CTL('a'):	/* literal character */
+		case TK_CTL('v'):	/* literal character */
 			buf[0] = term_read();
 			buf[1] = '\0';
 			return buf;
@@ -550,7 +550,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			xquit = 0;
 			cur_histstr:
 			i = 0;
-		case TK_CTL('v'):
+		case TK_CTL('a'):
 			cs = lbuf_get(tempbufs[0].lb, tempbufs[0].row - i);
 			if (cs) {
 				sbuf_cut(sb, 0)

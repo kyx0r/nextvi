@@ -1624,7 +1624,7 @@ void vi(int init)
 				case 'b':
 				case 'v':
 					vi_back(':');
-					term_push(k == 'v' ? "\x16" : "\x02", 1); /* ^v : ^b */
+					term_push(k == 'v' ? "\x01" : "\x02", 1); /* ^a : ^b */
 					break;
 				case ';':
 					ln = vi_prompt(":", "!", &kmap);
