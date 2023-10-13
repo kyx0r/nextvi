@@ -1593,12 +1593,6 @@ void vi(int init)
 				vi_mod = 2;
 				k = vi_read();
 				switch (k) {
-				case 'h':
-					ex_command(".s/\\./->/")
-					break;
-				case 'g':
-					ex_command(".s/->/\\./")
-					break;
 				case '.':
 					while (vi_arg1) {
 						term_push("j", 1);
