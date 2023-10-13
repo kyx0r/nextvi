@@ -78,7 +78,7 @@ NEXTVI FEATURES & CHANGES
 -------------------------
 1. Added unindent keybind: ^w
 ^w may also take vi_arg1 or motions as a region.
-2. (Feature moved to patches)
+2.
 3. Added linenumbers, keybind: # (relative numbers are placed after indent)
 Passing vi_arg1 to # enables permanent line numbers.
 4. Added invisible character view, keybind: V
@@ -136,8 +136,8 @@ which also happens to permit numbers > 9.
 17. Added key to delete everything inside (cursor outside) "" keybind: di" or dc"
 18. Added key to delete everything inside () keybind: di) or dc)
 19. Added key to delete everything inside (cursor outside) () keybind: di( or dc(
-20. Added key to change . to -> on cursor line keybind: vh
-21. Added key to change -> to . on cursor line keybind: vg
+20.
+21.
 22. Added new ex option "ish", this makes every "!" pipe command
 run though interactive shell so that stuff like aliases work. By
 default it is enabled, can be disabled if you need to for some
@@ -520,8 +520,7 @@ term_push(), but it's not required. Because they are macros they may run
 suboptimally or not handle every possible edge case. When calling a macro
 feature from another macro, the results are pushed back, which means the
 macro feature will always execute last, with the exception of feature 69.
-These features are considered a macro: 5. 6. 16. 17. 18. 19. 20.
-21. 26. 27. 34. 65. 71.
+These features are considered a macro: 5. 6. 16. 17. 18. 19. 26. 27. 34. 65. 71.
 
 Q3: Keybind with CTRL does not work?
 A3: vi is reading ASCII codes sent by the terminal. Depending on the
