@@ -1,8 +1,8 @@
 diff --git a/vi.c b/vi.c
-index fd75d09..4d229ab 100644
+index aa61709..6a65c7c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -459,6 +459,28 @@ static int vi_motionln(int *row, int cmd)
+@@ -460,6 +460,28 @@ static int vi_motionln(int *row, int cmd)
  	int c = vi_read();
  	int mark, mark_row, mark_off;
  	switch (c) {
@@ -31,7 +31,7 @@ index fd75d09..4d229ab 100644
  	case '\n':
  	case '+':
  		*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-@@ -717,6 +739,24 @@ static int vi_motion(int *row, int *off)
+@@ -718,6 +740,24 @@ static int vi_motion(int *row, int *off)
  	}
  	mv = vi_read();
  	switch (mv) {

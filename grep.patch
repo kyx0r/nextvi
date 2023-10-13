@@ -28,10 +28,10 @@ index 5b39040..c355320 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index fd75d09..fba0156 100644
+index aa61709..e6e1f79 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -654,12 +654,12 @@ void dir_calc(char *path)
+@@ -655,12 +655,12 @@ void dir_calc(char *path)
  	}
  }
  
@@ -46,7 +46,7 @@ index fd75d09..fba0156 100644
  	*row = xrow; *off = xoff-1; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -670,14 +670,14 @@ if (ret && xrow) { \
+@@ -671,14 +671,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -64,7 +64,7 @@ index fd75d09..fba0156 100644
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -693,7 +693,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -694,7 +694,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
  		path = lbuf_get(tempbufs[1].lb, fspos);
@@ -73,7 +73,7 @@ index fd75d09..fba0156 100644
  	}
  	return 0;
  }
-@@ -796,6 +796,7 @@ static int vi_motion(int *row, int *off)
+@@ -797,6 +797,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -81,7 +81,7 @@ index fd75d09..fba0156 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -814,8 +815,43 @@ static int vi_motion(int *row, int *off)
+@@ -815,8 +816,43 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -126,7 +126,7 @@ index fd75d09..fba0156 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1533,7 +1569,17 @@ void vi(int init)
+@@ -1534,7 +1570,17 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -145,7 +145,7 @@ index fd75d09..fba0156 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1662,6 +1708,11 @@ void vi(int init)
+@@ -1666,6 +1712,11 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
