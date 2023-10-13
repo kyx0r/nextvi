@@ -78,7 +78,8 @@ NEXTVI FEATURES & CHANGES
 -------------------------
 1. Added unindent keybind: ^w
 ^w may also take vi_arg1 or motions as a region.
-2.
+2. Added key to change the join mode of J key. keybind: vj
+Mode 1 (default) adds a space padding. Mode 0: raw line join.
 3. Added linenumbers, keybind: # (relative numbers are placed after indent)
 Passing vi_arg1 to # enables permanent line numbers.
 4. Added invisible character view, keybind: V
