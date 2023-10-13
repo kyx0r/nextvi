@@ -268,22 +268,15 @@ this problem you may need some extra patch, see PATCHES section below.
 46. When in ex insert mode, exiting with ^c will discard changes.
 47. Added Russian keymap, and changed how xkmap_alt works, now z + vi_arg1 in
 normal mode will switch what keymap ^f key changes, so for example 1 = fa 2 =
-ru. If you need some other language kmap just make one yourself. Look into
-kmap.h it's really simple. kmap also has digraph support, that list has been
-expanded to include non printing characters. Naming resembles ASCII caret
-notation, so for example 03 is key ^c to be able to type 03 enter insert, use
-^k to go into digraph mode, type then " c" (space+c) Essentially space is
-representing typeable ctrl key.  The reason this is useful is if you are
-using @ key to make macros there has to be a way to type these control
-characters. Alternatively, it's possible to type the character literal using
-^a + ^(insertkeyhere). In neatvi this was binded to ^v, currently ^v is used
-for 48. Nextvi shall keep both, the digraph way and ^a for clarity and better
-user reference, no more searching ascii keycodes online if kmap has it in the
-clear.
-48. Improvement to change 37. Now when in prompt/insert ^v will bring up the
+ru. New language kmap can be added in kmap.h translation array.
+Added non printing characters to the list of digraphs. The naming resembles
+ASCII caret notation. For example, to type 03 (the literal for ^c) enter
+insert mode followed by digraph mode using ^k and type " c" without quotes.
+Additionally, literal can be typed using ^v as in vi(1).
+48. Improvement to change 37. Now when in prompt/insert ^a will bring up the
 latest command from history. Also the history works for searches via / or ?
 the same way. keybind vv does the same but from normal mode, to save time.
-Pressing ^v again goes to next string.
+Pressing ^a again goes to next string.
 49. Added ability to get more than 1 word for keybinds ^a ^] ^p vr vt v/
 specified by number (vi_arg1). Regex control chars will be escaped.
 vr vt v/ ^] ^p will grab word(s) only if vi_arg1 >= 1 otherwise the keybind
@@ -449,7 +442,7 @@ Congratulations, vi has unofficially replaced your shell's frontend.
 Example 3:
 Setup some custom @@ macros in your favorite registers.
 export EXINIT="e|tp io{
-}kA|tp 1G|tp 2\"ayy"
+}kA|tp 1G|tp 2\"ayy"
 This macro gets loaded into register a, when @a is executed the macro will
 create { and closing } below the cursor leaving cursor in insert mode in
 between the braces. This is something you would commonly do in C like
