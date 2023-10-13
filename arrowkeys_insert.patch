@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 3262a9d..f2fa822 100644
+index 5102727..d75c35b 100644
 --- a/led.c
 +++ b/led.c
 @@ -286,7 +286,7 @@ static int led_lastword(char *s)
@@ -73,10 +73,10 @@ index 3262a9d..f2fa822 100644
  			term_chr('\n');
  		if (!pref || !pref[0]) {	/* updating autoindent */
 diff --git a/vi.c b/vi.c
-index 11f51c2..269b5d7 100644
+index fd75d09..6adf5e6 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1738,6 +1738,29 @@ void vi(int init)
+@@ -1732,6 +1732,29 @@ void vi(int init)
  				vc_insert(c);
  				vi_mod = !xpac && xrow == orow ? 3 : 1;
  				ins:
@@ -106,7 +106,7 @@ index 11f51c2..269b5d7 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xoff = lbuf_eol(xb, --xrow);
-@@ -1752,6 +1775,9 @@ void vi(int init)
+@@ -1746,6 +1769,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;

@@ -19,7 +19,7 @@ index 5b39040..2a9d24c 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 3262a9d..5f98cb6 100644
+index 5102727..45708b1 100644
 --- a/led.c
 +++ b/led.c
 @@ -367,6 +367,13 @@ static void led_info(char *str, int ai_max)
@@ -67,7 +67,7 @@ index 3262a9d..5f98cb6 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 11f51c2..dc36eeb 100644
+index fd75d09..cd653a3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
