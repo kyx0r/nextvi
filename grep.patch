@@ -28,7 +28,7 @@ index 0b79349..c01ca5a 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index da1015a..383fa46 100644
+index da1015a..4b9ebf8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -655,12 +655,12 @@ void dir_calc(char *path)
@@ -81,7 +81,7 @@ index da1015a..383fa46 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -815,8 +816,43 @@ static int vi_motion(int *row, int *off)
+@@ -815,8 +816,42 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -90,10 +90,9 @@ index da1015a..383fa46 100644
  			fsdir = 1;
 +		} else if (mv == TK_CTL('x')) {
 +			if (!strcmp(ex_path, "/grep/"))
-+				return -1;
-+			temp_done(2);
++				temp_switch(2);
 +			term_exec("qq", 3, /*nop*/, /*nop*/)
-+			temp_open(2, "/grep/", "/grep");
++			temp_pos(2, -1, 0, 0);
 +			sbuf *gstats; sbuf_make(gstats, 1024)
 +			char nbuf[100];
 +			int colpos = 0;
@@ -126,7 +125,7 @@ index da1015a..383fa46 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1534,7 +1570,17 @@ void vi(int init)
+@@ -1534,7 +1569,17 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -145,18 +144,25 @@ index da1015a..383fa46 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1666,6 +1712,11 @@ void vi(int init)
+@@ -1666,6 +1711,10 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
 +				case 'x':
-+					temp_open(2, "/grep/", "/grep");
 +					temp_switch(2);
 +					vi_mod = 1;
 +					break;
  				default:
  					vi_back(k);
  				}
+@@ -2021,6 +2070,7 @@ int main(int argc, char *argv[])
+ 	syn_init();
+ 	temp_open(0, "/hist/", "/");
+ 	temp_open(1, "/fm/", "/fm");
++	temp_open(2, "/grep/", "/grep");
+ 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
+ 		if (argv[i][1] == '-' && !argv[i][2]) {
+ 			i++;
 diff --git a/vi.h b/vi.h
 index 603102c..d58b09f 100644
 --- a/vi.h
