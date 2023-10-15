@@ -675,6 +675,12 @@ static int ec_redo(char *loc, char *cmd, char *arg)
 	return lbuf_redo(xb);
 }
 
+static int ec_save(char *loc, char *cmd, char *arg)
+{
+	lbuf_saved(xb, *arg);
+	return 0;
+}
+
 static int ec_mark(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
@@ -962,6 +968,7 @@ static struct excmd {
 } excmds[] = {
 	{"b", ec_buffer},
 	{"bp", ec_setpath},
+	{"bs", ec_save},
 	{"p", ec_print},
 	{"a", ec_insert},
 	{"ea", ec_editapprox},

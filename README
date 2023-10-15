@@ -127,8 +127,10 @@ buffer and # last swapped buffer. Now it is possible to expand any arbitrary
 buffer by using % or # (no difference in this case) followed by the buffer
 number. Example: :!echo "%69" prints the pathname for buffer 69 (if it exists).
 % and # can be escaped normally if path expansion is not wanted.
-Added new ex command "bp" which allows the user to change path pointed by current
-buffer. For example :bp vi.c|e! will repurpose the buffer for vi.c
+Added new ex command "bp" which changes the path for current buffer.
+For example :bp vi.c|e! will repurpose the buffer for vi.c
+Added new ex command "bs" which marks the current buffer as saved. Passing
+an arg will reset undo/redo history. Useful for scripting.
 14. Added key to show buffers and switch buffer
 (to switch press corresponding 0-9 number) keybind: ^7 or ^_
 If vi_arg1 is specified right before ^7 the buffer will be switched immediately
@@ -427,7 +429,7 @@ Example: yank matches and print them out.
 If you wanted to get really fancy, it is possible to nest global commands
 inside of global commands.
 Example: find all lines with int and a semicolon and append "has a semicolon"
-g/int/:.g/;/tp A has a semicolon
+:g/int/:.g/;/tp A has a semicolon
 
 - search motions:
 ? and / searches have the ability to be used as motions. This seems very
