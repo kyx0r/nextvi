@@ -630,7 +630,7 @@ void dir_calc(char *path)
 	DIR *dps[1024];
 	DIR *dp;
 	strcpy(cur_dir, path);
-	temp_open(1, "/fm/", "/fm");
+	temp_pos(1, -1, 0, 0);
 	fspos = 0;
 	goto start;
 	while (i > 0) {

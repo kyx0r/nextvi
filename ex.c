@@ -158,7 +158,6 @@ void temp_write(int i, char *str)
 	if (lbuf_get(lb, tempbufs[i].row))
 		tempbufs[i].row++;
 	lbuf_edit(lb, str, tempbufs[i].row, tempbufs[i].row);
-	lbuf_saved(lb, 1);
 }
 
 void temp_done(int i)
@@ -906,13 +905,10 @@ static int ec_set(char *loc, char *cmd, char *arg)
 
 static int ec_setdir(char *loc, char *cmd, char *arg)
 {
-	if (*arg) {
-		free(fs_exdir);
-		fs_exdir = uc_dup(arg);
-	} else {
-		temp_done(1);
-		dir_calc(fs_exdir ? fs_exdir : ".");
-	}
+	free(fs_exdir);
+	fs_exdir = uc_dup(*arg ? arg : ".");
+	if (cmd[1] == 'd')
+		dir_calc(fs_exdir);
 	return 0;
 }
 
@@ -1001,6 +997,7 @@ static struct excmd {
 	{"cm", ec_cmap},
 	{"cm!", ec_cmap},
 	{"fd", ec_setdir},
+	{"fp", ec_setdir},
 	{"cd", ec_chdir},
 	{"inc", ec_setincl},
 	{"bx", ec_setbufsmax},
