@@ -73,7 +73,7 @@ index cb4e404..e75a4a5 100644
  			term_chr('\n');
  		if (!pref || !pref[0]) {	/* updating autoindent */
 diff --git a/vi.c b/vi.c
-index aa61709..dd798a5 100644
+index da1015a..d557e16 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1736,6 +1736,29 @@ void vi(int init)

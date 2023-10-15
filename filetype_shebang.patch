@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 5b39040..6556731 100644
+index 0b79349..aa47ae2 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -418,6 +418,23 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -417,6 +417,23 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
  	ex_show(msg);

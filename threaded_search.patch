@@ -173,7 +173,7 @@ index 69fcbe4..6811ef4 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index aa61709..1d2c0de 100644
+index da1015a..b0f618c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
