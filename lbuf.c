@@ -194,6 +194,8 @@ int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 	lo->n_del = n_del;
 	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
 	lo->seq = lb->useq;
+	lo->mark = NULL;
+	lo->mark_off = NULL;
 	for (i = 0; i < NMARKS_BASE; i++)
 		if (lb->mark[i] >= pos && lb->mark[i] < pos + n_del)
 			lbuf_savemark(lb, lo, i);
