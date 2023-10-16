@@ -50,11 +50,9 @@ static void lopt_done(struct lopt *lo)
 static void lbuf_savemark(struct lbuf *lb, struct lopt *lo, int m)
 {
 	if (lb->mark[m] >= 0) {
-		if (!lo->mark) {
-			lo->mark = malloc(sizeof(lb->mark));
-			lo->mark_off = malloc(sizeof(lb->mark_off));
-			memset(lo->mark, 0xff, sizeof(lb->mark));
-		}
+		lo->mark = malloc(sizeof(lb->mark));
+		lo->mark_off = malloc(sizeof(lb->mark_off));
+		memset(lo->mark, 0xff, sizeof(lb->mark));
 		lo->mark[m] = lb->mark[m];
 		lo->mark_off[m] = lb->mark_off[m];
 	}
@@ -81,12 +79,6 @@ static int markidx(int mark)
 	if (mark == ']')
 		return 'z' - 'a' + 4;
 	return -1;
-}
-
-static void lbuf_savepos(struct lbuf *lb, struct lopt *lo)
-{
-	if (lb->mark[markidx('*')] >= 0)
-		lo->pos_off = lb->mark_off[markidx('*')];
 }
 
 static void lbuf_loadpos(struct lbuf *lb, struct lopt *lo)
@@ -172,7 +164,8 @@ static void lbuf_replace(struct lbuf *lb, char *s, int pos, int n_del, int n_ins
 		else if (lb->mark[i] >= pos + n_ins)
 			lb->mark[i] = pos + n_ins - 1;
 	}
-	lbuf_mark(lb, '[', pos, 0);
+	if (lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq)
+		lbuf_mark(lb, '[', pos, 0);
 	lbuf_mark(lb, ']', pos + (n_ins ? n_ins - 1 : 0), 0);
 }
 
@@ -192,17 +185,15 @@ int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 		lb->hist = hist;
 		lb->hist_sz = sz;
 	}
-	lo = &lb->hist[lb->hist_n];
-	lb->hist_n++;
+	lo = &lb->hist[lb->hist_n++];
 	lb->hist_u = lb->hist_n;
-	memset(lo, 0, sizeof(*lo));
-	lo->pos = pos;
-	lo->n_del = n_del;
-	lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
-	lo->n_ins = lbuf_linecount(buf);
 	lo->ins = buf ? uc_dup(buf) : NULL;
+	lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
+	lo->pos = pos;
+	lo->n_ins = lbuf_linecount(buf);
+	lo->n_del = n_del;
+	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
 	lo->seq = lb->useq;
-	lbuf_savepos(lb, lo);
 	for (i = 0; i < NMARKS_BASE; i++)
 		if (lb->mark[i] >= pos && lb->mark[i] < pos + n_del)
 			lbuf_savemark(lb, lo, i);
