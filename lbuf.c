@@ -1,4 +1,4 @@
-#define NMARKS_BASE            ('z' - 'a' + 2)
+#define NMARKS_BASE		('z' - 'a' + 2)
 #define NMARKS			32
 
 /* line operations */
@@ -161,8 +161,7 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
 			lbuf_savemark(lb, lo, i, i);
 			lb->mark[i] = -1;
 			continue;
-		}
-		if (lb->mark[i] >= pos + n_del)
+		} else if (lb->mark[i] >= pos + n_del)
 			lb->mark[i] += n_ins - n_del;
 		else if (lb->mark[i] >= pos + n_ins)
 			lb->mark[i] = pos + n_ins - 1;
@@ -197,6 +196,7 @@ void *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
 	lo->seq = lb->useq;
 	lo->mark = NULL;
+	lo->mark_off = NULL;
 	return (void*)lo;
 }
 
