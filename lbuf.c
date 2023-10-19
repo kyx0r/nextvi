@@ -308,23 +308,24 @@ int lbuf_undo(struct lbuf *lb)
 		lbuf_replace(lb, lo->del, lo, lo->n_ins, lbuf_linecount(lo->del));
 	}
 	lbuf_loadpos(lb, lo);
-	lbuf_savemark(lb, lo, markidx(']'), markidx('*'));
+	lbuf_savemark(lb, lo, markidx('*'), markidx('*'));
 	lbuf_loadmark(lb, lo, markidx('['), markidx('['));
 	return 0;
 }
 
 int lbuf_redo(struct lbuf *lb)
 {
-	int useq; struct lopt *lo;
+	int useq; struct lopt *lo = NULL;
 	if (lb->hist_u == lb->hist_n)
 		return 1;
 	useq = lb->hist[lb->hist_u].seq;
-	lbuf_loadmark(lb, &lb->hist[lb->hist_u], markidx('['), markidx(']'));
+	lbuf_loadmark(lb, &lb->hist[lb->hist_u], markidx('['), markidx('*'));
 	while (lb->hist_u < lb->hist_n && lb->hist[lb->hist_u].seq == useq) {
 		lo = &lb->hist[lb->hist_u++];
 		lbuf_replace(lb, lo->ins, lo, lo->n_del, lbuf_linecount(lo->ins));
 	}
-	lbuf_loadpos(lb, lo);
+	if (lo)
+		lbuf_loadpos(lb, lo);
 	return 0;
 }
 
