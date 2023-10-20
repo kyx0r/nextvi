@@ -170,6 +170,16 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
 	}
 }
 
+void lbuf_emark(struct lbuf *lb, void *lo, int beg, int end)
+{
+	lbuf_savemark(lb, lo, markidx(']'), markidx(']'));
+	lbuf_mark(lb, ']', end, ((struct lopt*)lo)->pos_off);
+	if (beg >= 0) {
+		lbuf_savemark(lb, lo, markidx('['), markidx('['));
+		lbuf_mark(lb, '[', beg, ((struct lopt*)lo)->pos_off);
+	}
+}
+
 /* append undo/redo history; return lopt */
 void *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 {
@@ -247,12 +257,8 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end)
 		return;
 	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg);
 	lbuf_replace(lb, buf, lo, lo->n_del, lo->n_ins);
-	if (lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq) {
-		lbuf_savemark(lb, lo, markidx(']'), markidx(']'));
-		lbuf_savemark(lb, lo, markidx('['), markidx('['));
-		lbuf_mark(lb, ']', beg + (lo->n_ins ? lo->n_ins - 1 : 0), lo->pos_off);
-		lbuf_mark(lb, '[', beg, lo->pos_off);
-	}
+	beg = lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
+	lbuf_emark(lb, lo, beg, beg + (lo->n_ins ? lo->n_ins - 1 : 0));
 }
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)

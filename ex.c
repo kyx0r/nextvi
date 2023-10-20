@@ -713,7 +713,8 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	int offs[grp];
 	char *pat = NULL, *rep = NULL;
 	char *s = arg;
-	int i;
+	void *lo1;
+	int i, first = -1, last;
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	pat = re_read(&s);
@@ -728,10 +729,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	free(rep);
 	if (!xkwdrs)
 		return 1;
-	/* if the change is bigger than display size
-	set savepoint where command was issued. */
-	if (end - beg > xrows)
-		lbuf_opt(xb, NULL, xrow, 0);
+	lo1 = lbuf_opt(xb, NULL, xrow, 0);
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
@@ -750,13 +748,18 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 				break;
 		}
 		if (r) {
+			if (first < 0)
+				first = i;
 			sbufn_str(r, ln)
 			lbuf_edit(xb, r->s, i, i + 1);
 			sbuf_free(r)
+			last = i;
 		}
 	}
-	if (end - beg > xrows)
-		lbuf_opt(xb, NULL, xrow, 0);
+	if (first >= 0) {
+		lbuf_emark(xb, lo1, first, last);
+		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
+	}
 	return 0;
 }
 
