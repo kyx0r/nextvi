@@ -1439,7 +1439,6 @@ void vi(int init)
 		if (mv > 0) {
 			if (strchr("\'`GHML/?{}[]nN", mv) ||
 					(mv == '%' && noff < 0)) {
-				lbuf_mark(xb, '\'', xrow, xoff);
 				lbuf_mark(xb, '`', xrow, xoff);
 			}
 			xrow = nrow;
