@@ -11,10 +11,10 @@ index 5cb68ed..15ec00b 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index c8a719c..221a466 100644
+index afc54ce..3b2cc95 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -421,35 +421,98 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -429,35 +429,98 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -173,7 +173,7 @@ index 69fcbe4..6811ef4 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index da1015a..b0f618c 100644
+index a559968..c9605ad 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -185,10 +185,10 @@ index da1015a..b0f618c 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 603102c..86b37c7 100644
+index dcc16ca..e471e31 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -193,7 +193,9 @@ int syn_addhl(char *reg, int func, int reload);
+@@ -194,7 +194,9 @@ int syn_addhl(char *reg, int func, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */

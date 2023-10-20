@@ -73,10 +73,10 @@ index cb4e404..e75a4a5 100644
  			term_chr('\n');
  		if (!pref || !pref[0]) {	/* updating autoindent */
 diff --git a/vi.c b/vi.c
-index da1015a..d557e16 100644
+index a559968..bc0d213 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1736,6 +1736,29 @@ void vi(int init)
+@@ -1735,6 +1735,29 @@ void vi(int init)
  				vc_insert(c);
  				vi_mod = !xpac && xrow == orow ? 3 : 1;
  				ins:
@@ -106,7 +106,7 @@ index da1015a..d557e16 100644
  				if (vi_insmov == 127) {
  					vi_mod = vi_mod == 3 ? 2 : 1;
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
-@@ -1750,6 +1773,9 @@ void vi(int init)
+@@ -1749,6 +1772,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;
