@@ -257,8 +257,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end)
 		return;
 	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg);
 	lbuf_replace(lb, buf, lo, lo->n_del, lo->n_ins);
-	beg = lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
-	lbuf_emark(lb, lo, beg, beg + (lo->n_ins ? lo->n_ins - 1 : 0));
+	lbuf_emark(lb, lo, lb->hist_u < 2 ||
+			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
+			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
 }
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)
