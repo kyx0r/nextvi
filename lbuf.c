@@ -49,18 +49,13 @@ static void lopt_done(struct lopt *lo)
 
 static void lbuf_savemark(struct lbuf *lb, struct lopt *lo, int m1, int m2)
 {
-	if (!lo->mark) {
-		lo->mark = malloc(sizeof(lb->mark));
-		lo->mark_off = malloc(sizeof(lb->mark_off));
-		memset(lo->mark, 0xff, sizeof(lb->mark));
-	}
 	lo->mark[m1] = lb->mark[m2];
 	lo->mark_off[m1] = lb->mark_off[m2];
 }
 
 static void lbuf_loadmark(struct lbuf *lb, struct lopt *lo, int m1, int m2)
 {
-	if (lo->mark && lo->mark[m2] >= 0) {
+	if (lo->mark[m2] >= 0) {
 		lb->mark[m1] = lo->mark[m2];
 		lb->mark_off[m1] = lo->mark_off[m2];
 	}
@@ -206,8 +201,9 @@ int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 	lo->n_del = n_del;
 	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
 	lo->seq = lb->useq;
-	lo->mark = NULL;
-	lo->mark_off = NULL;
+	lo->mark = malloc(sizeof(lb->mark));
+	lo->mark_off = malloc(sizeof(lb->mark_off));
+	memset(lo->mark, 0xff, sizeof(lb->mark));
 	return lb->hist_n - 1;
 }
 
