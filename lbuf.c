@@ -170,18 +170,19 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
 	}
 }
 
-void lbuf_emark(struct lbuf *lb, void *lo, int beg, int end)
+void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end)
 {
+	struct lopt *lo = &lb->hist[hist_n];
 	lbuf_savemark(lb, lo, markidx(']'), markidx(']'));
-	lbuf_mark(lb, ']', end, ((struct lopt*)lo)->pos_off);
+	lbuf_mark(lb, ']', end, lo->pos_off);
 	if (beg >= 0) {
 		lbuf_savemark(lb, lo, markidx('['), markidx('['));
-		lbuf_mark(lb, '[', beg, ((struct lopt*)lo)->pos_off);
+		lbuf_mark(lb, '[', beg, lo->pos_off);
 	}
 }
 
-/* append undo/redo history; return lopt */
-void *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
+/* append undo/redo history; return lopt idx */
+int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 {
 	struct lopt *lo;
 	int i;
@@ -207,7 +208,7 @@ void *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 	lo->seq = lb->useq;
 	lo->mark = NULL;
 	lo->mark_off = NULL;
-	return (void*)lo;
+	return lb->hist_n - 1;
 }
 
 int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
@@ -255,9 +256,10 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end)
 		end = lb->ln_n;
 	if (beg == end && !buf)
 		return;
-	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg);
+	int i = lbuf_opt(lb, buf, beg, end - beg);
+	struct lopt *lo = &lb->hist[i];
 	lbuf_replace(lb, buf, lo, lo->n_del, lo->n_ins);
-	lbuf_emark(lb, lo, lb->hist_u < 2 ||
+	lbuf_emark(lb, i, lb->hist_u < 2 ||
 			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
 			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
 }
