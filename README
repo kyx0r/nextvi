@@ -140,7 +140,10 @@ which also happens to permit numbers > 9.
 17. Added key to delete everything inside (cursor outside) "" keybind: di" or dc"
 18. Added key to delete everything inside () keybind: di) or dc)
 19. Added key to delete everything inside (cursor outside) () keybind: di( or dc(
-20.
+20. Improved lbuf marks so they don't break under erroneous conditions.
+[] marks properly track the start and end of the insertion along with
+redo/undo.
+In addition, [] also track the horizontal pos. (only works with ` keybind)
 21.
 22. Added new ex option "ish", this makes every "!" pipe command
 run though interactive shell so that stuff like aliases work. By
@@ -298,8 +301,7 @@ to shift the printing position by half the screen size vi_arg1 times.
 This is necessary sometimes if you want to paste from system clipboard.
 54. Removed full names of ex commands and options, (seriously, who uses that?)
 now only short and fast to type abbreviations work.
-55. Substitute undo-redo point return to where command was issued initially
-if the affected area is greater than terminal rows.
+55. Substitute undo-redo point return to where command was issued initially.
 56. Modified regex engine to support static lookahead expressions.
 For example [!abc] and [=abc] where ! is negated version of =. This will treat
 "abc" as (a && b && c) logically. It is possible to have multiple in
