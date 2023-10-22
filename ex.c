@@ -728,7 +728,6 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	free(rep);
 	if (!xkwdrs)
 		return 1;
-	lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), 0, 0);
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
@@ -747,8 +746,10 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 				break;
 		}
 		if (r) {
-			if (first < 0)
+			if (first < 0) {
 				first = i;
+				lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), 0, 0);
+			}
 			sbufn_str(r, ln)
 			lbuf_edit(xb, r->s, i, i + 1);
 			sbuf_free(r)
