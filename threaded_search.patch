@@ -11,10 +11,10 @@ index 5cb68ed..15ec00b 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index afc54ce..3b2cc95 100644
+index 2b57bca..f4218e7 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -429,35 +429,98 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -427,35 +427,98 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -185,7 +185,7 @@ index a559968..c9605ad 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index dcc16ca..e471e31 100644
+index 8990761..e768cb5 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -194,7 +194,9 @@ int syn_addhl(char *reg, int func, int reload);

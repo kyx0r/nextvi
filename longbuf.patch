@@ -1,8 +1,8 @@
 diff --git a/lbuf.c b/lbuf.c
-index afc54ce..bc14a91 100644
+index 2b57bca..eb2f9ae 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -216,9 +216,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
+@@ -213,9 +213,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
  	sbuf *sb; sbuf_make(sb, 1000000)
  	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
  		if (sb->s_n + nr >= sb->s_sz) {
@@ -48,7 +48,7 @@ index a559968..a134bf8 100644
  #include <fcntl.h>
  #include <stdio.h>
 diff --git a/vi.h b/vi.h
-index dcc16ca..a5dbbd4 100644
+index 8990761..ad07b25 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -35,10 +35,11 @@ void vi(int init);

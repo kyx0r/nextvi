@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index e68cee0..0fa6c4d 100644
+index 750627a..70a7041 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -393,7 +393,9 @@ int ex_edit(const char *path, int len)
@@ -23,7 +23,7 @@ index e68cee0..0fa6c4d 100644
  	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1089,13 +1094,21 @@ void ex(void)
+@@ -1087,13 +1092,21 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -127,7 +127,7 @@ index a559968..6aa740a 100644
  			if (argv[i][j] == 's')
  				xvis |= 2;
 diff --git a/vi.h b/vi.h
-index dcc16ca..11ae725 100644
+index 8990761..5dd270b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -418,3 +418,4 @@ extern rset *fsincl;

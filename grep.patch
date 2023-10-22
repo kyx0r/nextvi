@@ -15,7 +15,7 @@ index 463af0f..2dae05e 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index e68cee0..24d2a80 100644
+index 750627a..bebaa0c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,7 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -164,7 +164,7 @@ index a559968..c6606aa 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index dcc16ca..d2c8029 100644
+index 8990761..1de19d2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -299,7 +299,7 @@ extern int xbufcur;

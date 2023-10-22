@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index e68cee0..72722bc 100644
+index 750627a..cb3ed0d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index e68cee0..72722bc 100644
  int xish = 1;			/* interactive shell */
  int xgrp = 2;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -857,6 +858,7 @@ static struct option {
+@@ -855,6 +856,7 @@ static struct option {
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
  	{"tbs", &xtabspc},
@@ -79,7 +79,7 @@ index a559968..fdb24f2 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index dcc16ca..c3ff11c 100644
+index 8990761..f8cc75c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -407,6 +407,7 @@ extern int xhlr;
