@@ -1437,18 +1437,17 @@ void vi(int init)
 			vi_ybuf = vi_yankbuf();
 		mv = vi_motion(&nrow, &noff);
 		if (mv > 0) {
-			if (strchr("\'`GHML/?{}[]nN", mv) ||
-					(mv == '%' && noff < 0)) {
-				lbuf_mark(xb, '`', xrow, xoff);
-			}
-			xrow = nrow;
 			if (noff < 0 && !strchr("jk", mv))
-				noff = lbuf_indents(xb, xrow);
+				noff = lbuf_indents(xb, nrow);
 			else if (strchr("jk", mv))
-				noff = vi_col2off(xb, xrow, vi_col);
-			xoff = ren_noeol(lbuf_get(xb, xrow), noff);
+				noff = vi_col2off(xb, nrow, vi_col);
+			if ((xrow != nrow || xoff != noff) &&
+					strchr("%\'`GHML/?{}[]nN", mv))
+				lbuf_mark(xb, '`', xrow, xoff);
+			xrow = nrow;
+			xoff = ren_noeol(lbuf_get(xb, nrow), noff);
 			if (!strchr("|jk", mv))
-				vi_col = vi_off2col(xb, xrow, xoff);
+				vi_col = vi_off2col(xb, nrow, xoff);
 			switch (mv) {
 			case '\\':
 				vc_status();
