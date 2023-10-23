@@ -244,7 +244,7 @@ index a199943..3700127 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index a559968..3fcc0ec 100644
+index 3c616a5..6871174 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -590,7 +590,7 @@ static void vi_regprint(void)
