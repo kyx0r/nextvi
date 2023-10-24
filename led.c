@@ -539,11 +539,12 @@ static char *led_line(char *pref, char *post, char *ai,
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s);
 			preserve(struct buf*, ex_pbuf, ex_pbuf)
-			ex_pbuf = ex_buf;
+			preserve(struct buf*, ex_buf, ex_buf)
 			temp_switch(0);
 			vi(1);
-			temp_switch(0);
 			restore(ex_pbuf)
+			temp_switch(0);
+			restore(ex_buf)
 			vi(1); /* redraw past screen */
 			syn_setft("/-");
 			term_pos(xrows, 0);
