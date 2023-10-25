@@ -33,7 +33,7 @@ static int search(const char *pattern, int l)
 	}
 	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
 	sbuf_free(sylsb)
-	sbuf_null(suggestsb)
+	sbuf_mem(suggestsb, "\0\0\0\0", 4)
 	return suggestsb->s_n;
 }
 
@@ -143,6 +143,7 @@ static char *led_bounds(int *off, char **chrs, int cterm)
 		} else
 			i++;
 	}
+	sbuf_mem(out, "\0\0\0", 3)
 	sbufn_done(out)
 }
 
@@ -297,7 +298,8 @@ static void led_printparts(char *ai, char *pref, char *main, char *post)
 	sbuf_str(ln, ai)
 	sbuf_str(ln, pref)
 	sbuf_str(ln, main)
-	sbufn_str(ln, post)
+	sbuf_str(ln, post)
+	sbuf_mem(ln, "\0\0\0\0", 4)
 	rstate->ren_laststr = NULL;
 	ren_position(ln->s, &(char**){NULL}, &off);
 	off -= uc_slen(post);

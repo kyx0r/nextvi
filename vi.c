@@ -133,7 +133,7 @@ static void vi_drawrow(int row)
 	if (vi_lnnum == 1 || (vi_lnnum == 2 && row != xrow))
 	{
 		lnnum = 1;
-		l1 = *(int*)(s - sizeof(int)) + 2;
+		l1 = *(int*)(s - sizeof(int)) + 7;
 		char tmp[l1+100];
 		c = itoa(row+1-movedown, tmp);
 		l2 = strlen(tmp)+1;
