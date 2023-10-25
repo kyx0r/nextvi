@@ -112,6 +112,7 @@ kbd_layout.patch
 --------------
 Changes hjkl to work well with other keyboard layouts.
 In this example hjkl is changed to yneo (workman keyboard layout)
+Note: this patch can be used as a base for remapping any base keybinds.
 
 quickexit.patch
 --------------
