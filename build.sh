@@ -34,7 +34,7 @@ build() {
 pgobuild() {
 	ccversion="$($CC --version)"
 	case "$ccversion" in *clang*) clang=1 ;; esac
-	if [ "$clang" = 1 ]; then
+	if [ "$clang" = 1 ] && [ -z "$PROFDATA" ]; then
 		if command -v llvm-profdata >/dev/null 2>&1; then
 			PROFDATA=llvm-profdata
 		elif xcrun -f llvm-profdata >/dev/null 2>&1; then
