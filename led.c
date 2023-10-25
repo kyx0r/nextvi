@@ -34,6 +34,7 @@ static int search(const char *pattern, int l)
 	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
 	sbuf_free(sylsb)
 	sbuf_mem(suggestsb, "\0\0\0\0", 4)
+	suggestsb->s_n -= 4;
 	return suggestsb->s_n;
 }
 
