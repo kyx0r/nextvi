@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 750627a..47d8c09 100644
+index 750627a..5a69ab3 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -963,6 +963,29 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+@@ -963,6 +963,32 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -10,21 +10,24 @@ index 750627a..47d8c09 100644
 +{
 +	int idx;
 +	if (!*arg)
-+		idx = ex_buf - bufs;
++		idx = istempbuf(ex_buf) ? -1 : ex_buf - bufs;
 +	else {
 +		while (*arg == ' ' || *arg == '\t')
 +			arg++;
 +		idx = atoi(arg);
 +	}
-+	if (idx >= xbufcur)
++	if (idx < 0 || (!idx && xbufcur < 2) || idx >= xbufcur)
 +		return 1;
 +	bufs_free(idx);
 +	for (int i = idx; i < xbufcur; i++)
 +		bufs[i] = bufs[i+1];
 +	xbufcur--;
-+	ex_buf = idx < ex_buf - bufs ? ex_buf - 1 : ex_buf;
-+	ex_buf = idx == ex_buf - bufs ? bufs : ex_buf;
-+	ex_pbuf = idx == ex_buf - bufs ? bufs : ex_pbuf;
++	if (!istempbuf(ex_buf)) {
++		ex_buf = idx < ex_buf - bufs ? ex_buf - 1 : ex_buf;
++		ex_buf = idx == ex_buf - bufs ? bufs : ex_buf;
++		ex_pbuf = idx == ex_buf - bufs ? bufs : ex_pbuf;
++	} else
++		ex_pbuf = idx == ex_pbuf - bufs ? bufs : ex_pbuf;
 +	syn_setft(ex_ft);
 +	return 0;
 +}
@@ -32,7 +35,7 @@ index 750627a..47d8c09 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1009,6 +1032,7 @@ static struct excmd {
+@@ -1009,6 +1035,7 @@ static struct excmd {
  	{"cd", ec_chdir},
  	{"inc", ec_setincl},
  	{"bx", ec_setbufsmax},
