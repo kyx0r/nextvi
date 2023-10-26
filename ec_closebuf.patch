@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 750627a..a4cc074 100644
+index 750627a..fc9bfd5 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -963,6 +963,37 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+@@ -963,6 +963,38 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -24,14 +24,15 @@ index 750627a..a4cc074 100644
 +		bufs[i] = bufs[i+1];
 +	xbufcur--;
 +	if (!istmp) {
-+		ex_buf = idx < ex_buf - bufs ? ex_buf - 1 : ex_buf;
 +		ex_buf = idx == ex_buf - bufs ? bufs : ex_buf;
-+		ex_pbuf = idx == ex_buf - bufs ? bufs : ex_pbuf;
-+	} else {
-+		ex_pbuf = idx < ex_pbuf - bufs ? ex_pbuf - 1 : ex_pbuf;
++		ex_buf = idx < ex_buf - bufs ? ex_buf - 1 : ex_buf;
 +		ex_pbuf = idx == ex_pbuf - bufs ? bufs : ex_pbuf;
-+		ex_tpbuf = idx < ex_tpbuf - bufs ? ex_tpbuf - 1 : ex_tpbuf;
++		ex_pbuf = idx < ex_pbuf - bufs ? ex_pbuf - 1 : ex_pbuf;
++	} else {
++		ex_pbuf = idx == ex_pbuf - bufs ? bufs : ex_pbuf;
++		ex_pbuf = idx < ex_pbuf - bufs ? ex_pbuf - 1 : ex_pbuf;
 +		ex_tpbuf = idx == ex_tpbuf - bufs ? bufs : ex_tpbuf;
++		ex_tpbuf = idx < ex_tpbuf - bufs ? ex_tpbuf - 1 : ex_tpbuf;
 +	}
 +	syn_setft(ex_ft);
 +	return 0;
@@ -40,7 +41,7 @@ index 750627a..a4cc074 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1009,6 +1040,7 @@ static struct excmd {
+@@ -1009,6 +1041,7 @@ static struct excmd {
  	{"cd", ec_chdir},
  	{"inc", ec_setincl},
  	{"bx", ec_setbufsmax},
