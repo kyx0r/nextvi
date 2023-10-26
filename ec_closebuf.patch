@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 750627a..5f10d90 100644
+index 750627a..a4cc074 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -963,6 +963,35 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+@@ -963,6 +963,37 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -28,7 +28,9 @@ index 750627a..5f10d90 100644
 +		ex_buf = idx == ex_buf - bufs ? bufs : ex_buf;
 +		ex_pbuf = idx == ex_buf - bufs ? bufs : ex_pbuf;
 +	} else {
++		ex_pbuf = idx < ex_pbuf - bufs ? ex_pbuf - 1 : ex_pbuf;
 +		ex_pbuf = idx == ex_pbuf - bufs ? bufs : ex_pbuf;
++		ex_tpbuf = idx < ex_tpbuf - bufs ? ex_tpbuf - 1 : ex_tpbuf;
 +		ex_tpbuf = idx == ex_tpbuf - bufs ? bufs : ex_tpbuf;
 +	}
 +	syn_setft(ex_ft);
@@ -38,7 +40,7 @@ index 750627a..5f10d90 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1009,6 +1038,7 @@ static struct excmd {
+@@ -1009,6 +1040,7 @@ static struct excmd {
  	{"cd", ec_chdir},
  	{"inc", ec_setincl},
  	{"bx", ec_setbufsmax},
@@ -46,15 +48,3 @@ index 750627a..5f10d90 100644
  	{"ac", ec_setacreg},
  	{"", ec_null},
  };
-@@ -1097,3 +1127,11 @@ void ex_init(char **files, int n)
- 	if (!(xvis & 2) && (s = getenv("EXINIT")))
- 		ex_command(s)
- }
-+
-+void ex_done(void)
-+{
-+	for (int i = 0; i < xbufcur; i++)
-+		bufs_free(i);
-+	rset_free(xkwdrs);
-+	free(bufs);
-+}
