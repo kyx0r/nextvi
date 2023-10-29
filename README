@@ -123,6 +123,11 @@ mode will be cancelled mid way and paste will be wrong. Luckily this almost
 never happens because such letter combination is extremely rare.
 Delay time (in ms) can be set via :se qe=N or disabled by setting N to 0.
 
+hl_mark.patch
+-------------
+Adds new ex option "mhl" which will highlight lbuf marks. Each mark has
+different color up to 16. Higher marks may duplicate the colors.
+
 Helper macros:
 --------------
 @q = creates structure like this:
