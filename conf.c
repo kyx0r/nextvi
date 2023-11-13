@@ -9,8 +9,8 @@ struct filetype fts[] = {
 	{"roff", "\\.(ms|tr|roff|tmac|txt|[1-9])$"},	/* troff */
 	{"tex", "\\.tex$"},				/* tex */
 	{"msg", "letter$|mbox$|mail$"},			/* email */
-	{"mk", "Makefile$|makefile$|\\.mk$"},		/* makefile */
-	{"sh", "\\.(sh|bash|zsh)$"},			/* shell script */
+	{"mk", "[Mm]akefile$|\\.mk$"},			/* makefile */
+	{"sh", "\\.(ba|z)?sh$|(ba|z|k)shrc$|profile$"},	/* shell script */
 	{"py", "\\.py$"},				/* python */
 	{"nm", "\\.nm$"},				/* neatmail */
 	{"js", "\\.js$"},				/* javascript */
@@ -98,7 +98,7 @@ default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 	{"mk", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"mk", NULL, {9}, {0}, 0, 1},
 	{"mk", "([A-Za-z0-9_]*)[ \t]*:?=", {0, 3}},
-	{"mk", "\\$\\([a-zA-Z0-9_]+\\)", {3}},
+	{"mk", "\\$[\\({][a-zA-Z0-9_]+[\\)}]|\\$\\$", {3}},
 	{"mk", "#.*", {2 | SYN_IT}},
 	{"mk", "([A-Za-z_%.\\-]+):", {0, SYN_BD}},
 
