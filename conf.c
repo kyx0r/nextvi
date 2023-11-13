@@ -9,7 +9,7 @@ struct filetype fts[] = {
 	{"roff", "\\.(ms|tr|roff|tmac|txt|[1-9])$"},	/* troff */
 	{"tex", "\\.tex$"},				/* tex */
 	{"msg", "letter$|mbox$|mail$"},			/* email */
-	{"mk", "Makefile$|makefile$|\\.mk$"},		/* makefile */
+	{"mk", "[Mm]akefile$|\\.mk$"},			/* makefile */
 	{"sh", "\\.(ba|z)?sh$|(ba|z|k)shrc$|profile$"},	/* shell script */
 	{"py", "\\.py$"},				/* python */
 	{"nm", "\\.nm$"},				/* neatmail */
