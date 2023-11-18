@@ -170,7 +170,7 @@ while (i < cterm) { \
 		att_new = ratt[o]; \
 		if (att_new != att_old) \
 			sbuf_str(out, term_att(att_new)) \
-		char *s = ren_translate(chrs[o], s0, i, cterm-1); \
+		char *s = ren_translate(chrs[o], s0); \
 		if (s) \
 			sbuf_str(out, s) \
 		else if (uc_isprint(chrs[o])) { \
