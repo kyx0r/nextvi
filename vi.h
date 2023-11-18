@@ -166,7 +166,7 @@ int ren_cursor(char *s, int pos);
 int ren_noeol(char *s, int p);
 int ren_off(char *s, int pos);
 int ren_region(char *s, int c1, int c2, int *l1, int *l2, int closed);
-char *ren_translate(char *s, char *ln, int pos, int end);
+char *ren_translate(char *s, char *ln);
 int ren_cwid(char *s, int pos);
 /* text direction */
 int dir_context(char *s);

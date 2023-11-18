@@ -212,7 +212,7 @@ int ren_cwid(char *s, int pos)
 	return uc_wid(c);
 }
 
-char *ren_translate(char *s, char *ln, int pos, int end)
+char *ren_translate(char *s, char *ln)
 {
 	int c; uc_code(c, s)
 	for (int i = 0; i < placeholderslen; i++)
@@ -221,7 +221,7 @@ char *ren_translate(char *s, char *ln, int pos, int end)
 	if (uc_acomb(c)) {
 		static char buf[16];
 		uc_len(c, s)
-		sprintf(buf, "ـ%.*s", pos > end ? 0 : c, s);
+		sprintf(buf, "ـ%.*s", c, s);
 		return buf;
 	}
 	if (uc_isbell(c))
