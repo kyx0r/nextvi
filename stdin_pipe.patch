@@ -51,7 +51,7 @@ index 750627a..eb4effa 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 4d2e41a..a42fbd0 100644
+index 4d45dc3..a42fbd0 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,8 @@
@@ -63,15 +63,14 @@ index 4d2e41a..a42fbd0 100644
  static struct termios termios;
  
  void term_init(void)
-@@ -10,22 +12,25 @@ void term_init(void)
+@@ -10,21 +12,25 @@ void term_init(void)
  	struct winsize win;
  	struct termios newtermios;
  	sbufn_make(term_sbuf, 2048)
 -	tcgetattr(0, &termios);
 +	tcgetattr(stdin_fd, &termios);
  	newtermios = termios;
--	newtermios.c_lflag &= ~(ICANON | ISIG);
--	newtermios.c_lflag &= ~ECHO;
+-	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 -	tcsetattr(0, TCSAFLUSH, &newtermios);
 +	if (!isig && stdin_fd)
 +		newtermios.c_lflag &= ~(ICANON);
@@ -94,7 +93,7 @@ index 4d2e41a..a42fbd0 100644
  }
  
  void term_done(void)
-@@ -34,7 +39,7 @@ void term_done(void)
+@@ -33,7 +39,7 @@ void term_done(void)
  		return;
  	term_commit();
  	sbuf_free(term_sbuf)
@@ -103,7 +102,7 @@ index 4d2e41a..a42fbd0 100644
  }
  
  void term_clean(void)
-@@ -127,12 +132,12 @@ int term_read(void)
+@@ -126,12 +132,12 @@ int term_read(void)
  	struct pollfd ufds[1];
  	int n;
  	if (ibuf_pos >= ibuf_cnt) {
@@ -118,7 +117,7 @@ index 4d2e41a..a42fbd0 100644
  			return -1;
  		ibuf_cnt = n;
  		ibuf_pos = 0;
-@@ -307,7 +312,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -306,7 +312,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
