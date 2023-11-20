@@ -12,8 +12,7 @@ void term_init(void)
 	sbufn_make(term_sbuf, 2048)
 	tcgetattr(0, &termios);
 	newtermios = termios;
-	newtermios.c_lflag &= ~(ICANON | ISIG);
-	newtermios.c_lflag &= ~ECHO;
+	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 	tcsetattr(0, TCSAFLUSH, &newtermios);
 	if (getenv("LINES"))
 		xrows = atoi(getenv("LINES"));
