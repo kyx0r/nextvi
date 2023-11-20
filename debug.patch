@@ -27,7 +27,7 @@ index a199943..b657dfb 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index fe05f5c..6797f7c 100644
+index 1048192..da52cff 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -78,6 +78,13 @@ void dir_init(void)
@@ -94,7 +94,7 @@ index c6f6e9e..61d506b 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 8990761..6e66bdc 100644
+index acc8ae3..c9f1013 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -171,6 +171,7 @@ int ren_cwid(char *s, int pos);

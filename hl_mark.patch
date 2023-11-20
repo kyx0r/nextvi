@@ -19,7 +19,7 @@ index 750627a..1f2bef8 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 66378b3..f62ce69 100644
+index e69f3ce..63b160e 100644
 --- a/led.c
 +++ b/led.c
 @@ -130,6 +130,21 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)

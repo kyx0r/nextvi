@@ -17,10 +17,10 @@ index d9f602e..c0a6533 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index 4d2e41a..f4adfda 100644
+index 4d45dc3..9f81016 100644
 --- a/term.c
 +++ b/term.c
-@@ -134,6 +134,10 @@ int term_read(void)
+@@ -133,6 +133,10 @@ int term_read(void)
  		/* read a single input character */
  		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0)
  			return -1;
