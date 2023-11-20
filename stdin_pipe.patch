@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 750627a..b185881 100644
+index 750627a..eb4effa 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -393,7 +393,9 @@ int ex_edit(const char *path, int len)
@@ -23,7 +23,7 @@ index 750627a..b185881 100644
  	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1087,13 +1092,21 @@ void ex(void)
+@@ -1087,13 +1092,24 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -41,14 +41,17 @@ index 750627a..b185881 100644
 +		if (i)
 +			ec_edit(NULL, "", "");
 +		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
++		term_done();
++		term_init();
 +		lbuf_saved(xb, 1);
 +		ec_edit("", NULL, ""); /* shebang patch compat */
 +	}
++	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
  	if (!(xvis & 2) && (s = getenv("EXINIT")))
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 4d2e41a..ab2cc28 100644
+index 4d2e41a..a42fbd0 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,8 @@
@@ -60,7 +63,7 @@ index 4d2e41a..ab2cc28 100644
  static struct termios termios;
  
  void term_init(void)
-@@ -10,22 +12,23 @@ void term_init(void)
+@@ -10,22 +12,25 @@ void term_init(void)
  	struct winsize win;
  	struct termios newtermios;
  	sbufn_make(term_sbuf, 2048)
@@ -70,7 +73,9 @@ index 4d2e41a..ab2cc28 100644
 -	newtermios.c_lflag &= ~(ICANON | ISIG);
 -	newtermios.c_lflag &= ~ECHO;
 -	tcsetattr(0, TCSAFLUSH, &newtermios);
-+	if (isig || !stdin_fd)
++	if (!isig && stdin_fd)
++		newtermios.c_lflag &= ~(ICANON);
++	else
 +		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 +	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
  	if (getenv("LINES"))
@@ -89,7 +94,7 @@ index 4d2e41a..ab2cc28 100644
  }
  
  void term_done(void)
-@@ -34,7 +37,7 @@ void term_done(void)
+@@ -34,7 +39,7 @@ void term_done(void)
  		return;
  	term_commit();
  	sbuf_free(term_sbuf)
@@ -98,7 +103,7 @@ index 4d2e41a..ab2cc28 100644
  }
  
  void term_clean(void)
-@@ -127,12 +130,12 @@ int term_read(void)
+@@ -127,12 +132,12 @@ int term_read(void)
  	struct pollfd ufds[1];
  	int n;
  	if (ibuf_pos >= ibuf_cnt) {
@@ -113,7 +118,7 @@ index 4d2e41a..ab2cc28 100644
  			return -1;
  		ibuf_cnt = n;
  		ibuf_pos = 0;
-@@ -307,7 +310,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -307,7 +312,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -123,7 +128,7 @@ index 4d2e41a..ab2cc28 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index c6f6e9e..cba247f 100644
+index c6f6e9e..5c72cd1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1997,6 +1997,8 @@ void vi(int init)
@@ -157,18 +162,6 @@ index c6f6e9e..cba247f 100644
  		for (j = 1; argv[i][j]; j++) {
  			if (argv[i][j] == 's')
  				xvis |= 2;
-@@ -2040,6 +2044,11 @@ int main(int argc, char *argv[])
- 	}
- 	term_init();
- 	ex_init(argv + i, argc - i);
-+	if (stdin_fd) { /* got past init? ok remove ^c */
-+		signal(SIGINT, SIG_DFL);
-+		term_done();
-+		term_init();
-+	}
- 	if (xvis & 4)
- 		ex();
- 	else
 diff --git a/vi.h b/vi.h
 index acc8ae3..9678bff 100644
 --- a/vi.h
