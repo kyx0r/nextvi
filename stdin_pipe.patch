@@ -48,7 +48,7 @@ index 750627a..70a7041 100644
 +	}
  }
 diff --git a/term.c b/term.c
-index 4d2e41a..cb0e742 100644
+index 4d2e41a..a42fbd0 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,8 @@
@@ -60,7 +60,7 @@ index 4d2e41a..cb0e742 100644
  static struct termios termios;
  
  void term_init(void)
-@@ -10,22 +12,26 @@ void term_init(void)
+@@ -10,22 +12,25 @@ void term_init(void)
  	struct winsize win;
  	struct termios newtermios;
  	sbufn_make(term_sbuf, 2048)
@@ -68,12 +68,12 @@ index 4d2e41a..cb0e742 100644
 +	tcgetattr(stdin_fd, &termios);
  	newtermios = termios;
 -	newtermios.c_lflag &= ~(ICANON | ISIG);
+-	newtermios.c_lflag &= ~ECHO;
+-	tcsetattr(0, TCSAFLUSH, &newtermios);
 +	if (!isig && stdin_fd)
 +		newtermios.c_lflag &= ~(ICANON);
 +	else
-+		newtermios.c_lflag &= ~(ICANON | ISIG);
- 	newtermios.c_lflag &= ~ECHO;
--	tcsetattr(0, TCSAFLUSH, &newtermios);
++		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 +	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
  	if (getenv("LINES"))
  		xrows = atoi(getenv("LINES"));
@@ -91,7 +91,7 @@ index 4d2e41a..cb0e742 100644
  }
  
  void term_done(void)
-@@ -34,7 +40,7 @@ void term_done(void)
+@@ -34,7 +39,7 @@ void term_done(void)
  		return;
  	term_commit();
  	sbuf_free(term_sbuf)
@@ -100,7 +100,7 @@ index 4d2e41a..cb0e742 100644
  }
  
  void term_clean(void)
-@@ -127,12 +133,12 @@ int term_read(void)
+@@ -127,12 +132,12 @@ int term_read(void)
  	struct pollfd ufds[1];
  	int n;
  	if (ibuf_pos >= ibuf_cnt) {
@@ -115,7 +115,7 @@ index 4d2e41a..cb0e742 100644
  			return -1;
  		ibuf_cnt = n;
  		ibuf_pos = 0;
-@@ -307,7 +313,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -307,7 +312,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
