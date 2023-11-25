@@ -1027,6 +1027,8 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 	while (*src == ':' || *src == ' ' || *src == '\t')
 		src++;
 	while (*src && strchr(" \t0123456789+-.,/?$';%", *src)) {
+		if (*src == '\'' && src[1])
+			*loc++ = *src++;
 		if (*src == '/' || *src == '?') {
 			int d = *src;
 			do {
