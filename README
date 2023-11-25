@@ -416,6 +416,8 @@ Example: print until int is found
 Example: print until int is found in reverse
 :?int?,.p
 Note: in some cases . can be dropped but is kept for readability.
+Example: print lines from mark d to mark a
+:'d,'ap
 
 - ex global command:
 Same syntax as ex substitution command, but instead of replacement
@@ -455,9 +457,9 @@ real "groking vi" starts.
 Example 1:
 There is a dictionary file (assume vi.c), which we always want to have indexed
 at startup for autocomplete feature in 31.
-export EXINIT="e ./vi.c|tp i|u|bx 1|bx"
-The last "bx" commands delete the vi.c buffer. "u" can be used to unmark vi.c
-as being modified. To keep it around as a buffer remove the "bx" commands.
+export EXINIT="e ./vi.c|tp i|bx 1|bx"
+The last "bx" commands delete the vi.c buffer. To keep it around as a buffer
+remove the "bx" commands.
 Example 2:
 Load your shell's history into vi's history buffer and adjust the data such
 that it is usable by appending ! at the beginning of command and escaping the "|"
