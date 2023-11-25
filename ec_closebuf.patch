@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 750627a..fc9bfd5 100644
+index aaac5be..08d8939 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -963,6 +963,38 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)

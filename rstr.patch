@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 750627a..b87ab03 100644
+index aaac5be..0ce3c67 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *ex_buf;		/* current buffer */
