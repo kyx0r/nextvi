@@ -6,7 +6,7 @@ CFLAGS="\
 -Wno-unused-parameter \
 -Wno-unused-result \
 -Wfatal-errors -std=c99 \
--D_POSIX_C_SOURCE=200809L -O2 $CFLAGS"
+-D_POSIX_C_SOURCE=200809L $CFLAGS"
 
 : "${CC:=cc}"
 : "${PREFIX:=/usr/local}"
@@ -28,7 +28,11 @@ install() {
 }
 
 build() {
-	run "$CC vi.c -o vi $CFLAGS"
+	run "$CC vi.c -o vi -O2 $CFLAGS"
+}
+
+debug() {
+	run "$CC vi.c -o vi -O0 -g $CFLAGS"
 }
 
 pgobuild() {
@@ -42,10 +46,10 @@ pgobuild() {
 		fi
 		[ -z "$PROFDATA" ] && echo "pgobuild with clang requires llvm-profdata" && exit 1
 	fi
-	run "$CC vi.c -fprofile-generate=. -o vi $CFLAGS"
+	run "$CC vi.c -fprofile-generate=. -o vi -O2 $CFLAGS"
 	echo "qq" | ./vi -v ./vi.c >/dev/null
 	[ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
-	run "$CC vi.c -fprofile-use=. -o vi $CFLAGS"
+	run "$CC vi.c -fprofile-use=. -o vi -O2 $CFLAGS"
 	rm -f ./*.gcda ./*.profraw ./default.profdata
 }
 
