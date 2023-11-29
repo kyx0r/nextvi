@@ -1100,4 +1100,5 @@ void ex_init(char **files, int n)
 		ex_command(s)
 	for (int i = 0; i < cmdnum; i++)
 		ex_command(ex_cmds[i])
+	free(ex_cmds);
 }
