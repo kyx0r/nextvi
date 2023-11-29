@@ -1087,7 +1087,7 @@ void ex(void)
 	}
 }
 
-void ex_init(char **files, int n)
+void ex_init(char **files, int n, char **cmds, int cmdnum)
 {
 	xbufsalloc = MAX(n, xbufsalloc);
 	ec_setbufsmax(NULL, NULL, "");
@@ -1099,6 +1099,6 @@ void ex_init(char **files, int n)
 	if (!(xvis & 2) && (s = getenv("EXINIT")))
 		ex_command(s)
 	for (int i = 0; i < cmdnum; i++)
-		ex_command(ex_cmds[i])
-	free(ex_cmds);
+		ex_command(cmds[i])
+	free(cmds);
 }

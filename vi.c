@@ -2012,7 +2012,8 @@ static int setup_signals(void) {
 
 int main(int argc, char *argv[])
 {
-	int i, j;
+	int i, j, cmdnum = 0;
+	char** ex_cmds = NULL;
 	if (!setup_signals())
 		return EXIT_FAILURE;
 	dir_init();
@@ -2052,7 +2053,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	term_init();
-	ex_init(argv + i, argc - i);
+	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
 	if (xvis & 4)
 		ex();
 	else
