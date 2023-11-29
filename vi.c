@@ -2031,9 +2031,22 @@ int main(int argc, char *argv[])
 				xvis |= 4;
 			else if (argv[i][j] == 'v')
 				xvis = 0;
-			else {
+			else if (argv[i][j] == 'c') {
+				if (argv[i][j+1]) {
+					ex_cmds = realloc(ex_cmds, sizeof(char*) * (cmdnum + 1));
+					ex_cmds[cmdnum++] = argv[i] + j + 1;
+					break;
+				} else if (i + 1 < argc) {
+					ex_cmds = realloc(ex_cmds, sizeof(char*) * (cmdnum + 1));
+					ex_cmds[cmdnum++] = argv[++i];
+					break;
+				} else {
+					fprintf(stderr, "Missing argument for -c\n");
+					return EXIT_FAILURE;
+				}
+			} else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Usage: %s [-esv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Usage: %s [-esv] [-c cmd] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

@@ -1098,4 +1098,6 @@ void ex_init(char **files, int n)
 	} while (--n > 0);
 	if (!(xvis & 2) && (s = getenv("EXINIT")))
 		ex_command(s)
+	for (int i = 0; i < cmdnum; i++)
+		ex_command(ex_cmds[i])
 }

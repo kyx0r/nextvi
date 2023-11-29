@@ -418,3 +418,6 @@ extern rset *fsincl;
 extern char *fs_exdir;
 extern int vi_hidch;
 extern int vi_insmov;
+
+int cmdnum = 0;
+char** ex_cmds = NULL;
