@@ -1096,6 +1096,36 @@ void ex_init(char **files, int n)
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
-	if (!(xvis & 2) && (s = getenv("EXINIT")))
-		ex_command(s)
+	if (!(xvis & 2)) {
+		if (getenv("EXINIT")) {
+			ex_command(getenv("EXINIT"));
+		} else if (getenv("HOME")) {
+			char exrc[PATH_MAX];
+			snprintf(exrc, sizeof(exrc), "%s/.exrc", getenv("HOME"));
+			struct stat st;
+			if (stat(exrc, &st) == 0) {
+				if (st.st_uid == getuid() && !(st.st_mode & S_IWGRP) && !(st.st_mode & S_IWOTH)) {
+					FILE *fp = fopen(exrc, "r");
+					if (fp) {
+						char *ln;
+						while (getline(&ln, &(size_t){0}, fp) >= 0) {
+							ln[strlen(ln) - 1] = '\0';
+							ex_command(ln);
+							free(ln);
+							ln = NULL;
+						}
+						fclose(fp);
+						if (ln)
+							free(ln);
+					} else {
+						fprintf(stderr, "Cannot open ~/.exrc\n");
+						exit(EXIT_FAILURE);
+					}
+				} else {
+					fprintf(stderr, "Bad permissions on ~/.exrc\n");
+					exit(EXIT_FAILURE);
+				}
+			}
+		}
+	}
 }
