@@ -432,8 +432,10 @@ static char *led_line(char *pref, char *post, char *ai,
 				if (!p_reg || p_reg == '9')
 					p_reg = '/';
 				while (p_reg < '9' && !vi_regget(++p_reg, &lnmode));
-			} else
-				p_reg = 0;
+			} else {
+				c = term_read();
+				p_reg = c == TK_CTL('\\') ? 0 : c;
+			}
 			if ((cs = vi_regget(p_reg, &lnmode))) {
 				sbuf_chr(sb, p_reg ? p_reg : '~')
 				sbuf_chr(sb, ' ')
