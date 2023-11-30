@@ -316,7 +316,7 @@ int ex_exec(const char *ln);
 char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);
-void ex_init(char **files, int n);
+void ex_init(char **files, int n, char** cmds, int cmdnum);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
