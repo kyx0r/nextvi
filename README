@@ -376,7 +376,8 @@ recursion case, where operations can be safely executed in a separate instance.
 Still, a great amount of care and understanding is needed when making such
 complicated macros.
 72. Added keybinds ^\ and ^] to control the default register for pasting
-(^p) in insert mode. ^\ resets to default yank register.
+(^p) in insert mode. ^\ selects any register or resets to default yank register
+if pressed twice.
 ^] changes register to the next available, between 0 and 9. Contents
 of the register are displayed on the bottom row. In nextvi, register 0
 stores previous value of default register if operation is atomic
