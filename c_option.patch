@@ -1,30 +1,39 @@
-From bfbc442dee1d14b6160e0eebdfc91ddc9154f36f Mon Sep 17 00:00:00 2001
-From: OldWorldOrdr <joey.t.reinhart@gmail.com>
-Date: Tue, 28 Nov 2023 19:37:59 -0500
-Subject: [PATCH 1/3] -c command line option
-
----
- ex.c |  2 ++
- vi.c | 17 +++++++++++++++--
- vi.h |  3 +++
- 3 files changed, 20 insertions(+), 2 deletions(-)
-
 diff --git a/ex.c b/ex.c
-index aaac5be..67d899d 100644
+index aaac5be..635030d 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1098,4 +1098,6 @@ void ex_init(char **files, int n)
+@@ -1087,7 +1087,7 @@ void ex(void)
+ 	}
+ }
+ 
+-void ex_init(char **files, int n)
++void ex_init(char **files, int n, char **cmds, int cmdnum)
+ {
+ 	xbufsalloc = MAX(n, xbufsalloc);
+ 	ec_setbufsmax(NULL, NULL, "");
+@@ -1098,4 +1098,7 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	if (!(xvis & 2) && (s = getenv("EXINIT")))
  		ex_command(s)
 +	for (int i = 0; i < cmdnum; i++)
-+		ex_command(ex_cmds[i])
++		ex_command(cmds[i])
++	free(cmds);
  }
 diff --git a/vi.c b/vi.c
-index c6f6e9e..bdaa809 100644
+index c6f6e9e..56eb82e 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2031,9 +2031,22 @@ int main(int argc, char *argv[])
+@@ -2012,7 +2012,8 @@ static int setup_signals(void) {
+ 
+ int main(int argc, char *argv[])
+ {
+-	int i, j;
++	int i, j, cmdnum = 0;
++	char** ex_cmds = NULL;
+ 	if (!setup_signals())
+ 		return EXIT_FAILURE;
+ 	dir_init();
+@@ -2031,15 +2032,28 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'v')
  				xvis = 0;
@@ -49,87 +58,6 @@ index c6f6e9e..bdaa809 100644
  				return EXIT_FAILURE;
  			}
  		}
-diff --git a/vi.h b/vi.h
-index acc8ae3..3f041db 100644
---- a/vi.h
-+++ b/vi.h
-@@ -418,3 +418,6 @@ extern rset *fsincl;
- extern char *fs_exdir;
- extern int vi_hidch;
- extern int vi_insmov;
-+
-+int cmdnum = 0;
-+char** ex_cmds = NULL;
-
-From 4cdaf8a82e27619d1849343beb03814198ae0fd0 Mon Sep 17 00:00:00 2001
-From: OldWorldOrdr <joey.t.reinhart@gmail.com>
-Date: Wed, 29 Nov 2023 13:39:32 -0500
-Subject: [PATCH 2/3] free
-
----
- ex.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/ex.c b/ex.c
-index 67d899d..ee02d46 100644
---- a/ex.c
-+++ b/ex.c
-@@ -1100,4 +1100,5 @@ void ex_init(char **files, int n)
- 		ex_command(s)
- 	for (int i = 0; i < cmdnum; i++)
- 		ex_command(ex_cmds[i])
-+	free(ex_cmds);
- }
-
-From f201ac90a01ce78694aa468b7431f9165f4a30bc Mon Sep 17 00:00:00 2001
-From: OldWorldOrdr <joey.t.reinhart@gmail.com>
-Date: Wed, 29 Nov 2023 13:44:40 -0500
-Subject: [PATCH 3/3] rev 2
-
----
- ex.c | 6 +++---
- vi.c | 5 +++--
- vi.h | 5 +----
- 3 files changed, 7 insertions(+), 9 deletions(-)
-
-diff --git a/ex.c b/ex.c
-index ee02d46..635030d 100644
---- a/ex.c
-+++ b/ex.c
-@@ -1087,7 +1087,7 @@ void ex(void)
- 	}
- }
- 
--void ex_init(char **files, int n)
-+void ex_init(char **files, int n, char **cmds, int cmdnum)
- {
- 	xbufsalloc = MAX(n, xbufsalloc);
- 	ec_setbufsmax(NULL, NULL, "");
-@@ -1099,6 +1099,6 @@ void ex_init(char **files, int n)
- 	if (!(xvis & 2) && (s = getenv("EXINIT")))
- 		ex_command(s)
- 	for (int i = 0; i < cmdnum; i++)
--		ex_command(ex_cmds[i])
--	free(ex_cmds);
-+		ex_command(cmds[i])
-+	free(cmds);
- }
-diff --git a/vi.c b/vi.c
-index bdaa809..56eb82e 100644
---- a/vi.c
-+++ b/vi.c
-@@ -2012,7 +2012,8 @@ static int setup_signals(void) {
- 
- int main(int argc, char *argv[])
- {
--	int i, j;
-+	int i, j, cmdnum = 0;
-+	char** ex_cmds = NULL;
- 	if (!setup_signals())
- 		return EXIT_FAILURE;
- 	dir_init();
-@@ -2052,7 +2053,7 @@ int main(int argc, char *argv[])
- 		}
  	}
  	term_init();
 -	ex_init(argv + i, argc - i);
@@ -138,7 +66,7 @@ index bdaa809..56eb82e 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 3f041db..2deca2a 100644
+index acc8ae3..2deca2a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -316,7 +316,7 @@ int ex_exec(const char *ln);
@@ -150,10 +78,3 @@ index 3f041db..2deca2a 100644
  void ex_bufpostfix(struct buf *p, int clear);
  int ex_krs(rset **krs, int *dir);
  void ex_krsset(char *kwd, int dir);
-@@ -418,6 +418,3 @@ extern rset *fsincl;
- extern char *fs_exdir;
- extern int vi_hidch;
- extern int vi_insmov;
--
--int cmdnum = 0;
--char** ex_cmds = NULL;
