@@ -1,8 +1,59 @@
 diff --git a/ex.c b/ex.c
-index aaac5be..002a945 100644
+index aaac5be..05eec60 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1096,6 +1096,36 @@ void ex_init(char **files, int n)
+@@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
+ int xpac;			/* print autocomplete options */
+ int xkwdcnt;			/* number of search kwd changes */
+ int xbufcur;			/* number of active buffers */
++int xexrc;			/* read .exrc from the current directory */
+ struct buf *bufs;		/* main buffers */
+ struct buf tempbufs[2];		/* temporary buffers, for internal use */
+ struct buf *ex_buf;		/* current buffer */
+@@ -859,6 +860,7 @@ static struct option {
+ 	{"grp", &xgrp},
+ 	{"pac", &xpac},
+ 	{"led", &xled},
++	{"exrc", &xexrc},
+ };
+ 
+ static char *cutword(char *s, char *d)
+@@ -1087,6 +1089,34 @@ void ex(void)
+ 	}
+ }
+ 
++void load_exrc(char *exrc)
++{
++	struct stat st;
++	if (stat(exrc, &st) == 0) {
++		if (st.st_uid == getuid() && !(st.st_mode & S_IWGRP) && !(st.st_mode & S_IWOTH)) {
++			FILE *fp = fopen(exrc, "r");
++			if (fp) {
++				char *ln;
++				while (getline(&ln, &(size_t){0}, fp) >= 0) {
++					ln[strlen(ln) - 1] = '\0';
++					ex_command(ln);
++					free(ln);
++					ln = NULL;
++				}
++				fclose(fp);
++				if (ln)
++					free(ln);
++			} else {
++				fprintf(stderr, "Cannot open ~/.exrc\n");
++				exit(EXIT_FAILURE);
++			}
++		} else {
++			fprintf(stderr, "Bad permissions on ~/.exrc\n");
++			exit(EXIT_FAILURE);
++		}
++	}
++}
++
+ void ex_init(char **files, int n)
+ {
+ 	xbufsalloc = MAX(n, xbufsalloc);
+@@ -1096,6 +1126,15 @@ void ex_init(char **files, int n)
  		ec_edit("", "e", s);
  		s = *(++files);
  	} while (--n > 0);
@@ -14,31 +65,10 @@ index aaac5be..002a945 100644
 +		} else if (getenv("HOME")) {
 +			char exrc[PATH_MAX];
 +			snprintf(exrc, sizeof(exrc), "%s/.exrc", getenv("HOME"));
-+			struct stat st;
-+			if (stat(exrc, &st) == 0) {
-+				if (st.st_uid == getuid() && !(st.st_mode & S_IWGRP) && !(st.st_mode & S_IWOTH)) {
-+					FILE *fp = fopen(exrc, "r");
-+					if (fp) {
-+						char *ln;
-+						while (getline(&ln, &(size_t){0}, fp) >= 0) {
-+							ln[strlen(ln) - 1] = '\0';
-+							ex_command(ln);
-+							free(ln);
-+							ln = NULL;
-+						}
-+						fclose(fp);
-+						if (ln)
-+							free(ln);
-+					} else {
-+						fprintf(stderr, "Cannot open ~/.exrc\n");
-+						exit(EXIT_FAILURE);
-+					}
-+				} else {
-+					fprintf(stderr, "Bad permissions on ~/.exrc\n");
-+					exit(EXIT_FAILURE);
-+				}
-+			}
++			load_exrc(exrc);
 +		}
++		if (xexrc && strcmp(getcwd(NULL, 0), getenv("HOME")))
++			load_exrc(".exrc");
 +	}
  }
 diff --git a/vi.c b/vi.c
