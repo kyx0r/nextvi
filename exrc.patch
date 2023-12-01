@@ -1,13 +1,3 @@
-From e99f9ef368f69abb7013f010be24d2353fb496d0 Mon Sep 17 00:00:00 2001
-From: OldWorldOrdr <joey.t.reinhart@gmail.com>
-Date: Thu, 30 Nov 2023 14:32:21 -0500
-Subject: [PATCH] support ~/.exrc
-
----
- ex.c | 34 ++++++++++++++++++++++++++++++++--
- vi.c |  1 +
- 2 files changed, 33 insertions(+), 2 deletions(-)
-
 diff --git a/ex.c b/ex.c
 index aaac5be..002a945 100644
 --- a/ex.c
