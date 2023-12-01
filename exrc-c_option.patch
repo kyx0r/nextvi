@@ -1,0 +1,122 @@
+diff --git a/ex.c b/ex.c
+index aaac5be..bf617c4 100644
+--- a/ex.c
++++ b/ex.c
+@@ -1087,7 +1087,7 @@ void ex(void)
+ 	}
+ }
+ 
+-void ex_init(char **files, int n)
++void ex_init(char **files, int n, char **cmds, int cmdnum)
+ {
+ 	xbufsalloc = MAX(n, xbufsalloc);
+ 	ec_setbufsmax(NULL, NULL, "");
+@@ -1096,6 +1096,39 @@ void ex_init(char **files, int n)
+ 		ec_edit("", "e", s);
+ 		s = *(++files);
+ 	} while (--n > 0);
+-	if (!(xvis & 2) && (s = getenv("EXINIT")))
+-		ex_command(s)
++	if (!(xvis & 2)) {
++		if (getenv("EXINIT")) {
++			ex_command(getenv("EXINIT"));
++		} else if (getenv("HOME")) {
++			char exrc[PATH_MAX];
++			snprintf(exrc, sizeof(exrc), "%s/.exrc", getenv("HOME"));
++			struct stat st;
++			if (stat(exrc, &st) == 0) {
++				if (st.st_uid == getuid() && !(st.st_mode & S_IWGRP) && !(st.st_mode & S_IWOTH)) {
++					FILE *fp = fopen(exrc, "r");
++					if (fp) {
++						char *ln;
++						while (getline(&ln, &(size_t){0}, fp) >= 0) {
++							ln[strlen(ln) - 1] = '\0';
++							ex_command(ln);
++							free(ln);
++							ln = NULL;
++						}
++						fclose(fp);
++						if (ln)
++							free(ln);
++					} else {
++						fprintf(stderr, "Cannot open ~/.exrc\n");
++						exit(EXIT_FAILURE);
++					}
++				} else {
++					fprintf(stderr, "Bad permissions on ~/.exrc\n");
++					exit(EXIT_FAILURE);
++				}
++			}
++		}
++	}
++	for (int i = 0; i < cmdnum; i++)
++		ex_command(cmds[i])
++	free(cmds);
+ }
+diff --git a/vi.c b/vi.c
+index c6f6e9e..2aeb70b 100644
+--- a/vi.c
++++ b/vi.c
+@@ -18,6 +18,7 @@
+  */
+ #include <ctype.h>
+ #include <fcntl.h>
++#include <limits.h>
+ #include <stdio.h>
+ #include <stdarg.h>
+ #include <stdlib.h>
+@@ -2012,7 +2013,8 @@ static int setup_signals(void) {
+ 
+ int main(int argc, char *argv[])
+ {
+-	int i, j;
++	int i, j, cmdnum = 0;
++	char** ex_cmds = NULL;
+ 	if (!setup_signals())
+ 		return EXIT_FAILURE;
+ 	dir_init();
+@@ -2031,15 +2033,28 @@ int main(int argc, char *argv[])
+ 				xvis |= 4;
+ 			else if (argv[i][j] == 'v')
+ 				xvis = 0;
+-			else {
++			else if (argv[i][j] == 'c') {
++				if (argv[i][j+1]) {
++					ex_cmds = realloc(ex_cmds, sizeof(char*) * (cmdnum + 1));
++					ex_cmds[cmdnum++] = argv[i] + j + 1;
++					break;
++				} else if (i + 1 < argc) {
++					ex_cmds = realloc(ex_cmds, sizeof(char*) * (cmdnum + 1));
++					ex_cmds[cmdnum++] = argv[++i];
++					break;
++				} else {
++					fprintf(stderr, "Missing argument for -c\n");
++					return EXIT_FAILURE;
++				}
++			} else {
+ 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+-				fprintf(stderr, "Usage: %s [-esv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Usage: %s [-esv] [-c cmd] [file ...]\n", argv[0]);
+ 				return EXIT_FAILURE;
+ 			}
+ 		}
+ 	}
+ 	term_init();
+-	ex_init(argv + i, argc - i);
++	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
+ 	if (xvis & 4)
+ 		ex();
+ 	else
+diff --git a/vi.h b/vi.h
+index acc8ae3..2deca2a 100644
+--- a/vi.h
++++ b/vi.h
+@@ -316,7 +316,7 @@ int ex_exec(const char *ln);
+ char *ex_read(char *msg);
+ void ex_print(char *line);
+ void ex_show(char *msg);
+-void ex_init(char **files, int n);
++void ex_init(char **files, int n, char** cmds, int cmdnum);
+ void ex_bufpostfix(struct buf *p, int clear);
+ int ex_krs(rset **krs, int *dir);
+ void ex_krsset(char *kwd, int dir);
