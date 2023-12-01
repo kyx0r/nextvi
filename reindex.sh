@@ -9,4 +9,4 @@ do
 	git add $p
 	echo "END PATCH: $p"
 done
-rm tmp *.orig *.rej
+rm -f tmp *.orig *.rej
