@@ -19,7 +19,7 @@ index aaac5be..13640af 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index e69f3ce..43c80e4 100644
+index 1ee27a0..a042516 100644
 --- a/led.c
 +++ b/led.c
 @@ -370,6 +370,13 @@ static void led_info(char *str, int ai_max)
@@ -44,7 +44,7 @@ index e69f3ce..43c80e4 100644
  	sbufn_make(sb, xcols)
  	if (insert)
  		sbufn_str(sb, insert)
-@@ -572,7 +580,21 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -574,7 +582,21 @@ static char *led_line(char *pref, char *post, char *ai,
  			term_exec(":", 1, /*nop*/, /*nop*/)
  			restore(xvis)
  			continue;
