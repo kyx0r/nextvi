@@ -138,6 +138,10 @@ exrc.patch
 Adds support for reading ~/.exrc file. This can be used to pass in ex
 commands instead of EXINIT.
 
+exrc-c_option.patch
+-------------
+Combines exrc.patch and c_option.patch
+
 Helper macros:
 --------------
 @q = creates structure like this:
