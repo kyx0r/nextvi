@@ -128,11 +128,21 @@ hl_mark.patch
 Adds new ex option "mhl" which will highlight lbuf marks. Each mark has
 different color up to 16. Higher marks may duplicate the colors.
 
+c_option.patch
+-------------
+Adds -c commandline option. This can be used to pass in ex commands instead
+of EXINIT.
+
+exrc.patch
+-------------
+Adds support for reading ~/.exrc file. This can be used to pass in ex
+commands instead of EXINIT.
+
 Helper macros:
 --------------
 @q = creates structure like this:
 {
-	
+
 }
 @w = creates structure like this:
 whatever {
