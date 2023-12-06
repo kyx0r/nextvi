@@ -138,6 +138,10 @@ exrc.patch
 Adds support for reading ~/.exrc file. This can be used to pass in ex
 commands instead of EXINIT.
 
+readonly.patch
+-------------
+Adds new ex option "ro" and commandline readonly option -R
+
 Helper macros:
 --------------
 @q = creates structure like this:
