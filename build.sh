@@ -1,4 +1,13 @@
 #!/bin/sh -e
+
+if [ -z "$OPTFLAGS" ]; then
+	if [ "$1" = "debug" ]; then
+		OPTFLAGS="-O0"
+	else
+		OPTFLAGS="-O2"
+	fi
+fi
+
 CFLAGS="\
 -pedantic -Wall -Wextra \
 -Wno-implicit-fallthrough \
@@ -6,7 +15,7 @@ CFLAGS="\
 -Wno-unused-parameter \
 -Wno-unused-result \
 -Wfatal-errors -std=c99 \
--D_POSIX_C_SOURCE=200809L $CFLAGS"
+-D_POSIX_C_SOURCE=200809L $OPTFLAGS $CFLAGS"
 
 : "${CC:=cc}"
 : "${PREFIX:=/usr/local}"
@@ -28,11 +37,11 @@ install() {
 }
 
 build() {
-	run "$CC vi.c -o vi -O2 $CFLAGS"
+	run "$CC vi.c -o vi $CFLAGS"
 }
 
 debug() {
-	run "$CC vi.c -o vi -O0 -g $CFLAGS"
+	run "$CC vi.c -o vi -g $CFLAGS"
 }
 
 pgobuild() {
@@ -46,10 +55,10 @@ pgobuild() {
 		fi
 		[ -z "$PROFDATA" ] && echo "pgobuild with clang requires llvm-profdata" && exit 1
 	fi
-	run "$CC vi.c -fprofile-generate=. -o vi -O2 $CFLAGS"
+	run "$CC vi.c -fprofile-generate=. -o vi $CFLAGS"
 	echo "qq" | ./vi -v ./vi.c >/dev/null
 	[ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
-	run "$CC vi.c -fprofile-use=. -o vi -O2 $CFLAGS"
+	run "$CC vi.c -fprofile-use=. -o vi $CFLAGS"
 	rm -f ./*.gcda ./*.profraw ./default.profdata
 }
 
