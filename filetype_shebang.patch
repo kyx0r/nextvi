@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index aaac5be..2c57488 100644
+index aaac5be..fade285 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -417,6 +417,23 @@ static int ec_edit(char *loc, char *cmd, char *arg)
@@ -12,7 +12,7 @@ index aaac5be..2c57488 100644
 +			adv++;
 +		struct filetype lfts[] = {
 +			{"sh", "^#!.*/(env[ \t]*)?(sh|bash|zsh|dash)([ \t]*.*)?$"},
-+			{"py", "^#!.*/(env[ \t]*)?(python3?)([ \t]*.*)?$"}
++			{"py", "^#!.*/(env[ \t]*)?python3?([ \t]*.*)?$"}
 +		};
 +		char *pats[LEN(lfts)];
 +		for (int i = 0; i < LEN(lfts); i++)
