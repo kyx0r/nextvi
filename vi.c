@@ -2030,7 +2030,7 @@ int main(int argc, char *argv[])
 			else if (argv[i][j] == 'e')
 				xvis |= 4;
 			else if (argv[i][j] == 'v')
-				xvis = 0;
+				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
 				fprintf(stderr, "Usage: %s [-esv] [file ...]\n", argv[0]);
