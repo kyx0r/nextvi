@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index aaac5be..05eec60 100644
+index aaac5be..70219c3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
@@ -18,10 +18,27 @@ index aaac5be..05eec60 100644
  };
  
  static char *cutword(char *s, char *d)
-@@ -1087,6 +1089,34 @@ void ex(void)
+@@ -1087,6 +1089,47 @@ void ex(void)
  	}
  }
  
++char *load_line(FILE *fp)
++{
++	char *ln = NULL;
++	int n = 0;
++	int c;
++	while ((c = fgetc(fp)) != EOF && c != '\n') {
++		ln = realloc(ln, n + 2);
++		ln[n++] = c;
++	}
++	if (c == EOF && !n) {
++		free(ln);
++		return NULL;
++	}
++	ln[n] = '\0';
++	return ln;
++}
++
 +void load_exrc(char *exrc)
 +{
 +	struct stat st;
@@ -29,16 +46,12 @@ index aaac5be..05eec60 100644
 +		if (st.st_uid == getuid() && !(st.st_mode & S_IWGRP) && !(st.st_mode & S_IWOTH)) {
 +			FILE *fp = fopen(exrc, "r");
 +			if (fp) {
-+				char *ln;
-+				while (getline(&ln, &(size_t){0}, fp) >= 0) {
-+					ln[strlen(ln) - 1] = '\0';
++				char *ln = NULL;
++				while ((ln = load_line(fp))) {
 +					ex_command(ln);
 +					free(ln);
-+					ln = NULL;
 +				}
 +				fclose(fp);
-+				if (ln)
-+					free(ln);
 +			} else {
 +				fprintf(stderr, "Cannot open ~/.exrc\n");
 +				exit(EXIT_FAILURE);
@@ -53,7 +66,7 @@ index aaac5be..05eec60 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1096,6 +1126,15 @@ void ex_init(char **files, int n)
+@@ -1096,6 +1139,15 @@ void ex_init(char **files, int n)
  		ec_edit("", "e", s);
  		s = *(++files);
  	} while (--n > 0);
