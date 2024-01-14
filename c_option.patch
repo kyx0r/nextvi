@@ -20,7 +20,7 @@ index aaac5be..635030d 100644
 +	free(cmds);
  }
 diff --git a/vi.c b/vi.c
-index c6f6e9e..56eb82e 100644
+index 5fc71a8..98084d2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2012,7 +2012,8 @@ static int setup_signals(void) {
@@ -36,7 +36,7 @@ index c6f6e9e..56eb82e 100644
 @@ -2031,15 +2032,28 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'v')
- 				xvis = 0;
+ 				xvis &= ~4;
 -			else {
 +			else if (argv[i][j] == 'c') {
 +				if (argv[i][j+1]) {
