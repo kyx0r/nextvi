@@ -85,7 +85,7 @@ index aaac5be..70219c3 100644
 +	}
  }
 diff --git a/vi.c b/vi.c
-index c6f6e9e..79dd7f9 100644
+index 5fc71a8..6e8fc7f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -18,6 +18,7 @@

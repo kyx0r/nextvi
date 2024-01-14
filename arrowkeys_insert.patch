@@ -73,7 +73,7 @@ index 1ee27a0..cffa5ea 100644
  			term_chr('\n');
  		if (!pref || !pref[0]) {	/* updating autoindent */
 diff --git a/vi.c b/vi.c
-index c6f6e9e..cb119ae 100644
+index 5fc71a8..8f60c43 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1006,10 +1006,13 @@ static int charcount(char *text, int tlen, char *post)
