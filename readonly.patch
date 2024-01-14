@@ -69,13 +69,13 @@ index aaac5be..527c2fa 100644
  };
  
 diff --git a/vi.c b/vi.c
-index c6f6e9e..fa54c9a 100644
+index 5fc71a8..6f50026 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2031,9 +2031,11 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'v')
- 				xvis = 0;
+ 				xvis &= ~4;
 +			else if (argv[i][j] == 'R')
 +				readonly = 1;
  			else {
