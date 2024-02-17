@@ -305,6 +305,18 @@ extern struct buf tempbufs[2];
 #define ex_path ex_buf->path
 #define ex_ft ex_buf->ft
 #define xb ex_buf->lb
+#define exbuf_load(buf) \
+	xrow = buf->row; \
+	xoff = buf->off; \
+	xtop = buf->top; \
+	xtd = buf->td; \
+
+#define exbuf_save(buf) \
+	buf->row = xrow; \
+	buf->off = xoff; \
+	buf->top = xtop; \
+	buf->td = xtd; \
+
 void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
 void temp_write(int i, char *str);

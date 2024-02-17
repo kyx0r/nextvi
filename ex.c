@@ -66,18 +66,6 @@ static long mtime(char *path)
 	return -1;
 }
 
-#define exbuf_load(buf) \
-xrow = buf->row; \
-xoff = buf->off; \
-xtop = buf->top; \
-xtd = buf->td; \
-
-#define exbuf_save(buf) \
-buf->row = xrow; \
-buf->off = xoff; \
-buf->top = xtop; \
-buf->td = xtd; \
-
 void bufs_switch(int idx)
 {
 	if (ex_buf != &bufs[idx]) {
