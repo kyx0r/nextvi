@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index aaac5be..d5eb53b 100644
+index fc089c1..8d82a3e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -393,7 +393,9 @@ int ex_edit(const char *path, int len)
+@@ -381,7 +381,9 @@ int ex_edit(const char *path, int len)
  static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index aaac5be..d5eb53b 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -413,6 +415,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -401,6 +403,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
  	}
@@ -23,7 +23,7 @@ index aaac5be..d5eb53b 100644
  	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1089,13 +1094,24 @@ void ex(void)
+@@ -1077,13 +1082,24 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -162,10 +162,10 @@ index 5fc71a8..d344e47 100644
  			if (argv[i][j] == 's')
  				xvis |= 2;
 diff --git a/vi.h b/vi.h
-index acc8ae3..9678bff 100644
+index 2bf5ea0..3727757 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -418,3 +418,4 @@ extern rset *fsincl;
+@@ -430,3 +430,4 @@ extern rset *fsincl;
  extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;

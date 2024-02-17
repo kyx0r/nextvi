@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index aaac5be..527c2fa 100644
+index fc089c1..32b2efa 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ static int xbufsmax;		/* number of buffers */
@@ -10,7 +10,7 @@ index aaac5be..527c2fa 100644
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
-@@ -408,6 +409,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -396,6 +397,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: sigh... */
  	}
@@ -19,7 +19,7 @@ index aaac5be..527c2fa 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -514,14 +517,19 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -502,14 +505,19 @@ static int ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf);
  	} else {
  		int fd;
@@ -47,7 +47,7 @@ index aaac5be..527c2fa 100644
  		}
  		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode());
  		if (fd < 0) {
-@@ -963,6 +971,12 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+@@ -951,6 +959,12 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -60,7 +60,7 @@ index aaac5be..527c2fa 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1010,6 +1024,7 @@ static struct excmd {
+@@ -998,6 +1012,7 @@ static struct excmd {
  	{"inc", ec_setincl},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
@@ -86,7 +86,7 @@ index 5fc71a8..6f50026 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index acc8ae3..82fedb7 100644
+index 2bf5ea0..fb2f288 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -291,7 +291,7 @@ struct buf {
@@ -98,7 +98,7 @@ index acc8ae3..82fedb7 100644
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
-@@ -418,3 +418,4 @@ extern rset *fsincl;
+@@ -430,3 +430,4 @@ extern rset *fsincl;
  extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;

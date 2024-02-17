@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index aaac5be..45584c6 100644
+index fc089c1..2c863f6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -10,7 +10,7 @@ index aaac5be..45584c6 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -854,6 +855,7 @@ static struct option {
+@@ -842,6 +843,7 @@ static struct option {
  	{"hlw", &xhlw},
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
@@ -19,7 +19,7 @@ index aaac5be..45584c6 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 057f6d3..f0749af 100644
+index 3a43e64..e48fe2d 100644
 --- a/led.c
 +++ b/led.c
 @@ -130,6 +130,21 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)

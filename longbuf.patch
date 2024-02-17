@@ -14,7 +14,7 @@ index 2b57bca..eb2f9ae 100644
  			sbuf_extend(sb, newsz)
  		} else
 diff --git a/led.c b/led.c
-index 057f6d3..cb955f6 100644
+index 3a43e64..f93cd6a 100644
 --- a/led.c
 +++ b/led.c
 @@ -466,7 +466,7 @@ static char *led_line(char *pref, char *post, char *ai,
@@ -48,7 +48,7 @@ index 5fc71a8..86a1b4c 100644
  #include <fcntl.h>
  #include <stdio.h>
 diff --git a/vi.h b/vi.h
-index acc8ae3..0e16fae 100644
+index 2bf5ea0..ae2037b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -35,10 +35,11 @@ void vi(int init);

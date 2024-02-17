@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 057f6d3..e8e4100 100644
+index 3a43e64..99c3e1b 100644
 --- a/led.c
 +++ b/led.c
 @@ -288,7 +288,7 @@ static int led_lastword(char *s)
@@ -34,7 +34,7 @@ index 057f6d3..e8e4100 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -570,6 +573,20 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -571,6 +574,20 @@ static char *led_line(char *pref, char *post, char *ai,
  		case TK_CTL('l'):
  			term_clean();
  			continue;
@@ -55,7 +55,7 @@ index 057f6d3..e8e4100 100644
  		case TK_CTL('o'):;
  			preserve(int, xvis, 0)
  			term_exec(":", 1, /*nop*/, /*nop*/)
-@@ -587,6 +604,7 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -588,6 +605,7 @@ static char *led_line(char *pref, char *post, char *ai,
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index 057f6d3..e8e4100 100644
  	*key = c;
  	sbufn_done(sb)
  }
-@@ -647,7 +665,7 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
+@@ -648,7 +666,7 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
  			return sb;
  		}
  		led_printparts(ai, pref ? pref : "", uc_lastline(ln),

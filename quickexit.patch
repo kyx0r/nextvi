@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index aaac5be..13640af 100644
+index fc089c1..5c5418d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index aaac5be..13640af 100644
  int xish = 1;			/* interactive shell */
  int xgrp = 2;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -855,6 +856,7 @@ static struct option {
+@@ -843,6 +844,7 @@ static struct option {
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
  	{"tbs", &xtabspc},
@@ -19,7 +19,7 @@ index aaac5be..13640af 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 057f6d3..99a027e 100644
+index 3a43e64..a189c4f 100644
 --- a/led.c
 +++ b/led.c
 @@ -370,6 +370,14 @@ static void led_info(char *str, int ai_max)
@@ -45,7 +45,7 @@ index 057f6d3..99a027e 100644
  	sbufn_make(sb, xcols)
  	if (insert)
  		sbufn_str(sb, insert)
-@@ -575,7 +584,21 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -576,7 +585,21 @@ static char *led_line(char *pref, char *post, char *ai,
  			term_exec(":", 1, /*nop*/, /*nop*/)
  			restore(xvis)
  			continue;
@@ -80,10 +80,10 @@ index 5fc71a8..b0aa202 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index acc8ae3..915ba89 100644
+index 2bf5ea0..16a856f 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -407,6 +407,7 @@ extern int xhlr;
+@@ -419,6 +419,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;
