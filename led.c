@@ -547,10 +547,11 @@ static char *led_line(char *pref, char *post, char *ai,
 			preserve(struct buf*, ex_buf, ex_buf)
 			temp_switch(0);
 			vi(1);
-			ex_pbuf = tmpex_buf;
 			temp_switch(0);
 			restore(ex_pbuf)
 			restore(ex_buf)
+			exbuf_load(ex_buf)
+			syn_setft(ex_ft);
 			vi(1); /* redraw past screen */
 			syn_setft("/-");
 			term_pos(xrows, 0);
