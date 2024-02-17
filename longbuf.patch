@@ -14,7 +14,7 @@ index 2b57bca..eb2f9ae 100644
  			sbuf_extend(sb, newsz)
  		} else
 diff --git a/led.c b/led.c
-index 1ee27a0..ab01f2c 100644
+index 057f6d3..cb955f6 100644
 --- a/led.c
 +++ b/led.c
 @@ -466,7 +466,7 @@ static char *led_line(char *pref, char *post, char *ai,
