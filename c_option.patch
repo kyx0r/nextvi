@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index f216b11..b71be8d 100644
+index fa42186..ba55b68 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1075,7 +1075,7 @@ void ex(void)
@@ -20,7 +20,7 @@ index f216b11..b71be8d 100644
 +	free(cmds);
  }
 diff --git a/vi.c b/vi.c
-index dd93822..b6e09eb 100644
+index c97a907..6b535b4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2008,7 +2008,8 @@ static int setup_signals(void) {
