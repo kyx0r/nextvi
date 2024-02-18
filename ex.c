@@ -255,7 +255,7 @@ static int ex_region(char *loc, int *beg, int *end)
 
 static int ec_search(char *loc, char *cmd, char *arg)
 {
-	int dir, len, beg, end = lbuf_len(xb);
+	int dir, len, off, beg = -1, end = lbuf_len(xb);
 	char **re = !loc ? (char**)arg : &arg;
 	dir = **re == '/' ? 2 : -2;
 	char *e = re_read(re);
@@ -265,15 +265,16 @@ static int ec_search(char *loc, char *cmd, char *arg)
 	free(e);
 	if (!xkwdrs)
 		return -1;
-	if (!loc)
+	if (!loc) {
 		beg = xrow + (xkwddir > 0);
-	else if (ex_region(loc, &beg, &end))
-		return -1;
-	if (lbuf_search(xb, xkwdrs, xkwddir, &beg, end,
-			&xoff, &len, loc ? xkwddir : 0))
-		return -1;
-	if (loc)
+		off = 0;
+		if (lbuf_search(xb, xkwdrs, xkwddir, &beg, end, &off, &len, 0))
+			return -1;
+	} else if (!ex_region(loc, &beg, &end)) {
+		if (lbuf_search(xb, xkwdrs, xkwddir, &beg, end, &xoff, &len, xkwddir))
+			return -1;
 		xrow = beg;
+	}
 	return beg;
 }
 
