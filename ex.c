@@ -850,11 +850,11 @@ static struct option {
 
 static char *cutword(char *s, char *d)
 {
-	while (isspace(*s))
+	while (isspace((unsigned char)*s))
 		s++;
-	while (*s && !isspace(*s))
+	while (*s && !isspace((unsigned char)*s))
 		*d++ = *s++;
-	while (isspace(*s))
+	while (isspace((unsigned char)*s))
 		s++;
 	*d = '\0';
 	return s;

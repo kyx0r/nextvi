@@ -422,7 +422,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		kw = sb->s;
 		if ((re = re_read(&kw))) {
 			ex_krsset(re, cmd == '/' ? +2 : -2);
-			while (isspace(*kw))
+			while (isspace((unsigned char)*kw))
 				kw++;
 			vi_soset = !!kw[0];
 			vi_so = atoi(kw);
