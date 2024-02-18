@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index fc089c1..5d26783 100644
+index f216b11..054316a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1087,3 +1087,11 @@ void ex_init(char **files, int n)
@@ -56,7 +56,7 @@ index 1048192..da52cff 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 5fc71a8..2554d82 100644
+index dd93822..bff53d6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -577,6 +577,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -72,7 +72,7 @@ index 5fc71a8..2554d82 100644
  static void vi_regprint(void)
  {
  	term_pos(xrows, led_pos(vi_msg, 0));
-@@ -2044,6 +2050,7 @@ int main(int argc, char *argv[])
+@@ -2040,6 +2046,7 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -80,7 +80,7 @@ index 5fc71a8..2554d82 100644
  	term_done();
  	if (xvis & 4)
  		return EXIT_SUCCESS;
-@@ -2052,5 +2059,12 @@ int main(int argc, char *argv[])
+@@ -2048,5 +2055,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
@@ -94,10 +94,10 @@ index 5fc71a8..2554d82 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 2bf5ea0..3292add 100644
+index 12e671d..e595f16 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -171,6 +171,7 @@ int ren_cwid(char *s, int pos);
+@@ -172,6 +172,7 @@ int ren_cwid(char *s, int pos);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -105,7 +105,7 @@ index 2bf5ea0..3292add 100644
  /* syntax highlighting */
  #define SYN_BD		0x010000
  #define SYN_IT		0x020000
-@@ -192,6 +193,7 @@ int syn_merge(int old, int new);
+@@ -193,6 +194,7 @@ int syn_merge(int old, int new);
  void syn_reloadft(void);
  int syn_addhl(char *reg, int func, int reload);
  void syn_init(void);
@@ -113,7 +113,7 @@ index 2bf5ea0..3292add 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -330,6 +332,7 @@ void ex_print(char *line);
+@@ -331,6 +333,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);

@@ -1,5 +1,5 @@
 diff --git a/lbuf.c b/lbuf.c
-index 2b57bca..eb2f9ae 100644
+index 64d4ec0..5d05322 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -213,9 +213,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
@@ -36,7 +36,7 @@ index 3a43e64..f93cd6a 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index 5fc71a8..86a1b4c 100644
+index dd93822..0a16085 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -16,6 +16,7 @@
@@ -48,7 +48,7 @@ index 5fc71a8..86a1b4c 100644
  #include <fcntl.h>
  #include <stdio.h>
 diff --git a/vi.h b/vi.h
-index 2bf5ea0..ae2037b 100644
+index 12e671d..6ac4a8d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -35,10 +35,11 @@ void vi(int init);

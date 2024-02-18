@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index fc089c1..32b2efa 100644
+index f216b11..90b6874 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ static int xbufsmax;		/* number of buffers */
@@ -10,7 +10,7 @@ index fc089c1..32b2efa 100644
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
-@@ -396,6 +397,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -395,6 +396,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: sigh... */
  	}
@@ -19,7 +19,7 @@ index fc089c1..32b2efa 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -502,14 +505,19 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -501,14 +504,19 @@ static int ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf);
  	} else {
  		int fd;
@@ -47,7 +47,7 @@ index fc089c1..32b2efa 100644
  		}
  		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode());
  		if (fd < 0) {
-@@ -951,6 +959,12 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+@@ -950,6 +958,12 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -69,10 +69,10 @@ index fc089c1..32b2efa 100644
  };
  
 diff --git a/vi.c b/vi.c
-index 5fc71a8..6f50026 100644
+index dd93822..9a5c875 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2031,9 +2031,11 @@ int main(int argc, char *argv[])
+@@ -2027,9 +2027,11 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -86,10 +86,10 @@ index 5fc71a8..6f50026 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 2bf5ea0..fb2f288 100644
+index 12e671d..34f1561 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -291,7 +291,7 @@ struct buf {
+@@ -292,7 +292,7 @@ struct buf {
  	char *ft;			/* file type */
  	char *path;			/* file path */
  	struct lbuf *lb;
@@ -98,7 +98,7 @@ index 2bf5ea0..fb2f288 100644
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
-@@ -430,3 +430,4 @@ extern rset *fsincl;
+@@ -431,3 +431,4 @@ extern rset *fsincl;
  extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;

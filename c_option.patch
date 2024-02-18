@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index fc089c1..18f1b5d 100644
+index f216b11..b71be8d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1075,7 +1075,7 @@ void ex(void)
@@ -20,10 +20,10 @@ index fc089c1..18f1b5d 100644
 +	free(cmds);
  }
 diff --git a/vi.c b/vi.c
-index 5fc71a8..98084d2 100644
+index dd93822..b6e09eb 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2012,7 +2012,8 @@ static int setup_signals(void) {
+@@ -2008,7 +2008,8 @@ static int setup_signals(void) {
  
  int main(int argc, char *argv[])
  {
@@ -33,7 +33,7 @@ index 5fc71a8..98084d2 100644
  	if (!setup_signals())
  		return EXIT_FAILURE;
  	dir_init();
-@@ -2031,15 +2032,28 @@ int main(int argc, char *argv[])
+@@ -2027,15 +2028,28 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -66,10 +66,10 @@ index 5fc71a8..98084d2 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 2bf5ea0..9b5e127 100644
+index 12e671d..b67f15f 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -328,7 +328,7 @@ int ex_exec(const char *ln);
+@@ -329,7 +329,7 @@ int ex_exec(const char *ln);
  char *ex_read(char *msg);
  void ex_print(char *line);
  void ex_show(char *msg);
