@@ -159,11 +159,14 @@ Note: shell integration is one of the most powerful features of nextvi.
 Colors can be customized up to 256 colors if the terminal supports it.
 24. Added new syntax highlighting for C, js, html, css, diff...
 25. Added key that splits the line (opposite of J) keybind: K
-K may also take vi_arg1, in which case it will repeat the operation on next
-line.
-26. Added key that line wraps text to 80 line limit keybind: gq
-keybind: gw does the same but floors to the last word and is also
-much slower. gw is a macro, so set td=2 if there is bidi text, it makes a
+When vi_arg1 is specified, K will not create empty new line.
+26. Added key that line wraps entire buffer to the 80 colon limit. keybind: gq
+The keybind only does 1 step, which means that multiple runs are needed
+if the lines are too long.
+Added key that line wraps a single line to 80 colon limit keybind: gq
+gq does as many steps as needed.
+Both keybinds estimate the word boundary such that words are not split.
+Both keybinds are macro, so set td=2 if there is bidi text, it makes a
 difference.
 27. Added key that does multiline repeated edits keybind: v.
 This is based on the last commands and insertions and requires vi_arg1 for
@@ -346,7 +349,7 @@ Removed "make" ex command. Commands like these are not wanted, nextvi shall
 provide a more general purpose solution for the user, like the keybind v; for
 example.
 66. Added new ex option "grp". The following allows definition of target search
-group for / ? n N (31.) autocomplete and ex substitution. This becomes
+group for /?nN, (31.) autocomplete, (73.), and ex substitution. This becomes
 necessary when the result of regex search is to be based on some group rather
 than default match group. For example you want to search for the whole line
 but exclude the tabs at the beginning of the line, use regex like this:
@@ -382,6 +385,15 @@ if pressed twice.
 of the register are displayed on the bottom row. In nextvi, register 0
 stores previous value of default register if operation is atomic
 and did not include a whole line, else register 1 takes its place.
+73. New ex command :f allows for ranged search (stands for find).
+Example:
+:f/int
+or
+:f?int
+or
+:10,100f/int
+Additionally, :f supports xoff (horizontal offset). This is essential for
+scripting macros.
 
 LESSER KNOWN FEATURES
 ---------------------
