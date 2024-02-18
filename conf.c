@@ -245,7 +245,7 @@ int hlslen = LEN(hls);
 /* right-to-left characters (used only in dctxs[] and dmarks[]) */
 #define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْٔ"
 /* neutral characters (used only in dctxs[] and dmarks[]) */
-#define CNEUT		"-\\!\"#$%&'\\()*+,./:;<\\=>?@^_`{|}~ "
+#define CNEUT		"-\\!\"#$%&'\\()*+,./:;<\\=>?@\\^_`{|}~ "
 
 struct dircontext dctxs[] = {
 	{-1, "^[" CR2L "]"},
