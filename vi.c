@@ -435,7 +435,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, xkwdrs, dir, row, off, &len)) {
+		if (lbuf_search(xb, xkwdrs, dir, row, lbuf_len(xb), off, &len, dir)) {
 			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 					regs['/'], i, cnt);
 			break;
@@ -969,28 +969,24 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	free(post);
 }
 
-static void vi_splitln(int row, int linepos, int nextln)
+static void vi_splitln(int row, int linepos, int newln)
 {
 	char *s, *part, *buf;
-	int slen, crow;
-	int c = !vi_arg1 ? 1 : vi_arg1;
-	vi_mod = 1;
-	for (int i = 0; i < c; i++) {
-		crow = row + i;
-		s = lbuf_get(xb, crow);
-		if (!s)
-			return;
-		slen = uc_slen(s);
-		if (slen > linepos) {
-			part = uc_sub(s, linepos, slen);
-			buf = uc_sub(s, 0, linepos);
-			lbuf_edit(xb, buf, crow, crow+1);
-			lbuf_edit(xb, part, crow+1, crow+1);
-			free(part);
-			free(buf);
-			if (nextln)
-				c++;
+	int slen;
+	s = lbuf_get(xb, row);
+	if (!s)
+		return;
+	slen = uc_slen(s);
+	if (slen > linepos) {
+		part = uc_sub(s, linepos, slen);
+		buf = uc_sub(s, 0, linepos);
+		if (newln || *part != '\n') {
+			lbuf_edit(xb, buf, row, row+1);
+			lbuf_edit(xb, part, row+1, row+1);
+			vi_mod = 1;
 		}
+		free(part);
+		free(buf);
 	}
 }
 
@@ -1752,7 +1748,7 @@ void vi(int init)
 				vc_join(vi_joinmode, vi_arg1 <= 1 ? 2 : vi_arg1);
 				break;
 			case 'K':
-				vi_splitln(xrow, xoff+1, 0);
+				vi_splitln(xrow, xoff+1, !vi_arg1);
 				break;
 			case TK_CTL('l'):
 				term_done();
@@ -1817,7 +1813,7 @@ void vi(int init)
 					else
 						ibuf_cnt = 0;
 				else if (k == 'q')
-					vi_splitln(xrow, 80, 1);
+					ex_command("se grp=4|%g/./tp 80\\\\|\\|f/[^ \t]{1,80}(.)\\|tp 1K|se grp=2")
 				else if (k == '~' || k == 'u' || k == 'U')
 					if (!vc_motion(k))
 						vi_mod = 2;

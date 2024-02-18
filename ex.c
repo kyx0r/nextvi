@@ -215,68 +215,7 @@ void ex_krsset(char *kwd, int dir)
 		xkwddir = dir / 2;
 }
 
-static int ex_search(char **pat)
-{
-	sbuf *kw;
-	int row;
-	char *e = *pat;
-	sbufn_make(kw, 64)
-	while (*++e) {
-		if (*e == **pat)
-			break;
-		sbufn_chr(kw, (unsigned char) *e)
-		if (*e == '\\' && e[1])
-			e++;
-	}
-	ex_krsset(kw->s, **pat == '/' ? 2 : -2);
-	sbuf_free(kw)
-	*pat = *e ? e + 1 : e;
-	if (!xkwdrs)
-		return -1;
-	row = xrow + xkwddir;
-	while (row >= 0 && row < lbuf_len(xb)) {
-		if (rset_find(xkwdrs, lbuf_get(xb, row), 0, NULL, REG_NEWLINE) >= 0)
-			break;
-		row += xkwddir;
-	}
-	return row >= 0 && row < lbuf_len(xb) ? row : -1;
-}
-
-static int ex_lineno(char **num)
-{
-	int n = xrow;
-	switch ((unsigned char) **num) {
-	case '.':
-		*num += 1;
-		break;
-	case '$':
-		n = lbuf_len(xb) - 1;
-		*num += 1;
-		break;
-	case '\'':
-		if (lbuf_jump(xb, (unsigned char) *++(*num), &n, NULL))
-			return -1;
-		*num += 1;
-		break;
-	case '/':
-	case '?':
-		n = ex_search(num);
-		break;
-	default:
-		if (isdigit((unsigned char) **num)) {
-			n = atoi(*num) - 1;
-			while (isdigit((unsigned char) **num))
-				*num += 1;
-		}
-	}
-	while (**num == '-' || **num == '+') {
-		n += atoi((*num)++);
-		while (isdigit((unsigned char) **num))
-			(*num)++;
-	}
-	return n;
-}
-
+static int ex_lineno(char **num);
 /* parse ex command addresses */
 static int ex_region(char *loc, int *beg, int *end)
 {
@@ -312,6 +251,66 @@ static int ex_region(char *loc, int *beg, int *end)
 	if (*end < *beg || *end > lbuf_len(xb))
 		return 1;
 	return 0;
+}
+
+static int ec_search(char *loc, char *cmd, char *arg)
+{
+	int dir, len, off, beg = -1, end = lbuf_len(xb);
+	char **re = !loc ? (char**)arg : &arg;
+	dir = **re == '/' ? 2 : -2;
+	char *e = re_read(re);
+	if (!e)
+		return -1;
+	ex_krsset(e, dir);
+	free(e);
+	if (!xkwdrs)
+		return -1;
+	if (!loc) {
+		beg = xrow + (xkwddir > 0);
+		off = 0;
+		if (lbuf_search(xb, xkwdrs, xkwddir, &beg, end, &off, &len, 0))
+			return -1;
+	} else if (!ex_region(loc, &beg, &end)) {
+		if (lbuf_search(xb, xkwdrs, xkwddir, &beg, end, &xoff, &len, xkwddir))
+			return -1;
+		xrow = beg;
+	}
+	return beg;
+}
+
+static int ex_lineno(char **num)
+{
+	int n = xrow;
+	switch ((unsigned char) **num) {
+	case '.':
+		*num += 1;
+		break;
+	case '$':
+		n = lbuf_len(xb) - 1;
+		*num += 1;
+		break;
+	case '\'':
+		if (lbuf_jump(xb, (unsigned char) *++(*num), &n, NULL))
+			return -1;
+		*num += 1;
+		break;
+	case '/':
+	case '?':
+		n = ec_search(NULL, NULL, (char*)num);
+		break;
+	default:
+		if (isdigit((unsigned char) **num)) {
+			n = atoi(*num) - 1;
+			while (isdigit((unsigned char) **num))
+				*num += 1;
+		}
+	}
+	while (**num == '-' || **num == '+') {
+		n += atoi((*num)++);
+		while (isdigit((unsigned char) **num))
+			(*num)++;
+	}
+	return n;
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)
@@ -955,6 +954,7 @@ static struct excmd {
 	char *name;
 	int (*ec)(char *loc, char *cmd, char *arg);
 } excmds[] = {
+	{"f", ec_search},
 	{"b", ec_buffer},
 	{"bp", ec_setpath},
 	{"bs", ec_save},

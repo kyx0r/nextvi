@@ -141,7 +141,8 @@ int lbuf_eol(struct lbuf *lb, int r);
 void lbuf_globset(struct lbuf *lb, int pos, int dep);
 int lbuf_globget(struct lbuf *lb, int pos, int dep);
 int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
-int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len);
+int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+			int ln_n, int *o, int *len, int skip);
 /* motions */
 int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
 int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
