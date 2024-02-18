@@ -11,14 +11,15 @@ index 269a4a6..9f166a7 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index 2b57bca..f4218e7 100644
+index 64d4ec0..6e8f68b 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -427,35 +427,98 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -427,35 +427,100 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
--int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
+-int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+-			int ln_n, int *o, int *len, int skip)
 +struct lsparams
 +{
 +	struct lbuf *lb;
@@ -28,6 +29,7 @@ index 2b57bca..f4218e7 100644
 +	int *r;
 +	int *o;
 +	int *len;
++	int skip;
 +};
 +
 +static void *lsearch(void *arg)
@@ -37,13 +39,12 @@ index 2b57bca..f4218e7 100644
 +	int r0 = *a->r, o0 = *a->o, grp = xgrp;
  	int offs[grp], i = r0;
 -	char *s = lbuf_get(lb, i);
--	int off = dir > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
--	int ln_n = lbuf_len(lb);
+-	int off = skip > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
 -	for (; i >= 0 && i < ln_n; i += dir) {
 -		s = lb->ln[i];
 -		while (rset_find(re, s + off, grp / 2, offs,
 +	char *s = lbuf_get(a->lb, i);
-+	int off = a->dir > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
++	int off = a->skip > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
 +	for (; i >= 0 && i < a->ln_n; i += a->dir) {
 +		s = a->lb->ln[i];
 +		while (rset_find(a->re, s + off, grp / 2, offs,
@@ -76,7 +77,8 @@ index 2b57bca..f4218e7 100644
 +	return NULL;
 +}
 +
-+int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r, int *o, int *len)
++int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
++			int ln_n, int *o, int *len, int skip)
 +{
 +	#define NUM_THREADS 4
 +	pthread_t threads[NUM_THREADS];
@@ -85,23 +87,23 @@ index 2b57bca..f4218e7 100644
 +	int rs[NUM_THREADS];
 +	int os[NUM_THREADS];
 +	int ls[NUM_THREADS];
-+	int ln = lbuf_len(lb);
-+	int thread_step = ln / NUM_THREADS; /* number of lines assigned per thread */
++	int thread_step = ln_n / NUM_THREADS; /* number of lines assigned per thread */
 +	int step = 0, i = 0;
 +	utf8_length['\n'] = 0;
 +	for (i = 0; i < NUM_THREADS; i++) {
-+		if (*r + step > ln || *r + step * dir < 0)
++		if (*r + step > ln_n || *r + step * dir < 0)
 +			break;
 +		data[i].lb = lb;
 +		data[i].re = re;
 +		data[i].dir = dir;
++		data[i].skip = skip;
 +		rs[i] = *r + step * dir;
 +		step += thread_step;
 +		data[i].r = &rs[i];
 +		if (i == NUM_THREADS-1)
-+			data[i].ln_n = ln;
++			data[i].ln_n = ln_n;
 +		else
-+			data[i].ln_n = MIN(rs[i] + thread_step, ln);
++			data[i].ln_n = MIN(rs[i] + thread_step, ln_n);
 +		os[i] = i ? -1 : *o;
 +		data[i].o = &os[i];
 +		data[i].len = &ls[i];
@@ -173,7 +175,7 @@ index 69fcbe4..6811ef4 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 5fc71a8..53e302c 100644
+index dd93822..4c95913 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -185,10 +187,10 @@ index 5fc71a8..53e302c 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 2bf5ea0..5666312 100644
+index 12e671d..23e5ee8 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -194,7 +194,9 @@ int syn_addhl(char *reg, int func, int reload);
+@@ -195,7 +195,9 @@ int syn_addhl(char *reg, int func, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */
