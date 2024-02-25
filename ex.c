@@ -416,7 +416,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	*arg1 = '\0';
 	for (int pos = 0; pos < lbuf_len(tempbufs[1].lb); pos++) {
 		path = lbuf_get(tempbufs[1].lb, pos);
-		len = *(int*)(path - sizeof(int));
+		len = lbuf_slen(path);
 		for (i = len; i > 0 && path[i] != '/'; i--);
 		if (!i)
 			continue;

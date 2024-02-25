@@ -133,7 +133,7 @@ static void vi_drawrow(int row)
 	if (vi_lnnum == 1 || (vi_lnnum == 2 && row != xrow))
 	{
 		lnnum = 1;
-		l1 = *(int*)(s - sizeof(int)) + 7;
+		l1 = lbuf_slen(s) + 7;
 		char tmp[l1+100];
 		c = itoa(row+1-movedown, tmp);
 		l2 = strlen(tmp)+1;
@@ -656,7 +656,7 @@ void dir_calc(char *path)
 }
 
 #define fssearch() \
-len = *(int*)(path - sizeof(int)); \
+len = lbuf_slen(path); \
 path[len] = '\0'; \
 ret = ex_edit(path, len); \
 path[len] = '\n'; \
@@ -1002,10 +1002,13 @@ static int charcount(char *text, int tlen, char *post)
 	return uc_slen(nl) - uc_slen(post);
 }
 
-static char *vi_input(char *pref, char *post, int row)
+static char *vi_input(char *pref, char *post, int tlen, int row)
 {
 	sbuf *rep = led_input(pref, post, &xkmap, row);
-	xoff = *rep->s ? charcount(rep->s, rep->s_n, post) : xoff;
+	if (rep->s_n != tlen)
+		xoff = charcount(rep->s, rep->s_n, post);
+	else
+		rep->s[0] = '\0';
 	sbufn_done(rep)
 }
 
@@ -1020,17 +1023,18 @@ static char *vi_indents(char *ln)
 static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
 	char *region, *rep, *pref, *post;
+	char *ln = lbuf_get(xb, r1);
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
 	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
-	pref = lnmode ? vi_indents(lbuf_get(xb, r1)) : uc_sub(lbuf_get(xb, r1), 0, o1);
+	pref = lnmode ? vi_indents(ln) : uc_sub(ln, 0, o1);
 	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
 	term_room(r1 < xtop ? xtop - xrow : r1 - r2);
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
-	rep = vi_input(pref, post, r1 - r2 ? r1 - (r1 - r2) : -1);
+	rep = vi_input(pref, post, lnmode ? -1 : lbuf_slen(ln)+1, r1 - (r1 - r2));
 	if (*rep)
 		lbuf_edit(xb, rep, r1, r2 + 1);
 	free(rep);
@@ -1199,7 +1203,7 @@ static void vc_insert(int cmd)
 	post = ln && !cmdo ? uc_sub(ln, xoff, -1) : uc_dup("\n");
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
-	rep = vi_input(pref, post, row - cmdo);
+	rep = vi_input(pref, post, cmdo ? -1 : lbuf_slen(ln)+1, row - cmdo);
 	if (*rep) {
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
