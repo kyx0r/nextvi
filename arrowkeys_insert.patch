@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 3a43e64..99c3e1b 100644
+index 864cd94..39c9073 100644
 --- a/led.c
 +++ b/led.c
 @@ -288,7 +288,7 @@ static int led_lastword(char *s)
@@ -63,34 +63,36 @@ index 3a43e64..99c3e1b 100644
  	*key = c;
  	sbufn_done(sb)
  }
-@@ -648,7 +666,7 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
- 			return sb;
+@@ -638,7 +656,7 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
+ 			free(ln);
+ 			break;
  		}
- 		led_printparts(ai, pref ? pref : "", uc_lastline(ln),
--				key == '\n' ? "" : post);
-+				key == '\n' ? "" : post, 1);
- 		if (key == '\n')
- 			term_chr('\n');
- 		if (!pref || !pref[0]) {	/* updating autoindent */
+-		led_printparts(ai, pref, uc_lastline(ln), "");
++		led_printparts(ai, pref, uc_lastline(ln), "", 1);
+ 		term_chr('\n');
+ 		if (ai_max && !pref[0]) {	/* updating autoindent */
+ 			int ai_new = 0; 	/* number of initial spaces in ln */
 diff --git a/vi.c b/vi.c
-index c97a907..d17315f 100644
+index 5b6ebfc..f92d13f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1002,10 +1002,13 @@ static int charcount(char *text, int tlen, char *post)
+@@ -1002,6 +1002,7 @@ static int charcount(char *text, int tlen, char *post)
  	return uc_slen(nl) - uc_slen(post);
  }
  
 +static int lmodified;
-+
- static char *vi_input(char *pref, char *post, int row)
+ static char *vi_input(char *pref, char *post, int tlen, int row)
  {
  	sbuf *rep = led_input(pref, post, &xkmap, row);
- 	xoff = *rep->s ? charcount(rep->s, rep->s_n, post) : xoff;
+@@ -1009,6 +1010,7 @@ static char *vi_input(char *pref, char *post, int tlen, int row)
+ 		xoff = charcount(rep->s, rep->s_n, post);
+ 	else
+ 		rep->s[0] = '\0';
 +	lmodified = *rep->s;
  	sbufn_done(rep)
  }
  
-@@ -1730,6 +1733,37 @@ void vi(int init)
+@@ -1734,6 +1736,37 @@ void vi(int init)
  				vc_insert(c);
  				vi_mod = !xpac && xrow == orow ? 3 : 1;
  				ins:
@@ -128,7 +130,7 @@ index c97a907..d17315f 100644
  				if (vi_insmov == 127) {
  					vi_mod = vi_mod == 3 ? 2 : 1;
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
-@@ -1744,6 +1778,9 @@ void vi(int init)
+@@ -1748,6 +1781,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;
