@@ -942,6 +942,7 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 		return 1;
 	int bufidx = ex_buf - bufs;
 	int pbufidx = ex_pbuf - bufs;
+	int tpbufidx = ex_tpbuf - bufs;
 	int istemp = !ex_buf ? 0 : istempbuf(ex_buf);
 	for (; xbufcur > xbufsmax; xbufcur--)
 		bufs_free(xbufcur - 1);
@@ -949,6 +950,7 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 	if (!istemp)
 		ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
 	ex_pbuf = pbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+pbufidx;
+	ex_tpbuf = tpbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+tpbufidx;
 	return 0;
 }
 
