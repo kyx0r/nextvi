@@ -940,12 +940,14 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 	xbufsmax = *arg ? atoi(arg) : xbufsalloc;
 	if (xbufsmax <= 0)
 		return 1;
-	for (; xbufcur > xbufsmax; xbufcur--)
-		bufs_free(xbufcur - 1);
 	int bufidx = ex_buf - bufs;
 	int pbufidx = ex_pbuf - bufs;
+	int istemp = !ex_buf ? 0 : istempbuf(ex_buf);
+	for (; xbufcur > xbufsmax; xbufcur--)
+		bufs_free(xbufcur - 1);
 	bufs = realloc(bufs, sizeof(struct buf) * xbufsmax);
-	ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
+	if (!istemp)
+		ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
 	ex_pbuf = pbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+pbufidx;
 	return 0;
 }

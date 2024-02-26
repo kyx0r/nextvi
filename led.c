@@ -638,10 +638,8 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
 			free(ln);
 			break;
 		}
-		led_printparts(ai, pref, uc_lastline(ln),
-				key == '\n' ? "" : post);
-		if (key == '\n')
-			term_chr('\n');
+		led_printparts(ai, pref, uc_lastline(ln), "");
+		term_chr('\n');
 		if (ai_max && !pref[0]) {	/* updating autoindent */
 			int ai_new = 0; 	/* number of initial spaces in ln */
 			while (ln[ai_new] == ' ' || ln[ai_new] == '\t')
