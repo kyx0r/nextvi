@@ -119,6 +119,7 @@ void rset_free(rset *re);
 char *re_read(char **src);
 
 /* lbuf.c line buffer, managing a number of lines */
+#define lbuf_slen(ln) *(int*)(ln - sizeof(int))
 struct lbuf *lbuf_make(void);
 void lbuf_free(struct lbuf *lbuf);
 int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end);

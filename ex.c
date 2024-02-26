@@ -416,7 +416,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	*arg1 = '\0';
 	for (int pos = 0; pos < lbuf_len(tempbufs[1].lb); pos++) {
 		path = lbuf_get(tempbufs[1].lb, pos);
-		len = *(int*)(path - sizeof(int));
+		len = lbuf_slen(path);
 		for (i = len; i > 0 && path[i] != '/'; i--);
 		if (!i)
 			continue;
@@ -940,13 +940,17 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 	xbufsmax = *arg ? atoi(arg) : xbufsalloc;
 	if (xbufsmax <= 0)
 		return 1;
-	for (; xbufcur > xbufsmax; xbufcur--)
-		bufs_free(xbufcur - 1);
 	int bufidx = ex_buf - bufs;
 	int pbufidx = ex_pbuf - bufs;
+	int tpbufidx = ex_tpbuf - bufs;
+	int istemp = !ex_buf ? 0 : istempbuf(ex_buf);
+	for (; xbufcur > xbufsmax; xbufcur--)
+		bufs_free(xbufcur - 1);
 	bufs = realloc(bufs, sizeof(struct buf) * xbufsmax);
-	ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
+	if (!istemp)
+		ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
 	ex_pbuf = pbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+pbufidx;
+	ex_tpbuf = tpbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+tpbufidx;
 	return 0;
 }
 

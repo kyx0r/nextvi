@@ -366,7 +366,7 @@ static void led_info(char *str, int ai_max)
 {
 	rstate->ren_laststr = NULL;
 	led_render(str, xtop+xrows, 0, xcols);
-	if (ai_max)
+	if (ai_max >= 0)
 		term_pos(xrow - xtop, 0);
 }
 
@@ -513,7 +513,7 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			continue;
 		case TK_CTL('b'):
-			if (ai_max) {
+			if (ai_max >= 0) {
 				pac:;
 				int r = xrow-xtop+1;
 				if (sug)
@@ -583,7 +583,7 @@ static char *led_line(char *pref, char *post, char *ai,
 				sbufn_str(sb, cs)
 		}
 		sug = NULL; _sug = NULL;
-		if (ai_max && xpac)
+		if (ai_max >= 0 && xpac)
 			goto pac;
 	}
 leave:
@@ -598,7 +598,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 {
 	int key;
 	preserve(int, xtd, +2)
-	char *s = led_line(pref, post, "", 0, &key, kmap, insert, 0);
+	char *s = led_line(pref, post, "", -1, &key, kmap, insert, 0);
 	restore(xtd)
 	if (key == '\n') {
 		temp_pos(0, -1, 0, 0);
@@ -620,56 +620,44 @@ char *led_prompt(char *pref, char *post, char *insert,
 sbuf *led_input(char *pref, char *post, int *kmap, int row)
 {
 	sbuf *sb; sbuf_make(sb, 256)
-	char ai[128];
-	int ai_max = sizeof(ai) - 1;
-	int n = 0, key, orow = row >= 0 ? row : xrow;
+	int ai_max = 128 * xai;
+	char ai[ai_max+1];
+	int n = 0, key, orow = row;
 	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
 		ai[n++] = *pref++;
 	ai[n] = '\0';
 	while (1) {
 		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, NULL, orow);
-		int ln_sp = 0;	/* number of initial spaces in ln */
-		while (ln[ln_sp] == ' ' || ln[ln_sp] == '\t')
-			ln_sp++;
-		/* append the auto-indent only if there are other characters */
-		if (ln[ln_sp] || (pref && pref[0]) ||
-				(key != '\n' && post[0] && post[0] != '\n'))
-			sbuf_str(sb, ai)
-		if (pref)
+		sbuf_str(sb, ai)
+		if (pref[0])
 			sbuf_str(sb, pref)
 		sbuf_str(sb, ln)
 		if (key == '\n')
 			sbuf_chr(sb, '\n')
-		else if (!*ln) {
+		else {
 			free(ln);
-			if (row != xrow)
-				break;
-			sbufn_cut(sb, 0)
-			return sb;
+			break;
 		}
-		led_printparts(ai, pref ? pref : "", uc_lastline(ln),
-				key == '\n' ? "" : post);
-		if (key == '\n')
-			term_chr('\n');
-		if (!pref || !pref[0]) {	/* updating autoindent */
-			int ai_len = ai_max ? strlen(ai) : 0;
-			int ai_new = ln_sp;
+		led_printparts(ai, pref, uc_lastline(ln), "");
+		term_chr('\n');
+		if (ai_max && !pref[0]) {	/* updating autoindent */
+			int ai_new = 0; 	/* number of initial spaces in ln */
+			while (ln[ai_new] == ' ' || ln[ai_new] == '\t')
+				ai_new++;
+			int ai_len = strlen(ai);
 			if (ai_len + ai_new > ai_max)
 				ai_new = ai_max - ai_len;
 			memcpy(ai + ai_len, ln, ai_new);
 			ai[ai_len + ai_new] = '\0';
 		}
-		if (!xai)
-			ai[0] = '\0';
 		free(ln);
-		if (key != '\n')
-			break;
 		term_room(1);
-		pref = NULL;
+		pref[0] = '\0';
 		n = 0;
-		while (xai && (post[n] == ' ' || post[n] == '\t'))
+		while (n < ai_max && (post[n] == ' ' || post[n] == '\t'))
 			n++;
-		memmove(post, post + n, strlen(post) - n + 1);
+		if (n)
+			memmove(post, post + n, strlen(post) - n + 1);
 		xrow++;
 	}
 	sbufn_str(sb, post)
