@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index fa42186..b03c071 100644
+index 8932c87..8570552 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -380,7 +380,9 @@ int ex_edit(const char *path, int len)
@@ -23,7 +23,7 @@ index fa42186..b03c071 100644
  	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1077,13 +1082,24 @@ void ex(void)
+@@ -1081,13 +1086,24 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -127,10 +127,10 @@ index 4d45dc3..a42fbd0 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index c97a907..31f59cd 100644
+index 5b6ebfc..0e2e482 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1993,6 +1993,8 @@ void vi(int init)
+@@ -1997,6 +1997,8 @@ void vi(int init)
  
  static void sighandler(int signo)
  {
@@ -139,7 +139,7 @@ index c97a907..31f59cd 100644
  	vi_back(TK_CTL('l'));
  }
  
-@@ -2000,8 +2002,9 @@ static int setup_signals(void) {
+@@ -2004,8 +2006,9 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -151,7 +151,7 @@ index c97a907..31f59cd 100644
  		return 0;
  	return 1;
  }
-@@ -2019,7 +2022,8 @@ int main(int argc, char *argv[])
+@@ -2023,7 +2026,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -162,10 +162,10 @@ index c97a907..31f59cd 100644
  			if (argv[i][j] == 's')
  				xvis |= 2;
 diff --git a/vi.h b/vi.h
-index 12e671d..961abdd 100644
+index f75a904..42d00c0 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -431,3 +431,4 @@ extern rset *fsincl;
+@@ -432,3 +432,4 @@ extern rset *fsincl;
  extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
