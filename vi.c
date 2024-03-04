@@ -1034,7 +1034,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
-	rep = vi_input(pref, post, lnmode ? -1 : lbuf_slen(ln)+1, r1 - (r1 - r2));
+	rep = vi_input(pref, post, lnmode || !ln ? -1 : lbuf_slen(ln)+1, r1 - (r1 - r2));
 	if (*rep)
 		lbuf_edit(xb, rep, r1, r2 + 1);
 	free(rep);
@@ -1203,7 +1203,7 @@ static void vc_insert(int cmd)
 	post = ln && !cmdo ? uc_sub(ln, xoff, -1) : uc_dup("\n");
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
-	rep = vi_input(pref, post, cmdo ? -1 : lbuf_slen(ln)+1, row - cmdo);
+	rep = vi_input(pref, post, cmdo || !ln ? -1 : lbuf_slen(ln)+1, row - cmdo);
 	if (*rep) {
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
