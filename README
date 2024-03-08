@@ -208,7 +208,7 @@ times.
 Like ^g used to index file in insert mode, ^y can be used from insert to
 clear out the completion db.
 Running ex command "ac" with no argument will reset back to the default
-word filtering regex. You can find it's string in led.c as a reference.
+word filtering regex. You can find its string in led.c as a reference.
 Using ^b from insert mode will display all possible autocomplete options.
 Added new ex option "pac". When enabled the autocomplete options will
 be automatically displayed.
@@ -453,7 +453,7 @@ Example: find all lines with int and a semicolon and append "has a semicolon"
 counter intuitive and one would have never ever figure out that this
 feature even exists, unless noted. Even if you read the source code it's
 very easy to miss. How to use: optionally specify vi_arg1, specify the motion
-using it's keybind, then do / or ? and type out the search term.
+using its keybind, then do / or ? and type out the search term.
 The motion ends on the first match by default (no vi_arg1 specified).
 The optional vi_arg1 determines how many matches of the term to skip until the
 motion ends. Example: you see that the next 10 lines have the word "int"
