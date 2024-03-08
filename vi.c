@@ -1002,16 +1002,6 @@ static int charcount(char *text, int tlen, char *post)
 	return uc_slen(nl) - uc_slen(post);
 }
 
-static char *vi_input(char *pref, char *post, int tlen, int row)
-{
-	sbuf *rep = led_input(pref, post, &xkmap, row);
-	if (rep->s_n != tlen)
-		xoff = charcount(rep->s, rep->s_n, post);
-	else
-		rep->s[0] = '\0';
-	sbufn_done(rep)
-}
-
 static char *vi_indents(char *ln)
 {
 	sbuf *sb; sbuf_make(sb, 256)
@@ -1022,7 +1012,7 @@ static char *vi_indents(char *ln)
 
 static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
-	char *region, *rep, *pref, *post;
+	char *region, *pref, *post;
 	char *ln = lbuf_get(xb, r1);
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
 	vi_regput(vi_ybuf, region, lnmode);
@@ -1034,10 +1024,12 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
-	rep = vi_input(pref, post, lnmode || !ln ? -1 : lbuf_slen(ln)+1, r1 - (r1 - r2));
-	if (*rep)
-		lbuf_edit(xb, rep, r1, r2 + 1);
-	free(rep);
+	sbuf *rep = led_input(pref, post, &xkmap, r1 - (r1 - r2));
+	xoff = charcount(rep->s, rep->s_n, post);
+	int tlen = lnmode || !ln ? -1 : lbuf_slen(ln)+1;
+	if (rep->s_n != tlen || memcmp(&ln[o1], &rep->s[o1], o2 - o1))
+		lbuf_edit(xb, rep->s, r1, r2 + 1);
+	sbuf_free(rep)
 	free(pref);
 	free(post);
 }
@@ -1179,7 +1171,6 @@ static void vc_insert(int cmd)
 	char *pref, *post;
 	char *ln = lbuf_get(xb, xrow);
 	int row;
-	char *rep;
 	int cmdo;
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
@@ -1203,13 +1194,14 @@ static void vc_insert(int cmd)
 	post = ln && !cmdo ? uc_sub(ln, xoff, -1) : uc_dup("\n");
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
-	rep = vi_input(pref, post, cmdo || !ln ? -1 : lbuf_slen(ln)+1, row - cmdo);
-	if (*rep) {
+	sbuf *rep = led_input(pref, post, &xkmap, row - cmdo);
+	if (rep->s_n != (cmdo || !ln ? -1 : lbuf_slen(ln)+1)) {
+		xoff = charcount(rep->s, rep->s_n, post);
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
-		lbuf_edit(xb, rep, row, row + !cmdo);
+		lbuf_edit(xb, rep->s, row, row + !cmdo);
 	}
-	free(rep);
+	sbuf_free(rep)
 	free(pref);
 	free(post);
 }
