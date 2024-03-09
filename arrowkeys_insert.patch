@@ -73,26 +73,39 @@ index 864cd94..39c9073 100644
  		if (ai_max && !pref[0]) {	/* updating autoindent */
  			int ai_new = 0; 	/* number of initial spaces in ln */
 diff --git a/vi.c b/vi.c
-index 5b6ebfc..f92d13f 100644
+index ac92959..bbbce15 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1002,6 +1002,7 @@ static int charcount(char *text, int tlen, char *post)
- 	return uc_slen(nl) - uc_slen(post);
+@@ -1004,6 +1004,8 @@ static char *vi_indents(char *ln)
+ 	sbufn_done(sb)
  }
  
 +static int lmodified;
- static char *vi_input(char *pref, char *post, int tlen, int row)
++
+ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
- 	sbuf *rep = led_input(pref, post, &xkmap, row);
-@@ -1009,6 +1010,7 @@ static char *vi_input(char *pref, char *post, int tlen, int row)
- 		xoff = charcount(rep->s, rep->s_n, post);
- 	else
- 		rep->s[0] = '\0';
-+	lmodified = *rep->s;
- 	sbufn_done(rep)
+ 	char *region, *pref, *post;
+@@ -1027,6 +1029,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+ 	sbuf_free(rep)
+ 	free(pref);
+ 	free(post);
++	lmodified = 1;
  }
  
-@@ -1734,6 +1736,37 @@ void vi(int init)
+ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
+@@ -1193,8 +1196,10 @@ static void vc_insert(int cmd)
+ 		xoff = charcount(rep->s, rep->s_n, post);
+ 		if (cmdo && !lbuf_len(xb))
+ 			lbuf_edit(xb, "\n", 0, 0);
++		lmodified = 1;
+ 		lbuf_edit(xb, rep->s, row, row + !cmdo);
+-	}
++	} else
++		lmodified = 0;
+ 	sbuf_free(rep)
+ 	free(pref);
+ 	free(post);
+@@ -1718,6 +1723,37 @@ void vi(int init)
  				vc_insert(c);
  				vi_mod = !xpac && xrow == orow ? 3 : 1;
  				ins:
@@ -130,7 +143,7 @@ index 5b6ebfc..f92d13f 100644
  				if (vi_insmov == 127) {
  					vi_mod = vi_mod == 3 ? 2 : 1;
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
-@@ -1748,6 +1781,9 @@ void vi(int init)
+@@ -1732,6 +1768,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;
