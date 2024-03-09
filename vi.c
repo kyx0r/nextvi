@@ -924,13 +924,12 @@ static char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
 	if (r1 == r2)
 		return uc_sub(lbuf_get(lb, r1), o1, o2);
 	sbuf_make(sb, 1024)
-	s1 = uc_sub(lbuf_get(lb, r1), o1, -1);
+	s1 = uc_chr(lbuf_get(lb, r1), o1);
 	s3 = uc_sub(lbuf_get(lb, r2), 0, o2);
 	s2 = lbuf_cp(lb, r1 + 1, r2);
 	sbuf_str(sb, s1)
 	sbuf_str(sb, s2)
 	sbuf_str(sb, s3)
-	free(s1);
 	free(s2);
 	free(s3);
 	sbufn_done(sb)
@@ -954,7 +953,7 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
-	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
+	post = lnmode ? "\n" : uc_chr(lbuf_get(xb, r2), o2);
 	if (!lnmode) {
 		sbuf *sb; sbuf_make(sb, 1024)
 		sbuf_str(sb, pref)
@@ -966,28 +965,23 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	xrow = r1;
 	xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
 	free(pref);
-	free(post);
 }
 
 static void vi_splitln(int row, int linepos, int newln)
 {
 	char *s, *part, *buf;
-	int slen;
 	s = lbuf_get(xb, row);
 	if (!s)
 		return;
-	slen = uc_slen(s);
-	if (slen > linepos) {
-		part = uc_sub(s, linepos, slen);
-		buf = uc_sub(s, 0, linepos);
-		if (newln || *part != '\n') {
-			lbuf_edit(xb, buf, row, row+1);
-			lbuf_edit(xb, part, row+1, row+1);
-			vi_mod = 1;
-		}
-		free(part);
-		free(buf);
+	part = uc_sub(s, linepos, -1);
+	buf = uc_sub(s, 0, linepos);
+	if (newln || *part != '\n') {
+		lbuf_edit(xb, buf, row, row+1);
+		lbuf_edit(xb, part, row+1, row+1);
+		vi_mod = 1;
 	}
+	free(part);
+	free(buf);
 }
 
 static int charcount(char *text, int tlen, char *post)
@@ -1014,11 +1008,12 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
 	char *region, *pref, *post;
 	char *ln = lbuf_get(xb, r1);
+	int l1, l2;
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
 	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
-	pref = lnmode ? vi_indents(ln) : uc_sub(ln, 0, o1);
-	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
+	pref = lnmode ? vi_indents(ln) : uc_subl(ln, 0, o1, &l1);
+	post = lnmode ? uc_dup("\n") : uc_subl(lbuf_get(xb, r2), o2, -1, &l2);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
 	term_room(r1 < xtop ? xtop - xrow : r1 - r2);
 	xrow = r1;
@@ -1027,7 +1022,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	sbuf *rep = led_input(pref, post, &xkmap, r1 - (r1 - r2));
 	xoff = charcount(rep->s, rep->s_n, post);
 	int tlen = lnmode || !ln ? -1 : lbuf_slen(ln)+1;
-	if (rep->s_n != tlen || memcmp(&ln[o1], &rep->s[o1], o2 - o1))
+	if (rep->s_n != tlen || memcmp(&ln[l1], &rep->s[l1], tlen - l2 - l1))
 		lbuf_edit(xb, rep->s, r1, r2 + 1);
 	sbuf_free(rep)
 	free(pref);
@@ -1053,7 +1048,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 		s = uc_next(s);
 	}
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
-	post = lnmode ? uc_dup("\n") : uc_sub(lbuf_get(xb, r2), o2, -1);
+	post = lnmode ? "\n" : uc_chr(lbuf_get(xb, r2), o2);
 	if (!lnmode) {
 		sbuf *sb; sbuf_make(sb, 256)
 		sbuf_str(sb, pref)
@@ -1067,7 +1062,6 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 	xoff = lnmode ? lbuf_indents(xb, r2) : o2;
 	free(region);
 	free(pref);
-	free(post);
 }
 
 static void vi_pipe(int r1, int r2)
@@ -1236,9 +1230,8 @@ static int vc_put(int cmd)
 	free(s);
 	for (i = 0; i < cnt; i++)
 		sbuf_str(sb, buf)
-	s = uc_sub(ln, off, -1);
+	s = uc_chr(ln, off);
 	sbufn_str(sb, s)
-	free(s);
 	lbuf_edit(xb, sb->s, xrow, xrow + 1);
 	xoff = off + uc_slen(buf) * cnt - 1;
 	sbuf_free(sb)
@@ -1339,7 +1332,7 @@ static int vc_replace(void)
 	if (i < cnt)
 		return 1;
 	pref = uc_sub(ln, 0, off);
-	post = uc_sub(ln, off + cnt, -1);
+	post = uc_chr(ln, off + cnt);
 	sbuf_make(sb, 1024)
 	sbuf_str(sb, pref)
 	for (i = 0; i < cnt; i++)
@@ -1350,7 +1343,6 @@ static int vc_replace(void)
 	xoff = off;
 	sbuf_free(sb)
 	free(pref);
-	free(post);
 	return 0;
 }
 
