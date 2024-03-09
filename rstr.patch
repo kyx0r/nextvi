@@ -235,7 +235,7 @@ index a199943..3700127 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 5b6ebfc..be25559 100644
+index ac92959..4b4c94d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -590,7 +590,7 @@ static void vi_regprint(void)
@@ -257,7 +257,7 @@ index 5b6ebfc..be25559 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index f75a904..f6aab97 100644
+index 95a93d5..243422d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -113,10 +113,21 @@ typedef struct {
@@ -291,7 +291,7 @@ index f75a904..f6aab97 100644
  			int ln_n, int *o, int *len, int skip);
  /* motions */
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
-@@ -332,7 +343,7 @@ void ex_print(char *line);
+@@ -333,7 +344,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -300,7 +300,7 @@ index f75a904..f6aab97 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -426,9 +437,9 @@ extern int xgrp;
+@@ -427,9 +438,9 @@ extern int xgrp;
  extern int xpac;
  extern int xkwdcnt;
  extern int xkwddir;

@@ -36,7 +36,7 @@ index 864cd94..9da5513 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index 5b6ebfc..89ff678 100644
+index ac92959..b400d05 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -16,6 +16,7 @@
@@ -48,7 +48,7 @@ index 5b6ebfc..89ff678 100644
  #include <fcntl.h>
  #include <stdio.h>
 diff --git a/vi.h b/vi.h
-index f75a904..74cb6a1 100644
+index 95a93d5..c64c794 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -35,10 +35,11 @@ void vi(int init);
