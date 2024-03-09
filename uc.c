@@ -83,12 +83,14 @@ char **uc_chop(char *s, int *n)
 char *uc_chr(char *s, int off)
 {
 	int i = 0;
-	while (s && *s) {
+	if (!s)
+		return "";
+	while (*s) {
 		if (i++ == off)
 			return s;
 		s = uc_next(s);
 	}
-	return s && (off < 0 || i == off) ? s : "";
+	return off < 0 || i == off ? s : "";
 }
 
 /* the number of characters between s and s + off */
@@ -101,14 +103,15 @@ int uc_off(char *s, int off)
 	return i;
 }
 
-char *uc_sub(char *s, int beg, int end)
+char *uc_subl(char *s, int beg, int end, int *rlen)
 {
 	char *sbeg = uc_chr(s, beg);
-	char *send = uc_chr(s, end);
-	int len = sbeg && send && sbeg <= send ? send - sbeg : 0;
+	char *send = uc_chr(sbeg, end - beg);
+	int len = sbeg < send ? send - sbeg : 0;
 	char *r = malloc(len + 1);
 	memcpy(r, sbeg, len);
 	r[len] = '\0';
+	*rlen = len;
 	return r;
 }
 

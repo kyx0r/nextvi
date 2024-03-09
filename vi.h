@@ -217,7 +217,8 @@ int uc_wid(int c);
 int uc_slen(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
-char *uc_sub(char *s, int beg, int end);
+#define uc_sub(s, beg, end) uc_subl(s, beg, end, &(int){0})
+char *uc_subl(char *s, int beg, int end, int *rlen);
 char *uc_dup(const char *s);
 int uc_isspace(char *s);
 int uc_isprint(char *s);
