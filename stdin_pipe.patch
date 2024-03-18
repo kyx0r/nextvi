@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 8932c87..8570552 100644
+index f9264da..0e8dfd6 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -380,7 +380,9 @@ int ex_edit(const char *path, int len)
+@@ -390,7 +390,9 @@ int ex_edit(const char *path, int len)
  static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index 8932c87..8570552 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -400,6 +402,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -410,6 +412,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
  	}
@@ -23,7 +23,7 @@ index 8932c87..8570552 100644
  	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1081,13 +1086,24 @@ void ex(void)
+@@ -1091,13 +1096,24 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -127,10 +127,10 @@ index 4d45dc3..a42fbd0 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index ac92959..48c9025 100644
+index 3136a8b..12f787f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1981,6 +1981,8 @@ void vi(int init)
+@@ -1982,6 +1982,8 @@ void vi(int init)
  
  static void sighandler(int signo)
  {
@@ -139,7 +139,7 @@ index ac92959..48c9025 100644
  	vi_back(TK_CTL('l'));
  }
  
-@@ -1988,8 +1990,9 @@ static int setup_signals(void) {
+@@ -1989,8 +1991,9 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -151,7 +151,7 @@ index ac92959..48c9025 100644
  		return 0;
  	return 1;
  }
-@@ -2007,7 +2010,8 @@ int main(int argc, char *argv[])
+@@ -2008,7 +2011,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
