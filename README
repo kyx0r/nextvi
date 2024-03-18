@@ -386,14 +386,15 @@ of the register are displayed on the bottom row. In nextvi, register 0
 stores previous value of default register if operation is atomic
 and did not include a whole line, else register 1 takes its place.
 73. New ex command :f allows for ranged search (stands for find).
-Example:
+Example (no range given, current line only):
 :f/int
 or
 :f?int
-or
+or (specified range)
 :10,100f/int
 Additionally, :f supports xoff (horizontal offset). This is essential for
-scripting macros.
+scripting macros. Subsequent commands within the range will move to the
+next match just like n/N.
 
 LESSER KNOWN FEATURES
 ---------------------
