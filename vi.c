@@ -435,7 +435,8 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, xkwdrs, dir, row, lbuf_len(xb), off, &len, dir)) {
+		if (lbuf_search(xb, xkwdrs, dir, row, lbuf_len(xb),
+				off, &len, msg ? dir : 0)) {
 			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 					regs['/'], i, cnt);
 			break;
@@ -661,7 +662,7 @@ path[len] = '\0'; \
 ret = ex_edit(path, len); \
 path[len] = '\n'; \
 if (ret && xrow) { \
-	*row = xrow; *off = xoff-1; /* short circuit */ \
+	*row = xrow; *off = xoff; /* short circuit */ \
 	if (!vi_search('n', cnt, row, off, 0)) \
 		return 1; \
 	*off += 2; \
