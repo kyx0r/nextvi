@@ -1412,10 +1412,13 @@ void vi(int init)
 			vi_mod = -1;
 		if (vi_lnnum == 1)
 			vi_lnnum = 0;
-		if (vi_msg[0]) {
+		if (vi_msg[0] || vi_status) {
 			vi_msg[0] = '\0';
-			if (vi_status)
+			if (vi_status) {
+				xrows = vi_status != xrows ? xrows - 1 : xrows;
+				vi_status = xrows;
 				vc_status();
+			}
 			vi_drawrow(otop + xrows - 1);
 		}
 		if (!vi_ybuf)
@@ -1558,7 +1561,7 @@ void vi(int init)
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
 				break;
 			case TK_CTL('g'):
-				vi_status = vi_arg1;
+				vi_status = !!vi_arg1;
 				vc_status();
 				break;
 			case TK_CTL('^'):
