@@ -1,5 +1,5 @@
 diff --git a/kmap.h b/kmap.h
-index d9f602e..c0a6533 100644
+index 180984f..e5b0ab8 100644
 --- a/kmap.h
 +++ b/kmap.h
 @@ -1,5 +1,13 @@

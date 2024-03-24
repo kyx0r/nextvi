@@ -69,10 +69,10 @@ index f9264da..0267034 100644
  };
  
 diff --git a/vi.c b/vi.c
-index 3136a8b..5ef27bd 100644
+index 5fe67f2..e5c776a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2016,9 +2016,11 @@ int main(int argc, char *argv[])
+@@ -2019,9 +2019,11 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
