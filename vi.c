@@ -1561,6 +1561,7 @@ void vi(int init)
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
 				break;
 			case TK_CTL('g'):
+				xrows = !vi_arg1 && vi_status ? xrows + 1 : xrows;
 				vi_status = !!vi_arg1;
 				vc_status();
 				break;
