@@ -147,6 +147,10 @@ In addition, [] also track the horizontal pos. (only works with ` keybind)
 21. Added a special substitution character ! which runs a pipe command.
 If the closing ! is not specified, the end of the line becomes a terminator.
 This makes any ex command be able to receive data from the outside world.
+Example:
+Substitute the value of env var $SECRET to the value of $RANDOM :). In this
+demo, we set the value of SECRET to "int" ourselves.
+:%s/!export SECRET="int" && printf "%s" $SECRET!/!printf "%s" $RANDOM! :)
 Commands :w and :r make internal use of '!'. Due to this, standard
 functionality would require escape. Examples:
 To send data use :w \!less
