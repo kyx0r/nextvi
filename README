@@ -144,17 +144,18 @@ which also happens to permit numbers > 9.
 [] marks properly track the start and end of the insertion along with
 redo/undo.
 In addition, [] also track the horizontal pos. (only works with ` keybind)
-21.
-22. Added new ex option "ish", this makes every "!" pipe command
-run though interactive shell so that stuff like aliases work. By
-default it is enabled, can be disabled if you need to for some
-odd reason via :se noish
-Every ex command can use # % substitution (see 13). Added a special
-substitution character ! which runs a pipe command. If the closing !
-is not specified, the end of the line becomes a terminator.
+21. Added a special substitution character ! which runs a pipe command.
+If the closing ! is not specified, the end of the line becomes a terminator.
 This makes any ex command be able to receive data from the outside world.
-To send data use :w \!less notice how ! is escaped.
-Note: shell integration is one of the most powerful features of nextvi.
+Commands :w and :r make internal use of '!'. Due to this, standard
+functionality would require escape. Examples:
+To send data use :w \!less
+To read data use :r \!date
+22. Added new ex option "ish", this makes every "!" pipe command
+run through an interactive shell so that all shell features e.g. aliases work.
+By default it is enabled, can be disabled via :se noish
+Every ex command can use # % (see 13) and ! (see 21) substitution.
+Together, shell expansion is one of the most powerful features of nextvi.
 23. Changed the colors to be based on standard ANSI 16 colors desc in conf.c
 Colors can be customized up to 256 colors if the terminal supports it.
 24. Added new syntax highlighting for C, js, html, css, diff...
