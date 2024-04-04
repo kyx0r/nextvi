@@ -28,7 +28,7 @@ index f9264da..9828ff8 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 5fe67f2..90c75cd 100644
+index 7c41cf0..29c4695 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -656,12 +656,12 @@ void dir_calc(char *path)
@@ -146,7 +146,7 @@ index 5fe67f2..90c75cd 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1652,6 +1699,10 @@ void vi(int init)
+@@ -1653,6 +1700,10 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index 5fe67f2..90c75cd 100644
  				default:
  					vi_back(k);
  				}
-@@ -2007,6 +2058,7 @@ int main(int argc, char *argv[])
+@@ -2008,6 +2059,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
