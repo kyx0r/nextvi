@@ -97,6 +97,11 @@ Specify a number as an arg for what buffer to close.
 Specifying no argument(s) will close the current buffer.
 When the buffer is closed all buffers above will be shifted
 and renumbered.
+Range can be supplied like so :cx0-5
+This will close buffers 0 to 5 inclusive
+Omiting the parameter of the range assumes current buffer
+index for that parameter (not inclusive and either begin or end
+of the range). Example :cx-5 or :cx5-
 
 filetype_shebang.patch
 --------------
