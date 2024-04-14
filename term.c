@@ -228,7 +228,7 @@ char *xgetenv(char **q)
 			r = getenv(*q+1);
 		else
 			return *q;
-		q += 1;
+		q++;
 	}
 	return r;
 }
