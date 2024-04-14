@@ -665,7 +665,7 @@ if (ret && xrow) { \
 	*row = xrow; *off = xoff; /* short circuit */ \
 	if (!vi_search('n', cnt, row, off, 0)) \
 		return 1; \
-	*off += 1; \
+	++*off; \
 } else { \
 	*row = 0; *off = 0; \
 } \
