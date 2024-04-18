@@ -463,29 +463,35 @@ for (;; sp = _sp) { \
 		} else if (spc == CLASS) { \
 			int *pc = npc; \
 			int gcnt = pc[1]; \
-			int cnt, neq, _cnt; \
+			int cnt, neq; \
 			do { \
 				pc += 2; \
-				const char *s = sp; \
-				int cp = c; \
 				neq = pc[0]; \
 				cnt = pc[1]; \
-				_cnt = cnt; \
-				while (cnt--) { \
-					pc += 2; \
-					if (cp >= *pc && cp <= pc[1]) { \
-						if (neq < -1 || neq > 1) { \
+				if (neq < -1 || neq > 1) { \
+					const char *s = sp; \
+					int cp = c; \
+					for (; cnt > 0; cnt--) { \
+						pc += 2; \
+						if (c >= *pc && c <= pc[1]) { \
 							uc_len(j, s) s += j; \
-							uc_code(cp, s) \
-							_cnt--; \
-							continue; \
+							uc_code(c, s) cpn \
+						} else { \
+							pc += (cnt-1) * 2; \
+							break; \
 						} \
-						_cnt = 0; \
-						break; \
+					} \
+					cnt = !cnt; \
+					c = cp; \
+				} else { \
+					for (; cnt > 0; cnt--) { \
+						pc += 2; \
+						if (c >= *pc && c <= pc[1]) \
+							cnt = -1; \
 					} \
 				} \
-			} while (pc < npc + gcnt && _cnt); \
-			if ((_cnt && neq > 0) || (!_cnt && neq < 0)) \
+			} while (pc < npc + gcnt && !cnt); \
+			if ((!cnt && neq > 0) || (cnt && neq < 0)) \
 				deccont() \
 			npc += gcnt + 2; \
 		} else if (spc == MATCH) { \
