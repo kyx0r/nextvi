@@ -132,7 +132,7 @@ index fdf86af..6322491 100644
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 diff --git a/regex.c b/regex.c
-index a199943..aa27240 100644
+index 308e864..9fe55aa 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -314,7 +314,7 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -144,7 +144,7 @@ index a199943..aa27240 100644
  
  #define newsub(init, copy) \
  if (freesub) \
-@@ -539,8 +539,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -545,8 +545,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
  	char nsubs[prog->sub];
  	flg = prog->flg | flg;
