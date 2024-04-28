@@ -921,6 +921,7 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
 	char oldpath[4096];
 	char newpath[4096];
 	int i, c, plen;
+	oldpath[sizeof(oldpath)-1] = '\0';
 	if (!getcwd(oldpath, sizeof(oldpath)))
 		goto err;
 	if (*arg && chdir(arg))
@@ -935,7 +936,7 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
 			continue;
 		if (bufs[i].path[0] == '/')
 			plen = 0;
-		strcpy(oldpath+plen, bufs[i].path);
+		strncpy(oldpath+plen, bufs[i].path, sizeof(oldpath)-plen-1);
 		for (c = 0; oldpath[c] && oldpath[c] == newpath[c]; c++);
 		if (newpath[c] != '\0' || !oldpath[c])
 			c = 0;
