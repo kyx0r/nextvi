@@ -918,9 +918,35 @@ static int ec_setdir(char *loc, char *cmd, char *arg)
 
 static int ec_chdir(char *loc, char *cmd, char *arg)
 {
+	char oldpath[4096];
+	char newpath[4096];
+	int i, c, plen;
+	if (!getcwd(oldpath, sizeof(oldpath)))
+		goto err;
 	if (*arg && chdir(arg))
-		ex_show("chdir error");
+		goto err;
+	if (!getcwd(newpath, sizeof(newpath)))
+		goto err;
+	plen = strlen(oldpath);
+	if (oldpath[plen-1] != '/')
+		oldpath[plen++] = '/';
+	for (i = 0; i < xbufcur; i++) {
+		if (bufs[i].path[0] == '/')
+			plen = 0;
+		strcpy(oldpath+plen, bufs[i].path);
+		for (c = 0; oldpath[c] && oldpath[c] == newpath[c]; c++);
+		if (newpath[c] != '\0' || !oldpath[c])
+			c = 0;
+		else if (oldpath[c] == '/')
+			c++;
+		free(bufs[i].path);
+		bufs[i].path = uc_dup(oldpath+c);
+		bufs[i].plen = strlen(oldpath+c);
+	}
 	return 0;
+	err:
+	ex_show("chdir error");
+	return 1;
 }
 
 static int ec_setincl(char *loc, char *cmd, char *arg)
