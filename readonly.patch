@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b2c351b..58ec6c6 100644
+index 02b1dcd..60be5a2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ static int xbufsmax;		/* number of buffers */
@@ -47,7 +47,7 @@ index b2c351b..58ec6c6 100644
  		}
  		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode());
  		if (fd < 0) {
-@@ -990,6 +998,12 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+@@ -992,6 +1000,12 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -60,7 +60,7 @@ index b2c351b..58ec6c6 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1038,6 +1052,7 @@ static struct excmd {
+@@ -1040,6 +1054,7 @@ static struct excmd {
  	{"inc", ec_setincl},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
