@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index bfdd26c..a09b79f 100644
+index b2c351b..00998ce 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
@@ -18,7 +18,7 @@ index bfdd26c..a09b79f 100644
  };
  
  static char *cutword(char *s, char *d)
-@@ -1089,6 +1091,47 @@ void ex(void)
+@@ -1115,6 +1117,47 @@ void ex(void)
  	}
  }
  
@@ -66,7 +66,7 @@ index bfdd26c..a09b79f 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1098,6 +1141,15 @@ void ex_init(char **files, int n)
+@@ -1124,6 +1167,15 @@ void ex_init(char **files, int n)
  		ec_edit("", "e", s);
  		s = *(++files);
  	} while (--n > 0);
