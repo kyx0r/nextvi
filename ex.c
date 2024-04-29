@@ -535,10 +535,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
 				path, end - beg);
 		ex_show(msg);
 	}
-	if (!strcmp(ex_path, path)) {
-		lbuf_saved(xb, 0);
-		ex_buf->mtime = mtime(path);
-	}
+	if (strcmp(ex_path, path))
+		ec_setpath(NULL, NULL, path);
+	lbuf_saved(xb, 0);
+	ex_buf->mtime = mtime(path);
 	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
 		ec_quit("", cmd, "");
 	return 0;
@@ -931,6 +931,8 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
 	if (oldpath[plen-1] != '/')
 		oldpath[plen++] = '/';
 	for (i = 0; i < xbufcur; i++) {
+		if (!bufs[i].path[0])
+			continue;
 		if (bufs[i].path[0] == '/')
 			plen = 0;
 		strcpy(oldpath+plen, bufs[i].path);
