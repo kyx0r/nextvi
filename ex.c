@@ -920,6 +920,7 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
 {
 	char oldpath[4096];
 	char newpath[4096];
+	char *opath;
 	int i, c, plen;
 	oldpath[sizeof(oldpath)-1] = '\0';
 	if (!getcwd(oldpath, sizeof(oldpath)))
@@ -934,17 +935,21 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
 	for (i = 0; i < xbufcur; i++) {
 		if (!bufs[i].path[0])
 			continue;
-		if (bufs[i].path[0] == '/')
-			plen = 0;
-		strncpy(oldpath+plen, bufs[i].path, sizeof(oldpath)-plen-1);
-		for (c = 0; oldpath[c] && oldpath[c] == newpath[c]; c++);
-		if (newpath[c] != '\0' || !oldpath[c])
+		if (bufs[i].path[0] == '/') {
+			opath = bufs[i].path;
+		} else {
+			opath = oldpath;
+			strncpy(opath+plen, bufs[i].path, sizeof(oldpath)-plen-1);
+		}
+		for (c = 0; opath[c] && opath[c] == newpath[c]; c++);
+		if (newpath[c] || !opath[c])
 			c = 0;
-		else if (oldpath[c] == '/')
+		else if (opath[c] == '/')
 			c++;
+		opath = uc_dup(opath+c);
 		free(bufs[i].path);
-		bufs[i].path = uc_dup(oldpath+c);
-		bufs[i].plen = strlen(oldpath+c);
+		bufs[i].path = opath;
+		bufs[i].plen = strlen(opath);
 	}
 	return 0;
 	err:
