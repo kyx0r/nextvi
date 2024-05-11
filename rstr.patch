@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 02b1dcd..909746a 100644
+index b4998fa..8c2dc84 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -69,7 +69,7 @@ index 02b1dcd..909746a 100644
  	xgdep--;
  	return 0;
  }
-@@ -953,9 +953,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -959,9 +959,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
