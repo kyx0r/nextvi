@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b4998fa..56d287f 100644
+index b4998fa..948cff1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -414,6 +414,23 @@ static int ec_edit(char *loc, char *cmd, char *arg)
@@ -8,7 +8,7 @@ index b4998fa..56d287f 100644
  	ex_show(msg);
 +	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 +		int adv = 0;
-+		while (lbuf_len(xb) >= adv && lbuf_buf(xb)[adv][0] == '\n')
++		while (lbuf_len(xb) > adv+1 && lbuf_buf(xb)[adv][0] == '\n')
 +			adv++;
 +		struct filetype lfts[] = {
 +			{"sh", "^#!.*/(env[ \t]*)?(sh|bash|zsh|dash)([ \t]*.*)?$"},
