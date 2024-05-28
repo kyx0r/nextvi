@@ -30,7 +30,7 @@ struct lbuf {
 
 struct lbuf *lbuf_make(void)
 {
-	struct lbuf *lb = malloc(sizeof(*lb));
+	struct lbuf *lb = emalloc(sizeof(*lb));
 	int i;
 	memset(lb, 0, sizeof(*lb));
 	for (i = 0; i < LEN(lb->mark); i++)
@@ -118,8 +118,8 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
 	rstate->ren_laststr = NULL; /* there is no guarantee malloc not giving same ptr back */
 	while (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_sz + (lb->ln_sz ? lb->ln_sz : 512);
-		char **nln = malloc(nsz * sizeof(nln[0]));
-		char *nln_glob = malloc(nsz * sizeof(nln_glob[0]));
+		char **nln = emalloc(nsz * sizeof(nln[0]));
+		char *nln_glob = emalloc(nsz * sizeof(nln_glob[0]));
 		memcpy(nln, lb->ln, lb->ln_n * sizeof(lb->ln[0]));
 		memcpy(nln_glob, lb->ln_glob, lb->ln_n * sizeof(lb->ln_glob[0]));
 		free(lb->ln);
@@ -140,7 +140,7 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
 	for (i = 0; i < n_ins; i++) {
 		int l = linelength(s);
 		int l_nonl = l - (s[l - !!l] == '\n');
-		char *n = malloc(l_nonl + 7 + sizeof(int));
+		char *n = emalloc(l_nonl + 7 + sizeof(int));
 		*(int*)n = l_nonl;		/* store length */
 		n += sizeof(int);
 		memcpy(n, s, l_nonl);
@@ -186,7 +186,7 @@ int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 	lb->hist_n = lb->hist_u;
 	if (lb->hist_n == lb->hist_sz) {
 		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-		struct lopt *hist = malloc(sz * sizeof(hist[0]));
+		struct lopt *hist = emalloc(sz * sizeof(hist[0]));
 		memcpy(hist, lb->hist, lb->hist_n * sizeof(hist[0]));
 		free(lb->hist);
 		lb->hist = hist;
@@ -201,8 +201,8 @@ int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 	lo->n_del = n_del;
 	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
 	lo->seq = lb->useq;
-	lo->mark = malloc(sizeof(lb->mark));
-	lo->mark_off = malloc(sizeof(lb->mark_off));
+	lo->mark = emalloc(sizeof(lb->mark));
+	lo->mark_off = emalloc(sizeof(lb->mark_off));
 	memset(lo->mark, 0xff, sizeof(lb->mark));
 	return lb->hist_n - 1;
 }

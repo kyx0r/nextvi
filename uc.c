@@ -72,7 +72,7 @@ char **uc_chop(char *s, int *n)
 	char **chrs;
 	int i;
 	*n = uc_slen(s);
-	chrs = malloc((*n + 1) * sizeof(chrs[0]));
+	chrs = emalloc((*n + 1) * sizeof(chrs[0]));
 	for (i = 0; i < *n + 1; i++) {
 		chrs[i] = s;
 		s = uc_next(s);
@@ -108,7 +108,7 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
 	char *sbeg = uc_chr(s, beg);
 	char *send = uc_chr(sbeg, end - beg);
 	int len = sbeg < send ? send - sbeg : 0;
-	char *r = malloc(len + 1);
+	char *r = emalloc(len + 1);
 	memcpy(r, sbeg, len);
 	r[len] = '\0';
 	*rlen = len;
@@ -117,7 +117,7 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
 
 char *uc_dup(const char *s)
 {
-	char *r = malloc(strlen(s) + 1);
+	char *r = emalloc(strlen(s) + 1);
 	return r ? strcpy(r, s) : NULL;
 }
 

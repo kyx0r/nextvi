@@ -575,10 +575,10 @@ void rset_free(rset *rs)
 
 rset *rset_make(int n, char **re, int flg)
 {
-	rset *rs = malloc(sizeof(*rs));
+	rset *rs = emalloc(sizeof(*rs));
 	sbuf *sb; sbuf_make(sb, 1024)
-	rs->grp = malloc((n + 1) * sizeof(rs->grp[0]));
-	rs->setgrpcnt = malloc((n + 1) * sizeof(rs->setgrpcnt[0]));
+	rs->grp = emalloc((n + 1) * sizeof(rs->grp[0]));
+	rs->setgrpcnt = emalloc((n + 1) * sizeof(rs->setgrpcnt[0]));
 	rs->grpcnt = 2;
 	rs->n = n;
 	sbuf_chr(sb, '(')
@@ -599,7 +599,7 @@ rset *rset_make(int n, char **re, int flg)
 	rs->grp[n] = rs->grpcnt;
 	sbuf_mem(sb, ")\0\0\0\0", 5)
 	int sz = re_sizecode(sb->s) * sizeof(int);
-	char *code = malloc(sizeof(rcode)+abs(sz));
+	char *code = emalloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
 	if (sz < 0 || reg_comp((rcode*)code, sb->s, rs->grpcnt-1, flg)) {
 		rset_free(rs);

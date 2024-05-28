@@ -62,6 +62,28 @@ static int vi_joinmode = 1;		/* 1: insert extra space for pad 0: raw line join *
 static char *regs[256];			/* string registers */
 static int lnmode[256];
 
+void * emalloc(size_t size)
+{
+	void *p;
+
+	p = malloc(size);
+	if (!p) {
+		fprintf(stderr, "malloc: out of memory\n");
+		exit(1);
+	}
+	return p;
+}
+
+void * erealloc(void *p, size_t size)
+{
+	p = realloc(p, size);
+	if (!p) {
+		fprintf(stderr, "realloc: out of memory\n");
+		exit(1);
+	}
+	return p;
+}
+
 static void reverse_in_place(char *str, int len)
 {
 	char *p1 = str;
@@ -556,7 +578,7 @@ char *vi_regget(int c, int *ln)
 static void vi_regputraw(unsigned char c, const char *s, int ln)
 {
 	char *pre = isupper(c) && regs[tolower(c)] ? regs[tolower(c)] : "";
-	char *buf = malloc(strlen(pre) + strlen(s) + 1);
+	char *buf = emalloc(strlen(pre) + strlen(s) + 1);
 	strcpy(buf, pre);
 	strcat(buf, s);
 	free(regs[tolower(c)]);
