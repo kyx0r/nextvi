@@ -1,0 +1,72 @@
+diff --git a/ex.c b/ex.c
+index b4998fa..15847bc 100644
+--- a/ex.c
++++ b/ex.c
+@@ -202,11 +202,13 @@ static char *ex_pathexpand(char *src)
+ /* set the current search keyword rset if the kwd or flags changed */
+ void ex_krsset(char *kwd, int dir)
+ {
+-	char *reg = vi_regget('/', &(int){0});
++	int lnmode = 0;
++	char *pat = {kwd};
++	char *reg = vi_regget('/', &lnmode);
+ 	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
+ 		|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
+ 		rset_free(xkwdrs);
+-		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
++		xkwdrs = rset_make(1, &pat, xic ? REG_ICASE : 0);
+ 		xkwdcnt++;
+ 		vi_regput('/', kwd, 0);
+ 		xkwddir = dir;
+@@ -811,7 +813,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+ 	not = strchr(cmd, '!') || cmd[0] == 'v';
+ 	pat = re_read(&s);
+ 	if (pat)
+-		rs = rset_make(1, (char*[]){pat}, xic ? REG_ICASE : 0);
++		rs = rset_make(1, &pat, xic ? REG_ICASE : 0);
+ 	free(pat);
+ 	if (!pat || !rs)
+ 		return 1;
+@@ -959,9 +961,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+ 
+ static int ec_setincl(char *loc, char *cmd, char *arg)
+ {
++	char *pat = {arg};
+ 	rset_free(fsincl);
+ 	if (*arg)
+-		fsincl = rset_make(1, (char*[]){arg}, xic ? REG_ICASE : 0);
++		fsincl = rset_make(1, &pat, xic ? REG_ICASE : 0);
+ 	else
+ 		fsincl = NULL;
+ 	return 0;
+diff --git a/led.c b/led.c
+index 864cd94..169ee48 100644
+--- a/led.c
++++ b/led.c
+@@ -46,7 +46,8 @@ static void file_index(struct lbuf *buf)
+ 	int ln_n = lbuf_len(buf);
+ 	int subs[grp], n;
+ 	sbuf *ibuf;
+-	rset *rs = rset_make(1, (char*[]){xacreg ? xacreg->s : reg}, xic ? REG_ICASE : 0);
++	char *pat = {xacreg ? xacreg->s : reg};
++	rset *rs = rset_make(1, &pat, xic ? REG_ICASE : 0);
+ 	if (!rs)
+ 		return;
+ 	sbuf_make(ibuf, 1024)
+@@ -295,6 +296,7 @@ static void led_printparts(char *ai, char *pref, char *main, char *post)
+ 	sbuf *ln;
+ 	int off, pos;
+ 	int idir = 0;
++	char **c = {NULL};
+ 	sbuf_make(ln, xcols)
+ 	sbuf_str(ln, ai)
+ 	sbuf_str(ln, pref)
+@@ -302,7 +304,7 @@ static void led_printparts(char *ai, char *pref, char *main, char *post)
+ 	sbuf_str(ln, post)
+ 	sbuf_mem(ln, "\0\0\0\0", 4)
+ 	rstate->ren_laststr = NULL;
+-	ren_position(ln->s, &(char**){NULL}, &off);
++	ren_position(ln->s, &c, &off);
+ 	off -= uc_slen(post);
+ 	pos = ren_cursor(ln->s, ren_pos(ln->s, MAX(0, off - 1)));
+ 	if (pos >= xleft + xcols)
