@@ -70,3 +70,34 @@ index 864cd94..169ee48 100644
  	off -= uc_slen(post);
  	pos = ren_cursor(ln->s, ren_pos(ln->s, MAX(0, off - 1)));
  	if (pos >= xleft + xcols)
+diff --git a/uc.c b/uc.c
+index 26869fa..c266aa3 100644
+--- a/uc.c
++++ b/uc.c
+@@ -115,6 +115,13 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
+ 	return r;
+ }
+ 
++char *uc_sub(char *s, int beg, int end)
++{
++	int rlen = 0;
++
++	return uc_subl(s, beg, end, &rlen);
++}
++
+ char *uc_dup(const char *s)
+ {
+ 	char *r = malloc(strlen(s) + 1);
+diff --git a/vi.h b/vi.h
+index 95a93d5..7b2c59d 100644
+--- a/vi.h
++++ b/vi.h
+@@ -217,7 +217,7 @@ int uc_wid(int c);
+ int uc_slen(char *s);
+ char *uc_chr(char *s, int off);
+ int uc_off(char *s, int off);
+-#define uc_sub(s, beg, end) uc_subl(s, beg, end, &(int){0})
++char *uc_sub(char *s, int beg, int end);
+ char *uc_subl(char *s, int beg, int end, int *rlen);
+ char *uc_dup(const char *s);
+ int uc_isspace(char *s);
