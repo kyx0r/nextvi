@@ -176,3 +176,7 @@ export EXINIT="se noled|tp Oo{
 	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp oa()i|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*
 2x/\*\/
 2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<\$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\|w\\|\!git diff --no-index \%_ \%|tp 0\"fy$|tp o:ac  \\|tp i\\|u\\|ac3ls|tp 0\"cy$|inc (^[\!.git]+[^\\/]+$)|tp 50u|se led"
+
+remove_compound_literals.patch
+--------------
+Removes compound literals for portability reasons.
