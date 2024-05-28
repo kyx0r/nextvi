@@ -27,6 +27,8 @@ name = value; \
 name = tmp##name; \
 
 /* utility funcs */
+void * emalloc(size_t);
+void * erealloc(void *, size_t);
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
 
@@ -45,16 +47,16 @@ typedef struct sbuf {
 { \
 	char *s = sb->s; \
 	sb->s_sz = newsz; \
-	sb->s = malloc(sb->s_sz); \
+	sb->s = emalloc(sb->s_sz); \
 	memcpy(sb->s, s, sb->s_n); \
 	free(s); \
 } \
 
 #define sbuf_make(sb, newsz) \
 { \
-	sb = malloc(sizeof(*sb)); \
+	sb = emalloc(sizeof(*sb)); \
 	sb->s_sz = newsz; \
-	sb->s = malloc(newsz); \
+	sb->s = emalloc(newsz); \
 	sb->s_n = 0; \
 } \
 
