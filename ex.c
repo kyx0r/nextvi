@@ -990,7 +990,7 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 	int istemp = !ex_buf ? 0 : istempbuf(ex_buf);
 	for (; xbufcur > xbufsmax; xbufcur--)
 		bufs_free(xbufcur - 1);
-	bufs = realloc(bufs, sizeof(struct buf) * xbufsmax);
+	bufs = erealloc(bufs, sizeof(struct buf) * xbufsmax);
 	if (!istemp)
 		ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
 	ex_pbuf = pbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+pbufidx;

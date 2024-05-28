@@ -98,7 +98,7 @@ int *ren_position(char *s, char ***chrs, int *n)
 		ren_done();
 	chrs[0] = uc_chop(s, n);
 	int i, *off, *pos, nn = *n, cpos = 0;
-	pos = malloc(((nn + 1) * sizeof(pos[0])) * 2);
+	pos = emalloc(((nn + 1) * sizeof(pos[0])) * 2);
 	if (xorder && dir_reorder(chrs[0], pos, nn))
 	{
 		off = &pos[nn+1];
