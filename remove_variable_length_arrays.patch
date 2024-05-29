@@ -118,10 +118,26 @@ index 864cd94..7d9d31a 100644
  }
  
 diff --git a/regex.c b/regex.c
-index 51d54a4..8ee5c5a 100644
+index 51d54a4..d9d61ea 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -537,13 +537,13 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -314,7 +314,14 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
+ 	return 0;
+ }
+ 
+-#define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; return state; } \
++#define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \
++free(pcs); \
++free(subs); \
++free(sdense); \
++free(_clist); \
++free(_nlist); \
++free(nsubs); \
++return state; } \
+ 
+ #define newsub(init, copy) \
+ if (freesub) \
+@@ -537,13 +544,13 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	int spc, i, j, c, *npc, osubp = nsubp * sizeof(char*);
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
@@ -140,20 +156,7 @@ index 51d54a4..8ee5c5a 100644
  	flg = prog->flg | flg;
  	if (eol_ch)
  		utf8_length[eol_ch] = 0;
-@@ -552,6 +552,12 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
- 	goto jmp_start2;
- 	match(1, if ((unsigned int)c < 128) c = tolower(c);)
- 	match(2, /*nop*/)
-+	free(pcs);
-+	free(subs);
-+	free(sdense);
-+	free(_clist);
-+	free(_nlist);
-+	free(nsubs);
- }
- 
- static int re_groupcount(char *s)
-@@ -612,7 +618,7 @@ rset *rset_make(int n, char **re, int flg)
+@@ -612,7 +619,7 @@ rset *rset_make(int n, char **re, int flg)
  /* return the index of the matching regular expression or -1 if none matches */
  int rset_find(rset *rs, char *s, int n, int *grps, int flg)
  {
@@ -162,7 +165,7 @@ index 51d54a4..8ee5c5a 100644
  	regmatch_t *sub = subs+1;
  	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg))
  	{
-@@ -636,6 +642,7 @@ int rset_find(rset *rs, char *s, int n, int *grps, int flg)
+@@ -636,6 +643,7 @@ int rset_find(rset *rs, char *s, int n, int *grps, int flg)
  			}
  		}
  	}
