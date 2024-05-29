@@ -27,8 +27,8 @@ name = value; \
 name = tmp##name; \
 
 /* utility funcs */
-void * emalloc(size_t);
-void * erealloc(void *, size_t);
+void *emalloc(size_t size);
+void *erealloc(void *p, size_t size);
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
 
