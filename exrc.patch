@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2c841d1..f949850 100644
+index 2c841d1..e42ee9d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
@@ -28,7 +28,7 @@ index 2c841d1..f949850 100644
 +	int n = 0;
 +	int c;
 +	while ((c = fgetc(fp)) != EOF && c != '\n') {
-+		ln = realloc(ln, n + 2);
++		ln = erealloc(ln, n + 2);
 +		ln[n++] = c;
 +	}
 +	if (c == EOF && !n) {
