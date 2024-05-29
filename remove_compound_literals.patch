@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b4998fa..15847bc 100644
+index 2c841d1..2e5ab04 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -202,11 +202,13 @@ static char *ex_pathexpand(char *src)
@@ -71,7 +71,7 @@ index 864cd94..169ee48 100644
  	pos = ren_cursor(ln->s, ren_pos(ln->s, MAX(0, off - 1)));
  	if (pos >= xleft + xcols)
 diff --git a/uc.c b/uc.c
-index 26869fa..c266aa3 100644
+index 580d0bd..25c7703 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -115,6 +115,13 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
@@ -87,12 +87,12 @@ index 26869fa..c266aa3 100644
 +
  char *uc_dup(const char *s)
  {
- 	char *r = malloc(strlen(s) + 1);
+ 	char *r = emalloc(strlen(s) + 1);
 diff --git a/vi.h b/vi.h
-index 95a93d5..7b2c59d 100644
+index f4d0355..c052276 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -217,7 +217,7 @@ int uc_wid(int c);
+@@ -219,7 +219,7 @@ int uc_wid(int c);
  int uc_slen(char *s);
  char *uc_chr(char *s, int off);
  int uc_off(char *s, int off);

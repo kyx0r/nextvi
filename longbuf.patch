@@ -1,5 +1,5 @@
 diff --git a/lbuf.c b/lbuf.c
-index fdf86af..e2823df 100644
+index 8cd63f7..128fa5c 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -213,9 +213,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
@@ -36,7 +36,7 @@ index 864cd94..9da5513 100644
  				redo_suggest:
  				if (!(_sug = strchr(sug, '\n'))) {
 diff --git a/vi.c b/vi.c
-index 702f8a5..8d5dbfd 100644
+index 6746055..932ebd2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -16,6 +16,7 @@
@@ -48,10 +48,10 @@ index 702f8a5..8d5dbfd 100644
  #include <fcntl.h>
  #include <stdio.h>
 diff --git a/vi.h b/vi.h
-index 95a93d5..c64c794 100644
+index f4d0355..7d05a0e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -35,10 +35,11 @@ void vi(int init);
+@@ -37,10 +37,11 @@ void vi(int init);
  
  /* sbuf string buffer, variable-sized string */
  #define NEXTSZ(o, r)	MAX(o * 2, o + r)
@@ -65,7 +65,7 @@ index 95a93d5..c64c794 100644
  } sbuf;
  
  #define sbuf_extend(sb, newsz) \
-@@ -66,8 +67,8 @@ typedef struct sbuf {
+@@ -68,8 +69,8 @@ typedef struct sbuf {
  } \
  
  #define sbuf_(sb, x, len, func) \

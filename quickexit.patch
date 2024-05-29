@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b4998fa..16dc590 100644
+index 2c841d1..142c980 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -68,7 +68,7 @@ index 864cd94..7a9b5ee 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 702f8a5..cc05b65 100644
+index 6746055..57afada 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index 702f8a5..cc05b65 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 95a93d5..e86156c 100644
+index f4d0355..72b5c05 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -422,6 +422,7 @@ extern int xhlr;
+@@ -424,6 +424,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;
