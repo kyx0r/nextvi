@@ -62,24 +62,21 @@ static int vi_joinmode = 1;		/* 1: insert extra space for pad 0: raw line join *
 static char *regs[256];			/* string registers */
 static int lnmode[256];
 
-void * emalloc(size_t size)
+void *emalloc(size_t size)
 {
 	void *p;
-
-	p = malloc(size);
-	if (!p) {
-		fprintf(stderr, "malloc: out of memory\n");
-		exit(1);
+	if (!(p = malloc(size))) {
+		fprintf(stderr, "\nmalloc: out of memory\n");
+		exit(EXIT_FAILURE);
 	}
 	return p;
 }
 
-void * erealloc(void *p, size_t size)
+void *erealloc(void *p, size_t size)
 {
-	p = realloc(p, size);
-	if (!p) {
-		fprintf(stderr, "realloc: out of memory\n");
-		exit(1);
+	if (!(p = realloc(p, size))) {
+		fprintf(stderr, "\nrealloc: out of memory\n");
+		exit(EXIT_FAILURE);
 	}
 	return p;
 }
