@@ -180,3 +180,7 @@ export EXINIT="se noled|tp Oo{
 remove_compound_literals.patch
 --------------
 Removes compound literals for portability reasons.
+
+remove_variable_length_arrays.patch
+--------------
+Removes variable length arrays for portability reasons.
