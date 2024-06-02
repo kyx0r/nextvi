@@ -147,8 +147,32 @@ readonly.patch
 -------------
 Adds new ex option "ro" and commandline readonly option -R
 
-Helper macros:
+remove_compound_literals.patch
 --------------
+Removes compound literals for portability reasons.
+
+remove_variable_length_arrays.patch
+--------------
+Removes variable length arrays for portability reasons.
+
+undojump.patch
+--------------
+Adds a new keybind ^o which allows to jump through the undo marks
+without actually doing undo.
+
+My current EXINIT setup:
+--------------
+How it works:
+:se noled - temporarily disable redrawing the screen
+:se led - allow screen redraw
+:tp o... - runs insert statements on default buffer
+:tp 0\"wy$ - yank the line into a register w
+:tp 50u - run undo 50 times to revert the changes during setup
+could also use :bs command instead, however, with this you can 
+still redo and debug the EXINIT if needed.
+:inc (^[\!.git]+[^\\/]+$) always exclude .git folder from :fd
+
+Macros:
 @q = creates structure like this:
 {
 
@@ -158,7 +182,8 @@ whatever {
 	whatever
 	a
 }
-@e = creates ()
+@e = brings :e !p $c into ex prompt
+Note: p is alias to printf. $c[0-9] is env var containing some path
 @r = creates ""
 @a = creates a comment like this:
 /* whatever */
@@ -166,21 +191,15 @@ whatever {
 /* whatever */
 @d = uncomment /* */ comment
 @x = indent % region left
-@f = bring !cp % %_|w|!diff %_ % macro into ex prompt.
+@f = brings :cd !p $c into ex prompt
+Note: p is alias to printf. $c[0-9] is env var containing some path
+@l = bring !cp % %_|w|!git diff --no-index %_ % macro into ex prompt.
 Use to create patch and diff files fast. It relies on
 you not saving the file prior to running the macro.
 @c = run ac command and reindex ac db
 
 export EXINIT="se noled|tp Oo{
 }kA
-	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp oa()i|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*
+	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp o:e \!p \$c|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*
 2x/\*\/
-2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<\$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\|w\\|\!git diff --no-index \%_ \%|tp 0\"fy$|tp o:ac  \\|tp i\\|u\\|ac3ls|tp 0\"cy$|inc (^[\!.git]+[^\\/]+$)|tp 50u|se led"
-
-remove_compound_literals.patch
---------------
-Removes compound literals for portability reasons.
-
-remove_variable_length_arrays.patch
---------------
-Removes variable length arrays for portability reasons.
+2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<\$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\|w\\|\!git diff --no-index \%_ \%|tp 0\"ly$|tp o:ac  \\|tp i\\|u\\|ac3ls|tp 0\"cy$|tp o:cd \!p \$c|tp 0\"fy$|inc (^[\!.git]+[^\\/]+$)|tp 50u|se led"
