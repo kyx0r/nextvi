@@ -45,20 +45,18 @@ index 8cd63f7..db40abd 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 6746055..f165b97 100644
+index 6746055..ab867b2 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1680,6 +1680,19 @@ void vi(int init)
+@@ -1680,6 +1680,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod = 1;
  				break;
 +			case TK_CTL('o'):
 +				next_hop:	
-+				if ((k = lbuf_undojump(xb, &xrow, &xoff))) {
++				if (lbuf_undojump(xb, &xrow, &xoff))
 +					snprintf(vi_msg, sizeof(vi_msg), "undo jmp failed");
-+					if (k == 2)
-+						break;
-+				} else if (xrow == nrow)
++				else if (xrow == nrow)
 +					goto next_hop;
 +				vi_col = vi_off2col(xb, xrow, xoff);
 +				xoff = vi_col2off(xb, xrow, vi_col);
@@ -69,14 +67,14 @@ index 6746055..f165b97 100644
  				vi_word++;
  				if (!*vi_word)
 diff --git a/vi.h b/vi.h
-index f4d0355..fb4d826 100644
+index f4d0355..7f834e4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -135,6 +135,7 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end);
  int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
  void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
  int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off);
-+int lbuf_histjump(struct lbuf *lb, int *pos, int *off);
++int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
  int lbuf_undo(struct lbuf *lbuf);
  int lbuf_redo(struct lbuf *lbuf);
  int lbuf_modified(struct lbuf *lb);
