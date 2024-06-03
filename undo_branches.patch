@@ -28,7 +28,7 @@ index 2c841d1..4ce3707 100644
  	{"se", ec_set},
  	{"s", ec_substitute},
 diff --git a/lbuf.c b/lbuf.c
-index 8cd63f7..c94f57a 100644
+index 8cd63f7..73adc3b 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -16,6 +16,7 @@ struct lbuf {
@@ -47,35 +47,37 @@ index 8cd63f7..c94f57a 100644
  	return lb;
  }
  
-@@ -82,6 +84,18 @@ static void lbuf_loadpos(struct lbuf *lb, struct lopt *lo)
+@@ -82,6 +84,21 @@ static void lbuf_loadpos(struct lbuf *lb, struct lopt *lo)
  	lb->mark_off[markidx('*')] = lo->pos_off;
  }
  
 +static void lbuf_freeleafs(struct lbuf *lb)
 +{
-+	return;
 +	char *ptr = lb->rehist->s;
-+	int n;
++	struct lopt *hist;
++	int n, i;
 +	while (lb->rehist->s_n > ptr - lb->rehist->s) {
 +		n = *(int*)ptr;
-+		lopt_done((struct lopt*)(ptr+(sizeof(n)*2)));
-+		ptr += n * sizeof(lb->hist[0]) + (sizeof(n)*2);
++		hist = (struct lopt*)&ptr[sizeof(n)];
++		for (i = 0; i < n; i++)
++			lopt_done(&hist[i]);
++		ptr += n * sizeof(lb->hist[0]) + sizeof(n);
 +	}
++	sbuf_free(lb->rehist)
 +}
 +
  void lbuf_free(struct lbuf *lb)
  {
  	int i;
-@@ -89,6 +103,8 @@ void lbuf_free(struct lbuf *lb)
+@@ -89,6 +106,7 @@ void lbuf_free(struct lbuf *lb)
  		free(lb->ln[i] - sizeof(int));
  	for (i = 0; i < lb->hist_n; i++)
  		lopt_done(&lb->hist[i]);
 +	lbuf_freeleafs(lb);
-+	sbuf_free(lb->rehist)
  	free(lb->hist);
  	free(lb->ln);
  	free(lb->ln_glob);
-@@ -176,13 +192,67 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end)
+@@ -176,13 +194,67 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end)
  	}
  }
  
@@ -91,21 +93,21 @@ index 8cd63f7..c94f57a 100644
 +	}
 +	while (!lbuf_undo(lb));
 +	i = lb->hist_n - lb->hist_u;
-+	p("%d %d %d\n", i, lb->hist_n, lb->hist_u);
++	//p("%d %d %d\n", i, lb->hist_n, lb->hist_u);
 +	if (i) {
 +		sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
 +		sbuf_mem(lb->rehist, lb->hist, (int)(lb->hist_n * sizeof(lb->hist[0])));
 +		lb->hist_n = n;
 +		lb->hist_u = 0;
-+		if (lb->hist_n + n >= lb->hist_sz) {
++		if (lb->hist_n >= lb->hist_sz) {
 +			free(lb->hist);
 +			int sz = lb->hist_n * 2;
 +			struct lopt *hist = emalloc(sz * sizeof(hist[0]));
 +			lb->hist = hist;
 +			lb->hist_sz = sz;
 +		}
-+		memcpy(lb->hist, ptr1 + sizeof(n), n * sizeof(lb->hist[0]));
-+		ptr2 = ptr1 + n * sizeof(lb->hist[0]) + sizeof(n);
++		memcpy(lb->hist, &ptr1[sizeof(n)], n * sizeof(lb->hist[0]));
++		ptr2 = &ptr1[n * sizeof(lb->hist[0]) + sizeof(n)];
 +		if (lb->rehist->s_n > ptr2 - lb->rehist->s)
 +			memmove(ptr1, ptr2, lb->rehist->s_n - (ptr2 - lb->rehist->s));
 +		lb->rehist->s_n -= ptr2 - ptr1;
@@ -146,14 +148,12 @@ index 8cd63f7..c94f57a 100644
  	lb->hist_n = lb->hist_u;
  	if (lb->hist_n == lb->hist_sz) {
  		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -352,6 +422,10 @@ void lbuf_saved(struct lbuf *lb, int clear)
+@@ -352,6 +424,8 @@ void lbuf_saved(struct lbuf *lb, int clear)
  		lb->hist_n = 0;
  		lb->hist_u = 0;
  		lb->useq_last = lb->useq;
 +		lbuf_freeleafs(lb);
-+		//sbuf_free(lb->rehist)
-+		//sbuf_make(lb->rehist, 128)
-+		sbuf_cut(lb->rehist, 0)
++		sbuf_make(lb->rehist, 128)
  	}
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
