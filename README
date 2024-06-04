@@ -513,6 +513,7 @@ PATCHES
 New functionality can be obtained through optional patches provided in the
 patches branch. If you have a meaningful contribution and would love to be
 made public the patch can be submitted via email or github pull request.
+https://github.com/kyx0r/nextvi/tree/patches
 
 FAQ:
 ----
@@ -607,7 +608,7 @@ A8: Pikevm is a complete rewrite of nextvi's regex engine for the purposes of
 getting rid of backtracking and severe performance and memory constraints.
 Pikevm guarantees that all regular expressions are computed in constant space
 and O(n+k) time where n is size of the string and k is some constant for the
-complexity of the regex ie. number of state transitions. It is important to
+complexity of the regex i.e. number of state transitions. It is important to
 understand that it does not mean that we run at O(n) linear speed, but rather
 the amount of processing time & memory usage is distributed evenly and linearly
 throughout the string, the k constant plays a big role. If you are familiar
@@ -625,9 +626,9 @@ A: pikevm = NFA backtrack = DFA
 Q: What's wrong with original implementation?
 A: Nothing except it being slow and limited. My improved version of Ali's DFA
 implementation ran 3.5X faster in any case, however I found a bug with it
-where quested "?" nested groups compute wrong submatch results. To fix this
-problem, it would require to undo a lot of optimization work already done,
-basically going back to how slow Ali's implementation would be. The reason
+where zero quantifier "?" nested groups compute wrong submatch results. To
+fix this problem, it would require to undo a lot of optimization work already
+done, basically going back to how slow Ali's implementation would be. The reason
 this was spotted so late was because this kind of regex wasn't used before,
 so I never tested it. Other than that I think submatch extraction is correct
 on other cases. Pikevm does not have this bug, so it will be used as main
@@ -636,7 +637,7 @@ change isn't so surprising, as I was working on pikevm a few months prior, to
 favor a superior algorithm.
 You can still find that code here (likely with no updates):
 https://github.com/kyx0r/nextvi/tree/dfa_dead
-As a downside, NFA simulation looses the DFA property of being able to
+As a downside, NFA simulation loses the DFA property of being able to
 quickly short circuit a match, as everything runs linearly and at constant
 speed, incurring match time overhead. Well optimized DFA engine can
 outperform pikevm, but that is rather rare as they got problems of their own.
