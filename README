@@ -11,10 +11,13 @@ arrowkeys_insert.patch
 --------------
 Adds arrows keys support in insert mode.
 
-longbuf.patch
+64bit.sh
 --------------
-Overcome 2GB buffer size limitations. Fix all warns Will be able to read very
-large files.
+Convert entire codebase to 64 bit long instead of int.
+This will enable neatvi to read very large files and process huge buffers.
+Run this after you've applied the patches. Most of the time you won't need
+this, this is just a future proof concept in order for me to test that the
+codebase cleanly converts to 64 bit.
 
 threaded_search.patch
 --------------
@@ -175,7 +178,7 @@ How it works:
 :tp o... - runs insert statements on default buffer
 :tp 0\"wy$ - yank the line into a register w
 :tp 50u - run undo 50 times to revert the changes during setup
-could also use :bs command instead, however, with this you can 
+could also use :bs command instead, however, with this you can
 still redo and debug the EXINIT if needed.
 :inc (^[\!.git]+[^\\/]+$) always exclude .git folder from :fd
 
