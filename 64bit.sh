@@ -1,6 +1,8 @@
 #!/bin/sh -e
 for p in *.c *.h; do
 	sed -i "s/\<unsigned int\> /u64 /g" "$p"
+	sed -i "s/(unsigned int) /u64 /g" "$p"
+	sed -i "s/(unsigned int\*) /u64 /g" "$p"
 	sed -i "s/\<int\> /s64 /g" "$p"
 	sed -i "s/(int)/(s64)/g" "$p"
 	sed -i "s/(int\*)/(s64*)/g" "$p"
