@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2c841d1..7b824e0 100644
+index 694fd97..4b1ceb5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -390,7 +390,9 @@ int ex_edit(const char *path, int len)
@@ -51,7 +51,7 @@ index 2c841d1..7b824e0 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index bbce2d7..2f85cc3 100644
+index a1a219b..e0ad252 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,8 @@
@@ -102,7 +102,7 @@ index bbce2d7..2f85cc3 100644
  }
  
  void term_clean(void)
-@@ -126,12 +132,12 @@ int term_read(void)
+@@ -130,12 +136,12 @@ int term_read(void)
  	struct pollfd ufds[1];
  	int n;
  	if (ibuf_pos >= ibuf_cnt) {
@@ -117,7 +117,7 @@ index bbce2d7..2f85cc3 100644
  			return -1;
  		ibuf_cnt = n;
  		ibuf_pos = 0;
-@@ -306,7 +312,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -310,7 +316,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -127,7 +127,7 @@ index bbce2d7..2f85cc3 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 6746055..3dcbd19 100644
+index 8b2dbb4..3106f1a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2005,6 +2005,8 @@ void vi(int init)

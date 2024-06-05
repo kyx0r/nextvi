@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2c841d1..e42ee9d 100644
+index 694fd97..3d26243 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
@@ -85,7 +85,7 @@ index 2c841d1..e42ee9d 100644
 +	}
  }
 diff --git a/vi.c b/vi.c
-index 6746055..71cc455 100644
+index 8b2dbb4..16be6ca 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -18,6 +18,7 @@
