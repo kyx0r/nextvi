@@ -219,9 +219,9 @@ char *ren_translate(char *s, char *ln)
 		if (placeholders[i].cp == c)
 			return placeholders[i].d;
 	if (uc_acomb(c)) {
-		static char buf[16];
+		static char buf[16] = "ـ";
 		uc_len(c, s)
-		sprintf(buf, "ـ%.*s", c, s);
+		*((char*)memcpy(buf+2, s, c)+c) = '\0';
 		return buf;
 	}
 	if (uc_isbell(c))

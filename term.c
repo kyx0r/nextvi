@@ -77,27 +77,31 @@ void term_kill(void)
 
 void term_room(int n)
 {
-	char cmd[16];
-	if (n < 0)
-		sprintf(cmd, "\33[%dM", -n);
-	else if (n > 0)
-		sprintf(cmd, "\33[%dL", n);
-	if (n)
-		term_out(cmd);
+	char cmd[64] = "\33[";
+	if (!n)
+		return;
+	char *s = itoa(abs(n), cmd+2);
+	s[0] = n < 0 ? 'M' : 'L';
+	s[1] = '\0';
+	term_out(cmd);
 }
 
 void term_pos(int r, int c)
 {
-	char buf[32];
+	char buf[64] = "\r\33[", *s;
 	if (c < 0)
 		c = 0;
 	else if (c >= xcols)
 		c = xcols - 1;
-	if (r < 0)
-		sprintf(buf, "\r\33[%d%c", abs(c), c > 0 ? 'C' : 'D');
-	else
-		sprintf(buf, "\33[%d;%dH", r + 1, c + 1);
-	term_out(buf);
+	if (r < 0) {
+		memcpy(itoa(abs(c), buf+3), c > 0 ? "C" : "D", 2);
+		term_out(buf);
+	} else {
+		s = itoa(r + 1, buf+3);
+		*s++ = ';';
+		memcpy(itoa(c + 1, s), "H", 2);
+		term_out(buf+1);
+	}
 }
 
 static char ibuf[4096];			/* input character buffer */
