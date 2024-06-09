@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 864c531..4c35cae 100644
+index 0a29620..074d291 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -49,6 +49,8 @@ struct highlight hls[] = {
