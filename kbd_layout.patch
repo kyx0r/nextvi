@@ -17,13 +17,13 @@ index 180984f..e5b0ab8 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index a1a219b..a6eb437 100644
+index 75a62d8..b6d1c44 100644
 --- a/term.c
 +++ b/term.c
-@@ -137,6 +137,10 @@ int term_read(void)
- 		/* read a single input character */
- 		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0)
+@@ -139,6 +139,10 @@ int term_read(void)
+ 			xquit = !isatty(STDIN_FILENO);
  			return -1;
+ 		}
 +		if (conf_kmap(0)[(unsigned char)*ibuf]) {
 +			n = MIN(strlen(conf_kmap(0)[(unsigned char)*ibuf]), sizeof(ibuf)-1);
 +			memcpy(ibuf, conf_kmap(0)[(unsigned char)*ibuf], n);
