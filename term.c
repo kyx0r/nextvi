@@ -135,8 +135,10 @@ int term_read(void)
 		if (poll(ufds, 1, -1) <= 0)
 			return -1;
 		/* read a single input character */
-		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0)
+		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
+			xquit = !isatty(STDIN_FILENO);
 			return -1;
+		}
 		ibuf_cnt = n;
 		ibuf_pos = 0;
 	}
