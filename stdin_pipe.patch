@@ -51,7 +51,7 @@ index 694fd97..4b1ceb5 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index a1a219b..e0ad252 100644
+index 75a62d8..ed74053 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,6 +1,8 @@
@@ -102,7 +102,7 @@ index a1a219b..e0ad252 100644
  }
  
  void term_clean(void)
-@@ -130,12 +136,12 @@ int term_read(void)
+@@ -130,13 +136,13 @@ int term_read(void)
  	struct pollfd ufds[1];
  	int n;
  	if (ibuf_pos >= ibuf_cnt) {
@@ -112,12 +112,14 @@ index a1a219b..e0ad252 100644
  		if (poll(ufds, 1, -1) <= 0)
  			return -1;
  		/* read a single input character */
--		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0)
-+		if ((n = read(stdin_fd, ibuf, 1)) <= 0)
+-		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
+-			xquit = !isatty(STDIN_FILENO);
++		if ((n = read(stdin_fd, ibuf, 1)) <= 0) {
++			xquit = !isatty(stdin_fd);
  			return -1;
+ 		}
  		ibuf_cnt = n;
- 		ibuf_pos = 0;
-@@ -310,7 +316,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -312,7 +318,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
