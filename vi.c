@@ -1344,13 +1344,13 @@ static int vc_replace(void)
 	char *s;
 	int off, i;
 	if (!ln || !cs)
-		return 1;
+		return 0;
 	off = ren_noeol(ln, xoff);
 	s = uc_chr(ln, off);
 	for (i = 0; s[0] != '\n' && i < cnt; i++)
 		s = uc_next(s);
 	if (i < cnt)
-		return 1;
+		return 0;
 	pref = uc_sub(ln, 0, off);
 	post = uc_chr(ln, off + cnt);
 	sbuf_make(sb, 1024)
@@ -1359,11 +1359,14 @@ static int vc_replace(void)
 		sbuf_str(sb, cs)
 	sbufn_str(sb, post)
 	lbuf_edit(xb, sb->s, xrow, xrow + 1);
-	off += cnt - 1;
-	xoff = off;
+	if (cs[0] == '\n') {
+		xrow += cnt;
+		xoff = 0;
+	} else
+		xoff = off + cnt - 1;
 	sbuf_free(sb)
 	free(pref);
-	return 0;
+	return cs[0] == '\n' ? 1 : 2;
 }
 
 static char rep_cmd[4096];	/* the last command */
@@ -1851,8 +1854,7 @@ void vi(int init)
 					vi_mod = 2;
 				break;
 			case 'r':
-				if (!vc_replace())
-					vi_mod = 2;
+				vi_mod = vc_replace();
 				break;
 			case 's':
 				vi_back(' ');
