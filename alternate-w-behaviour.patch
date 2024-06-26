@@ -1,0 +1,15 @@
+diff --git a/vi.c b/vi.c
+index 702f8a5..f0a3dd2 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1132,6 +1132,10 @@ static int vc_motion(int cmd)
+ 	if (r1 == r2 && o1 > o2)
+ 		swap(&o1, &o2);
+ 	o1 = ren_noeol(lbuf_get(xb, r1), o1);
++	if (!lnmode && r2 == (r1 + 1) && o2 == 0) {
++		r2 = r1;
++		o2 = lbuf_eol(xb, r1);
++	}
+ 	if (!lnmode && strchr("fFtTeE%", mv))
+ 		if (o2 < lbuf_eol(xb, r2))
+ 			o2 = ren_noeol(lbuf_get(xb, r2), o2) + 1;

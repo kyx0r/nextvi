@@ -170,6 +170,10 @@ to print the divergent changes. Each path has an index, to switch to it
 use :up with a number as an argument. Example: :up1
 The current undo branch is stored as the last index before swapping.
 
+alternate-w-behaviour.patch
+--------------
+Implements more vim/like d/c/yw
+
 My current EXINIT setup:
 --------------
 How it works:
