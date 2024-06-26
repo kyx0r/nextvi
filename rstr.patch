@@ -235,7 +235,7 @@ index 51d54a4..3e8ea6b 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 8b2dbb4..403498c 100644
+index 067b5ad..98db4fb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -610,7 +610,7 @@ static void vi_regprint(void)
@@ -257,7 +257,7 @@ index 8b2dbb4..403498c 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index f4d0355..46dc90a 100644
+index 039a4d0..33eed4d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -115,10 +115,21 @@ typedef struct {

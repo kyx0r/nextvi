@@ -40,7 +40,7 @@ index 694fd97..031b717 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/led.c b/led.c
-index 864cd94..169ee48 100644
+index 0004ef9..b796eab 100644
 --- a/led.c
 +++ b/led.c
 @@ -46,7 +46,8 @@ static void file_index(struct lbuf *buf)
@@ -89,7 +89,7 @@ index 580d0bd..25c7703 100644
  {
  	char *r = emalloc(strlen(s) + 1);
 diff --git a/vi.h b/vi.h
-index f4d0355..c052276 100644
+index 039a4d0..18e8cdb 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,7 +219,7 @@ int uc_wid(int c);

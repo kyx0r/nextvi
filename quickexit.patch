@@ -19,7 +19,7 @@ index 694fd97..9692425 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 864cd94..7a9b5ee 100644
+index 0004ef9..24000c5 100644
 --- a/led.c
 +++ b/led.c
 @@ -370,6 +370,14 @@ static void led_info(char *str, int ai_max)
@@ -68,7 +68,7 @@ index 864cd94..7a9b5ee 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 8b2dbb4..4d0948c 100644
+index 067b5ad..0aad369 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,7 +80,7 @@ index 8b2dbb4..4d0948c 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index f4d0355..72b5c05 100644
+index 039a4d0..b52514f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -424,6 +424,7 @@ extern int xhlr;
