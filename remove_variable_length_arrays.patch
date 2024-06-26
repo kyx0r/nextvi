@@ -76,7 +76,7 @@ index 8cd63f7..e4e1036 100644
  }
  
 diff --git a/led.c b/led.c
-index 864cd94..7d9d31a 100644
+index 0004ef9..4682bd1 100644
 --- a/led.c
 +++ b/led.c
 @@ -44,7 +44,7 @@ static void file_index(struct lbuf *buf)
@@ -116,7 +116,7 @@ index 864cd94..7d9d31a 100644
  }
  
  static int led_lastchar(char *s)
-@@ -621,7 +624,7 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
+@@ -621,7 +624,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row)
  {
  	sbuf *sb; sbuf_make(sb, 256)
  	int ai_max = 128 * xai;
@@ -125,10 +125,10 @@ index 864cd94..7d9d31a 100644
  	int n = 0, key, orow = row;
  	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
  		ai[n++] = *pref++;
-@@ -661,6 +664,7 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
+@@ -659,6 +662,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row)
  		xrow++;
  	}
- 	sbufn_str(sb, post)
+ 	sbufn_str(sb, *post)
 +	free(ai);
  	return sb;
  }
@@ -227,7 +227,7 @@ index f3b49de..330b06a 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 8b2dbb4..a272dcd 100644
+index 067b5ad..a53c762 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -153,7 +153,7 @@ static void vi_drawrow(int row)
@@ -279,7 +279,7 @@ index 8b2dbb4..a272dcd 100644
  		}
  	}
  }
-@@ -1534,12 +1538,13 @@ void vi(int init)
+@@ -1535,12 +1539,13 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -294,7 +294,7 @@ index 8b2dbb4..a272dcd 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1650,7 +1655,7 @@ void vi(int init)
+@@ -1651,7 +1656,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix(), '|');
@@ -303,7 +303,7 @@ index 8b2dbb4..a272dcd 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg1, buf+4);
  					strcat(buf1, "s/");
-@@ -1660,10 +1665,11 @@ void vi(int init)
+@@ -1661,10 +1666,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_prompt(":", buf, &kmap);
@@ -316,7 +316,7 @@ index 8b2dbb4..a272dcd 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1671,6 +1677,7 @@ void vi(int init)
+@@ -1672,6 +1678,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_prompt(":", buf, &kmap);
