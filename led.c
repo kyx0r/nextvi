@@ -617,7 +617,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 }
 
 /* read visual command input */
-sbuf *led_input(char *pref, char *post, int *kmap, int row)
+sbuf *led_input(char *pref, char **post, int *kmap, int row)
 {
 	sbuf *sb; sbuf_make(sb, 256)
 	int ai_max = 128 * xai;
@@ -627,7 +627,7 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
 		ai[n++] = *pref++;
 	ai[n] = '\0';
 	while (1) {
-		char *ln = led_line(pref, post, ai, ai_max, &key, kmap, NULL, orow);
+		char *ln = led_line(pref, *post, ai, ai_max, &key, kmap, NULL, orow);
 		sbuf_str(sb, ai)
 		if (pref[0])
 			sbuf_str(sb, pref)
@@ -653,14 +653,12 @@ sbuf *led_input(char *pref, char *post, int *kmap, int row)
 		free(ln);
 		term_room(1);
 		pref[0] = '\0';
-		n = 0;
-		while (n < ai_max && (post[n] == ' ' || post[n] == '\t'))
-			n++;
-		if (n)
-			memmove(post, post + n, strlen(post) - n + 1);
+		if (ai_max)
+			while (**post == ' ' || **post == '\t')
+				++*post;
 		xrow++;
 	}
-	sbufn_str(sb, post)
+	sbufn_str(sb, *post)
 	return sb;
 }
 
