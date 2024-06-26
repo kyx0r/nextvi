@@ -1,12 +1,12 @@
 diff --git a/ex.c b/ex.c
-index 694fd97..9f21007 100644
+index 694fd97..e138dc4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static char xrep[EXLEN];	/* the last replacement */
  static int xgdep;		/* global command recursion depth */
-+int readonly = 0;		/* commandline readonly option */
++char readonly = 0;		/* commandline readonly option */
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
@@ -15,7 +15,7 @@ index 694fd97..9f21007 100644
  		cd = 3; /* XXX: sigh... */
  	}
 +	if ((access(arg, F_OK) == 0 && access(arg, W_OK) == -1) || readonly)
-+		ex_buf->ro = 1;
++		ex_buf->readonly = 1;
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
@@ -32,7 +32,7 @@ index 694fd97..9f21007 100644
 -			ex_show("write failed: file exists");
 -			return 1;
 +		if (!strchr(cmd, '!')) {
-+			if (ex_buf->ro == 1) {
++			if (ex_buf->readonly) {
 +				ex_show("write failed: readonly option is set, add ! to override");
 +				return 1;
 +			}
@@ -53,7 +53,7 @@ index 694fd97..9f21007 100644
  
 +static int ec_readonly(char *loc, char *cmd, char *arg)
 +{
-+	ex_buf->ro = !ex_buf->ro;
++	ex_buf->readonly = !ex_buf->readonly;
 +	return 0;
 +}
 +
@@ -86,20 +86,19 @@ index 067b5ad..69f1f2f 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 039a4d0..d483b1f 100644
+index 039a4d0..38ea91e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -296,7 +296,7 @@ struct buf {
- 	char *ft;			/* file type */
- 	char *path;			/* file path */
- 	struct lbuf *lb;
--	int plen, row, off, top;
-+	int plen, row, off, top, ro;
+@@ -299,6 +299,7 @@ struct buf {
+ 	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
++	char readonly;			/* read only */
  };
-@@ -435,3 +435,4 @@ extern rset *fsincl;
+ extern int xbufcur;
+ extern struct buf *ex_buf;
+@@ -435,3 +436,4 @@ extern rset *fsincl;
  extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
-+extern int readonly;
++extern char readonly;
