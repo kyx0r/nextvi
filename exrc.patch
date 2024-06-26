@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 694fd97..3d26243 100644
+index 694fd97..35774e9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
@@ -66,7 +66,7 @@ index 694fd97..3d26243 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1132,6 +1175,15 @@ void ex_init(char **files, int n)
+@@ -1132,6 +1175,18 @@ void ex_init(char **files, int n)
  		ec_edit("", "e", s);
  		s = *(++files);
  	} while (--n > 0);
@@ -75,10 +75,13 @@ index 694fd97..3d26243 100644
 +	if (!(xvis & 2)) {
 +		if (getenv("EXINIT")) {
 +			ex_command(getenv("EXINIT"));
-+		} else if (getenv("HOME")) {
-+			char exrc[PATH_MAX];
-+			snprintf(exrc, sizeof(exrc), "%s/.exrc", getenv("HOME"));
-+			load_exrc(exrc);
++		} else {
++			char *homeenv = getenv("HOME");
++			if (homeenv) {
++				char exrc[PATH_MAX];
++				snprintf(exrc, sizeof(exrc), "%s/.exrc", homeenv);
++				load_exrc(exrc);
++			}
 +		}
 +		if (xexrc && strcmp(getcwd(NULL, 0), getenv("HOME")))
 +			load_exrc(".exrc");
