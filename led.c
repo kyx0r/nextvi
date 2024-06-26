@@ -653,8 +653,9 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row)
 		free(ln);
 		term_room(1);
 		pref[0] = '\0';
-		while (**post == ' ' || **post == '\t')
-			++*post;
+		if (ai_max)
+			while (**post == ' ' || **post == '\t')
+				++*post;
 		xrow++;
 	}
 	sbufn_str(sb, *post)
