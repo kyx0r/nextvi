@@ -1729,9 +1729,10 @@ void vi(int init)
 			case '>':
 			case '<':
 			case TK_CTL('w'):
-				vi_mod |= vc_motion(c, 1);
+				k = vc_motion(c, 1);
 				if (c == 'c')
 					goto ins;
+				vi_mod |= k;
 				break;
 			case 'I':
 			case 'i':
@@ -1740,10 +1741,9 @@ void vi(int init)
 			case 'o':
 			case 'O':
 				vc_insert(c);
-				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				ins:
+				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				if (vi_insmov == 127) {
-					vi_mod |= vi_mod & 8 ? 2 : 1;
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
 						vc_join(0, 2);
@@ -1836,10 +1836,6 @@ void vi(int init)
 				vi_back(127);
 				vi_mod |= vc_motion('d', 2);
 				break;
-			case 'C':
-				vi_back('$');
-				vi_mod |= vc_motion('c', 1);
-				goto ins;
 			case 'D':
 				vi_back('$');
 				vi_mod |= vc_motion('d', 2);
@@ -1847,13 +1843,17 @@ void vi(int init)
 			case 'r':
 				vi_mod |= vc_replace();
 				break;
+			case 'C':
+				vi_back('$');
+				vc_motion('c', 0);
+				goto ins;
 			case 's':
 				vi_back(' ');
-				vi_mod |= vc_motion('c', 1);
+				vc_motion('c', 0);
 				goto ins;
 			case 'S':
 				vi_back('c');
-				vi_mod |= vc_motion('c', 1);
+				vc_motion('c', 0);
 				goto ins;
 			case 'Y':
 				vi_back('y');
