@@ -45,12 +45,12 @@ index 8cd63f7..db40abd 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 067b5ad..90718af 100644
+index 2eba4fd..f348e67 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1681,6 +1681,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
- 				vi_mod = 1;
+ 				vi_mod |= 1;
  				break;
 +			case TK_CTL('o'):
 +				next_hop:

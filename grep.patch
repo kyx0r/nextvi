@@ -28,7 +28,7 @@ index 694fd97..9ab71a9 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 067b5ad..e28e3ba 100644
+index 2eba4fd..d96c4a1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -675,12 +675,12 @@ void dir_calc(char *path)
@@ -157,7 +157,7 @@ index 067b5ad..e28e3ba 100644
  				default:
  					vi_back(k);
  				}
-@@ -2027,6 +2078,7 @@ int main(int argc, char *argv[])
+@@ -2017,6 +2068,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
