@@ -1629,8 +1629,10 @@ void vi(int init)
 					ex_command("%s/\x0d//g|%s/[ \t]+$//g")
 					vi_mod |= 1;
 					break;
-				case 'i':
-					ln = vi_prompt(":", "%s/^ {8}/\t/g", &kmap);
+				case 'i':;
+					char restr[] = "%s/^ {8}/\t/g";
+					restr[6] = vi_arg1 ? vi_arg1 + '0' : '8';
+					ln = vi_prompt(":", restr, &kmap);
 					goto do_excmd;
 				case 'b':
 				case 'v':
