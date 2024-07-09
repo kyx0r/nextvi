@@ -1629,9 +1629,19 @@ void vi(int init)
 					ex_command("%s/\x0d//g|%s/[ \t]+$//g")
 					vi_mod |= 1;
 					break;
+				case 'I':;
 				case 'i':;
-					char restr[] = "%s/^ {8}/\t/g";
-					restr[6] = vi_arg1 ? vi_arg1 + '0' : '8';
+					char restr[100] = "%s/^\t/";
+					vi_arg1 = vi_arg1 ? MIN(vi_arg1, 80) : 8;
+					if (k == 'I') {
+						cmd = restr+6;
+						while (vi_arg1--)
+							*cmd++ = ' ';
+						strcpy(cmd, "/g");
+					} else {
+						strcpy(restr, "%s/^ {");
+						strcpy(itoa(vi_arg1, restr+6), "}/\t/g");
+					}
 					ln = vi_prompt(":", restr, &kmap);
 					goto do_excmd;
 				case 'b':
