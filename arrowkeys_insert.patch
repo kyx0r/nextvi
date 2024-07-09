@@ -73,7 +73,7 @@ index 0004ef9..c7b66cd 100644
  		if (ai_max && !pref[0]) {	/* updating autoindent */
  			int ai_new = 0; 	/* number of initial spaces in ln */
 diff --git a/vi.c b/vi.c
-index 97832dd..b16eb5e 100644
+index 5e537b6..4702770 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1023,6 +1023,8 @@ static char *vi_indents(char *ln)
@@ -105,7 +105,7 @@ index 97832dd..b16eb5e 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1745,6 +1750,37 @@ void vi(int init)
+@@ -1755,6 +1760,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -143,7 +143,7 @@ index 97832dd..b16eb5e 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xoff = lbuf_eol(xb, --xrow);
-@@ -1758,6 +1794,9 @@ void vi(int init)
+@@ -1768,6 +1804,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;

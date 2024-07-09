@@ -1,5 +1,5 @@
 diff --git a/vi.c b/vi.c
-index 97832dd..7991ec2 100644
+index 5e537b6..aa69108 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1150,6 +1150,10 @@ static int vc_motion(int cmd, int modbit)
