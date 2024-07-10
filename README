@@ -83,7 +83,7 @@ Mode 1 (default) adds a space padding. Mode 0: raw line join.
 3. Added linenumbers, keybind: # (relative numbers are placed after indent)
 Passing vi_arg1 to # enables permanent line numbers.
 4. Added invisible character view, keybind: V
-5. Added regex for changing spaces to tabs and vise versa, (controlled by vi_arg1)
+5. Added regex for changing spaces to tabs and vice versa, (controlled by vi_arg1)
 keybind: vi, vI
 6. Added regex for removing \r line endings and trail space/tab, keybind: vo
 7. Changed behavior of ^a to change search direction when no more match. (see 49.)
