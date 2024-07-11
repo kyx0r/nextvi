@@ -593,7 +593,7 @@ static int ec_print(char *loc, char *cmd, char *arg)
 		return 1;
 	for (i = beg; i < end; i++)
 		ex_print(lbuf_get(xb, i));
-	xrow = end;
+	xrow = end - 1;
 	xoff = 0;
 	return 0;
 }
