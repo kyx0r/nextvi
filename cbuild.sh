@@ -50,7 +50,6 @@ case "$OS" in
 esac
 
 OPTIMIZE_FLAGS="-O2"
-
 build() {
 	require "${CC:=cc}"
 	log "$G" "Entering step: \"Build \"$(basename "$BASE")\" using \"$CC\""
