@@ -1832,12 +1832,12 @@ void vi(int init)
 					vc_charinfo();
 				else if (k == 'w') {
 					char cmd[100] = "tp ";
-					n = vi_arg1 ? vi_arg1 : 80;
+					n = vi_arg1 ? vi_arg1 - 1 : 79;
 					strcpy(itoa(n, cmd+3), "\\|");
 					while (1) {
 						ex_command(cmd)
-						ex_command("se grp=4|f/[^ \t]{1,80}(.)|tp 1K|se grp=2")
-						if (vi_col <= n)
+						ex_command("se grp=4|f/[^ \t]*[^ \t]?(.)|tp 1K|se grp=2")
+						if (vi_col < n)
 							break;
 						ex_command("+1")
 					}
