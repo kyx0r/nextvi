@@ -2,10 +2,9 @@
 
 POSIXLY_CORRECT=1
 cbuild_OPWD="$PWD"
-BASE="$(realpath "$0")" && BASE="${BASE%/*}"
-if [ "$OPWD" != "$BASE" ]; then
-    cd "$BASE" || log "$R" "Unable to change directory to ${BASE##*/}. Re-execute using a POSIX shell and check again."
-fi
+BASE="${0%/*}" && [ "$BASE" = "$0" ] && BASE="." # -> BASE="$(realpath "$0")" && BASE="${BASE%/*}"
+cd "$BASE" || log "$R" "Unable to change directory to ${BASE##*/}. Re-execute using a POSIX shell and check again."
+BASE="${PWD%/}"
 trap 'cd "$cbuild_OPWD"' EXIT
 
 # Color escape sequences
@@ -74,17 +73,22 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "debug")
         shift
-        log "$G" "Entering step: \"Override \$OPTFLAGS with debugging flags\""
+        log "$G" "Entering step: \"Override \"\$OPTFLAGS\" with debugging flags\""
         OPTFLAGS="-O0 -g"
         set -- build "$@"
         ;;
     "" | "build")
         # If the user doesn't use "build" explicitely, do not run the build step again.
-        [ "$1" = "build" ] || {
+        if [ "$1" = "build" ]; then
             explicit="1"
-        } && [ -n "$1" ] && shift
-        if [ "$explicit" = "1" ]; then
-            [ -f ./vi ] || [ -f ./nextvi ] && log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled" && exit 0
+        else
+            [ -n "$1" ] && shift
+        fi
+        if [ "$explicit" != "1" ]; then
+            if [ -f ./vi ] || [ -f ./nextvi ]; then
+                log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled"
+                exit 0
+            fi
         fi
         # Start build process
         build && exit 0 || exit 1
@@ -117,7 +121,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "clean")
         shift
-        run rm ./vi ./nextvi 2>/dev/null
+        run rm -f ./vi ./nextvi 2>/dev/null
         exit 0
         ;;
     "retrieve")
