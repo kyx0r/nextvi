@@ -1,9 +1,10 @@
 #!/bin/sh
 
+POSIXLY_CORRECT=1
 cbuild_OPWD="$PWD"
 BASE="$(dirname "$(realpath "$0")")"
 if [ "$OPWD" != "$BASE" ]; then
-	cd "$BASE" || exit 1
+	cd "$BASE" || log "$R" "Unable to change directory to ${BASE##*/}. Re-execute using a POSIX shell and check again."
 fi
 trap 'cd "$cbuild_OPWD"' EXIT
 
@@ -21,7 +22,7 @@ log() {
 }
 
 require() {
-	which "$1" >/dev/null 2>&1 || {
+	command -v "$1" >/dev/null 2>&1 || {
 		log "$R" "[$1] is not installed. Please ensure the command is available [$1] and try again."
 		exit 1
 	}
@@ -49,31 +50,31 @@ case "$OS" in
 *Darwin*) CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE" ;;
 esac
 
-OPTIMIZE_FLAGS="-O2"
+: "${OPTFLAGS:=-O2}"
 build() {
-	require "${CC:=cc}"
-	log "$G" "Entering step: \"Build \"$(basename "$BASE")\" using \"$CC\""
-	run "$CC vi.c -o vi $OPTIMIZE_FLAGS $CFLAGS" || {
-		log "$R" "Failed during step: \"Build \"$(basename "$BASE")\" using \"$CC\""
+	require "${CC}"
+	log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\""
+	run "$CC vi.c -o vi $OPTFLAGS $CFLAGS" || {
+		log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\""
 		exit 1
 	}
 }
 
 # Argument processing
-while [ $# -gt 0 ]; do
+while [ $# -gt 0 ] || [ "$1" = "" ]; do
 	case "$1" in
 	"install")
 		shift
 		build && {
 			run mkdir -p "$DESTDIR$PREFIX/bin/" &&
 				run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
-				[ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"$(basename "$BASE")\" has been install to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
+				[ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been install to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
 		} && exit 0 || exit 1
 		;;
 	"debug")
 		shift
-		log "$G" 'Entering step: "Apply debugging flags"'
-		OPTIMIZE_FLAGS="-O0 -g"
+		log "$G" "Entering step: \"Override \$OPTFLAGS with debugging flags\""
+		OPTFLAGS="-O0 -g"
 		set -- build "$@"
 		;;
 	"" | "build")
@@ -91,7 +92,7 @@ while [ $# -gt 0 ]; do
 				elif xcrun -f llvm-profdata >/dev/null 2>&1; then
 					PROFDATA="xcrun llvm-profdata"
 				fi
-				[ -z "$PROFDATA" ] && echo "pgobuild with clang requires llvm-profdata" && exit 1
+				[ -z "$PROFDATA" ] && log "R" "pgobuild with clang requires llvm-profdata" && exit 1
 			fi
 			run "$CC vi.c -fprofile-generate=. -o vi -O2 $CFLAGS"
 			echo "qq" | ./vi -v ./vi.c >/dev/null
@@ -99,10 +100,10 @@ while [ $# -gt 0 ]; do
 			run "$CC vi.c -fprofile-use=. -o vi -O2 $CFLAGS"
 			rm -f ./*.gcda ./*.profraw ./default.profdata
 		}
-		require "${CC:=cc}"
-		log "$G" "Entering step: \"Build \"$(basename "$BASE")\" using \"$CC\" and PGO\""
+		require "${CC}"
+		log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
 		pgobuild || {
-			log "$R" "Failed during step: \"Build \"$(basename "$BASE")\" using \"$CC\" and PGO\""
+			log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
 			exit 1
 		} && exit 0 || exit 1
 		;;
