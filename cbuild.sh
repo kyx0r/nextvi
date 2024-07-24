@@ -4,7 +4,7 @@ POSIXLY_CORRECT=1
 cbuild_OPWD="$PWD"
 BASE="$(dirname "$(realpath "$0")")"
 if [ "$OPWD" != "$BASE" ]; then
-	cd "$BASE" || log "$R" "Unable to change directory to ${BASE##*/}. Re-execute using a POSIX shell and check again."
+    cd "$BASE" || log "$R" "Unable to change directory to ${BASE##*/}. Re-execute using a POSIX shell and check again."
 fi
 trap 'cd "$cbuild_OPWD"' EXIT
 
@@ -15,23 +15,23 @@ B="\033[34m" #     Blue
 NC="\033[m"  #     Unset
 
 log() {
-	# shellcheck disable=SC2059 # Using %s with ANSII escape sequences is not possible
-	printf "${1}->$NC "
-	shift
-	printf "%s\n" "$*"
+    # shellcheck disable=SC2059 # Using %s with ANSII escape sequences is not possible
+    printf "${1}->$NC "
+    shift
+    printf "%s\n" "$*"
 }
 
 require() {
-	command -v "$1" >/dev/null 2>&1 || {
-		log "$R" "[$1] is not installed. Please ensure the command is available [$1] and try again."
-		exit 1
-	}
+    command -v "$1" >/dev/null 2>&1 || {
+        log "$R" "[$1] is not installed. Please ensure the command is available [$1] and try again."
+        exit 1
+    }
 }
 
 run() {
-	log "$B" "$*"
-	# shellcheck disable=SC2068 # We want to split elements, but avoid whitespace problems (`$*`), and also avoid `eval $*`
-	$@
+    log "$B" "$*"
+    # shellcheck disable=SC2068 # We want to split elements, but avoid whitespace problems (`$*`), and also avoid `eval $*`
+    $@
 }
 
 CFLAGS="\
@@ -53,81 +53,81 @@ esac
 
 : "${OPTFLAGS:=-O2}"
 build() {
-	require "${CC}"
-	log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\""
-	run "$CC vi.c -o vi $OPTFLAGS $CFLAGS" || {
-		log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\""
-		exit 1
-	}
+    require "${CC}"
+    log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\""
+    run "$CC vi.c -o vi $OPTFLAGS $CFLAGS" || {
+        log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\""
+        exit 1
+    }
 }
 
 # Argument processing
 while [ $# -gt 0 ] || [ "$1" = "" ]; do
-	case "$1" in
-	"install")
-		shift
-		build && {
-			run mkdir -p "$DESTDIR$PREFIX/bin/" &&
-				run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
-				[ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been install to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
-		} && exit 0 || exit 1
-		;;
-	"debug")
-		shift
-		log "$G" "Entering step: \"Override \$OPTFLAGS with debugging flags\""
-		OPTFLAGS="-O0 -g"
-		set -- build "$@"
-		;;
-	"" | "build")
-		shift
-		build && exit 0 || exit 1
-		;;
-	"pgobuild")
-		shift
-		pgobuild() {
-			ccversion="$($CC --version)"
-			case "$ccversion" in *clang*) clang=1 ;; esac
-			if [ "$clang" = 1 ] && [ -z "$PROFDATA" ]; then
-				if command -v llvm-profdata >/dev/null 2>&1; then
-					PROFDATA=llvm-profdata
-				elif xcrun -f llvm-profdata >/dev/null 2>&1; then
-					PROFDATA="xcrun llvm-profdata"
-				fi
-				[ -z "$PROFDATA" ] && log "R" "pgobuild with clang requires llvm-profdata" && exit 1
-			fi
-			run "$CC vi.c -fprofile-generate=. -o vi -O2 $CFLAGS"
-			echo "qq" | ./vi -v ./vi.c >/dev/null
-			[ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
-			run "$CC vi.c -fprofile-use=. -o vi -O2 $CFLAGS"
-			rm -f ./*.gcda ./*.profraw ./default.profdata
-		}
-		require "${CC}"
-		log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
-		pgobuild || {
-			log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
-			exit 1
-		} && exit 0 || exit 1
-		;;
-	"clean")
-		shift
-		[ -x ./vi ] || {
-			log "$R" "./vi does not exist!"
-			exit 1
-		} && run rm ./vi
-		exit 0
-		;;
-	"retrieve")
-		shift
-		[ -x ./vi ] || {
-			log "$R" "./vi does not exist!"
-			exit 1
-		} && mv ./vi ./nextvi
-		readlink -f ./nextvi
-		exit 0
-		;;
-	*)
-		echo "Usage: $0 {install|pgobuild|build|debug|clean}"
-		exit 1
-		;;
-	esac
+    case "$1" in
+    "install")
+        shift
+        build && {
+            run mkdir -p "$DESTDIR$PREFIX/bin/" &&
+                run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
+                [ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been install to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
+        } && exit 0 || exit 1
+        ;;
+    "debug")
+        shift
+        log "$G" "Entering step: \"Override \$OPTFLAGS with debugging flags\""
+        OPTFLAGS="-O0 -g"
+        set -- build "$@"
+        ;;
+    "" | "build")
+        shift
+        build && exit 0 || exit 1
+        ;;
+    "pgobuild")
+        shift
+        pgobuild() {
+            ccversion="$($CC --version)"
+            case "$ccversion" in *clang*) clang=1 ;; esac
+            if [ "$clang" = 1 ] && [ -z "$PROFDATA" ]; then
+                if command -v llvm-profdata >/dev/null 2>&1; then
+                    PROFDATA=llvm-profdata
+                elif xcrun -f llvm-profdata >/dev/null 2>&1; then
+                    PROFDATA="xcrun llvm-profdata"
+                fi
+                [ -z "$PROFDATA" ] && log "R" "pgobuild with clang requires llvm-profdata" && exit 1
+            fi
+            run "$CC vi.c -fprofile-generate=. -o vi -O2 $CFLAGS"
+            echo "qq" | ./vi -v ./vi.c >/dev/null
+            [ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
+            run "$CC vi.c -fprofile-use=. -o vi -O2 $CFLAGS"
+            rm -f ./*.gcda ./*.profraw ./default.profdata
+        }
+        require "${CC}"
+        log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
+        pgobuild || {
+            log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
+            exit 1
+        } && exit 0 || exit 1
+        ;;
+    "clean")
+        shift
+        [ -x ./vi ] || {
+            log "$R" "./vi does not exist!"
+            exit 1
+        } && run rm ./vi
+        exit 0
+        ;;
+    "retrieve")
+        shift
+        [ -x ./vi ] || {
+            log "$R" "./vi does not exist!"
+            exit 1
+        } && mv ./vi ./nextvi
+        readlink -f ./nextvi
+        exit 0
+        ;;
+    *)
+        echo "Usage: $0 {install|pgobuild|build|debug|clean}"
+        exit 1
+        ;;
+    esac
 done
