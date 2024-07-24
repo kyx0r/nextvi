@@ -30,7 +30,7 @@ require() {
 
 run() {
     log "$B" "$*"
-    # shellcheck disable=SC2068 # We want to split elements, but avoid whitespace problems (`$*`), and also avoid `eval $*`. This makes the shell do less work, see: https://github.com/brgl/busybox/blob/abbf17abccbf832365d9acf1c280369ba7d5f8b2/shell/ash.c#L6309C47-L6310C46
+    # shellcheck disable=SC2068 # We want to split elements, but avoid whitespace problems (`$*`), and also avoid `eval $*`
     $@
 }
 
@@ -79,7 +79,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         set -- build "$@"
         ;;
     "" | "build")
-        shift
+        [ -n "$1" ] && shift
         build && exit 0 || exit 1
         ;;
     "pgobuild")
