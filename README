@@ -166,14 +166,11 @@ Colors can be customized up to 256 colors if the terminal supports it.
 24. Added new syntax highlighting for C, js, html, css, diff...
 25. Added key that splits the line (opposite of J) keybind: K
 When vi_arg1 is specified, K will not create empty new line.
-26. Added key that line wraps entire buffer to the 80 colon limit. keybind: gq
-The keybind only does 1 step, which means that multiple runs are needed
-if the lines are too long.
-Added key that line wraps a single line to 80 colon limit keybind: gq
-gq does as many steps as needed.
+26. Added key that line wraps entire buffer to the 80 (or vi_arg1) colon limit.
+keybind: gq
+Added key that line wraps a single line to 80 colon (or vi_arg1) limit.
+keybind: gw
 Both keybinds estimate the word boundary such that words are not split.
-Both keybinds are macro, so set td=2 if there is bidi text, it makes a
-difference.
 27. Added key that does multiline repeated edits keybind: v.
 This is based on the last commands and insertions and requires vi_arg1 for
 how many lines to repeat said operation. When last operation was 'i' or other
