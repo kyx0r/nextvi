@@ -129,7 +129,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         if [ -x ./vi ]; then
             [ ! -e ./nextvi ] && mv ./vi ./nextvi
         else
-            log "$R" "./vi does not exist!" ; exit 1
+            log "$R" "\"${BASE##*/}\" was never compiled OR it was but its binaries weren't found anyways." ; exit 1
         fi
         readlink -f ./nextvi && exit 0
         ;;
