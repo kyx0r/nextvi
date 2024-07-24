@@ -79,7 +79,14 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         set -- build "$@"
         ;;
     "" | "build")
-        [ -n "$1" ] && shift
+        # If the user doesn't use "build" explicitely, do not run the build step again.
+        [ "$1" = "build" ] || {
+            explicit="1"
+        } && [ -n "$1" ] && shift
+        if [ "$explicit" = "1" ]; then
+            [ -f ./vi ] || [ -f ./nextvi ] && log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled" && exit 0
+        fi
+        # Start build process
         build && exit 0 || exit 1
         ;;
     "pgobuild")
@@ -110,10 +117,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "clean")
         shift
-        [ -x ./vi ] || {
-            log "$R" "./vi does not exist!"
-            exit 1
-        } && run rm ./vi
+        run rm ./vi ./nextvi 2>/dev/null
         exit 0
         ;;
     "retrieve")
