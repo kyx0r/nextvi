@@ -2,7 +2,7 @@
 
 POSIXLY_CORRECT=1
 cbuild_OPWD="$PWD"
-BASE="$(dirname "$(realpath "$0")")"
+[ "${0%/*}" = "$0" ] && BASE="." || BASE="${0%/*}"
 if [ "$OPWD" != "$BASE" ]; then
     cd "$BASE" || log "$R" "Unable to change directory to ${BASE##*/}. Re-execute using a POSIX shell and check again."
 fi
@@ -30,7 +30,7 @@ require() {
 
 run() {
     log "$B" "$*"
-    # shellcheck disable=SC2068 # We want to split elements, but avoid whitespace problems (`$*`), and also avoid `eval $*`. Using `$@` also makes the shell do less work in most implementations of SH, see: https://github.com/brgl/busybox/blob/abbf17abccbf832365d9acf1c280369ba7d5f8b2/shell/ash.c#L6309C47-L6310C46
+    # shellcheck disable=SC2068 # We want to split elements, but avoid whitespace problems (`$*`), and also avoid `eval $*`
     $@
 }
 
