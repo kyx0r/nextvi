@@ -53,7 +53,7 @@ esac
 : "${OPTFLAGS:=-O2}"
 build() {
     require "${CC}"
-    log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\""
+    log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\"\""
     run "$CC vi.c -o vi $OPTFLAGS $CFLAGS" || {
         log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\""
         exit 1
@@ -126,12 +126,12 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "retrieve")
         shift
-        [ -x ./vi ] || {
-            log "$R" "./vi does not exist!"
-            exit 1
-        } && mv ./vi ./nextvi
-        readlink -f ./nextvi
-        exit 0
+        if [ -x ./vi ]; then
+            [ ! -e ./nextvi ] && mv ./vi ./nextvi
+        else
+            log "$R" "./vi does not exist!" ; exit 1
+        fi
+        readlink -f ./nextvi && exit 0
         ;;
     *)
         echo "Usage: $0 {install|pgobuild|build|debug|clean}"
