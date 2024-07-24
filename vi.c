@@ -1432,13 +1432,8 @@ void vi(int init)
 			vi_mod |= 4;
 		if (vi_lnnum == 1)
 			vi_lnnum = 0;
-		if (vi_msg[0] || vi_status) {
+		if (vi_msg[0]) {
 			vi_msg[0] = '\0';
-			if (vi_status) {
-				xrows = vi_status != xrows ? xrows - 1 : xrows;
-				vi_status = xrows;
-				vc_status();
-			}
 			vi_drawrow(otop + xrows - 1);
 		}
 		if (!vi_ybuf)
@@ -1581,8 +1576,10 @@ void vi(int init)
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
 				break;
 			case TK_CTL('g'):
-				xrows = !vi_arg1 && vi_status ? xrows + 1 : xrows;
-				vi_status = !!vi_arg1;
+				if (vi_arg1) {
+					vi_status = vi_arg1 % 2 ? xrows - vi_arg1 : 0;
+					xrows += vi_status ? 0 : vi_arg1 - 1;
+				}
 				vc_status();
 				break;
 			case TK_CTL('^'):
@@ -2011,7 +2008,13 @@ void vi(int init)
 			syn_blockhl = 0;
 			vi_drawrow(xrow);
 		}
-		vi_drawmsg();
+		if (vi_status) {
+			xrows = vi_status != xrows ? vi_status : xrows;
+			vc_status();
+			vi_drawmsg();
+			vi_msg[0] = '\0';
+		} else
+			vi_drawmsg();
 		term_pos(xrow - xtop, n);
 		term_commit();
 		lbuf_modified(xb);
