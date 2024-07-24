@@ -1830,14 +1830,22 @@ void vi(int init)
 					term_push("1G", 2);
 				else if (k == 'a')
 					vc_charinfo();
-				else if (k == 'w')
-					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n')
-						term_push("080|gwbhKj", 10);
-					else
-						ibuf_cnt = 0;
-				else if (k == 'q')
-					ex_command("se grp=4|%g/./tp 80\\\\|\\|f/[^ \t]{1,80}(.)\\|tp 1K|se grp=2")
-				else if (k == '~' || k == 'u' || k == 'U')
+				else if (k == 'w') {
+					char cmd[100] = "tp ";
+					n = vi_arg1 ? vi_arg1 : 80;
+					strcpy(itoa(n, cmd+3), "\\|");
+					while (1) {
+						ex_command(cmd)
+						ex_command("se grp=4|f/[^ \t]{1,80}(.)|tp 1K|se grp=2")
+						if (vi_col <= n)
+							break;
+						ex_command("+1")
+					}
+				} else if (k == 'q') {
+					char cmd[100] = "%g/./tp ";
+					strcpy(itoa(vi_arg1, cmd+8), "gw");
+					ex_command(cmd)
+				} else if (k == '~' || k == 'u' || k == 'U')
 					vi_mod |= vc_motion(k, 2);
 				break;
 			case 'x':
