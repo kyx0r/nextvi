@@ -30,7 +30,8 @@ require() {
 
 run() {
 	log "$B" "$*"
-	eval "$*"
+	# shellcheck disable=SC2068 # We want to split elements, but avoid whitespace problems (`$*`), and also avoid `eval $*`
+	$@
 }
 
 CFLAGS="\
