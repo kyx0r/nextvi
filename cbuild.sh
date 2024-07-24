@@ -2,7 +2,7 @@
 
 POSIXLY_CORRECT=1
 cbuild_OPWD="$PWD"
-[ "${0%/*}" = "$0" ] && BASE="." || BASE="${0%/*}"
+BASE="$(realpath "$0")" && BASE="${BASE%/*}"
 if [ "$OPWD" != "$BASE" ]; then
     cd "$BASE" || log "$R" "Unable to change directory to ${BASE##*/}. Re-execute using a POSIX shell and check again."
 fi
