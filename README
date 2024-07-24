@@ -694,8 +694,8 @@ NEXTVI:
 --------------------------------------------------------------------------------
 Further optimization:
 1. To create the most optimal exe, enable PGO optimizations by compiling via
-./build.sh pgobuild which can lead to a significant performance boost on some
-application specific tasks. Feel free to adjust build.sh and the sample data
+./cbuild.sh pgobuild which can lead to a significant performance boost on some
+application specific tasks. Feel free to adjust cbuild.sh and the sample data
 on which it's being trained on, though default probably already good enough.
 2. To improve nextvi's performance, shaping, character reordering, and
 syntax highlighting can be disabled by defining the EXINIT environment
