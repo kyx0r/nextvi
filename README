@@ -498,7 +498,7 @@ programming language.
    Otherwise this examples 2 and 3 may not work!!!
 To suppress EXINIT invoke vi like so: EXINIT= vi file
 When scripting for improved performance, output can be disabled by running :se noled
-and the initial load message can be supressed using redirection like so: vi > /dev/null
+and the initial load message can be suppressed using redirection like so: vi > /dev/null
 
 - Uppercase registers
 In vi uppercase registers append to the lowercase register instead of
