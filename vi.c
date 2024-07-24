@@ -329,8 +329,8 @@ void ex_show(char *msg)
 		term_chr('\n');
 		syn_setft(ex_ft);
 	} else {
-		write(1, msg, dstrlen(msg, '\n'));
-		write(1, "\n", 1);
+		term_write(msg, dstrlen(msg, '\n'));
+		term_write("\n", 1);
 	}
 }
 

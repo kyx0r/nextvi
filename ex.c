@@ -1132,6 +1132,6 @@ void ex_init(char **files, int n)
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
-	if (!(xvis & 2) && (s = getenv("EXINIT")))
+	if ((s = getenv("EXINIT")))
 		ex_command(s)
 }
