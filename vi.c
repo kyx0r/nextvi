@@ -1831,9 +1831,10 @@ void vi(int init)
 				else if (k == 'a')
 					vc_charinfo();
 				else if (k == 'w') {
-					char cmd[100] = "tp ";
+					char cmd[100] = "se noled|tp ";
 					n = vi_arg1 ? vi_arg1 - 1 : 79;
-					strcpy(itoa(n, cmd+3), "\\|");
+					k = xled;
+					strcpy(itoa(n, cmd+11), "\\|");
 					while (1) {
 						ex_command(cmd)
 						ex_command("se grp=4|f/[^ \t]*[^ \t]?(.)|tp 1K|se grp=2")
@@ -1841,9 +1842,13 @@ void vi(int init)
 							break;
 						ex_command("+1")
 					}
+					if (k) {
+						ex_command("se led")
+						vi_mod |= 1;
+					}
 				} else if (k == 'q') {
-					char cmd[100] = "%g/./tp ";
-					strcpy(itoa(vi_arg1, cmd+8), "gw");
+					char cmd[100] = "se noled|%g/./tp ";
+					strcpy(itoa(vi_arg1, cmd+16), "gw|se led");
 					ex_command(cmd)
 				} else if (k == '~' || k == 'u' || k == 'U')
 					vi_mod |= vc_motion(k, 2);
