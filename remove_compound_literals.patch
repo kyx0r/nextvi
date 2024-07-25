@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 694fd97..031b717 100644
+index 6d3cad9..390c533 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -202,11 +202,13 @@ static char *ex_pathexpand(char *src)
@@ -18,7 +18,7 @@ index 694fd97..031b717 100644
  		xkwdcnt++;
  		vi_regput('/', kwd, 0);
  		xkwddir = dir;
-@@ -811,7 +813,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -799,7 +801,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	not = strchr(cmd, '!') || cmd[0] == 'v';
  	pat = re_read(&s);
  	if (pat)
@@ -27,7 +27,7 @@ index 694fd97..031b717 100644
  	free(pat);
  	if (!pat || !rs)
  		return 1;
-@@ -959,9 +961,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -947,9 +949,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -89,7 +89,7 @@ index 580d0bd..25c7703 100644
  {
  	char *r = emalloc(strlen(s) + 1);
 diff --git a/vi.h b/vi.h
-index 039a4d0..18e8cdb 100644
+index b3b727f..061838d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,7 +219,7 @@ int uc_wid(int c);

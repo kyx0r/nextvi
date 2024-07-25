@@ -1,9 +1,9 @@
 diff --git a/ex.c b/ex.c
-index 694fd97..7a4ddf8 100644
+index 6d3cad9..06aa4e7 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1135,3 +1135,11 @@ void ex_init(char **files, int n)
- 	if (!(xvis & 2) && (s = getenv("EXINIT")))
+@@ -1123,3 +1123,11 @@ void ex_init(char **files, int n)
+ 	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
 +
@@ -56,7 +56,7 @@ index f3b49de..cf5fd0d 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 5e537b6..1ee30ef 100644
+index 657d534..970101d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -597,6 +597,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -72,7 +72,7 @@ index 5e537b6..1ee30ef 100644
  static void vi_regprint(void)
  {
  	term_pos(xrows, led_pos(vi_msg, 0));
-@@ -2054,6 +2060,7 @@ int main(int argc, char *argv[])
+@@ -2070,6 +2076,7 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -80,7 +80,7 @@ index 5e537b6..1ee30ef 100644
  	term_done();
  	if (xvis & 4)
  		return EXIT_SUCCESS;
-@@ -2062,5 +2069,12 @@ int main(int argc, char *argv[])
+@@ -2078,5 +2085,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
@@ -94,7 +94,7 @@ index 5e537b6..1ee30ef 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 039a4d0..9cf2fb8 100644
+index b3b727f..364397b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -175,6 +175,7 @@ int ren_cwid(char *s, int pos);
@@ -113,7 +113,7 @@ index 039a4d0..9cf2fb8 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -335,6 +337,7 @@ void ex_print(char *line);
+@@ -336,6 +338,7 @@ void ex_print(char *line);
  void ex_show(char *msg);
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
