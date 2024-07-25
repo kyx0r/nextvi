@@ -2008,7 +2008,7 @@ void vi(int init)
 			syn_blockhl = 0;
 			vi_drawrow(xrow);
 		}
-		if (vi_status) {
+		if (vi_status && !vi_msg[0]) {
 			xrows = vi_status != xrows ? vi_status : xrows;
 			vc_status();
 			vi_drawmsg();
