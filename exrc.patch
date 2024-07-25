@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 694fd97..35774e9 100644
+index 6d3cad9..492b868 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
@@ -10,7 +10,7 @@ index 694fd97..35774e9 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -856,6 +857,7 @@ static struct option {
+@@ -844,6 +845,7 @@ static struct option {
  	{"grp", &xgrp},
  	{"pac", &xpac},
  	{"led", &xled},
@@ -18,7 +18,7 @@ index 694fd97..35774e9 100644
  };
  
  static char *cutword(char *s, char *d)
-@@ -1123,6 +1125,47 @@ void ex(void)
+@@ -1111,6 +1113,47 @@ void ex(void)
  	}
  }
  
@@ -66,29 +66,26 @@ index 694fd97..35774e9 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1132,6 +1175,18 @@ void ex_init(char **files, int n)
+@@ -1120,6 +1163,16 @@ void ex_init(char **files, int n)
  		ec_edit("", "e", s);
  		s = *(++files);
  	} while (--n > 0);
--	if (!(xvis & 2) && (s = getenv("EXINIT")))
--		ex_command(s)
-+	if (!(xvis & 2)) {
-+		if (getenv("EXINIT")) {
-+			ex_command(getenv("EXINIT"));
-+		} else {
-+			char *homeenv = getenv("HOME");
-+			if (homeenv) {
-+				char exrc[PATH_MAX];
-+				snprintf(exrc, sizeof(exrc), "%s/.exrc", homeenv);
-+				load_exrc(exrc);
-+			}
+-	if ((s = getenv("EXINIT")))
++	if ((s = getenv("EXINIT"))) {
+ 		ex_command(s)
++	} else {
++		char *homeenv = getenv("HOME");
++		if (homeenv) {
++			char exrc[PATH_MAX];
++			snprintf(exrc, sizeof(exrc), "%s/.exrc", homeenv);
++			load_exrc(exrc);
 +		}
-+		if (xexrc && strcmp(getcwd(NULL, 0), getenv("HOME")))
-+			load_exrc(".exrc");
 +	}
++	if (xexrc && strcmp(getcwd(NULL, 0), getenv("HOME")))
++		load_exrc(".exrc");
  }
 diff --git a/vi.c b/vi.c
-index 5e537b6..9d77176 100644
+index 657d534..1a3a1c6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -18,6 +18,7 @@
