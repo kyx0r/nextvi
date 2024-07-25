@@ -73,7 +73,7 @@ index 0004ef9..c7b66cd 100644
  		if (ai_max && !pref[0]) {	/* updating autoindent */
  			int ai_new = 0; 	/* number of initial spaces in ln */
 diff --git a/vi.c b/vi.c
-index 657d534..c84de33 100644
+index bda3445..66be6ac 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1023,6 +1023,8 @@ static char *vi_indents(char *ln)
