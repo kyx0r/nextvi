@@ -242,6 +242,7 @@ extern sbuf *term_sbuf;
 extern int term_record;
 extern int xrows, xcols;
 extern unsigned int ibuf_pos, ibuf_cnt, icmd_pos;
+#define term_write(s, n) if (xled) write(1, s, n);
 void term_init(void);
 void term_done(void);
 void term_clean(void);

@@ -593,19 +593,7 @@ static int ec_print(char *loc, char *cmd, char *arg)
 		return 1;
 	for (i = beg; i < end; i++)
 		ex_print(lbuf_get(xb, i));
-	xrow = MAX(beg, end - 1);
-	xoff = 0;
-	return 0;
-}
-
-static int ec_null(char *loc, char *cmd, char *arg)
-{
-	int beg, end;
-	if (xvis & 4)
-		return ec_print(loc, cmd, arg);
-	if (ex_region(loc, &beg, &end))
-		return 1;
-	xrow = MAX(beg, end - 1);
+	xrow = MAX(beg, end - (cmd[0] || loc[0]));
 	xoff = 0;
 	return 0;
 }
@@ -1046,7 +1034,7 @@ static struct excmd {
 	{"inc", ec_setincl},
 	{"bx", ec_setbufsmax},
 	{"ac", ec_setacreg},
-	{"", ec_null},
+	{"", ec_print},
 };
 
 static int ex_idx(const char *cmd)
@@ -1132,6 +1120,6 @@ void ex_init(char **files, int n)
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
-	if (!(xvis & 2) && (s = getenv("EXINIT")))
+	if ((s = getenv("EXINIT")))
 		ex_command(s)
 }

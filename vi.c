@@ -2,7 +2,7 @@
  * NEXTVI Editor
  *
  * Copyright (C) 2015-2019 Ali Gholami Rudi <ali at rudi dot ir>
- * Copyright (C) 2020-2021 Kyryl Melekhin <k dot melekhin at gmail dot com>
+ * Copyright (C) 2020-2024 Kyryl Melekhin <k dot melekhin at gmail dot com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -329,8 +329,8 @@ void ex_show(char *msg)
 		term_chr('\n');
 		syn_setft(ex_ft);
 	} else {
-		write(1, msg, dstrlen(msg, '\n'));
-		write(1, "\n", 1);
+		term_write(msg, dstrlen(msg, '\n'));
+		term_write("\n", 1);
 	}
 }
 
@@ -1432,13 +1432,8 @@ void vi(int init)
 			vi_mod |= 4;
 		if (vi_lnnum == 1)
 			vi_lnnum = 0;
-		if (vi_msg[0] || vi_status) {
+		if (vi_msg[0]) {
 			vi_msg[0] = '\0';
-			if (vi_status) {
-				xrows = vi_status != xrows ? xrows - 1 : xrows;
-				vi_status = xrows;
-				vc_status();
-			}
 			vi_drawrow(otop + xrows - 1);
 		}
 		if (!vi_ybuf)
@@ -1581,8 +1576,10 @@ void vi(int init)
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
 				break;
 			case TK_CTL('g'):
-				xrows = !vi_arg1 && vi_status ? xrows + 1 : xrows;
-				vi_status = !!vi_arg1;
+				if (vi_arg1) {
+					vi_status = vi_arg1 % 2 ? xrows - vi_arg1 : 0;
+					xrows += vi_status ? 0 : vi_arg1 - 1;
+				}
 				vc_status();
 				break;
 			case TK_CTL('^'):
@@ -1830,14 +1827,27 @@ void vi(int init)
 					term_push("1G", 2);
 				else if (k == 'a')
 					vc_charinfo();
-				else if (k == 'w')
-					if (*uc_chr(lbuf_get(xb, xrow), xoff+1) != '\n')
-						term_push("080|gwbhKj", 10);
-					else
-						ibuf_cnt = 0;
-				else if (k == 'q')
-					ex_command("se grp=4|%g/./tp 80\\\\|\\|f/[^ \t]{1,80}(.)\\|tp 1K|se grp=2")
-				else if (k == '~' || k == 'u' || k == 'U')
+				else if (k == 'w') {
+					char cmd[100] = "se noled|tp ";
+					n = vi_arg1 ? vi_arg1 - 1 : 79;
+					k = xled;
+					strcpy(itoa(n, cmd+11), "\\|");
+					while (1) {
+						ex_exec(cmd);
+						ex_exec("se grp=4|f/[^ \t]*[^ \t]?(.)|tp 1K|se grp=2");
+						if (vi_col < n)
+							break;
+						ex_exec("+1");
+					}
+					if (k) {
+						ex_exec("se led");
+						vi_mod |= 1;
+					}
+				} else if (k == 'q') {
+					char cmd[100] = "se noled|%g/./tp ";
+					strcpy(itoa(vi_arg1, cmd+16), "gw|se led");
+					ex_command(cmd)
+				} else if (k == '~' || k == 'u' || k == 'U')
 					vi_mod |= vc_motion(k, 2);
 				break;
 			case 'x':
@@ -1998,7 +2008,13 @@ void vi(int init)
 			syn_blockhl = 0;
 			vi_drawrow(xrow);
 		}
-		vi_drawmsg();
+		if (vi_status) {
+			xrows = vi_status != xrows ? vi_status : xrows;
+			vc_status();
+			vi_drawmsg();
+			vi_msg[0] = '\0';
+		} else
+			vi_drawmsg();
 		term_pos(xrow - xtop, n);
 		term_commit();
 		lbuf_modified(xb);
