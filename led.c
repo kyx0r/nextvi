@@ -631,14 +631,14 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row)
 		sbuf_str(sb, ai)
 		if (pref[0])
 			sbuf_str(sb, pref)
+		n = sb->s_n;
 		sbuf_str(sb, ln)
-		if (key == '\n')
-			sbuf_chr(sb, '\n')
-		else {
+		if (key != '\n') {
 			free(ln);
 			break;
 		}
-		led_printparts(ai, pref, uc_lastline(ln), "");
+		sbufn_chr(sb, key)
+		led_printparts(ai, pref, &sb->s[n], "");
 		term_chr('\n');
 		if (ai_max && !pref[0]) {	/* updating autoindent */
 			int ai_new = 0; 	/* number of initial spaces in ln */
