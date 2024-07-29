@@ -21,6 +21,7 @@ log() {
 }
 
 require() {
+    set -- $1
     command -v "$1" >/dev/null 2>&1 || {
         log "$R" "[$1] is not installed. Please ensure the command is available [$1] and try again."
         exit 1
