@@ -38,8 +38,8 @@ void term_done(void)
 
 void term_clean(void)
 {
-	term_write("\x1b[2J", 4);	/* clear screen */
-	term_write("\x1b[H", 3);	/* cursor topleft */
+	term_write("\x1b[2J", 4)	/* clear screen */
+	term_write("\x1b[H", 3)		/* cursor topleft */
 }
 
 void term_suspend(void)
@@ -51,7 +51,7 @@ void term_suspend(void)
 
 void term_commit(void)
 {
-	term_write(term_sbuf->s, term_sbuf->s_n);
+	term_write(term_sbuf->s, term_sbuf->s_n)
 	sbuf_cut(term_sbuf, 0)
 	term_record = 0;
 }
@@ -61,7 +61,7 @@ void term_out(char *s)
 	if (term_record)
 		sbufn_str(term_sbuf, s)
 	else
-		term_write(s, strlen(s));
+		term_write(s, strlen(s))
 }
 
 void term_chr(int ch)
@@ -275,7 +275,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 		if (fds[0].revents & POLLIN) {
 			int ret = read(fds[0].fd, buf, sizeof(buf));
 			if (ret > 0 && oproc == 2)
-				term_write(buf, ret);
+				term_write(buf, ret)
 			if (ret > 0)
 				sbuf_mem(sb, buf, ret)
 			else {

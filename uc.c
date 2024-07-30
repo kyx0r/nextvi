@@ -60,12 +60,6 @@ char *uc_prev(char *beg, char *s)
 	return s == beg ? beg : uc_beg(beg, s - 1);
 }
 
-char *uc_lastline(char *s)
-{
-	char *r = strrchr(s, '\n');
-	return r ? r + 1 : s;
-}
-
 /* allocate and return an array for the characters in s */
 char **uc_chop(char *s, int *n)
 {

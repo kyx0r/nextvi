@@ -235,7 +235,6 @@ char *uc_prev(char *beg, char *s);
 char *uc_beg(char *beg, char *s);
 char *uc_end(char *s);
 char *uc_shape(char *beg, char *s);
-char *uc_lastline(char *s);
 
 /* term.c managing the terminal */
 extern sbuf *term_sbuf;
