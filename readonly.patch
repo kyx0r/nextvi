@@ -77,10 +77,10 @@ index 6d3cad9..a84abfa 100644
  };
  
 diff --git a/vi.c b/vi.c
-index bda3445..50b0bb0 100644
+index d6434ad..00e9f99 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2057,9 +2057,11 @@ int main(int argc, char *argv[])
+@@ -2061,9 +2061,11 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -94,10 +94,10 @@ index bda3445..50b0bb0 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index b3b727f..9b50b65 100644
+index 3d42679..9830065 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -300,6 +300,7 @@ struct buf {
+@@ -299,6 +299,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -105,7 +105,7 @@ index b3b727f..9b50b65 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -436,3 +437,4 @@ extern rset *fsincl;
+@@ -435,3 +436,4 @@ extern rset *fsincl;
  extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;

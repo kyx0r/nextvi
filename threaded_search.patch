@@ -1,8 +1,8 @@
 diff --git a/cbuild.sh b/cbuild.sh
-index 4accee9..7dd27fa 100755
+index a229555..936ae5d 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -40,6 +40,7 @@ CFLAGS="\
+@@ -41,6 +41,7 @@ CFLAGS="\
  -Wno-unused-parameter \
  -Wno-unused-result \
  -Wfatal-errors -std=c99 \
@@ -157,7 +157,7 @@ index 51d54a4..6b6d006 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 580d0bd..26e4b1d 100644
+index 058f00b..c892d5d 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -175,7 +175,7 @@ index 580d0bd..26e4b1d 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index bda3445..2890112 100644
+index d6434ad..74b6d51 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -187,7 +187,7 @@ index bda3445..2890112 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index b3b727f..24e82f5 100644
+index 3d42679..29e4b64 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -198,7 +198,9 @@ int syn_addhl(char *reg, int func, int reload);
