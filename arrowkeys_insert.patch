@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 0004ef9..c7b66cd 100644
+index 6374558..5d7b4ca 100644
 --- a/led.c
 +++ b/led.c
 @@ -288,7 +288,7 @@ static int led_lastword(char *s)
@@ -64,19 +64,19 @@ index 0004ef9..c7b66cd 100644
  	sbufn_done(sb)
  }
 @@ -638,7 +656,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row)
- 			free(ln);
  			break;
  		}
--		led_printparts(ai, pref, uc_lastline(ln), "");
-+		led_printparts(ai, pref, uc_lastline(ln), "", 1);
+ 		sbufn_chr(sb, key)
+-		led_printparts(ai, pref, &sb->s[n], "");
++		led_printparts(ai, pref, &sb->s[n], "", 1);
  		term_chr('\n');
  		if (ai_max && !pref[0]) {	/* updating autoindent */
  			int ai_new = 0; 	/* number of initial spaces in ln */
 diff --git a/vi.c b/vi.c
-index bda3445..66be6ac 100644
+index d6434ad..3c6f7fa 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1023,6 +1023,8 @@ static char *vi_indents(char *ln)
+@@ -1027,6 +1027,8 @@ static char *vi_indents(char *ln)
  	sbufn_done(sb)
  }
  
@@ -85,7 +85,7 @@ index bda3445..66be6ac 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *region, *pref, *post, *_post;
-@@ -1046,6 +1048,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -1050,6 +1052,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
@@ -93,7 +93,7 @@ index bda3445..66be6ac 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1211,8 +1214,10 @@ static void vc_insert(int cmd)
+@@ -1215,8 +1218,10 @@ static void vc_insert(int cmd)
  		xoff = charcount(rep->s, rep->s_n, post, l2 - (post - _post));
  		if (cmdo && !lbuf_len(xb))
  			lbuf_edit(xb, "\n", 0, 0);
@@ -105,7 +105,7 @@ index bda3445..66be6ac 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1752,6 +1757,37 @@ void vi(int init)
+@@ -1756,6 +1761,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -143,7 +143,7 @@ index bda3445..66be6ac 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xoff = lbuf_eol(xb, --xrow);
-@@ -1765,6 +1801,9 @@ void vi(int init)
+@@ -1769,6 +1805,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;
