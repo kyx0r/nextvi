@@ -1316,9 +1316,10 @@ static void vc_status(void)
 	int col = vi_off2col(xb, xrow, xoff);
 	long buf = ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%c %d lines %d%% L%d C%d B%ld",
+		"\"%s\"%c %d line%c %d%% L%d C%d B%ld",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? '*' : ' ', lbuf_len(xb),
+		lbuf_len(xb) == 1 ? ' ' : 's',
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1,
 		buf >= xbufcur || buf < 0 ? tempbufs - ex_buf - 1 : buf);
