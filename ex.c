@@ -410,9 +410,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 		ex_bufpostfix(ex_buf, arg[0]);
 		syn_setft(ex_ft);
 	}
-	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [%c]",
+	snprintf(msg, sizeof(msg), "\"%s\"  %d line%c  [%c]",
 			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
-			fd < 0 || rd ? 'f' : 'r');
+			lbuf_len(xb) == 1 ? ' ' : 's', fd < 0 || rd ? 'f' : 'r');
 	ex_show(msg);
 	return fd < 0 || rd;
 }
@@ -483,8 +483,8 @@ static int ec_read(char *loc, char *cmd, char *arg)
 		close(fd);
 	}
 	xrow = end + lbuf_len(xb) - n - 1;
-	snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [r]",
-			path, lbuf_len(xb) - n);
+	snprintf(msg, sizeof(msg), "\"%s\"  %d line%c  [r]",
+			path, lbuf_len(xb) - n,  lbuf_len(xb) == n ? ' ' : 's');
 	ex_show(msg);
 	return 0;
 }
@@ -531,8 +531,8 @@ static int ec_write(char *loc, char *cmd, char *arg)
 			return 1;
 		}
 		close(fd);
-		snprintf(msg, sizeof(msg), "\"%s\"  %d lines  [w]",
-				path, end - beg);
+		snprintf(msg, sizeof(msg), "\"%s\"  %d line%c  [w]",
+				path, end - beg, end - beg == 1 ? ' ' : 's');
 		ex_show(msg);
 	}
 	if (strcmp(ex_path, path))
