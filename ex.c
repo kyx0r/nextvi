@@ -484,7 +484,7 @@ static int ec_read(char *loc, char *cmd, char *arg)
 	}
 	xrow = end + lbuf_len(xb) - n - 1;
 	snprintf(msg, sizeof(msg), "\"%s\"  %d line%c  [r]",
-			path, lbuf_len(xb) - n,  lbuf_len(xb) == n ? ' ' : 's');
+			path, lbuf_len(xb) - n,  lbuf_len(xb) - n == 1 ? ' ' : 's');
 	ex_show(msg);
 	return 0;
 }
