@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 6d3cad9..a84abfa 100644
+index 595f261..af4b49c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ static int xbufsmax;		/* number of buffers */
@@ -77,7 +77,7 @@ index 6d3cad9..a84abfa 100644
  };
  
 diff --git a/vi.c b/vi.c
-index d6434ad..00e9f99 100644
+index 024601b..7471225 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2061,9 +2061,11 @@ int main(int argc, char *argv[])

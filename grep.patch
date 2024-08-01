@@ -15,7 +15,7 @@ index 0a29620..8656efb 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index 6d3cad9..b28eb8c 100644
+index 595f261..185b8dd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,7 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -28,7 +28,7 @@ index 6d3cad9..b28eb8c 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index d6434ad..2b60000 100644
+index 024601b..6a24521 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -679,12 +679,12 @@ void dir_calc(char *path)

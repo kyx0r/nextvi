@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 6d3cad9..5366150 100644
+index 595f261..1cc6e9a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -68,7 +68,7 @@ index 6374558..db14697 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index d6434ad..74bd608 100644
+index 024601b..e2b20c4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
