@@ -87,8 +87,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         fi
         if [ "$explicit" != "1" ]; then
             if [ -f ./vi ] || [ -f ./nextvi ]; then
-                log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled"
-                exit 0
+                find . -name "*.[ch]" -newer vi | grep -q . || log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled" && exit 0
             fi
         fi
         # Start build process
