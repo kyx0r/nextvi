@@ -61,16 +61,18 @@ build() {
     }
 }
 
+install() {
+    run mkdir -p "$DESTDIR$PREFIX/bin/" &&
+    run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
+    [ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been installed to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
+}
+
 # Argument processing
 while [ $# -gt 0 ] || [ "$1" = "" ]; do
     case "$1" in
     "install")
         shift
-        build && {
-            run mkdir -p "$DESTDIR$PREFIX/bin/" &&
-                run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
-                [ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been install to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
-        } && exit 0 || exit 1
+        [ -x ./vi ] && install && exit 0 || build && install && exit 0
         ;;
     "debug")
         shift
