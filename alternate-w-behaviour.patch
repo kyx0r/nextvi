@@ -1,8 +1,8 @@
 diff --git a/vi.c b/vi.c
-index 024601b..eec1ad1 100644
+index bd558f4..d742229 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1154,6 +1154,10 @@ static int vc_motion(int cmd, int modbit)
+@@ -1153,6 +1153,10 @@ static int vc_motion(int cmd, int modbit)
  	if (r1 == r2 && o1 > o2)
  		swap(&o1, &o2);
  	o1 = ren_noeol(lbuf_get(xb, r1), o1);

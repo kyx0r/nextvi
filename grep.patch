@@ -15,7 +15,7 @@ index 0a29620..8656efb 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index 595f261..185b8dd 100644
+index 05fb5a0..b5da28c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,7 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -28,10 +28,10 @@ index 595f261..185b8dd 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 024601b..6a24521 100644
+index bd558f4..bda9e82 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -679,12 +679,12 @@ void dir_calc(char *path)
+@@ -678,12 +678,12 @@ void dir_calc(char *path)
  	}
  }
  
@@ -46,7 +46,7 @@ index 024601b..6a24521 100644
  	*row = xrow; *off = xoff; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -695,14 +695,14 @@ if (ret && xrow) { \
+@@ -694,14 +694,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -64,7 +64,7 @@ index 024601b..6a24521 100644
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -718,7 +718,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -717,7 +717,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
  		path = lbuf_get(tempbufs[1].lb, fspos);
@@ -73,7 +73,7 @@ index 024601b..6a24521 100644
  	}
  	return 0;
  }
-@@ -821,6 +821,7 @@ static int vi_motion(int *row, int *off)
+@@ -820,6 +820,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -81,7 +81,7 @@ index 024601b..6a24521 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -839,8 +840,44 @@ static int vi_motion(int *row, int *off)
+@@ -838,8 +839,44 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -127,7 +127,7 @@ index 024601b..6a24521 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1539,7 +1576,17 @@ void vi(int init)
+@@ -1538,7 +1575,17 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -146,7 +146,7 @@ index 024601b..6a24521 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1686,6 +1733,10 @@ void vi(int init)
+@@ -1685,6 +1732,10 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index 024601b..6a24521 100644
  				default:
  					vi_back(k);
  				}
-@@ -2049,6 +2100,7 @@ int main(int argc, char *argv[])
+@@ -2048,6 +2099,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
@@ -166,7 +166,7 @@ index 024601b..6a24521 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 3d42679..f0f1ca5 100644
+index 9345662..f26850f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -304,7 +304,7 @@ extern int xbufcur;

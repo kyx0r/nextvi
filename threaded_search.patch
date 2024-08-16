@@ -1,5 +1,5 @@
 diff --git a/cbuild.sh b/cbuild.sh
-index a229555..936ae5d 100755
+index 5dab4de..59a4d95 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -41,6 +41,7 @@ CFLAGS="\
@@ -175,7 +175,7 @@ index 058f00b..c892d5d 100644
  /* the number of utf-8 characters in s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 024601b..6c114f2 100644
+index bd558f4..bef232e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -187,7 +187,7 @@ index 024601b..6c114f2 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 3d42679..29e4b64 100644
+index 9345662..77d91a6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -198,7 +198,9 @@ int syn_addhl(char *reg, int func, int reload);

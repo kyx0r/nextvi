@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 595f261..14b8401 100644
+index 05fb5a0..800d886 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -202,11 +202,13 @@ static char *ex_pathexpand(char *src)
+@@ -203,11 +203,13 @@ static char *ex_pathexpand(char *src)
  /* set the current search keyword rset if the kwd or flags changed */
  void ex_krsset(char *kwd, int dir)
  {
@@ -16,9 +16,9 @@ index 595f261..14b8401 100644
 -		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
 +		xkwdrs = rset_make(1, &pat, xic ? REG_ICASE : 0);
  		xkwdcnt++;
- 		vi_regput('/', kwd, 0);
+ 		vi_regputraw('/', kwd, 0, 0);
  		xkwddir = dir;
-@@ -799,7 +801,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -801,7 +803,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	not = strchr(cmd, '!') || cmd[0] == 'v';
  	pat = re_read(&s);
  	if (pat)
@@ -27,7 +27,7 @@ index 595f261..14b8401 100644
  	free(pat);
  	if (!pat || !rs)
  		return 1;
-@@ -947,9 +949,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -949,9 +951,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -89,7 +89,7 @@ index 058f00b..d09b12b 100644
  {
  	char *r = emalloc(strlen(s) + 1);
 diff --git a/vi.h b/vi.h
-index 3d42679..b04cab1 100644
+index 9345662..1a35540 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,7 +219,7 @@ int uc_wid(int c);
