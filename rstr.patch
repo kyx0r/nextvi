@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 595f261..dde1ba8 100644
+index 05fb5a0..f2825d5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -9,9 +9,9 @@ index 595f261..dde1ba8 100644
 -rset *xkwdrs;			/* the last searched keyword rset */
 +rstr *xkwdrs;			/* the last searched keyword rstr */
  int xkwddir;			/* the last search direction */
+ int ex_printed;			/* ex_print() calls since the last command */
  static int xbufsmax;		/* number of buffers */
- static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -204,9 +204,9 @@ void ex_krsset(char *kwd, int dir)
+@@ -205,9 +205,9 @@ void ex_krsset(char *kwd, int dir)
  {
  	char *reg = vi_regget('/', &(int){0});
  	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
@@ -22,9 +22,9 @@ index 595f261..dde1ba8 100644
 +		rstr_free(xkwdrs);
 +		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
  		xkwdcnt++;
- 		vi_regput('/', kwd, 0);
+ 		vi_regputraw('/', kwd, 0, 0);
  		xkwddir = dir;
-@@ -716,7 +716,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -718,7 +718,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
@@ -33,7 +33,7 @@ index 595f261..dde1ba8 100644
  			if (offs[xgrp - 2] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -791,7 +791,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -793,7 +793,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	int beg, end, not;
  	char *pat, *s = arg;
  	int i;
@@ -42,7 +42,7 @@ index 595f261..dde1ba8 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_region(loc, &beg, &end))
-@@ -799,7 +799,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -801,7 +801,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	not = strchr(cmd, '!') || cmd[0] == 'v';
  	pat = re_read(&s);
  	if (pat)
@@ -51,7 +51,7 @@ index 595f261..dde1ba8 100644
  	free(pat);
  	if (!pat || !rs)
  		return 1;
-@@ -809,7 +809,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -811,7 +811,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	i = beg;
  	while (i < lbuf_len(xb)) {
  		char *ln = lbuf_get(xb, i);
@@ -60,7 +60,7 @@ index 595f261..dde1ba8 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -820,7 +820,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -822,7 +822,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	}
  	for (i = 0; i < lbuf_len(xb); i++)
  		lbuf_globget(xb, i, xgdep);
@@ -69,7 +69,7 @@ index 595f261..dde1ba8 100644
  	xgdep--;
  	return 0;
  }
-@@ -947,9 +947,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -949,9 +949,9 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -235,10 +235,10 @@ index 51d54a4..3e8ea6b 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 024601b..612cc72 100644
+index bd558f4..ddbe4d7 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -614,7 +614,7 @@ static void vi_regprint(void)
+@@ -613,7 +613,7 @@ static void vi_regprint(void)
  	}
  }
  
@@ -247,7 +247,7 @@ index 024601b..612cc72 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -632,7 +632,7 @@ static char *file_calc(char *path)
+@@ -631,7 +631,7 @@ static char *file_calc(char *path)
  		len = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len);
@@ -257,7 +257,7 @@ index 024601b..612cc72 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 3d42679..48ddc3e 100644
+index 9345662..bce6037 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -115,10 +115,21 @@ typedef struct {
@@ -300,10 +300,10 @@ index 3d42679..48ddc3e 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -429,9 +440,9 @@ extern int xgrp;
- extern int xpac;
+@@ -431,9 +442,9 @@ extern int xpac;
  extern int xkwdcnt;
  extern int xkwddir;
+ extern int ex_printed;
 -extern rset *xkwdrs;
 +extern rstr *xkwdrs;
  extern sbuf *xacreg;
