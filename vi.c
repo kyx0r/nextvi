@@ -575,9 +575,9 @@ char *vi_regget(int c, int *ln)
 	return regs[c];
 }
 
-static void vi_regputraw(unsigned char c, const char *s, int ln)
+void vi_regputraw(unsigned char c, const char *s, int ln, int append)
 {
-	char *pre = isupper(c) && regs[tolower(c)] ? regs[tolower(c)] : "";
+	char *pre = append && regs[tolower(c)] ? regs[tolower(c)] : "";
 	char *buf = emalloc(strlen(pre) + strlen(s) + 1);
 	strcpy(buf, pre);
 	strcat(buf, s);
@@ -593,11 +593,11 @@ void vi_regput(int c, const char *s, int ln)
 	if (ln || strchr(s, '\n')) {
 		for (i = 8; i > 0; i--)
 			if ((i_s = vi_regget('0' + i, &i_ln)))
-				vi_regputraw('0' + i + 1, i_s, i_ln);
-		vi_regputraw('1', s, ln);
+				vi_regputraw('0' + i + 1, i_s, i_ln, 0);
+		vi_regputraw('1', s, ln, 0);
 	} else if (vi_regget(c, &i))
-		vi_regputraw('0', vi_regget(c, &i), ln);
-	vi_regputraw(c, s, ln);
+		vi_regputraw('0', vi_regget(c, &i), ln, 0);
+	vi_regputraw(c, s, ln, isupper(c));
 }
 
 static void vi_regprint(void)

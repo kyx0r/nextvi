@@ -209,7 +209,7 @@ void ex_krsset(char *kwd, int dir)
 		rset_free(xkwdrs);
 		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
 		xkwdcnt++;
-		vi_regput('/', kwd, 0);
+		vi_regputraw('/', kwd, 0, 0);
 		xkwddir = dir;
 	}
 	if (dir == -2 || dir == 2)
@@ -603,19 +603,14 @@ static int ec_print(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static void ex_yank(int reg, int beg, int end)
-{
-	char *buf = lbuf_cp(xb, beg, end);
-	vi_regput(reg, buf, 1);
-	free(buf);
-}
-
 static int ec_delete(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
-	ex_yank((unsigned char) arg[0], beg, end);
+	char *buf = lbuf_cp(xb, beg, end);
+	vi_regput((unsigned char) arg[0], buf, 1);
+	free(buf);
 	lbuf_edit(xb, NULL, beg, end);
 	xrow = beg;
 	return 0;
@@ -626,7 +621,9 @@ static int ec_yank(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
-	ex_yank((unsigned char) arg[0], beg, end);
+	char *buf = lbuf_cp(xb, beg, end);
+	vi_regputraw(arg[0], buf, 1, isupper((unsigned char) arg[0]) || arg[1]);
+	free(buf);
 	return 0;
 }
 
