@@ -29,6 +29,7 @@ static struct buf *ex_tpbuf;	/* temp prev buffer */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 int xkwddir;			/* the last search direction */
+int ex_printed;			/* ex_print() calls since the last command */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
 static char xrep[EXLEN];	/* the last replacement */
@@ -419,29 +420,37 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 
 static int ec_editapprox(char *loc, char *cmd, char *arg)
 {
-	int len, i, inst;
-	char *path, *arg1;
-	arg1 = arg+dstrlen(arg, ' ');
-	inst = atoi(arg1);
+	sbuf *sb; sbufn_make(sb, 128)
+	char ln[EXLEN];
+	char *path, *arg1 = arg+dstrlen(arg, ' ');
+	int c = 0, i, inst = *arg1 ? atoi(arg1) : -1;
 	*arg1 = '\0';
 	for (int pos = 0; pos < lbuf_len(tempbufs[1].lb); pos++) {
 		path = lbuf_get(tempbufs[1].lb, pos);
-		len = lbuf_slen(path);
-		for (i = len; i > 0 && path[i] != '/'; i--);
+		for (i = lbuf_slen(path); i > 0 && path[i] != '/'; i--);
 		if (!i)
 			continue;
-		path[len] = '\0';
 		if (strstr(&path[i+1], arg)) {
-			if (!inst) {
-				ec_edit(loc, cmd, path);
-				path[len] = '\n';
-				break;
-			}
-			inst--;
+			sbufn_str(sb, path)
+			snprintf(ln, LEN(ln), "%d %s", c++, path);
+			ex_print(ln);
 		}
-		path[len] = '\n';
 	}
-	return 1;
+	if (inst < 0 && c > 1)
+		inst = term_read() - '0';
+	path = sb->s-1;
+	for (i = 0; i < c; i++) {
+		arg = path;
+		path = strchr(path+1, '\n');
+		*path = '\0';
+		if (i == inst || c == 1) {
+			ec_edit(loc, cmd, arg+1);
+			break;
+		}
+	}
+	ex_printed = 0;
+	sbuf_free(sb)
+	return 0;
 }
 
 static int ec_setpath(char *loc, char *cmd, char *arg)
