@@ -420,7 +420,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 
 static int ec_editapprox(char *loc, char *cmd, char *arg)
 {
-	sbuf *sb; sbufn_make(sb, 128)
+	sbuf *sb; sbuf_make(sb, 128)
 	char ln[EXLEN];
 	char *path, *arg1 = arg+dstrlen(arg, ' ');
 	int c = 0, i, inst = *arg1 ? atoi(arg1) : -1;
@@ -431,22 +431,18 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 		if (!i)
 			continue;
 		if (strstr(&path[i+1], arg)) {
-			sbufn_str(sb, path)
+			sbuf_mem(sb, &path, (int)sizeof(path))
 			snprintf(ln, LEN(ln), "%d %s", c++, path);
 			ex_print(ln);
 		}
 	}
 	if (inst < 0 && c > 1)
 		inst = term_read() - '0';
-	path = sb->s-1;
-	for (i = 0; i < c; i++) {
-		arg = path;
-		path = strchr(path+1, '\n');
-		*path = '\0';
-		if (i == inst || c == 1) {
-			ec_edit(loc, cmd, arg+1);
-			break;
-		}
+	if ((inst >= 0 && inst < c) || c == 1) {
+		path = *(char**)&sb->s[c == 1 ? 0 : inst * sizeof(path)];
+		path[lbuf_slen(path)] = '\0';
+		ec_edit(loc, cmd, path);
+		path[lbuf_slen(path)] = '\n';
 	}
 	ex_printed = 0;
 	sbuf_free(sb)
