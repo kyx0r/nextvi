@@ -52,7 +52,6 @@ static char vi_charlast[8];		/* the last character searched via f, t, F, or T */
 static int vi_charcmd;			/* the character finding command */
 static int vi_ybuf;			/* current yank buffer */
 static int vi_col;			/* the column requested by | command */
-static int vi_printed;			/* ex_print() calls since the last command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
@@ -263,14 +262,14 @@ static char *vi_char(void)
 
 static void vi_wait(void)
 {
-	if (vi_printed > 1) {
+	if (ex_printed > 1) {
 		strcpy(vi_msg, "[any key to continue] ");
 		vi_drawmsg();
 		vi_char();
 		vi_msg[0] = '\0';
 		vi_mod |= 1;
 	}
-	vi_printed = 0;
+	ex_printed = 0;
 }
 
 static char *vi_prompt(char *msg, char *insert, int *kmap)
@@ -339,18 +338,18 @@ void ex_print(char *line)
 {
 	syn_blockhl = 0;
 	if (!(xvis & 4)) {
-		if (vi_printed == 1 || !line)
+		if (ex_printed == 1 || !line)
 			term_chr('\n');
 		if (line) {
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 			syn_setft("/-");
 			led_reprint(line, -1);
 			syn_setft(ex_ft);
-			if (vi_printed > 0)
+			if (ex_printed > 0)
 				term_chr('\n');
-			vi_printed++;
+			ex_printed++;
 		} else
-			vi_printed = 2;
+			ex_printed = 2;
 	} else if (line)
 		ex_show(line);
 }
@@ -576,9 +575,9 @@ char *vi_regget(int c, int *ln)
 	return regs[c];
 }
 
-static void vi_regputraw(unsigned char c, const char *s, int ln)
+void vi_regputraw(unsigned char c, const char *s, int ln, int append)
 {
-	char *pre = isupper(c) && regs[tolower(c)] ? regs[tolower(c)] : "";
+	char *pre = append && regs[tolower(c)] ? regs[tolower(c)] : "";
 	char *buf = emalloc(strlen(pre) + strlen(s) + 1);
 	strcpy(buf, pre);
 	strcat(buf, s);
@@ -594,11 +593,11 @@ void vi_regput(int c, const char *s, int ln)
 	if (ln || strchr(s, '\n')) {
 		for (i = 8; i > 0; i--)
 			if ((i_s = vi_regget('0' + i, &i_ln)))
-				vi_regputraw('0' + i + 1, i_s, i_ln);
-		vi_regputraw('1', s, ln);
+				vi_regputraw('0' + i + 1, i_s, i_ln, 0);
+		vi_regputraw('1', s, ln, 0);
 	} else if (vi_regget(c, &i))
-		vi_regputraw('0', vi_regget(c, &i), ln);
-	vi_regputraw(c, s, ln);
+		vi_regputraw('0', vi_regget(c, &i), ln, 0);
+	vi_regputraw(c, s, ln, isupper(c));
 }
 
 static void vi_regprint(void)
@@ -1557,7 +1556,7 @@ void vi(int init)
 					vc_status();
 				}
 				vi_mod |= 1;
-				vi_printed = 0;
+				ex_printed = 0;
 				break;
 			case 'u':
 				undo:

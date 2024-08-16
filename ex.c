@@ -29,6 +29,7 @@ static struct buf *ex_tpbuf;	/* temp prev buffer */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 int xkwddir;			/* the last search direction */
+int ex_printed;			/* ex_print() calls since the last command */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
 static char xrep[EXLEN];	/* the last replacement */
@@ -208,7 +209,7 @@ void ex_krsset(char *kwd, int dir)
 		rset_free(xkwdrs);
 		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
 		xkwdcnt++;
-		vi_regput('/', kwd, 0);
+		vi_regputraw('/', kwd, 0, 0);
 		xkwddir = dir;
 	}
 	if (dir == -2 || dir == 2)
@@ -419,29 +420,33 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 
 static int ec_editapprox(char *loc, char *cmd, char *arg)
 {
-	int len, i, inst;
-	char *path, *arg1;
-	arg1 = arg+dstrlen(arg, ' ');
-	inst = atoi(arg1);
+	sbuf *sb; sbuf_make(sb, 128)
+	char ln[EXLEN];
+	char *path, *arg1 = arg+dstrlen(arg, ' ');
+	int c = 0, i, inst = *arg1 ? atoi(arg1) : -1;
 	*arg1 = '\0';
 	for (int pos = 0; pos < lbuf_len(tempbufs[1].lb); pos++) {
 		path = lbuf_get(tempbufs[1].lb, pos);
-		len = lbuf_slen(path);
-		for (i = len; i > 0 && path[i] != '/'; i--);
+		for (i = lbuf_slen(path); i > 0 && path[i] != '/'; i--);
 		if (!i)
 			continue;
-		path[len] = '\0';
 		if (strstr(&path[i+1], arg)) {
-			if (!inst) {
-				ec_edit(loc, cmd, path);
-				path[len] = '\n';
-				break;
-			}
-			inst--;
+			sbuf_mem(sb, &path, (int)sizeof(path))
+			snprintf(ln, LEN(ln), "%d %s", c++, path);
+			ex_print(ln);
 		}
-		path[len] = '\n';
 	}
-	return 1;
+	if (inst < 0 && c > 1)
+		inst = term_read() - '0';
+	if ((inst >= 0 && inst < c) || c == 1) {
+		path = *(char**)&sb->s[c == 1 ? 0 : inst * sizeof(path)];
+		path[lbuf_slen(path)] = '\0';
+		ec_edit(loc, cmd, path);
+		path[lbuf_slen(path)] = '\n';
+	}
+	ex_printed = 0;
+	sbuf_free(sb)
+	return 0;
 }
 
 static int ec_setpath(char *loc, char *cmd, char *arg)
@@ -598,19 +603,14 @@ static int ec_print(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static void ex_yank(int reg, int beg, int end)
-{
-	char *buf = lbuf_cp(xb, beg, end);
-	vi_regput(reg, buf, 1);
-	free(buf);
-}
-
 static int ec_delete(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
-	ex_yank((unsigned char) arg[0], beg, end);
+	char *buf = lbuf_cp(xb, beg, end);
+	vi_regput((unsigned char) arg[0], buf, 1);
+	free(buf);
 	lbuf_edit(xb, NULL, beg, end);
 	xrow = beg;
 	return 0;
@@ -621,7 +621,9 @@ static int ec_yank(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
-	ex_yank((unsigned char) arg[0], beg, end);
+	char *buf = lbuf_cp(xb, beg, end);
+	vi_regputraw(arg[0], buf, 1, isupper((unsigned char) arg[0]) || arg[1]);
+	free(buf);
 	return 0;
 }
 

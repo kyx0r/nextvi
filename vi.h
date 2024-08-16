@@ -329,7 +329,7 @@ void temp_done(int i);
 void temp_pos(int i, int row, int off, int top);
 void ex(void);
 int ex_exec(const char *ln);
-#define ex_command(ln) { ex_exec(ln); vi_regput(':', ln, 0); }
+#define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 char *ex_read(char *msg);
 void ex_print(char *line);
 void ex_show(char *msg);
@@ -400,7 +400,8 @@ char *conf_digraph(int c1, int c2);
 
 /* vi.c */
 char *vi_regget(int c, int *lnmode);
-void vi_regput(int c, const char *s, int lnmode);
+void vi_regputraw(unsigned char c, const char *s, int ln, int append);
+void vi_regput(int c, const char *s, int ln);
 /* file system */
 void dir_calc(char *path);
 /* global variables */
@@ -429,6 +430,7 @@ extern int xgrp;
 extern int xpac;
 extern int xkwdcnt;
 extern int xkwddir;
+extern int ex_printed;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;
