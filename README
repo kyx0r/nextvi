@@ -103,10 +103,11 @@ vi_arg1 == 1,3,5,7,9 switches to the mark.
 0 (default) is a special mark created by fssearch used by ^p as a return
 point for if ^p can't find any more matches.
 11. Added ex command "ea" which opens file using filename substring.
-Setting an extra parameter in form of a number will tell how many matches with
-similar filename to skip.
 For example file might be named "./path/bla/bla/file123.c" but you can open it
-just by "ea fi" if this is a uniquely matched filename.
+just by "ea fi". If the substring matches more than 1 filename, a prompt will
+be shown. Submit using numbers 0-9 (higher ascii values work too (^c to cancel)).
+Passing an extra arg to :ea in form of a number will bypass the prompt and
+open the corresponding file.
 12. Added ex command "fd" to set and recalculate the directory listing for
 fssearch or "ea" ex command. No argument implies current directory.
 The "fp" command sets the path without recalculating.
