@@ -575,8 +575,12 @@ static char *led_line(char *pref, char *post, char *ai,
 			term_clean();
 			continue;
 		case TK_CTL('o'):;
-			preserve(int, xvis, 0)
-			term_exec(":", 1, /*nop*/, /*nop*/)
+			preserve(int, xvis, xvis & 4 ? 0 : 4)
+			if (xvis & 4) {
+				ex();
+				xquit = 0;
+			} else
+				term_exec(":", 1, /*nop*/, /*nop*/)
 			restore(xvis)
 			continue;
 		default:

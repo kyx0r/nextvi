@@ -376,14 +376,8 @@ macro queue and run independently. In a way, macro executed by tp exercises
 the same causality as running C code directly.
 70. Added key to list through the buffers. keybind: ^n
 vi_arg1 changes the direction of ^n.
-71. In insert mode keybind ^o allows access to a secondary ex prompt or new
-vi instance so that it becomes possible to switch to vi from ex or postpone
-some operation, do something else and come back later.  This feature is
-implemented using functionality provided by 69. and exists to prove and
-demonstrate that vi is to some extent REENTRANT as in single threaded
-recursion case, where operations can be safely executed in a separate instance.
-Still, a great amount of care and understanding is needed when making such
-complicated macros.
+71. In insert/(ex prompt) mode keybind ^o facilitates a switch between ex and vi
+modes.
 72. Added keybinds ^\ and ^] to control the default register for pasting
 (^p) in insert mode. ^\ selects any register or resets to default yank register
 if pressed twice.
