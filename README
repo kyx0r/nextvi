@@ -200,11 +200,11 @@ If the regex rule allows inclusion of nonalphanumeric or punctuation characters
 you won't be able to retrieve the string like it works with words by default.
 Automatically determining the position from which completion starts
 inside insert sbuf is ambiguous. More fine tuned control is needed and
-can be achieved using new keybind ^z in insert. Use ^z before you type out
+can be achieved using new keybind ^x in insert. Use ^x before you type out
 search term, this will set start position for completion, such
-that the options can be looped over inplace. ^z is a toggle, to disable
+that the options can be looped over inplace. ^x is a toggle, to disable
 it (without exiting insert) press twice in same place. When ^z is set
-^u keybind will delete everything until ^z mark first, otherwise ^u
+^u keybind will delete everything until ^x mark first, otherwise ^u
 operates normally (deletes everything).
 Autocomplete db is persistent throughout all buffers and it also has data
 duplication and redundancy checking such that same files can be indexed many

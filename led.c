@@ -480,6 +480,9 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			goto redo_suggest;
 		case TK_CTL('z'):
+			term_suspend();
+			continue;
+		case TK_CTL('x'):
 			sug_pt = sug_pt == len ? -1 : len;
 			char buf[100];
 			itoa(sug_pt, buf);
