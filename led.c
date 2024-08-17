@@ -586,12 +586,13 @@ static char *led_line(char *pref, char *post, char *ai,
 			term_clean();
 			continue;
 		case TK_CTL('o'):;
-			preserve(int, xvis, xvis & 4 ? 0 : 4)
-			if (xvis & 4) {
+			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
+			syn_setft(ex_ft);
+			if (xvis & 4)
 				ex();
-				xquit = 0;
-			} else
-				term_exec(":", 1, /*nop*/, /*nop*/)
+			else
+				vi(1);
+			xquit = 0;
 			restore(xvis)
 			continue;
 		default:
