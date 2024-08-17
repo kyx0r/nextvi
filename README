@@ -508,8 +508,10 @@ In vi uppercase registers append to the lowercase register instead of
 overwriting the register completely. This is very useful, for example,
 use global and yank ex commands together:
 :g/searchterm/ya A
-Now we can use "ap and paste all the lines matched by the regex. Depending
-on the usecase simply :g/searchterm/ya or :g/searchterm/p may also be enough.
+Now we can use "ap or :pu a and paste all the lines matched by the regex.
+The ex command "ya" can also be used to append to any of the non-alphabetical
+registers by adding any extra character to the command.
+:ya 1x
 
 PATCHES
 -------
