@@ -370,6 +370,15 @@ static void led_info(char *str, int ai_max)
 		term_pos(xrow - xtop, 0);
 }
 
+static void led_redraw(int r, int orow)
+{
+	for (; r < xrows; r++) {
+		char *cs = lbuf_get(xb, (r-(xrow-orow))+xtop);
+		led_print(cs ? cs : "~", r);
+	}
+	term_pos(xrow - xtop, 0);
+}
+
 /* read a line from the terminal */
 static char *led_line(char *pref, char *post, char *ai,
 		int ai_max, int *key, int *kmap,
@@ -480,7 +489,13 @@ static char *led_line(char *pref, char *post, char *ai,
 			}
 			goto redo_suggest;
 		case TK_CTL('z'):
-			term_suspend();
+			if (ai_max < 0)
+				term_suspend();
+			else {
+				term_pos(xrow - xtop, 0);
+				term_suspend();
+				led_redraw(0, orow);
+			}
 			continue;
 		case TK_CTL('x'):
 			sug_pt = sug_pt == len ? -1 : len;
@@ -537,11 +552,7 @@ static char *led_line(char *pref, char *post, char *ai,
 					syn_setft(ex_ft);
 					r++;
 				}
-				for (; r < xrows; r++) {
-					cs = lbuf_get(xb, (r-(xrow-orow))+xtop);
-					led_print(cs ? cs : "~", r);
-				}
-				term_pos(xrow - xtop, 0);
+				led_redraw(r, orow);
 				continue;
 			}
 			temp_pos(0, -1, 0, 0);
