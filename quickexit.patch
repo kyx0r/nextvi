@@ -19,11 +19,11 @@ index 05fb5a0..0915cb8 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 6374558..db14697 100644
+index b6750fa..2106857 100644
 --- a/led.c
 +++ b/led.c
-@@ -370,6 +370,14 @@ static void led_info(char *str, int ai_max)
- 		term_pos(xrow - xtop, 0);
+@@ -384,6 +384,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
+ 	term_pos(xrow - xtop, 0);
  }
  
 +static int gettime_ms(void)
@@ -35,18 +35,18 @@ index 6374558..db14697 100644
 +}
 +
  /* read a line from the terminal */
- static char *led_line(char *pref, char *post, char *ai,
- 		int ai_max, int *key, int *kmap,
-@@ -379,6 +387,7 @@ static char *led_line(char *pref, char *post, char *ai,
- 	int ai_len = strlen(ai), len, p_reg = 0;
+ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
+ 		int ai_max, int *key, int *kmap, int orow, int lsh)
+@@ -391,6 +399,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
+ 	int len, p_reg = 0;
  	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
 +	int quickexit = 0;
- 	sbufn_make(sb, xcols)
- 	if (insert)
- 		sbufn_str(sb, insert)
-@@ -576,7 +585,21 @@ static char *led_line(char *pref, char *post, char *ai,
- 			term_exec(":", 1, /*nop*/, /*nop*/)
+ 	if (!post)
+ 		post = "";
+ 	while (1) {
+@@ -593,7 +602,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
+ 			xquit = 0;
  			restore(xvis)
  			continue;
 +		case 'j':
@@ -68,7 +68,7 @@ index 6374558..db14697 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index bd558f4..8013277 100644
+index ae05b0c..174fd96 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,7 +80,7 @@ index bd558f4..8013277 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 9345662..b05b5d4 100644
+index 4b8435f..6ba4330 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -425,6 +425,7 @@ extern int xhlr;
