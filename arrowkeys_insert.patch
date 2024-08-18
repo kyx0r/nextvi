@@ -1,42 +1,41 @@
 diff --git a/led.c b/led.c
-index 6374558..5d7b4ca 100644
+index b6750fa..a30cd92 100644
 --- a/led.c
 +++ b/led.c
 @@ -288,7 +288,7 @@ static int led_lastword(char *s)
  	return r - s;
  }
  
--static void led_printparts(char *ai, char *pref, char *main, char *post)
-+static void led_printparts(char *ai, char *pref, char *main, char *post, int print)
+-static void led_printparts(sbuf *sb, int ps, char *post)
++static void led_printparts(sbuf *sb, int ps, char *post, int print)
  {
  	if (!xled)
  		return;
-@@ -309,8 +309,10 @@ static void led_printparts(char *ai, char *pref, char *main, char *post)
+@@ -304,8 +304,10 @@ static void led_printparts(sbuf *sb, int ps, char *post)
  		xleft = pos - xcols / 2;
  	if (pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
 -	syn_blockhl = 0;
--	led_print(ln->s, -1);
+-	led_print(sb->s+ps, -1);
 +	if (print) {
 +		syn_blockhl = 0;
-+		led_print(ln->s, -1);
++		led_print(sb->s+ps, -1);
 +	}
  	/* cursor position for inserting the next character */
- 	if (*pref || *main || *ai) {
+ 	if (next) {
  		if (off - 2 >= 0)
-@@ -387,7 +389,8 @@ static char *led_line(char *pref, char *post, char *ai,
+@@ -394,7 +396,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
  	if (!post)
  		post = "";
  	while (1) {
--		led_printparts(ai, pref, sb->s, post);
-+		led_printparts(ai, pref, sb->s, post, !memchr("ABCD", vi_insmov, 4));
-+		vi_insmov = -1;
+-		led_printparts(sb, ps, post);
++		led_printparts(sb, ps, post, !memchr("ABCD", vi_insmov, 4));
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -571,6 +574,20 @@ static char *led_line(char *pref, char *post, char *ai,
- 		case TK_CTL('l'):
- 			term_clean();
+@@ -583,6 +585,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
+ 			else
+ 				led_redraw(sb->s, 0, orow, -lsh);
  			continue;
 +		case '\033':;	/* Arrow keys */
 +			char cbuf[1];
@@ -53,27 +52,27 @@ index 6374558..5d7b4ca 100644
 +			fcntl(STDIN_FILENO, F_SETFL, fl);
 +			goto leave;
  		case TK_CTL('o'):;
- 			preserve(int, xvis, 0)
- 			term_exec(":", 1, /*nop*/, /*nop*/)
-@@ -588,6 +605,7 @@ static char *led_line(char *pref, char *post, char *ai,
+ 			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
+ 			syn_setft(ex_ft);
+@@ -605,6 +621,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
  	}
  leave:
  	vi_insmov = c;
 +_leave:
  	*key = c;
- 	sbufn_done(sb)
  }
-@@ -638,7 +656,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row)
- 			break;
+ 
+@@ -655,7 +672,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
+ 			return sb;
  		}
  		sbufn_chr(sb, key)
--		led_printparts(ai, pref, &sb->s[n], "");
-+		led_printparts(ai, pref, &sb->s[n], "", 1);
+-		led_printparts(sb, ps, "");
++		led_printparts(sb, ps, "", 1);
  		term_chr('\n');
- 		if (ai_max && !pref[0]) {	/* updating autoindent */
- 			int ai_new = 0; 	/* number of initial spaces in ln */
+ 		ps = sb->s_n;
+ 		if (ai_max) {			/* updating autoindent */
 diff --git a/vi.c b/vi.c
-index bd558f4..b02aee9 100644
+index ae05b0c..26f8ddc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1026,6 +1026,8 @@ static char *vi_indents(char *ln)
