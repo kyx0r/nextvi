@@ -76,7 +76,7 @@ index 8cd63f7..e4e1036 100644
  }
  
 diff --git a/led.c b/led.c
-index 6374558..0793577 100644
+index b6750fa..3e06b7a 100644
 --- a/led.c
 +++ b/led.c
 @@ -44,7 +44,7 @@ static void file_index(struct lbuf *buf)
@@ -116,23 +116,23 @@ index 6374558..0793577 100644
  }
  
  static int led_lastchar(char *s)
-@@ -621,7 +624,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row)
+@@ -639,7 +642,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
  {
- 	sbuf *sb; sbuf_make(sb, 256)
+ 	sbuf *sb; sbufn_make(sb, xcols)
  	int ai_max = 128 * xai;
 -	char ai[ai_max+1];
 +	char *ai = emalloc(ai_max+1);
- 	int n = 0, key, orow = row;
+ 	int n = 0, ps = 0, key, orow = row;
  	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
  		ai[n++] = *pref++;
-@@ -659,6 +662,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row)
- 		xrow++;
- 	}
- 	sbufn_str(sb, *post)
-+	free(ai);
- 	return sb;
- }
- 
+@@ -652,6 +655,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
+ 		led_line(sb, ps, n, *post, ai, ai_max, &key, kmap, orow, lsh);
+ 		if (key != '\n') {
+ 			sbufn_str(sb, *post)
++			free(ai);
+ 			return sb;
+ 		}
+ 		sbufn_chr(sb, key)
 diff --git a/regex.c b/regex.c
 index 51d54a4..5722fcc 100644
 --- a/regex.c
@@ -227,7 +227,7 @@ index f3b49de..330b06a 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index bd558f4..22aea31 100644
+index ae05b0c..d834d61 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -152,7 +152,7 @@ static void vi_drawrow(int row)
