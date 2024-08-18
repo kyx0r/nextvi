@@ -28,7 +28,7 @@ index 05fb5a0..b5da28c 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index bd558f4..bda9e82 100644
+index ae05b0c..aa5add9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -678,12 +678,12 @@ void dir_calc(char *path)
@@ -166,7 +166,7 @@ index bd558f4..bda9e82 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 9345662..f26850f 100644
+index 4b8435f..544757c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -304,7 +304,7 @@ extern int xbufcur;
