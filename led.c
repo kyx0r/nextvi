@@ -365,15 +365,16 @@ static void led_info(char *str, int ai_max)
 		term_pos(xrow - xtop, 0);
 }
 
-static void led_redraw(sbuf *sb, int r, int orow, int lsh)
+static void led_redraw(char *cs, int r, int orow, int lsh)
 {
-	char *cs = sb->s;
 	for (int nl = 0; r < xrows; r++) {
 		if (r >= orow-xtop && r < xrow-xtop) {
+			sbuf *cb; sbuf_make(cb, 128)
 			nl = dstrlen(cs, '\n');
-			cs[nl] = '\0';
-			led_print(cs, r);
-			cs[nl] = '\n';
+			sbuf_mem(cb, cs, nl+1)
+			sbuf_mem(cb, "\0\0\0\0", 4)
+			led_reprint(cb->s, r);
+			sbuf_free(cb)
 			cs += nl+1;
 			continue;
 		}
@@ -488,7 +489,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
 			else {
 				term_pos(xrow - xtop, 0);
 				term_suspend();
-				led_redraw(sb, 0, orow, -lsh);
+				led_redraw(sb->s, 0, orow, -lsh);
 			}
 			continue;
 		case TK_CTL('x'):
@@ -546,7 +547,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
 					syn_setft(ex_ft);
 					r++;
 				}
-				led_redraw(sb, r, orow, lsh);
+				led_redraw(sb->s, r, orow, lsh);
 				continue;
 			}
 			temp_pos(0, -1, 0, 0);
@@ -577,7 +578,10 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
 				goto cur_histstr;
 			break;
 		case TK_CTL('l'):
-			term_clean();
+			if (ai_max < 0)
+				term_clean();
+			else
+				led_redraw(sb->s, 0, orow, -lsh);
 			continue;
 		case TK_CTL('o'):;
 			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
