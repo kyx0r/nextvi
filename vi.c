@@ -1041,7 +1041,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
-	sbuf *rep = led_input(pref, &post, &xkmap, r1 - (r1 - r2));
+	sbuf *rep = led_input(pref, &post, &xkmap, r1 - (r1 - r2), 0);
 	xoff = charcount(rep->s, rep->s_n, post, l2 - (post - _post));
 	int tlen = lnmode || !ln ? -1 : lbuf_slen(ln)+1;
 	if (rep->s_n != tlen || memcmp(&ln[l1], &rep->s[l1], tlen - l2 - l1))
@@ -1209,7 +1209,7 @@ static void vc_insert(int cmd)
 	post = _post = ln && !cmdo ? uc_subl(ln, xoff, -1, &l2) : uc_dup("\n");
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
-	sbuf *rep = led_input(pref, &post, &xkmap, row - cmdo);
+	sbuf *rep = led_input(pref, &post, &xkmap, row, cmdo);
 	if (cmdo || post != _post || rep->s_n != (!ln ? -1 : lbuf_slen(ln)+1)) {
 		xoff = charcount(rep->s, rep->s_n, post, l2 - (post - _post));
 		if (cmdo && !lbuf_len(xb))
