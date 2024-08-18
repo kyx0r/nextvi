@@ -33,7 +33,7 @@ static int search(const char *pattern, int l)
 	}
 	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
 	sbuf_free(sylsb)
-	sbuf_mem(suggestsb, "\0\0\0\0", 4)
+	sbuf_set(suggestsb, '\0', 4)
 	suggestsb->s_n -= 4;
 	return suggestsb->s_n;
 }
@@ -144,7 +144,7 @@ static char *led_bounds(int *off, char **chrs, int cterm)
 		} else
 			i++;
 	}
-	sbuf_mem(out, "\0\0\0", 3)
+	sbuf_set(out, '\0', 3)
 	sbufn_done(out)
 }
 
@@ -295,7 +295,7 @@ static void led_printparts(sbuf *sb, int ps, char *post)
 	int off, pos, psn = sb->s_n;
 	int idir = 0, next = sb->s[ps];
 	sbuf_str(sb, post)
-	sbuf_mem(sb, "\0\0\0\0", 4)
+	sbuf_set(sb, '\0', 4)
 	rstate->ren_laststr = NULL;
 	ren_position(sb->s+ps, &(char**){NULL}, &off);
 	off -= uc_slen(post);
@@ -372,7 +372,7 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 			sbuf *cb; sbuf_make(cb, 128)
 			nl = dstrlen(cs, '\n');
 			sbuf_mem(cb, cs, nl+1)
-			sbuf_mem(cb, "\0\0\0\0", 4)
+			sbuf_set(cb, '\0', 4)
 			led_reprint(cb->s, r);
 			sbuf_free(cb)
 			cs += nl+1;
@@ -649,8 +649,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
 		if (pref[0])
 			sbufn_str(sb, pref)
 		n = sb->s_n;
-		led_line(sb, ps, sb->s_n, *post, ai,
-				ai_max, &key, kmap, orow, lsh);
+		led_line(sb, ps, n, *post, ai, ai_max, &key, kmap, orow, lsh);
 		if (key != '\n') {
 			sbufn_str(sb, *post)
 			return sb;
