@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 6374558..ea5d087 100644
+index b6750fa..cd51da2 100644
 --- a/led.c
 +++ b/led.c
 @@ -130,24 +130,6 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
@@ -20,7 +20,7 @@ index 6374558..ea5d087 100644
 -		} else
 -			i++;
 -	}
--	sbuf_mem(out, "\0\0\0", 3)
+-	sbuf_set(out, '\0', 3)
 -	sbufn_done(out)
 -}
 -
