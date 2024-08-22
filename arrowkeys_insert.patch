@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index b6750fa..f7bbc49 100644
+index 41cff99..745f355 100644
 --- a/led.c
 +++ b/led.c
 @@ -288,7 +288,7 @@ static int led_lastword(char *s)
@@ -34,7 +34,7 @@ index b6750fa..f7bbc49 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -583,6 +586,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
+@@ -579,6 +582,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
  			else
  				led_redraw(sb->s, 0, orow, -lsh);
  			continue;
@@ -55,7 +55,7 @@ index b6750fa..f7bbc49 100644
  		case TK_CTL('o'):;
  			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
  			syn_setft(ex_ft);
-@@ -605,6 +622,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
+@@ -601,6 +618,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index b6750fa..f7bbc49 100644
  	*key = c;
  }
  
-@@ -655,7 +673,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
+@@ -651,7 +669,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)
