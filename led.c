@@ -484,13 +484,9 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
 			}
 			goto redo_suggest;
 		case TK_CTL('z'):
-			if (ai_max < 0)
-				term_suspend();
-			else {
-				term_pos(xrow - xtop, 0);
-				term_suspend();
+			term_suspend();
+			if (ai_max >= 0)
 				led_redraw(sb->s, 0, orow, -lsh);
-			}
 			continue;
 		case TK_CTL('x'):
 			sug_pt = sug_pt == len ? -1 : len;
