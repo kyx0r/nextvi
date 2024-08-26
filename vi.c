@@ -1432,7 +1432,7 @@ void vi(int init)
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
 		if (*vi_word || vi_lnnum)
-			vi_mod |= 4;
+			vi_mod = 5;
 		if (vi_lnnum == 1)
 			vi_lnnum = 0;
 		if (vi_msg[0]) {
@@ -1479,26 +1479,22 @@ void vi(int init)
 			case TK_CTL('b'):
 				vi_scrollbackward(MAX(1, vi_arg1) * (xrows - 1));
 				xoff = lbuf_indents(xb, xrow);
-				vi_mod |= 1;
+				vi_mod |= 8;
 				break;
 			case TK_CTL('f'):
 				vi_scrollforward(MAX(1, vi_arg1) * (xrows - 1));
 				xoff = lbuf_indents(xb, xrow);
-				vi_mod |= 1;
+				vi_mod |= 8;
 				break;
 			case TK_CTL('e'):
 				vi_scrolley = vi_arg1 ? vi_arg1 : vi_scrolley;
 				vi_scrollforward(MAX(1, vi_scrolley));
 				xoff = vi_col2off(xb, xrow, vi_col);
-				if (vi_scrolley > 1 || vi_mod)
-					vi_mod |= 4;
 				break;
 			case TK_CTL('y'):
 				vi_scrolley = vi_arg1 ? vi_arg1 : vi_scrolley;
 				vi_scrollbackward(MAX(1, vi_scrolley));
 				xoff = vi_col2off(xb, xrow, vi_col);
-				if (vi_scrolley > 1 || vi_mod)
-					vi_mod |= 4;
 				break;
 			case TK_CTL('u'):
 				if (xrow == 0)
@@ -1510,7 +1506,7 @@ void vi(int init)
 				if (xtop > 0)
 					xtop = MAX(0, xtop - n);
 				xoff = lbuf_indents(xb, xrow);
-				vi_mod |= 1;
+				vi_mod |= 8;
 				break;
 			case TK_CTL('d'):
 				if (xrow == lbuf_len(xb) - 1)
@@ -1522,7 +1518,7 @@ void vi(int init)
 				if (xtop < lbuf_len(xb) - xrows)
 					xtop = MIN(lbuf_len(xb) - xrows, xtop + n);
 				xoff = lbuf_indents(xb, xrow);
-				vi_mod |= 1;
+				vi_mod |= 8;
 				break;
 			case TK_CTL('z'):
 				term_pos(xrows, 0);
@@ -1924,7 +1920,7 @@ void vi(int init)
 			xtop = xtop + xrows + xrows / 2 <= xrow ?
 					xrow - xrows / 2 : xrow - xrows + 1;
 		xoff = ren_noeol(lbuf_get(xb, xrow), xoff);
-		if (vi_mod && vi_mod != 4)
+		if (vi_mod && vi_mod != 5)
 			vi_col = vi_off2col(xb, xrow, xoff);
 		if (vi_col >= xleft + xcols)
 			xleft = vi_col - xcols / 2;
@@ -1993,7 +1989,7 @@ void vi(int init)
 		}
 		syn_reloadft();
 		term_record = 1;
-		if (vi_mod & 1 || vi_mod & 4 || xleft != oleft)
+		if (vi_mod & 1 || xleft != oleft)
 			vi_drawagain();
 		else if (xtop != otop)
 			vi_drawupdate(otop);
