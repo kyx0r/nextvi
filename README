@@ -535,18 +535,18 @@ control he/she desires.
 LOC:
 +--------------+---------------------+
 | 569  kmap.h  | keymap translation  |
-| 428  vi.h    | definitions/aux     |
+| 439  vi.h    | definitions/aux     |
 +--------------+---------------------+
-| 577  uc.c    | UTF-8 support       |
-| 318  term.c  | low level IO        |
-| 298  conf.c  | hl/ft/td config     |
-| 652  regex.c | extended RE         |
-| 590  lbuf.c  | file/line buffer    |
-| 1083 ex.c    | ex options/commands |
-| 2085 vi.c    | normal mode/general |
-| 685  led.c   | insert mode/output  |
+| 574  uc.c    | UTF-8 support       |
+| 330  term.c  | low level IO        |
+| 301  conf.c  | hl/ft/td config     |
+| 658  regex.c | extended RE         |
+| 598  lbuf.c  | file/line buffer    |
+| 1127 ex.c    | ex options/commands |
+| 2081 vi.c    | normal mode/general |
+| 681  led.c   | insert mode/output  |
 | 384  ren.c   | positioning/syntax  |
-| 6670 total   | wc -l *.c           |
+| 6734 total   | wc -l *.c           |
 +--------------+---------------------+
 The code is devised to be unquestionable.
 You will be able to read, understand and modify this code faster.
@@ -650,47 +650,62 @@ https://swtch.com/~rsc/regexp/regexp1.html
 PERFORMANCE
 -----------
 Stress test:
-1. Compile both versions with gcc -O2 -g (no customizations done)
-2. Open Nextvi's vi.c and hold ^d until the end of the file
-3. Capture the results with cachegrind
+1. Compile both versions with gcc -O2 (all defaults)
+2. Capture the results with cachegrind:
+valgrind --tool=cachegrind --cache-sim=yes --branch-sim=yes ./vi vi.c
+3. Hold ^d until the end of the file
 4. To find out what these values mean see:
 https://valgrind.org/docs/manual/cg-manual.html
-NEATVI:
+NEATVI (0c1b058):
 --------------------------------------------------------------------------------
-| I   refs:      1,030,137,070
-| I1  misses:          122,660
-| LLi misses:            1,298
-| I1  miss rate:          0.01%
-| LLi miss rate:          0.00%
-|
-| D   refs:        672,331,702  (373,790,802 rd   + 298,540,900 wr)
-| D1  misses:          473,511  (    215,088 rd   +     258,423 wr)
-| LLd misses:            7,836  (      1,116 rd   +       6,720 wr)
-| D1  miss rate:           0.1% (        0.1%     +         0.1%  )
-| LLd miss rate:           0.0% (        0.0%     +         0.0%  )
-|
-| LL refs:             596,171  (    337,748 rd   +     258,423 wr)
-| LL misses:             9,134  (      2,414 rd   +       6,720 wr)
-| LL miss rate:            0.0% (        0.0%     +         0.0%  )
---------------------------------------------------------------------------------
-NEXTVI:
---------------------------------------------------------------------------------
-| I   refs:      364,197,180
-| I1  misses:         93,186
-| LLi misses:          1,228
-| I1  miss rate:        0.03%
+| I refs:        230,718,361
+| I1  misses:         13,632
+| LLi misses:          1,986
+| I1  miss rate:        0.01%
 | LLi miss rate:        0.00%
 |
-| D   refs:      142,125,211  (100,909,090 rd   + 41,216,121 wr)
-| D1  misses:        140,991  (     81,656 rd   +     59,335 wr)
-| LLd misses:          6,043  (      1,855 rd   +      4,188 wr)
-| D1  miss rate:         0.1% (        0.1%     +        0.1%  )
+| D refs:        211,999,814  (114,549,290 rd   + 97,450,524 wr)
+| D1  misses:        131,145  (     56,458 rd   +     74,687 wr)
+| LLd misses:          6,826  (      1,790 rd   +      5,036 wr)
+| D1  miss rate:         0.1% (        0.0%     +        0.1%  )
 | LLd miss rate:         0.0% (        0.0%     +        0.0%  )
 |
-| LL refs:           234,177  (    174,842 rd   +     59,335 wr)
-| LL misses:           7,271  (      3,083 rd   +      4,188 wr)
+| LL refs:           144,777  (     70,090 rd   +     74,687 wr)
+| LL misses:           8,812  (      3,776 rd   +      5,036 wr)
 | LL miss rate:          0.0% (        0.0%     +        0.0%  )
+|
+| Branches:      101,392,132  (100,946,798 cond +    445,334 ind)
+| Mispredicts:     2,602,468  (  2,601,900 cond +        568 ind)
+| Mispred rate:          2.6% (        2.6%     +        0.1%   )
 --------------------------------------------------------------------------------
+NEXTVI (c79a80f):
+--------------------------------------------------------------------------------
+| I refs:        190,206,268
+| I1  misses:          2,381
+| LLi misses:          1,986
+| I1  miss rate:        0.00%
+| LLi miss rate:        0.00%
+|
+| D refs:         67,866,595  (49,705,087 rd   + 18,161,508 wr)
+| D1  misses:         40,463  (    28,546 rd   +     11,917 wr)
+| LLd misses:          6,167  (     2,479 rd   +      3,688 wr)
+| D1  miss rate:         0.1% (       0.1%     +        0.1%  )
+| LLd miss rate:         0.0% (       0.0%     +        0.0%  )
+|
+| LL refs:            42,844  (    30,927 rd   +     11,917 wr)
+| LL misses:           8,153  (     4,465 rd   +      3,688 wr)
+| LL miss rate:          0.0% (       0.0%     +        0.0%  )
+|
+| Branches:       35,374,242  (35,114,146 cond +    260,096 ind)
+| Mispredicts:     2,136,593  ( 2,134,916 cond +      1,677 ind)
+| Mispred rate:          6.0% (       6.1%     +        0.6%   )
+--------------------------------------------------------------------------------
+Notes:
+The comparison is surface level only, as projects have diverged significantly.
+Neatvi has been recently optimized, which significantly reduced the Irefs.
+However, a lot of the optimizations are cutting corners and making assumptions.
+For instance, testing the text direction only when input is utf-8, which reasonable
+as it may be, is still limiting what you can do with the software.
 Further optimization:
 1. To create the most optimal exe, enable PGO optimizations by compiling via
 ./cbuild.sh pgobuild which can lead to a significant performance boost on some
@@ -698,7 +713,7 @@ application specific tasks. Feel free to adjust cbuild.sh and the sample data
 on which it's being trained on, though default probably already good enough.
 2. To improve nextvi's performance, shaping, character reordering, and
 syntax highlighting can be disabled by defining the EXINIT environment
-variable as "se noshape | se noorder | se nohl | se td=+2".
+variable as "se noshape|se noorder|se nohl|se td=2".
 
 Favorite quotes:
 --------------------------------------------------------------------------------
