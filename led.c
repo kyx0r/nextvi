@@ -654,7 +654,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
 		led_printparts(sb, ps, "");
 		term_chr('\n');
 		ps = sb->s_n;
-		if (ai_max) {			/* updating autoindent */
+		if (ai_max && !pref[0]) {	/* updating autoindent */
 			int ai_new = 0; 	/* number of initial spaces in ln */
 			while (sb->s[ai_new+n] == ' ' || sb->s[ai_new+n] == '\t')
 				ai_new++;
