@@ -653,22 +653,24 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
 		sbufn_chr(sb, key)
 		led_printparts(sb, ps, "");
 		term_chr('\n');
+		term_room(1);
+		xrow++;
 		ps = sb->s_n;
-		if (ai_max && !pref[0]) {	/* updating autoindent */
-			int ai_new = 0; 	/* number of initial spaces in ln */
-			while (sb->s[ai_new+n] == ' ' || sb->s[ai_new+n] == '\t')
-				ai_new++;
-			int ai_len = strlen(ai);
-			if (ai_len + ai_new > ai_max)
-				ai_new = ai_max - ai_len;
-			memcpy(ai + ai_len, sb->s+n, ai_new);
-			ai[ai_len + ai_new] = '\0';
+		if (ai_max) {	/* updating autoindent */
 			while (**post == ' ' || **post == '\t')
 				++*post;
+			if (!pref[0]) {
+				int ai_new = 0;		/* number of initial spaces in ln */
+				while (sb->s[ai_new+n] == ' ' || sb->s[ai_new+n] == '\t')
+					ai_new++;
+				int ai_len = strlen(ai);
+				if (ai_len + ai_new > ai_max)
+					ai_new = ai_max - ai_len;
+				memcpy(ai + ai_len, sb->s+n, ai_new);
+				ai[ai_len + ai_new] = '\0';
+			}
 		}
-		term_room(1);
 		pref[0] = '\0';
-		xrow++;
 	}
 }
 
