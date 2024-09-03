@@ -385,8 +385,8 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 }
 
 /* read a line from the terminal */
-static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
-		int ai_max, int *key, int *kmap, int orow, int lsh)
+static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+		int *key, int *kmap, int orow, int lsh)
 {
 	int len, p_reg = 0;
 	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
@@ -425,7 +425,6 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, char *ai,
 			if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
 				sbuf_cut(sb, ps)
 				sbufn_str(sb, sb->s+ps+1)
-				ai[MAX(0, strlen(ai)-1)] = '\0';
 			}
 			break;
 		case TK_CTL(']'):
@@ -609,7 +608,6 @@ char *led_prompt(char *pref, char *post, char *insert,
 		int *kmap)
 {
 	int key, n;
-	char ai[1];
 	sbuf *sb; sbufn_make(sb, xcols)
 	if (pref)
 		sbufn_str(sb, pref)
@@ -617,7 +615,7 @@ char *led_prompt(char *pref, char *post, char *insert,
 	if (insert)
 		sbufn_str(sb, insert)
 	preserve(int, xtd, +2)
-	led_line(sb, 0, n, post, ai, -1, &key, kmap, 0, 0);
+	led_line(sb, 0, n, post, -1, &key, kmap, 0, 0);
 	restore(xtd)
 	if (key == '\n') {
 		temp_pos(0, -1, 0, 0);
@@ -633,19 +631,12 @@ char *led_prompt(char *pref, char *post, char *insert,
 /* read visual command input */
 sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
 {
-	sbuf *sb; sbufn_make(sb, xcols)
+	sbuf *sb; sbuf_make(sb, xcols)
 	int ai_max = 128 * xai;
-	char ai[ai_max+1];
-	int n = 0, ps = 0, key, orow = row;
-	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
-		ai[n++] = *pref++;
-	ai[n] = '\0';
+	int n, ps = 0, key, orow = row;
+	sbufn_str(sb, pref)
 	while (1) {
-		sbufn_str(sb, ai)
-		if (pref[0])
-			sbufn_str(sb, pref)
-		n = sb->s_n;
-		led_line(sb, ps, n, *post, ai, ai_max, &key, kmap, orow, lsh);
+		led_line(sb, ps, sb->s_n, *post, ai_max, &key, kmap, orow, lsh);
 		if (key != '\n') {
 			sbufn_str(sb, *post)
 			return sb;
@@ -655,22 +646,17 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
 		term_chr('\n');
 		term_room(1);
 		xrow++;
+		n = ps;
 		ps = sb->s_n;
 		if (ai_max) {	/* updating autoindent */
 			while (**post == ' ' || **post == '\t')
 				++*post;
-			if (!pref[0]) {
-				int ai_new = 0;		/* number of initial spaces in ln */
-				while (sb->s[ai_new+n] == ' ' || sb->s[ai_new+n] == '\t')
-					ai_new++;
-				int ai_len = strlen(ai);
-				if (ai_len + ai_new > ai_max)
-					ai_new = ai_max - ai_len;
-				memcpy(ai + ai_len, sb->s+n, ai_new);
-				ai[ai_len + ai_new] = '\0';
-			}
+			int ai_new = n;
+			while (sb->s[ai_new] == ' ' || sb->s[ai_new] == '\t')
+				ai_new++;
+			ai_new = ai_max > ai_new - n ? ai_new - n : ai_max;
+			sbufn_mem(sb, sb->s+n, ai_new)
 		}
-		pref[0] = '\0';
 	}
 }
 
