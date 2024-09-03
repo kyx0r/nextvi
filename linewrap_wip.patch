@@ -1,0 +1,217 @@
+diff --git a/ex.c b/ex.c
+index 05fb5a0..48f261a 100644
+--- a/ex.c
++++ b/ex.c
+@@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
+ int xpac;			/* print autocomplete options */
+ int xkwdcnt;			/* number of search kwd changes */
+ int xbufcur;			/* number of active buffers */
++int xlw = 1;			/* line wrap mode */
+ struct buf *bufs;		/* main buffers */
+ struct buf tempbufs[2];		/* temporary buffers, for internal use */
+ struct buf *ex_buf;		/* current buffer */
+@@ -846,6 +847,7 @@ static struct option {
+ 	{"grp", &xgrp},
+ 	{"pac", &xpac},
+ 	{"led", &xled},
++	{"lw", &xlw},
+ };
+ 
+ static char *cutword(char *s, char *d)
+diff --git a/ren.c b/ren.c
+index f3b49de..3136d68 100644
+--- a/ren.c
++++ b/ren.c
+@@ -78,7 +78,7 @@ void dir_init(void)
+ 	dir_rsctx = rset_make(i, ctx, 0);
+ }
+ 
+-static ren_state rstates[1];
++static ren_state rstates[2];
+ ren_state *rstate = &rstates[0];
+ 
+ void ren_done(void)
+@@ -115,6 +115,9 @@ int *ren_position(char *s, char ***chrs, int *n)
+ 		}
+ 	}
+ 	pos[nn] = cpos;
++	if (xlw)
++		rstate->rln = cpos / xcols;
++	rstate->cln = 0;
+ 	rstate->ren_laststr = s;
+ 	rstate->ren_lastpos = pos;
+ 	rstate->ren_lastchrs = chrs[0];
+diff --git a/vi.c b/vi.c
+index 626f023..6caeced 100644
+--- a/vi.c
++++ b/vi.c
+@@ -133,12 +133,14 @@ for (int k = nrow; k == nrow; i++) \
+ 	tmp[l1] = *snum; \
+ } \
+ 
++static int lshift;
++
+ static void vi_drawrow(int row)
+ {
+ 	int l1, l2, i, lnnum = 0;
+ 	static int movedown;
+ 	char *c;
+-	char *s = lbuf_get(xb, row-movedown);
++	char *s = lbuf_get(xb, row-movedown-lshift);
+ 	static char ch1[1] = "~";
+ 	static char ch2[1] = "";
+ 	if (!s) {
+@@ -210,6 +212,7 @@ static void vi_drawrow(int row)
+ 		restore(xtd)
+ 	} else if (!lnnum)
+ 		led_print(s, row - xtop);
++	lshift += rstate->pln > 1 ? rstate->pln - 1 : 0;
+ 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
+ 		movedown = 0;
+ }
+@@ -219,25 +222,27 @@ static void vi_drawagain(void)
+ {
+ 	syn_scdir(0);
+ 	syn_blockhl = 0;
+-	for (int i = xtop; i < xtop + xrows; i++)
+-		vi_drawrow(i);
++	lshift = 0;
++	for (int i = xtop; i + lshift < xtop + xrows; i++)
++		vi_drawrow(i + lshift);
+ }
+ 
+ /* update the screen */
+ static void vi_drawupdate(int otop)
+ {
+ 	int i = otop - xtop;
++	lshift = 0;
+ 	term_pos(0, 0);
+ 	term_room(i);
+ 	syn_scdir(i > 1 || i < -1 ? -1 : i);
+ 	if (i < 0) {
+ 		int n = MIN(-i, xrows);
+-		for (i = 0; i < n; i++)
+-			vi_drawrow(xtop + xrows - n + i);
++		for (i = 0; i + lshift < n; i++)
++			vi_drawrow(xtop + xrows - n + i + lshift);
+ 	} else {
+ 		int n = MIN(i, xrows);
+-		for (i = 0; i < n; i++)
+-			vi_drawrow(xtop + i);
++		for (i = 0; i + lshift < n; i++)
++			vi_drawrow(xtop + i + lshift);
+ 	}
+ }
+ 
+@@ -501,10 +506,16 @@ static int vi_motionln(int *row, int cmd)
+ 		*row = mark_row;
+ 		break;
+ 	case 'j':
+-		*row = MIN(*row + cnt, lbuf_len(xb) - 1);
++		if (rstate->rln != rstate->cln)
++			rstate->cln++;
++		else
++			*row = MIN(*row + cnt, lbuf_len(xb) - 1);
+ 		break;
+ 	case 'k':
+-		*row = MAX(*row - cnt, 0);
++		if (rstate->cln)
++			rstate->cln--;
++		else
++			*row = MAX(*row - cnt, 0);
+ 		break;
+ 	case 'G':
+ 		*row = (vi_arg1 || vi_arg2) ? cnt - 1 : lbuf_len(xb) - 1;
+@@ -734,6 +745,8 @@ static int vi_motion(int *row, int *off)
+ 	int mark, mark_row, mark_off;
+ 	char *cs;
+ 	int mv, i;
++	char **c;
++	ren_position(ln, &c, &i);
+ 
+ 	if ((mv = vi_motionln(row, 0))) {
+ 		*off = -1;
+@@ -1437,7 +1450,9 @@ void vi(int init)
+ 			vi_lnnum = 0;
+ 		if (vi_msg[0]) {
+ 			vi_msg[0] = '\0';
++			rstate++;
+ 			vi_drawrow(otop + xrows - 1);
++			rstate--;
+ 		}
+ 		if (!vi_ybuf)
+ 			vi_ybuf = vi_yankbuf();
+@@ -1927,6 +1942,11 @@ void vi(int init)
+ 		if (vi_col < xleft)
+ 			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
+ 		n = led_pos(lbuf_get(xb, xrow), ren_cursor(lbuf_get(xb, xrow), vi_col));
++		int cln = rstate->cln;
++		if (xlw) {
++			rstate++;
++			rstate->ren_laststr = NULL;
++		}
+ 		vi_wait();
+ 		if (xhlw) {
+ 			static char *word;
+@@ -2014,7 +2034,15 @@ void vi(int init)
+ 			vi_msg[0] = '\0';
+ 		} else
+ 			vi_drawmsg();
+-		term_pos(xrow - xtop, n);
++		if (xlw) {
++			char **_s;
++			for (int i = xtop; i < xrow; i++) {
++				ren_position(lbuf_get(xb, i), &_s, &mv);
++				cln += rstate->rln;
++			}
++			rstate--;
++		}
++		term_pos(xrow - xtop + cln, n);
+ 		term_commit();
+ 		lbuf_modified(xb);
+ 	}
+diff --git a/vi.h b/vi.h
+index 4b8435f..981a94c 100644
+--- a/vi.h
++++ b/vi.h
+@@ -159,6 +159,9 @@ typedef struct {
+ 	char *ren_laststr;	/* to prevent redundant computations, ensure pointer uniqueness */
+ 	int *ren_lastpos;
+ 	int ren_lastn;
++	int pln;
++	int rln;
++	int cln;
+ } ren_state;
+ extern ren_state *rstate;
+ void ren_done(void);
+@@ -285,7 +288,21 @@ char *xgetenv(char* q[]);
+ char *led_prompt(char *pref, char *post, char *insert, int *kmap);
+ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh);
+ void led_render(char *s0, int row, int cbeg, int cend);
+-#define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
++#define led_print(msg, row) \
++{ \
++if (xlw) { \
++	rstate->pln = 0; \
++	for (int left = 0, r = row; r < xrows; r++) { \
++		led_render(msg, r, left, left+xcols); \
++		left += xcols; \
++		rstate->pln++; \
++		if (!rstate->ren_lastn || left >= rstate->ren_lastpos[rstate->ren_lastn]) \
++			break; \
++	} \
++} else \
++	led_render(msg, row, xleft, xleft + xcols); \
++} \
++
+ #define led_reprint(msg, row) { rstate->ren_laststr = NULL; led_print(msg, row); }
+ char *led_read(int *kmap, int c);
+ int led_pos(char *s, int pos);
+@@ -428,6 +445,7 @@ extern int xtabspc;
+ extern int xish;
+ extern int xgrp;
+ extern int xpac;
++extern int xlw;
+ extern int xkwdcnt;
+ extern int xkwddir;
+ extern int ex_printed;

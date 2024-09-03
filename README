@@ -174,6 +174,15 @@ alternate-w-behaviour.patch
 --------------
 Implements more vim/like d/c/yw
 
+linewrap_wip.patch
+--------------
+Soft line wrap. Adds a new ex option "lw" which will wrap the line
+when it reaches the terminal edge.
+TODO:
+Normal redraw - *somewhat done*
+Line operations - *have an idea*
+Insert mode - *not sure*
+
 My current EXINIT setup:
 --------------
 How it works:
