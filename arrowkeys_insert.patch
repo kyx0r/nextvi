@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 41cff99..745f355 100644
+index ac089ed..cf5797c 100644
 --- a/led.c
 +++ b/led.c
 @@ -288,7 +288,7 @@ static int led_lastword(char *s)
@@ -71,7 +71,7 @@ index 41cff99..745f355 100644
 +		led_printparts(sb, ps, "", 1);
  		term_chr('\n');
  		ps = sb->s_n;
- 		if (ai_max) {			/* updating autoindent */
+ 		if (ai_max && !pref[0]) {	/* updating autoindent */
 diff --git a/vi.c b/vi.c
 index 626f023..c895df5 100644
 --- a/vi.c
