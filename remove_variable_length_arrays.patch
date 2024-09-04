@@ -76,7 +76,7 @@ index 8cd63f7..e4e1036 100644
  }
  
 diff --git a/led.c b/led.c
-index a8e7aed..0368fdf 100644
+index 68a13c6..3131088 100644
 --- a/led.c
 +++ b/led.c
 @@ -44,7 +44,7 @@ static void file_index(struct lbuf *buf)
@@ -116,23 +116,6 @@ index a8e7aed..0368fdf 100644
  }
  
  static int led_lastchar(char *s)
-@@ -635,7 +638,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
- {
- 	sbuf *sb; sbufn_make(sb, xcols)
- 	int ai_max = 128 * xai;
--	char ai[ai_max+1];
-+	char *ai = emalloc(ai_max+1);
- 	int n = 0, ps = 0, key, orow = row;
- 	while (n < ai_max && (*pref == ' ' || *pref == '\t'))
- 		ai[n++] = *pref++;
-@@ -648,6 +651,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
- 		led_line(sb, ps, n, *post, ai, ai_max, &key, kmap, orow, lsh);
- 		if (key != '\n') {
- 			sbufn_str(sb, *post)
-+			free(ai);
- 			return sb;
- 		}
- 		sbufn_chr(sb, key)
 diff --git a/regex.c b/regex.c
 index 51d54a4..5722fcc 100644
 --- a/regex.c
