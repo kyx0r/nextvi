@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 05fb5a0..800d886 100644
+index d45b663..aab9f26 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -203,11 +203,13 @@ static char *ex_pathexpand(char *src)
@@ -18,7 +18,7 @@ index 05fb5a0..800d886 100644
  		xkwdcnt++;
  		vi_regputraw('/', kwd, 0, 0);
  		xkwddir = dir;
-@@ -801,7 +803,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -802,7 +804,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	not = strchr(cmd, '!') || cmd[0] == 'v';
  	pat = re_read(&s);
  	if (pat)
@@ -27,7 +27,7 @@ index 05fb5a0..800d886 100644
  	free(pat);
  	if (!pat || !rs)
  		return 1;
-@@ -949,9 +951,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -950,9 +952,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {

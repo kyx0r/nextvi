@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 05fb5a0..b206765 100644
+index d45b663..8f6c532 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1113,7 +1113,7 @@ void ex(void)
+@@ -1114,7 +1114,7 @@ void ex(void)
  	}
  }
  
@@ -11,7 +11,7 @@ index 05fb5a0..b206765 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1124,4 +1124,6 @@ void ex_init(char **files, int n)
+@@ -1125,4 +1125,6 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -19,7 +19,7 @@ index 05fb5a0..b206765 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 626f023..3666425 100644
+index 17c2e92..8890591 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2037,7 +2037,8 @@ static int setup_signals(void) {

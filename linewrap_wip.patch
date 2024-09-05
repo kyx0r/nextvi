@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 05fb5a0..48f261a 100644
+index d45b663..a8eacf5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
@@ -10,7 +10,7 @@ index 05fb5a0..48f261a 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -846,6 +847,7 @@ static struct option {
+@@ -847,6 +848,7 @@ static struct option {
  	{"grp", &xgrp},
  	{"pac", &xpac},
  	{"led", &xled},
@@ -42,7 +42,7 @@ index f3b49de..3136d68 100644
  	rstate->ren_lastpos = pos;
  	rstate->ren_lastchrs = chrs[0];
 diff --git a/vi.c b/vi.c
-index 626f023..6caeced 100644
+index 17c2e92..cd6bc48 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -133,12 +133,14 @@ for (int k = nrow; k == nrow; i++) \

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 05fb5a0..0915cb8 100644
+index d45b663..9e61ffb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index 05fb5a0..0915cb8 100644
  int xish = 1;			/* interactive shell */
  int xgrp = 2;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -842,6 +843,7 @@ static struct option {
+@@ -843,6 +844,7 @@ static struct option {
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
  	{"tbs", &xtabspc},
@@ -68,7 +68,7 @@ index 68a13c6..4d20815 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 626f023..ef24106 100644
+index 17c2e92..058848b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
