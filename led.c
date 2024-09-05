@@ -371,11 +371,11 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 		if (r >= orow-xtop && r < xrow-xtop) {
 			sbuf *cb; sbuf_make(cb, 128)
 			nl = dstrlen(cs, '\n');
-			sbuf_mem(cb, cs, nl+1)
+			sbuf_mem(cb, cs, nl+!!cs[nl])
 			sbuf_set(cb, '\0', 4)
 			led_reprint(cb->s, r);
 			sbuf_free(cb)
-			cs += nl+1;
+			cs += nl+!!cs[nl];
 			continue;
 		}
 		nl = r < xrow-xtop ? r+xtop : (r-(xrow-orow-lsh))+xtop;
