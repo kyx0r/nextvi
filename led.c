@@ -378,7 +378,7 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 			cs += nl+!!cs[nl];
 			continue;
 		}
-		nl = r < xrow-xtop ? r+xtop : (r-(xrow-orow-lsh))+xtop;
+		nl = r < xrow-xtop ? r+xtop : (r-(xrow-orow+lsh))+xtop;
 		led_print(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r);
 	}
 	term_pos(xrow - xtop, 0);
@@ -485,7 +485,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 		case TK_CTL('z'):
 			term_suspend();
 			if (ai_max >= 0)
-				led_redraw(sb->s, 0, orow, -lsh);
+				led_redraw(sb->s, 0, orow, lsh);
 			continue;
 		case TK_CTL('x'):
 			sug_pt = sug_pt == len ? -1 : len;
@@ -576,7 +576,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			if (ai_max < 0)
 				term_clean();
 			else
-				led_redraw(sb->s, 0, orow, -lsh);
+				led_redraw(sb->s, 0, orow, lsh);
 			continue;
 		case TK_CTL('o'):;
 			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
