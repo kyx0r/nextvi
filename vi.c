@@ -302,7 +302,7 @@ char *ex_read(char *msg)
 		syn_setft("/-");
 		char *s = led_prompt(msg, "", NULL, &xkmap);
 		xleft = oleft;
-		if (s)
+		if (s && (!msg || strcmp(s, msg)))
 			term_chr('\n');
 		syn_setft(ex_ft);
 		return s;

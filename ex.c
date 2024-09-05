@@ -565,7 +565,7 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end) && (beg != 0 || end != 0))
 		return 1;
 	sbufn_make(sb, 64)
-	while ((s = ex_read(""))) {
+	while ((s = ex_read(NULL))) {
 		if (!strcmp(".", s)) {
 			free(s);
 			break;
@@ -596,8 +596,9 @@ static int ec_print(char *loc, char *cmd, char *arg)
 			return 1;
 	if (ex_region(loc, &beg, &end))
 		return 1;
-	for (i = beg; i < end; i++)
-		ex_print(lbuf_get(xb, i));
+	if (cmd[0] || !(cmd[0] || loc[0]))
+		for (i = beg; i < end; i++)
+			ex_print(lbuf_get(xb, i));
 	xrow = MAX(beg, end - (cmd[0] || loc[0]));
 	xoff = 0;
 	return 0;
