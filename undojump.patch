@@ -1,5 +1,5 @@
 diff --git a/lbuf.c b/lbuf.c
-index 0e49188..1364068 100644
+index 52b99b9..a334ecd 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -303,6 +303,41 @@ int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off)
@@ -45,7 +45,7 @@ index 0e49188..1364068 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 88ce5c6..dc9e2f2 100644
+index c4d046a..24493a9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1689,6 +1689,17 @@ void vi(int init)
@@ -67,7 +67,7 @@ index 88ce5c6..dc9e2f2 100644
  				vi_word++;
  				if (!*vi_word)
 diff --git a/vi.h b/vi.h
-index 827274c..fa5899a 100644
+index 00ba570..7456944 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -135,6 +135,7 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end);

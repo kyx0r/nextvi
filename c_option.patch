@@ -19,7 +19,7 @@ index d45b663..8f6c532 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 88ce5c6..2acd48c 100644
+index c4d046a..929ef66 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2037,7 +2037,8 @@ static int setup_signals(void) {
@@ -63,7 +63,7 @@ index 88ce5c6..2acd48c 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 827274c..1f72f83 100644
+index 00ba570..4246af3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -331,7 +331,7 @@ int ex_exec(const char *ln);

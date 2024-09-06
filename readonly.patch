@@ -77,7 +77,7 @@ index d45b663..706acff 100644
  };
  
 diff --git a/vi.c b/vi.c
-index 88ce5c6..1385919 100644
+index c4d046a..028b6a5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2056,9 +2056,11 @@ int main(int argc, char *argv[])
@@ -94,7 +94,7 @@ index 88ce5c6..1385919 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 827274c..35280d5 100644
+index 00ba570..eacd181 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -297,6 +297,7 @@ struct buf {
