@@ -385,7 +385,7 @@ int lbuf_indents(struct lbuf *lb, int r)
 	if (!ln)
 		return 0;
 	for (o = 0; uc_isspace(ln); o++)
-		ln = uc_next(ln);
+		ln += utf8_length[(unsigned char)ln[0]];
 	return o;
 }
 
@@ -396,7 +396,7 @@ static int uc_nextdir(char **s, char *beg, int dir)
 			return 1;
 		*s = uc_prev(beg, *s);
 	} else {
-		*s = uc_next(*s);
+		*s += utf8_length[(unsigned char)s[0][0]];
 		if (!(*s)[0])
 			return 1;
 	}

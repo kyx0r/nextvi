@@ -22,8 +22,8 @@ unsigned char utf8_length[256] = {
 int uc_slen(char *s)
 {
 	int n;
-	for (n = 0; *s; n++)
-		s = uc_end(s) + 1;
+	for (n = 0; utf8_length[(unsigned char)s[0]]; n++)
+		s += utf8_length[(unsigned char)s[0]];
 	return n;
 }
 
@@ -33,25 +33,6 @@ char *uc_beg(char *beg, char *s)
 	while (s > beg && (((unsigned char) *s) & 0xc0) == 0x80)
 		s--;
 	return s;
-}
-
-/* find the end of the character at s[i] */
-char *uc_end(char *s)
-{
-	if (!*s || !((unsigned char) *s & 0x80))
-		return s;
-	if (((unsigned char) *s & 0xc0) == 0xc0)
-		s++;
-	while (((unsigned char) *s & 0xc0) == 0x80)
-		s++;
-	return s - 1;
-}
-
-/* return a pointer to the character following s */
-char *uc_next(char *s)
-{
-	s = uc_end(s);
-	return *s ? s + 1 : s;
 }
 
 /* return a pointer to the character preceding s */
@@ -69,7 +50,7 @@ char **uc_chop(char *s, int *n)
 	chrs = emalloc((*n + 1) * sizeof(chrs[0]));
 	for (i = 0; i < *n + 1; i++) {
 		chrs[i] = s;
-		s = uc_next(s);
+		s += utf8_length[(unsigned char)s[0]];
 	}
 	return chrs;
 }
@@ -82,9 +63,9 @@ char *uc_chr(char *s, int off)
 	while (*s) {
 		if (i++ == off)
 			return s;
-		s = uc_next(s);
+		s += utf8_length[(unsigned char)s[0]];
 	}
-	return off < 0 || i == off ? s : "";
+	return s;
 }
 
 /* the number of characters between s and s + off */
@@ -93,7 +74,7 @@ int uc_off(char *s, int off)
 	char *e = s + off;
 	int i;
 	for (i = 0; s < e && *s; i++)
-		s = uc_next(s);
+		s += utf8_length[(unsigned char)s[0]];
 	return i;
 }
 
@@ -102,9 +83,9 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
 	char *sbeg = uc_chr(s, beg);
 	char *send = uc_chr(sbeg, end - beg);
 	int len = sbeg < send ? send - sbeg : 0;
-	char *r = emalloc(len + 1);
+	char *r = emalloc(len + 4);
 	memcpy(r, sbeg, len);
-	r[len] = '\0';
+	memset(r+len, 0, 4);
 	*rlen = len;
 	return r;
 }
@@ -317,7 +298,7 @@ char *uc_shape(char *beg, char *s)
 	}
 	r = s;
 	while (*r) {
-		r = uc_next(r); uc_code(tmp, r)
+		r += utf8_length[(unsigned char)r[0]]; uc_code(tmp, r)
 		if (!uc_acomb(tmp)) {
 			uc_code(next, r)
 			break;
