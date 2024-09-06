@@ -80,7 +80,7 @@ sb->s_n += len; \
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that NULL terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
-#define sbufn_done(sb) { char *s = sb->s; sbuf_null(sb) free(sb); return s; }
+#define sbufn_done(sb) { sbuf_set(sb, '\0', 4) char *s = sb->s; free(sb); return s; }
 #define sbufn_make(sb, newsz) { sbuf_make(sb, newsz) sbuf_null(sb) }
 #define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
 #define sbufn_mem(sb, s, len) { sbuf_mem(sb, s, len) sbuf_null(sb) }
@@ -230,10 +230,8 @@ int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
 char **uc_chop(char *s, int *n);
-char *uc_next(char *s);
 char *uc_prev(char *beg, char *s);
 char *uc_beg(char *beg, char *s);
-char *uc_end(char *s);
 char *uc_shape(char *beg, char *s);
 
 /* term.c managing the terminal */

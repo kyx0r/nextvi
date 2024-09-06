@@ -550,7 +550,7 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int x)
 		beg = uc_beg(ln, beg - 1);
 	for (int i = n; *end && i > 0; end++, i--) {
 		while (*end && uc_kind(end) == 1)
-			end = uc_next(end);
+			end += utf8_length[(unsigned char)end[0]];
 	}
 	if (beg >= --end)
 		return NULL;
@@ -1067,7 +1067,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 			if (cmd == '~')
 				s[0] = islower(c) ? toupper(c) : tolower(c);
 		}
-		s = uc_next(s);
+		s += utf8_length[(unsigned char)s[0]];
 	}
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? "\n" : uc_chr(lbuf_get(xb, r2), o2);
@@ -1349,7 +1349,7 @@ static int vc_replace(void)
 	off = ren_noeol(ln, xoff);
 	s = uc_chr(ln, off);
 	for (i = 0; s[0] != '\n' && i < cnt; i++)
-		s = uc_next(s);
+		s += utf8_length[(unsigned char)s[0]];
 	if (i < cnt)
 		return 0;
 	pref = uc_sub(ln, 0, off);

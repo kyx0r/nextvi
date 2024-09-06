@@ -144,7 +144,6 @@ static char *led_bounds(int *off, char **chrs, int cterm)
 		} else
 			i++;
 	}
-	sbuf_set(out, '\0', 3)
 	sbufn_done(out)
 }
 
