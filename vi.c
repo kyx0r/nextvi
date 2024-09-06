@@ -548,9 +548,9 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int x)
 	end = beg;
 	while (beg > ln && uc_kind(uc_beg(ln, beg - 1)) == 1)
 		beg = uc_beg(ln, beg - 1);
-	for (int i = n; *end && i > 0; end++, i--) {
-		while (*end && uc_kind(end) == 1)
-			end += utf8_length[(unsigned char)end[0]];
+	for (int i = n; uc_len(end) && i > 0; end++, i--) {
+		while (uc_len(end) && uc_kind(end) == 1)
+			end += uc_len(end);
 	}
 	if (beg >= --end)
 		return NULL;
@@ -1057,7 +1057,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 	char *region, *s;
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
 	s = region;
-	while (*s) {
+	while (uc_len(s)) {
 		int c = (unsigned char) s[0];
 		if (c <= 0x7f) {
 			if (cmd == 'u')
@@ -1067,7 +1067,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 			if (cmd == '~')
 				s[0] = islower(c) ? toupper(c) : tolower(c);
 		}
-		s += utf8_length[(unsigned char)s[0]];
+		s += uc_len(s);
 	}
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? "\n" : uc_chr(lbuf_get(xb, r2), o2);
@@ -1328,7 +1328,7 @@ static void vc_charinfo(void)
 	char *c = uc_chr(lbuf_get(xb, xrow), xoff);
 	if (c) {
 		char cbuf[8] = "";
-		int l; uc_len(l, c)
+		int l = uc_len(c);
 		memcpy(cbuf, c, l);
 		uc_code(l, c)
 		snprintf(vi_msg, sizeof(vi_msg), "<%s> %04x", cbuf, l);
@@ -1348,8 +1348,8 @@ static int vc_replace(void)
 		return 0;
 	off = ren_noeol(ln, xoff);
 	s = uc_chr(ln, off);
-	for (i = 0; s[0] != '\n' && i < cnt; i++)
-		s += utf8_length[(unsigned char)s[0]];
+	for (i = 0; uc_len(s) && *s != '\n' && i < cnt; i++)
+		s += uc_len(s);
 	if (i < cnt)
 		return 0;
 	pref = uc_sub(ln, 0, off);

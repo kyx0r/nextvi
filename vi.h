@@ -200,7 +200,7 @@ void syn_init(void);
 /* uc.c utf-8 helper functions */
 extern unsigned char utf8_length[256];
 /* return the length of a utf-8 character */
-#define uc_len(dst, s) dst = utf8_length[(unsigned char)s[0]];
+#define uc_len(s) utf8_length[(unsigned char)s[0]]
 /* the unicode codepoint of the given utf-8 character */
 #define uc_code(dst, s) \
 dst = (unsigned char)s[0]; \

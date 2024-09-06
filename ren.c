@@ -220,7 +220,7 @@ char *ren_translate(char *s, char *ln)
 			return placeholders[i].d;
 	if (uc_acomb(c)) {
 		static char buf[16] = "ـ";
-		uc_len(c, s)
+		c = uc_len(s);
 		*((char*)memcpy(buf+2, s, c)+c) = '\0';
 		return buf;
 	}
