@@ -1,32 +1,24 @@
 diff --git a/led.c b/led.c
-index 99eae91..17a30ab 100644
+index 3614481..9be551e 100644
 --- a/led.c
 +++ b/led.c
-@@ -130,23 +130,6 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
+@@ -130,6 +130,7 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
  	}
  }
  
--static char *led_bounds(int *off, char **chrs, int cterm)
--{
--	int l, i = 0;
--	sbuf *out;
--	sbuf_make(out, cterm*4);
--	while (i < cterm) {
--		int o = off[i];
--		if (o >= 0) {
--			uc_len(l, chrs[o])
--			sbuf_mem(out, chrs[o], l)
--			for (; off[i] == o; i++);
--		} else
--			i++;
--	}
--	sbufn_done(out)
--}
--
++#if 0
+ static char *led_bounds(int *off, char **chrs, int cterm)
+ {
+ 	int i = 0;
+@@ -145,6 +146,7 @@ static char *led_bounds(int *off, char **chrs, int cterm)
+ 	}
+ 	sbufn_done(out)
+ }
++#endif
+ 
  #define print_ch1(out) sbuf_mem(out, chrs[o], l)
  #define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
- 
-@@ -166,7 +149,7 @@ while (i < cterm) { \
+@@ -165,7 +167,7 @@ while (i < cterm) { \
  	o = off[i]; \
  	if (o >= 0) { \
  		for (l = i; off[i] == o; i++); \
@@ -35,7 +27,7 @@ index 99eae91..17a30ab 100644
  		if (att_new != att_old) \
  			sbuf_str(out, term_att(att_new)) \
  		char *s = ren_translate(chrs[o], s0); \
-@@ -194,17 +177,16 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -193,17 +195,16 @@ void led_render(char *s0, int row, int cbeg, int cend)
  {
  	if (!xled)
  		return;
@@ -57,7 +49,7 @@ index 99eae91..17a30ab 100644
  	if (ctx < 0) {
  		for (; i < n; i++) {
  			int curbeg = cend - pos[i] - 1;
-@@ -238,24 +220,10 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -237,24 +238,10 @@ void led_render(char *s0, int row, int cbeg, int cend)
  			}
  		}
  	}
