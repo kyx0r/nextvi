@@ -40,7 +40,7 @@ index d45b663..aab9f26 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/led.c b/led.c
-index 68a13c6..3924b4f 100644
+index 99eae91..45c8fe4 100644
 --- a/led.c
 +++ b/led.c
 @@ -46,7 +46,8 @@ static void file_index(struct lbuf *buf)
@@ -53,7 +53,7 @@ index 68a13c6..3924b4f 100644
  	if (!rs)
  		return;
  	sbuf_make(ibuf, 1024)
-@@ -294,10 +295,11 @@ static void led_printparts(sbuf *sb, int ps, char *post)
+@@ -293,10 +294,11 @@ static void led_printparts(sbuf *sb, int ps, char *post)
  		return;
  	int off, pos, psn = sb->s_n;
  	int idir = 0, next = sb->s[ps];
@@ -67,10 +67,10 @@ index 68a13c6..3924b4f 100644
  	pos = ren_cursor(sb->s+ps, ren_pos(sb->s+ps, MAX(0, off - 1)));
  	if (pos >= xleft + xcols)
 diff --git a/uc.c b/uc.c
-index 058f00b..d09b12b 100644
+index 2316839..f1d7d01 100644
 --- a/uc.c
 +++ b/uc.c
-@@ -109,6 +109,13 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
+@@ -90,6 +90,13 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
  	return r;
  }
  
@@ -85,7 +85,7 @@ index 058f00b..d09b12b 100644
  {
  	char *r = emalloc(strlen(s) + 1);
 diff --git a/vi.h b/vi.h
-index 4b8435f..d22bb53 100644
+index 827274c..6dccc94 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,7 +219,7 @@ int uc_wid(int c);

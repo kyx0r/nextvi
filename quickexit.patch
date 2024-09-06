@@ -19,10 +19,10 @@ index d45b663..9e61ffb 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 68a13c6..4d20815 100644
+index 99eae91..136e61f 100644
 --- a/led.c
 +++ b/led.c
-@@ -384,6 +384,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
+@@ -383,6 +383,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
  	term_pos(xrow - xtop, 0);
  }
  
@@ -37,7 +37,7 @@ index 68a13c6..4d20815 100644
  /* read a line from the terminal */
  static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  		int *key, int *kmap, int orow, int lsh)
-@@ -391,6 +399,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -390,6 +398,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int len, p_reg = 0;
  	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
@@ -45,7 +45,7 @@ index 68a13c6..4d20815 100644
  	if (!post)
  		post = "";
  	while (1) {
-@@ -588,7 +597,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -587,7 +596,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			xquit = 0;
  			restore(xvis)
  			continue;
@@ -68,7 +68,7 @@ index 68a13c6..4d20815 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 17c2e92..058848b 100644
+index 88ce5c6..2256d04 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index 17c2e92..058848b 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 4b8435f..6ba4330 100644
+index 827274c..9bcbaee 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -425,6 +425,7 @@ extern int xhlr;
+@@ -423,6 +423,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

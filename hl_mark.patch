@@ -19,7 +19,7 @@ index d45b663..cac3464 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 68a13c6..37bcc29 100644
+index 99eae91..bdb4b49 100644
 --- a/led.c
 +++ b/led.c
 @@ -130,6 +130,21 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
@@ -44,7 +44,7 @@ index 68a13c6..37bcc29 100644
  static char *led_bounds(int *off, char **chrs, int cterm)
  {
  	int l, i = 0;
-@@ -257,6 +272,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -256,6 +271,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
  	}
  	if (xhlr)
  		led_markrev(n, chrs, pos, ratt);

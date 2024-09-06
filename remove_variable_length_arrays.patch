@@ -46,7 +46,7 @@ index d45b663..26a344c 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 8cd63f7..e4e1036 100644
+index 0e49188..629ccd1 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -431,7 +431,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
@@ -76,7 +76,7 @@ index 8cd63f7..e4e1036 100644
  }
  
 diff --git a/led.c b/led.c
-index 68a13c6..3131088 100644
+index 99eae91..458e573 100644
 --- a/led.c
 +++ b/led.c
 @@ -44,7 +44,7 @@ static void file_index(struct lbuf *buf)
@@ -96,7 +96,7 @@ index 68a13c6..3131088 100644
  }
  
  static char *kmap_map(int kmap, int c)
-@@ -199,8 +200,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -198,8 +199,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
  	char *bound = s0;
  	int *pos;		/* pos[i]: the screen position of the i-th character */
  	char **chrs;		/* chrs[i]: the i-th character in s1 */
@@ -107,7 +107,7 @@ index 68a13c6..3131088 100644
  	int *ratt = att;	/* att[i]: adjusted for terminal boundary */
  	int ctx = dir_context(s0);
  	memset(off, -1, (cterm+1) * sizeof(off[0]));
-@@ -266,6 +267,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -265,6 +266,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
  		led_out(term_sbuf, 1)
  	if (!term_record)
  		term_commit();
@@ -210,7 +210,7 @@ index f3b49de..330b06a 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 17c2e92..656147a 100644
+index 88ce5c6..d1e7ec5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -152,7 +152,7 @@ static void vi_drawrow(int row)

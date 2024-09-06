@@ -42,7 +42,7 @@ index f3b49de..3136d68 100644
  	rstate->ren_lastpos = pos;
  	rstate->ren_lastchrs = chrs[0];
 diff --git a/vi.c b/vi.c
-index 17c2e92..cd6bc48 100644
+index 88ce5c6..98c23b1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -133,12 +133,14 @@ for (int k = nrow; k == nrow; i++) \
@@ -171,7 +171,7 @@ index 17c2e92..cd6bc48 100644
  		lbuf_modified(xb);
  	}
 diff --git a/vi.h b/vi.h
-index 4b8435f..981a94c 100644
+index 827274c..f5905b6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -159,6 +159,9 @@ typedef struct {
@@ -184,7 +184,7 @@ index 4b8435f..981a94c 100644
  } ren_state;
  extern ren_state *rstate;
  void ren_done(void);
-@@ -285,7 +288,21 @@ char *xgetenv(char* q[]);
+@@ -283,7 +286,21 @@ char *xgetenv(char* q[]);
  char *led_prompt(char *pref, char *post, char *insert, int *kmap);
  sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh);
  void led_render(char *s0, int row, int cbeg, int cend);
@@ -207,7 +207,7 @@ index 4b8435f..981a94c 100644
  #define led_reprint(msg, row) { rstate->ren_laststr = NULL; led_print(msg, row); }
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
-@@ -428,6 +445,7 @@ extern int xtabspc;
+@@ -426,6 +443,7 @@ extern int xtabspc;
  extern int xish;
  extern int xgrp;
  extern int xpac;

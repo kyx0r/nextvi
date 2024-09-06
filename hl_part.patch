@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 68a13c6..ec6cb12 100644
+index 99eae91..6cc07b2 100644
 --- a/led.c
 +++ b/led.c
-@@ -165,31 +165,71 @@ else if (*chrs[o] == '\t') \
+@@ -164,31 +164,71 @@ else if (*chrs[o] == '\t') \
  while (i < cterm) { \
  	int att_new = 0; \
  	o = off[i]; \
@@ -89,7 +89,7 @@ index 68a13c6..ec6cb12 100644
  /* render and highlight a line */
  void led_render(char *s0, int row, int cbeg, int cend)
  {
-@@ -199,54 +239,26 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -198,54 +238,26 @@ void led_render(char *s0, int row, int cbeg, int cend)
  	char *bound = s0;
  	int *pos;		/* pos[i]: the screen position of the i-th character */
  	char **chrs;		/* chrs[i]: the i-th character in s1 */
@@ -157,7 +157,7 @@ index 68a13c6..ec6cb12 100644
  			o = off[i];
  			if (o >= 0) {
  				ratt[o] = att[j++];
-@@ -257,6 +269,9 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -256,6 +268,9 @@ void led_render(char *s0, int row, int cbeg, int cend)
  	}
  	if (xhlr)
  		led_markrev(n, chrs, pos, ratt);
