@@ -22,8 +22,8 @@ unsigned char utf8_length[256] = {
 int uc_slen(char *s)
 {
 	int n;
-	for (n = 0; utf8_length[(unsigned char)s[0]]; n++)
-		s += utf8_length[(unsigned char)s[0]];
+	for (n = 0; uc_len(s); n++)
+		s += uc_len(s);
 	return n;
 }
 
@@ -50,7 +50,7 @@ char **uc_chop(char *s, int *n)
 	chrs = emalloc((*n + 1) * sizeof(chrs[0]));
 	for (i = 0; i < *n + 1; i++) {
 		chrs[i] = s;
-		s += utf8_length[(unsigned char)s[0]];
+		s += uc_len(s);
 	}
 	return chrs;
 }
@@ -60,10 +60,10 @@ char *uc_chr(char *s, int off)
 	int i = 0;
 	if (!s)
 		return "";
-	while (*s) {
+	while (uc_len(s)) {
 		if (i++ == off)
 			return s;
-		s += utf8_length[(unsigned char)s[0]];
+		s += uc_len(s);
 	}
 	return s;
 }
@@ -73,8 +73,8 @@ int uc_off(char *s, int off)
 {
 	char *e = s + off;
 	int i;
-	for (i = 0; s < e && *s; i++)
-		s += utf8_length[(unsigned char)s[0]];
+	for (i = 0; s < e && uc_len(s); i++)
+		s += uc_len(s);
 	return i;
 }
 
@@ -297,8 +297,8 @@ char *uc_shape(char *beg, char *s)
 		}
 	}
 	r = s;
-	while (*r) {
-		r += utf8_length[(unsigned char)r[0]]; uc_code(tmp, r)
+	while (uc_len(r)) {
+		r += uc_len(r); uc_code(tmp, r)
 		if (!uc_acomb(tmp)) {
 			uc_code(next, r)
 			break;

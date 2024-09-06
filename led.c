@@ -132,14 +132,13 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 
 static char *led_bounds(int *off, char **chrs, int cterm)
 {
-	int l, i = 0;
+	int i = 0;
 	sbuf *out;
 	sbuf_make(out, cterm*4);
 	while (i < cterm) {
 		int o = off[i];
 		if (o >= 0) {
-			uc_len(l, chrs[o])
-			sbuf_mem(out, chrs[o], l)
+			sbuf_mem(out, chrs[o], uc_len(chrs[o]))
 			for (; off[i] == o; i++);
 		} else
 			i++;
@@ -173,7 +172,7 @@ while (i < cterm) { \
 		if (s) \
 			sbuf_str(out, s) \
 		else if (uc_isprint(chrs[o])) { \
-			uc_len(l, chrs[o]) \
+			l = uc_len(chrs[o]); \
 			print_ch##n(out) \
 		} else { \
 			hid_ch##n(out) \
@@ -343,7 +342,7 @@ char *led_read(int *kmap, int c)
 		default:
 			if ((c & 0xc0) == 0xc0) {	/* utf-8 character */
 				buf[0] = c;
-				uc_len(n, buf)
+				n = uc_len(buf);
 				for (i = 1; i < n; i++)
 					buf[i] = term_read();
 				buf[n] = '\0';

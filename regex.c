@@ -93,7 +93,7 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (*re == '\\') re++;
 				if (!*re) return -1;
-				uc_len(l, re)
+				l = uc_len(re);
 				uc_code(c, re)
 				if (re[-1] != '\\' && re[l] != ']' &&
 						(c == '!' || c == '=' || c == '^')) {
@@ -119,7 +119,7 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 				if (flg & REG_ICASE && (unsigned int)c < 128)
 					c = tolower(c);
 				EMIT(PC++, c);
-				uc_len(c, re) re += c;
+				re += uc_len(re);
 			}
 			EMIT(PC-(cnt*2)-1, cnt);
 			EMIT(term+1, PC - term - 2);
@@ -251,7 +251,7 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 			term = PC;
 			break;
 		}
-		uc_len(c, re) re += c;
+		re += uc_len(re);
 	}
 	if (code && alt_label) {
 		EMIT(alt_label, REL(alt_label, PC) + 1);
@@ -449,8 +449,8 @@ clistidx = nlistidx; \
 
 #define match(n, cpn) \
 for (;; sp = _sp) { \
-	uc_len(i, sp) uc_code(c, sp) cpn \
-	_sp = sp+i;\
+	uc_code(c, sp) cpn \
+	_sp = sp+uc_len(sp); \
 	nlistidx = 0, sparsesz = 0; \
 	for (i = 0; i < clistidx; i++) { \
 		npc = clist[i].pc; \
@@ -474,7 +474,7 @@ for (;; sp = _sp) { \
 					for (; cnt > 0; cnt--) { \
 						pc += 2; \
 						if (c >= *pc && c <= pc[1]) { \
-							uc_len(j, s) s += j; \
+							s += uc_len(s); \
 							uc_code(c, s) cpn \
 						} else { \
 							pc += (cnt-1) * 2; \
