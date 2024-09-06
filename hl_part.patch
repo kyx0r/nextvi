@@ -15,7 +15,7 @@ index 99eae91..6cc07b2 100644
 -		if (s) \
 -			sbuf_str(out, s) \
 -		else if (uc_isprint(chrs[o])) { \
--			uc_len(l, chrs[o]) \
+-			l = uc_len(chrs[o]); \
 -			print_ch##n(out) \
 -		} else { \
 -			hid_ch##n(out) \
@@ -38,7 +38,7 @@ index 99eae91..6cc07b2 100644
 +	if (s) \
 +		sbuf_str(out, s) \
 +	else if (uc_isprint(chrs[o])) { \
-+		uc_len(l, chrs[o]) \
++		l = uc_len(chrs[o]); \
 +		print_ch##n(out) \
 +	} else { \
 +		hid_ch##n(out) \
