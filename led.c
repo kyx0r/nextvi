@@ -636,7 +636,9 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
 	while (1) {
 		led_line(sb, ps, sb->s_n, *post, ai_max, &key, kmap, orow, lsh);
 		if (key != '\n') {
-			sbufn_str(sb, *post)
+			sbuf_str(sb, *post)
+			sbuf_set(sb, '\0', 4)
+			sb->s_n -= 4;
 			return sb;
 		}
 		sbufn_chr(sb, key)

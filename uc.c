@@ -18,7 +18,7 @@ unsigned char utf8_length[256] = {
 	/* F */ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
-/* the number of utf-8 characters in s */
+/* the number of utf-8 characters in a fat nulled s */
 int uc_slen(char *s)
 {
 	int n;
@@ -85,7 +85,7 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
 	int len = sbeg < send ? send - sbeg : 0;
 	char *r = emalloc(len + 4);
 	memcpy(r, sbeg, len);
-	memset(r+len, 0, 4);
+	memset(r+len, '\0', 4);
 	*rlen = len;
 	return r;
 }

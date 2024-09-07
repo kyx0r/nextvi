@@ -578,9 +578,11 @@ char *vi_regget(int c, int *ln)
 void vi_regputraw(unsigned char c, const char *s, int ln, int append)
 {
 	char *pre = append && regs[tolower(c)] ? regs[tolower(c)] : "";
-	char *buf = emalloc(strlen(pre) + strlen(s) + 1);
-	strcpy(buf, pre);
-	strcat(buf, s);
+	int len1 = strlen(pre), len2 = strlen(s);
+	char *buf = emalloc(len1 + len2 + 4);
+	memcpy(buf, pre, len1);
+	memcpy(buf+len1, s, len2);
+	memset(buf+len1+len2, '\0', 4);
 	free(regs[tolower(c)]);
 	regs[tolower(c)] = buf;
 	lnmode[tolower(c)] = ln;
@@ -1251,8 +1253,7 @@ static int vc_put(int cmd)
 	free(s);
 	for (i = 0; i < cnt; i++)
 		sbuf_str(sb, buf)
-	s = uc_chr(ln, off);
-	sbufn_str(sb, s)
+	sbufn_str(sb, uc_chr(ln, off))
 	lbuf_edit(xb, sb->s, xrow, xrow + 1);
 	xoff = off + uc_slen(buf) * cnt - 1;
 	sbuf_free(sb)
@@ -1266,7 +1267,8 @@ static void vc_join(int spc, int cnt)
 	int end = xrow + cnt;
 	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
 		return;
-	sbufn_make(sb, 1024)
+	sbuf_make(sb, 1024)
+	xoff = 0;
 	for (int i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		char *lnend = ln + lbuf_slen(ln);
@@ -1274,11 +1276,13 @@ static void vc_join(int spc, int cnt)
 			while (ln[0] == ' ' || ln[0] == '\t')
 				ln++;
 			if (spc && sb->s_n && *ln != ')' &&
-					sb->s[sb->s_n-1] != ' ')
-				sbufn_chr(sb, ' ')
+					sb->s[sb->s_n-1] != ' ') {
+				sbuf_chr(sb, ' ')
+				xoff++;
+			}
 		}
-		xoff = uc_slen(sb->s);
-		sbufn_mem(sb, ln, lnend - ln)
+		xoff += (i+1 == end) ? 0 : uc_slen(ln) - 1;
+		sbuf_mem(sb, ln, lnend - ln)
 	}
 	sbufn_chr(sb, '\n')
 	lbuf_edit(xb, sb->s, beg, end);
@@ -1835,7 +1839,7 @@ void vi(int init)
 					strcpy(itoa(vi_arg1, cmd+16), "gw|se led");
 					ex_command(cmd)
 				} else if (k == '~' || k == 'u' || k == 'U')
-					vi_mod |= vc_motion(k, 2);
+					vi_mod |= vc_motion(k, 1);
 				break;
 			case 'x':
 				vi_back(' ');
