@@ -1259,41 +1259,29 @@ static int vc_put(int cmd)
 	return 1;
 }
 
-static int join_spaces(char *prev, char *next)
-{
-	int prevlen = strlen(prev);
-	if (!prev[0])
-		return 0;
-	if (prev[prevlen - 1] == ' ' || next[0] == ')')
-		return 0;
-	return prev[prevlen - 1] == '.' ? 2 : 1;
-}
-
 static void vc_join(int spc, int cnt)
 {
 	sbuf *sb;
 	int beg = xrow;
 	int end = xrow + cnt;
-	int off = 0, i;
 	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
 		return;
 	sbufn_make(sb, 1024)
-	for (i = beg; i < end; i++) {
+	for (int i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
-		char *lnend = strchr(ln, '\n');
-		int spaces;
-		if (i > beg)
+		char *lnend = ln + lbuf_slen(ln);
+		if (i > beg) {
 			while (ln[0] == ' ' || ln[0] == '\t')
 				ln++;
-		spaces = i > beg && spc ? join_spaces(sb->s, ln) : 0;
-		off = uc_slen(sb->s);
-		while (spaces--)
-			sbuf_chr(sb, ' ')
+			if (spc && sb->s_n && *ln != ')' &&
+					sb->s[sb->s_n-1] != ' ')
+				sbufn_chr(sb, ' ')
+		}
+		xoff = uc_slen(sb->s);
 		sbufn_mem(sb, ln, lnend - ln)
 	}
 	sbufn_chr(sb, '\n')
 	lbuf_edit(xb, sb->s, beg, end);
-	xoff = off;
 	sbuf_free(sb)
 	vi_mod |= 1;
 }

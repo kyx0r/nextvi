@@ -63,8 +63,6 @@ static void lbuf_loadmark(struct lbuf *lb, struct lopt *lo, int m1, int m2)
 
 static int markidx(int mark)
 {
-	if (islower(mark))
-		return mark - 'a';
 	if (mark == '\'' || mark == '`')
 		return 'z' - 'a' + 1;
 	if (mark == '*')
@@ -73,6 +71,8 @@ static int markidx(int mark)
 		return 'z' - 'a' + 3;
 	if (mark == ']')
 		return 'z' - 'a' + 4;
+	if (islower(mark))
+		return mark - 'a';
 	return -1;
 }
 
