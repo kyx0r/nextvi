@@ -111,9 +111,8 @@ static void vi_drawmsg(void)
 	if (vi_msg[0]) {
 		syn_blockhl = 0;
 		syn_setft("/-");
-		rstate->ren_laststr = NULL;
 		preserve(int, xtd, 2)
-		led_render(vi_msg, xrows, 0, xcols);
+		led_recrender(vi_msg, xrows, 0, 0, xcols);
 		restore(xtd)
 		syn_setft(ex_ft);
 	}
@@ -145,7 +144,7 @@ static void vi_drawrow(int row)
 		s = ch1;
 		if (*vi_word && row == xrow+1)
 			goto last_row;
-		led_print(row ? s : ch2, row - xtop);
+		led_print(row ? s : ch2, row - xtop, 0);
 		return;
 	}
 	if (vi_lnnum == 1 || (vi_lnnum == 2 && row != xrow))
@@ -165,7 +164,7 @@ static void vi_drawrow(int row)
 		c = itoa(abs(xrow-row+movedown), tmp+l2+i);
 		*c++ = ' ';
 		memcpy(c, s+i, l1-i);
-		led_reprint(tmp, row - xtop);
+		led_reprint(tmp, row - xtop, 0);
 	}
 	if (*vi_word && row == xrow+1) {
 		last_row:;
@@ -173,7 +172,7 @@ static void vi_drawrow(int row)
 		int nrow = xrow;
 		c = lbuf_get(xb, xrow);
 		if (!c || *c == '\n') {
-			led_print(s, row - xtop);
+			led_print(s, row - xtop, 0);
 			return;
 		}
 		char tmp[xcols+3];
@@ -203,13 +202,13 @@ static void vi_drawrow(int row)
 		preserve(int, xtd, dir_context(c) * 2)
 		movedown = 1;
 		syn_setft("/#");
-		led_render(tmp, row - xtop, 0, xcols);
+		led_crender(tmp, row - xtop, 0, 0, xcols);
 		syn_setft(ex_ft);
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
 	} else if (!lnnum)
-		led_print(s, row - xtop);
+		led_print(s, row - xtop, 0);
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
 		movedown = 0;
 }
@@ -324,7 +323,7 @@ void ex_show(char *msg)
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (term_sbuf) {
 		syn_setft("/-");
-		led_reprint(msg, -1);
+		led_reprint(msg, -1, 0);
 		term_chr('\n');
 		syn_setft(ex_ft);
 	} else {
@@ -334,7 +333,7 @@ void ex_show(char *msg)
 }
 
 /* print an ex output line */
-void ex_print(char *line)
+void ex_cprint(char *line, int r, int c, int ln)
 {
 	syn_blockhl = 0;
 	if (!(xvis & 4)) {
@@ -343,11 +342,11 @@ void ex_print(char *line)
 		if (line) {
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 			syn_setft("/-");
-			led_reprint(line, -1);
+			led_recrender(line, r, c, xleft, xleft + xcols - c)
 			syn_setft(ex_ft);
-			if (ex_printed > 0)
+			if (ln && ex_printed > 0)
 				term_chr('\n');
-			ex_printed++;
+			ex_printed += (ln || ex_printed);
 		} else
 			ex_printed = 2;
 	} else if (line)
@@ -604,13 +603,14 @@ void vi_regput(int c, const char *s, int ln)
 
 static void vi_regprint(void)
 {
+	static char buf[5];
 	term_pos(xrows, led_pos(vi_msg, 0));
 	xleft = (xcols / 2) * vi_arg1;
 	for (int i = 1; i < LEN(regs); i++) {
 		if (regs[i]) {
-			char buf[xcols * 5 + 3];
-			snprintf(buf, xcols * 5 + 3, "%c %s", (unsigned char)i, regs[i]);
-			ex_print(xleft ? regs[i] : buf);
+			*buf = i;
+			ex_cprint(buf, xrows, 0, 0);
+			ex_cprint(regs[i], -1, xleft ? 0 : 2, 1);
 		}
 	}
 }

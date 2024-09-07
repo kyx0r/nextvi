@@ -189,7 +189,7 @@ while (i < cterm) { \
 } sbufn_str(out, term_att(0)) } \
 
 /* render and highlight a line */
-void led_render(char *s0, int row, int cbeg, int cend)
+void led_render(char *s0, int cbeg, int cend)
 {
 	if (!xled)
 		return;
@@ -256,14 +256,10 @@ void led_render(char *s0, int row, int cbeg, int cend)
 	if (xhlr)
 		led_markrev(n, chrs, pos, ratt);
 	/* generate term output */
-	term_pos(row, 0);
-	term_kill();
 	if (vi_hidch)
 		led_out(term_sbuf, 2)
 	else
 		led_out(term_sbuf, 1)
-	if (!term_record)
-		term_commit();
 }
 
 static int led_lastchar(char *s)
@@ -303,7 +299,7 @@ static void led_printparts(sbuf *sb, int ps, char *post)
 	if (pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
 	syn_blockhl = 0;
-	led_print(sb->s+ps, -1);
+	led_print(sb->s+ps, -1, 0);
 	/* cursor position for inserting the next character */
 	if (next) {
 		if (off - 2 >= 0)
@@ -357,8 +353,7 @@ char *led_read(int *kmap, int c)
 
 static void led_info(char *str, int ai_max)
 {
-	rstate->ren_laststr = NULL;
-	led_render(str, xtop+xrows, 0, xcols);
+	led_recrender(str, xtop+xrows, 0, 0, xcols)
 	if (ai_max >= 0)
 		term_pos(xrow - xtop, 0);
 }
@@ -371,13 +366,13 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 			nl = dstrlen(cs, '\n');
 			sbuf_mem(cb, cs, nl+!!cs[nl])
 			sbuf_set(cb, '\0', 4)
-			led_reprint(cb->s, r);
+			led_reprint(cb->s, r, 0);
 			sbuf_free(cb)
 			cs += nl+!!cs[nl];
 			continue;
 		}
 		nl = r < xrow-xtop ? r+xtop : (r-(xrow-orow+lsh))+xtop;
-		led_print(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r);
+		led_print(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r, 0);
 	}
 	term_pos(xrow - xtop, 0);
 }
@@ -531,7 +526,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 					syn_setft("/ac");
 					preserve(int, xtd, 2)
 					for (int left = 0; r < xrows; r++) {
-						led_render(sug, r, left, left+xcols);
+						led_crender(sug, r, 0, left, left+xcols);
 						left += xcols;
 						if (left >= rstate->ren_lastpos[rstate->ren_lastn])
 							break;

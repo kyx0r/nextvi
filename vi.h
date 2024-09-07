@@ -219,8 +219,8 @@ int uc_wid(int c);
 int uc_slen(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
-#define uc_sub(s, beg, end) uc_subl(s, beg, end, &(int){0})
 char *uc_subl(char *s, int beg, int end, int *rlen);
+#define uc_sub(s, beg, end) uc_subl(s, beg, end, &(int){0})
 char *uc_dup(const char *s);
 int uc_isspace(char *s);
 int uc_isprint(char *s);
@@ -282,9 +282,23 @@ char *xgetenv(char* q[]);
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh);
-void led_render(char *s0, int row, int cbeg, int cend);
-#define led_print(msg, row) led_render(msg, row, xleft, xleft + xcols)
-#define led_reprint(msg, row) { rstate->ren_laststr = NULL; led_print(msg, row); }
+void led_render(char *s0, int cbeg, int cend);
+#define led_crender(msg, row, col, beg, end) \
+{ \
+	int record = term_record; \
+	term_record = 1; \
+	term_pos(row, col); \
+	term_kill(); \
+	led_render(msg, beg, end); \
+	if (!record) \
+		term_commit(); \
+} \
+
+#define led_print(msg, row, col) led_crender(msg, row, col, xleft, xleft + xcols)
+#define led_reprint(msg, row, col) { rstate->ren_laststr = NULL; led_print(msg, row, col); }
+#define led_recrender(msg, row, col, beg, end) \
+{ rstate->ren_laststr = NULL; led_crender(msg, row, col, beg, end); } \
+
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
@@ -329,7 +343,8 @@ void ex(void);
 int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 char *ex_read(char *msg);
-void ex_print(char *line);
+void ex_cprint(char *line, int r, int c, int ln);
+#define ex_print(line) ex_cprint(line, -1, 0, 1)
 void ex_show(char *msg);
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
