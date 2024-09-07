@@ -40,7 +40,7 @@ index d45b663..aab9f26 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/led.c b/led.c
-index 963cec2..b409f88 100644
+index b5a7d48..7329667 100644
 --- a/led.c
 +++ b/led.c
 @@ -46,7 +46,8 @@ static void file_index(struct lbuf *buf)
@@ -67,7 +67,7 @@ index 963cec2..b409f88 100644
  	pos = ren_cursor(sb->s+ps, ren_pos(sb->s+ps, MAX(0, off - 1)));
  	if (pos >= xleft + xcols)
 diff --git a/uc.c b/uc.c
-index 1062a2d..332705b 100644
+index 319c126..6e9472b 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -90,6 +90,13 @@ char *uc_subl(char *s, int beg, int end, int *rlen)

@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 963cec2..6b358d1 100644
+index b5a7d48..795c3ff 100644
 --- a/led.c
 +++ b/led.c
 @@ -286,7 +286,7 @@ static int led_lastword(char *s)
@@ -63,7 +63,7 @@ index 963cec2..6b358d1 100644
  	*key = c;
  }
  
-@@ -640,7 +658,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
+@@ -642,7 +660,7 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)
@@ -73,10 +73,10 @@ index 963cec2..6b358d1 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 9b4c292..98b421c 100644
+index 32f68bc..104c65f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1026,6 +1026,8 @@ static char *vi_indents(char *ln)
+@@ -1028,6 +1028,8 @@ static char *vi_indents(char *ln)
  	sbufn_done(sb)
  }
  
@@ -85,7 +85,7 @@ index 9b4c292..98b421c 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *region, *pref, *post, *_post;
-@@ -1049,6 +1051,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -1051,6 +1053,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
@@ -93,7 +93,7 @@ index 9b4c292..98b421c 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1214,8 +1217,10 @@ static void vc_insert(int cmd)
+@@ -1216,8 +1219,10 @@ static void vc_insert(int cmd)
  		xoff = charcount(rep->s, rep->s_n, post, l2 - (post - _post));
  		if (cmdo && !lbuf_len(xb))
  			lbuf_edit(xb, "\n", 0, 0);
@@ -105,7 +105,7 @@ index 9b4c292..98b421c 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1739,6 +1744,37 @@ void vi(int init)
+@@ -1743,6 +1748,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -143,7 +143,7 @@ index 9b4c292..98b421c 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xoff = lbuf_eol(xb, --xrow);
-@@ -1752,6 +1788,9 @@ void vi(int init)
+@@ -1756,6 +1792,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;

@@ -157,7 +157,7 @@ index 1187892..f95aa10 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 1062a2d..a2fe979 100644
+index 319c126..0cb25a9 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -172,10 +172,10 @@ index 1062a2d..a2fe979 100644
  };
 +unsigned char *utf8_length = _utf8_length;
  
- /* the number of utf-8 characters in s */
+ /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 9b4c292..d4224f7 100644
+index 32f68bc..90e3bab 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
