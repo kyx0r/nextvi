@@ -366,7 +366,7 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 			nl = dstrlen(cs, '\n');
 			sbuf_mem(cb, cs, nl+!!cs[nl])
 			sbuf_set(cb, '\0', 4)
-			led_reprint(cb->s, r, 0);
+			led_reprint(cb->s, r, 0)
 			sbuf_free(cb)
 			cs += nl+!!cs[nl];
 			continue;
@@ -526,7 +526,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 					syn_setft("/ac");
 					preserve(int, xtd, 2)
 					for (int left = 0; r < xrows; r++) {
-						led_crender(sug, r, 0, left, left+xcols);
+						led_crender(sug, r, 0, left, left+xcols)
 						left += xcols;
 						if (left >= rstate->ren_lastpos[rstate->ren_lastn])
 							break;
@@ -597,8 +597,7 @@ leave:
 }
 
 /* read an ex command */
-char *led_prompt(char *pref, char *post, char *insert,
-		int *kmap)
+char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 {
 	int key, n;
 	sbuf *sb; sbufn_make(sb, xcols)

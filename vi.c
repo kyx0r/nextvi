@@ -112,7 +112,7 @@ static void vi_drawmsg(void)
 		syn_blockhl = 0;
 		syn_setft("/-");
 		preserve(int, xtd, 2)
-		led_recrender(vi_msg, xrows, 0, 0, xcols);
+		led_recrender(vi_msg, xrows, 0, 0, xcols)
 		restore(xtd)
 		syn_setft(ex_ft);
 	}
@@ -202,7 +202,7 @@ static void vi_drawrow(int row)
 		preserve(int, xtd, dir_context(c) * 2)
 		movedown = 1;
 		syn_setft("/#");
-		led_crender(tmp, row - xtop, 0, 0, xcols);
+		led_crender(tmp, row - xtop, 0, 0, xcols)
 		syn_setft(ex_ft);
 		restore(xorder)
 		restore(syn_blockhl)
@@ -323,7 +323,7 @@ void ex_show(char *msg)
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (term_sbuf) {
 		syn_setft("/-");
-		led_reprint(msg, -1, 0);
+		led_reprint(msg, -1, 0)
 		term_chr('\n');
 		syn_setft(ex_ft);
 	} else {
