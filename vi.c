@@ -111,9 +111,8 @@ static void vi_drawmsg(void)
 	if (vi_msg[0]) {
 		syn_blockhl = 0;
 		syn_setft("/-");
-		rstate->ren_laststr = NULL;
 		preserve(int, xtd, 2)
-		led_render(vi_msg, xrows, 0, xcols);
+		led_recrender(vi_msg, xrows, 0, 0, xcols)
 		restore(xtd)
 		syn_setft(ex_ft);
 	}
@@ -145,7 +144,7 @@ static void vi_drawrow(int row)
 		s = ch1;
 		if (*vi_word && row == xrow+1)
 			goto last_row;
-		led_print(row ? s : ch2, row - xtop);
+		led_print(row ? s : ch2, row - xtop, 0);
 		return;
 	}
 	if (vi_lnnum == 1 || (vi_lnnum == 2 && row != xrow))
@@ -165,7 +164,7 @@ static void vi_drawrow(int row)
 		c = itoa(abs(xrow-row+movedown), tmp+l2+i);
 		*c++ = ' ';
 		memcpy(c, s+i, l1-i);
-		led_reprint(tmp, row - xtop);
+		led_reprint(tmp, row - xtop, 0);
 	}
 	if (*vi_word && row == xrow+1) {
 		last_row:;
@@ -173,7 +172,7 @@ static void vi_drawrow(int row)
 		int nrow = xrow;
 		c = lbuf_get(xb, xrow);
 		if (!c || *c == '\n') {
-			led_print(s, row - xtop);
+			led_print(s, row - xtop, 0);
 			return;
 		}
 		char tmp[xcols+3];
@@ -203,13 +202,13 @@ static void vi_drawrow(int row)
 		preserve(int, xtd, dir_context(c) * 2)
 		movedown = 1;
 		syn_setft("/#");
-		led_render(tmp, row - xtop, 0, xcols);
+		led_crender(tmp, row - xtop, 0, 0, xcols)
 		syn_setft(ex_ft);
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
 	} else if (!lnnum)
-		led_print(s, row - xtop);
+		led_print(s, row - xtop, 0);
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
 		movedown = 0;
 }
@@ -324,7 +323,7 @@ void ex_show(char *msg)
 		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
 	} else if (term_sbuf) {
 		syn_setft("/-");
-		led_reprint(msg, -1);
+		led_reprint(msg, -1, 0)
 		term_chr('\n');
 		syn_setft(ex_ft);
 	} else {
@@ -334,7 +333,7 @@ void ex_show(char *msg)
 }
 
 /* print an ex output line */
-void ex_print(char *line)
+void ex_cprint(char *line, int r, int c, int ln)
 {
 	syn_blockhl = 0;
 	if (!(xvis & 4)) {
@@ -343,11 +342,11 @@ void ex_print(char *line)
 		if (line) {
 			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
 			syn_setft("/-");
-			led_reprint(line, -1);
+			led_recrender(line, r, c, xleft, xleft + xcols - c)
 			syn_setft(ex_ft);
-			if (ex_printed > 0)
+			if (ln && ex_printed > 0)
 				term_chr('\n');
-			ex_printed++;
+			ex_printed += (ln || ex_printed);
 		} else
 			ex_printed = 2;
 	} else if (line)
@@ -604,13 +603,14 @@ void vi_regput(int c, const char *s, int ln)
 
 static void vi_regprint(void)
 {
+	static char buf[5];
 	term_pos(xrows, led_pos(vi_msg, 0));
 	xleft = (xcols / 2) * vi_arg1;
 	for (int i = 1; i < LEN(regs); i++) {
 		if (regs[i]) {
-			char buf[xcols * 5 + 3];
-			snprintf(buf, xcols * 5 + 3, "%c %s", (unsigned char)i, regs[i]);
-			ex_print(xleft ? regs[i] : buf);
+			*buf = i;
+			ex_cprint(buf, xrows, 0, 0);
+			ex_cprint(regs[i], -1, xleft ? 0 : 2, 1);
 		}
 	}
 }
@@ -1124,7 +1124,7 @@ static void vi_shift(int r1, int r2, int dir)
 	sbuf_free(sb)
 }
 
-static int vc_motion(int cmd, int modbit)
+static void vc_motion(int cmd)
 {
 	int r1 = xrow, r2 = xrow;	/* region rows */
 	int o1 = xoff, o2;		/* visual region columns */
@@ -1132,17 +1132,17 @@ static int vc_motion(int cmd, int modbit)
 	int mv;
 	vi_arg2 = vi_prefix();
 	if (vi_arg2 < 0)
-		return 0;
+		return;
 	o1 = ren_noeol(lbuf_get(xb, r1), o1);
 	o2 = o1;
 	if ((mv = vi_motionln(&r2, cmd))) {
 		o2 = -1;
 	} else if (!(mv = vi_motion(&r2, &o2))) {
 		vi_read();
-		return 0;
+		return;
 	}
 	if (mv < 0)
-		return 0;
+		return;
 	lnmode = o2 < 0;
 	if (lnmode) {
 		o1 = 0;
@@ -1158,20 +1158,18 @@ static int vc_motion(int cmd, int modbit)
 	if (!lnmode && strchr("fFtTeE%", mv))
 		if (o2 < lbuf_eol(xb, r2))
 			o2 = ren_noeol(lbuf_get(xb, r2), o2) + 1;
-	if (cmd == 'y')
+	if (cmd == 'y') {
 		vi_yank(r1, o1, r2, o2, lnmode);
+		return;
+	}
 	if (cmd == 'd')
 		vi_delete(r1, o1, r2, o2, lnmode);
 	if (cmd == 'c')
 		vi_change(r1, o1, r2, o2, lnmode);
 	if (cmd == '~' || cmd == 'u' || cmd == 'U')
 		vi_case(r1, o1, r2, o2, lnmode, cmd);
-	if (cmd == '!') {
-		if (mv == '{' || mv == '}')
-			if (lbuf_get(xb, r2) && *lbuf_get(xb, r2) == '\n' && r1 < r2)
-				r2--;
+	if (cmd == '!')
 		vi_pipe(r1, r2);
-	}
 	if (cmd == '>' || cmd == '<')
 		vi_shift(r1, r2, cmd == '>' ? +1 : -1);
 	if (cmd == TK_CTL('w'))
@@ -1181,7 +1179,7 @@ static int vc_motion(int cmd, int modbit)
 				vi_shift(lc, lc, -1);
 			vi_shift(lc, lc, -1);
 		}
-	return modbit;
+	vi_mod |= (r1 != r2 || (lnmode && cmd == 'd')) ? 1 : 2;
 }
 
 static void vc_insert(int cmd)
@@ -1424,7 +1422,7 @@ void vi(int init)
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
 		if (*vi_word || vi_lnnum)
-			vi_mod = 5;
+			vi_mod = 4;
 		if (vi_lnnum == 1)
 			vi_lnnum = 0;
 		if (vi_msg[0]) {
@@ -1729,10 +1727,9 @@ void vi(int init)
 			case '>':
 			case '<':
 			case TK_CTL('w'):
-				k = vc_motion(c, 1);
+				vc_motion(c);
 				if (c == 'c')
 					goto ins;
-				vi_mod |= k;
 				break;
 			case 'I':
 			case 'i':
@@ -1839,38 +1836,38 @@ void vi(int init)
 					strcpy(itoa(vi_arg1, cmd+16), "gw|se led");
 					ex_command(cmd)
 				} else if (k == '~' || k == 'u' || k == 'U')
-					vi_mod |= vc_motion(k, 1);
+					vc_motion(k);
 				break;
 			case 'x':
 				vi_back(' ');
-				vi_mod |= vc_motion('d', 2);
+				vc_motion('d');
 				break;
 			case 'X':
 				vi_back(127);
-				vi_mod |= vc_motion('d', 2);
+				vc_motion('d');
 				break;
 			case 'D':
 				vi_back('$');
-				vi_mod |= vc_motion('d', 2);
+				vc_motion('d');
 				break;
 			case 'r':
 				vi_mod |= vc_replace();
 				break;
 			case 'C':
 				vi_back('$');
-				vc_motion('c', 0);
+				vc_motion('c');
 				goto ins;
 			case 's':
 				vi_back(' ');
-				vc_motion('c', 0);
+				vc_motion('c');
 				goto ins;
 			case 'S':
 				vi_back('c');
-				vc_motion('c', 0);
+				vc_motion('c');
 				goto ins;
 			case 'Y':
 				vi_back('y');
-				vc_motion('y', 0);
+				vc_motion('y');
 				break;
 			case 'R':
 				vi_mod |= 1;
@@ -1883,7 +1880,7 @@ void vi(int init)
 				break;
 			case '~':
 				vi_back(' ');
-				vi_mod |= vc_motion('~', 2);
+				vc_motion('~');
 				break;
 			case '.':
 				vc_repeat();
@@ -1912,7 +1909,7 @@ void vi(int init)
 			xtop = xtop + xrows + xrows / 2 <= xrow ?
 					xrow - xrows / 2 : xrow - xrows + 1;
 		xoff = ren_noeol(lbuf_get(xb, xrow), xoff);
-		if (vi_mod && vi_mod != 5)
+		if (vi_mod && vi_mod != 4)
 			vi_col = vi_off2col(xb, xrow, xoff);
 		if (vi_col >= xleft + xcols)
 			xleft = vi_col - xcols / 2;
@@ -1981,7 +1978,7 @@ void vi(int init)
 		}
 		syn_reloadft();
 		term_record = 1;
-		if (vi_mod & 1 || xleft != oleft)
+		if (vi_mod & 1 || vi_mod & 4 || xleft != oleft)
 			vi_drawagain();
 		else if (xtop != otop)
 			vi_drawupdate(otop);
