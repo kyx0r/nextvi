@@ -16,10 +16,10 @@ index b5a7d48..795c3ff 100644
  	if (pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
 -	syn_blockhl = 0;
--	led_print(sb->s+ps, -1);
+-	led_print(sb->s+ps, -1, 0);
 +	if (print) {
 +		syn_blockhl = 0;
-+		led_print(sb->s+ps, -1);
++		led_print(sb->s+ps, -1, 0);
 +	}
  	/* cursor position for inserting the next character */
  	if (next) {
