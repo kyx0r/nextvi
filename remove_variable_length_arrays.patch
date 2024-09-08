@@ -76,7 +76,7 @@ index 507e94d..3777bd4 100644
  }
  
 diff --git a/led.c b/led.c
-index b5a7d48..ab4dd76 100644
+index 2191531..7aa61f1 100644
 --- a/led.c
 +++ b/led.c
 @@ -44,7 +44,7 @@ static void file_index(struct lbuf *buf)
@@ -96,7 +96,7 @@ index b5a7d48..ab4dd76 100644
  }
  
  static char *kmap_map(int kmap, int c)
-@@ -197,8 +198,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -197,8 +198,8 @@ void led_render(char *s0, int cbeg, int cend)
  	char *bound = s0;
  	int *pos;		/* pos[i]: the screen position of the i-th character */
  	char **chrs;		/* chrs[i]: the i-th character in s1 */
@@ -107,10 +107,10 @@ index b5a7d48..ab4dd76 100644
  	int *ratt = att;	/* att[i]: adjusted for terminal boundary */
  	int ctx = dir_context(s0);
  	memset(off, -1, (cterm+1) * sizeof(off[0]));
-@@ -264,6 +265,8 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -260,6 +261,8 @@ void led_render(char *s0, int cbeg, int cend)
+ 		led_out(term_sbuf, 2)
+ 	else
  		led_out(term_sbuf, 1)
- 	if (!term_record)
- 		term_commit();
 +	free(off);
 +	free(att);
  }
@@ -210,10 +210,10 @@ index 7004c66..6c0be8b 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 32f68bc..05c2a3d 100644
+index bad646d..d18bdcd 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -152,7 +152,7 @@ static void vi_drawrow(int row)
+@@ -151,7 +151,7 @@ static void vi_drawrow(int row)
  	{
  		lnnum = 1;
  		l1 = lbuf_slen(s) + 7;
@@ -222,16 +222,16 @@ index 32f68bc..05c2a3d 100644
  		c = itoa(row+1-movedown, tmp);
  		l2 = strlen(tmp)+1;
  		*c++ = ' ';
-@@ -166,6 +166,7 @@ static void vi_drawrow(int row)
+@@ -165,6 +165,7 @@ static void vi_drawrow(int row)
  		*c++ = ' ';
  		memcpy(c, s+i, l1-i);
- 		led_reprint(tmp, row - xtop);
+ 		led_reprint(tmp, row - xtop, 0);
 +		free(tmp);
  	}
  	if (*vi_word && row == xrow+1) {
  		last_row:;
-@@ -176,8 +177,8 @@ static void vi_drawrow(int row)
- 			led_print(s, row - xtop);
+@@ -175,8 +176,8 @@ static void vi_drawrow(int row)
+ 			led_print(s, row - xtop, 0);
  			return;
  		}
 -		char tmp[xcols+3];
@@ -241,28 +241,16 @@ index 32f68bc..05c2a3d 100644
  		memset(tmp, ' ', xcols+1);
  		tmp[xcols+1] = '\n';
  		tmp[xcols+2] = '\0';
-@@ -208,6 +209,8 @@ static void vi_drawrow(int row)
+@@ -207,6 +208,8 @@ static void vi_drawrow(int row)
  		restore(xorder)
  		restore(syn_blockhl)
  		restore(xtd)
 +		free(tmp);
 +		free(snum);
  	} else if (!lnnum)
- 		led_print(s, row - xtop);
+ 		led_print(s, row - xtop, 0);
  	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
-@@ -608,9 +611,10 @@ static void vi_regprint(void)
- 	xleft = (xcols / 2) * vi_arg1;
- 	for (int i = 1; i < LEN(regs); i++) {
- 		if (regs[i]) {
--			char buf[xcols * 5 + 3];
-+			char *buf = emalloc(xcols * 5 + 3);
- 			snprintf(buf, xcols * 5 + 3, "%c %s", (unsigned char)i, regs[i]);
- 			ex_print(xleft ? regs[i] : buf);
-+			free(buf);
- 		}
- 	}
- }
-@@ -1521,12 +1525,13 @@ void vi(int init)
+@@ -1519,12 +1522,13 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -277,7 +265,7 @@ index 32f68bc..05c2a3d 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1651,7 +1656,7 @@ void vi(int init)
+@@ -1649,7 +1653,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix(), '|');
@@ -286,7 +274,7 @@ index 32f68bc..05c2a3d 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg1, buf+4);
  					strcat(buf1, "s/");
-@@ -1661,10 +1666,11 @@ void vi(int init)
+@@ -1659,10 +1663,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_prompt(":", buf, &kmap);
@@ -299,7 +287,7 @@ index 32f68bc..05c2a3d 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1672,6 +1678,7 @@ void vi(int init)
+@@ -1670,6 +1675,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_prompt(":", buf, &kmap);
