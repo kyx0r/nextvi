@@ -42,6 +42,7 @@
 
 int vi_hidch;		/* show hidden chars */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
+int vi_lncol;		/* line numbers cursor offset */
 static int vi_lnnum;	/* line numbers */
 static int vi_mod;	/* screen should be redrawn:
 			(bit 1: whole screen, bit 2: current line, bit 4: whole screen not updating vi_col) */
@@ -125,7 +126,7 @@ noff = xoff; \
 for (int k = nrow; k == nrow; i++) \
 { \
 	itoa(i%10 ? i%10 : i, snum); \
-	l1 = ren_pos(c, noff) - xleft; \
+	l1 = ren_pos(c, noff) - xleft + vi_lncol; \
 	if (l1 > xcols || l1 < 0 \
 		|| lbuf_word(xb, skip, dir, &nrow, &noff)) \
 		break; \
@@ -134,7 +135,7 @@ for (int k = nrow; k == nrow; i++) \
 
 static void vi_drawrow(int row)
 {
-	int l1, l2, i, lnnum = 0;
+	int l1, i, lnnum = vi_lnnum;
 	static int movedown;
 	char *c;
 	char *s = lbuf_get(xb, row-movedown);
@@ -147,36 +148,33 @@ static void vi_drawrow(int row)
 		led_print(row ? s : ch2, row - xtop, 0);
 		return;
 	}
-	if (vi_lnnum == 1 || (vi_lnnum == 2 && row != xrow))
-	{
-		lnnum = 1;
-		l1 = lbuf_slen(s) + 7;
-		char tmp[l1+100];
-		c = itoa(row+1-movedown, tmp);
-		l2 = strlen(tmp)+1;
-		*c++ = ' ';
-		for (i = 0; i < l1; i++)
-			if (s[i] != '\t' && s[i] != ' ')
-				break;
-		if (!s[i])
-			i = 0;
-		memcpy(c, s, i);
-		c = itoa(abs(xrow-row+movedown), tmp+l2+i);
-		*c++ = ' ';
-		memcpy(c, s+i, l1-i);
-		led_reprint(tmp, row - xtop, 0);
+	if (lnnum) {
+		char tmp[100];
+		c = tmp;
+		if (lnnum == 1 || lnnum & 2) {
+			c = itoa(row+1-movedown, tmp);
+			*c++ = ' ';
+		}
+		if (lnnum == 1 || lnnum & 4) {
+			c = itoa(abs(xrow-row+movedown), c);
+			*c++ = ' ';
+		}
+		l1 = MAX(c - tmp, vi_lncol);
+		vi_lncol = dir_context(s) < 0 ? 0 : l1;
+		memset(c, ' ', l1 - (c - tmp));
+		c[l1 - (c - tmp)] = '\0';
+		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
+		led_prender(tmp, row - xtop, 0, 0, l1);
 	}
 	if (*vi_word && row == xrow+1) {
 		last_row:;
-		int noff = xoff;
-		int nrow = xrow;
+		int noff, nrow;
 		c = lbuf_get(xb, xrow);
 		if (!c || *c == '\n') {
 			led_print(s, row - xtop, 0);
 			return;
 		}
-		char tmp[xcols+3];
-		char snum[100];
+		char tmp[xcols+3], snum[100];
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
@@ -196,7 +194,7 @@ static void vi_drawrow(int row)
 			vi_drawwordnum(lbuf_wordbeg, 1, 1)
 			break;
 		}
-		tmp[ren_pos(c, xoff) - xleft] = *uc_chr(c, xoff) == '\t' ? ' ' : *vi_word;
+		tmp[ren_pos(c, xoff) - xleft+vi_lncol] = *uc_chr(c, xoff) == '\t' ? ' ' : *vi_word;
 		preserve(int, xorder, 0)
 		preserve(int, syn_blockhl, 0)
 		preserve(int, xtd, dir_context(c) * 2)
@@ -1421,10 +1419,12 @@ void vi(int init)
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
-		if (*vi_word || vi_lnnum)
+		if (*vi_word || vi_lnnum == 1 || vi_lnnum & 4)
 			vi_mod = 4;
-		if (vi_lnnum == 1)
+		if (vi_lnnum == 1) {
 			vi_lnnum = 0;
+			vi_lncol = 0;
+		}
 		if (vi_msg[0]) {
 			vi_msg[0] = '\0';
 			vi_drawrow(otop + xrows - 1);
@@ -1580,7 +1580,11 @@ void vi(int init)
 				ex_exec("w");
 				break;
 			case '#':
-				vi_lnnum = !vi_arg1 ? 1 : 2;
+				if (vi_lnnum & vi_arg1)
+					vi_lnnum = vi_lnnum & ~vi_arg1;
+				else
+					vi_lnnum = vi_arg1 ? vi_lnnum | vi_arg1 : !vi_lnnum;
+				vi_lncol = 0;
 				vi_mod |= 1;
 				break;
 			case 'v':
@@ -1739,7 +1743,7 @@ void vi(int init)
 			case 'O':
 				vc_insert(c);
 				ins:
-				vi_mod |= !xpac && xrow == orow ? 8 : 1;
+				vi_mod |= !vi_lncol && !xpac && xrow == orow ? 8 : 1;
 				if (vi_insmov == 127) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);
@@ -2003,7 +2007,7 @@ void vi(int init)
 			vi_msg[0] = '\0';
 		} else
 			vi_drawmsg();
-		term_pos(xrow - xtop, n);
+		term_pos(xrow - xtop, n + vi_lncol);
 		term_commit();
 		lbuf_modified(xb);
 	}

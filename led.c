@@ -625,10 +625,12 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
 {
 	sbuf *sb; sbuf_make(sb, xcols)
 	int ai_max = 128 * xai;
-	int n, ps = 0, key, orow = row;
+	int n, ps = 0, key;
 	sbufn_str(sb, pref)
+	if (vi_lncol)
+		led_redraw(sb->s, 0, row, lsh);
 	while (1) {
-		led_line(sb, ps, sb->s_n, *post, ai_max, &key, kmap, orow, lsh);
+		led_line(sb, ps, sb->s_n, *post, ai_max, &key, kmap, row, lsh);
 		if (key != '\n') {
 			sbuf_str(sb, *post)
 			sbuf_set(sb, '\0', 4)
