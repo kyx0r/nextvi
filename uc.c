@@ -653,7 +653,7 @@ int uc_isbell(int c)
 /* printing width */
 int uc_wid(int c)
 {
-	if (uc_isbell(c) || uc_acomb(c) || !uc_isdw(c))
-		return 1;
-	return 2;
+	if (uc_isdw(c))
+		return 2;
+	return 1; /* treat zw as 1 */
 }
