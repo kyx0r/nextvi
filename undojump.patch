@@ -45,10 +45,10 @@ index 507e94d..2102340 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 32f68bc..15df249 100644
+index bad646d..0617f23 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1681,6 +1681,17 @@ void vi(int init)
+@@ -1679,6 +1679,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
@@ -67,7 +67,7 @@ index 32f68bc..15df249 100644
  				vi_word++;
  				if (!*vi_word)
 diff --git a/vi.h b/vi.h
-index 00ba570..7456944 100644
+index 0810180..854a3ab 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -135,6 +135,7 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end);

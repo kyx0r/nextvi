@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index b5a7d48..e81ea04 100644
+index 2191531..e9c6b59 100644
 --- a/led.c
 +++ b/led.c
 @@ -163,31 +163,71 @@ else if (*chrs[o] == '\t') \
@@ -87,9 +87,9 @@ index b5a7d48..e81ea04 100644
 +} \
 +
  /* render and highlight a line */
- void led_render(char *s0, int row, int cbeg, int cend)
+ void led_render(char *s0, int cbeg, int cend)
  {
-@@ -197,54 +237,26 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -197,54 +237,26 @@ void led_render(char *s0, int cbeg, int cend)
  	char *bound = s0;
  	int *pos;		/* pos[i]: the screen position of the i-th character */
  	char **chrs;		/* chrs[i]: the i-th character in s1 */
@@ -157,7 +157,7 @@ index b5a7d48..e81ea04 100644
  			o = off[i];
  			if (o >= 0) {
  				ratt[o] = att[j++];
-@@ -255,6 +267,9 @@ void led_render(char *s0, int row, int cbeg, int cend)
+@@ -255,6 +267,9 @@ void led_render(char *s0, int cbeg, int cend)
  	}
  	if (xhlr)
  		led_markrev(n, chrs, pos, ratt);
@@ -165,5 +165,5 @@ index b5a7d48..e81ea04 100644
 +	memset(off, -1, (cterm+1) * sizeof(off[0]));
 +	off_comp(cbeg, cend, cterm, /*nop*/)
  	/* generate term output */
- 	term_pos(row, 0);
- 	term_kill();
+ 	if (vi_hidch)
+ 		led_out(term_sbuf, 2)

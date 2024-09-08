@@ -28,7 +28,7 @@ index d45b663..e5dbcd0 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 32f68bc..410f185 100644
+index bad646d..a63a8fd 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -680,12 +680,12 @@ void dir_calc(char *path)
@@ -127,7 +127,7 @@ index 32f68bc..410f185 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1526,7 +1563,17 @@ void vi(int init)
+@@ -1524,7 +1561,17 @@ void vi(int init)
  				buf[1] = 'e';
  				buf[2] = ' ';
  				strcpy(buf+3, ln);
@@ -146,7 +146,7 @@ index 32f68bc..410f185 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1673,6 +1720,10 @@ void vi(int init)
+@@ -1671,6 +1718,10 @@ void vi(int init)
  					}
  					ln = vi_prompt(":", buf, &kmap);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index 32f68bc..410f185 100644
  				default:
  					vi_back(k);
  				}
-@@ -2036,6 +2087,7 @@ int main(int argc, char *argv[])
+@@ -2033,6 +2084,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
@@ -166,10 +166,10 @@ index 32f68bc..410f185 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 00ba570..51a860e 100644
+index 0810180..864e59b 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -302,7 +302,7 @@ extern int xbufcur;
+@@ -316,7 +316,7 @@ extern int xbufcur;
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  extern struct buf *bufs;
