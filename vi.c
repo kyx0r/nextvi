@@ -216,6 +216,7 @@ static void vi_drawagain(void)
 {
 	syn_scdir(0);
 	syn_blockhl = 0;
+	vi_lncol = 0;
 	for (int i = xtop; i < xtop + xrows; i++)
 		vi_drawrow(i);
 }
@@ -1421,10 +1422,8 @@ void vi(int init)
 		vi_arg1 = vi_prefix();
 		if (*vi_word || vi_lnnum == 1 || vi_lnnum & 4)
 			vi_mod = 4;
-		if (vi_lnnum == 1) {
+		if (vi_lnnum == 1)
 			vi_lnnum = 0;
-			vi_lncol = 0;
-		}
 		if (vi_msg[0]) {
 			vi_msg[0] = '\0';
 			vi_drawrow(otop + xrows - 1);
@@ -1584,7 +1583,6 @@ void vi(int init)
 					vi_lnnum = vi_lnnum & ~vi_arg1;
 				else
 					vi_lnnum = vi_arg1 ? vi_lnnum | vi_arg1 : !vi_lnnum;
-				vi_lncol = 0;
 				vi_mod |= 1;
 				break;
 			case 'v':
