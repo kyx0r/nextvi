@@ -335,7 +335,7 @@ void ex_cprint(char *line, int r, int c, int ln)
 	syn_setft(ex_ft);
 	if (xvis & 4 || (ln && xmpt > 0))
 		term_chr('\n');
-	xmpt += (ln || xmpt);
+	xmpt += !(xvis & 4) && (ln || xmpt);
 }
 
 static int vi_yankbuf(void)
