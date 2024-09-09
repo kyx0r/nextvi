@@ -299,14 +299,14 @@ static void led_printparts(sbuf *sb, int ps, char *post)
 	if (pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
 	syn_blockhl = 0;
-	led_print(sb->s+ps, -1, 0);
+	led_crender(sb->s+ps, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	/* cursor position for inserting the next character */
 	if (next) {
 		if (off - 2 >= 0)
 			idir = ren_pos(sb->s+ps, off-1) - ren_pos(sb->s+ps, off-2);
 		idir = idir < 0 ? -1 : 1;
 	}
-	term_pos(-1, led_pos(sb->s+ps, pos + idir));
+	term_pos(-1, led_pos(sb->s+ps, pos + idir) + vi_lncol);
 	sbufn_cut(sb, psn)
 }
 
@@ -361,18 +361,23 @@ static void led_info(char *str, int ai_max)
 static void led_redraw(char *cs, int r, int orow, int lsh)
 {
 	for (int nl = 0; r < xrows; r++) {
+		if (vi_lncol) {
+			term_pos(r, 0);
+			term_kill();
+		}
 		if (r >= orow-xtop && r < xrow-xtop) {
 			sbuf *cb; sbuf_make(cb, 128)
 			nl = dstrlen(cs, '\n');
 			sbuf_mem(cb, cs, nl+!!cs[nl])
 			sbuf_set(cb, '\0', 4)
-			led_reprint(cb->s, r, 0)
+			led_recrender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
 			sbuf_free(cb)
 			cs += nl+!!cs[nl];
 			continue;
 		}
 		nl = r < xrow-xtop ? r+xtop : (r-(xrow-orow+lsh))+xtop;
-		led_print(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r, 0);
+		led_crender(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r,
+			vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
 	term_pos(xrow - xtop, 0);
 }
@@ -627,8 +632,6 @@ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
 	int ai_max = 128 * xai;
 	int n, ps = 0, key;
 	sbufn_str(sb, pref)
-	if (vi_lncol)
-		led_redraw(sb->s, 0, row, lsh);
 	while (1) {
 		led_line(sb, ps, sb->s_n, *post, ai_max, &key, kmap, row, lsh);
 		if (key != '\n') {

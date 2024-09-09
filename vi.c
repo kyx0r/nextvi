@@ -180,12 +180,9 @@ static void vi_drawrow(int row)
 		goto ret;
 	}
 	skip:
-	if (!s) {
-		s = ch1;
-		led_print(row ? s : ch2, row - xtop, 0);
-		goto ret;
-	}
-	if (lnnum) {
+	if (!s)
+		s = row ? ch1 : ch2;
+	else if (lnnum) {
 		char tmp[100];
 		c = tmp, i = 0, i1 = 0;
 		if (lnnum == 1 || lnnum & 2) {
@@ -209,7 +206,7 @@ static void vi_drawrow(int row)
 		restore(syn_blockhl)
 		goto ret;
 	}
-	led_print(s, row - xtop, 0);
+	led_crender(s, row - xtop, 0, xleft, xleft + xcols);
 	ret:
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
 		movedown = 0;
@@ -1731,7 +1728,7 @@ void vi(int init)
 			case 'O':
 				vc_insert(c);
 				ins:
-				vi_mod |= !vi_lncol && !xpac && xrow == orow ? 8 : 1;
+				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				if (vi_insmov == 127) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
 						xoff = lbuf_eol(xb, --xrow);

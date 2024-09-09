@@ -296,11 +296,8 @@ void led_render(char *s0, int cbeg, int cend);
 
 #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, /**/)
 #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
-#define led_print(msg, row, col) led_crender(msg, row, col, xleft, xleft + xcols)
-#define led_reprint(msg, row, col) { rstate->ren_laststr = NULL; led_print(msg, row, col); }
 #define led_recrender(msg, row, col, beg, end) \
-{ rstate->ren_laststr = NULL; led_crender(msg, row, col, beg, end); } \
-
+{ rstate->ren_laststr = NULL; led_crender(msg, row, col, beg, end); }
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
