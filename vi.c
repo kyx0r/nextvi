@@ -135,7 +135,7 @@ for (int k = nrow; k == nrow; i++) \
 
 static void vi_drawrow(int row)
 {
-	int l1, i, lnnum = vi_lnnum;
+	int l1, i, i1, lnnum = vi_lnnum;
 	static int movedown;
 	char *c;
 	char *s = lbuf_get(xb, row-movedown);
@@ -150,16 +150,19 @@ static void vi_drawrow(int row)
 	}
 	if (lnnum) {
 		char tmp[100];
-		c = tmp;
+		c = tmp, i = 0, i1 = 0;
 		if (lnnum == 1 || lnnum & 2) {
 			c = itoa(row+1-movedown, tmp);
 			*c++ = ' ';
+			i = snprintf(0, 0, "%d", xtop+xrows);
 		}
 		if (lnnum == 1 || lnnum & 4) {
 			c = itoa(abs(xrow-row+movedown), c);
 			*c++ = ' ';
+			i1 = snprintf(0, 0, "%d", xrows);
 		}
-		l1 = MAX(c - tmp, vi_lncol);
+		*c = '\0';
+		l1 = (c - tmp) + (i+i1 - (strlen(tmp) - !!i - !!i1));
 		vi_lncol = dir_context(s) < 0 ? 0 : l1;
 		memset(c, ' ', l1 - (c - tmp));
 		c[l1 - (c - tmp)] = '\0';
@@ -216,7 +219,6 @@ static void vi_drawagain(void)
 {
 	syn_scdir(0);
 	syn_blockhl = 0;
-	vi_lncol = 0;
 	for (int i = xtop; i < xtop + xrows; i++)
 		vi_drawrow(i);
 }
@@ -1422,8 +1424,10 @@ void vi(int init)
 		vi_arg1 = vi_prefix();
 		if (*vi_word || vi_lnnum == 1 || vi_lnnum & 4)
 			vi_mod = 4;
-		if (vi_lnnum == 1)
+		if (vi_lnnum == 1) {
 			vi_lnnum = 0;
+			vi_lncol = 0;
+		}
 		if (vi_msg[0]) {
 			vi_msg[0] = '\0';
 			vi_drawrow(otop + xrows - 1);
@@ -1583,6 +1587,7 @@ void vi(int init)
 					vi_lnnum = vi_lnnum & ~vi_arg1;
 				else
 					vi_lnnum = vi_arg1 ? vi_lnnum | vi_arg1 : !vi_lnnum;
+				vi_lncol = 0;
 				vi_mod |= 1;
 				break;
 			case 'v':
