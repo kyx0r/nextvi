@@ -317,41 +317,27 @@ char *ex_read(char *msg)
 	sbufn_done(sb)
 }
 
-/* show an ex message */
-void ex_show(char *msg)
-{
-	if (!(xvis & 4)) {
-		snprintf(vi_msg, sizeof(vi_msg), "%s", msg);
-	} else if (term_sbuf) {
-		syn_setft("/-");
-		led_reprint(msg, -1, 0)
-		term_chr('\n');
-		syn_setft(ex_ft);
-	} else {
-		term_write(msg, dstrlen(msg, '\n'))
-		term_write("\n", 1)
-	}
-}
-
 /* print an ex output line */
 void ex_cprint(char *line, int r, int c, int ln)
 {
+	if (!term_sbuf) {
+		term_write(line, dstrlen(line, '\n'))
+		term_write("\n", 1)
+		return;
+	}
 	syn_blockhl = 0;
-	if (!(xvis & 4)) {
-		if (ex_printed == 1 || !line)
+	if (!xvis) {
+		if (ex_printed == 1)
 			term_chr('\n');
-		if (line) {
-			snprintf(vi_msg, sizeof(vi_msg), "%s", line);
-			syn_setft("/-");
-			led_recrender(line, r, c, xleft, xleft + xcols - c)
-			syn_setft(ex_ft);
-			if (ln && ex_printed > 0)
-				term_chr('\n');
-			ex_printed += (ln || ex_printed);
-		} else
-			ex_printed = 2;
-	} else if (line)
-		ex_show(line);
+		term_pos(xrows, led_pos(vi_msg, 0));
+		snprintf(vi_msg, sizeof(vi_msg), "%s", line);
+	}
+	syn_setft("/-");
+	led_recrender(line, r, c, xleft, xleft + xcols - c)
+	syn_setft(ex_ft);
+	if (xvis & 4 || (ln && ex_printed > 0))
+		term_chr('\n');
+	ex_printed += (ln || ex_printed);
 }
 
 static int vi_yankbuf(void)
@@ -605,7 +591,6 @@ void vi_regput(int c, const char *s, int ln)
 static void vi_regprint(void)
 {
 	static char buf[5];
-	term_pos(xrows, led_pos(vi_msg, 0));
 	xleft = (xcols / 2) * vi_arg1;
 	for (int i = 1; i < LEN(regs); i++) {
 		if (regs[i]) {
@@ -1535,7 +1520,6 @@ void vi(int init)
 			case TK_CTL('_'): /* note: this is also ^7 per ascii */
 				if (vi_arg1 > 0)
 					goto switchbuf;
-				term_pos(xrows, led_pos(vi_msg, 0));
 				xleft = 0;
 				ex_exec("b");
 				vi_arg1 = vi_digit();
@@ -2047,7 +2031,7 @@ int main(int argc, char *argv[])
 		}
 		for (j = 1; argv[i][j]; j++) {
 			if (argv[i][j] == 's')
-				xvis |= 2;
+				xvis |= 2|4;
 			else if (argv[i][j] == 'e')
 				xvis |= 4;
 			else if (argv[i][j] == 'v')

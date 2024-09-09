@@ -347,7 +347,6 @@ int ex_exec(const char *ln);
 char *ex_read(char *msg);
 void ex_cprint(char *line, int r, int c, int ln);
 #define ex_print(line) ex_cprint(line, -1, 0, 1)
-void ex_show(char *msg);
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
