@@ -1561,8 +1561,11 @@ void vi(int init)
 				vc_status();
 				vi_mod |= 1;
 				break;
-			case TK_CTL('k'):
-				ex_exec("w");
+			case TK_CTL('k'):;
+				static struct lbuf *writexb;
+				if ((k = ex_exec("w")) && xb == writexb)
+					k = ex_exec("se nompt|w!");
+				writexb = k ? xb : NULL;
 				break;
 			case '#':
 				if (vi_lnnum & vi_arg1)
