@@ -444,7 +444,7 @@ extern int xgrp;
 extern int xpac;
 extern int xkwdcnt;
 extern int xkwddir;
-extern int ex_printed;
+extern int xmpt;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;

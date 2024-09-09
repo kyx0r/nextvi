@@ -262,14 +262,14 @@ static char *vi_char(void)
 
 static void vi_wait(void)
 {
-	if (ex_printed > 1) {
+	if (xmpt > 1) {
 		strcpy(vi_msg, "[any key to continue] ");
 		vi_drawmsg();
-		vi_char();
+		term_read();
 		vi_msg[0] = '\0';
 		vi_mod |= 1;
 	}
-	ex_printed = 0;
+	xmpt = 0;
 }
 
 static char *vi_prompt(char *msg, char *insert, int *kmap)
@@ -326,8 +326,8 @@ void ex_cprint(char *line, int r, int c, int ln)
 		return;
 	}
 	syn_blockhl = 0;
-	if (!xvis) {
-		if (ex_printed == 1)
+	if (!(xvis & 4)) {
+		if (xmpt == 1)
 			term_chr('\n');
 		term_pos(xrows, led_pos(vi_msg, 0));
 		snprintf(vi_msg, sizeof(vi_msg), "%s", line);
@@ -335,9 +335,9 @@ void ex_cprint(char *line, int r, int c, int ln)
 	syn_setft("/-");
 	led_recrender(line, r, c, xleft, xleft + xcols - c)
 	syn_setft(ex_ft);
-	if (xvis & 4 || (ln && ex_printed > 0))
+	if (xvis & 4 || (ln && xmpt > 0))
 		term_chr('\n');
-	ex_printed += (ln || ex_printed);
+	xmpt += (ln || xmpt);
 }
 
 static int vi_yankbuf(void)
@@ -1529,7 +1529,7 @@ void vi(int init)
 					vc_status();
 				}
 				vi_mod |= 1;
-				ex_printed = 0;
+				xmpt = 0;
 				break;
 			case 'u':
 				undo:
@@ -2034,11 +2034,13 @@ int main(int argc, char *argv[])
 				xvis |= 2|4;
 			else if (argv[i][j] == 'e')
 				xvis |= 4;
+			else if (argv[i][j] == 'm')
+				xvis |= 8;
 			else if (argv[i][j] == 'v')
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Usage: %s [-esv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Usage: %s [-esvm] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
