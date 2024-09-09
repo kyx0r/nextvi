@@ -40,7 +40,7 @@ static int dir_reorder(char **chrs, int *ord, int end)
 				dir_reverse(ord, r_beg+beg, r_end+beg);
 			if (dmarks[found].dir < 0)
 				dir_reverse(ord, c_beg+beg, c_end+beg);
-			beg = r_end+beg;
+			beg += r_end;
 		} else
 			break;
 	}
@@ -99,11 +99,9 @@ int *ren_position(char *s, char ***chrs, int *n)
 	chrs[0] = uc_chop(s, n);
 	int i, *off, *pos, nn = *n, cpos = 0;
 	pos = emalloc(((nn + 1) * sizeof(pos[0])) * 2);
-	if (xorder && dir_reorder(chrs[0], pos, nn))
-	{
+	if (xorder && dir_reorder(chrs[0], pos, nn)) {
 		off = &pos[nn+1];
-		for (i = 0; i < nn; i++)
-			off[pos[i]] = i;
+		memcpy(off, pos, nn * sizeof(pos[0]));
 		for (i = 0; i < nn; i++) {
 			pos[off[i]] = cpos;
 			cpos += ren_cwid(chrs[0][off[i]], cpos);
@@ -118,7 +116,7 @@ int *ren_position(char *s, char ***chrs, int *n)
 	rstate->ren_laststr = s;
 	rstate->ren_lastpos = pos;
 	rstate->ren_lastchrs = chrs[0];
-	rstate->ren_lastn = *n;
+	rstate->ren_lastn = nn;
 	return pos;
 }
 
