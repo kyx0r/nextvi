@@ -141,42 +141,11 @@ static void vi_drawrow(int row)
 	char *s = lbuf_get(xb, row-movedown);
 	static char ch1[1] = "~";
 	static char ch2[1] = "";
-	if (!s) {
-		s = ch1;
-		if (*vi_word && row == xrow+1)
-			goto last_row;
-		led_print(row ? s : ch2, row - xtop, 0);
-		return;
-	}
-	if (lnnum) {
-		char tmp[100];
-		c = tmp, i = 0, i1 = 0;
-		if (lnnum == 1 || lnnum & 2) {
-			c = itoa(row+1-movedown, tmp);
-			*c++ = ' ';
-			i = snprintf(0, 0, "%d", xtop+xrows);
-		}
-		if (lnnum == 1 || lnnum & 4) {
-			c = itoa(abs(xrow-row+movedown), c);
-			*c++ = ' ';
-			i1 = snprintf(0, 0, "%d", xrows);
-		}
-		*c = '\0';
-		l1 = (c - tmp) + (i+i1 - (strlen(tmp) - !!i - !!i1));
-		vi_lncol = dir_context(s) < 0 ? 0 : l1;
-		memset(c, ' ', l1 - (c - tmp));
-		c[l1 - (c - tmp)] = '\0';
-		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
-		led_prender(tmp, row - xtop, 0, 0, l1);
-	}
 	if (*vi_word && row == xrow+1) {
-		last_row:;
 		int noff, nrow;
 		c = lbuf_get(xb, xrow);
-		if (!c || *c == '\n') {
-			led_print(s, row - xtop, 0);
-			return;
-		}
+		if (!c || *c == '\n')
+			goto skip;
 		char tmp[xcols+3], snum[100];
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
@@ -208,8 +177,40 @@ static void vi_drawrow(int row)
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
-	} else if (!lnnum)
-		led_print(s, row - xtop, 0);
+		goto ret;
+	}
+	skip:
+	if (!s) {
+		s = ch1;
+		led_print(row ? s : ch2, row - xtop, 0);
+		goto ret;
+	}
+	if (lnnum) {
+		char tmp[100];
+		c = tmp, i = 0, i1 = 0;
+		if (lnnum == 1 || lnnum & 2) {
+			c = itoa(row+1-movedown, tmp);
+			*c++ = ' ';
+			i = snprintf(0, 0, "%d", xtop+xrows);
+		}
+		if (lnnum == 1 || lnnum & 4) {
+			c = itoa(abs(xrow-row+movedown), c);
+			*c++ = ' ';
+			i1 = snprintf(0, 0, "%d", xrows);
+		}
+		*c = '\0';
+		l1 = (c - tmp) + (i+i1 - (strlen(tmp) - !!i - !!i1));
+		vi_lncol = dir_context(s) < 0 ? 0 : l1;
+		memset(c, ' ', l1 - (c - tmp));
+		c[l1 - (c - tmp)] = '\0';
+		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
+		preserve(int, syn_blockhl, 0)
+		led_prender(tmp, row - xtop, 0, 0, l1);
+		restore(syn_blockhl)
+		goto ret;
+	}
+	led_print(s, row - xtop, 0);
+	ret:
 	if (row+1 == MIN(xtop + xrows, lbuf_len(xb)+movedown))
 		movedown = 0;
 }
