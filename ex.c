@@ -519,14 +519,15 @@ static int ec_write(char *loc, char *cmd, char *arg)
 		free(ibuf);
 	} else {
 		int fd;
-		if (!strchr(cmd, '!') && !strcmp(ex_path, path) &&
-				mtime(ex_path) > ex_buf->mtime) {
-			ex_print("write failed: file changed");
-			return 1;
-		}
-		if (!strchr(cmd, '!') && arg[0] && mtime(arg) >= 0) {
-			ex_print("write failed: file exists");
-			return 1;
+		if (!strchr(cmd, '!')) {
+			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
+				ex_print("write failed: file changed");
+				return 1;
+			}
+			if (arg[0] && mtime(path) >= 0) {
+				ex_print("write failed: file exists");
+				return 1;
+			}
 		}
 		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode());
 		if (fd < 0) {
