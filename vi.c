@@ -183,14 +183,15 @@ static void vi_drawrow(int row)
 	if (!s)
 		s = row ? ch1 : ch2;
 	else if (lnnum) {
-		char tmp[100];
+		char tmp[100], tmp1[100], *p;
 		c = tmp, i = 0, i1 = 0;
 		if (lnnum == 1 || lnnum & 2) {
 			c = itoa(row+1-movedown, tmp);
 			*c++ = ' ';
 			i = snprintf(0, 0, "%d", xtop+xrows);
 		}
-		if (lnnum == 1 || lnnum & 4) {
+		if (lnnum == 1 || lnnum & 4 || lnnum & 8) {
+			p = c;
 			c = itoa(abs(xrow-row+movedown), c);
 			*c++ = ' ';
 			i1 = snprintf(0, 0, "%d", xrows);
@@ -202,6 +203,14 @@ static void vi_drawrow(int row)
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
 		preserve(int, syn_blockhl, 0)
+		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
+			for (i = 0; s[i] == '\t' || s[i] == ' '; i++){}
+			c = itoa(abs(xrow-row+movedown), tmp1);
+			i1 = ren_pos(s, i)-(c-tmp1)-1;
+			if (i1 > 0)
+				memset(p, ' ', strlen(p));
+			led_prender(tmp1, row - xtop, l1+i1, 0, l1);
+		}
 		led_prender(tmp, row - xtop, 0, 0, l1);
 		restore(syn_blockhl)
 		goto ret;
@@ -1405,7 +1414,7 @@ void vi(int init)
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
-		if (*vi_word || vi_lnnum == 1 || vi_lnnum & 4)
+		if (*vi_word || vi_lnnum == 1 || vi_lnnum & 4 || vi_lnnum & 8)
 			vi_mod = 4;
 		if (vi_lnnum == 1) {
 			vi_lnnum = 0;
