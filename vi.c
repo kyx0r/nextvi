@@ -203,6 +203,7 @@ static void vi_drawrow(int row)
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
 		preserve(int, syn_blockhl, 0)
+		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
 			i1 = -((itoa(abs(xrow-row+movedown), tmp1) - tmp1)+1);
 			for (i = 0; s[i] == '\t' || s[i] == ' '; i++)
@@ -212,6 +213,7 @@ static void vi_drawrow(int row)
 			led_prender(tmp1, row - xtop, l1+i1, 0, l1);
 		}
 		led_prender(tmp, row - xtop, 0, 0, l1);
+		syn_setft(ex_ft);
 		restore(syn_blockhl)
 		goto ret;
 	}

@@ -86,6 +86,7 @@ There are 4 modes (a toggle and controlled by vi_arg1):
 	2# - permanent. shows global numbers.
 	4# - permanent. shows relative numbers after indentation.
 	8# - permanent. shows relative numbers.
+Line number colors are customizeable in conf.c under "/##" ft.
 4. Added invisible character view, keybind: V
 5. Added regex for changing spaces to tabs and vice versa, (controlled by vi_arg1)
 keybind: vi, vI
