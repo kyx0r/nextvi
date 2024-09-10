@@ -190,8 +190,8 @@ static void vi_drawrow(int row)
 			*c++ = ' ';
 			i = snprintf(0, 0, "%d", xtop+xrows);
 		}
+		p = c;
 		if (lnnum == 1 || lnnum & 4 || lnnum & 8) {
-			p = c;
 			c = itoa(abs(xrow-row+movedown), c);
 			*c++ = ' ';
 			i1 = snprintf(0, 0, "%d", xrows);
