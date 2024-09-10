@@ -478,6 +478,17 @@ At the zenith of your vi/nextvi education you'll find that EXINIT can be
 used to achieve arbitrary level of customization. Using new ex command "tp"
 any sequence of vi/ex commands can be performed at startup. This is where
 real "groking vi" starts.
+
+To run the examples below:
+There are invisible/non printing characters inside the EXINIT string. Visual
+copy paste in most programs will not copy it correctly. Copy it into a file and
+execute like this:
+	$ source ./init.sh
+The new line inside the EXINIT string is literal and is represented with "\n".
+To suppress EXINIT invoke vi like so: EXINIT= vi file
+When scripting for improved performance, output can be disabled by running :se noled
+and the initial load message can be suppressed using -m commandline.
+
 Example 1:
 There is a dictionary file (assume vi.c), which we always want to have indexed
 at startup for autocomplete feature in 31.
@@ -497,10 +508,6 @@ This macro gets loaded into register a, when @a is executed the macro will
 create { and closing } below the cursor leaving cursor in insert mode in
 between the braces. This is something you would commonly do in C like
 programming language.
-The new line inside the EXINIT string is literal and is repsented with "\n".
-To suppress EXINIT invoke vi like so: EXINIT= vi file
-When scripting for improved performance, output can be disabled by running :se noled
-and the initial load message can be suppressed using -m commandline.
 
 - Uppercase registers
 In vi uppercase registers append to the lowercase register instead of
