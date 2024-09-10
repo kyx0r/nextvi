@@ -204,9 +204,9 @@ static void vi_drawrow(int row)
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
 		preserve(int, syn_blockhl, 0)
 		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
-			for (i = 0; s[i] == '\t' || s[i] == ' '; i++){}
-			c = itoa(abs(xrow-row+movedown), tmp1);
-			i1 = ren_pos(s, i)-(c-tmp1)-1;
+			i1 = -((itoa(abs(xrow-row+movedown), tmp1) - tmp1)+1);
+			for (i = 0; s[i] == '\t' || s[i] == ' '; i++)
+				i1 += ren_next(s, i, dir_context(s));
 			if (i1 > 0)
 				memset(p, ' ', strlen(p));
 			led_prender(tmp1, row - xtop, l1+i1, 0, l1);
