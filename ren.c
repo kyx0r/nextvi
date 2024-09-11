@@ -190,10 +190,7 @@ int ren_next(char *s, int p, int dir)
 	int n;
 	char **c;
 	int *pos = ren_position(s, &c, &n);
-	if (dir >= 0)
-		p = pos[ren_posfind(pos, n, p+1, 1)];
-	else
-		p = pos[ren_posfind(pos, n, p-1, -1)];
+	p = pos[ren_posfind(pos, n, p+dir, dir)];
 	return *c[ren_off(s, p)] != '\n' ? p : -1;
 }
 
