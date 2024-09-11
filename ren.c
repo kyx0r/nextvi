@@ -120,24 +120,24 @@ int *ren_position(char *s, char ***chrs, int *n)
 	return pos;
 }
 
-/* find the next character after visual position p; if cur, start from p itself */
-static int *pos_next(int *pos, int n, int p, int cur)
+/* find the next character after visual position p */
+static int pos_next(int *pos, int n, int p)
 {
 	int i, ret = -1;
 	for (i = 0; i < n; i++)
-		if (pos[i] - !cur >= p && (ret < 0 || pos[i] < pos[ret]))
+		if (pos[i] >= p && (ret < 0 || pos[i] < pos[ret]))
 			ret = i;
-	return ret >= 0 ? &pos[ret] : &pos[n];
+	return ret >= 0 ? ret : n;
 }
 
-/* find the previous character after visual position p; if cur, start from p itself */
-static int *pos_prev(int *pos, int n, int p, int cur)
+/* find the previous character after visual position p */
+static int pos_prev(int *pos, int n, int p)
 {
 	int i, ret = -1;
 	for (i = 0; i < n; i++)
-		if (pos[i] + !cur <= p && (ret < 0 || pos[i] > pos[ret]))
+		if (pos[i] <= p && (ret < 0 || pos[i] > pos[ret]))
 			ret = i;
-	return ret >= 0 ? &pos[ret] : &pos[n];
+	return ret >= 0 ? ret : n;
 }
 
 /* convert character offset to visual position */
@@ -156,33 +156,35 @@ int ren_off(char *s, int p)
 	int n;
 	char **c;
 	int *pos = ren_position(s, &c, &n);
-	int *ch = pos_prev(pos, n, p, 1);
+	int *ch = &pos[pos_prev(pos, n, p)];
 	return ch - pos;
 }
 
 /* adjust cursor position */
 int ren_cursor(char *s, int p)
 {
-	int n, next;
-	int *pos;
+	int n, nn, *pos;
 	char **c;
 	if (!s)
 		return 0;
 	pos = ren_position(s, &c, &n);
-	p = *pos_prev(pos, n, p, 1);
-	if (*uc_chr(s, ren_off(s, p)) == '\n')
-		p = *pos_prev(pos, n, p, 0);
-	next = *pos_next(pos, n, p, 0) - 1;
-	return next >= 0 ? next : 0;
+	nn = pos_next(pos, n, p+1);
+	p = pos[nn];
+	if (n == nn)
+		p = pos[pos_prev(pos, n, p)];
+	return p - (*c[n-1] == '\n');
 }
 
 /* return an offset before EOL */
 int ren_noeol(char *s, int o)
 {
-	int n = s ? uc_slen(s) : 0;
-	if (o >= n)
-		o = MAX(0, n - 1);
-	return o > 0 && uc_chr(s, o)[0] == '\n' ? o - 1 : o;
+	if (!s || o <= 0)
+		return 0;
+	int n;
+	char **c;
+	ren_position(s, &c, &n);
+	o = o >= n ? n - 1 : o;
+	return o - (*c[o] == '\n');
 }
 
 /* the position of the next character */
@@ -191,12 +193,11 @@ int ren_next(char *s, int p, int dir)
 	int n;
 	char **c;
 	int *pos = ren_position(s, &c, &n);
-	p = *pos_prev(pos, n, p, 1);
 	if (dir >= 0)
-		p = *pos_next(pos, n, p, 0);
+		p = pos[pos_next(pos, n, p+1)];
 	else
-		p = *pos_prev(pos, n, p, 0);
-	return s && uc_chr(s, ren_off(s, p))[0] != '\n' ? p : -1;
+		p = pos[pos_prev(pos, n, p-1)];
+	return *c[ren_off(s, p)] != '\n' ? p : -1;
 }
 
 int ren_cwid(char *s, int pos)
