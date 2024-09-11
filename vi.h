@@ -155,10 +155,10 @@ int lbuf_pair(struct lbuf *lb, int *row, int *off);
 
 /* ren.c rendering lines */
 typedef struct {
-	char **ren_lastchrs;
-	char *ren_laststr;	/* to prevent redundant computations, ensure pointer uniqueness */
-	int *ren_lastpos;
-	int ren_lastn;
+	char **chrs;
+	char *s;	/* to prevent redundant computations, ensure pointer uniqueness */
+	int *pos;
+	int n;
 } ren_state;
 extern ren_state *rstate;
 void ren_done(void);
@@ -283,22 +283,21 @@ char *xgetenv(char* q[]);
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
-#define led_crender(msg, row, col, beg, end) \
+#define _led_render(msg, row, col, beg, end, kill) \
 { \
 	int record = term_record; \
 	term_record = 1; \
 	term_pos(row, col); \
-	term_kill(); \
+	kill \
 	led_render(msg, beg, end); \
 	if (!record) \
 		term_commit(); \
 } \
 
-#define led_print(msg, row, col) led_crender(msg, row, col, xleft, xleft + xcols)
-#define led_reprint(msg, row, col) { rstate->ren_laststr = NULL; led_print(msg, row, col); }
+#define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, /**/)
+#define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
 #define led_recrender(msg, row, col, beg, end) \
-{ rstate->ren_laststr = NULL; led_crender(msg, row, col, beg, end); } \
-
+{ rstate->s = NULL; led_crender(msg, row, col, beg, end); }
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
@@ -345,7 +344,6 @@ int ex_exec(const char *ln);
 char *ex_read(char *msg);
 void ex_cprint(char *line, int r, int c, int ln);
 #define ex_print(line) ex_cprint(line, -1, 0, 1)
-void ex_show(char *msg);
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
@@ -443,10 +441,11 @@ extern int xgrp;
 extern int xpac;
 extern int xkwdcnt;
 extern int xkwddir;
-extern int ex_printed;
+extern int xmpt;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;
 extern char *fs_exdir;
 extern int vi_hidch;
 extern int vi_insmov;
+extern int vi_lncol;

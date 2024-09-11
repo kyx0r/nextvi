@@ -40,7 +40,7 @@ static int dir_reorder(char **chrs, int *ord, int end)
 				dir_reverse(ord, r_beg+beg, r_end+beg);
 			if (dmarks[found].dir < 0)
 				dir_reverse(ord, c_beg+beg, c_end+beg);
-			beg = r_end+beg;
+			beg += r_end;
 		} else
 			break;
 	}
@@ -83,27 +83,24 @@ ren_state *rstate = &rstates[0];
 
 void ren_done(void)
 {
-	free(rstate->ren_lastpos);
-	free(rstate->ren_lastchrs);
+	free(rstate->pos);
+	free(rstate->chrs);
 }
 
 /* specify the screen position of the characters in s */
 int *ren_position(char *s, char ***chrs, int *n)
 {
-	if (rstate->ren_laststr == s) {
-		chrs[0] = rstate->ren_lastchrs;
-		*n = rstate->ren_lastn;
-		return rstate->ren_lastpos;
+	if (rstate->s == s) {
+		chrs[0] = rstate->chrs;
+		*n = rstate->n;
+		return rstate->pos;
 	} else
 		ren_done();
 	chrs[0] = uc_chop(s, n);
 	int i, *off, *pos, nn = *n, cpos = 0;
 	pos = emalloc(((nn + 1) * sizeof(pos[0])) * 2);
-	if (xorder && dir_reorder(chrs[0], pos, nn))
-	{
-		off = &pos[nn+1];
-		for (i = 0; i < nn; i++)
-			off[pos[i]] = i;
+	off = &pos[nn+1];
+	if (xorder && dir_reorder(chrs[0], off, nn)) {
 		for (i = 0; i < nn; i++) {
 			pos[off[i]] = cpos;
 			cpos += ren_cwid(chrs[0][off[i]], cpos);
@@ -115,31 +112,28 @@ int *ren_position(char *s, char ***chrs, int *n)
 		}
 	}
 	pos[nn] = cpos;
-	rstate->ren_laststr = s;
-	rstate->ren_lastpos = pos;
-	rstate->ren_lastchrs = chrs[0];
-	rstate->ren_lastn = *n;
+	rstate->s = s;
+	rstate->pos = pos;
+	rstate->chrs = chrs[0];
+	rstate->n = nn;
 	return pos;
 }
 
-/* find the next character after visual position p; if cur, start from p itself */
-static int *pos_next(int *pos, int n, int p, int cur)
+/* find the character at visual position p, rounding left or right */
+static int ren_posfind(int *pos, int n, int p, int dir)
 {
 	int i, ret = -1;
+	if (dir < 0)
+		goto prev;
 	for (i = 0; i < n; i++)
-		if (pos[i] - !cur >= p && (ret < 0 || pos[i] < pos[ret]))
+		if (pos[i] >= p && (ret < 0 || pos[i] < pos[ret]))
 			ret = i;
-	return ret >= 0 ? &pos[ret] : &pos[n];
-}
-
-/* find the previous character after visual position p; if cur, start from p itself */
-static int *pos_prev(int *pos, int n, int p, int cur)
-{
-	int i, ret = -1;
+	return ret >= 0 ? ret : n;
+	prev:
 	for (i = 0; i < n; i++)
-		if (pos[i] + !cur <= p && (ret < 0 || pos[i] > pos[ret]))
+		if (pos[i] <= p && (ret < 0 || pos[i] > pos[ret]))
 			ret = i;
-	return ret >= 0 ? &pos[ret] : &pos[n];
+	return ret >= 0 ? ret : n;
 }
 
 /* convert character offset to visual position */
@@ -158,33 +152,35 @@ int ren_off(char *s, int p)
 	int n;
 	char **c;
 	int *pos = ren_position(s, &c, &n);
-	int *ch = pos_prev(pos, n, p, 1);
+	int *ch = &pos[ren_posfind(pos, n, p, -1)];
 	return ch - pos;
 }
 
 /* adjust cursor position */
 int ren_cursor(char *s, int p)
 {
-	int n, next;
-	int *pos;
+	int n, nn, *pos;
 	char **c;
 	if (!s)
 		return 0;
 	pos = ren_position(s, &c, &n);
-	p = *pos_prev(pos, n, p, 1);
-	if (*uc_chr(s, ren_off(s, p)) == '\n')
-		p = *pos_prev(pos, n, p, 0);
-	next = *pos_next(pos, n, p, 0) - 1;
-	return next >= 0 ? next : 0;
+	nn = ren_posfind(pos, n, p+1, 1);
+	p = pos[nn];
+	if (n == nn)
+		p = pos[ren_posfind(pos, n, p-1, -1)];
+	return p - (*c[n-!!n] == '\n');
 }
 
 /* return an offset before EOL */
 int ren_noeol(char *s, int o)
 {
-	int n = s ? uc_slen(s) : 0;
-	if (o >= n)
-		o = MAX(0, n - 1);
-	return o > 0 && uc_chr(s, o)[0] == '\n' ? o - 1 : o;
+	if (!s || o <= 0)
+		return 0;
+	int n;
+	char **c;
+	ren_position(s, &c, &n);
+	o = o >= n ? n - !!n : o;
+	return o - (*c[o] == '\n');
 }
 
 /* the position of the next character */
@@ -193,12 +189,8 @@ int ren_next(char *s, int p, int dir)
 	int n;
 	char **c;
 	int *pos = ren_position(s, &c, &n);
-	p = *pos_prev(pos, n, p, 1);
-	if (dir >= 0)
-		p = *pos_next(pos, n, p, 0);
-	else
-		p = *pos_prev(pos, n, p, 0);
-	return s && uc_chr(s, ren_off(s, p))[0] != '\n' ? p : -1;
+	p = pos[ren_posfind(pos, n, p+dir, dir)];
+	return *c[ren_off(s, p)] != '\n' ? p : -1;
 }
 
 int ren_cwid(char *s, int pos)
