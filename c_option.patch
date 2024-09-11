@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index d45b663..8f6c532 100644
+index 0ae7d17..046d840 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1114,7 +1114,7 @@ void ex(void)
+@@ -1121,7 +1121,7 @@ void ex(void)
  	}
  }
  
@@ -11,18 +11,18 @@ index d45b663..8f6c532 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1125,4 +1125,6 @@ void ex_init(char **files, int n)
- 	} while (--n > 0);
+@@ -1134,4 +1134,6 @@ void ex_init(char **files, int n)
+ 	xvis &= ~8;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
 +	for (int i = 0; i < cmdnum; i++)
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index bad646d..6f9503e 100644
+index 4111eaa..99dabb9 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2026,7 +2026,8 @@ static int setup_signals(void) {
+@@ -2029,7 +2029,8 @@ static int setup_signals(void) {
  
  int main(int argc, char *argv[])
  {
@@ -32,8 +32,8 @@ index bad646d..6f9503e 100644
  	if (!setup_signals())
  		return EXIT_FAILURE;
  	dir_init();
-@@ -2045,15 +2046,26 @@ int main(int argc, char *argv[])
- 				xvis |= 4;
+@@ -2050,15 +2051,26 @@ int main(int argc, char *argv[])
+ 				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
 -			else {
@@ -50,8 +50,8 @@ index bad646d..6f9503e 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Usage: %s [-esv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Usage: %s [-esv] [-c cmd] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
@@ -63,13 +63,13 @@ index bad646d..6f9503e 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 0810180..f555300 100644
+index b358bf1..db3439c 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -346,7 +346,7 @@ char *ex_read(char *msg);
+@@ -344,7 +344,7 @@ int ex_exec(const char *ln);
+ char *ex_read(char *msg);
  void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
- void ex_show(char *msg);
 -void ex_init(char **files, int n);
 +void ex_init(char **files, int n, char** cmds, int cmdnum);
  void ex_bufpostfix(struct buf *p, int clear);
