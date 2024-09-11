@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index d45b663..1df788b 100644
+index 0ae7d17..1abe2c3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -391,7 +391,9 @@ int ex_edit(const char *path, int len)
@@ -23,7 +23,7 @@ index d45b663..1df788b 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1116,13 +1121,24 @@ void ex(void)
+@@ -1123,15 +1128,26 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -46,6 +46,8 @@ index d45b663..1df788b 100644
 +		lbuf_saved(xb, 1);
 +		ec_edit("", NULL, ""); /* shebang patch compat */
 +	}
+ 	xmpt = 0;
+ 	xvis &= ~8;
 +	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -129,10 +131,10 @@ index 83bdc97..dbabd87 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index bad646d..e3a737b 100644
+index 4111eaa..6235e47 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2011,6 +2011,8 @@ void vi(int init)
+@@ -2014,6 +2014,8 @@ void vi(int init)
  
  static void sighandler(int signo)
  {
@@ -141,7 +143,7 @@ index bad646d..e3a737b 100644
  	vi_back(TK_CTL('l'));
  }
  
-@@ -2018,8 +2020,9 @@ static int setup_signals(void) {
+@@ -2021,8 +2023,9 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -153,7 +155,7 @@ index bad646d..e3a737b 100644
  		return 0;
  	return 1;
  }
-@@ -2037,7 +2040,8 @@ int main(int argc, char *argv[])
+@@ -2040,7 +2043,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -162,13 +164,16 @@ index bad646d..e3a737b 100644
 +			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
  		for (j = 1; argv[i][j]; j++) {
  			if (argv[i][j] == 's')
- 				xvis |= 2;
+ 				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 0810180..7c93b73 100644
+index b358bf1..fac5a7b 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -450,3 +450,4 @@ extern rset *fsincl;
- extern char *fs_exdir;
- extern int vi_hidch;
- extern int vi_insmov;
+@@ -416,6 +416,7 @@ void vi_regput(int c, const char *s, int ln);
+ /* file system */
+ void dir_calc(char *path);
+ /* global variables */
 +extern int stdin_fd;
+ extern int xrow;
+ extern int xoff;
+ extern int xtop;
