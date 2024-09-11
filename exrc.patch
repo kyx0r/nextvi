@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index d45b663..3cbac4d 100644
+index 0ae7d17..1ffad0b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xgrp = 2;			/* regex search group */
@@ -10,15 +10,15 @@ index d45b663..3cbac4d 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -847,6 +848,7 @@ static struct option {
- 	{"grp", &xgrp},
- 	{"pac", &xpac},
- 	{"led", &xled},
+@@ -843,6 +844,7 @@ static struct option {
+ 	{"td", &xtd},
+ 	{"shape", &xshape},
+ 	{"order", &xorder},
 +	{"exrc", &xexrc},
- };
- 
- static char *cutword(char *s, char *d)
-@@ -1114,6 +1116,47 @@ void ex(void)
+ 	{"hl", &xhl},
+ 	{"hll", &xhll},
+ 	{"hlw", &xhlw},
+@@ -1121,6 +1123,47 @@ void ex(void)
  	}
  }
  
@@ -66,10 +66,10 @@ index d45b663..3cbac4d 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1123,6 +1166,16 @@ void ex_init(char **files, int n)
- 		ec_edit("", "e", s);
- 		s = *(++files);
+@@ -1132,6 +1175,16 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
+ 	xmpt = 0;
+ 	xvis &= ~8;
 -	if ((s = getenv("EXINIT")))
 +	if ((s = getenv("EXINIT"))) {
  		ex_command(s)
@@ -85,7 +85,7 @@ index d45b663..3cbac4d 100644
 +		load_exrc(".exrc");
  }
 diff --git a/vi.c b/vi.c
-index bad646d..fd61386 100644
+index 4111eaa..cb9d329 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -18,6 +18,7 @@
