@@ -290,7 +290,7 @@ static void led_printparts(sbuf *sb, int ps, char *post)
 	int idir = 0, next = sb->s[ps];
 	sbuf_str(sb, post)
 	sbuf_set(sb, '\0', 4)
-	rstate->ren_laststr = NULL;
+	rstate->s = NULL;
 	ren_position(sb->s+ps, &(char**){NULL}, &off);
 	off -= uc_slen(post);
 	pos = ren_cursor(sb->s+ps, ren_pos(sb->s+ps, MAX(0, off - 1)));
@@ -533,7 +533,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 					for (int left = 0; r < xrows; r++) {
 						led_crender(sug, r, 0, left, left+xcols)
 						left += xcols;
-						if (left >= rstate->ren_lastpos[rstate->ren_lastn])
+						if (left >= rstate->pos[rstate->n])
 							break;
 					}
 					restore(xtd)
