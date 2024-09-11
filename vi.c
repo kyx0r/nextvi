@@ -205,7 +205,7 @@ static void vi_drawrow(int row)
 		preserve(int, syn_blockhl, 0)
 		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
-			for (i1 = 0; isspace(*rstate->chrs[ren_off(s, i1)]);)
+			for (i1 = 0; strchr(" \t", *rstate->chrs[ren_off(s, i1)]);)
 				i1 = ren_next(s, i1, 1);
 			i1 -= (itoa(abs(xrow-row+movedown), tmp1) - tmp1)+1;
 			if (i1 > 0)
