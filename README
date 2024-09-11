@@ -4,8 +4,7 @@ Nextvi is a vi/ex editor. It can edit bidirectional UTF-8 text.
 
 NOTICE
 ======
-As of 2022-01-01 Nextvi development has been driven to completion.
-No new features are being added, old ones polish and improve.
+Master branch includes only the core feature set. See PATCHES section.
 Be sure to read Q1 in the FAQ section of this file before doing anything else.
 
 NAME
@@ -236,6 +235,7 @@ Running "inc" without an arg will disable all filters.
  - Added key that opens the file based on text from the cursor.
    keybind: ^i or TAB
 34. Added key to save current file keybind: ^k
+If there was a soft error writing to the file, hit ^k again to force write.
 35. The new special character "/" for ft in conf.c now signifies that the
 regex will be applied on any file. "/" is forbidden filename character on
 unix, the filetype that includes "/" is for internal use.
@@ -480,7 +480,7 @@ used to achieve arbitrary level of customization. Using new ex command "tp"
 any sequence of vi/ex commands can be performed at startup. This is where
 real "groking vi" starts.
 
-To run the examples below:
+To run examples below:
 There are invisible/non printing characters inside the EXINIT string. Visual
 copy paste in most programs will not copy it correctly. Copy it into a file and
 execute like this:
