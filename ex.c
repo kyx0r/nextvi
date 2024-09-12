@@ -1111,6 +1111,7 @@ int ex_exec(const char *ln)
 /* ex main loop */
 void ex(void)
 {
+	vi_lncol = 0;
 	while (!xquit) {
 		char *ln = ex_read(":");
 		if (ln) {
