@@ -27,7 +27,7 @@ index 1187892..b61eef9 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index 658aaeb..2b138e4 100644
+index 0dcc579..2ca1b76 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -78,6 +78,13 @@ void dir_init(void)
@@ -44,7 +44,7 @@ index 658aaeb..2b138e4 100644
  static ren_state rstates[1];
  ren_state *rstate = &rstates[0];
  
-@@ -374,3 +381,10 @@ void syn_init(void)
+@@ -373,3 +380,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -56,10 +56,10 @@ index 658aaeb..2b138e4 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index d80fdda..885aa70 100644
+index 0b5ce57..87a616f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -598,6 +598,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -600,6 +600,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -72,7 +72,7 @@ index d80fdda..885aa70 100644
  static void vi_regprint(void)
  {
  	static char buf[5];
-@@ -2064,6 +2070,7 @@ int main(int argc, char *argv[])
+@@ -2066,6 +2072,7 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -80,7 +80,7 @@ index d80fdda..885aa70 100644
  	term_done();
  	if (xvis & 4)
  		return EXIT_SUCCESS;
-@@ -2072,5 +2079,12 @@ int main(int argc, char *argv[])
+@@ -2074,5 +2081,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();

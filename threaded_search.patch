@@ -175,7 +175,7 @@ index 87d24c5..b33616e 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index d80fdda..50e6df8 100644
+index 0b5ce57..57b096d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
