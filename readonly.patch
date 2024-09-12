@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index d45b663..706acff 100644
+index 0ae7d17..423c7b8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -34,6 +34,7 @@ static int xbufsmax;		/* number of buffers */
@@ -27,35 +27,18 @@ index d45b663..706acff 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -516,14 +520,19 @@ static int ec_write(char *loc, char *cmd, char *arg)
- 		free(ibuf);
+@@ -520,6 +524,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
--		if (!strchr(cmd, '!') && !strcmp(ex_path, path) &&
--				mtime(ex_path) > ex_buf->mtime) {
--			ex_show("write failed: file changed");
--			return 1;
--		}
--		if (!strchr(cmd, '!') && arg[0] && mtime(arg) >= 0) {
--			ex_show("write failed: file exists");
--			return 1;
-+		if (!strchr(cmd, '!')) {
+ 		if (!strchr(cmd, '!')) {
 +			if (ex_buf->readonly) {
 +				ex_show("write failed: readonly option is set");
 +				return 1;
 +			}
-+			if (!strcmp(ex_path, path) && mtime(ex_path) > ex_buf->mtime) {
-+				ex_show("write failed: file changed");
-+				return 1;
-+			}
-+			if (arg[0] && mtime(arg) >= 0) {
-+				ex_show("write failed: file exists");
-+				return 1;
-+			}
- 		}
- 		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode());
- 		if (fd < 0) {
-@@ -989,6 +998,12 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
+ 			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
+ 				ex_print("write failed: file changed");
+ 				return 1;
+@@ -996,6 +1004,12 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -68,7 +51,7 @@ index d45b663..706acff 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1037,6 +1052,7 @@ static struct excmd {
+@@ -1044,6 +1058,7 @@ static struct excmd {
  	{"inc", ec_setincl},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
@@ -77,27 +60,27 @@ index d45b663..706acff 100644
  };
  
 diff --git a/vi.c b/vi.c
-index bad646d..39626f2 100644
+index 4111eaa..6e69bb3 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2045,9 +2045,11 @@ int main(int argc, char *argv[])
- 				xvis |= 4;
+@@ -2050,9 +2050,11 @@ int main(int argc, char *argv[])
+ 				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
 +			else if (argv[i][j] == 'R')
 +				readonly = 1;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Usage: %s [-esv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Usage: %s [-eRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Usage: %s [-emRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 0810180..def8734 100644
+index b358bf1..68648a4 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -311,6 +311,7 @@ struct buf {
+@@ -310,6 +310,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -105,8 +88,8 @@ index 0810180..def8734 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -450,3 +451,4 @@ extern rset *fsincl;
- extern char *fs_exdir;
+@@ -449,3 +450,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
+ extern int vi_lncol;
 +extern char readonly;
