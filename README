@@ -3,14 +3,6 @@ NEXTVI PATCHES
 Optional patches for Nextvi.
 Apply: patch < name.patch
 
-arrowkeys_normal.patch
---------------
-Adds arrows keys support in normal mode.
-
-arrowkeys_insert.patch
---------------
-Adds arrows keys support in insert mode.
-
 64bit.sh
 --------------
 Convert entire codebase to 64 bit long instead of int.
@@ -19,18 +11,23 @@ Run this after you've applied the patches. Most of the time you won't need
 this, this is just a future proof concept in order for me to test that the
 codebase cleanly converts to 64 bit.
 
+gen-widechars.sh
+--------------
+A script I use to update zwchars and dwchars in uc.c
+
+arrowkeys_normal.patch
+--------------
+Adds arrows keys support in normal mode.
+
+arrowkeys_insert.patch
+--------------
+Adds arrows keys support in insert mode.
+
 threaded_search.patch
 --------------
 Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
 aka libpthread
-
-colors_lnum.patch
---------------
-Demonstrates the most simple way one could go about customizing colors for
-linenumbers triggered by # keybind without breaking existing syntax
-highlights on the c filetype. More complicated approach can be to use
-syn_addhl() and a NULL pattern, however that requires more modifications.
 
 hl_part.patch
 --------------
@@ -73,11 +70,11 @@ stores the results in /grep/ buffer. At last, user will be switched to /grep/.
 Line information is stored and displayed with special new syntax highlight
 rules. Searched keyword is also highlighted.  Use the familiar keybind ^i or
 TAB on the wanted line to immediately open the file and goto the line
-specified.  Upon next use of ^x keybind, old results get discarded. To re-
-open /grep/ without discarding use new keybind vx The format of the lines
-stored is specifically designed to mirror the output of grep -r -n "str" .
-so that the feature can be substituted with a pipe command in case of a
-higher performing grep implementation or loading of cached results from script.
+specified. To quickly open /grep/ use new keybind: vx
+The format of the lines stored is specifically designed to mirror the output of
+grep -r -n "str" .
+The feature can be substituted with a pipe command in case of a higher performing
+grep implementation or loading of cached results from script.
 
 rstr.patch
 --------------
@@ -174,14 +171,9 @@ alternate-w-behaviour.patch
 --------------
 Implements more vim/like d/c/yw
 
-linewrap_wip.patch
+linewrap.patch
 --------------
-Soft line wrap. Adds a new ex option "lw" which will wrap the line
-when it reaches the terminal edge.
-TODO:
-Normal redraw - *somewhat done*
-Line operations - *have an idea*
-Insert mode - *not sure*
+TODO
 
 My current EXINIT setup:
 --------------
@@ -221,8 +213,4 @@ Use to create patch and diff files fast. It relies on
 you not saving the file prior to running the macro.
 @c = run ac command and reindex ac db
 
-export EXINIT="se noled|tp Oo{
-}kA
-	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp o:e \!p \$c|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*
-2x/\*\/
-2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<\$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\|w\\|\!git diff --no-index \%_ \%|tp 0\"ly$|tp o:ac  \\|tp i\\|u\\|ac3ls|tp 0\"cy$|tp o:cd \!p \$c|tp 0\"fy$|inc (^[\!.git]+[^\\/]+$)|tp 50u|se led"
+export EXINIT=$'se noled|tp Oo{\n}kA\n	|tp 1G2\"qY2j\"Qy$|tp oA {jo}koa|tp 0\"wy$|tp o:e \!p $c|tp 0\"ey$|tp oa\"\"i|tp 0\"ry$|tp oI/*A*/|tp 0\"aY|tp oi/*A*/|tp 0\"sy$|tp o/\/\*\n2x/\*\/\n2x|tp 02k2\"dY2j\"Dy$|tp o>\%<<$\%<<|tp 0\"xy$|tp o:\!cp \% \%_\\|w\\|\!git diff --no-index \%_ \%|tp 0\"ly$|tp o:ac  \\|tp i\\|u\\|ac3ls|tp 0\"cy$|tp o:cd \!p $c|tp 0\"fy$|inc (^[\!.git]+[^\\/]+$)|tp 50u|se led'
