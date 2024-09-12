@@ -183,14 +183,13 @@ int ren_noeol(char *s, int o)
 	return o - (o > 0 && *c[o] == '\n');
 }
 
-/* the position of the next character */
+/* the visual position of the next character */
 int ren_next(char *s, int p, int dir)
 {
 	int n;
 	char **c;
 	int *pos = ren_position(s, &c, &n);
-	p = pos[ren_posfind(pos, n, p+dir, dir)];
-	return *c[ren_off(s, p)] != '\n' ? p : -1;
+	return pos[ren_posfind(pos, n, p+dir, dir)];
 }
 
 int ren_cwid(char *s, int pos)
