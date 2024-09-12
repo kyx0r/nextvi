@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index d45b663..9e61ffb 100644
+index 0ae7d17..db6bfad 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index d45b663..9e61ffb 100644
  int xish = 1;			/* interactive shell */
  int xgrp = 2;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -843,6 +844,7 @@ static struct option {
+@@ -849,6 +850,7 @@ static struct option {
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
  	{"tbs", &xtabspc},
@@ -19,10 +19,10 @@ index d45b663..9e61ffb 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 2191531..e625f18 100644
+index 4d40f2b..38f5d9c 100644
 --- a/led.c
 +++ b/led.c
-@@ -377,6 +377,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
+@@ -382,6 +382,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
  	term_pos(xrow - xtop, 0);
  }
  
@@ -37,7 +37,7 @@ index 2191531..e625f18 100644
  /* read a line from the terminal */
  static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  		int *key, int *kmap, int orow, int lsh)
-@@ -384,6 +392,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -389,6 +397,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int len, p_reg = 0;
  	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
@@ -45,7 +45,7 @@ index 2191531..e625f18 100644
  	if (!post)
  		post = "";
  	while (1) {
-@@ -581,7 +590,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -586,7 +595,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			xquit = 0;
  			restore(xvis)
  			continue;
@@ -68,7 +68,7 @@ index 2191531..e625f18 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index bad646d..808d125 100644
+index 4111eaa..6ce2756 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index bad646d..808d125 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 0810180..e01ba5b 100644
+index b358bf1..357a5a3 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -438,6 +438,7 @@ extern int xhlr;
+@@ -436,6 +436,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;
