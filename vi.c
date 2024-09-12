@@ -206,11 +206,12 @@ static void vi_drawrow(int row)
 		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
 			for (i1 = 0; strchr(" \t", *rstate->chrs[ren_off(s, i1)]);)
-				i1 = ren_next(s, i1, 1);
+				i1 = MAX(i1+1, ren_next(s, i1, 1));
 			i1 -= (itoa(abs(xrow-row+movedown), tmp1) - tmp1)+1;
-			if (i1 > 0)
+			if (i1 >= 0) {
 				memset(p, ' ', strlen(p));
-			led_prender(tmp1, row - xtop, l1+i1, 0, l1);
+				led_prender(tmp1, row - xtop, l1+i1, 0, l1);
+			}
 		}
 		led_prender(tmp, row - xtop, 0, 0, l1);
 		syn_setft(ex_ft);
