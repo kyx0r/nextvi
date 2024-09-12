@@ -204,9 +204,10 @@ static void vi_drawrow(int row)
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
 		preserve(int, syn_blockhl, 0)
 		syn_setft("/##");
-		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
-			for (i1 = 0; strchr(" \t", *rstate->chrs[ren_off(s, i1)]);)
-				i1 = MAX(i1+1, ren_next(s, i1, 1));
+		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
+			for (i1 = 0;; i1 = ren_next(s, i1, 1))
+				if (!strchr(" \t", *rstate->chrs[ren_off(s, i1)]))
+					break;
 			i1 -= (itoa(abs(xrow-row+movedown), tmp1) - tmp1)+1;
 			if (i1 >= 0) {
 				memset(p, ' ', strlen(p));
@@ -407,11 +408,12 @@ static int vi_nextoff(struct lbuf *lb, int dir, int *row, int *off)
 static int vi_nextcol(struct lbuf *lb, int dir, int *row, int *off)
 {
 	char *ln = lbuf_get(lb, *row);
-	int col = ln ? ren_pos(ln, *off) : 0;
-	int o = ln ? ren_next(ln, col, dir) : -1;
-	if (o < 0)
+	if (!ln)
 		return -1;
-	*off = ren_off(ln, o);
+	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
+	if (*rstate->chrs[o] == '\n')
+		return -1;
+	*off = o;
 	return 0;
 }
 
