@@ -237,17 +237,17 @@ static void vi_drawagain(void)
 /* update the screen */
 static void vi_drawupdate(int otop)
 {
-	int i = otop - xtop;
+	int i = otop - xtop, n;
 	term_pos(0, 0);
 	term_room(i);
-	syn_scdir(i > 1 || i < -1 ? -1 : i);
+	syn_scdir(i);
 	if (i < 0) {
-		int n = MIN(-i, xrows);
+		n = MIN(-i, xrows);
 		for (i = 0; i < n; i++)
 			vi_drawrow(xtop + xrows - n + i);
 	} else {
-		int n = MIN(i, xrows);
-		for (i = 0; i < n; i++)
+		n = MIN(i, xrows);
+		for (i = n-1; i >= 0; i--)
 			vi_drawrow(xtop + i);
 	}
 }
