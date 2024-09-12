@@ -166,8 +166,8 @@ int ren_cursor(char *s, int p)
 	pos = ren_position(s, &c, &n);
 	nn = ren_posfind(pos, n, p+1, 1);
 	p = pos[nn];
-	if (n == nn)
-		p = pos[ren_posfind(pos, n, p-1, -1)];
+	if (p && n && n == nn)
+		p--;
 	return p - (n > 1 && *c[n-1] == '\n');
 }
 
