@@ -168,7 +168,7 @@ int ren_cursor(char *s, int p)
 	p = pos[nn];
 	if (n == nn)
 		p = pos[ren_posfind(pos, n, p-1, -1)];
-	return p - (*c[n-!!n] == '\n');
+	return p - (n > 1 && *c[n-1] == '\n');
 }
 
 /* return an offset before EOL */
@@ -179,8 +179,8 @@ int ren_noeol(char *s, int o)
 	int n;
 	char **c;
 	ren_position(s, &c, &n);
-	o = o >= n ? n - !!n : o;
-	return o - (*c[o] == '\n');
+	o = o >= n ? n : o;
+	return o - (o > 0 && *c[o] == '\n');
 }
 
 /* the position of the next character */
