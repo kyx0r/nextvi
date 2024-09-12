@@ -287,6 +287,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 {
 	char *r, *s;
 	term_pos(xrows, led_pos(msg, 0));
+	vi_lncol = 0;
 	syn_setft("/-");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(ex_ft);
