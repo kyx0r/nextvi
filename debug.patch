@@ -56,10 +56,10 @@ index 658aaeb..2b138e4 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 4111eaa..de86b9d 100644
+index d80fdda..885aa70 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -597,6 +597,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -598,6 +598,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -72,7 +72,7 @@ index 4111eaa..de86b9d 100644
  static void vi_regprint(void)
  {
  	static char buf[5];
-@@ -2063,6 +2069,7 @@ int main(int argc, char *argv[])
+@@ -2064,6 +2070,7 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -80,7 +80,7 @@ index 4111eaa..de86b9d 100644
  	term_done();
  	if (xvis & 4)
  		return EXIT_SUCCESS;
-@@ -2071,5 +2078,12 @@ int main(int argc, char *argv[])
+@@ -2072,5 +2079,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
