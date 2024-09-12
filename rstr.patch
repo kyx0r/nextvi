@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 0ae7d17..73cb226 100644
+index ca49605..4f5487e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -235,10 +235,10 @@ index 1187892..a6ea850 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 0b5ce57..825ab51 100644
+index c620fa8..2c442db 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -613,7 +613,7 @@ static void vi_regprint(void)
+@@ -614,7 +614,7 @@ static void vi_regprint(void)
  	}
  }
  
@@ -247,7 +247,7 @@ index 0b5ce57..825ab51 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -631,7 +631,7 @@ static char *file_calc(char *path)
+@@ -632,7 +632,7 @@ static char *file_calc(char *path)
  		len = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len);
