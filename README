@@ -403,7 +403,7 @@ next match just like n/N.
 74. Added a new ex option "mpt". When set to 0 after an ex command is called
 from vi, disables the "[any key to continue]" prompt. This is needed because
 nextvi no longer swallows print messages and will print everything instead
-of just last one.
+of just last one. If mpt is negative, the prompt will remain disabled.
 75. Added commandline option -m to disable the initial file read message
 because :se noled can't.
 
