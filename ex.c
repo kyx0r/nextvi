@@ -445,7 +445,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 		ec_edit(loc, cmd, path);
 		path[lbuf_slen(path)] = '\n';
 	}
-	xmpt = 0;
+	xmpt = xmpt >= 0 ? 0 : xmpt;
 	sbuf_free(sb)
 	return 0;
 }
@@ -514,7 +514,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 		ibuf = lbuf_cp(xb, beg, end);
 		if (!(xvis & 4))
 			term_chr('\n');
-		xmpt = 2;
+		xmpt = xmpt >= 0 ? 2 : xmpt;
 		cmd_pipe(arg + 1, ibuf, 0);
 		free(ibuf);
 	} else {
@@ -761,7 +761,7 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 		int ret;
 		if (!(xvis & 4))
 			term_chr('\n');
-		xmpt = 2;
+		xmpt = xmpt >= 0 ? 2 : xmpt;
 		ret = cmd_exec(arg);
 		return ret;
 	}
