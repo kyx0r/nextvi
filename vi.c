@@ -143,10 +143,9 @@ static void vi_drawrow(int row)
 		int noff, nrow;
 		s = lbuf_get(xb, row - vi_rshift);
 		c = lbuf_get(xb, xrow);
-		if (!c || *c == '\n' || row+1 == xtop + xrows) {
+		if (row == xtop + xrows-1 || !c || *c == '\n')
 			vi_rshift = 0;
-			goto skip;
-		} else if (row != xrow+1)
+		if (row != xrow+1 || !c || *c == '\n')
 			goto skip;
 		char tmp[xcols+3], snum[100];
 		memset(tmp, ' ', xcols+1);
@@ -172,7 +171,7 @@ static void vi_drawrow(int row)
 		preserve(int, xorder, 0)
 		preserve(int, syn_blockhl, 0)
 		preserve(int, xtd, dir_context(c) * 2)
-		vi_rshift = 1;
+		vi_rshift = (row != xtop + xrows-1);
 		syn_setft("/#");
 		led_crender(tmp, row - xtop, 0, 0, xcols)
 		syn_setft(ex_ft);
