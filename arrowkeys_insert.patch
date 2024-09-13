@@ -73,10 +73,10 @@ index 4d40f2b..db791b3 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index c620fa8..e498c09 100644
+index c65d82a..b4c9592 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1027,6 +1027,8 @@ static char *vi_indents(char *ln)
+@@ -1025,6 +1025,8 @@ static char *vi_indents(char *ln)
  	sbufn_done(sb)
  }
  
@@ -85,7 +85,7 @@ index c620fa8..e498c09 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *region, *pref, *post, *_post;
-@@ -1050,6 +1052,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -1048,6 +1050,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
@@ -93,7 +93,7 @@ index c620fa8..e498c09 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1213,8 +1216,10 @@ static void vc_insert(int cmd)
+@@ -1211,8 +1214,10 @@ static void vc_insert(int cmd)
  		xoff = charcount(rep->s, rep->s_n, post, l2 - (post - _post));
  		if (cmdo && !lbuf_len(xb))
  			lbuf_edit(xb, "\n", 0, 0);
@@ -105,7 +105,7 @@ index c620fa8..e498c09 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1747,6 +1752,37 @@ void vi(int init)
+@@ -1745,6 +1750,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -143,7 +143,7 @@ index c620fa8..e498c09 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xoff = lbuf_eol(xb, --xrow);
-@@ -1760,6 +1796,9 @@ void vi(int init)
+@@ -1758,6 +1794,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;

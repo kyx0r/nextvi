@@ -85,7 +85,7 @@ index ca49605..abaa1e2 100644
 +		load_exrc(".exrc");
  }
 diff --git a/vi.c b/vi.c
-index c620fa8..e2c9bd5 100644
+index c65d82a..5101d6b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -18,6 +18,7 @@
