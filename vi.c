@@ -278,7 +278,7 @@ static void vi_wait(void)
 		vi_msg[0] = '\0';
 		vi_mod |= 1;
 	}
-	xmpt = 0;
+	xmpt = xmpt > 0 ? 0 : xmpt;
 }
 
 static char *vi_prompt(char *msg, char *insert, int *kmap)
@@ -347,7 +347,7 @@ void ex_cprint(char *line, int r, int c, int ln)
 	syn_setft(ex_ft);
 	if (xvis & 4 || (ln && xmpt > 0))
 		term_chr('\n');
-	xmpt += !(xvis & 4) && (ln || xmpt);
+	xmpt += !(xvis & 4) && xmpt >= 0 && (ln || xmpt);
 }
 
 static int vi_yankbuf(void)
@@ -1540,7 +1540,7 @@ void vi(int init)
 					vc_status();
 				}
 				vi_mod |= 1;
-				xmpt = 0;
+				xmpt = xmpt >= 0 ? 0 : xmpt;
 				break;
 			case 'u':
 				undo:
