@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ca49605..c723449 100644
+index 6514152..13872a7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -34,6 +34,7 @@ static int xbufsmax;		/* number of buffers */
@@ -32,7 +32,7 @@ index ca49605..c723449 100644
  		int fd;
  		if (!strchr(cmd, '!')) {
 +			if (ex_buf->readonly) {
-+				ex_show("write failed: readonly option is set");
++				ex_print("write failed: readonly option is set");
 +				return 1;
 +			}
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
@@ -60,7 +60,7 @@ index ca49605..c723449 100644
  };
  
 diff --git a/vi.c b/vi.c
-index c65d82a..71c485a 100644
+index fafe530..b612aed 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2057,9 +2057,11 @@ int main(int argc, char *argv[])
