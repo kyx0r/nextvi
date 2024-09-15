@@ -113,10 +113,12 @@ static int led_offdir(char **chrs, int *pos, int i)
 }
 
 /* highlight text in reverse direction */
-static void led_markrev(int n, char **chrs, int *pos, int *att)
+static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *att)
 {
 	int i = 0, j;
 	int hl = conf_hlrev();
+	int *ratt = malloc((n+1)*sizeof(int));
+	memset(ratt, 0, (n+1)*sizeof(int));
 	while (i + 1 < n) {
 		int dir = led_offdir(chrs, pos, i);
 		int beg = i;
@@ -124,10 +126,19 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
 			i++;
 		if (dir < 0)
 			for (j = beg; j <= i; j++)
-				att[j] = syn_merge(hl, att[j]);
+				ratt[j] = hl;
 		if (i == beg)
 			i++;
 	}
+	for (j = 0, i = 0; i < cterm;) {
+		int o = off[i];
+		if (o >= 0) {
+			att[j] = syn_merge(ratt[o], att[j]);
+			j++;
+		}
+		for (i++; off[i] == o; i++);
+	}
+	free(ratt);
 }
 
 static char *led_bounds(int *off, char **chrs, int cterm)
@@ -137,11 +148,9 @@ static char *led_bounds(int *off, char **chrs, int cterm)
 	sbuf_make(out, cterm*4);
 	while (i < cterm) {
 		int o = off[i];
-		if (o >= 0) {
+		if (o >= 0)
 			sbuf_mem(out, chrs[o], uc_len(chrs[o]))
-			for (; off[i] == o; i++);
-		} else
-			i++;
+		for (i++; off[i] == o; i++);
 	}
 	sbufn_done(out)
 }
@@ -159,13 +168,13 @@ else if (*chrs[o] == '\t') \
 	out->s[pre] = '<'; \
 
 #define led_out(out, n) \
-{ int l, att_old = 0, i = 0; \
-while (i < cterm) { \
+{ \
+for (i = 0; i < cterm;) { \
 	int att_new = 0; \
 	o = off[i]; \
 	if (o >= 0) { \
 		for (l = i; off[i] == o; i++); \
-		att_new = ratt[o]; \
+		att_new = att[atti++]; \
 		if (att_new != att_old) \
 			sbuf_str(out, term_att(att_new)) \
 		char *s = ren_translate(chrs[o], s0); \
@@ -193,13 +202,13 @@ void led_render(char *s0, int cbeg, int cend)
 {
 	if (!xled)
 		return;
-	int j, n, i = 0, o = 0, cterm = cend - cbeg;
+	int l, n, i = 0, o = 0, cterm = cend - cbeg;
+	int att_old = 0, atti = 0;
 	char *bound = s0;
 	int *pos;		/* pos[i]: the screen position of the i-th character */
 	char **chrs;		/* chrs[i]: the i-th character in s1 */
 	int off[cterm+1];	/* off[i]: the character at screen position i */
 	int att[cterm+1];	/* att[i]: the attributes of i-th character */
-	int *ratt = att;	/* att[i]: adjusted for terminal boundary */
 	int ctx = dir_context(s0);
 	memset(off, -1, (cterm+1) * sizeof(off[0]));
 	memset(att, 0, (cterm+1) * sizeof(att[0]));
@@ -237,24 +246,14 @@ void led_render(char *s0, int cbeg, int cend)
 			}
 		}
 	}
-	if (pos[n] > cterm || cbeg)
+	if (pos[n] > cterm || cbeg || ctx < 0)
 		bound = led_bounds(off, chrs, cterm);
 	if (xhl)
 		syn_highlight(att, bound, n < cterm ? n : cterm);
-	if (bound != s0) {
+	if (bound != s0)
 		free(bound);
-		ratt = &pos[n+1];
-		for (j = 0, i = 0; i < cterm;) {
-			o = off[i];
-			if (o >= 0) {
-				ratt[o] = att[j++];
-				for (; off[i] == o; i++);
-			} else
-				i++;
-		}
-	}
 	if (xhlr)
-		led_markrev(n, chrs, pos, ratt);
+		led_markrev(n, cterm, off, chrs, pos, att);
 	/* generate term output */
 	if (vi_hidch)
 		led_out(term_sbuf, 2)

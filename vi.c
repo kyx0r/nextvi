@@ -1812,6 +1812,7 @@ void vi(int init)
 					xkmap_alt = k - '0';
 					break;
 				}
+				rstate->s = NULL;
 				vi_mod |= 1;
 				break;
 			case 'g':
