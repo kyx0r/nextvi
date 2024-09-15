@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index e1e5df4..3e2d76f 100644
+index 00338ff..f3cce1c 100644
 --- a/led.c
 +++ b/led.c
 @@ -113,12 +113,10 @@ static int led_offdir(char **chrs, int *pos, int i)
@@ -16,7 +16,7 @@ index e1e5df4..3e2d76f 100644
  	while (i + 1 < n) {
  		int dir = led_offdir(chrs, pos, i);
  		int beg = i;
-@@ -126,19 +124,10 @@ static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *
+@@ -126,18 +124,10 @@ static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *
  			i++;
  		if (dir < 0)
  			for (j = beg; j <= i; j++)
@@ -26,18 +26,17 @@ index e1e5df4..3e2d76f 100644
  			i++;
  	}
 -	for (j = 0, i = 0; i < cterm;) {
--		int o = off[i];
+-		int o = off[i++];
 -		if (o >= 0) {
 -			att[j] = syn_merge(ratt[o], att[j]);
--			j++;
+-			for (j++; off[i] == o; i++);
 -		}
--		for (i++; off[i] == o; i++);
 -	}
 -	free(ratt);
  }
  
  static char *led_bounds(int *off, char **chrs, int cterm)
-@@ -172,88 +161,114 @@ else if (*chrs[o] == '\t') \
+@@ -172,88 +162,114 @@ else if (*chrs[o] == '\t') \
  for (i = 0; i < cterm;) { \
  	int att_new = 0; \
  	o = off[i]; \
