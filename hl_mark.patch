@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ca49605..bc96153 100644
+index 6514152..7efa27f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -19,14 +19,14 @@ index ca49605..bc96153 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 4d40f2b..88f012f 100644
+index e1e5df4..0efed69 100644
 --- a/led.c
 +++ b/led.c
-@@ -130,6 +130,21 @@ static void led_markrev(int n, char **chrs, int *pos, int *att)
- 	}
+@@ -141,6 +141,23 @@ static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *
+ 	free(ratt);
  }
  
-+static void led_hlmark(int *att, int row)
++static void led_hlmark(int *att, int row, int cterm)
 +{
 +	int mrow = -1, moff, icol = 0;
 +	char marks[] = "abcdefghijklmnopqrstuvwxyz[]`'";
@@ -35,6 +35,8 @@ index 4d40f2b..88f012f 100644
 +			continue;
 +		if (icol > 15) /* wrap for only 16 color term */
 +			icol = 0;
++		while (moff > cterm)
++			moff -= cterm;
 +		att[moff] = SYN_BGMK(icol+1);
 +		mrow = -1;
 +	}
@@ -44,12 +46,42 @@ index 4d40f2b..88f012f 100644
  static char *led_bounds(int *off, char **chrs, int cterm)
  {
  	int i = 0;
-@@ -255,6 +270,8 @@ void led_render(char *s0, int cbeg, int cend)
- 	}
+@@ -198,7 +215,7 @@ for (i = 0; i < cterm;) { \
+ } sbufn_str(out, term_att(0)) } \
+ 
+ /* render and highlight a line */
+-void led_render(char *s0, int cbeg, int cend)
++void led_render(char *s0, int cbeg, int cend, int row)
+ {
+ 	if (!xled)
+ 		return;
+@@ -254,6 +271,8 @@ void led_render(char *s0, int cbeg, int cend)
+ 		free(bound);
  	if (xhlr)
- 		led_markrev(n, chrs, pos, ratt);
+ 		led_markrev(n, cterm, off, chrs, pos, att);
 +	if (xhlm && row >= 0)
-+		led_hlmark(ratt, row+xtop);
++		led_hlmark(att, row+xtop, cterm);
  	/* generate term output */
  	if (vi_hidch)
  		led_out(term_sbuf, 2)
+diff --git a/vi.h b/vi.h
+index 85eea8a..3968bc6 100644
+--- a/vi.h
++++ b/vi.h
+@@ -282,14 +282,14 @@ char *xgetenv(char* q[]);
+ /* led.c line-oriented input and output */
+ char *led_prompt(char *pref, char *post, char *insert, int *kmap);
+ sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh);
+-void led_render(char *s0, int cbeg, int cend);
++void led_render(char *s0, int cbeg, int cend, int row);
+ #define _led_render(msg, row, col, beg, end, kill) \
+ { \
+ 	int record = term_record; \
+ 	term_record = 1; \
+ 	term_pos(row, col); \
+ 	kill \
+-	led_render(msg, beg, end); \
++	led_render(msg, beg, end, row); \
+ 	if (!record) \
+ 		term_commit(); \
+ } \
