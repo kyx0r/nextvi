@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index e1e5df4..1636746 100644
+index 00338ff..77fdea3 100644
 --- a/led.c
 +++ b/led.c
 @@ -113,12 +113,10 @@ static int led_offdir(char **chrs, int *pos, int i)
@@ -16,7 +16,7 @@ index e1e5df4..1636746 100644
  	while (i + 1 < n) {
  		int dir = led_offdir(chrs, pos, i);
  		int beg = i;
-@@ -126,21 +124,13 @@ static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *
+@@ -126,20 +124,13 @@ static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *
  			i++;
  		if (dir < 0)
  			for (j = beg; j <= i; j++)
@@ -26,12 +26,11 @@ index e1e5df4..1636746 100644
  			i++;
  	}
 -	for (j = 0, i = 0; i < cterm;) {
--		int o = off[i];
+-		int o = off[i++];
 -		if (o >= 0) {
 -			att[j] = syn_merge(ratt[o], att[j]);
--			j++;
+-			for (j++; off[i] == o; i++);
 -		}
--		for (i++; off[i] == o; i++);
 -	}
 -	free(ratt);
  }
@@ -40,7 +39,7 @@ index e1e5df4..1636746 100644
  static char *led_bounds(int *off, char **chrs, int cterm)
  {
  	int i = 0;
-@@ -154,6 +144,7 @@ static char *led_bounds(int *off, char **chrs, int cterm)
+@@ -154,6 +145,7 @@ static char *led_bounds(int *off, char **chrs, int cterm)
  	}
  	sbufn_done(out)
  }
@@ -48,7 +47,7 @@ index e1e5df4..1636746 100644
  
  #define print_ch1(out) sbuf_mem(out, chrs[o], l)
  #define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
-@@ -174,7 +165,7 @@ for (i = 0; i < cterm;) { \
+@@ -174,7 +166,7 @@ for (i = 0; i < cterm;) { \
  	o = off[i]; \
  	if (o >= 0) { \
  		for (l = i; off[i] == o; i++); \
@@ -57,7 +56,7 @@ index e1e5df4..1636746 100644
  		if (att_new != att_old) \
  			sbuf_str(out, term_att(att_new)) \
  		char *s = ren_translate(chrs[o], s0); \
-@@ -203,16 +194,16 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -203,16 +195,16 @@ void led_render(char *s0, int cbeg, int cend)
  	if (!xled)
  		return;
  	int l, n, i = 0, o = 0, cterm = cend - cbeg;
@@ -78,7 +77,7 @@ index e1e5df4..1636746 100644
  	if (ctx < 0) {
  		for (; i < n; i++) {
  			int curbeg = cend - pos[i] - 1;
-@@ -246,14 +237,10 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -246,14 +238,10 @@ void led_render(char *s0, int cbeg, int cend)
  			}
  		}
  	}
