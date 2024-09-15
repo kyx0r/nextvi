@@ -340,7 +340,7 @@ void ex_cprint(char *line, int r, int c, int ln)
 		if (xmpt == 1)
 			term_chr('\n');
 		term_pos(xrows, led_pos(vi_msg, 0));
-		snprintf(vi_msg, sizeof(vi_msg), "%s", line);
+		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
 	}
 	syn_setft("/-");
 	led_recrender(line, r, c, xleft, xleft + xcols - c)
@@ -601,8 +601,9 @@ void vi_regput(int c, const char *s, int ln)
 
 static void vi_regprint(void)
 {
-	static char buf[5];
+	static char buf[5] = "  ";
 	xleft = (xcols / 2) * vi_arg1;
+	preserve(int, xtd, 2)
 	for (int i = 1; i < LEN(regs); i++) {
 		if (regs[i]) {
 			*buf = i;
@@ -610,6 +611,7 @@ static void vi_regprint(void)
 			ex_cprint(regs[i], -1, xleft ? 0 : 2, 1);
 		}
 	}
+	restore(xtd)
 }
 
 rset *fsincl;
