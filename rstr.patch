@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ca49605..4f5487e 100644
+index 6514152..d23d8c9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -235,7 +235,7 @@ index 1187892..a6ea850 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index c65d82a..79467eb 100644
+index eca1e16..98df317 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -612,7 +612,7 @@ static void vi_regprint(void)
@@ -257,7 +257,7 @@ index c65d82a..79467eb 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index b358bf1..2aabb43 100644
+index 85eea8a..c32329f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -115,10 +115,21 @@ typedef struct {
@@ -300,7 +300,7 @@ index b358bf1..2aabb43 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -442,9 +453,9 @@ extern int xpac;
+@@ -441,9 +452,9 @@ extern int xpac;
  extern int xkwdcnt;
  extern int xkwddir;
  extern int xmpt;

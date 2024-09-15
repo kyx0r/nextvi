@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ca49605..0394c5d 100644
+index 6514152..87aab4f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -996,6 +996,16 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
@@ -182,7 +182,7 @@ index fe02499..3a968de 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index b358bf1..78a9d9a 100644
+index 85eea8a..58a98ef 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -146,6 +146,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ca49605..c92a365 100644
+index 6514152..d6086c9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -203,11 +203,13 @@ static char *ex_pathexpand(char *src)
@@ -40,7 +40,7 @@ index ca49605..c92a365 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/led.c b/led.c
-index 4d40f2b..5ecd347 100644
+index e1e5df4..b90b9c5 100644
 --- a/led.c
 +++ b/led.c
 @@ -46,7 +46,8 @@ static void file_index(struct lbuf *buf)
@@ -53,7 +53,7 @@ index 4d40f2b..5ecd347 100644
  	if (!rs)
  		return;
  	sbuf_make(ibuf, 1024)
-@@ -288,10 +289,11 @@ static void led_printparts(sbuf *sb, int ps, char *post)
+@@ -287,10 +288,11 @@ static void led_printparts(sbuf *sb, int ps, char *post)
  		return;
  	int off, pos, psn = sb->s_n;
  	int idir = 0, next = sb->s[ps];
@@ -85,7 +85,7 @@ index 87d24c5..2d3695e 100644
  {
  	char *r = emalloc(strlen(s) + 1);
 diff --git a/vi.h b/vi.h
-index b358bf1..a5aae5c 100644
+index 85eea8a..a267921 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,8 +219,8 @@ int uc_wid(int c);

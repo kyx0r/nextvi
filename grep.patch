@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 88e1588..9589843 100644
+index 5e50d21..7fcb3b7 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -234,6 +234,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
@@ -15,7 +15,7 @@ index 88e1588..9589843 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index ca49605..4bd05ac 100644
+index 6514152..6cd9f49 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,7 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -28,7 +28,7 @@ index ca49605..4bd05ac 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index c65d82a..b0d1949 100644
+index eca1e16..224d0bc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -677,12 +677,12 @@ void dir_calc(char *path)
@@ -157,7 +157,7 @@ index c65d82a..b0d1949 100644
  				default:
  					vi_back(k);
  				}
-@@ -2043,6 +2094,7 @@ int main(int argc, char *argv[])
+@@ -2044,6 +2095,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
@@ -166,7 +166,7 @@ index c65d82a..b0d1949 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index b358bf1..bc34ae0 100644
+index 85eea8a..bcaa9d1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -315,7 +315,7 @@ extern int xbufcur;
