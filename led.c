@@ -131,12 +131,11 @@ static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *
 			i++;
 	}
 	for (j = 0, i = 0; i < cterm;) {
-		int o = off[i];
+		int o = off[i++];
 		if (o >= 0) {
 			att[j] = syn_merge(ratt[o], att[j]);
-			j++;
+			for (j++; off[i] == o; i++);
 		}
-		for (i++; off[i] == o; i++);
 	}
 	free(ratt);
 }
@@ -147,10 +146,11 @@ static char *led_bounds(int *off, char **chrs, int cterm)
 	sbuf *out;
 	sbuf_make(out, cterm*4);
 	while (i < cterm) {
-		int o = off[i];
-		if (o >= 0)
+		int o = off[i++];
+		if (o >= 0) {
 			sbuf_mem(out, chrs[o], uc_len(chrs[o]))
-		for (i++; off[i] == o; i++);
+			for (; off[i] == o; i++);
+		}
 	}
 	sbufn_done(out)
 }
