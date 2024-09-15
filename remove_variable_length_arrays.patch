@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ca49605..1f44c8b 100644
+index 6514152..8181717 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -702,7 +702,6 @@ static void replace(sbuf *dst, char *rep, char *ln, int *offs)
@@ -76,7 +76,7 @@ index fe02499..49b4940 100644
  }
  
 diff --git a/led.c b/led.c
-index 4d40f2b..8d642f3 100644
+index e1e5df4..db39730 100644
 --- a/led.c
 +++ b/led.c
 @@ -44,7 +44,7 @@ static void file_index(struct lbuf *buf)
@@ -96,7 +96,7 @@ index 4d40f2b..8d642f3 100644
  }
  
  static char *kmap_map(int kmap, int c)
-@@ -197,8 +198,8 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -207,8 +208,8 @@ void led_render(char *s0, int cbeg, int cend)
  	char *bound = s0;
  	int *pos;		/* pos[i]: the screen position of the i-th character */
  	char **chrs;		/* chrs[i]: the i-th character in s1 */
@@ -104,10 +104,10 @@ index 4d40f2b..8d642f3 100644
 -	int att[cterm+1];	/* att[i]: the attributes of i-th character */
 +	int *off = emalloc((cterm+1) * sizeof(int));	/* off[i]: the character at screen position i */
 +	int *att = emalloc((cterm+1) * sizeof(int));	/* att[i]: the attributes of i-th character */
- 	int *ratt = att;	/* att[i]: adjusted for terminal boundary */
  	int ctx = dir_context(s0);
  	memset(off, -1, (cterm+1) * sizeof(off[0]));
-@@ -260,6 +261,8 @@ void led_render(char *s0, int cbeg, int cend)
+ 	memset(att, 0, (cterm+1) * sizeof(att[0]));
+@@ -259,6 +260,8 @@ void led_render(char *s0, int cbeg, int cend)
  		led_out(term_sbuf, 2)
  	else
  		led_out(term_sbuf, 1)
@@ -178,7 +178,7 @@ index 1187892..c26d73d 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 0dcc579..be020cd 100644
+index 69f3d3d..38504b9 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -241,13 +241,14 @@ int syn_blockhl;
@@ -210,7 +210,7 @@ index 0dcc579..be020cd 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index c65d82a..ea239d6 100644
+index eca1e16..2776d28 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -147,7 +147,8 @@ static void vi_drawrow(int row)
