@@ -30,6 +30,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 int xkwddir;			/* the last search direction */
 int xmpt;			/* whether to prompt after printing > 1 lines in vi */
+char *xregs[256];		/* string registers */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
 static char xrep[EXLEN];	/* the last replacement */
@@ -203,7 +204,7 @@ static char *ex_pathexpand(char *src)
 /* set the current search keyword rset if the kwd or flags changed */
 void ex_krsset(char *kwd, int dir)
 {
-	char *reg = vi_regget('/', &(int){0});
+	char *reg = xregs['/'];
 	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
 		|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
 		rset_free(xkwdrs);
@@ -635,10 +636,9 @@ static int ec_yank(char *loc, char *cmd, char *arg)
 static int ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
-	int lnmode;
 	char *buf;
 	int n = lbuf_len(xb);
-	buf = vi_regget((unsigned char) arg[0], &lnmode);
+	buf = xregs[(unsigned char) arg[0]];
 	if (!buf || ex_region(loc, &beg, &end))
 		return 1;
 	lbuf_edit(xb, buf, end, end);
@@ -996,6 +996,22 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
+static int ec_regprint(char *loc, char *cmd, char *arg)
+{
+	static char buf[5] = "  ";
+	xleft = (xcols / 2) * (*arg ? atoi(arg) : 0);
+	preserve(int, xtd, 2)
+	for (int i = 1; i < LEN(xregs); i++) {
+		if (xregs[i]) {
+			*buf = i;
+			ex_cprint(buf, -1, 0, 0);
+			ex_cprint(xregs[i], -1, xleft ? 0 : 2, 1);
+		}
+	}
+	restore(xtd)
+	return 0;
+}
+
 static struct excmd {
 	char *name;
 	int (*ec)(char *loc, char *cmd, char *arg);
@@ -1042,6 +1058,7 @@ static struct excmd {
 	{"fp", ec_setdir},
 	{"cd", ec_chdir},
 	{"inc", ec_setincl},
+	{"reg", ec_regprint},
 	{"bx", ec_setbufsmax},
 	{"ac", ec_setacreg},
 	{"", ec_print},

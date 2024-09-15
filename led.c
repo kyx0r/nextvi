@@ -386,7 +386,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 		int *key, int *kmap, int orow, int lsh)
 {
 	int len, p_reg = 0;
-	int c, lnmode, i = 0, last_sug = 0, sug_pt = -1;
+	int c, i = 0, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	if (!post)
 		post = "";
@@ -431,12 +431,12 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			if (c == TK_CTL(']')) {
 				if (!p_reg || p_reg == '9')
 					p_reg = '/';
-				while (p_reg < '9' && !vi_regget(++p_reg, &lnmode));
+				while (p_reg < '9' && !xregs[++p_reg]);
 			} else {
 				c = term_read();
 				p_reg = c == TK_CTL('\\') ? 0 : c;
 			}
-			if ((cs = vi_regget(p_reg, &lnmode))) {
+			if ((cs = xregs[p_reg])) {
 				sbuf_chr(sb, p_reg ? p_reg : '~')
 				sbuf_chr(sb, ' ')
 				sbufn_str(sb, cs)
@@ -446,8 +446,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 				goto retry;
 			continue;
 		case TK_CTL('p'):
-			if (vi_regget(p_reg, &lnmode))
-				sbufn_str(sb, vi_regget(p_reg, &lnmode))
+			if (xregs[p_reg])
+				sbufn_str(sb, xregs[p_reg])
 			break;
 		case TK_CTL('g'):
 			if (!suggestsb) {

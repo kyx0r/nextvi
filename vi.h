@@ -303,6 +303,7 @@ int led_pos(char *s, int pos);
 void led_done(void);
 
 /* ex.c ex commands */
+extern char *xregs[256];
 struct buf {
 	char *ft;			/* file type */
 	char *path;			/* file path */
@@ -409,7 +410,6 @@ int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
 
 /* vi.c */
-char *vi_regget(int c, int *lnmode);
 void vi_regputraw(unsigned char c, const char *s, int ln, int append);
 void vi_regput(int c, const char *s, int ln);
 /* file system */
