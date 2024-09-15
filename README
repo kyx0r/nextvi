@@ -307,9 +307,10 @@ can delete all the characters on the line, when no more characters left the
 line will be wrapped onto the next one. This is behavior you can expect from
 95% of editors, now nextvi is not an exception. The similar change was done for
 ^w keybind.
-51. Added key to show the registers and their contents. keybind: R
-If the length of a register is bigger than the terminal, specify vi_arg1 to
-to shift the printing position by half the screen size vi_arg1 times.
+51. Added ex command "reg" to show the registers and their contents.
+Horizontal printing position can be shifted by passing a number. This will shift
+the printing position by half the terminal width N times.
+To print registers from vi - keybind: R
 52. Made feature of reverse text highlight toggleable via new ex option "hlr"
 53. Added a key to disable autoindent. keybind: va
 This is necessary sometimes if you want to paste from system clipboard.
