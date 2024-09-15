@@ -122,7 +122,7 @@ index eca1e16..224d0bc 100644
 +			temp_switch(2);
 +			lbuf_jump(xb, '[', row, off);
 +			*off = 0;
-+			syn_addhl(regs['/'], 3, 1); /* see conf.c */
++			syn_addhl(xregs['/'], 3, 1); /* see conf.c */
 +			syn_reloadft();
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
