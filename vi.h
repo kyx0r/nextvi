@@ -389,8 +389,7 @@ extern int dctxlen;
 /* direction marks; the direction of a few words in a line */
 struct dirmark {
 	int ctx;	/* the direction context for this mark; 0 means any */
-	int dir;	/* the direction of the matched text */
-	int grp;	/* the nested subgroup; 0 means no groups */
+	int dir[8];	/* the direction of a matched text group */
 	char *pat;
 };
 extern struct dirmark dmarks[];

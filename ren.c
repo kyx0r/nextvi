@@ -21,26 +21,26 @@ static int dir_reorder(char **chrs, int *ord, int end)
 {
 	int dir = dir_context(chrs[0]);
 	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
-	int beg = 0, end1 = end, r_beg, r_end, c_beg, c_end;
-	int subs[32], grp, found;
+	int beg = 0, end1 = end, c_beg, c_end;
+	int subs[LEN(dmarks[0].dir)], gdir, found, i;
 	while (beg < end) {
 		char *s = chrs[beg];
-		found = rset_find(rs, s, 16, subs,
+		found = rset_find(rs, s, LEN(subs) / 2, subs,
 				*chrs[end-1] == '\n' ? REG_NEWLINE : 0);
 		if (found >= 0) {
-			for (int i = 0; i < end1; i++)
+			for (i = 0; i < end1; i++)
 				ord[i] = i;
+			c_end = 0;
 			end1 = -1;
-			grp = dmarks[found].grp;
-			r_beg = uc_off(s, subs[0]);
-			r_end = uc_off(s, subs[1]);
-			c_beg = subs[grp * 2 + 0] >= 0 ? uc_off(s, subs[grp * 2 + 0]) : r_beg;
-			c_end = subs[grp * 2 + 1] >= 0 ? uc_off(s, subs[grp * 2 + 1]) : r_end;
-			if (dir < 0)
-				dir_reverse(ord, r_beg+beg, r_end+beg);
-			if (dmarks[found].dir < 0)
-				dir_reverse(ord, c_beg+beg, c_end+beg);
-			beg += r_end;
+			for (i = 0; i < LEN(subs) / 2; i++) {
+				gdir = dmarks[found].dir[i];
+				if (subs[i * 2] < 0 || gdir >= 0)
+					continue;
+				c_beg = uc_off(s, subs[i * 2]);
+				c_end = uc_off(s, subs[i * 2 + 1]);
+				dir_reverse(ord, beg+c_beg, beg+c_end);
+			}
+			beg += c_end ? c_end : 1;
 		} else
 			break;
 	}

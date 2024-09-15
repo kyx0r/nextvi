@@ -257,12 +257,8 @@ struct dircontext dctxs[] = {
 int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
-	{+0, +1, 1, "\\\\\\*\\[([^\\]]+)\\]"},
-	{+1, -1, 0, "[" CR2L "][" CNEUT CR2L "]*[" CR2L "]"},
-	{-1, +1, 0, "[a-zA-Z0-9_][^" CR2L "\\\\`$']*[a-zA-Z0-9_]"},
-	{+0, +1, 0, "\\$([^$]+)\\$"},
-	{+0, +1, 1, "\\\\[a-zA-Z0-9_]+\\{([^}]+)\\}"},
-	{-1, +1, 0, "\\\\[^ \t" CR2L "]+"},
+	{+1, {-1}, "[" CR2L "][" CNEUT CR2L "]*[" CR2L "]"},
+	{-1, {0, 1, -1}, "(^[ \t]*)([^" CR2L "]*)"},
 };
 int dmarkslen = LEN(dmarks);
 
