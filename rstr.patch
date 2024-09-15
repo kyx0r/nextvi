@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 6514152..d23d8c9 100644
+index 3440b72..bfea453 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -10,10 +10,10 @@ index 6514152..d23d8c9 100644
 +rstr *xkwdrs;			/* the last searched keyword rstr */
  int xkwddir;			/* the last search direction */
  int xmpt;			/* whether to prompt after printing > 1 lines in vi */
- static int xbufsmax;		/* number of buffers */
-@@ -205,9 +205,9 @@ void ex_krsset(char *kwd, int dir)
+ char *xregs[256];		/* string registers */
+@@ -206,9 +206,9 @@ void ex_krsset(char *kwd, int dir)
  {
- 	char *reg = vi_regget('/', &(int){0});
+ 	char *reg = xregs['/'];
  	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
 -		|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
 -		rset_free(xkwdrs);
@@ -235,11 +235,11 @@ index 1187892..a6ea850 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index eca1e16..98df317 100644
+index 159ff54..6a7b6c8 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -612,7 +612,7 @@ static void vi_regprint(void)
- 	}
+@@ -592,7 +592,7 @@ void vi_regput(int c, const char *s, int ln)
+ 	vi_regputraw(c, s, ln, isupper(c));
  }
  
 -rset *fsincl;
@@ -247,7 +247,7 @@ index eca1e16..98df317 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -630,7 +630,7 @@ static char *file_calc(char *path)
+@@ -610,7 +610,7 @@ static char *file_calc(char *path)
  		len = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len);
@@ -257,7 +257,7 @@ index eca1e16..98df317 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 85eea8a..c32329f 100644
+index 76785fa..ad9cee4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -115,10 +115,21 @@ typedef struct {
@@ -291,7 +291,7 @@ index 85eea8a..c32329f 100644
  			int ln_n, int *o, int *len, int skip);
  /* motions */
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
-@@ -346,7 +357,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -347,7 +358,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);

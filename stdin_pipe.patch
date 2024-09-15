@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 6514152..b32d2c8 100644
+index 3440b72..bfc52b5 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -391,7 +391,9 @@ int ex_edit(const char *path, int len)
+@@ -392,7 +392,9 @@ int ex_edit(const char *path, int len)
  static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index 6514152..b32d2c8 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -411,6 +413,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -412,6 +414,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
  	}
@@ -23,7 +23,7 @@ index 6514152..b32d2c8 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1124,15 +1129,26 @@ void ex(void)
+@@ -1141,15 +1146,26 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -131,10 +131,10 @@ index 83bdc97..dbabd87 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index eca1e16..dbea79f 100644
+index 159ff54..28a9b98 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2022,6 +2022,8 @@ void vi(int init)
+@@ -1998,6 +1998,8 @@ void vi(int init)
  
  static void sighandler(int signo)
  {
@@ -143,7 +143,7 @@ index eca1e16..dbea79f 100644
  	vi_back(TK_CTL('l'));
  }
  
-@@ -2029,8 +2031,9 @@ static int setup_signals(void) {
+@@ -2005,8 +2007,9 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -155,7 +155,7 @@ index eca1e16..dbea79f 100644
  		return 0;
  	return 1;
  }
-@@ -2048,7 +2051,8 @@ int main(int argc, char *argv[])
+@@ -2024,7 +2027,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -166,7 +166,7 @@ index eca1e16..dbea79f 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 85eea8a..9fa9bca 100644
+index 76785fa..d2cb1cf 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -415,6 +415,7 @@ void vi_regput(int c, const char *s, int ln);
