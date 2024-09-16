@@ -43,19 +43,19 @@ static void file_index(struct lbuf *buf)
 	char reg[] = "[^\t ;:,`.<>[\\]\\^%$#@*\\!?+\\-|/\\=\\\\{}&\\()'\"]+";
 	int len, sidx, grp = xgrp;
 	char **ss = lbuf_buf(buf);
-	int ln_n = lbuf_len(buf);
-	int subs[grp], n;
+	int ln_n = lbuf_len(buf), n;
 	sbuf *ibuf;
 	rset *rs = rset_make(1, (char*[]){xacreg ? xacreg->s : reg}, xic ? REG_ICASE : 0);
 	if (!rs)
 		return;
+	int subs[rs->grpcnt * 2];
 	sbuf_make(ibuf, 1024)
 	for (n = 1; n <= acsb->s_n; n++)
 		if (acsb->s[n - 1] == '\n')
 			sbuf_mem(ibuf, &n, (int)sizeof(n))
 	for (int i = 0; i < ln_n; i++) {
 		sidx = 0;
-		while (rset_find(rs, ss[i]+sidx, grp / 2, subs,
+		while (rset_find(rs, ss[i]+sidx, subs,
 				sidx ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
 			/* if target group not found, continue with group 1
 			which will always be valid, otherwise there be no match */

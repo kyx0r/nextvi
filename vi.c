@@ -610,7 +610,7 @@ static char *file_calc(char *path)
 		len = strlen(dp->d_name)+1;
 		path[pathlen] = '/';
 		memcpy(&path[pathlen+1], dp->d_name, len);
-		if (fsincl && rset_find(fsincl, path, 0, NULL, 0) < 0)
+		if (fsincl && rset_find(fsincl, path, NULL, 0) < 0)
 			continue;
 		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
 			temp_write(1, path);

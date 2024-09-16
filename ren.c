@@ -22,17 +22,17 @@ static int dir_reorder(char **chrs, int *ord, int end)
 	int dir = dir_context(chrs[0]);
 	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
 	int beg = 0, end1 = end, c_beg, c_end;
-	int subs[LEN(dmarks[0].dir)], gdir, found, i;
+	int subs[LEN(dmarks[0].dir) * 2], gdir, found, i;
 	while (beg < end) {
 		char *s = chrs[beg];
-		found = rset_find(rs, s, LEN(subs) / 2, subs,
+		found = rset_find(rs, s, subs,
 				*chrs[end-1] == '\n' ? REG_NEWLINE : 0);
 		if (found >= 0) {
 			for (i = 0; i < end1; i++)
 				ord[i] = i;
 			c_end = 0;
 			end1 = -1;
-			for (i = 0; i < LEN(subs) / 2; i++) {
+			for (i = 0; i < rs->setgrpcnt[found]; i++) {
 				gdir = dmarks[found].dir[i];
 				if (subs[i * 2] < 0 || gdir >= 0)
 					continue;
@@ -56,7 +56,7 @@ int dir_context(char *s)
 	if (xtd < -1)
 		return -1;
 	if (dir_rsctx && s)
-		if ((found = rset_find(dir_rsctx, s, 0, NULL, 0)) >= 0)
+		if ((found = rset_find(dir_rsctx, s, NULL, 0)) >= 0)
 			return dctxs[found].dir;
 	return xtd < 0 ? -1 : +1;
 }
@@ -286,16 +286,16 @@ int syn_merge(int old, int new)
 void syn_highlight(int *att, char *s, int n)
 {
 	rset *rs = ftmap[ftidx].rs;
-	int subs[16 * 2];
+	int subs[rs->grpcnt * 2], sl;
 	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
 	int bend = 0, cend = 0;
-	while ((hl = rset_find(rs, s + sidx, LEN(subs) / 2, subs, flg)) >= 0)
+	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0)
 	{
-		hl += ftmap[ftidx].setbidx;
+		hl = sl + ftmap[ftidx].setbidx;
 		int *catt = hls[hl].att;
 		int blkend = hls[hl].blkend;
 		if (blkend && sidx >= bend) {
-			for (i = 0; i < LEN(subs) / 2; i++)
+			for (i = 0; i < rs->setgrpcnt[sl]; i++)
 				if (subs[i * 2] >= 0)
 					blk = i;
 			blkm += blkm > abs(hls[hl].blkend) ? -1 : 1;
@@ -310,7 +310,7 @@ void syn_highlight(int *att, char *s, int n)
 			} else
 				blk = 0;
 		}
-		for (i = 0; i < LEN(subs) / 2; i++) {
+		for (i = 0; i < rs->setgrpcnt[sl]; i++) {
 			if (subs[i * 2] >= 0) {
 				int beg = uc_off(s, sidx + subs[i * 2 + 0]);
 				int end = uc_off(s, sidx + subs[i * 2 + 1]);
@@ -337,7 +337,7 @@ void syn_highlight(int *att, char *s, int n)
 
 char *syn_filetype(char *path)
 {
-	int hl = rset_find(syn_ftrs, path, 0, NULL, 0);
+	int hl = rset_find(syn_ftrs, path, NULL, 0);
 	return hl >= 0 && hl < ftslen ? fts[hl].ft : hls[0].ft;
 }
 

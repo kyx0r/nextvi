@@ -701,8 +701,7 @@ static void replace(sbuf *dst, char *rep, char *ln, int *offs)
 
 static int ec_substitute(char *loc, char *cmd, char *arg)
 {
-	int beg, end, grp = xgrp != 2 ? xgrp : 32;
-	int offs[grp];
+	int beg, end;
 	char *pat = NULL, *rep = NULL;
 	char *s = arg;
 	int i, first = -1, last;
@@ -720,10 +719,11 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	free(rep);
 	if (!xkwdrs)
 		return 1;
+	int offs[xkwdrs->grpcnt * 2];
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
-		while (rset_find(xkwdrs, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
+		while (rset_find(xkwdrs, ln, offs, REG_NEWLINE) >= 0) {
 			if (offs[xgrp - 2] < 0) {
 				ln += offs[1] > 0 ? offs[1] : 1;
 				continue;
@@ -818,7 +818,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	i = beg;
 	while (i < lbuf_len(xb)) {
 		char *ln = lbuf_get(xb, i);
-		if ((rset_find(rs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
+		if ((rset_find(rs, ln, NULL, REG_NEWLINE) < 0) == not) {
 			xrow = i;
 			if (ex_exec(s))
 				break;

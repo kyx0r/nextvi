@@ -579,29 +579,30 @@ rset *rset_make(int n, char **re, int flg)
 	sbuf *sb; sbuf_make(sb, 1024)
 	rs->grp = emalloc((n + 1) * sizeof(rs->grp[0]));
 	rs->setgrpcnt = emalloc((n + 1) * sizeof(rs->setgrpcnt[0]));
-	rs->grpcnt = 2;
+	rs->grpcnt = n > 1;
 	rs->n = n;
-	sbuf_chr(sb, '(')
 	for (int i = 0; i < n; i++) {
 		if (!re[i]) {
 			rs->grp[i] = -1;
 			continue;
 		}
-		if (sb->s_n > 1)
+		if (sb->s_n > 0)
 			sbuf_chr(sb, '|')
-		sbuf_chr(sb, '(')
+		if (n > 1)
+			sbuf_chr(sb, '(')
 		sbuf_str(sb, re[i])
-		sbuf_chr(sb, ')')
+		if (n > 1)
+			sbuf_chr(sb, ')')
 		rs->grp[i] = rs->grpcnt;
-		rs->setgrpcnt[i] = re_groupcount(re[i]);
-		rs->grpcnt += 1 + rs->setgrpcnt[i];
+		rs->setgrpcnt[i] = re_groupcount(re[i]) + 1;
+		rs->grpcnt += rs->setgrpcnt[i];
 	}
-	rs->grp[n] = rs->grpcnt;
-	sbuf_mem(sb, ")\0\0\0\0", 5)
+	sbuf_mem(sb, "\0\0\0\0", 4)
 	int sz = re_sizecode(sb->s) * sizeof(int);
 	char *code = emalloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
-	if (sz < 0 || reg_comp((rcode*)code, sb->s, rs->grpcnt-1, flg)) {
+	if (sz < 0 || reg_comp((rcode*)code, sb->s,
+				MAX(rs->grpcnt-1, 0), flg)) {
 		rset_free(rs);
 		rs = NULL;
 	}
@@ -610,7 +611,7 @@ rset *rset_make(int n, char **re, int flg)
 }
 
 /* return the index of the matching regular expression or -1 if none matches */
-int rset_find(rset *rs, char *s, int n, int *grps, int flg)
+int rset_find(rset *rs, char *s, int *grps, int flg)
 {
 	regmatch_t subs[rs->grpcnt+1];
 	regmatch_t *sub = subs+1;
@@ -618,13 +619,11 @@ int rset_find(rset *rs, char *s, int n, int *grps, int flg)
 	{
 		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
 		for (int i = rs->n-1; i >= 0; i--) {
-			if (sub[rs->grp[i]].rm_eo)
-			{
-				int grp, sgrp = rs->setgrpcnt[i] + 1;
+			if (sub[rs->grp[i]].rm_eo) {
+				int grp, n = grps ? rs->setgrpcnt[i] : 0;
 				for (int gi = 0; gi < n; gi++) {
 					grp = rs->grp[i] + gi;
-					if (gi < sgrp && sub[grp].rm_eo
-							&& sub[grp].rm_so) {
+					if (sub[grp].rm_eo && sub[grp].rm_so) {
 						grps[gi * 2] = sub[grp].rm_so - s;
 						grps[gi * 2 + 1] = sub[grp].rm_eo - s;
 					} else {
