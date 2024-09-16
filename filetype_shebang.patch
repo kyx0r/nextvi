@@ -18,7 +18,7 @@ index 8acbc66..7b336b7 100644
 +		for (int i = 0; i < LEN(lfts); i++)
 +			pats[i] = lfts[i].pat;
 +		rset *rs = rset_make(LEN(lfts), pats, 0);
-+		int hl = rset_find(rs, lbuf_buf(xb)[adv], 0, NULL, REG_NEWLINE);
++		int hl = rset_find(rs, lbuf_buf(xb)[adv], NULL, REG_NEWLINE);
 +		if (hl >= 0)
 +			ex_ft = syn_setft(lfts[hl].ft);
 +		rset_free(rs);
