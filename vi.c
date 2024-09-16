@@ -610,7 +610,7 @@ static char *file_calc(char *path)
 		len = strlen(dp->d_name)+1;
 		path[pathlen] = '/';
 		memcpy(&path[pathlen+1], dp->d_name, len);
-		if (fsincl && rset_find(fsincl, path, 0, NULL, 0) < 0)
+		if (fsincl && rset_find(fsincl, path, NULL, 0) < 0)
 			continue;
 		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
 			temp_write(1, path);
@@ -1805,7 +1805,7 @@ void vi(int init)
 					strcpy(itoa(n, cmd+11), "\\|");
 					while (1) {
 						ex_exec(cmd);
-						ex_exec("se grp=4|f/[^ \t]*[^ \t]?(.)|tp 1K|se grp=2");
+						ex_exec("se grp=2|f/[^ \t]*[^ \t]?(.)|tp 1K|se nogrp");
 						if (vi_col < n)
 							break;
 						ex_exec("+1");

@@ -116,7 +116,7 @@ typedef struct {
 	int grpcnt;		/* group count */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
-int rset_find(rset *re, char *s, int n, int *grps, int flg);
+int rset_find(rset *re, char *s, int *grps, int flg);
 void rset_free(rset *re);
 char *re_read(char **src);
 
