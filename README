@@ -366,9 +366,8 @@ necessary when the result of regex search is to be based on some group rather
 than default match group. For example you want to search for the whole line
 but exclude the tabs at the beginning of the line, use regex like this:
 [	]+(.[^ ]+) since only the capture result for 2nd group matters use
-the "grp" like this: :se grp=4 .The number 4 is important, it is calculated
-using: grpnum * 2, to get the second group number do: 2 * 2 = 4. The first
-group is always 2, 1 * 2 = 2, :se grp=2 gets you back to default group/behavior.
+the "grp" like this: :se grp=2 .The number 2 is important, it is calculated
+using: grpnum * 2. In this case grpnum is 1. The default grpnum is always 0.
 67. Undo and Redo commands (u,^r) may take optional vi_arg1 which repeats the
 operation N times.
 68. Search motions do not terminate with error if the count is greater than
