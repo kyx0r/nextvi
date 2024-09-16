@@ -17,7 +17,7 @@ int xkmap;			/* the current keymap */
 int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
 int xish = 1;			/* interactive shell */
-int xgrp = 2;			/* regex search group */
+int xgrp;			/* regex search group */
 int xpac;			/* print autocomplete options */
 int xkwdcnt;			/* number of search kwd changes */
 int xbufcur;			/* number of active buffers */
@@ -724,15 +724,15 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
 		while (rset_find(xkwdrs, ln, offs, REG_NEWLINE) >= 0) {
-			if (offs[xgrp - 2] < 0) {
+			if (offs[xgrp] < 0) {
 				ln += offs[1] > 0 ? offs[1] : 1;
 				continue;
 			} else if (!r)
 				sbuf_make(r, 256)
-			sbuf_mem(r, ln, offs[xgrp - 2])
+			sbuf_mem(r, ln, offs[xgrp])
 			replace(r, xrep, ln, offs);
-			ln += offs[xgrp - 1];
-			if (!offs[xgrp - 1])	/* zero-length match */
+			ln += offs[xgrp + 1];
+			if (!offs[xgrp + 1])	/* zero-length match */
 				sbuf_chr(r, (unsigned char)*ln++)
 			if (*ln == '\n' || !*ln || !strchr(s, 'g'))
 				break;

@@ -1805,7 +1805,7 @@ void vi(int init)
 					strcpy(itoa(n, cmd+11), "\\|");
 					while (1) {
 						ex_exec(cmd);
-						ex_exec("se grp=4|f/[^ \t]*[^ \t]?(.)|tp 1K|se grp=2");
+						ex_exec("se grp=2|f/[^ \t]*[^ \t]?(.)|tp 1K|se nogrp");
 						if (vi_col < n)
 							break;
 						ex_exec("+1");

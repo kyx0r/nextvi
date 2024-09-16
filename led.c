@@ -59,13 +59,13 @@ static void file_index(struct lbuf *buf)
 				sidx ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
 			/* if target group not found, continue with group 1
 			which will always be valid, otherwise there be no match */
-			if (subs[grp - 2] < 0) {
+			if (subs[grp] < 0) {
 				sidx += subs[1] > 0 ? subs[1] : 1;
 				continue;
 			}
-			len = subs[grp - 1] - subs[grp - 2];
+			len = subs[grp + 1] - subs[grp];
 			if (len > 1) {
-				char *part = ss[i]+sidx+subs[grp - 2];
+				char *part = ss[i]+sidx+subs[grp];
 				int *ip = (int*)(ibuf->s+sizeof(n));
 				for (n = len+1; ip < (int*)&ibuf->s[ibuf->s_n]; ip++)
 					if (*ip - ip[-1] == n &&
@@ -76,7 +76,7 @@ static void file_index(struct lbuf *buf)
 				sbuf_mem(ibuf, &acsb->s_n, (int)sizeof(n))
 			}
 			skip:
-			sidx += subs[grp - 1] > 0 ? subs[grp - 1] : 1;
+			sidx += subs[grp + 1] > 0 ? subs[grp + 1] : 1;
 		}
 	}
 	sbuf_null(acsb)
