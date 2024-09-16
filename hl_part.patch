@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 1f01cd5..f2520f5 100644
+index 9bef4a4..01bec65 100644
 --- a/led.c
 +++ b/led.c
 @@ -113,12 +113,10 @@ static int led_offdir(char **chrs, int *pos, int i)

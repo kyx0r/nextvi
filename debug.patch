@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 3440b72..1be6598 100644
+index 8acbc66..2afa6ad 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1153,3 +1153,11 @@ void ex_init(char **files, int n)
@@ -15,7 +15,7 @@ index 3440b72..1be6598 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 1187892..b61eef9 100644
+index 9d9877a..2820473 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -540,6 +540,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
@@ -27,7 +27,7 @@ index 1187892..b61eef9 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index 69f3d3d..bf4f78b 100644
+index 5bbb7d9..a4319ab 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -78,6 +78,13 @@ void dir_init(void)
@@ -56,7 +56,7 @@ index 69f3d3d..bf4f78b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 159ff54..dc83d0a 100644
+index 869b920..9ec5dff 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -592,6 +592,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -94,7 +94,7 @@ index 159ff54..dc83d0a 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 76785fa..8d5905b 100644
+index 1d23d99..4022869 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -175,6 +175,7 @@ int ren_cwid(char *s, int pos);
