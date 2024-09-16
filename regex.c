@@ -575,23 +575,27 @@ void rset_free(rset *rs)
 
 rset *rset_make(int n, char **re, int flg)
 {
+	int i, c = 0;
 	rset *rs = emalloc(sizeof(*rs));
 	sbuf *sb; sbuf_make(sb, 1024)
 	rs->grp = emalloc((n + 1) * sizeof(rs->grp[0]));
 	rs->setgrpcnt = emalloc((n + 1) * sizeof(rs->setgrpcnt[0]));
-	rs->grpcnt = n > 1;
 	rs->n = n;
-	for (int i = 0; i < n; i++) {
+	for (i = 0; i < n; i++)
+		if (!re[i])
+			c++;
+	rs->grpcnt = (n - c) > 1;
+	for (i = 0; i < n; i++) {
 		if (!re[i]) {
 			rs->grp[i] = -1;
 			continue;
 		}
 		if (sb->s_n > 0)
 			sbuf_chr(sb, '|')
-		if (n > 1)
+		if ((n - c) > 1)
 			sbuf_chr(sb, '(')
 		sbuf_str(sb, re[i])
-		if (n > 1)
+		if ((n - c) > 1)
 			sbuf_chr(sb, ')')
 		rs->grp[i] = rs->grpcnt;
 		rs->setgrpcnt[i] = re_groupcount(re[i]) + 1;
