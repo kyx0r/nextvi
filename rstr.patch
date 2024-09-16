@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 3440b72..bfea453 100644
+index 8acbc66..7643a88 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -27,7 +27,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -24,13 +24,18 @@ index 3440b72..bfea453 100644
  		xkwdcnt++;
  		vi_regputraw('/', kwd, 0, 0);
  		xkwddir = dir;
-@@ -723,7 +723,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -719,11 +719,11 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+ 	free(rep);
+ 	if (!xkwdrs)
+ 		return 1;
+-	int offs[xkwdrs->grpcnt * 2];
++	int offs[xkwdrs->rs ? xkwdrs->rs->grpcnt * 2 : 2];
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
--		while (rset_find(xkwdrs, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
-+		while (rstr_find(xkwdrs, ln, grp / 2, offs, REG_NEWLINE) >= 0) {
- 			if (offs[xgrp - 2] < 0) {
+-		while (rset_find(xkwdrs, ln, offs, REG_NEWLINE) >= 0) {
++		while (rstr_find(xkwdrs, ln, offs, REG_NEWLINE) >= 0) {
+ 			if (offs[xgrp] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
 @@ -800,7 +800,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
@@ -55,8 +60,8 @@ index 3440b72..bfea453 100644
  	i = beg;
  	while (i < lbuf_len(xb)) {
  		char *ln = lbuf_get(xb, i);
--		if ((rset_find(rs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
-+		if ((rstr_find(rs, ln, 0, NULL, REG_NEWLINE) < 0) == not) {
+-		if ((rset_find(rs, ln, NULL, REG_NEWLINE) < 0) == not) {
++		if ((rstr_find(rs, ln, NULL, REG_NEWLINE) < 0) == not) {
  			xrow = i;
  			if (ex_exec(s))
  				break;
@@ -82,10 +87,10 @@ index 3440b72..bfea453 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/lbuf.c b/lbuf.c
-index fe02499..ba7e0e2 100644
+index 65210df..f26041d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -427,7 +427,7 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -427,16 +427,16 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -93,21 +98,23 @@ index fe02499..ba7e0e2 100644
 +int lbuf_search(struct lbuf *lb, rstr *re, int dir, int *r,
  			int ln_n, int *o, int *len, int skip)
  {
- 	int r0 = *r, o0 = *o, grp = xgrp;
-@@ -436,7 +436,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+ 	int r0 = *r, o0 = *o;
+-	int offs[re->grpcnt * 2], i = r0;
++	int offs[re->rs ? re->rs->grpcnt * 2 : 2], i = r0;
+ 	char *s = lbuf_get(lb, i);
  	int off = skip > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
  	for (; i >= 0 && i < ln_n; i += dir) {
  		s = lb->ln[i];
--		while (rset_find(re, s + off, grp / 2, offs,
-+		while (rstr_find(re, s + off, grp / 2, offs,
+-		while (rset_find(re, s + off, offs,
++		while (rstr_find(re, s + off, offs,
  				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
- 			int g1 = offs[grp - 2], g2 = offs[grp - 1];
+ 			int g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 1187892..a6ea850 100644
+index 9d9877a..2bc0d1b 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -656,3 +656,126 @@ char *re_read(char **src)
+@@ -659,3 +659,124 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_done(sb)
  }
@@ -172,10 +179,8 @@ index 1187892..a6ea850 100644
 +		goto break##gen; \
 +} \
 +if (!*m) { \
-+	if (n >= 1) { \
-+		grps[0] = r - s; \
-+		grps[1] = r - s + len; \
-+	} \
++	grps[0] = r - s; \
++	grps[1] = r - s + len; \
 +	return 0; \
 +} \
 +break##gen:; \
@@ -199,12 +204,12 @@ index 1187892..a6ea850 100644
 +	rstr_match1(4##gen, _wbeg, _wend, cmpcase) \
 +
 +/* return zero if an occurrence is found */
-+int rstr_find(rstr *rs, char *s, int n, int *grps, int flg)
++int rstr_find(rstr *rs, char *s, int *grps, int flg)
 +{
 +	int len;
 +	char *beg, *end, *r, *t, *m;
 +	if (rs->rs)
-+		return rset_find(rs->rs, s, n, grps, flg);
++		return rset_find(rs->rs, s, grps, flg);
 +	if ((rs->lbeg && (flg & REG_NOTBOL)) || (rs->lend && (flg & REG_NOTEOL)))
 +		return -1;
 +	if (!*s)
@@ -235,7 +240,7 @@ index 1187892..a6ea850 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 159ff54..6a7b6c8 100644
+index 869b920..016c902 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -592,7 +592,7 @@ void vi_regput(int c, const char *s, int ln)
@@ -251,13 +256,13 @@ index 159ff54..6a7b6c8 100644
  		len = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len);
--		if (fsincl && rset_find(fsincl, path, 0, NULL, 0) < 0)
-+		if (fsincl && rstr_find(fsincl, path, 0, NULL, 0) < 0)
+-		if (fsincl && rset_find(fsincl, path, NULL, 0) < 0)
++		if (fsincl && rstr_find(fsincl, path, NULL, 0) < 0)
  			continue;
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 76785fa..ad9cee4 100644
+index 1d23d99..1a9f189 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -115,10 +115,21 @@ typedef struct {
@@ -273,11 +278,11 @@ index 76785fa..ad9cee4 100644
 +	int wbeg, wend;		/* match word beg/end */
 +} rstr;
  rset *rset_make(int n, char **pat, int flg);
- int rset_find(rset *re, char *s, int n, int *grps, int flg);
+ int rset_find(rset *re, char *s, int *grps, int flg);
  void rset_free(rset *re);
  char *re_read(char **src);
 +rstr *rstr_make(char *re, int flg);
-+int rstr_find(rstr *rs, char *s, int n, int *grps, int flg);
++int rstr_find(rstr *rs, char *s, int *grps, int flg);
 +void rstr_free(rstr *rs);
  
  /* lbuf.c line buffer, managing a number of lines */
