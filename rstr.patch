@@ -111,10 +111,10 @@ index 65210df..f26041d 100644
  			int g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 9d9877a..2bc0d1b 100644
+index 9d9877a..13ae7be 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -659,3 +659,124 @@ char *re_read(char **src)
+@@ -659,3 +659,126 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_done(sb)
  }
@@ -179,8 +179,10 @@ index 9d9877a..2bc0d1b 100644
 +		goto break##gen; \
 +} \
 +if (!*m) { \
-+	grps[0] = r - s; \
-+	grps[1] = r - s + len; \
++	if (grps) { \
++		grps[0] = r - s; \
++		grps[1] = r - s + len; \
++	} \
 +	return 0; \
 +} \
 +break##gen:; \
