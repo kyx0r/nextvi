@@ -619,8 +619,7 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
 {
 	regmatch_t subs[rs->grpcnt+1];
 	regmatch_t *sub = subs+1;
-	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg))
-	{
+	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
 		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
 		for (int i = rs->n-1; i >= 0; i--) {
 			if (sub[rs->grp[i]].rm_eo) {

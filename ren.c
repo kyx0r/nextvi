@@ -289,8 +289,7 @@ void syn_highlight(int *att, char *s, int n)
 	int subs[rs->grpcnt * 2], sl;
 	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
 	int bend = 0, cend = 0;
-	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0)
-	{
+	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
 		hl = sl + ftmap[ftidx].setbidx;
 		int *catt = hls[hl].att;
 		int blkend = hls[hl].blkend;
