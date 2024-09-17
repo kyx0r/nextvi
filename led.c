@@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf), n;
 	sbuf *ibuf;
-	rset *rs = rset_make(1, (char*[]){xacreg ? xacreg->s : reg}, xic ? REG_ICASE : 0);
+	rset *rs = rset_smake(xacreg ? xacreg->s : reg, xic ? REG_ICASE : 0);
 	if (!rs)
 		return;
 	int subs[rs->grpcnt * 2];
@@ -290,7 +290,7 @@ static void led_printparts(sbuf *sb, int ps, char *post)
 	sbuf_str(sb, post)
 	sbuf_set(sb, '\0', 4)
 	rstate->s = NULL;
-	ren_position(sb->s+ps, &(char**){NULL}, &off);
+	ren_position_m(, sb->s+ps, &off)
 	off -= uc_slen(post);
 	pos = ren_cursor(sb->s+ps, ren_pos(sb->s+ps, MAX(0, off - 1)));
 	if (pos >= xleft + xcols)

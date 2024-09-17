@@ -118,6 +118,8 @@ typedef struct {
 	int grpcnt;		/* group count */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
+rset *rset_smake(char *pat, int flg)
+	{ char *ss[1] = {pat}; return rset_make(1, ss, flg); }
 int rset_find(rset *re, char *s, int *grps, int flg);
 void rset_free(rset *re);
 char *re_read(char **src);
@@ -165,6 +167,7 @@ typedef struct {
 extern ren_state *rstate;
 void ren_done(void);
 int *ren_position(char *s, char ***c, int *n);
+#define ren_position_m(p, s, n) { char **c; p ren_position(s, &c, n); }
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
 int ren_pos(char *s, int off);
@@ -222,7 +225,8 @@ int uc_slen(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
 char *uc_subl(char *s, int beg, int end, int *rlen);
-#define uc_sub(s, beg, end) uc_subl(s, beg, end, &(int){0})
+char *uc_sub(char *s, int beg, int end)
+	{ int l; return uc_subl(s, beg, end, &l); }
 char *uc_dup(const char *s);
 int uc_isspace(char *s);
 int uc_isprint(char *s);

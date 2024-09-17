@@ -139,9 +139,8 @@ static int ren_posfind(int *pos, int n, int p, int dir)
 /* convert character offset to visual position */
 int ren_pos(char *s, int off)
 {
-	int n;
-	char **c;
-	int *pos = ren_position(s, &c, &n);
+	int n, *pos;
+	ren_position_m(pos =, s, &n)
 	int ret = off < n ? pos[off] : 0;
 	return ret;
 }
@@ -149,9 +148,8 @@ int ren_pos(char *s, int off)
 /* convert visual position to character offset */
 int ren_off(char *s, int p)
 {
-	int n;
-	char **c;
-	int *pos = ren_position(s, &c, &n);
+	int n, *pos;
+	ren_position_m(pos =, s, &n)
 	int *ch = &pos[ren_posfind(pos, n, p, -1)];
 	return ch - pos;
 }
@@ -186,9 +184,8 @@ int ren_noeol(char *s, int o)
 /* the visual position of the next character */
 int ren_next(char *s, int p, int dir)
 {
-	int n;
-	char **c;
-	int *pos = ren_position(s, &c, &n);
+	int n, *pos;
+	ren_position_m(pos =, s, &n)
 	return pos[ren_posfind(pos, n, p+dir, dir)];
 }
 
