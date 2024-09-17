@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index 8acbc66..b079c9f 100644
+index 2419168..f723546 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -21,6 +21,7 @@ int xgrp;			/* regex search group */
- int xpac;			/* print autocomplete options */
+@@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
  int xkwdcnt;			/* number of search kwd changes */
  int xbufcur;			/* number of active buffers */
+ int xgrec;			/* global vi/ex recursion depth */
 +int xexrc;			/* read .exrc from the current directory */
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -843,6 +844,7 @@ static struct option {
+@@ -844,6 +845,7 @@ static struct option {
  	{"td", &xtd},
  	{"shape", &xshape},
  	{"order", &xorder},
@@ -18,8 +18,8 @@ index 8acbc66..b079c9f 100644
  	{"hl", &xhl},
  	{"hll", &xhll},
  	{"hlw", &xhlw},
-@@ -1139,6 +1141,47 @@ void ex(void)
- 	}
+@@ -1142,6 +1144,47 @@ void ex(void)
+ 	xgrec--;
  }
  
 +char *load_line(FILE *fp)
@@ -66,7 +66,7 @@ index 8acbc66..b079c9f 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1150,6 +1193,16 @@ void ex_init(char **files, int n)
+@@ -1153,6 +1196,16 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	xmpt = 0;
  	xvis &= ~8;
@@ -85,7 +85,7 @@ index 8acbc66..b079c9f 100644
 +		load_exrc(".exrc");
  }
 diff --git a/vi.c b/vi.c
-index 869b920..84d4665 100644
+index 81fa416..6551c8a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -18,6 +18,7 @@
