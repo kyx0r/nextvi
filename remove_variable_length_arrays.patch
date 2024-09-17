@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 8acbc66..f0596d3 100644
+index 2419168..4c7d518 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -719,7 +719,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -720,7 +720,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	free(rep);
  	if (!xkwdrs)
  		return 1;
@@ -11,7 +11,7 @@ index 8acbc66..f0596d3 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -750,6 +750,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -751,6 +751,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	}
  	if (first >= 0)
  		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
@@ -19,7 +19,7 @@ index 8acbc66..f0596d3 100644
  	return 0;
  }
  
-@@ -1113,7 +1114,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
+@@ -1114,7 +1115,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index 8acbc66..f0596d3 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, cmd, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1122,6 +1123,9 @@ int ex_exec(const char *ln)
+@@ -1123,6 +1124,9 @@ int ex_exec(const char *ln)
  			ret = excmds[idx].ec(loc, cmd, ecmd);
  		free(ecmd);
  	}
@@ -110,7 +110,7 @@ index 9bef4a4..1941103 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 9d9877a..5fd93b3 100644
+index 3dfb7d3..e607578 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -314,7 +314,14 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -155,9 +155,9 @@ index 9d9877a..5fd93b3 100644
 -	regmatch_t subs[rs->grpcnt+1];
 +	regmatch_t *subs = emalloc((rs->grpcnt+1) * sizeof(regmatch_t));
  	regmatch_t *sub = subs+1;
- 	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg))
- 	{
-@@ -635,10 +642,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
+ 	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
+ 		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
+@@ -634,10 +641,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
  						grps[gi * 2 + 1] = -1;
  					}
  				}
@@ -171,7 +171,7 @@ index 9d9877a..5fd93b3 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 5bbb7d9..2d356bf 100644
+index 8d9a5f3..ea40cc5 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -241,13 +241,14 @@ int syn_blockhl;
@@ -198,8 +198,8 @@ index 5bbb7d9..2d356bf 100644
 +	int *subs = emalloc(rs->grpcnt * 2 * sizeof(int)), sl;
  	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
  	int bend = 0, cend = 0;
- 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0)
-@@ -333,6 +334,7 @@ void syn_highlight(int *att, char *s, int n)
+ 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
+@@ -332,6 +333,7 @@ void syn_highlight(int *att, char *s, int n)
  	if (syn_blockhl && !blk)
  		for (j = 0; j < n; j++)
  			att[j] = blockcont && att[j] ? att[j] : *blockatt;
@@ -207,7 +207,7 @@ index 5bbb7d9..2d356bf 100644
  }
  
  char *syn_filetype(char *path)
-@@ -367,9 +369,10 @@ int syn_addhl(char *reg, int func, int reload)
+@@ -366,9 +368,10 @@ int syn_addhl(char *reg, int func, int reload)
  
  void syn_init(void)
  {
@@ -220,7 +220,7 @@ index 5bbb7d9..2d356bf 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 869b920..6d48afd 100644
+index 81fa416..8ecd533 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -146,7 +146,8 @@ static void vi_drawrow(int row)

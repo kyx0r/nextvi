@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8acbc66..f64c519 100644
+index 2419168..3b33ed3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index 8acbc66..f64c519 100644
  int xish = 1;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -849,6 +850,7 @@ static struct option {
+@@ -850,6 +851,7 @@ static struct option {
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
  	{"tbs", &xtabspc},
@@ -68,7 +68,7 @@ index 9bef4a4..dedce8b 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 869b920..accb725 100644
+index 81fa416..8df1821 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index 869b920..accb725 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 1d23d99..bb69e36 100644
+index 52eeab4..3a014d8 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -435,6 +435,7 @@ extern int xhlr;
+@@ -436,6 +436,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

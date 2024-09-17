@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 8acbc66..ca8d360 100644
+index 2419168..ac411af 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -35,6 +35,7 @@ static int xbufsmax;		/* number of buffers */
+@@ -36,6 +36,7 @@ static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static char xrep[EXLEN];	/* the last replacement */
  static int xgdep;		/* global command recursion depth */
@@ -10,7 +10,7 @@ index 8acbc66..ca8d360 100644
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
-@@ -96,6 +97,7 @@ static int bufs_open(const char *path, int len)
+@@ -97,6 +98,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -18,7 +18,7 @@ index 8acbc66..ca8d360 100644
  	return i;
  }
  
-@@ -407,6 +409,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -408,6 +410,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: sigh... */
  	}
@@ -27,7 +27,7 @@ index 8acbc66..ca8d360 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -521,6 +525,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -522,6 +526,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -38,7 +38,7 @@ index 8acbc66..ca8d360 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
  				ex_print("write failed: file changed");
  				return 1;
-@@ -1012,6 +1020,12 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
+@@ -1013,6 +1021,12 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -51,7 +51,7 @@ index 8acbc66..ca8d360 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1061,6 +1075,7 @@ static struct excmd {
+@@ -1062,6 +1076,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
@@ -60,7 +60,7 @@ index 8acbc66..ca8d360 100644
  };
  
 diff --git a/vi.c b/vi.c
-index 869b920..b11235c 100644
+index 81fa416..4eaff58 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2034,9 +2034,11 @@ int main(int argc, char *argv[])
@@ -77,10 +77,10 @@ index 869b920..b11235c 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 1d23d99..77ad685 100644
+index 52eeab4..6db66d4 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -311,6 +311,7 @@ struct buf {
+@@ -313,6 +313,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -88,7 +88,7 @@ index 1d23d99..77ad685 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -448,3 +449,4 @@ extern char *fs_exdir;
+@@ -449,3 +450,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;

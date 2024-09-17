@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 8acbc66..fd3b693 100644
+index 2419168..3dd9589 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1012,6 +1012,16 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
+@@ -1013,6 +1013,16 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -19,7 +19,7 @@ index 8acbc66..fd3b693 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1044,6 +1054,7 @@ static struct excmd {
+@@ -1045,6 +1055,7 @@ static struct excmd {
  	{"wq", ec_write},
  	{"wq!", ec_write},
  	{"u", ec_undo},
@@ -182,10 +182,10 @@ index 65210df..634d3df 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 1d23d99..13a1659 100644
+index 52eeab4..dda4ac0 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -146,6 +146,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
+@@ -148,6 +148,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int ln_n, int *o, int *len, int skip);
