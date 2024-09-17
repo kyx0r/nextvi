@@ -21,6 +21,7 @@ int xgrp;			/* regex search group */
 int xpac;			/* print autocomplete options */
 int xkwdcnt;			/* number of search kwd changes */
 int xbufcur;			/* number of active buffers */
+int xgrec;			/* global vi/ex recursion depth */
 struct buf *bufs;		/* main buffers */
 struct buf tempbufs[2];		/* temporary buffers, for internal use */
 struct buf *ex_buf;		/* current buffer */
@@ -351,7 +352,7 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 static int ec_quit(char *loc, char *cmd, char *arg)
 {
 	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
-		if (lbuf_modified(bufs[i].lb)) {
+		if (xgrec < 2 && lbuf_modified(bufs[i].lb)) {
 			ex_print("buffers modified");
 			return 1;
 		}
@@ -1129,6 +1130,7 @@ int ex_exec(const char *ln)
 void ex(void)
 {
 	vi_lncol = 0;
+	xgrec++;
 	while (!xquit) {
 		char *ln = ex_read(":");
 		if (ln) {
@@ -1137,6 +1139,7 @@ void ex(void)
 			lbuf_modified(xb);
 		}
 	}
+	xgrec--;
 }
 
 void ex_init(char **files, int n)

@@ -544,10 +544,9 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int x)
 	end = beg;
 	while (beg > ln && uc_kind(uc_beg(ln, beg - 1)) == 1)
 		beg = uc_beg(ln, beg - 1);
-	for (int i = n; uc_len(end) && i > 0; end++, i--) {
+	for (int i = n; uc_len(end) && i > 0; end++, i--)
 		while (uc_len(end) && uc_kind(end) == 1)
 			end += uc_len(end);
-	}
 	if (beg >= --end)
 		return NULL;
 	sbuf_make(sb, (end - beg)+64)
@@ -1376,6 +1375,7 @@ void vi(int init)
 {
 	int mark, kmap = 0;
 	char *ln, *cs;
+	xgrec++;
 	if (init) {
 		xtop = MAX(0, xrow - xrows / 2);
 		vi_col = vi_off2col(xb, xrow, xoff);
@@ -1926,8 +1926,7 @@ void vi(int init)
 					if (sb)
 						sbuf_free(sb)
 					sbuf_make(sb, 128)
-					if (off && row == xrow && off - start - 1 < 0)
-					{
+					if (off && row == xrow && off - start - 1 < 0) {
 						ch += 3;
 						swap(&start, &off);
 					}
@@ -1994,6 +1993,7 @@ void vi(int init)
 		term_commit();
 		lbuf_modified(xb);
 	}
+	xgrec--;
 }
 
 static void sighandler(int signo)

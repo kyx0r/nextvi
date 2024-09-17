@@ -33,7 +33,9 @@ int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
 
 /* main functions */
+extern int xgrec;
 void vi(int init);
+void ex(void);
 
 /* sbuf string buffer, variable-sized string */
 #define NEXTSZ(o, r)	MAX(o * 2, o + r)
@@ -339,7 +341,6 @@ void temp_switch(int i);
 void temp_write(int i, char *str);
 void temp_done(int i);
 void temp_pos(int i, int row, int off, int top);
-void ex(void);
 int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 char *ex_read(char *msg);
