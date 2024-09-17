@@ -1,0 +1,210 @@
+.Dd Sep 12, 2024
+.Dt nextvi 1
+.Os
+.
+.Sh NAME
+.Nm nextvi
+.Nd Next version of neatvi (a small vi/ex editor) for editing bidirectional UTF-8 text
+.
+.Sh SYNOPSIS
+.Nm vi
+.Op Fl esv
+.Op Ar
+.
+.Sh DESCRIPTION
+.Nm nextvi
+is a
+.Xr vi 1 Ns -like
+text editor based on Ali Gholami Rudi's
+.Xr neatvi 1 Ns .
+It supports UTF-8 and bidirectional text.
+.
+.Sh VI COMMANDS
+.Bl -tag -width Ds
+.It Cm +
+.It Cm -
+.It Cm _
+.It Cm '
+.It Cm j
+.It Cm k
+.It Cm G
+.It Cm H
+.It Cm L
+.It Cm M
+.It Cm ,
+.It Cm ;
+.It Cm h
+.It Cm l
+.It Cm f
+.It Cm F
+.It Cm t
+.It Cm T
+.It Cm B
+.It Cm E
+.It Cm b
+.It Cm e
+.It Cm W
+.It Cm w
+.It Cm {
+.It Cm }
+.It Cm [
+.It Cm ]
+.It Cm C-]
+.It Cm C-p
+.It Cm C-t
+.It Cm 0
+.It Cm ^
+.It Cm $
+.It Cm |
+.It Cm /
+.It Cm ?
+.It Cm n
+.It Cm N
+.It Cm C-a
+.It Cm " "
+.It Cm C-h
+.It Cm `
+.It Cm %
+.It Cm \\
+.El
+.
+.Sh EX COMMANDS
+.Bl -tag -width Ds
+.
+.It Cm f
+.It Cm b
+.It Cm bp
+.It Cm bs
+.It Cm p
+.It Cm a
+.It Cm ea
+.It Cm ea!
+.It Cm i
+.It Cm d
+.It Cm c
+.It Cm e
+.It Cm e!
+.It Cm g
+.It Cm g!
+.It Cm =
+.It Cm k
+.It Cm tp
+.It Cm pu
+.It Cm q
+.It Cm q!
+.It Cm r
+.It Cm v
+.It Cm w
+.It Cm w!
+.It Cm wq
+.It Cm wq!
+.It Cm u
+.It Cm rd
+.It Cm se
+.It Cm s
+.It Cm x
+.It Cm x!
+.It Cm ya
+.It Cm !
+.It Cm ft
+.It Cm cm
+.It Cm cm!
+.It Cm fd
+.It Cm fp
+.It Cm cd
+.It Cm inc
+.It Cm bx
+.It Cm ac
+.
+.El
+.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.
+.It Cm ai
+If set, indent new lines.
+.
+.It Cm ic
+If set, ignore case in regular expressions.
+.
+.It Cm ish
+.\" TODO
+.
+.It Cm grp
+.\" TODO
+.
+.It Cm hl
+If set, highlight text based on rules defined in
+.Pa conf.c .
+.
+.It Cm hll
+If set, highlight current line.
+.
+.It Cm hlp
+If set, highlight pairs of brackets.
+.
+.It Cm hlr
+If set, highlight text in reverse direction.
+.
+.It Cm hlw
+If set, highlight current word.
+.
+.It Cm led
+.\" TODO
+.
+.It Cm mpt
+.\" TODO
+.
+.It Cm order
+If set, reorder characters based on rules defined in
+.Pa conf.c .
+.
+.It Cm pac
+If set, enable autocomplete.
+.
+.It Cm shape
+If set, perform Arabic script letter shaping.
+.
+.It Cm tbs
+Number of spaces used to represent a tab.
+.
+.It Cm td
+Current text direction context.
+This option accepts four meaningful values:
+.Bl -tag -width Ds -compact
+.It Ar +2
+Exclusively left-to-right.
+.It Ar +1
+Follow
+.Va dircontexts[]
+(in
+.Pa conf.c ) ,
+defaulting to left-to-right.
+.It Ar -1
+Follow
+.Va dircontexts[] ,
+defaulting to right-to-left.
+.It Ar -2
+Exclusively right-to-left.
+.
+.El
+.El
+.
+.Sh SPECIAL MARKS
+.
+.Sh SPECIAL YANK BUFFERS
+.
+.Sh SEE ALSO
+.
+.Sh AUTHORS
+.An -nosplit
+.Nm
+was written by
+.An Kyryl Melekhin Aq Mt k.melekhin@gmail.com .
+It is based on
+.Xr neatvi 1 Ns ,
+which was written by
+.An Ali Gholami Rudi Aq Mt ali@rudi.ir .
+.\" add more contributors here?
+This manual page was written by
+.An népéta Aq Mt nepeta@canaglie.net
