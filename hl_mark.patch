@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2419168..94c4415 100644
+index a6562d1..482334b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -19,7 +19,7 @@ index 2419168..94c4415 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 9bef4a4..f135190 100644
+index d6a0b36..8bbdbaf 100644
 --- a/led.c
 +++ b/led.c
 @@ -140,6 +140,23 @@ static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *
@@ -65,13 +65,13 @@ index 9bef4a4..f135190 100644
  	if (vi_hidch)
  		led_out(term_sbuf, 2)
 diff --git a/vi.h b/vi.h
-index 52eeab4..497b876 100644
+index a438c09..82a248c 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -284,14 +284,14 @@ char *xgetenv(char* q[]);
+@@ -288,14 +288,14 @@ char *xgetenv(char* q[]);
  /* led.c line-oriented input and output */
  char *led_prompt(char *pref, char *post, char *insert, int *kmap);
- sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh);
+ sbuf *led_input(char *pref, char **post, int row, int lsh);
 -void led_render(char *s0, int cbeg, int cend);
 +void led_render(char *s0, int cbeg, int cend, int row);
  #define _led_render(msg, row, col, beg, end, kill) \
