@@ -281,7 +281,7 @@ static int led_lastword(char *s)
 	return r - s;
 }
 
-static void led_printparts(sbuf *sb, int ps, char *post)
+static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
 {
 	if (!xled)
 		return;
@@ -292,6 +292,8 @@ static void led_printparts(sbuf *sb, int ps, char *post)
 	rstate->s = NULL;
 	ren_position_m(, sb->s+ps, &off)
 	off -= uc_slen(post);
+	if (ai_max >= 0)
+		xoff = off;
 	pos = ren_cursor(sb->s+ps, ren_pos(sb->s+ps, MAX(0, off - 1)));
 	if (pos >= xleft + xcols)
 		xleft = pos - xcols / 2;
@@ -391,7 +393,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 	if (!post)
 		post = "";
 	while (1) {
-		led_printparts(sb, ps, post);
+		led_printparts(sb, ps, post, ai_max);
 		len = sb->s_n;
 		c = term_read();
 		switch (c) {
@@ -625,26 +627,28 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 }
 
 /* read visual command input */
-sbuf *led_input(char *pref, char **post, int *ps, int row, int lsh)
+sbuf *led_input(char *pref, char **post, int row, int lsh)
 {
 	sbuf *sb; sbuf_make(sb, xcols)
 	int ai_max = 128 * xai;
-	int n, key;
+	int n, key, ps = 0;
 	sbufn_str(sb, pref)
 	while (1) {
-		led_line(sb, *ps, sb->s_n, *post, ai_max, &key, &xkmap, row, lsh);
+		led_line(sb, ps, sb->s_n, *post, ai_max, &key, &xkmap, row, lsh);
 		if (key != '\n') {
 			sbuf_set(sb, '\0', 4)
 			sb->s_n -= 4;
+			if (!xled)
+				xoff = uc_slen(sb->s+ps);
 			return sb;
 		}
 		sbufn_chr(sb, key)
-		led_printparts(sb, *ps, "");
+		led_printparts(sb, ps, "", 0);
 		term_chr('\n');
 		term_room(1);
 		xrow++;
-		n = *ps;
-		*ps = sb->s_n;
+		n = ps;
+		ps = sb->s_n;
 		if (ai_max) {	/* updating autoindent */
 			while (**post == ' ' || **post == '\t')
 				++*post;

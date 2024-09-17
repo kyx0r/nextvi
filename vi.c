@@ -998,7 +998,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
 	char *region, *pref, *post, *_post;
 	char *ln = lbuf_get(xb, r1);
-	int n = 0, l1, l2 = 1;
+	int l1, l2 = 1;
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
 	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
@@ -1009,8 +1009,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
-	sbuf *rep = led_input(pref, &post, &n, r1 - (r1 - r2), 0);
-	xoff = uc_slen(rep->s+n);
+	sbuf *rep = led_input(pref, &post, r1 - (r1 - r2), 0);
 	sbufn_str(rep, post)
 	int tlen = lnmode || !ln ? -1 : lbuf_slen(ln)+1;
 	if (rep->s_n != tlen || memcmp(&ln[l1], &rep->s[l1], tlen - l2 - l1))
@@ -1153,7 +1152,7 @@ static void vc_insert(int cmd)
 {
 	char *pref, *post, *_post;
 	char *ln = lbuf_get(xb, xrow);
-	int row, cmdo, n = 0, l1;
+	int row, cmdo, l1;
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
 	else if (cmd == 'A')
@@ -1176,9 +1175,8 @@ static void vc_insert(int cmd)
 	post = _post = ln && !cmdo ? uc_sub(ln, xoff, -1) : uc_dup("\n");
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
-	sbuf *rep = led_input(pref, &post, &n, row, cmdo);
+	sbuf *rep = led_input(pref, &post, row, cmdo);
 	if (rep->s_n != l1 || cmdo || !ln || memcmp(ln, rep->s, l1)) {
-		xoff = uc_slen(rep->s+n);
 		sbufn_str(rep, post)
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
