@@ -1177,7 +1177,7 @@ static void vc_insert(int cmd)
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
 	sbuf *rep = led_input(pref, &post, &n, row, cmdo);
-	if (cmdo || rep->s_n != l1 || !ln || memcmp(ln, rep->s, l1)) {
+	if (rep->s_n != l1 || cmdo || !ln || memcmp(ln, rep->s, l1)) {
 		xoff = uc_slen(rep->s+n);
 		sbufn_str(rep, post)
 		if (cmdo && !lbuf_len(xb))
