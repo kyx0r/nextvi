@@ -985,22 +985,12 @@ static void vi_splitln(int row, int linepos, int newln)
 	free(buf);
 }
 
-static int charcount(char *text, int tlen, char *post, int plen)
-{
-	char *nl = text;
-	if (tlen < plen)
-		return 0;
-	for (int i = 0; i < tlen - plen; i++)
-		if (text[i] == '\n')
-			nl = text + i + 1;
-	return uc_slen(nl) - uc_slen(post);
-}
-
-static char *vi_indents(char *ln)
+static char *vi_indents(char *ln, int *l)
 {
 	sbuf *sb; sbuf_make(sb, 256)
 	while (xai && ln && (*ln == ' ' || *ln == '\t'))
 		sbuf_chr(sb, *ln++)
+	*l = sb->s_n;
 	sbufn_done(sb)
 }
 
@@ -1012,15 +1002,15 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
 	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
-	pref = lnmode ? vi_indents(ln) : uc_subl(ln, 0, o1, &l1);
+	pref = lnmode ? vi_indents(ln, &l1) : uc_subl(ln, 0, o1, &l1);
 	post = _post = lnmode ? uc_dup("\n") : uc_subl(lbuf_get(xb, r2), o2, -1, &l2);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
 	term_room(r1 < xtop ? xtop - xrow : r1 - r2);
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
-	sbuf *rep = led_input(pref, &post, &xkmap, r1 - (r1 - r2), 0);
-	xoff = charcount(rep->s, rep->s_n, post, l2 - (post - _post));
+	sbuf *rep = led_input(pref, &post, r1 - (r1 - r2), 0);
+	sbufn_str(rep, post)
 	int tlen = lnmode || !ln ? -1 : lbuf_slen(ln)+1;
 	if (rep->s_n != tlen || memcmp(&ln[l1], &rep->s[l1], tlen - l2 - l1))
 		lbuf_edit(xb, rep->s, r1, r2 + 1);
@@ -1162,7 +1152,7 @@ static void vc_insert(int cmd)
 {
 	char *pref, *post, *_post;
 	char *ln = lbuf_get(xb, xrow);
-	int row, cmdo, l2 = 1;
+	int row, cmdo, l1;
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
 	else if (cmd == 'A')
@@ -1181,13 +1171,13 @@ static void vc_insert(int cmd)
 	if (ln && ln[0] == '\n')
 		xoff = 0;
 	cmdo = cmd == 'o' || cmd == 'O';
-	pref = ln && !cmdo ? uc_sub(ln, 0, xoff) : vi_indents(ln);
-	post = _post = ln && !cmdo ? uc_subl(ln, xoff, -1, &l2) : uc_dup("\n");
+	pref = ln && !cmdo ? uc_subl(ln, 0, xoff, &l1) : vi_indents(ln, &l1);
+	post = _post = ln && !cmdo ? uc_sub(ln, xoff, -1) : uc_dup("\n");
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
-	sbuf *rep = led_input(pref, &post, &xkmap, row, cmdo);
-	if (cmdo || post != _post || rep->s_n != (!ln ? -1 : lbuf_slen(ln)+1)) {
-		xoff = charcount(rep->s, rep->s_n, post, l2 - (post - _post));
+	sbuf *rep = led_input(pref, &post, row, cmdo);
+	if (rep->s_n != l1 || cmdo || !ln || memcmp(ln, rep->s, l1)) {
+		sbufn_str(rep, post)
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
 		lbuf_edit(xb, rep->s, row, row + !cmdo);
@@ -1724,7 +1714,7 @@ void vi(int init)
 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				if (vi_insmov == 127) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
-						xoff = lbuf_eol(xb, --xrow);
+						xrow--;
 						vc_join(0, 2);
 					} else if (xoff)
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
