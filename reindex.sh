@@ -2,11 +2,11 @@
 for p in *.patch
 do
 	printf "%s\n" "PATCH: $p"
-	patch < $p
+	patch --merge=diff3 < $p
 	[ ! -z "$1" ] && ./cbuild.sh build
-	git diff > ./tmp
+	git diff > /tmp/tmp.patch
 	patch -R < $p &>/dev/null
-	cp tmp $p
+	cp /tmp/tmp.patch $p
 	git add $p
 	printf "\n"
 done
