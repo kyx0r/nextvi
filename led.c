@@ -625,27 +625,26 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 }
 
 /* read visual command input */
-sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
+sbuf *led_input(char *pref, char **post, int *ps, int row, int lsh)
 {
 	sbuf *sb; sbuf_make(sb, xcols)
 	int ai_max = 128 * xai;
-	int n, ps = 0, key;
+	int n, key;
 	sbufn_str(sb, pref)
 	while (1) {
-		led_line(sb, ps, sb->s_n, *post, ai_max, &key, kmap, row, lsh);
+		led_line(sb, *ps, sb->s_n, *post, ai_max, &key, &xkmap, row, lsh);
 		if (key != '\n') {
-			sbuf_str(sb, *post)
 			sbuf_set(sb, '\0', 4)
 			sb->s_n -= 4;
 			return sb;
 		}
 		sbufn_chr(sb, key)
-		led_printparts(sb, ps, "");
+		led_printparts(sb, *ps, "");
 		term_chr('\n');
 		term_room(1);
 		xrow++;
-		n = ps;
-		ps = sb->s_n;
+		n = *ps;
+		*ps = sb->s_n;
 		if (ai_max) {	/* updating autoindent */
 			while (**post == ' ' || **post == '\t')
 				++*post;
