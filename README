@@ -146,10 +146,6 @@ readonly.patch
 -------------
 Adds new ex option "ro" and commandline readonly option -R
 
-remove_compound_literals.patch
---------------
-Removes compound literals for portability reasons.
-
 remove_variable_length_arrays.patch
 --------------
 Removes variable length arrays for portability reasons.
