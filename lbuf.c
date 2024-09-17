@@ -490,8 +490,10 @@ static int lbuf_lnnext(struct lbuf *lb, int dir, int *r, int *o)
 
 int lbuf_eol(struct lbuf *lb, int row)
 {
-	int len = lbuf_get(lb, row) ? uc_slen(lbuf_get(lb, row)) : 0;
-	return len ? len - 1 : 0;
+	int len = 0;
+	if (lbuf_get(lb, row))
+		ren_position_m(, lbuf_get(lb, row), &len)
+	return len ? len - 1 : len;
 }
 
 static int lbuf_next(struct lbuf *lb, int dir, int *r, int *o)

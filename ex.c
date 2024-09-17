@@ -209,7 +209,7 @@ void ex_krsset(char *kwd, int dir)
 	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
 		|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
 		rset_free(xkwdrs);
-		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
+		xkwdrs = rset_smake(kwd, xic ? REG_ICASE : 0);
 		xkwdcnt++;
 		vi_regputraw('/', kwd, 0, 0);
 		xkwddir = dir;
@@ -809,7 +809,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	not = strchr(cmd, '!') || cmd[0] == 'v';
 	pat = re_read(&s);
 	if (pat)
-		rs = rset_make(1, (char*[]){pat}, xic ? REG_ICASE : 0);
+		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	free(pat);
 	if (!pat || !rs)
 		return 1;
@@ -960,7 +960,7 @@ static int ec_setincl(char *loc, char *cmd, char *arg)
 {
 	rset_free(fsincl);
 	if (*arg)
-		fsincl = rset_make(1, (char*[]){arg}, xic ? REG_ICASE : 0);
+		fsincl = rset_smake(arg, xic ? REG_ICASE : 0);
 	else
 		fsincl = NULL;
 	return 0;
