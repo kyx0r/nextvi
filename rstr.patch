@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2419168..c7a7b89 100644
+index a6562d1..0765182 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -28,7 +28,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -17,8 +17,8 @@ index 2419168..c7a7b89 100644
  	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
 -		|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
 -		rset_free(xkwdrs);
--		xkwdrs = rset_make(1, (char*[]){kwd}, xic ? REG_ICASE : 0);
-+		|| (xkwdrs->icase != xic))) {
+-		xkwdrs = rset_smake(kwd, xic ? REG_ICASE : 0);
++		|| ((xkwdrs->rs->regex->flg & REG_ICASE) != xic))) {
 +		rstr_free(xkwdrs);
 +		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
  		xkwdcnt++;
@@ -51,7 +51,7 @@ index 2419168..c7a7b89 100644
  	not = strchr(cmd, '!') || cmd[0] == 'v';
  	pat = re_read(&s);
  	if (pat)
--		rs = rset_make(1, (char*[]){pat}, xic ? REG_ICASE : 0);
+-		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 +		rs = rstr_make(pat, xic ? REG_ICASE : 0);
  	free(pat);
  	if (!pat || !rs)
@@ -81,13 +81,13 @@ index 2419168..c7a7b89 100644
 -	rset_free(fsincl);
 +	rstr_free(fsincl);
  	if (*arg)
--		fsincl = rset_make(1, (char*[]){arg}, xic ? REG_ICASE : 0);
+-		fsincl = rset_smake(arg, xic ? REG_ICASE : 0);
 +		fsincl = rstr_make(arg, xic ? REG_ICASE : 0);
  	else
  		fsincl = NULL;
  	return 0;
 diff --git a/lbuf.c b/lbuf.c
-index 65210df..f26041d 100644
+index 56c550d..a975018 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -427,16 +427,16 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -242,7 +242,7 @@ index 3dfb7d3..23185d7 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 81fa416..9f2faae 100644
+index d0dd729..dd4fb56 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -591,7 +591,7 @@ void vi_regput(int c, const char *s, int ln)
@@ -264,10 +264,10 @@ index 81fa416..9f2faae 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 52eeab4..2bb1093 100644
+index a438c09..f570e4f 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -117,10 +117,21 @@ typedef struct {
+@@ -117,12 +117,23 @@ typedef struct {
  	int *setgrpcnt;		/* number of groups in each regular expression */
  	int grpcnt;		/* group count */
  } rset;
@@ -280,6 +280,8 @@ index 52eeab4..2bb1093 100644
 +	int wbeg, wend;		/* match word beg/end */
 +} rstr;
  rset *rset_make(int n, char **pat, int flg);
+ rset *rset_smake(char *pat, int flg)
+ 	{ char *ss[1] = {pat}; return rset_make(1, ss, flg); }
  int rset_find(rset *re, char *s, int *grps, int flg);
  void rset_free(rset *re);
  char *re_read(char **src);
@@ -289,7 +291,7 @@ index 52eeab4..2bb1093 100644
  
  /* lbuf.c line buffer, managing a number of lines */
  #define lbuf_slen(ln) *(int*)(ln - sizeof(int))
-@@ -146,7 +157,7 @@ int lbuf_eol(struct lbuf *lb, int r);
+@@ -148,7 +159,7 @@ int lbuf_eol(struct lbuf *lb, int r);
  void lbuf_globset(struct lbuf *lb, int pos, int dep);
  int lbuf_globget(struct lbuf *lb, int pos, int dep);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
@@ -298,7 +300,7 @@ index 52eeab4..2bb1093 100644
  			int ln_n, int *o, int *len, int skip);
  /* motions */
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
-@@ -348,7 +359,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -352,7 +363,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -307,7 +309,7 @@ index 52eeab4..2bb1093 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -442,9 +453,9 @@ extern int xpac;
+@@ -446,9 +457,9 @@ extern int xpac;
  extern int xkwdcnt;
  extern int xkwddir;
  extern int xmpt;
