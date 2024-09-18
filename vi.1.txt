@@ -19,6 +19,18 @@ text editor based on Ali Gholami Rudi's
 .Xr neatvi 1 Ns .
 It supports UTF-8 and bidirectional text.
 .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.
+.It Fl e
+Enter Ex mode on startup.
+.
+.It Fl s
+.\" TODO
+.
+.It Fl v
+.\" TODO
+.
 .Sh VI COMMANDS
 .Bl -tag -width Ds
 .It Cm +
@@ -118,7 +130,7 @@ It supports UTF-8 and bidirectional text.
 .
 .El
 .
-.Sh OPTIONS
+.Sh EX OPTIONS
 .Bl -tag -width Ds
 .
 .It Cm ai
