@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index d6a0b36..8946e8f 100644
+index f53b9b0..aec1f2e 100644
 --- a/led.c
 +++ b/led.c
 @@ -281,7 +281,7 @@ static int led_lastword(char *s)
@@ -24,9 +24,9 @@ index d6a0b36..8946e8f 100644
  	/* cursor position for inserting the next character */
  	if (next) {
  		if (off - 2 >= 0)
-@@ -393,7 +395,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
- 	if (!post)
- 		post = "";
+@@ -391,7 +393,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+ 	int c, i = 0, last_sug = 0, sug_pt = -1;
+ 	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
 -		led_printparts(sb, ps, post, ai_max);
 +		led_printparts(sb, ps, post, ai_max, !memchr("ABCD", vi_insmov, 4));
@@ -63,7 +63,7 @@ index d6a0b36..8946e8f 100644
  	*key = c;
  }
  
-@@ -643,7 +661,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
+@@ -642,7 +660,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)
