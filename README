@@ -11,6 +11,15 @@ DESCRIPTION
      nextvi is a vi(1)-like text editor based on Ali Gholami Rudi's neatvi(1).
      It supports UTF-8 and bidirectional text.
 
+OPTIONS
+     -e	     Enter Ex mode on startup.
+
+     -m	     Disable initial file read message.
+
+     -s	     When combined with -e enters limited Ex mode.
+
+     -v	     Enter visual mode on startup. (Default)
+
 VI COMMANDS
      +
 
@@ -189,7 +198,7 @@ EX COMMANDS
 
      ac
 
-OPTIONS
+EX OPTIONS
      ai	     If set, indent new lines.
 
      ic	     If set, ignore case in regular expressions.
