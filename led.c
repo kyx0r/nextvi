@@ -390,8 +390,6 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 	int len, p_reg = 0;
 	int c, i = 0, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
-	if (!post)
-		post = "";
 	while (1) {
 		led_printparts(sb, ps, post, ai_max);
 		len = sb->s_n;
@@ -399,7 +397,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 		switch (c) {
 		case TK_CTL('h'):
 		case 127:
-			if (len - pre)
+			if (len - pre > 0)
 				sbufn_cut(sb, led_lastchar(sb->s + pre) + pre)
 			else
 				goto leave;
@@ -408,7 +406,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			sbufn_cut(sb, sug_pt > pre && len > sug_pt ? sug_pt : pre)
 			break;
 		case TK_CTL('w'):
-			if (len - pre)
+			if (len - pre > 0)
 				sbufn_cut(sb, led_lastword(sb->s + pre) + pre)
 			else
 				term_push("bdwi", 5);
@@ -419,11 +417,13 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			sbuf_chr(sb, '\t')
 			sbufn_str(sb, cs)
 			free(cs);
+			pre++;
 			break;
 		case TK_CTL('d'):
 			if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
 				sbuf_cut(sb, ps)
 				sbufn_str(sb, sb->s+ps+1)
+				pre--;
 			}
 			break;
 		case TK_CTL(']'):
@@ -618,8 +618,7 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 	if (key == '\n') {
 		temp_pos(0, -1, 0, 0);
 		temp_write(0, sb->s + n);
-		if (post)
-			sbuf_str(sb, post)
+		sbuf_str(sb, post)
 		sbufn_done(sb)
 	}
 	sbuf_free(sb)
