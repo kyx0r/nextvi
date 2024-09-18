@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index f53b9b0..e97247d 100644
+index f53b9b0..34d4472 100644
 --- a/led.c
 +++ b/led.c
 @@ -10,26 +10,31 @@ int dstrlen(const char *s, char delim)
@@ -26,9 +26,8 @@ index f53b9b0..e97247d 100644
 -		if (len++ != l) {
 +		if (len++ != sb->s_n - l) {
  			if (part == part1)
--				sbuf_mem(suggestsb, part, len)
+ 				sbuf_mem(suggestsb, part, len)
 -			else
-+				sbuf_mem(suggestsb, part+(pre-l), len-(pre-l))
 +			else if (l >= pre)
  				sbuf_mem(sylsb, part, len)
  		}
@@ -62,13 +61,15 @@ index f53b9b0..e97247d 100644
  			if (_sug) {
  				if (suggestsb->s_n == sug - suggestsb->s)
  					continue;
-@@ -506,13 +513,13 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -506,13 +513,14 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  				}
  				suggest:
  				*_sug = '\0';
 -				sbuf_cut(sb, last_sug)
-+				sbuf_cut(sb, MAX(lsug, pre))
- 				sbufn_str(sb, sug)
+-				sbufn_str(sb, sug)
++				for (c = 0; sug[c] && sb->s[c+lsug] == sug[c]; c++){}
++				sbuf_cut(sb, MAX(lsug+c, pre))
++				sbufn_str(sb, sug+c)
  				sug = _sug+1;
  				continue;
  			}
@@ -78,7 +79,7 @@ index f53b9b0..e97247d 100644
  				sug = suggestsb->s;
  				if (!(_sug = strchr(sug, '\n')))
  					continue;
-@@ -525,8 +532,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -525,8 +533,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  				int r = xrow-xtop+1;
  				if (sug)
  					goto pac_;
