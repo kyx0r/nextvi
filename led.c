@@ -112,34 +112,6 @@ static int led_offdir(char **chrs, int *pos, int i)
 	return 0;
 }
 
-/* highlight text in reverse direction */
-static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *att)
-{
-	int i = 0, j;
-	int hl = conf_hlrev();
-	int *ratt = malloc((n+1)*sizeof(int));
-	memset(ratt, 0, (n+1)*sizeof(int));
-	while (i + 1 < n) {
-		int dir = led_offdir(chrs, pos, i);
-		int beg = i;
-		while (i + 1 < n && led_offdir(chrs, pos, i) == dir)
-			i++;
-		if (dir < 0)
-			for (j = beg; j <= i; j++)
-				ratt[j] = hl;
-		if (i == beg)
-			i++;
-	}
-	for (j = 0, i = 0; i < cterm;) {
-		int o = off[i++];
-		if (o >= 0) {
-			att[j] = syn_merge(ratt[o], att[j]);
-			for (j++; off[i] == o; i++);
-		}
-	}
-	free(ratt);
-}
-
 static char *led_bounds(int *off, char **chrs, int cterm)
 {
 	int i = 0;
@@ -252,8 +224,19 @@ void led_render(char *s0, int cbeg, int cend)
 		syn_highlight(att, bound, n < cterm ? n : cterm);
 	if (bound != s0)
 		free(bound);
-	if (xhlr)
-		led_markrev(n, cterm, off, chrs, pos, att);
+	if (xhlr) {
+		for (i = 0, l = 0; i < cterm;) {
+			o = off[i++];
+			if (o < 0)
+				continue;
+			for (l++; off[i] == o; i++);
+			if (led_offdir(chrs, pos, o) >= 0)
+				continue;
+			att[l-1] = syn_merge(conf_hlrev(), att[l-1]);
+			if (l - 1 - ctx >= 0)
+				att[l-1-ctx] = syn_merge(conf_hlrev(), att[l-1-ctx]);
+		}
+	}
 	/* generate term output */
 	if (vi_hidch)
 		led_out(term_sbuf, 2)
