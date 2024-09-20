@@ -60,7 +60,7 @@ index a6562d1..1b8aa3e 100644
  };
  
 diff --git a/vi.c b/vi.c
-index d0dd729..f7380bf 100644
+index 11ee9ea..2a09d20 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -2024,9 +2024,11 @@ int main(int argc, char *argv[])
