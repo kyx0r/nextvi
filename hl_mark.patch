@@ -19,11 +19,11 @@ index a6562d1..482334b 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index f53b9b0..ae81e59 100644
+index 683f9fb..ad8eb58 100644
 --- a/led.c
 +++ b/led.c
-@@ -140,6 +140,23 @@ static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *
- 	free(ratt);
+@@ -112,6 +112,22 @@ static int led_offdir(char **chrs, int *pos, int i)
+ 	return 0;
  }
  
 +static void led_hlmark(int *att, int row, int cterm)
@@ -40,13 +40,12 @@ index f53b9b0..ae81e59 100644
 +		att[moff] = SYN_BGMK(icol+1);
 +		mrow = -1;
 +	}
-+	
 +}
 +
- static char *led_bounds(int *off, char **chrs, int cterm)
- {
- 	int i = 0;
-@@ -198,7 +215,7 @@ for (i = 0; i < cterm;) { \
+ #define print_ch1(out) sbuf_mem(out, chrs[o], l)
+ #define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
+ 
+@@ -155,7 +171,7 @@ for (i = 0; i < cterm;) { \
  } sbufn_str(out, term_att(0)) } \
  
  /* render and highlight a line */
@@ -55,10 +54,10 @@ index f53b9b0..ae81e59 100644
  {
  	if (!xled)
  		return;
-@@ -254,6 +271,8 @@ void led_render(char *s0, int cbeg, int cend)
- 		free(bound);
- 	if (xhlr)
- 		led_markrev(n, cterm, off, chrs, pos, att);
+@@ -252,6 +268,8 @@ void led_render(char *s0, int cbeg, int cend)
+ 			att[j+1] = syn_merge(conf_hlrev(), att[j+1]);
+ 		}
+ 	}
 +	if (xhlm && row >= 0)
 +		led_hlmark(att, row+xtop, cterm);
  	/* generate term output */
