@@ -1590,7 +1590,7 @@ void vi(int init)
 				case 'I':;
 				case 'i':;
 					char restr[100] = "%s/^\t/";
-					vi_arg1 = vi_arg1 ? MIN(vi_arg1, 80) : 8;
+					vi_arg1 = MIN(vi_arg1 ? vi_arg1 : xtabspc, 80);
 					if (k == 'I') {
 						cmd = restr+6;
 						while (vi_arg1--)
