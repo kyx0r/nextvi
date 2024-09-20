@@ -69,7 +69,7 @@ index 56c550d..adb2f56 100644
  }
  
 diff --git a/led.c b/led.c
-index f53b9b0..37f34d3 100644
+index 683f9fb..683cc20 100644
 --- a/led.c
 +++ b/led.c
 @@ -48,7 +48,7 @@ static void file_index(struct lbuf *buf)
@@ -89,23 +89,38 @@ index f53b9b0..37f34d3 100644
  }
  
  static char *kmap_map(int kmap, int c)
-@@ -207,8 +208,8 @@ void led_render(char *s0, int cbeg, int cend)
- 	char *bound = s0;
- 	int *pos;		/* pos[i]: the screen position of the i-th character */
+@@ -164,10 +165,10 @@ void led_render(char *s0, int cbeg, int cend)
+ 	int att_old = 0, atti = 0;
+ 	char *bound = NULL;
  	char **chrs;		/* chrs[i]: the i-th character in s1 */
 -	int off[cterm+1];	/* off[i]: the character at screen position i */
 -	int att[cterm+1];	/* att[i]: the attributes of i-th character */
+-	int stt[cterm+1];	/* stt[i]: remap off indexes */
+-	int ctt[cterm+1];	/* ctt[i]: cterm bound attrs */
 +	int *off = emalloc((cterm+1) * sizeof(int));	/* off[i]: the character at screen position i */
 +	int *att = emalloc((cterm+1) * sizeof(int));	/* att[i]: the attributes of i-th character */
++	int *stt = NULL;	/* stt[i]: remap off indexes */
++	int *ctt = NULL;	/* ctt[i]: cterm bound attrs */
+ 	int *pos = ren_position(s0, &chrs, &n);	/* pos[i]: the screen position of the i-th character */
  	int ctx = dir_context(s0);
  	memset(off, -1, (cterm+1) * sizeof(off[0]));
- 	memset(att, 0, (cterm+1) * sizeof(att[0]));
-@@ -259,6 +260,8 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -205,6 +206,8 @@ void led_render(char *s0, int cbeg, int cend)
+ 		}
+ 	}
+ 	if (pos[n] > cterm || cbeg) {
++		stt = emalloc((cterm+1) * sizeof(int));
++		ctt = emalloc((cterm+1) * sizeof(int));
+ 		for (i = 0, c = 0; i < cterm;) {
+ 			o = off[i++];
+ 			if (o >= 0) {
+@@ -257,6 +260,10 @@ void led_render(char *s0, int cbeg, int cend)
  		led_out(term_sbuf, 2)
  	else
  		led_out(term_sbuf, 1)
 +	free(off);
 +	free(att);
++	free(stt);
++	free(ctt);
  }
  
  static int led_lastchar(char *s)
