@@ -29,11 +29,12 @@ Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
 aka libpthread
 
-hl_part.patch (DEFUNCT)
+hl_part.patch
 --------------
 Allow syntax highlight to continue past the terminal dimensions up to a
 certain limit. To customize the depth, adjust LEDFORW and LEDBACK definitions
 in led.c
+Somewhat bugged when text is in reverse direction. Sigh....
 
 debug.patch
 --------------

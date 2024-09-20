@@ -1,0 +1,150 @@
+diff --git a/led.c b/led.c
+index 683f9fb..62a18b7 100644
+--- a/led.c
++++ b/led.c
+@@ -154,6 +154,46 @@ for (i = 0; i < cterm;) { \
+ 	att_old = att_new; \
+ } sbufn_str(out, term_att(0)) } \
+ 
++#define LEDBACK 100
++#define LEDFORW 100
++
++#define off_comp(beg, end, term, ch) \
++if (ctx < 0) { \
++	for (; i < n; i++) { \
++		int curbeg = end - pos[i] - 1; \
++		if (curbeg >= 0 && curbeg < term) { \
++			int curwid = ren_cwid(chrs[i], pos[i]); \
++			if (o + curwid > term) \
++				break; \
++			if (end - (pos[i] + curwid - 1) - 1 < 0) \
++				continue; \
++			o += curwid; \
++			while (--curwid >= 0) \
++				off[end - (pos[i] + curwid - 1) - 2] = i; \
++			ch \
++			if (o == term) \
++				break; \
++		} \
++	} \
++} else { \
++	for (; i < n; i++) { \
++		int curbeg = pos[i] - beg; \
++		if (curbeg >= 0 && curbeg < term) { \
++			int curwid = ren_cwid(chrs[i], pos[i]); \
++			if (o + curwid > term) \
++				break; \
++			if (curbeg + curwid > term) \
++				continue; \
++			o += curwid; \
++			while (--curwid >= 0) \
++				off[curbeg + curwid] = i; \
++			ch \
++			if (o == term) \
++				break; \
++		} \
++	} \
++} \
++
+ /* render and highlight a line */
+ void led_render(char *s0, int cbeg, int cend)
+ {
+@@ -163,49 +203,22 @@ void led_render(char *s0, int cbeg, int cend)
+ 	int j, c, l, n, i = 0, o = 0, cterm = cend - cbeg;
+ 	int att_old = 0, atti = 0;
+ 	char *bound = NULL;
++	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
++	int fcend = cend + LEDFORW;
++	int fcterm = fcend - fcbeg; /* fake the render dimensions */
++	int firstch0 = -1;
++	int firstch1 = -1;
+ 	char **chrs;		/* chrs[i]: the i-th character in s1 */
+-	int off[cterm+1];	/* off[i]: the character at screen position i */
+-	int att[cterm+1];	/* att[i]: the attributes of i-th character */
+-	int stt[cterm+1];	/* stt[i]: remap off indexes */
+-	int ctt[cterm+1];	/* ctt[i]: cterm bound attrs */
++	int off[fcterm+1];	/* off[i]: the character at screen position i */
++	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
++	int stt[fcterm+1];	/* stt[i]: remap off indexes */
++	int ctt[fcterm+1];	/* ctt[i]: fcterm bound attrs */
+ 	int *pos = ren_position(s0, &chrs, &n);	/* pos[i]: the screen position of the i-th character */
+ 	int ctx = dir_context(s0);
+-	memset(off, -1, (cterm+1) * sizeof(off[0]));
+-	if (ctx < 0) {
+-		for (; i < n; i++) {
+-			int curbeg = cend - pos[i] - 1;
+-			if (curbeg >= 0 && curbeg < cterm) {
+-				int curwid = ren_cwid(chrs[i], pos[i]);
+-				if (o + curwid > cterm)
+-					break;
+-				if (cend - (pos[i] + curwid - 1) - 1 < 0)
+-					continue;
+-				o += curwid;
+-				while (--curwid >= 0)
+-					off[cend - (pos[i] + curwid - 1) - 2] = i;
+-				if (o == cterm)
+-					break;
+-			}
+-		}
+-	} else {
+-		for (; i < n; i++) {
+-			int curbeg = pos[i] - cbeg;
+-			if (curbeg >= 0 && curbeg < cterm) {
+-				int curwid = ren_cwid(chrs[i], pos[i]);
+-				if (o + curwid > cterm)
+-					break;
+-				if (curbeg + curwid > cterm)
+-					continue;
+-				o += curwid;
+-				while (--curwid >= 0)
+-					off[curbeg + curwid] = i;
+-				if (o == cterm)
+-					break;
+-			}
+-		}
+-	}
++	memset(off, -1, (fcterm+1) * sizeof(off[0]));
++	off_comp(fcbeg, fcend, fcterm, if (firstch0 == -1) firstch0 = i;)
+ 	if (pos[n] > cterm || cbeg) {
+-		for (i = 0, c = 0; i < cterm;) {
++		for (i = 0, c = 0; i < fcterm;) {
+ 			o = off[i++];
+ 			if (o >= 0) {
+ 				att[c++] = o;
+@@ -228,19 +241,19 @@ void led_render(char *s0, int cbeg, int cend)
+ 		}
+ 		for (i = 0; i < c; i++)
+ 			ctt[stt[i]] = i;
+-		sbuf_make(bsb, cterm*4);
++		sbuf_make(bsb, fcterm*4);
+ 		for (i = 0; i < c; i++)
+ 			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
+ 		sbuf_set(bsb, '\0', 4)
+ 		bound = bsb->s;
+ 	}
+-	memset(att, 0, MIN(n, cterm) * sizeof(att[0]));
++	memset(att, 0, MIN(n, fcterm) * sizeof(att[0]));
+ 	if (xhl)
+-		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
++		syn_highlight(att, bound ? bound : s0, MIN(n, fcterm));
+ 	if (bound)
+ 		sbuf_free(bsb);
+ 	if (xhlr) {
+-		for (c = 0, i = 0; i < cterm;) {
++		for (c = 0, i = 0; i < fcterm;) {
+ 			o = off[i++];
+ 			if (o < 0)
+ 				continue;
+@@ -252,6 +265,12 @@ void led_render(char *s0, int cbeg, int cend)
+ 			att[j+1] = syn_merge(conf_hlrev(), att[j+1]);
+ 		}
+ 	}
++	if (bound || ctx < 0) { /* TODO: this isn't right in some cases */
++		i = firstch0 < 0 ? n : firstch0; o = 0;
++		memset(off, -1, (cterm+1) * sizeof(off[0]));
++		off_comp(cbeg, cend, cterm, if (firstch1 == -1) firstch1 = i;)
++		atti = MAX(0, firstch1 - firstch0);
++	}
+ 	/* generate term output */
+ 	if (vi_hidch)
+ 		led_out(term_sbuf, 2)
