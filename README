@@ -29,29 +29,11 @@ Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
 aka libpthread
 
-hl_part.patch
+hl_part.patch (DEFUNCT)
 --------------
 Allow syntax highlight to continue past the terminal dimensions up to a
 certain limit. To customize the depth, adjust LEDFORW and LEDBACK definitions
 in led.c
-
-hl_naive.patch
---------------
-Original approach to syntax highlight as in neatvi.
-Pros:
-1. Simpler and shorter code in led_render()
-2. Unlimited length, can highlight anything pikevm is willing to match.
-3. Retains the same right to left highlight in reverse text direction.
-Base nextvi will always highlight left to right which means that non reversible
-highlight patterns will not always be possible to display the same way.
-Cons:
-1. Terrible performance, need to disable syntax hl if working with lines 10K+
-(You've been warned!)
-2. Cannot render lines like those by option pac=1 efficiently. Will recompute
-the whole string every iteration.
-3. Difficult to adapt other kinds of codes to make use of.
-Note: Patch is not compatible with hl_part.patch in any way, pick one or the
-other.
 
 debug.patch
 --------------
