@@ -212,11 +212,10 @@ void led_render(char *s0, int cbeg, int cend)
 				for (; off[i] == o; i++);
 			}
 		}
-		for (i = 0; i < c; i++)
-			stt[i] = i;
+		stt[0] = 0;
 		for (i = 1; i < c; i++) {
 			int key0 = att[i];
-			int key1 = stt[i];
+			int key1 = i;
 			j = i - 1;
 			while (j >= 0 && att[j] > key0) {
 				att[j + 1] = att[j];
