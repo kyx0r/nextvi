@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 683f9fb..62a18b7 100644
+index 4d5c11f..971bb57 100644
 --- a/led.c
 +++ b/led.c
 @@ -154,6 +154,46 @@ for (i = 0; i < cterm;) { \
@@ -111,7 +111,7 @@ index 683f9fb..62a18b7 100644
  			o = off[i++];
  			if (o >= 0) {
  				att[c++] = o;
-@@ -228,19 +241,19 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -227,19 +240,19 @@ void led_render(char *s0, int cbeg, int cend)
  		}
  		for (i = 0; i < c; i++)
  			ctt[stt[i]] = i;
@@ -135,7 +135,7 @@ index 683f9fb..62a18b7 100644
  			o = off[i++];
  			if (o < 0)
  				continue;
-@@ -252,6 +265,12 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -251,6 +264,12 @@ void led_render(char *s0, int cbeg, int cend)
  			att[j+1] = syn_merge(conf_hlrev(), att[j+1]);
  		}
  	}

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index a6562d1..482334b 100644
+index cb634fe..83a72fb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -10,7 +10,7 @@ index a6562d1..482334b 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -849,6 +850,7 @@ static struct option {
+@@ -859,6 +860,7 @@ static struct option {
  	{"hlw", &xhlw},
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
@@ -19,7 +19,7 @@ index a6562d1..482334b 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 683f9fb..ad8eb58 100644
+index 4d5c11f..5d11419 100644
 --- a/led.c
 +++ b/led.c
 @@ -112,6 +112,22 @@ static int led_offdir(char **chrs, int *pos, int i)
@@ -54,7 +54,7 @@ index 683f9fb..ad8eb58 100644
  {
  	if (!xled)
  		return;
-@@ -252,6 +268,8 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -251,6 +267,8 @@ void led_render(char *s0, int cbeg, int cend)
  			att[j+1] = syn_merge(conf_hlrev(), att[j+1]);
  		}
  	}
@@ -64,10 +64,10 @@ index 683f9fb..ad8eb58 100644
  	if (vi_hidch)
  		led_out(term_sbuf, 2)
 diff --git a/vi.h b/vi.h
-index a438c09..82a248c 100644
+index b690ec1..2c13a91 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -288,14 +288,14 @@ char *xgetenv(char* q[]);
+@@ -287,14 +287,14 @@ char *xgetenv(char* q[]);
  /* led.c line-oriented input and output */
  char *led_prompt(char *pref, char *post, char *insert, int *kmap);
  sbuf *led_input(char *pref, char **post, int row, int lsh);
