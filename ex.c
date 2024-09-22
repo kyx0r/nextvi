@@ -31,6 +31,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 int xkwddir;			/* the last search direction */
 int xmpt;			/* whether to prompt after printing > 1 lines in vi */
+int xpr;			/* ex_cprint register */
 char *xregs[256];		/* string registers */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
@@ -497,6 +498,14 @@ static int ec_read(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
+static int ex_pipeout(char *cmd, char *buf)
+{
+	if (!(xvis & 4))
+		term_chr('\n');
+	xmpt = xmpt >= 0 ? 2 : xmpt;
+	return !!cmd_pipe(cmd, buf, 0);
+}
+
 static int ec_write(char *loc, char *cmd, char *arg)
 {
 	char msg[EXLEN+32];
@@ -514,10 +523,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 	}
 	if (arg[0] == '!') {
 		ibuf = lbuf_cp(xb, beg, end);
-		if (!(xvis & 4))
-			term_chr('\n');
-		xmpt = xmpt >= 0 ? 2 : xmpt;
-		cmd_pipe(arg + 1, ibuf, 0);
+		ex_pipeout(arg + 1, ibuf);
 		free(ibuf);
 	} else {
 		int fd;
@@ -626,6 +632,10 @@ static int ec_delete(char *loc, char *cmd, char *arg)
 static int ec_yank(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
+	if (cmd[2] == '!') {
+		vi_regputraw(arg[0], "", 0, 0);
+		return 0;
+	}
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return 1;
 	char *buf = lbuf_cp(xb, beg, end);
@@ -636,12 +646,18 @@ static int ec_yank(char *loc, char *cmd, char *arg)
 
 static int ec_put(char *loc, char *cmd, char *arg)
 {
-	int beg, end;
+	int beg, end, i = 0;
 	char *buf;
 	int n = lbuf_len(xb);
-	buf = xregs[(unsigned char) arg[0]];
+	if (arg[i] == '!' && arg[i+1] && arg[i+1] != ' ')
+		buf = xregs[0];
+	else
+		buf = xregs[(unsigned char) arg[i++]];
 	if (!buf || ex_region(loc, &beg, &end))
 		return 1;
+	for (; arg[i] && arg[i] != '!'; i++){}
+	if (arg[i] == '!' && arg[i+1])
+		return ex_pipeout(arg + i + 1, buf);
 	lbuf_edit(xb, buf, end, end);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
 	return 0;
@@ -758,14 +774,8 @@ static int ec_exec(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
 	char *text, *rep;
-	if (!loc[0]) {
-		int ret;
-		if (!(xvis & 4))
-			term_chr('\n');
-		xmpt = xmpt >= 0 ? 2 : xmpt;
-		ret = cmd_exec(arg);
-		return ret;
-	}
+	if (!loc[0])
+		return ex_pipeout(arg, NULL);
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	text = lbuf_cp(xb, beg, end);
@@ -855,6 +865,7 @@ static struct option {
 	{"pac", &xpac},
 	{"led", &xled},
 	{"mpt", &xmpt},
+	{"pr", &xpr},
 };
 
 static char *cutword(char *s, char *d)
@@ -887,7 +898,7 @@ static int ec_set(char *loc, char *cmd, char *arg)
 			if (r) {
 				*r = '\0';
 				strcpy(opt, tok);
-				val = atoi(r + 1);
+				val = isdigit(r[1]) ? atoi(r + 1) : r[1];
 			} else {
 				strcpy(opt, tok);
 				val = 1;
@@ -1003,7 +1014,7 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
 	xleft = (xcols / 2) * (*arg ? atoi(arg) : 0);
 	preserve(int, xtd, 2)
 	for (int i = 1; i < LEN(xregs); i++) {
-		if (xregs[i]) {
+		if (xregs[i] && i != tolower(xpr)) {
 			*buf = i;
 			ex_cprint(buf, -1, 0, 0);
 			ex_cprint(xregs[i], -1, xleft ? 0 : 2, 1);
@@ -1051,6 +1062,7 @@ static struct excmd {
 	{"x", ec_write},
 	{"x!", ec_write},
 	{"ya", ec_yank},
+	{"ya!", ec_yank},
 	{"!", ec_exec},
 	{"ft", ec_ft},
 	{"cm", ec_cmap},
