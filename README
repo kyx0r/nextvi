@@ -406,6 +406,15 @@ nextvi no longer swallows print messages and will print everything instead
 of just last one. If mpt is negative, the prompt will remain disabled.
 75. Added commandline option -m to disable the initial file read message
 because :se noled can't.
+76. Improved register IO. :pu command can pipe the register to en external
+program by specifying \! as a 2nd argument. New command :ya! can be used
+to reset the value of a register. New ex option "pr" (print register).
+It can be set using a character or a number. For instance, :se pr=a will
+use the register 'a'. When the register is set, all data passed into ex_print
+will be stored. If the register is uppercase, new lines are added to match
+the exact output that was printed. With this, you have full control over
+internal editor state. For example, printing the current buffers list
+to a file is now possible.
 
 LESSER KNOWN FEATURES
 ---------------------
