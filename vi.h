@@ -278,7 +278,6 @@ char *term_cmd(int *n);
 
 /* process management */
 char *cmd_pipe(char *cmd, char *ibuf, int oproc);
-int cmd_exec(char *cmd);
 char *xgetenv(char* q[]);
 
 #define TK_CTL(x)	((x) & 037)
@@ -446,6 +445,7 @@ extern int xpac;
 extern int xkwdcnt;
 extern int xkwddir;
 extern int xmpt;
+extern int xpr;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;

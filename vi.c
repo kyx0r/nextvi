@@ -329,23 +329,30 @@ char *ex_read(char *msg)
 /* print an ex output line */
 void ex_cprint(char *line, int r, int c, int ln)
 {
+	syn_blockhl = 0;
+	if (!(xvis & 4)) {
+		if (xmpt == 1)
+			term_chr('\n');
+		if (isupper(xpr) && xmpt == 1 && !strchr(line, '\n'))
+			vi_regputraw(xpr, "\n", 1, 1);
+		term_pos(xrows, led_pos(vi_msg, 0));
+		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
+	}
+	if (xpr)
+		vi_regputraw(xpr, line, !!strchr(line, '\n'), 1);
 	if (!term_sbuf) {
 		term_write(line, dstrlen(line, '\n'))
 		term_write("\n", 1)
 		return;
 	}
-	syn_blockhl = 0;
-	if (!(xvis & 4)) {
-		if (xmpt == 1)
-			term_chr('\n');
-		term_pos(xrows, led_pos(vi_msg, 0));
-		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
-	}
 	syn_setft("/-");
 	led_recrender(line, r, c, xleft, xleft + xcols - c)
 	syn_setft(ex_ft);
-	if (ln && (xvis & 4 || xmpt > 0))
+	if (ln && (xvis & 4 || xmpt > 0)) {
 		term_chr('\n');
+		if (isupper(xpr) && !strchr(line, '\n'))
+			vi_regputraw(xpr, "\n", 1, 1);
+	}
 	xmpt += !(xvis & 4) && xmpt >= 0 && (ln || xmpt);
 }
 
