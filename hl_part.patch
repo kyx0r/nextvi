@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 4d5c11f..fdeaffe 100644
+index 9ed4d0d..204e090 100644
 --- a/led.c
 +++ b/led.c
 @@ -126,7 +126,7 @@ else if (*chrs[o] == '\t') \
@@ -15,8 +15,8 @@ index 4d5c11f..fdeaffe 100644
  	att_old = att_new; \
  } sbufn_str(out, term_att(0)) } \
  
-+#define LEDBACK 100
-+#define LEDFORW 100
++#define LEDBACK 300
++#define LEDFORW 300
 +
 +#define off_comp(beg, end, term, ch) \
 +
@@ -47,49 +47,21 @@ index 4d5c11f..fdeaffe 100644
  	int *pos = ren_position(s0, &chrs, &n);	/* pos[i]: the screen position of the i-th character */
  	int ctx = dir_context(s0);
 -	memset(off, -1, (cterm+1) * sizeof(off[0]));
--	if (ctx < 0) {
--		for (; i < n; i++) {
++	memset(off, -1, (fcterm+1) * sizeof(off[0]));
+ 	if (ctx < 0) {
+ 		for (; i < n; i++) {
 -			int curbeg = cend - pos[i] - 1;
 -			if (curbeg >= 0 && curbeg < cterm) {
--				int curwid = ren_cwid(chrs[i], pos[i]);
++			int curbeg = fcend - pos[i] - 1;
++			if (curbeg >= 0 && curbeg < fcterm) {
+ 				int curwid = ren_cwid(chrs[i], pos[i]);
 -				if (o + curwid > cterm)
--					break;
++				if (o + curwid > fcterm)
+ 					break;
 -				if (cend - (pos[i] + curwid - 1) - 1 < 0)
--					continue;
--				o += curwid;
--				while (--curwid >= 0)
--					off[cend - (pos[i] + curwid - 1) - 2] = i;
--				if (o == cterm)
--					break;
--			}
--		}
--	} else {
--		for (; i < n; i++) {
--			int curbeg = pos[i] - cbeg;
--			if (curbeg >= 0 && curbeg < cterm) {
--				int curwid = ren_cwid(chrs[i], pos[i]);
--				if (o + curwid > cterm)
--					break;
--				if (curbeg + curwid > cterm)
--					continue;
-+	memset(off, -1, (fcterm+1) * sizeof(off[0]));
-+	if (ctx < 0) { 
-+		for (; i < n; i++) { 
-+			int curbeg = fcend - pos[i] - 1; 
-+			if (curbeg >= 0 && curbeg < fcterm) { 
-+				int curwid = ren_cwid(chrs[i], pos[i]); 
-+				if (o + curwid > fcterm) 
-+					break; 
-+				if (fcend - (pos[i] + curwid - 1) - 1 < 0) 
-+					continue; 
++				if (fcend - (pos[i] + curwid - 1) - 1 < 0)
+ 					continue;
  				o += curwid;
--				while (--curwid >= 0)
--					off[curbeg + curwid] = i;
--				if (o == cterm)
--					break;
--			}
--		}
--	}
 +				if (cend - pos[i] - 1 >= 0 && cend - pos[i-!!i] - 1 < cterm) {
 +					if (i && cend - pos[i-1] - 1 < 0)
 +						curwid = curwid > 1 ? 0 : curwid;
@@ -101,23 +73,29 @@ index 4d5c11f..fdeaffe 100644
 +						bmin = MIN(l, bmin);
 +					bmax = MAX(fcend - (pos[i] + curwid - 1)+j, bmax);
 +				}
-+				while (--curwid >= 0) 
-+					off[fcend - (pos[i] + curwid - 1) - 2] = i; 
-+				if (o == fcterm) 
-+					break; 
-+			} 
-+		} 
+ 				while (--curwid >= 0)
+-					off[cend - (pos[i] + curwid - 1) - 2] = i;
+-				if (o == cterm)
++					off[fcend - (pos[i] + curwid - 1) - 2] = i;
++				if (o == fcterm)
+ 					break;
+ 			}
+ 		}
 +		bmin = MAX(0, bmin - abs(bmax - bmin - cterm));
-+	} else { 
-+		for (; i < n; i++) { 
-+			int curbeg = pos[i] - fcbeg; 
-+			if (curbeg >= 0 && curbeg < fcterm) { 
-+				int curwid = ren_cwid(chrs[i], pos[i]); 
-+				if (o + curwid > fcterm) 
-+					break; 
-+				if (curbeg + curwid > fcterm) 
-+					continue; 
-+				o += curwid; 
+ 	} else {
+ 		for (; i < n; i++) {
+-			int curbeg = pos[i] - cbeg;
+-			if (curbeg >= 0 && curbeg < cterm) {
++			int curbeg = pos[i] - fcbeg;
++			if (curbeg >= 0 && curbeg < fcterm) {
+ 				int curwid = ren_cwid(chrs[i], pos[i]);
+-				if (o + curwid > cterm)
++				if (o + curwid > fcterm)
+ 					break;
+-				if (curbeg + curwid > cterm)
++				if (curbeg + curwid > fcterm)
+ 					continue;
+ 				o += curwid;
 +				if (pos[i+1] - cbeg >= 0 && pos[i] - cbeg < cterm) {
 +					if (pos[i] - cbeg + curwid >= cterm)
 +						curwid = curwid > 1 ? 0 : curwid;
@@ -129,13 +107,14 @@ index 4d5c11f..fdeaffe 100644
 +					if (pos[i] - cbeg < 0)
 +						curwid = abs(pos[i] - cbeg);
 +				}
-+				while (--curwid >= 0) 
-+					off[curbeg + curwid] = i; 
-+				if (o == fcterm) 
-+					break; 
-+			} 
-+		} 
-+	} 
+ 				while (--curwid >= 0)
+ 					off[curbeg + curwid] = i;
+-				if (o == cterm)
++				if (o == fcterm)
+ 					break;
+ 			}
+ 		}
+ 	}
  	if (pos[n] > cterm || cbeg) {
 -		for (i = 0, c = 0; i < cterm;) {
 +		for (i = 0, c = 0; i < fcterm;) {
@@ -144,14 +123,7 @@ index 4d5c11f..fdeaffe 100644
  			o = off[i++];
  			if (o >= 0) {
  				att[c++] = o;
-@@ -227,19 +262,19 @@ void led_render(char *s0, int cbeg, int cend)
- 		}
- 		for (i = 0; i < c; i++)
- 			ctt[stt[i]] = i;
--		sbuf_make(bsb, cterm*4);
-+		sbuf_make(bsb, fcterm*4);
- 		for (i = 0; i < c; i++)
- 			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
+@@ -232,13 +267,13 @@ void led_render(char *s0, int cbeg, int cend)
  		sbuf_set(bsb, '\0', 4)
  		bound = bsb->s;
  	}
