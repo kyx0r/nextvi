@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index cb634fe..8234528 100644
+index 9f94877..c52122a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1168,3 +1168,11 @@ void ex_init(char **files, int n)
@@ -27,7 +27,7 @@ index 3dfb7d3..f3648ee 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index f418435..0d3ee1f 100644
+index 848fb4f..a74b6cf 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -78,6 +78,13 @@ void dir_init(void)

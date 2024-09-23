@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index cb634fe..bea6ca5 100644
+index 9f94877..5bcd4a9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1024,6 +1024,16 @@ static int ec_regprint(char *loc, char *cmd, char *arg)

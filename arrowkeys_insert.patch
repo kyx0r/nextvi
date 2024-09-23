@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 4d5c11f..1484a56 100644
+index 9ed4d0d..db783a7 100644
 --- a/led.c
 +++ b/led.c
-@@ -278,7 +278,7 @@ static int led_lastword(char *s)
+@@ -277,7 +277,7 @@ static int led_lastword(char *s)
  	return r - s;
  }
  
@@ -11,7 +11,7 @@ index 4d5c11f..1484a56 100644
  {
  	if (!xled)
  		return;
-@@ -296,8 +296,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
+@@ -295,8 +295,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
  		xleft = pos - xcols / 2;
  	if (pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
@@ -24,7 +24,7 @@ index 4d5c11f..1484a56 100644
  	/* cursor position for inserting the next character */
  	if (next) {
  		if (off - 2 >= 0)
-@@ -388,7 +390,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -387,7 +389,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int c, i = 0, last_sug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
@@ -34,7 +34,7 @@ index 4d5c11f..1484a56 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -574,6 +577,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -573,6 +576,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			else
  				led_redraw(sb->s, 0, orow, lsh);
  			continue;
@@ -55,7 +55,7 @@ index 4d5c11f..1484a56 100644
  		case TK_CTL('o'):;
  			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
  			syn_setft(ex_ft);
-@@ -596,6 +613,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -595,6 +612,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index 4d5c11f..1484a56 100644
  	*key = c;
  }
  
-@@ -639,7 +657,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
+@@ -638,7 +656,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)

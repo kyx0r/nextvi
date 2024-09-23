@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index cb634fe..83a72fb 100644
+index 9f94877..d34612c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -19,7 +19,7 @@ index cb634fe..83a72fb 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 4d5c11f..5d11419 100644
+index 9ed4d0d..ecf9abc 100644
 --- a/led.c
 +++ b/led.c
 @@ -112,6 +112,22 @@ static int led_offdir(char **chrs, int *pos, int i)
@@ -54,7 +54,7 @@ index 4d5c11f..5d11419 100644
  {
  	if (!xled)
  		return;
-@@ -251,6 +267,8 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -250,6 +266,8 @@ void led_render(char *s0, int cbeg, int cend)
  			att[j+1] = syn_merge(conf_hlrev(), att[j+1]);
  		}
  	}
