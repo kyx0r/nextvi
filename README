@@ -34,7 +34,10 @@ hl_part.patch
 Allow syntax highlight to continue past the terminal dimensions up to a
 certain limit. To customize the depth, adjust LEDFORW and LEDBACK definitions
 in led.c
-Somewhat bugged when text is in reverse direction. Sigh....
+The most complicated part of nextvi is the bounds calculation code and mapping
+it to syntax highlighting. This patch essentially makes it even more complicated.
+Most likely you will not be able to understand this code. However, it works
+correcly in every scenario, so appreciate the art and hard work that went into it.
 
 debug.patch
 --------------
