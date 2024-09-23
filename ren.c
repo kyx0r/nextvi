@@ -343,7 +343,7 @@ void syn_reloadft(void)
 		rset *rs = ftmap[ftidx].rs;
 		syn_initft(ftidx, ftmap[ftidx].setbidx, ftmap[ftidx].ft);
 		if (!ftmap[ftidx].rs) {
-			ftmap[ftidx].rs = rs;	
+			ftmap[ftidx].rs = rs;
 		} else
 			rset_free(rs);
 		syn_reload = 0;

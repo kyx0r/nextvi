@@ -215,7 +215,6 @@ void led_render(char *s0, int cbeg, int cend)
 		stt[0] = 0;
 		for (i = 1; i < c; i++) {
 			int key0 = att[i];
-			int key1 = i;
 			j = i - 1;
 			while (j >= 0 && att[j] > key0) {
 				att[j + 1] = att[j];
@@ -223,13 +222,13 @@ void led_render(char *s0, int cbeg, int cend)
 				j = j - 1;
 			}
 			att[j + 1] = key0;
-			stt[j + 1] = key1;
+			stt[j + 1] = i;
 		}
-		for (i = 0; i < c; i++)
-			ctt[stt[i]] = i;
 		sbuf_make(bsb, cterm*4);
-		for (i = 0; i < c; i++)
+		for (i = 0; i < c; i++) {
+			ctt[stt[i]] = i;
 			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
+		}
 		sbuf_set(bsb, '\0', 4)
 		bound = bsb->s;
 	}
@@ -425,7 +424,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			break;
 		case TK_CTL(']'):
 		case TK_CTL('\\'):
-			i = 0; 
+			i = 0;
 			retry:
 			if (c == TK_CTL(']')) {
 				if (!p_reg || p_reg == '9')
