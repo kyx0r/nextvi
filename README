@@ -39,6 +39,19 @@ it to syntax highlighting. This patch essentially makes it even more complicated
 Most likely you will not be able to understand this code. However, it works
 correcly in every scenario, so appreciate the art and hard work that went into it.
 
+hl_naive.patch
+--------------
+Original approach to syntax highlight as in neatvi. Use this only if you don't
+care about performance on large lines.
+Pros:
+1. Simpler and shorter code in led_render()
+2. Unlimited length, can highlight anything pikevm is willing to match.
+Cons:
+1. Terrible performance, need to disable syntax hl if working with lines 10K+
+(You've been warned!)
+2. Cannot render lines like those by option pac=1 efficiently. Will recompute
+the whole string every iteration.
+
 debug.patch
 --------------
 Cleanup reachable memory upon termination.
