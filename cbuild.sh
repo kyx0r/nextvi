@@ -47,8 +47,10 @@ CFLAGS="\
 : "${PREFIX:=/usr/local}"
 : "${OS:=$(uname)}"
 case "$OS" in
+*_NT*) CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L" ;;
 *Darwin*) CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L -D_DARWIN_C_SOURCE" ;;
 *Linux*) CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L" ;;
+*) CFLAGS="$CFLAGS -D_DEFAULT_SOURCE" ;;
 esac
 
 : "${OPTFLAGS:=-O2}"
