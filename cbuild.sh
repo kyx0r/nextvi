@@ -41,14 +41,14 @@ CFLAGS="\
 -Wno-unused-parameter \
 -Wno-unused-result \
 -Wfatal-errors -std=c99 \
--D_POSIX_C_SOURCE=200809L $CFLAGS"
+ $CFLAGS"
 
 : "${CC:=cc}"
 : "${PREFIX:=/usr/local}"
 : "${OS:=$(uname)}"
 case "$OS" in
-*BSD*) CFLAGS="$CFLAGS -D_BSD_SOURCE" ;;
-*Darwin*) CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE" ;;
+*Darwin*) CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L -D_DARWIN_C_SOURCE" ;;
+*Linux*) CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L" ;;
 esac
 
 : "${OPTFLAGS:=-O2}"
