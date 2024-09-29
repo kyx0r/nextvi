@@ -30,15 +30,10 @@ int uc_slen(char *s)
 /* find the beginning of the character at s[i] */
 char *uc_beg(char *beg, char *s)
 {
-	while (s > beg && (((unsigned char) *s) & 0xc0) == 0x80)
-		s--;
+	if (utf8_length[0xc0] == 1)
+		return s;
+	for (; s > beg && ((unsigned char)*s & 0xc0) == 0x80; s--);
 	return s;
-}
-
-/* return a pointer to the character preceding s */
-char *uc_prev(char *beg, char *s)
-{
-	return s == beg ? beg : uc_beg(beg, s - 1);
 }
 
 /* allocate and return an array for the characters in s */
@@ -280,31 +275,32 @@ static void uc_cput(char *d, int c)
 }
 
 /* shape the given arabic character; returns a static buffer */
-char *uc_shape(char *beg, char *s)
+char *uc_shape(char *beg, char *s, int c)
 {
 	static char out[16];
 	char *r;
-	int tmp, curr, prev = 0, next = 0;
-	uc_code(curr, s)
-	if (!curr || !UC_R2L(curr))
+	int tmp, prev = 0, next = 0;
+	if (!c || !UC_R2L(c))
 		return NULL;
 	r = s;
 	while (r > beg) {
-		r = uc_beg(beg, r - 1); uc_code(tmp, r)
+		r = uc_beg(beg, r - 1);
+		uc_codel(tmp, r, tmp)
 		if (!uc_acomb(tmp)) {
-			uc_code(prev, r)
+			uc_codel(prev, r, prev)
 			break;
 		}
 	}
 	r = s;
 	while (uc_len(r)) {
-		r += uc_len(r); uc_code(tmp, r)
+		r += uc_len(r);
+		uc_codel(tmp, r, tmp)
 		if (!uc_acomb(tmp)) {
-			uc_code(next, r)
+			uc_codel(next, r, next)
 			break;
 		}
 	}
-	uc_cput(out, uc_cshape(curr, prev, next));
+	uc_cput(out, uc_cshape(c, prev, next));
 	return out;
 }
 
@@ -643,11 +639,11 @@ static int uc_iszw(int c)
 }
 
 /* nonprintable characters */
-int uc_isbell(int c)
+int uc_isbell(int c, int l)
 {
 	if (c == ' ' || c == '\t' || c == '\n' || (c <= 0x7f && isprint(c)))
 		return 0;
-	return uc_iszw(c) || find(c, bchars, LEN(bchars));
+	return l == 1 || uc_iszw(c) || find(c, bchars, LEN(bchars));
 }
 
 /* printing width */

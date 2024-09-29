@@ -394,7 +394,7 @@ static int uc_nextdir(char **s, char *beg, int dir)
 	if (dir < 0) {
 		if (*s == beg)
 			return 1;
-		*s = uc_prev(beg, *s);
+		*s = uc_beg(beg, (*s) - 1);
 	} else {
 		*s += uc_len(s[0]);
 		if (!(*s)[0])
@@ -416,7 +416,8 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 		n = -n;
 	s = uc_chr(ln, *off);
 	while (n > 0 && !uc_nextdir(&s, ln, dir)) {
-		uc_code(c1, s) uc_code(c2, cs)
+		uc_codel(c1, s, c1)
+		uc_codel(c2, cs, c2)
 		if (c1 == c2)
 			n--;
 	}

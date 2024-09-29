@@ -1292,7 +1292,7 @@ static void vc_charinfo(void)
 		char cbuf[8] = "";
 		int l = uc_len(c);
 		memcpy(cbuf, c, l);
-		uc_code(l, c)
+		uc_code(l, c, l)
 		snprintf(vi_msg, sizeof(vi_msg), "<%s> %04x", cbuf, l);
 	}
 }
