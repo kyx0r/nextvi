@@ -279,24 +279,24 @@ char *uc_shape(char *beg, char *s, int c)
 {
 	static char out[16];
 	char *r;
-	int tmp, prev = 0, next = 0;
+	int tmp, l, prev = 0, next = 0;
 	if (!c || !UC_R2L(c))
 		return NULL;
 	r = s;
 	while (r > beg) {
 		r = uc_beg(beg, r - 1);
-		uc_codel(tmp, r, tmp)
+		uc_code(tmp, r, l)
 		if (!uc_acomb(tmp)) {
-			uc_codel(prev, r, prev)
+			uc_code(prev, r, l)
 			break;
 		}
 	}
 	r = s;
 	while (uc_len(r)) {
 		r += uc_len(r);
-		uc_codel(tmp, r, tmp)
+		uc_code(tmp, r, l)
 		if (!uc_acomb(tmp)) {
-			uc_codel(next, r, next)
+			uc_code(next, r, l)
 			break;
 		}
 	}

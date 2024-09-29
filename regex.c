@@ -52,7 +52,7 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 	const char *re = re_loc;
 	int *code = sizecode ? NULL : prog->insts;
 	int start = PC, term = PC;
-	int alt_label = 0, c;
+	int alt_label = 0, c, l, cnt;
 	int alt_stack[4096], altc = 0;
 	int cap_stack[4096 * 5], capc = 0;
 
@@ -71,7 +71,7 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 		default:
 			term = PC;
 			EMIT(PC++, CHAR);
-			uc_codel(c, re, c)
+			uc_code(c, re, l)
 			if (flg & REG_ICASE && (unsigned int)c < 128)
 				c = tolower(c);
 			EMIT(PC++, c);
@@ -81,7 +81,6 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 			EMIT(PC++, ANY);
 			break;
 		case '[':;
-			int cnt, l;
 			term = PC;
 			re++;
 			EMIT(PC++, CLASS);
@@ -93,7 +92,7 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (*re == '\\') re++;
 				if (!*re) return -1;
-				uc_codel(c, re, l)
+				uc_code(c, re, l)
 				if (re[-1] != '\\' && re[l] != ']' &&
 						(c == '!' || c == '=' || c == '^')) {
 					EMIT(PC-(cnt*2)-1, cnt);
@@ -114,7 +113,7 @@ static int compilecode(const char *re_loc, rcode *prog, int sizecode, int flg)
 				EMIT(PC++, c);
 				if (re[l] == '-' && re[l+1] != ']')
 					re += l+1;
-				uc_codel(c, re, l)
+				uc_code(c, re, l)
 				re += l;
 				if (flg & REG_ICASE && (unsigned int)c < 128)
 					c = tolower(c);
@@ -448,7 +447,7 @@ clistidx = nlistidx; \
 
 #define match(n, cpn) \
 for (;; sp = _sp) { \
-	uc_codel(c, sp, i) cpn \
+	uc_code(c, sp, i) cpn \
 	_sp = sp+i; \
 	nlistidx = 0, sparsesz = 0; \
 	for (i = 0; i < clistidx; i++) { \
@@ -474,7 +473,7 @@ for (;; sp = _sp) { \
 						pc += 2; \
 						if (c >= *pc && c <= pc[1]) { \
 							s += uc_len(s); \
-							uc_codel(c, s, c) cpn \
+							uc_code(c, s, j) cpn \
 						} else { \
 							pc += (cnt-1) * 2; \
 							break; \

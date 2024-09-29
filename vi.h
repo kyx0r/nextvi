@@ -207,21 +207,20 @@ extern unsigned char utf8_length[256];
 /* return the length of a utf-8 character */
 #define uc_len(s) utf8_length[(unsigned char)s[0]]
 /* the unicode codepoint of the given utf-8 character */
-#define _uc_code(dst, s, assignl, l) \
-assignl \
-if (l == 1) \
-	dst = s[0]; \
+#define uc_code(dst, s, l) \
+dst = (unsigned char)s[0]; \
+l = utf8_length[dst]; \
+if (l == 1); \
 else if (l == 2) \
-	dst = ((s[0] & 0x1f) << 6) | (s[1] & 0x3f); \
+	dst = ((dst & 0x1f) << 6) | (s[1] & 0x3f); \
 else if (l == 3) \
-	dst = ((s[0] & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f); \
+	dst = ((dst & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f); \
 else if (l == 4) \
-	dst = ((s[0] & 0x07) << 18) | ((s[1] & 0x3f) << 12) | \
+	dst = ((dst & 0x07) << 18) | ((s[1] & 0x3f) << 12) | \
 		((s[2] & 0x3f) << 6) | (s[3] & 0x3f); \
 else \
-	dst = 0;
-#define uc_codel(dst, s, l) _uc_code(dst, s, l = uc_len(s);, l)
-#define uc_code(dst, s, l) _uc_code(dst, s,, l)
+	dst = 0; \
+
 int uc_wid(int c);
 int uc_slen(char *s);
 char *uc_chr(char *s, int off);

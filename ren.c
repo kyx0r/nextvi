@@ -199,7 +199,7 @@ int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
 		return xtabspc - (pos & (xtabspc-1));
-	int c; uc_codel(c, s, c)
+	int c, l; uc_code(c, s, l)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)
 			return placeholders[i].wid;
@@ -208,7 +208,7 @@ int ren_cwid(char *s, int pos)
 
 char *ren_translate(char *s, char *ln)
 {
-	int c, l; uc_codel(c, s, l)
+	int c, l; uc_code(c, s, l)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)
 			return placeholders[i].d;
