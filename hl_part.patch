@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 9ed4d0d..204e090 100644
+index abf62fd..aff5e69 100644
 --- a/led.c
 +++ b/led.c
-@@ -126,7 +126,7 @@ else if (*chrs[o] == '\t') \
+@@ -123,7 +123,7 @@ else if (*chrs[o] == '\t') \
  
  #define led_out(out, n) \
  { \
@@ -11,7 +11,7 @@ index 9ed4d0d..204e090 100644
  	int att_new = 0; \
  	o = off[i]; \
  	if (o >= 0) { \
-@@ -154,58 +154,93 @@ for (i = 0; i < cterm;) { \
+@@ -151,58 +151,93 @@ for (i = 0; i < cterm;) { \
  	att_old = att_new; \
  } sbufn_str(out, term_att(0)) } \
  
@@ -123,7 +123,7 @@ index 9ed4d0d..204e090 100644
  			o = off[i++];
  			if (o >= 0) {
  				att[c++] = o;
-@@ -232,13 +267,13 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -229,13 +264,13 @@ void led_render(char *s0, int cbeg, int cend)
  		sbuf_set(bsb, '\0', 4)
  		bound = bsb->s;
  	}

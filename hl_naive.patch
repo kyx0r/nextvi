@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 9ed4d0d..cfaa78b 100644
+index abf62fd..0a1f1ed 100644
 --- a/led.c
 +++ b/led.c
-@@ -131,7 +131,7 @@ for (i = 0; i < cterm;) { \
+@@ -128,7 +128,7 @@ for (i = 0; i < cterm;) { \
  	o = off[i]; \
  	if (o >= 0) { \
  		for (l = i; off[i] == o; i++); \
@@ -11,7 +11,7 @@ index 9ed4d0d..cfaa78b 100644
  		if (att_new != att_old) \
  			sbuf_str(out, term_att(att_new)) \
  		char *s = ren_translate(chrs[o], s0); \
-@@ -159,18 +159,17 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -156,18 +156,17 @@ void led_render(char *s0, int cbeg, int cend)
  {
  	if (!xled)
  		return;
@@ -37,7 +37,7 @@ index 9ed4d0d..cfaa78b 100644
  	if (ctx < 0) {
  		for (; i < n; i++) {
  			int curbeg = cend - pos[i] - 1;
-@@ -204,50 +203,20 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -201,50 +200,20 @@ void led_render(char *s0, int cbeg, int cend)
  			}
  		}
  	}

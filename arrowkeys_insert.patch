@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 9ed4d0d..db783a7 100644
+index abf62fd..d7a9cc2 100644
 --- a/led.c
 +++ b/led.c
-@@ -277,7 +277,7 @@ static int led_lastword(char *s)
+@@ -274,7 +274,7 @@ static int led_lastword(char *s)
  	return r - s;
  }
  
@@ -11,7 +11,7 @@ index 9ed4d0d..db783a7 100644
  {
  	if (!xled)
  		return;
-@@ -295,8 +295,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
+@@ -292,8 +292,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
  		xleft = pos - xcols / 2;
  	if (pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
@@ -24,7 +24,7 @@ index 9ed4d0d..db783a7 100644
  	/* cursor position for inserting the next character */
  	if (next) {
  		if (off - 2 >= 0)
-@@ -387,7 +389,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -384,7 +386,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int c, i = 0, last_sug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
@@ -34,7 +34,7 @@ index 9ed4d0d..db783a7 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -573,6 +576,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -570,6 +573,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			else
  				led_redraw(sb->s, 0, orow, lsh);
  			continue;
@@ -55,7 +55,7 @@ index 9ed4d0d..db783a7 100644
  		case TK_CTL('o'):;
  			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
  			syn_setft(ex_ft);
-@@ -595,6 +612,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -592,6 +609,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index 9ed4d0d..db783a7 100644
  	*key = c;
  }
  
-@@ -638,7 +656,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
+@@ -635,7 +653,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)
@@ -73,7 +73,7 @@ index 9ed4d0d..db783a7 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 96d9f62..f110fd2 100644
+index 3ad8ff4..9f25d10 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1001,6 +1001,8 @@ static char *vi_indents(char *ln, int *l)

@@ -19,10 +19,10 @@ index 9f94877..d34612c 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 9ed4d0d..ecf9abc 100644
+index abf62fd..99d3645 100644
 --- a/led.c
 +++ b/led.c
-@@ -112,6 +112,22 @@ static int led_offdir(char **chrs, int *pos, int i)
+@@ -109,6 +109,22 @@ static int led_offdir(char **chrs, int *pos, int i)
  	return 0;
  }
  
@@ -45,7 +45,7 @@ index 9ed4d0d..ecf9abc 100644
  #define print_ch1(out) sbuf_mem(out, chrs[o], l)
  #define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
  
-@@ -155,7 +171,7 @@ for (i = 0; i < cterm;) { \
+@@ -152,7 +168,7 @@ for (i = 0; i < cterm;) { \
  } sbufn_str(out, term_att(0)) } \
  
  /* render and highlight a line */
@@ -54,7 +54,7 @@ index 9ed4d0d..ecf9abc 100644
  {
  	if (!xled)
  		return;
-@@ -250,6 +266,8 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -247,6 +263,8 @@ void led_render(char *s0, int cbeg, int cend)
  			att[j+1] = syn_merge(conf_hlrev(), att[j+1]);
  		}
  	}
@@ -64,7 +64,7 @@ index 9ed4d0d..ecf9abc 100644
  	if (vi_hidch)
  		led_out(term_sbuf, 2)
 diff --git a/vi.h b/vi.h
-index b690ec1..2c13a91 100644
+index db9870f..297edf0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -287,14 +287,14 @@ char *xgetenv(char* q[]);

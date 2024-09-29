@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 5e50d21..7fcb3b7 100644
+index 43b6621..9bee90d 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -234,6 +234,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
@@ -28,10 +28,10 @@ index 9f94877..1f62b4c 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 96d9f62..a41e25c 100644
+index 3ad8ff4..3b15285 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -663,12 +663,12 @@ void dir_calc(char *path)
+@@ -664,12 +664,12 @@ void dir_calc(char *path)
  	}
  }
  
@@ -46,7 +46,7 @@ index 96d9f62..a41e25c 100644
  	*row = xrow; *off = xoff; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -679,14 +679,14 @@ if (ret && xrow) { \
+@@ -680,14 +680,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -64,7 +64,7 @@ index 96d9f62..a41e25c 100644
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -702,7 +702,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -703,7 +703,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
  		path = lbuf_get(tempbufs[1].lb, fspos);
@@ -73,7 +73,7 @@ index 96d9f62..a41e25c 100644
  	}
  	return 0;
  }
-@@ -805,6 +805,7 @@ static int vi_motion(int *row, int *off)
+@@ -806,6 +806,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -81,7 +81,7 @@ index 96d9f62..a41e25c 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -823,8 +824,44 @@ static int vi_motion(int *row, int *off)
+@@ -824,8 +825,44 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -157,7 +157,7 @@ index 96d9f62..a41e25c 100644
  				default:
  					vi_back(k);
  				}
-@@ -2017,6 +2068,7 @@ int main(int argc, char *argv[])
+@@ -2018,6 +2069,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
@@ -166,7 +166,7 @@ index 96d9f62..a41e25c 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index b690ec1..d83d96d 100644
+index db9870f..a356fbc 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -321,7 +321,7 @@ extern int xbufcur;

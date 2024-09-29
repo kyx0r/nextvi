@@ -69,7 +69,7 @@ index 56c550d..adb2f56 100644
  }
  
 diff --git a/led.c b/led.c
-index 9ed4d0d..c4cc555 100644
+index abf62fd..3f314a8 100644
 --- a/led.c
 +++ b/led.c
 @@ -48,7 +48,7 @@ static void file_index(struct lbuf *buf)
@@ -89,7 +89,7 @@ index 9ed4d0d..c4cc555 100644
  }
  
  static char *kmap_map(int kmap, int c)
-@@ -164,10 +165,10 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -161,10 +162,10 @@ void led_render(char *s0, int cbeg, int cend)
  	int att_old = 0, atti = 0;
  	char *bound = NULL;
  	char **chrs;		/* chrs[i]: the i-th character in s1 */
@@ -104,7 +104,7 @@ index 9ed4d0d..c4cc555 100644
  	int *pos = ren_position(s0, &chrs, &n);	/* pos[i]: the screen position of the i-th character */
  	int ctx = dir_context(s0);
  	memset(off, -1, (cterm+1) * sizeof(off[0]));
-@@ -205,6 +206,8 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -202,6 +203,8 @@ void led_render(char *s0, int cbeg, int cend)
  		}
  	}
  	if (pos[n] > cterm || cbeg) {
@@ -113,7 +113,7 @@ index 9ed4d0d..c4cc555 100644
  		for (i = 0, c = 0; i < cterm;) {
  			o = off[i++];
  			if (o >= 0) {
-@@ -255,6 +258,10 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -252,6 +255,10 @@ void led_render(char *s0, int cbeg, int cend)
  		led_out(term_sbuf, 2)
  	else
  		led_out(term_sbuf, 1)
@@ -186,10 +186,10 @@ index 3dfb7d3..e607578 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 848fb4f..595b4ba 100644
+index da3a813..126eb51 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -238,13 +238,14 @@ int syn_blockhl;
+@@ -244,13 +244,14 @@ int syn_blockhl;
  static void syn_initft(int fti, int n, char *name)
  {
  	int i = n;
@@ -205,7 +205,7 @@ index 848fb4f..595b4ba 100644
  }
  
  char *syn_setft(char *ft)
-@@ -283,7 +284,7 @@ int syn_merge(int old, int new)
+@@ -289,7 +290,7 @@ int syn_merge(int old, int new)
  void syn_highlight(int *att, char *s, int n)
  {
  	rset *rs = ftmap[ftidx].rs;
@@ -214,7 +214,7 @@ index 848fb4f..595b4ba 100644
  	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
  	int bend = 0, cend = 0;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
-@@ -329,6 +330,7 @@ void syn_highlight(int *att, char *s, int n)
+@@ -335,6 +336,7 @@ void syn_highlight(int *att, char *s, int n)
  	if (syn_blockhl && !blk)
  		for (j = 0; j < n; j++)
  			att[j] = blockcont && att[j] ? att[j] : *blockatt;
@@ -222,7 +222,7 @@ index 848fb4f..595b4ba 100644
  }
  
  char *syn_filetype(char *path)
-@@ -363,9 +365,10 @@ int syn_addhl(char *reg, int func, int reload)
+@@ -369,9 +371,10 @@ int syn_addhl(char *reg, int func, int reload)
  
  void syn_init(void)
  {
@@ -235,10 +235,10 @@ index 848fb4f..595b4ba 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 96d9f62..40eade7 100644
+index 3ad8ff4..08b3451 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -146,7 +146,8 @@ static void vi_drawrow(int row)
+@@ -147,7 +147,8 @@ static void vi_drawrow(int row)
  			vi_rshift = 0;
  		if (row != xrow+1 || !c || *c == '\n')
  			goto skip;
@@ -248,7 +248,7 @@ index 96d9f62..40eade7 100644
  		memset(tmp, ' ', xcols+1);
  		tmp[xcols+1] = '\n';
  		tmp[xcols+2] = '\0';
-@@ -177,6 +178,8 @@ static void vi_drawrow(int row)
+@@ -178,6 +179,8 @@ static void vi_drawrow(int row)
  		restore(xorder)
  		restore(syn_blockhl)
  		restore(xtd)

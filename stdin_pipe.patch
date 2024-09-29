@@ -131,10 +131,10 @@ index 5d359e6..eed2631 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 96d9f62..f64eaf2 100644
+index 3ad8ff4..b9b8dd3 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1995,6 +1995,8 @@ void vi(int init)
+@@ -1996,6 +1996,8 @@ void vi(int init)
  
  static void sighandler(int signo)
  {
@@ -143,7 +143,7 @@ index 96d9f62..f64eaf2 100644
  	vi_back(TK_CTL('l'));
  }
  
-@@ -2002,8 +2004,9 @@ static int setup_signals(void) {
+@@ -2003,8 +2005,9 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -155,7 +155,7 @@ index 96d9f62..f64eaf2 100644
  		return 0;
  	return 1;
  }
-@@ -2021,7 +2024,8 @@ int main(int argc, char *argv[])
+@@ -2022,7 +2025,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -166,7 +166,7 @@ index 96d9f62..f64eaf2 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index b690ec1..8f5521b 100644
+index db9870f..454390d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -419,6 +419,7 @@ void vi_regput(int c, const char *s, int ln);
