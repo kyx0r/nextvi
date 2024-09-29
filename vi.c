@@ -44,7 +44,8 @@ int vi_hidch;		/* show hidden chars */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
 int vi_lncol;		/* line numbers cursor offset */
 static int vi_lnnum;	/* line numbers */
-static int vi_mod;	/* screen should be redrawn: (bit 1: whole screen, bit 2: current line) */
+static int vi_mod;	/* screen should be redrawn -
+			bit 1: whole screen, bit 2: current line, bit 3: update vi_col) */
 static char *vi_word = "\0eEwW";	/* line word navigation */
 static int vi_rshift;			/* row shift for vi_word */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
@@ -206,7 +207,7 @@ static void vi_drawrow(int row)
 		preserve(int, syn_blockhl, 0)
 		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
-			for (i1 = 0; strchr(" \t", *rstate->chrs[ren_off(s, i1)]);)
+			for (i1 = 0; strchr(" \t", *rstate->chrs[ren_off(s, i1, 1)]);)
 				i1 = ren_next(s, i1, 1);
 			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
 			if (i1 >= 0) {
@@ -365,12 +366,6 @@ static int vi_yankbuf(void)
 	return 0;
 }
 
-static int vi_off2col(struct lbuf *lb, int row, int off)
-{
-	char *ln = lbuf_get(lb, row);
-	return ln ? ren_pos(ln, off) : 0;
-}
-
 static int vi_prefix(void)
 {
 	int n = 0;
@@ -395,10 +390,16 @@ static int vi_digit(void)
 	return -1;
 }
 
+static int vi_off2col(struct lbuf *lb, int row, int off)
+{
+	char *ln = lbuf_get(lb, row);
+	return ln ? ren_pos(ln, off) : 0;
+}
+
 static int vi_col2off(struct lbuf *lb, int row, int col)
 {
 	char *ln = lbuf_get(lb, row);
-	return ln ? ren_off(ln, col) : 0;
+	return ln ? ren_off(ln, col, 1) : 0;
 }
 
 static int vi_nextoff(struct lbuf *lb, int dir, int *row, int *off)
@@ -415,7 +416,7 @@ static int vi_nextcol(struct lbuf *lb, int dir, int *row, int *off)
 	char *ln = lbuf_get(lb, *row);
 	if (!ln)
 		return -1;
-	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
+	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir), 0);
 	if (*rstate->chrs[o] == '\n')
 		return -1;
 	*off = o;
@@ -863,7 +864,6 @@ static int vi_motion(int *row, int *off)
 		*off = lbuf_eol(xb, *row);
 		break;
 	case '|':
-		*off = vi_col2off(xb, *row, cnt - 1);
 		vi_col = cnt - 1;
 		break;
 	case '/':
@@ -1382,8 +1382,8 @@ void vi(int init)
 	}
 	while (!xquit) {
 		int nrow = xrow;
-		int noff = ren_noeol(lbuf_get(xb, xrow), xoff);
-		int ooff = xoff;
+		int noff = xoff;
+		int ooff = noff;
 		int otop = xtop;
 		int oleft = xleft;
 		int orow = xrow;
@@ -1406,17 +1406,17 @@ void vi(int init)
 			vi_ybuf = vi_yankbuf();
 		mv = vi_motion(&nrow, &noff);
 		if (mv > 0) {
-			if (noff < 0 && !strchr("jk", mv))
-				noff = lbuf_indents(xb, nrow);
-			else if (strchr("jk", mv))
+			if (strchr("|jk", mv)) {
 				noff = vi_col2off(xb, nrow, vi_col);
-			if ((xrow != nrow || xoff != noff) &&
+			} else {
+				noff = noff < 0 ? lbuf_indents(xb, nrow) : noff;
+				vi_mod |= 4;
+			}
+			if ((xrow != nrow || ooff != noff) &&
 					strchr("%\'`GHML/?{}[]nN", mv))
-				lbuf_mark(xb, '`', xrow, xoff);
+				lbuf_mark(xb, '`', xrow, ooff);
 			xrow = nrow;
-			xoff = ren_noeol(lbuf_get(xb, nrow), noff);
-			if (!strchr("|jk", mv))
-				vi_col = vi_off2col(xb, nrow, xoff);
+			xoff = noff;
 			switch (mv) {
 			case '\\':
 				vc_status();
@@ -1442,12 +1442,12 @@ void vi(int init)
 			case TK_CTL('b'):
 				vi_scrollbackward(MAX(1, vi_arg1) * (xrows - 1));
 				xoff = lbuf_indents(xb, xrow);
-				vi_mod |= 8;
+				vi_mod |= 4;
 				break;
 			case TK_CTL('f'):
 				vi_scrollforward(MAX(1, vi_arg1) * (xrows - 1));
 				xoff = lbuf_indents(xb, xrow);
-				vi_mod |= 8;
+				vi_mod |= 4;
 				break;
 			case TK_CTL('e'):
 				vi_scrolley = vi_arg1 ? vi_arg1 : vi_scrolley;
@@ -1469,7 +1469,7 @@ void vi(int init)
 				if (xtop > 0)
 					xtop = MAX(0, xtop - n);
 				xoff = lbuf_indents(xb, xrow);
-				vi_mod |= 8;
+				vi_mod |= 4;
 				break;
 			case TK_CTL('d'):
 				if (xrow == lbuf_len(xb) - 1)
@@ -1481,7 +1481,7 @@ void vi(int init)
 				if (xtop < lbuf_len(xb) - xrows)
 					xtop = MIN(lbuf_len(xb) - xrows, xtop + n);
 				xoff = lbuf_indents(xb, xrow);
-				vi_mod |= 8;
+				vi_mod |= 4;
 				break;
 			case TK_CTL('z'):
 				term_pos(xrows, 0);
@@ -1887,14 +1887,15 @@ void vi(int init)
 		if (xtop + xrows <= xrow)
 			xtop = xtop + xrows + xrows / 2 <= xrow ?
 					xrow - xrows / 2 : xrow - xrows + 1;
-		xoff = ren_noeol(lbuf_get(xb, xrow), xoff);
+		ln = lbuf_get(xb, xrow);
+		xoff = ren_noeol(ln, xoff);
 		if (vi_mod)
 			vi_col = vi_off2col(xb, xrow, xoff);
 		if (vi_col >= xleft + xcols)
 			xleft = vi_col - xcols / 2;
 		if (vi_col < xleft)
 			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
-		n = led_pos(lbuf_get(xb, xrow), ren_cursor(lbuf_get(xb, xrow), vi_col));
+		n = led_pos(ln, ren_cursor(ln, vi_col));
 		vi_wait();
 		if (xhlw) {
 			static char *word;
@@ -1907,15 +1908,15 @@ void vi(int init)
 				}
 			}
 		}
-		if (xhlp && (cs = lbuf_get(xb, xrow))) {
+		if (xhlp && ln) {
 			char pairs[] = "{([})]{([})]";
-			cs = uc_chr(cs, xoff);
+			cs = uc_chr(ln, xoff);
 			int start = uc_off(cs, strcspn(cs, "{([})]"));
 			int ch = dstrlen(pairs, *uc_chr(cs, start));
 			if (ch < 9) {
 				static sbuf *sb;
 				char buf[100];
-				int pos = xleft ? ren_off(lbuf_get(xb, xrow), xleft) : 0;
+				int pos = xleft ? ren_off(ln, xleft, 1) : 0;
 				start += xoff - pos;
 				int row = xrow, off = start + pos;
 				if (!lbuf_pair(xb, &row, &off)) {

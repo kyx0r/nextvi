@@ -92,15 +92,12 @@ static char *kmap_map(int kmap, int c)
 	return keymap[c] ? keymap[c] : cs;
 }
 
-static int led_posctx(int dir, int pos, int beg, int end)
-{
-	return dir >= 0 ? pos - beg : end - pos - 1;
-}
-
 /* map cursor horizontal position to terminal column number */
 int led_pos(char *s, int pos)
 {
-	return led_posctx(dir_context(s), pos, xleft, xleft + xcols);
+	if (dir_context(s) < 0)
+		return xleft + xcols - pos - 1;
+	return pos - xleft;
 }
 
 static int led_offdir(char **chrs, int *pos, int i)

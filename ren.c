@@ -145,13 +145,19 @@ int ren_pos(char *s, int off)
 	return ret;
 }
 
-/* convert visual position to character offset */
-int ren_off(char *s, int p)
+/* convert visual position to character offset. nl omits newline */
+int ren_off(char *s, int p, int nl)
 {
-	int n, *pos;
-	ren_position_m(pos =, s, &n)
-	int *ch = &pos[ren_posfind(pos, n, p, -1)];
-	return ch - pos;
+	int n, i, nn = 0, ret = -1, *pos;
+	char **c;
+	pos = ren_position(s, &c, &n);
+	for (i = 0; i < n - nl; i++) {
+		if (pos[i] <= p && (ret < 0 || pos[i] > pos[ret]))
+			ret = i;
+		else if (ret < 0 && pos[i] > pos[nn])
+			nn = i;
+	}
+	return ret >= 0 ? ret : nn;
 }
 
 /* adjust cursor position */
