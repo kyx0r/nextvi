@@ -11,10 +11,10 @@ index 8027993..ac8c0b2 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index 56c550d..b652b90 100644
+index e4e30a7..b6f8817 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -427,35 +427,100 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -428,35 +428,100 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -133,10 +133,10 @@ index 56c550d..b652b90 100644
  
  int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
 diff --git a/regex.c b/regex.c
-index 3dfb7d3..1019699 100644
+index 9f690cc..cc40094 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -314,7 +314,7 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
+@@ -312,7 +312,7 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
  	return 0;
  }
  
@@ -145,7 +145,7 @@ index 3dfb7d3..1019699 100644
  
  #define newsub(init, copy) \
  if (freesub) \
-@@ -545,8 +545,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -543,8 +543,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
  	char nsubs[prog->sub];
  	flg = prog->flg | flg;
@@ -158,7 +158,7 @@ index 3dfb7d3..1019699 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 87d24c5..b33616e 100644
+index 1b7ff25..c6dfe99 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -176,7 +176,7 @@ index 87d24c5..b33616e 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 3ad8ff4..cdbd02e 100644
+index d998bfe..f5023ac 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -188,7 +188,7 @@ index 3ad8ff4..cdbd02e 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index db9870f..c6d76a2 100644
+index 706f409..1137e9d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -203,7 +203,9 @@ int syn_addhl(char *reg, int func, int reload);

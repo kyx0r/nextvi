@@ -91,7 +91,7 @@ index abf62fd..8ba5021 100644
  					pac_:
  					syn_setft("/ac");
 diff --git a/vi.c b/vi.c
-index 3ad8ff4..ab36cd5 100644
+index d998bfe..2572271 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1128,6 +1128,10 @@ static void vc_motion(int cmd)
