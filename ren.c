@@ -199,7 +199,7 @@ int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
 		return xtabspc - (pos & (xtabspc-1));
-	int c; uc_code(c, s)
+	int c, l; uc_code(c, s, l)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)
 			return placeholders[i].wid;
@@ -208,19 +208,18 @@ int ren_cwid(char *s, int pos)
 
 char *ren_translate(char *s, char *ln)
 {
-	int c; uc_code(c, s)
+	int c, l; uc_code(c, s, l)
 	for (int i = 0; i < placeholderslen; i++)
 		if (placeholders[i].cp == c)
 			return placeholders[i].d;
 	if (uc_acomb(c)) {
 		static char buf[16] = "ـ";
-		c = uc_len(s);
-		*((char*)memcpy(buf+2, s, c)+c) = '\0';
+		*((char*)memcpy(buf+2, s, l)+l) = '\0';
 		return buf;
 	}
-	if (uc_isbell(c))
+	if (uc_isbell(c, l))
 		return "�";
-	return !xshape ? NULL : uc_shape(ln, s);
+	return !xshape ? NULL : uc_shape(ln, s, c);
 }
 
 #define NFTS		30

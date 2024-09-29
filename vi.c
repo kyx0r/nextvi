@@ -1287,13 +1287,13 @@ static void vc_status(void)
 
 static void vc_charinfo(void)
 {
+	char cbuf[8] = "";
+	int cp, l;
 	char *c = uc_chr(lbuf_get(xb, xrow), xoff);
 	if (c) {
-		char cbuf[8] = "";
-		int l = uc_len(c);
+		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
-		uc_code(l, c)
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %04x", cbuf, l);
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x", cbuf, cp);
 	}
 }
 

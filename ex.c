@@ -1024,6 +1024,17 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
+static int ec_setenc(char *loc, char *cmd, char *arg)
+{
+	if (utf8_length[0xc0] == 1) {
+		memset(utf8_length+0xc0, 2, 0xe0 - 0xc0);
+		memset(utf8_length+0xe0, 3, 0xf0 - 0xe0);
+		memset(utf8_length+0xf0, 4, 0xf8 - 0xf0);
+	} else
+		memset(utf8_length+1, 1, 255);
+	return 0;
+}
+
 static struct excmd {
 	char *name;
 	int (*ec)(char *loc, char *cmd, char *arg);
@@ -1074,6 +1085,7 @@ static struct excmd {
 	{"reg", ec_regprint},
 	{"bx", ec_setbufsmax},
 	{"ac", ec_setacreg},
+	{"uc", ec_setenc},
 	{"", ec_print},
 };
 

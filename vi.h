@@ -207,14 +207,15 @@ extern unsigned char utf8_length[256];
 /* return the length of a utf-8 character */
 #define uc_len(s) utf8_length[(unsigned char)s[0]]
 /* the unicode codepoint of the given utf-8 character */
-#define uc_code(dst, s) \
+#define uc_code(dst, s, l) \
 dst = (unsigned char)s[0]; \
-if (dst < 192); \
-else if (dst < 224) \
+l = utf8_length[dst]; \
+if (l == 1); \
+else if (l == 2) \
 	dst = ((dst & 0x1f) << 6) | (s[1] & 0x3f); \
-else if (dst < 240) \
+else if (l == 3) \
 	dst = ((dst & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f); \
-else if (dst < 248) \
+else if (l == 4) \
 	dst = ((dst & 0x07) << 18) | ((s[1] & 0x3f) << 12) | \
 		((s[2] & 0x3f) << 6) | (s[3] & 0x3f); \
 else \
@@ -233,12 +234,11 @@ int uc_isprint(char *s);
 int uc_isdigit(char *s);
 int uc_isalpha(char *s);
 int uc_kind(char *c);
-int uc_isbell(int c);
+int uc_isbell(int c, int l);
 int uc_acomb(int c);
 char **uc_chop(char *s, int *n);
-char *uc_prev(char *beg, char *s);
 char *uc_beg(char *beg, char *s);
-char *uc_shape(char *beg, char *s);
+char *uc_shape(char *beg, char *s, int c);
 
 /* term.c managing the terminal */
 extern sbuf *term_sbuf;
