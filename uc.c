@@ -639,11 +639,9 @@ static int uc_iszw(int c)
 }
 
 /* nonprintable characters */
-int uc_isbell(int c, int l)
+int uc_isbell(int c)
 {
-	if (c == '\t' || c == '\n' || (c >= 0x20 && c < 0x7f))
-		return 0;
-	return l == 1 || uc_iszw(c) || find(c, bchars, LEN(bchars));
+	return uc_iszw(c) || find(c, bchars, LEN(bchars));
 }
 
 /* printing width */
