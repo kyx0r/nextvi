@@ -234,7 +234,7 @@ int uc_isprint(char *s);
 int uc_isdigit(char *s);
 int uc_isalpha(char *s);
 int uc_kind(char *c);
-int uc_isbell(int c, int l);
+int uc_isbell(int c);
 int uc_acomb(int c);
 char **uc_chop(char *s, int *n);
 char *uc_beg(char *beg, char *s);
@@ -401,9 +401,10 @@ extern struct dirmark dmarks[];
 extern int dmarkslen;
 /* character placeholders */
 struct placeholder {
-	int cp;		/* the source character codepoint */
+	int cp[2];	/* the source character codepoint */
 	char *d;	/* the placeholder */
 	int wid;	/* the width of the placeholder */
+	int l;		/* the length of the codepoint */
 };
 extern struct placeholder placeholders[];
 extern int placeholderslen;
