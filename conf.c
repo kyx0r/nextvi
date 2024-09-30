@@ -265,6 +265,7 @@ int dmarkslen = LEN(dmarks);
 struct placeholder ph[] = {
 	{{0x0,0x1f}, "^", 1, 1},
 	{{0x7f,0xff}, "~", 1, 1},
+	{{0x200c,0x200d}, "-", 1, 3},
 };
 int phlen = LEN(ph);
 
