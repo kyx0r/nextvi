@@ -77,7 +77,7 @@ index d998bfe..4d0fb4e 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 706f409..cc28429 100644
+index 78589d7..5aff9ee 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -316,6 +316,7 @@ struct buf {
@@ -88,7 +88,7 @@ index 706f409..cc28429 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -453,3 +454,4 @@ extern char *fs_exdir;
+@@ -454,3 +455,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;

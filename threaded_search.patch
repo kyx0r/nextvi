@@ -158,7 +158,7 @@ index 9f690cc..cc40094 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 1b7ff25..c6dfe99 100644
+index b05db93..7298b6a 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -188,7 +188,7 @@ index d998bfe..f5023ac 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 706f409..1137e9d 100644
+index 78589d7..06f3216 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -203,7 +203,9 @@ int syn_addhl(char *reg, int func, int reload);

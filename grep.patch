@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 43b6621..9bee90d 100644
+index b0d82d5..0c151e5 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -234,6 +234,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
@@ -166,7 +166,7 @@ index d998bfe..13d52fd 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 706f409..bf5426d 100644
+index 78589d7..481c4d7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -321,7 +321,7 @@ extern int xbufcur;

@@ -186,10 +186,10 @@ index 9f690cc..98400b6 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 6c08145..37e6ca5 100644
+index 8105e7a..17cc23e 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -243,13 +243,14 @@ int syn_blockhl;
+@@ -249,13 +249,14 @@ int syn_blockhl;
  static void syn_initft(int fti, int n, char *name)
  {
  	int i = n;
@@ -205,7 +205,7 @@ index 6c08145..37e6ca5 100644
  }
  
  char *syn_setft(char *ft)
-@@ -288,7 +289,7 @@ int syn_merge(int old, int new)
+@@ -294,7 +295,7 @@ int syn_merge(int old, int new)
  void syn_highlight(int *att, char *s, int n)
  {
  	rset *rs = ftmap[ftidx].rs;
@@ -214,7 +214,7 @@ index 6c08145..37e6ca5 100644
  	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
  	int bend = 0, cend = 0;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
-@@ -334,6 +335,7 @@ void syn_highlight(int *att, char *s, int n)
+@@ -340,6 +341,7 @@ void syn_highlight(int *att, char *s, int n)
  	if (syn_blockhl && !blk)
  		for (j = 0; j < n; j++)
  			att[j] = blockcont && att[j] ? att[j] : *blockatt;
@@ -222,7 +222,7 @@ index 6c08145..37e6ca5 100644
  }
  
  char *syn_filetype(char *path)
-@@ -368,9 +370,10 @@ int syn_addhl(char *reg, int func, int reload)
+@@ -374,9 +376,10 @@ int syn_addhl(char *reg, int func, int reload)
  
  void syn_init(void)
  {

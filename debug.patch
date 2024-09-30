@@ -27,7 +27,7 @@ index 9f690cc..bcf9b78 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index 6c08145..17c4a2a 100644
+index 8105e7a..a6e7e88 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -78,6 +78,13 @@ void dir_init(void)
@@ -44,7 +44,7 @@ index 6c08145..17c4a2a 100644
  static ren_state rstates[1];
  ren_state *rstate = &rstates[0];
  
-@@ -374,3 +381,10 @@ void syn_init(void)
+@@ -380,3 +387,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -94,7 +94,7 @@ index d998bfe..36a920f 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 706f409..4a03bc1 100644
+index 78589d7..46dcfd5 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -180,6 +180,7 @@ int ren_cwid(char *s, int pos);

@@ -264,7 +264,7 @@ index d998bfe..5b4e063 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 706f409..bb851cc 100644
+index 78589d7..db8095b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -117,12 +117,23 @@ typedef struct {
@@ -309,7 +309,7 @@ index 706f409..bb851cc 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -446,9 +457,9 @@ extern int xkwdcnt;
+@@ -447,9 +458,9 @@ extern int xkwdcnt;
  extern int xkwddir;
  extern int xmpt;
  extern int xpr;

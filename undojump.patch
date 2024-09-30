@@ -67,7 +67,7 @@ index d998bfe..1fbff21 100644
  				vi_word++;
  				if (!*vi_word)
 diff --git a/vi.h b/vi.h
-index 706f409..4c09b27 100644
+index 78589d7..13ddd3d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -139,6 +139,7 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end);
