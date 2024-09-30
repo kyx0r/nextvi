@@ -94,7 +94,7 @@ char *uc_dup(const char *s)
 int uc_isspace(char *s)
 {
 	int c = s ? (unsigned char) *s : 0;
-	return c <= 0x7f && isspace(c);
+	return c < 0x7f && isspace(c);
 }
 
 int uc_isprint(char *s)
@@ -112,7 +112,7 @@ int uc_isalpha(char *s)
 int uc_isdigit(char *s)
 {
 	int c = s ? (unsigned char) *s : 0;
-	return c <= 0x7f && isdigit(c);
+	return c < 0x7f && isdigit(c);
 }
 
 int uc_kind(char *c)
@@ -641,7 +641,7 @@ static int uc_iszw(int c)
 /* nonprintable characters */
 int uc_isbell(int c, int l)
 {
-	if (c == ' ' || c == '\t' || c == '\n' || (c <= 0x7f && isprint(c)))
+	if (c == '\t' || c == '\n' || (c >= 0x20 && c < 0x7f))
 		return 0;
 	return l == 1 || uc_iszw(c) || find(c, bchars, LEN(bchars));
 }
