@@ -415,8 +415,10 @@ will be stored. If the register is uppercase, new lines are added to match
 the exact output that was printed. With this, you have full control over
 internal editor state. For example, printing the current buffers list
 to a file is now possible.
-77. Added new ex command "uc" which can be used to enable/disable utf-8
-decoding. This feature is particularly useful when editing files with mixed
+77. Added new ex command "uc" and "ua". "uc" can be used to enable/disable
+multibyte utf-8 decoding. "ua" can be used to enable/disable rendering of
+8 bit ascii (Extended ASCII).
+This feature is particularly useful when editing files with mixed
 encodings, binary files, or when the terminal does not support UTF-8 or
 lacks the necessary fonts to display UTF-8 characters.
 
