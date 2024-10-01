@@ -1026,12 +1026,17 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
 
 static int ec_setenc(char *loc, char *cmd, char *arg)
 {
+	if (cmd[1] == 'a') {
+		ph[0].d = ph[0].d ? NULL : "~";
+		return 0;
+	}
 	if (utf8_length[0xc0] == 1) {
 		memset(utf8_length+0xc0, 2, 0xe0 - 0xc0);
 		memset(utf8_length+0xe0, 3, 0xf0 - 0xe0);
 		memset(utf8_length+0xf0, 4, 0xf8 - 0xf0);
-	} else
-		memset(utf8_length+1, 1, 255);
+		return 0;
+	}
+	memset(utf8_length+1, 1, 255);
 	return 0;
 }
 
@@ -1086,6 +1091,7 @@ static struct excmd {
 	{"bx", ec_setbufsmax},
 	{"ac", ec_setacreg},
 	{"uc", ec_setenc},
+	{"ua", ec_setenc},
 	{"", ec_print},
 };
 
