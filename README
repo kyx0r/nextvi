@@ -415,12 +415,17 @@ will be stored. If the register is uppercase, new lines are added to match
 the exact output that was printed. With this, you have full control over
 internal editor state. For example, printing the current buffers list
 to a file is now possible.
-77. Added new ex command "uc" and "ua". "uc" can be used to enable/disable
-multibyte utf-8 decoding. "ua" can be used to enable/disable rendering of
-8 bit ascii (Extended ASCII).
+77. Added new ex command "uc" and "ph". "uc" can be used to enable/disable
+multibyte utf-8 decoding. "ph" can be used to set new placeholders at runtime.
 This feature is particularly useful when editing files with mixed
 encodings, binary files, or when the terminal does not support UTF-8 or
 lacks the necessary fonts to display UTF-8 characters.
+render 8 bit ascii (Extended ASCII) as '~':
+:ph 128 255 1 1~
+flawless ISO/IEC 8859-1 (latin-1) support:
+:uc|ph 128 160 1 1~
+reset to default as in conf.c:
+:ph
 
 LESSER KNOWN FEATURES
 ---------------------
