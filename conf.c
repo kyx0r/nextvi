@@ -262,12 +262,12 @@ struct dirmark dmarks[] = {
 };
 int dmarkslen = LEN(dmarks);
 
-struct placeholder ph[] = {
-	{{0x7f,0xff}, NULL, 1, 1},
-	{{0x0,0x1f}, "^", 1, 1},
-	{{0x200c,0x200d}, "-", 1, 3},
+struct placeholder ph[5] = {
+	{{0x0,0x1f}, {'^'}, 1, 1},
+	{{0x200c,0x200d}, {'-'}, 1, 3},
 };
-int phlen = LEN(ph);
+const int _phlen = 2;
+int phlen = _phlen;
 
 int conf_hlrev(void)
 {

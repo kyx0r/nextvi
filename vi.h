@@ -402,7 +402,7 @@ extern int dmarkslen;
 /* character placeholders */
 struct placeholder {
 	int cp[2];	/* the source character codepoint */
-	char *d;	/* the placeholder */
+	char d[8];	/* the placeholder */
 	int wid;	/* the width of the placeholder */
 	int l;		/* the length of the codepoint */
 };

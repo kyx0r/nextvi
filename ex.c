@@ -1026,8 +1026,18 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
 
 static int ec_setenc(char *loc, char *cmd, char *arg)
 {
-	if (cmd[1] == 'a') {
-		ph[0].d = ph[0].d ? NULL : "~";
+	if (cmd[0] == 'p') {
+		if (!*arg)
+			phlen = _phlen;
+		else if (phlen < LEN(ph)) {
+			ph[phlen].cp[0] = strtol(arg, &arg, 0);
+			ph[phlen].cp[1] = strtol(arg, &arg, 0);
+			ph[phlen].wid = strtol(arg, &arg, 2);
+			ph[phlen++].l = strtol(arg, &arg, 2);
+			if (strlen(arg) && strlen(arg) < 8)
+				strcpy(ph[phlen-1].d, arg);
+		} else
+			ex_print("no space for placeholder");
 		return 0;
 	}
 	if (utf8_length[0xc0] == 1) {
@@ -1091,7 +1101,7 @@ static struct excmd {
 	{"bx", ec_setbufsmax},
 	{"ac", ec_setacreg},
 	{"uc", ec_setenc},
-	{"ua", ec_setenc},
+	{"ph", ec_setenc},
 	{"", ec_print},
 };
 
