@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 24ece75..3ef4dd4 100644
+index 1c81b00..c7a2c11 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1040,6 +1040,49 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1050,6 +1050,49 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -52,11 +52,11 @@ index 24ece75..3ef4dd4 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1089,6 +1132,7 @@ static struct excmd {
+@@ -1099,6 +1142,7 @@ static struct excmd {
  	{"inc", ec_setincl},
  	{"reg", ec_regprint},
  	{"bx", ec_setbufsmax},
 +	{"cx", ec_closebuf},
  	{"ac", ec_setacreg},
  	{"uc", ec_setenc},
- 	{"ua", ec_setenc},
+ 	{"ph", ec_setenc},

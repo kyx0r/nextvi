@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 24ece75..6edb58e 100644
+index 1c81b00..eb4fa24 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -28,7 +28,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -264,7 +264,7 @@ index d998bfe..5b4e063 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 78589d7..db8095b 100644
+index 3a96ecb..d3f8c12 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -117,12 +117,23 @@ typedef struct {

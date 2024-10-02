@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 24ece75..703dfcf 100644
+index 1c81b00..d2a1aa2 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1040,6 +1040,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1050,6 +1050,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -19,7 +19,7 @@ index 24ece75..703dfcf 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1072,6 +1082,7 @@ static struct excmd {
+@@ -1082,6 +1092,7 @@ static struct excmd {
  	{"wq", ec_write},
  	{"wq!", ec_write},
  	{"u", ec_undo},
@@ -182,7 +182,7 @@ index e4e30a7..1c6cea9 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 78589d7..fa5d80f 100644
+index 3a96ecb..6afa240 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);

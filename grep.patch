@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 20a1a47..b1ae019 100644
+index d446c95..9a318b7 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -234,6 +234,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
@@ -15,7 +15,7 @@ index 20a1a47..b1ae019 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 diff --git a/ex.c b/ex.c
-index 24ece75..c902888 100644
+index 1c81b00..ee5b4ae 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -166,7 +166,7 @@ index d998bfe..13d52fd 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 78589d7..481c4d7 100644
+index 3a96ecb..28442aa 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -321,7 +321,7 @@ extern int xbufcur;

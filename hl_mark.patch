@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 24ece75..3cd6b29 100644
+index 1c81b00..0272b12 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -64,7 +64,7 @@ index abf62fd..99d3645 100644
  	if (vi_hidch)
  		led_out(term_sbuf, 2)
 diff --git a/vi.h b/vi.h
-index 78589d7..3e89fa6 100644
+index 3a96ecb..ce0ba87 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -287,14 +287,14 @@ char *xgetenv(char* q[]);
