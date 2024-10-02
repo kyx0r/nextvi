@@ -290,10 +290,6 @@ this problem you may need some extra patch, see PATCHES section below.
 47. Added Russian keymap, and changed how xkmap_alt works, now z + vi_arg1 in
 normal mode will switch what keymap ^f key changes, so for example 1 = fa 2 =
 ru. New language kmap can be added in kmap.h translation array.
-Added non printing characters to the list of digraphs. The naming resembles
-ASCII caret notation. For example, to type 03 (the literal for ^c) enter
-insert mode followed by digraph mode using ^k and type " c" without quotes.
-Additionally, literal can be typed using ^v as in vi(1).
 48. Improvement to change 37. Now when in prompt/insert ^a will bring up the
 latest command from history. Also the history works for searches via / or ?
 the same way. keybind vv does the same but from normal mode, to save time.
