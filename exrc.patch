@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 1c81b00..cdec993 100644
+index d29c595..fc15332 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -85,7 +85,7 @@ index 1c81b00..cdec993 100644
 +		load_exrc(".exrc");
  }
 diff --git a/vi.c b/vi.c
-index d998bfe..5169b9e 100644
+index 83c51ad..d5d772f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -18,6 +18,7 @@
