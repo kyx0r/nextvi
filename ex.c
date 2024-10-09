@@ -500,9 +500,10 @@ static int ec_read(char *loc, char *cmd, char *arg)
 
 static int ex_pipeout(char *cmd, char *buf)
 {
-	if (!(xvis & 4))
+	if (!(xvis & 4)) {
 		term_chr('\n');
-	xmpt = xmpt >= 0 ? 2 : xmpt;
+		xmpt = xmpt >= 0 ? 2 : xmpt;
+	}
 	return !!cmd_pipe(cmd, buf, 0);
 }
 
