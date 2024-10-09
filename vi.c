@@ -715,9 +715,7 @@ static int vi_motion(int *row, int *off)
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
-	char *ln = lbuf_get(xb, *row);
-	int dir = dir_context(ln ? ln : "");
-	int mark, mark_row, mark_off;
+	int dir, mark, mark_row, mark_off;
 	char *cs;
 	int mv, i;
 
@@ -736,10 +734,19 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case 'h':
-		dir = -dir;
 	case 'l':
+		dir = dir_context(lbuf_get(xb, *row));
+		dir = mv == 'h' ? -dir : dir;
 		for (i = 0; i < cnt; i++)
 			if (vi_nextcol(xb, dir, row, off))
+				break;
+		break;
+	case ' ':
+	case 127:
+	case TK_CTL('h'):
+		dir = mv == ' ' ? +1 : -1;
+		for (i = 0; i < cnt; i++)
+			if (vi_nextoff(xb, dir, row, off))
 				break;
 		break;
 	case 'f':
@@ -883,17 +890,6 @@ static int vi_motion(int *row, int *off)
 			if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
 				return -1;
 		}
-		break;
-	case ' ':
-		for (i = 0; i < cnt; i++)
-			if (vi_nextoff(xb, +1, row, off))
-				break;
-		break;
-	case 127:
-	case TK_CTL('h'):
-		for (i = 0; i < cnt; i++)
-			if (vi_nextoff(xb, -1, row, off))
-				break;
 		break;
 	case '`':
 		if ((mark = vi_read()) <= 0)
@@ -1493,9 +1489,7 @@ void vi(int init)
 					break;
 				ln += xoff;
 				char buf[strlen(ln)+4];
-				buf[0] = ':';
-				buf[1] = 'e';
-				buf[2] = ' ';
+				strcpy(buf, ":e ");
 				strcpy(buf+3, ln);
 				term_push(buf, strlen(ln)+3);
 				break; }
