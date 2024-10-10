@@ -59,6 +59,7 @@ static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
 static int vi_cndir = 1;		/* ^n direction */
 static int vi_status;			/* always show status */
+static int vi_tsm;			/* type of the status message */
 static int vi_joinmode = 1;		/* 1: insert extra space for pad 0: raw line join */
 static int vi_rln[256];
 
@@ -1268,9 +1269,19 @@ static void vi_scrollbackward(int cnt)
 	xrow = MIN(xrow, xtop + xrows - 1);
 }
 
-static void vc_status(void)
+static void vc_status(int type)
 {
 	int col = vi_off2col(xb, xrow, xoff);
+	int cp, l;
+	char cbuf[8] = "", *c;
+	if (type && (c = uc_chr(lbuf_get(xb, xrow), xoff))) {
+		uc_code(cp, c, l)
+		memcpy(cbuf, c, l);
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x O%d C%d",
+			cbuf, cp, xoff,
+			ren_cursor(lbuf_get(xb, xrow), col) + 1);
+		return;
+	}
 	long buf = ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
 		"\"%s\"%s%dL %d%% L%d C%d B%ld",
@@ -1279,18 +1290,6 @@ static void vc_status(void)
 		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1,
 		buf >= xbufcur || buf < 0 ? tempbufs - ex_buf - 1 : buf);
-}
-
-static void vc_charinfo(void)
-{
-	char cbuf[8] = "";
-	int cp, l;
-	char *c = uc_chr(lbuf_get(xb, xrow), xoff);
-	if (c) {
-		uc_code(cp, c, l)
-		memcpy(cbuf, c, l);
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x", cbuf, cp);
-	}
 }
 
 static int vc_replace(void)
@@ -1396,7 +1395,8 @@ void vi(int init)
 		}
 		if (vi_msg[0]) {
 			vi_msg[0] = '\0';
-			vi_drawrow(otop + xrows - 1);
+			if (!vi_status)
+				vi_drawrow(otop + xrows - 1);
 		}
 		if (!vi_ybuf)
 			vi_ybuf = vi_yankbuf();
@@ -1415,7 +1415,7 @@ void vi(int init)
 			xoff = noff;
 			switch (mv) {
 			case '\\':
-				vc_status();
+				vc_status(0);
 			case 1: /* ^a */
 			case '/':
 			case '?':
@@ -1505,7 +1505,7 @@ void vi(int init)
 				if (vi_arg1 > -1 && vi_arg1 < xbufcur) {
 					switchbuf:
 					bufs_switchwft(vi_arg1 < xbufcur ? vi_arg1 : 0)
-					vc_status();
+					vc_status(0);
 				}
 				vi_mod |= 1;
 				xmpt = xmpt >= 0 ? 0 : xmpt;
@@ -1531,15 +1531,17 @@ void vi(int init)
 					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
 				break;
 			case TK_CTL('g'):
+				vi_tsm = 0;
+				status:
 				if (vi_arg1) {
 					vi_status = vi_arg1 % 2 ? xrows - vi_arg1 : 0;
 					xrows += vi_status ? 0 : vi_arg1 - 1;
 				}
-				vc_status();
+				vc_status(vi_tsm);
 				break;
 			case TK_CTL('^'):
 				bufs_switchwft(ex_pbuf - bufs)
-				vc_status();
+				vc_status(0);
 				vi_mod |= 1;
 				break;
 			case TK_CTL('k'):;
@@ -1787,9 +1789,10 @@ void vi(int init)
 				k = vi_read();
 				if (k == 'g')
 					term_push("1G", 2);
-				else if (k == 'a')
-					vc_charinfo();
-				else if (k == 'w') {
+				else if (k == 'a') {
+					vi_tsm = 1;
+					goto status;
+				} else if (k == 'w') {
 					char cmd[100] = "se noled|tp ";
 					n = vi_arg1 ? vi_arg1 - 1 : 79;
 					k = xled;
@@ -1976,7 +1979,7 @@ void vi(int init)
 		}
 		if (vi_status && !vi_msg[0]) {
 			xrows = vi_status != xrows ? vi_status : xrows;
-			vc_status();
+			vc_status(vi_tsm);
 			vi_drawmsg();
 			vi_msg[0] = '\0';
 		} else
@@ -2043,7 +2046,7 @@ int main(int argc, char *argv[])
 	if (xvis & 4)
 		return EXIT_SUCCESS;
 	if (xquit == 2) {
-		term_pos(xrows - 1, 0);
+		term_pos(xrows - !vi_status, 0);
 		term_kill();
 	} else
 		term_clean();
