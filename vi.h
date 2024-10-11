@@ -361,6 +361,7 @@ void bufs_switch(int idx);
 
 /* conf.c configuration variables */
 /* map file names to file types */
+extern int conf_mode;
 struct filetype {
 	char *ft;		/* file type */
 	char *pat;		/* file name pattern */
@@ -407,9 +408,9 @@ struct placeholder {
 	int l;		/* the length of the codepoint */
 };
 extern struct placeholder placeholders[];
-extern int placeholderslen;
-int conf_hlrev(void);
-int conf_mode(void);
+extern const int def_phlen;
+extern int phlen;
+extern int conf_hlrev;
 char **conf_kmap(int id);
 int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);

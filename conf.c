@@ -2,7 +2,7 @@
 #include "kmap.h"
 
 /* access mode of new files */
-#define MKFILE_MODE		0600
+int conf_mode = 0600;
 
 struct filetype fts[] = {
 	{"c", "\\.(c|h|cpp|hpp|cc|cs)$"},		/* C */
@@ -244,7 +244,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 int hlslen = LEN(hls);
 
 /* how to highlight text in the reverse direction */
-#define SYN_REVDIR		SYN_BGMK(8)
+int conf_hlrev = SYN_BGMK(8);
 
 /* right-to-left characters (used only in dctxs[] and dmarks[]) */
 #define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْٔ"
@@ -263,22 +263,13 @@ struct dirmark dmarks[] = {
 };
 int dmarkslen = LEN(dmarks);
 
-struct placeholder ph[5] = {
-	{{0x0,0x1f}, {'^'}, 1, 1},
-	{{0x200c,0x200d}, {'-'}, 1, 3},
+#define DEF_PHLEN 2
+struct placeholder ph[DEF_PHLEN+5] = {
+	{{0x0,0x1f}, "^", 1, 1},
+	{{0x200c,0x200d}, "-", 1, 3},
 };
-const int _phlen = 2;
-int phlen = _phlen;
-
-int conf_hlrev(void)
-{
-	return SYN_REVDIR;
-}
-
-int conf_mode(void)
-{
-	return MKFILE_MODE;
-}
+const int def_phlen = DEF_PHLEN;
+int phlen = DEF_PHLEN;
 
 char **conf_kmap(int id)
 {
