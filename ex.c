@@ -538,7 +538,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 				return 1;
 			}
 		}
-		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode());
+		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode);
 		if (fd < 0) {
 			ex_print("write failed: cannot create file");
 			return 1;
@@ -1029,7 +1029,7 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
 {
 	if (cmd[0] == 'p') {
 		if (!*arg)
-			phlen = _phlen;
+			phlen = def_phlen;
 		else if (phlen < LEN(ph)) {
 			ph[phlen].cp[0] = strtol(arg, &arg, 0);
 			ph[phlen].cp[1] = strtol(arg, &arg, 0);

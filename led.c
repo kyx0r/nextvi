@@ -243,8 +243,8 @@ void led_render(char *s0, int cbeg, int cend)
 			if (led_offdir(chrs, pos, o) >= 0)
 				continue;
 			j = bound ? ctt[c-1] : o;
-			att[j] = syn_merge(conf_hlrev(), att[j]);
-			att[j+1] = syn_merge(conf_hlrev(), att[j+1]);
+			att[j] = syn_merge(conf_hlrev, att[j]);
+			att[j+1] = syn_merge(conf_hlrev, att[j+1]);
 		}
 	}
 	/* generate term output */
