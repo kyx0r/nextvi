@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 11d3574..b6b2e83 100644
+index fff5d34..55d600b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -737,7 +737,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
@@ -69,7 +69,7 @@ index e4e30a7..fef19c4 100644
  }
  
 diff --git a/led.c b/led.c
-index abf62fd..3f314a8 100644
+index 0f3752f..6cfac6f 100644
 --- a/led.c
 +++ b/led.c
 @@ -48,7 +48,7 @@ static void file_index(struct lbuf *buf)
