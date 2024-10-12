@@ -65,6 +65,7 @@ build() {
 
 install() {
     run mkdir -p "$DESTDIR$PREFIX/bin/" &&
+    run rm "$DESTDIR$PREFIX/bin/vi" &&
     run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
     [ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been installed to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
 }
