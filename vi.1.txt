@@ -39,7 +39,7 @@ A required argument suffixing a command
 .It Cm C-
 A ctrl key
 .It Cm Space
-A separation, multiple binds to same command
+A separation, multiple binds to the same command
 .El
 .Sh VI NORMAL
 .Bl -tag -width Dq -compact
@@ -49,14 +49,44 @@ Move the cursor arg1 lines down
 Move the cursor arg1 lines up
 .It Cm ^
 Move the cursor to the start of the line after indentation
-.It Cm '
-Goto a line mark
+
 .It Cm arg1-#
-Enable/Disable line numbers and switch modes
-.It Cm C-^
+Enable/Disable line numbers and switch modes:
+.Bl -nested -compact
+.It
+# - single shot print, shows global and relative numbers.
+.It
+2# - permanent. shows global numbers.
+.It
+4# - permanent. shows relative numbers after indentation.
+.It
+8# - permanent. shows relative numbers.
+.El
+
+.It Cm C-^ C-6
 Switch to previous buffer
-.It Cm arg1-C-w
-Unindent region
+.It Cm arg1-C-r
+Redo arg1 times
+.It Cm arg1-u
+Undo arg1 times
+.It Cm C-i TAB
+Open file using text from the cursor to eol
+.It Cm arg1-C-e
+Scroll down 1 or arg1 lines. arg1 is set and stored, cursor position preserved
+.It Cm arg1-C-y
+Scroll up 1 or arg1 lines. arg1 is set and stored, cursor position preserved
+.It Cm arg1-C-d
+Scroll down half a screen size. If arg1 set scroll to arg1 lines
+.It Cm arg1-C-u
+Scroll up half a screen size. If arg1 set scroll to arg1 lines
+.It Cm C-b
+Scroll up full screen size
+.It Cm C-f
+Scroll down full screen size
+.It Cm C-k
+Write the current buffer to file. 2nd attempt force writes
+.It Cm arg1-C-w-arg2
+Unindent arg2 region
 .It Cm arg1-<-arg2
 Indent left arg2 region
 .It Cm arg1->-arg2
@@ -65,10 +95,60 @@ Indent right arg2 region
 Execute a arg2 register macro
 .It Cm @@
 Execute a last executed register macro on a new line
-.It Cm m
-Set a buffer local line mark
+.It Cm arg1-.
+Repeat last normal command arg1 times
+.It Cm arg1-v.
+Repeat last normal command moving down across arg1 lines
+.It Cm :
+Enter vi mode ex prompt
+.It Cm arg1-!-arg2
+Enter pipe ex prompt based on the region specified by arg1 or arg2
+.It Cm vv
+Open ex prompt with the last ex command from history
+.It Cm arg1-vr
+Open %s/ ex prompt. arg1 specifies word(s) from the cursor to be inserted
+.It Cm arg1-vt-arg2
+Open .,.+0s/ ex prompt. arg1 specifies number of lines from the cursor. arg2 specifies word(s) from the cursor to be inserted
+.It Cm arg1-v/
+Open v/ xkwd ex prompt to set search keyword. arg1 specifies word(s) from the cursor to be inserted
+.It Cm v;
+Open ! ex prompt
+.It Cm vb
+Switch to b-1 history buffer
+.It Cm arg1-vi
+Open %s/^ {8}/	/g ex prompt. Contains regex for changing spaces to tabs. arg1 modifies the width
+.It Cm arg1-vI
+Open %s/^	/        /g ex prompt. Contains regex for changing tabs to spaces. arg1 modifies the width
+.It Cm vo
+Removes \er character from line endings and trailing white spaces
+.It Cm va
+Toggle autoindent on or off. see xai
+.It Cm C-g
+Print buffer status infos
+.It Cm arg1-C-g
+Enable permanent status bar row
+.It Cm ga
+Print character info
+.It Cm arg1-ga
+Enable permanent character info bar row
+.It Cm arg1-gw
+Hard wrap a line to arg1 col limit
+.It Cm arg1-gq
+Hard wrap a buffer to arg1 col limit
 .It Cm gg
 Goto the first line in the buffer
+.It Cm g~-arg2
+Switch case for arg2 region
+.It Cm gu-arg2
+Switch to lowercase for arg2 region
+.It Cm gU-arg2
+Switch to uppercase for arg2 region
+.It Cm arg1-~
+Switch case arg1 times forward
+.It Cm '-arg2
+Goto a line mark arg2
+.It Cm m-arg2
+Set a buffer local line mark arg2
 .It Cm i
 Enter insert mode
 .It Cm I
@@ -76,7 +156,7 @@ Enter insert moving cursor to the start of the line after indentation
 .It Cm a
 Enter insert mode 1 character forward
 .It Cm A
-Enter insert mode moving cursor to the end of the line
+Enter insert mode moving cursor to the eol
 .It Cm s
 Enter insert mode deleting character under the cursor
 .It Cm S
@@ -86,13 +166,17 @@ Enter insert mode creating a new line down
 .It Cm O
 Enter insert mode creating a new line up
 .It Cm arg1-c-arg2
-Enter insert mode deleting based on the motion region
+Enter insert mode deleting based on the arg2 motion region
 .It Cm C
-Enter insert mode deleting from cursor to the end of the line
+Enter insert mode deleting from cursor to the eol
 .It Cm arg1-d-arg2
-Delete a region
+Delete a arg2 region
 .It Cm D
-Delete from a cursor to the end of the line
+Delete from a cursor to the eol
+.It Cm di-arg2
+Delete around arg2 which can be ( or ) or \&"
+.It Cm ci-arg2
+Change around arg2 which can be ( or ) or \&"
 .It Cm K
 Split a line
 .It Cm arg1-K
@@ -113,14 +197,16 @@ Paste a default register below current line or behind cursor pos
 Operation on the register arg2
 .It Cm R
 Print registers and their contents
+.It Cm V
+Toggle show hidden characters: Space,Tab,New line
 .It Cm arg1-r-arg2
 Replace arg1 characters with arg2 under the cursor forward
 .It Cm C-v
 Show line motion numbers for ebEBwW. Switches its modes
 .It Cm arg1-C-v
 Disable line motion numbers
-.It Cm G
-Goto the last line in the buffer
+.It Cm arg1-G
+Goto the last line in the buffer or arg1 line
 .It Cm H
 Goto the highest line of the screen
 .It Cm L
@@ -160,9 +246,9 @@ Move the cursor to the start of the word skipping punctuation forward arg1 times
 .It Cm arg1-w
 Move the cursor to the start of the word forward arg1 times
 .It Cm {
-Move the cursor to the next { region
+Move the cursor to the next { region up
 .It Cm }
-Move the cursor to the next } region
+Move the cursor to the next { region down
 .It Cm [
 Move the cursor to the next \en region up
 .It Cm ]
@@ -177,10 +263,24 @@ Filesystem search backward based on directory listing in b-2
 Set a global file mark
 .It Cm arg1-C-t
 Set or switch to a global mark based on arg1 % 2 == 0 
+.It Cm arg1-C-7 arg1-C-_
+Show buffer list and switch based to arg1 buffer or 0-9 when prompted
 .It Cm 0 |
 Move the cursor to the start of the line.
+.It Cm arg1-z.
+Center the screen. arg1 is xtop
+.It Cm arg1-z\en
+Center the screen at top row. arg1 is xtop
+.It Cm arg1-z-
+Center the screen at bottom row. arg1 is xtop
+.It Cm z-arg2
+Change alternate keymap to arg2
+.It Cm ze zf
+Switch to the English and alternate keymap
+.It Cm zL zl zr zR
+Change the value of td option
 .It Cm $
-Move the cursor to the end of the line.
+Move the cursor to the eol.
 .It Cm arg1-|
 Move the cursor to arg1 col
 .It Cm arg1-/
@@ -199,18 +299,26 @@ Auto search setting arg1 words from the cursor
 Move cursor arg1 character forward
 .It Cm arg1-C-h arg1-Backspace
 Move cursor arg1 character backward
-.It Cm `
-Goto a line mark with horizonal position
+.It Cm `-arg2
+Goto a line mark arg2 with horizonal position
 .It Cm %
 Move the cursor to [](){} pair
 .It Cm arg1-%
-Move the cursor to the arg1 % representation line of the file
+Move the cursor to the arg1 percent line number
+.It Cm arg1-C-n
+Swap to the next buffer, arg1 changes direction (forward/backward)
 .It Cm \e
 Swap to /fm/ buffer b-2
+.It Cm C-z
+Suspend vi
+.It Cm C-l
+Force redraw whole screen and update terminal dimensions
 .It Cm qq
 Force quit cleaning the terminal
 .It Cm zz
 Force quit not cleaning the terminal, submits commands if recursive
+.It Cm ZZ
+Soft quit, attempting to write the file before exit
 .El
 .
 .Sh EX COMMANDS

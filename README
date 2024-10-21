@@ -20,7 +20,7 @@ NOTATION
      arg1-   An optional number prefixing a command
      -arg2   A required argument suffixing a command
      C-	     A ctrl key
-     Space   A separation, multiple binds to same command
+     Space   A separation, multiple binds to the same command
 
 VI NORMAL
      arg1-+ arg1-\n arg1-j
@@ -28,30 +28,84 @@ VI NORMAL
      arg1-- arg1-k
 		   Move the cursor arg1 lines up
      ^		   Move the cursor to the start of the line after indentation
-     '		   Goto a line mark
-     arg1-#	   Enable/Disable line numbers and switch modes
-     C-^	   Switch to previous buffer
-     arg1-C-w	   Unindent region
+
+     arg1-#	   Enable/Disable line numbers and switch modes:
+		   # - single shot print, shows global and relative numbers.
+		   2# - permanent. shows global numbers.
+		   4# - permanent. shows relative numbers after indentation.
+		   8# - permanent. shows relative numbers.
+
+     C-^ C-6	   Switch to previous buffer
+     arg1-C-r	   Redo arg1 times
+     arg1-u	   Undo arg1 times
+     C-i TAB	   Open file using text from the cursor to eol
+     arg1-C-e	   Scroll down 1 or arg1 lines. arg1 is set and stored, cursor
+		   position preserved
+     arg1-C-y	   Scroll up 1 or arg1 lines. arg1 is set and stored, cursor
+		   position preserved
+     arg1-C-d	   Scroll down half a screen size. If arg1 set scroll to arg1
+		   lines
+     arg1-C-u	   Scroll up half a screen size. If arg1 set scroll to arg1
+		   lines
+     C-b	   Scroll up full screen size
+     C-f	   Scroll down full screen size
+     C-k	   Write the current buffer to file. 2nd attempt force writes
+     arg1-C-w-arg2
+		   Unindent arg2 region
      arg1-<-arg2   Indent left arg2 region
      arg1->-arg2   Indent right arg2 region
      @-arg2	   Execute a arg2 register macro
      @@		   Execute a last executed register macro on a new line
-     m		   Set a buffer local line mark
+     arg1-.	   Repeat last normal command arg1 times
+     arg1-v.	   Repeat last normal command moving down across arg1 lines
+     :		   Enter vi mode ex prompt
+     arg1-!-arg2   Enter pipe ex prompt based on the region specified by arg1
+		   or arg2
+     vv		   Open ex prompt with the last ex command from history
+     arg1-vr	   Open %s/ ex prompt. arg1 specifies word(s) from the cursor
+		   to be inserted
+     arg1-vt-arg2  Open .,.+0s/ ex prompt. arg1 specifies number of lines from
+		   the cursor. arg2 specifies word(s) from the cursor to be
+		   inserted
+     arg1-v/	   Open v/ xkwd ex prompt to set search keyword. arg1
+		   specifies word(s) from the cursor to be inserted
+     v;		   Open ! ex prompt
+     vb		   Switch to b-1 history buffer
+     arg1-vi	   Open %s/^ {8}/ /g ex prompt. Contains regex for changing
+		   spaces to tabs. arg1 modifies the width
+     arg1-vI	   Open %s/^ /	      /g ex prompt. Contains regex for
+		   changing tabs to spaces. arg1 modifies the width
+     vo		   Removes \r character from line endings and trailing white
+		   spaces
+     va		   Toggle autoindent on or off. see xai
+     C-g	   Print buffer status infos
+     arg1-C-g	   Enable permanent status bar row
+     ga		   Print character info
+     arg1-ga	   Enable permanent character info bar row
+     arg1-gw	   Hard wrap a line to arg1 col limit
+     arg1-gq	   Hard wrap a buffer to arg1 col limit
      gg		   Goto the first line in the buffer
+     g~-arg2	   Switch case for arg2 region
+     gu-arg2	   Switch to lowercase for arg2 region
+     gU-arg2	   Switch to uppercase for arg2 region
+     arg1-~	   Switch case arg1 times forward
+     '-arg2	   Goto a line mark arg2
+     m-arg2	   Set a buffer local line mark arg2
      i		   Enter insert mode
      I		   Enter insert moving cursor to the start of the line after
 		   indentation
      a		   Enter insert mode 1 character forward
-     A		   Enter insert mode moving cursor to the end of the line
+     A		   Enter insert mode moving cursor to the eol
      s		   Enter insert mode deleting character under the cursor
      S		   Enter insert mode deleting everything on the line
      o		   Enter insert mode creating a new line down
      O		   Enter insert mode creating a new line up
-     arg1-c-arg2   Enter insert mode deleting based on the motion region
-     C		   Enter insert mode deleting from cursor to the end of the
-		   line
-     arg1-d-arg2   Delete a region
-     D		   Delete from a cursor to the end of the line
+     arg1-c-arg2   Enter insert mode deleting based on the arg2 motion region
+     C		   Enter insert mode deleting from cursor to the eol
+     arg1-d-arg2   Delete a arg2 region
+     D		   Delete from a cursor to the eol
+     di-arg2	   Delete around arg2 which can be ( or ) or "
+     ci-arg2	   Change around arg2 which can be ( or ) or "
      K		   Split a line
      arg1-K	   Split a line without creating empty new lines
      arg1-J	   Join arg1 lines
@@ -64,10 +118,11 @@ VI NORMAL
 		   cursor pos
      "-arg2	   Operation on the register arg2
      R		   Print registers and their contents
+     V		   Toggle show hidden characters: Space,Tab,New line
      arg1-r-arg2   Replace arg1 characters with arg2 under the cursor forward
      C-v	   Show line motion numbers for ebEBwW. Switches its modes
      arg1-C-v	   Disable line motion numbers
-     G		   Goto the last line in the buffer
+     arg1-G	   Goto the last line in the buffer or arg1 line
      H		   Goto the highest line of the screen
      L		   Goto the lowest line of the screen
      M		   Goto the middle line of the screen
@@ -90,8 +145,8 @@ VI NORMAL
      arg1-W	   Move the cursor to the start of the word skipping
 		   punctuation forward arg1 times
      arg1-w	   Move the cursor to the start of the word forward arg1 times
-     {		   Move the cursor to the next { region
-     }		   Move the cursor to the next } region
+     {		   Move the cursor to the next { region up
+     }		   Move the cursor to the next { region down
      [		   Move the cursor to the next \n region up
      ]		   Move the cursor to the next \n region down
      C-]	   Filesystem search forward based on directory listing in b-2
@@ -101,8 +156,17 @@ VI NORMAL
 		   b-2
      C-t	   Set a global file mark
      arg1-C-t	   Set or switch to a global mark based on arg1 % 2 == 0
+     arg1-C-7 arg1-C-_
+		   Show buffer list and switch based to arg1 buffer or 0-9
+		   when prompted
      0 |	   Move the cursor to the start of the line.
-     $		   Move the cursor to the end of the line.
+     arg1-z.	   Center the screen. arg1 is xtop
+     arg1-z\n	   Center the screen at top row. arg1 is xtop
+     arg1-z-	   Center the screen at bottom row. arg1 is xtop
+     z-arg2	   Change alternate keymap to arg2
+     ze zf	   Switch to the English and alternate keymap
+     zL zl zr zR   Change the value of td option
+     $		   Move the cursor to the eol.
      arg1-|	   Move the cursor to arg1 col
      arg1-/	   Search using regex down skipping arg1 matches
      arg1-?	   Search using regex up skipping arg1 matches
@@ -114,14 +178,18 @@ VI NORMAL
      arg1-Space	   Move cursor arg1 character forward
      arg1-C-h arg1-Backspace
 		   Move cursor arg1 character backward
-     `		   Goto a line mark with horizonal position
+     `-arg2	   Goto a line mark arg2 with horizonal position
      %		   Move the cursor to [](){} pair
-     arg1-%	   Move the cursor to the arg1 % representation line of the
-		   file
+     arg1-%	   Move the cursor to the arg1 percent line number
+     arg1-C-n	   Swap to the next buffer, arg1 changes direction
+		   (forward/backward)
      \		   Swap to /fm/ buffer b-2
+     C-z	   Suspend vi
+     C-l	   Force redraw whole screen and update terminal dimensions
      qq		   Force quit cleaning the terminal
      zz		   Force quit not cleaning the terminal, submits commands if
 		   recursive
+     ZZ		   Soft quit, attempting to write the file before exit
 
 EX COMMANDS
      f
