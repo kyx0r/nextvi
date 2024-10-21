@@ -166,7 +166,7 @@ VI NORMAL
      z-arg2	   Change alternate keymap to arg2
      ze zf	   Switch to the English and alternate keymap
      zL zl zr zR   Change the value of td option
-     $		   Move the cursor to the eol.
+     $		   Move the cursor to the eol
      arg1-|	   Move the cursor to arg1 col
      arg1-/	   Search using regex down skipping arg1 matches
      arg1-?	   Search using regex up skipping arg1 matches
@@ -190,6 +190,32 @@ VI NORMAL
      zz		   Force quit not cleaning the terminal, submits commands if
 		   recursive
      ZZ		   Soft quit, attempting to write the file before exit
+
+INSERT MODE
+     C-h Backspace
+		   Delete a character
+     C-u	   Delete util C-x mark or everything
+     C-w	   Delete a word
+     C-t	   Increase indent
+     C-d	   Decrease indent
+     C-]	   Switch a default paste register to 0-9
+     C-\-arg2	   Select paste register arg2. \ selects default register
+     C-p	   Paste a register
+     C-g	   Index a buffer for autocomplete
+     C-y	   Reset autocomplete db
+     C-r	   Loop through autocomplete options backward
+     C-n	   Loop through autocomplete options forward
+     C-z	   Suspend vi/ex
+     C-x	   Set a mark for C-u and completion starting position
+     C-b	   Open history buffer b-1 when in ex prompt, otherwise print
+		   autocomplete options
+     C-a	   Loop through the strings from a history buffer b-1
+     C-l	   Redraw the screen in vi mode, clean the terminal in ex
+     C-o	   Switch between vi and ex modes
+     C-e	   Switch to english keymap
+     C-f	   Switch to alternative keymap
+     C-v-arg2	   Read a literal character arg2
+     C-k-arg2	   Read a diagraph sequence arg2
 
 EX COMMANDS
      f

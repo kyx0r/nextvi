@@ -280,7 +280,7 @@ Switch to the English and alternate keymap
 .It Cm zL zl zr zR
 Change the value of td option
 .It Cm $
-Move the cursor to the eol.
+Move the cursor to the eol
 .It Cm arg1-|
 Move the cursor to arg1 col
 .It Cm arg1-/
@@ -319,6 +319,54 @@ Force quit cleaning the terminal
 Force quit not cleaning the terminal, submits commands if recursive
 .It Cm ZZ
 Soft quit, attempting to write the file before exit
+.El
+.
+.Sh INSERT MODE
+.Bl -tag -width Dq -compact
+.It Cm C-h Backspace
+Delete a character
+.It Cm C-u
+Delete util C-x mark or everything
+.It Cm C-w
+Delete a word
+.It Cm C-t
+Increase indent
+.It Cm C-d
+Decrease indent
+.It Cm C-]
+Switch a default paste register to 0-9
+.It Cm C-\e-arg2
+Select paste register arg2. \e selects default register
+.It Cm C-p
+Paste a register
+.It Cm C-g
+Index a buffer for autocomplete
+.It Cm C-y
+Reset autocomplete db
+.It Cm C-r
+Loop through autocomplete options backward
+.It Cm C-n
+Loop through autocomplete options forward
+.It Cm C-z
+Suspend vi/ex
+.It Cm C-x
+Set a mark for C-u and completion starting position
+.It Cm C-b
+Open history buffer b-1 when in ex prompt, otherwise print autocomplete options
+.It Cm C-a
+Loop through the strings from a history buffer b-1
+.It Cm C-l
+Redraw the screen in vi mode, clean the terminal in ex
+.It Cm C-o
+Switch between vi and ex modes
+.It Cm C-e
+Switch to english keymap
+.It Cm C-f
+Switch to alternative keymap
+.It Cm C-v-arg2
+Read a literal character arg2
+.It Cm C-k-arg2
+Read a diagraph sequence arg2
 .El
 .
 .Sh EX COMMANDS
