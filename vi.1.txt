@@ -4,11 +4,11 @@
 .
 .Sh NAME
 .Nm nextvi
-.Nd Next version of neatvi (a small vi/ex editor) for editing bidirectional UTF-8 text
+.Nd A small vi/ex editor for editing bidirectional UTF-8 text
 .
 .Sh SYNOPSIS
 .Nm vi
-.Op Fl esv
+.Op Fl emsv
 .Op Ar
 .
 .Sh DESCRIPTION
@@ -23,63 +23,104 @@ It supports UTF-8 and bidirectional text.
 .Bl -tag -width Ds
 .
 .It Fl e
-Enter Ex mode on startup.
+Enter Ex mode on startup
 .
 .It Fl m
-Disable initial file read message.
+Disable initial file read message
 .
 .It Fl s
-When combined with -e enters limited Ex mode.
+When combined with -e enters limited Ex mode
 .
 .It Fl v
 Enter visual mode on startup. (Default)
 .
-.Sh VI COMMANDS
+.Sh VI NORMAL
 .Bl -tag -width Ds
-.It Cm +
-.It Cm -
-.It Cm _
+.It Cm arg-+ arg-\en arg-j
+Move the cursor arg lines down
+.It Cm arg-- arg-k
+Move the cursor arg lines up
+.It Cm ^
+Move the cursor to the start of the line after indentation
 .It Cm '
-.It Cm j
-.It Cm k
+Goto a line mark
+.It Cm gg
+Goto the first line in the buffer
 .It Cm G
+Goto the last line in the buffer
 .It Cm H
+Goto the highest line of the screen
 .It Cm L
+Goto the lowest line of the screen
 .It Cm M
-.It Cm ,
-.It Cm ;
-.It Cm h
-.It Cm l
+Goto the middle line of the screen
+.It Cm arg-,
+Repeat last f or F or t or F command backward arg times
+.It Cm arg-;
+Repeat last f or F or t or F command forward arg times
+.It Cm arg-h
+Move the cursor arg cols left
+.It Cm arg-l
+Move the cursor arg cols right
 .It Cm f
+Move the cursor to the character found forward
 .It Cm F
+Move the cursor to the character found backward
 .It Cm t
+Move the cursor until the character found forward
 .It Cm T
-.It Cm B
-.It Cm E
-.It Cm b
-.It Cm e
-.It Cm W
-.It Cm w
+Move the cursor until the character found backward
+.It Cm arg-B
+Move the cursor to the end of the word skipping punctuation backward arg times
+.It Cm arg-E
+Move the cursor to the end of the word skipping punctuation forward arg times
+.It Cm arg-b
+Move the cursor to the end of the word backward arg times
+.It Cm arg-e
+Move the cursor to the end of the word forward arg times
+.It Cm arg-W
+Move the cursor to the start of the word skipping punctuation forward arg times
+.It Cm arg-w
+Move the cursor to the start of the word forward arg times
 .It Cm {
+Move the cursor to the next { region
 .It Cm }
+Move the cursor to the next } region
 .It Cm [
+Move the cursor to the next \en region up
 .It Cm ]
+Move the cursor to the next \en region down
 .It Cm C-]
 .It Cm C-p
 .It Cm C-t
-.It Cm 0
-.It Cm ^
+.It Cm 0 |
+Move the cursor to the start of the line.
 .It Cm $
-.It Cm |
-.It Cm /
-.It Cm ?
-.It Cm n
-.It Cm N
+Move the cursor to the end of the line.
+.It Cm arg-|
+Move the cursor to arg col
+.It Cm arg-/
+Search using regex down skipping arg matches
+.It Cm arg-?
+Search using regex up skipping arg matches
+.It Cm arg-n
+Repeat search down skipping arg matches
+.It Cm arg-N
+Repeat search up skipping arg matches
 .It Cm C-a
-.It Cm " "
-.It Cm C-h
+Auto search word under the cursor, not centering and wrapping up/down direction
+.It Cm arg-C-a
+Auto search setting arg words from the cursor
+.It Cm arg-Space
+Move cursor arg character forward
+.It Cm arg-C-h arg-Backspace
+Move cursor arg character backward
 .It Cm `
+Goto a line mark with horizonal position
 .It Cm %
+Move the cursor to [](){} pair
+.It Cm arg-%
+Move the cursor to the arg % representation line of the file
 .It Cm \\
 .El
 .
@@ -175,7 +216,7 @@ If set, reorder characters based on rules defined in
 .Pa conf.c .
 .
 .It Cm pac
-If set, enable autocomplete.
+If set, print autocomplete suggestions on the fly.
 .
 .It Cm shape
 If set, perform Arabic script letter shaping.

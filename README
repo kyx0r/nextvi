@@ -1,81 +1,83 @@
 nextvi(1)		    General Commands Manual		     nextvi(1)
 
 NAME
-     nextvi – Next version of neatvi (a small vi/ex editor) for editing
-     bidirectional UTF-8 text
+     nextvi – A small vi/ex editor for editing bidirectional UTF-8 text
 
 SYNOPSIS
-     vi [-esv] [file ...]
+     vi [-emsv] [file ...]
 
 DESCRIPTION
      nextvi is a vi(1)-like text editor based on Ali Gholami Rudi's neatvi(1).
      It supports UTF-8 and bidirectional text.
 
 OPTIONS
-     -e	     Enter Ex mode on startup.
+     -e	     Enter Ex mode on startup
 
-     -m	     Disable initial file read message.
+     -m	     Disable initial file read message
 
-     -s	     When combined with -e enters limited Ex mode.
+     -s	     When combined with -e enters limited Ex mode
 
      -v	     Enter visual mode on startup. (Default)
 
-VI COMMANDS
-     +
+VI NORMAL
+     arg-+ arg-\n arg-j
+	     Move the cursor arg lines down
 
-     -
+     arg-- arg-k
+	     Move the cursor arg lines up
 
-     _
+     ^	     Move the cursor to the start of the line after indentation
 
-     '
+     '	     Goto a line mark
 
-     j
+     gg	     Goto the first line in the buffer
 
-     k
+     G	     Goto the last line in the buffer
 
-     G
+     H	     Goto the highest line of the screen
 
-     H
+     L	     Goto the lowest line of the screen
 
-     L
+     M	     Goto the middle line of the screen
 
-     M
+     arg-,   Repeat last f or F or t or F command backward arg times
 
-     ,
+     arg-;   Repeat last f or F or t or F command forward arg times
 
-     ;
+     arg-h   Move the cursor arg cols left
 
-     h
+     arg-l   Move the cursor arg cols right
 
-     l
+     f	     Move the cursor to the character found forward
 
-     f
+     F	     Move the cursor to the character found backward
 
-     F
+     t	     Move the cursor until the character found forward
 
-     t
+     T	     Move the cursor until the character found backward
 
-     T
+     arg-B   Move the cursor to the end of the word skipping punctuation
+	     backward arg times
 
-     B
+     arg-E   Move the cursor to the end of the word skipping punctuation
+	     forward arg times
 
-     E
+     arg-b   Move the cursor to the end of the word backward arg times
 
-     b
+     arg-e   Move the cursor to the end of the word forward arg times
 
-     e
+     arg-W   Move the cursor to the start of the word skipping punctuation
+	     forward arg times
 
-     W
+     arg-w   Move the cursor to the start of the word forward arg times
 
-     w
+     {	     Move the cursor to the next { region
 
-     {
+     }	     Move the cursor to the next } region
 
-     }
+     [	     Move the cursor to the next \n region up
 
-     [
-
-     ]
+     ]	     Move the cursor to the next \n region down
 
      C-]
 
@@ -83,30 +85,37 @@ VI COMMANDS
 
      C-t
 
-     0
+     0 |     Move the cursor to the start of the line.
 
-     ^
+     $	     Move the cursor to the end of the line.
 
-     $
+     arg-|   Move the cursor to arg col
 
-     |
+     arg-/   Search using regex down skipping arg matches
 
-     /
+     arg-?   Search using regex up skipping arg matches
 
-     ?
+     arg-n   Repeat search down skipping arg matches
 
-     n
+     arg-N   Repeat search up skipping arg matches
 
-     N
+     C-a     Auto search word under the cursor, not centering and wrapping
+	     up/down direction
 
-     C-a
+     arg-C-a
+	     Auto search setting arg words from the cursor
 
+     arg-Space
+	     Move cursor arg character forward
 
-     C-h
+     arg-C-h arg-Backspace
+	     Move cursor arg character backward
 
-     `
+     `	     Goto a line mark with horizonal position
 
-     %
+     %	     Move the cursor to [](){} pair
+
+     arg-%   Move the cursor to the arg % representation line of the file
 
 
 EX COMMANDS
@@ -223,7 +232,7 @@ EX OPTIONS
 
      order   If set, reorder characters based on rules defined in conf.c.
 
-     pac     If set, enable autocomplete.
+     pac     If set, print autocomplete suggestions on the fly.
 
      shape   If set, perform Arabic script letter shaping.
 
@@ -245,4 +254,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
      manual page was written by népéta <nepeta@canaglie.net>
 
-Linux 6.10.8-arch1-1	      September 12, 2024	  Linux 6.10.8-arch1-1
+Linux 6.11.4-arch1-1	      September 12, 2024	  Linux 6.11.4-arch1-1
