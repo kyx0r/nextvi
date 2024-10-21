@@ -1,9 +1,9 @@
 .Dd Sep 12, 2024
-.Dt nextvi 1
+.Dt Nextvi 1
 .Os
 .
 .Sh NAME
-.Nm nextvi
+.Nm Nextvi
 .Nd A small vi/ex editor for editing bidirectional UTF-8 text
 .
 .Sh SYNOPSIS
@@ -12,11 +12,11 @@
 .Op Ar
 .
 .Sh DESCRIPTION
-.Nm nextvi
+.Nm Nextvi
 is a
 .Xr vi 1 Ns -like
 text editor based on Ali Gholami Rudi's
-.Xr neatvi 1 Ns .
+.Xr Neatvi 1 Ns .
 It supports UTF-8 and bidirectional text.
 .
 .Sh OPTIONS
@@ -34,18 +34,95 @@ When combined with -e enters limited Ex mode
 .It Fl v
 Enter visual mode on startup. (Default)
 .
+.Sh NOTATION
+.Bl -tag -width Ds
+.It Cm arg1-
+An optional number prefixing a command
+.It Cm -arg2
+A required argument suffixing a command
+.It Cm C-
+A ctrl key
+.It Cm Space
+A separation, multiple binds to same command
+.
 .Sh VI NORMAL
 .Bl -tag -width Ds
-.It Cm arg-+ arg-\en arg-j
-Move the cursor arg lines down
-.It Cm arg-- arg-k
-Move the cursor arg lines up
+.It Cm arg1-+ arg1-\en arg1-j
+Move the cursor arg1 lines down
+.It Cm arg1-- arg1-k
+Move the cursor arg1 lines up
 .It Cm ^
 Move the cursor to the start of the line after indentation
 .It Cm '
 Goto a line mark
+.It Cm arg1-#
+Enable/Disable line numbers and switch modes
+.It Cm C-^
+Switch to previous buffer
+.It Cm arg1-C-w
+Unindent region
+.It Cm arg1-<-arg2
+Indent left arg2 region
+.It Cm arg1->-arg2
+Indent right arg2 region
+.It Cm @-arg2
+Execute a arg2 register macro
+.It Cm @@
+Execute a last executed register macro on a new line
+.It Cm m
+Set a buffer local line mark
 .It Cm gg
 Goto the first line in the buffer
+.It Cm i
+Enter insert mode
+.It Cm I
+Enter insert moving cursor to the start of the line after indentation
+.It Cm a
+Enter insert mode 1 character forward
+.It Cm A
+Enter insert mode moving cursor to the end of the line
+.It Cm s
+Enter insert mode deleting character under the cursor
+.It Cm S
+Enter insert mode deleting everything on the line
+.It Cm o
+Enter insert mode creating a new line down
+.It Cm O
+Enter insert mode creating a new line up
+.It Cm arg1-c-arg2
+Enter insert mode deleting based on the motion region
+.It Cm C
+Enter insert mode deleting from cursor to the end of the line
+.It Cm arg1-d-arg2
+Delete a region
+.It Cm D
+Delete from a cursor to the end of the line
+.It Cm K
+Split a line
+.It Cm arg1-K
+Split a line without creating empty new lines
+.It Cm arg1-J
+Join arg1 lines
+.It Cm vj
+Raw line join mode, disables space padding when joining lines
+.It Cm arg1-y-arg2
+Yank a region
+.It Cm Y yy
+Yank a line
+.It Cm arg1-p
+Paste a default register
+.It Cm arg1-P
+Paste a default register below current line or behind cursor pos
+.It Cm "-arg2
+Operation on the register arg2
+.It Cm R
+Print registers and their contents
+.It Cm arg1-r-arg2
+Replace arg1 characters with arg2 under the cursor forward
+.It Cm C-v
+Show line motion numbers for ebEBwW. Switches its modes
+.It Cm arg1-C-v
+Disable line motion numbers
 .It Cm G
 Goto the last line in the buffer
 .It Cm H
@@ -54,34 +131,38 @@ Goto the highest line of the screen
 Goto the lowest line of the screen
 .It Cm M
 Goto the middle line of the screen
-.It Cm arg-,
-Repeat last f or F or t or F command backward arg times
-.It Cm arg-;
-Repeat last f or F or t or F command forward arg times
-.It Cm arg-h
-Move the cursor arg cols left
-.It Cm arg-l
-Move the cursor arg cols right
-.It Cm f
-Move the cursor to the character found forward
-.It Cm F
-Move the cursor to the character found backward
-.It Cm t
-Move the cursor until the character found forward
-.It Cm T
-Move the cursor until the character found backward
-.It Cm arg-B
-Move the cursor to the end of the word skipping punctuation backward arg times
-.It Cm arg-E
-Move the cursor to the end of the word skipping punctuation forward arg times
-.It Cm arg-b
-Move the cursor to the end of the word backward arg times
-.It Cm arg-e
-Move the cursor to the end of the word forward arg times
-.It Cm arg-W
-Move the cursor to the start of the word skipping punctuation forward arg times
-.It Cm arg-w
-Move the cursor to the start of the word forward arg times
+.It Cm arg1-x
+Delete arg1 characters under the cursor forward
+.It Cm arg1-X
+Delete arg1 characters under the cursor backward
+.It Cm arg1-,
+Repeat last f or F or t or F command backward arg1 times
+.It Cm arg1-;
+Repeat last f or F or t or F command forward arg1 times
+.It Cm arg1-h
+Move the cursor arg1 cols left
+.It Cm arg1-l
+Move the cursor arg1 cols right
+.It Cm f-arg2
+Move the cursor to the arg2 character found forward
+.It Cm F-arg2
+Move the cursor to the arg2 character found backward
+.It Cm t-arg2
+Move the cursor until the arg2 character found forward
+.It Cm T-arg2
+Move the cursor until the arg2 character found backward
+.It Cm arg1-B
+Move the cursor to the end of the word skipping punctuation backward arg1 times
+.It Cm arg1-E
+Move the cursor to the end of the word skipping punctuation forward arg1 times
+.It Cm arg1-b
+Move the cursor to the end of the word backward arg1 times
+.It Cm arg1-e
+Move the cursor to the end of the word forward arg1 times
+.It Cm arg1-W
+Move the cursor to the start of the word skipping punctuation forward arg1 times
+.It Cm arg1-w
+Move the cursor to the start of the word forward arg1 times
 .It Cm {
 Move the cursor to the next { region
 .It Cm }
@@ -91,37 +172,49 @@ Move the cursor to the next \en region up
 .It Cm ]
 Move the cursor to the next \en region down
 .It Cm C-]
+Filesystem search forward based on directory listing in b-2
+.It Cm arg1-C-]
+Filesystem search forward, setting search keyword to arg1 words under the cursor
 .It Cm C-p
+Filesystem search backward based on directory listing in b-2
 .It Cm C-t
+Set a global file mark
+.It Cm arg1-C-t
+Set or switch to a global mark based on arg1 % 2 == 0 
 .It Cm 0 |
 Move the cursor to the start of the line.
 .It Cm $
 Move the cursor to the end of the line.
-.It Cm arg-|
-Move the cursor to arg col
-.It Cm arg-/
-Search using regex down skipping arg matches
-.It Cm arg-?
-Search using regex up skipping arg matches
-.It Cm arg-n
-Repeat search down skipping arg matches
-.It Cm arg-N
-Repeat search up skipping arg matches
+.It Cm arg1-|
+Move the cursor to arg1 col
+.It Cm arg1-/
+Search using regex down skipping arg1 matches
+.It Cm arg1-?
+Search using regex up skipping arg1 matches
+.It Cm arg1-n
+Repeat search down skipping arg1 matches
+.It Cm arg1-N
+Repeat search up skipping arg1 matches
 .It Cm C-a
 Auto search word under the cursor, not centering and wrapping up/down direction
-.It Cm arg-C-a
-Auto search setting arg words from the cursor
-.It Cm arg-Space
-Move cursor arg character forward
-.It Cm arg-C-h arg-Backspace
-Move cursor arg character backward
+.It Cm arg1-C-a
+Auto search setting arg1 words from the cursor
+.It Cm arg1-Space
+Move cursor arg1 character forward
+.It Cm arg1-C-h arg1-Backspace
+Move cursor arg1 character backward
 .It Cm `
 Goto a line mark with horizonal position
 .It Cm %
 Move the cursor to [](){} pair
-.It Cm arg-%
-Move the cursor to the arg % representation line of the file
-.It Cm \\
+.It Cm arg1-%
+Move the cursor to the arg1 % representation line of the file
+.It Cm \e
+Swap to /fm/ buffer b-2
+.It Cm qq
+Force quit cleaning the terminal
+.It Cm zz
+Force quit not cleaning the terminal, submits commands if recursive
 .El
 .
 .Sh EX COMMANDS
