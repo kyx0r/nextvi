@@ -322,9 +322,3 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 		sbufn_done(sb)
 	return NULL;
 }
-
-int cmd_exec(char *cmd)
-{
-	cmd_pipe(cmd, NULL, 0);
-	return 0;
-}

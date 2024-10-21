@@ -139,21 +139,25 @@ static int ren_posfind(int *pos, int n, int p, int dir)
 /* convert character offset to visual position */
 int ren_pos(char *s, int off)
 {
-	int n;
-	char **c;
-	int *pos = ren_position(s, &c, &n);
+	int n, *pos;
+	ren_position_m(pos =, s, &n)
 	int ret = off < n ? pos[off] : 0;
 	return ret;
 }
 
-/* convert visual position to character offset */
-int ren_off(char *s, int p)
+/* convert visual position to character offset. nl omits newline */
+int ren_off(char *s, int p, int nl)
 {
-	int n;
+	int n, i, nn = 0, ret = -1, *pos;
 	char **c;
-	int *pos = ren_position(s, &c, &n);
-	int *ch = &pos[ren_posfind(pos, n, p, -1)];
-	return ch - pos;
+	pos = ren_position(s, &c, &n);
+	for (i = 0; i < n - nl; i++) {
+		if (pos[i] <= p && (ret < 0 || pos[i] > pos[ret]))
+			ret = i;
+		else if (ret < 0 && pos[i] > pos[nn])
+			nn = i;
+	}
+	return ret >= 0 ? ret : nn;
 }
 
 /* adjust cursor position */
@@ -186,9 +190,8 @@ int ren_noeol(char *s, int o)
 /* the visual position of the next character */
 int ren_next(char *s, int p, int dir)
 {
-	int n;
-	char **c;
-	int *pos = ren_position(s, &c, &n);
+	int n, *pos;
+	ren_position_m(pos =, s, &n)
 	return pos[ren_posfind(pos, n, p+dir, dir)];
 }
 
@@ -196,28 +199,33 @@ int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
 		return xtabspc - (pos & (xtabspc-1));
-	int c; uc_code(c, s)
-	for (int i = 0; i < placeholderslen; i++)
-		if (placeholders[i].cp == c)
-			return placeholders[i].wid;
+	if (s[0] == '\n')
+		return 1;
+	int c, l; uc_code(c, s, l)
+	for (int i = 0; i < phlen; i++)
+		if (c >= ph[i].cp[0] && c <= ph[i].cp[1] && l == ph[i].l)
+			return ph[i].wid;
 	return uc_wid(c);
 }
 
 char *ren_translate(char *s, char *ln)
 {
-	int c; uc_code(c, s)
-	for (int i = 0; i < placeholderslen; i++)
-		if (placeholders[i].cp == c)
-			return placeholders[i].d;
+	if (s[0] == '\t' || s[0] == '\n')
+		return NULL;
+	int c, l; uc_code(c, s, l)
+	for (int i = 0; i < phlen; i++)
+		if (c >= ph[i].cp[0] && c <= ph[i].cp[1] && l == ph[i].l)
+			return ph[i].d;
+	if (l == 1)
+		return NULL;
 	if (uc_acomb(c)) {
 		static char buf[16] = "ـ";
-		c = uc_len(s);
-		*((char*)memcpy(buf+2, s, c)+c) = '\0';
+		*((char*)memcpy(buf+2, s, l)+l) = '\0';
 		return buf;
 	}
 	if (uc_isbell(c))
 		return "�";
-	return !xshape ? NULL : uc_shape(ln, s);
+	return xshape ? uc_shape(ln, s, c) : NULL;
 }
 
 #define NFTS		30
@@ -346,7 +354,7 @@ void syn_reloadft(void)
 		rset *rs = ftmap[ftidx].rs;
 		syn_initft(ftidx, ftmap[ftidx].setbidx, ftmap[ftidx].ft);
 		if (!ftmap[ftidx].rs) {
-			ftmap[ftidx].rs = rs;	
+			ftmap[ftidx].rs = rs;
 		} else
 			rset_free(rs);
 		syn_reload = 0;

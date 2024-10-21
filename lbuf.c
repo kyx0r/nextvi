@@ -394,7 +394,7 @@ static int uc_nextdir(char **s, char *beg, int dir)
 	if (dir < 0) {
 		if (*s == beg)
 			return 1;
-		*s = uc_prev(beg, *s);
+		*s = uc_beg(beg, (*s) - 1);
 	} else {
 		*s += uc_len(s[0]);
 		if (!(*s)[0])
@@ -407,7 +407,7 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 {
 	char *ln = lbuf_get(lb, *row);
 	char *s;
-	int c1, c2, dir = (cmd == 'f' || cmd == 't') ? +1 : -1;
+	int c1, c2, l, dir = (cmd == 'f' || cmd == 't') ? +1 : -1;
 	if (!ln)
 		return 1;
 	if (n < 0)
@@ -416,7 +416,8 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 		n = -n;
 	s = uc_chr(ln, *off);
 	while (n > 0 && !uc_nextdir(&s, ln, dir)) {
-		uc_code(c1, s) uc_code(c2, cs)
+		uc_code(c1, s, l)
+		uc_code(c2, cs, l)
 		if (c1 == c2)
 			n--;
 	}
@@ -490,8 +491,10 @@ static int lbuf_lnnext(struct lbuf *lb, int dir, int *r, int *o)
 
 int lbuf_eol(struct lbuf *lb, int row)
 {
-	int len = lbuf_get(lb, row) ? uc_slen(lbuf_get(lb, row)) : 0;
-	return len ? len - 1 : 0;
+	int len = 0;
+	if (lbuf_get(lb, row))
+		ren_position_m(, lbuf_get(lb, row), &len)
+	return len ? len - 1 : len;
 }
 
 static int lbuf_next(struct lbuf *lb, int dir, int *r, int *o)

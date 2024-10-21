@@ -118,6 +118,8 @@ typedef struct {
 	int grpcnt;		/* group count */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
+rset *rset_smake(char *pat, int flg)
+	{ char *ss[1] = {pat}; return rset_make(1, ss, flg); }
 int rset_find(rset *re, char *s, int *grps, int flg);
 void rset_free(rset *re);
 char *re_read(char **src);
@@ -165,12 +167,13 @@ typedef struct {
 extern ren_state *rstate;
 void ren_done(void);
 int *ren_position(char *s, char ***c, int *n);
+#define ren_position_m(p, s, n) { char **c; p ren_position(s, &c, n); }
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
 int ren_pos(char *s, int off);
 int ren_cursor(char *s, int pos);
 int ren_noeol(char *s, int p);
-int ren_off(char *s, int pos);
+int ren_off(char *s, int p, int nl);
 int ren_region(char *s, int c1, int c2, int *l1, int *l2, int closed);
 char *ren_translate(char *s, char *ln);
 int ren_cwid(char *s, int pos);
@@ -204,14 +207,15 @@ extern unsigned char utf8_length[256];
 /* return the length of a utf-8 character */
 #define uc_len(s) utf8_length[(unsigned char)s[0]]
 /* the unicode codepoint of the given utf-8 character */
-#define uc_code(dst, s) \
+#define uc_code(dst, s, l) \
 dst = (unsigned char)s[0]; \
-if (dst < 192); \
-else if (dst < 224) \
+l = utf8_length[dst]; \
+if (l == 1); \
+else if (l == 2) \
 	dst = ((dst & 0x1f) << 6) | (s[1] & 0x3f); \
-else if (dst < 240) \
+else if (l == 3) \
 	dst = ((dst & 0x0f) << 12) | ((s[1] & 0x3f) << 6) | (s[2] & 0x3f); \
-else if (dst < 248) \
+else if (l == 4) \
 	dst = ((dst & 0x07) << 18) | ((s[1] & 0x3f) << 12) | \
 		((s[2] & 0x3f) << 6) | (s[3] & 0x3f); \
 else \
@@ -222,7 +226,8 @@ int uc_slen(char *s);
 char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
 char *uc_subl(char *s, int beg, int end, int *rlen);
-#define uc_sub(s, beg, end) uc_subl(s, beg, end, &(int){0})
+char *uc_sub(char *s, int beg, int end)
+	{ int l; return uc_subl(s, beg, end, &l); }
 char *uc_dup(const char *s);
 int uc_isspace(char *s);
 int uc_isprint(char *s);
@@ -232,9 +237,8 @@ int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
 char **uc_chop(char *s, int *n);
-char *uc_prev(char *beg, char *s);
 char *uc_beg(char *beg, char *s);
-char *uc_shape(char *beg, char *s);
+char *uc_shape(char *beg, char *s, int c);
 
 /* term.c managing the terminal */
 extern sbuf *term_sbuf;
@@ -274,7 +278,6 @@ char *term_cmd(int *n);
 
 /* process management */
 char *cmd_pipe(char *cmd, char *ibuf, int oproc);
-int cmd_exec(char *cmd);
 char *xgetenv(char* q[]);
 
 #define TK_CTL(x)	((x) & 037)
@@ -283,7 +286,7 @@ char *xgetenv(char* q[]);
 
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
-sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh);
+sbuf *led_input(char *pref, char **post, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
 { \
@@ -358,6 +361,7 @@ void bufs_switch(int idx);
 
 /* conf.c configuration variables */
 /* map file names to file types */
+extern int conf_mode;
 struct filetype {
 	char *ft;		/* file type */
 	char *pat;		/* file name pattern */
@@ -398,14 +402,15 @@ extern struct dirmark dmarks[];
 extern int dmarkslen;
 /* character placeholders */
 struct placeholder {
-	int cp;		/* the source character codepoint */
-	char *d;	/* the placeholder */
+	int cp[2];	/* the source character codepoint */
+	char d[8];	/* the placeholder */
 	int wid;	/* the width of the placeholder */
+	int l;		/* the length of the codepoint */
 };
 extern struct placeholder placeholders[];
-extern int placeholderslen;
-int conf_hlrev(void);
-int conf_mode(void);
+extern const int def_phlen;
+extern int phlen;
+extern int conf_hlrev;
 char **conf_kmap(int id);
 int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
@@ -442,6 +447,7 @@ extern int xpac;
 extern int xkwdcnt;
 extern int xkwddir;
 extern int xmpt;
+extern int xpr;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;

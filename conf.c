@@ -2,7 +2,7 @@
 #include "kmap.h"
 
 /* access mode of new files */
-#define MKFILE_MODE		0600
+int conf_mode = 0600;
 
 struct filetype fts[] = {
 	{"c", "\\.(c|h|cpp|hpp|cc|cs)$"},		/* C */
@@ -107,7 +107,7 @@ default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 	{"sh", NULL, {9}, {0}, 0, 1},
 	{"sh", "\\<(?:break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>",
 		{5 | SYN_BD}},
-	{"sh", "#.*$", {2 | SYN_IT}},
+	{"sh", "[ \t](#.*$)|^(#.*$)", {0, 2 | SYN_IT, 2 | SYN_IT}},
 	{"sh", "\"(?:[^\"\\\\]|\\\\.)*\"", {4}},
 	{"sh", "`(?:[^`\\\\]|\\\\.)*`", {4}},
 	{"sh", "'[^']*'", {4}},
@@ -236,6 +236,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 
 	/* status bar (is never '\n' terminated) */
 	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
+	{"/-", "^<(.+)> [^ ]+ (O[0-9]+) (C[0-9]+)$", {8 | SYN_BD, 9, 14, 11}},
 	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 		{8 | SYN_BD, 4, 9, 4, 11, 2}},
 	{"/-", "^.*$", {8 | SYN_BD}},
@@ -243,7 +244,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 int hlslen = LEN(hls);
 
 /* how to highlight text in the reverse direction */
-#define SYN_REVDIR		SYN_BGMK(8)
+int conf_hlrev = SYN_BGMK(8);
 
 /* right-to-left characters (used only in dctxs[] and dmarks[]) */
 #define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْٔ"
@@ -262,21 +263,13 @@ struct dirmark dmarks[] = {
 };
 int dmarkslen = LEN(dmarks);
 
-struct placeholder placeholders[] = {
-	{0x200c, "-", 1}, /* ‌ */
-	{0x200d, "-", 1}, /* ‍ */
+#define DEF_PHLEN 2
+struct placeholder ph[DEF_PHLEN+5] = {
+	{{0x0,0x1f}, "^", 1, 1},
+	{{0x200c,0x200d}, "-", 1, 3},
 };
-int placeholderslen = LEN(placeholders);
-
-int conf_hlrev(void)
-{
-	return SYN_REVDIR;
-}
-
-int conf_mode(void)
-{
-	return MKFILE_MODE;
-}
+const int def_phlen = DEF_PHLEN;
+int phlen = DEF_PHLEN;
 
 char **conf_kmap(int id)
 {

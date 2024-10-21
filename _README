@@ -290,10 +290,6 @@ this problem you may need some extra patch, see PATCHES section below.
 47. Added Russian keymap, and changed how xkmap_alt works, now z + vi_arg1 in
 normal mode will switch what keymap ^f key changes, so for example 1 = fa 2 =
 ru. New language kmap can be added in kmap.h translation array.
-Added non printing characters to the list of digraphs. The naming resembles
-ASCII caret notation. For example, to type 03 (the literal for ^c) enter
-insert mode followed by digraph mode using ^k and type " c" without quotes.
-Additionally, literal can be typed using ^v as in vi(1).
 48. Improvement to change 37. Now when in prompt/insert ^a will bring up the
 latest command from history. Also the history works for searches via / or ?
 the same way. keybind vv does the same but from normal mode, to save time.
@@ -406,6 +402,26 @@ nextvi no longer swallows print messages and will print everything instead
 of just last one. If mpt is negative, the prompt will remain disabled.
 75. Added commandline option -m to disable the initial file read message
 because :se noled can't.
+76. Improved register IO. :pu command can pipe the register to en external
+program by specifying \! as a 2nd argument. New command :ya! can be used
+to reset the value of a register. New ex option "pr" (print register).
+It can be set using a character or a number. For instance, :se pr=a will
+use the register 'a'. When the register is set, all data passed into ex_print
+will be stored. If the register is uppercase, new lines are added to match
+the exact output that was printed. With this, you have full control over
+internal editor state. For example, printing the current buffers list
+to a file is now possible.
+77. Added new ex command "uc" and "ph". "uc" can be used to enable/disable
+multibyte utf-8 decoding. "ph" can be used to set new placeholders at runtime.
+This feature is particularly useful when editing files with mixed
+encodings, binary files, or when the terminal does not support UTF-8 or
+lacks the necessary fonts to display UTF-8 characters.
+render 8 bit ascii (Extended ASCII) as '~':
+:ph 128 255 1 1~
+flawless ISO/IEC 8859-1 (latin-1) support:
+:uc|ph 128 160 1 1~
+reset to default as in conf.c:
+:ph
 
 LESSER KNOWN FEATURES
 ---------------------

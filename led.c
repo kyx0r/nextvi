@@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf), n;
 	sbuf *ibuf;
-	rset *rs = rset_make(1, (char*[]){xacreg ? xacreg->s : reg}, xic ? REG_ICASE : 0);
+	rset *rs = rset_smake(xacreg ? xacreg->s : reg, xic ? REG_ICASE : 0);
 	if (!rs)
 		return;
 	int subs[rs->grpcnt * 2];
@@ -92,15 +92,12 @@ static char *kmap_map(int kmap, int c)
 	return keymap[c] ? keymap[c] : cs;
 }
 
-static int led_posctx(int dir, int pos, int beg, int end)
-{
-	return dir >= 0 ? pos - beg : end - pos - 1;
-}
-
 /* map cursor horizontal position to terminal column number */
 int led_pos(char *s, int pos)
 {
-	return led_posctx(dir_context(s), pos, xleft, xleft + xcols);
+	if (dir_context(s) < 0)
+		return xleft + xcols - pos - 1;
+	return pos - xleft;
 }
 
 static int led_offdir(char **chrs, int *pos, int i)
@@ -110,49 +107,6 @@ static int led_offdir(char **chrs, int *pos, int i)
 	if (pos[i + 1] + ren_cwid(chrs[i + 1], pos[i + 1]) == pos[i])
 		return -1;
 	return 0;
-}
-
-/* highlight text in reverse direction */
-static void led_markrev(int n, int cterm, int *off, char **chrs, int *pos, int *att)
-{
-	int i = 0, j;
-	int hl = conf_hlrev();
-	int *ratt = malloc((n+1)*sizeof(int));
-	memset(ratt, 0, (n+1)*sizeof(int));
-	while (i + 1 < n) {
-		int dir = led_offdir(chrs, pos, i);
-		int beg = i;
-		while (i + 1 < n && led_offdir(chrs, pos, i) == dir)
-			i++;
-		if (dir < 0)
-			for (j = beg; j <= i; j++)
-				ratt[j] = hl;
-		if (i == beg)
-			i++;
-	}
-	for (j = 0, i = 0; i < cterm;) {
-		int o = off[i++];
-		if (o >= 0) {
-			att[j] = syn_merge(ratt[o], att[j]);
-			for (j++; off[i] == o; i++);
-		}
-	}
-	free(ratt);
-}
-
-static char *led_bounds(int *off, char **chrs, int cterm)
-{
-	int i = 0;
-	sbuf *out;
-	sbuf_make(out, cterm*4);
-	while (i < cterm) {
-		int o = off[i++];
-		if (o >= 0) {
-			sbuf_mem(out, chrs[o], uc_len(chrs[o]))
-			for (; off[i] == o; i++);
-		}
-	}
-	sbufn_done(out)
 }
 
 #define print_ch1(out) sbuf_mem(out, chrs[o], l)
@@ -174,7 +128,7 @@ for (i = 0; i < cterm;) { \
 	o = off[i]; \
 	if (o >= 0) { \
 		for (l = i; off[i] == o; i++); \
-		att_new = att[atti++]; \
+		att_new = att[bound ? ctt[atti++] : o]; \
 		if (att_new != att_old) \
 			sbuf_str(out, term_att(att_new)) \
 		char *s = ren_translate(chrs[o], s0); \
@@ -202,17 +156,18 @@ void led_render(char *s0, int cbeg, int cend)
 {
 	if (!xled)
 		return;
-	int l, n, i = 0, o = 0, cterm = cend - cbeg;
+	sbuf *bsb;
+	int j, c, l, n, i = 0, o = 0, cterm = cend - cbeg;
 	int att_old = 0, atti = 0;
-	char *bound = s0;
-	int *pos;		/* pos[i]: the screen position of the i-th character */
+	char *bound = NULL;
 	char **chrs;		/* chrs[i]: the i-th character in s1 */
 	int off[cterm+1];	/* off[i]: the character at screen position i */
 	int att[cterm+1];	/* att[i]: the attributes of i-th character */
+	int stt[cterm+1];	/* stt[i]: remap off indexes */
+	int ctt[cterm+1];	/* ctt[i]: cterm bound attrs */
+	int *pos = ren_position(s0, &chrs, &n);	/* pos[i]: the screen position of the i-th character */
 	int ctx = dir_context(s0);
 	memset(off, -1, (cterm+1) * sizeof(off[0]));
-	memset(att, 0, (cterm+1) * sizeof(att[0]));
-	pos = ren_position(s0, &chrs, &n);
 	if (ctx < 0) {
 		for (; i < n; i++) {
 			int curbeg = cend - pos[i] - 1;
@@ -246,14 +201,52 @@ void led_render(char *s0, int cbeg, int cend)
 			}
 		}
 	}
-	if (pos[n] > cterm || cbeg || ctx < 0)
-		bound = led_bounds(off, chrs, cterm);
+	if (pos[n] > cterm || cbeg) {
+		for (i = 0, c = 0; i < cterm;) {
+			o = off[i++];
+			if (o >= 0) {
+				att[c++] = o;
+				for (; off[i] == o; i++);
+			}
+		}
+		stt[0] = 0;
+		for (i = 1; i < c; i++) {
+			int key0 = att[i];
+			j = i - 1;
+			while (j >= 0 && att[j] > key0) {
+				att[j + 1] = att[j];
+				stt[j + 1] = stt[j];
+				j = j - 1;
+			}
+			att[j + 1] = key0;
+			stt[j + 1] = i;
+		}
+		sbuf_make(bsb, cterm*4);
+		for (i = 0; i < c; i++) {
+			ctt[stt[i]] = i;
+			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
+		}
+		sbuf_set(bsb, '\0', 4)
+		bound = bsb->s;
+	}
+	memset(att, 0, MIN(n, cterm) * sizeof(att[0]));
 	if (xhl)
-		syn_highlight(att, bound, n < cterm ? n : cterm);
-	if (bound != s0)
-		free(bound);
-	if (xhlr)
-		led_markrev(n, cterm, off, chrs, pos, att);
+		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
+	if (bound)
+		sbuf_free(bsb);
+	if (xhlr) {
+		for (c = 0, i = 0; i < cterm;) {
+			o = off[i++];
+			if (o < 0)
+				continue;
+			for (c++; off[i] == o; i++);
+			if (led_offdir(chrs, pos, o) >= 0)
+				continue;
+			j = bound ? ctt[c-1] : o;
+			att[j] = syn_merge(conf_hlrev, att[j]);
+			att[j+1] = syn_merge(conf_hlrev, att[j+1]);
+		}
+	}
 	/* generate term output */
 	if (vi_hidch)
 		led_out(term_sbuf, 2)
@@ -281,7 +274,7 @@ static int led_lastword(char *s)
 	return r - s;
 }
 
-static void led_printparts(sbuf *sb, int ps, char *post)
+static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
 {
 	if (!xled)
 		return;
@@ -290,8 +283,10 @@ static void led_printparts(sbuf *sb, int ps, char *post)
 	sbuf_str(sb, post)
 	sbuf_set(sb, '\0', 4)
 	rstate->s = NULL;
-	ren_position(sb->s+ps, &(char**){NULL}, &off);
+	ren_position_m(, sb->s+ps, &off)
 	off -= uc_slen(post);
+	if (ai_max >= 0)
+		xoff = off;
 	pos = ren_cursor(sb->s+ps, ren_pos(sb->s+ps, MAX(0, off - 1)));
 	if (pos >= xleft + xcols)
 		xleft = pos - xcols / 2;
@@ -388,16 +383,14 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 	int len, p_reg = 0;
 	int c, i = 0, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
-	if (!post)
-		post = "";
 	while (1) {
-		led_printparts(sb, ps, post);
+		led_printparts(sb, ps, post, ai_max);
 		len = sb->s_n;
 		c = term_read();
 		switch (c) {
 		case TK_CTL('h'):
 		case 127:
-			if (len - pre)
+			if (len - pre > 0)
 				sbufn_cut(sb, led_lastchar(sb->s + pre) + pre)
 			else
 				goto leave;
@@ -406,7 +399,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			sbufn_cut(sb, sug_pt > pre && len > sug_pt ? sug_pt : pre)
 			break;
 		case TK_CTL('w'):
-			if (len - pre)
+			if (len - pre > 0)
 				sbufn_cut(sb, led_lastword(sb->s + pre) + pre)
 			else
 				term_push("bdwi", 5);
@@ -417,16 +410,18 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			sbuf_chr(sb, '\t')
 			sbufn_str(sb, cs)
 			free(cs);
+			pre++;
 			break;
 		case TK_CTL('d'):
 			if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
 				sbuf_cut(sb, ps)
 				sbufn_str(sb, sb->s+ps+1)
+				pre--;
 			}
 			break;
 		case TK_CTL(']'):
 		case TK_CTL('\\'):
-			i = 0; 
+			i = 0;
 			retry:
 			if (c == TK_CTL(']')) {
 				if (!p_reg || p_reg == '9')
@@ -616,8 +611,7 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 	if (key == '\n') {
 		temp_pos(0, -1, 0, 0);
 		temp_write(0, sb->s + n);
-		if (post)
-			sbuf_str(sb, post)
+		sbuf_str(sb, post)
 		sbufn_done(sb)
 	}
 	sbuf_free(sb)
@@ -625,22 +619,23 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 }
 
 /* read visual command input */
-sbuf *led_input(char *pref, char **post, int *kmap, int row, int lsh)
+sbuf *led_input(char *pref, char **post, int row, int lsh)
 {
 	sbuf *sb; sbuf_make(sb, xcols)
 	int ai_max = 128 * xai;
-	int n, ps = 0, key;
+	int n, key, ps = 0;
 	sbufn_str(sb, pref)
 	while (1) {
-		led_line(sb, ps, sb->s_n, *post, ai_max, &key, kmap, row, lsh);
+		led_line(sb, ps, sb->s_n, *post, ai_max, &key, &xkmap, row, lsh);
 		if (key != '\n') {
-			sbuf_str(sb, *post)
 			sbuf_set(sb, '\0', 4)
 			sb->s_n -= 4;
+			if (!xled)
+				xoff = uc_slen(sb->s+ps);
 			return sb;
 		}
 		sbufn_chr(sb, key)
-		led_printparts(sb, ps, "");
+		led_printparts(sb, ps, "", 0);
 		term_chr('\n');
 		term_room(1);
 		xrow++;
