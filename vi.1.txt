@@ -20,22 +20,18 @@ text editor based on Ali Gholami Rudi's
 It supports UTF-8 and bidirectional text.
 .
 .Sh OPTIONS
-.Bl -tag -width Ds
-.
+.Bl -tag -width Ds -compact
 .It Fl e
 Enter Ex mode on startup
-.
 .It Fl m
 Disable initial file read message
-.
 .It Fl s
 When combined with -e enters limited Ex mode
-.
 .It Fl v
 Enter visual mode on startup. (Default)
-.
+.El
 .Sh NOTATION
-.Bl -tag -width Ds
+.Bl -tag -width Ds -compact
 .It Cm arg1-
 An optional number prefixing a command
 .It Cm -arg2
@@ -44,9 +40,9 @@ A required argument suffixing a command
 A ctrl key
 .It Cm Space
 A separation, multiple binds to same command
-.
+.El
 .Sh VI NORMAL
-.Bl -tag -width Ds
+.Bl -tag -width Dq -compact
 .It Cm arg1-+ arg1-\en arg1-j
 Move the cursor arg1 lines down
 .It Cm arg1-- arg1-k
@@ -113,7 +109,7 @@ Yank a line
 Paste a default register
 .It Cm arg1-P
 Paste a default register below current line or behind cursor pos
-.It Cm "-arg2
+.It Cm \&"-arg2
 Operation on the register arg2
 .It Cm R
 Print registers and their contents
@@ -218,7 +214,7 @@ Force quit not cleaning the terminal, submits commands if recursive
 .El
 .
 .Sh EX COMMANDS
-.Bl -tag -width Ds
+.Bl -tag -width Ds -compact
 .
 .It Cm f
 .It Cm b
@@ -268,7 +264,7 @@ Force quit not cleaning the terminal, submits commands if recursive
 .El
 .
 .Sh EX OPTIONS
-.Bl -tag -width Ds
+.Bl -tag -width Ds -compact
 .
 .It Cm ai
 If set, indent new lines.
