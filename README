@@ -8,7 +8,20 @@ SYNOPSIS
 
 DESCRIPTION
      Nextvi is a vi(1)-like text editor based on Ali Gholami Rudi's Neatvi(1).
-     It supports UTF-8 and bidirectional text.
+     Invented Bill Joy in 1976, VI (Visual Editor) is a text editor that
+     allows users to edit and manipulate text in a visual mode.	 It is a
+     command-line editor that uses a set of keystrokes and commands to
+     navigate and modify text. VI is a powerful and efficient editor that is
+     widely used in Unix and Linux environments. It is known for its modal
+     interface, where the user can switch between insert, command, and visual
+     modes to perform different actions.It is also popular among developers
+     and system administrators due to its flexibility and customization
+     options. VI's syntax and command set are similar to those of other vi/ex
+     editors, making it a versatile tool for users who are familiar with other
+     text editors. 50 years later, I am pleased to present the superior vi
+     implementation. Nextvi is a masterpiece, a symphony of efficiency and
+     elegance. It boasts a blazing fast startup time, unrivaled portability
+     and hackability, god powerful macro system and so much more.
 
 OPTIONS
      -e	     Enter Ex mode on startup
@@ -216,52 +229,179 @@ INSERT MODE
      C-f	   Switch to alternative keymap
      C-v-arg2	   Read a literal character arg2
      C-k-arg2	   Read a diagraph sequence arg2
+     C-c ESC	   Exit insert mode
+
+EX
+     Ex is a line editor for Unix systems originally written by Bill Joy in
+     1976.  In ex, every command is prefixed with ':'. Ex is essential to vi
+     which allows it to run commands and macros. Together vi and ex create a
+     beautiful symbiosis which complements eath other and helps to solve
+     various domain problems.
+
+EX RANGES
+     Some ex commands can be prefixed with ranges.
+     Example: print lines 1,5
+	     :1,5p
+     Example: print 5 lines around xrow
+	     :.-5,.+5p
+     Example: print until int is found
+	     :.,/int/p
+     Example: print until int is found in reverse
+	     :?int?,.p
+	     Note: in some cases . can be dropped but is kept for readability.
+     Example: print lines from mark d to mark a
+	     :'d,'ap
 
 EX COMMANDS
-     f
-     b
-     bp
-     bs
-     p
-     a
-     ea
-     ea!
-     i
-     d
-     c
-     e
-     e!
-     g
-     g!
-     =
-     k
-     tp
-     pu
-     q
-     q!
-     r
-     v
-     w
-     w!
-     wq
-     wq!
-     u
-     rd
-     se
-     s
-     x
-     x!
-     ya
-     !
-     ft
-     cm
-     cm!
-     fd
-     fp
-     cd
-     inc
-     bx
-     ac
+     f	     Ranged search (stands for find)
+
+	     Example (no range given, current line only):
+	     :f/int
+	     or
+	     :f?int
+	     or (specified range)
+	     :10,100f/int
+	     Additionally, :f supports xoff (horizontal offset). This is
+	     essential for scripting macros. Subsequent commands within the
+	     range will move to the next match just like n/N.
+
+     b	     Print currently active buffers and their state
+     bp	     Set current buffer path
+     bs	     Set current buffer saved. If arg given, reset undo/redo history
+     p	     Print line(s) from the buffer
+
+     ea	     Open file based on it's filename substring and from listing in
+	     b-2
+
+	     If the substring matches more than 1 filename, a prompt will
+	     be shown. Submit using numbers 0-9 (higher ascii values work
+	     too (^c to cancel)). Passing an extra arg to :ea in form of
+	     a number will bypass the prompt and open the corresponding file.
+
+     ea!     Forced version of ea
+     a	     Enter ex append mode (exiting with ^c will discard changes)
+     i	     Enter ex insert mode (exiting with ^c will discard changes)
+     c	     Enter ex change mode (exiting with ^c will discard changes)
+     d	     Delete a line
+     e	     Open a file at path
+     e!	     Reload the current buffer from FS
+
+     g	     Global command
+
+	     Same syntax as ex substitution command, but instead of replacement
+	     string it takes an ex command after the / / enclosed regex.
+	     Example: remove empty lines
+	     :g/^$/d
+	     Try doing similar with substitution command - will not work
+	     as removing '\n' without deleting the line is invalid, but
+	     it will work with global command. Multiple ex commands can be
+	     chained in one global command.
+	     In this case the ex separator has to be escaped once.
+	     Example: yank matches and print them out.
+	     :g/int/ya A\|p
+	     If you wanted to get really fancy, it is possible to nest global
+	     commands inside of global commands.
+	     Example: find all lines with int and a semicolon and append "has a semicolon"
+	     :g/int/:.g/;/tp A has a semicolon?
+
+     g! v    Inverted global command
+     =	     Move the cursor to a line number
+     k	     Set a mark
+
+     tp	     Global macro (stands for term_push)
+
+	     It can run any vi normal command and execute insert statements.
+	     The advantage of tp over traditional macros is in the ability
+	     to bypass the macro queue and run independently. In a way, macro
+	     executed by tp exercises the same causality as running C code
+	     directly.
+
+     pu	     Paste a register
+
+	     :pu command can pipe the register to an external program by
+	     specifying \! as a 2nd argument.
+
+     q	     Soft quit
+     q!	     Force quit
+
+     r	     Read a file
+
+	     To read data from a pipe use :r \!date
+
+     w	     Soft write a to file
+
+	     To pipe data to external process use :w \!less
+
+     w!	     Force write a to file
+     wq x    Write and soft quit
+     wq! x!  Write and force quit
+     u	     Undo
+     rd	     Redo
+
+     se	     Set a variable
+
+	     Examples:
+	     :se var=1
+	     :se novar
+
+     s	     Substitute
+
+	     Basic usage:
+	     :%s/term1/term2/g
+
+	     Substitution backreference:
+	     This inserts the text of matched group specified by \x where x is
+	     group number. Example:
+	     this is an example text for subs and has int or void
+	     :%s/(int)\|(void)/pre\0after
+	     this is an example text for subs and has preintafter or void
+	     :%s/(int)\|(void)/pre\2after/g
+	     this is an example text for subs and has prepreafterafter or prevoidafter
+
+     ya	     Yank a region
+     ya!     Reset register value
+     !	     Run external program
+
+     ft	     Set a filetype
+
+	     Without filetype, prints the current file type. When filetype
+	     is specified, sets the file type of the current ex buffer.
+	     In nextvi :ft also reloads the highlight ft, which makes it
+	     possible to reset dynamic highlights created by options like
+	     "hlw".
+
+     cm cm!  Keymap
+
+	     Without kmap, prints the current keymap name. When kmap is specified,
+	     sets the alternate keymap to kmap and, unless ! is given, switches
+	     to this keymap.
+
+     fd	     Set a secondary directory (stands for file dir)
+
+	     Recalculates the directory listing for fssearch or :ea ex command.
+	     No argument implies current directory.
+
+     fp	     Set a secondary directory path (stands for file path)
+     cd	     Set a working directory (stands for change dir)
+
+     inc     Include regex for :fd calculation
+
+	     Example 1:
+	     We want to get only files in submodule directory that end with .c
+	     extension:
+	     :inc submodule.*\.c$
+	     Example 2:
+	     Exclude the .git and submodule folders.
+	     :inc (^[\!.git\!submodule]+[^\/]+$)
+	     Running "inc" without an arg will disable all filters.
+
+     bx	     Set max number of buffers allowed (default is 10)
+
+     ac	     Set autocomplete filter regex
+
+	     Running ex command "ac" with no argument will reset back to
+	     the default word filtering regex. You can find its string in
+	     led.c as a reference.
 
 EX OPTIONS
      ai	     If set, indent new lines.

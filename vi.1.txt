@@ -17,7 +17,22 @@ is a
 .Xr vi 1 Ns -like
 text editor based on Ali Gholami Rudi's
 .Xr Neatvi 1 Ns .
-It supports UTF-8 and bidirectional text.
+Invented Bill Joy in 1976, VI (Visual Editor) is a text editor
+that allows users to edit and manipulate text in a visual mode.
+It is a command-line editor that uses a set of keystrokes and
+commands to navigate and modify text. VI is a powerful and efficient
+editor that is widely used in Unix and Linux environments. It
+is known for its modal interface, where the user can switch
+between insert, command, and visual modes to perform different
+actions.It is also popular among developers and system administrators
+due to its flexibility and customization options. VI's syntax
+and command set are similar to those of other vi/ex editors,
+making it a versatile tool for users who are familiar with other
+text editors. 50 years later, I am pleased to present the superior
+vi implementation. Nextvi is a masterpiece, a symphony of efficiency
+and elegance. It boasts a blazing fast startup time, unrivaled
+portability and hackability, god powerful macro system and so
+much more.
 .
 .Sh OPTIONS
 .Bl -tag -width Ds -compact
@@ -262,7 +277,7 @@ Filesystem search backward based on directory listing in b-2
 .It Cm C-t
 Set a global file mark
 .It Cm arg1-C-t
-Set or switch to a global mark based on arg1 % 2 == 0 
+Set or switch to a global mark based on arg1 % 2 == 0
 .It Cm arg1-C-7 arg1-C-_
 Show buffer list and switch based to arg1 buffer or 0-9 when prompted
 .It Cm 0 |
@@ -367,55 +382,239 @@ Switch to alternative keymap
 Read a literal character arg2
 .It Cm C-k-arg2
 Read a diagraph sequence arg2
+.It Cm C-c ESC
+Exit insert mode
+.El
+.
+.Sh EX
+Ex is a line editor for Unix systems originally written by Bill Joy in 1976.
+In ex, every command is prefixed with ':'. Ex is essential to vi which allows it
+to run commands and macros. Together vi and ex create a beautiful symbiosis
+which complements eath other and helps to solve various domain problems.
+.
+.Sh EX RANGES
+Some ex commands can be prefixed with ranges.
+.Bl -tag -width Ds -compact
+.It Cm Example: print lines 1,5
+:1,5p
+.It Cm Example: print 5 lines around xrow
+:.-5,.+5p
+.It Cm Example: print until int is found
+:.,/int/p
+.It Cm Example: print until int is found in reverse
+:?int?,.p
+.Bd -literal -compact
+Note: in some cases . can be dropped but is kept for readability.
+.Ed
+.It Cm Example: print lines from mark d to mark a
+:'d,'ap
 .El
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.
 .It Cm f
+Ranged search (stands for find)
+.Bd -literal
+Example (no range given, current line only):
+:f/int
+or
+:f?int
+or (specified range)
+:10,100f/int
+Additionally, :f supports xoff (horizontal offset). This is
+essential for scripting macros. Subsequent commands within the
+range will move to the next match just like n/N.
+.Ed
+
 .It Cm b
+Print currently active buffers and their state
 .It Cm bp
+Set current buffer path
 .It Cm bs
+Set current buffer saved. If arg given, reset undo/redo history
 .It Cm p
-.It Cm a
+Print line(s) from the buffer
+
 .It Cm ea
+Open file based on it's filename substring and from listing in b-2
+.Bd -literal
+If the substring matches more than 1 filename, a prompt will
+be shown. Submit using numbers 0-9 (higher ascii values work
+too (^c to cancel)). Passing an extra arg to :ea in form of
+a number will bypass the prompt and open the corresponding file.
+.Ed
+
 .It Cm ea!
+Forced version of ea
+.It Cm a
+Enter ex append mode (exiting with ^c will discard changes)
 .It Cm i
-.It Cm d
+Enter ex insert mode (exiting with ^c will discard changes)
 .It Cm c
+Enter ex change mode (exiting with ^c will discard changes)
+.It Cm d
+Delete a line
 .It Cm e
+Open a file at path
 .It Cm e!
+Reload the current buffer from FS
+
 .It Cm g
-.It Cm g!
+Global command
+.Bd -literal
+Same syntax as ex substitution command, but instead of replacement
+string it takes an ex command after the / / enclosed regex.
+Example: remove empty lines
+:g/^$/d
+Try doing similar with substitution command - will not work
+as removing '\en' without deleting the line is invalid, but
+it will work with global command. Multiple ex commands can be
+chained in one global command.
+In this case the ex separator has to be escaped once.
+Example: yank matches and print them out.
+:g/int/ya A\e|p
+If you wanted to get really fancy, it is possible to nest global
+commands inside of global commands.
+Example: find all lines with int and a semicolon and append "has a semicolon"
+:g/int/:.g/;/tp A has a semicolon
+.Ed
+
+.It Cm g! v
+Inverted global command
 .It Cm =
+Move the cursor to a line number
 .It Cm k
+Set a mark
+
 .It Cm tp
+Global macro (stands for term_push)
+.Bd -literal
+It can run any vi normal command and execute insert statements.
+The advantage of tp over traditional macros is in the ability
+to bypass the macro queue and run independently. In a way, macro
+executed by tp exercises the same causality as running C code
+directly.
+.Ed
+
 .It Cm pu
+Paste a register
+.Bd -literal
+:pu command can pipe the register to an external program by
+specifying \e! as a 2nd argument.
+.Ed
+
 .It Cm q
+Soft quit
 .It Cm q!
+Force quit
+
 .It Cm r
-.It Cm v
+Read a file
+.Bd -literal
+To read data from a pipe use :r \e!date
+.Ed
+
 .It Cm w
+Soft write a to file
+.Bd -literal
+To pipe data to external process use :w \e!less
+.Ed
+
 .It Cm w!
-.It Cm wq
-.It Cm wq!
+Force write a to file
+.It Cm wq x
+Write and soft quit
+.It Cm wq! x!
+Write and force quit
 .It Cm u
+Undo
 .It Cm rd
+Redo
+
 .It Cm se
+Set a variable
+.Bd -literal
+Examples:
+:se var=1
+:se novar
+.Ed
+
 .It Cm s
-.It Cm x
-.It Cm x!
+Substitute
+.Bd -literal
+Basic usage:
+:%s/term1/term2/g
+
+Substitution backreference:
+This inserts the text of matched group specified by \ex where x is
+group number. Example:
+this is an example text for subs and has int or void
+:%s/(int)\e|(void)/pre\e0after
+this is an example text for subs and has preintafter or void
+:%s/(int)\e|(void)/pre\e2after/g
+this is an example text for subs and has prepreafterafter or prevoidafter
+.Ed
+
 .It Cm ya
+Yank a region
+.It Cm ya!
+Reset register value
 .It Cm !
+Run external program
+
 .It Cm ft
-.It Cm cm
-.It Cm cm!
+Set a filetype
+.Bd -literal
+Without filetype, prints the current file type. When filetype
+is specified, sets the file type of the current ex buffer.
+In nextvi :ft also reloads the highlight ft, which makes it
+possible to reset dynamic highlights created by options like
+"hlw".
+.Ed
+
+.It Cm cm cm!
+Keymap
+.Bd -literal
+Without kmap, prints the current keymap name. When kmap is specified,
+sets the alternate keymap to kmap and, unless ! is given, switches
+to this keymap.
+.Ed
+
 .It Cm fd
+Set a secondary directory (stands for file dir)
+.Bd -literal
+Recalculates the directory listing for fssearch or :ea ex command.
+No argument implies current directory.
+.Ed
+
 .It Cm fp
+Set a secondary directory path (stands for file path)
 .It Cm cd
+Set a working directory (stands for change dir)
+
 .It Cm inc
+Include regex for :fd calculation
+.Bd -literal
+Example 1:
+We want to get only files in submodule directory that end with .c
+extension:
+:inc submodule.*\e.c$
+Example 2:
+Exclude the .git and submodule folders.
+:inc (^[\e!.git\e!submodule]+[^\e/]+$)
+Running "inc" without an arg will disable all filters.
+.Ed
+
 .It Cm bx
+Set max number of buffers allowed (default is 10)
+
 .It Cm ac
+Set autocomplete filter regex
+.Bd -literal
+Running ex command "ac" with no argument will reset back to
+the default word filtering regex. You can find its string in
+led.c as a reference.
+.Ed
 .
 .El
 .
