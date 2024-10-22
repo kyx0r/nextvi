@@ -84,7 +84,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         set -- build "$@"
         ;;
     "" | "build")
-        # If the user doesn't use "build" explicitely, do not run the build step again.
+        # If the user doesn't use "build" explicitly, do not run the build step again.
         if [ "$1" = "build" ]; then
             explicit="1"
         else
