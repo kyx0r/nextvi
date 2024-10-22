@@ -8,20 +8,20 @@ SYNOPSIS
 
 DESCRIPTION
      Nextvi is a vi(1)-like text editor based on Ali Gholami Rudi's Neatvi(1).
-     Invented Bill Joy in 1976, VI (Visual Editor) is a text editor that
+     Invented by Bill Joy in 1976, VI (Visual Editor) is a text editor that
      allows users to edit and manipulate text in a visual mode.	 It is a
      command-line editor that uses a set of keystrokes and commands to
      navigate and modify text. VI is a powerful and efficient editor that is
      widely used in Unix and Linux environments. It is known for its modal
      interface, where the user can switch between insert, command, and visual
-     modes to perform different actions.It is also popular among developers
+     modes to perform different actions. It is also popular among developers
      and system administrators due to its flexibility and customization
      options. VI's syntax and command set are similar to those of other vi/ex
      editors, making it a versatile tool for users who are familiar with other
-     text editors. 50 years later, I am pleased to present the superior vi
-     implementation. Nextvi is a masterpiece, a symphony of efficiency and
-     elegance. It boasts a blazing fast startup time, unrivaled portability
-     and hackability, god powerful macro system and so much more.
+     text editors. 50 years later, a superior vi implementation has been
+     created. Nextvi is a masterpiece, a symphony of efficiency and elegance.
+     It boasts a blazing fast startup time, unrivaled portability,
+     hackability, a god powerful macro system and so much more.
 
 OPTIONS
      -e	     Enter Ex mode on startup
