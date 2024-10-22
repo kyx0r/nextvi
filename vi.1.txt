@@ -352,7 +352,7 @@ Decrease indent
 .It Cm C-]
 Switch a default paste register to 0-9
 .It Cm C-\e-arg2
-Select paste register arg2. \e selects default register
+Select paste register arg2. C-\e selects default register
 .It Cm C-p
 Paste a register
 .It Cm C-g
