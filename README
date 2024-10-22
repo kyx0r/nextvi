@@ -191,7 +191,7 @@ VI NORMAL
      arg1-Space	   Move cursor arg1 character forward
      arg1-C-h arg1-Backspace
 		   Move cursor arg1 character backward
-     `-arg2	   Goto a line mark arg2 with horizonal position
+     `-arg2	   Goto a line mark arg2 with horizontal position
      %		   Move the cursor to [](){} pair
      arg1-%	   Move the cursor to the arg1 percent line number
      arg1-C-n	   Swap to the next buffer, arg1 changes direction
