@@ -8,20 +8,18 @@ SYNOPSIS
 
 DESCRIPTION
      Nextvi is a vi(1)-like text editor based on Ali Gholami Rudi's Neatvi(1).
-     Invented by Bill Joy in 1976, VI (Visual Editor) is a text editor that
-     allows users to edit and manipulate text in a visual mode.	 It is a
-     command-line editor that uses a set of keystrokes and commands to
-     navigate and modify text. VI is a powerful and efficient editor that is
-     widely used in Unix and Linux environments. It is known for its modal
-     interface, where the user can switch between insert, command, and visual
-     modes to perform different actions. It is also popular among developers
-     and system administrators due to its flexibility and customization
-     options. VI's syntax and command set are similar to those of other vi/ex
-     editors, making it a versatile tool for users who are familiar with other
-     text editors. 50 years later, a superior vi implementation has been
-     created. Nextvi is a masterpiece, a symphony of efficiency and elegance.
-     It boasts a blazing fast startup time, unrivaled portability,
-     hackability, a god powerful macro system and so much more.
+     VI is a legendary command-line text editor, first introduced by Bill Joy
+     in 1976, renowned for its modal interface, which allows users to switch
+     between insert, command, and visual modes for seamless text manipulation.
+     This powerful and efficient editor has stood the test of time, remaining
+     a staple tool for developers and system administrators in Unix and Linux
+     environments, thanks to its flexibility, customization options, and
+     syntax similar to other vi/ex editors. To mark its 50th anniversary,
+     Nextvi emerges as the pinnacle of VI's evolution. This masterpiece of
+     efficiency and elegance boasts unparalleled startup speed, unmatched
+     portability, exceptional hackability, and an incredibly robust macro
+     system, among other features. Nextvi is truly the next generation of VI,
+     ready to elevate your text editing experience.
 
 OPTIONS
      -e	     Enter Ex mode on startup
@@ -238,6 +236,7 @@ VI MOTIONS
      3d/int  Delete text until the 3rd instance of "int" keyword
      d3w     Delete 3 words
      "ayl    Yank a character into 'a' register
+     "Ayw    Use uppercase to append a word to 'a' register.
 
 EX
      Ex is a line editor for Unix systems originally written by Bill Joy in
@@ -260,8 +259,8 @@ EX EXPANSION
      command. If the closing ! is not specified, the end of the line
      becomes a terminator.
      Example:
-     Substitute the value of env var $SECRET to the value of $RANDOM
-     :). In this demo, we set the value of SECRET to "int" ourselves.
+     Substitute the value of env var $SECRET to the value of $RANDOM :).
+     In this demo, we set the value of SECRET to "int" ourselves.
      :%s/!export SECRET="int" && printf "%s" $SECRET!/!printf "%s" $RANDOM! :)
 
 EX ESCAPES
@@ -337,7 +336,7 @@ EX COMMANDS
 	     it will work with global command. Multiple ex commands can be
 	     chained in one global command.
 	     In this case the ex separator has to be escaped once.
-	     Example: yank matches and print them out.
+	     Example: yank matches appending to reg 'a' and print them out.
 	     :g/int/ya A\|p
 	     If you wanted to get really fancy, it is possible to nest global
 	     commands inside of global commands.
@@ -399,6 +398,12 @@ EX COMMANDS
 	     this is an example text for subs and has prepreafterafter or prevoidafter
 
      ya	     Yank a region
+
+	     ya can append to any of the non-alphabetical registers by adding
+	     any extra character to the command.
+	     Example: append to register 1
+	     :ya 1x
+
      ya!     Reset register value
      !	     Run external program
 
@@ -568,6 +573,52 @@ SPECIAL MARKS & YANK REGISTERS
 	     and a \n character.
      1-9     previous value(s) of default register (nonatomic)
 
+CODE MAP
+     +--------------+---------------------+
+     | 537  kmap.h  | keymap translation  |
+     | 457  vi.h    | definitions/aux	  |
+     +--------------+---------------------+
+     | 653  uc.c    | UTF-8 support	  |
+     | 324  term.c  | low level IO	  |
+     | 293  conf.c  | hl/ft/td config	  |
+     | 658  regex.c | extended RE	  |
+     | 601  lbuf.c  | file/line buffer	  |
+     | 1199 ex.c    | ex options/commands |
+     | 2054 vi.c    | normal mode/general |
+     | 662  led.c   | insert mode/output  |
+     | 382  ren.c   | positioning/syntax  |
+     | 6826 total   | wc -l *.c		  |
+     +--------------+---------------------+
+
+COMPILING
+     export CC='g++ -x c'
+	     set compiler, g++ example
+     export CFLAGS='-s'
+	     set CFLAGS, strip example
+     ./cbuild.sh
+	     Basic build
+     ./cbuild.sh debug
+	     Basic debug build
+     ./cbuild.sh pgobuild
+	     pgobuild which can lead to a significant performance boost on
+	     some application specific tasks.
+     valgrind --tool=cachegrind --cache-sim=yes --branch-sim=yes ./vi vi.c
+	     performance bench test
+
+PHILOSOPHY
+     In most text editors, flexibility is a minor or irrelevant design goal.
+     Nextvi is designed to be flexible where the editor adapts to the user needs.
+     This flexibility is achieved by heavily chaining basic commands and allowing
+     them to create new ones with completely different functionality. Command
+     reuse keeps the editor small without infringing on your freedom to quickly
+     get a good grasp on the code. If you want to customize anything, you should
+     be able to do it using the only core commands or a mix with some specific C
+     code for more difficult tasks. Simple and flexible design allows for straight
+     forward solutions to any problem long term and filters bad inconsistent ideas.
+
+     "All software sucks, but some do more than others."
+	     - Kyryl Melekhin
+
 SEE ALSO
      New functionality can be obtained through optional patches provided in the
      patches branch. If you have a meaningful contribution and would love to be
@@ -577,6 +628,54 @@ SEE ALSO
      Resources used to create this manual and contributions to be submitted on
      the manual branch.
      https://github.com/kyx0r/nextvi/tree/manual
+
+     Q: What is pikevm?
+     A: Pikevm is a complete rewrite of nextvi's regex engine for the purposes of
+     getting rid of backtracking and severe performance and memory constraints.
+     Pikevm guarantees that all regular expressions are computed in constant space
+     and O(n+k) time where n is size of the string and k is some constant for the
+     complexity of the regex i.e. number of state transitions. It is important to
+     understand that it does not mean that we run at O(n) linear speed, but rather
+     the amount of processing time & memory usage is distributed evenly and linearly
+     throughout the string, the k constant plays a big role. If you are familiar
+     with radix sort algorithms this follows the same idea.
+     Q: What are the other benefits?
+     A: For example, now it is possible to compute a C comment /* n */ where n can
+     be an infinite number of characters. Of course this extends to every other
+     valid regular expression.
+     Q: New features pikevm supports?
+     A: Additionally, pikevm supports PCRE style non capture group (?:) and lazy
+     quantifiers like .*? and .+?? because they were easy to implement and allow
+     for further regex profiling/optimization.
+     Q: NFA vs DFA (identify)
+     A: pikevm = NFA backtrack = DFA
+     Q: What's wrong with original implementation?
+     A: Nothing except it being slow and limited. My improved version of Ali's DFA
+     implementation ran 3.5X faster in any case, however I found a bug with it
+     where zero quantifier "?" nested groups compute wrong submatch results. To
+     fix this problem, it would require to undo a lot of optimization work already
+     done, basically going back to how slow Ali's implementation would be. The reason
+     this was spotted so late was because this kind of regex wasn't used before,
+     so I never tested it. Other than that I think submatch extraction is correct
+     on other cases. Pikevm does not have this bug, so it will be used as main
+     regex engine from now on, unless dfa ever finds a proper fix. Honestly, this
+     change isn't so surprising, as I was working on pikevm a few months prior, to
+     favor a superior algorithm.
+     You can still find that code here (likely with no updates):
+     https://github.com/kyx0r/nextvi/tree/dfa_dead
+     As a downside, NFA simulation loses the DFA property of being able to
+     quickly short circuit a match, as everything runs linearly and at constant
+     speed, incurring match time overhead. Well optimized DFA engine can
+     outperform pikevm, but that is rather rare as they got problems of their own.
+     For example as independently benchmarked, dfa_dead runs only 13% faster than
+     pikevm and that is stretching the limit of what is physically possible on a
+     table based matcher. Can't cheat mother nature, and if you dare to try she's
+     unforgiving at best.
+     Supplementary reading by Russ Cox:
+     https://swtch.com/~rsc/regexp/regexp1.html
+
+     Original Neatvi repository:
+     https://github.com/aligrudi/neatvi
 
 AUTHORS
      Nextvi was written by Kyryl Melekhin <k.melekhin@gmail.com>.  It is based
