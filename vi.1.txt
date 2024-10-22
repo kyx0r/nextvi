@@ -140,12 +140,16 @@ Removes \er character from line endings and trailing white spaces
 Toggle autoindent on or off. see xai
 .It Cm C-g
 Print buffer status infos
-.It Cm arg1-C-g
+.It Cm 1-C-g
 Enable permanent status bar row
+.It Cm 2-C-g
+Disable permanent status bar row
 .It Cm ga
 Print character info
-.It Cm arg1-ga
+.It Cm 1-ga
 Enable permanent character info bar row
+.It Cm 2-ga
+Disable permanent character info bar row
 .It Cm arg1-gw
 Hard wrap a line to arg1 col limit
 .It Cm arg1-gq
@@ -392,6 +396,18 @@ In ex, every command is prefixed with ':'. Ex is essential to vi, which allows i
 to run commands and macros. Together vi and ex create a beautiful symbiosis, which 
 complements each other and helps to solve various domain problems.
 .
+.Sh EX ESCAPES
+Nextvi special character escapes work mostly the same way everywhere
+except the following situations:
+.Bd -literal -compact
+ - Escapes in regex bracket expressions.
+ - # % and ! characters have to be escaped if they are part of an ex command.
+ - A single back slash requires 2 back slashes, and so on.
+ - regex requires for ( to be escaped if used inside [] brackets.
+ - In ex prompt the only separator is "|" character. It can be escaped normally
+   but will require extra back slash if passed into a regular expression.
+.Ed
+.
 .Sh EX RANGES
 Some ex commands can be prefixed with ranges.
 .Bl -tag -width Ds -compact
@@ -438,6 +454,9 @@ Print line(s) from the buffer
 .It Cm ea
 Open file based on it's filename substring and from listing in b-2
 .Bd -literal
+Requires directory listing in b-2 backfilled prior. May be done
+with :fd
+
 If the substring matches more than 1 filename, a prompt will
 be shown. Submit using numbers 0-9 (higher ascii values work
 too (^c to cancel)). Passing an extra arg to :ea in form of
@@ -453,7 +472,7 @@ Enter ex insert mode (exiting with ^c will discard changes)
 .It Cm c
 Enter ex change mode (exiting with ^c will discard changes)
 .It Cm d
-Delete a line
+Delete line(s)
 .It Cm e
 Open a file at path
 .It Cm e!
@@ -605,6 +624,8 @@ Exclude the .git and submodule folders.
 Running "inc" without an arg will disable all filters.
 .Ed
 
+.It Cm reg
+Print registers and their contents
 .It Cm bx
 Set max number of buffers allowed (default is 10)
 
@@ -614,6 +635,28 @@ Set autocomplete filter regex
 Running ex command "ac" with no argument will reset back to
 the default word filtering regex. You can find its string in
 led.c as a reference.
+.Ed
+
+.It Cm uc
+Toggle multibyte utf-8 decoding
+.Bd -literal
+This feature is particularly useful when editing files with 
+mixed encodings, binary files, or when the terminal does not 
+support UTF-8 or lacks the necessary fonts to display UTF-8 
+characters. Typically to be used along with :ph for the full 
+effect.
+.Ed
+
+.It Cm ph
+Create new placeholders
+.Bd -literal
+Examples:
+render 8 bit ascii (Extended ASCII) as '~':
+:ph 128 255 1 1~
+flawless ISO/IEC 8859-1 (latin-1) support:
+:uc|ph 128 160 1 1~
+reset to default as in conf.c:
+:ph
 .Ed
 .
 .El
@@ -626,12 +669,29 @@ If set, indent new lines.
 .
 .It Cm ic
 If set, ignore case in regular expressions.
-.
+
 .It Cm ish
-.\" TODO
-.
+Interactive shell
+.Bd -literal
+Makes every "!" pipe command run through an interactive shell 
+so that all shell features e.g. aliases work.
+.Ed
+
 .It Cm grp
-.\" TODO
+Regex search group
+.Bd -literal
+The following allows definition of target search group for /?nN, 
+autocomplete, ranged search, and ex substitution. This becomes 
+necessary when the result of regex search is to be based on 
+some group rather than default match group. For example you 
+want to search for the whole line but exclude the tabs at the 
+beginning of the line, use regex like this: [	]+(.[^ ]+) since 
+only the capture result for 2nd group matters use the "grp" 
+like this: :se grp=2 .The number 2 is important, it is calculated 
+using: grpnum * 2. In this case grpnum is 1. The default grpnum 
+is always 0.
+.Ed
+
 .
 .It Cm hl
 If set, highlight text based on rules defined in
@@ -647,23 +707,28 @@ If set, highlight pairs of brackets.
 If set, highlight text in reverse direction.
 .
 .It Cm hlw
-If set, highlight current word.
+If set, highlight current word under the cursor.
 .
 .It Cm led
-.\" TODO
-.
+If unset, all terminal output is disabled.
+
 .It Cm mpt
-.\" TODO
-.
+Control vi prompts
+.Bd -literal
+When set to 0 after an ex command is called from vi, disables 
+the "[any key to continue]" prompt. If mpt is negative, the 
+prompt will remain disabled.
+.Ed
+
 .It Cm order
 If set, reorder characters based on rules defined in
 .Pa conf.c .
 .
-.It Cm pac
-If set, print autocomplete suggestions on the fly.
-.
 .It Cm shape
 If set, perform Arabic script letter shaping.
+.
+.It Cm pac
+If set, print autocomplete suggestions on the fly.
 .
 .It Cm tbs
 Number of spaces used to represent a tab.
@@ -688,11 +753,32 @@ defaulting to right-to-left.
 Exclusively right-to-left.
 .
 .El
+.
+.Sh SPECIAL MARKS & YANK REGISTERS
+Marks:
+.Bl -tag -width Ds -compact
+.It Cm * 
+the position of the previous change
+.It Cm [ 
+the first line of the previous change
+.It Cm ] 
+the last line of the previous change
 .El
-.
-.Sh SPECIAL MARKS
-.
-.Sh SPECIAL YANK BUFFERS
+Regs:
+.Bl -tag -width Ds -compact
+.It Cm / 
+the previous search keyword
+.It Cm :
+the previous ex command
+.It Cm 0 
+previous value of default register (atomic)
+.Bd -literal -compact
+Atomic means the operation did not include a whole line
+and a \en character.
+.Ed
+.It Cm 1-9
+previous value(s) of default register (nonatomic)
+.El
 .
 .Sh SEE ALSO
 .
@@ -706,5 +792,5 @@ It is based on
 which was written by
 .An Ali Gholami Rudi Aq Mt ali@rudi.ir .
 .\" add more contributors here?
-This manual page was written by
+This manual page was inspired by
 .An népéta Aq Mt nepeta@canaglie.net

@@ -92,9 +92,11 @@ VI NORMAL
 		   spaces
      va		   Toggle autoindent on or off. see xai
      C-g	   Print buffer status infos
-     arg1-C-g	   Enable permanent status bar row
+     1-C-g	   Enable permanent status bar row
+     2-C-g	   Disable permanent status bar row
      ga		   Print character info
-     arg1-ga	   Enable permanent character info bar row
+     1-ga	   Enable permanent character info bar row
+     2-ga	   Disable permanent character info bar row
      arg1-gw	   Hard wrap a line to arg1 col limit
      arg1-gq	   Hard wrap a buffer to arg1 col limit
      gg		   Goto the first line in the buffer
@@ -238,6 +240,16 @@ EX
      beautiful symbiosis, which complements each other and helps to solve
      various domain problems.
 
+EX ESCAPES
+     Nextvi special character escapes work mostly the same way everywhere
+     except the following situations:
+      - Escapes in regex bracket expressions.
+      - # % and ! characters have to be escaped if they are part of an ex command.
+      - A single back slash requires 2 back slashes, and so on.
+      - regex requires for ( to be escaped if used inside [] brackets.
+      - In ex prompt the only separator is "|" character. It can be escaped normally
+	but will require extra back slash if passed into a regular expression.
+
 EX RANGES
      Some ex commands can be prefixed with ranges.
      Example: print lines 1,5
@@ -273,6 +285,9 @@ EX COMMANDS
      ea	     Open file based on it's filename substring and from listing in
 	     b-2
 
+	     Requires directory listing in b-2 backfilled prior. May be done
+	     with :fd
+
 	     If the substring matches more than 1 filename, a prompt will
 	     be shown. Submit using numbers 0-9 (higher ascii values work
 	     too (^c to cancel)). Passing an extra arg to :ea in form of
@@ -282,7 +297,7 @@ EX COMMANDS
      a	     Enter ex append mode (exiting with ^c will discard changes)
      i	     Enter ex insert mode (exiting with ^c will discard changes)
      c	     Enter ex change mode (exiting with ^c will discard changes)
-     d	     Delete a line
+     d	     Delete line(s)
      e	     Open a file at path
      e!	     Reload the current buffer from FS
 
@@ -395,6 +410,7 @@ EX COMMANDS
 	     :inc (^[\!.git\!submodule]+[^\/]+$)
 	     Running "inc" without an arg will disable all filters.
 
+     reg     Print registers and their contents
      bx	     Set max number of buffers allowed (default is 10)
 
      ac	     Set autocomplete filter regex
@@ -403,21 +419,62 @@ EX COMMANDS
 	     the default word filtering regex. You can find its string in
 	     led.c as a reference.
 
+     uc	     Toggle multibyte utf-8 decoding
+
+	     This feature is particularly useful when editing files with
+	     mixed encodings, binary files, or when the terminal does not
+	     support UTF-8 or lacks the necessary fonts to display UTF-8
+	     characters. Typically to be used along with :ph for the full
+	     effect.
+
+     ph	     Create new placeholders
+
+	     Examples:
+	     render 8 bit ascii (Extended ASCII) as '~':
+	     :ph 128 255 1 1~
+	     flawless ISO/IEC 8859-1 (latin-1) support:
+	     :uc|ph 128 160 1 1~
+	     reset to default as in conf.c:
+	     :ph
+
 EX OPTIONS
      ai	     If set, indent new lines.
      ic	     If set, ignore case in regular expressions.
-     ish
-     grp
+
+     ish     Interactive shell
+
+	     Makes every "!" pipe command run through an interactive shell
+	     so that all shell features e.g. aliases work.
+
+     grp     Regex search group
+
+	     The following allows definition of target search group for /?nN,
+	     autocomplete, ranged search, and ex substitution. This becomes
+	     necessary when the result of regex search is to be based on
+	     some group rather than default match group. For example you
+	     want to search for the whole line but exclude the tabs at the
+	     beginning of the line, use regex like this: [   ]+(.[^ ]+) since
+	     only the capture result for 2nd group matters use the "grp"
+	     like this: :se grp=2 .The number 2 is important, it is calculated
+	     using: grpnum * 2. In this case grpnum is 1. The default grpnum
+	     is always 0.
+
      hl	     If set, highlight text based on rules defined in conf.c.
      hll     If set, highlight current line.
      hlp     If set, highlight pairs of brackets.
      hlr     If set, highlight text in reverse direction.
-     hlw     If set, highlight current word.
-     led
-     mpt
+     hlw     If set, highlight current word under the cursor.
+     led     If unset, all terminal output is disabled.
+
+     mpt     Control vi prompts
+
+	     When set to 0 after an ex command is called from vi, disables
+	     the "[any key to continue]" prompt. If mpt is negative, the
+	     prompt will remain disabled.
+
      order   If set, reorder characters based on rules defined in conf.c.
-     pac     If set, print autocomplete suggestions on the fly.
      shape   If set, perform Arabic script letter shaping.
+     pac     If set, print autocomplete suggestions on the fly.
      tbs     Number of spaces used to represent a tab.
      td	     Current text direction context.  This option accepts four
 	     meaningful values:
@@ -427,12 +484,23 @@ EX OPTIONS
 	     -1	     Follow dircontexts[], defaulting to right-to-left.
 	     -2	     Exclusively right-to-left.
 
-SPECIAL MARKS
-SPECIAL YANK BUFFERS
+SPECIAL MARKS & YANK REGISTERS
+     Marks:
+     *	     the position of the previous change
+     [	     the first line of the previous change
+     ]	     the last line of the previous change
+     Regs:
+     /	     the previous search keyword
+     :	     the previous ex command
+     0	     previous value of default register (atomic)
+	     Atomic means the operation did not include a whole line
+	     and a \n character.
+     1-9     previous value(s) of default register (nonatomic)
+
 SEE ALSO
 AUTHORS
      Nextvi was written by Kyryl Melekhin <k.melekhin@gmail.com>.  It is based
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
-     manual page was written by népéta <nepeta@canaglie.net>
+     manual page was inspired by népéta <nepeta@canaglie.net>
 
 Linux 6.11.4-arch1-1	      September 12, 2024	  Linux 6.11.4-arch1-1
