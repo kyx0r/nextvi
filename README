@@ -95,13 +95,13 @@ VI NORMAL
      ga		   Print character info
      1-ga	   Enable permanent character info bar row
      2-ga	   Disable permanent character info bar row
-     arg1-gw	   Hard wrap a line to arg1 col limit
-     arg1-gq	   Hard wrap a buffer to arg1 col limit
+     arg1-gw	   Hard line wrap a line to arg1 col limit
+     arg1-gq	   Hard line wrap a buffer to arg1 col limit
      gg		   Goto the first line in the buffer
-     g~-arg2	   Switch case for arg2 region
-     gu-arg2	   Switch to lowercase for arg2 region
-     gU-arg2	   Switch to uppercase for arg2 region
-     arg1-~	   Switch case arg1 times forward
+     g~-arg2	   Switch character case for arg2 region
+     gu-arg2	   Switch arg2 region to lowercase
+     gU-arg2	   Switch arg2 region to uppercase
+     arg1-~	   Switch character case arg1 times forward
      '-arg2	   Goto a line mark arg2
      m-arg2	   Set a buffer local line mark arg2
      i		   Enter insert mode
@@ -301,7 +301,7 @@ EX COMMANDS
 	     essential for scripting macros. Subsequent commands within the
 	     range will move to the next match just like n/N.
 
-     b	     Print currently active buffers state or switch to buffer
+     b	     Print currently active buffers state or switch to a buffer
 
 	     Switching to the 5th buffer:
 	     :b5
@@ -320,8 +320,11 @@ EX COMMANDS
      ea	     Open file based on it's filename substring and from listing in
 	     b-2
 
-	     Requires directory listing in b-2 backfilled prior. May be done
-	     with :fd
+	     Requires directory listing in b-2 backfilled prior. This can
+	     be done with:
+	     :fd
+	     or
+	     :b-2|1,1!find .
 
 	     If the substring matches more than 1 filename, a prompt will
 	     be shown. Submit using numbers 0-9 (higher ascii values work
@@ -572,6 +575,33 @@ EXINIT ENV VAR
      create { and closing } below the cursor leaving cursor in insert mode in
      between the braces. This is something you would commonly do in C like
      programming language.
+
+REGEX
+     Nextvi's regex syntax is akin to that of Plan 9.
+     .	     match any single char
+     ^	     assert start of the line
+     $	     assert end of the line
+     {N,M}   match N to M times
+     ()	     grouping
+     (?:)    non capture grouping
+     [N-M]   match ranges N to M
+     *	     repeated zero or more times
+     +	     repeated one or more times
+     |	     union, alternative branch
+     \<	     assert beginning of the word
+     \>	     assert end of the word
+     ?	     one or zero matches greedy
+     ??	     one or zero matches lazy
+
+     Additionally, Nextvi's supports static lookahead expressions. For example
+     [!abc] and [=abc] where ! is negated version of =. This will treat "abc"
+     as (a && b && c) logically. It is possible to have multiple in one
+     bracket expression as well. For example [!abc!cda!qwe] where each string
+     delimited by the ! acts like a typical or operation i.e. [acq] with only
+     difference of testing the extra characters ahead. To combine both
+     standard bracket expression and lookahead in one, use ^ or ^= where ^ is
+     negated and ^= is default. For example: [!abc^=123] characters after ^=
+     match exactly how [123] would.
 
 SPECIAL MARKS
      *	     the position of the previous change
