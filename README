@@ -236,7 +236,7 @@ VI MOTIONS
      3d/int  Delete text until the 3rd instance of "int" keyword
      d3w     Delete 3 words
      "ayl    Yank a character into 'a' register
-     "Ayw    Use uppercase to append a word to 'a' register.
+     "Ayw    Use uppercase to append a word to 'a' register
 
 EX
      Ex is a line editor for Unix systems originally written by Bill Joy in
@@ -560,12 +560,12 @@ EXINIT ENV VAR
      between the braces. This is something you would commonly do in C like
      programming language.
 
-SPECIAL MARKS & YANK REGISTERS
-     Marks:
+SPECIAL MARKS
      *	     the position of the previous change
      [	     the first line of the previous change
      ]	     the last line of the previous change
-     Regs:
+
+SPECIAL REGISTERS
      /	     the previous search keyword
      :	     the previous ex command
      0	     previous value of default register (atomic)
@@ -682,4 +682,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
      manual page was inspired by népéta <nepeta@canaglie.net>
 
-Linux 6.11.4-arch1-1	      September 12, 2024	  Linux 6.11.4-arch1-1
+Linux 6.11.4-arch1-1	       October 22, 2024		  Linux 6.11.4-arch1-1
