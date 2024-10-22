@@ -148,19 +148,19 @@ Enable permanent character info bar row
 .It Cm 2-ga
 Disable permanent character info bar row
 .It Cm arg1-gw
-Hard wrap a line to arg1 col limit
+Hard line wrap a line to arg1 col limit
 .It Cm arg1-gq
-Hard wrap a buffer to arg1 col limit
+Hard line wrap a buffer to arg1 col limit
 .It Cm gg
 Goto the first line in the buffer
 .It Cm g~-arg2
-Switch case for arg2 region
+Switch character case for arg2 region
 .It Cm gu-arg2
-Switch to lowercase for arg2 region
+Switch arg2 region to lowercase
 .It Cm gU-arg2
-Switch to uppercase for arg2 region
+Switch arg2 region to uppercase
 .It Cm arg1-~
-Switch case arg1 times forward
+Switch character case arg1 times forward
 .It Cm '-arg2
 Goto a line mark arg2
 .It Cm m-arg2
@@ -475,7 +475,7 @@ range will move to the next match just like n/N.
 .Ed
 
 .It Cm b
-Print currently active buffers state or switch to buffer
+Print currently active buffers state or switch to a buffer
 .Bd -literal
 Switching to the 5th buffer:
 :b5
@@ -498,8 +498,11 @@ Print line(s) from the buffer
 .It Cm ea
 Open file based on it's filename substring and from listing in b-2
 .Bd -literal
-Requires directory listing in b-2 backfilled prior. May be done
-with :fd
+Requires directory listing in b-2 backfilled prior. This can
+be done with:
+:fd
+or
+:b-2|1,1!find .
 
 If the substring matches more than 1 filename, a prompt will
 be shown. Submit using numbers 0-9 (higher ascii values work
@@ -858,13 +861,55 @@ between the braces. This is something you would commonly do in C like
 programming language.
 .Ed
 .
+.Sh REGEX
+Nextvi's regex syntax is akin to that of Plan 9.
+.Bl -tag -width Ds -compact
+.It Cm \&.
+match any single char
+.It Cm ^
+assert start of the line
+.It Cm $
+assert end of the line
+.It Cm {N,M}
+match N to M times
+.It Cm ()
+grouping
+.It Cm (?:)
+non capture grouping
+.It Cm [N-M]
+match ranges N to M
+.It Cm *
+repeated zero or more times
+.It Cm +
+repeated one or more times
+.It Cm \&|
+union, alternative branch
+.It Cm \e<
+assert beginning of the word
+.It Cm \e>
+assert end of the word
+.It Cm \&?
+one or zero matches greedy
+.It Cm \&??
+one or zero matches lazy
+.El
+
+Additionally, Nextvi's supports static lookahead expressions. For example
+[!abc] and [=abc] where ! is negated version of =. This will treat "abc" as (a &&
+b && c) logically. It is possible to have multiple in one bracket expression as
+well. For example [!abc!cda!qwe] where each string delimited by the ! acts like
+a typical or operation i.e. [acq] with only difference of testing the extra characters
+ahead. To combine both standard bracket expression and lookahead in one, use ^ or
+^= where ^ is negated and ^= is default. For example: [!abc^=123] characters after
+^= match exactly how [123] would.
+.
 .Sh SPECIAL MARKS
 .Bl -tag -width Ds -compact
 .It Cm *
 the position of the previous change
-.It Cm [
+.It Cm \&[
 the first line of the previous change
-.It Cm ]
+.It Cm \&]
 the last line of the previous change
 .El
 .
@@ -872,7 +917,7 @@ the last line of the previous change
 .Bl -tag -width Ds -compact
 .It Cm /
 the previous search keyword
-.It Cm :
+.It Cm \&:
 the previous ex command
 .It Cm 0
 previous value of default register (atomic)
