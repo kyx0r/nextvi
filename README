@@ -212,7 +212,7 @@ INSERT MODE
      C-t	   Increase indent
      C-d	   Decrease indent
      C-]	   Switch a default paste register to 0-9
-     C-\-arg2	   Select paste register arg2. \ selects default register
+     C-\-arg2	   Select paste register arg2. C-\ selects default register
      C-p	   Paste a register
      C-g	   Index a buffer for autocomplete
      C-y	   Reset autocomplete db
