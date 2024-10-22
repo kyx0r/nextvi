@@ -388,9 +388,9 @@ Exit insert mode
 .
 .Sh EX
 Ex is a line editor for Unix systems originally written by Bill Joy in 1976.
-In ex, every command is prefixed with ':'. Ex is essential to vi which allows it
-to run commands and macros. Together vi and ex create a beautiful symbiosis
-which complements eath other and helps to solve various domain problems.
+In ex, every command is prefixed with ':'. Ex is essential to vi, which allows it
+to run commands and macros. Together vi and ex create a beautiful symbiosis, which 
+complements each other and helps to solve various domain problems.
 .
 .Sh EX RANGES
 Some ex commands can be prefixed with ranges.
