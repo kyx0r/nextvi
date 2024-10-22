@@ -316,7 +316,7 @@ Move cursor arg1 character forward
 .It Cm arg1-C-h arg1-Backspace
 Move cursor arg1 character backward
 .It Cm `-arg2
-Goto a line mark arg2 with horizonal position
+Goto a line mark arg2 with horizontal position
 .It Cm %
 Move the cursor to [](){} pair
 .It Cm arg1-%
@@ -475,7 +475,19 @@ range will move to the next match just like n/N.
 .Ed
 
 .It Cm b
-Print currently active buffers and their state
+Print currently active buffers state or switch to buffer
+.Bd -literal
+Switching to the 5th buffer:
+:b5
+
+There are 2 temporary buffers which are separate from
+the main buffers.
+b-1 = /hist/ ex history buffer
+b-2 = /fm/ directory listing buffer
+Switching to the temporary buffer buffer:
+:b-1
+.Ed
+
 .It Cm bp
 Set current buffer path
 .It Cm bs
@@ -508,7 +520,7 @@ Delete line(s)
 .It Cm e
 Open a file at path
 .It Cm e!
-Reload the current buffer from FS
+Reload the current buffer from the filesystem
 
 .It Cm g
 Global command
@@ -550,8 +562,10 @@ directly.
 .It Cm pu
 Paste a register
 .Bd -literal
-:pu command can pipe the register to an external program by
+Any register can be piped to an external program by
 specifying \e! as a 2nd argument.
+Example: copy default register to X11 clipboard
+:pu \e!xclip -selection clipboard
 .Ed
 
 .It Cm q

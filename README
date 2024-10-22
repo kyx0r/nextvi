@@ -191,7 +191,7 @@ VI NORMAL
      arg1-Space	   Move cursor arg1 character forward
      arg1-C-h arg1-Backspace
 		   Move cursor arg1 character backward
-     `-arg2	   Goto a line mark arg2 with horizonal position
+     `-arg2	   Goto a line mark arg2 with horizontal position
      %		   Move the cursor to [](){} pair
      arg1-%	   Move the cursor to the arg1 percent line number
      arg1-C-n	   Swap to the next buffer, arg1 changes direction
@@ -301,7 +301,18 @@ EX COMMANDS
 	     essential for scripting macros. Subsequent commands within the
 	     range will move to the next match just like n/N.
 
-     b	     Print currently active buffers and their state
+     b	     Print currently active buffers state or switch to buffer
+
+	     Switching to the 5th buffer:
+	     :b5
+
+	     There are 2 temporary buffers which are separate from
+	     the main buffers.
+	     b-1 = /hist/ ex history buffer
+	     b-2 = /fm/ directory listing buffer
+	     Switching to the temporary buffer buffer:
+	     :b-1
+
      bp	     Set current buffer path
      bs	     Set current buffer saved. If arg given, reset undo/redo history
      p	     Print line(s) from the buffer
@@ -323,7 +334,7 @@ EX COMMANDS
      c	     Enter ex change mode (exiting with ^c will discard changes)
      d	     Delete line(s)
      e	     Open a file at path
-     e!	     Reload the current buffer from FS
+     e!	     Reload the current buffer from the filesystem
 
      g	     Global command
 
@@ -357,8 +368,10 @@ EX COMMANDS
 
      pu	     Paste a register
 
-	     :pu command can pipe the register to an external program by
+	     Any register can be piped to an external program by
 	     specifying \! as a 2nd argument.
+	     Example: copy default register to X11 clipboard
+	     :pu \!xclip -selection clipboard
 
      q	     Soft quit
      q!	     Force quit
