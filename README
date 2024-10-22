@@ -230,8 +230,14 @@ INSERT MODE
      C-e	   Switch to english keymap
      C-f	   Switch to alternative keymap
      C-v-arg2	   Read a literal character arg2
-     C-k-arg2	   Read a diagraph sequence arg2
+     C-k-arg2	   Read a digraph sequence arg2
      C-c ESC	   Exit insert mode
+
+VI MOTIONS
+     Basic motion examples:
+     3d/int  Delete text until the 3rd instance of "int" keyword
+     d3w     Delete 3 words
+     "ayl    Yank a character into 'a' register
 
 EX
      Ex is a line editor for Unix systems originally written by Bill Joy in
@@ -240,29 +246,48 @@ EX
      beautiful symbiosis, which complements each other and helps to solve
      various domain problems.
 
+EX EXPANSION
+     Characters # and % in ex prompt substitute the buffer pathname.
+     % substitutes current buffer and # last swapped buffer.
+     It is possible to expand any arbitrary buffer by using % or
+     # (no difference in this case) followed by the buffer number.
+     Example:
+     print the pathname for buffer 69 (if it exists).
+     :!echo "%69"
+
+     Every ex command is be able to receive data from the outside
+     world through a special expansion character ! which runs a pipe
+     command. If the closing ! is not specified, the end of the line
+     becomes a terminator.
+     Example:
+     Substitute the value of env var $SECRET to the value of $RANDOM
+     :). In this demo, we set the value of SECRET to "int" ourselves.
+     :%s/!export SECRET="int" && printf "%s" $SECRET!/!printf "%s" $RANDOM! :)
+
 EX ESCAPES
      Nextvi special character escapes work mostly the same way everywhere
      except the following situations:
       - Escapes in regex bracket expressions.
-      - # % and ! characters have to be escaped if they are part of an ex command.
+      - Due to ex expansion # % and ! characters have to be escaped
+	if they are part of an ex command.
       - A single back slash requires 2 back slashes, and so on.
       - regex requires for ( to be escaped if used inside [] brackets.
-      - In ex prompt the only separator is "|" character. It can be escaped normally
-	but will require extra back slash if passed into a regular expression.
+      - In ex prompt the only separator is "|" character. It can
+	be escaped normally but will require extra back slash if passed
+	into a regular expression.
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
-     Example: print lines 1,5
-	     :1,5p
-     Example: print 5 lines around xrow
-	     :.-5,.+5p
-     Example: print until int is found
-	     :.,/int/p
-     Example: print until int is found in reverse
-	     :?int?,.p
+     :1,5p   print lines 1,5
+     :.-5,.+5p
+	     print 5 lines around xrow
+     :.,/int/p
+	     print until int is found
+     :?int?,.p
+	     print until int is found in reverse
 	     Note: in some cases . can be dropped but is kept for readability.
-     Example: print lines from mark d to mark a
-	     :'d,'ap
+     :'d,'ap
+	     print lines from mark d to mark a
 
 EX COMMANDS
      f	     Ranged search (stands for find)
@@ -484,6 +509,52 @@ EX OPTIONS
 	     -1	     Follow dircontexts[], defaulting to right-to-left.
 	     -2	     Exclusively right-to-left.
 
+     pr	     Print register
+
+	     Set a special register using a character or a number. For instance,
+	     :se pr=a will use the register 'a'. When the register is set,
+	     all data passed into ex_print will be stored. If the register
+	     is uppercase, new lines are added to match the exact output
+	     that was printed. With this, internal editor state can be exported.
+	     For example, printing the current buffers list with :b to a
+	     file is possible.
+
+EXINIT ENV VAR
+     EXINIT can be used to achieve arbitrary level of customization.
+     Using ex command "tp" any sequence of vi/ex commands can be
+     performed at startup.
+
+     To run examples below:
+     There are invisible/non printing characters inside the EXINIT
+     string. Visual copy paste in most programs will not copy it
+     correctly. Copy it into a file and execute like this:
+	     $ source ./init.sh
+     The new line inside the EXINIT string is literal and is represented
+     with "\n". To suppress EXINIT invoke vi like so: EXINIT= vi file
+     When scripting for improved performance, output can be disabled
+     by running :se noled and the initial load message can be suppressed
+     using -m commandline.
+
+     Example 1:
+     There is a dictionary file (assume vi.c), which we always want to have indexed
+     at startup for autocomplete.
+     export EXINIT="e ./vi.c|tp i?|bx 1|bx"
+     The last "bx" commands delete the vi.c buffer. To keep it around as a buffer
+     remove the "bx" commands.
+     Example 2:
+     Load your shell's history into vi's history buffer and adjust the data such
+     that it is usable by appending ! at the beginning of command and escaping the "|"
+     pipes the way ex prompt expects them.
+     export EXINIT=$'e /root/.ash_history|tp yG:?p:%s/^/\!\\|%s/ \| / \\\\\\| /g\nqq|bx 1|bx|ft'
+     Congratulations, vi has unofficially replaced your shell's frontend.
+     Example 3:
+     Setup some custom @@ macros in your favorite registers.
+     export EXINIT=$'e|tp io{\n}??kA|tp 1G|tp 2\"ayy'
+     This macro gets loaded into register a, when @a is executed the macro will
+     create { and closing } below the cursor leaving cursor in insert mode in
+     between the braces. This is something you would commonly do in C like
+     programming language.
+
 SPECIAL MARKS & YANK REGISTERS
      Marks:
      *	     the position of the previous change
@@ -498,6 +569,15 @@ SPECIAL MARKS & YANK REGISTERS
      1-9     previous value(s) of default register (nonatomic)
 
 SEE ALSO
+     New functionality can be obtained through optional patches provided in the
+     patches branch. If you have a meaningful contribution and would love to be
+     made public the patch can be submitted via email or github pull request.
+     https://github.com/kyx0r/nextvi/tree/patches
+
+     Resources used to create this manual and contributions to be submitted on
+     the manual branch.
+     https://github.com/kyx0r/nextvi/tree/manual
+
 AUTHORS
      Nextvi was written by Kyryl Melekhin <k.melekhin@gmail.com>.  It is based
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
