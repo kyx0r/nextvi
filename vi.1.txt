@@ -1,4 +1,4 @@
-.Dd Sep 12, 2024
+.Dd Oct 22, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -397,7 +397,7 @@ Delete 3 words
 .It Cm \&"ayl
 Yank a character into 'a' register
 .It Cm \&"Ayw
-Use uppercase to append a word to 'a' register.
+Use uppercase to append a word to 'a' register
 .El
 .
 .Sh EX
@@ -844,8 +844,7 @@ between the braces. This is something you would commonly do in C like
 programming language.
 .Ed
 .
-.Sh SPECIAL MARKS & YANK REGISTERS
-Marks:
+.Sh SPECIAL MARKS
 .Bl -tag -width Ds -compact
 .It Cm *
 the position of the previous change
@@ -854,7 +853,8 @@ the first line of the previous change
 .It Cm ]
 the last line of the previous change
 .El
-Regs:
+.
+.Sh SPECIAL REGISTERS
 .Bl -tag -width Ds -compact
 .It Cm /
 the previous search keyword
