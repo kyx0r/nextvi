@@ -88,13 +88,13 @@ VI NORMAL
 		   lines
      C-b	   Scroll up full screen size
      C-f	   Scroll down full screen size
-
-     arg1-#	   Enable/Disable line numbers and switch modes:
-		   # - single shot print, shows global and relative numbers.
-		   2# - permanent. shows global numbers.
-		   4# - permanent. shows relative numbers after indentation.
-		   8# - permanent. shows relative numbers.
-
+     #		   Show global and relative line numbers
+     2#		   Show global line numbers permanently
+     4#		   Show relative line numbers after indentation permanently
+     8#		   Show relative line numbers permanently
+     V		   Toggle show hidden characters: Space,Tab,New line
+     C-v	   Toggle show line motion numbers for ebEBwW
+     arg1-C-v	   Disable line motion numbers
      arg1-C-r	   Redo arg1 times
      arg1-u	   Undo arg1 times
      C-i TAB	   Open file using text from the cursor to eol
@@ -105,7 +105,7 @@ VI NORMAL
      arg1->-arg2   Indent right arg2 region
      "-arg2	   Operate on the register arg2
      R		   Print registers and their contents
-     @-arg2	   Execute a arg2 register macro
+     @-arg2	   Execute arg2 register macro
      @@		   Execute a last executed register macro on a new line
      arg1-.	   Repeat last normal command arg1 times
      arg1-v.	   Repeat last normal command moving down across arg1 lines
@@ -151,10 +151,13 @@ VI NORMAL
      O		   Enter insert mode creating a new line up
      arg1-c-arg2   Enter insert mode deleting based on the arg2 motion region
      C		   Enter insert mode deleting from cursor to the eol
-     arg1-d-arg2   Delete a arg2 region
+     arg1-d-arg2   Delete arg2 region
      D		   Delete from a cursor to the eol
+     arg1-x	   Delete arg1 characters under the cursor forward
+     arg1-X	   Delete arg1 characters under the cursor backward
      di-arg2	   Delete around arg2 which can be ( or ) or "
      ci-arg2	   Change around arg2 which can be ( or ) or "
+     arg1-r-arg2   Replace arg1 characters with arg2 under the cursor forward
      K		   Split a line
      arg1-K	   Split a line without creating empty new lines
      arg1-J	   Join arg1 lines
@@ -164,12 +167,6 @@ VI NORMAL
      arg1-p	   Paste a default register
      arg1-P	   Paste a default register below current line or behind
 		   cursor pos
-     V		   Toggle show hidden characters: Space,Tab,New line
-     arg1-r-arg2   Replace arg1 characters with arg2 under the cursor forward
-     C-v	   Show line motion numbers for ebEBwW. Switches its modes
-     arg1-C-v	   Disable line motion numbers
-     arg1-x	   Delete arg1 characters under the cursor forward
-     arg1-X	   Delete arg1 characters under the cursor backward
      m-arg2	   Set a buffer local line mark arg2
      C-t	   Set a global file mark 0
      arg1-C-t	   Set or switch to a global mark based on arg1 % 2 == 0
@@ -195,6 +192,8 @@ VI NORMAL
 		   words under the cursor
      C-p	   Filesystem search backward based on directory listing in
 		   b-2
+     arg1-C-p	   Filesystem search backward, setting search keyword to arg1
+		   words under the cursor
      C-z	   Suspend vi
      C-l	   Force redraw whole screen and update terminal dimensions
      qq		   Force quit cleaning the terminal
