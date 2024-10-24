@@ -86,8 +86,7 @@ VI NORMAL
 		   spaces to tabs. arg1 modifies the width
      arg1-vI	   Open %s/^ /	      /g ex prompt. Contains regex for
 		   changing tabs to spaces. arg1 modifies the width
-     vo		   Removes \r character from line endings and trailing white
-		   spaces
+     vo		   Remove trailing white spaces and \r line endings
      va		   Toggle autoindent on or off. see xai
      C-g	   Print buffer status infos
      1-C-g	   Enable permanent status bar row
@@ -122,14 +121,13 @@ VI NORMAL
      K		   Split a line
      arg1-K	   Split a line without creating empty new lines
      arg1-J	   Join arg1 lines
-     vj		   Raw line join mode, disables space padding when joining
-		   lines
+     vj		   Toggle space padding when joining lines
      arg1-y-arg2   Yank a region
      Y yy	   Yank a line
      arg1-p	   Paste a default register
      arg1-P	   Paste a default register below current line or behind
 		   cursor pos
-     "-arg2	   Operation on the register arg2
+     "-arg2	   Operate on the register arg2
      R		   Print registers and their contents
      V		   Toggle show hidden characters: Space,Tab,New line
      arg1-r-arg2   Replace arg1 characters with arg2 under the cursor forward
@@ -236,7 +234,7 @@ VI MOTIONS
      3d/int  Delete text until the 3rd instance of "int" keyword
      d3w     Delete 3 words
      "ayl    Yank a character into 'a' register
-     "Ayw    Use uppercase to append a word to 'a' register
+     "Ayw    Append a word to 'a' register
 
 EX
      Ex is a line editor for Unix systems originally written by Bill Joy in
@@ -396,8 +394,11 @@ EX COMMANDS
      se	     Set a variable
 
 	     Examples:
-	     :se var=1
-	     :se novar
+	     :se hll
+	     :se nohll
+	     Exact value:
+	     :se hll=1
+	     :se hll=0
 
      s	     Substitute
 
@@ -415,6 +416,7 @@ EX COMMANDS
 
      ya	     Yank a region
 
+	     To append to the register, pass in its uppercase version.
 	     ya can append to any of the non-alphabetical registers by adding
 	     any extra character to the command.
 	     Example: append to register 1
@@ -604,13 +606,13 @@ REGEX
      match exactly how [123] would.
 
 SPECIAL MARKS
-     *	     the position of the previous change
-     [	     the first line of the previous change
-     ]	     the last line of the previous change
+     *	     position of the previous change
+     [	     first line of the previous change
+     ]	     last line of the previous change
 
 SPECIAL REGISTERS
-     /	     the previous search keyword
-     :	     the previous ex command
+     /	     previous search keyword
+     :	     previous ex command
      0	     previous value of default register (atomic)
 	     Atomic means the operation did not include a whole line
 	     and a \n character.
@@ -626,11 +628,11 @@ CODE MAP
      | 293  conf.c  | hl/ft/td config	  |
      | 658  regex.c | extended RE	  |
      | 601  lbuf.c  | file/line buffer	  |
-     | 1199 ex.c    | ex options/commands |
+     | 1200 ex.c    | ex options/commands |
      | 2054 vi.c    | normal mode/general |
      | 662  led.c   | insert mode/output  |
      | 382  ren.c   | positioning/syntax  |
-     | 6826 total   | wc -l *.c		  |
+     | 6827 total   | wc -l *.c		  |
      +--------------+---------------------+
 
 COMPILING
@@ -725,4 +727,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
      manual page was inspired by népéta <nepeta@canaglie.net>
 
-Linux 6.11.4-arch1-1	       October 22, 2024		  Linux 6.11.4-arch1-1
+Linux 6.11.4-arch1-1	       October 24, 2024		  Linux 6.11.4-arch1-1
