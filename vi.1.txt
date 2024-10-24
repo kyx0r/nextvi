@@ -143,26 +143,20 @@ Scroll up half a screen size. If arg1 set scroll to arg1 lines
 Scroll up full screen size
 .It Cm C-f
 Scroll down full screen size
-
-.It Cm arg1-#
-Enable/Disable line numbers and switch modes:
-.Bl -nested -compact
-.It
-# - single shot print, shows global and relative numbers.
-.It
-2# - permanent. shows global numbers.
-.It
-4# - permanent. shows relative numbers after indentation.
-.It
-8# - permanent. shows relative numbers.
-.El
+.It Cm #
+Show global and relative line numbers
+.It Cm 2#
+Show global line numbers permanently
+.It Cm 4#
+Show relative line numbers after indentation permanently
+.It Cm 8#
+Show relative line numbers permanently
 .It Cm V
 Toggle show hidden characters: Space,Tab,New line
 .It Cm C-v
-Show line motion numbers for ebEBwW. Switch its modes
+Toggle show line motion numbers for ebEBwW
 .It Cm arg1-C-v
 Disable line motion numbers
-
 .It Cm arg1-C-r
 Redo arg1 times
 .It Cm arg1-u

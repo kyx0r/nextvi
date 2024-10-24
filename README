@@ -88,16 +88,13 @@ VI NORMAL
 		   lines
      C-b	   Scroll up full screen size
      C-f	   Scroll down full screen size
-
-     arg1-#	   Enable/Disable line numbers and switch modes:
-		   # - single shot print, shows global and relative numbers.
-		   2# - permanent. shows global numbers.
-		   4# - permanent. shows relative numbers after indentation.
-		   8# - permanent. shows relative numbers.
+     #		   Show global and relative line numbers
+     2#		   Show global line numbers permanently
+     4#		   Show relative line numbers after indentation permanently
+     8#		   Show relative line numbers permanently
      V		   Toggle show hidden characters: Space,Tab,New line
-     C-v	   Show line motion numbers for ebEBwW. Switch its modes
+     C-v	   Toggle show line motion numbers for ebEBwW
      arg1-C-v	   Disable line motion numbers
-
      arg1-C-r	   Redo arg1 times
      arg1-u	   Undo arg1 times
      C-i TAB	   Open file using text from the cursor to eol
