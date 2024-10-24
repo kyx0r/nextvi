@@ -899,7 +899,8 @@ static int ec_set(char *loc, char *cmd, char *arg)
 			if (r) {
 				*r = '\0';
 				strcpy(opt, tok);
-				val = strtol(r+1, NULL, 10) ? atoi(r+1) : r[1];
+				if (!(val = atoi(r+1)))
+					val = isdigit(r[1]) ? 0 : r[1];
 			} else {
 				strcpy(opt, tok);
 				val = 1;
