@@ -176,7 +176,7 @@ Operate on the register arg2
 .It Cm R
 Print registers and their contents
 .It Cm @-arg2
-Execute a arg2 register macro
+Execute arg2 register macro
 .It Cm @@
 Execute a last executed register macro on a new line
 .It Cm arg1-.
@@ -252,13 +252,19 @@ Enter insert mode deleting based on the arg2 motion region
 .It Cm C
 Enter insert mode deleting from cursor to the eol
 .It Cm arg1-d-arg2
-Delete a arg2 region
+Delete arg2 region
 .It Cm D
 Delete from a cursor to the eol
+.It Cm arg1-x
+Delete arg1 characters under the cursor forward
+.It Cm arg1-X
+Delete arg1 characters under the cursor backward
 .It Cm di-arg2
 Delete around arg2 which can be ( or ) or \&"
 .It Cm ci-arg2
 Change around arg2 which can be ( or ) or \&"
+.It Cm arg1-r-arg2
+Replace arg1 characters with arg2 under the cursor forward
 .It Cm K
 Split a line
 .It Cm arg1-K
@@ -277,16 +283,10 @@ Paste a default register
 Paste a default register below current line or behind cursor pos
 .It Cm V
 Toggle show hidden characters: Space,Tab,New line
-.It Cm arg1-r-arg2
-Replace arg1 characters with arg2 under the cursor forward
 .It Cm C-v
 Show line motion numbers for ebEBwW. Switches its modes
 .It Cm arg1-C-v
 Disable line motion numbers
-.It Cm arg1-x
-Delete arg1 characters under the cursor forward
-.It Cm arg1-X
-Delete arg1 characters under the cursor backward
 .It Cm m-arg2
 Set a buffer local line mark arg2
 .It Cm C-t
@@ -325,6 +325,8 @@ Filesystem search forward based on directory listing in b-2
 Filesystem search forward, setting search keyword to arg1 words under the cursor
 .It Cm C-p
 Filesystem search backward based on directory listing in b-2
+.It Cm arg1-C-p
+Filesystem search backward, setting search keyword to arg1 words under the cursor
 .It Cm C-z
 Suspend vi
 .It Cm C-l
