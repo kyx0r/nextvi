@@ -156,6 +156,12 @@ Enable/Disable line numbers and switch modes:
 .It
 8# - permanent. shows relative numbers.
 .El
+.It Cm V
+Toggle show hidden characters: Space,Tab,New line
+.It Cm C-v
+Show line motion numbers for ebEBwW. Switch its modes
+.It Cm arg1-C-v
+Disable line motion numbers
 
 .It Cm arg1-C-r
 Redo arg1 times
@@ -281,12 +287,6 @@ Yank a line
 Paste a default register
 .It Cm arg1-P
 Paste a default register below current line or behind cursor pos
-.It Cm V
-Toggle show hidden characters: Space,Tab,New line
-.It Cm C-v
-Show line motion numbers for ebEBwW. Switches its modes
-.It Cm arg1-C-v
-Disable line motion numbers
 .It Cm m-arg2
 Set a buffer local line mark arg2
 .It Cm C-t

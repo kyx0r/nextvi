@@ -94,6 +94,9 @@ VI NORMAL
 		   2# - permanent. shows global numbers.
 		   4# - permanent. shows relative numbers after indentation.
 		   8# - permanent. shows relative numbers.
+     V		   Toggle show hidden characters: Space,Tab,New line
+     C-v	   Show line motion numbers for ebEBwW. Switch its modes
+     arg1-C-v	   Disable line motion numbers
 
      arg1-C-r	   Redo arg1 times
      arg1-u	   Undo arg1 times
@@ -167,9 +170,6 @@ VI NORMAL
      arg1-p	   Paste a default register
      arg1-P	   Paste a default register below current line or behind
 		   cursor pos
-     V		   Toggle show hidden characters: Space,Tab,New line
-     C-v	   Show line motion numbers for ebEBwW. Switches its modes
-     arg1-C-v	   Disable line motion numbers
      m-arg2	   Set a buffer local line mark arg2
      C-t	   Set a global file mark 0
      arg1-C-t	   Set or switch to a global mark based on arg1 % 2 == 0
