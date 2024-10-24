@@ -1,5 +1,5 @@
 diff --git a/cbuild.sh b/cbuild.sh
-index 8027993..ac8c0b2 100755
+index ef1e347..65c33e3 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -41,6 +41,7 @@ CFLAGS="\

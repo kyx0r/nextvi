@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index fff5d34..55d600b 100644
+index 7dd7192..4dcbecc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -737,7 +737,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
@@ -19,7 +19,7 @@ index fff5d34..55d600b 100644
  	return 0;
  }
  
-@@ -1155,7 +1156,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
+@@ -1156,7 +1157,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index fff5d34..55d600b 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, cmd, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1164,6 +1165,9 @@ int ex_exec(const char *ln)
+@@ -1165,6 +1166,9 @@ int ex_exec(const char *ln)
  			ret = excmds[idx].ec(loc, cmd, ecmd);
  		free(ecmd);
  	}

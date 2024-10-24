@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index fff5d34..b3418b1 100644
+index 7dd7192..42bab4d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -18,7 +18,7 @@ index fff5d34..b3418b1 100644
  	{"hl", &xhl},
  	{"hll", &xhll},
  	{"hlw", &xhlw},
-@@ -1183,6 +1185,51 @@ void ex(void)
+@@ -1184,6 +1186,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -70,7 +70,7 @@ index fff5d34..b3418b1 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1194,6 +1241,20 @@ void ex_init(char **files, int n)
+@@ -1195,6 +1242,20 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	xmpt = 0;
  	xvis &= ~8;

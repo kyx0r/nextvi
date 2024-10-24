@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index fff5d34..c1f44d1 100644
+index 7dd7192..7bc5a68 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
