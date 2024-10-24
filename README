@@ -38,18 +38,46 @@ VI NORMAL
 		   Move the cursor arg1 lines down
      arg1-- arg1-k
 		   Move the cursor arg1 lines up
+     arg1-h	   Move the cursor arg1 cols left
+     arg1-l	   Move the cursor arg1 cols right
+     f-arg2	   Move the cursor to the arg2 character found forward
+     F-arg2	   Move the cursor to the arg2 character found backward
+     t-arg2	   Move the cursor until the arg2 character found forward
+     T-arg2	   Move the cursor until the arg2 character found backward
+     arg1-,	   Repeat last f or F or t or F command backward arg1 times
+     arg1-;	   Repeat last f or F or t or F command forward arg1 times
+     arg1-B	   Move the cursor to the end of the word skipping punctuation
+		   backward arg1 times
+     arg1-E	   Move the cursor to the end of the word skipping punctuation
+		   forward arg1 times
+     arg1-b	   Move the cursor to the end of the word backward arg1 times
+     arg1-e	   Move the cursor to the end of the word forward arg1 times
+     arg1-W	   Move the cursor to the start of the word skipping
+		   punctuation forward arg1 times
+     arg1-w	   Move the cursor to the start of the word forward arg1 times
+     {		   Move the cursor to the next { region up
+     }		   Move the cursor to the next { region down
+     [		   Move the cursor to the next \n region up
+     ]		   Move the cursor to the next \n region down
      ^		   Move the cursor to the start of the line after indentation
-
-     arg1-#	   Enable/Disable line numbers and switch modes:
-		   # - single shot print, shows global and relative numbers.
-		   2# - permanent. shows global numbers.
-		   4# - permanent. shows relative numbers after indentation.
-		   8# - permanent. shows relative numbers.
-
-     C-^ C-6	   Switch to previous buffer
-     arg1-C-r	   Redo arg1 times
-     arg1-u	   Undo arg1 times
-     C-i TAB	   Open file using text from the cursor to eol
+     0 |	   Move the cursor to the start of the line.
+     $		   Move the cursor to the eol
+     arg1-|	   Move the cursor to arg1 col
+     arg1-Space	   Move cursor arg1 characters forward
+     arg1-C-h arg1-Backspace
+		   Move cursor arg1 characters backward
+     %		   Move the cursor to [](){} pair
+     arg1-%	   Move the cursor to the arg1 percent line number
+     '-arg2	   Goto a line mark arg2
+     `-arg2	   Goto a line mark arg2 with horizontal position
+     gg		   Goto the first line in the buffer
+     arg1-G	   Goto the last line in the buffer or arg1 line
+     H		   Goto the highest line of the screen
+     L		   Goto the lowest line of the screen
+     M		   Goto the middle line of the screen
+     arg1-z.	   Center the screen. arg1 is xtop
+     arg1-z\n	   Center the screen at top row. arg1 is xtop
+     arg1-z-	   Center the screen at bottom row. arg1 is xtop
      arg1-C-e	   Scroll down 1 or arg1 lines. arg1 is set and stored, cursor
 		   position preserved
      arg1-C-y	   Scroll up 1 or arg1 lines. arg1 is set and stored, cursor
@@ -60,11 +88,23 @@ VI NORMAL
 		   lines
      C-b	   Scroll up full screen size
      C-f	   Scroll down full screen size
+
+     arg1-#	   Enable/Disable line numbers and switch modes:
+		   # - single shot print, shows global and relative numbers.
+		   2# - permanent. shows global numbers.
+		   4# - permanent. shows relative numbers after indentation.
+		   8# - permanent. shows relative numbers.
+
+     arg1-C-r	   Redo arg1 times
+     arg1-u	   Undo arg1 times
+     C-i TAB	   Open file using text from the cursor to eol
      C-k	   Write the current buffer to file. 2nd attempt force writes
      arg1-C-w-arg2
 		   Unindent arg2 region
      arg1-<-arg2   Indent left arg2 region
      arg1->-arg2   Indent right arg2 region
+     "-arg2	   Operate on the register arg2
+     R		   Print registers and their contents
      @-arg2	   Execute a arg2 register macro
      @@		   Execute a last executed register macro on a new line
      arg1-.	   Repeat last normal command arg1 times
@@ -87,7 +127,7 @@ VI NORMAL
      arg1-vI	   Open %s/^ /	      /g ex prompt. Contains regex for
 		   changing tabs to spaces. arg1 modifies the width
      vo		   Remove trailing white spaces and \r line endings
-     va		   Toggle autoindent on or off. see xai
+     va		   Toggle autoindent on or off. see ai ex option
      C-g	   Print buffer status infos
      1-C-g	   Enable permanent status bar row
      2-C-g	   Disable permanent status bar row
@@ -96,13 +136,10 @@ VI NORMAL
      2-ga	   Disable permanent character info bar row
      arg1-gw	   Hard line wrap a line to arg1 col limit
      arg1-gq	   Hard line wrap a buffer to arg1 col limit
-     gg		   Goto the first line in the buffer
      g~-arg2	   Switch character case for arg2 region
      gu-arg2	   Switch arg2 region to lowercase
      gU-arg2	   Switch arg2 region to uppercase
      arg1-~	   Switch character case arg1 times forward
-     '-arg2	   Goto a line mark arg2
-     m-arg2	   Set a buffer local line mark arg2
      i		   Enter insert mode
      I		   Enter insert moving cursor to the start of the line after
 		   indentation
@@ -127,58 +164,25 @@ VI NORMAL
      arg1-p	   Paste a default register
      arg1-P	   Paste a default register below current line or behind
 		   cursor pos
-     "-arg2	   Operate on the register arg2
-     R		   Print registers and their contents
      V		   Toggle show hidden characters: Space,Tab,New line
      arg1-r-arg2   Replace arg1 characters with arg2 under the cursor forward
      C-v	   Show line motion numbers for ebEBwW. Switches its modes
      arg1-C-v	   Disable line motion numbers
-     arg1-G	   Goto the last line in the buffer or arg1 line
-     H		   Goto the highest line of the screen
-     L		   Goto the lowest line of the screen
-     M		   Goto the middle line of the screen
      arg1-x	   Delete arg1 characters under the cursor forward
      arg1-X	   Delete arg1 characters under the cursor backward
-     arg1-,	   Repeat last f or F or t or F command backward arg1 times
-     arg1-;	   Repeat last f or F or t or F command forward arg1 times
-     arg1-h	   Move the cursor arg1 cols left
-     arg1-l	   Move the cursor arg1 cols right
-     f-arg2	   Move the cursor to the arg2 character found forward
-     F-arg2	   Move the cursor to the arg2 character found backward
-     t-arg2	   Move the cursor until the arg2 character found forward
-     T-arg2	   Move the cursor until the arg2 character found backward
-     arg1-B	   Move the cursor to the end of the word skipping punctuation
-		   backward arg1 times
-     arg1-E	   Move the cursor to the end of the word skipping punctuation
-		   forward arg1 times
-     arg1-b	   Move the cursor to the end of the word backward arg1 times
-     arg1-e	   Move the cursor to the end of the word forward arg1 times
-     arg1-W	   Move the cursor to the start of the word skipping
-		   punctuation forward arg1 times
-     arg1-w	   Move the cursor to the start of the word forward arg1 times
-     {		   Move the cursor to the next { region up
-     }		   Move the cursor to the next { region down
-     [		   Move the cursor to the next \n region up
-     ]		   Move the cursor to the next \n region down
-     C-]	   Filesystem search forward based on directory listing in b-2
-     arg1-C-]	   Filesystem search forward, setting search keyword to arg1
-		   words under the cursor
-     C-p	   Filesystem search backward based on directory listing in
-		   b-2
-     C-t	   Set a global file mark
+     m-arg2	   Set a buffer local line mark arg2
+     C-t	   Set a global file mark 0
      arg1-C-t	   Set or switch to a global mark based on arg1 % 2 == 0
      arg1-C-7 arg1-C-_
 		   Show buffer list and switch based to arg1 buffer or 0-9
 		   when prompted
-     0 |	   Move the cursor to the start of the line.
-     arg1-z.	   Center the screen. arg1 is xtop
-     arg1-z\n	   Center the screen at top row. arg1 is xtop
-     arg1-z-	   Center the screen at bottom row. arg1 is xtop
+     C-^ C-6	   Swap to the previous buffer
+     arg1-C-n	   Swap to the next buffer, arg1 changes direction
+		   (forward/backward)
+     \		   Swap to /fm/ buffer b-2
      z-arg2	   Change alternate keymap to arg2
      ze zf	   Switch to the English and alternate keymap
      zL zl zr zR   Change the value of td option
-     $		   Move the cursor to the eol
-     arg1-|	   Move the cursor to arg1 col
      arg1-/	   Search using regex down skipping arg1 matches
      arg1-?	   Search using regex up skipping arg1 matches
      arg1-n	   Repeat search down skipping arg1 matches
@@ -186,15 +190,11 @@ VI NORMAL
      C-a	   Auto search word under the cursor, not centering and
 		   wrapping up/down direction
      arg1-C-a	   Auto search setting arg1 words from the cursor
-     arg1-Space	   Move cursor arg1 character forward
-     arg1-C-h arg1-Backspace
-		   Move cursor arg1 character backward
-     `-arg2	   Goto a line mark arg2 with horizontal position
-     %		   Move the cursor to [](){} pair
-     arg1-%	   Move the cursor to the arg1 percent line number
-     arg1-C-n	   Swap to the next buffer, arg1 changes direction
-		   (forward/backward)
-     \		   Swap to /fm/ buffer b-2
+     C-]	   Filesystem search forward based on directory listing in b-2
+     arg1-C-]	   Filesystem search forward, setting search keyword to arg1
+		   words under the cursor
+     C-p	   Filesystem search backward based on directory listing in
+		   b-2
      C-z	   Suspend vi
      C-l	   Force redraw whole screen and update terminal dimensions
      qq		   Force quit cleaning the terminal
@@ -220,7 +220,7 @@ INSERT MODE
      C-x	   Set a mark for C-u and completion starting position
      C-b	   Open history buffer b-1 when in ex prompt, otherwise print
 		   autocomplete options
-     C-a	   Loop through the strings from a history buffer b-1
+     C-a	   Loop through the strings in a history buffer b-1
      C-l	   Redraw the screen in vi mode, clean the terminal in ex
      C-o	   Switch between vi and ex modes
      C-e	   Switch to english keymap
@@ -423,7 +423,11 @@ EX COMMANDS
 	     :ya 1x
 
      ya!     Reset register value
+
      !	     Run external program
+
+	     When ex range specified, pipes the program output into current
+	     buffer.
 
      ft	     Set a filetype
 
