@@ -537,8 +537,9 @@ Example: yank matches appending to reg 'a' and print them out.
 :g/int/ya A\e|p
 If you wanted to get really fancy, it is possible to nest global
 commands inside of global commands.
-Example: find all lines with int and a semicolon and append "has a semicolon"
-:g/int/:.g/;/tp A has a semicolon
+Example: find all lines with int and a semicolon and append
+"has a semicolon" (^C must be literal)
+:g/int/:.g/;/tp A has a semicolon^C
 .Ed
 
 .It Cm g! v
@@ -822,7 +823,7 @@ Set a special register using a character or a number. For instance,
 all data passed into ex_print will be stored. If the register
 is uppercase, new lines are added to match the exact output
 that was printed. With this, internal editor state can be exported.
-For example: paste current buffer list exactly like from :b command
+Example: paste current buffer list exactly like from :b command
 :se pr=A|ya! a|b|pu a
 .Ed
 .
@@ -841,7 +842,7 @@ export EXINIT=$(printf "e ./vi.c|tp i\ex7|bx 1|bx")
 The last "bx" commands delete the vi.c buffer. To keep it around as a buffer
 remove the "bx" commands.
 Example 2:
-Load your some file (assume vi.c) into vi's history buffer.
+Load some file (assume vi.c) into vi's history buffer.
 export EXINIT="e ./vi.c|tp yG|b-1|pu|b-1|bx 1|bx|ft"
 Example 3:
 Setup some custom @@ macros in your favorite registers.
