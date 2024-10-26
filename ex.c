@@ -495,11 +495,11 @@ static int ec_read(char *loc, char *cmd, char *arg)
 	obuf = lbuf_cp(lb, beg, end);
 	if (*obuf)
 		lbuf_edit(pxb, obuf, pos, pos);
-	lbuf_free(lb);
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [r]",
 			path, lbuf_len(pxb) - n);
 	free(obuf);
 	err:
+	lbuf_free(lb);
 	xrow = pos;
 	xb = pxb;
 	if (fd >= 0)
