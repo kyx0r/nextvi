@@ -687,8 +687,8 @@ Set a secondary directory path (stands for file path)
 .It Cm cd
 Set a working directory (stands for change dir)
 .Bd -literal
-The paths of currently open buffers will automatically be
-adjusted to account the new working directory.
+Currently open buffers' file paths will be automatically adjusted 
+to reflect a newly set working directory.
 .Ed
 
 .It Cm inc
