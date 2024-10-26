@@ -464,36 +464,46 @@ static int ec_setpath(char *loc, char *cmd, char *arg)
 static int ec_read(char *loc, char *cmd, char *arg)
 {
 	char msg[EXLEN+32];
-	int beg, end;
+	int beg, end, fd = -1;
 	char *path;
 	char *obuf;
 	int n = lbuf_len(xb);
+	int pos = MIN(xrow + 1, lbuf_len(xb));
+	struct lbuf *lb = lbuf_make(), *pxb = xb;
 	path = arg[0] ? arg : ex_path;
-	if (ex_region(loc, &beg, &end))
-		return 1;
 	if (arg[0] == '!') {
-		int pos = MIN(xrow + 1, lbuf_len(xb));
 		obuf = cmd_pipe(arg + 1, NULL, 1);
 		if (obuf)
-			lbuf_edit(xb, obuf, pos, pos);
+			lbuf_edit(lb, obuf, 0, 0);
 		free(obuf);
 	} else {
-		int fd = open(path, O_RDONLY);
-		int pos = lbuf_len(xb) ? end : 0;
-		if (fd < 0) {
-			ex_print("read failed");
-			return 1;
+		if ((fd = open(path, O_RDONLY)) < 0) {
+			strcpy(msg, "open failed");
+			goto err;
 		}
-		if (lbuf_rd(xb, fd, pos, pos)) {
-			ex_print("read failed");
-			close(fd);
-			return 1;
+		if (lbuf_rd(lb, fd, 0, 0)) {
+			strcpy(msg, "read failed");
+			goto err;
 		}
-		close(fd);
 	}
-	xrow = end + lbuf_len(xb) - n - 1;
+	xb = lb;
+	xrow = 0;
+	if (ex_region(loc, &beg, &end)) {
+		strcpy(msg, "bad region");
+		goto err;
+	}
+	obuf = lbuf_cp(lb, beg, end);
+	if (*obuf)
+		lbuf_edit(pxb, obuf, pos, pos);
+	lbuf_free(lb);
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [r]",
-			path, lbuf_len(xb) - n);
+			path, lbuf_len(pxb) - n);
+	free(obuf);
+	err:
+	xrow = pos;
+	xb = pxb;
+	if (fd >= 0)
+		close(fd);
 	ex_print(msg);
 	return 0;
 }
