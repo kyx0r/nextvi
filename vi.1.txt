@@ -508,12 +508,14 @@ a number will bypass the prompt and open the corresponding file.
 
 .It Cm ea!
 Forced version of ea
-.It Cm a
-Enter ex append mode (exiting with ^c will discard changes)
-.It Cm i
-Enter ex insert mode (exiting with ^c will discard changes)
-.It Cm c
-Enter ex change mode (exiting with ^c will discard changes)
+
+.It Cm a i c
+Enter ex append/insert/change mode
+.Bd -literal
+Exiting with .\en or ESC will apply changes to the buffer.
+Exiting with ^c will discard changes.
+.Ed
+
 .It Cm d
 Delete line(s)
 .It Cm e
@@ -681,8 +683,13 @@ No argument implies current directory.
 
 .It Cm fp
 Set a secondary directory path (stands for file path)
+
 .It Cm cd
 Set a working directory (stands for change dir)
+.Bd -literal
+The paths of currently open buffers will automatically be
+adjusted to account the new working directory.
+.Ed
 
 .It Cm inc
 Include regex for :fd calculation
@@ -699,8 +706,14 @@ Running "inc" without an arg will disable all filters.
 
 .It Cm reg
 Print registers and their contents
+
 .It Cm bx
-Set max number of buffers allowed (default is 10)
+Set max number of buffers allowed
+.Bd -literal
+Buffers will be deallocated if the number specified is lower
+than the number of buffers currently in use.
+No argument will reset to default value of 10.
+.Ed
 
 .It Cm ac
 Set autocomplete filter regex

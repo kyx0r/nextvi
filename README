@@ -330,9 +330,12 @@ EX COMMANDS
 	     a number will bypass the prompt and open the corresponding file.
 
      ea!     Forced version of ea
-     a	     Enter ex append mode (exiting with ^c will discard changes)
-     i	     Enter ex insert mode (exiting with ^c will discard changes)
-     c	     Enter ex change mode (exiting with ^c will discard changes)
+
+     a i c   Enter ex append/insert/change mode
+
+	     Exiting with .\n or ESC will apply changes to the buffer.
+	     Exiting with ^c will discard changes.
+
      d	     Delete line(s)
      e	     Open a file at path
      e!	     Reload the current buffer from the filesystem
@@ -461,7 +464,11 @@ EX COMMANDS
 	     No argument implies current directory.
 
      fp	     Set a secondary directory path (stands for file path)
+
      cd	     Set a working directory (stands for change dir)
+
+	     The paths of currently open buffers will automatically be
+	     adjusted to account the new working directory.
 
      inc     Include regex for :fd calculation
 
@@ -475,7 +482,12 @@ EX COMMANDS
 	     Running "inc" without an arg will disable all filters.
 
      reg     Print registers and their contents
-     bx	     Set max number of buffers allowed (default is 10)
+
+     bx	     Set max number of buffers allowed
+
+	     Buffers will be deallocated if the number specified is lower
+	     than the number of buffers currently in use.
+	     No argument will reset to default value of 10.
 
      ac	     Set autocomplete filter regex
 
