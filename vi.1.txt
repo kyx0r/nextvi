@@ -452,6 +452,20 @@ Note: in some cases . can be dropped but is kept for readability.
 .Ed
 .It Cm :'d,'ap
 print lines from mark d to mark a
+.It Cm :%p
+print all lines in the buffer
+.It Cm :$p
+print last line in the buffer
+.It Cm :;50
+goto horizontal offset 50
+.It Cm :10;50
+goto line 10 offset 50
+.It Cm :10;.+5
+goto line 10 +5 offset
+.It Cm :'a;'a
+goto line mark a offset a
+.It Cm :;$
+goto eol
 .El
 .
 .Sh EX COMMANDS
@@ -480,8 +494,10 @@ There are 2 temporary buffers which are separate from
 the main buffers.
 b-1 = /hist/ ex history buffer
 b-2 = /fm/ directory listing buffer
-Switching to the temporary buffer buffer:
+Switching to the temporary buffer:
 :b-1
+or
+:b-2
 .Ed
 
 .It Cm bp
@@ -498,7 +514,7 @@ Requires directory listing in b-2 backfilled prior. This can
 be done with:
 :fd
 or
-:b-2|1,1!find .
+:b-2|1,$!find .
 
 If the substring matches more than 1 filename, a prompt will
 be shown. Submit using numbers 0-9 (higher ascii values work
@@ -512,6 +528,7 @@ Forced version of ea
 .It Cm a i c
 Enter ex append/insert/change mode
 .Bd -literal
+Range determines the position.
 Exiting with .\en or ESC will apply changes to the buffer.
 Exiting with ^c will discard changes.
 .Ed
@@ -547,7 +564,7 @@ Example: find all lines with int and a semicolon and append
 .It Cm g! v
 Inverted global command
 .It Cm =
-Move the cursor to a line number
+Print the current range linenumber
 .It Cm k
 Set a mark
 
@@ -956,11 +973,11 @@ previous value(s) of default register (nonatomic)
 | 293  conf.c  | hl/ft/td config     |
 | 658  regex.c | extended RE         |
 | 601  lbuf.c  | file/line buffer    |
-| 1210 ex.c    | ex options/commands |
+| 1211 ex.c    | ex options/commands |
 | 2054 vi.c    | normal mode/general |
 | 662  led.c   | insert mode/output  |
 | 382  ren.c   | positioning/syntax  |
-| 6837 total   | wc -l *.c           |
+| 6838 total   | wc -l *.c           |
 +--------------+---------------------+
 .Ed
 .
