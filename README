@@ -98,7 +98,8 @@ VI NORMAL
      arg1-C-r	   Redo arg1 times
      arg1-u	   Undo arg1 times
      C-i TAB	   Open file using text from the cursor to eol
-     C-k	   Write the current buffer to file. 2nd attempt force writes
+     C-k	   Write the current buffer to file. Force write on 2nd
+		   attempt
      arg1-C-w-arg2
 		   Unindent arg2 region
      arg1-<-arg2   Indent left arg2 region
@@ -369,8 +370,7 @@ EX COMMANDS
 
      pu	     Paste a register
 
-	     Any register can be piped to an external program by
-	     specifying \! as a 2nd argument.
+	     To pipe register data to an external process use :pu \!<cmd>
 	     Example: copy default register to X11 clipboard
 	     :pu \!xclip -selection clipboard
 
@@ -379,11 +379,23 @@ EX COMMANDS
 
      r	     Read a file
 
-	     To read data from a pipe use :r \!date
+	     To read data from a file use :<range>r <filename>
+	     To read data from a pipe use :<range>r \!<cmd>
+	     Example: pipe in only the first line
+	     :r \!ls
+	     Example: pipe in only lines 3,5
+	     :3,5r \!ls
+	     Example: pipe in all data
+	     :%r \!ls
 
      w	     Soft write a to file
 
-	     To pipe data to external process use :w \!less
+	     To write data to a file use :<range>w <filename>
+	     To pipe buffer data to external process use :<range>w \!<cmd>
+	     Example: pipe out all data into less
+	     :w \!less
+	     Example: pipe out only first 10 lines
+	     :1,10w \!less
 
      w!	     Force write a to file
      wq x    Write and soft quit
@@ -427,7 +439,7 @@ EX COMMANDS
      !	     Run external program
 
 	     When ex range specified, pipes the program output into current
-	     buffer.
+	     buffer replacing the affected range.
 
      ft	     Set a filetype
 
@@ -618,11 +630,11 @@ CODE MAP
      | 293  conf.c  | hl/ft/td config	  |
      | 658  regex.c | extended RE	  |
      | 601  lbuf.c  | file/line buffer	  |
-     | 1200 ex.c    | ex options/commands |
+     | 1210 ex.c    | ex options/commands |
      | 2054 vi.c    | normal mode/general |
      | 662  led.c   | insert mode/output  |
      | 382  ren.c   | positioning/syntax  |
-     | 6827 total   | wc -l *.c		  |
+     | 6837 total   | wc -l *.c		  |
      +--------------+---------------------+
 
 COMPILING
@@ -717,4 +729,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
      manual page was inspired by népéta <nepeta@canaglie.net>
 
-Linux 6.11.4-arch1-1	       October 24, 2024		  Linux 6.11.4-arch1-1
+Linux 6.11.4-arch1-1	       October 26, 2024		  Linux 6.11.4-arch1-1
