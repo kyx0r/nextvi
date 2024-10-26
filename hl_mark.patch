@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 7dd7192..3c17acb 100644
+index 637c2ee..42f5b38 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -10,7 +10,7 @@ index 7dd7192..3c17acb 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -860,6 +861,7 @@ static struct option {
+@@ -870,6 +871,7 @@ static struct option {
  	{"hlw", &xhlw},
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},

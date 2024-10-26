@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 7dd7192..42bab4d 100644
+index 637c2ee..661ddad 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -10,7 +10,7 @@ index 7dd7192..42bab4d 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -855,6 +856,7 @@ static struct option {
+@@ -865,6 +866,7 @@ static struct option {
  	{"td", &xtd},
  	{"shape", &xshape},
  	{"order", &xorder},
@@ -18,7 +18,7 @@ index 7dd7192..42bab4d 100644
  	{"hl", &xhl},
  	{"hll", &xhll},
  	{"hlw", &xhlw},
-@@ -1184,6 +1186,51 @@ void ex(void)
+@@ -1194,6 +1196,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -70,7 +70,7 @@ index 7dd7192..42bab4d 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1195,6 +1242,20 @@ void ex_init(char **files, int n)
+@@ -1205,6 +1252,20 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	xmpt = 0;
  	xvis &= ~8;

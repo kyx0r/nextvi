@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 7dd7192..004c2ee 100644
+index 637c2ee..364e503 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,6 +37,7 @@ static int xbufsmax;		/* number of buffers */
@@ -27,7 +27,7 @@ index 7dd7192..004c2ee 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -529,6 +533,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -539,6 +543,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -38,7 +38,7 @@ index 7dd7192..004c2ee 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
  				ex_print("write failed: file changed");
  				return 1;
-@@ -1052,6 +1060,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1062,6 +1070,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -51,7 +51,7 @@ index 7dd7192..004c2ee 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1102,6 +1116,7 @@ static struct excmd {
+@@ -1112,6 +1126,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
