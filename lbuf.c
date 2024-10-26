@@ -434,7 +434,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	int r0 = *r, o0 = *o;
 	int offs[re->grpcnt * 2], i = r0;
 	char *s = lbuf_get(lb, i);
-	int off = skip > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
+	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
 	for (; i >= 0 && i < ln_n; i += dir) {
 		s = lb->ln[i];
 		while (rset_find(re, s + off, offs,
