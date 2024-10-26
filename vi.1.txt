@@ -443,6 +443,10 @@ Some ex commands can be prefixed with ranges.
 print lines 1,5
 .It Cm :.-5,.+5p
 print 5 lines around xrow
+.It Cm :/int/p
+print first occurance of int
+.It Cm :?int?p
+print first occurance of int in reverse
 .It Cm :.,/int/p
 print until int is found
 .It Cm :?int?,.p
@@ -466,6 +470,8 @@ goto line 10 +5 offset
 goto line mark a offset a
 .It Cm :;$
 goto eol
+.It Cm :5;/int/
+search for int on line 5 (similar to :f)
 .El
 .
 .Sh EX COMMANDS
@@ -704,7 +710,7 @@ Set a secondary directory path (stands for file path)
 .It Cm cd
 Set a working directory (stands for change dir)
 .Bd -literal
-Currently open buffers' file paths will be automatically adjusted 
+Currently open buffers' file paths will be automatically adjusted
 to reflect a newly set working directory.
 .Ed
 
@@ -973,11 +979,11 @@ previous value(s) of default register (nonatomic)
 | 293  conf.c  | hl/ft/td config     |
 | 658  regex.c | extended RE         |
 | 601  lbuf.c  | file/line buffer    |
-| 1211 ex.c    | ex options/commands |
+| 1213 ex.c    | ex options/commands |
 | 2054 vi.c    | normal mode/general |
 | 662  led.c   | insert mode/output  |
 | 382  ren.c   | positioning/syntax  |
-| 6838 total   | wc -l *.c           |
+| 6840 total   | wc -l *.c           |
 +--------------+---------------------+
 .Ed
 .
