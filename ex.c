@@ -219,7 +219,43 @@ void ex_krsset(char *kwd, int dir)
 		xkwddir = dir / 2;
 }
 
-static int ex_lineno(char **num);
+static int ec_search(char *loc, char *cmd, char *arg);
+
+static int ex_range(char **num, int n, int *row)
+{
+	switch ((unsigned char) **num) {
+	case '.':
+		++*num;
+		break;
+	case '$':
+		n = row ? lbuf_eol(xb, *row) - 1: lbuf_len(xb) - 1;
+		++*num;
+		break;
+	case '\'':
+		if (lbuf_jump(xb, (unsigned char) *++(*num),
+				&n, row ? &n : NULL))
+			return -1;
+		++*num;
+		break;
+	case '/':
+	case '?':
+		n = ec_search(NULL, (char*)row, (char*)num);
+		break;
+	default:
+		if (isdigit((unsigned char) **num)) {
+			n = atoi(*num) - 1;
+			while (isdigit((unsigned char) **num))
+				++*num;
+		}
+	}
+	while (**num == '-' || **num == '+') {
+		n += atoi((*num)++);
+		while (isdigit((unsigned char) **num))
+			++*num;
+	}
+	return n;
+}
+
 /* parse ex command addresses */
 static int ex_region(char *loc, int *beg, int *end)
 {
@@ -236,17 +272,18 @@ static int ex_region(char *loc, int *beg, int *end)
 	}
 	while (*loc) {
 		int end0 = *end;
-		*end = ex_lineno(&loc) + 1;
-		*beg = naddr++ ? end0 - 1 : *end - 1;
-		if (!naddr++)
-			*beg = *end - 1;
+		if (*loc == ';' || *loc == ',') {
+			loc++;
+			if (loc[-1] == ',')
+				goto skip;
+			xoff = ex_range(&loc, xoff, naddr ? beg : &xrow) + 1;
+		} else {
+			skip:
+			*end = ex_range(&loc, xrow, NULL) + 1;
+			*beg = naddr++ ? end0 - 1 : *end - 1;
+		}
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
-		if (!*loc)
-			break;
-		if (*loc == ';')
-			xrow = *end - 1;
-		loc++;
 	}
 	if (*beg < 0 && *end == 0)
 		*beg = 0;
@@ -289,42 +326,7 @@ static int ec_search(char *loc, char *cmd, char *arg)
 		xrow = beg;
 		xoff = off;
 	}
-	return beg;
-}
-
-static int ex_lineno(char **num)
-{
-	int n = xrow;
-	switch ((unsigned char) **num) {
-	case '.':
-		++*num;
-		break;
-	case '$':
-		n = lbuf_len(xb) - 1;
-		++*num;
-		break;
-	case '\'':
-		if (lbuf_jump(xb, (unsigned char) *++(*num), &n, NULL))
-			return -1;
-		++*num;
-		break;
-	case '/':
-	case '?':
-		n = ec_search(NULL, NULL, (char*)num);
-		break;
-	default:
-		if (isdigit((unsigned char) **num)) {
-			n = atoi(*num) - 1;
-			while (isdigit((unsigned char) **num))
-				++*num;
-		}
-	}
-	while (**num == '-' || **num == '+') {
-		n += atoi((*num)++);
-		while (isdigit((unsigned char) **num))
-			++*num;
-	}
-	return n;
+	return cmd ? off - 1 : beg;
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)
@@ -623,7 +625,6 @@ static int ec_print(char *loc, char *cmd, char *arg)
 		for (i = beg; i < end; i++)
 			ex_print(lbuf_get(xb, i));
 	xrow = MAX(beg, end - (cmd[0] || loc[0]));
-	xoff = 0;
 	return 0;
 }
 
@@ -706,7 +707,7 @@ static int ec_mark(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end))
 		return 1;
-	lbuf_mark(xb, (unsigned char) arg[0], end - 1, 0);
+	lbuf_mark(xb, (unsigned char) arg[0], end - 1, xoff);
 	return 0;
 }
 
