@@ -307,9 +307,10 @@ static int ec_search(char *loc, char *cmd, char *arg)
 	if (!xkwdrs)
 		return -1;
 	if (!loc) {
-		beg = xrow + (xkwddir > 0);
-		off = 0;
-		if (lbuf_search(xb, xkwdrs, xkwddir, &beg, end, &off, &len, 0))
+		beg = cmd ? *(int*)cmd : xrow + (xkwddir > 0);
+		off = cmd ? xoff : 0;
+		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
+				end, &off, &len, MIN(dir, 0)))
 			return -1;
 	} else if (!ex_region(loc, &beg, &end)) {
 		off = xoff;
@@ -319,7 +320,8 @@ static int ec_search(char *loc, char *cmd, char *arg)
 			beg = xkwddir > 0 ? beg : end++;
 		} else
 			beg = xrow;
-		if (lbuf_search(xb, xkwdrs, xkwddir, &beg, end, &off, &len, xkwddir))
+		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
+				end, &off, &len, xkwddir))
 			return -1;
 		if (beg < obeg)
 			return -1;
