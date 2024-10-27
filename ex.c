@@ -930,13 +930,12 @@ static int ec_set(char *loc, char *cmd, char *arg)
 			char *r = strchr(tok, '=');
 			if (r) {
 				*r = '\0';
-				strcpy(opt, tok);
 				if (!(val = atoi(r+1)))
-					val = isdigit(r[1]) ? 0 : r[1];
-			} else {
-				strcpy(opt, tok);
+					if (!isdigit((unsigned char)r[1]))
+						val = (unsigned char)r[1];
+			} else
 				val = 1;
-			}
+			strcpy(opt, tok);
 		}
 		for (i = 0; i < LEN(options); i++) {
 			struct option *o = &options[i];
