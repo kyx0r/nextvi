@@ -564,8 +564,8 @@ EX OPTIONS
      grp     Regex search group
 
 	     Defines a target search group for any regex search operation.
-	     This becomes necessary when the result of regex search is to be based on
-	     some group rather than default match group.
+	     This becomes necessary when the result of regex search is to
+	     be based on some group rather than default match group.
 
 	     Example: ignore tabs at the beginning of the line
 	     :se grp=2|1,$f/^[	     ]+(.+)|se nogrp
@@ -614,7 +614,7 @@ EX OPTIONS
 EXINIT ENV VAR
      EXINIT defines a sequence of vi/ex commands to be performed
      at startup. Consequently, this is the primary way for scripting
-     and customizing nextvi outside of conf.c.
+     and customizing nextvi outside of C.
      Many standard text processing utils such as grep, awk, sed
      can be replaced by nextvi with EXINIT in mind.
 
@@ -629,7 +629,7 @@ EXINIT ENV VAR
      export EXINIT="b-1|%r ./vi.c|b-1"
 
      Example 3:
-     Setup a macro in register a@
+     Setup a @ macro in register a
      When @a is executed the macro will create { and closing } below
      the cursor leaving cursor in insert mode in between the braces.
      export EXINIT=$(printf "e|tp io{\n}\x16\x3kA|tp 1G|tp 2\"ayy")
