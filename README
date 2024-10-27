@@ -89,9 +89,10 @@ VI NORMAL
      C-b	   Scroll up full screen size
      C-f	   Scroll down full screen size
      #		   Show global and relative line numbers
-     2#		   Show global line numbers permanently
-     4#		   Show relative line numbers after indentation permanently
-     8#		   Show relative line numbers permanently
+     2#		   Toggle show global line numbers permanently
+     4#		   Toggle show relative line numbers after indentation
+		   permanently
+     8#		   Toggle show relative line numbers permanently
      V		   Toggle show hidden characters: Space,Tab,New line
      C-v	   Toggle show line motion numbers for ebEBwW
      arg1-C-v	   Disable line motion numbers
@@ -101,9 +102,9 @@ VI NORMAL
      C-k	   Write the current buffer to file. Force write on 2nd
 		   attempt
      arg1-C-w-arg2
-		   Unindent arg2 region
-     arg1-<-arg2   Indent left arg2 region
-     arg1->-arg2   Indent right arg2 region
+		   Unindent arg2 region arg1 times
+     arg1-<-arg2   Indent left arg2 region arg1 times
+     arg1->-arg2   Indent right arg2 region arg1 times
      "-arg2	   Operate on the register arg2
      R		   Print registers and their contents
      @-arg2	   Execute arg2 register macro
@@ -122,7 +123,8 @@ VI NORMAL
      arg1-v/	   Open v/ xkwd ex prompt to set search keyword. arg1
 		   specifies word(s) from the cursor to be inserted
      v;		   Open ! ex prompt
-     vb		   Switch to b-1 history buffer
+     vb		   Recurse into b-1 history buffer. Use any quit command to
+		   exit recursion
      arg1-vi	   Open %s/^ {8}/ /g ex prompt. Contains regex for changing
 		   spaces to tabs. arg1 modifies the width
      arg1-vI	   Open %s/^ /	      /g ex prompt. Contains regex for
@@ -152,7 +154,7 @@ VI NORMAL
      O		   Enter insert mode creating a new line up
      arg1-c-arg2   Enter insert mode deleting based on the arg2 motion region
      C		   Enter insert mode deleting from cursor to the eol
-     arg1-d-arg2   Delete arg2 region
+     arg1-d-arg2   Delete arg2 region arg1 times
      D		   Delete from a cursor to the eol
      arg1-x	   Delete arg1 characters under the cursor forward
      arg1-X	   Delete arg1 characters under the cursor backward
@@ -163,7 +165,7 @@ VI NORMAL
      arg1-K	   Split a line without creating empty new lines
      arg1-J	   Join arg1 lines
      vj		   Toggle space padding when joining lines
-     arg1-y-arg2   Yank a region
+     arg1-y-arg2   Yank arg2 region arg1 times
      Y yy	   Yank a line
      arg1-p	   Paste a default register
      arg1-P	   Paste a default register below current line or behind
@@ -218,11 +220,12 @@ INSERT MODE
      C-n	   Loop through autocomplete options forward
      C-z	   Suspend vi/ex
      C-x	   Set a mark for C-u and completion starting position
-     C-b	   Open history buffer b-1 when in ex prompt, otherwise print
-		   autocomplete options
+     C-b	   Recurse into b-1 history buffer when in ex prompt. Use any
+		   quit command to exit recursion
+     C-b	   Print autocomplete options when in vi insert
      C-a	   Loop through the strings in a history buffer b-1
      C-l	   Redraw the screen in vi mode, clean the terminal in ex
-     C-o	   Switch between vi and ex modes
+     C-o	   Switch between vi and ex modes recursively
      C-e	   Switch to english keymap
      C-f	   Switch to alternative keymap
      C-v-arg2	   Read a literal character arg2
@@ -275,6 +278,9 @@ EX ESCAPES
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
+     .	     current position
+     ,	     vertical range separator
+     ;	     horizontal range separator
      :1,5p   print lines 1,5
      :.-5,.+5p
 	     print 5 lines around xrow
@@ -286,7 +292,6 @@ EX RANGES
 	     print until int is found
      :?int?,.p
 	     print until int is found in reverse
-	     Note: in some cases . can be dropped but is kept for readability.
      :'d,'ap
 	     print lines from mark d to mark a
      :%p     print all lines in the buffer
@@ -298,7 +303,9 @@ EX RANGES
      :'a;'a  goto line mark a character offset a
      :;$     goto eol
      :5;/int/
-	     search for int on line 5 (similar to :f)
+	     search for int on line 5
+     :.;?int?
+	     search for int in reverse on the current line
 
 EX COMMANDS
      f	     Ranged search (stands for find)
@@ -309,9 +316,8 @@ EX COMMANDS
 	     :f?int
 	     or (specified range)
 	     :10,100f/int
-	     Additionally, :f supports xoff (horizontal offset). This is
-	     essential for scripting macros. Subsequent commands within the
-	     range will move to the next match just like n/N.
+	     Subsequent commands within the range will move to the next match
+	     just like vi n/N commands.
 
      b	     Print currently active buffers state or switch to a buffer
 
@@ -562,7 +568,7 @@ EX OPTIONS
 
      hl	     If set, highlight text based on rules defined in conf.c.
      hll     If set, highlight current line.
-     hlp     If set, highlight pairs of brackets.
+     hlp     If set, highlight [](){} pairs.
      hlr     If set, highlight text in reverse direction.
      hlw     If set, highlight current word under the cursor.
      led     If unset, all terminal output is disabled.

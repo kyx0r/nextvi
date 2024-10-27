@@ -146,11 +146,11 @@ Scroll down full screen size
 .It Cm #
 Show global and relative line numbers
 .It Cm 2#
-Show global line numbers permanently
+Toggle show global line numbers permanently
 .It Cm 4#
-Show relative line numbers after indentation permanently
+Toggle show relative line numbers after indentation permanently
 .It Cm 8#
-Show relative line numbers permanently
+Toggle show relative line numbers permanently
 .It Cm V
 Toggle show hidden characters: Space,Tab,New line
 .It Cm C-v
@@ -166,11 +166,11 @@ Open file using text from the cursor to eol
 .It Cm C-k
 Write the current buffer to file. Force write on 2nd attempt
 .It Cm arg1-C-w-arg2
-Unindent arg2 region
+Unindent arg2 region arg1 times
 .It Cm arg1-<-arg2
-Indent left arg2 region
+Indent left arg2 region arg1 times
 .It Cm arg1->-arg2
-Indent right arg2 region
+Indent right arg2 region arg1 times
 .It Cm \&"-arg2
 Operate on the register arg2
 .It Cm R
@@ -198,7 +198,7 @@ Open v/ xkwd ex prompt to set search keyword. arg1 specifies word(s) from the cu
 .It Cm v;
 Open ! ex prompt
 .It Cm vb
-Switch to b-1 history buffer
+Recurse into b-1 history buffer. Use any quit command to exit recursion
 .It Cm arg1-vi
 Open %s/^ {8}/	/g ex prompt. Contains regex for changing spaces to tabs. arg1 modifies the width
 .It Cm arg1-vI
@@ -252,7 +252,7 @@ Enter insert mode deleting based on the arg2 motion region
 .It Cm C
 Enter insert mode deleting from cursor to the eol
 .It Cm arg1-d-arg2
-Delete arg2 region
+Delete arg2 region arg1 times
 .It Cm D
 Delete from a cursor to the eol
 .It Cm arg1-x
@@ -274,7 +274,7 @@ Join arg1 lines
 .It Cm vj
 Toggle space padding when joining lines
 .It Cm arg1-y-arg2
-Yank a region
+Yank arg2 region arg1 times
 .It Cm Y yy
 Yank a line
 .It Cm arg1-p
@@ -364,13 +364,15 @@ Suspend vi/ex
 .It Cm C-x
 Set a mark for C-u and completion starting position
 .It Cm C-b
-Open history buffer b-1 when in ex prompt, otherwise print autocomplete options
+Recurse into b-1 history buffer when in ex prompt. Use any quit command to exit recursion
+.It Cm C-b
+Print autocomplete options when in vi insert
 .It Cm C-a
 Loop through the strings in a history buffer b-1
 .It Cm C-l
 Redraw the screen in vi mode, clean the terminal in ex
 .It Cm C-o
-Switch between vi and ex modes
+Switch between vi and ex modes recursively
 .It Cm C-e
 Switch to english keymap
 .It Cm C-f
@@ -439,6 +441,12 @@ except the following situations:
 .Sh EX RANGES
 Some ex commands can be prefixed with ranges.
 .Bl -tag -width Ds -compact
+.It Cm \&.
+current position
+.It Cm \&,
+vertical range separator
+.It Cm \&;
+horizontal range separator
 .It Cm :1,5p
 print lines 1,5
 .It Cm :.-5,.+5p
@@ -451,9 +459,6 @@ print first occurance of int in reverse
 print until int is found
 .It Cm :?int?,.p
 print until int is found in reverse
-.Bd -literal -compact
-Note: in some cases . can be dropped but is kept for readability.
-.Ed
 .It Cm :'d,'ap
 print lines from mark d to mark a
 .It Cm :%p
@@ -471,7 +476,9 @@ goto line mark a character offset a
 .It Cm :;$
 goto eol
 .It Cm :5;/int/
-search for int on line 5 (similar to :f)
+search for int on line 5
+.It Cm :.;?int?
+search for int in reverse on the current line
 .El
 .
 .Sh EX COMMANDS
@@ -485,9 +492,8 @@ or
 :f?int
 or (specified range)
 :10,100f/int
-Additionally, :f supports xoff (horizontal offset). This is
-essential for scripting macros. Subsequent commands within the
-range will move to the next match just like n/N.
+Subsequent commands within the range will move to the next match
+just like vi n/N commands.
 .Ed
 
 .It Cm b
@@ -819,7 +825,7 @@ If set, highlight text based on rules defined in
 If set, highlight current line.
 .
 .It Cm hlp
-If set, highlight pairs of brackets.
+If set, highlight [](){} pairs.
 .
 .It Cm hlr
 If set, highlight text in reverse direction.
