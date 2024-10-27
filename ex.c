@@ -228,7 +228,7 @@ static int ex_range(char **num, int n, int *row)
 		++*num;
 		break;
 	case '$':
-		n = row ? lbuf_eol(xb, *row) - 1: lbuf_len(xb) - 1;
+		n = row ? lbuf_eol(xb, *row) : lbuf_len(xb) - 1;
 		++*num;
 		break;
 	case '\'':
@@ -243,7 +243,7 @@ static int ex_range(char **num, int n, int *row)
 		break;
 	default:
 		if (isdigit((unsigned char) **num)) {
-			n = atoi(*num) - 1;
+			n = atoi(*num) - !row;
 			while (isdigit((unsigned char) **num))
 				++*num;
 		}
@@ -257,7 +257,8 @@ static int ex_range(char **num, int n, int *row)
 }
 
 /* parse ex command addresses */
-static int ex_region(char *loc, int *beg, int *end)
+#define ex_region(loc, beg, end) ex_oregion(loc, beg, end, NULL, NULL)
+static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 {
 	int naddr = 0;
 	if (!strcmp("%", loc) || !lbuf_len(xb)) {
@@ -267,7 +268,7 @@ static int ex_region(char *loc, int *beg, int *end)
 	}
 	if (!*loc) {
 		*beg = xrow;
-		*end = xrow == lbuf_len(xb) ? xrow : xrow + 1;
+		*end = MIN(lbuf_len(xb), xrow + 1);
 		return 0;
 	}
 	while (*loc) {
@@ -276,7 +277,11 @@ static int ex_region(char *loc, int *beg, int *end)
 			loc++;
 			if (loc[-1] == ',')
 				goto skip;
-			xoff = ex_range(&loc, xoff, naddr ? beg : &xrow) + 1;
+			if (o1 && *o2 >= 0)
+				*o1 = *o2;
+			xoff = ex_range(&loc, xoff, naddr ? beg : &xrow);
+			if (o2)
+				*o2 = xoff;
 		} else {
 			skip:
 			*end = ex_range(&loc, xrow, NULL) + 1;
@@ -328,7 +333,7 @@ static int ec_search(char *loc, char *cmd, char *arg)
 		xrow = beg;
 		xoff = off;
 	}
-	return cmd ? off - 1 : beg;
+	return cmd ? off : beg;
 }
 
 static int ec_buffer(char *loc, char *cmd, char *arg)
@@ -589,7 +594,7 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 	char *s;
 	int beg, end;
 	int n;
-	if (ex_region(loc, &beg, &end) && (beg != 0 || end != 0))
+	if (ex_region(loc, &beg, &end))
 		return 1;
 	sbufn_make(sb, 64)
 	while ((s = ex_read(NULL))) {
@@ -616,16 +621,30 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 
 static int ec_print(char *loc, char *cmd, char *arg)
 {
-	int beg, end;
-	int i;
+	int i, beg, end, o1 = -1, o2 = -1;
+	char *o;
 	if (!cmd[0] && !loc[0])
 		if (xrow >= lbuf_len(xb))
 			return 1;
-	if (ex_region(loc, &beg, &end))
+	if (ex_oregion(loc, &beg, &end, &o1, &o2))
 		return 1;
-	if (cmd[0] || !(cmd[0] || loc[0]))
-		for (i = beg; i < end; i++)
-			ex_print(lbuf_get(xb, i));
+	if (!cmd[0] && loc[0]) {
+		xrow = MAX(beg, end - 1);
+		return 0;
+	}
+	for (i = beg; i < end; i++) {
+		o = NULL;
+		if (o1 >= 0 && o2 >= 0) {
+			if (beg == end-1)
+				o = uc_sub(lbuf_get(xb, i), o1, o2);
+			else if (i == beg)
+				o = uc_sub(lbuf_get(xb, i), o1, -1);
+			else if (i == end-1)
+				o = uc_sub(lbuf_get(xb, i), 0, o2);
+		}
+		ex_print(o ? o : lbuf_get(xb, i));
+		free(o);
+	}
 	xrow = MAX(beg, end - (cmd[0] || loc[0]));
 	return 0;
 }
