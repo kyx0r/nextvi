@@ -1,2 +1,2 @@
 #!/bin/sh
-man ./vi.1.txt | col -b > README
+man ./vi.1|col -b > README

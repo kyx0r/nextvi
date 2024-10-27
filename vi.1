@@ -515,9 +515,9 @@ Set current buffer saved. If arg given, reset undo/redo history
 Print line(s) from the buffer
 .Bd -literal
 Example: utilize character offset ranges
-1,10;5;5p
+:1,10;5;5p
 Example: print current line from offset 5 to 10
-\&.;5;10p
+:.;5;10p
 .Ed
 
 .It Cm ea
@@ -542,7 +542,7 @@ Forced version of ea
 Enter ex append/insert/change mode
 .Bd -literal
 Range determines the position.
-Exiting with .\en or ESC will apply changes to the buffer.
+Exiting with \en.\en or \enESC will apply changes to the buffer.
 Exiting with ^c will discard changes.
 .Ed
 

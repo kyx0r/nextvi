@@ -333,9 +333,9 @@ EX COMMANDS
      p	     Print line(s) from the buffer
 
 	     Example: utilize character offset ranges
-	     1,10;5;5p
+	     :1,10;5;5p
 	     Example: print current line from offset 5 to 10
-	     .;5;10p
+	     :.;5;10p
 
      ea	     Open file based on it's filename substring and from listing in
 	     b-2
@@ -356,7 +356,7 @@ EX COMMANDS
      a i c   Enter ex append/insert/change mode
 
 	     Range determines the position.
-	     Exiting with .\n or ESC will apply changes to the buffer.
+	     Exiting with \n.\n or \nESC will apply changes to the buffer.
 	     Exiting with ^c will discard changes.
 
      d	     Delete line(s)
