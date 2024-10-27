@@ -291,11 +291,11 @@ EX RANGES
 	     print lines from mark d to mark a
      :%p     print all lines in the buffer
      :$p     print last line in the buffer
-     :;50    goto horizontal offset 50
-     :10;50  goto line 10 offset 50
+     :;50    goto character offset 50
+     :10;50  goto line 10 character offset 50
      :10;.+5
-	     goto line 10 +5 offset
-     :'a;'a  goto line mark a offset a
+	     goto line 10 +5 character offset
+     :'a;'a  goto line mark a character offset a
      :;$     goto eol
      :5;/int/
 	     search for int on line 5 (similar to :f)
@@ -329,7 +329,13 @@ EX COMMANDS
 
      bp	     Set current buffer path
      bs	     Set current buffer saved. If arg given, reset undo/redo history
+
      p	     Print line(s) from the buffer
+
+	     Example: utilize character offset ranges
+	     1,10;5;5p
+	     Example: print current line from offset 5 to 10
+	     .;5;10p
 
      ea	     Open file based on it's filename substring and from listing in
 	     b-2
@@ -375,6 +381,8 @@ EX COMMANDS
 	     Example: find all lines with int and a semicolon and append
 	     "has a semicolon" (^C must be literal)
 	     :g/int/:.g/;/tp A has a semicolon^C
+	     Advanced example: extract/print data enclosed in ()
+	     :g/\(.+\)/;0;/\(.+\)/\|.;.+1k a\|se grp=2\|;/\)*(\))/\|se nogrp\|k s\|.;'a;'sp
 
      g! v    Inverted global command
      =	     Print the current range linenumber
@@ -659,11 +667,11 @@ CODE MAP
      | 293  conf.c  | hl/ft/td config	  |
      | 658  regex.c | extended RE	  |
      | 601  lbuf.c  | file/line buffer	  |
-     | 1213 ex.c    | ex options/commands |
+     | 1232 ex.c    | ex options/commands |
      | 2054 vi.c    | normal mode/general |
      | 662  led.c   | insert mode/output  |
      | 382  ren.c   | positioning/syntax  |
-     | 6840 total   | wc -l *.c		  |
+     | 6859 total   | wc -l *.c		  |
      +--------------+---------------------+
 
 COMPILING
