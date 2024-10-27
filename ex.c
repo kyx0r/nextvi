@@ -584,7 +584,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 static int ec_termpush(char *loc, char *cmd, char *arg)
 {
 	if (*arg)
-		term_exec(arg, strlen(arg), /*nop*/, term_push("qq", 3);)
+		term_exec(arg, strlen(arg))
 	return 0;
 }
 

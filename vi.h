@@ -244,6 +244,7 @@ char *uc_shape(char *beg, char *s, int c);
 extern sbuf *term_sbuf;
 extern int term_record;
 extern int xrows, xcols;
+extern int texec;
 extern unsigned int ibuf_pos, ibuf_cnt, icmd_pos;
 #define term_write(s, n) if (xled) write(1, s, n);
 void term_init(void);
@@ -262,15 +263,15 @@ void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
 char *term_cmd(int *n);
-#define term_exec(s, n, precode, postcode) \
+#define term_exec(s, n) \
 { \
 	int pbuf_cnt = ibuf_cnt; \
 	int pbuf_pos = ibuf_pos; \
 	ibuf_pos = pbuf_cnt; \
-	precode \
+	texec++; \
 	term_push(s, n); \
-	postcode \
 	vi(0); \
+	texec--; \
 	ibuf_cnt = pbuf_cnt; \
 	ibuf_pos = pbuf_pos; \
 	xquit = 0; \

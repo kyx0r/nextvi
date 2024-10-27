@@ -1,6 +1,7 @@
 sbuf *term_sbuf;
 int term_record;
 int xrows, xcols;
+int texec;
 static struct termios termios;
 
 void term_init(void)
@@ -130,6 +131,10 @@ int term_read(void)
 	struct pollfd ufds[1];
 	int n;
 	if (ibuf_pos >= ibuf_cnt) {
+		if (texec) {
+			xquit = 1;
+			return -1;
+		}
 		ufds[0].fd = STDIN_FILENO;
 		ufds[0].events = POLLIN;
 		if (poll(ufds, 1, -1) <= 0)
