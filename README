@@ -472,8 +472,11 @@ EX COMMANDS
 
      !	     Run external program
 
-	     When ex range specified, pipes the program output into current
-	     buffer replacing the affected range.
+	     When ex range specified, pipes the buffer data to an external
+	     process and pipes the output back into current buffer replacing
+	     the affected range.
+	     Example: infamously sort the buffer
+	     :1,$!sort
 
      ft	     Set a filetype
 
