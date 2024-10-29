@@ -108,8 +108,8 @@ VI NORMAL
      arg1->-arg2   Indent right arg2 region arg1 times
      "-arg2	   Operate on the register arg2
      R		   Print registers and their contents
-     @-arg2	   Execute arg2 register macro
-     @@		   Execute a last executed register macro on a new line
+     arg1-@-arg2   Execute arg2 register macro arg1 times
+     arg1-@@	   Execute a last executed register macro arg1 times
      arg1-.	   Repeat last normal command arg1 times
      arg1-v.	   Repeat last normal command moving down across arg1 lines
      :		   Enter vi mode ex prompt
@@ -153,7 +153,7 @@ VI NORMAL
      S		   Enter insert mode deleting everything on the line
      o		   Enter insert mode creating a new line down
      O		   Enter insert mode creating a new line up
-     arg1-c-arg2   Enter insert mode deleting based on the arg2 motion region
+     arg1-c-arg2   Enter insert mode deleting arg2 region arg1 times
      C		   Enter insert mode deleting from cursor to the eol
      arg1-d-arg2   Delete arg2 region arg1 times
      D		   Delete from a cursor to the eol
@@ -401,11 +401,7 @@ EX COMMANDS
      tp	     Global macro (stands for term_push)
 
 	     Run any sequence of vi/ex commands or macros.
-	     The advantage of :tp over @ macros is in the ability execute other
-	     macros and be executed from @ macros. In addition, :tp is able to
-	     run inside EXINIT where it is most commonly used.
-	     For example, macro ci(int cannot be executed by a @ macro because
-	     ci( is a macro in itself. However, it can be executed using :tp.
+	     The most common use case is to run macros inside EXINIT.
 	     Example: execute ci(int macro
 	     :tp ci(int
 	     Example: execute ci(int exiting insert mode
@@ -685,19 +681,18 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+---------------------+
-     | 537  kmap.h  | keymap translation  |
-     | 458  vi.h    | definitions/aux	  |
-     +--------------+---------------------+
-     | 653  uc.c    | UTF-8 support	  |
-     | 329  term.c  | low level IO	  |
      | 293  conf.c  | hl/ft/td config	  |
-     | 658  regex.c | extended RE	  |
-     | 601  lbuf.c  | file/line buffer	  |
-     | 1232 ex.c    | ex options/commands |
-     | 2054 vi.c    | normal mode/general |
-     | 662  led.c   | insert mode/output  |
+     | 340  term.c  | low level IO	  |
      | 382  ren.c   | positioning/syntax  |
-     | 6863 total   | wc -l *.c		  |
+     | 457  vi.h    | definitions/aux	  |
+     | 537  kmap.h  | keymap translation  |
+     | 601  lbuf.c  | file/line buffer	  |
+     | 653  uc.c    | UTF-8 support	  |
+     | 658  regex.c | extended RE	  |
+     | 662  led.c   | insert mode/output  |
+     | 1232 ex.c    | ex options/commands |
+     | 2031 vi.c    | normal mode/general |
+     | 7846 total   | wc -l *.[ch]|sort	  |
      +--------------+---------------------+
 
 COMPILING
