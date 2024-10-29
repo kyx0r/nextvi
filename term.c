@@ -1,7 +1,7 @@
 sbuf *term_sbuf;
 int term_record;
 int xrows, xcols;
-int texec;
+int texec, tn;
 static struct termios termios;
 
 void term_init(void)
@@ -114,7 +114,15 @@ unsigned int icmd_pos;			/* icmd[] position */
 void term_push(char *s, unsigned int n)
 {
 	n = MIN(n, sizeof(ibuf) - ibuf_cnt);
-	memcpy(ibuf + ibuf_cnt, s, n);
+	if (texec) {
+		if ((int)(ibuf_cnt - ibuf_pos - tn) < 0)
+			tn = 0;
+		memcpy(ibuf + ibuf_pos + n + tn,
+			ibuf + ibuf_pos + tn, ibuf_cnt - ibuf_pos - tn);
+		memcpy(ibuf + ibuf_pos + tn, s, n);
+		tn += n;
+	} else
+		memcpy(ibuf + ibuf_cnt, s, n);
 	ibuf_cnt += n;
 }
 
@@ -131,10 +139,6 @@ int term_read(void)
 	struct pollfd ufds[1];
 	int n;
 	if (ibuf_pos >= ibuf_cnt) {
-		if (texec) {
-			xquit = 1;
-			return -1;
-		}
 		ufds[0].fd = STDIN_FILENO;
 		ufds[0].events = POLLIN;
 		if (poll(ufds, 1, -1) <= 0)
@@ -146,7 +150,8 @@ int term_read(void)
 		}
 		ibuf_cnt = n;
 		ibuf_pos = 0;
-	}
+	} else if (texec == 1 && ibuf_pos == ibuf_cnt - 1)
+		xquit = 1;
 	if (icmd_pos < sizeof(icmd))
 		icmd[icmd_pos++] = (unsigned char)ibuf[ibuf_pos];
 	return (unsigned char)ibuf[ibuf_pos++];
