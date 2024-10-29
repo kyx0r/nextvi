@@ -148,7 +148,7 @@ VI NORMAL
 		   indentation
      a		   Enter insert mode 1 character forward
      A		   Enter insert mode moving cursor to the eol
-     s		   Enter insert mode deleting character under the cursor
+     arg1-s	   Enter insert mode deleting arg1 characters
      S		   Enter insert mode deleting everything on the line
      o		   Enter insert mode creating a new line down
      O		   Enter insert mode creating a new line up
@@ -403,13 +403,13 @@ EX COMMANDS
 	     The advantage of :tp over @ macros is in the ability execute other
 	     macros and be executed from @ macros. In addition, :tp is able to
 	     run inside EXINIT where it is most commonly used.
-	     For example, macro ci(int cannot be executed by a @ register because
+	     For example, macro ci(int cannot be executed by a @ macro because
 	     ci( is a macro in itself. However, it can be executed using :tp.
 	     Example: execute ci(int macro
 	     :tp ci(int
 	     Example: execute ci(int exiting insert mode
 	     :tp ci(int^C
-	     Example: execute ci)INT as a followup
+	     Example: execute ci)INT as a follow-up
 	     :tp ci(int^Cci)INT
 
      tp!     Global macro recursive
@@ -632,7 +632,7 @@ EXINIT ENV VAR
      There is a dictionary file (assume vi.c), which we always want
      to have indexed at startup for autocomplete. The last "bx" commands
      delete the vi.c buffer.
-     export EXINIT=$(printf "e ./vi.c|tp i\x7|bx 1|bx")
+     export EXINIT=$(printf "e ./vi.c|tp i\x7\x3|bx 1|bx")
 
      Example 2:
      Load some file (assume vi.c) into vi's history buffer.
@@ -642,7 +642,7 @@ EXINIT ENV VAR
      Setup a @ macro in register a
      When @a is executed the macro will create { and closing } below
      the cursor leaving cursor in insert mode in between the braces.
-     export EXINIT=$(printf "e|tp io{\n}\x16\x3kA|tp 1G|tp 2\"ayy")
+     export EXINIT=$(printf "e|tp io{\n}\x16\x3kA\x3|tp 1G|tp 2\"ayy")
 
 REGEX
      Nextvi's regex syntax is akin to that of Plan 9.
