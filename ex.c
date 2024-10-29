@@ -584,7 +584,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 static int ec_termpush(char *loc, char *cmd, char *arg)
 {
 	if (*arg)
-		term_exec(arg, strlen(arg))
+		term_exec(arg, strlen(arg), cmd[2] ? 2 : 1)
 	return 0;
 }
 
@@ -1105,6 +1105,7 @@ static struct excmd {
 	{"=", ec_lnum},
 	{"k", ec_mark},
 	{"tp", ec_termpush},
+	{"tp!", ec_termpush},
 	{"pu", ec_put},
 	{"q", ec_quit},
 	{"q!", ec_quit},
