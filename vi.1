@@ -52,6 +52,8 @@ A required argument suffixing a command
 A ctrl key
 .It Cm Space
 A separation, multiple binds to the same command
+.It Cm <^x>
+A representation of non-printable character literal x
 .El
 .Sh VI NORMAL
 .Bl -tag -width Dq -compact
@@ -288,7 +290,7 @@ Set a global file mark 0
 .It Cm arg1-C-t
 Set or switch to a global mark based on arg1 % 2 == 0
 .It Cm arg1-C-7 arg1-C-_
-Show buffer list and switch based to arg1 buffer or 0-9 when prompted
+Show buffer list and switch based on arg1 or 0-9 index when prompted
 .It Cm C-^ C-6
 Swap to the previous buffer
 .It Cm arg1-C-n
@@ -352,7 +354,7 @@ Select paste register arg2. C-\e selects default register
 .It Cm C-p
 Paste a register
 .It Cm C-g
-Index a buffer for autocomplete
+Index buffer for autocomplete
 .It Cm C-y
 Reset autocomplete db
 .It Cm C-r
@@ -537,7 +539,7 @@ Example: backfill b-2 using find
 
 If the substring matches more than 1 filename, a prompt will
 be shown. Submit using numbers 0-9 (higher ascii values work
-too (^c to cancel)). Passing an extra arg to :ea in form of
+too (C-c to cancel)). Passing an extra arg to :ea in form of
 a number will bypass the prompt and open the corresponding file.
 Example: open filename containing "v"
 :ea v
@@ -553,7 +555,7 @@ Enter ex append/insert/change mode
 .Bd -literal
 Range determines the position.
 Exiting with \en.\en or \enESC will apply changes to the buffer.
-Exiting with ^c will discard changes.
+Exiting with C-c will discard changes.
 .Ed
 
 .It Cm d
@@ -579,8 +581,8 @@ Example: yank matches appending to reg 'a' and print them out.
 
 It is possible to nest global commands inside of global commands.
 Example: find all lines with int and a semicolon and append
-"has a semicolon" (^C must be literal)
-:g/int/:.g/;/tp A has a semicolon^C
+"has a semicolon"
+:g/int/:.g/;/tp A has a semicolon<^C>
 Advanced example: extract/print data enclosed in ()
 :g/\e(.+\e)/;0;/\e(.+\e)/\e|.;.+1k a\e|se grp=2\e|;/\e)*(\e))/\e|se nogrp\e|k s\e|.;'a;'sp
 .Ed
@@ -604,9 +606,9 @@ ci( is a macro in itself. However, it can be executed using :tp.
 Example: execute ci(int macro
 :tp ci(int
 Example: execute ci(int exiting insert mode
-:tp ci(int^C
+:tp ci(int<^C>
 Example: execute ci)INT as a follow-up
-:tp ci(int^Cci)INT
+:tp ci(int<^C>ci)INT
 .Ed
 
 .It Cm tp!
@@ -614,8 +616,6 @@ Global macro recursive
 .Bd -literal
 Unlike :tp the recursion is not terminated on the sequence end.
 Intended use is to debug a :tp macro.
-Example: execute macro vb for a more accurate effect
-:tp! vb
 .Ed
 
 .It Cm pu

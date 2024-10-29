@@ -32,6 +32,7 @@ NOTATION
      -arg2   A required argument suffixing a command
      C-	     A ctrl key
      Space   A separation, multiple binds to the same command
+     <^x>    A representation of non-printable character literal x
 
 VI NORMAL
      arg1-+ arg1-\n arg1-j
@@ -174,8 +175,8 @@ VI NORMAL
      C-t	   Set a global file mark 0
      arg1-C-t	   Set or switch to a global mark based on arg1 % 2 == 0
      arg1-C-7 arg1-C-_
-		   Show buffer list and switch based to arg1 buffer or 0-9
-		   when prompted
+		   Show buffer list and switch based on arg1 or 0-9 index when
+		   prompted
      C-^ C-6	   Swap to the previous buffer
      arg1-C-n	   Swap to the next buffer, arg1 changes direction
 		   (forward/backward)
@@ -214,7 +215,7 @@ INSERT MODE
      C-]	   Switch a default paste register to 0-9
      C-\-arg2	   Select paste register arg2. C-\ selects default register
      C-p	   Paste a register
-     C-g	   Index a buffer for autocomplete
+     C-g	   Index buffer for autocomplete
      C-y	   Reset autocomplete db
      C-r	   Loop through autocomplete options backward
      C-n	   Loop through autocomplete options forward
@@ -354,7 +355,7 @@ EX COMMANDS
 
 	     If the substring matches more than 1 filename, a prompt will
 	     be shown. Submit using numbers 0-9 (higher ascii values work
-	     too (^c to cancel)). Passing an extra arg to :ea in form of
+	     too (C-c to cancel)). Passing an extra arg to :ea in form of
 	     a number will bypass the prompt and open the corresponding file.
 	     Example: open filename containing "v"
 	     :ea v
@@ -367,7 +368,7 @@ EX COMMANDS
 
 	     Range determines the position.
 	     Exiting with \n.\n or \nESC will apply changes to the buffer.
-	     Exiting with ^c will discard changes.
+	     Exiting with C-c will discard changes.
 
      d	     Delete line(s)
      e	     Open a file at path
@@ -388,8 +389,8 @@ EX COMMANDS
 
 	     It is possible to nest global commands inside of global commands.
 	     Example: find all lines with int and a semicolon and append
-	     "has a semicolon" (^C must be literal)
-	     :g/int/:.g/;/tp A has a semicolon^C
+	     "has a semicolon"
+	     :g/int/:.g/;/tp A has a semicolon<^C>
 	     Advanced example: extract/print data enclosed in ()
 	     :g/\(.+\)/;0;/\(.+\)/\|.;.+1k a\|se grp=2\|;/\)*(\))/\|se nogrp\|k s\|.;'a;'sp
 
@@ -408,16 +409,14 @@ EX COMMANDS
 	     Example: execute ci(int macro
 	     :tp ci(int
 	     Example: execute ci(int exiting insert mode
-	     :tp ci(int^C
+	     :tp ci(int<^C>
 	     Example: execute ci)INT as a follow-up
-	     :tp ci(int^Cci)INT
+	     :tp ci(int<^C>ci)INT
 
      tp!     Global macro recursive
 
 	     Unlike :tp the recursion is not terminated on the sequence end.
 	     Intended use is to debug a :tp macro.
-	     Example: execute macro vb for a more accurate effect
-	     :tp! vb
 
      pu	     Paste a register
 
