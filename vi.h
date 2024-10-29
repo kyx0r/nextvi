@@ -262,7 +262,9 @@ int term_read(void);
 void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
+void term_back(int c);
 char *term_cmd(int *n);
+#define term_dec() ibuf_pos--; icmd_pos--;
 #define term_exec(s, n, val) \
 { \
 	term_push(s, n); \
@@ -278,9 +280,9 @@ char *term_cmd(int *n);
 char *cmd_pipe(char *cmd, char *ibuf, int oproc);
 char *xgetenv(char* q[]);
 
-#define TK_CTL(x)	((x) & 037)
-#define TK_INT(c)	((c) < 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
 #define TK_ESC		(TK_CTL('['))
+#define TK_CTL(x)	((x) & 037)
+#define TK_INT(c)	((c) <= 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
 
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);

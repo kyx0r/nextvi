@@ -126,6 +126,12 @@ void term_push(char *s, unsigned int n)
 	ibuf_cnt += n;
 }
 
+void term_back(int c)
+{
+	char s[1] = {c};
+	term_push(s, 1);
+}
+
 /* return a static buffer containing inputs read since the last term_cmd() */
 char *term_cmd(int *n)
 {
@@ -141,17 +147,17 @@ int term_read(void)
 	if (ibuf_pos >= ibuf_cnt) {
 		ufds[0].fd = STDIN_FILENO;
 		ufds[0].events = POLLIN;
-		if (poll(ufds, 1, -1) <= 0)
-			return -1;
 		/* read a single input character */
-		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
+		if (poll(ufds, 1, -1) <= 0 ||
+				(n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
 			xquit = !isatty(STDIN_FILENO);
-			return -1;
+			*ibuf = 0;
+			n = 1;
 		}
 		ibuf_cnt = n;
 		ibuf_pos = 0;
-	} else if (texec == 1 && ibuf_pos == ibuf_cnt - 1)
-		xquit = 1;
+	} else if (ibuf_pos == ibuf_cnt - 1)
+		xquit = texec == 1;
 	if (icmd_pos < sizeof(icmd))
 		icmd[icmd_pos++] = (unsigned char)ibuf[ibuf_pos];
 	return (unsigned char)ibuf[ibuf_pos++];
