@@ -251,25 +251,6 @@ static void vi_drawupdate(int i)
 	}
 }
 
-static int vi_buf[128];
-static unsigned int vi_buflen;
-
-static int vi_read(void)
-{
-	return vi_buflen ? vi_buf[--vi_buflen] : term_read();
-}
-
-static void vi_back(int c)
-{
-	if (vi_buflen < sizeof(vi_buf))
-		vi_buf[vi_buflen++] = c;
-}
-
-static char *vi_char(void)
-{
-	return led_read(&xkmap, term_read());
-}
-
 static void vi_wait(void)
 {
 	if (xmpt > 1) {
@@ -360,34 +341,32 @@ void ex_cprint(char *line, int r, int c, int ln)
 
 static int vi_yankbuf(void)
 {
-	int c = vi_read();
+	int c = term_read();
 	if (c == '"')
-		return vi_read();
-	vi_back(c);
+		return term_read();
+	term_dec()
 	return 0;
 }
 
 static int vi_prefix(void)
 {
 	int n = 0;
-	int c = vi_read();
-	if ((c >= '1' && c <= '9')) {
-		while (isdigit(c)) {
+	int c = term_read();
+	if (c >= '1' && c <= '9') {
+		while (c >= '0' && c <= '9') {
 			n = n * 10 + c - '0';
-			c = vi_read();
+			c = term_read();
 		}
 	}
-	vi_back(c);
+	term_dec()
 	return n;
 }
 
 static int vi_digit(void)
 {
-	int c = vi_read();
-	if ((c >= '0' && c <= '9')) {
-		if (isdigit(c))
-			return c - '0';
-	}
+	int c = term_read();
+	if (c >= '0' && c <= '9')
+		return c - '0';
 	return -1;
 }
 
@@ -485,7 +464,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 static int vi_motionln(int *row, int cmd)
 {
 	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
-	int c = vi_read();
+	int c = term_read();
 	int mark, mark_row, mark_off;
 	switch (c) {
 	case '\n':
@@ -499,7 +478,7 @@ static int vi_motionln(int *row, int cmd)
 		*row = MIN(*row + cnt - 1, lbuf_len(xb) - 1);
 		break;
 	case '\'':
-		if ((mark = vi_read()) <= 0)
+		if ((mark = term_read()) <= 0)
 			return -1;
 		if (lbuf_jump(xb, mark, &mark_row, &mark_off))
 			return -1;
@@ -534,7 +513,7 @@ static int vi_motionln(int *row, int cmd)
 			*row = MAX(0, lbuf_len(xb) - 1) * cnt / 100;
 			break;
 		}
-		vi_back(c);
+		term_dec()
 		return 0;
 	}
 	if (*row < 0)
@@ -724,7 +703,7 @@ static int vi_motion(int *row, int *off)
 		*off = -1;
 		return mv;
 	}
-	mv = vi_read();
+	mv = term_read();
 	switch (mv) {
 	case ',':
 		cnt = -cnt;
@@ -754,7 +733,7 @@ static int vi_motion(int *row, int *off)
 	case 'F':
 	case 't':
 	case 'T':
-		if (!(cs = vi_char()))
+		if (!(cs = led_read(&xkmap, term_read())))
 			return -1;
 		if (vi_findchar(xb, cs, mv, cnt, row, off))
 			return -1;
@@ -800,14 +779,14 @@ static int vi_motion(int *row, int *off)
 				break;
 		break;
 	case '[':
-		if (vi_read() != '[')
+		if (term_read() != '[')
 			return -1;
 		for (i = 0; i < cnt; i++)
 			if (lbuf_sectionbeg(xb, -1, row, off))
 				break;
 		break;
 	case ']':
-		if (vi_read() != ']')
+		if (term_read() != ']')
 			return -1;
 		for (i = 0; i < cnt; i++)
 			if (lbuf_sectionbeg(xb, +1, row, off))
@@ -893,7 +872,7 @@ static int vi_motion(int *row, int *off)
 		}
 		break;
 	case '`':
-		if ((mark = vi_read()) <= 0)
+		if ((mark = term_read()) <= 0)
 			return -1;
 		if (lbuf_jump(xb, mark, &mark_row, &mark_off))
 			return -1;
@@ -909,7 +888,6 @@ static int vi_motion(int *row, int *off)
 		*row = xrow; *off = xoff;
 		break;
 	default:
-		vi_back(mv);
 		return 0;
 	}
 	return mv;
@@ -1107,10 +1085,8 @@ static void vc_motion(int cmd)
 	o2 = o1;
 	if ((mv = vi_motionln(&r2, cmd))) {
 		o2 = -1;
-	} else if (!(mv = vi_motion(&r2, &o2))) {
-		vi_read();
+	} else if (!(mv = vi_motion(&r2, &o2)))
 		return;
-	}
 	if (mv < 0)
 		return;
 	lnmode = o2 < 0;
@@ -1295,7 +1271,7 @@ static void vc_status(int type)
 static int vc_replace(void)
 {
 	int cnt = MAX(1, vi_arg1);
-	char *cs = vi_char();
+	char *cs = led_read(&xkmap, term_read());
 	char *ln = lbuf_get(xb, xrow);
 	sbuf *sb;
 	char *pref, *post;
@@ -1339,7 +1315,7 @@ static void vc_repeat(void)
 static void vc_execute(void)
 {
 	static int exec_buf = -1;
-	int c = vi_read(), i;
+	int c = term_read(), i, n = MAX(1, vi_arg1);
 	char *buf = NULL;
 	if (TK_INT(c))
 		return;
@@ -1348,11 +1324,12 @@ static void vc_execute(void)
 	exec_buf = c;
 	if (exec_buf >= 0)
 		buf = xregs[exec_buf];
-	if (buf)
-		for (i = 0; i < MAX(1, vi_arg1); i++)
-			term_push(buf, strlen(buf));
-	else
+	if (!buf) {
 		snprintf(vi_msg, sizeof(vi_msg), "exec buffer empty");
+		return;
+	}
+	for (i = 0; i < n; i++)
+		term_exec(buf, strlen(buf), 1)
 }
 
 static void vi_argcmd(int arg, char cmd)
@@ -1429,7 +1406,8 @@ void vi(int init)
 			}
 		} else if (mv == 0) {
 			char *cmd;
-			int c = vi_read();
+			term_dec()
+			int c = term_read();
 			int k = 0;
 			if (c <= 0)
 				continue;
@@ -1560,7 +1538,7 @@ void vi(int init)
 				break;
 			case 'v':
 				vi_mod |= 2;
-				k = vi_read();
+				k = term_read();
 				switch (k) {
 				case '.':
 					while (vi_arg1) {
@@ -1607,8 +1585,7 @@ void vi(int init)
 					goto do_excmd;
 				case 'b':
 				case 'v':
-					vi_back(':');
-					term_push(k == 'v' ? "\x01" : "\x02", 1); /* ^a : ^b */
+					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
 					break;
 				case ';':
 					ln = vi_prompt(":", "!", &kmap);
@@ -1647,7 +1624,7 @@ void vi(int init)
 					ln = vi_prompt(":", buf, &kmap);
 					goto do_excmd; }
 				default:
-					vi_back(k);
+					term_dec()
 				}
 				break;
 			case 'V':
@@ -1672,15 +1649,15 @@ void vi(int init)
 					continue;
 				break;
 			case 'q':
-				k = vi_read();
+				k = term_read();
 				if (k == 'q')
 					xquit = 1;
 				continue;
 			case 'c':
 			case 'd':
-				k = vi_read();
+				k = term_read();
 				if (k == 'i') {
-					k = vi_read();
+					k = term_read();
 					switch(k) {
 					case ')':
 						term_push("F(ldt)", 6);
@@ -1693,10 +1670,10 @@ void vi(int init)
 						break;
 					}
 					if (c == 'c')
-						term_push("i", 1);
+						term_back('i');
 					break;
 				}
-				vi_back(k);
+				term_dec()
 			case 'y':
 			case '!':
 			case '>':
@@ -1721,7 +1698,7 @@ void vi(int init)
 						vc_join(0, 2);
 					} else if (xoff)
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
-					vi_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
+					term_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
 					break;
 				}
 				if (c != 'A' && c != 'C')
@@ -1740,7 +1717,7 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case 'm':
-				if ((mark = vi_read()) > 0 && islower(mark))
+				if ((mark = term_read()) > 0 && islower(mark))
 					lbuf_mark(xb, mark, xrow, xoff);
 				break;
 			case 'p':
@@ -1748,7 +1725,7 @@ void vi(int init)
 				vi_mod |= vc_put(c);
 				break;
 			case 'z':
-				k = vi_read();
+				k = term_read();
 				switch (k) {
 				case 'z':
 					xquit = 2;
@@ -1786,7 +1763,7 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case 'g':
-				k = vi_read();
+				k = term_read();
 				if (k == 'g')
 					term_push("1G", 2);
 				else if (k == 'a') {
@@ -1816,46 +1793,46 @@ void vi(int init)
 					vc_motion(k);
 				break;
 			case 'x':
-				vi_back(' ');
+				term_back(' ');
 				vc_motion('d');
 				break;
 			case 'X':
-				vi_back(127);
+				term_back(127);
 				vc_motion('d');
 				break;
 			case 'D':
-				vi_back('$');
+				term_back('$');
 				vc_motion('d');
 				break;
 			case 'r':
 				vi_mod |= vc_replace();
 				break;
 			case 'C':
-				vi_back('$');
+				term_back('$');
 				vc_motion('c');
 				goto ins;
 			case 's':
-				vi_back(' ');
+				term_back(' ');
 				vc_motion('c');
 				goto ins;
 			case 'S':
-				vi_back('c');
+				term_back('c');
 				vc_motion('c');
 				goto ins;
 			case 'Y':
-				vi_back('y');
+				term_back('y');
 				vc_motion('y');
 				break;
 			case 'R':
 				ex_exec("reg");
 				break;
 			case 'Z':
-				k = vi_read();
+				k = term_read();
 				if (k == 'Z')
 					ex_exec("x");
 				break;
 			case '~':
-				vi_back(' ');
+				term_back(' ');
 				vc_motion('~');
 				break;
 			case '.':
@@ -1993,7 +1970,7 @@ void vi(int init)
 
 static void sighandler(int signo)
 {
-	vi_back(TK_CTL('l'));
+	term_back(TK_CTL('l'));
 }
 
 static int setup_signals(void) {
