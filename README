@@ -400,14 +400,24 @@ EX COMMANDS
      tp	     Global macro (stands for term_push)
 
 	     Run any sequence of vi/ex commands or macros.
-	     The advantage of tp over @ macros is in the ability execute other
-	     macros and be executed from @ macros.
-	     For example, macro di( cannot be executed by a @ register because
-	     di( is a macro in itself. However, it can be executed using :tp.
-	     Example: execute di( macro
-	     :tp di(
-	     Example: call :tp using :tp and execute di( (\n is literal)
-	     :tp :tp di(\n
+	     The advantage of :tp over @ macros is in the ability execute other
+	     macros and be executed from @ macros. In addition, :tp is able to
+	     run inside EXINIT where it is most commonly used.
+	     For example, macro ci(int cannot be executed by a @ register because
+	     ci( is a macro in itself. However, it can be executed using :tp.
+	     Example: execute ci(int macro
+	     :tp ci(int
+	     Example: execute ci(int exiting insert mode
+	     :tp ci(int^C
+	     Example: execute ci)INT as a followup
+	     :tp ci(int^Cci)INT
+
+     tp!     Global macro recursive
+
+	     Unlike :tp the recursion is not terminated on the sequence end.
+	     Intended use is to debug a :tp macro.
+	     Example: execute macro vb for a more accurate effect
+	     :tp! vb
 
      pu	     Paste a register
 
@@ -783,4 +793,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
      manual page was inspired by népéta <nepeta@canaglie.net>
 
-Linux 6.11.4-arch1-1	       October 27, 2024		  Linux 6.11.4-arch1-1
+Linux 6.11.4-arch1-1	       October 29, 2024		  Linux 6.11.4-arch1-1

@@ -1,4 +1,4 @@
-.Dd Oct 27, 2024
+.Dd Oct 29, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -596,14 +596,26 @@ Set a mark
 Global macro (stands for term_push)
 .Bd -literal
 Run any sequence of vi/ex commands or macros.
-The advantage of tp over @ macros is in the ability execute other
-macros and be executed from @ macros.
-For example, macro di( cannot be executed by a @ register because
-di( is a macro in itself. However, it can be executed using :tp.
-Example: execute di( macro
-:tp di(
-Example: call :tp using :tp and execute di( (\en is literal)
-:tp :tp di(\en
+The advantage of :tp over @ macros is in the ability execute other
+macros and be executed from @ macros. In addition, :tp is able to
+run inside EXINIT where it is most commonly used.
+For example, macro ci(int cannot be executed by a @ register because
+ci( is a macro in itself. However, it can be executed using :tp.
+Example: execute ci(int macro
+:tp ci(int
+Example: execute ci(int exiting insert mode
+:tp ci(int^C
+Example: execute ci)INT as a followup
+:tp ci(int^Cci)INT
+.Ed
+
+.It Cm tp!
+Global macro recursive
+.Bd -literal
+Unlike :tp the recursion is not terminated on the sequence end.
+Intended use is to debug a :tp macro.
+Example: execute macro vb for a more accurate effect
+:tp! vb
 .Ed
 
 .It Cm pu
