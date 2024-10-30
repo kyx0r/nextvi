@@ -177,9 +177,11 @@ Indent right arg2 region arg1 times
 Operate on the register arg2
 .It Cm R
 Print registers and their contents
+.It Cm arg1-&-arg2
+Execute arg2 register macro in non-blocking mode arg1 times
 .It Cm arg1-@-arg2
-Execute arg2 register macro arg1 times
-.It Cm arg1-@@
+Execute arg2 register macro in blocking mode arg1 times
+.It Cm arg1-@@ arg1-&&
 Execute a last executed register macro arg1 times
 .It Cm arg1-.
 Repeat last normal command arg1 times
@@ -454,9 +456,9 @@ print lines 1,5
 .It Cm :.-5,.+5p
 print 5 lines around xrow
 .It Cm :/int/p
-print first occurance of int
+print first occurrence of int
 .It Cm :?int?p
-print first occurance of int in reverse
+print first occurrence of int in reverse
 .It Cm :.,/int/p
 print until int is found
 .It Cm :?int?,.p
@@ -582,7 +584,7 @@ Example: yank matches appending to reg 'a' and print them out.
 It is possible to nest global commands inside of global commands.
 Example: find all lines with int and a semicolon and append
 "has a semicolon"
-:g/int/:.g/;/tp A has a semicolon<^C>
+:g/int/:.g/;/& A has a semicolon
 Advanced example: extract/print data enclosed in ()
 :g/\e(.+\e)/;0;/\e(.+\e)/\e|.;.+1k a\e|se grp=2\e|;/\e)*(\e))/\e|se nogrp\e|k s\e|.;'a;'sp
 .Ed
@@ -594,24 +596,37 @@ Print the current range linenumber
 .It Cm k
 Set a mark
 
-.It Cm tp
-Global macro (stands for term_push)
+.It Cm &
+Global non-blocking macro
 .Bd -literal
-Run any sequence of vi/ex commands or macros.
-The most common use case is to run macros inside EXINIT.
+Execute any sequence of vi/ex commands or macros.
+A non-blocking macro shall not wait for input when the end of
+the sequence is reached. A non-blocking macro executing itself
+will always reach a terminating point.
+Example: execute vi insert statement
+:& ihello
+Example: execute :hello
+:& :hello
 Example: execute ci(int macro
-:tp ci(int
-Example: execute ci(int exiting insert mode
-:tp ci(int<^C>
-Example: execute ci)INT as a follow-up
-:tp ci(int<^C>ci)INT
+:& ci(int
 .Ed
 
-.It Cm tp!
-Global macro recursive
+.It Cm @
+Global blocking macro
 .Bd -literal
-Unlike :tp the recursion is not terminated on the sequence end.
-Intended use is to debug a :tp macro.
+Execute any sequence of vi/ex commands or macros.
+A blocking macro shall wait for input when the end of the sequence
+is reached. A blocking macro executing itself results in congestion.
+Example: execute vi insert statement
+:@ ihello
+Example: insert :hello into vi/ex prompt
+:@ :hello
+Example: execute ci(int macro
+:@ ci(int
+Example: execute ci(int exiting insert mode
+:@ ci(int<^C>
+Example: execute ci)INT as a follow-up
+:@ ci(int<^C>ci)INT
 .Ed
 
 .It Cm pu
@@ -921,7 +936,7 @@ Example 1:
 There is a dictionary file (assume vi.c), which we always want
 to have indexed at startup for autocomplete. The last "bx" commands
 delete the vi.c buffer.
-export EXINIT=$(printf "e ./vi.c|tp i\ex7\ex3|bx 1|bx")
+export EXINIT=$(printf "e ./vi.c|& i\ex7\ex3|bx 1|bx")
 
 Example 2:
 Load some file (assume vi.c) into vi's history buffer.
@@ -931,7 +946,7 @@ Example 3:
 Setup a @ macro in register a
 When @a is executed the macro will create { and closing } below
 the cursor leaving cursor in insert mode in between the braces.
-export EXINIT=$(printf "e|tp io{\en}\ex16\ex3kA\ex3|tp 1G|tp 2\e"ayy")
+export EXINIT=$(printf "e|& io{\en}\ex16\ex3kA\ex3|& 1G|& 2\e"ayy")
 .Ed
 .
 .Sh REGEX
