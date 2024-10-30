@@ -106,7 +106,7 @@ void term_pos(int r, int c)
 }
 
 static char ibuf[4096];			/* input character buffer */
-static char icmd[4096];			/* read after the last term_cmd() */
+char icmd[4096];			/* read after the last term_cmd() */
 unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
 unsigned int icmd_pos;			/* icmd[] position */
 
@@ -130,14 +130,6 @@ void term_back(int c)
 {
 	char s[1] = {c};
 	term_push(s, 1);
-}
-
-/* return a static buffer containing inputs read since the last term_cmd() */
-char *term_cmd(int *n)
-{
-	*n = icmd_pos;
-	icmd_pos = 0;
-	return icmd;
 }
 
 int term_read(void)

@@ -283,6 +283,12 @@ static char *vi_prompt(char *msg, char *insert, int *kmap)
 	return r;
 }
 
+static char *vi_enprompt(char *msg, char *insert)
+{
+	int kmap = 0;
+	return vi_prompt(msg, insert, &kmap);
+}
+
 /* read an ex input line */
 char *ex_read(char *msg)
 {
@@ -1038,14 +1044,13 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 
 static void vi_pipe(int r1, int r2)
 {
-	int kmap = 0;
 	char region[100];
 	char *p = itoa(r1+1, region);
 	*p++ = ',';
 	p = itoa(r2+1, p);
 	*p++ = '!';
 	*p = '\0';
-	char *cmd = vi_prompt(":", region, &kmap);
+	char *cmd = vi_enprompt(":", region);
 	if (!cmd)
 		return;
 	ex_command(cmd)
@@ -1079,13 +1084,11 @@ static void vc_motion(int cmd)
 	int lnmode = 0;			/* line-based region */
 	int mv;
 	vi_arg2 = vi_prefix();
-	if (vi_arg2 < 0)
-		return;
 	o1 = ren_noeol(lbuf_get(xb, r1), o1);
 	o2 = o1;
-	if ((mv = vi_motionln(&r2, cmd))) {
+	if ((mv = vi_motionln(&r2, cmd)))
 		o2 = -1;
-	} else if (!(mv = vi_motion(&r2, &o2)))
+	else if (!(mv = vi_motion(&r2, &o2)))
 		return;
 	if (mv < 0)
 		return;
@@ -1342,8 +1345,8 @@ static void vi_argcmd(int arg, char cmd)
 
 void vi(int init)
 {
-	int mark, kmap = 0;
 	char *ln, *cs;
+	int mv, n, k, c;
 	xgrec++;
 	if (init) {
 		xtop = MAX(0, xrow - xrows / 2);
@@ -1359,8 +1362,7 @@ void vi(int init)
 		int otop = xtop;
 		int oleft = xleft;
 		int orow = xrow;
-		int mv, n;
-		term_cmd(&n);
+		icmd_pos = 0;
 		vi_arg2 = 0;
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf();
@@ -1407,11 +1409,9 @@ void vi(int init)
 		} else if (mv == 0) {
 			char *cmd;
 			term_dec()
-			int c = term_read();
-			int k = 0;
-			if (c <= 0)
-				continue;
 			lbuf_mark(xb, '*', xrow, xoff);
+			re_motion:
+			c = term_read();
 			switch (c) {
 			case TK_CTL('b'):
 				vi_scrollbackward(MAX(1, vi_arg1) * (xrows - 1));
@@ -1581,18 +1581,18 @@ void vi(int init)
 						strcpy(restr, "%s/^ {");
 						strcpy(itoa(vi_arg1, restr+6), "}/\t/g");
 					}
-					ln = vi_prompt(":", restr, &kmap);
+					ln = vi_enprompt(":", restr);
 					goto do_excmd;
 				case 'b':
 				case 'v':
 					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
 					break;
 				case ';':
-					ln = vi_prompt(":", "!", &kmap);
+					ln = vi_enprompt(":", "!");
 					goto do_excmd;
 				case '/':
 					cs = vi_curword(xb, xrow, xoff, vi_arg1, 0);
-					ln = vi_prompt("v/ xkwd:", cs, &kmap);
+					ln = vi_prompt("v/ xkwd:", cs, &xkmap);
 					ex_krsset(ln, +1);
 					free(ln);
 					free(cs);
@@ -1610,7 +1610,7 @@ void vi(int init)
 						strcat(buf1, "/");
 						free(cs);
 					}
-					ln = vi_prompt(":", buf, &kmap);
+					ln = vi_enprompt(":", buf);
 					goto do_excmd; }
 				case 'r': {
 					cs = vi_curword(xb, xrow, xoff, vi_arg1, '|');
@@ -1621,7 +1621,7 @@ void vi(int init)
 						strcat(buf, "/");
 						free(cs);
 					}
-					ln = vi_prompt(":", buf, &kmap);
+					ln = vi_enprompt(":", buf);
 					goto do_excmd; }
 				default:
 					term_dec()
@@ -1640,7 +1640,7 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case ':':
-				ln = vi_prompt(":", 0, &kmap);
+				ln = vi_enprompt(":", 0);
 				do_excmd:
 				if (ln && ln[0])
 					ex_command(ln)
@@ -1649,8 +1649,7 @@ void vi(int init)
 					continue;
 				break;
 			case 'q':
-				k = term_read();
-				if (k == 'q')
+				if (term_read() == 'q')
 					xquit = 1;
 				continue;
 			case 'c':
@@ -1717,8 +1716,8 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case 'm':
-				if ((mark = term_read()) > 0 && islower(mark))
-					lbuf_mark(xb, mark, xrow, xoff);
+				if ((k = term_read()) > 0 && islower(k))
+					lbuf_mark(xb, k, xrow, xoff);
 				break;
 			case 'p':
 			case 'P':
@@ -1789,51 +1788,46 @@ void vi(int init)
 					char cmd[100] = "se noled|%g/./tp ";
 					strcpy(itoa(vi_arg1, cmd+16), "gw|se led");
 					ex_command(cmd)
-				} else if (k == '~' || k == 'u' || k == 'U')
+				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
+					goto rep;
+				}
 				break;
 			case 'x':
-				term_back(' ');
-				vc_motion('d');
-				break;
+				term_push("d ", 2);
+				goto motion;
 			case 'X':
-				term_back(127);
-				vc_motion('d');
-				break;
+				term_push("d", 2);
+				goto motion;
 			case 'D':
-				term_back('$');
-				vc_motion('d');
-				break;
+				term_push("d$", 2);
+				goto motion;
+			case 'Y':
+				term_push("yy", 2);
+				goto motion;
+			case '~':
+				term_push("~ ", 2);
+				goto motion;
+			case 'C':
+				term_push("c$", 2);
+				goto motion;
+			case 's':
+				term_push("c ", 2);
+				goto motion;
+			case 'S':
+				term_push("cc", 2);
+				motion:
+				icmd_pos--;
+				goto re_motion;
 			case 'r':
 				vi_mod |= vc_replace();
-				break;
-			case 'C':
-				term_back('$');
-				vc_motion('c');
-				goto ins;
-			case 's':
-				term_back(' ');
-				vc_motion('c');
-				goto ins;
-			case 'S':
-				term_back('c');
-				vc_motion('c');
-				goto ins;
-			case 'Y':
-				term_back('y');
-				vc_motion('y');
 				break;
 			case 'R':
 				ex_exec("reg");
 				break;
 			case 'Z':
-				k = term_read();
-				if (k == 'Z')
+				if (term_read() == 'Z')
 					ex_exec("x");
-				break;
-			case '~':
-				term_back(' ');
-				vc_motion('~');
 				break;
 			case '.':
 				vc_repeat();
@@ -1844,12 +1838,11 @@ void vi(int init)
 			default:
 				continue;
 			}
-			cmd = term_cmd(&n);
-			if (strchr("!<>ACDIJKOPRSXYacdioprsxy~", c) ||
-					(c == 'g' && strchr("uU~", k))) {
-				if ((unsigned int)n < sizeof(rep_cmd)) {
-					memcpy(rep_cmd, cmd, n);
-					rep_len = n;
+			if (strchr("!<>AIJKOPRacdiopry", c)) {
+				rep:
+				if ((unsigned int)icmd_pos < sizeof(rep_cmd)) {
+					memcpy(rep_cmd, icmd, icmd_pos);
+					rep_len = icmd_pos;
 				}
 			}
 		}

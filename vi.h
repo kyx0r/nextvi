@@ -246,6 +246,7 @@ extern int term_record;
 extern int xrows, xcols;
 extern int texec, tn;
 extern unsigned int ibuf_pos, ibuf_cnt, icmd_pos;
+extern char icmd[4096];
 #define term_write(s, n) if (xled) write(1, s, n);
 void term_init(void);
 void term_done(void);
@@ -263,7 +264,6 @@ void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
 void term_back(int c);
-char *term_cmd(int *n);
 #define term_dec() ibuf_pos--; icmd_pos--;
 #define term_exec(s, n, val) \
 { \
