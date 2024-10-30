@@ -364,7 +364,6 @@ static int vi_prefix(void)
 			c = term_read();
 		}
 	}
-	term_dec()
 	return n;
 }
 
@@ -1084,6 +1083,7 @@ static void vc_motion(int cmd)
 	int lnmode = 0;			/* line-based region */
 	int mv;
 	vi_arg2 = vi_prefix();
+	term_dec()
 	o1 = ren_noeol(lbuf_get(xb, r1), o1);
 	o2 = o1;
 	if ((mv = vi_motionln(&r2, cmd)))
@@ -1367,6 +1367,7 @@ void vi(int init)
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
+		term_dec()
 		if (vi_lnnum == 1) {
 			vi_lnnum = 0;
 			vi_lncol = 0;
@@ -1806,7 +1807,7 @@ void vi(int init)
 				term_push("yy", 2);
 				goto motion;
 			case '~':
-				term_push("~ ", 2);
+				term_push("g~ ", 3);
 				goto motion;
 			case 'C':
 				term_push("c$", 2);
