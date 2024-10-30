@@ -286,9 +286,9 @@ EX RANGES
      :.-5,.+5p
 	     print 5 lines around xrow
      :/int/p
-	     print first occurance of int
+	     print first occurrence of int
      :?int?p
-	     print first occurance of int in reverse
+	     print first occurrence of int in reverse
      :.,/int/p
 	     print until int is found
      :?int?,.p
