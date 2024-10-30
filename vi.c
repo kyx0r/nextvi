@@ -812,7 +812,7 @@ static int vi_motion(int *row, int *off)
 		struct buf* tmpex_buf = istempbuf(ex_buf) ? ex_pbuf : ex_buf;
 		if (mv == TK_CTL(']')) {
 			if (vi_arg1 || lkwdcnt != xkwdcnt)
-				term_exec("", 1, 1)
+				term_exec("", 1, '&')
 			lkwdcnt = xkwdcnt;
 			fspos += fsdir < 0 ? 1 : 0;
 			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -1315,14 +1315,14 @@ static void vc_repeat(void)
 		term_push(rep_cmd, rep_len);
 }
 
-static void vc_execute(void)
+static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
 	int c = term_read(), i, n = MAX(1, vi_arg1);
 	char *buf = NULL;
 	if (TK_INT(c))
 		return;
-	if (c == '@')
+	if (c == cmd)
 		c = exec_buf;
 	exec_buf = c;
 	if (exec_buf >= 0)
@@ -1332,7 +1332,7 @@ static void vc_execute(void)
 		return;
 	}
 	for (i = 0; i < n; i++)
-		term_exec(buf, strlen(buf), 1)
+		term_exec(buf, strlen(buf), cmd)
 }
 
 static void vi_argcmd(int arg, char cmd)
@@ -1770,13 +1770,13 @@ void vi(int init)
 					vi_tsm = 1;
 					goto status;
 				} else if (k == 'w') {
-					char cmd[100] = "se noled|tp ";
+					char cmd[100] = "se noled|& ";
 					n = vi_arg1 ? vi_arg1 - 1 : 79;
 					k = xled;
-					strcpy(itoa(n, cmd+11), "\\|");
+					strcpy(itoa(n, cmd+10), "\\|");
 					while (1) {
 						ex_exec(cmd);
-						ex_exec("se grp=2|f/[^ \t]*[^ \t]?(.)|tp 1K|se nogrp");
+						ex_exec("se grp=2|f/[^ \t]*[^ \t]?(.)|& 1K|se nogrp");
 						if (vi_col < n)
 							break;
 						ex_exec("+1");
@@ -1786,8 +1786,8 @@ void vi(int init)
 						vi_mod |= 1;
 					}
 				} else if (k == 'q') {
-					char cmd[100] = "se noled|%g/./tp ";
-					strcpy(itoa(vi_arg1, cmd+16), "gw|se led");
+					char cmd[100] = "se noled|g/./& ";
+					strcpy(itoa(vi_arg1, cmd+14), "gw|se led");
 					ex_command(cmd)
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
@@ -1834,7 +1834,8 @@ void vi(int init)
 				vc_repeat();
 				break;
 			case '@':
-				vc_execute();
+			case '&':
+				vc_execute(c);
 				break;
 			default:
 				continue;
