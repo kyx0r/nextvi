@@ -265,15 +265,20 @@ char *term_att(int att);
 void term_push(char *s, unsigned int n);
 void term_back(int c);
 #define term_dec() ibuf_pos--; icmd_pos--;
-#define term_exec(s, n, val) \
+#define term_exec(s, n, type) \
 { \
+	preserve(int, ibuf_pos, ibuf_pos) \
+	preserve(int, ibuf_cnt, ibuf_cnt) \
 	term_push(s, n); \
+	preserve(int, xquit, 0) \
 	preserve(int, tn, 0) \
-	preserve(int, texec, val) \
+	preserve(int, texec, type) \
 	vi(0); \
 	restore(tn) \
 	restore(texec) \
-	xquit = 0; \
+	restore(xquit) \
+	restore(ibuf_pos) \
+	restore(ibuf_cnt) \
 } \
 
 /* process management */

@@ -581,10 +581,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static int ec_termpush(char *loc, char *cmd, char *arg)
+static int ec_termexec(char *loc, char *cmd, char *arg)
 {
 	if (*arg)
-		term_exec(arg, strlen(arg), cmd[2] ? 2 : 1)
+		term_exec(arg, strlen(arg), cmd[0])
 	return 0;
 }
 
@@ -1104,8 +1104,8 @@ static struct excmd {
 	{"g!", ec_glob},
 	{"=", ec_lnum},
 	{"k", ec_mark},
-	{"tp", ec_termpush},
-	{"tp!", ec_termpush},
+	{"@", ec_termexec},
+	{"&", ec_termexec},
 	{"pu", ec_put},
 	{"q", ec_quit},
 	{"q!", ec_quit},
@@ -1167,9 +1167,9 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 		} else
 			*loc++ = *src++;
 	}
-	while (*src && isalpha((unsigned char)*src))
+	while (*src >= 'a' && *src <= 'z')
 		*cmd++ = *src++;
-	if (*src == '!' || *src == '=')
+	if (*src == '!' || *src == '=' || *src == '&' || *src == '@')
 		*cmd++ = *src++;
 	while (*src == ' ' || *src == '\t')
 		src++;

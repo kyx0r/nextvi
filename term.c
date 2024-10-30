@@ -137,19 +137,24 @@ int term_read(void)
 	struct pollfd ufds[1];
 	int n;
 	if (ibuf_pos >= ibuf_cnt) {
+		if (texec) {
+			xquit = 1;
+			if (texec == '&')
+				goto ret;
+		}
 		ufds[0].fd = STDIN_FILENO;
 		ufds[0].events = POLLIN;
 		/* read a single input character */
 		if (poll(ufds, 1, -1) <= 0 ||
 				(n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
 			xquit = !isatty(STDIN_FILENO);
+			ret:
 			*ibuf = 0;
 			n = 1;
 		}
 		ibuf_cnt = n;
 		ibuf_pos = 0;
-	} else if (ibuf_pos == ibuf_cnt - 1)
-		xquit = texec == 1;
+	}
 	if (icmd_pos < sizeof(icmd))
 		icmd[icmd_pos++] = (unsigned char)ibuf[ibuf_pos];
 	return (unsigned char)ibuf[ibuf_pos++];
