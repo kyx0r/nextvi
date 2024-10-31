@@ -32,10 +32,10 @@ NOTATION
      -arg2   A required argument suffixing a command
      C-	     A ctrl key
      Space   A separation, multiple binds to the same command
-     <^x>    A representation of non-printable character literal x
+     <x>     An x representation of non-printable character literal
 
 VI NORMAL
-     arg1-+ arg1-\n arg1-j
+     arg1-+ arg1-C-m arg1-j
 		   Move the cursor arg1 lines down
      arg1-- arg1-k
 		   Move the cursor arg1 lines up
@@ -77,7 +77,7 @@ VI NORMAL
      L		   Goto the lowest line of the screen
      M		   Goto the middle line of the screen
      arg1-z.	   Center the screen. arg1 is xtop
-     arg1-z\n	   Center the screen at top row. arg1 is xtop
+     arg1-zC-m	   Center the screen at top row. arg1 is xtop
      arg1-z-	   Center the screen at bottom row. arg1 is xtop
      arg1-C-e	   Scroll down 1 or arg1 lines. arg1 is set and stored, cursor
 		   position preserved
@@ -208,7 +208,7 @@ VI NORMAL
      ZZ		   Soft quit, attempting to write the file before exit
 
 INSERT MODE
-     C-h Backspace
+     C-h Backspace <\x7f>
 		   Delete a character
      C-u	   Delete util C-x mark or everything
      C-w	   Delete a word
@@ -218,7 +218,7 @@ INSERT MODE
      C-\-arg2	   Select paste register arg2. C-\ selects default register
      C-p	   Paste a register
      C-g	   Index buffer for autocomplete
-     C-y	   Reset autocomplete db
+     C-y	   Reset autocomplete data
      C-r	   Loop through autocomplete options backward
      C-n	   Loop through autocomplete options forward
      C-z	   Suspend vi/ex
@@ -233,7 +233,8 @@ INSERT MODE
      C-f	   Switch to alternative keymap
      C-v-arg2	   Read a literal character arg2
      C-k-arg2	   Read a digraph sequence arg2
-     C-c ESC	   Exit insert mode
+     C-c ESC <\x1b>
+		   Exit insert mode
 
 VI MOTIONS
      Basic motion examples:
@@ -369,7 +370,7 @@ EX COMMANDS
      a i c   Enter ex append/insert/change mode
 
 	     Range determines the position.
-	     Exiting with \n.\n or \nESC will apply changes to the buffer.
+	     Exiting with C-m.C-m or C-mESC will apply changes to the buffer.
 	     Exiting with C-c will discard changes.
 
      d	     Delete line(s)
@@ -554,6 +555,8 @@ EX COMMANDS
 
      ac	     Set autocomplete filter regex
 
+	     Example: autocomplete using whole lines from the buffer
+	     :ac .+
 	     No argument resets to the default word filter regex as defined
 	     in led.c.
 
