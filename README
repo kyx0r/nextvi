@@ -24,7 +24,7 @@ DESCRIPTION
 OPTIONS
      -e	     Enter Ex mode on startup
      -m	     Disable initial file read message
-     -s	     When combined with -e enters limited Ex mode
+     -s	     Enter raw Ex mode
      -v	     Enter visual mode on startup. (Default)
 
 NOTATION
@@ -607,6 +607,17 @@ EX OPTIONS
 	     cursor.
      led     If unset, all terminal output is disabled.
 
+     vis     Control startup flags
+
+	     Example: disable :e message in ex mode
+	     :se vis=12
+	     Example: disable :e message in vi mode
+	     :se vis=8
+	     Example: enable raw ex mode
+	     :se vis=6
+	     Example: disable raw ex mode
+	     :se vis=4
+
      mpt     Control vi prompts
 
 	     When set to 0 after an ex command is called from vi, disables
@@ -712,9 +723,9 @@ CODE MAP
      | 653   uc.c    | UTF-8 support	     |
      | 658   regex.c | extended RE	     |
      | 662   led.c   | insert mode/output    |
-     | 1232  ex.c    | ex options/commands   |
+     | 1233  ex.c    | ex options/commands   |
      | 2026  vi.c    | normal mode/general   |
-     | 6844  total   | wc -l *.c|sort	     |
+     | 6845  total   | wc -l *.c|sort	     |
      +---------------+-----------------------+
 
 COMPILING
