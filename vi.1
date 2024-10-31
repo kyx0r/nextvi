@@ -641,8 +641,12 @@ Advanced example: extract/print data enclosed in ()
 Inverted global command
 .It Cm [range]=
 Print the current range linenumber
-.It Cm [range]k [register]
-Set a mark
+
+.It Cm [range]k [mark]
+Set a line mark
+.Bd -literal
+The character offset is set to the current position.
+.Ed
 
 .It Cm &{macro}
 Global non-blocking macro
@@ -740,7 +744,6 @@ Example: set using exact values
 :se hll=0
 .Ed
 
-.It Cm s
 .It Cm [range]s{*}[kwd]{*}{str}[*][opts]
 Substitute
 .Bd -literal
@@ -761,7 +764,7 @@ this is an example text for subs and has preintafter or void
 this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
-.It Cm [range]ya [reg][append]
+.It Cm [range]ya [register][append]
 Yank a region
 .Bd -literal
 To append to the register, pass in its uppercase version.
