@@ -52,12 +52,12 @@ A required argument suffixing a command
 A ctrl key
 .It Cm Space
 A separation, multiple binds to the same command
-.It Cm <^x>
+.It Cm <x>
 A representation of non-printable character literal x
 .El
 .Sh VI NORMAL
 .Bl -tag -width Dq -compact
-.It Cm arg1-+ arg1-\en arg1-j
+.It Cm arg1-+ arg1-C-m arg1-j
 Move the cursor arg1 lines down
 .It Cm arg1-- arg1-k
 Move the cursor arg1 lines up
@@ -129,7 +129,7 @@ Goto the lowest line of the screen
 Goto the middle line of the screen
 .It Cm arg1-z.
 Center the screen. arg1 is xtop
-.It Cm arg1-z\en
+.It Cm arg1-zC-m
 Center the screen at top row. arg1 is xtop
 .It Cm arg1-z-
 Center the screen at bottom row. arg1 is xtop
@@ -339,7 +339,7 @@ Soft quit, attempting to write the file before exit
 .
 .Sh INSERT MODE
 .Bl -tag -width Dq -compact
-.It Cm C-h Backspace
+.It Cm C-h Backspace <\ex7f>
 Delete a character
 .It Cm C-u
 Delete util C-x mark or everything
@@ -358,7 +358,7 @@ Paste a register
 .It Cm C-g
 Index buffer for autocomplete
 .It Cm C-y
-Reset autocomplete db
+Reset autocomplete data
 .It Cm C-r
 Loop through autocomplete options backward
 .It Cm C-n
@@ -385,7 +385,7 @@ Switch to alternative keymap
 Read a literal character arg2
 .It Cm C-k-arg2
 Read a digraph sequence arg2
-.It Cm C-c ESC
+.It Cm C-c ESC <\ex1b>
 Exit insert mode
 .El
 .
@@ -556,7 +556,7 @@ Forced version of ea
 Enter ex append/insert/change mode
 .Bd -literal
 Range determines the position.
-Exiting with \en.\en or \enESC will apply changes to the buffer.
+Exiting with C-m.C-m or C-mESC will apply changes to the buffer.
 Exiting with C-c will discard changes.
 .Ed
 
@@ -792,6 +792,8 @@ No argument will reset to the default value of 10.
 .It Cm ac
 Set autocomplete filter regex
 .Bd -literal
+Example: autocomplete using whole lines from the buffer
+:ac .+
 No argument resets to the default word filter regex as defined
 in led.c.
 .Ed
