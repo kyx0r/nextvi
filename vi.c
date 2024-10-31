@@ -56,7 +56,6 @@ static int vi_ybuf;			/* current yank buffer */
 static int vi_col;			/* the column requested by | command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
-static int vi_soset, vi_so;		/* search offset; 1 in "/kw/1" */
 static int vi_cndir = 1;		/* ^n direction */
 static int vi_status;			/* always show status */
 static int vi_tsm;			/* type of the status message */
@@ -421,25 +420,10 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 	int i, dir, len = 0;
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
-		sbuf *sb;
 		char *kw = vi_prompt(sign, 0, &xkmap);
-		char *re;
 		if (!kw)
 			return 1;
-		sbuf_make(sb, 1024)
-		sbuf_chr(sb, cmd)
-		sbufn_str(sb, kw)
-		free(kw);
-		kw = sb->s;
-		if ((re = re_read(&kw))) {
-			ex_krsset(re, cmd == '/' ? +2 : -2);
-			while (isspace((unsigned char)*kw))
-				kw++;
-			vi_soset = !!kw[0];
-			vi_so = atoi(kw);
-			free(re);
-		}
-		sbuf_free(sb)
+		ex_krsset(kw, cmd == '/' ? +2 : -2);
 	} else if (msg)
 		ex_krsset(xregs['/'], xkwddir);
 	if (!lbuf_len(xb) || (!xkwddir || !xkwdrs))
@@ -450,19 +434,12 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 				off, &len, msg ? dir : -1)) {
 			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 					xregs['/'], i, cnt);
-			break;
+			return 1;
 		}
 		if (i + 1 < cnt && cmd == '/')
 			*off += len;
 	}
-	if (i && vi_soset) {
-		*off = -1;
-		if (*row + vi_so < 0 || *row + vi_so >= lbuf_len(xb))
-			i = 0;
-		else
-			*row += vi_so;
-	}
-	return !i;
+	return 0;
 }
 
 /* read a line motion */
