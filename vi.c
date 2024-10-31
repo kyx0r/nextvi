@@ -417,7 +417,7 @@ static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int 
 
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
-	int i, dir, len = 0;
+	int i, dir;
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
 		char *kw = vi_prompt(sign, 0, &xkmap);
@@ -430,14 +430,12 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, xkwdrs, dir, row, lbuf_len(xb),
-				off, &len, msg ? dir : -1)) {
+		if (lbuf_search(xb, xkwdrs, dir, row, off,
+				lbuf_len(xb), msg ? dir : -1)) {
 			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 					xregs['/'], i, cnt);
 			return 1;
 		}
-		if (i + 1 < cnt && cmd == '/')
-			*off += len;
 	}
 	return 0;
 }
