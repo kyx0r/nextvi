@@ -24,8 +24,8 @@ DESCRIPTION
 OPTIONS
      -e	     Enter Ex mode on startup
      -m	     Disable initial file read message
-     -s	     Enter raw Ex mode
-     -v	     Enter visual mode on startup. (Default)
+     -s	     Enter raw Ex mode on startup
+     -v	     Enter visual mode on startup (Default)
 
 NOTATION
      arg1-   An optional number prefixing a command
@@ -717,15 +717,15 @@ CODE MAP
      | 537   kmap.h  | keymap translation    |
      +---------------+-----------------------+
      | 293   conf.c  | hl/ft/td config	     |
-     | 337   term.c  | low level IO	     |
+     | 336   term.c  | low level IO	     |
      | 382   ren.c   | positioning/syntax    |
-     | 601   lbuf.c  | file/line buffer	     |
+     | 600   lbuf.c  | file/line buffer	     |
      | 653   uc.c    | UTF-8 support	     |
      | 658   regex.c | extended RE	     |
      | 662   led.c   | insert mode/output    |
      | 1233  ex.c    | ex options/commands   |
-     | 2026  vi.c    | normal mode/general   |
-     | 6845  total   | wc -l *.c|sort	     |
+     | 2001  vi.c    | normal mode/general   |
+     | 6818  total   | wc -l *.c|sort	     |
      +---------------+-----------------------+
 
 COMPILING
@@ -763,8 +763,7 @@ SEE ALSO
      made public the patch can be submitted via email or github pull request.
      https://github.com/kyx0r/nextvi/tree/patches
 
-     Resources used to create this manual and contributions to be submitted on
-     the manual branch.
+     Scripts used to generate this manual are located in the manual branch.
      https://github.com/kyx0r/nextvi/tree/manual
 
      Q: What is pikevm?
