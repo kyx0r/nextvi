@@ -17,5 +17,5 @@ EXINIT="${EXINIT}|/ex\.c/|&A ex options/commands	\\|"
 EXINIT="${EXINIT}|/vi\.c/|&A normal mode/general	\\|"
 EXINIT="${EXINIT}|/total/|&A wc -l *.c\|sort	\\|"
 EXINIT="${EXINIT}|\$|pu|'a|-1|pu"
-EXINIT="${EXINIT}|se pr=A|1,\$p|pu a \!cat|q!"
+EXINIT="${EXINIT}|se led|se vis=6|1,\$p|se vis=4|q!"
 vi -em
