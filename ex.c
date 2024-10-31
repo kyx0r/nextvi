@@ -707,14 +707,14 @@ static int ec_lnum(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static int ec_undo(char *loc, char *cmd, char *arg)
+static int ec_undoredo(char *loc, char *cmd, char *arg)
 {
-	return lbuf_undo(xb);
-}
-
-static int ec_redo(char *loc, char *cmd, char *arg)
-{
-	return lbuf_redo(xb);
+	int n = !arg[0] ? 1 : atoi(arg);
+	if (arg[0] == '$')
+		n = -1;
+	for (int ret = 0; n && !ret; n--)
+		ret = cmd[0] == 'u' ? lbuf_undo(xb) : lbuf_redo(xb);
+	return 0;
 }
 
 static int ec_save(char *loc, char *cmd, char *arg)
@@ -849,7 +849,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 		loc = "%";
 	if (ex_region(loc, &beg, &end))
 		return 1;
-	not = strchr(cmd, '!') || cmd[0] == 'v';
+	not = !!strchr(cmd, '!');
 	pat = re_read(&s);
 	if (pat)
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
@@ -1111,13 +1111,12 @@ static struct excmd {
 	{"q", ec_quit},
 	{"q!", ec_quit},
 	{"r", ec_read},
-	{"v", ec_glob},
 	{"w", ec_write},
 	{"w!", ec_write},
 	{"wq", ec_write},
 	{"wq!", ec_write},
-	{"u", ec_undo},
-	{"rd", ec_redo},
+	{"u", ec_undoredo},
+	{"rd", ec_undoredo},
 	{"se", ec_set},
 	{"s", ec_substitute},
 	{"x", ec_write},
