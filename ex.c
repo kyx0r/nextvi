@@ -897,6 +897,7 @@ static struct option {
 	{"grp", &xgrp},
 	{"pac", &xpac},
 	{"led", &xled},
+	{"vis", &xvis},
 	{"mpt", &xmpt},
 	{"pr", &xpr},
 };

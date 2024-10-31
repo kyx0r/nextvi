@@ -294,7 +294,7 @@ char *ex_read(char *msg)
 {
 	sbuf *sb;
 	int c;
-	if (term_sbuf && xled) {
+	if (!(xvis & 2) && xled) {
 		int oleft = xleft;
 		syn_blockhl = 0;
 		syn_setft("/-");
@@ -329,7 +329,7 @@ void ex_cprint(char *line, int r, int c, int ln)
 	}
 	if (xpr)
 		vi_regputraw(xpr, line, !!strchr(line, '\n'), 1);
-	if (!term_sbuf) {
+	if (xvis & 2) {
 		term_write(line, dstrlen(line, '\n'))
 		term_write("\n", 1)
 		return;
