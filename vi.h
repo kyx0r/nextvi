@@ -246,7 +246,7 @@ extern int term_record;
 extern int xrows, xcols;
 extern int texec, tn;
 extern unsigned int ibuf_pos, ibuf_cnt, icmd_pos;
-extern char icmd[4096];
+extern unsigned char icmd[4096];
 #define term_write(s, n) if (xled) write(1, s, n);
 void term_init(void);
 void term_done(void);

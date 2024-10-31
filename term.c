@@ -105,8 +105,8 @@ void term_pos(int r, int c)
 	}
 }
 
-static char ibuf[4096];			/* input character buffer */
-char icmd[4096];			/* read after the last term_cmd() */
+static unsigned char ibuf[4096];	/* input character buffer */
+unsigned char icmd[4096];		/* read after the last term_cmd() */
 unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
 unsigned int icmd_pos;			/* icmd[] position */
 
@@ -155,9 +155,9 @@ int term_read(void)
 		ibuf_cnt = n;
 		ibuf_pos = 0;
 	}
-	if (icmd_pos < sizeof(icmd))
-		icmd[icmd_pos++] = (unsigned char)ibuf[ibuf_pos];
-	return (unsigned char)ibuf[ibuf_pos++];
+	icmd_pos = icmd_pos % sizeof(icmd);
+	icmd[icmd_pos++] = ibuf[ibuf_pos];
+	return ibuf[ibuf_pos++];
 }
 
 /* return a static string that changes text attributes to att */
