@@ -32,7 +32,7 @@ NOTATION
      -arg2   A required argument suffixing a command
      C-	     A ctrl key
      Space   A separation, multiple binds to the same command
-     <x>     A representation of non-printable character literal x
+     <x>     An x representation of non-printable character literal
 
 VI NORMAL
      arg1-+ arg1-C-m arg1-j
