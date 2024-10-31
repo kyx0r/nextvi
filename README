@@ -404,23 +404,26 @@ EX COMMANDS
 
 	     Execute any sequence of vi/ex commands or macros.
 	     A non-blocking macro shall not wait for input when the end of
-	     the sequence is reached. A non-blocking macro executing itself
-	     will always reach a terminating point.
+	     the sequence is reached. A non-blocking macro executing other
+	     macros will always reach a terminating point.
 	     Example: execute vi insert statement
 	     :& ihello
 	     Example: execute :hello
 	     :& :hello
 	     Example: execute ci(int macro
 	     :& ci(int
+	     Example: turn non-blocking into blocking macro
+	     :& :@ :run as non-blocking but blocking<^M>
 
      @	     Global blocking macro
 
 	     Execute any sequence of vi/ex commands or macros.
 	     A blocking macro shall wait for input when the end of the sequence
-	     is reached. A blocking macro executing itself results in congestion.
+	     is reached. A blocking macro executing other macros may result
+	     in congestion.
 	     Example: execute vi insert statement
 	     :@ ihello
-	     Example: insert :hello into vi/ex prompt
+	     Example: insert hello into : prompt
 	     :@ :hello
 	     Example: execute ci(int macro
 	     :@ ci(int
@@ -695,20 +698,21 @@ SPECIAL REGISTERS
      1-9     previous value(s) of default register (nonatomic)
 
 CODE MAP
-     +--------------+---------------------+
-     | 293  conf.c  | hl/ft/td config	  |
-     | 340  term.c  | low level IO	  |
-     | 382  ren.c   | positioning/syntax  |
-     | 457  vi.h    | definitions/aux	  |
-     | 537  kmap.h  | keymap translation  |
-     | 601  lbuf.c  | file/line buffer	  |
-     | 653  uc.c    | UTF-8 support	  |
-     | 658  regex.c | extended RE	  |
-     | 662  led.c   | insert mode/output  |
-     | 1232 ex.c    | ex options/commands |
-     | 2031 vi.c    | normal mode/general |
-     | 7846 total   | wc -l *.[ch]|sort	  |
-     +--------------+---------------------+
+     +---------------+-----------------------+
+     | 462   vi.h    | definitions/aux	     |
+     | 537   kmap.h  | keymap translation    |
+     +---------------+-----------------------+
+     | 293   conf.c  | hl/ft/td config	     |
+     | 337   term.c  | low level IO	     |
+     | 382   ren.c   | positioning/syntax    |
+     | 601   lbuf.c  | file/line buffer	     |
+     | 653   uc.c    | UTF-8 support	     |
+     | 658   regex.c | extended RE	     |
+     | 662   led.c   | insert mode/output    |
+     | 1232  ex.c    | ex options/commands   |
+     | 2026  vi.c    | normal mode/general   |
+     | 6844  total   | wc -l *.c|sort	     |
+     +---------------+-----------------------+
 
 COMPILING
      export CC='g++ -x c'
