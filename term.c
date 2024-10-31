@@ -25,7 +25,6 @@ void term_init(void)
 	}
 	xcols = xcols ? xcols : 80;
 	xrows = xrows ? xrows : 25;
-	term_out("\33[m");
 }
 
 void term_done(void)
