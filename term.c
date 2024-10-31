@@ -6,7 +6,7 @@ static struct termios termios;
 
 void term_init(void)
 {
-	if (xvis & 2 && xvis & 4)
+	if (xvis & 2)
 		return;
 	struct winsize win;
 	struct termios newtermios;
@@ -30,7 +30,7 @@ void term_init(void)
 
 void term_done(void)
 {
-	if (!term_sbuf)
+	if (xvis & 2)
 		return;
 	term_commit();
 	sbuf_free(term_sbuf)
