@@ -430,8 +430,11 @@ EX COMMANDS
 	     Inverted global command
      [range]=
 	     Print the current range linenumber
-     [range]k [register]
-	     Set a mark
+
+     [range]k [mark]
+	     Set a line mark
+
+	     The character offset is set to the current position.
 
      &{macro}
 	     Global non-blocking macro
@@ -518,7 +521,6 @@ EX COMMANDS
 	     :se hll=1
 	     :se hll=0
 
-     s
      [range]s{*}[kwd]{*}{str}[*][opts]
 	     Substitute
 
@@ -538,7 +540,7 @@ EX COMMANDS
 	     :%s/(int)\|(void)/pre\2after/g
 	     this is an example text for subs and has prepreafterafter or prevoidafter
 
-     [range]ya [reg][append]
+     [range]ya [register][append]
 	     Yank a region
 
 	     To append to the register, pass in its uppercase version.
@@ -761,8 +763,7 @@ SPECIAL REGISTERS
      /	     previous search keyword
      :	     previous ex command
      0	     previous value of default register (atomic)
-	     Atomic means the operation did not include a whole line
-	     and a \n character.
+	     Atomic means the operation did not include a <Newline> character.
      1-9     previous value(s) of default register (nonatomic)
 
 CODE MAP
