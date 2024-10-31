@@ -429,7 +429,7 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 }
 
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
-			int ln_n, int *o, int *len, int skip)
+			int *o, int ln_n, int skip)
 {
 	int r0 = *r, o0 = *o;
 	int offs[re->grpcnt * 2], i = r0;
@@ -448,7 +448,6 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 				break;
 			*o = uc_off(s, off + g1);
 			*r = i;
-			*len = uc_off(s + off + g1, g2 - g1);
 			off += g2 > 0 ? g2 : 1;
 			if (dir > 0)
 				return 0;

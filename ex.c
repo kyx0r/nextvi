@@ -301,7 +301,7 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 
 static int ec_search(char *loc, char *cmd, char *arg)
 {
-	int dir, len, off, obeg, beg = -1, end = lbuf_len(xb);
+	int dir, off, obeg, beg = -1, end = lbuf_len(xb);
 	char **re = !loc ? (char**)arg : &arg;
 	dir = **re == '/' ? 2 : -2;
 	char *e = re_read(re);
@@ -315,7 +315,7 @@ static int ec_search(char *loc, char *cmd, char *arg)
 		beg = cmd ? *(int*)cmd : xrow + (xkwddir > 0);
 		off = cmd ? xoff : 0;
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
-				end, &off, &len, MIN(dir, 0)))
+				&off, end, MIN(dir, 0)))
 			return -1;
 	} else if (!ex_region(loc, &beg, &end)) {
 		off = xoff;
@@ -326,7 +326,7 @@ static int ec_search(char *loc, char *cmd, char *arg)
 		} else
 			beg = xrow;
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
-				end, &off, &len, xkwddir))
+				&off, end, xkwddir))
 			return -1;
 		if (beg < obeg)
 			return -1;
