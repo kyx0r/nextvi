@@ -31,7 +31,7 @@ NOTATION
      <x>     An x representation of non-printable character literal
      [x]     An x representation of a optional argument
      {x}     An x representation of a required argument
-     <^x>    A representation of a ctrl key x
+     <^X>    A representation of a ctrl key X
      #	     A representation of a positive number
      *	     A representation of any character(s)
      |	     A separation of alternative representations
@@ -39,7 +39,7 @@ NOTATION
 VI NORMAL
      [#]+
      [#]j
-     [#]<^m>
+     [#]<^M>
      [#]<Newline>
 		   Move the cursor # lines down
      [#]-
@@ -64,14 +64,14 @@ VI NORMAL
      [#]w	   Move the cursor to the start of the word forward # times
      {		   Move the cursor to the next { region up
      }		   Move the cursor to the next { region down
-     [		   Move the cursor to the next <^m> region up
-     ]		   Move the cursor to the next <^m> region down
+     [		   Move the cursor to the next <^M> region up
+     ]		   Move the cursor to the next <^M> region down
      ^		   Move the cursor to the start of the line after indentation
      0 |	   Move the cursor to the start of the line
      $		   Move the cursor to the end of the line
      [#]|	   Move the cursor to # col
      [#]<Space>	   Move cursor # characters forward
-     [#]<^h>
+     [#]<^H>
      [#]<Backspace>
 		   Move cursor # characters backward
      %		   Move the cursor to [](){} pair
@@ -84,34 +84,34 @@ VI NORMAL
      L		   Goto the lowest line of the screen
      M		   Goto the middle line of the screen
      [#]z.	   Center the screen. # is xtop
-     [#]z<^m>
+     [#]z<^M>
      [#]z<Newline>
 		   Center the screen at top row. # is xtop
      [#]z-	   Center the screen at bottom row. # is xtop
-     [#]<^e>	   Scroll down 1 or # lines. # is set and stored, cursor
+     [#]<^E>	   Scroll down 1 or # lines. # is set and stored, cursor
 		   position preserved
-     [#]<^y>	   Scroll up 1 or # lines. # is set and stored, cursor
+     [#]<^Y>	   Scroll up 1 or # lines. # is set and stored, cursor
 		   position preserved
-     [#]<^d>	   Scroll down half a screen size. If # set scroll to # lines
-     [#]<^u>	   Scroll up half a screen size. If # set scroll to # lines
-     <^b>	   Scroll up full screen size
-     <^f>	   Scroll down full screen size
+     [#]<^D>	   Scroll down half a screen size. If # set scroll to # lines
+     [#]<^U>	   Scroll up half a screen size. If # set scroll to # lines
+     <^B>	   Scroll up full screen size
+     <^F>	   Scroll down full screen size
      #		   Show global and relative line numbers
      2#		   Toggle show global line numbers permanently
      4#		   Toggle show relative line numbers after indentation
 		   permanently
      8#		   Toggle show relative line numbers permanently
      V		   Toggle show hidden characters: Space,Tab,New line
-     <^v>	   Toggle show line motion numbers for ebEBwW
-     [#]<^v>	   Disable line motion numbers
-     [#]<^r>	   Redo # times
+     <^V>	   Toggle show line motion numbers for ebEBwW
+     [#]<^V>	   Disable line motion numbers
+     [#]<^R>	   Redo # times
      [#]u	   Undo # times
-     <^i>
+     <^I>
      <Tab>
 		   Open file using text from the cursor to end of the line
-     <^k>	   Write the current buffer to file. Force write on 2nd
+     <^K>	   Write the current buffer to file. Force write on 2nd
 		   attempt
-     [#]<^w>{arg}  Unindent arg region # times
+     [#]<^W>{arg}  Unindent arg region # times
      [#]<{arg}	   Indent left arg region # times
      [#]>{arg}	   Indent right arg region # times
      "{arg}	   Operate on the register arg
@@ -141,9 +141,9 @@ VI NORMAL
 		   changing tabs to spaces. # modifies the width
      vo		   Remove trailing white spaces and <\r> line endings
      va		   Toggle autoindent on or off. see ai ex option
-     <^g>	   Print buffer status infos
-     1<^g>	   Enable permanent status bar row
-     2<^g>	   Disable permanent status bar row
+     <^G>	   Print buffer status infos
+     1<^G>	   Enable permanent status bar row
+     2<^G>	   Disable permanent status bar row
      ga		   Print character info
      1ga	   Enable permanent character info bar row
      2ga	   Disable permanent character info bar row
@@ -182,8 +182,8 @@ VI NORMAL
      [#]P	   Paste a default register below current line or behind
 		   cursor pos
      m{arg}	   Set a buffer local line mark arg
-     <^t>	   Set a global file mark 0
-     [#]<^t>	   Set or switch to a global mark based on # % 2 == 0
+     <^T>	   Set a global file mark 0
+     [#]<^T>	   Set or switch to a global mark based on # % 2 == 0
      [#]<^7>
      [#]<^_>
 		   Show buffer list and switch based on # or 0-9 index when
@@ -191,7 +191,7 @@ VI NORMAL
      <^^>
      <^6>
 		   Swap to the previous buffer
-     [#]<^n>	   Swap to the next buffer, # changes direction
+     [#]<^N>	   Swap to the next buffer, # changes direction
 		   (forward/backward)
      \		   Swap to /fm/ buffer b-2
      z{arg}	   Change alternate keymap to arg
@@ -206,51 +206,51 @@ VI NORMAL
      [#]?	   Search using regex up skipping # matches
      [#]n	   Repeat search down skipping # matches
      [#]N	   Repeat search up skipping # matches
-     <^a>	   Auto search word under the cursor, not centering and
+     <^A>	   Auto search word under the cursor, not centering and
 		   wrapping up/down direction
-     [#]<^a>	   Auto search setting # words from the cursor
+     [#]<^A>	   Auto search setting # words from the cursor
      <^]>	   Filesystem search forward based on directory listing in b-2
      [#]<^]>	   Filesystem search forward, setting search keyword to #
 		   words under the cursor
-     <^p>	   Filesystem search backward based on directory listing in
+     <^P>	   Filesystem search backward based on directory listing in
 		   b-2
-     [#]<^p>	   Filesystem search backward, setting search keyword to #
+     [#]<^P>	   Filesystem search backward, setting search keyword to #
 		   words under the cursor
-     <^z>	   Suspend vi
-     <^l>	   Force redraw whole screen and update terminal dimensions
+     <^Z>	   Suspend vi
+     <^L>	   Force redraw whole screen and update terminal dimensions
      qq		   Force quit cleaning the terminal
      zz		   Force quit not cleaning the terminal, submits commands if
 		   recursive
      ZZ		   Soft quit, attempting to write the file before exit
 
 INSERT MODE
-     <^h>
+     <^H>
      <Backspace>
 		   Delete a character
-     <^u>	   Delete util <^x> mark or everything
-     <^w>	   Delete a word
-     <^t>	   Increase indent
-     <^d>	   Decrease indent
+     <^U>	   Delete util <^X> mark or everything
+     <^W>	   Delete a word
+     <^T>	   Increase indent
+     <^D>	   Decrease indent
      <^]>	   Switch a default paste register to 0-9
      <^\>{arg}	   Select paste register arg. <^\> selects default register
-     <^p>	   Paste a register
-     <^g>	   Index buffer for autocomplete
-     <^y>	   Reset autocomplete data
-     <^r>	   Loop through autocomplete options backward
-     <^n>	   Loop through autocomplete options forward
-     <^z>	   Suspend vi/ex
-     <^x>	   Set a mark for <^u> and completion starting position
-     <^b>	   Recurse into b-1 history buffer when in ex prompt. Use any
+     <^P>	   Paste a register
+     <^G>	   Index buffer for autocomplete
+     <^Y>	   Reset autocomplete data
+     <^R>	   Loop through autocomplete options backward
+     <^N>	   Loop through autocomplete options forward
+     <^Z>	   Suspend vi/ex
+     <^X>	   Set a mark for <^U> and completion starting position
+     <^B>	   Recurse into b-1 history buffer when in ex prompt. Use any
 		   quit command to exit recursion
-     <^b>	   Print autocomplete options when in vi insert
-     <^a>	   Loop through the strings in a history buffer b-1
-     <^l>	   Redraw the screen in vi mode, clean the terminal in ex
-     <^o>	   Switch between vi and ex modes recursively
-     <^o>	   Switch to english keymap
-     <^f>	   Switch to alternative keymap
-     <^v>{arg}	   Read a literal character arg
-     <^k>{arg}	   Read a digraph sequence arg
-     <^c>
+     <^B>	   Print autocomplete options when in vi insert
+     <^A>	   Loop through the strings in a history buffer b-1
+     <^L>	   Redraw the screen in vi mode, clean the terminal in ex
+     <^O>	   Switch between vi and ex modes recursively
+     <^O>	   Switch to english keymap
+     <^F>	   Switch to alternative keymap
+     <^V>{arg}	   Read a literal character arg
+     <^K>{arg}	   Read a digraph sequence arg
+     <^C>
      <ESC>
 		   Exit insert mode
 
@@ -382,7 +382,7 @@ EX COMMANDS
 
 	     If the substring matches more than 1 filename, a prompt will
 	     be shown. Submit using numbers 0-9 (higher ascii values work
-	     too (<^c> to cancel)). Passing an extra arg to :ea in form of
+	     too (<^C> to cancel)). Passing an extra arg to :ea in form of
 	     a number will bypass the prompt and open the corresponding file.
 	     Example: open filename containing "v"
 	     :ea v
@@ -396,8 +396,8 @@ EX COMMANDS
 	     Enter ex append/insert/change mode
 
 	     # determines insertion line number.
-	     Exiting with <^m>.<^m> or <^m><ESC> will apply changes to the buffer.
-	     Exiting with <^c> will discard changes.
+	     Exiting with <^M>.<^M> or <^M><ESC> will apply changes to the buffer.
+	     Exiting with <^C> will discard changes.
 
      [range]d
 	     Delete line(s)
@@ -429,7 +429,7 @@ EX COMMANDS
      [range]g!{*}[kwd]{*}{cmd}
 	     Inverted global command
      [range]=
-	     Print the current range linenumber
+	     Print the current range line number
 
      [range]k [mark]
 	     Set a line mark
@@ -450,7 +450,7 @@ EX COMMANDS
 	     Example: execute ci(int macro
 	     :& ci(int
 	     Example: turn non-blocking into blocking macro
-	     :& :@ :run as non-blocking but blocking<^v><^m>
+	     :& :@ :run as non-blocking but blocking<^V><^M>
 
      @{macro}
 	     Global blocking macro
@@ -466,9 +466,9 @@ EX COMMANDS
 	     Example: execute ci(int macro
 	     :@ ci(int
 	     Example: execute ci(int exiting insert mode
-	     :@ ci(int<^v><^c>
+	     :@ ci(int<^V><^C>
 	     Example: execute ci)INT as a follow-up
-	     :@ ci(int<^v><^c>ci)INT
+	     :@ ci(int<^V><^C>ci)INT
 
      pu [register] [cmd]
 	     Paste a register
@@ -779,8 +779,8 @@ CODE MAP
      | 658   regex.c | extended RE	     |
      | 662   led.c   | insert mode/output    |
      | 1232  ex.c    | ex options/commands   |
-     | 2001  vi.c    | normal mode/general   |
-     | 6817  total   | wc -l *.c|sort	     |
+     | 2003  vi.c    | normal mode/general   |
+     | 6819  total   | wc -l *.c|sort	     |
      +---------------+-----------------------+
 
 COMPILING
@@ -874,4 +874,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
      manual page was inspired by népéta <nepeta@canaglie.net>
 
-Linux 6.11.4-arch1-1	       November 1, 2024		  Linux 6.11.4-arch1-1
+Linux 6.11.5-arch1-1	       November 1, 2024		  Linux 6.11.5-arch1-1
