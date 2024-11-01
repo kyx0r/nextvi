@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 637c2ee..364e503 100644
+index ce358db..abf4557 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,6 +37,7 @@ static int xbufsmax;		/* number of buffers */
@@ -18,7 +18,7 @@ index 637c2ee..364e503 100644
  	return i;
  }
  
-@@ -409,6 +411,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -418,6 +420,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: sigh... */
  	}
@@ -27,7 +27,7 @@ index 637c2ee..364e503 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -539,6 +543,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -548,6 +552,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -38,7 +38,7 @@ index 637c2ee..364e503 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
  				ex_print("write failed: file changed");
  				return 1;
-@@ -1062,6 +1070,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1084,6 +1092,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -51,7 +51,7 @@ index 637c2ee..364e503 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1112,6 +1126,7 @@ static struct excmd {
+@@ -1134,6 +1148,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
@@ -60,10 +60,10 @@ index 637c2ee..364e503 100644
  	{"ph", ec_setenc},
  	{"", ec_print},
 diff --git a/vi.c b/vi.c
-index 860ebee..55869c7 100644
+index 15722c2..05b0b97 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -2029,9 +2029,11 @@ int main(int argc, char *argv[])
+@@ -1976,9 +1976,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -77,10 +77,10 @@ index 860ebee..55869c7 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index b2fa0d2..a1b8977 100644
+index 8c489e7..f5e7104 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -316,6 +316,7 @@ struct buf {
+@@ -321,6 +321,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -88,7 +88,7 @@ index b2fa0d2..a1b8977 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -455,3 +456,4 @@ extern char *fs_exdir;
+@@ -460,3 +461,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;

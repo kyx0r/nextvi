@@ -17,12 +17,12 @@ index d025f5f..e549d13 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index 5d359e6..993c479 100644
+index 4fe3fa3..eeeebdd 100644
 --- a/term.c
 +++ b/term.c
-@@ -139,6 +139,10 @@ int term_read(void)
- 			xquit = !isatty(STDIN_FILENO);
- 			return -1;
+@@ -151,6 +151,10 @@ int term_read(void)
+ 			*ibuf = 0;
+ 			n = 1;
  		}
 +		if (conf_kmap(0)[(unsigned char)*ibuf]) {
 +			n = MIN(strlen(conf_kmap(0)[(unsigned char)*ibuf]), sizeof(ibuf)-1);

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 637c2ee..42f5b38 100644
+index ce358db..5040cf3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -10,7 +10,7 @@ index 637c2ee..42f5b38 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -870,6 +871,7 @@ static struct option {
+@@ -892,6 +893,7 @@ static struct option {
  	{"hlw", &xhlw},
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
@@ -64,10 +64,10 @@ index 0f3752f..7e32150 100644
  	if (vi_hidch)
  		led_out(term_sbuf, 2)
 diff --git a/vi.h b/vi.h
-index b2fa0d2..d97ea94 100644
+index 8c489e7..a563b01 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -287,14 +287,14 @@ char *xgetenv(char* q[]);
+@@ -292,14 +292,14 @@ char *xgetenv(char* q[]);
  /* led.c line-oriented input and output */
  char *led_prompt(char *pref, char *post, char *insert, int *kmap);
  sbuf *led_input(char *pref, char **post, int row, int lsh);
