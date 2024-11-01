@@ -50,8 +50,8 @@ An x representation of non-printable character literal
 An x representation of a optional argument
 .It Cm {x}
 An x representation of a required argument
-.It Cm <^x>
-A representation of a ctrl key x
+.It Cm <^X>
+A representation of a ctrl key X
 .It Cm #
 A representation of a positive number
 .It Cm *
@@ -63,7 +63,7 @@ A separation of alternative representations
 .Bl -tag -width Dq -compact
 .It Cm [#]+
 .It Cm [#]j
-.It Cm [#]<^m>
+.It Cm [#]<^M>
 .It Cm [#]<Newline>
 .Bd -compact
 Move the cursor # lines down
@@ -106,9 +106,9 @@ Move the cursor to the next { region up
 .It Cm }
 Move the cursor to the next { region down
 .It Cm \&[
-Move the cursor to the next <^m> region up
+Move the cursor to the next <^M> region up
 .It Cm \&]
-Move the cursor to the next <^m> region down
+Move the cursor to the next <^M> region down
 .It Cm ^
 Move the cursor to the start of the line after indentation
 .It Cm 0 \&|
@@ -119,7 +119,7 @@ Move the cursor to the end of the line
 Move the cursor to # col
 .It Cm [#]<Space>
 Move cursor # characters forward
-.It Cm [#]<^h>
+.It Cm [#]<^H>
 .It Cm [#]<Backspace>
 .Bd -compact
 Move cursor # characters backward
@@ -144,24 +144,24 @@ Goto the lowest line of the screen
 Goto the middle line of the screen
 .It Cm [#]z.
 Center the screen. # is xtop
-.It Cm [#]z<^m>
+.It Cm [#]z<^M>
 .It Cm [#]z<Newline>
 .Bd -compact
 Center the screen at top row. # is xtop
 .Ed
 .It Cm [#]z-
 Center the screen at bottom row. # is xtop
-.It Cm [#]<^e>
+.It Cm [#]<^E>
 Scroll down 1 or # lines. # is set and stored, cursor position preserved
-.It Cm [#]<^y>
+.It Cm [#]<^Y>
 Scroll up 1 or # lines. # is set and stored, cursor position preserved
-.It Cm [#]<^d>
+.It Cm [#]<^D>
 Scroll down half a screen size. If # set scroll to # lines
-.It Cm [#]<^u>
+.It Cm [#]<^U>
 Scroll up half a screen size. If # set scroll to # lines
-.It Cm <^b>
+.It Cm <^B>
 Scroll up full screen size
-.It Cm <^f>
+.It Cm <^F>
 Scroll down full screen size
 .It Cm #
 Show global and relative line numbers
@@ -173,22 +173,22 @@ Toggle show relative line numbers after indentation permanently
 Toggle show relative line numbers permanently
 .It Cm V
 Toggle show hidden characters: Space,Tab,New line
-.It Cm <^v>
+.It Cm <^V>
 Toggle show line motion numbers for ebEBwW
-.It Cm [#]<^v>
+.It Cm [#]<^V>
 Disable line motion numbers
-.It Cm [#]<^r>
+.It Cm [#]<^R>
 Redo # times
 .It Cm [#]u
 Undo # times
-.It Cm <^i>
+.It Cm <^I>
 .It Cm <Tab>
 .Bd -compact
 Open file using text from the cursor to end of the line
 .Ed
-.It Cm <^k>
+.It Cm <^K>
 Write the current buffer to file. Force write on 2nd attempt
-.It Cm [#]<^w>{arg}
+.It Cm [#]<^W>{arg}
 Unindent arg region # times
 .It Cm [#]<{arg}
 Indent left arg region # times
@@ -235,11 +235,11 @@ Open %s/^	/        /g ex prompt. Contains regex for changing tabs to spaces. # m
 Remove trailing white spaces and <\er> line endings
 .It Cm va
 Toggle autoindent on or off. see ai ex option
-.It Cm <^g>
+.It Cm <^G>
 Print buffer status infos
-.It Cm 1<^g>
+.It Cm 1<^G>
 Enable permanent status bar row
-.It Cm 2<^g>
+.It Cm 2<^G>
 Disable permanent status bar row
 .It Cm ga
 Print character info
@@ -311,9 +311,9 @@ Paste a default register
 Paste a default register below current line or behind cursor pos
 .It Cm m{arg}
 Set a buffer local line mark arg
-.It Cm <^t>
+.It Cm <^T>
 Set a global file mark 0
-.It Cm [#]<^t>
+.It Cm [#]<^T>
 Set or switch to a global mark based on # % 2 == 0
 .It Cm [#]<^7>
 .It Cm [#]<^_>
@@ -325,7 +325,7 @@ Show buffer list and switch based on # or 0-9 index when prompted
 .Bd -compact
 Swap to the previous buffer
 .Ed
-.It Cm [#]<^n>
+.It Cm [#]<^N>
 Swap to the next buffer, # changes direction (forward/backward)
 .It Cm \e
 Swap to /fm/ buffer b-2
@@ -352,21 +352,21 @@ Search using regex up skipping # matches
 Repeat search down skipping # matches
 .It Cm [#]N
 Repeat search up skipping # matches
-.It Cm <^a>
+.It Cm <^A>
 Auto search word under the cursor, not centering and wrapping up/down direction
-.It Cm [#]<^a>
+.It Cm [#]<^A>
 Auto search setting # words from the cursor
 .It Cm <^]>
 Filesystem search forward based on directory listing in b-2
 .It Cm [#]<^]>
 Filesystem search forward, setting search keyword to # words under the cursor
-.It Cm <^p>
+.It Cm <^P>
 Filesystem search backward based on directory listing in b-2
-.It Cm [#]<^p>
+.It Cm [#]<^P>
 Filesystem search backward, setting search keyword to # words under the cursor
-.It Cm <^z>
+.It Cm <^Z>
 Suspend vi
-.It Cm <^l>
+.It Cm <^L>
 Force redraw whole screen and update terminal dimensions
 .It Cm qq
 Force quit cleaning the terminal
@@ -378,56 +378,56 @@ Soft quit, attempting to write the file before exit
 .
 .Sh INSERT MODE
 .Bl -tag -width Dq -compact
-.It Cm <^h>
+.It Cm <^H>
 .It Cm <Backspace>
 .Bd -compact
 Delete a character
 .Ed
-.It Cm <^u>
-Delete util <^x> mark or everything
-.It Cm <^w>
+.It Cm <^U>
+Delete util <^X> mark or everything
+.It Cm <^W>
 Delete a word
-.It Cm <^t>
+.It Cm <^T>
 Increase indent
-.It Cm <^d>
+.It Cm <^D>
 Decrease indent
 .It Cm <^]>
 Switch a default paste register to 0-9
 .It Cm <^\e>{arg}
 Select paste register arg. <^\e> selects default register
-.It Cm <^p>
+.It Cm <^P>
 Paste a register
-.It Cm <^g>
+.It Cm <^G>
 Index buffer for autocomplete
-.It Cm <^y>
+.It Cm <^Y>
 Reset autocomplete data
-.It Cm <^r>
+.It Cm <^R>
 Loop through autocomplete options backward
-.It Cm <^n>
+.It Cm <^N>
 Loop through autocomplete options forward
-.It Cm <^z>
+.It Cm <^Z>
 Suspend vi/ex
-.It Cm <^x>
-Set a mark for <^u> and completion starting position
-.It Cm <^b>
+.It Cm <^X>
+Set a mark for <^U> and completion starting position
+.It Cm <^B>
 Recurse into b-1 history buffer when in ex prompt. Use any quit command to exit recursion
-.It Cm <^b>
+.It Cm <^B>
 Print autocomplete options when in vi insert
-.It Cm <^a>
+.It Cm <^A>
 Loop through the strings in a history buffer b-1
-.It Cm <^l>
+.It Cm <^L>
 Redraw the screen in vi mode, clean the terminal in ex
-.It Cm <^o>
+.It Cm <^O>
 Switch between vi and ex modes recursively
-.It Cm <^o>
+.It Cm <^O>
 Switch to english keymap
-.It Cm <^f>
+.It Cm <^F>
 Switch to alternative keymap
-.It Cm <^v>{arg}
+.It Cm <^V>{arg}
 Read a literal character arg
-.It Cm <^k>{arg}
+.It Cm <^K>{arg}
 Read a digraph sequence arg
-.It Cm <^c>
+.It Cm <^C>
 .It Cm <ESC>
 .Bd -compact
 Exit insert mode
@@ -589,7 +589,7 @@ Example: backfill b-2 using find
 
 If the substring matches more than 1 filename, a prompt will
 be shown. Submit using numbers 0-9 (higher ascii values work
-too (<^c> to cancel)). Passing an extra arg to :ea in form of
+too (<^C> to cancel)). Passing an extra arg to :ea in form of
 a number will bypass the prompt and open the corresponding file.
 Example: open filename containing "v"
 :ea v
@@ -604,8 +604,8 @@ Forced version of ea
 Enter ex append/insert/change mode
 .Bd -literal
 # determines insertion line number.
-Exiting with <^m>.<^m> or <^m><ESC> will apply changes to the buffer.
-Exiting with <^c> will discard changes.
+Exiting with <^M>.<^M> or <^M><ESC> will apply changes to the buffer.
+Exiting with <^C> will discard changes.
 .Ed
 
 .It Cm [range]d
@@ -640,7 +640,7 @@ Advanced example: extract/print data enclosed in ()
 .It Cm [range]g!{*}[kwd]{*}{cmd}
 Inverted global command
 .It Cm [range]=
-Print the current range linenumber
+Print the current range line number
 
 .It Cm [range]k [mark]
 Set a line mark
@@ -662,7 +662,7 @@ Example: execute :hello
 Example: execute ci(int macro
 :& ci(int
 Example: turn non-blocking into blocking macro
-:& :@ :run as non-blocking but blocking<^v><^m>
+:& :@ :run as non-blocking but blocking<^V><^M>
 .Ed
 
 .It Cm @{macro}
@@ -679,9 +679,9 @@ Example: insert hello into : prompt
 Example: execute ci(int macro
 :@ ci(int
 Example: execute ci(int exiting insert mode
-:@ ci(int<^v><^c>
+:@ ci(int<^V><^C>
 Example: execute ci)INT as a follow-up
-:@ ci(int<^v><^c>ci)INT
+:@ ci(int<^V><^C>ci)INT
 .Ed
 
 .It Cm pu [register] [cmd]
@@ -1101,8 +1101,8 @@ previous value(s) of default register (nonatomic)
 | 658	regex.c	| extended RE		|
 | 662	led.c	| insert mode/output	|
 | 1232	ex.c	| ex options/commands	|
-| 2001	vi.c	| normal mode/general	|
-| 6817	total	| wc -l *.c|sort	|
+| 2003	vi.c	| normal mode/general	|
+| 6819	total	| wc -l *.c|sort	|
 +---------------+-----------------------+
 .Ed
 .
