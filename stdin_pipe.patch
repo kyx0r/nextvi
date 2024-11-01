@@ -129,31 +129,20 @@ index 4fe3fa3..38e94a0 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 15722c2..0a0e9c9 100644
+index 188401c..a909bc4 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1940,6 +1940,8 @@ void vi(int init)
- 
- static void sighandler(int signo)
- {
-+	if (signo == SIGINT)
-+		return;
- 	term_back(TK_CTL('l'));
- }
- 
-@@ -1947,8 +1949,9 @@ static int setup_signals(void) {
+@@ -1950,7 +1950,8 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
--	if (sigaction(SIGCONT, &sa, NULL) ||
--			sigaction(SIGWINCH, &sa, NULL))
-+	if (sigaction(SIGCONT, &sa, NULL)
-+			|| sigaction(SIGWINCH, &sa, NULL)
+-	if (sigaction(SIGWINCH, &sa, NULL))
++	if (sigaction(SIGWINCH, &sa, NULL)
 +			|| sigaction(SIGINT, &sa, NULL))
  		return 0;
  	return 1;
  }
-@@ -1966,7 +1969,8 @@ int main(int argc, char *argv[])
+@@ -1968,7 +1969,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
