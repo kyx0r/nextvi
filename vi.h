@@ -149,7 +149,7 @@ void lbuf_globset(struct lbuf *lb, int pos, int dep);
 int lbuf_globget(struct lbuf *lb, int pos, int dep);
 int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
-			int ln_n, int *o, int *len, int skip);
+			int *o, int ln_n, int skip);
 /* motions */
 int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
 int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
@@ -244,7 +244,9 @@ char *uc_shape(char *beg, char *s, int c);
 extern sbuf *term_sbuf;
 extern int term_record;
 extern int xrows, xcols;
+extern int texec, tn;
 extern unsigned int ibuf_pos, ibuf_cnt, icmd_pos;
+extern unsigned char icmd[4096];
 #define term_write(s, n) if (xled) write(1, s, n);
 void term_init(void);
 void term_done(void);
@@ -261,28 +263,31 @@ int term_read(void);
 void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
-char *term_cmd(int *n);
-#define term_exec(s, n, precode, postcode) \
+void term_back(int c);
+#define term_dec() ibuf_pos--; icmd_pos--;
+#define term_exec(s, n, type) \
 { \
-	int pbuf_cnt = ibuf_cnt; \
-	int pbuf_pos = ibuf_pos; \
-	ibuf_pos = pbuf_cnt; \
-	precode \
+	preserve(int, ibuf_pos, ibuf_pos) \
+	preserve(int, ibuf_cnt, ibuf_cnt) \
 	term_push(s, n); \
-	postcode \
+	preserve(int, xquit, 0) \
+	preserve(int, tn, 0) \
+	preserve(int, texec, type) \
 	vi(0); \
-	ibuf_cnt = pbuf_cnt; \
-	ibuf_pos = pbuf_pos; \
-	xquit = 0; \
+	restore(tn) \
+	restore(texec) \
+	restore(xquit) \
+	restore(ibuf_pos) \
+	restore(ibuf_cnt) \
 } \
 
 /* process management */
 char *cmd_pipe(char *cmd, char *ibuf, int oproc);
 char *xgetenv(char* q[]);
 
-#define TK_CTL(x)	((x) & 037)
-#define TK_INT(c)	((c) < 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
 #define TK_ESC		(TK_CTL('['))
+#define TK_CTL(x)	((x) & 037)
+#define TK_INT(c)	((c) <= 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
 
 /* led.c line-oriented input and output */
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);

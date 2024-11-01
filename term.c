@@ -1,11 +1,12 @@
 sbuf *term_sbuf;
 int term_record;
 int xrows, xcols;
+int texec, tn;
 static struct termios termios;
 
 void term_init(void)
 {
-	if (xvis & 2 && xvis & 4)
+	if (xvis & 2)
 		return;
 	struct winsize win;
 	struct termios newtermios;
@@ -24,12 +25,11 @@ void term_init(void)
 	}
 	xcols = xcols ? xcols : 80;
 	xrows = xrows ? xrows : 25;
-	term_out("\33[m");
 }
 
 void term_done(void)
 {
-	if (!term_sbuf)
+	if (xvis & 2)
 		return;
 	term_commit();
 	sbuf_free(term_sbuf)
@@ -104,8 +104,8 @@ void term_pos(int r, int c)
 	}
 }
 
-static char ibuf[4096];			/* input character buffer */
-static char icmd[4096];			/* read after the last term_cmd() */
+static unsigned char ibuf[4096];	/* input character buffer */
+unsigned char icmd[4096];		/* read after the last term_cmd() */
 unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
 unsigned int icmd_pos;			/* icmd[] position */
 
@@ -113,16 +113,22 @@ unsigned int icmd_pos;			/* icmd[] position */
 void term_push(char *s, unsigned int n)
 {
 	n = MIN(n, sizeof(ibuf) - ibuf_cnt);
-	memcpy(ibuf + ibuf_cnt, s, n);
+	if (texec) {
+		if ((int)(ibuf_cnt - ibuf_pos - tn) < 0)
+			tn = 0;
+		memcpy(ibuf + ibuf_pos + n + tn,
+			ibuf + ibuf_pos + tn, ibuf_cnt - ibuf_pos - tn);
+		memcpy(ibuf + ibuf_pos + tn, s, n);
+		tn += n;
+	} else
+		memcpy(ibuf + ibuf_cnt, s, n);
 	ibuf_cnt += n;
 }
 
-/* return a static buffer containing inputs read since the last term_cmd() */
-char *term_cmd(int *n)
+void term_back(int c)
 {
-	*n = icmd_pos;
-	icmd_pos = 0;
-	return icmd;
+	char s[1] = {c};
+	term_push(s, 1);
 }
 
 int term_read(void)
@@ -130,21 +136,27 @@ int term_read(void)
 	struct pollfd ufds[1];
 	int n;
 	if (ibuf_pos >= ibuf_cnt) {
+		if (texec) {
+			xquit = 1;
+			if (texec == '&')
+				goto ret;
+		}
 		ufds[0].fd = STDIN_FILENO;
 		ufds[0].events = POLLIN;
-		if (poll(ufds, 1, -1) <= 0)
-			return -1;
 		/* read a single input character */
-		if ((n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
+		if (poll(ufds, 1, -1) <= 0 ||
+				(n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
 			xquit = !isatty(STDIN_FILENO);
-			return -1;
+			ret:
+			*ibuf = 0;
+			n = 1;
 		}
 		ibuf_cnt = n;
 		ibuf_pos = 0;
 	}
-	if (icmd_pos < sizeof(icmd))
-		icmd[icmd_pos++] = (unsigned char)ibuf[ibuf_pos];
-	return (unsigned char)ibuf[ibuf_pos++];
+	icmd_pos = icmd_pos % sizeof(icmd);
+	icmd[icmd_pos++] = ibuf[ibuf_pos];
+	return ibuf[ibuf_pos++];
 }
 
 /* return a static string that changes text attributes to att */
