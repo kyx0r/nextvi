@@ -73,10 +73,10 @@ index 0f3752f..3a2a0fc 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 860ebee..9531cc6 100644
+index 15722c2..2074e9b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -998,6 +998,8 @@ static char *vi_indents(char *ln, int *l)
+@@ -956,6 +956,8 @@ static char *vi_indents(char *ln, int *l)
  	sbufn_done(sb)
  }
  
@@ -85,7 +85,7 @@ index 860ebee..9531cc6 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *region, *pref, *post, *_post;
-@@ -1021,6 +1023,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -979,6 +981,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
@@ -93,7 +93,7 @@ index 860ebee..9531cc6 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1184,8 +1187,10 @@ static void vc_insert(int cmd)
+@@ -1138,8 +1141,10 @@ static void vc_insert(int cmd)
  		sbufn_str(rep, post)
  		if (cmdo && !lbuf_len(xb))
  			lbuf_edit(xb, "\n", 0, 0);
@@ -105,13 +105,13 @@ index 860ebee..9531cc6 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1715,6 +1720,37 @@ void vi(int init)
+@@ -1667,6 +1672,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 +				switch (vi_insmov) {
 +				case 'A':	/* ↑ */
-+					vi_back(!lmodified ? c : 'i');
++					term_back(!lmodified ? c : 'i');
 +					if (lmodified)
 +						vi_col = vi_off2col(xb, xrow, xoff);
 +					xrow--;
@@ -120,7 +120,7 @@ index 860ebee..9531cc6 100644
 +					lmodified = 0;
 +					goto _break;
 +				case 'B':	/* ↓ */
-+					vi_back(!lmodified ? c : 'i');
++					term_back(!lmodified ? c : 'i');
 +					if (lmodified)
 +						vi_col = vi_off2col(xb, xrow, xoff);
 +					xrow++;
@@ -128,13 +128,13 @@ index 860ebee..9531cc6 100644
 +					lmodified = 0;
 +					goto _break;
 +				case 'D':	/* ← */
-+					vi_back('i');
++					term_back('i');
 +					xoff--;
 +					xoff = xoff < 0 ? 0 : xoff;
 +					vi_col = vi_off2col(xb, xrow, xoff);
 +					goto _break;
 +				case 'C':	/* → */
-+					vi_back(*uc_chr(lbuf_get(xb, xrow), xoff+2) ? 'i' : 'A');
++					term_back(*uc_chr(lbuf_get(xb, xrow), xoff+2) ? 'i' : 'A');
 +					xoff++;
 +					if (*uc_chr(lbuf_get(xb, xrow), xoff))
 +						vi_col = vi_off2col(xb, xrow, xoff);
@@ -143,7 +143,7 @@ index 860ebee..9531cc6 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xrow--;
-@@ -1728,6 +1764,9 @@ void vi(int init)
+@@ -1680,6 +1716,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;
