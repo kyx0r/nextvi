@@ -1433,11 +1433,6 @@ void vi(int init)
 				xoff = lbuf_indents(xb, xrow);
 				vi_mod |= 4;
 				break;
-			case TK_CTL('z'):
-				term_pos(xrows, 0);
-				term_suspend();
-				vi_mod |= 1;
-				break;
 			case TK_CTL('i'): {
 				if (!(ln = lbuf_get(xb, xrow)))
 					break;
@@ -1686,9 +1681,16 @@ void vi(int init)
 			case 'K':
 				vi_splitln(xrow, xoff+1, !vi_arg1);
 				break;
+			case TK_CTL('z'):
 			case TK_CTL('l'):
-				term_done();
-				term_init();
+				if (c == TK_CTL('z')) {
+					term_pos(xrows, 0);
+					term_suspend();
+				} else {
+					term_done();
+					term_init();
+				}
+				vi_status = vi_status ? xrows - 1: vi_status;
 				vi_mod |= 1;
 				break;
 			case 'm':
@@ -1940,15 +1942,15 @@ void vi(int init)
 
 static void sighandler(int signo)
 {
-	term_back(TK_CTL('l'));
+	if (!(xvis & 4) && signo == SIGWINCH)
+		term_exec("", 1, '&')
 }
 
 static int setup_signals(void) {
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = sighandler;
-	if (sigaction(SIGCONT, &sa, NULL) ||
-			sigaction(SIGWINCH, &sa, NULL))
+	if (sigaction(SIGWINCH, &sa, NULL))
 		return 0;
 	return 1;
 }
