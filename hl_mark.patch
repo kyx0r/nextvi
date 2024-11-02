@@ -19,7 +19,7 @@ index ce358db..5040cf3 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/led.c b/led.c
-index 86215dc..ab2237d 100644
+index 1dda5b5..3f95c5f 100644
 --- a/led.c
 +++ b/led.c
 @@ -109,6 +109,22 @@ static int led_offdir(char **chrs, int *pos, int i)

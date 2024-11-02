@@ -19,7 +19,7 @@ index ce358db..180d1ed 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 86215dc..c755702 100644
+index 1dda5b5..cbac890 100644
 --- a/led.c
 +++ b/led.c
 @@ -376,6 +376,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
@@ -39,7 +39,7 @@ index 86215dc..c755702 100644
  		int *key, int *kmap, int orow, int lsh)
 @@ -383,6 +391,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int len, t_row = -2, p_reg = 0;
- 	int c, i, last_sug = 0, sug_pt = -1;
+ 	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
 +	int quickexit = 0;
  	while (1) {
@@ -68,7 +68,7 @@ index 86215dc..c755702 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 14930ad..3d0e71c 100644
+index d97ad5d..28d792a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@

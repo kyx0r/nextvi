@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 86215dc..2088699 100644
+index 1dda5b5..dcc8cfd 100644
 --- a/led.c
 +++ b/led.c
 @@ -274,7 +274,7 @@ static int led_lastword(char *s)
@@ -25,7 +25,7 @@ index 86215dc..2088699 100644
  	if (next) {
  		if (off - 2 >= 0)
 @@ -384,7 +386,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
- 	int c, i, last_sug = 0, sug_pt = -1;
+ 	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
 -		led_printparts(sb, ps, post, ai_max);
@@ -73,7 +73,7 @@ index 86215dc..2088699 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 14930ad..f548b66 100644
+index d97ad5d..668336a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -960,6 +960,8 @@ static char *vi_indents(char *ln, int *l)

@@ -129,7 +129,7 @@ index 4fe3fa3..38e94a0 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 14930ad..348e772 100644
+index d97ad5d..7b0be01 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1954,7 +1954,8 @@ static int setup_signals(void) {

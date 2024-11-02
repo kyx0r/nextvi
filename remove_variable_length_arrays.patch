@@ -69,7 +69,7 @@ index 18131f8..2c47959 100644
  }
  
 diff --git a/led.c b/led.c
-index 86215dc..fdd9daf 100644
+index 1dda5b5..1dd1c83 100644
 --- a/led.c
 +++ b/led.c
 @@ -48,7 +48,7 @@ static void file_index(struct lbuf *buf)
@@ -235,7 +235,7 @@ index 8105e7a..17cc23e 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 14930ad..e3d53bd 100644
+index d97ad5d..badfe96 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -147,7 +147,8 @@ static void vi_drawrow(int row)
