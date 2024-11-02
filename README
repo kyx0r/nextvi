@@ -27,14 +27,14 @@ OPTIONS
      -s	     Enter raw Ex mode on startup
      -v	     Enter visual mode on startup (Default)
 
-NOTATION
-     <x>     An x representation of a character literal
-     [x]     An x representation of a optional argument
-     {x}     An x representation of a required argument
-     <^X>    A representation of a ctrl key X
-     #	     A representation of a positive number
-     *	     A representation of any character(s)
-     |	     A separation of alternative representations
+MANPAGE NOTATION
+     <x>     A closure where x represents character literal
+     [x]     A closure where x represents optional argument
+     {x}     A closure where x represents required argument
+     <^X>    Represents a ctrl key X
+     #	     Represents a positive number in a closure
+     *	     Represents any character(s) in a closure
+     < >     Separates alternatives in a closure
 
 VI NORMAL
      [#]+
@@ -51,8 +51,8 @@ VI NORMAL
      F{arg}	   Move to arg character found backward
      t{arg}	   Move until arg character found forward
      T{arg}	   Move until arg character found backward
-     [#],	   Repeat last <f|F|t|T> move backward # times
-     [#];	   Repeat last <f|F|t|T> move forward # times
+     [#],	   Repeat last <f F t T> move backward # times
+     [#];	   Repeat last <f F t T> move forward # times
      [#]B	   Move to end of word, skip punctuation backward # times
      [#]E	   Move to end of word, skip punctuation forward # times
      [#]b	   Move to end of word backward # times
@@ -96,7 +96,7 @@ VI NORMAL
      4#		   Toggle show relative line numbers after indentation
 		   permanently
      8#		   Toggle show relative line numbers permanently
-     V		   Toggle show hidden characters:<Space><Tab><Newline>
+     V		   Toggle show hidden characters:<Space Tab Newline>
      <^V>	   Toggle show line motion numbers for ebEBwW
      [#]<^V>	   Disable line motion numbers
      [#]<^R>	   Redo # times
@@ -126,10 +126,10 @@ VI NORMAL
      [#]v/	   Enter v/ xkwd ex prompt to set search keyword. Insert #
 		   words from cursor
      v;		   Enter ! ex prompt
-     [#]vi	   Enter %s/^ {8}/     /g ex prompt. Contains regex for
-		   changing spaces to tabs. # modifies tab width
-     [#]vI	   Enter %s/^	  /	   /g ex prompt. Contains regex for
-		   changing tabs to spaces. # modifies tab width
+     [#]vi	   Enter %s/ ex prompt. Contains regex for changing spaces to
+		   tabs. # modifies tab width
+     [#]vI	   Enter %s/ ex prompt. Contains regex for changing tabs to
+		   spaces. # modifies tab width
      vo		   Remove trailing white spaces and <\r> line endings
      va		   Toggle autoindent on or off. see ai ex option
      <^G>	   Print buffer status infos
@@ -158,8 +158,8 @@ VI NORMAL
      D		   Delete from cursor to end of line
      [#]x	   Delete # characters from cursor forward
      [#]X	   Delete # characters from cursor backward
-     di{arg}	   Delete around arg which can be ( or ) or "
-     ci{arg}	   Change around arg which can be ( or ) or "
+     di{arg}	   Delete around arg which can be <( ) ">
+     ci{arg}	   Change around arg which can be <( ) ">
      [#]r{arg}	   Replace # characters with arg from cursor forward
      K		   Split a line
      [#]K	   Split a line without creating <Newline>
@@ -180,7 +180,7 @@ VI NORMAL
      <^^>
      <^6>
 		   Swap to previous buffer
-     [#]<^N>	   Swap to next buffer, # changes direction (forward/backward)
+     [#]<^N>	   Swap to next buffer, # changes direction [forward backward]
      \		   Swap to /fm/ buffer b-2
      [#]\	   Swap from /fm/ buffer b-2 and backfill directory listing
      vb		   Recurse into b-1 history buffer. Insert current line into
@@ -196,9 +196,9 @@ VI NORMAL
      [#]?	   Regex search, move up 1 or # matches
      [#]n
      [#]N
-		   Repeat regex search, move down/up 1 or # matches
-     <^A>	   Regex search 1 word from cursor, no center, move wrap
-		   up/down direction
+		   Repeat regex search, move [down up] 1 or # matches
+     <^A>	   Regex search 1 word from cursor, no center, wraparound move
+		   [up down]
      {#}<^A>	   Regex search, set keyword to # words from cursor
      <^]>	   Filesystem search forward based on directory listing in b-2
      {#}<^]>	   Filesystem search forward, set keyword to # words from
@@ -214,23 +214,22 @@ VI NORMAL
      ZZ		   Soft quit, write to a file before exit
 
 VI REGIONS
-     Regions are vi normal commands that define [h|v]range for vi motions.
+     Regions are vi normal commands that define [h v]range for vi motions.
      Commands described with the word "move" define a region.
      This includes:
-     <+><j><^M><Newline><-><k><h><l><f><F><t><T><,><;><B><E><b><e>
-     <W><w><{><}><[><]><^><0><$><Space><^H><Backspace><%><'><`><G>
-     <H><L><M></><?><n><N><^A>
+     <+ j ^M Newline - k h l f F t T , ; B E b e W w { } [ ] ^ 0 $ Space
+     ^H Backspace % ' ` G H L M / ? n N ^A>
 
 VI MOTIONS
-     Motions are vi normal commands that run in a [h|v]range.
+     Motions are vi normal commands that run in a [h v]range.
      Commands described with the word "region" consume a region.
      This includes:
-     <^W><<><>><!>{g~}{gu}{gU}<c><d><y><">
+     <^W < > ! g~ gu gU c d y ">
      Examples:
-     3d/int  Delete text until the 3rd instance of "int" keyword
+     3d/int  Delete text until the 3rd instance of [int] keyword
      d3w     Delete 3 words
-     "ayl    Yank a character into 'a' register
-     "Ayw    Append a word to 'a' register
+     "ayl    Yank a character into <a> register
+     "Ayw    Append a word to <a> register
 
 VI/EX INSERT
      <^H>
@@ -272,18 +271,17 @@ EX
      initiated with the prefix <:>.
 
 EX EXPANSION
-     Characters # and % in ex prompt substitute the buffer pathname.
-     % substitutes current buffer and # last swapped buffer.
-     It is possible to expand any arbitrary buffer by using % or
-     # (no difference in this case) followed by the buffer number.
-     Example:
-     print the pathname for buffer 69 (if it exists).
+     Characters <# %> in ex prompt substitute the buffer pathname.
+     <%> substitutes current buffer and <#> last swapped buffer.
+     It is possible to expand any arbitrary buffer by using <# %>
+     followed by the buffer number.
+     Example: print the pathname for buffer 69.
      :!echo "%69"
 
-     Every ex command is be able to receive data from the outside
-     world through a special expansion character ! which runs a pipe
-     command. If the closing ! is not specified, the end of the line
-     becomes a terminator.
+     Every ex command is be able to receive data from external process
+     through a special expansion character <!> which pipes the data
+     into the command itself. If the closing <!> is not specified,
+     the end of the line becomes a terminator.
      Example:
      Substitute the value of env var $SECRET to the value of $RANDOM :).
      In this demo, we set the value of SECRET to "int" ourselves.
@@ -293,11 +291,11 @@ EX ESCAPES
      Nextvi special character escapes work mostly the same way everywhere
      except the following situations:
       - Escapes in regex bracket expressions.
-      - Due to ex expansion # % and ! characters have to be escaped
+      - Due to ex expansion <# % !> characters have to be escaped
 	if they are part of an ex command.
       - A single back slash requires 2 back slashes, and so on.
-      - regex requires for ( to be escaped if used inside [] brackets.
-      - In ex prompt the only separator is "|" character. It can
+      - regex requires for <(> to be escaped if used inside "[]" brackets.
+      - In ex prompt the only separator is <|> character. It can
 	be escaped normally but will require extra back slash if passed
 	into a regular expression or a global command.
 
@@ -418,7 +416,7 @@ EX COMMANDS
 	     :g/^$/d
 
 	     Multiple ex commands can be chained in one global command.
-	     To chain commands, the ex separator "|" must be escaped once.
+	     To chain commands, the ex separator <|> must be escaped once.
 	     Example: yank matches appending to reg 'a' and print them out.
 	     :g/int/ya A\|p
 
@@ -426,8 +424,9 @@ EX COMMANDS
 	     Example: find all lines with int and a semicolon and append
 	     "has a semicolon"
 	     :g/int/:.g/;/& A has a semicolon
-	     Advanced example: extract/print data enclosed in ()
-	     :g/\(.+\)/;0;/\(.+\)/\|.;.+1k a\|se grp=2\|;/\)*(\))/\|se nogrp\|k s\|.;'a;'sp
+	     Example: extract/print data enclosed in "()"
+	     :g/\(.+\)/;0;/\(.+\)/\|.;.+1k a\|se grp=2\|;/\)*(\))/\|
+	     se nogrp\|k s\|.;'a;'sp
 
      [range]g!{*}[kwd]{*}{cmd}
 	     Inverted global command
@@ -483,7 +482,7 @@ EX COMMANDS
      q	     Soft quit
      q!	     Force quit
 
-     [range]r [path|cmd]
+     [range]r [path cmd]
 	     Read a file or a pipe
 
 	     To read data from a pipe use :[range]r \![cmd]
@@ -494,7 +493,7 @@ EX COMMANDS
 	     Example: pipe in all data
 	     :%r \!ls
 
-     [range]w [path|cmd]
+     [range]w [path cmd]
 	     Write to a file or a pipe
 
 	     To pipe buffer data to external process use :[range]w \![cmd]
@@ -510,8 +509,8 @@ EX COMMANDS
      x[!]
 	     Write and force/soft quit
 
-     u[#|$]  Undo # times or all with $
-     rd[#|$]
+     u[# $]  Undo # times or all with $
+     rd[# $]
 	     Redo # times or all with $
 
      se {exp}
@@ -549,7 +548,7 @@ EX COMMANDS
 	     To append to the register, pass in its uppercase version.
 	     To append to any of the non-alphabetical registers add any extra
 	     character to the command.
-	     Example: append to register 1
+	     Example: append to register <1>
 	     :ya 1x
 
      ya!     Reset register value
@@ -626,10 +625,10 @@ EX COMMANDS
 	     characters. Typically to be used along with :ph for the full
 	     effect.
 
-     ph [#clow] [#chigh] [#width] [#blen][*]
+     ph [#clow] [#chigh] [#width] [#blen][*char]
 	     Create new placeholders
 
-	     Example: render 8 bit ascii (Extended ASCII) as '~'
+	     Example: render 8 bit ascii (Extended ASCII) as <~>
 	     :ph 128 255 1 1~
 	     Example: flawless ISO/IEC 8859-1 (latin-1) support
 	     :uc|ph 128 160 1 1~
@@ -712,31 +711,31 @@ EXINIT ENV VAR
      Many standard text processing utils such as grep, awk, sed
      can be replaced by nextvi with EXINIT in mind.
 
-     Example 1:
-     There is a dictionary file (assume vi.c), which we always want
-     to have indexed at startup for autocomplete. The last "bx" commands
-     delete the vi.c buffer.
-     export EXINIT=$(printf "e ./vi.c|& i\x7\x3|bx 1|bx")
+     Examples:
 
-     Example 2:
-     Load some file (assume vi.c) into vi's history buffer.
-     export EXINIT="b-1|%r ./vi.c|b-1"
+     export EXINIT=$'e ./vi.c|& i\x7\x3|bx 1|bx'
+	     Index vi.c for autocomplete
 
-     Example 3:
-     Setup a @ macro in register a
-     When @a is executed the macro will create { and closing } below
-     the cursor leaving cursor in insert mode in between the braces.
-     export EXINIT=$(printf "e|& io{\n}\x16\x3kA\x3|& 1G|& 2\"ayy")
+     export EXINIT='b-1|%r ./vi.c|b-1'
+	     Load vi.c into a history buffer
+
+     export EXINIT=$'e|& io{\n}\x16\x3kA\x3|& 1G|& 2\"ayy'
+	     Setup @ macro in register <a>
+
+	     @a macro creates <{> and closing <}> below the cursor leaving
+	     cursor in insert mode in between the braces.
 
 REGEX
      Nextvi's regex syntax is akin to that of Plan 9.
+     Disregard manpage notation for <{ } [ ]> in this section.
+
      .	     match any single char
      ^	     assert start of the line
      $	     assert end of the line
      {N,M}   match N to M times
      ()	     grouping
      (?:)    non capture grouping
-     [N-M]   match ranges N to M
+     [N-M]   match a set of alternate ranges N to M
      *	     repeated zero or more times
      +	     repeated one or more times
      |	     union, alternative branch
@@ -745,15 +744,15 @@ REGEX
      ?	     one or zero matches greedy
      ??	     one or zero matches lazy
 
-     Additionally, Nextvi's supports static lookahead expressions. For example
-     [!abc] and [=abc] where ! is negated version of =. This will treat "abc"
-     as (a && b && c) logically. It is possible to have multiple in one
-     bracket expression as well. For example [!abc!cda!qwe] where each string
-     delimited by the ! acts like a typical or operation i.e. [acq] with only
-     difference of testing the extra characters ahead. To combine both
-     standard bracket expression and lookahead in one, use ^ or ^= where ^ is
-     negated and ^= is default. For example: [!abc^=123] characters after ^=
-     match exactly how [123] would.
+     Additionally, Nextvi's supports static lookahead expressions.
+     /[=abc]
+	     find <a> followed by "bc"
+     /[!abc]
+	     find anything except <a> followed by "bc"
+     /[!abc!cda!qwe]
+	     multiple lookahead alternatives in one bracket exp
+     /[!abc^=123]
+	     disable lookahead using "^=" specifier and match [123]
 
 SPECIAL MARKS
      *	     position of the previous change
