@@ -769,7 +769,7 @@ SPECIAL REGISTERS
 
 CODE MAP
      +---------------+-----------------------+
-     | 469   vi.h    | definitions/aux	     |
+     | 471   vi.h    | definitions/aux	     |
      | 537   kmap.h  | keymap translation    |
      +---------------+-----------------------+
      | 293   conf.c  | hl/ft/td config	     |
