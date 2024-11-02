@@ -53,7 +53,7 @@ index ce358db..7fd311b 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 4fe3fa3..38e94a0 100644
+index 6a8da67..0a60e35 100644
 --- a/term.c
 +++ b/term.c
 @@ -2,6 +2,8 @@ sbuf *term_sbuf;
