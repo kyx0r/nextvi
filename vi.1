@@ -42,22 +42,22 @@ Enter raw Ex mode on startup
 .It Fl v
 Enter visual mode on startup (Default)
 .El
-.Sh NOTATION
+.Sh MANPAGE NOTATION
 .Bl -tag -width Ds -compact
 .It Cm <x>
-An x representation of a character literal
+A closure where x represents character literal
 .It Cm [x]
-An x representation of a optional argument
+A closure where x represents optional argument
 .It Cm {x}
-An x representation of a required argument
+A closure where x represents required argument
 .It Cm <^X>
-A representation of a ctrl key X
+Represents a ctrl key X
 .It Cm #
-A representation of a positive number
+Represents a positive number in a closure
 .It Cm *
-A representation of any character(s)
-.It Cm \&|
-A separation of alternative representations
+Represents any character(s) in a closure
+.It Cm < >
+Separates alternatives in a closure
 .El
 .Sh VI NORMAL
 .Bl -tag -width Dq -compact
@@ -86,9 +86,9 @@ Move until arg character found forward
 .It Cm T{arg}
 Move until arg character found backward
 .It Cm [#],
-Repeat last <f|F|t|T> move backward # times
+Repeat last <f F t T> move backward # times
 .It Cm [#];
-Repeat last <f|F|t|T> move forward # times
+Repeat last <f F t T> move forward # times
 .It Cm [#]B
 Move to end of word, skip punctuation backward # times
 .It Cm [#]E
@@ -172,7 +172,7 @@ Toggle show relative line numbers after indentation permanently
 .It Cm 8#
 Toggle show relative line numbers permanently
 .It Cm V
-Toggle show hidden characters:<Space><Tab><Newline>
+Toggle show hidden characters:<Space Tab Newline>
 .It Cm <^V>
 Toggle show line motion numbers for ebEBwW
 .It Cm [#]<^V>
@@ -226,9 +226,9 @@ Enter v/ xkwd ex prompt to set search keyword. Insert # words from cursor
 .It Cm v;
 Enter ! ex prompt
 .It Cm [#]vi
-Enter %s/^ {8}/	/g ex prompt. Contains regex for changing spaces to tabs. # modifies tab width
+Enter %s/ ex prompt. Contains regex for changing spaces to tabs. # modifies tab width
 .It Cm [#]vI
-Enter %s/^	/        /g ex prompt. Contains regex for changing tabs to spaces. # modifies tab width
+Enter %s/ ex prompt. Contains regex for changing tabs to spaces. # modifies tab width
 .It Cm vo
 Remove trailing white spaces and <\er> line endings
 .It Cm va
@@ -286,9 +286,9 @@ Delete # characters from cursor forward
 .It Cm [#]X
 Delete # characters from cursor backward
 .It Cm di{arg}
-Delete around arg which can be ( or ) or \&"
+Delete around arg which can be <( ) \&">
 .It Cm ci{arg}
-Change around arg which can be ( or ) or \&"
+Change around arg which can be <( ) \&">
 .It Cm [#]r{arg}
 Replace # characters with arg from cursor forward
 .It Cm K
@@ -324,7 +324,7 @@ Show buffer list and switch based on # or 0-9 index when prompted
 Swap to previous buffer
 .Ed
 .It Cm [#]<^N>
-Swap to next buffer, # changes direction (forward/backward)
+Swap to next buffer, # changes direction [forward backward]
 .It Cm \e
 Swap to /fm/ buffer b-2
 .It Cm [#]\e
@@ -352,10 +352,10 @@ Regex search, move up 1 or # matches
 .It Cm [#]n
 .It Cm [#]N
 .Bd -compact
-Repeat regex search, move down/up 1 or # matches
+Repeat regex search, move [down up] 1 or # matches
 .Ed
 .It Cm <^A>
-Regex search 1 word from cursor, no center, move wrap up/down direction
+Regex search 1 word from cursor, no center, wraparound move [up down]
 .It Cm {#}<^A>
 Regex search, set keyword to # words from cursor
 .It Cm <^]>
@@ -380,31 +380,30 @@ Soft quit, write to a file before exit
 .
 .Sh VI REGIONS
 .Bd -literal -compact
-Regions are vi normal commands that define [h|v]range for vi motions.
+Regions are vi normal commands that define [h v]range for vi motions.
 Commands described with the word "move" define a region.
 This includes:
-<+><j><^M><Newline><-><k><h><l><f><F><t><T><,><;><B><E><b><e>
-<W><w><{><}><[><]><^><0><$><Space><^H><Backspace><%><'><`><G>
-<H><L><M></><?><n><N><^A>
+<+ j ^M Newline - k h l f F t T , ; B E b e W w { } [ ] ^ 0 $ Space
+^H Backspace % ' ` G H L M / ? n N ^A>
 .Ed
 .
 .Sh VI MOTIONS
 .Bd -literal -compact
-Motions are vi normal commands that run in a [h|v]range.
+Motions are vi normal commands that run in a [h v]range.
 Commands described with the word "region" consume a region.
 This includes:
-<^W><<><>><!>{g~}{gu}{gU}<c><d><y><">
+<^W < > ! g~ gu gU c d y ">
 Examples:
 .Ed
 .Bl -tag -width Ds -compact
 .It Cm 3d/int
-Delete text until the 3rd instance of "int" keyword
+Delete text until the 3rd instance of [int] keyword
 .It Cm d3w
 Delete 3 words
 .It Cm \&"ayl
-Yank a character into 'a' register
+Yank a character into <a> register
 .It Cm \&"Ayw
-Append a word to 'a' register
+Append a word to <a> register
 .El
 .
 .Sh VI/EX INSERT
@@ -473,18 +472,17 @@ In Ex, each command is initiated with the prefix <:>.
 .
 .Sh EX EXPANSION
 .Bd -literal -compact
-Characters # and % in ex prompt substitute the buffer pathname.
-% substitutes current buffer and # last swapped buffer.
-It is possible to expand any arbitrary buffer by using % or
-# (no difference in this case) followed by the buffer number.
-Example:
-print the pathname for buffer 69 (if it exists).
+Characters <# %> in ex prompt substitute the buffer pathname.
+<%> substitutes current buffer and <#> last swapped buffer.
+It is possible to expand any arbitrary buffer by using <# %>
+followed by the buffer number.
+Example: print the pathname for buffer 69.
 :!echo "%69"
 
-Every ex command is be able to receive data from the outside
-world through a special expansion character ! which runs a pipe
-command. If the closing ! is not specified, the end of the line
-becomes a terminator.
+Every ex command is be able to receive data from external process 
+through a special expansion character <!> which pipes the data 
+into the command itself. If the closing <!> is not specified, 
+the end of the line becomes a terminator.
 Example:
 Substitute the value of env var $SECRET to the value of $RANDOM :).
 In this demo, we set the value of SECRET to "int" ourselves.
@@ -496,11 +494,11 @@ Nextvi special character escapes work mostly the same way everywhere
 except the following situations:
 .Bd -literal -compact
  - Escapes in regex bracket expressions.
- - Due to ex expansion # % and ! characters have to be escaped
+ - Due to ex expansion <# % !> characters have to be escaped
    if they are part of an ex command.
  - A single back slash requires 2 back slashes, and so on.
- - regex requires for ( to be escaped if used inside [] brackets.
- - In ex prompt the only separator is "|" character. It can
+ - regex requires for <(> to be escaped if used inside "[]" brackets.
+ - In ex prompt the only separator is <|> character. It can
    be escaped normally but will require extra back slash if passed
    into a regular expression or a global command.
 .Ed
@@ -643,7 +641,7 @@ Example: remove empty lines
 :g/^$/d
 
 Multiple ex commands can be chained in one global command.
-To chain commands, the ex separator "|" must be escaped once.
+To chain commands, the ex separator <|> must be escaped once.
 Example: yank matches appending to reg 'a' and print them out.
 :g/int/ya A\e|p
 
@@ -651,8 +649,9 @@ It is possible to nest global commands inside of global commands.
 Example: find all lines with int and a semicolon and append
 "has a semicolon"
 :g/int/:.g/;/& A has a semicolon
-Advanced example: extract/print data enclosed in ()
-:g/\e(.+\e)/;0;/\e(.+\e)/\e|.;.+1k a\e|se grp=2\e|;/\e)*(\e))/\e|se nogrp\e|k s\e|.;'a;'sp
+Example: extract/print data enclosed in "()"
+:g/\e(.+\e)/;0;/\e(.+\e)/\e|.;.+1k a\e|se grp=2\e|;/\e)*(\e))/\e|
+se nogrp\e|k s\e|.;'a;'sp
 .Ed
 
 .It Cm [range]g!{*}[kwd]{*}{cmd}
@@ -715,7 +714,7 @@ Soft quit
 .It Cm q!
 Force quit
 
-.It Cm [range]r [path|cmd]
+.It Cm [range]r [path cmd]
 Read a file or a pipe
 .Bd -literal
 To read data from a pipe use :[range]r \e![cmd]
@@ -727,7 +726,7 @@ Example: pipe in all data
 :%r \e!ls
 .Ed
 
-.It Cm [range]w [path|cmd]
+.It Cm [range]w [path cmd]
 Write to a file or a pipe
 .Bd -literal
 To pipe buffer data to external process use :[range]w \e![cmd]
@@ -746,9 +745,9 @@ Force write to a file
 Write and force/soft quit
 .Ed
 
-.It Cm u[#|$]
+.It Cm u[# $]
 Undo # times or all with $
-.It Cm rd[#|$]
+.It Cm rd[# $]
 Redo # times or all with $
 
 .It Cm se {exp}
@@ -788,7 +787,7 @@ Yank a region
 To append to the register, pass in its uppercase version.
 To append to any of the non-alphabetical registers add any extra
 character to the command.
-Example: append to register 1
+Example: append to register <1>
 :ya 1x
 .Ed
 
@@ -879,10 +878,10 @@ characters. Typically to be used along with :ph for the full
 effect.
 .Ed
 
-.It Cm ph [#clow] [#chigh] [#width] [#blen][*]
+.It Cm ph [#clow] [#chigh] [#width] [#blen][*char]
 Create new placeholders
 .Bd -literal
-Example: render 8 bit ascii (Extended ASCII) as '~'
+Example: render 8 bit ascii (Extended ASCII) as <~>
 :ph 128 255 1 1~
 Example: flawless ISO/IEC 8859-1 (latin-1) support
 :uc|ph 128 160 1 1~
@@ -1020,26 +1019,30 @@ and customizing nextvi outside of C.
 Many standard text processing utils such as grep, awk, sed
 can be replaced by nextvi with EXINIT in mind.
 
-Example 1:
-There is a dictionary file (assume vi.c), which we always want
-to have indexed at startup for autocomplete. The last "bx" commands
-delete the vi.c buffer.
-export EXINIT=$(printf "e ./vi.c|& i\ex7\ex3|bx 1|bx")
-
-Example 2:
-Load some file (assume vi.c) into vi's history buffer.
-export EXINIT="b-1|%r ./vi.c|b-1"
-
-Example 3:
-Setup a @ macro in register a
-When @a is executed the macro will create { and closing } below
-the cursor leaving cursor in insert mode in between the braces.
-export EXINIT=$(printf "e|& io{\en}\ex16\ex3kA\ex3|& 1G|& 2\e"ayy")
+Examples:
 .Ed
+
+.Bl -tag -width Ds -compact
+.It Cm export EXINIT=$'e ./vi.c|& i\ex7\ex3|bx 1|bx'
+Index vi.c for autocomplete
+
+.It Cm export EXINIT='b-1|%r ./vi.c|b-1'
+Load vi.c into a history buffer
+
+.It Cm export EXINIT=$'e|& io{\en}\ex16\ex3kA\ex3|& 1G|& 2\e"ayy'
+Setup @ macro in register <a>
+
+@a macro creates <{> and closing <}> below the cursor leaving
+cursor in insert mode in between the braces.
+.El
 .
 .Sh REGEX
+.Bd -literal
 Nextvi's regex syntax is akin to that of Plan 9.
+Disregard manpage notation for <{ } [ ]> in this section.
+.Ed
 .Bl -tag -width Ds -compact
+
 .It Cm \&.
 match any single char
 .It Cm ^
@@ -1053,7 +1056,7 @@ grouping
 .It Cm (?:)
 non capture grouping
 .It Cm [N-M]
-match ranges N to M
+match a set of alternate ranges N to M
 .It Cm *
 repeated zero or more times
 .It Cm +
@@ -1070,14 +1073,17 @@ one or zero matches greedy
 one or zero matches lazy
 .El
 
-Additionally, Nextvi's supports static lookahead expressions. For example
-[!abc] and [=abc] where ! is negated version of =. This will treat "abc" as (a &&
-b && c) logically. It is possible to have multiple in one bracket expression as
-well. For example [!abc!cda!qwe] where each string delimited by the ! acts like
-a typical or operation i.e. [acq] with only difference of testing the extra characters
-ahead. To combine both standard bracket expression and lookahead in one, use ^ or
-^= where ^ is negated and ^= is default. For example: [!abc^=123] characters after
-^= match exactly how [123] would.
+Additionally, Nextvi's supports static lookahead expressions.
+.Bl -tag -width Ds -compact
+.It Cm /[=abc]
+find <a> followed by "bc"
+.It Cm /[!abc]
+find anything except <a> followed by "bc"
+.It Cm /[!abc!cda!qwe]
+multiple lookahead alternatives in one bracket exp
+.It Cm /[!abc^=123]
+disable lookahead using "^=" specifier and match [123]
+.El
 .
 .Sh SPECIAL MARKS
 .Bl -tag -width Ds -compact
