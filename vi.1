@@ -45,7 +45,7 @@ Enter visual mode on startup (Default)
 .Sh NOTATION
 .Bl -tag -width Ds -compact
 .It Cm <x>
-An x representation of non-printable character literal
+An x representation of a character literal
 .It Cm [x]
 An x representation of a optional argument
 .It Cm {x}
@@ -86,9 +86,9 @@ Move until arg character found forward
 .It Cm T{arg}
 Move until arg character found backward
 .It Cm [#],
-Repeat last f or F or t or T command backward # times
+Repeat last <f|F|t|T> move backward # times
 .It Cm [#];
-Repeat last f or F or t or T command forward # times
+Repeat last <f|F|t|T> move forward # times
 .It Cm [#]B
 Move to end of word, skip punctuation backward # times
 .It Cm [#]E
@@ -301,16 +301,16 @@ Join # lines
 Toggle space padding when joining lines
 .It Cm [#]y{arg}
 Yank arg region # times
-.It Cm Y
-Yank a line
+.It Cm [#]Y
+Yank # lines
 .It Cm [#]p
-Paste a default register
+Paste default register # times
 .It Cm [#]P
-Paste a default register below current line or behind cursor position
+Paste default register below current line or behind cursor position # times
 .It Cm m{arg}
-Set a buffer local line mark arg
+Set buffer local line mark arg
 .It Cm <^T>
-Set a global file mark 0
+Set global line mark 0. Global marks are always valid
 .It Cm [#]<^T>
 Set or switch to a global mark based on # % 2 == 0
 .It Cm [#]<^7>
@@ -331,8 +331,8 @@ Swap to /fm/ buffer b-2
 Swap from /fm/ buffer b-2 and backfill directory listing
 .It Cm vb
 Recurse into b-1 history buffer. Insert current line into ex prompt after a quit command
-.It Cm z{arg}
-Set alternative keymap to arg keymap
+.It Cm z{#}
+Set alternative keymap to # keymap
 .It Cm ze
 Switch to English keymap
 .It Cm zf
@@ -387,7 +387,7 @@ This includes:
 <W><w><{><}><[><]><^><0><$><Space><^H><Backspace><%><'><`><G>
 <H><L><M></><?><n><N><^A>
 .Ed
-. 
+.
 .Sh VI MOTIONS
 .Bd -literal -compact
 Motions are vi normal commands that run in a [h|v]range.
@@ -466,9 +466,9 @@ Exit insert mode
 .El
 .
 .Sh EX
-Ex is a powerful line editor for Unix systems, initially developed by Bill Joy in 
-1976. This essential tool serves as the backbone of vi, enabling it to execute commands, 
-macros and even transform into a purely command-line interface (CLI) when desired. 
+Ex is a powerful line editor for Unix systems, initially developed by Bill Joy in
+1976. This essential tool serves as the backbone of vi, enabling it to execute commands,
+macros and even transform into a purely command-line interface (CLI) when desired.
 In Ex, each command is initiated with the prefix <:>.
 .
 .Sh EX EXPANSION
@@ -1002,7 +1002,7 @@ Print register
 Set a special register using a character or a number.
 Once the register is set, all data passed into ex_print will
 be stored in the register.
-If the register is uppercase, <Newline> characters are added 
+If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
 Example: paste current buffer list exactly like from :b command
 :se pr=A|ya! a|b|pu a
