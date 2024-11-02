@@ -28,7 +28,7 @@ OPTIONS
      -v	     Enter visual mode on startup (Default)
 
 NOTATION
-     <x>     An x representation of non-printable character literal
+     <x>     An x representation of a character literal
      [x]     An x representation of a optional argument
      {x}     An x representation of a required argument
      <^X>    A representation of a ctrl key X
@@ -51,8 +51,8 @@ VI NORMAL
      F{arg}	   Move to arg character found backward
      t{arg}	   Move until arg character found forward
      T{arg}	   Move until arg character found backward
-     [#],	   Repeat last f or F or t or T command backward # times
-     [#];	   Repeat last f or F or t or T command forward # times
+     [#],	   Repeat last <f|F|t|T> move backward # times
+     [#];	   Repeat last <f|F|t|T> move forward # times
      [#]B	   Move to end of word, skip punctuation backward # times
      [#]E	   Move to end of word, skip punctuation forward # times
      [#]b	   Move to end of word backward # times
@@ -166,12 +166,12 @@ VI NORMAL
      [#]J	   Join # lines
      vj		   Toggle space padding when joining lines
      [#]y{arg}	   Yank arg region # times
-     Y		   Yank a line
-     [#]p	   Paste a default register
-     [#]P	   Paste a default register below current line or behind
-		   cursor position
-     m{arg}	   Set a buffer local line mark arg
-     <^T>	   Set a global file mark 0
+     [#]Y	   Yank # lines
+     [#]p	   Paste default register # times
+     [#]P	   Paste default register below current line or behind cursor
+		   position # times
+     m{arg}	   Set buffer local line mark arg
+     <^T>	   Set global line mark 0. Global marks are always valid
      [#]<^T>	   Set or switch to a global mark based on # % 2 == 0
      [#]<^7>
      [#]<^_>
@@ -185,7 +185,7 @@ VI NORMAL
      [#]\	   Swap from /fm/ buffer b-2 and backfill directory listing
      vb		   Recurse into b-1 history buffer. Insert current line into
 		   ex prompt after a quit command
-     z{arg}	   Set alternative keymap to arg keymap
+     z{#}	   Set alternative keymap to # keymap
      ze		   Switch to English keymap
      zf		   Switch to alternative keymap
      zL		   Set td ex option to 2
