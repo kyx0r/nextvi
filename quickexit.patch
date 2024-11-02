@@ -68,7 +68,7 @@ index 1dda5b5..cbac890 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index d97ad5d..28d792a 100644
+index 87fdf71..ef4e4cb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index d97ad5d..28d792a 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 21b2da3..187beb1 100644
+index 5b4e3f1..ca51cca 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -455,6 +455,7 @@ extern int xhlr;
+@@ -454,6 +454,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

@@ -11,7 +11,7 @@ index ef1e347..65c33e3 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index 18131f8..cb6ec91 100644
+index 63344a0..57514c1 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -428,34 +428,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -125,7 +125,7 @@ index 18131f8..cb6ec91 100644
 +	return 1;
  }
  
- int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off)
+ int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
 index 9f690cc..cc40094 100644
 --- a/regex.c
@@ -170,7 +170,7 @@ index b05db93..7298b6a 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index d97ad5d..5e8298c 100644
+index 87fdf71..993e1bc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -182,10 +182,10 @@ index d97ad5d..5e8298c 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 21b2da3..9454f55 100644
+index 5b4e3f1..6c14022 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -212,7 +212,9 @@ int syn_addhl(char *reg, int func, int reload);
+@@ -211,7 +211,9 @@ int syn_addhl(char *reg, int func, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */
