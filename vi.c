@@ -866,8 +866,8 @@ static int vi_motion(int *row, int *off)
 		break;
 	case '\\':
 		temp_switch(1);
-		if (vi_arg1)
-			ex_command("1,$d|fd")
+		if (vi_arg1 && xb == tempbufs[1].lb)
+			ex_command("1,$d|fd|b-2")
 		*row = xrow;
 		*off = xoff;
 		break;
