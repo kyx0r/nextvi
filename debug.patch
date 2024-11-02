@@ -94,10 +94,10 @@ index d97ad5d..5fce986 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 0ed11e0..3721467 100644
+index 21b2da3..a2f7293 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -187,6 +187,7 @@ int ren_cwid(char *s, int pos);
+@@ -189,6 +189,7 @@ int ren_cwid(char *s, int pos);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -105,7 +105,7 @@ index 0ed11e0..3721467 100644
  /* syntax highlighting */
  #define SYN_BD		0x010000
  #define SYN_IT		0x020000
-@@ -208,6 +209,7 @@ int syn_merge(int old, int new);
+@@ -210,6 +211,7 @@ int syn_merge(int old, int new);
  void syn_reloadft(void);
  int syn_addhl(char *reg, int func, int reload);
  void syn_init(void);
@@ -113,7 +113,7 @@ index 0ed11e0..3721467 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -363,6 +365,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -365,6 +367,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);

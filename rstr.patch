@@ -264,7 +264,7 @@ index d97ad5d..bf70edb 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 0ed11e0..86eeaf4 100644
+index 21b2da3..4cec349 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -117,12 +117,23 @@ typedef struct {
@@ -299,8 +299,8 @@ index 0ed11e0..86eeaf4 100644
 +int lbuf_search(struct lbuf *lb, rstr *re, int dir, int *r,
  			int *o, int ln_n, int skip);
  #define lbuf_dedup(lb, str, n) \
- { for (int i = 0; i < lbuf_len(lb); i++) { \
-@@ -363,7 +374,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+ { for (int i = 0; i < lbuf_len(lb);) { \
+@@ -365,7 +376,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -309,7 +309,7 @@ index 0ed11e0..86eeaf4 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -460,9 +471,9 @@ extern int xkwdcnt;
+@@ -462,9 +473,9 @@ extern int xkwdcnt;
  extern int xkwddir;
  extern int xmpt;
  extern int xpr;

@@ -182,7 +182,7 @@ index 18131f8..544d973 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 0ed11e0..1da4e10 100644
+index 21b2da3..8bf47bc 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
@@ -192,5 +192,5 @@ index 0ed11e0..1da4e10 100644
 +void lbuf_setleaf(struct lbuf *lb, int leaf);
 +char *lbuf_getleafs(struct lbuf *lb);
  #define lbuf_dedup(lb, str, n) \
- { for (int i = 0; i < lbuf_len(lb); i++) { \
+ { for (int i = 0; i < lbuf_len(lb);) { \
  	char *s = lbuf_get(lb, i); \

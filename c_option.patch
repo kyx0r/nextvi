@@ -63,10 +63,10 @@ index d97ad5d..fa44332 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 0ed11e0..6a154f1 100644
+index 21b2da3..c628917 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -361,7 +361,7 @@ int ex_exec(const char *ln);
+@@ -363,7 +363,7 @@ int ex_exec(const char *ln);
  char *ex_read(char *msg);
  void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
