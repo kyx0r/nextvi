@@ -151,10 +151,12 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 			int *o, int ln_n, int skip);
 #define lbuf_dedup(lb, str, n) \
-{ for (int i = 0; i < lbuf_len(lb); i++) { \
+{ for (int i = 0; i < lbuf_len(lb);) { \
 	char *s = lbuf_get(lb, i); \
 	if (n == lbuf_slen(s) && !memcmp(str, s, n)) \
 		lbuf_edit(lb, NULL, i, i + 1); \
+	else \
+		i++; \
 }} \
 
 /* motions */
