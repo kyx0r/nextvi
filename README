@@ -224,7 +224,7 @@ VI MOTIONS
      Motions are vi normal commands that run in a [h v]range.
      Commands described with the word "region" consume a region.
      This includes:
-     <^W < > ! g~ gu gU c d y ">
+     <^W < > ! c d y "> g~ gu gU
      Examples:
      3d/int  Delete text until the 3rd instance of [int] keyword
      d3w     Delete 3 words
