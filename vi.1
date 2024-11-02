@@ -66,95 +66,95 @@ A separation of alternative representations
 .It Cm [#]<^M>
 .It Cm [#]<Newline>
 .Bd -compact
-Move the cursor # lines down
+Move # lines down
 .Ed
 .It Cm [#]-
 .It Cm [#]k
 .Bd -compact
-Move the cursor # lines up
+Move # lines up
 .Ed
 .It Cm [#]h
-Move the cursor # cols left
+Move # cols left
 .It Cm [#]l
-Move the cursor # cols right
+Move # cols right
 .It Cm f{arg}
-Move the cursor to the arg character found forward
+Move to arg character found forward
 .It Cm F{arg}
-Move the cursor to the arg character found backward
+Move to arg character found backward
 .It Cm t{arg}
-Move the cursor until the arg character found forward
+Move until arg character found forward
 .It Cm T{arg}
-Move the cursor until the arg character found backward
+Move until arg character found backward
 .It Cm [#],
 Repeat last f or F or t or T command backward # times
 .It Cm [#];
 Repeat last f or F or t or T command forward # times
 .It Cm [#]B
-Move the cursor to the end of the word skipping punctuation backward # times
+Move to end of word, skip punctuation backward # times
 .It Cm [#]E
-Move the cursor to the end of the word skipping punctuation forward # times
+Move to end of word, skip punctuation forward # times
 .It Cm [#]b
-Move the cursor to the end of the word backward # times
+Move to end of word backward # times
 .It Cm [#]e
-Move the cursor to the end of the word forward # times
+Move to end of word forward # times
 .It Cm [#]W
-Move the cursor to the start of the word skipping punctuation forward # times
+Move to start of word, skip punctuation forward # times
 .It Cm [#]w
-Move the cursor to the start of the word forward # times
+Move to start of word forward # times
 .It Cm {
-Move the cursor to the next { region up
+Move to next <{> section up
 .It Cm }
-Move the cursor to the next { region down
+Move to next <{> section down
 .It Cm \&[
-Move the cursor to the next <^M> region up
+Move to next <Newline> section up
 .It Cm \&]
-Move the cursor to the next <^M> region down
+Move to next <Newline> section down
 .It Cm ^
-Move the cursor to the start of the line after indentation
-.It Cm 0 \&|
-Move the cursor to the start of the line
+Move to start of line after indentation
+.It Cm 0
+Move to start of line
 .It Cm $
-Move the cursor to the end of the line
+Move to end of line
 .It Cm [#]|
-Move the cursor to # col
+Goto # col
 .It Cm [#]<Space>
-Move cursor # characters forward
+Move # characters forward
 .It Cm [#]<^H>
 .It Cm [#]<Backspace>
 .Bd -compact
-Move cursor # characters backward
+Move # characters backward
 .Ed
 .It Cm %
-Move the cursor to [](){} pair
+Move to [](){} pair
 .It Cm [#]%
-Move the cursor to the # percent line number
+Move to # percent line number
 .It Cm '{arg}
-Goto a line mark arg
+Move to a line mark arg
 .It Cm `{arg}
-Goto a line mark arg with horizontal position
+Move to a line mark arg with cursor position
 .It Cm gg
-Goto the first line in the buffer
+Goto first line in buffer
 .It Cm [#]G
-Goto the last line in the buffer or # line
+Move to last line in buffer or # line
 .It Cm H
-Goto the highest line of the screen
+Move to highest line on a screen
 .It Cm L
-Goto the lowest line of the screen
+Move to lowest line on a screen
 .It Cm M
-Goto the middle line of the screen
+Move to middle line on a screen
 .It Cm [#]z.
-Center the screen. # is xtop
+Center screen at cursor. # is xtop
 .It Cm [#]z<^M>
 .It Cm [#]z<Newline>
 .Bd -compact
-Center the screen at top row. # is xtop
+Center screen at top row. # is xtop
 .Ed
 .It Cm [#]z-
-Center the screen at bottom row. # is xtop
+Center screen at bottom row. # is xtop
 .It Cm [#]<^E>
-Scroll down 1 or # lines. # is set and stored, cursor position preserved
+Scroll down 1 or # lines, retain # and cursor position
 .It Cm [#]<^Y>
-Scroll up 1 or # lines. # is set and stored, cursor position preserved
+Scroll up 1 or # lines, retain # and cursor position
 .It Cm [#]<^D>
 Scroll down half a screen size. If # set scroll to # lines
 .It Cm [#]<^U>
@@ -172,7 +172,7 @@ Toggle show relative line numbers after indentation permanently
 .It Cm 8#
 Toggle show relative line numbers permanently
 .It Cm V
-Toggle show hidden characters: Space,Tab,New line
+Toggle show hidden characters:<Space><Tab><Newline>
 .It Cm <^V>
 Toggle show line motion numbers for ebEBwW
 .It Cm [#]<^V>
@@ -184,18 +184,18 @@ Undo # times
 .It Cm <^I>
 .It Cm <Tab>
 .Bd -compact
-Open file using text from the cursor to end of the line
+Open file path from cursor to end of line
 .Ed
 .It Cm <^K>
-Write the current buffer to file. Force write on 2nd attempt
+Write current buffer to file. Force write on 2nd attempt
 .It Cm [#]<^W>{arg}
 Unindent arg region # times
 .It Cm [#]<{arg}
 Indent left arg region # times
 .It Cm [#]>{arg}
 Indent right arg region # times
-.It Cm \&"{arg}
-Operate on the register arg
+.It Cm \&"{arg}{arg1}
+Operate on arg register according to arg1 motion
 .It Cm R
 Print registers and their contents
 .It Cm [#]&{arg}
@@ -212,25 +212,23 @@ Repeat last normal command # times
 .It Cm [#]v.
 Repeat last normal command moving down across # lines
 .It Cm \&:
-Enter vi mode ex prompt
+Enter ex prompt
 .It Cm [#]!{arg}
-Enter pipe ex prompt based on the region specified by # or arg
+Enter pipe ex prompt based on region # or arg
 .It Cm vv
-Open ex prompt with the last ex command from history
+Enter ex prompt with the last ex command from history
 .It Cm [#]vr
-Open %s/ ex prompt. Insert # word(s) from the cursor
+Enter %s/ ex prompt. Insert # words from cursor
 .It Cm [#]vt[#arg]
-Open .,.+0s/ ex prompt. # specifies number of lines from the cursor. Insert #arg word(s) from the cursor
+Enter .,.+0s/ ex prompt. Insert # of lines from cursor. Insert #arg words from cursor
 .It Cm [#]v/
-Open v/ xkwd ex prompt to set search keyword. Insert # word(s) from the cursor
+Enter v/ xkwd ex prompt to set search keyword. Insert # words from cursor
 .It Cm v;
-Open ! ex prompt
-.It Cm vb
-Recurse into b-1 history buffer. Any quit command shall exit recursion
+Enter ! ex prompt
 .It Cm [#]vi
-Open %s/^ {8}/	/g ex prompt. Contains regex for changing spaces to tabs. # modifies the width
+Enter %s/^ {8}/	/g ex prompt. Contains regex for changing spaces to tabs. # modifies tab width
 .It Cm [#]vI
-Open %s/^	/        /g ex prompt. Contains regex for changing tabs to spaces. # modifies the width
+Enter %s/^	/        /g ex prompt. Contains regex for changing tabs to spaces. # modifies tab width
 .It Cm vo
 Remove trailing white spaces and <\er> line endings
 .It Cm va
@@ -262,41 +260,41 @@ Switch character case # times forward
 .It Cm i
 Enter insert mode
 .It Cm I
-Enter insert moving cursor to the start of the line after indentation
+Enter insert mode at start of line after indentation
+.It Cm A
+Enter insert mode at end of line
 .It Cm a
 Enter insert mode 1 character forward
-.It Cm A
-Enter insert mode moving cursor to the end of the line
 .It Cm [#]s
-Enter insert mode deleting # characters
+Enter insert mode and delete # characters
 .It Cm S
-Enter insert mode deleting everything on the line
+Enter insert mode and delete all characters
 .It Cm o
-Enter insert mode creating a new line down
+Enter insert mode and create a new line down
 .It Cm O
-Enter insert mode creating a new line up
+Enter insert mode and create a new line up
 .It Cm [#]c{arg}
-Enter insert mode deleting arg region # times
+Enter insert mode and delete arg region # times
 .It Cm C
-Enter insert mode deleting from cursor to the end of the line
+Enter insert mode and delete from cursor to end of line
 .It Cm [#]d{arg}
 Delete arg region # times
 .It Cm D
-Delete from a cursor to the end of the line
+Delete from cursor to end of line
 .It Cm [#]x
-Delete # characters under the cursor forward
+Delete # characters from cursor forward
 .It Cm [#]X
-Delete # characters under the cursor backward
+Delete # characters from cursor backward
 .It Cm di{arg}
 Delete around arg which can be ( or ) or \&"
 .It Cm ci{arg}
 Change around arg which can be ( or ) or \&"
 .It Cm [#]r{arg}
-Replace # characters with arg under the cursor forward
+Replace # characters with arg from cursor forward
 .It Cm K
 Split a line
 .It Cm [#]K
-Split a line without creating empty new lines
+Split a line without creating <Newline>
 .It Cm [#]J
 Join # lines
 .It Cm vj
@@ -308,7 +306,7 @@ Yank a line
 .It Cm [#]p
 Paste a default register
 .It Cm [#]P
-Paste a default register below current line or behind cursor pos
+Paste a default register below current line or behind cursor position
 .It Cm m{arg}
 Set a buffer local line mark arg
 .It Cm <^T>
@@ -323,21 +321,22 @@ Show buffer list and switch based on # or 0-9 index when prompted
 .It Cm <^^>
 .It Cm <^6>
 .Bd -compact
-Swap to the previous buffer
+Swap to previous buffer
 .Ed
 .It Cm [#]<^N>
-Swap to the next buffer, # changes direction (forward/backward)
+Swap to next buffer, # changes direction (forward/backward)
 .It Cm \e
 Swap to /fm/ buffer b-2
 .It Cm [#]\e
 Swap from /fm/ buffer b-2 and backfill directory listing
+.It Cm vb
+Recurse into b-1 history buffer. Insert current line into ex prompt after a quit command
 .It Cm z{arg}
-Change alternate keymap to arg
+Set alternative keymap to arg keymap
 .It Cm ze
+Switch to English keymap
 .It Cm zf
-.Bd -compact
-Switch to the English and alternate keymap
-.Ed
+Switch to alternative keymap
 .It Cm zL
 Set td ex option to 2
 .It Cm zl
@@ -347,38 +346,68 @@ Set td ex option to -1
 .It Cm zR
 Set td ex option to -2
 .It Cm [#]/
-Search using regex down skipping # matches
+Regex search, move down 1 or # matches
 .It Cm [#]?
-Search using regex up skipping # matches
+Regex search, move up 1 or # matches
 .It Cm [#]n
-Repeat search down skipping # matches
 .It Cm [#]N
-Repeat search up skipping # matches
+.Bd -compact
+Repeat regex search, move down/up 1 or # matches
+.Ed
 .It Cm <^A>
-Auto search word under the cursor, not centering and wrapping up/down direction
-.It Cm [#]<^A>
-Auto search setting # words from the cursor
+Regex search 1 word from cursor, no center, move wrap up/down direction
+.It Cm {#}<^A>
+Regex search, set keyword to # words from cursor
 .It Cm <^]>
 Filesystem search forward based on directory listing in b-2
-.It Cm [#]<^]>
-Filesystem search forward, setting search keyword to # words under the cursor
+.It Cm {#}<^]>
+Filesystem search forward, set keyword to # words from cursor
 .It Cm <^P>
 Filesystem search backward based on directory listing in b-2
-.It Cm [#]<^P>
-Filesystem search backward, setting search keyword to # words under the cursor
+.It Cm {#}<^P>
+Filesystem search backward, set keyword to # words from cursor
 .It Cm <^Z>
 Suspend vi
 .It Cm <^L>
 Force redraw whole screen and update terminal dimensions
 .It Cm qq
-Force quit cleaning the terminal
+Force quit and clean terminal
 .It Cm zz
-Force quit not cleaning the terminal, submits commands if recursive
+Force quit, submit a command when recursive
 .It Cm ZZ
-Soft quit, attempting to write the file before exit
+Soft quit, write to a file before exit
 .El
 .
-.Sh INSERT MODE
+.Sh VI REGIONS
+.Bd -literal -compact
+Regions are vi normal commands that define [h|v]range for vi motions.
+Commands described with the word "move" define a region.
+This includes:
+<+><j><^M><Newline><-><k><h><l><f><F><t><T><,><;><B><E><b><e>
+<W><w><{><}><[><]><^><0><$><Space><^H><Backspace><%><'><`><G>
+<H><L><M></><?><n><N><^A>
+.Ed
+. 
+.Sh VI MOTIONS
+.Bd -literal -compact
+Motions are vi normal commands that run in a [h|v]range.
+Commands described with the word "region" consume a region.
+This includes:
+<{><}><^W><<><>><!>{g~}{gu}{gU}<c><d><y><">
+Examples:
+.Ed
+.Bl -tag -width Ds -compact
+.It Cm 3d/int
+Delete text until the 3rd instance of "int" keyword
+.It Cm d3w
+Delete 3 words
+.It Cm \&"ayl
+Yank a character into 'a' register
+.It Cm \&"Ayw
+Append a word to 'a' register
+.El
+.
+.Sh VI/EX INSERT
 .Bl -tag -width Dq -compact
 .It Cm <^H>
 .It Cm <Backspace>
@@ -394,11 +423,13 @@ Increase indent
 .It Cm <^D>
 Decrease indent
 .It Cm <^]>
-Switch a default paste register to 0-9
+Switch default paste register to registers 0-9
 .It Cm <^\e>{arg}
 Select paste register arg. <^\e> selects default register
 .It Cm <^P>
 Paste a register
+.It Cm <^X>
+Mark autocomplete and <^U> starting position. <^X> resets the mark
 .It Cm <^G>
 Index buffer for autocomplete
 .It Cm <^Y>
@@ -407,18 +438,16 @@ Reset autocomplete data
 Loop through autocomplete options backward
 .It Cm <^N>
 Loop through autocomplete options forward
-.It Cm <^Z>
-Suspend vi/ex
-.It Cm <^X>
-Set a mark for <^U> and completion starting position
-.It Cm <^B>
-Recurse into b-1 history buffer when in ex prompt. Use any quit command to exit recursion
 .It Cm <^B>
 Print autocomplete options when in vi insert
+.It Cm <^B>
+Recurse into b-1 history buffer when in ex prompt. Insert current line into ex prompt after a quit command
 .It Cm <^A>
-Loop through the strings in a history buffer b-1
+Loop through lines in a history buffer b-1
+.It Cm <^Z>
+Suspend vi/ex
 .It Cm <^L>
-Redraw the screen in vi mode, clean the terminal in ex
+Redraw screen in vi mode, clean terminal in ex
 .It Cm <^O>
 Switch between vi and ex modes recursively
 .It Cm <^O>
@@ -436,24 +465,11 @@ Exit insert mode
 .Ed
 .El
 .
-.Sh VI MOTIONS
-Basic motion examples:
-.Bl -tag -width Ds -compact
-.It Cm 3d/int
-Delete text until the 3rd instance of "int" keyword
-.It Cm d3w
-Delete 3 words
-.It Cm \&"ayl
-Yank a character into 'a' register
-.It Cm \&"Ayw
-Append a word to 'a' register
-.El
-.
 .Sh EX
-Ex is a line editor for Unix systems originally written by Bill Joy in 1976.
-In ex, every command is prefixed with ':'. Ex is essential to vi, which allows it
-to run commands and macros. Together vi and ex create a beautiful symbiosis, which
-complements each other and helps to solve various domain problems.
+Ex is a powerful line editor for Unix systems, initially developed by Bill Joy in 
+1976. This essential tool serves as the backbone of vi, enabling it to execute commands, 
+macros and even transform into a purely command-line interface (CLI) when desired. 
+In Ex, each command is initiated with the prefix <:>.
 .
 .Sh EX EXPANSION
 .Bd -literal -compact
@@ -866,12 +882,11 @@ effect.
 .It Cm ph [#clow] [#chigh] [#width] [#blen][*]
 Create new placeholders
 .Bd -literal
-Examples:
-render 8 bit ascii (Extended ASCII) as '~':
+Example: render 8 bit ascii (Extended ASCII) as '~'
 :ph 128 255 1 1~
-flawless ISO/IEC 8859-1 (latin-1) support:
+Example: flawless ISO/IEC 8859-1 (latin-1) support
 :uc|ph 128 160 1 1~
-reset to default as in conf.c:
+Example: reset to default as in conf.c
 :ph
 .Ed
 .
@@ -922,7 +937,7 @@ If set and defined in hl, highlight current line.
 If set and defined in hl, highlight [](){} pairs.
 .
 .It Cm hlw
-If set and defined in hl, highlight current word under the cursor.
+If set and defined in hl, highlight current word from cursor.
 .
 .It Cm led
 If unset, all terminal output is disabled.
@@ -987,8 +1002,8 @@ Print register
 Set a special register using a character or a number.
 Once the register is set, all data passed into ex_print will
 be stored in the register.
-If the register is uppercase, new lines are added to match the
-exact output that was printed.
+If the register is uppercase, <Newline> characters are added 
+to match the exact output that was printed.
 Example: paste current buffer list exactly like from :b command
 :se pr=A|ya! a|b|pu a
 Example: store a line printed with :p
@@ -1092,19 +1107,19 @@ previous value(s) of default register (nonatomic)
 .Sh CODE MAP
 .Bd -literal -compact
 +---------------+-----------------------+
-| 471	vi.h	| definitions/aux	|
+| 470	vi.h	| definitions/aux	|
 | 537	kmap.h	| keymap translation	|
 +---------------+-----------------------+
 | 293	conf.c	| hl/ft/td config	|
 | 336	term.c	| low level IO		|
 | 382	ren.c	| positioning/syntax	|
-| 600	lbuf.c	| file/line buffer	|
+| 593	lbuf.c	| file/line buffer	|
 | 653	uc.c	| UTF-8 support		|
 | 658	regex.c	| extended RE		|
 | 665	led.c	| insert mode/output	|
 | 1232	ex.c	| ex options/commands	|
-| 2007	vi.c	| normal mode/general	|
-| 6826	total	| wc -l *.c|sort	|
+| 1993	vi.c	| normal mode/general	|
+| 6805	total	| wc -l *.c|sort	|
 +---------------+-----------------------+
 .Ed
 .
