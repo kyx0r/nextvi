@@ -381,7 +381,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 		int *key, int *kmap, int orow, int lsh)
 {
 	int len, t_row = -2, p_reg = 0;
-	int c, i, last_sug = 0, sug_pt = -1;
+	int c, i, lsug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	while (1) {
 		led_printparts(sb, ps, post, ai_max);
@@ -488,7 +488,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 		case TK_CTL('n'):
 			if (!suggestsb)
 				continue;
-			last_sug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s + pre) + pre;
+			lsug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s + pre) + pre;
 			if (_sug) {
 				if (suggestsb->s_n == sug - suggestsb->s)
 					continue;
@@ -499,13 +499,13 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 				}
 				suggest:
 				*_sug = '\0';
-				sbuf_cut(sb, last_sug)
+				sbuf_cut(sb, lsug)
 				sbufn_str(sb, sug)
 				sug = _sug+1;
 				continue;
 			}
 			lookup:
-			if (search(sb->s + last_sug, len - last_sug)) {
+			if (search(sb->s + lsug, len - lsug)) {
 				sug = suggestsb->s;
 				if (!(_sug = strchr(sug, '\n')))
 					continue;
