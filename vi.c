@@ -750,27 +750,13 @@ static int vi_motion(int *row, int *off)
 				break;
 		break;
 	case '{':
-		for (i = 0; i < cnt; i++)
-			if (lbuf_paragraphbeg(xb, -1, row, off))
-				break;
-		break;
 	case '}':
-		for (i = 0; i < cnt; i++)
-			if (lbuf_paragraphbeg(xb, +1, row, off))
-				break;
-		break;
 	case '[':
-		if (term_read() != '[')
-			return -1;
-		for (i = 0; i < cnt; i++)
-			if (lbuf_sectionbeg(xb, -1, row, off))
-				break;
-		break;
 	case ']':
-		if (term_read() != ']')
-			return -1;
+		dir = mv == '{' || mv == '[' ? 1 : -1;
+		mark = mv == '[' || mv == ']' ? '\n' : '{';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_sectionbeg(xb, +1, row, off))
+			if (lbuf_sectionbeg(xb, dir, row, off, mark))
 				break;
 		break;
 	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
