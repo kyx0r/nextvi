@@ -380,8 +380,8 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 		int *key, int *kmap, int orow, int lsh)
 {
-	int len, p_reg = 0;
-	int c, i = 0, last_sug = 0, sug_pt = -1;
+	int len, t_row = -2, p_reg = 0;
+	int c, i, last_sug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	while (1) {
 		led_printparts(sb, ps, post, ai_max);
@@ -537,6 +537,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 				led_redraw(sb->s, r, orow, lsh);
 				continue;
 			}
+			lbuf_dedup(tempbufs[0].lb, sb->s + pre, sb->s_n - pre)
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s + pre);
 			preserve(struct buf*, ex_pbuf, ex_pbuf)
@@ -552,17 +553,16 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			syn_setft("/-");
 			term_pos(xrows, 0);
 			xquit = 0;
-			cur_histstr:
-			i = 0;
+			t_row = tempbufs[0].row;
 		case TK_CTL('a'):
-			cs = lbuf_get(tempbufs[0].lb, tempbufs[0].row - i);
-			if (cs) {
+			t_row = t_row < -1 ? tempbufs[0].row : t_row;
+			t_row += lbuf_len(tempbufs[0].lb);
+			t_row = t_row % MAX(1, lbuf_len(tempbufs[0].lb));
+			if ((cs = lbuf_get(tempbufs[0].lb, t_row--))) {
 				sbuf_cut(sb, pre)
 				sbuf_str(sb, cs)
 				sb->s[--sb->s_n] = '\0';
-				i++;
-			} else if (i)
-				goto cur_histstr;
+			}
 			break;
 		case TK_CTL('l'):
 			if (ai_max < 0)
@@ -609,8 +609,11 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 	led_line(sb, 0, n, post, -1, &key, kmap, 0, 0);
 	restore(xtd)
 	if (key == '\n') {
-		temp_pos(0, -1, 0, 0);
-		temp_write(0, sb->s + n);
+		if (pref) {
+			lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
+			temp_pos(0, -1, 0, 0);
+			temp_write(0, sb->s + n);
+		}
 		sbuf_str(sb, post)
 		sbufn_done(sb)
 	}

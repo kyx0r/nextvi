@@ -150,6 +150,13 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
 int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 			int *o, int ln_n, int skip);
+#define lbuf_dedup(lb, str, n) \
+{ for (int i = 0; i < lbuf_len(lb); i++) { \
+	char *s = lbuf_get(lb, i); \
+	if (n == lbuf_slen(s) && !memcmp(str, s, n)) \
+		lbuf_edit(lb, NULL, i, i + 1); \
+}} \
+
 /* motions */
 int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
 int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);

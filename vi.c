@@ -293,7 +293,7 @@ char *ex_read(char *msg)
 {
 	sbuf *sb;
 	int c;
-	if (!(xvis & 2) && xled) {
+	if (!(xvis & 2)) {
 		int oleft = xleft;
 		syn_blockhl = 0;
 		syn_setft("/-");
@@ -420,10 +420,11 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 	int i, dir;
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
-		char *kw = vi_prompt(sign, 0, &xkmap);
+		char *kw = vi_prompt(sign, NULL, &xkmap);
 		if (!kw)
 			return 1;
 		ex_krsset(kw, cmd == '/' ? +2 : -2);
+		free(kw);
 	} else if (msg)
 		ex_krsset(xregs['/'], xkwddir);
 	if (!lbuf_len(xb) || (!xkwddir || !xkwdrs))
@@ -865,7 +866,10 @@ static int vi_motion(int *row, int *off)
 		break;
 	case '\\':
 		temp_switch(1);
-		*row = xrow; *off = xoff;
+		if (vi_arg1)
+			ex_command("1,$d|fd")
+		*row = xrow;
+		*off = xoff;
 		break;
 	default:
 		return 0;
