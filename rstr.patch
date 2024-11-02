@@ -242,10 +242,10 @@ index 9f690cc..5cacff1 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 15722c2..ec4eed5 100644
+index 14930ad..689fdef 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -559,7 +559,7 @@ void vi_regput(int c, const char *s, int ln)
+@@ -560,7 +560,7 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -254,7 +254,7 @@ index 15722c2..ec4eed5 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -577,7 +577,7 @@ static char *file_calc(char *path)
+@@ -578,7 +578,7 @@ static char *file_calc(char *path)
  		len = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len);
@@ -264,7 +264,7 @@ index 15722c2..ec4eed5 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 8c489e7..4957620 100644
+index 0ed11e0..86eeaf4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -117,12 +117,23 @@ typedef struct {
@@ -298,9 +298,9 @@ index 8c489e7..4957620 100644
 -int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 +int lbuf_search(struct lbuf *lb, rstr *re, int dir, int *r,
  			int *o, int ln_n, int skip);
- /* motions */
- int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
-@@ -356,7 +367,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+ #define lbuf_dedup(lb, str, n) \
+ { for (int i = 0; i < lbuf_len(lb); i++) { \
+@@ -363,7 +374,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -309,7 +309,7 @@ index 8c489e7..4957620 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -453,9 +464,9 @@ extern int xkwdcnt;
+@@ -460,9 +471,9 @@ extern int xkwdcnt;
  extern int xkwddir;
  extern int xmpt;
  extern int xpr;

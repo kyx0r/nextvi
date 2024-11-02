@@ -56,10 +56,10 @@ index 8105e7a..a6e7e88 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 15722c2..adaaab5 100644
+index 14930ad..d5ccb97 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -559,6 +559,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -560,6 +560,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -72,7 +72,7 @@ index 15722c2..adaaab5 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1989,6 +1995,7 @@ int main(int argc, char *argv[])
+@@ -1995,6 +2001,7 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -80,7 +80,7 @@ index 15722c2..adaaab5 100644
  	term_done();
  	if (xvis & 4)
  		return EXIT_SUCCESS;
-@@ -1997,5 +2004,12 @@ int main(int argc, char *argv[])
+@@ -2003,5 +2010,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
@@ -94,10 +94,10 @@ index 15722c2..adaaab5 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 8c489e7..27b42f1 100644
+index 0ed11e0..3721467 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -180,6 +180,7 @@ int ren_cwid(char *s, int pos);
+@@ -187,6 +187,7 @@ int ren_cwid(char *s, int pos);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -105,7 +105,7 @@ index 8c489e7..27b42f1 100644
  /* syntax highlighting */
  #define SYN_BD		0x010000
  #define SYN_IT		0x020000
-@@ -201,6 +202,7 @@ int syn_merge(int old, int new);
+@@ -208,6 +209,7 @@ int syn_merge(int old, int new);
  void syn_reloadft(void);
  int syn_addhl(char *reg, int func, int reload);
  void syn_init(void);
@@ -113,7 +113,7 @@ index 8c489e7..27b42f1 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -356,6 +358,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -363,6 +365,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
