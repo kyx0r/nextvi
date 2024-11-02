@@ -194,7 +194,7 @@ VI NORMAL
      [#]<^N>	   Swap to the next buffer, # changes direction
 		   (forward/backward)
      \		   Swap to /fm/ buffer b-2
-     [#]\	   Swap to /fm/ buffer b-2 and backfill directory listing
+     [#]\	   Swap from /fm/ buffer b-2 and backfill directory listing
      z{arg}	   Change alternate keymap to arg
      ze
      zf
