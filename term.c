@@ -116,7 +116,7 @@ void term_push(char *s, unsigned int n)
 	if (texec) {
 		if ((int)(ibuf_cnt - ibuf_pos - tn) < 0)
 			tn = 0;
-		memcpy(ibuf + ibuf_pos + n + tn,
+		memmove(ibuf + ibuf_pos + n + tn,
 			ibuf + ibuf_pos + tn, ibuf_cnt - ibuf_pos - tn);
 		memcpy(ibuf + ibuf_pos + tn, s, n);
 		tn += n;
