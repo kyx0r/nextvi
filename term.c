@@ -112,14 +112,16 @@ unsigned int icmd_pos;			/* icmd[] position */
 /* read s before reading from the terminal */
 void term_push(char *s, unsigned int n)
 {
+	static unsigned pibuf_pos;
 	n = MIN(n, sizeof(ibuf) - ibuf_cnt);
 	if (texec) {
-		if ((int)(ibuf_cnt - ibuf_pos - tn) < 0)
+		if (pibuf_pos != ibuf_pos)
 			tn = 0;
 		memmove(ibuf + ibuf_pos + n + tn,
 			ibuf + ibuf_pos + tn, ibuf_cnt - ibuf_pos - tn);
 		memcpy(ibuf + ibuf_pos + tn, s, n);
 		tn += n;
+		pibuf_pos = ibuf_pos;
 	} else
 		memcpy(ibuf + ibuf_cnt, s, n);
 	ibuf_cnt += n;
