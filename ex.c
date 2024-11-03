@@ -597,15 +597,16 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end))
 		return 1;
 	sbufn_make(sb, 64)
+	if (*arg)
+		term_push(arg, strlen(arg));
 	while ((s = ex_read(NULL))) {
-		if (!strcmp(".", s)) {
-			free(s);
+		if (!strcmp(".", s))
 			break;
-		}
 		sbuf_str(sb, s)
 		sbufn_chr(sb, '\n')
 		free(s);
 	}
+	free(s);
 	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
 		beg++;
 	if (cmd[0] != 'c')
@@ -614,7 +615,8 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 		n = lbuf_len(xb);
 		lbuf_edit(xb, sb->s, beg, end);
 		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
-	}
+	} else
+		vi_insmov = 0;
 	sbuf_free(sb)
 	return 0;
 }
