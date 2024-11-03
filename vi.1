@@ -632,8 +632,14 @@ Exiting with <^C> will discard changes.
 Delete line(s)
 .It Cm e [path]
 Open a file at a path
-.It Cm e!
-Reload the current buffer from the filesystem
+.Bd -literal
+No argument opens "unnamed" buffer.
+.Ed
+.It Cm e![path]
+Force open a file at a path
+.Bd -literal
+No argument re-reads the current buffer from the filesystem.
+.Ed
 
 .It Cm [range]g{*}[kwd]{*}{cmd}
 Global command
@@ -755,7 +761,7 @@ Undo # times or all with $
 Redo # times or all with $
 
 .It Cm se {exp}
-Set a variable
+Set ex option variable
 .Bd -literal
 Example: set using implications
 :se hll

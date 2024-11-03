@@ -408,7 +408,12 @@ EX COMMANDS
 	     Delete line(s)
      e [path]
 	     Open a file at a path
-     e!	     Reload the current buffer from the filesystem
+
+	     No argument opens "unnamed" buffer.
+     e![path]
+	     Force open a file at a path
+
+	     No argument re-reads the current buffer from the filesystem.
 
      [range]g{*}[kwd]{*}{cmd}
 	     Global command
@@ -518,7 +523,7 @@ EX COMMANDS
 	     Redo # times or all with $
 
      se {exp}
-	     Set a variable
+	     Set ex option variable
 
 	     Example: set using implications
 	     :se hll
