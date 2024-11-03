@@ -1,5 +1,5 @@
 #!/bin/sh
-EXINIT="se noled|:1!wc -l *.h\|sort|\$k a|\$! wc -l *.c\|sort"
+EXINIT="se noled|1!wc -l *.h\|sort|\$k a|\$! wc -l *.c\|sort"
 EXINIT="${EXINIT}|1|&G|&O+---------------------------------------+"
 EXINIT="${EXINIT}|%s/ /	/"
 EXINIT="${EXINIT}|2,\$g//&I\\\| "
