@@ -386,7 +386,7 @@ int lbuf_indents(struct lbuf *lb, int r)
 		return 0;
 	for (o = 0; uc_isspace(ln); o++)
 		ln += uc_len(ln);
-	return o;
+	return ln[o] ? o : o - 2;
 }
 
 static int uc_nextdir(char **s, char *beg, int dir)

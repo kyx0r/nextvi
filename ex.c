@@ -600,7 +600,7 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 	if (*arg)
 		term_push(arg, strlen(arg));
 	while ((s = ex_read(NULL))) {
-		if (!strcmp(".", s))
+		if (xvis & 2 && !strcmp(".", s))
 			break;
 		sbuf_str(sb, s)
 		sbufn_chr(sb, '\n')
