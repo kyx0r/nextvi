@@ -16,7 +16,7 @@ int xorder = 1;			/* change the order of characters */
 int xkmap;			/* the current keymap */
 int xkmap_alt = 1;		/* the alternate keymap */
 int xtabspc = 8;		/* number of spaces for tab */
-int xish = 1;			/* interactive shell */
+int xish;			/* interactive shell */
 int xgrp;			/* regex search group */
 int xpac;			/* print autocomplete options */
 int xkwdcnt;			/* number of search kwd changes */
