@@ -249,12 +249,12 @@ Disable permanent character info bar row
 Hard line wrap a line to # col limit
 .It Cm [#]gq
 Hard line wrap a buffer to # col limit
-.It Cm g~{arg}
-Switch character case for arg region
-.It Cm gu{arg}
-Switch arg region to lowercase
-.It Cm gU{arg}
-Switch arg region to uppercase
+.It Cm [#]g~{arg}
+Switch character case for arg region # times
+.It Cm [#]gu{arg}
+Switch arg region to lowercase # times
+.It Cm [#]gU{arg}
+Switch arg region to uppercase # times
 .It Cm [#]~
 Switch character case # times forward
 .It Cm i
@@ -393,6 +393,10 @@ Motions are vi normal commands that run in a [h v]range.
 Commands described with the word "region" consume a region.
 This includes:
 <^W < > ! c d y "> g~ gu gU
+Special motions that consume a motion:
+<">
+Special motions that can use [#] as number of lines:
+dd yy cc g~~ guu gUU
 Examples:
 .Ed
 .Bl -tag -width Ds -compact
@@ -791,7 +795,7 @@ Example: append to register <1>
 :ya 1x
 .Ed
 
-.It Cm ya!
+.It Cm ya![register]
 Reset register value
 
 .It Cm [range]![cmd]

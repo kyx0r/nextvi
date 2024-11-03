@@ -140,9 +140,9 @@ VI NORMAL
      2ga	   Disable permanent character info bar row
      [#]gw	   Hard line wrap a line to # col limit
      [#]gq	   Hard line wrap a buffer to # col limit
-     g~{arg}	   Switch character case for arg region
-     gu{arg}	   Switch arg region to lowercase
-     gU{arg}	   Switch arg region to uppercase
+     [#]g~{arg}	   Switch character case for arg region # times
+     [#]gu{arg}	   Switch arg region to lowercase # times
+     [#]gU{arg}	   Switch arg region to uppercase # times
      [#]~	   Switch character case # times forward
      i		   Enter insert mode
      I		   Enter insert mode at start of line after indentation
@@ -225,6 +225,10 @@ VI MOTIONS
      Commands described with the word "region" consume a region.
      This includes:
      <^W < > ! c d y "> g~ gu gU
+     Special motions that consume a motion:
+     <">
+     Special motions that can use [#] as number of lines:
+     dd yy cc g~~ guu gUU
      Examples:
      3d/int  Delete text until the 3rd instance of [int] keyword
      d3w     Delete 3 words
@@ -551,7 +555,8 @@ EX COMMANDS
 	     Example: append to register <1>
 	     :ya 1x
 
-     ya!     Reset register value
+     ya![register]
+	     Reset register value
 
      [range]![cmd]
 	     Run external program
