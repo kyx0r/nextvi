@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 0f3752f..7f93021 100644
+index 1dda5b5..be8458a 100644
 --- a/led.c
 +++ b/led.c
 @@ -10,26 +10,31 @@ int dstrlen(const char *s, char delim)
@@ -40,12 +40,9 @@ index 0f3752f..7f93021 100644
  	}
  	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
  	sbuf_free(sylsb)
-@@ -381,8 +386,10 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
- 		int *key, int *kmap, int orow, int lsh)
- {
- 	int len, p_reg = 0;
--	int c, i = 0, last_sug = 0, sug_pt = -1;
-+	int c, i = 0, lsug = 0, sug_pt = -1;
+@@ -383,6 +388,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+ 	int len, t_row = -2, p_reg = 0;
+ 	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
 +	if (ai_max >= 0 && xpac)
 +		goto pac;
@@ -56,7 +53,7 @@ index 0f3752f..7f93021 100644
  		case TK_CTL('n'):
  			if (!suggestsb)
  				continue;
--			last_sug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s + pre) + pre;
+-			lsug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s + pre) + pre;
 +			lsug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s);
  			if (_sug) {
  				if (suggestsb->s_n == sug - suggestsb->s)
@@ -65,7 +62,7 @@ index 0f3752f..7f93021 100644
  				}
  				suggest:
  				*_sug = '\0';
--				sbuf_cut(sb, last_sug)
+-				sbuf_cut(sb, lsug)
 -				sbufn_str(sb, sug)
 +				for (c = 0; sug[c] && sb->s[c+lsug] == sug[c]; c++){}
 +				sbuf_cut(sb, MAX(lsug+c, pre))
@@ -74,7 +71,7 @@ index 0f3752f..7f93021 100644
  				continue;
  			}
  			lookup:
--			if (search(sb->s + last_sug, len - last_sug)) {
+-			if (search(sb->s + lsug, len - lsug)) {
 +			if (search(sb, lsug, pre)) {
  				sug = suggestsb->s;
  				if (!(_sug = strchr(sug, '\n')))
@@ -91,10 +88,10 @@ index 0f3752f..7f93021 100644
  					pac_:
  					syn_setft("/ac");
 diff --git a/vi.c b/vi.c
-index 860ebee..4adca8d 100644
+index 87fdf71..d74e907 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1125,6 +1125,10 @@ static void vc_motion(int cmd)
+@@ -1069,6 +1069,10 @@ static void vc_motion(int cmd)
  	if (r1 == r2 && o1 > o2)
  		swap(&o1, &o2);
  	o1 = ren_noeol(lbuf_get(xb, r1), o1);

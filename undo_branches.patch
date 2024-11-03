@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index fff5d34..e733613 100644
+index 5ba507c..17df9e3 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1051,6 +1051,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1086,6 +1086,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -19,16 +19,16 @@ index fff5d34..e733613 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1083,6 +1093,7 @@ static struct excmd {
+@@ -1117,6 +1127,7 @@ static struct excmd {
+ 	{"w!", ec_write},
  	{"wq", ec_write},
  	{"wq!", ec_write},
- 	{"u", ec_undo},
 +	{"up", ec_undoleafs},
- 	{"rd", ec_redo},
+ 	{"u", ec_undoredo},
+ 	{"rd", ec_undoredo},
  	{"se", ec_set},
- 	{"s", ec_substitute},
 diff --git a/lbuf.c b/lbuf.c
-index e4e30a7..1c6cea9 100644
+index 63344a0..56f7f08 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -16,6 +16,7 @@ struct lbuf {
@@ -182,15 +182,15 @@ index e4e30a7..1c6cea9 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index b2fa0d2..b02446d 100644
+index 5b4e3f1..37073ce 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
- 			int ln_n, int *o, int *len, int skip);
+ 			int *o, int ln_n, int skip);
 +void lbuf_setleaf(struct lbuf *lb, int leaf);
 +char *lbuf_getleafs(struct lbuf *lb);
- /* motions */
- int lbuf_paragraphbeg(struct lbuf *lb, int dir, int *row, int *off);
- int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off);
+ #define lbuf_dedup(lb, str, n) \
+ { for (int i = 0; i < lbuf_len(lb);) { \
+ 	char *s = lbuf_get(lb, i); \

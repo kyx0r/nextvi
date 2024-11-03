@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index fff5d34..c1f44d1 100644
+index 5ba507c..adb0141 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index fff5d34..c1f44d1 100644
  int xish = 1;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -861,6 +862,7 @@ static struct option {
+@@ -895,6 +896,7 @@ static struct option {
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
  	{"tbs", &xtabspc},
@@ -19,7 +19,7 @@ index fff5d34..c1f44d1 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 0f3752f..4d1cc03 100644
+index 1dda5b5..cbac890 100644
 --- a/led.c
 +++ b/led.c
 @@ -376,6 +376,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
@@ -38,8 +38,8 @@ index 0f3752f..4d1cc03 100644
  static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  		int *key, int *kmap, int orow, int lsh)
 @@ -383,6 +391,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
- 	int len, p_reg = 0;
- 	int c, i = 0, last_sug = 0, sug_pt = -1;
+ 	int len, t_row = -2, p_reg = 0;
+ 	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
 +	int quickexit = 0;
  	while (1) {
@@ -68,7 +68,7 @@ index 0f3752f..4d1cc03 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 860ebee..1c89282 100644
+index 87fdf71..ef4e4cb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index 860ebee..1c89282 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index b2fa0d2..8c88838 100644
+index 5b4e3f1..ca51cca 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -441,6 +441,7 @@ extern int xhlr;
+@@ -454,6 +454,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

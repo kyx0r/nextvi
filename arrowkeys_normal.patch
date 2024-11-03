@@ -1,15 +1,15 @@
 diff --git a/vi.c b/vi.c
-index 860ebee..31e4a2d 100644
+index 87fdf71..1033f49 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -488,6 +488,28 @@ static int vi_motionln(int *row, int cmd)
- 	int c = vi_read();
+@@ -448,6 +448,28 @@ static int vi_motionln(int *row, int cmd)
+ 	int c = term_read();
  	int mark, mark_row, mark_off;
  	switch (c) {
 +	case '\033':	/* Arrow keys */
-+		c = vi_read();
++		c = term_read();
 +		if (c == '[') {
-+			c = vi_read();
++			c = term_read();
 +			switch (c) {
 +			case 'A':	/* ↑ */
 +				*row = MAX(*row - cnt, 0);
@@ -20,26 +20,26 @@ index 860ebee..31e4a2d 100644
 +				c = 'j';
 +				break;
 +			default:	/* Not a line motion so we put back all the arrow characters */
-+				vi_back(c);
-+				vi_back('[');
-+				vi_back('\033');
++				term_back('\033');
++				term_back('[');
++				term_back(c);
 +				return 0;
 +			}
-+		} else /* Not an arrow sequence so we abort */
++		} else	/* Not an arrow sequence so we abort */
 +			return 0;
 +		break;
  	case '\n':
  	case '+':
  		*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-@@ -726,6 +748,25 @@ static int vi_motion(int *row, int *off)
+@@ -686,6 +708,25 @@ static int vi_motion(int *row, int *off)
  	}
- 	mv = vi_read();
+ 	mv = term_read();
  	switch (mv) {
 +	case '\033':	/* Arrow keys */
-+		mv = vi_read();
++		mv = term_read();
 +		if (mv == '[') {
 +			dir = dir_context(lbuf_get(xb, *row));
-+			mv = vi_read();
++			mv = term_read();
 +			switch (mv) {
 +			case 'D':	/* ← */
 +				dir = -dir;
