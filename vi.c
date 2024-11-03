@@ -450,13 +450,12 @@ static int vi_motionln(int *row, int cmd)
 	switch (c) {
 	case '\n':
 	case '+':
+	case 'j':
 		*row = MIN(*row + cnt, lbuf_len(xb) - 1);
 		break;
+	case 'k':
 	case '-':
 		*row = MAX(*row - cnt, 0);
-		break;
-	case '_':
-		*row = MIN(*row + cnt - 1, lbuf_len(xb) - 1);
 		break;
 	case '\'':
 		if ((mark = term_read()) <= 0)
@@ -464,12 +463,6 @@ static int vi_motionln(int *row, int cmd)
 		if (lbuf_jump(xb, mark, &mark_row, &mark_off))
 			return -1;
 		*row = mark_row;
-		break;
-	case 'j':
-		*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-		break;
-	case 'k':
-		*row = MAX(*row - cnt, 0);
 		break;
 	case 'G':
 		*row = (vi_arg1 || vi_arg2) ? cnt - 1 : lbuf_len(xb) - 1;
