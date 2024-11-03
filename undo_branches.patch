@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5ba507c..17df9e3 100644
+index a0ad9d8..5c279c0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1086,6 +1086,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
@@ -28,7 +28,7 @@ index 5ba507c..17df9e3 100644
  	{"rd", ec_undoredo},
  	{"se", ec_set},
 diff --git a/lbuf.c b/lbuf.c
-index 63344a0..56f7f08 100644
+index 27b8049..9d95703 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -16,6 +16,7 @@ struct lbuf {

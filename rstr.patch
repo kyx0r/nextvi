@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5ba507c..f0c63ef 100644
+index a0ad9d8..8e9bb0e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -28,7 +28,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -87,7 +87,7 @@ index 5ba507c..f0c63ef 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/lbuf.c b/lbuf.c
-index 63344a0..dfb5430 100644
+index 27b8049..3ce7268 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -428,16 +428,16 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -242,10 +242,10 @@ index 9f690cc..5cacff1 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 87fdf71..bb935e4 100644
+index fb1312c..c33780e 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -560,7 +560,7 @@ void vi_regput(int c, const char *s, int ln)
+@@ -553,7 +553,7 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -254,7 +254,7 @@ index 87fdf71..bb935e4 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -578,7 +578,7 @@ static char *file_calc(char *path)
+@@ -571,7 +571,7 @@ static char *file_calc(char *path)
  		len = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len);

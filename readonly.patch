@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5ba507c..b597b35 100644
+index a0ad9d8..f815189 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,6 +37,7 @@ static int xbufsmax;		/* number of buffers */
@@ -60,10 +60,10 @@ index 5ba507c..b597b35 100644
  	{"ph", ec_setenc},
  	{"", ec_print},
 diff --git a/vi.c b/vi.c
-index 87fdf71..c2533eb 100644
+index fb1312c..003aa55 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1968,9 +1968,11 @@ int main(int argc, char *argv[])
+@@ -1961,9 +1961,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
