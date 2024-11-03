@@ -31,6 +31,7 @@ MANPAGE NOTATION
      <x>     A closure where x represents character literal
      [x]     A closure where x represents optional argument
      {x}     A closure where x represents required argument
+     "x"     A closure where x represents a string
      <^X>    Represents a ctrl key X
      #	     Represents a positive number in a closure
      *	     Represents any character(s) in a closure
@@ -71,7 +72,7 @@ VI NORMAL
      [#]<^H>
      [#]<Backspace>
 		   Move # characters backward
-     %		   Move to [](){} pair
+     %		   Move to closest <] ) }> <[ ( {> pair
      [#]%	   Move to # percent line number
      '{arg}	   Move to a line mark arg
      `{arg}	   Move to a line mark arg with cursor position
@@ -97,7 +98,7 @@ VI NORMAL
 		   permanently
      8#		   Toggle show relative line numbers permanently
      V		   Toggle show hidden characters:<Space Tab Newline>
-     <^V>	   Toggle show line motion numbers for ebEBwW
+     <^V>	   Toggle show line motion numbers for <e b E B w W>
      [#]<^V>	   Disable line motion numbers
      [#]<^R>	   Redo # times
      [#]u	   Undo # times
@@ -131,7 +132,7 @@ VI NORMAL
      [#]vI	   Enter %s/ ex prompt. Contains regex for changing tabs to
 		   spaces. # modifies tab width
      vo		   Remove trailing white spaces and <\r> line endings
-     va		   Toggle autoindent on or off. see ai ex option
+     va		   Toggle ai ex option
      <^G>	   Print buffer status infos
      1<^G>	   Enable permanent status bar row
      2<^G>	   Disable permanent status bar row
@@ -230,7 +231,7 @@ VI MOTIONS
      Special motions that can use [#] as number of lines:
      dd yy cc g~~ guu gUU
      Examples:
-     3d/int  Delete text until the 3rd instance of [int] keyword
+     3d/int  Delete text until the 3rd instance of "int" keyword
      d3w     Delete 3 words
      "ayl    Yank a character into <a> register
      "Ayw    Append a word to <a> register
@@ -287,9 +288,9 @@ EX EXPANSION
      into the command itself. If the closing <!> is not specified,
      the end of the line becomes a terminator.
      Example:
-     Substitute the value of env var $SECRET to the value of $RANDOM :).
+     Substitute the value of env var $SECRET to the value of $RANDOM.
      In this demo, we set the value of SECRET to "int" ourselves.
-     :%s/!export SECRET="int" && printf "%s" $SECRET!/!printf "%s" $RANDOM! :)
+     :%s/!export SECRET="int" && printf "%s" $SECRET!/!printf "%s" $RANDOM!
 
 EX ESCAPES
      Nextvi special character escapes work mostly the same way everywhere
@@ -397,10 +398,13 @@ EX COMMANDS
      ea![kwd] [#]
 	     Forced version of ea
 
-     [#]a [#]i [#]c
-	     Enter ex append/insert/change mode
+     [#]a [str]
+     [#]i [str]
+     [#]c [str]
+	     Enter ex {append insert change} mode
 
 	     # determines insertion line number.
+	     str determines initial input into the insertion buffer.
 	     Exiting with <^M>.<^M> or <^M><ESC> will apply changes to the buffer.
 	     Exiting with <^C> will discard changes.
 
@@ -669,7 +673,7 @@ EX OPTIONS
      hl	     If set, highlight text based on rules defined in conf.c.
      hlr     If set, highlight text in reverse direction.
      hll     If set and defined in hl, highlight current line.
-     hlp     If set and defined in hl, highlight [](){} pairs.
+     hlp     If set and defined in hl, highlight "[]" "()" "{}" pairs.
      hlw     If set and defined in hl, highlight current word from cursor.
      led     If unset, all terminal output is disabled.
 
@@ -788,9 +792,9 @@ CODE MAP
      | 653   uc.c    | UTF-8 support	     |
      | 658   regex.c | extended RE	     |
      | 665   led.c   | insert mode/output    |
-     | 1232  ex.c    | ex options/commands   |
+     | 1234  ex.c    | ex options/commands   |
      | 1993  vi.c    | normal mode/general   |
-     | 6805  total   | wc -l *.c|sort	     |
+     | 6807  total   | wc -l *.c|sort	     |
      +---------------+-----------------------+
 
 COMPILING
