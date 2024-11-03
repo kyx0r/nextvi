@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index ce358db..e91daf7 100644
+index 5ba507c..b7c0a31 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -769,7 +769,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -771,7 +771,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	free(rep);
  	if (!xkwdrs)
  		return 1;
@@ -11,7 +11,7 @@ index ce358db..e91daf7 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -800,6 +800,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -802,6 +802,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	}
  	if (first >= 0)
  		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
@@ -19,7 +19,7 @@ index ce358db..e91daf7 100644
  	return 0;
  }
  
-@@ -1188,7 +1189,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
+@@ -1190,7 +1191,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index ce358db..e91daf7 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, cmd, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1197,6 +1198,9 @@ int ex_exec(const char *ln)
+@@ -1199,6 +1200,9 @@ int ex_exec(const char *ln)
  			ret = excmds[idx].ec(loc, cmd, ecmd);
  		free(ecmd);
  	}
