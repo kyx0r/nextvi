@@ -1,7 +1,6 @@
 sbuf *term_sbuf;
 int term_record;
 int xrows, xcols;
-int texec, tn;
 static struct termios termios;
 
 void term_init(void)
@@ -105,23 +104,23 @@ void term_pos(int r, int c)
 }
 
 static unsigned char ibuf[4096];	/* input character buffer */
-unsigned char icmd[4096];		/* read after the last term_cmd() */
 unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
+unsigned char icmd[4096];		/* read after the last term_cmd() */
 unsigned int icmd_pos;			/* icmd[] position */
+unsigned int tibuf_pos, texec, tn;
 
 /* read s before reading from the terminal */
 void term_push(char *s, unsigned int n)
 {
-	static unsigned pibuf_pos;
 	n = MIN(n, sizeof(ibuf) - ibuf_cnt);
 	if (texec) {
-		if (pibuf_pos != ibuf_pos)
+		if (tibuf_pos != ibuf_pos)
 			tn = 0;
 		memmove(ibuf + ibuf_pos + n + tn,
 			ibuf + ibuf_pos + tn, ibuf_cnt - ibuf_pos - tn);
 		memcpy(ibuf + ibuf_pos + tn, s, n);
 		tn += n;
-		pibuf_pos = ibuf_pos;
+		tibuf_pos = ibuf_pos;
 	} else
 		memcpy(ibuf + ibuf_cnt, s, n);
 	ibuf_cnt += n;

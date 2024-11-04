@@ -252,7 +252,7 @@ char *uc_shape(char *beg, char *s, int c);
 extern sbuf *term_sbuf;
 extern int term_record;
 extern int xrows, xcols;
-extern int texec, tn;
+extern unsigned int tibuf_pos, texec, tn;
 extern unsigned int ibuf_pos, ibuf_cnt, icmd_pos;
 extern unsigned char icmd[4096];
 #define term_write(s, n) if (xled) write(1, s, n);
@@ -275,14 +275,14 @@ void term_back(int c);
 #define term_dec() ibuf_pos--; icmd_pos--;
 #define term_exec(s, n, type) \
 { \
-	preserve(int, ibuf_pos, ibuf_pos) \
 	preserve(int, ibuf_cnt, ibuf_cnt) \
+	preserve(int, ibuf_pos, ibuf_cnt) \
 	term_push(s, n); \
 	preserve(int, xquit, 0) \
-	preserve(int, tn, 0) \
 	preserve(int, texec, type) \
+	tn = 0; \
 	vi(0); \
-	restore(tn) \
+	tn = 0; \
 	restore(texec) \
 	restore(xquit) \
 	restore(ibuf_pos) \
