@@ -64,7 +64,7 @@ index 1dda5b5..3f95c5f 100644
  	if (vi_hidch)
  		led_out(term_sbuf, 2)
 diff --git a/vi.h b/vi.h
-index 5b4e3f1..04495a7 100644
+index 82dbc9d..000cdf2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -300,14 +300,14 @@ char *xgetenv(char* q[]);

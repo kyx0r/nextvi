@@ -264,7 +264,7 @@ index fb1312c..c33780e 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 5b4e3f1..9bd408f 100644
+index 82dbc9d..61575cb 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -117,12 +117,23 @@ typedef struct {

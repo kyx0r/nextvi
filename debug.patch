@@ -94,7 +94,7 @@ index fb1312c..ffe1a78 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 5b4e3f1..dc37182 100644
+index 82dbc9d..6e05d14 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -188,6 +188,7 @@ int ren_cwid(char *s, int pos);

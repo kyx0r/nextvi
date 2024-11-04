@@ -182,7 +182,7 @@ index 27b8049..9d95703 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 5b4e3f1..37073ce 100644
+index 82dbc9d..c425af5 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
