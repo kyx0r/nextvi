@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index a0ad9d8..3dca392 100644
+index a0ad9d8..6d4c6ac 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,8 @@ int xkwddir;			/* the last search direction */
@@ -20,12 +20,12 @@ index a0ad9d8..3dca392 100644
 +	char *rep;
 +	if (!*arg)
 +		return 0;
-+	xenvp = environ;
 +	setenv("FT", ex_ft, 1);
 +	if (!(xvis & 4) && cmd[1] == 'c') {
 +		term_chr('\n');
 +		xmpt = xmpt >= 0 ? 2 : xmpt;
 +	}
++	xenvp = environ;
 +	rep = cmd_pipe(arg, NULL, cmd[1] == 'x');
 +	if (rep && cmd[1] == 'x')
 +		ex_exec(rep);
