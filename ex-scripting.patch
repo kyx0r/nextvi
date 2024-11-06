@@ -1,48 +1,35 @@
 diff --git a/ex.c b/ex.c
-index 5ba507c..746418a 100644
+index a0ad9d8..5cf36cf 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1086,6 +1086,39 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -33,6 +33,8 @@ int xkwddir;			/* the last search direction */
+ int xmpt;			/* whether to prompt after printing > 1 lines in vi */
+ int xpr;			/* ex_cprint register */
+ char *xregs[256];		/* string registers */
++extern char** environ;
++char **xenvp;
+ static int xbufsmax;		/* number of buffers */
+ static int xbufsalloc = 10;	/* initial number of buffers */
+ static char xrep[EXLEN];	/* the last replacement */
+@@ -1086,6 +1088,17 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
-+void ex_script(FILE *fp)
-+{
-+	char done = 0;
-+	do {
-+		size_t n = 128, i = 0;
-+		int c;
-+		char *ln = malloc(128);
-+		while ((c = fgetc(fp)) != EOF && c != '\n') {
-+			if (i >= n - 2) {
-+				n += 128;
-+				ln = erealloc(ln, n);
-+			}
-+			ln[i++] = c;
-+		}
-+		if (!i) {
-+			free(ln);
-+			done = 1;
-+			break;
-+		}
-+		ln[i] = '\0';
-+		ex_command(ln);
-+		free(ln);
-+	} while(!done);
-+}
-+
 +static int ec_script(char *loc, char *cmd, char *arg)
 +{
-+	FILE *fp = popen(arg, "r");
-+	ex_script(fp);
-+	pclose(fp);
++	if (!*arg)
++		return 0;
++	xenvp = environ;
++	setenv("FT", ex_ft, 1);
++	ex_pipeout(arg, NULL);
++	xenvp = NULL;
 +	return 0;
 +}
 +
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1138,6 +1171,7 @@ static struct excmd {
+@@ -1138,6 +1151,7 @@ static struct excmd {
  	{"ac", ec_setacreg},
  	{"uc", ec_setenc},
  	{"ph", ec_setenc},
@@ -50,3 +37,19 @@ index 5ba507c..746418a 100644
  	{"", ec_print},
  };
  
+diff --git a/term.c b/term.c
+index bf2e6e7..77dda2b 100644
+--- a/term.c
++++ b/term.c
+@@ -218,7 +218,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+ 			close(pipefds1[0]);
+ 			close(pipefds1[1]);
+ 		}
+-		execvp(argv[0], argv);
++		if (xenvp)
++			execve(argv[0], argv, xenvp);
++		else
++			execvp(argv[0], argv);
+ 		exit(1);
+ 	}
+ 	if (ifd)
