@@ -1,7 +1,6 @@
 #!/bin/sh
 EXINIT="se noled|1!wc -l *.h\|sort|\$k a|\$! wc -l *.c\|sort"
-EXINIT="${EXINIT}|1|&G|&O_|ya"
-EXINIT="${EXINIT}|%s/ /	/"
+EXINIT="${EXINIT}|1|&G|&O_|ya|g/^[0-9]/&I |1"
 EXINIT="${EXINIT}|/vi\.h/|&A \\| definitions/aux"
 EXINIT="${EXINIT}|/kmap\.h/|&A \\| keymap translation"
 EXINIT="${EXINIT}|/conf\.c/|&A \\| hl/ft/td config"
