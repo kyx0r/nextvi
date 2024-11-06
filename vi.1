@@ -63,18 +63,18 @@ Separates alternatives in a closure
 .El
 .Sh VI NORMAL
 .Bl -tag -width Dq -compact
-.It Cm [#]+
 .It Cm [#]j
+Move # lines down
+.It Cm [#]k
+Move # lines up
+.It Cm [#]+
 .It Cm [#]<^M>
 .It Cm [#]<Newline>
 .Bd -compact
-Move # lines down
+Move # lines down, cursor after indent
 .Ed
 .It Cm [#]-
-.It Cm [#]k
-.Bd -compact
-Move # lines up
-.Ed
+Move # lines up, cursor after indent
 .It Cm [#]h
 Move # cols left
 .It Cm [#]l
@@ -112,7 +112,7 @@ Move to next <Newline> section up
 .It Cm \&]
 Move to next <Newline> section down
 .It Cm ^
-Move to start of line after indentation
+Move to start of line after indent
 .It Cm 0
 Move to start of line
 .It Cm $
@@ -170,14 +170,14 @@ Show global and relative line numbers
 .It Cm 2#
 Toggle show global line numbers permanently
 .It Cm 4#
-Toggle show relative line numbers after indentation permanently
+Toggle show relative line numbers after indent permanently
 .It Cm 8#
 Toggle show relative line numbers permanently
 .It Cm V
 Toggle show hidden characters:<Space Tab Newline>
 .It Cm <^V>
 Toggle show line motion numbers for <e b E B w W>
-.It Cm [#]<^V>
+.It Cm {#}<^V>
 Disable line motion numbers
 .It Cm [#]<^R>
 Redo # times
@@ -262,7 +262,7 @@ Switch character case # times forward
 .It Cm i
 Enter insert mode
 .It Cm I
-Enter insert mode at start of line after indentation
+Enter insert mode at start of line after indent
 .It Cm A
 Enter insert mode at end of line
 .It Cm a
@@ -295,7 +295,7 @@ Change around arg which can be <( ) \&">
 Replace # characters with arg from cursor forward
 .It Cm K
 Split a line
-.It Cm [#]K
+.It Cm {#}K
 Split a line without creating <Newline>
 .It Cm [#]J
 Join # lines
@@ -398,7 +398,7 @@ This includes:
 Special motions that consume a motion:
 <">
 Special motions that can use [#] as number of lines:
-dd yy cc g~~ guu gUU
+dd yy cc g~~ guu gUU >> << <^W><^W> !!
 Examples:
 .Ed
 .Bl -tag -width Ds -compact

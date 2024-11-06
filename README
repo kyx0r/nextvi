@@ -38,14 +38,13 @@ MANPAGE NOTATION
      < >     Separates alternatives in a closure
 
 VI NORMAL
+     [#]j	   Move # lines down
+     [#]k	   Move # lines up
      [#]+
-     [#]j
      [#]<^M>
      [#]<Newline>
-		   Move # lines down
-     [#]-
-     [#]k
-		   Move # lines up
+		   Move # lines down, cursor after indent
+     [#]-	   Move # lines up, cursor after indent
      [#]h	   Move # cols left
      [#]l	   Move # cols right
      f{arg}	   Move to arg character found forward
@@ -64,7 +63,7 @@ VI NORMAL
      }		   Move to next <{> section down
      [		   Move to next <Newline> section up
      ]		   Move to next <Newline> section down
-     ^		   Move to start of line after indentation
+     ^		   Move to start of line after indent
      0		   Move to start of line
      $		   Move to end of line
      [#]|	   Goto # col
@@ -94,12 +93,11 @@ VI NORMAL
      <^F>	   Scroll down full screen size
      #		   Show global and relative line numbers
      2#		   Toggle show global line numbers permanently
-     4#		   Toggle show relative line numbers after indentation
-		   permanently
+     4#		   Toggle show relative line numbers after indent permanently
      8#		   Toggle show relative line numbers permanently
      V		   Toggle show hidden characters:<Space Tab Newline>
      <^V>	   Toggle show line motion numbers for <e b E B w W>
-     [#]<^V>	   Disable line motion numbers
+     {#}<^V>	   Disable line motion numbers
      [#]<^R>	   Redo # times
      [#]u	   Undo # times
      <^I>
@@ -146,7 +144,7 @@ VI NORMAL
      [#]gU{arg}	   Switch arg region to uppercase # times
      [#]~	   Switch character case # times forward
      i		   Enter insert mode
-     I		   Enter insert mode at start of line after indentation
+     I		   Enter insert mode at start of line after indent
      A		   Enter insert mode at end of line
      a		   Enter insert mode 1 character forward
      [#]s	   Enter insert mode and delete # characters
@@ -163,7 +161,7 @@ VI NORMAL
      ci{arg}	   Change around arg which can be <( ) ">
      [#]r{arg}	   Replace # characters with arg from cursor forward
      K		   Split a line
-     [#]K	   Split a line without creating <Newline>
+     {#}K	   Split a line without creating <Newline>
      [#]J	   Join # lines
      vj		   Toggle space padding when joining lines
      [#]y{arg}	   Yank arg region # times
@@ -229,7 +227,7 @@ VI MOTIONS
      Special motions that consume a motion:
      <">
      Special motions that can use [#] as number of lines:
-     dd yy cc g~~ guu gUU
+     dd yy cc g~~ guu gUU >> << <^W><^W> !!
      Examples:
      3d/int  Delete text until the 3rd instance of "int" keyword
      d3w     Delete 3 words
