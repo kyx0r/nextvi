@@ -485,9 +485,9 @@ followed by the buffer number.
 Example: print the pathname for buffer 69.
 :!echo "%69"
 
-Every ex command is be able to receive data from external process 
-through a special expansion character <!> which pipes the data 
-into the command itself. If the closing <!> is not specified, 
+Every ex command is be able to receive data from external process
+through a special expansion character <!> which pipes the data
+into the command itself. If the closing <!> is not specified,
 the end of the line becomes a terminator.
 Example:
 Substitute the value of env var $SECRET to the value of $RANDOM.
@@ -927,7 +927,7 @@ Interactive shell
 .Bd -literal
 Run every <!> command through an interactive shell.
 The shell will source the .rc file before command execution.
-This makes it possible to use predefined functions, aliases 
+This makes it possible to use predefined functions, aliases
 and ENV variables from the .rc file.
 Precondition:
 	There must be no stdout output created by .rc file
@@ -1138,27 +1138,25 @@ previous value(s) of default register (nonatomic)
 .El
 .
 .Sh CODE MAP
-.Bd -literal -compact
 .TS
 tab(|);
 | l | l |.
 _
-470   vi.h    | definitions/aux
-537   kmap.h  | keymap translation
+470	vi.h | definitions/aux
+537	kmap.h | keymap translation
 _
-293   conf.c  | hl/ft/td config
-338   term.c  | low level IO
-382   ren.c   | positioning/syntax
-593   lbuf.c  | file/line buffer
-653   uc.c    | UTF-8 support
-658   regex.c | extended RE
-665   led.c   | insert mode/output
-1234  ex.c    | ex options/commands
-1986  vi.c    | normal mode/general
-6802  total   | wc -l *.c\(basort
+293	conf.c | hl/ft/td config
+337	term.c | low level IO
+382	ren.c | positioning/syntax
+593	lbuf.c | file/line buffer
+653	uc.c | UTF-8 support
+658	regex.c | extended RE
+665	led.c | insert mode/output
+1234	ex.c | ex options/commands
+1986	vi.c | normal mode/general
+6801	total | wc -l *.c|sort
 _
 .TE
-.Ed
 .
 .Sh COMPILING
 .Bl -tag -width Ds -compact

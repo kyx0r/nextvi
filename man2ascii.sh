@@ -1,4 +1,4 @@
 #!/bin/sh
-EXINIT='/CODE MAP/|.+2,.+16!./gencodemap.sh|wq'
+EXINIT='/CODE MAP/|.+4,.+18!./gencodemap.sh|wq'
 vi -s ./vi.1
-man ./vi.1|col -b > README
+man -T ascii ./vi.1|col -b > README
