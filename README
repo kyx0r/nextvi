@@ -806,7 +806,7 @@ CODE MAP
      | 665 led.c    |  insert mode/output  |
      | 1234 ex.c    |  ex options/commands |
      | 1986 vi.c    |  normal mode/general |
-     | 6801 total   |  wc -l *.c	   |
+     | 6801 total   |  wc -l *.c|sort	   |
      +--------------+----------------------+
 
 COMPILING
