@@ -72,7 +72,7 @@ VI NORMAL
      [#]<Backspace>
 		   Move # characters backward
      %		   Move to closest <] ) }><[ ( {> pair
-     [#]%	   Move to # percent line number
+     {#}%	   Move to # percent line number
      '{arg}	   Move to a line mark arg
      `{arg}	   Move to a line mark arg with cursor position
      gg		   Goto first line in buffer
