@@ -175,6 +175,19 @@ linewrap.patch
 --------------
 TODO
 
+ex-scripting.patch
+--------------
+Adds new commands :sc and :sx
+NEXTVI_FT - current buffer filetype
+NEXTVI_ROW - current line number
+NEXTVI_OFF - current byte offset
+NEXTVI_COFF - current character offset
+NEXTVI_LINE - current line
+NEXTVI_WORD - current word
+:sc runs a command with the environment variables above
+:sx runs a command with the environment variables above and
+executes its stdout as ex commands
+
 My current EXINIT setup:
 --------------
 How it works:
