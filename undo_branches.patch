@@ -28,7 +28,7 @@ index a0ad9d8..5c279c0 100644
  	{"rd", ec_undoredo},
  	{"se", ec_set},
 diff --git a/lbuf.c b/lbuf.c
-index 27b8049..9d95703 100644
+index deec286..55be719 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -16,6 +16,7 @@ struct lbuf {
