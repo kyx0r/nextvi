@@ -329,7 +329,7 @@ Swap to previous buffer
 Swap to next buffer, # changes direction [forward backward]
 .It Cm \e
 Swap to /fm/ buffer b-2
-.It Cm [#]\e
+.It Cm {#}\e
 Swap from /fm/ buffer b-2 and backfill directory listing
 .It Cm vb
 Recurse into b-1 history buffer. Insert current line into ex prompt after a quit command
@@ -879,8 +879,11 @@ Example: exclude the .git and submodule folders
 No argument disables the filter.
 .Ed
 
-.It Cm reg
+.It Cm reg[hscroll]
 Print registers and their contents
+.Bd -literal
+Printing position is determined by xcols / 2 * [hscroll]
+.Ed
 
 .It Cm bx[#]
 Set max number of buffers allowed
