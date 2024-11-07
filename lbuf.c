@@ -503,12 +503,7 @@ static int lbuf_next(struct lbuf *lb, int dir, int *r, int *o)
 	return 0;
 }
 
-/* return a pointer to the character at visual position c of line r */
-static char *lbuf_chr(struct lbuf *lb, int r, int c)
-{
-	char *ln = lbuf_get(lb, r);
-	return ln ? uc_chr(ln, c) : "";
-}
+#define lbuf_chr(lb, r, c) uc_chr(lbuf_get(lb, r), c)
 
 /* move to the last character of the word */
 static int lbuf_wordlast(struct lbuf *lb, int kind, int dir, int *row, int *off)
