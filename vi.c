@@ -1211,11 +1211,12 @@ static void vc_status(int type)
 	int col = vi_off2col(xb, xrow, xoff);
 	int cp, l;
 	char cbuf[8] = "", *c;
-	if (type && (c = uc_chr(lbuf_get(xb, xrow), xoff))) {
+	if (type) {
+		c = uc_chr(lbuf_get(xb, xrow), xoff);
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
 		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x S%ld O%d C%d",
-			cbuf, cp, c - lbuf_get(xb, xrow), xoff,
+			cbuf, cp, *c ? c - lbuf_get(xb, xrow) : 0, xoff,
 			ren_cursor(lbuf_get(xb, xrow), col) + 1);
 		return;
 	}
