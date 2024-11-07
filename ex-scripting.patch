@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index a0ad9d8..4a51599 100644
+index a0ad9d8..93fddb0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
@@ -25,11 +25,11 @@ index a0ad9d8..4a51599 100644
 +	setenv("NEXTVI_FT", ex_ft, 1);
 +	itoa(row, buf);
 +	setenv("NEXTVI_ROW", buf, 1);
-+	itoa(uc_chr(ln, off) - ln, buf);
++	itoa(ln ? uc_chr(ln, off) - ln : 0, buf);
 +	setenv("NEXTVI_OFF", buf, 1);
 +	itoa(off, buf);
 +	setenv("NEXTVI_COFF", buf, 1);
-+	setenv("NEXTVI_LINE", ln, 1);
++	setenv("NEXTVI_LINE", ln ? ln : "", 1);
 +	if (!lbuf_wordend(xb, 0, 1, &row, &off)) {
 +		rep = uc_sub(lbuf_get(xb, row), xoff, off+1);
 +		setenv("NEXTVI_WORD", rep, 1);
