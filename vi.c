@@ -1214,8 +1214,8 @@ static void vc_status(int type)
 	if (type && (c = uc_chr(lbuf_get(xb, xrow), xoff))) {
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x O%d C%d",
-			cbuf, cp, xoff,
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x S%ld O%d C%d",
+			cbuf, cp, c - lbuf_get(xb, xrow), xoff,
 			ren_cursor(lbuf_get(xb, xrow), col) + 1);
 		return;
 	}
