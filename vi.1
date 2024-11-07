@@ -384,23 +384,32 @@ Soft quit, write to a file before exit
 .Bd -literal -compact
 Regions are vi normal commands that define [h v]range for vi motions.
 Commands described with the word "move" define a region.
-This includes:
-<+ j ^M Newline - k h l f F t T , ; B E b e W w { } [ ] ^ 0 $ Space
-^H Backspace % ' ` G H L M / ? n N ^A>
 .Ed
+.Bl -tag -width Ds -compact
+
+.It Cm <+ j ^M Newline - k h l f F t T \&, \&; B E b e W w { } \&[ \&] ^ 0 $ Space ^H Backspace % ' ` G H L M / \&? n N ^A>
+
+All regions
+.El
 .
 .Sh VI MOTIONS
 .Bd -literal -compact
 Motions are vi normal commands that run in a [h v]range.
 Commands described with the word "region" consume a region.
-This includes:
-<^W < > ! c d y "> g~ gu gU
-Special motions that consume a motion:
-<">
-Special motions that can use [#] as number of lines:
-dd yy cc g~~ guu gUU >> << <^W><^W> !!
-Examples:
 .Ed
+.Bl -tag -width Ds -compact
+
+.It Cm <^W < > \&! c d y \&"> g~ gu gU
+All motions
+
+.It Cm <">
+Special motions that consume a motion
+
+.It Cm dd yy cc g~~ guu gUU >> << <^W><^W> !!
+Special motions that can use [#] as number of lines
+
+.El
+Examples:
 .Bl -tag -width Ds -compact
 .It Cm 3d/int
 Delete text until the 3rd instance of "int" keyword
@@ -455,7 +464,7 @@ Suspend vi/ex
 Redraw screen in vi mode, clean terminal in ex
 .It Cm <^O>
 Switch between vi and ex modes recursively
-.It Cm <^O>
+.It Cm <^E>
 Switch to english keymap
 .It Cm <^F>
 Switch to alternative keymap
@@ -840,7 +849,7 @@ Set a keymap
 No argument prints the current keymap name.
 .Ed
 
-.It Cm cm! [keymap]
+.It Cm cm![keymap]
 Set an alternative keymap
 
 .It Cm fd [path]
