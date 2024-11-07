@@ -215,19 +215,24 @@ VI NORMAL
 VI REGIONS
      Regions are vi normal commands that define [h v]range for vi motions.
      Commands described with the word "move" define a region.
-     This includes:
-     <+ j ^M Newline - k h l f F t T , ; B E b e W w { } [ ] ^ 0 $ Space
-     ^H Backspace % ' ` G H L M / ? n N ^A>
+
+     <+ j ^M Newline - k h l f F t T , ; B E b e W w { } [ ] ^ 0 $ Space ^H
+	     Backspace % ' ` G H L M / ? n N ^A>
+
+	     All regions
 
 VI MOTIONS
      Motions are vi normal commands that run in a [h v]range.
      Commands described with the word "region" consume a region.
-     This includes:
+
      <^W < > ! c d y "> g~ gu gU
-     Special motions that consume a motion:
-     <">
-     Special motions that can use [#] as number of lines:
+	     All motions
+
+     <">     Special motions that consume a motion
+
      dd yy cc g~~ guu gUU >> << <^W><^W> !!
+	     Special motions that can use [#] as number of lines
+
      Examples:
      3d/int  Delete text until the 3rd instance of "int" keyword
      d3w     Delete 3 words
@@ -258,7 +263,7 @@ VI/EX INSERT
      <^Z>	   Suspend vi/ex
      <^L>	   Redraw screen in vi mode, clean terminal in ex
      <^O>	   Switch between vi and ex modes recursively
-     <^O>	   Switch to english keymap
+     <^E>	   Switch to english keymap
      <^F>	   Switch to alternative keymap
      <^V>{arg}	   Read a literal character arg
      <^K>{arg}	   Read a digraph sequence arg
@@ -593,7 +598,7 @@ EX COMMANDS
 
 	     No argument prints the current keymap name.
 
-     cm! [keymap]
+     cm![keymap]
 	     Set an alternative keymap
 
      fd [path]
