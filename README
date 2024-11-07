@@ -181,7 +181,7 @@ VI NORMAL
 		   Swap to previous buffer
      [#]<^N>	   Swap to next buffer, # changes direction [forward backward]
      \		   Swap to /fm/ buffer b-2
-     [#]\	   Swap from /fm/ buffer b-2 and backfill directory listing
+     {#}\	   Swap from /fm/ buffer b-2 and backfill directory listing
      vb		   Recurse into b-1 history buffer. Insert current line into
 		   ex prompt after a quit command
      z{#}	   Set alternative keymap to # keymap
@@ -625,7 +625,10 @@ EX COMMANDS
 	     :inc (^[\!.git\!submodule]+[^\/]+$)
 	     No argument disables the filter.
 
-     reg     Print registers and their contents
+     reg[hscroll]
+	     Print registers and their contents
+
+	     Printing position is determined by xcols / 2 * [hscroll]
 
      bx[#]   Set max number of buffers allowed
 
