@@ -484,7 +484,7 @@ static int vi_motionln(int *row, int cmd)
 		if (c == '%' && (vi_arg1 || vi_arg2)) {
 			if (cnt > 100)
 				return -1;
-			*row = MAX(0, lbuf_len(xb) - 1) * cnt / 100;
+			*row = lbuf_len(xb) * cnt / 100;
 			break;
 		}
 		term_dec()
@@ -1225,7 +1225,7 @@ static void vc_status(int type)
 		"\"%s\"%s%dL %d%% L%d C%d B%ld",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? "* " : " ", lbuf_len(xb),
-		xrow * 100 / (lbuf_len(xb)+1), xrow+1,
+		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1,
 		ren_cursor(lbuf_get(xb, xrow), col) + 1,
 		buf >= xbufcur || buf < 0 ? tempbufs - ex_buf - 1 : buf);
 }
@@ -1899,7 +1899,7 @@ void vi(int init)
 		if (xhll) {
 			syn_blockhl = 0;
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
-				if (!vi_mod)
+				if (!(vi_mod & 1) && !*vi_word)
 					vi_drawrow(orow);
 			syn_addhl("^.+", 2, 1);
 			syn_reloadft();
