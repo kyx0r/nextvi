@@ -1,8 +1,8 @@
 diff --git a/conf.c b/conf.c
-index b330ebe..dddf32f 100644
+index 768db46..58813d8 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -234,6 +234,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
+@@ -235,6 +235,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
  		{0, SYN_BGMK(9), SYN_BGMK(8), SYN_BGMK(7)}},
  	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", {0, SYN_BGMK(8)}},
  
@@ -28,7 +28,7 @@ index a0ad9d8..b85d44d 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index b653c88..6b37462 100644
+index 6a28ae3..3a0c8b7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -618,12 +618,12 @@ void dir_calc(char *path)
