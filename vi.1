@@ -91,18 +91,18 @@ Move until arg character found backward
 Repeat last <f F t T> move backward # times
 .It Cm [#];
 Repeat last <f F t T> move forward # times
-.It Cm [#]B
-Move to end of word, skip punctuation backward # times
 .It Cm [#]E
-Move to end of word, skip punctuation forward # times
-.It Cm [#]b
-Move to end of word backward # times
+Move to end of word # times, skip punctuation
 .It Cm [#]e
-Move to end of word forward # times
+Move to end of word # times
+.It Cm [#]B
+Move to beg of word backward # times, skip punctuation
+.It Cm [#]b
+Move to beg of word backward # times
 .It Cm [#]W
-Move to start of word, skip punctuation forward # times
+Move to beg of word forward # times, skip punctuation
 .It Cm [#]w
-Move to start of word forward # times
+Move to beg of word forward # times
 .It Cm {
 Move to next <{> section up
 .It Cm }
@@ -158,9 +158,9 @@ Scroll down 1 or # lines, retain # and cursor position
 .It Cm [#]<^Y>
 Scroll up 1 or # lines, retain # and cursor position
 .It Cm [#]<^D>
-Scroll down half a screen size. If # set scroll to # lines
+Scroll down half a screen size. If [#], set scroll to # lines
 .It Cm [#]<^U>
-Scroll up half a screen size. If # set scroll to # lines
+Scroll up half a screen size. If [#], set scroll to # lines
 .It Cm <^B>
 Scroll up full screen size
 .It Cm <^F>
@@ -218,7 +218,7 @@ Enter ex prompt
 .It Cm [#]!{arg}
 Enter pipe ex prompt based on region # or arg
 .It Cm vv
-Enter ex prompt with the last ex command from history
+Enter ex prompt with the last line from history buffer b-1
 .It Cm [#]vr
 Enter %s/ ex prompt. Insert # words from cursor
 .It Cm [#]vt[#arg]
@@ -248,9 +248,9 @@ Enable permanent character info bar row
 .It Cm 2ga
 Disable permanent character info bar row
 .It Cm [#]gw
-Hard line wrap a line to # col limit
+Hard line wrap a line to # col limit. Default: 80
 .It Cm [#]gq
-Hard line wrap a buffer to # col limit
+Hard line wrap a buffer to # col limit. Default: 80
 .It Cm [#]g~{arg}
 Switch character case for arg region # times
 .It Cm [#]gu{arg}
@@ -334,7 +334,7 @@ Swap from /fm/ buffer b-2 and backfill directory listing
 .It Cm vb
 Recurse into b-1 history buffer. Insert current line into ex prompt after a quit command
 .It Cm z{#}
-Set alternative keymap to # keymap
+Set alternative keymap to # keymap. 1 = Farsi 2 = Russian
 .It Cm ze
 Switch to English keymap
 .It Cm zf
@@ -790,6 +790,8 @@ Example: set using implications
 Example: set using exact values
 :se hll=1
 :se hll=0
+Example: set using ascii character
+:se hll=a
 .Ed
 
 .It Cm [range]s{*}[kwd]{*}{str}[*][opts]
@@ -1157,7 +1159,7 @@ _
  470 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 293 conf.c | hl/ft/td config
+ 294 conf.c | hl/ft/td config
  337 term.c | low level IO
  382 ren.c | positioning/syntax
  588 lbuf.c | file/line buffer
@@ -1166,7 +1168,7 @@ _
  665 led.c | insert mode/output
  1234 ex.c | ex options/commands
  1987 vi.c | normal mode/general
- 6797 total | wc -l *.c\(basort
+ 6798 total | wc -l *.c\(basort
 _
 .TE
 .

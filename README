@@ -53,12 +53,12 @@ VI NORMAL
      T{arg}	   Move until arg character found backward
      [#],	   Repeat last <f F t T> move backward # times
      [#];	   Repeat last <f F t T> move forward # times
-     [#]B	   Move to end of word, skip punctuation backward # times
-     [#]E	   Move to end of word, skip punctuation forward # times
-     [#]b	   Move to end of word backward # times
-     [#]e	   Move to end of word forward # times
-     [#]W	   Move to start of word, skip punctuation forward # times
-     [#]w	   Move to start of word forward # times
+     [#]E	   Move to end of word # times, skip punctuation
+     [#]e	   Move to end of word # times
+     [#]B	   Move to beg of word backward # times, skip punctuation
+     [#]b	   Move to beg of word backward # times
+     [#]W	   Move to beg of word forward # times, skip punctuation
+     [#]w	   Move to beg of word forward # times
      {		   Move to next <{> section up
      }		   Move to next <{> section down
      [		   Move to next <Newline> section up
@@ -87,8 +87,9 @@ VI NORMAL
      [#]z-	   Center screen at bottom row. # is xtop
      [#]<^E>	   Scroll down 1 or # lines, retain # and cursor position
      [#]<^Y>	   Scroll up 1 or # lines, retain # and cursor position
-     [#]<^D>	   Scroll down half a screen size. If # set scroll to # lines
-     [#]<^U>	   Scroll up half a screen size. If # set scroll to # lines
+     [#]<^D>	   Scroll down half a screen size. If [#], set scroll to #
+		   lines
+     [#]<^U>	   Scroll up half a screen size. If [#], set scroll to # lines
      <^B>	   Scroll up full screen size
      <^F>	   Scroll down full screen size
      #		   Show global and relative line numbers
@@ -118,7 +119,7 @@ VI NORMAL
      [#]v.	   Repeat last normal command moving down across # lines
      :		   Enter ex prompt
      [#]!{arg}	   Enter pipe ex prompt based on region # or arg
-     vv		   Enter ex prompt with the last ex command from history
+     vv		   Enter ex prompt with the last line from history buffer b-1
      [#]vr	   Enter %s/ ex prompt. Insert # words from cursor
      [#]vt[#arg]   Enter .,.+0s/ ex prompt. Insert # of lines from cursor.
 		   Insert #arg words from cursor
@@ -137,8 +138,8 @@ VI NORMAL
      ga		   Print character info
      1ga	   Enable permanent character info bar row
      2ga	   Disable permanent character info bar row
-     [#]gw	   Hard line wrap a line to # col limit
-     [#]gq	   Hard line wrap a buffer to # col limit
+     [#]gw	   Hard line wrap a line to # col limit. Default: 80
+     [#]gq	   Hard line wrap a buffer to # col limit. Default: 80
      [#]g~{arg}	   Switch character case for arg region # times
      [#]gu{arg}	   Switch arg region to lowercase # times
      [#]gU{arg}	   Switch arg region to uppercase # times
@@ -184,7 +185,7 @@ VI NORMAL
      {#}\	   Swap from /fm/ buffer b-2 and backfill directory listing
      vb		   Recurse into b-1 history buffer. Insert current line into
 		   ex prompt after a quit command
-     z{#}	   Set alternative keymap to # keymap
+     z{#}	   Set alternative keymap to # keymap. 1 = Farsi 2 = Russian
      ze		   Switch to English keymap
      zf		   Switch to alternative keymap
      zL		   Set td ex option to 2
@@ -545,6 +546,8 @@ EX COMMANDS
 	     Example: set using exact values
 	     :se hll=1
 	     :se hll=0
+	     Example: set using ascii character
+	     :se hll=a
 
      [range]s{*}[kwd]{*}{str}[*][opts]
 	     Substitute
@@ -803,7 +806,7 @@ CODE MAP
      | 470 vi.h	    |  definitions/aux	   |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
-     | 293 conf.c   |  hl/ft/td config	   |
+     | 294 conf.c   |  hl/ft/td config	   |
      | 337 term.c   |  low level IO	   |
      | 382 ren.c    |  positioning/syntax  |
      | 588 lbuf.c   |  file/line buffer	   |
@@ -812,7 +815,7 @@ CODE MAP
      | 665 led.c    |  insert mode/output  |
      | 1234 ex.c    |  ex options/commands |
      | 1987 vi.c    |  normal mode/general |
-     | 6797 total   |  wc -l *.c|sort	   |
+     | 6798 total   |  wc -l *.c|sort	   |
      +--------------+----------------------+
 
 COMPILING
