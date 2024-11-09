@@ -1899,7 +1899,7 @@ void vi(int init)
 		if (xhll) {
 			syn_blockhl = 0;
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
-				if (!vi_mod)
+				if (!(vi_mod & 1) && !*vi_word)
 					vi_drawrow(orow);
 			syn_addhl("^.+", 2, 1);
 			syn_reloadft();
