@@ -208,6 +208,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{"html", "&[a-zA-Z0-9_]+;", {5}},
 
 	/* diff */
+	{"diff", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"diff", "^-.*", {1}},
 	{"diff", "^\\+.*", {2}},
 	{"diff", "^@.*", {6}},
