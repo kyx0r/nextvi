@@ -495,6 +495,8 @@ EX COMMANDS
 	     :@ ci(int<^V><^C>
 	     Example: execute ci)INT as a follow-up
 	     :@ ci(int<^V><^C>ci)INT
+	     Example: execute dw after user exits insert
+	     :@i|@dw
 
      pu [register] [cmd]
 	     Paste a register
