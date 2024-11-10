@@ -153,7 +153,7 @@ for (i = 0; i < cterm;) { \
 } sbufn_str(out, term_att(0)) } \
 
 /* render and highlight a line */
-void led_render(char *s0, int cbeg, int cend, int row)
+void led_render(char *s0, int cbeg, int cend)
 {
 	if (!xled)
 		return;
@@ -238,11 +238,11 @@ void led_render(char *s0, int cbeg, int cend, int row)
 		for (c = 0, i = 0; i < cterm;) {
 			if ((o = off[i++]) < 0)
 				continue;
-			int *p = (int*)led_attsb->s;
-			for (; p < (int*)&led_attsb->s[led_attsb->s_n]; p+=3) {
-				if (p[1] == o && p[0] == row) {
+			void **p = (void**)led_attsb->s;
+			for (; p < (void**)&led_attsb->s[led_attsb->s_n]; p+=2) {
+				if (*(char**)p == chrs[o]) {
 					j = bound ? ctt[c] : o;
-					att[j] = syn_merge(p[2], att[j]);
+					att[j] = syn_merge(*((int**)p)[1], att[j]);
 					break;
 				}
 			}

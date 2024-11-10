@@ -302,14 +302,14 @@ char *xgetenv(char* q[]);
 extern sbuf *led_attsb;
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 sbuf *led_input(char *pref, char **post, int row, int lsh);
-void led_render(char *s0, int cbeg, int cend, int row);
+void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
 { \
 	int record = term_record; \
 	term_record = 1; \
 	term_pos(row, col); \
 	kill \
-	led_render(msg, beg, end, row); \
+	led_render(msg, beg, end); \
 	if (!record) \
 		term_commit(); \
 } \
