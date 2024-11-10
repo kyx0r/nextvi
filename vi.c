@@ -1337,6 +1337,8 @@ void vi(int init)
 			if (!vi_status)
 				vi_drawrow(otop + xrows - 1);
 		}
+		if (led_attsb)
+			sbuf_cut(led_attsb, 0)
 		if (!vi_ybuf)
 			vi_ybuf = vi_yankbuf();
 		mv = vi_motion(&nrow, &noff);
@@ -1843,9 +1845,7 @@ void vi(int init)
 			int row1 = xrow, off1 = xoff;
 			int sz = sizeof(void*);
 			if (!led_attsb)
-				sbuf_make(led_attsb, 128)
-			else
-				sbuf_cut(led_attsb, 0)
+				sbuf_make(led_attsb, sz * 4)
 			if (!lbuf_pair(xb, &row, &off)) {
 				row1 = row; off1 = off;
 				if (!lbuf_pair(xb, &row, &off)) {

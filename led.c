@@ -234,7 +234,7 @@ void led_render(char *s0, int cbeg, int cend)
 		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
 	if (bound)
 		sbuf_free(bsb);
-	if (led_attsb && xhl) {
+	if (led_attsb && led_attsb->s_n && xhl) {
 		for (c = 0, i = 0; i < cterm;) {
 			if ((o = off[i++]) < 0)
 				continue;
