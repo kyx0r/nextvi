@@ -1838,50 +1838,26 @@ void vi(int init)
 				}
 			}
 		}
-		if (xhlp && ln) {
-			char pairs[] = "{([})]{([})]";
-			cs = uc_chr(ln, xoff);
-			int start = uc_off(cs, strcspn(cs, "{([})]"));
-			int ch = dstrlen(pairs, *uc_chr(cs, start));
-			if (ch < 9) {
-				static sbuf *sb;
-				char buf[100];
-				int pos = xleft ? ren_off(ln, xleft, 1) : 0;
-				start += xoff - pos;
-				int row = xrow, off = start + pos;
+		if (xhlp && (k = syn_findhl(3)) >= 0) {
+			int row = xrow, off = xoff;
+			int row1 = xrow, off1 = xoff;
+			int sz = sizeof(int);
+			if (!led_attsb)
+				sbuf_make(led_attsb, 128)
+			else
+				sbuf_cut(led_attsb, 0)
+			if (!lbuf_pair(xb, &row, &off)) {
+				row1 = row; off1 = off;
 				if (!lbuf_pair(xb, &row, &off)) {
-					off -= pos;
-					if (sb)
-						sbuf_free(sb)
-					sbuf_make(sb, 128)
-					if (off && row == xrow && off - start - 1 < 0) {
-						ch += 3;
-						swap(&start, &off);
-					}
-					if (start) {
-						sbuf_str(sb, "^.{")
-						itoa(start, buf);
-						sbuf_str(sb, buf)
-						sbuf_str(sb, "}(\\{)")
-					} else
-						sbuf_str(sb, "^(\\{)")
-					sb->s[sb->s_n-2] = pairs[ch];
-					if (off && row == xrow) {
-						sbuf_str(sb, ".{")
-						itoa(abs(off - start - 1), buf);
-						sbuf_str(sb, buf)
-						sbuf_str(sb, "}(\\})")
-					} else if (off) {
-						sbuf_str(sb, "|^.{")
-						itoa(off, buf);
-						sbuf_str(sb, buf)
-						sbuf_str(sb, "}(\\})")
-					} else
-						sbuf_str(sb, "|^(\\})")
-					sb->s[sb->s_n-2] = pairs[ch+3];
-					sbuf_null(sb)
-					syn_addhl(sb->s, 3, 1);
-					vi_mod |= 1;
+					row1 -= xtop;
+					sbuf_mem(led_attsb, &row1, sz)
+					sbuf_mem(led_attsb, &off1, sz)
+					sbuf_mem(led_attsb, &hls[k].att[0], sz)
+					row -= xtop;
+					sbuf_mem(led_attsb, &row, sz)
+					sbuf_mem(led_attsb, &off, sz)
+					sbuf_mem(led_attsb, &hls[k].att[0], sz)
+					vi_mod |= row1 == row && orow == xrow ? 2 : 1;
 				}
 			}
 		}
@@ -1906,7 +1882,7 @@ void vi(int init)
 			vi_drawrow(xrow);
 			syn_addhl(NULL, 2, 1);
 			syn_reloadft();
-		} else if (vi_mod == 2) {
+		} else if (vi_mod & 2 && !(vi_mod & 1)) {
 			syn_blockhl = 0;
 			vi_drawrow(xrow);
 		}

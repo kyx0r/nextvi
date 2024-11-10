@@ -826,6 +826,10 @@ static int ec_ft(char *loc, char *cmd, char *arg)
 {
 	ex_ft = syn_setft(arg[0] ? arg : ex_ft);
 	ex_print(ex_ft);
+	if (led_attsb) {
+		sbuf_free(led_attsb)
+		led_attsb = NULL;
+	}
 	syn_reload = 1;
 	return 0;
 }

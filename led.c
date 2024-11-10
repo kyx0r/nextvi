@@ -2,6 +2,7 @@
 
 static sbuf *suggestsb;
 static sbuf *acsb;
+sbuf *led_attsb;
 
 int dstrlen(const char *s, char delim)
 {
@@ -152,7 +153,7 @@ for (i = 0; i < cterm;) { \
 } sbufn_str(out, term_att(0)) } \
 
 /* render and highlight a line */
-void led_render(char *s0, int cbeg, int cend)
+void led_render(char *s0, int cbeg, int cend, int row)
 {
 	if (!xled)
 		return;
@@ -203,8 +204,7 @@ void led_render(char *s0, int cbeg, int cend)
 	}
 	if (pos[n] > cterm || cbeg) {
 		for (i = 0, c = 0; i < cterm;) {
-			o = off[i++];
-			if (o >= 0) {
+			if ((o = off[i++]) >= 0) {
 				att[c++] = o;
 				for (; off[i] == o; i++);
 			}
@@ -234,7 +234,22 @@ void led_render(char *s0, int cbeg, int cend)
 		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
 	if (bound)
 		sbuf_free(bsb);
-	if (xhlr) {
+	if (led_attsb && xhl) {
+		for (c = 0, i = 0; i < cterm;) {
+			if ((o = off[i++]) < 0)
+				continue;
+			int *p = (int*)led_attsb->s;
+			for (; p < (int*)&led_attsb->s[led_attsb->s_n]; p+=3) {
+				if (p[1] == o && p[0] == row) {
+					j = bound ? ctt[c] : o;
+					att[j] = syn_merge(p[2], att[j]);
+					break;
+				}
+			}
+			for (c++; off[i] == o; i++);
+		}
+	}
+	if (xhlr && xhl) {
 		for (c = 0, i = 0; i < cterm;) {
 			o = off[i++];
 			if (o < 0)

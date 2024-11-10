@@ -361,15 +361,21 @@ void syn_reloadft(void)
 	}
 }
 
-int syn_addhl(char *reg, int func, int reload)
+int syn_findhl(int id)
 {
 	for (int i = ftmap[ftidx].setbidx; i < ftmap[ftidx].seteidx; i++)
-		if (hls[i].func == func) {
-			hls[i].pat = reg;
-			syn_reload = reload;
+		if (hls[i].id == id)
 			return i;
-		}
 	return -1;
+}
+
+void syn_addhl(char *reg, int id, int reload)
+{
+	int ret = syn_findhl(id);
+	if (ret >= 0) {
+		hls[ret].pat = reg;
+		syn_reload = reload;
+	}
 }
 
 void syn_init(void)

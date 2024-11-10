@@ -44,14 +44,13 @@ struct highlight hls[] = {
 	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 	/* "/" is default hl, must have at least 1 entry for fallback */
 	{"/", NULL, {14 | SYN_BD}, {1}, 0, 2},  /* <-- optional, used by hll if set */
-	/* optional, used by hlp if set */
-	{"/", NULL, {0, 9 | SYN_BGMK(10), 9 | SYN_BGMK(10)}, {1, -1, -1}, 0, 3},
+	{"/", NULL, {9 | SYN_BGMK(10)}, {0}, 0, 3}, /* <-- optional, used by hlp if set */
 	{"/", NULL, {9}, {0}, 0, 1}, /* <-- optional, used by hlw if set */
 
 	{"c", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"c", "^.+\\\\\n$", {14}, {1}},
 	{"c", "(/\\*[!*/]*)|([^\"!/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
-	{"c", NULL, {0, 9 | SYN_BGMK(12), 9 | SYN_BGMK(12)}, {1, -1, -1}, 0, 3},
+	{"c", NULL, {9 | SYN_BGMK(12)}, {0}, 0, 3},
 	{"c", NULL, {9}, {0}, 0, 1},
 	{"c", "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|\
 long|f(?:loat|64|32)|double|void|enum|union|typedef|static|extern|register|struct|\
