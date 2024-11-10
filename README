@@ -141,6 +141,10 @@ exrc.patch
 Adds support for reading ~/.exrc file. This can be used to pass in ex
 commands instead of EXINIT.
 
+exrc-xdg.patch
+-------------
+Adds XDG dir support for exrc.patch.
+
 readonly.patch
 -------------
 Adds new ex option "ro" and commandline readonly option -R
