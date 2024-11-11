@@ -46,7 +46,9 @@ int vi_lncol;		/* line numbers cursor offset */
 static int vi_lnnum;	/* line numbers */
 static int vi_mod;	/* screen should be redrawn -
 			bit 1: whole screen, bit 2: current line, bit 3: update vi_col) */
-static char *vi_word = "\0eEwW";	/* line word navigation */
+static char vi_word_m[] = "\0eEwW";	/* line word navigation */
+static char *vi_word = vi_word_m;
+static char *_vi_word = vi_word_m;
 static int vi_rshift;			/* row shift for vi_word */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN+128];		/* current message */
@@ -151,22 +153,13 @@ static void vi_drawrow(int row)
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
-		switch (*vi_word) {
-		case 'e':
-			vi_drawwordnum(lbuf_wordend, 0, 1)
-			vi_drawwordnum(lbuf_wordend, 0, -1)
-			break;
-		case 'E':
-			vi_drawwordnum(lbuf_wordend, 1, 1)
-			vi_drawwordnum(lbuf_wordend, 1, -1)
-			break;
-		case 'w':
-			vi_drawwordnum(lbuf_wordbeg, 0, 1)
-			break;
-		case 'W':
-			vi_drawwordnum(lbuf_wordbeg, 1, 1)
-			break;
+		i1 = isupper(*vi_word);
+		if (*vi_word == 'e' || *vi_word == 'E') {
+			vi_drawwordnum(lbuf_wordend, i1, 1)
+		} else if (*vi_word == 'w' || *vi_word == 'W') {
+			vi_drawwordnum(lbuf_wordbeg, i1, 1)
 		}
+		vi_drawwordnum(lbuf_wordend, i1, -1)
 		tmp[ren_pos(c, xoff) - xleft+vi_lncol] = *uc_chr(c, xoff) == '\t' ? ' ' : *vi_word;
 		preserve(int, xorder, 0)
 		preserve(int, syn_blockhl, 0)
@@ -1589,11 +1582,12 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case TK_CTL('v'):
-				vi_word++;
-				if (!*vi_word)
-					vi_word -= 5;
 				if (vi_arg1)
-					while (*vi_word) vi_word--;
+					vi_word = _vi_word + vi_arg1;
+				else
+					vi_word++;
+				if (vi_word > _vi_word+4)
+					vi_word = _vi_word;
 				vi_mod |= 1;
 				break;
 			case ':':
