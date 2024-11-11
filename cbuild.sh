@@ -139,7 +139,18 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         fi
         readlink -f ./nextvi && exit 0
         ;;
-    *)
+    "fetch")
+        shift
+        # handle edge case if user's branch isn't master
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        git switch -c upstream-temp
+        git pull https://github.com/kyx0r/nextvi
+        git switch $branch
+        git rebase --rebase-merges upstream-temp
+        git branch -D upstream-temp
+        log "Successfully fetched from upstream"
+        ;;
+      *)
         echo "Usage: $0 {install|pgobuild|build|debug|clean}"
         exit 1
         ;;

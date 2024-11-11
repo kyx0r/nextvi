@@ -207,7 +207,8 @@ void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 int syn_merge(int old, int new);
 void syn_reloadft(void);
-int syn_addhl(char *reg, int func, int reload);
+int syn_findhl(int id);
+void syn_addhl(char *reg, int id, int reload);
 void syn_init(void);
 
 /* uc.c utf-8 helper functions */
@@ -298,6 +299,7 @@ char *xgetenv(char* q[]);
 #define TK_INT(c)	((c) <= 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
 
 /* led.c line-oriented input and output */
+extern sbuf *led_attsb;
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 sbuf *led_input(char *pref, char **post, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
@@ -394,7 +396,7 @@ struct highlight {
 				negative value - continue at sp+1 */
 	signed char blkend;	/* the ending group for multi-line patterns;
 				negative group is able to start and end itself */
-	char func;		/* if func > 0 some function will use this hl based on this id */
+	char id;		/* id of this hl */
 };
 extern struct highlight hls[];
 extern int hlslen;

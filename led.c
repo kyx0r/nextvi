@@ -2,6 +2,7 @@
 
 static sbuf *suggestsb;
 static sbuf *acsb;
+sbuf *led_attsb;
 
 int dstrlen(const char *s, char delim)
 {
@@ -203,8 +204,7 @@ void led_render(char *s0, int cbeg, int cend)
 	}
 	if (pos[n] > cterm || cbeg) {
 		for (i = 0, c = 0; i < cterm;) {
-			o = off[i++];
-			if (o >= 0) {
+			if ((o = off[i++]) >= 0) {
 				att[c++] = o;
 				for (; off[i] == o; i++);
 			}
@@ -234,7 +234,22 @@ void led_render(char *s0, int cbeg, int cend)
 		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
 	if (bound)
 		sbuf_free(bsb);
-	if (xhlr) {
+	if (led_attsb && led_attsb->s_n && xhl) {
+		for (c = 0, i = 0; i < cterm;) {
+			if ((o = off[i++]) < 0)
+				continue;
+			void **p = (void**)led_attsb->s;
+			for (; p < (void**)&led_attsb->s[led_attsb->s_n]; p+=2) {
+				if (*(char**)p == chrs[o]) {
+					j = bound ? ctt[c] : o;
+					att[j] = syn_merge(*((int**)p)[1], att[j]);
+					break;
+				}
+			}
+			for (c++; off[i] == o; i++);
+		}
+	}
+	if (xhlr && xhl) {
 		for (c = 0, i = 0; i < cterm;) {
 			o = off[i++];
 			if (o < 0)
