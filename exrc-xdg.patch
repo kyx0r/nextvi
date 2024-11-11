@@ -85,6 +85,11 @@ index a0ad9d8..26ccde9 100644
 +			snprintf(exrc, sizeof(exrc), "%s/nextvi/exrc", xdgconfighomeenv);
 +			load_exrc(exrc);
 +		} else if (homeenv) {
++			char exrc[PATH_MAX];						
++			snprintf(exrc, sizeof(exrc), "%s/.config/nextvi/exrc", homeenv);
++			load_exrc(exrc);
++		}
++		if (homeenv) {
 +			char exrc[PATH_MAX];
 +			snprintf(exrc, sizeof(exrc), "%s/.exrc", homeenv);
 +			load_exrc(exrc);
