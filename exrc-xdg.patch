@@ -82,7 +82,7 @@ index a0ad9d8..26ccde9 100644
 +		char *xdgconfighomeenv = getenv("XDG_CONFIG_HOME");
 +		if (xdgconfighomeenv) {
 +			char exrc[PATH_MAX];
-+			snprintf(exrc, sizeof(exrc), "%s/vi/exrc", xdgconfighomeenv);
++			snprintf(exrc, sizeof(exrc), "%s/nextvi/exrc", xdgconfighomeenv);
 +			load_exrc(exrc);
 +		} else if (homeenv) {
 +			char exrc[PATH_MAX];
