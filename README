@@ -36,6 +36,7 @@ MANPAGE NOTATION
      #	     Represents a positive number in a closure
      *	     Represents any character(s) in a closure
      < >     Separates alternatives in a closure
+     x-x     Range from x to x
 
 VI NORMAL
      [#]j	   Move # lines down
@@ -98,7 +99,8 @@ VI NORMAL
      8#		   Toggle show relative line numbers permanently
      V		   Toggle show hidden characters:<Space Tab Newline>
      <^V>	   Toggle show line motion numbers for <e b E B w W>
-     {#}<^V>	   Disable line motion numbers
+     {#-4}<^V>	   Switch to line motion number mode #
+     {5-#}<^V>	   Disable line motion numbers
      [#]<^R>	   Redo # times
      [#]u	   Undo # times
      <^I>
@@ -300,13 +302,12 @@ EX ESCAPES
      Nextvi special character escapes work mostly the same way everywhere
      except the following situations:
       - Escapes in regex bracket expressions.
-      - Due to ex expansion <# % !> characters have to be escaped
-	if they are part of an ex command.
-      - A single back slash requires 2 back slashes, and so on.
-      - regex requires for <(> to be escaped if used inside "[]" brackets.
-      - In ex prompt the only separator is <|> character. It can
-	be escaped normally but will require extra back slash if passed
-	into a regular expression or a global command.
+      - Due to ex expansion <# % !> have to be escaped if they are literals.
+      - Literal <\> can be escaped like so: "\\"
+      - Regex requires for <(> to be escaped if used inside "[]".
+      - In Ex, the only separator is <|>. It can be escaped normally
+	but will require extra <\> if passed into a regular expression
+	or a global command.
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
@@ -326,14 +327,14 @@ EX RANGES
      :?int?,.p
 	     print until int is found in reverse
      :'d,'ap
-	     print lines from mark d to mark a
+	     print lines from mark <d> to mark <a>
      :%p     print all lines in the buffer
      :$p     print last line in the buffer
      :;50    goto character offset 50
      :10;50  goto line 10 character offset 50
      :10;.+5
 	     goto line 10 +5 character offset
-     :'a;'a  goto line mark a character offset a
+     :'a;'a  goto line mark <a> offset <a>
      :;$     goto end of the line
      :5;/int/
 	     search for int on line 5
@@ -800,24 +801,24 @@ SPECIAL REGISTERS
      /	     previous search keyword
      :	     previous ex command
      0	     previous value of default register (atomic)
-	     Atomic means the operation did not include a <Newline> character.
+	     Atomic means the operation did not include a <Newline>.
      1-9     previous value(s) of default register (nonatomic)
 
 CODE MAP
      +--------------+----------------------+
-     | 470 vi.h	    |  definitions/aux	   |
+     | 472 vi.h	    |  definitions/aux	   |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
-     | 294 conf.c   |  hl/ft/td config	   |
+     | 293 conf.c   |  hl/ft/td config	   |
      | 337 term.c   |  low level IO	   |
-     | 382 ren.c    |  positioning/syntax  |
+     | 388 ren.c    |  positioning/syntax  |
      | 588 lbuf.c   |  file/line buffer	   |
      | 653 uc.c	    |  UTF-8 support	   |
      | 658 regex.c  |  extended RE	   |
-     | 665 led.c    |  insert mode/output  |
-     | 1234 ex.c    |  ex options/commands |
-     | 1987 vi.c    |  normal mode/general |
-     | 6798 total   |  wc -l *.c|sort	   |
+     | 680 led.c    |  insert mode/output  |
+     | 1238 ex.c    |  ex options/commands |
+     | 1956 vi.c    |  normal mode/general |
+     | 6791 total   |  wc -l *.c|sort	   |
      +--------------+----------------------+
 
 COMPILING
@@ -826,12 +827,18 @@ COMPILING
      export CFLAGS='-s'
 	     set CFLAGS, strip example
      ./cbuild.sh
-	     Basic build
+	     build once
+     ./cbuild.sh build
+	     build
      ./cbuild.sh debug
-	     Basic debug build
+	     build with -O0 -g
      ./cbuild.sh pgobuild
-	     pgobuild which can lead to a significant performance boost on
-	     some application specific tasks.
+	     PGO build can lead to a significant performance boost on some
+	     application specific tasks
+     ./cbuild.sh install
+	     install vi to $DESTDIR$PREFIX/bin
+     ./cbuild.sh fetch
+	     merge commits from upstream repository
      valgrind --tool=cachegrind --cache-sim=yes --branch-sim=yes ./vi vi.c
 	     performance bench test
 
