@@ -99,7 +99,7 @@ VI NORMAL
      8#		   Toggle show relative line numbers permanently
      V		   Toggle show hidden characters:<Space Tab Newline>
      <^V>	   Toggle show line motion numbers for <e b E B w W>
-     {#-4}<^V>	   Switch to line motion number mode #
+     {1-4}<^V>	   Switch to line motion number mode #
      {5-#}<^V>	   Disable line motion numbers
      [#]<^R>	   Redo # times
      [#]u	   Undo # times
@@ -174,9 +174,12 @@ VI NORMAL
 		   position # times
      m{arg}	   Set buffer local line mark arg
      <^T>	   Set global line mark 0. Global marks are always valid
-     [#]<^T>	   Set or switch to a global mark based on # % 2 == 0
-     [#]<^7>
-     [#]<^_>
+     {0 2 4 6 8}<^T>
+		   Set a global line mark #
+     {1 3 5 7 9}<^T>
+		   Switch to a global line mark #
+     [#]<^7>{0-9}
+     [#]<^_>{0-9}
 		   Show buffer list and switch based on # or 0-9 index when
 		   prompted
      <^^>
@@ -187,7 +190,8 @@ VI NORMAL
      {#}\	   Swap from /fm/ buffer b-2 and backfill directory listing
      vb		   Recurse into b-1 history buffer. Insert current line into
 		   ex prompt after a quit command
-     z{#}	   Set alternative keymap to # keymap. 1 = Farsi 2 = Russian
+     z1		   Set alternative keymap to Farsi keymap
+     z2		   Set alternative keymap to Russian keymap
      ze		   Switch to English keymap
      zf		   Switch to alternative keymap
      zL		   Set td ex option to 2
@@ -279,7 +283,7 @@ EX
      Bill Joy in 1976. This essential tool serves as the backbone of vi,
      enabling it to execute commands, macros and even transform into a purely
      command-line interface (CLI) when desired.	 In Ex, each command is
-     initiated with the prefix <:>.
+     initiated with the prefix <:> and separated by <|>.
 
 EX EXPANSION
      Characters <# %> in ex prompt substitute the buffer pathname.
@@ -299,15 +303,13 @@ EX EXPANSION
      :%s/!export SECRET="int" && printf "%s" $SECRET!/!printf "%s" $RANDOM!
 
 EX ESCAPES
-     Nextvi special character escapes work mostly the same way everywhere
-     except the following situations:
-      - Escapes in regex bracket expressions.
-      - Due to ex expansion <# % !> have to be escaped if they are literals.
-      - Literal <\> can be escaped like so: "\\"
-      - Regex requires for <(> to be escaped if used inside "[]".
-      - In Ex, the only separator is <|>. It can be escaped normally
-	but will require extra <\> if passed into a regular expression
-	or a global command.
+     Special characters will become regular when escaped with <\>.
+     <( ^ ! = [ ]>
+	     Special characters in regex "[]" bracket exp
+     <( ) { } + * ? ^ $ [ ] | \< \> .>
+	     Special characters in regex
+     <# % ! |>
+	     Special characters in ex
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
@@ -334,7 +336,7 @@ EX RANGES
      :10;50  goto line 10 character offset 50
      :10;.+5
 	     goto line 10 +5 character offset
-     :'a;'a  goto line mark <a> offset <a>
+     :'a;'a  goto line mark <a> offset mark <a>
      :;$     goto end of the line
      :5;/int/
 	     search for int on line 5
