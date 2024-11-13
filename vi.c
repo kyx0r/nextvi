@@ -1209,7 +1209,7 @@ static void vc_status(int type)
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
 		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x S%ld O%d C%d",
-			cbuf, cp, *c ? c - lbuf_get(xb, xrow) : 0, xoff,
+			cbuf, cp, *c ? c - lbuf_get(xb, xrow) : 0L, xoff,
 			ren_cursor(lbuf_get(xb, xrow), col) + 1);
 		return;
 	}
