@@ -157,52 +157,37 @@ void led_render(char *s0, int cbeg, int cend)
 {
 	if (!xled)
 		return;
+	ren_state *r = ren_position(s0);
 	sbuf *bsb;
-	int j, c, l, n, i = 0, o = 0, cterm = cend - cbeg;
-	int att_old = 0, atti = 0;
+	int j, c, l, i, o, n = r->n;
+	int att_old = 0, atti = 0, cterm = cend - cbeg;
 	char *bound = NULL;
-	char **chrs;		/* chrs[i]: the i-th character in s1 */
+	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
 	int off[cterm+1];	/* off[i]: the character at screen position i */
 	int att[cterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[cterm+1];	/* stt[i]: remap off indexes */
 	int ctt[cterm+1];	/* ctt[i]: cterm bound attrs */
-	int *pos = ren_position(s0, &chrs, &n);	/* pos[i]: the screen position of the i-th character */
-	int ctx = dir_context(s0);
-	memset(off, -1, (cterm+1) * sizeof(off[0]));
+	int ctx = r->ctx;
+	off[cterm] = -1;
 	if (ctx < 0) {
-		for (; i < n; i++) {
-			int curbeg = cend - pos[i] - 1;
-			if (curbeg >= 0 && curbeg < cterm) {
-				int curwid = ren_cwid(chrs[i], pos[i]);
-				if (o + curwid > cterm)
-					break;
-				if (cend - (pos[i] + curwid - 1) - 1 < 0)
-					continue;
-				o += curwid;
-				while (--curwid >= 0)
-					off[cend - (pos[i] + curwid - 1) - 2] = i;
-				if (o == cterm)
-					break;
-			}
-		}
+		o = cbeg;
+		for (i = cterm-1; i >= 0; i--, o++)
+			off[i] = o <= r->cmax ? r->col[o] : -1;
 	} else {
-		for (; i < n; i++) {
-			int curbeg = pos[i] - cbeg;
-			if (curbeg >= 0 && curbeg < cterm) {
-				int curwid = ren_cwid(chrs[i], pos[i]);
-				if (o + curwid > cterm)
-					break;
-				if (curbeg + curwid > cterm)
-					continue;
-				o += curwid;
-				while (--curwid >= 0)
-					off[curbeg + curwid] = i;
-				if (o == cterm)
-					break;
-			}
-		}
+		for (i = cbeg; i < cend; i++)
+			off[i - cbeg] = i <= r->cmax ? r->col[i] : -1;
 	}
-	if (pos[n] > cterm || cbeg) {
+	if (r->cmax > cterm || cbeg) {
+		i = ctx < 0 ? cterm-1 : 0;
+		o = off[i];
+		if (cbeg && r->wid[o] > 1)
+			while (off[i] == o)
+				off[ctx < 0 ? i-- : i++] = -1;
+		i = ctx < 0 ? 0 : cterm-1;
+		o = off[i];
+		if (r->cmax > cterm && r->wid[o] > 1)
+			while (off[i] == o)
+				off[ctx < 0 ? i++ : i--] = -1;
 		for (i = 0, c = 0; i < cterm;) {
 			if ((o = off[i++]) >= 0) {
 				att[c++] = o;
@@ -255,7 +240,7 @@ void led_render(char *s0, int cbeg, int cend)
 			if (o < 0)
 				continue;
 			for (c++; off[i] == o; i++);
-			if (led_offdir(chrs, pos, o) >= 0)
+			if (led_offdir(chrs, r->pos, o) >= 0)
 				continue;
 			j = bound ? ctt[c-1] : o;
 			att[j] = syn_merge(conf_hlrev, att[j]);
@@ -298,7 +283,7 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
 	sbuf_str(sb, post)
 	sbuf_set(sb, '\0', 4)
 	rstate->s = NULL;
-	ren_position_m(, sb->s+ps, &off)
+	off = ren_position(sb->s+ps)->n;
 	off -= uc_slen(post);
 	if (ai_max >= 0)
 		xoff = off;
