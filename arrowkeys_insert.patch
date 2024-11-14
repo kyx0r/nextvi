@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 1dda5b5..dcc8cfd 100644
+index 093d9b4..7284be1 100644
 --- a/led.c
 +++ b/led.c
 @@ -274,7 +274,7 @@ static int led_lastword(char *s)
@@ -73,10 +73,10 @@ index 1dda5b5..dcc8cfd 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 6a28ae3..9b747d7 100644
+index 1fc6e5c..c280e35 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -939,6 +939,8 @@ static char *vi_indents(char *ln, int *l)
+@@ -935,6 +935,8 @@ static char *vi_indents(char *ln, int *l)
  	sbufn_done(sb)
  }
  
@@ -85,7 +85,7 @@ index 6a28ae3..9b747d7 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *region, *pref, *post, *_post;
-@@ -962,6 +964,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -958,6 +960,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
@@ -93,7 +93,7 @@ index 6a28ae3..9b747d7 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1121,8 +1124,10 @@ static void vc_insert(int cmd)
+@@ -1117,8 +1120,10 @@ static void vc_insert(int cmd)
  		sbufn_str(rep, post)
  		if (cmdo && !lbuf_len(xb))
  			lbuf_edit(xb, "\n", 0, 0);

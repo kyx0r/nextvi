@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index a0ad9d8..5d662d5 100644
+index b416146..fc8fc73 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index a0ad9d8..5d662d5 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -895,6 +896,7 @@ static struct option {
+@@ -899,6 +900,7 @@ static struct option {
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
  	{"tbs", &xtabspc},
@@ -19,7 +19,7 @@ index a0ad9d8..5d662d5 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 1dda5b5..cbac890 100644
+index 093d9b4..6bf6142 100644
 --- a/led.c
 +++ b/led.c
 @@ -376,6 +376,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
@@ -68,7 +68,7 @@ index 1dda5b5..cbac890 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 6a28ae3..7e88eb5 100644
+index 1fc6e5c..059c994 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index 6a28ae3..7e88eb5 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 82dbc9d..18d1f6b 100644
+index d8c7a06..e7002e9 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -454,6 +454,7 @@ extern int xhlr;
+@@ -459,6 +459,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

@@ -1,5 +1,5 @@
 diff --git a/lbuf.c b/lbuf.c
-index deec286..2b60ed3 100644
+index 9338f12..dec55b5 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -303,6 +303,41 @@ int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off)
@@ -45,10 +45,10 @@ index deec286..2b60ed3 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 6a28ae3..8414bc2 100644
+index 1fc6e5c..6132bce 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1586,6 +1586,17 @@ void vi(int init)
+@@ -1584,6 +1584,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
@@ -64,10 +64,10 @@ index 6a28ae3..8414bc2 100644
 +				vi_mod = 1;
 +				break;
  			case TK_CTL('v'):
- 				vi_word++;
- 				if (!*vi_word)
+ 				vi_arg1 = (vi_wsel % 5) + !!*vi_word;
+ 			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 82dbc9d..4506511 100644
+index d8c7a06..b14a7a7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -139,6 +139,7 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end);

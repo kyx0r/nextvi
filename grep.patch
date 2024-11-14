@@ -1,8 +1,8 @@
 diff --git a/conf.c b/conf.c
-index 768db46..58813d8 100644
+index 9911a91..9d0456c 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -235,6 +235,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
+@@ -234,6 +234,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
  		{0, SYN_BGMK(9), SYN_BGMK(8), SYN_BGMK(7)}},
  	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", {0, SYN_BGMK(8)}},
  
@@ -15,7 +15,7 @@ index 768db46..58813d8 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^<(.+)> [^ ]+ (S[0-9]+) (O[0-9]+) (C[0-9]+)$", {8 | SYN_BD, 9, 5, 14, 11}},
 diff --git a/ex.c b/ex.c
-index a0ad9d8..b85d44d 100644
+index b416146..36b31ba 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -28,10 +28,10 @@ index a0ad9d8..b85d44d 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 6a28ae3..3a0c8b7 100644
+index 1fc6e5c..48bdb6a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -618,12 +618,12 @@ void dir_calc(char *path)
+@@ -611,12 +611,12 @@ void dir_calc(char *path)
  	}
  }
  
@@ -46,7 +46,7 @@ index 6a28ae3..3a0c8b7 100644
  	*row = xrow; *off = xoff; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -634,14 +634,14 @@ if (ret && xrow) { \
+@@ -627,14 +627,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -64,7 +64,7 @@ index 6a28ae3..3a0c8b7 100644
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -657,7 +657,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -650,7 +650,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
  		path = lbuf_get(tempbufs[1].lb, fspos);
@@ -73,7 +73,7 @@ index 6a28ae3..3a0c8b7 100644
  	}
  	return 0;
  }
-@@ -753,6 +753,7 @@ static int vi_motion(int *row, int *off)
+@@ -749,6 +749,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -81,7 +81,7 @@ index 6a28ae3..3a0c8b7 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -771,8 +772,44 @@ static int vi_motion(int *row, int *off)
+@@ -767,8 +768,44 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -127,7 +127,7 @@ index 6a28ae3..3a0c8b7 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1424,7 +1461,17 @@ void vi(int init)
+@@ -1422,7 +1459,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -146,7 +146,7 @@ index 6a28ae3..3a0c8b7 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1578,6 +1625,10 @@ void vi(int init)
+@@ -1576,6 +1623,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index 6a28ae3..3a0c8b7 100644
  				default:
  					term_dec()
  				}
-@@ -1948,6 +1999,7 @@ int main(int argc, char *argv[])
+@@ -1921,6 +1972,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
@@ -166,10 +166,10 @@ index 6a28ae3..3a0c8b7 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 82dbc9d..de8e13d 100644
+index d8c7a06..1b6affa 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -334,7 +334,7 @@ extern int xbufcur;
+@@ -339,7 +339,7 @@ extern int xbufcur;
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  extern struct buf *bufs;

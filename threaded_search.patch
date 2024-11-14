@@ -1,5 +1,5 @@
 diff --git a/cbuild.sh b/cbuild.sh
-index ef1e347..65c33e3 100755
+index b496f47..2e76016 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -41,6 +41,7 @@ CFLAGS="\
@@ -11,7 +11,7 @@ index ef1e347..65c33e3 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index deec286..621315b 100644
+index 9338f12..813921e 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -428,34 +428,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -170,7 +170,7 @@ index b05db93..7298b6a 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 6a28ae3..b51daf2 100644
+index 1fc6e5c..23691ee 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -182,10 +182,10 @@ index 6a28ae3..b51daf2 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 82dbc9d..fcdc9a2 100644
+index d8c7a06..c4854cc 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -211,7 +211,9 @@ int syn_addhl(char *reg, int func, int reload);
+@@ -215,7 +215,9 @@ void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */

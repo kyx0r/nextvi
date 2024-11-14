@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 1dda5b5..be8458a 100644
+index 093d9b4..4943fba 100644
 --- a/led.c
 +++ b/led.c
-@@ -10,26 +10,31 @@ int dstrlen(const char *s, char delim)
+@@ -11,26 +11,31 @@ int dstrlen(const char *s, char delim)
  	return i-s;
  }
  
@@ -88,10 +88,10 @@ index 1dda5b5..be8458a 100644
  					pac_:
  					syn_setft("/ac");
 diff --git a/vi.c b/vi.c
-index 6a28ae3..09b00c7 100644
+index 1fc6e5c..20bf85f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1062,6 +1062,10 @@ static void vc_motion(int cmd)
+@@ -1058,6 +1058,10 @@ static void vc_motion(int cmd)
  	if (r1 == r2 && o1 > o2)
  		swap(&o1, &o2);
  	o1 = ren_noeol(lbuf_get(xb, r1), o1);

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index a0ad9d8..93fddb0 100644
+index b416146..27323ab 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
@@ -10,7 +10,7 @@ index a0ad9d8..93fddb0 100644
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static char xrep[EXLEN];	/* the last replacement */
-@@ -1086,6 +1087,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1090,6 +1091,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -52,7 +52,7 @@ index a0ad9d8..93fddb0 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1138,6 +1174,8 @@ static struct excmd {
+@@ -1142,6 +1178,8 @@ static struct excmd {
  	{"ac", ec_setacreg},
  	{"uc", ec_setenc},
  	{"ph", ec_setenc},
@@ -78,7 +78,7 @@ index bf2e6e7..77dda2b 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 82dbc9d..46b3267 100644
+index d8c7a06..a41c332 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

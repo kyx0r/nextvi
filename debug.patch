@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index a0ad9d8..d154778 100644
+index b416146..4a0a81b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1232,3 +1232,11 @@ void ex_init(char **files, int n)
+@@ -1236,3 +1236,11 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -27,10 +27,10 @@ index 9f690cc..bcf9b78 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index 8105e7a..a6e7e88 100644
+index 8ad04cb..a904dc7 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -78,6 +78,13 @@ void dir_init(void)
+@@ -77,6 +77,13 @@ void dir_init(void)
  	dir_rsctx = rset_make(i, ctx, 0);
  }
  
@@ -44,7 +44,7 @@ index 8105e7a..a6e7e88 100644
  static ren_state rstates[1];
  ren_state *rstate = &rstates[0];
  
-@@ -380,3 +387,10 @@ void syn_init(void)
+@@ -382,3 +389,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -56,10 +56,10 @@ index 8105e7a..a6e7e88 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 6a28ae3..d82800b 100644
+index 1fc6e5c..288945e 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -553,6 +553,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -546,6 +546,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -72,7 +72,7 @@ index 6a28ae3..d82800b 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1975,6 +1981,7 @@ int main(int argc, char *argv[])
+@@ -1948,6 +1954,7 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -80,7 +80,7 @@ index 6a28ae3..d82800b 100644
  	term_done();
  	if (xvis & 4)
  		return EXIT_SUCCESS;
-@@ -1983,5 +1990,12 @@ int main(int argc, char *argv[])
+@@ -1956,5 +1963,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
@@ -94,10 +94,10 @@ index 6a28ae3..d82800b 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 82dbc9d..6e05d14 100644
+index d8c7a06..c81ccff 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -188,6 +188,7 @@ int ren_cwid(char *s, int pos);
+@@ -191,6 +191,7 @@ int ren_cwid(char *s, int pos);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -105,15 +105,15 @@ index 82dbc9d..6e05d14 100644
  /* syntax highlighting */
  #define SYN_BD		0x010000
  #define SYN_IT		0x020000
-@@ -209,6 +210,7 @@ int syn_merge(int old, int new);
- void syn_reloadft(void);
- int syn_addhl(char *reg, int func, int reload);
+@@ -213,6 +214,7 @@ void syn_reloadft(void);
+ int syn_findhl(int id);
+ void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
 +void syn_done(void);
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -364,6 +366,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -369,6 +371,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
