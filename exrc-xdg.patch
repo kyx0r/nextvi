@@ -57,11 +57,11 @@ index b416146..1b6d9d7 100644
 +				ex_script(fp);
 +				fclose(fp);
 +			} else {
-+				fprintf(stderr, "Cannot open ~/.exrc\n");
++				fprintf(stderr, "Cannot open %s\n", exrc);
 +				exit(EXIT_FAILURE);
 +			}
 +		} else {
-+			fprintf(stderr, "Bad permissions on ~/.exrc\n");
++			fprintf(stderr, "Bad permissions on %s\n", exrc);
 +			exit(EXIT_FAILURE);
 +		}
 +	}
