@@ -46,9 +46,10 @@ int vi_lncol;		/* line numbers cursor offset */
 static int vi_lnnum;	/* line numbers */
 static int vi_mod;	/* screen should be redrawn -
 			bit 1: whole screen, bit 2: current line, bit 3: update vi_col) */
-static char vi_word_m[] = "\0eEwW";	/* line word navigation */
+static char vi_word_m[] = "\0heEwW";	/* line word navigation */
 static char *vi_word = vi_word_m;
 static char *_vi_word = vi_word_m;
+static int vi_wsel = 1;
 static int vi_rshift;			/* row shift for vi_word */
 static int vi_arg1, vi_arg2;		/* the first and second arguments */
 static char vi_msg[EXLEN+128];		/* current message */
@@ -121,19 +122,19 @@ static void vi_drawmsg(void)
 	}
 }
 
-#define vi_drawwordnum(lbuf_word, skip, dir) \
-i = 0; \
+static int vi_nextcol(struct lbuf *lb, int dir, int *row, int *off);
+#define vi_drawnum(func) \
+{ i = 0; \
 nrow = xrow; \
 noff = xoff; \
 for (int k = nrow; k == nrow; i++) \
 { \
-	itoa(i%10 ? i%10 : i, snum); \
-	l1 = ren_pos(c, noff) - xleft + vi_lncol; \
-	if (l1 > xcols || l1 < 0 \
-		|| lbuf_word(xb, skip, dir, &nrow, &noff)) \
+	l1 = ren_next(c, ren_pos(c, noff), 1)-1-xleft+vi_lncol; \
+	if (l1 > xcols || l1 < 0 || func) \
 		break; \
+	itoa(i%10 ? i%10 : i, snum); \
 	tmp[l1] = *snum; \
-} \
+} } \
 
 static void vi_drawrow(int row)
 {
@@ -153,14 +154,17 @@ static void vi_drawrow(int row)
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
-		i1 = isupper(*vi_word);
-		if (*vi_word == 'e' || *vi_word == 'E') {
-			vi_drawwordnum(lbuf_wordend, i1, 1)
-		} else if (*vi_word == 'w' || *vi_word == 'W') {
-			vi_drawwordnum(lbuf_wordbeg, i1, 1)
-		}
-		vi_drawwordnum(lbuf_wordend, i1, -1)
-		tmp[ren_pos(c, xoff) - xleft+vi_lncol] = *uc_chr(c, xoff) == '\t' ? ' ' : *vi_word;
+		i1 = isupper((unsigned char)*vi_word);
+		if (*vi_word == 'e' || *vi_word == 'E')
+			vi_drawnum(lbuf_wordend(xb, i1, 1, &nrow, &noff))
+		else if (*vi_word == 'w' || *vi_word == 'W')
+			vi_drawnum(lbuf_wordbeg(xb, i1, 1, &nrow, &noff))
+		if (*vi_word == 'h') {
+			vi_drawnum(vi_nextcol(xb, 1, &nrow, &noff))
+			vi_drawnum(vi_nextcol(xb, -1, &nrow, &noff))
+		} else
+			vi_drawnum(lbuf_wordend(xb, i1, -1, &nrow, &noff))
+		tmp[ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol] = *vi_word;
 		preserve(int, xorder, 0)
 		preserve(int, syn_blockhl, 0)
 		preserve(int, xtd, dir_context(c) * 2)
@@ -200,7 +204,7 @@ static void vi_drawrow(int row)
 		preserve(int, syn_blockhl, 0)
 		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
-			for (i1 = 0; strchr(" \t", *rstate->chrs[ren_off(s, i1, 0)]);)
+			for (i1 = 0; strchr(" \t", *rstate->chrs[ren_off(s, i1)]);)
 				i1 = ren_next(s, i1, 1);
 			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
 			if (i1 >= 0) {
@@ -376,16 +380,12 @@ static int vi_off2col(struct lbuf *lb, int row, int off)
 static int vi_col2off(struct lbuf *lb, int row, int col)
 {
 	char *ln = lbuf_get(lb, row);
-	return ln ? ren_off(ln, col, 1) : 0;
-}
-
-static int vi_nextoff(struct lbuf *lb, int dir, int *row, int *off)
-{
-	int o = *off + dir;
-	if (o < 0 || !lbuf_get(lb, *row) || o >= uc_slen(lbuf_get(lb, *row)))
-		return 1;
-	*off = o;
-	return 0;
+	if (!ln)
+		return 0;
+	ren_state *r = ren_position(ln);
+	if (col >= r->cmax)
+		return r->col[r->cmax - 1];
+	return r->col[col];
 }
 
 static int vi_nextcol(struct lbuf *lb, int dir, int *row, int *off)
@@ -393,7 +393,7 @@ static int vi_nextcol(struct lbuf *lb, int dir, int *row, int *off)
 	char *ln = lbuf_get(lb, *row);
 	if (!ln)
 		return -1;
-	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir), 0);
+	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
 	if (*rstate->chrs[o] == '\n')
 		return -1;
 	*off = o;
@@ -692,8 +692,11 @@ static int vi_motion(int *row, int *off)
 	case 127:
 	case TK_CTL('h'):
 		dir = mv == ' ' ? +1 : -1;
-		for (i = 0; i < cnt; i++)
-			if (vi_nextoff(xb, dir, row, off))
+		if (!lbuf_get(xb, *row))
+			break;
+		mark = ren_position(lbuf_get(xb, *row))->n;
+		for (i = 0; i < cnt; i++, *off += dir)
+			if (*off + dir < 0 || *off + dir >= mark)
 				break;
 		break;
 	case 'f':
@@ -1209,7 +1212,7 @@ static void vc_status(int type)
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
 		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x S%ld O%d C%d",
-			cbuf, cp, *c ? c - lbuf_get(xb, xrow) : 0, xoff,
+			cbuf, cp, *c ? c - lbuf_get(xb, xrow) : 0L, xoff,
 			ren_cursor(lbuf_get(xb, xrow), col) + 1);
 		return;
 	}
@@ -1582,12 +1585,13 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case TK_CTL('v'):
-				if (vi_arg1)
+				vi_arg1 = (vi_wsel % 5) + !!*vi_word;
+			case TK_CTL('c'):
+				if (vi_arg1 && vi_arg1 <= 5) {
+					vi_wsel = vi_arg1;
 					vi_word = _vi_word + vi_arg1;
-				else
-					vi_word++;
-				if (vi_word > _vi_word+4)
-					vi_word = _vi_word;
+				} else
+					vi_word = _vi_word + (!*vi_word * vi_wsel);
 				vi_mod |= 1;
 				break;
 			case ':':
@@ -1799,7 +1803,7 @@ void vi(int init)
 			}
 			if (strchr("!<>AIJKOPRacdiopry", c)) {
 				rep:
-				if ((unsigned int)icmd_pos < sizeof(rep_cmd)) {
+				if (icmd_pos < sizeof(rep_cmd)) {
 					memcpy(rep_cmd, icmd, icmd_pos);
 					rep_len = icmd_pos;
 				}

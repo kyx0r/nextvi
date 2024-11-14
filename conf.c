@@ -221,13 +221,13 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{"/fm", "(/).*[^/]+\n$", {8, 6}, {1, 1}},
 
 	/* numbers highlight for ^v */
-	{"/#", "[ewEW]", {14 | SYN_BD}},
+	{"/#", "[hewEW]", {14 | SYN_BD}},
 	{"/#", "1([ \t]*[1-9][ \t]*)9", {9, 13 | SYN_BD}},
 	{"/#", "9[ \t]*([1-9][ \t]*)1", {9, 13 | SYN_BD}},
 	{"/#", "[1-9]", {9}},
 
 	/* numbers highlight for # */
-	{"/##", "[0-9]", {9 | SYN_BD}},
+	{"/##", "[0-9]+", {9 | SYN_BD}},
 
 	/* autocomplete dropdown */
 	{"/ac", "[^ \t-/:-@[-^{-~]+(?:(\n$)|\n)|\n|([^\n]+(\n))",
