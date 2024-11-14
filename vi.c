@@ -154,7 +154,7 @@ static void vi_drawrow(int row)
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
-		i1 = isupper(*vi_word);
+		i1 = isupper((unsigned char)*vi_word);
 		if (*vi_word == 'e' || *vi_word == 'E')
 			vi_drawnum(lbuf_wordend(xb, i1, 1, &nrow, &noff))
 		else if (*vi_word == 'w' || *vi_word == 'W')
@@ -1212,7 +1212,7 @@ static void vc_status(int type)
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
 		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x S%ld O%d C%d",
-			cbuf, cp, *c ? c - lbuf_get(xb, xrow) : 0, xoff,
+			cbuf, cp, *c ? c - lbuf_get(xb, xrow) : 0L, xoff,
 			ren_cursor(lbuf_get(xb, xrow), col) + 1);
 		return;
 	}
