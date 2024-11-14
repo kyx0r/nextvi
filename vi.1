@@ -177,12 +177,12 @@ Toggle show relative line numbers after indent permanently
 Toggle show relative line numbers permanently
 .It Cm V
 Toggle show hidden characters:<Space Tab Newline>
-.It Cm <^V>
-Toggle show line motion numbers for <e b E B w W>
-.It Cm {1-4}<^V>
+.It Cm <^C>
+Toggle show line motion numbers for <h l e b E B w W>
+.It Cm {1-5}<^C>
 Switch to line motion number mode #
-.It Cm {5-#}<^V>
-Disable line motion numbers
+.It Cm <^V>
+Loop through line motion number modes
 .It Cm [#]<^R>
 Redo # times
 .It Cm [#]u
@@ -1165,19 +1165,19 @@ previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 472 vi.h | definitions/aux
+ 475 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  293 conf.c | hl/ft/td config
  337 term.c | low level IO
- 388 ren.c | positioning/syntax
+ 384 ren.c | positioning/syntax
  588 lbuf.c | file/line buffer
  653 uc.c | UTF-8 support
  658 regex.c | extended RE
- 680 led.c | insert mode/output
+ 665 led.c | insert mode/output
  1238 ex.c | ex options/commands
- 1956 vi.c | normal mode/general
- 6791 total | wc -l *.c\(basort
+ 1960 vi.c | normal mode/general
+ 6776 total | wc -l *.c\(basort
 _
 .TE
 .
