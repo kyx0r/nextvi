@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index a0ad9d8..d5a5adf 100644
+index b416146..78d897c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -771,7 +771,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
@@ -19,7 +19,7 @@ index a0ad9d8..d5a5adf 100644
  	return 0;
  }
  
-@@ -1190,7 +1191,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
+@@ -1194,7 +1195,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index a0ad9d8..d5a5adf 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, cmd, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1199,6 +1200,9 @@ int ex_exec(const char *ln)
+@@ -1203,6 +1204,9 @@ int ex_exec(const char *ln)
  			ret = excmds[idx].ec(loc, cmd, ecmd);
  		free(ecmd);
  	}
@@ -39,7 +39,7 @@ index a0ad9d8..d5a5adf 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index deec286..2c4e12d 100644
+index 9338f12..06039c1 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -432,7 +432,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
@@ -69,10 +69,10 @@ index deec286..2c4e12d 100644
  }
  
 diff --git a/led.c b/led.c
-index 1dda5b5..1dd1c83 100644
+index 093d9b4..fe9b251 100644
 --- a/led.c
 +++ b/led.c
-@@ -48,7 +48,7 @@ static void file_index(struct lbuf *buf)
+@@ -49,7 +49,7 @@ static void file_index(struct lbuf *buf)
  	rset *rs = rset_smake(xacreg ? xacreg->s : reg, xic ? REG_ICASE : 0);
  	if (!rs)
  		return;
@@ -81,7 +81,7 @@ index 1dda5b5..1dd1c83 100644
  	sbuf_make(ibuf, 1024)
  	for (n = 1; n <= acsb->s_n; n++)
  		if (acsb->s[n - 1] == '\n')
-@@ -82,6 +82,7 @@ static void file_index(struct lbuf *buf)
+@@ -83,6 +83,7 @@ static void file_index(struct lbuf *buf)
  	sbuf_null(acsb)
  	sbuf_free(ibuf)
  	rset_free(rs);
@@ -89,10 +89,10 @@ index 1dda5b5..1dd1c83 100644
  }
  
  static char *kmap_map(int kmap, int c)
-@@ -161,10 +162,10 @@ void led_render(char *s0, int cbeg, int cend)
- 	int att_old = 0, atti = 0;
+@@ -163,10 +164,10 @@ void led_render(char *s0, int cbeg, int cend)
+ 	int att_old = 0, atti = 0, cterm = cend - cbeg;
  	char *bound = NULL;
- 	char **chrs;		/* chrs[i]: the i-th character in s1 */
+ 	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
 -	int off[cterm+1];	/* off[i]: the character at screen position i */
 -	int att[cterm+1];	/* att[i]: the attributes of i-th character */
 -	int stt[cterm+1];	/* stt[i]: remap off indexes */
@@ -101,18 +101,18 @@ index 1dda5b5..1dd1c83 100644
 +	int *att = emalloc((cterm+1) * sizeof(int));	/* att[i]: the attributes of i-th character */
 +	int *stt = NULL;	/* stt[i]: remap off indexes */
 +	int *ctt = NULL;	/* ctt[i]: cterm bound attrs */
- 	int *pos = ren_position(s0, &chrs, &n);	/* pos[i]: the screen position of the i-th character */
- 	int ctx = dir_context(s0);
- 	memset(off, -1, (cterm+1) * sizeof(off[0]));
-@@ -202,6 +203,8 @@ void led_render(char *s0, int cbeg, int cend)
- 		}
- 	}
- 	if (pos[n] > cterm || cbeg) {
+ 	int ctx = r->ctx;
+ 	off[cterm] = -1;
+ 	if (ctx < 0) {
+@@ -188,6 +189,8 @@ void led_render(char *s0, int cbeg, int cend)
+ 		if (r->cmax > cterm && r->wid[o] > 1)
+ 			while (off[i] == o)
+ 				off[ctx < 0 ? i++ : i--] = -1;
 +		stt = emalloc((cterm+1) * sizeof(int));
 +		ctt = emalloc((cterm+1) * sizeof(int));
  		for (i = 0, c = 0; i < cterm;) {
- 			o = off[i++];
- 			if (o >= 0) {
+ 			if ((o = off[i++]) >= 0) {
+ 				att[c++] = o;
 @@ -252,6 +255,10 @@ void led_render(char *s0, int cbeg, int cend)
  		led_out(term_sbuf, 2)
  	else
@@ -186,10 +186,10 @@ index 9f690cc..98400b6 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 8105e7a..17cc23e 100644
+index 8ad04cb..f27e688 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -249,13 +249,14 @@ int syn_blockhl;
+@@ -245,13 +245,14 @@ int syn_blockhl;
  static void syn_initft(int fti, int n, char *name)
  {
  	int i = n;
@@ -205,7 +205,7 @@ index 8105e7a..17cc23e 100644
  }
  
  char *syn_setft(char *ft)
-@@ -294,7 +295,7 @@ int syn_merge(int old, int new)
+@@ -290,7 +291,7 @@ int syn_merge(int old, int new)
  void syn_highlight(int *att, char *s, int n)
  {
  	rset *rs = ftmap[ftidx].rs;
@@ -214,7 +214,7 @@ index 8105e7a..17cc23e 100644
  	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
  	int bend = 0, cend = 0;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
-@@ -340,6 +341,7 @@ void syn_highlight(int *att, char *s, int n)
+@@ -336,6 +337,7 @@ void syn_highlight(int *att, char *s, int n)
  	if (syn_blockhl && !blk)
  		for (j = 0; j < n; j++)
  			att[j] = blockcont && att[j] ? att[j] : *blockatt;
@@ -222,7 +222,7 @@ index 8105e7a..17cc23e 100644
  }
  
  char *syn_filetype(char *path)
-@@ -374,9 +376,10 @@ int syn_addhl(char *reg, int func, int reload)
+@@ -376,9 +378,10 @@ void syn_addhl(char *reg, int id, int reload)
  
  void syn_init(void)
  {
@@ -235,10 +235,10 @@ index 8105e7a..17cc23e 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 6a28ae3..6c16946 100644
+index 1fc6e5c..077bed4 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -147,7 +147,8 @@ static void vi_drawrow(int row)
+@@ -150,7 +150,8 @@ static void vi_drawrow(int row)
  			vi_rshift = 0;
  		if (row != xrow+1 || !c || *c == '\n')
  			goto skip;
@@ -248,7 +248,7 @@ index 6a28ae3..6c16946 100644
  		memset(tmp, ' ', xcols+1);
  		tmp[xcols+1] = '\n';
  		tmp[xcols+2] = '\0';
-@@ -178,6 +179,8 @@ static void vi_drawrow(int row)
+@@ -175,6 +176,8 @@ static void vi_drawrow(int row)
  		restore(xorder)
  		restore(syn_blockhl)
  		restore(xtd)
@@ -257,7 +257,7 @@ index 6a28ae3..6c16946 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1421,10 +1424,11 @@ void vi(int init)
+@@ -1419,10 +1422,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -270,7 +270,7 @@ index 6a28ae3..6c16946 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1556,7 +1560,7 @@ void vi(int init)
+@@ -1554,7 +1558,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix(), '|');
@@ -279,7 +279,7 @@ index 6a28ae3..6c16946 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg1, buf+4);
  					strcat(buf1, "s/");
-@@ -1566,10 +1570,11 @@ void vi(int init)
+@@ -1564,10 +1568,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf);
@@ -292,7 +292,7 @@ index 6a28ae3..6c16946 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1577,6 +1582,7 @@ void vi(int init)
+@@ -1575,6 +1580,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf);
