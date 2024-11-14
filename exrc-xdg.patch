@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b416146..1b6d9d7 100644
+index b416146..4010afb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
