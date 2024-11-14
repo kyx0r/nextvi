@@ -485,7 +485,7 @@ int lbuf_eol(struct lbuf *lb, int row)
 {
 	int len = 0;
 	if (lbuf_get(lb, row))
-		ren_position_m(, lbuf_get(lb, row), &len)
+		len = ren_position(lbuf_get(lb, row))->n;
 	return len ? len - 1 : len;
 }
 

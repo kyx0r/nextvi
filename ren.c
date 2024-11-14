@@ -17,9 +17,8 @@ static void dir_reverse(int *ord, int beg, int end)
 }
 
 /* reorder the characters based on direction marks and characters */
-static int dir_reorder(char **chrs, int *ord, int end)
+static int dir_reorder(char **chrs, int *ord, int end, int dir)
 {
-	int dir = dir_context(chrs[0]);
 	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
 	int beg = 0, end1 = end, c_beg, c_end;
 	int subs[LEN(dmarks[0].dir) * 2], gdir, found, i;
@@ -83,96 +82,91 @@ ren_state *rstate = &rstates[0];
 
 void ren_done(void)
 {
+	free(rstate->col);
 	free(rstate->pos);
 	free(rstate->chrs);
 }
 
 /* specify the screen position of the characters in s */
-int *ren_position(char *s, char ***chrs, int *n)
+ren_state *ren_position(char *s)
 {
-	if (rstate->s == s) {
-		chrs[0] = rstate->chrs;
-		*n = rstate->n;
-		return rstate->pos;
-	} else
+	if (rstate->s == s)
+		return rstate;
+	else
 		ren_done();
-	chrs[0] = uc_chop(s, n);
-	int i, *off, *pos, nn = *n, cpos = 0;
-	pos = emalloc(((nn + 1) * sizeof(pos[0])) * 2);
-	off = &pos[nn+1];
-	if (xorder && dir_reorder(chrs[0], off, nn)) {
-		for (i = 0; i < nn; i++) {
+	int n, i, c = 0, *off, *pos, *col;
+	int cpos = 0, wid;
+	char **chrs = uc_chop(s, &n);
+	pos = emalloc(((n + 1) * sizeof(pos[0])) * 2);
+	off = &pos[n+1];
+	rstate->ctx = dir_context(s);
+	if (xorder && dir_reorder(chrs, off, n, rstate->ctx)) {
+		int *wids = emalloc((n + 1) * sizeof(pos[0]));
+		for (i = 0; i < n; i++) {
 			pos[off[i]] = cpos;
-			cpos += ren_cwid(chrs[0][off[i]], cpos);
+			cpos += ren_cwid(chrs[off[i]], cpos);
 		}
+		col = emalloc(cpos * sizeof(pos[0]));
+		pos[n] = cpos;
+		for (i = 0; i < n; i++) {
+			wid = ren_cwid(chrs[off[i]], pos[off[i]]);
+			wids[off[i]] = wid;
+			while (wid--)
+				col[c++] = off[i];
+		}
+		memcpy(off, wids, (n + 1) * sizeof(pos[0]));
+		free(wids);
 	} else {
-		for (i = 0; i < nn; i++) {
+		for (i = 0; i < n; i++) {
 			pos[i] = cpos;
-			cpos += ren_cwid(chrs[0][i], cpos);
+			cpos += ren_cwid(chrs[i], cpos);
+		}
+		col = emalloc(cpos * sizeof(pos[0]));
+		pos[n] = cpos;
+		for (i = 0; i < n; i++) {
+			wid = pos[i+1] - pos[i];
+			off[i] = wid;
+			while (wid--)
+				col[c++] = i;
 		}
 	}
-	pos[nn] = cpos;
+	rstate->wid = off;
+	rstate->cmax = cpos-1;
+	rstate->col = col;
 	rstate->s = s;
 	rstate->pos = pos;
-	rstate->chrs = chrs[0];
-	rstate->n = nn;
-	return pos;
-}
-
-/* find the character at visual position p, rounding left or right */
-static int ren_posfind(int *pos, int n, int p, int dir)
-{
-	int i, ret = -1;
-	if (dir < 0)
-		goto prev;
-	for (i = 0; i < n; i++)
-		if (pos[i] >= p && (ret < 0 || pos[i] < pos[ret]))
-			ret = i;
-	return ret >= 0 ? ret : n;
-	prev:
-	for (i = 0; i < n; i++)
-		if (pos[i] <= p && (ret < 0 || pos[i] > pos[ret]))
-			ret = i;
-	return ret >= 0 ? ret : n;
+	rstate->chrs = chrs;
+	rstate->n = n;
+	return rstate;
 }
 
 /* convert character offset to visual position */
 int ren_pos(char *s, int off)
 {
-	int n, *pos;
-	ren_position_m(pos =, s, &n)
-	int ret = off < n ? pos[off] : 0;
-	return ret;
+	ren_state *r = ren_position(s);
+	return off < r->n ? r->pos[off] : 0;
 }
 
-/* convert visual position to character offset. nl omits newline */
-int ren_off(char *s, int p, int nl)
+/* convert visual position to character offset */
+int ren_off(char *s, int p)
 {
-	int n, i, nn = 0, ret = -1, *pos;
-	char **c;
-	pos = ren_position(s, &c, &n);
-	for (i = 0; i < n - nl; i++) {
-		if (pos[i] <= p && (ret < 0 || pos[i] > pos[ret]))
-			ret = i;
-		else if (ret < 0 && pos[i] > pos[nn])
-			nn = i;
-	}
-	return ret >= 0 ? ret : nn;
+	ren_state *r = ren_position(s);
+	return r->col[p < r->cmax ? p : r->cmax];
 }
 
 /* adjust cursor position */
 int ren_cursor(char *s, int p)
 {
-	int n, nn, *pos;
-	char **c;
 	if (!s)
 		return 0;
-	pos = ren_position(s, &c, &n);
-	nn = ren_posfind(pos, n, p+1, 1);
-	p = pos[nn];
-	if (p && n && n == nn)
-		p--;
-	return p - (n > 1 && *c[n-1] == '\n');
+	ren_state *r = ren_position(s);
+	int i, n = r->n;
+	if (!n)
+		return 0;
+	if (p >= r->pos[n - 1])
+		p = r->pos[r->col[r->cmax - (*r->chrs[n-1] == '\n')]];
+	i = r->col[p];
+	return r->pos[i] + r->wid[i] - 1;
 }
 
 /* return an offset before EOL */
@@ -180,19 +174,21 @@ int ren_noeol(char *s, int o)
 {
 	if (!s || o <= 0)
 		return 0;
-	int n;
-	char **c;
-	ren_position(s, &c, &n);
-	o = o >= n ? n : o;
-	return o - (o > 0 && *c[o] == '\n');
+	ren_state *r = ren_position(s);
+	o = o >= r->n ? r->n : o;
+	return o - (o > 0 && *r->chrs[o] == '\n');
 }
 
 /* the visual position of the next character */
 int ren_next(char *s, int p, int dir)
 {
-	int n, *pos;
-	ren_position_m(pos =, s, &n)
-	return pos[ren_posfind(pos, n, p+dir, dir)];
+	ren_state *r = ren_position(s);
+	if (p+dir < 0 || p > r->cmax)
+		return r->pos[r->col[r->cmax]];
+	int i = r->col[p];
+	if (r->wid[i] > 1 && dir > 0)
+		return r->pos[i] + r->wid[i];
+	return r->pos[i] + dir;
 }
 
 int ren_cwid(char *s, int pos)
@@ -361,15 +357,21 @@ void syn_reloadft(void)
 	}
 }
 
-int syn_addhl(char *reg, int func, int reload)
+int syn_findhl(int id)
 {
 	for (int i = ftmap[ftidx].setbidx; i < ftmap[ftidx].seteidx; i++)
-		if (hls[i].func == func) {
-			hls[i].pat = reg;
-			syn_reload = reload;
+		if (hls[i].id == id)
 			return i;
-		}
 	return -1;
+}
+
+void syn_addhl(char *reg, int id, int reload)
+{
+	int ret = syn_findhl(id);
+	if (ret >= 0) {
+		hls[ret].pat = reg;
+		syn_reload = reload;
+	}
 }
 
 void syn_init(void)
