@@ -35,4 +35,16 @@ pgobuild:
 	${CC} ${CFLAGS} -fprofile-use=. -o vi vi.c
 	rm *.gcda
 
-.PHONY: all clean install pgobuild
+fetch:
+	@ if ! git diff --quiet HEAD; then \
+		echo "Please stash changes before fetching." ; \
+		exit 1; \
+	fi
+	git switch -c upstream-temp
+	git pull https://github.com/kyx0r/nextvi
+	git switch master
+	git rebase --rebase-merges upstream-temp
+	git branch -D upstream-temp
+	echo "Successfully fetched from upstream."
+
+.PHONY: all clean install pgobuild fetch
