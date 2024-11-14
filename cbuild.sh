@@ -141,17 +141,19 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "fetch")
         shift
-        # handle edge case if user's branch isn't master
-        branch=$(git rev-parse --abbrev-ref HEAD)
+        ! git diff --quiet HEAD && {
+          log "$R" "Please stash changes before fetching."
+          exit 1
+        }
         git switch -c upstream-temp
         git pull https://github.com/kyx0r/nextvi
-        git switch $branch
+        git switch master
         git rebase --rebase-merges upstream-temp
         git branch -D upstream-temp
-        log "Successfully fetched from upstream"
+        log "$G" "Successfully fetched from upstream."
         ;;
-      *)
-        echo "Usage: $0 {install|pgobuild|build|debug|clean}"
+    *)
+        echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean}"
         exit 1
         ;;
     esac
