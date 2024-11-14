@@ -29,7 +29,7 @@ Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
 aka libpthread
 
-hl_part.patch
+hl_part.patch (DEFUNCT TODO)
 --------------
 Allow syntax highlight to continue past the terminal dimensions up to a
 certain limit. To customize the depth, adjust LEDFORW and LEDBACK definitions
@@ -39,7 +39,7 @@ it to syntax highlighting. This patch essentially makes it even more complicated
 Most likely you will not be able to understand this code. However, it works
 correcly in every scenario, so appreciate the art and hard work that went into it.
 
-hl_naive.patch
+hl_naive.patch (DEFUNCT TODO)
 --------------
 Original approach to syntax highlight as in neatvi. Use this only if you don't
 care about performance on large lines.
@@ -171,9 +171,8 @@ Improvements to autocomplete, now the word completion will also use
 text that prefixes the insert when it makes sense. Makes it possible
 to autocomplete in more desired situations.
 
-linewrap.patch
+linewrap.patch (DEFUNCT TODO)
 --------------
-TODO
 
 ex-scripting.patch
 --------------
