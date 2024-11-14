@@ -36,10 +36,10 @@ pgobuild:
 	rm *.gcda
 
 fetch:
-	! git diff --quiet HEAD && {
-	echo "Please stash changes before fetching."
-	exit 1
-	}
+	@ if ! git diff --quiet HEAD; then \
+		echo "Please stash changes before fetching." ; \
+		exit 1; \
+	fi
 	git switch -c upstream-temp
 	git pull https://github.com/kyx0r/nextvi
 	git switch master
