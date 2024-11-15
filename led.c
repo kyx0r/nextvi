@@ -180,12 +180,12 @@ void led_render(char *s0, int cbeg, int cend)
 	if (r->cmax > cterm || cbeg) {
 		i = ctx < 0 ? cterm-1 : 0;
 		o = off[i];
-		if (cbeg && r->wid[o] > 1)
+		if (cbeg && r->pos[o] < cbeg)
 			while (off[i] == o)
 				off[ctx < 0 ? i-- : i++] = -1;
 		i = ctx < 0 ? 0 : cterm-1;
 		o = off[i];
-		if (r->cmax > cterm && r->wid[o] > 1)
+		if (r->cmax > cterm && r->pos[o] + r->wid[o] > cend)
 			while (off[i] == o)
 				off[ctx < 0 ? i++ : i--] = -1;
 		for (i = 0, c = 0; i < cterm;) {
