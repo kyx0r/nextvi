@@ -398,7 +398,7 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
 		return 0;
 	ren_state *r = ren_position(ln);
 	if (col >= r->cmax)
-		return r->col[r->cmax - 1];
+		return r->col[r->cmax - !!r->cmax];
 	return r->col[col];
 }
 

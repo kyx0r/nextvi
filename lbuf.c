@@ -484,8 +484,6 @@ static int lbuf_next(struct lbuf *lb, int dir, int *r, int *o)
 {
 	int odir = dir > 0 ? 1 : -1;
 	int len, off = *o + odir;
-	if (odir < 0 && *r >= lbuf_len(lb))
-		*r = MAX(0, lbuf_len(lb) - 1);
 	if (lbuf_get(lb, *r))
 		len = ren_position(lbuf_get(lb, *r))->n;
 	else
