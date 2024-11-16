@@ -484,8 +484,6 @@ static int lbuf_next(struct lbuf *lb, int dir, int *r, int *o)
 {
 	int odir = dir > 0 ? 1 : -1;
 	int len, off = *o + odir;
-	if (odir < 0 && *r >= lbuf_len(lb))
-		*r = MAX(0, lbuf_len(lb) - 1);
 	if (lbuf_get(lb, *r))
 		len = ren_position(lbuf_get(lb, *r))->n;
 	else
@@ -572,10 +570,10 @@ int lbuf_pair(struct lbuf *lb, int *row, int *off)
 	if (!lbuf_get(lb, r))
 		return 1;
 	ren_state *rs = ren_position(lbuf_get(lb, r));
-	for (; !strchr(pairs, *rs->chrs[o]); o++);
-	if (!strchr(pairs, *rs->chrs[o]))
+	for (; o < rs->n-1 && !memchr(pairs, *rs->chrs[o], 6); o++);
+	if (!memchr(pairs, *rs->chrs[o], 6))
 		return 1;
-	p = strchr(pairs, *rs->chrs[o]) - pairs;
+	p = (char*)memchr(pairs, *rs->chrs[o], 6) - pairs;
 	while (!lbuf_next(lb, (p & 1) ? -1 : +1, &r, &o)) {
 		c = *rstate->chrs[o];
 		if (c == pairs[p ^ 1])
