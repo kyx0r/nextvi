@@ -77,7 +77,7 @@ void dir_init(void)
 	dir_rsctx = rset_make(i, ctx, 0);
 }
 
-static ren_state rstates[1];
+static ren_state rstates[2];
 ren_state *rstate = &rstates[0];
 
 void ren_done(void)
