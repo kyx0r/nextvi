@@ -69,7 +69,7 @@ index ece3c3b..f5b66b5 100644
  }
  
 diff --git a/led.c b/led.c
-index 71d1336..e91ceb3 100644
+index 34a08e5..b2cc2e4 100644
 --- a/led.c
 +++ b/led.c
 @@ -49,7 +49,7 @@ static void file_index(struct lbuf *buf)
@@ -89,7 +89,7 @@ index 71d1336..e91ceb3 100644
  }
  
  static char *kmap_map(int kmap, int c)
-@@ -164,10 +165,10 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -163,10 +164,10 @@ void led_render(char *s0, int cbeg, int cend)
  	int att_old = 0, atti = 0, cterm = cend - cbeg;
  	char *bound = NULL;
  	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
@@ -104,7 +104,7 @@ index 71d1336..e91ceb3 100644
  	int ctx = r->ctx;
  	off[cterm] = -1;
  	if (ctx < 0) {
-@@ -189,6 +190,8 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -188,6 +189,8 @@ void led_render(char *s0, int cbeg, int cend)
  		if (r->cmax > cterm && r->pos[o] + r->wid[o] > cend)
  			while (off[i] == o)
  				off[ctx < 0 ? i++ : i--] = -1;
@@ -114,9 +114,9 @@ index 71d1336..e91ceb3 100644
  			if ((o = off[i++]) >= 0) {
  				att[c++] = o;
 @@ -253,6 +256,10 @@ void led_render(char *s0, int cbeg, int cend)
- 		led_out(term_sbuf, 2)
  	else
  		led_out(term_sbuf, 1)
+ 	sbufn_str(term_sbuf, term_att(0))
 +	free(off);
 +	free(att);
 +	free(stt);
