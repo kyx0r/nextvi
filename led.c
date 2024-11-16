@@ -115,12 +115,11 @@ static int led_offdir(char **chrs, int *pos, int i)
 
 #define hid_ch1(out) sbuf_set(out, ' ', i - l)
 #define hid_ch2(out) \
-int pre = out->s_n; \
 sbuf_set(out, *chrs[o] == '\n' ? '\\' : '-', i - l) \
 if (ctx > 0 && *chrs[o] == '\t') \
 	out->s[out->s_n-1] = '>'; \
 else if (*chrs[o] == '\t') \
-	out->s[pre] = '<'; \
+	out->s[out->s_n - (i - l)] = '<'; \
 
 #define led_out(out, n) \
 { \
@@ -151,7 +150,7 @@ for (i = 0; i < cterm;) { \
 			break; \
 	} \
 	att_old = att_new; \
-} sbufn_str(out, term_att(0)) } \
+} } \
 
 /* render and highlight a line */
 void led_render(char *s0, int cbeg, int cend)
@@ -253,6 +252,7 @@ void led_render(char *s0, int cbeg, int cend)
 		led_out(term_sbuf, 2)
 	else
 		led_out(term_sbuf, 1)
+	sbufn_str(term_sbuf, term_att(0))
 }
 
 static int led_lastchar(char *s)
