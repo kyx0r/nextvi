@@ -164,7 +164,7 @@ int ren_cursor(char *s, int p)
 	if (!n)
 		return 0;
 	if (p >= r->pos[n - 1])
-		p = r->pos[r->col[r->cmax - (*r->chrs[n-1] == '\n')]];
+		p = r->pos[r->col[r->cmax - (r->cmax && *r->chrs[n-1] == '\n')]];
 	i = r->col[p];
 	return r->pos[i] + r->wid[i] - 1;
 }
