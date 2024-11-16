@@ -88,10 +88,10 @@ index 71d1336..744c46c 100644
  					pac_:
  					syn_setft("/ac");
 diff --git a/vi.c b/vi.c
-index b496c07..d1d0eda 100644
+index 3aa0653..34bc766 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1060,6 +1060,10 @@ static void vc_motion(int cmd)
+@@ -1051,6 +1051,10 @@ static void vc_motion(int cmd)
  	if (r1 == r2 && o1 > o2)
  		swap(&o1, &o2);
  	o1 = ren_noeol(lbuf_get(xb, r1), o1);
