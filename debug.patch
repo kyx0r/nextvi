@@ -27,7 +27,7 @@ index 9f690cc..bcf9b78 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index 8ad04cb..a904dc7 100644
+index 03b4b5d..9a21155 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -77,6 +77,13 @@ void dir_init(void)
@@ -41,7 +41,7 @@ index 8ad04cb..a904dc7 100644
 +	rset_free(dir_rsctx);
 +}
 +
- static ren_state rstates[1];
+ static ren_state rstates[2];
  ren_state *rstate = &rstates[0];
  
 @@ -382,3 +389,10 @@ void syn_init(void)
@@ -56,10 +56,10 @@ index 8ad04cb..a904dc7 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 1fc6e5c..288945e 100644
+index b496c07..4a6b481 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -546,6 +546,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -548,6 +548,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -72,7 +72,7 @@ index 1fc6e5c..288945e 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1948,6 +1954,7 @@ int main(int argc, char *argv[])
+@@ -1953,6 +1959,7 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -80,7 +80,7 @@ index 1fc6e5c..288945e 100644
  	term_done();
  	if (xvis & 4)
  		return EXIT_SUCCESS;
-@@ -1956,5 +1963,12 @@ int main(int argc, char *argv[])
+@@ -1961,5 +1968,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
