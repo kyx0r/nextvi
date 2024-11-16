@@ -146,8 +146,9 @@ for (i = 0; i < cterm;) { \
 			if (att_new != att_old) \
 				sbuf_str(out, term_att(0)) \
 			sbuf_chr(out, ' ') \
-		} \
-		i++; \
+			i++; \
+		} else \
+			break; \
 	} \
 	att_old = att_new; \
 } sbufn_str(out, term_att(0)) } \
