@@ -103,7 +103,7 @@ index b416146..4010afb 100644
 +	}
  }
 diff --git a/vi.c b/vi.c
-index 1fc6e5c..9e60e10 100644
+index b496c07..e121270 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -18,6 +18,7 @@

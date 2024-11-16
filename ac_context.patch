@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index b7f0c05..951ad0c 100644
+index 71d1336..744c46c 100644
 --- a/led.c
 +++ b/led.c
 @@ -11,26 +11,31 @@ int dstrlen(const char *s, char delim)
@@ -40,7 +40,7 @@ index b7f0c05..951ad0c 100644
  	}
  	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
  	sbuf_free(sylsb)
-@@ -383,6 +388,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -384,6 +389,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int len, t_row = -2, p_reg = 0;
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
@@ -49,7 +49,7 @@ index b7f0c05..951ad0c 100644
  	while (1) {
  		led_printparts(sb, ps, post, ai_max);
  		len = sb->s_n;
-@@ -488,7 +495,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -489,7 +496,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  		case TK_CTL('n'):
  			if (!suggestsb)
  				continue;
@@ -58,7 +58,7 @@ index b7f0c05..951ad0c 100644
  			if (_sug) {
  				if (suggestsb->s_n == sug - suggestsb->s)
  					continue;
-@@ -499,13 +506,14 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -500,13 +507,14 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  				}
  				suggest:
  				*_sug = '\0';
@@ -76,7 +76,7 @@ index b7f0c05..951ad0c 100644
  				sug = suggestsb->s;
  				if (!(_sug = strchr(sug, '\n')))
  					continue;
-@@ -518,8 +526,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -519,8 +527,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  				int r = xrow-xtop+1;
  				if (sug)
  					goto pac_;
@@ -88,10 +88,10 @@ index b7f0c05..951ad0c 100644
  					pac_:
  					syn_setft("/ac");
 diff --git a/vi.c b/vi.c
-index 1fc6e5c..20bf85f 100644
+index b496c07..d1d0eda 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1058,6 +1058,10 @@ static void vc_motion(int cmd)
+@@ -1060,6 +1060,10 @@ static void vc_motion(int cmd)
  	if (r1 == r2 && o1 > o2)
  		swap(&o1, &o2);
  	o1 = ren_noeol(lbuf_get(xb, r1), o1);

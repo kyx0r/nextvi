@@ -19,10 +19,10 @@ index b416146..fc8fc73 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index b7f0c05..dce92f9 100644
+index 71d1336..c136b6f 100644
 --- a/led.c
 +++ b/led.c
-@@ -376,6 +376,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
+@@ -377,6 +377,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
  	term_pos(xrow - xtop, 0);
  }
  
@@ -37,7 +37,7 @@ index b7f0c05..dce92f9 100644
  /* read a line from the terminal */
  static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  		int *key, int *kmap, int orow, int lsh)
-@@ -383,6 +391,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -384,6 +392,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int len, t_row = -2, p_reg = 0;
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
@@ -45,7 +45,7 @@ index b7f0c05..dce92f9 100644
  	while (1) {
  		led_printparts(sb, ps, post, ai_max);
  		len = sb->s_n;
-@@ -580,7 +589,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -581,7 +590,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			xquit = 0;
  			restore(xvis)
  			continue;
@@ -68,7 +68,7 @@ index b7f0c05..dce92f9 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 1fc6e5c..059c994 100644
+index b496c07..aeb8781 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
