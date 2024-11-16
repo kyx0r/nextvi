@@ -559,8 +559,7 @@ int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off)
 			return 0;
 		}
 	}
-	if (lbuf_wordlast(lb, big ? 3 : uc_kind(rstate->chrs[*off]), dir, row, off))
-		return 1;
+	lbuf_wordlast(lb, big ? 3 : uc_kind(rstate->chrs[*off]), dir, row, off);
 	return 0;
 }
 

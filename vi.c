@@ -141,12 +141,10 @@ nrow = xrow; \
 noff = xoff; \
 for (i = 0, ret = 0;; i++) { \
 	l1 = ren_next(c, ren_pos(c, noff), 1)-1-xleft+vi_lncol; \
-	if (l1 > xcols || l1 < 0) \
+	if (l1 > xcols || l1 < 0 || ret) \
 		break; \
 	itoa(i%10 ? i%10 : i, snum); \
 	tmp[l1] = *snum; \
-	if (ret) \
-		break; \
 	ret = func; \
 } } \
 
