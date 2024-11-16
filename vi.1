@@ -1,4 +1,4 @@
-.Dd Nov 1, 2024
+.Dd Nov 16, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -105,6 +105,8 @@ Move to beg of word backward # times
 Move to beg of word forward # times, skip punctuation
 .It Cm [#]w
 Move to beg of word forward # times
+.It Cm vw
+Toggle line mode for <E e B b W w>
 .It Cm {
 Move to next <{> section up
 .It Cm }
@@ -1168,16 +1170,16 @@ _
  475 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 293 conf.c | hl/ft/td config
+ 294 conf.c | hl/ft/td config
  337 term.c | low level IO
  384 ren.c | positioning/syntax
- 588 lbuf.c | file/line buffer
+ 592 lbuf.c | file/line buffer
  653 uc.c | UTF-8 support
  658 regex.c | extended RE
- 665 led.c | insert mode/output
+ 666 led.c | insert mode/output
  1238 ex.c | ex options/commands
- 1960 vi.c | normal mode/general
- 6776 total | wc -l *.c\(basort
+ 1965 vi.c | normal mode/general
+ 6787 total | wc -l *.c\(basort
 _
 .TE
 .
