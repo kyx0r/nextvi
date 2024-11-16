@@ -87,7 +87,7 @@ index b416146..49f99df 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/lbuf.c b/lbuf.c
-index ece3c3b..3cefb44 100644
+index 1678fef..932df65 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -428,16 +428,16 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -242,7 +242,7 @@ index 9f690cc..5cacff1 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 3aa0653..a19ca9a 100644
+index 4579e1a..c8476b1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -548,7 +548,7 @@ void vi_regput(int c, const char *s, int ln)

@@ -27,7 +27,7 @@ index 9f690cc..bcf9b78 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index 03b4b5d..9a21155 100644
+index c694ade..eabc5b0 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -77,6 +77,13 @@ void dir_init(void)
@@ -56,7 +56,7 @@ index 03b4b5d..9a21155 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 3aa0653..7115599 100644
+index 4579e1a..a773609 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -548,6 +548,12 @@ void vi_regput(int c, const char *s, int ln)
