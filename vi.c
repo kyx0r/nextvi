@@ -710,34 +710,25 @@ static int vi_motion(int *row, int *off)
 		if (vi_findchar(xb, cs, mv, cnt, row, off))
 			return -1;
 		break;
-	case 'B':
-		for (i = 0; i < cnt; i++)
-			if (lbuf_wordend(xb, 1, -(vi_nlword+1), row, off))
-				break;
-		break;
 	case 'b':
+	case 'B':
+		mark = mv == 'B';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordend(xb, 0, -(vi_nlword+1), row, off))
-				break;
-		break;
-	case 'E':
-		for (i = 0; i < cnt; i++)
-			if (lbuf_wordend(xb, 1, vi_nlword+1, row, off))
+			if (lbuf_wordend(xb, mark, -(vi_nlword+1), row, off))
 				break;
 		break;
 	case 'e':
+	case 'E':
+		mark = mv == 'E';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordend(xb, 0, vi_nlword+1, row, off))
-				break;
-		break;
-	case 'W':
-		for (i = 0; i < cnt; i++)
-			if (lbuf_wordbeg(xb, 1, vi_nlword+1, row, off))
+			if (lbuf_wordend(xb, mark, vi_nlword+1, row, off))
 				break;
 		break;
 	case 'w':
+	case 'W':
+		mark = mv == 'W';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordbeg(xb, 0, vi_nlword+1, row, off))
+			if (lbuf_wordbeg(xb, mark, vi_nlword+1, row, off))
 				break;
 		break;
 	case '{':
