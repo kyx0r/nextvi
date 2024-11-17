@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b416146..78e5e9a 100644
+index c3836b2..97ba073 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -403,7 +403,9 @@ int ex_edit(const char *path, int len)
@@ -53,7 +53,7 @@ index b416146..78e5e9a 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index bf2e6e7..5ca5fa8 100644
+index 71ab1f5..4172da6 100644
 --- a/term.c
 +++ b/term.c
 @@ -2,6 +2,8 @@ sbuf *term_sbuf;
@@ -119,7 +119,7 @@ index bf2e6e7..5ca5fa8 100644
  			ret:
  			*ibuf = 0;
  			n = 1;
-@@ -325,7 +331,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -323,7 +329,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -129,10 +129,10 @@ index bf2e6e7..5ca5fa8 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 4579e1a..361442e 100644
+index 0b2e9d9..59a72d0 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1903,7 +1903,8 @@ static int setup_signals(void) {
+@@ -1900,7 +1900,8 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -142,7 +142,7 @@ index 4579e1a..361442e 100644
  		return 0;
  	return 1;
  }
-@@ -1921,7 +1922,8 @@ int main(int argc, char *argv[])
+@@ -1918,7 +1919,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -153,10 +153,10 @@ index 4579e1a..361442e 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index d8c7a06..47d1bfe 100644
+index d5ba57b..a005b61 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -439,6 +439,7 @@ void vi_regput(int c, const char *s, int ln);
+@@ -441,6 +441,7 @@ void vi_regput(int c, const char *s, int ln);
  /* file system */
  void dir_calc(char *path);
  /* global variables */

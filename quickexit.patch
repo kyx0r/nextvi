@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b416146..fc8fc73 100644
+index c3836b2..6c06744 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -19,7 +19,7 @@ index b416146..fc8fc73 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 34a08e5..b2cb11d 100644
+index 32c5f2e..d2647a9 100644
 --- a/led.c
 +++ b/led.c
 @@ -377,6 +377,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
@@ -68,7 +68,7 @@ index 34a08e5..b2cb11d 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 4579e1a..bbe7906 100644
+index 0b2e9d9..f18c977 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index 4579e1a..bbe7906 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index d8c7a06..e7002e9 100644
+index d5ba57b..2c2b892 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -459,6 +459,7 @@ extern int xhlr;
+@@ -461,6 +461,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

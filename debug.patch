@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b416146..4a0a81b 100644
+index c3836b2..cc883b9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1236,3 +1236,11 @@ void ex_init(char **files, int n)
@@ -15,7 +15,7 @@ index b416146..4a0a81b 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 9f690cc..bcf9b78 100644
+index 6aec6a9..6db87f9 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -538,6 +538,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
@@ -56,10 +56,10 @@ index c694ade..eabc5b0 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 4579e1a..a773609 100644
+index 0b2e9d9..151db53 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -548,6 +548,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -546,6 +546,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -72,7 +72,7 @@ index 4579e1a..a773609 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1944,6 +1950,7 @@ int main(int argc, char *argv[])
+@@ -1941,6 +1947,7 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -80,7 +80,7 @@ index 4579e1a..a773609 100644
  	term_done();
  	if (xvis & 4)
  		return EXIT_SUCCESS;
-@@ -1952,5 +1959,12 @@ int main(int argc, char *argv[])
+@@ -1949,5 +1956,12 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
@@ -94,10 +94,10 @@ index 4579e1a..a773609 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index d8c7a06..c81ccff 100644
+index d5ba57b..c7dacfb 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -191,6 +191,7 @@ int ren_cwid(char *s, int pos);
+@@ -193,6 +193,7 @@ int ren_cwid(char *s, int pos);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -105,7 +105,7 @@ index d8c7a06..c81ccff 100644
  /* syntax highlighting */
  #define SYN_BD		0x010000
  #define SYN_IT		0x020000
-@@ -213,6 +214,7 @@ void syn_reloadft(void);
+@@ -215,6 +216,7 @@ void syn_reloadft(void);
  int syn_findhl(int id);
  void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
@@ -113,7 +113,7 @@ index d8c7a06..c81ccff 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -369,6 +371,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -371,6 +373,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
