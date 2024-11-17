@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b416146..6b3ae8a 100644
+index c3836b2..9668584 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1090,6 +1090,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
@@ -28,7 +28,7 @@ index b416146..6b3ae8a 100644
  	{"rd", ec_undoredo},
  	{"se", ec_set},
 diff --git a/lbuf.c b/lbuf.c
-index 1678fef..b82fe05 100644
+index fa1c628..9bd24f1 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -16,6 +16,7 @@ struct lbuf {
@@ -136,7 +136,7 @@ index 1678fef..b82fe05 100644
 +	char *ptr = lb->rehist->s, *bptr;
 +	int n, i;
 +	char buf[100];
-+	sbuf *sb; sbuf_make(sb, 128)
++	sbuf_smake(sb, 128)
 +	for (i = 0; lb->rehist->s_n > ptr - lb->rehist->s; i++) {
 +		n = *(int*)ptr;
 +		bptr = itoa(i, buf);
@@ -147,7 +147,7 @@ index 1678fef..b82fe05 100644
 +		sbuf_str(sb, buf);
 +		ptr += n * sizeof(lb->hist[0]) + sizeof(lb->hist_n);
 +	}
-+	sbufn_done(sb)
++	sbufn_sret(sb)
 +}
 +
  /* append undo/redo history; return lopt idx */
@@ -182,10 +182,10 @@ index 1678fef..b82fe05 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index d8c7a06..e17e550 100644
+index d5ba57b..0ab9233 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -150,6 +150,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
+@@ -152,6 +152,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip);
