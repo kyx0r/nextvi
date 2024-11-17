@@ -1857,7 +1857,7 @@ void vi(int init)
 				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 				|| (*vi_word && orow != xrow))
 			vi_drawagain(xtop);
-		else if (*vi_word && ooff != xoff) {
+		else if (*vi_word && ooff != xoff && xrow+1 < xtop + xrows) {
 			vi_drawrow(xrow+1);
 			vi_rshift = 0;
 		} else if (xtop != otop)
