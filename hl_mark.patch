@@ -1,0 +1,53 @@
+diff --git a/ex.c b/ex.c
+index c3836b2..0eb6c00 100644
+--- a/ex.c
++++ b/ex.c
+@@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
+ int xhlw;			/* highlight current word */
+ int xhlp;			/* highlight {}[]() pair */
+ int xhlr;			/* highlight text in reverse direction */
++int xhlm;			/* highlight marks */
+ int xled = 1;			/* use the line editor */
+ int xtd = +1;			/* current text direction */
+ int xshape = 1;			/* perform letter shaping */
+@@ -898,6 +899,7 @@ static struct option {
+ 	{"hlw", &xhlw},
+ 	{"hlp", &xhlp},
+ 	{"hlr", &xhlr},
++	{"hlm", &xhlm},
+ 	{"tbs", &xtabspc},
+ 	{"ish", &xish},
+ 	{"grp", &xgrp},
+diff --git a/vi.c b/vi.c
+index 0b2e9d9..3539185 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1831,6 +1831,28 @@ void vi(int init)
+ 				}
+ 			}
+ 		}
++		if (xhlm) {
++			static int atts[16];
++			for (int i = 1; i < LEN(atts); i++)
++				atts[i-1] = SYN_BGMK(i);
++			int mrow, moff, icol = 0;
++			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`'";
++			int sz = sizeof(void*);
++			if (!led_attsb)
++				sbuf_make(led_attsb, sz * 4)
++			for (int i = 0; i < LEN(marks); icol++, i++) {
++				if (lbuf_jump(xb, marks[i], &mrow, &moff))
++					continue;
++				if (icol > 15) /* wrap for only 16 color term */
++					icol = 0;
++				char *p = uc_chr(lbuf_get(xb, mrow), moff);
++				if (*p) {
++					int *att = &atts[icol];
++					sbuf_mem(led_attsb, &p, sz)
++					sbuf_mem(led_attsb, &att, sz)
++				}
++			}
++		}
+ 		if (xhlp && (k = syn_findhl(3)) >= 0) {
+ 			int row = xrow, off = xoff;
+ 			int row1 = xrow, off1 = xoff;
