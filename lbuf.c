@@ -210,7 +210,7 @@ int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
 {
 	long nr;
-	sbuf *sb; sbuf_make(sb, 1000000)
+	sbuf_smake(sb, 1000000)
 	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
 		if (sb->s_n + nr >= sb->s_sz) {
 			int newsz = NEXTSZ((unsigned int)sb->s_sz, (unsigned int)sb->s_sz + 1);
@@ -223,7 +223,7 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
 	}
 	sbuf_null(sb)
 	lbuf_edit(lbuf, sb->s, beg, end);
-	sbuf_free(sb)
+	free(sb->s);
 	return nr != 0;
 }
 

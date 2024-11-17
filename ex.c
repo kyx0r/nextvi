@@ -433,7 +433,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 
 static int ec_editapprox(char *loc, char *cmd, char *arg)
 {
-	sbuf *sb; sbuf_make(sb, 128)
+	sbuf_smake(sb, 128)
 	char ln[EXLEN];
 	char *path, *arg1 = arg+dstrlen(arg, ' ');
 	int c = 0, i, inst = *arg1 ? atoi(arg1) : -1;
@@ -458,7 +458,7 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 		path[lbuf_slen(path)] = '\n';
 	}
 	xmpt = xmpt >= 0 ? 0 : xmpt;
-	sbuf_free(sb)
+	free(sb->s);
 	return 0;
 }
 
