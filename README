@@ -130,6 +130,7 @@ hl_mark.patch
 -------------
 Adds new ex option "mhl" which will highlight lbuf marks. Each mark has
 different color up to 16. Higher marks may duplicate the colors.
+Lazy redraw, use <^L> if needed.
 
 c_option.patch
 -------------
