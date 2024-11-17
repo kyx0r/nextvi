@@ -39,11 +39,10 @@ char *uc_beg(char *beg, char *s)
 /* allocate and return an array for the characters in s */
 char **uc_chop(char *s, int *n)
 {
-	char **chrs;
-	int i;
 	*n = uc_slen(s);
-	chrs = emalloc((*n + 1) * sizeof(chrs[0]));
-	for (i = 0; i < *n + 1; i++) {
+	int i, c = *n + 1;
+	char **chrs = emalloc(c * sizeof(chrs[0]));
+	for (i = 0; i < c; i++) {
 		chrs[i] = s;
 		s += uc_len(s);
 	}

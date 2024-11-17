@@ -262,11 +262,11 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end)
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)
 {
-	sbuf *sb; sbuf_make(sb, 64)
+	sbuf_smake(sb, 64)
 	for (int i = beg; i < end; i++)
 		if (i < lb->ln_n)
 			sbuf_str(sb, lb->ln[i])
-	sbufn_done(sb)
+	sbufn_sret(sb)
 }
 
 char *lbuf_get(struct lbuf *lb, int pos)

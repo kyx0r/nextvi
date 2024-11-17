@@ -257,7 +257,6 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 {
 	static char *sh[] = {"$SHELL", "sh", NULL};
 	struct pollfd fds[3];
-	sbuf *sb = NULL; /* initialize, bogus gcc12 warn */
 	char buf[512];
 	int ifd = -1, ofd = -1;
 	int slen = ibuf ? strlen(ibuf) : 0;
@@ -271,8 +270,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 	int pid = cmd_make(argv+!xish, ibuf ? &ifd : NULL, oproc ? &ofd : NULL);
 	if (pid <= 0)
 		return NULL;
-	if (oproc)
-		sbuf_make(sb, 64)
+	sbuf_smake(sb, sizeof(buf))
 	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
 		term_done();
@@ -332,6 +330,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 		signal(SIGINT, SIG_DFL);
 	}
 	if (oproc)
-		sbufn_done(sb)
+		sbufn_sret(sb)
+	free(sb->s);
 	return NULL;
 }
