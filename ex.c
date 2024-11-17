@@ -164,7 +164,7 @@ void temp_done(int i)
 /* replace % and # with buffer names and !..! with command output */
 static char *ex_pathexpand(char *src)
 {
-	sbuf *sb; sbuf_make(sb, 1024)
+	sbuf_smake(sb, 1024)
 	while (*src) {
 		if (*src == '#' || *src == '%') {
 			int n = -1;
@@ -173,7 +173,7 @@ static char *ex_pathexpand(char *src)
 				pbuf = &bufs[n = atoi(&src[1])];
 			if (pbuf >= &bufs[xbufcur] || !pbuf->path[0]) {
 				ex_print("\"#\" or \"%\" is not set");
-				sbuf_free(sb)
+				free(sb->s);
 				return NULL;
 			}
 			sbuf_str(sb, pbuf->path)
@@ -200,7 +200,7 @@ static char *ex_pathexpand(char *src)
 			sbuf_chr(sb, *src++)
 		}
 	}
-	sbufn_done(sb)
+	sbufn_sret(sb)
 }
 
 /* set the current search keyword rset if the kwd or flags changed */
