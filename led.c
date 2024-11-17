@@ -600,7 +600,8 @@ leave:
 char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 {
 	int key, n;
-	sbuf *sb; sbufn_make(sb, xcols)
+	sbuf_smake(sb, xcols)
+	sbuf_null(sb)
 	if (pref)
 		sbufn_str(sb, pref)
 	n = sb->s_n;
@@ -616,9 +617,9 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 			temp_write(0, sb->s + n);
 		}
 		sbuf_str(sb, post)
-		sbufn_done(sb)
+		sbufn_sret(sb)
 	}
-	sbuf_free(sb)
+	free(sb->s);
 	return NULL;
 }
 

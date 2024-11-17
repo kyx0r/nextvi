@@ -302,7 +302,6 @@ static char *vi_enprompt(char *msg, char *insert)
 /* read an ex input line */
 char *ex_read(char *msg)
 {
-	sbuf *sb;
 	int c;
 	if (!(xvis & 2)) {
 		int oleft = xleft;
@@ -315,14 +314,14 @@ char *ex_read(char *msg)
 		syn_setft(ex_ft);
 		return s;
 	}
-	sbuf_make(sb, 128)
+	sbuf_smake(sb, 128)
 	while ((c = term_read()) != EOF && c != '\n')
 		sbuf_chr(sb, c)
 	if (c == EOF) {
-		sbuf_free(sb)
+		free(sb->s);
 		return NULL;
 	}
-	sbufn_done(sb)
+	sbufn_sret(sb)
 }
 
 /* print an ex output line */
@@ -492,7 +491,6 @@ static int vi_motionln(int *row, int cmd)
 
 static char *vi_curword(struct lbuf *lb, int row, int off, int n, int x)
 {
-	sbuf *sb;
 	char *ln = lbuf_get(lb, row);
 	char *beg, *end;
 	if (!ln || !n)
@@ -506,19 +504,19 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int x)
 			end += uc_len(end);
 	if (beg >= --end)
 		return NULL;
-	sbuf_make(sb, (end - beg)+64)
+	sbuf_smake(sb, (end - beg)+64)
 	if (n > 1) {
 		for (; beg != end; beg++) {
 			if (strchr("!#%{}[]().?\\^$|*/+", *beg))
 				sbuf_str(sb, *beg == x ? "\\\\" : "\\")
 			sbuf_chr(sb, *beg)
 		}
-		sbufn_done(sb)
+	} else {
+		sbuf_str(sb, "\\<")
+		sbuf_mem(sb, beg, end - beg)
+		sbuf_str(sb, "\\>")
 	}
-	sbuf_str(sb, "\\<")
-	sbuf_mem(sb, beg, end - beg)
-	sbuf_str(sb, "\\>")
-	sbufn_done(sb)
+	sbufn_sret(sb)
 }
 
 void vi_regputraw(unsigned char c, const char *s, int ln, int append)
@@ -854,11 +852,10 @@ static void swap(int *a, int *b)
 
 static char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
 {
-	sbuf *sb;
 	char *s1, *s2, *s3;
 	if (r1 == r2)
 		return uc_sub(lbuf_get(lb, r1), o1, o2);
-	sbuf_make(sb, 1024)
+	sbuf_smake(sb, 1024)
 	s1 = uc_chr(lbuf_get(lb, r1), o1);
 	s3 = uc_sub(lbuf_get(lb, r2), 0, o2);
 	s2 = lbuf_cp(lb, r1 + 1, r2);
@@ -867,7 +864,7 @@ static char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
 	sbuf_str(sb, s3)
 	free(s2);
 	free(s3);
-	sbufn_done(sb)
+	sbufn_sret(sb)
 }
 
 static void vi_yank(int r1, int o1, int r2, int o2, int lnmode)
@@ -921,11 +918,11 @@ static void vi_splitln(int row, int linepos, int newln)
 
 static char *vi_indents(char *ln, int *l)
 {
-	sbuf *sb; sbuf_make(sb, 256)
+	sbuf_smake(sb, 256)
 	while (xai && ln && (*ln == ' ' || *ln == '\t'))
 		sbuf_chr(sb, *ln++)
 	*l = sb->s_n;
-	sbufn_done(sb)
+	sbufn_sret(sb)
 }
 
 static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
@@ -1199,9 +1196,9 @@ static void vc_status(int type)
 {
 	int cp, l, col;
 	char cbuf[8] = "", *c;
+	col = vi_off2col(xb, xrow, xoff);
+	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
 	if (type && lbuf_get(xb, xrow)) {
-		col = vi_off2col(xb, xrow, xoff);
-		col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
 		c = rstate->chrs[xoff];
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
@@ -1212,10 +1209,10 @@ static void vc_status(int type)
 	}
 	long buf = ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%s%dL %d%% L%d B%ld",
+		"\"%s\"%s%dL %d%% L%d C%d B%ld",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? "* " : " ", lbuf_len(xb),
-		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1,
+		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
 		buf >= xbufcur || buf < 0 ? tempbufs - ex_buf - 1 : buf);
 }
 

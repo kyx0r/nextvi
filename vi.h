@@ -54,9 +54,9 @@ typedef struct sbuf {
 	free(s); \
 } \
 
-#define sbuf_make(sb, newsz) \
+#define _sbuf_make(sb, newsz, alloc) \
 { \
-	sb = emalloc(sizeof(*sb)); \
+	alloc; \
 	sb->s_sz = newsz; \
 	sb->s = emalloc(newsz); \
 	sb->s_n = 0; \
@@ -75,6 +75,8 @@ if (sb->s_n + len >= sb->s_sz) \
 mem##func(sb->s + sb->s_n, x, len); \
 sb->s_n += len; \
 
+#define sbuf_smake(sb, newsz) sbuf _##sb, *sb = &_##sb; _sbuf_make(sb, newsz,)
+#define sbuf_make(sb, newsz) { _sbuf_make(sb, newsz, sb = emalloc(sizeof(*sb))) }
 #define sbuf_free(sb) { free(sb->s); free(sb); }
 #define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
 #define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
@@ -82,13 +84,13 @@ sb->s_n += len; \
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that NULL terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
-#define sbufn_done(sb) { sbuf_set(sb, '\0', 4) char *s = sb->s; free(sb); return s; }
 #define sbufn_make(sb, newsz) { sbuf_make(sb, newsz) sbuf_null(sb) }
 #define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
 #define sbufn_mem(sb, s, len) { sbuf_mem(sb, s, len) sbuf_null(sb) }
 #define sbufn_str(sb, s) { sbuf_str(sb, s) sbuf_null(sb) }
 #define sbufn_cut(sb, len) { sbuf_cut(sb, len) sbuf_null(sb) }
 #define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_null(sb) }
+#define sbufn_sret(sb) { sbuf_set(sb, '\0', 4) return sb->s; }
 
 /* regex.c regular expression sets */
 #define REG_ICASE	0x01
