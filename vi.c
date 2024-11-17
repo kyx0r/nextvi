@@ -887,11 +887,11 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? "\n" : uc_chr(lbuf_get(xb, r2), o2);
 	if (!lnmode) {
-		sbuf *sb; sbuf_make(sb, 1024)
+		sbuf_smake(sb, 1024)
 		sbuf_str(sb, pref)
 		sbufn_str(sb, post)
 		lbuf_edit(xb, sb->s, r1, r2 + 1);
-		sbuf_free(sb)
+		free(sb->s);
 	} else
 		lbuf_edit(xb, NULL, r1, r2 + 1);
 	xrow = r1;
@@ -971,12 +971,12 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
 	post = lnmode ? "\n" : uc_chr(lbuf_get(xb, r2), o2);
 	if (!lnmode) {
-		sbuf *sb; sbuf_make(sb, 256)
+		sbuf_smake(sb, 256)
 		sbuf_str(sb, pref)
 		sbuf_str(sb, region)
 		sbufn_str(sb, post)
 		lbuf_edit(xb, sb->s, r1, r2 + 1);
-		sbuf_free(sb)
+		free(sb->s);
 	} else
 		lbuf_edit(xb, region, r1, r2 + 1);
 	xrow = r2;
@@ -1002,7 +1002,7 @@ static void vi_pipe(int r1, int r2)
 
 static void vi_shift(int r1, int r2, int dir)
 {
-	sbuf *sb; sbuf_make(sb, 1024)
+	sbuf_smake(sb, 1024)
 	char *ln;
 	int i;
 	for (i = r1; i <= r2; i++) {
@@ -1017,7 +1017,7 @@ static void vi_shift(int r1, int r2, int dir)
 		sbuf_cut(sb, 0)
 	}
 	xoff = lbuf_indents(xb, r1);
-	sbuf_free(sb)
+	free(sb->s);
 }
 
 static void vc_motion(int cmd)
@@ -1123,7 +1123,7 @@ static int vc_put(int cmd)
 		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty");
 	if (!buf || !buf[0])
 		return 0;
-	sbuf *sb; sbuf_make(sb, 1024)
+	sbuf_smake(sb, 1024)
 	if (vi_rln[vi_ybuf]) {
 		for (i = 0; i < cnt; i++)
 			sbufn_str(sb, buf)
@@ -1133,7 +1133,7 @@ static int vc_put(int cmd)
 			xrow++;
 		lbuf_edit(xb, sb->s, xrow, xrow);
 		xoff = lbuf_indents(xb, xrow);
-		sbuf_free(sb)
+		free(sb->s);
 		return 1;
 	}
 	char *ln = xrow < lbuf_len(xb) ? lbuf_get(xb, xrow) : "\n";
@@ -1146,18 +1146,17 @@ static int vc_put(int cmd)
 	sbufn_str(sb, uc_chr(ln, off))
 	lbuf_edit(xb, sb->s, xrow, xrow + 1);
 	xoff = off + uc_slen(buf) * cnt - 1;
-	sbuf_free(sb)
+	free(sb->s);
 	return 1;
 }
 
 static void vc_join(int spc, int cnt)
 {
-	sbuf *sb;
 	int beg = xrow;
 	int end = xrow + cnt;
 	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
 		return;
-	sbuf_make(sb, 1024)
+	sbuf_smake(sb, 1024)
 	xoff = 0;
 	for (int i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
@@ -1176,7 +1175,7 @@ static void vc_join(int spc, int cnt)
 	}
 	sbufn_chr(sb, '\n')
 	lbuf_edit(xb, sb->s, beg, end);
-	sbuf_free(sb)
+	free(sb->s);
 	vi_mod |= 1;
 }
 
@@ -1221,7 +1220,6 @@ static int vc_replace(void)
 	int cnt = MAX(1, vi_arg1);
 	char *cs = led_read(&xkmap, term_read());
 	char *ln = lbuf_get(xb, xrow);
-	sbuf *sb;
 	char *pref, *post;
 	char *s;
 	int off, i;
@@ -1235,7 +1233,7 @@ static int vc_replace(void)
 		return 0;
 	pref = uc_sub(ln, 0, off);
 	post = uc_chr(ln, off + cnt);
-	sbuf_make(sb, 1024)
+	sbuf_smake(sb, 1024)
 	sbuf_str(sb, pref)
 	for (i = 0; i < cnt; i++)
 		sbuf_str(sb, cs)
@@ -1246,7 +1244,7 @@ static int vc_replace(void)
 		xoff = 0;
 	} else
 		xoff = off + cnt - 1;
-	sbuf_free(sb)
+	free(sb->s);
 	free(pref);
 	return cs[0] == '\n' ? 1 : 2;
 }

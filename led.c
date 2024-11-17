@@ -16,8 +16,7 @@ static int search(const char *pattern, int l)
 	if (!*pattern)
 		return 0;
 	sbuf_cut(suggestsb, 0)
-	sbuf *sylsb;
-	sbuf_make(sylsb, 1024)
+	sbuf_smake(sylsb, 1024)
 	char *part = strstr(acsb->s, pattern);
 	while (part) {
 		char *part1 = part;
@@ -33,7 +32,7 @@ static int search(const char *pattern, int l)
 		part = strstr(part+len, pattern);
 	}
 	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
-	sbuf_free(sylsb)
+	free(sylsb->s);
 	sbuf_set(suggestsb, '\0', 4)
 	suggestsb->s_n -= 4;
 	return suggestsb->s_n;
@@ -45,12 +44,11 @@ static void file_index(struct lbuf *buf)
 	int len, sidx, grp = xgrp;
 	char **ss = lbuf_buf(buf);
 	int ln_n = lbuf_len(buf), n;
-	sbuf *ibuf;
 	rset *rs = rset_smake(xacreg ? xacreg->s : reg, xic ? REG_ICASE : 0);
 	if (!rs)
 		return;
 	int subs[rs->grpcnt * 2];
-	sbuf_make(ibuf, 1024)
+	sbuf_smake(ibuf, 1024)
 	for (n = 1; n <= acsb->s_n; n++)
 		if (acsb->s[n - 1] == '\n')
 			sbuf_mem(ibuf, &n, (int)sizeof(n))
@@ -81,7 +79,7 @@ static void file_index(struct lbuf *buf)
 		}
 	}
 	sbuf_null(acsb)
-	sbuf_free(ibuf)
+	free(ibuf->s);
 	rset_free(rs);
 }
 
@@ -361,12 +359,12 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 			term_kill();
 		}
 		if (r >= orow-xtop && r < xrow-xtop) {
-			sbuf *cb; sbuf_make(cb, 128)
+			sbuf_smake(cb, 128)
 			nl = dstrlen(cs, '\n');
 			sbuf_mem(cb, cs, nl+!!cs[nl])
 			sbuf_set(cb, '\0', 4)
 			led_recrender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
-			sbuf_free(cb)
+			free(cb->s);
 			cs += nl+!!cs[nl];
 			continue;
 		}
