@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 32c5f2e..f7134f1 100644
+index ca40adb..4c0eacc 100644
 --- a/led.c
 +++ b/led.c
-@@ -275,7 +275,7 @@ static int led_lastword(char *s)
+@@ -276,7 +276,7 @@ static int led_lastword(char *s)
  	return r - s;
  }
  
@@ -11,7 +11,7 @@ index 32c5f2e..f7134f1 100644
  {
  	if (!xled)
  		return;
-@@ -293,8 +293,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
+@@ -294,8 +294,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
  		xleft = pos - xcols / 2;
  	if (pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
@@ -24,7 +24,7 @@ index 32c5f2e..f7134f1 100644
  	/* cursor position for inserting the next character */
  	if (next) {
  		if (off - 2 >= 0)
-@@ -385,7 +387,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -386,7 +388,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
@@ -34,7 +34,7 @@ index 32c5f2e..f7134f1 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -571,6 +574,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -572,6 +575,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			else
  				led_redraw(sb->s, 0, orow, lsh);
  			continue;
@@ -55,7 +55,7 @@ index 32c5f2e..f7134f1 100644
  		case TK_CTL('o'):;
  			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
  			syn_setft(ex_ft);
-@@ -593,6 +610,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -594,6 +611,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index 32c5f2e..f7134f1 100644
  	*key = c;
  }
  
-@@ -640,7 +658,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
+@@ -641,7 +659,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)
@@ -73,7 +73,7 @@ index 32c5f2e..f7134f1 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 0b2e9d9..767fc49 100644
+index d038913..8767ed9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -925,6 +925,8 @@ static char *vi_indents(char *ln, int *l)
@@ -105,7 +105,7 @@ index 0b2e9d9..767fc49 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1639,6 +1644,37 @@ void vi(int init)
+@@ -1637,6 +1642,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -143,7 +143,7 @@ index 0b2e9d9..767fc49 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xrow--;
-@@ -1652,6 +1688,9 @@ void vi(int init)
+@@ -1650,6 +1686,9 @@ void vi(int init)
  					xoff--;
  				xoff = xoff < 0 ? 0 : xoff;
  				break;

@@ -11,7 +11,7 @@ index b496f47..2e76016 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index fa1c628..31c25f8 100644
+index 0eae02e..2f58ece 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -428,34 +428,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -127,7 +127,7 @@ index fa1c628..31c25f8 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 6aec6a9..c945eb1 100644
+index 1388190..69a2920 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -312,7 +312,7 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -170,7 +170,7 @@ index 3d9e061..fc3924b 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 0b2e9d9..2fc3d3d 100644
+index d038913..4826bb0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -182,7 +182,7 @@ index 0b2e9d9..2fc3d3d 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index d5ba57b..7f1c609 100644
+index ac6b5a3..c978c73 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -217,7 +217,9 @@ void syn_addhl(char *reg, int id, int reload);

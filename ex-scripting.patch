@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c3836b2..6c984c1 100644
+index 756f45d..01c3ced 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
@@ -78,7 +78,7 @@ index 71ab1f5..b8a3eb2 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index d5ba57b..879e3df 100644
+index ac6b5a3..72bedb0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

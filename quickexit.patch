@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c3836b2..6c06744 100644
+index 756f45d..831da86 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -19,10 +19,10 @@ index c3836b2..6c06744 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 32c5f2e..d2647a9 100644
+index ca40adb..d1a81e7 100644
 --- a/led.c
 +++ b/led.c
-@@ -377,6 +377,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
+@@ -378,6 +378,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
  	term_pos(xrow - xtop, 0);
  }
  
@@ -37,7 +37,7 @@ index 32c5f2e..d2647a9 100644
  /* read a line from the terminal */
  static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  		int *key, int *kmap, int orow, int lsh)
-@@ -384,6 +392,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -385,6 +393,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int len, t_row = -2, p_reg = 0;
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
@@ -45,7 +45,7 @@ index 32c5f2e..d2647a9 100644
  	while (1) {
  		led_printparts(sb, ps, post, ai_max);
  		len = sb->s_n;
-@@ -581,7 +590,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -582,7 +591,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			xquit = 0;
  			restore(xvis)
  			continue;
@@ -68,7 +68,7 @@ index 32c5f2e..d2647a9 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 0b2e9d9..f18c977 100644
+index d038913..6d7af6d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,10 +80,10 @@ index 0b2e9d9..f18c977 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index d5ba57b..2c2b892 100644
+index ac6b5a3..41fd3fb 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -461,6 +461,7 @@ extern int xhlr;
+@@ -466,6 +466,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

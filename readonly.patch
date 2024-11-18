@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c3836b2..921d80f 100644
+index 756f45d..7bb00c8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,6 +37,7 @@ static int xbufsmax;		/* number of buffers */
@@ -60,10 +60,10 @@ index c3836b2..921d80f 100644
  	{"ph", ec_setenc},
  	{"", ec_print},
 diff --git a/vi.c b/vi.c
-index 0b2e9d9..910a96c 100644
+index d038913..41238c6 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1928,9 +1928,11 @@ int main(int argc, char *argv[])
+@@ -1926,9 +1926,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -77,10 +77,10 @@ index 0b2e9d9..910a96c 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index d5ba57b..9095e60 100644
+index ac6b5a3..b85d99c 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -336,6 +336,7 @@ struct buf {
+@@ -341,6 +341,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -88,7 +88,7 @@ index d5ba57b..9095e60 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -475,3 +476,4 @@ extern char *fs_exdir;
+@@ -480,3 +481,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c3836b2..9668584 100644
+index 756f45d..061049c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1090,6 +1090,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
@@ -28,7 +28,7 @@ index c3836b2..9668584 100644
  	{"rd", ec_undoredo},
  	{"se", ec_set},
 diff --git a/lbuf.c b/lbuf.c
-index fa1c628..9bd24f1 100644
+index 0eae02e..e5a2ac5 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -16,6 +16,7 @@ struct lbuf {
@@ -182,7 +182,7 @@ index fa1c628..9bd24f1 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index d5ba57b..0ab9233 100644
+index ac6b5a3..f603412 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -152,6 +152,8 @@ int lbuf_globget(struct lbuf *lb, int pos, int dep);
