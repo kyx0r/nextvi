@@ -62,7 +62,7 @@ index 756f45d..01c3ced 100644
  };
  
 diff --git a/term.c b/term.c
-index 71ab1f5..b8a3eb2 100644
+index 885c082..4ee6495 100644
 --- a/term.c
 +++ b/term.c
 @@ -218,7 +218,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
