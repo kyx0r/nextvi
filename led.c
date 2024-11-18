@@ -156,7 +156,6 @@ void led_render(char *s0, int cbeg, int cend)
 	if (!xled)
 		return;
 	ren_state *r = ren_position(s0);
-	sbuf *bsb;
 	int j, c, l, i, o, n = r->n;
 	int att_old = 0, atti = 0, cterm = cend - cbeg;
 	char *bound = NULL;
@@ -204,7 +203,7 @@ void led_render(char *s0, int cbeg, int cend)
 			att[j + 1] = key0;
 			stt[j + 1] = i;
 		}
-		sbuf_make(bsb, cterm*4);
+		sbuf_smake(bsb, cterm*4);
 		for (i = 0; i < c; i++) {
 			ctt[stt[i]] = i;
 			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
@@ -215,21 +214,25 @@ void led_render(char *s0, int cbeg, int cend)
 	memset(att, 0, MIN(n, cterm) * sizeof(att[0]));
 	if (xhl)
 		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
-	if (bound)
-		sbuf_free(bsb);
-	if (led_attsb && led_attsb->s_n && xhl) {
-		for (c = 0, i = 0; i < cterm;) {
-			if ((o = off[i++]) < 0)
+	free(bound);
+	if (led_attsb && xhl) {
+		led_att *p = (led_att*)led_attsb->s;
+		for (; (char*)p < &led_attsb->s[led_attsb->s_n]; p++) {
+			if (p->s != chrs[0])
 				continue;
-			void **p = (void**)led_attsb->s;
-			for (; p < (void**)&led_attsb->s[led_attsb->s_n]; p+=2) {
-				if (*(char**)p == chrs[o]) {
-					j = bound ? ctt[c] : o;
-					att[j] = syn_merge(*((int**)p)[1], att[j]);
+			if (!bound) {
+				att[p->off] = syn_merge(p->att, att[p->off]);
+				continue;
+			}
+			for (c = 0, i = 0; i < cterm;) {
+				if ((o = off[i++]) < 0)
+					continue;
+				if (o == p->off) {
+					att[ctt[c]] = syn_merge(p->att, att[ctt[c]]);
 					break;
 				}
+				for (c++; off[i] == o; i++);
 			}
-			for (c++; off[i] == o; i++);
 		}
 	}
 	if (xhlr && xhl) {

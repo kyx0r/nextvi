@@ -304,6 +304,11 @@ char *xgetenv(char* q[]);
 #define TK_INT(c)	((c) <= 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
 
 /* led.c line-oriented input and output */
+typedef struct {
+	char *s;
+	int off;
+	int att;
+} led_att;
 extern sbuf *led_attsb;
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 sbuf *led_input(char *pref, char **post, int row, int lsh);
