@@ -1832,19 +1832,19 @@ void vi(int init)
 		if (xhlp && (k = syn_findhl(3)) >= 0) {
 			int row = xrow, off = xoff;
 			int row1 = xrow, off1 = xoff;
-			int sz = sizeof(void*);
+			led_att la;
 			if (!led_attsb)
-				sbuf_make(led_attsb, sz * 4)
+				sbuf_make(led_attsb, sizeof(la) * 2)
 			if (!lbuf_pair(xb, &row, &off)) {
 				row1 = row; off1 = off;
 				if (!lbuf_pair(xb, &row, &off)) {
-					char *p = uc_chr(ln, off);
-					int *att = &hls[k].att[0];
-					sbuf_mem(led_attsb, &p, sz)
-					sbuf_mem(led_attsb, &att, sz)
-					p = uc_chr(lbuf_get(xb, row1), off1);
-					sbuf_mem(led_attsb, &p, sz)
-					sbuf_mem(led_attsb, &att, sz)
+					la.s = ln;
+					la.off = off;
+					la.att = hls[k].att[0];
+					sbuf_mem(led_attsb, &la, (int)sizeof(la))
+					la.s = lbuf_get(xb, row1);
+					la.off = off1;
+					sbuf_mem(led_attsb, &la, (int)sizeof(la))
 					vi_mod |= row1 == row && orow == xrow ? 2 : 1;
 				}
 			}

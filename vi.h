@@ -179,7 +179,6 @@ typedef struct {
 	int ctx;
 } ren_state;
 extern ren_state *rstate;
-void ren_done(void);
 ren_state *ren_position(char *s);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
@@ -187,7 +186,6 @@ int ren_pos(char *s, int off);
 int ren_cursor(char *s, int pos);
 int ren_noeol(char *s, int p);
 int ren_off(char *s, int p);
-int ren_region(char *s, int c1, int c2, int *l1, int *l2, int closed);
 char *ren_translate(char *s, char *ln);
 int ren_cwid(char *s, int pos);
 /* text direction */
@@ -304,6 +302,11 @@ char *xgetenv(char* q[]);
 #define TK_INT(c)	((c) <= 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
 
 /* led.c line-oriented input and output */
+typedef struct {
+	char *s;
+	int off;
+	int att;
+} led_att;
 extern sbuf *led_attsb;
 char *led_prompt(char *pref, char *post, char *insert, int *kmap);
 sbuf *led_input(char *pref, char **post, int row, int lsh);
