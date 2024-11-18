@@ -19,27 +19,25 @@ index 756f45d..b2b1bd4 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/vi.c b/vi.c
-index d038913..08bf975 100644
+index d038913..244547a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1829,6 +1829,23 @@ void vi(int init)
+@@ -1829,6 +1829,21 @@ void vi(int init)
  				}
  			}
  		}
 +		if (xhlm) {
-+			int mrow, moff, icol = 1;
++			int mrow, moff;
 +			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`'";
 +			led_att la;
 +			if (!led_attsb)
 +				sbuf_make(led_attsb, sizeof(la))
-+			for (int i = 0; i < LEN(marks); icol++, i++) {
++			for (int i = 0; i < LEN(marks); i++) {
 +				if (lbuf_jump(xb, marks[i], &mrow, &moff))
 +					continue;
-+				if (icol > 15) /* wrap for only 16 color term */
-+					icol = 1;
 +				la.s = lbuf_get(xb, mrow);
 +				la.off = moff;
-+				la.att = SYN_BGMK(icol);
++				la.att = SYN_BGMK((i % 15) + 1);
 +				sbuf_mem(led_attsb, &la, (int)sizeof(la))
 +			}
 +		}
