@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c3836b2..2196a9f 100644
+index 756f45d..ff8d5e1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -771,7 +771,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
@@ -39,7 +39,7 @@ index c3836b2..2196a9f 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index fa1c628..c5468a9 100644
+index 0eae02e..5af59e8 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -432,7 +432,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
@@ -69,27 +69,27 @@ index fa1c628..c5468a9 100644
  }
  
 diff --git a/led.c b/led.c
-index 32c5f2e..2706dff 100644
+index ca40adb..341d4b3 100644
 --- a/led.c
 +++ b/led.c
-@@ -49,7 +49,7 @@ static void file_index(struct lbuf *buf)
+@@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
  	rset *rs = rset_smake(xacreg ? xacreg->s : reg, xic ? REG_ICASE : 0);
  	if (!rs)
  		return;
 -	int subs[rs->grpcnt * 2];
 +	int *subs = emalloc(rs->grpcnt * 2 * sizeof(int));
- 	sbuf_make(ibuf, 1024)
+ 	sbuf_smake(ibuf, 1024)
  	for (n = 1; n <= acsb->s_n; n++)
  		if (acsb->s[n - 1] == '\n')
-@@ -83,6 +83,7 @@ static void file_index(struct lbuf *buf)
+@@ -81,6 +81,7 @@ static void file_index(struct lbuf *buf)
  	sbuf_null(acsb)
- 	sbuf_free(ibuf)
+ 	free(ibuf->s);
  	rset_free(rs);
 +	free(subs);
  }
  
  static char *kmap_map(int kmap, int c)
-@@ -163,10 +164,10 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -160,10 +161,10 @@ void led_render(char *s0, int cbeg, int cend)
  	int att_old = 0, atti = 0, cterm = cend - cbeg;
  	char *bound = NULL;
  	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
@@ -104,7 +104,7 @@ index 32c5f2e..2706dff 100644
  	int ctx = r->ctx;
  	off[cterm] = -1;
  	if (ctx < 0) {
-@@ -188,6 +189,8 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -185,6 +186,8 @@ void led_render(char *s0, int cbeg, int cend)
  		if (r->cmax > cterm && r->pos[o] + r->wid[o] > cend)
  			while (off[i] == o)
  				off[ctx < 0 ? i++ : i--] = -1;
@@ -113,7 +113,7 @@ index 32c5f2e..2706dff 100644
  		for (i = 0, c = 0; i < cterm;) {
  			if ((o = off[i++]) >= 0) {
  				att[c++] = o;
-@@ -253,6 +256,10 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -254,6 +257,10 @@ void led_render(char *s0, int cbeg, int cend)
  	else
  		led_out(term_sbuf, 1)
  	sbufn_str(term_sbuf, term_att(0))
@@ -125,7 +125,7 @@ index 32c5f2e..2706dff 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 6aec6a9..aa370e1 100644
+index 1388190..20921cc 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -312,7 +312,14 @@ int reg_comp(rcode *prog, const char *re, int nsubs, int flags)
@@ -235,7 +235,7 @@ index c694ade..5afd08a 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 0b2e9d9..fcc6d30 100644
+index d038913..6bffc01 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -162,7 +162,8 @@ static void vi_drawrow(int row)
@@ -257,7 +257,7 @@ index 0b2e9d9..fcc6d30 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1409,10 +1412,11 @@ void vi(int init)
+@@ -1407,10 +1410,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -270,7 +270,7 @@ index 0b2e9d9..fcc6d30 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1547,7 +1551,7 @@ void vi(int init)
+@@ -1545,7 +1549,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix(), '|');
@@ -279,7 +279,7 @@ index 0b2e9d9..fcc6d30 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg1, buf+4);
  					strcat(buf1, "s/");
-@@ -1557,10 +1561,11 @@ void vi(int init)
+@@ -1555,10 +1559,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf);
@@ -292,7 +292,7 @@ index 0b2e9d9..fcc6d30 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1568,6 +1573,7 @@ void vi(int init)
+@@ -1566,6 +1571,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf);
