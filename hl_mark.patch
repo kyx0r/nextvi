@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c3836b2..0eb6c00 100644
+index 756f45d..b2b1bd4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -19,33 +19,28 @@ index c3836b2..0eb6c00 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/vi.c b/vi.c
-index 0b2e9d9..3539185 100644
+index d038913..08bf975 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1831,6 +1831,28 @@ void vi(int init)
+@@ -1829,6 +1829,23 @@ void vi(int init)
  				}
  			}
  		}
 +		if (xhlm) {
-+			static int atts[16];
-+			for (int i = 1; i < LEN(atts); i++)
-+				atts[i-1] = SYN_BGMK(i);
-+			int mrow, moff, icol = 0;
++			int mrow, moff, icol = 1;
 +			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`'";
-+			int sz = sizeof(void*);
++			led_att la;
 +			if (!led_attsb)
-+				sbuf_make(led_attsb, sz * 4)
++				sbuf_make(led_attsb, sizeof(la))
 +			for (int i = 0; i < LEN(marks); icol++, i++) {
 +				if (lbuf_jump(xb, marks[i], &mrow, &moff))
 +					continue;
 +				if (icol > 15) /* wrap for only 16 color term */
-+					icol = 0;
-+				char *p = uc_chr(lbuf_get(xb, mrow), moff);
-+				if (*p) {
-+					int *att = &atts[icol];
-+					sbuf_mem(led_attsb, &p, sz)
-+					sbuf_mem(led_attsb, &att, sz)
-+				}
++					icol = 1;
++				la.s = lbuf_get(xb, mrow);
++				la.off = moff;
++				la.att = SYN_BGMK(icol);
++				sbuf_mem(led_attsb, &la, (int)sizeof(la))
 +			}
 +		}
  		if (xhlp && (k = syn_findhl(3)) >= 0) {
