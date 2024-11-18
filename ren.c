@@ -80,20 +80,16 @@ void dir_init(void)
 static ren_state rstates[2];
 ren_state *rstate = &rstates[0];
 
-void ren_done(void)
-{
-	free(rstate->col);
-	free(rstate->pos);
-	free(rstate->chrs);
-}
-
 /* specify the screen position of the characters in s */
 ren_state *ren_position(char *s)
 {
 	if (rstate->s == s)
 		return rstate;
-	else
-		ren_done();
+	else {
+		free(rstate->col);
+		free(rstate->pos);
+		free(rstate->chrs);
+	}
 	int n, i, c = 0, *off, *pos, *col;
 	int cpos = 0, wid;
 	char **chrs = uc_chop(s, &n);
