@@ -77,10 +77,10 @@ index d038913..41238c6 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index ac6b5a3..b85d99c 100644
+index ff5c929..aea5e3a 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -341,6 +341,7 @@ struct buf {
+@@ -339,6 +339,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -88,7 +88,7 @@ index ac6b5a3..b85d99c 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -480,3 +481,4 @@ extern char *fs_exdir;
+@@ -478,3 +479,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;

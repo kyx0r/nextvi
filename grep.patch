@@ -166,10 +166,10 @@ index d038913..8138396 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index ac6b5a3..f236c45 100644
+index ff5c929..963f890 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -346,7 +346,7 @@ extern int xbufcur;
+@@ -344,7 +344,7 @@ extern int xbufcur;
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  extern struct buf *bufs;
