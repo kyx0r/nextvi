@@ -197,8 +197,8 @@ char *term_att(int att)
 static int cmd_make(char **argv, int *ifd, int *ofd)
 {
 	int pid;
-	int pipefds0[2];
-	int pipefds1[2];
+	int pipefds0[2] = {-1, -1};
+	int pipefds1[2] = {-1, -1};
 	if (ifd)
 		pipe(pipefds0);
 	if (ofd)
@@ -274,8 +274,8 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
 		term_done();
-	}
-	fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
+	} else if (ifd >= 0)
+		fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
 	fds[0].fd = ofd;
 	fds[0].events = POLLIN;
 	fds[1].fd = ifd;
