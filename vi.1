@@ -1,4 +1,4 @@
-.Dd Nov 17, 2024
+.Dd Nov 18, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -108,13 +108,13 @@ Move to beg of word forward # times
 .It Cm vw
 Toggle line mode for <E e B b W w>
 .It Cm {
-Move to next <{> section up
-.It Cm }
 Move to next <{> section down
+.It Cm }
+Move to next <{> section up
 .It Cm \&[
-Move to next <Newline> section up
-.It Cm \&]
 Move to next <Newline> section down
+.It Cm \&]
+Move to next <Newline> section up
 .It Cm ^
 Move to start of line after indent
 .It Cm 0
@@ -619,7 +619,7 @@ Example: print current line from offset 5 to 10
 .Ed
 
 .It Cm ea [kwd] [#]
-Open file based on it's filename substring and from listing in b-2
+Open file based on filename substring from dir listing in b-2
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
 Example: backfill b-2 using :fd
@@ -751,11 +751,6 @@ Example: copy default register to X11 clipboard
 :pu \e!xclip -selection clipboard
 .Ed
 
-.It Cm q
-Soft quit
-.It Cm q!
-Force quit
-
 .It Cm [range]r [path cmd]
 Read a file or a pipe
 .Bd -literal
@@ -780,6 +775,11 @@ Example: pipe out only first 10 lines
 
 .It Cm [range]w! [path]
 Force write to a file
+
+.It Cm q
+Soft quit
+.It Cm q!
+Force quit
 
 .It Cm wq[!]
 .It Cm x[!]
@@ -1145,6 +1145,10 @@ position of the previous change
 first line of the previous change
 .It Cm \&]
 last line of the previous change
+.It Cm \&'
+position of the previous line region
+.It Cm \&`
+position of the previous line region
 .El
 .
 .Sh SPECIAL REGISTERS
@@ -1167,19 +1171,19 @@ previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 477 vi.h | definitions/aux
+ 480 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  294 conf.c | hl/ft/td config
  336 term.c | low level IO
- 384 ren.c | positioning/syntax
+ 380 ren.c | positioning/syntax
  590 lbuf.c | file/line buffer
  652 uc.c | UTF-8 support
  658 regex.c | extended RE
- 667 led.c | insert mode/output
+ 668 led.c | insert mode/output
  1238 ex.c | ex options/commands
- 1953 vi.c | normal mode/general
- 6772 total | wc -l *.c\(basort
+ 1951 vi.c | normal mode/general
+ 6767 total | wc -l *.c\(basort
 _
 .TE
 .
