@@ -218,7 +218,7 @@ void led_render(char *s0, int cbeg, int cend)
 	if (led_attsb && xhl) {
 		led_att *p = (led_att*)led_attsb->s;
 		for (; (char*)p < &led_attsb->s[led_attsb->s_n]; p++) {
-			if (p->s != chrs[0])
+			if (p->s != s0)
 				continue;
 			if (!bound) {
 				att[p->off] = syn_merge(p->att, att[p->off]);
