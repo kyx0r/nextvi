@@ -69,7 +69,7 @@ index 0eae02e..5af59e8 100644
  }
  
 diff --git a/led.c b/led.c
-index 03a7939..693b1fe 100644
+index 3141109..8488226 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -105,7 +105,7 @@ index 03a7939..693b1fe 100644
  	off[cterm] = -1;
  	if (ctx < 0) {
 @@ -185,6 +186,8 @@ void led_render(char *s0, int cbeg, int cend)
- 		if (r->cmax > cterm && r->pos[o] + r->wid[o] > cend)
+ 		if (o >= 0 && r->cmax > cterm && r->pos[o] + r->wid[o] > cend)
  			while (off[i] == o)
  				off[ctx < 0 ? i++ : i--] = -1;
 +		stt = emalloc((cterm+1) * sizeof(int));

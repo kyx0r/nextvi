@@ -19,7 +19,7 @@ index 756f45d..831da86 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 03a7939..2117e5a 100644
+index 3141109..2ed3435 100644
 --- a/led.c
 +++ b/led.c
 @@ -378,6 +378,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
