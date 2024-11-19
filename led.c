@@ -206,6 +206,7 @@ void led_render(char *s0, int cbeg, int cend)
 		sbuf_smake(bsb, cterm*4);
 		for (i = 0; i < c; i++) {
 			ctt[stt[i]] = i;
+			stt[i] = att[i];
 			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
 		}
 		sbuf_set(bsb, '\0', 4)
@@ -220,18 +221,24 @@ void led_render(char *s0, int cbeg, int cend)
 		for (; (char*)p < &led_attsb->s[led_attsb->s_n]; p++) {
 			if (p->s != s0)
 				continue;
-			if (!bound) {
+			if (!bound)
 				att[p->off] = syn_merge(p->att, att[p->off]);
-				continue;
-			}
-			for (c = 0, i = 0; i < cterm;) {
-				if ((o = off[i++]) < 0)
-					continue;
-				if (o == p->off) {
-					att[ctt[c]] = syn_merge(p->att, att[ctt[c]]);
-					break;
+			else if (c && stt[0] <= p->off && stt[c-1] >= p->off) {
+				i = p->off - stt[0];
+				if (i < c && stt[i] == p->off) {
+					att[i] = syn_merge(p->att, att[i]);
+					continue; /* text not reordered */
 				}
-				for (c++; off[i] == o; i++);
+				for (l = 0, j = c - 1; l <= j;) {
+					i = l + (j - l) / 2;
+					if (stt[i] == p->off) {
+						att[i] = syn_merge(p->att, att[i]);
+						break;
+					} else if (stt[i] < p->off)
+						l = i + 1;
+					else
+						j = i - 1;
+				}
 			}
 		}
 	}
