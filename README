@@ -198,7 +198,7 @@ How it works:
 :se noled - temporarily disable redrawing the screen
 :se ish - enable interactive shell
 :i - runs insert statement with every macro inside until \n\x1b
-:tp j0"wy$ - yank the line into a register w
+:&1G0"q2Y2j"Qy$ - yank 3 lines into register q, excluding last newline
 :u$ - undo everything
 :inc (^[\!.git]+[^\\/]+$) always exclude .git folder from :fd
 :se pac - print autocomplete options
