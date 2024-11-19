@@ -129,10 +129,10 @@ index 885c082..fd2565f 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index d038913..93e425f 100644
+index 7845c06..8fdf93c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1898,7 +1898,8 @@ static int setup_signals(void) {
+@@ -1899,7 +1899,8 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -142,7 +142,7 @@ index d038913..93e425f 100644
  		return 0;
  	return 1;
  }
-@@ -1916,7 +1917,8 @@ int main(int argc, char *argv[])
+@@ -1917,7 +1918,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;

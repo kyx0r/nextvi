@@ -11,7 +11,7 @@ index b496f47..2e76016 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index 0eae02e..2f58ece 100644
+index 0c4eb5b..9cc0c42 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -428,34 +428,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -170,7 +170,7 @@ index 3d9e061..fc3924b 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index d038913..4826bb0 100644
+index 7845c06..9ad4212 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
