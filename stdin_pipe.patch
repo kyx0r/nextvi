@@ -153,10 +153,10 @@ index 7845c06..8fdf93c 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index ff5c929..14259e9 100644
+index 2b93eec..df6a7eb 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -444,6 +444,7 @@ void vi_regput(int c, const char *s, int ln);
+@@ -443,6 +443,7 @@ void vi_regput(int c, const char *s, int ln);
  /* file system */
  void dir_calc(char *path);
  /* global variables */

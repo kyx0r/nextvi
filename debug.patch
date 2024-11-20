@@ -27,10 +27,10 @@ index 1388190..47bd82c 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index dd50b66..d00c0a3 100644
+index 87d7248..8b5383d 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -80,6 +80,18 @@ void dir_init(void)
+@@ -93,6 +93,18 @@ static int ren_cwid(char *s, int pos)
  static ren_state rstates[2];
  ren_state *rstate = &rstates[0];
  
@@ -98,10 +98,10 @@ index 7845c06..1eb34d8 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index ff5c929..7a20614 100644
+index 2b93eec..c961e38 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -191,6 +191,7 @@ int ren_cwid(char *s, int pos);
+@@ -190,6 +190,7 @@ char *ren_translate(char *s, char *ln);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -109,7 +109,7 @@ index ff5c929..7a20614 100644
  /* syntax highlighting */
  #define SYN_BD		0x010000
  #define SYN_IT		0x020000
-@@ -213,6 +214,7 @@ void syn_reloadft(void);
+@@ -212,6 +213,7 @@ void syn_reloadft(void);
  int syn_findhl(int id);
  void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
@@ -117,7 +117,7 @@ index ff5c929..7a20614 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -374,6 +376,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -373,6 +375,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);

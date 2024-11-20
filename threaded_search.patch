@@ -182,10 +182,10 @@ index 7845c06..9ad4212 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index ff5c929..6e7113f 100644
+index 2b93eec..1425778 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -215,7 +215,9 @@ void syn_addhl(char *reg, int id, int reload);
+@@ -214,7 +214,9 @@ void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */
