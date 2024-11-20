@@ -99,15 +99,6 @@ int led_pos(char *s, int pos)
 	return pos - xleft;
 }
 
-static int led_offdir(char **chrs, int *pos, int i)
-{
-	if (pos[i] + ren_cwid(chrs[i], pos[i]) == pos[i + 1])
-		return +1;
-	if (pos[i + 1] + ren_cwid(chrs[i + 1], pos[i + 1]) == pos[i])
-		return -1;
-	return 0;
-}
-
 #define print_ch1(out) sbuf_mem(out, chrs[o], l)
 #define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
 
@@ -248,7 +239,9 @@ void led_render(char *s0, int cbeg, int cend)
 			if (o < 0)
 				continue;
 			for (c++; off[i] == o; i++);
-			if (led_offdir(chrs, r->pos, o) >= 0)
+			if (r->pos[o] + r->wid[o] == r->pos[o + 1])
+				continue;
+			if (r->pos[o + 1] + r->wid[o + 1] != r->pos[o])
 				continue;
 			j = bound ? ctt[c-1] : o;
 			att[j] = syn_merge(conf_hlrev, att[j]);
