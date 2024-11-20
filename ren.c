@@ -77,6 +77,19 @@ void dir_init(void)
 	dir_rsctx = rset_make(i, ctx, 0);
 }
 
+static int ren_cwid(char *s, int pos)
+{
+	if (s[0] == '\t')
+		return xtabspc - (pos & (xtabspc-1));
+	if (s[0] == '\n')
+		return 1;
+	int c, l; uc_code(c, s, l)
+	for (int i = 0; i < phlen; i++)
+		if (c >= ph[i].cp[0] && c <= ph[i].cp[1] && l == ph[i].l)
+			return ph[i].wid;
+	return uc_wid(c);
+}
+
 static ren_state rstates[2];
 ren_state *rstate = &rstates[0];
 
@@ -185,19 +198,6 @@ int ren_next(char *s, int p, int dir)
 	if (r->wid[i] > 1 && dir > 0)
 		return r->pos[i] + r->wid[i];
 	return r->pos[i] + dir;
-}
-
-int ren_cwid(char *s, int pos)
-{
-	if (s[0] == '\t')
-		return xtabspc - (pos & (xtabspc-1));
-	if (s[0] == '\n')
-		return 1;
-	int c, l; uc_code(c, s, l)
-	for (int i = 0; i < phlen; i++)
-		if (c >= ph[i].cp[0] && c <= ph[i].cp[1] && l == ph[i].l)
-			return ph[i].wid;
-	return uc_wid(c);
 }
 
 char *ren_translate(char *s, char *ln)
