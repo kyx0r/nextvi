@@ -65,45 +65,85 @@ Range from x to x
 .El
 .Sh VI NORMAL
 .Bl -tag -width Dq -compact
-.It Cm [#]j
+.It Cm [
+.Em #
+]j
 Move # lines down
-.It Cm [#]k
+.It Cm [
+.Em #
+]k
 Move # lines up
-.It Cm [#]+
-.It Cm [#]<^M>
-.It Cm [#]<Newline>
+.It Cm [
+.Em #
+]+
+.It Cm [
+.Em #
+]<^M>
+.It Cm [
+.Em #
+]<Newline>
 .Bd -compact
 Move # lines down, cursor after indent
 .Ed
-.It Cm [#]-
+.It Cm [
+.Em #
+]-
 Move # lines up, cursor after indent
-.It Cm [#]h
+.It Cm [
+.Em #
+]h
 Move # cols left
-.It Cm [#]l
+.It Cm [
+.Em #
+]l
 Move # cols right
-.It Cm f{arg}
+.It Cm f{
+.Em arg
+}
 Move to arg character found forward
-.It Cm F{arg}
+.It Cm F{
+.Em arg
+}
 Move to arg character found backward
-.It Cm t{arg}
+.It Cm t{
+.Em arg
+}
 Move until arg character found forward
-.It Cm T{arg}
+.It Cm T{
+.Em arg
+}
 Move until arg character found backward
-.It Cm [#],
+.It Cm [
+.Em #
+],
 Repeat last <f F t T> move backward # times
-.It Cm [#];
+.It Cm [
+.Em #
+];
 Repeat last <f F t T> move forward # times
-.It Cm [#]E
+.It Cm [
+.Em #
+]E
 Move to end of word # times, skip punctuation
-.It Cm [#]e
+.It Cm [
+.Em #
+]e
 Move to end of word # times
-.It Cm [#]B
+.It Cm [
+.Em #
+]B
 Move to beg of word backward # times, skip punctuation
-.It Cm [#]b
+.It Cm [
+.Em #
+]b
 Move to beg of word backward # times
-.It Cm [#]W
+.It Cm [
+.Em #
+]W
 Move to beg of word forward # times, skip punctuation
-.It Cm [#]w
+.It Cm [
+.Em #
+]w
 Move to beg of word forward # times
 .It Cm vw
 Toggle line mode for <E e B b W w>
@@ -121,26 +161,42 @@ Move to start of line after indent
 Move to start of line
 .It Cm $
 Move to end of line
-.It Cm [#]|
+.It Cm [
+.Em #
+]|
 Goto # col
-.It Cm [#]<Space>
+.It Cm [
+.Em #
+]<Space>
 Move # characters forward
-.It Cm [#]<^H>
-.It Cm [#]<Backspace>
+.It Cm [
+.Em #
+]<^H>
+.It Cm [
+.Em #
+]<Backspace>
 .Bd -compact
 Move # characters backward
 .Ed
 .It Cm %
 Move to closest <] ) }><[ ( {> pair
-.It Cm {#}%
+.It Cm {
+.Em #
+}%
 Move to # percent line number
-.It Cm '{arg}
+.It Cm '{
+.Em arg
+}
 Move to a line mark arg
-.It Cm `{arg}
+.It Cm `{
+.Em arg
+}
 Move to a line mark arg with cursor position
 .It Cm gg
 Goto first line in buffer
-.It Cm [#]G
+.It Cm [
+.Em #
+]G
 Move to last line in buffer or # line
 .It Cm H
 Move to highest line on a screen
@@ -148,22 +204,38 @@ Move to highest line on a screen
 Move to lowest line on a screen
 .It Cm M
 Move to middle line on a screen
-.It Cm [#]z.
+.It Cm [
+.Em #
+]z.
 Center screen at cursor. # is xtop
-.It Cm [#]z<^M>
-.It Cm [#]z<Newline>
+.It Cm [
+.Em #
+]z<^M>
+.It Cm [
+.Em #
+]z<Newline>
 .Bd -compact
 Center screen at top row. # is xtop
 .Ed
-.It Cm [#]z-
+.It Cm [
+.Em #
+]z-
 Center screen at bottom row. # is xtop
-.It Cm [#]<^E>
+.It Cm [
+.Em #
+]<^E>
 Scroll down 1 or # lines, retain # and cursor position
-.It Cm [#]<^Y>
+.It Cm [
+.Em #
+]<^Y>
 Scroll up 1 or # lines, retain # and cursor position
-.It Cm [#]<^D>
+.It Cm [
+.Em #
+]<^D>
 Scroll down half a screen size. If [#], set scroll to # lines
-.It Cm [#]<^U>
+.It Cm [
+.Em #
+]<^U>
 Scroll up half a screen size. If [#], set scroll to # lines
 .It Cm <^B>
 Scroll up full screen size
@@ -181,7 +253,9 @@ Toggle show relative line numbers permanently
 Toggle show hidden characters:<Space Tab Newline>
 .It Cm <^C>
 Toggle show line motion numbers for <h l e b E B w W>
-.It Cm {1-5}<^C>
+.It Cm {
+.Em 1-5
+}<^C>
 Switch to line motion number mode #
 .It Cm <^V>
 Loop through line motion number modes
@@ -196,46 +270,94 @@ Open file path from cursor to end of line
 .Ed
 .It Cm <^K>
 Write current buffer to file. Force write on 2nd attempt
-.It Cm [#]<^W>{arg}
+.It Cm [
+.Em #
+]<^W>{
+.Em arg
+}
 Unindent arg region # times
-.It Cm [#]<{arg}
+.It Cm [
+.Em #
+]<{
+.Em arg
+}
 Indent left arg region # times
-.It Cm [#]>{arg}
+.It Cm [
+.Em #
+]>{
+.Em arg
+}
 Indent right arg region # times
-.It Cm \&"{arg}{arg1}
+.It Cm \&"{
+.Em arg
+}{
+.Em arg1
+}
 Operate on arg register according to arg1 motion
 .It Cm R
 Print registers and their contents
-.It Cm [#]&{arg}
+.It Cm [
+.Em #
+]&{
+.Em arg
+}
 Execute arg register macro in non-blocking mode # times
-.It Cm [#]@{arg}
+.It Cm [
+.Em #
+]@{
+.Em arg
+}
 Execute arg register macro in blocking mode # times
-.It Cm [#]@@
-.It Cm [#]&&
+.It Cm [
+.Em #
+]@@
+.It Cm [
+.Em #
+]&&
 .Bd -compact
 Execute a last executed register macro # times
 .Ed
-.It Cm [#].
+.It Cm [
+.Em #
+].
 Repeat last normal command # times
-.It Cm [#]v.
+.It Cm [
+.Em #
+]v.
 Repeat last normal command moving down across # lines
 .It Cm \&:
 Enter ex prompt
-.It Cm [#]!{arg}
+.It Cm [
+.Em #
+]!{
+.Em arg
+}
 Enter pipe ex prompt based on region # or arg
 .It Cm vv
 Enter ex prompt with the last line from history buffer b-1
-.It Cm [#]vr
+.It Cm [
+.Em #
+]vr
 Enter %s/ ex prompt. Insert # words from cursor
-.It Cm [#]vt[#arg]
+.It Cm [
+.Em #
+]vt[
+.Em #arg
+]
 Enter .,.+0s/ ex prompt. Insert # of lines from cursor. Insert #arg words from cursor
-.It Cm [#]v/
+.It Cm [
+.Em #
+]v/
 Enter v/ xkwd ex prompt to set search keyword. Insert # words from cursor
 .It Cm v;
 Enter ! ex prompt
-.It Cm [#]vi
+.It Cm [
+.Em #
+]vi
 Enter %s/ ex prompt. Contains regex for changing spaces to tabs. # modifies tab width
-.It Cm [#]vI
+.It Cm [
+.Em #
+]vI
 Enter %s/ ex prompt. Contains regex for changing tabs to spaces. # modifies tab width
 .It Cm vo
 Remove trailing white spaces and <\er> line endings
@@ -253,17 +375,35 @@ Print character info
 Enable permanent character info bar row
 .It Cm 2ga
 Disable permanent character info bar row
-.It Cm [#]gw
+.It Cm [
+.Em #
+]gw
 Hard line wrap a line to # col limit. Default: 80
-.It Cm [#]gq
+.It Cm [
+.Em #
+]gq
 Hard line wrap a buffer to # col limit. Default: 80
-.It Cm [#]g~{arg}
+.It Cm [
+.Em #
+]g~{
+.Em arg
+}
 Switch character case for arg region # times
-.It Cm [#]gu{arg}
+.It Cm [
+.Em #
+]gu{
+.Em arg
+}
 Switch arg region to lowercase # times
-.It Cm [#]gU{arg}
+.It Cm [
+.Em #
+]gU{
+.Em arg
+}
 Switch arg region to uppercase # times
-.It Cm [#]~
+.It Cm [
+.Em #
+]~
 Switch character case # times forward
 .It Cm i
 Enter insert mode
@@ -273,7 +413,9 @@ Enter insert mode at start of line after indent
 Enter insert mode at end of line
 .It Cm a
 Enter insert mode 1 character forward
-.It Cm [#]s
+.It Cm [
+.Em #
+]s
 Enter insert mode and delete # characters
 .It Cm S
 Enter insert mode and delete all characters
@@ -281,50 +423,98 @@ Enter insert mode and delete all characters
 Enter insert mode and create a new line down
 .It Cm O
 Enter insert mode and create a new line up
-.It Cm [#]c{arg}
+.It Cm [
+.Em #
+]c{
+.Em arg
+}
 Enter insert mode and delete arg region # times
 .It Cm C
 Enter insert mode and delete from cursor to end of line
-.It Cm [#]d{arg}
+.It Cm [
+.Em #
+]d{
+.Em arg
+}
 Delete arg region # times
 .It Cm D
 Delete from cursor to end of line
-.It Cm [#]x
+.It Cm [
+.Em #
+]x
 Delete # characters from cursor forward
-.It Cm [#]X
+.It Cm [
+.Em #
+]X
 Delete # characters from cursor backward
-.It Cm di{arg}
+.It Cm di{
+.Em arg
+}
 Delete around arg which can be <( ) \&">
-.It Cm ci{arg}
+.It Cm ci{
+.Em arg
+}
 Change around arg which can be <( ) \&">
-.It Cm [#]r{arg}
+.It Cm [
+.Em #
+]r{
+.Em arg
+}
 Replace # characters with arg from cursor forward
 .It Cm K
 Split a line
-.It Cm {#}K
+.It Cm {
+.Em #
+}K
 Split a line without creating <Newline>
-.It Cm [#]J
+.It Cm [
+.Em #
+]J
 Join # lines
 .It Cm vj
 Toggle space padding when joining lines
-.It Cm [#]y{arg}
+.It Cm [
+.Em #
+]y{
+.Em arg
+}
 Yank arg region # times
-.It Cm [#]Y
+.It Cm [
+.Em #
+]Y
 Yank # lines
-.It Cm [#]p
+.It Cm [
+.Em #
+]p
 Paste default register # times
-.It Cm [#]P
+.It Cm [
+.Em #
+]P
 Paste default register below current line or behind cursor position # times
-.It Cm m{arg}
+.It Cm m{
+.Em arg
+}
 Set buffer local line mark arg
 .It Cm <^T>
 Set global line mark 0. Global marks are always valid
-.It Cm {0 2 4 6 8}<^T>
+.It Cm {
+.Em 0 2 4 6 8
+}<^T>
 Set a global line mark #
-.It Cm {1 3 5 7 9}<^T>
+.It Cm {
+.Em 1 3 5 7 9
+}<^T>
 Switch to a global line mark #
-.It Cm [#]<^7>{0-9}
-.It Cm [#]<^_>{0-9}
+.It Cm [
+.Em #
+]<^7>{
+.Em 0-9
+}
+.It Cm [
+.Em #
+]<^_>{
+.Em 0-9
+}
 .Bd -compact
 Show buffer list and switch based on # or 0-9 index when prompted
 .Ed
@@ -333,11 +523,15 @@ Show buffer list and switch based on # or 0-9 index when prompted
 .Bd -compact
 Swap to previous buffer
 .Ed
-.It Cm [#]<^N>
+.It Cm [
+.Em #
+]<^N>
 Swap to next buffer, # changes direction [forward backward]
 .It Cm \e
 Swap to /fm/ buffer b-2
-.It Cm {#}\e
+.It Cm {
+.Em #
+}\e
 Swap from /fm/ buffer b-2 and backfill directory listing
 .It Cm vb
 Recurse into b-1 history buffer. Insert current line into ex prompt after a quit command
@@ -357,26 +551,40 @@ Set td ex option to 1
 Set td ex option to -1
 .It Cm zR
 Set td ex option to -2
-.It Cm [#]/
+.It Cm [
+.Em #
+]/
 Regex search, move down 1 or # matches
-.It Cm [#]?
+.It Cm [
+.Em #
+]?
 Regex search, move up 1 or # matches
-.It Cm [#]n
-.It Cm [#]N
+.It Cm [
+.Em #
+]n
+.It Cm [
+.Em #
+]N
 .Bd -compact
 Repeat regex search, move [down up] 1 or # matches
 .Ed
 .It Cm <^A>
 Regex search 1 word from cursor, no center, wraparound move [up down]
-.It Cm {#}<^A>
+.It Cm {
+.Em #
+}<^A>
 Regex search, set keyword to # words from cursor
 .It Cm <^]>
 Filesystem search forward based on directory listing in b-2
-.It Cm {#}<^]>
+.It Cm {
+.Em #
+}<^]>
 Filesystem search forward, set keyword to # words from cursor
 .It Cm <^P>
 Filesystem search backward based on directory listing in b-2
-.It Cm {#}<^P>
+.It Cm {
+.Em #
+}<^P>
 Filesystem search backward, set keyword to # words from cursor
 .It Cm <^Z>
 Suspend vi
