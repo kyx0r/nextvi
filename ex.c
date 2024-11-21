@@ -152,15 +152,6 @@ void temp_write(int i, char *str)
 	lbuf_edit(lb, str, tempbufs[i].row, tempbufs[i].row);
 }
 
-void temp_done(int i)
-{
-	if (tempbufs[i].lb) {
-		free(tempbufs[i].path);
-		lbuf_free(tempbufs[i].lb);
-		tempbufs[i].lb = NULL;
-	}
-}
-
 /* replace % and # with buffer names and !..! with command output */
 static char *ex_pathexpand(char *src)
 {

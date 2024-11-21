@@ -361,7 +361,6 @@ extern struct buf tempbufs[2];
 void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
 void temp_write(int i, char *str);
-void temp_done(int i);
 void temp_pos(int i, int row, int off, int top);
 int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
