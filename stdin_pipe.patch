@@ -53,7 +53,7 @@ index 756f45d..21ce399 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 885c082..fd2565f 100644
+index 07c7870..48d8407 100644
 --- a/term.c
 +++ b/term.c
 @@ -2,6 +2,8 @@ sbuf *term_sbuf;
@@ -153,10 +153,10 @@ index 7845c06..8fdf93c 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 2b93eec..df6a7eb 100644
+index 1bc31c5..0f184a9 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -443,6 +443,7 @@ void vi_regput(int c, const char *s, int ln);
+@@ -440,6 +440,7 @@ void vi_regput(int c, const char *s, int ln);
  /* file system */
  void dir_calc(char *path);
  /* global variables */

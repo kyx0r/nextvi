@@ -80,10 +80,10 @@ index 7845c06..bd3923b 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 2b93eec..0ea966b 100644
+index 1bc31c5..eafff7e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -463,6 +463,7 @@ extern int xhlr;
+@@ -460,6 +460,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

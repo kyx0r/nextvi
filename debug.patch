@@ -98,7 +98,7 @@ index 7845c06..1eb34d8 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 2b93eec..c961e38 100644
+index 1bc31c5..b51f1ea 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -190,6 +190,7 @@ char *ren_translate(char *s, char *ln);
@@ -117,7 +117,7 @@ index 2b93eec..c961e38 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -373,6 +375,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -370,6 +372,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);

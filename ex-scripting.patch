@@ -62,7 +62,7 @@ index 756f45d..01c3ced 100644
  };
  
 diff --git a/term.c b/term.c
-index 885c082..4ee6495 100644
+index 07c7870..d009f7b 100644
 --- a/term.c
 +++ b/term.c
 @@ -218,7 +218,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -78,7 +78,7 @@ index 885c082..4ee6495 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 2b93eec..3ccb313 100644
+index 1bc31c5..b2e9939 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple
