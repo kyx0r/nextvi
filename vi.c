@@ -1202,18 +1202,18 @@ static void vc_status(int type)
 		c = rstate->chrs[xoff];
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x %dL %dW S%ld O%d C%d",
-			cbuf, cp, l, rstate->wid[xoff], c - lbuf_get(xb, xrow),
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x %dL %dW S%d O%d C%d",
+			cbuf, cp, l, rstate->wid[xoff], (int)(c - lbuf_get(xb, xrow)),
 			xoff, col);
 		return;
 	}
-	long buf = ex_buf - bufs;
+	int buf = ex_buf - bufs;
+	buf = buf >= xbufcur || buf < 0 ? tempbufs - ex_buf - 1 : buf;
 	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%s%dL %d%% L%d C%d B%ld",
+		"\"%s\"%s%dL %d%% L%d C%d B%d",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? "* " : " ", lbuf_len(xb),
-		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
-		buf >= xbufcur || buf < 0 ? tempbufs - ex_buf - 1 : buf);
+		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col, buf);
 }
 
 static int vc_replace(void)
