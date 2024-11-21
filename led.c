@@ -203,7 +203,7 @@ void led_render(char *s0, int cbeg, int cend)
 		sbuf_set(bsb, '\0', 4)
 		bound = bsb->s;
 	}
-	memset(att, 0, MIN(n, cterm) * sizeof(att[0]));
+	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
 	if (xhl)
 		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
 	free(bound);
@@ -234,16 +234,16 @@ void led_render(char *s0, int cbeg, int cend)
 		}
 	}
 	if (xhlr && xhl) {
-		for (c = 0, i = 0; i < cterm;) {
+		for (l = 0, i = 0; i < cterm;) {
 			o = off[i++];
 			if (o < 0)
 				continue;
-			for (c++; off[i] == o; i++);
-			if (r->pos[o] + r->wid[o] == r->pos[o + 1])
+			for (l++; off[i] == o; i++);
+			if (o+1 >= r->n || r->pos[o] + r->wid[o] == r->pos[o + 1])
 				continue;
 			if (r->pos[o + 1] + r->wid[o + 1] != r->pos[o])
 				continue;
-			j = bound ? ctt[c-1] : o;
+			j = bound ? ctt[l-1] : o;
 			att[j] = syn_merge(conf_hlrev, att[j]);
 			att[j+1] = syn_merge(conf_hlrev, att[j+1]);
 		}

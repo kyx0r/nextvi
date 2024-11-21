@@ -169,12 +169,11 @@ int ren_cursor(char *s, int p)
 	if (!s)
 		return 0;
 	ren_state *r = ren_position(s);
-	int i, n = r->n;
-	if (!n)
+	if (r->cmax < 0)
 		return 0;
-	if (p >= r->pos[n - 1])
-		p = r->pos[r->col[r->cmax - (r->cmax && *r->chrs[n-1] == '\n')]];
-	i = r->col[p];
+	if (p >= r->cmax)
+		p = r->cmax - (r->cmax && *r->chrs[r->col[r->cmax]] == '\n');
+	int i = r->col[p];
 	return r->pos[i] + r->wid[i] - 1;
 }
 
