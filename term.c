@@ -55,7 +55,7 @@ void term_commit(void)
 	term_record = 0;
 }
 
-void term_out(char *s)
+static void term_out(char *s)
 {
 	if (term_record)
 		sbufn_str(term_sbuf, s)
