@@ -15,7 +15,7 @@ index 89ed025..9f96ac4 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index 756f45d..a6d77d9 100644
+index cc4c2c4..0c484df 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -166,7 +166,7 @@ index 7845c06..24cc739 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 1bc31c5..240b300 100644
+index 4c63119..e49f3bf 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -340,7 +340,7 @@ extern int xbufcur;

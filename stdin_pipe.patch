@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 756f45d..21ce399 100644
+index cc4c2c4..382a824 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -403,7 +403,9 @@ int ex_edit(const char *path, int len)
+@@ -394,7 +394,9 @@ int ex_edit(const char *path, int len)
  static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index 756f45d..21ce399 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -423,6 +425,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -414,6 +416,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
  	}
@@ -23,7 +23,7 @@ index 756f45d..21ce399 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1224,15 +1229,26 @@ void ex(void)
+@@ -1215,15 +1220,26 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -153,10 +153,10 @@ index 7845c06..8fdf93c 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 1bc31c5..0f184a9 100644
+index 4c63119..bc335f2 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -440,6 +440,7 @@ void vi_regput(int c, const char *s, int ln);
+@@ -439,6 +439,7 @@ void vi_regput(int c, const char *s, int ln);
  /* file system */
  void dir_calc(char *path);
  /* global variables */

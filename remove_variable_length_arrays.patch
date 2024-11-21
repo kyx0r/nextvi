@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 756f45d..ff8d5e1 100644
+index cc4c2c4..9ebdcc7 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -771,7 +771,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -762,7 +762,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	free(rep);
  	if (!xkwdrs)
  		return 1;
@@ -11,7 +11,7 @@ index 756f45d..ff8d5e1 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -802,6 +802,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -793,6 +793,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	}
  	if (first >= 0)
  		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
@@ -19,7 +19,7 @@ index 756f45d..ff8d5e1 100644
  	return 0;
  }
  
-@@ -1194,7 +1195,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
+@@ -1185,7 +1186,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index 756f45d..ff8d5e1 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, cmd, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1203,6 +1204,9 @@ int ex_exec(const char *ln)
+@@ -1194,6 +1195,9 @@ int ex_exec(const char *ln)
  			ret = excmds[idx].ec(loc, cmd, ecmd);
  		free(ecmd);
  	}
@@ -69,7 +69,7 @@ index 0c4eb5b..c088616 100644
  }
  
 diff --git a/led.c b/led.c
-index cadd138..74de1b6 100644
+index 292582e..ff1315d 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -186,10 +186,10 @@ index 1388190..20921cc 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 87d7248..0fdf53b 100644
+index b35848f..f3b4d3c 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -241,13 +241,14 @@ int syn_blockhl;
+@@ -240,13 +240,14 @@ int syn_blockhl;
  static void syn_initft(int fti, int n, char *name)
  {
  	int i = n;
@@ -205,7 +205,7 @@ index 87d7248..0fdf53b 100644
  }
  
  char *syn_setft(char *ft)
-@@ -286,7 +287,7 @@ int syn_merge(int old, int new)
+@@ -285,7 +286,7 @@ int syn_merge(int old, int new)
  void syn_highlight(int *att, char *s, int n)
  {
  	rset *rs = ftmap[ftidx].rs;
@@ -214,7 +214,7 @@ index 87d7248..0fdf53b 100644
  	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
  	int bend = 0, cend = 0;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
-@@ -332,6 +333,7 @@ void syn_highlight(int *att, char *s, int n)
+@@ -331,6 +332,7 @@ void syn_highlight(int *att, char *s, int n)
  	if (syn_blockhl && !blk)
  		for (j = 0; j < n; j++)
  			att[j] = blockcont && att[j] ? att[j] : *blockatt;
@@ -222,7 +222,7 @@ index 87d7248..0fdf53b 100644
  }
  
  char *syn_filetype(char *path)
-@@ -372,9 +374,10 @@ void syn_addhl(char *reg, int id, int reload)
+@@ -371,9 +373,10 @@ void syn_addhl(char *reg, int id, int reload)
  
  void syn_init(void)
  {
