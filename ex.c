@@ -37,6 +37,7 @@ static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
 static char xrep[EXLEN];	/* the last replacement */
 static int xgdep;		/* global command recursion depth */
+static int xsep = ':';		/* ex command separator */
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
 {
@@ -897,6 +898,7 @@ static struct option {
 	{"vis", &xvis},
 	{"mpt", &xmpt},
 	{"pr", &xpr},
+	{"sep", &xsep},
 };
 
 static char *cutword(char *s, char *d)
@@ -1147,7 +1149,7 @@ static int ex_idx(const char *cmd)
 /* parse ex command until | or eol. */
 static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 {
-	while (*src == ':' || *src == ' ' || *src == '\t')
+	while (*src == xsep || *src == ' ' || *src == '\t')
 		src++;
 	while (*src && strchr(" \t0123456789+-.,/?$';%", *src)) {
 		if (*src == '\'' && src[1])
@@ -1170,7 +1172,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 		*cmd++ = *src++;
 	while (*src == ' ' || *src == '\t')
 		src++;
-	while (*src && *src != ':') {
+	while (*src && *src != xsep) {
 		if (*src == '\\' && src[1] == ':')
 			src++;
 		*arg++ = *src++;
