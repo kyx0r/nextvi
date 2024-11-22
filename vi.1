@@ -98,13 +98,13 @@ Move to end of word # times, skip punctuation
 .It Cm [\fI#\fP]e
 Move to end of word # times
 .It Cm [\fI#\fP]B
-Move to beg of word backward # times, skip punctuation
+Move to start of word backward # times, skip punctuation
 .It Cm [\fI#\fP]b
-Move to beg of word backward # times
+Move to start of word backward # times
 .It Cm [\fI#\fP]W
-Move to beg of word forward # times, skip punctuation
+Move to start of word forward # times, skip punctuation
 .It Cm [\fI#\fP]w
-Move to beg of word forward # times
+Move to start of word forward # times
 .It Cm vw
 Toggle line mode for <E e B b W w>
 .It Cm {
@@ -302,7 +302,7 @@ Replace # characters with arg from cursor forward
 .It Cm K
 Split a line
 .It Cm {\fI#\fP}K
-Split a line without creating <Newline>
+Split a line without creating blank <Newline>
 .It Cm [\fI#\fP]J
 Join # lines
 .It Cm vj
@@ -966,7 +966,7 @@ Defines a target search group for any regex search operation.
 This becomes necessary when the result of regex search is to
 be based on some group rather than default match group.
 
-Example: ignore tabs at the beginning of the line
+Example: ignore tabs at the start of the line
 :se grp=2|1,$f/^[	]+(.+)|se nogrp
 
 The value of grp is calculated using (group number * 2).
@@ -1116,7 +1116,7 @@ repeated one or more times
 .It Cm \&|
 union, alternative branch
 .It Cm \e<
-assert beginning of the word
+assert start of the word
 .It Cm \e>
 assert end of the word
 .It Cm \&?
@@ -1182,8 +1182,8 @@ _
  658 regex.c | extended RE
  668 led.c | insert mode/output
  1229 ex.c | ex options/commands
- 1952 vi.c | normal mode/general
- 6758 total | wc -l *.c\(basort
+ 1951 vi.c | normal mode/general
+ 6757 total | wc -l *.c\(basort
 _
 .TE
 .
@@ -1218,8 +1218,8 @@ This flexibility is achieved by heavily chaining basic commands and allowing
 them to create new ones with completely different functionality. Command
 reuse keeps the editor small without infringing on your freedom to quickly
 get a good grasp on the code. If you want to customize anything, you should
-be able to do it using the only core commands or a mix with some specific C
-code for more difficult tasks. Simple and flexible design allows for straight
+be able to do it using only core commands or a mix with some specific C code
+for more difficult tasks. Simple and flexible design allows for straight
 forward solutions to any problem long term and filters bad inconsistent ideas.
 
 .Sy \&"All software sucks, but some do more than others."
