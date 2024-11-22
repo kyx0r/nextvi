@@ -1060,6 +1060,13 @@ Example: paste current buffer list exactly like from :b command
 Example: store a line printed with :p
 :se pr=A:ya! a:p
 .Ed
+
+.It Cm sep
+Ex separator
+.Bd -literal
+Set Ex command separator character. Default <:>
+Built-in commands using default separator will seize to function.
+.Ed
 .
 .El
 .
@@ -1181,9 +1188,9 @@ _
  652 uc.c | UTF-8 support
  658 regex.c | extended RE
  668 led.c | insert mode/output
- 1229 ex.c | ex options/commands
+ 1231 ex.c | ex options/commands
  1951 vi.c | normal mode/general
- 6757 total | wc -l *.c\(basort
+ 6759 total | wc -l *.c\(basort
 _
 .TE
 .
