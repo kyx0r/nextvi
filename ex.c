@@ -1170,8 +1170,8 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 		*cmd++ = *src++;
 	while (*src == ' ' || *src == '\t')
 		src++;
-	while (*src && *src != '|') {
-		if (*src == '\\' && src[1] == '|')
+	while (*src && *src != ':') {
+		if (*src == '\\' && src[1] == ':')
 			src++;
 		*arg++ = *src++;
 	}
