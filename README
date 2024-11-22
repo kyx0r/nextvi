@@ -284,7 +284,7 @@ EX
      Bill Joy in 1976. This essential tool serves as the backbone of vi,
      enabling it to execute commands, macros and even transform into a purely
      command-line interface (CLI) when desired.	 In Ex, each command is
-     initiated with the prefix <:> and separated by <|>.
+     initiated and separated by <:> prefix.
 
 EX EXPANSION
      Characters <# %> in ex prompt substitute the buffer pathname.
@@ -309,7 +309,7 @@ EX ESCAPES
 	     Special characters in regex "[]" bracket exp
      <( ) { } + * ? ^ $ [ ] | \< \> .>
 	     Special characters in regex
-     <# % ! |>
+     <# % ! :>
 	     Special characters in ex
 
 EX RANGES
@@ -391,7 +391,7 @@ EX COMMANDS
 	     Example: backfill b-2 using :fd
 	     :fd
 	     Example: backfill b-2 using find
-	     :b-2|1,$!find .
+	     :b-2:1,$!find .
 
 	     If the substring matches more than 1 filename, a prompt will
 	     be shown. Submit using numbers 0-9 (higher ascii values work
@@ -443,17 +443,17 @@ EX COMMANDS
 	     :g/^$/d
 
 	     Multiple ex commands can be chained in one global command.
-	     To chain commands, the ex separator <|> must be escaped once.
+	     To chain commands, the ex separator <:> must be escaped once.
 	     Example: yank matches appending to reg 'a' and print them out.
-	     :g/int/ya A\|p
+	     :g/int/ya A\:p
 
 	     It is possible to nest global commands inside of global commands.
 	     Example: find all lines with int and a semicolon and append
 	     "has a semicolon"
 	     :g/int/:.g/;/& A has a semicolon
 	     Example: extract/print data enclosed in "()"
-	     :g/\(.+\)/;0;/\(.+\)/\|.;.+1k a\|se grp=2\|;/\)*(\))/\|
-	     se nogrp\|k s\|.;'a;'sp
+	     :g/\(.+\)/;0;/\(.+\)/\:.;.+1k a\:se grp=2\:;/\)*(\))/\:
+	     se nogrp\:k s\:.;'a;'sp
 
      [range]g!{*}[kwd]{*}{cmd}
 	     Inverted global command
@@ -475,11 +475,11 @@ EX COMMANDS
 	     Example: execute vi insert statement
 	     :& ihello
 	     Example: execute :hello
-	     :& :hello
+	     :& \:hello
 	     Example: execute ci(int macro
 	     :& ci(int
 	     Example: turn non-blocking into blocking macro
-	     :& :@ :run as non-blocking but blocking<^V><^M>
+	     :& \:@ \\:run as non-blocking but blocking<^V><^M>
 
      @{macro}
 	     Global blocking macro
@@ -491,7 +491,7 @@ EX COMMANDS
 	     Example: execute vi insert statement
 	     :@ ihello
 	     Example: insert "hello" into <:> prompt
-	     :@ :hello
+	     :@ \:hello
 	     Example: execute ci(int macro
 	     :@ ci(int
 	     Example: execute ci(int exiting insert mode
@@ -499,7 +499,7 @@ EX COMMANDS
 	     Example: execute ci)INT as a follow-up
 	     :@ ci(int<^V><^C>ci)INT
 	     Example: execute dw after user exits insert
-	     :@i|@dw
+	     :@i:@dw
 
      pu [register] [cmd]
 	     Paste a register
@@ -568,9 +568,9 @@ EX COMMANDS
 
 	     Example: substitution backreference
 	     this is an example text for subs and has int or void
-	     :%s/(int)\|(void)/pre\0after
+	     :%s/(int)|(void)/pre\0after
 	     this is an example text for subs and has preintafter or void
-	     :%s/(int)\|(void)/pre\2after/g
+	     :%s/(int)|(void)/pre\2after/g
 	     this is an example text for subs and has prepreafterafter or prevoidafter
 
      [range]ya [register][append]
@@ -666,7 +666,7 @@ EX COMMANDS
 	     Example: render 8 bit ascii (Extended ASCII) as <~>
 	     :ph 128 255 1 1~
 	     Example: flawless ISO/IEC 8859-1 (latin-1) support
-	     :uc|ph 128 160 1 1~
+	     :uc:ph 128 160 1 1~
 	     Example: reset to default as in conf.c
 	     :ph
 
@@ -691,7 +691,7 @@ EX OPTIONS
 	     be based on some group rather than default match group.
 
 	     Example: ignore tabs at the start of the line
-	     :se grp=2|1,$f/^[	     ]+(.+)|se nogrp
+	     :se grp=2:1,$f/^[	     ]+(.+):se nogrp
 
 	     The value of grp is calculated using (group number * 2).
 	     The default group number is 0.
@@ -740,9 +740,14 @@ EX OPTIONS
 	     If the register is uppercase, <Newline> characters are added
 	     to match the exact output that was printed.
 	     Example: paste current buffer list exactly like from :b command
-	     :se pr=A|ya! a|b|pu a
+	     :se pr=A:ya! a:b:pu a
 	     Example: store a line printed with :p
-	     :se pr=A|ya! a|p
+	     :se pr=A:ya! a:p
+
+     sep     Ex separator
+
+	     Set Ex command separator character. Default <:>
+	     Built-in commands using <:> separator will seize to function.
 
 EXINIT ENV VAR
      EXINIT defines a sequence of vi/ex commands to be performed
@@ -753,13 +758,13 @@ EXINIT ENV VAR
 
      Examples:
 
-     export EXINIT=$'e ./vi.c|& i\x7\x3|bx 1|bx'
+     export EXINIT=$'e ./vi.c:& i\x7\x3:bx 1:bx'
 	     Index vi.c for autocomplete
 
-     export EXINIT='b-1|%r ./vi.c|b-1'
+     export EXINIT='b-1:%r ./vi.c:b-1'
 	     Load vi.c into a history buffer
 
-     export EXINIT=$'e|& io{\n}\x16\x3kA\x3|& 1G|& 2\"ayy'
+     export EXINIT=$'e:& io{\n}\x16\x3kA\x3:& 1G:& 2\"ayy'
 	     Setup @ macro in register <a>
 
 	     @a macro creates <{> and closing <}> below the cursor leaving
@@ -820,9 +825,9 @@ CODE MAP
      | 652 uc.c	    |  UTF-8 support	   |
      | 658 regex.c  |  extended RE	   |
      | 668 led.c    |  insert mode/output  |
-     | 1229 ex.c    |  ex options/commands |
+     | 1231 ex.c    |  ex options/commands |
      | 1951 vi.c    |  normal mode/general |
-     | 6757 total   |  wc -l *.c|sort	   |
+     | 6759 total   |  wc -l *.c|sort	   |
      +--------------+----------------------+
 
 COMPILING
