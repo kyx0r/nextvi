@@ -1076,9 +1076,9 @@ Example: disable separator
 .Bd -literal
 EXINIT defines a sequence of vi/ex commands to be performed
 at startup. Consequently, this is the primary way for scripting
-and customizing nextvi outside of C.
+and customizing Nextvi outside of C.
 Many standard text processing utils such as grep, awk, sed
-can be replaced by nextvi with EXINIT in mind.
+can be replaced by Nextvi with EXINIT in mind.
 
 Examples:
 .Ed
@@ -1134,7 +1134,7 @@ one or zero matches greedy
 one or zero matches lazy
 .El
 
-Additionally, Nextvi's supports static lookahead expressions.
+Additionally, Nextvi supports static lookahead expressions.
 .Bl -tag -width Ds -compact
 .It Cm /[=abc]
 find <a> followed by "bc"
@@ -1246,7 +1246,7 @@ Scripts used to generate this manual are located in the manual branch.
 .Lk https://github.com/kyx0r/nextvi/tree/manual
 
 Q: What is pikevm?
-A: Pikevm is a complete rewrite of nextvi's regex engine for the purposes of
+A: Pikevm is a complete rewrite of Nextvi's regex engine for the purposes of
 getting rid of backtracking and severe performance and memory constraints.
 Pikevm guarantees that all regular expressions are computed in constant space
 and O(n+k) time where n is size of the string and k is some constant for the
