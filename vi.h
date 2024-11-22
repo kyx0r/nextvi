@@ -466,6 +466,7 @@ extern int xkwdcnt;
 extern int xkwddir;
 extern int xmpt;
 extern int xpr;
+extern int xsep;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;

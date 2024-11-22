@@ -490,7 +490,7 @@ static int vi_motionln(int *row, int cmd)
 	return c;
 }
 
-static char *vi_curword(struct lbuf *lb, int row, int off, int n, int x)
+static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 {
 	char *ln = lbuf_get(lb, row);
 	char *beg, *end;
@@ -508,8 +508,10 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int x)
 	sbuf_smake(sb, (end - beg)+64)
 	if (n > 1) {
 		for (; beg != end; beg++) {
+			if (*beg == xsep)
+				sbuf_chr(sb, '\\')
 			if (strchr("!#%{}[]().?\\^$|*/+", *beg))
-				sbuf_str(sb, *beg == x ? "\\\\" : "\\")
+				sbuf_chr(sb, '\\')
 			sbuf_chr(sb, *beg)
 		}
 	} else {
@@ -748,7 +750,7 @@ static int vi_motion(int *row, int *off)
 			ex_edit(savepath[n]->s, savepath[n]->s_n); \
 		} \
 
-		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt, 0))) {
+		if (vi_arg1 && (cs = vi_curword(xb, *row, *off, cnt))) {
 			ex_krsset(cs, +1);
 			free(cs);
 		}
@@ -809,7 +811,7 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		break;
 	case TK_CTL('a'):
-		if (!(cs = vi_curword(xb, *row, *off, cnt, 0)))
+		if (!(cs = vi_curword(xb, *row, *off, cnt)))
 			return -1;
 		ex_krsset(cs, +1);
 		free(cs);
@@ -834,7 +836,7 @@ static int vi_motion(int *row, int *off)
 	case '\\':
 		temp_switch(1);
 		if (vi_arg1 && xb == tempbufs[1].lb)
-			ex_command("1,$d|fd|b-2")
+			ex_command("1,$d:fd:b-2")
 		*row = xrow;
 		*off = xoff;
 		break;
@@ -1466,7 +1468,7 @@ void vi(int init)
 			case TK_CTL('k'):;
 				static struct lbuf *writexb;
 				if ((k = ex_exec("w")) && xb == writexb)
-					k = ex_exec("se nompt|w!");
+					k = ex_exec("se nompt:w!");
 				writexb = k ? xb : NULL;
 				break;
 			case '#':
@@ -1509,7 +1511,7 @@ void vi(int init)
 					vi_nlword = !vi_nlword;
 					break;
 				case 'o':
-					ex_command("%s/\x0d//g|%s/[ \t]+$//g")
+					ex_command("%s/\x0d//g:%s/[ \t]+$//g")
 					vi_mod |= 1;
 					break;
 				case 'I':;
@@ -1535,7 +1537,7 @@ void vi(int init)
 					ln = vi_enprompt(":", "!");
 					goto do_excmd;
 				case '/':
-					cs = vi_curword(xb, xrow, xoff, vi_arg1, 0);
+					cs = vi_curword(xb, xrow, xoff, vi_arg1);
 					ln = vi_prompt("v/ xkwd:", cs, &xkmap);
 					ex_krsset(ln, +1);
 					free(ln);
@@ -1544,7 +1546,7 @@ void vi(int init)
 				case 't': {
 					strcpy(vi_msg, "arg2:(0|#)");
 					vi_drawmsg();
-					cs = vi_curword(xb, xrow, xoff, vi_prefix(), '|');
+					cs = vi_curword(xb, xrow, xoff, vi_prefix());
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, ".,.+");
 					char *buf1 = itoa(vi_arg1, buf+4);
@@ -1557,7 +1559,7 @@ void vi(int init)
 					ln = vi_enprompt(":", buf);
 					goto do_excmd; }
 				case 'r': {
-					cs = vi_curword(xb, xrow, xoff, vi_arg1, '|');
+					cs = vi_curword(xb, xrow, xoff, vi_arg1);
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, "%s/");
 					if (cs) {
@@ -1722,13 +1724,13 @@ void vi(int init)
 					vi_tsm = 1;
 					goto status;
 				} else if (k == 'w') {
-					char cmd[100] = "se noled|& ";
+					char cmd[100] = "se noled:& ";
 					n = vi_arg1 ? vi_arg1 - 1 : 79;
 					k = xled;
-					strcpy(itoa(n, cmd+10), "\\|");
+					strcpy(itoa(n, cmd+10), "|");
 					while (1) {
 						ex_exec(cmd);
-						ex_exec("se grp=2|f/[^ \t]*[^ \t]?(.)|& 1K|se nogrp");
+						ex_exec("se grp=2:f/[^ \t]*[^ \t]?(.):& 1K:se nogrp");
 						if (vi_col < n)
 							break;
 						ex_exec("+1");
@@ -1738,8 +1740,8 @@ void vi(int init)
 						vi_mod |= 1;
 					}
 				} else if (k == 'q') {
-					char cmd[100] = "se noled|g/./& ";
-					strcpy(itoa(vi_arg1, cmd+14), "gw|se led");
+					char cmd[100] = "se noled:g/./& ";
+					strcpy(itoa(vi_arg1, cmd+14), "gw:se led");
 					ex_command(cmd)
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
@@ -1820,7 +1822,7 @@ void vi(int init)
 		vi_wait();
 		if (xhlw) {
 			static char *word;
-			if ((cs = vi_curword(xb, xrow, xoff, xhlw, 0))) {
+			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
 				if (!word || strcmp(word, cs)) {
 					syn_addhl(cs, 1, 1);
 					free(word);
