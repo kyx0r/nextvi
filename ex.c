@@ -32,12 +32,12 @@ rset *xkwdrs;			/* the last searched keyword rset */
 int xkwddir;			/* the last search direction */
 int xmpt;			/* whether to prompt after printing > 1 lines in vi */
 int xpr;			/* ex_cprint register */
+int xsep = ':';			/* ex command separator */
 char *xregs[256];		/* string registers */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
 static char xrep[EXLEN];	/* the last replacement */
 static int xgdep;		/* global command recursion depth */
-static int xsep = ':';		/* ex command separator */
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
 {

@@ -508,8 +508,10 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	sbuf_smake(sb, (end - beg)+64)
 	if (n > 1) {
 		for (; beg != end; beg++) {
-			if (strchr(":!#%{}[]().?\\^$|*/+", *beg))
-				sbuf_str(sb, "\\")
+			if (*beg == xsep)
+				sbuf_chr(sb, '\\')
+			if (strchr("!#%{}[]().?\\^$|*/+", *beg))
+				sbuf_chr(sb, '\\')
 			sbuf_chr(sb, *beg)
 		}
 	} else {
