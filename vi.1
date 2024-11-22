@@ -719,7 +719,7 @@ Example: execute :hello
 Example: execute ci(int macro
 :& ci(int
 Example: turn non-blocking into blocking macro
-:& \e:@ \e:run as non-blocking but blocking<^V><^M>
+:& \e:@ \e\e:run as non-blocking but blocking<^V><^M>
 .Ed
 
 .It Cm @{macro}
@@ -1065,7 +1065,7 @@ Example: store a line printed with :p
 Ex separator
 .Bd -literal
 Set Ex command separator character. Default <:>
-Built-in commands using default separator will seize to function.
+Built-in commands using <:> separator will seize to function.
 .Ed
 .
 .El

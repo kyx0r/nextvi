@@ -479,7 +479,7 @@ EX COMMANDS
 	     Example: execute ci(int macro
 	     :& ci(int
 	     Example: turn non-blocking into blocking macro
-	     :& \:@ \:run as non-blocking but blocking<^V><^M>
+	     :& \:@ \\:run as non-blocking but blocking<^V><^M>
 
      @{macro}
 	     Global blocking macro
@@ -747,7 +747,7 @@ EX OPTIONS
      sep     Ex separator
 
 	     Set Ex command separator character. Default <:>
-	     Built-in commands using default separator will seize to function.
+	     Built-in commands using <:> separator will seize to function.
 
 EXINIT ENV VAR
      EXINIT defines a sequence of vi/ex commands to be performed
