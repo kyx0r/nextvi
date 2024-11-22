@@ -1194,7 +1194,7 @@ static void vi_scrollbackward(int cnt)
 
 static void vc_status(int type)
 {
-	int cp, l, col;
+	int cp, l, col, buf;
 	char cbuf[8] = "", *c;
 	col = vi_off2col(xb, xrow, xoff);
 	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -1207,8 +1207,7 @@ static void vc_status(int type)
 			xoff, col);
 		return;
 	}
-	int buf = ex_buf - bufs;
-	buf = buf >= xbufcur || buf < 0 ? tempbufs - ex_buf - 1 : buf;
+	buf = istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
 		"\"%s\"%s%dL %d%% L%d C%d B%d",
 		ex_path[0] ? ex_path : "unnamed",
