@@ -575,7 +575,7 @@ search for int in reverse on the current line
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [range]f{/?}[kwd]
+.It Cm [\fIrange\fP]f{/?}[\fIkwd\fP]
 Ranged search (stands for find)
 .Bd -literal
 Example: no range given, current line only
@@ -588,7 +588,7 @@ Subsequent commands within the range will move to the next match
 just like vi n/N commands.
 .Ed
 
-.It Cm b[#]
+.It Cm b[\fI#\fP]
 Print currently active buffers state or switch to a buffer
 .Bd -literal
 Example: switch to the 5th buffer
@@ -604,12 +604,12 @@ Example: switch to the b-2 buffer
 :b-2
 .Ed
 
-.It Cm bp [path]
+.It Cm bp [\fIpath\fP]
 Set current buffer path
-.It Cm bs[#]
+.It Cm bs[\fI#\fP]
 Set current buffer saved. If any arg given, reset undo/redo history
 
-.It Cm [range]p
+.It Cm [\fIrange\fP]p
 Print line(s) from the buffer
 .Bd -literal
 Example: utilize character offset ranges
@@ -618,7 +618,7 @@ Example: print current line from offset 5 to 10
 :.;5;10p
 .Ed
 
-.It Cm ea [kwd] [#]
+.It Cm ea [\fIkwd\fP] [\fI#\fP]
 Open file based on filename substring from dir listing in b-2
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
@@ -637,12 +637,12 @@ Example: open first match containing "v"
 :ea v 0
 .Ed
 
-.It Cm ea![kwd] [#]
+.It Cm ea![\fIkwd\fP] [\fI#\fP]
 Forced version of ea
 
-.It Cm [#]a [str]
-.It Cm [#]i [str]
-.It Cm [#]c [str]
+.It Cm [\fI#\fP]a [\fIstr\fP]
+.It Cm [\fI#\fP]i [\fIstr\fP]
+.It Cm [\fI#\fP]c [\fIstr\fP]
 Enter ex {append insert change} mode
 .Bd -literal
 # determines insertion line number.
@@ -658,20 +658,20 @@ Example: insert "hello" in raw ex mode
 i hello<^M>.<^M>
 .Ed
 
-.It Cm [range]d
+.It Cm [\fIrange\fP]d
 Delete line(s)
-.It Cm e [path]
+.It Cm e [\fIpath\fP]
 Open a file at a path
 .Bd -literal
 No argument opens "unnamed" buffer.
 .Ed
-.It Cm e![path]
+.It Cm e![\fIpath\fP]
 Force open a file at a path
 .Bd -literal
 No argument re-reads the current buffer from the filesystem.
 .Ed
 
-.It Cm [range]g{*}[kwd]{*}{cmd}
+.It Cm [\fIrange\fP]g{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
 Global command
 .Bd -literal
 Execute an ex command on a range of lines that matches an
@@ -694,18 +694,18 @@ Example: extract/print data enclosed in "()"
 se nogrp\e:k s\e:.;'a;'sp
 .Ed
 
-.It Cm [range]g!{*}[kwd]{*}{cmd}
+.It Cm [\fIrange\fP]g!{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
 Inverted global command
-.It Cm [range]=
+.It Cm [\fIrange\fP]=
 Print the current range line number
 
-.It Cm [range]k [mark]
+.It Cm [\fIrange\fP]k [\fImark\fP]
 Set a line mark
 .Bd -literal
 The character offset is set to the current position.
 .Ed
 
-.It Cm &{macro}
+.It Cm &{\fImacro\fP}
 Global non-blocking macro
 .Bd -literal
 Execute any sequence of vi/ex commands or macros.
@@ -722,7 +722,7 @@ Example: turn non-blocking into blocking macro
 :& \e:@ \e\e:run as non-blocking but blocking<^V><^M>
 .Ed
 
-.It Cm @{macro}
+.It Cm @{\fImacro\fP}
 Global blocking macro
 .Bd -literal
 Execute any sequence of vi/ex commands or macros.
@@ -743,7 +743,7 @@ Example: execute dw after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm pu [register] [cmd]
+.It Cm pu [\fIregister\fP] [\fIcmd\fP]
 Paste a register
 .Bd -literal
 To pipe register data to an external process use :pu \e![cmd]
@@ -751,7 +751,7 @@ Example: copy default register to X11 clipboard
 :pu \e!xclip -selection clipboard
 .Ed
 
-.It Cm [range]r [path cmd]
+.It Cm [\fIrange\fP]r [\fIpath cmd\fP]
 Read a file or a pipe
 .Bd -literal
 To read data from a pipe use :[range]r \e![cmd]
@@ -763,7 +763,7 @@ Example: pipe in all data
 :%r \e!ls
 .Ed
 
-.It Cm [range]w [path cmd]
+.It Cm [\fIrange\fP]w [\fIpath cmd\fP]
 Write to a file or a pipe
 .Bd -literal
 To pipe buffer data to external process use :[range]w \e![cmd]
@@ -773,7 +773,7 @@ Example: pipe out only first 10 lines
 :1,10w \e!less
 .Ed
 
-.It Cm [range]w! [path]
+.It Cm [\fIrange\fP]w! [\fIpath\fP]
 Force write to a file
 
 .It Cm q
@@ -787,12 +787,12 @@ Force quit
 Write and force/soft quit
 .Ed
 
-.It Cm u[# $]
+.It Cm u[\fI# $\fP]
 Undo # times or all with $
-.It Cm rd[# $]
+.It Cm rd[\fI# $\fP]
 Redo # times or all with $
 
-.It Cm se {exp}
+.It Cm se {\fIexp\fP}
 Set ex option variable
 .Bd -literal
 Example: set using implications
@@ -805,7 +805,7 @@ Example: set using ascii character
 :se hll=a
 .Ed
 
-.It Cm [range]s{*}[kwd]{*}{str}[*][opts]
+.It Cm [\fIrange\fP]s{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIstr\fP}[\fI*\fP][\fIopts\fP]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -825,7 +825,7 @@ this is an example text for subs and has preintafter or void
 this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
-.It Cm [range]ya [register][append]
+.It Cm [\fIrange\fP]ya [\fIregister\fP][\fIappend\fP]
 Yank a region
 .Bd -literal
 To append to the register, pass in its uppercase version.
@@ -835,10 +835,10 @@ Example: append to register <1>
 :ya 1x
 .Ed
 
-.It Cm ya![register]
+.It Cm ya![\fIregister\fP]
 Reset register value
 
-.It Cm [range]![cmd]
+.It Cm [\fIrange\fP]![\fIcmd\fP]
 Run external program
 .Bd -literal
 When ex range specified, pipes the buffer data to an external
@@ -848,7 +848,7 @@ Example: infamously sort the buffer
 :1,$!sort
 .Ed
 
-.It Cm ft [filetype]
+.It Cm ft [\fIfiletype\fP]
 Set a filetype
 .Bd -literal
 No argument prints the current file type.
@@ -856,33 +856,33 @@ Reloads the highlight ft, which makes it possible to reset dynamic
 highlights created by options like "hlw".
 .Ed
 
-.It Cm cm [keymap]
+.It Cm cm [\fIkeymap\fP]
 Set a keymap
 .Bd -literal
 No argument prints the current keymap name.
 .Ed
 
-.It Cm cm![keymap]
+.It Cm cm![\fIkeymap\fP]
 Set an alternative keymap
 
-.It Cm fd [path]
+.It Cm fd [\fIpath\fP]
 Set a secondary directory (stands for file dir)
 .Bd -literal
 Recalculates the directory listing in b-2 buffer.
 No argument implies current directory.
 .Ed
 
-.It Cm fp [path]
+.It Cm fp [\fIpath\fP]
 Set a directory path for :fd (stands for file path)
 
-.It Cm cd [path]
+.It Cm cd [\fIpath\fP]
 Set a working directory (stands for change dir)
 .Bd -literal
 Currently open buffers' file paths will be automatically adjusted
 to reflect a newly set working directory.
 .Ed
 
-.It Cm inc [regex]
+.It Cm inc [\fIregex\fP]
 Include regex for :fd calculation
 .Bd -literal
 Example: include only files in submodule directory that end with .c
@@ -892,13 +892,13 @@ Example: exclude the .git and submodule folders
 No argument disables the filter.
 .Ed
 
-.It Cm reg[hscroll]
+.It Cm reg[\fIhscroll\fP]
 Print registers and their contents
 .Bd -literal
 Printing position is determined by xcols / 2 * [hscroll]
 .Ed
 
-.It Cm bx[#]
+.It Cm bx[\fI#\fP]
 Set max number of buffers allowed
 .Bd -literal
 Buffers will be deallocated if the number specified is lower
@@ -906,7 +906,7 @@ than the number of buffers currently in use.
 No argument will reset to the default value of 10.
 .Ed
 
-.It Cm ac [regex]
+.It Cm ac [\fIregex\fP]
 Set autocomplete filter regex
 .Bd -literal
 Example: autocomplete using whole lines from the buffer
@@ -925,7 +925,7 @@ characters. Typically to be used along with :ph for the full
 effect.
 .Ed
 
-.It Cm ph [#clow] [#chigh] [#width] [#blen][*char]
+.It Cm ph [\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
 Create new placeholders
 .Bd -literal
 Example: render 8 bit ascii (Extended ASCII) as <~>
@@ -1110,13 +1110,13 @@ match any single char
 assert start of the line
 .It Cm $
 assert end of the line
-.It Cm {N,M}
+.It Cm {\fIN\fP,\fIM\fP}
 match N to M times
 .It Cm ()
 grouping
 .It Cm (?:)
 non capture grouping
-.It Cm [N-M]
+.It Cm [\fIN\fP-\fIM\fP]
 match a set of alternate ranges N to M
 .It Cm *
 repeated zero or more times
