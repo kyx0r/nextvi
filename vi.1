@@ -493,7 +493,7 @@ Exit insert mode
 Ex is a powerful line editor for Unix systems, initially developed by Bill Joy in
 1976. This essential tool serves as the backbone of vi, enabling it to execute commands,
 macros and even transform into a purely command-line interface (CLI) when desired.
-In Ex, each command is initiated with the prefix <:> and separated by <|>.
+In Ex, each command is initiated and separated by <:> prefix.
 .
 .Sh EX EXPANSION
 .Bd -literal -compact
@@ -523,7 +523,7 @@ Special characters will become regular when escaped with <\\>.
 Special characters in regex "[]" bracket exp
 .It Cm <\&( \&) { } + * \&? ^ $ \&[ \&] \&| \\\\< \\\\> .>
 Special characters in regex
-.It Cm <# % \&! |>
+.It Cm <# % \&! :>
 Special characters in ex
 .El
 .
@@ -625,7 +625,7 @@ Requires directory listing in b-2 backfilled prior.
 Example: backfill b-2 using :fd
 :fd
 Example: backfill b-2 using find
-:b-2|1,$!find .
+:b-2:1,$!find .
 
 If the substring matches more than 1 filename, a prompt will
 be shown. Submit using numbers 0-9 (higher ascii values work
@@ -681,17 +681,17 @@ Example: remove empty lines
 :g/^$/d
 
 Multiple ex commands can be chained in one global command.
-To chain commands, the ex separator <|> must be escaped once.
+To chain commands, the ex separator <:> must be escaped once.
 Example: yank matches appending to reg 'a' and print them out.
-:g/int/ya A\e|p
+:g/int/ya A\e:p
 
 It is possible to nest global commands inside of global commands.
 Example: find all lines with int and a semicolon and append
 "has a semicolon"
 :g/int/:.g/;/& A has a semicolon
 Example: extract/print data enclosed in "()"
-:g/\e(.+\e)/;0;/\e(.+\e)/\e|.;.+1k a\e|se grp=2\e|;/\e)*(\e))/\e|
-se nogrp\e|k s\e|.;'a;'sp
+:g/\e(.+\e)/;0;/\e(.+\e)/\e:.;.+1k a\e:se grp=2\e:;/\e)*(\e))/\e:
+se nogrp\e:k s\e:.;'a;'sp
 .Ed
 
 .It Cm [range]g!{*}[kwd]{*}{cmd}
@@ -715,11 +715,11 @@ macros will always reach a terminating point.
 Example: execute vi insert statement
 :& ihello
 Example: execute :hello
-:& :hello
+:& \e:hello
 Example: execute ci(int macro
 :& ci(int
 Example: turn non-blocking into blocking macro
-:& :@ :run as non-blocking but blocking<^V><^M>
+:& \e:@ \e:run as non-blocking but blocking<^V><^M>
 .Ed
 
 .It Cm @{macro}
@@ -732,7 +732,7 @@ in congestion.
 Example: execute vi insert statement
 :@ ihello
 Example: insert "hello" into <:> prompt
-:@ :hello
+:@ \e:hello
 Example: execute ci(int macro
 :@ ci(int
 Example: execute ci(int exiting insert mode
@@ -740,7 +740,7 @@ Example: execute ci(int exiting insert mode
 Example: execute ci)INT as a follow-up
 :@ ci(int<^V><^C>ci)INT
 Example: execute dw after user exits insert
-:@i|@dw
+:@i:@dw
 .Ed
 
 .It Cm pu [register] [cmd]
@@ -819,9 +819,9 @@ specified by \ex where x is group number.
 
 Example: substitution backreference
 this is an example text for subs and has int or void
-:%s/(int)\e|(void)/pre\e0after
+:%s/(int)|(void)/pre\e0after
 this is an example text for subs and has preintafter or void
-:%s/(int)\e|(void)/pre\e2after/g
+:%s/(int)|(void)/pre\e2after/g
 this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
@@ -931,7 +931,7 @@ Create new placeholders
 Example: render 8 bit ascii (Extended ASCII) as <~>
 :ph 128 255 1 1~
 Example: flawless ISO/IEC 8859-1 (latin-1) support
-:uc|ph 128 160 1 1~
+:uc:ph 128 160 1 1~
 Example: reset to default as in conf.c
 :ph
 .Ed
@@ -967,7 +967,7 @@ This becomes necessary when the result of regex search is to
 be based on some group rather than default match group.
 
 Example: ignore tabs at the start of the line
-:se grp=2|1,$f/^[	]+(.+)|se nogrp
+:se grp=2:1,$f/^[	]+(.+):se nogrp
 
 The value of grp is calculated using (group number * 2).
 The default group number is 0.
@@ -1056,9 +1056,9 @@ be stored in the register.
 If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
 Example: paste current buffer list exactly like from :b command
-:se pr=A|ya! a|b|pu a
+:se pr=A:ya! a:b:pu a
 Example: store a line printed with :p
-:se pr=A|ya! a|p
+:se pr=A:ya! a:p
 .Ed
 .
 .El
@@ -1075,13 +1075,13 @@ Examples:
 .Ed
 
 .Bl -tag -width Ds -compact
-.It Cm export EXINIT=$'e ./vi.c|& i\ex7\ex3|bx 1|bx'
+.It Cm export EXINIT=$'e ./vi.c:& i\ex7\ex3:bx 1:bx'
 Index vi.c for autocomplete
 
-.It Cm export EXINIT='b-1|%r ./vi.c|b-1'
+.It Cm export EXINIT='b-1:%r ./vi.c:b-1'
 Load vi.c into a history buffer
 
-.It Cm export EXINIT=$'e|& io{\en}\ex16\ex3kA\ex3|& 1G|& 2\e"ayy'
+.It Cm export EXINIT=$'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2\e"ayy'
 Setup @ macro in register <a>
 
 @a macro creates <{> and closing <}> below the cursor leaving
