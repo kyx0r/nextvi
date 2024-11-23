@@ -5,11 +5,12 @@ Apply: patch < name.patch
 
 64bit.sh
 --------------
-Convert entire codebase to 64 bit long instead of int.
-This will enable neatvi to read very large files and process huge buffers.
-Run this after you've applied the patches. Most of the time you won't need
-this, this is just a future proof concept in order for me to test that the
-codebase cleanly converts to 64 bit.
+Convert entire codebase to 64 bit integers instead of 32 bit.
+This will enable neatvi to read files & buffers up to 9,223,372 Terabytes.
+In addition, this will improve performance on 64 bit CPUs due to
+matching pointer <---> integer alignment and possibly more compiler
+optimizations.
+Run this after you've applied the patches.
 
 gen-widechars.sh
 --------------
