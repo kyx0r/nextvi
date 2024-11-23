@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index f0a6684..aef92b5 100644
+index 9620b65..0a408b3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ static int xbufsmax;		/* number of buffers */

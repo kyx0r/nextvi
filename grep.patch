@@ -15,7 +15,7 @@ index 89ed025..9f96ac4 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index f0a6684..b62a7e2 100644
+index 9620b65..c25e95c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */

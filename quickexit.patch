@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index f0a6684..ba4752c 100644
+index 9620b65..ea48ab0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -19,7 +19,7 @@ index f0a6684..ba4752c 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 292582e..d035ffe 100644
+index 8134634..40dfaa9 100644
 --- a/led.c
 +++ b/led.c
 @@ -378,6 +378,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)

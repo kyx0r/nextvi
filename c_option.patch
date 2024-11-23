@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index f0a6684..4863102 100644
+index 9620b65..2fcbf8b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1215,7 +1215,7 @@ void ex(void)
