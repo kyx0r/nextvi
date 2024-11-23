@@ -1,0 +1,92 @@
+diff --git a/led.c b/led.c
+index 292582e..e6bca3a 100644
+--- a/led.c
++++ b/led.c
+@@ -141,20 +141,26 @@ for (i = 0; i < cterm;) { \
+ 	att_old = att_new; \
+ } } \
+ 
++#define LEDBACK 300
++#define LEDFORW 300
++
+ /* render and highlight a line */
+ void led_render(char *s0, int cbeg, int cend)
+ {
+ 	if (!xled)
+ 		return;
+ 	ren_state *r = ren_position(s0);
++	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
++	int fcend = cend + LEDFORW;
++	int fcterm = fcend - fcbeg; /* fake the render dimensions */
+ 	int j, c, l, i, o, n = r->n;
+ 	int att_old = 0, atti = 0, cterm = cend - cbeg;
+ 	char *bound = NULL;
+ 	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
+ 	int off[cterm+1];	/* off[i]: the character at screen position i */
+-	int att[cterm+1];	/* att[i]: the attributes of i-th character */
+-	int stt[cterm+1];	/* stt[i]: remap off indexes */
+-	int ctt[cterm+1];	/* ctt[i]: cterm bound attrs */
++	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
++	int stt[fcterm+1];	/* stt[i]: remap off indexes */
++	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
+ 	int ctx = r->ctx;
+ 	off[cterm] = -1;
+ 	if (ctx < 0) {
+@@ -166,6 +172,7 @@ void led_render(char *s0, int cbeg, int cend)
+ 			off[i - cbeg] = i <= r->cmax ? r->col[i] : -1;
+ 	}
+ 	if (r->cmax > cterm || cbeg) {
++		c = 0;
+ 		i = ctx < 0 ? cterm-1 : 0;
+ 		o = off[i];
+ 		if (o >= 0 && cbeg && r->pos[o] < cbeg)
+@@ -176,12 +183,27 @@ void led_render(char *s0, int cbeg, int cend)
+ 		if (o >= 0 && r->cmax > cterm && r->pos[o] + r->wid[o] > cend)
+ 			while (off[i] == o)
+ 				off[ctx < 0 ? i++ : i--] = -1;
+-		for (i = 0, c = 0; i < cterm;) {
++		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
++		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
++			if (r->pos[l] < cbeg && c < fcterm) {
++				atti++;
++				att[c++] = l;
++			}
++			l -= ctx;
++		}
++		for (i = 0; i < cterm;) {
+ 			if ((o = off[i++]) >= 0) {
+ 				att[c++] = o;
+ 				for (; off[i] == o; i++);
+ 			}
+ 		}
++		l = cend <= r->cmax ? r->col[cend] : -1;
++		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
++			if (r->pos[l] >= cend && c < fcterm) {
++				att[c++] = l;
++			}
++			l += ctx;
++		}
+ 		stt[0] = 0;
+ 		for (i = 1; i < c; i++) {
+ 			int key0 = att[i];
+@@ -203,9 +225,9 @@ void led_render(char *s0, int cbeg, int cend)
+ 		sbuf_set(bsb, '\0', 4)
+ 		bound = bsb->s;
+ 	}
+-	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
++	memset(att, 0, MIN(n, fcterm+1) * sizeof(att[0]));
+ 	if (xhl)
+-		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
++		syn_highlight(att, bound ? bound : s0, MIN(n, fcterm));
+ 	free(bound);
+ 	if (led_attsb && xhl) {
+ 		led_att *p = (led_att*)led_attsb->s;
+@@ -215,7 +237,7 @@ void led_render(char *s0, int cbeg, int cend)
+ 			if (!bound)
+ 				att[p->off] = syn_merge(p->att, att[p->off]);
+ 			else if (c && stt[0] <= p->off && stt[c-1] >= p->off) {
+-				i = p->off - stt[0];
++				i = p->off - stt[atti];
+ 				if (i < c && stt[i] == p->off) {
+ 					att[i] = syn_merge(p->att, att[i]);
+ 					continue; /* text not reordered */
