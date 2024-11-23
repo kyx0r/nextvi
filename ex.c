@@ -1173,14 +1173,14 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 	while (*src == ' ' || *src == '\t')
 		src++;
 	while (*src && *src != xsep) {
-		if (*src == '\\' && src[1] == ':')
+		if (*src == '\\' && src[1] == xsep)
 			src++;
 		*arg++ = *src++;
 	}
 	*loc = '\0';
 	*cmd = '\0';
 	*arg = '\0';
-	return *src == '|' ? src+1 : src;
+	return src;
 }
 
 /* execute a single ex command */

@@ -239,7 +239,7 @@ void led_render(char *s0, int cbeg, int cend)
 			if (o < 0)
 				continue;
 			for (l++; off[i] == o; i++);
-			if (o+1 >= r->n || r->pos[o] + r->wid[o] == r->pos[o + 1])
+			if (o+1 >= n || r->pos[o] + r->wid[o] == r->pos[o + 1])
 				continue;
 			if (r->pos[o + 1] + r->wid[o + 1] != r->pos[o])
 				continue;
