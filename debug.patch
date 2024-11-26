@@ -32,10 +32,10 @@ index 1388190..47bd82c 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index b35848f..b21c64d 100644
+index fc443da..5705f36 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -93,6 +93,18 @@ static int ren_cwid(char *s, int pos)
+@@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
  static ren_state rstates[2];
  ren_state *rstate = &rstates[0];
  
@@ -45,16 +45,18 @@ index b35848f..b21c64d 100644
 +	rset_free(dir_rsrl);
 +	rset_free(dir_rsctx);
 +	for (int i = 0; i < LEN(rstates); i++) {
-+		free(rstate[i].col);
-+		free(rstate[i].pos);
-+		free(rstate[i].chrs);
++		if (rstate[i].col) {
++			free(rstate[i].col - 2);
++			free(rstate[i].pos);
++			free(rstate[i].chrs);
++		}
 +	}
 +}
 +
  /* specify the screen position of the characters in s */
  ren_state *ren_position(char *s)
  {
-@@ -377,3 +389,10 @@ void syn_init(void)
+@@ -378,3 +392,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
