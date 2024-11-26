@@ -1,4 +1,4 @@
-.Dd Nov 23, 2024
+.Dd Nov 25, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -925,6 +925,18 @@ characters. Typically to be used along with :ph for the full
 effect.
 .Ed
 
+.It Cm uz
+Toggle zero width placeholders
+.Bd -literal
+Use only if your terminal can render zero width utf-8.
+.Ed
+
+.It Cm ub
+Toggle combining multicodepoint placeholders
+.Bd -literal
+Use only if your terminal can render multicodepoint utf-8 (emojis).
+.Ed
+
 .It Cm ph [\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
 Create new placeholders
 .Bd -literal
@@ -1180,19 +1192,19 @@ previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 476 vi.h | definitions/aux
+ 478 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  294 conf.c | hl/ft/td config
  336 term.c | low level IO
  379 ren.c | positioning/syntax
  590 lbuf.c | file/line buffer
- 652 uc.c | UTF-8 support
+ 650 uc.c | UTF-8 support
  658 regex.c | extended RE
  668 led.c | insert mode/output
- 1231 ex.c | ex options/commands
+ 1236 ex.c | ex options/commands
  1953 vi.c | normal mode/general
- 6761 total | wc -l *.c\(basort
+ 6764 total | wc -l *.c\(basort
 _
 .TE
 .
