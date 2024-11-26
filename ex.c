@@ -1073,13 +1073,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
 			ex_print("no space for placeholder");
 		return 0;
 	}
-	if (utf8_length[0xc0] == 1) {
+	if (cmd[1] == 'z')
+		zwlen = !zwlen ? def_zwlen : 0;
+	else if (cmd[1] == 'b')
+		bclen = !bclen ? def_bclen : 0;
+	else if (utf8_length[0xc0] == 1) {
 		memset(utf8_length+0xc0, 2, 0xe0 - 0xc0);
 		memset(utf8_length+0xe0, 3, 0xf0 - 0xe0);
 		memset(utf8_length+0xf0, 4, 0xf8 - 0xf0);
-		return 0;
-	}
-	memset(utf8_length+1, 1, 255);
+	} else
+		memset(utf8_length+1, 1, 255);
 	return 0;
 }
 
@@ -1134,6 +1137,8 @@ static struct excmd {
 	{"bx", ec_setbufsmax},
 	{"ac", ec_setacreg},
 	{"uc", ec_setenc},
+	{"uz", ec_setenc},
+	{"ub", ec_setenc},
 	{"ph", ec_setenc},
 	{"", ec_print},
 };

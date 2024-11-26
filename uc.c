@@ -470,6 +470,8 @@ static int zwchars[][2] = {
 	{0x1E2AE, 0x1E2AE}, {0x1E2EC, 0x1E2EF}, {0x1E4EC, 0x1E4EF}, {0x1E8D0, 0x1E8D6},
 	{0x1E944, 0x1E94A}, {0xE0001, 0xE0001}, {0xE0020, 0xE007F},
 };
+int zwlen = LEN(zwchars);
+int def_zwlen = LEN(zwchars);
 
 static int bchars[][2] = {
 	{0x00000, 0x0001f}, {0x00080, 0x0009f}, {0x00300, 0x0036f},
@@ -606,10 +608,12 @@ static int bchars[][2] = {
 	{0x1f233, 0x1f23f}, {0x1f24a, 0x1ffff}, {0x2a6d8, 0x2a6ff},
 	{0x2b736, 0x2f7ff}, {0x2fa1f, 0x10ffff},
 };
+int bclen = LEN(bchars);
+int def_bclen = LEN(bchars);
 
 static int find(int c, int tab[][2], int n)
 {
-	if (c < tab[0][0])
+	if (c < tab[0][0] || !n)
 		return 0;
 	int m, l = 0;
 	int h = n - 1;
@@ -631,16 +635,10 @@ static int uc_isdw(int c)
 	return find(c, dwchars, LEN(dwchars));
 }
 
-/* zero-width and combining characters */
-static int uc_iszw(int c)
-{
-	return find(c, zwchars, LEN(zwchars));
-}
-
-/* nonprintable characters */
+/* (nonprintable) zero width & combining characters */
 int uc_isbell(int c)
 {
-	return uc_iszw(c) || find(c, bchars, LEN(bchars));
+	return find(c, zwchars, zwlen) || find(c, bchars, bclen);
 }
 
 /* printing width */
@@ -648,5 +646,5 @@ int uc_wid(int c)
 {
 	if (uc_isdw(c))
 		return 2;
-	return 1; /* treat zw as 1 */
+	return zwlen || !find(c, zwchars, def_zwlen);
 }
