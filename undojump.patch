@@ -67,7 +67,7 @@ index f26d278..f0f833b 100644
  				vi_arg1 = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 95832e2..6ce5af4 100644
+index 5a60d19..22e58eb 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -141,6 +141,7 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end);

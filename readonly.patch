@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 9620b65..0a408b3 100644
+index 8bdffb3..8be12c5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ static int xbufsmax;		/* number of buffers */
@@ -38,7 +38,7 @@ index 9620b65..0a408b3 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
  				ex_print("write failed: file changed");
  				return 1;
-@@ -1083,6 +1091,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1086,6 +1094,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -51,14 +51,14 @@ index 9620b65..0a408b3 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1133,6 +1147,7 @@ static struct excmd {
+@@ -1136,6 +1150,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
 +	{"ro", ec_readonly},
  	{"uc", ec_setenc},
- 	{"ph", ec_setenc},
- 	{"", ec_print},
+ 	{"uz", ec_setenc},
+ 	{"ub", ec_setenc},
 diff --git a/vi.c b/vi.c
 index f26d278..1e4b8fe 100644
 --- a/vi.c
@@ -77,10 +77,10 @@ index f26d278..1e4b8fe 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 95832e2..0ea19d2 100644
+index 5a60d19..6958c67 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -335,6 +335,7 @@ struct buf {
+@@ -337,6 +337,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -88,7 +88,7 @@ index 95832e2..0ea19d2 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -474,3 +475,4 @@ extern char *fs_exdir;
+@@ -476,3 +477,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;

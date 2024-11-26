@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 9620b65..9723c57 100644
+index 8bdffb3..64b638f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1229,3 +1229,16 @@ void ex_init(char **files, int n)
+@@ -1234,3 +1234,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -101,7 +101,7 @@ index f26d278..b01eca7 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 95832e2..27b1521 100644
+index 5a60d19..c6005d4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -190,6 +190,7 @@ char *ren_translate(char *s, char *ln);
@@ -120,7 +120,7 @@ index 95832e2..27b1521 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -369,6 +371,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -371,6 +373,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
