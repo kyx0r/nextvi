@@ -152,7 +152,7 @@ index 1388190..69a2920 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 3d9e061..fc3924b 100644
+index ab66fcc..8752084 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -182,17 +182,16 @@ index f26d278..a5d428c 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 95832e2..1ceac47 100644
+index 5a60d19..9ff8eeb 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -214,7 +214,9 @@ void syn_addhl(char *reg, int id, int reload);
+@@ -214,7 +214,8 @@ void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */
 -extern unsigned char utf8_length[256];
 +extern unsigned char _utf8_length[256];
 +extern unsigned char *utf8_length;
-+
+ extern int zwlen, def_zwlen;
+ extern int bclen, def_bclen;
  /* return the length of a utf-8 character */
- #define uc_len(s) utf8_length[(unsigned char)s[0]]
- /* the unicode codepoint of the given utf-8 character */
