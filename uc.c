@@ -646,5 +646,5 @@ int uc_wid(int c)
 {
 	if (uc_isdw(c))
 		return 2;
-	return 1; /* treat zw as 1 */
+	return zwlen || !find(c, zwchars, def_zwlen);
 }
