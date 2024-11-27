@@ -830,14 +830,14 @@ CODE MAP
      +--------------+----------------------+
      | 294 conf.c   |  hl/ft/td config	   |
      | 336 term.c   |  low level IO	   |
-     | 379 ren.c    |  positioning/syntax  |
+     | 380 ren.c    |  positioning/syntax  |
      | 590 lbuf.c   |  file/line buffer	   |
      | 650 uc.c	    |  UTF-8 support	   |
      | 658 regex.c  |  extended RE	   |
-     | 668 led.c    |  insert mode/output  |
+     | 670 led.c    |  insert mode/output  |
      | 1236 ex.c    |  ex options/commands |
-     | 1953 vi.c    |  normal mode/general |
-     | 6764 total   |  wc -l *.c|sort	   |
+     | 1952 vi.c    |  normal mode/general |
+     | 6766 total   |  wc -l *.c|sort	   |
      +--------------+----------------------+
 
 COMPILING
@@ -937,4 +937,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.11.9-arch1-1	       November 25, 2024	  Linux 6.11.9-arch1-1
+Linux 6.11.9-arch1-1	       November 27, 2024	  Linux 6.11.9-arch1-1

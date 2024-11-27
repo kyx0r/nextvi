@@ -123,11 +123,8 @@ static void vi_drawmsg(void)
 	}
 }
 
-static int vi_nextcol(struct lbuf *lb, int dir, int *row, int *off)
+static int vi_nextcol(char *ln, int dir, int *off)
 {
-	char *ln = lbuf_get(lb, *row);
-	if (!ln)
-		return -1;
 	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
 	if (*rstate->chrs[o] == '\n')
 		return -1;
@@ -173,8 +170,8 @@ static void vi_drawrow(int row)
 		else if (*vi_word == 'w' || *vi_word == 'W')
 			vi_drawnum(lbuf_wordbeg(xb, i1, 2, &nrow, &noff))
 		if (*vi_word == 'h') {
-			vi_drawnum(vi_nextcol(xb, 1, &nrow, &noff))
-			vi_drawnum(vi_nextcol(xb, -1, &nrow, &noff))
+			vi_drawnum(vi_nextcol(c, 1, &noff))
+			vi_drawnum(vi_nextcol(c, -1, &noff))
 		} else
 			vi_drawnum(lbuf_wordend(xb, i1, -2, &nrow, &noff))
 		tmp[ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol] = *vi_word;
@@ -685,10 +682,12 @@ static int vi_motion(int *row, int *off)
 		break;
 	case 'h':
 	case 'l':
-		dir = dir_context(lbuf_get(xb, *row));
+		if (!(cs = lbuf_get(xb, *row)))
+			return -1;
+		dir = dir_context(cs);
 		dir = mv == 'h' ? -dir : dir;
 		for (i = 0; i < cnt; i++)
-			if (vi_nextcol(xb, dir, row, off))
+			if (vi_nextcol(cs, dir, off))
 				break;
 		break;
 	case ' ':
@@ -1648,9 +1647,9 @@ void vi(int init)
 					term_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
 					break;
 				}
-				if (c != 'A' && c != 'C')
-					xoff--;
-				xoff = xoff < 0 ? 0 : xoff;
+				ln = lbuf_get(xb, xrow);
+				if (c != 'A' && c != 'C' && ln)
+					vi_nextcol(ln, -dir_context(ln), &xoff);
 				break;
 			case 'J':
 				vc_join(vi_joinmode, vi_arg1 <= 1 ? 2 : vi_arg1);

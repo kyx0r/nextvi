@@ -98,24 +98,24 @@ ren_state *ren_position(char *s)
 {
 	if (rstate->s == s)
 		return rstate;
-	else {
-		free(rstate->col);
+	else if (rstate->col) {
+		free(rstate->col - 2);
 		free(rstate->pos);
 		free(rstate->chrs);
 	}
-	int n, i, c = 0, *off, *pos, *col;
-	int cpos = 0, wid;
+	unsigned int n, i, c = 2;
+	int cpos = 0, wid, *off, *pos, *col;
 	char **chrs = uc_chop(s, &n);
 	pos = emalloc(((n + 1) * sizeof(pos[0])) * 2);
 	off = &pos[n+1];
 	rstate->ctx = dir_context(s);
 	if (xorder && dir_reorder(chrs, off, n, rstate->ctx)) {
-		int *wids = emalloc((n + 1) * sizeof(pos[0]));
+		int *wids = emalloc(n * sizeof(wids[0]));
 		for (i = 0; i < n; i++) {
 			pos[off[i]] = cpos;
 			cpos += ren_cwid(chrs[off[i]], cpos);
 		}
-		col = emalloc(cpos * sizeof(pos[0]));
+		col = emalloc((cpos + 2) * sizeof(col[0]));
 		pos[n] = cpos;
 		for (i = 0; i < n; i++) {
 			wid = ren_cwid(chrs[off[i]], pos[off[i]]);
@@ -123,14 +123,14 @@ ren_state *ren_position(char *s)
 			while (wid--)
 				col[c++] = off[i];
 		}
-		memcpy(off, wids, (n + 1) * sizeof(pos[0]));
+		memcpy(off, wids, n * sizeof(wids[0]));
 		free(wids);
 	} else {
 		for (i = 0; i < n; i++) {
 			pos[i] = cpos;
 			cpos += ren_cwid(chrs[i], cpos);
 		}
-		col = emalloc(cpos * sizeof(pos[0]));
+		col = emalloc((cpos + 2) * sizeof(col[0]));
 		pos[n] = cpos;
 		for (i = 0; i < n; i++) {
 			wid = pos[i+1] - pos[i];
@@ -139,9 +139,12 @@ ren_state *ren_position(char *s)
 				col[c++] = i;
 		}
 	}
+	off[n] = 0;
+	col[0] = n;
+	col[1] = n;
 	rstate->wid = off;
-	rstate->cmax = cpos-1;
-	rstate->col = col;
+	rstate->cmax = cpos - 1;
+	rstate->col = col + 2;
 	rstate->s = s;
 	rstate->pos = pos;
 	rstate->chrs = chrs;
@@ -169,10 +172,8 @@ int ren_cursor(char *s, int p)
 	if (!s)
 		return 0;
 	ren_state *r = ren_position(s);
-	if (r->cmax < 0)
-		return 0;
 	if (p >= r->cmax)
-		p = r->cmax - (r->cmax && *r->chrs[r->col[r->cmax]] == '\n');
+		p = r->cmax - (*r->chrs[r->col[r->cmax]] == '\n');
 	int i = r->col[p];
 	return r->pos[i] + r->wid[i] - 1;
 }

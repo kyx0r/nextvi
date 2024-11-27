@@ -37,7 +37,7 @@ char *uc_beg(char *beg, char *s)
 }
 
 /* allocate and return an array for the characters in s */
-char **uc_chop(char *s, int *n)
+char **uc_chop(char *s, unsigned int *n)
 {
 	*n = uc_slen(s);
 	int i, c = *n + 1;

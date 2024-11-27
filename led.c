@@ -276,33 +276,35 @@ static int led_lastword(char *s)
 	return r - s;
 }
 
-static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
+static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
 {
-	if (!xled)
+	if (!xled) {
+		sbuf_null(sb)
 		return;
-	int off, pos, psn = sb->s_n;
-	int idir = 0, next = sb->s[ps];
+	}
+	int dir, off, pos, psn = sb->s_n;
 	sbuf_str(sb, post)
 	sbuf_set(sb, '\0', 4)
 	rstate->s = NULL;
-	off = ren_position(sb->s+ps)->n;
-	off -= uc_slen(post);
+	ren_state *r = ren_position(sb->s + ps);
+	off = r->n - uc_slen(post);
 	if (ai_max >= 0)
 		xoff = off;
-	pos = ren_cursor(sb->s+ps, ren_pos(sb->s+ps, MAX(0, off - 1)));
+	pos = ren_cursor(r->s, r->pos[MAX(0, off-1)]);
+	if (off > 0) {
+		int two = off > 1 && psn != pre;
+		dir = r->pos[off-two] - r->pos[off-(two+1)];
+		if (abs(dir) > r->wid[off-(two+1)])
+			pos = ren_cursor(r->s, r->pos[off-two]);
+		pos += dir < 0 ? -1 : 1;
+	}
 	if (pos >= xleft + xcols)
 		xleft = pos - xcols / 2;
 	if (pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
 	syn_blockhl = 0;
-	led_crender(sb->s+ps, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
-	/* cursor position for inserting the next character */
-	if (next) {
-		if (off - 2 >= 0)
-			idir = ren_pos(sb->s+ps, off-1) - ren_pos(sb->s+ps, off-2);
-		idir = idir < 0 ? -1 : 1;
-	}
-	term_pos(-1, led_pos(sb->s+ps, pos + idir) + vi_lncol);
+	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
+	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
 	sbufn_cut(sb, psn)
 }
 
@@ -386,7 +388,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 	int c, i, lsug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	while (1) {
-		led_printparts(sb, ps, post, ai_max);
+		led_printparts(sb, pre, ps, post, ai_max);
 		len = sb->s_n;
 		c = term_read();
 		switch (c) {
@@ -517,6 +519,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 		case TK_CTL('b'):
 			if (ai_max >= 0) {
 				pac:;
+				sbuf_null(sb)
 				int r = xrow-xtop+1;
 				if (sug)
 					goto pac_;
@@ -586,7 +589,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			if (c == '\n' || TK_INT(c))
 				goto leave;
 			if ((cs = led_read(kmap, c)))
-				sbufn_str(sb, cs)
+				sbuf_str(sb, cs)
 		}
 		sug = NULL; _sug = NULL;
 		if (ai_max >= 0 && xpac)
@@ -602,12 +605,11 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 {
 	int key, n;
 	sbuf_smake(sb, xcols)
-	sbuf_null(sb)
 	if (pref)
-		sbufn_str(sb, pref)
+		sbuf_str(sb, pref)
 	n = sb->s_n;
 	if (insert)
-		sbufn_str(sb, insert)
+		sbuf_str(sb, insert)
 	preserve(int, xtd, +2)
 	led_line(sb, 0, n, post, -1, &key, kmap, 0, 0);
 	restore(xtd)
@@ -630,7 +632,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
 	sbuf *sb; sbuf_make(sb, xcols)
 	int ai_max = 128 * xai;
 	int n, key, ps = 0;
-	sbufn_str(sb, pref)
+	sbuf_str(sb, pref)
 	while (1) {
 		led_line(sb, ps, sb->s_n, *post, ai_max, &key, &xkmap, row, lsh);
 		if (key != '\n') {
@@ -641,7 +643,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
 			return sb;
 		}
 		sbufn_chr(sb, key)
-		led_printparts(sb, ps, "", 0);
+		led_printparts(sb, -1, ps, "", 0);
 		term_chr('\n');
 		term_room(1);
 		xrow++;
