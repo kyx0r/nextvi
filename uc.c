@@ -37,7 +37,7 @@ char *uc_beg(char *beg, char *s)
 }
 
 /* allocate and return an array for the characters in s */
-char **uc_chop(char *s, int *n)
+char **uc_chop(char *s, unsigned int *n)
 {
 	*n = uc_slen(s);
 	int i, c = *n + 1;
@@ -646,5 +646,5 @@ int uc_wid(int c)
 {
 	if (uc_isdw(c))
 		return 2;
-	return 1; /* treat zw as 1 */
+	return zwlen || !find(c, zwchars, def_zwlen);
 }

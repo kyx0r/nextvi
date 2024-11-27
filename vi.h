@@ -249,7 +249,7 @@ int uc_isalpha(char *s);
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
-char **uc_chop(char *s, int *n);
+char **uc_chop(char *s, unsigned int *n);
 char *uc_beg(char *beg, char *s);
 char *uc_shape(char *beg, char *s, int c);
 
