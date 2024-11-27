@@ -276,7 +276,7 @@ static int led_lastword(char *s)
 	return r - s;
 }
 
-static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
+static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
 {
 	if (!xled) {
 		sbuf_null(sb)
@@ -290,10 +290,12 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
 	off = r->n - uc_slen(post);
 	if (ai_max >= 0)
 		xoff = off;
-	pos = ren_cursor(r->s, ren_pos(r->s, MAX(0, off-1)));
-	if (off - 1 >= 0) {
-		dir = (off - 2 >= 0);
-		dir = r->pos[off - dir] - r->pos[off-(dir+1)];
+	pos = ren_cursor(r->s, r->pos[MAX(0, off-1)]);
+	if (off > 0) {
+		int two = off > 1 && psn != pre;
+		dir = r->pos[off-two] - r->pos[off-(two+1)];
+		if (abs(dir) > r->wid[off-(two+1)])
+			pos = ren_cursor(r->s, r->pos[off-two]);
 		pos += dir < 0 ? -1 : 1;
 	}
 	if (pos >= xleft + xcols)
@@ -386,7 +388,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 	int c, i, lsug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	while (1) {
-		led_printparts(sb, ps, post, ai_max);
+		led_printparts(sb, pre, ps, post, ai_max);
 		len = sb->s_n;
 		c = term_read();
 		switch (c) {
@@ -641,7 +643,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
 			return sb;
 		}
 		sbufn_chr(sb, key)
-		led_printparts(sb, ps, "", 0);
+		led_printparts(sb, -1, ps, "", 0);
 		term_chr('\n');
 		term_room(1);
 		xrow++;
