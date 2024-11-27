@@ -19,7 +19,7 @@ index 8bdffb3..c635d81 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 8134634..40dfaa9 100644
+index 2900d0a..8080e9c 100644
 --- a/led.c
 +++ b/led.c
 @@ -378,6 +378,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
@@ -45,7 +45,7 @@ index 8134634..40dfaa9 100644
  	while (1) {
  		led_printparts(sb, ps, post, ai_max);
  		len = sb->s_n;
-@@ -582,7 +591,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -583,7 +592,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			xquit = 0;
  			restore(xvis)
  			continue;
