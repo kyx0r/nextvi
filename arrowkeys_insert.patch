@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 8134634..9d21d20 100644
+index 2900d0a..93205de 100644
 --- a/led.c
 +++ b/led.c
 @@ -276,7 +276,7 @@ static int led_lastword(char *s)
@@ -9,21 +9,21 @@ index 8134634..9d21d20 100644
 -static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
 +static void led_printparts(sbuf *sb, int ps, char *post, int ai_max, int print)
  {
- 	if (!xled)
- 		return;
-@@ -294,8 +294,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
+ 	if (!xled) {
+ 		sbuf_null(sb)
+@@ -300,8 +300,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
  		xleft = pos - xcols / 2;
  	if (pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
 -	syn_blockhl = 0;
--	led_crender(sb->s+ps, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
+-	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
 +		syn_blockhl = 0;
 +		led_crender(sb->s+ps, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
- 	/* cursor position for inserting the next character */
- 	if (next) {
- 		if (off - 2 >= 0)
+ 	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
+ 	sbufn_cut(sb, psn)
+ }
 @@ -386,7 +388,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
@@ -34,7 +34,7 @@ index 8134634..9d21d20 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -572,6 +575,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -573,6 +576,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			else
  				led_redraw(sb->s, 0, orow, lsh);
  			continue;
@@ -55,7 +55,7 @@ index 8134634..9d21d20 100644
  		case TK_CTL('o'):;
  			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
  			syn_setft(ex_ft);
-@@ -594,6 +611,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -595,6 +612,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	}
  leave:
  	vi_insmov = c;
