@@ -69,7 +69,7 @@ index 0c4eb5b..c088616 100644
  }
  
 diff --git a/led.c b/led.c
-index 2900d0a..04c9cfe 100644
+index 8b7f3e5..e99eaa8 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -186,7 +186,7 @@ index 1388190..20921cc 100644
  }
  
 diff --git a/ren.c b/ren.c
-index fc443da..582001c 100644
+index 8c1c5c8..a285d71 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -241,13 +241,14 @@ int syn_blockhl;
@@ -235,10 +235,10 @@ index fc443da..582001c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index f26d278..a487df2 100644
+index cc508db..6d84da1 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -163,7 +163,8 @@ static void vi_drawrow(int row)
+@@ -160,7 +160,8 @@ static void vi_drawrow(int row)
  			vi_rshift = 0;
  		if (row != xrow+1 || !c || *c == '\n')
  			goto skip;
@@ -248,7 +248,7 @@ index f26d278..a487df2 100644
  		memset(tmp, ' ', xcols+1);
  		tmp[xcols+1] = '\n';
  		tmp[xcols+2] = '\0';
-@@ -190,6 +191,8 @@ static void vi_drawrow(int row)
+@@ -187,6 +188,8 @@ static void vi_drawrow(int row)
  		restore(xorder)
  		restore(syn_blockhl)
  		restore(xtd)
@@ -257,7 +257,7 @@ index f26d278..a487df2 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1409,10 +1412,11 @@ void vi(int init)
+@@ -1408,10 +1411,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -270,7 +270,7 @@ index f26d278..a487df2 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1547,7 +1551,7 @@ void vi(int init)
+@@ -1546,7 +1550,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -279,7 +279,7 @@ index f26d278..a487df2 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg1, buf+4);
  					strcat(buf1, "s/");
-@@ -1557,10 +1561,11 @@ void vi(int init)
+@@ -1556,10 +1560,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf);
@@ -292,7 +292,7 @@ index f26d278..a487df2 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1568,6 +1573,7 @@ void vi(int init)
+@@ -1567,6 +1572,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf);

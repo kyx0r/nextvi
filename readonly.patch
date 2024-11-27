@@ -60,10 +60,10 @@ index 8bdffb3..8be12c5 100644
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
 diff --git a/vi.c b/vi.c
-index f26d278..1e4b8fe 100644
+index cc508db..673a657 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1928,9 +1928,11 @@ int main(int argc, char *argv[])
+@@ -1927,9 +1927,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -77,7 +77,7 @@ index f26d278..1e4b8fe 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 5a60d19..6958c67 100644
+index 731fc73..65249dd 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -337,6 +337,7 @@ struct buf {
