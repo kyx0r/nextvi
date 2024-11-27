@@ -103,8 +103,8 @@ ren_state *ren_position(char *s)
 		free(rstate->pos);
 		free(rstate->chrs);
 	}
-	int n, i, c = 2, *off, *pos, *col;
-	int cpos = 0, wid;
+	unsigned int n, i, c = 2;
+	int cpos = 0, wid, *off, *pos, *col;
 	char **chrs = uc_chop(s, &n);
 	pos = emalloc(((n + 1) * sizeof(pos[0])) * 2);
 	off = &pos[n+1];
