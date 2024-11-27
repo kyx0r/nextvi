@@ -37,8 +37,7 @@ certain limit. To customize the depth, adjust LEDFORW and LEDBACK definitions
 in led.c
 Patch will alter the meaning of <^> <$> assertions in syntax highlight
 regex, as the line would be considered to start/end beyond the visible columns.
-Patch works flawlessly in reverse direction and with arbitrary
-positioned text.
+Patch works in reverse direction and with reordered text.
 
 debug.patch
 --------------
