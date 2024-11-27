@@ -1,17 +1,17 @@
 diff --git a/led.c b/led.c
-index 2900d0a..93205de 100644
+index 8b7f3e5..937d3d2 100644
 --- a/led.c
 +++ b/led.c
 @@ -276,7 +276,7 @@ static int led_lastword(char *s)
  	return r - s;
  }
  
--static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
-+static void led_printparts(sbuf *sb, int ps, char *post, int ai_max, int print)
+-static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
++static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max, int print)
  {
  	if (!xled) {
  		sbuf_null(sb)
-@@ -300,8 +300,10 @@ static void led_printparts(sbuf *sb, int ps, char *post, int ai_max)
+@@ -302,8 +302,10 @@ static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
  		xleft = pos - xcols / 2;
  	if (pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
@@ -24,17 +24,17 @@ index 2900d0a..93205de 100644
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
  	sbufn_cut(sb, psn)
  }
-@@ -386,7 +388,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -388,7 +390,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
--		led_printparts(sb, ps, post, ai_max);
-+		led_printparts(sb, ps, post, ai_max, !memchr("ABCD", vi_insmov, 4));
+-		led_printparts(sb, pre, ps, post, ai_max);
++		led_printparts(sb, pre, ps, post, ai_max, !memchr("ABCD", vi_insmov, 4));
 +		vi_insmov = -1;
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -573,6 +576,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -575,6 +578,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			else
  				led_redraw(sb->s, 0, orow, lsh);
  			continue;
@@ -55,7 +55,7 @@ index 2900d0a..93205de 100644
  		case TK_CTL('o'):;
  			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
  			syn_setft(ex_ft);
-@@ -595,6 +612,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -597,6 +614,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	}
  leave:
  	vi_insmov = c;
@@ -63,20 +63,20 @@ index 2900d0a..93205de 100644
  	*key = c;
  }
  
-@@ -641,7 +659,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
+@@ -643,7 +661,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)
--		led_printparts(sb, ps, "", 0);
-+		led_printparts(sb, ps, "", 0, 1);
+-		led_printparts(sb, -1, ps, "", 0);
++		led_printparts(sb, -1, ps, "", 0, 1);
  		term_chr('\n');
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index f26d278..75eea8d 100644
+index cc508db..ba45bc1 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -928,6 +928,8 @@ static char *vi_indents(char *ln, int *l)
+@@ -927,6 +927,8 @@ static char *vi_indents(char *ln, int *l)
  	sbufn_sret(sb)
  }
  
@@ -85,7 +85,7 @@ index f26d278..75eea8d 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *region, *pref, *post, *_post;
-@@ -951,6 +953,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -950,6 +952,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
@@ -93,7 +93,7 @@ index f26d278..75eea8d 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1110,8 +1113,10 @@ static void vc_insert(int cmd)
+@@ -1109,8 +1112,10 @@ static void vc_insert(int cmd)
  		sbufn_str(rep, post)
  		if (cmdo && !lbuf_len(xb))
  			lbuf_edit(xb, "\n", 0, 0);
@@ -105,7 +105,7 @@ index f26d278..75eea8d 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1639,6 +1644,37 @@ void vi(int init)
+@@ -1638,6 +1643,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -143,9 +143,9 @@ index f26d278..75eea8d 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xrow--;
-@@ -1652,6 +1688,9 @@ void vi(int init)
- 					xoff--;
- 				xoff = xoff < 0 ? 0 : xoff;
+@@ -1651,6 +1687,9 @@ void vi(int init)
+ 				if (c != 'A' && c != 'C' && ln)
+ 					vi_nextcol(ln, -dir_context(ln), &xoff);
  				break;
 +				_break:
 +				vi_mod = 0;
