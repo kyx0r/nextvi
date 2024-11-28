@@ -655,6 +655,29 @@ static int fs_searchback(int cnt, int *row, int *off)
 	return 0;
 }
 
+static void vc_status(int type)
+{
+	int cp, l, col, buf;
+	char cbuf[8] = "", *c;
+	col = vi_off2col(xb, xrow, xoff);
+	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
+	if (type && lbuf_get(xb, xrow)) {
+		c = rstate->chrs[xoff];
+		uc_code(cp, c, l)
+		memcpy(cbuf, c, l);
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x %dL %dW S%d O%d C%d",
+			cbuf, cp, l, rstate->wid[xoff], (int)(c - lbuf_get(xb, xrow)),
+			xoff, col);
+		return;
+	}
+	buf = istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs;
+	snprintf(vi_msg, sizeof(vi_msg),
+		"\"%s\"%s%dL %d%% L%d C%d B%d",
+		ex_path[0] ? ex_path : "unnamed",
+		lbuf_modified(xb) ? "* " : " ", lbuf_len(xb),
+		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col, buf);
+}
+
 /* read a motion */
 static int vi_motion(int *row, int *off)
 {
@@ -777,7 +800,8 @@ static int vi_motion(int *row, int *off)
 		for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
 			ex_bufpostfix(&bufs[i], 1);
 		syn_setft(ex_ft);
-		return '\\';
+		vc_status(0);
+		return 'n';
 	case TK_CTL('t'):
 		if (vi_arg1 % 2 == 0 && vi_arg1 < LEN(srow) * 2) {
 			vi_arg1 /= 2;
@@ -831,13 +855,6 @@ static int vi_motion(int *row, int *off)
 	case '%':
 		if (lbuf_pair(xb, row, off))
 			return -1;
-		break;
-	case '\\':
-		temp_switch(1);
-		if (vi_arg1 && xb == tempbufs[1].lb)
-			ex_command("1,$d:fd:b-2")
-		*row = xrow;
-		*off = xoff;
 		break;
 	default:
 		return 0;
@@ -1193,29 +1210,6 @@ static void vi_scrollbackward(int cnt)
 	xrow = MIN(xrow, xtop + xrows - 1);
 }
 
-static void vc_status(int type)
-{
-	int cp, l, col, buf;
-	char cbuf[8] = "", *c;
-	col = vi_off2col(xb, xrow, xoff);
-	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
-	if (type && lbuf_get(xb, xrow)) {
-		c = rstate->chrs[xoff];
-		uc_code(cp, c, l)
-		memcpy(cbuf, c, l);
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x %dL %dW S%d O%d C%d",
-			cbuf, cp, l, rstate->wid[xoff], (int)(c - lbuf_get(xb, xrow)),
-			xoff, col);
-		return;
-	}
-	buf = istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs;
-	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%s%dL %d%% L%d C%d B%d",
-		ex_path[0] ? ex_path : "unnamed",
-		lbuf_modified(xb) ? "* " : " ", lbuf_len(xb),
-		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col, buf);
-}
-
 static int vc_replace(void)
 {
 	int cnt = MAX(1, vi_arg1);
@@ -1335,13 +1329,11 @@ void vi(int init)
 				vi_mod |= 4;
 			}
 			if ((xrow != nrow || ooff != noff) &&
-					strchr("%\'`GHML/?{}[]nN", mv))
+					strchr("%'`GHML/?{}[]", mv))
 				lbuf_mark(xb, '`', xrow, ooff);
 			xrow = nrow;
 			xoff = noff;
 			switch (mv) {
-			case '\\':
-				vc_status(0);
 			case 1: /* ^a */
 			case '/':
 			case '?':
@@ -1789,6 +1781,13 @@ void vi(int init)
 			case '@':
 			case '&':
 				vc_execute(c);
+				break;
+			case '\\':
+				ex_exec("b-2");
+				if (vi_arg1 && xb == tempbufs[1].lb)
+					ex_exec("1,$d:fd:b-2");
+				vc_status(0);
+				vi_mod |= 1;
 				break;
 			default:
 				continue;
