@@ -28,7 +28,7 @@ index 8bdffb3..eacfe68 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 244d951..5ed3423 100644
+index 244d951..3a1f3e8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -611,12 +611,12 @@ void dir_calc(char *path)
@@ -136,7 +136,7 @@ index 244d951..5ed3423 100644
 +					int subs[2];
 +					rset *rs = rset_make(1, (char*[]){":[0-9]+:"}, 0);
 +					if (rset_find(rs, buf, subs, 0) >= 0) {
-+						buf[subs[0]] = '|';
++						buf[subs[0]] = xsep;
 +						buf[subs[1]-1] = '\n';
 +						buf[subs[1]] = '\0';
 +					}
