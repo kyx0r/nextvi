@@ -28,7 +28,7 @@ index 8bdffb3..eacfe68 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index cc508db..82f351f 100644
+index 244d951..5ed3423 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -611,12 +611,12 @@ void dir_calc(char *path)
@@ -73,7 +73,7 @@ index cc508db..82f351f 100644
  	}
  	return 0;
  }
-@@ -742,6 +742,7 @@ static int vi_motion(int *row, int *off)
+@@ -765,6 +765,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -81,7 +81,7 @@ index cc508db..82f351f 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -760,8 +761,44 @@ static int vi_motion(int *row, int *off)
+@@ -783,8 +784,44 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -127,7 +127,7 @@ index cc508db..82f351f 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1411,7 +1448,17 @@ void vi(int init)
+@@ -1403,7 +1440,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -146,7 +146,7 @@ index cc508db..82f351f 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1568,6 +1615,10 @@ void vi(int init)
+@@ -1560,6 +1607,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index cc508db..82f351f 100644
  				default:
  					term_dec()
  				}
-@@ -1913,6 +1964,7 @@ int main(int argc, char *argv[])
+@@ -1912,6 +1963,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");

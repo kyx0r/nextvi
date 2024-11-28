@@ -19,10 +19,10 @@ index 8bdffb3..6c316de 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index cc508db..cc7b97c 100644
+index 244d951..145f34a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1906,7 +1906,8 @@ static int setup_signals(void) {
+@@ -1905,7 +1905,8 @@ static int setup_signals(void) {
  
  int main(int argc, char *argv[])
  {
@@ -32,7 +32,7 @@ index cc508db..cc7b97c 100644
  	if (!setup_signals())
  		return EXIT_FAILURE;
  	dir_init();
-@@ -1927,15 +1928,26 @@ int main(int argc, char *argv[])
+@@ -1926,15 +1927,26 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
