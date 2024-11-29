@@ -46,7 +46,7 @@ int vi_lncol;		/* line numbers cursor offset */
 static int vi_lnnum;	/* line numbers */
 static int vi_mod;	/* screen should be redrawn -
 			bit 1: whole screen, bit 2: current line, bit 3: update vi_col) */
-static char vi_word_m[] = "\0heEwW";	/* line word navigation */
+static char vi_word_m[] = "\0leEwW";	/* line word navigation */
 static char *vi_word = vi_word_m;
 static char *_vi_word = vi_word_m;
 static int vi_wsel = 1;
@@ -169,7 +169,7 @@ static void vi_drawrow(int row)
 			vi_drawnum(lbuf_wordend(xb, i1, 2, &nrow, &noff))
 		else if (*vi_word == 'w' || *vi_word == 'W')
 			vi_drawnum(lbuf_wordbeg(xb, i1, 2, &nrow, &noff))
-		if (*vi_word == 'h') {
+		if (*vi_word == 'l') {
 			vi_drawnum(vi_nextcol(c, 1, &noff))
 			vi_drawnum(vi_nextcol(c, -1, &noff))
 		} else
