@@ -96,7 +96,7 @@ VI NORMAL
      4#		   Toggle show relative line numbers after indent permanently
      8#		   Toggle show relative line numbers permanently
      V		   Toggle show hidden characters:<Space Tab Newline>
-     <^C>	   Toggle show line motion numbers for <h l e b E B w W>
+     <^C>	   Toggle show line motion numbers for <l h e b E B w W>
      {1-5}<^C>	   Switch to line motion number mode #
      <^V>	   Loop through line motion number modes
      [#]<^R>	   Redo # times
