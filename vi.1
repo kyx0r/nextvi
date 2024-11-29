@@ -101,14 +101,14 @@ Move to start of word forward # times, skip punctuation
 Move to start of word forward # times
 .It Cm vw
 Toggle line mode for <E e B b W w>
-.It Cm {
-Move to next <{> section down
-.It Cm }
-Move to next <{> section up
-.It Cm \&[
-Move to next <Newline> section down
-.It Cm \&]
-Move to next <Newline> section up
+.It Cm [\fI#\fP]{
+Move to next <{> section down # times
+.It Cm [\fI#\fP]}
+Move to next <{> section up # times
+.It Cm [\fI#\fP]\&[
+Move to next <Newline> section down # times
+.It Cm [\fI#\fP]\&]
+Move to next <Newline> section up # times
 .It Cm ^
 Move to start of line after indent
 .It Cm 0
@@ -288,9 +288,9 @@ Delete # characters from cursor forward
 .It Cm [\fI#\fP]X
 Delete # characters from cursor backward
 .It Cm di{\fIarg\fP}
-Delete around arg which can be <( ) \&">
+Delete inside arg pairs <( ) \&">
 .It Cm ci{\fIarg\fP}
-Change around arg which can be <( ) \&">
+Change inside arg pairs <( ) \&">
 .It Cm [\fI#\fP]r{\fIarg\fP}
 Replace # characters with arg from cursor forward
 .It Cm K

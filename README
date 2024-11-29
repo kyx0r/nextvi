@@ -58,10 +58,10 @@ VI NORMAL
      [#]W	   Move to start of word forward # times, skip punctuation
      [#]w	   Move to start of word forward # times
      vw		   Toggle line mode for <E e B b W w>
-     {		   Move to next <{> section down
-     }		   Move to next <{> section up
-     [		   Move to next <Newline> section down
-     ]		   Move to next <Newline> section up
+     [#]{	   Move to next <{> section down # times
+     [#]}	   Move to next <{> section up # times
+     [#][	   Move to next <Newline> section down # times
+     [#]]	   Move to next <Newline> section up # times
      ^		   Move to start of line after indent
      0		   Move to start of line
      $		   Move to end of line
@@ -158,8 +158,8 @@ VI NORMAL
      D		   Delete from cursor to end of line
      [#]x	   Delete # characters from cursor forward
      [#]X	   Delete # characters from cursor backward
-     di{arg}	   Delete around arg which can be <( ) ">
-     ci{arg}	   Change around arg which can be <( ) ">
+     di{arg}	   Delete inside arg pairs <( ) ">
+     ci{arg}	   Change inside arg pairs <( ) ">
      [#]r{arg}	   Replace # characters with arg from cursor forward
      K		   Split a line
      {#}K	   Split a line without creating blank <Newline>
