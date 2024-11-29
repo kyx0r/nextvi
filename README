@@ -1,25 +1,22 @@
 Nextvi(1)		    General Commands Manual		     Nextvi(1)
 
 NAME
-     Nextvi - A small vi/ex editor for editing bidirectional UTF-8 text
+     Nextvi - A small vi/ex terminal text editor
 
 SYNOPSIS
      vi [-emsv] [file ...]
 
 DESCRIPTION
-     Nextvi is a vi(1)-like text editor based on Ali Gholami Rudi's Neatvi(1).
-     VI is a legendary command-line text editor, first introduced by Bill Joy
-     in 1976, renowned for its modal interface, which allows users to switch
-     between insert, command, and visual modes for seamless text manipulation.
-     This powerful and efficient editor has stood the test of time, remaining
-     a staple tool for developers and system administrators in Unix and Linux
-     environments, thanks to its flexibility, customization options, and
-     syntax similar to other vi/ex editors. To mark its 50th anniversary,
-     Nextvi emerges as the pinnacle of VI's evolution. This masterpiece of
-     efficiency and elegance boasts unparalleled startup speed, unmatched
-     portability, exceptional hackability, and an incredibly robust macro
-     system, among other features. Nextvi is truly the next generation of VI,
-     ready to elevate your text editing experience.
+     Nextvi is a modern clone of the command-line text editor vi(1),
+     initially developed by Bill Joy in 1976 for Unix-based systems.
+     Nextvi builds upon many standard features from vi(1) including
+     unique modal interface that allows users to switch between normal,
+     insert, and command modes, for efficient text manipulation.
+     Additional enhancements include an unrestricted macro system,
+     syntax highlighting, keymaps, bidirectional UTF-8 support, and
+     numerous other features. Nextvi remains highly efficient, portable,
+     and hackable, ensuring its continued relevance and high quality
+     for years to come.
 
 OPTIONS
      -e	     Enter Ex mode on startup
@@ -281,11 +278,11 @@ VI/EX INSERT
 		   Exit insert mode
 
 EX
-     Ex is a powerful line editor for Unix systems, initially developed by
-     Bill Joy in 1976. This essential tool serves as the backbone of vi,
-     enabling it to execute commands, macros and even transform into a purely
-     command-line interface (CLI) when desired. In Ex, each command is
-     initiated and separated by <:> prefix.
+     Ex is a powerful line editor for Unix systems, initially developed
+     by Bill Joy in 1976. This essential tool serves as the backbone
+     of vi, enabling it to execute commands, macros and even transform
+     into a purely command-line interface (CLI) when desired. In
+     Ex, each command is initiated and separated by <:> prefix.
 
 EX EXPANSION
      Characters <# %> in ex prompt substitute the buffer pathname.
