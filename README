@@ -6,7 +6,7 @@ Apply: patch < name.patch
 64bit.sh
 --------------
 Convert entire codebase to 64 bit integers instead of 32 bit.
-This will enable neatvi to read files & buffers up to 9,223,372 Terabytes.
+This will enable Nextvi to read files & buffers up to 9,223,372 Terabytes.
 In addition, this will improve performance on 64 bit CPUs due to
 matching pointer <---> integer alignment and possibly more compiler
 optimizations.
@@ -63,7 +63,7 @@ grep implementation or loading of cached results from script.
 
 rstr.patch
 --------------
-Adaptation from upstream neatvi, where simple operations are optimized by
+Adaptation from upstream Neatvi, where simple operations are optimized by
 running a specialized search code instead of full regex engine. rstr can
 yeild up to 3X faster search on non regex patterns. This is not included in
 base nextvi due to underlying complexity.
