@@ -147,7 +147,7 @@ void led_render(char *s0, int cbeg, int cend)
 	if (!xled)
 		return;
 	ren_state *r = ren_position(s0);
-	int j, c, l, i, o, n = r->n;
+	int j, c = 0, l, i, o, n = r->n;
 	int att_old = 0, atti = 0, cterm = cend - cbeg;
 	char *bound = NULL;
 	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
