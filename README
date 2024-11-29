@@ -942,6 +942,12 @@ SEE ALSO
      Original Neatvi repository:
      https://github.com/aligrudi/neatvi
 
+     Posix vi(1)
+     https://pubs.opengroup.org/onlinepubs/9699919799/utilities/vi.html
+
+     Posix ex(1)
+     https://pubs.opengroup.org/onlinepubs/9699919799/utilities/ex.html
+
 AUTHORS
      Nextvi was written by Kyryl Melekhin <k.melekhin@gmail.com>.  It is based
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
