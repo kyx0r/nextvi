@@ -150,7 +150,7 @@ void led_render(char *s0, int cbeg, int cend)
 	int j, c, l, i, o, n = r->n;
 	int att_old = 0, atti = 0, cterm = cend - cbeg;
 	char *bound = NULL;
-	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
+	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s0 */
 	int off[cterm+1];	/* off[i]: the character at screen position i */
 	int att[cterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[cterm+1];	/* stt[i]: remap off indexes */

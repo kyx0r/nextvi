@@ -1584,12 +1584,10 @@ void vi(int init)
 				if (ln && ln[0])
 					ex_command(ln)
 				free(ln);
-				if (xquit)
-					continue;
 				break;
 			case 'q':
 				if (term_read() == 'q')
-					xquit = 1;
+					xquit = 1 * (xgrec > 1 ? -1 : 1);
 				continue;
 			case 'c':
 			case 'd':
@@ -1673,7 +1671,7 @@ void vi(int init)
 				k = term_read();
 				switch (k) {
 				case 'z':
-					xquit = 2;
+					xquit = 2 * (xgrec > 1 ? -1 : 1);
 					term_push("\n", 1);
 					break;
 				case '\n':
@@ -1942,7 +1940,7 @@ int main(int argc, char *argv[])
 	term_done();
 	if (xvis & 4)
 		return EXIT_SUCCESS;
-	if (xquit == 2) {
+	if (abs(xquit) == 2) {
 		term_pos(xrows - !vi_status, 0);
 		term_kill();
 	} else
