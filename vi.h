@@ -280,13 +280,13 @@ void term_back(int c);
 	preserve(int, ibuf_cnt, ibuf_cnt) \
 	preserve(int, ibuf_pos, ibuf_cnt) \
 	term_push(s, n); \
-	preserve(int, xquit, 0) \
 	preserve(int, texec, type) \
 	tn = 0; \
 	vi(0); \
 	tn = 0; \
 	restore(texec) \
-	restore(xquit) \
+	if (xquit > 0) \
+		xquit = 0; \
 	restore(ibuf_pos) \
 	restore(ibuf_cnt) \
 } \

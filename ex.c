@@ -358,7 +358,7 @@ static int ec_quit(char *loc, char *cmd, char *arg)
 			ex_print("buffers modified");
 			return 1;
 		}
-	xquit = 1;
+	xquit = 1 * (xgrec > 1 ? -1 : 1);
 	return 0;
 }
 
