@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8bdffb3..58e0413 100644
+index 50bcd8f..12c04b8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -763,7 +763,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
@@ -69,7 +69,7 @@ index 0c4eb5b..c088616 100644
  }
  
 diff --git a/led.c b/led.c
-index 8b7f3e5..e99eaa8 100644
+index 607bcf1..2270de1 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -92,7 +92,7 @@ index 8b7f3e5..e99eaa8 100644
 @@ -151,10 +152,10 @@ void led_render(char *s0, int cbeg, int cend)
  	int att_old = 0, atti = 0, cterm = cend - cbeg;
  	char *bound = NULL;
- 	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
+ 	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s0 */
 -	int off[cterm+1];	/* off[i]: the character at screen position i */
 -	int att[cterm+1];	/* att[i]: the attributes of i-th character */
 -	int stt[cterm+1];	/* stt[i]: remap off indexes */
@@ -235,7 +235,7 @@ index 8c1c5c8..a285d71 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index d4ae369..7f866bd 100644
+index b9821df..0c07fa8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -160,7 +160,8 @@ static void vi_drawrow(int row)
