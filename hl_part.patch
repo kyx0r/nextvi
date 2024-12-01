@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 8b7f3e5..f46a4ec 100644
+index 607bcf1..c9bc63b 100644
 --- a/led.c
 +++ b/led.c
 @@ -141,20 +141,26 @@ for (i = 0; i < cterm;) { \
@@ -21,7 +21,7 @@ index 8b7f3e5..f46a4ec 100644
  	int j, c, l, i, o, n = r->n;
  	int att_old = 0, atti = 0, cterm = cend - cbeg;
  	char *bound = NULL;
- 	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s1 */
+ 	char **chrs = r->chrs;	/* chrs[i]: the i-th character in s0 */
  	int off[cterm+1];	/* off[i]: the character at screen position i */
 -	int att[cterm+1];	/* att[i]: the attributes of i-th character */
 -	int stt[cterm+1];	/* stt[i]: remap off indexes */
