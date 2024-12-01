@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8bdffb3..bba7bf9 100644
+index 50bcd8f..e12cc1b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -28,7 +28,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -242,7 +242,7 @@ index 1388190..6749b56 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index d4ae369..ff4836a 100644
+index b9821df..dc0d80f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -546,7 +546,7 @@ void vi_regput(int c, const char *s, int ln)
@@ -264,7 +264,7 @@ index d4ae369..ff4836a 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 731fc73..996feb4 100644
+index f43b375..c4fe161 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -119,12 +119,23 @@ typedef struct {

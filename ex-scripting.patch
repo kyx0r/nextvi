@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8bdffb3..9d86b8c 100644
+index 50bcd8f..eed8792 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -34,6 +34,7 @@ int xmpt;			/* whether to prompt after printing > 1 lines in vi */
@@ -78,7 +78,7 @@ index 07c7870..d009f7b 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 731fc73..3951159 100644
+index f43b375..acdae72 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

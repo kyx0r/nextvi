@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8bdffb3..c906710 100644
+index 50bcd8f..edcb96d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -19,10 +19,10 @@ index 8bdffb3..c906710 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/vi.c b/vi.c
-index d4ae369..89f5bab 100644
+index b9821df..8e727a0 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1829,6 +1829,21 @@ void vi(int init)
+@@ -1827,6 +1827,21 @@ void vi(int init)
  				}
  			}
  		}

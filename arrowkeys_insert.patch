@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 8b7f3e5..937d3d2 100644
+index 607bcf1..4034466 100644
 --- a/led.c
 +++ b/led.c
 @@ -276,7 +276,7 @@ static int led_lastword(char *s)
@@ -73,7 +73,7 @@ index 8b7f3e5..937d3d2 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index d4ae369..22fbf6f 100644
+index b9821df..d3eab8f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -944,6 +944,8 @@ static char *vi_indents(char *ln, int *l)
@@ -105,7 +105,7 @@ index d4ae369..22fbf6f 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1630,6 +1635,37 @@ void vi(int init)
+@@ -1628,6 +1633,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -143,7 +143,7 @@ index d4ae369..22fbf6f 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xrow--;
-@@ -1643,6 +1679,9 @@ void vi(int init)
+@@ -1641,6 +1677,9 @@ void vi(int init)
  				if (c != 'A' && c != 'C' && ln)
  					vi_nextcol(ln, -dir_context(ln), &xoff);
  				break;
