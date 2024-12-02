@@ -1,33 +1,3 @@
-#define NMARKS_BASE		('z' - 'a' + 2)
-#define NMARKS			32
-
-/* line operations */
-struct lopt {
-	char *ins;		/* inserted text */
-	char *del;		/* deleted text */
-	int pos, n_ins, n_del;	/* modification location */
-	int pos_off;		/* cursor line offset */
-	int seq;		/* operation number */
-	int *mark, *mark_off;	/* saved marks */
-};
-
-/* line buffers */
-struct lbuf {
-	char **ln;		/* buffer lines */
-	char *ln_glob;		/* line global mark */
-	struct lopt *hist;	/* buffer history */
-	int mark[NMARKS];	/* mark lines */
-	int mark_off[NMARKS];	/* mark line offsets */
-	int ln_n;		/* number of lines in ln[] */
-	int ln_sz;		/* size of ln[] */
-	int useq;		/* current operation sequence */
-	int hist_sz;		/* size of hist[] */
-	int hist_n;		/* current history head in hist[] */
-	int hist_u;		/* current undo head in hist[] */
-	int useq_zero;		/* useq for lbuf_saved() */
-	int useq_last;		/* useq before hist[] */
-};
-
 struct lbuf *lbuf_make(void)
 {
 	struct lbuf *lb = emalloc(sizeof(*lb));
@@ -86,12 +56,11 @@ void lbuf_free(struct lbuf *lb)
 {
 	int i;
 	for (i = 0; i < lb->ln_n; i++)
-		free(lb->ln[i] - sizeof(int));
+		free(lbuf_i(lb, i));
 	for (i = 0; i < lb->hist_n; i++)
 		lopt_done(&lb->hist[i]);
 	free(lb->hist);
 	free(lb->ln);
-	free(lb->ln_glob);
 	free(lb);
 }
 
@@ -118,39 +87,32 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
 	rstate->s = NULL; /* there is no guarantee malloc not giving same ptr back */
 	while (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_sz + (lb->ln_sz ? lb->ln_sz : 512);
-		char **nln = emalloc(nsz * sizeof(nln[0]));
-		char *nln_glob = emalloc(nsz * sizeof(nln_glob[0]));
+		char **nln = emalloc(nsz * sizeof(lb->ln[0]));
 		memcpy(nln, lb->ln, lb->ln_n * sizeof(lb->ln[0]));
-		memcpy(nln_glob, lb->ln_glob, lb->ln_n * sizeof(lb->ln_glob[0]));
 		free(lb->ln);
-		free(lb->ln_glob);
 		lb->ln = nln;
-		lb->ln_glob = nln_glob;
 		lb->ln_sz = nsz;
 	}
 	for (i = 0; i < n_del; i++)
-		free(lb->ln[pos + i] - sizeof(int));
+		free(lbuf_i(lb, pos + i));
 	if (n_ins != n_del) {
 		memmove(lb->ln + pos + n_ins, lb->ln + pos + n_del,
 			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
-		memmove(lb->ln_glob + pos + n_ins, lb->ln_glob + pos + n_del,
-			(lb->ln_n - pos - n_del) * sizeof(lb->ln_glob[0]));
 	}
 	lb->ln_n += n_ins - n_del;
 	for (i = 0; i < n_ins; i++) {
 		int l = linelength(s);
 		int l_nonl = l - (s[l - !!l] == '\n');
-		char *n = emalloc(l_nonl + 7 + sizeof(int));
-		*(int*)n = l_nonl;		/* store length */
-		n += sizeof(int);
-		memcpy(n, s, l_nonl);
-		memset(&n[l_nonl + 1], 0, 5);	/* fault tolerance pad */
-		n[l_nonl] = '\n';
-		lb->ln[pos + i] = n;
+		struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
+		n->len = l_nonl;
+		n->grec = 0;
+		char *ln = (char*)(n + 1);
+		memcpy(ln, s, l_nonl);
+		memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
+		ln[l_nonl] = '\n';
+		lb->ln[pos + i] = ln;
 		s += l;
 	}
-	for (i = n_del; i < n_ins; i++)
-		lb->ln_glob[pos + i] = 0;
 	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
 		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
 			lbuf_savemark(lb, lo, i, i);
@@ -232,7 +194,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
 	for (int i = beg; i < end; i++) {
 		char *ln = lbuf->ln[i];
 		long nw = 0;
-		long nl = lbuf_slen(ln) + 1;
+		long nl = lbuf_s(ln)->len + 1;
 		while (nw < nl) {
 			long nc = write(fd, ln + nw, nl - nw);
 			if (nc < 0)
@@ -272,16 +234,6 @@ char *lbuf_cp(struct lbuf *lb, int beg, int end)
 char *lbuf_get(struct lbuf *lb, int pos)
 {
 	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
-}
-
-char **lbuf_buf(struct lbuf *lb)
-{
-	return lb->ln;
-}
-
-int lbuf_len(struct lbuf *lb)
-{
-	return lb->ln_n;
 }
 
 void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off)
@@ -362,20 +314,6 @@ int lbuf_modified(struct lbuf *lb)
 {
 	lb->useq++;
 	return lbuf_seq(lb) != lb->useq_zero;
-}
-
-/* mark the line for ex global command */
-void lbuf_globset(struct lbuf *lb, int pos, int dep)
-{
-	lb->ln_glob[pos] |= 1 << dep;
-}
-
-/* return and clear ex global command mark */
-int lbuf_globget(struct lbuf *lb, int pos, int dep)
-{
-	int o = lb->ln_glob[pos] & (1 << dep);
-	lb->ln_glob[pos] &= ~(1 << dep);
-	return o > 0;
 }
 
 int lbuf_indents(struct lbuf *lb, int r)
