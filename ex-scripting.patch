@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 50bcd8f..eed8792 100644
+index df76f48..ddfe544 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -34,6 +34,7 @@ int xmpt;			/* whether to prompt after printing > 1 lines in vi */
@@ -10,7 +10,7 @@ index 50bcd8f..eed8792 100644
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static char xrep[EXLEN];	/* the last replacement */
-@@ -1086,6 +1087,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1085,6 +1086,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -52,7 +52,7 @@ index 50bcd8f..eed8792 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1140,6 +1176,8 @@ static struct excmd {
+@@ -1139,6 +1175,8 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"ph", ec_setenc},
@@ -78,7 +78,7 @@ index 07c7870..d009f7b 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index f43b375..acdae72 100644
+index 7f54177..6d6abaa 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

@@ -11,15 +11,23 @@ index b496f47..2e76016 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index 0c4eb5b..9cc0c42 100644
+index 69db198..8d20093 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -428,34 +428,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -366,34 +366,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
 -int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 -			int *o, int ln_n, int skip)
+-{
+-	int r0 = *r, o0 = *o;
+-	int offs[re->grpcnt * 2], i = r0;
+-	char *s = lbuf_get(lb, i);
+-	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
+-	for (; i >= 0 && i < ln_n; i += dir) {
+-		s = lb->ln[i];
+-		while (rset_find(re, s + off, offs,
 +struct lsparams
 +{
 +	struct lbuf *lb;
@@ -32,14 +40,7 @@ index 0c4eb5b..9cc0c42 100644
 +};
 +
 +static void *lsearch(void *arg)
- {
--	int r0 = *r, o0 = *o;
--	int offs[re->grpcnt * 2], i = r0;
--	char *s = lbuf_get(lb, i);
--	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
--	for (; i >= 0 && i < ln_n; i += dir) {
--		s = lb->ln[i];
--		while (rset_find(re, s + off, offs,
++{
 +	struct lsparams *a = arg;
 +	int r0 = *a->r, o0 = *a->o;
 +	int offs[a->re->grpcnt * 2], i = r0;
@@ -170,7 +171,7 @@ index 0da830f..7cb6143 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index b9821df..b39660b 100644
+index 3c09077..ecae890 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -30,6 +30,7 @@
@@ -182,10 +183,10 @@ index b9821df..b39660b 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index f43b375..ce984b9 100644
+index 7f54177..cf22587 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -214,7 +214,8 @@ void syn_addhl(char *reg, int id, int reload);
+@@ -241,7 +241,8 @@ void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */

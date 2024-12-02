@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 50bcd8f..5fb1b77 100644
+index df76f48..97d06ec 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ static int xbufsmax;		/* number of buffers */
@@ -27,7 +27,7 @@ index 50bcd8f..5fb1b77 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -540,6 +544,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -541,6 +545,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -38,7 +38,7 @@ index 50bcd8f..5fb1b77 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
  				ex_print("write failed: file changed");
  				return 1;
-@@ -1086,6 +1094,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1085,6 +1093,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -51,7 +51,7 @@ index 50bcd8f..5fb1b77 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1136,6 +1150,7 @@ static struct excmd {
+@@ -1135,6 +1149,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
@@ -60,7 +60,7 @@ index 50bcd8f..5fb1b77 100644
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
 diff --git a/vi.c b/vi.c
-index b9821df..e0e488b 100644
+index 3c09077..7c2863a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1924,9 +1924,11 @@ int main(int argc, char *argv[])
@@ -77,10 +77,10 @@ index b9821df..e0e488b 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index f43b375..a15e74e 100644
+index 7f54177..71cd218 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -337,6 +337,7 @@ struct buf {
+@@ -364,6 +364,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -88,7 +88,7 @@ index f43b375..a15e74e 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -476,3 +477,4 @@ extern char *fs_exdir;
+@@ -503,3 +504,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;
