@@ -428,15 +428,17 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	sbuf_smake(sb, 128)
 	char ln[EXLEN];
 	char *path, *arg1 = arg+dstrlen(arg, ' ');
+	struct lbuf *lb = tempbufs[1].lb;
 	int c = 0, i, inst = *arg1 ? atoi(arg1) : -1;
+	int pos;
 	*arg1 = '\0';
-	for (int pos = 0; pos < lbuf_len(tempbufs[1].lb); pos++) {
-		path = lbuf_get(tempbufs[1].lb, pos);
-		for (i = lbuf_slen(path); i > 0 && path[i] != '/'; i--);
+	for (pos = 0; pos < lbuf_len(lb); pos++) {
+		path = lb->li[pos].s;
+		for (i = lb->li[pos].len; i > 0 && path[i] != '/'; i--);
 		if (!i)
 			continue;
 		if (strstr(&path[i+1], arg)) {
-			sbuf_mem(sb, &path, (int)sizeof(path))
+			sbuf_mem(sb, &pos, (int)sizeof(pos))
 			snprintf(ln, LEN(ln), "%d %s", c++, path);
 			ex_print(ln);
 		}
@@ -444,10 +446,11 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	if (inst < 0 && c > 1)
 		inst = term_read() - '0';
 	if ((inst >= 0 && inst < c) || c == 1) {
-		path = *(char**)&sb->s[c == 1 ? 0 : inst * sizeof(path)];
-		path[lbuf_slen(path)] = '\0';
+		pos = *((int*)sb->s + (c == 1 ? 0 : inst));
+		path = lb->li[pos].s;
+		path[lb->li[pos].len] = '\0';
 		ec_edit(loc, cmd, path);
-		path[lbuf_slen(path)] = '\n';
+		path[lb->li[pos].len] = '\n';
 	}
 	xmpt = xmpt >= 0 ? 0 : xmpt;
 	free(sb->s);
@@ -854,11 +857,11 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	free(pat);
 	if (!pat || !rs)
 		return 1;
-	xgdep++;
-	for (i = beg + 1; i < end; i++)
-		lbuf_globset(xb, i, xgdep);
-	i = beg;
-	while (i < lbuf_len(xb)) {
+	xgdep = !xgdep ? 1 : xgdep * 2;
+	for (i = beg; i < end; i++)
+		xb->li[i].grec |= xgdep;
+	for (i = beg; i < lbuf_len(xb);) {
+		xb->li[i].grec &= ~xgdep;
 		char *ln = lbuf_get(xb, i);
 		if ((rset_find(rs, ln, NULL, REG_NEWLINE) < 0) == not) {
 			xrow = i;
@@ -866,13 +869,11 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 				break;
 			i = MIN(i, xrow);
 		}
-		while (i < lbuf_len(xb) && !lbuf_globget(xb, i, xgdep))
+		while (i < lbuf_len(xb) && !(xb->li[i].grec & xgdep))
 			i++;
 	}
-	for (i = 0; i < lbuf_len(xb); i++)
-		lbuf_globget(xb, i, xgdep);
 	rset_free(rs);
-	xgdep--;
+	xgdep /= 2;
 	return 0;
 }
 
