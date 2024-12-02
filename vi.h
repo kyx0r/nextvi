@@ -127,7 +127,37 @@ void rset_free(rset *re);
 char *re_read(char **src);
 
 /* lbuf.c line buffer, managing a number of lines */
-#define lbuf_slen(ln) *(int*)(ln - sizeof(int))
+#define NMARKS_BASE		('z' - 'a' + 2)
+#define NMARKS			32
+struct lopt {
+	char *ins;		/* inserted text */
+	char *del;		/* deleted text */
+	int pos, n_ins, n_del;	/* modification location */
+	int pos_off;		/* cursor line offset */
+	int seq;		/* operation number */
+	int *mark, *mark_off;	/* saved marks */
+};
+struct linfo {
+	int len;
+	int grec;
+};
+struct lbuf {
+	char **ln;		/* buffer lines */
+	struct lopt *hist;	/* buffer history */
+	int mark[NMARKS];	/* mark lines */
+	int mark_off[NMARKS];	/* mark line offsets */
+	int ln_n;		/* number of lines in ln[] */
+	int ln_sz;		/* size of ln[] */
+	int useq;		/* current operation sequence */
+	int hist_sz;		/* size of hist[] */
+	int hist_n;		/* current history head in hist[] */
+	int hist_u;		/* current undo head in hist[] */
+	int useq_zero;		/* useq for lbuf_saved() */
+	int useq_last;		/* useq before hist[] */
+};
+#define lbuf_len(lb) lb->ln_n
+#define lbuf_s(ln) ((struct linfo*)(ln - sizeof(struct linfo)))
+#define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
 struct lbuf *lbuf_make(void);
 void lbuf_free(struct lbuf *lbuf);
 int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end);
@@ -135,8 +165,6 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
 void lbuf_edit(struct lbuf *lbuf, char *s, int beg, int end);
 char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
 char *lbuf_get(struct lbuf *lbuf, int pos);
-char **lbuf_buf(struct lbuf *lb);
-int lbuf_len(struct lbuf *lbuf);
 void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end);
 int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
 void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
@@ -147,15 +175,13 @@ int lbuf_modified(struct lbuf *lb);
 void lbuf_saved(struct lbuf *lb, int clear);
 int lbuf_indents(struct lbuf *lb, int r);
 int lbuf_eol(struct lbuf *lb, int r);
-void lbuf_globset(struct lbuf *lb, int pos, int dep);
-int lbuf_globget(struct lbuf *lb, int pos, int dep);
 int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 			int *o, int ln_n, int skip);
 #define lbuf_dedup(lb, str, n) \
 { for (int i = 0; i < lbuf_len(lb);) { \
 	char *s = lbuf_get(lb, i); \
-	if (n == lbuf_slen(s) && !memcmp(str, s, n)) \
+	if (n == lbuf_s(s)->len && !memcmp(str, s, n)) \
 		lbuf_edit(lb, NULL, i, i + 1); \
 	else \
 		i++; \

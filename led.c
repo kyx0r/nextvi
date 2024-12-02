@@ -42,7 +42,7 @@ static void file_index(struct lbuf *buf)
 {
 	char reg[] = "[^\t ;:,`.<>[\\]\\^%$#@*\\!?+\\-|/\\=\\\\{}&\\()'\"]+";
 	int len, sidx, grp = xgrp;
-	char **ss = lbuf_buf(buf);
+	char **ss = buf->ln;
 	int ln_n = lbuf_len(buf), n;
 	rset *rs = rset_smake(xacreg ? xacreg->s : reg, xic ? REG_ICASE : 0);
 	if (!rs)
