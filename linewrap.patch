@@ -1,0 +1,146 @@
+diff --git a/ex.c b/ex.c
+index df76f48..317cdf2 100644
+--- a/ex.c
++++ b/ex.c
+@@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
+ int xmpt;			/* whether to prompt after printing > 1 lines in vi */
+ int xpr;			/* ex_cprint register */
+ int xsep = ':';			/* ex command separator */
++int xlw;			/* soft linewrap col */
+ char *xregs[256];		/* string registers */
+ static int xbufsmax;		/* number of buffers */
+ static int xbufsalloc = 10;	/* initial number of buffers */
+@@ -1085,6 +1086,21 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+ 	return 0;
+ }
+ 
++static int ec_linewrap(char *loc, char *cmd, char *arg)
++{
++	if (*arg)
++		xlw = atoi(arg);
++	else
++		xlw = xcols;
++	if (cmd[1] == 'j')
++		for (int i = 0; i < lbuf_len(xb); i++)
++			lbuf_lj(xb, i);
++	else
++		for (int i = 0; i < lbuf_len(xb); i++)
++			lbuf_lw(xb, i);
++	return 0;
++}
++
+ static struct excmd {
+ 	char *name;
+ 	int (*ec)(char *loc, char *cmd, char *arg);
+@@ -1128,6 +1144,8 @@ static struct excmd {
+ 	{"ft", ec_ft},
+ 	{"cm", ec_cmap},
+ 	{"cm!", ec_cmap},
++	{"lw", ec_linewrap},
++	{"lj", ec_linewrap},
+ 	{"fd", ec_setdir},
+ 	{"fp", ec_setdir},
+ 	{"cd", ec_chdir},
+diff --git a/lbuf.c b/lbuf.c
+index 69db198..64fc146 100644
+--- a/lbuf.c
++++ b/lbuf.c
+@@ -93,8 +93,11 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
+ 		lb->ln = nln;
+ 		lb->ln_sz = nsz;
+ 	}
+-	for (i = 0; i < n_del; i++)
++	int lw[n_del];
++	for (i = 0; i < n_del; i++) {
++		lw[i] = lbuf_i(lb, pos + i)->lw;
+ 		free(lbuf_i(lb, pos + i));
++	}
+ 	if (n_ins != n_del) {
+ 		memmove(lb->ln + pos + n_ins, lb->ln + pos + n_del,
+ 			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
+@@ -106,6 +109,10 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
+ 		struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
+ 		n->len = l_nonl;
+ 		n->grec = 0;
++		int _lw = -1;
++		if (i < n_del)
++			_lw = lw[i];
++		n->lw = _lw;
+ 		char *ln = (char*)(n + 1);
+ 		memcpy(ln, s, l_nonl);
+ 		memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
+@@ -194,7 +201,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+ 	for (int i = beg; i < end; i++) {
+ 		char *ln = lbuf->ln[i];
+ 		long nw = 0;
+-		long nl = lbuf_s(ln)->len + 1;
++		long nl = lbuf_s(ln)->len + (lbuf_s(ln)->lw < 0);
+ 		while (nw < nl) {
+ 			long nc = write(fd, ln + nw, nl - nw);
+ 			if (nc < 0)
+@@ -205,6 +212,44 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+ 	return 0;
+ }
+ 
++void lbuf_lw(struct lbuf *lb, int i)
++{
++	ren_state *r = ren_position(lbuf_get(lb, i));
++	if (r->cmax <= xlw)
++		return;
++	char *buf = uc_sub(r->s, 0, r->col[xlw]);
++	char *part = uc_sub(r->s, r->col[xlw], -1);
++	lbuf_edit(lb, buf, i, i+1);
++	lbuf_i(lb, i)->lw = i;
++	lbuf_edit(lb, part, i+1, i+1);
++	free(buf);
++	free(part);
++	lb->hist_u -= 2;
++	lopt_done(&lb->hist[--lb->hist_n]);
++	lopt_done(&lb->hist[--lb->hist_n]);
++}
++
++void lbuf_lj(struct lbuf *lb, int i)
++{
++	int x;
++	if (lbuf_i(lb, i)->lw >= 0) {
++		sbuf_smake(sb, 1024)
++		sbuf_mem(sb, lb->ln[i], lbuf_i(lb, i)->len)
++		char *cs = lbuf_get(xb, i + 1);
++		for (x = i + 1; cs;) {
++			sbufn_mem(sb, cs, lbuf_i(lb, x)->len)
++			if (lbuf_i(lb, x)->lw < 0)
++				break;
++			cs = lbuf_get(xb, ++x);
++		}
++		lbuf_edit(lb, sb->s, i, x+1);
++		lbuf_i(lb, i)->lw = -1;
++		lb->hist_u -= 1;
++		lopt_done(&lb->hist[--lb->hist_n]);
++		free(sb->s);
++	}
++}
++
+ /* replace lines beg through end with buf */
+ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end)
+ {
+diff --git a/vi.h b/vi.h
+index 9e17595..0248a5f 100644
+--- a/vi.h
++++ b/vi.h
+@@ -140,6 +140,7 @@ struct lopt {
+ struct linfo {
+ 	int len;
+ 	int grec;
++	int lw;
+ };
+ struct lbuf {
+ 	char **ln;		/* buffer lines */
+@@ -162,6 +163,8 @@ struct lbuf *lbuf_make(void);
+ void lbuf_free(struct lbuf *lbuf);
+ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end);
+ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
++void lbuf_lw(struct lbuf *lb, int i);
++void lbuf_lj(struct lbuf *lb, int i);
+ void lbuf_edit(struct lbuf *lbuf, char *s, int beg, int end);
+ char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
+ char *lbuf_get(struct lbuf *lbuf, int pos);
