@@ -174,10 +174,10 @@ index 69db198..d1cc596 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 7f54177..50800a9 100644
+index 9e17595..f83b6e0 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -145,6 +145,7 @@ struct linfo {
+@@ -144,6 +144,7 @@ struct linfo {
  struct lbuf {
  	char **ln;		/* buffer lines */
  	struct lopt *hist;	/* buffer history */
@@ -185,7 +185,7 @@ index 7f54177..50800a9 100644
  	int mark[NMARKS];	/* mark lines */
  	int mark_off[NMARKS];	/* mark line offsets */
  	int ln_n;		/* number of lines in ln[] */
-@@ -179,6 +180,8 @@ int lbuf_eol(struct lbuf *lb, int r);
+@@ -178,6 +179,8 @@ int lbuf_eol(struct lbuf *lb, int r);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip);
