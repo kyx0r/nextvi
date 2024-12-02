@@ -138,7 +138,6 @@ struct lopt {
 	int *mark, *mark_off;	/* saved marks */
 };
 struct linfo {
-	char *s;
 	int len;
 	int grec;
 };
