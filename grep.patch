@@ -15,7 +15,7 @@ index 43370de..7a63d66 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index 50bcd8f..fe949bb 100644
+index df76f48..8293bab 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -28,7 +28,7 @@ index 50bcd8f..fe949bb 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index b9821df..7d05588 100644
+index 3c09077..3d8b593 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -611,12 +611,12 @@ void dir_calc(char *path)
@@ -37,7 +37,7 @@ index b9821df..7d05588 100644
  
 -#define fssearch() \
 +#define fssearch(isbuffer) \
- len = lbuf_slen(path); \
+ len = lbuf_s(path)->len; \
  path[len] = '\0'; \
  ret = ex_edit(path, len); \
  path[len] = '\n'; \
@@ -58,7 +58,7 @@ index b9821df..7d05588 100644
 +	int ret, len;
  	wrap:
  	while (fspos < lbuf_len(tempbufs[1].lb)) {
- 		path = lbuf_get(tempbufs[1].lb, fspos++);
+ 		path = tempbufs[1].lb->ln[fspos++];
 -		fssearch()
 +		fssearch(ret && xrow && again != 2)
  	}
@@ -67,7 +67,7 @@ index b9821df..7d05588 100644
 @@ -650,7 +650,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
- 		path = lbuf_get(tempbufs[1].lb, fspos);
+ 		path = tempbufs[1].lb->ln[fspos];
 -		fssearch()
 +		fssearch(ret && xrow)
  	}
@@ -166,10 +166,10 @@ index b9821df..7d05588 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index f43b375..30ca970 100644
+index 7f54177..e408a27 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -342,7 +342,7 @@ extern int xbufcur;
+@@ -369,7 +369,7 @@ extern int xbufcur;
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  extern struct buf *bufs;
