@@ -138,12 +138,11 @@ struct lopt {
 	int *mark, *mark_off;	/* saved marks */
 };
 struct linfo {
-	char *s;
 	int len;
 	int grec;
 };
 struct lbuf {
-	struct linfo *li;	/* buffer lines */
+	char **ln;		/* buffer lines */
 	struct lopt *hist;	/* buffer history */
 	int mark[NMARKS];	/* mark lines */
 	int mark_off[NMARKS];	/* mark line offsets */
@@ -157,6 +156,8 @@ struct lbuf {
 	int useq_last;		/* useq before hist[] */
 };
 #define lbuf_len(lb) lb->ln_n
+#define lbuf_s(ln) ((struct linfo*)(ln - sizeof(struct linfo)))
+#define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
 struct lbuf *lbuf_make(void);
 void lbuf_free(struct lbuf *lbuf);
 int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end);
@@ -180,7 +181,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 #define lbuf_dedup(lb, str, n) \
 { for (int i = 0; i < lbuf_len(lb);) { \
 	char *s = lbuf_get(lb, i); \
-	if (n == lb->li[i].len && !memcmp(str, s, n)) \
+	if (n == lbuf_s(s)->len && !memcmp(str, s, n)) \
 		lbuf_edit(lb, NULL, i, i + 1); \
 	else \
 		i++; \

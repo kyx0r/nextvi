@@ -42,7 +42,7 @@ static void file_index(struct lbuf *buf)
 {
 	char reg[] = "[^\t ;:,`.<>[\\]\\^%$#@*\\!?+\\-|/\\=\\\\{}&\\()'\"]+";
 	int len, sidx, grp = xgrp;
-	struct linfo *li = buf->li;
+	char **ss = buf->ln;
 	int ln_n = lbuf_len(buf), n;
 	rset *rs = rset_smake(xacreg ? xacreg->s : reg, xic ? REG_ICASE : 0);
 	if (!rs)
@@ -54,7 +54,7 @@ static void file_index(struct lbuf *buf)
 			sbuf_mem(ibuf, &n, (int)sizeof(n))
 	for (int i = 0; i < ln_n; i++) {
 		sidx = 0;
-		while (rset_find(rs, li[i].s+sidx, subs,
+		while (rset_find(rs, ss[i]+sidx, subs,
 				sidx ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
 			/* if target group not found, continue with group 1
 			which will always be valid, otherwise there be no match */
@@ -64,7 +64,7 @@ static void file_index(struct lbuf *buf)
 			}
 			len = subs[grp + 1] - subs[grp];
 			if (len > 1) {
-				char *part = li[i].s+sidx+subs[grp];
+				char *part = ss[i]+sidx+subs[grp];
 				int *ip = (int*)(ibuf->s+sizeof(n));
 				for (n = len+1; ip < (int*)&ibuf->s[ibuf->s_n]; ip++)
 					if (*ip - ip[-1] == n &&

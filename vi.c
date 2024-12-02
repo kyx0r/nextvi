@@ -612,6 +612,7 @@ void dir_calc(char *path)
 }
 
 #define fssearch() \
+len = lbuf_s(path)->len; \
 path[len] = '\0'; \
 ret = ex_edit(path, len); \
 path[len] = '\n'; \
@@ -632,8 +633,7 @@ static int fs_search(int cnt, int *row, int *off)
 	int again = 0, ret, len;
 	wrap:
 	while (fspos < lbuf_len(tempbufs[1].lb)) {
-		path = tempbufs[1].lb->li[fspos].s;
-		len = tempbufs[1].lb->li[fspos++].len;
+		path = tempbufs[1].lb->ln[fspos++];
 		fssearch()
 	}
 	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
@@ -649,8 +649,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 	char *path;
 	int ret, len;
 	while (--fspos >= 0) {
-		path = tempbufs[1].lb->li[fspos].s;
-		len = tempbufs[1].lb->li[fspos].len;
+		path = tempbufs[1].lb->ln[fspos];
 		fssearch()
 	}
 	return 0;
@@ -962,7 +961,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 		xtop = r1;
 	sbuf *rep = led_input(pref, &post, r1 - (r1 - r2), 0);
 	sbufn_str(rep, post)
-	int tlen = lnmode || !ln ? -1 : xb->li[r1].len+1;
+	int tlen = lnmode || !ln ? -1 : lbuf_s(ln)->len+1;
 	if (rep->s_n != tlen || memcmp(&ln[l1], &rep->s[l1], tlen - l2 - l1))
 		lbuf_edit(xb, rep->s, r1, r2 + 1);
 	sbuf_free(rep)
@@ -1180,7 +1179,7 @@ static void vc_join(int spc, int cnt)
 	xoff = 0;
 	for (int i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
-		char *lnend = ln + xb->li[i].len;
+		char *lnend = ln + lbuf_s(ln)->len;
 		if (i > beg) {
 			while (ln[0] == ' ' || ln[0] == '\t')
 				ln++;

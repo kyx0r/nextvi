@@ -56,11 +56,11 @@ void lbuf_free(struct lbuf *lb)
 {
 	int i;
 	for (i = 0; i < lb->ln_n; i++)
-		free(lb->li[i].s);
+		free(lbuf_i(lb, i));
 	for (i = 0; i < lb->hist_n; i++)
 		lopt_done(&lb->hist[i]);
 	free(lb->hist);
-	free(lb->li);
+	free(lb->ln);
 	free(lb);
 }
 
@@ -87,29 +87,30 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
 	rstate->s = NULL; /* there is no guarantee malloc not giving same ptr back */
 	while (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_sz + (lb->ln_sz ? lb->ln_sz : 512);
-		struct linfo *nln = emalloc(nsz * sizeof(lb->li[0]));
-		memcpy(nln, lb->li, lb->ln_n * sizeof(lb->li[0]));
-		free(lb->li);
-		lb->li = nln;
+		char **nln = emalloc(nsz * sizeof(lb->ln[0]));
+		memcpy(nln, lb->ln, lb->ln_n * sizeof(lb->ln[0]));
+		free(lb->ln);
+		lb->ln = nln;
 		lb->ln_sz = nsz;
 	}
 	for (i = 0; i < n_del; i++)
-		free(lb->li[pos + i].s);
+		free(lbuf_i(lb, pos + i));
 	if (n_ins != n_del) {
-		memmove(lb->li + pos + n_ins, lb->li + pos + n_del,
-			(lb->ln_n - pos - n_del) * sizeof(lb->li[0]));
+		memmove(lb->ln + pos + n_ins, lb->ln + pos + n_del,
+			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
 	}
 	lb->ln_n += n_ins - n_del;
 	for (i = 0; i < n_ins; i++) {
 		int l = linelength(s);
 		int l_nonl = l - (s[l - !!l] == '\n');
-		char *n = emalloc(l_nonl + 7);
-		memcpy(n, s, l_nonl);
-		memset(&n[l_nonl + 1], 0, 5);	/* fault tolerance pad */
-		n[l_nonl] = '\n';
-		lb->li[pos + i].s = n;
-		lb->li[pos + i].len = l_nonl;
-		lb->li[pos + i].grec = 0;
+		struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
+		n->len = l_nonl;
+		n->grec = 0;
+		char *ln = (char*)(n + 1);
+		memcpy(ln, s, l_nonl);
+		memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
+		ln[l_nonl] = '\n';
+		lb->ln[pos + i] = ln;
 		s += l;
 	}
 	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
@@ -191,9 +192,9 @@ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end)
 int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
 {
 	for (int i = beg; i < end; i++) {
-		char *ln = lbuf->li[i].s;
+		char *ln = lbuf->ln[i];
 		long nw = 0;
-		long nl = lbuf->li[i].len + 1;
+		long nl = lbuf_s(ln)->len + 1;
 		while (nw < nl) {
 			long nc = write(fd, ln + nw, nl - nw);
 			if (nc < 0)
@@ -226,13 +227,13 @@ char *lbuf_cp(struct lbuf *lb, int beg, int end)
 	sbuf_smake(sb, 64)
 	for (int i = beg; i < end; i++)
 		if (i < lb->ln_n)
-			sbuf_str(sb, lb->li[i].s)
+			sbuf_str(sb, lb->ln[i])
 	sbufn_sret(sb)
 }
 
 char *lbuf_get(struct lbuf *lb, int pos)
 {
-	return pos >= 0 && pos < lb->ln_n ? lb->li[pos].s : NULL;
+	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
 }
 
 void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off)
@@ -373,7 +374,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	char *s = lbuf_get(lb, i);
 	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
 	for (; i >= 0 && i < ln_n; i += dir) {
-		s = lb->li[i].s;
+		s = lb->ln[i];
 		while (rset_find(re, s + off, offs,
 				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
 			int g1 = offs[xgrp], g2 = offs[xgrp + 1];

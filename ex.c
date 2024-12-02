@@ -430,15 +430,14 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	char *path, *arg1 = arg+dstrlen(arg, ' ');
 	struct lbuf *lb = tempbufs[1].lb;
 	int c = 0, i, inst = *arg1 ? atoi(arg1) : -1;
-	int pos;
 	*arg1 = '\0';
-	for (pos = 0; pos < lbuf_len(lb); pos++) {
-		path = lb->li[pos].s;
-		for (i = lb->li[pos].len; i > 0 && path[i] != '/'; i--);
+	for (int pos = 0; pos < lbuf_len(lb); pos++) {
+		path = lb->ln[pos];
+		for (i = lbuf_s(path)->len; i > 0 && path[i] != '/'; i--);
 		if (!i)
 			continue;
 		if (strstr(&path[i+1], arg)) {
-			sbuf_mem(sb, &pos, (int)sizeof(pos))
+			sbuf_mem(sb, &path, (int)sizeof(path))
 			snprintf(ln, LEN(ln), "%d %s", c++, path);
 			ex_print(ln);
 		}
@@ -446,11 +445,10 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 	if (inst < 0 && c > 1)
 		inst = term_read() - '0';
 	if ((inst >= 0 && inst < c) || c == 1) {
-		pos = *((int*)sb->s + (c == 1 ? 0 : inst));
-		path = lb->li[pos].s;
-		path[lb->li[pos].len] = '\0';
+		path = *((char**)sb->s + (c == 1 ? 0 : inst));
+		path[lbuf_s(path)->len] = '\0';
 		ec_edit(loc, cmd, path);
-		path[lb->li[pos].len] = '\n';
+		path[lbuf_s(path)->len] = '\n';
 	}
 	xmpt = xmpt >= 0 ? 0 : xmpt;
 	free(sb->s);
@@ -859,17 +857,17 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 		return 1;
 	xgdep = !xgdep ? 1 : xgdep * 2;
 	for (i = beg; i < end; i++)
-		xb->li[i].grec |= xgdep;
+		lbuf_i(xb, i)->grec |= xgdep;
 	for (i = beg; i < lbuf_len(xb);) {
-		xb->li[i].grec &= ~xgdep;
 		char *ln = lbuf_get(xb, i);
+		lbuf_s(ln)->grec &= ~xgdep;
 		if ((rset_find(rs, ln, NULL, REG_NEWLINE) < 0) == not) {
 			xrow = i;
 			if (ex_exec(s))
 				break;
 			i = MIN(i, xrow);
 		}
-		while (i < lbuf_len(xb) && !(xb->li[i].grec & xgdep))
+		while (i < lbuf_len(xb) && !(lbuf_i(xb, i)->grec & xgdep))
 			i++;
 	}
 	rset_free(rs);
