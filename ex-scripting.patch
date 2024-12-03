@@ -62,10 +62,10 @@ index df76f48..ddfe544 100644
  };
  
 diff --git a/term.c b/term.c
-index 07c7870..d009f7b 100644
+index 49ca154..ce025fc 100644
 --- a/term.c
 +++ b/term.c
-@@ -218,7 +218,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -217,7 +217,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}
