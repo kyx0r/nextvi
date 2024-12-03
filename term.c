@@ -88,17 +88,16 @@ void term_room(int n)
 void term_pos(int r, int c)
 {
 	char buf[64] = "\r\33[", *s;
-	if (c < 0)
-		c = 0;
-	else if (c >= xcols)
-		c = xcols - 1;
 	if (r < 0) {
-		memcpy(itoa(abs(c), buf+3), c > 0 ? "C" : "D", 2);
+		memcpy(itoa(MAX(0, c), buf+3), c > 0 ? "C" : "D", 2);
 		term_out(buf);
 	} else {
 		s = itoa(r + 1, buf+3);
-		*s++ = ';';
-		memcpy(itoa(c + 1, s), "H", 2);
+		if (c > 0) {
+			*s++ = ';';
+			s = itoa(c + 1, s);
+		}
+		memcpy(s, "H", 2);
 		term_out(buf+1);
 	}
 }
