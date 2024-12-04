@@ -14,7 +14,6 @@ for p in *.c *.h; do
 	EXINIT="${EXINIT}:%s/s64 signo/int signo/g"
 	EXINIT="${EXINIT}:%s/s64 pipefds/int pipefds/g"
 	EXINIT="${EXINIT}:%s/s64 main\(s64/int main(int/g"
-	EXINIT="${EXINIT}:wq"
-	vi -sm "$p"
+	EXINIT="${EXINIT}:wq" vi -sm "$p"
 done
 EXINIT=$'1:i \#include <stdint.h>\ntypedef uint64_t u64;\ntypedef int64_t s64;\n.\n:wq' vi -sm vi.h
