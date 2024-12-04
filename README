@@ -660,7 +660,7 @@ EX COMMANDS
 
      uz	     Toggle zero width placeholders
 
-	     Use only if your terminal can render zero width utf-8.
+	     Use only if you need to hide zero width characters.
 
      ub	     Toggle combining multicodepoint placeholders
 
@@ -827,15 +827,15 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 294 conf.c   |  hl/ft/td config	   |
-     | 336 term.c   |  low level IO	   |
+     | 335 term.c   |  low level IO	   |
      | 380 ren.c    |  positioning/syntax  |
      | 528 lbuf.c   |  file/line buffer	   |
      | 650 uc.c	    |  UTF-8 support	   |
      | 658 regex.c  |  extended RE	   |
      | 670 led.c    |  insert mode/output  |
      | 1235 ex.c    |  ex options/commands |
-     | 1949 vi.c    |  normal mode/general |
-     | 6700 total   |  wc -l *.c|sort	   |
+     | 1956 vi.c    |  normal mode/general |
+     | 6706 total   |  wc -l *.c|sort	   |
      +--------------+----------------------+
 
 COMPILING
@@ -953,4 +953,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.	 This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.12.1-arch1-1	       December 1, 2024		  Linux 6.12.1-arch1-1
+Linux 6.12.1-arch1-1	       December 4, 2024		  Linux 6.12.1-arch1-1
