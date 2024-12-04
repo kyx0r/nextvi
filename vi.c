@@ -1637,9 +1637,8 @@ void vi(int init)
 					term_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
 					break;
 				}
-				ln = lbuf_get(xb, xrow);
-				if (c != 'A' && c != 'C' && ln)
-					vi_nextcol(ln, -dir_context(ln), &xoff);
+				if (c != 'A' && c != 'C')
+					xoff--;
 				break;
 			case 'J':
 				vc_join(vi_joinmode, vi_arg1 <= 1 ? 2 : vi_arg1);
@@ -1808,6 +1807,10 @@ void vi(int init)
 					xrow - xrows / 2 : xrow - xrows + 1;
 		ln = lbuf_get(xb, xrow);
 		xoff = ren_noeol(ln, xoff);
+		while (!rstate->wid[xoff] && xoff)
+			xoff--;
+		while (!rstate->wid[xoff] && xoff < rstate->n)
+			xoff++;
 		if (vi_mod)
 			vi_col = vi_off2col(xb, xrow, xoff);
 		if (vi_col >= xleft + xcols)

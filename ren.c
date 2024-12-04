@@ -181,10 +181,10 @@ int ren_cursor(char *s, int p)
 /* return an offset before EOL */
 int ren_noeol(char *s, int o)
 {
-	if (!s || o <= 0)
+	if (!s)
 		return 0;
 	ren_state *r = ren_position(s);
-	o = o >= r->n ? r->n : o;
+	o = o >= r->n ? r->n : MAX(0, o);
 	return o - (o > 0 && *r->chrs[o] == '\n');
 }
 
