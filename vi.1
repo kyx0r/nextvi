@@ -1,4 +1,4 @@
-.Dd Dec  1, 2024
+.Dd Dec  4, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -926,7 +926,7 @@ effect.
 .It Cm uz
 Toggle zero width placeholders
 .Bd -literal
-Use only if your terminal can render zero width utf-8.
+Use only if you need to hide zero width characters.
 .Ed
 
 .It Cm ub
@@ -1194,15 +1194,15 @@ _
  537 kmap.h | keymap translation
 _
  294 conf.c | hl/ft/td config
- 336 term.c | low level IO
+ 335 term.c | low level IO
  380 ren.c | positioning/syntax
  528 lbuf.c | file/line buffer
  650 uc.c | UTF-8 support
  658 regex.c | extended RE
  670 led.c | insert mode/output
  1235 ex.c | ex options/commands
- 1949 vi.c | normal mode/general
- 6700 total | wc -l *.c\(basort
+ 1956 vi.c | normal mode/general
+ 6706 total | wc -l *.c\(basort
 _
 .TE
 .
