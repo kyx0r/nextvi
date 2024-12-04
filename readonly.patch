@@ -60,10 +60,10 @@ index df76f48..97d06ec 100644
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
 diff --git a/vi.c b/vi.c
-index 3c09077..7c2863a 100644
+index b5242c5..406330d 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1924,9 +1924,11 @@ int main(int argc, char *argv[])
+@@ -1927,9 +1927,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
