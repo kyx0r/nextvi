@@ -260,7 +260,7 @@ int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
 	{+1, {-1}, "[" CR2L "][" CNEUT CR2L "]*[" CR2L "]"},
-	{-1, {0, 1, -1}, "(^[ \t]*)([^" CR2L "]*)"},
+	{-1, {0, 1, -1, 1, -1}, "(^[ \t]*)([^" CR2L "]*)([" CR2L "]*)([^" CR2L "]*)"},
 };
 int dmarkslen = LEN(dmarks);
 
