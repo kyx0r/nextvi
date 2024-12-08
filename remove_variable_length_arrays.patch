@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index df76f48..c916c4c 100644
+index e7c1a02..aef47c5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -764,7 +764,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
@@ -14,7 +14,7 @@ index df76f48..c916c4c 100644
 @@ -795,6 +795,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	}
  	if (first >= 0)
- 		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
+ 		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), first, last);
 +	free(offs);
  	return 0;
  }
@@ -39,10 +39,10 @@ index df76f48..c916c4c 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 69db198..24d0184 100644
+index 1f65e4e..e8ebb3b 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -370,7 +370,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -366,7 +366,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
@@ -51,7 +51,7 @@ index 69db198..24d0184 100644
  	char *s = lbuf_get(lb, i);
  	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
  	for (; i >= 0 && i < ln_n; i += dir) {
-@@ -387,12 +387,15 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -383,12 +383,15 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			*o = uc_off(s, off + g1);
  			*r = i;
  			off += g2 > 0 ? g2 : 1;
