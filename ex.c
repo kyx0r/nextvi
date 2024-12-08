@@ -372,7 +372,7 @@ void ex_bufpostfix(struct buf *p, int clear)
 #define readfile(errchk) \
 fd = open(ex_path, O_RDONLY); \
 if (fd >= 0) { \
-	errchk lbuf_rd(xb, fd, 0, lbuf_len(xb)); \
+	errchk lbuf_rd(xb, fd, 0, lbuf_len(xb), 1); \
 	close(fd); \
 } \
 
@@ -483,7 +483,7 @@ static int ec_read(char *loc, char *cmd, char *arg)
 			strcpy(msg, "open failed");
 			goto err;
 		}
-		if (lbuf_rd(lb, fd, 0, 0)) {
+		if (lbuf_rd(lb, fd, 0, 0, 0)) {
 			strcpy(msg, "read failed");
 			goto err;
 		}
@@ -785,7 +785,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		if (r) {
 			if (first < 0) {
 				first = i;
-				lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), 0, 0);
+				lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), 0, 0);
 			}
 			sbufn_str(r, ln)
 			lbuf_edit(xb, r->s, i, i + 1);
@@ -794,7 +794,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		}
 	}
 	if (first >= 0)
-		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
+		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), first, last);
 	return 0;
 }
 
