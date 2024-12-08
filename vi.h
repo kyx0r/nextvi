@@ -160,13 +160,14 @@ struct lbuf {
 #define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
 struct lbuf *lbuf_make(void);
 void lbuf_free(struct lbuf *lbuf);
-int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end);
+int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init);
 int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
-void lbuf_edit(struct lbuf *lbuf, char *s, int beg, int end);
+void lbuf_iedit(struct lbuf *lbuf, char *s, int beg, int end, int init);
+#define lbuf_edit(lb, s, beg, end) lbuf_iedit(lb, s, beg, end, 0)
 char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
 char *lbuf_get(struct lbuf *lbuf, int pos);
-void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end);
-int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
+void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end);
+struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init);
 void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
 int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off);
 int lbuf_undo(struct lbuf *lbuf);
