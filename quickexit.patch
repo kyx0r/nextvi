@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index df76f48..dfcdbe9 100644
+index e7c1a02..9c4de7e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -80,10 +80,10 @@ index 7d5c53a..05ada23 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 9e17595..e137814 100644
+index 22262a5..0b4b758 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -487,6 +487,7 @@ extern int xhlr;
+@@ -488,6 +488,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;
