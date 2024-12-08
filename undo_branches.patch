@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index df76f48..e7ff03a 100644
+index e7c1a02..06c2af0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1085,6 +1085,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
@@ -28,7 +28,7 @@ index df76f48..e7ff03a 100644
  	{"rd", ec_undoredo},
  	{"se", ec_set},
 diff --git a/lbuf.c b/lbuf.c
-index 69db198..d1cc596 100644
+index 1f65e4e..3374b07 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -6,6 +6,7 @@ struct lbuf *lbuf_make(void)
@@ -81,7 +81,7 @@ index 69db198..d1cc596 100644
  	free(lb->hist);
  	free(lb->ln);
  	free(lb);
-@@ -138,13 +165,72 @@ void lbuf_emark(struct lbuf *lb, int hist_n, int beg, int end)
+@@ -135,13 +162,72 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
  	}
  }
  
@@ -142,8 +142,8 @@ index 69db198..d1cc596 100644
 +	sbufn_sret(sb)
 +}
 +
- /* append undo/redo history; return lopt idx */
- int lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
+ /* append undo/redo history */
+ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
  {
  	struct lopt *lo;
 -	int i;
@@ -157,7 +157,7 @@ index 69db198..d1cc596 100644
  	lb->hist_n = lb->hist_u;
  	if (lb->hist_n == lb->hist_sz) {
  		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -297,13 +383,12 @@ static int lbuf_seq(struct lbuf *lb)
+@@ -293,13 +379,12 @@ static int lbuf_seq(struct lbuf *lb)
  /* mark buffer as saved and, if clear, clear the undo history */
  void lbuf_saved(struct lbuf *lb, int clear)
  {
@@ -174,7 +174,7 @@ index 69db198..d1cc596 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 9e17595..f83b6e0 100644
+index 22262a5..fa39a6d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -144,6 +144,7 @@ struct linfo {
@@ -185,7 +185,7 @@ index 9e17595..f83b6e0 100644
  	int mark[NMARKS];	/* mark lines */
  	int mark_off[NMARKS];	/* mark line offsets */
  	int ln_n;		/* number of lines in ln[] */
-@@ -178,6 +179,8 @@ int lbuf_eol(struct lbuf *lb, int r);
+@@ -179,6 +180,8 @@ int lbuf_eol(struct lbuf *lb, int r);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip);
