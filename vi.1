@@ -1,4 +1,4 @@
-.Dd Dec  4, 2024
+.Dd Dec 11, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -686,7 +686,7 @@ Example: yank matches appending to reg 'a' and print them out.
 It is possible to nest global commands inside of global commands.
 Example: find all lines with int and a semicolon and append
 "has a semicolon"
-:g/int/:.g/;/& A has a semicolon
+:g/int/\e:.g/;/& A has a semicolon
 Example: extract/print data enclosed in "()"
 :g/\e(.+\e)/;0;/\e(.+\e)/\e:.;.+1k a\e:se grp=2\e:;/\e)*(\e))/\e:
 se nogrp\e:k s\e:.;'a;'sp
@@ -951,13 +951,13 @@ Example: reset to default as in conf.c
 .Sh EX OPTIONS
 .Bl -tag -width Ds -compact
 .
-.It Cm ai
-If set, indent new lines.
+.It Cm ai=1
+Indent new lines
 .
-.It Cm ic
-If set, ignore case in regular expressions.
+.It Cm ic=1
+Ignore case in regular expressions
 
-.It Cm ish
+.It Cm ish=0
 Interactive shell
 .Bd -literal
 Run every <!> command through an interactive shell.
@@ -969,7 +969,7 @@ Precondition:
 	for <!> commands to return expected results.
 .Ed
 
-.It Cm grp
+.It Cm grp=0
 Regex search group
 .Bd -literal
 Defines a target search group for any regex search operation.
@@ -980,30 +980,29 @@ Example: ignore tabs at the start of the line
 :se grp=2:1,$f/^[	]+(.+):se nogrp
 
 The value of grp is calculated using (group number * 2).
-The default group number is 0.
 .Ed
 
 .
-.It Cm hl
-If set, highlight text based on rules defined in
-.Pa conf.c .
+.It Cm hl=1
+Highlight text based on rules defined in
+.Pa conf.c
 .
-.It Cm hlr
-If set, highlight text in reverse direction.
+.It Cm hlr=0
+Highlight text in reverse direction
 .
-.It Cm hll
-If set and defined in hl, highlight current line.
+.It Cm hll=0
+Highlight current line based on filetype hl
 .
-.It Cm hlp
-If set and defined in hl, highlight "[]" "()" "{}" pairs.
+.It Cm hlp=0
+Highlight "[]" "()" "{}" pairs based on filetype hl
 .
-.It Cm hlw
-If set and defined in hl, highlight current word from cursor.
+.It Cm hlw=0
+Highlight current word based on filetype hl
 .
-.It Cm led
-If unset, all terminal output is disabled.
+.It Cm led=1
+Enable all terminal output
 
-.It Cm vis
+.It Cm vis=0
 Control startup flags
 .Bd -literal
 Example: disable :e message in ex mode
@@ -1016,7 +1015,7 @@ Example: disable raw ex mode
 :se vis=4
 .Ed
 
-.It Cm mpt
+.It Cm mpt=0
 Control vi prompts
 .Bd -literal
 When set to 0 after an ex command is called from vi, disables
@@ -1024,40 +1023,40 @@ the "[any key to continue]" prompt.
 If mpt is negative, the prompt will remain disabled.
 .Ed
 
-.It Cm order
-If set, reorder characters based on rules defined in
-.Pa conf.c .
+.It Cm order=1
+Reorder characters based on rules defined in
+.Pa conf.c
 .
-.It Cm shape
-If set, perform Arabic script letter shaping.
+.It Cm shape=1
+Perform Arabic script letter shaping
 .
-.It Cm pac
-If set, print autocomplete suggestions on the fly.
+.It Cm pac=0
+Print autocomplete suggestions on the fly
 .
-.It Cm tbs
-Number of spaces used to represent a tab.
+.It Cm tbs=8
+Number of spaces used to represent a tab
 .
-.It Cm td
-Current text direction context.
+.It Cm td=1
+Current text direction context
 This option accepts four meaningful values:
 .Bl -tag -width Ds -compact
 .It Ar +2
-Exclusively left-to-right.
+Exclusively left-to-right
 .It Ar +1
 Follow
 .Va dircontexts[]
 (in
 .Pa conf.c ) ,
-defaulting to left-to-right.
+defaulting to left-to-right
 .It Ar -1
 Follow
 .Va dircontexts[] ,
-defaulting to right-to-left.
+defaulting to right-to-left
 .It Ar -2
-Exclusively right-to-left.
+Exclusively right-to-left
 .El
 
-.It Cm pr
+.It Cm pr=0
 Print register
 .Bd -literal
 Set a special register using a character or a number.
@@ -1071,11 +1070,13 @@ Example: store a line printed with :p
 :se pr=A:ya! a:p
 .Ed
 
-.It Cm sep
+.It Cm sep=:
 Ex separator
 .Bd -literal
-Set Ex command separator character. Default <:>
-Built-in commands using <:> separator will seize to function.
+Set Ex command separator character.
+Changing default <:> separator will break some built-in commands/macros.
+Example: set separator to <|>
+:se sep=|
 Example: disable separator
 :se nosep
 .Ed
@@ -1153,7 +1154,7 @@ find anything except <a> followed by "bc"
 .It Cm /[!abc!cda!qwe]
 multiple lookahead alternatives in one bracket exp
 .It Cm /[!abc^=123]
-disable lookahead using "^=" specifier and match [123]
+disable lookahead after "^=" specifier and match [123] normally
 .El
 .
 .Sh SPECIAL MARKS
@@ -1190,19 +1191,19 @@ previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 504 vi.h | definitions/aux
+ 505 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  294 conf.c | hl/ft/td config
  335 term.c | low level IO
  380 ren.c | positioning/syntax
- 528 lbuf.c | file/line buffer
+ 524 lbuf.c | file/line buffer
  650 uc.c | UTF-8 support
  658 regex.c | extended RE
  670 led.c | insert mode/output
  1235 ex.c | ex options/commands
  1956 vi.c | normal mode/general
- 6706 total | wc -l *.c\(basort
+ 6702 total | wc -l *.c\(basort
 _
 .TE
 .
