@@ -39,10 +39,10 @@ index e7c1a02..aef47c5 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 1f65e4e..e8ebb3b 100644
+index 6e7002d..37b8519 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -366,7 +366,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -365,7 +365,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
@@ -51,7 +51,7 @@ index 1f65e4e..e8ebb3b 100644
  	char *s = lbuf_get(lb, i);
  	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
  	for (; i >= 0 && i < ln_n; i += dir) {
-@@ -383,12 +383,15 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -382,12 +382,15 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			*o = uc_off(s, off + g1);
  			*r = i;
  			off += g2 > 0 ? g2 : 1;
@@ -69,7 +69,7 @@ index 1f65e4e..e8ebb3b 100644
  }
  
 diff --git a/led.c b/led.c
-index ae0eab7..a397f45 100644
+index 2807dec..a698891 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)

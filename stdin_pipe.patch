@@ -153,7 +153,7 @@ index 7d5c53a..4e86b6d 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 22262a5..101467a 100644
+index a6c4d9b..4f6bc0b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -468,6 +468,7 @@ void vi_regput(int c, const char *s, int ln);

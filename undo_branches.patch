@@ -28,7 +28,7 @@ index e7c1a02..06c2af0 100644
  	{"rd", ec_undoredo},
  	{"se", ec_set},
 diff --git a/lbuf.c b/lbuf.c
-index 1f65e4e..3374b07 100644
+index 6e7002d..a62dbbd 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -6,6 +6,7 @@ struct lbuf *lbuf_make(void)
@@ -81,7 +81,7 @@ index 1f65e4e..3374b07 100644
  	free(lb->hist);
  	free(lb->ln);
  	free(lb);
-@@ -135,13 +162,72 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
+@@ -134,13 +161,72 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
  	}
  }
  
@@ -157,7 +157,7 @@ index 1f65e4e..3374b07 100644
  	lb->hist_n = lb->hist_u;
  	if (lb->hist_n == lb->hist_sz) {
  		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -293,13 +379,12 @@ static int lbuf_seq(struct lbuf *lb)
+@@ -292,13 +378,12 @@ static int lbuf_seq(struct lbuf *lb)
  /* mark buffer as saved and, if clear, clear the undo history */
  void lbuf_saved(struct lbuf *lb, int clear)
  {
@@ -174,7 +174,7 @@ index 1f65e4e..3374b07 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 22262a5..fa39a6d 100644
+index a6c4d9b..347db14 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -144,6 +144,7 @@ struct linfo {

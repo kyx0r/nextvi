@@ -87,10 +87,10 @@ index e7c1a02..108d2ba 100644
  		fsincl = NULL;
  	return 0;
 diff --git a/lbuf.c b/lbuf.c
-index 1f65e4e..29d72b6 100644
+index 6e7002d..7928ce6 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -362,16 +362,16 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -361,16 +361,16 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -264,7 +264,7 @@ index 7d5c53a..b0b9bb9 100644
  		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
  			temp_write(1, path);
 diff --git a/vi.h b/vi.h
-index 22262a5..802e35b 100644
+index a6c4d9b..9fcdf27 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -119,12 +119,23 @@ typedef struct {

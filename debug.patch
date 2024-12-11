@@ -103,7 +103,7 @@ index 7d5c53a..0721dd9 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 22262a5..507acae 100644
+index a6c4d9b..0c01114 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -217,6 +217,7 @@ char *ren_translate(char *s, char *ln);

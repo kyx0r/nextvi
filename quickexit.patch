@@ -19,7 +19,7 @@ index e7c1a02..9c4de7e 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index ae0eab7..8b842cc 100644
+index 2807dec..1415b5c 100644
 --- a/led.c
 +++ b/led.c
 @@ -380,6 +380,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
@@ -80,7 +80,7 @@ index 7d5c53a..05ada23 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 22262a5..0b4b758 100644
+index a6c4d9b..df9d2f9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -488,6 +488,7 @@ extern int xhlr;

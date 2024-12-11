@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index ae0eab7..a1ba602 100644
+index 2807dec..744848a 100644
 --- a/led.c
 +++ b/led.c
 @@ -276,7 +276,7 @@ static int led_lastword(char *s)
