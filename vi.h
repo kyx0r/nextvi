@@ -64,7 +64,7 @@ typedef struct sbuf {
 
 #define sbuf_chr(sb, c) \
 { \
-	if (sb->s_n + 1 == sb->s_sz) \
+	if (sb->s_n + 1 >= sb->s_sz) \
 		sbuf_extend(sb, NEXTSZ(sb->s_sz, 1)) \
 	sb->s[sb->s_n++] = c; \
 } \

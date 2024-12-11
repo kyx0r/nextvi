@@ -566,7 +566,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			if ((cs = lbuf_get(tempbufs[0].lb, t_row--))) {
 				sbuf_cut(sb, pre)
 				sbuf_str(sb, cs)
-				sb->s[--sb->s_n] = '\0';
+				sb->s_n--;
 			}
 			break;
 		case TK_CTL('l'):
