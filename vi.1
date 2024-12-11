@@ -675,7 +675,7 @@ Global command
 Execute an ex command on a range of lines that matches an
 enclosed regex.
 
-Example: remove empty lines
+Example: remove all empty lines
 :g/^$/d
 
 Multiple ex commands can be chained in one global command.
@@ -684,9 +684,16 @@ Example: yank matches appending to reg 'a' and print them out.
 :g/int/ya A\e:p
 
 It is possible to nest global commands inside of global commands.
-Example: find all lines with int and a semicolon and append
-"has a semicolon"
-:g/int/\e:.g/;/& A has a semicolon
+A global command will not be executed on lines that were created 
+or deleted by a nested global command.
+When range not given, a nested global command is implied to 
+match the current line.
+
+Example: Nested global command
+Append "has a semicolon" to all lines that contain "int" and 
+end with <;>.
+:g/int/g/;$/& A has a semicolon
+
 Example: extract/print data enclosed in "()"
 :g/\e(.+\e)/;0;/\e(.+\e)/\e:.;.+1k a\e:se grp=2\e:;/\e)*(\e))/\e:
 se nogrp\e:k s\e:.;'a;'sp
@@ -1038,6 +1045,7 @@ Number of spaces used to represent a tab
 .
 .It Cm td=1
 Current text direction context
+
 This option accepts four meaningful values:
 .Bl -tag -width Ds -compact
 .It Ar +2
