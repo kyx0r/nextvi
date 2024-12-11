@@ -42,34 +42,42 @@ index e7c1a02..73152f2 100644
  	{"fp", ec_setdir},
  	{"cd", ec_chdir},
 diff --git a/lbuf.c b/lbuf.c
-index 1f65e4e..ad0644d 100644
+index 6e7002d..99d32b3 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -91,8 +91,11 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
- 		lb->ln = nln;
- 		lb->ln_sz = nsz;
- 	}
--	for (i = 0; i < n_del; i++)
+@@ -75,6 +75,11 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+ {
+ 	int i, n_ins = 0, pos = lo->pos;
+ 	sbuf_smake(sb, 0)
 +	int lw[n_del];
 +	for (i = 0; i < n_del; i++) {
 +		lw[i] = lbuf_i(lb, pos + i)->lw;
- 		free(lbuf_i(lb, pos + i));
++		free(lbuf_i(lb, pos + i));
 +	}
- 	if (n_ins != n_del) {
- 		memmove(lb->ln + pos + n_ins, lb->ln + pos + n_del,
- 			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
-@@ -104,6 +107,10 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
- 		struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
- 		n->len = l_nonl;
- 		n->grec = 0;
-+		int _lw = -1;
-+		if (i < n_del)
-+			_lw = lw[i];
-+		n->lw = _lw;
- 		char *ln = (char*)(n + 1);
- 		memcpy(ln, s, l_nonl);
- 		memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
-@@ -191,7 +198,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+ 	if (s) {
+ 		for (; *s; n_ins++) {
+ 			int l = linelength(s);
+@@ -82,6 +87,10 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+ 			struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
+ 			n->len = l_nonl;
+ 			n->grec = 0;
++			int _lw = -1;
++			if (i < n_del)
++				_lw = lw[i];
++			n->lw = _lw;
+ 			char *ln = (char*)(n + 1);
+ 			memcpy(ln, s, l_nonl);
+ 			memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
+@@ -90,8 +99,6 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+ 			s += l;
+ 		}
+ 	}
+-	for (i = 0; i < n_del; i++)
+-		free(lbuf_i(lb, pos + i));
+ 	rstate->s = NULL; /* there is no guarantee malloc not giving same ptr back */
+ 	if (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
+ 		int nsz = lb->ln_n + n_ins - n_del + 512;
+@@ -190,7 +197,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lbuf->ln[i];
  		long nw = 0;
@@ -78,7 +86,7 @@ index 1f65e4e..ad0644d 100644
  		while (nw < nl) {
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
-@@ -202,6 +209,44 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+@@ -201,6 +208,44 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
  	return 0;
  }
  
@@ -124,7 +132,7 @@ index 1f65e4e..ad0644d 100644
  void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
  {
 diff --git a/vi.h b/vi.h
-index 22262a5..6fef7d6 100644
+index a6c4d9b..634af5b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -140,6 +140,7 @@ struct lopt {
