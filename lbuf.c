@@ -70,47 +70,44 @@ static int linelength(char *s)
 	return s[len] == '\n' ? len + 1 : len;
 }
 
-static int lbuf_linecount(char *s)
-{
-	int n;
-	for (n = 0; *s; n++)
-		s += linelength(s);
-	return n;
-}
-
 /* low-level line replacement */
-static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, int n_ins)
+static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 {
-	int i, pos = lo->pos;
+	int i, n_ins = 0, pos = lo->pos;
+	sbuf_smake(sb, 0)
+	if (s) {
+		for (; *s; n_ins++) {
+			int l = linelength(s);
+			int l_nonl = l - (s[l - !!l] == '\n');
+			struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
+			n->len = l_nonl;
+			n->grec = 0;
+			char *ln = (char*)(n + 1);
+			memcpy(ln, s, l_nonl);
+			memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
+			ln[l_nonl] = '\n';
+			sbuf_mem(sb, &ln, (int)sizeof(s))
+			s += l;
+		}
+	}
+	for (i = 0; i < n_del; i++)
+		free(lbuf_i(lb, pos + i));
 	rstate->s = NULL; /* there is no guarantee malloc not giving same ptr back */
-	while (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
-		int nsz = lb->ln_sz + (lb->ln_sz ? lb->ln_sz : 512);
+	if (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
+		int nsz = lb->ln_n + n_ins - n_del + 512;
 		char **nln = emalloc(nsz * sizeof(lb->ln[0]));
 		memcpy(nln, lb->ln, lb->ln_n * sizeof(lb->ln[0]));
 		free(lb->ln);
 		lb->ln = nln;
 		lb->ln_sz = nsz;
 	}
-	for (i = 0; i < n_del; i++)
-		free(lbuf_i(lb, pos + i));
 	if (n_ins != n_del) {
 		memmove(lb->ln + pos + n_ins, lb->ln + pos + n_del,
 			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
 	}
 	lb->ln_n += n_ins - n_del;
-	for (i = 0; i < n_ins; i++) {
-		int l = linelength(s);
-		int l_nonl = l - (s[l - !!l] == '\n');
-		struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
-		n->len = l_nonl;
-		n->grec = 0;
-		char *ln = (char*)(n + 1);
-		memcpy(ln, s, l_nonl);
-		memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
-		ln[l_nonl] = '\n';
-		lb->ln[pos + i] = ln;
-		s += l;
-	}
+	for (i = 0; i < n_ins; i++)
+		lb->ln[pos + i] = *((char**)sb->s + i);
 	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
 		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
 			lbuf_savemark(lb, lo, i, i);
@@ -123,6 +120,8 @@ static void lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del, i
 		else
 			lbuf_loadmark(lb, lo, i, i);
 	}
+	free(sb->s);
+	return n_ins;
 }
 
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
@@ -156,7 +155,7 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 	lo->ins = !init && buf ? uc_dup(buf) : NULL;
 	lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
 	lo->pos = pos;
-	lo->n_ins = buf ? lbuf_linecount(buf) : 0;
+	lo->n_ins = 0;
 	lo->n_del = n_del;
 	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
 	lo->seq = lb->useq;
@@ -212,7 +211,7 @@ void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
 	if (beg == end && !buf)
 		return;
 	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg, init);
-	lbuf_replace(lb, buf, lo, lo->n_del, lo->n_ins);
+	lo->n_ins = lbuf_replace(lb, buf, lo, lo->n_del);
 	lbuf_emark(lb, lo, lb->hist_u < 2 ||
 			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
 			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
@@ -260,7 +259,7 @@ int lbuf_undo(struct lbuf *lb)
 	lbuf_savemark(lb, lo, markidx('*'), markidx('['));
 	while (lb->hist_u && lb->hist[lb->hist_u - 1].seq == useq) {
 		lo = &lb->hist[--(lb->hist_u)];
-		lbuf_replace(lb, lo->del, lo, lo->n_ins, lo->n_del);
+		lbuf_replace(lb, lo->del, lo, lo->n_ins);
 	}
 	lbuf_loadpos(lb, lo);
 	lbuf_savemark(lb, lo, markidx('`'), markidx(']'));
@@ -278,7 +277,7 @@ int lbuf_redo(struct lbuf *lb)
 	lbuf_loadmark(lb, lo, markidx(']'), markidx('`'));
 	while (lb->hist_u < lb->hist_n && lb->hist[lb->hist_u].seq == useq) {
 		lo = &lb->hist[lb->hist_u++];
-		lbuf_replace(lb, lo->ins, lo, lo->n_del, lo->n_ins);
+		lbuf_replace(lb, lo->ins, lo, lo->n_del);
 	}
 	lbuf_loadpos(lb, lo);
 	lbuf_loadmark(lb, lo, markidx('['), markidx('*'));
