@@ -437,7 +437,7 @@ EX COMMANDS
              Execute an ex command on a range of lines that matches an
              enclosed regex.
 
-             Example: remove empty lines
+             Example: remove all empty lines
              :g/^$/d
 
              Multiple ex commands can be chained in one global command.
@@ -446,9 +446,16 @@ EX COMMANDS
              :g/int/ya A\:p
 
              It is possible to nest global commands inside of global commands.
-             Example: find all lines with int and a semicolon and append
-             "has a semicolon"
-             :g/int/\:.g/;/& A has a semicolon
+             A global command will not be executed on lines that were created
+             or deleted by a nested global command.
+             When range not given, a nested global command is implied to
+             match the current line.
+
+             Example: Nested global command
+             Append "has a semicolon" to all lines that contain "int" and
+             end with <;>.
+             :g/int/g/;$/& A has a semicolon
+
              Example: extract/print data enclosed in "()"
              :g/\(.+\)/;0;/\(.+\)/\:.;.+1k a\:se grp=2\:;/\)*(\))/\:
              se nogrp\:k s\:.;'a;'sp
@@ -731,8 +738,9 @@ EX OPTIONS
              Perform Arabic script letter shaping
      pac=0   Print autocomplete suggestions on the fly
      tbs=8   Number of spaces used to represent a tab
-     td=1    Current text direction context This option accepts four
-             meaningful values:
+     td=1    Current text direction context
+
+             This option accepts four meaningful values:
              +2      Exclusively left-to-right
              +1      Follow dircontexts[] (in conf.c), defaulting to left-to-
                      right
