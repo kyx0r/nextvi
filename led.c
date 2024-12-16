@@ -395,31 +395,31 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 		case TK_CTL('h'):
 		case 127:
 			if (len - pre > 0)
-				sbufn_cut(sb, led_lastchar(sb->s + pre) + pre)
+				sbuf_cut(sb, led_lastchar(sb->s + pre) + pre)
 			else
 				goto leave;
 			break;
 		case TK_CTL('u'):
-			sbufn_cut(sb, sug_pt > pre && len > sug_pt ? sug_pt : pre)
+			sbuf_cut(sb, sug_pt > pre && len > sug_pt ? sug_pt : pre)
 			break;
 		case TK_CTL('w'):
 			if (len - pre > 0)
-				sbufn_cut(sb, led_lastword(sb->s + pre) + pre)
-			else
+				sbuf_cut(sb, led_lastword(sb->s + pre) + pre)
+			else if (ai_max >= 0)
 				term_push("bdwi", 5);
 			break;
 		case TK_CTL('t'):
 			cs = uc_dup(sb->s + ps);
 			sbuf_cut(sb, ps)
 			sbuf_chr(sb, '\t')
-			sbufn_str(sb, cs)
+			sbuf_str(sb, cs)
 			free(cs);
 			pre++;
 			break;
 		case TK_CTL('d'):
 			if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
 				sbuf_cut(sb, ps)
-				sbufn_str(sb, sb->s+ps+1)
+				sbuf_str(sb, sb->s+ps+1)
 				pre--;
 			}
 			break;
@@ -438,15 +438,16 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			if ((cs = xregs[p_reg])) {
 				sbuf_chr(sb, p_reg ? p_reg : '~')
 				sbuf_chr(sb, ' ')
-				sbufn_str(sb, cs)
+				sbuf_str(sb, cs)
+				sbuf_set(sb, '\0', 4)
 				led_info(sb->s + len, ai_max);
-				sbufn_cut(sb, len)
+				sbuf_cut(sb, len)
 			} else if (!i++)
 				goto retry;
 			continue;
 		case TK_CTL('p'):
 			if (xregs[p_reg])
-				sbufn_str(sb, xregs[p_reg])
+				sbuf_str(sb, xregs[p_reg])
 			break;
 		case TK_CTL('g'):
 			if (!suggestsb) {
@@ -504,7 +505,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 				suggest:
 				*_sug = '\0';
 				sbuf_cut(sb, lsug)
-				sbufn_str(sb, sug)
+				sbuf_str(sb, sug)
 				sug = _sug+1;
 				continue;
 			}
@@ -547,6 +548,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			temp_write(0, sb->s + pre);
 			preserve(struct buf*, ex_pbuf, ex_pbuf)
 			preserve(struct buf*, ex_buf, ex_buf)
+			preserve(int, xquit, 0)
 			temp_switch(0);
 			vi(1);
 			temp_switch(0);
@@ -557,7 +559,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			vi(1); /* redraw past screen */
 			syn_setft("/-");
 			term_pos(xrows, 0);
-			xquit = 0;
+			if (xquit >= 0)
+				restore(xquit)
 			t_row = tempbufs[0].row;
 		case TK_CTL('a'):
 			t_row = t_row < -1 ? tempbufs[0].row : t_row;
@@ -582,7 +585,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 				ex();
 			else
 				vi(1);
-			xquit = 0;
+			xquit = xquit > 0 ? 0 : xquit;
 			restore(xvis)
 			continue;
 		default:

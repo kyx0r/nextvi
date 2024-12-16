@@ -1,6 +1,6 @@
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xleft;			/* the first visible column */
-int xquit;			/* exit if set */
+int xquit;			/* exit recursion if positive, quit when negative */
 int xvis;			/* visual mode */
 int xai = 1;			/* autoindent option */
 int xic = 1;			/* ignorecase option */
@@ -354,11 +354,12 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 static int ec_quit(char *loc, char *cmd, char *arg)
 {
 	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
-		if (xgrec < 2 && lbuf_modified(bufs[i].lb)) {
+		if ((xquit < 0 || xgrec < 2) && lbuf_modified(bufs[i].lb)) {
 			ex_print("buffers modified");
 			return 1;
 		}
-	xquit = 1 * (xgrec > 1 ? -1 : 1);
+	if (!xquit)
+		xquit = !strchr(cmd, '!') ? 1 : -1;
 	return 0;
 }
 

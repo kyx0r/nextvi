@@ -113,6 +113,8 @@ void term_push(char *s, unsigned int n)
 {
 	n = MIN(n, sizeof(ibuf) - ibuf_cnt);
 	if (texec) {
+		if (texec == '@' && n && xquit > 0)
+			xquit = 0;
 		if (tibuf_pos != ibuf_pos)
 			tn = 0;
 		memmove(ibuf + ibuf_pos + n + tn,
@@ -134,26 +136,29 @@ void term_back(int c)
 int term_read(void)
 {
 	struct pollfd ufds[1];
-	int n;
 	if (ibuf_pos >= ibuf_cnt) {
 		if (texec) {
-			xquit = 1;
+			xquit = !xquit ? 1 : xquit;
 			if (texec == '&')
-				goto ret;
+				goto err;
 		}
 		ufds[0].fd = STDIN_FILENO;
 		ufds[0].events = POLLIN;
 		/* read a single input character */
-		if (poll(ufds, 1, -1) <= 0 ||
-				(n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
-			xquit = !isatty(STDIN_FILENO);
-			ret:
+		if (xquit < 0 || poll(ufds, 1, -1) <= 0 ||
+				read(STDIN_FILENO, ibuf, 1) <= 0) {
+			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
+			err:
 			*ibuf = 0;
-			n = 1;
+		} else if (texec && ibuf_pos < sizeof(ibuf)) {
+			ibuf_cnt++;
+			ibuf[ibuf_pos] = *ibuf;
+			goto ret;
 		}
-		ibuf_cnt = n;
+		ibuf_cnt = 1;
 		ibuf_pos = 0;
 	}
+	ret:
 	icmd_pos = icmd_pos % sizeof(icmd);
 	icmd[icmd_pos++] = ibuf[ibuf_pos];
 	return ibuf[ibuf_pos++];
