@@ -548,12 +548,14 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			temp_write(0, sb->s + pre);
 			preserve(struct buf*, ex_pbuf, ex_pbuf)
 			preserve(struct buf*, ex_buf, ex_buf)
+			preserve(int, texec, texec == '@' ? 0 : texec)
 			preserve(int, xquit, 0)
 			temp_switch(0);
 			vi(1);
 			temp_switch(0);
 			restore(ex_pbuf)
 			restore(ex_buf)
+			restore(texec)
 			exbuf_load(ex_buf)
 			syn_setft(ex_ft);
 			vi(1); /* redraw past screen */
