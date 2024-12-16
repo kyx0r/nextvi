@@ -214,8 +214,8 @@ VI NORMAL
                    cursor
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
-     qq            Exit and clean terminal
-     zz            Exit and submit a command when recursive
+     qq            Exit and clean terminal, force quit in a & macro
+     zz            Exit and submit history command, force quit in a & macro
      ZZ            Exit and soft write to a file
 
 VI REGIONS

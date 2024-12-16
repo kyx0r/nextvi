@@ -1,6 +1,6 @@
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xleft;			/* the first visible column */
-int xquit;			/* exit recursion if positive, quit when negative */
+int xquit;			/* exit if positive, force quit when negative */
 int xvis;			/* visual mode */
 int xai = 1;			/* autoindent option */
 int xic = 1;			/* ignorecase option */
