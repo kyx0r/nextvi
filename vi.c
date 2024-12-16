@@ -1587,7 +1587,7 @@ void vi(int init)
 				break;
 			case 'q':
 				if (term_read() == 'q')
-					xquit = 1 * (xgrec > 1 ? -1 : 1);
+					xquit = texec == '&' ? -1 : 1;
 				continue;
 			case 'c':
 			case 'd':
@@ -1670,7 +1670,7 @@ void vi(int init)
 				k = term_read();
 				switch (k) {
 				case 'z':
-					xquit = 2 * (xgrec > 1 ? -1 : 1);
+					xquit = 2 * (texec == '&' ? -1 : 1);
 					term_push("\n", 1);
 					break;
 				case '\n':
