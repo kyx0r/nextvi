@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index e7c1a02..0f132cf 100644
+index 0e1389b..9c59715 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -395,7 +395,9 @@ int ex_edit(const char *path, int len)
+@@ -396,7 +396,9 @@ int ex_edit(const char *path, int len)
  static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index e7c1a02..0f132cf 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -415,6 +417,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -416,6 +418,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
  	}
@@ -23,7 +23,7 @@ index e7c1a02..0f132cf 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1221,15 +1226,26 @@ void ex(void)
+@@ -1222,15 +1227,26 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -53,7 +53,7 @@ index e7c1a02..0f132cf 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 49ca154..ace7442 100644
+index 60ea4a9..2ffd2e3 100644
 --- a/term.c
 +++ b/term.c
 @@ -2,6 +2,8 @@ sbuf *term_sbuf;
@@ -103,23 +103,23 @@ index 49ca154..ace7442 100644
  }
  
  void term_clean(void)
-@@ -141,12 +147,12 @@ int term_read(void)
+@@ -142,12 +148,12 @@ int term_read(void)
  			if (texec == '&')
- 				goto ret;
+ 				goto err;
  		}
 -		ufds[0].fd = STDIN_FILENO;
 +		ufds[0].fd = stdin_fd;
  		ufds[0].events = POLLIN;
  		/* read a single input character */
- 		if (poll(ufds, 1, -1) <= 0 ||
--				(n = read(STDIN_FILENO, ibuf, 1)) <= 0) {
--			xquit = !isatty(STDIN_FILENO);
-+				(n = read(stdin_fd, ibuf, 1)) <= 0) {
-+			xquit = !isatty(stdin_fd);
- 			ret:
+ 		if (xquit < 0 || poll(ufds, 1, -1) <= 0 ||
+-				read(STDIN_FILENO, ibuf, 1) <= 0) {
+-			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
++				read(stdin_fd, ibuf, 1) <= 0) {
++			xquit = !isatty(stdin_fd) ? -1 : xquit;
+ 			err:
  			*ibuf = 0;
- 			n = 1;
-@@ -322,7 +328,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+ 		} else if (texec && ibuf_pos < sizeof(ibuf)) {
+@@ -327,7 +333,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -129,7 +129,7 @@ index 49ca154..ace7442 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 7d5c53a..4e86b6d 100644
+index 3fd6917..ff5ad7e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1903,7 +1903,8 @@ static int setup_signals(void) {
