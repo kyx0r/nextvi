@@ -1,4 +1,4 @@
-.Dd Dec 11, 2024
+.Dd Dec 15, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -378,11 +378,11 @@ Suspend vi
 .It Cm <^L>
 Force redraw whole screen and update terminal dimensions
 .It Cm qq
-Force quit and clean terminal
+Exit and clean terminal
 .It Cm zz
-Force quit, submit a command when recursive
+Exit and submit a command when recursive
 .It Cm ZZ
-Soft quit, write to a file before exit
+Exit and soft write to a file
 .El
 .
 .Sh VI REGIONS
@@ -782,14 +782,14 @@ Example: pipe out only first 10 lines
 Force write to a file
 
 .It Cm q
-Soft quit
+Exit
 .It Cm q!
 Force quit
 
 .It Cm wq[!]
 .It Cm x[!]
 .Bd -compact
-Write and force/soft quit
+Soft write and exit or force quit
 .Ed
 
 .It Cm u[\fI# $\fP]
@@ -1203,15 +1203,15 @@ _
  537 kmap.h | keymap translation
 _
  294 conf.c | hl/ft/td config
- 335 term.c | low level IO
+ 340 term.c | low level IO
  380 ren.c | positioning/syntax
  523 lbuf.c | file/line buffer
  650 uc.c | UTF-8 support
  658 regex.c | extended RE
- 670 led.c | insert mode/output
- 1235 ex.c | ex options/commands
+ 673 led.c | insert mode/output
+ 1236 ex.c | ex options/commands
  1956 vi.c | normal mode/general
- 6701 total | wc -l *.c\(basort
+ 6710 total | wc -l *.c\(basort
 _
 .TE
 .
