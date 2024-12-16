@@ -214,9 +214,9 @@ VI NORMAL
                    cursor
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
-     qq            Force quit and clean terminal
-     zz            Force quit, submit a command when recursive
-     ZZ            Soft quit, write to a file before exit
+     qq            Exit and clean terminal
+     zz            Exit and submit a command when recursive
+     ZZ            Exit and soft write to a file
 
 VI REGIONS
      Regions are vi normal commands that define [h v]range for vi motions.
@@ -536,12 +536,12 @@ EX COMMANDS
      [range]w! [path]
              Force write to a file
 
-     q       Soft quit
+     q       Exit
      q!      Force quit
 
      wq[!]
      x[!]
-             Write and force/soft quit
+             Soft write and exit or force quit
 
      u[# $]  Undo # times or all with $
      rd[# $]
@@ -838,15 +838,15 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 294 conf.c   |  hl/ft/td config     |
-     | 335 term.c   |  low level IO        |
+     | 340 term.c   |  low level IO        |
      | 380 ren.c    |  positioning/syntax  |
      | 523 lbuf.c   |  file/line buffer    |
      | 650 uc.c     |  UTF-8 support       |
      | 658 regex.c  |  extended RE         |
-     | 670 led.c    |  insert mode/output  |
-     | 1235 ex.c    |  ex options/commands |
+     | 673 led.c    |  insert mode/output  |
+     | 1236 ex.c    |  ex options/commands |
      | 1956 vi.c    |  normal mode/general |
-     | 6701 total   |  wc -l *.c|sort      |
+     | 6710 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -964,4 +964,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.13.0-rc1               December 11, 2024              Linux 6.13.0-rc1
+Linux 6.13.0-rc1               December 15, 2024              Linux 6.13.0-rc1
