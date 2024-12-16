@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index e7c1a02..dd33d52 100644
+index 0e1389b..243164e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ static int xbufsmax;		/* number of buffers */
@@ -18,7 +18,7 @@ index e7c1a02..dd33d52 100644
  	return i;
  }
  
-@@ -410,6 +412,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -411,6 +413,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: sigh... */
  	}
@@ -27,7 +27,7 @@ index e7c1a02..dd33d52 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -541,6 +545,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -542,6 +546,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -38,7 +38,7 @@ index e7c1a02..dd33d52 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
  				ex_print("write failed: file changed");
  				return 1;
-@@ -1085,6 +1093,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1086,6 +1094,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -51,7 +51,7 @@ index e7c1a02..dd33d52 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1135,6 +1149,7 @@ static struct excmd {
+@@ -1136,6 +1150,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"bx", ec_setbufsmax},
  	{"ac", ec_setacreg},
@@ -60,7 +60,7 @@ index e7c1a02..dd33d52 100644
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
 diff --git a/vi.c b/vi.c
-index 7d5c53a..b3a8a76 100644
+index 3fd6917..5d5df71 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1931,9 +1931,11 @@ int main(int argc, char *argv[])

@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 2807dec..1b555a8 100644
+index a42450d..a647e21 100644
 --- a/led.c
 +++ b/led.c
 @@ -141,20 +141,26 @@ for (i = 0; i < cterm;) { \

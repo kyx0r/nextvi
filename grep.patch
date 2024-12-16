@@ -15,7 +15,7 @@ index 22fad4a..1c54a22 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index e7c1a02..114587e 100644
+index 0e1389b..b0a5f6a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -28,7 +28,7 @@ index e7c1a02..114587e 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 7d5c53a..03b4f43 100644
+index 3fd6917..a3c535b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -611,12 +611,12 @@ void dir_calc(char *path)

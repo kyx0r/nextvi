@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index e7c1a02..5ed3415 100644
+index 0e1389b..470010e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -34,6 +34,7 @@ int xmpt;			/* whether to prompt after printing > 1 lines in vi */
@@ -10,7 +10,7 @@ index e7c1a02..5ed3415 100644
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static char xrep[EXLEN];	/* the last replacement */
-@@ -1085,6 +1086,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1086,6 +1087,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -52,7 +52,7 @@ index e7c1a02..5ed3415 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1139,6 +1175,8 @@ static struct excmd {
+@@ -1140,6 +1176,8 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"ph", ec_setenc},
@@ -62,10 +62,10 @@ index e7c1a02..5ed3415 100644
  };
  
 diff --git a/term.c b/term.c
-index 49ca154..ce025fc 100644
+index 60ea4a9..ce8f32d 100644
 --- a/term.c
 +++ b/term.c
-@@ -217,7 +217,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -222,7 +222,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}

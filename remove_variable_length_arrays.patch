@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index e7c1a02..aef47c5 100644
+index 0e1389b..9f6a77b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -764,7 +764,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -765,7 +765,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	free(rep);
  	if (!xkwdrs)
  		return 1;
@@ -11,7 +11,7 @@ index e7c1a02..aef47c5 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -795,6 +795,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -796,6 +796,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	}
  	if (first >= 0)
  		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), first, last);
@@ -19,7 +19,7 @@ index e7c1a02..aef47c5 100644
  	return 0;
  }
  
-@@ -1191,7 +1192,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
+@@ -1192,7 +1193,7 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index e7c1a02..aef47c5 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, cmd, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1200,6 +1201,9 @@ int ex_exec(const char *ln)
+@@ -1201,6 +1202,9 @@ int ex_exec(const char *ln)
  			ret = excmds[idx].ec(loc, cmd, ecmd);
  		free(ecmd);
  	}
@@ -69,7 +69,7 @@ index 6e7002d..37b8519 100644
  }
  
 diff --git a/led.c b/led.c
-index 2807dec..a698891 100644
+index a42450d..9bf12f3 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -235,7 +235,7 @@ index ffa2e94..daf2a9c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 7d5c53a..51dc11d 100644
+index 3fd6917..d38bd2f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -160,7 +160,8 @@ static void vi_drawrow(int row)
