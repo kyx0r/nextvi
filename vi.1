@@ -720,7 +720,7 @@ macros will always reach a terminating point.
 Example: execute vi insert statement
 :& ihello
 Example: execute :hello
-:& \e:hello
+:& \e:hello<^V><^M>
 Example: execute ci(int macro
 :& ci(int
 Example: turn non-blocking into blocking macro
@@ -926,8 +926,8 @@ Toggle multibyte utf-8 decoding
 This command is particularly useful when editing files with
 mixed encodings, binary files, or when the terminal does not
 support UTF-8 or lacks the necessary fonts to display UTF-8
-characters. Typically to be used along with :ph for the full
-effect.
+characters. It's often paired with :ph command to achieve
+hex editor-like functionality.
 .Ed
 
 .It Cm uz
