@@ -152,6 +152,13 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         git branch -D upstream-temp
         log "$G" "Successfully fetched from upstream."
         ;;
+    "bench")
+        shift
+        export EXINIT="&dw1999.qq"
+        valgrind --tool=callgrind ./vi vi.c
+        valgrind --tool=cachegrind --cache-sim=yes --branch-sim=yes ./vi vi.c
+        exit 0
+        ;;
     *)
         echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean}"
         exit 1

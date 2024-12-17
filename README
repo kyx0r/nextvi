@@ -188,7 +188,7 @@ VI NORMAL
      \             Swap to /fm/ buffer b-2
      {#}\          Swap from /fm/ buffer b-2 and backfill directory listing
      vb            Recurse into b-1 history buffer. Insert current line into
-                   ex prompt after a quit command
+                   ex prompt on exit
      z1            Set alternative keymap to Farsi keymap
      z2            Set alternative keymap to Russian keymap
      ze            Switch to English keymap
@@ -264,7 +264,7 @@ VI/EX INSERT
      <^N>          Loop through autocomplete options forward
      <^B>          Print autocomplete options when in vi insert
      <^B>          Recurse into b-1 history buffer when in ex prompt. Insert
-                   current line into ex prompt after a quit command
+                   current line into ex prompt on exit
      <^A>          Loop through lines in a history buffer b-1
      <^Z>          Suspend vi/ex
      <^L>          Redraw screen in vi mode, clean terminal in ex
@@ -448,8 +448,8 @@ EX COMMANDS
              It is possible to nest global commands inside of global commands.
              A global command will not be executed on lines that were created
              or deleted by a nested global command.
-             When range not given, a nested global command is implied to
-             match the current line.
+             When range not given, a nested global command is executed on
+             the current line.
 
              Example: Nested global command
              Append "has a semicolon" to all lines that contain "int" and
@@ -867,8 +867,8 @@ COMPILING
              install vi to $DESTDIR$PREFIX/bin
      ./cbuild.sh fetch
              merge commits from upstream repository
-     valgrind --tool=cachegrind --cache-sim=yes --branch-sim=yes ./vi vi.c
-             performance bench test
+     ./cbuild.sh bench
+             performance bench test 2000 word deletions on vi.c
 
 PHILOSOPHY
      In most text editors, flexibility is a minor or irrelevant design
@@ -964,4 +964,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.13.0-rc1               December 15, 2024              Linux 6.13.0-rc1
+Linux 6.13.0-rc1               December 16, 2024              Linux 6.13.0-rc1

@@ -1,4 +1,4 @@
-.Dd Dec 15, 2024
+.Dd Dec 16, 2024
 .Dt Nextvi 1
 .Os
 .
@@ -335,7 +335,7 @@ Swap to /fm/ buffer b-2
 .It Cm {\fI#\fP}\e
 Swap from /fm/ buffer b-2 and backfill directory listing
 .It Cm vb
-Recurse into b-1 history buffer. Insert current line into ex prompt after a quit command
+Recurse into b-1 history buffer. Insert current line into ex prompt on exit
 .It Cm z1
 Set alternative keymap to Farsi keymap
 .It Cm z2
@@ -460,7 +460,7 @@ Loop through autocomplete options forward
 .It Cm <^B>
 Print autocomplete options when in vi insert
 .It Cm <^B>
-Recurse into b-1 history buffer when in ex prompt. Insert current line into ex prompt after a quit command
+Recurse into b-1 history buffer when in ex prompt. Insert current line into ex prompt on exit
 .It Cm <^A>
 Loop through lines in a history buffer b-1
 .It Cm <^Z>
@@ -684,13 +684,13 @@ Example: yank matches appending to reg 'a' and print them out.
 :g/int/ya A\e:p
 
 It is possible to nest global commands inside of global commands.
-A global command will not be executed on lines that were created 
+A global command will not be executed on lines that were created
 or deleted by a nested global command.
-When range not given, a nested global command is implied to 
-match the current line.
+When range not given, a nested global command is executed on
+the current line.
 
 Example: Nested global command
-Append "has a semicolon" to all lines that contain "int" and 
+Append "has a semicolon" to all lines that contain "int" and
 end with <;>.
 :g/int/g/;$/& A has a semicolon
 
@@ -1234,8 +1234,8 @@ some application specific tasks
 install vi to $DESTDIR$PREFIX/bin
 .It Cm ./cbuild.sh fetch
 merge commits from upstream repository
-.It Cm valgrind --tool=cachegrind --cache-sim=yes --branch-sim=yes ./vi vi.c
-performance bench test
+.It Cm ./cbuild.sh bench
+performance bench test 2000 word deletions on vi.c
 .El
 .
 .Sh PHILOSOPHY
