@@ -186,7 +186,7 @@ index 1388190..20921cc 100644
  }
  
 diff --git a/ren.c b/ren.c
-index ffa2e94..daf2a9c 100644
+index def7604..37c3810 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -241,13 +241,14 @@ int syn_blockhl;
