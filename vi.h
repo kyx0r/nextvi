@@ -454,8 +454,8 @@ struct placeholder {
 	int wid;	/* the width of the placeholder */
 	int l;		/* the length of the codepoint */
 };
-extern struct placeholder placeholders[];
-extern const int def_phlen;
+extern struct placeholder _ph[];
+extern struct placeholder *ph;
 extern int phlen;
 extern int conf_hlrev;
 char **conf_kmap(int id);
