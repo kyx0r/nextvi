@@ -1060,17 +1060,25 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
 static int ec_setenc(char *loc, char *cmd, char *arg)
 {
 	if (cmd[0] == 'p') {
-		if (!*arg)
-			phlen = def_phlen;
-		else if (phlen < LEN(ph)) {
-			ph[phlen].cp[0] = strtol(arg, &arg, 0);
-			ph[phlen].cp[1] = strtol(arg, &arg, 0);
-			ph[phlen].wid = strtol(arg, &arg, 2);
-			ph[phlen++].l = strtol(arg, &arg, 2);
-			if (strlen(arg) && strlen(arg) < LEN(ph[0].d))
-				strcpy(ph[phlen-1].d, arg);
-		} else
-			ex_print("no space for placeholder");
+		if (!*arg) {
+			if (ph != _ph)
+				free(ph);
+			phlen = LEN(_ph);
+			ph = _ph;
+			return 0;
+		} else if (ph == _ph) {
+			ph = NULL;
+			phlen = 0;
+		}
+		ph = erealloc(ph, sizeof(struct placeholder) * (phlen + 1));
+		ph[phlen].cp[0] = strtol(arg, &arg, 0);
+		ph[phlen].cp[1] = strtol(arg, &arg, 0);
+		ph[phlen].wid = strtol(arg, &arg, 0);
+		ph[phlen++].l = strtol(arg, &arg, 0);
+		if (strlen(arg) && strlen(arg) < LEN(ph[0].d))
+			strcpy(ph[phlen-1].d, arg);
+		else
+			ex_print("ph failed");
 		return 0;
 	}
 	if (cmd[1] == 'z')

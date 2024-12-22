@@ -264,13 +264,12 @@ struct dirmark dmarks[] = {
 };
 int dmarkslen = LEN(dmarks);
 
-#define DEF_PHLEN 2
-struct placeholder ph[DEF_PHLEN+5] = {
+struct placeholder _ph[2] = {
 	{{0x0,0x1f}, "^", 1, 1},
 	{{0x200c,0x200d}, "-", 1, 3},
 };
-const int def_phlen = DEF_PHLEN;
-int phlen = DEF_PHLEN;
+struct placeholder *ph = _ph;
+int phlen = LEN(_ph);
 
 char **conf_kmap(int id)
 {
