@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 0e1389b..790c72f 100644
+index 0c4ae2d..321be97 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -80,7 +80,7 @@ index 3fd6917..eb19a53 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index a6c4d9b..df9d2f9 100644
+index 5523cc7..5449390 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -488,6 +488,7 @@ extern int xhlr;

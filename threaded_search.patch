@@ -1,5 +1,5 @@
 diff --git a/cbuild.sh b/cbuild.sh
-index 77f24c4..589315d 100755
+index 2b56135..4664b5d 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -41,6 +41,7 @@ CFLAGS="\
@@ -183,7 +183,7 @@ index 3fd6917..8e11aba 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index a6c4d9b..8788917 100644
+index 5523cc7..177f838 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -241,7 +241,8 @@ void syn_addhl(char *reg, int id, int reload);
