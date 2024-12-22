@@ -1074,11 +1074,9 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
 		ph[phlen].cp[0] = strtol(arg, &arg, 0);
 		ph[phlen].cp[1] = strtol(arg, &arg, 0);
 		ph[phlen].wid = strtol(arg, &arg, 0);
-		ph[phlen++].l = strtol(arg, &arg, 0);
+		ph[phlen].l = strtol(arg, &arg, 0);
 		if (strlen(arg) && strlen(arg) < LEN(ph[0].d))
-			strcpy(ph[phlen-1].d, arg);
-		else
-			ex_print("ph failed");
+			strcpy(ph[phlen++].d, arg);
 		return 0;
 	}
 	if (cmd[1] == 'z')
