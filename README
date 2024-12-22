@@ -673,13 +673,17 @@ EX COMMANDS
 
              Use only if your terminal can render multicodepoint utf-8 (emojis).
 
-     ph [#clow] [#chigh] [#width] [#blen][*char]
-             Create new placeholders
+     ph[#clow] [#chigh] [#width] [#blen][*char]
+             Redefine placeholders
 
              Example: render 8 bit ascii (Extended ASCII) as <~>
              :ph 128 255 1 1~
              Example: flawless ISO/IEC 8859-1 (latin-1) support
              :uc:ph 128 160 1 1~
+             Example: render control byte 03 as "^C"
+             :ph 3 3 2 1^C
+             Example: disable default placeholders in conf.c
+             :ph0
              Example: reset to default as in conf.c
              :ph
 
@@ -837,16 +841,16 @@ CODE MAP
      | 505 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
-     | 294 conf.c   |  hl/ft/td config     |
+     | 293 conf.c   |  hl/ft/td config     |
      | 340 term.c   |  low level IO        |
      | 380 ren.c    |  positioning/syntax  |
      | 523 lbuf.c   |  file/line buffer    |
      | 650 uc.c     |  UTF-8 support       |
      | 658 regex.c  |  extended RE         |
      | 675 led.c    |  insert mode/output  |
-     | 1236 ex.c    |  ex options/commands |
+     | 1242 ex.c    |  ex options/commands |
      | 1956 vi.c    |  normal mode/general |
-     | 6712 total   |  wc -l *.c|sort      |
+     | 6717 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -964,4 +968,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.13.0-rc1               December 16, 2024              Linux 6.13.0-rc1
+Linux 6.13.0-rc1               December 22, 2024              Linux 6.13.0-rc1
