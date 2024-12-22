@@ -942,7 +942,7 @@ Toggle combining multicodepoint placeholders
 Use only if your terminal can render multicodepoint utf-8 (emojis).
 .Ed
 
-.It Cm ph [\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
+.It Cm ph[\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
 Redefine placeholders
 .Bd -literal
 Example: render 8 bit ascii (Extended ASCII) as <~>
@@ -952,7 +952,7 @@ Example: flawless ISO/IEC 8859-1 (latin-1) support
 Example: render control byte 03 as "^C"
 :ph 3 3 2 1^C
 Example: disable default placeholders in conf.c
-:ph 0 0 0 0~
+:ph0
 Example: reset to default as in conf.c
 :ph
 .Ed
