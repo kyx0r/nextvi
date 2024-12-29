@@ -242,10 +242,10 @@ index 1388190..6749b56 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 3fd6917..b3a0d3f 100644
+index b1c415b..71c6737 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -546,7 +546,7 @@ void vi_regput(int c, const char *s, int ln)
+@@ -542,7 +542,7 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -254,7 +254,7 @@ index 3fd6917..b3a0d3f 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -564,7 +564,7 @@ static char *file_calc(char *path)
+@@ -560,7 +560,7 @@ static char *file_calc(char *path)
  		len = strlen(dp->d_name)+1;
  		path[pathlen] = '/';
  		memcpy(&path[pathlen+1], dp->d_name, len);

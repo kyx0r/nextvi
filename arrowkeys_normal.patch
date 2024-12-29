@@ -1,8 +1,8 @@
 diff --git a/vi.c b/vi.c
-index 3fd6917..8a29663 100644
+index b1c415b..e0045d8 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -440,6 +440,28 @@ static int vi_motionln(int *row, int cmd)
+@@ -436,6 +436,28 @@ static int vi_motionln(int *row, int cmd)
  	int c = term_read();
  	int mark, mark_row, mark_off;
  	switch (c) {
@@ -31,7 +31,7 @@ index 3fd6917..8a29663 100644
  	case '\n':
  	case '+':
  	case 'j':
-@@ -695,6 +717,27 @@ static int vi_motion(int *row, int *off)
+@@ -691,6 +713,27 @@ static int vi_motion(int *row, int *off)
  	}
  	mv = term_read();
  	switch (mv) {
