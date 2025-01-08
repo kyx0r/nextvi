@@ -2,7 +2,7 @@
  * NEXTVI Editor
  *
  * Copyright (C) 2015-2019 Ali Gholami Rudi <ali at rudi dot ir>
- * Copyright (C) 2020-2024 Kyryl Melekhin <k dot melekhin at gmail dot com>
+ * Copyright (C) 2020-2025 Kyryl Melekhin <k dot melekhin at gmail dot com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1331,12 +1331,12 @@ void vi(int init)
 			xoff = noff;
 			switch (mv) {
 			case 1: /* ^a */
+				if (xrow < otop + xrows - 1)
+					break;
 			case '/':
 			case '?':
 			case 'n':
 			case 'N':
-				if (mv == 1 && xrow < otop + xrows - 1)
-					break;
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod |= 1;
 				break;
