@@ -60,7 +60,7 @@ index 0c4ae2d..a0853ac 100644
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
 diff --git a/vi.c b/vi.c
-index b1c415b..d99e4a4 100644
+index b595207..1474f8a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1927,9 +1927,11 @@ int main(int argc, char *argv[])
