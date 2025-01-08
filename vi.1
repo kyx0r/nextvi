@@ -1,4 +1,4 @@
-.Dd Dec 22, 2024
+.Dd Jan  8, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -945,16 +945,18 @@ Use only if your terminal can render multicodepoint utf-8 (emojis).
 .It Cm ph[\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
 Redefine placeholders
 .Bd -literal
+This command replaces placeholders defined in conf.c
+and subsequent :ph commands expand the list of placeholders.
 Example: render 8 bit ascii (Extended ASCII) as <~>
 :ph 128 255 1 1~
 Example: flawless ISO/IEC 8859-1 (latin-1) support
 :uc:ph 128 160 1 1~
 Example: render control byte 03 as "^C"
 :ph 3 3 2 1^C
-Example: disable default placeholders in conf.c
-:ph0
 Example: reset to default as in conf.c
 :ph
+Example: disable default placeholders in conf.c
+:ph:ph0
 .Ed
 .
 .El
@@ -975,7 +977,13 @@ Run every <!> command through an interactive shell.
 The shell will source the .rc file before command execution.
 This makes it possible to use predefined functions, aliases
 and ENV variables from the .rc file.
-Precondition:
+Precondition 1:
+	The .rc filename is shell specific, such as .bashrc in Bash
+	and .zshrc in Zsh.
+Precondition 2:
+	The environment variable $SHELL determines the default
+	shell, otherwise it defaults to /bin/sh.
+Precondition 3:
 	There must be no stdout output created by .rc file
 	for <!> commands to return expected results.
 .Ed
@@ -1214,8 +1222,8 @@ _
  658 regex.c | extended RE
  675 led.c | insert mode/output
  1242 ex.c | ex options/commands
- 1956 vi.c | normal mode/general
- 6717 total | wc -l *.c\(basort
+ 1952 vi.c | normal mode/general
+ 6713 total | wc -l *.c\(basort
 _
 .TE
 .
