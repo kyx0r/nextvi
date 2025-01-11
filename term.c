@@ -159,8 +159,8 @@ int term_read(void)
 		ibuf_pos = 0;
 	}
 	ret:
-	icmd_pos = icmd_pos % sizeof(icmd);
-	icmd[icmd_pos++] = ibuf[ibuf_pos];
+	if (icmd_pos < sizeof(icmd))
+		icmd[icmd_pos++] = ibuf[ibuf_pos];
 	return ibuf[ibuf_pos++];
 }
 

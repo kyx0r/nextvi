@@ -159,11 +159,11 @@ void led_render(char *s0, int cbeg, int cend)
 	off[cterm] = -1;
 	if (ctx < 0) {
 		o = cbeg;
-		for (i = cterm-1; i >= 0; i--, o++)
-			off[i] = o <= r->cmax ? r->col[o] : -1;
+		for (c = cterm-1; c >= 0; c--, o++)
+			off[c] = o <= r->cmax ? r->col[o] : -1;
 	} else {
-		for (i = cbeg; i < cend; i++)
-			off[i - cbeg] = i <= r->cmax ? r->col[i] : -1;
+		for (c = cbeg; c < cend; c++)
+			off[c - cbeg] = c <= r->cmax ? r->col[c] : -1;
 	}
 	if (r->cmax > cterm || cbeg) {
 		i = ctx < 0 ? cterm-1 : 0;
