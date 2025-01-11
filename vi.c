@@ -1240,7 +1240,7 @@ static int vc_replace(void)
 	return cs[0] == '\n' ? 1 : 2;
 }
 
-static char rep_cmd[4096];	/* the last command */
+static char rep_cmd[sizeof(icmd)];	/* the last command */
 static int rep_len;
 
 static void vc_repeat(void)
@@ -1787,10 +1787,8 @@ void vi(int init)
 			}
 			if (strchr("!<>AIJKOPRacdiopry", c)) {
 				rep:
-				if (icmd_pos < sizeof(rep_cmd)) {
-					memcpy(rep_cmd, icmd, icmd_pos);
-					rep_len = icmd_pos;
-				}
+				memcpy(rep_cmd, icmd, icmd_pos);
+				rep_len = icmd_pos;
 			}
 		}
 		if (xrow < 0 || xrow >= lbuf_len(xb))
