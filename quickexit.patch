@@ -19,7 +19,7 @@ index 0c4ae2d..321be97 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 9ef9a87..62af310 100644
+index eab4bb5..97aeb79 100644
 --- a/led.c
 +++ b/led.c
 @@ -380,6 +380,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
@@ -68,7 +68,7 @@ index 9ef9a87..62af310 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index b595207..8cfcac6 100644
+index edcc830..1f11a51 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
