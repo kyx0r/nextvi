@@ -500,8 +500,9 @@ Ex commands are initiated and separated by <:> prefix. Fields
 can be separated by <Space> or <Tab>. There can only be 1 separator
 in between [cmd] and [args]. To avoid ambiguity, it is recommended
 to always use a separator between [cmd] and [args] in scripts.
-Examples:
 .Bl -tag -width Ds -compact
+
+Examples:
 .It Cm :evi.c
 Evaluates to ":e vi.c"
 .It Cm :eabc
@@ -517,6 +518,7 @@ Special characters in [args] will become regular when escaped
 with <\\>.
 .Ed
 .Bl -tag -width Ds -compact
+
 .It Cm <( ^ \&! = \&[ \&] \e>
 Special characters in regex "[]" bracket exp
 .It Cm <\&( \&) { } + * \&? ^ $ \&[ \&] \&| \\\\< \\\\> \&. \e>
@@ -531,6 +533,7 @@ Characters <# %> in [args] substitute the buffer pathname.
 <%> substitutes current buffer and <#> last swapped buffer.
 It is possible to expand any arbitrary buffer by using <# %>
 followed by the buffer number.
+
 Example: print the pathname for buffer 69.
 :!echo "%69"
 
@@ -538,18 +541,29 @@ Every ex command is be able to receive data from external process
 through a special expansion character <!> which pipes the data
 into the command itself. If the closing <!> is not specified,
 the end of the line becomes a terminator.
-Example:
-Substitute the value of env var $SECRET to the value of $RANDOM.
-In this demo, we set the value of SECRET to "int" ourselves.
-:%s/!export SECRET="int" && printf "%s" $SECRET!/!printf "%s" $RANDOM!
+
+Example: Substitute "int" with the value of $RANDOM
+:%s/int/!printf "%s" $RANDOM!
+Example: Insert output of ls shell command
+:& i!ls
 .Ed
 .
 .Sh EX RANGES
 .Bd -literal -compact
 Some ex commands can be prefixed with ranges.
-Examples:
 .Ed
 .Bl -tag -width Ds -compact
+
+.It Cm [. - +][1-9 %][sep][, ;][. - +][1-9 $]
+Numeric ranges
+.It Cm </ ?>{kwd}[</ ?>]
+Search ranges
+'It Cm <'>{mark}
+Mark ranges
+.El
+.Bl -tag -width Ds -compact
+
+Examples:
 .It Cm \&.
 current position
 .It Cm \&,
