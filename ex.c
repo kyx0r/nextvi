@@ -1,6 +1,6 @@
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xleft;			/* the first visible column */
-int xquit;			/* exit if positive, force quit when negative */
+int xquit;			/* exit if positive, force quit if negative */
 int xvis;			/* visual mode */
 int xai = 1;			/* autoindent option */
 int xic = 1;			/* ignorecase option */
@@ -619,9 +619,10 @@ static int ec_print(char *loc, char *cmd, char *arg)
 {
 	int i, beg, end, o1 = -1, o2 = -1;
 	char *o;
-	if (!cmd[0] && !loc[0])
-		if (xrow >= lbuf_len(xb))
-			return 1;
+	if (!cmd[0] && !loc[0] && arg[0]) {
+		ex_print("unknown command");
+		return 1;
+	}
 	if (ex_oregion(loc, &beg, &end, &o1, &o2))
 		return 1;
 	if (!cmd[0] && loc[0]) {
@@ -1095,93 +1096,92 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
 static struct excmd {
 	char *name;
 	int (*ec)(char *loc, char *cmd, char *arg);
-} excmds[] = {
-	{"f", ec_search},
-	{"b", ec_buffer},
-	{"bp", ec_setpath},
-	{"bs", ec_save},
-	{"p", ec_print},
-	{"a", ec_insert},
-	{"ea", ec_editapprox},
-	{"ea!", ec_editapprox},
-	{"i", ec_insert},
-	{"d", ec_delete},
-	{"c", ec_insert},
-	{"e", ec_edit},
-	{"e!", ec_edit},
-	{"g", ec_glob},
-	{"g!", ec_glob},
-	{"=", ec_lnum},
-	{"k", ec_mark},
+} excmds[] = { /* commands must be sorted longest of its kind topmost */
 	{"@", ec_termexec},
 	{"&", ec_termexec},
-	{"pu", ec_put},
-	{"q", ec_quit},
-	{"q!", ec_quit},
-	{"r", ec_read},
-	{"w", ec_write},
-	{"w!", ec_write},
-	{"wq", ec_write},
-	{"wq!", ec_write},
-	{"u", ec_undoredo},
-	{"rd", ec_undoredo},
-	{"se", ec_set},
-	{"s", ec_substitute},
-	{"x", ec_write},
-	{"x!", ec_write},
-	{"ya", ec_yank},
-	{"ya!", ec_yank},
 	{"!", ec_exec},
+	{"bp", ec_setpath},
+	{"bs", ec_save},
+	{"bx", ec_setbufsmax},
+	{"b", ec_buffer},
+	{"pu", ec_put},
+	{"ph", ec_setenc},
+	{"p", ec_print},
+	{"ac", ec_setacreg},
+	{"a", ec_insert},
+	{"ea!", ec_editapprox},
+	{"ea", ec_editapprox},
+	{"e!", ec_edit},
+	{"e", ec_edit},
 	{"ft", ec_ft},
-	{"cm", ec_cmap},
-	{"cm!", ec_cmap},
 	{"fd", ec_setdir},
 	{"fp", ec_setdir},
-	{"cd", ec_chdir},
+	{"f", ec_search},
 	{"inc", ec_setincl},
+	{"i", ec_insert},
+	{"d", ec_delete},
+	{"g!", ec_glob},
+	{"g", ec_glob},
+	{"k", ec_mark},
+	{"q!", ec_quit},
+	{"q", ec_quit},
 	{"reg", ec_regprint},
-	{"bx", ec_setbufsmax},
-	{"ac", ec_setacreg},
+	{"rd", ec_undoredo},
+	{"r", ec_read},
+	{"wq!", ec_write},
+	{"wq", ec_write},
+	{"w!", ec_write},
+	{"w", ec_write},
 	{"uc", ec_setenc},
 	{"uz", ec_setenc},
 	{"ub", ec_setenc},
-	{"ph", ec_setenc},
-	{"", ec_print},
+	{"u", ec_undoredo},
+	{"se", ec_set},
+	{"s", ec_substitute},
+	{"x!", ec_write},
+	{"x", ec_write},
+	{"ya!", ec_yank},
+	{"ya", ec_yank},
+	{"cm!", ec_cmap},
+	{"cm", ec_cmap},
+	{"cd", ec_chdir},
+	{"c", ec_insert},
+	{"=", ec_lnum},
+	{"", ec_print}, /* do not remove */
 };
 
-static int ex_idx(const char *cmd)
+/* parse ex command until xsep or null. */
+static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
 {
-	for (int i = 0; i < LEN(excmds); i++)
-		if (!strcmp(excmds[i].name, cmd))
-			return i;
-	return -1;
-}
-
-/* parse ex command until | or eol. */
-static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
-{
+	int i, j;
 	while (*src == xsep || *src == ' ' || *src == '\t')
 		src++;
 	while (*src && strchr(" \t0123456789+-.,/?$';%", *src)) {
 		if (*src == '\'' && src[1])
 			*loc++ = *src++;
 		if (*src == '/' || *src == '?') {
-			int d = *src;
+			j = *src;
 			do {
 				if (*src == '\\' && src[1])
 					*loc++ = *src++;
 				*loc++ = *src++;
-			} while (*src && *src != d);
+			} while (*src && *src != j);
 			if (*src)
 				*loc++ = *src++;
 		} else
 			*loc++ = *src++;
 	}
-	while (*src >= 'a' && *src <= 'z')
-		*cmd++ = *src++;
-	if (*src == '!' || *src == '=' || *src == '&' || *src == '@')
-		*cmd++ = *src++;
-	while (*src == ' ' || *src == '\t')
+	for (i = 0; i < LEN(excmds); i++) {
+		for (j = 0; excmds[i].name[j]; j++)
+			if (!src[j] || src[j] != excmds[i].name[j])
+				break;
+		if (!excmds[i].name[j]) {
+			*idx = i;
+			src += j;
+			break;
+		}
+	}
+	if (*src == ' ' || *src == '\t')
 		src++;
 	while (*src && *src != xsep) {
 		if (*src == '\\' && src[1] == xsep)
@@ -1189,7 +1189,6 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 		*arg++ = *src++;
 	}
 	*loc = '\0';
-	*cmd = '\0';
 	*arg = '\0';
 	return src;
 }
@@ -1197,14 +1196,13 @@ static const char *ex_parse(const char *src, char *loc, char *cmd, char *arg)
 /* execute a single ex command */
 int ex_exec(const char *ln)
 {
-	int ret = 0, len = strlen(ln) + 1;
-	char loc[len], cmd[len], arg[len];
+	int ret = 0, idx = 0, len = strlen(ln) + 1;
+	char loc[len], arg[len];
 	while (*ln) {
-		ln = ex_parse(ln, loc, cmd, arg);
+		ln = ex_parse(ln, loc, &idx, arg);
 		char *ecmd = ex_pathexpand(arg);
-		int idx = ex_idx(cmd);
-		if (idx >= 0 && ecmd)
-			ret = excmds[idx].ec(loc, cmd, ecmd);
+		if (ecmd)
+			ret = excmds[idx].ec(loc, excmds[idx].name, ecmd);
 		free(ecmd);
 	}
 	return ret;
