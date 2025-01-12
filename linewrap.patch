@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 0c4ae2d..234b646 100644
+index 9a9d9b6..2417138 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
@@ -10,7 +10,7 @@ index 0c4ae2d..234b646 100644
  char *xregs[256];		/* string registers */
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -1092,6 +1093,21 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1093,6 +1094,21 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -32,15 +32,15 @@ index 0c4ae2d..234b646 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1135,6 +1151,8 @@ static struct excmd {
+@@ -1114,6 +1130,8 @@ static struct excmd {
+ 	{"e!", ec_edit},
+ 	{"e", ec_edit},
  	{"ft", ec_ft},
- 	{"cm", ec_cmap},
- 	{"cm!", ec_cmap},
 +	{"lw", ec_linewrap},
 +	{"lj", ec_linewrap},
  	{"fd", ec_setdir},
  	{"fp", ec_setdir},
- 	{"cd", ec_chdir},
+ 	{"f", ec_search},
 diff --git a/lbuf.c b/lbuf.c
 index 6e7002d..99d32b3 100644
 --- a/lbuf.c
