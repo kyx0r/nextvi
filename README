@@ -877,15 +877,15 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 293 conf.c   |  hl/ft/td config     |
-     | 345 term.c   |  low level IO        |
+     | 341 term.c   |  low level IO        |
      | 380 ren.c    |  positioning/syntax  |
      | 523 lbuf.c   |  file/line buffer    |
      | 650 uc.c     |  UTF-8 support       |
      | 658 regex.c  |  extended RE         |
      | 675 led.c    |  insert mode/output  |
      | 1240 ex.c    |  ex options/commands |
-     | 1950 vi.c    |  normal mode/general |
-     | 6714 total   |  wc -l *.c|sort      |
+     | 1951 vi.c    |  normal mode/general |
+     | 6711 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1003,4 +1003,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.13.0-rc1               January 13, 2025               Linux 6.13.0-rc1
+Linux 6.13.0-rc1               January 14, 2025               Linux 6.13.0-rc1
