@@ -53,7 +53,7 @@ index 9a9d9b6..f7bb111 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 7a761c1..aa668a2 100644
+index 83b9570..9ad5af5 100644
 --- a/term.c
 +++ b/term.c
 @@ -2,6 +2,8 @@ sbuf *term_sbuf;
@@ -62,13 +62,16 @@ index 7a761c1..aa668a2 100644
  static struct termios termios;
 +int stdin_fd;
 +static int isig;
- 
- void term_init(void)
- {
-@@ -10,20 +12,24 @@ void term_init(void)
+ static unsigned char *ibuf;		/* input character buffer */
+ static unsigned int ibuf_sz = 128;	/* input buffer size */
+ unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
+@@ -15,22 +17,26 @@ void term_init(void)
+ 		return;
  	struct winsize win;
  	struct termios newtermios;
- 	sbufn_make(term_sbuf, 2048)
+-	sbuf_make(term_sbuf, 2048)
++	sbufn_make(term_sbuf, 2048)
+ 	ibuf = emalloc(128);
 -	tcgetattr(0, &termios);
 +	tcgetattr(stdin_fd, &termios);
  	newtermios = termios;
@@ -94,16 +97,16 @@ index 7a761c1..aa668a2 100644
  }
  
  void term_done(void)
-@@ -32,7 +38,7 @@ void term_done(void)
- 		return;
+@@ -40,7 +46,7 @@ void term_done(void)
  	term_commit();
  	sbuf_free(term_sbuf)
+ 	free(ibuf);
 -	tcsetattr(0, 0, &termios);
 +	tcsetattr(stdin_fd, 0, &termios);
  }
  
  void term_clean(void)
-@@ -142,12 +148,12 @@ int term_read(void)
+@@ -152,12 +158,12 @@ int term_read(void)
  			if (texec == '&')
  				goto err;
  		}
@@ -118,8 +121,8 @@ index 7a761c1..aa668a2 100644
 +			xquit = !isatty(stdin_fd) ? -1 : xquit;
  			err:
  			*ibuf = 0;
- 		} else if (texec && ibuf_pos < sizeof(ibuf)) {
-@@ -327,7 +333,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+ 		}
+@@ -332,7 +338,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
