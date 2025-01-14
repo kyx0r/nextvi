@@ -495,7 +495,7 @@ into a purely command-line interface (CLI) when desired.
 .Sh EX PARSING
 .Bd -literal -compact
 Parsing follows the structure:
-[<:>][range][sep][cmd][<sep>][args][<:>]
+[<:>][\fIrange\fP][\fIsep\fIP][\fIcmd\fIP][<\fIsep\fP>][args][<:>]
 Ex commands are initiated and separated by <:> prefix. Fields
 can be separated by <Space> or <Tab>. There can only be 1 separator
 in between [cmd] and [args]. To avoid ambiguity, it is recommended
@@ -554,11 +554,11 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [. - +][1-9 %][sep][, ;][. - +][1-9 $]
+.It Cm [. - +][1-9 %][\fIsep\fP][, ;][. - +][1-9 $]
 Numeric ranges
-.It Cm </ ?>{kwd}[</ ?>]
+.It Cm </ ?>{\fIkwd\fP}[</ ?>]
 Search ranges
-'It Cm <'>{mark}
+'It Cm <'>{\fImark\fP}
 Mark ranges
 .El
 .Bl -tag -width Ds -compact
