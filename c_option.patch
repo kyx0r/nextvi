@@ -19,7 +19,7 @@ index 9a9d9b6..deb0c3a 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index edcc830..235bf87 100644
+index 5d9d8fc..d79dd5a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1904,7 +1904,8 @@ static int setup_signals(void) {
@@ -32,7 +32,7 @@ index edcc830..235bf87 100644
  	if (!setup_signals())
  		return EXIT_FAILURE;
  	dir_init();
-@@ -1925,15 +1926,26 @@ int main(int argc, char *argv[])
+@@ -1925,16 +1926,27 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -56,6 +56,7 @@ index edcc830..235bf87 100644
  			}
  		}
  	}
+ 	ibuf = emalloc(ibuf_sz);
  	term_init();
 -	ex_init(argv + i, argc - i);
 +	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
@@ -63,7 +64,7 @@ index edcc830..235bf87 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 5523cc7..29d3918 100644
+index 35810e4..029d781 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -396,7 +396,7 @@ int ex_exec(const char *ln);
