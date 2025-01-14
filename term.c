@@ -16,7 +16,8 @@ void term_init(void)
 	struct winsize win;
 	struct termios newtermios;
 	sbuf_make(term_sbuf, 2048)
-	ibuf = emalloc(128);
+	if (!ibuf)
+		ibuf = emalloc(ibuf_sz);
 	tcgetattr(0, &termios);
 	newtermios = termios;
 	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
@@ -39,7 +40,6 @@ void term_done(void)
 		return;
 	term_commit();
 	sbuf_free(term_sbuf)
-	free(ibuf);
 	tcsetattr(0, 0, &termios);
 }
 
