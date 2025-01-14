@@ -68,7 +68,7 @@ index eab4bb5..97aeb79 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index edcc830..1f11a51 100644
+index 5d9d8fc..360bc5d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
@@ -80,7 +80,7 @@ index edcc830..1f11a51 100644
  #include <termios.h>
  #include <sys/stat.h>
 diff --git a/vi.h b/vi.h
-index 5523cc7..5449390 100644
+index 35810e4..9ec935e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -488,6 +488,7 @@ extern int xhlr;

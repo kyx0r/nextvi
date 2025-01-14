@@ -60,7 +60,7 @@ index 9a9d9b6..16023ce 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index edcc830..14f10d5 100644
+index 5d9d8fc..6e89696 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1925,9 +1925,11 @@ int main(int argc, char *argv[])
@@ -77,7 +77,7 @@ index edcc830..14f10d5 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 5523cc7..2575f05 100644
+index 35810e4..a2d61aa 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -364,6 +364,7 @@ struct buf {

@@ -62,10 +62,10 @@ index 9a9d9b6..62453af 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 2b07c09..2be702f 100644
+index 8583b83..4700d6f 100644
 --- a/term.c
 +++ b/term.c
-@@ -227,7 +227,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -223,7 +223,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}
@@ -78,7 +78,7 @@ index 2b07c09..2be702f 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 5523cc7..cd5c5d2 100644
+index 35810e4..0e41694 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

@@ -132,7 +132,7 @@ index 6e7002d..99d32b3 100644
  void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
  {
 diff --git a/vi.h b/vi.h
-index 5523cc7..3e23f4d 100644
+index 35810e4..ee02ad8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -140,6 +140,7 @@ struct lopt {
