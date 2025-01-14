@@ -2,11 +2,11 @@ sbuf *term_sbuf;
 int term_record;
 int xrows, xcols;
 static struct termios termios;
-static unsigned char *ibuf;		/* input character buffer */
-static unsigned int ibuf_sz = 128;	/* input buffer size */
-unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
-unsigned char icmd[4096];		/* read after the last term_cmd() */
-unsigned int icmd_pos;			/* icmd[] position */
+static unsigned char *ibuf;
+static unsigned int ibuf_sz = 128;
+unsigned int ibuf_pos, ibuf_cnt;
+unsigned char icmd[4096];
+unsigned int icmd_pos;
 unsigned int tibuf_pos, tibuf_cnt, texec, tn;
 
 void term_init(void)
