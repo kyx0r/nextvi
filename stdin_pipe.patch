@@ -53,18 +53,18 @@ index 9a9d9b6..f7bb111 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 2b07c09..b2b4cc4 100644
+index 1fcb15f..3db389b 100644
 --- a/term.c
 +++ b/term.c
-@@ -2,6 +2,8 @@ sbuf *term_sbuf;
- int term_record;
- int xrows, xcols;
- static struct termios termios;
+@@ -8,6 +8,8 @@ unsigned int ibuf_pos, ibuf_cnt;
+ unsigned char icmd[4096];
+ unsigned int icmd_pos;
+ unsigned int tibuf_pos, tibuf_cnt, texec, tn;
 +int stdin_fd;
 +static int isig;
- static unsigned char *ibuf;		/* input character buffer */
- static unsigned int ibuf_sz = 128;	/* input buffer size */
- unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
+ 
+ void term_init(void)
+ {
 @@ -15,23 +17,27 @@ void term_init(void)
  		return;
  	struct winsize win;
