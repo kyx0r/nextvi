@@ -53,7 +53,7 @@ index 9a9d9b6..f7bb111 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 83b9570..9ad5af5 100644
+index 2b07c09..b2b4cc4 100644
 --- a/term.c
 +++ b/term.c
 @@ -2,6 +2,8 @@ sbuf *term_sbuf;
@@ -65,13 +65,14 @@ index 83b9570..9ad5af5 100644
  static unsigned char *ibuf;		/* input character buffer */
  static unsigned int ibuf_sz = 128;	/* input buffer size */
  unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
-@@ -15,22 +17,26 @@ void term_init(void)
+@@ -15,23 +17,27 @@ void term_init(void)
  		return;
  	struct winsize win;
  	struct termios newtermios;
 -	sbuf_make(term_sbuf, 2048)
 +	sbufn_make(term_sbuf, 2048)
- 	ibuf = emalloc(128);
+ 	if (!ibuf)
+ 		ibuf = emalloc(ibuf_sz);
 -	tcgetattr(0, &termios);
 +	tcgetattr(stdin_fd, &termios);
  	newtermios = termios;
@@ -98,9 +99,9 @@ index 83b9570..9ad5af5 100644
  
  void term_done(void)
 @@ -40,7 +46,7 @@ void term_done(void)
+ 		return;
  	term_commit();
  	sbuf_free(term_sbuf)
- 	free(ibuf);
 -	tcsetattr(0, 0, &termios);
 +	tcsetattr(stdin_fd, 0, &termios);
  }
