@@ -1,13 +1,10 @@
+static struct termios termios;
 sbuf *term_sbuf;
 int term_record;
 int xrows, xcols;
-static struct termios termios;
-static unsigned char *ibuf;
-static unsigned int ibuf_sz = 128;
-unsigned int ibuf_pos, ibuf_cnt;
-unsigned char icmd[4096];
-unsigned int icmd_pos;
-unsigned int tibuf_pos, tibuf_cnt, texec, tn;
+unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+unsigned char *ibuf, icmd[4096];
+unsigned int texec, tn;
 
 void term_init(void)
 {
@@ -16,8 +13,6 @@ void term_init(void)
 	struct winsize win;
 	struct termios newtermios;
 	sbuf_make(term_sbuf, 2048)
-	if (!ibuf)
-		ibuf = emalloc(ibuf_sz);
 	tcgetattr(0, &termios);
 	newtermios = termios;
 	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
@@ -113,6 +108,7 @@ void term_pos(int r, int c)
 /* read s before reading from the terminal */
 void term_push(char *s, unsigned int n)
 {
+	static unsigned int tibuf_pos, tibuf_cnt;
 	if (texec == '@' && xquit > 0) {
 		xquit = 0;
 		tn = 0;
