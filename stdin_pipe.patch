@@ -53,27 +53,25 @@ index 9a9d9b6..f7bb111 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 1fcb15f..3db389b 100644
+index 8583b83..32507e8 100644
 --- a/term.c
 +++ b/term.c
-@@ -8,6 +8,8 @@ unsigned int ibuf_pos, ibuf_cnt;
- unsigned char icmd[4096];
- unsigned int icmd_pos;
- unsigned int tibuf_pos, tibuf_cnt, texec, tn;
+@@ -5,6 +5,8 @@ int xrows, xcols;
+ unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+ unsigned char *ibuf, icmd[4096];
+ unsigned int texec, tn;
 +int stdin_fd;
 +static int isig;
  
  void term_init(void)
  {
-@@ -15,23 +17,27 @@ void term_init(void)
+@@ -12,21 +14,25 @@ void term_init(void)
  		return;
  	struct winsize win;
  	struct termios newtermios;
 -	sbuf_make(term_sbuf, 2048)
-+	sbufn_make(term_sbuf, 2048)
- 	if (!ibuf)
- 		ibuf = emalloc(ibuf_sz);
 -	tcgetattr(0, &termios);
++	sbufn_make(term_sbuf, 2048)
 +	tcgetattr(stdin_fd, &termios);
  	newtermios = termios;
 -	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
@@ -98,7 +96,7 @@ index 1fcb15f..3db389b 100644
  }
  
  void term_done(void)
-@@ -40,7 +46,7 @@ void term_done(void)
+@@ -35,7 +41,7 @@ void term_done(void)
  		return;
  	term_commit();
  	sbuf_free(term_sbuf)
@@ -107,7 +105,7 @@ index 1fcb15f..3db389b 100644
  }
  
  void term_clean(void)
-@@ -152,12 +158,12 @@ int term_read(void)
+@@ -148,12 +154,12 @@ int term_read(void)
  			if (texec == '&')
  				goto err;
  		}
@@ -123,7 +121,7 @@ index 1fcb15f..3db389b 100644
  			err:
  			*ibuf = 0;
  		}
-@@ -332,7 +338,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -328,7 +334,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -133,7 +131,7 @@ index 1fcb15f..3db389b 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index edcc830..dded623 100644
+index 5d9d8fc..430550a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1897,7 +1897,8 @@ static int setup_signals(void) {
@@ -157,7 +155,7 @@ index edcc830..dded623 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 5523cc7..038d3d9 100644
+index 35810e4..5da72fa 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -468,6 +468,7 @@ void vi_regput(int c, const char *s, int ln);
