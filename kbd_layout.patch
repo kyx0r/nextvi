@@ -17,18 +17,12 @@ index d025f5f..e549d13 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index 7a761c1..4ee0ab4 100644
+index 83b9570..548088e 100644
 --- a/term.c
 +++ b/term.c
-@@ -151,10 +151,14 @@ int term_read(void)
+@@ -161,6 +161,8 @@ int term_read(void)
  			err:
  			*ibuf = 0;
- 		} else if (texec && ibuf_pos < sizeof(ibuf)) {
-+			if (*ibuf > 0 && conf_kmap(0)[*ibuf])
-+				*ibuf = *conf_kmap(0)[*ibuf];
- 			ibuf_cnt++;
- 			ibuf[ibuf_pos] = *ibuf;
- 			goto ret;
  		}
 +		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 +			*ibuf = *conf_kmap(0)[*ibuf];
