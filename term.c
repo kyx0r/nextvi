@@ -2,6 +2,12 @@ sbuf *term_sbuf;
 int term_record;
 int xrows, xcols;
 static struct termios termios;
+static unsigned char *ibuf;		/* input character buffer */
+static unsigned int ibuf_sz = 128;	/* input buffer size */
+unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
+unsigned char icmd[4096];		/* read after the last term_cmd() */
+unsigned int icmd_pos;			/* icmd[] position */
+unsigned int tibuf_pos, tibuf_cnt, texec, tn;
 
 void term_init(void)
 {
@@ -9,7 +15,9 @@ void term_init(void)
 		return;
 	struct winsize win;
 	struct termios newtermios;
-	sbufn_make(term_sbuf, 2048)
+	sbuf_make(term_sbuf, 2048)
+	if (!ibuf)
+		ibuf = emalloc(ibuf_sz);
 	tcgetattr(0, &termios);
 	newtermios = termios;
 	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
@@ -102,19 +110,20 @@ void term_pos(int r, int c)
 	}
 }
 
-static unsigned char ibuf[4096];	/* input character buffer */
-unsigned int ibuf_pos, ibuf_cnt;	/* ibuf[] position and length */
-unsigned char icmd[4096];		/* read after the last term_cmd() */
-unsigned int icmd_pos;			/* icmd[] position */
-unsigned int tibuf_pos, texec, tn;
-
 /* read s before reading from the terminal */
 void term_push(char *s, unsigned int n)
 {
-	n = MIN(n, sizeof(ibuf) - ibuf_cnt);
+	if (texec == '@' && xquit > 0) {
+		xquit = 0;
+		tn = 0;
+		ibuf_cnt = tibuf_cnt;
+		ibuf_pos = tibuf_cnt;
+	}
+	if (ibuf_cnt + n >= ibuf_sz || ibuf_sz - ibuf_cnt + n > 128) {
+		ibuf_sz = ibuf_cnt + n + 128;
+		ibuf = erealloc(ibuf, ibuf_sz);
+	}
 	if (texec) {
-		if (texec == '@' && n && xquit > 0)
-			xquit = 0;
 		if (tibuf_pos != ibuf_pos)
 			tn = 0;
 		memmove(ibuf + ibuf_pos + n + tn,
@@ -124,6 +133,7 @@ void term_push(char *s, unsigned int n)
 		tibuf_pos = ibuf_pos;
 	} else
 		memcpy(ibuf + ibuf_cnt, s, n);
+	tibuf_cnt = ibuf_cnt;
 	ibuf_cnt += n;
 }
 
@@ -150,15 +160,10 @@ int term_read(void)
 			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 			err:
 			*ibuf = 0;
-		} else if (texec && ibuf_pos < sizeof(ibuf)) {
-			ibuf_cnt++;
-			ibuf[ibuf_pos] = *ibuf;
-			goto ret;
 		}
 		ibuf_cnt = 1;
 		ibuf_pos = 0;
 	}
-	ret:
 	if (icmd_pos < sizeof(icmd))
 		icmd[icmd_pos++] = ibuf[ibuf_pos];
 	return ibuf[ibuf_pos++];
