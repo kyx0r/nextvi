@@ -1932,6 +1932,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
+	ibuf = emalloc(ibuf_sz);
 	term_init();
 	ex_init(argv + i, argc - i);
 	if (xvis & 4)
