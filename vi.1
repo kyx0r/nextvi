@@ -378,9 +378,9 @@ Suspend vi
 .It Cm <^L>
 Force redraw whole screen and update terminal dimensions
 .It Cm qq
-Exit and clean terminal, force quit in a & macro
+Exit and clean terminal, force quit in an & macro
 .It Cm zz
-Exit and submit history command, force quit in a & macro
+Exit and submit history command, force quit in an & macro
 .It Cm ZZ
 Exit and soft write to a file
 .El
@@ -497,7 +497,7 @@ into a purely command-line interface (CLI) when desired.
 Parsing follows the structure:
 [<:>][\fIrange\fP][\fIsep\fP][\fIcmd\fP][<\fIsep\fP>][\fIargs\fP][<:>]
 Ex commands are initiated and separated by <:> prefix. Fields
-can be separated by <Space> or <Tab>. There can only be 1 separator
+can be separated by <Space> or <Tab>. There can only be one separator
 in between [cmd] and [args]. To avoid ambiguity, it is recommended
 to always use a separator between [cmd] and [args] in scripts.
 .Bl -tag -width Ds -compact
@@ -625,7 +625,7 @@ Print currently active buffers state or switch to a buffer
 Example: switch to the 5th buffer
 :b5
 
-There are 2 temporary buffers which are separate from
+There are two temporary buffers which are separate from
 the main buffers.
 b-1 = /hist/ ex history buffer
 b-2 = /fm/ directory listing buffer
@@ -658,7 +658,7 @@ Example: backfill b-2 using :fd
 Example: backfill b-2 using find
 :b-2:1,$!find .
 
-If the substring matches more than 1 filename, a prompt will
+If the substring matches more than one filename, a prompt will
 be shown. Submit using numbers 0-9 (higher ascii values work
 too (<^C> to cancel)). Passing an extra arg to :ea in form of
 a number will bypass the prompt and open the corresponding file.
