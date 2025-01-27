@@ -242,7 +242,7 @@ index 1388190..6749b56 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 5d9d8fc..d280edb 100644
+index 6b1077d..8c15535 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -542,7 +542,7 @@ void vi_regput(int c, const char *s, int ln)
@@ -254,15 +254,15 @@ index 5d9d8fc..d280edb 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -560,7 +560,7 @@ static char *file_calc(char *path)
- 		len = strlen(dp->d_name)+1;
- 		path[pathlen] = '/';
- 		memcpy(&path[pathlen+1], dp->d_name, len);
--		if (fsincl && rset_find(fsincl, path, NULL, 0) < 0)
-+		if (fsincl && rstr_find(fsincl, path, NULL, 0) < 0)
- 			continue;
- 		if (lstat(path, &statbuf) >= 0 && S_ISREG(statbuf.st_mode))
- 			temp_write(1, path);
+@@ -580,7 +580,7 @@ void dir_calc(char *path)
+ 				plen[i] = pathlen + len;
+ 				memcpy(ptrs[i++], cpath, pathlen + len);
+ 			} else if (ret >= 0 && S_ISREG(statbuf.st_mode))
+-				if (!fsincl || rset_find(fsincl, cpath, NULL, 0) >= 0)
++				if (!fsincl || rstr_find(fsincl, cpath, NULL, 0) >= 0)
+ 					temp_write(1, cpath);
+ 		}
+ 		closedir(dp);
 diff --git a/vi.h b/vi.h
 index 35810e4..04993cd 100644
 --- a/vi.h
