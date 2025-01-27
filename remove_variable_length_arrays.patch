@@ -234,7 +234,7 @@ index def7604..37c3810 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 5d9d8fc..a7ff641 100644
+index 6b1077d..aa4c4f0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -160,7 +160,8 @@ static void vi_drawrow(int row)
@@ -256,7 +256,7 @@ index 5d9d8fc..a7ff641 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1396,10 +1399,11 @@ void vi(int init)
+@@ -1383,10 +1386,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -269,7 +269,7 @@ index 5d9d8fc..a7ff641 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1534,7 +1538,7 @@ void vi(int init)
+@@ -1521,7 +1525,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -278,7 +278,7 @@ index 5d9d8fc..a7ff641 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg1, buf+4);
  					strcat(buf1, "s/");
-@@ -1544,10 +1548,11 @@ void vi(int init)
+@@ -1531,10 +1535,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -291,7 +291,7 @@ index 5d9d8fc..a7ff641 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1555,6 +1560,7 @@ void vi(int init)
+@@ -1542,6 +1547,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
