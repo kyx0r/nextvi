@@ -28,11 +28,11 @@ index 9a9d9b6..c7c2364 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 6b1077d..6a673b3 100644
+index fb0dcc4..3287673 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -594,12 +594,12 @@ void dir_calc(char *path)
- 	}
+@@ -602,12 +602,12 @@ void dir_calc(char *path)
+ 	free(sb->s);
  }
  
 -#define fssearch() \
@@ -46,7 +46,7 @@ index 6b1077d..6a673b3 100644
  	*row = xrow; *off = xoff; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -610,14 +610,14 @@ if (ret && xrow) { \
+@@ -618,14 +618,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -64,7 +64,7 @@ index 6b1077d..6a673b3 100644
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -633,7 +633,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -641,7 +641,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
  		path = tempbufs[1].lb->ln[fspos];
@@ -73,7 +73,7 @@ index 6b1077d..6a673b3 100644
  	}
  	return 0;
  }
-@@ -748,6 +748,7 @@ static int vi_motion(int *row, int *off)
+@@ -756,6 +756,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -81,7 +81,7 @@ index 6b1077d..6a673b3 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -766,8 +767,44 @@ static int vi_motion(int *row, int *off)
+@@ -774,8 +775,44 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -127,7 +127,7 @@ index 6b1077d..6a673b3 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1386,7 +1423,17 @@ void vi(int init)
+@@ -1394,7 +1431,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -146,7 +146,7 @@ index 6b1077d..6a673b3 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg1 ? -vi_cndir : vi_cndir;
-@@ -1543,6 +1590,10 @@ void vi(int init)
+@@ -1551,6 +1598,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index 6b1077d..6a673b3 100644
  				default:
  					term_dec()
  				}
-@@ -1898,6 +1949,7 @@ int main(int argc, char *argv[])
+@@ -1906,6 +1957,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
