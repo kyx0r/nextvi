@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 9a9d9b6..16023ce 100644
+index 7ca9c44..b6a33dd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ static int xbufsmax;		/* number of buffers */
@@ -20,11 +20,11 @@ index 9a9d9b6..16023ce 100644
  
 @@ -411,6 +413,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
- 		cd = 3; /* XXX: sigh... */
+ 		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
 +	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 +		ex_buf->readonly = 1;
- 	readfile(rd =)
+ 	readfile(rd =, cd == 3)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
 @@ -542,6 +546,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
@@ -60,10 +60,10 @@ index 9a9d9b6..16023ce 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index fb0dcc4..8be4488 100644
+index fccb6ba..92e2504 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1920,9 +1920,11 @@ int main(int argc, char *argv[])
+@@ -1921,9 +1921,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
