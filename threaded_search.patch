@@ -11,10 +11,10 @@ index 2b56135..4664b5d 100755
  
  : "${CC:=cc}"
 diff --git a/lbuf.c b/lbuf.c
-index 6e7002d..9b3fcd6 100644
+index 0649f71..debb5f8 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -361,34 +361,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -359,34 +359,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -171,10 +171,10 @@ index 0da830f..7cb6143 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index fb0dcc4..cddf842 100644
+index fccb6ba..97bb7e7 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -30,6 +30,7 @@
+@@ -31,6 +31,7 @@
  #include <sys/stat.h>
  #include <sys/ioctl.h>
  #include <sys/wait.h>

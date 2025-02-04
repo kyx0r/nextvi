@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 9a9d9b6..2417138 100644
+index 7ca9c44..9512615 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
@@ -42,7 +42,7 @@ index 9a9d9b6..2417138 100644
  	{"fp", ec_setdir},
  	{"f", ec_search},
 diff --git a/lbuf.c b/lbuf.c
-index 6e7002d..99d32b3 100644
+index 0649f71..6b4e277 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -75,6 +75,11 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
@@ -77,7 +77,7 @@ index 6e7002d..99d32b3 100644
  	rstate->s = NULL; /* there is no guarantee malloc not giving same ptr back */
  	if (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
  		int nsz = lb->ln_n + n_ins - n_del + 512;
-@@ -190,7 +197,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+@@ -188,7 +195,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lbuf->ln[i];
  		long nw = 0;
@@ -86,7 +86,7 @@ index 6e7002d..99d32b3 100644
  		while (nw < nl) {
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
-@@ -201,6 +208,44 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+@@ -199,6 +206,44 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
  	return 0;
  }
  

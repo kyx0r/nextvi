@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 9a9d9b6..f7bb111 100644
+index 7ca9c44..30551eb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -396,7 +396,9 @@ int ex_edit(const char *path, int len)
@@ -131,10 +131,10 @@ index 8583b83..32507e8 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index fb0dcc4..c25ae2a 100644
+index fccb6ba..e8d7dea 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1892,7 +1892,8 @@ static int setup_signals(void) {
+@@ -1893,7 +1893,8 @@ static int setup_signals(void) {
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -144,7 +144,7 @@ index fb0dcc4..c25ae2a 100644
  		return 0;
  	return 1;
  }
-@@ -1910,7 +1911,8 @@ int main(int argc, char *argv[])
+@@ -1911,7 +1912,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
