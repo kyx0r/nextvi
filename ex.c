@@ -370,10 +370,10 @@ void ex_bufpostfix(struct buf *p, int clear)
 	lbuf_saved(p->lb, clear);
 }
 
-#define readfile(errchk) \
+#define readfile(errchk, init) \
 fd = open(ex_path, O_RDONLY); \
 if (fd >= 0) { \
-	errchk lbuf_rd(xb, fd, 0, lbuf_len(xb), 1); \
+	errchk lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \
 	close(fd); \
 } \
 
@@ -389,7 +389,7 @@ int ex_edit(const char *path, int len)
 		return 1;
 	}
 	bufs_switch(bufs_open(path, len));
-	readfile(/**/)
+	readfile(/**/, 1)
 	return 0;
 }
 
@@ -409,9 +409,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 		return 1;
 	} else if (len || !xbufcur || !strchr(cmd, '!')) {
 		bufs_switch(bufs_open(arg+cd, len));
-		cd = 3; /* XXX: sigh... */
+		cd = 3; /* XXX: quick hack to indicate new lbuf */
 	}
-	readfile(rd =)
+	readfile(rd =, cd == 3)
 	if (cd == 3 || (!rd && fd >= 0)) {
 		ex_bufpostfix(ex_buf, arg[0]);
 		syn_setft(ex_ft);
