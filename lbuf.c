@@ -168,16 +168,14 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init)
 {
 	long nr;
-	sbuf_smake(sb, 1000000)
+	sbuf_smake(sb, 1048575)  /* caps at 2147481600 on 32 bit */
 	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
-		if (sb->s_n + nr >= sb->s_sz) {
-			int newsz = NEXTSZ((unsigned int)sb->s_sz, (unsigned int)sb->s_sz + 1);
-			if (newsz < 0)
-				break; /* can't read files > ~2GB */
-			sb->s_n += nr;
-			sbuf_extend(sb, newsz)
-		} else
-			sb->s_n += nr;
+		sb->s_n += nr;
+		if (sb->s_n >= sb->s_sz) {
+			if (sb->s_n > INT_MAX / 2)
+				break;
+			sbuf_extend(sb, sb->s_n * 2)
+		}
 	}
 	sbuf_null(sb)
 	lbuf_iedit(lbuf, sb->s, beg, end, init);

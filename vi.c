@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <termios.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
