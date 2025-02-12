@@ -1,0 +1,84 @@
+diff --git a/lbuf.c b/lbuf.c
+index 0649f71..1d68a35 100644
+--- a/lbuf.c
++++ b/lbuf.c
+@@ -165,20 +165,67 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
+ 	return lo;
+ }
+ 
+-int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init)
+-{
+-	long nr;
+-	sbuf_smake(sb, 1048575)  /* caps at 2147481600 on 32 bit */
+-	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
+-		sb->s_n += nr;
+-		if (sb->s_n >= sb->s_sz) {
+-			if (sb->s_n > INT_MAX / 2)
+-				break;
+-			sbuf_extend(sb, sb->s_n * 2)
++int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
++{
++	long nr, l, nins = 0, nl = 0;
++	struct linfo *n, *cn = NULL;
++	sbuf_smake(sb, init ? 0 : 1048575)
++	if (!init) {
++	        while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
++	                sb->s_n += nr;
++	                if (sb->s_n >= sb->s_sz) {
++	                        if (sb->s_n > INT_MAX / 2)
++	                                break;
++	                        sbuf_extend(sb, sb->s_n * 2)
++	                }
++	        }
++	        sbuf_null(sb)
++	        lbuf_iedit(lb, sb->s, beg, end, init);
++	        free(sb->s);
++	        return nr != 0;
++	}
++	const int rchunk = 4096;
++	char sm[rchunk+1], *s, *ln;
++	while ((nr = read(fd, sm, rchunk)) > 0) {
++		s = sm;
++		s[nr] = '\0';
++		for (; *s; nins++) {
++			l = linelength(s);
++			nl = (s[l - !!l] == '\n');
++			int l_nonl = l - nl;
++			if (!cn) {
++				n = emalloc(l_nonl + 7 + sizeof(struct linfo));
++				n->len = l_nonl;
++				n->grec = 0;
++				ln = (char*)(n + 1);
++				memcpy(ln, s, l_nonl);
++				memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
++				ln[l_nonl] = '\n';
++			} else {
++				n = erealloc(cn, cn->len + l_nonl + 7 + sizeof(struct linfo));
++				ln = (char*)(n + 1);
++				memcpy(ln + n->len, s, l_nonl);
++				n->len += l_nonl;
++				cn = NULL;
++				memset(&ln[n->len + 1], 0, 5);	/* fault tolerance pad */
++				ln[n->len] = '\n';
++			}
++			sbuf_mem(sb, &ln, (int)sizeof(ln))
++			s += l;
++		}
++		if (s - sm != rchunk)
++			break;
++		if (!nl) {
++			cn = n;
++			nins--;
++			sb->s_n -= sizeof(ln);
+ 		}
+ 	}
+-	sbuf_null(sb)
+-	lbuf_iedit(lbuf, sb->s, beg, end, init);
++	lb->ln_n = nins;
++	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));
++	lb->ln_sz = nins + 512;
++	for (int i = 0; i < nins; i++)
++		lb->ln[i] = *((char**)sb->s + i);
+ 	free(sb->s);
+ 	return nr != 0;
+ }
