@@ -557,10 +557,10 @@ void dir_calc(char *path)
 	int plen[1024];
 	DIR *dp, *sdp, *dps[1024];
 	unsigned int pathlen = strlen(path), len;
+	if (!(dp = opendir(path)))
+		return;
 	cpath = emalloc(pathlen + 1024);
 	strcpy(cpath, path);
-	if (!(dp = opendir(cpath)))
-		return;
 	sbuf_smake(sb, 1024)
 	temp_pos(1, -1, 0, 0);
 	fspos = 0;
