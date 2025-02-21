@@ -1,5 +1,5 @@
 diff --git a/vi.c b/vi.c
-index fccb6ba..4d2504e 100644
+index 5991e2b..e27d17c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -671,7 +671,7 @@ static void vc_status(int type)
