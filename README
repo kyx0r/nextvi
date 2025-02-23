@@ -72,8 +72,10 @@ VI NORMAL
                    Move # characters backward
      %             Move to closest <] ) }><[ ( {> pair
      {#}%          Move to # percent line number
-     '{arg}        Move to a line mark arg
-     `{arg}        Move to a line mark arg with cursor position
+     '{a-z ` ' [] *}
+                   Move to a line mark
+     `{a-z ` ' [] *}
+                   Move to a line mark with cursor position
      gg            Goto first line in buffer
      [#]G          Move to last line in buffer or # line
      H             Move to highest line on a screen
@@ -170,7 +172,8 @@ VI NORMAL
      [#]p          Paste default register # times
      [#]P          Paste default register below current line or behind cursor
                    position # times
-     m{arg}        Set buffer local line mark arg
+     m{a-z ` ' [] *}
+                   Set buffer local line mark
      <^T>          Set global line mark 0. Global marks are always valid
      {0 2 4 6 8}<^T>
                    Set a global line mark #
@@ -253,13 +256,13 @@ VI/EX INSERT
      <^W>          Delete a word
      <^T>          Increase indent
      <^D>          Decrease indent
-     <^]>          Switch default paste register to registers 0-9
+     <^]>          Select paste register from 0-9 registers in a loop
      <^\>{arg}     Select paste register arg. <^\> selects default register
      <^P>          Paste a register
      <^X>          Mark autocomplete and <^U> starting position. <^X> resets
                    the mark
-     <^G>          Index buffer for autocomplete
-     <^Y>          Reset autocomplete data
+     <^G>          Index current buffer for autocomplete
+     <^Y>          Reset all indexed autocomplete data
      <^R>          Loop through autocomplete options backward
      <^N>          Loop through autocomplete options forward
      <^B>          Print autocomplete options when in vi insert
@@ -1003,4 +1006,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.13.2                   February 21, 2025                  Linux 6.13.2
+Linux 6.13.2                   February 23, 2025                  Linux 6.13.2
