@@ -68,7 +68,7 @@ index def7604..784fdc3 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index cc5df97..39d6e30 100644
+index a622620..1fa5bba 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -542,6 +542,12 @@ void vi_regput(int c, const char *s, int ln)

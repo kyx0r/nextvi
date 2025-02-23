@@ -68,7 +68,7 @@ index eab4bb5..97aeb79 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index cc5df97..83aaf5c 100644
+index a622620..1a08128 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -25,6 +25,7 @@
