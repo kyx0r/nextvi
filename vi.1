@@ -1,4 +1,4 @@
-.Dd Feb 21, 2025
+.Dd Feb 23, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -128,10 +128,10 @@ Move # characters backward
 Move to closest <] ) }><[ ( {> pair
 .It Cm {\fI#\fP}%
 Move to # percent line number
-.It Cm '{\fIarg\fP}
-Move to a line mark arg
-.It Cm `{\fIarg\fP}
-Move to a line mark arg with cursor position
+.It Cm '{\fIa-z ` ' [ ] *\fP}
+Move to a line mark
+.It Cm `{\fIa-z ` ' [ ] *\fP}
+Move to a line mark with cursor position
 .It Cm gg
 Goto first line in buffer
 .It Cm [\fI#\fP]G
@@ -309,8 +309,8 @@ Yank # lines
 Paste default register # times
 .It Cm [\fI#\fP]P
 Paste default register below current line or behind cursor position # times
-.It Cm m{\fIarg\fP}
-Set buffer local line mark arg
+.It Cm m{\fIa-z ` ' [] *\fP}
+Set buffer local line mark
 .It Cm <^T>
 Set global line mark 0. Global marks are always valid
 .It Cm {\fI0 2 4 6 8\fP}<^T>
@@ -442,7 +442,7 @@ Increase indent
 .It Cm <^D>
 Decrease indent
 .It Cm <^]>
-Switch default paste register to registers 0-9
+Select paste register from 0-9 registers in a loop
 .It Cm <^\e>{arg}
 Select paste register arg. <^\e> selects default register
 .It Cm <^P>
@@ -450,9 +450,9 @@ Paste a register
 .It Cm <^X>
 Mark autocomplete and <^U> starting position. <^X> resets the mark
 .It Cm <^G>
-Index buffer for autocomplete
+Index current buffer for autocomplete
 .It Cm <^Y>
-Reset autocomplete data
+Reset all indexed autocomplete data
 .It Cm <^R>
 Loop through autocomplete options backward
 .It Cm <^N>
