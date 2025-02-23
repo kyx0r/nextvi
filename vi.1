@@ -401,6 +401,7 @@ All regions
 .Bd -literal -compact
 Motions are vi normal commands that run in a [h v]range.
 Commands described with the word "region" consume a region.
+Motions can be prefixed or suffixed by [#].
 .Ed
 .Bl -tag -width Ds -compact
 
@@ -418,8 +419,10 @@ Examples:
 .Bl -tag -width Ds -compact
 .It Cm 3d/int
 Delete text until the 3rd instance of "int" keyword
+.It Cm 3dw
+Delete 3 words (prefix [#])
 .It Cm d3w
-Delete 3 words
+Delete 3 words (suffix [#])
 .It Cm \&"ayl
 Yank a character into <a> register
 .It Cm \&"Ayw
@@ -1255,8 +1258,8 @@ _
  658 regex.c | extended RE
  675 led.c | insert mode/output
  1240 ex.c | ex options/commands
- 1947 vi.c | normal mode/general
- 6705 total | wc -l *.c\(basort
+ 1948 vi.c | normal mode/general
+ 6706 total | wc -l *.c\(basort
 _
 .TE
 .
