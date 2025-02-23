@@ -433,7 +433,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 /* read a line motion */
 static int vi_motionln(int *row, int cmd)
 {
-	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
+	int cnt = vi_arg1 ? vi_arg1 : vi_arg2;
 	int c = term_read();
 	int mark, mark_row, mark_off;
 	switch (c) {
@@ -454,7 +454,7 @@ static int vi_motionln(int *row, int cmd)
 		*row = mark_row;
 		break;
 	case 'G':
-		*row = (vi_arg1 || vi_arg2) ? cnt - 1 : lbuf_len(xb) - 1;
+		*row = vi_arg1 ? cnt - 1 : lbuf_len(xb) - 1;
 		break;
 	case 'H':
 		*row = MIN(xtop + cnt - 1, lbuf_len(xb) - 1);
@@ -470,7 +470,7 @@ static int vi_motionln(int *row, int cmd)
 			*row = MIN(*row + cnt - 1, lbuf_len(xb) - 1);
 			break;
 		}
-		if (c == '%' && (vi_arg1 || vi_arg2)) {
+		if (c == '%' && vi_arg1) {
 			if (cnt > 100)
 				return -1;
 			*row = lbuf_len(xb) * cnt / 100;
@@ -676,7 +676,7 @@ static int vi_motion(int *row, int *off)
 	static char ca_dir;
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
-	int cnt = (vi_arg1 ? vi_arg1 : 1) * (vi_arg2 ? vi_arg2 : 1);
+	int cnt = vi_arg1 ? vi_arg1 : vi_arg2;
 	int dir, mark, mark_row, mark_off;
 	char *cs;
 	int mv, i;
@@ -1011,18 +1011,22 @@ static void vi_pipe(int r1, int r2)
 	free(cmd);
 }
 
-static void vi_shift(int r1, int r2, int dir)
+static void vi_shift(int r1, int r2, int dir, int count)
 {
 	sbuf_smake(sb, 1024)
 	char *ln;
-	int i;
+	int i, c;
 	for (i = r1; i <= r2; i++) {
 		if (!(ln = lbuf_get(xb, i)))
 			continue;
-		if (dir < 0)
-			ln = ln[0] == ' ' || ln[0] == '\t' ? ln + 1 : ln;
-		else if (ln[0] != '\n' || r1 == r2)
-			sbuf_chr(sb, '\t')
+		for (c = 0; c < count; c++) {
+			if (dir < 0) {
+				if (*ln != ' ' && *ln != '\t')
+					break;
+				ln++;
+			} else if (*ln != '\n' || r1 == r2)
+				sbuf_chr(sb, '\t')
+		}
 		sbufn_str(sb, ln)
 		lbuf_edit(xb, sb->s, i, i + 1);
 		sbuf_cut(sb, 0)
@@ -1036,9 +1040,9 @@ static void vc_motion(int cmd)
 	int r1 = xrow, r2 = xrow;	/* region rows */
 	int o1 = xoff, o2;		/* visual region columns */
 	int lnmode = 0;			/* line-based region */
-	int mv;
-	vi_arg2 = vi_prefix();
+	int mv = vi_prefix();
 	term_dec()
+	vi_arg2 = mv ? mv : 1;
 	o1 = ren_noeol(lbuf_get(xb, r1), o1);
 	o2 = o1;
 	if ((mv = vi_motionln(&r2, cmd)))
@@ -1075,14 +1079,10 @@ static void vc_motion(int cmd)
 	if (cmd == '!')
 		vi_pipe(r1, r2);
 	if (cmd == '>' || cmd == '<')
-		vi_shift(r1, r2, cmd == '>' ? +1 : -1);
+		vi_shift(r1, r2, cmd == '>' ? +1 : -1,
+			lnmode ? 1 : vi_arg1 ? vi_arg1 : vi_arg2);
 	if (cmd == TK_CTL('w'))
-		for (int lc = r1; lc <= r2; lc++) {
-			xoff = 2;
-			while (xoff > 1)
-				vi_shift(lc, lc, -1);
-			vi_shift(lc, lc, -1);
-		}
+		vi_shift(r1, r2, -1, INT_MAX / 2);
 	vi_mod |= (r1 != r2 || (lnmode && cmd == 'd')) ? 1 : 2;
 }
 
@@ -1293,7 +1293,7 @@ void vi(int init)
 		int oleft = xleft;
 		int orow = xrow;
 		icmd_pos = 0;
-		vi_arg2 = 0;
+		vi_arg2 = 1;
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf();
 		vi_arg1 = vi_prefix();
@@ -1850,7 +1850,8 @@ void vi(int init)
 				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 				|| (*vi_word && orow != xrow))
 			vi_drawagain(xtop);
-		else if (*vi_word && ooff != xoff && xrow+1 < xtop + xrows) {
+		else if (*vi_word && (ooff != xoff || vi_mod & 2)
+				&& xrow+1 < xtop + xrows) {
 			vi_drawrow(xrow+1);
 			vi_rshift = 0;
 		} else if (xtop != otop)
