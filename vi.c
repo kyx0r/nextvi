@@ -1039,10 +1039,10 @@ static void vc_motion(int cmd)
 	int r1 = xrow, r2 = xrow;	/* region rows */
 	int o1 = xoff, o2;		/* visual region columns */
 	int lnmode = 0;			/* line-based region */
-	int mv, arg = vi_prefix();
+	int mv = vi_prefix();
 	term_dec()
-	if (arg)
-		vi_arg = arg;
+	if (mv)
+		vi_arg = mv;
 	o1 = ren_noeol(lbuf_get(xb, r1), o1);
 	o2 = o1;
 	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
@@ -1072,16 +1072,16 @@ static void vc_motion(int cmd)
 	}
 	if (cmd == 'd')
 		vi_delete(r1, o1, r2, o2, lnmode);
-	if (cmd == 'c')
+	else if (cmd == 'c')
 		vi_change(r1, o1, r2, o2, lnmode);
-	if (cmd == '~' || cmd == 'u' || cmd == 'U')
+	else if (cmd == '~' || cmd == 'u' || cmd == 'U')
 		vi_case(r1, o1, r2, o2, lnmode, cmd);
-	if (cmd == '!')
+	else if (cmd == '!')
 		vi_pipe(r1, r2);
-	if (cmd == '>' || cmd == '<')
+	else if (cmd == '>' || cmd == '<')
 		vi_shift(r1, r2, cmd == '>' ? +1 : -1,
 			lnmode ? 1 : vi_arg ? vi_arg : 1);
-	if (cmd == TK_CTL('w'))
+	else if (cmd == TK_CTL('w'))
 		vi_shift(r1, r2, -1, INT_MAX / 2);
 	vi_mod |= (r1 != r2 || (lnmode && cmd == 'd')) ? 1 : 2;
 }
