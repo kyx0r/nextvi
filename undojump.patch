@@ -45,10 +45,10 @@ index 0649f71..268c77d 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 5991e2b..5ad6c4d 100644
+index cc5df97..5cd0309 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1560,6 +1560,17 @@ void vi(int init)
+@@ -1559,6 +1559,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
@@ -64,7 +64,7 @@ index 5991e2b..5ad6c4d 100644
 +				vi_mod = 1;
 +				break;
  			case TK_CTL('v'):
- 				vi_arg1 = (vi_wsel % 5) + !!*vi_word;
+ 				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
 index 35810e4..b315164 100644
