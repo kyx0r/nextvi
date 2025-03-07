@@ -1797,12 +1797,13 @@ void vi(int init)
 		ln = lbuf_get(xb, xrow);
 		xoff = ren_noeol(ln, xoff);
 		if (ln && !rstate->wid[xoff]) {
-			n = xoff;
-			do {
-				if (!xoff)
+			for (n = xoff, k = n; k < rstate->n && !rstate->wid[k];) {
+				if (!k)
 					n = ooff+1;
-				xoff += n > ooff ? 1 : -1;
-			} while (!rstate->wid[xoff] && xoff < rstate->n);
+				k += n > ooff ? 1 : -1;
+			}
+			if (k < rstate->n)
+				xoff = k;
 		}
 		if (vi_mod)
 			vi_col = vi_off2col(xb, xrow, xoff);
