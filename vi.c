@@ -1886,11 +1886,12 @@ void vi(int init)
 
 static void sighandler(int signo)
 {
-	if (!(xvis & 4) && signo == SIGWINCH)
+	if (term_sbuf && !(xvis & 4) && signo == SIGWINCH)
 		term_exec("", 1, '&')
 }
 
-static int setup_signals(void) {
+static int setup_signals(void)
+{
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = sighandler;
