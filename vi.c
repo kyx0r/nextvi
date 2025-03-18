@@ -1890,7 +1890,7 @@ static void sighandler(int signo)
 		term_exec("", 1, '&')
 }
 
-static int setup_signals(void) {
+int setup_signals(void) {
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = sighandler;

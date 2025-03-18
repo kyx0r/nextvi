@@ -278,6 +278,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 	sbuf_smake(sb, sizeof(buf))
 	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
+		signal(SIGWINCH, SIG_IGN);
 		term_done();
 	} else if (ifd >= 0)
 		fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
@@ -332,6 +333,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 	signal(SIGTTOU, SIG_DFL);
 	if (!ibuf) {
 		term_init();
+		setup_signals();
 		signal(SIGINT, SIG_DFL);
 	}
 	if (oproc)

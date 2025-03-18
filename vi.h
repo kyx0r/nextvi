@@ -465,6 +465,7 @@ char *conf_digraph(int c1, int c2);
 /* vi.c */
 void vi_regputraw(unsigned char c, const char *s, int ln, int append);
 void vi_regput(int c, const char *s, int ln);
+int setup_signals(void);
 /* file system */
 void dir_calc(char *path);
 /* global variables */
