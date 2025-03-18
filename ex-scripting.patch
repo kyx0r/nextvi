@@ -62,10 +62,10 @@ index 7ca9c44..adb4ba6 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 8583b83..4700d6f 100644
+index aad65b8..3f5d627 100644
 --- a/term.c
 +++ b/term.c
-@@ -223,7 +223,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -224,7 +224,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}

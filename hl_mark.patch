@@ -19,7 +19,7 @@ index 7ca9c44..b4c8a93 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/vi.c b/vi.c
-index 93cefea..2abb19d 100644
+index 159e078..54b8c16 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1824,6 +1824,21 @@ void vi(int init)
