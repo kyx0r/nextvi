@@ -53,7 +53,7 @@ index 7ca9c44..30551eb 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 8583b83..32507e8 100644
+index aad65b8..9733940 100644
 --- a/term.c
 +++ b/term.c
 @@ -5,6 +5,8 @@ int xrows, xcols;
@@ -96,16 +96,16 @@ index 8583b83..32507e8 100644
  }
  
  void term_done(void)
-@@ -35,7 +41,7 @@ void term_done(void)
- 		return;
+@@ -36,7 +42,7 @@ void term_done(void)
  	term_commit();
  	sbuf_free(term_sbuf)
+ 	term_sbuf = NULL;
 -	tcsetattr(0, 0, &termios);
 +	tcsetattr(stdin_fd, 0, &termios);
  }
  
  void term_clean(void)
-@@ -148,12 +154,12 @@ int term_read(void)
+@@ -149,12 +155,12 @@ int term_read(void)
  			if (texec == '&')
  				goto err;
  		}
@@ -121,7 +121,7 @@ index 8583b83..32507e8 100644
  			err:
  			*ibuf = 0;
  		}
-@@ -328,7 +334,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -329,7 +335,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
  		close(ifd);
  	waitpid(pid, NULL, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -131,10 +131,10 @@ index 8583b83..32507e8 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 93cefea..41009c2 100644
+index 159e078..2fa4cb7 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1894,7 +1894,8 @@ static int setup_signals(void) {
+@@ -1895,7 +1895,8 @@ static int setup_signals(void)
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -144,7 +144,7 @@ index 93cefea..41009c2 100644
  		return 0;
  	return 1;
  }
-@@ -1912,7 +1913,8 @@ int main(int argc, char *argv[])
+@@ -1913,7 +1914,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
