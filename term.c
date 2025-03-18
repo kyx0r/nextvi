@@ -35,6 +35,7 @@ void term_done(void)
 		return;
 	term_commit();
 	sbuf_free(term_sbuf)
+	term_sbuf = NULL;
 	tcsetattr(0, 0, &termios);
 }
 
