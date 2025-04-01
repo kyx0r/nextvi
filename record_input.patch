@@ -1,0 +1,49 @@
+diff --git a/ex.c b/ex.c
+index 7ca9c44..92ad577 100644
+--- a/ex.c
++++ b/ex.c
+@@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
+ int xkwdcnt;			/* number of search kwd changes */
+ int xbufcur;			/* number of active buffers */
+ int xgrec;			/* global vi/ex recursion depth */
++int xrec;			/* input recoding register */
+ struct buf *bufs;		/* main buffers */
+ struct buf tempbufs[2];		/* temporary buffers, for internal use */
+ struct buf *ex_buf;		/* current buffer */
+@@ -900,6 +901,7 @@ static struct option {
+ 	{"mpt", &xmpt},
+ 	{"pr", &xpr},
+ 	{"sep", &xsep},
++	{"rec", &xrec},
+ };
+ 
+ static char *cutword(char *s, char *d)
+diff --git a/term.c b/term.c
+index aad65b8..b23b7f0 100644
+--- a/term.c
++++ b/term.c
+@@ -160,6 +160,12 @@ int term_read(void)
+ 		}
+ 		ibuf_cnt = 1;
+ 		ibuf_pos = 0;
++		if (xrec && *ibuf) {
++			char buf[2];
++			buf[0] = *ibuf;
++			buf[1] = '\0';
++			vi_regputraw(xrec, buf, 0, 1);
++		}
+ 	}
+ 	if (icmd_pos < sizeof(icmd))
+ 		icmd[icmd_pos++] = ibuf[ibuf_pos];
+diff --git a/vi.h b/vi.h
+index 35810e4..416128d 100644
+--- a/vi.h
++++ b/vi.h
+@@ -496,6 +496,7 @@ extern int xkwddir;
+ extern int xmpt;
+ extern int xpr;
+ extern int xsep;
++extern int xrec;
+ extern rset *xkwdrs;
+ extern sbuf *xacreg;
+ extern rset *fsincl;
