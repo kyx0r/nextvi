@@ -191,6 +191,11 @@ file into the memory right away. This patch optimizes the reading of
 binary files, since it would be truncated earlier before loading
 the whole file into memory.
 
+record_input.patch
+--------------
+Adds ex option "rec". This option specifies a register in which
+to record all user input. Makes it easier to record macros.
+
 My current EXINIT setup:
 --------------
 How it works:
