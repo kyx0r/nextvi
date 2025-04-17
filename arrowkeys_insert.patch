@@ -73,7 +73,7 @@ index eab4bb5..4c72891 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 159e078..91171cb 100644
+index e4ddc55..e434853 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -935,6 +935,8 @@ static char *vi_indents(char *ln, int *l)
@@ -140,7 +140,7 @@ index 159e078..91171cb 100644
 +						vi_col = vi_off2col(xb, xrow, xoff);
 +					goto _break;
 +				}
- 				if (vi_insmov == 127) {
+ 				if (vi_insmov == 127 || vi_insmov == TK_CTL('h')) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xrow--;
 @@ -1631,6 +1667,9 @@ void vi(int init)
