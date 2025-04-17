@@ -68,10 +68,10 @@ index eab4bb5..97aeb79 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index e4ddc55..56b0f66 100644
+index 695fa25..aec966a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -25,6 +25,7 @@
+@@ -7,6 +7,7 @@
  #include <dirent.h>
  #include <signal.h>
  #include <unistd.h>
