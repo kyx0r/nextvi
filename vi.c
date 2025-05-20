@@ -133,8 +133,7 @@ static void vi_drawrow(int row)
 {
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
-	static char ch1[1] = "~";
-	static char ch2[1] = "";
+	static char ch[2] = "~";
 	if (*vi_word) {
 		int noff, nrow, ret;
 		s = lbuf_get(xb, row - vi_rshift);
@@ -175,7 +174,7 @@ static void vi_drawrow(int row)
 	s = lbuf_get(xb, row);
 	skip:
 	if (!s)
-		s = row ? ch1 : ch2;
+		s = row ? ch : ch+1;
 	else if (lnnum) {
 		char tmp[100], tmp1[100], *p;
 		c = tmp, i = 0, i1 = 0;
