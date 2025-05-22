@@ -294,10 +294,10 @@ void syn_highlight(int *att, char *s, int n)
 		int *catt = hls[hl].att;
 		int blkend = hls[hl].blkend;
 		if (blkend && sidx >= bend) {
-			for (i = 0; i < rs->setgrpcnt[sl]; i++)
+			for (i = 0; i <= abs(blkend); i++)
 				if (subs[i * 2] >= 0)
 					blk = i;
-			blkm += blkm > abs(hls[hl].blkend) ? -1 : 1;
+			blkm += blkm > abs(blkend) ? -1 : 1;
 			if (blkm == 1 && last_scdir > 0)
 				blkend = blkend < 0 ? -1 : 1;
 			if (syn_blockhl == hl && blk == abs(blkend))
