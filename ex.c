@@ -443,8 +443,10 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 			ex_print(ln);
 		}
 	}
-	if (inst < 0 && c > 1)
-		inst = term_read() - '0';
+	if (inst < 0 && c > 1) {
+		inst = term_read();
+		inst = inst == '\n' ? 0 : inst - '0';
+	}
 	if ((inst >= 0 && inst < c) || c == 1) {
 		path = *((char**)sb->s + (c == 1 ? 0 : inst));
 		path[lbuf_s(path)->len] = '\0';
