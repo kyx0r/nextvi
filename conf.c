@@ -49,7 +49,8 @@ struct highlight hls[] = {
 
 	{"c", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"c", "^.+\\\\\n$", {14}, {1}},
-	{"c", "(/\\*[!*/]*)|([^\"!/*]*\\*/)", {4 | SYN_IT}, {0}, 2},
+	{"c", "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?>\".*\\*/.*\"))",
+		{4 | SYN_IT}, {0}, 2},
 	{"c", NULL, {9 | SYN_BGMK(12)}, {0}, 0, 3},
 	{"c", NULL, {9}, {0}, 0, 1},
 	{"c", "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|\
@@ -59,7 +60,7 @@ s(?:64|32|16|8)|u(?:64|32|16|8)|b32|bool|const|size_t|inline|restrict|\
 out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 	{"c", "(\\?).+?(:)", {0, 3, 3}, {1, 0, -1}},
-	{"c", "(?://.*)|^(?:\t* \\*.*)", {4 | SYN_IT}},
+	{"c", "//.*", {4 | SYN_IT}},
 	{"c", "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", {6, 6, 5}},
 	{"c", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
 	{"c", "\"\"|\"(?:.*?(?:\\\\\\\\|[^\\\\])\")?", {5}},
@@ -110,7 +111,7 @@ default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 	{"sh", "\"(?:[^\"\\\\]|\\\\.)*\"", {4}},
 	{"sh", "`(?:[^`\\\\]|\\\\.)*`", {4}},
 	{"sh", "'[^']*'", {4}},
-	{"sh", "\\$(?:\\{[^}]+\\}|[a-zA-Z_0-9]+|[\\!#$?*@-])", {1}},
+	{"sh", "\\$(?:\\{[^}]+\\}|[a-zA-Z_0-9]+|[!#$?*@-])", {1}},
 	{"sh", "^([a-zA-Z_0-9]* *\\(\\)) *\\{", {0, SYN_BD}},
 	{"sh", "^\\. .*", {SYN_BD}},
 
@@ -122,7 +123,8 @@ default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
 for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
 	{"py", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
 	{"py", "\"{3}.*?\"{3}", {6}},
-	{"py", "((?:[!\"\"\"]*\"{3}\n$)|(?:\"{3}[!\"\"\"]*)|\"{3})", {6}, {0}, -1},
+	{"py", "((?:(?:(?!^\"\"\").)*\"{3}\n$)|(?:\"{3}(?:(?!^\"\"\").)*)|\"{3})",
+		{6}, {0}, -1},
 	{"py", "[\"](\\\\\"|[^\"])*?[\"]", {4}},
 	{"py", "['](\\\\'|[^'])*?[']", {4}},
 
@@ -141,7 +143,7 @@ for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)
 	/* javascript */
 	{"js", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"js", NULL, {9}, {0}, 0, 1},
-	{"js", "(/\\*[!*/]*)|([^`'\"!/*]*\\*/)", {10 | SYN_IT}, {0}, 2},
+	{"js", "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))", {10 | SYN_IT}, {0}, 2},
 	{"js", "\\<(?:abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
 double|else|enum|eval|export|extends|false|final|finally|float|for|function|\
@@ -160,8 +162,8 @@ name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", {12, 6 | S
 	{"html", NULL, {14 | SYN_BD}, {1}, 0, 2},
 	{"html", "(\\{)[^}]*|(^[^{]*)?(\\})", {8, 5, 8, 5}, {1, 1, -1, -1}, 3},
 	{"html", NULL, {9}, {0}, 0, 1},
-	{"html", "(/\\*[!*/]*)|([^\"!/*]*\\*/)", {5 | SYN_IT}, {0}, 2},
-	{"html", "(<!--[!------>]*)|([!<\\!------]*-->)", {5 | SYN_IT}, {0}, 2},
+	{"html", "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/)", {5 | SYN_IT}, {0}, 2},
+	{"html", "(<!--(?:(?!^-->).)*)|((?:(?!^<!--).)*-->)", {5 | SYN_IT}, {0}, 2},
 	{"html", "([^\t -,.-/:-@[-^{-~]+:).+;", {0, 3}, {1, 1}},
 	{"html", "\\<(?:accept|accesskey|align|allow|alt|async|\
 auto(?:capitalize|complete|focus|play)|background|\
@@ -250,7 +252,7 @@ int conf_hlrev = SYN_BGMK(8);
 /* right-to-left characters (used only in dctxs[] and dmarks[]) */
 #define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْٔ"
 /* neutral characters (used only in dctxs[] and dmarks[]) */
-#define CNEUT		"-\\!\"#$%&'\\()*+,./:;<\\=>?@\\^_`{|}~ "
+#define CNEUT		"-!\"#$%&'\\()*+,./:;<=>?@\\^_`{|}~ "
 
 struct dircontext dctxs[] = {
 	{-1, "^[" CR2L "]"},
