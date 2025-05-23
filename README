@@ -838,7 +838,18 @@ EXINIT ENV VAR
              cursor in insert mode in between the braces.
 
 REGEX
-     Nextvi's regex syntax is akin to that of Plan 9.
+     Pikevm is a fast non backtracking NFA simulation regex engine
+     developed for Nextvi. It ensures regular expressions are evaluated
+     in constant space and O(n + k) time complexity where <n> is
+     the input string length and <k> represents the regex's structural
+     complexity (e.g., state transitions or alternations). While
+     this does not guarantee strict O(n) linear runtime performance,
+     it ensures computational and memory resources are distributed
+     linearly and evenly across the input, with <k> directly influencing
+     the constant factor. This principle is similar to the concept
+     utilized in radix sort algorithms.
+
+     Pikevm's syntax is akin to regexp(7) from Plan 9.
      Disregard manpage notation for <{ } [ ]> in this section.
 
      .       Match any single char
@@ -905,10 +916,10 @@ CODE MAP
      | 521 lbuf.c   |  file/line buffer    |
      | 650 uc.c     |  UTF-8 support       |
      | 675 led.c    |  insert mode/output  |
-     | 707 regex.c  |  extended RE         |
+     | 715 regex.c  |  extended RE         |
      | 1246 ex.c    |  ex options/commands |
      | 1934 vi.c    |  normal mode/general |
-     | 6750 total   |  wc -l *.c|sort      |
+     | 6758 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -959,59 +970,6 @@ SEE ALSO
      branch.
      https://github.com/kyx0r/nextvi/tree/manual
 
-     Q: What is pikevm?
-     A: Pikevm is a complete rewrite of Nextvi's regex engine for
-     the purposes of getting rid of backtracking and severe performance
-     and memory constraints. Pikevm guarantees that all regular expressions
-     are computed in constant space and O(n+k) time where n is size
-     of the string and k is some constant for the complexity of the
-     regex i.e. number of state transitions. It is important to understand
-     that it does not mean that we run at O(n) linear speed, but
-     rather the amount of processing time & memory usage is distributed
-     evenly and linearly throughout the string, the k constant plays
-     a big role. If you are familiar with radix sort algorithms this
-     follows the same idea.
-     Q: What are the other benefits?
-     A: For example, now it is possible to compute a C comment
-     /* x */ where x can be an infinite number of characters. Of course,
-     this extends to every other valid regular expression.
-     Q: New features pikevm supports?
-     A: Additionally, pikevm supports PCRE style non capture group
-     (?:) and lazy quantifiers like .*? and .+?? because they were
-     easy to implement and allow for further regex profiling/optimization.
-     Q: NFA vs DFA (identify)
-     A: pikevm = NFA backtrack = DFA
-     Q: What's wrong with original implementation?
-     A: Nothing except it being slow and limited. My improved version
-     of Ali's DFA implementation ran 3.5X faster in any case, however
-     I found a bug with it where zero quantifier "?" nested groups
-     compute wrong submatch results. To fix this problem, it would
-     require to undo a lot of optimization work already done, basically
-     going back to how slow Ali's implementation would be. The reason
-     this was spotted so late was because this kind of regex wasn't
-     used before, so I never tested it. Other than that I think submatch
-     extraction is correct on other cases. Pikevm does not have this
-     bug, so it will be used as main regex engine from now on, unless
-     dfa ever finds a proper fix. Honestly, this change isn't so
-     surprising, as I was working on pikevm a few months prior, to
-     favor a superior algorithm.
-
-     You can still find that code here (likely with no updates):
-     https://github.com/kyx0r/nextvi/tree/dfa_dead
-
-     As a downside, NFA simulation loses the DFA property of being
-     able to quickly short circuit a match, as everything runs linearly
-     and at constant speed, incurring match time overhead. Well optimized
-     DFA engine can outperform pikevm, but that is rather rare as
-     they got problems of their own. For example as independently
-     benchmarked, dfa_dead runs only 13% faster than pikevm and that
-     is stretching the limit of what is physically possible on a
-     table based matcher. Can't cheat mother nature, and if you dare
-     to try she's unforgiving at best.
-
-     Supplementary reading by Russ Cox:
-     https://swtch.com/~rsc/regexp/regexp1.html
-
      Original Neatvi repository:
      https://github.com/aligrudi/neatvi
 
@@ -1020,6 +978,12 @@ SEE ALSO
 
      Posix ex(1)
      https://pubs.opengroup.org/onlinepubs/9699919799/utilities/ex.html
+
+     NFA regular expressions by Russ Cox:
+     https://swtch.com/~rsc/regexp/regexp1.html
+
+     Plan 9 regexp(7)
+     https://man.cat-v.org/p9p/7/regexp
 
 AUTHORS
      Nextvi was written by Kyryl Melekhin <k.melekhin@gmail.com>.  It is based
