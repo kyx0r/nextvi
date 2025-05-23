@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
@@ -644,7 +645,7 @@ static void vc_status(int type)
 			xoff, col);
 		return;
 	}
-	intptr_t buf = istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs;
+	ptrdiff_t buf = istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
 		"\"%s\"%s%dL %d%% L%d C%d B%td",
 		ex_path[0] ? ex_path : "unnamed",
