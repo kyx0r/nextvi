@@ -52,6 +52,14 @@ pc += num;
 static int re_sizecode(char *re, int *laidx);
 static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags);
 
+static void reg_free(rcode *p)
+{
+	for (int i = 0; i < p->laidx; i++)
+		reg_free(p->la[i]);
+	free(p->la);
+	free(p);
+}
+
 static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 {
 	char *re = re_loc, *s, *p;
@@ -161,8 +169,10 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 							if (sz < 0)
 								return -1;
 							prog->la[prog->laidx] = emalloc(sizeof(rcode)+sz);
-							if (reg_comp(prog->la[prog->laidx], re, 0, laidx, prog->flg))
+							if (reg_comp(prog->la[prog->laidx], re, 0, laidx, prog->flg)) {
+								reg_free(prog->la[prog->laidx]);
 								return -1;
+							}
 						}
 						*s = ')';
 					}
@@ -319,8 +329,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 	prog->splits = 0;
 	prog->laidx = 0;
 	prog->flg = flags;
-	if (laidx)
-		prog->la = emalloc(laidx * sizeof(rcode*));
+	prog->la = laidx ? emalloc(laidx * sizeof(rcode*)) : NULL;
 	int res = compilecode(re, prog, 0, flags);
 	if (res < 0) return res;
 	int icnt = 0, scnt = SPLIT;
@@ -483,7 +492,7 @@ if (spc > JMP) { \
 	} else \
 		test = re_pikevm(prog->la[npc[2]], str, NULL, 0, 0); \
 	if ((test && (npc[1] == '!' || npc[1] == '>')) \
-			|| (npc[1] == '=' || npc[1] == '<')) \
+			|| (!test && (npc[1] == '=' || npc[1] == '<'))) \
 		deccheck(nn) \
 	npc += 4; goto rec##nn; \
 } else { \
@@ -596,15 +605,6 @@ static int re_groupcount(char *s)
 	return n;
 }
 
-static void reg_free(rcode *p)
-{
-	for (int i = 0; i < p->laidx; i++)
-		reg_free(p->la[i]);
-	if (p->laidx)
-		free(p->la);
-	free(p);
-}
-
 void rset_free(rset *rs)
 {
 	if (!rs)
@@ -648,13 +648,15 @@ rset *rset_make(int n, char **re, int flg)
 	int sz = re_sizecode(sb->s, &laidx) * sizeof(int);
 	char *code = emalloc(sizeof(rcode)+abs(sz));
 	rs->regex = (rcode*)code;
-	if (sz < 0 || reg_comp((rcode*)code, sb->s,
-				MAX(rs->grpcnt-1, 0), laidx, flg)) {
-		if (sz < 0)
-			rs->regex->laidx = 0;
+	if (sz < 0) {
+		rs->regex->la = NULL;
+		rs->regex->laidx = 0;
+		err:
 		rset_free(rs);
 		rs = NULL;
-	}
+	} else if (reg_comp((rcode*)code, sb->s,
+				MAX(rs->grpcnt-1, 0), laidx, flg))
+		goto err;
 	free(sb->s);
 	return rs;
 }
