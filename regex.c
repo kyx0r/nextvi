@@ -160,6 +160,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 							p = emalloc(sizeof(rcode) + s - re);
 							prog->la[prog->laidx] = (rcode*)p;
 							prog->la[prog->laidx]->laidx = 0;
+							prog->la[prog->laidx]->la = NULL;
 							for (p += sizeof(rcode), re++; re != s; re++)
 								if (*re != '\\')
 									*p++ = *re;
