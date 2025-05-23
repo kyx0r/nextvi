@@ -73,7 +73,8 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 		switch (*re) {
 		case '\\':
 			re++;
-			if (!*re) return -1; /* Trailing backslash */
+			if (!*re)
+				return -1; /* Trailing backslash */
 			if (*re == '<' || *re == '>') {
 				if (re - re_loc > 2 && re[-2] == '\\')
 					break;
@@ -104,8 +105,10 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 				EMIT(PC++, 1);
 			PC++;
 			for (cnt = 0; *re != ']'; cnt++) {
-				if (*re == '\\') re++;
-				if (!*re) return -1;
+				if (*re == '\\')
+					re++;
+				if (!*re)
+					return -1;
 				uc_code(c, re, l)
 				if (flg & REG_ICASE && (unsigned int)c < 128)
 					c = tolower(c);
@@ -197,7 +200,8 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			start = PC;
 			break;
 		case ')':
-			if (--capc-4 < 0) return -1;
+			if (--capc-4 < 0)
+				return -1;
 			if (code && alt_label) {
 				EMIT(alt_label, REL(alt_label, PC) + 1);
 				int _altc = cap_stack[capc];
@@ -245,7 +249,8 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			}
 			break;
 		case '?':
-			if (PC == term) return -1;
+			if (PC == term)
+				return -1;
 			INSERT_CODE(term, 2, PC);
 			if (re[1] == '?') {
 				EMIT(term, RSPLIT);
@@ -256,7 +261,8 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			term = PC;
 			break;
 		case '*':
-			if (PC == term) return -1;
+			if (PC == term)
+				return -1;
 			INSERT_CODE(term, 2, PC);
 			EMIT(PC, JMP);
 			EMIT(PC + 1, REL(PC, term));
@@ -270,7 +276,8 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			term = PC;
 			break;
 		case '+':
-			if (PC == term) return -1;
+			if (PC == term)
+				return -1;
 			if (re[1] == '?') {
 				EMIT(PC, SPLIT);
 				re++;
@@ -331,8 +338,8 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 	prog->laidx = 0;
 	prog->flg = flags;
 	prog->la = laidx ? emalloc(laidx * sizeof(rcode*)) : NULL;
-	int res = compilecode(re, prog, 0, flags);
-	if (res < 0) return res;
+	if (compilecode(re, prog, 0, flags) < 0)
+		return -1;
 	int icnt = 0, scnt = SPLIT;
 	for (int i = 0; i < prog->unilen; i++)
 		switch (prog->insts[i]) {
@@ -618,11 +625,11 @@ void rset_free(rset *rs)
 
 rset *rset_make(int n, char **re, int flg)
 {
-	int i, c = 0;
+	int i, laidx, sz, c = 0;
 	rset *rs = emalloc(sizeof(*rs));
-	sbuf_smake(sb, 1024)
 	rs->grp = emalloc((n + 1) * sizeof(rs->grp[0]));
 	rs->setgrpcnt = emalloc((n + 1) * sizeof(rs->setgrpcnt[0]));
+	sbuf_smake(sb, 1024)
 	rs->n = n;
 	for (i = 0; i < n; i++)
 		if (!re[i])
@@ -645,19 +652,19 @@ rset *rset_make(int n, char **re, int flg)
 		rs->grpcnt += rs->setgrpcnt[i];
 	}
 	sbuf_mem(sb, "\0\0\0\0", 4)
-	int laidx;
-	int sz = re_sizecode(sb->s, &laidx) * sizeof(int);
-	char *code = emalloc(sizeof(rcode)+abs(sz));
-	rs->regex = (rcode*)code;
-	if (sz < 0) {
-		rs->regex->la = NULL;
-		rs->regex->laidx = 0;
-		err:
-		rset_free(rs);
-		rs = NULL;
-	} else if (reg_comp((rcode*)code, sb->s,
+	sz = re_sizecode(sb->s, &laidx) * sizeof(int);
+	if (sz > 0) {
+		rs->regex = emalloc(sizeof(rcode)+sz);
+		if (!reg_comp(rs->regex, sb->s,
 				MAX(rs->grpcnt-1, 0), laidx, flg))
-		goto err;
+			goto success;
+		reg_free(rs->regex);
+	}
+	free(rs->setgrpcnt);
+	free(rs->grp);
+	free(rs);
+	rs = NULL;
+	success:
 	free(sb->s);
 	return rs;
 }
