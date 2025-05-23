@@ -860,24 +860,25 @@ REGEX
      (?<)    Positive lookbehind
      (?>)    Negative lookbehind
 
-     Nextvi lookaround expressions allows you to create regular expressions
-     that are impossible to create without them. They can be used anywhere
-     inside regex with a few considerations.
-     Point 1:
-             Lookarounds will contain a full regular expression, however,
-             grouping should always be non capturing, otherwise it
-             will needlessly hurt performance.
-     Point 2:
-             Lookarounds can contain nested lookarounds.
-     Point 3:
-             For performance, static lookahead such as (?=^word) will
-             get optimized into a simpler representation, bypassing
-             regex compilation.
-     Point 4:
-             Using Lookbehind at the start of a regular expession will
-             exponentially decrease performance. The intended use case
-             is to validate the integrity anywhere near the end of
-             a complicated pattern.
+     Lookaround expressions enable the creation of regular expressions
+     that would be impossible to construct without them. They can
+     be used anywhere within a regex, though some considerations
+     must be taken into account.
+     Aspect 1:
+             Lookarounds contain a full regex, but should use non-capturing
+             groups to avoid performance issues.
+     Aspect 2:
+             Lookarounds can have nested lookarounds.
+     Aspect 3:
+             Static lookaheads like (?=^word) are optimized, bypassing
+             compilation.
+     Aspect 4:
+             Using lookbehind assertions at the beginning of a regex can
+             dramatically reduce performance. This is because the regex engine
+             must scan the entire input to find valid starting positions
+             for the assertion. Lookbehinds are best suited for validating
+             context near the end of a complex pattern, where the engine
+             has already narrowed down potential matches.
 
 SPECIAL MARKS
      *       Position of the previous change
@@ -904,10 +905,10 @@ CODE MAP
      | 521 lbuf.c   |  file/line buffer    |
      | 650 uc.c     |  UTF-8 support       |
      | 675 led.c    |  insert mode/output  |
-     | 705 regex.c  |  extended RE         |
-     | 1242 ex.c    |  ex options/commands |
-     | 1930 vi.c    |  normal mode/general |
-     | 6740 total   |  wc -l *.c|sort      |
+     | 707 regex.c  |  extended RE         |
+     | 1246 ex.c    |  ex options/commands |
+     | 1934 vi.c    |  normal mode/general |
+     | 6750 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
