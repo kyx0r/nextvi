@@ -308,7 +308,7 @@ EX ESCAPES
      Special characters in [args] will become regular when escaped
      with <\>.
 
-     <( ^ ! = [ ] \>
+     <( ^ [ ] \>
              Special characters in regex "[]" bracket exp
      <( ) { } + * ? ^ $ [ ] | \< \> . \>
              Special characters in regex
@@ -329,9 +329,9 @@ EX EXPANSION
      into the command itself. If the closing <!> is not specified,
      the end of the line becomes a terminator.
 
-     Example: Substitute "int" with the value of $RANDOM
+     Example: substitute "int" with the value of $RANDOM
      :%s/int/!printf "%s" $RANDOM!
-     Example: Insert output of ls shell command
+     Example: insert output of ls shell command
      :& i!ls
 
 EX RANGES
@@ -344,35 +344,38 @@ EX RANGES
      <'>{mark}
              Mark ranges
 
+     .       Current position
+     ,       Vertical range separator
+     ;       Horizontal range separator
+     %       Range from first to last line of the buffer
+     $       Last line of the buffer or end of the line
+
      Examples:
-     .       current position
-     ,       vertical range separator
-     ;       horizontal range separator
-     :1,5p   print lines 1,5
+     :1,5p   Print lines 1,5
      :.-5,.+5p
-             print 5 lines around xrow
+             Print 5 lines around xrow
      :/int/p
-             print first occurrence of int
+             Print first occurrence of int
      :?int?p
-             print first occurrence of int in reverse
+             Print first occurrence of int in reverse
      :.,/int/p
-             print until int is found
+             Print until int is found
      :?int?,.p
-             print until int is found in reverse
+             Print until int is found in reverse
      :'d,'ap
-             print lines from mark <d> to mark <a>
-     :%p     print all lines in the buffer
-     :$p     print last line in the buffer
-     :;50    goto character offset 50
-     :10;50  goto line 10 character offset 50
+             Print lines from mark <d> to mark <a>
+     :%p     Print all lines in the buffer
+     :$p     Print last line in the buffer
+     :;50    Goto character offset 50
+     :10;50  Goto line 10 character offset 50
      :10;.+5
-             goto line 10 +5 character offset
-     :'a;'a  goto line mark <a> offset mark <a>
-     :;$     goto end of the line
+             Goto line 10 +5 character offset
+     :'a;'a  Goto line mark <a> offset mark <a>
+     :;$     Goto end of the line
      :5;/int/
-             search for int on line 5
+             Search for int on line 5
      :.;?int?
-             search for int in reverse on the current line
+             Search for int in reverse on the current line
 
 EX COMMANDS
      [range]f{/?}[kwd]
@@ -424,9 +427,10 @@ EX COMMANDS
              :b-2:1,$!find .
 
              If the substring matches more than one filename, a prompt will
-             be shown. Submit using numbers 0-9 (higher ascii values work
-             too (<^C> to cancel)). Passing an extra arg to :ea in form of
-             a number will bypass the prompt and open the corresponding file.
+             be shown. Submit using numbers 0-9 or higher ascii values.
+             <^C> to cancel, <Newline> to select first match. Passing an
+             extra arg to :ea in form of a number will bypass the prompt
+             and open the corresponding file.
              Example: open filename containing "v"
              :ea v
              Example: open first match containing "v"
@@ -483,7 +487,7 @@ EX COMMANDS
              When range not given, a nested global command is executed on
              the current line.
 
-             Example: Nested global command
+             Example: nested global command
              Append "has a semicolon" to all lines that contain "int" and
              end with <;>.
              :g/int/g/;$/& A has a semicolon
@@ -667,7 +671,7 @@ EX COMMANDS
              Example: include only files in submodule directory that end with .c
              :inc submodule.*\.c$
              Example: exclude the .git and submodule folders
-             :inc (^[\!.git\!submodule]+[^\/]+$)
+             :inc (^(?\:(?\!^\.git|^submodule).)+[^/]+$)
              No argument disables the filter.
 
      reg[hscroll]
@@ -837,82 +841,95 @@ REGEX
      Nextvi's regex syntax is akin to that of Plan 9.
      Disregard manpage notation for <{ } [ ]> in this section.
 
-     .       match any single char
-     ^       assert start of the line
-     $       assert end of the line
-     {N,M}   match N to M times
-     ()      grouping
-     (?:)    non capture grouping
-     [N-M]   match a set of alternate ranges N to M
-     *       repeated zero or more times
-     +       repeated one or more times
-     |       union, alternative branch
-     \<      assert start of the word
-     \>      assert end of the word
-     ?       one or zero matches greedy
-     ??      one or zero matches lazy
+     .       Match any single char
+     ^       Assert start of the line
+     $       Assert end of the line
+     {N,M}   Match N to M times
+     ()      Grouping
+     (?:)    Non capture grouping
+     [N-M]   Match a set of alternate ranges N to M
+     *       Repeated zero or more times
+     +       Repeated one or more times
+     |       Union, alternative branch
+     \<      Assert start of the word
+     \>      Assert end of the word
+     ?       One or zero matches greedy
+     ??      One or zero matches lazy
+     (?=)    Positive lookahead
+     (?!)    Negative lookahead
+     (?<)    Positive lookbehind
+     (?>)    Negative lookbehind
 
-     Additionally, Nextvi supports static lookahead expressions.
-     /[=abc]
-             find <a> followed by "bc"
-     /[!abc]
-             find anything except <a> followed by "bc"
-     /[!abc!cda!qwe]
-             multiple lookahead alternatives in one bracket exp
-     /[!abc^=123]
-             disable lookahead after "^=" specifier and match [123] normally
+     Nextvi lookaround expressions allows you to create regular expressions
+     that are impossible to create without them. They can be used anywhere
+     inside regex with a few considerations.
+     Point 1:
+             Lookarounds will contain a full regular expression, however,
+             grouping should always be non capturing, otherwise it
+             will needlessly hurt performance.
+     Point 2:
+             Lookarounds can contain nested lookarounds.
+     Point 3:
+             For performance, static lookahead such as (?=^word) will
+             get optimized into a simpler representation, bypassing
+             regex compilation.
+     Point 4:
+             Using Lookbehind at the start of a regular expession will
+             exponentially decrease performance. The intended use case
+             is to validate the integrity anywhere near the end of
+             a complicated pattern.
 
 SPECIAL MARKS
-     *       position of the previous change
-     [       first line of the previous change
-     ]       last line of the previous change
-     '       position of the previous line region
-     `       position of the previous line region
+     *       Position of the previous change
+     [       First line of the previous change
+     ]       Last line of the previous change
+     '       Position of the previous line region
+     `       Position of the previous line region
 
 SPECIAL REGISTERS
-     /       previous search keyword
-     :       previous ex command
-     0       previous value of default register (atomic)
+     /       Previous search keyword
+     :       Previous ex command
+     0       Previous value of default register (atomic)
              Atomic means the operation did not include a <Newline>.
-     1-9     previous value(s) of default register (nonatomic)
+     1-9     Previous value(s) of default register (nonatomic)
 
 CODE MAP
      +--------------+----------------------+
-     | 505 vi.h     |  definitions/aux     |
+     | 508 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
-     | 293 conf.c   |  hl/ft/td config     |
-     | 341 term.c   |  low level IO        |
+     | 295 conf.c   |  hl/ft/td config     |
+     | 342 term.c   |  low level IO        |
      | 380 ren.c    |  positioning/syntax  |
      | 521 lbuf.c   |  file/line buffer    |
      | 650 uc.c     |  UTF-8 support       |
-     | 658 regex.c  |  extended RE         |
      | 675 led.c    |  insert mode/output  |
-     | 1240 ex.c    |  ex options/commands |
-     | 1947 vi.c    |  normal mode/general |
-     | 6705 total   |  wc -l *.c|sort      |
+     | 705 regex.c  |  extended RE         |
+     | 1242 ex.c    |  ex options/commands |
+     | 1930 vi.c    |  normal mode/general |
+     | 6740 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
      export CC='g++ -x c'
-             set compiler, g++ example
+             Set compiler, g++ example
      export CFLAGS='-s'
-             set CFLAGS, strip example
+             Set CFLAGS, strip example
      ./cbuild.sh
-             build once
+             Build once
      ./cbuild.sh build
-             build
+             Build
      ./cbuild.sh debug
-             build with -O0 -g
+             Build with -O0 -g
      ./cbuild.sh pgobuild
              PGO build can lead to a significant performance boost on some
              application specific tasks
      ./cbuild.sh install
-             install vi to $DESTDIR$PREFIX/bin
+             Install vi to $DESTDIR$PREFIX/bin
      ./cbuild.sh fetch
-             merge commits from upstream repository
+             Merge commits from upstream repository
      ./cbuild.sh bench
-             performance bench test 2000 word deletions on vi.c
+             Performance bench test 2000 word deletions on vi.c
 
 PHILOSOPHY
      In most text editors, flexibility is a minor or irrelevant design
@@ -1008,4 +1025,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.13.2                   February 23, 2025                  Linux 6.13.2
+Linux 6.13.7                     May 23, 2025                     Linux 6.13.7
