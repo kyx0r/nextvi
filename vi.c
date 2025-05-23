@@ -644,12 +644,12 @@ static void vc_status(int type)
 			xoff, col);
 		return;
 	}
-	intptr_t buf = istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
 		"\"%s\"%s%dL %d%% L%d C%d B%td",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? "* " : " ", lbuf_len(xb),
-		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col, buf);
+		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
+		istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs);
 }
 
 /* read a motion */
