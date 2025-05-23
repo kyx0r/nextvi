@@ -629,7 +629,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 
 static void vc_status(int type)
 {
-	int cp, l, col, buf;
+	int cp, l, col;
 	char cbuf[8] = "", *c;
 	col = vi_off2col(xb, xrow, xoff);
 	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -637,14 +637,14 @@ static void vc_status(int type)
 		c = rstate->chrs[xoff];
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x %dL %dW S%d O%d C%d",
-			cbuf, cp, l, rstate->wid[xoff], (int)(c - lbuf_get(xb, xrow)),
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x %dL %dW S%td O%d C%d",
+			cbuf, cp, l, rstate->wid[xoff], c - lbuf_get(xb, xrow),
 			xoff, col);
 		return;
 	}
-	buf = istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs;
+	intptr_t buf = istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs;
 	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%s%dL %d%% L%d C%d B%d",
+		"\"%s\"%s%dL %d%% L%d C%d B%td",
 		ex_path[0] ? ex_path : "unnamed",
 		lbuf_modified(xb) ? "* " : " ", lbuf_len(xb),
 		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col, buf);
