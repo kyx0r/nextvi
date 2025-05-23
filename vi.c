@@ -394,6 +394,8 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		if (!kw)
 			return 1;
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
+		if (!xkwdrs)
+			ex_print("syntax error");
 		free(kw);
 	} else if (msg)
 		ex_krsset(xregs['/'], xkwddir);
@@ -1503,6 +1505,8 @@ void vi(int init)
 					cs = vi_curword(xb, xrow, xoff, vi_arg);
 					ln = vi_prompt("v/ xkwd:", cs, &xkmap, &n);
 					ex_krsset(ln + n, +1);
+					if (!xkwdrs)
+						ex_print("syntax error");
 					free(ln);
 					free(cs);
 					break;
