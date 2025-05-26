@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 7ca9c44..213d9b9 100644
+index e41edeb..7fa73c6 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1238,3 +1238,16 @@ void ex_init(char **files, int n)
+@@ -1244,3 +1244,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -20,10 +20,10 @@ index 7ca9c44..213d9b9 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 1388190..47bd82c 100644
+index 08470a5..0e95395 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -538,6 +538,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -590,6 +590,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	int *pcs[prog->splits];
  	rsub *subs[prog->splits];
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
@@ -32,7 +32,7 @@ index 1388190..47bd82c 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/ren.c b/ren.c
-index def7604..784fdc3 100644
+index 305942a..5f0b449 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
@@ -68,10 +68,10 @@ index def7604..784fdc3 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 695fa25..77d547a 100644
+index 74b81e8..8553db5 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -524,6 +524,12 @@ void vi_regput(int c, const char *s, int ln)
+@@ -525,6 +525,12 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -84,7 +84,7 @@ index 695fa25..77d547a 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1919,7 +1925,10 @@ int main(int argc, char *argv[])
+@@ -1922,7 +1928,10 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -95,7 +95,7 @@ index 695fa25..77d547a 100644
  	if (xvis & 4)
  		return EXIT_SUCCESS;
  	if (abs(xquit) == 2) {
-@@ -1927,5 +1936,9 @@ int main(int argc, char *argv[])
+@@ -1930,5 +1939,9 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
@@ -106,10 +106,10 @@ index 695fa25..77d547a 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 35810e4..b395f95 100644
+index f00adb9..9ab3a98 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -217,6 +217,7 @@ char *ren_translate(char *s, char *ln);
+@@ -220,6 +220,7 @@ char *ren_translate(char *s, char *ln);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -117,7 +117,7 @@ index 35810e4..b395f95 100644
  /* syntax highlighting */
  #define SYN_BD		0x010000
  #define SYN_IT		0x020000
-@@ -239,6 +240,7 @@ void syn_reloadft(void);
+@@ -242,6 +243,7 @@ void syn_reloadft(void);
  int syn_findhl(int id);
  void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
@@ -125,7 +125,7 @@ index 35810e4..b395f95 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -398,6 +400,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -401,6 +403,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);

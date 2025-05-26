@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 7ca9c44..31014ce 100644
+index e41edeb..7db2964 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1224,7 +1224,7 @@ void ex(void)
+@@ -1230,7 +1230,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -11,7 +11,7 @@ index 7ca9c44..31014ce 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1237,4 +1237,6 @@ void ex_init(char **files, int n)
+@@ -1243,4 +1243,6 @@ void ex_init(char **files, int n)
  	xvis &= ~8;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -19,10 +19,10 @@ index 7ca9c44..31014ce 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 695fa25..102c41f 100644
+index 74b81e8..360595c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1884,7 +1884,8 @@ static int setup_signals(void)
+@@ -1887,7 +1887,8 @@ static int setup_signals(void)
  
  int main(int argc, char *argv[])
  {
@@ -32,7 +32,7 @@ index 695fa25..102c41f 100644
  	if (!setup_signals())
  		return EXIT_FAILURE;
  	dir_init();
-@@ -1905,16 +1906,27 @@ int main(int argc, char *argv[])
+@@ -1908,16 +1909,27 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -64,10 +64,10 @@ index 695fa25..102c41f 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 35810e4..029d781 100644
+index f00adb9..7abe76d 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -396,7 +396,7 @@ int ex_exec(const char *ln);
+@@ -399,7 +399,7 @@ int ex_exec(const char *ln);
  char *ex_read(char *msg);
  void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)

@@ -45,10 +45,10 @@ index 0649f71..268c77d 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 695fa25..2026b4d 100644
+index 74b81e8..22fe03f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1541,6 +1541,17 @@ void vi(int init)
+@@ -1544,6 +1544,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
@@ -67,10 +67,10 @@ index 695fa25..2026b4d 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 35810e4..b315164 100644
+index f00adb9..ee6f333 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -170,6 +170,7 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end);
+@@ -173,6 +173,7 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end);
  struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init);
  void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
  int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off);

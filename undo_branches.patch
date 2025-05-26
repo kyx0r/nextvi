@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 7ca9c44..95713c3 100644
+index e41edeb..111ec69 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1093,6 +1093,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1099,6 +1099,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -19,7 +19,7 @@ index 7ca9c44..95713c3 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1135,6 +1145,7 @@ static struct excmd {
+@@ -1141,6 +1151,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -174,10 +174,10 @@ index 0649f71..6594b14 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 35810e4..57f76d3 100644
+index f00adb9..6b91dda 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -144,6 +144,7 @@ struct linfo {
+@@ -147,6 +147,7 @@ struct linfo {
  struct lbuf {
  	char **ln;		/* buffer lines */
  	struct lopt *hist;	/* buffer history */
@@ -185,7 +185,7 @@ index 35810e4..57f76d3 100644
  	int mark[NMARKS];	/* mark lines */
  	int mark_off[NMARKS];	/* mark line offsets */
  	int ln_n;		/* number of lines in ln[] */
-@@ -179,6 +180,8 @@ int lbuf_eol(struct lbuf *lb, int r);
+@@ -182,6 +183,8 @@ int lbuf_eol(struct lbuf *lb, int r);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip);

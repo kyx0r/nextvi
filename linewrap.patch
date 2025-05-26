@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 7ca9c44..9512615 100644
+index e41edeb..d5262c4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
@@ -10,7 +10,7 @@ index 7ca9c44..9512615 100644
  char *xregs[256];		/* string registers */
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -1093,6 +1094,21 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1099,6 +1100,21 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -32,7 +32,7 @@ index 7ca9c44..9512615 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1114,6 +1130,8 @@ static struct excmd {
+@@ -1120,6 +1136,8 @@ static struct excmd {
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
@@ -132,10 +132,10 @@ index 0649f71..6b4e277 100644
  void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
  {
 diff --git a/vi.h b/vi.h
-index 35810e4..ee02ad8 100644
+index f00adb9..2ec9936 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -140,6 +140,7 @@ struct lopt {
+@@ -143,6 +143,7 @@ struct lopt {
  struct linfo {
  	int len;
  	int grec;
@@ -143,7 +143,7 @@ index 35810e4..ee02ad8 100644
  };
  struct lbuf {
  	char **ln;		/* buffer lines */
-@@ -162,6 +163,8 @@ struct lbuf *lbuf_make(void);
+@@ -165,6 +166,8 @@ struct lbuf *lbuf_make(void);
  void lbuf_free(struct lbuf *lbuf);
  int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init);
  int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);

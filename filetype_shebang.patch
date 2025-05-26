@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 7ca9c44..f9a9229 100644
+index e41edeb..0fbf7eb 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -421,6 +421,23 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -423,6 +423,23 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  			fd < 0 || rd ? 'f' : 'r');
  	if (!(xvis & 8))
  		ex_print(msg);
