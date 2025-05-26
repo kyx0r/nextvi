@@ -301,8 +301,10 @@ static int ec_search(char *loc, char *cmd, char *arg)
 		return -1;
 	ex_krsset(e, dir);
 	free(e);
-	if (!xkwdrs)
+	if (!xkwdrs) {
+		ex_print("re syntax error");
 		return -1;
+	}
 	if (!loc) {
 		beg = cmd ? *(int*)cmd : xrow + (xkwddir > 0);
 		off = cmd ? xoff : 0;
@@ -443,8 +445,10 @@ static int ec_editapprox(char *loc, char *cmd, char *arg)
 			ex_print(ln);
 		}
 	}
-	if (inst < 0 && c > 1)
-		inst = term_read() - '0';
+	if (inst < 0 && c > 1) {
+		inst = term_read();
+		inst = inst == '\n' ? 0 : inst - '0';
+	}
 	if ((inst >= 0 && inst < c) || c == 1) {
 		path = *((char**)sb->s + (c == 1 ? 0 : inst));
 		path[lbuf_s(path)->len] = '\0';
@@ -764,8 +768,10 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 		snprintf(xrep, sizeof(xrep), "%s", rep ? rep : "");
 	free(pat);
 	free(rep);
-	if (!xkwdrs)
+	if (!xkwdrs) {
+		ex_print("re syntax error");
 		return 1;
+	}
 	int offs[xkwdrs->grpcnt * 2];
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
@@ -1004,10 +1010,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
 static int ec_setincl(char *loc, char *cmd, char *arg)
 {
 	rset_free(fsincl);
-	if (*arg)
-		fsincl = rset_smake(arg, xic ? REG_ICASE : 0);
-	else
+	if (!*arg)
 		fsincl = NULL;
+	else if (!(fsincl = rset_smake(arg, xic ? REG_ICASE : 0)))
+		ex_print("syntax error");
 	return 0;
 }
 

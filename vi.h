@@ -101,16 +101,19 @@ typedef struct {
 	char *rm_so;
 	char *rm_eo;
 } regmatch_t;
-typedef struct {
-	int unilen;	/* number of integers in insts */
-	int len;	/* number of atoms/instructions */
-	int sub;	/* interim val = save count; final val = nsubs size */
-	int presub;	/* interim val = save count; final val = 1 rsub size */
-	int splits;	/* number of split insts */
-	int sparsesz;	/* sdense size */
-	int flg;	/* stored flags */
-	int insts[];	/* re code */
-} rcode;
+struct rcode {
+	struct rcode **la;	/* lookahead expressions */
+	int laidx;		/* lookahead index */
+	int unilen;		/* number of integers in insts */
+	int len;		/* number of atoms/instructions */
+	int sub;		/* interim val = save count; final val = nsubs size */
+	int presub;		/* interim val = save count; final val = 1 rsub size */
+	int splits;		/* number of split insts */
+	int sparsesz;		/* sdense size */
+	int flg;		/* stored flags */
+	int insts[];		/* re code */
+};
+typedef struct rcode rcode;
 /* regular expression set */
 typedef struct {
 	rcode *regex;		/* the combined regular expression */
@@ -425,7 +428,7 @@ struct highlight {
 				else defines hl continuation for the group:
 				positive value - continue at rm_so
 				zero (default) - continue at rm_eo
-				negative value - continue at sp+1 */
+				negative value - ignore it or continue at sp+1 */
 	signed char blkend;	/* the ending group for multi-line patterns;
 				negative group is able to start and end itself */
 	char id;		/* id of this hl */
