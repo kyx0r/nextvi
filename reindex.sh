@@ -9,6 +9,6 @@ do
 	cp /tmp/tmp.patch $p
 	git add $p
 	printf "\n"
-	[ "$1" = "2" ] && git reset --hard
+	[ "$1" = "2" ] && git reset --hard &>/dev/null
 done
 rm -f tmp *.orig *.rej
