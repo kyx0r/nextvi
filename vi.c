@@ -980,11 +980,15 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 
 static void vi_pipe(int r1, int r2)
 {
-	char region[100];
-	char *p = itoa(r1+1, region);
 	int mlen;
-	*p++ = ',';
-	p = itoa(r2+1, p);
+	char region[100], *p = region;
+	if (r1 == r2 && !vi_arg)
+		*p++ = '.';
+	else {
+		p = itoa(r1+1, region);
+		*p++ = ',';
+		p = itoa(r2+1, p);
+	}
 	*p++ = '!';
 	*p = '\0';
 	char *cmd = vi_enprompt(":", region, &mlen);
