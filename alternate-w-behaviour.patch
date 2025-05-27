@@ -1,5 +1,5 @@
 diff --git a/vi.c b/vi.c
-index 74b81e8..27b1592 100644
+index 3ca8bc4..402da7b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -653,7 +653,7 @@ static void vc_status(int type)
@@ -26,7 +26,7 @@ index 74b81e8..27b1592 100644
  				break;
  		break;
  	case '{':
-@@ -1030,7 +1034,7 @@ static void vc_motion(int cmd)
+@@ -1034,7 +1038,7 @@ static void vc_motion(int cmd)
  	o2 = o1;
  	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
  		o2 = -1;
@@ -35,7 +35,7 @@ index 74b81e8..27b1592 100644
  		return;
  	if (mv < 0)
  		return;
-@@ -1294,7 +1298,7 @@ void vi(int init)
+@@ -1298,7 +1302,7 @@ void vi(int init)
  			sbuf_cut(led_attsb, 0)
  		if (!vi_ybuf)
  			vi_ybuf = vi_yankbuf();

@@ -28,7 +28,7 @@ index e41edeb..db4662b 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 74b81e8..dbc82c1 100644
+index 3ca8bc4..80d7b88 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -585,12 +585,12 @@ void dir_calc(char *path)
@@ -127,7 +127,7 @@ index 74b81e8..dbc82c1 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1377,7 +1414,17 @@ void vi(int init)
+@@ -1381,7 +1418,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -146,7 +146,7 @@ index 74b81e8..dbc82c1 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1536,6 +1583,10 @@ void vi(int init)
+@@ -1540,6 +1587,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index 74b81e8..dbc82c1 100644
  				default:
  					term_dec()
  				}
-@@ -1894,6 +1945,7 @@ int main(int argc, char *argv[])
+@@ -1898,6 +1949,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");

@@ -68,7 +68,7 @@ index 305942a..5f0b449 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 74b81e8..8553db5 100644
+index 3ca8bc4..f897987 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -84,7 +84,7 @@ index 74b81e8..8553db5 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1922,7 +1928,10 @@ int main(int argc, char *argv[])
+@@ -1926,7 +1932,10 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -95,7 +95,7 @@ index 74b81e8..8553db5 100644
  	if (xvis & 4)
  		return EXIT_SUCCESS;
  	if (abs(xquit) == 2) {
-@@ -1930,5 +1939,9 @@ int main(int argc, char *argv[])
+@@ -1934,5 +1943,9 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();
