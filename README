@@ -120,7 +120,7 @@ VI NORMAL
      [#].          Repeat last normal command # times
      [#]v.         Repeat last normal command moving down across # lines
      :             Enter ex prompt
-     [#]!{arg}     Enter pipe ex prompt based on region # or arg
+     [#]!{arg}     Enter pipe ex prompt based on # or arg region
      vv            Enter ex prompt with the last line from history buffer b-1
      [#]vr         Enter %s/ ex prompt. Insert # words from cursor
      [#]vt[#arg]   Enter .,.+0s/ ex prompt. Insert # of lines from cursor.
@@ -918,8 +918,8 @@ CODE MAP
      | 675 led.c    |  insert mode/output  |
      | 715 regex.c  |  extended RE         |
      | 1246 ex.c    |  ex options/commands |
-     | 1934 vi.c    |  normal mode/general |
-     | 6758 total   |  wc -l *.c|sort      |
+     | 1938 vi.c    |  normal mode/general |
+     | 6762 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -990,4 +990,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.13.7                     May 23, 2025                     Linux 6.13.7
+Linux 6.13.7                     May 27, 2025                     Linux 6.13.7
