@@ -65,6 +65,7 @@ build() {
 
 install() {
     run rm "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
+    command -v strip >/dev/null 2>&1 && run strip vi
     run mkdir -p "$DESTDIR$PREFIX/bin/" &&
     run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
     [ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been installed to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
@@ -93,6 +94,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         if [ "$explicit" != "1" ]; then
             if [ -f ./vi ] || [ -f ./nextvi ]; then
                 log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled"
+                echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean}"
                 exit 0
             fi
         fi
