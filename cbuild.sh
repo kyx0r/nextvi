@@ -44,6 +44,7 @@ CFLAGS="\
  $CFLAGS"
 
 : "${CC:=cc}"
+: "${STRIP:=strip}"
 : "${PREFIX:=/usr/local}"
 : "${OS:=$(uname)}"
 case "$OS" in
@@ -65,7 +66,7 @@ build() {
 
 install() {
     run rm "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
-    command -v strip >/dev/null 2>&1 && run strip vi
+    command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
     run mkdir -p "$DESTDIR$PREFIX/bin/" &&
     run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
     [ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been installed to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
