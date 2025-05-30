@@ -1,0 +1,179 @@
+diff --git a/ex.c b/ex.c
+index e41edeb..bfa9c4c 100644
+--- a/ex.c
++++ b/ex.c
+@@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
+ int xmpt;			/* whether to prompt after printing > 1 lines in vi */
+ int xpr;			/* ex_cprint register */
+ int xsep = ':';			/* ex command separator */
++int xlw = 10;			/* soft linewrap col */
+ char *xregs[256];		/* string registers */
+ static int xbufsmax;		/* number of buffers */
+ static int xbufsalloc = 10;	/* initial number of buffers */
+diff --git a/lbuf.c b/lbuf.c
+index 0649f71..0c283af 100644
+--- a/lbuf.c
++++ b/lbuf.c
+@@ -74,21 +74,96 @@ static int linelength(char *s)
+ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+ {
+ 	int i, n_ins = 0, pos = lo->pos;
++	int r_ins = -1;
+ 	sbuf_smake(sb, 0)
+ 	if (s) {
++		char *lwp = NULL;
++		sbuf_smake(nsb, 1)
++		char *nwp = lbuf_get(lb, pos);
++		int org = pos;
++		int p_ndel = n_del;
++		p("%s %d %d\n", nwp, n_del, pos)
++		if (!n_del && nwp && (!lbuf_s(nwp)->lw_prev))
++			goto skip;
++		while (nwp && lbuf_s(nwp)->lw_prev) {
++			nwp = lbuf_s(nwp)->lw_prev;
++			pos--;
++		}
++		if (org != pos || (nwp && lbuf_s(nwp)->lw_next)) {
++			//p("%d\n", n_del)
++			n_del = 0;
++			while (nwp) {
++				//p("%s %d\n", nwp, lbuf_s(nwp)->len)
++				if (org - pos == n_del) {
++					for (r_ins = 0; *s; r_ins++) {
++						int l = linelength(s);
++						sbuf_mem(nsb, s, l - (s[l - !!l] == '\n'))
++						s += l;
++					}
++					if (!p_ndel)
++						sbuf_mem(nsb, nwp, lbuf_s(nwp)->len)
++				} else
++					sbuf_mem(nsb, nwp, lbuf_s(nwp)->len)
++				nwp = lbuf_s(nwp)->lw_next;
++				//free(lbuf_s(nwp)->lw_prev);
++				n_del++;
++			}
++		}
++		if (nsb->s_n > 0) {
++			s = nsb->s;
++			sbuf_null(nsb)
++			lo->n_del = n_del;
++			lo->pos = pos;
++			free(lo->ins);
++			lo->ins = s;
++			free(lo->del);
++			lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
++			//p("%s", s);
++		}
++		skip:
+ 		for (; *s; n_ins++) {
+ 			int l = linelength(s);
+ 			int l_nonl = l - (s[l - !!l] == '\n');
+ 			struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
+ 			n->len = l_nonl;
+ 			n->grec = 0;
++			n->lw_prev = NULL;
++			n->lw_next = NULL;
+ 			char *ln = (char*)(n + 1);
+ 			memcpy(ln, s, l_nonl);
+ 			memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
+ 			ln[l_nonl] = '\n';
++			if (xlw) {
++				rstate->s = NULL;
++				ren_state *r = ren_position(ln);
++				if (r->cmax > xlw) {
++					l = uc_chr(r->s, r->col[xlw]) - r->s;
++					if (l <= 0)
++						abort();
++					l_nonl = l - (ln[l - !!l] == '\n');
++					n = erealloc(n, l_nonl + 7 + sizeof(struct linfo));
++					n->len = l_nonl;
++					n->grec = 0;
++					n->lw_prev = lwp;
++					n->lw_next = NULL;
++					ln = (char*)(n + 1);
++					if (lwp)
++						lbuf_s(lwp)->lw_next = ln;
++					lwp = ln;
++					memcpy(ln, s, l_nonl);
++					memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
++					ln[l_nonl] = '\n';
++				} else {
++					if (lwp)
++						lbuf_s(lwp)->lw_next = ln;
++					n->lw_prev = lwp;
++					lwp = NULL;
++				}
++			}
+ 			sbuf_mem(sb, &ln, (int)sizeof(s))
+ 			s += l;
+ 		}
++		//free(nsb->s);
+ 	}
+ 	for (i = 0; i < n_del; i++)
+ 		free(lbuf_i(lb, pos + i));
+@@ -106,8 +181,10 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+ 			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
+ 	}
+ 	lb->ln_n += n_ins - n_del;
+-	for (i = 0; i < n_ins; i++)
++	for (i = 0; i < n_ins; i++) {
+ 		lb->ln[pos + i] = *((char**)sb->s + i);
++		//p("%s", lb->ln[pos + i]);
++	}
+ 	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
+ 		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
+ 			lbuf_savemark(lb, lo, i, i);
+@@ -165,6 +242,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
+ 	return lo;
+ }
+ 
++void lbuf_lw(struct lbuf *lb, int i)
++{
++
++}
++
+ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init)
+ {
+ 	long nr;
+@@ -188,7 +270,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+ 	for (int i = beg; i < end; i++) {
+ 		char *ln = lbuf->ln[i];
+ 		long nw = 0;
+-		long nl = lbuf_s(ln)->len + 1;
++		long nl = lbuf_s(ln)->len + (!lbuf_s(ln)->lw_next);
+ 		while (nw < nl) {
+ 			long nc = write(fd, ln + nw, nl - nw);
+ 			if (nc < 0)
+diff --git a/regex.c b/regex.c
+index 08470a5..0e95395 100644
+--- a/regex.c
++++ b/regex.c
+@@ -590,6 +590,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+ 	int *pcs[prog->splits];
+ 	rsub *subs[prog->splits];
+ 	unsigned int sdense[prog->sparsesz], sparsesz = 0;
++	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+ 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
+ 	rthread _clist[prog->len], _nlist[prog->len];
+ 	rthread *clist = _clist, *nlist = _nlist, *tmp;
+diff --git a/vi.h b/vi.h
+index f00adb9..e68db67 100644
+--- a/vi.h
++++ b/vi.h
+@@ -143,6 +143,8 @@ struct lopt {
+ struct linfo {
+ 	int len;
+ 	int grec;
++	char *lw_prev;
++	char *lw_next;
+ };
+ struct lbuf {
+ 	char **ln;		/* buffer lines */
+@@ -165,6 +167,7 @@ struct lbuf *lbuf_make(void);
+ void lbuf_free(struct lbuf *lbuf);
+ int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init);
+ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
++void lbuf_lw(struct lbuf *lb, int i);
+ void lbuf_iedit(struct lbuf *lbuf, char *s, int beg, int end, int init);
+ #define lbuf_edit(lb, s, beg, end) lbuf_iedit(lb, s, beg, end, 0)
+ char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
