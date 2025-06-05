@@ -95,7 +95,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         if [ "$explicit" != "1" ]; then
             if [ -f ./vi ] || [ -f ./nextvi ]; then
                 log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled"
-                echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean}"
+                echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean|bench}"
                 exit 0
             fi
         fi
