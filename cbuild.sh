@@ -72,6 +72,11 @@ install() {
     [ -x "$DESTDIR$PREFIX/bin/vi" ] && log "$G" "\"${BASE##*/}\" has been installed to $DESTDIR$PREFIX/bin/vi" || log "$R" "Couldn't finish installation"
 }
 
+print_usage() {
+    echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean|bench}"
+    exit "$1"
+}
+
 # Argument processing
 while [ $# -gt 0 ] || [ "$1" = "" ]; do
     case "$1" in
@@ -95,8 +100,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         if [ "$explicit" != "1" ]; then
             if [ -f ./vi ] || [ -f ./nextvi ]; then
                 log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled"
-                echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean}"
-                exit 0
+                print_usage 0
             fi
         fi
         # Start build process
@@ -163,8 +167,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         exit 0
         ;;
     *)
-        echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean}"
-        exit 1
+        print_usage 1
         ;;
     esac
 done
