@@ -140,8 +140,8 @@ VI NORMAL
      ga            Print character info
      1ga           Enable permanent character info bar row
      2ga           Disable permanent character info bar row
-     [#]gw         Hard line wrap a line to # col limit. Default: 80
-     [#]gq         Hard line wrap a buffer to # col limit. Default: 80
+     [#]gw         Hard word wrap a line to # col limit. Default: 80
+     [#]gq         Hard word wrap a buffer to # col limit. Default: 80
      [#]g~{arg}    Switch character case for arg region # times
      [#]gu{arg}    Switch arg region to lowercase # times
      [#]gU{arg}    Switch arg region to uppercase # times
@@ -990,4 +990,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.13.7                     May 27, 2025                     Linux 6.13.7
+Linux 6.14.10                    June 7, 2025                    Linux 6.14.10
