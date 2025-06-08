@@ -1745,13 +1745,13 @@ void vi(int init)
 				if (k == 'Z')
 					ex_exec("x");
 				else if (k == 'z') {
-					xquit = 2 * (texec == '&' ? -1 : 1);
+					xquit = texec == '&' ? -1 : 1;
 					if (xgrec > 1) {
 						term_push("\n", 1);
 						break;
 					}
 				} else if (!TK_INT(k))
-					xquit = texec == '&' ? -1 : 1;
+					xquit = texec == '&' ? -2 : 2;
 				continue;
 			case '.':
 				vc_repeat();
@@ -1928,12 +1928,11 @@ int main(int argc, char *argv[])
 	else
 		vi(1);
 	term_done();
-	if (xvis & 4)
-		return EXIT_SUCCESS;
-	if (abs(xquit) == 2) {
+	if (abs(xquit) == 2)
+		term_clean();
+	else {
 		term_pos(xrows - !vi_status, 0);
 		term_kill();
-	} else
-		term_clean();
+	}
 	return EXIT_SUCCESS;
 }
