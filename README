@@ -219,7 +219,7 @@ VI NORMAL
      <^L>          Force redraw whole screen and update terminal dimensions
      Z{*}          Exit and clean terminal, force quit in an & macro
      Zz            Exit and submit history command, force quit in an & macro
-     ZZ            Exit and soft write to a file
+     ZZ            Exit and write unsaved changes to a file
 
 VI REGIONS
      Regions are vi normal commands that define [h v]range for vi motions.
@@ -575,9 +575,12 @@ EX COMMANDS
      q       Exit
      q!      Force quit
 
-     wq[!]
-     x[!]
-             Soft write and exit or force quit
+     wq
+     x
+             Write and exit
+     wq!
+     x!
+             Force write and quit
 
      u[# $]  Undo # times or all with $
      rd[# $]
@@ -916,10 +919,10 @@ CODE MAP
      | 521 lbuf.c   |  file/line buffer    |
      | 650 uc.c     |  UTF-8 support       |
      | 675 led.c    |  insert mode/output  |
-     | 715 regex.c  |  extended RE         |
+     | 716 regex.c  |  extended RE         |
      | 1246 ex.c    |  ex options/commands |
-     | 1936 vi.c    |  normal mode/general |
-     | 6760 total   |  wc -l *.c|sort      |
+     | 1939 vi.c    |  normal mode/general |
+     | 6764 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING

@@ -382,7 +382,7 @@ Exit and clean terminal, force quit in an & macro
 .It Cm Zz
 Exit and submit history command, force quit in an & macro
 .It Cm ZZ
-Exit and soft write to a file
+Exit and write unsaved changes to a file
 .El
 .
 .Sh VI REGIONS
@@ -828,10 +828,15 @@ Exit
 .It Cm q!
 Force quit
 
-.It Cm wq[!]
-.It Cm x[!]
+.It Cm wq
+.It Cm x
 .Bd -compact
-Soft write and exit or force quit
+Write and exit
+.Ed
+.It Cm wq!
+.It Cm x!
+.Bd -compact
+Force write and quit
 .Ed
 
 .It Cm u[\fI# $\fP]
@@ -1291,10 +1296,10 @@ _
  521 lbuf.c | file/line buffer
  650 uc.c | UTF-8 support
  675 led.c | insert mode/output
- 715 regex.c | extended RE
+ 716 regex.c | extended RE
  1246 ex.c | ex options/commands
- 1936 vi.c | normal mode/general
- 6760 total | wc -l *.c\(basort
+ 1939 vi.c | normal mode/general
+ 6764 total | wc -l *.c\(basort
 _
 .TE
 .
