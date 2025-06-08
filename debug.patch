@@ -20,10 +20,10 @@ index e41edeb..7fa73c6 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 08470a5..0e95395 100644
+index 842722f..4e30464 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -590,6 +590,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -591,6 +591,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	int *pcs[prog->splits];
  	rsub *subs[prog->splits];
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
@@ -68,7 +68,7 @@ index 305942a..5f0b449 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index ff4161d..c0ae9cb 100644
+index 03e547b..1825c56 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -84,7 +84,7 @@ index ff4161d..c0ae9cb 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1924,7 +1930,10 @@ int main(int argc, char *argv[])
+@@ -1927,7 +1933,10 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -95,7 +95,7 @@ index ff4161d..c0ae9cb 100644
  	if (xvis & 4)
  		return EXIT_SUCCESS;
  	if (abs(xquit) == 2) {
-@@ -1932,5 +1941,9 @@ int main(int argc, char *argv[])
+@@ -1935,5 +1944,9 @@ int main(int argc, char *argv[])
  		term_kill();
  	} else
  		term_clean();

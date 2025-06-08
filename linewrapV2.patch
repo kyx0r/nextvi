@@ -145,10 +145,10 @@ index 0649f71..0c283af 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/regex.c b/regex.c
-index 08470a5..0e95395 100644
+index 842722f..4e30464 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -590,6 +590,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -591,6 +591,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	int *pcs[prog->splits];
  	rsub *subs[prog->splits];
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;

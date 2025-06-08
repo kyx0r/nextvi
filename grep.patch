@@ -28,7 +28,7 @@ index e41edeb..db4662b 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index ff4161d..a28b47a 100644
+index 03e547b..93eff6f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -585,12 +585,12 @@ void dir_calc(char *path)
@@ -157,7 +157,7 @@ index ff4161d..a28b47a 100644
  				default:
  					term_dec()
  				}
-@@ -1896,6 +1947,7 @@ int main(int argc, char *argv[])
+@@ -1899,6 +1950,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");

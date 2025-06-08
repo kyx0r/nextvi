@@ -128,7 +128,7 @@ index 0649f71..debb5f8 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 08470a5..db495c2 100644
+index 842722f..3b324f0 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -377,7 +377,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -140,7 +140,7 @@ index 08470a5..db495c2 100644
  
  #define newsub(init, copy) \
  if (freesub) \
-@@ -595,8 +595,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -596,8 +596,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
  	char nsubs[prog->sub];
  	flg = prog->flg | flg;
@@ -171,7 +171,7 @@ index 0da830f..7cb6143 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index ff4161d..eb4fb6c 100644
+index 03e547b..aa741ed 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
