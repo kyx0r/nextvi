@@ -1565,10 +1565,6 @@ void vi(int init)
 					ex_command(ln + n)
 				free(ln);
 				break;
-			case 'q':
-				if (term_read() == 'q')
-					xquit = texec == '&' ? -1 : 1;
-				continue;
 			case 'c':
 			case 'd':
 				k = term_read();
@@ -1649,10 +1645,6 @@ void vi(int init)
 			case 'z':
 				k = term_read();
 				switch (k) {
-				case 'z':
-					xquit = 2 * (texec == '&' ? -1 : 1);
-					term_push("\n", 1);
-					break;
 				case '\n':
 					xtop = vi_arg ? vi_arg : xrow;
 					break;
@@ -1749,8 +1741,14 @@ void vi(int init)
 				ex_exec("reg");
 				break;
 			case 'Z':
-				if (term_read() == 'Z')
+				k = term_read();
+				if (k == 'Z')
 					ex_exec("x");
+				else if (k == 'z') {
+					xquit = 2 * (texec == '&' ? -1 : 1);
+					term_push("\n", 1);
+				} else if (!TK_INT(k))
+					xquit = texec == '&' ? -1 : 1;
 				break;
 			case '.':
 				vc_repeat();
