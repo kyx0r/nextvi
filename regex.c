@@ -137,7 +137,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					EMIT(PC++, prog->laidx);
 					bal = 1;
 					s = ++re;
-					la_static = *s == '^';
+					la_static = !(flg & REG_ICASE) && *s == '^';
 					while (1) {
 						if (!*s)
 							return -1;
@@ -173,7 +173,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 							if (sz < 0)
 								return -1;
 							prog->la[prog->laidx] = emalloc(sizeof(rcode)+sz);
-							if (reg_comp(prog->la[prog->laidx], re, 0, laidx, prog->flg)) {
+							if (reg_comp(prog->la[prog->laidx], re, 0, laidx, flg)) {
 								reg_free(prog->la[prog->laidx]);
 								return -1;
 							}
@@ -498,7 +498,8 @@ if (spc > JMP) { \
 	if (npc[3]) { \
 		test = !strncmp(str, (char*)(prog->la[npc[2]]+1), npc[3]); \
 	} else \
-		test = re_pikevm(prog->la[npc[2]], str, NULL, 0, 0); \
+		test = re_pikevm(prog->la[npc[2]], str, NULL, 0, \
+					flg & REG_ICASE ? REG_ICASE : 0); \
 	if ((test && (npc[1] == '!' || npc[1] == '>')) \
 			|| (!test && (npc[1] == '=' || npc[1] == '<'))) \
 		deccheck(nn) \
