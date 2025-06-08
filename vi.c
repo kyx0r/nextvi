@@ -1746,10 +1746,13 @@ void vi(int init)
 					ex_exec("x");
 				else if (k == 'z') {
 					xquit = 2 * (texec == '&' ? -1 : 1);
-					term_push("\n", 1);
+					if (xgrec > 1) {
+						term_push("\n", 1);
+						break;
+					}
 				} else if (!TK_INT(k))
 					xquit = texec == '&' ? -1 : 1;
-				break;
+				continue;
 			case '.':
 				vc_repeat();
 				break;
