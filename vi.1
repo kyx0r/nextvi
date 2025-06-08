@@ -1,4 +1,4 @@
-.Dd Jun  7, 2025
+.Dd Jun  8, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -377,9 +377,9 @@ Filesystem search backward, set keyword to # words from cursor
 Suspend vi
 .It Cm <^L>
 Force redraw whole screen and update terminal dimensions
-.It Cm qq
+.It Cm Z{*}
 Exit and clean terminal, force quit in an & macro
-.It Cm zz
+.It Cm Zz
 Exit and submit history command, force quit in an & macro
 .It Cm ZZ
 Exit and soft write to a file
@@ -1293,8 +1293,8 @@ _
  675 led.c | insert mode/output
  715 regex.c | extended RE
  1246 ex.c | ex options/commands
- 1938 vi.c | normal mode/general
- 6762 total | wc -l *.c\(basort
+ 1936 vi.c | normal mode/general
+ 6760 total | wc -l *.c\(basort
 _
 .TE
 .
