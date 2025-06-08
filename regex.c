@@ -498,8 +498,7 @@ if (spc > JMP) { \
 	if (npc[3]) { \
 		test = !strncmp(str, (char*)(prog->la[npc[2]]+1), npc[3]); \
 	} else \
-		test = re_pikevm(prog->la[npc[2]], str, NULL, 0, \
-					flg & REG_ICASE ? REG_ICASE : 0); \
+		test = re_pikevm(prog->la[npc[2]], str, NULL, 0, 0); \
 	if ((test && (npc[1] == '!' || npc[1] == '>')) \
 			|| (!test && (npc[1] == '=' || npc[1] == '<'))) \
 		deccheck(nn) \
