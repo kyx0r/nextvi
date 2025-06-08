@@ -120,7 +120,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
                 [ -z "$PROFDATA" ] && log "R" "pgobuild with clang requires llvm-profdata" && exit 1
             fi
             run "$CC vi.c -fprofile-generate=. -o vi -O2 $CFLAGS"
-            echo "qq" | ./vi -v ./vi.c >/dev/null
+            echo "Zx" | ./vi -v ./vi.c >/dev/null
             [ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
             run "$CC vi.c -fprofile-use=. -o vi -O2 $CFLAGS"
             rm -f ./*.gcda ./*.profraw ./default.profdata
@@ -161,7 +161,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "bench")
         shift
-        export EXINIT="${EXINIT}:&dw1999.qq"
+        export EXINIT="${EXINIT}:&dw1999.Zx"
         valgrind --tool=callgrind ./vi vi.c
         valgrind --tool=cachegrind --cache-sim=yes --branch-sim=yes ./vi vi.c
         exit 0
