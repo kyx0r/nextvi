@@ -124,7 +124,7 @@ index 713ad19..ee9158b 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 842722f..95ba598 100644
+index 3353c28..363a245 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -377,7 +377,14 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -143,7 +143,7 @@ index 842722f..95ba598 100644
  
  #define newsub(init, copy) \
  if (freesub) \
-@@ -588,13 +595,13 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+@@ -587,13 +594,13 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
  	int spc, i, j, c, *npc, osubp = nsubp * sizeof(char*);
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
@@ -162,7 +162,7 @@ index 842722f..95ba598 100644
  	flg = prog->flg | flg;
  	if (eol_ch)
  		utf8_length[eol_ch] = 0;
-@@ -673,7 +680,7 @@ rset *rset_make(int n, char **re, int flg)
+@@ -672,7 +679,7 @@ rset *rset_make(int n, char **re, int flg)
  /* return the index of the matching regular expression or -1 if none matches */
  int rset_find(rset *rs, char *s, int *grps, int flg)
  {
@@ -171,7 +171,7 @@ index 842722f..95ba598 100644
  	regmatch_t *sub = subs+1;
  	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
  		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
-@@ -690,10 +697,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
+@@ -689,10 +696,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
  						grps[gi * 2 + 1] = -1;
  					}
  				}
