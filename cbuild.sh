@@ -120,7 +120,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
                 [ -z "$PROFDATA" ] && log "R" "pgobuild with clang requires llvm-profdata" && exit 1
             fi
             run "$CC vi.c -fprofile-generate=. -o vi -O2 $CFLAGS"
-            export EXINIT=$'&dw100.1\\\\:/not matching:&100J0300liinsert:&ewbgwZz'
+            export EXINIT=$'&dw100.1\\\\:/not matching:&:b0:&100J0300liinsert:&ewbgwZz'
             ./vi ./vi.c > /dev/null
             [ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
             run "$CC vi.c -fprofile-use=. -o vi -O2 $CFLAGS"
