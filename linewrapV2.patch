@@ -11,10 +11,10 @@ index e41edeb..bfa9c4c 100644
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
 diff --git a/lbuf.c b/lbuf.c
-index 0649f71..0c283af 100644
+index 0649f71..04f1efc 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -74,21 +74,96 @@ static int linelength(char *s)
+@@ -74,21 +74,104 @@ static int linelength(char *s)
  static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
  {
  	int i, n_ins = 0, pos = lo->pos;
@@ -26,13 +26,15 @@ index 0649f71..0c283af 100644
 +		char *nwp = lbuf_get(lb, pos);
 +		int org = pos;
 +		int p_ndel = n_del;
-+		p("%s %d %d\n", nwp, n_del, pos)
 +		if (!n_del && nwp && (!lbuf_s(nwp)->lw_prev))
++			goto skip;
++		if (s == lo->del || s == lo->ins)
 +			goto skip;
 +		while (nwp && lbuf_s(nwp)->lw_prev) {
 +			nwp = lbuf_s(nwp)->lw_prev;
 +			pos--;
 +		}
++		//p("%s %d %d %d %d\n", nwp, n_del, pos, org, n_ins)
 +		if (org != pos || (nwp && lbuf_s(nwp)->lw_next)) {
 +			//p("%d\n", n_del)
 +			n_del = 0;
@@ -53,15 +55,21 @@ index 0649f71..0c283af 100644
 +				n_del++;
 +			}
 +		}
++		//p("%d\n", nsb->s_n)
 +		if (nsb->s_n > 0) {
 +			s = nsb->s;
 +			sbuf_null(nsb)
 +			lo->n_del = n_del;
 +			lo->pos = pos;
-+			free(lo->ins);
-+			lo->ins = s;
-+			free(lo->del);
-+			lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
++			if (lo->ins) {
++				free(lo->ins);
++				lo->ins = s;
++			}
++			if (lo->del) {
++				free(lo->del);
++				lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
++			}
++			//p("%s", lo->del);
 +			//p("%s", s);
 +		}
 +		skip:
@@ -111,7 +119,7 @@ index 0649f71..0c283af 100644
  	}
  	for (i = 0; i < n_del; i++)
  		free(lbuf_i(lb, pos + i));
-@@ -106,8 +181,10 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+@@ -106,8 +189,10 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
  			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
  	}
  	lb->ln_n += n_ins - n_del;
@@ -123,7 +131,7 @@ index 0649f71..0c283af 100644
  	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
  		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
  			lbuf_savemark(lb, lo, i, i);
-@@ -165,6 +242,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
+@@ -165,6 +250,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
  	return lo;
  }
  
@@ -135,7 +143,7 @@ index 0649f71..0c283af 100644
  int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init)
  {
  	long nr;
-@@ -188,7 +270,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+@@ -188,7 +278,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lbuf->ln[i];
  		long nw = 0;
