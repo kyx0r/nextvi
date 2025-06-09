@@ -1,34 +1,50 @@
 diff --git a/ex.c b/ex.c
-index e41edeb..bfa9c4c 100644
+index e41edeb..9188df1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
  int xmpt;			/* whether to prompt after printing > 1 lines in vi */
  int xpr;			/* ex_cprint register */
  int xsep = ':';			/* ex command separator */
-+int xlw = 10;			/* soft linewrap col */
++int xlw = 40;			/* soft linewrap col */
  char *xregs[256];		/* string registers */
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
 diff --git a/lbuf.c b/lbuf.c
-index 0649f71..04f1efc 100644
+index 0649f71..205a4ed 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -74,21 +74,104 @@ static int linelength(char *s)
+@@ -70,25 +70,136 @@ static int linelength(char *s)
+ 	return s[len] == '\n' ? len + 1 : len;
+ }
+ 
++static char *lbuf_cat(struct lbuf *lb, int beg, int end)
++{
++	sbuf_smake(sb, 64)
++	for (int i = beg; i < end; i++)
++		if (i < lb->ln_n)
++			sbuf_mem(sb, lb->ln[i], lbuf_s(lb->ln[i])->len)
++	sbufn_sret(sb)
++}
++
+ /* low-level line replacement */
  static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
  {
  	int i, n_ins = 0, pos = lo->pos;
-+	int r_ins = -1;
++	int r_ins;
++	int relink = 0;
  	sbuf_smake(sb, 0)
++	char *nwp = lbuf_get(lb, pos);
  	if (s) {
 +		char *lwp = NULL;
-+		sbuf_smake(nsb, 1)
-+		char *nwp = lbuf_get(lb, pos);
++		sbuf_smake(nsb, 0)
 +		int org = pos;
 +		int p_ndel = n_del;
-+		if (!n_del && nwp && (!lbuf_s(nwp)->lw_prev))
++		if (s == lo->del || s == lo->ins) {
++			relink = 1;
 +			goto skip;
-+		if (s == lo->del || s == lo->ins)
++		}
++		if (!n_del && nwp && (!lbuf_s(nwp)->lw_prev))
 +			goto skip;
 +		while (nwp && lbuf_s(nwp)->lw_prev) {
 +			nwp = lbuf_s(nwp)->lw_prev;
@@ -43,7 +59,10 @@ index 0649f71..04f1efc 100644
 +				if (org - pos == n_del) {
 +					for (r_ins = 0; *s; r_ins++) {
 +						int l = linelength(s);
-+						sbuf_mem(nsb, s, l - (s[l - !!l] == '\n'))
++						int l_nonl = l - (s[l - !!l] == '\n');
++						//p("pre: %d %d %d %d\n", l, l_nonl, nsb->s_n, nsb->s_sz)
++						sbuf_mem(nsb, s, l_nonl)
++						//p("aft: %d %d %d %d\n", l, l_nonl, nsb->s_n, nsb->s_sz)
 +						s += l;
 +					}
 +					if (!p_ndel)
@@ -51,7 +70,6 @@ index 0649f71..04f1efc 100644
 +				} else
 +					sbuf_mem(nsb, nwp, lbuf_s(nwp)->len)
 +				nwp = lbuf_s(nwp)->lw_next;
-+				//free(lbuf_s(nwp)->lw_prev);
 +				n_del++;
 +			}
 +		}
@@ -67,7 +85,7 @@ index 0649f71..04f1efc 100644
 +			}
 +			if (lo->del) {
 +				free(lo->del);
-+				lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
++				lo->del = n_del ? lbuf_cat(lb, pos, pos + n_del) : NULL;
 +			}
 +			//p("%s", lo->del);
 +			//p("%s", s);
@@ -115,23 +133,53 @@ index 0649f71..04f1efc 100644
  			sbuf_mem(sb, &ln, (int)sizeof(s))
  			s += l;
  		}
-+		//free(nsb->s);
++		if (!lo->ins)
++			free(nsb->s);
++	} else if (xlw && n_del) {
++		if (nwp && lbuf_s(nwp)->lw_prev) {
++			nwp = lbuf_s(nwp)->lw_prev;
++			lbuf_s(nwp)->lw_next = NULL;
++			lo->unlinked1 = nwp;
++		}
++		nwp = lbuf_get(lb, pos + (n_del-1));
++		if (nwp && lbuf_s(nwp)->lw_next) {
++			nwp = lbuf_s(nwp)->lw_next;
++			lbuf_s(nwp)->lw_prev = NULL;
++			lo->unlinked2 = nwp;
++		}
++		//p("%p %p\n", lo->unlinked1, lo->unlinked2)
  	}
  	for (i = 0; i < n_del; i++)
  		free(lbuf_i(lb, pos + i));
-@@ -106,8 +189,10 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
- 			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
- 	}
+@@ -108,6 +219,18 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
  	lb->ln_n += n_ins - n_del;
--	for (i = 0; i < n_ins; i++)
-+	for (i = 0; i < n_ins; i++) {
+ 	for (i = 0; i < n_ins; i++)
  		lb->ln[pos + i] = *((char**)sb->s + i);
-+		//p("%s", lb->ln[pos + i]);
++	//p("relink: %d\n", relink)
++	if (relink && n_ins) {
++		//p("%p %p\n", lo->unlinked1, lo->unlinked2)
++		if (lo->unlinked1) {
++			lbuf_s(lo->unlinked1)->lw_next = lb->ln[pos];
++			lbuf_s(lb->ln[pos])->lw_prev = lo->unlinked1;
++		}
++		if (lo->unlinked2) {
++			lbuf_s(lo->unlinked2)->lw_prev = lb->ln[pos + (n_ins-1)];
++			lbuf_s(lb->ln[pos + (n_ins-1)])->lw_next = lo->unlinked2;
++		}
 +	}
  	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
  		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
  			lbuf_savemark(lb, lo, i, i);
-@@ -165,6 +250,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
+@@ -157,6 +280,8 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
+ 	lo->pos = pos;
+ 	lo->n_ins = 0;
+ 	lo->n_del = n_del;
++	lo->unlinked1 = NULL;
++	lo->unlinked2 = NULL;
+ 	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
+ 	lo->seq = lb->useq;
+ 	lo->mark = emalloc(sizeof(lb->mark));
+@@ -165,6 +290,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
  	return lo;
  }
  
@@ -143,12 +191,13 @@ index 0649f71..04f1efc 100644
  int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init)
  {
  	long nr;
-@@ -188,7 +278,7 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+@@ -188,7 +318,8 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lbuf->ln[i];
  		long nw = 0;
 -		long nl = lbuf_s(ln)->len + 1;
 +		long nl = lbuf_s(ln)->len + (!lbuf_s(ln)->lw_next);
++		//p("%p\n", lbuf_s(ln)->lw_next)
  		while (nw < nl) {
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
@@ -165,10 +214,34 @@ index 3353c28..4fa34e8 100644
  	rthread _clist[prog->len], _nlist[prog->len];
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 diff --git a/vi.h b/vi.h
-index f00adb9..e68db67 100644
+index f00adb9..50e7d44 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -143,6 +143,8 @@ struct lopt {
+@@ -47,11 +47,11 @@ typedef struct sbuf {
+ 
+ #define sbuf_extend(sb, newsz) \
+ { \
+-	char *s = sb->s; \
++	char *__s_ = sb->s; \
+ 	sb->s_sz = newsz; \
+ 	sb->s = emalloc(sb->s_sz); \
+-	memcpy(sb->s, s, sb->s_n); \
+-	free(s); \
++	memcpy(sb->s, __s_, sb->s_n); \
++	free(__s_); \
+ } \
+ 
+ #define _sbuf_make(sb, newsz, alloc) \
+@@ -135,6 +135,8 @@ char *re_read(char **src);
+ struct lopt {
+ 	char *ins;		/* inserted text */
+ 	char *del;		/* deleted text */
++	char *unlinked1;
++	char *unlinked2;
+ 	int pos, n_ins, n_del;	/* modification location */
+ 	int pos_off;		/* cursor line offset */
+ 	int seq;		/* operation number */
+@@ -143,6 +145,8 @@ struct lopt {
  struct linfo {
  	int len;
  	int grec;
@@ -177,7 +250,7 @@ index f00adb9..e68db67 100644
  };
  struct lbuf {
  	char **ln;		/* buffer lines */
-@@ -165,6 +167,7 @@ struct lbuf *lbuf_make(void);
+@@ -165,6 +169,7 @@ struct lbuf *lbuf_make(void);
  void lbuf_free(struct lbuf *lbuf);
  int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init);
  int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
