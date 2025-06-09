@@ -47,11 +47,11 @@ typedef struct sbuf {
 
 #define sbuf_extend(sb, newsz) \
 { \
-	char *s = sb->s; \
+	char *__s_ = sb->s; \
 	sb->s_sz = newsz; \
 	sb->s = emalloc(sb->s_sz); \
-	memcpy(sb->s, s, sb->s_n); \
-	free(s); \
+	memcpy(sb->s, __s_, sb->s_n); \
+	free(__s_); \
 } \
 
 #define _sbuf_make(sb, newsz, alloc) \
