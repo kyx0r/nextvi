@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index e41edeb..30c5b4e 100644
+index e41edeb..690941f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
@@ -28,7 +28,7 @@ index e41edeb..30c5b4e 100644
 +	lbuf_free(xb);
 +	xb = lbuf_make();
 +	readfile(, 1)
-+	ex_bufpostfix(ex_buf, arg[0]);
++	ex_bufpostfix(ex_buf, 1);
 +	syn_setft(ex_ft);
 +	return 0;
 +}
