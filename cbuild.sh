@@ -34,6 +34,12 @@ run() {
     $@
 }
 
+: "${CC:=cc}"
+: "${STRIP:=strip}"
+: "${PREFIX:=/usr/local}"
+: "${OS:=$(uname)}"
+: "${CFLAGS:=-O2}"
+
 CFLAGS="\
 -pedantic -Wall -Wextra \
 -Wno-implicit-fallthrough \
@@ -41,12 +47,8 @@ CFLAGS="\
 -Wno-unused-parameter \
 -Wno-unused-result \
 -Wfatal-errors -std=c99 \
- $CFLAGS"
+$CFLAGS"
 
-: "${CC:=cc}"
-: "${STRIP:=strip}"
-: "${PREFIX:=/usr/local}"
-: "${OS:=$(uname)}"
 case "$OS" in
 *_NT*) CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L" ;;
 *Darwin*) CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L -D_DARWIN_C_SOURCE" ;;
@@ -54,11 +56,10 @@ case "$OS" in
 *) CFLAGS="$CFLAGS -D_DEFAULT_SOURCE" ;;
 esac
 
-: "${OPTFLAGS:=-O2}"
 build() {
     require "${CC}"
     log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\"\""
-    run "$CC vi.c -o vi $OPTFLAGS $CFLAGS" || {
+    run "$CC vi.c -o vi $CFLAGS" || {
         log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\""
         exit 1
     }
@@ -86,8 +87,8 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "debug")
         shift
-        log "$G" "Entering step: \"Override \"\$OPTFLAGS\" with debugging flags\""
-        OPTFLAGS="-O0 -g"
+        CFLAGS="$CFLAGS -O0 -g"
+        log "$G" "Entering step: \"Append \"\$CFLAGS\" with debugging flags\""
         set -- build "$@"
         ;;
     "" | "build")
