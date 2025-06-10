@@ -168,8 +168,9 @@ linewrap.patch
 Implements soft line wrap commands.
 lw[col]
 	Soft line wrap buffer to terminal col or col specified.
-lj
-	Disable line wrap.
+	0 disables line wrap.
+	linewrapped lines are highlighted.
+	somewhat useable.
 
 ex-scripting.patch
 --------------
