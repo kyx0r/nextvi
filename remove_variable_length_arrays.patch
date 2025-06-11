@@ -124,10 +124,10 @@ index 713ad19..ee9158b 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 3353c28..363a245 100644
+index cffd23f..61f89fd 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -377,7 +377,14 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
+@@ -377,7 +377,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
  	return 0;
  }
  
@@ -139,17 +139,18 @@ index 3353c28..363a245 100644
 +free(_clist); \
 +free(_nlist); \
 +free(nsubs); \
++free(lb); \
 +return state; } \
  
  #define newsub(init, copy) \
  if (freesub) \
-@@ -587,13 +594,13 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
- 	int spc, i, j, c, *npc, osubp = nsubp * sizeof(char*);
- 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
- 	int *insts = prog->insts, eol_ch = flg & REG_NEWLINE ? '\n' : 0;
--	int *pcs[prog->splits];
+@@ -596,18 +604,20 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+ 	if (!*s)
+ 		return 0;
+ 	const char *sp = s, *_sp = s;
+-	int *pcs[prog->splits], *npc, *pc, *insts = prog->insts;
 -	rsub *subs[prog->splits];
--	unsigned int sdense[prog->sparsesz], sparsesz = 0;
++	int *npc, *pc, *insts = prog->insts;
 +	int **pcs = emalloc((prog->splits) * sizeof(int*));
 +	rsub **subs = emalloc(prog->splits * sizeof(rsub*));
 +	unsigned int *sdense = emalloc(prog->sparsesz * sizeof(unsigned int)), sparsesz = 0;
@@ -157,12 +158,20 @@ index 3353c28..363a245 100644
 -	rthread _clist[prog->len], _nlist[prog->len];
 +	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
+ 	int rsubsize = prog->presub, suboff = 0;
+ 	int cnt, spc, i, j, c, osubp = nsubp * sizeof(char*);
+ 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
+ 	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
+-	unsigned int sdense[prog->sparsesz], sparsesz = 0;
+-	int lb[prog->laidx << 1], lblen = 0;
 -	char nsubs[prog->sub];
++	int *lb = emalloc(prog->laidx << 1);
++	int lblen = 0;
 +	char *nsubs = emalloc(prog->sub);
  	flg = prog->flg | flg;
  	if (eol_ch)
  		utf8_length[eol_ch] = 0;
-@@ -672,7 +679,7 @@ rset *rset_make(int n, char **re, int flg)
+@@ -686,7 +696,7 @@ rset *rset_make(int n, char **re, int flg)
  /* return the index of the matching regular expression or -1 if none matches */
  int rset_find(rset *rs, char *s, int *grps, int flg)
  {
@@ -171,7 +180,7 @@ index 3353c28..363a245 100644
  	regmatch_t *sub = subs+1;
  	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
  		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
-@@ -689,10 +696,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
+@@ -703,10 +713,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
  						grps[gi * 2 + 1] = -1;
  					}
  				}
