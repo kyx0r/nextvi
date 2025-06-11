@@ -1930,7 +1930,7 @@ int main(int argc, char *argv[])
 	term_done();
 	if (abs(xquit) == 2)
 		term_clean();
-	else {
+	else if (!(xvis & 4)) {
 		term_pos(xrows - !vi_status, 0);
 		term_kill();
 	}
