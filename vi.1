@@ -1,4 +1,4 @@
-.Dd Jun  8, 2025
+.Dd Jun 11, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -866,6 +866,9 @@ enclosed regex with an enclosed replacement string.
 Example: global replacement
 :%s/term1/term2/g
 
+Example: replace matching previously set search keyword
+:%s//term2/g
+
 Substitution backreference inserts the text of matched group
 specified by \ex where x is group number.
 
@@ -1238,19 +1241,16 @@ be used anywhere within a regex, though some considerations
 must be taken into account.
 Aspect 1:
 	Lookarounds contain a full regex, but should use non-capturing
-	groups to avoid performance issues.
+	groups to avoid incorrect results and performance issues.
 Aspect 2:
 	Lookarounds can have nested lookarounds.
 Aspect 3:
-	Static lookaheads like (?=^word) are optimized, bypassing
-	compilation.
+	Static lookarounds like (?=^word) are optimized, bypassing
+	the regex engine.
 Aspect 4:
-	Using lookbehind assertions at the beginning of a regex can
-	dramatically reduce performance. This is because the regex engine
-	must scan the entire input to find valid starting positions
-	for the assertion. Lookbehinds are best suited for validating
-	context near the end of a complex pattern, where the engine
-	has already narrowed down potential matches.
+	Lookarounds are best suited for asserting near the end of a
+	complex pattern, where the engine has already narrowed down
+	potential matches.
 .Ed
 .
 .Sh SPECIAL MARKS
@@ -1296,10 +1296,10 @@ _
  521 lbuf.c | file/line buffer
  650 uc.c | UTF-8 support
  675 led.c | insert mode/output
- 716 regex.c | extended RE
+ 729 regex.c | extended RE
  1246 ex.c | ex options/commands
- 1939 vi.c | normal mode/general
- 6764 total | wc -l *.c\(basort
+ 1938 vi.c | normal mode/general
+ 6776 total | wc -l *.c\(basort
 _
 .TE
 .

@@ -607,6 +607,9 @@ EX COMMANDS
              Example: global replacement
              :%s/term1/term2/g
 
+             Example: replace matching previously set search keyword
+             :%s//term2/g
+
              Substitution backreference inserts the text of matched group
              specified by \x where x is group number.
 
@@ -880,19 +883,16 @@ REGEX
      must be taken into account.
      Aspect 1:
              Lookarounds contain a full regex, but should use non-capturing
-             groups to avoid performance issues.
+             groups to avoid incorrect results and performance issues.
      Aspect 2:
              Lookarounds can have nested lookarounds.
      Aspect 3:
-             Static lookaheads like (?=^word) are optimized, bypassing
-             compilation.
+             Static lookarounds like (?=^word) are optimized, bypassing
+             the regex engine.
      Aspect 4:
-             Using lookbehind assertions at the beginning of a regex can
-             dramatically reduce performance. This is because the regex engine
-             must scan the entire input to find valid starting positions
-             for the assertion. Lookbehinds are best suited for validating
-             context near the end of a complex pattern, where the engine
-             has already narrowed down potential matches.
+             Lookarounds are best suited for asserting near the end of a
+             complex pattern, where the engine has already narrowed down
+             potential matches.
 
 SPECIAL MARKS
      *       Position of the previous change
@@ -919,10 +919,10 @@ CODE MAP
      | 521 lbuf.c   |  file/line buffer    |
      | 650 uc.c     |  UTF-8 support       |
      | 675 led.c    |  insert mode/output  |
-     | 716 regex.c  |  extended RE         |
+     | 729 regex.c  |  extended RE         |
      | 1246 ex.c    |  ex options/commands |
-     | 1939 vi.c    |  normal mode/general |
-     | 6764 total   |  wc -l *.c|sort      |
+     | 1938 vi.c    |  normal mode/general |
+     | 6776 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -993,4 +993,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.14.10                    June 8, 2025                    Linux 6.14.10
+Linux 6.12.30-1-lts              June 11, 2025             Linux 6.12.30-1-lts
