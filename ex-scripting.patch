@@ -78,7 +78,7 @@ index aad65b8..3f5d627 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index f00adb9..564626e 100644
+index 7aaf529..855ef8a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

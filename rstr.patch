@@ -112,10 +112,10 @@ index 0649f71..cea68ac 100644
  			int g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 3353c28..5450076 100644
+index cffd23f..3c96f44 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -713,3 +713,126 @@ char *re_read(char **src)
+@@ -727,3 +727,126 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_sret(sb)
  }
@@ -265,7 +265,7 @@ index ee36a88..cc00ae7 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index f00adb9..a3b9221 100644
+index 7aaf529..cfd0bf3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -122,12 +122,23 @@ typedef struct {
