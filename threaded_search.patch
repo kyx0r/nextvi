@@ -1,15 +1,15 @@
 diff --git a/cbuild.sh b/cbuild.sh
-index a019600..d02904d 100755
+index 11ae655..d8bb199 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -41,6 +41,7 @@ CFLAGS="\
+@@ -47,6 +47,7 @@ CFLAGS="\
  -Wno-unused-parameter \
  -Wno-unused-result \
  -Wfatal-errors -std=c99 \
 +-lpthread \
-  $CFLAGS"
+ $CFLAGS"
  
- : "${CC:=cc}"
+ case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
 index 0649f71..debb5f8 100644
 --- a/lbuf.c
@@ -128,7 +128,7 @@ index 0649f71..debb5f8 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 3353c28..e85529a 100644
+index cffd23f..32bfe0d 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -377,7 +377,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -140,8 +140,8 @@ index 3353c28..e85529a 100644
  
  #define newsub(init, copy) \
  if (freesub) \
-@@ -595,8 +595,10 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
- 	rthread *clist = _clist, *nlist = _nlist, *tmp;
+@@ -609,8 +609,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+ 	int lb[prog->laidx << 1], lblen = 0;
  	char nsubs[prog->sub];
  	flg = prog->flg | flg;
 -	if (eol_ch)
@@ -183,7 +183,7 @@ index ee36a88..22575ff 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index f00adb9..92e77d0 100644
+index 7aaf529..f115068 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -244,7 +244,8 @@ void syn_addhl(char *reg, int id, int reload);
