@@ -20,17 +20,17 @@ index e41edeb..7fa73c6 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 3353c28..4fa34e8 100644
+index cffd23f..ebc57c9 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -590,6 +590,7 @@ int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
- 	int *pcs[prog->splits];
- 	rsub *subs[prog->splits];
+@@ -606,6 +606,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+ 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
+ 	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
 +	memset(sdense, 0, sizeof(int) * prog->sparsesz);
- 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
- 	rthread _clist[prog->len], _nlist[prog->len];
- 	rthread *clist = _clist, *nlist = _nlist, *tmp;
+ 	int lb[prog->laidx << 1], lblen = 0;
+ 	char nsubs[prog->sub];
+ 	flg = prog->flg | flg;
 diff --git a/ren.c b/ren.c
 index 305942a..5f0b449 100644
 --- a/ren.c
@@ -105,7 +105,7 @@ index ee36a88..377ac03 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index f00adb9..9ab3a98 100644
+index 7aaf529..9f89bc8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -220,6 +220,7 @@ char *ren_translate(char *s, char *ln);
