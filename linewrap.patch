@@ -254,13 +254,13 @@ index 302cafb..a63d8cb 100644
  	if (!s)
  		s = row ? ch : ch+1;
 diff --git a/vi.h b/vi.h
-index 7aaf529..44af50e 100644
+index 5eecfe3..77e80cf 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -135,6 +135,8 @@ char *re_read(char **src);
- struct lopt {
+@@ -136,6 +136,8 @@ struct lopt {
  	char *ins;		/* inserted text */
  	char *del;		/* deleted text */
+ 	int *mark, *mark_off;	/* saved marks */
 +	char *unlinked1;
 +	char *unlinked2;
  	int pos, n_ins, n_del;	/* modification location */
