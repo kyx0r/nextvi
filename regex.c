@@ -7,7 +7,7 @@ static int isword(const char *s)
 enum
 {
 	/* Instructions which consume input bytes */
-	CHAR,
+	CHAR = 1,
 	CLASS,
 	MATCH,
 	ANY,
@@ -17,6 +17,7 @@ enum
 	BOL,
 	EOL,
 	LOOKAROUND,
+	_PAD,
 	/* Other (special) instructions */
 	SAVE,
 	/* Instructions which take relative offset as arg */
@@ -344,19 +345,20 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 		switch (prog->insts[i]) {
 		case LOOKAROUND:
 			i += 3;
-			break;
-		case SPLIT:
-			prog->insts[i++] = scnt;
-			scnt += 2;
-			break;
-		case RSPLIT:
-			prog->insts[i++] = -scnt;
-			scnt += 2;
+			icnt++;
 			break;
 		case CLASS:
 			i += prog->insts[i+2] * 2 + 2;
 			icnt++;
 			break;
+		case SPLIT:
+			prog->insts[i++] = scnt;
+			scnt += 2;
+			icnt++;
+			break;
+		case RSPLIT:
+			prog->insts[i] = -scnt;
+			scnt += 2;
 		case JMP:
 		case SAVE:
 		case CHAR:
@@ -370,7 +372,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 	prog->splits = (scnt - SPLIT) / 2;
 	prog->len = icnt + 2;
 	prog->presub = sizeof(rsub) + (sizeof(char*) * (nsubs + 1) * 2);
-	prog->sub = prog->presub * (prog->len + 3);
+	prog->sub = prog->presub * (prog->len - prog->splits + 3);
 	prog->sparsesz = scnt;
 	return 0;
 }
@@ -378,22 +380,18 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; return state; } \
 
 #define newsub(init, copy) \
-if (freesub) { \
-	s1 = freesub; freesub = s1->freesub; copy \
-} else { \
-	if (suboff == prog->sub) \
-		suboff = 0; \
-	s1 = (rsub*)&nsubs[suboff]; \
-	suboff += rsubsize; init \
-} \
+if (freesub) \
+	{ s1 = freesub; freesub = s1->freesub; copy } \
+else \
+	{ if (suboff == prog->sub) suboff = 0; \
+	s1 = (rsub*)&nsubs[suboff]; suboff += rsubsize; init } \
 
 #define onlist(nn) \
 if (sdense[spc] < sparsesz) \
-	if (sdense[sdense[spc]] == (unsigned int)spc) \
+	if (sdense[sdense[spc] << 1] == (unsigned int)spc) \
 		deccheck(nn) \
 sdense[spc] = sparsesz; \
-sdense[sparsesz] = spc; \
-sparsesz += 2; \
+sdense[sparsesz++ << 1] = spc; \
 
 #define decref(csub) \
 if (--csub->ref == 0) { \
@@ -568,9 +566,9 @@ for (;; sp = _sp) { \
 				matched = nsub; \
 			} \
 			if (sp == _sp || nlistidx == 1) { \
-				for (i = 0; i < nsubp; i+=2) { \
-					subp[i] = matched->sub[i >> 1]; \
-					subp[i+1] = matched->sub[(nsubp >> 1) + (i >> 1)]; \
+				for (i = 0, j = i; i < nsubp; i+=2, j++) { \
+					subp[i] = matched->sub[j]; \
+					subp[i+1] = matched->sub[nsubp / 2 + j]; \
 				} \
 				_return(1) \
 			} \
