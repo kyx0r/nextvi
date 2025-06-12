@@ -112,7 +112,7 @@ index 0649f71..cea68ac 100644
  			int g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index f183396..27696cb 100644
+index 7bdb728..0827ae1 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -729,3 +729,126 @@ char *re_read(char **src)
