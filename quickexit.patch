@@ -80,7 +80,7 @@ index 302cafb..02925a7 100644
  #include <termios.h>
  #include <limits.h>
 diff --git a/vi.h b/vi.h
-index 7aaf529..afaab71 100644
+index 5eecfe3..b764ad9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -491,6 +491,7 @@ extern int xhlr;

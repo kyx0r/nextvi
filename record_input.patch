@@ -36,7 +36,7 @@ index aad65b8..b23b7f0 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 7aaf529..5cb58e7 100644
+index 5eecfe3..1cde372 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -499,6 +499,7 @@ extern int xkwddir;

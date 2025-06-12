@@ -77,7 +77,7 @@ index 302cafb..b96c718 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 7aaf529..4e59f0e 100644
+index 5eecfe3..6301de3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -367,6 +367,7 @@ struct buf {

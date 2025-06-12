@@ -265,7 +265,7 @@ index 302cafb..8ce3c5c 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 7aaf529..cfd0bf3 100644
+index 5eecfe3..519ef19 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -122,12 +122,23 @@ typedef struct {
