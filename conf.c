@@ -255,14 +255,14 @@ int conf_hlrev = SYN_BGMK(8);
 #define CNEUT		"-!\"#$%&'\\()*+,./:;<=>?@\\^_`{|}~ "
 
 struct dircontext dctxs[] = {
-	{-1, "^[" CR2L "]"},
-	{+1, "^[a-zA-Z_0-9]"},
+	{"^[" CR2L "]", -1},
+	{"^[a-zA-Z_0-9]", +1},
 };
 int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
-	{+1, {-1}, "[" CR2L "][" CNEUT CR2L "]*[" CR2L "]"},
-	{-1, {0, 1, -1, 1, -1}, "(^[ \t]*)([^" CR2L "]*)([" CR2L "]*)([^" CR2L "]*)"},
+	{"[" CR2L "][" CNEUT CR2L "]*[" CR2L "]", +1, {-1}},
+	{"(^[ \t]*)([^" CR2L "]*)([" CR2L "]*)([^" CR2L "]*)", -1, {0, 1, -1, 1, -1}},
 };
 int dmarkslen = LEN(dmarks);
 
