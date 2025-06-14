@@ -374,7 +374,6 @@ extern struct buf *ex_pbuf;
 extern struct buf *bufs;
 extern struct buf tempbufs[2];
 #define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
-#define EXLEN	512	/* ex line length */
 #define ex_path ex_buf->path
 #define ex_ft ex_buf->ft
 #define xb ex_buf->lb
