@@ -35,7 +35,7 @@ static char *_vi_word = vi_word_m;
 static int vi_wsel = 1;
 static int vi_rshift;			/* row shift for vi_word */
 static int vi_arg;			/* numeric argument */
-static char vi_msg[EXLEN+128];		/* current message */
+static char vi_msg[512];		/* current message */
 static char vi_charlast[8];		/* the last character searched via f, t, F, or T */
 static int vi_charcmd;			/* the character finding command */
 static int vi_ybuf;			/* current yank buffer */
