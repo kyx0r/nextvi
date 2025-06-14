@@ -761,7 +761,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end))
 		return 2;
 	pat = re_read(&s);
-	if (pat && *pat)
+	if (pat && (*pat || !rs))
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	if (!rs) {
 		free(pat);
@@ -862,10 +862,12 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 		return 2;
 	not = !!strchr(cmd, '!');
 	pat = re_read(&s);
-	if (pat)
+	if (pat && *pat)
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
+	else
+		rs = rset_smake(xregs['/'] ? xregs['/'] : "", xic ? REG_ICASE : 0);
 	free(pat);
-	if (!pat || !rs)
+	if (!rs)
 		return 3;
 	xgdep = !xgdep ? 1 : xgdep * 2;
 	for (i = beg; i < end; i++)
