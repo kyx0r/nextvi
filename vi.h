@@ -130,8 +130,8 @@ void rset_free(rset *re);
 char *re_read(char **src);
 
 /* lbuf.c line buffer, managing a number of lines */
-#define NMARKS_BASE		('z' - 'a' + 2)
-#define NMARKS			32
+#define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
+#define NMARKS			30	/* adj: '`* nonadj: [] */
 struct lopt {
 	char *ins;		/* inserted text */
 	char *del;		/* deleted text */

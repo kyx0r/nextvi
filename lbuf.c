@@ -252,17 +252,24 @@ int lbuf_undo(struct lbuf *lb)
 {
 	if (!lb->hist_u)
 		return 1;
-	struct lopt *lo = &lb->hist[lb->hist_u - 1];
-	int useq = lo->seq;
-	lbuf_savemark(lb, lo, markidx('*'), markidx('['));
+	struct lopt *lo = &lb->hist[lb->hist_u - 1], *plo = lo;
+	int useq = lo->seq, tmp[4];
+	int lbrk = markidx(']'), rbrk = markidx('[');
 	while (lb->hist_u && lb->hist[lb->hist_u - 1].seq == useq) {
 		lo = &lb->hist[--(lb->hist_u)];
 		lbuf_replace(lb, lo->del, lo, lo->n_ins);
 	}
 	lbuf_loadpos(lb, lo);
-	lbuf_savemark(lb, lo, markidx('`'), markidx(']'));
-	lbuf_loadmark(lb, lo, markidx('['), markidx('['));
-	lbuf_loadmark(lb, lo, markidx(']'), markidx(']'));
+	tmp[0] = lb->mark[lbrk];
+	tmp[1] = lb->mark_off[lbrk];
+	tmp[2] = lb->mark[rbrk];
+	tmp[3] = lb->mark_off[rbrk];
+	lbuf_loadmark(lb, lo, lbrk, lbrk);
+	lbuf_loadmark(lb, lo, rbrk, rbrk);
+	plo->mark[lbrk] = tmp[0];
+	plo->mark_off[lbrk] = tmp[1];
+	plo->mark[rbrk] = tmp[2];
+	plo->mark_off[rbrk] = tmp[3];
 	return 0;
 }
 
@@ -272,13 +279,13 @@ int lbuf_redo(struct lbuf *lb)
 		return 1;
 	struct lopt *lo = &lb->hist[lb->hist_u];
 	int useq = lo->seq;
-	lbuf_loadmark(lb, lo, markidx(']'), markidx('`'));
 	while (lb->hist_u < lb->hist_n && lb->hist[lb->hist_u].seq == useq) {
 		lo = &lb->hist[lb->hist_u++];
 		lbuf_replace(lb, lo->ins, lo, lo->n_del);
 	}
 	lbuf_loadpos(lb, lo);
-	lbuf_loadmark(lb, lo, markidx('['), markidx('*'));
+	lbuf_loadmark(lb, lo, markidx(']'), markidx(']'));
+	lbuf_loadmark(lb, lo, markidx('['), markidx('['));
 	return 0;
 }
 

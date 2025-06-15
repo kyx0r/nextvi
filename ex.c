@@ -852,9 +852,8 @@ static int ec_cmap(char *loc, char *cmd, char *arg)
 
 static int ec_glob(char *loc, char *cmd, char *arg)
 {
-	int beg, end, not;
+	int i, beg, end, not;
 	char *pat, *s = arg;
-	int i;
 	rset *rs;
 	if (!loc[0] && !xgdep)
 		loc = "%";
