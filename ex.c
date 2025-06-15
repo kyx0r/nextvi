@@ -263,7 +263,6 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 		return 0;
 	}
 	while (*loc) {
-		int end0 = *end;
 		if (*loc == ';' || *loc == ',') {
 			loc++;
 			if (loc[-1] == ',')
@@ -275,17 +274,21 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 				*o2 = xoff;
 		} else {
 			skip:
-			*end = ex_range(&loc, xrow, NULL) + 1;
-			*beg = naddr++ ? end0 - 1 : *end - 1;
+			if (naddr++ % 2)
+				*end = ex_range(&loc, xrow, NULL) + 1;
+			else
+				*beg = ex_range(&loc, xrow, NULL);
 		}
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 	}
-	if (*beg < 0 && *end == 0)
-		*beg = 0;
+	if (!naddr)
+		return 2;
 	if (*beg < 0 || *beg >= lbuf_len(xb))
 		return 1;
-	if (*end < *beg || *end > lbuf_len(xb))
+	if (naddr < 2)
+		*end = *beg + 1;
+	else if (*end <= *beg || *end > lbuf_len(xb))
 		return 1;
 	return 0;
 }
@@ -628,8 +631,8 @@ static int ec_print(char *loc, char *cmd, char *arg)
 		ex_print("unknown command");
 		return 1;
 	}
-	if (ex_oregion(loc, &beg, &end, &o1, &o2))
-		return 2;
+	if ((i = ex_oregion(loc, &beg, &end, &o1, &o2)))
+		return i == 2 && o2 >= 0 ? 1 : 2;
 	if (!cmd[0] && loc[0]) {
 		xrow = MAX(beg, end - 1);
 		return 0;
