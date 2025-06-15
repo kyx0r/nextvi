@@ -36,7 +36,6 @@ int xsep = ':';			/* ex command separator */
 char *xregs[256];		/* string registers */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
-static char xrep[512];		/* the last replacement */
 static int xgdep;		/* global command recursion depth */
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
@@ -755,35 +754,37 @@ static void replace(sbuf *dst, char *rep, char *ln, int *offs)
 static int ec_substitute(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
-	char *pat = NULL, *rep = NULL;
+	char *pat, *rep = NULL;
 	char *s = arg;
+	rset *rs = xkwdrs;
 	int i, first = -1, last;
 	if (ex_region(loc, &beg, &end))
 		return 2;
 	pat = re_read(&s);
-	ex_krsset(pat, +1);
+	if (pat && (*pat || !rs))
+		rs = rset_smake(pat, xic ? REG_ICASE : 0);
+	if (!rs) {
+		free(pat);
+		return 3;
+	}
 	if (pat && *s) {
 		s--;
 		rep = re_read(&s);
 	}
-	if (pat || rep)
-		snprintf(xrep, sizeof(xrep), "%s", rep ? rep : "");
 	free(pat);
-	free(rep);
-	if (!xkwdrs)
-		return 3;
-	int offs[xkwdrs->grpcnt * 2];
+	int offs[rs->grpcnt * 2];
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
-		while (rset_find(xkwdrs, ln, offs, REG_NEWLINE) >= 0) {
+		while (rset_find(rs, ln, offs, REG_NEWLINE) >= 0) {
 			if (offs[xgrp] < 0) {
 				ln += offs[1] > 0 ? offs[1] : 1;
 				continue;
 			} else if (!r)
 				sbuf_make(r, 256)
 			sbuf_mem(r, ln, offs[xgrp])
-			replace(r, xrep, ln, offs);
+			if (rep)
+				replace(r, rep, ln, offs);
 			ln += offs[xgrp + 1];
 			if (!offs[xgrp + 1])	/* zero-length match */
 				sbuf_chr(r, (unsigned char)*ln++)
@@ -803,6 +804,9 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	if (first >= 0)
 		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), first, last);
+	if (rs != xkwdrs)
+		rset_free(rs);
+	free(rep);
 	return 0;
 }
 
@@ -848,9 +852,8 @@ static int ec_cmap(char *loc, char *cmd, char *arg)
 
 static int ec_glob(char *loc, char *cmd, char *arg)
 {
-	int beg, end, not;
+	int i, beg, end, not;
 	char *pat, *s = arg;
-	int i;
 	rset *rs;
 	if (!loc[0] && !xgdep)
 		loc = "%";
@@ -858,10 +861,12 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 		return 2;
 	not = !!strchr(cmd, '!');
 	pat = re_read(&s);
-	if (pat)
+	if (pat && *pat)
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
+	else
+		rs = rset_smake(xregs['/'] ? xregs['/'] : "", xic ? REG_ICASE : 0);
 	free(pat);
-	if (!pat || !rs)
+	if (!rs)
 		return 3;
 	xgdep = !xgdep ? 1 : xgdep * 2;
 	for (i = beg; i < end; i++)
