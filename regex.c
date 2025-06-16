@@ -63,7 +63,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 {
 	char *re = re_loc, *s, *p;
 	int *code = sizecode ? NULL : prog->insts;
-	int start = PC, term = PC;
+	int start = PC, term = PC, lb_start = 0;
 	int alt_label = 0, c, l, cnt;
 	int alt_stack[4096], altc = 0;
 	int cap_stack[4096 * 5], capc = 0;
@@ -125,72 +125,78 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 		case '(':;
 			term = PC;
 			int sub, sz, laidx, bal, la_static;
-			int capture = 1;
-			if (*(re+1) == '?') {
+			if (re[1] == '?') {
 				re += 2;
-				if (*re == ':')
-					capture = 0;
-				else if (*re == '=' || *re == '!' || *re == '<' || *re == '>') {
-					EMIT(PC++, LOOKAROUND);
-					EMIT(PC++, *re);
-					EMIT(PC++, prog->laidx);
-					bal = 1;
-					s = ++re;
-					la_static = !(flg & REG_ICASE) && *s == '^';
-					while (1) {
-						if (!*s)
-							return -1;
-						else if (*s == '\\') {
-							s++;
-							if (code && (*s == '<' || *s == '>'))
-								la_static = 0;
-						} else if (*s == '(') {
-							bal++;
-							la_static = 0;
-						} else if (*s == ')') {
-							bal--;
-							if (!bal)
-								break;
-						} else if (code && la_static && strchr("|.*+?[]{}$", *s))
-							la_static = 0;
-						s += uc_len(s);
-					}
-					EMIT(PC++, la_static);
-					if (code) {
-						*s = '\0';
-						if (la_static) {
-							p = emalloc(sizeof(rcode) + s - re);
-							prog->la[prog->laidx] = (rcode*)p;
-							prog->la[prog->laidx]->laidx = 0;
-							prog->la[prog->laidx]->la = NULL;
-							for (p += sizeof(rcode), re++; re != s; re++)
-								if (*re != '\\')
-									*p++ = *re;
-							EMIT(PC-1, p - (char*)(prog->la[prog->laidx]+1));
-						} else {
-							sz = re_sizecode(re, &laidx) * sizeof(int);
-							if (sz < 0)
-								return -1;
-							prog->la[prog->laidx] = emalloc(sizeof(rcode)+sz);
-							if (reg_comp(prog->la[prog->laidx], re, 0, laidx, flg)) {
-								reg_free(prog->la[prog->laidx]);
-								return -1;
-							}
-						}
-						*s = ')';
-					}
-					prog->laidx++;
-					re = s;
+				if (*re == ':') {
+					cap_stack[capc++] = 0;
+					goto non_capture;
+				} else if (*re == '#') {
+					lb_start = atoi(re+1);
+					if (!(re = strchr(re, ')')))
+						return -1;
 					break;
-				} else
+				} else if (*re != '=' && *re != '!' && *re != '<' && *re != '>')
 					return -1;
+				EMIT(PC++, LOOKAROUND);
+				EMIT(PC++, *re);
+				EMIT(PC++, prog->laidx);
+				bal = 1;
+				s = ++re;
+				la_static = !(flg & REG_ICASE) && *s == '^';
+				while (1) {
+					if (!*s)
+						return -1;
+					else if (*s == '\\') {
+						s++;
+						if (code && (*s == '<' || *s == '>'))
+							la_static = 0;
+					} else if (*s == '(') {
+						bal++;
+						la_static = 0;
+					} else if (*s == ')') {
+						bal--;
+						if (!bal)
+							break;
+					} else if (code && la_static && strchr("|.*+?[]{}$", *s))
+						la_static = 0;
+					s += uc_len(s);
+				}
+				EMIT(PC++, la_static);
+				EMIT(PC++, lb_start);
+				if (code) {
+					*s = '\0';
+					if (la_static) {
+						p = emalloc(sizeof(rcode) + s - re);
+						prog->la[prog->laidx] = (rcode*)p;
+						prog->la[prog->laidx]->laidx = 0;
+						prog->la[prog->laidx]->la = NULL;
+						for (p += sizeof(rcode), re++; re != s;) {
+							if (*re == '\\')
+								re += (s - re) > 1;
+							*p++ = *re++;
+						}
+						EMIT(PC-2, p - (char*)(prog->la[prog->laidx]+1));
+					} else {
+						sz = re_sizecode(re, &laidx) * sizeof(int);
+						if (sz < 0)
+							return -1;
+						prog->la[prog->laidx] = emalloc(sizeof(rcode)+sz);
+						if (reg_comp(prog->la[prog->laidx], re, 0, laidx, flg)) {
+							reg_free(prog->la[prog->laidx]);
+							return -1;
+						}
+					}
+					*s = ')';
+				}
+				prog->laidx++;
+				re = s;
+				break;
 			}
-			if (capture) {
-				sub = ++prog->sub;
-				EMIT(PC++, SAVE);
-				EMIT(PC++, sub);
-			}
-			cap_stack[capc++] = capture;
+			sub = ++prog->sub;
+			EMIT(PC++, SAVE);
+			EMIT(PC++, sub);
+			cap_stack[capc++] = 1;
+			non_capture:
 			cap_stack[capc++] = term;
 			cap_stack[capc++] = alt_label;
 			cap_stack[capc++] = start;
@@ -343,7 +349,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 	for (int i = 0; i < prog->unilen; i++)
 		switch (prog->insts[i]) {
 		case LOOKAROUND:
-			i += 3;
+			i += 4;
 			break;
 		case CLASS:
 			i += prog->insts[i+2] * 2 + 2;
@@ -501,23 +507,32 @@ if (spc > JMP) { \
 		else \
 			cnt = re_pikevm(prog->la[npc[2]], _sp, NULL, 0, 0); \
 	} else { \
-		for (j = 0; j < lblen; j+=2) \
-			if (lb[j] == npc - insts) { \
-				cnt = lb[j+1]; \
+		str = npc[4] ? _sp - npc[4] : s; \
+		if (npc[4] && str < s) { \
+			npc += 5; goto rec##nn; \
+		} \
+		for (j = 0; j < lblen; j+=3) \
+			if (lb[j] == npc) { \
+				if (lb[j+1] != str) \
+					break; \
+				cnt = !!lb[j+2]; \
 				goto lb_cached##nn; \
 			} \
 		if (npc[3]) \
-			cnt = !strncmp(s, (char*)(prog->la[npc[2]]+1), npc[3]); \
+			cnt = !strncmp(str, (char*)(prog->la[npc[2]]+1), npc[3]); \
 		else \
-			cnt = re_pikevm(prog->la[npc[2]], s, NULL, 0, 0); \
-		lb[lblen++] = npc - insts; \
-		lb[lblen++] = cnt; \
+			cnt = re_pikevm(prog->la[npc[2]], str, NULL, 0, 0); \
+		lb[j] = npc; \
+		lb[j+1] = str; \
+		lb[j+2] = cnt ? (void*)1 : NULL; \
+		if (j == lblen) \
+			lblen += 3; \
 	} \
 	lb_cached##nn: \
 	if ((cnt && (npc[1] == '!' || npc[1] == '>')) \
 			|| (!cnt && (npc[1] == '=' || npc[1] == '<'))) \
 		deccheck(nn) \
-	npc += 4; goto rec##nn; \
+	npc += 5; goto rec##nn; \
 } else { \
 	if (flg & REG_NOTBOL || _sp != s) { \
 		if (!si && !clistidx) \
@@ -597,18 +612,18 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 {
 	if (!*s)
 		return 0;
-	const char *sp = s, *_sp = s;
+	const char *sp = s, *_sp = s, *str;
 	int *pcs[prog->splits], *npc, *pc, *insts = prog->insts;
 	rsub *subs[prog->splits];
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
-	int rsubsize = prog->presub, suboff = 0;
+	const void *lb[prog->laidx * 3];
+	int rsubsize = prog->presub, suboff = 0, lblen = 0;
 	int cnt, spc, i, j, c, osubp = nsubp * sizeof(char*);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	unsigned int sdense[prog->sparsesz], sparsesz = 0;
-	int lb[prog->laidx << 1], lblen = 0;
 	char nsubs[prog->sub];
 	flg = prog->flg | flg;
 	if (eol_ch)
@@ -622,9 +637,11 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 
 static int re_groupcount(char *s)
 {
-	int n = *s == '(' && s[1] != '?' ? 1 : 0;
-	while (*s++)
-		if (s[0] == '(' && s[-1] != '\\' && s[1] != '?')
+	int n;
+	for (n = 0; *s; s++)
+		if (s[0] == '\\' && s[1])
+			s++;
+		else if (s[0] == '(' && s[1] != '?')
 			n++;
 	return n;
 }
