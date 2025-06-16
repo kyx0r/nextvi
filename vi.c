@@ -258,7 +258,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap, int *mlen)
 	char *s;
 	term_pos(xrows, led_pos(msg, 0));
 	vi_lncol = 0;
-	syn_setft("/-");
+	syn_setft("/ex");
 	s = led_prompt(msg, "", insert, kmap);
 	syn_setft(ex_ft);
 	vi_mod |= 1;
@@ -282,7 +282,7 @@ char *ex_read(char *msg)
 	if (!(xvis & 2)) {
 		int oleft = xleft;
 		syn_blockhl = 0;
-		syn_setft("/-");
+		syn_setft("/ex");
 		char *s = led_prompt(msg, "", NULL, &xkmap);
 		xleft = oleft;
 		if (s && (!msg || strcmp(s, msg)))
@@ -1509,7 +1509,7 @@ void vi(int init)
 					cs = vi_curword(xb, xrow, xoff, vi_arg);
 					ln = vi_prompt("v/ xkwd:", cs, &xkmap, &n);
 					ex_krsset(ln + n, +1);
-					if (!xkwdrs)
+					if (ln && !xkwdrs)
 						ex_print("syntax error");
 					free(ln);
 					free(cs);
