@@ -244,7 +244,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 (?:([+-])([0-9]+))?)?([@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f[tdp]?|i|inc|g!?|\
 q!?|rd?|reg|w[!q]?!?|u[czb]?|se?|x!?|ya!?|cm!?|cd?)?",
 		{12 | SYN_BD, 1, 1, 1, 15, 13, 1, 1, 15, 1, 10}},
-	{"/ex", "\\\\(.)", {6 | SYN_BD, 3}},
+	{"/ex", "\\\\(.)", {8 | SYN_BD, 3}},
 	{"/ex", "![^!]*!?|[%#](?#2)(?>^:)[0-9]*", {15 | SYN_BD}},
 
 	/* status bar (is never '\n' terminated) */
