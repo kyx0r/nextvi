@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index e41edeb..7fa73c6 100644
+index 8ee35d7..a863d0b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1244,3 +1244,16 @@ void ex_init(char **files, int n)
+@@ -1245,3 +1245,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -20,17 +20,23 @@ index e41edeb..7fa73c6 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 7bdb728..4931d81 100644
+index 37a96d9..bd6bfbc 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -608,6 +608,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -624,6 +624,13 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
++<<<<<<<
++|||||||
++	int lb[prog->laidx << 1], lblen = 0;
++=======
 +	memset(sdense, 0, sizeof(int) * prog->sparsesz);
- 	int lb[prog->laidx << 1], lblen = 0;
++	int lb[prog->laidx << 1], lblen = 0;
++>>>>>>>
  	char nsubs[prog->sub];
  	flg = prog->flg | flg;
+ 	if (eol_ch)
 diff --git a/ren.c b/ren.c
 index 305942a..5f0b449 100644
 --- a/ren.c
@@ -68,7 +74,7 @@ index 305942a..5f0b449 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 302cafb..7a1bf0f 100644
+index f6c0031..a957b03 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -105,7 +111,7 @@ index 302cafb..7a1bf0f 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 5eecfe3..fe60e7c 100644
+index 419d3b5..b5d76a0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -220,6 +220,7 @@ char *ren_translate(char *s, char *ln);
@@ -124,7 +130,7 @@ index 5eecfe3..fe60e7c 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -401,6 +403,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -400,6 +402,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) ex_cprint(line, -1, 0, 1)
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
