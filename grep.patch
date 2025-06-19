@@ -1,10 +1,10 @@
 diff --git a/conf.c b/conf.c
-index 3d87be1..13c8068 100644
+index 5badb7d..2ad5b5e 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -236,6 +236,11 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
- 		{0, SYN_BGMK(9), SYN_BGMK(8), SYN_BGMK(7)}},
- 	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", {0, SYN_BGMK(8)}},
+@@ -247,6 +247,11 @@ q!?|reg|rd?|w[!q]?!?|u[czb]?|se?|x!?|ya!?|cm!?|cd?)?",
+ 	{"/ex", "\\\\(.)|(:)#", {8 | SYN_BD, 3, 12}},
+ 	{"/ex", "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", {15 | SYN_BD}},
  
 +	/* grep buffer */
 +	/* I don't feel like making new ->func index so reuse 3 here */
@@ -15,7 +15,7 @@ index 3d87be1..13c8068 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index e41edeb..db4662b 100644
+index 8ee35d7..a364064 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -28,7 +28,7 @@ index e41edeb..db4662b 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 302cafb..3adccb7 100644
+index f6c0031..69ee349 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -585,12 +585,12 @@ void dir_calc(char *path)
@@ -166,7 +166,7 @@ index 302cafb..3adccb7 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 5eecfe3..68fd376 100644
+index 419d3b5..c7f27b3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -372,7 +372,7 @@ extern int xbufcur;
@@ -176,5 +176,5 @@ index 5eecfe3..68fd376 100644
 -extern struct buf tempbufs[2];
 +extern struct buf tempbufs[3];
  #define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
- #define EXLEN	512	/* ex line length */
  #define ex_path ex_buf->path
+ #define ex_ft ex_buf->ft

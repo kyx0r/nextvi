@@ -11,10 +11,10 @@ index 11ae655..d8bb199 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 0649f71..debb5f8 100644
+index 4e6b7a2..3f58673 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -359,34 +359,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -366,34 +366,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -128,10 +128,10 @@ index 0649f71..debb5f8 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 7bdb728..65534f8 100644
+index 37a96d9..6bb1ec5 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -375,7 +375,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
+@@ -381,7 +381,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
  	return 0;
  }
  
@@ -140,8 +140,8 @@ index 7bdb728..65534f8 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -611,8 +611,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
- 	int lb[prog->laidx << 1], lblen = 0;
+@@ -626,8 +626,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+ 	unsigned int sdense[prog->sparsesz], sparsesz = 0;
  	char nsubs[prog->sub];
  	flg = prog->flg | flg;
 -	if (eol_ch)
@@ -171,7 +171,7 @@ index 0da830f..7cb6143 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 302cafb..c7b05c2 100644
+index f6c0031..f47ff2a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -183,7 +183,7 @@ index 302cafb..c7b05c2 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 5eecfe3..761efe5 100644
+index 419d3b5..240383f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -244,7 +244,8 @@ void syn_addhl(char *reg, int id, int reload);

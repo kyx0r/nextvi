@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index e41edeb..111ec69 100644
+index 8ee35d7..7123f01 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1099,6 +1099,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1095,6 +1095,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -19,7 +19,7 @@ index e41edeb..111ec69 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1141,6 +1151,7 @@ static struct excmd {
+@@ -1137,6 +1147,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -28,7 +28,7 @@ index e41edeb..111ec69 100644
  	{"se", ec_set},
  	{"s", ec_substitute},
 diff --git a/lbuf.c b/lbuf.c
-index 0649f71..6594b14 100644
+index 4e6b7a2..62306a2 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -6,6 +6,7 @@ struct lbuf *lbuf_make(void)
@@ -157,7 +157,7 @@ index 0649f71..6594b14 100644
  	lb->hist_n = lb->hist_u;
  	if (lb->hist_n == lb->hist_sz) {
  		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -290,13 +376,12 @@ static int lbuf_seq(struct lbuf *lb)
+@@ -297,13 +383,12 @@ static int lbuf_seq(struct lbuf *lb)
  /* mark buffer as saved and, if clear, clear the undo history */
  void lbuf_saved(struct lbuf *lb, int clear)
  {
@@ -174,7 +174,7 @@ index 0649f71..6594b14 100644
  	lb->useq_zero = lbuf_seq(lb);
  	lbuf_modified(xb);
 diff --git a/vi.h b/vi.h
-index 5eecfe3..87f7d2c 100644
+index 419d3b5..d8c307c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -147,6 +147,7 @@ struct linfo {
