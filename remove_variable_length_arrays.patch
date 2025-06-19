@@ -124,7 +124,7 @@ index 9757e68..3f55edf 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 37a96d9..ed80778 100644
+index 37a96d9..c99ecd4 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -381,7 +381,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -159,7 +159,7 @@ index 37a96d9..ed80778 100644
 +	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 -	const void *lb[prog->laidx * 3];
-+	const void *lb = emalloc(prog->laidx * 3);
++	const void **lb = emalloc(prog->laidx * 3 * sizeof(void*));
  	int rsubsize = prog->presub, suboff = 0, lblen = 0;
  	int cnt, spc, i, j, c, osubp = nsubp * sizeof(char*);
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
