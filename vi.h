@@ -130,8 +130,8 @@ void rset_free(rset *re);
 char *re_read(char **src);
 
 /* lbuf.c line buffer, managing a number of lines */
-#define NMARKS_BASE		('z' - 'a' + 2)
-#define NMARKS			32
+#define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
+#define NMARKS			30	/* adj: '`* nonadj: [] */
 struct lopt {
 	char *ins;		/* inserted text */
 	char *del;		/* deleted text */
@@ -374,7 +374,6 @@ extern struct buf *ex_pbuf;
 extern struct buf *bufs;
 extern struct buf tempbufs[2];
 #define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
-#define EXLEN	512	/* ex line length */
 #define ex_path ex_buf->path
 #define ex_ft ex_buf->ft
 #define xb ex_buf->lb

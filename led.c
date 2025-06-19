@@ -559,7 +559,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			exbuf_load(ex_buf)
 			syn_setft(ex_ft);
 			vi(1); /* redraw past screen */
-			syn_setft("/-");
+			syn_setft("/ex");
 			term_pos(xrows, 0);
 			if (xquit >= 0)
 				restore(xquit)
