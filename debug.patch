@@ -20,7 +20,7 @@ index 8ee35d7..a863d0b 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 37a96d9..9350f27 100644
+index b4c3ab3..54e94aa 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -624,6 +624,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i

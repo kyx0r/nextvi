@@ -128,7 +128,7 @@ index 4e6b7a2..3f58673 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 37a96d9..6bb1ec5 100644
+index b4c3ab3..6928255 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -381,7 +381,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
