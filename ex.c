@@ -1207,7 +1207,7 @@ int ex_exec(const char *ln)
 			continue;
 		ret = excmds[idx].ec(loc, excmds[idx].name, ecmd);
 		if (ret == 2)
-			ex_print("invalid region");
+			ex_print("invalid range");
 		else if (ret == 3)
 			ex_print("syntax error");
 		free(ecmd);
