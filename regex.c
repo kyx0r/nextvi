@@ -132,7 +132,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					goto non_capture;
 				} else if (*re == '#') {
 					lb_start = atoi(re+1);
-					if (!(re = strchr(re, ')')))
+					if (lb_start < 0 || !(re = strchr(re, ')')))
 						return -1;
 					break;
 				} else if (*re != '=' && *re != '!' && *re != '<' && *re != '>')
