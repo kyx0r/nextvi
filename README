@@ -235,4 +235,4 @@ Use to create patch and diff files fast. It relies on
 you not saving the file prior to running the macro.
 @c = run ac command and reindex ac db
 
-export EXINIT=$'se noled:se ish:i o{\n}kA\n	\nA {jo}koa\n\\:e \!p $c\nI/*A*/\ni/*A*/\n/\/\*\n2x/\*\/\n2x\n>\%<<$\%<<\n\\:\!cp \% \%_\\:w\\:\!git diff --no-index \%_ \%\n\\:ac  \\:& i\\:ac3ls\n\\:cd \!p $c\n\x1b:&1G0"q2Y2j"Qy$ 0j"wy$ j0"ey$ j0"ay$ j0"sy$ j0"d2Y2j"Dy$ j0"xy$ j0"ly$ j0"cy$ j0"fy$:inc (^(?\:(?\!^\.git).)+[^/]+$):u$:1:se pac:se led'
+export EXINIT="$(printf '%b' 'se noled:se ish:i o{\n}kA\n	\nA {jo}koa\n\\:e \!p $c\nI/*A*/\ni/*A*/\n/\/\*\n2x/\*\/\n2x\n>\%<<$\%<<\n\\:\!cp \% \%_\\:w\\:\!git diff --no-index \%_ \%\n\\:ac  \\:& i\\:ac3ls\n\\:cd \!p $c\n\x1b:&1G0"q2Y2j"Qy$ 0j"wy$ j0"ey$ j0"ay$ j0"sy$ j0"d2Y2j"Dy$ j0"xy$ j0"ly$ j0"cy$ j0"fy$:inc (^(?\:(?\!^\.git).)+[^/]+$):u$:1:se pac:se led')"
