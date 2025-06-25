@@ -834,13 +834,13 @@ EXINIT ENV VAR
 
      Examples:
 
-     export EXINIT=$'e ./vi.c:& i\x7\x3:bx 1:bx'
+     export EXINIT="$(printf '%b' 'e ./vi.c:& i\x7\x3:bx 1:bx')"
              Index vi.c for autocomplete
 
      export EXINIT='b-1:%r ./vi.c:b-1'
              Load vi.c into a history buffer
 
-     export EXINIT=$'e:& io{\n}\x16\x3kA\x3:& 1G:& 2\"ayy'
+     export EXINIT="$(printf '%b' 'e:& io{\n}\x16\x3kA\x3:& 1G:& 2"ayy')"
              Setup @ macro in register <a>
 
              @a macro creates <{> and closing <}> below the cursor leaving
@@ -1000,4 +1000,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.14.10                    June 16, 2025                   Linux 6.14.10
+Linux 6.14.10                    June 25, 2025                   Linux 6.14.10

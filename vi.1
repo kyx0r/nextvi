@@ -1,4 +1,4 @@
-.Dd Jun 16, 2025
+.Dd Jun 25, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -1168,13 +1168,13 @@ Examples:
 .Ed
 
 .Bl -tag -width Ds -compact
-.It Cm export EXINIT=$'e ./vi.c:& i\ex7\ex3:bx 1:bx'
+.It Cm export EXINIT="$(printf '%b' 'e ./vi.c:& i\ex7\ex3:bx 1:bx')"
 Index vi.c for autocomplete
 
 .It Cm export EXINIT='b-1:%r ./vi.c:b-1'
 Load vi.c into a history buffer
 
-.It Cm export EXINIT=$'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2\e"ayy'
+.It Cm export EXINIT="$(printf '%b' 'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2"ayy')"
 Setup @ macro in register <a>
 
 @a macro creates <{> and closing <}> below the cursor leaving
