@@ -17,4 +17,4 @@ for p in *.c *.h; do
 	EXINIT="${EXINIT}:%s/INT_MAX/INT64_MAX/g"
 	EXINIT="${EXINIT}:wq" vi -sm "$p"
 done
-EXINIT=$'1:i \#include <stdint.h>\ntypedef uint64_t u64;\ntypedef int64_t s64;\n.\n:wq' vi -sm vi.h
+EXINIT="$(printf '%b' '1:i \#include <stdint.h>\ntypedef uint64_t u64;\ntypedef int64_t s64;\n.\n:wq')" vi -sm vi.h
