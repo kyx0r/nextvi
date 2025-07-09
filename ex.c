@@ -737,27 +737,10 @@ static int ec_mark(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static void replace(sbuf *dst, char *rep, char *ln, int *offs)
-{
-	while (rep[0]) {
-		if (rep[0] == '\\' && rep[1]) {
-			if (rep[1] >= '0' && rep[1] <= '9') {
-				int grp = (rep[1] - '0') * 2;
-				int len = offs[grp + 1] - offs[grp];
-				sbuf_mem(dst, ln + offs[grp], len)
-			} else
-				sbuf_chr(dst, (unsigned char) rep[1])
-			rep++;
-		} else
-			sbuf_chr(dst, (unsigned char) rep[0])
-		rep++;
-	}
-}
-
 static int ec_substitute(char *loc, char *cmd, char *arg)
 {
-	int beg, end;
-	char *pat, *rep = NULL;
+	int beg, end, grp;
+	char *pat, *rep = NULL, *_rep;
 	char *s = arg;
 	rset *rs = xkwdrs;
 	int i, first = -1, last;
@@ -786,8 +769,20 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
 			} else if (!r)
 				sbuf_make(r, 256)
 			sbuf_mem(r, ln, offs[xgrp])
-			if (rep)
-				replace(r, rep, ln, offs);
+			if (rep) {
+				for (_rep = rep; *_rep; _rep++) {
+					if (*_rep != '\\' || !_rep[1]) {
+						sbuf_chr(r, (unsigned char)*_rep)
+						continue;
+					}
+					_rep++;
+					grp = abs((*_rep - '0') * 2);
+					if (grp + 1 >= rs->grpcnt * 2)
+						sbuf_chr(r, (unsigned char)*_rep)
+					else if (offs[grp] >= 0)
+						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
+				}
+			}
 			ln += offs[xgrp + 1];
 			if (!offs[xgrp + 1])	/* zero-length match */
 				sbuf_chr(r, (unsigned char)*ln++)
