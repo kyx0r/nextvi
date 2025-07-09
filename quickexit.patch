@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8ee35d7..f848500 100644
+index 4ed7b54..4339916 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index 8ee35d7..f848500 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -906,6 +907,7 @@ static struct option {
+@@ -901,6 +902,7 @@ static struct option {
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
  	{"tbs", &xtabspc},

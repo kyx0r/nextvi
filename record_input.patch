@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8ee35d7..2eda2ae 100644
+index 4ed7b54..70eed16 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -10,7 +10,7 @@ index 8ee35d7..2eda2ae 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -914,6 +915,7 @@ static struct option {
+@@ -909,6 +910,7 @@ static struct option {
  	{"mpt", &xmpt},
  	{"pr", &xpr},
  	{"sep", &xsep},

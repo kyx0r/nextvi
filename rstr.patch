@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8ee35d7..934939f 100644
+index 4ed7b54..da3e4ed 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -28,7 +28,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -24,9 +24,9 @@ index 8ee35d7..934939f 100644
  		xkwdcnt++;
  		vi_regputraw('/', kwd, 0, 0);
  		xkwddir = dir;
-@@ -759,13 +759,13 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
- 	int beg, end;
- 	char *pat, *rep = NULL;
+@@ -742,13 +742,13 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+ 	int beg, end, grp;
+ 	char *pat, *rep = NULL, *_rep;
  	char *s = arg;
 -	rset *rs = xkwdrs;
 +	rstr *rs = xkwdrs;
@@ -40,7 +40,7 @@ index 8ee35d7..934939f 100644
  	if (!rs) {
  		free(pat);
  		return 3;
-@@ -775,11 +775,11 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -758,11 +758,11 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -54,7 +54,7 @@ index 8ee35d7..934939f 100644
  			if (offs[xgrp] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -808,7 +808,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -803,7 +803,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	if (first >= 0)
  		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), first, last);
  	if (rs != xkwdrs)
@@ -63,7 +63,7 @@ index 8ee35d7..934939f 100644
  	free(rep);
  	return 0;
  }
-@@ -857,7 +857,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -852,7 +852,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  {
  	int i, beg, end, not;
  	char *pat, *s = arg;
@@ -72,7 +72,7 @@ index 8ee35d7..934939f 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_region(loc, &beg, &end))
-@@ -865,9 +865,9 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -860,9 +860,9 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	not = !!strchr(cmd, '!');
  	pat = re_read(&s);
  	if (pat && *pat)
@@ -84,7 +84,7 @@ index 8ee35d7..934939f 100644
  	free(pat);
  	if (!rs)
  		return 3;
-@@ -877,7 +877,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -872,7 +872,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	for (i = beg; i < lbuf_len(xb);) {
  		char *ln = lbuf_get(xb, i);
  		lbuf_s(ln)->grec &= ~xgdep;
@@ -93,7 +93,7 @@ index 8ee35d7..934939f 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -886,7 +886,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -881,7 +881,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  		while (i < lbuf_len(xb) && !(lbuf_i(xb, i)->grec & xgdep))
  			i++;
  	}
@@ -102,7 +102,7 @@ index 8ee35d7..934939f 100644
  	xgdep /= 2;
  	return 0;
  }
-@@ -1005,10 +1005,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -1000,10 +1000,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {

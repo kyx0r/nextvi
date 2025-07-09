@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8ee35d7..4ba6aca 100644
+index 4ed7b54..cba502c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -34,6 +34,7 @@ int xmpt;			/* whether to prompt after printing > 1 lines in vi */
@@ -10,7 +10,7 @@ index 8ee35d7..4ba6aca 100644
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static int xgdep;		/* global command recursion depth */
-@@ -1095,6 +1096,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1090,6 +1091,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -52,7 +52,7 @@ index 8ee35d7..4ba6aca 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1139,6 +1175,8 @@ static struct excmd {
+@@ -1134,6 +1170,8 @@ static struct excmd {
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
  	{"se", ec_set},

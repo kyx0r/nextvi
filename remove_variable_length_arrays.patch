@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 8ee35d7..0eea2e5 100644
+index 4ed7b54..f05d3d7 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -775,7 +775,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -758,7 +758,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -11,7 +11,7 @@ index 8ee35d7..0eea2e5 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -810,6 +810,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -805,6 +805,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -19,7 +19,7 @@ index 8ee35d7..0eea2e5 100644
  	return 0;
  }
  
-@@ -1199,7 +1200,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
+@@ -1194,7 +1195,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, idx = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index 8ee35d7..0eea2e5 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, &idx, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1212,6 +1213,8 @@ int ex_exec(const char *ln)
+@@ -1207,6 +1208,8 @@ int ex_exec(const char *ln)
  			ex_print("syntax error");
  		free(ecmd);
  	}
