@@ -1,4 +1,4 @@
-.Dd Jun 25, 2025
+.Dd Jul  9, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -523,9 +523,9 @@ with <\\>.
 .Bl -tag -width Ds -compact
 
 .It Cm <( ^ \&[ \&] \e>
-Special characters in regex "[]" bracket exp
-.It Cm <\&( \&) { } + * \&? ^ $ \&[ \&] \&| \\\\< \\\\> \&. \e>
-Special characters in regex
+Special characters in regex "[]" expression
+.It Cm <\&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&.> \&"\\\\<\&" \&"\\\\>\&"
+Specials in regex
 .It Cm <# % \&! :>
 Special characters in ex
 .El
@@ -884,7 +884,7 @@ this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
 .It Cm [\fIrange\fP]ya[\fIregister\fP][\fIappend\fP]
-Yank a region
+Yank a range
 .Bd -literal
 To append to the register, pass in its uppercase version.
 To append to any of the non-alphabetical registers add any extra
@@ -1138,7 +1138,7 @@ be stored in the register.
 If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
 Example: paste current buffer list exactly like from :b command
-:se pr=A:ya! a:b:pu a
+:se pr=A:ya! a: b:pu a
 Example: store a line printed with :p
 :se pr=A:ya! a:p
 .Ed
@@ -1305,9 +1305,9 @@ _
  650 uc.c | UTF-8 support
  675 led.c | insert mode/output
  748 regex.c | extended RE
- 1247 ex.c | ex options/commands
+ 1242 ex.c | ex options/commands
  1938 vi.c | normal mode/general
- 6814 total | wc -l *.c\(basort
+ 6809 total | wc -l *.c\(basort
 _
 .TE
 .
@@ -1364,7 +1364,7 @@ Scripts used to generate this manual are located in the manual
 branch.
 .Lk https://github.com/kyx0r/nextvi/tree/manual
 
-Original Neatvi repository:
+Original Neatvi repository
 .Lk https://github.com/aligrudi/neatvi
 
 Posix vi(1)
@@ -1373,7 +1373,7 @@ Posix vi(1)
 Posix ex(1)
 .Lk https://pubs.opengroup.org/onlinepubs/9699919799/utilities/ex.html
 
-NFA regular expressions by Russ Cox:
+NFA regular expressions by Russ Cox
 .Lk https://swtch.com/~rsc/regexp/regexp1.html
 
 Plan 9 regexp(7)
