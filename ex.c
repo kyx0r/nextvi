@@ -33,6 +33,8 @@ int xkwddir;			/* the last search direction */
 int xmpt;			/* whether to prompt after printing > 1 lines in vi */
 int xpr;			/* ex_cprint register */
 int xsep = ':';			/* ex command separator */
+int xlim = -1;			/* rendering cutoff for non cursor lines */
+int xseq = 1;			/* undo/redo sequence */
 char *xregs[256];		/* string registers */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
@@ -909,6 +911,8 @@ static struct option {
 	{"mpt", &xmpt},
 	{"pr", &xpr},
 	{"sep", &xsep},
+	{"lim", &xlim},
+	{"seq", &xseq},
 };
 
 static int ec_set(char *loc, char *cmd, char *arg)
@@ -1213,14 +1217,14 @@ int ex_exec(const char *ln)
 /* ex main loop */
 void ex(void)
 {
-	vi_lncol = 0;
 	xgrec++;
 	while (!xquit) {
+		vi_lncol = 0;
 		char *ln = ex_read(":");
 		if (ln) {
 			ex_command(ln)
 			free(ln);
-			lbuf_modified(xb);
+			xb->useq += xseq;
 		}
 	}
 	xgrec--;

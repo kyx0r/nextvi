@@ -207,7 +207,9 @@ typedef struct {
 	int n;
 	int cmax;
 	int ctx;
+	char nullhole[4];
 } ren_state;
+extern ren_state rstates[3];
 extern ren_state *rstate;
 ren_state *ren_position(char *s);
 int ren_next(char *s, int p, int dir);
@@ -279,7 +281,6 @@ int uc_isalpha(char *s);
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
-char **uc_chop(char *s, unsigned int *n);
 char *uc_beg(char *beg, char *s);
 char *uc_shape(char *beg, char *s, int c);
 
@@ -336,7 +337,7 @@ typedef struct {
 	int att;
 } led_att;
 extern sbuf *led_attsb;
-char *led_prompt(char *pref, char *post, char *insert, int *kmap);
+char *led_prompt(char *pref, char *post, char *insert, int *kmap, int *key);
 sbuf *led_input(char *pref, char **post, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
@@ -352,8 +353,10 @@ void led_render(char *s0, int cbeg, int cend);
 
 #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, /**/)
 #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
-#define led_recrender(msg, row, col, beg, end) \
-{ rstate->s = NULL; led_crender(msg, row, col, beg, end); }
+#define led_rscrender(msg, row, col, beg, end) \
+{ rstate = rstates+2; rstate->s = NULL; led_crender(msg, row, col, beg, end); rstate -= 2; }
+#define led_rsprender(msg, row, col, beg, end) \
+{ rstate = rstates+2; rstate->s = NULL; led_prender(msg, row, col, beg, end); rstate -= 2; }
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
@@ -498,6 +501,8 @@ extern int xkwddir;
 extern int xmpt;
 extern int xpr;
 extern int xsep;
+extern int xlim;
+extern int xseq;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;

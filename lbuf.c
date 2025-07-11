@@ -90,9 +90,11 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 			s += l;
 		}
 	}
-	for (i = 0; i < n_del; i++)
+	for (i = 0; i < n_del; i++) {
+		if (lb->ln[pos + i] == rstate->s)
+			rstate->s = NULL;	/* invalidate deleted cached rstate */
 		free(lbuf_i(lb, pos + i));
-	rstate->s = NULL; /* there is no guarantee malloc not giving same ptr back */
+	}
 	if (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_n + n_ins - n_del + 512;
 		char **nln = emalloc(nsz * sizeof(lb->ln[0]));
@@ -306,13 +308,11 @@ void lbuf_saved(struct lbuf *lb, int clear)
 		lb->useq_last = lb->useq;
 	}
 	lb->useq_zero = lbuf_seq(lb);
-	lbuf_modified(xb);
 }
 
 /* was the file modified since the last reset */
 int lbuf_modified(struct lbuf *lb)
 {
-	lb->useq++;
 	return lbuf_seq(lb) != lb->useq_zero;
 }
 
@@ -373,22 +373,27 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	int offs[re->grpcnt * 2], i = r0;
 	char *s = lbuf_get(lb, i);
 	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
+	int g1, g2, _o, step;
 	for (; i >= 0 && i < ln_n; i += dir) {
+		_o = 0;
+		step = 0;
 		s = lb->ln[i];
 		while (rset_find(re, s + off, offs,
 				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
-			int g1 = offs[xgrp], g2 = offs[xgrp + 1];
+			g1 = offs[xgrp], g2 = offs[xgrp + 1];
 			if (g1 < 0) {
 				off += offs[1] > 0 ? offs[1] : 1;
 				continue;
 			}
-			if (dir < 0 && r0 == i && uc_off(s, off+g1) >= o0)
+			_o += uc_off(s + step, off + g1 - step);
+			if (dir < 0 && r0 == i && _o >= o0)
 				break;
-			*o = uc_off(s, off + g1);
+			*o = _o;
 			*r = i;
-			off += g2 > 0 ? g2 : 1;
 			if (dir > 0)
 				return 0;
+			step = off + g1;
+			off += g2 > 0 ? g2 : 1;
 			ln_n = -1; /* break outer loop efficiently */
 		}
 		off = 0;

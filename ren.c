@@ -36,7 +36,8 @@ static int dir_reorder(char **chrs, int *ord, int end, int dir)
 				if (subs[i * 2] < 0 || gdir >= 0)
 					continue;
 				c_beg = uc_off(s, subs[i * 2]);
-				c_end = uc_off(s, subs[i * 2 + 1]);
+				c_end = c_beg + uc_off(s + subs[i * 2],
+						subs[i * 2 + 1] - subs[i * 2]);
 				dir_reverse(ord, beg+c_beg, beg+c_end);
 			}
 			beg += c_end ? c_end : 1;
@@ -90,8 +91,8 @@ static int ren_cwid(char *s, int pos)
 	return uc_wid(c);
 }
 
-static ren_state rstates[2];
-ren_state *rstate = &rstates[0];
+ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
+ren_state *rstate = rstates;
 
 /* specify the screen position of the characters in s */
 ren_state *ren_position(char *s)
@@ -103,12 +104,30 @@ ren_state *ren_position(char *s)
 		free(rstate->pos);
 		free(rstate->chrs);
 	}
-	unsigned int n, i, c = 2;
-	int cpos = 0, wid, *off, *pos, *col;
-	char **chrs = uc_chop(s, &n);
-	pos = emalloc(((n + 1) * sizeof(pos[0])) * 2);
-	off = &pos[n+1];
+	rstate->s = s;
 	rstate->ctx = dir_context(s);
+	unsigned int n, max;
+	char *ss;
+	if (xlim >= 0 && rstate == rstates+1) {
+		ss = s;
+		max = (unsigned int)xlim;
+		for (n = 0; n < max && uc_len(ss); n++)
+			ss += uc_len(ss);
+		if (uc_len(ss)) {
+			memcpy(rstate->nullhole, ss, 4);
+			memset(ss, 0, 4);
+		}
+	} else
+		n = uc_slen(s);
+	unsigned int b = n + 1, c = 2, i;
+	char **chrs = emalloc(b * sizeof(chrs[0]));
+	for (i = 0; i < b; i++) {
+		chrs[i] = s;
+		s += uc_len(s);
+	}
+	int cpos = 0, wid, *off, *pos, *col;
+	pos = emalloc(b * 2 * sizeof(pos[0]));
+	off = &pos[b];
 	if (xorder && dir_reorder(chrs, off, n, rstate->ctx)) {
 		int *wids = emalloc(n * sizeof(wids[0]));
 		for (i = 0; i < n; i++) {
@@ -145,7 +164,6 @@ ren_state *ren_position(char *s)
 	rstate->wid = off;
 	rstate->cmax = cpos - 1;
 	rstate->col = col + 2;
-	rstate->s = s;
 	rstate->pos = pos;
 	rstate->chrs = chrs;
 	rstate->n = n;
@@ -311,8 +329,9 @@ void syn_highlight(int *att, char *s, int n)
 		}
 		for (i = 0; i < rs->setgrpcnt[sl]; i++) {
 			if (subs[i * 2] >= 0) {
-				int beg = uc_off(s, sidx + subs[i * 2 + 0]);
-				int end = uc_off(s, sidx + subs[i * 2 + 1]);
+				int beg = uc_off(s, sidx + subs[i * 2]);
+				int end = beg + uc_off(s + sidx + subs[i * 2],
+						subs[i * 2 + 1] - subs[i * 2]);
 				for (j = beg; j < end; j++)
 					att[j] = syn_merge(att[j], catt[i]);
 				if (!hls[hl].end[i])
