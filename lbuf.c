@@ -90,8 +90,11 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 			s += l;
 		}
 	}
-	for (i = 0; i < n_del; i++)
+	for (i = 0; i < n_del; i++) {
+		if (lb->ln[pos + i] == rstate->s)
+			rstate->s = NULL;	/* invalidate deleted cached rstate */
 		free(lbuf_i(lb, pos + i));
+	}
 	if (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_n + n_ins - n_del + 512;
 		char **nln = emalloc(nsz * sizeof(lb->ln[0]));
@@ -107,9 +110,6 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 	lb->ln_n += n_ins - n_del;
 	for (i = 0; i < n_ins; i++)
 		lb->ln[pos + i] = *((char**)sb->s + i);
-	while (rstate->s && --i >= 0)  /* there is no guarantee malloc not giving same ptr back */
-		if (*((char**)sb->s + i) == rstate->s)
-			rstate->s = NULL;
 	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
 		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
 			lbuf_savemark(lb, lo, i, i);
