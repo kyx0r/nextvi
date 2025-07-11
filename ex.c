@@ -1213,9 +1213,9 @@ int ex_exec(const char *ln)
 /* ex main loop */
 void ex(void)
 {
-	vi_lncol = 0;
 	xgrec++;
 	while (!xquit) {
+		vi_lncol = 0;
 		char *ln = ex_read(":");
 		if (ln) {
 			ex_command(ln)

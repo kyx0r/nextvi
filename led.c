@@ -285,6 +285,7 @@ static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
 	int dir, off, pos, psn = sb->s_n;
 	sbuf_str(sb, post)
 	sbuf_set(sb, '\0', 4)
+	rstate++;
 	rstate->s = NULL;
 	ren_state *r = ren_position(sb->s + ps);
 	off = r->n - uc_slen(post);
@@ -306,6 +307,7 @@ static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
 	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
 	sbufn_cut(sb, psn)
+	rstate--;
 }
 
 /* read a character from the terminal */
@@ -351,7 +353,7 @@ char *led_read(int *kmap, int c)
 
 static void led_info(char *str, int ai_max)
 {
-	led_recrender(str, xtop+xrows, 0, 0, xcols)
+	led_rscrender(str, xtop+xrows, 0, 0, xcols)
 	if (ai_max >= 0)
 		term_pos(xrow - xtop, 0);
 }
@@ -368,13 +370,13 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 			nl = dstrlen(cs, '\n');
 			sbuf_mem(cb, cs, nl+!!cs[nl])
 			sbuf_set(cb, '\0', 4)
-			led_recrender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
+			led_rscrender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
 			free(cb->s);
 			cs += nl+!!cs[nl];
 			continue;
 		}
 		nl = r < xrow-xtop ? r+xtop : (r-(xrow-orow+lsh))+xtop;
-		led_crender(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r,
+		led_rscrender(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r,
 			vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
 	term_pos(xrow - xtop, 0);
@@ -531,9 +533,9 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 					syn_setft("/ac");
 					preserve(int, xtd, 2)
 					for (int left = 0; r < xrows; r++) {
-						led_crender(sug, r, 0, left, left+xcols)
+						led_rscrender(sug, r, 0, left, left+xcols)
 						left += xcols;
-						if (left >= rstate->pos[rstate->n])
+						if (left >= rstates[2].pos[rstates[2].n])
 							break;
 					}
 					restore(xtd)
@@ -606,9 +608,9 @@ leave:
 }
 
 /* read an ex command */
-char *led_prompt(char *pref, char *post, char *insert, int *kmap)
+char *led_prompt(char *pref, char *post, char *insert, int *kmap, int *key)
 {
-	int key, n;
+	int n;
 	sbuf_smake(sb, xcols)
 	if (pref)
 		sbuf_str(sb, pref)
@@ -616,19 +618,17 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap)
 	if (insert)
 		sbuf_str(sb, insert)
 	preserve(int, xtd, +2)
-	led_line(sb, 0, n, post, -1, &key, kmap, 0, 0);
+	led_line(sb, 0, n, post, -1, key, kmap, 0, 0);
 	restore(xtd)
-	if (key == '\n') {
+	if (*key == '\n') {
 		if (pref) {
 			lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s + n);
 		}
 		sbuf_str(sb, post)
-		sbufn_sret(sb)
 	}
-	free(sb->s);
-	return NULL;
+	sbufn_sret(sb)
 }
 
 /* read visual command input */
