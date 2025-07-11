@@ -502,6 +502,7 @@ extern int xmpt;
 extern int xpr;
 extern int xsep;
 extern int xlim;
+extern int xseq;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;

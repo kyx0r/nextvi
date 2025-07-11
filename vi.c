@@ -1077,7 +1077,7 @@ static void vc_motion(int cmd)
 			lnmode ? 1 : vi_arg ? vi_arg : 1);
 	else if (cmd == TK_CTL('w'))
 		vi_shift(r1, r2, -1, INT_MAX / 2);
-	vi_mod |= (r1 != r2 || (lnmode && cmd == 'd')) ? 1 : 2;
+	vi_mod |= (r1 != r2 || (lnmode && (cmd == 'd' || cmd == '!'))) ? 1 : 2;
 }
 
 static void vc_insert(int cmd)
@@ -1692,10 +1692,10 @@ void vi(int init)
 					vi_tsm = 1;
 					goto status;
 				} else if (k == 'w') {
-					char cmd[100] = "se noled:& ";
+					char cmd[100] = "se noled:se noseq:& ";
 					n = vi_arg ? vi_arg - 1 : 79;
 					k = xled;
-					strcpy(itoa(n, cmd+10), "|");
+					strcpy(itoa(n, cmd+19), "|");
 					while (1) {
 						ex_exec(cmd);
 						ex_exec("se grp=2:f/[^ \t]*[^ \t]?(.):& 1K:se nogrp");
@@ -1704,12 +1704,12 @@ void vi(int init)
 						ex_exec("+1");
 					}
 					if (k) {
-						ex_exec("se led");
+						ex_exec("se led:se seq");
 						vi_mod |= 1;
 					}
 				} else if (k == 'q') {
-					char cmd[100] = "se noled:g/./& ";
-					strcpy(itoa(vi_arg, cmd+14), "gw:se led");
+					char cmd[100] = "se noled:se noseq:g/./& ";
+					strcpy(itoa(vi_arg, cmd+23), "gw:se led:se seq");
 					ex_command(cmd)
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
@@ -1877,7 +1877,7 @@ void vi(int init)
 			vi_drawmsg();
 		term_pos(xrow - xtop, n + vi_lncol);
 		term_commit();
-		lbuf_modified(xb);
+		xb->useq += xseq;
 	}
 	xgrec--;
 }
