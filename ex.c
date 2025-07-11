@@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
 int xmpt;			/* whether to prompt after printing > 1 lines in vi */
 int xpr;			/* ex_cprint register */
 int xsep = ':';			/* ex command separator */
+int xlim = -1;			/* rendering cutoff for non cursor lines */
 char *xregs[256];		/* string registers */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
@@ -909,6 +910,7 @@ static struct option {
 	{"mpt", &xmpt},
 	{"pr", &xpr},
 	{"sep", &xsep},
+	{"lim", &xlim},
 };
 
 static int ec_set(char *loc, char *cmd, char *arg)

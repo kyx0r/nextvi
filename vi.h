@@ -207,6 +207,7 @@ typedef struct {
 	int n;
 	int cmax;
 	int ctx;
+	char nullhole[4];
 } ren_state;
 extern ren_state rstates[3];
 extern ren_state *rstate;
@@ -280,7 +281,6 @@ int uc_isalpha(char *s);
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
-char **uc_chop(char *s, unsigned int *n);
 char *uc_beg(char *beg, char *s);
 char *uc_shape(char *beg, char *s, int c);
 
@@ -501,6 +501,7 @@ extern int xkwddir;
 extern int xmpt;
 extern int xpr;
 extern int xsep;
+extern int xlim;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;
