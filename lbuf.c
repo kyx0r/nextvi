@@ -140,8 +140,7 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
 struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 {
 	struct lopt *lo;
-	int i;
-	for (i = lb->hist_u; i < lb->hist_n; i++)
+	for (int i = lb->hist_u; i < lb->hist_n; i++)
 		lopt_done(&lb->hist[i]);
 	lb->hist_n = lb->hist_u;
 	if (lb->hist_n == lb->hist_sz) {
@@ -152,18 +151,26 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 		lb->hist = hist;
 		lb->hist_sz = sz;
 	}
-	lo = &lb->hist[lb->hist_n++];
-	lb->hist_u = lb->hist_n;
-	lo->ins = !init && buf ? uc_dup(buf) : NULL;
-	lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
+	if (xseq < 0) {
+		static struct lopt _lo;
+		static int _buf[NMARKS];
+		lo = &_lo;
+		lo->mark = _buf;
+		lo->mark_off = _buf;
+	} else {
+		lo = &lb->hist[lb->hist_n++];
+		lb->hist_u = lb->hist_n;
+		lo->ins = !init && buf ? uc_dup(buf) : NULL;
+		lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
+		lo->mark = emalloc(sizeof(lb->mark));
+		memset(lo->mark, 0xff, sizeof(lb->mark));
+		lo->mark_off = emalloc(sizeof(lb->mark_off));
+	}
 	lo->pos = pos;
 	lo->n_ins = 0;
 	lo->n_del = n_del;
 	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
 	lo->seq = lb->useq;
-	lo->mark = emalloc(sizeof(lb->mark));
-	lo->mark_off = emalloc(sizeof(lb->mark_off));
-	memset(lo->mark, 0xff, sizeof(lb->mark));
 	return lo;
 }
 

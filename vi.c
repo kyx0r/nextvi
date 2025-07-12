@@ -1693,6 +1693,8 @@ void vi(int init)
 					goto status;
 				} else if (k == 'w') {
 					char cmd[100] = "se noled:se noseq:& ";
+					if (xseq < 0)
+						memset(cmd+9, ' ', 9);
 					n = vi_arg ? vi_arg - 1 : 79;
 					k = xled;
 					strcpy(itoa(n, cmd+19), "|");
@@ -1704,13 +1706,17 @@ void vi(int init)
 						ex_exec("+1");
 					}
 					if (k) {
-						ex_exec("se led:se seq");
+						if (!xseq)
+							ex_exec("se seq");
+						ex_exec("se led");
 						vi_mod |= 1;
 					}
 				} else if (k == 'q') {
-					char cmd[100] = "se noled:se noseq:g/./& ";
-					strcpy(itoa(vi_arg, cmd+23), "gw:se led:se seq");
+					char cmd[100] = "se noled:g/./& ";
+					strcpy(itoa(vi_arg, cmd+14), "gw:se led");
 					ex_command(cmd)
+					if (!xseq)
+						ex_exec("se seq");
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
 					goto rep;
