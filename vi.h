@@ -207,8 +207,12 @@ typedef struct {
 	int n;
 	int cmax;
 	int ctx;
+	int holelen;
+	char nullhole[4];
 } ren_state;
+extern ren_state rstates[3];
 extern ren_state *rstate;
+#define RS(n, func) { rstate = rstates+n; rstate->s = NULL; func; rstate -= n; }
 ren_state *ren_position(char *s);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
@@ -279,7 +283,6 @@ int uc_isalpha(char *s);
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
-char **uc_chop(char *s, unsigned int *n);
 char *uc_beg(char *beg, char *s);
 char *uc_shape(char *beg, char *s, int c);
 
@@ -336,7 +339,7 @@ typedef struct {
 	int att;
 } led_att;
 extern sbuf *led_attsb;
-char *led_prompt(char *pref, char *post, char *insert, int *kmap);
+char *led_prompt(char *pref, char *post, char *insert, int *kmap, int *key);
 sbuf *led_input(char *pref, char **post, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
@@ -352,8 +355,6 @@ void led_render(char *s0, int cbeg, int cend);
 
 #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, /**/)
 #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
-#define led_recrender(msg, row, col, beg, end) \
-{ rstate->s = NULL; led_crender(msg, row, col, beg, end); }
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
@@ -397,7 +398,7 @@ int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 char *ex_read(char *msg);
 void ex_cprint(char *line, int r, int c, int ln);
-#define ex_print(line) ex_cprint(line, -1, 0, 1)
+#define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
@@ -498,6 +499,8 @@ extern int xkwddir;
 extern int xmpt;
 extern int xpr;
 extern int xsep;
+extern int xlim;
+extern int xseq;
 extern rset *xkwdrs;
 extern sbuf *xacreg;
 extern rset *fsincl;

@@ -36,19 +36,6 @@ char *uc_beg(char *beg, char *s)
 	return s;
 }
 
-/* allocate and return an array for the characters in s */
-char **uc_chop(char *s, unsigned int *n)
-{
-	*n = uc_slen(s);
-	int i, c = *n + 1;
-	char **chrs = emalloc(c * sizeof(chrs[0]));
-	for (i = 0; i < c; i++) {
-		chrs[i] = s;
-		s += uc_len(s);
-	}
-	return chrs;
-}
-
 char *uc_chr(char *s, int off)
 {
 	int i = 0;

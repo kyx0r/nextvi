@@ -90,9 +90,11 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 			s += l;
 		}
 	}
-	for (i = 0; i < n_del; i++)
+	for (i = 0; i < n_del; i++) {
+		if (lb->ln[pos + i] == rstate->s)
+			rstate->s = NULL;	/* invalidate deleted cached rstate */
 		free(lbuf_i(lb, pos + i));
-	rstate->s = NULL; /* there is no guarantee malloc not giving same ptr back */
+	}
 	if (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_n + n_ins - n_del + 512;
 		char **nln = emalloc(nsz * sizeof(lb->ln[0]));
@@ -138,8 +140,7 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
 struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 {
 	struct lopt *lo;
-	int i;
-	for (i = lb->hist_u; i < lb->hist_n; i++)
+	for (int i = lb->hist_u; i < lb->hist_n; i++)
 		lopt_done(&lb->hist[i]);
 	lb->hist_n = lb->hist_u;
 	if (lb->hist_n == lb->hist_sz) {
@@ -150,18 +151,26 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 		lb->hist = hist;
 		lb->hist_sz = sz;
 	}
-	lo = &lb->hist[lb->hist_n++];
-	lb->hist_u = lb->hist_n;
-	lo->ins = !init && buf ? uc_dup(buf) : NULL;
-	lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
+	if (xseq < 0) {
+		static struct lopt _lo;
+		static int _buf[NMARKS];
+		lo = &_lo;
+		lo->mark = _buf;
+		lo->mark_off = _buf;
+	} else {
+		lo = &lb->hist[lb->hist_n++];
+		lb->hist_u = lb->hist_n;
+		lo->ins = !init && buf ? uc_dup(buf) : NULL;
+		lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
+		lo->mark = emalloc(sizeof(lb->mark));
+		memset(lo->mark, 0xff, sizeof(lb->mark));
+		lo->mark_off = emalloc(sizeof(lb->mark_off));
+	}
 	lo->pos = pos;
 	lo->n_ins = 0;
 	lo->n_del = n_del;
 	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
 	lo->seq = lb->useq;
-	lo->mark = emalloc(sizeof(lb->mark));
-	lo->mark_off = emalloc(sizeof(lb->mark_off));
-	memset(lo->mark, 0xff, sizeof(lb->mark));
 	return lo;
 }
 
@@ -297,22 +306,19 @@ static int lbuf_seq(struct lbuf *lb)
 /* mark buffer as saved and, if clear, clear the undo history */
 void lbuf_saved(struct lbuf *lb, int clear)
 {
-	int i;
 	if (clear) {
-		for (i = 0; i < lb->hist_n; i++)
+		for (int i = 0; i < lb->hist_n; i++)
 			lopt_done(&lb->hist[i]);
 		lb->hist_n = 0;
 		lb->hist_u = 0;
 		lb->useq_last = lb->useq;
 	}
 	lb->useq_zero = lbuf_seq(lb);
-	lbuf_modified(xb);
 }
 
 /* was the file modified since the last reset */
 int lbuf_modified(struct lbuf *lb)
 {
-	lb->useq++;
 	return lbuf_seq(lb) != lb->useq_zero;
 }
 
@@ -373,22 +379,27 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	int offs[re->grpcnt * 2], i = r0;
 	char *s = lbuf_get(lb, i);
 	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
+	int g1, g2, _o, step;
 	for (; i >= 0 && i < ln_n; i += dir) {
+		_o = 0;
+		step = 0;
 		s = lb->ln[i];
 		while (rset_find(re, s + off, offs,
 				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
-			int g1 = offs[xgrp], g2 = offs[xgrp + 1];
+			g1 = offs[xgrp], g2 = offs[xgrp + 1];
 			if (g1 < 0) {
 				off += offs[1] > 0 ? offs[1] : 1;
 				continue;
 			}
-			if (dir < 0 && r0 == i && uc_off(s, off+g1) >= o0)
+			_o += uc_off(s + step, off + g1 - step);
+			if (dir < 0 && r0 == i && _o >= o0)
 				break;
-			*o = uc_off(s, off + g1);
+			*o = _o;
 			*r = i;
-			off += g2 > 0 ? g2 : 1;
 			if (dir > 0)
 				return 0;
+			step = off + g1;
+			off += g2 > 0 ? g2 : 1;
 			ln_n = -1; /* break outer loop efficiently */
 		}
 		off = 0;

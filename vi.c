@@ -100,7 +100,7 @@ static void vi_drawmsg(void)
 		syn_blockhl = 0;
 		syn_setft("/-");
 		preserve(int, xtd, 2)
-		led_recrender(vi_msg, xrows, 0, 0, xcols)
+		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
 		restore(xtd)
 		syn_setft(ex_ft);
 	}
@@ -133,7 +133,7 @@ static void vi_drawrow(int row)
 {
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
-	static char ch[2] = "~";
+	static char ch[5] = "~";
 	if (*vi_word) {
 		int noff, nrow, ret;
 		s = lbuf_get(xb, row - vi_rshift);
@@ -162,9 +162,7 @@ static void vi_drawrow(int row)
 		preserve(int, xtd, dir_context(c) * 2)
 		vi_rshift = (row != xtop + xrows-1);
 		syn_setft("/#");
-		rstate++;
-		led_recrender(tmp, row - xtop, 0, 0, xcols)
-		rstate--;
+		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
 		syn_setft(ex_ft);
 		restore(xorder)
 		restore(syn_blockhl)
@@ -173,6 +171,7 @@ static void vi_drawrow(int row)
 	}
 	s = lbuf_get(xb, row);
 	skip:
+	rstate += row != xrow;
 	if (!s)
 		s = row ? ch : ch+1;
 	else if (lnnum) {
@@ -194,24 +193,26 @@ static void vi_drawrow(int row)
 		vi_lncol = dir_context(s) < 0 ? 0 : l1;
 		memset(c, ' ', l1 - (c - tmp));
 		c[l1 - (c - tmp)] = '\0';
-		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
+		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
 		preserve(int, syn_blockhl, 0)
 		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
-			for (i1 = 0; strchr(" \t", *rstate->chrs[ren_off(s, i1)]);)
+			for (i1 = 0; i1 < rstate->cmax &&
+					memchr(" \t", *rstate->chrs[ren_off(s, i1)], 2);)
 				i1 = ren_next(s, i1, 1);
 			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
 			if (i1 >= 0) {
 				memset(p, ' ', strlen(p));
-				led_prender(tmp1, row - xtop, l1+i1, 0, l1);
+				RS(2, led_prender(tmp1, row - xtop, l1+i1, 0, l1))
 			}
 		}
-		led_prender(tmp, row - xtop, 0, 0, l1);
+		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
 		syn_setft(ex_ft);
 		restore(syn_blockhl)
 		return;
 	}
-	led_crender(s, row - xtop, 0, xleft, xleft + xcols);
+	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
+	rstate = rstates;
 }
 
 /* redraw the screen */
@@ -255,18 +256,19 @@ static void vi_wait(void)
 
 static char *vi_prompt(char *msg, char *insert, int *kmap, int *mlen)
 {
-	char *s;
+	int key;
 	term_pos(xrows, led_pos(msg, 0));
-	vi_lncol = 0;
 	syn_setft("/ex");
-	s = led_prompt(msg, "", insert, kmap);
+	char *s = led_prompt(msg, "", insert, kmap, &key);
 	syn_setft(ex_ft);
-	vi_mod |= 1;
-	*mlen = s ? strlen(msg) : 0;
-	if (!s)
-		return NULL;
 	strncpy(vi_msg, s, sizeof(vi_msg) - 1);
-	return s;
+	if (key == '\n') {
+		*mlen = strlen(msg);
+		return s;
+	}
+	*mlen = 0;
+	free(s);
+	return NULL;
 }
 
 static char *vi_enprompt(char *msg, char *insert, int *mlen)
@@ -280,14 +282,17 @@ char *ex_read(char *msg)
 {
 	int c;
 	if (!(xvis & 2)) {
-		int oleft = xleft;
+		int oleft = xleft, key;
 		syn_blockhl = 0;
 		syn_setft("/ex");
-		char *s = led_prompt(msg, "", NULL, &xkmap);
-		xleft = oleft;
-		if (s && (!msg || strcmp(s, msg)))
-			term_chr('\n');
+		char *s = led_prompt(msg, "", NULL, &xkmap, &key);
 		syn_setft(ex_ft);
+		xleft = oleft;
+		if (key != '\n') {
+			free(s);
+			return NULL;
+		} else if (!msg || strcmp(s, msg))
+			term_chr('\n');
 		return s;
 	}
 	sbuf_smake(sb, 128)
@@ -320,7 +325,7 @@ void ex_cprint(char *line, int r, int c, int ln)
 		return;
 	}
 	syn_setft("/-");
-	led_recrender(line, r, c, xleft, xleft + xcols - c)
+	led_crender(line, r, c, xleft, xleft + xcols - c)
 	syn_setft(ex_ft);
 	if (ln && (xvis & 4 || xmpt > 0)) {
 		term_chr('\n');
@@ -395,7 +400,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			return 1;
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
 		if (!xkwdrs)
-			ex_print("syntax error");
+			ex_print("syntax error")
 		free(kw);
 	} else if (msg)
 		ex_krsset(xregs['/'], xkwddir);
@@ -1070,7 +1075,7 @@ static void vc_motion(int cmd)
 			lnmode ? 1 : vi_arg ? vi_arg : 1);
 	else if (cmd == TK_CTL('w'))
 		vi_shift(r1, r2, -1, INT_MAX / 2);
-	vi_mod |= (r1 != r2 || (lnmode && cmd == 'd')) ? 1 : 2;
+	vi_mod |= (r1 != r2 || (lnmode && (cmd == 'd' || cmd == '!'))) ? 1 : 2;
 }
 
 static void vc_insert(int cmd)
@@ -1510,7 +1515,7 @@ void vi(int init)
 					ln = vi_prompt("v/ xkwd:", cs, &xkmap, &n);
 					ex_krsset(ln + n, +1);
 					if (ln && !xkwdrs)
-						ex_print("syntax error");
+						ex_print("syntax error")
 					free(ln);
 					free(cs);
 					break;
@@ -1564,6 +1569,7 @@ void vi(int init)
 				if (ln && ln[n])
 					ex_command(ln + n)
 				free(ln);
+				vi_mod |= xquit == 0;
 				break;
 			case 'c':
 			case 'd':
@@ -1658,11 +1664,12 @@ void vi(int init)
 					break;
 				case 'l':
 				case 'r':
-					xtd = k == 'r' ? -1 : +1;
-					break;
 				case 'L':
 				case 'R':
-					xtd = k == 'R' ? -2 : +2;
+					xtd = isupper(k)+1;
+					xtd = tolower(k) == 'r' ? -xtd : xtd;
+					rstates[0].s = NULL;
+					rstates[1].s = NULL;
 					break;
 				case 'e':
 				case 'f':
@@ -1673,7 +1680,6 @@ void vi(int init)
 					xkmap_alt = k - '0';
 					break;
 				}
-				rstate->s = NULL;
 				vi_mod |= 1;
 				break;
 			case 'g':
@@ -1684,10 +1690,12 @@ void vi(int init)
 					vi_tsm = 1;
 					goto status;
 				} else if (k == 'w') {
-					char cmd[100] = "se noled:& ";
+					char cmd[100] = "se noled:se noseq:& ";
+					if (xseq < 0)
+						memset(cmd+9, ' ', 9);
 					n = vi_arg ? vi_arg - 1 : 79;
 					k = xled;
-					strcpy(itoa(n, cmd+10), "|");
+					strcpy(itoa(n, cmd+19), "|");
 					while (1) {
 						ex_exec(cmd);
 						ex_exec("se grp=2:f/[^ \t]*[^ \t]?(.):& 1K:se nogrp");
@@ -1696,6 +1704,8 @@ void vi(int init)
 						ex_exec("+1");
 					}
 					if (k) {
+						if (!xseq)
+							ex_exec("se seq");
 						ex_exec("se led");
 						vi_mod |= 1;
 					}
@@ -1703,6 +1713,8 @@ void vi(int init)
 					char cmd[100] = "se noled:g/./& ";
 					strcpy(itoa(vi_arg, cmd+14), "gw:se led");
 					ex_command(cmd)
+					if (!xseq)
+						ex_exec("se seq");
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
 					goto rep;
@@ -1869,7 +1881,7 @@ void vi(int init)
 			vi_drawmsg();
 		term_pos(xrow - xtop, n + vi_lncol);
 		term_commit();
-		lbuf_modified(xb);
+		xb->useq += xseq;
 	}
 	xgrec--;
 }
