@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index 4ed7b54..7145196 100644
+index 734b51d..60f007e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -33,6 +33,7 @@ int xkwddir;			/* the last search direction */
- int xmpt;			/* whether to prompt after printing > 1 lines in vi */
- int xpr;			/* ex_cprint register */
+@@ -35,6 +35,7 @@ int xpr;			/* ex_cprint register */
  int xsep = ':';			/* ex command separator */
+ int xlim = -1;			/* rendering cutoff for non cursor lines */
+ int xseq = 1;			/* undo/redo sequence */
 +int xlw;			/* soft linewrap col */
  char *xregs[256];		/* string registers */
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -1090,6 +1091,25 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1094,6 +1095,25 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -36,7 +36,7 @@ index 4ed7b54..7145196 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1111,6 +1131,7 @@ static struct excmd {
+@@ -1115,6 +1135,7 @@ static struct excmd {
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
@@ -45,7 +45,7 @@ index 4ed7b54..7145196 100644
  	{"fp", ec_setdir},
  	{"f", ec_search},
 diff --git a/lbuf.c b/lbuf.c
-index 4e6b7a2..fd5a776 100644
+index 76d0656..3f1ff5c 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -70,25 +70,139 @@ static int linelength(char *s)
@@ -186,9 +186,9 @@ index 4e6b7a2..fd5a776 100644
 +		//XXX: handle linewrapped blocks in n_del region for lo->del
 +		//p("%p %p\n", lo->unlinked1, lo->unlinked2)
  	}
- 	for (i = 0; i < n_del; i++)
- 		free(lbuf_i(lb, pos + i));
-@@ -108,6 +222,18 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+ 	for (i = 0; i < n_del; i++) {
+ 		if (lb->ln[pos + i] == rstate->s)
+@@ -110,6 +224,18 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
  	lb->ln_n += n_ins - n_del;
  	for (i = 0; i < n_ins; i++)
  		lb->ln[pos + i] = *((char**)sb->s + i);
@@ -207,7 +207,7 @@ index 4e6b7a2..fd5a776 100644
  	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
  		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
  			lbuf_savemark(lb, lo, i, i);
-@@ -157,6 +283,8 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
+@@ -169,6 +295,8 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
  	lo->pos = pos;
  	lo->n_ins = 0;
  	lo->n_del = n_del;
@@ -215,8 +215,8 @@ index 4e6b7a2..fd5a776 100644
 +	lo->unlinked2 = NULL;
  	lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark_off[markidx('*')] : 0;
  	lo->seq = lb->useq;
- 	lo->mark = emalloc(sizeof(lb->mark));
-@@ -188,7 +316,8 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
+ 	return lo;
+@@ -197,7 +325,8 @@ int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lbuf->ln[i];
  		long nw = 0;
@@ -227,10 +227,10 @@ index 4e6b7a2..fd5a776 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index f6c0031..0640d10 100644
+index 8d4d649..df641fc 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -172,6 +172,22 @@ static void vi_drawrow(int row)
+@@ -170,6 +170,22 @@ static void vi_drawrow(int row)
  		return;
  	}
  	s = lbuf_get(xb, row);
@@ -251,10 +251,10 @@ index f6c0031..0640d10 100644
 +		}
 +	}
  	skip:
+ 	rstate += row != xrow;
  	if (!s)
- 		s = row ? ch : ch+1;
 diff --git a/vi.h b/vi.h
-index 419d3b5..e4a271a 100644
+index fc076db..594f30b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -136,6 +136,8 @@ struct lopt {
