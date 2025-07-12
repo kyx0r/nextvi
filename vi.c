@@ -100,7 +100,7 @@ static void vi_drawmsg(void)
 		syn_blockhl = 0;
 		syn_setft("/-");
 		preserve(int, xtd, 2)
-		led_rscrender(vi_msg, xrows, 0, 0, xcols)
+		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
 		restore(xtd)
 		syn_setft(ex_ft);
 	}
@@ -162,7 +162,7 @@ static void vi_drawrow(int row)
 		preserve(int, xtd, dir_context(c) * 2)
 		vi_rshift = (row != xtop + xrows-1);
 		syn_setft("/#");
-		led_rscrender(tmp, row - xtop, 0, 0, xcols)
+		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
 		syn_setft(ex_ft);
 		restore(xorder)
 		restore(syn_blockhl)
@@ -193,7 +193,7 @@ static void vi_drawrow(int row)
 		vi_lncol = dir_context(s) < 0 ? 0 : l1;
 		memset(c, ' ', l1 - (c - tmp));
 		c[l1 - (c - tmp)] = '\0';
-		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1);
+		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
 		preserve(int, syn_blockhl, 0)
 		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
@@ -203,16 +203,16 @@ static void vi_drawrow(int row)
 			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
 			if (i1 >= 0) {
 				memset(p, ' ', strlen(p));
-				led_rsprender(tmp1, row - xtop, l1+i1, 0, l1);
+				RS(2, led_prender(tmp1, row - xtop, l1+i1, 0, l1))
 			}
 		}
-		led_rsprender(tmp, row - xtop, 0, 0, l1);
+		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
 		syn_setft(ex_ft);
 		restore(syn_blockhl)
 		rstate = rstates;
 		return;
 	}
-	led_crender(s, row - xtop, 0, xleft, xleft + xcols);
+	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
 	rstate = rstates;
 }
 
@@ -327,7 +327,7 @@ void ex_cprint(char *line, int r, int c, int ln)
 		return;
 	}
 	syn_setft("/-");
-	led_rscrender(line, r, c, xleft, xleft + xcols - c)
+	led_crender(line, r, c, xleft, xleft + xcols - c)
 	syn_setft(ex_ft);
 	if (ln && (xvis & 4 || xmpt > 0)) {
 		term_chr('\n');
@@ -402,7 +402,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			return 1;
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
 		if (!xkwdrs)
-			ex_print("syntax error");
+			ex_print("syntax error")
 		free(kw);
 	} else if (msg)
 		ex_krsset(xregs['/'], xkwddir);
@@ -1517,7 +1517,7 @@ void vi(int init)
 					ln = vi_prompt("v/ xkwd:", cs, &xkmap, &n);
 					ex_krsset(ln + n, +1);
 					if (ln && !xkwdrs)
-						ex_print("syntax error");
+						ex_print("syntax error")
 					free(ln);
 					free(cs);
 					break;

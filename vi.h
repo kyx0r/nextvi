@@ -207,10 +207,12 @@ typedef struct {
 	int n;
 	int cmax;
 	int ctx;
+	int holelen;
 	char nullhole[4];
 } ren_state;
 extern ren_state rstates[3];
 extern ren_state *rstate;
+#define RS(n, func) { rstate = rstates+n; rstate->s = NULL; func; rstate -= n; }
 ren_state *ren_position(char *s);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
@@ -353,10 +355,6 @@ void led_render(char *s0, int cbeg, int cend);
 
 #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, /**/)
 #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
-#define led_rscrender(msg, row, col, beg, end) \
-{ rstate = rstates+2; rstate->s = NULL; led_crender(msg, row, col, beg, end); rstate -= 2; }
-#define led_rsprender(msg, row, col, beg, end) \
-{ rstate = rstates+2; rstate->s = NULL; led_prender(msg, row, col, beg, end); rstate -= 2; }
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
@@ -400,7 +398,7 @@ int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 char *ex_read(char *msg);
 void ex_cprint(char *line, int r, int c, int ln);
-#define ex_print(line) ex_cprint(line, -1, 0, 1)
+#define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
