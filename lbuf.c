@@ -306,9 +306,8 @@ static int lbuf_seq(struct lbuf *lb)
 /* mark buffer as saved and, if clear, clear the undo history */
 void lbuf_saved(struct lbuf *lb, int clear)
 {
-	int i;
 	if (clear) {
-		for (i = 0; i < lb->hist_n; i++)
+		for (int i = 0; i < lb->hist_n; i++)
 			lopt_done(&lb->hist[i]);
 		lb->hist_n = 0;
 		lb->hist_u = 0;

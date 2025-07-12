@@ -1218,15 +1218,20 @@ int ex_exec(const char *ln)
 void ex(void)
 {
 	xgrec++;
+	char *ln, *prev = NULL;
 	while (!xquit) {
-		vi_lncol = 0;
-		char *ln = ex_read(":");
-		if (ln) {
+		if ((ln = ex_read(":"))) {
+			if (prev && !strcmp(ln, ":")) {
+				free(ln);
+				ln = prev;
+			} else
+				free(prev);
 			ex_command(ln)
-			free(ln);
 			xb->useq += xseq;
 		}
+		prev = ln;
 	}
+	free(prev);
 	xgrec--;
 }
 

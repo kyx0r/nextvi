@@ -209,7 +209,6 @@ static void vi_drawrow(int row)
 		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
 		syn_setft(ex_ft);
 		restore(syn_blockhl)
-		rstate = rstates;
 		return;
 	}
 	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
@@ -259,7 +258,6 @@ static char *vi_prompt(char *msg, char *insert, int *kmap, int *mlen)
 {
 	int key;
 	term_pos(xrows, led_pos(msg, 0));
-	vi_lncol = 0;
 	syn_setft("/ex");
 	char *s = led_prompt(msg, "", insert, kmap, &key);
 	syn_setft(ex_ft);

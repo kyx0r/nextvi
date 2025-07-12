@@ -618,6 +618,7 @@ leave:
 char *led_prompt(char *pref, char *post, char *insert, int *kmap, int *key)
 {
 	int n;
+	vi_lncol = 0;
 	sbuf_smake(sb, xcols)
 	if (pref)
 		sbuf_str(sb, pref)
