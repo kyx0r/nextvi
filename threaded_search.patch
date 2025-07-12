@@ -11,10 +11,10 @@ index 6a68ca2..4b95f9a 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 4e6b7a2..3f58673 100644
+index 76d0656..6d34138 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -366,34 +366,95 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -372,19 +372,30 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -25,9 +25,6 @@ index 4e6b7a2..3f58673 100644
 -	int offs[re->grpcnt * 2], i = r0;
 -	char *s = lbuf_get(lb, i);
 -	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
--	for (; i >= 0 && i < ln_n; i += dir) {
--		s = lb->ln[i];
--		while (rset_find(re, s + off, offs,
 +struct lsparams
 +{
 +	struct lbuf *lb;
@@ -46,25 +43,33 @@ index 4e6b7a2..3f58673 100644
 +	int offs[a->re->grpcnt * 2], i = r0;
 +	char *s = lbuf_get(a->lb, i);
 +	int off = a->skip > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
+ 	int g1, g2, _o, step;
+-	for (; i >= 0 && i < ln_n; i += dir) {
 +	for (; i >= 0 && i < a->ln_n; i += a->dir) {
+ 		_o = 0;
+ 		step = 0;
+-		s = lb->ln[i];
+-		while (rset_find(re, s + off, offs,
 +		s = a->lb->ln[i];
 +		while (rset_find(a->re, s + off, offs,
  				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
- 			int g1 = offs[xgrp], g2 = offs[xgrp + 1];
+ 			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
- 				off += offs[1] > 0 ? offs[1] : 1;
+@@ -392,19 +403,69 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				continue;
  			}
--			if (dir < 0 && r0 == i && uc_off(s, off+g1) >= o0)
-+			if (a->dir < 0 && r0 == i && uc_off(s, off+g1) >= o0)
+ 			_o += uc_off(s + step, off + g1 - step);
+-			if (dir < 0 && r0 == i && _o >= o0)
++			if (a->dir < 0 && r0 == i && _o >= o0)
  				break;
--			*o = uc_off(s, off + g1);
+-			*o = _o;
 -			*r = i;
-+			*a->o = uc_off(s, off + g1);
-+			*a->r = i;
- 			off += g2 > 0 ? g2 : 1;
 -			if (dir > 0)
 -				return 0;
++			*a->o = _o;
++			*a->r = i;
+ 			step = off + g1;
+ 			off += g2 > 0 ? g2 : 1;
 -			ln_n = -1; /* break outer loop efficiently */
 +			a->ln_n = -1; /* break outer loop efficiently */
 +			if (a->dir > 0)
@@ -153,7 +158,7 @@ index b4c3ab3..6928255 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 0da830f..7cb6143 100644
+index c0c0b79..3a6cbab 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -171,7 +176,7 @@ index 0da830f..7cb6143 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index f6c0031..f47ff2a 100644
+index 8d4d649..559348f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -183,10 +188,10 @@ index f6c0031..f47ff2a 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 419d3b5..240383f 100644
+index fc076db..f2e21ce 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -244,7 +244,8 @@ void syn_addhl(char *reg, int id, int reload);
+@@ -248,7 +248,8 @@ void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */
