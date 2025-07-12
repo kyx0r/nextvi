@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4ed7b54..dd8369c 100644
+index 734b51d..c8863f7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -10,7 +10,7 @@ index 4ed7b54..dd8369c 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -900,6 +901,7 @@ static struct option {
+@@ -902,6 +903,7 @@ static struct option {
  	{"hlw", &xhlw},
  	{"hlp", &xhlp},
  	{"hlr", &xhlr},
@@ -19,10 +19,10 @@ index 4ed7b54..dd8369c 100644
  	{"ish", &xish},
  	{"grp", &xgrp},
 diff --git a/vi.c b/vi.c
-index f6c0031..3ceac30 100644
+index 8d4d649..b89fc2a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1814,6 +1814,21 @@ void vi(int init)
+@@ -1826,6 +1826,21 @@ void vi(int init)
  				}
  			}
  		}

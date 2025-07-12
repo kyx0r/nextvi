@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 9757e68..e15f071 100644
+index 9058c7c..4a3a432 100644
 --- a/led.c
 +++ b/led.c
-@@ -276,7 +276,7 @@ static int led_lastword(char *s)
+@@ -280,7 +280,7 @@ static int led_lastword(char *s)
  	return r - s;
  }
  
@@ -11,7 +11,7 @@ index 9757e68..e15f071 100644
  {
  	if (!xled) {
  		sbuf_null(sb)
-@@ -302,8 +302,10 @@ static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
+@@ -307,8 +307,10 @@ static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
  		xleft = pos - xcols / 2;
  	if (pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
@@ -23,8 +23,8 @@ index 9757e68..e15f071 100644
 +	}
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
  	sbufn_cut(sb, psn)
- }
-@@ -388,7 +390,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+ 	rstate -= 2;
+@@ -397,7 +399,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
@@ -34,7 +34,7 @@ index 9757e68..e15f071 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -580,6 +583,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -589,6 +592,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			else
  				led_redraw(sb->s, 0, orow, lsh);
  			continue;
@@ -55,7 +55,7 @@ index 9757e68..e15f071 100644
  		case TK_CTL('o'):;
  			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
  			syn_setft(ex_ft);
-@@ -602,6 +619,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+@@ -611,6 +628,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index 9757e68..e15f071 100644
  	*key = c;
  }
  
-@@ -648,7 +666,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
+@@ -656,7 +674,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)
@@ -73,10 +73,10 @@ index 9757e68..e15f071 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index f6c0031..0e4d21a 100644
+index 8d4d649..a2c81a5 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -918,6 +918,8 @@ static char *vi_indents(char *ln, int *l)
+@@ -923,6 +923,8 @@ static char *vi_indents(char *ln, int *l)
  	sbufn_sret(sb)
  }
  
@@ -85,7 +85,7 @@ index f6c0031..0e4d21a 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *region, *pref, *post, *_post;
-@@ -941,6 +943,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -946,6 +948,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
@@ -93,7 +93,7 @@ index f6c0031..0e4d21a 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1105,8 +1108,10 @@ static void vc_insert(int cmd)
+@@ -1110,8 +1113,10 @@ static void vc_insert(int cmd)
  		sbufn_str(rep, post)
  		if (cmdo && !lbuf_len(xb))
  			lbuf_edit(xb, "\n", 0, 0);
@@ -105,7 +105,7 @@ index f6c0031..0e4d21a 100644
  	sbuf_free(rep)
  	free(pref);
  	free(_post);
-@@ -1604,6 +1609,37 @@ void vi(int init)
+@@ -1610,6 +1615,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -143,7 +143,7 @@ index f6c0031..0e4d21a 100644
  				if (vi_insmov == 127 || vi_insmov == TK_CTL('h')) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xrow--;
-@@ -1616,6 +1652,9 @@ void vi(int init)
+@@ -1622,6 +1658,9 @@ void vi(int init)
  				if (c != 'A' && c != 'C')
  					xoff--;
  				break;

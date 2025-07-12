@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index 4ed7b54..cba502c 100644
+index 734b51d..993e5c0 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -34,6 +34,7 @@ int xmpt;			/* whether to prompt after printing > 1 lines in vi */
- int xpr;			/* ex_cprint register */
- int xsep = ':';			/* ex command separator */
+@@ -36,6 +36,7 @@ int xsep = ':';			/* ex command separator */
+ int xlim = -1;			/* rendering cutoff for non cursor lines */
+ int xseq = 1;			/* undo/redo sequence */
  char *xregs[256];		/* string registers */
 +char **xenvp;
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static int xgdep;		/* global command recursion depth */
-@@ -1090,6 +1091,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1094,6 +1095,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -52,7 +52,7 @@ index 4ed7b54..cba502c 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1134,6 +1170,8 @@ static struct excmd {
+@@ -1138,6 +1174,8 @@ static struct excmd {
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
  	{"se", ec_set},
@@ -78,7 +78,7 @@ index aad65b8..3f5d627 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 419d3b5..19c0826 100644
+index fc076db..2ce3820 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple
