@@ -1,4 +1,4 @@
-.Dd Jul 11, 2025
+.Dd Jul 12, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -926,7 +926,7 @@ Set an alternative keymap
 .It Cm fd[\fIpath\fP]
 Set a secondary directory (stands for file dir)
 .Bd -literal
-Recalculates the directory listing in b-2 buffer.
+Recalculates directory listing in b-2 buffer.
 No argument implies current directory.
 .Ed
 
@@ -945,7 +945,7 @@ Include regex for :fd calculation
 .Bd -literal
 Example: include only files in submodule directory that end with .c
 :inc submodule.*\e.c$
-Example: exclude the .git and submodule folders
+Example: exclude .git and submodule folders
 :inc (^(?\e:(?\e!^\e.git|^submodule).)+[^/]+$)
 No argument disables the filter.
 .Ed
@@ -1157,8 +1157,9 @@ Example: disable separator
 .It Cm lim=-1
 Line length render limit
 .Bd -literal
-Set render cutoff length for non cursor lines.
-Improves redraw performance when editing a file containing one 
+Set render cutoff length for non cursor lines in vi and all 
+lines in ex mode.
+Improves redraw performance when editing a file containing one
 or many long lines (1MB+ per line).
 Example: reasonable value
 :se lim=5000
@@ -1169,12 +1170,16 @@ Example: disable the limit
 .Ed
 
 .It Cm seq=1
-Control Undo/Redo sequencing
+Control Undo/Redo
 .Bd -literal
-When sequencing is disabled, multiple distinct operations undo/redo 
-in a single step.
+When seq is 0, multiple distinct operations undo/redo in a single 
+step.
+To optimize resource use under heavy workloads, undo/redo tracking 
+can be disabled by setting seq to a negative value.
 Example: test undo/redo operations in a single step
 :&ocontrol test:se noseq:&a step1:&a step2:&a step3:se seq
+Example: completely disable undo/redo
+:se seq=-1
 .Ed
 .
 .El
@@ -1209,15 +1214,15 @@ Set ex options for optimal long line performance
 .
 .Sh REGEX
 .Bd -literal
-Pikevm is a fast non backtracking NFA simulation regex engine 
-developed for Nextvi. It ensures regular expressions are evaluated 
-in constant space and O(n + k) time complexity where <n> is 
-the input string length and <k> represents the regex’s structural 
-complexity (e.g., state transitions or alternations). While 
-this does not guarantee strict O(n) linear runtime performance, 
-it ensures computational and memory resources are distributed 
-linearly and evenly across the input, with <k> directly influencing 
-the constant factor. This principle is similar to the concept 
+Pikevm is a fast non backtracking NFA simulation regex engine
+developed for Nextvi. It ensures regular expressions are evaluated
+in constant space and O(n + k) time complexity where <n> is
+the input string length and <k> represents the regex’s structural
+complexity (e.g., state transitions or alternations). While
+this does not guarantee strict O(n) linear runtime performance,
+it ensures computational and memory resources are distributed
+linearly and evenly across the input, with <k> directly influencing
+the constant factor. This principle is similar to the concept
 utilized in radix sort algorithms.
 
 Pikevm's syntax is akin to regexp(7) from Plan 9.
@@ -1283,7 +1288,7 @@ Aspect 4:
 	complex pattern, where the engine has already narrowed down
 	potential matches.
 Aspect 5:
-	Lookbehind without offset rescans entire string. Offset begins 
+	Lookbehind without offset rescans entire string. Offset begins
 	scanning from current position minus specified value.
 .Ed
 .
@@ -1321,19 +1326,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 512 vi.h | definitions/aux
+ 510 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  306 conf.c | hl/ft/td config
  342 term.c | low level IO
- 399 ren.c | positioning/syntax
- 533 lbuf.c | file/line buffer
+ 398 ren.c | positioning/syntax
+ 539 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
- 682 led.c | insert mode/output
+ 683 led.c | insert mode/output
  748 regex.c | extended RE
- 1246 ex.c | ex options/commands
- 1946 vi.c | normal mode/general
- 6839 total | wc -l *.c\(basort
+ 1251 ex.c | ex options/commands
+ 1950 vi.c | normal mode/general
+ 6854 total | wc -l *.c\(basort
 _
 .TE
 .
