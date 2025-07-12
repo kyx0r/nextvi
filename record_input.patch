@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4ed7b54..70eed16 100644
+index 734b51d..00ee6da 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -10,10 +10,10 @@ index 4ed7b54..70eed16 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -909,6 +910,7 @@ static struct option {
- 	{"mpt", &xmpt},
- 	{"pr", &xpr},
+@@ -913,6 +914,7 @@ static struct option {
  	{"sep", &xsep},
+ 	{"lim", &xlim},
+ 	{"seq", &xseq},
 +	{"rec", &xrec},
  };
  
@@ -36,13 +36,13 @@ index aad65b8..b23b7f0 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 419d3b5..83f9062 100644
+index fc076db..a9e0c89 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -498,6 +498,7 @@ extern int xkwddir;
- extern int xmpt;
- extern int xpr;
+@@ -501,6 +501,7 @@ extern int xpr;
  extern int xsep;
+ extern int xlim;
+ extern int xseq;
 +extern int xrec;
  extern rset *xkwdrs;
  extern sbuf *xacreg;
