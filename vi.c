@@ -296,9 +296,9 @@ char *ex_read(char *msg)
 		return s;
 	}
 	sbuf_smake(sb, 128)
-	while ((c = term_read()) != EOF && c != '\n')
+	while (!xquit && (c = term_read()) != '\n')
 		sbuf_chr(sb, c)
-	if (c == EOF) {
+	if (xquit) {
 		free(sb->s);
 		return NULL;
 	}
