@@ -66,7 +66,7 @@ build() {
 }
 
 install() {
-    run rm "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
+    run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
     command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
     run mkdir -p "$DESTDIR$PREFIX/bin/" &&
     run cp -f vi "$DESTDIR$PREFIX/bin/vi" &&
