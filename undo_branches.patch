@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 4ed7b54..de2ed7a 100644
+index 734b51d..d8c7a0f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1090,6 +1090,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1094,6 +1094,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -19,7 +19,7 @@ index 4ed7b54..de2ed7a 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1132,6 +1142,7 @@ static struct excmd {
+@@ -1136,6 +1146,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -28,7 +28,7 @@ index 4ed7b54..de2ed7a 100644
  	{"se", ec_set},
  	{"s", ec_substitute},
 diff --git a/lbuf.c b/lbuf.c
-index 4e6b7a2..62306a2 100644
+index 76d0656..7b17b59 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -6,6 +6,7 @@ struct lbuf *lbuf_make(void)
@@ -81,7 +81,7 @@ index 4e6b7a2..62306a2 100644
  	free(lb->hist);
  	free(lb->ln);
  	free(lb);
-@@ -134,13 +161,72 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
+@@ -136,12 +163,72 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
  	}
  }
  
@@ -146,8 +146,7 @@ index 4e6b7a2..62306a2 100644
  struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
  {
  	struct lopt *lo;
--	int i;
--	for (i = lb->hist_u; i < lb->hist_n; i++)
+-	for (int i = lb->hist_u; i < lb->hist_n; i++)
 -		lopt_done(&lb->hist[i]);
 +	int i = lb->hist_n - lb->hist_u;
 +	if (i) {
@@ -157,13 +156,11 @@ index 4e6b7a2..62306a2 100644
  	lb->hist_n = lb->hist_u;
  	if (lb->hist_n == lb->hist_sz) {
  		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -297,13 +383,12 @@ static int lbuf_seq(struct lbuf *lb)
- /* mark buffer as saved and, if clear, clear the undo history */
+@@ -307,11 +394,11 @@ static int lbuf_seq(struct lbuf *lb)
  void lbuf_saved(struct lbuf *lb, int clear)
  {
--	int i;
  	if (clear) {
--		for (i = 0; i < lb->hist_n; i++)
+-		for (int i = 0; i < lb->hist_n; i++)
 -			lopt_done(&lb->hist[i]);
 +		lbuf_freeleafs(lb);
  		lb->hist_n = 0;
@@ -172,9 +169,9 @@ index 4e6b7a2..62306a2 100644
 +		sbuf_make(lb->rehist, 128)
  	}
  	lb->useq_zero = lbuf_seq(lb);
- 	lbuf_modified(xb);
+ }
 diff --git a/vi.h b/vi.h
-index 419d3b5..d8c307c 100644
+index fc076db..ca5eea8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -147,6 +147,7 @@ struct linfo {
