@@ -113,10 +113,9 @@ ren_state *ren_position(char *s)
 		max = (unsigned int)xlim;
 		for (n = 0; n < max && uc_len(ss); n++)
 			ss += uc_len(ss);
-		if (uc_len(ss)) {
-			memcpy(rstate->nullhole, ss, 4);
-			memset(ss, 0, 4);
-		}
+		rstate->holelen = uc_len(ss);
+		memcpy(rstate->nullhole, ss, rstate->holelen);
+		memset(ss, 0, rstate->holelen);
 	} else
 		n = uc_slen(s);
 	unsigned int b = n + 1, c = 2, i;

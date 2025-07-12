@@ -254,9 +254,9 @@ void led_render(char *s0, int cbeg, int cend)
 	else
 		led_out(term_sbuf, 1)
 	sbufn_str(term_sbuf, term_att(0))
-	if (r->nullhole[0]) {
-		memcpy(chrs[n], r->nullhole, 4);
-		r->nullhole[0] = '\0';
+	if (r->holelen) {
+		memcpy(chrs[n], r->nullhole, r->holelen);
+		r->holelen = 0;
 	}
 }
 
@@ -357,7 +357,7 @@ char *led_read(int *kmap, int c)
 
 static void led_info(char *str, int ai_max)
 {
-	led_rscrender(str, xtop+xrows, 0, 0, xcols)
+	RS(2, led_crender(str, xtop+xrows, 0, 0, xcols))
 	if (ai_max >= 0)
 		term_pos(xrow - xtop, 0);
 }
@@ -383,7 +383,7 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 		}
 		nl = r < xrow-xtop ? r+xtop : (r-(xrow-orow+lsh))+xtop;
 		led_crender(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r,
-			vi_lncol, xleft, xleft + xcols - vi_lncol);
+			vi_lncol, xleft, xleft + xcols - vi_lncol)
 	}
 	term_pos(xrow - xtop, 0);
 	rstate--;
@@ -540,7 +540,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 					syn_setft("/ac");
 					preserve(int, xtd, 2)
 					for (int left = 0; r < xrows; r++) {
-						led_rscrender(sug, r, 0, left, left+xcols)
+						RS(2, led_crender(sug, r, 0, left, left+xcols))
 						left += xcols;
 						if (left >= rstates[2].pos[rstates[2].n])
 							break;
@@ -618,6 +618,7 @@ leave:
 char *led_prompt(char *pref, char *post, char *insert, int *kmap, int *key)
 {
 	int n;
+	vi_lncol = 0;
 	sbuf_smake(sb, xcols)
 	if (pref)
 		sbuf_str(sb, pref)
