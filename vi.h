@@ -235,6 +235,7 @@ void dir_init(void);
 #define SYN_BGSET(a)	((a) & 0x20ff00)
 #define SYN_FG(a)	((a) & 0xff)
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
+extern int ftidx;
 extern int syn_reload;
 extern int syn_blockhl;
 char *syn_setft(char *ft);

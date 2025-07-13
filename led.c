@@ -591,13 +591,16 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
 			continue;
 		case TK_CTL('o'):;
 			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
-			syn_setft(ex_ft);
+			preserve(int, ftidx, ftidx)
 			if (xvis & 4)
 				ex();
-			else
+			else {
+				syn_setft(ex_ft);
 				vi(1);
+			}
 			xquit = xquit > 0 ? 0 : xquit;
 			restore(xvis)
+			restore(ftidx)
 			continue;
 		default:
 			if (c == '\n' || TK_INT(c))
