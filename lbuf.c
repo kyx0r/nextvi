@@ -136,6 +136,10 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
 	}
 }
 
+static int smark[NMARKS];
+static int smark_off[NMARKS];
+static struct lopt slo = {.mark = smark, .mark_off = smark_off};
+
 /* append undo/redo history */
 struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 {
@@ -151,13 +155,9 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 		lb->hist = hist;
 		lb->hist_sz = sz;
 	}
-	if (xseq < 0) {
-		static struct lopt _lo;
-		static int _buf[NMARKS];
-		lo = &_lo;
-		lo->mark = _buf;
-		lo->mark_off = _buf;
-	} else {
+	if (xseq < 0)
+		lo = &slo;
+	else {
 		lo = &lb->hist[lb->hist_n++];
 		lb->hist_u = lb->hist_n;
 		lo->ins = !init && buf ? uc_dup(buf) : NULL;
@@ -261,24 +261,19 @@ int lbuf_undo(struct lbuf *lb)
 {
 	if (!lb->hist_u)
 		return 1;
-	struct lopt *lo = &lb->hist[lb->hist_u - 1], *plo = lo;
-	int useq = lo->seq, tmp[4];
-	int lbrk = markidx(']'), rbrk = markidx('[');
+	struct lopt *lo = &lb->hist[lb->hist_u - 1];
+	int useq = lo->seq;
+	if (lb->hist_u == lb->hist_n) {
+		lbuf_savemark(lb, &slo, markidx(']'), markidx(']'));
+		lbuf_savemark(lb, &slo, markidx('['), markidx('['));
+	}
 	while (lb->hist_u && lb->hist[lb->hist_u - 1].seq == useq) {
-		lo = &lb->hist[--(lb->hist_u)];
+		lo = &lb->hist[--lb->hist_u];
 		lbuf_replace(lb, lo->del, lo, lo->n_ins);
 	}
 	lbuf_loadpos(lb, lo);
-	tmp[0] = lb->mark[lbrk];
-	tmp[1] = lb->mark_off[lbrk];
-	tmp[2] = lb->mark[rbrk];
-	tmp[3] = lb->mark_off[rbrk];
-	lbuf_loadmark(lb, lo, lbrk, lbrk);
-	lbuf_loadmark(lb, lo, rbrk, rbrk);
-	plo->mark[lbrk] = tmp[0];
-	plo->mark_off[lbrk] = tmp[1];
-	plo->mark[rbrk] = tmp[2];
-	plo->mark_off[rbrk] = tmp[3];
+	lbuf_loadmark(lb, lo, markidx(']'), markidx(']'));
+	lbuf_loadmark(lb, lo, markidx('['), markidx('['));
 	return 0;
 }
 
@@ -293,8 +288,13 @@ int lbuf_redo(struct lbuf *lb)
 		lbuf_replace(lb, lo->ins, lo, lo->n_del);
 	}
 	lbuf_loadpos(lb, lo);
-	lbuf_loadmark(lb, lo, markidx(']'), markidx(']'));
-	lbuf_loadmark(lb, lo, markidx('['), markidx('['));
+	if (lb->hist_u < lb->hist_n) {
+		lbuf_loadmark(lb, lo+1, markidx(']'), markidx(']'));
+		lbuf_loadmark(lb, lo+1, markidx('['), markidx('['));
+	} else {
+		lbuf_loadmark(lb, &slo, markidx(']'), markidx(']'));
+		lbuf_loadmark(lb, &slo, markidx('['), markidx('['));
+	}
 	return 0;
 }
 
