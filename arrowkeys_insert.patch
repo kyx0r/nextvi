@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 9058c7c..4a3a432 100644
+index 0684f39..a06c387 100644
 --- a/led.c
 +++ b/led.c
 @@ -280,7 +280,7 @@ static int led_lastword(char *s)
@@ -54,8 +54,8 @@ index 9058c7c..4a3a432 100644
 +			goto leave;
  		case TK_CTL('o'):;
  			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
- 			syn_setft(ex_ft);
-@@ -611,6 +628,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
+ 			preserve(int, ftidx, ftidx)
+@@ -614,6 +631,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index 9058c7c..4a3a432 100644
  	*key = c;
  }
  
-@@ -656,7 +674,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
+@@ -659,7 +677,7 @@ sbuf *led_input(char *pref, char **post, int row, int lsh)
  			return sb;
  		}
  		sbufn_chr(sb, key)
@@ -73,7 +73,7 @@ index 9058c7c..4a3a432 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 8d4d649..a2c81a5 100644
+index 38d0370..fbe9e1b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -923,6 +923,8 @@ static char *vi_indents(char *ln, int *l)

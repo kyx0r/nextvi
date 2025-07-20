@@ -32,7 +32,7 @@ index b4c3ab3..54e94aa 100644
  	flg = prog->flg | flg;
  	if (eol_ch)
 diff --git a/ren.c b/ren.c
-index d1bcd69..3cc6764 100644
+index 65d29e2..1a9533d 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -94,6 +94,20 @@ static int ren_cwid(char *s, int pos)
@@ -68,7 +68,7 @@ index d1bcd69..3cc6764 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 8d4d649..d82b8c1 100644
+index 38d0370..290b48d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -530,6 +530,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -105,7 +105,7 @@ index 8d4d649..d82b8c1 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index fc076db..a601bfa 100644
+index 48337ed..d30dfb1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -224,6 +224,7 @@ char *ren_translate(char *s, char *ln);
@@ -116,7 +116,7 @@ index fc076db..a601bfa 100644
  /* syntax highlighting */
  #define SYN_BD		0x010000
  #define SYN_IT		0x020000
-@@ -246,6 +247,7 @@ void syn_reloadft(void);
+@@ -247,6 +248,7 @@ void syn_reloadft(void);
  int syn_findhl(int id);
  void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
@@ -124,7 +124,7 @@ index fc076db..a601bfa 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -401,6 +403,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -402,6 +404,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);

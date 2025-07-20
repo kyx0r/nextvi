@@ -19,7 +19,7 @@ index 734b51d..d6a01a6 100644
  	{"grp", &xgrp},
  	{"pac", &xpac},
 diff --git a/led.c b/led.c
-index 9058c7c..6d750ea 100644
+index 0684f39..1a28f24 100644
 --- a/led.c
 +++ b/led.c
 @@ -389,6 +389,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
@@ -45,9 +45,9 @@ index 9058c7c..6d750ea 100644
  	while (1) {
  		led_printparts(sb, pre, ps, post, ai_max);
  		len = sb->s_n;
-@@ -599,7 +608,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
- 			xquit = xquit > 0 ? 0 : xquit;
+@@ -602,7 +611,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
  			restore(xvis)
+ 			restore(ftidx)
  			continue;
 +		case 'j':
 +			if (xqexit && (gettime_ms() - quickexit) < xqexit) {
@@ -68,7 +68,7 @@ index 9058c7c..6d750ea 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 8d4d649..3c4dedf 100644
+index 38d0370..a827ea2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -80,10 +80,10 @@ index 8d4d649..3c4dedf 100644
  #include <termios.h>
  #include <limits.h>
 diff --git a/vi.h b/vi.h
-index fc076db..1913b10 100644
+index 48337ed..c867ea2 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -491,6 +491,7 @@ extern int xhlr;
+@@ -492,6 +492,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
  extern int xtabspc;

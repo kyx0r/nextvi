@@ -19,7 +19,7 @@ index 734b51d..eaac4e6 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 8d4d649..078afc5 100644
+index 38d0370..364b4cc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1904,7 +1904,8 @@ static int setup_signals(void)
@@ -64,10 +64,10 @@ index 8d4d649..078afc5 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index fc076db..b967040 100644
+index 48337ed..5fec83e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -399,7 +399,7 @@ int ex_exec(const char *ln);
+@@ -400,7 +400,7 @@ int ex_exec(const char *ln);
  char *ex_read(char *msg);
  void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))

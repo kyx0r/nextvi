@@ -36,10 +36,10 @@ index aad65b8..b23b7f0 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index fc076db..a9e0c89 100644
+index 48337ed..b1c37fb 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -501,6 +501,7 @@ extern int xpr;
+@@ -502,6 +502,7 @@ extern int xpr;
  extern int xsep;
  extern int xlim;
  extern int xseq;

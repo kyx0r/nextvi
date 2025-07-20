@@ -131,7 +131,7 @@ index aad65b8..9733940 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 8d4d649..95ae6cb 100644
+index 38d0370..bad21ed 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1897,7 +1897,8 @@ static int setup_signals(void)
@@ -155,10 +155,10 @@ index 8d4d649..95ae6cb 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index fc076db..c9735fa 100644
+index 48337ed..145162d 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -471,6 +471,7 @@ void vi_regput(int c, const char *s, int ln);
+@@ -472,6 +472,7 @@ void vi_regput(int c, const char *s, int ln);
  /* file system */
  void dir_calc(char *path);
  /* global variables */
