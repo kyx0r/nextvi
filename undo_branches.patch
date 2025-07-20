@@ -28,7 +28,7 @@ index 734b51d..d8c7a0f 100644
  	{"se", ec_set},
  	{"s", ec_substitute},
 diff --git a/lbuf.c b/lbuf.c
-index 76d0656..7b17b59 100644
+index f064e1c..5116b4f 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -6,6 +6,7 @@ struct lbuf *lbuf_make(void)
@@ -81,9 +81,9 @@ index 76d0656..7b17b59 100644
  	free(lb->hist);
  	free(lb->ln);
  	free(lb);
-@@ -136,12 +163,72 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
- 	}
- }
+@@ -140,12 +167,72 @@ static int smark[NMARKS];
+ static int smark_off[NMARKS];
+ static struct lopt slo = {.mark = smark, .mark_off = smark_off};
  
 +void lbuf_setleaf(struct lbuf *lb, int leaf)
 +{
@@ -171,7 +171,7 @@ index 76d0656..7b17b59 100644
  	lb->useq_zero = lbuf_seq(lb);
  }
 diff --git a/vi.h b/vi.h
-index fc076db..ca5eea8 100644
+index 48337ed..ed31771 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -147,6 +147,7 @@ struct linfo {
