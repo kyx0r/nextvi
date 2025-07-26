@@ -36,13 +36,13 @@ char *uc_beg(char *beg, char *s)
 	return s;
 }
 
-char *uc_chr(char *s, int off)
+char *uc_chrn(char *s, int off, int *n)
 {
-	int i = 0;
+	*n = 0;
 	if (!s)
 		return "";
-	while (uc_len(s)) {
-		if (i++ == off)
+	for (; uc_len(s); ++*n) {
+		if (*n == off)
 			return s;
 		s += uc_len(s);
 	}
@@ -59,10 +59,10 @@ int uc_off(char *s, int off)
 	return i;
 }
 
-char *uc_subl(char *s, int beg, int end, int *rlen)
+char *uc_subl(char *s, int beg, int end, int *rlen, int *rn)
 {
 	char *sbeg = uc_chr(s, beg);
-	char *send = uc_chr(sbeg, end - beg);
+	char *send = uc_chrn(sbeg, end - beg, rn);
 	int len = sbeg < send ? send - sbeg : 0;
 	char *r = emalloc(len + 4);
 	memcpy(r, sbeg, len);

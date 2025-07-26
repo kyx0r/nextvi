@@ -280,7 +280,8 @@ static int led_lastword(char *s)
 	return r - s;
 }
 
-static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
+static void led_printparts(sbuf *sb, int pre, int ps,
+	char *post, int postn, int ai_max)
 {
 	if (!xled) {
 		sbuf_null(sb)
@@ -289,10 +290,12 @@ static void led_printparts(sbuf *sb, int pre, int ps, char *post, int ai_max)
 	int dir, off, pos, psn = sb->s_n;
 	sbuf_str(sb, post)
 	sbuf_set(sb, '\0', 4)
+	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
+	For correctness, rstate must be recomputed. */
 	rstate += 2;
 	rstate->s = NULL;
 	ren_state *r = ren_position(sb->s + ps);
-	off = r->n - uc_slen(post);
+	off = r->n - postn;
 	if (ai_max >= 0)
 		xoff = off;
 	pos = ren_cursor(r->s, r->pos[MAX(0, off-1)]);
@@ -390,14 +393,14 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 }
 
 /* read a line from the terminal */
-static void led_line(sbuf *sb, int ps, int pre, char *post, int ai_max,
-		int *key, int *kmap, int orow, int lsh)
+static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
+	int ai_max, int *key, int *kmap, int orow, int lsh)
 {
 	int len, t_row = -2, p_reg = 0;
 	int c, i, lsug = 0, sug_pt = -1;
 	char *cs, *sug = NULL, *_sug = NULL;
 	while (1) {
-		led_printparts(sb, pre, ps, post, ai_max);
+		led_printparts(sb, pre, ps, post, postn, ai_max);
 		len = sb->s_n;
 		c = term_read();
 		switch (c) {
@@ -618,7 +621,7 @@ leave:
 }
 
 /* read an ex command */
-char *led_prompt(char *pref, char *post, char *insert, int *kmap, int *key)
+char *led_prompt(char *pref, char *insert, int *kmap, int *key)
 {
 	int n;
 	vi_lncol = 0;
@@ -629,44 +632,39 @@ char *led_prompt(char *pref, char *post, char *insert, int *kmap, int *key)
 	if (insert)
 		sbuf_str(sb, insert)
 	preserve(int, xtd, +2)
-	led_line(sb, 0, n, post, -1, key, kmap, 0, 0);
+	led_line(sb, 0, n, "", 0, -1, key, kmap, 0, 0);
 	restore(xtd)
-	if (*key == '\n') {
-		if (pref) {
-			lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
-			temp_pos(0, -1, 0, 0);
-			temp_write(0, sb->s + n);
-		}
-		sbuf_str(sb, post)
+	if (*key == '\n' && pref) {
+		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
+		temp_pos(0, -1, 0, 0);
+		temp_write(0, sb->s + n);
 	}
 	sbufn_sret(sb)
 }
 
 /* read visual command input */
-sbuf *led_input(char *pref, char **post, int row, int lsh)
+void led_input(sbuf *sb, char **post, int postn, int row, int lsh)
 {
-	sbuf *sb; sbuf_make(sb, xcols)
 	int ai_max = 128 * xai;
 	int n, key, ps = 0;
-	sbuf_str(sb, pref)
 	while (1) {
-		led_line(sb, ps, sb->s_n, *post, ai_max, &key, &xkmap, row, lsh);
+		led_line(sb, ps, sb->s_n, *post, postn, ai_max, &key, &xkmap, row, lsh);
 		if (key != '\n') {
 			sbuf_set(sb, '\0', 4)
 			sb->s_n -= 4;
 			if (!xled)
 				xoff = uc_slen(sb->s+ps);
-			return sb;
+			return;
 		}
 		sbufn_chr(sb, key)
-		led_printparts(sb, -1, ps, "", 0);
+		led_printparts(sb, -1, ps, "", 0, 0);
 		term_chr('\n');
 		term_room(1);
 		xrow++;
 		n = ps;
 		ps = sb->s_n;
 		if (ai_max) {	/* updating autoindent */
-			while (**post == ' ' || **post == '\t')
+			for (; **post == ' ' || **post == '\t'; postn--)
 				++*post;
 			int ai_new = n;
 			while (sb->s[ai_new] == ' ' || sb->s[ai_new] == '\t')
