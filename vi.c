@@ -259,7 +259,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap, int *mlen)
 	int key;
 	term_pos(xrows, led_pos(msg, 0));
 	syn_setft("/ex");
-	char *s = led_prompt(msg, "", insert, kmap, &key);
+	char *s = led_prompt(msg, insert, kmap, &key);
 	syn_setft(ex_ft);
 	strncpy(vi_msg, s, sizeof(vi_msg) - 1);
 	if (key == '\n') {
@@ -285,7 +285,7 @@ char *ex_read(char *msg)
 		int oleft = xleft, key;
 		syn_blockhl = 0;
 		syn_setft("/ex");
-		char *s = led_prompt(msg, "", NULL, &xkmap, &key);
+		char *s = led_prompt(msg, NULL, &xkmap, &key);
 		syn_setft(ex_ft);
 		xleft = oleft;
 		if (key != '\n') {
@@ -914,37 +914,45 @@ static void vi_splitln(int row, int linepos, int newln)
 	free(buf);
 }
 
-static char *vi_indents(char *ln, int *l)
+static void vi_indents(char *ln, int *l)
 {
-	sbuf_smake(sb, 256)
-	while (xai && ln && (*ln == ' ' || *ln == '\t'))
-		sbuf_chr(sb, *ln++)
-	*l = sb->s_n;
-	sbufn_sret(sb)
+	if (!xai || !ln)
+		ln = "";
+	char *pln = ln;
+	for (; *ln == ' ' || *ln == '\t'; ln++);
+	*l = ln - pln;
 }
 
 static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
-	char *region, *pref, *post, *_post;
+	char *region, *post, *_post;
 	char *ln = lbuf_get(xb, r1);
-	int l1, l2 = 1;
-	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
+	int tlen, l1, l2 = 1, postn = 1;
+	sbuf_smake(sb, xcols)
+	if (lnmode || !ln) {
+		vi_indents(ln, &l1);
+		post = _post = uc_dup("\n");
+		tlen = -1;
+		region = lbuf_region(xb, r1, 0, r2, -1);
+	} else {
+		l1 = uc_chr(ln, o1) - ln;
+		post = _post = uc_subl(lbuf_get(xb, r2), o2, -1, &l2, &postn);
+		tlen = lbuf_s(ln)->len+1;
+		region = lbuf_region(xb, r1, o1, r2, o2);
+	}
 	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
-	pref = lnmode ? vi_indents(ln, &l1) : uc_subl(ln, 0, o1, &l1);
-	post = _post = lnmode ? uc_dup("\n") : uc_subl(lbuf_get(xb, r2), o2, -1, &l2);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
 	term_room(r1 < xtop ? xtop - xrow : r1 - r2);
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
-	sbuf *rep = led_input(pref, &post, r1 - (r1 - r2), 0);
-	sbufn_str(rep, post)
-	int tlen = lnmode || !ln ? -1 : lbuf_s(ln)->len+1;
-	if (rep->s_n != tlen || memcmp(&ln[l1], &rep->s[l1], tlen - l2 - l1))
-		lbuf_edit(xb, rep->s, r1, r2 + 1);
-	sbuf_free(rep)
-	free(pref);
+	sbuf_mem(sb, ln, l1)
+	led_input(sb, &post, postn, r1 - (r1 - r2), 0);
+	sbufn_str(sb, post)
+	if (sb->s_n != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
+		lbuf_edit(xb, sb->s, r1, r2 + 1);
+	free(sb->s);
 	free(_post);
 }
 
@@ -1080,19 +1088,18 @@ static void vc_motion(int cmd)
 
 static void vc_insert(int cmd)
 {
-	char *pref, *post, *_post;
+	char *post, *_post;
 	char *ln = lbuf_get(xb, xrow);
-	int row, cmdo, l1;
+	int row, cmdo, l1, l2, postn = 1;
+	sbuf_smake(sb, xcols)
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
 	else if (cmd == 'A')
 		xoff = lbuf_eol(xb, xrow);
 	else if (cmd == 'o') {
 		xrow++;
-		if (xrow - xtop == xrows) {
-			xtop++;
-			vi_drawagain(xtop);
-		}
+		if (xrow - xtop == xrows)
+			vi_drawagain(++xtop);
 	}
 	xoff = ren_noeol(ln, xoff);
 	row = xrow;
@@ -1101,19 +1108,24 @@ static void vc_insert(int cmd)
 	if (ln && ln[0] == '\n')
 		xoff = 0;
 	cmdo = cmd == 'o' || cmd == 'O';
-	pref = ln && !cmdo ? uc_subl(ln, 0, xoff, &l1) : vi_indents(ln, &l1);
-	post = _post = ln && !cmdo ? uc_sub(ln, xoff, -1) : uc_dup("\n");
-	term_pos(row - xtop, 0);
-	term_room(cmdo);
-	sbuf *rep = led_input(pref, &post, row, cmdo);
-	if (rep->s_n != l1 || cmdo || !ln || memcmp(ln, rep->s, l1)) {
-		sbufn_str(rep, post)
+	if (cmdo || !ln) {
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
-		lbuf_edit(xb, rep->s, row, row + !cmdo);
+		vi_indents(ln, &l1);
+		post = _post = uc_dup("\n");
+	} else {
+		l1 = uc_chr(ln, xoff) - ln;
+		post = _post = uc_subl(ln + l1, 0, -1, &l2, &postn);
 	}
-	sbuf_free(rep)
-	free(pref);
+	term_pos(row - xtop, 0);
+	term_room(cmdo);
+	sbuf_mem(sb, ln, l1)
+	led_input(sb, &post, postn, row, cmdo);
+	if (sb->s_n != l1 || cmdo || !ln) {
+		sbufn_str(sb, post)
+		lbuf_edit(xb, sb->s, row, row + !cmdo);
+	}
+	free(sb->s);
 	free(_post);
 }
 
