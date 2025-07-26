@@ -271,11 +271,12 @@ else \
 
 int uc_wid(int c);
 int uc_slen(char *s);
-char *uc_chr(char *s, int off);
+char *uc_chrn(char *s, int off, int *n);
+char *uc_chr(char *s, int off) { int n; return uc_chrn(s, off, &n); }
 int uc_off(char *s, int off);
-char *uc_subl(char *s, int beg, int end, int *rlen);
+char *uc_subl(char *s, int beg, int end, int *rlen, int *rn);
 char *uc_sub(char *s, int beg, int end)
-	{ int l; return uc_subl(s, beg, end, &l); }
+	{ int l; return uc_subl(s, beg, end, &l, &l); }
 char *uc_dup(const char *s);
 int uc_isspace(char *s);
 int uc_isprint(char *s);
@@ -340,8 +341,8 @@ typedef struct {
 	int att;
 } led_att;
 extern sbuf *led_attsb;
-char *led_prompt(char *pref, char *post, char *insert, int *kmap, int *key);
-sbuf *led_input(char *pref, char **post, int row, int lsh);
+char *led_prompt(char *pref, char *insert, int *kmap, int *key);
+void led_input(sbuf *sb, char **post, int postn, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
 { \

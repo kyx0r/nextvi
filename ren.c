@@ -107,9 +107,8 @@ ren_state *ren_position(char *s)
 	rstate->s = s;
 	rstate->ctx = dir_context(s);
 	unsigned int n, max;
-	char *ss;
 	if (xlim >= 0 && rstate == rstates+1) {
-		ss = s;
+		char *ss = s;
 		max = (unsigned int)xlim;
 		for (n = 0; n < max && uc_len(ss); n++)
 			ss += uc_len(ss);
