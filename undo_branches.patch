@@ -171,7 +171,7 @@ index f064e1c..5116b4f 100644
  	lb->useq_zero = lbuf_seq(lb);
  }
 diff --git a/vi.h b/vi.h
-index 48337ed..ed31771 100644
+index abd3ed6..a4070cd 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -147,6 +147,7 @@ struct linfo {
