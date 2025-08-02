@@ -549,6 +549,8 @@ Example: substitute "int" with the value of $RANDOM
 :%s/int/!printf "%s" $RANDOM!
 Example: insert output of ls shell command
 :& i!ls
+Example: insert output of ls shell command efficiently
+:;c !ls!<^V><^M><^V><ESC>
 .Ed
 .
 .Sh EX RANGES
