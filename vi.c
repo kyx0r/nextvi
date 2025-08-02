@@ -1060,9 +1060,8 @@ static void vc_motion(int cmd)
 
 static void vc_insert(int cmd)
 {
-	char *post, *_post;
-	char *ln = lbuf_get(xb, xrow);
-	int row, cmdo, l1, l2, postn = 1;
+	char *post, *ln = lbuf_get(xb, xrow);
+	int row, cmdo, l1, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
@@ -1084,10 +1083,11 @@ static void vc_insert(int cmd)
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
 		vi_indents(ln, &l1);
-		post = _post = uc_dup("\n");
+		post = "\n";
 	} else {
-		l1 = uc_chr(ln, xoff) - ln;
-		post = _post = uc_subl(ln + l1, 0, -1, &l2, &postn);
+		l1 = rstate->chrs[xoff] - ln;
+		postn = rstate->n - xoff;
+		post = ln + l1;
 	}
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
@@ -1098,7 +1098,6 @@ static void vc_insert(int cmd)
 		lbuf_edit(xb, sb->s, row, row + !cmdo);
 	}
 	free(sb->s);
-	free(_post);
 }
 
 static int vc_put(int cmd)
