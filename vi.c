@@ -277,34 +277,6 @@ static char *vi_enprompt(char *msg, char *insert, int *mlen)
 	return vi_prompt(msg, insert, &kmap, mlen);
 }
 
-/* read an ex input line */
-char *ex_read(char *msg)
-{
-	int c;
-	if (!(xvis & 2)) {
-		int oleft = xleft, key;
-		syn_blockhl = 0;
-		syn_setft("/ex");
-		char *s = led_prompt(msg, NULL, &xkmap, &key);
-		syn_setft(ex_ft);
-		xleft = oleft;
-		if (key != '\n') {
-			free(s);
-			return NULL;
-		} else if (!msg || strcmp(s, msg))
-			term_chr('\n');
-		return s;
-	}
-	sbuf_smake(sb, 128)
-	while (!xquit && (c = term_read()) != '\n')
-		sbuf_chr(sb, c)
-	if (xquit) {
-		free(sb->s);
-		return NULL;
-	}
-	sbufn_sret(sb)
-}
-
 /* print an ex output line */
 void ex_cprint(char *line, int r, int c, int ln)
 {
