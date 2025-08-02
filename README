@@ -388,7 +388,7 @@ EX COMMANDS
              Example: range given
              :10,100f/int
              Subsequent commands within the range will move to the next match
-             just like vi n/N commands.
+             just like vi normal [#]n or [#]N commands.
 
      b[#]    Print currently active buffers state or switch to a buffer
 
@@ -409,7 +409,7 @@ EX COMMANDS
      bs[#]   Set current buffer saved. If any arg given, reset undo/redo
              history
 
-     [range]p
+     [vrange][hrange]p
              Print line(s) from the buffer
 
              Example: utilize character offset ranges
@@ -439,13 +439,11 @@ EX COMMANDS
      ea![kwd] [#]
              Forced version of ea
 
-     [#]a[str]
      [#]i[str]
-     [#]c[str]
-             Enter ex {append insert change} mode
+             Enter ex insert mode before specified line
 
-             # determines insertion line number.
-             str determines initial input into the insertion buffer.
+             # specifies insertion line number.
+             str specifies initial input into the insertion buffer.
 
              Example: insert "hello" in vi/ex
              :i hello<^M><ESC>
@@ -455,6 +453,25 @@ EX COMMANDS
              :i hello<^V><^M><^V><ESC>
              Example: insert "hello" in raw ex mode
              i hello<^M>.<^M>
+
+     [#]a[str]
+             Enter ex insert mode after specified line
+
+     [vrange][hrange]c[str]
+             Enter ex insert mode on specified line
+
+             This is the most efficient command for arbitrary insertion.
+
+             Example: replace current line with "hello"
+             :c hello<^M><ESC>
+             Example: replace lines 1-5 with "hello"
+             :1,5c hello<^M><ESC>
+             Example: insert "hello" at current character offset
+             :;c hello<^M><ESC>
+             Example: insert "hello" at end of line
+             :;$c hello<^M><ESC>
+             Example: insert "hello" at line 5 and end of line
+             :5;$c hello<^M><ESC>
 
      [range]d
              Delete line(s)
@@ -944,7 +961,7 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 512 vi.h     |  definitions/aux     |
+     | 511 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 306 conf.c   |  hl/ft/td config     |
@@ -954,9 +971,9 @@ CODE MAP
      | 637 uc.c     |  UTF-8 support       |
      | 684 led.c    |  insert mode/output  |
      | 748 regex.c  |  extended RE         |
-     | 1251 ex.c    |  ex options/commands |
-     | 1962 vi.c    |  normal mode/general |
-     | 6866 total   |  wc -l *.c|sort      |
+     | 1285 ex.c    |  ex options/commands |
+     | 1934 vi.c    |  normal mode/general |
+     | 6872 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1027,4 +1044,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.14.10                    July 27, 2025                   Linux 6.14.10
+Linux 6.16.0                    August 2, 2025                    Linux 6.16.0
