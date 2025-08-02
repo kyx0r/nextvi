@@ -259,11 +259,6 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 		*end = MAX(0, lbuf_len(xb));
 		return 0;
 	}
-	if (!*loc) {
-		*beg = xrow;
-		*end = MIN(lbuf_len(xb), xrow + 1);
-		return 0;
-	}
 	while (*loc) {
 		if (*loc == ';' || *loc == ',') {
 			loc++;
@@ -284,8 +279,11 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 	}
-	if (!naddr)
-		return 2;
+	if (!naddr) {
+		*beg = xrow;
+		*end = MIN(lbuf_len(xb), xrow + 1);
+		return 0;
+	}
 	if (*beg < 0 || *beg >= lbuf_len(xb))
 		return 1;
 	if (naddr < 2)
@@ -592,36 +590,72 @@ static int ec_termexec(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
+static char *ex_read(char *msg)
+{
+	int c;
+	if (!(xvis & 2)) {
+		int oleft = xleft, key;
+		syn_blockhl = 0;
+		syn_setft("/ex");
+		char *s = led_prompt(msg, NULL, &xkmap, &key);
+		syn_setft(ex_ft);
+		xleft = oleft;
+		if (key != '\n') {
+			free(s);
+			return NULL;
+		} else if (!msg || strcmp(s, msg))
+			term_chr('\n');
+		return s;
+	}
+	sbuf_smake(sb, 128)
+	while (!xquit && (c = term_read()) != '\n')
+		sbuf_chr(sb, c)
+	if (xquit) {
+		free(sb->s);
+		return NULL;
+	}
+	sbufn_sret(sb)
+}
+
 static int ec_insert(char *loc, char *cmd, char *arg)
 {
-	sbuf *sb;
-	char *s;
-	int beg, end;
-	int n;
-	if (ex_region(loc, &beg, &end))
+	int beg, end, n = 0, commit = 0;
+	int o1, o2 = -1;
+	if (ex_oregion(loc, &beg, &end, &o1, &o2))
 		return 2;
-	sbufn_make(sb, 64)
+	char *s, *ln = o2 >= 0 ? lbuf_get(xb, beg) : NULL;
+	sbuf_smake(sb, 64)
+	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
+		beg++;
+	else if (cmd[0] == 'i')
+		end = beg;
+	else if (ln) {
+		n = uc_chr(ln, o2) - ln;
+		sbuf_mem(sb, ln, n)
+	}
 	if (*arg)
 		term_push(arg, strlen(arg));
 	while ((s = ex_read(NULL))) {
-		if (xvis & 2 && !strcmp(".", s))
+		if (xvis & 2 && !strcmp(".", s)) {
+			free(s);
 			break;
+		}
 		sbuf_str(sb, s)
 		sbufn_chr(sb, '\n')
 		free(s);
+		commit = 1;
 	}
-	free(s);
-	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
-		beg++;
-	if (cmd[0] != 'c')
-		end = beg;
-	if (vi_insmov != TK_CTL('c')) {
+	if (vi_insmov != TK_CTL('c') && commit) {
+		if (cmd[0] == 'c' && ln) {
+			sb->s_n--;
+			sbufn_str(sb, ln + n)
+		}
 		n = lbuf_len(xb);
 		lbuf_edit(xb, sb->s, beg, end);
 		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
 	} else
 		vi_insmov = 0;
-	sbuf_free(sb)
+	free(sb->s);
 	return 0;
 }
 
@@ -633,8 +667,8 @@ static int ec_print(char *loc, char *cmd, char *arg)
 		ex_print("unknown command")
 		return 1;
 	}
-	if ((i = ex_oregion(loc, &beg, &end, &o1, &o2)))
-		return i == 2 && o2 >= 0 ? 1 : 2;
+	if (ex_oregion(loc, &beg, &end, &o1, &o2))
+		return 2;
 	if (!cmd[0] && loc[0]) {
 		xrow = MAX(beg, end - 1);
 		return 0;
