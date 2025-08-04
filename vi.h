@@ -341,7 +341,7 @@ typedef struct {
 	int att;
 } led_att;
 extern sbuf *led_attsb;
-char *led_prompt(char *pref, char *insert, int *kmap, int *key);
+void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist);
 void led_input(sbuf *sb, char **post, int postn, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \

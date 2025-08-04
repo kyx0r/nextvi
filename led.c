@@ -621,25 +621,20 @@ leave:
 }
 
 /* read an ex command */
-char *led_prompt(char *pref, char *insert, int *kmap, int *key)
+void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist)
 {
-	int n;
+	int n = sb->s_n;
 	vi_lncol = 0;
-	sbuf_smake(sb, xcols)
-	if (pref)
-		sbuf_str(sb, pref)
-	n = sb->s_n;
 	if (insert)
 		sbuf_str(sb, insert)
 	preserve(int, xtd, +2)
-	led_line(sb, 0, n, "", 0, -1, key, kmap, 0, 0);
+	led_line(sb, ps, n, "", 0, -1, key, kmap, 0, 0);
 	restore(xtd)
-	if (*key == '\n' && pref) {
+	if (*key == '\n' && hist) {
 		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
 		temp_pos(0, -1, 0, 0);
 		temp_write(0, sb->s + n);
 	}
-	sbufn_sret(sb)
 }
 
 /* read visual command input */
@@ -650,13 +645,11 @@ void led_input(sbuf *sb, char **post, int postn, int row, int lsh)
 	while (1) {
 		led_line(sb, ps, sb->s_n, *post, postn, ai_max, &key, &xkmap, row, lsh);
 		if (key != '\n') {
-			sbuf_set(sb, '\0', 4)
-			sb->s_n -= 4;
 			if (!xled)
 				xoff = uc_slen(sb->s+ps);
 			return;
 		}
-		sbufn_chr(sb, key)
+		sbuf_chr(sb, key)
 		led_printparts(sb, -1, ps, "", 0, 0);
 		term_chr('\n');
 		term_room(1);
@@ -670,7 +663,7 @@ void led_input(sbuf *sb, char **post, int postn, int row, int lsh)
 			while (sb->s[ai_new] == ' ' || sb->s[ai_new] == '\t')
 				ai_new++;
 			ai_new = ai_max > ai_new - n ? ai_new - n : ai_max;
-			sbufn_mem(sb, sb->s+n, ai_new)
+			sbuf_mem(sb, sb->s+n, ai_new)
 		}
 	}
 }
