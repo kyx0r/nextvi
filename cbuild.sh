@@ -136,7 +136,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "clean")
         shift
-        run rm -f ./vi ./nextvi 2>/dev/null
+        run rm -f vi nextvi callgrind.out.* cachegrind.out.* 2>/dev/null
         exit 0
         ;;
     "retrieve")
