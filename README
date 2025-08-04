@@ -460,7 +460,7 @@ EX COMMANDS
              Enter ex insert mode after specified line
 
      [vrange][hrange]c[str]
-             Enter ex insert mode on specified line
+             Enter ex change/insert mode on specified line
 
              This is the most efficient command for arbitrary insertion.
 
@@ -504,8 +504,8 @@ EX COMMANDS
              :g/int/ya A\:p
 
              It is possible to nest global commands inside of global commands.
-             A global command will not be executed on lines that were changed
-             by a nested global command.
+             The first global command will not be executed on lines that
+             were changed by a nested global command.
              When range not given, a nested global command is executed on
              the current line.
 
@@ -549,8 +549,8 @@ EX COMMANDS
 
              Execute raw vi/ex input sequence.
              A blocking macro shall wait for input when the end of the sequence
-             is reached. A blocking macro executing other macros may result
-             in congestion.
+             is reached. A blocking macro executing other macros may cause
+             input congestion.
              Example: execute vi insert statement
              :@ ihello
              Example: insert "hello" into <:> vi prompt
