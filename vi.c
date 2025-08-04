@@ -257,17 +257,17 @@ static void vi_wait(void)
 static char *vi_prompt(char *msg, char *insert, int *kmap, int *mlen)
 {
 	int key;
+	sbuf_smake(sb, xcols)
+	sbuf_str(sb, msg)
+	*mlen = sb->s_n;
 	term_pos(xrows, led_pos(msg, 0));
 	syn_setft("/ex");
-	char *s = led_prompt(msg, insert, kmap, &key);
+	led_prompt(sb, insert, kmap, &key, 0, 1);
 	syn_setft(ex_ft);
-	strncpy(vi_msg, s, sizeof(vi_msg) - 1);
-	if (key == '\n') {
-		*mlen = strlen(msg);
-		return s;
-	}
-	*mlen = 0;
-	free(s);
+	strncpy(vi_msg, sb->s, sizeof(vi_msg) - 1);
+	if (key == '\n')
+		return sb->s;
+	free(sb->s);
 	return NULL;
 }
 
@@ -275,34 +275,6 @@ static char *vi_enprompt(char *msg, char *insert, int *mlen)
 {
 	int kmap = 0;
 	return vi_prompt(msg, insert, &kmap, mlen);
-}
-
-/* read an ex input line */
-char *ex_read(char *msg)
-{
-	int c;
-	if (!(xvis & 2)) {
-		int oleft = xleft, key;
-		syn_blockhl = 0;
-		syn_setft("/ex");
-		char *s = led_prompt(msg, NULL, &xkmap, &key);
-		syn_setft(ex_ft);
-		xleft = oleft;
-		if (key != '\n') {
-			free(s);
-			return NULL;
-		} else if (!msg || strcmp(s, msg))
-			term_chr('\n');
-		return s;
-	}
-	sbuf_smake(sb, 128)
-	while (!xquit && (c = term_read()) != '\n')
-		sbuf_chr(sb, c)
-	if (xquit) {
-		free(sb->s);
-		return NULL;
-	}
-	sbufn_sret(sb)
 }
 
 /* print an ex output line */
@@ -477,7 +449,7 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	char *beg, *end;
 	if (!ln || !n)
 		return NULL;
-	beg = uc_chr(ln, ren_noeol(ln, off));
+	beg = rstate->chrs[ren_noeol(ln, off)];
 	end = beg;
 	while (beg > ln && uc_kind(uc_beg(ln, beg - 1)) == 1)
 		beg = uc_beg(ln, beg - 1);
@@ -859,8 +831,8 @@ static char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
 	s2 = lbuf_cp(lb, r1 + 1, r2);
 	sbuf_str(sb, s1)
 	sbuf_str(sb, s2)
-	sbuf_str(sb, s3)
 	free(s2);
+	sbuf_str(sb, s3)
 	free(s3);
 	sbufn_sret(sb)
 }
@@ -877,16 +849,16 @@ static void vi_yank(int r1, int o1, int r2, int o2, int lnmode)
 
 static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 {
-	char *pref, *post;
-	char *region;
+	char *pref, *post, *region;
 	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
 	vi_regput(vi_ybuf, region, lnmode);
 	free(region);
-	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
-	post = lnmode ? "\n" : uc_chr(lbuf_get(xb, r2), o2);
 	if (!lnmode) {
+		pref = lbuf_get(xb, r1);
+		int preflen = uc_chr(pref, o1) - pref;
+		post = uc_chr(lbuf_get(xb, r2), o2);
 		sbuf_smake(sb, 1024)
-		sbuf_str(sb, pref)
+		sbuf_mem(sb, pref, preflen)
 		sbufn_str(sb, post)
 		lbuf_edit(xb, sb->s, r1, r2 + 1);
 		free(sb->s);
@@ -894,24 +866,23 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 		lbuf_edit(xb, NULL, r1, r2 + 1);
 	xrow = r1;
 	xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
-	free(pref);
 }
 
 static void vi_splitln(int row, int linepos, int newln)
 {
-	char *s, *part, *buf;
-	s = lbuf_get(xb, row);
-	if (!s)
+	char *s, *pref, *post;
+	int l, n;
+	if (!(s = lbuf_get(xb, row)))
 		return;
-	part = uc_sub(s, linepos, -1);
-	buf = uc_sub(s, 0, linepos);
-	if (newln || *part != '\n') {
-		lbuf_edit(xb, buf, row, row+1);
-		lbuf_edit(xb, part, row+1, row+1);
+	pref = uc_subl(s, 0, linepos, &l, &n);
+	post = uc_sub(s + l, 0, -1);
+	if (newln || *post != '\n') {
+		lbuf_edit(xb, pref, row, row+1);
+		lbuf_edit(xb, post, row+1, row+1);
 		vi_mod |= 1;
 	}
-	free(part);
-	free(buf);
+	free(post);
+	free(pref);
 }
 
 static void vi_indents(char *ln, int *l)
@@ -1088,9 +1059,8 @@ static void vc_motion(int cmd)
 
 static void vc_insert(int cmd)
 {
-	char *post, *_post;
-	char *ln = lbuf_get(xb, xrow);
-	int row, cmdo, l1, l2, postn = 1;
+	char *post, *ln = lbuf_get(xb, xrow);
+	int row, cmdo, l1, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
@@ -1112,10 +1082,11 @@ static void vc_insert(int cmd)
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
 		vi_indents(ln, &l1);
-		post = _post = uc_dup("\n");
+		post = "\n";
 	} else {
-		l1 = uc_chr(ln, xoff) - ln;
-		post = _post = uc_subl(ln + l1, 0, -1, &l2, &postn);
+		l1 = rstate->chrs[xoff] - ln;
+		postn = rstate->n - xoff;
+		post = ln + l1;
 	}
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
@@ -1126,14 +1097,13 @@ static void vc_insert(int cmd)
 		lbuf_edit(xb, sb->s, row, row + !cmdo);
 	}
 	free(sb->s);
-	free(_post);
 }
 
 static int vc_put(int cmd)
 {
 	int cnt = MAX(1, vi_arg);
-	char *buf = xregs[vi_ybuf];
-	int i;
+	int i, off;
+	char *buf = xregs[vi_ybuf], *ln;
 	if (!buf)
 		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty");
 	if (!buf || !buf[0])
@@ -1151,14 +1121,13 @@ static int vc_put(int cmd)
 		free(sb->s);
 		return 1;
 	}
-	char *ln = xrow < lbuf_len(xb) ? lbuf_get(xb, xrow) : "\n";
-	int off = ren_noeol(ln, xoff) + (ln[0] != '\n' && cmd == 'p');
-	char *s = uc_sub(ln, 0, off);
-	sbuf_str(sb, s)
-	free(s);
+	if (!(ln = lbuf_get(xb, xrow)))
+		ln = "\n";
+	off = ren_noeol(ln, xoff) + (ln[0] != '\n' && cmd == 'p');
+	sbuf_mem(sb, ln, rstate->chrs[off] - ln)
 	for (i = 0; i < cnt; i++)
 		sbuf_str(sb, buf)
-	sbufn_str(sb, uc_chr(ln, off))
+	sbufn_str(sb, rstate->chrs[off])
 	lbuf_edit(xb, sb->s, xrow, xrow + 1);
 	xoff = off + uc_slen(buf) * cnt - 1;
 	free(sb->s);
@@ -1211,24 +1180,17 @@ static int vc_replace(void)
 	int cnt = MAX(1, vi_arg);
 	char *cs = led_read(&xkmap, term_read());
 	char *ln = lbuf_get(xb, xrow);
-	char *pref, *post;
-	char *s;
 	int off, i;
 	if (!ln || !cs)
 		return 0;
 	off = ren_noeol(ln, xoff);
-	s = uc_chr(ln, off);
-	for (i = 0; uc_len(s) && *s != '\n' && i < cnt; i++)
-		s += uc_len(s);
-	if (i < cnt)
+	if (off + cnt >= rstate->n)
 		return 0;
-	pref = uc_sub(ln, 0, off);
-	post = uc_chr(ln, off + cnt);
-	sbuf_smake(sb, 1024)
-	sbuf_str(sb, pref)
+	sbuf_smake(sb, lbuf_s(ln)->len)
+	sbuf_mem(sb, ln, rstate->chrs[off] - ln)
 	for (i = 0; i < cnt; i++)
 		sbuf_str(sb, cs)
-	sbufn_str(sb, post)
+	sbufn_str(sb, rstate->chrs[off+cnt])
 	lbuf_edit(xb, sb->s, xrow, xrow + 1);
 	if (cs[0] == '\n') {
 		xrow += cnt;
@@ -1236,7 +1198,6 @@ static int vc_replace(void)
 	} else
 		xoff = off + cnt - 1;
 	free(sb->s);
-	free(pref);
 	return cs[0] == '\n' ? 1 : 2;
 }
 
@@ -1525,7 +1486,8 @@ void vi(int init)
 				case '/':
 					cs = vi_curword(xb, xrow, xoff, vi_arg);
 					ln = vi_prompt("v/ xkwd:", cs, &xkmap, &n);
-					ex_krsset(ln + n, +1);
+					if (ln)
+						ex_krsset(ln + n, +1);
 					if (ln && !xkwdrs)
 						ex_print("syntax error")
 					free(ln);

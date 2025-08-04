@@ -341,7 +341,7 @@ typedef struct {
 	int att;
 } led_att;
 extern sbuf *led_attsb;
-char *led_prompt(char *pref, char *insert, int *kmap, int *key);
+void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist);
 void led_input(sbuf *sb, char **post, int postn, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
@@ -398,7 +398,6 @@ void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
 int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
-char *ex_read(char *msg);
 void ex_cprint(char *line, int r, int c, int ln);
 #define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
 void ex_init(char **files, int n);
