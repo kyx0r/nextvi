@@ -284,7 +284,8 @@ static void led_printparts(sbuf *sb, int pre, int ps,
 	char *post, int postn, int ai_max)
 {
 	if (!xled) {
-		sbuf_null(sb)
+		sbuf_set(sb, '\0', 4)
+		sb->s_n -= 4;
 		return;
 	}
 	int dir, off, pos, psn = sb->s_n;
