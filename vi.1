@@ -1,4 +1,4 @@
-.Dd Aug  2, 2025
+.Dd Aug  4, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -550,7 +550,7 @@ Example: substitute "int" with the value of $RANDOM
 Example: insert output of ls shell command
 :& i!ls
 Example: insert output of ls shell command efficiently
-:;c !ls!<^V><^M><^V><ESC>
+:;c !ls!<^V><ESC>
 .Ed
 .
 .Sh EX RANGES
@@ -691,9 +691,9 @@ str specifies initial input into the insertion buffer.
 Example: insert "hello" in vi/ex
 :i hello<^M><ESC>
 Example: discard changes in vi/ex
-:i hello<^C>
+:i hello<^M><^C>
 Example: immediately insert "hello"
-:i hello<^V><^M><^V><ESC>
+:i hello<^V><ESC>
 Example: insert "hello" in raw ex mode
 i hello<^M>.<^M>
 .Ed
@@ -1354,11 +1354,11 @@ _
  397 ren.c | positioning/syntax
  539 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
- 684 led.c | insert mode/output
+ 678 led.c | insert mode/output
  748 regex.c | extended RE
- 1285 ex.c | ex options/commands
- 1934 vi.c | normal mode/general
- 6872 total | wc -l *.c\(basort
+ 1287 ex.c | ex options/commands
+ 1924 vi.c | normal mode/general
+ 6858 total | wc -l *.c\(basort
 _
 .TE
 .
