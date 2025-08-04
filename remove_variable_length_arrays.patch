@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 734b51d..46606c4 100644
+index 78b6a8f0..31361744 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -760,7 +760,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -795,7 +795,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -11,7 +11,7 @@ index 734b51d..46606c4 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -807,6 +807,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -842,6 +842,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -19,7 +19,7 @@ index 734b51d..46606c4 100644
  	return 0;
  }
  
-@@ -1198,7 +1199,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
+@@ -1233,7 +1234,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, idx = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index 734b51d..46606c4 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, &idx, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1211,6 +1212,8 @@ int ex_exec(const char *ln)
+@@ -1246,6 +1247,8 @@ int ex_exec(const char *ln)
  			ex_print("syntax error")
  		free(ecmd);
  	}
@@ -38,7 +38,7 @@ index 734b51d..46606c4 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index f064e1c..4ce6dc4 100644
+index f064e1c3..4ce6dc48 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -376,7 +376,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
@@ -70,7 +70,7 @@ index f064e1c..4ce6dc4 100644
  }
  
 diff --git a/led.c b/led.c
-index 3ce8035..3bf8590 100644
+index f1757aed..2c581ac1 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -126,7 +126,7 @@ index 3ce8035..3bf8590 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index b4c3ab3..b020b22 100644
+index b4c3ab3a..b020b22c 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -381,7 +381,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -195,7 +195,7 @@ index b4c3ab3..b020b22 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 2a80efa..8fe62e8 100644
+index 2a80efa7..8fe62e8c 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -257,13 +257,14 @@ int syn_blockhl;
@@ -244,7 +244,7 @@ index 2a80efa..8fe62e8 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 5bcd5ec..715b3f9 100644
+index d2fb5c35..3b2f88c5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -142,7 +142,8 @@ static void vi_drawrow(int row)
@@ -266,7 +266,7 @@ index 5bcd5ec..715b3f9 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1395,10 +1398,11 @@ void vi(int init)
+@@ -1356,10 +1359,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -279,7 +279,7 @@ index 5bcd5ec..715b3f9 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1535,7 +1539,7 @@ void vi(int init)
+@@ -1497,7 +1501,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -288,7 +288,7 @@ index 5bcd5ec..715b3f9 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1545,10 +1549,11 @@ void vi(int init)
+@@ -1507,10 +1511,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -301,7 +301,7 @@ index 5bcd5ec..715b3f9 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1556,6 +1561,7 @@ void vi(int init)
+@@ -1518,6 +1523,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);

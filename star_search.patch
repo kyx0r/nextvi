@@ -1,8 +1,8 @@
 diff --git a/vi.c b/vi.c
-index 5bcd5ec..9c512a2 100644
+index d2fb5c35..44623a18 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -813,6 +813,7 @@ static int vi_motion(int *row, int *off)
+@@ -785,6 +785,7 @@ static int vi_motion(int *row, int *off)
  			return -1;
  		break;
  	case TK_CTL('a'):

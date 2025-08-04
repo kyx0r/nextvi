@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 734b51d..60f007e 100644
+index 78b6a8f0..f4a5d78d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,6 +35,7 @@ int xpr;			/* ex_cprint register */
@@ -10,7 +10,7 @@ index 734b51d..60f007e 100644
  char *xregs[256];		/* string registers */
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -1094,6 +1095,25 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1129,6 +1130,25 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -36,7 +36,7 @@ index 734b51d..60f007e 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1115,6 +1135,7 @@ static struct excmd {
+@@ -1150,6 +1170,7 @@ static struct excmd {
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
@@ -45,7 +45,7 @@ index 734b51d..60f007e 100644
  	{"fp", ec_setdir},
  	{"f", ec_search},
 diff --git a/lbuf.c b/lbuf.c
-index f064e1c..7c5f735 100644
+index f064e1c3..7c5f735f 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -70,25 +70,139 @@ static int linelength(char *s)
@@ -227,7 +227,7 @@ index f064e1c..7c5f735 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index 5bcd5ec..9af027d 100644
+index d2fb5c35..538aaff6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,22 @@ static void vi_drawrow(int row)
@@ -254,7 +254,7 @@ index 5bcd5ec..9af027d 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index abd3ed6..55522a1 100644
+index b6f6588a..3a25c378 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -136,6 +136,8 @@ struct lopt {

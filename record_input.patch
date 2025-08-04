@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 734b51d..00ee6da 100644
+index 78b6a8f0..5c2655dc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -10,7 +10,7 @@ index 734b51d..00ee6da 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -913,6 +914,7 @@ static struct option {
+@@ -948,6 +949,7 @@ static struct option {
  	{"sep", &xsep},
  	{"lim", &xlim},
  	{"seq", &xseq},
@@ -19,7 +19,7 @@ index 734b51d..00ee6da 100644
  
  static int ec_set(char *loc, char *cmd, char *arg)
 diff --git a/term.c b/term.c
-index aad65b8..b23b7f0 100644
+index aad65b80..b23b7f0b 100644
 --- a/term.c
 +++ b/term.c
 @@ -160,6 +160,12 @@ int term_read(void)
@@ -36,10 +36,10 @@ index aad65b8..b23b7f0 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index abd3ed6..32ac9f2 100644
+index b6f6588a..3c628729 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -503,6 +503,7 @@ extern int xpr;
+@@ -502,6 +502,7 @@ extern int xpr;
  extern int xsep;
  extern int xlim;
  extern int xseq;

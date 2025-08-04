@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 734b51d..993e5c0 100644
+index 78b6a8f0..9fc1f522 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -36,6 +36,7 @@ int xsep = ':';			/* ex command separator */
@@ -10,7 +10,7 @@ index 734b51d..993e5c0 100644
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static int xgdep;		/* global command recursion depth */
-@@ -1094,6 +1095,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1129,6 +1130,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -52,7 +52,7 @@ index 734b51d..993e5c0 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1138,6 +1174,8 @@ static struct excmd {
+@@ -1173,6 +1209,8 @@ static struct excmd {
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
  	{"se", ec_set},
@@ -62,7 +62,7 @@ index 734b51d..993e5c0 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index aad65b8..3f5d627 100644
+index aad65b80..3f5d627f 100644
 --- a/term.c
 +++ b/term.c
 @@ -224,7 +224,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -78,7 +78,7 @@ index aad65b8..3f5d627 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index abd3ed6..a4c6952 100644
+index b6f6588a..e454ca1e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

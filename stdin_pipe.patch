@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 734b51d..d6fe718 100644
+index 78b6a8f0..ed8770f2 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -403,7 +403,9 @@ int ex_edit(const char *path, int len)
+@@ -401,7 +401,9 @@ int ex_edit(const char *path, int len)
  static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index 734b51d..d6fe718 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -423,6 +425,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -421,6 +423,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
  	}
@@ -23,7 +23,7 @@ index 734b51d..d6fe718 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*ex_path ? ex_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1237,15 +1242,26 @@ void ex(void)
+@@ -1273,15 +1278,26 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -53,7 +53,7 @@ index 734b51d..d6fe718 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index aad65b8..9733940 100644
+index aad65b80..9733940e 100644
 --- a/term.c
 +++ b/term.c
 @@ -5,6 +5,8 @@ int xrows, xcols;
@@ -131,10 +131,10 @@ index aad65b8..9733940 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 5bcd5ec..e81eacc 100644
+index d2fb5c35..b09a9279 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1909,7 +1909,8 @@ static int setup_signals(void)
+@@ -1871,7 +1871,8 @@ static int setup_signals(void)
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -144,7 +144,7 @@ index 5bcd5ec..e81eacc 100644
  		return 0;
  	return 1;
  }
-@@ -1927,7 +1928,8 @@ int main(int argc, char *argv[])
+@@ -1889,7 +1890,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -155,10 +155,10 @@ index 5bcd5ec..e81eacc 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index abd3ed6..545b30c 100644
+index b6f6588a..83c58072 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -473,6 +473,7 @@ void vi_regput(int c, const char *s, int ln);
+@@ -472,6 +472,7 @@ void vi_regput(int c, const char *s, int ln);
  /* file system */
  void dir_calc(char *path);
  /* global variables */
