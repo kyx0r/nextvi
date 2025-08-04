@@ -870,19 +870,19 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 
 static void vi_splitln(int row, int linepos, int newln)
 {
-	char *s, *part, *buf;
-	s = lbuf_get(xb, row);
-	if (!s)
+	char *s, *pref, *post;
+	int l, n;
+	if (!(s = lbuf_get(xb, row)))
 		return;
-	part = uc_sub(s, linepos, -1);
-	buf = uc_sub(s, 0, linepos);
-	if (newln || *part != '\n') {
-		lbuf_edit(xb, buf, row, row+1);
-		lbuf_edit(xb, part, row+1, row+1);
+	pref = uc_subl(s, 0, linepos, &l, &n);
+	post = uc_sub(s + l, 0, -1);
+	if (newln || *post != '\n') {
+		lbuf_edit(xb, pref, row, row+1);
+		lbuf_edit(xb, post, row+1, row+1);
 		vi_mod |= 1;
 	}
-	free(part);
-	free(buf);
+	free(post);
+	free(pref);
 }
 
 static void vi_indents(char *ln, int *l)
