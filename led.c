@@ -409,7 +409,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 		case 127:
 			if (len - pre > 0)
 				sbuf_cut(sb, led_lastchar(sb->s + pre) + pre)
-			else
+			else if (ai_max >= 0)
 				goto leave;
 			break;
 		case TK_CTL('u'):
