@@ -31,6 +31,7 @@ void *emalloc(size_t size);
 void *erealloc(void *p, size_t size);
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
+void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
 
 /* main functions */
 extern int xgrec;
