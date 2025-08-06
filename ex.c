@@ -617,7 +617,7 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
 static int ec_insert(char *loc, char *cmd, char *arg)
 {
 	int beg, end, ps = 0, n = 0;
-	int o1, o2 = -1;
+	int o1 = -1, o2 = -1;
 	if (ex_oregion(loc, &beg, &end, &o1, &o2))
 		return 2;
 	char *ln = o2 >= 0 ? lbuf_get(xb, beg) : NULL;
@@ -627,6 +627,8 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 	else if (cmd[0] == 'i')
 		end = beg;
 	else if (ln) {
+		if (o1 >= 0)
+			swap(&o1, &o2);
 		if (rstate->s == ln)
 			n = rstate->chrs[o2] - ln;
 		else
@@ -646,12 +648,12 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 		ps = sb->s_n;
 	}
 	if (vi_insmov != TK_CTL('c')) {
-		sbufn_chr(sb, xvis & 2 ? 0 : '\n')
 		if (ln && cmd[0] == 'c') {
 			memcpy(sb->s, ln, n);
-			sb->s_n--;
-			sbufn_str(sb, ln + n)
-		}
+			ln = o1 >= 0 ? uc_chr(ln + n, o1) : ln + n;
+			sbufn_str(sb, ln)
+		} else
+			sbufn_chr(sb, xvis & 2 ? 0 : '\n')
 		n = lbuf_len(xb);
 		lbuf_edit(xb, sb->s, beg, end);
 		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
