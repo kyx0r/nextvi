@@ -813,13 +813,6 @@ static int vi_motion(int *row, int *off)
 	return mv;
 }
 
-static void swap(int *a, int *b)
-{
-	int t = *a;
-	*a = *b;
-	*b = t;
-}
-
 static char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
 {
 	char *s1, *s2, *s3;

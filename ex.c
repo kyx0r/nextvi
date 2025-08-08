@@ -253,7 +253,7 @@ static int ex_range(char **num, int n, int *row)
 #define ex_region(loc, beg, end) ex_oregion(loc, beg, end, NULL, NULL)
 static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	int naddr = 0;
+	int vaddr = 0, haddr = 0, ooff = xoff;
 	if (!strcmp("%", loc) || !lbuf_len(xb)) {
 		*beg = 0;
 		*end = MAX(0, lbuf_len(xb));
@@ -264,14 +264,14 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 			loc++;
 			if (loc[-1] == ',')
 				goto skip;
-			if (o1 && *o2 >= 0)
-				*o1 = *o2;
-			xoff = ex_range(&loc, xoff, naddr ? beg : &xrow);
-			if (o2)
+			xoff = ex_range(&loc, ooff, vaddr ? beg : &xrow);
+			if (o2 && haddr++ % 2)
 				*o2 = xoff;
+			else if (o1)
+				*o1 = xoff;
 		} else {
 			skip:
-			if (naddr++ % 2)
+			if (vaddr++ % 2)
 				*end = ex_range(&loc, xrow, NULL) + 1;
 			else
 				*beg = ex_range(&loc, xrow, NULL);
@@ -279,14 +279,14 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 	}
-	if (!naddr) {
+	if (!vaddr) {
 		*beg = xrow;
 		*end = MIN(lbuf_len(xb), xrow + 1);
 		return 0;
 	}
 	if (*beg < 0 || *beg >= lbuf_len(xb))
 		return 1;
-	if (naddr < 2)
+	if (vaddr < 2)
 		*end = *beg + 1;
 	else if (*end <= *beg || *end > lbuf_len(xb))
 		return 1;
@@ -617,20 +617,23 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
 static int ec_insert(char *loc, char *cmd, char *arg)
 {
 	int beg, end, ps = 0, n = 0;
-	int o1, o2 = -1;
+	int o1 = -1, o2 = -1;
 	if (ex_oregion(loc, &beg, &end, &o1, &o2))
 		return 2;
-	char *ln = o2 >= 0 ? lbuf_get(xb, beg) : NULL;
+	char *ln = o1 >= 0 ? lbuf_get(xb, beg) : NULL;
 	sbuf_smake(sb, ln && cmd[0] == 'c' ? lbuf_s(ln)->len + xcols : xcols)
 	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
 		beg++;
 	else if (cmd[0] == 'i')
 		end = beg;
 	else if (ln) {
-		if (rstate->s == ln)
-			n = rstate->chrs[o2] - ln;
-		else
-			n = uc_chr(ln, o2) - ln;
+		if (rstate->s == ln) {
+			o1 = MIN(o1, rstate->n);
+			n = rstate->chrs[o1] - ln;
+		} else
+			n = uc_chrn(ln, o1, &o1) - ln;
+		lbuf_mark(xb, '*', beg, o1);
+		xoff = o1;
 		sb->s_n = n;
 		ps = n;
 	}
@@ -646,12 +649,12 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 		ps = sb->s_n;
 	}
 	if (vi_insmov != TK_CTL('c')) {
-		sbufn_chr(sb, xvis & 2 ? 0 : '\n')
 		if (ln && cmd[0] == 'c') {
 			memcpy(sb->s, ln, n);
-			sb->s_n--;
-			sbufn_str(sb, ln + n)
-		}
+			ln = o2 > o1 ? uc_chr(ln + n, o2 - o1) : ln + n;
+			sbufn_str(sb, ln)
+		} else
+			sbufn_chr(sb, xvis & 2 ? 0 : '\n')
 		n = lbuf_len(xb);
 		lbuf_edit(xb, sb->s, beg, end);
 		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
