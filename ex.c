@@ -627,11 +627,13 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 	else if (cmd[0] == 'i')
 		end = beg;
 	else if (ln) {
-		xoff = o1;
-		if (rstate->s == ln)
+		if (rstate->s == ln) {
+			o1 = MIN(o1, rstate->n);
 			n = rstate->chrs[o1] - ln;
-		else
-			n = uc_chr(ln, o1) - ln;
+		} else
+			n = uc_chrn(ln, o1, &o1) - ln;
+		lbuf_mark(xb, '*', beg, o1);
+		xoff = o1;
 		sb->s_n = n;
 		ps = n;
 	}
