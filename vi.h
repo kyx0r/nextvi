@@ -148,7 +148,8 @@ struct linfo {
 struct lbuf {
 	char **ln;			/* buffer lines */
 	struct lopt *hist;		/* buffer history */
-	int mark[(NMARKS+2) * 2];	/* mark rows & offs */
+	int mark[NMARKS * 2];		/* mark rows & offs */
+	int tmp_mark[4];		/* aux mark state */
 	int ln_n;			/* number of lines in ln[] */
 	int ln_sz;			/* size of ln[] */
 	int useq;			/* current operation sequence */

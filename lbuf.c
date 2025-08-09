@@ -14,11 +14,13 @@ static void lopt_done(struct lopt *lo)
 	free(lo->ins);
 }
 
-#define lbuf_movemark(dst, at0, src, at1) \
-{ dst->mark[at0] = src->mark[at1]; dst->mark[at0 * 2] = src->mark[at1 * 2]; } \
+#define _lbuf_movemark(dst, at0, src, at1, pivot) \
+{ dst[at0] = src[at1]; dst[at0 + pivot] = src[at1 + pivot]; } \
+
+#define lbuf_movemark(dst, at0, src, at1) _lbuf_movemark(dst, at0, src, at1, NMARKS)
 
 #define lbuf_loadmark(dst, at0, src0, src1) \
-{ dst->mark[at0] = src0; dst->mark[at0 * 2] = src1; } \
+{ dst[at0] = src0; dst[at0 + NMARKS] = src1; } \
 
 static int markidx(int mark)
 {
@@ -39,7 +41,7 @@ void lbuf_mark(struct lbuf *lb, int mark, int pos, int off)
 {
 	int mk = markidx(mark);
 	if (mk >= 0)
-		lbuf_loadmark(lb, mk, pos, off)
+		lbuf_loadmark(lb->mark, mk, pos, off)
 }
 
 int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off)
@@ -48,7 +50,7 @@ int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off)
 	if (mk < 0 || lb->mark[mk] < 0)
 		return 1;
 	*pos = lb->mark[mk];
-	*off = lb->mark[mk * 2];
+	*off = lb->mark[mk + NMARKS];
 	return 0;
 }
 
@@ -112,7 +114,7 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 		lb->ln[pos + i] = *((char**)sb->s + i);
 	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
 		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
-			lbuf_movemark(lo, i, lb, i)
+			lbuf_movemark(lo->mark, i, lb->mark, i)
 			lb->mark[i] = -1;
 			continue;
 		} else if (lb->mark[i] >= pos + n_del)
@@ -120,7 +122,7 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 		else if (n_ins && lb->mark[i] >= pos + n_ins)
 			lb->mark[i] = pos + n_ins - 1;
 		else if (lo->mark[i] >= 0)
-			lbuf_movemark(lb, i, lo, i)
+			lbuf_movemark(lb->mark, i, lo->mark, i)
 	}
 	free(sb->s);
 	return n_ins;
@@ -129,12 +131,12 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
 {
 	int mk = markidx(']');
-	lbuf_movemark(lo, mk, lb, mk)
-	lbuf_loadmark(lb, mk, end, lo->pos_off)
+	lbuf_movemark(lo->mark, mk, lb->mark, mk)
+	lbuf_loadmark(lb->mark, mk, end, lo->pos_off)
 	if (beg >= 0) {
 		mk = markidx('[');
-		lbuf_movemark(lo, mk, lb, mk)
-		lbuf_loadmark(lb, mk, beg, lo->pos_off)
+		lbuf_movemark(lo->mark, mk, lb->mark, mk)
+		lbuf_loadmark(lb->mark, mk, beg, lo->pos_off)
 	}
 }
 
@@ -166,7 +168,8 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 		lo->mark = emalloc(sizeof(lb->mark));
 		memset(lo->mark, -1, sizeof(lb->mark) / 2);
 		lo->seq = lb->useq;
-		lo->pos_off = lb->mark[markidx('*')] >= 0 ? lb->mark[markidx('*') * 2] : 0;
+		lo->pos_off = lb->mark[markidx('*')] >= 0 ?
+				lb->mark[markidx('*') + NMARKS] : 0;
 	}
 	lo->pos = pos;
 	lo->n_ins = 0;
@@ -247,16 +250,16 @@ int lbuf_undo(struct lbuf *lb)
 	const int useq = lo->seq;
 	const int m0 = markidx(']'), m1 = markidx('[');
 	if (lb->hist_u == lb->hist_n) {
-		lbuf_movemark(lb, NMARKS+1, lb, m0)
-		lbuf_movemark(lb, NMARKS+2, lb, m1)
+		_lbuf_movemark(lb->tmp_mark, 0, lb->mark, m0, 2)
+		_lbuf_movemark(lb->tmp_mark, 1, lb->mark, m1, 2)
 	}
 	while (lb->hist_u && lb->hist[lb->hist_u - 1].seq == useq) {
 		lo = &lb->hist[--lb->hist_u];
 		lbuf_replace(lb, lo->del, lo, lo->n_ins);
 	}
-	lbuf_loadmark(lb, markidx('*'), lo->pos, lo->pos_off)
-	lbuf_movemark(lb, m0, lo, m0)
-	lbuf_movemark(lb, m1, lo, m1)
+	lbuf_loadmark(lb->mark, markidx('*'), lo->pos, lo->pos_off)
+	lbuf_movemark(lb->mark, m0, lo->mark, m0)
+	lbuf_movemark(lb->mark, m1, lo->mark, m1)
 	lb->modified = lb->hist_u != 0;
 	return 0;
 }
@@ -272,14 +275,14 @@ int lbuf_redo(struct lbuf *lb)
 		lo = &lb->hist[lb->hist_u++];
 		lbuf_replace(lb, lo->ins, lo, lo->n_del);
 	}
-	lbuf_loadmark(lb, markidx('*'), lo->pos, lo->pos_off)
+	lbuf_loadmark(lb->mark, markidx('*'), lo->pos, lo->pos_off)
 	if (lb->hist_u < lb->hist_n) {
 		lo++;
-		lbuf_movemark(lb, m0, lo, m0)
-		lbuf_movemark(lb, m1, lo, m1)
+		lbuf_movemark(lb->mark, m0, lo->mark, m0)
+		lbuf_movemark(lb->mark, m1, lo->mark, m1)
 	} else {
-		lbuf_movemark(lb, m0, lb, NMARKS+1)
-		lbuf_movemark(lb, m1, lb, NMARKS+2)
+		_lbuf_movemark(lb->mark, m0, lb->tmp_mark, 0, 2)
+		_lbuf_movemark(lb->mark, m1, lb->tmp_mark, 1, 2)
 	}
 	lb->modified = lb->hist_u != 0;
 	return 0;
