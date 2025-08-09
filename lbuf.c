@@ -168,12 +168,12 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
 		lo->mark = emalloc(sizeof(lb->mark));
 		memset(lo->mark, -1, sizeof(lb->mark) / 2);
 		lo->seq = lb->useq;
-		lo->pos_off = lb->mark[markidx('*')] >= 0 ?
-				lb->mark[markidx('*') + NMARKS] : 0;
 	}
 	lo->pos = pos;
 	lo->n_ins = 0;
 	lo->n_del = n_del;
+	lo->pos_off = lb->mark[markidx('*')] >= 0 ?
+			lb->mark[markidx('*') + NMARKS] : 0;
 	return lo;
 }
 
