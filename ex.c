@@ -216,6 +216,7 @@ static int ec_search(char *loc, char *cmd, char *arg);
 
 static int ex_range(char **num, int n, int *row)
 {
+	int no;
 	switch ((unsigned char) **num) {
 	case '.':
 		++*num;
@@ -226,7 +227,7 @@ static int ex_range(char **num, int n, int *row)
 		break;
 	case '\'':
 		if (lbuf_jump(xb, (unsigned char) *++(*num),
-				&n, row ? &n : NULL))
+				&n, row ? &n : &no))
 			return -1;
 		++*num;
 		break;
@@ -339,7 +340,7 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 			char c = ex_buf == bufs+i ? '%' : ' ';
 			c = ex_pbuf == bufs+i ? '#' : c;
 			snprintf(ln, LEN(ln), "%d %c %s", i,
-				c + (char)lbuf_modified(bufs[i].lb), bufs[i].path);
+				c + (char)bufs[i].lb->modified, bufs[i].path);
 			ex_print(ln)
 		}
 		return 0;
@@ -359,7 +360,7 @@ static int ec_buffer(char *loc, char *cmd, char *arg)
 static int ec_quit(char *loc, char *cmd, char *arg)
 {
 	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
-		if ((xquit < 0 || xgrec < 2) && lbuf_modified(bufs[i].lb)) {
+		if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified) {
 			ex_print("buffers modified")
 			return 1;
 		}
@@ -409,7 +410,7 @@ static int ec_edit(char *loc, char *cmd, char *arg)
 		bufs_switchwft(fd)
 		return 0;
 	} else if (xbufcur == xbufsmax && !strchr(cmd, '!') &&
-			lbuf_modified(bufs[xbufsmax - 1].lb)) {
+			bufs[xbufsmax - 1].lb->modified) {
 		ex_print("last buffer modified")
 		return 1;
 	} else if (len || !xbufcur || !strchr(cmd, '!')) {
@@ -535,7 +536,7 @@ static int ec_write(char *loc, char *cmd, char *arg)
 	char *ibuf;
 	int beg, end;
 	path = arg[0] ? arg : ex_path;
-	if (cmd[0] == 'x' && !lbuf_modified(xb))
+	if (cmd[0] == 'x' && !xb->modified)
 		return ec_quit("", cmd, "");
 	if (ex_region(loc, &beg, &end))
 		return 2;

@@ -136,7 +136,7 @@ char *re_read(char **src);
 struct lopt {
 	char *ins;		/* inserted text */
 	char *del;		/* deleted text */
-	int *mark, *mark_off;	/* saved marks */
+	int *mark;		/* saved marks */
 	int pos, n_ins, n_del;	/* modification location */
 	int pos_off;		/* cursor line offset */
 	int seq;		/* operation number */
@@ -146,37 +146,34 @@ struct linfo {
 	int grec;
 };
 struct lbuf {
-	char **ln;		/* buffer lines */
-	struct lopt *hist;	/* buffer history */
-	int mark[NMARKS];	/* mark lines */
-	int mark_off[NMARKS];	/* mark line offsets */
-	int ln_n;		/* number of lines in ln[] */
-	int ln_sz;		/* size of ln[] */
-	int useq;		/* current operation sequence */
-	int hist_sz;		/* size of hist[] */
-	int hist_n;		/* current history head in hist[] */
-	int hist_u;		/* current undo head in hist[] */
-	int useq_zero;		/* useq for lbuf_saved() */
-	int useq_last;		/* useq before hist[] */
+	char **ln;			/* buffer lines */
+	struct lopt *hist;		/* buffer history */
+	int mark[(NMARKS+2) * 2];	/* mark rows & offs */
+	int ln_n;			/* number of lines in ln[] */
+	int ln_sz;			/* size of ln[] */
+	int useq;			/* current operation sequence */
+	int modified;			/* modification state */
+	int hist_sz;			/* size of hist[] */
+	int hist_n;			/* current history head in hist[] */
+	int hist_u;			/* current undo head in hist[] */
 };
 #define lbuf_len(lb) lb->ln_n
 #define lbuf_s(ln) ((struct linfo*)(ln - sizeof(struct linfo)))
 #define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
 struct lbuf *lbuf_make(void);
-void lbuf_free(struct lbuf *lbuf);
-int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init);
-int lbuf_wr(struct lbuf *lbuf, int fd, int beg, int end);
-void lbuf_iedit(struct lbuf *lbuf, char *s, int beg, int end, int init);
+void lbuf_free(struct lbuf *lb);
+int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
+int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
+void lbuf_iedit(struct lbuf *lb, char *s, int beg, int end, int init);
 #define lbuf_edit(lb, s, beg, end) lbuf_iedit(lb, s, beg, end, 0)
-char *lbuf_cp(struct lbuf *lbuf, int beg, int end);
-char *lbuf_get(struct lbuf *lbuf, int pos);
+char *lbuf_cp(struct lbuf *lb, int beg, int end);
+char *lbuf_get(struct lbuf *lb, int pos);
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end);
 struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init);
-void lbuf_mark(struct lbuf *lbuf, int mark, int pos, int off);
-int lbuf_jump(struct lbuf *lbuf, int mark, int *pos, int *off);
-int lbuf_undo(struct lbuf *lbuf);
-int lbuf_redo(struct lbuf *lbuf);
-int lbuf_modified(struct lbuf *lb);
+void lbuf_mark(struct lbuf *lb, int mark, int pos, int off);
+int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off);
+int lbuf_undo(struct lbuf *lb);
+int lbuf_redo(struct lbuf *lb);
 void lbuf_saved(struct lbuf *lb, int clear);
 int lbuf_indents(struct lbuf *lb, int r);
 int lbuf_eol(struct lbuf *lb, int r);
