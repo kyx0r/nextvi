@@ -28,7 +28,7 @@ index c0d11fe4..5f1d3e1b 100644
  	{"se", ec_set},
  	{"s", ec_substitute},
 diff --git a/lbuf.c b/lbuf.c
-index ae7e2b6a..15f24f59 100644
+index 921cac86..21bb7373 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -4,6 +4,7 @@ struct lbuf *lbuf_make(void)
@@ -170,7 +170,7 @@ index ae7e2b6a..15f24f59 100644
  	lb->modified = 0;
  }
 diff --git a/vi.h b/vi.h
-index cee630c4..38102075 100644
+index 81134ac4..d0ca2026 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -148,6 +148,7 @@ struct linfo {

@@ -166,7 +166,7 @@ index 901e4b2c..9c6176fa 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index cee630c4..8ce44ca2 100644
+index 81134ac4..715d109b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -374,7 +374,7 @@ extern int xbufcur;

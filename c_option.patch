@@ -64,7 +64,7 @@ index 901e4b2c..0addbcb1 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index cee630c4..a89b6d07 100644
+index 81134ac4..ad1d51a2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -399,7 +399,7 @@ int ex_exec(const char *ln);

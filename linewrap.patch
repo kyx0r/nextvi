@@ -45,7 +45,7 @@ index c0d11fe4..d4706ba4 100644
  	{"fp", ec_setdir},
  	{"f", ec_search},
 diff --git a/lbuf.c b/lbuf.c
-index ae7e2b6a..c9a5152e 100644
+index 921cac86..6fae8eb0 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -72,25 +72,139 @@ static int linelength(char *s)
@@ -254,7 +254,7 @@ index 901e4b2c..faa96ffd 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index cee630c4..8db09e67 100644
+index 81134ac4..c6824176 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -137,6 +137,8 @@ struct lopt {

@@ -38,7 +38,7 @@ index c0d11fe4..de8bd711 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index ae7e2b6a..4031b536 100644
+index 921cac86..d4a6d565 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -354,7 +354,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
