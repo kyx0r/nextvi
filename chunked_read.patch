@@ -1,13 +1,11 @@
 diff --git a/lbuf.c b/lbuf.c
-index f064e1c3..14a27542 100644
+index ae7e2b6a..432b7fc7 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -174,20 +174,69 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
- 	return lo;
- }
+@@ -179,18 +179,67 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
  
--int lbuf_rd(struct lbuf *lbuf, int fd, int beg, int end, int init)
--{
+ int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
+ {
 -	long nr;
 -	sbuf_smake(sb, 1048575)  /* caps at 2147481600 on 32 bit */
 -	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
@@ -16,8 +14,6 @@ index f064e1c3..14a27542 100644
 -			if (sb->s_n > INT_MAX / 2)
 -				break;
 -			sbuf_extend(sb, sb->s_n * 2)
-+int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
-+{
 +	long nr, l, nins = 0, nl = 0;
 +	struct linfo *n, *cn = NULL;
 +	sbuf_smake(sb, init ? 0 : 1048575)
@@ -75,7 +71,7 @@ index f064e1c3..14a27542 100644
  		}
  	}
 -	sbuf_null(sb)
--	lbuf_iedit(lbuf, sb->s, beg, end, init);
+-	lbuf_iedit(lb, sb->s, beg, end, init);
 +	lb->ln_n = nins;
 +	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));
 +	lb->ln_sz = nins + 512;
