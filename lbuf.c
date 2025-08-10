@@ -14,10 +14,10 @@ static void lopt_done(struct lopt *lo)
 	free(lo->ins);
 }
 
-#define _lbuf_movemark(dst, at0, src, at1, pivot) \
-{ dst[at0] = src[at1]; dst[at0 + pivot] = src[at1 + pivot]; } \
+#define _lbuf_movemark(dst, at0, off0, src, at1, off1) \
+{ dst[at0] = src[at1]; dst[at0 + off0] = src[at1 + off1]; } \
 
-#define lbuf_movemark(dst, at0, src, at1) _lbuf_movemark(dst, at0, src, at1, NMARKS)
+#define lbuf_movemark(dst, at0, src, at1) _lbuf_movemark(dst, at0, NMARKS, src, at1, NMARKS)
 
 #define lbuf_loadmark(dst, at0, src0, src1) \
 { dst[at0] = src0; dst[at0 + NMARKS] = src1; } \
@@ -250,8 +250,8 @@ int lbuf_undo(struct lbuf *lb)
 	const int useq = lo->seq;
 	const int m0 = markidx(']'), m1 = markidx('[');
 	if (lb->hist_u == lb->hist_n) {
-		_lbuf_movemark(lb->tmp_mark, 0, lb->mark, m0, 2)
-		_lbuf_movemark(lb->tmp_mark, 1, lb->mark, m1, 2)
+		_lbuf_movemark(lb->tmp_mark, 0, 2, lb->mark, m0, NMARKS)
+		_lbuf_movemark(lb->tmp_mark, 1, 2, lb->mark, m1, NMARKS)
 	}
 	while (lb->hist_u && lb->hist[lb->hist_u - 1].seq == useq) {
 		lo = &lb->hist[--lb->hist_u];
@@ -281,10 +281,10 @@ int lbuf_redo(struct lbuf *lb)
 		lbuf_movemark(lb->mark, m0, lo->mark, m0)
 		lbuf_movemark(lb->mark, m1, lo->mark, m1)
 	} else {
-		_lbuf_movemark(lb->mark, m0, lb->tmp_mark, 0, 2)
-		_lbuf_movemark(lb->mark, m1, lb->tmp_mark, 1, 2)
+		_lbuf_movemark(lb->mark, m0, NMARKS, lb->tmp_mark, 0, 2)
+		_lbuf_movemark(lb->mark, m1, NMARKS, lb->tmp_mark, 1, 2)
 	}
-	lb->modified = lb->hist_u != 0;
+	lb->modified = 1;
 	return 0;
 }
 
