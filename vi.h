@@ -57,7 +57,7 @@ typedef struct sbuf {
 
 #define _sbuf_make(sb, newsz, alloc) \
 { \
-	alloc; \
+	alloc \
 	sb->s_sz = newsz; \
 	sb->s = emalloc(newsz); \
 	sb->s_n = 0; \
@@ -77,7 +77,7 @@ mem##func(sb->s + sb->s_n, x, len); \
 sb->s_n += len; \
 
 #define sbuf_smake(sb, newsz) sbuf _##sb, *sb = &_##sb; _sbuf_make(sb, newsz,)
-#define sbuf_make(sb, newsz) { _sbuf_make(sb, newsz, sb = emalloc(sizeof(*sb))) }
+#define sbuf_make(sb, newsz) { _sbuf_make(sb, newsz, sb = emalloc(sizeof(*sb));) }
 #define sbuf_free(sb) { free(sb->s); free(sb); }
 #define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
 #define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
