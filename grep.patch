@@ -15,7 +15,7 @@ index a3278fa9..361d6d94 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index 73646a4b..c45d9194 100644
+index c0d11fe4..813a7e6a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -28,7 +28,7 @@ index 73646a4b..c45d9194 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index f95a2fae..672eb81d 100644
+index 901e4b2c..9c6176fa 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -562,12 +562,12 @@ void dir_calc(char *path)
@@ -166,10 +166,10 @@ index f95a2fae..672eb81d 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c57d91a6..1e3e9b19 100644
+index cee630c4..8ce44ca2 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -376,7 +376,7 @@ extern int xbufcur;
+@@ -374,7 +374,7 @@ extern int xbufcur;
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  extern struct buf *bufs;

@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 73646a4b..f222ab86 100644
+index c0d11fe4..de8bd711 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -798,7 +798,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -799,7 +799,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -11,7 +11,7 @@ index 73646a4b..f222ab86 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -845,6 +845,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -846,6 +846,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -19,7 +19,7 @@ index 73646a4b..f222ab86 100644
  	return 0;
  }
  
-@@ -1236,7 +1237,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
+@@ -1237,7 +1238,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, idx = 0, len = strlen(ln) + 1;
@@ -28,7 +28,7 @@ index 73646a4b..f222ab86 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, &idx, arg);
  		char *ecmd = ex_pathexpand(arg);
-@@ -1249,6 +1250,8 @@ int ex_exec(const char *ln)
+@@ -1250,6 +1251,8 @@ int ex_exec(const char *ln)
  			ex_print("syntax error")
  		free(ecmd);
  	}
@@ -38,10 +38,10 @@ index 73646a4b..f222ab86 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index f064e1c3..4ce6dc48 100644
+index ae7e2b6a..4031b536 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -376,7 +376,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -354,7 +354,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
@@ -50,7 +50,7 @@ index f064e1c3..4ce6dc48 100644
  	char *s = lbuf_get(lb, i);
  	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
  	int g1, g2, _o, step;
-@@ -396,14 +396,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -374,14 +374,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				break;
  			*o = _o;
  			*r = i;
@@ -244,7 +244,7 @@ index 2a80efa7..8fe62e8c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index f95a2fae..7bed5728 100644
+index 901e4b2c..340596e6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -142,7 +142,8 @@ static void vi_drawrow(int row)
