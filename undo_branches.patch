@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 73646a4b..914be0e3 100644
+index c0d11fe4..5f1d3e1b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1132,6 +1132,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1133,6 +1133,16 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -19,7 +19,7 @@ index 73646a4b..914be0e3 100644
  static struct excmd {
  	char *name;
  	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1174,6 +1184,7 @@ static struct excmd {
+@@ -1175,6 +1185,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -28,19 +28,19 @@ index 73646a4b..914be0e3 100644
  	{"se", ec_set},
  	{"s", ec_substitute},
 diff --git a/lbuf.c b/lbuf.c
-index f064e1c3..5116b4fb 100644
+index ae7e2b6a..15f24f59 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -6,6 +6,7 @@ struct lbuf *lbuf_make(void)
- 	for (i = 0; i < LEN(lb->mark); i++)
+@@ -4,6 +4,7 @@ struct lbuf *lbuf_make(void)
+ 	memset(lb, 0, sizeof(*lb));
+ 	for (int i = 0; i < LEN(lb->mark); i++)
  		lb->mark[i] = -1;
- 	lb->useq = 1;
 +	sbuf_make(lb->rehist, 128)
  	return lb;
  }
  
-@@ -52,13 +53,39 @@ static void lbuf_loadpos(struct lbuf *lb, struct lopt *lo)
- 	lb->mark_off[markidx('*')] = lo->pos_off;
+@@ -54,13 +55,39 @@ int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off)
+ 	return 0;
  }
  
 +static void lbuf_freeleafs(struct lbuf *lb)
@@ -81,9 +81,9 @@ index f064e1c3..5116b4fb 100644
  	free(lb->hist);
  	free(lb->ln);
  	free(lb);
-@@ -140,12 +167,72 @@ static int smark[NMARKS];
- static int smark_off[NMARKS];
- static struct lopt slo = {.mark = smark, .mark_off = smark_off};
+@@ -143,12 +170,72 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
+ static int smark[NMARKS * 2] = {-1};
+ static struct lopt slo = {.mark = smark};
  
 +void lbuf_setleaf(struct lbuf *lb, int leaf)
 +{
@@ -156,7 +156,7 @@ index f064e1c3..5116b4fb 100644
  	lb->hist_n = lb->hist_u;
  	if (lb->hist_n == lb->hist_sz) {
  		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -307,11 +394,11 @@ static int lbuf_seq(struct lbuf *lb)
+@@ -292,10 +379,10 @@ int lbuf_redo(struct lbuf *lb)
  void lbuf_saved(struct lbuf *lb, int clear)
  {
  	if (clear) {
@@ -165,24 +165,23 @@ index f064e1c3..5116b4fb 100644
 +		lbuf_freeleafs(lb);
  		lb->hist_n = 0;
  		lb->hist_u = 0;
- 		lb->useq_last = lb->useq;
 +		sbuf_make(lb->rehist, 128)
  	}
- 	lb->useq_zero = lbuf_seq(lb);
+ 	lb->modified = 0;
  }
 diff --git a/vi.h b/vi.h
-index c57d91a6..3efb37ed 100644
+index cee630c4..38102075 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -148,6 +148,7 @@ struct linfo {
  struct lbuf {
- 	char **ln;		/* buffer lines */
- 	struct lopt *hist;	/* buffer history */
+ 	char **ln;			/* buffer lines */
+ 	struct lopt *hist;		/* buffer history */
 +	sbuf *rehist;		/* alternate redo timelines */
- 	int mark[NMARKS];	/* mark lines */
- 	int mark_off[NMARKS];	/* mark line offsets */
- 	int ln_n;		/* number of lines in ln[] */
-@@ -183,6 +184,8 @@ int lbuf_eol(struct lbuf *lb, int r);
+ 	int mark[NMARKS * 2];		/* mark rows & offs */
+ 	int tmp_mark[4];		/* aux mark state */
+ 	int ln_n;			/* number of lines in ln[] */
+@@ -181,6 +182,8 @@ int lbuf_eol(struct lbuf *lb, int r);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip);
