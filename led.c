@@ -321,7 +321,7 @@ static void led_printparts(sbuf *sb, int pre, int ps,
 /* read a character from the terminal */
 char *led_read(int *kmap, int c)
 {
-	static char buf[32];
+	static char buf[5];
 	int c1, c2, i, n;
 	while (!TK_INT(c)) {
 		switch (c) {

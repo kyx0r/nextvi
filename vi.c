@@ -36,7 +36,7 @@ static int vi_wsel = 1;
 static int vi_rshift;			/* row shift for vi_word */
 static int vi_arg;			/* numeric argument */
 static char vi_msg[512];		/* current message */
-static char vi_charlast[8];		/* the last character searched via f, t, F, or T */
+static char vi_charlast[5];		/* the last character searched via f, t, F, or T */
 static int vi_charcmd;			/* the character finding command */
 static int vi_ybuf;			/* current yank buffer */
 static int vi_col;			/* the column requested by | command */
@@ -354,14 +354,6 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
 	return r->col[col];
 }
 
-static int vi_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
-{
-	if (vi_charlast != cs)
-		strcpy(vi_charlast, cs);
-	vi_charcmd = cmd;
-	return lbuf_findchar(lb, cs, cmd, n, row, off);
-}
-
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
 	int i, dir;
@@ -449,7 +441,8 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	char *beg, *end;
 	if (!ln || !n)
 		return NULL;
-	beg = rstate->chrs[ren_noeol(ln, off)];
+	int o = ren_noeol(ln, off);
+	beg = rstate->chrs[o];
 	end = beg;
 	while (beg > ln && uc_kind(uc_beg(ln, beg - 1)) == 1)
 		beg = uc_beg(ln, beg - 1);
@@ -647,11 +640,15 @@ static int vi_motion(int *row, int *off)
 	mv = term_read();
 	switch (mv) {
 	case ',':
-		cnt = -cnt;
 	case ';':
 		if (!vi_charlast[0])
 			return -1;
-		if (vi_findchar(xb, vi_charlast, vi_charcmd, cnt, row, off))
+		if (mv == ',')
+			mv = vi_charcmd == 'F' || vi_charcmd == 'T'
+				? tolower(vi_charcmd) : toupper(vi_charcmd);
+		else
+			mv = vi_charcmd;
+		if (lbuf_findchar(xb, vi_charlast, mv, cnt, row, off))
 			return -1;
 		break;
 	case 'h':
@@ -667,9 +664,9 @@ static int vi_motion(int *row, int *off)
 	case ' ':
 	case 127:
 	case TK_CTL('h'):
-		dir = mv == ' ' ? +1 : -1;
 		if (!lbuf_get(xb, *row))
 			break;
+		dir = mv == ' ' ? +1 : -1;
 		mark = ren_position(lbuf_get(xb, *row))->n;
 		for (i = 0; i < cnt; i++, *off += dir)
 			if (*off + dir < 0 || *off + dir >= mark)
@@ -681,7 +678,9 @@ static int vi_motion(int *row, int *off)
 	case 'T':
 		if (!(cs = led_read(&xkmap, term_read())))
 			return -1;
-		if (vi_findchar(xb, cs, mv, cnt, row, off))
+		strcpy(vi_charlast, cs);
+		vi_charcmd = mv;
+		if (lbuf_findchar(xb, cs, mv, cnt, row, off))
 			return -1;
 		break;
 	case 'b':

@@ -311,42 +311,24 @@ int lbuf_indents(struct lbuf *lb, int r)
 	return *ln ? o : o - 2;
 }
 
-static int uc_nextdir(char **s, char *beg, int dir)
-{
-	if (dir < 0) {
-		if (*s == beg)
-			return 1;
-		*s = uc_beg(beg, (*s) - 1);
-	} else {
-		*s += uc_len(s[0]);
-		if (!(*s)[0])
-			return 1;
-	}
-	return 0;
-}
-
 int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 {
 	char *ln = lbuf_get(lb, *row);
-	char *s;
 	int c1, c2, l, dir = (cmd == 'f' || cmd == 't') ? +1 : -1;
 	if (!ln)
 		return 1;
-	if (n < 0)
-		dir = -dir;
-	if (n < 0)
-		n = -n;
-	s = uc_chr(ln, *off);
-	while (n > 0 && !uc_nextdir(&s, ln, dir)) {
-		uc_code(c1, s, l)
-		uc_code(c2, cs, l)
+	ren_state *r = ren_position(ln);
+	uc_code(c2, cs, l)
+	*off += dir + (cmd == 't') - (cmd == 'T');
+	while (n > 0 && *off >= 0 && *off < r->n) {
+		uc_code(c1, r->chrs[*off], l)
 		if (c1 == c2)
 			n--;
+		if (n > 0)
+			*off += dir;
 	}
 	if (!n && (cmd == 't' || cmd == 'T'))
-		uc_nextdir(&s, ln, -dir);
-	if (!n)
-		*off = uc_off(ln, s - ln);
+		*off = MIN(MAX(0, *off - dir), r->n-1);
 	return n != 0;
 }
 
@@ -356,7 +338,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	int r0 = *r, o0 = *o;
 	int offs[re->grpcnt * 2], i = r0;
 	char *s = lbuf_get(lb, i);
-	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
+	int off = skip >= 0 && s ? uc_chr(s, o0 + skip) - s : 0;
 	int g1, g2, _o, step;
 	for (; i >= 0 && i < ln_n; i += dir) {
 		_o = 0;
