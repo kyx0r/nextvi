@@ -393,7 +393,7 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 	rstate--;
 }
 
-void led_modeswap()
+void led_modeswap(void)
 {
 	preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
 	preserve(int, ftidx, ftidx)
