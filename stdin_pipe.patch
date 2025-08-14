@@ -131,10 +131,10 @@ index aad65b80..9733940e 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 901e4b2c..bdd03787 100644
+index 90692bfe..d19642a2 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1864,7 +1864,8 @@ static int setup_signals(void)
+@@ -1868,7 +1868,8 @@ static int setup_signals(void)
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -144,7 +144,7 @@ index 901e4b2c..bdd03787 100644
  		return 0;
  	return 1;
  }
-@@ -1882,7 +1883,8 @@ int main(int argc, char *argv[])
+@@ -1886,7 +1887,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -155,10 +155,10 @@ index 901e4b2c..bdd03787 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 81134ac4..7f2d45f2 100644
+index c17d9ead..dcfb8bd7 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -471,6 +471,7 @@ void vi_regput(int c, const char *s, int ln);
+@@ -472,6 +472,7 @@ void vi_regput(int c, const char *s, int ln);
  /* file system */
  void dir_calc(char *path);
  /* global variables */

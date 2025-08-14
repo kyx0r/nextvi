@@ -125,10 +125,10 @@ index c0d11fe4..f7df6bdf 100644
  	return 0;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 921cac86..09b3b865 100644
+index 46c31a10..c0fee499 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -350,11 +350,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -332,11 +332,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -140,9 +140,9 @@ index 921cac86..09b3b865 100644
 -	int offs[re->grpcnt * 2], i = r0;
 +	int offs[re->rs ? re->rs->grpcnt * 2 : 2], i = r0;
  	char *s = lbuf_get(lb, i);
- 	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
+ 	int off = skip >= 0 && s ? uc_chr(s, o0 + skip) - s : 0;
  	int g1, g2, _o, step;
-@@ -362,7 +362,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -344,7 +344,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  		_o = 0;
  		step = 0;
  		s = lb->ln[i];
@@ -283,10 +283,10 @@ index b4c3ab3a..fbf025db 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 901e4b2c..2915eaa5 100644
+index 90692bfe..0de668b0 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -502,7 +502,7 @@ void vi_regput(int c, const char *s, int ln)
+@@ -495,7 +495,7 @@ void vi_regput(int c, const char *s, int ln)
  	vi_regputraw(c, s, ln, isupper(c));
  }
  
@@ -295,7 +295,7 @@ index 901e4b2c..2915eaa5 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -542,7 +542,7 @@ void dir_calc(char *path)
+@@ -535,7 +535,7 @@ void dir_calc(char *path)
  				memcpy(cpath, ptrs[i], pathlen + len);
  				plen[i++] = pathlen + len;
  			} else if (ret >= 0 && S_ISREG(statbuf.st_mode))
@@ -305,7 +305,7 @@ index 901e4b2c..2915eaa5 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 81134ac4..afc7a20b 100644
+index c17d9ead..101d0259 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -123,12 +123,23 @@ typedef struct {
@@ -341,7 +341,7 @@ index 81134ac4..afc7a20b 100644
  			int *o, int ln_n, int skip);
  #define lbuf_dedup(lb, str, n) \
  { for (int i = 0; i < lbuf_len(lb);) { \
-@@ -401,7 +412,7 @@ void ex_cprint(char *line, int r, int c, int ln);
+@@ -402,7 +413,7 @@ void ex_cprint(char *line, int r, int c, int ln);
  #define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -350,7 +350,7 @@ index 81134ac4..afc7a20b 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -501,9 +512,9 @@ extern int xpr;
+@@ -502,9 +513,9 @@ extern int xpr;
  extern int xsep;
  extern int xlim;
  extern int xseq;

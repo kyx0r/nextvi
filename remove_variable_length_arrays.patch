@@ -38,19 +38,19 @@ index c0d11fe4..de8bd711 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 921cac86..d4a6d565 100644
+index 46c31a10..007a6962 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -354,7 +354,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -336,7 +336,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
 -	int offs[re->grpcnt * 2], i = r0;
 +	int *offs = emalloc(re->grpcnt * 2 * sizeof(int)), i = r0;
  	char *s = lbuf_get(lb, i);
- 	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
+ 	int off = skip >= 0 && s ? uc_chr(s, o0 + skip) - s : 0;
  	int g1, g2, _o, step;
-@@ -374,14 +374,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -356,14 +356,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				break;
  			*o = _o;
  			*r = i;
@@ -70,7 +70,7 @@ index 921cac86..d4a6d565 100644
  }
  
 diff --git a/led.c b/led.c
-index 868eedae..eb1968e4 100644
+index 051fb919..fd897aff 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -244,7 +244,7 @@ index 2a80efa7..8fe62e8c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 901e4b2c..340596e6 100644
+index 90692bfe..98683539 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -142,7 +142,8 @@ static void vi_drawrow(int row)
@@ -266,7 +266,7 @@ index 901e4b2c..340596e6 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1349,10 +1352,11 @@ void vi(int init)
+@@ -1348,10 +1351,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -279,7 +279,7 @@ index 901e4b2c..340596e6 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1490,7 +1494,7 @@ void vi(int init)
+@@ -1489,7 +1493,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -288,7 +288,7 @@ index 901e4b2c..340596e6 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1500,10 +1504,11 @@ void vi(int init)
+@@ -1499,10 +1503,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -301,7 +301,7 @@ index 901e4b2c..340596e6 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1511,6 +1516,7 @@ void vi(int init)
+@@ -1510,6 +1515,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
