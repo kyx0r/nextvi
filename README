@@ -119,6 +119,7 @@ VI NORMAL
                    Execute a last executed register macro # times
      [#].          Repeat last normal command # times
      [#]v.         Repeat last normal command moving down across # lines
+     Q             Enter ex mode
      :             Enter ex prompt
      [#]!{arg}     Enter pipe ex prompt based on # or arg region
      vv            Enter ex prompt with the last line from history buffer b-1
@@ -965,19 +966,19 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 510 vi.h     |  definitions/aux     |
+     | 511 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 306 conf.c   |  hl/ft/td config     |
      | 342 term.c   |  low level IO        |
      | 397 ren.c    |  positioning/syntax  |
-     | 517 lbuf.c   |  file/line buffer    |
+     | 499 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
-     | 678 led.c    |  insert mode/output  |
+     | 683 led.c    |  insert mode/output  |
      | 748 regex.c  |  extended RE         |
      | 1291 ex.c    |  ex options/commands |
-     | 1917 vi.c    |  normal mode/general |
-     | 6833 total   |  wc -l *.c|sort      |
+     | 1921 vi.c    |  normal mode/general |
+     | 6824 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1048,4 +1049,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                    August 9, 2025                    Linux 6.16.0
+Linux 6.16.0                    August 14, 2025                   Linux 6.16.0
