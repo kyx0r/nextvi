@@ -11,21 +11,17 @@ index 2d2e86b9..fb944f70 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 921cac86..e3687af4 100644
+index 46c31a10..757a7f83 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -350,19 +350,30 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -332,19 +332,30 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
 -int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 -			int *o, int ln_n, int skip)
 +struct lsparams
- {
--	int r0 = *r, o0 = *o;
--	int offs[re->grpcnt * 2], i = r0;
--	char *s = lbuf_get(lb, i);
--	int off = skip >= 0 && *uc_chr(s, o0 + skip) ? uc_chr(s, o0 + skip) - s : 0;
++{
 +	struct lbuf *lb;
 +	rset *re;
 +	int dir;
@@ -36,12 +32,16 @@ index 921cac86..e3687af4 100644
 +};
 +
 +static void *lsearch(void *arg)
-+{
+ {
+-	int r0 = *r, o0 = *o;
+-	int offs[re->grpcnt * 2], i = r0;
+-	char *s = lbuf_get(lb, i);
+-	int off = skip >= 0 && s ? uc_chr(s, o0 + skip) - s : 0;
 +	struct lsparams *a = arg;
 +	int r0 = *a->r, o0 = *a->o;
 +	int offs[a->re->grpcnt * 2], i = r0;
 +	char *s = lbuf_get(a->lb, i);
-+	int off = a->skip > 0 && *uc_chr(s, o0 + 1) ? uc_chr(s, o0 + 1) - s : 0;
++	int off = a->skip >= 0 && s ? uc_chr(s, o0 + a->skip) - s : 0;
  	int g1, g2, _o, step;
 -	for (; i >= 0 && i < ln_n; i += dir) {
 +	for (; i >= 0 && i < a->ln_n; i += a->dir) {
@@ -54,7 +54,7 @@ index 921cac86..e3687af4 100644
  				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
-@@ -370,19 +381,69 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -352,19 +363,69 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				continue;
  			}
  			_o += uc_off(s + step, off + g1 - step);
@@ -175,7 +175,7 @@ index bc22a958..130772b3 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 901e4b2c..58106988 100644
+index 90692bfe..9634445a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -187,7 +187,7 @@ index 901e4b2c..58106988 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 81134ac4..bba3f27b 100644
+index c17d9ead..23255d1a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -248,7 +248,8 @@ void syn_addhl(char *reg, int id, int reload);
