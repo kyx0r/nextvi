@@ -393,6 +393,21 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 	rstate--;
 }
 
+void led_modeswap()
+{
+	preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
+	preserve(int, ftidx, ftidx)
+	if (xvis & 4)
+		ex();
+	else {
+		syn_setft(ex_ft);
+		vi(1);
+	}
+	xquit = xquit > 0 ? 0 : xquit;
+	restore(xvis)
+	restore(ftidx)
+}
+
 /* read a line from the terminal */
 static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 	int ai_max, int *key, int *kmap, int orow, int lsh)
@@ -594,17 +609,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 				led_redraw(sb->s, 0, orow, lsh);
 			continue;
 		case TK_CTL('o'):;
-			preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
-			preserve(int, ftidx, ftidx)
-			if (xvis & 4)
-				ex();
-			else {
-				syn_setft(ex_ft);
-				vi(1);
-			}
-			xquit = xquit > 0 ? 0 : xquit;
-			restore(xvis)
-			restore(ftidx)
+			led_modeswap();
 			continue;
 		default:
 			if (c == '\n' || TK_INT(c))

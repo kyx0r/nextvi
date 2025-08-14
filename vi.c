@@ -1718,6 +1718,11 @@ void vi(int init)
 			case 'R':
 				ex_exec("reg");
 				break;
+			case 'Q':
+				term_pos(xrow - xtop, 0);
+				led_modeswap();
+				vi_mod |= 1;
+				break;
 			case 'Z':
 				k = term_read();
 				if (k == 'Z')
