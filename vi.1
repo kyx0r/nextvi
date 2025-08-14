@@ -1,4 +1,4 @@
-.Dd Aug  9, 2025
+.Dd Aug 14, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -213,6 +213,8 @@ Execute a last executed register macro # times
 Repeat last normal command # times
 .It Cm [\fI#\fP]v.
 Repeat last normal command moving down across # lines
+.It Cm Q
+Enter ex mode
 .It Cm \&:
 Enter ex prompt
 .It Cm [\fI#\fP]!{\fIarg\fP}
@@ -1348,19 +1350,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 510 vi.h | definitions/aux
+ 511 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  306 conf.c | hl/ft/td config
  342 term.c | low level IO
  397 ren.c | positioning/syntax
- 517 lbuf.c | file/line buffer
+ 499 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
- 678 led.c | insert mode/output
+ 683 led.c | insert mode/output
  748 regex.c | extended RE
  1291 ex.c | ex options/commands
- 1917 vi.c | normal mode/general
- 6833 total | wc -l *.c\(basort
+ 1921 vi.c | normal mode/general
+ 6824 total | wc -l *.c\(basort
 _
 .TE
 .
