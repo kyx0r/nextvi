@@ -395,8 +395,7 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 
 void led_modeswap(void)
 {
-	preserve(int, xvis, xvis & 4 ? xvis & ~4 : xvis | 4)
-	preserve(int, ftidx, ftidx)
+	preserve(int, xvis, xvis ^= 4;)
 	if (xvis & 4)
 		ex();
 	else {
@@ -405,7 +404,6 @@ void led_modeswap(void)
 	}
 	xquit = xquit > 0 ? 0 : xquit;
 	restore(xvis)
-	restore(ftidx)
 }
 
 /* read a line from the terminal */
@@ -557,7 +555,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 					sug = suggestsb->s;
 					pac_:
 					syn_setft("/ac");
-					preserve(int, xtd, 2)
+					preserve(int, xtd, xtd = 2;)
 					for (int left = 0; r < xrows; r++) {
 						RS(2, led_crender(sug, r, 0, left, left+xcols))
 						left += xcols;
@@ -574,10 +572,10 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 			lbuf_dedup(tempbufs[0].lb, sb->s + pre, sb->s_n - pre)
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s + pre);
-			preserve(struct buf*, ex_pbuf, ex_pbuf)
-			preserve(struct buf*, ex_buf, ex_buf)
-			preserve(int, texec, texec == '@' ? 0 : texec)
-			preserve(int, xquit, 0)
+			preserve(struct buf*, ex_pbuf,)
+			preserve(struct buf*, ex_buf,)
+			preserve(int, texec, if (texec == '@') texec = 0;)
+			preserve(int, xquit, xquit = 0;)
 			temp_switch(0);
 			vi(1);
 			temp_switch(0);
@@ -633,7 +631,7 @@ void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist)
 	vi_lncol = 0;
 	if (insert)
 		sbuf_str(sb, insert)
-	preserve(int, xtd, +2)
+	preserve(int, xtd, xtd = 2;)
 	led_line(sb, ps, n, "", 0, -1, key, kmap, 0, 0);
 	restore(xtd)
 	if (*key == '\n' && hist) {

@@ -270,6 +270,11 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 				*o2 = xoff;
 			else if (o1)
 				*o1 = xoff;
+			char *ln = lbuf_get(xb, vaddr ? *beg : xrow);
+			if (ln && rstate->s == ln)
+				xleft = rstate->pos[MIN(xoff, rstate->n - 1)];
+			else if (ln && rstates[1].s == ln)
+				xleft = rstates[1].pos[MIN(xoff, rstates[1].n - 1)];
 		} else {
 			skip:
 			if (vaddr++ % 2)
@@ -395,7 +400,7 @@ int ex_edit(const char *path, int len)
 		return 1;
 	}
 	bufs_switch(bufs_open(path, len));
-	readfile(/**/, 1)
+	readfile(, 1)
 	return 0;
 }
 
@@ -1086,7 +1091,7 @@ static int ec_regprint(char *loc, char *cmd, char *arg)
 {
 	static char buf[5] = "  ";
 	xleft = (xcols / 2) * (*arg ? atoi(arg) : 0);
-	preserve(int, xtd, 2)
+	preserve(int, xtd, xtd = 2;)
 	for (int i = 1; i < LEN(xregs); i++) {
 		if (xregs[i] && i != tolower(xpr)) {
 			*buf = i;

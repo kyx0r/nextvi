@@ -245,7 +245,7 @@ static struct ftmap {
 	rset *rs;
 } ftmap[NFTS];
 static int ftmidx;
-int ftidx;
+static int ftidx;
 
 static rset *syn_ftrs;
 static int last_scdir;

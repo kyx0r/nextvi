@@ -21,7 +21,7 @@ files and thus is never static.
 /* ease up ridiculous global stuffing */
 #define preserve(type, name, value) \
 type tmp##name = name; \
-name = value; \
+value \
 
 #define restore(name) \
 name = tmp##name; \
@@ -234,7 +234,6 @@ void dir_init(void);
 #define SYN_BGSET(a)	((a) & 0x20ff00)
 #define SYN_FG(a)	((a) & 0xff)
 #define SYN_BG(a)	(((a) >> 8) & 0xff)
-extern int ftidx;
 extern int syn_reload;
 extern int syn_blockhl;
 char *syn_setft(char *ft);
@@ -311,10 +310,10 @@ void term_back(int c);
 #define term_dec() ibuf_pos--; icmd_pos--;
 #define term_exec(s, n, type) \
 { \
-	preserve(int, ibuf_cnt, ibuf_cnt) \
-	preserve(int, ibuf_pos, ibuf_cnt) \
+	preserve(int, ibuf_cnt,) \
+	preserve(int, ibuf_pos, ibuf_pos = ibuf_cnt;) \
 	term_push(s, n); \
-	preserve(int, texec, type) \
+	preserve(int, texec, texec = type;) \
 	tn = 0; \
 	vi(0); \
 	tn = 0; \
@@ -355,7 +354,7 @@ void led_render(char *s0, int cbeg, int cend);
 		term_commit(); \
 } \
 
-#define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, /**/)
+#define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end,)
 #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
@@ -399,7 +398,8 @@ void temp_pos(int i, int row, int off, int top);
 int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 void ex_cprint(char *line, int r, int c, int ln);
-#define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
+#define ex_print(line) \
+{ preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, -1, 0, 1)); restore(xleft) }
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);

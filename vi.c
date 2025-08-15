@@ -99,7 +99,7 @@ static void vi_drawmsg(void)
 	if (vi_msg[0]) {
 		syn_blockhl = 0;
 		syn_setft("/-");
-		preserve(int, xtd, 2)
+		preserve(int, xtd, xtd = 2;)
 		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
 		restore(xtd)
 		syn_setft(ex_ft);
@@ -142,7 +142,7 @@ static void vi_drawrow(int row)
 			vi_rshift = 0;
 		if (row != xrow+1 || !c || *c == '\n')
 			goto skip;
-		char tmp[xcols+3], snum[100];
+		char tmp[xcols+3], snum[32];
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
@@ -157,9 +157,9 @@ static void vi_drawrow(int row)
 		} else
 			vi_drawnum(lbuf_wordend(xb, i1, -2, &nrow, &noff))
 		tmp[ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol] = *vi_word;
-		preserve(int, xorder, 0)
-		preserve(int, syn_blockhl, 0)
-		preserve(int, xtd, dir_context(c) * 2)
+		preserve(int, xorder, xorder = 0;)
+		preserve(int, syn_blockhl, syn_blockhl = 0;)
+		preserve(int, xtd, xtd = dir_context(c) * 2;)
 		vi_rshift = (row != xtop + xrows-1);
 		syn_setft("/#");
 		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
@@ -175,7 +175,7 @@ static void vi_drawrow(int row)
 	if (!s)
 		s = row ? ch : ch+1;
 	else if (lnnum) {
-		char tmp[100], tmp1[100], *p;
+		char tmp[32], tmp1[32], *p;
 		c = tmp, i = 0, i1 = 0;
 		if (lnnum == 1 || lnnum & 2) {
 			c = itoa(row+1-vi_rshift, tmp);
@@ -194,7 +194,7 @@ static void vi_drawrow(int row)
 		memset(c, ' ', l1 - (c - tmp));
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
-		preserve(int, syn_blockhl, 0)
+		preserve(int, syn_blockhl, syn_blockhl = 0;)
 		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
@@ -957,7 +957,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 static void vi_pipe(int r1, int r2)
 {
 	int mlen;
-	char region[100], *p = region;
+	char region[32], *p = region;
 	if (r1 == r2 && !vi_arg)
 		*p++ = '.';
 	else {
@@ -1224,7 +1224,7 @@ static void vc_execute(int cmd)
 
 static void vi_argcmd(int arg, char cmd)
 {
-	char str[100];
+	char str[32];
 	char *cs = itoa(arg, str);
 	*cs = cmd;
 	term_push(str, cs - str + 1);
