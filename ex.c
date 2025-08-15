@@ -270,6 +270,11 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 				*o2 = xoff;
 			else if (o1)
 				*o1 = xoff;
+			char *ln = lbuf_get(xb, vaddr ? *beg : xrow);
+			if (ln && rstate->s == ln)
+				xleft = rstate->pos[MIN(xoff, rstate->n - 1)];
+			else if (ln && rstates[1].s == ln)
+				xleft = rstates[1].pos[MIN(xoff, rstates[1].n - 1)];
 		} else {
 			skip:
 			if (vaddr++ % 2)

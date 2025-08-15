@@ -399,7 +399,7 @@ void temp_pos(int i, int row, int off, int top);
 int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 void ex_cprint(char *line, int r, int c, int ln);
-#define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
+#define ex_print(line) { xleft = 0; RS(2, ex_cprint(line, -1, 0, 1)) }
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
