@@ -1,4 +1,4 @@
-.Dd Aug 14, 2025
+.Dd Aug 17, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -764,8 +764,8 @@ end with <;>.
 :g/int/g/;$/& A has a semicolon
 
 Example: extract/print data enclosed in "()"
-:g/\e(.+\e)/;0;/\e(.+\e)/\e:.;.+1k a\e:se grp=2\e:;/\e)*(\e))/\e:
-se nogrp\e:k s\e:.;'a;'sp
+:g/\e(.+\e)/;0;/\e(.+\e)/\e:.;.+1k a\e:grp 2\e:;/\e)*(\e))/\e:
+grp 0\e:k s\e:.;'a;'sp
 .Ed
 
 .It Cm [\fIrange\fP]g!{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
@@ -871,19 +871,6 @@ Undo # times or all with $
 .It Cm rd[\fI# $\fP]
 Redo # times or all with $
 
-.It Cm se{\fIexp\fP}
-Set ex option variable
-.Bd -literal
-Example: set using implications
-:se hll
-:se nohll
-Example: set using numeric values
-:se hll=1
-:se hll=0
-Example: set using ascii values
-:se hll=a
-.Ed
-
 .It Cm [\fIrange\fP]s{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIstr\fP}[\fI*\fP][\fIopts\fP]
 Substitute
 .Bd -literal
@@ -974,11 +961,8 @@ Example: exclude .git and submodule folders
 No argument disables the filter.
 .Ed
 
-.It Cm reg[\fIhscroll\fP]
+.It Cm reg
 Print registers and their contents
-.Bd -literal
-Printing position is determined by xcols / 2 * [hscroll]
-.Ed
 
 .It Cm bx[\fI#\fP]
 Set max number of buffers allowed
@@ -1039,15 +1023,22 @@ Example: disable default placeholders in conf.c
 .El
 .
 .Sh EX OPTIONS
+.Bd -literal -compact
+Ex options are ex commands designed to alter global variables.
+Values hold a signed integer. Values may represent a character.
+Default value is specified in val=* as part of an argument notation.
+No argument sets the value to 1, unless stated otherwise.
+.Ed
+
 .Bl -tag -width Ds -compact
 .
-.It Cm ai=1
+.It Cm ai[val=1]
 Indent new lines
 .
-.It Cm ic=1
+.It Cm ic[val=1]
 Ignore case in regular expressions
 
-.It Cm ish=0
+.It Cm ish[val=0]
 Interactive shell
 .Bd -literal
 Run every <!> command through an interactive shell.
@@ -1065,7 +1056,7 @@ Precondition 3:
 	for <!> commands to return expected results.
 .Ed
 
-.It Cm grp=0
+.It Cm grp[val=0]
 Regex search group
 .Bd -literal
 Defines a target search group for any regex search operation.
@@ -1073,45 +1064,45 @@ This becomes necessary when the result of regex search is to
 be based on some group rather than default match group.
 
 Example: ignore tabs at the start of the line
-:se grp=2:1,$f/^[	]+(.+):se nogrp
+:grp 2:1,$f/^[	]+(.+):grp 0
 
 The value of grp is calculated using (group number * 2).
 .Ed
 
 .
-.It Cm hl=1
+.It Cm hl[val=1]
 Highlight text based on rules defined in
 .Pa conf.c
 .
-.It Cm hlr=0
+.It Cm hlr[val=0]
 Highlight text in reverse direction
 .
-.It Cm hll=0
+.It Cm hll[val=0]
 Highlight current line based on filetype hl
 .
-.It Cm hlp=0
+.It Cm hlp[val=0]
 Highlight "[]" "()" "{}" pairs based on filetype hl
 .
-.It Cm hlw=0
+.It Cm hlw[val=0]
 Highlight current word based on filetype hl
 .
-.It Cm led=1
+.It Cm led[val=1]
 Enable all terminal output
 
-.It Cm vis=0
+.It Cm vis[val=0]
 Control startup flags
 .Bd -literal
 Example: disable :e message in ex mode
-:se vis=12
+:vis 12
 Example: disable :e message in vi mode
-:se vis=8
+:vis 8
 Example: enable raw ex mode
-:se vis=6
+:vis 6
 Example: disable raw ex mode
-:se vis=4
+:vis 4
 .Ed
 
-.It Cm mpt=0
+.It Cm mpt[val=0]
 Control vi prompts
 .Bd -literal
 When set to 0 after an ex command is called from vi, disables
@@ -1119,20 +1110,20 @@ the "[any key to continue]" prompt.
 If mpt is negative, the prompt will remain disabled.
 .Ed
 
-.It Cm order=1
+.It Cm order[val=1]
 Reorder characters based on rules defined in
 .Pa conf.c
 .
-.It Cm shape=1
+.It Cm shape[val=1]
 Perform Arabic script letter shaping
 .
-.It Cm pac=0
+.It Cm pac[val=0]
 Print autocomplete suggestions on the fly
 .
-.It Cm tbs=8
+.It Cm tbs[val=8]
 Number of spaces used to represent a tab
 .
-.It Cm td=1
+.It Cm td[val=1]
 Current text direction context
 
 This option accepts four meaningful values:
@@ -1153,7 +1144,7 @@ defaulting to right-to-left
 Exclusively right-to-left
 .El
 
-.It Cm pr=0
+.It Cm pr[val=0]
 Print register
 .Bd -literal
 Set a special register using a character or a number.
@@ -1162,23 +1153,23 @@ be stored in the register.
 If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
 Example: paste current buffer list exactly like from :b command
-:se pr=A:ya! a: b:pu a
+:pr A:ya! a: b:pu a
 Example: store a line printed with :p
-:se pr=A:ya! a:p
+:pr A:ya! a:p
 .Ed
 
-.It Cm sep=:
+.It Cm sep[val=:]
 Ex separator
 .Bd -literal
 Set Ex command separator character.
 Changing default <:> separator will break some built-in commands/macros.
 Example: set separator to <|>
-:se sep=|
+:sep |
 Example: disable separator
-:se nosep
+:sep 0
 .Ed
 
-.It Cm lim=-1
+.It Cm lim[val=-1]
 Line length render limit
 .Bd -literal
 Set render cutoff length for non cursor lines in vi and all
@@ -1186,14 +1177,14 @@ lines in ex mode.
 Improves redraw performance when editing a file containing one
 or many long lines (1MB+ per line).
 Example: reasonable value
-:se lim=5000
+:lim 5000
 Example: render only the cursor line
-:se lim=0
+:lim 0
 Example: disable the limit
-:se lim=-1
+:lim -1
 .Ed
 
-.It Cm seq=1
+.It Cm seq[val=1]
 Control Undo/Redo
 .Bd -literal
 When seq is 0, multiple distinct operations undo/redo in a single
@@ -1201,9 +1192,16 @@ step.
 To optimize resource use under heavy workloads, undo/redo tracking
 can be disabled by setting seq to a negative value.
 Example: test undo/redo operations in a single step
-:&ocontrol test:se noseq:&a step1:&a step2:&a step3:se seq
+:&ocontrol test:seq 0:&a step1:&a step2:&a step3:seq
 Example: completely disable undo/redo
-:se seq=-1
+:seq -1
+.Ed
+
+.It Cm [hscroll]left[val=0]
+Control horizontal scroll
+.Bd -literal
+No argument sets the value to 0.
+hscroll computes the value using: xcols / 2 * hscroll
 .Ed
 .
 .El
@@ -1232,7 +1230,7 @@ Setup @ macro in register <a>
 @a macro creates <{> and closing <}> below the cursor leaving
 cursor in insert mode in between the braces.
 
-.It Cm export EXINIT='se td=2:se order=0:se lim=5000'
+.It Cm export EXINIT='td 2:order 0:lim 5000'
 Set ex options for optimal long line performance
 .El
 .
@@ -1350,19 +1348,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 511 vi.h | definitions/aux
+ 509 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 306 conf.c | hl/ft/td config
+ 295 conf.c | hl/ft/td config
  342 term.c | low level IO
  397 ren.c | positioning/syntax
  499 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
- 683 led.c | insert mode/output
+ 680 led.c | insert mode/output
  748 regex.c | extended RE
- 1291 ex.c | ex options/commands
+ 1285 ex.c | ex options/commands
  1921 vi.c | normal mode/general
- 6824 total | wc -l *.c\(basort
+ 6804 total | wc -l *.c\(basort
 _
 .TE
 .
