@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 051fb919..7f926a1c 100644
+index a48ea92..51d040f 100644
 --- a/led.c
 +++ b/led.c
 @@ -281,7 +281,7 @@ static int led_lastword(char *s)
@@ -24,7 +24,7 @@ index 051fb919..7f926a1c 100644
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
  	sbufn_cut(sb, psn)
  	rstate -= 2;
-@@ -416,7 +418,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
+@@ -414,7 +416,8 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
@@ -34,7 +34,7 @@ index 051fb919..7f926a1c 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -608,6 +611,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
+@@ -605,6 +608,20 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
  			else
  				led_redraw(sb->s, 0, orow, lsh);
  			continue;
@@ -55,7 +55,7 @@ index 051fb919..7f926a1c 100644
  		case TK_CTL('o'):;
  			led_modeswap();
  			continue;
-@@ -623,6 +640,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
+@@ -620,6 +637,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index 051fb919..7f926a1c 100644
  	*key = c;
  }
  
-@@ -656,7 +674,7 @@ void led_input(sbuf *sb, char **post, int postn, int row, int lsh)
+@@ -653,7 +671,7 @@ void led_input(sbuf *sb, char **post, int postn, int row, int lsh)
  			return;
  		}
  		sbuf_chr(sb, key)
@@ -73,7 +73,7 @@ index 051fb919..7f926a1c 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 90692bfe..abb4b1f5 100644
+index acaa67b..96c8731 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -886,6 +886,8 @@ static void vi_indents(char *ln, int *l)

@@ -1,10 +1,10 @@
 diff --git a/conf.c b/conf.c
-index a3278fa9..361d6d94 100644
+index baeb665..67095df 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -247,6 +247,11 @@ q!?|reg|rd?|w[!q]?!?|u[czb]?|se?|x!?|ya!?|cm!?|cd?)?",
- 	{"/ex", "\\\\(.)|(:)#", {8 | SYN_BD, 3, 12}},
- 	{"/ex", "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", {15 | SYN_BD}},
+@@ -236,6 +236,11 @@ left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[tdp]|[ \t]?([?/]
+ 	{"/ex", "\\\\(.)|(:)#", A(AY1 | SYN_BD, YE, BL1)},
+ 	{"/ex", "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", A(WH1 | SYN_BD)},
  
 +	/* grep buffer */
 +	/* I don't feel like making new ->func index so reuse 3 here */
@@ -12,10 +12,10 @@ index a3278fa9..361d6d94 100644
 +	{"/grep", NULL, {7 | SYN_BGMK(9)}, {0}, 0, 3},
 +
  	/* status bar (is never '\n' terminated) */
- 	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
+ 	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index c0d11fe4..813a7e6a 100644
+index 00b901b..9c3d575 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -28,7 +28,7 @@ index c0d11fe4..813a7e6a 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 90692bfe..8075ed3f 100644
+index acaa67b..c89c7e0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -555,12 +555,12 @@ void dir_calc(char *path)
@@ -166,10 +166,10 @@ index 90692bfe..8075ed3f 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c17d9ead..0659de29 100644
+index f723a8a..743eb7b 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -375,7 +375,7 @@ extern int xbufcur;
+@@ -378,7 +378,7 @@ extern int xbufcur;
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  extern struct buf *bufs;

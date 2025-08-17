@@ -1,5 +1,5 @@
 diff --git a/cbuild.sh b/cbuild.sh
-index 2d2e86b9..fb944f70 100755
+index 2d2e86b..fb944f7 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -47,6 +47,7 @@ CFLAGS="\
@@ -11,7 +11,7 @@ index 2d2e86b9..fb944f70 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 46c31a10..757a7f83 100644
+index 46c31a1..757a7f8 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -332,19 +332,30 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -132,7 +132,7 @@ index 46c31a10..757a7f83 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index b4c3ab3a..6928255b 100644
+index b4c3ab3..6928255 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -381,7 +381,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -157,7 +157,7 @@ index b4c3ab3a..6928255b 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index bc22a958..130772b3 100644
+index bc22a95..130772b 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -175,7 +175,7 @@ index bc22a958..130772b3 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 90692bfe..9634445a 100644
+index acaa67b..4fba524 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -187,10 +187,10 @@ index 90692bfe..9634445a 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index c17d9ead..23255d1a 100644
+index f723a8a..f41a169 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -248,7 +248,8 @@ void syn_addhl(char *reg, int id, int reload);
+@@ -251,7 +251,8 @@ void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */
