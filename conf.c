@@ -6,7 +6,7 @@ int conf_mode = 0600;
 #define FTGEN(ft) static char ft_##ft[] = #ft;
 #define FT(ft) ft_##ft
 FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(msg)
-FTGEN(mk) FTGEN(sh) FTGEN(py) FTGEN(js) 
+FTGEN(mk) FTGEN(sh) FTGEN(py) FTGEN(js)
 FTGEN(html) FTGEN(diff)
 
 struct filetype fts[] = {
@@ -223,7 +223,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{"/ac", "[^ \t-/:-@[-^{-~]+(?:(\n$)|\n)|\n|([^\n]+(\n))",
 		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
 	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
-	
+
 	/* ex mode (is never '\n' terminated) */
 	{"/ex", "^[^:].*$", A(AY1 | SYN_BD)},
 	{"/ex", "^.*$", A(AY1 | SYN_BD | SYN_SO)},

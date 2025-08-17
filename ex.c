@@ -1095,7 +1095,7 @@ EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
 EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
 EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
 
-_EO(left, 
+_EO(left,
 	if (*loc)
 		xleft = (xcols / 2) * atoi(loc);
 	else
