@@ -1,9 +1,9 @@
 #!/bin/sh -e
 for p in *.c *.h; do
-	EXINIT="seseq=-1:%s/(\<unsigned int\> )/u64 /g"
+	EXINIT="seq -1:%s/(\<unsigned int\> )/u64 /g"
 	EXINIT="${EXINIT}:%s/\(unsigned int\)/(u64)/g"
 	EXINIT="${EXINIT}:%s/\(unsigned int\*\)/(u64*) /g"
-	EXINIT="${EXINIT}:%s/(\<int\> )/s64 /g"
+	EXINIT="${EXINIT}:%s/(\<int\> )|\<int(?=^\[)/s64 /g"
 	EXINIT="${EXINIT}:%s/\(int\)/(s64)/g"
 	EXINIT="${EXINIT}:%s/\(int\*\)/(s64*)/g"
 	EXINIT="${EXINIT}:%s/\<int,\>/s64,/g"
