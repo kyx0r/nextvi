@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c0d11fe4..2d63b42d 100644
+index 00b901b..fe5b736 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -10,15 +10,23 @@ index c0d11fe4..2d63b42d 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -936,6 +937,7 @@ static struct option {
- 	{"td", &xtd},
- 	{"shape", &xshape},
- 	{"order", &xorder},
-+	{"exrc", &xexrc},
- 	{"hl", &xhl},
- 	{"hll", &xhll},
- 	{"hlw", &xhlw},
-@@ -1275,6 +1277,51 @@ void ex(void)
+@@ -1094,6 +1095,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
+ EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
+ EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
++EO(exrc)
+ 
+ _EO(left, 
+ 	if (*loc)
+@@ -1126,6 +1128,7 @@ static struct excmd {
+ 	EO(ai),
+ 	{"ac", ec_setacreg},
+ 	{"a", ec_insert},
++	EO(exrc),
+ 	{"ea!", ec_editapprox},
+ 	{"ea", ec_editapprox},
+ 	{"e!", ec_edit},
+@@ -1269,6 +1272,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -70,7 +78,7 @@ index c0d11fe4..2d63b42d 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1286,6 +1333,30 @@ void ex_init(char **files, int n)
+@@ -1280,6 +1328,30 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	xmpt = 0;
  	xvis &= ~8;
@@ -103,7 +111,7 @@ index c0d11fe4..2d63b42d 100644
 +	}
  }
 diff --git a/vi.c b/vi.c
-index 90692bfe..0b6dc30d 100644
+index acaa67b..6434e7e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,5 +1,6 @@
