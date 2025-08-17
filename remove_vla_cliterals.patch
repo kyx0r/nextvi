@@ -1,3 +1,16 @@
+diff --git a/conf.c b/conf.c
+index baeb665..6a52bbb 100644
+--- a/conf.c
++++ b/conf.c
+@@ -40,7 +40,7 @@ int ftslen = LEN(fts);
+ #define CY1	14	/* bright cyan */
+ #define WH1	15	/* bright white */
+ 
+-#define A(...) (int[]){__VA_ARGS__}
++#define A(...) {__VA_ARGS__}
+ 
+ struct highlight hls[] = {
+ 	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
 index 00b901b..61870ad 100644
 --- a/ex.c
@@ -309,3 +322,16 @@ index acaa67b..34d11c0 100644
  					goto do_excmd; }
  				default:
  					term_dec()
+diff --git a/vi.h b/vi.h
+index f723a8a..b54bdaa 100644
+--- a/vi.h
++++ b/vi.h
+@@ -427,7 +427,7 @@ extern int ftslen;
+ struct highlight {
+ 	char *ft;		/* the filetype of this pattern */
+ 	char *pat;		/* regular expression */
+-	int *att;		/* attributes of the matched groups */
++	int att[16];		/* attributes of the matched groups */
+ 	signed char blkend;	/* the ending group for multi-line patterns;
+ 				negative group is able to start and end itself */
+ 	char id;		/* id of this hl */
