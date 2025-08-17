@@ -569,7 +569,6 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 				led_redraw(sb->s, r, orow, lsh);
 				continue;
 			}
-			lbuf_dedup(tempbufs[0].lb, sb->s + pre, sb->s_n - pre)
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s + pre);
 			preserve(struct buf*, ex_pbuf,)

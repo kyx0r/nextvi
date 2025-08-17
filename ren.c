@@ -81,7 +81,7 @@ void dir_init(void)
 static int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
-		return xtabspc - (pos & (xtabspc-1));
+		return xtbs - (pos & (xtbs-1));
 	if (s[0] == '\n')
 		return 1;
 	int c, l; uc_code(c, s, l)
@@ -250,7 +250,6 @@ static int ftidx;
 static rset *syn_ftrs;
 static int last_scdir;
 static int *blockatt;
-static int blockcont;
 int syn_reload;
 int syn_blockhl;
 
@@ -279,8 +278,10 @@ char *syn_setft(char *ft)
 		if (!strcmp(ft, hls[i].ft)) {
 			ftidx = ftmidx;
 			syn_initft(ftmidx++, i, hls[i].ft);
-			break;
+			return ftmap[ftidx].ft;
 		}
+	if (!ftmidx && !ftmap[ftidx].rs)
+		syn_initft(ftmidx++, 0, hls[0].ft);
 	return ftmap[ftidx].ft;
 }
 
@@ -321,7 +322,6 @@ void syn_highlight(int *att, char *s, int n)
 			else if (!syn_blockhl && blk != blkend) {
 				syn_blockhl = hl;
 				blockatt = catt;
-				blockcont = hls[hl].end[blk];
 			} else
 				blk = 0;
 		}
@@ -332,12 +332,12 @@ void syn_highlight(int *att, char *s, int n)
 						subs[i * 2 + 1] - subs[i * 2]);
 				for (j = beg; j < end; j++)
 					att[j] = syn_merge(att[j], catt[i]);
-				if (!hls[hl].end[i])
+				if (!SYN_SOSET(catt[i]))
 					cend = MAX(cend, subs[i * 2 + 1]);
 				else {
 					if (blkend)
 						bend = MAX(cend, subs[i * 2 + 1]) + sidx;
-					if (hls[hl].end[i] > 0)
+					if (!SYN_SPSET(catt[i]))
 						cend = MAX(cend, subs[i * 2]);
 				}
 			}
@@ -348,7 +348,7 @@ void syn_highlight(int *att, char *s, int n)
 	}
 	if (syn_blockhl && !blk)
 		for (j = 0; j < n; j++)
-			att[j] = blockcont && att[j] ? att[j] : *blockatt;
+			att[j] = att[j] && SYN_SOSET(*blockatt) ? att[j] : *blockatt;
 }
 
 char *syn_filetype(char *path)

@@ -3,169 +3,157 @@
 
 /* access mode of new files */
 int conf_mode = 0600;
+#define FTGEN(ft) static char ft_##ft[] = #ft;
+#define FT(ft) ft_##ft
+FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(msg)
+FTGEN(mk) FTGEN(sh) FTGEN(py) FTGEN(js) 
+FTGEN(html) FTGEN(diff)
 
 struct filetype fts[] = {
-	{"c", "\\.(c|h|cpp|hpp|cc|cs)$"},		/* C */
-	{"roff", "\\.(ms|tr|roff|tmac|txt|[1-9])$"},	/* troff */
-	{"tex", "\\.tex$"},				/* tex */
-	{"msg", "letter$|mbox$|mail$"},			/* email */
-	{"mk", "[Mm]akefile$|\\.mk$"},			/* makefile */
-	{"sh", "\\.(ba|z)?sh$|(ba|z|k)shrc$|profile$"},	/* shell script */
-	{"py", "\\.py$"},				/* python */
-	{"nm", "\\.nm$"},				/* neatmail */
-	{"js", "\\.js$"},				/* javascript */
-	{"html", "\\.(html?|css)$"},			/* html,css */
-	{"diff", "\\.(patch|diff)$"}			/* diff */
+	{FT(c), "\\.(c|h|cpp|hpp|cc|cs)$"},			/* C */
+	{FT(roff), "\\.(ms|tr|roff|tmac|txt|[1-9])$"},		/* troff */
+	{FT(tex), "\\.tex$"},					/* tex */
+	{FT(msg), "letter$|mbox$|mail$"},			/* email */
+	{FT(mk), "[Mm]akefile$|\\.mk$"},			/* makefile */
+	{FT(sh), "\\.(ba|z)?sh$|(ba|z|k)shrc$|profile$"},	/* shell script */
+	{FT(py), "\\.py$"},					/* python */
+	{FT(js), "\\.js$"},					/* javascript */
+	{FT(html), "\\.(html?|css)$"},				/* html,css */
+	{FT(diff), "\\.(patch|diff)$"}				/* diff */
 };
 int ftslen = LEN(fts);
 
-/*
-colors 0-15
-0 = black | inverse
-1 = red3
-2 = green3
-3 = yellow3
-4 = blue2
-5 = magenta3
-6 = cyan3
-7 = gray90
-bright colors
-8 = gray50
-9 = red
-10 = green
-11 = yellow
-12 = blue
-13 = magenta
-14 = cyan
-15 = white
-*/
+#define IN	0	/* inverse | black */
+#define RE	1	/* red */
+#define GR	2	/* green */
+#define YE	3	/* yellow */
+#define BL	4	/* blue */
+#define MA	5	/* magenta */
+#define CY	6	/* cyan */
+#define AY	7	/* gray */
+#define AY1	8	/* bright gray */
+#define RE1	9	/* bright red */
+#define GR1	10	/* bright green */
+#define YE1	11	/* bright yellow */
+#define BL1	12	/* bright blue */
+#define MA1	13	/* bright magenta */
+#define CY1	14	/* bright cyan */
+#define WH1	15	/* bright white */
+
+#define A(...) (int[]){__VA_ARGS__}
 
 struct highlight hls[] = {
 	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 	/* "/" is default hl, must have at least 1 entry for fallback */
-	{"/", NULL, {14 | SYN_BD}, {1}, 0, 2},  /* <-- optional, used by hll if set */
-	{"/", NULL, {9 | SYN_BGMK(10)}, {0}, 0, 3}, /* <-- optional, used by hlp if set */
-	{"/", NULL, {9}, {0}, 0, 1}, /* <-- optional, used by hlw if set */
+	{"/", NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},  /* <-- optional, used by hll if set */
+	{"/", NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
+	{"/", NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
 
-	{"c", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"c", "^.+\\\\\n$", {14}, {1}},
-	{"c", "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?>\".*\\*/.*\"))",
-		{4 | SYN_IT}, {0}, 2},
-	{"c", NULL, {9 | SYN_BGMK(12)}, {0}, 0, 3},
-	{"c", NULL, {9}, {0}, 0, 1},
-	{"c", "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|\
+	{FT(c), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(c), "^.+\\\\\n$", A(CY1 | SYN_SO)},
+	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?>\".*\\*/.*\"))",
+		A(BL | SYN_IT, BL, BL), 2},
+	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
+	{FT(c), NULL, A(RE1), 0, 1},
+	{FT(c), "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|\
 long|f(?:loat|64|32)|double|void|enum|union|typedef|static|extern|register|struct|\
 s(?:64|32|16|8)|u(?:64|32|16|8)|b32|bool|const|size_t|inline|restrict|\
 (true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|malloc|free|realloc|NULL|std(?:in|\
 out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|\
-default|break|continue))\\>", {10, 12 | SYN_BD, 11}},
-	{"c", "(\\?).+?(:)", {0, 3, 3}, {1, 0, -1}},
-	{"c", "//.*", {4 | SYN_IT}},
-	{"c", "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", {6, 6, 5}},
-	{"c", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
-	{"c", "\"(?:[^\"\\\\]|\\\\.)*\"|\"", {5}},
-	{"c", "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", {5}},
-	{"c", "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", {9}},
+default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+	{FT(c), "(\\?).+?(:)", A(IN | SYN_SO, YE, YE | SYN_SP)},
+	{FT(c), "//.*", A(BL | SYN_IT)},
+	{FT(c), "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", A(CY, CY, MA)},
+	{FT(c), "([a-zA-Z0-9_]+)\\(", A(IN, SYN_BD)},
+	{FT(c), "\"(?:[^\"\\\\]|\\\\.)*\"|\"", A(MA)},
+	{FT(c), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
+	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", A(RE1)},
 
-	{"roff", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"roff", NULL, {9}, {0}, 0, 1},
-	{"roff", "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
-		{4, 0, 5 | SYN_BD, 4 | SYN_BD, 5 | SYN_BD, 4 | SYN_BD}, {1}},
-	{"roff", "\\\\\".*", {2 | SYN_IT}},
-	{"roff", "\\\\{1,2}[*$fgkmns]([^[\\(]|\\(..|\\[[^\\]]*\\])", {3}},
-	{"roff", "\\\\([^[(*$fgkmns]|\\(..|\\[[^\\]]*\\])", {3}},
-	{"roff", "\\$[^$]+\\$", {3}},
+	{FT(roff), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(roff), NULL, A(RE1), 0, 1},
+	{FT(roff), "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
+		A(BL | SYN_SO, IN, MA | SYN_BD, BL | SYN_BD, MA | SYN_BD, BL | SYN_BD)},
+	{FT(roff), "\\\\\".*", A(GR | SYN_IT)},
+	{FT(roff), "\\\\{1,2}[*$fgkmns]([^[\\(]|\\(..|\\[[^\\]]*\\])", A(YE)},
+	{FT(roff), "\\\\(?:[^[\\(*$fgkmns]|\\(..|\\[[^\\]]*\\])", A(YE)},
+	{FT(roff), "\\$[^$]+\\$", A(YE)},
 
-	{"tex", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"tex", NULL, {9}, {0}, 0, 1},
-	{"tex", "\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)\\})?",
-		{4 | SYN_BD, 0, 3, 0, 5}},
-	{"tex", "\\$[^$]+\\$", {3}},
-	{"tex", "%.*", {2 | SYN_IT}},
+	{FT(tex), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(tex), NULL, A(RE1), 0, 1},
+	{FT(tex), "\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)\\})?",
+		A(BL | SYN_BD, IN, YE, IN, MA)},
+	{FT(tex), "\\$[^$]+\\$", A(YE)},
+	{FT(tex), "%.*", A(GR | SYN_IT)},
 
-	/* mail */
-	{"msg", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"msg", NULL, {9}, {0}, 0, 1},
-	{"msg", "^From .*20..\n$", {6 | SYN_BD}},
-	{"msg", "^Subject: (.*)", {6 | SYN_BD, 4 | SYN_BD}},
-	{"msg", "^From: (.*)", {6 | SYN_BD, 2 | SYN_BD}},
-	{"msg", "^To: (.*)", {6 | SYN_BD, 5 | SYN_BD}},
-	{"msg", "^Cc: (.*)", {6 | SYN_BD, 5 | SYN_BD}},
-	{"msg", "^[-A-Za-z]+: .+", {6 | SYN_BD}},
-	{"msg", "^> .*", {2 | SYN_IT}},
+	{FT(msg), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(msg), NULL, A(RE1), 0, 1},
+	{FT(msg), "^From .*20..\n$", A(CY | SYN_BD)},
+	{FT(msg), "^Subject: (.*)", A(CY | SYN_BD, BL | SYN_BD)},
+	{FT(msg), "^From: (.*)", A(CY | SYN_BD, GR | SYN_BD)},
+	{FT(msg), "^To: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
+	{FT(msg), "^Cc: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
+	{FT(msg), "^[-A-Za-z]+: .+", A(CY | SYN_BD)},
+	{FT(msg), "^> .*", A(GR | SYN_IT)},
 
-	/* makefile */
-	{"mk", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"mk", NULL, {9}, {0}, 0, 1},
-	{"mk", "([A-Za-z0-9_]*)[ \t]*:?=", {0, 3}},
-	{"mk", "\\$[\\({][a-zA-Z0-9_]+[\\)}]|\\$\\$", {3}},
-	{"mk", "#.*", {2 | SYN_IT}},
-	{"mk", "([A-Za-z_%.\\-]+):", {0, SYN_BD}},
+	{FT(mk), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(mk), NULL, A(RE1), 0, 1},
+	{FT(mk), "([A-Za-z0-9_]*)[ \t]*:?=", A(IN, YE)},
+	{FT(mk), "\\$[\\({][a-zA-Z0-9_]+[\\)}]|\\$\\$", A(YE)},
+	{FT(mk), "#.*", A(GR | SYN_IT)},
+	{FT(mk), "([A-Za-z_%.\\-]+):", A(IN, SYN_BD)},
 
-	/* shell script */
-	{"sh", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"sh", NULL, {9}, {0}, 0, 1},
-	{"sh", "\\<(?:break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>",
-		{5 | SYN_BD}},
-	{"sh", "[ \t](#.*)|^(#.*)", {0, 2 | SYN_IT, 2 | SYN_IT}},
-	{"sh", "\"(?:[^\"\\\\]|\\\\.)*\"", {4}},
-	{"sh", "`(?:[^`\\\\]|\\\\.)*`", {4}},
-	{"sh", "'[^']*'", {4}},
-	{"sh", "\\$(?:\\{[^}]+\\}|[a-zA-Z_0-9]+|[!#$?*@-])", {1}},
-	{"sh", "^([a-zA-Z_0-9]* *\\(\\)) *\\{", {0, SYN_BD}},
-	{"sh", "^\\. .*", {SYN_BD}},
+	{FT(sh), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(sh), NULL, A(RE1), 0, 1},
+	{FT(sh), "\\<(?:break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>",
+		A(MA | SYN_BD)},
+	{FT(sh), "[ \t](#.*)|^(#.*)", A(IN, GR | SYN_IT, GR | SYN_IT)},
+	{FT(sh), "\"(?:[^\"\\\\]|\\\\.)*\"", A(BL)},
+	{FT(sh), "`(?:[^`\\\\]|\\\\.)*`", A(BL)},
+	{FT(sh), "'[^']*'", A(BL)},
+	{FT(sh), "\\$(?:\\{[^}]+\\}|[a-zA-Z_0-9]+|[!#$?*@-])", A(RE)},
+	{FT(sh), "^([a-zA-Z_0-9]* *\\(\\)) *\\{", A(IN, SYN_BD)},
+	{FT(sh), "^\\. .*", A(SYN_BD)},
 
-	/* python */
-	{"py", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"py", NULL, {9}, {0}, 0, 1},
-	{"py", "#.*", {2}},
-	{"py", "\\<(?:and|break|class|continue|def|del|elif|else|except|finally|\
-for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", {5}},
-	{"py", "([a-zA-Z0-9_]+)\\(", {0, SYN_BD}},
-	{"py", "\"{3}.*?\"{3}", {6}},
-	{"py", "((?:(?:(?!^\"\"\").)*\"{3}\n$)|(?:\"{3}(?:(?!^\"\"\").)*)|\"{3})",
-		{6}, {0}, -1},
-	{"py", "[\"](\\\\\"|[^\"])*?[\"]", {4}},
-	{"py", "['](\\\\'|[^'])*?[']", {4}},
+	{FT(py), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(py), NULL, A(RE1), 0, 1},
+	{FT(py), "#.*", A(GR)},
+	{FT(py), "\\<(?:and|break|class|continue|def|del|elif|else|except|finally|\
+for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", A(MA)},
+	{FT(py), "([a-zA-Z0-9_]+)\\(", A(IN, SYN_BD)},
+	{FT(py), "\"{3}.*?\"{3}", A(CY)},
+	{FT(py), "((?:(?:(?!^\"\"\").)*\"{3}\n$)|(?:\"{3}(?:(?!^\"\"\").)*)|\"{3})",
+		A(CY, CY, CY), -1},
+	{FT(py), "[\"](?:\\\\\"|[^\"])*?[\"]", A(BL)},
+	{FT(py), "['](?:\\\\'|[^'])*?[']", A(BL)},
 
-	/* neatmail */
-	{"nm", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"nm", "^([ROU])([0-9]+)\t([^\t]*)\t([^\t]*)",
-		{0 | SYN_BGMK(15), 6 | SYN_BD, 12 | SYN_BD, 5, 8 | SYN_BD}},
-	{"nm", "^[N].*", {0 | SYN_BD | SYN_BGMK(6)}},
-	{"nm", "^[A-Z][HT].*", {0 | SYN_BD | SYN_BGMK(13)}},
-	{"nm", "^[A-Z][MI].*", {0 | SYN_BD | SYN_BGMK(11)}},
-	{"nm", "^[A-Z][LJ].*", {7 | SYN_BGMK(15)}},
-	{"nm", "^[F].*", {0 | SYN_BD | SYN_BGMK(7)}},
-	{"nm", "^\t.*", {7 | SYN_IT}},
-	{"nm", "^:.*", {SYN_BD}},
-
-	/* javascript */
-	{"js", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"js", NULL, {9}, {0}, 0, 1},
-	{"js", "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))", {10 | SYN_IT}, {0}, 2},
-	{"js", "\\<(?:abstract|arguments|await|boolean|\
+	{FT(js), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(js), NULL, A(RE1), 0, 1},
+	{FT(js), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))",
+		A(GR1 | SYN_IT, GR1, GR1), 2},
+	{FT(js), "\\<(?:abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
 double|else|enum|eval|export|extends|false|final|finally|float|for|function|\
 goto|if|implements|import|in|instanceof|int|interface|let|long|native|new|\
 null|package|private|protected|public|return|short|static|super|switch|synchronized|\
 this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|yield|\
 (Array|Date|hasOwnProperty|Infinity|isFinite|isNaN|isPrototypeOf|length|Math|NaN|\
-name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", {12, 6 | SYN_BD}},
-	{"js", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+)\\>", {9}},
-	{"js", "//.*", {10 | SYN_IT}},
-	{"js", "'(?:[^'\\\\]|\\\\.)*'", {5}},
-	{"js", "\"(?:[^\"\\\\]|\\\\.)*\"", {5}},
-	{"js", "`(?:[^`\\\\]|\\\\.)*`", {5}},
+name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", A(BL1, CY | SYN_BD)},
+	{FT(js), "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+)\\>", A(RE1)},
+	{FT(js), "//.*", A(GR1 | SYN_IT)},
+	{FT(js), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
+	{FT(js), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
+	{FT(js), "`(?:[^`\\\\]|\\\\.)*`", A(MA)},
 
-	/* html */
-	{"html", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"html", "(\\{)[^}]*|(^[^{]*)?(\\})", {8, 5, 8, 5}, {1, 1, -1, -1}, 3},
-	{"html", NULL, {9}, {0}, 0, 1},
-	{"html", "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/)", {5 | SYN_IT}, {0}, 2},
-	{"html", "(<!--(?:(?!^-->).)*)|((?:(?!^<!--).)*-->)", {5 | SYN_IT}, {0}, 2},
-	{"html", "([^\t -,.-/:-@[-^{-~]+:).+;", {0, 3}, {1, 1}},
-	{"html", "\\<(?:accept|accesskey|align|allow|alt|async|\
+	{FT(html), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(html), "(\\{)[^}]*|(^[^{]*)?(\\})",
+		A(AY1 | SYN_SO, MA | SYN_SO, AY1 | SYN_SP, MA | SYN_SP), 3},
+	{FT(html), NULL, A(RE1), 0, 1},
+	{FT(html), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/)",
+		A(MA | SYN_IT, MA, MA), 2},
+	{FT(html), "(<!--(?:(?!^-->).)*)|((?:(?!^<!--).)*-->)",
+		A(MA | SYN_IT, MA, MA), 2},
+	{FT(html), "([^\t -,.-/:-@[-^{-~]+:).+;", A(SYN_SO, YE | SYN_SO)},
+	{FT(html), "\\<(?:accept|accesskey|align|allow|alt|async|\
 auto(?:capitalize|complete|focus|play)|background|\
 bgcolor|border|buffered|challenge|charset|checked|cite|\
 class|code(?:base)|color|cols|colspan|content(?:editable)|\
@@ -197,63 +185,64 @@ bgsound|big|blink|center|command|element|font|\
 frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
 multicol|nextid|nobr|noembed|noframes|plaintext|spacer|\
 strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
-(fixed;|absolute;|relative;)))\\>", {2, 6, 13}},
-	{"html", "\"(?:[^\"\\\\]|\\\\.)*\"", {12}},
-	{"html", "'(?:[^'\\\\]|\\\\.)*'", {5}},
-	{"html", "#\\<[A-Fa-f0-9]+\\>", {9}},
-	{"html", "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:px|vw|vh|%|s)?)\\>", {9}},
-	{"html", "<(/)?[^>]+>", {3, 13}, {1}},
+(fixed;|absolute;|relative;)))\\>", A(GR, CY, MA1)},
+	{FT(html), "\"(?:[^\"\\\\]|\\\\.)*\"", A(BL1)},
+	{FT(html), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
+	{FT(html), "#\\<[A-Fa-f0-9]+\\>", A(RE1)},
+	{FT(html), "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:px|vw|vh|%|s)?)\\>", A(RE1)},
+	{FT(html), "<(/)?[^>]+>", A(YE | SYN_SO, MA1)},
 	/* do not use this regex on DFA engines, causes catastrophic backtracking */
-	{"html", "([#.][ \t]*[a-zA-Z0-9_\\-]+\
-(?:(?:[, \t]*[#.][a-zA-Z0-9_\\-]+)?)+)(?:.?""?){1,20}\\{", {0, SYN_BD}, {1}},
-	{"html", "&[a-zA-Z0-9_]+;", {5}},
+	{FT(html), "([#.][ \t]*[a-zA-Z0-9_\\-]+\
+(?:(?:[, \t]*[#.][a-zA-Z0-9_\\-]+)?)+)(?:.?""?){1,20}\\{", A(SYN_SO, SYN_BD)},
+	{FT(html), "&[a-zA-Z0-9_]+;", A(MA)},
 
-	/* diff */
-	{"diff", NULL, {14 | SYN_BD}, {1}, 0, 2},
-	{"diff", "^-.*", {1}},
-	{"diff", "^\\+.*", {2}},
-	{"diff", "^@.*", {6}},
-	{"diff", "^diff .*", {SYN_BD}},
+	{FT(diff), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(diff), "^-.*", A(RE)},
+	{FT(diff), "^\\+.*", A(GR)},
+	{FT(diff), "^@.*", A(CY)},
+	{FT(diff), "^diff .*", A(SYN_BD)},
 
 	/* file manager */
-	{"/fm", "^(?:(\\.\\.?(/))|(([^/]+/)+|/.*/|/))?.*\n$", {8, 4, 6, 6}, {-1, -1, -1, 0}},
-	{"/fm", "(/+)\\.\\.(/+)(?>^\\./)", {4, 6, 6}, {-1, 0, 1}},
-	{"/fm", "[^/]*\\.sh\n$", {2}},
-	{"/fm", "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", {5}},
-	{"/fm", "/.*/", {6}},
+	{"/fm", "^(?:(\\.\\.?(/))|(([^/]+/)+|/.*/|/))?.*\n$",
+		A(AY1 | SYN_SP, BL | SYN_SP, CY | SYN_SP, CY)},
+	{"/fm", "(/+)\\.\\.(/+)(?>^\\./)", A(BL | SYN_SP, CY, CY | SYN_SO)},
+	{"/fm", "[^/]*\\.sh\n$", A(GR)},
+	{"/fm", "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", A(MA)},
+	{"/fm", "/.*/", A(CY)},
 
 	/* numbers highlight for ^v */
-	{"/#", "[0lewEW]", {14 | SYN_BD}},
-	{"/#", "1([ \t]*[1-9][ \t]*)9", {9, 13 | SYN_BD}},
-	{"/#", "9[ \t]*([1-9][ \t]*)1", {9, 13 | SYN_BD}},
-	{"/#", "[1-9]", {9}},
+	{"/#", "[0lewEW]", A(CY1 | SYN_BD)},
+	{"/#", "1([ \t]*[1-9][ \t]*)9", A(RE1, MA1 | SYN_BD)},
+	{"/#", "9[ \t]*([1-9][ \t]*)1", A(RE1, MA1 | SYN_BD)},
+	{"/#", "[1-9]", A(RE1)},
 
 	/* numbers highlight for # */
-	{"/##", "[0-9]+", {9 | SYN_BD}},
+	{"/##", "[0-9]+", A(RE1 | SYN_BD)},
 
 	/* autocomplete dropdown */
 	{"/ac", "[^ \t-/:-@[-^{-~]+(?:(\n$)|\n)|\n|([^\n]+(\n))",
-		{0, SYN_BGMK(9), SYN_BGMK(8), SYN_BGMK(7)}},
-	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", {0, SYN_BGMK(8)}},
+		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
+	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
 	
 	/* ex mode (is never '\n' terminated) */
-	{"/ex", "^[^:].*$", {8 | SYN_BD}},
-	{"/ex", "^.*$", {8 | SYN_BD}, {1}},
+	{"/ex", "^[^:].*$", A(AY1 | SYN_BD)},
+	{"/ex", "^.*$", A(AY1 | SYN_BD | SYN_SO)},
 	{"/ex", ":(?!^#)[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z])?([0-9]*)?)\
 (?:([+-])[0-9]+)?)[ \t]*(?:([,;])((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z])?([0-9]*)?)\
-(?:([+-])([0-9]+))?)*)([@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f[tdp]?|inc|i|g!?|\
-q!?|reg|rd?|w[!q]?!?|u[czb]?|se?|x!?|ya!?|cm!?|cd?)?",
-		{12 | SYN_BD, 1, 1, 1, 1, 15, 13, 1, 1, 15, 1, 10}},
-	{"/ex", "\\\\(.)|(:)#", {8 | SYN_BD, 3, 12}},
-	{"/ex", "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", {15 | SYN_BD}},
+(?:([+-])([0-9]+))?)*)((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|\
+left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[tdp]|[ \t]?([?/]))?|inc|i|\
+(?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w[!q]?!?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
+	{"/ex", "\\\\(.)|(:)#", A(AY1 | SYN_BD, YE, BL1)},
+	{"/ex", "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", A(WH1 | SYN_BD)},
 
 	/* status bar (is never '\n' terminated) */
-	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", {8 | SYN_BD, 4, 1}},
+	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
 	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
-		{8 | SYN_BD, 9, 4, 3, 5, 14, 11}},
+		A(AY1 | SYN_BD, RE1, BL, YE, MA, CY1, YE1)},
 	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
-		{8 | SYN_BD, 4, 9, 4, 11, 2}},
-	{"/-", "^.*$", {8 | SYN_BD}},
+		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
+	{"/-", "^.*$", A(AY1 | SYN_BD)},
 };
 int hlslen = LEN(hls);
 

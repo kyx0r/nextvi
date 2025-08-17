@@ -957,7 +957,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 static void vi_pipe(int r1, int r2)
 {
 	int mlen;
-	char region[32], *p = region;
+	char region[64], *p = region;
 	if (r1 == r2 && !vi_arg)
 		*p++ = '.';
 	else {
@@ -1456,7 +1456,7 @@ void vi(int init)
 				case 'I':;
 				case 'i':;
 					char restr[100] = "%s/^\t/";
-					vi_arg = MIN(vi_arg ? vi_arg : xtabspc, 80);
+					vi_arg = MIN(vi_arg ? vi_arg : xtbs, 80);
 					if (k == 'I') {
 						cmd = restr+6;
 						while (vi_arg--)
@@ -1656,31 +1656,31 @@ void vi(int init)
 					vi_tsm = 1;
 					goto status;
 				} else if (k == 'w') {
-					char cmd[100] = "se noled:se noseq:& ";
+					char cmd[100] = "led0:seq0:& ";
 					if (xseq < 0)
-						memset(cmd+9, ' ', 9);
+						memset(cmd+5, ' ', 5);
 					n = vi_arg ? vi_arg - 1 : 79;
 					k = xled;
-					strcpy(itoa(n, cmd+19), "|");
+					strcpy(itoa(n, cmd+11), "|");
 					while (1) {
 						ex_exec(cmd);
-						ex_exec("se grp=2:f/[^ \t]*[^ \t]?(.):& 1K:se nogrp");
+						ex_exec("grp2:f/[^ \t]*[^ \t]?(.):& 1K:grp0");
 						if (vi_col < n)
 							break;
 						ex_exec("+1");
 					}
 					if (k) {
 						if (!xseq)
-							ex_exec("se seq");
-						ex_exec("se led");
+							ex_exec("seq");
+						ex_exec("led");
 						vi_mod |= 1;
 					}
 				} else if (k == 'q') {
-					char cmd[100] = "se noled:g/./& ";
-					strcpy(itoa(vi_arg, cmd+14), "gw:se led");
+					char cmd[100] = "led0:g/./& ";
+					strcpy(itoa(vi_arg, cmd+10), "gw:led");
 					ex_command(cmd)
 					if (!xseq)
-						ex_exec("se seq");
+						ex_exec("seq");
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
 					goto rep;
