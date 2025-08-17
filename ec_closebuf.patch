@@ -1,9 +1,9 @@
 diff --git a/ex.c b/ex.c
-index c0d11fe4..41588fec 100644
+index 00b901b..60c4964 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1133,6 +1133,49 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
- 	return 0;
+@@ -1085,6 +1085,50 @@ static int eo_val(char *arg)
+ 	return val;
  }
  
 +static int ec_closebuf(char *loc, char *cmd, char *arg)
@@ -49,14 +49,15 @@ index c0d11fe4..41588fec 100644
 +	return 0;
 +}
 +
- static struct excmd {
- 	char *name;
- 	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1185,6 +1228,7 @@ static struct excmd {
++
+ #define _EO(opt, inner) \
+ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ 
+@@ -1167,6 +1211,7 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},
 +	{"cx", ec_closebuf},
  	{"c", ec_insert},
- 	{"=", ec_lnum},
- 	{"", ec_print}, /* do not remove */
+ 	EO(tbs),
+ 	EO(td),
