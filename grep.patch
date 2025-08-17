@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index baeb665..fe3ed00 100644
+index baf090d6..43c01fdf 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -236,6 +236,11 @@ left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[tdp]|[ \t]?([?/]
@@ -15,7 +15,7 @@ index baeb665..fe3ed00 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index 00b901b..9c3d575 100644
+index 36f8d311..3440468c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -28,7 +28,7 @@ index 00b901b..9c3d575 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index acaa67b..c89c7e0 100644
+index acaa67b9..c89c7e09 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -555,12 +555,12 @@ void dir_calc(char *path)
@@ -166,7 +166,7 @@ index acaa67b..c89c7e0 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index f723a8a..743eb7b 100644
+index f723a8ab..743eb7b3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -378,7 +378,7 @@ extern int xbufcur;

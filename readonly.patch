@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 00b901b..6b5567c 100644
+index 36f8d311..d6e51a09 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -39,6 +39,7 @@ char *xregs[256];		/* string registers */
@@ -60,7 +60,7 @@ index 00b901b..6b5567c 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index acaa67b..4fb8dc8 100644
+index acaa67b9..4fb8dc8f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1896,9 +1896,11 @@ int main(int argc, char *argv[])
@@ -77,7 +77,7 @@ index acaa67b..4fb8dc8 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index f723a8a..100d2a9 100644
+index f723a8ab..100d2a92 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -373,6 +373,7 @@ struct buf {

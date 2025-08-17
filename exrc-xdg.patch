@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 00b901b..fe5b736 100644
+index 36f8d311..91101523 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -16,7 +16,7 @@ index 00b901b..fe5b736 100644
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
 +EO(exrc)
  
- _EO(left, 
+ _EO(left,
  	if (*loc)
 @@ -1126,6 +1128,7 @@ static struct excmd {
  	EO(ai),
@@ -111,7 +111,7 @@ index 00b901b..fe5b736 100644
 +	}
  }
 diff --git a/vi.c b/vi.c
-index acaa67b..6434e7e 100644
+index acaa67b9..6434e7ed 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,5 +1,6 @@

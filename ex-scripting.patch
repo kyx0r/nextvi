@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 00b901b..108b7cc 100644
+index 36f8d311..aefbbe61 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -36,6 +36,7 @@ int xsep = ':';			/* ex command separator */
@@ -62,7 +62,7 @@ index 00b901b..108b7cc 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 40e0cb4..e02383f 100644
+index 40e0cb4c..e02383fe 100644
 --- a/term.c
 +++ b/term.c
 @@ -224,7 +224,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -78,7 +78,7 @@ index 40e0cb4..e02383f 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index f723a8a..57ca4dc 100644
+index f723a8ab..57ca4dca 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

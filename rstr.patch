@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 00b901b..6ab6666 100644
+index 36f8d311..9497ce87 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -28,7 +28,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -125,7 +125,7 @@ index 00b901b..6ab6666 100644
  	return 0;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 46c31a1..c0fee49 100644
+index 46c31a10..c0fee499 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -332,11 +332,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -152,7 +152,7 @@ index 46c31a1..c0fee49 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index b4c3ab3..fbf025d 100644
+index 3be5b7f2..b672cbe7 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -746,3 +746,126 @@ char *re_read(char **src)
@@ -283,7 +283,7 @@ index b4c3ab3..fbf025d 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index acaa67b..0720bc2 100644
+index acaa67b9..0720bc2c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -495,7 +495,7 @@ void vi_regput(int c, const char *s, int ln)
@@ -305,7 +305,7 @@ index acaa67b..0720bc2 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index f723a8a..0fd1849 100644
+index f723a8ab..0fd18495 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -123,12 +123,23 @@ typedef struct {

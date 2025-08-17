@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 00b901b..439c97f 100644
+index 36f8d311..24c4cb92 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -16,7 +16,7 @@ index 00b901b..439c97f 100644
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
 +EO(qe)
  
- _EO(left, 
+ _EO(left,
  	if (*loc)
 @@ -1143,6 +1145,7 @@ static struct excmd {
  	{"g!", ec_glob},
@@ -27,7 +27,7 @@ index 00b901b..439c97f 100644
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index a48ea92..22bae3b 100644
+index a48ea92a..22bae3ba 100644
 --- a/led.c
 +++ b/led.c
 @@ -406,6 +406,14 @@ void led_modeswap(void)
@@ -76,7 +76,7 @@ index a48ea92..22bae3b 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index acaa67b..87e3c2d 100644
+index acaa67b9..87e3c2d9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -97,7 +97,7 @@ index acaa67b..87e3c2d 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index f723a8a..f8d04df 100644
+index f723a8ab..f8d04dfd 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -490,6 +490,7 @@ extern int xhlr;

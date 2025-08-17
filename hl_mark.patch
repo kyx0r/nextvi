@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 00b901b..1e48032 100644
+index 36f8d311..3d833bd7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -16,7 +16,7 @@ index 00b901b..1e48032 100644
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
 +EO(hlm)
  
- _EO(left, 
+ _EO(left,
  	if (*loc)
 @@ -1171,6 +1173,7 @@ static struct excmd {
  	EO(tbs),
@@ -27,7 +27,7 @@ index 00b901b..1e48032 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index acaa67b..a19a032 100644
+index acaa67b9..a19a032e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1797,6 +1797,21 @@ void vi(int init)

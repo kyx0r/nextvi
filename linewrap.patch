@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 00b901b..cb820da 100644
+index 36f8d311..a548e8ea 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,6 +35,7 @@ int xpr;			/* ex_cprint register */
@@ -45,7 +45,7 @@ index 00b901b..cb820da 100644
  	EO(mpt),
  	{"=", ec_lnum},
 diff --git a/lbuf.c b/lbuf.c
-index 46c31a1..2edeb73 100644
+index 46c31a10..2edeb738 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -72,25 +72,139 @@ static int linelength(char *s)
@@ -227,7 +227,7 @@ index 46c31a1..2edeb73 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index acaa67b..6a71c0e 100644
+index acaa67b9..6a71c0e3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,22 @@ static void vi_drawrow(int row)
@@ -254,7 +254,7 @@ index acaa67b..6a71c0e 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index f723a8a..0462b5a 100644
+index f723a8ab..0462b5ab 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -137,6 +137,8 @@ struct lopt {

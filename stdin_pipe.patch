@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 00b901b..072a0b1 100644
+index 36f8d311..6f2d8c5f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -409,7 +409,9 @@ int ex_edit(const char *path, int len)
@@ -53,7 +53,7 @@ index 00b901b..072a0b1 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 40e0cb4..2c1d17f 100644
+index 40e0cb4c..2c1d17f6 100644
 --- a/term.c
 +++ b/term.c
 @@ -5,6 +5,8 @@ int xrows, xcols;
@@ -131,7 +131,7 @@ index 40e0cb4..2c1d17f 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index acaa67b..de0572a 100644
+index acaa67b9..de0572a9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1868,7 +1868,8 @@ static int setup_signals(void)
@@ -155,7 +155,7 @@ index acaa67b..de0572a 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index f723a8a..f7972cd 100644
+index f723a8ab..f7972cd1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -470,6 +470,7 @@ void vi_regput(int c, const char *s, int ln);
