@@ -1407,7 +1407,7 @@ void vi(int init)
 			case TK_CTL('k'):;
 				static struct lbuf *writexb;
 				if ((k = ex_exec("w")) && xb == writexb)
-					k = ex_exec("se nompt:w!");
+					k = ex_exec("mpt0:w!");
 				writexb = k ? xb : NULL;
 				break;
 			case '#':
