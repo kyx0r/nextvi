@@ -21,7 +21,7 @@ files and thus is never static.
 /* ease up ridiculous global stuffing */
 #define preserve(type, name, value) \
 type tmp##name = name; \
-name = value; \
+value \
 
 #define restore(name) \
 name = tmp##name; \
@@ -224,17 +224,20 @@ char *ren_translate(char *s, char *ln);
 int dir_context(char *s);
 void dir_init(void);
 /* syntax highlighting */
-#define SYN_BD		0x010000
-#define SYN_IT		0x020000
-#define SYN_RV		0x040000
+#define SYN_BD		0x10000
+#define SYN_IT		0x20000
+#define SYN_RV		0x40000
 #define SYN_FGMK(f)	(0x100000 | (f))
-#define SYN_BGMK(b)	(0x200000 | ((b) << 8))
+#define SYN_BGMK(b)	(0x200000 | (b << 8))
 #define SYN_FLG		0xff0000
-#define SYN_FGSET(a)	((a) & 0x1000ff)
-#define SYN_BGSET(a)	((a) & 0x20ff00)
-#define SYN_FG(a)	((a) & 0xff)
-#define SYN_BG(a)	(((a) >> 8) & 0xff)
-extern int ftidx;
+#define SYN_FGSET(a)	(a & 0x1000ff)
+#define SYN_BGSET(a)	(a & 0x20ff00)
+#define SYN_FG(a)	(a & 0xff)
+#define SYN_BG(a)	((a >> 8) & 0xff)
+#define SYN_SO		0x400000
+#define SYN_SP		0xc00000
+#define SYN_SOSET(a)	(a & 0x400000)
+#define SYN_SPSET(a)	((a & 0xc00000) == 0xc00000)
 extern int syn_reload;
 extern int syn_blockhl;
 char *syn_setft(char *ft);
@@ -311,10 +314,10 @@ void term_back(int c);
 #define term_dec() ibuf_pos--; icmd_pos--;
 #define term_exec(s, n, type) \
 { \
-	preserve(int, ibuf_cnt, ibuf_cnt) \
-	preserve(int, ibuf_pos, ibuf_cnt) \
+	preserve(int, ibuf_cnt,) \
+	preserve(int, ibuf_pos, ibuf_pos = ibuf_cnt;) \
 	term_push(s, n); \
-	preserve(int, texec, type) \
+	preserve(int, texec, texec = type;) \
 	tn = 0; \
 	vi(0); \
 	tn = 0; \
@@ -329,9 +332,9 @@ void term_back(int c);
 char *cmd_pipe(char *cmd, char *ibuf, int oproc);
 char *xgetenv(char* q[]);
 
-#define TK_ESC		(TK_CTL('['))
-#define TK_CTL(x)	((x) & 037)
-#define TK_INT(c)	((c) <= 0 || (c) == TK_ESC || (c) == TK_CTL('c'))
+#define TK_ESC		TK_CTL('[')
+#define TK_CTL(x)	(x & 037)
+#define TK_INT(c)	(c <= 0 || c == TK_ESC || c == TK_CTL('c'))
 
 /* led.c line-oriented input and output */
 typedef struct {
@@ -355,7 +358,7 @@ void led_render(char *s0, int cbeg, int cend);
 		term_commit(); \
 } \
 
-#define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, /**/)
+#define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end,)
 #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
 char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
@@ -399,7 +402,8 @@ void temp_pos(int i, int row, int off, int top);
 int ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 void ex_cprint(char *line, int r, int c, int ln);
-#define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
+#define ex_print(line) \
+{ preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, -1, 0, 1)); restore(xleft) }
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
@@ -423,13 +427,7 @@ extern int ftslen;
 struct highlight {
 	char *ft;		/* the filetype of this pattern */
 	char *pat;		/* regular expression */
-	int att[16];		/* attributes of the matched groups */
-	signed char end[16];	/* the group ending this pattern;
-				if set on multi-line the block emits all other matches in rset
-				else defines hl continuation for the group:
-				positive value - continue at rm_so
-				zero (default) - continue at rm_eo
-				negative value - ignore it or continue at sp+1 */
+	int *att;		/* attributes of the matched groups */
 	signed char blkend;	/* the ending group for multi-line patterns;
 				negative group is able to start and end itself */
 	char id;		/* id of this hl */
@@ -491,7 +489,7 @@ extern int xhlp;
 extern int xhlr;
 extern int xkmap;
 extern int xkmap_alt;
-extern int xtabspc;
+extern int xtbs;
 extern int xish;
 extern int xgrp;
 extern int xpac;
