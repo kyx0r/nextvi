@@ -1,29 +1,37 @@
 diff --git a/ex.c b/ex.c
-index c0d11fe4..ba3e0a98 100644
+index 00b901b..439c97f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
  int xkmap;			/* the current keymap */
  int xkmap_alt = 1;		/* the alternate keymap */
- int xtabspc = 8;		/* number of spaces for tab */
-+int xqexit = 1000;		/* exit insert via kj (delay in ms) */
+ int xtbs = 8;			/* number of spaces for tab */
++int xqe = 1000;			/* exit insert via kj (delay in ms) */
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -942,6 +943,7 @@ static struct option {
- 	{"hlp", &xhlp},
- 	{"hlr", &xhlr},
- 	{"tbs", &xtabspc},
-+	{"qe", &xqexit},
- 	{"ish", &xish},
- 	{"grp", &xgrp},
- 	{"pac", &xpac},
+@@ -1094,6 +1095,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
+ EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
+ EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
++EO(qe)
+ 
+ _EO(left, 
+ 	if (*loc)
+@@ -1143,6 +1145,7 @@ static struct excmd {
+ 	{"g!", ec_glob},
+ 	{"g", ec_glob},
+ 	{"k", ec_mark},
++	EO(qe),
+ 	{"q!", ec_quit},
+ 	{"q", ec_quit},
+ 	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index 051fb919..a5d767c8 100644
+index a48ea92..22bae3b 100644
 --- a/led.c
 +++ b/led.c
-@@ -408,6 +408,14 @@ void led_modeswap()
- 	restore(ftidx)
+@@ -406,6 +406,14 @@ void led_modeswap(void)
+ 	restore(xvis)
  }
  
 +static int gettime_ms(void)
@@ -37,7 +45,7 @@ index 051fb919..a5d767c8 100644
  /* read a line from the terminal */
  static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
  	int ai_max, int *key, int *kmap, int orow, int lsh)
-@@ -415,6 +423,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
+@@ -413,6 +421,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
  	int len, t_row = -2, p_reg = 0;
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
@@ -45,12 +53,12 @@ index 051fb919..a5d767c8 100644
  	while (1) {
  		led_printparts(sb, pre, ps, post, postn, ai_max);
  		len = sb->s_n;
-@@ -611,7 +620,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
+@@ -608,7 +617,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
  		case TK_CTL('o'):;
  			led_modeswap();
  			continue;
 +		case 'j':
-+			if (xqexit && (gettime_ms() - quickexit) < xqexit) {
++			if (xqe && (gettime_ms() - quickexit) < xqe) {
 +				if (sb->s_n) {
 +					if (sb->s[led_lastchar(sb->s)] != 'k')
 +						goto _default;
@@ -68,7 +76,7 @@ index 051fb919..a5d767c8 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 90692bfe..256bb3aa 100644
+index acaa67b..87e3c2d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -79,15 +87,24 @@ index 90692bfe..256bb3aa 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
+@@ -1576,6 +1577,8 @@ void vi(int init)
+ 				vc_insert(c);
+ 				ins:
+ 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
++				if (xqe)
++					vi_mod |= 2;
+ 				if (vi_insmov == 127 || vi_insmov == TK_CTL('h')) {
+ 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
+ 						xrow--;
 diff --git a/vi.h b/vi.h
-index c17d9ead..4e3701ae 100644
+index f723a8a..f8d04df 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -492,6 +492,7 @@ extern int xhlr;
+@@ -490,6 +490,7 @@ extern int xhlr;
  extern int xkmap;
  extern int xkmap_alt;
- extern int xtabspc;
-+extern int xqexit;
+ extern int xtbs;
++extern int xqe;
  extern int xish;
  extern int xgrp;
  extern int xpac;
