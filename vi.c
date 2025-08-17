@@ -99,7 +99,7 @@ static void vi_drawmsg(void)
 	if (vi_msg[0]) {
 		syn_blockhl = 0;
 		syn_setft("/-");
-		preserve(int, xtd, 2)
+		preserve(int, xtd, xtd = 2;)
 		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
 		restore(xtd)
 		syn_setft(ex_ft);
@@ -142,7 +142,7 @@ static void vi_drawrow(int row)
 			vi_rshift = 0;
 		if (row != xrow+1 || !c || *c == '\n')
 			goto skip;
-		char tmp[xcols+3], snum[100];
+		char tmp[xcols+3], snum[32];
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
@@ -157,9 +157,9 @@ static void vi_drawrow(int row)
 		} else
 			vi_drawnum(lbuf_wordend(xb, i1, -2, &nrow, &noff))
 		tmp[ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol] = *vi_word;
-		preserve(int, xorder, 0)
-		preserve(int, syn_blockhl, 0)
-		preserve(int, xtd, dir_context(c) * 2)
+		preserve(int, xorder, xorder = 0;)
+		preserve(int, syn_blockhl, syn_blockhl = 0;)
+		preserve(int, xtd, xtd = dir_context(c) * 2;)
 		vi_rshift = (row != xtop + xrows-1);
 		syn_setft("/#");
 		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
@@ -175,7 +175,7 @@ static void vi_drawrow(int row)
 	if (!s)
 		s = row ? ch : ch+1;
 	else if (lnnum) {
-		char tmp[100], tmp1[100], *p;
+		char tmp[32], tmp1[32], *p;
 		c = tmp, i = 0, i1 = 0;
 		if (lnnum == 1 || lnnum & 2) {
 			c = itoa(row+1-vi_rshift, tmp);
@@ -194,7 +194,7 @@ static void vi_drawrow(int row)
 		memset(c, ' ', l1 - (c - tmp));
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
-		preserve(int, syn_blockhl, 0)
+		preserve(int, syn_blockhl, syn_blockhl = 0;)
 		syn_setft("/##");
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
@@ -957,7 +957,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 static void vi_pipe(int r1, int r2)
 {
 	int mlen;
-	char region[100], *p = region;
+	char region[64], *p = region;
 	if (r1 == r2 && !vi_arg)
 		*p++ = '.';
 	else {
@@ -1224,7 +1224,7 @@ static void vc_execute(int cmd)
 
 static void vi_argcmd(int arg, char cmd)
 {
-	char str[100];
+	char str[32];
 	char *cs = itoa(arg, str);
 	*cs = cmd;
 	term_push(str, cs - str + 1);
@@ -1407,7 +1407,7 @@ void vi(int init)
 			case TK_CTL('k'):;
 				static struct lbuf *writexb;
 				if ((k = ex_exec("w")) && xb == writexb)
-					k = ex_exec("se nompt:w!");
+					k = ex_exec("mpt0:w!");
 				writexb = k ? xb : NULL;
 				break;
 			case '#':
@@ -1456,7 +1456,7 @@ void vi(int init)
 				case 'I':;
 				case 'i':;
 					char restr[100] = "%s/^\t/";
-					vi_arg = MIN(vi_arg ? vi_arg : xtabspc, 80);
+					vi_arg = MIN(vi_arg ? vi_arg : xtbs, 80);
 					if (k == 'I') {
 						cmd = restr+6;
 						while (vi_arg--)
@@ -1656,31 +1656,31 @@ void vi(int init)
 					vi_tsm = 1;
 					goto status;
 				} else if (k == 'w') {
-					char cmd[100] = "se noled:se noseq:& ";
+					char cmd[100] = "led0:seq0:& ";
 					if (xseq < 0)
-						memset(cmd+9, ' ', 9);
+						memset(cmd+5, ' ', 5);
 					n = vi_arg ? vi_arg - 1 : 79;
 					k = xled;
-					strcpy(itoa(n, cmd+19), "|");
+					strcpy(itoa(n, cmd+11), "|");
 					while (1) {
 						ex_exec(cmd);
-						ex_exec("se grp=2:f/[^ \t]*[^ \t]?(.):& 1K:se nogrp");
+						ex_exec("grp2:f/[^ \t]*[^ \t]?(.):& 1K:grp0");
 						if (vi_col < n)
 							break;
 						ex_exec("+1");
 					}
 					if (k) {
 						if (!xseq)
-							ex_exec("se seq");
-						ex_exec("se led");
+							ex_exec("seq");
+						ex_exec("led");
 						vi_mod |= 1;
 					}
 				} else if (k == 'q') {
-					char cmd[100] = "se noled:g/./& ";
-					strcpy(itoa(vi_arg, cmd+14), "gw:se led");
+					char cmd[100] = "led0:g/./& ";
+					strcpy(itoa(vi_arg, cmd+10), "gw:led");
 					ex_command(cmd)
 					if (!xseq)
-						ex_exec("se seq");
+						ex_exec("seq");
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
 					goto rep;

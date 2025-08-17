@@ -15,7 +15,7 @@ int xshape = 1;			/* perform letter shaping */
 int xorder = 1;			/* change the order of characters */
 int xkmap;			/* the current keymap */
 int xkmap_alt = 1;		/* the alternate keymap */
-int xtabspc = 8;		/* number of spaces for tab */
+int xtbs = 8;			/* number of spaces for tab */
 int xish;			/* interactive shell */
 int xgrp;			/* regex search group */
 int xpac;			/* print autocomplete options */
@@ -270,6 +270,11 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 				*o2 = xoff;
 			else if (o1)
 				*o1 = xoff;
+			char *ln = lbuf_get(xb, vaddr ? *beg : xrow);
+			if (ln && rstate->s == ln)
+				xleft = rstate->pos[MIN(xoff, rstate->n - 1)];
+			else if (ln && rstates[1].s == ln)
+				xleft = rstates[1].pos[MIN(xoff, rstates[1].n - 1)];
 		} else {
 			skip:
 			if (vaddr++ % 2)
@@ -299,6 +304,8 @@ static int ec_search(char *loc, char *cmd, char *arg)
 	int dir, off, obeg, beg = -1, end = lbuf_len(xb);
 	char **re = !loc ? (char**)arg : &arg;
 	dir = **re == '/' ? 2 : -2;
+	if (dir < 0 && **re != '?')
+		return 3;
 	char *e = re_read(re);
 	if (!e)
 		return loc ? 3 : -1;
@@ -395,7 +402,7 @@ int ex_edit(const char *path, int len)
 		return 1;
 	}
 	bufs_switch(bufs_open(path, len));
-	readfile(/**/, 1)
+	readfile(, 1)
 	return 0;
 }
 
@@ -594,13 +601,13 @@ static int ec_termexec(char *loc, char *cmd, char *arg)
 static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
 {
 	if (!(xvis & 2)) {
-		int oleft = xleft, key;
-		int n = sb->s_n;
+		preserve(int, xleft, xleft = 0;)
+		int n = sb->s_n, key;
 		sbuf_str(sb, msg)
 		syn_setft(ft);
 		led_prompt(sb, NULL, &xkmap, &key, ps, hist);
 		syn_setft(ex_ft);
-		xleft = oleft;
+		restore(xleft)
 		if (key != '\n')
 			return 1;
 		else if (!*msg || strcmp(sb->s + n, msg))
@@ -927,70 +934,6 @@ static int ec_glob(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
-static struct option {
-	char *name;
-	int *var;
-} options[] = {
-	{"ai", &xai},
-	{"ic", &xic},
-	{"td", &xtd},
-	{"shape", &xshape},
-	{"order", &xorder},
-	{"hl", &xhl},
-	{"hll", &xhll},
-	{"hlw", &xhlw},
-	{"hlp", &xhlp},
-	{"hlr", &xhlr},
-	{"tbs", &xtabspc},
-	{"ish", &xish},
-	{"grp", &xgrp},
-	{"pac", &xpac},
-	{"led", &xled},
-	{"vis", &xvis},
-	{"mpt", &xmpt},
-	{"pr", &xpr},
-	{"sep", &xsep},
-	{"lim", &xlim},
-	{"seq", &xseq},
-};
-
-static int ec_set(char *loc, char *cmd, char *arg)
-{
-	char tok[128], *s = tok;
-	int val = 0, i;
-	if (*arg) {
-		while (isspace((unsigned char)*arg))
-			arg++;
-		while (s < &tok[127] && *arg && !isspace((unsigned char)*arg))
-			*s++ = *arg++;
-		*s = '\0';
-		s = tok;
-		/* checking prefix "no" before option */
-		if (s[0] == 'n' && s[1] == 'o')
-			s += 2;
-		else {
-			char *r = strchr(s, '=');
-			if (r) {
-				*r = '\0';
-				if (!(val = atoi(r+1)))
-					if (!isdigit((unsigned char)r[1]))
-						val = (unsigned char)r[1];
-			} else
-				val = 1;
-		}
-		for (i = 0; i < LEN(options); i++) {
-			struct option *o = &options[i];
-			if (!strcmp(o->name, s)) {
-				*o->var = val;
-				return 0;
-			}
-		}
-		ex_print("unknown option")
-		return 1;
-	}
-	return 0;
-}
-
 static int ec_setdir(char *loc, char *cmd, char *arg)
 {
 	free(fs_exdir);
@@ -1085,8 +1028,7 @@ static int ec_setbufsmax(char *loc, char *cmd, char *arg)
 static int ec_regprint(char *loc, char *cmd, char *arg)
 {
 	static char buf[5] = "  ";
-	xleft = (xcols / 2) * (*arg ? atoi(arg) : 0);
-	preserve(int, xtd, 2)
+	preserve(int, xtd, xtd = 2;)
 	for (int i = 1; i < LEN(xregs); i++) {
 		if (xregs[i] && i != tolower(xpr)) {
 			*buf = i;
@@ -1133,10 +1075,42 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
 	return 0;
 }
 
+static int eo_val(char *arg)
+{
+	if (!*arg)
+		return 1;
+	int val = atoi(arg);
+	if (!val && !isdigit((unsigned char)*arg))
+		return (unsigned char)*arg;
+	return val;
+}
+
+#define _EO(opt, inner) \
+static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+
+#define EO(opt) \
+	_EO(opt, x##opt = eo_val(arg); return 0;)
+
+EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
+EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
+EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
+
+_EO(left, 
+	if (*loc)
+		xleft = (xcols / 2) * atoi(loc);
+	else
+		xleft = *arg ? atoi(arg) : 0;
+	return 0;
+)
+
+#undef EO
+#define EO(opt) {#opt, eo_##opt}
+
+/* commands & opts must be sorted longest of its kind topmost */
 static struct excmd {
 	char *name;
 	int (*ec)(char *loc, char *cmd, char *arg);
-} excmds[] = { /* commands must be sorted longest of its kind topmost */
+} excmds[] = {
 	{"@", ec_termexec},
 	{"&", ec_termexec},
 	{"!", ec_exec},
@@ -1144,9 +1118,12 @@ static struct excmd {
 	{"bs", ec_save},
 	{"bx", ec_setbufsmax},
 	{"b", ec_buffer},
+	EO(pac),
+	EO(pr),
 	{"pu", ec_put},
 	{"ph", ec_setenc},
 	{"p", ec_print},
+	EO(ai),
 	{"ac", ec_setacreg},
 	{"a", ec_insert},
 	{"ea!", ec_editapprox},
@@ -1157,9 +1134,12 @@ static struct excmd {
 	{"fd", ec_setdir},
 	{"fp", ec_setdir},
 	{"f", ec_search},
+	EO(ish),
 	{"inc", ec_setincl},
+	EO(ic),
 	{"i", ec_insert},
 	{"d", ec_delete},
+	EO(grp),
 	{"g!", ec_glob},
 	{"g", ec_glob},
 	{"k", ec_mark},
@@ -1176,7 +1156,9 @@ static struct excmd {
 	{"uz", ec_setenc},
 	{"ub", ec_setenc},
 	{"u", ec_undoredo},
-	{"se", ec_set},
+	EO(shape),
+	EO(seq),
+	EO(sep),
 	{"s", ec_substitute},
 	{"x!", ec_write},
 	{"x", ec_write},
@@ -1186,6 +1168,19 @@ static struct excmd {
 	{"cm", ec_cmap},
 	{"cd", ec_chdir},
 	{"c", ec_insert},
+	EO(tbs),
+	EO(td),
+	EO(order),
+	EO(hll),
+	EO(hlw),
+	EO(hlp),
+	EO(hlr),
+	EO(hl),
+	EO(left),
+	EO(lim),
+	EO(led),
+	EO(vis),
+	EO(mpt),
 	{"=", ec_lnum},
 	{"", ec_print}, /* do not remove */
 };
@@ -1237,11 +1232,10 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
 int ex_exec(const char *ln)
 {
 	int ret = 0, idx = 0, len = strlen(ln) + 1;
-	char loc[len], arg[len];
+	char loc[len], arg[len], *ecmd;
 	while (*ln) {
 		ln = ex_parse(ln, loc, &idx, arg);
-		char *ecmd = ex_pathexpand(arg);
-		if (!ecmd)
+		if (!(ecmd = ex_pathexpand(arg)))
 			continue;
 		ret = excmds[idx].ec(loc, excmds[idx].name, ecmd);
 		if (ret == 2)

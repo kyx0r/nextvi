@@ -183,17 +183,17 @@ char *term_att(int att)
 		{*s++ = ';'; *s++ = '7';}
 	if (SYN_FGSET(att)) {
 		*s++ = ';';
-		if ((fg & 0xff) < 8)
-			s = itoa(30 + (fg & 0xff), s);
+		if (fg < 8)
+			s = itoa(30 + fg, s);
 		else
-			s = itoa(fg & 0xff, (char*)memcpy(s, "38;5;", 5)+5);
+			s = itoa(fg, (char*)memcpy(s, "38;5;", 5)+5);
 	}
 	if (SYN_BGSET(att)) {
 		*s++ = ';';
-		if ((bg & 0xff) < 8)
-			s = itoa(40 + (bg & 0xff), s);
+		if (bg < 8)
+			s = itoa(40 + bg, s);
 		else
-			s = itoa(bg & 0xff, (char*)memcpy(s, "48;5;", 5)+5);
+			s = itoa(bg, (char*)memcpy(s, "48;5;", 5)+5);
 	}
 	s[0] = 'm';
 	s[1] = '\0';
