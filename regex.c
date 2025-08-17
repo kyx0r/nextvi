@@ -440,7 +440,7 @@ if (npc[1] > (nsubp >> 1) && nsub->ref > 1) { \
 #define savenlist() \
 if (nsub->ref > 1) { \
 	nsub->ref--; \
-	newsub(/*nop*/, /*nop*/) \
+	newsub(,) \
 	memcpy(s1->sub, nsub->sub, osubp); \
 	nsub = s1; \
 	nsub->ref = 1; \
@@ -599,7 +599,7 @@ for (;; sp = _sp) { \
 		break; \
 	swaplist() \
 	jmp_start##n: \
-	newsub(memset(s1->sub, 0, osubp);, /*nop*/) \
+	newsub(memset(s1->sub, 0, osubp);,) \
 	s1->ref = 1; \
 	s1->sub[0] = _sp; \
 	npc = insts; nsub = s1; \
@@ -632,7 +632,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 		goto jmp_start1;
 	goto jmp_start2;
 	match(1, if ((unsigned int)c < 128) c = tolower(c);)
-	match(2, /*nop*/)
+	match(2,)
 }
 
 static int re_groupcount(char *s)
