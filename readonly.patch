@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c0d11fe4..2db30a0d 100644
+index 00b901b..6b5567c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -39,6 +39,7 @@ char *xregs[256];		/* string registers */
@@ -18,7 +18,7 @@ index c0d11fe4..2db30a0d 100644
  	return i;
  }
  
-@@ -417,6 +419,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -424,6 +426,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -27,7 +27,7 @@ index c0d11fe4..2db30a0d 100644
  	readfile(rd =, cd == 3)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -551,6 +555,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -558,6 +562,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -38,7 +38,7 @@ index c0d11fe4..2db30a0d 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
  				ex_print("write failed: file changed")
  				return 1;
-@@ -1133,6 +1141,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1075,6 +1083,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -48,10 +48,10 @@ index c0d11fe4..2db30a0d 100644
 +	return 0;
 +}
 +
- static struct excmd {
- 	char *name;
- 	int (*ec)(char *loc, char *cmd, char *arg);
-@@ -1167,6 +1181,7 @@ static struct excmd {
+ static int eo_val(char *arg)
+ {
+ 	if (!*arg)
+@@ -1147,6 +1161,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -60,7 +60,7 @@ index c0d11fe4..2db30a0d 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 90692bfe..a00ee037 100644
+index acaa67b..4fb8dc8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1896,9 +1896,11 @@ int main(int argc, char *argv[])
@@ -77,10 +77,10 @@ index 90692bfe..a00ee037 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index c17d9ead..e5abf5a9 100644
+index f723a8a..100d2a9 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -370,6 +370,7 @@ struct buf {
+@@ -373,6 +373,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -88,7 +88,7 @@ index c17d9ead..e5abf5a9 100644
  };
  extern int xbufcur;
  extern struct buf *ex_buf;
-@@ -509,3 +510,4 @@ extern char *fs_exdir;
+@@ -507,3 +508,4 @@ extern char *fs_exdir;
  extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;
