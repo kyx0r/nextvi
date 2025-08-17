@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c0d11fe4..5f4e89ad 100644
+index 00b901b..1e48032 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -9,6 +9,7 @@ int xhll;			/* highlight current line */
@@ -10,16 +10,24 @@ index c0d11fe4..5f4e89ad 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -941,6 +942,7 @@ static struct option {
- 	{"hlw", &xhlw},
- 	{"hlp", &xhlp},
- 	{"hlr", &xhlr},
-+	{"hlm", &xhlm},
- 	{"tbs", &xtabspc},
- 	{"ish", &xish},
- 	{"grp", &xgrp},
+@@ -1094,6 +1095,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
+ EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
+ EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
++EO(hlm)
+ 
+ _EO(left, 
+ 	if (*loc)
+@@ -1171,6 +1173,7 @@ static struct excmd {
+ 	EO(tbs),
+ 	EO(td),
+ 	EO(order),
++	EO(hlm),
+ 	EO(hll),
+ 	EO(hlw),
+ 	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 90692bfe..c0feb007 100644
+index acaa67b..a19a032 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1797,6 +1797,21 @@ void vi(int init)
@@ -37,7 +45,7 @@ index 90692bfe..c0feb007 100644
 +					continue;
 +				la.s = lbuf_get(xb, mrow);
 +				la.off = moff;
-+				la.att = SYN_BGMK((i % 15) + 1);
++				la.att = SYN_BGMK(((i % 15) + 1));
 +				sbuf_mem(led_attsb, &la, (int)sizeof(la))
 +			}
 +		}
