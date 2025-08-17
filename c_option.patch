@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index c0d11fe4..028235dc 100644
+index 00b901b..b3b96e4 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1275,7 +1275,7 @@ void ex(void)
+@@ -1269,7 +1269,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -11,7 +11,7 @@ index c0d11fe4..028235dc 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1288,4 +1288,6 @@ void ex_init(char **files, int n)
+@@ -1282,4 +1282,6 @@ void ex_init(char **files, int n)
  	xvis &= ~8;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -19,7 +19,7 @@ index c0d11fe4..028235dc 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 90692bfe..39fbd857 100644
+index acaa67b..841f2a5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1875,7 +1875,8 @@ static int setup_signals(void)
@@ -64,13 +64,13 @@ index 90692bfe..39fbd857 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index c17d9ead..c5785ba0 100644
+index f723a8a..ba9dba5 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -400,7 +400,7 @@ int ex_exec(const char *ln);
- #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
+@@ -404,7 +404,7 @@ int ex_exec(const char *ln);
  void ex_cprint(char *line, int r, int c, int ln);
- #define ex_print(line) RS(2, ex_cprint(line, -1, 0, 1))
+ #define ex_print(line) \
+ { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, -1, 0, 1)); restore(xleft) }
 -void ex_init(char **files, int n);
 +void ex_init(char **files, int n, char** cmds, int cmdnum);
  void ex_bufpostfix(struct buf *p, int clear);
