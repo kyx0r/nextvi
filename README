@@ -137,9 +137,9 @@ readonly.patch
 -------------
 Adds new ex option "ro" and commandline readonly option -R
 
-remove_variable_length_arrays.patch
+remove_vla_cliterals.patch
 --------------
-Removes variable length arrays for portability reasons.
+Removes variable length arrays and compound literals for portability reasons.
 
 undojump.patch
 --------------
