@@ -1720,6 +1720,7 @@ void vi(int init)
 				break;
 			case 'Q':
 				term_pos(xrow - xtop, 0);
+				xoff = vi_arg ? xoff : 0;
 				led_modeswap();
 				vi_mod |= 1;
 				break;
@@ -1780,9 +1781,7 @@ void vi(int init)
 		}
 		if (vi_mod)
 			vi_col = vi_off2col(xb, xrow, xoff);
-		if (vi_col >= xleft + xcols)
-			xleft = vi_col - xcols / 2;
-		if (vi_col < xleft)
+		if (vi_col >= xleft + xcols || vi_col < xleft)
 			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
 		n = led_pos(ln, ren_cursor(ln, vi_col));
 		vi_wait();
