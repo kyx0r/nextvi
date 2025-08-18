@@ -307,9 +307,7 @@ static void led_printparts(sbuf *sb, int pre, int ps,
 			pos = ren_cursor(r->s, r->pos[off-two]);
 		pos += dir < 0 ? -1 : 1;
 	}
-	if (pos >= xleft + xcols)
-		xleft = pos - xcols / 2;
-	if (pos < xleft)
+	if (pos >= xleft + xcols || pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
 	syn_blockhl = 0;
 	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
