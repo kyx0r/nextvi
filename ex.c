@@ -270,11 +270,6 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 				*o2 = xoff;
 			else if (o1)
 				*o1 = xoff;
-			char *ln = lbuf_get(xb, vaddr ? *beg : xrow);
-			if (ln && rstate->s == ln)
-				xleft = rstate->pos[MIN(xoff, rstate->n - 1)];
-			else if (ln && rstates[1].s == ln)
-				xleft = rstates[1].pos[MIN(xoff, rstates[1].n - 1)];
 		} else {
 			skip:
 			if (vaddr++ % 2)
@@ -674,7 +669,7 @@ static int ec_insert(char *loc, char *cmd, char *arg)
 static int ec_print(char *loc, char *cmd, char *arg)
 {
 	int i, beg, end, o1 = -1, o2 = -1;
-	char *o;
+	char *o, *ln;
 	if (!cmd[0] && !loc[0] && arg[0]) {
 		ex_print("unknown command")
 		return 1;
@@ -685,17 +680,29 @@ static int ec_print(char *loc, char *cmd, char *arg)
 		xrow = MAX(beg, end - 1);
 		return 0;
 	}
+	rstate = rstates+1;
 	for (i = beg; i < end; i++) {
 		o = NULL;
+		rstate->s = o;
+		ln = lbuf_get(xb, i);
 		if (o1 >= 0 && o2 >= 0 && beg == end-1)
-			o = uc_sub(lbuf_get(xb, i), o1, o2);
+			o = uc_sub(ln, o1, o2);
 		else if (o1 >= 0 && i == beg)
-			o = uc_sub(lbuf_get(xb, i), o1, -1);
+			o = uc_sub(ln, o1, -1);
 		else if (o2 >= 0 && i == end-1)
-			o = uc_sub(lbuf_get(xb, i), 0, o2);
-		RS(1, ex_cprint(o ? o : lbuf_get(xb, i), -1, 0, 1))
+			o = uc_sub(ln, 0, o2);
+		else {
+			if (xvis & 4 && beg == end-1)
+				xleft = ren_position(ln)->pos[MIN(xoff, rstate->n - 1)];
+			ex_cprint(ln, -1, 0, 1);
+			continue;
+		}
+		preserve(int, xleft, xleft = 0;)
+		ex_cprint(o, -1, 0, 1);
+		restore(xleft)
 		free(o);
 	}
+	rstate--;
 	xrow = MAX(beg, end - (cmd[0] || loc[0]));
 	return 0;
 }
