@@ -81,7 +81,7 @@ void dir_init(void)
 static int ren_cwid(char *s, int pos)
 {
 	if (s[0] == '\t')
-		return xtbs - (pos & (xtbs-1));
+		return xtbs ? xtbs - (pos % xtbs) : 0;
 	if (s[0] == '\n')
 		return 1;
 	int c, l; uc_code(c, s, l)
