@@ -45,10 +45,10 @@ VI NORMAL
      [#]-          Move # lines up, cursor after indent
      [#]h          Move # cols left
      [#]l          Move # cols right
-     f{arg}        Move to arg character found forward
-     F{arg}        Move to arg character found backward
-     t{arg}        Move until arg character found forward
-     T{arg}        Move until arg character found backward
+     [#]f{arg}     Move to arg character found forward # times
+     [#]F{arg}     Move to arg character found backward # times
+     [#]t{arg}     Move until arg character found forward # times
+     [#]T{arg}     Move until arg character found backward # times
      [#],          Repeat last <f F t T> move backward # times
      [#];          Repeat last <f F t T> move forward # times
      [#]E          Move to end of word # times, skip punctuation
@@ -119,7 +119,7 @@ VI NORMAL
                    Execute a last executed register macro # times
      [#].          Repeat last normal command # times
      [#]v.         Repeat last normal command moving down across # lines
-     Q             Enter ex mode
+     [#]Q          Enter ex mode. # retains current character offset
      :             Enter ex prompt
      [#]!{arg}     Enter pipe ex prompt based on # or arg region
      vv            Enter ex prompt with the last line from history buffer b-1
@@ -992,11 +992,11 @@ CODE MAP
      | 397 ren.c    |  positioning/syntax  |
      | 499 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
-     | 680 led.c    |  insert mode/output  |
+     | 678 led.c    |  insert mode/output  |
      | 748 regex.c  |  extended RE         |
      | 1288 ex.c    |  ex options/commands |
-     | 1921 vi.c    |  normal mode/general |
-     | 6807 total   |  wc -l *.c|sort      |
+     | 1920 vi.c    |  normal mode/general |
+     | 6804 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
