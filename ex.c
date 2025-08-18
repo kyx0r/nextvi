@@ -687,14 +687,12 @@ static int ec_print(char *loc, char *cmd, char *arg)
 	}
 	for (i = beg; i < end; i++) {
 		o = NULL;
-		if (o1 >= 0 && o2 >= 0) {
-			if (beg == end-1)
-				o = uc_sub(lbuf_get(xb, i), o1, o2);
-			else if (i == beg)
-				o = uc_sub(lbuf_get(xb, i), o1, -1);
-			else if (i == end-1)
-				o = uc_sub(lbuf_get(xb, i), 0, o2);
-		}
+		if (o1 >= 0 && o2 >= 0 && beg == end-1)
+			o = uc_sub(lbuf_get(xb, i), o1, o2);
+		else if (o1 >= 0 && i == beg)
+			o = uc_sub(lbuf_get(xb, i), o1, -1);
+		else if (o2 >= 0 && i == end-1)
+			o = uc_sub(lbuf_get(xb, i), 0, o2);
 		RS(1, ex_cprint(o ? o : lbuf_get(xb, i), -1, 0, 1))
 		free(o);
 	}
@@ -752,10 +750,10 @@ static int ec_put(char *loc, char *cmd, char *arg)
 static int ec_lnum(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
-	int beg, end;
-	if (ex_region(loc, &beg, &end))
+	int beg, end, o1 = -1, o2 = -1;
+	if (ex_oregion(loc, &beg, &end, &o1, &o2))
 		return 2;
-	sprintf(msg, "%d", end);
+	sprintf(msg, "%d", o1 >= 0 ? o1 : end);
 	ex_print(msg)
 	return 0;
 }
@@ -1077,8 +1075,6 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
 
 static int eo_val(char *arg)
 {
-	if (!*arg)
-		return 1;
 	int val = atoi(arg);
 	if (!val && !isdigit((unsigned char)*arg))
 		return (unsigned char)*arg;
@@ -1089,7 +1085,7 @@ static int eo_val(char *arg)
 static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
 
 #define EO(opt) \
-	_EO(opt, x##opt = eo_val(arg); return 0;)
+	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return 0;)
 
 EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
 EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
