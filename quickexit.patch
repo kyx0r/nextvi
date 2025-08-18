@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 36f8d311..24c4cb92 100644
+index 6b1f8801..d6094ec9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index 36f8d311..24c4cb92 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1094,6 +1095,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1090,6 +1091,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index 36f8d311..24c4cb92 100644
  
  _EO(left,
  	if (*loc)
-@@ -1143,6 +1145,7 @@ static struct excmd {
+@@ -1139,6 +1141,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	{"k", ec_mark},

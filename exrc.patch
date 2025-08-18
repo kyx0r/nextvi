@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 36f8d311..4c7633b4 100644
+index 6b1f8801..ac1425e9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
@@ -10,7 +10,7 @@ index 36f8d311..4c7633b4 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1094,6 +1095,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1090,6 +1091,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index 36f8d311..4c7633b4 100644
  
  _EO(left,
  	if (*loc)
-@@ -1126,6 +1128,7 @@ static struct excmd {
+@@ -1122,6 +1124,7 @@ static struct excmd {
  	EO(ai),
  	{"ac", ec_setacreg},
  	{"a", ec_insert},
@@ -26,7 +26,7 @@ index 36f8d311..4c7633b4 100644
  	{"ea!", ec_editapprox},
  	{"ea", ec_editapprox},
  	{"e!", ec_edit},
-@@ -1269,6 +1272,51 @@ void ex(void)
+@@ -1265,6 +1268,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -78,7 +78,7 @@ index 36f8d311..4c7633b4 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1280,6 +1328,20 @@ void ex_init(char **files, int n)
+@@ -1276,6 +1324,20 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	xmpt = 0;
  	xvis &= ~8;

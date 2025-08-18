@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 36f8d311..d6e51a09 100644
+index 6b1f8801..fb1543d0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -39,6 +39,7 @@ char *xregs[256];		/* string registers */
@@ -38,7 +38,7 @@ index 36f8d311..d6e51a09 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
  				ex_print("write failed: file changed")
  				return 1;
-@@ -1075,6 +1083,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1073,6 +1081,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -50,8 +50,8 @@ index 36f8d311..d6e51a09 100644
 +
  static int eo_val(char *arg)
  {
- 	if (!*arg)
-@@ -1147,6 +1161,7 @@ static struct excmd {
+ 	int val = atoi(arg);
+@@ -1143,6 +1157,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
