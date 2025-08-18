@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 6b1f8801..4cb54fb4 100644
+index 69296967..ee408965 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1279,3 +1279,16 @@ void ex_init(char **files, int n)
+@@ -1286,3 +1286,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -32,7 +32,7 @@ index 3be5b7f2..444db062 100644
  	flg = prog->flg | flg;
  	if (eol_ch)
 diff --git a/ren.c b/ren.c
-index 95d44219..cb4b36b7 100644
+index 446b378f..7690a169 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -94,6 +94,20 @@ static int ren_cwid(char *s, int pos)

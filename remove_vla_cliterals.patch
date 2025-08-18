@@ -12,10 +12,10 @@ index baf090d6..255eb86c 100644
  struct highlight hls[] = {
  	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 6b1f8801..5835d9cb 100644
+index 69296967..cf5227f6 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -804,7 +804,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -811,7 +811,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 6b1f8801..5835d9cb 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -851,6 +851,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -858,6 +858,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -32,7 +32,7 @@ index 6b1f8801..5835d9cb 100644
  	return 0;
  }
  
-@@ -1228,7 +1229,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
+@@ -1235,7 +1236,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, idx = 0, len = strlen(ln) + 1;
@@ -41,7 +41,7 @@ index 6b1f8801..5835d9cb 100644
  	while (*ln) {
  		ln = ex_parse(ln, loc, &idx, arg);
  		if (!(ecmd = ex_pathexpand(arg)))
-@@ -1240,6 +1241,8 @@ int ex_exec(const char *ln)
+@@ -1247,6 +1248,8 @@ int ex_exec(const char *ln)
  			ex_print("syntax error")
  		free(ecmd);
  	}
@@ -208,7 +208,7 @@ index 3be5b7f2..37b927c7 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 95d44219..9da439a9 100644
+index 446b378f..225cb585 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -256,13 +256,14 @@ int syn_blockhl;

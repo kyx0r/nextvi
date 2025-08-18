@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 6b1f8801..67bae813 100644
+index 69296967..5f669d33 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -36,6 +36,7 @@ int xsep = ':';			/* ex command separator */
@@ -10,7 +10,7 @@ index 6b1f8801..67bae813 100644
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
  static int xgdep;		/* global command recursion depth */
-@@ -1073,6 +1074,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1080,6 +1081,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
  	return 0;
  }
  
@@ -52,7 +52,7 @@ index 6b1f8801..67bae813 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1155,6 +1191,8 @@ static struct excmd {
+@@ -1162,6 +1198,8 @@ static struct excmd {
  	EO(shape),
  	EO(seq),
  	EO(sep),
