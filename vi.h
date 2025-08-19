@@ -177,7 +177,7 @@ int lbuf_undo(struct lbuf *lb);
 int lbuf_redo(struct lbuf *lb);
 void lbuf_saved(struct lbuf *lb, int clear);
 int lbuf_indents(struct lbuf *lb, int r);
-int lbuf_eol(struct lbuf *lb, int r);
+int lbuf_eol(struct lbuf *lb, int r, int state);
 int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 			int *o, int ln_n, int skip);

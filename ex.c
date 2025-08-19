@@ -222,7 +222,7 @@ static int ex_range(char **num, int n, int *row)
 		++*num;
 		break;
 	case '$':
-		n = row ? lbuf_eol(xb, *row) : lbuf_len(xb) - 1;
+		n = row ? lbuf_eol(xb, *row, 2) : lbuf_len(xb) - 1;
 		++*num;
 		break;
 	case '\'':
@@ -254,7 +254,7 @@ static int ex_range(char **num, int n, int *row)
 #define ex_region(loc, beg, end) ex_oregion(loc, beg, end, NULL, NULL)
 static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	int vaddr = 0, haddr = 0, ooff = xoff;
+	int vaddr = 0, haddr = 0, ooff = xoff, row;
 	if (!strcmp("%", loc) || !lbuf_len(xb)) {
 		*beg = 0;
 		*end = MAX(0, lbuf_len(xb));
@@ -265,7 +265,8 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 			loc++;
 			if (loc[-1] == ',')
 				goto skip;
-			xoff = ex_range(&loc, ooff, vaddr ? beg : &xrow);
+			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
+			xoff = ex_range(&loc, ooff, &row);
 			if (o2 && haddr++ % 2)
 				*o2 = xoff;
 			else if (o1)

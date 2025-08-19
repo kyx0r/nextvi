@@ -381,12 +381,15 @@ int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 	return 0;
 }
 
-int lbuf_eol(struct lbuf *lb, int row)
+int lbuf_eol(struct lbuf *lb, int row, int state)
 {
-	int len = 0;
-	if (lbuf_get(lb, row))
-		len = ren_position(lbuf_get(lb, row))->n;
-	return len ? len - 1 : len;
+	char *ln = lbuf_get(lb, row);
+	if (!ln)
+		return 0;
+	if (state == 2)
+		state = rstate->s == ln;
+	state = state ? ren_position(ln)->n - 1 : uc_slen(ln) - 1;
+	return state < 0 ? 0 : state;
 }
 
 static int lbuf_next(struct lbuf *lb, int dir, int *r, int *o)
@@ -405,7 +408,7 @@ static int lbuf_next(struct lbuf *lb, int dir, int *r, int *o)
 			ren_position(lbuf_get(lb, *r));
 			*o = 0;
 		} else
-			*o = lbuf_eol(lb, *r);
+			*o = lbuf_eol(lb, *r, 1);
 	} else
 		*o = off;
 	return 0;
