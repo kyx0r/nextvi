@@ -15,7 +15,7 @@ index baf090d6..43c01fdf 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index 69296967..0c93fb8d 100644
+index 5bf89e3b..2e8446b1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -28,7 +28,7 @@ index 69296967..0c93fb8d 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 31771360..0798474e 100644
+index 98367572..bb83fc1f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -555,12 +555,12 @@ void dir_calc(char *path)
@@ -127,7 +127,7 @@ index 31771360..0798474e 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1351,7 +1388,17 @@ void vi(int init)
+@@ -1350,7 +1387,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -146,7 +146,7 @@ index 31771360..0798474e 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1511,6 +1558,10 @@ void vi(int init)
+@@ -1510,6 +1557,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index 31771360..0798474e 100644
  				default:
  					term_dec()
  				}
-@@ -1881,6 +1932,7 @@ int main(int argc, char *argv[])
+@@ -1880,6 +1931,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
@@ -166,7 +166,7 @@ index 31771360..0798474e 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index f723a8ab..743eb7b3 100644
+index ae224584..02412e71 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -378,7 +378,7 @@ extern int xbufcur;

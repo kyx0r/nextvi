@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 69296967..536fe232 100644
+index 5bf89e3b..9106b75c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -28,7 +28,7 @@ struct buf *ex_buf;		/* current buffer */
@@ -24,7 +24,7 @@ index 69296967..536fe232 100644
  		xkwdcnt++;
  		vi_regputraw('/', kwd, 0, 0);
  		xkwddir = dir;
-@@ -795,13 +795,13 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -796,13 +796,13 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	int beg, end, grp;
  	char *pat, *rep = NULL, *_rep;
  	char *s = arg;
@@ -40,7 +40,7 @@ index 69296967..536fe232 100644
  	if (!rs) {
  		free(pat);
  		return 3;
-@@ -811,11 +811,11 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -812,11 +812,11 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -54,7 +54,7 @@ index 69296967..536fe232 100644
  			if (offs[xgrp] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -830,7 +830,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -831,7 +831,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  					}
  					_rep++;
  					grp = abs((*_rep - '0') * 2);
@@ -63,7 +63,7 @@ index 69296967..536fe232 100644
  						sbuf_chr(r, (unsigned char)*_rep)
  					else if (offs[grp] >= 0)
  						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
-@@ -856,7 +856,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -857,7 +857,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	if (first >= 0)
  		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), first, last);
  	if (rs != xkwdrs)
@@ -72,7 +72,7 @@ index 69296967..536fe232 100644
  	free(rep);
  	return 0;
  }
-@@ -905,7 +905,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -906,7 +906,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  {
  	int i, beg, end, not;
  	char *pat, *s = arg;
@@ -81,7 +81,7 @@ index 69296967..536fe232 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_region(loc, &beg, &end))
-@@ -913,9 +913,9 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -914,9 +914,9 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	not = !!strchr(cmd, '!');
  	pat = re_read(&s);
  	if (pat && *pat)
@@ -93,7 +93,7 @@ index 69296967..536fe232 100644
  	free(pat);
  	if (!rs)
  		return 3;
-@@ -925,7 +925,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -926,7 +926,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  	for (i = beg; i < lbuf_len(xb);) {
  		char *ln = lbuf_get(xb, i);
  		lbuf_s(ln)->grec &= ~xgdep;
@@ -102,7 +102,7 @@ index 69296967..536fe232 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -934,7 +934,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
+@@ -935,7 +935,7 @@ static int ec_glob(char *loc, char *cmd, char *arg)
  		while (i < lbuf_len(xb) && !(lbuf_i(xb, i)->grec & xgdep))
  			i++;
  	}
@@ -111,7 +111,7 @@ index 69296967..536fe232 100644
  	xgdep /= 2;
  	return 0;
  }
-@@ -991,10 +991,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
+@@ -992,10 +992,10 @@ static int ec_chdir(char *loc, char *cmd, char *arg)
  
  static int ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -125,7 +125,7 @@ index 69296967..536fe232 100644
  	return 0;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 46c31a10..c0fee499 100644
+index e4d22551..73538ba6 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -332,11 +332,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -283,7 +283,7 @@ index 3be5b7f2..b672cbe7 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 31771360..72e7c08a 100644
+index 98367572..84b2de0b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -495,7 +495,7 @@ void vi_regput(int c, const char *s, int ln)
@@ -305,7 +305,7 @@ index 31771360..72e7c08a 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index f723a8ab..0fd18495 100644
+index ae224584..7ec49f3f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -123,12 +123,23 @@ typedef struct {
@@ -334,7 +334,7 @@ index f723a8ab..0fd18495 100644
  #define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
 @@ -179,7 +190,7 @@ void lbuf_saved(struct lbuf *lb, int clear);
  int lbuf_indents(struct lbuf *lb, int r);
- int lbuf_eol(struct lbuf *lb, int r);
+ int lbuf_eol(struct lbuf *lb, int r, int state);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
 -int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 +int lbuf_search(struct lbuf *lb, rstr *re, int dir, int *r,

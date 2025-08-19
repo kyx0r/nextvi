@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 69296967..e97018e9 100644
+index 5bf89e3b..41d6691a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -16,6 +16,7 @@ int xorder = 1;			/* change the order of characters */
@@ -10,7 +10,7 @@ index 69296967..e97018e9 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1097,6 +1098,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1098,6 +1099,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index 69296967..e97018e9 100644
  
  _EO(left,
  	if (*loc)
-@@ -1146,6 +1148,7 @@ static struct excmd {
+@@ -1147,6 +1149,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	{"k", ec_mark},
@@ -76,7 +76,7 @@ index a0a32874..f67d62f8 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 31771360..79e1ea7f 100644
+index 98367572..934fb5ef 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -87,17 +87,17 @@ index 31771360..79e1ea7f 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1576,6 +1577,8 @@ void vi(int init)
+@@ -1575,6 +1576,8 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 +				if (xqe)
 +					vi_mod |= 2;
  				if (vi_insmov == 127 || vi_insmov == TK_CTL('h')) {
- 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
+ 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index f723a8ab..f8d04dfd 100644
+index ae224584..6a3a17c9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -490,6 +490,7 @@ extern int xhlr;

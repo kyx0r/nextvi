@@ -73,7 +73,7 @@ index a0a32874..be62dc03 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 31771360..77087b7e 100644
+index 98367572..4431c5e4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -886,6 +886,8 @@ static void vi_indents(char *ln, int *l)
@@ -93,7 +93,7 @@ index 31771360..77087b7e 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1087,7 +1090,9 @@ static void vc_insert(int cmd)
+@@ -1086,7 +1089,9 @@ static void vc_insert(int cmd)
  	if (sb->s_n != l1 || cmdo || !ln) {
  		sbufn_str(sb, post)
  		lbuf_edit(xb, sb->s, row, row + !cmdo);
@@ -104,7 +104,7 @@ index 31771360..77087b7e 100644
  	free(sb->s);
  }
  
-@@ -1576,6 +1581,37 @@ void vi(int init)
+@@ -1575,6 +1580,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -140,9 +140,9 @@ index 31771360..77087b7e 100644
 +					goto _break;
 +				}
  				if (vi_insmov == 127 || vi_insmov == TK_CTL('h')) {
- 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
+ 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1588,6 +1624,9 @@ void vi(int init)
+@@ -1587,6 +1623,9 @@ void vi(int init)
  				if (c != 'A' && c != 'C')
  					xoff--;
  				break;
