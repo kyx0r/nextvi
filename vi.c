@@ -771,7 +771,7 @@ static int vi_motion(int *row, int *off)
 		*off = lbuf_indents(xb, *row);
 		break;
 	case '$':
-		*off = lbuf_eol(xb, *row);
+		*off = lbuf_eol(xb, *row, 1);
 		break;
 	case '|':
 		vi_col = cnt - 1;
@@ -1017,18 +1017,17 @@ static void vc_motion(int cmd)
 	lnmode = o2 < 0;
 	if (lnmode) {
 		o1 = 0;
-		o2 = lbuf_eol(xb, r2);
+		o2 = lbuf_eol(xb, r2, r1 >= r2);
 	}
 	if (r1 > r2) {
 		swap(&r1, &r2);
 		swap(&o1, &o2);
-	}
-	if (r1 == r2 && o1 > o2)
+	} else if (r1 == r2 && o1 > o2)
 		swap(&o1, &o2);
 	o1 = ren_noeol(lbuf_get(xb, r1), o1);
 	if (!lnmode && strchr("fFtTeE%", mv))
-		if (o2 < lbuf_eol(xb, r2))
-			o2 = ren_noeol(lbuf_get(xb, r2), o2) + 1;
+		if (o2 < lbuf_eol(xb, r2, 2))
+			o2++;
 	if (cmd == 'y') {
 		vi_yank(r1, o1, r2, o2, lnmode);
 		return;
@@ -1057,7 +1056,7 @@ static void vc_insert(int cmd)
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
 	else if (cmd == 'A')
-		xoff = lbuf_eol(xb, xrow);
+		xoff = lbuf_eol(xb, xrow, 1);
 	else if (cmd == 'o') {
 		xrow++;
 		if (xrow - xtop == xrows)
@@ -1577,12 +1576,12 @@ void vi(int init)
 				ins:
 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				if (vi_insmov == 127 || vi_insmov == TK_CTL('h')) {
-					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow))) {
+					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
 						xrow--;
 						vc_join(0, 2);
 					} else if (xoff)
 						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
-					term_back(xoff != lbuf_eol(xb, xrow) ? 'i' : 'a');
+					term_back(xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a');
 					break;
 				}
 				if (c != 'A' && c != 'C')
