@@ -706,7 +706,8 @@ Enter ex insert mode after specified line
 .It Cm [\fIvrange\fP][\fIhrange\fP]c[\fIstr\fP]
 Enter ex change mode on specified line
 .Bd -literal
-This command is optimal for altering a buffer.
+In combination with seq and lim ex options, this command is 
+optimal for modifying very long lines. Max ~1.0GB on 32bit.
 
 Example: replace current line with "hello"
 :c hello<^M><ESC>
@@ -821,12 +822,14 @@ Example: execute vi dw command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm pu[\fIregister\fP] [\fIcmd\fP]
+.It Cm pu[\fIreg\fP] [\fIcmd\fP]
 Paste a register
 .Bd -literal
-To pipe register data to an external process use :pu \e![cmd]
+To pipe register data to an external process use :pu[reg] \e![cmd]
 Example: copy default register to X11 clipboard
 :pu \e!xclip -selection clipboard
+Example: copy register <a> to X11 clipboard
+:pu a \e!xclip -selection clipboard
 .Ed
 
 .It Cm [\fIrange\fP]r[\fIpath cmd\fP]
@@ -1156,6 +1159,8 @@ Once the register is set, all data passed into ex_print will
 be stored in the register.
 If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
+Print register contents cannot be displayed via R or :reg command
+when register is assigned (self-referential problem).
 Example: paste current buffer list exactly like from :b command
 :pr A:ya! a: b:pu a
 Example: store a line printed with :p
@@ -1191,10 +1196,10 @@ Example: disable the limit
 .It Cm seq[val=1]
 Control Undo/Redo
 .Bd -literal
-When seq is 0, multiple distinct operations undo/redo in a single
-step.
-To optimize resource use under heavy workloads, undo/redo tracking
-can be disabled by setting seq to a negative value.
+When seq is 0, multiple distinct operations undo/redo in a
+single step.
+To optimize resource use under heavy workloads, undo/redo
+tracking can be disabled by setting seq to a negative value.
 Example: test undo/redo operations in a single step
 :&ocontrol test:seq 0:&a step1:&a step2:&a step3:seq
 Example: completely disable undo/redo
