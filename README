@@ -463,7 +463,8 @@ EX COMMANDS
      [vrange][hrange]c[str]
              Enter ex change mode on specified line
 
-             This command is optimal for altering a buffer.
+             In combination with seq and lim ex options, this command is
+             optimal for modifying very long lines. Max ~1.0GB on 32bit.
 
              Example: replace current line with "hello"
              :c hello<^M><ESC>
@@ -570,12 +571,14 @@ EX COMMANDS
              Example: execute vi dw command after user exits insert
              :@i:@dw
 
-     pu[register] [cmd]
+     pu[reg] [cmd]
              Paste a register
 
-             To pipe register data to an external process use :pu \![cmd]
+             To pipe register data to an external process use :pu[reg] \![cmd]
              Example: copy default register to X11 clipboard
              :pu \!xclip -selection clipboard
+             Example: copy register <a> to X11 clipboard
+             :pu a \!xclip -selection clipboard
 
      [range]r[path cmd]
              Read a file or a pipe
@@ -842,6 +845,8 @@ EX OPTIONS
              be stored in the register.
              If the register is uppercase, <Newline> characters are added
              to match the exact output that was printed.
+             Print register contents cannot be displayed via R or :reg command
+             when register is assigned (self-referential problem).
              Example: paste current buffer list exactly like from :b command
              :pr A:ya! a: b:pu a
              Example: store a line printed with :p
@@ -874,10 +879,10 @@ EX OPTIONS
      seq[val=1]
              Control Undo/Redo
 
-             When seq is 0, multiple distinct operations undo/redo in a single
-             step.
-             To optimize resource use under heavy workloads, undo/redo tracking
-             can be disabled by setting seq to a negative value.
+             When seq is 0, multiple distinct operations undo/redo in a
+             single step.
+             To optimize resource use under heavy workloads, undo/redo
+             tracking can be disabled by setting seq to a negative value.
              Example: test undo/redo operations in a single step
              :&ocontrol test:seq 0:&a step1:&a step2:&a step3:seq
              Example: completely disable undo/redo
