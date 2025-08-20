@@ -1,4 +1,4 @@
-.Dd Aug 19, 2025
+.Dd Aug 20, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -619,28 +619,29 @@ Search for int in reverse on the current line
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
 .It Cm [\fIrange\fP]f{/?}[\fIkwd\fP]
-Ranged search (stands for find)
+Ranged search
 .Bd -literal
+Subsequent commands within range move to the next match
+just like vi normal [#]n or [#]N commands.
+
 Example: no range given, current line only
 :f/int
 Example: reverse
 :f?int
 Example: range given
 :10,100f/int
-Subsequent commands within the range will move to the next match
-just like vi normal [#]n or [#]N commands.
 .Ed
 
 .It Cm b[\fI#\fP]
 Print currently active buffers state or switch to a buffer
 .Bd -literal
-Example: switch to the 5th buffer
-:b5
-
 There are two temporary buffers which are separate from
 the main buffers.
 b-1 = /hist/ ex history buffer
 b-2 = /fm/ directory listing buffer
+
+Example: switch to the 5th buffer
+:b5
 Example: switch to the b-1 buffer
 :b-1
 Example: switch to the b-2 buffer
@@ -657,6 +658,8 @@ Print line(s) from the buffer
 .Bd -literal
 Example: utilize character offset ranges
 :1,10;5;5p
+Example: interleaved character offset ranges
+:1;5,10;5p
 Example: print current line from offset 5 to 10
 :.;5;10p
 .Ed
@@ -665,16 +668,18 @@ Example: print current line from offset 5 to 10
 Open file based on filename substring from dir listing in b-2
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
+
 Example: backfill b-2 using :fd
 :fd
 Example: backfill b-2 using find
-:b-2:1,$!find .
+:b-2:%!find .
 
 If the substring matches more than one filename, a prompt will
 be shown. Submit using numbers 0-9 or higher ascii values.
 <^C> to cancel, <Newline> to select first match. Passing an
 extra arg to :ea in form of a number will bypass the prompt
 and open the corresponding file.
+
 Example: open filename containing "v"
 :ea v
 Example: open first match containing "v"
@@ -750,6 +755,7 @@ Example: print lines matching previously set search keyword
 
 Multiple ex commands can be chained in one global command.
 To chain commands, the ex separator <:> must be escaped once.
+
 Example: yank matches appending to reg 'a' and print them out.
 :g/int/ya A\e:p
 
@@ -791,6 +797,7 @@ Execute raw vi/ex input sequence.
 A non-blocking macro shall not wait for input when the end of
 the sequence is reached. A non-blocking macro executing other
 macros will always reach a terminating point.
+
 Example: execute vi insert statement
 :& ihello
 Example: execute :hello
@@ -808,6 +815,7 @@ Execute raw vi/ex input sequence.
 A blocking macro shall wait for input when the end of the sequence
 is reached. A blocking macro executing other macros may cause
 input congestion.
+
 Example: execute vi insert statement
 :@ ihello
 Example: insert "hello" into <:> vi prompt
@@ -826,6 +834,7 @@ Example: execute vi dw command after user exits insert
 Paste a register
 .Bd -literal
 To pipe register data to an external process use :pu[reg] \e![cmd]
+
 Example: copy default register to X11 clipboard
 :pu \e!xclip -selection clipboard
 Example: copy register <a> to X11 clipboard
@@ -836,6 +845,7 @@ Example: copy register <a> to X11 clipboard
 Read a file or a pipe
 .Bd -literal
 To read data from a pipe use :[range]r \e![cmd]
+
 Example: pipe in only the first line
 :r \e!ls
 Example: pipe in only lines 3,5
@@ -848,6 +858,7 @@ Example: pipe in all data
 Write to a file or a pipe
 .Bd -literal
 To pipe buffer data to external process use :[range]w \e![cmd]
+
 Example: pipe out all data into less
 :w \e!less
 Example: pipe out only first 10 lines
@@ -907,6 +918,7 @@ Yank a range
 To append to the register, pass in its uppercase version.
 To append to any of the non-alphabetical registers add any extra
 character to the command.
+
 Example: append to register <1>
 :ya 1x
 .Ed
@@ -920,6 +932,7 @@ Run external program
 When ex range specified, pipes the buffer data to an external
 process and pipes the output back into current buffer replacing
 the affected range.
+
 Example: infamously sort the buffer
 :1,$!sort
 .Ed
@@ -942,17 +955,17 @@ No argument prints the current keymap name.
 Set an alternative keymap
 
 .It Cm fd[\fIpath\fP]
-Set a secondary directory (stands for file dir)
+Set a secondary directory
 .Bd -literal
 Recalculates directory listing in b-2 buffer.
 No argument implies current directory.
 .Ed
 
 .It Cm fp[\fIpath\fP]
-Set a directory path for :fd (stands for file path)
+Set a directory path for :fd command
 
 .It Cm cd[\fIpath\fP]
-Set a working directory (stands for change dir)
+Set a working directory
 .Bd -literal
 Currently open buffers' file paths will be automatically adjusted
 to reflect a newly set working directory.
@@ -961,11 +974,12 @@ to reflect a newly set working directory.
 .It Cm inc[\fIregex\fP]
 Include regex for :fd calculation
 .Bd -literal
+No argument disables the filter.
+
 Example: include only files in submodule directory that end with .c
 :inc submodule.*\e.c$
 Example: exclude .git and submodule folders
 :inc (^(?\e:(?\e!^\e.git|^submodule).)+[^/]+$)
-No argument disables the filter.
 .Ed
 
 .It Cm reg
@@ -982,10 +996,11 @@ No argument will reset to the default value of 10.
 .It Cm ac[\fIregex\fP]
 Set autocomplete filter regex
 .Bd -literal
-Example: autocomplete using whole lines from the buffer
-:ac .+
 No argument resets to the default word filter regex as defined
 in led.c.
+
+Example: autocomplete using whole lines from the buffer
+:ac .+
 .Ed
 
 .It Cm uc
@@ -1015,6 +1030,7 @@ Redefine placeholders
 .Bd -literal
 This command replaces placeholders defined in conf.c
 and subsequent :ph commands expand the list of placeholders.
+
 Example: render 8 bit ascii (Extended ASCII) as <~>
 :ph 128 255 1 1~
 Example: flawless ISO/IEC 8859-1 (latin-1) support
@@ -1070,10 +1086,10 @@ Defines a target search group for any regex search operation.
 This becomes necessary when the result of regex search is to
 be based on some group rather than default match group.
 
+The value of grp is calculated using (group number * 2).
+
 Example: ignore tabs at the start of the line
 :grp 2:1,$f/^[	]+(.+):grp
-
-The value of grp is calculated using (group number * 2).
 .Ed
 
 .
@@ -1157,10 +1173,13 @@ Print register
 Set a special register using a character or a number.
 Once the register is set, all data passed into ex_print will
 be stored in the register.
+
 If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
+
 Print register contents cannot be displayed via R or :reg command
 when register is assigned (self-referential problem).
+
 Example: paste current buffer list exactly like from :b command
 :pr A:ya! a: b:pu a
 Example: store a line printed with :p
@@ -1183,8 +1202,10 @@ Line length render limit
 .Bd -literal
 Set render cutoff length for non cursor lines in vi and all
 lines in ex mode.
+
 Improves redraw performance when editing a file containing one
 or many long lines (1MB+ per line).
+
 Example: reasonable value
 :lim 5000
 Example: render only the cursor line
@@ -1198,8 +1219,10 @@ Control Undo/Redo
 .Bd -literal
 When seq is 0, multiple distinct operations undo/redo in a
 single step.
+
 To optimize resource use under heavy workloads, undo/redo
 tracking can be disabled by setting seq to a negative value.
+
 Example: test undo/redo operations in a single step
 :&ocontrol test:seq 0:&a step1:&a step2:&a step3:seq
 Example: completely disable undo/redo
