@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 5bf89e3b..d7bdc463 100644
+index b0a96771..4b0b21cf 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -405,7 +405,9 @@ int ex_edit(const char *path, int len)
+@@ -403,7 +403,9 @@ int ex_edit(const char *path, int len)
  static int ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index 5bf89e3b..d7bdc463 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -425,6 +427,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -423,6 +425,9 @@ static int ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(ex_ft);
  	}
