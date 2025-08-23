@@ -155,9 +155,8 @@ void temp_write(int i, char *str)
 }
 
 /* replace % and # with buffer names and !..! with command output */
-static char *ex_pathexpand(char *src)
+static char *ex_pathexpand(sbuf *sb, char *src)
 {
-	sbuf_smake(sb, 1024)
 	while (*src) {
 		if (*src == '#' || *src == '%') {
 			int n = -1;
@@ -166,7 +165,6 @@ static char *ex_pathexpand(char *src)
 				pbuf = &bufs[n = atoi(&src[1])];
 			if (pbuf >= &bufs[xbufcur] || !pbuf->path[0]) {
 				ex_print("\"#\" or \"%\" is not set")
-				free(sb->s);
 				return NULL;
 			}
 			sbuf_str(sb, pbuf->path)
@@ -1195,7 +1193,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
 	int i, j;
 	while (*src == xsep || *src == ' ' || *src == '\t')
 		src++;
-	while (*src && strchr(" \t0123456789+-.,/?$';%", *src)) {
+	while (memchr(" \t0123456789+-.,/?$';%", *src, 22)) {
 		if (*src == '\'' && src[1])
 			*loc++ = *src++;
 		if (*src == '/' || *src == '?') {
@@ -1237,17 +1235,19 @@ int ex_exec(const char *ln)
 {
 	int ret = 0, idx = 0, len = strlen(ln) + 1;
 	char loc[len], arg[len], *ecmd;
+	sbuf_smake(sb, 1024)
 	while (*ln) {
 		ln = ex_parse(ln, loc, &idx, arg);
-		if (!(ecmd = ex_pathexpand(arg)))
-			continue;
-		ret = excmds[idx].ec(loc, excmds[idx].name, ecmd);
-		if (ret == 2)
-			ex_print("invalid range")
-		else if (ret == 3)
-			ex_print("syntax error")
-		free(ecmd);
+		if ((ecmd = ex_pathexpand(sb, arg))) {
+			ret = excmds[idx].ec(loc, excmds[idx].name, ecmd);
+			if (ret == 2)
+				ex_print("invalid range")
+			else if (ret == 3)
+				ex_print("syntax error")
+		}
+		sbuf_cut(sb, 0)
 	}
+	free(sb->s);
 	return ret;
 }
 
@@ -1267,7 +1267,7 @@ void ex(void)
 			esc = 1;
 		} else
 			esc = 0;
-		sbuf_cut(sb, 0);
+		sbuf_cut(sb, 0)
 	}
 	free(sb->s);
 	xgrec--;
