@@ -83,7 +83,7 @@ index e4d22551..cf73a1be 100644
  }
  
 diff --git a/led.c b/led.c
-index a0a32874..0b0f45c9 100644
+index 989601f8..b862a1e9 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
