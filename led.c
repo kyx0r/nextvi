@@ -393,6 +393,8 @@ static void led_redraw(char *cs, int r, int orow, int lsh)
 
 void led_modeswap(void)
 {
+	preserve(int, xquit, xquit = 0;)
+	preserve(int, texec, if (texec == '@') texec = 0;)
 	preserve(int, xvis, xvis ^= 4;)
 	if (xvis & 4)
 		ex();
@@ -400,7 +402,9 @@ void led_modeswap(void)
 		syn_setft(ex_ft);
 		vi(1);
 	}
-	xquit = xquit > 0 ? 0 : xquit;
+	if (xquit > 0)
+		restore(xquit)
+	restore(texec)
 	restore(xvis)
 }
 
@@ -584,7 +588,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 			vi(1); /* redraw past screen */
 			syn_setft("/ex");
 			term_pos(xrows, 0);
-			if (xquit >= 0)
+			if (xquit > 0)
 				restore(xquit)
 			t_row = tempbufs[0].row;
 		case TK_CTL('a'):
