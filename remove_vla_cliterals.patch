@@ -12,10 +12,10 @@ index baf090d6..255eb86c 100644
  struct highlight hls[] = {
  	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 5bf89e3b..ebd7ad54 100644
+index b0a96771..5954055e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -812,7 +812,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -810,7 +810,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 5bf89e3b..ebd7ad54 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -859,6 +859,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -857,6 +857,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -32,19 +32,19 @@ index 5bf89e3b..ebd7ad54 100644
  	return 0;
  }
  
-@@ -1236,7 +1237,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
+@@ -1234,7 +1235,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
  int ex_exec(const char *ln)
  {
  	int ret = 0, idx = 0, len = strlen(ln) + 1;
 -	char loc[len], arg[len], *ecmd;
 +	char *loc = emalloc(len), *arg = emalloc(len), *ecmd;
+ 	sbuf_smake(sb, 1024)
  	while (*ln) {
  		ln = ex_parse(ln, loc, &idx, arg);
- 		if (!(ecmd = ex_pathexpand(arg)))
 @@ -1248,6 +1249,8 @@ int ex_exec(const char *ln)
- 			ex_print("syntax error")
- 		free(ecmd);
+ 		sbuf_cut(sb, 0)
  	}
+ 	free(sb->s);
 +	free(loc);
 +	free(arg);
  	return ret;
