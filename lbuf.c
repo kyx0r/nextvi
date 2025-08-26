@@ -340,13 +340,14 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	int offs[re->grpcnt * 2], i = r0;
 	char *s = lbuf_get(lb, i);
 	int off = skip >= 0 && s ? uc_chr(s, o0 + skip) - s : 0;
-	int g1, g2, _o, step;
+	int g1, g2, _o, step, flg;
 	for (; i >= 0 && i < ln_n; i += dir) {
 		_o = 0;
 		step = 0;
+		flg = REG_NEWLINE;
 		s = lb->ln[i];
-		while (rset_find(re, s + off, offs,
-				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
+		while (rset_find(re, s + off, offs, flg) >= 0) {
+			flg |= REG_NOTBOL;
 			g1 = offs[xgrp], g2 = offs[xgrp + 1];
 			if (g1 < 0) {
 				off += offs[1] > 0 ? offs[1] : 1;
