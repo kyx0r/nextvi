@@ -252,7 +252,7 @@ static int ex_range(char **num, int n, int *row)
 #define ex_region(loc, beg, end) ex_oregion(loc, beg, end, NULL, NULL)
 static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	int vaddr = 0, haddr = 0, ooff = xoff, row;
+	int vaddr = 0, haddr = 0, ooff, row;
 	if (!strcmp("%", loc) || !lbuf_len(xb)) {
 		*beg = 0;
 		*end = MAX(0, lbuf_len(xb));
@@ -264,11 +264,11 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 			if (loc[-1] == ',')
 				goto skip;
 			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
-			xoff = ex_range(&loc, ooff, &row);
+			ooff = ex_range(&loc, xoff, &row);
 			if (o2 && haddr++ % 2)
-				*o2 = xoff;
+				*o2 = ooff;
 			else if (o1)
-				*o1 = xoff;
+				*o1 = ooff;
 		} else {
 			skip:
 			if (vaddr++ % 2)
@@ -279,9 +279,10 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 	}
-	if (xoff < 0) {
+	if (haddr) {
+		if (ooff < 0)
+			return 1;
 		xoff = ooff;
-		return 1;
 	}
 	if (!vaddr) {
 		*beg = xrow;
@@ -991,7 +992,7 @@ static int ec_while(char *loc, char *cmd, char *arg)
 	}
 	for (; beg && ret == ret1; beg--)
 		ret = ex_exec(arg);
-	return ret == ret1 ? ret : skip;
+	return ret == ret1 ? 0 : skip;
 }
 
 static int ec_setdir(char *loc, char *cmd, char *arg)
@@ -1301,13 +1302,15 @@ int ex_exec(const char *ln)
 			continue;
 		}
 		if ((ecmd = ex_pathexpand(sb, arg))) {
-			ret = excmds[idx].ec(loc, excmds[idx].name, ecmd);
-			if (ret == 2)
+			idx = excmds[idx].ec(loc, excmds[idx].name, ecmd);
+			if (idx == 2)
 				ex_print("invalid range")
-			else if (ret == 3)
+			else if (idx == 3)
 				ex_print("syntax error")
-			else if (ret > 4)
+			if (idx > 4)
 				skip = ret - 4;
+			else
+				ret += idx;
 		}
 		sbuf_cut(sb, 0)
 	}
