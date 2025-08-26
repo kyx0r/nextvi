@@ -232,8 +232,7 @@ static int ex_range(char **num, int n, int *row)
 		break;
 	case '/':
 	case '?':
-		n = ec_search(NULL, (char*)row, (char*)num);
-		break;
+		return ec_search(NULL, (char*)row, (char*)num);
 	default:
 		if (isdigit((unsigned char) **num)) {
 			n = atoi(*num) - !row;
@@ -280,6 +279,10 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 	}
+	if (xoff < 0) {
+		xoff = ooff;
+		return 1;
+	}
 	if (!vaddr) {
 		*beg = xrow;
 		*end = MIN(lbuf_len(xb), xrow + 1);
@@ -296,7 +299,7 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 
 static int ec_search(char *loc, char *cmd, char *arg)
 {
-	int dir, off, obeg, beg = -1, end = lbuf_len(xb);
+	int dir, off, obeg, beg = -1, end;
 	char **re = !loc ? (char**)arg : &arg;
 	dir = **re == '/' ? 2 : -2;
 	if (dir < 0 && **re != '?')
@@ -311,6 +314,7 @@ static int ec_search(char *loc, char *cmd, char *arg)
 	if (!loc) {
 		beg = cmd ? *(int*)cmd : xrow + (xkwddir > 0);
 		off = cmd ? xoff : 0;
+		end = cmd ? beg+1 : lbuf_len(xb);
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
 				&off, end, MIN(dir, 0)))
 			return -1;
