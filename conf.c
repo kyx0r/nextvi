@@ -231,7 +231,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 (?:([+-])[0-9]+)?)[ \t]*(?:([,;])((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z])?([0-9]*)?)\
 (?:([+-])([0-9]+))?)*)((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|\
 left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[tdp]|[ \t]?([?/]))?|inc|i|\
-(?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w[!q]?!?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
+(?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[ql!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
 	{"/ex", "\\\\(.)|(:)#", A(AY1 | SYN_BD, YE, BL1)},
 	{"/ex", "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", A(WH1 | SYN_BD)},
