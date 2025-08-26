@@ -225,7 +225,8 @@ void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
 			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
 			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
 	lb->modified = 1;
-	lb->saved = -1;
+	if (lb->saved > lb->hist_u)
+		lb->saved = -1;
 }
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)
