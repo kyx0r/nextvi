@@ -2,8 +2,7 @@ struct lbuf *lbuf_make(void)
 {
 	struct lbuf *lb = emalloc(sizeof(*lb));
 	memset(lb, 0, sizeof(*lb));
-	for (int i = 0; i < LEN(lb->mark); i++)
-		lb->mark[i] = -1;
+	memset(lb->mark, -1, sizeof(lb->mark) / 2);
 	return lb;
 }
 
@@ -226,6 +225,7 @@ void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
 			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
 			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
 	lb->modified = 1;
+	lb->saved = -1;
 }
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)
@@ -260,7 +260,7 @@ int lbuf_undo(struct lbuf *lb)
 	lbuf_loadmark(lb->mark, markidx('*'), lo->pos, lo->pos_off)
 	lbuf_movemark(lb->mark, m0, lo->mark, m0)
 	lbuf_movemark(lb->mark, m1, lo->mark, m1)
-	lb->modified = lb->hist_u != 0;
+	lb->modified = lb->hist_u != lb->saved;
 	return 0;
 }
 
@@ -284,7 +284,7 @@ int lbuf_redo(struct lbuf *lb)
 		_lbuf_movemark(lb->mark, m0, NMARKS, lb->tmp_mark, 0, 2)
 		_lbuf_movemark(lb->mark, m1, NMARKS, lb->tmp_mark, 1, 2)
 	}
-	lb->modified = 1;
+	lb->modified = lb->hist_u != lb->saved;
 	return 0;
 }
 
@@ -298,6 +298,7 @@ void lbuf_saved(struct lbuf *lb, int clear)
 		lb->hist_u = 0;
 	}
 	lb->modified = 0;
+	lb->saved = lb->hist_u;
 }
 
 int lbuf_indents(struct lbuf *lb, int r)
