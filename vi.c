@@ -1358,9 +1358,9 @@ void vi(int init)
 				break;
 			case TK_CTL('k'):;
 				static struct lbuf *writexb;
-				if ((k = ex_exec("w")) && xb == writexb)
-					k = ex_exec("mpt0:w!");
-				writexb = k ? xb : NULL;
+				if ((cs = ex_exec("w")) && xb == writexb)
+					cs = ex_exec("mpt0:w!");
+				writexb = cs ? xb : NULL;
 				break;
 			case '#':
 				if (vi_lnnum & vi_arg)

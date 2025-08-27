@@ -432,7 +432,7 @@ void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
 void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
-int ex_exec(const char *ln);
+void *ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 void ex_cprint(char *line, int r, int c, int ln);
 #define ex_print(line) \
