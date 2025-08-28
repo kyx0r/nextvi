@@ -248,15 +248,16 @@ static int ex_range(char **num, int n, int *row)
 		break;
 	case '/':
 	case '?':
-		if (ex_reread(num, &dir))
+		off = row ? n : 0;
+		if (off < 0 || ex_reread(num, &dir))
 			return -1;
 		beg = row ? *row : xrow + (xkwddir > 0);
-		off = row ? n : 0;
 		end = row ? beg+1 : lbuf_len(xb);
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
 				&off, end, MIN(dir, 0)))
 			return -1;
-		return row ? off : beg;
+		n = row ? off : beg;
+		break;
 	default:
 		if (isdigit((unsigned char) **num)) {
 			n = atoi(*num) - !row;
@@ -276,12 +277,12 @@ static int ex_range(char **num, int n, int *row)
 #define ex_region(loc, beg, end) ex_oregion(loc, beg, end, NULL, NULL)
 static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	int vaddr = 0, haddr = 0, ooff = xoff, row;
 	if (!strcmp("%", loc) || !lbuf_len(xb)) {
 		*beg = 0;
 		*end = MAX(0, lbuf_len(xb));
 		return 0;
 	}
+	int vaddr = 0, haddr = 0, ooff = xoff, row;
 	while (*loc) {
 		if (*loc == ';' || *loc == ',') {
 			loc++;
@@ -322,7 +323,7 @@ static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
 	return 0;
 }
 
-static void *ec_search(char *loc, char *cmd, char *arg)
+static void *ec_find(char *loc, char *cmd, char *arg)
 {
 	int dir, off, obeg, beg, end;
 	char *err = ex_reread(&arg, &dir);
@@ -338,7 +339,7 @@ static void *ec_search(char *loc, char *cmd, char *arg)
 	} else
 		beg = xrow;
 	if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
-			&off, end, xkwddir))
+			&off, end, cmd[1] == '+' ? xkwddir : MIN(dir, 0)))
 		return xuerr;
 	if (beg < obeg)
 		return xuerr;
@@ -1184,7 +1185,8 @@ static struct excmd {
 	{"ft", ec_ft},
 	{"fd", ec_setdir},
 	{"fp", ec_setdir},
-	{"f", ec_search},
+	{"f+", ec_find},
+	{"f", ec_find},
 	EO(ish),
 	{"inc", ec_setincl},
 	EO(ic),
