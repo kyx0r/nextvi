@@ -1621,20 +1621,18 @@ void vi(int init)
 						vi_col = vi_off2col(xb, xrow, xoff+1);
 						if (vi_col <= n)
 							break;
-						if (ex_exec("1,1wlf/[^ \t]*(?\\\\:.$|(.)):;c\n\x1b"))
+						if (ex_exec("1,1wlf/[^ \t]*[ \t]+(?\\\\:.$|(.)):;c\n\x1b"))
 							break;
 					}
 					restore(xled)
 					restore(xgrp)
 					vi_mod |= !texec;
 				} else if (k == 'q') {
-					preserve(int, xseq, xseq = 0;)
 					preserve(int, xled, xled = 0;)
 					char cmd[64] = "g/./& ";
 					strcpy(itoa(vi_arg, cmd+5), "gw");
 					ex_command(cmd)
 					restore(xled)
-					restore(xseq)
 					vi_mod |= 1;
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
@@ -1702,7 +1700,7 @@ void vi(int init)
 			case '\\':
 				ex_exec("b-2");
 				if (vi_arg && xb == tempbufs[1].lb)
-					ex_exec("1,$d:fd:b-2");
+					ex_exec("%d:fd:b-2");
 				vc_status(0);
 				vi_mod |= 1;
 				break;

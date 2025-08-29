@@ -340,8 +340,12 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	int r0 = *r, o0 = *o;
 	int offs[re->grpcnt * 2], i = r0;
 	char *s = lbuf_get(lb, i);
-	int off = skip >= 0 && s ? uc_chr(s, o0 + skip) - s : 0;
-	int g1, g2, _o, step, flg;
+	int off, g1, g2, _o, step, flg;
+	if (skip >= 0 && s)
+		off = rstate->s == s ? rstate->chrs[o0 + skip] - s
+					: uc_chr(s, o0 + skip) - s;
+	else
+		off = 0;
 	for (; i >= 0 && i < ln_n; i += dir) {
 		_o = 0;
 		step = 0;
