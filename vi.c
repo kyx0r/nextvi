@@ -760,8 +760,7 @@ static int vi_motion(int *row, int *off)
 		free(cs);
 		if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg))) {
 			ca_dir = !ca_dir;
-			if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
-				return -1;
+			return -1;
 		}
 		break;
 	case '`':
@@ -1234,9 +1233,7 @@ void vi(int init)
 			xrow = nrow;
 			xoff = noff;
 			switch (mv) {
-			case 1: /* ^a */
-				if (xrow < otop + xrows - 1)
-					break;
+			case TK_CTL('a'):
 			case '/':
 			case '?':
 			case 'n':
