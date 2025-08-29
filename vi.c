@@ -595,7 +595,6 @@ static void vc_status(int type)
 /* read a motion */
 static int vi_motion(int *row, int *off)
 {
-	static char ca_dir;
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
 	int cnt = vi_arg ? vi_arg : 1;
@@ -758,10 +757,8 @@ static int vi_motion(int *row, int *off)
 			return -1;
 		ex_krsset(cs, +1);
 		free(cs);
-		if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg))) {
-			ca_dir = !ca_dir;
-			return -1;
-		}
+		if (vi_search('n', 1, row, off, sizeof(vi_msg)))
+			xkwddir = -xkwddir;
 		break;
 	case '`':
 		if ((mark = term_read()) <= 0)
@@ -1233,7 +1230,6 @@ void vi(int init)
 			xrow = nrow;
 			xoff = noff;
 			switch (mv) {
-			case TK_CTL('a'):
 			case '/':
 			case '?':
 			case 'n':
