@@ -164,8 +164,7 @@ VI NORMAL
      di{arg}       Delete inside arg pairs <( ) ">
      ci{arg}       Change inside arg pairs <( ) ">
      [#]r{arg}     Replace # characters with arg from cursor forward
-     K             Split a line
-     {#}K          Split a line without creating blank <Newline>
+     [#]K          Split a line # times
      [#]J          Join # lines
      vj            Toggle space padding when joining lines
      [#]y{arg}     Yank arg region # times
@@ -384,15 +383,19 @@ EX COMMANDS
      [range]f{/?}[kwd]
              Ranged search
 
-             Subsequent commands within range move to the next match
-             just like vi normal [#]n or [#]N commands.
-
              Example: no range given, current line only
              :f/int
              Example: reverse
              :f?int
              Example: range given
              :10,100f/int
+
+     [range]f+{/?}[kwd]
+             Incrementing ranged search
+
+             Equivalent to the :f command, except subsequent commands within
+             range move to the next match just like vi normal [#]n or [#]N
+             commands.
 
      b[#]    Print currently active buffers state or switch to a buffer
 
@@ -579,6 +582,29 @@ EX COMMANDS
              Example: execute vi dw command after user exits insert
              :@i:@dw
 
+     [# $],[skip1=0],[skip2=0]wl{cmd}
+             While loop conditional
+
+             Repeat {cmd} [#] times or infinite with <$>.
+             While loop is broken once {cmd} returns an error or count exceeded.
+             If while fails with error, [skip1] and [skip2] specify the location/range
+             of the separated ex commands to skip that follow next in chain.
+
+             Example: attempt to join every line in file using arbitrary count
+             :10000wl & J
+             Example: undo everything
+             :$wl u
+             Example: calculate directory only if :cd succeeded
+             :1,1wl cd /blah:fd
+             Example: repeat chain of ex commands 10 times
+             :10wl 1p5p10p
+             Example: print a line only if it contains "int" at offset 5
+             :1,1wl ;5;/^int/:p
+             Example: allow :led while branching only :p command
+             :led:1,2wl ;5;/^int/:led:p
+             Example: branch multiple commands
+             :led:1,2,3wl ;5;/^int/:led:&i2 not branched:p:p
+
      pu[reg] [cmd]
              Paste a register
 
@@ -624,9 +650,8 @@ EX COMMANDS
      x!
              Force write and quit
 
-     u[# $]  Undo # times or all with $
-     rd[# $]
-             Redo # times or all with $
+     u       Undo
+     rd      Redo
 
      [range]s{*}[kwd]{*}{str}[*][opts]
              Substitute
@@ -1012,19 +1037,19 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 509 vi.h     |  definitions/aux     |
+     | 510 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 295 conf.c   |  hl/ft/td config     |
      | 342 term.c   |  low level IO        |
      | 397 ren.c    |  positioning/syntax  |
-     | 502 lbuf.c   |  file/line buffer    |
+     | 509 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
      | 682 led.c    |  insert mode/output  |
      | 748 regex.c  |  extended RE         |
-     | 1289 ex.c    |  ex options/commands |
-     | 1919 vi.c    |  normal mode/general |
-     | 6811 total   |  wc -l *.c|sort      |
+     | 1345 ex.c    |  ex options/commands |
+     | 1870 vi.c    |  normal mode/general |
+     | 6825 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1095,4 +1120,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                    August 23, 2025                   Linux 6.16.0
+Linux 6.16.0                    August 29, 2025                   Linux 6.16.0
