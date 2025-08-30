@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index b0a96771..8821ab43 100644
+index 147a4104..492fa4d0 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
- int xkwdcnt;			/* number of search kwd changes */
- int xbufcur;			/* number of active buffers */
- int xgrec;			/* global vi/ex recursion depth */
+@@ -32,6 +32,7 @@ int xkwdcnt;			/* number of search kwd changes */
+ sbuf *xacreg;			/* autocomplete db filter regex */
+ rset *xkwdrs;			/* the last searched keyword rset */
+ char *xregs[256];		/* string registers */
 +int xexrc = 0;			/* read .exrc from the current directory */
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1096,6 +1097,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1146,6 +1147,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index b0a96771..8821ab43 100644
  
  _EO(left,
  	if (*loc)
-@@ -1128,6 +1130,7 @@ static struct excmd {
+@@ -1178,6 +1180,7 @@ static struct excmd {
  	EO(ai),
  	{"ac", ec_setacreg},
  	{"a", ec_insert},
@@ -26,7 +26,7 @@ index b0a96771..8821ab43 100644
  	{"ea!", ec_editapprox},
  	{"ea", ec_editapprox},
  	{"e!", ec_edit},
-@@ -1273,6 +1276,51 @@ void ex(void)
+@@ -1329,6 +1332,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -78,7 +78,7 @@ index b0a96771..8821ab43 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1284,6 +1332,30 @@ void ex_init(char **files, int n)
+@@ -1340,6 +1388,30 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	xmpt = 0;
  	xvis &= ~8;
@@ -110,14 +110,3 @@ index b0a96771..8821ab43 100644
 +			load_exrc(".exrc");
 +	}
  }
-diff --git a/vi.c b/vi.c
-index 98367572..284c2083 100644
---- a/vi.c
-+++ b/vi.c
-@@ -1,5 +1,6 @@
- #include <ctype.h>
- #include <fcntl.h>
-+#include <limits.h>
- #include <stdio.h>
- #include <stdarg.h>
- #include <stdlib.h>
