@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index baf090d6..255eb86c 100644
+index 846e3bf8..79d94849 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -40,7 +40,7 @@ int ftslen = LEN(fts);
@@ -12,10 +12,10 @@ index baf090d6..255eb86c 100644
  struct highlight hls[] = {
  	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index b0a96771..5954055e 100644
+index 147a4104..249c4a63 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -810,7 +810,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -838,7 +838,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,24 +24,24 @@ index b0a96771..5954055e 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -857,6 +857,7 @@ static int ec_substitute(char *loc, char *cmd, char *arg)
+@@ -885,6 +885,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
 +	free(offs);
- 	return 0;
+ 	return NULL;
  }
  
-@@ -1234,7 +1235,7 @@ static const char *ex_parse(const char *src, char *loc, int *idx, char *arg)
- int ex_exec(const char *ln)
+@@ -1287,7 +1288,7 @@ void *ex_exec(const char *ln)
  {
- 	int ret = 0, idx = 0, len = strlen(ln) + 1;
--	char loc[len], arg[len], *ecmd;
-+	char *loc = emalloc(len), *arg = emalloc(len), *ecmd;
+ 	int idx = 0, len = strlen(ln) + 1;
+ 	int r1 = -1, r2 = -1;
+-	char loc[len], arg[len], *ecmd, *ret = NULL;
++	char *loc = emalloc(len), *arg = emalloc(len), *ecmd, *ret = NULL;
  	sbuf_smake(sb, 1024)
- 	while (*ln) {
+ 	for (int i = 0; *ln; i++) {
  		ln = ex_parse(ln, loc, &idx, arg);
-@@ -1248,6 +1249,8 @@ int ex_exec(const char *ln)
+@@ -1304,6 +1305,8 @@ void *ex_exec(const char *ln)
  		sbuf_cut(sb, 0)
  	}
  	free(sb->s);
@@ -51,19 +51,19 @@ index b0a96771..5954055e 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index e4d22551..cf73a1be 100644
+index 2c79d6c4..d359ceec 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -336,7 +336,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -338,7 +338,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
 -	int offs[re->grpcnt * 2], i = r0;
 +	int *offs = emalloc(re->grpcnt * 2 * sizeof(int)), i = r0;
  	char *s = lbuf_get(lb, i);
- 	int off = skip >= 0 && s ? uc_chr(s, o0 + skip) - s : 0;
- 	int g1, g2, _o, step;
-@@ -356,14 +356,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+ 	int off, g1, g2, _o, step, flg;
+ 	if (skip >= 0 && s)
+@@ -363,14 +363,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				break;
  			*o = _o;
  			*r = i;
@@ -257,7 +257,7 @@ index 446b378f..225cb585 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 98367572..518ab49a 100644
+index 41570cf4..db556c36 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -142,7 +142,8 @@ static void vi_drawrow(int row)
@@ -279,7 +279,7 @@ index 98367572..518ab49a 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1347,10 +1350,11 @@ void vi(int init)
+@@ -1293,10 +1296,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -292,7 +292,7 @@ index 98367572..518ab49a 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1488,7 +1492,7 @@ void vi(int init)
+@@ -1434,7 +1438,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -301,7 +301,7 @@ index 98367572..518ab49a 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1498,10 +1502,11 @@ void vi(int init)
+@@ -1444,10 +1448,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -314,7 +314,7 @@ index 98367572..518ab49a 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1509,6 +1514,7 @@ void vi(int init)
+@@ -1455,6 +1460,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -323,10 +323,10 @@ index 98367572..518ab49a 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index ae224584..933bc904 100644
+index 3254b683..2e6a59c1 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -427,7 +427,7 @@ extern int ftslen;
+@@ -460,7 +460,7 @@ extern int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */
