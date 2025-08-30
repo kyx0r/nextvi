@@ -1,26 +1,24 @@
 diff --git a/ex.c b/ex.c
-index b0a96771..19d684f1 100644
+index 147a4104..e7f9ea0d 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -35,6 +35,7 @@ int xpr;			/* ex_cprint register */
+@@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */
  int xsep = ':';			/* ex command separator */
  int xlim = -1;			/* rendering cutoff for non cursor lines */
  int xseq = 1;			/* undo/redo sequence */
 +int xlw;			/* soft linewrap col */
- char *xregs[256];		/* string registers */
- static int xbufsmax;		/* number of buffers */
- static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -1079,6 +1080,25 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
- 	return 0;
+ 
+ int xrow, xoff, xtop;		/* current row, column, and top row */
+ int xbufcur;			/* number of active buffers */
+@@ -1129,6 +1130,23 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+ 	return NULL;
  }
  
-+static int ec_linewrap(char *loc, char *cmd, char *arg)
++static void *ec_linewrap(char *loc, char *cmd, char *arg)
 +{
 +	int fd;
-+	if (xb->modified) {
-+		ex_print("unsaved changes present");
-+		return 1;
-+	}
++	if (xb->modified)
++		return "unsaved changes present";
 +	if (*arg)
 +		xlw = atoi(arg);
 +	else
@@ -30,13 +28,13 @@ index b0a96771..19d684f1 100644
 +	readfile(, 1)
 +	ex_bufpostfix(ex_buf, 1);
 +	syn_setft(ex_ft);
-+	return 0;
++	return NULL;
 +}
 +
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1181,6 +1201,7 @@ static struct excmd {
+@@ -1233,6 +1251,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -45,10 +43,10 @@ index b0a96771..19d684f1 100644
  	EO(mpt),
  	{"=", ec_lnum},
 diff --git a/lbuf.c b/lbuf.c
-index e4d22551..98ba8806 100644
+index 2c79d6c4..f0507940 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -72,25 +72,139 @@ static int linelength(char *s)
+@@ -71,25 +71,139 @@ static int linelength(char *s)
  	return s[len] == '\n' ? len + 1 : len;
  }
  
@@ -188,7 +186,7 @@ index e4d22551..98ba8806 100644
  	}
  	for (i = 0; i < n_del; i++) {
  		if (lb->ln[pos + i] == rstate->s)
-@@ -112,6 +226,18 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+@@ -111,6 +225,18 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
  	lb->ln_n += n_ins - n_del;
  	for (i = 0; i < n_ins; i++)
  		lb->ln[pos + i] = *((char**)sb->s + i);
@@ -207,7 +205,7 @@ index e4d22551..98ba8806 100644
  	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
  		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
  			lbuf_movemark(lo->mark, i, lb->mark, i)
-@@ -172,6 +298,8 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
+@@ -171,6 +297,8 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
  	lo->pos = pos;
  	lo->n_ins = 0;
  	lo->n_del = n_del;
@@ -216,7 +214,7 @@ index e4d22551..98ba8806 100644
  	lo->pos_off = lb->mark[markidx('*')] >= 0 ?
  			lb->mark[markidx('*') + NMARKS] : 0;
  	return lo;
-@@ -200,7 +328,8 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
+@@ -199,7 +327,8 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lb->ln[i];
  		long nw = 0;
@@ -227,7 +225,7 @@ index e4d22551..98ba8806 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index 98367572..41b37afe 100644
+index 41570cf4..26f4e506 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,22 @@ static void vi_drawrow(int row)
@@ -254,10 +252,10 @@ index 98367572..41b37afe 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index ae224584..5ac55716 100644
+index 3254b683..8ddc352c 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -137,6 +137,8 @@ struct lopt {
+@@ -136,6 +136,8 @@ struct lopt {
  	char *ins;		/* inserted text */
  	char *del;		/* deleted text */
  	int *mark;		/* saved marks */
@@ -266,7 +264,7 @@ index ae224584..5ac55716 100644
  	int pos, n_ins, n_del;	/* modification location */
  	int pos_off;		/* cursor line offset */
  	int seq;		/* operation number */
-@@ -144,6 +146,8 @@ struct lopt {
+@@ -143,6 +145,8 @@ struct lopt {
  struct linfo {
  	int len;
  	int grec;
