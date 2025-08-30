@@ -1,12 +1,12 @@
 diff --git a/ex.c b/ex.c
-index 147a4104..8335a15f 100644
+index 147a4104..4b620b3a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1137,6 +1137,50 @@ static int eo_val(char *arg)
  	return val;
  }
  
-+static int ec_closebuf(char *loc, char *cmd, char *arg)
++static void *ec_closebuf(char *loc, char *cmd, char *arg)
 +{
 +	int idx, ridx = 0;
 +	int istmp = istempbuf(ex_buf);
@@ -28,7 +28,7 @@ index 147a4104..8335a15f 100644
 +	}
 +	for (int b = 0; b <= ridx; b++) {
 +		if (idx < 0 || (!idx && xbufcur < 2) || idx >= xbufcur)
-+			return 1;
++			return "invalid buffer index";
 +		bufs_free(idx);
 +		for (int i = idx; i < xbufcur; i++)
 +			bufs[i] = bufs[i+1];
@@ -46,7 +46,7 @@ index 147a4104..8335a15f 100644
 +		}
 +		syn_setft(ex_ft);
 +	}
-+	return 0;
++	return NULL;
 +}
 +
 +
