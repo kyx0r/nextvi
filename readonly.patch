@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index b0a96771..e161721b 100644
+index 147a4104..ec01e94a 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -39,6 +39,7 @@ char *xregs[256];		/* string registers */
- static int xbufsmax;		/* number of buffers */
- static int xbufsalloc = 10;	/* initial number of buffers */
- static int xgdep;		/* global command recursion depth */
+@@ -43,6 +43,7 @@ static int xgdep;		/* global command recursion depth */
+ static char xuerr[] = "unreported error";
+ static char xserr[] = "syntax error";
+ static char xrerr[] = "invalid range";
 +char readonly = 0;		/* commandline readonly option */
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
-@@ -100,6 +101,7 @@ static int bufs_open(const char *path, int len)
+@@ -104,6 +105,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -18,7 +18,7 @@ index b0a96771..e161721b 100644
  	return i;
  }
  
-@@ -418,6 +420,8 @@ static int ec_edit(char *loc, char *cmd, char *arg)
+@@ -429,6 +431,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -27,31 +27,29 @@ index b0a96771..e161721b 100644
  	readfile(rd =, cd == 3)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -552,6 +556,10 @@ static int ec_write(char *loc, char *cmd, char *arg)
+@@ -561,6 +565,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
-+			if (ex_buf->readonly) {
-+				ex_print("write failed: readonly option is set");
-+				return 1;
-+			}
- 			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime) {
- 				ex_print("write failed: file changed")
- 				return 1;
-@@ -1079,6 +1087,12 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
- 	return 0;
++			if (ex_buf->readonly)
++				return "write failed: readonly option is set";
+ 			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime)
+ 				return "write failed: file changed";
+ 			if (arg[0] && mtime(path) >= 0)
+@@ -1129,6 +1135,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+ 	return NULL;
  }
  
-+static int ec_readonly(char *loc, char *cmd, char *arg)
++static void *ec_readonly(char *loc, char *cmd, char *arg)
 +{
 +	ex_buf->readonly = !ex_buf->readonly;
-+	return 0;
++	return NULL;
 +}
 +
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1149,6 +1163,7 @@ static struct excmd {
+@@ -1200,6 +1212,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -60,10 +58,10 @@ index b0a96771..e161721b 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 98367572..40472fe6 100644
+index 41570cf4..2bc16e5f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1894,9 +1894,11 @@ int main(int argc, char *argv[])
+@@ -1841,9 +1841,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -77,19 +75,19 @@ index 98367572..40472fe6 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index ae224584..7f891aa8 100644
+index 3254b683..0a0997c4 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -373,6 +373,7 @@ struct buf {
+@@ -372,6 +372,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
 +	char readonly;			/* read only */
  };
- extern int xbufcur;
- extern struct buf *ex_buf;
-@@ -507,3 +508,4 @@ extern char *fs_exdir;
- extern int vi_hidch;
- extern int vi_insmov;
- extern int vi_lncol;
+ /* ex options */
+ extern int xleft;
+@@ -508,3 +509,4 @@ void vi_regput(int c, const char *s, int ln);
+ extern rset *fsincl;
+ extern char *fs_exdir;
+ void dir_calc(char *path);
 +extern char readonly;
