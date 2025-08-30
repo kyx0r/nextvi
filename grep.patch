@@ -1,8 +1,8 @@
 diff --git a/conf.c b/conf.c
-index baf090d6..43c01fdf 100644
+index 846e3bf8..823fce65 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -236,6 +236,11 @@ left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[tdp]|[ \t]?([?/]
+@@ -236,6 +236,11 @@ left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[+ \t]?([?/])|[td
  	{"/ex", "\\\\(.)|(:)#", A(AY1 | SYN_BD, YE, BL1)},
  	{"/ex", "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", A(WH1 | SYN_BD)},
  
@@ -15,12 +15,12 @@ index baf090d6..43c01fdf 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index b0a96771..d20b04b1 100644
+index 147a4104..7a489699 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -23,7 +23,7 @@ int xkwdcnt;			/* number of search kwd changes */
- int xbufcur;			/* number of active buffers */
- int xgrec;			/* global vi/ex recursion depth */
+@@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
+ rset *xkwdrs;			/* the last searched keyword rset */
+ char *xregs[256];		/* string registers */
  struct buf *bufs;		/* main buffers */
 -struct buf tempbufs[2];		/* temporary buffers, for internal use */
 +struct buf tempbufs[3];		/* temporary buffers, for internal use */
@@ -28,10 +28,10 @@ index b0a96771..d20b04b1 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 98367572..bb83fc1f 100644
+index 41570cf4..46e2af6c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -555,12 +555,12 @@ void dir_calc(char *path)
+@@ -525,12 +525,12 @@ void dir_calc(char *path)
  	free(sb->s);
  }
  
@@ -46,7 +46,7 @@ index 98367572..bb83fc1f 100644
  	*row = xrow; *off = xoff; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -571,14 +571,14 @@ if (ret && xrow) { \
+@@ -541,14 +541,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -64,7 +64,7 @@ index 98367572..bb83fc1f 100644
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -594,7 +594,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -564,7 +564,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
  		path = tempbufs[1].lb->ln[fspos];
@@ -73,7 +73,7 @@ index 98367572..bb83fc1f 100644
  	}
  	return 0;
  }
-@@ -715,6 +715,7 @@ static int vi_motion(int *row, int *off)
+@@ -684,6 +684,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -81,7 +81,7 @@ index 98367572..bb83fc1f 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -733,8 +734,44 @@ static int vi_motion(int *row, int *off)
+@@ -702,8 +703,44 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -127,7 +127,7 @@ index 98367572..bb83fc1f 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1350,7 +1387,17 @@ void vi(int init)
+@@ -1296,7 +1333,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -146,7 +146,7 @@ index 98367572..bb83fc1f 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1510,6 +1557,10 @@ void vi(int init)
+@@ -1456,6 +1503,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -157,7 +157,7 @@ index 98367572..bb83fc1f 100644
  				default:
  					term_dec()
  				}
-@@ -1880,6 +1931,7 @@ int main(int argc, char *argv[])
+@@ -1827,6 +1878,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", "/");
  	temp_open(1, "/fm/", "/fm");
@@ -166,15 +166,15 @@ index 98367572..bb83fc1f 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index ae224584..02412e71 100644
+index 3254b683..9f4cac5f 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -378,7 +378,7 @@ extern int xbufcur;
- extern struct buf *ex_buf;
- extern struct buf *ex_pbuf;
+@@ -409,7 +409,7 @@ extern sbuf *xacreg;
+ extern rset *xkwdrs;
+ extern char *xregs[256];
  extern struct buf *bufs;
 -extern struct buf tempbufs[2];
 +extern struct buf tempbufs[3];
+ extern struct buf *ex_buf;
+ extern struct buf *ex_pbuf;
  #define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
- #define ex_path ex_buf->path
- #define ex_ft ex_buf->ft
