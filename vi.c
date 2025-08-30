@@ -720,7 +720,9 @@ static int vi_motion(int *row, int *off)
 			ex_bufpostfix(&bufs[i], 1);
 		syn_setft(ex_ft);
 		vc_status(0);
-		return 'n';
+		xtop = MAX(0, *row - xrows / 2);
+		vi_mod |= 1;
+		break;
 	case TK_CTL('t'):
 		if (vi_arg % 2 == 0 && vi_arg < LEN(srow) * 2) {
 			vi_arg /= 2;
@@ -751,14 +753,21 @@ static int vi_motion(int *row, int *off)
 	case 'N':
 		if (vi_search(mv, cnt, row, off, sizeof(vi_msg)))
 			return -1;
+		xtop = MAX(0, *row - xrows / 2);
+		vi_mod |= mv == '/' || mv == '?';
 		break;
+	case '*':
 	case TK_CTL('a'):
-		if (!(cs = vi_curword(xb, *row, *off, cnt)))
-			return -1;
-		ex_krsset(cs, +1);
-		free(cs);
+		if (mv == '*' || vi_arg) {
+			if (!(cs = vi_curword(xb, *row, *off, cnt)))
+				return -1;
+			ex_krsset(cs, +1);
+			free(cs);
+		}
 		if (vi_search('n', 1, row, off, sizeof(vi_msg)))
 			xkwddir = -xkwddir;
+		else if (*row < xtop || *row >= xtop + xrows - 1)
+			xtop = MAX(0, *row - xrows / 2);
 		break;
 	case '`':
 		if ((mark = term_read()) <= 0)
@@ -1229,15 +1238,6 @@ void vi(int init)
 				lbuf_mark(xb, '`', xrow, ooff);
 			xrow = nrow;
 			xoff = noff;
-			switch (mv) {
-			case '/':
-			case '?':
-			case 'n':
-			case 'N':
-				xtop = MAX(0, xrow - xrows / 2);
-				vi_mod |= 1;
-				break;
-			}
 		} else if (mv == 0) {
 			char *cmd;
 			term_dec()
