@@ -94,10 +94,6 @@ Detect and set the corresponding filetype based on the shebang
 or specific data in the file. Currently supports only shell
 and python.
 
-star_search.patch
---------------
-Alternative to ^a search but does not center the screen.
-
 kbd_layout.patch
 --------------
 Changes hjkl to work well with other keyboard layouts.
