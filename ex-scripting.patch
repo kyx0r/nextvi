@@ -1,27 +1,27 @@
 diff --git a/ex.c b/ex.c
-index b0a96771..97e83e80 100644
+index 147a4104..76ecded4 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -36,6 +36,7 @@ int xsep = ':';			/* ex command separator */
- int xlim = -1;			/* rendering cutoff for non cursor lines */
- int xseq = 1;			/* undo/redo sequence */
+@@ -32,6 +32,7 @@ int xkwdcnt;			/* number of search kwd changes */
+ sbuf *xacreg;			/* autocomplete db filter regex */
+ rset *xkwdrs;			/* the last searched keyword rset */
  char *xregs[256];		/* string registers */
 +char **xenvp;
- static int xbufsmax;		/* number of buffers */
- static int xbufsalloc = 10;	/* initial number of buffers */
- static int xgdep;		/* global command recursion depth */
-@@ -1079,6 +1080,41 @@ static int ec_setenc(char *loc, char *cmd, char *arg)
- 	return 0;
+ struct buf *bufs;		/* main buffers */
+ struct buf tempbufs[2];		/* temporary buffers, for internal use */
+ struct buf *ex_buf;		/* current buffer */
+@@ -1129,6 +1130,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+ 	return NULL;
  }
  
-+static int ec_script(char *loc, char *cmd, char *arg)
++static void *ec_script(char *loc, char *cmd, char *arg)
 +{
 +	char *rep;
 +	char buf[100];
 +	int row = xrow, off = xoff;
 +	char *ln = lbuf_get(xb, row);
 +	if (!*arg)
-+		return 0;
++		return xserr;
 +	setenv("NEXTVI_FT", ex_ft, 1);
 +	itoa(row, buf);
 +	setenv("NEXTVI_ROW", buf, 1);
@@ -46,13 +46,13 @@ index b0a96771..97e83e80 100644
 +	if (rep && cmd[1] == 'x')
 +		ex_exec(rep);
 +	free(rep);
-+	return 0;
++	return NULL;
 +}
 +
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1161,6 +1197,8 @@ static struct excmd {
+@@ -1213,6 +1249,8 @@ static struct excmd {
  	EO(shape),
  	EO(seq),
  	EO(sep),
@@ -78,7 +78,7 @@ index 40e0cb4c..e02383fe 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index ae224584..31c7f9b2 100644
+index 3254b683..0dcd10da 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple
