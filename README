@@ -205,8 +205,10 @@ VI NORMAL
      [#]n
      [#]N
                    Repeat regex search, move [down up] 1 or # matches
-     <^A>          Regex search 1 word from cursor, no center, wraparound move
+     <^A>          Regex search, no center, wraparound move [up down]
+     *             Regex search 1 word from cursor, no center, wraparound move
                    [up down]
+     {#}*
      {#}<^A>       Regex search, set keyword to # words from cursor
      <^]>          Filesystem regex search forward based on directory listing
                    in b-2. Sets global line mark 0 for <^P> fallback
@@ -1121,4 +1123,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                    August 29, 2025                   Linux 6.16.0
+Linux 6.16.0                    August 30, 2025                   Linux 6.16.0

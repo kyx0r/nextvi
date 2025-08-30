@@ -1,4 +1,4 @@
-.Dd Aug 29, 2025
+.Dd Aug 30, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -362,7 +362,10 @@ Regex search, move up 1 or # matches
 Repeat regex search, move [down up] 1 or # matches
 .Ed
 .It Cm <^A>
+Regex search, no center, wraparound move [up down]
+.It Cm *
 Regex search 1 word from cursor, no center, wraparound move [up down]
+.It Cm {\fI#\fP}*
 .It Cm {\fI#\fP}<^A>
 Regex search, set keyword to # words from cursor
 .It Cm <^]>
