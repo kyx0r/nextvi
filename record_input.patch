@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index b0a96771..53e396af 100644
+index 147a4104..76e8758a 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -22,6 +22,7 @@ int xpac;			/* print autocomplete options */
- int xkwdcnt;			/* number of search kwd changes */
- int xbufcur;			/* number of active buffers */
- int xgrec;			/* global vi/ex recursion depth */
+@@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */
+ int xsep = ':';			/* ex command separator */
+ int xlim = -1;			/* rendering cutoff for non cursor lines */
+ int xseq = 1;			/* undo/redo sequence */
 +int xrec;			/* input recoding register */
- struct buf *bufs;		/* main buffers */
- struct buf tempbufs[2];		/* temporary buffers, for internal use */
- struct buf *ex_buf;		/* current buffer */
-@@ -1096,6 +1097,7 @@ static int eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ 
+ int xrow, xoff, xtop;		/* current row, column, and top row */
+ int xbufcur;			/* number of active buffers */
+@@ -1146,6 +1147,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index b0a96771..53e396af 100644
  
  _EO(left,
  	if (*loc)
-@@ -1147,6 +1149,7 @@ static struct excmd {
+@@ -1198,6 +1200,7 @@ static struct excmd {
  	{"k", ec_mark},
  	{"q!", ec_quit},
  	{"q", ec_quit},
@@ -44,14 +44,14 @@ index 40e0cb4c..7fa1d2f4 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index ae224584..7359b8a1 100644
+index 3254b683..d437dade 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -500,6 +500,7 @@ extern int xpr;
+@@ -397,6 +397,7 @@ extern int xpr;
  extern int xsep;
  extern int xlim;
  extern int xseq;
 +extern int xrec;
- extern rset *xkwdrs;
- extern sbuf *xacreg;
- extern rset *fsincl;
+ /* global variables */
+ extern int xrow, xoff, xtop;
+ extern int xbufcur;
