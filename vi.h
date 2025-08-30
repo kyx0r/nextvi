@@ -34,7 +34,6 @@ char *itoa(int n, char s[]);
 void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
 
 /* main functions */
-extern int xgrec;
 void vi(int init);
 void ex(void);
 
@@ -154,6 +153,7 @@ struct lbuf {
 	int ln_sz;			/* size of ln[] */
 	int useq;			/* current operation sequence */
 	int modified;			/* modification state */
+	int saved;			/* save state */
 	int hist_sz;			/* size of hist[] */
 	int hist_n;			/* current history head in hist[] */
 	int hist_u;			/* current undo head in hist[] */
@@ -365,7 +365,6 @@ int led_pos(char *s, int pos);
 void led_done(void);
 
 /* ex.c ex commands */
-extern char *xregs[256];
 struct buf {
 	char *ft;			/* file type */
 	char *path;			/* file path */
@@ -374,11 +373,45 @@ struct buf {
 	long mtime;			/* modification time */
 	signed char td;			/* text direction */
 };
+/* ex options */
+extern int xleft;
+extern int xquit;
+extern int xvis;
+extern int xai;
+extern int xic;
+extern int xhl;
+extern int xhll;
+extern int xhlw;
+extern int xhlp;
+extern int xhlr;
+extern int xled;
+extern int xtd;	
+extern int xshape;
+extern int xorder;
+extern int xtbs;
+extern int xish;
+extern int xgrp;
+extern int xpac;
+extern int xmpt;
+extern int xpr;	
+extern int xsep;
+extern int xlim;
+extern int xseq;
+/* global variables */
+extern int xrow, xoff, xtop;
 extern int xbufcur;
-extern struct buf *ex_buf;
-extern struct buf *ex_pbuf;
+extern int xgrec;
+extern int xkmap;
+extern int xkmap_alt;
+extern int xkwddir;
+extern int xkwdcnt;
+extern sbuf *xacreg;
+extern rset *xkwdrs;
+extern char *xregs[256];
 extern struct buf *bufs;
 extern struct buf tempbufs[2];
+extern struct buf *ex_buf;
+extern struct buf *ex_pbuf;
 #define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
 #define ex_path ex_buf->path
 #define ex_ft ex_buf->ft
@@ -399,7 +432,7 @@ void temp_open(int i, char *name, char *ft);
 void temp_switch(int i);
 void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
-int ex_exec(const char *ln);
+void *ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
 void ex_cprint(char *line, int r, int c, int ln);
 #define ex_print(line) \
@@ -465,45 +498,13 @@ int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
 
 /* vi.c */
-void vi_regputraw(unsigned char c, const char *s, int ln, int append);
-void vi_regput(int c, const char *s, int ln);
-/* file system */
-void dir_calc(char *path);
-/* global variables */
-extern int xrow;
-extern int xoff;
-extern int xtop;
-extern int xleft;
-extern int xvis;
-extern int xled;
-extern int xquit;
-extern int xic;
-extern int xai;
-extern int xtd;
-extern int xshape;
-extern int xorder;
-extern int xhl;
-extern int xhll;
-extern int xhlw;
-extern int xhlp;
-extern int xhlr;
-extern int xkmap;
-extern int xkmap_alt;
-extern int xtbs;
-extern int xish;
-extern int xgrp;
-extern int xpac;
-extern int xkwdcnt;
-extern int xkwddir;
-extern int xmpt;
-extern int xpr;
-extern int xsep;
-extern int xlim;
-extern int xseq;
-extern rset *xkwdrs;
-extern sbuf *xacreg;
-extern rset *fsincl;
-extern char *fs_exdir;
 extern int vi_hidch;
 extern int vi_insmov;
 extern int vi_lncol;
+extern char vi_msg[512];
+void vi_regputraw(unsigned char c, const char *s, int ln, int append);
+void vi_regput(int c, const char *s, int ln);
+/* file system */
+extern rset *fsincl;
+extern char *fs_exdir;
+void dir_calc(char *path);

@@ -26,6 +26,7 @@
 int vi_hidch;		/* show hidden chars */
 int vi_insmov;		/* moving in insert outside of insertion sbuf */
 int vi_lncol;		/* line numbers cursor offset */
+char vi_msg[512];	/* current message */
 static int vi_lnnum;	/* line numbers */
 static int vi_mod;	/* screen should be redrawn -
 			bit 1: whole screen, bit 2: current line, bit 3: update vi_col) */
@@ -35,7 +36,6 @@ static char *_vi_word = vi_word_m;
 static int vi_wsel = 1;
 static int vi_rshift;			/* row shift for vi_word */
 static int vi_arg;			/* numeric argument */
-static char vi_msg[512];		/* current message */
 static char vi_charlast[5];		/* the last character searched via f, t, F, or T */
 static int vi_charcmd;			/* the character finding command */
 static int vi_ybuf;			/* current yank buffer */
@@ -275,36 +275,6 @@ static char *vi_enprompt(char *msg, char *insert, int *mlen)
 {
 	int kmap = 0;
 	return vi_prompt(msg, insert, &kmap, mlen);
-}
-
-/* print an ex output line */
-void ex_cprint(char *line, int r, int c, int ln)
-{
-	syn_blockhl = 0;
-	if (!(xvis & 4)) {
-		if (xmpt == 1)
-			term_chr('\n');
-		if (isupper(xpr) && xmpt == 1 && !strchr(line, '\n'))
-			vi_regputraw(xpr, "\n", 1, 1);
-		term_pos(xrows, led_pos(vi_msg, 0));
-		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
-	}
-	if (xpr)
-		vi_regputraw(xpr, line, !!strchr(line, '\n'), 1);
-	if (xvis & 2) {
-		term_write(line, dstrlen(line, '\n'))
-		term_write("\n", 1)
-		return;
-	}
-	syn_setft("/-");
-	led_crender(line, r, c, xleft, xleft + xcols - c)
-	syn_setft(ex_ft);
-	if (ln && (xvis & 4 || xmpt > 0)) {
-		term_chr('\n');
-		if (isupper(xpr) && !strchr(line, '\n'))
-			vi_regputraw(xpr, "\n", 1, 1);
-	}
-	xmpt += !(xvis & 4) && xmpt >= 0 && (ln || xmpt);
 }
 
 static int vi_yankbuf(void)
@@ -625,7 +595,6 @@ static void vc_status(int type)
 /* read a motion */
 static int vi_motion(int *row, int *off)
 {
-	static char ca_dir;
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
 	int cnt = vi_arg ? vi_arg : 1;
@@ -751,7 +720,9 @@ static int vi_motion(int *row, int *off)
 			ex_bufpostfix(&bufs[i], 1);
 		syn_setft(ex_ft);
 		vc_status(0);
-		return 'n';
+		xtop = MAX(0, *row - xrows / 2);
+		vi_mod |= 1;
+		break;
 	case TK_CTL('t'):
 		if (vi_arg % 2 == 0 && vi_arg < LEN(srow) * 2) {
 			vi_arg /= 2;
@@ -782,17 +753,21 @@ static int vi_motion(int *row, int *off)
 	case 'N':
 		if (vi_search(mv, cnt, row, off, sizeof(vi_msg)))
 			return -1;
+		xtop = MAX(0, *row - xrows / 2);
+		vi_mod |= mv == '/' || mv == '?';
 		break;
+	case '*':
 	case TK_CTL('a'):
-		if (!(cs = vi_curword(xb, *row, *off, cnt)))
-			return -1;
-		ex_krsset(cs, +1);
-		free(cs);
-		if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg))) {
-			ca_dir = !ca_dir;
-			if (vi_search(ca_dir ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
+		if (mv == '*' || vi_arg) {
+			if (!(cs = vi_curword(xb, *row, *off, cnt)))
 				return -1;
+			ex_krsset(cs, +1);
+			free(cs);
 		}
+		if (vi_search('n', 1, row, off, sizeof(vi_msg)))
+			xkwddir = -xkwddir;
+		else if (*row < xtop || *row >= xtop + xrows - 1)
+			xtop = MAX(0, *row - xrows / 2);
 		break;
 	case '`':
 		if ((mark = term_read()) <= 0)
@@ -858,23 +833,6 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 		lbuf_edit(xb, NULL, r1, r2 + 1);
 	xrow = r1;
 	xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
-}
-
-static void vi_splitln(int row, int linepos, int newln)
-{
-	char *s, *pref, *post;
-	int l, n;
-	if (!(s = lbuf_get(xb, row)))
-		return;
-	pref = uc_subl(s, 0, linepos, &l, &n);
-	post = uc_sub(s + l, 0, -1);
-	if (newln || *post != '\n') {
-		lbuf_edit(xb, pref, row, row+1);
-		lbuf_edit(xb, post, row+1, row+1);
-		vi_mod |= 1;
-	}
-	free(post);
-	free(pref);
 }
 
 static void vi_indents(char *ln, int *l)
@@ -1280,18 +1238,6 @@ void vi(int init)
 				lbuf_mark(xb, '`', xrow, ooff);
 			xrow = nrow;
 			xoff = noff;
-			switch (mv) {
-			case 1: /* ^a */
-				if (xrow < otop + xrows - 1)
-					break;
-			case '/':
-			case '?':
-			case 'n':
-			case 'N':
-				xtop = MAX(0, xrow - xrows / 2);
-				vi_mod |= 1;
-				break;
-			}
 		} else if (mv == 0) {
 			char *cmd;
 			term_dec()
@@ -1405,9 +1351,9 @@ void vi(int init)
 				break;
 			case TK_CTL('k'):;
 				static struct lbuf *writexb;
-				if ((k = ex_exec("w")) && xb == writexb)
-					k = ex_exec("mpt0:w!");
-				writexb = k ? xb : NULL;
+				if ((cs = ex_exec("w")) && xb == writexb)
+					cs = ex_exec("mpt0:w!");
+				writexb = cs ? xb : NULL;
 				break;
 			case '#':
 				if (vi_lnnum & vi_arg)
@@ -1590,9 +1536,14 @@ void vi(int init)
 			case 'J':
 				vc_join(vi_joinmode, vi_arg <= 1 ? 2 : vi_arg);
 				break;
-			case 'K':
-				vi_splitln(xrow, xoff+1, !vi_arg);
-				break;
+			case 'K': {
+				preserve(int, xled, xled = 0;)
+				do {
+					ex_exec(";+1c\n\x1b:-1");
+				} while (vi_arg--);
+				restore(xled)
+				vi_mod |= 1;
+				break; }
 			case TK_CTL('z'):
 			case TK_CTL('l'):
 				if (c == TK_CTL('z')) {
@@ -1655,31 +1606,27 @@ void vi(int init)
 					vi_tsm = 1;
 					goto status;
 				} else if (k == 'w') {
-					char cmd[100] = "led0:seq0:& ";
-					if (xseq < 0)
-						memset(cmd+5, ' ', 5);
-					n = vi_arg ? vi_arg - 1 : 79;
-					k = xled;
-					strcpy(itoa(n, cmd+11), "|");
+					preserve(int, xled, xled = 0;)
+					preserve(int, xgrp, xgrp = 2;)
+					n = vi_arg ? vi_arg : 80;
 					while (1) {
-						ex_exec(cmd);
-						ex_exec("grp2:f/[^ \t]*[^ \t]?(.):& 1K:grp0");
-						if (vi_col < n)
+						xoff = vi_col2off(xb, xrow, n);
+						vi_col = vi_off2col(xb, xrow, xoff+1);
+						if (vi_col <= n)
 							break;
-						ex_exec("+1");
+						if (ex_exec("1,1wlf/[^ \t]*[ \t]+(?\\\\:.$|(.)):;c\n\x1b"))
+							break;
 					}
-					if (k) {
-						if (!xseq)
-							ex_exec("seq");
-						ex_exec("led");
-						vi_mod |= 1;
-					}
+					restore(xled)
+					restore(xgrp)
+					vi_mod |= !texec;
 				} else if (k == 'q') {
-					char cmd[100] = "led0:g/./& ";
-					strcpy(itoa(vi_arg, cmd+10), "gw:led");
+					preserve(int, xled, xled = 0;)
+					char cmd[64] = "g/./& ";
+					strcpy(itoa(vi_arg, cmd+5), "gw");
 					ex_command(cmd)
-					if (!xseq)
-						ex_exec("seq");
+					restore(xled)
+					vi_mod |= 1;
 				} else if (k == '~' || k == 'u' || k == 'U') {
 					vc_motion(k);
 					goto rep;
@@ -1746,7 +1693,7 @@ void vi(int init)
 			case '\\':
 				ex_exec("b-2");
 				if (vi_arg && xb == tempbufs[1].lb)
-					ex_exec("1,$d:fd:b-2");
+					ex_exec("%d:fd:b-2");
 				vc_status(0);
 				vi_mod |= 1;
 				break;

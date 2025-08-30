@@ -2,8 +2,7 @@ struct lbuf *lbuf_make(void)
 {
 	struct lbuf *lb = emalloc(sizeof(*lb));
 	memset(lb, 0, sizeof(*lb));
-	for (int i = 0; i < LEN(lb->mark); i++)
-		lb->mark[i] = -1;
+	memset(lb->mark, -1, sizeof(lb->mark) / 2);
 	return lb;
 }
 
@@ -226,6 +225,8 @@ void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
 			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
 			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
 	lb->modified = 1;
+	if (lb->saved > lb->hist_u)
+		lb->saved = -1;
 }
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)
@@ -260,7 +261,7 @@ int lbuf_undo(struct lbuf *lb)
 	lbuf_loadmark(lb->mark, markidx('*'), lo->pos, lo->pos_off)
 	lbuf_movemark(lb->mark, m0, lo->mark, m0)
 	lbuf_movemark(lb->mark, m1, lo->mark, m1)
-	lb->modified = lb->hist_u != 0;
+	lb->modified = lb->hist_u != lb->saved;
 	return 0;
 }
 
@@ -284,7 +285,7 @@ int lbuf_redo(struct lbuf *lb)
 		_lbuf_movemark(lb->mark, m0, NMARKS, lb->tmp_mark, 0, 2)
 		_lbuf_movemark(lb->mark, m1, NMARKS, lb->tmp_mark, 1, 2)
 	}
-	lb->modified = 1;
+	lb->modified = lb->hist_u != lb->saved;
 	return 0;
 }
 
@@ -298,6 +299,7 @@ void lbuf_saved(struct lbuf *lb, int clear)
 		lb->hist_u = 0;
 	}
 	lb->modified = 0;
+	lb->saved = lb->hist_u;
 }
 
 int lbuf_indents(struct lbuf *lb, int r)
@@ -338,14 +340,19 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	int r0 = *r, o0 = *o;
 	int offs[re->grpcnt * 2], i = r0;
 	char *s = lbuf_get(lb, i);
-	int off = skip >= 0 && s ? uc_chr(s, o0 + skip) - s : 0;
-	int g1, g2, _o, step;
+	int off, g1, g2, _o, step, flg;
+	if (skip >= 0 && s)
+		off = rstate->s == s ? rstate->chrs[o0 + skip] - s
+					: uc_chr(s, o0 + skip) - s;
+	else
+		off = 0;
 	for (; i >= 0 && i < ln_n; i += dir) {
 		_o = 0;
 		step = 0;
+		flg = REG_NEWLINE;
 		s = lb->ln[i];
-		while (rset_find(re, s + off, offs,
-				off ? REG_NOTBOL | REG_NEWLINE : REG_NEWLINE) >= 0) {
+		while (rset_find(re, s + off, offs, flg) >= 0) {
+			flg |= REG_NOTBOL;
 			g1 = offs[xgrp], g2 = offs[xgrp + 1];
 			if (g1 < 0) {
 				off += offs[1] > 0 ? offs[1] : 1;
