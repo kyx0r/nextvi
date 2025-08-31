@@ -249,10 +249,10 @@ int hlslen = LEN(hls);
 /* how to highlight text in the reverse direction */
 int conf_hlrev = SYN_BGMK(8);
 
-/* right-to-left characters (used only in dctxs[] and dmarks[]) */
+/* right-to-left characters */
 #define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْٔ"
-/* neutral characters (used only in dctxs[] and dmarks[]) */
-#define CNEUT		"-!\"#$%&'\\()*+,./:;<=>?@\\^_`{|}~ "
+/* neutral characters */
+#define CNEUT		"\x1- !-/:-@[-`{-\x7f"
 
 struct dircontext dctxs[] = {
 	{"^[" CR2L "]", -1},
@@ -262,7 +262,7 @@ int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
 	{"[" CR2L "][" CNEUT CR2L "]*[" CR2L "]", +1, {-1}},
-	{"(^[ \t]*)([^" CR2L "]*)([" CR2L "]*)([^" CR2L "]*)", -1, {0, 1, -1, 1, -1}},
+	{"[^" CR2L CNEUT "]+", -1, {-1}},
 };
 int dmarkslen = LEN(dmarks);
 
