@@ -106,19 +106,20 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (*re == '\\')
 					re++;
-				if (!*re)
+				uc_code(c, re, l)
+				if (flg & REG_ICASE && (unsigned int)c < 128)
+					c = tolower(c);
+				EMIT(PC++, c);
+				if (re[l] == '-' && re[l+1] != ']') {
+					re += l + 1 + (re[l+1] == '\\');
+					uc_code(c, re, l)
+					if (flg & REG_ICASE && (unsigned int)c < 128)
+						c = tolower(c);
+				}
+				EMIT(PC++, c);
+				if (!l)
 					return -1;
-				uc_code(c, re, l)
-				if (flg & REG_ICASE && (unsigned int)c < 128)
-					c = tolower(c);
-				EMIT(PC++, c);
-				if (re[l] == '-' && re[l+1] != ']')
-					re += l+1;
-				uc_code(c, re, l)
 				re += l;
-				if (flg & REG_ICASE && (unsigned int)c < 128)
-					c = tolower(c);
-				EMIT(PC++, c);
 			}
 			EMIT(term + 2, cnt);
 			break;
@@ -684,7 +685,7 @@ rset *rset_make(int n, char **re, int flg)
 		rs->setgrpcnt[i] = re_groupcount(re[i]) + 1;
 		rs->grpcnt += rs->setgrpcnt[i];
 	}
-	sbuf_mem(sb, "\0\0\0\0", 4)
+	sbuf_set(sb, '\0', 4)
 	sz = re_sizecode(sb->s, &laidx) * sizeof(int);
 	if (sz > 0) {
 		rs->regex = emalloc(sizeof(rcode)+sz);

@@ -22,11 +22,10 @@ static int dir_reorder(char **chrs, int *ord, int end, int dir)
 	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
 	int beg = 0, end1 = end, c_beg, c_end;
 	int subs[LEN(dmarks[0].dir) * 2], gdir, found, i;
+	int flg = *chrs[MAX(beg, end-1)] == '\n' ? REG_NEWLINE : 0;
 	while (beg < end) {
 		char *s = chrs[beg];
-		found = rset_find(rs, s, subs,
-				*chrs[end-1] == '\n' ? REG_NEWLINE : 0);
-		if (found >= 0) {
+		if ((found = rset_find(rs, s, subs, flg)) >= 0) {
 			for (i = 0; i < end1; i++)
 				ord[i] = i;
 			c_end = 0;
