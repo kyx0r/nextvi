@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 989601f8..9534b1d1 100644
+index d18c849e..cc35303d 100644
 --- a/led.c
 +++ b/led.c
 @@ -281,7 +281,7 @@ static int led_lastword(char *s)
@@ -73,7 +73,7 @@ index 989601f8..9534b1d1 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 41570cf4..2b267ae8 100644
+index 827cf661..d101719f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -844,6 +844,8 @@ static void vi_indents(char *ln, int *l)

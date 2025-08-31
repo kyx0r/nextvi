@@ -20,10 +20,10 @@ index 147a4104..7f3b7393 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 3be5b7f2..444db062 100644
+index daeeea06..6c1b9a1c 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -624,6 +624,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -625,6 +625,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
@@ -32,10 +32,10 @@ index 3be5b7f2..444db062 100644
  	flg = prog->flg | flg;
  	if (eol_ch)
 diff --git a/ren.c b/ren.c
-index 446b378f..7690a169 100644
+index d09ee288..b7d41ab3 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -94,6 +94,20 @@ static int ren_cwid(char *s, int pos)
+@@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
  ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
  ren_state *rstate = rstates;
  
@@ -56,7 +56,7 @@ index 446b378f..7690a169 100644
  /* specify the screen position of the characters in s */
  ren_state *ren_position(char *s)
  {
-@@ -395,3 +409,10 @@ void syn_init(void)
+@@ -394,3 +408,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -68,7 +68,7 @@ index 446b378f..7690a169 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 41570cf4..8475bd4a 100644
+index 827cf661..e204797e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -465,6 +465,12 @@ void vi_regput(int c, const char *s, int ln)

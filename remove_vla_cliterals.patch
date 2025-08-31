@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 846e3bf8..79d94849 100644
+index dc9ff893..7565bbeb 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -40,7 +40,7 @@ int ftslen = LEN(fts);
@@ -83,7 +83,7 @@ index 2c79d6c4..d359ceec 100644
  }
  
 diff --git a/led.c b/led.c
-index 989601f8..b862a1e9 100644
+index d18c849e..8f565a9a 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -139,10 +139,10 @@ index 989601f8..b862a1e9 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 3be5b7f2..37b927c7 100644
+index daeeea06..969d2276 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -381,7 +381,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
+@@ -382,7 +382,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
  	return 0;
  }
  
@@ -159,7 +159,7 @@ index 3be5b7f2..37b927c7 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -613,18 +621,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -614,18 +622,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	if (!*s)
  		return 0;
  	const char *sp = s, *_sp = s, *str;
@@ -185,7 +185,7 @@ index 3be5b7f2..37b927c7 100644
  	flg = prog->flg | flg;
  	if (eol_ch)
  		utf8_length[eol_ch] = 0;
-@@ -705,7 +714,7 @@ rset *rset_make(int n, char **re, int flg)
+@@ -706,7 +715,7 @@ rset *rset_make(int n, char **re, int flg)
  /* return the index of the matching regular expression or -1 if none matches */
  int rset_find(rset *rs, char *s, int *grps, int flg)
  {
@@ -194,7 +194,7 @@ index 3be5b7f2..37b927c7 100644
  	regmatch_t *sub = subs+1;
  	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
  		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
-@@ -722,10 +731,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
+@@ -723,10 +732,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
  						grps[gi * 2 + 1] = -1;
  					}
  				}
@@ -208,10 +208,10 @@ index 3be5b7f2..37b927c7 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 446b378f..225cb585 100644
+index d09ee288..a2546536 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -256,13 +256,14 @@ int syn_blockhl;
+@@ -255,13 +255,14 @@ int syn_blockhl;
  static void syn_initft(int fti, int n, char *name)
  {
  	int i = n;
@@ -227,7 +227,7 @@ index 446b378f..225cb585 100644
  }
  
  char *syn_setft(char *ft)
-@@ -303,7 +304,7 @@ int syn_merge(int old, int new)
+@@ -302,7 +303,7 @@ int syn_merge(int old, int new)
  void syn_highlight(int *att, char *s, int n)
  {
  	rset *rs = ftmap[ftidx].rs;
@@ -236,7 +236,7 @@ index 446b378f..225cb585 100644
  	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
  	int bend = 0, cend = 0;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
-@@ -349,6 +350,7 @@ void syn_highlight(int *att, char *s, int n)
+@@ -348,6 +349,7 @@ void syn_highlight(int *att, char *s, int n)
  	if (syn_blockhl && !blk)
  		for (j = 0; j < n; j++)
  			att[j] = att[j] && SYN_SOSET(*blockatt) ? att[j] : *blockatt;
@@ -244,7 +244,7 @@ index 446b378f..225cb585 100644
  }
  
  char *syn_filetype(char *path)
-@@ -389,9 +391,10 @@ void syn_addhl(char *reg, int id, int reload)
+@@ -388,9 +390,10 @@ void syn_addhl(char *reg, int id, int reload)
  
  void syn_init(void)
  {
@@ -257,7 +257,7 @@ index 446b378f..225cb585 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 41570cf4..db556c36 100644
+index 827cf661..ea32ca50 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -142,7 +142,8 @@ static void vi_drawrow(int row)

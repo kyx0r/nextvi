@@ -152,10 +152,10 @@ index 2c79d6c4..63643201 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 3be5b7f2..b672cbe7 100644
+index daeeea06..5acf036a 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -746,3 +746,126 @@ char *re_read(char **src)
+@@ -747,3 +747,126 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_sret(sb)
  }
@@ -283,7 +283,7 @@ index 3be5b7f2..b672cbe7 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 41570cf4..6b9cbda1 100644
+index 827cf661..0db927dd 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -465,7 +465,7 @@ void vi_regput(int c, const char *s, int ln)

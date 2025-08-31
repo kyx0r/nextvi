@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 846e3bf8..823fce65 100644
+index dc9ff893..3ebee0a1 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -236,6 +236,11 @@ left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[+ \t]?([?/])|[td
@@ -28,7 +28,7 @@ index 147a4104..7a489699 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 41570cf4..46e2af6c 100644
+index 827cf661..79e20f35 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,12 +525,12 @@ void dir_calc(char *path)

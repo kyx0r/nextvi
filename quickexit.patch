@@ -27,7 +27,7 @@ index 147a4104..2c99b2af 100644
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index 989601f8..380811ed 100644
+index d18c849e..ddb37e37 100644
 --- a/led.c
 +++ b/led.c
 @@ -408,6 +408,14 @@ void led_modeswap(void)
@@ -76,7 +76,7 @@ index 989601f8..380811ed 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 41570cf4..df561323 100644
+index 827cf661..0b86773a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
