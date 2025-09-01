@@ -673,15 +673,16 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	}
 	if (*arg)
 		term_push(arg, strlen(arg));
-	vi_insmov = 0;
-	while (!ex_read(sb, "", "/-", ps, 0)) {
-		if (xvis & 2 && !strcmp(".", sb->s + ps)) {
-			sb->s_n--;
-			break;
+	do {
+		while (!ex_read(sb, "", "/-", ps, 0)) {
+			if (xvis & 2 && !strcmp(".", sb->s + ps)) {
+				sb->s_n--;
+				break;
+			}
+			sbufn_chr(sb, '\n')
+			ps = sb->s_n;
 		}
-		sbufn_chr(sb, '\n')
-		ps = sb->s_n;
-	}
+	} while (vi_insmov == 127);
 	if (vi_insmov != TK_CTL('c')) {
 		if (ln && cmd[0] == 'c') {
 			memcpy(sb->s, ln, n);
@@ -693,6 +694,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		lbuf_edit(xb, sb->s, beg, end);
 		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
 	}
+	vi_insmov = 0;
 	free(sb->s);
 	return NULL;
 }
