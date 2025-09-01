@@ -673,28 +673,30 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	}
 	if (*arg)
 		term_push(arg, strlen(arg));
-	do {
-		while (!ex_read(sb, "", "/-", ps, 0)) {
-			if (xvis & 2 && !strcmp(".", sb->s + ps)) {
-				sb->s_n--;
-				break;
-			}
-			sbufn_chr(sb, '\n')
-			ps = sb->s_n;
+	vi_insmov = 0;
+	while (!ex_read(sb, "", "/-", ps, 0)) {
+		if (xvis & 2 && !strcmp(".", sb->s + ps)) {
+			sb->s_n--;
+			break;
 		}
-	} while (vi_insmov == 127);
+		sbufn_chr(sb, '\n')
+		ps = sb->s_n;
+	}
 	if (vi_insmov != TK_CTL('c')) {
 		if (ln && cmd[0] == 'c') {
 			memcpy(sb->s, ln, n);
 			ln = o2 > o1 ? uc_chr(ln + n, o2 - o1) : ln + n;
 			sbufn_str(sb, ln)
-		} else
-			sbufn_chr(sb, xvis & 2 ? 0 : '\n')
-		n = lbuf_len(xb);
-		lbuf_edit(xb, sb->s, beg, end);
-		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
+		} else if (!(xvis & 2) && vi_insmov != 127)
+			sbufn_chr(sb, '\n')
+		else
+			sbuf_null(sb)
+		if (n < sb->s_n) {
+			n = lbuf_len(xb);
+			lbuf_edit(xb, sb->s, beg, end);
+			xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
+		}
 	}
-	vi_insmov = 0;
 	free(sb->s);
 	return NULL;
 }
