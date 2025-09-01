@@ -1,4 +1,4 @@
-.Dd Aug 31, 2025
+.Dd Sep  1, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -438,7 +438,7 @@ Append a word to <a> register
 .It Cm <^H>
 .It Cm <Backspace>
 .Bd -compact
-Delete a character
+Delete a character, reset ex mode when empty
 .Ed
 .It Cm <^U>
 Delete util <^X> mark or everything
@@ -487,7 +487,7 @@ Read a digraph sequence arg
 .It Cm <^C>
 .It Cm <ESC>
 .Bd -compact
-Exit insert mode in vi, reset last command in ex
+Exit insert mode in vi, reset in ex
 .Ed
 .El
 .
@@ -1417,16 +1417,16 @@ _
  510 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 295 conf.c | hl/ft/td config
+ 296 conf.c | hl/ft/td config
  342 term.c | low level IO
  396 ren.c | positioning/syntax
  509 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
  682 led.c | insert mode/output
  749 regex.c | pikevm
- 1345 ex.c | ex options/commands
- 1866 vi.c | normal mode/general
- 6821 total | wc -l *.c\(basort
+ 1347 ex.c | ex options/commands
+ 1867 vi.c | normal mode/general
+ 6825 total | wc -l *.c\(basort
 _
 .TE
 .

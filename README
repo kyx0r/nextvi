@@ -254,7 +254,7 @@ VI MOTIONS
 VI/EX INSERT
      <^H>
      <Backspace>
-                   Delete a character
+                   Delete a character, reset ex mode when empty
      <^U>          Delete util <^X> mark or everything
      <^W>          Delete a word
      <^T>          Increase indent
@@ -281,7 +281,7 @@ VI/EX INSERT
      <^K>{arg}     Read a digraph sequence arg
      <^C>
      <ESC>
-                   Exit insert mode in vi, reset last command in ex
+                   Exit insert mode in vi, reset in ex
 
 EX
      Ex is a powerful line editor for Unix systems, initially developed
@@ -1043,16 +1043,16 @@ CODE MAP
      | 510 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
-     | 295 conf.c   |  hl/ft/td config     |
+     | 296 conf.c   |  hl/ft/td config     |
      | 342 term.c   |  low level IO        |
      | 396 ren.c    |  positioning/syntax  |
      | 509 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
      | 682 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
-     | 1345 ex.c    |  ex options/commands |
-     | 1866 vi.c    |  normal mode/general |
-     | 6821 total   |  wc -l *.c|sort      |
+     | 1347 ex.c    |  ex options/commands |
+     | 1867 vi.c    |  normal mode/general |
+     | 6825 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1123,4 +1123,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                    August 31, 2025                   Linux 6.16.0
+Linux 6.16.0                   September 1, 2025                  Linux 6.16.0
