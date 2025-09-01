@@ -597,6 +597,7 @@ static int vi_motion(int *row, int *off)
 {
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
+	static int cadir = 1;
 	int cnt = vi_arg ? vi_arg : 1;
 	int dir, mark, mark_row, mark_off;
 	char *cs;
@@ -764,8 +765,8 @@ static int vi_motion(int *row, int *off)
 			ex_krsset(cs, +1);
 			free(cs);
 		}
-		if (vi_search('n', 1, row, off, sizeof(vi_msg)))
-			xkwddir = -xkwddir;
+		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
+			cadir = -cadir;
 		else if (*row < xtop || *row >= xtop + xrows - 1)
 			xtop = MAX(0, *row - xrows / 2);
 		break;
