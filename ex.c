@@ -654,7 +654,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (ex_oregion(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	char *ln = o1 >= 0 ? lbuf_get(xb, beg) : NULL;
-	sbuf_smake(sb, ln && cmd[0] == 'c' ? lbuf_s(ln)->len + xcols : xcols)
+	sbuf_smake(sb, ln && cmd[0] == 'c' ? lbuf_s(ln)->len + 128 : 128)
 	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
 		beg++;
 	else if (cmd[0] == 'i')
