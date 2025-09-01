@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 147a4104..76e8758a 100644
+index 5f4064ff..7c58ef32 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */
@@ -10,7 +10,7 @@ index 147a4104..76e8758a 100644
  
  int xrow, xoff, xtop;		/* current row, column, and top row */
  int xbufcur;			/* number of active buffers */
-@@ -1146,6 +1147,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1148,6 +1149,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index 147a4104..76e8758a 100644
  
  _EO(left,
  	if (*loc)
-@@ -1198,6 +1200,7 @@ static struct excmd {
+@@ -1200,6 +1202,7 @@ static struct excmd {
  	{"k", ec_mark},
  	{"q!", ec_quit},
  	{"q", ec_quit},

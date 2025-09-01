@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index dc9ff893..7565bbeb 100644
+index 3bc4f5b9..3f3c458a 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -40,7 +40,7 @@ int ftslen = LEN(fts);
@@ -12,10 +12,10 @@ index dc9ff893..7565bbeb 100644
  struct highlight hls[] = {
  	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 147a4104..249c4a63 100644
+index 5f4064ff..a4f9355f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -838,7 +838,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -840,7 +840,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 147a4104..249c4a63 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -885,6 +885,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -887,6 +887,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -32,7 +32,7 @@ index 147a4104..249c4a63 100644
  	return NULL;
  }
  
-@@ -1287,7 +1288,7 @@ void *ex_exec(const char *ln)
+@@ -1289,7 +1290,7 @@ void *ex_exec(const char *ln)
  {
  	int idx = 0, len = strlen(ln) + 1;
  	int r1 = -1, r2 = -1;
@@ -41,7 +41,7 @@ index 147a4104..249c4a63 100644
  	sbuf_smake(sb, 1024)
  	for (int i = 0; *ln; i++) {
  		ln = ex_parse(ln, loc, &idx, arg);
-@@ -1304,6 +1305,8 @@ void *ex_exec(const char *ln)
+@@ -1306,6 +1307,8 @@ void *ex_exec(const char *ln)
  		sbuf_cut(sb, 0)
  	}
  	free(sb->s);
@@ -83,7 +83,7 @@ index 2c79d6c4..d359ceec 100644
  }
  
 diff --git a/led.c b/led.c
-index d18c849e..8f565a9a 100644
+index 3462b4f7..36b325bd 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -257,7 +257,7 @@ index d09ee288..a2546536 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 827cf661..ea32ca50 100644
+index f29fc564..99abbf3f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -142,7 +142,8 @@ static void vi_drawrow(int row)
@@ -279,7 +279,7 @@ index 827cf661..ea32ca50 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1293,10 +1296,11 @@ void vi(int init)
+@@ -1294,10 +1297,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -292,7 +292,7 @@ index 827cf661..ea32ca50 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1434,7 +1438,7 @@ void vi(int init)
+@@ -1435,7 +1439,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -301,7 +301,7 @@ index 827cf661..ea32ca50 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1444,10 +1448,11 @@ void vi(int init)
+@@ -1445,10 +1449,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -314,7 +314,7 @@ index 827cf661..ea32ca50 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1455,6 +1460,7 @@ void vi(int init)
+@@ -1456,6 +1461,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
