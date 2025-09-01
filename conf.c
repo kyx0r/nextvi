@@ -250,7 +250,7 @@ int hlslen = LEN(hls);
 int conf_hlrev = SYN_BGMK(8);
 
 /* right-to-left characters */
-#define CR2L		"ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىييپچژکگی‌‍؛،»«؟ًٌٍَُِّْٔ"
+#define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
 /* neutral characters */
 #define CNEUT		"\x1- !-/:-@[-`{-\x7f"
 
@@ -262,7 +262,8 @@ int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
 	{"[" CR2L "][" CNEUT CR2L "]*[" CR2L "]", +1, {-1}},
-	{"[^" CR2L CNEUT "]+", -1, {-1}},
+	{"^([ \t]+)?([" CNEUT "]*[^" CR2L "]*[^" CR2L CNEUT "](?:[" CNEUT "]+$)?)", -1, {0, 1, -1}},
+	{"[^" CR2L CNEUT "][^" CR2L "]*[^" CR2L CNEUT "](?:[" CNEUT "]+$)?", -1, {-1}},
 };
 int dmarkslen = LEN(dmarks);
 
