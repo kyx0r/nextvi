@@ -704,6 +704,8 @@ str specifies initial input into the insertion buffer.
 
 Example: insert "hello" in vi/ex
 :i hello<^M><ESC>
+Example: insert "hello" in vi/ex trimming <Newline>
+:i hello<^M><Backspace>
 Example: discard changes in vi/ex
 :i hello<^M><^C>
 Example: immediately insert "hello"
@@ -1424,9 +1426,9 @@ _
  637 uc.c | UTF-8 support
  682 led.c | insert mode/output
  749 regex.c | pikevm
- 1347 ex.c | ex options/commands
+ 1349 ex.c | ex options/commands
  1867 vi.c | normal mode/general
- 6825 total | wc -l *.c\(basort
+ 6827 total | wc -l *.c\(basort
 _
 .TE
 .
