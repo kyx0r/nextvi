@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5f4064ff..b0d9b454 100644
+index 6b725ecb..dbdbbb52 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -13,6 +13,7 @@ int xtd = +1;			/* current text direction */
@@ -10,7 +10,7 @@ index 5f4064ff..b0d9b454 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1148,6 +1149,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1150,6 +1151,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index 5f4064ff..b0d9b454 100644
  
  _EO(left,
  	if (*loc)
-@@ -1198,6 +1200,7 @@ static struct excmd {
+@@ -1200,6 +1202,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	{"k", ec_mark},

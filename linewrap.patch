@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5f4064ff..7f5bf654 100644
+index 6b725ecb..139d4bfd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */
@@ -10,7 +10,7 @@ index 5f4064ff..7f5bf654 100644
  
  int xrow, xoff, xtop;		/* current row, column, and top row */
  int xbufcur;			/* number of active buffers */
-@@ -1131,6 +1132,23 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1133,6 +1134,23 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -34,7 +34,7 @@ index 5f4064ff..7f5bf654 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1235,6 +1253,7 @@ static struct excmd {
+@@ -1237,6 +1255,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),

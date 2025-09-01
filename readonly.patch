@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5f4064ff..eed0480c 100644
+index 6b725ecb..9c213422 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -43,6 +43,7 @@ static int xgdep;		/* global command recursion depth */
@@ -36,7 +36,7 @@ index 5f4064ff..eed0480c 100644
  			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1131,6 +1137,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1133,6 +1139,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index 5f4064ff..eed0480c 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1202,6 +1214,7 @@ static struct excmd {
+@@ -1204,6 +1216,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
