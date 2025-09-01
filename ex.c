@@ -679,24 +679,28 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			sb->s_n--;
 			break;
 		}
-		sbufn_chr(sb, '\n')
+		sbuf_chr(sb, '\n')
 		ps = sb->s_n;
 	}
 	if (vi_insmov != TK_CTL('c')) {
+		if (vi_insmov == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
+			sb->s_n--;
 		if (ln && cmd[0] == 'c') {
+			if (n == sb->s_n && o2 <= o1)
+				goto ret;
 			memcpy(sb->s, ln, n);
 			ln = o2 > o1 ? uc_chr(ln + n, o2 - o1) : ln + n;
-			sbufn_str(sb, ln)
+			sbuf_str(sb, ln)
 		} else if (!(xvis & 2) && vi_insmov != 127)
-			sbufn_chr(sb, '\n')
-		else
-			sbuf_null(sb)
-		if (n < sb->s_n) {
-			n = lbuf_len(xb);
-			lbuf_edit(xb, sb->s, beg, end);
-			xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
-		}
+			sbuf_chr(sb, '\n')
+		else if (n == sb->s_n)
+			goto ret;
+		sbuf_null(sb)
+		n = lbuf_len(xb);
+		lbuf_edit(xb, sb->s, beg, end);
+		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
 	}
+	ret:
 	free(sb->s);
 	return NULL;
 }
