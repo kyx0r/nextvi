@@ -15,7 +15,7 @@ index 3bc4f5b9..a61f0ebb 100644
  	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
  	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 diff --git a/ex.c b/ex.c
-index 6b725ecb..a4fb4a70 100644
+index 4095ed7f..6f3157e8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -28,7 +28,7 @@ index 6b725ecb..a4fb4a70 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index f29fc564..84bf46bc 100644
+index 592ad250..63063aef 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,12 +525,12 @@ void dir_calc(char *path)

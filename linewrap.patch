@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 6b725ecb..139d4bfd 100644
+index 4095ed7f..d9157441 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */
@@ -10,7 +10,7 @@ index 6b725ecb..139d4bfd 100644
  
  int xrow, xoff, xtop;		/* current row, column, and top row */
  int xbufcur;			/* number of active buffers */
-@@ -1133,6 +1134,23 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1137,6 +1138,23 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -34,7 +34,7 @@ index 6b725ecb..139d4bfd 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1237,6 +1255,7 @@ static struct excmd {
+@@ -1241,6 +1259,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -225,7 +225,7 @@ index 2c79d6c4..f0507940 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index f29fc564..58e2de54 100644
+index 592ad250..e9e519ad 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,22 @@ static void vi_drawrow(int row)

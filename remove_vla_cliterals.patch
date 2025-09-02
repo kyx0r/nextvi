@@ -12,10 +12,10 @@ index 3bc4f5b9..3f3c458a 100644
  struct highlight hls[] = {
  	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 6b725ecb..f71ffe7f 100644
+index 4095ed7f..4721abde 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -842,7 +842,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -846,7 +846,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 6b725ecb..f71ffe7f 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -889,6 +889,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -893,6 +893,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -32,7 +32,7 @@ index 6b725ecb..f71ffe7f 100644
  	return NULL;
  }
  
-@@ -1291,7 +1292,7 @@ void *ex_exec(const char *ln)
+@@ -1295,7 +1296,7 @@ void *ex_exec(const char *ln)
  {
  	int idx = 0, len = strlen(ln) + 1;
  	int r1 = -1, r2 = -1;
@@ -41,7 +41,7 @@ index 6b725ecb..f71ffe7f 100644
  	sbuf_smake(sb, 1024)
  	for (int i = 0; *ln; i++) {
  		ln = ex_parse(ln, loc, &idx, arg);
-@@ -1308,6 +1309,8 @@ void *ex_exec(const char *ln)
+@@ -1312,6 +1313,8 @@ void *ex_exec(const char *ln)
  		sbuf_cut(sb, 0)
  	}
  	free(sb->s);
@@ -83,7 +83,7 @@ index 2c79d6c4..d359ceec 100644
  }
  
 diff --git a/led.c b/led.c
-index 3462b4f7..36b325bd 100644
+index 0d6f360f..3541c479 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -257,7 +257,7 @@ index d09ee288..a2546536 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index f29fc564..99abbf3f 100644
+index 592ad250..1942ff20 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -142,7 +142,8 @@ static void vi_drawrow(int row)
