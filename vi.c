@@ -1522,7 +1522,7 @@ void vi(int init)
 				vc_insert(c);
 				ins:
 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-				if (vi_insmov == 127 || vi_insmov == TK_CTL('h')) {
+				if (vi_insmov == 127) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
 						xrow--;
 						vc_join(0, 2);
