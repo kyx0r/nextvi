@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 6b725ecb..dbdbbb52 100644
+index 4095ed7f..49e10254 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -13,6 +13,7 @@ int xtd = +1;			/* current text direction */
@@ -10,7 +10,7 @@ index 6b725ecb..dbdbbb52 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1150,6 +1151,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1154,6 +1155,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index 6b725ecb..dbdbbb52 100644
  
  _EO(left,
  	if (*loc)
-@@ -1200,6 +1202,7 @@ static struct excmd {
+@@ -1204,6 +1206,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	{"k", ec_mark},
@@ -27,7 +27,7 @@ index 6b725ecb..dbdbbb52 100644
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index 3462b4f7..5a302811 100644
+index 0d6f360f..2cb09a46 100644
 --- a/led.c
 +++ b/led.c
 @@ -408,6 +408,14 @@ void led_modeswap(void)
@@ -53,7 +53,7 @@ index 3462b4f7..5a302811 100644
  	while (1) {
  		led_printparts(sb, pre, ps, post, postn, ai_max);
  		len = sb->s_n;
-@@ -610,7 +619,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
+@@ -611,7 +620,21 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
  		case TK_CTL('o'):;
  			led_modeswap();
  			continue;
@@ -76,7 +76,7 @@ index 3462b4f7..5a302811 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index f29fc564..52dbaac1 100644
+index 592ad250..0d07358a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -93,7 +93,7 @@ index f29fc564..52dbaac1 100644
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 +				if (xqe)
 +					vi_mod |= 2;
- 				if (vi_insmov == 127 || vi_insmov == TK_CTL('h')) {
+ 				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
