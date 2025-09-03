@@ -1,4 +1,4 @@
-.Dd Sep  2, 2025
+.Dd Sep  3, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -1187,17 +1187,17 @@ Current text direction context
 
 This option accepts four meaningful values:
 .Bl -tag -width Ds -compact
-.It Ar +2
+.It Ar 2
 Exclusively left-to-right
-.It Ar +1
+.It Ar 1
 Follow
-.Va dircontexts[]
+.Va dctxs[]
 (in
 .Pa conf.c ) ,
 defaulting to left-to-right
 .It Ar -1
 Follow
-.Va dircontexts[] ,
+.Va dctxs[] ,
 defaulting to right-to-left
 .It Ar -2
 Exclusively right-to-left
