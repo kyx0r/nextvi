@@ -877,10 +877,9 @@ EX OPTIONS
              Current text direction context
 
              This option accepts four meaningful values:
-             +2      Exclusively left-to-right
-             +1      Follow dircontexts[] (in conf.c), defaulting to left-to-
-                     right
-             -1      Follow dircontexts[], defaulting to right-to-left
+             2       Exclusively left-to-right
+             1       Follow dctxs[] (in conf.c), defaulting to left-to-right
+             -1      Follow dctxs[], defaulting to right-to-left
              -2      Exclusively right-to-left
 
      pr[val=0]
@@ -1125,4 +1124,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                   September 2, 2025                  Linux 6.16.0
+Linux 6.16.0                   September 3, 2025                  Linux 6.16.0
