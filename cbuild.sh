@@ -87,7 +87,10 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "debug")
         shift
-        CFLAGS="$CFLAGS -O0 -g"
+        if command -v scan-build >/dev/null 2>&1; then
+                CC="scan-build $CC"
+        fi
+        CFLAGS="$CFLAGS -O0 -g -fsanitize=address -fsanitize=undefined"
         log "$G" "Entering step: \"Append \"\$CFLAGS\" with debugging flags\""
         set -- build "$@"
         ;;
