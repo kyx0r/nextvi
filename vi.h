@@ -414,8 +414,8 @@ extern struct buf tempbufs[2];
 extern struct buf *ex_buf;
 extern struct buf *ex_pbuf;
 #define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
-#define ex_path ex_buf->path
-#define ex_ft ex_buf->ft
+#define xb_path ex_buf->path
+#define xb_ft ex_buf->ft
 #define xb ex_buf->lb
 #define exbuf_load(buf) \
 	xrow = buf->row; \
@@ -435,9 +435,9 @@ void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
 void *ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
-void ex_cprint(char *line, int r, int c, int ln);
-#define ex_print(line) \
-{ preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, -1, 0, 1)); restore(xleft) }
+void ex_cprint(char *line, char *ft, int r, int c, int ln);
+#define ex_print(line, ft) \
+{ preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
@@ -446,7 +446,7 @@ int ex_edit(const char *path, int len);
 void ec_bufferi(int id);
 void bufs_switch(int idx);
 #define bufs_switchwft(idx) \
-{ if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(ex_ft); } } \
+{ if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
 
 /* conf.c configuration variables */
 /* map file names to file types */

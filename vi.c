@@ -98,11 +98,11 @@ static void vi_drawmsg(void)
 {
 	if (vi_msg[0]) {
 		syn_blockhl = 0;
-		syn_setft("/-");
+		syn_setft(bar_ft);
 		preserve(int, xtd, xtd = 2;)
 		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
 		restore(xtd)
-		syn_setft(ex_ft);
+		syn_setft(xb_ft);
 	}
 }
 
@@ -161,9 +161,9 @@ static void vi_drawrow(int row)
 		preserve(int, syn_blockhl, syn_blockhl = 0;)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
 		vi_rshift = (row != xtop + xrows-1);
-		syn_setft("/#");
+		syn_setft(n_ft);
 		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
-		syn_setft(ex_ft);
+		syn_setft(xb_ft);
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
@@ -195,7 +195,7 @@ static void vi_drawrow(int row)
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
 		preserve(int, syn_blockhl, syn_blockhl = 0;)
-		syn_setft("/##");
+		syn_setft(nn_ft);
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
 					memchr(" \t", *rstate->chrs[ren_off(s, i1)], 2);)
@@ -207,7 +207,7 @@ static void vi_drawrow(int row)
 			}
 		}
 		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
-		syn_setft(ex_ft);
+		syn_setft(xb_ft);
 		restore(syn_blockhl)
 		return;
 	}
@@ -254,16 +254,16 @@ static void vi_wait(void)
 	xmpt = xmpt > 0 ? 0 : xmpt;
 }
 
-static char *vi_prompt(char *msg, char *insert, int *kmap, int *mlen)
+static char *vi_prompt(char *msg, char *ft, char *insert, int *kmap, int *mlen)
 {
 	int key;
 	sbuf_smake(sb, xcols)
 	sbuf_str(sb, msg)
 	*mlen = sb->s_n;
 	term_pos(xrows, led_pos(msg, 0));
-	syn_setft("/ex");
+	syn_setft(ft);
 	led_prompt(sb, insert, kmap, &key, 0, 1);
-	syn_setft(ex_ft);
+	syn_setft(xb_ft);
 	strncpy(vi_msg, sb->s, sizeof(vi_msg) - 1);
 	if (key == '\n')
 		return sb->s;
@@ -274,7 +274,7 @@ static char *vi_prompt(char *msg, char *insert, int *kmap, int *mlen)
 static char *vi_enprompt(char *msg, char *insert, int *mlen)
 {
 	int kmap = 0;
-	return vi_prompt(msg, insert, &kmap, mlen);
+	return vi_prompt(msg, ex_ft, insert, &kmap, mlen);
 }
 
 static int vi_yankbuf(void)
@@ -329,12 +329,12 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 	int i, dir;
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
-		char *kw = vi_prompt(sign, NULL, &xkmap, &i);
+		char *kw = vi_prompt(sign, vs_ft, NULL, &xkmap, &i);
 		if (!kw)
 			return 1;
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
 		if (!xkwdrs)
-			ex_print("syntax error")
+			ex_print("syntax error", msg_ft)
 		free(kw);
 	} else if (msg)
 		ex_krsset(xregs['/'], xkwddir);
@@ -586,7 +586,7 @@ static void vc_status(int type)
 	}
 	snprintf(vi_msg, sizeof(vi_msg),
 		"\"%s\"%s%dL %d%% L%d C%d B%td",
-		ex_path[0] ? ex_path : "unnamed",
+		xb_path[0] ? xb_path : "unnamed",
 		xb->modified ? "* " : " ", lbuf_len(xb),
 		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
 		istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs);
@@ -719,7 +719,7 @@ static int vi_motion(int *row, int *off)
 		bsync_ret:
 		for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
 			ex_bufpostfix(&bufs[i], 1);
-		syn_setft(ex_ft);
+		syn_setft(xb_ft);
 		vc_status(0);
 		xtop = MAX(0, *row - xrows / 2);
 		vi_mod |= 1;
@@ -730,7 +730,7 @@ static int vi_motion(int *row, int *off)
 			if (!savepath[vi_arg])
 				sbuf_make(savepath[vi_arg], 128)
 			sbuf_cut(savepath[vi_arg], 0)
-			sbufn_str(savepath[vi_arg], ex_path)
+			sbufn_str(savepath[vi_arg], xb_path)
 			srow[vi_arg] = *row; soff[vi_arg] = *off;
 			break;
 		}
@@ -1417,11 +1417,11 @@ void vi(int init)
 					goto do_excmd;
 				case '/':
 					cs = vi_curword(xb, xrow, xoff, vi_arg);
-					ln = vi_prompt("v/ xkwd:", cs, &xkmap, &n);
+					ln = vi_prompt("xkwd:", vs_ft, cs, &xkmap, &n);
 					if (ln)
 						ex_krsset(ln + n, +1);
 					if (ln && !xkwdrs)
-						ex_print("syntax error")
+						ex_print("syntax error", msg_ft)
 					free(ln);
 					free(cs);
 					break;
@@ -1819,8 +1819,8 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	dir_init();
 	syn_init();
-	temp_open(0, "/hist/", "/");
-	temp_open(1, "/fm/", "/fm");
+	temp_open(0, "/hist/", _ft);
+	temp_open(1, "/fm/", fm_ft);
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == '-' && !argv[i][2]) {
 			i++;
