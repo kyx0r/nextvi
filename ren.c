@@ -199,7 +199,7 @@ int ren_noeol(char *s, int o)
 	if (!s)
 		return 0;
 	ren_state *r = ren_position(s);
-	o = o >= r->n ? r->n - 1 : MAX(0, o);
+	o = MAX(0, o >= r->n ? r->n - 1 : o);
 	return o - (o > 0 && *r->chrs[o] == '\n');
 }
 

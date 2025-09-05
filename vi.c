@@ -1744,8 +1744,7 @@ void vi(int init)
 			}
 		}
 		if (xhlp && (k = syn_findhl(3)) >= 0) {
-			int row = xrow, off = xoff;
-			int row1 = xrow, off1 = xoff;
+			int row = xrow, off = xoff, row1, off1;
 			led_att la;
 			if (!led_attsb)
 				sbuf_make(led_attsb, sizeof(la) * 2)
