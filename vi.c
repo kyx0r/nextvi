@@ -1383,12 +1383,6 @@ void vi(int init)
 						vi_arg--;
 					}
 					break;
-				case 'a':
-					xai = !xai;
-					char aistr[] = "autoindent  ";
-					aistr[11] = xai + '0';
-					snprintf(vi_msg, sizeof(vi_msg), "%s", aistr);
-					break;
 				case 'j':
 					vi_joinmode = !vi_joinmode;
 					break;

@@ -18,6 +18,7 @@ files and thus is never static.
 	{FILE *f = fopen("file", "a");\
 	fprintf(f, s, ##__VA_ARGS__);\
 	fclose(f);}\
+
 /* ease up ridiculous global stuffing */
 #define preserve(type, name, value) \
 type tmp##name = name; \
@@ -385,7 +386,7 @@ extern int xhlw;
 extern int xhlp;
 extern int xhlr;
 extern int xled;
-extern int xtd;	
+extern int xtd;
 extern int xshape;
 extern int xorder;
 extern int xtbs;
@@ -393,7 +394,7 @@ extern int xish;
 extern int xgrp;
 extern int xpac;
 extern int xmpt;
-extern int xpr;	
+extern int xpr;
 extern int xsep;
 extern int xlim;
 extern int xseq;
