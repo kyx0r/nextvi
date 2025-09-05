@@ -2,7 +2,7 @@
 #include "kmap.h"
 
 /* access mode of new files */
-int conf_mode = 0600;
+const int conf_mode = 0600;
 #define FTGEN(ft) static char ft_##ft[] = #ft;
 #define FT(ft) ft_##ft
 FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(msg)
@@ -21,7 +21,7 @@ struct filetype fts[] = {
 	{FT(html), "\\.(html?|css)$"},				/* html,css */
 	{FT(diff), "\\.(patch|diff)$"}				/* diff */
 };
-int ftslen = LEN(fts);
+const int ftslen = LEN(fts);
 
 #define IN	0	/* inverse | black */
 #define RE	1	/* red */
@@ -244,10 +244,10 @@ left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[+ \t]?([?/])|[td
 		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 	{"/-", "^.*$", A(AY1 | SYN_BD)},
 };
-int hlslen = LEN(hls);
+const int hlslen = LEN(hls);
 
 /* how to highlight text in the reverse direction */
-int conf_hlrev = SYN_BGMK(8);
+const int conf_hlrev = SYN_BGMK(8);
 
 /* right-to-left characters */
 #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
@@ -258,14 +258,14 @@ struct dircontext dctxs[] = {
 	{"^[" CR2L "]", -1},
 	{"^[a-zA-Z_0-9]", +1},
 };
-int dctxlen = LEN(dctxs);
+const int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
 	{"[" CR2L "][" CNEUT CR2L "]*[" CR2L "]", +1, {-1}},
 	{"^([ \t]+)?([" CNEUT "]*[^" CR2L "]*[^" CR2L CNEUT "](?:[" CNEUT "]+$)?)", -1, {0, 1, -1}},
 	{"[^" CR2L CNEUT "][^" CR2L "]*[^" CR2L CNEUT "](?:[" CNEUT "]+$)?", -1, {-1}},
 };
-int dmarkslen = LEN(dmarks);
+const int dmarkslen = LEN(dmarks);
 
 struct placeholder _ph[2] = {
 	{{0x0,0x1f}, "^", 1, 1},

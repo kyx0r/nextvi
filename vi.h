@@ -18,6 +18,7 @@ files and thus is never static.
 	{FILE *f = fopen("file", "a");\
 	fprintf(f, s, ##__VA_ARGS__);\
 	fclose(f);}\
+
 /* ease up ridiculous global stuffing */
 #define preserve(type, name, value) \
 type tmp##name = name; \
@@ -385,7 +386,7 @@ extern int xhlw;
 extern int xhlp;
 extern int xhlr;
 extern int xled;
-extern int xtd;	
+extern int xtd;
 extern int xshape;
 extern int xorder;
 extern int xtbs;
@@ -393,7 +394,7 @@ extern int xish;
 extern int xgrp;
 extern int xpac;
 extern int xmpt;
-extern int xpr;	
+extern int xpr;
 extern int xsep;
 extern int xlim;
 extern int xseq;
@@ -449,13 +450,13 @@ void bufs_switch(int idx);
 
 /* conf.c configuration variables */
 /* map file names to file types */
-extern int conf_mode;
+extern const int conf_mode;
 struct filetype {
 	char *ft;		/* file type */
 	char *pat;		/* file name pattern */
 };
 extern struct filetype fts[];
-extern int ftslen;
+extern const int ftslen;
 /* syntax highlighting patterns */
 struct highlight {
 	char *ft;		/* the filetype of this pattern */
@@ -466,14 +467,14 @@ struct highlight {
 	char id;		/* id of this hl */
 };
 extern struct highlight hls[];
-extern int hlslen;
+extern const int hlslen;
 /* direction context patterns; specifies the direction of a whole line */
 struct dircontext {
 	char *pat;
 	int dir;
 };
 extern struct dircontext dctxs[];
-extern int dctxlen;
+extern const int dctxlen;
 /* direction marks; the direction of a few words in a line */
 struct dirmark {
 	char *pat;
@@ -481,7 +482,7 @@ struct dirmark {
 	int dir[8];	/* the direction of a matched text group */
 };
 extern struct dirmark dmarks[];
-extern int dmarkslen;
+extern const int dmarkslen;
 /* character placeholders */
 struct placeholder {
 	int cp[2];	/* the source character codepoint */
@@ -492,7 +493,7 @@ struct placeholder {
 extern struct placeholder _ph[];
 extern struct placeholder *ph;
 extern int phlen;
-extern int conf_hlrev;
+extern const int conf_hlrev;
 char **conf_kmap(int id);
 int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
