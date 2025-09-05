@@ -1,4 +1,4 @@
-.Dd Sep  3, 2025
+.Dd Sep  5, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -235,8 +235,6 @@ Enter %s/ ex prompt. Contains regex for changing spaces to tabs. # modifies tab 
 Enter %s/ ex prompt. Contains regex for changing tabs to spaces. # modifies tab width
 .It Cm vo
 Remove trailing white spaces and <\er> line endings
-.It Cm va
-Toggle ai ex option
 .It Cm <^G>
 Print buffer status infos
 .It Cm 1<^G>
@@ -1122,7 +1120,7 @@ Defines a target search group for any regex search operation.
 This becomes necessary when the result of regex search is to
 be based on some group rather than default match group.
 
-The value of grp is calculated using (group number * 2).
+The value of grp must be divisible by 2.
 
 Example: ignore tabs at the start of the line
 :grp 2:1,$f/^[	]+(.+):grp
@@ -1416,7 +1414,7 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 510 vi.h | definitions/aux
+ 511 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  296 conf.c | hl/ft/td config
@@ -1427,8 +1425,8 @@ _
  683 led.c | insert mode/output
  749 regex.c | pikevm
  1353 ex.c | ex options/commands
- 1867 vi.c | normal mode/general
- 6832 total | wc -l *.c\(basort
+ 1860 vi.c | normal mode/general
+ 6825 total | wc -l *.c\(basort
 _
 .TE
 .
@@ -1443,7 +1441,7 @@ Build once
 .It Cm ./cbuild.sh build
 Build
 .It Cm ./cbuild.sh debug
-Build with -O0 -g
+Build with symbols, static analysis, dynamic analysis, and no optimizations
 .It Cm ./cbuild.sh pgobuild
 PGO build can lead to a significant performance boost on
 some application specific tasks
