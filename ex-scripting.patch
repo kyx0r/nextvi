@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 9670f44b..21549944 100644
+index add094d1..432698f3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -32,6 +32,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -10,7 +10,7 @@ index 9670f44b..21549944 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1137,6 +1138,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1141,6 +1142,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -18,7 +18,7 @@ index 9670f44b..21549944 100644
 +{
 +	char *rep;
 +	char buf[100];
-+	int row = xrow, off = xoff;
++	int row = xrow, off = xoff, ret = 0;
 +	char *ln = lbuf_get(xb, row);
 +	if (!*arg)
 +		return xserr;
@@ -41,18 +41,18 @@ index 9670f44b..21549944 100644
 +		xmpt = xmpt >= 0 ? 2 : xmpt;
 +	}
 +	xenvp = environ;
-+	rep = cmd_pipe(arg, NULL, cmd[1] == 'x');
++	rep = cmd_pipe(arg, NULL, &ret, cmd[1] == 'x');
 +	xenvp = NULL;
 +	if (rep && cmd[1] == 'x')
 +		ex_exec(rep);
 +	free(rep);
-+	return NULL;
++	return ret ? xuerr : NULL;
 +}
 +
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1221,6 +1257,8 @@ static struct excmd {
+@@ -1225,6 +1261,8 @@ static struct excmd {
  	EO(shape),
  	EO(seq),
  	EO(sep),
@@ -62,7 +62,7 @@ index 9670f44b..21549944 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 40e0cb4c..e02383fe 100644
+index b6e926e6..b01a3eb8 100644
 --- a/term.c
 +++ b/term.c
 @@ -224,7 +224,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -78,7 +78,7 @@ index 40e0cb4c..e02383fe 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 7e96fc20..a062f2f9 100644
+index 2e3f4c23..d6aaf97d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple
