@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4095ed7f..d9157441 100644
+index 9670f44b..05bedee9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */
@@ -225,7 +225,7 @@ index 2c79d6c4..f0507940 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index 592ad250..e9e519ad 100644
+index 70ba6b96..be50162c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,22 @@ static void vi_drawrow(int row)
@@ -252,10 +252,10 @@ index 592ad250..e9e519ad 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index 3254b683..8ddc352c 100644
+index 7e96fc20..0edacc6e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -136,6 +136,8 @@ struct lopt {
+@@ -137,6 +137,8 @@ struct lopt {
  	char *ins;		/* inserted text */
  	char *del;		/* deleted text */
  	int *mark;		/* saved marks */
@@ -264,7 +264,7 @@ index 3254b683..8ddc352c 100644
  	int pos, n_ins, n_del;	/* modification location */
  	int pos_off;		/* cursor line offset */
  	int seq;		/* operation number */
-@@ -143,6 +145,8 @@ struct lopt {
+@@ -144,6 +146,8 @@ struct lopt {
  struct linfo {
  	int len;
  	int grec;

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4095ed7f..9e84f2ab 100644
+index 9670f44b..26bbc62d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -8,6 +8,7 @@ int xhll;			/* highlight current line */
@@ -27,10 +27,10 @@ index 4095ed7f..9e84f2ab 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 592ad250..8a54a219 100644
+index 70ba6b96..72e6c912 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1743,6 +1743,21 @@ void vi(int init)
+@@ -1737,6 +1737,21 @@ void vi(int init)
  				}
  			}
  		}
@@ -50,5 +50,5 @@ index 592ad250..8a54a219 100644
 +			}
 +		}
  		if (xhlp && (k = syn_findhl(3)) >= 0) {
- 			int row = xrow, off = xoff;
- 			int row1 = xrow, off1 = xoff;
+ 			int row = xrow, off = xoff, row1, off1;
+ 			led_att la;

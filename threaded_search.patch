@@ -1,5 +1,5 @@
 diff --git a/cbuild.sh b/cbuild.sh
-index 2d2e86b9..fb944f70 100755
+index 2372d3b8..3b294bc7 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -47,6 +47,7 @@ CFLAGS="\
@@ -182,7 +182,7 @@ index bc22a958..130772b3 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 592ad250..18ed39a8 100644
+index 70ba6b96..8ee356f2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -194,10 +194,10 @@ index 592ad250..18ed39a8 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 3254b683..baad6475 100644
+index 7e96fc20..d92e391a 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -251,7 +251,8 @@ void syn_addhl(char *reg, int id, int reload);
+@@ -252,7 +252,8 @@ void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */

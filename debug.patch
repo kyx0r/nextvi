@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4095ed7f..0398750a 100644
+index 9670f44b..e251280a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1351,3 +1351,16 @@ void ex_init(char **files, int n)
@@ -32,7 +32,7 @@ index daeeea06..6c1b9a1c 100644
  	flg = prog->flg | flg;
  	if (eol_ch)
 diff --git a/ren.c b/ren.c
-index d09ee288..b7d41ab3 100644
+index a552bd9b..8666a62b 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
@@ -68,7 +68,7 @@ index d09ee288..b7d41ab3 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 592ad250..0316f0c1 100644
+index 70ba6b96..925a2b94 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -465,6 +465,12 @@ void vi_regput(int c, const char *s, int ln)
@@ -84,7 +84,7 @@ index 592ad250..0316f0c1 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1856,12 +1862,19 @@ int main(int argc, char *argv[])
+@@ -1849,12 +1855,19 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -105,10 +105,10 @@ index 592ad250..0316f0c1 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 3254b683..ede38496 100644
+index 7e96fc20..c6e00970 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -223,6 +223,7 @@ char *ren_translate(char *s, char *ln);
+@@ -224,6 +224,7 @@ char *ren_translate(char *s, char *ln);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -116,7 +116,7 @@ index 3254b683..ede38496 100644
  /* syntax highlighting */
  #define SYN_BD		0x10000
  #define SYN_IT		0x20000
-@@ -249,6 +250,7 @@ void syn_reloadft(void);
+@@ -250,6 +251,7 @@ void syn_reloadft(void);
  int syn_findhl(int id);
  void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
@@ -124,8 +124,8 @@ index 3254b683..ede38496 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -439,6 +441,7 @@ void ex_cprint(char *line, int r, int c, int ln);
- { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, -1, 0, 1)); restore(xleft) }
+@@ -440,6 +442,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
+ { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
 +void ex_done(void);

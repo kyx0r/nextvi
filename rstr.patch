@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4095ed7f..108629df 100644
+index 9670f44b..bae966e5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -283,7 +283,7 @@ index daeeea06..5acf036a 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 592ad250..f8a526b9 100644
+index 70ba6b96..921b2e7a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -465,7 +465,7 @@ void vi_regput(int c, const char *s, int ln)
@@ -305,10 +305,10 @@ index 592ad250..f8a526b9 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 3254b683..a420c6a1 100644
+index 7e96fc20..75fee8f0 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -122,12 +122,23 @@ typedef struct {
+@@ -123,12 +123,23 @@ typedef struct {
  	int *setgrpcnt;		/* number of groups in each regular expression */
  	int grpcnt;		/* group count */
  } rset;
@@ -332,7 +332,7 @@ index 3254b683..a420c6a1 100644
  
  /* lbuf.c line buffer, managing a number of lines */
  #define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
-@@ -179,7 +190,7 @@ void lbuf_saved(struct lbuf *lb, int clear);
+@@ -180,7 +191,7 @@ void lbuf_saved(struct lbuf *lb, int clear);
  int lbuf_indents(struct lbuf *lb, int r);
  int lbuf_eol(struct lbuf *lb, int r, int state);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
@@ -341,7 +341,7 @@ index 3254b683..a420c6a1 100644
  			int *o, int ln_n, int skip);
  #define lbuf_dedup(lb, str, n) \
  { for (int i = 0; i < lbuf_len(lb);) { \
-@@ -406,7 +417,7 @@ extern int xkmap_alt;
+@@ -407,7 +418,7 @@ extern int xkmap_alt;
  extern int xkwddir;
  extern int xkwdcnt;
  extern sbuf *xacreg;
@@ -350,8 +350,8 @@ index 3254b683..a420c6a1 100644
  extern char *xregs[256];
  extern struct buf *bufs;
  extern struct buf tempbufs[2];
-@@ -439,7 +450,7 @@ void ex_cprint(char *line, int r, int c, int ln);
- { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, -1, 0, 1)); restore(xleft) }
+@@ -440,7 +451,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
+ { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
 -int ex_krs(rset **krs, int *dir);
@@ -359,7 +359,7 @@ index 3254b683..a420c6a1 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -505,6 +516,6 @@ extern char vi_msg[512];
+@@ -506,6 +517,6 @@ extern char vi_msg[512];
  void vi_regputraw(unsigned char c, const char *s, int ln, int append);
  void vi_regput(int c, const char *s, int ln);
  /* file system */
