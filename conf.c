@@ -2,7 +2,7 @@
 #include "kmap.h"
 
 /* access mode of new files */
-int conf_mode = 0600;
+const int conf_mode = 0600;
 #define FTGEN(ft) static char ft_##ft[] = #ft;
 #define FT(ft) ft_##ft
 FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(msg)
@@ -21,7 +21,17 @@ struct filetype fts[] = {
 	{FT(html), "\\.(html?|css)$"},				/* html,css */
 	{FT(diff), "\\.(patch|diff)$"}				/* diff */
 };
-int ftslen = LEN(fts);
+const int ftslen = LEN(fts);
+
+char _ft[] = "/";	/* default hl */
+char fm_ft[] = "/fm";	/* file manager */
+char n_ft[] = "/#";	/* numbers highlight for ^v */
+char nn_ft[] = "/##";	/* numbers highlight for # */
+char ac_ft[] = "/ac";	/* autocomplete dropdown */
+char ex_ft[] = "/ex";	/* ex mode (is never '\n' terminated) */
+char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
+char bar_ft[] = "/-";	/* status bar (is never '\n' terminated) */
+char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
 
 #define IN	0	/* inverse | black */
 #define RE	1	/* red */
@@ -42,12 +52,12 @@ int ftslen = LEN(fts);
 
 #define A(...) (int[]){__VA_ARGS__}
 
+/* At least 1 entry is required in this struct for fallback */
+/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 struct highlight hls[] = {
-	/* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
-	/* "/" is default hl, must have at least 1 entry for fallback */
-	{"/", NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},  /* <-- optional, used by hll if set */
-	{"/", NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
-	{"/", NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
+	{_ft, NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},  /* <-- optional, used by hll if set */
+	{_ft, NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
+	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
 
 	{FT(c), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
 	{FT(c), "^.+\\\\\n$", A(CY1 | SYN_SO)},
@@ -202,52 +212,51 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{FT(diff), "^@.*", A(CY)},
 	{FT(diff), "^diff .*", A(SYN_BD)},
 
-	/* file manager */
-	{"/fm", "^(?:(\\.\\.?(/))|(([^/]+/)+|/.*/|/))?.*\n$",
+	{fm_ft, "^(?:(\\.\\.?(/))|(([^/]+/)+|/.*/|/))?.*\n$",
 		A(AY1 | SYN_SP, BL | SYN_SP, CY | SYN_SP, CY)},
-	{"/fm", "(/+)\\.\\.(/+)(?>^\\./)", A(BL | SYN_SP, CY, CY | SYN_SO)},
-	{"/fm", "[^/]*\\.sh\n$", A(GR)},
-	{"/fm", "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", A(MA)},
-	{"/fm", "/.*/", A(CY)},
+	{fm_ft, "(/+)\\.\\.(/+)(?>^\\./)", A(BL | SYN_SP, CY, CY | SYN_SO)},
+	{fm_ft, "[^/]*\\.sh\n$", A(GR)},
+	{fm_ft, "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", A(MA)},
+	{fm_ft, "/.*/", A(CY)},
 
-	/* numbers highlight for ^v */
-	{"/#", "[0lewEW]", A(CY1 | SYN_BD)},
-	{"/#", "1([ \t]*[1-9][ \t]*)9", A(RE1, MA1 | SYN_BD)},
-	{"/#", "9[ \t]*([1-9][ \t]*)1", A(RE1, MA1 | SYN_BD)},
-	{"/#", "[1-9]", A(RE1)},
+	{n_ft, "[0lewEW]", A(CY1 | SYN_BD)},
+	{n_ft, "1([ \t]*[1-9][ \t]*)9", A(RE1, MA1 | SYN_BD)},
+	{n_ft, "9[ \t]*([1-9][ \t]*)1", A(RE1, MA1 | SYN_BD)},
+	{n_ft, "[1-9]", A(RE1)},
 
-	/* numbers highlight for # */
-	{"/##", "[0-9]+", A(RE1 | SYN_BD)},
+	{nn_ft, "[0-9]+", A(RE1 | SYN_BD)},
 
-	/* autocomplete dropdown */
-	{"/ac", "[^ \t-/:-@[-^{-~]+(?:(\n$)|\n)|\n|([^\n]+(\n))",
+	{ac_ft, "[^ \t-/:-@[-^{-~]+(?:(\n$)|\n)|\n|([^\n]+(\n))",
 		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
-	{"/ac", "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
+	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
 
-	/* ex mode (is never '\n' terminated) */
-	{"/ex", "^[^:].*$", A(AY1 | SYN_BD)},
-	{"/ex", "^.*$", A(AY1 | SYN_BD | SYN_SO)},
-	{"/ex", ":(?!^#)[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z])?([0-9]*)?)\
+	{ex_ft, "^[^:].*$", A(AY1 | SYN_BD)},
+	{ex_ft, "^.*$", A(AY1 | SYN_BD | SYN_SO)},
+	{ex_ft, ":(?!^#)[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z])?([0-9]*)?)\
 (?:([+-])[0-9]+)?)[ \t]*(?:([,;])((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z])?([0-9]*)?)\
 (?:([+-])([0-9]+))?)*)((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|\
 left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[+ \t]?([?/])|[tdp+])?|inc|i|\
 (?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[ql!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
-	{"/ex", "\\\\(.)|(:)#", A(AY1 | SYN_BD, YE, BL1)},
-	{"/ex", "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", A(WH1 | SYN_BD)},
+	{ex_ft, "\\\\(.)|(:)#", A(AY1 | SYN_BD, YE, BL1)},
+	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|[%#][0-9]*", A(WH1 | SYN_BD)},
 
-	/* status bar (is never '\n' terminated) */
-	{"/-", "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
-	{"/-", "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
+	{vs_ft, "^.*$", A(AY1 | SYN_BD | SYN_SO)},
+	{vs_ft, "\\\\(.)", A(0, YE | SYN_BD)},
+
+	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
+	{bar_ft, "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 		A(AY1 | SYN_BD, RE1, BL, YE, MA, CY1, YE1)},
-	{"/-", "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
+	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
-	{"/-", "^.*$", A(AY1 | SYN_BD)},
+	{bar_ft, "^.*$", A(AY1 | SYN_BD)},
+
+	{msg_ft, "^.*$", A(AY1 | SYN_BD)},
 };
-int hlslen = LEN(hls);
+const int hlslen = LEN(hls);
 
 /* how to highlight text in the reverse direction */
-int conf_hlrev = SYN_BGMK(8);
+const int conf_hlrev = SYN_BGMK(8);
 
 /* right-to-left characters */
 #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
@@ -258,14 +267,14 @@ struct dircontext dctxs[] = {
 	{"^[" CR2L "]", -1},
 	{"^[a-zA-Z_0-9]", +1},
 };
-int dctxlen = LEN(dctxs);
+const int dctxlen = LEN(dctxs);
 
 struct dirmark dmarks[] = {
 	{"[" CR2L "][" CNEUT CR2L "]*[" CR2L "]", +1, {-1}},
 	{"^([ \t]+)?([" CNEUT "]*[^" CR2L "]*[^" CR2L CNEUT "](?:[" CNEUT "]+$)?)", -1, {0, 1, -1}},
 	{"[^" CR2L CNEUT "][^" CR2L "]*[^" CR2L CNEUT "](?:[" CNEUT "]+$)?", -1, {-1}},
 };
-int dmarkslen = LEN(dmarks);
+const int dmarkslen = LEN(dmarks);
 
 struct placeholder _ph[2] = {
 	{{0x0,0x1f}, "^", 1, 1},
