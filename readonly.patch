@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4095ed7f..ea699148 100644
+index 9670f44b..21e4efa6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -43,6 +43,7 @@ static int xgdep;		/* global command recursion depth */
@@ -33,7 +33,7 @@ index 4095ed7f..ea699148 100644
  		if (!strchr(cmd, '!')) {
 +			if (ex_buf->readonly)
 +				return "write failed: readonly option is set";
- 			if (!strcmp(ex_path, path) && mtime(path) > ex_buf->mtime)
+ 			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
 @@ -1137,6 +1143,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
@@ -58,10 +58,10 @@ index 4095ed7f..ea699148 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 592ad250..4aea853c 100644
+index 70ba6b96..f92e8260 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1842,9 +1842,11 @@ int main(int argc, char *argv[])
+@@ -1835,9 +1835,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -75,10 +75,10 @@ index 592ad250..4aea853c 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 3254b683..0a0997c4 100644
+index 7e96fc20..fea0e89a 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -372,6 +372,7 @@ struct buf {
+@@ -373,6 +373,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -86,7 +86,7 @@ index 3254b683..0a0997c4 100644
  };
  /* ex options */
  extern int xleft;
-@@ -508,3 +509,4 @@ void vi_regput(int c, const char *s, int ln);
+@@ -509,3 +510,4 @@ void vi_regput(int c, const char *s, int ln);
  extern rset *fsincl;
  extern char *fs_exdir;
  void dir_calc(char *path);
