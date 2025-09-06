@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4095ed7f..555909fd 100644
+index 9670f44b..e7ec7c24 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1337,7 +1337,7 @@ void ex(void)
@@ -19,10 +19,10 @@ index 4095ed7f..555909fd 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 592ad250..94b801b9 100644
+index 70ba6b96..0cc43ba5 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1821,7 +1821,8 @@ static int setup_signals(void)
+@@ -1814,7 +1814,8 @@ static int setup_signals(void)
  
  int main(int argc, char *argv[])
  {
@@ -32,7 +32,7 @@ index 592ad250..94b801b9 100644
  	if (!setup_signals())
  		return EXIT_FAILURE;
  	dir_init();
-@@ -1842,16 +1843,27 @@ int main(int argc, char *argv[])
+@@ -1835,16 +1836,27 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -64,13 +64,13 @@ index 592ad250..94b801b9 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 3254b683..de6028ec 100644
+index 7e96fc20..9882b976 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -437,7 +437,7 @@ void *ex_exec(const char *ln);
- void ex_cprint(char *line, int r, int c, int ln);
- #define ex_print(line) \
- { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, -1, 0, 1)); restore(xleft) }
+@@ -438,7 +438,7 @@ void *ex_exec(const char *ln);
+ void ex_cprint(char *line, char *ft, int r, int c, int ln);
+ #define ex_print(line, ft) \
+ { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
 -void ex_init(char **files, int n);
 +void ex_init(char **files, int n, char** cmds, int cmdnum);
  void ex_bufpostfix(struct buf *p, int clear);
