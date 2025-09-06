@@ -125,7 +125,7 @@ index add094d1..2546b34a 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 0ae5f909..38b33887 100644
+index f0963670..1fb14514 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -340,11 +340,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)

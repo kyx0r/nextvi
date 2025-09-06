@@ -1,5 +1,5 @@
 diff --git a/lbuf.c b/lbuf.c
-index 0ae5f909..53f3e0d9 100644
+index f0963670..0bb611c1 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -249,6 +249,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
