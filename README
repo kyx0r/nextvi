@@ -598,7 +598,7 @@ EX COMMANDS
              Example: calculate directory only if :cd succeeded
              :1,1wl cd /blah:fd
              Example: repeat chain of ex commands 10 times
-             :10wl 1p5p10p
+             :10wl 1p\:5p\:10p
              Example: print a line only if it contains "int" at offset 5
              :1,1wl ;5;/^int/:p
              Example: allow :led while branching only :p command
