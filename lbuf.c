@@ -231,11 +231,17 @@ void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)
 {
-	sbuf_smake(sb, 64)
-	for (int i = beg; i < end; i++)
-		if (i < lb->ln_n)
-			sbuf_str(sb, lb->ln[i])
-	sbufn_sret(sb)
+	int i, msum = 0;
+	end = MIN(lb->ln_n, end);
+	for (i = beg; i < end; i++)
+		msum += lbuf_i(lb, i)->len + 1;
+	char *p = emalloc(msum+1);
+	for (msum = 0, i = beg; i < end; i++) {
+		memcpy(p + msum, lb->ln[i], lbuf_i(lb, i)->len + 1);
+		msum += lbuf_i(lb, i)->len + 1;
+	}
+	p[msum] = '\0';
+	return p;
 }
 
 char *lbuf_get(struct lbuf *lb, int pos)

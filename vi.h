@@ -39,7 +39,7 @@ void vi(int init);
 void ex(void);
 
 /* sbuf string buffer, variable-sized string */
-#define NEXTSZ(o, r)	MAX(o * 2, o + r)
+#define NEXTSZ(o, r)	o + r + ((o + r) >> 1)
 typedef struct sbuf {
 	char *s;	/* allocated buffer */
 	int s_n;	/* length of the string stored in s[] */
