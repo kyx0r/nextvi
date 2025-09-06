@@ -39,7 +39,7 @@ void vi(int init);
 void ex(void);
 
 /* sbuf string buffer, variable-sized string */
-#define NEXTSZ(o, r)	MAX(o * 2, o + r)
+#define NEXTSZ(o, r)	o + r + ((o + r) >> 1)
 typedef struct sbuf {
 	char *s;	/* allocated buffer */
 	int s_n;	/* length of the string stored in s[] */
@@ -72,7 +72,7 @@ typedef struct sbuf {
 
 #define sbuf_(sb, x, len, func) \
 if (sb->s_n + len >= sb->s_sz) \
-	sbuf_extend(sb, NEXTSZ(sb->s_sz, len + 1)) \
+	sbuf_extend(sb, NEXTSZ(sb->s_sz, len)) \
 mem##func(sb->s + sb->s_n, x, len); \
 sb->s_n += len; \
 
@@ -330,7 +330,7 @@ void term_back(int c);
 } \
 
 /* process management */
-char *cmd_pipe(char *cmd, char *ibuf, int oproc);
+char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc);
 char *xgetenv(char* q[]);
 
 #define TK_ESC		TK_CTL('[')
