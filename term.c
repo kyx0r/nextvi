@@ -259,7 +259,7 @@ char *xgetenv(char **q)
 }
 
 /* execute a command; pass in input if ibuf and process output if oproc */
-char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc)
 {
 	static char *sh[] = {"$SHELL", "sh", NULL};
 	struct pollfd fds[3];
@@ -274,8 +274,11 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 	argv[3] = cmd;
 	argv[4] = NULL;
 	int pid = cmd_make(argv+!xish, ibuf ? &ifd : NULL, oproc ? &ofd : NULL);
-	if (pid <= 0)
+	if (pid <= 0) {
+		if (status)
+			*status = 127;
 		return NULL;
+	}
 	sbuf_smake(sb, sizeof(buf))
 	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
@@ -327,7 +330,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
 		close(ofd);
 	if (fds[1].fd >= 0)
 		close(ifd);
-	waitpid(pid, NULL, 0);
+	waitpid(pid, status, 0);
 	signal(SIGTTOU, SIG_IGN);
 	tcsetpgrp(STDIN_FILENO, getpgrp());
 	signal(SIGTTOU, SIG_DFL);
