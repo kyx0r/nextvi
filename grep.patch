@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 727dc9d3..f017a346 100644
+index 72436b9d..7f07fdee 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -32,6 +32,7 @@ char ex_ft[] = "/ex";	/* ex mode (is never '\n' terminated) */
