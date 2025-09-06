@@ -1,4 +1,4 @@
-.Dd Sep  5, 2025
+.Dd Sep  6, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -226,7 +226,7 @@ Enter %s/ ex prompt. Insert # words from cursor
 .It Cm [\fI#\fP]vt[\fI#arg\fP]
 Enter .,.+0s/ ex prompt. Insert # of lines from cursor. Insert #arg words from cursor
 .It Cm [\fI#\fP]v/
-Enter v/ xkwd ex prompt to set search keyword. Insert # words from cursor
+Enter xkwd ex prompt to set search keyword. Insert # words from cursor
 .It Cm v;
 Enter ! ex prompt
 .It Cm [\fI#\fP]vi
@@ -1417,7 +1417,7 @@ _
  511 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 296 conf.c | hl/ft/td config
+ 305 conf.c | hl/ft/td config
  342 term.c | low level IO
  396 ren.c | positioning/syntax
  509 lbuf.c | file/line buffer
@@ -1426,7 +1426,7 @@ _
  749 regex.c | pikevm
  1353 ex.c | ex options/commands
  1860 vi.c | normal mode/general
- 6825 total | wc -l *.c\(basort
+ 6834 total | wc -l *.c\(basort
 _
 .TE
 .
