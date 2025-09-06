@@ -186,7 +186,7 @@ static char *ex_pathexpand(sbuf *sb, char *src)
 			}
 			src += *src ? 1 : 0;
 			sbuf_null(sb)
-			char *str = cmd_pipe(sb->s + n, NULL, 1);
+			char *str = cmd_pipe(sb->s + n, NULL, NULL, 1);
 			sbuf_cut(sb, n)
 			if (str)
 				sbuf_str(sb, str)
@@ -496,7 +496,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	struct lbuf *lb = lbuf_make(), *pxb = xb;
 	path = arg[0] ? arg : xb_path;
 	if (arg[0] == '!') {
-		obuf = cmd_pipe(arg + 1, NULL, 1);
+		obuf = cmd_pipe(arg + 1, NULL, NULL, 1);
 		if (obuf)
 			lbuf_edit(lb, obuf, 0, 0);
 		free(obuf);
@@ -534,11 +534,13 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 
 static void *ex_pipeout(char *cmd, char *buf)
 {
+	int ret = 0;
 	if (!(xvis & 4)) {
 		term_chr('\n');
 		xmpt = xmpt >= 0 ? 2 : xmpt;
 	}
-	return cmd_pipe(cmd, buf, 0) ? xuerr : NULL;
+	cmd_pipe(cmd, buf, &ret, 0);
+	return ret ? xuerr : NULL;
 }
 
 static void *ec_write(char *loc, char *cmd, char *arg)
@@ -907,7 +909,7 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end))
 		return xrerr;
 	text = lbuf_cp(xb, beg, end);
-	rep = cmd_pipe(arg, text, 1);
+	rep = cmd_pipe(arg, text, NULL, 1);
 	if (rep)
 		lbuf_edit(xb, rep, beg, end);
 	free(text);

@@ -330,7 +330,7 @@ void term_back(int c);
 } \
 
 /* process management */
-char *cmd_pipe(char *cmd, char *ibuf, int oproc);
+char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc);
 char *xgetenv(char* q[]);
 
 #define TK_ESC		TK_CTL('[')
