@@ -162,10 +162,13 @@ void temp_write(int i, char *str)
 static char *ex_pathexpand(sbuf *sb, char *src)
 {
 	while (*src) {
-		if (*src == '#' || *src == '%') {
+		if (*src == '%') {
 			int n = -1;
-			struct buf *pbuf = *src == '%' ? ex_buf : ex_pbuf;
-			if ((src[1] ^ '0') < 10)
+			struct buf *pbuf = ex_buf;
+			if (src[1] == '#') {
+				pbuf = ex_pbuf;
+				src++;
+			} else if ((src[1] ^ '0') < 10)
 				pbuf = &bufs[n = atoi(&src[1])];
 			if (pbuf >= &bufs[xbufcur] || !pbuf->path[0]) {
 				ex_print("\"#\" or \"%\" is not set", msg_ft)
@@ -189,8 +192,7 @@ static char *ex_pathexpand(sbuf *sb, char *src)
 				sbuf_str(sb, str)
 			free(str);
 		} else {
-			if (*src == '\\' &&
-				(src[1] == '#' || src[1] == '%' || src[1] == '!'))
+			if (*src == '\\' && (src[1] == '%' || src[1] == '!'))
 				src++;
 			sbuf_chr(sb, *src++)
 		}

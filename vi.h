@@ -72,7 +72,7 @@ typedef struct sbuf {
 
 #define sbuf_(sb, x, len, func) \
 if (sb->s_n + len >= sb->s_sz) \
-	sbuf_extend(sb, NEXTSZ(sb->s_sz, len + 1)) \
+	sbuf_extend(sb, NEXTSZ(sb->s_sz, len)) \
 mem##func(sb->s + sb->s_n, x, len); \
 sb->s_n += len; \
 
