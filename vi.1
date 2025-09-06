@@ -528,16 +528,15 @@ with <\\>.
 Special characters in regex "[]" expression
 .It Cm <\&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&.> \&"\\\\<\&" \&"\\\\>\&"
 Specials in regex
-.It Cm <# % \&! :>
+.It Cm <% \&! :>
 Special characters in ex
 .El
 .
 .Sh EX EXPANSION
 .Bd -literal -compact
-Characters <# %> in [args] substitute the buffer pathname.
-<%> substitutes current buffer and <#> last swapped buffer.
-It is possible to expand any arbitrary buffer by using <# %>
-followed by the buffer number.
+<%> in [args] substitutes current buffer pathname or any buffer 
+pathname when followed by a number.
+"%#" substitutes last swapped buffer pathname.
 
 Example: print the pathname for buffer 69.
 :!echo "%69"
@@ -859,6 +858,8 @@ Example: allow :led while branching only :p command
 :led:1,2wl ;5;/^int/:led:p
 Example: branch multiple commands
 :led:1,2,3wl ;5;/^int/:led:&i2 not branched:p:p
+Example: edit vi.c only if it exists
+:1,1wl \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
 
 .It Cm pu[\fIreg\fP] [\fIcmd\fP]
@@ -1418,15 +1419,15 @@ _
  537 kmap.h | keymap translation
 _
  305 conf.c | hl/ft/td config
- 342 term.c | low level IO
+ 345 term.c | low level IO
  396 ren.c | positioning/syntax
- 509 lbuf.c | file/line buffer
+ 515 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  749 regex.c | pikevm
- 1353 ex.c | ex options/commands
+ 1357 ex.c | ex options/commands
  1860 vi.c | normal mode/general
- 6834 total | wc -l *.c\(basort
+ 6847 total | wc -l *.c\(basort
 _
 .TE
 .
