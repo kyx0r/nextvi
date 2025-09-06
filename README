@@ -126,8 +126,8 @@ VI NORMAL
      [#]vr         Enter %s/ ex prompt. Insert # words from cursor
      [#]vt[#arg]   Enter .,.+0s/ ex prompt. Insert # of lines from cursor.
                    Insert #arg words from cursor
-     [#]v/         Enter v/ xkwd ex prompt to set search keyword. Insert #
-                   words from cursor
+     [#]v/         Enter xkwd ex prompt to set search keyword. Insert # words
+                   from cursor
      v;            Enter ! ex prompt
      [#]vi         Enter %s/ ex prompt. Contains regex for changing spaces to
                    tabs. # modifies tab width
@@ -1043,7 +1043,7 @@ CODE MAP
      | 511 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
-     | 296 conf.c   |  hl/ft/td config     |
+     | 305 conf.c   |  hl/ft/td config     |
      | 342 term.c   |  low level IO        |
      | 396 ren.c    |  positioning/syntax  |
      | 509 lbuf.c   |  file/line buffer    |
@@ -1052,7 +1052,7 @@ CODE MAP
      | 749 regex.c  |  pikevm              |
      | 1353 ex.c    |  ex options/commands |
      | 1860 vi.c    |  normal mode/general |
-     | 6825 total   |  wc -l *.c|sort      |
+     | 6834 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1124,4 +1124,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                   September 5, 2025                  Linux 6.16.0
+Linux 6.16.0                   September 6, 2025                  Linux 6.16.0
