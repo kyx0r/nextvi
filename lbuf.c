@@ -236,12 +236,12 @@ char *lbuf_cp(struct lbuf *lb, int beg, int end)
 	for (i = beg; i < end; i++)
 		msum += lbuf_i(lb, i)->len + 1;
 	char *p = emalloc(msum+1);
-	for (msum = 0, i = beg; i < end; i++) {
-		memcpy(p + msum, lb->ln[i], lbuf_i(lb, i)->len + 1);
-		msum += lbuf_i(lb, i)->len + 1;
+	for (i = beg; i < end; i++) {
+		memcpy(p, lb->ln[i], lbuf_i(lb, i)->len + 1);
+		p += lbuf_i(lb, i)->len + 1;
 	}
-	p[msum] = '\0';
-	return p;
+	*p = '\0';
+	return p - msum;
 }
 
 char *lbuf_get(struct lbuf *lb, int pos)
