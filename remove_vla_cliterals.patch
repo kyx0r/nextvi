@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 72436b9d..51a26354 100644
+index b819e95a..7cf4d031 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -12,10 +12,10 @@ index 72436b9d..51a26354 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 9670f44b..ee1de3e7 100644
+index add094d1..607a4ce9 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -846,7 +846,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -850,7 +850,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 9670f44b..ee1de3e7 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -893,6 +893,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -897,6 +897,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -32,7 +32,7 @@ index 9670f44b..ee1de3e7 100644
  	return NULL;
  }
  
-@@ -1295,7 +1296,7 @@ void *ex_exec(const char *ln)
+@@ -1299,7 +1300,7 @@ void *ex_exec(const char *ln)
  {
  	int idx = 0, len = strlen(ln) + 1;
  	int r1 = -1, r2 = -1;
@@ -41,7 +41,7 @@ index 9670f44b..ee1de3e7 100644
  	sbuf_smake(sb, 1024)
  	for (int i = 0; *ln; i++) {
  		ln = ex_parse(ln, loc, &idx, arg);
-@@ -1312,6 +1313,8 @@ void *ex_exec(const char *ln)
+@@ -1316,6 +1317,8 @@ void *ex_exec(const char *ln)
  		sbuf_cut(sb, 0)
  	}
  	free(sb->s);
@@ -51,10 +51,10 @@ index 9670f44b..ee1de3e7 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 2c79d6c4..d359ceec 100644
+index 0ae5f909..5f02c781 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -338,7 +338,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -344,7 +344,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
@@ -63,7 +63,7 @@ index 2c79d6c4..d359ceec 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (skip >= 0 && s)
-@@ -363,14 +363,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -369,14 +369,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				break;
  			*o = _o;
  			*r = i;
@@ -323,7 +323,7 @@ index 70ba6b96..b865ed2b 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 7e96fc20..22bfee7f 100644
+index 2e3f4c23..e79bb31f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -461,7 +461,7 @@ extern const int ftslen;

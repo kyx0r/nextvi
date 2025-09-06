@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 9670f44b..336db8f7 100644
+index add094d1..e8c77136 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1137,6 +1137,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1141,6 +1141,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -19,7 +19,7 @@ index 9670f44b..336db8f7 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1217,6 +1227,7 @@ static struct excmd {
+@@ -1221,6 +1231,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -28,7 +28,7 @@ index 9670f44b..336db8f7 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index 2c79d6c4..95b93996 100644
+index 0ae5f909..4699e23d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -3,6 +3,7 @@ struct lbuf *lbuf_make(void)
@@ -156,7 +156,7 @@ index 2c79d6c4..95b93996 100644
  	lb->hist_n = lb->hist_u;
  	if (lb->hist_n == lb->hist_sz) {
  		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -293,10 +380,10 @@ int lbuf_redo(struct lbuf *lb)
+@@ -299,10 +386,10 @@ int lbuf_redo(struct lbuf *lb)
  void lbuf_saved(struct lbuf *lb, int clear)
  {
  	if (clear) {
@@ -170,7 +170,7 @@ index 2c79d6c4..95b93996 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index 7e96fc20..15a292a1 100644
+index 2e3f4c23..52a43bac 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -148,6 +148,7 @@ struct linfo {

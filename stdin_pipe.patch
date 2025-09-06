@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 9670f44b..74fe583e 100644
+index add094d1..01890941 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -415,7 +415,9 @@ int ex_edit(const char *path, int len)
+@@ -417,7 +417,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index 9670f44b..74fe583e 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -434,6 +436,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -436,6 +438,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -23,7 +23,7 @@ index 9670f44b..74fe583e 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1339,15 +1344,26 @@ void ex(void)
+@@ -1343,15 +1348,26 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -53,7 +53,7 @@ index 9670f44b..74fe583e 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 40e0cb4c..2c1d17f6 100644
+index b6e926e6..40ae04c1 100644
 --- a/term.c
 +++ b/term.c
 @@ -5,6 +5,8 @@ int xrows, xcols;
@@ -121,9 +121,9 @@ index 40e0cb4c..2c1d17f6 100644
  			err:
  			*ibuf = 0;
  		}
-@@ -329,7 +335,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int oproc)
+@@ -332,7 +338,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc)
  		close(ifd);
- 	waitpid(pid, NULL, 0);
+ 	waitpid(pid, status, 0);
  	signal(SIGTTOU, SIG_IGN);
 -	tcsetpgrp(STDIN_FILENO, getpgrp());
 +	tcsetpgrp(stdin_fd, getpgrp());
@@ -155,7 +155,7 @@ index 70ba6b96..67da07c3 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 7e96fc20..740d84be 100644
+index 2e3f4c23..6848f933 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -503,6 +503,7 @@ extern int vi_hidch;

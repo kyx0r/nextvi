@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 9670f44b..26bbc62d 100644
+index add094d1..2f1cfac2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -8,6 +8,7 @@ int xhll;			/* highlight current line */
@@ -10,7 +10,7 @@ index 9670f44b..26bbc62d 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1154,6 +1155,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1158,6 +1159,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index 9670f44b..26bbc62d 100644
  
  _EO(left,
  	if (*loc)
-@@ -1233,6 +1235,7 @@ static struct excmd {
+@@ -1237,6 +1239,7 @@ static struct excmd {
  	EO(tbs),
  	EO(td),
  	EO(order),
