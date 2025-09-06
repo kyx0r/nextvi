@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4095ed7f..e458df29 100644
+index 9670f44b..336db8f7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1137,6 +1137,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
@@ -12,7 +12,7 @@ index 4095ed7f..e458df29 100644
 +	if (*arg)
 +		lbuf_setleaf(xb, atoi(arg));
 +	else
-+		ex_print(s);
++		ex_print(s, msg_ft)
 +	return NULL;
 +}
 +
@@ -170,10 +170,10 @@ index 2c79d6c4..95b93996 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index 3254b683..28a3b4a9 100644
+index 7e96fc20..15a292a1 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -147,6 +147,7 @@ struct linfo {
+@@ -148,6 +148,7 @@ struct linfo {
  struct lbuf {
  	char **ln;			/* buffer lines */
  	struct lopt *hist;		/* buffer history */
@@ -181,7 +181,7 @@ index 3254b683..28a3b4a9 100644
  	int mark[NMARKS * 2];		/* mark rows & offs */
  	int tmp_mark[4];		/* aux mark state */
  	int ln_n;			/* number of lines in ln[] */
-@@ -181,6 +182,8 @@ int lbuf_eol(struct lbuf *lb, int r, int state);
+@@ -182,6 +183,8 @@ int lbuf_eol(struct lbuf *lb, int r, int state);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip);
