@@ -399,7 +399,7 @@ void led_modeswap(void)
 	if (xvis & 4)
 		ex();
 	else {
-		syn_setft(ex_ft);
+		syn_setft(xb_ft);
 		vi(1);
 	}
 	if (xquit > 0)
@@ -557,7 +557,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 				if (suggestsb && search(sb->s + c, sb->s_n - c)) {
 					sug = suggestsb->s;
 					pac_:
-					syn_setft("/ac");
+					syn_setft(ac_ft);
 					preserve(int, xtd, xtd = 2;)
 					for (int left = 0; r < xrows; r++) {
 						RS(2, led_crender(sug, r, 0, left, left+xcols))
@@ -566,7 +566,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 							break;
 					}
 					restore(xtd)
-					syn_setft(ex_ft);
+					syn_setft(xb_ft);
 					r++;
 				}
 				led_redraw(sb->s, r, orow, lsh);
@@ -585,9 +585,9 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 			restore(ex_buf)
 			restore(texec)
 			exbuf_load(ex_buf)
-			syn_setft(ex_ft);
+			syn_setft(xb_ft);
 			vi(1); /* redraw past screen */
-			syn_setft("/ex");
+			syn_setft(ex_ft);
 			term_pos(xrows, 0);
 			if (xquit > 0)
 				restore(xquit)
