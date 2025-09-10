@@ -9,8 +9,14 @@ struct lbuf *lbuf_make(void)
 static void lopt_done(struct lopt *lo)
 {
 	free(lo->mark);
-	free(lo->del);
+	if (!(lo->ref & 2))
+		for (int i = 0; i < lo->n_ins; i++)
+			free(lbuf_s(lo->ins[i]));
 	free(lo->ins);
+	if (!(lo->ref & 1))
+		for (int i = 0; i < lo->n_del; i++)
+			free(lbuf_s(lo->del[i]));
+	free(lo->del);
 }
 
 #define _lbuf_movemark(dst, at0, off0, src, at1, off1) \
@@ -72,10 +78,9 @@ static int linelength(char *s)
 }
 
 /* low-level line replacement */
-static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
+static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int n_del, int n_ins)
 {
-	int i, n_ins = 0, pos = lo->pos;
-	sbuf_smake(sb, 0)
+	int i, pos = lo->pos;
 	if (s) {
 		for (; *s; n_ins++) {
 			int l = linelength(s);
@@ -90,11 +95,6 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 			sbuf_mem(sb, &ln, (int)sizeof(s))
 			s += l;
 		}
-	}
-	for (i = 0; i < n_del; i++) {
-		if (lb->ln[pos + i] == rstate->s)
-			rstate->s = NULL;	/* invalidate deleted cached rstate */
-		free(lbuf_i(lb, pos + i));
 	}
 	if (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
 		int nsz = lb->ln_n + n_ins - n_del + 512;
@@ -112,7 +112,7 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 	for (i = 0; i < n_ins; i++)
 		lb->ln[pos + i] = *((char**)sb->s + i);
 	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
-		if (!s && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
+		if (!n_ins && lb->mark[i] >= pos && lb->mark[i] < pos + n_del) {
 			lbuf_movemark(lo->mark, i, lb->mark, i)
 			lb->mark[i] = -1;
 			continue;
@@ -123,7 +123,6 @@ static int lbuf_replace(struct lbuf *lb, char *s, struct lopt *lo, int n_del)
 		else if (lo->mark[i] >= 0)
 			lbuf_movemark(lb->mark, i, lo->mark, i)
 	}
-	free(sb->s);
 	return n_ins;
 }
 
@@ -139,40 +138,43 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
 	}
 }
 
-static int smark[NMARKS * 2] = {-1};
-static struct lopt slo = {.mark = smark};
+static struct lopt slo;
 
 /* append undo/redo history */
-struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init)
+struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 {
 	struct lopt *lo;
-	for (int i = lb->hist_u; i < lb->hist_n; i++)
-		lopt_done(&lb->hist[i]);
-	lb->hist_n = lb->hist_u;
-	if (lb->hist_n == lb->hist_sz) {
-		int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-		struct lopt *hist = emalloc(sz * sizeof(hist[0]));
-		memcpy(hist, lb->hist, lb->hist_n * sizeof(hist[0]));
-		free(lb->hist);
-		lb->hist = hist;
-		lb->hist_sz = sz;
-	}
-	if (xseq < 0)
+	if (xseq < 0) {
 		lo = &slo;
-	else {
+		lopt_done(lo);
+	} else {
+		for (int i = lb->hist_u; i < lb->hist_n; i++)
+			lopt_done(&lb->hist[i]);
+		lb->hist_n = lb->hist_u;
+		if (lb->hist_n == lb->hist_sz) {
+			int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
+			struct lopt *hist = emalloc(sz * sizeof(hist[0]));
+			memcpy(hist, lb->hist, lb->hist_n * sizeof(hist[0]));
+			free(lb->hist);
+			lb->hist = hist;
+			lb->hist_sz = sz;
+		}
 		lo = &lb->hist[lb->hist_n++];
 		lb->hist_u = lb->hist_n;
-		lo->ins = !init && buf ? uc_dup(buf) : NULL;
-		lo->del = n_del ? lbuf_cp(lb, pos, pos + n_del) : NULL;
-		lo->mark = emalloc(sizeof(lb->mark));
-		memset(lo->mark, -1, sizeof(lb->mark) / 2);
-		lo->seq = lb->useq;
 	}
+	lo->ins = NULL;
+	lo->del = n_del ? emalloc(n_del * sizeof(lo->del[0])) : NULL;
+	for (int i = 0; i < n_del; i++)
+		lo->del[i] = lb->ln[pos + i];
+	lo->mark = emalloc(sizeof(lb->mark));
+	memset(lo->mark, -1, sizeof(lb->mark) / 2);
 	lo->pos = pos;
 	lo->n_ins = 0;
 	lo->n_del = n_del;
 	lo->pos_off = lb->mark[markidx('*')] >= 0 ?
 			lb->mark[markidx('*') + NMARKS] : 0;
+	lo->seq = lb->useq;
+	lo->ref = 2;
 	return lo;
 }
 
@@ -219,14 +221,21 @@ void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
 		end = lb->ln_n;
 	if (beg == end && !buf)
 		return;
-	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg, init);
-	lo->n_ins = lbuf_replace(lb, buf, lo, lo->n_del);
+	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg);
+	sbuf_smake(sb, 0)
+	lo->n_ins = lbuf_replace(lb, sb, buf, lo, lo->n_del, 0);
+	free(sb->s);
 	lbuf_emark(lb, lo, lb->hist_u < 2 ||
 			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
 			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
 	lb->modified = 1;
 	if (lb->saved > lb->hist_u)
 		lb->saved = -1;
+	if (xseq < 0 || !lo->n_ins || init)
+		return;
+	lo->ins = emalloc(lo->n_ins * sizeof(lo->ins[0]));
+	for (int i = 0; i < lo->n_ins; i++)
+		lo->ins[i] = lb->ln[beg + i];
 }
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)
@@ -256,13 +265,16 @@ int lbuf_undo(struct lbuf *lb)
 	struct lopt *lo = &lb->hist[lb->hist_u - 1];
 	const int useq = lo->seq;
 	const int m0 = markidx(']'), m1 = markidx('[');
+	sbuf sb;
 	if (lb->hist_u == lb->hist_n) {
 		_lbuf_movemark(lb->tmp_mark, 0, 2, lb->mark, m0, NMARKS)
 		_lbuf_movemark(lb->tmp_mark, 1, 2, lb->mark, m1, NMARKS)
 	}
 	while (lb->hist_u && lb->hist[lb->hist_u - 1].seq == useq) {
 		lo = &lb->hist[--lb->hist_u];
-		lbuf_replace(lb, lo->del, lo, lo->n_ins);
+		lo->ref = 1;
+		sb.s = (char*)lo->del;
+		lbuf_replace(lb, &sb, NULL, lo, lo->n_ins, lo->n_del);
 	}
 	lbuf_loadmark(lb->mark, markidx('*'), lo->pos, lo->pos_off)
 	lbuf_movemark(lb->mark, m0, lo->mark, m0)
@@ -278,9 +290,12 @@ int lbuf_redo(struct lbuf *lb)
 	struct lopt *lo = &lb->hist[lb->hist_u];
 	const int useq = lo->seq;
 	const int m0 = markidx(']'), m1 = markidx('[');
+	sbuf sb;
 	while (lb->hist_u < lb->hist_n && lb->hist[lb->hist_u].seq == useq) {
 		lo = &lb->hist[lb->hist_u++];
-		lbuf_replace(lb, lo->ins, lo, lo->n_del);
+		lo->ref = 2;
+		sb.s = (char*)lo->ins;
+		lbuf_replace(lb, &sb, NULL, lo, lo->n_del, lo->n_ins);
 	}
 	lbuf_loadmark(lb->mark, markidx('*'), lo->pos, lo->pos_off)
 	if (lb->hist_u < lb->hist_n) {
