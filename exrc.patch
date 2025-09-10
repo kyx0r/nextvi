@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index add094d1..520927eb 100644
+index d065ef4b..bf5e975b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -32,6 +32,7 @@ int xkwdcnt;			/* number of search kwd changes */

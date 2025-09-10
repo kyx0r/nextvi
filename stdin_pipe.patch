@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index add094d1..01890941 100644
+index d065ef4b..da20a32a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -417,7 +417,9 @@ int ex_edit(const char *path, int len)
@@ -155,10 +155,10 @@ index 70ba6b96..67da07c3 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 2e3f4c23..6848f933 100644
+index e9ed2893..ad5351ca 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -503,6 +503,7 @@ extern int vi_hidch;
+@@ -504,6 +504,7 @@ extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;
  extern char vi_msg[512];

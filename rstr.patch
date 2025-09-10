@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index add094d1..2546b34a 100644
+index d065ef4b..7bdd67de 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -65,7 +65,7 @@ index add094d1..2546b34a 100644
  						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
 @@ -895,7 +895,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (first >= 0)
- 		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), first, last);
+ 		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
  	if (rs != xkwdrs)
 -		rset_free(rs);
 +		rstr_free(rs);
@@ -125,10 +125,10 @@ index add094d1..2546b34a 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index f0963670..1fb14514 100644
+index 49ba57ed..caf80c51 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -340,11 +340,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -355,11 +355,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -142,7 +142,7 @@ index f0963670..1fb14514 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (skip >= 0 && s)
-@@ -357,7 +357,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -372,7 +372,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  		step = 0;
  		flg = REG_NEWLINE;
  		s = lb->ln[i];
@@ -305,7 +305,7 @@ index 70ba6b96..921b2e7a 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 2e3f4c23..80f8854d 100644
+index e9ed2893..dc7e0130 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -123,12 +123,23 @@ typedef struct {
@@ -332,7 +332,7 @@ index 2e3f4c23..80f8854d 100644
  
  /* lbuf.c line buffer, managing a number of lines */
  #define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
-@@ -180,7 +191,7 @@ void lbuf_saved(struct lbuf *lb, int clear);
+@@ -181,7 +192,7 @@ void lbuf_saved(struct lbuf *lb, int clear);
  int lbuf_indents(struct lbuf *lb, int r);
  int lbuf_eol(struct lbuf *lb, int r, int state);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
@@ -341,7 +341,7 @@ index 2e3f4c23..80f8854d 100644
  			int *o, int ln_n, int skip);
  #define lbuf_dedup(lb, str, n) \
  { for (int i = 0; i < lbuf_len(lb);) { \
-@@ -407,7 +418,7 @@ extern int xkmap_alt;
+@@ -408,7 +419,7 @@ extern int xkmap_alt;
  extern int xkwddir;
  extern int xkwdcnt;
  extern sbuf *xacreg;
@@ -350,7 +350,7 @@ index 2e3f4c23..80f8854d 100644
  extern char *xregs[256];
  extern struct buf *bufs;
  extern struct buf tempbufs[2];
-@@ -440,7 +451,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
+@@ -441,7 +452,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
  { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -359,7 +359,7 @@ index 2e3f4c23..80f8854d 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ec_bufferi(int id);
-@@ -506,6 +517,6 @@ extern char vi_msg[512];
+@@ -507,6 +518,6 @@ extern char vi_msg[512];
  void vi_regputraw(unsigned char c, const char *s, int ln, int append);
  void vi_regput(int c, const char *s, int ln);
  /* file system */

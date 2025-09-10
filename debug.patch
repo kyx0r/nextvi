@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index add094d1..a2a1a8d3 100644
+index d065ef4b..3b9eae89 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1355,3 +1355,16 @@ void ex_init(char **files, int n)
@@ -105,10 +105,10 @@ index 70ba6b96..925a2b94 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 2e3f4c23..c072e777 100644
+index e9ed2893..b1c7f3be 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -224,6 +224,7 @@ char *ren_translate(char *s, char *ln);
+@@ -225,6 +225,7 @@ char *ren_translate(char *s, char *ln);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -116,7 +116,7 @@ index 2e3f4c23..c072e777 100644
  /* syntax highlighting */
  #define SYN_BD		0x10000
  #define SYN_IT		0x20000
-@@ -250,6 +251,7 @@ void syn_reloadft(void);
+@@ -251,6 +252,7 @@ void syn_reloadft(void);
  int syn_findhl(int id);
  void syn_addhl(char *reg, int id, int reload);
  void syn_init(void);
@@ -124,7 +124,7 @@ index 2e3f4c23..c072e777 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -440,6 +442,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
+@@ -441,6 +443,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
  { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
