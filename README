@@ -317,7 +317,7 @@ EX ESCAPES
 
 EX EXPANSION
      <%> in [args] substitutes current buffer pathname or any buffer
-     pathname when followed by a number.
+     pathname when followed by a corresponding buffer number.
      "%#" substitutes last swapped buffer pathname.
 
      Example: print the pathname for buffer 69.
@@ -932,7 +932,7 @@ EX OPTIONS
              When seq is 0, multiple distinct operations undo/redo in a
              single step.
 
-             To optimize resource use under heavy workloads, undo/redo
+             To optimize memory usage under heavy workloads, undo/redo
              tracking can be disabled by setting seq to a negative value.
 
              Example: test undo/redo operations in a single step
@@ -1041,19 +1041,19 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 511 vi.h     |  definitions/aux     |
+     | 512 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 305 conf.c   |  hl/ft/td config     |
      | 345 term.c   |  low level IO        |
      | 396 ren.c    |  positioning/syntax  |
-     | 515 lbuf.c   |  file/line buffer    |
+     | 530 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
      | 1357 ex.c    |  ex options/commands |
      | 1860 vi.c    |  normal mode/general |
-     | 6847 total   |  wc -l *.c|sort      |
+     | 6862 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1125,4 +1125,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                   September 6, 2025                  Linux 6.16.0
+Linux 6.16.0                  September 10, 2025                  Linux 6.16.0
