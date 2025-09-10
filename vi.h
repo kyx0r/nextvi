@@ -134,12 +134,13 @@ char *re_read(char **src);
 #define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
 #define NMARKS			30	/* adj: '`* nonadj: [] */
 struct lopt {
-	char *ins;		/* inserted text */
-	char *del;		/* deleted text */
+	char **ins;		/* inserted lines */
+	char **del;		/* deleted lines */
 	int *mark;		/* saved marks */
 	int pos, n_ins, n_del;	/* modification location */
 	int pos_off;		/* cursor line offset */
 	int seq;		/* operation number */
+	int ref;		/* ins/del ref exists on lbuf */
 };
 struct linfo {
 	int len;
@@ -171,7 +172,7 @@ void lbuf_iedit(struct lbuf *lb, char *s, int beg, int end, int init);
 char *lbuf_cp(struct lbuf *lb, int beg, int end);
 char *lbuf_get(struct lbuf *lb, int pos);
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end);
-struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del, int init);
+struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
 void lbuf_mark(struct lbuf *lb, int mark, int pos, int off);
 int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off);
 int lbuf_undo(struct lbuf *lb);

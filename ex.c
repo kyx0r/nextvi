@@ -884,7 +884,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		if (r) {
 			if (first < 0) {
 				first = i;
-				lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), 0, 0);
+				lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), 0, 0);
 			}
 			sbufn_str(r, ln)
 			lbuf_edit(xb, r->s, i, i + 1);
@@ -893,7 +893,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		}
 	}
 	if (first >= 0)
-		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0, 0), first, last);
+		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
 	if (rs != xkwdrs)
 		rset_free(rs);
 	free(rep);
