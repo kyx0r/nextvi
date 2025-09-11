@@ -464,10 +464,10 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 				c = term_read();
 				p_reg = c == TK_CTL('\\') ? 0 : c;
 			}
-			if ((cs = xregs[p_reg])) {
+			if (xregs[p_reg]) {
 				sbuf_chr(sb, p_reg ? p_reg : '~')
 				sbuf_chr(sb, ' ')
-				sbuf_str(sb, cs)
+				sbuf_mem(sb, xregs[p_reg]->s, xregs[p_reg]->s_n)
 				sbuf_set(sb, '\0', 4)
 				led_info(sb->s + len, ai_max);
 				sbuf_cut(sb, len)
@@ -476,7 +476,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 			continue;
 		case TK_CTL('p'):
 			if (xregs[p_reg])
-				sbuf_str(sb, xregs[p_reg])
+				sbuf_str(sb, xregs[p_reg]->s)
 			break;
 		case TK_CTL('g'):
 			if (!suggestsb) {

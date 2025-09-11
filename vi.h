@@ -409,7 +409,7 @@ extern int xkwddir;
 extern int xkwdcnt;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
-extern char *xregs[256];
+extern sbuf *xregs[256];
 extern struct buf *bufs;
 extern struct buf tempbufs[2];
 extern struct buf *ex_buf;
@@ -435,7 +435,7 @@ void temp_switch(int i);
 void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
 void *ex_exec(const char *ln);
-#define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
+#define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0); }
 void ex_cprint(char *line, char *ft, int r, int c, int ln);
 #define ex_print(line, ft) \
 { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
@@ -504,8 +504,7 @@ extern int vi_hidch;
 extern int vi_insmov;
 extern int vi_lncol;
 extern char vi_msg[512];
-void vi_regputraw(unsigned char c, const char *s, int ln, int append);
-void vi_regput(int c, const char *s, int ln);
+void vi_regputraw(unsigned char c, const char *s, int append);
 /* file system */
 extern rset *fsincl;
 extern char *fs_exdir;

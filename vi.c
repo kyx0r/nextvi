@@ -47,7 +47,6 @@ static int vi_status;			/* always show status */
 static int vi_tsm;			/* type of the status message */
 static int vi_joinmode = 1;		/* 1: insert extra space for pad 0: raw line join */
 static int vi_nlword;			/* new line mode for eEwWbB */
-static int vi_rln[256];
 
 void *emalloc(size_t size)
 {
@@ -337,7 +336,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			ex_print("syntax error", msg_ft)
 		free(kw);
 	} else if (msg)
-		ex_krsset(xregs['/'], xkwddir);
+		ex_krsset(xregs['/'] ? xregs['/']->s : NULL, xkwddir);
 	if (!lbuf_len(xb) || (!xkwddir || !xkwdrs))
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
@@ -345,7 +344,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		if (lbuf_search(xb, xkwdrs, dir, row, off,
 				lbuf_len(xb), msg ? dir : -1)) {
 			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
-					xregs['/'], i, cnt);
+					xregs['/'] ? xregs['/']->s : "", i, cnt);
 			return 1;
 		}
 	}
@@ -438,31 +437,36 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	sbufn_sret(sb)
 }
 
-void vi_regputraw(unsigned char c, const char *s, int ln, int append)
+void vi_regputraw(unsigned char c, const char *s, int append)
 {
-	char *pre = append && xregs[tolower(c)] ? xregs[tolower(c)] : "";
-	int len1 = strlen(pre), len2 = strlen(s);
-	char *buf = emalloc(len1 + len2 + 4);
-	memcpy(buf, pre, len1);
-	memcpy(buf+len1, s, len2);
-	memset(buf+len1+len2, '\0', 4);
-	free(xregs[tolower(c)]);
-	xregs[tolower(c)] = buf;
-	vi_rln[tolower(c)] = ln;
+	sbuf *sb = xregs[tolower(c)];
+	if (s) {
+		if (!sb) {
+			sbuf_make(sb, 0)
+			xregs[tolower(c)] = sb;
+		}
+		if (!append)
+			sbuf_cut(sb, 0)
+		sbuf_str(sb, s)
+		sbuf_set(sb, '\0', 4)
+		sb->s_n -= 4;
+	} else if (sb) {
+		sbuf_free(sb)
+		xregs[tolower(c)] = NULL;
+	}
 }
 
-void vi_regput(int c, const char *s, int ln)
+static void vi_regput(int c, const char *s, int lnmode)
 {
-	int i;
-	char *i_s;
-	if (ln || strchr(s, '\n')) {
-		for (i = 8; i > 0; i--)
+	if (lnmode) {
+		sbuf *i_s;
+		for (int i = 8; i > 0; i--)
 			if ((i_s = xregs['0'+i]))
-				vi_regputraw('0' + i + 1, i_s, vi_rln['0'+i], 0);
-		vi_regputraw('1', s, ln, 0);
+				vi_regputraw('0' + i + 1, i_s->s, 0);
+		vi_regputraw('1', s, 0);
 	} else if (xregs[c])
-		vi_regputraw('0', xregs[c], ln, 0);
-	vi_regputraw(c, s, ln, isupper(c));
+		vi_regputraw('0', xregs[c]->s, 0);
+	vi_regputraw(c, s, isupper(c));
 }
 
 rset *fsincl;
@@ -1053,15 +1057,16 @@ static int vc_put(int cmd)
 {
 	int cnt = MAX(1, vi_arg);
 	int i, off;
-	char *buf = xregs[vi_ybuf], *ln;
+	sbuf *buf = xregs[vi_ybuf];
+	char *ln;
 	if (!buf)
 		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty");
-	if (!buf || !buf[0])
+	if (!buf || !buf->s_n)
 		return 0;
 	sbuf_smake(sb, 1024)
-	if (vi_rln[vi_ybuf]) {
+	if (buf->s[buf->s_n-1] == '\n' || strchr(buf->s, '\n')) {
 		for (i = 0; i < cnt; i++)
-			sbufn_str(sb, buf)
+			sbufn_mem(sb, buf->s, buf->s_n)
 		if (!lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0);
 		if (cmd == 'p')
@@ -1076,10 +1081,10 @@ static int vc_put(int cmd)
 	off = ren_noeol(ln, xoff) + (ln[0] != '\n' && cmd == 'p');
 	sbuf_mem(sb, ln, rstate->chrs[off] - ln)
 	for (i = 0; i < cnt; i++)
-		sbuf_str(sb, buf)
+		sbuf_mem(sb, buf->s, buf->s_n)
 	sbufn_str(sb, rstate->chrs[off])
 	lbuf_edit(xb, sb->s, xrow, xrow + 1);
-	xoff = off + uc_slen(buf) * cnt - 1;
+	xoff = off + uc_slen(buf->s) * cnt - 1;
 	free(sb->s);
 	return 1;
 }
@@ -1164,7 +1169,7 @@ static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
 	int c = term_read(), i, n = MAX(1, vi_arg);
-	char *buf = NULL;
+	sbuf *buf = NULL;
 	if (TK_INT(c))
 		return;
 	if (c == cmd)
@@ -1177,7 +1182,7 @@ static void vc_execute(int cmd)
 		return;
 	}
 	for (i = 0; i < n; i++)
-		term_exec(buf, strlen(buf), cmd)
+		term_exec(buf->s, buf->s_n, cmd)
 }
 
 static void vi_argcmd(int arg, char cmd)

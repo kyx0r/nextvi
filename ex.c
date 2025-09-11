@@ -31,7 +31,7 @@ int xkwddir;			/* the last search direction */
 int xkwdcnt;			/* number of search kwd changes */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
-char *xregs[256];		/* string registers */
+sbuf *xregs[256];		/* string registers */
 struct buf *bufs;		/* main buffers */
 struct buf tempbufs[2];		/* temporary buffers, for internal use */
 struct buf *ex_buf;		/* current buffer */
@@ -203,13 +203,13 @@ static char *ex_pathexpand(sbuf *sb, char *src)
 /* set the current search keyword rset if the kwd or flags changed */
 void ex_krsset(char *kwd, int dir)
 {
-	char *reg = xregs['/'];
-	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg))
-		|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
+	sbuf *reg = xregs['/'];
+	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg->s))
+			|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
 		rset_free(xkwdrs);
 		xkwdrs = rset_smake(kwd, xic ? REG_ICASE : 0);
 		xkwdcnt++;
-		vi_regputraw('/', kwd, 0, 0);
+		vi_regputraw('/', kwd, 0);
 		xkwddir = dir;
 	}
 	if (dir == -2 || dir == 2)
@@ -605,12 +605,12 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln)
 		if (xmpt == 1)
 			term_chr('\n');
 		if (isupper(xpr) && xmpt == 1 && !strchr(line, '\n'))
-			vi_regputraw(xpr, "\n", 1, 1);
+			vi_regputraw(xpr, "\n", 1);
 		term_pos(xrows, led_pos(vi_msg, 0));
 		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
 	}
 	if (xpr)
-		vi_regputraw(xpr, line, !!strchr(line, '\n'), 1);
+		vi_regputraw(xpr, line, 1);
 	if (xvis & 2) {
 		term_write(line, dstrlen(line, '\n'))
 		term_write("\n", 1)
@@ -622,7 +622,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln)
 	if (ln && (xvis & 4 || xmpt > 0)) {
 		term_chr('\n');
 		if (isupper(xpr) && !strchr(line, '\n'))
-			vi_regputraw(xpr, "\n", 1, 1);
+			vi_regputraw(xpr, "\n", 1);
 	}
 	xmpt += !(xvis & 4) && xmpt >= 0 && (ln || xmpt);
 }
@@ -753,9 +753,6 @@ static void *ec_delete(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return xrerr;
-	char *buf = lbuf_cp(xb, beg, end);
-	vi_regput((unsigned char) arg[0], buf, 1);
-	free(buf);
 	lbuf_edit(xb, NULL, beg, end);
 	xrow = beg;
 	return NULL;
@@ -765,13 +762,13 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
 	if (cmd[2] == '!') {
-		vi_regputraw(arg[0], "", 0, 0);
+		vi_regputraw(arg[0], NULL, 0);
 		return NULL;
 	}
 	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
 		return xrerr;
 	char *buf = lbuf_cp(xb, beg, end);
-	vi_regputraw(arg[0], buf, 1, isupper((unsigned char) arg[0]) || arg[1]);
+	vi_regputraw(arg[0], buf, isupper((unsigned char) arg[0]) || arg[1]);
 	free(buf);
 	return NULL;
 }
@@ -779,7 +776,7 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 static void *ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end, i = 0;
-	char *buf;
+	sbuf *buf;
 	int n = lbuf_len(xb);
 	if (arg[i] == '!' && arg[i+1] && arg[i+1] != ' ')
 		buf = xregs[0];
@@ -791,8 +788,8 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 		return xrerr;
 	for (; arg[i] && arg[i] != '!'; i++){}
 	if (arg[i] == '!' && arg[i+1])
-		return ex_pipeout(arg + i + 1, buf);
-	lbuf_edit(xb, buf, end, end);
+		return ex_pipeout(arg + i + 1, buf->s);
+	lbuf_edit(xb, buf->s, end, end);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
 	return NULL;
 }
@@ -954,7 +951,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	if (pat && *pat)
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	else
-		rs = rset_smake(xregs['/'] ? xregs['/'] : "", xic ? REG_ICASE : 0);
+		rs = rset_smake(xregs['/'] ? xregs['/']->s : "", xic ? REG_ICASE : 0);
 	free(pat);
 	if (!rs)
 		return xserr;
@@ -1099,7 +1096,7 @@ static void *ec_regprint(char *loc, char *cmd, char *arg)
 		if (xregs[i] && i != tolower(xpr)) {
 			*buf = i;
 			RS(2, ex_cprint(buf, msg_ft, -1, 0, 0))
-			RS(2, ex_cprint(xregs[i], msg_ft, -1, xleft ? 0 : 2, 1))
+			RS(2, ex_cprint(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, 1))
 		}
 	}
 	restore(xtd)
@@ -1328,7 +1325,7 @@ void ex(void)
 	while (!xquit) {
 		if (!ex_read(sb, ":", ex_ft, 0, 1)) {
 			if (!strcmp(sb->s, ":") && esc)
-				ex_exec(xregs[':']);
+				ex_exec(xregs[':']->s);
 			else
 				ex_command(sb->s)
 			xb->useq += xseq;
