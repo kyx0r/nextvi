@@ -407,53 +407,32 @@ static int vi_motionln(int *row, int cmd, int cnt)
 static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 {
 	char *ln = lbuf_get(lb, row);
-	char *beg, *end;
 	if (!ln || !n)
 		return NULL;
-	int o = ren_noeol(ln, off);
-	beg = rstate->chrs[o];
-	end = beg;
-	while (beg > ln && uc_kind(uc_beg(ln, beg - 1)) == 1)
-		beg = uc_beg(ln, beg - 1);
-	for (int i = n; uc_len(end) && i > 0; end++, i--)
-		while (uc_len(end) && uc_kind(end) == 1)
-			end += uc_len(end);
-	if (beg >= --end)
+	off = ren_noeol(ln, off);
+	char **beg = rstate->chrs;
+	int o = off;
+	int end = rstate->n;
+	for (int i = 0; i < n && o < end; i++)
+		while (uc_kind(beg[o++]) == 1);
+	for (; off >= 0 && uc_kind(beg[off]) == 1; off--);
+	if (--o == off++)
 		return NULL;
-	sbuf_smake(sb, (end - beg)+64)
+	sbuf_smake(sb, 64)
 	if (n > 1) {
-		for (; beg != end; beg++) {
-			if (*beg == xsep)
+		for (; off != o; off++) {
+			if (*beg[off] == xsep)
 				sbuf_chr(sb, '\\')
-			if (strchr("!#%{}[]().?\\^$|*/+", *beg))
+			if (strchr("!%{}[]().?\\^$|*/+", *beg[off]))
 				sbuf_chr(sb, '\\')
-			sbuf_chr(sb, *beg)
+			sbuf_chr(sb, *beg[off])
 		}
 	} else {
 		sbuf_str(sb, "\\<")
-		sbuf_mem(sb, beg, end - beg)
+		sbuf_mem(sb, beg[off], beg[o] - beg[off])
 		sbuf_str(sb, "\\>")
 	}
 	sbufn_sret(sb)
-}
-
-void vi_regputraw(unsigned char c, const char *s, int append)
-{
-	sbuf *sb = xregs[tolower(c)];
-	if (s) {
-		if (!sb) {
-			sbuf_make(sb, 0)
-			xregs[tolower(c)] = sb;
-		}
-		if (!append)
-			sbuf_cut(sb, 0)
-		sbuf_str(sb, s)
-		sbuf_set(sb, '\0', 4)
-		sb->s_n -= 4;
-	} else if (sb) {
-		sbuf_free(sb)
-		xregs[tolower(c)] = NULL;
-	}
 }
 
 static void vi_regput(int c, const char *s, int lnmode)
@@ -462,11 +441,11 @@ static void vi_regput(int c, const char *s, int lnmode)
 		sbuf *i_s;
 		for (int i = 8; i > 0; i--)
 			if ((i_s = xregs['0'+i]))
-				vi_regputraw('0' + i + 1, i_s->s, 0);
-		vi_regputraw('1', s, 0);
+				ex_regput('0' + i + 1, i_s->s, 0);
+		ex_regput('1', s, 0);
 	} else if (xregs[c])
-		vi_regputraw('0', xregs[c]->s, 0);
-	vi_regputraw(c, s, isupper(c));
+		ex_regput('0', xregs[c]->s, 0);
+	ex_regput(c, s, isupper(c));
 }
 
 rset *fsincl;
@@ -790,23 +769,6 @@ static int vi_motion(int *row, int *off)
 		return 0;
 	}
 	return mv;
-}
-
-static char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
-{
-	char *s1, *s2, *s3;
-	if (r1 == r2)
-		return uc_sub(lbuf_get(lb, r1), o1, o2);
-	sbuf_smake(sb, 1024)
-	s1 = uc_chr(lbuf_get(lb, r1), o1);
-	s3 = uc_sub(lbuf_get(lb, r2), 0, o2);
-	s2 = lbuf_cp(lb, r1 + 1, r2);
-	sbuf_str(sb, s1)
-	sbuf_str(sb, s2)
-	free(s2);
-	sbuf_str(sb, s3)
-	free(s3);
-	sbufn_sret(sb)
 }
 
 static void vi_yank(int r1, int o1, int r2, int o2, int lnmode)

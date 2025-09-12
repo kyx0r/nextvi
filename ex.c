@@ -209,7 +209,7 @@ void ex_krsset(char *kwd, int dir)
 		rset_free(xkwdrs);
 		xkwdrs = rset_smake(kwd, xic ? REG_ICASE : 0);
 		xkwdcnt++;
-		vi_regputraw('/', kwd, 0);
+		ex_regput('/', kwd, 0);
 		xkwddir = dir;
 	}
 	if (dir == -2 || dir == 2)
@@ -276,8 +276,8 @@ static int ex_range(char **num, int n, int *row)
 }
 
 /* parse ex command addresses */
-#define ex_region(loc, beg, end) ex_oregion(loc, beg, end, NULL, NULL)
-static int ex_oregion(char *loc, int *beg, int *end, int *o1, int *o2)
+#define ex_vregion(loc, beg, end) ex_region(loc, beg, end, NULL, NULL)
+static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
 	if (!strcmp("%", loc) || !lbuf_len(xb)) {
 		*beg = 0;
@@ -331,7 +331,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	char *err = ex_reread(&arg, &dir);
 	if (err)
 		return err;
-	if (ex_region(loc, &beg, &end))
+	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	off = xoff;
 	obeg = beg;
@@ -512,7 +512,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	}
 	xb = lb;
 	xrow = 0;
-	if (ex_region(loc, &beg, &end)) {
+	if (ex_vregion(loc, &beg, &end)) {
 		ret = xrerr;
 		goto err;
 	}
@@ -552,7 +552,7 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 	path = arg[0] ? arg : xb_path;
 	if (cmd[0] == 'x' && !xb->modified)
 		return ec_quit("", cmd, "");
-	if (ex_region(loc, &beg, &end))
+	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	if (!loc[0]) {
 		beg = 0;
@@ -581,11 +581,11 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 		snprintf(msg, sizeof(msg), "\"%s\" %dL [w]",
 				path, end - beg);
 		ex_print(msg, bar_ft)
+		if (strcmp(xb_path, path))
+			ec_setpath(NULL, NULL, path);
+		lbuf_saved(xb, 0);
+		ex_buf->mtime = mtime(path);
 	}
-	if (strcmp(xb_path, path))
-		ec_setpath(NULL, NULL, path);
-	lbuf_saved(xb, 0);
-	ex_buf->mtime = mtime(path);
 	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
 		ec_quit("", cmd, "");
 	return NULL;
@@ -605,12 +605,12 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln)
 		if (xmpt == 1)
 			term_chr('\n');
 		if (isupper(xpr) && xmpt == 1 && !strchr(line, '\n'))
-			vi_regputraw(xpr, "\n", 1);
+			ex_regput(xpr, "\n", 1);
 		term_pos(xrows, led_pos(vi_msg, 0));
 		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
 	}
 	if (xpr)
-		vi_regputraw(xpr, line, 1);
+		ex_regput(xpr, line, 1);
 	if (xvis & 2) {
 		term_write(line, dstrlen(line, '\n'))
 		term_write("\n", 1)
@@ -622,7 +622,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln)
 	if (ln && (xvis & 4 || xmpt > 0)) {
 		term_chr('\n');
 		if (isupper(xpr) && !strchr(line, '\n'))
-			vi_regputraw(xpr, "\n", 1);
+			ex_regput(xpr, "\n", 1);
 	}
 	xmpt += !(xvis & 4) && xmpt >= 0 && (ln || xmpt);
 }
@@ -655,7 +655,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 {
 	int beg, end, ps = 0, n = 0;
 	int o1 = -1, o2 = -1;
-	if (ex_oregion(loc, &beg, &end, &o1, &o2))
+	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	char *ln = o1 >= 0 ? lbuf_get(xb, beg) : NULL;
 	sbuf_smake(sb, ln && cmd[0] == 'c' ? lbuf_s(ln)->len + 128 : 128)
@@ -715,7 +715,7 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 	char *o, *ln;
 	if (!cmd[0] && !loc[0] && arg[0])
 		return "unknown command";
-	if (ex_oregion(loc, &beg, &end, &o1, &o2))
+	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	if (!cmd[0] && loc[0]) {
 		xrow = MAX(beg, end - 1);
@@ -751,24 +751,42 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 static void *ec_delete(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
-	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
+	if (ex_vregion(loc, &beg, &end) || !lbuf_len(xb))
 		return xrerr;
 	lbuf_edit(xb, NULL, beg, end);
 	xrow = beg;
 	return NULL;
 }
 
+void ex_regput(unsigned char c, const char *s, int append)
+{
+	sbuf *sb = xregs[tolower(c)];
+	if (s) {
+		if (!sb) {
+			sbuf_make(sb, 0)
+			xregs[tolower(c)] = sb;
+		}
+		if (!append)
+			sbuf_cut(sb, 0)
+		sbuf_str(sb, s)
+		sbuf_set(sb, '\0', 4)
+		sb->s_n -= 4;
+	} else if (sb) {
+		sbuf_free(sb)
+		xregs[tolower(c)] = NULL;
+	}
+}
+
 static void *ec_yank(char *loc, char *cmd, char *arg)
 {
-	int beg, end;
+	int beg, end, o1 = 0, o2 = -1;
 	if (cmd[2] == '!') {
-		vi_regputraw(arg[0], NULL, 0);
+		ex_regput(arg[0], NULL, 0);
 		return NULL;
-	}
-	if (ex_region(loc, &beg, &end) || !lbuf_len(xb))
+	} else if (ex_region(loc, &beg, &end, &o1, &o2) || !lbuf_len(xb))
 		return xrerr;
-	char *buf = lbuf_cp(xb, beg, end);
-	vi_regputraw(arg[0], buf, isupper((unsigned char) arg[0]) || arg[1]);
+	char *buf = lbuf_region(xb, beg, o1, end-1, o2);
+	ex_regput(arg[0], buf, isupper((unsigned char) arg[0]) || arg[1]);
 	free(buf);
 	return NULL;
 }
@@ -777,19 +795,29 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end, i = 0;
 	sbuf *buf;
-	int n = lbuf_len(xb);
 	if (arg[i] == '!' && arg[i+1] && arg[i+1] != ' ')
 		buf = xregs[0];
 	else
 		buf = xregs[(unsigned char) arg[i++]];
 	if (!buf)
 		return "uninitialized register";
-	if (ex_region(loc, &beg, &end))
-		return xrerr;
 	for (; arg[i] && arg[i] != '!'; i++){}
 	if (arg[i] == '!' && arg[i+1])
 		return ex_pipeout(arg + i + 1, buf->s);
-	lbuf_edit(xb, buf->s, end, end);
+	int n = lbuf_len(xb), o1 = -1, o2 = -1;
+	if (ex_region(loc, &beg, &end, &o1, &o2))
+		return xrerr;
+	if (o1 >= 0) {
+		char *s = lbuf_get(xb, end-1);
+		char *e = uc_chr(s, o1);
+		char *p = emalloc(lbuf_s(s)->len + 2 + buf->s_n);
+		memcpy(p, s, e - s);
+		memcpy(p + (e - s), buf->s, buf->s_n);
+		memcpy(p + (e - s + buf->s_n), e, lbuf_s(s)->len + 2 - (e - s));
+		lbuf_edit(xb, p, end-1, end);
+		free(p);
+	} else
+		lbuf_edit(xb, buf->s, end, end);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
 	return NULL;
 }
@@ -798,7 +826,7 @@ static void *ec_lnum(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
 	int beg, end, o1 = -1, o2 = -1;
-	if (ex_oregion(loc, &beg, &end, &o1, &o2))
+	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	sprintf(msg, "%d", o1 >= 0 ? o1 : end);
 	ex_print(msg, msg_ft)
@@ -820,7 +848,7 @@ static void *ec_save(char *loc, char *cmd, char *arg)
 static void *ec_mark(char *loc, char *cmd, char *arg)
 {
 	int beg, end;
-	if (ex_region(loc, &beg, &end))
+	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	lbuf_mark(xb, (unsigned char) arg[0], end - 1, xoff);
 	return NULL;
@@ -833,7 +861,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	char *s = arg;
 	rset *rs = xkwdrs;
 	int i, first = -1, last;
-	if (ex_region(loc, &beg, &end))
+	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	pat = re_read(&s);
 	if (pat && (*pat || !rs))
@@ -903,7 +931,7 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 	char *text, *rep;
 	if (!loc[0])
 		return ex_pipeout(arg, NULL);
-	if (ex_region(loc, &beg, &end))
+	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	text = lbuf_cp(xb, beg, end);
 	rep = cmd_pipe(arg, text, NULL, 1);
@@ -944,7 +972,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	rset *rs;
 	if (!loc[0] && !xgdep)
 		loc = "%";
-	if (ex_region(loc, &beg, &end))
+	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	not = !!strchr(cmd, '!');
 	pat = re_read(&s);
