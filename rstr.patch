@@ -125,10 +125,10 @@ index 2bc1e43c..ebacf4cc 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 62cbaa10..68b59a81 100644
+index a888efdc..8e86a735 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -372,11 +372,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -373,11 +373,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -142,7 +142,7 @@ index 62cbaa10..68b59a81 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (skip >= 0 && s)
-@@ -389,7 +389,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -390,7 +390,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  		step = 0;
  		flg = REG_NEWLINE;
  		s = lb->ln[i];

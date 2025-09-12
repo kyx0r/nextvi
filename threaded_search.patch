@@ -11,10 +11,10 @@ index 2372d3b8..3b294bc7 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 62cbaa10..bc119b0c 100644
+index a888efdc..57861f03 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -372,24 +372,35 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -373,24 +373,35 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -61,7 +61,7 @@ index 62cbaa10..bc119b0c 100644
  			flg |= REG_NOTBOL;
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
-@@ -397,19 +408,69 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -398,19 +409,69 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				continue;
  			}
  			_o += uc_off(s + step, off + g1 - step);
