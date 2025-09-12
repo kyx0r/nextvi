@@ -36,7 +36,7 @@ index 2bc1e43c..2b24ba5a 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 39e37aec..24638a1b 100644
+index 39e37aec..797ad4f5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -508,12 +508,12 @@ void dir_calc(char *path)
@@ -130,7 +130,7 @@ index 39e37aec..24638a1b 100644
 +			temp_switch(2);
 +			lbuf_jump(xb, '[', row, off);
 +			*off = 0;
-+			syn_addhl(xregs['/'], 3, 1); /* see conf.c */
++			syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3, 1); /* see conf.c */
 +			syn_reloadft();
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
