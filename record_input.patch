@@ -27,7 +27,7 @@ index 2bc1e43c..53ee838d 100644
  	{"rd", ec_undoredo},
  	{"r", ec_read},
 diff --git a/term.c b/term.c
-index b6e926e6..e0782836 100644
+index b6e926e6..1a047d65 100644
 --- a/term.c
 +++ b/term.c
 @@ -160,6 +160,12 @@ int term_read(void)
@@ -38,7 +38,7 @@ index b6e926e6..e0782836 100644
 +			char buf[2];
 +			buf[0] = *ibuf;
 +			buf[1] = '\0';
-+			vi_regputraw(xrec, buf, 0, 1);
++			ex_regput(xrec, buf, 1);
 +		}
  	}
  	if (icmd_pos < sizeof(icmd))
