@@ -253,6 +253,23 @@ char *lbuf_cp(struct lbuf *lb, int beg, int end)
 	return p - msum;
 }
 
+char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
+{
+	if (r1 == r2)
+		return uc_sub(lbuf_get(lb, r1), o1, o2);
+	char *start, *end;
+	sbuf_smake(sb, 1024)
+	sbuf_str(sb, uc_chr(lbuf_get(lb, r1), o1))
+	r2 = MIN(lb->ln_n, r2);
+	for (int i = r1 + 1; i < r2; i++)
+		sbuf_mem(sb, lb->ln[i], lbuf_i(lb, i)->len + 1)
+	if ((start = lbuf_get(lb, r2))) {
+		end = uc_chr(start, o2);
+		sbuf_mem(sb, start, end - start)
+	}
+	sbufn_sret(sb)
+}
+
 char *lbuf_get(struct lbuf *lb, int pos)
 {
 	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
