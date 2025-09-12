@@ -379,7 +379,7 @@ EX RANGES
              Search for int in reverse on the current line
 
 EX COMMANDS
-     [range]f{/?}[kwd]
+     [vrange]f{/?}[kwd]
              Ranged search
 
              Example: no range given, current line only
@@ -389,7 +389,7 @@ EX COMMANDS
              Example: range given
              :10,100f/int
 
-     [range]f+{/?}[kwd]
+     [vrange]f+{/?}[kwd]
              Incrementing ranged search
 
              Equivalent to the :f command, except subsequent commands within
@@ -415,7 +415,7 @@ EX COMMANDS
      bs[#]   Set current buffer saved. If any arg given, reset undo/redo
              history
 
-     [vrange][hrange]p
+     [range]p
              Print line(s) from the buffer
 
              Example: utilize character offset ranges
@@ -488,7 +488,7 @@ EX COMMANDS
              Example: delete 5 characters from current position
              :;.;+5c<^M><ESC>
 
-     [range]d
+     [vrange]d
              Delete line(s)
      e[path]
              Open a file at a path
@@ -499,7 +499,7 @@ EX COMMANDS
 
              No argument re-reads the current buffer from the filesystem.
 
-     [range]g{*}[kwd]{*}{cmd}
+     [vrange]g{*}[kwd]{*}{cmd}
              Global command
 
              Execute an ex command on a range of lines that matches an
@@ -532,7 +532,7 @@ EX COMMANDS
              :g/\(.+\)/;0;/\(.+\)/\:.;.+1k a\:grp 2\:;/\)*(\))/\:
              grp\:k s\:.;'a;'sp
 
-     [range]g!{*}[kwd]{*}{cmd}
+     [vrange]g!{*}[kwd]{*}{cmd}
              Inverted global command
      [range]=
              Print the current range number
@@ -540,7 +540,7 @@ EX COMMANDS
              Example: print current character offset
              :;=
 
-     [range]k[mark]
+     [vrange]k[mark]
              Set a line mark
 
              The character offset is set to the current position.
@@ -608,7 +608,7 @@ EX COMMANDS
              Example: edit vi.c only if it exists
              :1,1wl \![ -f ./vi.c ]:e ./vi.c:mpt
 
-     pu[reg] [cmd]
+     [range]pu[reg] [cmd]
              Paste a register
 
              To pipe register data to an external process use :pu[reg] \![cmd]
@@ -617,8 +617,10 @@ EX COMMANDS
              :pu \!xclip -selection clipboard
              Example: copy register <a> to X11 clipboard
              :pu a \!xclip -selection clipboard
+             Example: paste <a> at line 1 character offset 5
+             :1;5pu a
 
-     [range]r[path cmd]
+     [vrange]r[path cmd]
              Read a file or a pipe
 
              To read data from a pipe use :[range]r \![cmd]
@@ -630,7 +632,7 @@ EX COMMANDS
              Example: pipe in all data
              :%r \!ls
 
-     [range]w[path cmd]
+     [vrange]w[path cmd]
              Write to a file or a pipe
 
              To pipe buffer data to external process use :[range]w \![cmd]
@@ -640,7 +642,7 @@ EX COMMANDS
              Example: pipe out only first 10 lines
              :1,10w \!less
 
-     [range]w![path]
+     [vrange]w![path]
              Force write to a file
 
      q       Exit
@@ -656,7 +658,7 @@ EX COMMANDS
      u       Undo
      rd      Redo
 
-     [range]s{*}[kwd]{*}{str}[*][opts]
+     [vrange]s{*}[kwd]{*}{str}[*][opts]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -687,11 +689,13 @@ EX COMMANDS
 
              Example: append to register <1>
              :ya 1x
+             Example: yank into <a> using ranges
+             :1,5;5;5ya a
 
      ya![register]
-             Reset register value
+             Free a register
 
-     [range]![cmd]
+     [vrange]![cmd]
              Run external program
 
              When ex range specified, pipes the buffer data to an external
@@ -1041,19 +1045,19 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 512 vi.h     |  definitions/aux     |
+     | 511 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 305 conf.c   |  hl/ft/td config     |
      | 345 term.c   |  low level IO        |
      | 396 ren.c    |  positioning/syntax  |
-     | 530 lbuf.c   |  file/line buffer    |
+     | 547 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
-     | 1357 ex.c    |  ex options/commands |
-     | 1860 vi.c    |  normal mode/general |
-     | 6862 total   |  wc -l *.c|sort      |
+     | 1382 ex.c    |  ex options/commands |
+     | 1827 vi.c    |  normal mode/general |
+     | 6871 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1125,4 +1129,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                  September 10, 2025                  Linux 6.16.0
+Linux 6.16.0                  September 12, 2025                  Linux 6.16.0
