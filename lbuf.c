@@ -136,6 +136,8 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
 		lbuf_movemark(lo->mark, mk, lb->mark, mk)
 		lbuf_loadmark(lb->mark, mk, beg, lo->pos_off)
 	}
+	if (xseq < 0)
+		lopt_done(lo);
 }
 
 static struct lopt slo;
@@ -144,10 +146,9 @@ static struct lopt slo;
 struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 {
 	struct lopt *lo;
-	if (xseq < 0) {
+	if (xseq < 0)
 		lo = &slo;
-		lopt_done(lo);
-	} else {
+	else {
 		for (int i = lb->hist_u; i < lb->hist_n; i++)
 			lopt_done(&lb->hist[i]);
 		lb->hist_n = lb->hist_u;
