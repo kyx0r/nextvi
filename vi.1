@@ -1,4 +1,4 @@
-.Dd Sep 10, 2025
+.Dd Sep 12, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -617,7 +617,7 @@ Search for int in reverse on the current line
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [\fIrange\fP]f{/?}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f{/?}[\fIkwd\fP]
 Ranged search
 .Bd -literal
 Example: no range given, current line only
@@ -628,7 +628,7 @@ Example: range given
 :10,100f/int
 .Ed
 
-.It Cm [\fIrange\fP]f+{/?}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+{/?}[\fIkwd\fP]
 Incrementing ranged search
 .Bd -literal
 Equivalent to the :f command, except subsequent commands within
@@ -657,7 +657,7 @@ Set current buffer path
 .It Cm bs[\fI#\fP]
 Set current buffer saved. If any arg given, reset undo/redo history
 
-.It Cm [\fIvrange\fP][\fIhrange\fP]p
+.It Cm [\fIrange\fP]p
 Print line(s) from the buffer
 .Bd -literal
 Example: utilize character offset ranges
@@ -734,7 +734,7 @@ Example: delete 5 characters from current position
 :;.;+5c<^M><ESC>
 .Ed
 
-.It Cm [\fIrange\fP]d
+.It Cm [\fIvrange\fP]d
 Delete line(s)
 .It Cm e[\fIpath\fP]
 Open a file at a path
@@ -747,7 +747,7 @@ Force open a file at a path
 No argument re-reads the current buffer from the filesystem.
 .Ed
 
-.It Cm [\fIrange\fP]g{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
+.It Cm [\fIvrange\fP]g{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
 Global command
 .Bd -literal
 Execute an ex command on a range of lines that matches an
@@ -781,7 +781,7 @@ Example: extract/print data enclosed in "()"
 grp\e:k s\e:.;'a;'sp
 .Ed
 
-.It Cm [\fIrange\fP]g!{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
+.It Cm [\fIvrange\fP]g!{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
 Inverted global command
 .It Cm [\fIrange\fP]=
 Print the current range number
@@ -790,7 +790,7 @@ Example: print current character offset
 :;=
 .Ed
 
-.It Cm [\fIrange\fP]k[\fImark\fP]
+.It Cm [\fIvrange\fP]k[\fImark\fP]
 Set a line mark
 .Bd -literal
 The character offset is set to the current position.
@@ -862,7 +862,7 @@ Example: edit vi.c only if it exists
 :1,1wl \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
 
-.It Cm pu[\fIreg\fP] [\fIcmd\fP]
+.It Cm [range]pu[\fIreg\fP] [\fIcmd\fP]
 Paste a register
 .Bd -literal
 To pipe register data to an external process use :pu[reg] \e![cmd]
@@ -871,9 +871,11 @@ Example: copy default register to X11 clipboard
 :pu \e!xclip -selection clipboard
 Example: copy register <a> to X11 clipboard
 :pu a \e!xclip -selection clipboard
+Example: paste <a> at line 1 character offset 5
+:1;5pu a
 .Ed
 
-.It Cm [\fIrange\fP]r[\fIpath cmd\fP]
+.It Cm [\fIvrange\fP]r[\fIpath cmd\fP]
 Read a file or a pipe
 .Bd -literal
 To read data from a pipe use :[range]r \e![cmd]
@@ -886,7 +888,7 @@ Example: pipe in all data
 :%r \e!ls
 .Ed
 
-.It Cm [\fIrange\fP]w[\fIpath cmd\fP]
+.It Cm [\fIvrange\fP]w[\fIpath cmd\fP]
 Write to a file or a pipe
 .Bd -literal
 To pipe buffer data to external process use :[range]w \e![cmd]
@@ -897,7 +899,7 @@ Example: pipe out only first 10 lines
 :1,10w \e!less
 .Ed
 
-.It Cm [\fIrange\fP]w![\fIpath\fP]
+.It Cm [\fIvrange\fP]w![\fIpath\fP]
 Force write to a file
 
 .It Cm q
@@ -921,7 +923,7 @@ Undo
 .It Cm rd
 Redo
 
-.It Cm [\fIrange\fP]s{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIstr\fP}[\fI*\fP][\fIopts\fP]
+.It Cm [\fIvrange\fP]s{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIstr\fP}[\fI*\fP][\fIopts\fP]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -953,12 +955,14 @@ character to the command.
 
 Example: append to register <1>
 :ya 1x
+Example: yank into <a> using ranges
+:1,5;5;5ya a
 .Ed
 
 .It Cm ya![\fIregister\fP]
-Reset register value
+Free a register
 
-.It Cm [\fIrange\fP]![\fIcmd\fP]
+.It Cm [\fIvrange\fP]![\fIcmd\fP]
 Run external program
 .Bd -literal
 When ex range specified, pipes the buffer data to an external
@@ -1415,19 +1419,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 512 vi.h | definitions/aux
+ 511 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  305 conf.c | hl/ft/td config
  345 term.c | low level IO
  396 ren.c | positioning/syntax
- 530 lbuf.c | file/line buffer
+ 547 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  749 regex.c | pikevm
- 1357 ex.c | ex options/commands
- 1860 vi.c | normal mode/general
- 6862 total | wc -l *.c\(basort
+ 1382 ex.c | ex options/commands
+ 1827 vi.c | normal mode/general
+ 6871 total | wc -l *.c\(basort
 _
 .TE
 .
