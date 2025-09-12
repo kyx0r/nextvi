@@ -241,7 +241,7 @@ left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[+ \t]?([?/])|[td
 	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]*)", A(WH1 | SYN_BD)},
 
-	{vs_ft, "^.+", A(AY1 | SYN_BD | SYN_SO)},
+	{vs_ft, "^(?:[?/]|xkwd:)(.*)", A(BL1 | SYN_BD | SYN_SO, AY1 | SYN_SO)},
 	{vs_ft, "(\\\\[<>]|\\(\\?[:=!<>#]|[.^${}[\\]\\()*+|?])|\\\\(.)", A(SYN_BD, WH1, YE)},
 
 	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},

@@ -170,6 +170,7 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
 void lbuf_iedit(struct lbuf *lb, char *s, int beg, int end, int init);
 #define lbuf_edit(lb, s, beg, end) lbuf_iedit(lb, s, beg, end, 0)
 char *lbuf_cp(struct lbuf *lb, int beg, int end);
+char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2);
 char *lbuf_get(struct lbuf *lb, int pos);
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end);
 struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
@@ -409,7 +410,7 @@ extern int xkwddir;
 extern int xkwdcnt;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
-extern char *xregs[256];
+extern sbuf *xregs[256];
 extern struct buf *bufs;
 extern struct buf tempbufs[2];
 extern struct buf *ex_buf;
@@ -435,7 +436,7 @@ void temp_switch(int i);
 void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
 void *ex_exec(const char *ln);
-#define ex_command(ln) { ex_exec(ln); vi_regputraw(':', ln, 0, 0); }
+#define ex_command(ln) { ex_exec(ln); ex_regput(':', ln, 0); }
 void ex_cprint(char *line, char *ft, int r, int c, int ln);
 #define ex_print(line, ft) \
 { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
@@ -444,7 +445,7 @@ void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
 int ex_edit(const char *path, int len);
-void ec_bufferi(int id);
+void ex_regput(unsigned char c, const char *s, int append);
 void bufs_switch(int idx);
 #define bufs_switchwft(idx) \
 { if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
@@ -504,8 +505,6 @@ extern int vi_hidch;
 extern int vi_insmov;
 extern int vi_lncol;
 extern char vi_msg[512];
-void vi_regputraw(unsigned char c, const char *s, int ln, int append);
-void vi_regput(int c, const char *s, int ln);
 /* file system */
 extern rset *fsincl;
 extern char *fs_exdir;
