@@ -1,8 +1,8 @@
 diff --git a/vi.c b/vi.c
-index 70ba6b96..941653c9 100644
+index 39e37aec..ae318071 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -593,7 +593,7 @@ static void vc_status(int type)
+@@ -576,7 +576,7 @@ static void vc_status(int type)
  }
  
  /* read a motion */
@@ -11,7 +11,7 @@ index 70ba6b96..941653c9 100644
  {
  	static sbuf *savepath[10];
  	static int srow[10], soff[10], lkwdcnt;
-@@ -669,9 +669,13 @@ static int vi_motion(int *row, int *off)
+@@ -652,9 +652,13 @@ static int vi_motion(int *row, int *off)
  		break;
  	case 'w':
  	case 'W':
@@ -26,7 +26,7 @@ index 70ba6b96..941653c9 100644
  				break;
  		break;
  	case '{':
-@@ -969,7 +973,7 @@ static void vc_motion(int cmd)
+@@ -935,7 +939,7 @@ static void vc_motion(int cmd)
  	o2 = o1;
  	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
  		o2 = -1;
@@ -35,7 +35,7 @@ index 70ba6b96..941653c9 100644
  		return;
  	if (mv < 0)
  		return;
-@@ -1226,7 +1230,7 @@ void vi(int init)
+@@ -1193,7 +1197,7 @@ void vi(int init)
  			sbuf_cut(led_attsb, 0)
  		if (!vi_ybuf)
  			vi_ybuf = vi_yankbuf();

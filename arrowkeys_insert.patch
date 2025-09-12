@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index ce71cad3..8465efdb 100644
+index 503b153e..be827082 100644
 --- a/led.c
 +++ b/led.c
 @@ -281,7 +281,7 @@ static int led_lastword(char *s)
@@ -73,10 +73,10 @@ index ce71cad3..8465efdb 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 70ba6b96..4a50d7ff 100644
+index 39e37aec..3497e301 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -845,6 +845,8 @@ static void vi_indents(char *ln, int *l)
+@@ -811,6 +811,8 @@ static void vi_indents(char *ln, int *l)
  	*l = ln - pln;
  }
  
@@ -85,7 +85,7 @@ index 70ba6b96..4a50d7ff 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *region, *post, *_post;
-@@ -876,6 +878,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -842,6 +844,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  		lbuf_edit(xb, sb->s, r1, r2 + 1);
  	free(sb->s);
  	free(_post);
@@ -93,7 +93,7 @@ index 70ba6b96..4a50d7ff 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1045,7 +1048,9 @@ static void vc_insert(int cmd)
+@@ -1011,7 +1014,9 @@ static void vc_insert(int cmd)
  	if (sb->s_n != l1 || cmdo || !ln) {
  		sbufn_str(sb, post)
  		lbuf_edit(xb, sb->s, row, row + !cmdo);
@@ -104,7 +104,7 @@ index 70ba6b96..4a50d7ff 100644
  	free(sb->s);
  }
  
-@@ -1516,6 +1521,37 @@ void vi(int init)
+@@ -1483,6 +1488,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -142,7 +142,7 @@ index 70ba6b96..4a50d7ff 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1528,6 +1564,9 @@ void vi(int init)
+@@ -1495,6 +1531,9 @@ void vi(int init)
  				if (c != 'A' && c != 'C')
  					xoff--;
  				break;
