@@ -65,7 +65,7 @@ Move # lines down
 Move # lines up
 .It Cm [\fI#\fP]+
 .It Cm [\fI#\fP]<^M>
-.It Cm [\fI#\fP]<Newline>
+.It Cm [\fI#\fP]<Enter>
 .Bd -compact
 Move # lines down, cursor after indent
 .Ed
@@ -145,7 +145,7 @@ Move to middle line on a screen
 .It Cm [\fI#\fP]z.
 Center screen at cursor. # is xtop
 .It Cm [\fI#\fP]z<^M>
-.It Cm [\fI#\fP]z<Newline>
+.It Cm [\fI#\fP]z<Enter>
 .Bd -compact
 Center screen at top row. # is xtop
 .Ed
@@ -394,7 +394,7 @@ Commands described with the word "move" define a region.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm <+ j ^M Newline - k h l f F t T \&, \&; B E b e W w { } \&[ \&] ^ 0 $ Space ^H Backspace % ' ` G H L M / \&? n N ^A>
+.It Cm <j + ^M Enter - k h l f F t T \&, \&; B E b e W w { } \&[ \&] ^ 0 $ Space ^H Backspace % ' ` G H L M / \&? n N ^A>
 
 All regions
 .El
@@ -487,6 +487,11 @@ Read a digraph sequence arg
 .Bd -compact
 Exit insert mode in vi, reset in ex
 .Ed
+.It Cm <^M>
+.It Cm <Enter>
+.Bd -compact
+Insert <Newline> in vi, submit command in ex
+.Ed
 .El
 .
 .Sh EX
@@ -524,7 +529,7 @@ with <\\>.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm <( ^ \&[ \&] \e>
+.It Cm <( ^ \&] \e>
 Special characters in regex "[]" expression
 .It Cm <\&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&.> \&"\\\\<\&" \&"\\\\>\&"
 Specials in regex
@@ -557,10 +562,12 @@ Example: insert output of ls shell command efficiently
 .Sh EX RANGES
 .Bd -literal -compact
 Some ex commands can be prefixed with ranges.
+[range] specifies vertical and horizontal range implementation.
+[vrange] specifies vertical only range implementation.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [. - +][1-9 %][\fIsep\fP][, ;][. - +][1-9 $]
+.It Cm [. $][- +][% 1-9][\fIsep\fP][, ;][. $][- +][1-9]
 Numeric ranges
 .It Cm </ ?>{\fIkwd\fP}[</ ?>]
 Search ranges
@@ -680,7 +687,7 @@ Example: backfill b-2 using find
 
 If the substring matches more than one filename, a prompt will
 be shown. Submit using numbers 0-9 or higher ascii values.
-<^C> to cancel, <Newline> to select first match. Passing an
+<^C> to cancel, <^M> to select first match. Passing an
 extra arg to :ea in form of a number will bypass the prompt
 and open the corresponding file.
 
@@ -718,7 +725,7 @@ Enter ex insert mode after specified line
 Enter ex change mode on specified line
 .Bd -literal
 In combination with seq and lim ex options, this command is
-optimal for modifying very long lines. Max ~1.5GB on 32bit.
+optimal for modifying very long lines. Max ~1.33GB on 32bit.
 
 Example: replace current line with "hello"
 :c hello<^M><ESC>
@@ -740,6 +747,8 @@ Delete line(s)
 Open a file at a path
 .Bd -literal
 No argument opens "unnamed" buffer.
+Files larger than 2.0GB are truncated on 32 bit.
+Line breaking happens until the first null terminator or EOF.
 .Ed
 .It Cm e![\fIpath\fP]
 Force open a file at a path
@@ -1127,8 +1136,8 @@ be based on some group rather than default match group.
 
 The value of grp must be divisible by 2.
 
-Example: ignore tabs at the start of the line
-:grp 2:1,$f/^[	]+(.+):grp
+Example: ignore spaces at the start of the line
+:grp 2:%f+/^[ ]+(.+):grp
 .Ed
 
 .
