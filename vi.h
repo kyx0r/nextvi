@@ -81,7 +81,7 @@ sb->s_n += len; \
 #define sbuf_free(sb) { free(sb->s); free(sb); }
 #define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
 #define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
-#define sbuf_str(sb, s) { const char *p = s; while(*p) sbuf_chr(sb, *p++) }
+#define sbuf_str(sb, s) { const char *__p_ = s; while(*__p_) sbuf_chr(sb, *__p_++) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that NULL terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
