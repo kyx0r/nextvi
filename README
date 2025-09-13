@@ -40,7 +40,7 @@ VI NORMAL
      [#]k          Move # lines up
      [#]+
      [#]<^M>
-     [#]<Newline>
+     [#]<Enter>
                    Move # lines down, cursor after indent
      [#]-          Move # lines up, cursor after indent
      [#]h          Move # cols left
@@ -83,7 +83,7 @@ VI NORMAL
      M             Move to middle line on a screen
      [#]z.         Center screen at cursor. # is xtop
      [#]z<^M>
-     [#]z<Newline>
+     [#]z<Enter>
                    Center screen at top row. # is xtop
      [#]z-         Center screen at bottom row. # is xtop
      [#]<^E>       Scroll down 1 or # lines, retain # and cursor position
@@ -225,7 +225,7 @@ VI REGIONS
      Regions are vi normal commands that define [h v]range for vi motions.
      Commands described with the word "move" define a region.
 
-     <+ j ^M Newline - k h l f F t T , ; B E b e W w { } [ ] ^ 0 $ Space ^H
+     <j + ^M Enter - k h l f F t T , ; B E b e W w { } [ ] ^ 0 $ Space ^H
              Backspace % ' ` G H L M / ? n N ^A>
 
              All regions
@@ -281,6 +281,9 @@ VI/EX INSERT
      <^C>
      <ESC>
                    Exit insert mode in vi, reset in ex
+     <^M>
+     <Enter>
+                   Insert <Newline> in vi, submit command in ex
 
 EX
      Ex is a powerful line editor for Unix systems, initially developed
@@ -308,7 +311,7 @@ EX ESCAPES
      Special characters in [args] will become regular when escaped
      with <\>.
 
-     <( ^ [ ] \>
+     <( ^ ] \>
              Special characters in regex "[]" expression
      <( ) { } + * ? ^ $ [ ] | \ .> "\<" "\>"
              Specials in regex
@@ -337,8 +340,10 @@ EX EXPANSION
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
+     [range] specifies vertical and horizontal range implementation.
+     [vrange] specifies vertical only range implementation.
 
-     [. - +][1-9 %][sep][, ;][. - +][1-9 $]
+     [. $][- +][% 1-9][sep][, ;][. $][- +][1-9]
              Numeric ranges
      </ ?>{kwd}[</ ?>]
              Search ranges
@@ -437,7 +442,7 @@ EX COMMANDS
 
              If the substring matches more than one filename, a prompt will
              be shown. Submit using numbers 0-9 or higher ascii values.
-             <^C> to cancel, <Newline> to select first match. Passing an
+             <^C> to cancel, <^M> to select first match. Passing an
              extra arg to :ea in form of a number will bypass the prompt
              and open the corresponding file.
 
@@ -473,7 +478,7 @@ EX COMMANDS
              Enter ex change mode on specified line
 
              In combination with seq and lim ex options, this command is
-             optimal for modifying very long lines. Max ~1.5GB on 32bit.
+             optimal for modifying very long lines. Max ~1.33GB on 32bit.
 
              Example: replace current line with "hello"
              :c hello<^M><ESC>
@@ -494,6 +499,8 @@ EX COMMANDS
              Open a file at a path
 
              No argument opens "unnamed" buffer.
+             Files larger than 2.0GB are truncated on 32 bit.
+             Line breaking happens until the first null terminator or EOF.
      e![path]
              Force open a file at a path
 
@@ -834,8 +841,8 @@ EX OPTIONS
 
              The value of grp must be divisible by 2.
 
-             Example: ignore tabs at the start of the line
-             :grp 2:1,$f/^[  ]+(.+):grp
+             Example: ignore spaces at the start of the line
+             :grp 2:%f+/^[ ]+(.+):grp
 
      hl[val=1]
              Highlight text based on rules defined in conf.c
