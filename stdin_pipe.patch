@@ -53,7 +53,7 @@ index c66a3844..91a8925f 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 2aef164b..7b56f2dc 100644
+index 2aef164b..21c7926e 100644
 --- a/term.c
 +++ b/term.c
 @@ -5,6 +5,8 @@ int xrows, xcols;
@@ -65,13 +65,11 @@ index 2aef164b..7b56f2dc 100644
  
  void term_init(void)
  {
-@@ -12,21 +14,25 @@ void term_init(void)
- 		return;
+@@ -13,20 +15,24 @@ void term_init(void)
  	struct winsize win;
  	struct termios newtermios;
--	sbuf_make(term_sbuf, 2048)
+ 	sbuf_make(term_sbuf, 2048)
 -	tcgetattr(0, &termios);
-+	sbufn_make(term_sbuf, 2048)
 +	tcgetattr(stdin_fd, &termios);
  	newtermios = termios;
 -	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
