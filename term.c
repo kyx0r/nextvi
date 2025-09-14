@@ -279,7 +279,7 @@ char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc)
 			*status = 127;
 		return NULL;
 	}
-	sbuf_smake(sb, sizeof(buf))
+	sbuf_smake(sb, sizeof(buf)+1)
 	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
 		term_done();
