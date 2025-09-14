@@ -478,7 +478,9 @@ EX COMMANDS
              Enter ex change mode on specified line
 
              In combination with seq and lim ex options, this command is
-             optimal for modifying very long lines. Max ~1.33GB on 32bit.
+             optimal for modifying very long lines.
+             Max insertion buffer is ~1.33GB on 32bit.
+             Max addressable line is 2.0GB on 32bit.
 
              Example: replace current line with "hello"
              :c hello<^M><ESC>
@@ -1062,9 +1064,9 @@ CODE MAP
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
-     | 1382 ex.c    |  ex options/commands |
+     | 1385 ex.c    |  ex options/commands |
      | 1827 vi.c    |  normal mode/general |
-     | 6870 total   |  wc -l *.c|sort      |
+     | 6873 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
