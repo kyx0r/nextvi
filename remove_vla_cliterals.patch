@@ -12,7 +12,7 @@ index ddacc04e..96d8f060 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 2bc1e43c..82bd5be1 100644
+index c66a3844..869805a5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -875,7 +875,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
@@ -51,10 +51,10 @@ index 2bc1e43c..82bd5be1 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index a888efdc..60dc914b 100644
+index ed2f4045..c3af6570 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -377,7 +377,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -375,7 +375,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
@@ -63,7 +63,7 @@ index a888efdc..60dc914b 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (skip >= 0 && s)
-@@ -402,14 +402,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -400,14 +400,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				break;
  			*o = _o;
  			*r = i;
@@ -323,10 +323,10 @@ index 39e37aec..34a213ef 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 959d54db..be5f43cd 100644
+index 2fe18c64..dbe6df4b 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -463,7 +463,7 @@ extern const int ftslen;
+@@ -462,7 +462,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */

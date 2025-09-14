@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2bc1e43c..88a73001 100644
+index c66a3844..fd422c09 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1174,6 +1174,50 @@ static int eo_val(char *arg)

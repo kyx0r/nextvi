@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2bc1e43c..4b5c8adb 100644
+index c66a3844..49849b53 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1366,7 +1366,7 @@ void ex(void)
@@ -64,10 +64,10 @@ index 39e37aec..4c41ea1b 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 959d54db..4798cb47 100644
+index 2fe18c64..b21c7666 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -440,7 +440,7 @@ void *ex_exec(const char *ln);
+@@ -439,7 +439,7 @@ void *ex_exec(const char *ln);
  void ex_cprint(char *line, char *ft, int r, int c, int ln);
  #define ex_print(line, ft) \
  { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
