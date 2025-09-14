@@ -763,7 +763,7 @@ void ex_regput(unsigned char c, const char *s, int append)
 	sbuf *sb = xregs[tolower(c)];
 	if (s) {
 		if (!sb) {
-			sbuf_make(sb, 0)
+			sbuf_make(sb, 64)
 			xregs[tolower(c)] = sb;
 		}
 		if (!append)

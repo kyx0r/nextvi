@@ -223,9 +223,8 @@ void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
 	if (beg == end && !buf)
 		return;
 	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg);
-	sbuf_smake(sb, 0)
+	sbuf_smake(sb, sizeof(lo->ins[0])+1)
 	lo->n_ins = lbuf_replace(lb, sb, buf, lo, lo->n_del, 0);
-	free(sb->s);
 	lbuf_emark(lb, lo, lb->hist_u < 2 ||
 			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
 			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
@@ -233,10 +232,9 @@ void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
 	if (lb->saved > lb->hist_u)
 		lb->saved = -1;
 	if (xseq < 0 || !lo->n_ins || init)
-		return;
-	lo->ins = emalloc(lo->n_ins * sizeof(lo->ins[0]));
-	for (int i = 0; i < lo->n_ins; i++)
-		lo->ins[i] = lb->ln[beg + i];
+		free(sb->s);
+	else
+		lo->ins = (char**)sb->s;
 }
 
 char *lbuf_cp(struct lbuf *lb, int beg, int end)
