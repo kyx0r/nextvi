@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c66a3844..91a8925f 100644
+index c66a3844..0e06c06b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -417,7 +417,9 @@ int ex_edit(const char *path, int len)
@@ -23,7 +23,7 @@ index c66a3844..91a8925f 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1368,15 +1373,26 @@ void ex(void)
+@@ -1368,15 +1373,29 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -44,7 +44,10 @@ index c66a3844..91a8925f 100644
 +		term_done();
 +		term_init();
 +		lbuf_saved(xb, 1);
-+		ec_edit("", NULL, ""); /* shebang patch compat */
++		if (i)
++			ex_print("stdin read failed", msg_ft)
++		else
++			ec_edit("", NULL, ""); /* shebang patch compat */
 +	}
  	xmpt = 0;
  	xvis &= ~8;
