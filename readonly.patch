@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c66a3844..72be503a 100644
+index 37a92f8f..ad523164 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -43,6 +43,7 @@ static int xgdep;		/* global command recursion depth */
@@ -36,7 +36,7 @@ index c66a3844..72be503a 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1166,6 +1172,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1169,6 +1175,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index c66a3844..72be503a 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1237,6 +1249,7 @@ static struct excmd {
+@@ -1240,6 +1252,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,7 +58,7 @@ index c66a3844..72be503a 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 39e37aec..c6cc3d62 100644
+index fbbac6dd..5be5339a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1802,9 +1802,11 @@ int main(int argc, char *argv[])

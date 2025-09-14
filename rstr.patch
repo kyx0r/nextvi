@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index c66a3844..76b7813b 100644
+index 37a92f8f..3b33f9c0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -24,7 +24,7 @@ index c66a3844..76b7813b 100644
  		xkwdcnt++;
  		ex_regput('/', kwd, 0);
  		xkwddir = dir;
-@@ -859,13 +859,13 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -862,13 +862,13 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	int beg, end, grp;
  	char *pat, *rep = NULL, *_rep;
  	char *s = arg;
@@ -40,7 +40,7 @@ index c66a3844..76b7813b 100644
  	if (!rs) {
  		free(pat);
  		return xserr;
-@@ -875,11 +875,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -878,11 +878,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -54,7 +54,7 @@ index c66a3844..76b7813b 100644
  			if (offs[xgrp] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -894,7 +894,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -897,7 +897,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  					}
  					_rep++;
  					grp = abs((*_rep - '0') * 2);
@@ -63,7 +63,7 @@ index c66a3844..76b7813b 100644
  						sbuf_chr(r, (unsigned char)*_rep)
  					else if (offs[grp] >= 0)
  						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
-@@ -920,7 +920,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -923,7 +923,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (first >= 0)
  		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
  	if (rs != xkwdrs)
@@ -72,7 +72,7 @@ index c66a3844..76b7813b 100644
  	free(rep);
  	return NULL;
  }
-@@ -969,7 +969,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -972,7 +972,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  {
  	int i, beg, end, not;
  	char *pat, *s = arg;
@@ -81,7 +81,7 @@ index c66a3844..76b7813b 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_vregion(loc, &beg, &end))
-@@ -977,9 +977,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -980,9 +980,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	not = !!strchr(cmd, '!');
  	pat = re_read(&s);
  	if (pat && *pat)
@@ -93,7 +93,7 @@ index c66a3844..76b7813b 100644
  	free(pat);
  	if (!rs)
  		return xserr;
-@@ -989,7 +989,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -992,7 +992,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	for (i = beg; i < lbuf_len(xb);) {
  		char *ln = lbuf_get(xb, i);
  		lbuf_s(ln)->grec &= ~xgdep;
@@ -102,7 +102,7 @@ index c66a3844..76b7813b 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -998,7 +998,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1001,7 +1001,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  		while (i < lbuf_len(xb) && !(lbuf_i(xb, i)->grec & xgdep))
  			i++;
  	}
@@ -111,7 +111,7 @@ index c66a3844..76b7813b 100644
  	xgdep /= 2;
  	return NULL;
  }
-@@ -1077,10 +1077,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
+@@ -1080,10 +1080,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
  
  static void *ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -283,7 +283,7 @@ index daeeea06..5acf036a 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 39e37aec..25ab856a 100644
+index fbbac6dd..269dd481 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -448,7 +448,7 @@ static void vi_regput(int c, const char *s, int lnmode)
