@@ -1442,7 +1442,7 @@ void vi(int init)
 				if (ln && ln[n])
 					ex_command(ln + n)
 				free(ln);
-				vi_mod |= xquit == 0;
+				vi_mod |= xgrec > 1 || xquit == 0;
 				break;
 			case 'c':
 			case 'd':

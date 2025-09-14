@@ -651,30 +651,23 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
 	return 0;
 }
 
+static char *ex_lbufstr(char *s, char *e, char *se, char *i, int in)
+{
+	char *p = emalloc(lbuf_s(s)->len + 2 + in);
+	memcpy(p, s, e - s);
+	memcpy(p + (e - s), i, in);
+	memcpy(p + (e - s + in), se, lbuf_s(s)->len + 2 - (e - s) - (se - e));
+	return p;
+}
+
 static void *ec_insert(char *loc, char *cmd, char *arg)
 {
-	int beg, end, ps = 0, n = 0;
-	int o1 = -1, o2 = -1;
+	int beg, end, o1 = -1, o2 = -1, ps = 0;
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
+	char *e, *se;
 	char *ln = o1 >= 0 ? lbuf_get(xb, beg) : NULL;
-	sbuf_smake(sb, ln && cmd[0] == 'c' ? lbuf_s(ln)->len + 128 : 128)
-	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
-		beg++;
-	else if (cmd[0] == 'i')
-		end = beg;
-	else if (ln) {
-		if (rstate->s == ln) {
-			o1 = MIN(o1, rstate->n);
-			n = rstate->chrs[o1] - ln;
-		} else
-			n = uc_chrn(ln, o1, &o1) - ln;
-		if (vi_msg[0])
-			lbuf_mark(xb, '*', beg, o1);
-		xoff = o1;
-		sb->s_n = n;
-		ps = n;
-	}
+	sbuf_smake(sb, 128)
 	if (*arg)
 		term_push(arg, strlen(arg));
 	vi_insmov = 0;
@@ -686,24 +679,37 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		sbuf_chr(sb, '\n')
 		ps = sb->s_n;
 	}
-	if (vi_insmov != TK_CTL('c')) {
-		if (vi_insmov == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
-			sb->s_n--;
-		if (ln && cmd[0] == 'c') {
-			if (n == sb->s_n && o2 <= o1)
-				goto ret;
-			memcpy(sb->s, ln, n);
-			ln = o2 > o1 ? uc_chr(ln + n, o2 - o1) : ln + n;
-			sbuf_str(sb, ln)
-		} else if (!(xvis & 2) && vi_insmov != 127)
-			sbuf_chr(sb, '\n')
-		else if (n == sb->s_n)
+	if (vi_insmov == TK_CTL('c'))
+		goto ret;
+	if (vi_insmov == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
+		sb->s_n--;
+	sbuf_null(sb)
+	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
+		beg++;
+	else if (cmd[0] == 'i')
+		end = beg;
+	if (ln && cmd[0] == 'c') {
+		if (rstate->s == ln) {
+			o1 = MIN(o1, rstate->n);
+			e = rstate->chrs[o1];
+		} else
+			e = uc_chrn(ln, o1, &o1);
+		if (vi_msg[0])
+			lbuf_mark(xb, '*', beg, o1);
+		xoff = o1;
+		se = o2 > o1 ? uc_chr(e, o2 - o1) : e;
+		ln = ex_lbufstr(ln, e, se, sb->s, sb->s_n);
+		free(sb->s);
+		sb->s = ln;
+		if (!sb->s_n && se == e)
 			goto ret;
-		sbuf_null(sb)
-		n = lbuf_len(xb);
-		lbuf_edit(xb, sb->s, beg, end);
-		xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
-	}
+	} else if (!(xvis & 2) && vi_insmov != 127)
+		sbufn_chr(sb, '\n')
+	else if (!sb->s_n)
+		goto ret;
+	o1 = lbuf_len(xb);
+	lbuf_edit(xb, sb->s, beg, end);
+	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - o1 - 1);
 	ret:
 	free(sb->s);
 	return NULL;
@@ -808,12 +814,9 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	if (o1 >= 0) {
-		char *s = lbuf_get(xb, end-1);
-		char *e = uc_chr(s, o1);
-		char *p = emalloc(lbuf_s(s)->len + 2 + buf->s_n);
-		memcpy(p, s, e - s);
-		memcpy(p + (e - s), buf->s, buf->s_n);
-		memcpy(p + (e - s + buf->s_n), e, lbuf_s(s)->len + 2 - (e - s));
+		char *ln = lbuf_get(xb, end-1);
+		char *e = uc_chr(ln, o1);
+		char *p = ex_lbufstr(ln, e, e, buf->s, buf->s_n);
 		lbuf_edit(xb, p, end-1, end);
 		free(p);
 	} else
