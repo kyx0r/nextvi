@@ -379,7 +379,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 	char *s = lbuf_get(lb, i);
 	int off, g1, g2, _o, step, flg;
 	if (skip >= 0 && s)
-		off = rstate->s == s ? rstate->chrs[o0 + skip] - s
+		off = rstate->s == s ? rstate->chrs[MIN(o0 + skip, rstate->n)] - s
 					: uc_chr(s, o0 + skip) - s;
 	else
 		off = 0;
