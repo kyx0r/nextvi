@@ -198,8 +198,8 @@ My current EXINIT setup:
 How it works:
 :led - temporarily disable redrawing the screen
 :ish - enable interactive shell
-:i - inserts every macro until \x1b
-:&1G0"q2Y2j"Qy$ - yank 3 lines into register q, excluding last newline
+:1io{\n}^^kA\n       \x1b - inserts macro on line 1 until \x1b
+:1,3;0;$yaq - yank 3 lines into register q, excluding last newline
 :u - undo insert
 :inc (^(?\:(?\!^\.git).)+[^/]+$) always exclude .git folder from :fd
 :pac - print autocomplete options
@@ -217,7 +217,6 @@ whatever {
 }
 @e = brings :e !p $c into ex prompt
 Note: p is alias to printf. $c[0-9] is env var containing some path
-@r = creates ""
 @a = creates a comment like this:
 /* whatever */
 @s = from the cursor creates a comment like this:
@@ -229,6 +228,6 @@ Note: p is alias to printf. $c[0-9] is env var containing some path
 @l = bring !cp % %_|w|!git diff --no-index %_ % macro into ex prompt.
 Use to create patch and diff files fast. It relies on
 you not saving the file prior to running the macro.
-@c = run ac command and reindex ac db
+@z = control character mapping placeholders
 
-export EXINIT="$(printf '%b' 'led:ish:i o{\n}kA\n	\nA {jo}koa\n\\:e \!p $c\nI/*A*/\ni/*A*/\n/\/\*\n2x/\*\/\n2x\n>\%<<$\%<<\n\\:\!cp \% \%_\\:w\\:\!git diff --no-index \%_ \%\n\\:ac  \\:& i\\:ac3ls\n\\:cd \!p $c\x1b:&1G0"q2Y2j"Qy$ 0j"wy$ j0"ey$ j0"ay$ j0"sy$ j0"d2Y2j"Dy$ j0"xy$ j0"ly$ j0"cy$ j0"fy$:inc (^(?\:(?\!^\.git).)+[^/]+$):u:1:pac:led')"
+export EXINIT="$(printf '%b' 'led:ish:      1io{\n}kA\n	\x1b:1,3;0;$yaq:        1iA {jo}koa\x1b:;0;$yaw:     1i\\:e \!p $c\x1b:;0;$yae:     1iI/*A*/\x1b:;0;$yaa:     1ii/*A*/\x1b:;0;$yas:      1i/\/\*\n2x/\*\/\n2x\x1b:1,3;0;$yad:     1i>\%<<$\%<<\x1b:;0;$yax:     1i\\:\!cp \% \%_\\:w\\:\!git diff --no-index \%_ \%\x1b:;0;$yal:      1i\\:cd \!p $c\x1b:;0;$yaf:       1i\\:ph1 1 2 1^A\\:ph2 2 2 1^B\\:ph3 3 2 1^C\\:ph4 4 2 1^D\\:ph5 5 2 1^E\\:ph6 6 2 1^F\\:ph7 7 2 1^G\\:ph8 8 2 1^H\\:ph9 9 2 1^I\\:ph10 10 2 1^J\\:ph11 11 2 1^K\\:ph12 12 2 1^L\\:ph13 13 2 1^M\\:ph14 14 2 1^N\\:ph15 15 2 1^O\\:ph16 16 2 1^P\\:ph17 17 2 1^Q\\:ph18 18 2 1^R\\:ph19 19 2 1^S\\:ph20 20 2 1^T\\:ph21 21 2 1^U\\:ph22 22 2 1^V\\:ph23 23 2 1^W\\:ph24 24 2 1^X\\:ph25 25 2 1^Y\\:ph26 26 2 1^Z\\:ph27 27 2 1^[\\:ph28 28 2 1^\\\\\\:ph29 29 2 1^]\\:ph30 30 2 1^^\\:ph31 31 2 1^_\x1b:;0;$yaz:         inc (^(?\:(?\!^\.git).)+[^/]+$):u:1:pac:led')"
