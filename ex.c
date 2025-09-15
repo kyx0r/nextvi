@@ -740,7 +740,7 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 			o = uc_sub(ln, 0, o2);
 		else {
 			if (xvis & 4 && beg == end-1)
-				xleft = ren_position(ln)->pos[MIN(xoff, rstate->n - 1)];
+				xleft = ren_position(ln)->pos[MIN(xoff, rstate->n)];
 			ex_cprint(ln, msg_ft, -1, 0, 1);
 			continue;
 		}
