@@ -1624,7 +1624,7 @@ void vi(int init)
 				vi_mod |= vc_replace();
 				break;
 			case 'R':
-				ex_exec("reg");
+				ex_exec("left:reg");
 				break;
 			case 'Q':
 				term_pos(xrow - xtop, 0);
