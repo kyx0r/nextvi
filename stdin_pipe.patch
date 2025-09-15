@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 37a92f8f..80072adf 100644
+index 318aa4ec..0a078e36 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -417,7 +417,9 @@ int ex_edit(const char *path, int len)
@@ -132,7 +132,7 @@ index 2aef164b..21c7926e 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index fbbac6dd..905ddcca 100644
+index 3b2a1fc4..cd79e08d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1774,7 +1774,8 @@ static int setup_signals(void)

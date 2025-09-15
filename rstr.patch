@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 37a92f8f..3b33f9c0 100644
+index 318aa4ec..6dc1f00d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -125,7 +125,7 @@ index 37a92f8f..3b33f9c0 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index ed2f4045..2ff2c17a 100644
+index dc583bc5..8a43d5ed 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -371,11 +371,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -283,7 +283,7 @@ index daeeea06..5acf036a 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index fbbac6dd..269dd481 100644
+index 3b2a1fc4..15750ca6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -448,7 +448,7 @@ static void vi_regput(int c, const char *s, int lnmode)
