@@ -698,11 +698,11 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			lbuf_mark(xb, '*', beg, o1);
 		xoff = o1;
 		se = o2 > o1 ? uc_chr(e, o2 - o1) : e;
+		if (!sb->s_n && se == e)
+			goto ret;
 		ln = ex_lbufstr(ln, e, se, sb->s, sb->s_n);
 		free(sb->s);
 		sb->s = ln;
-		if (!sb->s_n && se == e)
-			goto ret;
 	} else if (!(xvis & 2) && vi_insmov != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
