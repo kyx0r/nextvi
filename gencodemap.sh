@@ -1,0 +1,17 @@
+#!/bin/sh
+EXINIT="led0:1!wc -l *.h|sort:\$k a:\$!wc -l *.c|sort"
+EXINIT="${EXINIT}:1:&G:&O_:ya:g/^[0-9]/&I :1"
+EXINIT="${EXINIT}:/vi\.h/:&A | definitions/aux"
+EXINIT="${EXINIT}:1:/kmap\.h/:&A | keymap translation"
+EXINIT="${EXINIT}:1:/conf\.c/:&A | hl/ft/td config"
+EXINIT="${EXINIT}:1:/term\.c/:&A | low level IO"
+EXINIT="${EXINIT}:1:/ren\.c/:&A | positioning/syntax"
+EXINIT="${EXINIT}:1:/lbuf\.c/:&A | file/line buffer"
+EXINIT="${EXINIT}:1:/uc\.c/:&A | UTF-8 support"
+EXINIT="${EXINIT}:1:/regex\.c/:&A | pikevm"
+EXINIT="${EXINIT}:1:/led\.c/:&A | insert mode/output"
+EXINIT="${EXINIT}:1:/\<ex\.c\>/:&A | ex options/commands"
+EXINIT="${EXINIT}:1:/vi\.c/:&A | normal mode/general"
+EXINIT="${EXINIT}:1:/total/:&A | wc -l *.c\(basort"
+EXINIT="${EXINIT}:\$:pu:'a:-1:pu"
+EXINIT="${EXINIT}:led:vis6:1,\$p:vis4:q!" vi -em

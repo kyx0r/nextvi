@@ -1,0 +1,1529 @@
+.Dd Sep 16, 2025
+.Dt Nextvi 1
+.Os
+.
+.Sh NAME
+.Nm Nextvi
+.Nd A small vi/ex terminal text editor
+.
+.Sh SYNOPSIS
+.Nm vi
+.Op Fl emsv
+.Op Ar
+.
+.Sh DESCRIPTION
+.Bd -literal -compact
+Nextvi is a modern clone of the command-line text editor vi(1),
+initially developed by Bill Joy in 1976 for Unix-based systems.
+Nextvi builds upon many standard features from vi(1) including
+unique modal interface that allows users to switch between normal,
+insert, and command modes, for efficient text manipulation.
+Additional enhancements include an unrestricted macro system,
+syntax highlighting, keymaps, bidirectional UTF-8 support, and
+numerous other features. Nextvi remains highly efficient, portable,
+and hackable, ensuring its continued relevance and high quality
+for years to come.
+.Ed
+.
+.Sh OPTIONS
+.Bl -tag -width Ds -compact
+.It Fl e
+Enter Ex mode on startup
+.It Fl m
+Disable initial file read message
+.It Fl s
+Enter raw Ex mode on startup
+.It Fl v
+Enter visual mode on startup (Default)
+.El
+.Sh MANPAGE NOTATION
+.Bl -tag -width Ds -compact
+.It Cm <x>
+A closure where x represents character literal
+.It Cm [\fIx\fP]
+A closure where x represents optional argument
+.It Cm {\fIx\fP}
+A closure where x represents required argument
+.It Cm \&"x\&"
+A closure where x represents a string
+.It Cm <^X>
+Represents a ctrl key X
+.It Cm #
+Represents a positive number in a closure
+.It Cm *
+Represents any character(s) in a closure
+.It Cm < >
+Separates alternatives in a closure
+.It Cm x-y
+Range from x to y
+.El
+.Sh VI NORMAL
+.Bl -tag -width Dq -compact
+.It Cm [\fI#\fP]j
+Move # lines down
+.It Cm [\fI#\fP]k
+Move # lines up
+.It Cm [\fI#\fP]+
+.It Cm [\fI#\fP]<^M>
+.It Cm [\fI#\fP]<Enter>
+.Bd -compact
+Move # lines down, cursor after indent
+.Ed
+.It Cm [\fI#\fP]-
+Move # lines up, cursor after indent
+.It Cm [\fI#\fP]h
+Move # cols left
+.It Cm [\fI#\fP]l
+Move # cols right
+.It Cm [\fI#\fP]f{\fIarg\fP}
+Move to arg character found forward # times
+.It Cm [\fI#\fP]F{\fIarg\fP}
+Move to arg character found backward # times
+.It Cm [\fI#\fP]t{\fIarg\fP}
+Move until arg character found forward # times
+.It Cm [\fI#\fP]T{\fIarg\fP}
+Move until arg character found backward # times
+.It Cm [\fI#\fP],
+Repeat last <f F t T> move backward # times
+.It Cm [\fI#\fP];
+Repeat last <f F t T> move forward # times
+.It Cm [\fI#\fP]E
+Move to end of word # times, skip punctuation
+.It Cm [\fI#\fP]e
+Move to end of word # times
+.It Cm [\fI#\fP]B
+Move to start of word backward # times, skip punctuation
+.It Cm [\fI#\fP]b
+Move to start of word backward # times
+.It Cm [\fI#\fP]W
+Move to start of word forward # times, skip punctuation
+.It Cm [\fI#\fP]w
+Move to start of word forward # times
+.It Cm vw
+Toggle line mode for <E e B b W w>
+.It Cm [\fI#\fP]{
+Move to next <{> section down # times
+.It Cm [\fI#\fP]}
+Move to next <{> section up # times
+.It Cm [\fI#\fP]\&[
+Move to next <Newline> section down # times
+.It Cm [\fI#\fP]\&]
+Move to next <Newline> section up # times
+.It Cm ^
+Move to start of line after indent
+.It Cm 0
+Move to start of line
+.It Cm $
+Move to end of line
+.It Cm [\fI#\fP]|
+Goto # col
+.It Cm [\fI#\fP]<Space>
+Move # characters forward
+.It Cm [\fI#\fP]<^H>
+.It Cm [\fI#\fP]<Backspace>
+.Bd -compact
+Move # characters backward
+.Ed
+.It Cm %
+Move to closest <] ) }><[ ( {> pair
+.It Cm {\fI#\fP}%
+Move to # percent line number
+.It Cm '{\fIa-z ` ' [ ] *\fP}
+Move to a line mark
+.It Cm `{\fIa-z ` ' [ ] *\fP}
+Move to a line mark with cursor position
+.It Cm gg
+Goto first line in buffer
+.It Cm [\fI#\fP]G
+Move to last line in buffer or # line
+.It Cm H
+Move to highest line on a screen
+.It Cm L
+Move to lowest line on a screen
+.It Cm M
+Move to middle line on a screen
+.It Cm z.
+Center screen at cursor
+.It Cm z<^M>
+.It Cm z<Enter>
+.Bd -compact
+Center screen at top row
+.Ed
+.It Cm z-
+Center screen at bottom row
+.It Cm [\fI#\fP]<^E>
+Scroll down 1 or # lines, retain # and cursor position
+.It Cm [\fI#\fP]<^Y>
+Scroll up 1 or # lines, retain # and cursor position
+.It Cm [\fI#\fP]<^D>
+Scroll down half a screen size. If [#], set scroll to # lines
+.It Cm [\fI#\fP]<^U>
+Scroll up half a screen size. If [#], set scroll to # lines
+.It Cm <^B>
+Scroll up full screen size
+.It Cm <^F>
+Scroll down full screen size
+.It Cm #
+Show global and relative line numbers
+.It Cm 2#
+Toggle show global line numbers permanently
+.It Cm 4#
+Toggle show relative line numbers after indent permanently
+.It Cm 8#
+Toggle show relative line numbers permanently
+.It Cm V
+Toggle show hidden characters:<Space Tab Newline>
+.It Cm <^C>
+Toggle show line motion numbers for <l h e b E B w W>
+.It Cm {\fI1-5\fP}<^C>
+Switch to line motion number mode #
+.It Cm <^V>
+Loop through line motion number modes
+.It Cm [\fI#\fP]<^R>
+Redo # times
+.It Cm [\fI#\fP]u
+Undo # times
+.It Cm <^I>
+.It Cm <Tab>
+.Bd -compact
+Open file path from cursor to end of line
+.Ed
+.It Cm <^K>
+Write current buffer to file. Force write on 2nd attempt
+.It Cm [\fI#\fP]<^W>{\fIarg\fP}
+Unindent arg region # times
+.It Cm [\fI#\fP]<{\fIarg\fP}
+Indent left arg region # times
+.It Cm [\fI#\fP]>{\fIarg\fP}
+Indent right arg region # times
+.It Cm \&"{\fIarg\fP}{\fIarg1\fP}
+Operate on arg register according to arg1 motion
+.It Cm R
+Print registers and their contents
+.It Cm [\fI#\fP]&{\fIarg\fP}
+Execute arg register macro in non-blocking mode # times
+.It Cm [\fI#\fP]@{\fIarg\fP}
+Execute arg register macro in blocking mode # times
+.It Cm [\fI#\fP]@@
+.It Cm [\fI#\fP]&&
+.Bd -compact
+Execute a last executed register macro # times
+.Ed
+.It Cm [\fI#\fP].
+Repeat last normal command # times
+.It Cm [\fI#\fP]v.
+Repeat last normal command moving down across # lines
+.It Cm [\fI#\fP]Q
+Enter ex mode. # retains current character offset
+.It Cm \&:
+Enter ex prompt
+.It Cm [\fI#\fP]!{\fIarg\fP}
+Enter pipe ex prompt based on # or arg region
+.It Cm vv
+Enter ex prompt with the last line from history buffer b-1
+.It Cm [\fI#\fP]vr
+Enter %s/ ex prompt. Insert # words from cursor
+.It Cm [\fI#\fP]vt[\fI#arg\fP]
+Enter .,.+0s/ ex prompt. Insert # of lines from cursor. Insert #arg words from cursor
+.It Cm [\fI#\fP]v/
+Enter xkwd ex prompt to set search keyword. Insert # words from cursor
+.It Cm v;
+Enter ! ex prompt
+.It Cm [\fI#\fP]vi
+Enter %s/ ex prompt. Contains regex for changing spaces to tabs. # modifies tab width
+.It Cm [\fI#\fP]vI
+Enter %s/ ex prompt. Contains regex for changing tabs to spaces. # modifies tab width
+.It Cm vo
+Remove trailing white spaces and <\er> line endings
+.It Cm <^G>
+Print buffer status infos
+.It Cm 1<^G>
+Enable permanent status bar row
+.It Cm 2<^G>
+Disable permanent status bar row
+.It Cm ga
+Print character info
+.It Cm 1ga
+Enable permanent character info bar row
+.It Cm 2ga
+Disable permanent character info bar row
+.It Cm [\fI#\fP]gw
+Hard word wrap a line to # col limit. Default: 80
+.It Cm [\fI#\fP]gq
+Hard word wrap a buffer to # col limit. Default: 80
+.It Cm [\fI#\fP]g~{\fIarg\fP}
+Switch character case for arg region # times
+.It Cm [\fI#\fP]gu{\fIarg\fP}
+Switch arg region to lowercase # times
+.It Cm [\fI#\fP]gU{\fIarg\fP}
+Switch arg region to uppercase # times
+.It Cm [\fI#\fP]~
+Switch character case # times forward
+.It Cm i
+Enter insert mode
+.It Cm I
+Enter insert mode at start of line after indent
+.It Cm A
+Enter insert mode at end of line
+.It Cm a
+Enter insert mode 1 character forward
+.It Cm [\fI#\fP]s
+Enter insert mode and delete # characters
+.It Cm S
+Enter insert mode and delete all characters
+.It Cm o
+Enter insert mode and create a new line down
+.It Cm O
+Enter insert mode and create a new line up
+.It Cm [\fI#\fP]c{\fIarg\fP}
+Enter insert mode and delete arg region # times
+.It Cm C
+Enter insert mode and delete from cursor to end of line
+.It Cm [\fI#\fP]d{\fIarg\fP}
+Delete arg region # times
+.It Cm D
+Delete from cursor to end of line
+.It Cm [\fI#\fP]x
+Delete # characters from cursor forward
+.It Cm [\fI#\fP]X
+Delete # characters from cursor backward
+.It Cm di{\fIarg\fP}
+Delete inside arg pairs <( ) \&">
+.It Cm ci{\fIarg\fP}
+Change inside arg pairs <( ) \&">
+.It Cm [\fI#\fP]r{\fIarg\fP}
+Replace # characters with arg from cursor forward
+.It Cm [\fI#\fP]K
+Split a line # times
+.It Cm [\fI#\fP]J
+Join # lines
+.It Cm vj
+Toggle space padding when joining lines
+.It Cm [\fI#\fP]y{\fIarg\fP}
+Yank arg region # times
+.It Cm [\fI#\fP]Y
+Yank # lines
+.It Cm [\fI#\fP]p
+Paste default register # times
+.It Cm [\fI#\fP]P
+Paste default register below current line or behind cursor position # times
+.It Cm m{\fIa-z ` ' [] *\fP}
+Set buffer local line mark
+.It Cm <^T>
+Set global line mark 0. Global marks are always valid
+.It Cm {\fI0 2 4 6 8\fP}<^T>
+Set a global line mark #
+.It Cm {\fI1 3 5 7 9\fP}<^T>
+Switch to a global line mark #
+.It Cm [\fI#\fP]<^7>{\fI0-9\fP}
+.It Cm [\fI#\fP]<^_>{\fI0-9\fP}
+.It Cm [\fI#\fP]<^/>{\fI0-9\fP}
+.Bd -compact
+Show buffer list and switch based on # or 0-9 index when prompted
+.Ed
+.It Cm <^^>
+.It Cm <^6>
+.Bd -compact
+Swap to previous buffer
+.Ed
+.It Cm [\fI#\fP]<^N>
+Swap to next buffer, # changes direction [forward backward]
+.It Cm \e
+Swap to /fm/ buffer b-2
+.It Cm {\fI#\fP}\e
+Swap from /fm/ buffer b-2 and backfill directory listing
+.It Cm vb
+Recurse into b-1 history buffer. Insert current line into ex prompt on exit
+.It Cm z1
+Set alternative keymap to Farsi keymap
+.It Cm z2
+Set alternative keymap to Russian keymap
+.It Cm ze
+Switch to English keymap
+.It Cm zf
+Switch to alternative keymap
+.It Cm zL
+Set td ex option to 2
+.It Cm zl
+Set td ex option to 1
+.It Cm zr
+Set td ex option to -1
+.It Cm zR
+Set td ex option to -2
+.It Cm [\fI#\fP]/
+Regex search, move down 1 or # matches
+.It Cm [\fI#\fP]?
+Regex search, move up 1 or # matches
+.It Cm [\fI#\fP]n
+.It Cm [\fI#\fP]N
+.Bd -compact
+Repeat regex search, move [down up] 1 or # matches
+.Ed
+.It Cm <^A>
+Regex search 1 word from cursor, no center, wraparound move [up down]
+.It Cm *
+Regex search, no center, wraparound move [up down]
+.It Cm {\fI#\fP}*
+.It Cm {\fI#\fP}<^A>
+Regex search, set keyword to # words from cursor
+.It Cm <^]>
+Filesystem regex search forward based on directory listing in
+b-2. Sets global line mark 0 for <^P> fallback
+.It Cm {\fI#\fP}<^]>
+Filesystem regex search forward, set keyword to # words from
+cursor
+.It Cm <^P>
+.It Cm {\fI#\fP}<^P>
+Filesystem regex search backward
+.It Cm <^Z>
+Suspend vi
+.It Cm <^L>
+Force redraw whole screen and update terminal dimensions
+.It Cm Z{*}
+Exit and clean terminal, force quit in an & macro
+.It Cm Zz
+Exit and submit history command, force quit in an & macro
+.It Cm ZZ
+Exit and write unsaved changes to a file
+.El
+.
+.Sh VI REGIONS
+.Bd -literal -compact
+Regions are vi normal commands that define [h v]range for vi motions.
+Commands described with the word "move" define a region.
+.Ed
+.Bl -tag -width Ds -compact
+
+.It Cm <j + ^M Enter - k h l f F t T \&, \&; B E b e W w { } \&[ \&] ^ 0 $ Space ^H Backspace % ' ` G H L M / \&? n N ^A>
+
+All regions
+.El
+.
+.Sh VI MOTIONS
+.Bd -literal -compact
+Motions are vi normal commands that run in a [h v]range.
+Commands described with the word "region" consume a region.
+Motions can be prefixed or suffixed by [#].
+.Ed
+.Bl -tag -width Ds -compact
+
+.It Cm <^W < > \&! c d y \&"> g~ gu gU
+All motions
+
+.It Cm <">
+Special motions that consume a motion
+
+.It Cm dd yy cc g~~ guu gUU >> << <^W><^W> !!
+Special motions that can use [#] as number of lines
+
+.El
+Examples:
+.Bl -tag -width Ds -compact
+.It Cm 3d/int
+Delete text until the 3rd instance of "int" keyword
+.It Cm 3dw
+Delete 3 words (prefix [#])
+.It Cm d3w
+Delete 3 words (suffix [#])
+.It Cm \&"ayl
+Yank a character into <a> register
+.It Cm \&"Ayw
+Append a word to <a> register
+.El
+.
+.Sh VI/EX INSERT
+.Bl -tag -width Dq -compact
+.It Cm <^H>
+.It Cm <Backspace>
+.Bd -compact
+Delete a character, reset ex mode when empty
+.Ed
+.It Cm <^U>
+Delete util <^X> mark or everything
+.It Cm <^W>
+Delete a word
+.It Cm <^T>
+Increase indent
+.It Cm <^D>
+Decrease indent
+.It Cm <^]>
+Select paste register from 0-9 registers in a loop
+.It Cm <^\e>{arg}
+Select paste register arg. <^\e> selects default register
+.It Cm <^P>
+Paste a register
+.It Cm <^X>
+Mark autocomplete and <^U> starting position. <^X> resets the mark
+.It Cm <^G>
+Index current buffer for autocomplete
+.It Cm <^Y>
+Reset all indexed autocomplete data
+.It Cm <^R>
+Loop through autocomplete options backward
+.It Cm <^N>
+Loop through autocomplete options forward
+.It Cm <^B>
+Print autocomplete options when in vi insert
+.It Cm <^B>
+Recurse into b-1 history buffer when in ex prompt. Insert current line into ex prompt on exit
+.It Cm <^A>
+Loop through lines in a history buffer b-1
+.It Cm <^Z>
+Suspend vi/ex
+.It Cm <^L>
+Redraw screen in vi mode, clean terminal in ex
+.It Cm <^O>
+Switch between vi and ex modes recursively
+.It Cm <^E>
+Switch to english keymap
+.It Cm <^F>
+Switch to alternative keymap
+.It Cm <^V>{arg}
+Read a literal character arg
+.It Cm <^K>{arg}
+Read a digraph sequence arg
+.It Cm <^C>
+.It Cm <ESC>
+.Bd -compact
+Exit insert mode in vi, reset in ex
+.Ed
+.It Cm <^M>
+.It Cm <Enter>
+.Bd -compact
+Insert <Newline> in vi, submit command in ex
+.Ed
+.El
+.
+.Sh EX
+.Bd -literal -compact
+Ex is a powerful line editor for Unix systems, initially developed
+by Bill Joy in 1976. This essential tool serves as the backbone
+of vi, enabling it to execute commands, macros and even transform
+into a purely command-line interface (CLI) when desired.
+.Ed
+.
+.Sh EX PARSING
+.Bd -literal -compact
+Parsing follows the structure:
+[<:>][\fIrange\fP][\fIsep\fP][\fIcmd\fP][<\fIsep\fP>][\fIargs\fP][<:>]
+Ex commands are initiated and separated by <:> prefix. Fields
+can be separated by <Space> or <Tab>. There can only be one separator
+in between [cmd] and [args]. To avoid ambiguity, it is recommended
+to always use a separator between [cmd] and [args] in scripts.
+.Bl -tag -width Ds -compact
+
+Examples:
+.It Cm :evi.c
+Evaluates to ":e vi.c"
+.It Cm :eabc
+Evaluates to ":ea bc" not ":e abc"
+.It Cm :e \& vi.c
+Edit " vi.c". [<sep>] is required
+.El
+.Ed
+.
+.Sh EX ESCAPES
+.Bd -literal -compact
+Special characters in [args] will become regular when escaped
+with <\\>.
+.Ed
+.Bl -tag -width Ds -compact
+
+.It Cm <( ^ \&] \e>
+Special characters in regex "[]" expression
+.It Cm <\&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&.> \&"\\\\<\&" \&"\\\\>\&"
+Specials in regex
+.It Cm <% \&! :>
+Special characters in ex
+.El
+.
+.Sh EX EXPANSION
+.Bd -literal -compact
+<%> in [args] substitutes current buffer pathname or any buffer 
+pathname when followed by a corresponding buffer number.
+"%#" substitutes last swapped buffer pathname.
+
+Example: print the pathname for buffer 69.
+:!echo "%69"
+
+Every ex command is be able to receive data from external process
+through a special expansion character <!> which pipes the data
+into the command itself. If the closing <!> is not specified,
+the end of the line becomes a terminator.
+
+Example: substitute "int" with the value of $RANDOM
+:%s/int/!printf "%s" $RANDOM!
+Example: insert output of ls shell command
+:& i!ls
+Example: insert output of ls shell command efficiently
+:;c !ls!<^V><ESC>
+.Ed
+.
+.Sh EX RANGES
+.Bd -literal -compact
+Some ex commands can be prefixed with ranges.
+[range] specifies vertical and horizontal range implementation.
+[vrange] specifies vertical only range implementation.
+.Ed
+.Bl -tag -width Ds -compact
+
+.It Cm [. $][- +][% 1-9][\fIsep\fP][, ;][. $][- +][1-9]
+Numeric ranges
+.It Cm </ ?>{\fIkwd\fP}[</ ?>]
+Search ranges
+'It Cm <'>{\fImark\fP}
+Mark ranges
+
+.It Cm \&.
+Current position
+.It Cm \&,
+Vertical range separator
+.It Cm \&;
+Horizontal range separator
+.It Cm \&%
+Range from first to last line of the buffer
+.It Cm \&$
+Last line of the buffer or end of the line
+.El
+.Bl -tag -width Ds -compact
+
+Examples:
+.It Cm :1,5p
+Print lines 1,5
+.It Cm :.-5,.+5p
+Print 5 lines around current position
+.It Cm :/int/p
+Print first occurrence of int
+.It Cm :?int?p
+Print first occurrence of int in reverse
+.It Cm :.,/int/p
+Print until int is found
+.It Cm :?int?,.p
+Print until int is found in reverse
+.It Cm :'d,'ap
+Print lines from mark <d> to mark <a>
+.It Cm :%p
+Print all lines in the buffer
+.It Cm :$p
+Print last line in the buffer
+.It Cm :;50
+Goto character offset 50
+.It Cm :10;50
+Goto line 10 character offset 50
+.It Cm :10;.+5
+Goto line 10 +5 character offset
+.It Cm :'a;'a
+Goto line mark <a> offset mark <a>
+.It Cm :;$
+Goto end of the line
+.It Cm :5;/int/
+Search for int on line 5
+.It Cm :.;?int?
+Search for int in reverse on the current line
+.El
+.
+.Sh EX COMMANDS
+.Bl -tag -width Ds -compact
+.It Cm [\fIvrange\fP]f{/?}[\fIkwd\fP]
+Ranged search
+.Bd -literal
+Example: no range given, current line only
+:f/int
+Example: reverse
+:f?int
+Example: range given
+:10,100f/int
+.Ed
+
+.It Cm [\fIvrange\fP]f+{/?}[\fIkwd\fP]
+Incrementing ranged search
+.Bd -literal
+Equivalent to the :f command, except subsequent commands within
+range move to the next match just like vi normal [#]n or [#]N
+commands.
+.Ed
+
+.It Cm b[\fI#\fP]
+Print currently active buffers state or switch to a buffer
+.Bd -literal
+There are two temporary buffers which are separate from
+the main buffers.
+b-1 = /hist/ ex history buffer
+b-2 = /fm/ directory listing buffer
+
+Example: switch to the 5th buffer
+:b5
+Example: switch to the b-1 buffer
+:b-1
+Example: switch to the b-2 buffer
+:b-2
+.Ed
+
+.It Cm bp[\fIpath\fP]
+Set current buffer path
+.It Cm bs[\fI#\fP]
+Set current buffer saved. If any arg given, reset undo/redo history
+
+.It Cm [\fIrange\fP]p
+Print line(s) from the buffer
+.Bd -literal
+Example: utilize character offset ranges
+:1,10;5;5p
+Example: interleaved character offset ranges
+:1;5,10;5p
+Example: print current line from offset 5 to 10
+:.;5;10p
+.Ed
+
+.It Cm ea[\fIkwd\fP] [\fI#\fP]
+Open file based on filename substring from dir listing in b-2
+.Bd -literal
+Requires directory listing in b-2 backfilled prior.
+
+Example: backfill b-2 using :fd
+:fd
+Example: backfill b-2 using find
+:b-2:%!find .
+
+If the substring matches more than one filename, a prompt will
+be shown. Submit using numbers 0-9 or higher ascii values.
+<^C> to cancel, <^M> to select first match. Passing an
+extra arg to :ea in form of a number will bypass the prompt
+and open the corresponding file.
+
+Example: open filename containing "v"
+:ea v
+Example: open first match containing "v"
+:ea v 0
+.Ed
+
+.It Cm ea![\fIkwd\fP] [\fI#\fP]
+Forced version of ea
+
+.It Cm [\fI#\fP]i[\fIstr\fP]
+Enter ex insert mode before specified line
+.Bd -literal
+# specifies insertion line number.
+str specifies initial input into the insertion buffer.
+
+Example: insert "hello" in vi/ex
+:i hello<^M><ESC>
+Example: insert "hello" in vi/ex trimming <Newline>
+:i hello<^M><^M><Backspace>
+Example: discard changes in vi/ex
+:i hello<^M><^C>
+Example: immediately insert "hello"
+:i hello<^V><ESC>
+Example: insert "hello" in raw ex mode
+i hello<^M>.<^M>
+.Ed
+
+.It Cm [\fI#\fP]a[\fIstr\fP]
+Enter ex insert mode after specified line
+
+.It Cm [\fIrange\fP]c[\fIstr\fP]
+Enter ex change mode on specified line
+.Bd -literal
+In combination with seq and lim ex options, this command is
+optimal for modifying very long lines.
+Max insertion buffer is ~1.33GB on 32bit.
+Max addressable line is 2.0GB on 32bit.
+
+Example: replace current line with "hello"
+:c hello<^M><ESC>
+Example: replace lines 1-5 with "hello"
+:1,5c hello<^M><ESC>
+Example: insert "hello" at current character offset
+:;c hello<^M><ESC>
+Example: insert "hello" at end of line
+:;$c hello<^M><ESC>
+Example: insert "hello" at line 5 and end of line
+:5;$c hello<^M><ESC>
+Example: delete 5 characters from current position
+:;.;+5c<^M><ESC>
+.Ed
+
+.It Cm [\fIvrange\fP]d
+Delete line(s)
+.It Cm e[\fIpath\fP]
+Open a file at a path
+.Bd -literal
+No argument opens "unnamed" buffer.
+Files larger than 2.0GB are truncated on 32 bit.
+Line breaking happens until the first null terminator or EOF.
+.Ed
+.It Cm e![\fIpath\fP]
+Force open a file at a path
+.Bd -literal
+No argument re-reads the current buffer from the filesystem.
+.Ed
+
+.It Cm [\fIvrange\fP]g{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
+Global command
+.Bd -literal
+Execute an ex command on a range of lines that matches an
+enclosed regex.
+
+Example: remove all empty lines
+:g/^$/d
+
+Example: print lines matching previously set search keyword
+:g//p
+
+Multiple ex commands can be chained in one global command.
+To chain commands, the ex separator <:> must be escaped once.
+
+Example: yank matches appending to reg 'a' and print them out.
+:g/int/ya A\e:p
+
+It is possible to nest global commands inside of global commands.
+The first global command will not be executed on lines that
+were changed by a nested global command.
+When range not given, a nested global command is executed on
+the current line.
+
+Example: nested global command
+Append "has a semicolon" to all lines that contain "int" and
+end with <;>.
+:g/int/g/;$/& A has a semicolon
+
+Example: extract/print data enclosed in "()"
+:g/\e(.+\e)/;0;/\e(.+\e)/\e:.;.+1k a\e:grp 2\e:;/\e)*(\e))/\e:
+grp\e:k s\e:.;'a;'sp
+.Ed
+
+.It Cm [\fIvrange\fP]g!{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
+Inverted global command
+.It Cm [\fIrange\fP]=
+Print the current range number
+.Bd -literal
+Example: print current character offset
+:;=
+.Ed
+
+.It Cm [\fIvrange\fP]k[\fImark\fP]
+Set a line mark
+.Bd -literal
+The character offset is set to the current position.
+.Ed
+
+.It Cm &{\fImacro\fP}
+Global non-blocking macro
+.Bd -literal
+Execute raw vi/ex input sequence.
+A non-blocking macro shall not wait for input when the end of
+the sequence is reached. A non-blocking macro executing other
+macros will always reach a terminating point.
+
+Example: execute vi insert statement
+:& ihello
+Example: execute :hello
+:& \e:hello<^V><^M>
+Example: execute vi ci(int macro
+:& ci(int
+Example: nest blocking macro inside non-blocking
+:& \e:@ \e\e:blocking<^V><^M>i continue in non-blocking
+.Ed
+
+.It Cm @{\fImacro\fP}
+Global blocking macro
+.Bd -literal
+Execute raw vi/ex input sequence.
+A blocking macro shall wait for input when the end of the sequence
+is reached. A blocking macro executing other macros may cause
+input congestion.
+
+Example: execute vi insert statement
+:@ ihello
+Example: insert "hello" into <:> vi prompt
+:@ \e:hello
+Example: execute vi ci(int macro
+:@ ci(int
+Example: execute ci(int exiting insert mode
+:@ ci(int<^V><^C>
+Example: execute ci)INT as a follow-up
+:@ ci(int<^V><^C>ci)INT
+Example: execute vi dw command after user exits insert
+:@i:@dw
+.Ed
+
+.It Cm [# $],[skip1=0 $],[skip2=0 $]wl{\fIcmd\fP}
+While loop conditional
+.Bd -literal
+Repeat {cmd} [#] times or infinite with <$>.
+While loop is broken once {cmd} returns an error or count exceeded.
+If while fails with error, [skip1] and [skip2] specify the location/range
+of the separated ex commands to skip that follow next in chain.
+
+Example: attempt to join every line in file using arbitrary count
+:10000wl & J
+Example: undo everything
+:$wl u
+Example: calculate directory only if :cd succeeded
+:1,1wl cd /blah:fd
+Example: repeat chain of ex commands 10 times
+:10wl 1p\e:5p\e:10p
+Example: print a line only if it contains "int" at offset 5
+:1,1wl ;5;/^int/:p
+Example: allow :led while branching only :p command
+:led:1,2wl ;5;/^int/:led:p
+Example: branch multiple commands
+:led:1,2,3wl ;5;/^int/:led:&i2 not branched:p:p
+Example: edit vi.c only if it exists
+:1,1wl \e![ -f ./vi.c ]:e ./vi.c:mpt
+.Ed
+
+.It Cm [range]pu[\fIreg\fP] [\fIcmd\fP]
+Paste a register
+.Bd -literal
+To pipe register data to an external process use :pu[reg] \e![cmd]
+
+Example: copy default register to X11 clipboard
+:pu \e!xclip -selection clipboard
+Example: copy register <a> to X11 clipboard
+:pu a \e!xclip -selection clipboard
+Example: paste <a> at line 1 character offset 5
+:1;5pu a
+.Ed
+
+.It Cm [\fIvrange\fP]r[\fIpath cmd\fP]
+Read a file or a pipe
+.Bd -literal
+To read data from a pipe use :[range]r \e![cmd]
+
+Example: pipe in only the first line
+:r \e!ls
+Example: pipe in only lines 3,5
+:3,5r \e!ls
+Example: pipe in all data
+:%r \e!ls
+.Ed
+
+.It Cm [\fIvrange\fP]w[\fIpath cmd\fP]
+Write to a file or a pipe
+.Bd -literal
+To pipe buffer data to external process use :[range]w \e![cmd]
+
+Example: pipe out all data into less
+:w \e!less
+Example: pipe out only first 10 lines
+:1,10w \e!less
+.Ed
+
+.It Cm [\fIvrange\fP]w![\fIpath\fP]
+Force write to a file
+
+.It Cm q
+Exit
+.It Cm q!
+Force quit
+
+.It Cm wq
+.It Cm x
+.Bd -compact
+Write and exit
+.Ed
+.It Cm wq!
+.It Cm x!
+.Bd -compact
+Force write and quit
+.Ed
+
+.It Cm u
+Undo
+.It Cm rd
+Redo
+
+.It Cm [\fIvrange\fP]s{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIstr\fP}[\fI*\fP][\fIopts\fP]
+Substitute
+.Bd -literal
+Find and replace text in a range of lines that matches an
+enclosed regex with an enclosed replacement string.
+
+Example: global replacement
+:%s/term1/term2/g
+
+Example: replace matching previously set search keyword
+:%s//term2/g
+
+Substitution backreference inserts the text of matched group
+specified by \ex where x is group number.
+
+Example: substitution backreference
+this is an example text for subs and has int or void
+:%s/(int)|(void)/pre\e0after
+this is an example text for subs and has preintafter or void
+:%s/(int)|(void)/pre\e2after/g
+this is an example text for subs and has prepreafterafter or prevoidafter
+.Ed
+
+.It Cm [\fIrange\fP]ya[\fIregister\fP][\fIappend\fP]
+Yank a range
+.Bd -literal
+To append to the register, pass in its uppercase version.
+To append to any of the non-alphabetical registers add any extra
+character to the command.
+
+Example: append to register <1>
+:ya 1x
+Example: yank into <a> using ranges
+:1,5;5;5ya a
+.Ed
+
+.It Cm ya![\fIregister\fP]
+Free a register
+
+.It Cm [\fIvrange\fP]![\fIcmd\fP]
+Run external program
+.Bd -literal
+When ex range specified, pipes the buffer data to an external
+process and pipes the output back into current buffer replacing
+the affected range.
+
+Example: infamously sort the buffer
+:1,$!sort
+.Ed
+
+.It Cm ft[\fIfiletype\fP]
+Set a filetype
+.Bd -literal
+No argument prints the current file type.
+Reloads the highlight ft, which makes it possible to reset dynamic
+highlights created by options like "hlw".
+.Ed
+
+.It Cm cm[\fIkeymap\fP]
+Set a keymap
+.Bd -literal
+No argument prints the current keymap name.
+.Ed
+
+.It Cm cm![\fIkeymap\fP]
+Set an alternative keymap
+
+.It Cm fd[\fIpath\fP]
+Set a secondary directory
+.Bd -literal
+Recalculates directory listing in b-2 buffer.
+No argument implies current directory.
+.Ed
+
+.It Cm fp[\fIpath\fP]
+Set a directory path for :fd command
+
+.It Cm cd[\fIpath\fP]
+Set a working directory
+.Bd -literal
+Currently open buffers' file paths will be automatically adjusted
+to reflect a newly set working directory.
+.Ed
+
+.It Cm inc[\fIregex\fP]
+Include regex for :fd calculation
+.Bd -literal
+No argument disables the filter.
+
+Example: include only files in submodule directory that end with .c
+:inc submodule.*\e.c$
+Example: exclude .git and submodule folders
+:inc (^(?\e:(?\e!^\e.git|^submodule).)+[^/]+$)
+.Ed
+
+.It Cm reg
+Print registers and their contents
+
+.It Cm bx[\fI#\fP]
+Set max number of buffers allowed
+.Bd -literal
+Buffers will be deallocated if the number specified is lower
+than the number of buffers currently in use.
+No argument will reset to the default value of 10.
+.Ed
+
+.It Cm ac[\fIregex\fP]
+Set autocomplete filter regex
+.Bd -literal
+No argument resets to the default word filter regex as defined
+in led.c.
+
+Example: autocomplete using whole lines from the buffer
+:ac .+
+.Ed
+
+.It Cm uc
+Toggle multibyte utf-8 decoding
+.Bd -literal
+This command is particularly useful when editing files with
+mixed encodings, binary files, or when the terminal does not
+support UTF-8 or lacks the necessary fonts to display UTF-8
+characters. It's often paired with :ph command to achieve
+hex editor-like functionality.
+.Ed
+
+.It Cm uz
+Toggle zero width placeholders
+.Bd -literal
+Use only if you need to hide zero width characters.
+.Ed
+
+.It Cm ub
+Toggle combining multicodepoint placeholders
+.Bd -literal
+Use only if your terminal can render multicodepoint utf-8 (emojis).
+.Ed
+
+.It Cm ph[\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
+Redefine placeholders
+.Bd -literal
+This command replaces placeholders defined in conf.c
+and subsequent :ph commands expand the list of placeholders.
+
+Example: render 8 bit ascii (Extended ASCII) as <~>
+:ph 128 255 1 1~
+Example: flawless ISO/IEC 8859-1 (latin-1) support
+:uc:ph 128 160 1 1~
+Example: render control byte 03 as "^C"
+:ph 3 3 2 1^C
+Example: reset to default as in conf.c
+:ph
+Example: disable default placeholders in conf.c
+:ph:ph0
+.Ed
+.
+.El
+.
+.Sh EX OPTIONS
+.Bd -literal -compact
+Ex options are ex commands designed to alter global variables.
+Values hold a signed integer. Values may represent a character.
+Default value is specified in val=* as part of an argument notation.
+No argument inverts the current value, unless stated otherwise.
+.Ed
+
+.Bl -tag -width Ds -compact
+.
+.It Cm ai[val=1]
+Indent new lines
+.Bd -literal
+This is a max indent length multiplier: val * 128
+.Ed
+.
+.It Cm ic[val=1]
+Ignore case in regular expressions
+
+.It Cm ish[val=0]
+Interactive shell
+.Bd -literal
+Run every <!> command through an interactive shell.
+The shell will source the .rc file before command execution.
+This makes it possible to use predefined functions, aliases
+and ENV variables from the .rc file.
+Precondition 1:
+	The .rc filename is shell specific, such as .bashrc in Bash
+	and .zshrc in Zsh.
+Precondition 2:
+	The environment variable $SHELL determines the default
+	shell, otherwise it defaults to /bin/sh.
+Precondition 3:
+	There must be no stdout output created by .rc file
+	for <!> commands to return expected results.
+.Ed
+
+.It Cm grp[val=0]
+Regex search group
+.Bd -literal
+Defines a target search group for any regex search operation.
+This becomes necessary when the result of regex search is to
+be based on some group rather than default match group.
+
+The value of grp must be divisible by 2.
+
+Example: ignore spaces at the start of the line
+:grp 2:%f+/^[ ]+(.+):grp
+.Ed
+
+.
+.It Cm hl[val=1]
+Highlight text based on rules defined in
+.Pa conf.c
+.
+.It Cm hlr[val=0]
+Highlight text in reverse direction
+.
+.It Cm hll[val=0]
+Highlight current line based on filetype hl
+.
+.It Cm hlp[val=0]
+Highlight "[]" "()" "{}" pairs based on filetype hl
+.
+.It Cm hlw[val=0]
+Highlight current word based on filetype hl
+.
+.It Cm led[val=1]
+Enable all terminal output
+
+.It Cm vis[val=0]
+Control startup flags
+.Bd -literal
+Example: disable :e message in ex mode
+:vis 12
+Example: disable :e message in vi mode
+:vis 8
+Example: enable raw ex mode
+:vis 6
+Example: disable raw ex mode
+:vis 4
+.Ed
+
+.It Cm mpt[val=0]
+Control vi prompts
+.Bd -literal
+When set to 0 after an ex command is called from vi, disables
+the "[any key to continue]" prompt.
+If mpt is negative, the prompt will remain disabled.
+.Ed
+
+.It Cm order[val=1]
+Reorder characters based on rules defined in
+.Pa conf.c
+.
+.It Cm shape[val=1]
+Perform Arabic script letter shaping
+.
+.It Cm pac[val=0]
+Print autocomplete suggestions on the fly
+.
+.It Cm tbs[val=8]
+Number of spaces used to represent a tab
+.
+.It Cm td[val=1]
+Current text direction context
+
+This option accepts four meaningful values:
+.Bl -tag -width Ds -compact
+.It Ar 2
+Exclusively left-to-right
+.It Ar 1
+Follow
+.Va dctxs[]
+(in
+.Pa conf.c ) ,
+defaulting to left-to-right
+.It Ar -1
+Follow
+.Va dctxs[] ,
+defaulting to right-to-left
+.It Ar -2
+Exclusively right-to-left
+.El
+
+.It Cm pr[val=0]
+Print register
+.Bd -literal
+Set a special register using a character or a number.
+Once the register is set, all data passed into ex_print will
+be stored in the register.
+
+If the register is uppercase, <Newline> characters are added
+to match the exact output that was printed.
+
+Print register contents cannot be displayed via R or :reg command
+when register is assigned (self-referential problem).
+
+Example: paste current buffer list exactly like from :b command
+:pr A:ya! a: b:pu a
+Example: store a line printed with :p
+:pr A:ya! a:p
+.Ed
+
+.It Cm sep[val=:]
+Ex separator
+.Bd -literal
+Set Ex command separator character.
+Changing default <:> separator will break some built-in commands/macros.
+Example: set separator to <|>
+:sep |
+Example: disable separator
+:sep 0
+.Ed
+
+.It Cm lim[val=-1]
+Line length render limit
+.Bd -literal
+Set render cutoff length for non cursor lines in vi and all
+lines in ex mode.
+
+Improves redraw performance when editing a file containing one
+or many long lines (1MB+ per line).
+
+Example: reasonable value
+:lim 5000
+Example: render only the cursor line
+:lim 0
+Example: disable the limit
+:lim -1
+.Ed
+
+.It Cm seq[val=1]
+Control Undo/Redo
+.Bd -literal
+When seq is 0, multiple distinct operations undo/redo in a
+single step.
+
+To optimize memory usage under heavy workloads, undo/redo
+tracking can be disabled by setting seq to a negative value.
+
+Example: test undo/redo operations in a single step
+:&ocontrol test:seq 0:&a step1:&a step2:&a step3:seq
+Example: completely disable undo/redo
+:seq -1
+.Ed
+
+.It Cm [hscroll]left[val=0]
+Control horizontal scroll
+.Bd -literal
+No argument sets the value to 0.
+hscroll computes the value using: xcols / 2 * hscroll
+.Ed
+.
+.El
+.
+.Sh EXINIT ENV VAR
+.Bd -literal
+EXINIT defines a sequence of vi/ex commands to be performed
+at startup. Consequently, this is the primary way for scripting
+and customizing Nextvi outside of C.
+Many standard text processing utils such as grep, awk, sed
+can be replaced by Nextvi with EXINIT in mind.
+
+Examples:
+.Ed
+
+.Bl -tag -width Ds -compact
+.It Cm export EXINIT="$(printf '%b' 'e ./vi.c:& i\ex7\ex3:bx 1:bx')"
+Index vi.c for autocomplete
+
+.It Cm export EXINIT='b-1:%r ./vi.c:b-1'
+Load vi.c into a history buffer
+
+.It Cm export EXINIT="$(printf '%b' 'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2"ayy')"
+Setup @ macro in register <a>
+
+@a macro creates <{> and closing <}> below the cursor leaving
+cursor in insert mode in between the braces.
+
+.It Cm export EXINIT='td 2:order 0:lim 5000'
+Set ex options for optimal long line performance
+.El
+.
+.Sh REGEX
+.Bd -literal
+Pikevm is a fast non backtracking NFA simulation regex engine
+developed for Nextvi. It ensures regular expressions are evaluated
+in constant space and O(n + k) time complexity where <n> is
+the input string length and <k> represents the regex’s structural
+complexity (e.g., state transitions or alternations). While
+this does not guarantee strict O(n) linear runtime performance,
+it ensures computational and memory resources are distributed
+linearly and evenly across the input, with <k> directly influencing
+the constant factor. This principle is similar to the concept
+utilized in radix sort algorithms.
+
+Pikevm's syntax is akin to regexp(7) from Plan 9.
+Disregard manpage notation for <{ } [ ]> in this section.
+.Ed
+.Bl -tag -width Ds -compact
+
+.It Cm \&.
+Match any single char
+.It Cm ^
+Assert start of the line
+.It Cm $
+Assert end of the line
+.It Cm {\fIN\fP,\fIM\fP}
+Match N to M times
+.It Cm ()
+Grouping
+.It Cm (?:)
+Non capture grouping
+.It Cm [\fIN\fP-\fIM\fP]
+Match a set of alternate ranges N to M
+.It Cm *
+Repeated zero or more times
+.It Cm +
+Repeated one or more times
+.It Cm \&|
+Union, alternative branch
+.It Cm \e<
+Assert start of the word
+.It Cm \e>
+Assert end of the word
+.It Cm \&?
+One or zero matches greedy
+.It Cm \&??
+One or zero matches lazy
+.It Cm \&(?=)
+Positive lookahead
+.It Cm \&(?!)
+Negative lookahead
+.It Cm \&(?<)
+Positive lookbehind
+.It Cm \&(?>)
+Negative lookbehind
+.It Cm \&(?#)
+Lookbehind offset in bytes
+.El
+.
+.Bd -literal
+Lookaround expressions enable the creation of regular expressions
+that would be impossible to construct without them. They can
+be used anywhere within a regex, though some considerations
+must be taken into account.
+Aspect 1:
+	Lookarounds contain a full regex, but should use non-capturing
+	groups to avoid incorrect results and performance issues.
+Aspect 2:
+	Lookarounds can have nested lookarounds.
+Aspect 3:
+	Static lookarounds like (?=^word) are optimized, bypassing
+	the regex engine.
+Aspect 4:
+	Lookarounds are best suited for asserting near the end of a
+	complex pattern, where the engine has already narrowed down
+	potential matches.
+Aspect 5:
+	Lookbehind without offset rescans entire string. Offset begins
+	scanning from current position minus specified value.
+.Ed
+.
+.Sh SPECIAL MARKS
+.Bl -tag -width Ds -compact
+.It Cm *
+Position of the previous operation or command
+.It Cm \&[
+First line of the previous change
+.It Cm \&]
+Last line of the previous change
+.It Cm \&'
+Position of the previous line region
+.It Cm \&`
+Position of the previous line region
+.El
+.
+.Sh SPECIAL REGISTERS
+.Bl -tag -width Ds -compact
+.It Cm /
+Previous search keyword
+.It Cm \&:
+Previous ex command
+.It Cm 0
+Previous value of default register (atomic)
+.Bd -literal -compact
+Atomic means the operation did not include a <Newline>.
+.Ed
+.It Cm 1-9
+Previous value(s) of default register (nonatomic)
+.El
+.
+.Sh CODE MAP
+.TS
+tab(|);
+| l | l |.
+_
+ 510 vi.h | definitions/aux
+ 537 kmap.h | keymap translation
+_
+ 305 conf.c | hl/ft/td config
+ 345 term.c | low level IO
+ 396 ren.c | positioning/syntax
+ 546 lbuf.c | file/line buffer
+ 637 uc.c | UTF-8 support
+ 683 led.c | insert mode/output
+ 749 regex.c | pikevm
+ 1385 ex.c | ex options/commands
+ 1825 vi.c | normal mode/general
+ 6871 total | wc -l *.c\(basort
+_
+.TE
+.
+.Sh COMPILING
+.Bl -tag -width Ds -compact
+.It Cm export CC='g++ -x c'
+Set compiler, g++ example
+.It Cm export CFLAGS='-s'
+Set CFLAGS, strip example
+.It Cm ./cbuild.sh
+Build once
+.It Cm ./cbuild.sh build
+Build
+.It Cm ./cbuild.sh debug
+Build with symbols, static analysis, dynamic analysis, and no optimizations
+.It Cm ./cbuild.sh pgobuild
+PGO build can lead to a significant performance boost on
+some application specific tasks
+.It Cm ./cbuild.sh install
+Install vi to $DESTDIR$PREFIX/bin
+.It Cm ./cbuild.sh fetch
+Merge commits from upstream repository
+.It Cm ./cbuild.sh bench
+Performance bench test 2000 word deletions on vi.c
+.El
+.
+.Sh PHILOSOPHY
+.Bd -literal -compact
+In most text editors, flexibility is a minor or irrelevant design
+goal. Nextvi is designed to be flexible where the editor adapts
+to the user needs. This flexibility is achieved by heavily chaining
+basic commands and allowing them to create new ones with completely
+different functionality. Command reuse keeps the editor small
+without infringing on your freedom to quickly get a good grasp
+on the code. If you want to customize anything, you should be
+able to do it using only core commands or a mix with some specific
+C code for more difficult tasks. Simple and flexible design
+allows for straight forward solutions to any problem long term
+and filters bad inconsistent ideas.
+
+.Sy \&"All software sucks, but some do more than others."
+.Em 	- Kyryl Melekhin
+.Ed
+.
+.Sh SEE ALSO
+.Bd -literal -compact
+New functionality can be obtained through optional patches provided
+in the patches branch. If you have a meaningful contribution
+and would love to be made public the patch can be submitted
+via email or github pull request.
+.Lk https://github.com/kyx0r/nextvi/tree/patches
+
+Scripts used to generate this manual are located in the manual
+branch.
+.Lk https://github.com/kyx0r/nextvi/tree/manual
+
+Original Neatvi repository
+.Lk https://github.com/aligrudi/neatvi
+
+Posix vi(1)
+.Lk https://pubs.opengroup.org/onlinepubs/9699919799/utilities/vi.html
+
+Posix ex(1)
+.Lk https://pubs.opengroup.org/onlinepubs/9699919799/utilities/ex.html
+
+NFA regular expressions by Russ Cox
+.Lk https://swtch.com/~rsc/regexp/regexp1.html
+
+Plan 9 regexp(7)
+.Lk https://man.cat-v.org/p9p/7/regexp
+.Ed
+.
+.Sh AUTHORS
+.An -nosplit
+.Nm
+was written by
+.An Kyryl Melekhin Aq Mt k.melekhin@gmail.com .
+It is based on
+.Xr neatvi 1 Ns ,
+which was written by
+.An Ali Gholami Rudi Aq Mt ali@rudi.ir .
+.\" add more contributors here?
+This manual page was inspired by
+.An népéta Aq Mt nepeta@canaglie.net
