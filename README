@@ -159,15 +159,6 @@ Improvements to autocomplete, now the word completion will also use
 text that prefixes the insert when it makes sense. Makes it possible
 to autocomplete in more desired situations.
 
-linewrap.patch
---------------
-Implements soft line wrap commands.
-lw[col]
-	Soft line wrap buffer to terminal col or col specified.
-	0 disables line wrap.
-	linewrapped lines are highlighted.
-	somewhat useable.
-
 ex-scripting.patch
 --------------
 Adds new commands :sc and :sx
