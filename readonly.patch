@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 318aa4ec..fa9ddf0e 100644
+index fc09e954..0b9ae495 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -43,6 +43,7 @@ static int xgdep;		/* global command recursion depth */
@@ -58,10 +58,10 @@ index 318aa4ec..fa9ddf0e 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 3b2a1fc4..a8f9a5b3 100644
+index e518e1e5..cd1f0423 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1802,9 +1802,11 @@ int main(int argc, char *argv[])
+@@ -1800,9 +1800,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 318aa4ec..f8031dc0 100644
+index fc09e954..14dff13b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -8,6 +8,7 @@ int xhll;			/* highlight current line */
@@ -27,10 +27,10 @@ index 318aa4ec..f8031dc0 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 3b2a1fc4..b91bf847 100644
+index e518e1e5..e69c605a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1704,6 +1704,21 @@ void vi(int init)
+@@ -1702,6 +1702,21 @@ void vi(int init)
  				}
  			}
  		}

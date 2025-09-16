@@ -23,7 +23,7 @@ index ddacc04e..641fd8a1 100644
  	{ex_ft, "^.*$", A(AY1 | SYN_BD | SYN_SO)},
  	{ex_ft, ":[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)\
 diff --git a/ex.c b/ex.c
-index 318aa4ec..dcb984be 100644
+index fc09e954..9219006d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -36,7 +36,7 @@ index 318aa4ec..dcb984be 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 3b2a1fc4..94ffcb66 100644
+index e518e1e5..73535311 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -508,12 +508,12 @@ void dir_calc(char *path)
@@ -165,7 +165,7 @@ index 3b2a1fc4..94ffcb66 100644
  				default:
  					term_dec()
  				}
-@@ -1788,6 +1839,7 @@ int main(int argc, char *argv[])
+@@ -1786,6 +1837,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
