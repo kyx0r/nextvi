@@ -81,11 +81,11 @@ VI NORMAL
      H             Move to highest line on a screen
      L             Move to lowest line on a screen
      M             Move to middle line on a screen
-     [#]z.         Center screen at cursor. # is xtop
-     [#]z<^M>
-     [#]z<Enter>
-                   Center screen at top row. # is xtop
-     [#]z-         Center screen at bottom row. # is xtop
+     z.            Center screen at cursor
+     z<^M>
+     z<Enter>
+                   Center screen at top row
+     z-            Center screen at bottom row
      [#]<^E>       Scroll down 1 or # lines, retain # and cursor position
      [#]<^Y>       Scroll up 1 or # lines, retain # and cursor position
      [#]<^D>       Scroll down half a screen size. If [#], set scroll to #
@@ -359,7 +359,7 @@ EX RANGES
      Examples:
      :1,5p   Print lines 1,5
      :.-5,.+5p
-             Print 5 lines around xrow
+             Print 5 lines around current position
      :/int/p
              Print first occurrence of int
      :?int?p
@@ -1065,8 +1065,8 @@ CODE MAP
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
      | 1385 ex.c    |  ex options/commands |
-     | 1827 vi.c    |  normal mode/general |
-     | 6873 total   |  wc -l *.c|sort      |
+     | 1825 vi.c    |  normal mode/general |
+     | 6871 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1138,4 +1138,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                  September 14, 2025                  Linux 6.16.0
+Linux 6.16.0                  September 16, 2025                  Linux 6.16.0

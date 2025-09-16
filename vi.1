@@ -1,4 +1,4 @@
-.Dd Sep 14, 2025
+.Dd Sep 16, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -142,15 +142,15 @@ Move to highest line on a screen
 Move to lowest line on a screen
 .It Cm M
 Move to middle line on a screen
-.It Cm [\fI#\fP]z.
-Center screen at cursor. # is xtop
-.It Cm [\fI#\fP]z<^M>
-.It Cm [\fI#\fP]z<Enter>
+.It Cm z.
+Center screen at cursor
+.It Cm z<^M>
+.It Cm z<Enter>
 .Bd -compact
-Center screen at top row. # is xtop
+Center screen at top row
 .Ed
-.It Cm [\fI#\fP]z-
-Center screen at bottom row. # is xtop
+.It Cm z-
+Center screen at bottom row
 .It Cm [\fI#\fP]<^E>
 Scroll down 1 or # lines, retain # and cursor position
 .It Cm [\fI#\fP]<^Y>
@@ -591,7 +591,7 @@ Examples:
 .It Cm :1,5p
 Print lines 1,5
 .It Cm :.-5,.+5p
-Print 5 lines around xrow
+Print 5 lines around current position
 .It Cm :/int/p
 Print first occurrence of int
 .It Cm :?int?p
@@ -1441,8 +1441,8 @@ _
  683 led.c | insert mode/output
  749 regex.c | pikevm
  1385 ex.c | ex options/commands
- 1827 vi.c | normal mode/general
- 6873 total | wc -l *.c\(basort
+ 1825 vi.c | normal mode/general
+ 6871 total | wc -l *.c\(basort
 _
 .TE
 .
