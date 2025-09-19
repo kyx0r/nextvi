@@ -617,13 +617,15 @@ static int vi_motion(int *row, int *off)
 	case ' ':
 	case 127:
 	case TK_CTL('h'):
-		if (!lbuf_get(xb, *row))
-			break;
 		dir = mv == ' ' ? +1 : -1;
-		mark = ren_position(lbuf_get(xb, *row))->n;
-		for (i = 0; i < cnt; i++, *off += dir)
-			if (*off + dir < 0 || *off + dir >= mark)
-				break;
+		mark = lbuf_eol(xb, *row, 1);
+		for (; cnt; cnt--, *off += dir) {
+			if (*off + dir < 0 || *off >= mark) {
+				*row += dir;
+				mark = lbuf_eol(xb, *row, 1);
+				*off = dir < 0 ? mark+1 : -1;
+			}
+		}
 		break;
 	case 'f':
 	case 'F':
@@ -773,31 +775,29 @@ static int vi_motion(int *row, int *off)
 
 static void vi_yank(int r1, int o1, int r2, int o2, int lnmode)
 {
-	char *region;
-	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
-	vi_regput(vi_ybuf, region, lnmode);
-	free(region);
+	sbuf rsb;
+	lbuf_region(xb, &rsb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
+	vi_regput(vi_ybuf, rsb.s, lnmode);
+	free(rsb.s);
 	xrow = r1;
 	xoff = lnmode ? xoff : o1;
 }
 
 static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 {
-	char *pref, *post, *region;
-	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
-	vi_regput(vi_ybuf, region, lnmode);
-	free(region);
-	if (!lnmode) {
-		pref = lbuf_get(xb, r1);
-		int preflen = uc_chr(pref, o1) - pref;
-		post = uc_chr(lbuf_get(xb, r2), o2);
-		sbuf_smake(sb, 1024)
-		sbuf_mem(sb, pref, preflen)
-		sbufn_str(sb, post)
-		lbuf_edit(xb, sb->s, r1, r2 + 1);
-		free(sb->s);
-	} else
+	sbuf rsb;
+	lbuf_region(xb, &rsb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
+	vi_regput(vi_ybuf, rsb.s, lnmode);
+	free(rsb.s);
+	if (lnmode)
 		lbuf_edit(xb, NULL, r1, r2 + 1);
+	else {
+		rsb.s = "";
+		rsb.s_n = 0;
+		char *s = lbuf_joinsb(xb, r1, r2, &rsb, &o1, &o2);
+		lbuf_edit(xb, s, r1, r2 + 1);
+		free(s);
+	}
 	xrow = r1;
 	xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
 }
@@ -813,23 +813,23 @@ static void vi_indents(char *ln, int *l)
 
 static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
-	char *region, *post, *_post;
-	char *ln = lbuf_get(xb, r1);
+	char *post, *_post, *ln = lbuf_get(xb, r1);
+	sbuf rsb;
 	int tlen, l1, l2 = 1, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (lnmode || !ln) {
 		vi_indents(ln, &l1);
 		post = _post = uc_dup("\n");
 		tlen = -1;
-		region = lbuf_region(xb, r1, 0, r2, -1);
+		lbuf_region(xb, &rsb, r1, 0, r2, -1);
 	} else {
 		l1 = uc_chr(ln, o1) - ln;
 		post = _post = uc_subl(lbuf_get(xb, r2), o2, -1, &l2, &postn);
 		tlen = lbuf_s(ln)->len+1;
-		region = lbuf_region(xb, r1, o1, r2, o2);
+		lbuf_region(xb, &rsb, r1, o1, r2, o2);
 	}
-	vi_regput(vi_ybuf, region, lnmode);
-	free(region);
+	vi_regput(vi_ybuf, rsb.s, lnmode);
+	free(rsb.s);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
 	term_room(r1 < xtop ? xtop - xrow : r1 - r2);
 	xrow = r1;
@@ -846,10 +846,9 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 
 static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 {
-	char *pref, *post;
-	char *region, *s;
-	region = lbuf_region(xb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
-	s = region;
+	sbuf rsb;
+	lbuf_region(xb, &rsb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
+	char *s = rsb.s;
 	while (uc_len(s)) {
 		int c = (unsigned char) s[0];
 		if (c <= 0x7f) {
@@ -862,21 +861,17 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 		}
 		s += uc_len(s);
 	}
-	pref = lnmode ? uc_dup("") : uc_sub(lbuf_get(xb, r1), 0, o1);
-	post = lnmode ? "\n" : uc_chr(lbuf_get(xb, r2), o2);
-	if (!lnmode) {
-		sbuf_smake(sb, 256)
-		sbuf_str(sb, pref)
-		sbuf_str(sb, region)
-		sbufn_str(sb, post)
-		lbuf_edit(xb, sb->s, r1, r2 + 1);
-		free(sb->s);
-	} else
-		lbuf_edit(xb, region, r1, r2 + 1);
+	if (lnmode) {
+		lbuf_edit(xb, rsb.s, r1, r2 + 1);
+		free(rsb.s);
+	} else {
+		s = lbuf_joinsb(xb, r1, r2, &rsb, &o1, &o2);
+		free(rsb.s);
+		lbuf_edit(xb, s, r1, r2 + 1);
+		free(s);
+	}
 	xrow = r2;
 	xoff = lnmode ? lbuf_indents(xb, r2) : o2;
-	free(region);
-	free(pref);
 }
 
 static void vi_pipe(int r1, int r2)
@@ -949,7 +944,7 @@ static void vc_motion(int cmd)
 		swap(&o1, &o2);
 	} else if (r1 == r2 && o1 > o2)
 		swap(&o1, &o2);
-	o1 = ren_noeol(lbuf_get(xb, r1), o1);
+	o1 = MAX(0, MIN(o1, ren_position(lbuf_get(xb, r1))->n));
 	if (!lnmode && strchr("fFtTeE%", mv))
 		if (o2 < lbuf_eol(xb, r2, 2))
 			o2++;
@@ -1195,6 +1190,10 @@ void vi(int init)
 			vi_ybuf = vi_yankbuf();
 		mv = vi_motion(&nrow, &noff);
 		if (mv > 0) {
+			if (mv == ' ' && noff >= lbuf_eol(xb, nrow, 1)) {
+				nrow++;
+				noff = 0;
+			}
 			if (strchr("|jk", mv)) {
 				noff = vi_col2off(xb, nrow, vi_col);
 			} else {

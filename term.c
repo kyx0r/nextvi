@@ -259,13 +259,12 @@ char *xgetenv(char **q)
 }
 
 /* execute a command; pass in input if ibuf and process output if oproc */
-char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc)
+sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 {
 	static char *sh[] = {"$SHELL", "sh", NULL};
 	struct pollfd fds[3];
 	char buf[512];
 	int ifd = -1, ofd = -1;
-	int slen = ibuf ? strlen(ibuf) : 0;
 	int nw = 0;
 	char *argv[5];
 	argv[0] = xgetenv(sh);
@@ -279,7 +278,8 @@ char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc)
 			*status = 127;
 		return NULL;
 	}
-	sbuf_smake(sb, sizeof(buf)+1)
+	sbuf *sb;
+	sbuf_make(sb, sizeof(buf)+1)
 	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
 		term_done();
@@ -306,11 +306,11 @@ char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc)
 			close(fds[0].fd);
 			fds[0].fd = -1;
 		}
-		if (fds[1].revents & POLLOUT) {
-			int ret = write(fds[1].fd, ibuf + nw, slen - nw);
+		if (fds[1].revents & POLLOUT && ibuf) {
+			int ret = write(fds[1].fd, ibuf->s + nw, ibuf->s_n - nw);
 			if (ret > 0)
 				nw += ret;
-			if (ret <= 0 || nw == slen) {
+			if (ret <= 0 || nw == ibuf->s_n) {
 				close(fds[1].fd);
 				fds[1].fd = -1;
 			}
@@ -338,8 +338,10 @@ char *cmd_pipe(char *cmd, char *ibuf, int *status, int oproc)
 		term_init();
 		signal(SIGINT, SIG_DFL);
 	}
-	if (oproc)
-		sbufn_sret(sb)
-	free(sb->s);
+	if (oproc) {
+		sbuf_null(sb)
+		return sb;
+	}
+	sbuf_free(sb)
 	return NULL;
 }
