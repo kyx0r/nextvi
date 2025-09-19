@@ -140,12 +140,11 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
 		lopt_done(lo);
 }
 
-static struct lopt slo;
-
 /* append undo/redo history */
 struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 {
 	struct lopt *lo;
+	static struct lopt slo;
 	if (xseq < 0)
 		lo = &slo;
 	else {
@@ -177,6 +176,30 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
 	lo->seq = lb->useq;
 	lo->ref = 2;
 	return lo;
+}
+
+/* replace lines beg through end with buf */
+void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
+{
+	if (beg > lb->ln_n)
+		beg = lb->ln_n;
+	if (end > lb->ln_n)
+		end = lb->ln_n;
+	if (beg == end && !buf)
+		return;
+	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg);
+	sbuf_smake(sb, sizeof(lo->ins[0])+1)
+	lo->n_ins = lbuf_replace(lb, sb, buf, lo, lo->n_del, 0);
+	lbuf_emark(lb, lo, lb->hist_u < 2 ||
+			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
+			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
+	lb->modified = 1;
+	if (lb->saved > lb->hist_u)
+		lb->saved = -1;
+	if (xseq < 0 || !lo->n_ins || init)
+		free(sb->s);
+	else
+		lo->ins = (char**)sb->s;
 }
 
 int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
@@ -213,60 +236,53 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
 	return 0;
 }
 
-/* replace lines beg through end with buf */
-void lbuf_iedit(struct lbuf *lb, char *buf, int beg, int end, int init)
+void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2)
 {
-	if (beg > lb->ln_n)
-		beg = lb->ln_n;
-	if (end > lb->ln_n)
-		end = lb->ln_n;
-	if (beg == end && !buf)
-		return;
-	struct lopt *lo = lbuf_opt(lb, buf, beg, end - beg);
-	sbuf_smake(sb, sizeof(lo->ins[0])+1)
-	lo->n_ins = lbuf_replace(lb, sb, buf, lo, lo->n_del, 0);
-	lbuf_emark(lb, lo, lb->hist_u < 2 ||
-			lb->hist[lb->hist_u - 2].seq != lb->useq ? beg : -1,
-			beg + (lo->n_ins ? lo->n_ins - 1 : 0));
-	lb->modified = 1;
-	if (lb->saved > lb->hist_u)
-		lb->saved = -1;
-	if (xseq < 0 || !lo->n_ins || init)
-		free(sb->s);
-	else
-		lo->ins = (char**)sb->s;
-}
-
-char *lbuf_cp(struct lbuf *lb, int beg, int end)
-{
-	int i, msum = 0;
-	end = MIN(lb->ln_n, end);
-	for (i = beg; i < end; i++)
-		msum += lbuf_i(lb, i)->len + 1;
-	char *p = emalloc(msum+1);
-	for (i = beg; i < end; i++) {
-		memcpy(p, lb->ln[i], lbuf_i(lb, i)->len + 1);
-		p += lbuf_i(lb, i)->len + 1;
-	}
-	*p = '\0';
-	return p - msum;
-}
-
-char *lbuf_region(struct lbuf *lb, int r1, int o1, int r2, int o2)
-{
-	if (r1 == r2)
-		return uc_sub(lbuf_get(lb, r1), o1, o2);
-	char *start, *end;
-	sbuf_smake(sb, 1024)
-	sbuf_str(sb, uc_chr(lbuf_get(lb, r1), o1))
+	char *s1 = lbuf_get(lb, r1), *s2 = s1;
+	_sbuf_make(sb, 1024,)
 	r2 = MIN(lb->ln_n, r2);
+	if (s1) {
+		int len = lbuf_s(s1)->len+1;
+		if (r1 == r2) {
+			s1 = uc_chr(s1, o1);
+			s2 = o2 >= o1 ? uc_chr(s1, o2 - o1) : s2 + len;
+			sbufn_mem(sb, s1, s2 - s1)
+			return;
+		}
+		s2 = o1 >= 0 ? uc_chr(s1, o1) : s1 + len;
+		sbuf_mem(sb, s2, len - (s2 - s1))
+	}
 	for (int i = r1 + 1; i < r2; i++)
 		sbuf_mem(sb, lb->ln[i], lbuf_i(lb, i)->len + 1)
-	if ((start = lbuf_get(lb, r2))) {
-		end = uc_chr(start, o2);
-		sbuf_mem(sb, start, end - start)
+	if ((s2 = lbuf_get(lb, r2))) {
+		s1 = o2 >= 0 ? uc_chr(s2, o2) : s2 + lbuf_s(s2)->len+1;
+		sbuf_mem(sb, s2, s1 - s2)
 	}
-	sbufn_sret(sb)
+	sbuf_null(sb)
+}
+
+char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2)
+{
+	char *s = lbuf_get(lb, r1), *e, *se, *p;
+	char *es = lbuf_get(lb, r2);
+	int endsz;
+	if (s && rstate->s == s) {
+		*o1 = MIN(*o1, rstate->n);
+		e = rstate->chrs[*o1];
+	} else
+		e = uc_chrn(s, *o1, o1);
+	if (r1 == r2) {
+		se = *o2 > *o1 ? uc_chr(e, *o2 - *o1) : e;
+		endsz = lbuf_s(s)->len + 2 - (se - e);
+	} else {
+		se = uc_chrn(es, *o2, o2);
+		endsz = (e - s) + (lbuf_s(es)->len + 2 - (se - es));
+	}
+	p = emalloc(endsz + i->s_n);
+	memcpy(p, s, e - s);
+	memcpy(p + (e - s), i->s, i->s_n);
+	memcpy(p + (e - s) + i->s_n, se, endsz - (e - s));
+	return p;
 }
 
 char *lbuf_get(struct lbuf *lb, int pos)
