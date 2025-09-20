@@ -283,7 +283,7 @@ static int ex_range(char **num, int n, int *row)
 }
 
 /* parse ex command addresses */
-#define ex_vregion(loc, beg, end) ex_region(loc, beg, end, NULL, NULL)
+#define ex_vregion(loc, beg, end) ex_region(loc, beg, end, &xoff, &xoff)
 static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
 	if (!strcmp("%", loc) || !lbuf_len(xb)) {
@@ -299,34 +299,32 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 			if (loc[-1] == ',')
 				goto skip;
 			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
-			ooff = ex_range(&loc, ooff, &row);
-			if (haddr++ % 2 && o2)
+			if ((ooff = ex_range(&loc, ooff, &row)) < 0)
+				return 1;
+			if (haddr++ % 2)
 				*o2 = ooff;
-			else if (o1)
+			else
 				*o1 = ooff;
 		} else {
 			skip:
-			if (vaddr++ % 2)
+			if (vaddr++ % 2) {
 				*end = ex_range(&loc, xrow, NULL) + 1;
-			else
+				if (*end <= *beg || *end > lbuf_len(xb))
+					return 1;
+			} else {
 				*beg = ex_range(&loc, xrow, NULL);
+				if (*beg < 0 || *beg >= lbuf_len(xb))
+					return 1;
+			}
 		}
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 	}
-	if (haddr && ooff < 0)
-		return 1;
 	if (!vaddr) {
 		*beg = xrow;
 		*end = MIN(lbuf_len(xb), xrow + 1);
-		return 0;
-	}
-	if (*beg < 0 || *beg >= lbuf_len(xb))
-		return 1;
-	if (vaddr < 2)
+	} else if (vaddr == 1)
 		*end = *beg + 1;
-	else if (*end <= *beg || *end > lbuf_len(xb))
-		return 1;
 	return 0;
 }
 
@@ -839,7 +837,7 @@ static void *ec_bufsave(char *loc, char *cmd, char *arg)
 static void *ec_mark(char *loc, char *cmd, char *arg)
 {
 	int beg, end, o1 = 0;
-	if (ex_region(loc, &beg, &end, &o1, NULL))
+	if (ex_region(loc, &beg, &end, &o1, &o1))
 		return xrerr;
 	lbuf_mark(xb, (unsigned char) arg[0], end - 1, o1);
 	return NULL;
