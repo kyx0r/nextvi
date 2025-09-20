@@ -42,7 +42,9 @@ static int xbufsalloc = 10;	/* initial number of buffers */
 static int xgdep;		/* global command recursion depth */
 static char xuerr[] = "unreported error";
 static char xserr[] = "syntax error";
-static char xrerr[] = "invalid range";
+static char xirerr[] = "invalid range";
+static char xsrerr[] = "range not found";
+static char *xrerr;
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
 {
@@ -252,13 +254,17 @@ static int ex_range(char **num, int n, int *row)
 	case '/':
 	case '?':
 		off = row ? n : 0;
-		if (off < 0 || ex_reread(num, &dir))
+		if (off < 0 || ex_reread(num, &dir)) {
+			xrerr = xsrerr;
 			return -1;
+		}
 		beg = row ? *row : xrow + (xkwddir > 0);
 		end = row ? beg+1 : lbuf_len(xb);
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
-				&off, end, MIN(dir, 0)))
+				&off, end, MIN(dir, 0))) {
+			xrerr = xsrerr;
 			return -1;
+		}
 		n = row ? off : beg;
 		break;
 	default:
@@ -286,6 +292,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		return 0;
 	}
 	int vaddr = 0, haddr = 0, ooff = xoff, row;
+	xrerr = xirerr;
 	while (*loc) {
 		if (*loc == ';' || *loc == ',') {
 			loc++;
@@ -293,7 +300,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 				goto skip;
 			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
 			ooff = ex_range(&loc, ooff, &row);
-			if (o2 && haddr++ % 2)
+			if (haddr++ % 2 && o2)
 				*o2 = ooff;
 			else if (o1)
 				*o1 = ooff;
