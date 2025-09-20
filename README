@@ -43,8 +43,8 @@ VI NORMAL
      [#]<Enter>
                    Move # lines down, cursor after indent
      [#]-          Move # lines up, cursor after indent
-     [#]h          Move # cols left
-     [#]l          Move # cols right
+     [#]h          Move # columns left
+     [#]l          Move # columns right
      [#]f{arg}     Move to arg character found forward # times
      [#]F{arg}     Move to arg character found backward # times
      [#]t{arg}     Move until arg character found forward # times
@@ -57,7 +57,7 @@ VI NORMAL
      [#]b          Move to start of word backward # times
      [#]W          Move to start of word forward # times, skip punctuation
      [#]w          Move to start of word forward # times
-     vw            Toggle line mode for <E e B b W w>
+     vw            Toggle line only mode for <E e B b W w>
      [#]{          Move to next <{> section down # times
      [#]}          Move to next <{> section up # times
      [#][          Move to next <Newline> section down # times
@@ -66,10 +66,10 @@ VI NORMAL
      0             Move to start of line
      $             Move to end of line
      [#]|          Goto # col
-     [#]<Space>    Move # characters forward
+     [#]<Space>    Move # characters forward, multiline
      [#]<^H>
      [#]<Backspace>
-                   Move # characters backward
+                   Move # characters backward, multiline
      %             Move to closest <] ) }><[ ( {> pair
      {#}%          Move to # percent line number
      '{a-z ` ' [] *}
@@ -340,8 +340,8 @@ EX EXPANSION
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
-     [range] specifies vertical and horizontal range implementation.
-     [vrange] specifies vertical only range implementation.
+     [range] specifies vertical and horizontal range.
+     [vrange] specifies vertical range and horizontal location.
 
      [. $][- +][% 1-9][sep][, ;][. $][- +][1-9]
              Numeric ranges
@@ -365,9 +365,10 @@ EX RANGES
      :?int?p
              Print first occurrence of int in reverse
      :.,/int/p
-             Print until int is found
+             Print until "int" is found
      :?int?,.p
-             Print until int is found in reverse
+             Print until "int" is found in reverse
+     :/      Search using previously set search keyword
      :'d,'ap
              Print lines from mark <d> to mark <a>
      :%p     Print all lines in the buffer
@@ -379,9 +380,11 @@ EX RANGES
      :'a;'a  Goto line mark <a> offset mark <a>
      :;$     Goto end of the line
      :5;/int/
-             Search for int on line 5
+             Search for "int" on line 5
      :.;?int?
-             Search for int in reverse on the current line
+             Search for "int" in reverse on the current line
+     :;/int/+3;//p
+             Print text enclosed by "int" on the current line
 
 EX COMMANDS
      [vrange]f{/?}[kwd]
@@ -566,7 +569,7 @@ EX COMMANDS
              :& ihello
              Example: execute :hello
              :& \:hello<^V><^M>
-             Example: execute vi ci(int macro
+             Example: execute vi "ci(int" macro
              :& ci(int
              Example: nest blocking macro inside non-blocking
              :& \:@ \\:blocking<^V><^M>i continue in non-blocking
@@ -583,13 +586,13 @@ EX COMMANDS
              :@ ihello
              Example: insert "hello" into <:> vi prompt
              :@ \:hello
-             Example: execute vi ci(int macro
+             Example: execute vi "ci(int" macro
              :@ ci(int
-             Example: execute ci(int exiting insert mode
+             Example: execute "ci(int" exiting insert mode
              :@ ci(int<^V><^C>
-             Example: execute ci)INT as a follow-up
+             Example: execute "ci)INT" as a follow-up
              :@ ci(int<^V><^C>ci)INT
-             Example: execute vi dw command after user exits insert
+             Example: execute vi "dw" command after user exits insert
              :@i:@dw
 
      [# $],[skip1=0 $],[skip2=0 $]wl{cmd}
@@ -629,7 +632,7 @@ EX COMMANDS
              Example: paste <a> at line 1 character offset 5
              :1;5pu a
 
-     [vrange]r[path cmd]
+     [range]r[path cmd]
              Read a file or a pipe
 
              To read data from a pipe use :[range]r \![cmd]
@@ -641,7 +644,7 @@ EX COMMANDS
              Example: pipe in all data
              :%r \!ls
 
-     [vrange]w[path cmd]
+     [range]w[path cmd]
              Write to a file or a pipe
 
              To pipe buffer data to external process use :[range]w \![cmd]
@@ -651,7 +654,7 @@ EX COMMANDS
              Example: pipe out only first 10 lines
              :1,10w \!less
 
-     [vrange]w![path]
+     [range]w![path]
              Force write to a file
 
      q       Exit
@@ -689,7 +692,7 @@ EX COMMANDS
              :%s/(int)|(void)/pre\2after/g
              this is an example text for subs and has prepreafterafter or prevoidafter
 
-     [range]ya[register][append]
+     [range]ya[reg][append]
              Yank a range
 
              To append to the register, pass in its uppercase version.
@@ -701,10 +704,10 @@ EX COMMANDS
              Example: yank into <a> using ranges
              :1,5;5;5ya a
 
-     ya![register]
+     ya![reg]
              Free a register
 
-     [vrange]![cmd]
+     [range]![cmd]
              Run external program
 
              When ex range specified, pipes the buffer data to an external
@@ -712,7 +715,13 @@ EX COMMANDS
              the affected range.
 
              Example: infamously sort the buffer
-             :1,$!sort
+             :%!sort
+             Example: use sed to replace "int" with "uint"
+             :%!sed -e 's/int/uint/g'
+             Example: pipe in result of ls command without replace
+             :;$+1!ls
+             Example: capitalize the word at current position using tr
+             :;.;/\>/!tr '[\:lower\:]' '[\:upper\:]'
 
      ft[filetype]
              Set a filetype
@@ -1058,15 +1067,15 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 305 conf.c   |  hl/ft/td config     |
-     | 345 term.c   |  low level IO        |
+     | 347 term.c   |  low level IO        |
      | 396 ren.c    |  positioning/syntax  |
-     | 546 lbuf.c   |  file/line buffer    |
+     | 562 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
-     | 1385 ex.c    |  ex options/commands |
-     | 1825 vi.c    |  normal mode/general |
-     | 6871 total   |  wc -l *.c|sort      |
+     | 1377 ex.c    |  ex options/commands |
+     | 1824 vi.c    |  normal mode/general |
+     | 6880 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1138,4 +1147,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                  September 16, 2025                  Linux 6.16.0
+Linux 6.16.0                  September 20, 2025                  Linux 6.16.0

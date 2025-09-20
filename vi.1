@@ -1,4 +1,4 @@
-.Dd Sep 16, 2025
+.Dd Sep 20, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -72,9 +72,9 @@ Move # lines down, cursor after indent
 .It Cm [\fI#\fP]-
 Move # lines up, cursor after indent
 .It Cm [\fI#\fP]h
-Move # cols left
+Move # columns left
 .It Cm [\fI#\fP]l
-Move # cols right
+Move # columns right
 .It Cm [\fI#\fP]f{\fIarg\fP}
 Move to arg character found forward # times
 .It Cm [\fI#\fP]F{\fIarg\fP}
@@ -100,7 +100,7 @@ Move to start of word forward # times, skip punctuation
 .It Cm [\fI#\fP]w
 Move to start of word forward # times
 .It Cm vw
-Toggle line mode for <E e B b W w>
+Toggle line only mode for <E e B b W w>
 .It Cm [\fI#\fP]{
 Move to next <{> section down # times
 .It Cm [\fI#\fP]}
@@ -118,11 +118,11 @@ Move to end of line
 .It Cm [\fI#\fP]|
 Goto # col
 .It Cm [\fI#\fP]<Space>
-Move # characters forward
+Move # characters forward, multiline
 .It Cm [\fI#\fP]<^H>
 .It Cm [\fI#\fP]<Backspace>
 .Bd -compact
-Move # characters backward
+Move # characters backward, multiline
 .Ed
 .It Cm %
 Move to closest <] ) }><[ ( {> pair
@@ -562,8 +562,8 @@ Example: insert output of ls shell command efficiently
 .Sh EX RANGES
 .Bd -literal -compact
 Some ex commands can be prefixed with ranges.
-[range] specifies vertical and horizontal range implementation.
-[vrange] specifies vertical only range implementation.
+[range] specifies vertical and horizontal range.
+[vrange] specifies vertical range and horizontal location.
 .Ed
 .Bl -tag -width Ds -compact
 
@@ -597,9 +597,11 @@ Print first occurrence of int
 .It Cm :?int?p
 Print first occurrence of int in reverse
 .It Cm :.,/int/p
-Print until int is found
+Print until "int" is found
 .It Cm :?int?,.p
-Print until int is found in reverse
+Print until "int" is found in reverse
+.It Cm :/
+Search using previously set search keyword
 .It Cm :'d,'ap
 Print lines from mark <d> to mark <a>
 .It Cm :%p
@@ -617,9 +619,11 @@ Goto line mark <a> offset mark <a>
 .It Cm :;$
 Goto end of the line
 .It Cm :5;/int/
-Search for int on line 5
+Search for "int" on line 5
 .It Cm :.;?int?
-Search for int in reverse on the current line
+Search for "int" in reverse on the current line
+.It Cm :;/int/+3;//p
+Print text enclosed by "int" on the current line
 .El
 .
 .Sh EX COMMANDS
@@ -819,7 +823,7 @@ Example: execute vi insert statement
 :& ihello
 Example: execute :hello
 :& \e:hello<^V><^M>
-Example: execute vi ci(int macro
+Example: execute vi "ci(int" macro
 :& ci(int
 Example: nest blocking macro inside non-blocking
 :& \e:@ \e\e:blocking<^V><^M>i continue in non-blocking
@@ -837,13 +841,13 @@ Example: execute vi insert statement
 :@ ihello
 Example: insert "hello" into <:> vi prompt
 :@ \e:hello
-Example: execute vi ci(int macro
+Example: execute vi "ci(int" macro
 :@ ci(int
-Example: execute ci(int exiting insert mode
+Example: execute "ci(int" exiting insert mode
 :@ ci(int<^V><^C>
-Example: execute ci)INT as a follow-up
+Example: execute "ci)INT" as a follow-up
 :@ ci(int<^V><^C>ci)INT
-Example: execute vi dw command after user exits insert
+Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
@@ -886,7 +890,7 @@ Example: paste <a> at line 1 character offset 5
 :1;5pu a
 .Ed
 
-.It Cm [\fIvrange\fP]r[\fIpath cmd\fP]
+.It Cm [\fIrange\fP]r[\fIpath cmd\fP]
 Read a file or a pipe
 .Bd -literal
 To read data from a pipe use :[range]r \e![cmd]
@@ -899,7 +903,7 @@ Example: pipe in all data
 :%r \e!ls
 .Ed
 
-.It Cm [\fIvrange\fP]w[\fIpath cmd\fP]
+.It Cm [\fIrange\fP]w[\fIpath cmd\fP]
 Write to a file or a pipe
 .Bd -literal
 To pipe buffer data to external process use :[range]w \e![cmd]
@@ -910,7 +914,7 @@ Example: pipe out only first 10 lines
 :1,10w \e!less
 .Ed
 
-.It Cm [\fIvrange\fP]w![\fIpath\fP]
+.It Cm [\fIrange\fP]w![\fIpath\fP]
 Force write to a file
 
 .It Cm q
@@ -957,7 +961,7 @@ this is an example text for subs and has preintafter or void
 this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
-.It Cm [\fIrange\fP]ya[\fIregister\fP][\fIappend\fP]
+.It Cm [\fIrange\fP]ya[\fIreg\fP][\fIappend\fP]
 Yank a range
 .Bd -literal
 To append to the register, pass in its uppercase version.
@@ -970,10 +974,10 @@ Example: yank into <a> using ranges
 :1,5;5;5ya a
 .Ed
 
-.It Cm ya![\fIregister\fP]
+.It Cm ya![\fIreg\fP]
 Free a register
 
-.It Cm [\fIvrange\fP]![\fIcmd\fP]
+.It Cm [\fIrange\fP]![\fIcmd\fP]
 Run external program
 .Bd -literal
 When ex range specified, pipes the buffer data to an external
@@ -981,7 +985,13 @@ process and pipes the output back into current buffer replacing
 the affected range.
 
 Example: infamously sort the buffer
-:1,$!sort
+:%!sort
+Example: use sed to replace "int" with "uint"
+:%!sed -e 's/int/uint/g'
+Example: pipe in result of ls command without replace
+:;$+1!ls
+Example: capitalize the word at current position using tr
+:;.;/\e>/!tr '[\e:lower\e:]' '[\e:upper\e:]'
 .Ed
 
 .It Cm ft[\fIfiletype\fP]
@@ -1434,15 +1444,15 @@ _
  537 kmap.h | keymap translation
 _
  305 conf.c | hl/ft/td config
- 345 term.c | low level IO
+ 347 term.c | low level IO
  396 ren.c | positioning/syntax
- 546 lbuf.c | file/line buffer
+ 562 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  749 regex.c | pikevm
- 1385 ex.c | ex options/commands
- 1825 vi.c | normal mode/general
- 6871 total | wc -l *.c\(basort
+ 1377 ex.c | ex options/commands
+ 1824 vi.c | normal mode/general
+ 6880 total | wc -l *.c\(basort
 _
 .TE
 .
