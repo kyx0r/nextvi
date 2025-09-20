@@ -622,7 +622,7 @@ static int vi_motion(int *row, int *off)
 		for (; cnt; cnt--, *off += dir) {
 			if (*off + dir < 0 || *off >= mark) {
 				*row += dir;
-				mark = lbuf_eol(xb, *row, 1);
+				mark = lbuf_eol(xb, *row, 0);
 				*off = dir < 0 ? mark+1 : -1;
 			}
 		}
@@ -1190,7 +1190,7 @@ void vi(int init)
 			vi_ybuf = vi_yankbuf();
 		mv = vi_motion(&nrow, &noff);
 		if (mv > 0) {
-			if (mv == ' ' && noff >= lbuf_eol(xb, nrow, 1)) {
+			if (mv == ' ' && noff >= lbuf_eol(xb, nrow, 2)) {
 				nrow++;
 				noff = 0;
 			}
