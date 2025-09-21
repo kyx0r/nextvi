@@ -1,8 +1,8 @@
 diff --git a/lbuf.c b/lbuf.c
-index dc583bc5..94b37d77 100644
+index 78dd47b1..b7bed619 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -181,18 +181,67 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
+@@ -205,18 +205,69 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  
  int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
  {
@@ -27,7 +27,7 @@ index dc583bc5..94b37d77 100644
 +	                }
 +	        }
 +	        sbuf_null(sb)
-+	        lbuf_iedit(lb, sb->s, beg, end, init);
++		lbuf_edit(lb, sb->s, beg, end, 0, 0);
 +	        free(sb->s);
 +	        return nr != 0;
 +	}
@@ -70,8 +70,8 @@ index dc583bc5..94b37d77 100644
 +			sb->s_n -= sizeof(ln);
  		}
  	}
--	sbuf_null(sb)
--	lbuf_iedit(lb, sb->s, beg, end, init);
+ 	sbuf_null(sb)
+ 	lbuf_edit(lb, sb->s, beg, end, 0, 0);
 +	lb->ln_n = nins;
 +	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));
 +	lb->ln_sz = nins + 512;
