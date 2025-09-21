@@ -136,8 +136,8 @@ struct lopt {
 	char **ins;		/* inserted lines */
 	char **del;		/* deleted lines */
 	int *mark;		/* saved marks */
-	int pos, n_ins, n_del;	/* modification location */
-	int pos_off;		/* cursor line offset */
+	int pos, pos_off;	/* modification location */
+	int n_ins, n_del;	/* modification range */
 	int seq;		/* operation number */
 	int ref;		/* ins/del ref exists on lbuf */
 };
@@ -166,17 +166,17 @@ struct lbuf *lbuf_make(void);
 void lbuf_free(struct lbuf *lb);
 int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
-void lbuf_iedit(struct lbuf *lb, char *s, int beg, int end, int init);
-#define lbuf_edit(lb, s, beg, end) lbuf_iedit(lb, s, beg, end, 0)
+void lbuf_edit(struct lbuf *lb, char *s, int beg, int end, int o1, int o2);
 void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2);
 char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2);
 char *lbuf_get(struct lbuf *lb, int pos);
-void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end);
-struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del);
+void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
+void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
+struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del);
 void lbuf_mark(struct lbuf *lb, int mark, int pos, int off);
 int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off);
-int lbuf_undo(struct lbuf *lb);
-int lbuf_redo(struct lbuf *lb);
+int lbuf_undo(struct lbuf *lb, int *row, int *off);
+int lbuf_redo(struct lbuf *lb, int *row, int *off);
 void lbuf_saved(struct lbuf *lb, int clear);
 int lbuf_indents(struct lbuf *lb, int r);
 int lbuf_eol(struct lbuf *lb, int r, int state);
@@ -187,7 +187,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 { for (int i = 0; i < lbuf_len(lb);) { \
 	char *s = lbuf_get(lb, i); \
 	if (n == lbuf_s(s)->len && !memcmp(str, s, n)) \
-		lbuf_edit(lb, NULL, i, i + 1); \
+		lbuf_edit(lb, NULL, i, i + 1, 0, 0); \
 	else \
 		i++; \
 }} \

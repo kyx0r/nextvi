@@ -790,12 +790,12 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	vi_regput(vi_ybuf, rsb.s, lnmode);
 	free(rsb.s);
 	if (lnmode)
-		lbuf_edit(xb, NULL, r1, r2 + 1);
+		lbuf_edit(xb, NULL, r1, r2 + 1, 0, 0);
 	else {
 		rsb.s = "";
 		rsb.s_n = 0;
 		char *s = lbuf_joinsb(xb, r1, r2, &rsb, &o1, &o2);
-		lbuf_edit(xb, s, r1, r2 + 1);
+		lbuf_edit(xb, s, r1, r2 + 1, o1, o1);
 		free(s);
 	}
 	xrow = r1;
@@ -839,7 +839,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	led_input(sb, &post, postn, r1 - (r1 - r2), 0);
 	sbufn_str(sb, post)
 	if (sb->s_n != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
-		lbuf_edit(xb, sb->s, r1, r2 + 1);
+		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
 	free(sb->s);
 	free(_post);
 }
@@ -862,12 +862,12 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 		s += uc_len(s);
 	}
 	if (lnmode) {
-		lbuf_edit(xb, rsb.s, r1, r2 + 1);
+		lbuf_edit(xb, rsb.s, r1, r2 + 1, 0, 0);
 		free(rsb.s);
 	} else {
 		s = lbuf_joinsb(xb, r1, r2, &rsb, &o1, &o2);
 		free(rsb.s);
-		lbuf_edit(xb, s, r1, r2 + 1);
+		lbuf_edit(xb, s, r1, r2 + 1, o1, o2);
 		free(s);
 	}
 	xrow = r2;
@@ -910,7 +910,7 @@ static void vi_shift(int r1, int r2, int dir, int count)
 				sbuf_chr(sb, '\t')
 		}
 		sbufn_str(sb, ln)
-		lbuf_edit(xb, sb->s, i, i + 1);
+		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 		sbuf_cut(sb, 0)
 	}
 	xoff = lbuf_indents(xb, r1);
@@ -971,7 +971,7 @@ static void vc_motion(int cmd)
 static void vc_insert(int cmd)
 {
 	char *post, *ln = lbuf_get(xb, xrow);
-	int row, cmdo, l1, postn = 1;
+	int row, cmdo, l1, off, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
@@ -991,12 +991,14 @@ static void vc_insert(int cmd)
 	cmdo = cmd == 'o' || cmd == 'O';
 	if (cmdo || !ln) {
 		if (cmdo && !lbuf_len(xb))
-			lbuf_edit(xb, "\n", 0, 0);
+			lbuf_edit(xb, "\n", 0, 0, 0, 0);
 		vi_indents(ln, &l1);
+		off = l1;
 		post = "\n";
 	} else {
-		l1 = rstate->chrs[xoff] - ln;
-		postn = rstate->n - xoff;
+		off = xoff;
+		l1 = rstate->chrs[off] - ln;
+		postn = rstate->n - off;
 		post = ln + l1;
 	}
 	term_pos(row - xtop, 0);
@@ -1005,7 +1007,7 @@ static void vc_insert(int cmd)
 	led_input(sb, &post, postn, row, cmdo);
 	if (sb->s_n != l1 || cmdo || !ln) {
 		sbufn_str(sb, post)
-		lbuf_edit(xb, sb->s, row, row + !cmdo);
+		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
 	}
 	free(sb->s);
 }
@@ -1025,10 +1027,10 @@ static int vc_put(int cmd)
 		for (i = 0; i < cnt; i++)
 			sbufn_mem(sb, buf->s, buf->s_n)
 		if (!lbuf_len(xb))
-			lbuf_edit(xb, "\n", 0, 0);
+			lbuf_edit(xb, "\n", 0, 0, 0, 0);
 		if (cmd == 'p')
 			xrow++;
-		lbuf_edit(xb, sb->s, xrow, xrow);
+		lbuf_edit(xb, sb->s, xrow, xrow, 0, 0);
 		xoff = lbuf_indents(xb, xrow);
 		free(sb->s);
 		return 1;
@@ -1040,8 +1042,8 @@ static int vc_put(int cmd)
 	for (i = 0; i < cnt; i++)
 		sbuf_mem(sb, buf->s, buf->s_n)
 	sbufn_str(sb, rstate->chrs[off])
-	lbuf_edit(xb, sb->s, xrow, xrow + 1);
 	xoff = off + uc_slen(buf->s) * cnt - 1;
+	lbuf_edit(xb, sb->s, xrow, xrow + 1, off, xoff);
 	free(sb->s);
 	return 1;
 }
@@ -1050,10 +1052,10 @@ static void vc_join(int spc, int cnt)
 {
 	int beg = xrow;
 	int end = xrow + cnt;
+	int off = 0;
 	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
 		return;
 	sbuf_smake(sb, 1024)
-	xoff = 0;
 	for (int i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		char *lnend = ln + lbuf_s(ln)->len;
@@ -1063,14 +1065,15 @@ static void vc_join(int spc, int cnt)
 			if (spc && sb->s_n && *ln != ')' &&
 					sb->s[sb->s_n-1] != ' ') {
 				sbuf_chr(sb, ' ')
-				xoff++;
+				off++;
 			}
 		}
-		xoff += (i+1 == end) ? 0 : uc_slen(ln) - 1;
+		off += (i+1 == end) ? 0 : uc_slen(ln) - 1;
 		sbuf_mem(sb, ln, lnend - ln)
 	}
 	sbufn_chr(sb, '\n')
-	lbuf_edit(xb, sb->s, beg, end);
+	lbuf_edit(xb, sb->s, beg, end, xoff, off);
+	xoff = off;
 	free(sb->s);
 	vi_mod |= 1;
 }
@@ -1103,12 +1106,9 @@ static int vc_replace(void)
 	for (i = 0; i < cnt; i++)
 		sbuf_str(sb, cs)
 	sbufn_str(sb, rstate->chrs[off+cnt])
-	lbuf_edit(xb, sb->s, xrow, xrow + 1);
-	if (cs[0] == '\n') {
-		xrow += cnt;
-		xoff = 0;
-	} else
-		xoff = off + cnt - 1;
+	xoff = (off + cnt - 1) * (cs[0] != '\n');
+	lbuf_edit(xb, sb->s, xrow, xrow + 1, off, xoff);
+	xrow += cnt * (cs[0] == '\n');
 	free(sb->s);
 	return cs[0] == '\n' ? 1 : 2;
 }
@@ -1208,7 +1208,6 @@ void vi(int init)
 		} else if (mv == 0) {
 			char *cmd;
 			term_dec()
-			lbuf_mark(xb, '*', xrow, xoff);
 			re_motion:
 			c = term_read();
 			switch (c) {
@@ -1284,8 +1283,7 @@ void vi(int init)
 				break;
 			case 'u':
 				undo:
-				if (vi_arg >= 0 && !lbuf_undo(xb)) {
-					lbuf_jump(xb, '*', &xrow, &xoff);
+				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
 					vi_mod |= 1;
 					vi_arg--;
 					goto undo;
@@ -1294,8 +1292,7 @@ void vi(int init)
 				break;
 			case TK_CTL('r'):
 				redo:
-				if (vi_arg >= 0 && !lbuf_redo(xb)) {
-					lbuf_jump(xb, '*', &xrow, &xoff);
+				if (vi_arg >= 0 && !lbuf_redo(xb, &xrow, &xoff)) {
 					vi_mod |= 1;
 					vi_arg--;
 					goto redo;
