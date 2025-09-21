@@ -893,20 +893,25 @@ Example: copy register <a> to X11 clipboard
 .It Cm [\fIrange\fP]r\e![\fIcmd\fP]
 Read a file or a pipe
 .Bd -literal
+Range is computed on a target.
+No argument evaluates to % range.
 
-Example: pipe in only the first line
+Example: read a file
+:r vi.c
+Example: pipe in all data
 :r \e!ls
 Example: pipe in only lines 3,5
 :3,5r \e!ls
-Example: pipe in all data
-:%r \e!ls
 .Ed
 
 .It Cm [\fIrange\fP]w[\fIpath\fP]
 .It Cm [\fIrange\fP]w\e![\fIcmd\fP]
 Write to a file or a pipe
 .Bd -literal
+No argument evaluates to % range.
 
+Example: to a file
+:w vi.c
 Example: pipe out all data into less
 :w \e!less
 Example: pipe out only first 10 lines
@@ -1449,9 +1454,9 @@ _
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  749 regex.c | pikevm
- 1387 ex.c | ex options/commands
+ 1390 ex.c | ex options/commands
  1821 vi.c | normal mode/general
- 6890 total | wc -l *.c\(basort
+ 6893 total | wc -l *.c\(basort
 _
 .TE
 .
