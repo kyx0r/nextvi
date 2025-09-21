@@ -575,6 +575,8 @@ EX COMMANDS
              :& ci(int
              Example: nest blocking macro inside non-blocking
              :& \:@ \\:blocking<^V><^M>i continue in non-blocking
+             Example: enable permanent vi line numbers
+             :& 2#
 
      @{macro}
              Global blocking macro
