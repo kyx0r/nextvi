@@ -42,7 +42,9 @@ static int xbufsalloc = 10;	/* initial number of buffers */
 static int xgdep;		/* global command recursion depth */
 static char xuerr[] = "unreported error";
 static char xserr[] = "syntax error";
-static char xrerr[] = "invalid range";
+static char xirerr[] = "invalid range";
+static char xsrerr[] = "range not found";
+static char *xrerr;
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
 {
@@ -155,7 +157,7 @@ void temp_write(int i, char *str)
 	struct lbuf *lb = tempbufs[i].lb;
 	if (lbuf_get(lb, tempbufs[i].row))
 		tempbufs[i].row++;
-	lbuf_edit(lb, str, tempbufs[i].row, tempbufs[i].row);
+	lbuf_edit(lb, str, tempbufs[i].row, tempbufs[i].row, 0, 0);
 }
 
 /* replace % and # with buffer names and !..! with command output */
@@ -186,11 +188,12 @@ static char *ex_pathexpand(sbuf *sb, char *src)
 			}
 			src += *src ? 1 : 0;
 			sbuf_null(sb)
-			char *str = cmd_pipe(sb->s + n, NULL, NULL, 1);
 			sbuf_cut(sb, n)
-			if (str)
-				sbuf_str(sb, str)
-			free(str);
+			sbuf *str = cmd_pipe(sb->s + n, NULL, 1, NULL);
+			if (str) {
+				sbuf_mem(sb, str->s, str->s_n)
+				sbuf_free(str)
+			}
 		} else {
 			if (*src == '\\' && (src[1] == '%' || src[1] == '!'))
 				src++;
@@ -251,13 +254,17 @@ static int ex_range(char **num, int n, int *row)
 	case '/':
 	case '?':
 		off = row ? n : 0;
-		if (off < 0 || ex_reread(num, &dir))
+		if (off < 0 || ex_reread(num, &dir)) {
+			xrerr = xsrerr;
 			return -1;
+		}
 		beg = row ? *row : xrow + (xkwddir > 0);
 		end = row ? beg+1 : lbuf_len(xb);
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
-				&off, end, MIN(dir, 0)))
+				&off, end, MIN(dir, 0))) {
+			xrerr = xsrerr;
 			return -1;
+		}
 		n = row ? off : beg;
 		break;
 	default:
@@ -276,7 +283,7 @@ static int ex_range(char **num, int n, int *row)
 }
 
 /* parse ex command addresses */
-#define ex_vregion(loc, beg, end) ex_region(loc, beg, end, NULL, NULL)
+#define ex_vregion(loc, beg, end) ex_region(loc, beg, end, &xoff, &xoff)
 static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
 	if (!strcmp("%", loc) || !lbuf_len(xb)) {
@@ -285,43 +292,39 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		return 0;
 	}
 	int vaddr = 0, haddr = 0, ooff = xoff, row;
+	xrerr = xirerr;
 	while (*loc) {
 		if (*loc == ';' || *loc == ',') {
 			loc++;
 			if (loc[-1] == ',')
 				goto skip;
 			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
-			ooff = ex_range(&loc, ooff, &row);
-			if (o2 && haddr++ % 2)
+			if ((ooff = ex_range(&loc, ooff, &row)) < 0)
+				return 1;
+			if (haddr++ % 2)
 				*o2 = ooff;
-			else if (o1)
+			else
 				*o1 = ooff;
 		} else {
 			skip:
-			if (vaddr++ % 2)
+			if (vaddr++ % 2) {
 				*end = ex_range(&loc, xrow, NULL) + 1;
-			else
+				if (*end <= *beg || *end > lbuf_len(xb))
+					return 1;
+			} else {
 				*beg = ex_range(&loc, xrow, NULL);
+				if (*beg < 0 || *beg >= lbuf_len(xb))
+					return 1;
+			}
 		}
 		while (*loc && *loc != ';' && *loc != ',')
 			loc++;
 	}
-	if (haddr) {
-		if (ooff < 0)
-			return 1;
-		xoff = ooff;
-	}
 	if (!vaddr) {
 		*beg = xrow;
 		*end = MIN(lbuf_len(xb), xrow + 1);
-		return 0;
-	}
-	if (*beg < 0 || *beg >= lbuf_len(xb))
-		return 1;
-	if (vaddr < 2)
+	} else if (vaddr == 1)
 		*end = *beg + 1;
-	else if (*end <= *beg || *end > lbuf_len(xb))
-		return 1;
 	return 0;
 }
 
@@ -488,18 +491,18 @@ static void *ec_setpath(char *loc, char *cmd, char *arg)
 
 static void *ec_read(char *loc, char *cmd, char *arg)
 {
+	sbuf obuf, *sb;
 	char msg[512];
-	int beg, end, fd = -1;
-	char *path, *obuf, *ret = NULL;
-	int n = lbuf_len(xb);
-	int pos = MIN(xrow + 1, lbuf_len(xb));
+	char *path, *ret = NULL;
+	int beg, end, o1 = 0, o2 = -1;
+	int row = xrow, off = xoff, fd = -1;
 	struct lbuf *lb = lbuf_make(), *pxb = xb;
 	path = arg[0] ? arg : xb_path;
 	if (arg[0] == '!') {
-		obuf = cmd_pipe(arg + 1, NULL, NULL, 1);
-		if (obuf)
-			lbuf_edit(lb, obuf, 0, 0);
-		free(obuf);
+		if ((sb = cmd_pipe(arg + 1, NULL, 1, NULL))) {
+			lbuf_edit(lb, sb->s, 0, 0, 0, 0);
+			sbuf_free(sb)
+		}
 	} else {
 		if ((fd = open(path, O_RDONLY)) < 0) {
 			ret = "open failed";
@@ -512,34 +515,38 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	}
 	xb = lb;
 	xrow = 0;
-	if (ex_vregion(loc, &beg, &end)) {
+	xoff = 0;
+	if (ex_region(loc, &beg, &end, &o1, &o2)) {
 		ret = xrerr;
 		goto err;
+	} else if (!loc[0]) {
+		beg = 0;
+		end = lbuf_len(lb);
 	}
-	obuf = lbuf_cp(lb, beg, end);
-	if (*obuf)
-		lbuf_edit(pxb, obuf, pos, pos);
+	lbuf_region(lb, &obuf, beg, o1, end-1, o2);
+	lbuf_edit(pxb, obuf.s, row, row, 0, 0);
+	free(obuf.s);
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [r]",
-			path, lbuf_len(pxb) - n);
+			path, lbuf_len(pxb) - lbuf_len(lb));
 	ex_print(msg, bar_ft)
-	free(obuf);
 	err:
 	lbuf_free(lb);
-	xrow = pos;
+	xrow = row;
+	xoff = off;
 	xb = pxb;
 	if (fd >= 0)
 		close(fd);
 	return ret;
 }
 
-static void *ex_pipeout(char *cmd, char *buf)
+static void *ex_pipeout(char *cmd, sbuf *buf)
 {
 	int ret = 0;
 	if (!(xvis & 4)) {
 		term_chr('\n');
 		xmpt = xmpt >= 0 ? 2 : xmpt;
 	}
-	cmd_pipe(cmd, buf, &ret, 0);
+	cmd_pipe(cmd, buf, 0, &ret);
 	return ret ? xuerr : NULL;
 }
 
@@ -547,21 +554,21 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 {
 	char msg[512];
 	char *path;
-	char *ibuf;
-	int beg, end;
+	sbuf ibuf;
+	int beg, end, o1 = 0, o2 = -1;
 	path = arg[0] ? arg : xb_path;
 	if (cmd[0] == 'x' && !xb->modified)
 		return ec_quit("", cmd, "");
-	if (ex_vregion(loc, &beg, &end))
+	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	if (!loc[0]) {
 		beg = 0;
 		end = lbuf_len(xb);
 	}
 	if (arg[0] == '!') {
-		ibuf = lbuf_cp(xb, beg, end);
-		ex_pipeout(arg + 1, ibuf);
-		free(ibuf);
+		lbuf_region(xb, &ibuf, beg, o1, end-1, o2);
+		ex_pipeout(arg + 1, &ibuf);
+		free(ibuf.s);
 	} else {
 		int fd;
 		if (!strchr(cmd, '!')) {
@@ -651,22 +658,11 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
 	return 0;
 }
 
-static char *ex_lbufstr(char *s, char *e, char *se, char *i, int in)
-{
-	char *p = emalloc(lbuf_s(s)->len + 2 + in);
-	memcpy(p, s, e - s);
-	memcpy(p + (e - s), i, in);
-	memcpy(p + (e - s + in), se, lbuf_s(s)->len + 2 - (e - s) - (se - e));
-	return p;
-}
-
 static void *ec_insert(char *loc, char *cmd, char *arg)
 {
 	int beg, end, o1 = -1, o2 = -1, ps = 0;
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	char *e, *se;
-	char *ln = o1 >= 0 ? lbuf_get(xb, beg) : NULL;
 	sbuf_smake(sb, 128)
 	if (*arg)
 		term_push(arg, strlen(arg));
@@ -688,28 +684,20 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		beg++;
 	else if (cmd[0] == 'i')
 		end = beg;
-	if (ln && cmd[0] == 'c') {
-		if (rstate->s == ln) {
-			o1 = MIN(o1, rstate->n);
-			e = rstate->chrs[o1];
-		} else
-			e = uc_chrn(ln, o1, &o1);
-		if (vi_msg[0])
-			lbuf_mark(xb, '*', beg, o1);
-		xoff = o1;
-		se = o2 > o1 ? uc_chr(e, o2 - o1) : e;
-		if (!sb->s_n && se == e)
+	if (o1 >= 0 && cmd[0] == 'c') {
+		if (!sb->s_n && o2 <= o1)
 			goto ret;
-		ln = ex_lbufstr(ln, e, se, sb->s, sb->s_n);
+		char *p = lbuf_joinsb(xb, beg, beg, sb, &o1, &o2);
+		o1 -= sb->s[0] == '\n';
 		free(sb->s);
-		sb->s = ln;
+		sb->s = p;
 	} else if (!(xvis & 2) && vi_insmov != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
 		goto ret;
-	o1 = lbuf_len(xb);
-	lbuf_edit(xb, sb->s, beg, end);
-	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - o1 - 1);
+	ps = lbuf_len(xb);
+	lbuf_edit(xb, sb->s, beg, end, o1, o2);
+	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - ps - 1);
 	ret:
 	free(sb->s);
 	return NULL;
@@ -723,6 +711,8 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		return "unknown command";
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
+	if (o1 >= 0)
+		xoff = MAX(o1, o2);
 	if (!cmd[0] && loc[0]) {
 		xrow = MAX(beg, end - 1);
 		return NULL;
@@ -759,7 +749,7 @@ static void *ec_delete(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_vregion(loc, &beg, &end) || !lbuf_len(xb))
 		return xrerr;
-	lbuf_edit(xb, NULL, beg, end);
+	lbuf_edit(xb, NULL, beg, end, 0, 0);
 	xrow = beg;
 	return NULL;
 }
@@ -791,9 +781,10 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 		return NULL;
 	} else if (ex_region(loc, &beg, &end, &o1, &o2) || !lbuf_len(xb))
 		return xrerr;
-	char *buf = lbuf_region(xb, beg, o1, end-1, o2);
-	ex_regput(arg[0], buf, isupper((unsigned char) arg[0]) || arg[1]);
-	free(buf);
+	sbuf sb;
+	lbuf_region(xb, &sb, beg, o1, end-1, o2);
+	ex_regput(arg[0], sb.s, isupper((unsigned char) arg[0]) || arg[1]);
+	free(sb.s);
 	return NULL;
 }
 
@@ -809,18 +800,16 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 		return "uninitialized register";
 	for (; arg[i] && arg[i] != '!'; i++){}
 	if (arg[i] == '!' && arg[i+1])
-		return ex_pipeout(arg + i + 1, buf->s);
+		return ex_pipeout(arg + i + 1, buf);
 	int n = lbuf_len(xb), o1 = -1, o2 = -1;
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	if (o1 >= 0) {
-		char *ln = lbuf_get(xb, end-1);
-		char *e = uc_chr(ln, o1);
-		char *p = ex_lbufstr(ln, e, e, buf->s, buf->s_n);
-		lbuf_edit(xb, p, end-1, end);
+	if (o1 >= 0 && n) {
+		char *p = lbuf_joinsb(xb, end-1, end-1, buf, &o1, &o2);
+		lbuf_edit(xb, p, end-1, end, o1, o1);
 		free(p);
 	} else
-		lbuf_edit(xb, buf->s, end, end);
+		lbuf_edit(xb, buf->s, end, end, o1, o1);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - n - 1);
 	return NULL;
 }
@@ -831,18 +820,20 @@ static void *ec_lnum(char *loc, char *cmd, char *arg)
 	int beg, end, o1 = -1, o2 = -1;
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	sprintf(msg, "%d", o1 >= 0 ? o1 : end);
+	sprintf(msg, "%d", o1 >= 0 ? MAX(o1, o2) : end);
 	ex_print(msg, msg_ft)
 	return NULL;
 }
 
 static void *ec_undoredo(char *loc, char *cmd, char *arg)
 {
-	int ret = cmd[0] == 'u' ? lbuf_undo(xb) : lbuf_redo(xb);
-	return ret ? xuerr : NULL;
+	int ref;
+	if (cmd[0] == 'u')
+		return lbuf_undo(xb, &ref, &ref) ? xuerr : NULL;
+	return lbuf_redo(xb, &ref, &ref) ? xuerr : NULL;
 }
 
-static void *ec_save(char *loc, char *cmd, char *arg)
+static void *ec_bufsave(char *loc, char *cmd, char *arg)
 {
 	lbuf_saved(xb, *arg);
 	return NULL;
@@ -864,6 +855,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	char *s = arg;
 	rset *rs = xkwdrs;
 	int i, first = -1, last;
+	struct lopt *lo;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	pat = re_read(&s);
@@ -912,16 +904,21 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		if (r) {
 			if (first < 0) {
 				first = i;
-				lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), 0, 0);
+				lo = lbuf_opt(xb, NULL, xrow, xoff, 0);
+				lbuf_smark(xb, lo, i, 0);
+				lbuf_emark(xb, lo, 0, 0);
 			}
 			sbufn_str(r, ln)
-			lbuf_edit(xb, r->s, i, i + 1);
+			lbuf_edit(xb, r->s, i, i + 1, 0, 0);
 			sbuf_free(r)
 			last = i;
 		}
 	}
-	if (first >= 0)
-		lbuf_emark(xb, lbuf_opt(xb, NULL, xrow, 0), first, last);
+	if (first >= 0) {
+		lo = lbuf_opt(xb, NULL, xrow, xoff, 0);
+		lbuf_smark(xb, lo, first, 0);
+		lbuf_emark(xb, lo, last, 0);
+	}
 	if (rs != xkwdrs)
 		rset_free(rs);
 	free(rep);
@@ -930,18 +927,24 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 
 static void *ec_exec(char *loc, char *cmd, char *arg)
 {
-	int beg, end;
-	char *text, *rep;
+	int beg, end, o1 = 0, o2 = -1;
 	if (!loc[0])
 		return ex_pipeout(arg, NULL);
-	if (ex_vregion(loc, &beg, &end))
+	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	text = lbuf_cp(xb, beg, end);
-	rep = cmd_pipe(arg, text, NULL, 1);
-	if (rep)
-		lbuf_edit(xb, rep, beg, end);
-	free(text);
-	free(rep);
+	sbuf text;
+	lbuf_region(xb, &text, beg, o1, end-1, o2);
+	sbuf *rep = cmd_pipe(arg, &text, 1, NULL);
+	free(text.s);
+	if (!rep)
+		return NULL;
+	if (o1 > 0) {
+		char *p = lbuf_joinsb(xb, beg, end-1, rep, &o1, &o2);
+		lbuf_edit(xb, p, beg, end, o1, o2);
+		free(p);
+	} else
+		lbuf_edit(xb, rep->s, beg, end, o1, o2);
+	sbuf_free(rep)
 	return NULL;
 }
 
@@ -1207,7 +1210,7 @@ static struct excmd {
 	{"&", ec_termexec},
 	{"!", ec_exec},
 	{"bp", ec_setpath},
-	{"bs", ec_save},
+	{"bs", ec_bufsave},
 	{"bx", ec_setbufsmax},
 	{"b", ec_buffer},
 	EO(pac),
@@ -1328,6 +1331,8 @@ void *ex_exec(const char *ln)
 	int idx = 0, len = strlen(ln) + 1;
 	int r1 = -1, r2 = -1;
 	char loc[len], arg[len], *ecmd, *ret = NULL;
+	if (!xgdep)
+		lbuf_mark(xb, '*', xrow, xoff);
 	sbuf_smake(sb, 1024)
 	for (int i = 0; *ln; i++) {
 		ln = ex_parse(ln, loc, &idx, arg);
