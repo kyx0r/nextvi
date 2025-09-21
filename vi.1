@@ -420,7 +420,7 @@ Special motions that can use [#] as number of lines
 Examples:
 .Bl -tag -width Ds -compact
 .It Cm 3d/int
-Delete text until the 3rd instance of "int" keyword
+Delete text until 3rd instance of "int" keyword
 .It Cm 3dw
 Delete 3 words (prefix [#])
 .It Cm d3w
@@ -539,37 +539,37 @@ Special characters in ex
 .
 .Sh EX EXPANSION
 .Bd -literal -compact
-<%> in [args] substitutes current buffer pathname or any buffer 
+<%> in [args] substitutes current buffer pathname or any buffer
 pathname when followed by a corresponding buffer number.
 "%#" substitutes last swapped buffer pathname.
 
 Example: print the pathname for buffer 69.
 :!echo "%69"
 
-Every ex command is be able to receive data from external process
-through a special expansion character <!> which pipes the data
-into the command itself. If the closing <!> is not specified,
-the end of the line becomes a terminator.
+Every ex command is be able to receive stdout from an external
+program via a special expansion character <!>.
+If the closing <!> was not specified, the end of the line becomes
+a terminator.
 
 Example: substitute "int" with the value of $RANDOM
 :%s/int/!printf "%s" $RANDOM!
 Example: insert output of ls shell command
 :& i!ls
-Example: insert output of ls shell command efficiently
+Example: insert output of ls more efficiently
 :;c !ls!<^V><ESC>
 .Ed
 .
 .Sh EX RANGES
 .Bd -literal -compact
 Some ex commands can be prefixed with ranges.
-[range] specifies vertical and horizontal range.
-[vrange] specifies vertical range and horizontal location.
+[range] implements vertical and horizontal ranges.
+[vrange] implements vertical range and horizontal position.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [. $][- +][% 1-9][\fIsep\fP][, ;][. $][- +][1-9]
-Numeric ranges
-.It Cm </ ?>{\fIkwd\fP}[</ ?>]
+.It Cm [. $ ' / ?][- +][% 1-9][\fIsep\fP][, ;][. $ ' / ?][- +][1-9]
+All ranges
+.It Cm </ ?>[\fIkwd\fP][</ ?>]
 Search ranges
 'It Cm <'>{\fImark\fP}
 Mark ranges
@@ -581,9 +581,9 @@ Vertical range separator
 .It Cm \&;
 Horizontal range separator
 .It Cm \&%
-Range from first to last line of the buffer
+Range from first to last line of a buffer
 .It Cm \&$
-Last line of the buffer or end of the line
+Last line of a buffer or end of line
 .El
 .Bl -tag -width Ds -compact
 
@@ -605,9 +605,9 @@ Search using previously set search keyword
 .It Cm :'d,'ap
 Print lines from mark <d> to mark <a>
 .It Cm :%p
-Print all lines in the buffer
+Print all lines in a buffer
 .It Cm :$p
-Print last line in the buffer
+Print last line in a buffer
 .It Cm :;50
 Goto character offset 50
 .It Cm :10;50
@@ -617,7 +617,7 @@ Goto line 10 +5 character offset
 .It Cm :'a;'a
 Goto line mark <a> offset mark <a>
 .It Cm :;$
-Goto end of the line
+Goto end of line
 .It Cm :5;/int/
 Search for "int" on line 5
 .It Cm :.;?int?
@@ -669,7 +669,7 @@ Set current buffer path
 Set current buffer saved. If any arg given, reset undo/redo history
 
 .It Cm [\fIrange\fP]p
-Print line(s) from the buffer
+Print line(s) from a buffer
 .Bd -literal
 Example: utilize character offset ranges
 :1,10;5;5p
@@ -877,23 +877,22 @@ Example: edit vi.c only if it exists
 :1,1wl \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
 
-.It Cm [range]pu[\fIreg\fP] [\fIcmd\fP]
-Paste a register
+.It Cm [range]pu[\fIreg\fP] [\fI\e!cmd\fP]
+Paste or pipe a register
 .Bd -literal
-To pipe register data to an external process use :pu[reg] \e![cmd]
 
+Example: paste <a> at line 1 character offset 5
+:1;5pu a
 Example: copy default register to X11 clipboard
 :pu \e!xclip -selection clipboard
 Example: copy register <a> to X11 clipboard
 :pu a \e!xclip -selection clipboard
-Example: paste <a> at line 1 character offset 5
-:1;5pu a
 .Ed
 
-.It Cm [\fIrange\fP]r[\fIpath cmd\fP]
+.It Cm [\fIrange\fP]r[\fIpath\fP]
+.It Cm [\fIrange\fP]r\e![\fIcmd\fP]
 Read a file or a pipe
 .Bd -literal
-To read data from a pipe use :[range]r \e![cmd]
 
 Example: pipe in only the first line
 :r \e!ls
@@ -903,10 +902,10 @@ Example: pipe in all data
 :%r \e!ls
 .Ed
 
-.It Cm [\fIrange\fP]w[\fIpath cmd\fP]
+.It Cm [\fIrange\fP]w[\fIpath\fP]
+.It Cm [\fIrange\fP]w\e![\fIcmd\fP]
 Write to a file or a pipe
 .Bd -literal
-To pipe buffer data to external process use :[range]w \e![cmd]
 
 Example: pipe out all data into less
 :w \e!less
@@ -978,13 +977,13 @@ Example: yank into <a> using ranges
 Free a register
 
 .It Cm [\fIrange\fP]![\fIcmd\fP]
-Run external program
+Run an external program
 .Bd -literal
-When ex range specified, pipes the buffer data to an external
-process and pipes the output back into current buffer replacing
-the affected range.
+When a range is specified, the buffer's data is piped to an external
+program. The resulting stdout is then piped back into the buffer,
+replacing the contents of the original range.
 
-Example: infamously sort the buffer
+Example: infamously sort a buffer
 :%!sort
 Example: use sed to replace "int" with "uint"
 :%!sed -e 's/int/uint/g'
@@ -1056,7 +1055,7 @@ Set autocomplete filter regex
 No argument resets to the default word filter regex as defined
 in led.c.
 
-Example: autocomplete using whole lines from the buffer
+Example: autocomplete using whole lines from a buffer
 :ac .+
 .Ed
 
@@ -1347,9 +1346,9 @@ Disregard manpage notation for <{ } [ ]> in this section.
 .It Cm \&.
 Match any single char
 .It Cm ^
-Assert start of the line
+Assert start of line
 .It Cm $
-Assert end of the line
+Assert end of line
 .It Cm {\fIN\fP,\fIM\fP}
 Match N to M times
 .It Cm ()
@@ -1365,9 +1364,9 @@ Repeated one or more times
 .It Cm \&|
 Union, alternative branch
 .It Cm \e<
-Assert start of the word
+Assert start of word
 .It Cm \e>
-Assert end of the word
+Assert end of word
 .It Cm \&?
 One or zero matches greedy
 .It Cm \&??
