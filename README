@@ -635,19 +635,24 @@ EX COMMANDS
      [range]r\![cmd]
              Read a file or a pipe
 
+             Range is computed on a target.
+             No argument evaluates to % range.
 
-             Example: pipe in only the first line
+             Example: read a file
+             :r vi.c
+             Example: pipe in all data
              :r \!ls
              Example: pipe in only lines 3,5
              :3,5r \!ls
-             Example: pipe in all data
-             :%r \!ls
 
      [range]w[path]
      [range]w\![cmd]
              Write to a file or a pipe
 
+             No argument evaluates to % range.
 
+             Example: to a file
+             :w vi.c
              Example: pipe out all data into less
              :w \!less
              Example: pipe out only first 10 lines
@@ -1072,9 +1077,9 @@ CODE MAP
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
-     | 1387 ex.c    |  ex options/commands |
+     | 1390 ex.c    |  ex options/commands |
      | 1821 vi.c    |  normal mode/general |
-     | 6890 total   |  wc -l *.c|sort      |
+     | 6893 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
