@@ -267,7 +267,9 @@ char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2)
 	char *s = lbuf_get(lb, r1), *e, *se, *p;
 	char *es = lbuf_get(lb, r2);
 	int endsz;
-	if (s && rstate->s == s) {
+	if (!s || !es)
+		return NULL;
+	if (rstate->s == s) {
 		*o1 = MIN(*o1, rstate->n);
 		e = rstate->chrs[*o1];
 	} else
