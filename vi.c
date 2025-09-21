@@ -944,7 +944,10 @@ static void vc_motion(int cmd)
 		swap(&o1, &o2);
 	} else if (r1 == r2 && o1 > o2)
 		swap(&o1, &o2);
-	o1 = MAX(0, MIN(o1, ren_position(lbuf_get(xb, r1))->n));
+	if (lbuf_get(xb, r1))
+		o1 = MAX(0, MIN(o1, ren_position(lbuf_get(xb, r1))->n));
+	else
+		o1 = 0;
 	if (!lnmode && strchr("fFtTeE%", mv))
 		if (o2 < lbuf_eol(xb, r2, 2))
 			o2++;
