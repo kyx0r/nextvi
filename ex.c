@@ -519,6 +519,9 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end, &o1, &o2)) {
 		ret = xrerr;
 		goto err;
+	} else if (!loc[0]) {
+		beg = 0;
+		end = lbuf_len(lb);
 	}
 	lbuf_region(lb, &obuf, beg, o1, end-1, o2);
 	lbuf_edit(pxb, obuf.s, row, row, 0, 0);
