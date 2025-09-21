@@ -164,7 +164,7 @@ struct lbuf {
 #define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
 struct lbuf *lbuf_make(void);
 void lbuf_free(struct lbuf *lb);
-int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
+int lbuf_rd(struct lbuf *lb, int fd, int beg, int end);
 int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
 void lbuf_edit(struct lbuf *lb, char *s, int beg, int end, int o1, int o2);
 void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2);

@@ -203,7 +203,7 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
 		lo->ins = (char**)sb->s;
 }
 
-int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
+int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
 {
 	long nr;
 	sbuf_smake(sb, 1048575)  /* caps at 2147481600 on 32 bit */
