@@ -23,7 +23,7 @@ index ddacc04e..641fd8a1 100644
  	{ex_ft, "^.*$", A(AY1 | SYN_BD | SYN_SO)},
  	{ex_ft, ":[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)\
 diff --git a/ex.c b/ex.c
-index fc09e954..9219006d 100644
+index 5e04d8d9..1ff71881 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -36,7 +36,7 @@ index fc09e954..9219006d 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index e518e1e5..73535311 100644
+index ed27be6a..71cbd469 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -508,12 +508,12 @@ void dir_calc(char *path)
@@ -81,7 +81,7 @@ index e518e1e5..73535311 100644
  	}
  	return 0;
  }
-@@ -668,6 +668,7 @@ static int vi_motion(int *row, int *off)
+@@ -670,6 +670,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -89,7 +89,7 @@ index e518e1e5..73535311 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -686,8 +687,44 @@ static int vi_motion(int *row, int *off)
+@@ -688,8 +689,44 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -135,7 +135,7 @@ index e518e1e5..73535311 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1264,7 +1301,17 @@ void vi(int init)
+@@ -1263,7 +1300,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -154,7 +154,7 @@ index e518e1e5..73535311 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1418,6 +1465,10 @@ void vi(int init)
+@@ -1415,6 +1462,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -165,7 +165,7 @@ index e518e1e5..73535311 100644
  				default:
  					term_dec()
  				}
-@@ -1786,6 +1837,7 @@ int main(int argc, char *argv[])
+@@ -1783,6 +1834,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
@@ -174,7 +174,7 @@ index e518e1e5..73535311 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 2fe18c64..3f60664c 100644
+index 1853b50c..571d0f50 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -411,7 +411,7 @@ extern sbuf *xacreg;

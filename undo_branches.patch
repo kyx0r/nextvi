@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index fc09e954..8b1b31a9 100644
+index 5e04d8d9..f22bff40 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1169,6 +1169,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1172,6 +1172,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -19,7 +19,7 @@ index fc09e954..8b1b31a9 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1249,6 +1259,7 @@ static struct excmd {
+@@ -1252,6 +1262,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -28,7 +28,7 @@ index fc09e954..8b1b31a9 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index dc583bc5..e3d6bf16 100644
+index 78dd47b1..acd01c0f 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -3,6 +3,7 @@ struct lbuf *lbuf_make(void)
@@ -81,9 +81,9 @@ index dc583bc5..e3d6bf16 100644
  	free(lb->hist);
  	free(lb->ln);
  	free(lb);
-@@ -142,6 +169,63 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int beg, int end)
- 
- static struct lopt slo;
+@@ -142,6 +169,63 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2)
+ 		lopt_done(lo);
+ }
  
 +void lbuf_setleaf(struct lbuf *lb, int leaf)
 +{
@@ -143,9 +143,9 @@ index dc583bc5..e3d6bf16 100644
 +}
 +
  /* append undo/redo history */
- struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
+ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del)
  {
-@@ -151,6 +235,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int pos, int n_del)
+@@ -152,6 +236,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del)
  	else {
  		for (int i = lb->hist_u; i < lb->hist_n; i++)
  			lopt_done(&lb->hist[i]);
@@ -157,7 +157,7 @@ index dc583bc5..e3d6bf16 100644
  		lb->hist_n = lb->hist_u;
  		if (lb->hist_n == lb->hist_sz) {
  			int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -330,10 +419,10 @@ int lbuf_redo(struct lbuf *lb)
+@@ -351,10 +440,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  void lbuf_saved(struct lbuf *lb, int clear)
  {
  	if (clear) {
@@ -171,7 +171,7 @@ index dc583bc5..e3d6bf16 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index 2fe18c64..34910c9c 100644
+index 1853b50c..f96efdd4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -148,6 +148,7 @@ struct linfo {
