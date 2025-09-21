@@ -838,10 +838,10 @@ static void *ec_bufsave(char *loc, char *cmd, char *arg)
 
 static void *ec_mark(char *loc, char *cmd, char *arg)
 {
-	int beg, end, o1 = 0;
-	if (ex_region(loc, &beg, &end, &o1, &o1))
+	int beg, end;
+	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
-	lbuf_mark(xb, (unsigned char) arg[0], end - 1, o1);
+	lbuf_mark(xb, (unsigned char) arg[0], end - 1, xoff);
 	return NULL;
 }
 
