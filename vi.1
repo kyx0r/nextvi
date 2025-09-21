@@ -1,4 +1,4 @@
-.Dd Sep 20, 2025
+.Dd Sep 21, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -1409,15 +1409,15 @@ Aspect 5:
 .Sh SPECIAL MARKS
 .Bl -tag -width Ds -compact
 .It Cm *
-Position of the previous operation or command
+Position of previous ex command
 .It Cm \&[
-First line of the previous change
+First line of previous change
 .It Cm \&]
-Last line of the previous change
+Last line of previous change
 .It Cm \&'
-Position of the previous line region
+Position of previous line region
 .It Cm \&`
-Position of the previous line region
+Position of previous line region
 .El
 .
 .Sh SPECIAL REGISTERS
@@ -1446,13 +1446,13 @@ _
  305 conf.c | hl/ft/td config
  347 term.c | low level IO
  396 ren.c | positioning/syntax
- 562 lbuf.c | file/line buffer
+ 565 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  749 regex.c | pikevm
- 1377 ex.c | ex options/commands
- 1824 vi.c | normal mode/general
- 6880 total | wc -l *.c\(basort
+ 1387 ex.c | ex options/commands
+ 1821 vi.c | normal mode/general
+ 6890 total | wc -l *.c\(basort
 _
 .TE
 .
