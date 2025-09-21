@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5e04d8d9..dd51bf95 100644
+index ee81adcc..707bac2c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1388,3 +1388,16 @@ void ex_init(char **files, int n)
@@ -105,7 +105,7 @@ index ed27be6a..a5bc5cba 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 1853b50c..d7372861 100644
+index 8f69f382..85e8e2a9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -225,6 +225,7 @@ char *ren_translate(char *s, char *ln);

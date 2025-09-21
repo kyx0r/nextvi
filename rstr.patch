@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5e04d8d9..c4218c18 100644
+index ee81adcc..e8def223 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -126,7 +126,7 @@ index 5e04d8d9..c4218c18 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 78dd47b1..405345ad 100644
+index 912bcd5d..0bd84e6a 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -392,11 +392,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -306,7 +306,7 @@ index ed27be6a..9bf3da19 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 1853b50c..10648363 100644
+index 8f69f382..95ddb817 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -122,12 +122,23 @@ typedef struct {

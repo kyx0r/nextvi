@@ -23,7 +23,7 @@ index ddacc04e..641fd8a1 100644
  	{ex_ft, "^.*$", A(AY1 | SYN_BD | SYN_SO)},
  	{ex_ft, ":[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)\
 diff --git a/ex.c b/ex.c
-index 5e04d8d9..1ff71881 100644
+index ee81adcc..24ee566c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -174,7 +174,7 @@ index ed27be6a..71cbd469 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 1853b50c..571d0f50 100644
+index 8f69f382..2f56dee2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -411,7 +411,7 @@ extern sbuf *xacreg;

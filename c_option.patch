@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5e04d8d9..1985fd7d 100644
+index ee81adcc..33765463 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1374,7 +1374,7 @@ void ex(void)
@@ -64,7 +64,7 @@ index ed27be6a..36224ca5 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 1853b50c..80d8dc11 100644
+index 8f69f382..deb22f44 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -439,7 +439,7 @@ void *ex_exec(const char *ln);

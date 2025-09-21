@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5e04d8d9..faafd5b6 100644
+index ee81adcc..c8cf5280 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */
@@ -44,7 +44,7 @@ index 70456d67..ba44dc4b 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 1853b50c..5dd81c75 100644
+index 8f69f382..87268fb9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -399,6 +399,7 @@ extern int xpr;

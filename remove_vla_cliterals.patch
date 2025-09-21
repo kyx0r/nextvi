@@ -12,7 +12,7 @@ index ddacc04e..96d8f060 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 5e04d8d9..02b2519d 100644
+index ee81adcc..7443b970 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -870,7 +870,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
@@ -53,7 +53,7 @@ index 5e04d8d9..02b2519d 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 78dd47b1..0ff36ad9 100644
+index 912bcd5d..e562cf21 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -396,7 +396,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
@@ -325,7 +325,7 @@ index ed27be6a..0fc4d218 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 1853b50c..aeb283c0 100644
+index 8f69f382..27d219ab 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -462,7 +462,7 @@ extern const int ftslen;
