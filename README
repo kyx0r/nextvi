@@ -244,7 +244,7 @@ VI MOTIONS
              Special motions that can use [#] as number of lines
 
      Examples:
-     3d/int  Delete text until the 3rd instance of "int" keyword
+     3d/int  Delete text until 3rd instance of "int" keyword
      3dw     Delete 3 words (prefix [#])
      d3w     Delete 3 words (suffix [#])
      "ayl    Yank a character into <a> register
@@ -326,26 +326,26 @@ EX EXPANSION
      Example: print the pathname for buffer 69.
      :!echo "%69"
 
-     Every ex command is be able to receive data from external process
-     through a special expansion character <!> which pipes the data
-     into the command itself. If the closing <!> is not specified,
-     the end of the line becomes a terminator.
+     Every ex command is be able to receive stdout from an external
+     program via a special expansion character <!>.
+     If the closing <!> was not specified, the end of the line becomes
+     a terminator.
 
      Example: substitute "int" with the value of $RANDOM
      :%s/int/!printf "%s" $RANDOM!
      Example: insert output of ls shell command
      :& i!ls
-     Example: insert output of ls shell command efficiently
+     Example: insert output of ls more efficiently
      :;c !ls!<^V><ESC>
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
-     [range] specifies vertical and horizontal range.
-     [vrange] specifies vertical range and horizontal location.
+     [range] implements vertical and horizontal ranges.
+     [vrange] implements vertical range and horizontal position.
 
-     [. $][- +][% 1-9][sep][, ;][. $][- +][1-9]
-             Numeric ranges
-     </ ?>{kwd}[</ ?>]
+     [. $ ' / ?][- +][% 1-9][sep][, ;][. $ ' / ?][- +][1-9]
+             All ranges
+     </ ?>[kwd][</ ?>]
              Search ranges
      <'>{mark}
              Mark ranges
@@ -353,8 +353,8 @@ EX RANGES
      .       Current position
      ,       Vertical range separator
      ;       Horizontal range separator
-     %       Range from first to last line of the buffer
-     $       Last line of the buffer or end of the line
+     %       Range from first to last line of a buffer
+     $       Last line of a buffer or end of line
 
      Examples:
      :1,5p   Print lines 1,5
@@ -371,14 +371,14 @@ EX RANGES
      :/      Search using previously set search keyword
      :'d,'ap
              Print lines from mark <d> to mark <a>
-     :%p     Print all lines in the buffer
-     :$p     Print last line in the buffer
+     :%p     Print all lines in a buffer
+     :$p     Print last line in a buffer
      :;50    Goto character offset 50
      :10;50  Goto line 10 character offset 50
      :10;.+5
              Goto line 10 +5 character offset
      :'a;'a  Goto line mark <a> offset mark <a>
-     :;$     Goto end of the line
+     :;$     Goto end of line
      :5;/int/
              Search for "int" on line 5
      :.;?int?
@@ -424,7 +424,7 @@ EX COMMANDS
              history
 
      [range]p
-             Print line(s) from the buffer
+             Print line(s) from a buffer
 
              Example: utilize character offset ranges
              :1,10;5;5p
@@ -620,22 +620,21 @@ EX COMMANDS
              Example: edit vi.c only if it exists
              :1,1wl \![ -f ./vi.c ]:e ./vi.c:mpt
 
-     [range]pu[reg] [cmd]
-             Paste a register
+     [range]pu[reg] [\!cmd]
+             Paste or pipe a register
 
-             To pipe register data to an external process use :pu[reg] \![cmd]
 
+             Example: paste <a> at line 1 character offset 5
+             :1;5pu a
              Example: copy default register to X11 clipboard
              :pu \!xclip -selection clipboard
              Example: copy register <a> to X11 clipboard
              :pu a \!xclip -selection clipboard
-             Example: paste <a> at line 1 character offset 5
-             :1;5pu a
 
-     [range]r[path cmd]
+     [range]r[path]
+     [range]r\![cmd]
              Read a file or a pipe
 
-             To read data from a pipe use :[range]r \![cmd]
 
              Example: pipe in only the first line
              :r \!ls
@@ -644,10 +643,10 @@ EX COMMANDS
              Example: pipe in all data
              :%r \!ls
 
-     [range]w[path cmd]
+     [range]w[path]
+     [range]w\![cmd]
              Write to a file or a pipe
 
-             To pipe buffer data to external process use :[range]w \![cmd]
 
              Example: pipe out all data into less
              :w \!less
@@ -708,13 +707,13 @@ EX COMMANDS
              Free a register
 
      [range]![cmd]
-             Run external program
+             Run an external program
 
-             When ex range specified, pipes the buffer data to an external
-             process and pipes the output back into current buffer replacing
-             the affected range.
+             When a range is specified, the buffer's data is piped to an external
+             program. The resulting stdout is then piped back into the buffer,
+             replacing the contents of the original range.
 
-             Example: infamously sort the buffer
+             Example: infamously sort a buffer
              :%!sort
              Example: use sed to replace "int" with "uint"
              :%!sed -e 's/int/uint/g'
@@ -777,7 +776,7 @@ EX COMMANDS
              No argument resets to the default word filter regex as defined
              in led.c.
 
-             Example: autocomplete using whole lines from the buffer
+             Example: autocomplete using whole lines from a buffer
              :ac .+
 
      uc      Toggle multibyte utf-8 decoding
@@ -1008,8 +1007,8 @@ REGEX
      Disregard manpage notation for <{ } [ ]> in this section.
 
      .       Match any single char
-     ^       Assert start of the line
-     $       Assert end of the line
+     ^       Assert start of line
+     $       Assert end of line
      {N,M}   Match N to M times
      ()      Grouping
      (?:)    Non capture grouping
@@ -1017,8 +1016,8 @@ REGEX
      *       Repeated zero or more times
      +       Repeated one or more times
      |       Union, alternative branch
-     \<      Assert start of the word
-     \>      Assert end of the word
+     \<      Assert start of word
+     \>      Assert end of word
      ?       One or zero matches greedy
      ??      One or zero matches lazy
      (?=)    Positive lookahead
