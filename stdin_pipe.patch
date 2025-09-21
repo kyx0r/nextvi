@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ee81adcc..149b5278 100644
+index ee81adcc..996be4f2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -420,7 +420,9 @@ int ex_edit(const char *path, int len)
@@ -40,7 +40,7 @@ index ee81adcc..149b5278 100644
 +	if (stdin_fd) {
 +		if (i)
 +			ec_edit(NULL, "", "");
-+		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb), 1);
++		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
 +		term_done();
 +		term_init();
 +		lbuf_saved(xb, 1);
