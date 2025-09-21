@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index fc09e954..0b9ae495 100644
+index ee81adcc..9a826688 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -43,6 +43,7 @@ static int xgdep;		/* global command recursion depth */
- static char xuerr[] = "unreported error";
- static char xserr[] = "syntax error";
- static char xrerr[] = "invalid range";
+@@ -45,6 +45,7 @@ static char xserr[] = "syntax error";
+ static char xirerr[] = "invalid range";
+ static char xsrerr[] = "range not found";
+ static char *xrerr;
 +char readonly = 0;		/* commandline readonly option */
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
-@@ -104,6 +105,7 @@ static int bufs_open(const char *path, int len)
+@@ -106,6 +107,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -18,16 +18,16 @@ index fc09e954..0b9ae495 100644
  	return i;
  }
  
-@@ -431,6 +433,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -434,6 +436,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
 +	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 +		ex_buf->readonly = 1;
- 	readfile(rd =, cd == 3)
+ 	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -565,6 +569,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -572,6 +576,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -36,7 +36,7 @@ index fc09e954..0b9ae495 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1169,6 +1175,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1172,6 +1178,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index fc09e954..0b9ae495 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1240,6 +1252,7 @@ static struct excmd {
+@@ -1243,6 +1255,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,10 +58,10 @@ index fc09e954..0b9ae495 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index e518e1e5..cd1f0423 100644
+index ed27be6a..ce084d51 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1800,9 +1800,11 @@ int main(int argc, char *argv[])
+@@ -1797,9 +1797,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -75,7 +75,7 @@ index e518e1e5..cd1f0423 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 2fe18c64..4d5f6946 100644
+index 8f69f382..3cd14f46 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -374,6 +374,7 @@ struct buf {
