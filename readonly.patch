@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 5e04d8d9..57ff93c0 100644
+index ee81adcc..9a826688 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -45,6 +45,7 @@ static char xserr[] = "syntax error";
@@ -24,7 +24,7 @@ index 5e04d8d9..57ff93c0 100644
  	}
 +	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 +		ex_buf->readonly = 1;
- 	readfile(rd =, cd == 3)
+ 	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
 @@ -572,6 +576,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
@@ -75,7 +75,7 @@ index ed27be6a..ce084d51 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 1853b50c..dd22c158 100644
+index 8f69f382..3cd14f46 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -374,6 +374,7 @@ struct buf {
