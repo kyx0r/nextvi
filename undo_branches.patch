@@ -28,7 +28,7 @@ index 5e04d8d9..f22bff40 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index 78dd47b1..acd01c0f 100644
+index 78dd47b1..bf1f8957 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -3,6 +3,7 @@ struct lbuf *lbuf_make(void)
@@ -99,7 +99,7 @@ index 78dd47b1..acd01c0f 100644
 +	}
 +	if (off < 0)
 +		return;
-+	while (!lbuf_undo(lb));
++	while (!lbuf_undo(lb, &xrow, &xoff));
 +	i = lb->hist_n - lb->hist_u;
 +	if (i) {
 +		sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
@@ -119,7 +119,7 @@ index 78dd47b1..acd01c0f 100644
 +		if (lb->rehist->s_n > ptr2 - lb->rehist->s)
 +			memmove(ptr1, ptr2, lb->rehist->s_n - (ptr2 - lb->rehist->s));
 +		lb->rehist->s_n -= ptr2 - ptr1;
-+		while (!lbuf_redo(lb));
++		while (!lbuf_redo(lb, &xrow, &xoff));
 +	}
 +}
 +
@@ -145,10 +145,12 @@ index 78dd47b1..acd01c0f 100644
  /* append undo/redo history */
  struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del)
  {
-@@ -152,6 +236,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del)
+@@ -150,8 +234,11 @@ struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del)
+ 	if (xseq < 0)
+ 		lo = &slo;
  	else {
- 		for (int i = lb->hist_u; i < lb->hist_n; i++)
- 			lopt_done(&lb->hist[i]);
+-		for (int i = lb->hist_u; i < lb->hist_n; i++)
+-			lopt_done(&lb->hist[i]);
 +		int i = lb->hist_n - lb->hist_u;
 +		if (i) {
 +			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
@@ -157,7 +159,7 @@ index 78dd47b1..acd01c0f 100644
  		lb->hist_n = lb->hist_u;
  		if (lb->hist_n == lb->hist_sz) {
  			int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -351,10 +440,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -351,10 +438,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  void lbuf_saved(struct lbuf *lb, int clear)
  {
  	if (clear) {
