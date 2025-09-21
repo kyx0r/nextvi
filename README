@@ -482,8 +482,8 @@ EX COMMANDS
 
              In combination with seq and lim ex options, this command is
              optimal for modifying very long lines.
-             Max insertion buffer is ~1.33GB on 32bit.
-             Max addressable line is 2.0GB on 32bit.
+             Max insertion buffer is ~1.33GB on a 32 bit build.
+             Max addressable line is 2.0GB on a 32 bit build.
 
              Example: replace current line with "hello"
              :c hello<^M><ESC>
@@ -504,7 +504,7 @@ EX COMMANDS
              Open a file at a path
 
              No argument opens "unnamed" buffer.
-             Files larger than 2.0GB are truncated on 32 bit.
+             Files larger than 2.0GB are truncated on a 32 bit build.
              Line breaking happens until the first null terminator or EOF.
      e![path]
              Force open a file at a path
@@ -516,6 +516,8 @@ EX COMMANDS
 
              Execute an ex command on a range of lines that matches an
              enclosed regex.
+
+             No range evaluates to % range or . range when nested.
 
              Example: remove all empty lines
              :g/^$/d
@@ -532,8 +534,6 @@ EX COMMANDS
              It is possible to nest global commands inside of global commands.
              The first global command will not be executed on lines that
              were changed by a nested global command.
-             When range not given, a nested global command is executed on
-             the current line.
 
              Example: nested global command
              Append "has a semicolon" to all lines that contain "int" and
@@ -551,6 +551,8 @@ EX COMMANDS
 
              Example: print current character offset
              :;=
+             Example: print value of mark <a>
+             :'a=
 
      [vrange]k[mark]
              Set a line mark
@@ -623,7 +625,6 @@ EX COMMANDS
      [range]pu[reg] [\!cmd]
              Paste or pipe a register
 
-
              Example: paste <a> at line 1 character offset 5
              :1;5pu a
              Example: copy default register to X11 clipboard
@@ -636,7 +637,8 @@ EX COMMANDS
              Read a file or a pipe
 
              Range is computed on a target.
-             No argument evaluates to % range.
+             No range evaluates to % range.
+             No argument evaluates to current buffer path.
 
              Example: read a file
              :r vi.c
@@ -647,11 +649,12 @@ EX COMMANDS
 
      [range]w[path]
      [range]w\![cmd]
-             Write to a file or a pipe
+             Write a file or a pipe
 
-             No argument evaluates to % range.
+             No range evaluates to % range.
+             No argument evaluates to current buffer path.
 
-             Example: to a file
+             Example: write a file
              :w vi.c
              Example: pipe out all data into less
              :w \!less
@@ -1078,8 +1081,8 @@ CODE MAP
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
      | 1390 ex.c    |  ex options/commands |
-     | 1821 vi.c    |  normal mode/general |
-     | 6893 total   |  wc -l *.c|sort      |
+     | 1824 vi.c    |  normal mode/general |
+     | 6896 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
