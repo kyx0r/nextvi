@@ -28,7 +28,7 @@ index 19ede9aa..1aac87c0 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index 912bcd5d..22e8769c 100644
+index 912bcd5d..c03ea82d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -3,6 +3,7 @@ struct lbuf *lbuf_make(void)
@@ -139,7 +139,7 @@ index 912bcd5d..22e8769c 100644
 +		sbuf_str(sb, buf);
 +		ptr += n * sizeof(lb->hist[0]) + sizeof(lb->hist_n);
 +	}
-+	sbufn_sret(sb)
++	sbufn_ret(sb, sb->s)
 +}
 +
  /* append undo/redo history */
