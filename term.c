@@ -338,10 +338,8 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 		term_init();
 		signal(SIGINT, SIG_DFL);
 	}
-	if (oproc) {
-		sbuf_null(sb)
-		return sb;
-	}
+	if (oproc)
+		sbufn_ret(sb, sb)
 	sbuf_free(sb)
 	return NULL;
 }
