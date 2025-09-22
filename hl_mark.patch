@@ -27,7 +27,7 @@ index 19ede9aa..dfc6b2b8 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index e1f1cb55..36e9c495 100644
+index e1f1cb55..23e7ea52 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1701,6 +1701,21 @@ void vi(int init)
@@ -36,7 +36,7 @@ index e1f1cb55..36e9c495 100644
  		}
 +		if (xhlm) {
 +			int mrow, moff;
-+			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`'";
++			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`*";
 +			led_att la;
 +			if (!led_attsb)
 +				sbuf_make(led_attsb, sizeof(la))
