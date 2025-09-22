@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ee81adcc..e8def223 100644
+index 19ede9aa..944b4a1e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -24,7 +24,7 @@ index ee81adcc..e8def223 100644
  		xkwdcnt++;
  		ex_regput('/', kwd, 0);
  		xkwddir = dir;
-@@ -853,14 +853,14 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -856,14 +856,14 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	int beg, end, grp;
  	char *pat, *rep = NULL, *_rep;
  	char *s = arg;
@@ -41,7 +41,7 @@ index ee81adcc..e8def223 100644
  	if (!rs) {
  		free(pat);
  		return xserr;
-@@ -870,11 +870,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -873,11 +873,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -55,7 +55,7 @@ index ee81adcc..e8def223 100644
  			if (offs[xgrp] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -889,7 +889,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -892,7 +892,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  					}
  					_rep++;
  					grp = abs((*_rep - '0') * 2);
@@ -64,7 +64,7 @@ index ee81adcc..e8def223 100644
  						sbuf_chr(r, (unsigned char)*_rep)
  					else if (offs[grp] >= 0)
  						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
-@@ -920,7 +920,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -923,7 +923,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		lbuf_emark(xb, lo, last, 0);
  	}
  	if (rs != xkwdrs)
@@ -73,7 +73,7 @@ index ee81adcc..e8def223 100644
  	free(rep);
  	return NULL;
  }
-@@ -975,7 +975,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -978,7 +978,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  {
  	int i, beg, end, not;
  	char *pat, *s = arg;
@@ -82,7 +82,7 @@ index ee81adcc..e8def223 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_vregion(loc, &beg, &end))
-@@ -983,9 +983,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -986,9 +986,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	not = !!strchr(cmd, '!');
  	pat = re_read(&s);
  	if (pat && *pat)
@@ -94,7 +94,7 @@ index ee81adcc..e8def223 100644
  	free(pat);
  	if (!rs)
  		return xserr;
-@@ -995,7 +995,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -998,7 +998,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	for (i = beg; i < lbuf_len(xb);) {
  		char *ln = lbuf_get(xb, i);
  		lbuf_s(ln)->grec &= ~xgdep;
@@ -103,7 +103,7 @@ index ee81adcc..e8def223 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -1004,7 +1004,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1007,7 +1007,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  		while (i < lbuf_len(xb) && !(lbuf_i(xb, i)->grec & xgdep))
  			i++;
  	}
@@ -112,7 +112,7 @@ index ee81adcc..e8def223 100644
  	xgdep /= 2;
  	return NULL;
  }
-@@ -1083,10 +1083,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
+@@ -1086,10 +1086,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
  
  static void *ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -153,12 +153,12 @@ index 912bcd5d..0bd84e6a 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index daeeea06..5acf036a 100644
+index 36cc16cc..4bdab9f6 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -747,3 +747,126 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
- 	sbufn_sret(sb)
+ 	sbufn_ret(sb, sb->s)
  }
 +
 +/* return zero if a simple pattern is given */
@@ -284,7 +284,7 @@ index daeeea06..5acf036a 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index ed27be6a..9bf3da19 100644
+index e1f1cb55..772fdaa7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -448,7 +448,7 @@ static void vi_regput(int c, const char *s, int lnmode)
@@ -306,7 +306,7 @@ index ed27be6a..9bf3da19 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 8f69f382..95ddb817 100644
+index 964e4b1d..ff2d80a0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -122,12 +122,23 @@ typedef struct {

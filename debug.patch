@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index ee81adcc..707bac2c 100644
+index 19ede9aa..250bc38c 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1388,3 +1388,16 @@ void ex_init(char **files, int n)
+@@ -1391,3 +1391,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -20,7 +20,7 @@ index ee81adcc..707bac2c 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index daeeea06..6c1b9a1c 100644
+index 36cc16cc..7c962553 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -625,6 +625,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
@@ -68,7 +68,7 @@ index a552bd9b..8666a62b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index ed27be6a..a5bc5cba 100644
+index e1f1cb55..5b2daab3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -448,6 +448,12 @@ static void vi_regput(int c, const char *s, int lnmode)
@@ -84,7 +84,7 @@ index ed27be6a..a5bc5cba 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1811,12 +1817,19 @@ int main(int argc, char *argv[])
+@@ -1813,12 +1819,19 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -105,7 +105,7 @@ index ed27be6a..a5bc5cba 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 8f69f382..85e8e2a9 100644
+index 964e4b1d..164cf229 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -225,6 +225,7 @@ char *ren_translate(char *s, char *ln);
