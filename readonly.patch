@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 19ede9aa..55ef44f2 100644
+index 19ede9aa..05d2ea06 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -45,6 +45,7 @@ static char xserr[] = "syntax error";
@@ -18,15 +18,15 @@ index 19ede9aa..55ef44f2 100644
  	return i;
  }
  
-@@ -439,6 +441,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
- 		ex_bufpostfix(ex_buf, arg[0]);
- 		syn_setft(xb_ft);
+@@ -434,6 +436,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+ 		bufs_switch(bufs_open(arg+cd, len));
+ 		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
 +	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 +		ex_buf->readonly = 1;
- 	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
- 			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
- 			fd < 0 || rd ? 'f' : 'r');
+ 	readfile(rd =)
+ 	if (cd == 3 || (!rd && fd >= 0)) {
+ 		ex_bufpostfix(ex_buf, arg[0]);
 @@ -572,6 +576,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
