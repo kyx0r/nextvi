@@ -745,5 +745,5 @@ char *re_read(char **src)
 		sbuf_chr(sb, (unsigned char) *s++)
 	}
 	*src = *s ? s + 1 : s;
-	sbufn_sret(sb)
+	sbufn_ret(sb, sb->s)
 }

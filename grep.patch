@@ -23,7 +23,7 @@ index ddacc04e..641fd8a1 100644
  	{ex_ft, "^.*$", A(AY1 | SYN_BD | SYN_SO)},
  	{ex_ft, ":[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)\
 diff --git a/ex.c b/ex.c
-index ee81adcc..24ee566c 100644
+index 19ede9aa..a6f2e8ad 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -36,7 +36,7 @@ index ee81adcc..24ee566c 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index ed27be6a..71cbd469 100644
+index e1f1cb55..16959833 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -508,12 +508,12 @@ void dir_calc(char *path)
@@ -135,7 +135,7 @@ index ed27be6a..71cbd469 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1263,7 +1300,17 @@ void vi(int init)
+@@ -1265,7 +1302,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -154,7 +154,7 @@ index ed27be6a..71cbd469 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1415,6 +1462,10 @@ void vi(int init)
+@@ -1417,6 +1464,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -165,7 +165,7 @@ index ed27be6a..71cbd469 100644
  				default:
  					term_dec()
  				}
-@@ -1783,6 +1834,7 @@ int main(int argc, char *argv[])
+@@ -1785,6 +1836,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
@@ -174,7 +174,7 @@ index ed27be6a..71cbd469 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 8f69f382..2f56dee2 100644
+index 964e4b1d..a4d150d7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -411,7 +411,7 @@ extern sbuf *xacreg;

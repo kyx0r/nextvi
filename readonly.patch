@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ee81adcc..9a826688 100644
+index 19ede9aa..05d2ea06 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -45,6 +45,7 @@ static char xserr[] = "syntax error";
@@ -36,7 +36,7 @@ index ee81adcc..9a826688 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1172,6 +1178,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1175,6 +1181,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index ee81adcc..9a826688 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1243,6 +1255,7 @@ static struct excmd {
+@@ -1246,6 +1258,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,10 +58,10 @@ index ee81adcc..9a826688 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index ed27be6a..ce084d51 100644
+index e1f1cb55..99922b16 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1797,9 +1797,11 @@ int main(int argc, char *argv[])
+@@ -1799,9 +1799,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -75,7 +75,7 @@ index ed27be6a..ce084d51 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 8f69f382..3cd14f46 100644
+index 964e4b1d..3458f65f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -374,6 +374,7 @@ struct buf {

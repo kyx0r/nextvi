@@ -546,11 +546,14 @@ EX COMMANDS
 
      [vrange]g!{*}[kwd]{*}{cmd}
              Inverted global command
-     [range]=
-             Print the current range number
+     [range]=[0-3]
+             Print range values
 
-             Example: print current character offset
-             :;=
+             Argument selects a specific value.
+             No argument prints all range values.
+
+             Example: print current character offset only
+             :;= 2
              Example: print value of mark <a>
              :'a=
 
@@ -1076,15 +1079,15 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 305 conf.c   |  hl/ft/td config     |
-     | 347 term.c   |  low level IO        |
+     | 345 term.c   |  low level IO        |
      | 396 ren.c    |  positioning/syntax  |
      | 567 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
-     | 1390 ex.c    |  ex options/commands |
-     | 1822 vi.c    |  normal mode/general |
-     | 6896 total   |  wc -l *.c|sort      |
+     | 1393 ex.c    |  ex options/commands |
+     | 1824 vi.c    |  normal mode/general |
+     | 6899 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1156,7 +1159,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                  September 21, 2025                  Linux 6.16.0
+Linux 6.16.0                  September 22, 2025                  Linux 6.16.0
 
 NEXTVI PATCHES
 ==============

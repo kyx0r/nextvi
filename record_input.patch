@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index ee81adcc..c8cf5280 100644
+index 19ede9aa..90b1ccc3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */
@@ -10,7 +10,7 @@ index ee81adcc..c8cf5280 100644
  
  int xrow, xoff, xtop;		/* current row, column, and top row */
  int xbufcur;			/* number of active buffers */
-@@ -1189,6 +1190,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1192,6 +1193,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index ee81adcc..c8cf5280 100644
  
  _EO(left,
  	if (*loc)
-@@ -1241,6 +1243,7 @@ static struct excmd {
+@@ -1244,6 +1246,7 @@ static struct excmd {
  	{"k", ec_mark},
  	{"q!", ec_quit},
  	{"q", ec_quit},
@@ -27,7 +27,7 @@ index ee81adcc..c8cf5280 100644
  	{"rd", ec_undoredo},
  	{"r", ec_read},
 diff --git a/term.c b/term.c
-index 70456d67..ba44dc4b 100644
+index 757c26eb..5655fd17 100644
 --- a/term.c
 +++ b/term.c
 @@ -160,6 +160,12 @@ int term_read(void)
@@ -44,7 +44,7 @@ index 70456d67..ba44dc4b 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 8f69f382..87268fb9 100644
+index 964e4b1d..5abdbecf 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -399,6 +399,7 @@ extern int xpr;
