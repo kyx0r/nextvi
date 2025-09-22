@@ -200,7 +200,7 @@ static char *ex_pathexpand(sbuf *sb, char *src)
 			sbuf_chr(sb, *src++)
 		}
 	}
-	sbufn_sret(sb)
+	sbufn_ret(sb, sb->s)
 }
 
 /* set the current search keyword rset if the kwd or flags changed */
@@ -817,10 +817,13 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 static void *ec_lnum(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
-	int beg, end, o1 = -1, o2 = -1;
-	if (ex_region(loc, &beg, &end, &o1, &o2))
+	int arr[4] = {0, 0, -1, -1};
+	if (ex_region(loc, &arr[0], &arr[1], &arr[2], &arr[3]))
 		return xrerr;
-	sprintf(msg, "%d", o1 >= 0 ? MAX(o1, o2) : end);
+	if (*arg && atoi(arg) >= 0 && atoi(arg) < 4)
+		itoa(arr[atoi(arg)], msg);
+	else
+		sprintf(msg, "%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
 	ex_print(msg, msg_ft)
 	return NULL;
 }

@@ -90,7 +90,7 @@ sb->s_n += len; \
 #define sbufn_str(sb, s) { sbuf_str(sb, s) sbuf_null(sb) }
 #define sbufn_cut(sb, len) { sbuf_cut(sb, len) sbuf_null(sb) }
 #define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_null(sb) }
-#define sbufn_sret(sb) { sbuf_set(sb, '\0', 4) return sb->s; }
+#define sbufn_ret(sb, str) { sbuf_null(sb) return str; }
 
 /* regex.c regular expression sets */
 #define REG_ICASE	0x01
