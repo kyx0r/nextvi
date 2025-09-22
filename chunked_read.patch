@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 19ede9aa..1c46d8c7 100644
+index 19ede9aa..22baf661 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -394,10 +394,10 @@ void ex_bufpostfix(struct buf *p, int clear)
@@ -11,7 +11,7 @@ index 19ede9aa..1c46d8c7 100644
  fd = open(xb_path, O_RDONLY); \
  if (fd >= 0) { \
 -	errchk lbuf_rd(xb, fd, 0, lbuf_len(xb)); \
-+	errchk lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \
++	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \
  	close(fd); \
  } \
  
@@ -33,17 +33,8 @@ index 19ede9aa..1c46d8c7 100644
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
-@@ -508,7 +508,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
- 			ret = "open failed";
- 			goto err;
- 		}
--		if (lbuf_rd(lb, fd, 0, 0)) {
-+		if (lbuf_rd(lb, fd, 0, 0, 0)) {
- 			ret = "read failed";
- 			goto err;
- 		}
 diff --git a/lbuf.c b/lbuf.c
-index 912bcd5d..b7bed619 100644
+index 912bcd5d..4c7cf4e7 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -203,20 +203,71 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -51,7 +42,7 @@ index 912bcd5d..b7bed619 100644
  }
  
 -int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
-+int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
++int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
  {
 -	long nr;
 -	sbuf_smake(sb, 1048575)  /* caps at 2147481600 on 32 bit */
@@ -128,15 +119,16 @@ index 912bcd5d..b7bed619 100644
  	return nr != 0;
  }
 diff --git a/vi.h b/vi.h
-index 964e4b1d..0c729ad0 100644
+index 964e4b1d..69e9b4e4 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -164,7 +164,7 @@ struct lbuf {
+@@ -164,7 +164,8 @@ struct lbuf {
  #define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
  struct lbuf *lbuf_make(void);
  void lbuf_free(struct lbuf *lb);
 -int lbuf_rd(struct lbuf *lb, int fd, int beg, int end);
-+int lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
++int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
++#define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
  int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
  void lbuf_edit(struct lbuf *lb, char *s, int beg, int end, int o1, int o2);
  void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2);
