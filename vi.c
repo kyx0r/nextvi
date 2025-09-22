@@ -432,7 +432,7 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 		sbuf_mem(sb, beg[off], beg[o] - beg[off])
 		sbuf_str(sb, "\\>")
 	}
-	sbufn_sret(sb)
+	sbufn_ret(sb, sb->s)
 }
 
 static void vi_regput(int c, const char *s, int lnmode)
@@ -819,6 +819,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	sbuf_smake(sb, xcols)
 	if (lnmode || !ln) {
 		vi_indents(ln, &l1);
+		o1 = l1;
 		post = _post = uc_dup("\n");
 		tlen = -1;
 		lbuf_region(xb, &rsb, r1, 0, r2, -1);
@@ -944,8 +945,9 @@ static void vc_motion(int cmd)
 		swap(&o1, &o2);
 	} else if (r1 == r2 && o1 > o2)
 		swap(&o1, &o2);
-	if (lbuf_get(xb, r1))
-		o1 = MAX(0, MIN(o1, ren_position(lbuf_get(xb, r1))->n));
+	ren_state *r = (ren_state*)lbuf_get(xb, r1);
+	r = r ? ren_position((char*)r) : NULL;
+	o1 = r ? MAX(0, MIN(o1, r->n)) : 0;
 	if (!lnmode && strchr("fFtTeE%", mv))
 		if (o2 < lbuf_eol(xb, r2, 2))
 			o2++;
