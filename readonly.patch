@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 19ede9aa..05d2ea06 100644
+index 43aa4e4c..bba64743 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -45,6 +45,7 @@ static char xserr[] = "syntax error";
@@ -18,7 +18,7 @@ index 19ede9aa..05d2ea06 100644
  	return i;
  }
  
-@@ -434,6 +436,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -433,6 +435,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -27,7 +27,7 @@ index 19ede9aa..05d2ea06 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -572,6 +576,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -571,6 +575,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -36,7 +36,7 @@ index 19ede9aa..05d2ea06 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1175,6 +1181,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1174,6 +1180,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index 19ede9aa..05d2ea06 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1246,6 +1258,7 @@ static struct excmd {
+@@ -1245,6 +1257,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,10 +58,10 @@ index 19ede9aa..05d2ea06 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index e1f1cb55..99922b16 100644
+index 568a3183..075bf074 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1799,9 +1799,11 @@ int main(int argc, char *argv[])
+@@ -1800,9 +1800,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;

@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 19ede9aa..22baf661 100644
+index 43aa4e4c..77e3a8dd 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -394,10 +394,10 @@ void ex_bufpostfix(struct buf *p, int clear)
+@@ -393,10 +393,10 @@ void ex_bufpostfix(struct buf *p, int clear)
  	lbuf_saved(p->lb, clear);
  }
  
@@ -15,7 +15,7 @@ index 19ede9aa..22baf661 100644
  	close(fd); \
  } \
  
-@@ -413,7 +413,7 @@ int ex_edit(const char *path, int len)
+@@ -412,7 +412,7 @@ int ex_edit(const char *path, int len)
  		return 1;
  	}
  	bufs_switch(bufs_open(path, len));
@@ -24,7 +24,7 @@ index 19ede9aa..22baf661 100644
  	return 0;
  }
  
-@@ -434,7 +434,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -433,7 +433,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
