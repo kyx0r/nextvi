@@ -619,11 +619,12 @@ static int vi_motion(int *row, int *off)
 	case TK_CTL('h'):
 		dir = mv == ' ' ? +1 : -1;
 		mark = lbuf_eol(xb, *row, 1);
-		for (; cnt; cnt--, *off += dir) {
-			if (*off + dir < 0 || *off >= mark) {
+		for (; cnt; cnt--) {
+			*off += dir;
+			if (*off < 0 || *off > mark) {
 				*row += dir;
 				mark = lbuf_eol(xb, *row, 0);
-				*off = dir < 0 ? mark+1 : -1;
+				*off = dir < 0 ? mark : 0;
 			}
 		}
 		break;
