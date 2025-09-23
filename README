@@ -1085,8 +1085,8 @@ CODE MAP
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 749 regex.c  |  pikevm              |
-     | 1393 ex.c    |  ex options/commands |
-     | 1824 vi.c    |  normal mode/general |
+     | 1392 ex.c    |  ex options/commands |
+     | 1825 vi.c    |  normal mode/general |
      | 6899 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
@@ -1159,7 +1159,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                  September 22, 2025                  Linux 6.16.0
+Linux 6.16.0                  September 23, 2025                  Linux 6.16.0
 
 NEXTVI PATCHES
 ==============
