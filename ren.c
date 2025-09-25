@@ -325,29 +325,28 @@ void syn_highlight(int *att, char *s, int n)
 				blk = 0;
 		}
 		for (i = 0; i < rs->setgrpcnt[sl]; i++) {
-			if (subs[i * 2] >= 0) {
+			if (subs[i * 2] >= 0 && !SYN_IGNSET(catt[i])) {
 				int beg = uc_off(s, sidx + subs[i * 2]);
 				int end = beg + uc_off(s + sidx + subs[i * 2],
 						subs[i * 2 + 1] - subs[i * 2]);
 				for (j = beg; j < end; j++)
 					att[j] = syn_merge(att[j], catt[i]);
-				if (!SYN_SOSET(catt[i]))
-					cend = MAX(cend, subs[i * 2 + 1]);
-				else {
-					if (blkend)
-						bend = MAX(cend, subs[i * 2 + 1]) + sidx;
-					if (!SYN_SPSET(catt[i]))
-						cend = MAX(cend, subs[i * 2]);
-				}
+				if (SYN_SPSET(catt[i]))
+					continue;
+				if (blkend && (catt[i] & SYN_IGN))
+					bend = MAX(cend, subs[i * 2 + 1]) + sidx;
+				cend = MAX(cend, subs[i * 2 + !SYN_SOSET(catt[i])]);
 			}
 		}
 		sidx += cend;
 		cend = 1;
 		flg = REG_NOTBOL;
 	}
-	if (syn_blockhl && !blk)
-		for (j = 0; j < n; j++)
-			att[j] = att[j] && SYN_SOSET(*blockatt) ? att[j] : *blockatt;
+	if (!syn_blockhl || blk || SYN_IGNSET(*blockatt))
+		return;
+	for (j = 0; j < n; j++)
+		if (!att[j] || !SYN_SOSET(*blockatt))
+			att[j] = *blockatt;
 }
 
 char *syn_filetype(char *path)

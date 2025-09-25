@@ -237,9 +237,11 @@ void dir_init(void);
 #define SYN_FG(a)	(a & 0xff)
 #define SYN_BG(a)	((a >> 8) & 0xff)
 #define SYN_SO		0x400000
-#define SYN_SP		0xc00000
+#define SYN_SP		0x800000
+#define SYN_IGN		0xc00000
 #define SYN_SOSET(a)	(a & 0x400000)
-#define SYN_SPSET(a)	((a & 0xc00000) == 0xc00000)
+#define SYN_SPSET(a)	(a & 0x800000)
+#define SYN_IGNSET(a)	((a & 0xc00000) == 0xc00000)
 extern int syn_reload;
 extern int syn_blockhl;
 char *syn_setft(char *ft);

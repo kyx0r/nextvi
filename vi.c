@@ -354,8 +354,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 /* read a line motion */
 static int vi_motionln(int *row, int cmd, int cnt)
 {
-	int c = term_read();
-	int mark, mark_row, mark_off;
+	int mark, c = term_read();
 	switch (c) {
 	case '\n':
 	case '+':
@@ -369,9 +368,8 @@ static int vi_motionln(int *row, int cmd, int cnt)
 	case '\'':
 		if ((mark = term_read()) <= 0)
 			return -1;
-		if (lbuf_jump(xb, mark, &mark_row, &mark_off))
+		if (lbuf_jump(xb, mark, row, &mark))
 			return -1;
-		*row = mark_row;
 		break;
 	case 'G':
 		*row = vi_arg ? cnt - 1 : lbuf_len(xb) - 1;
@@ -582,7 +580,7 @@ static int vi_motion(int *row, int *off)
 	static int srow[10], soff[10], lkwdcnt;
 	static int cadir = 1;
 	int cnt = vi_arg ? vi_arg : 1;
-	int dir, mark, mark_row, mark_off;
+	int dir, mark;
 	char *cs;
 	int mv, i;
 
@@ -759,10 +757,8 @@ static int vi_motion(int *row, int *off)
 	case '`':
 		if ((mark = term_read()) <= 0)
 			return -1;
-		if (lbuf_jump(xb, mark, &mark_row, &mark_off))
+		if (lbuf_jump(xb, mark, row, off))
 			return -1;
-		*row = mark_row;
-		*off = mark_off;
 		break;
 	case '%':
 		if (lbuf_pair(xb, row, off))

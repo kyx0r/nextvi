@@ -60,8 +60,10 @@ struct highlight hls[] = {
 	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
 
 	{FT(c), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	//{FT(c), "(\"[^\"]*\\\\\n$)|(^[^\"]*\")", A(SYN_IGN, MA, MA | SYN_IGN), 2},
+	//{FT(c), "^.*?(\")(.*?\\\\)?\n$|^(.*?\")", A(SYN_IGN, MA | SYN_SP, MA | SYN_SP, YE), 0},
 	{FT(c), "^.+\\\\\n$", A(CY1 | SYN_SO)},
-	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?>\".*\\*/.*\"))",
+	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?>\".*\\*/.*(?:\"|\\\\\n$)))",
 		A(BL | SYN_IT, BL, BL), 2},
 	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
 	{FT(c), NULL, A(RE1), 0, 1},
@@ -73,9 +75,9 @@ out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(c), "(\\?).+?(:)", A(IN | SYN_SO, YE, YE | SYN_SP)},
 	{FT(c), "//.*", A(BL | SYN_IT)},
+	{FT(c), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
 	{FT(c), "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", A(CY, CY, MA)},
 	{FT(c), "([a-zA-Z0-9_]+)\\(", A(IN, SYN_BD)},
-	{FT(c), "\"(?:[^\"\\\\]|\\\\.)*\"|\"", A(MA)},
 	{FT(c), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
 	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", A(RE1)},
 
@@ -232,10 +234,12 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 
 	{ex_ft, "^[^:].*$", A(AY1 | SYN_BD)},
 	{ex_ft, "^.*$", A(AY1 | SYN_BD | SYN_SO)},
-	{ex_ft, ":[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)\
-(?:([+-])[0-9]+)?)[ \t]*(?:([,;])((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)\
-(?:([+-])([0-9]+))?)*)((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|\
-left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[+ \t]?([?/])|[tdp+])?|inc|i|\
+	{ex_ft, ":[ \t]*((((?:\\?(?:[^?\\\\]|\\\\.)*\\?\?|/(?:[^/\\\\]|\\\\.)*/?)?\
+[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([+-])[0-9]+)?)[ \t]*(?:([,;])[ \t]*\
+((?:\\?(?:[^?\\\\]|\\\\.)*\\?\?|/(?:[^/\\\\]|\\\\.)*/?)?[.%$]?(?:'[a-z'`[\\]*])?\
+([0-9]*)?)(?:([+-])([0-9]+))?[ \t]*)*)\
+((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|left|lim|led|vis|mpt)\
+|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:\\+?[ \t]?([?/])|[tdp+])?|inc|i|\
 (?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[ql!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
 	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
