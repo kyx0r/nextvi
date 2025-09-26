@@ -236,22 +236,20 @@ void dir_init(void);
 #define SYN_BGSET(a)	(a & 0x20ff00)
 #define SYN_FG(a)	(a & 0xff)
 #define SYN_BG(a)	((a >> 8) & 0xff)
-#define SYN_SO		0x400000
-#define SYN_SP		0x800000
-#define SYN_IGN		0xc00000
-#define SYN_SOSET(a)	(a & 0x400000)
-#define SYN_SPSET(a)	(a & 0x800000)
-#define SYN_IGNSET(a)	((a & 0xc00000) == 0xc00000)
-extern int syn_reload;
+#define SYN_BS		0x400000
+#define SYN_BE		0x800000
+#define SYN_BSSET(a)	(a & 0x400000)
+#define SYN_BESET(a)	(a & 0x800000)
 extern int syn_blockhl;
+extern int ftidx;
 char *syn_setft(char *ft);
 void syn_scdir(int scdir);
-void syn_highlight(int *att, char *s, int n);
+void syn_highlight(int *att, char *s, int n, int fti);
 char *syn_filetype(char *path);
 int syn_merge(int old, int new);
-void syn_reloadft(void);
+void syn_reloadft(int hl);
 int syn_findhl(int id);
-void syn_addhl(char *reg, int id, int reload);
+int syn_addhl(char *reg, int id);
 void syn_init(void);
 
 /* uc.c utf-8 helper functions */
@@ -465,9 +463,8 @@ struct highlight {
 	char *ft;		/* the filetype of this pattern */
 	char *pat;		/* regular expression */
 	int *att;		/* attributes of the matched groups */
-	signed char blkend;	/* the ending group for multi-line patterns;
-				negative group is able to start and end itself */
-	char id;		/* id of this hl */
+	unsigned char set;	/* subset index */
+	unsigned char id;	/* id of this hl */
 };
 extern struct highlight hls[];
 extern const int hlslen;

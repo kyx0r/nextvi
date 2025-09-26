@@ -235,7 +235,7 @@ char *ren_translate(char *s, char *ln)
 	return xshape ? uc_shape(ln, s, c) : NULL;
 }
 
-#define NFTS		30
+#define NFTS		100
 /* mapping filetypes to regular expression sets */
 static struct ftmap {
 	int setbidx;
@@ -244,30 +244,30 @@ static struct ftmap {
 	rset *rs;
 } ftmap[NFTS];
 static int ftmidx;
-static int ftidx;
+int ftidx;
 
 static rset *syn_ftrs;
 static int last_scdir;
-static int *blockatt;
-int syn_reload;
+static int blockatt;
 int syn_blockhl;
 
-static void syn_initft(int fti, int n, char *name)
+static int syn_initft(int fti, int n, char *name)
 {
-	int i = n;
+	int i = n, set = hls[i].set;
 	char *pats[hlslen];
-	for (; i < hlslen && !strcmp(hls[i].ft, name); i++)
+	for (; i < hlslen && hls[i].ft == name && hls[i].set == set; i++)
 		pats[i - n] = hls[i].pat;
 	ftmap[fti].setbidx = n;
 	ftmap[fti].ft = name;
 	ftmap[fti].rs = rset_make(i - n, pats, 0);
 	ftmap[fti].seteidx = i;
+	return i < hlslen && hls[i].ft == name && hls[i].set != set;
 }
 
 char *syn_setft(char *ft)
 {
 	for (int i = 1; i < 4; i++)
-		syn_addhl(NULL, i, 0);
+		syn_addhl(NULL, i);
 	for (int i = 0; i < ftmidx; i++)
 		if (!strcmp(ft, ftmap[i].ft)) {
 			ftidx = i;
@@ -276,7 +276,8 @@ char *syn_setft(char *ft)
 	for (int i = 0; i < hlslen; i++)
 		if (!strcmp(ft, hls[i].ft)) {
 			ftidx = ftmidx;
-			syn_initft(ftmidx++, i, hls[i].ft);
+			while (syn_initft(ftmidx++, i, hls[i].ft))
+				i = ftmap[ftmidx-1].seteidx;
 			return ftmap[ftidx].ft;
 		}
 	if (!ftmidx && !ftmap[ftidx].rs)
@@ -288,7 +289,7 @@ void syn_scdir(int scdir)
 {
 	if (last_scdir != scdir) {
 		last_scdir = scdir;
-		syn_blockhl = 0;
+		syn_blockhl = -1;
 	}
 }
 
@@ -299,54 +300,43 @@ int syn_merge(int old, int new)
 	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
 }
 
-void syn_highlight(int *att, char *s, int n)
+void syn_highlight(int *att, char *s, int n, int fti)
 {
-	rset *rs = ftmap[ftidx].rs;
-	int subs[rs->grpcnt * 2], sl;
-	int blk = 0, blkm = 0, sidx = 0, flg = 0, hl, j, i;
-	int bend = 0, cend = 0;
+	rset *rs = ftmap[fti].rs;
+	int subs[rs->grpcnt * 2], *catt, sl;
+	int sidx = 0, flg = 0, hl, j, i;
+	int cend = 1, blockhl = syn_blockhl;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
-		hl = sl + ftmap[ftidx].setbidx;
-		int *catt = hls[hl].att;
-		int blkend = hls[hl].blkend;
-		if (blkend && sidx >= bend) {
-			for (i = 0; i <= abs(blkend); i++)
-				if (subs[i * 2] >= 0)
-					blk = i;
-			blkm += blkm > abs(blkend) ? -1 : 1;
-			if (blkm == 1 && last_scdir > 0)
-				blkend = blkend < 0 ? -1 : 1;
-			if (syn_blockhl == hl && blk == abs(blkend))
-				syn_blockhl = 0;
-			else if (!syn_blockhl && blk != blkend) {
-				syn_blockhl = hl;
-				blockatt = catt;
-			} else
-				blk = 0;
-		}
+		hl = sl + ftmap[fti].setbidx;
+		catt = hls[hl].att;
 		for (i = 0; i < rs->setgrpcnt[sl]; i++) {
-			if (subs[i * 2] >= 0 && !SYN_IGNSET(catt[i])) {
+			if (subs[i * 2] >= 0) {
+				if (SYN_BSSET(catt[i]) || SYN_BESET(catt[i])) {
+					if (syn_blockhl == hl)
+						syn_blockhl = -1;
+					else if (SYN_BSSET(catt[i]) || last_scdir > 0){
+						syn_blockhl = hl;
+						blockatt = catt[i];
+					}
+				}
 				int beg = uc_off(s, sidx + subs[i * 2]);
 				int end = beg + uc_off(s + sidx + subs[i * 2],
 						subs[i * 2 + 1] - subs[i * 2]);
 				for (j = beg; j < end; j++)
 					att[j] = syn_merge(att[j], catt[i]);
-				if (SYN_SPSET(catt[i]))
-					continue;
-				if (blkend && (catt[i] & SYN_IGN))
-					bend = MAX(cend, subs[i * 2 + 1]) + sidx;
-				cend = MAX(cend, subs[i * 2 + !SYN_SOSET(catt[i])]);
+				cend = MAX(cend, subs[i * 2 + 1]);
 			}
 		}
 		sidx += cend;
 		cend = 1;
 		flg = REG_NOTBOL;
 	}
-	if (!syn_blockhl || blk || SYN_IGNSET(*blockatt))
+	if (ftmidx > fti && ftmap[fti].ft == ftmap[fti+1].ft)
+		syn_highlight(att, s, n, fti+1);
+	if (blockhl < 0)
 		return;
 	for (j = 0; j < n; j++)
-		if (!att[j] || !SYN_SOSET(*blockatt))
-			att[j] = *blockatt;
+		att[j] = blockatt;
 }
 
 char *syn_filetype(char *path)
@@ -355,34 +345,37 @@ char *syn_filetype(char *path)
 	return hl >= 0 && hl < ftslen ? fts[hl].ft : hls[0].ft;
 }
 
-void syn_reloadft(void)
+void syn_reloadft(int hl)
 {
-	if (syn_reload) {
-		rset *rs = ftmap[ftidx].rs;
-		syn_initft(ftidx, ftmap[ftidx].setbidx, ftmap[ftidx].ft);
-		if (!ftmap[ftidx].rs) {
-			ftmap[ftidx].rs = rs;
-		} else
+	if (hl >= 0) {
+		int fti = ftidx;
+		while (fti < ftmidx && hl > ftmap[fti].seteidx)
+			fti++;
+		rset *rs = ftmap[fti].rs;
+		syn_initft(fti, ftmap[fti].setbidx, ftmap[fti].ft);
+		if (!ftmap[fti].rs)
+			ftmap[fti].rs = rs;
+		else
 			rset_free(rs);
-		syn_reload = 0;
 	}
 }
 
 int syn_findhl(int id)
 {
-	for (int i = ftmap[ftidx].setbidx; i < ftmap[ftidx].seteidx; i++)
+	int i = ftmap[ftidx].setbidx;
+	char *name = ftmap[ftidx].ft;
+	for (; i < hlslen && hls[i].ft == name; i++)
 		if (hls[i].id == id)
 			return i;
 	return -1;
 }
 
-void syn_addhl(char *reg, int id, int reload)
+int syn_addhl(char *reg, int id)
 {
 	int ret = syn_findhl(id);
-	if (ret >= 0) {
+	if (ret >= 0)
 		hls[ret].pat = reg;
-		syn_reload = reload;
-	}
+	return ret;
 }
 
 void syn_init(void)

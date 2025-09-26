@@ -205,7 +205,7 @@ void led_render(char *s0, int cbeg, int cend)
 	}
 	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
 	if (xhl)
-		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
+		syn_highlight(att, bound ? bound : s0, MIN(n, cterm), ftidx);
 	free(bound);
 	if (led_attsb && xhl) {
 		led_att *p = (led_att*)led_attsb->s;
@@ -309,7 +309,7 @@ static void led_printparts(sbuf *sb, int pre, int ps,
 	}
 	if (pos >= xleft + xcols || pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
-	syn_blockhl = 0;
+	syn_blockhl = -1;
 	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
 	sbufn_cut(sb, psn)

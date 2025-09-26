@@ -96,7 +96,7 @@ char *itoa(int n, char s[])
 static void vi_drawmsg(void)
 {
 	if (vi_msg[0]) {
-		syn_blockhl = 0;
+		syn_blockhl = -1;
 		syn_setft(bar_ft);
 		preserve(int, xtd, xtd = 2;)
 		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
@@ -157,7 +157,7 @@ static void vi_drawrow(int row)
 			vi_drawnum(lbuf_wordend(xb, i1, -2, &nrow, &noff))
 		tmp[ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol] = *vi_word;
 		preserve(int, xorder, xorder = 0;)
-		preserve(int, syn_blockhl, syn_blockhl = 0;)
+		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
 		vi_rshift = (row != xtop + xrows-1);
 		syn_setft(n_ft);
@@ -193,7 +193,7 @@ static void vi_drawrow(int row)
 		memset(c, ' ', l1 - (c - tmp));
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
-		preserve(int, syn_blockhl, syn_blockhl = 0;)
+		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		syn_setft(nn_ft);
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
@@ -218,7 +218,7 @@ static void vi_drawrow(int row)
 static void vi_drawagain(int i)
 {
 	syn_scdir(0);
-	syn_blockhl = 0;
+	syn_blockhl = -1;
 	for (; i < xtop + xrows; i++)
 		vi_drawrow(i);
 }
@@ -1691,7 +1691,7 @@ void vi(int init)
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
 				if (!word || strcmp(word, cs)) {
-					syn_addhl(cs, 1, 1);
+					syn_reloadft(syn_addhl(cs, 1));
 					free(word);
 					word = cs;
 					vi_mod |= 1;
@@ -1717,7 +1717,6 @@ void vi(int init)
 				}
 			}
 		}
-		syn_reloadft();
 		term_record = 1;
 		if (vi_mod & 1 || xleft != oleft
 				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
@@ -1730,17 +1729,15 @@ void vi(int init)
 		} else if (xtop != otop)
 			vi_drawupdate(otop - xtop);
 		if (xhll) {
-			syn_blockhl = 0;
+			syn_blockhl = -1;
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
 				if (!(vi_mod & 1) && !*vi_word)
 					vi_drawrow(orow);
-			syn_addhl("^.+", 2, 1);
-			syn_reloadft();
+			syn_reloadft(syn_addhl("^.+", 2));
 			vi_drawrow(xrow);
-			syn_addhl(NULL, 2, 1);
-			syn_reloadft();
+			syn_reloadft(syn_addhl(NULL, 2));
 		} else if (vi_mod & 2 && !(vi_mod & 1)) {
-			syn_blockhl = 0;
+			syn_blockhl = -1;
 			vi_drawrow(xrow);
 		}
 		if (vi_status && !vi_msg[0]) {

@@ -566,7 +566,7 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
 
 void ex_cprint(char *line, char *ft, int r, int c, int ln)
 {
-	syn_blockhl = 0;
+	syn_blockhl = -1;
 	if (!(xvis & 4)) {
 		if (xmpt == 1)
 			term_chr('\n');
@@ -918,7 +918,8 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
 		sbuf_free(led_attsb)
 		led_attsb = NULL;
 	}
-	syn_reload = 1;
+	for (int i = 1; i < 4; i++)
+		syn_reloadft(syn_findhl(i));
 	return NULL;
 }
 
