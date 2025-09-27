@@ -235,17 +235,15 @@ char *ren_translate(char *s, char *ln)
 	return xshape ? uc_shape(ln, s, c) : NULL;
 }
 
-#define NFTS		100
 /* mapping filetypes to regular expression sets */
 static struct ftmap {
 	int setbidx;
 	int seteidx;
 	char *ft;
 	rset *rs;
-} ftmap[NFTS];
+} ftmap[100];
 static int ftmidx;
-int ftidx;
-
+static int ftidx;
 static rset *syn_ftrs;
 static int last_scdir;
 static int blockatt;
@@ -300,43 +298,52 @@ int syn_merge(int old, int new)
 	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
 }
 
-void syn_highlight(int *att, char *s, int n, int fti)
+void syn_highlight(int *att, char *s, int n)
 {
+	int fti = ftidx, blockhl = syn_blockhl;
+	re:;
 	rset *rs = ftmap[fti].rs;
 	int subs[rs->grpcnt * 2], *catt, sl;
-	int sidx = 0, flg = 0, hl, j, i;
-	int cend = 1, blockhl = syn_blockhl;
+	int cend = 1, sidx = 0, flg = 0, blockca = -1, hl, j, i;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
 		hl = sl + ftmap[fti].setbidx;
 		catt = hls[hl].att;
 		for (i = 0; i < rs->setgrpcnt[sl]; i++) {
-			if (subs[i * 2] >= 0) {
-				if (SYN_BSSET(catt[i]) || SYN_BESET(catt[i])) {
-					if (syn_blockhl == hl)
-						syn_blockhl = -1;
-					else if (SYN_BSSET(catt[i]) || last_scdir > 0){
-						syn_blockhl = hl;
-						blockatt = catt[i];
-					}
+			if (subs[i * 2] < 0 || SYN_IGNSET(catt[i]))
+				continue;
+			cend = MAX(cend, subs[i * 2 + 1]);
+			if (SYN_BSESET(catt[i])) {
+				if (syn_blockhl == hl && (SYN_BESET(catt[i]) || last_scdir > 0)) {
+					blockca = -1;
+					syn_blockhl = blockca;
+				} else if (syn_blockhl < 0 && (SYN_BSSET(catt[i]) || last_scdir > 0)) {
+					if (SYN_BSESET(catt[i]) == SYN_BSE)
+						continue;
+					syn_blockhl = hl;
+					blockca = catt[i];
+					blockatt = catt[0];
 				}
-				int beg = uc_off(s, sidx + subs[i * 2]);
-				int end = beg + uc_off(s + sidx + subs[i * 2],
-						subs[i * 2 + 1] - subs[i * 2]);
-				for (j = beg; j < end; j++)
-					att[j] = syn_merge(att[j], catt[i]);
-				cend = MAX(cend, subs[i * 2 + 1]);
 			}
+			int beg = uc_off(s, sidx + subs[i * 2]);
+			int end = beg + uc_off(s + sidx + subs[i * 2],
+					subs[i * 2 + 1] - subs[i * 2]);
+			for (j = beg; j < end; j++)
+				att[j] = syn_merge(att[j], catt[i]);
 		}
 		sidx += cend;
 		cend = 1;
 		flg = REG_NOTBOL;
 	}
-	if (ftmidx > fti && ftmap[fti].ft == ftmap[fti+1].ft)
-		syn_highlight(att, s, n, fti+1);
-	if (blockhl < 0)
+	fti++;
+	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft)
+		goto re;
+	if (blockca >= 0 && SYN_BSSET(blockca) && last_scdir > 0)
+		syn_blockhl = -1;
+	if (syn_blockhl < 0 || blockhl < 0)
 		return;
 	for (j = 0; j < n; j++)
-		att[j] = blockatt;
+		if (!att[j] || !SYN_BPSET(blockatt))
+			att[j] = blockatt;
 }
 
 char *syn_filetype(char *path)

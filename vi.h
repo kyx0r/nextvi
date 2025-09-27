@@ -117,9 +117,9 @@ struct rcode {
 /* regular expression set */
 typedef struct {
 	rcode *regex;		/* the combined regular expression */
-	int n;			/* number of regular expressions in this set */
 	int *grp;		/* the group assigned to each subgroup */
 	int *setgrpcnt;		/* number of groups in each regular expression */
+	int n;			/* number of regular expressions in this set */
 	int grpcnt;		/* group count */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
@@ -238,13 +238,18 @@ void dir_init(void);
 #define SYN_BG(a)	((a >> 8) & 0xff)
 #define SYN_BS		0x400000
 #define SYN_BE		0x800000
-#define SYN_BSSET(a)	(a & 0x400000)
-#define SYN_BESET(a)	(a & 0x800000)
+#define SYN_BSE		0xc00000
+#define SYN_BP		0x1000000
+#define SYN_IGN		0x2000000
+#define SYN_BSSET(a)	(a & SYN_BS)
+#define SYN_BESET(a)	(a & SYN_BE)
+#define SYN_BSESET(a)	(a & SYN_BSE)
+#define SYN_BPSET(a)	(a & SYN_BP)
+#define SYN_IGNSET(a)	(a & SYN_IGN)
 extern int syn_blockhl;
-extern int ftidx;
 char *syn_setft(char *ft);
 void syn_scdir(int scdir);
-void syn_highlight(int *att, char *s, int n, int fti);
+void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 int syn_merge(int old, int new);
 void syn_reloadft(int hl);

@@ -652,17 +652,15 @@ void rset_free(rset *rs)
 	if (!rs)
 		return;
 	reg_free(rs->regex);
-	free(rs->setgrpcnt);
-	free(rs->grp);
 	free(rs);
 }
 
 rset *rset_make(int n, char **re, int flg)
 {
 	int i, laidx, sz, c = 0;
-	rset *rs = emalloc(sizeof(*rs));
-	rs->grp = emalloc((n + 1) * sizeof(rs->grp[0]));
-	rs->setgrpcnt = emalloc((n + 1) * sizeof(rs->setgrpcnt[0]));
+	rset *rs = emalloc(sizeof(*rs) + (((n + 1) * sizeof(rs->grp[0])) * 2));
+	rs->grp = (int*)(rs + 1);
+	rs->setgrpcnt = rs->grp + n + 1;
 	sbuf_smake(sb, 1024)
 	rs->n = n;
 	for (i = 0; i < n; i++)
@@ -694,8 +692,6 @@ rset *rset_make(int n, char **re, int flg)
 			goto success;
 		reg_free(rs->regex);
 	}
-	free(rs->setgrpcnt);
-	free(rs->grp);
 	free(rs);
 	rs = NULL;
 	success:

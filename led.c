@@ -205,7 +205,7 @@ void led_render(char *s0, int cbeg, int cend)
 	}
 	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
 	if (xhl)
-		syn_highlight(att, bound ? bound : s0, MIN(n, cterm), ftidx);
+		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
 	free(bound);
 	if (led_attsb && xhl) {
 		led_att *p = (led_att*)led_attsb->s;
