@@ -1,4 +1,4 @@
-.Dd Sep 23, 2025
+.Dd Sep 30, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -567,23 +567,37 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [. $ ' / ?][- +][% 1-9][\fIsep\fP][, ;][. $ ' / ?][- +][1-9]
+.It Cm [. $ ' / ?][- +][% 1-9][\fIpad\fP][, ;][\fIpad\fP][. $ ' / ?][- +][1-9]
 All ranges
 .It Cm </ ?>[\fIkwd\fP][</ ?>]
-Search ranges
+Search range
 'It Cm <'>{\fImark\fP}
-Mark ranges
+Mark range
 
 .It Cm \&.
 Current position
+.It Cm \&$
+Last line of a buffer or end of line
+.It Cm \&'
+Begin mark range
+.It Cm \&/
+Begin search range forward
+.It Cm \&?
+Begin search range backward
+.It Cm \&-
+Subtract following number
+.It Cm \&+
+Add following number
+.It Cm \&%
+Range from first to last line of a buffer
+.It Cm \&1-9
+Number or position
+.It Cm pad
+<Space> or <Tab>
 .It Cm \&,
 Vertical range separator
 .It Cm \&;
 Horizontal range separator
-.It Cm \&%
-Range from first to last line of a buffer
-.It Cm \&$
-Last line of a buffer or end of line
 .El
 .Bl -tag -width Ds -compact
 
@@ -665,7 +679,7 @@ Example: switch to the b-2 buffer
 
 .It Cm bp[\fIpath\fP]
 Set current buffer path
-.It Cm bs[\fI#\fP]
+.It Cm bs[\fI*\fP]
 Set current buffer saved. If any arg given, reset undo/redo history
 
 .It Cm [\fIrange\fP]p
@@ -704,10 +718,10 @@ Example: open first match containing "v"
 .It Cm ea![\fIkwd\fP] [\fI#\fP]
 Forced version of ea
 
-.It Cm [\fI#\fP]i[\fIstr\fP]
-Enter ex insert mode before specified line
+.It Cm [\fIvpos\fP]i[\fIstr\fP]
+Enter ex insert mode before vpos
 .Bd -literal
-# specifies insertion line number.
+vpos specifies insertion vertical position.
 str specifies initial input into the insertion buffer.
 
 Example: insert "hello" in vi/ex
@@ -722,11 +736,11 @@ Example: insert "hello" in raw ex mode
 i hello<^M>.<^M>
 .Ed
 
-.It Cm [\fI#\fP]a[\fIstr\fP]
-Enter ex insert mode after specified line
+.It Cm [\fIvpos\fP]a[\fIstr\fP]
+Enter ex insert mode after vpos
 
 .It Cm [\fIrange\fP]c[\fIstr\fP]
-Enter ex change mode on specified line
+Enter ex change mode
 .Bd -literal
 In combination with seq and lim ex options, this command is
 optimal for modifying very long lines.
@@ -1452,19 +1466,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 510 vi.h | definitions/aux
+ 516 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 305 conf.c | hl/ft/td config
+ 308 conf.c | hl/ft/td config
  345 term.c | low level IO
  396 ren.c | positioning/syntax
  567 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
- 749 regex.c | pikevm
- 1392 ex.c | ex options/commands
- 1825 vi.c | normal mode/general
- 6899 total | wc -l *.c\(basort
+ 731 regex.c | pikevm
+ 1395 ex.c | ex options/commands
+ 1818 vi.c | normal mode/general
+ 6880 total | wc -l *.c\(basort
 _
 .TE
 .

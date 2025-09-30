@@ -343,18 +343,25 @@ EX RANGES
      [range] implements vertical and horizontal ranges.
      [vrange] implements vertical range and horizontal position.
 
-     [. $ ' / ?][- +][% 1-9][sep][, ;][. $ ' / ?][- +][1-9]
+     [. $ ' / ?][- +][% 1-9][pad][, ;][pad][. $ ' / ?][- +][1-9]
              All ranges
      </ ?>[kwd][</ ?>]
-             Search ranges
+             Search range
      <'>{mark}
-             Mark ranges
+             Mark range
 
      .       Current position
+     $       Last line of a buffer or end of line
+     '       Begin mark range
+     /       Begin search range forward
+     ?       Begin search range backward
+     -       Subtract following number
+     +       Add following number
+     %       Range from first to last line of a buffer
+     1-9     Number or position
+     pad     <Space> or <Tab>
      ,       Vertical range separator
      ;       Horizontal range separator
-     %       Range from first to last line of a buffer
-     $       Last line of a buffer or end of line
 
      Examples:
      :1,5p   Print lines 1,5
@@ -420,7 +427,7 @@ EX COMMANDS
 
      bp[path]
              Set current buffer path
-     bs[#]   Set current buffer saved. If any arg given, reset undo/redo
+     bs[*]   Set current buffer saved. If any arg given, reset undo/redo
              history
 
      [range]p
@@ -457,10 +464,10 @@ EX COMMANDS
      ea![kwd] [#]
              Forced version of ea
 
-     [#]i[str]
-             Enter ex insert mode before specified line
+     [vpos]i[str]
+             Enter ex insert mode before vpos
 
-             # specifies insertion line number.
+             vpos specifies insertion vertical position.
              str specifies initial input into the insertion buffer.
 
              Example: insert "hello" in vi/ex
@@ -474,11 +481,11 @@ EX COMMANDS
              Example: insert "hello" in raw ex mode
              i hello<^M>.<^M>
 
-     [#]a[str]
-             Enter ex insert mode after specified line
+     [vpos]a[str]
+             Enter ex insert mode after vpos
 
      [range]c[str]
-             Enter ex change mode on specified line
+             Enter ex change mode
 
              In combination with seq and lim ex options, this command is
              optimal for modifying very long lines.
@@ -1075,19 +1082,19 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 510 vi.h     |  definitions/aux     |
+     | 516 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
-     | 305 conf.c   |  hl/ft/td config     |
+     | 308 conf.c   |  hl/ft/td config     |
      | 345 term.c   |  low level IO        |
      | 396 ren.c    |  positioning/syntax  |
      | 567 lbuf.c   |  file/line buffer    |
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
-     | 749 regex.c  |  pikevm              |
-     | 1392 ex.c    |  ex options/commands |
-     | 1825 vi.c    |  normal mode/general |
-     | 6899 total   |  wc -l *.c|sort      |
+     | 731 regex.c  |  pikevm              |
+     | 1395 ex.c    |  ex options/commands |
+     | 1818 vi.c    |  normal mode/general |
+     | 6880 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1159,7 +1166,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                  September 23, 2025                  Linux 6.16.0
+Linux 6.16.0                  September 30, 2025                  Linux 6.16.0
 
 NEXTVI PATCHES
 ==============

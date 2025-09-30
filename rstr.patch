@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 43aa4e4c..fdb3573e 100644
+index dfc5dd77..b8f937aa 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -11,7 +11,7 @@ index 43aa4e4c..fdb3573e 100644
  sbuf *xregs[256];		/* string registers */
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
-@@ -208,9 +208,9 @@ void ex_krsset(char *kwd, int dir)
+@@ -165,9 +165,9 @@ void ex_krsset(char *kwd, int dir)
  {
  	sbuf *reg = xregs['/'];
  	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg->s))
@@ -24,7 +24,7 @@ index 43aa4e4c..fdb3573e 100644
  		xkwdcnt++;
  		ex_regput('/', kwd, 0);
  		xkwddir = dir;
-@@ -855,14 +855,14 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -815,14 +815,14 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	int beg, end, grp;
  	char *pat, *rep = NULL, *_rep;
  	char *s = arg;
@@ -41,7 +41,7 @@ index 43aa4e4c..fdb3573e 100644
  	if (!rs) {
  		free(pat);
  		return xserr;
-@@ -872,11 +872,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -832,11 +832,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -55,7 +55,7 @@ index 43aa4e4c..fdb3573e 100644
  			if (offs[xgrp] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -891,7 +891,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -851,7 +851,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  					}
  					_rep++;
  					grp = abs((*_rep - '0') * 2);
@@ -64,7 +64,7 @@ index 43aa4e4c..fdb3573e 100644
  						sbuf_chr(r, (unsigned char)*_rep)
  					else if (offs[grp] >= 0)
  						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
-@@ -922,7 +922,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -882,7 +882,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		lbuf_emark(xb, lo, last, 0);
  	}
  	if (rs != xkwdrs)
@@ -73,7 +73,7 @@ index 43aa4e4c..fdb3573e 100644
  	free(rep);
  	return NULL;
  }
-@@ -977,7 +977,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -938,7 +938,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  {
  	int i, beg, end, not;
  	char *pat, *s = arg;
@@ -82,7 +82,7 @@ index 43aa4e4c..fdb3573e 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_vregion(loc, &beg, &end))
-@@ -985,9 +985,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -946,9 +946,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	not = !!strchr(cmd, '!');
  	pat = re_read(&s);
  	if (pat && *pat)
@@ -94,7 +94,7 @@ index 43aa4e4c..fdb3573e 100644
  	free(pat);
  	if (!rs)
  		return xserr;
-@@ -997,7 +997,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -958,7 +958,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	for (i = beg; i < lbuf_len(xb);) {
  		char *ln = lbuf_get(xb, i);
  		lbuf_s(ln)->grec &= ~xgdep;
@@ -103,7 +103,7 @@ index 43aa4e4c..fdb3573e 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -1006,7 +1006,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -967,7 +967,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  		while (i < lbuf_len(xb) && !(lbuf_i(xb, i)->grec & xgdep))
  			i++;
  	}
@@ -112,7 +112,7 @@ index 43aa4e4c..fdb3573e 100644
  	xgdep /= 2;
  	return NULL;
  }
-@@ -1085,10 +1085,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
+@@ -1046,10 +1046,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
  
  static void *ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -153,10 +153,10 @@ index 912bcd5d..0bd84e6a 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 36cc16cc..4bdab9f6 100644
+index 67351d38..5a3428c6 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -747,3 +747,126 @@ char *re_read(char **src)
+@@ -729,3 +729,126 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_ret(sb, sb->s)
  }
@@ -284,10 +284,10 @@ index 36cc16cc..4bdab9f6 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 568a3183..f1a6b30c 100644
+index 977c4747..5efa9a79 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -448,7 +448,7 @@ static void vi_regput(int c, const char *s, int lnmode)
+@@ -446,7 +446,7 @@ static void vi_regput(int c, const char *s, int lnmode)
  	ex_regput(c, s, isupper(c));
  }
  
@@ -296,7 +296,7 @@ index 568a3183..f1a6b30c 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -488,7 +488,7 @@ void dir_calc(char *path)
+@@ -486,7 +486,7 @@ void dir_calc(char *path)
  				memcpy(cpath, ptrs[i], pathlen + len);
  				plen[i++] = pathlen + len;
  			} else if (ret >= 0 && S_ISREG(statbuf.st_mode))
@@ -306,11 +306,11 @@ index 568a3183..f1a6b30c 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 964e4b1d..ff2d80a0 100644
+index 2eaf73de..91639de8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -122,12 +122,23 @@ typedef struct {
- 	int *setgrpcnt;		/* number of groups in each regular expression */
+ 	int n;			/* number of regular expressions in this set */
  	int grpcnt;		/* group count */
  } rset;
 +typedef struct {
@@ -342,7 +342,7 @@ index 964e4b1d..ff2d80a0 100644
  			int *o, int ln_n, int skip);
  #define lbuf_dedup(lb, str, n) \
  { for (int i = 0; i < lbuf_len(lb);) { \
-@@ -408,7 +419,7 @@ extern int xkmap_alt;
+@@ -415,7 +426,7 @@ extern int xkmap_alt;
  extern int xkwddir;
  extern int xkwdcnt;
  extern sbuf *xacreg;
@@ -351,7 +351,7 @@ index 964e4b1d..ff2d80a0 100644
  extern sbuf *xregs[256];
  extern struct buf *bufs;
  extern struct buf tempbufs[2];
-@@ -441,7 +452,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
+@@ -448,7 +459,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
  { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -360,7 +360,7 @@ index 964e4b1d..ff2d80a0 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ex_regput(unsigned char c, const char *s, int append);
-@@ -505,6 +516,6 @@ extern int vi_insmov;
+@@ -511,6 +522,6 @@ extern int vi_insmov;
  extern int vi_lncol;
  extern char vi_msg[512];
  /* file system */

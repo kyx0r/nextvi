@@ -117,9 +117,9 @@ struct rcode {
 /* regular expression set */
 typedef struct {
 	rcode *regex;		/* the combined regular expression */
-	int n;			/* number of regular expressions in this set */
 	int *grp;		/* the group assigned to each subgroup */
 	int *setgrpcnt;		/* number of groups in each regular expression */
+	int n;			/* number of regular expressions in this set */
 	int grpcnt;		/* group count */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
@@ -236,20 +236,27 @@ void dir_init(void);
 #define SYN_BGSET(a)	(a & 0x20ff00)
 #define SYN_FG(a)	(a & 0xff)
 #define SYN_BG(a)	((a >> 8) & 0xff)
-#define SYN_SO		0x400000
-#define SYN_SP		0xc00000
-#define SYN_SOSET(a)	(a & 0x400000)
-#define SYN_SPSET(a)	((a & 0xc00000) == 0xc00000)
-extern int syn_reload;
+#define SYN_BS		0x400000
+#define SYN_BE		0x800000
+#define SYN_BSE		0xc00000
+#define SYN_BP		0x1000000
+#define SYN_IGN		0x2000000
+#define SYN_AIGN	0x4000000
+#define SYN_BSSET(a)	(a & SYN_BS)
+#define SYN_BESET(a)	(a & SYN_BE)
+#define SYN_BSESET(a)	(a & SYN_BSE)
+#define SYN_BPSET(a)	(a & SYN_BP)
+#define SYN_IGNSET(a)	(a & SYN_IGN)
+#define SYN_AIGNSET(a)	(a & SYN_AIGN)
 extern int syn_blockhl;
 char *syn_setft(char *ft);
 void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 int syn_merge(int old, int new);
-void syn_reloadft(void);
+void syn_reloadft(int hl);
 int syn_findhl(int id);
-void syn_addhl(char *reg, int id, int reload);
+int syn_addhl(char *reg, int id);
 void syn_init(void);
 
 /* uc.c utf-8 helper functions */
@@ -463,9 +470,8 @@ struct highlight {
 	char *ft;		/* the filetype of this pattern */
 	char *pat;		/* regular expression */
 	int *att;		/* attributes of the matched groups */
-	signed char blkend;	/* the ending group for multi-line patterns;
-				negative group is able to start and end itself */
-	char id;		/* id of this hl */
+	unsigned char set;	/* subset index */
+	unsigned char id;	/* id of this hl */
 };
 extern struct highlight hls[];
 extern const int hlslen;
