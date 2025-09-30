@@ -1,4 +1,4 @@
-.Dd Sep 22, 2025
+.Dd Sep 30, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -567,23 +567,37 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [. $ ' / ?][- +][% 1-9][\fIsep\fP][, ;][. $ ' / ?][- +][1-9]
+.It Cm [. $ ' / ?][- +][% 1-9][\fIpad\fP][, ;][\fIpad\fP][. $ ' / ?][- +][1-9]
 All ranges
 .It Cm </ ?>[\fIkwd\fP][</ ?>]
-Search ranges
+Search range
 'It Cm <'>{\fImark\fP}
-Mark ranges
+Mark range
 
 .It Cm \&.
 Current position
+.It Cm \&$
+Last line of a buffer or end of line
+.It Cm \&'
+Begin mark range
+.It Cm \&/
+Begin search range forward
+.It Cm \&?
+Begin search range backward
+.It Cm \&-
+Subtract following number
+.It Cm \&+
+Add following number
+.It Cm \&%
+Range from first to last line of a buffer
+.It Cm \&1-9
+Number or position
+.It Cm pad
+<Space> or <Tab>
 .It Cm \&,
 Vertical range separator
 .It Cm \&;
 Horizontal range separator
-.It Cm \&%
-Range from first to last line of a buffer
-.It Cm \&$
-Last line of a buffer or end of line
 .El
 .Bl -tag -width Ds -compact
 
@@ -1452,19 +1466,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 510 vi.h | definitions/aux
+ 514 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 305 conf.c | hl/ft/td config
+ 307 conf.c | hl/ft/td config
  345 term.c | low level IO
- 396 ren.c | positioning/syntax
+ 395 ren.c | positioning/syntax
  567 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
- 749 regex.c | pikevm
- 1393 ex.c | ex options/commands
- 1824 vi.c | normal mode/general
- 6899 total | wc -l *.c\(basort
+ 731 regex.c | pikevm
+ 1395 ex.c | ex options/commands
+ 1818 vi.c | normal mode/general
+ 6878 total | wc -l *.c\(basort
 _
 .TE
 .
