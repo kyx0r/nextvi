@@ -241,11 +241,13 @@ void dir_init(void);
 #define SYN_BSE		0xc00000
 #define SYN_BP		0x1000000
 #define SYN_IGN		0x2000000
+#define SYN_AIGN	0x4000000
 #define SYN_BSSET(a)	(a & SYN_BS)
 #define SYN_BESET(a)	(a & SYN_BE)
 #define SYN_BSESET(a)	(a & SYN_BSE)
 #define SYN_BPSET(a)	(a & SYN_BP)
 #define SYN_IGNSET(a)	(a & SYN_IGN)
+#define SYN_AIGNSET(a)	(a & SYN_AIGN)
 extern int syn_blockhl;
 char *syn_setft(char *ft);
 void syn_scdir(int scdir);
