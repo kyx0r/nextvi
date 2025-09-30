@@ -139,7 +139,7 @@ index 912bcd5d..9fd18625 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 36cc16cc..b21631fa 100644
+index 67351d38..a017ce5c 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -382,7 +382,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -151,10 +151,10 @@ index 36cc16cc..b21631fa 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -627,8 +627,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
- 	unsigned int sdense[prog->sparsesz], sparsesz = 0;
- 	char nsubs[prog->sub];
+@@ -613,8 +613,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	flg = prog->flg | flg;
+ 	for (i = 0; i < prog->laidx; i++)
+ 		lb[i] = NULL;
 -	if (eol_ch)
 +	if (eol_ch && utf8_length[eol_ch])
  		utf8_length[eol_ch] = 0;
@@ -182,7 +182,7 @@ index bc22a958..130772b3 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 568a3183..4bcca6f4 100644
+index 977c4747..932a5414 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -194,10 +194,10 @@ index 568a3183..4bcca6f4 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 964e4b1d..23f08f59 100644
+index 159a2442..f568a814 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -253,7 +253,8 @@ void syn_addhl(char *reg, int id, int reload);
+@@ -258,7 +258,8 @@ int syn_addhl(char *reg, int id);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */
