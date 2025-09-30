@@ -139,9 +139,9 @@ for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)
 	{FT(py), "['](?:\\\\'|[^'])*?[']", A(BL)},
 
 	{FT(js), NULL, A(CY1 | SYN_BD), 1, 2},
-	{FT(js), NULL, A(RE1), 0, 1},
 	{FT(js), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))",
-		A(GR1 | SYN_IT, GR1, GR1), 2},
+		A(GR1 | SYN_IT, GR1, GR1)},
+	{FT(js), NULL, A(RE1), 0, 1},
 	{FT(js), "\\<(?:abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
 double|else|enum|eval|export|extends|false|final|finally|float|for|function|\
