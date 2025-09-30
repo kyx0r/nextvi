@@ -63,7 +63,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 {
 	char *re = re_loc, *s, *p;
 	int *code = sizecode ? NULL : prog->insts;
-	int start = PC, term = PC, lb_start = 0;
+	int start = PC, term = PC, lb_start = -1;
 	int alt_label = 0, c, l, cnt;
 	int alt_stack[4096], altc = 0;
 	int cap_stack[4096 * 5], capc = 0;
@@ -133,7 +133,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					goto non_capture;
 				} else if (*re == '#') {
 					lb_start = atoi(re+1);
-					if (lb_start < 0 || !(re = strchr(re, ')')))
+					if (!(re = strchr(re, ')')))
 						return -1;
 					break;
 				} else if (*re != '=' && *re != '!' && *re != '<' && *re != '>')
@@ -163,7 +163,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					s += uc_len(s);
 				}
 				EMIT(PC++, la_static);
-				EMIT(PC++, lb_start);
+				EMIT(PC++, re[-1] == '<' || re[-1] == '>' ? lb_start : 0);
 				if (code) {
 					*s = '\0';
 					if (la_static) {
@@ -502,37 +502,21 @@ if (spc > JMP) { \
 	npc += 2 + npc[1]; \
 	goto rec##nn; \
 } else if (spc == LOOKAROUND) { \
-	if (npc[1] == '=' || npc[1] == '!') { \
-		if (npc[3]) \
-			cnt = !strncmp(_sp, (char*)(prog->la[npc[2]]+1), npc[3]); \
-		else \
-			cnt = re_pikevm(prog->la[npc[2]], _sp, NULL, 0, 0); \
-	} else { \
-		str = npc[4] ? _sp - npc[4] : s; \
-		if (npc[4] && str < s) { \
-			npc += 5; goto rec##nn; \
-		} \
-		for (j = 0; j < lblen; j+=3) \
-			if (lb[j] == npc) { \
-				if (lb[j+1] != str) \
-					break; \
-				cnt = !!lb[j+2]; \
-				goto lb_cached##nn; \
-			} \
-		if (npc[3]) \
-			cnt = !strncmp(str, (char*)(prog->la[npc[2]]+1), npc[3]); \
-		else \
-			cnt = re_pikevm(prog->la[npc[2]], str, NULL, 0, 0); \
-		lb[j] = npc; \
-		lb[j+1] = str; \
-		lb[j+2] = cnt ? (void*)1 : NULL; \
-		if (j == lblen) \
-			lblen += 3; \
-	} \
-	lb_cached##nn: \
+	str = npc[4] >= 0 ? _sp - npc[4] : s; \
+	if (str < s) \
+		goto out##nn; \
+	j = npc[2]; \
+	if (npc[3]) \
+		cnt = !strncmp(str, (char*)(prog->la[j]+1), npc[3]); \
+	else if (!lb[j] || str > lb[j]) { \
+		cnt = re_pikevm(prog->la[j], str, _subp, 1, 0); \
+		lb[j] = cnt ? _subp[0] : NULL; \
+	} else \
+		cnt = !!lb[j]; \
 	if ((cnt && (npc[1] == '!' || npc[1] == '>')) \
 			|| (!cnt && (npc[1] == '=' || npc[1] == '<'))) \
 		deccheck(nn) \
+	out##nn: \
 	npc += 5; goto rec##nn; \
 } else { \
 	if (flg & REG_NOTBOL || _sp != s) { \
@@ -619,14 +603,16 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
-	const void *lb[prog->laidx * 3];
-	int rsubsize = prog->presub, suboff = 0, lblen = 0;
-	int cnt, spc, i, j, c, osubp = nsubp * sizeof(char*);
+	const char *_subp[2], *lb[prog->laidx];
+	int rsubsize = prog->presub, suboff = 0;
+	int cnt, spc, i, c, j, osubp = nsubp * sizeof(char*);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	unsigned int sdense[prog->sparsesz], sparsesz = 0;
 	char nsubs[prog->sub];
 	flg = prog->flg | flg;
+	for (i = 0; i < prog->laidx; i++)
+		lb[i] = NULL;
 	if (eol_ch)
 		utf8_length[eol_ch] = 0;
 	if (flg & REG_ICASE)
@@ -652,17 +638,15 @@ void rset_free(rset *rs)
 	if (!rs)
 		return;
 	reg_free(rs->regex);
-	free(rs->setgrpcnt);
-	free(rs->grp);
 	free(rs);
 }
 
 rset *rset_make(int n, char **re, int flg)
 {
 	int i, laidx, sz, c = 0;
-	rset *rs = emalloc(sizeof(*rs));
-	rs->grp = emalloc((n + 1) * sizeof(rs->grp[0]));
-	rs->setgrpcnt = emalloc((n + 1) * sizeof(rs->setgrpcnt[0]));
+	rset *rs = emalloc(sizeof(*rs) + (((n + 1) * sizeof(rs->grp[0])) * 2));
+	rs->grp = (int*)(rs + 1);
+	rs->setgrpcnt = rs->grp + n + 1;
 	sbuf_smake(sb, 1024)
 	rs->n = n;
 	for (i = 0; i < n; i++)
@@ -694,8 +678,6 @@ rset *rset_make(int n, char **re, int flg)
 			goto success;
 		reg_free(rs->regex);
 	}
-	free(rs->setgrpcnt);
-	free(rs->grp);
 	free(rs);
 	rs = NULL;
 	success:

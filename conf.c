@@ -55,14 +55,15 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
 /* At least 1 entry is required in this struct for fallback */
 /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 struct highlight hls[] = {
-	{_ft, NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},  /* <-- optional, used by hll if set */
+	{_ft, NULL, A(CY1 | SYN_BD ), 0, 2},  /* <-- optional, used by hll if set */
 	{_ft, NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
 	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
 
-	{FT(c), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
-	{FT(c), "^.+\\\\\n$", A(CY1 | SYN_SO)},
-	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?>\".*\\*/.*\"))",
-		A(BL | SYN_IT, BL, BL), 2},
+	{FT(c), "^.+\\\\\n$", A(CY1), 1},
+	{FT(c), NULL, A(CY1 | SYN_BD), 1, 2},
+	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE, YE), 2},
+	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?>\".*\\*/.*(?:\"|\\\\\n$)))",
+		A(BL | SYN_IT, BL | SYN_BS, BL | SYN_BE)},
 	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
 	{FT(c), NULL, A(RE1), 0, 1},
 	{FT(c), "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|\
@@ -71,31 +72,32 @@ s(?:64|32|16|8)|u(?:64|32|16|8)|b32|bool|const|size_t|inline|restrict|\
 (true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|malloc|free|realloc|NULL|std(?:in|\
 out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
-	{FT(c), "(\\?).+?(:)", A(IN | SYN_SO, YE, YE | SYN_SP)},
 	{FT(c), "//.*", A(BL | SYN_IT)},
-	{FT(c), "#[ \t]*([a-zA-Z0-9_]+([ \t]*<.*>)?)", A(CY, CY, MA)},
-	{FT(c), "([a-zA-Z0-9_]+)\\(", A(IN, SYN_BD)},
-	{FT(c), "\"(?:[^\"\\\\]|\\\\.)*\"|\"", A(MA)},
+	{FT(c), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
+	{FT(c), "#[ \t]*(?:[a-zA-Z0-9_]+([ \t]*<.*>)?)", A(CY, MA)},
+	{FT(c), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
 	{FT(c), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
 	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", A(RE1)},
+	{FT(c), "(\"[^\"]*\\\\\n$)|^(?=\")((?:[^\"\\\\]|\\\\.)*?\"(?!\\\\\n$))",
+		A(MA | SYN_IGN, MA | SYN_BS, MA | SYN_BSE), 3},
 
-	{FT(roff), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
-	{FT(roff), NULL, A(RE1), 0, 1},
+	{FT(roff), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(roff), "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
-		A(BL | SYN_SO, IN, MA | SYN_BD, BL | SYN_BD, MA | SYN_BD, BL | SYN_BD)},
+		A(BL, IN, MA | SYN_BD, BL | SYN_BD, MA | SYN_BD, BL | SYN_BD), 1},
+	{FT(roff), NULL, A(RE1), 0, 1},
 	{FT(roff), "\\\\\".*", A(GR | SYN_IT)},
 	{FT(roff), "\\\\{1,2}[*$fgkmns]([^[\\(]|\\(..|\\[[^\\]]*\\])", A(YE)},
 	{FT(roff), "\\\\(?:[^[\\(*$fgkmns]|\\(..|\\[[^\\]]*\\])", A(YE)},
 	{FT(roff), "\\$[^$]+\\$", A(YE)},
 
-	{FT(tex), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(tex), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(tex), NULL, A(RE1), 0, 1},
 	{FT(tex), "\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)\\})?",
 		A(BL | SYN_BD, IN, YE, IN, MA)},
 	{FT(tex), "\\$[^$]+\\$", A(YE)},
 	{FT(tex), "%.*", A(GR | SYN_IT)},
 
-	{FT(msg), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(msg), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(msg), NULL, A(RE1), 0, 1},
 	{FT(msg), "^From .*20..\n$", A(CY | SYN_BD)},
 	{FT(msg), "^Subject: (.*)", A(CY | SYN_BD, BL | SYN_BD)},
@@ -105,14 +107,14 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(msg), "^[-A-Za-z]+: .+", A(CY | SYN_BD)},
 	{FT(msg), "^> .*", A(GR | SYN_IT)},
 
-	{FT(mk), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(mk), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(mk), NULL, A(RE1), 0, 1},
 	{FT(mk), "([A-Za-z0-9_]*)[ \t]*:?=", A(IN, YE)},
 	{FT(mk), "\\$[\\({][a-zA-Z0-9_]+[\\)}]|\\$\\$", A(YE)},
 	{FT(mk), "#.*", A(GR | SYN_IT)},
 	{FT(mk), "([A-Za-z_%.\\-]+):", A(IN, SYN_BD)},
 
-	{FT(sh), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(sh), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(sh), NULL, A(RE1), 0, 1},
 	{FT(sh), "\\<(?:break|case|continue|do|done|elif|else|esac|fi|for|if|in|then|until|while)\\>",
 		A(MA | SYN_BD)},
@@ -124,19 +126,19 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(sh), "^([a-zA-Z_0-9]* *\\(\\)) *\\{", A(IN, SYN_BD)},
 	{FT(sh), "^\\. .*", A(SYN_BD)},
 
-	{FT(py), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(py), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(py), NULL, A(RE1), 0, 1},
 	{FT(py), "#.*", A(GR)},
 	{FT(py), "\\<(?:and|break|class|continue|def|del|elif|else|except|finally|\
 for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\>", A(MA)},
-	{FT(py), "([a-zA-Z0-9_]+)\\(", A(IN, SYN_BD)},
+	{FT(py), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
 	{FT(py), "\"{3}.*?\"{3}", A(CY)},
 	{FT(py), "((?:(?:(?!^\"\"\").)*\"{3}\n$)|(?:\"{3}(?:(?!^\"\"\").)*)|\"{3})",
-		A(CY, CY, CY), -1},
+		A(CY, CY | SYN_BS, CY | SYN_BE)},
 	{FT(py), "[\"](?:\\\\\"|[^\"])*?[\"]", A(BL)},
 	{FT(py), "['](?:\\\\'|[^'])*?[']", A(BL)},
 
-	{FT(js), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(js), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(js), NULL, A(RE1), 0, 1},
 	{FT(js), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))",
 		A(GR1 | SYN_IT, GR1, GR1), 2},
@@ -154,15 +156,19 @@ name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", A(BL1, CY 
 	{FT(js), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
 	{FT(js), "`(?:[^`\\\\]|\\\\.)*`", A(MA)},
 
-	{FT(html), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(html), NULL, A(CY1 | SYN_BD), 1, 2},
+	{FT(html), "<(/)?[^>]+>", A(YE, MA1), 1},
 	{FT(html), "(\\{)[^}]*|(^[^{]*)?(\\})",
-		A(AY1 | SYN_SO, MA | SYN_SO, AY1 | SYN_SP, MA | SYN_SP), 3},
+		A(AY1 | SYN_BP, MA | SYN_BS, AY1, MA | SYN_BE), 1},
+	{FT(html), "([^\t -,.-/:-@[-^{-~]+:).+;", A(IN, YE), 2},
+	/* do not use this regex on DFA engines, causes catastrophic backtracking */
+	{FT(html), "([#.][ \t]*[a-zA-Z0-9_\\-]+\
+(?:(?:[, \t]*[#.][a-zA-Z0-9_\\-]+)?)+)(?:.?""?){1,20}\\{", A(IN, SYN_BD), 2},
 	{FT(html), NULL, A(RE1), 0, 1},
 	{FT(html), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/)",
-		A(MA | SYN_IT, MA, MA), 2},
+		A(MA | SYN_IT, MA | SYN_BS, MA | SYN_BE)},
 	{FT(html), "(<!--(?:(?!^-->).)*)|((?:(?!^<!--).)*-->)",
-		A(MA | SYN_IT, MA, MA), 2},
-	{FT(html), "([^\t -,.-/:-@[-^{-~]+:).+;", A(SYN_SO, YE | SYN_SO)},
+		A(MA | SYN_IT, MA | SYN_BS, MA | SYN_BE)},
 	{FT(html), "\\<(?:accept|accesskey|align|allow|alt|async|\
 auto(?:capitalize|complete|focus|play)|background|\
 bgcolor|border|buffered|challenge|charset|checked|cite|\
@@ -200,24 +206,18 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{FT(html), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
 	{FT(html), "#\\<[A-Fa-f0-9]+\\>", A(RE1)},
 	{FT(html), "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:px|vw|vh|%|s)?)\\>", A(RE1)},
-	{FT(html), "<(/)?[^>]+>", A(YE | SYN_SO, MA1)},
-	/* do not use this regex on DFA engines, causes catastrophic backtracking */
-	{FT(html), "([#.][ \t]*[a-zA-Z0-9_\\-]+\
-(?:(?:[, \t]*[#.][a-zA-Z0-9_\\-]+)?)+)(?:.?""?){1,20}\\{", A(SYN_SO, SYN_BD)},
 	{FT(html), "&[a-zA-Z0-9_]+;", A(MA)},
 
-	{FT(diff), NULL, A(CY1 | SYN_BD | SYN_SO), 0, 2},
+	{FT(diff), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(diff), "^-.*", A(RE)},
 	{FT(diff), "^\\+.*", A(GR)},
 	{FT(diff), "^@.*", A(CY)},
 	{FT(diff), "^diff .*", A(SYN_BD)},
 
-	{fm_ft, "^(?:(\\.\\.?(/))|(([^/]+/)+|/.*/|/))?.*\n$",
-		A(AY1 | SYN_SP, BL | SYN_SP, CY | SYN_SP, CY)},
-	{fm_ft, "(/+)\\.\\.(/+)(?>^\\./)", A(BL | SYN_SP, CY, CY | SYN_SO)},
+	{fm_ft, ".+", A(AY1), 1},
+	{fm_ft, "(^\\.?\\.?)/|(?#1)(?<^/)(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
 	{fm_ft, "[^/]*\\.sh\n$", A(GR)},
 	{fm_ft, "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", A(MA)},
-	{fm_ft, "/.*/", A(CY)},
 
 	{n_ft, "[0lewEW]", A(CY1 | SYN_BD)},
 	{n_ft, "1([ \t]*[1-9][ \t]*)9", A(RE1, MA1 | SYN_BD)},
@@ -230,19 +230,21 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
 	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
 
-	{ex_ft, "^[^:].*$", A(AY1 | SYN_BD)},
-	{ex_ft, "^.*$", A(AY1 | SYN_BD | SYN_SO)},
-	{ex_ft, ":[ \t]*((((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)\
-(?:([+-])[0-9]+)?)[ \t]*(?:([,;])((?:[/?][^/?]*[/?]?)?[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)\
-(?:([+-])([0-9]+))?)*)((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|\
-left|lim|led|vis|mpt)|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:[+ \t]?([?/])|[tdp+])?|inc|i|\
+	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
+	{ex_ft, ":[ \t]*((((?:\\?(?:[^?\\\\]|\\\\.)*\\?\?|/(?:[^/\\\\]|\\\\.)*/?)?\
+[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([+-])[0-9]+)?)[ \t]*(?:([,;])[ \t]*\
+((?:\\?(?:[^?\\\\]|\\\\.)*\\?\?|/(?:[^/\\\\]|\\\\.)*/?)?[.%$]?(?:'[a-z'`[\\]*])?\
+([0-9]*)?)(?:([+-])([0-9]+))?[ \t]*)*)\
+((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|left|lim|led|vis|mpt)\
+|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:\\+?[ \t]?([?/])|[tdp+])?|inc|i|\
 (?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[ql!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
 	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]*)", A(WH1 | SYN_BD)},
 
-	{vs_ft, "^(?:[?/]|xkwd:)(.*)", A(BL1 | SYN_BD | SYN_SO, AY1 | SYN_SO)},
-	{vs_ft, "(\\\\[<>]|\\(\\?[:=!<>#]|[.^${}[\\]\\()*+|?])|\\\\(.)", A(SYN_BD, WH1, YE)},
+	{vs_ft, ".+", A(AY1 | SYN_BD), 1},
+	{vs_ft, "(^[?/]|xkwd:)|(\\\\[<>]|\\(\\?[:=!<>#]|[.^${}[\\]\\()*+|?])|\\\\(.)",
+		A(SYN_BD, BL1, WH1, YE)},
 
 	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
 	{bar_ft, "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
