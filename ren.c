@@ -316,14 +316,15 @@ void syn_highlight(int *att, char *s, int n)
 				if (syn_blockhl == hl && (SYN_BESET(catt[i]) || last_scdir > 0)) {
 					blockca = -1;
 					syn_blockhl = blockca;
+				} else if (SYN_AIGNSET(catt[i])) {
+					continue;
 				} else if (syn_blockhl < 0 && (SYN_BSSET(catt[i]) || last_scdir > 0)) {
-					if (SYN_BSESET(catt[i]) == SYN_BSE)
-						continue;
 					syn_blockhl = hl;
 					blockca = catt[i];
 					blockatt = catt[0];
 				}
-			}
+			} else if (SYN_AIGNSET(catt[i]))
+				continue;
 			int beg = uc_off(s, sidx + subs[i * 2]);
 			int end = beg + uc_off(s + sidx + subs[i * 2],
 					subs[i * 2 + 1] - subs[i * 2]);
@@ -337,7 +338,7 @@ void syn_highlight(int *att, char *s, int n)
 	fti++;
 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft)
 		goto re;
-	if (blockca >= 0 && SYN_BSSET(blockca) && last_scdir > 0)
+	if (blockca >= 0 && SYN_BSSET(blockca) && !SYN_BESET(blockca) && last_scdir > 0)
 		syn_blockhl = -1;
 	if (syn_blockhl < 0 || blockhl < 0)
 		return;
