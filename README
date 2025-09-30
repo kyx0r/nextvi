@@ -427,7 +427,7 @@ EX COMMANDS
 
      bp[path]
              Set current buffer path
-     bs[#]   Set current buffer saved. If any arg given, reset undo/redo
+     bs[*]   Set current buffer saved. If any arg given, reset undo/redo
              history
 
      [range]p
@@ -464,10 +464,10 @@ EX COMMANDS
      ea![kwd] [#]
              Forced version of ea
 
-     [#]i[str]
-             Enter ex insert mode before specified line
+     [vpos]i[str]
+             Enter ex insert mode before vpos
 
-             # specifies insertion line number.
+             vpos specifies insertion vertical position.
              str specifies initial input into the insertion buffer.
 
              Example: insert "hello" in vi/ex
@@ -481,11 +481,11 @@ EX COMMANDS
              Example: insert "hello" in raw ex mode
              i hello<^M>.<^M>
 
-     [#]a[str]
-             Enter ex insert mode after specified line
+     [vpos]a[str]
+             Enter ex insert mode after vpos
 
      [range]c[str]
-             Enter ex change mode on specified line
+             Enter ex change mode
 
              In combination with seq and lim ex options, this command is
              optimal for modifying very long lines.

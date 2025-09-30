@@ -679,7 +679,7 @@ Example: switch to the b-2 buffer
 
 .It Cm bp[\fIpath\fP]
 Set current buffer path
-.It Cm bs[\fI#\fP]
+.It Cm bs[\fI*\fP]
 Set current buffer saved. If any arg given, reset undo/redo history
 
 .It Cm [\fIrange\fP]p
@@ -718,10 +718,10 @@ Example: open first match containing "v"
 .It Cm ea![\fIkwd\fP] [\fI#\fP]
 Forced version of ea
 
-.It Cm [\fI#\fP]i[\fIstr\fP]
-Enter ex insert mode before specified line
+.It Cm [\fIvpos\fP]i[\fIstr\fP]
+Enter ex insert mode before vpos
 .Bd -literal
-# specifies insertion line number.
+vpos specifies insertion vertical position.
 str specifies initial input into the insertion buffer.
 
 Example: insert "hello" in vi/ex
@@ -736,11 +736,11 @@ Example: insert "hello" in raw ex mode
 i hello<^M>.<^M>
 .Ed
 
-.It Cm [\fI#\fP]a[\fIstr\fP]
-Enter ex insert mode after specified line
+.It Cm [\fIvpos\fP]a[\fIstr\fP]
+Enter ex insert mode after vpos
 
 .It Cm [\fIrange\fP]c[\fIstr\fP]
-Enter ex change mode on specified line
+Enter ex change mode
 .Bd -literal
 In combination with seq and lim ex options, this command is
 optimal for modifying very long lines.
