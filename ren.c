@@ -356,7 +356,7 @@ void syn_reloadft(int hl)
 {
 	if (hl >= 0) {
 		int fti = ftidx;
-		while (fti < ftmidx && hl > ftmap[fti].seteidx)
+		while (fti < ftmidx && hl >= ftmap[fti].seteidx)
 			fti++;
 		rset *rs = ftmap[fti].rs;
 		syn_initft(fti, ftmap[fti].setbidx, ftmap[fti].ft);
