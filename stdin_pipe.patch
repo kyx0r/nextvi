@@ -156,10 +156,10 @@ index 977c4747..d785fd40 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 159a2442..051a8e56 100644
+index 2eaf73de..6964b009 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -508,6 +508,7 @@ extern int vi_hidch;
+@@ -510,6 +510,7 @@ extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;
  extern char vi_msg[512];

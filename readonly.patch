@@ -75,10 +75,10 @@ index 977c4747..a49d03c1 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 159a2442..6698360d 100644
+index 2eaf73de..3dae6996 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -379,6 +379,7 @@ struct buf {
+@@ -381,6 +381,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -86,7 +86,7 @@ index 159a2442..6698360d 100644
  };
  /* ex options */
  extern int xleft;
-@@ -512,3 +513,4 @@ extern char vi_msg[512];
+@@ -514,3 +515,4 @@ extern char vi_msg[512];
  extern rset *fsincl;
  extern char *fs_exdir;
  void dir_calc(char *path);

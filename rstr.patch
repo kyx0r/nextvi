@@ -306,7 +306,7 @@ index 977c4747..5efa9a79 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 159a2442..831c1fea 100644
+index 2eaf73de..91639de8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -122,12 +122,23 @@ typedef struct {
@@ -342,7 +342,7 @@ index 159a2442..831c1fea 100644
  			int *o, int ln_n, int skip);
  #define lbuf_dedup(lb, str, n) \
  { for (int i = 0; i < lbuf_len(lb);) { \
-@@ -413,7 +424,7 @@ extern int xkmap_alt;
+@@ -415,7 +426,7 @@ extern int xkmap_alt;
  extern int xkwddir;
  extern int xkwdcnt;
  extern sbuf *xacreg;
@@ -351,7 +351,7 @@ index 159a2442..831c1fea 100644
  extern sbuf *xregs[256];
  extern struct buf *bufs;
  extern struct buf tempbufs[2];
-@@ -446,7 +457,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
+@@ -448,7 +459,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
  { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -360,7 +360,7 @@ index 159a2442..831c1fea 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ex_regput(unsigned char c, const char *s, int append);
-@@ -509,6 +520,6 @@ extern int vi_insmov;
+@@ -511,6 +522,6 @@ extern int vi_insmov;
  extern int vi_lncol;
  extern char vi_msg[512];
  /* file system */

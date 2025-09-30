@@ -173,7 +173,7 @@ index 912bcd5d..c03ea82d 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index 159a2442..4156ae24 100644
+index 2eaf73de..103b2010 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -148,6 +148,7 @@ struct linfo {

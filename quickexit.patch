@@ -97,10 +97,10 @@ index 977c4747..46a2eea1 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index 159a2442..523f7876 100644
+index 2eaf73de..4322fbcf 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -396,6 +396,7 @@ extern int xtd;
+@@ -398,6 +398,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xtbs;
