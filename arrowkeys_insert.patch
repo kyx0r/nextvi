@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 503b153e..be827082 100644
+index 222ad78b..a7369acf 100644
 --- a/led.c
 +++ b/led.c
 @@ -281,7 +281,7 @@ static int led_lastword(char *s)
@@ -15,10 +15,10 @@ index 503b153e..be827082 100644
  	}
  	if (pos >= xleft + xcols || pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
--	syn_blockhl = 0;
+-	syn_blockhl = -1;
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
-+		syn_blockhl = 0;
++		syn_blockhl = -1;
 +		led_crender(sb->s+ps, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
@@ -73,10 +73,10 @@ index 503b153e..be827082 100644
  		term_room(1);
  		xrow++;
 diff --git a/vi.c b/vi.c
-index 568a3183..a63bceec 100644
+index 977c4747..fbedabac 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -812,6 +812,8 @@ static void vi_indents(char *ln, int *l)
+@@ -808,6 +808,8 @@ static void vi_indents(char *ln, int *l)
  	*l = ln - pln;
  }
  
@@ -85,7 +85,7 @@ index 568a3183..a63bceec 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *post, *_post, *ln = lbuf_get(xb, r1);
-@@ -844,6 +846,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -840,6 +842,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
  	free(_post);
@@ -93,7 +93,7 @@ index 568a3183..a63bceec 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1012,7 +1015,9 @@ static void vc_insert(int cmd)
+@@ -1008,7 +1011,9 @@ static void vc_insert(int cmd)
  	if (sb->s_n != l1 || cmdo || !ln) {
  		sbufn_str(sb, post)
  		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
@@ -104,7 +104,7 @@ index 568a3183..a63bceec 100644
  	free(sb->s);
  }
  
-@@ -1483,6 +1488,37 @@ void vi(int init)
+@@ -1479,6 +1484,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -142,7 +142,7 @@ index 568a3183..a63bceec 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1495,6 +1531,9 @@ void vi(int init)
+@@ -1491,6 +1527,9 @@ void vi(int init)
  				if (c != 'A' && c != 'C')
  					xoff--;
  				break;
