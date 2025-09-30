@@ -96,7 +96,7 @@ char *itoa(int n, char s[])
 static void vi_drawmsg(void)
 {
 	if (vi_msg[0]) {
-		syn_blockhl = 0;
+		syn_blockhl = -1;
 		syn_setft(bar_ft);
 		preserve(int, xtd, xtd = 2;)
 		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
@@ -157,7 +157,7 @@ static void vi_drawrow(int row)
 			vi_drawnum(lbuf_wordend(xb, i1, -2, &nrow, &noff))
 		tmp[ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol] = *vi_word;
 		preserve(int, xorder, xorder = 0;)
-		preserve(int, syn_blockhl, syn_blockhl = 0;)
+		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
 		vi_rshift = (row != xtop + xrows-1);
 		syn_setft(n_ft);
@@ -193,7 +193,7 @@ static void vi_drawrow(int row)
 		memset(c, ' ', l1 - (c - tmp));
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
-		preserve(int, syn_blockhl, syn_blockhl = 0;)
+		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		syn_setft(nn_ft);
 		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
@@ -218,7 +218,7 @@ static void vi_drawrow(int row)
 static void vi_drawagain(int i)
 {
 	syn_scdir(0);
-	syn_blockhl = 0;
+	syn_blockhl = -1;
 	for (; i < xtop + xrows; i++)
 		vi_drawrow(i);
 }
@@ -354,8 +354,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 /* read a line motion */
 static int vi_motionln(int *row, int cmd, int cnt)
 {
-	int c = term_read();
-	int mark, mark_row, mark_off;
+	int mark, c = term_read();
 	switch (c) {
 	case '\n':
 	case '+':
@@ -369,9 +368,8 @@ static int vi_motionln(int *row, int cmd, int cnt)
 	case '\'':
 		if ((mark = term_read()) <= 0)
 			return -1;
-		if (lbuf_jump(xb, mark, &mark_row, &mark_off))
+		if (lbuf_jump(xb, mark, row, &mark))
 			return -1;
-		*row = mark_row;
 		break;
 	case 'G':
 		*row = vi_arg ? cnt - 1 : lbuf_len(xb) - 1;
@@ -582,7 +580,7 @@ static int vi_motion(int *row, int *off)
 	static int srow[10], soff[10], lkwdcnt;
 	static int cadir = 1;
 	int cnt = vi_arg ? vi_arg : 1;
-	int dir, mark, mark_row, mark_off;
+	int dir, mark;
 	char *cs;
 	int mv, i;
 
@@ -759,10 +757,8 @@ static int vi_motion(int *row, int *off)
 	case '`':
 		if ((mark = term_read()) <= 0)
 			return -1;
-		if (lbuf_jump(xb, mark, &mark_row, &mark_off))
+		if (lbuf_jump(xb, mark, row, off))
 			return -1;
-		*row = mark_row;
-		*off = mark_off;
 		break;
 	case '%':
 		if (lbuf_pair(xb, row, off))
@@ -1695,7 +1691,7 @@ void vi(int init)
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
 				if (!word || strcmp(word, cs)) {
-					syn_addhl(cs, 1, 1);
+					syn_reloadft(syn_addhl(cs, 1));
 					free(word);
 					word = cs;
 					vi_mod |= 1;
@@ -1721,7 +1717,6 @@ void vi(int init)
 				}
 			}
 		}
-		syn_reloadft();
 		term_record = 1;
 		if (vi_mod & 1 || xleft != oleft
 				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
@@ -1734,17 +1729,15 @@ void vi(int init)
 		} else if (xtop != otop)
 			vi_drawupdate(otop - xtop);
 		if (xhll) {
-			syn_blockhl = 0;
+			syn_blockhl = -1;
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
 				if (!(vi_mod & 1) && !*vi_word)
 					vi_drawrow(orow);
-			syn_addhl("^.+", 2, 1);
-			syn_reloadft();
+			syn_reloadft(syn_addhl("^.+", 2));
 			vi_drawrow(xrow);
-			syn_addhl(NULL, 2, 1);
-			syn_reloadft();
+			syn_reloadft(syn_addhl(NULL, 2));
 		} else if (vi_mod & 2 && !(vi_mod & 1)) {
-			syn_blockhl = 0;
+			syn_blockhl = -1;
 			vi_drawrow(xrow);
 		}
 		if (vi_status && !vi_msg[0]) {
@@ -1802,7 +1795,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-1.4 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
