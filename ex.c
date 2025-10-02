@@ -196,7 +196,7 @@ static int ex_range(char **num, int n, int *row)
 	int dir, off, beg, end;
 	while (**num == ' ' || **num == '\t')
 		++*num;
-	switch ((unsigned char) **num) {
+	switch ((unsigned char)**num) {
 	case '.':
 		++*num;
 		break;
@@ -205,7 +205,7 @@ static int ex_range(char **num, int n, int *row)
 		++*num;
 		break;
 	case '\'':
-		if (lbuf_jump(xb, (unsigned char) *++(*num),
+		if (lbuf_jump(xb, (unsigned char)*++(*num),
 				&n, row ? &n : &dir))
 			return -1;
 		++*num;
@@ -227,15 +227,15 @@ static int ex_range(char **num, int n, int *row)
 		n = row ? off : beg;
 		break;
 	default:
-		if (isdigit((unsigned char) **num)) {
+		if (isdigit((unsigned char)**num)) {
 			n = atoi(*num) - !row;
-			while (isdigit((unsigned char) **num))
+			while (isdigit((unsigned char)**num))
 				++*num;
 		}
 	}
 	while (**num == '-' || **num == '+') {
 		n += atoi((*num)++);
-		while (isdigit((unsigned char) **num))
+		while (isdigit((unsigned char)**num))
 			++*num;
 	}
 	return n;
@@ -410,7 +410,7 @@ static void *ec_editapprox(char *loc, char *cmd, char *arg)
 {
 	sbuf_smake(sb, 128)
 	char ln[512];
-	char *path, *arg1 = arg+dstrlen(arg, ' ');
+	char *path, *arg1 = arg + dstrlen(arg, ' ');
 	struct lbuf *lb = tempbufs[1].lb;
 	int c = 0, i, inst = *arg1 ? atoi(arg1) : -1;
 	*arg1 = '\0';
@@ -736,13 +736,13 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 {
 	int beg, end, o1 = 0, o2 = -1;
 	if (cmd[2] == '!') {
-		ex_regput(arg[0], NULL, 0);
+		ex_regput(*arg, NULL, 0);
 		return NULL;
 	} else if (ex_region(loc, &beg, &end, &o1, &o2) || !lbuf_len(xb))
 		return xrerr;
 	sbuf sb;
 	lbuf_region(xb, &sb, beg, o1, end-1, o2);
-	ex_regput(arg[0], sb.s, isupper((unsigned char) arg[0]) || arg[1]);
+	ex_regput(*arg, sb.s, isupper((unsigned char)*arg) || (*arg && arg[1]));
 	free(sb.s);
 	return NULL;
 }
@@ -751,10 +751,10 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end, i = 0;
 	sbuf *buf;
-	if (arg[i] == '!' && arg[i+1] && arg[i+1] != ' ')
-		buf = xregs[0];
+	if (!*arg || (arg[i] == '!' && arg[i+1] && arg[i+1] != ' '))
+		buf = xregs[i];
 	else
-		buf = xregs[(unsigned char) arg[i++]];
+		buf = xregs[(unsigned char)arg[i++]];
 	if (!buf)
 		return "uninitialized register";
 	for (; arg[i] && arg[i] != '!'; i++){}
@@ -806,7 +806,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 	int beg, end;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
-	lbuf_mark(xb, (unsigned char) arg[0], end - 1, xoff);
+	lbuf_mark(xb, (unsigned char)*arg, end - 1, xoff);
 	return NULL;
 }
 

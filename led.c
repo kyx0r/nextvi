@@ -476,7 +476,7 @@ static void led_line(sbuf *sb, int ps, int pre, char *post, int postn,
 			continue;
 		case TK_CTL('p'):
 			if (xregs[p_reg])
-				sbuf_str(sb, xregs[p_reg]->s)
+				sbuf_mem(sb, xregs[p_reg]->s, xregs[p_reg]->s_n)
 			break;
 		case TK_CTL('g'):
 			if (!suggestsb) {
