@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 6a9a209..707b266 100644
+index 6a9a209d..707b2668 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -21,7 +21,7 @@ index 6a9a209..707b266 100644
  	{ex_ft, ":[ \t]*((((?:\\?(?:[^?\\\\]|\\\\.)*\\?\?|/(?:[^/\\\\]|\\\\.)*/?)?\
  [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([+-])[0-9]+)?)[ \t]*(?:([,;])[ \t]*\
 diff --git a/ex.c b/ex.c
-index dfc5dd7..09a0def 100644
+index d20fb35f..942ae517 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -34,7 +34,7 @@ index dfc5dd7..09a0def 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 977c474..9bca94d 100644
+index 0f5b5fac..2f7c3c05 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -506,12 +506,12 @@ void dir_calc(char *path)
@@ -171,7 +171,7 @@ index 977c474..9bca94d 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 2eaf73d..baf15f9 100644
+index 2eaf73de..baf15f98 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -418,7 +418,7 @@ extern sbuf *xacreg;
