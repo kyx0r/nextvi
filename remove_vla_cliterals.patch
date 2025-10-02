@@ -12,7 +12,7 @@ index 6a9a209d..676378f1 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index dfc5dd77..f2e156de 100644
+index d20fb35f..040b3cbc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -832,7 +832,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
@@ -65,7 +65,7 @@ index 912bcd5d..e562cf21 100644
  }
  
 diff --git a/led.c b/led.c
-index 222ad78b..52a42767 100644
+index 7a124730..dcfddc46 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -190,7 +190,7 @@ index 67351d38..0813b402 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 2767516a..66cf7cba 100644
+index 45e50cac..4e4df142 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -252,13 +252,14 @@ int syn_blockhl;
@@ -209,7 +209,7 @@ index 2767516a..66cf7cba 100644
  	return i < hlslen && hls[i].ft == name && hls[i].set != set;
  }
  
-@@ -303,7 +304,7 @@ void syn_highlight(int *att, char *s, int n)
+@@ -306,7 +307,7 @@ void syn_highlight(int *att, char *s, int n)
  	int fti = ftidx, blockhl = syn_blockhl;
  	re:;
  	rset *rs = ftmap[fti].rs;
@@ -218,7 +218,7 @@ index 2767516a..66cf7cba 100644
  	int cend = 1, sidx = 0, flg = 0, blockca = -1, hl, j, i;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
  		hl = sl + ftmap[fti].setbidx;
-@@ -336,15 +337,20 @@ void syn_highlight(int *att, char *s, int n)
+@@ -339,15 +340,20 @@ void syn_highlight(int *att, char *s, int n)
  		flg = REG_NOTBOL;
  	}
  	fti++;
@@ -241,7 +241,7 @@ index 2767516a..66cf7cba 100644
  }
  
  char *syn_filetype(char *path)
-@@ -388,9 +394,10 @@ int syn_addhl(char *reg, int id)
+@@ -391,9 +397,10 @@ int syn_addhl(char *reg, int id)
  
  void syn_init(void)
  {
@@ -254,7 +254,7 @@ index 2767516a..66cf7cba 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 977c4747..bbb5724b 100644
+index 0f5b5fac..517f6be9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -141,7 +141,8 @@ static void vi_drawrow(int row)

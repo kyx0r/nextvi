@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index dfc5dd77..83dee7ef 100644
+index d20fb35f..d0b808dd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1393,3 +1393,16 @@ void ex_init(char **files, int n)
@@ -32,7 +32,7 @@ index 67351d38..db2010b1 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
 diff --git a/ren.c b/ren.c
-index 2767516a..91a93784 100644
+index 45e50cac..3ece8916 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
@@ -56,7 +56,7 @@ index 2767516a..91a93784 100644
  /* specify the screen position of the characters in s */
  ren_state *ren_position(char *s)
  {
-@@ -394,3 +408,10 @@ void syn_init(void)
+@@ -397,3 +411,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -68,7 +68,7 @@ index 2767516a..91a93784 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 977c4747..ecbbadc1 100644
+index 0f5b5fac..0e780e01 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -446,6 +446,12 @@ static void vi_regput(int c, const char *s, int lnmode)

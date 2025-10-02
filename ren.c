@@ -264,23 +264,26 @@ static int syn_initft(int fti, int n, char *name)
 
 char *syn_setft(char *ft)
 {
-	for (int i = 1; i < 4; i++)
+	int i;
+	for (i = 1; i < 4; i++)
 		syn_addhl(NULL, i);
-	for (int i = 0; i < ftmidx; i++)
+	for (i = 0; i < ftmidx; i++)
 		if (!strcmp(ft, ftmap[i].ft)) {
 			ftidx = i;
 			return ftmap[ftidx].ft;
 		}
-	for (int i = 0; i < hlslen; i++)
+	for (i = 0; i < hlslen; i++)
 		if (!strcmp(ft, hls[i].ft)) {
+			default_hl:
 			ftidx = ftmidx;
 			while (syn_initft(ftmidx++, i, hls[i].ft))
 				i = ftmap[ftmidx-1].seteidx;
 			return ftmap[ftidx].ft;
 		}
-	if (!ftmidx && !ftmap[ftidx].rs)
-		syn_initft(ftmidx++, 0, hls[0].ft);
-	return ftmap[ftidx].ft;
+	if (ftmidx)
+		return ftmap[ftidx].ft;
+	i = 0;
+	goto default_hl;
 }
 
 void syn_scdir(int scdir)
@@ -357,7 +360,7 @@ void syn_reloadft(int hl)
 {
 	if (hl >= 0) {
 		int fti = ftidx;
-		while (fti < ftmidx && hl >= ftmap[fti].seteidx)
+		while (fti < ftmidx - 1 && hl >= ftmap[fti].seteidx)
 			fti++;
 		rset *rs = ftmap[fti].rs;
 		syn_initft(fti, ftmap[fti].setbidx, ftmap[fti].ft);
