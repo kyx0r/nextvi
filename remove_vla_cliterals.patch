@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 6a9a209d..676378f1 100644
+index 5bf7e80d..123b9d22 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -33,10 +33,10 @@ index d20fb35f..040b3cbc 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 912bcd5d..e562cf21 100644
+index cedc3cdf..8e1f95e8 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -396,7 +396,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -407,7 +407,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
@@ -45,7 +45,7 @@ index 912bcd5d..e562cf21 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (skip >= 0 && s)
-@@ -421,14 +421,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -432,14 +432,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				break;
  			*o = _o;
  			*r = i;
@@ -254,7 +254,7 @@ index 45e50cac..4e4df142 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 0f5b5fac..517f6be9 100644
+index 05cbd5f9..e615c69f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -141,7 +141,8 @@ static void vi_drawrow(int row)
@@ -276,7 +276,7 @@ index 0f5b5fac..517f6be9 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1259,10 +1262,11 @@ void vi(int init)
+@@ -1263,10 +1266,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -289,7 +289,7 @@ index 0f5b5fac..517f6be9 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1392,7 +1396,7 @@ void vi(int init)
+@@ -1396,7 +1400,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -298,7 +298,7 @@ index 0f5b5fac..517f6be9 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1402,10 +1406,11 @@ void vi(int init)
+@@ -1406,10 +1410,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -311,7 +311,7 @@ index 0f5b5fac..517f6be9 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1413,6 +1418,7 @@ void vi(int init)
+@@ -1417,6 +1422,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);

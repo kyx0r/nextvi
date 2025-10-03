@@ -126,10 +126,10 @@ index d20fb35f..aacf4c1a 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 912bcd5d..0bd84e6a 100644
+index cedc3cdf..dcd7b6ea 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -392,11 +392,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -403,11 +403,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -143,7 +143,7 @@ index 912bcd5d..0bd84e6a 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (skip >= 0 && s)
-@@ -409,7 +409,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -420,7 +420,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  		step = 0;
  		flg = REG_NEWLINE;
  		s = lb->ln[i];
@@ -284,7 +284,7 @@ index 67351d38..5a3428c6 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 0f5b5fac..7b3ffaa2 100644
+index 05cbd5f9..01c6d16a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -446,7 +446,7 @@ static void vi_regput(int c, const char *s, int lnmode)

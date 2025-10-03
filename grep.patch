@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 6a9a209d..707b2668 100644
+index 5bf7e80d..89715a93 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -34,7 +34,7 @@ index d20fb35f..942ae517 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 0f5b5fac..2f7c3c05 100644
+index 05cbd5f9..f1d493dc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -506,12 +506,12 @@ void dir_calc(char *path)
@@ -79,7 +79,7 @@ index 0f5b5fac..2f7c3c05 100644
  	}
  	return 0;
  }
-@@ -669,6 +669,7 @@ static int vi_motion(int *row, int *off)
+@@ -673,6 +673,7 @@ static int vi_motion(int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
@@ -87,7 +87,7 @@ index 0f5b5fac..2f7c3c05 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -687,8 +688,43 @@ static int vi_motion(int *row, int *off)
+@@ -691,8 +692,43 @@ static int vi_motion(int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -132,7 +132,7 @@ index 0f5b5fac..2f7c3c05 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1262,7 +1298,17 @@ void vi(int init)
+@@ -1266,7 +1302,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -151,7 +151,7 @@ index 0f5b5fac..2f7c3c05 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1414,6 +1460,10 @@ void vi(int init)
+@@ -1418,6 +1464,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -162,7 +162,7 @@ index 0f5b5fac..2f7c3c05 100644
  				default:
  					term_dec()
  				}
-@@ -1779,6 +1829,7 @@ int main(int argc, char *argv[])
+@@ -1783,6 +1833,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);

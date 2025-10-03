@@ -205,19 +205,30 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
 
 int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
 {
-	long nr;
-	sbuf_smake(sb, 1048575)  /* caps at 2147481600 on 32 bit */
-	while ((nr = read(fd, sb->s + sb->s_n, sb->s_sz - sb->s_n)) > 0) {
-		sb->s_n += nr;
-		if (sb->s_n >= sb->s_sz) {
-			if (sb->s_n > INT_MAX / 2)
+	struct stat st;
+	long nr;	/* 1048575 caps at 2147481600 on 32 bit */
+	int sz = 1048575, step = 1, n = 0;
+	if (fstat(fd, &st) >= 0 && S_ISREG(st.st_mode))
+		sz = st.st_size >= INT_MAX ? INT_MAX : st.st_size + step;
+	char *s = emalloc(sz--);
+	while ((nr = read(fd, s + n, sz - n)) > 0) {
+		n += nr;
+		if (n >= sz + step) {
+			if (n > INT_MAX / 2) {
+				n -= nr;
 				break;
-			sbuf_extend(sb, sb->s_n * 2)
+			}
+			sz = n * 2;
+			s = erealloc(s, sz--);
+			step = 1;
+		} else if (n == sz) {
+			sz++;
+			step = 0;
 		}
 	}
-	sbuf_null(sb)
-	lbuf_edit(lb, sb->s, beg, end, 0, 0);
-	free(sb->s);
+	s[n] = '\0';
+	lbuf_edit(lb, s, beg, end, 0, 0);
+	free(s);
 	return nr != 0;
 }
 

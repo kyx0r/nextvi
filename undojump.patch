@@ -1,8 +1,8 @@
 diff --git a/lbuf.c b/lbuf.c
-index 912bcd5d..23c20648 100644
+index cedc3cdf..2a8597f6 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -293,6 +293,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
+@@ -304,6 +304,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
  	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
  }
  
@@ -45,10 +45,10 @@ index 912bcd5d..23c20648 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 0f5b5fac..32eccfa4 100644
+index 05cbd5f9..20ef3eb1 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1422,6 +1422,17 @@ void vi(int init)
+@@ -1426,6 +1426,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
