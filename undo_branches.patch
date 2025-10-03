@@ -28,7 +28,7 @@ index d20fb35f..6d7670aa 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index 912bcd5d..c03ea82d 100644
+index cedc3cdf..89c51b1a 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -3,6 +3,7 @@ struct lbuf *lbuf_make(void)
@@ -159,7 +159,7 @@ index 912bcd5d..c03ea82d 100644
  		lb->hist_n = lb->hist_u;
  		if (lb->hist_n == lb->hist_sz) {
  			int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -351,10 +438,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -362,10 +449,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  void lbuf_saved(struct lbuf *lb, int clear)
  {
  	if (clear) {
