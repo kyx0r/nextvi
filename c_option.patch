@@ -19,10 +19,10 @@ index d20fb35f..7559a809 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 9cd98aab..4585ee1f 100644
+index 05cbd5f9..5f2ed5f4 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1774,7 +1774,8 @@ static int setup_signals(void)
+@@ -1776,7 +1776,8 @@ static int setup_signals(void)
  
  int main(int argc, char *argv[])
  {
@@ -32,7 +32,7 @@ index 9cd98aab..4585ee1f 100644
  	if (!setup_signals())
  		return EXIT_FAILURE;
  	dir_init();
-@@ -1795,16 +1796,27 @@ int main(int argc, char *argv[])
+@@ -1797,16 +1798,27 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -50,8 +50,8 @@ index 9cd98aab..4585ee1f 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-1.5 Usage: %s [-emsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-1.5 Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-1.6 Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-1.6 Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
