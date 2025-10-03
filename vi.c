@@ -620,8 +620,10 @@ static int vi_motion(int *row, int *off)
 		for (; cnt; cnt--) {
 			*off += dir;
 			if (*off < 0 || *off > mark) {
+				if (!(cs = lbuf_get(xb, *row + dir)))
+					break;
 				*row += dir;
-				mark = lbuf_eol(xb, *row, 0);
+				mark = uc_slen(cs) - 1;
 				*off = dir < 0 ? mark : 0;
 			}
 		}
