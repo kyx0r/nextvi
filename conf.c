@@ -215,7 +215,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{FT(diff), "^@.*", A(CY)},
 	{FT(diff), "^diff .*", A(SYN_BD)},
 
-	{fm_ft, ".+", A(AY1), 1},
+	{fm_ft, "^.+\n$", A(AY1), 1},
 	{fm_ft, "(^\\.?\\.?)/|(?#1)(?<^/)(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
 	{fm_ft, "[^/]*\\.sh\n$", A(GR)},
 	{fm_ft, "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", A(MA)},
