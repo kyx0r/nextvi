@@ -574,7 +574,7 @@ static void vc_status(int type)
 }
 
 /* read a motion */
-static int vi_motion(int *row, int *off)
+static int vi_motion(int vc, int *row, int *off)
 {
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
@@ -620,18 +620,23 @@ static int vi_motion(int *row, int *off)
 		mark = cs ? ren_position(cs)->n : 0;
 		i = *off;
 		*off += cnt * dir;
-		if (*off >= 0 && *off <= mark)
-			break;
-		cnt -= dir > 0 ? mark - i : i;
-		*off = dir > 0 ? mark : 0;
-		while ((cs = lbuf_get(xb, *row + dir))) {
-			*row += dir;
-			mark = uc_slen(cs);
-			if (cnt - mark <= 0) {
-				*off = dir < 0 ? mark - cnt : cnt;
-				break;
+		if (*off < 0 || *off >= mark) {
+			cnt -= dir > 0 ? mark - i : i;
+			*off = dir > 0 ? mark : 0;
+			while ((cs = lbuf_get(xb, *row + dir))) {
+				*row += dir;
+				mark = uc_slen(cs);
+				if (cnt - mark <= 0) {
+					*off = dir < 0 ? mark - cnt : cnt;
+					break;
+				}
+				cnt -= mark;
 			}
-			cnt -= mark;
+		}
+		if (!vc && dir > 0 && lbuf_get(xb, *row + dir)
+				&& (mark < 2 || *off >= mark - 1)) {
+			*row += dir;
+			*off = 0;
 		}
 		break;
 	case 'f':
@@ -936,7 +941,7 @@ static void vc_motion(int cmd)
 	o2 = o1;
 	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
 		o2 = -1;
-	else if (!(mv = vi_motion(&r2, &o2)))
+	else if (!(mv = vi_motion(1, &r2, &o2)))
 		return;
 	if (mv < 0)
 		return;
@@ -1197,12 +1202,8 @@ void vi(int init)
 			sbuf_cut(led_attsb, 0)
 		if (!vi_ybuf)
 			vi_ybuf = vi_yankbuf();
-		mv = vi_motion(&nrow, &noff);
+		mv = vi_motion(0, &nrow, &noff);
 		if (mv > 0) {
-			if (mv == ' ' && lbuf_get(xb, nrow+1) && noff >= lbuf_eol(xb, nrow, 2)) {
-				nrow++;
-				noff = 0;
-			}
 			if (strchr("|jk", mv)) {
 				noff = vi_col2off(xb, nrow, vi_col);
 			} else {
