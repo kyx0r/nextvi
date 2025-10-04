@@ -616,18 +616,22 @@ static int vi_motion(int *row, int *off)
 	case 127:
 	case TK_CTL('h'):
 		dir = mv == ' ' ? +1 : -1;
-		mark = lbuf_eol(xb, *row, 1);
-		for (; cnt; cnt--) {
-			*off += dir;
-			if (*off < 0 || *off > mark) {
-				if (!(cs = lbuf_get(xb, *row + dir))) {
-					*off = dir < 0 ? 0 : mark;
-					break;
-				}
-				*row += dir;
-				mark = uc_slen(cs) - 1;
-				*off = dir < 0 ? mark : 0;
+		cs = lbuf_get(xb, *row);
+		mark = cs ? ren_position(cs)->n : 0;
+		i = *off;
+		*off += cnt * dir;
+		if (*off >= 0 && *off <= mark)
+			break;
+		cnt -= dir > 0 ? mark - i : i;
+		*off = dir > 0 ? mark : 0;
+		while ((cs = lbuf_get(xb, *row + dir))) {
+			*row += dir;
+			mark = uc_slen(cs);
+			if (cnt - mark <= 0) {
+				*off = dir < 0 ? mark - cnt : cnt;
+				break;
 			}
+			cnt -= mark;
 		}
 		break;
 	case 'f':
@@ -956,6 +960,7 @@ static void vc_motion(int cmd)
 		vi_yank(r1, o1, r2, o2, lnmode);
 		return;
 	}
+	mv = lbuf_len(xb);
 	if (cmd == 'd')
 		vi_delete(r1, o1, r2, o2, lnmode);
 	else if (cmd == 'c')
@@ -969,7 +974,7 @@ static void vc_motion(int cmd)
 			lnmode ? 1 : vi_arg ? vi_arg : 1);
 	else if (cmd == TK_CTL('w'))
 		vi_shift(r1, r2, -1, INT_MAX / 2);
-	vi_mod |= (r1 != r2 || (lnmode && (cmd == 'd' || cmd == '!'))) ? 1 : 2;
+	vi_mod |= r1 != r2 || mv != lbuf_len(xb) ? 1 : 2;
 }
 
 static void vc_insert(int cmd)
@@ -1799,7 +1804,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-1.6 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-1.7 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
