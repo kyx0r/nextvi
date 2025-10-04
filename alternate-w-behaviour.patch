@@ -1,21 +1,12 @@
 diff --git a/vi.c b/vi.c
-index 05cbd5f9..e6db9f9e 100644
+index e9ce26f5..4b0de14f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -574,7 +574,7 @@ static void vc_status(int type)
- }
- 
- /* read a motion */
--static int vi_motion(int *row, int *off)
-+static int vi_motion(int *row, int *off, int comb)
- {
- 	static sbuf *savepath[10];
- 	static int srow[10], soff[10], lkwdcnt;
-@@ -657,9 +657,13 @@ static int vi_motion(int *row, int *off)
+@@ -666,9 +666,13 @@ static int vi_motion(int vc, int *row, int *off)
  		break;
  	case 'w':
  	case 'W':
-+		if (comb)
++		if (vc)
 +			dir = 2;
 +		else
 +			dir = vi_nlword+1;
@@ -26,21 +17,3 @@ index 05cbd5f9..e6db9f9e 100644
  				break;
  		break;
  	case '{':
-@@ -932,7 +936,7 @@ static void vc_motion(int cmd)
- 	o2 = o1;
- 	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
- 		o2 = -1;
--	else if (!(mv = vi_motion(&r2, &o2)))
-+	else if (!(mv = vi_motion(&r2, &o2, 1)))
- 		return;
- 	if (mv < 0)
- 		return;
-@@ -1192,7 +1196,7 @@ void vi(int init)
- 			sbuf_cut(led_attsb, 0)
- 		if (!vi_ybuf)
- 			vi_ybuf = vi_yankbuf();
--		mv = vi_motion(&nrow, &noff);
-+		mv = vi_motion(&nrow, &noff, 0);
- 		if (mv > 0) {
- 			if (mv == ' ' && lbuf_get(xb, nrow+1) && noff >= lbuf_eol(xb, nrow, 2)) {
- 				nrow++;
