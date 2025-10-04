@@ -574,7 +574,7 @@ static void vc_status(int type)
 }
 
 /* read a motion */
-static int vi_motion(int *row, int *off)
+static int vi_motion(int vc, int *row, int *off)
 {
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
@@ -616,18 +616,27 @@ static int vi_motion(int *row, int *off)
 	case 127:
 	case TK_CTL('h'):
 		dir = mv == ' ' ? +1 : -1;
-		mark = lbuf_eol(xb, *row, 1);
-		for (; cnt; cnt--) {
-			*off += dir;
-			if (*off < 0 || *off > mark) {
-				if (!(cs = lbuf_get(xb, *row + dir))) {
-					*off = dir < 0 ? 0 : mark;
+		cs = lbuf_get(xb, *row);
+		mark = cs ? ren_position(cs)->n : 0;
+		i = *off;
+		*off += cnt * dir;
+		if (*off < 0 || *off >= mark) {
+			cnt -= dir > 0 ? mark - i : i;
+			*off = dir > 0 ? mark : 0;
+			while ((cs = lbuf_get(xb, *row + dir))) {
+				*row += dir;
+				mark = uc_slen(cs);
+				if (cnt - mark <= 0) {
+					*off = dir < 0 ? mark - cnt : cnt;
 					break;
 				}
-				*row += dir;
-				mark = uc_slen(cs) - 1;
-				*off = dir < 0 ? mark : 0;
+				cnt -= mark;
 			}
+		}
+		if (!vc && dir > 0 && lbuf_get(xb, *row + dir)
+				&& (mark < 2 || *off >= mark - 1)) {
+			*row += dir;
+			*off = 0;
 		}
 		break;
 	case 'f':
@@ -932,7 +941,7 @@ static void vc_motion(int cmd)
 	o2 = o1;
 	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
 		o2 = -1;
-	else if (!(mv = vi_motion(&r2, &o2)))
+	else if (!(mv = vi_motion(1, &r2, &o2)))
 		return;
 	if (mv < 0)
 		return;
@@ -956,6 +965,7 @@ static void vc_motion(int cmd)
 		vi_yank(r1, o1, r2, o2, lnmode);
 		return;
 	}
+	mv = lbuf_len(xb);
 	if (cmd == 'd')
 		vi_delete(r1, o1, r2, o2, lnmode);
 	else if (cmd == 'c')
@@ -969,7 +979,7 @@ static void vc_motion(int cmd)
 			lnmode ? 1 : vi_arg ? vi_arg : 1);
 	else if (cmd == TK_CTL('w'))
 		vi_shift(r1, r2, -1, INT_MAX / 2);
-	vi_mod |= (r1 != r2 || (lnmode && (cmd == 'd' || cmd == '!'))) ? 1 : 2;
+	vi_mod |= r1 != r2 || mv != lbuf_len(xb) ? 1 : 2;
 }
 
 static void vc_insert(int cmd)
@@ -1192,12 +1202,8 @@ void vi(int init)
 			sbuf_cut(led_attsb, 0)
 		if (!vi_ybuf)
 			vi_ybuf = vi_yankbuf();
-		mv = vi_motion(&nrow, &noff);
+		mv = vi_motion(0, &nrow, &noff);
 		if (mv > 0) {
-			if (mv == ' ' && lbuf_get(xb, nrow+1) && noff >= lbuf_eol(xb, nrow, 2)) {
-				nrow++;
-				noff = 0;
-			}
 			if (strchr("|jk", mv)) {
 				noff = vi_col2off(xb, nrow, vi_col);
 			} else {
@@ -1799,7 +1805,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-1.6 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-1.7 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

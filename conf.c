@@ -55,7 +55,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
 /* At least 1 entry is required in this struct for fallback */
 /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 struct highlight hls[] = {
-	{_ft, NULL, A(CY1 | SYN_BD ), 0, 2},  /* <-- optional, used by hll if set */
+	{_ft, NULL, A(CY1 | SYN_BD), 1, 2},  /* <-- optional, used by hll if set */
 	{_ft, NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
 	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
 
