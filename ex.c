@@ -777,10 +777,11 @@ static void *ec_lnum(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
 	int arr[4] = {0, 0, -1, -1};
-	if (ex_region(loc, &arr[0], &arr[1], &arr[2], &arr[3]))
+	int ret = ex_region(loc, &arr[0], &arr[1], &arr[2], &arr[3]);
+	if (ret && !((*arg && arg[1]) || (*arg && (*arg ^ '0') >= 4)))
 		return xrerr;
-	if (*arg && atoi(arg) >= 0 && atoi(arg) < 4)
-		itoa(arr[atoi(arg)], msg);
+	if ((*arg ^ '0') < 4)
+		itoa(arr[*arg ^ '0'], msg);
 	else
 		sprintf(msg, "%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
 	ex_print(msg, msg_ft)
