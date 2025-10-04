@@ -1,12 +1,12 @@
 diff --git a/vi.c b/vi.c
-index e9ce26f5..4b0de14f 100644
+index e9ce26f5..5336e9bc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -666,9 +666,13 @@ static int vi_motion(int vc, int *row, int *off)
  		break;
  	case 'w':
  	case 'W':
-+		if (vc)
++		if (vc && cnt == 1)
 +			dir = 2;
 +		else
 +			dir = vi_nlword+1;
