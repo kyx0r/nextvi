@@ -181,9 +181,7 @@ static char *ex_reread(char ***re, int *dir)
 	*dir = ***re == '>' ? 2 : -2;
 	if (*dir < 0 && ***re != '<')
 		return xserr;
-	p("pre %s\n", **re)
 	char *e = re_read(*re);
-	p("post %s\n", e)
 	if (!e)
 		return xserr;
 	ex_krsset(e, *dir);

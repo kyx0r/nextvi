@@ -306,36 +306,49 @@ void syn_highlight(int *att, char *s, int n)
 	int fti = ftidx, blockhl = syn_blockhl;
 	re:;
 	rset *rs = ftmap[fti].rs;
-	int subs[rs->grpcnt * 2], *catt, sl;
-	int cend = 1, sidx = 0, flg = 0, blockca = -1, hl, j, i;
+	int subs[rs->grpcnt * 2], *catt, *aign, sl, c;
+	int cend, sidx = 0, flg = 0, blockca = -1, hl, j, i;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
+		cend = 1;
 		hl = sl + ftmap[fti].setbidx;
+		sl = rs->setgrpcnt[sl];
 		catt = hls[hl].att;
-		for (i = 0; i < rs->setgrpcnt[sl]; i++) {
+		for (i = 0; i < sl; i++) {
 			if (subs[i * 2] < 0 || SYN_IGNSET(catt[i]))
 				continue;
 			cend = MAX(cend, subs[i * 2 + 1]);
+			int beg = uc_off(s, sidx + subs[i * 2]);
+			int end = beg + uc_off(s + sidx + subs[i * 2],
+					subs[i * 2 + 1] - subs[i * 2]);
+			if (!SYN_AIGNSET(catt[i]))
+				goto att;
+			for (aign = &catt[sl], c = *aign; c; c--) {
+				if (SYN_AIGNSET(catt[i]) == SYN_AIGN) {
+					for (j = beg; j < end; j++)
+						if ((att[j] & 0xffff) == aign[c])
+							goto end;
+				} else if ((SYN_SAIGNSET(catt[i]) &&
+						(att[beg] & 0xffff) == aign[c]) ||
+						(SYN_EAIGNSET(catt[i]) &&
+						(att[MAX(0, end-1)] & 0xffff) == aign[c]))
+					goto end;
+			}
+			att:
+			for (j = beg; j < end; j++)
+				att[j] = syn_merge(att[j], catt[i]);
 			if (SYN_BSESET(catt[i])) {
 				if (syn_blockhl == hl && (SYN_BESET(catt[i]) || last_scdir > 0)) {
 					blockca = -1;
 					syn_blockhl = blockca;
-				} else if (SYN_AIGNSET(catt[i])) {
-					continue;
 				} else if (syn_blockhl < 0 && (SYN_BSSET(catt[i]) || last_scdir > 0)) {
 					syn_blockhl = hl;
 					blockca = catt[i];
 					blockatt = catt[0];
 				}
-			} else if (SYN_AIGNSET(catt[i]))
-				continue;
-			int beg = uc_off(s, sidx + subs[i * 2]);
-			int end = beg + uc_off(s + sidx + subs[i * 2],
-					subs[i * 2 + 1] - subs[i * 2]);
-			for (j = beg; j < end; j++)
-				att[j] = syn_merge(att[j], catt[i]);
+			}
+			end:;
 		}
 		sidx += cend;
-		cend = 1;
 		flg = REG_NOTBOL;
 	}
 	fti++;
