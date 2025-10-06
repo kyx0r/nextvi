@@ -178,10 +178,12 @@ void ex_krsset(char *kwd, int dir)
 
 static char *ex_reread(char ***re, int *dir)
 {
-	*dir = ***re == '/' ? 2 : -2;
-	if (*dir < 0 && ***re != '?')
+	*dir = ***re == '>' ? 2 : -2;
+	if (*dir < 0 && ***re != '<')
 		return xserr;
+	p("pre %s\n", **re)
 	char *e = re_read(*re);
+	p("post %s\n", e)
 	if (!e)
 		return xserr;
 	ex_krsset(e, *dir);
@@ -193,7 +195,7 @@ static char *ex_reread(char ***re, int *dir)
 
 static int ex_range(char **num, int n, int *row)
 {
-	int dir, off, beg, end;
+	int dir, off, beg, end, adj = 0;
 	while (**num == ' ' || **num == '\t')
 		++*num;
 	switch ((unsigned char)**num) {
@@ -210,8 +212,8 @@ static int ex_range(char **num, int n, int *row)
 			return -1;
 		++*num;
 		break;
-	case '/':
-	case '?':
+	case '>':
+	case '<':
 		off = row ? n : 0;
 		if (off < 0 || ex_reread(&num, &dir)) {
 			xrerr = off < 0 ? xsrerr : xserr;
@@ -228,17 +230,30 @@ static int ex_range(char **num, int n, int *row)
 		break;
 	default:
 		if (isdigit((unsigned char)**num)) {
-			n = atoi(*num) - !row;
+			adj = !row;
+			n = atoi(*num);
 			while (isdigit((unsigned char)**num))
 				++*num;
 		}
 	}
-	while (**num == '-' || **num == '+') {
-		n += atoi((*num)++);
-		while (isdigit((unsigned char)**num))
+	while (**num) {
+		dir = atoi(*num+1);
+		if (**num == '-') 
+			n -= dir;
+		else if (**num == '+')
+			n += dir;
+		else if (**num == '/')
+			n /= dir ? dir : 1;
+		else if (**num == '*')
+			n *= dir;
+		else if (**num == '%')
+			n %= dir ? dir : 1;
+		else
+			break;
+		for (++*num; isdigit((unsigned char)**num);)
 			++*num;
 	}
-	return n;
+	return n - adj;
 }
 
 /* parse ex command addresses */
@@ -1173,6 +1188,7 @@ static struct excmd {
 	{"@", ec_termexec},
 	{"&", ec_termexec},
 	{"!", ec_exec},
+	{"?", ec_while},
 	{"bp", ec_setpath},
 	{"bs", ec_bufsave},
 	{"bx", ec_setbufsmax},
@@ -1210,7 +1226,6 @@ static struct excmd {
 	{"r", ec_read},
 	{"wq!", ec_write},
 	{"wq", ec_write},
-	{"wl", ec_while},
 	{"w!", ec_write},
 	{"w", ec_write},
 	{"uc", ec_setenc},
@@ -1300,16 +1315,14 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	char *dst = sb->s;
 	while (*src == xsep || *src == ' ' || *src == '\t')
 		src += !!src[0];
-	while (memchr(" \t0123456789+-.,/?$';%", *src, 22)) {
+	while (memchr(" \t0123456789+-.,<>/$';%*", *src, 24)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
-		if (*src == '/' || *src == '?') {
+		if (*src == '>' || *src == '<') {
 			j = *src;
 			do {
-				if (*src == '\\' && src[1] == j)
-					*dst++ = *src++;
 				*dst++ = *src++;
-			} while (*src && *src != j);
+			} while (*src && (*src != j || src[-1] == '\\'));
 			if (*src)
 				*dst++ = *src++;
 		} else
