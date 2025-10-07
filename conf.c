@@ -79,7 +79,7 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", A(RE1)},
 	{FT(c), "(\"[^\"]*\\\\\n$)|^(.*\"(?!\\\\\n$))",
 		A(MA | SYN_IGN, MA | SYN_BS | SYN_SAIGN, MA | SYN_BE | SYN_EAIGN, 2, MA, BL), 3},
-	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SAIGN, YE | SYN_SAIGN, 1, MA), 3},
+	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SAIGN, YE, 1, MA), 3},
 
 	{FT(roff), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(roff), "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",

@@ -346,8 +346,8 @@ void syn_highlight(int *att, char *s, int n)
 					blockatt = catt[0];
 				}
 			}
-			end:;
 		}
+		end:;
 		sidx += cend;
 		flg = REG_NOTBOL;
 	}
