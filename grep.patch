@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index d7b14fcc..aff1031c 100644
+index c07add92..7ed704bb 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -10,7 +10,7 @@ index d7b14fcc..aff1031c 100644
  char ex_ft[] = "/ex";	/* ex mode (is never '\n' terminated) */
  char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
  char bar_ft[] = "/-";	/* status bar (is never '\n' terminated) */
-@@ -231,6 +232,9 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
+@@ -230,6 +231,9 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
  		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
  	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
  
@@ -18,10 +18,10 @@ index d7b14fcc..aff1031c 100644
 +	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 +
  	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
- 	{ex_ft, ":[ \t]*((((?:\\?(?:[^?\\\\]|\\\\.)*\\?\?|/(?:[^/\\\\]|\\\\.)*/?)?\
- [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([+-])[0-9]+)?)[ \t]*(?:([,;])[ \t]*\
+ 	{ex_ft, ":[ \t]*((((?:<.*?(?:[^\\\\]<|$)|>.*?(?:[^\\\\]>|$))?\
+ [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*)[ \t]*(?:([,;])[ \t]*\
 diff --git a/ex.c b/ex.c
-index d20fb35f..942ae517 100644
+index bfdaa99c..9ecf7354 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -34,7 +34,7 @@ index d20fb35f..942ae517 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index e9ce26f5..cb953a0c 100644
+index 28df33cb..8fce0e65 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -506,12 +506,12 @@ void dir_calc(char *path)
@@ -171,10 +171,10 @@ index e9ce26f5..cb953a0c 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 2eaf73de..baf15f98 100644
+index 1bef0600..ad9a9a74 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -418,7 +418,7 @@ extern sbuf *xacreg;
+@@ -422,7 +422,7 @@ extern sbuf *xacreg;
  extern rset *xkwdrs;
  extern sbuf *xregs[256];
  extern struct buf *bufs;
