@@ -139,7 +139,7 @@ index cedc3cdf..439ca460 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index fa566878..95d0abd5 100644
+index 1869f045..99db760e 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -380,7 +380,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -151,7 +151,7 @@ index fa566878..95d0abd5 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -611,8 +611,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -610,8 +610,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;

@@ -20,10 +20,10 @@ index bfdaa99c..3f67aee7 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index fa566878..0c2038aa 100644
+index 1869f045..fa39f411 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -607,6 +607,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -606,6 +606,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
