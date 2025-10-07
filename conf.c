@@ -55,14 +55,13 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
 /* At least 1 entry is required in this struct for fallback */
 /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 struct highlight hls[] = {
-	{_ft, NULL, A(CY1 | SYN_BD ), 0, 2},  /* <-- optional, used by hll if set */
+	{_ft, NULL, A(CY1 | SYN_BD), 1, 2},  /* <-- optional, used by hll if set */
 	{_ft, NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
 	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
 
 	{FT(c), "^.+\\\\\n$", A(CY1), 1},
 	{FT(c), NULL, A(CY1 | SYN_BD), 1, 2},
-	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE, YE), 2},
-	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?>\".*\\*/.*(?:\"|\\\\\n$)))",
+	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?<\".*\\*/.*(?:\"|\\\\\n$)))",
 		A(BL | SYN_IT, BL | SYN_BS, BL | SYN_BE)},
 	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
 	{FT(c), NULL, A(RE1), 0, 1},
@@ -78,9 +77,9 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(c), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
 	{FT(c), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
 	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", A(RE1)},
-	{FT(c), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA | SYN_AIGN), 3},
-	{FT(c), "(\"[^\"]*\\\\\n$)|^(?=\")((?:[^\"\\\\]|\\\\.)*?\"(?!\\\\\n$))",
-		A(MA | SYN_IGN, MA | SYN_BS, MA | SYN_BE | SYN_AIGN), 3},
+	{FT(c), "(\"[^\"]*\\\\\n$)|^(.*\"(?!\\\\\n$))",
+		A(MA | SYN_IGN, MA | SYN_BS | SYN_SAIGN, MA | SYN_BE | SYN_EAIGN, 2, MA, BL), 3},
+	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SAIGN, YE, 1, MA), 3},
 
 	{FT(roff), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(roff), "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
@@ -216,7 +215,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{FT(diff), "^diff .*", A(SYN_BD)},
 
 	{fm_ft, "^.+\n$", A(AY1), 1},
-	{fm_ft, "(^\\.?\\.?)/|(?#1)(?<^/)(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
+	{fm_ft, "(^\\.?\\.?)/|(?#1)(?>^/)(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
 	{fm_ft, "[^/]*\\.sh\n$", A(GR)},
 	{fm_ft, "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", A(MA)},
 
@@ -232,13 +231,13 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
 
 	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
-	{ex_ft, ":[ \t]*((((?:\\?(?:[^?\\\\]|\\\\.)*\\?\?|/(?:[^/\\\\]|\\\\.)*/?)?\
-[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([+-])[0-9]+)?)[ \t]*(?:([,;])[ \t]*\
-((?:\\?(?:[^?\\\\]|\\\\.)*\\?\?|/(?:[^/\\\\]|\\\\.)*/?)?[.%$]?(?:'[a-z'`[\\]*])?\
-([0-9]*)?)(?:([+-])([0-9]+))?[ \t]*)*)\
+	{ex_ft, ":[ \t]*((((?:<.*?(?:[^\\\\]<|$)|>.*?(?:[^\\\\]>|$))?\
+[.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*)[ \t]*(?:([,;])[ \t]*\
+((?:<.*?(?:[^\\\\]<|$)|>.*?(?:[^\\\\]>|$))?[.$]?(?:'[a-z'`[\\]*])?\
+([0-9]*)?)(?:([-*-+/%])([0-9]+))*[ \t]*)*)\
 ((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|left|lim|led|vis|mpt)\
-|[@&!=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:\\+?[ \t]?([?/])|[tdp+])?|inc|i|\
-(?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[ql!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
+|[@&!?=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:\\+?[ \t]?([><])|[tdp+])?|inc|i|\
+(?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
 	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]*)", A(WH1 | SYN_BD)},

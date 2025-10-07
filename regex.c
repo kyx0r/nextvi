@@ -75,8 +75,6 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			if (!*re)
 				return -1; /* Trailing backslash */
 			if (*re == '<' || *re == '>') {
-				if (re - re_loc > 2 && re[-2] == '\\')
-					break;
 				EMIT(PC++, *re == '<' ? WBEG : WEND);
 				term = PC;
 				break;
@@ -396,11 +394,10 @@ if (freesub) { \
 
 #define onlist(nn) \
 if (sdense[spc] < sparsesz) \
-	if (sdense[sdense[spc]] == (unsigned int)spc) \
+	if (sdense[sdense[spc] << 1] == (unsigned int)spc) \
 		deccheck(nn) \
 sdense[spc] = sparsesz; \
-sdense[sparsesz] = spc; \
-sparsesz += 2; \
+sdense[sparsesz++ << 1] = spc; \
 
 #define decref(csub) \
 if (--csub->ref == 0) { \
@@ -513,8 +510,8 @@ if (spc > JMP) { \
 		lb[j] = cnt ? _subp[0] : NULL; \
 	} else \
 		cnt = !!lb[j]; \
-	if ((cnt && (npc[1] == '!' || npc[1] == '>')) \
-			|| (!cnt && (npc[1] == '=' || npc[1] == '<'))) \
+	if ((cnt && (npc[1] == '!' || npc[1] == '<')) \
+			|| (!cnt && (npc[1] == '=' || npc[1] == '>'))) \
 		deccheck(nn) \
 	out##nn: \
 	npc += 5; goto rec##nn; \
@@ -721,7 +718,10 @@ char *re_read(char **src)
 		return NULL;
 	sbuf_smake(sb, 256)
 	while (*s && *s != delim) {
-		if (s[0] == '\\' && s[1])
+		if (delim == '<' || delim == '>') {
+			if (s[0] == '\\' && s[1] == delim)
+				s++;
+		} else if (s[0] == '\\' && s[1])
 			if (*(++s) != delim)
 				sbuf_chr(sb, '\\')
 		sbuf_chr(sb, (unsigned char) *s++)

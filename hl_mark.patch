@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index d20fb35f..dcf9eba1 100644
+index bfdaa99c..38a9c34e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -8,6 +8,7 @@ int xhll;			/* highlight current line */
@@ -10,7 +10,7 @@ index d20fb35f..dcf9eba1 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1152,6 +1153,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1166,6 +1167,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index d20fb35f..dcf9eba1 100644
  
  _EO(left,
  	if (*loc)
-@@ -1231,6 +1233,7 @@ static struct excmd {
+@@ -1245,6 +1247,7 @@ static struct excmd {
  	EO(tbs),
  	EO(td),
  	EO(order),
@@ -27,10 +27,10 @@ index d20fb35f..dcf9eba1 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 05cbd5f9..3054ce29 100644
+index 28df33cb..4cd1186c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1702,6 +1702,21 @@ void vi(int init)
+@@ -1708,6 +1708,21 @@ void vi(int init)
  				}
  			}
  		}
