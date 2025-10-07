@@ -394,11 +394,10 @@ if (freesub) { \
 
 #define onlist(nn) \
 if (sdense[spc] < sparsesz) \
-	if (sdense[sdense[spc]] == (unsigned int)spc) \
+	if (sdense[sdense[spc] << 1] == (unsigned int)spc) \
 		deccheck(nn) \
 sdense[spc] = sparsesz; \
-sdense[sparsesz] = spc; \
-sparsesz += 2; \
+sdense[sparsesz++ << 1] = spc; \
 
 #define decref(csub) \
 if (--csub->ref == 0) { \
