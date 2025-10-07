@@ -341,7 +341,7 @@ EX RANGES
      [range] implements vertical and horizontal ranges.
      [vrange] implements vertical range and horizontal position.
 
-     [pad][, ;][pad][. $ '][> < %][- + * / %][1-9]
+     [pad][, ;][pad][%][. $][' > <][- + * / %][1-9]
              All ranges structure
      {> <}[kwd][> <]
              Search range structure
