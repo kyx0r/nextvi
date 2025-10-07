@@ -1,4 +1,4 @@
-.Dd Oct  3, 2025
+.Dd Oct  7, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -394,7 +394,7 @@ Commands described with the word "move" define a region.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm <j + ^M Enter - k h l f F t T \&, \&; B E b e W w { } \&[ \&] ^ 0 $ Space ^H Backspace % ' ` G H L M / \&? n N ^A>
+.It Cm j + <^M> <Enter> - k h l f F t T \&, \&; B E b e W w { } \&[ \&] ^ 0 $ <Space> <^H> <Backspace> % ' ` G H L M / \&? n N <^A>
 
 All regions
 .El
@@ -407,10 +407,10 @@ Motions can be prefixed or suffixed by [#].
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm <^W < > \&! c d y \&"> g~ gu gU
+.It Cm <^W> < > \&! c d y \&" g~ gu gU
 All motions
 
-.It Cm <">
+.It Cm \&"
 Special motions that consume a motion
 
 .It Cm dd yy cc g~~ guu gUU >> << <^W><^W> !!
@@ -505,11 +505,11 @@ into a purely command-line interface (CLI) when desired.
 .Sh EX PARSING
 .Bd -literal -compact
 Parsing follows the structure:
-[<:>][\fIrange\fP][\fIsep\fP][\fIcmd\fP][<\fIsep\fP>][\fIargs\fP][<:>]
+[<sep>][\fIrange\fP][\fIpad\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
 Ex commands are initiated and separated by <:> prefix. Fields
-can be separated by <Space> or <Tab>. There can only be one separator
-in between [cmd] and [args]. To avoid ambiguity, it is recommended
-to always use a separator between [cmd] and [args] in scripts.
+can be padded by <Space> or <Tab>. There can only be one pad
+in between [cmd] and [args]. To avoid ambiguity in scripts, it 
+is recommended to always use a pad between [cmd] and [args].
 .Bl -tag -width Ds -compact
 
 Examples:
@@ -518,7 +518,7 @@ Evaluates to ":e vi.c"
 .It Cm :eabc
 Evaluates to ":ea bc" not ":e abc"
 .It Cm :e \& vi.c
-Edit " vi.c". [<sep>] is required
+Edit " vi.c". <pad> is required
 .El
 .Ed
 .
@@ -529,12 +529,12 @@ with <\\>.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm <( ^ \&] \e>
-Special characters in regex "[]" expression
-.It Cm <\&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&.> \&"\\\\<\&" \&"\\\\>\&"
+.It Cm \&( \&^ \&]
+Specials in regex "[]" expression
+.It Cm \&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&. \\\\< \\\\>
 Specials in regex
-.It Cm <% \&! :>
-Special characters in ex
+.It Cm \&% \&! \&:
+Specials in ex
 .El
 .
 .Sh EX EXPANSION
@@ -567,12 +567,12 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [. $ ' / ?][- +][% 1-9][\fIpad\fP][, ;][\fIpad\fP][. $ ' / ?][- +][1-9]
-All ranges
-.It Cm </ ?>[\fIkwd\fP][</ ?>]
-Search range
-'It Cm <'>{\fImark\fP}
-Mark range
+.It Cm [\fIpad\fP][, ;][\fIpad\fP][. $ '][> < %][- + * / %][1-9]
+All ranges structure
+.It Cm {> <}[\fIkwd\fP][> <]
+Search range structure
+'It Cm '{<\fImark\fP>}
+Mark range structure
 
 .It Cm \&.
 Current position
@@ -580,16 +580,20 @@ Current position
 Last line of a buffer or end of line
 .It Cm \&'
 Begin mark range
-.It Cm \&/
+.It Cm \&>
 Begin search range forward
-.It Cm \&?
+.It Cm \&<
 Begin search range backward
 .It Cm \&-
 Subtract following number
 .It Cm \&+
 Add following number
+.It Cm \&*
+Multiply following number
+.It Cm \&/
+Divide following number
 .It Cm \&%
-Range from first to last line of a buffer
+Range from first to last line or modulo following number 
 .It Cm \&1-9
 Number or position
 .It Cm pad
@@ -606,15 +610,15 @@ Examples:
 Print lines 1,5
 .It Cm :.-5,.+5p
 Print 5 lines around current position
-.It Cm :/int/p
+.It Cm :>int>p
 Print first occurrence of int
-.It Cm :?int?p
+.It Cm :<int<p
 Print first occurrence of int in reverse
-.It Cm :.,/int/p
+.It Cm :.,>int>p
 Print until "int" is found
-.It Cm :?int?,.p
+.It Cm :<int<,.p
 Print until "int" is found in reverse
-.It Cm :/
+.It Cm :>
 Search using previously set search keyword
 .It Cm :'d,'ap
 Print lines from mark <d> to mark <a>
@@ -622,6 +626,8 @@ Print lines from mark <d> to mark <a>
 Print all lines in a buffer
 .It Cm :$p
 Print last line in a buffer
+.It Cm :$*50/100+1
+Goto 50% of the file
 .It Cm :;50
 Goto character offset 50
 .It Cm :10;50
@@ -632,28 +638,28 @@ Goto line 10 +5 character offset
 Goto line mark <a> offset mark <a>
 .It Cm :;$
 Goto end of line
-.It Cm :5;/int/
+.It Cm :5;>int>
 Search for "int" on line 5
-.It Cm :.;?int?
+.It Cm :.;<int<
 Search for "int" in reverse on the current line
-.It Cm :;/int/+3;//p
+.It Cm :;>int>+3;>>p
 Print text enclosed by "int" on the current line
 .El
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [\fIvrange\fP]f{/?}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f{> <}[\fIkwd\fP]
 Ranged search
 .Bd -literal
 Example: no range given, current line only
-:f/int
+:f>int
 Example: reverse
-:f?int
+:f<int
 Example: range given
-:10,100f/int
+:10,100f>int
 .Ed
 
-.It Cm [\fIvrange\fP]f+{/?}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+{> <}[\fIkwd\fP]
 Incrementing ranged search
 .Bd -literal
 Equivalent to the :f command, except subsequent commands within
@@ -776,7 +782,7 @@ Force open a file at a path
 No argument re-reads the current buffer from the filesystem.
 .Ed
 
-.It Cm [\fIvrange\fP]g{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
+.It Cm [\fIvrange\fP]g{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIcmd\fP}
 Global command
 .Bd -literal
 Execute an ex command on a range of lines that matches an
@@ -806,25 +812,28 @@ end with <;>.
 :g/int/g/;$/& A has a semicolon
 
 Example: extract/print data enclosed in "()"
-:g/\e(.+\e)/;0;/\e(.+\e)/\e:.;.+1k a\e:grp 2\e:;/\e)*(\e))/\e:
+:g/\e(.+\e)/;0;>\e(.+\e)>\e:.;.+1k a\e:grp 2\e:;>\e)*(\e))>\e:
 grp\e:k s\e:.;'a;'sp
 .Ed
 
-.It Cm [\fIvrange\fP]g!{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIcmd\fP}
+.It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIcmd\fP}
 Inverted global command
-.It Cm [\fIrange\fP]=[0-3]
-Print range values
+.It Cm [\fIrange\fP]=[<0-3 *>][*]
+Print range numbers
 .Bd -literal
-Argument selects a specific value.
-No argument prints all range values.
+Argument 0-3 selects a specific number.
+Any or any extra argument circumvents buffer range check.
+No argument prints all range numbers.
 
 Example: print current character offset only
 :;= 2
 Example: print value of mark <a>
 :'a=
+Example: calculate 75 - 100
+:1,75-100=1p
 .Ed
 
-.It Cm [\fIvrange\fP]k[\fImark\fP]
+.It Cm [\fIvrange\fP]k[<\fImark\fP>]
 Set a line mark
 .Bd -literal
 The character offset is set to the current position.
@@ -872,7 +881,7 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [# $],[skip1=0 $],[skip2=0 $]wl{\fIcmd\fP}
+.It Cm [# $],[skip1=0 $],[skip2=0 $]?{\fIcmd\fP}
 While loop conditional
 .Bd -literal
 Repeat {cmd} [#] times or infinite with <$>.
@@ -881,21 +890,21 @@ If while fails with error, [skip1] and [skip2] specify the location/range
 of the separated ex commands to skip that follow next in chain.
 
 Example: attempt to join every line in file using arbitrary count
-:10000wl & J
+:10000? & J
 Example: undo everything
-:$wl u
+:$? u
 Example: calculate directory only if :cd succeeded
-:1,1wl cd /blah:fd
+:1,1? cd /blah:fd
 Example: repeat chain of ex commands 10 times
-:10wl 1p\e:5p\e:10p
+:10? 1p\e:5p\e:10p
 Example: print a line only if it contains "int" at offset 5
-:1,1wl ;5;/^int/:p
+:1,1? ;5;>^int>:p
 Example: allow :led while branching only :p command
-:led:1,2wl ;5;/^int/:led:p
+:led:1,2? ;5;>^int>:led:p
 Example: branch multiple commands
-:led:1,2,3wl ;5;/^int/:led:&i2 not branched:p:p
+:led:1,2,3? ;5;>^int>:led:&i2 not branched:p:p
 Example: edit vi.c only if it exists
-:1,1wl \e![ -f ./vi.c ]:e ./vi.c:mpt
+:1,1? \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
 
 .It Cm [range]pu[\fIreg\fP] [\fI\e!cmd\fP]
@@ -964,7 +973,7 @@ Undo
 .It Cm rd
 Redo
 
-.It Cm [\fIvrange\fP]s{\fI*\fP}[\fIkwd\fP]{\fI*\fP}{\fIstr\fP}[\fI*\fP][\fIopts\fP]
+.It Cm [\fIvrange\fP]s{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIstr\fP}[<\fI*\fP>][\fIopts\fP]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -1017,7 +1026,7 @@ Example: use sed to replace "int" with "uint"
 Example: pipe in result of ls command without replace
 :;$+1!ls
 Example: capitalize the word at current position using tr
-:;.;/\e>/!tr '[\e:lower\e:]' '[\e:upper\e:]'
+:;.;>\e\e>>!tr '[\e:lower\e:]' '[\e:upper\e:]'
 .Ed
 
 .It Cm ft[\fIfiletype\fP]
@@ -1175,7 +1184,7 @@ be based on some group rather than default match group.
 The value of grp must be divisible by 2.
 
 Example: ignore spaces at the start of the line
-:grp 2:%f+/^[ ]+(.+):grp
+:grp 2:%f+>^[ ]+(.+):grp
 .Ed
 
 .
@@ -1402,9 +1411,9 @@ One or zero matches lazy
 Positive lookahead
 .It Cm \&(?!)
 Negative lookahead
-.It Cm \&(?<)
-Positive lookbehind
 .It Cm \&(?>)
+Positive lookbehind
+.It Cm \&(?<)
 Negative lookbehind
 .It Cm \&(?#)
 Lookbehind offset in bytes
@@ -1466,19 +1475,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 516 vi.h | definitions/aux
+ 520 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 308 conf.c | hl/ft/td config
+ 307 conf.c | hl/ft/td config
  345 term.c | low level IO
- 399 ren.c | positioning/syntax
+ 412 ren.c | positioning/syntax
  578 lbuf.c | file/line buffer
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
- 731 regex.c | pikevm
- 1395 ex.c | ex options/commands
- 1822 vi.c | normal mode/general
- 6898 total | wc -l *.c\(basort
+ 732 regex.c | pikevm
+ 1407 ex.c | ex options/commands
+ 1828 vi.c | normal mode/general
+ 6929 total | wc -l *.c\(basort
 _
 .TE
 .
