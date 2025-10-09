@@ -372,7 +372,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 	prog->insts[prog->unilen++] = SAVE;
 	prog->insts[prog->unilen++] = prog->sub + 1;
 	prog->insts[prog->unilen++] = MATCH;
-	prog->splits = (scnt - SPLIT) / 2;
+	prog->splits = MAX((scnt - SPLIT) / 2, 1);
 	prog->len = icnt + 3;
 	prog->presub = sizeof(rsub) + (sizeof(char*) * (nsubs + 1) * 2);
 	prog->sub = prog->presub * (icnt + 6);
@@ -600,7 +600,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
-	const char *_subp[2], *lb[prog->laidx];
+	const char *_subp[2], *lb[prog->laidx+1];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubp * sizeof(char*);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
