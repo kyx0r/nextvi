@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index c07add92..6a05aa8c 100644
+index 8dda708c..2483692d 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -121,7 +121,7 @@ index 7a124730..dcfddc46 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 1869f045..08a27f1a 100644
+index 700158e4..9d64262c 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -380,7 +380,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -155,7 +155,7 @@ index 1869f045..08a27f1a 100644
 -	rthread _clist[prog->len], _nlist[prog->len];
 +	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
--	const char *_subp[2], *lb[prog->laidx];
+-	const char *_subp[2], *lb[prog->laidx+1];
 +	const char *_subp[2], **lb = emalloc(prog->laidx * sizeof(lb[0]));
  	int rsubsize = prog->presub, suboff = 0;
  	int cnt, spc, i, c, j, osubp = nsubp * sizeof(char*);
@@ -254,7 +254,7 @@ index 9dfe491e..19c70ddb 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 28df33cb..f056f293 100644
+index b83a1df9..410158cc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -141,7 +141,8 @@ static void vi_drawrow(int row)
