@@ -32,7 +32,7 @@ index 700158e4..42017e9c 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
 diff --git a/ren.c b/ren.c
-index 9dfe491e..2813e961 100644
+index 09382b7b..1e744cdb 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
