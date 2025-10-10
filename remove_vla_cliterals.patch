@@ -190,7 +190,7 @@ index 700158e4..9d64262c 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 9dfe491e..19c70ddb 100644
+index 09382b7b..8beeed21 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -252,13 +252,14 @@ int syn_blockhl;
@@ -210,12 +210,12 @@ index 9dfe491e..19c70ddb 100644
  }
  
 @@ -306,7 +307,7 @@ void syn_highlight(int *att, char *s, int n)
- 	int fti = ftidx, blockhl = syn_blockhl;
+ 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
  	re:;
  	rset *rs = ftmap[fti].rs;
 -	int subs[rs->grpcnt * 2], *catt, *aign, sl, c;
 +	int *subs = emalloc(rs->grpcnt * 2 * sizeof(int)), *catt, *aign, sl, c;
- 	int cend, sidx = 0, flg = 0, blockca = -1, hl, j, i;
+ 	int cend, sidx = 0, flg = 0, hl, j, i;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
  		cend = 1;
 @@ -352,15 +353,20 @@ void syn_highlight(int *att, char *s, int n)
