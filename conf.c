@@ -140,7 +140,7 @@ for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)
 
 	{FT(js), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(js), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))",
-		A(GR1 | SYN_IT, GR1, GR1)},
+		A(GR1 | SYN_IT, GR1 | SYN_BS, GR1 | SYN_BE)},
 	{FT(js), NULL, A(RE1), 0, 1},
 	{FT(js), "\\<(?:abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
