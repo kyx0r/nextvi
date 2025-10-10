@@ -303,11 +303,11 @@ int syn_merge(int old, int new)
 
 void syn_highlight(int *att, char *s, int n)
 {
-	int fti = ftidx, blockhl = syn_blockhl;
+	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
 	re:;
 	rset *rs = ftmap[fti].rs;
 	int subs[rs->grpcnt * 2], *catt, *aign, sl, c;
-	int cend, sidx = 0, flg = 0, blockca = -1, hl, j, i;
+	int cend, sidx = 0, flg = 0, hl, j, i;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
 		cend = 1;
 		hl = sl + ftmap[fti].setbidx;
