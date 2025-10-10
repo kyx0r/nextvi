@@ -288,7 +288,7 @@ char *syn_setft(char *ft)
 
 void syn_scdir(int scdir)
 {
-	if (last_scdir != scdir) {
+	if (!scdir || (last_scdir > 0) != (scdir > 0)) {
 		last_scdir = scdir;
 		syn_blockhl = -1;
 	}
