@@ -1267,17 +1267,20 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 		if (*src == '%') {
 			int n = -1;
 			struct buf *pbuf = ex_buf;
-			if (src[1] == '#') {
-				pbuf = ex_pbuf;
+			src++;
+			if (*src == '#') {
 				src++;
-			} else if ((src[1] ^ '0') < 10)
-				pbuf = &bufs[n = atoi(&src[1])];
-			if (pbuf >= &bufs[xbufcur] || !pbuf->path[0]) {
+				pbuf = ex_pbuf;
+			} else if ((*src ^ '0') < 10)
+				pbuf = &bufs[n = atoi(src)];
+			if (pbuf < bufs || pbuf >= &bufs[xbufcur] || !pbuf->path[0]) {
 				ex_print("\"#\" or \"%\" is not set", msg_ft)
 				*arg = -1;
 			} else
 				sbuf_str(sb, pbuf->path)
-			src += n >= 0 ? snprintf(0, 0, "%+d", n) : 1;
+			if (n >= 0)
+				src += snprintf(0, 0, "%d", n);
+			src += *src == '\\' && src[-1] != '#' && (src[1] ^ '0') < 10;
 		} else if (*src == '!') {
 			int n = sb->s_n;
 			src++;
