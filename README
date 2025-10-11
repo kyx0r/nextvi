@@ -311,7 +311,8 @@ EX ESCAPES
      Special characters in [args] will become regular when escaped
      with <\>.
 
-     ( ^ ]   Specials in regex "[]" expression
+     ( ^ ] -
+             Specials in regex "[]" expression
      ( ) { } + * ? ^ $ [ ] | \ . \< \>
              Specials in regex
      % ! :   Specials in ex
@@ -341,13 +342,16 @@ EX RANGES
      [range] implements vertical and horizontal ranges.
      [vrange] implements vertical range and horizontal position.
 
-     [pad][, ;][pad][%][. $][' > <][- + * / %][1-9]
+     [pad][, ;][pad][%][. $ ' > <][- + * / %][0-9]
              All ranges structure
      {> <}[kwd][> <]
              Search range structure
      '{<mark>}
              Mark range structure
 
+     pad     <Space> or <Tab>
+     ,       Vertical range separator
+     ;       Horizontal range separator
      .       Current position
      $       Last line of a buffer or end of line
      '       Begin mark range
@@ -358,19 +362,16 @@ EX RANGES
      *       Multiply following number
      /       Divide following number
      %       Range from first to last line or modulo following number
-     1-9     Number or position
-     pad     <Space> or <Tab>
-     ,       Vertical range separator
-     ;       Horizontal range separator
+     0-9     Number or position
 
      Examples:
      :1,5p   Print lines 1,5
      :.-5,.+5p
              Print 5 lines around current position
      :>int>p
-             Print first occurrence of int
+             Print first occurrence of "int"
      :<int<p
-             Print first occurrence of int in reverse
+             Print first occurrence of "int" in reverse
      :.,>int>p
              Print until "int" is found
      :<int<,.p
@@ -639,7 +640,7 @@ EX COMMANDS
              Example: edit vi.c only if it exists
              :1,1? \![ -f ./vi.c ]:e ./vi.c:mpt
 
-     [range]pu[reg] [\!cmd]
+     [range]pu[<reg>][*][\!{cmd}]
              Paste or pipe a register
 
              Example: paste <a> at line 1 character offset 5
@@ -716,7 +717,7 @@ EX COMMANDS
              :%s/(int)|(void)/pre\2after/g
              this is an example text for subs and has prepreafterafter or prevoidafter
 
-     [range]ya[reg][append]
+     [range]ya[<reg>][*]
              Yank a range
 
              To append to the register, pass in its uppercase version.
@@ -728,7 +729,7 @@ EX COMMANDS
              Example: yank into <a> using ranges
              :1,5;5;5ya a
 
-     ya![reg]
+     ya![<reg>]
              Free a register
 
      [range]![cmd]
@@ -1029,26 +1030,26 @@ REGEX
      utilized in radix sort algorithms.
 
      Pikevm's syntax is akin to regexp(7) from Plan 9.
-     Disregard manpage notation for <{ } [ ]> in this section.
+     Disregard manpage notation in this section.
 
      .       Match any single char
-     ^       Assert start of line
-     $       Assert end of line
      {N,M}   Match N to M times
+     [N-M]   Match a set of alternate ranges N to M
      ()      Grouping
      (?:)    Non capture grouping
-     [N-M]   Match a set of alternate ranges N to M
      *       Repeated zero or more times
      +       Repeated one or more times
      |       Union, alternative branch
-     \<      Assert start of word
-     \>      Assert end of word
      ?       One or zero matches greedy
      ??      One or zero matches lazy
-     (?=)    Positive lookahead
-     (?!)    Negative lookahead
-     (?>)    Positive lookbehind
-     (?<)    Negative lookbehind
+     ^       Assert start of line
+     $       Assert end of line
+     \<      Assert start of word
+     \>      Assert end of word
+     (?=)    Assert positive lookahead
+     (?!)    Assert negative lookahead
+     (?>)    Assert positive lookbehind
+     (?<)    Assert negative lookbehind
      (?#)    Lookbehind offset in bytes
 
      Lookaround expressions enable the creation of regular expressions
@@ -1171,4 +1172,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.16.0                    October 7, 2025                   Linux 6.16.0
+Linux 6.17.1                   October 11, 2025                   Linux 6.17.1
