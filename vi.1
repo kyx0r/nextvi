@@ -567,7 +567,7 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [\fIpad\fP][, ;][\fIpad\fP][%][. $ ' > <][- + * / %][0-9]
+.It Cm [\fIpad\fP][%][, ;][\fIpad\fP][. $ ' > <][- + * / %][0-9]
 All ranges structure
 .It Cm {> <}[\fIkwd\fP][> <]
 Search range structure
@@ -576,6 +576,8 @@ Mark range structure
 
 .It Cm pad
 <Space> or <Tab>
+.It Cm \&%
+Range from first to last line
 .It Cm \&,
 Vertical range separator
 .It Cm \&;
@@ -599,7 +601,7 @@ Multiply following number
 .It Cm \&/
 Divide following number
 .It Cm \&%
-Range from first to last line or modulo following number 
+Modulo following number 
 .It Cm \&0-9
 Number or position
 .El

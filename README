@@ -342,7 +342,7 @@ EX RANGES
      [range] implements vertical and horizontal ranges.
      [vrange] implements vertical range and horizontal position.
 
-     [pad][, ;][pad][%][. $ ' > <][- + * / %][0-9]
+     [pad][%][, ;][pad][. $ ' > <][- + * / %][0-9]
              All ranges structure
      {> <}[kwd][> <]
              Search range structure
@@ -350,6 +350,7 @@ EX RANGES
              Mark range structure
 
      pad     <Space> or <Tab>
+     %       Range from first to last line
      ,       Vertical range separator
      ;       Horizontal range separator
      .       Current position
@@ -361,7 +362,7 @@ EX RANGES
      +       Add following number
      *       Multiply following number
      /       Divide following number
-     %       Range from first to last line or modulo following number
+     %       Modulo following number
      0-9     Number or position
 
      Examples:
