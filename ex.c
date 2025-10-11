@@ -1275,9 +1275,8 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			if (pbuf >= &bufs[xbufcur] || !pbuf->path[0]) {
 				ex_print("\"#\" or \"%\" is not set", msg_ft)
 				*arg = -1;
-				continue;
-			}
-			sbuf_str(sb, pbuf->path)
+			} else
+				sbuf_str(sb, pbuf->path)
 			src += n >= 0 ? snprintf(0, 0, "%+d", n) : 1;
 		} else if (*src == '!') {
 			int n = sb->s_n;
