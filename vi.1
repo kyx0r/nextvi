@@ -801,8 +801,8 @@ Example: print lines matching previously set search keyword
 Multiple ex commands can be chained in one global command.
 To chain commands, the ex separator <:> must be escaped once.
 
-Example: yank matches appending to reg 'a' and print them out.
-:g/int/ya A\e:p
+Example: print and append lines matching "int" to register <a>
+:g/int/p\e:ya A
 
 It is possible to nest global commands inside of global commands.
 The first global command will not be executed on lines that
@@ -975,7 +975,7 @@ Undo
 .It Cm rd
 Redo
 
-.It Cm [\fIvrange\fP]s{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIstr\fP}[<\fI*\fP>][\fIopts\fP]
+.It Cm [\fIvrange\fP]s{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIstr\fP}[<\fI*\fP>][<\fIg\fP>]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -1383,10 +1383,10 @@ Disregard manpage notation in this section.
 
 .It Cm \&.
 Match any single char
-.It Cm {\fIN\fP,\fIM\fP}
-Match N to M times
 .It Cm [\fIN\fP-\fIM\fP]
 Match a set of alternate ranges N to M
+.It Cm {\fIN\fP,\fIM\fP}
+Match N to M times
 .It Cm ()
 Grouping
 .It Cm (?:)
@@ -1487,9 +1487,9 @@ _
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  731 regex.c | pikevm
- 1407 ex.c | ex options/commands
+ 1409 ex.c | ex options/commands
  1828 vi.c | normal mode/general
- 6928 total | wc -l *.c\(basort
+ 6930 total | wc -l *.c\(basort
 _
 .TE
 .
