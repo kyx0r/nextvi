@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 8dda708c..b32365c6 100644
+index 4e07054e..8103ccb3 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -21,7 +21,7 @@ index 8dda708c..b32365c6 100644
  	{ex_ft, "(?#1):[ \t]*((((?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
  [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*)[ \t]*(?:([,;])[ \t]*\
 diff --git a/ex.c b/ex.c
-index bfdaa99c..9ecf7354 100644
+index 60221567..d4246f11 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */

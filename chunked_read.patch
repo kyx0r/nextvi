@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index bfdaa99c..3a69d128 100644
+index 60221567..48681f7d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -366,10 +366,10 @@ void ex_bufpostfix(struct buf *p, int clear)
