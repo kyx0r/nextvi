@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 60221567..c53dd60b 100644
+index 372a5688..1722bca2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */

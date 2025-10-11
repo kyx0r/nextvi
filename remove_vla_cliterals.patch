@@ -12,7 +12,7 @@ index 4e07054e..7aea43a1 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 60221567..1cc7ba56 100644
+index 372a5688..8d2391d4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -846,7 +846,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
