@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index bfdaa99c..52dd4d00 100644
+index 372a5688..47491e8b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -392,7 +392,9 @@ int ex_edit(const char *path, int len)
@@ -23,7 +23,7 @@ index bfdaa99c..52dd4d00 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1393,15 +1398,29 @@ void ex(void)
+@@ -1395,15 +1400,35 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -48,6 +48,12 @@ index bfdaa99c..52dd4d00 100644
 +			ex_print("stdin read failed", msg_ft)
 +		else
 +			ec_edit("", NULL, ""); /* shebang patch compat */
++		close(0);
++		if (dup2(stdin_fd, 0) == -1) {
++			fprintf(stderr, "error: %s\n", "dup2");
++			close(stdin_fd);
++			exit(1);
++		}
 +	}
  	xmpt = 0;
  	xvis &= ~8;
@@ -56,7 +62,7 @@ index bfdaa99c..52dd4d00 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 757c26eb..2b16f4df 100644
+index 757c26eb..22b91105 100644
 --- a/term.c
 +++ b/term.c
 @@ -5,6 +5,8 @@ int xrows, xcols;
@@ -122,6 +128,15 @@ index 757c26eb..2b16f4df 100644
  			err:
  			*ibuf = 0;
  		}
+@@ -289,7 +295,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+ 	fds[0].events = POLLIN;
+ 	fds[1].fd = ifd;
+ 	fds[1].events = POLLOUT;
+-	fds[2].fd = ibuf ? 0 : -1;
++	fds[2].fd = ibuf ? stdin_fd : -1;
+ 	fds[2].events = POLLIN;
+ 	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
+ 		if (fds[0].revents & POLLIN) {
 @@ -332,7 +338,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  		close(ifd);
  	waitpid(pid, status, 0);
@@ -132,7 +147,7 @@ index 757c26eb..2b16f4df 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 28df33cb..2c6b5a78 100644
+index b83a1df9..ea421418 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1775,7 +1775,8 @@ static int setup_signals(void)

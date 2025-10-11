@@ -140,7 +140,7 @@ for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)
 
 	{FT(js), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(js), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))",
-		A(GR1 | SYN_IT, GR1, GR1)},
+		A(GR1 | SYN_IT, GR1 | SYN_BS, GR1 | SYN_BE)},
 	{FT(js), NULL, A(RE1), 0, 1},
 	{FT(js), "\\<(?:abstract|arguments|await|boolean|\
 break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|\
@@ -231,9 +231,9 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
 
 	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
-	{ex_ft, ":[ \t]*((((?:<.*?(?:[^\\\\]<|$)|>.*?(?:[^\\\\]>|$))?\
+	{ex_ft, "(?#1):[ \t]*((((?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
 [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*)[ \t]*(?:([,;])[ \t]*\
-((?:<.*?(?:[^\\\\]<|$)|>.*?(?:[^\\\\]>|$))?[.$]?(?:'[a-z'`[\\]*])?\
+((?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?[.$]?(?:'[a-z'`[\\]*])?\
 ([0-9]*)?)(?:([-*-+/%])([0-9]+))*[ \t]*)*)\
 ((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|left|lim|led|vis|mpt)\
 |[@&!?=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:\\+?[ \t]?([><])|[tdp+])?|inc|i|\

@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index c07add92..7ed704bb 100644
+index 4e07054e..8103ccb3 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -18,10 +18,10 @@ index c07add92..7ed704bb 100644
 +	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 +
  	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
- 	{ex_ft, ":[ \t]*((((?:<.*?(?:[^\\\\]<|$)|>.*?(?:[^\\\\]>|$))?\
+ 	{ex_ft, "(?#1):[ \t]*((((?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
  [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*)[ \t]*(?:([,;])[ \t]*\
 diff --git a/ex.c b/ex.c
-index bfdaa99c..9ecf7354 100644
+index 372a5688..80c15751 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -34,7 +34,7 @@ index bfdaa99c..9ecf7354 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 28df33cb..8fce0e65 100644
+index b83a1df9..8ed9fb58 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -506,12 +506,12 @@ void dir_calc(char *path)

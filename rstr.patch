@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index bfdaa99c..c2ebb7b8 100644
+index 372a5688..1722bca2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -30,7 +30,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -153,7 +153,7 @@ index cedc3cdf..dcd7b6ea 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 1869f045..d9bf831e 100644
+index 700158e4..d47657dd 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -729,3 +729,126 @@ char *re_read(char **src)
@@ -284,7 +284,7 @@ index 1869f045..d9bf831e 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 28df33cb..97885854 100644
+index b83a1df9..6b4ad2b1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -446,7 +446,7 @@ static void vi_regput(int c, const char *s, int lnmode)

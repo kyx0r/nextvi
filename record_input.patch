@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index bfdaa99c..b8e78989 100644
+index 372a5688..626e90fd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -21,6 +21,7 @@ int xpr;			/* ex_cprint register */

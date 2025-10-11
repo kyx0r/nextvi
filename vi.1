@@ -1,4 +1,4 @@
-.Dd Oct  7, 2025
+.Dd Oct 11, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -529,7 +529,7 @@ with <\\>.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm \&( \&^ \&]
+.It Cm \&( \&^ \&] \&-
 Specials in regex "[]" expression
 .It Cm \&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&. \\\\< \\\\>
 Specials in regex
@@ -567,13 +567,21 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [\fIpad\fP][, ;][\fIpad\fP][%][. $][' > <][- + * / %][1-9]
+.It Cm [\fIpad\fP][%][, ;][\fIpad\fP][. $ ' > <][- + * / %][0-9]
 All ranges structure
 .It Cm {> <}[\fIkwd\fP][> <]
 Search range structure
 'It Cm '{<\fImark\fP>}
 Mark range structure
 
+.It Cm pad
+<Space> or <Tab>
+.It Cm \&%
+Range from first to last line
+.It Cm \&,
+Vertical range separator
+.It Cm \&;
+Horizontal range separator
 .It Cm \&.
 Current position
 .It Cm \&$
@@ -593,15 +601,9 @@ Multiply following number
 .It Cm \&/
 Divide following number
 .It Cm \&%
-Range from first to last line or modulo following number 
-.It Cm \&1-9
+Modulo following number 
+.It Cm \&0-9
 Number or position
-.It Cm pad
-<Space> or <Tab>
-.It Cm \&,
-Vertical range separator
-.It Cm \&;
-Horizontal range separator
 .El
 .Bl -tag -width Ds -compact
 
@@ -611,9 +613,9 @@ Print lines 1,5
 .It Cm :.-5,.+5p
 Print 5 lines around current position
 .It Cm :>int>p
-Print first occurrence of int
+Print first occurrence of "int"
 .It Cm :<int<p
-Print first occurrence of int in reverse
+Print first occurrence of "int" in reverse
 .It Cm :.,>int>p
 Print until "int" is found
 .It Cm :<int<,.p
@@ -907,7 +909,7 @@ Example: edit vi.c only if it exists
 :1,1? \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
 
-.It Cm [range]pu[\fIreg\fP] [\fI\e!cmd\fP]
+.It Cm [range]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
 Paste or pipe a register
 .Bd -literal
 Example: paste <a> at line 1 character offset 5
@@ -996,7 +998,7 @@ this is an example text for subs and has preintafter or void
 this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
-.It Cm [\fIrange\fP]ya[\fIreg\fP][\fIappend\fP]
+.It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fI*\fP]
 Yank a range
 .Bd -literal
 To append to the register, pass in its uppercase version.
@@ -1009,7 +1011,7 @@ Example: yank into <a> using ranges
 :1,5;5;5ya a
 .Ed
 
-.It Cm ya![\fIreg\fP]
+.It Cm ya![<\fIreg\fP>]
 Free a register
 
 .It Cm [\fIrange\fP]![\fIcmd\fP]
@@ -1375,46 +1377,46 @@ the constant factor. This principle is similar to the concept
 utilized in radix sort algorithms.
 
 Pikevm's syntax is akin to regexp(7) from Plan 9.
-Disregard manpage notation for <{ } [ ]> in this section.
+Disregard manpage notation in this section.
 .Ed
 .Bl -tag -width Ds -compact
 
 .It Cm \&.
 Match any single char
-.It Cm ^
-Assert start of line
-.It Cm $
-Assert end of line
 .It Cm {\fIN\fP,\fIM\fP}
 Match N to M times
+.It Cm [\fIN\fP-\fIM\fP]
+Match a set of alternate ranges N to M
 .It Cm ()
 Grouping
 .It Cm (?:)
 Non capture grouping
-.It Cm [\fIN\fP-\fIM\fP]
-Match a set of alternate ranges N to M
 .It Cm *
 Repeated zero or more times
 .It Cm +
 Repeated one or more times
 .It Cm \&|
 Union, alternative branch
-.It Cm \e<
-Assert start of word
-.It Cm \e>
-Assert end of word
 .It Cm \&?
 One or zero matches greedy
 .It Cm \&??
 One or zero matches lazy
+.It Cm ^
+Assert start of line
+.It Cm $
+Assert end of line
+.It Cm \e<
+Assert start of word
+.It Cm \e>
+Assert end of word
 .It Cm \&(?=)
-Positive lookahead
+Assert positive lookahead
 .It Cm \&(?!)
-Negative lookahead
+Assert negative lookahead
 .It Cm \&(?>)
-Positive lookbehind
+Assert positive lookbehind
 .It Cm \&(?<)
-Negative lookbehind
+Assert negative lookbehind
 .It Cm \&(?#)
 Lookbehind offset in bytes
 .El
@@ -1485,9 +1487,9 @@ _
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  731 regex.c | pikevm
- 1407 ex.c | ex options/commands
+ 1409 ex.c | ex options/commands
  1828 vi.c | normal mode/general
- 6928 total | wc -l *.c\(basort
+ 6930 total | wc -l *.c\(basort
 _
 .TE
 .

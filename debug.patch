@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index bfdaa99c..3f67aee7 100644
+index 372a5688..89ea0fa8 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1405,3 +1405,16 @@ void ex_init(char **files, int n)
+@@ -1407,3 +1407,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -20,7 +20,7 @@ index bfdaa99c..3f67aee7 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 1869f045..fa39f411 100644
+index 700158e4..42017e9c 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -606,6 +606,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
@@ -32,7 +32,7 @@ index 1869f045..fa39f411 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
 diff --git a/ren.c b/ren.c
-index 9dfe491e..2813e961 100644
+index 6a1f4ef2..c13f25bc 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
@@ -68,7 +68,7 @@ index 9dfe491e..2813e961 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 28df33cb..630aed26 100644
+index b83a1df9..f4c8d400 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -446,6 +446,13 @@ static void vi_regput(int c, const char *s, int lnmode)
