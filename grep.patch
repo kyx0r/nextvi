@@ -34,7 +34,7 @@ index 372a5688..80c15751 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index b83a1df9..8ed9fb58 100644
+index 8ba30730..58acbee1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -506,12 +506,12 @@ void dir_calc(char *path)

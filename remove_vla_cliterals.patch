@@ -190,7 +190,7 @@ index 700158e4..9d64262c 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 6a1f4ef2..2824b15b 100644
+index 75795ebf..357e978f 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -252,13 +252,14 @@ int syn_blockhl;
@@ -254,7 +254,7 @@ index 6a1f4ef2..2824b15b 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index b83a1df9..410158cc 100644
+index 8ba30730..88615c2a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -141,7 +141,8 @@ static void vi_drawrow(int row)

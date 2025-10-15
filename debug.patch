@@ -32,7 +32,7 @@ index 700158e4..42017e9c 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
 diff --git a/ren.c b/ren.c
-index 6a1f4ef2..c13f25bc 100644
+index 75795ebf..384beacc 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
@@ -68,7 +68,7 @@ index 6a1f4ef2..c13f25bc 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index b83a1df9..f4c8d400 100644
+index 8ba30730..bf4f5f9a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -446,6 +446,13 @@ static void vi_regput(int c, const char *s, int lnmode)

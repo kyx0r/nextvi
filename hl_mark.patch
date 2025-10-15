@@ -27,7 +27,7 @@ index 372a5688..b66ae0d9 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index b83a1df9..1fbdccce 100644
+index 8ba30730..9928cc99 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1708,6 +1708,21 @@ void vi(int init)
