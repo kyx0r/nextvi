@@ -58,7 +58,7 @@ index 372a5688..796d37be 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index b83a1df9..0a28de31 100644
+index 8ba30730..4f68e910 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1803,9 +1803,11 @@ int main(int argc, char *argv[])
@@ -69,8 +69,8 @@ index b83a1df9..0a28de31 100644
 +				readonly = 1;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-1.8 Usage: %s [-emsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-1.8 Usage: %s [-emRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-1.9 Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-1.9 Usage: %s [-emRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
