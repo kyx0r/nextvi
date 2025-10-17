@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 372a5688..d84361c9 100644
+index cb93123e..387dfe45 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1149,6 +1149,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1150,6 +1150,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -19,7 +19,7 @@ index 372a5688..d84361c9 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1229,6 +1239,7 @@ static struct excmd {
+@@ -1230,6 +1240,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
