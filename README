@@ -359,9 +359,9 @@ EX RANGES
      <       Begin search range backward
      -       Subtract following number
      +       Add following number
-     *       Multiply following number
-     /       Divide following number
-     %       Modulo following number
+     *       Multiply by the following number
+     /       Divide by the following number
+     %       Modulo by the following number
      0-9     Number or position
 
      Examples:
