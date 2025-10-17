@@ -988,10 +988,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
-	int beg = 1, addr = 0, skip[4];
+	int beg = 1, addr = 0, skip[3] = {0, 1, 1};
 	void *ret = NULL;
-	static int _skip[4];
-	memset(skip, 0, sizeof(skip));
+	static int _skip[3];
 	for (; *loc && addr < 3; addr++) {
 		if (*loc == ',')
 			loc++;
@@ -1006,7 +1005,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		skip[2] = skip[1];
 	for (; beg && !ret; beg--)
 		ret = ex_exec(arg);
-	return ret && addr > 1 ? memcpy(_skip, skip, sizeof(skip)) : NULL;
+	return !ret || addr == 1 ? NULL : memcpy(_skip, skip, sizeof(skip));
 }
 
 static void *ec_setdir(char *loc, char *cmd, char *arg)
