@@ -670,6 +670,8 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	ps = lbuf_len(xb);
 	lbuf_edit(xb, sb->s, beg, end, o1, o2);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - ps - 1);
+	if (o1 >= 0)
+		xoff = o1;
 	ret:
 	free(sb->s);
 	return NULL;
