@@ -1,4 +1,4 @@
-.Dd Oct 11, 2025
+.Dd Oct 17, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -372,8 +372,7 @@ b-2. Sets global line mark 0 for <^P> fallback
 .It Cm {\fI#\fP}<^]>
 Filesystem regex search forward, set keyword to # words from
 cursor
-.It Cm <^P>
-.It Cm {\fI#\fP}<^P>
+.It Cm [\fI#\fP]<^P>
 Filesystem regex search backward
 .It Cm <^Z>
 Suspend vi
@@ -508,7 +507,7 @@ Parsing follows the structure:
 [<sep>][\fIrange\fP][\fIpad\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
 Ex commands are initiated and separated by <:> prefix. Fields
 can be padded by <Space> or <Tab>. There can only be one pad
-in between [cmd] and [args]. To avoid ambiguity in scripts, it 
+in between [cmd] and [args]. To avoid ambiguity in scripts, it
 is recommended to always use a pad between [cmd] and [args].
 .Bl -tag -width Ds -compact
 
@@ -543,12 +542,12 @@ Specials in ex
 pathname when followed by a corresponding buffer number.
 "%#" substitutes last swapped buffer pathname.
 
-Example: print the pathname for buffer 69.
+Example: print pathname for buffer 69
 :!echo "%69"
 
 Every ex command is be able to receive stdout from an external
 program via a special expansion character <!>.
-If the closing <!> was not specified, the end of the line becomes
+If closing <!> was not specified, the end of the line becomes
 a terminator.
 
 Example: substitute "int" with the value of $RANDOM
@@ -601,7 +600,7 @@ Multiply following number
 .It Cm \&/
 Divide following number
 .It Cm \&%
-Modulo following number 
+Modulo following number
 .It Cm \&0-9
 Number or position
 .El
@@ -726,10 +725,9 @@ Example: open first match containing "v"
 .It Cm ea![\fIkwd\fP] [\fI#\fP]
 Forced version of ea
 
-.It Cm [\fIvpos\fP]i[\fIstr\fP]
-Enter ex insert mode before vpos
+.It Cm [\fIvrange\fP]i[\fIstr\fP]
+Enter ex insert mode before specified position
 .Bd -literal
-vpos specifies insertion vertical position.
 str specifies initial input into the insertion buffer.
 
 Example: insert "hello" in vi/ex
@@ -744,8 +742,8 @@ Example: insert "hello" in raw ex mode
 i hello<^M>.<^M>
 .Ed
 
-.It Cm [\fIvpos\fP]a[\fIstr\fP]
-Enter ex insert mode after vpos
+.It Cm [\fIvrange\fP]a[\fIstr\fP]
+Enter ex insert mode after specified position
 
 .It Cm [\fIrange\fP]c[\fIstr\fP]
 Enter ex change mode
@@ -883,30 +881,31 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [# $],[skip1=0 $],[skip2=0 $]?{\fIcmd\fP}
+.It Cm [#0 <$>][,{#1 <$>}][,{#2 <$>}]?{\fIcmd\fP}
 While loop conditional
 .Bd -literal
-Repeat {cmd} [#] times or infinite with <$>.
-While loop is broken once {cmd} returns an error or count exceeded.
-If while fails with error, [skip1] and [skip2] specify the location/range
-of the separated ex commands to skip that follow next in chain.
+Repeat cmd #0 times or infinite with <$>.
+While loop is broken once cmd returns an error or count exceeded.
+If while fails with error, #1 and #2 specify a range of the separated
+ex commands to skip that follow next in chain.
+No argument creates a conditional with all # parameters set to 1.
 
 Example: attempt to join every line in file using arbitrary count
 :10000? & J
 Example: undo everything
 :$? u
-Example: calculate directory only if :cd succeeded
-:1,1? cd /blah:fd
 Example: repeat chain of ex commands 10 times
 :10? 1p\e:5p\e:10p
+Example: calculate directory only if :cd succeeded
+:? cd /blah:fd
 Example: print a line only if it contains "int" at offset 5
-:1,1? ;5;>^int>:p
+:? ;5;>^int>:p
 Example: allow :led while branching only :p command
 :led:1,2? ;5;>^int>:led:p
 Example: branch multiple commands
 :led:1,2,3? ;5;>^int>:led:&i2 not branched:p:p
 Example: edit vi.c only if it exists
-:1,1? \e![ -f ./vi.c ]:e ./vi.c:mpt
+:? \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
 
 .It Cm [range]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
@@ -1027,7 +1026,7 @@ Example: use sed to replace "int" with "uint"
 :%!sed -e 's/int/uint/g'
 Example: pipe in result of ls command without replace
 :;$+1!ls
-Example: capitalize the word at current position using tr
+Example: capitalize word at current position using tr
 :;.;>\e\e>>!tr '[\e:lower\e:]' '[\e:upper\e:]'
 .Ed
 
@@ -1487,9 +1486,9 @@ _
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  731 regex.c | pikevm
- 1409 ex.c | ex options/commands
+ 1410 ex.c | ex options/commands
  1828 vi.c | normal mode/general
- 6930 total | wc -l *.c\(basort
+ 6931 total | wc -l *.c\(basort
 _
 .TE
 .
