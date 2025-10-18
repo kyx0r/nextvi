@@ -86,7 +86,7 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 		A(BL, IN, MA | SYN_BD, BL | SYN_BD, MA | SYN_BD, BL | SYN_BD), 1},
 	{FT(roff), NULL, A(RE1), 0, 1},
 	{FT(roff), "\\\\\".*", A(GR | SYN_IT)},
-	{FT(roff), "\\\\{1,2}[*$fgkmns]([^[\\(]|\\(..|\\[[^\\]]*\\])", A(YE)},
+	{FT(roff), "\\\\{1,2}[*$fgkmns](?:[^[\\(]|\\(..|\\[[^\\]]*\\])", A(YE)},
 	{FT(roff), "\\\\(?:[^[\\(*$fgkmns]|\\(..|\\[[^\\]]*\\])", A(YE)},
 	{FT(roff), "\\$[^$]+\\$", A(YE)},
 
