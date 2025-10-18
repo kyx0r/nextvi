@@ -569,9 +569,10 @@ EX COMMANDS
              Example: calculate 75 - 100
              :1,75-100=1p
 
-     [vrange]k[<mark>]
+     [vrange]k{<mark>}
              Set a line mark
 
+             Valid marks: <a-z> <`> <'> <[> <]> <*>
              The character offset is set to the current position.
 
      &{macro}
@@ -621,7 +622,7 @@ EX COMMANDS
              While loop is broken once cmd returns an error or count exceeded.
              If while fails with error, #1 and #2 specify a range of the separated
              ex commands to skip that follow next in chain.
-             No argument creates a conditional with all # parameters set to 1.
+             No prefix creates a conditional with all # parameters set to 1.
 
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
@@ -939,7 +940,7 @@ EX OPTIONS
              If the register is uppercase, <Newline> characters are added
              to match the exact output that was printed.
 
-             Print register contents cannot be displayed via R or :reg command
+             Print register contents cannot be displayed with R or :reg command
              when register is assigned (self-referential problem).
 
              Example: paste current buffer list exactly like from :b command
@@ -1172,4 +1173,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.1                   October 17, 2025                   Linux 6.17.1
+Linux 6.17.1                   October 18, 2025                   Linux 6.17.1
