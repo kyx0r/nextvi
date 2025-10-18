@@ -443,7 +443,7 @@ static void vi_regput(int c, const char *s, int lnmode)
 		ex_regput('1', s, 0);
 	} else if (xregs[c])
 		ex_regput('0', xregs[c]->s, 0);
-	ex_regput(c, s, isupper(c));
+	ex_regput(tolower(c), s, isupper(c));
 }
 
 rset *fsincl;
