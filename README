@@ -414,7 +414,7 @@ EX COMMANDS
              range move to the next match just like vi normal [#]n or [#]N
              commands.
 
-     b[#]    Print currently active buffers state or switch to a buffer
+     b[#]    Print buffers or switch to a buffer
 
              There are two temporary buffers which are separate from
              the main buffers.
@@ -430,8 +430,10 @@ EX COMMANDS
 
      bp[path]
              Set current buffer path
-     bs[*]   Set current buffer saved. If any arg given, reset undo/redo
-             history
+
+     bs[*]   Set current buffer saved
+
+             Argument resets undo/redo history
 
      [range]p
              Print line(s) from a buffer
@@ -443,8 +445,8 @@ EX COMMANDS
              Example: print current line from offset 5 to 10
              :.;5;10p
 
-     ea[kwd] [#]
-             Open file based on filename substring from dir listing in b-2
+     ea[kwd]
+             Open file based on filename substring
 
              Requires directory listing in b-2 backfilled prior.
 
@@ -453,18 +455,18 @@ EX COMMANDS
              Example: backfill b-2 using find
              :b-2:%!find .
 
-             If the substring matches more than one filename, a prompt will
-             be shown. Submit using numbers 0-9 or higher ascii values.
-             <^C> to cancel, <^M> to select first match. Passing an
-             extra arg to :ea in form of a number will bypass the prompt
-             and open the corresponding file.
+             If kwd matches more than one filename, a list of matches
+             and a fuzzy find prompt will be shown. If the number of matches
+             is less than 10, match can be picked using numbers 0-9.
+             <^C> or <ESC> to abort.
+             <^M> or <Enter> to input a number larger than 9.
 
+             Example: print entire listing
+             :ea
              Example: open filename containing "v"
              :ea v
-             Example: open first match containing "v"
-             :ea v 0
 
-     ea![kwd] [#]
+     ea![kwd]
              Forced version of ea
 
      [vrange]i[str]
@@ -721,9 +723,8 @@ EX COMMANDS
      [range]ya[<reg>][*]
              Yank a range
 
-             To append to the register, pass in its uppercase version.
-             To append to any of the non-alphabetical registers add any extra
-             character to the command.
+             Register value range is 1-255.
+             Any extra argument appends to the register.
 
              Example: append to register <1>
              :ya 1x
@@ -944,9 +945,9 @@ EX OPTIONS
              when register is assigned (self-referential problem).
 
              Example: paste current buffer list exactly like from :b command
-             :pr A:ya! a: b:pu a
+             :pr A:ya! A: b:pu A
              Example: store a line printed with :p
-             :pr A:ya! a:p
+             :pr A:ya! A:p
 
      sep[val=:]
              Ex separator
@@ -1006,10 +1007,10 @@ EXINIT ENV VAR
      export EXINIT="$(printf '%b' 'e ./vi.c:& i\x7\x3:bx 1:bx')"
              Index vi.c for autocomplete
 
-     export EXINIT='b-1:%r ./vi.c:b-1'
+     export EXINIT='b-1:r ./vi.c:b-1'
              Load vi.c into a history buffer
 
-     export EXINIT="$(printf '%b' 'e:& io{\n}\x16\x3kA\x3:& 1G:& 2"ayy')"
+     export EXINIT="$(printf '%b' 'e:& io{\n}\x16\x3kA\x3:& 1G:& 2"aY')"
              Setup @ macro in register <a>
 
              @a macro creates <{> and closing <}> below the cursor leaving
@@ -1099,9 +1100,9 @@ CODE MAP
      | 637 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 731 regex.c  |  pikevm              |
-     | 1410 ex.c    |  ex options/commands |
+     | 1435 ex.c    |  ex options/commands |
      | 1828 vi.c    |  normal mode/general |
-     | 6931 total   |  wc -l *.c|sort      |
+     | 6956 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
