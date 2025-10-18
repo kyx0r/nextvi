@@ -669,7 +669,7 @@ commands.
 .Ed
 
 .It Cm b[\fI#\fP]
-Print currently active buffers state or switch to a buffer
+Print buffers or switch to a buffer
 .Bd -literal
 There are two temporary buffers which are separate from
 the main buffers.
@@ -686,8 +686,12 @@ Example: switch to the b-2 buffer
 
 .It Cm bp[\fIpath\fP]
 Set current buffer path
+
 .It Cm bs[\fI*\fP]
-Set current buffer saved. If any arg given, reset undo/redo history
+Set current buffer saved
+.Bd -literal
+Argument resets undo/redo history
+.Ed
 
 .It Cm [\fIrange\fP]p
 Print line(s) from a buffer
@@ -700,8 +704,8 @@ Example: print current line from offset 5 to 10
 :.;5;10p
 .Ed
 
-.It Cm ea[\fIkwd\fP] [\fI#\fP]
-Open file based on filename substring from dir listing in b-2
+.It Cm ea[\fIkwd\fP]
+Open file based on filename substring
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
 
@@ -710,19 +714,19 @@ Example: backfill b-2 using :fd
 Example: backfill b-2 using find
 :b-2:%!find .
 
-If the substring matches more than one filename, a prompt will
-be shown. Submit using numbers 0-9 or higher ascii values.
-<^C> to cancel, <^M> to select first match. Passing an
-extra arg to :ea in form of a number will bypass the prompt
-and open the corresponding file.
+If kwd matches more than one filename, a list of matches
+and a fuzzy find prompt will be shown. If the number of matches
+is less than 10, match can be picked using numbers 0-9.
+<^C> or <ESC> to abort.
+<^M> or <Enter> to input a number larger than 9.
 
+Example: print entire listing
+:ea
 Example: open filename containing "v"
 :ea v
-Example: open first match containing "v"
-:ea v 0
 .Ed
 
-.It Cm ea![\fIkwd\fP] [\fI#\fP]
+.It Cm ea![\fIkwd\fP]
 Forced version of ea
 
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
@@ -1001,9 +1005,8 @@ this is an example text for subs and has prepreafterafter or prevoidafter
 .It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fI*\fP]
 Yank a range
 .Bd -literal
-To append to the register, pass in its uppercase version.
-To append to any of the non-alphabetical registers add any extra
-character to the command.
+Register value range is 1-255.
+Any extra argument appends to the register.
 
 Example: append to register <1>
 :ya 1x
@@ -1278,9 +1281,9 @@ Print register contents cannot be displayed with R or :reg command
 when register is assigned (self-referential problem).
 
 Example: paste current buffer list exactly like from :b command
-:pr A:ya! a: b:pu a
+:pr A:ya! A: b:pu A
 Example: store a line printed with :p
-:pr A:ya! a:p
+:pr A:ya! A:p
 .Ed
 
 .It Cm sep[val=:]
@@ -1350,10 +1353,10 @@ Examples:
 .It Cm export EXINIT="$(printf '%b' 'e ./vi.c:& i\ex7\ex3:bx 1:bx')"
 Index vi.c for autocomplete
 
-.It Cm export EXINIT='b-1:%r ./vi.c:b-1'
+.It Cm export EXINIT='b-1:r ./vi.c:b-1'
 Load vi.c into a history buffer
 
-.It Cm export EXINIT="$(printf '%b' 'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2"ayy')"
+.It Cm export EXINIT="$(printf '%b' 'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2"aY')"
 Setup @ macro in register <a>
 
 @a macro creates <{> and closing <}> below the cursor leaving
@@ -1487,9 +1490,9 @@ _
  637 uc.c | UTF-8 support
  683 led.c | insert mode/output
  731 regex.c | pikevm
- 1410 ex.c | ex options/commands
+ 1435 ex.c | ex options/commands
  1828 vi.c | normal mode/general
- 6931 total | wc -l *.c\(basort
+ 6956 total | wc -l *.c\(basort
 _
 .TE
 .
