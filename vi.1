@@ -1,4 +1,4 @@
-.Dd Oct 17, 2025
+.Dd Oct 18, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -833,9 +833,10 @@ Example: calculate 75 - 100
 :1,75-100=1p
 .Ed
 
-.It Cm [\fIvrange\fP]k[<\fImark\fP>]
+.It Cm [\fIvrange\fP]k{<\fImark\fP>}
 Set a line mark
 .Bd -literal
+Valid marks: <a-z> <`> <'> <[> <]> <*>
 The character offset is set to the current position.
 .Ed
 
@@ -888,7 +889,7 @@ Repeat cmd #0 times or infinite with <$>.
 While loop is broken once cmd returns an error or count exceeded.
 If while fails with error, #1 and #2 specify a range of the separated
 ex commands to skip that follow next in chain.
-No argument creates a conditional with all # parameters set to 1.
+No prefix creates a conditional with all # parameters set to 1.
 
 Example: attempt to join every line in file using arbitrary count
 :10000? & J
@@ -1273,7 +1274,7 @@ be stored in the register.
 If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
 
-Print register contents cannot be displayed via R or :reg command
+Print register contents cannot be displayed with R or :reg command
 when register is assigned (self-referential problem).
 
 Example: paste current buffer list exactly like from :b command
