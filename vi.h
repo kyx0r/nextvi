@@ -347,7 +347,7 @@ char *xgetenv(char* q[]);
 
 #define TK_ESC		TK_CTL('[')
 #define TK_CTL(x)	(x & 037)
-#define TK_INT(c)	(c <= 0 || c == TK_ESC || c == TK_CTL('c'))
+#define TK_INT(c)	(!c || c == TK_ESC || c == TK_CTL('c'))
 
 /* led.c line-oriented input and output */
 typedef struct {
