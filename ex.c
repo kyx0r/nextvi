@@ -730,11 +730,11 @@ static void *ec_delete(char *loc, char *cmd, char *arg)
 
 void ex_regput(unsigned char c, const char *s, int append)
 {
-	sbuf *sb = xregs[tolower(c)];
+	sbuf *sb = xregs[c];
 	if (s) {
 		if (!sb) {
 			sbuf_make(sb, 64)
-			xregs[tolower(c)] = sb;
+			xregs[c] = sb;
 		}
 		if (!append)
 			sbuf_cut(sb, 0)
@@ -743,7 +743,7 @@ void ex_regput(unsigned char c, const char *s, int append)
 		sb->s_n -= 4;
 	} else if (sb) {
 		sbuf_free(sb)
-		xregs[tolower(c)] = NULL;
+		xregs[c] = NULL;
 	}
 }
 
@@ -757,7 +757,7 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 		return xrerr;
 	sbuf sb;
 	lbuf_region(xb, &sb, beg, o1, end-1, o2);
-	ex_regput(*arg, sb.s, isupper((unsigned char)*arg) || (*arg && arg[1]));
+	ex_regput(*arg, sb.s, *arg && arg[1]);
 	free(sb.s);
 	return NULL;
 }
@@ -1105,7 +1105,7 @@ static void *ec_regprint(char *loc, char *cmd, char *arg)
 	static char buf[5] = "  ";
 	preserve(int, xtd, xtd = 2;)
 	for (int i = 1; i < LEN(xregs); i++) {
-		if (xregs[i] && i != tolower(xpr)) {
+		if (xregs[i] && i != xpr) {
 			*buf = i;
 			RS(2, ex_cprint(buf, msg_ft, -1, 0, 0))
 			RS(2, ex_cprint(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, 1))
