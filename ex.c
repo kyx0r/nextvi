@@ -449,12 +449,11 @@ static void *ec_editapprox(char *loc, char *cmd, char *arg)
 	sbuf_smake(fuzz, 16)
 	char *path, *p, buf[32];
 	struct lbuf *lb = tempbufs[1].lb;
-	int z, c, pos, i, inst;
+	int z, c, pos, i, inst = *loc ? atoi(loc) : -1;
 	sbuf_str(fuzz, arg)
 	for (z = 0;; z++) {
 		sbuf_null(fuzz)
-		inst = -1, c = 0;
-		for (pos = 0; pos < lbuf_len(lb); pos++) {
+		for (c = 0, pos = 0; pos < lbuf_len(lb); pos++) {
 			path = lb->ln[pos];
 			for (i = lbuf_s(path)->len; i > 0 && path[i] != '/'; i--);
 			if (strstr(&path[i+!!i], arg)) {
@@ -488,6 +487,7 @@ static void *ec_editapprox(char *loc, char *cmd, char *arg)
 				ex_print("", msg_ft)
 		} else
 			break;
+		inst = -1;
 	}
 	if ((inst >= 0 && inst < c) || c == 1) {
 		path = *((char**)sb->s + (c == 1 ? 0 : inst));
