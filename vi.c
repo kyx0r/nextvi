@@ -318,7 +318,7 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
 		return 0;
 	ren_state *r = ren_position(ln);
 	if (col >= r->cmax)
-		return r->col[r->cmax - !!r->cmax];
+		return r->col[r->cmax - 1];
 	return r->col[col];
 }
 
@@ -417,7 +417,7 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 		return NULL;
 	sbuf_smake(sb, 64)
 	if (n > 1) {
-		for (; off != o; off++) {
+		for (; off < o; off++) {
 			if (*beg[off] == xsep)
 				sbuf_chr(sb, '\\')
 			if (strchr("!%{}[]().?\\^$|*/+", *beg[off]))
