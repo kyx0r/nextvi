@@ -218,7 +218,6 @@ static void vi_drawrow(int row)
 static void vi_drawagain(int i)
 {
 	syn_scdir(0);
-	syn_blockhl = -1;
 	for (; i < xtop + xrows; i++)
 		vi_drawrow(i);
 }
