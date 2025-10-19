@@ -445,7 +445,7 @@ EX COMMANDS
              Example: print current line from offset 5 to 10
              :.;5;10p
 
-     ea[kwd]
+     [#]ea[kwd]
              Open file based on filename substring
 
              Requires directory listing in b-2 backfilled prior.
@@ -455,6 +455,7 @@ EX COMMANDS
              Example: backfill b-2 using find
              :b-2:%!find .
 
+             Prefix is a number to select ahead of time.
              If kwd matches more than one filename, a list of matches
              and a fuzzy find prompt will be shown. If the number of matches
              is less than 10, match can be picked using numbers 0-9.
@@ -465,6 +466,8 @@ EX COMMANDS
              :ea
              Example: open filename containing "v"
              :ea v
+             Example: open path at index 15
+             :15ea
 
      ea![kwd]
              Forced version of ea
@@ -1174,4 +1177,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.1                   October 18, 2025                   Linux 6.17.1
+Linux 6.17.1                   October 19, 2025                   Linux 6.17.1

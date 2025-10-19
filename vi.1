@@ -1,4 +1,4 @@
-.Dd Oct 18, 2025
+.Dd Oct 19, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -704,7 +704,7 @@ Example: print current line from offset 5 to 10
 :.;5;10p
 .Ed
 
-.It Cm ea[\fIkwd\fP]
+.It Cm [#]ea[\fIkwd\fP]
 Open file based on filename substring
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
@@ -714,6 +714,7 @@ Example: backfill b-2 using :fd
 Example: backfill b-2 using find
 :b-2:%!find .
 
+Prefix is a number to select ahead of time.
 If kwd matches more than one filename, a list of matches
 and a fuzzy find prompt will be shown. If the number of matches
 is less than 10, match can be picked using numbers 0-9.
@@ -724,6 +725,8 @@ Example: print entire listing
 :ea
 Example: open filename containing "v"
 :ea v
+Example: open path at index 15
+:15ea
 .Ed
 
 .It Cm ea![\fIkwd\fP]
