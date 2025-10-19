@@ -17,33 +17,31 @@ static void dir_reverse(int *ord, int beg, int end)
 }
 
 /* reorder the characters based on direction marks and characters */
-static int dir_reorder(char **chrs, int *ord, int end, int dir)
+static int dir_reorder(char *s, char *se, int *ord, int end, int dir)
 {
 	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
-	int beg = 0, end1 = end, c_beg, c_end;
+	int beg = 0, off, c_beg, c_end;
 	int subs[LEN(dmarks[0].dir) * 2], gdir, found, i;
-	int flg = *chrs[MAX(beg, end-1)] == '\n' ? REG_NEWLINE : 0;
-	while (beg < end) {
-		char *s = chrs[beg];
-		if ((found = rset_find(rs, s, subs, flg)) >= 0) {
-			for (i = 0; i < end1; i++)
-				ord[i] = i;
-			c_end = 0;
-			end1 = -1;
-			for (i = 0; i < rs->setgrpcnt[found]; i++) {
-				gdir = dmarks[found].dir[i];
-				if (subs[i * 2] < 0 || gdir >= 0)
-					continue;
-				c_beg = uc_off(s, subs[i * 2]);
-				c_end = c_beg + uc_off(s + subs[i * 2],
-						subs[i * 2 + 1] - subs[i * 2]);
-				dir_reverse(ord, beg+c_beg, beg+c_end);
-			}
-			beg += c_end ? c_end : 1;
-		} else
-			break;
+	int flg = se > s && se[-1] == '\n' ? REG_NEWLINE : 0;
+	while (se > s && (found = rset_find(rs, s, subs, flg)) >= 0) {
+		for (i = 0; i < end; i++)
+			ord[i] = i;
+		end = -1;
+		c_end = 0;
+		for (i = 0; i < rs->setgrpcnt[found]; i++) {
+			gdir = dmarks[found].dir[i];
+			off = subs[i * 2];
+			if (off < 0 || gdir >= 0)
+				continue;
+			c_beg = uc_off(s, off);
+			c_end = c_beg + uc_off(s + off, subs[i * 2 + 1] - off);
+			off = subs[i * 2 + 1];
+			dir_reverse(ord, beg+c_beg, beg+c_end);
+		}
+		beg += c_end ? c_end : 1;
+		s += c_end ? off : 1;
 	}
-	return end1 < 0;
+	return end < 0;
 }
 
 /* return the direction context of the given line */
@@ -101,13 +99,12 @@ ren_state *ren_position(char *s)
 	else if (rstate->col) {
 		free(rstate->col - 2);
 		free(rstate->pos);
-		free(rstate->chrs);
 	}
 	rstate->s = s;
 	rstate->ctx = dir_context(s);
 	unsigned int n, max;
+	char *ss = s;
 	if (xlim >= 0 && rstate == rstates+1) {
-		char *ss = s;
 		max = (unsigned int)xlim;
 		for (n = 0; n < max && uc_len(ss); n++)
 			ss += uc_len(ss);
@@ -115,24 +112,25 @@ ren_state *ren_position(char *s)
 		memcpy(rstate->nullhole, ss, rstate->holelen);
 		memset(ss, 0, rstate->holelen);
 	} else
-		n = uc_slen(s);
+		for (n = 0; uc_len(ss); n++)
+			ss += uc_len(ss);
 	unsigned int b = n + 1, c = 2, i;
-	char **chrs = emalloc(b * sizeof(chrs[0]));
-	for (i = 0; i < b; i++) {
-		chrs[i] = s;
-		s += uc_len(s);
-	}
-	int cpos = 0, wid, *off, *pos, *col;
-	pos = emalloc(b * 2 * sizeof(pos[0]));
-	off = &pos[b];
-	if (xorder && dir_reorder(chrs, off, n, rstate->ctx)) {
+	int cpos = 0, wid, *col;
+	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
+	int *off = &pos[b];
+	char **chrs = (char**)&off[b];
+	if (xorder && dir_reorder(s, ss, off, n, rstate->ctx)) {
+		for (i = 0; i < b; i++) {
+			chrs[i] = s;
+			s += uc_len(s);
+		}
 		int *wids = emalloc(n * sizeof(wids[0]));
 		for (i = 0; i < n; i++) {
 			pos[off[i]] = cpos;
 			cpos += ren_cwid(chrs[off[i]], cpos);
 		}
-		col = emalloc((cpos + 2) * sizeof(col[0]));
 		pos[n] = cpos;
+		col = emalloc((cpos + 2) * sizeof(col[0]));
 		for (i = 0; i < n; i++) {
 			wid = ren_cwid(chrs[off[i]], pos[off[i]]);
 			wids[off[i]] = wid;
@@ -143,11 +141,14 @@ ren_state *ren_position(char *s)
 		free(wids);
 	} else {
 		for (i = 0; i < n; i++) {
+			chrs[i] = s;
 			pos[i] = cpos;
-			cpos += ren_cwid(chrs[i], cpos);
+			cpos += ren_cwid(s, cpos);
+			s += uc_len(s);
 		}
-		col = emalloc((cpos + 2) * sizeof(col[0]));
+		chrs[n] = s;
 		pos[n] = cpos;
+		col = emalloc((cpos + 2) * sizeof(col[0]));
 		for (i = 0; i < n; i++) {
 			wid = pos[i+1] - pos[i];
 			off[i] = wid;
