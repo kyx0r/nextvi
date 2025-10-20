@@ -578,10 +578,9 @@ static int vi_motion(int vc, int *row, int *off)
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
 	static int cadir = 1;
-	int cnt = vi_arg ? vi_arg : 1;
-	int dir, mark;
 	char *cs;
-	int mv, i;
+	int cnt = vi_arg ? vi_arg : 1;
+	int mv, i, dir, mark;
 
 	if ((mv = vi_motionln(row, 0, cnt))) {
 		*off = -1;
@@ -670,6 +669,45 @@ static int vi_motion(int vc, int *row, int *off)
 			if (lbuf_wordbeg(xb, mark, vi_nlword+1, row, off))
 				break;
 		break;
+	case '(':
+	case ')':
+		dir = mv == ')' ? 1 : -1;
+		rset *set = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
+		int subs[2], org;
+		for (i = 0; i < cnt; i++) {
+			mark = *row;
+			org = *off;
+			for (;(cs = lbuf_get(xb, *row)) && *cs == '\n'; *row += dir);
+			if (*row != mark) {
+				*off = 0;
+				if (dir > 0)
+					continue;
+				*off = lbuf_eol(xb, *row, 1);
+			}
+			while (!lbuf_next(xb, dir, row, off)) {
+				cs = rstate->chrs[*off];
+				if (*off == 0 && *cs == '\n') {
+					if (dir < 0 && (mark - *row) > 1) {
+						*row += 1;
+						*off = 0;
+					}
+					break;
+				} else if (rset_find(set, cs, subs, 0) >= 0) {
+					if (mark == *row && rstate->chrs[org] == cs + subs[1])
+						continue;
+					if (!cs[subs[1]]) {
+						if (dir < 0 && *row + 1 == mark)
+							continue;
+						*row += 1;
+						*off = MAX(0, lbuf_indents(xb, *row));
+					} else
+						*off += uc_off(cs, subs[1]);
+					break;
+				}
+			}
+		}
+		rset_free(set);
+		return mv;
 	case '{':
 	case '}':
 	case '[':
