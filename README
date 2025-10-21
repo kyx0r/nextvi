@@ -457,12 +457,12 @@ EX COMMANDS
              Example: backfill b-2 using find
              :b-2:%!find .
 
-             Prefix is a number to select ahead of time.
              If kwd matches more than one filename, a list of matches
              and a fuzzy find prompt will be shown. If the number of matches
              is less than 10, match can be picked using numbers 0-9.
              <^C> or <ESC> to abort.
              <^M> or <Enter> to input a number larger than 9.
+             Prefix is a number selected ahead of time.
 
              Example: print entire listing
              :ea
@@ -471,7 +471,7 @@ EX COMMANDS
              Example: open path at index 15
              :15ea
 
-     ea![kwd]
+     [#]ea![kwd]
              Forced version of ea
 
      [vrange]i[str]
@@ -1106,8 +1106,8 @@ CODE MAP
      | 683 led.c    |  insert mode/output  |
      | 731 regex.c  |  pikevm              |
      | 1435 ex.c    |  ex options/commands |
-     | 1865 vi.c    |  normal mode/general |
-     | 6970 total   |  wc -l *.c|sort      |
+     | 1864 vi.c    |  normal mode/general |
+     | 6969 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
