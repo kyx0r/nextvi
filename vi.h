@@ -294,10 +294,10 @@ char *uc_subl(char *s, int beg, int end, int *rlen, int *rn);
 char *uc_sub(char *s, int beg, int end)
 	{ int l; return uc_subl(s, beg, end, &l, &l); }
 char *uc_dup(const char *s);
-#define uc_isspace(s) (*s < 0x7f && isspace(*s))
-#define uc_isprint(s) (*s > 0x7f || isprint(*s))
-#define uc_isdigit(s) (*s < 0x7f && isdigit(*s))
-#define uc_isalpha(s) (*s > 0x7f || isalpha(*s))
+#define uc_isspace(s) ((unsigned char)*s < 0x7f && isspace((unsigned char)*s))
+#define uc_isprint(s) ((unsigned char)*s > 0x7f || isprint((unsigned char)*s))
+#define uc_isdigit(s) ((unsigned char)*s < 0x7f && isdigit((unsigned char)*s))
+#define uc_isalpha(s) ((unsigned char)*s > 0x7f || isalpha((unsigned char)*s))
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
