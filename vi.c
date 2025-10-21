@@ -679,7 +679,7 @@ static int vi_motion(int vc, int *row, int *off)
 			org = *off;
 			for (;(cs = lbuf_get(xb, *row)) && *cs == '\n'; *row += dir);
 			if (*row != mark) {
-				*off = 0;
+				*off = MAX(0, lbuf_indents(xb, *row));
 				if (dir > 0)
 					continue;
 				*off = lbuf_eol(xb, *row, 1);
@@ -687,10 +687,9 @@ static int vi_motion(int vc, int *row, int *off)
 			while (!lbuf_next(xb, dir, row, off)) {
 				cs = rstate->chrs[*off];
 				if (*off == 0 && *cs == '\n') {
-					if (dir < 0 && (mark - *row) > 1) {
+					if (dir < 0 && (mark - *row) > 1)
 						*row += 1;
-						*off = 0;
-					}
+					*off = MAX(0, lbuf_indents(xb, *row));
 					break;
 				} else if (rset_find(set, cs, subs, 0) >= 0) {
 					if (mark == *row && rstate->chrs[org] == cs + subs[1])
