@@ -1,4 +1,4 @@
-.Dd Oct 19, 2025
+.Dd Oct 21, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -101,6 +101,10 @@ Move to start of word forward # times, skip punctuation
 Move to start of word forward # times
 .It Cm vw
 Toggle line only mode for <E e B b W w>
+.It Cm [\fI#\fP](
+Move to next sentence boundary down # times
+.It Cm [\fI#\fP])
+Move to next sentence boundary up # times
 .It Cm [\fI#\fP]{
 Move to next <{> section down # times
 .It Cm [\fI#\fP]}
@@ -393,7 +397,7 @@ Commands described with the word "move" define a region.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm j + <^M> <Enter> - k h l f F t T \&, \&; B E b e W w { } \&[ \&] ^ 0 $ <Space> <^H> <Backspace> % ' ` G H L M / \&? n N <^A>
+.It Cm j + <^M> <Enter> - k h l f F t T \&, \&; B E b e W w \&( \&) { } \&[ \&] ^ 0 $ <Space> <^H> <Backspace> % ' ` G H L M / \&? n N <^A>
 
 All regions
 .El
@@ -1483,19 +1487,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 520 vi.h | definitions/aux
+ 521 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  307 conf.c | hl/ft/td config
  345 term.c | low level IO
- 412 ren.c | positioning/syntax
+ 413 ren.c | positioning/syntax
  578 lbuf.c | file/line buffer
- 637 uc.c | UTF-8 support
+ 613 uc.c | UTF-8 support
  683 led.c | insert mode/output
  731 regex.c | pikevm
  1435 ex.c | ex options/commands
- 1828 vi.c | normal mode/general
- 6956 total | wc -l *.c\(basort
+ 1865 vi.c | normal mode/general
+ 6970 total | wc -l *.c\(basort
 _
 .TE
 .
