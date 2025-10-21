@@ -39,6 +39,11 @@ Patch will alter the meaning of <^> <$> assertions in syntax highlight
 regex, as the line would be considered to start/end beyond the visible columns.
 Patch works in reverse direction and with reordered text.
 
+hl_naive.patch
+--------------
+Allow syntax highlight to continue past the terminal dimensions unlimited.
+Performance will degrade on very long lines.
+
 debug.patch
 --------------
 Cleanup reachable memory upon termination.
@@ -158,6 +163,10 @@ ac_context.patch
 Improvements to autocomplete, now the word completion will also use
 text that prefixes the insert when it makes sense. Makes it possible
 to autocomplete in more desired situations.
+
+linewrap.patch
+--------------
+Soft line wrap proof of concept
 
 ex-scripting.patch
 --------------
