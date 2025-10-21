@@ -38,15 +38,15 @@ Enter visual mode on startup (Default)
 .El
 .Sh MANPAGE NOTATION
 .Bl -tag -width Ds -compact
-.It Cm <x>
+.It Cm <\fIx\fP>
 A closure where x represents character literal
 .It Cm [\fIx\fP]
 A closure where x represents optional argument
 .It Cm {\fIx\fP}
 A closure where x represents required argument
-.It Cm \&"x\&"
+.It Cm \&"\fIx\fP\&"
 A closure where x represents a string
-.It Cm <^X>
+.It Cm <^\fIX\fP>
 Represents a ctrl key X
 .It Cm #
 Represents a positive number in a closure
@@ -1159,16 +1159,16 @@ No argument inverts the current value, unless stated otherwise.
 
 .Bl -tag -width Ds -compact
 .
-.It Cm ai[\fIval\fP=1]
+.It Cm ai[\fIval=1\fP]
 Indent new lines
 .Bd -literal
 This is a max indent length multiplier: val * 128
 .Ed
 .
-.It Cm ic[\fIval\fP=1]
+.It Cm ic[\fIval=1\fP]
 Ignore case in regular expressions
 
-.It Cm ish[\fIval\fP=0]
+.It Cm ish[\fIval=0\fP]
 Interactive shell
 .Bd -literal
 Run every <!> command through an interactive shell.
@@ -1186,7 +1186,7 @@ Precondition 3:
 	for <!> commands to return expected results.
 .Ed
 
-.It Cm grp[\fIval\fP=0]
+.It Cm grp[\fIval=0\fP]
 Regex search group
 .Bd -literal
 Defines a target search group for any regex search operation.
@@ -1200,26 +1200,26 @@ Example: ignore spaces at the start of the line
 .Ed
 
 .
-.It Cm hl[\fIval\fP=1]
+.It Cm hl[\fIval=1\fP]
 Highlight text based on rules defined in
 .Pa conf.c
 .
-.It Cm hlr[\fIval\fP=0]
+.It Cm hlr[\fIval=0\fP]
 Highlight text in reverse direction
 .
-.It Cm hll[\fIval\fP=0]
+.It Cm hll[\fIval=0\fP]
 Highlight current line based on filetype hl
 .
-.It Cm hlp[\fIval\fP=0]
+.It Cm hlp[\fIval=0\fP]
 Highlight "[]" "()" "{}" pairs based on filetype hl
 .
-.It Cm hlw[\fIval\fP=0]
+.It Cm hlw[\fIval=0\fP]
 Highlight current word based on filetype hl
 .
-.It Cm led[\fIval\fP=1]
+.It Cm led[\fIval=1\fP]
 Enable all terminal output
 
-.It Cm vis[\fIval\fP=0]
+.It Cm vis[\fIval=0\fP]
 Control startup flags
 .Bd -literal
 Example: disable :e message in ex mode
@@ -1232,7 +1232,7 @@ Example: disable raw ex mode
 :vis 4
 .Ed
 
-.It Cm mpt[\fIval\fP=0]
+.It Cm mpt[\fIval=0\fP]
 Control vi prompts
 .Bd -literal
 When set to 0 after an ex command is called from vi, disables
@@ -1240,20 +1240,20 @@ the "[any key to continue]" prompt.
 If mpt is negative, the prompt will remain disabled.
 .Ed
 
-.It Cm order[\fIval\fP=1]
+.It Cm order[\fIval=1\fP]
 Reorder characters based on rules defined in
 .Pa conf.c
 .
-.It Cm shape[\fIval\fP=1]
+.It Cm shape[\fIval=1\fP]
 Perform Arabic script letter shaping
 .
-.It Cm pac[\fIval\fP=0]
+.It Cm pac[\fIval=0\fP]
 Print autocomplete suggestions on the fly
 .
-.It Cm tbs[\fIval\fP=8]
+.It Cm tbs[\fIval=8\fP]
 Number of spaces used to represent a tab
 .
-.It Cm td[\fIval\fP=1]
+.It Cm td[\fIval=1\fP]
 Current text direction context
 
 This option accepts four meaningful values:
@@ -1274,7 +1274,7 @@ defaulting to right-to-left
 Exclusively right-to-left
 .El
 
-.It Cm pr[\fIval\fP=0]
+.It Cm pr[\fIval=0\fP]
 Print register
 .Bd -literal
 Set a special register using a character or a number.
@@ -1293,7 +1293,7 @@ Example: store a line printed with :p
 :pr A:ya! A:p
 .Ed
 
-.It Cm sep[\fIval\fP=:]
+.It Cm sep[\fIval=:\fP]
 Ex separator
 .Bd -literal
 Set Ex command separator character.
@@ -1304,7 +1304,7 @@ Example: disable separator
 :sep 0
 .Ed
 
-.It Cm lim[\fIval\fP=-1]
+.It Cm lim[\fIval=-1\fP]
 Line length render limit
 .Bd -literal
 Set render cutoff length for non cursor lines in vi and all
@@ -1321,7 +1321,7 @@ Example: disable the limit
 :lim -1
 .Ed
 
-.It Cm seq[\fIval\fP=1]
+.It Cm seq[\fIval=1\fP]
 Control Undo/Redo
 .Bd -literal
 When seq is 0, multiple distinct operations undo/redo in a
@@ -1336,7 +1336,7 @@ Example: completely disable undo/redo
 :seq -1
 .Ed
 
-.It Cm [hscroll]left[\fIval\fP=0]
+.It Cm [\fIhscroll\fP]left[\fIval=0\fP]
 Control horizontal scroll
 .Bd -literal
 No argument sets the value to 0.
