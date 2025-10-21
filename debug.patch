@@ -32,10 +32,10 @@ index 700158e4..42017e9c 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
 diff --git a/ren.c b/ren.c
-index 6e79674f..f807291b 100644
+index 6e79674f..5870448a 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -91,6 +91,20 @@ static int ren_cwid(char *s, int pos)
+@@ -91,6 +91,19 @@ static int ren_cwid(char *s, int pos)
  ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
  ren_state *rstate = rstates;
  
@@ -48,7 +48,6 @@ index 6e79674f..f807291b 100644
 +		if (rstate[i].col) {
 +			free(rstate[i].col - 2);
 +			free(rstate[i].pos);
-+			free(rstate[i].chrs);
 +		}
 +	}
 +}
@@ -56,7 +55,7 @@ index 6e79674f..f807291b 100644
  /* specify the screen position of the characters in s */
  ren_state *ren_position(char *s)
  {
-@@ -411,3 +425,10 @@ void syn_init(void)
+@@ -411,3 +424,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
