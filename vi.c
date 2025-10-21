@@ -407,26 +407,26 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	if (!ln || !n)
 		return NULL;
 	off = ren_noeol(ln, off);
-	char **beg = rstate->chrs;
-	int o = off;
-	int end = rstate->n;
-	for (int i = 0; i < n && o < end; i++)
-		while (uc_kind(beg[o++]) == 1);
-	for (; off >= 0 && uc_kind(beg[off]) == 1; off--);
-	if (--o == off++)
+	char **chrs = rstate->chrs;
+	int cap = rstate->n;
+	int end = off;
+	for (int i = 0; i < n && end < cap; i++)
+		while (uc_kind(chrs[end++]) == 1);
+	for (; off > 0 && uc_kind(chrs[off - 1]) == 1; off--);
+	if (!end || --end == off)
 		return NULL;
 	sbuf_smake(sb, 64)
 	if (n > 1) {
-		for (; off < o; off++) {
-			if (*beg[off] == xsep)
+		for (; off < end; off++) {
+			if (*chrs[off] == xsep)
 				sbuf_chr(sb, '\\')
-			if (strchr("!%{}[]().?\\^$|*/+", *beg[off]))
+			if (strchr("!%{}[]().?\\^$|*/+", *chrs[off]))
 				sbuf_chr(sb, '\\')
-			sbuf_chr(sb, *beg[off])
+			sbuf_chr(sb, *chrs[off])
 		}
 	} else {
 		sbuf_str(sb, "\\<")
-		sbuf_mem(sb, beg[off], beg[o] - beg[off])
+		sbuf_mem(sb, chrs[off], chrs[end] - chrs[off])
 		sbuf_str(sb, "\\>")
 	}
 	sbufn_ret(sb, sb->s)
