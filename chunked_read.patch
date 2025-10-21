@@ -1,9 +1,9 @@
 diff --git a/ex.c b/ex.c
-index cb93123e..000916e1 100644
+index 302af98e..820233b4 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -366,10 +366,10 @@ void ex_bufpostfix(struct buf *p, int clear)
- 	lbuf_saved(p->lb, clear);
+@@ -390,10 +390,10 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
+ 	return 0;
  }
  
 -#define readfile(errchk) \
@@ -15,7 +15,7 @@ index cb93123e..000916e1 100644
  	close(fd); \
  } \
  
-@@ -385,7 +385,7 @@ int ex_edit(const char *path, int len)
+@@ -409,7 +409,7 @@ int ex_edit(const char *path, int len)
  		return 1;
  	}
  	bufs_switch(bufs_open(path, len));
@@ -24,7 +24,7 @@ index cb93123e..000916e1 100644
  	return 0;
  }
  
-@@ -406,7 +406,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -430,7 +430,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -34,7 +34,7 @@ index cb93123e..000916e1 100644
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
 diff --git a/lbuf.c b/lbuf.c
-index cedc3cdf..2f3a233c 100644
+index 884b7807..aeedd871 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -203,32 +203,85 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -146,7 +146,7 @@ index cedc3cdf..2f3a233c 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 1bef0600..ac808f9d 100644
+index c0cb10d8..26851ef9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -164,7 +164,8 @@ struct lbuf {

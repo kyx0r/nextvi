@@ -1,8 +1,8 @@
 diff --git a/vi.c b/vi.c
-index 79cdac30..e2ae0b05 100644
+index 6c69814b..c43bd8a1 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -666,9 +666,13 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -664,9 +664,13 @@ static int vi_motion(int vc, int *row, int *off)
  		break;
  	case 'w':
  	case 'W':
@@ -16,4 +16,4 @@ index 79cdac30..e2ae0b05 100644
 +			if (lbuf_wordbeg(xb, mark, dir, row, off))
  				break;
  		break;
- 	case '{':
+ 	case '(':
