@@ -671,7 +671,7 @@ static int vi_motion(int vc, int *row, int *off)
 		break;
 	case '(':
 	case ')':
-		dir = mv == ')' ? 1 : -1;
+		dir = mv == '(' ? 1 : -1;
 		rset *set = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
 		int subs[2], org;
 		for (i = 0; i < cnt; i++) {
