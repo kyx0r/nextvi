@@ -708,7 +708,7 @@ Example: print current line from offset 5 to 10
 :.;5;10p
 .Ed
 
-.It Cm [#]ea[\fIkwd\fP]
+.It Cm [\fI#\fP]ea[\fIkwd\fP]
 Open file based on filename substring
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
@@ -718,12 +718,12 @@ Example: backfill b-2 using :fd
 Example: backfill b-2 using find
 :b-2:%!find .
 
-Prefix is a number to select ahead of time.
 If kwd matches more than one filename, a list of matches
 and a fuzzy find prompt will be shown. If the number of matches
 is less than 10, match can be picked using numbers 0-9.
 <^C> or <ESC> to abort.
 <^M> or <Enter> to input a number larger than 9.
+Prefix is a number selected ahead of time.
 
 Example: print entire listing
 :ea
@@ -733,7 +733,7 @@ Example: open path at index 15
 :15ea
 .Ed
 
-.It Cm ea![\fIkwd\fP]
+.It Cm [\fI#\fP]ea![\fIkwd\fP]
 Forced version of ea
 
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
@@ -893,7 +893,7 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [#0 <$>][,{#1 <$>}][,{#2 <$>}]?{\fIcmd\fP}
+.It Cm [\fI#0\fP <\fI$\fP>][\fI,\fP{\fI#1\fP <\fI$\fP>}][\fI,\fP{\fI#2\fP <\fI$\fP>}]?{\fIcmd\fP}
 While loop conditional
 .Bd -literal
 Repeat cmd #0 times or infinite with <$>.
@@ -920,7 +920,7 @@ Example: edit vi.c only if it exists
 :? \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
 
-.It Cm [range]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
+.It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
 Paste or pipe a register
 .Bd -literal
 Example: paste <a> at line 1 character offset 5
