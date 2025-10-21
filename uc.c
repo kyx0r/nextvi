@@ -77,30 +77,6 @@ char *uc_dup(const char *s)
 	return r ? strcpy(r, s) : NULL;
 }
 
-int uc_isspace(char *s)
-{
-	int c = s ? (unsigned char) *s : 0;
-	return c < 0x7f && isspace(c);
-}
-
-int uc_isprint(char *s)
-{
-	int c = s ? (unsigned char) *s : 0;
-	return c > 0x7f || isprint(c);
-}
-
-int uc_isalpha(char *s)
-{
-	int c = s ? (unsigned char) *s : 0;
-	return c > 0x7f || isalpha(c);
-}
-
-int uc_isdigit(char *s)
-{
-	int c = s ? (unsigned char) *s : 0;
-	return c < 0x7f && isdigit(c);
-}
-
 int uc_kind(char *c)
 {
 	if (uc_isspace(c))

@@ -11,10 +11,10 @@ index 2372d3b8..3b294bc7 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index cedc3cdf..439ca460 100644
+index 884b7807..ef158f6e 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -403,24 +403,35 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -403,24 +403,30 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -25,13 +25,20 @@ index cedc3cdf..439ca460 100644
 -	int r0 = *r, o0 = *o;
 -	int offs[re->grpcnt * 2], i = r0;
 -	char *s = lbuf_get(lb, i);
+-	int off, g1, g2, _o, step, flg;
+-	if (skip >= 0 && s)
+-		off = rstate->s == s ? rstate->chrs[MIN(o0 + skip, rstate->n)] - s
+-					: uc_chr(s, o0 + skip) - s;
+-	else
+-		off = 0;
+-	for (; i >= 0 && i < ln_n; i += dir) {
 +	struct lbuf *lb;
 +	rset *re;
 +	int dir;
 +	int ln_n;
 +	int *r;
 +	int *o;
-+	int skip;
++	int off;
 +};
 +
 +static void *lsearch(void *arg)
@@ -39,17 +46,8 @@ index cedc3cdf..439ca460 100644
 +	struct lsparams *a = arg;
 +	int r0 = *a->r, o0 = *a->o;
 +	int offs[a->re->grpcnt * 2], i = r0;
-+	char *s = lbuf_get(a->lb, i);
- 	int off, g1, g2, _o, step, flg;
--	if (skip >= 0 && s)
--		off = rstate->s == s ? rstate->chrs[MIN(o0 + skip, rstate->n)] - s
--					: uc_chr(s, o0 + skip) - s;
-+	if (a->skip >= 0 && s)
-+		off = rstate->s == s ? rstate->chrs[MIN(o0 + a->skip, rstate->n)] - s
-+					: uc_chr(s, o0 + a->skip) - s;
- 	else
- 		off = 0;
--	for (; i >= 0 && i < ln_n; i += dir) {
++	char *s;
++	int off = a->off, g1, g2, _o, step, flg;
 +	for (; i >= 0 && i < a->ln_n; i += a->dir) {
  		_o = 0;
  		step = 0;
@@ -61,7 +59,7 @@ index cedc3cdf..439ca460 100644
  			flg |= REG_NOTBOL;
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
-@@ -428,19 +439,69 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -428,19 +434,75 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				continue;
  			}
  			_o += uc_off(s + step, off + g1 - step);
@@ -97,7 +95,13 @@ index cedc3cdf..439ca460 100644
 +	int rs[NUM_THREADS];
 +	int os[NUM_THREADS];
 +	int thread_step = ln_n / NUM_THREADS; /* number of lines assigned per thread */
-+	int step = 0, i = 0;
++	int step = 0, i = 0, off;
++	char *s = lbuf_get(lb, *r);
++	if (skip >= 0 && s)
++		off = rstate->s == s ? rstate->chrs[MIN(*o + skip, rstate->n)] - s
++					: uc_chr(s, *o + skip) - s;
++	else
++		off = 0;
 +	utf8_length['\n'] = 0;
 +	for (i = 0; i < NUM_THREADS; i++) {
 +		if (*r + step > ln_n || *r + step * dir < 0)
@@ -105,7 +109,7 @@ index cedc3cdf..439ca460 100644
 +		data[i].lb = lb;
 +		data[i].re = re;
 +		data[i].dir = dir;
-+		data[i].skip = skip;
++		data[i].off = i ? 0 : off;
 +		rs[i] = *r + step * dir;
 +		step += thread_step;
 +		data[i].r = &rs[i];
@@ -164,7 +168,7 @@ index 700158e4..0bced731 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index bc22a958..130772b3 100644
+index 049ccc8d..ece3a6f9 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -182,7 +186,7 @@ index bc22a958..130772b3 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index b83a1df9..c743df99 100644
+index 79e50d08..133e5fa3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -194,10 +198,10 @@ index b83a1df9..c743df99 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 1bef0600..08be5917 100644
+index c0cb10d8..e4ef5087 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -264,7 +264,8 @@ int syn_addhl(char *reg, int id);
+@@ -265,7 +265,8 @@ int syn_addhl(char *reg, int id);
  void syn_init(void);
  
  /* uc.c utf-8 helper functions */

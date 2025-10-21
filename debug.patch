@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 372a5688..89ea0fa8 100644
+index 302af98e..ef7519ff 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1407,3 +1407,16 @@ void ex_init(char **files, int n)
+@@ -1433,3 +1433,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -32,10 +32,10 @@ index 700158e4..42017e9c 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
 diff --git a/ren.c b/ren.c
-index 6a1f4ef2..c13f25bc 100644
+index 6e79674f..f807291b 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -93,6 +93,20 @@ static int ren_cwid(char *s, int pos)
+@@ -91,6 +91,20 @@ static int ren_cwid(char *s, int pos)
  ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
  ren_state *rstate = rstates;
  
@@ -56,7 +56,7 @@ index 6a1f4ef2..c13f25bc 100644
  /* specify the screen position of the characters in s */
  ren_state *ren_position(char *s)
  {
-@@ -410,3 +424,10 @@ void syn_init(void)
+@@ -411,3 +425,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -68,11 +68,11 @@ index 6a1f4ef2..c13f25bc 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index b83a1df9..f4c8d400 100644
+index 79e50d08..aea18c8b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -446,6 +446,13 @@ static void vi_regput(int c, const char *s, int lnmode)
- 	ex_regput(c, s, isupper(c));
+@@ -445,6 +445,13 @@ static void vi_regput(int c, const char *s, int lnmode)
+ 	ex_regput(tolower(c), s, isupper(c));
  }
  
 +static void vi_regdone(void)
@@ -85,7 +85,7 @@ index b83a1df9..f4c8d400 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1817,12 +1824,19 @@ int main(int argc, char *argv[])
+@@ -1853,12 +1860,19 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -106,10 +106,10 @@ index b83a1df9..f4c8d400 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index 1bef0600..6d4ca0c4 100644
+index c0cb10d8..7a6279e7 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -225,6 +225,7 @@ char *ren_translate(char *s, char *ln);
+@@ -226,6 +226,7 @@ char *ren_translate(char *s, char *ln);
  /* text direction */
  int dir_context(char *s);
  void dir_init(void);
@@ -117,7 +117,7 @@ index 1bef0600..6d4ca0c4 100644
  /* syntax highlighting */
  #define SYN_BD		0x10000
  #define SYN_IT		0x20000
-@@ -262,6 +263,7 @@ void syn_reloadft(int hl);
+@@ -263,6 +264,7 @@ void syn_reloadft(int hl);
  int syn_findhl(int id);
  int syn_addhl(char *reg, int id);
  void syn_init(void);
@@ -125,7 +125,7 @@ index 1bef0600..6d4ca0c4 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -452,6 +454,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
+@@ -453,6 +455,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln);
  { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);

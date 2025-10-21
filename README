@@ -58,6 +58,8 @@ VI NORMAL
      [#]W          Move to start of word forward # times, skip punctuation
      [#]w          Move to start of word forward # times
      vw            Toggle line only mode for <E e B b W w>
+     [#](          Move to next sentence boundary down # times
+     [#])          Move to next sentence boundary up # times
      [#]{          Move to next <{> section down # times
      [#]}          Move to next <{> section up # times
      [#][          Move to next <Newline> section down # times
@@ -213,8 +215,7 @@ VI NORMAL
                    in b-2. Sets global line mark 0 for <^P> fallback
      {#}<^]>       Filesystem regex search forward, set keyword to # words
                    from cursor
-     <^P>
-     {#}<^P>       Filesystem regex search backward
+     [#]<^P>       Filesystem regex search backward
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
      Z{*}          Exit and clean terminal, force quit in an & macro
@@ -225,8 +226,8 @@ VI REGIONS
      Regions are vi normal commands that define [h v]range for vi motions.
      Commands described with the word "move" define a region.
 
-     j + <^M> <Enter> - k h l f F t T , ; B E b e W w { } [ ] ^ 0 $ <Space>
-             <^H> <Backspace> % ' ` G H L M / ? n N <^A>
+     j + <^M> <Enter> - k h l f F t T , ; B E b e W w ( ) { } [ ] ^ 0 $
+             <Space> <^H> <Backspace> % ' ` G H L M / ? n N <^A>
 
              All regions
 
@@ -322,12 +323,12 @@ EX EXPANSION
      pathname when followed by a corresponding buffer number.
      "%#" substitutes last swapped buffer pathname.
 
-     Example: print the pathname for buffer 69.
+     Example: print pathname for buffer 69
      :!echo "%69"
 
      Every ex command is be able to receive stdout from an external
      program via a special expansion character <!>.
-     If the closing <!> was not specified, the end of the line becomes
+     If closing <!> was not specified, the end of the line becomes
      a terminator.
 
      Example: substitute "int" with the value of $RANDOM
@@ -360,9 +361,9 @@ EX RANGES
      <       Begin search range backward
      -       Subtract following number
      +       Add following number
-     *       Multiply following number
-     /       Divide following number
-     %       Modulo following number
+     *       Multiply by the following number
+     /       Divide by the following number
+     %       Modulo by the following number
      0-9     Number or position
 
      Examples:
@@ -415,7 +416,7 @@ EX COMMANDS
              range move to the next match just like vi normal [#]n or [#]N
              commands.
 
-     b[#]    Print currently active buffers state or switch to a buffer
+     b[#]    Print buffers or switch to a buffer
 
              There are two temporary buffers which are separate from
              the main buffers.
@@ -431,8 +432,10 @@ EX COMMANDS
 
      bp[path]
              Set current buffer path
-     bs[*]   Set current buffer saved. If any arg given, reset undo/redo
-             history
+
+     bs[*]   Set current buffer saved
+
+             Argument resets undo/redo history
 
      [range]p
              Print line(s) from a buffer
@@ -444,8 +447,8 @@ EX COMMANDS
              Example: print current line from offset 5 to 10
              :.;5;10p
 
-     ea[kwd] [#]
-             Open file based on filename substring from dir listing in b-2
+     [#]ea[kwd]
+             Open file based on filename substring
 
              Requires directory listing in b-2 backfilled prior.
 
@@ -454,24 +457,26 @@ EX COMMANDS
              Example: backfill b-2 using find
              :b-2:%!find .
 
-             If the substring matches more than one filename, a prompt will
-             be shown. Submit using numbers 0-9 or higher ascii values.
-             <^C> to cancel, <^M> to select first match. Passing an
-             extra arg to :ea in form of a number will bypass the prompt
-             and open the corresponding file.
+             If kwd matches more than one filename, a list of matches
+             and a fuzzy find prompt will be shown. If the number of matches
+             is less than 10, match can be picked using numbers 0-9.
+             <^C> or <ESC> to abort.
+             <^M> or <Enter> to input a number larger than 9.
+             Prefix is a number selected ahead of time.
 
+             Example: print entire listing
+             :ea
              Example: open filename containing "v"
              :ea v
-             Example: open first match containing "v"
-             :ea v 0
+             Example: open path at index 15
+             :15ea
 
-     ea![kwd] [#]
+     [#]ea![kwd]
              Forced version of ea
 
-     [vpos]i[str]
-             Enter ex insert mode before vpos
+     [vrange]i[str]
+             Enter ex insert mode before specified position
 
-             vpos specifies insertion vertical position.
              str specifies initial input into the insertion buffer.
 
              Example: insert "hello" in vi/ex
@@ -485,8 +490,8 @@ EX COMMANDS
              Example: insert "hello" in raw ex mode
              i hello<^M>.<^M>
 
-     [vpos]a[str]
-             Enter ex insert mode after vpos
+     [vrange]a[str]
+             Enter ex insert mode after specified position
 
      [range]c[str]
              Enter ex change mode
@@ -539,8 +544,8 @@ EX COMMANDS
              Multiple ex commands can be chained in one global command.
              To chain commands, the ex separator <:> must be escaped once.
 
-             Example: yank matches appending to reg 'a' and print them out.
-             :g/int/ya A\:p
+             Example: print and append lines matching "int" to register <a>
+             :g/int/p\:ya A
 
              It is possible to nest global commands inside of global commands.
              The first global command will not be executed on lines that
@@ -571,9 +576,10 @@ EX COMMANDS
              Example: calculate 75 - 100
              :1,75-100=1p
 
-     [vrange]k[<mark>]
+     [vrange]k{<mark>}
              Set a line mark
 
+             Valid marks: <a-z> <`> <'> <[> <]> <*>
              The character offset is set to the current position.
 
      &{macro}
@@ -616,30 +622,31 @@ EX COMMANDS
              Example: execute vi "dw" command after user exits insert
              :@i:@dw
 
-     [# $],[skip1=0 $],[skip2=0 $]?{cmd}
+     [#0 <$>][,{#1 <$>}][,{#2 <$>}]?{cmd}
              While loop conditional
 
-             Repeat {cmd} [#] times or infinite with <$>.
-             While loop is broken once {cmd} returns an error or count exceeded.
-             If while fails with error, [skip1] and [skip2] specify the location/range
-             of the separated ex commands to skip that follow next in chain.
+             Repeat cmd #0 times or infinite with <$>.
+             While loop is broken once cmd returns an error or count exceeded.
+             If while fails with error, #1 and #2 specify a range of the separated
+             ex commands to skip that follow next in chain.
+             No prefix creates a conditional with all # parameters set to 1.
 
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
              Example: undo everything
              :$? u
-             Example: calculate directory only if :cd succeeded
-             :1,1? cd /blah:fd
              Example: repeat chain of ex commands 10 times
              :10? 1p\:5p\:10p
+             Example: calculate directory only if :cd succeeded
+             :? cd /blah:fd
              Example: print a line only if it contains "int" at offset 5
-             :1,1? ;5;>^int>:p
+             :? ;5;>^int>:p
              Example: allow :led while branching only :p command
              :led:1,2? ;5;>^int>:led:p
              Example: branch multiple commands
              :led:1,2,3? ;5;>^int>:led:&i2 not branched:p:p
              Example: edit vi.c only if it exists
-             :1,1? \![ -f ./vi.c ]:e ./vi.c:mpt
+             :? \![ -f ./vi.c ]:e ./vi.c:mpt
 
      [range]pu[<reg>][*][\!{cmd}]
              Paste or pipe a register
@@ -696,7 +703,7 @@ EX COMMANDS
      u       Undo
      rd      Redo
 
-     [vrange]s{<*>}[kwd]{<*>}{str}[<*>][opts]
+     [vrange]s{<*>}[kwd]{<*>}{str}[<*>][<g>]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -721,9 +728,8 @@ EX COMMANDS
      [range]ya[<reg>][*]
              Yank a range
 
-             To append to the register, pass in its uppercase version.
-             To append to any of the non-alphabetical registers add any extra
-             character to the command.
+             Register value range is 1-255.
+             Any extra argument appends to the register.
 
              Example: append to register <1>
              :ya 1x
@@ -746,7 +752,7 @@ EX COMMANDS
              :%!sed -e 's/int/uint/g'
              Example: pipe in result of ls command without replace
              :;$+1!ls
-             Example: capitalize the word at current position using tr
+             Example: capitalize word at current position using tr
              :;.;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
 
      ft[filetype]
@@ -940,13 +946,13 @@ EX OPTIONS
              If the register is uppercase, <Newline> characters are added
              to match the exact output that was printed.
 
-             Print register contents cannot be displayed via R or :reg command
+             Print register contents cannot be displayed with R or :reg command
              when register is assigned (self-referential problem).
 
              Example: paste current buffer list exactly like from :b command
-             :pr A:ya! a: b:pu a
+             :pr A:ya! A: b:pu A
              Example: store a line printed with :p
-             :pr A:ya! a:p
+             :pr A:ya! A:p
 
      sep[val=:]
              Ex separator
@@ -1006,10 +1012,10 @@ EXINIT ENV VAR
      export EXINIT="$(printf '%b' 'e ./vi.c:& i\x7\x3:bx 1:bx')"
              Index vi.c for autocomplete
 
-     export EXINIT='b-1:%r ./vi.c:b-1'
+     export EXINIT='b-1:r ./vi.c:b-1'
              Load vi.c into a history buffer
 
-     export EXINIT="$(printf '%b' 'e:& io{\n}\x16\x3kA\x3:& 1G:& 2"ayy')"
+     export EXINIT="$(printf '%b' 'e:& io{\n}\x16\x3kA\x3:& 1G:& 2"aY')"
              Setup @ macro in register <a>
 
              @a macro creates <{> and closing <}> below the cursor leaving
@@ -1034,8 +1040,8 @@ REGEX
      Disregard manpage notation in this section.
 
      .       Match any single char
-     {N,M}   Match N to M times
      [N-M]   Match a set of alternate ranges N to M
+     {N,M}   Match N to M times
      ()      Grouping
      (?:)    Non capture grouping
      *       Repeated zero or more times
@@ -1089,19 +1095,19 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 520 vi.h     |  definitions/aux     |
+     | 521 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 307 conf.c   |  hl/ft/td config     |
      | 345 term.c   |  low level IO        |
-     | 412 ren.c    |  positioning/syntax  |
+     | 413 ren.c    |  positioning/syntax  |
      | 578 lbuf.c   |  file/line buffer    |
-     | 637 uc.c     |  UTF-8 support       |
+     | 613 uc.c     |  UTF-8 support       |
      | 683 led.c    |  insert mode/output  |
      | 731 regex.c  |  pikevm              |
-     | 1409 ex.c    |  ex options/commands |
-     | 1828 vi.c    |  normal mode/general |
-     | 6930 total   |  wc -l *.c|sort      |
+     | 1435 ex.c    |  ex options/commands |
+     | 1864 vi.c    |  normal mode/general |
+     | 6969 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1173,7 +1179,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.1                   October 11, 2025                   Linux 6.17.1
+Linux 6.17.1                   October 21, 2025                   Linux 6.17.1
 
 NEXTVI PATCHES
 ==============
@@ -1215,6 +1221,11 @@ in led.c
 Patch will alter the meaning of <^> <$> assertions in syntax highlight
 regex, as the line would be considered to start/end beyond the visible columns.
 Patch works in reverse direction and with reordered text.
+
+hl_naive.patch
+--------------
+Allow syntax highlight to continue past the terminal dimensions unlimited.
+Performance will degrade on very long lines.
 
 debug.patch
 --------------
@@ -1335,6 +1346,10 @@ ac_context.patch
 Improvements to autocomplete, now the word completion will also use
 text that prefixes the insert when it makes sense. Makes it possible
 to autocomplete in more desired situations.
+
+linewrap.patch
+--------------
+Soft line wrap proof of concept
 
 ex-scripting.patch
 --------------

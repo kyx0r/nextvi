@@ -1,4 +1,4 @@
-.Dd Oct 11, 2025
+.Dd Oct 21, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -38,15 +38,15 @@ Enter visual mode on startup (Default)
 .El
 .Sh MANPAGE NOTATION
 .Bl -tag -width Ds -compact
-.It Cm <x>
+.It Cm <\fIx\fP>
 A closure where x represents character literal
 .It Cm [\fIx\fP]
 A closure where x represents optional argument
 .It Cm {\fIx\fP}
 A closure where x represents required argument
-.It Cm \&"x\&"
+.It Cm \&"\fIx\fP\&"
 A closure where x represents a string
-.It Cm <^X>
+.It Cm <^\fIX\fP>
 Represents a ctrl key X
 .It Cm #
 Represents a positive number in a closure
@@ -101,6 +101,10 @@ Move to start of word forward # times, skip punctuation
 Move to start of word forward # times
 .It Cm vw
 Toggle line only mode for <E e B b W w>
+.It Cm [\fI#\fP](
+Move to next sentence boundary down # times
+.It Cm [\fI#\fP])
+Move to next sentence boundary up # times
 .It Cm [\fI#\fP]{
 Move to next <{> section down # times
 .It Cm [\fI#\fP]}
@@ -372,8 +376,7 @@ b-2. Sets global line mark 0 for <^P> fallback
 .It Cm {\fI#\fP}<^]>
 Filesystem regex search forward, set keyword to # words from
 cursor
-.It Cm <^P>
-.It Cm {\fI#\fP}<^P>
+.It Cm [\fI#\fP]<^P>
 Filesystem regex search backward
 .It Cm <^Z>
 Suspend vi
@@ -394,7 +397,7 @@ Commands described with the word "move" define a region.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm j + <^M> <Enter> - k h l f F t T \&, \&; B E b e W w { } \&[ \&] ^ 0 $ <Space> <^H> <Backspace> % ' ` G H L M / \&? n N <^A>
+.It Cm j + <^M> <Enter> - k h l f F t T \&, \&; B E b e W w \&( \&) { } \&[ \&] ^ 0 $ <Space> <^H> <Backspace> % ' ` G H L M / \&? n N <^A>
 
 All regions
 .El
@@ -505,10 +508,10 @@ into a purely command-line interface (CLI) when desired.
 .Sh EX PARSING
 .Bd -literal -compact
 Parsing follows the structure:
-[<sep>][\fIrange\fP][\fIpad\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
+[<\fIsep\fP>][\fIrange\fP][\fIpad\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
 Ex commands are initiated and separated by <:> prefix. Fields
 can be padded by <Space> or <Tab>. There can only be one pad
-in between [cmd] and [args]. To avoid ambiguity in scripts, it 
+in between [cmd] and [args]. To avoid ambiguity in scripts, it
 is recommended to always use a pad between [cmd] and [args].
 .Bl -tag -width Ds -compact
 
@@ -543,12 +546,12 @@ Specials in ex
 pathname when followed by a corresponding buffer number.
 "%#" substitutes last swapped buffer pathname.
 
-Example: print the pathname for buffer 69.
+Example: print pathname for buffer 69
 :!echo "%69"
 
 Every ex command is be able to receive stdout from an external
 program via a special expansion character <!>.
-If the closing <!> was not specified, the end of the line becomes
+If closing <!> was not specified, the end of the line becomes
 a terminator.
 
 Example: substitute "int" with the value of $RANDOM
@@ -567,9 +570,9 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [\fIpad\fP][%][, ;][\fIpad\fP][. $ ' > <][- + * / %][0-9]
+.It Cm [\fIpad\fP][\fI%\fP][\fI, ;\fP][\fIpad\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
 All ranges structure
-.It Cm {> <}[\fIkwd\fP][> <]
+.It Cm {\fI> <\fP}[\fIkwd\fP][\fI> <\fP]
 Search range structure
 'It Cm '{<\fImark\fP>}
 Mark range structure
@@ -597,11 +600,11 @@ Subtract following number
 .It Cm \&+
 Add following number
 .It Cm \&*
-Multiply following number
+Multiply by the following number
 .It Cm \&/
-Divide following number
+Divide by the following number
 .It Cm \&%
-Modulo following number 
+Modulo by the following number
 .It Cm \&0-9
 Number or position
 .El
@@ -650,7 +653,7 @@ Print text enclosed by "int" on the current line
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [\fIvrange\fP]f{> <}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f{\fI> <\fP}[\fIkwd\fP]
 Ranged search
 .Bd -literal
 Example: no range given, current line only
@@ -661,7 +664,7 @@ Example: range given
 :10,100f>int
 .Ed
 
-.It Cm [\fIvrange\fP]f+{> <}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+{\fI> <\fP}[\fIkwd\fP]
 Incrementing ranged search
 .Bd -literal
 Equivalent to the :f command, except subsequent commands within
@@ -670,7 +673,7 @@ commands.
 .Ed
 
 .It Cm b[\fI#\fP]
-Print currently active buffers state or switch to a buffer
+Print buffers or switch to a buffer
 .Bd -literal
 There are two temporary buffers which are separate from
 the main buffers.
@@ -687,8 +690,12 @@ Example: switch to the b-2 buffer
 
 .It Cm bp[\fIpath\fP]
 Set current buffer path
+
 .It Cm bs[\fI*\fP]
-Set current buffer saved. If any arg given, reset undo/redo history
+Set current buffer saved
+.Bd -literal
+Argument resets undo/redo history
+.Ed
 
 .It Cm [\fIrange\fP]p
 Print line(s) from a buffer
@@ -701,8 +708,8 @@ Example: print current line from offset 5 to 10
 :.;5;10p
 .Ed
 
-.It Cm ea[\fIkwd\fP] [\fI#\fP]
-Open file based on filename substring from dir listing in b-2
+.It Cm [\fI#\fP]ea[\fIkwd\fP]
+Open file based on filename substring
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
 
@@ -711,25 +718,27 @@ Example: backfill b-2 using :fd
 Example: backfill b-2 using find
 :b-2:%!find .
 
-If the substring matches more than one filename, a prompt will
-be shown. Submit using numbers 0-9 or higher ascii values.
-<^C> to cancel, <^M> to select first match. Passing an
-extra arg to :ea in form of a number will bypass the prompt
-and open the corresponding file.
+If kwd matches more than one filename, a list of matches
+and a fuzzy find prompt will be shown. If the number of matches
+is less than 10, match can be picked using numbers 0-9.
+<^C> or <ESC> to abort.
+<^M> or <Enter> to input a number larger than 9.
+Prefix is a number selected ahead of time.
 
+Example: print entire listing
+:ea
 Example: open filename containing "v"
 :ea v
-Example: open first match containing "v"
-:ea v 0
+Example: open path at index 15
+:15ea
 .Ed
 
-.It Cm ea![\fIkwd\fP] [\fI#\fP]
+.It Cm [\fI#\fP]ea![\fIkwd\fP]
 Forced version of ea
 
-.It Cm [\fIvpos\fP]i[\fIstr\fP]
-Enter ex insert mode before vpos
+.It Cm [\fIvrange\fP]i[\fIstr\fP]
+Enter ex insert mode before specified position
 .Bd -literal
-vpos specifies insertion vertical position.
 str specifies initial input into the insertion buffer.
 
 Example: insert "hello" in vi/ex
@@ -744,8 +753,8 @@ Example: insert "hello" in raw ex mode
 i hello<^M>.<^M>
 .Ed
 
-.It Cm [\fIvpos\fP]a[\fIstr\fP]
-Enter ex insert mode after vpos
+.It Cm [\fIvrange\fP]a[\fIstr\fP]
+Enter ex insert mode after specified position
 
 .It Cm [\fIrange\fP]c[\fIstr\fP]
 Enter ex change mode
@@ -801,8 +810,8 @@ Example: print lines matching previously set search keyword
 Multiple ex commands can be chained in one global command.
 To chain commands, the ex separator <:> must be escaped once.
 
-Example: yank matches appending to reg 'a' and print them out.
-:g/int/ya A\e:p
+Example: print and append lines matching "int" to register <a>
+:g/int/p\e:ya A
 
 It is possible to nest global commands inside of global commands.
 The first global command will not be executed on lines that
@@ -820,7 +829,7 @@ grp\e:k s\e:.;'a;'sp
 
 .It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIcmd\fP}
 Inverted global command
-.It Cm [\fIrange\fP]=[<0-3 *>][*]
+.It Cm [\fIrange\fP]=[<\fI0-3\fP \fI*\fP>][\fI*\fP]
 Print range numbers
 .Bd -literal
 Argument 0-3 selects a specific number.
@@ -835,9 +844,10 @@ Example: calculate 75 - 100
 :1,75-100=1p
 .Ed
 
-.It Cm [\fIvrange\fP]k[<\fImark\fP>]
+.It Cm [\fIvrange\fP]k{<\fImark\fP>}
 Set a line mark
 .Bd -literal
+Valid marks: <a-z> <`> <'> <[> <]> <*>
 The character offset is set to the current position.
 .Ed
 
@@ -883,33 +893,34 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [# $],[skip1=0 $],[skip2=0 $]?{\fIcmd\fP}
+.It Cm [\fI#0\fP <\fI$\fP>][,{\fI#1\fP <\fI$\fP>}][,{\fI#2\fP <\fI$\fP>}]?{\fIcmd\fP}
 While loop conditional
 .Bd -literal
-Repeat {cmd} [#] times or infinite with <$>.
-While loop is broken once {cmd} returns an error or count exceeded.
-If while fails with error, [skip1] and [skip2] specify the location/range
-of the separated ex commands to skip that follow next in chain.
+Repeat cmd #0 times or infinite with <$>.
+While loop is broken once cmd returns an error or count exceeded.
+If while fails with error, #1 and #2 specify a range of the separated
+ex commands to skip that follow next in chain.
+No prefix creates a conditional with all # parameters set to 1.
 
 Example: attempt to join every line in file using arbitrary count
 :10000? & J
 Example: undo everything
 :$? u
-Example: calculate directory only if :cd succeeded
-:1,1? cd /blah:fd
 Example: repeat chain of ex commands 10 times
 :10? 1p\e:5p\e:10p
+Example: calculate directory only if :cd succeeded
+:? cd /blah:fd
 Example: print a line only if it contains "int" at offset 5
-:1,1? ;5;>^int>:p
+:? ;5;>^int>:p
 Example: allow :led while branching only :p command
 :led:1,2? ;5;>^int>:led:p
 Example: branch multiple commands
 :led:1,2,3? ;5;>^int>:led:&i2 not branched:p:p
 Example: edit vi.c only if it exists
-:1,1? \e![ -f ./vi.c ]:e ./vi.c:mpt
+:? \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
 
-.It Cm [range]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
+.It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
 Paste or pipe a register
 .Bd -literal
 Example: paste <a> at line 1 character offset 5
@@ -975,7 +986,7 @@ Undo
 .It Cm rd
 Redo
 
-.It Cm [\fIvrange\fP]s{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIstr\fP}[<\fI*\fP>][\fIopts\fP]
+.It Cm [\fIvrange\fP]s{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIstr\fP}[<\fI*\fP>][<\fIg\fP>]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -1001,9 +1012,8 @@ this is an example text for subs and has prepreafterafter or prevoidafter
 .It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fI*\fP]
 Yank a range
 .Bd -literal
-To append to the register, pass in its uppercase version.
-To append to any of the non-alphabetical registers add any extra
-character to the command.
+Register value range is 1-255.
+Any extra argument appends to the register.
 
 Example: append to register <1>
 :ya 1x
@@ -1027,7 +1037,7 @@ Example: use sed to replace "int" with "uint"
 :%!sed -e 's/int/uint/g'
 Example: pipe in result of ls command without replace
 :;$+1!ls
-Example: capitalize the word at current position using tr
+Example: capitalize word at current position using tr
 :;.;>\e\e>>!tr '[\e:lower\e:]' '[\e:upper\e:]'
 .Ed
 
@@ -1149,16 +1159,16 @@ No argument inverts the current value, unless stated otherwise.
 
 .Bl -tag -width Ds -compact
 .
-.It Cm ai[val=1]
+.It Cm ai[\fIval=1\fP]
 Indent new lines
 .Bd -literal
 This is a max indent length multiplier: val * 128
 .Ed
 .
-.It Cm ic[val=1]
+.It Cm ic[\fIval=1\fP]
 Ignore case in regular expressions
 
-.It Cm ish[val=0]
+.It Cm ish[\fIval=0\fP]
 Interactive shell
 .Bd -literal
 Run every <!> command through an interactive shell.
@@ -1176,7 +1186,7 @@ Precondition 3:
 	for <!> commands to return expected results.
 .Ed
 
-.It Cm grp[val=0]
+.It Cm grp[\fIval=0\fP]
 Regex search group
 .Bd -literal
 Defines a target search group for any regex search operation.
@@ -1190,26 +1200,26 @@ Example: ignore spaces at the start of the line
 .Ed
 
 .
-.It Cm hl[val=1]
+.It Cm hl[\fIval=1\fP]
 Highlight text based on rules defined in
 .Pa conf.c
 .
-.It Cm hlr[val=0]
+.It Cm hlr[\fIval=0\fP]
 Highlight text in reverse direction
 .
-.It Cm hll[val=0]
+.It Cm hll[\fIval=0\fP]
 Highlight current line based on filetype hl
 .
-.It Cm hlp[val=0]
+.It Cm hlp[\fIval=0\fP]
 Highlight "[]" "()" "{}" pairs based on filetype hl
 .
-.It Cm hlw[val=0]
+.It Cm hlw[\fIval=0\fP]
 Highlight current word based on filetype hl
 .
-.It Cm led[val=1]
+.It Cm led[\fIval=1\fP]
 Enable all terminal output
 
-.It Cm vis[val=0]
+.It Cm vis[\fIval=0\fP]
 Control startup flags
 .Bd -literal
 Example: disable :e message in ex mode
@@ -1222,7 +1232,7 @@ Example: disable raw ex mode
 :vis 4
 .Ed
 
-.It Cm mpt[val=0]
+.It Cm mpt[\fIval=0\fP]
 Control vi prompts
 .Bd -literal
 When set to 0 after an ex command is called from vi, disables
@@ -1230,20 +1240,20 @@ the "[any key to continue]" prompt.
 If mpt is negative, the prompt will remain disabled.
 .Ed
 
-.It Cm order[val=1]
+.It Cm order[\fIval=1\fP]
 Reorder characters based on rules defined in
 .Pa conf.c
 .
-.It Cm shape[val=1]
+.It Cm shape[\fIval=1\fP]
 Perform Arabic script letter shaping
 .
-.It Cm pac[val=0]
+.It Cm pac[\fIval=0\fP]
 Print autocomplete suggestions on the fly
 .
-.It Cm tbs[val=8]
+.It Cm tbs[\fIval=8\fP]
 Number of spaces used to represent a tab
 .
-.It Cm td[val=1]
+.It Cm td[\fIval=1\fP]
 Current text direction context
 
 This option accepts four meaningful values:
@@ -1264,7 +1274,7 @@ defaulting to right-to-left
 Exclusively right-to-left
 .El
 
-.It Cm pr[val=0]
+.It Cm pr[\fIval=0\fP]
 Print register
 .Bd -literal
 Set a special register using a character or a number.
@@ -1274,16 +1284,16 @@ be stored in the register.
 If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
 
-Print register contents cannot be displayed via R or :reg command
+Print register contents cannot be displayed with R or :reg command
 when register is assigned (self-referential problem).
 
 Example: paste current buffer list exactly like from :b command
-:pr A:ya! a: b:pu a
+:pr A:ya! A: b:pu A
 Example: store a line printed with :p
-:pr A:ya! a:p
+:pr A:ya! A:p
 .Ed
 
-.It Cm sep[val=:]
+.It Cm sep[\fIval=:\fP]
 Ex separator
 .Bd -literal
 Set Ex command separator character.
@@ -1294,7 +1304,7 @@ Example: disable separator
 :sep 0
 .Ed
 
-.It Cm lim[val=-1]
+.It Cm lim[\fIval=-1\fP]
 Line length render limit
 .Bd -literal
 Set render cutoff length for non cursor lines in vi and all
@@ -1311,7 +1321,7 @@ Example: disable the limit
 :lim -1
 .Ed
 
-.It Cm seq[val=1]
+.It Cm seq[\fIval=1\fP]
 Control Undo/Redo
 .Bd -literal
 When seq is 0, multiple distinct operations undo/redo in a
@@ -1326,7 +1336,7 @@ Example: completely disable undo/redo
 :seq -1
 .Ed
 
-.It Cm [hscroll]left[val=0]
+.It Cm [\fIhscroll\fP]left[\fIval=0\fP]
 Control horizontal scroll
 .Bd -literal
 No argument sets the value to 0.
@@ -1350,10 +1360,10 @@ Examples:
 .It Cm export EXINIT="$(printf '%b' 'e ./vi.c:& i\ex7\ex3:bx 1:bx')"
 Index vi.c for autocomplete
 
-.It Cm export EXINIT='b-1:%r ./vi.c:b-1'
+.It Cm export EXINIT='b-1:r ./vi.c:b-1'
 Load vi.c into a history buffer
 
-.It Cm export EXINIT="$(printf '%b' 'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2"ayy')"
+.It Cm export EXINIT="$(printf '%b' 'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2"aY')"
 Setup @ macro in register <a>
 
 @a macro creates <{> and closing <}> below the cursor leaving
@@ -1383,10 +1393,10 @@ Disregard manpage notation in this section.
 
 .It Cm \&.
 Match any single char
-.It Cm {\fIN\fP,\fIM\fP}
-Match N to M times
 .It Cm [\fIN\fP-\fIM\fP]
 Match a set of alternate ranges N to M
+.It Cm {\fIN\fP,\fIM\fP}
+Match N to M times
 .It Cm ()
 Grouping
 .It Cm (?:)
@@ -1477,19 +1487,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 520 vi.h | definitions/aux
+ 521 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  307 conf.c | hl/ft/td config
  345 term.c | low level IO
- 412 ren.c | positioning/syntax
+ 413 ren.c | positioning/syntax
  578 lbuf.c | file/line buffer
- 637 uc.c | UTF-8 support
+ 613 uc.c | UTF-8 support
  683 led.c | insert mode/output
  731 regex.c | pikevm
- 1409 ex.c | ex options/commands
- 1828 vi.c | normal mode/general
- 6930 total | wc -l *.c\(basort
+ 1435 ex.c | ex options/commands
+ 1864 vi.c | normal mode/general
+ 6969 total | wc -l *.c\(basort
 _
 .TE
 .

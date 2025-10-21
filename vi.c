@@ -218,7 +218,6 @@ static void vi_drawrow(int row)
 static void vi_drawagain(int i)
 {
 	syn_scdir(0);
-	syn_blockhl = -1;
 	for (; i < xtop + xrows; i++)
 		vi_drawrow(i);
 }
@@ -319,7 +318,7 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
 		return 0;
 	ren_state *r = ren_position(ln);
 	if (col >= r->cmax)
-		return r->col[r->cmax - !!r->cmax];
+		return r->col[r->cmax - 1];
 	return r->col[col];
 }
 
@@ -408,26 +407,26 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	if (!ln || !n)
 		return NULL;
 	off = ren_noeol(ln, off);
-	char **beg = rstate->chrs;
-	int o = off;
-	int end = rstate->n;
-	for (int i = 0; i < n && o < end; i++)
-		while (uc_kind(beg[o++]) == 1);
-	for (; off >= 0 && uc_kind(beg[off]) == 1; off--);
-	if (--o == off++)
+	char **chrs = rstate->chrs;
+	int cap = rstate->n;
+	int end = off;
+	for (int i = 0; i < n && end < cap; i++)
+		while (uc_kind(chrs[end++]) == 1);
+	for (; off > 0 && uc_kind(chrs[off - 1]) == 1; off--);
+	if (!end || --end == off)
 		return NULL;
 	sbuf_smake(sb, 64)
 	if (n > 1) {
-		for (; off != o; off++) {
-			if (*beg[off] == xsep)
+		for (; off < end; off++) {
+			if (*chrs[off] == xsep)
 				sbuf_chr(sb, '\\')
-			if (strchr("!%{}[]().?\\^$|*/+", *beg[off]))
+			if (strchr("!%{}[]().?\\^$|*/+", *chrs[off]))
 				sbuf_chr(sb, '\\')
-			sbuf_chr(sb, *beg[off])
+			sbuf_chr(sb, *chrs[off])
 		}
 	} else {
 		sbuf_str(sb, "\\<")
-		sbuf_mem(sb, beg[off], beg[o] - beg[off])
+		sbuf_mem(sb, chrs[off], chrs[end] - chrs[off])
 		sbuf_str(sb, "\\>")
 	}
 	sbufn_ret(sb, sb->s)
@@ -443,7 +442,7 @@ static void vi_regput(int c, const char *s, int lnmode)
 		ex_regput('1', s, 0);
 	} else if (xregs[c])
 		ex_regput('0', xregs[c]->s, 0);
-	ex_regput(c, s, isupper(c));
+	ex_regput(tolower(c), s, isupper(c));
 }
 
 rset *fsincl;
@@ -579,10 +578,9 @@ static int vi_motion(int vc, int *row, int *off)
 	static sbuf *savepath[10];
 	static int srow[10], soff[10], lkwdcnt;
 	static int cadir = 1;
-	int cnt = vi_arg ? vi_arg : 1;
-	int dir, mark;
 	char *cs;
-	int mv, i;
+	int cnt = vi_arg ? vi_arg : 1;
+	int mv, i, dir, mark;
 
 	if ((mv = vi_motionln(row, 0, cnt))) {
 		*off = -1;
@@ -671,6 +669,44 @@ static int vi_motion(int vc, int *row, int *off)
 			if (lbuf_wordbeg(xb, mark, vi_nlword+1, row, off))
 				break;
 		break;
+	case '(':
+	case ')':
+		dir = mv == '(' ? 1 : -1;
+		rset *set = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
+		int subs[2], org;
+		for (i = 0; i < cnt; i++) {
+			mark = *row;
+			org = *off;
+			for (;(cs = lbuf_get(xb, *row)) && *cs == '\n'; *row += dir);
+			if (*row != mark) {
+				*off = MAX(0, lbuf_indents(xb, *row));
+				if (dir > 0)
+					continue;
+				*off = lbuf_eol(xb, *row, 1);
+			}
+			while (!lbuf_next(xb, dir, row, off)) {
+				cs = rstate->chrs[*off];
+				if (*off == 0 && *cs == '\n') {
+					if (dir < 0 && (mark - *row) > 1)
+						*row += 1;
+					*off = MAX(0, lbuf_indents(xb, *row));
+					break;
+				} else if (rset_find(set, cs, subs, 0) >= 0) {
+					if (mark == *row && rstate->chrs[org] == cs + subs[1])
+						continue;
+					if (!cs[subs[1]]) {
+						if (dir < 0 && *row + 1 == mark)
+							continue;
+						*row += 1;
+						*off = MAX(0, lbuf_indents(xb, *row));
+					} else
+						*off += uc_off(cs, subs[1]);
+					break;
+				}
+			}
+		}
+		rset_free(set);
+		return mv;
 	case '{':
 	case '}':
 	case '[':
@@ -1580,7 +1616,7 @@ void vi(int init)
 						vi_col = vi_off2col(xb, xrow, xoff+1);
 						if (vi_col <= n)
 							break;
-						if (ex_exec("1,1?f>[^ \t]*[ \t]+(?\\\\:.$|(.)):;c\n\x1b"))
+						if (ex_exec("?f>[^ \t]*[ \t]+(?\\\\:.$|(.)):;c\n\x1b"))
 							break;
 					}
 					restore(xled)
@@ -1805,7 +1841,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-1.8 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-1.9 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

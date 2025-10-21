@@ -366,6 +366,30 @@ void ex_bufpostfix(struct buf *p, int clear)
 	lbuf_saved(p->lb, clear);
 }
 
+static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
+{
+	if (!(xvis & 2)) {
+		preserve(int, xleft, xleft = 0;)
+		int n = sb->s_n, key;
+		sbuf_str(sb, msg)
+		syn_setft(ft);
+		led_prompt(sb, NULL, &xkmap, &key, ps, hist);
+		syn_setft(xb_ft);
+		restore(xleft)
+		if (key != '\n')
+			return 1;
+		else if (!*msg || strcmp(sb->s + n, msg))
+			term_chr('\n');
+		return 0;
+	}
+	for (int c; !xquit && (c = term_read()) != '\n';)
+		sbuf_chr(sb, c)
+	if (xquit)
+		return 1;
+	sbuf_null(sb)
+	return 0;
+}
+
 #define readfile(errchk) \
 fd = open(xb_path, O_RDONLY); \
 if (fd >= 0) { \
@@ -422,25 +446,48 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 static void *ec_editapprox(char *loc, char *cmd, char *arg)
 {
 	sbuf_smake(sb, 128)
-	char ln[512];
-	char *path, *arg1 = arg + dstrlen(arg, ' ');
+	sbuf_smake(fuzz, 16)
+	char *path, *p, buf[32];
 	struct lbuf *lb = tempbufs[1].lb;
-	int c = 0, i, inst = *arg1 ? atoi(arg1) : -1;
-	*arg1 = '\0';
-	for (int pos = 0; pos < lbuf_len(lb); pos++) {
-		path = lb->ln[pos];
-		for (i = lbuf_s(path)->len; i > 0 && path[i] != '/'; i--);
-		if (!i)
-			continue;
-		if (strstr(&path[i+1], arg)) {
-			sbuf_mem(sb, &path, (int)sizeof(path))
-			snprintf(ln, LEN(ln), "%d %s", c++, path);
-			ex_print(ln, msg_ft)
+	int z, c, pos, i, inst = *loc ? atoi(loc) : -1;
+	sbuf_str(fuzz, arg)
+	for (z = 0;; z++) {
+		sbuf_null(fuzz)
+		for (c = 0, pos = 0; pos < lbuf_len(lb); pos++) {
+			path = lb->ln[pos];
+			for (i = lbuf_s(path)->len; i > 0 && path[i] != '/'; i--);
+			if (strstr(&path[i+!!i], arg)) {
+				sbuf_mem(sb, &path, (int)sizeof(path))
+				p = itoa(c++, buf);
+				RS(2, ex_cprint(buf, msg_ft, -1, 0, 0))
+				RS(2, ex_cprint(path, msg_ft, -1, xleft ? 0 : (p - buf) + 1, 1))
+			}
 		}
-	}
-	if (inst < 0 && c > 1) {
-		inst = term_read();
-		inst = inst == '\n' ? 0 : inst - '0';
+		if ((inst < 0 && c > 1) || (z && !c)) {
+			RS(2, ex_cprint(fuzz->s, msg_ft, -1, 0, 0))
+			inst = term_read();
+			if (TK_INT(inst))
+				goto out;
+			else if (c && inst == '\n') {
+				inst = 0;
+				sbuf_cut(fuzz, inst)
+				if (!ex_read(fuzz, "", msg_ft, inst, inst))
+					inst = atoi(fuzz->s);	
+				break;
+			} else if (c && c < 10 && isdigit(inst)) {
+				inst -= '0';
+				break;
+			} else if (inst == 127 || inst == TK_CTL('h'))
+				sbuf_cut(fuzz, MAX(0, fuzz->s_n-1))
+			else
+				sbuf_chr(fuzz, inst)
+			sbuf_cut(sb, 0)
+			arg = fuzz->s;
+			if (c)
+				ex_print("", msg_ft)
+		} else
+			break;
+		inst = -1;
 	}
 	if ((inst >= 0 && inst < c) || c == 1) {
 		path = *((char**)sb->s + (c == 1 ? 0 : inst));
@@ -448,7 +495,9 @@ static void *ec_editapprox(char *loc, char *cmd, char *arg)
 		ec_edit(loc, cmd, path);
 		path[lbuf_s(path)->len] = '\n';
 	}
+	out:
 	xmpt = xmpt >= 0 ? 0 : xmpt;
+	free(fuzz->s);
 	free(sb->s);
 	return NULL;
 }
@@ -606,30 +655,6 @@ void ex_cprint(char *line, char *ft, int r, int c, int ln)
 	xmpt += !(xvis & 4) && xmpt >= 0 && (ln || xmpt);
 }
 
-static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
-{
-	if (!(xvis & 2)) {
-		preserve(int, xleft, xleft = 0;)
-		int n = sb->s_n, key;
-		sbuf_str(sb, msg)
-		syn_setft(ft);
-		led_prompt(sb, NULL, &xkmap, &key, ps, hist);
-		syn_setft(xb_ft);
-		restore(xleft)
-		if (key != '\n')
-			return 1;
-		else if (!*msg || strcmp(sb->s + n, msg))
-			term_chr('\n');
-		return 0;
-	}
-	for (int c; !xquit && (c = term_read()) != '\n';)
-		sbuf_chr(sb, c)
-	if (xquit)
-		return 1;
-	sbuf_null(sb)
-	return 0;
-}
-
 static void *ec_insert(char *loc, char *cmd, char *arg)
 {
 	int beg, end, o1 = -1, o2 = -1, ps = 0;
@@ -670,6 +695,8 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	ps = lbuf_len(xb);
 	lbuf_edit(xb, sb->s, beg, end, o1, o2);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - ps - 1);
+	if (o1 >= 0)
+		xoff = o1;
 	ret:
 	free(sb->s);
 	return NULL;
@@ -728,11 +755,11 @@ static void *ec_delete(char *loc, char *cmd, char *arg)
 
 void ex_regput(unsigned char c, const char *s, int append)
 {
-	sbuf *sb = xregs[tolower(c)];
+	sbuf *sb = xregs[c];
 	if (s) {
 		if (!sb) {
 			sbuf_make(sb, 64)
-			xregs[tolower(c)] = sb;
+			xregs[c] = sb;
 		}
 		if (!append)
 			sbuf_cut(sb, 0)
@@ -741,7 +768,7 @@ void ex_regput(unsigned char c, const char *s, int append)
 		sb->s_n -= 4;
 	} else if (sb) {
 		sbuf_free(sb)
-		xregs[tolower(c)] = NULL;
+		xregs[c] = NULL;
 	}
 }
 
@@ -755,7 +782,7 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 		return xrerr;
 	sbuf sb;
 	lbuf_region(xb, &sb, beg, o1, end-1, o2);
-	ex_regput(*arg, sb.s, isupper((unsigned char)*arg) || (*arg && arg[1]));
+	ex_regput(*arg, sb.s, *arg && arg[1]);
 	free(sb.s);
 	return NULL;
 }
@@ -786,7 +813,7 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-static void *ec_lnum(char *loc, char *cmd, char *arg)
+static void *ec_num(char *loc, char *cmd, char *arg)
 {
 	char msg[128];
 	int arr[4] = {0, 0, -1, -1};
@@ -988,10 +1015,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
-	int beg = 1, addr = 0, skip[4];
+	int beg = 1, addr = 0, skip[3] = {0, 1, 1};
 	void *ret = NULL;
-	static int _skip[4];
-	memset(skip, 0, sizeof(skip));
+	static int _skip[3];
 	for (; *loc && addr < 3; addr++) {
 		if (*loc == ',')
 			loc++;
@@ -1006,7 +1032,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		skip[2] = skip[1];
 	for (; beg && !ret; beg--)
 		ret = ex_exec(arg);
-	return ret && addr > 1 ? memcpy(_skip, skip, sizeof(skip)) : NULL;
+	return !ret || addr == 1 ? NULL : memcpy(_skip, skip, sizeof(skip));
 }
 
 static void *ec_setdir(char *loc, char *cmd, char *arg)
@@ -1104,7 +1130,7 @@ static void *ec_regprint(char *loc, char *cmd, char *arg)
 	static char buf[5] = "  ";
 	preserve(int, xtd, xtd = 2;)
 	for (int i = 1; i < LEN(xregs); i++) {
-		if (xregs[i] && i != tolower(xpr)) {
+		if (xregs[i] && i != xpr) {
 			*buf = i;
 			RS(2, ex_cprint(buf, msg_ft, -1, 0, 0))
 			RS(2, ex_cprint(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, 1))
@@ -1255,7 +1281,7 @@ static struct excmd {
 	EO(led),
 	EO(vis),
 	EO(mpt),
-	{"=", ec_lnum},
+	{"=", ec_num},
 	{"", ec_print}, /* do not remove */
 };
 

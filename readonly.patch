@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 372a5688..796d37be 100644
+index 302af98e..22610e7c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -45,6 +45,7 @@ static char xserr[] = "syntax error";
@@ -18,7 +18,7 @@ index 372a5688..796d37be 100644
  	return i;
  }
  
-@@ -406,6 +408,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -430,6 +432,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -27,7 +27,7 @@ index 372a5688..796d37be 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -544,6 +548,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -593,6 +597,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else {
  		int fd;
  		if (!strchr(cmd, '!')) {
@@ -36,7 +36,7 @@ index 372a5688..796d37be 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1149,6 +1155,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1175,6 +1181,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index 372a5688..796d37be 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1221,6 +1233,7 @@ static struct excmd {
+@@ -1247,6 +1259,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,10 +58,10 @@ index 372a5688..796d37be 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index b83a1df9..0a28de31 100644
+index 79e50d08..4225ba1d 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1803,9 +1803,11 @@ int main(int argc, char *argv[])
+@@ -1839,9 +1839,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -69,16 +69,16 @@ index b83a1df9..0a28de31 100644
 +				readonly = 1;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-1.8 Usage: %s [-emsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-1.8 Usage: %s [-emRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-1.9 Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-1.9 Usage: %s [-emRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 1bef0600..6151aa3c 100644
+index c0cb10d8..27173406 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -385,6 +385,7 @@ struct buf {
+@@ -386,6 +386,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -86,7 +86,7 @@ index 1bef0600..6151aa3c 100644
  };
  /* ex options */
  extern int xleft;
-@@ -518,3 +519,4 @@ extern char vi_msg[512];
+@@ -519,3 +520,4 @@ extern char vi_msg[512];
  extern rset *fsincl;
  extern char *fs_exdir;
  void dir_calc(char *path);
