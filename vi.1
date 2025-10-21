@@ -508,7 +508,7 @@ into a purely command-line interface (CLI) when desired.
 .Sh EX PARSING
 .Bd -literal -compact
 Parsing follows the structure:
-[<sep>][\fIrange\fP][\fIpad\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
+[<\fIsep\fP>][\fIrange\fP][\fIpad\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
 Ex commands are initiated and separated by <:> prefix. Fields
 can be padded by <Space> or <Tab>. There can only be one pad
 in between [cmd] and [args]. To avoid ambiguity in scripts, it
@@ -570,9 +570,9 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [\fIpad\fP][%][, ;][\fIpad\fP][. $ ' > <][- + * / %][0-9]
+.It Cm [\fIpad\fP][\fI%\fP][\fI, ;\fP][\fIpad\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
 All ranges structure
-.It Cm {> <}[\fIkwd\fP][> <]
+.It Cm {\fI> <\fP}[\fIkwd\fP][\fI> <\fP]
 Search range structure
 'It Cm '{<\fImark\fP>}
 Mark range structure
@@ -653,7 +653,7 @@ Print text enclosed by "int" on the current line
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [\fIvrange\fP]f{> <}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f{\fI> <\fP}[\fIkwd\fP]
 Ranged search
 .Bd -literal
 Example: no range given, current line only
@@ -664,7 +664,7 @@ Example: range given
 :10,100f>int
 .Ed
 
-.It Cm [\fIvrange\fP]f+{> <}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+{\fI> <\fP}[\fIkwd\fP]
 Incrementing ranged search
 .Bd -literal
 Equivalent to the :f command, except subsequent commands within
@@ -829,7 +829,7 @@ grp\e:k s\e:.;'a;'sp
 
 .It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIcmd\fP}
 Inverted global command
-.It Cm [\fIrange\fP]=[<0-3 *>][*]
+.It Cm [\fIrange\fP]=[<\fI0-3\fP \fI*\fP>][\fI*\fP]
 Print range numbers
 .Bd -literal
 Argument 0-3 selects a specific number.
@@ -893,7 +893,7 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [\fI#0\fP <\fI$\fP>][\fI,\fP{\fI#1\fP <\fI$\fP>}][\fI,\fP{\fI#2\fP <\fI$\fP>}]?{\fIcmd\fP}
+.It Cm [\fI#0\fP <\fI$\fP>][,{\fI#1\fP <\fI$\fP>}][,{\fI#2\fP <\fI$\fP>}]?{\fIcmd\fP}
 While loop conditional
 .Bd -literal
 Repeat cmd #0 times or infinite with <$>.
@@ -1159,16 +1159,16 @@ No argument inverts the current value, unless stated otherwise.
 
 .Bl -tag -width Ds -compact
 .
-.It Cm ai[val=1]
+.It Cm ai[\fIval\fP=1]
 Indent new lines
 .Bd -literal
 This is a max indent length multiplier: val * 128
 .Ed
 .
-.It Cm ic[val=1]
+.It Cm ic[\fIval\fP=1]
 Ignore case in regular expressions
 
-.It Cm ish[val=0]
+.It Cm ish[\fIval\fP=0]
 Interactive shell
 .Bd -literal
 Run every <!> command through an interactive shell.
@@ -1186,7 +1186,7 @@ Precondition 3:
 	for <!> commands to return expected results.
 .Ed
 
-.It Cm grp[val=0]
+.It Cm grp[\fIval\fP=0]
 Regex search group
 .Bd -literal
 Defines a target search group for any regex search operation.
@@ -1200,26 +1200,26 @@ Example: ignore spaces at the start of the line
 .Ed
 
 .
-.It Cm hl[val=1]
+.It Cm hl[\fIval\fP=1]
 Highlight text based on rules defined in
 .Pa conf.c
 .
-.It Cm hlr[val=0]
+.It Cm hlr[\fIval\fP=0]
 Highlight text in reverse direction
 .
-.It Cm hll[val=0]
+.It Cm hll[\fIval\fP=0]
 Highlight current line based on filetype hl
 .
-.It Cm hlp[val=0]
+.It Cm hlp[\fIval\fP=0]
 Highlight "[]" "()" "{}" pairs based on filetype hl
 .
-.It Cm hlw[val=0]
+.It Cm hlw[\fIval\fP=0]
 Highlight current word based on filetype hl
 .
-.It Cm led[val=1]
+.It Cm led[\fIval\fP=1]
 Enable all terminal output
 
-.It Cm vis[val=0]
+.It Cm vis[\fIval\fP=0]
 Control startup flags
 .Bd -literal
 Example: disable :e message in ex mode
@@ -1232,7 +1232,7 @@ Example: disable raw ex mode
 :vis 4
 .Ed
 
-.It Cm mpt[val=0]
+.It Cm mpt[\fIval\fP=0]
 Control vi prompts
 .Bd -literal
 When set to 0 after an ex command is called from vi, disables
@@ -1240,20 +1240,20 @@ the "[any key to continue]" prompt.
 If mpt is negative, the prompt will remain disabled.
 .Ed
 
-.It Cm order[val=1]
+.It Cm order[\fIval\fP=1]
 Reorder characters based on rules defined in
 .Pa conf.c
 .
-.It Cm shape[val=1]
+.It Cm shape[\fIval\fP=1]
 Perform Arabic script letter shaping
 .
-.It Cm pac[val=0]
+.It Cm pac[\fIval\fP=0]
 Print autocomplete suggestions on the fly
 .
-.It Cm tbs[val=8]
+.It Cm tbs[\fIval\fP=8]
 Number of spaces used to represent a tab
 .
-.It Cm td[val=1]
+.It Cm td[\fIval\fP=1]
 Current text direction context
 
 This option accepts four meaningful values:
@@ -1274,7 +1274,7 @@ defaulting to right-to-left
 Exclusively right-to-left
 .El
 
-.It Cm pr[val=0]
+.It Cm pr[\fIval\fP=0]
 Print register
 .Bd -literal
 Set a special register using a character or a number.
@@ -1293,7 +1293,7 @@ Example: store a line printed with :p
 :pr A:ya! A:p
 .Ed
 
-.It Cm sep[val=:]
+.It Cm sep[\fIval\fP=:]
 Ex separator
 .Bd -literal
 Set Ex command separator character.
@@ -1304,7 +1304,7 @@ Example: disable separator
 :sep 0
 .Ed
 
-.It Cm lim[val=-1]
+.It Cm lim[\fIval\fP=-1]
 Line length render limit
 .Bd -literal
 Set render cutoff length for non cursor lines in vi and all
@@ -1321,7 +1321,7 @@ Example: disable the limit
 :lim -1
 .Ed
 
-.It Cm seq[val=1]
+.It Cm seq[\fIval\fP=1]
 Control Undo/Redo
 .Bd -literal
 When seq is 0, multiple distinct operations undo/redo in a
@@ -1336,7 +1336,7 @@ Example: completely disable undo/redo
 :seq -1
 .Ed
 
-.It Cm [hscroll]left[val=0]
+.It Cm [hscroll]left[\fIval\fP=0]
 Control horizontal scroll
 .Bd -literal
 No argument sets the value to 0.
