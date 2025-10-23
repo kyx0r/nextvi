@@ -307,7 +307,7 @@ void syn_highlight(int *att, char *s, int n)
 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
 	re:;
 	rset *rs = ftmap[fti].rs;
-	int subs[rs->grpcnt * 2], *catt, *aign, sl, c;
+	int subs[rs->grpcnt * 2], *catt, *iatt, sl, c;
 	int cend, sidx = 0, flg = 0, hl, j, i;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
 		cend = 1;
@@ -321,20 +321,19 @@ void syn_highlight(int *att, char *s, int n)
 			int beg = uc_off(s, sidx + subs[i * 2]);
 			int end = beg + uc_off(s + sidx + subs[i * 2],
 					subs[i * 2 + 1] - subs[i * 2]);
-			if (!SYN_AIGNSET(catt[i]))
-				goto att;
-			for (aign = &catt[sl], c = *aign; c; c--) {
-				if (SYN_AIGNSET(catt[i]) == SYN_AIGN) {
-					for (j = beg; j < end; j++)
-						if ((att[j] & 0xffff) == aign[c])
-							goto end;
-				} else if ((SYN_SAIGNSET(catt[i]) &&
-						(att[beg] & 0xffff) == aign[c]) ||
-						(SYN_EAIGNSET(catt[i]) &&
-						(att[MAX(0, end-1)] & 0xffff) == aign[c]))
-					goto end;
+			if (SYN_ATTSET(catt[i])) {
+				iatt = &catt[sl];
+				c = *iatt;
+				if (SYN_ATTSET(catt[i]) == SYN_ATT) {
+					for (j = beg; c && j < end; j++)
+						for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
+				} else if (SYN_SATTSET(catt[i]))
+					for (; c && (att[beg] & 0xffff) != iatt[c]; c--);
+				else if (SYN_EATTSET(catt[i]))
+					for (; c && (att[MAX(0, end-1)] & 0xffff) != iatt[c]; c--);
+				if (!c)
+					break;
 			}
-			att:
 			for (j = beg; j < end; j++)
 				att[j] = syn_merge(att[j], catt[i]);
 			if (SYN_BSESET(catt[i])) {
@@ -348,7 +347,6 @@ void syn_highlight(int *att, char *s, int n)
 				}
 			}
 		}
-		end:;
 		sidx += cend;
 		flg = REG_NOTBOL;
 	}
