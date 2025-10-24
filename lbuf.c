@@ -241,7 +241,7 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
 		while (nw < nl) {
 			long nc = write(fd, ln + nw, nl - nw);
 			if (nc < 0)
-				return 1;
+				return nc;
 			nw += nc;
 		}
 	}

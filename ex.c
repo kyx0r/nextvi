@@ -573,10 +573,9 @@ static void *ex_pipeout(char *cmd, sbuf *buf)
 
 static void *ec_write(char *loc, char *cmd, char *arg)
 {
-	char msg[512];
-	char *path;
+	char msg[512], *path;
 	sbuf ibuf;
-	int beg, end, o1 = 0, o2 = -1;
+	int fd, beg, end, o1 = -1, o2 = -1;
 	path = arg[0] ? arg : xb_path;
 	if (cmd[0] == 'x' && !xb->modified)
 		return ec_quit("", cmd, "");
@@ -587,11 +586,10 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 		end = lbuf_len(xb);
 	}
 	if (arg[0] == '!') {
-		lbuf_region(xb, &ibuf, beg, o1, end-1, o2);
+		lbuf_region(xb, &ibuf, beg, MAX(0, o1), end-1, o2);
 		ex_pipeout(arg + 1, &ibuf);
 		free(ibuf.s);
 	} else {
-		int fd;
 		if (!strchr(cmd, '!')) {
 			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
 				return "write failed: file changed";
@@ -601,11 +599,15 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode);
 		if (fd < 0)
 			return "write failed: cannot create file";
-		if (lbuf_wr(xb, fd, beg, end)) {
-			close(fd);
-			return "write failed";
-		}
+		if (o1 >= 0) {
+			lbuf_region(xb, &ibuf, beg, o1, end-1, o2);
+			o1 = write(fd, ibuf.s, ibuf.s_n);
+			free(ibuf.s);
+		} else
+			o1 = lbuf_wr(xb, fd, beg, end);
 		close(fd);
+		if (o1 < 0)
+			return "write failed";
 		snprintf(msg, sizeof(msg), "\"%s\" %dL [w]",
 				path, end - beg);
 		ex_print(msg, bar_ft)
