@@ -307,7 +307,7 @@ void syn_highlight(int *att, char *s, int n)
 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
 	re:;
 	rset *rs = ftmap[fti].rs;
-	int subs[rs->grpcnt * 2], *catt, *iatt, sl, c;
+	int subs[rs->grpcnt * 2 + 1], *catt, *iatt, sl, c;
 	int cend, sidx = 0, flg = 0, hl, j, i;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
 		cend = 1;
