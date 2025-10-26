@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 302af98e..ef7519ff 100644
+index 4b68eb4c..ea3f7cab 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1433,3 +1433,16 @@ void ex_init(char **files, int n)
+@@ -1435,3 +1435,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -20,10 +20,10 @@ index 302af98e..ef7519ff 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index 700158e4..42017e9c 100644
+index 8f943897..04814a1d 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -606,6 +606,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -607,6 +607,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
@@ -32,7 +32,7 @@ index 700158e4..42017e9c 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
 diff --git a/ren.c b/ren.c
-index 6e79674f..5870448a 100644
+index 48be9bde..26c8522a 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -91,6 +91,19 @@ static int ren_cwid(char *s, int pos)
@@ -55,7 +55,7 @@ index 6e79674f..5870448a 100644
  /* specify the screen position of the characters in s */
  ren_state *ren_position(char *s)
  {
-@@ -411,3 +424,10 @@ void syn_init(void)
+@@ -409,3 +422,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -67,7 +67,7 @@ index 6e79674f..5870448a 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 79e50d08..aea18c8b 100644
+index ab3725b0..fa074b89 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -445,6 +445,13 @@ static void vi_regput(int c, const char *s, int lnmode)
@@ -84,7 +84,7 @@ index 79e50d08..aea18c8b 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1853,12 +1860,19 @@ int main(int argc, char *argv[])
+@@ -1854,12 +1861,19 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -105,7 +105,7 @@ index 79e50d08..aea18c8b 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index c0cb10d8..7a6279e7 100644
+index 519997a5..f1ef5cf7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -226,6 +226,7 @@ char *ren_translate(char *s, char *ln);

@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index c30bcd12..ae173653 100644
+index a6f0547d..c05daa8c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -21,7 +21,7 @@ index c30bcd12..ae173653 100644
  	{ex_ft, "(?#1):[ \t]*((((?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
  [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*)[ \t]*(?:([,;])[ \t]*\
 diff --git a/ex.c b/ex.c
-index 302af98e..63bb7011 100644
+index 4b68eb4c..80091112 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -34,7 +34,7 @@ index 302af98e..63bb7011 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 79e50d08..e2df63f0 100644
+index ab3725b0..6fa45c3e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -505,12 +505,12 @@ void dir_calc(char *path)
@@ -162,7 +162,7 @@ index 79e50d08..e2df63f0 100644
  				default:
  					term_dec()
  				}
-@@ -1825,6 +1875,7 @@ int main(int argc, char *argv[])
+@@ -1826,6 +1876,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
@@ -171,7 +171,7 @@ index 79e50d08..e2df63f0 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c0cb10d8..4961d7cb 100644
+index 519997a5..7226cb54 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -423,7 +423,7 @@ extern sbuf *xacreg;
