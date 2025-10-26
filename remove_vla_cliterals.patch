@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index c30bcd12..28a8626c 100644
+index a6f0547d..ea3021ec 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -12,10 +12,10 @@ index c30bcd12..28a8626c 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 302af98e..facb3c29 100644
+index 4b68eb4c..50fdb0ef 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -873,7 +873,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -875,7 +875,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 302af98e..facb3c29 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -925,6 +925,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -927,6 +927,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -33,7 +33,7 @@ index 302af98e..facb3c29 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 884b7807..dad10220 100644
+index 2dab3b6e..105463b4 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -407,7 +407,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
@@ -121,7 +121,7 @@ index 7a124730..dcfddc46 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 700158e4..9d64262c 100644
+index 8f943897..589fc6e8 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -380,7 +380,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
@@ -141,17 +141,17 @@ index 700158e4..9d64262c 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -595,18 +603,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -596,18 +604,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	if (!*s)
  		return 0;
- 	const char *sp = s, *_sp = s, *str;
+ 	const char *sp = s, *_sp = s, *s0, *s1;
 -	int *pcs[prog->splits], *npc, *pc, *insts = prog->insts;
 -	rsub *subs[prog->splits];
 +	int *npc, *pc, *insts = prog->insts;
 +	int **pcs = emalloc((prog->splits) * sizeof(int*));
 +	rsub **subs = emalloc(prog->splits * sizeof(rsub*));
 +	unsigned int *sdense = emalloc(prog->sparsesz * sizeof(unsigned int)), sparsesz = 0;
- 	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
+ 	rsub *nsub, *sub, *matched = NULL, *freesub = NULL;
 -	rthread _clist[prog->len], _nlist[prog->len];
 +	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
@@ -167,7 +167,7 @@ index 700158e4..9d64262c 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
-@@ -685,7 +694,7 @@ rset *rset_make(int n, char **re, int flg)
+@@ -686,7 +695,7 @@ rset *rset_make(int n, char **re, int flg)
  /* return the index of the matching regular expression or -1 if none matches */
  int rset_find(rset *rs, char *s, int *grps, int flg)
  {
@@ -176,7 +176,7 @@ index 700158e4..9d64262c 100644
  	regmatch_t *sub = subs+1;
  	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
  		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
-@@ -702,10 +711,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
+@@ -703,10 +712,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
  						grps[gi * 2 + 1] = -1;
  					}
  				}
@@ -190,7 +190,7 @@ index 700158e4..9d64262c 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 6e79674f..4a097728 100644
+index 48be9bde..e4f46063 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -253,13 +253,14 @@ int syn_blockhl;
@@ -213,12 +213,12 @@ index 6e79674f..4a097728 100644
  	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
  	re:;
  	rset *rs = ftmap[fti].rs;
--	int subs[rs->grpcnt * 2], *catt, *aign, sl, c;
-+	int *subs = emalloc(rs->grpcnt * 2 * sizeof(int)), *catt, *aign, sl, c;
+-	int subs[rs->grpcnt * 2 + 1], *catt, *iatt, sl, c;
++	int *subs = emalloc(rs->grpcnt * 2 * sizeof(int)), *catt, *iatt, sl, c;
  	int cend, sidx = 0, flg = 0, hl, j, i;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
  		cend = 1;
-@@ -353,15 +354,20 @@ void syn_highlight(int *att, char *s, int n)
+@@ -351,15 +352,20 @@ void syn_highlight(int *att, char *s, int n)
  		flg = REG_NOTBOL;
  	}
  	fti++;
@@ -241,7 +241,7 @@ index 6e79674f..4a097728 100644
  }
  
  char *syn_filetype(char *path)
-@@ -405,9 +411,10 @@ int syn_addhl(char *reg, int id)
+@@ -403,9 +409,10 @@ int syn_addhl(char *reg, int id)
  
  void syn_init(void)
  {
@@ -254,7 +254,7 @@ index 6e79674f..4a097728 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 79e50d08..bacdd8a1 100644
+index ab3725b0..df896d87 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -141,7 +141,8 @@ static void vi_drawrow(int row)
@@ -320,7 +320,7 @@ index 79e50d08..bacdd8a1 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index c0cb10d8..dc4643f3 100644
+index 519997a5..5a6cf40a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -474,7 +474,7 @@ extern const int ftslen;
