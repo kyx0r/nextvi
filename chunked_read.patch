@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 302af98e..820233b4 100644
+index 4b68eb4c..5d7aa3f6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -390,10 +390,10 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
@@ -34,7 +34,7 @@ index 302af98e..820233b4 100644
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
 diff --git a/lbuf.c b/lbuf.c
-index 884b7807..aeedd871 100644
+index 2dab3b6e..4548927c 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -203,32 +203,85 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -146,7 +146,7 @@ index 884b7807..aeedd871 100644
  }
  
 diff --git a/vi.h b/vi.h
-index c0cb10d8..26851ef9 100644
+index 519997a5..475a659b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -164,7 +164,8 @@ struct lbuf {

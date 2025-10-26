@@ -677,7 +677,7 @@ static int vi_motion(int vc, int *row, int *off)
 		for (i = 0; i < cnt; i++) {
 			mark = *row;
 			org = *off;
-			for (;(cs = lbuf_get(xb, *row)) && *cs == '\n'; *row += dir);
+			for (; (cs = lbuf_get(xb, *row)) && *cs == '\n'; *row += dir);
 			if (*row != mark) {
 				*off = MAX(0, lbuf_indents(xb, *row));
 				if (dir > 0)
@@ -1779,6 +1779,7 @@ void vi(int init)
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
 				if (!(vi_mod & 1) && !*vi_word)
 					vi_drawrow(orow);
+			syn_blockhl = -1;
 			syn_reloadft(syn_addhl("^.+", 2));
 			vi_drawrow(xrow);
 			syn_reloadft(syn_addhl(NULL, 2));
@@ -1841,7 +1842,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-1.9 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-2.0 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

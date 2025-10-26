@@ -63,7 +63,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 {
 	char *re = re_loc, *s, *p;
 	int *code = sizecode ? NULL : prog->insts;
-	int start = PC, term = PC, lb_start = -1;
+	int start = PC, term = PC, lb_start = 0;
 	int alt_label = 0, c, l, cnt;
 	int alt_stack[4096], altc = 0;
 	int cap_stack[4096 * 5], capc = 0;
@@ -134,10 +134,10 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					if (!(re = strchr(re, ')')))
 						return -1;
 					break;
-				} else if (*re != '=' && *re != '!' && *re != '<' && *re != '>')
+				} else if (*re != '=' && *re != '!' && *re != '>' && *re != '<')
 					return -1;
 				EMIT(PC++, LOOKAROUND);
-				EMIT(PC++, *re);
+				EMIT(PC++, *re == '=' ? 1 : *re == '!' ? -3 : *re == '>' ? 2 : -2);
 				EMIT(PC++, prog->laidx);
 				bal = 1;
 				s = ++re;
@@ -161,7 +161,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					s += uc_len(s);
 				}
 				EMIT(PC++, la_static);
-				EMIT(PC++, re[-1] == '<' || re[-1] == '>' ? lb_start : 0);
+				EMIT(PC++, lb_start);
 				if (code) {
 					*s = '\0';
 					if (la_static) {
@@ -384,11 +384,11 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 
 #define newsub(init, copy) \
 if (freesub) { \
-	s1 = freesub; freesub = s1->freesub; copy \
+	sub = freesub; freesub = sub->freesub; copy \
 } else { \
 	if (suboff == prog->sub) \
 		suboff = 0; \
-	s1 = (rsub*)&nsubs[suboff]; \
+	sub = (rsub*)&nsubs[suboff]; \
 	suboff += rsubsize; init \
 } \
 
@@ -429,9 +429,9 @@ goto next##nn; \
 #define saveclist() \
 if (npc[1] > (nsubp >> 1) && nsub->ref > 1) { \
 	nsub->ref--; \
-	newsub(memcpy(s1->sub, nsub->sub, osubp);, \
-	memcpy(s1->sub, nsub->sub, osubp >> 1);) \
-	nsub = s1; \
+	newsub(memcpy(sub->sub, nsub->sub, osubp);, \
+	memcpy(sub->sub, nsub->sub, osubp >> 1);) \
+	nsub = sub; \
 	nsub->ref = 1; \
 } \
 
@@ -439,8 +439,8 @@ if (npc[1] > (nsubp >> 1) && nsub->ref > 1) { \
 if (nsub->ref > 1) { \
 	nsub->ref--; \
 	newsub(,) \
-	memcpy(s1->sub, nsub->sub, osubp); \
-	nsub = s1; \
+	memcpy(sub->sub, nsub->sub, osubp); \
+	nsub = sub; \
 	nsub->ref = 1; \
 } \
 
@@ -499,19 +499,29 @@ if (spc > JMP) { \
 	npc += 2 + npc[1]; \
 	goto rec##nn; \
 } else if (spc == LOOKAROUND) { \
-	str = npc[4] >= 0 ? _sp - npc[4] : s; \
-	if (str < s) \
+	if ((npc[1] & 3) < 2) \
+		s0 = _sp; \
+	else if (npc[4] < 0) \
+		s0 = s; \
+	else if (npc[4]) { \
+		s0 = _sp - npc[4]; \
+		if (s0 < s) \
+			goto out##nn; \
+	} else if (sp != s) \
+		s0 = sp; \
+	else \
 		goto out##nn; \
 	j = npc[2]; \
-	if (npc[3]) \
-		cnt = !strncmp(str, (char*)(prog->la[j]+1), npc[3]); \
-	else if (!lb[j] || str > lb[j]) { \
-		cnt = re_pikevm(prog->la[j], str, _subp, 1, 0); \
+	if (npc[3]) { \
+		s1 = (char*)(prog->la[j]+1); \
+		for (j = npc[3], cnt = 0; cnt < j && s0[cnt] == s1[cnt]; cnt++); \
+		cnt = cnt == j; \
+	} else if (!lb[j] || s0 > lb[j]) { \
+		cnt = re_pikevm(prog->la[j], s0, _subp, 1, 0); \
 		lb[j] = cnt ? _subp[0] : NULL; \
 	} else \
 		cnt = !!lb[j]; \
-	if ((cnt && (npc[1] == '!' || npc[1] == '<')) \
-			|| (!cnt && (npc[1] == '=' || npc[1] == '>'))) \
+	if (npc[1] * ((cnt << 1) - 1) < 0) \
 		deccheck(nn) \
 	out##nn: \
 	npc += 5; goto rec##nn; \
@@ -581,10 +591,10 @@ for (;; sp = _sp) { \
 		break; \
 	swaplist() \
 	jmp_start##n: \
-	newsub(memset(s1->sub, 0, osubp);,) \
-	s1->ref = 1; \
-	s1->sub[0] = _sp; \
-	npc = insts; nsub = s1; \
+	newsub(memset(sub->sub, 0, osubp);,) \
+	sub->ref = 1; \
+	sub->sub[0] = _sp; \
+	npc = insts; nsub = sub; \
 	addthread(n, 1##n, clist, clistidx) \
 	_continue##n:; \
 } \
@@ -594,10 +604,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 {
 	if (!*s)
 		return 0;
-	const char *sp = s, *_sp = s, *str;
+	const char *sp = s, *_sp = s, *s0, *s1;
 	int *pcs[prog->splits], *npc, *pc, *insts = prog->insts;
 	rsub *subs[prog->splits];
-	rsub *nsub, *s1, *matched = NULL, *freesub = NULL;
+	rsub *nsub, *sub, *matched = NULL, *freesub = NULL;
 	rthread _clist[prog->len], _nlist[prog->len];
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
 	const char *_subp[2], *lb[prog->laidx+1];
