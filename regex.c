@@ -63,7 +63,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 {
 	char *re = re_loc, *s, *p;
 	int *code = sizecode ? NULL : prog->insts;
-	int start = PC, term = PC, lb_start = -1;
+	int start = PC, term = PC, lb_start = 0;
 	int alt_label = 0, c, l, cnt;
 	int alt_stack[4096], altc = 0;
 	int cap_stack[4096 * 5], capc = 0;
@@ -161,7 +161,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					s += uc_len(s);
 				}
 				EMIT(PC++, la_static);
-				EMIT(PC++, re[-1] == '<' || re[-1] == '>' ? lb_start : 0);
+				EMIT(PC++, lb_start);
 				if (code) {
 					*s = '\0';
 					if (la_static) {
@@ -499,8 +499,17 @@ if (spc > JMP) { \
 	npc += 2 + npc[1]; \
 	goto rec##nn; \
 } else if (spc == LOOKAROUND) { \
-	s0 = npc[4] >= 0 ? _sp - npc[4] : s; \
-	if (s0 < s) \
+	if ((npc[1] & 3) < 2) \
+		s0 = _sp; \
+	else if (npc[4] < 0) \
+		s0 = s; \
+	else if (npc[4]) { \
+		s0 = _sp - npc[4]; \
+		if (s0 < s) \
+			goto out##nn; \
+	} else if (sp != s) \
+		s0 = sp; \
+	else \
 		goto out##nn; \
 	j = npc[2]; \
 	if (npc[3]) { \
