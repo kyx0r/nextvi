@@ -153,10 +153,10 @@ index 2dab3b6e..c34390f7 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 8f943897..e34fa13d 100644
+index 3d0a5893..84b069f6 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -730,3 +730,126 @@ char *re_read(char **src)
+@@ -739,3 +739,126 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_ret(sb, sb->s)
  }
