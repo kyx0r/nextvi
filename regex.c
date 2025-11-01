@@ -505,12 +505,12 @@ if (spc > JMP) { \
 		s0 = s; \
 	else if (npc[4]) { \
 		s0 = _sp - npc[4]; \
-		if (s0 < s) \
+		if (s0 < s) { \
+			cnt = 0; \
 			goto out##nn; \
-	} else if (sp != s) \
+		} \
+	} else \
 		s0 = sp; \
-	else \
-		goto out##nn; \
 	j = npc[2]; \
 	if (npc[3]) { \
 		s1 = (char*)(prog->la[j]+1); \
@@ -521,9 +521,9 @@ if (spc > JMP) { \
 		lb[j] = cnt ? _subp[0] : NULL; \
 	} else \
 		cnt = !!lb[j]; \
+	out##nn: \
 	if (npc[1] * ((cnt << 1) - 1) < 0) \
 		deccheck(nn) \
-	out##nn: \
 	npc += 5; goto rec##nn; \
 } else { \
 	if (flg & REG_NOTBOL || _sp != s) { \
