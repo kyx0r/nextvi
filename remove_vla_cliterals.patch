@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 18ceb7e5..e88de2f5 100644
+index 1b318a63..7f1b7a95 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -121,10 +121,10 @@ index 7a124730..dcfddc46 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 3d0a5893..98f2f1b5 100644
+index 9d6c0522..0e27da35 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -380,7 +380,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
+@@ -393,7 +393,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
  	return 0;
  }
  
@@ -141,7 +141,7 @@ index 3d0a5893..98f2f1b5 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -605,18 +613,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -618,18 +626,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
  	if (!*s)
  		return 0;
  	const char *sp = s, *_sp = s, *s0, *s1;
@@ -167,7 +167,7 @@ index 3d0a5893..98f2f1b5 100644
  	flg = prog->flg | flg;
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
-@@ -695,7 +704,7 @@ rset *rset_make(int n, char **re, int flg)
+@@ -708,7 +717,7 @@ rset *rset_make(int n, char **re, int flg)
  /* return the index of the matching regular expression or -1 if none matches */
  int rset_find(rset *rs, char *s, int *grps, int flg)
  {
@@ -176,7 +176,7 @@ index 3d0a5893..98f2f1b5 100644
  	regmatch_t *sub = subs+1;
  	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
  		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
-@@ -712,10 +721,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
+@@ -725,10 +734,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
  						grps[gi * 2 + 1] = -1;
  					}
  				}
@@ -254,7 +254,7 @@ index 48be9bde..e4f46063 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index ab3725b0..df896d87 100644
+index 76d20710..3ddce84d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -141,7 +141,8 @@ static void vi_drawrow(int row)
