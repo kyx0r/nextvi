@@ -253,6 +253,10 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					memcpy(&code[PC], &code[term], size*sizeof(int));
 				PC += size;
 			}
+			if (!mincnt) {
+				nojmp = 2;
+				mincnt++;
+			}
 			for (i = maxcnt-mincnt; i > 0; i--) {
 				EMIT(PC++, SPLIT);
 				EMIT(PC++, REL(PC, PC+((size+2)*i)));
@@ -260,10 +264,8 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					memcpy(&code[PC], &code[term], size*sizeof(int));
 				PC += size;
 			}
-			if (!mincnt && maxcnt) {
-				nojmp = 1;
+			if (nojmp == 2)
 				goto zcase;
-			}
 			break;
 		case '?':
 			if (PC == term)
