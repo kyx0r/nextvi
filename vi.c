@@ -1121,7 +1121,7 @@ static void vc_join(int spc, int cnt)
 		off += (i+1 == end) ? 0 : uc_slen(ln) - 1;
 		sbuf_mem(sb, ln, lnend - ln)
 	}
-	sbufn_chr(sb, '\n')
+	sbuf_null(sb)
 	lbuf_edit(xb, sb->s, beg, end, xoff, off);
 	xoff = off;
 	free(sb->s);
