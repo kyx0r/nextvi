@@ -65,7 +65,7 @@ struct highlight hls[] = {
 		A(BL | SYN_IT, BL | SYN_BS, BL | SYN_BE)},
 	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
 	{FT(c), NULL, A(RE1), 0, 1},
-	{FT(c), "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|\
+	{FT(c), "\\<(?:signed|unsigned|char|short|u?int(?:64_t|32_t|16_t|8_t)?|FILE|DIR|\
 long|f(?:loat|64|32)|double|void|enum|union|typedef|static|extern|register|struct|\
 s(?:64|32|16|8)|u(?:64|32|16|8)|b32|bool|const|size_t|inline|restrict|\
 (true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|malloc|free|realloc|NULL|std(?:in|\
