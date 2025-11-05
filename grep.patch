@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 1b318a63..5f6771e7 100644
+index 30a8e94c..548db1bc 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -34,7 +34,7 @@ index 4b68eb4c..80091112 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 76d20710..5a030b67 100644
+index ff7c9a54..fb637f75 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -505,12 +505,12 @@ void dir_calc(char *path)
