@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 30a8e94c..f399af61 100644
+index 4b0a55f9..94c44d58 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
