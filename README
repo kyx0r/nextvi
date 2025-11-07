@@ -112,7 +112,7 @@ It's important to understand that this has a caveat, if input comes too fast,
 for example a paste from terminal and the sequence has "kj" in it, insert
 mode will be cancelled mid way and paste will be wrong. Luckily this almost
 never happens because such letter combination is extremely rare.
-Delay time (in ms) can be set via :se qe=N or disabled by setting N to 0.
+Delay time (in ms) can be set via :qe N or disabled by setting N to 0.
 
 hl_mark.patch
 -------------
