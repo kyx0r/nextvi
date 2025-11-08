@@ -659,7 +659,7 @@ EX COMMANDS
              :pu a \!xclip -selection clipboard
 
      [range]r[path]
-     [range]r\![cmd]
+     [range]r[\!{cmd}]
              Read a file or a pipe
 
              Range is computed on a target.
@@ -674,7 +674,7 @@ EX COMMANDS
              :3,5r \!ls
 
      [range]w[path]
-     [range]w\![cmd]
+     [range]w[\!{cmd}]
              Write a file or a pipe
 
              No range evaluates to % range.
@@ -1180,4 +1180,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.1                   November 1, 2025                   Linux 6.17.1
+Linux 6.17.7                   November 8, 2025                   Linux 6.17.7
