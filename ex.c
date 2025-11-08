@@ -1062,6 +1062,8 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 	if (!getcwd(newpath, sizeof(newpath)))
 		return "getcwd error";
 	plen = strlen(oldpath);
+	if (plen == sizeof(oldpath)-1)
+		return "oldpath >= 4096";
 	if (plen && oldpath[plen-1] != '/')
 		oldpath[plen++] = '/';
 	for (i = 0; i < xbufcur; i++) {
