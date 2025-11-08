@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4b68eb4c..222e0aa9 100644
+index bd37d19d..d6c96983 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -32,6 +32,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -10,7 +10,7 @@ index 4b68eb4c..222e0aa9 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1194,6 +1195,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1197,6 +1198,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
@@ -18,7 +18,7 @@ index 4b68eb4c..222e0aa9 100644
  
  _EO(left,
  	if (*loc)
-@@ -1227,6 +1229,7 @@ static struct excmd {
+@@ -1230,6 +1232,7 @@ static struct excmd {
  	EO(ai),
  	{"ac", ec_setacreg},
  	{"a", ec_insert},
@@ -26,7 +26,7 @@ index 4b68eb4c..222e0aa9 100644
  	{"ea!", ec_editapprox},
  	{"ea", ec_editapprox},
  	{"e!", ec_edit},
-@@ -1421,6 +1424,51 @@ void ex(void)
+@@ -1424,6 +1427,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -78,7 +78,7 @@ index 4b68eb4c..222e0aa9 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1432,6 +1480,30 @@ void ex_init(char **files, int n)
+@@ -1435,6 +1483,30 @@ void ex_init(char **files, int n)
  	} while (--n > 0);
  	xmpt = 0;
  	xvis &= ~8;

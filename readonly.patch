@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 4b68eb4c..5de8aa56 100644
+index bd37d19d..523eb053 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -45,6 +45,7 @@ static char xserr[] = "syntax error";
@@ -36,7 +36,7 @@ index 4b68eb4c..5de8aa56 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1177,6 +1183,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1180,6 +1186,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index 4b68eb4c..5de8aa56 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1249,6 +1261,7 @@ static struct excmd {
+@@ -1252,6 +1264,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
