@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 4b68eb4c..ea3f7cab 100644
+index bd37d19d..b7d550e4 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1435,3 +1435,16 @@ void ex_init(char **files, int n)
+@@ -1438,3 +1438,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }
@@ -67,7 +67,7 @@ index 48be9bde..26c8522a 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 76d20710..e53ab2b5 100644
+index ff7c9a54..45f6c3dc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -445,6 +445,13 @@ static void vi_regput(int c, const char *s, int lnmode)

@@ -1,4 +1,4 @@
-.Dd Nov  1, 2025
+.Dd Nov 15, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -799,7 +799,7 @@ Global command
 Execute an ex command on a range of lines that matches an
 enclosed regex.
 
-No range evaluates to % range or . range when nested.
+No range evaluates to <%> range or <.> range when nested.
 
 Example: remove all empty lines
 :g/^$/d
@@ -811,7 +811,7 @@ Multiple ex commands can be chained in one global command.
 To chain commands, the ex separator <:> must be escaped once.
 
 Example: print and append lines matching "int" to register <a>
-:g/int/p\e:ya A
+:g/int/p\e:ya ax
 
 It is possible to nest global commands inside of global commands.
 The first global command will not be executed on lines that
@@ -932,11 +932,11 @@ Example: copy register <a> to X11 clipboard
 .Ed
 
 .It Cm [\fIrange\fP]r[\fIpath\fP]
-.It Cm [\fIrange\fP]r\e![\fIcmd\fP]
+.It Cm [\fIrange\fP]r[\e!{\fIcmd\fP}]
 Read a file or a pipe
 .Bd -literal
 Range is computed on a target.
-No range evaluates to % range.
+No range evaluates to <%> range.
 No argument evaluates to current buffer path.
 
 Example: read a file
@@ -948,10 +948,10 @@ Example: pipe in only lines 3,5
 .Ed
 
 .It Cm [\fIrange\fP]w[\fIpath\fP]
-.It Cm [\fIrange\fP]w\e![\fIcmd\fP]
+.It Cm [\fIrange\fP]w[\e!{\fIcmd\fP}]
 Write a file or a pipe
 .Bd -literal
-No range evaluates to % range.
+No range evaluates to <%> range.
 No argument evaluates to current buffer path.
 
 Example: write a file
@@ -1010,10 +1010,11 @@ this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
 .It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fI*\fP]
-Yank a range
+Yank into a register
 .Bd -literal
-Register value range is 1-255.
+Argument value range is 0x1-0xff and 0x0 without.
 Any extra argument appends to the register.
+Default register 0x0 cannot be appended to.
 
 Example: append to register <1>
 :ya 1x
@@ -1498,9 +1499,9 @@ _
  613 uc.c | UTF-8 support
  683 led.c | insert mode/output
  756 regex.c | pikevm
- 1437 ex.c | ex options/commands
+ 1440 ex.c | ex options/commands
  1865 vi.c | normal mode/general
- 6995 total | wc -l *.c\(basort
+ 6998 total | wc -l *.c\(basort
 _
 .TE
 .

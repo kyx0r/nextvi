@@ -1052,15 +1052,20 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 	char newpath[4096];
 	char *opath;
 	int i, c, plen;
+	oldpath[0] = '\0';
 	oldpath[sizeof(oldpath)-1] = '\0';
 	if (!getcwd(oldpath, sizeof(oldpath)))
-		goto err;
+		if ((opath = getenv("PWD")))
+			strncpy(oldpath, opath, sizeof(oldpath)-1);
 	if (*arg && chdir(arg))
-		goto err;
+		return "chdir error";
 	if (!getcwd(newpath, sizeof(newpath)))
-		goto err;
+		return "getcwd error";
+	setenv("PWD", newpath, 1);
 	plen = strlen(oldpath);
-	if (oldpath[plen-1] != '/')
+	if (plen == sizeof(oldpath)-1)
+		return "oldpath >= 4096";
+	if (plen && oldpath[plen-1] != '/')
 		oldpath[plen++] = '/';
 	for (i = 0; i < xbufcur; i++) {
 		if (!bufs[i].path[0])
@@ -1082,8 +1087,6 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 		bufs[i].plen = strlen(opath);
 	}
 	return NULL;
-	err:
-	return "chdir error";
 }
 
 static void *ec_setincl(char *loc, char *cmd, char *arg)

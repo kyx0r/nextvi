@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 1b318a63..7f1b7a95 100644
+index 4b0a55f9..94c44d58 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -12,7 +12,7 @@ index 1b318a63..7f1b7a95 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 4b68eb4c..50fdb0ef 100644
+index bd37d19d..3decd363 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -875,7 +875,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
@@ -254,7 +254,7 @@ index 48be9bde..e4f46063 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 76d20710..3ddce84d 100644
+index ff7c9a54..19b31d4e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -141,7 +141,8 @@ static void vi_drawrow(int row)
