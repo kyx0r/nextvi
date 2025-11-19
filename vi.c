@@ -1121,7 +1121,7 @@ static void vc_join(int spc, int cnt)
 		off += (i+1 == end) ? 0 : uc_slen(ln) - 1;
 		sbuf_mem(sb, ln, lnend - ln)
 	}
-	sbuf_null(sb)
+	sbufn_chr(sb, '\n')
 	lbuf_edit(xb, sb->s, beg, end, xoff, off);
 	xoff = off;
 	free(sb->s);
@@ -1842,7 +1842,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-2.2 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-2.3 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
