@@ -576,6 +576,7 @@ static void vc_status(int type)
 static int vi_motion(int vc, int *row, int *off)
 {
 	static sbuf *savepath[10];
+	static rset *bre;
 	static int srow[10], soff[10], lkwdcnt;
 	static int cadir = 1;
 	char *cs;
@@ -672,7 +673,8 @@ static int vi_motion(int vc, int *row, int *off)
 	case '(':
 	case ')':
 		dir = mv == '(' ? 1 : -1;
-		rset *set = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
+		if (!bre)
+			bre = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
 		int subs[2], org;
 		for (i = 0; i < cnt; i++) {
 			mark = *row;
@@ -691,7 +693,7 @@ static int vi_motion(int vc, int *row, int *off)
 						*row += 1;
 					*off = MAX(0, lbuf_indents(xb, *row));
 					break;
-				} else if (rset_find(set, cs, subs, 0) >= 0) {
+				} else if (rset_find(bre, cs, subs, 0) >= 0) {
 					if (mark == *row && rstate->chrs[org] == cs + subs[1])
 						continue;
 					if (!cs[subs[1]]) {
@@ -705,7 +707,6 @@ static int vi_motion(int vc, int *row, int *off)
 				}
 			}
 		}
-		rset_free(set);
 		return mv;
 	case '{':
 	case '}':
@@ -1842,7 +1843,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-2.3 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-2.4 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
