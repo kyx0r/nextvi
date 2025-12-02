@@ -107,7 +107,7 @@ index 2dab3b6e..62661844 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index 62da17b5..1972e0d8 100644
+index 47f935e1..433d8c34 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -169,6 +169,22 @@ static void vi_drawrow(int row)
@@ -134,7 +134,7 @@ index 62da17b5..1972e0d8 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index 519997a5..f8dd3d65 100644
+index 4852b25b..aa816d2d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -144,6 +144,8 @@ struct lopt {
