@@ -237,14 +237,14 @@ void dir_init(void);
 #define SYN_BGSET(a)	(a & 0x20ff00)
 #define SYN_FG(a)	(a & 0xff)
 #define SYN_BG(a)	((a >> 8) & 0xff)
-#define SYN_BS		0x400000
-#define SYN_BE		0x800000
-#define SYN_BSE		0xc00000
-#define SYN_BP		0x1000000
-#define SYN_IGN		0x2000000
-#define SYN_SATT	0x4000000
-#define SYN_EATT	0x8000000
-#define SYN_ATT		0xc000000
+#define SYN_BS		0x400000	/* grp starting block highlight */
+#define SYN_BE		0x800000	/* grp ending block highlight */
+#define SYN_BSE		0xc00000	/* grp self terminating block highlight */
+#define SYN_BP		0x1000000	/* set is a block attribute passthrough */
+#define SYN_IGN		0x2000000	/* grp ignoring highlight attributes */
+#define SYN_SATT	0x4000000	/* grp inclusion check at start offset */
+#define SYN_EATT	0x8000000	/* grp inclusion check at end offset */
+#define SYN_ATT		0xc000000	/* grp inclusion check from start to end */
 #define SYN_BSSET(a)	(a & SYN_BS)
 #define SYN_BESET(a)	(a & SYN_BE)
 #define SYN_BSESET(a)	(a & SYN_BSE)
@@ -253,6 +253,7 @@ void dir_init(void);
 #define SYN_SATTSET(a)	(a & SYN_SATT)
 #define SYN_EATTSET(a)	(a & SYN_EATT)
 #define SYN_ATTSET(a)	(a & SYN_ATT)
+extern int ftidx;
 extern int syn_blockhl;
 char *syn_setft(char *ft);
 void syn_scdir(int scdir);
@@ -359,7 +360,7 @@ typedef struct {
 extern sbuf *led_attsb;
 void led_modeswap(void);
 void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist);
-void led_input(sbuf *sb, char **post, int postn, int row, int lsh);
+int led_input(sbuf *sb, char *post, int postn, int row, int lsh);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
 { \
@@ -443,7 +444,7 @@ extern struct buf *ex_pbuf;
 	buf->td = xtd; \
 
 void temp_open(int i, char *name, char *ft);
-void temp_switch(int i);
+void temp_switch(int i, int swap);
 void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
 void *ex_exec(const char *ln);
