@@ -107,7 +107,7 @@ index 2dab3b6e..62661844 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index 59233907..b824b640 100644
+index c58e2c0b..2f591300 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -169,6 +169,22 @@ static void vi_drawrow(int row)
