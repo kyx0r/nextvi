@@ -572,7 +572,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
 			}
 			temp_pos(0, -1, 0, 0);
 			temp_write(0, sb->s + pre);
-			int bidx = ex_buf - bufs;
+			preserve(struct buf*, ex_buf,)
+			int bidx = istempbuf(ex_buf) ? -1 : ex_buf - bufs;
 			int pidx = ex_pbuf - bufs;
 			preserve(int, texec, if (texec == '@') texec = 0;)
 			preserve(int, xquit, xquit = 0;)
@@ -582,7 +583,10 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
 			temp_switch(0);
 			restore(texec)
 			ex_pbuf = pidx >= xbufcur ? bufs : bufs + pidx;
-			ex_buf = bidx >= xbufcur ? bufs : bufs + bidx;
+			if (bidx >= 0)
+				ex_buf = bidx >= xbufcur ? bufs : bufs + bidx;
+			else
+				restore(ex_buf)
 			exbuf_load(ex_buf)
 			syn_setft(xb_ft);
 			vi(1); /* redraw past screen */
@@ -612,11 +616,15 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
 				*post = uc_dup(*post);
 				*modpost = 1;
 			}
-			int bidx = ex_buf - bufs;
+			preserve(struct buf*, ex_buf,)
+			int bidx = istempbuf(ex_buf) ? -1 : ex_buf - bufs;
 			preserve(int, ftidx,)
 			led_modeswap();
 			restore(ftidx)
-			if (bidx != ex_buf - bufs && bidx < xbufcur) {
+			if (bidx < 0 && ex_buf != tmpex_buf) {
+				restore(ex_buf)
+				exbuf_load(ex_buf)
+			} else if (bidx != ex_buf - bufs && bidx < xbufcur) {
 				ex_buf = bufs + bidx;
 				exbuf_load(ex_buf)
 			}
