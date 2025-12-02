@@ -170,8 +170,9 @@ VI NORMAL
      vj            Toggle space padding when joining lines
      [#]y{arg}     Yank arg region # times
      [#]Y          Yank # lines
-     [#]p          Paste default register # times
-     [#]P          Paste default register below current line or behind cursor
+     [#]p          Paste default register below current line or after cursor
+                   position # times
+     [#]P          Paste default register above current line or before cursor
                    position # times
      m{a-z ` ' [] *}
                    Set buffer local line mark
