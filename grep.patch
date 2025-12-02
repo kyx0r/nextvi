@@ -34,7 +34,7 @@ index 168c0b01..821413e9 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 59233907..77e65b3f 100644
+index 59233907..4bd0e47f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -505,12 +505,12 @@ void dir_calc(char *path)
@@ -87,7 +87,7 @@ index 59233907..77e65b3f 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -737,8 +738,43 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -737,8 +738,42 @@ static int vi_motion(int vc, int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -95,10 +95,9 @@ index 59233907..77e65b3f 100644
 +			fs_search(0, 1, row, off);
  			fsdir = 1;
 +		} else if (mv == TK_CTL('x')) {
-+			if (!strcmp(xb_path, "/grep/"))
-+				temp_switch(2);
 +			term_exec("", 1, '&')
 +			temp_pos(2, -1, 0, 0);
++			temp_switch(2, 0);
 +			sbuf *gstats; sbuf_make(gstats, 1024)
 +			char nbuf[100];
 +			int colpos = 0;
@@ -125,14 +124,14 @@ index 59233907..77e65b3f 100644
 +			sbuf_free(gstats)
 +			for (i = xbufcur-1; i >= 0 && bufs[i].mtime == -1; i--)
 +				ex_bufpostfix(&bufs[i], 1);
-+			temp_switch(2);
++			temp_switch(2, 0);
 +			lbuf_jump(xb, '[', row, off);
 +			*off = 0;
 +			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3));
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1316,7 +1352,17 @@ void vi(int init)
+@@ -1316,7 +1351,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -151,18 +150,18 @@ index 59233907..77e65b3f 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1465,6 +1511,10 @@ void vi(int init)
+@@ -1465,6 +1510,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
 +				case 'x':
-+					temp_switch(2);
++					temp_switch(2, 1);
 +					vi_mod = 1;
 +					break;
  				default:
  					term_dec()
  				}
-@@ -1824,6 +1874,7 @@ int main(int argc, char *argv[])
+@@ -1824,6 +1873,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
