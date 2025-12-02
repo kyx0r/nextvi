@@ -132,12 +132,14 @@ void temp_pos(int i, int row, int off, int top)
 	tempbufs[i].top = top;
 }
 
-void temp_switch(int i)
+void temp_switch(int i, int swap)
 {
 	if (ex_buf == &tempbufs[i]) {
-		exbuf_save(ex_buf)
-		ex_buf = ex_pbuf;
-		ex_pbuf = ex_tpbuf;
+		if (swap) {
+			exbuf_save(ex_buf)
+			ex_buf = ex_pbuf;
+			ex_pbuf = ex_tpbuf;
+		}
 	} else {
 		if (!istempbuf(ex_buf)) {
 			ex_tpbuf = ex_pbuf;
@@ -339,7 +341,7 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
 		return NULL;
 	} else if (atoi(arg) < 0) {
 		if (abs(atoi(arg)) <= LEN(tempbufs)) {
-			temp_switch(abs(atoi(arg))-1);
+			temp_switch(abs(atoi(arg))-1, 1);
 			return NULL;
 		}
 	} else if (atoi(arg) < xbufcur) {
