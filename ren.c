@@ -244,10 +244,10 @@ static struct ftmap {
 	rset *rs;
 } ftmap[100];
 static int ftmidx;
-static int ftidx;
 static rset *syn_ftrs;
 static int last_scdir;
 static int blockatt;
+int ftidx;
 int syn_blockhl;
 
 static int syn_initft(int fti, int n, char *name)
