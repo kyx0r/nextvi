@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 5bf477ae..4fa839be 100644
+index 9cf2c778..fde2bbcc 100644
 --- a/led.c
 +++ b/led.c
 @@ -11,25 +11,30 @@ int dstrlen(const char *s, char delim)
