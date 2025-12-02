@@ -73,7 +73,7 @@ index 9cf2c778..b394738b 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index c58e2c0b..f91b6b54 100644
+index cbad0b34..9883cc33 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -858,6 +858,8 @@ static void vi_indents(char *ln, int *l)
@@ -84,11 +84,11 @@ index c58e2c0b..f91b6b54 100644
 +
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
- 	char *post, *_post, *ln = lbuf_get(xb, r1);
+ 	char *post, *ln = lbuf_get(xb, r1);
 @@ -889,6 +891,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
- 	free(_post);
+ 	free(post);
 +	lmodified = 1;
  }
  
