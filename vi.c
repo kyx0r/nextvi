@@ -885,7 +885,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 		xtop = r1;
 	sbuf_mem(sb, ln, l1)
 	postn = led_input(sb, post, postn, r1 - (r1 - r2), 0);
-	if (postn != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
+	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
 		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
 	free(sb->s);
 	free(_post);
