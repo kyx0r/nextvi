@@ -444,7 +444,7 @@ extern struct buf *ex_pbuf;
 	buf->td = xtd; \
 
 void temp_open(int i, char *name, char *ft);
-void temp_switch(int i);
+void temp_switch(int i, int swap);
 void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
 void *ex_exec(const char *ln);

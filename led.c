@@ -578,9 +578,9 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
 			preserve(int, texec, if (texec == '@') texec = 0;)
 			preserve(int, xquit, xquit = 0;)
 			preserve(int, ftidx,)
-			temp_switch(0);
+			temp_switch(0, 0);
 			vi(1);
-			temp_switch(0);
+			exbuf_save(ex_buf)
 			restore(texec)
 			ex_pbuf = pidx >= xbufcur ? bufs : bufs + pidx;
 			if (bidx >= 0)

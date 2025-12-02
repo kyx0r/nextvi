@@ -1198,13 +1198,23 @@ static void vi_argcmd(int arg, char cmd)
 	term_push(str, cs - str + 1);
 }
 
+#define topfix() \
+if (xrow < 0 || xrow >= lbuf_len(xb)) \
+	xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0; \
+if (xtop > xrow) \
+	xtop = xtop - xrows / 2 > xrow ? \
+			MAX(0, xrow - xrows / 2) : xrow; \
+if (xtop + xrows <= xrow) \
+	xtop = xtop + xrows + xrows / 2 <= xrow ? \
+			xrow - xrows / 2 : xrow - xrows + 1; \
+
 void vi(int init)
 {
 	char *ln, *cs;
 	int mv, n, k, c;
 	xgrec++;
 	if (init) {
-		xtop = MAX(0, xrow - xrows / 2);
+		topfix()
 		vi_col = vi_off2col(xb, xrow, xoff);
 		vi_drawagain(xtop);
 		vi_drawmsg();
@@ -1428,7 +1438,6 @@ void vi(int init)
 						ex_print("syntax error", msg_ft)
 					free(ln);
 					free(cs);
-					vi_mod |= 1;
 					break;
 				case 't': {
 					strcpy(vi_msg, "arg2:(0|#)");
@@ -1704,14 +1713,7 @@ void vi(int init)
 				rep_len = icmd_pos;
 			}
 		}
-		if (xrow < 0 || xrow >= lbuf_len(xb))
-			xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0;
-		if (xtop > xrow)
-			xtop = xtop - xrows / 2 > xrow ?
-					MAX(0, xrow - xrows / 2) : xrow;
-		if (xtop + xrows <= xrow)
-			xtop = xtop + xrows + xrows / 2 <= xrow ?
-					xrow - xrows / 2 : xrow - xrows + 1;
+		topfix()
 		ln = lbuf_get(xb, xrow);
 		xoff = ren_noeol(ln, xoff);
 		if (ln && !rstate->wid[xoff]) {
