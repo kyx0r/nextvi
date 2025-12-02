@@ -34,7 +34,7 @@ index bd37d19d..122bcc3f 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 62da17b5..7426721d 100644
+index 47f935e1..9c8ba71b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -505,12 +505,12 @@ void dir_calc(char *path)
@@ -79,15 +79,15 @@ index 62da17b5..7426721d 100644
  	}
  	return 0;
  }
-@@ -718,6 +718,7 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -719,6 +719,7 @@ static int vi_motion(int vc, int *row, int *off)
  				break;
  		break;
- 	case TK_CTL(']'):	/* note: this is also ^5 as per ascii */
+ 	case TK_CTL(']'):	/* this is also ^5 on some systems */
 +	case TK_CTL('x'):
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -736,8 +737,43 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -737,8 +738,43 @@ static int vi_motion(int vc, int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -132,7 +132,7 @@ index 62da17b5..7426721d 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1308,7 +1344,17 @@ void vi(int init)
+@@ -1306,7 +1342,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -151,7 +151,7 @@ index 62da17b5..7426721d 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1460,6 +1506,10 @@ void vi(int init)
+@@ -1456,6 +1502,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -162,7 +162,7 @@ index 62da17b5..7426721d 100644
  				default:
  					term_dec()
  				}
-@@ -1826,6 +1876,7 @@ int main(int argc, char *argv[])
+@@ -1822,6 +1872,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
@@ -171,10 +171,10 @@ index 62da17b5..7426721d 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 519997a5..7226cb54 100644
+index 4852b25b..5ee8f9ed 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -423,7 +423,7 @@ extern sbuf *xacreg;
+@@ -424,7 +424,7 @@ extern sbuf *xacreg;
  extern rset *xkwdrs;
  extern sbuf *xregs[256];
  extern struct buf *bufs;
