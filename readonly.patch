@@ -58,7 +58,7 @@ index 168c0b01..10e33e3c 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index c58e2c0b..b07feb24 100644
+index cbad0b34..6c8a96b3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1838,9 +1838,11 @@ int main(int argc, char *argv[])
