@@ -860,19 +860,19 @@ static void vi_indents(char *ln, int *l)
 
 static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
-	char *post, *_post, *ln = lbuf_get(xb, r1);
+	char *post, *ln = lbuf_get(xb, r1);
 	sbuf rsb;
 	int tlen, l1, l2 = 1, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (lnmode || !ln) {
 		vi_indents(ln, &l1);
 		o1 = l1;
-		post = _post = uc_dup("\n");
+		post = uc_dup("\n");
 		tlen = -1;
 		lbuf_region(xb, &rsb, r1, 0, r2, -1);
 	} else {
 		l1 = uc_chr(ln, o1) - ln;
-		post = _post = uc_subl(lbuf_get(xb, r2), o2, -1, &l2, &postn);
+		post = uc_subl(lbuf_get(xb, r2), o2, -1, &l2, &postn);
 		tlen = lbuf_s(ln)->len+1;
 		lbuf_region(xb, &rsb, r1, o1, r2, o2);
 	}
@@ -888,7 +888,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
 		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
 	free(sb->s);
-	free(_post);
+	free(post);
 }
 
 static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
