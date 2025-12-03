@@ -1059,13 +1059,14 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 	if (!getcwd(oldpath, sizeof(oldpath)))
 		if ((opath = getenv("PWD")))
 			strncpy(oldpath, opath, sizeof(oldpath)-1);
-	if (*arg && chdir(arg))
+	plen = strlen(oldpath);
+	i = plen == sizeof(oldpath)-1;
+	if (chdir(*arg ? arg : oldpath))
 		return "chdir error";
 	if (!getcwd(newpath, sizeof(newpath)))
 		return "getcwd error";
 	setenv("PWD", newpath, 1);
-	plen = strlen(oldpath);
-	if (plen == sizeof(oldpath)-1)
+	if (i)
 		return "oldpath >= 4096";
 	if (plen && oldpath[plen-1] != '/')
 		oldpath[plen++] = '/';
