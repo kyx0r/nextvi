@@ -867,12 +867,13 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	if (lnmode || !ln) {
 		vi_indents(ln, &l1);
 		o1 = l1;
-		post = uc_dup("\n");
+		post = "\n";
 		tlen = -1;
 		lbuf_region(xb, &rsb, r1, 0, r2, -1);
 	} else {
 		l1 = uc_chr(ln, o1) - ln;
-		post = uc_subl(lbuf_get(xb, r2), o2, -1, &l2, &postn);
+		post = uc_chr(lbuf_get(xb, r2), o2);
+		l2 = uc_chrn(post, -1, &postn) - post;
 		tlen = lbuf_s(ln)->len+1;
 		lbuf_region(xb, &rsb, r1, o1, r2, o2);
 	}
@@ -888,7 +889,6 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
 		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
 	free(sb->s);
-	free(post);
 }
 
 static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
@@ -1840,7 +1840,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-2.4 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-2.5 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
