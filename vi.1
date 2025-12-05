@@ -1,4 +1,4 @@
-.Dd Dec  2, 2025
+.Dd Dec  5, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -649,6 +649,10 @@ Search for "int" on line 5
 Search for "int" in reverse on the current line
 .It Cm :;>int>+3;>>p
 Print text enclosed by "int" on the current line
+.It Cm :5,+10=
++10 is relative to the initial current line, not 5
+.It Cm :;5;+10=
++10 is relative to the initial current offset, not 5
 .El
 .
 .Sh EX COMMANDS
@@ -778,8 +782,14 @@ Example: delete 5 characters from current position
 :;.;+5c<^M><ESC>
 .Ed
 
-.It Cm [\fIvrange\fP]d
+.It Cm [\fIrange\fP]d
 Delete line(s)
+.Bd -literal
+Example: delete from current position to the start of the buffer
+:;0;.,1,.d
+Example: delete from current position to the end of the buffer
+:;;$,.,$d
+.Ed
 .It Cm e[\fIpath\fP]
 Open a file at a path
 .Bd -literal
@@ -1072,6 +1082,9 @@ Set a directory path for :fd command
 .It Cm cd[\fIpath\fP]
 Set a working directory
 .Bd -literal
+No argument relinks the current directory in case it got removed
+or unmounted.
+
 Currently open buffers' file paths will be automatically adjusted
 to reflect a newly set working directory.
 .Ed
@@ -1499,9 +1512,9 @@ _
  613 uc.c | UTF-8 support
  708 led.c | insert mode/output
  756 regex.c | pikevm
- 1442 ex.c | ex options/commands
+ 1455 ex.c | ex options/commands
  1863 vi.c | normal mode/general
- 7023 total | wc -l *.c\(basort
+ 7036 total | wc -l *.c\(basort
 _
 .TE
 .
