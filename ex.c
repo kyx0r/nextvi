@@ -271,6 +271,8 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		if (*loc == ';') {
 			loc++;
 			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
+			if (row < 0 || row >= lbuf_len(xb))
+				return 1;
 			if ((ooff = ex_range(&loc, ooff, &row)) < 0)
 				return 1;
 			if (haddr++ % 2)
@@ -280,15 +282,10 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		} else {
 			if (*loc == ',')
 				loc++;
-			if (vaddr++ % 2) {
+			if (vaddr++ % 2)
 				*end = ex_range(&loc, xrow, NULL) + 1;
-				if (*end <= *beg || *end > lbuf_len(xb))
-					return 1;
-			} else {
+			else
 				*beg = ex_range(&loc, xrow, NULL);
-				if (*beg < 0 || *beg >= lbuf_len(xb))
-					return 1;
-			}
 		}
 		while (*loc && *loc != ';' && *loc != ',')
 		        loc++;
@@ -298,6 +295,10 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		*end = MIN(lbuf_len(xb), xrow + 1);
 	} else if (vaddr == 1)
 		*end = *beg + 1;
+	if (*beg < 0 || *beg >= lbuf_len(xb))
+		return 1;
+	if (*end <= *beg || *end > lbuf_len(xb))
+		return 1;
 	return 0;
 }
 
