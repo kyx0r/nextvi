@@ -273,7 +273,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
 			if (row < 0 || row >= lbuf_len(xb))
 				return 1;
-			if ((ooff = ex_range(&loc, ooff, &row)) < 0)
+			if ((ooff = ex_range(&loc, xoff, &row)) < 0)
 				return 1;
 			if (haddr++ % 2)
 				*o2 = ooff;
