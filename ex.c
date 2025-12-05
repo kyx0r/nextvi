@@ -455,6 +455,7 @@ static void *ec_editapprox(char *loc, char *cmd, char *arg)
 	sbuf_str(fuzz, arg)
 	for (z = 0;; z++) {
 		sbuf_null(fuzz)
+		term_record = !!term_sbuf;
 		for (c = 0, pos = 0; pos < lbuf_len(lb); pos++) {
 			path = lb->ln[pos];
 			for (i = lbuf_s(path)->len; i > 0 && path[i] != '/'; i--);
@@ -465,6 +466,8 @@ static void *ec_editapprox(char *loc, char *cmd, char *arg)
 				RS(2, ex_cprint(path, msg_ft, -1, xleft ? 0 : (p - buf) + 1, 1))
 			}
 		}
+		if (term_record)
+			term_commit();
 		if ((inst < 0 && c > 1) || (z && !c)) {
 			RS(2, ex_cprint(fuzz->s, msg_ft, -1, 0, 0))
 			inst = term_read();
@@ -688,7 +691,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (o1 >= 0 && cmd[0] == 'c') {
 		if (!sb->s_n && o2 <= o1)
 			goto ret;
-		char *p = lbuf_joinsb(xb, beg, beg, sb, &o1, &o2);
+		char *p = lbuf_joinsb(xb, beg, end-1, sb, &o1, &o2);
 		o1 -= sb->s[0] == '\n';
 		free(sb->s);
 		sb->s = p;
@@ -749,10 +752,18 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 
 static void *ec_delete(char *loc, char *cmd, char *arg)
 {
-	int beg, end;
-	if (ex_vregion(loc, &beg, &end) || !lbuf_len(xb))
+	int beg, end, o1 = -1, o2 = -1;
+	sbuf sb;
+	char *p = NULL;
+	if (ex_region(loc, &beg, &end, &o1, &o2) || !lbuf_len(xb))
 		return xrerr;
-	lbuf_edit(xb, NULL, beg, end, 0, 0);
+	if (o1 >= 0) {
+		sb.s = "";
+		sb.s_n = 0;
+		p = lbuf_joinsb(xb, beg, end-1, &sb, &o1, &o2);
+	}
+	lbuf_edit(xb, p, beg, end, o1, o2);
+	free(p);
 	xrow = beg;
 	return NULL;
 }
