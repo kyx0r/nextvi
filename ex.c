@@ -694,6 +694,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			goto ret;
 		char *p = lbuf_joinsb(xb, beg, end-1, sb, &o1, &o2);
 		o1 -= sb->s[0] == '\n';
+		xoff = o1;
 		free(sb->s);
 		sb->s = p;
 	} else if (!(xvis & 2) && vi_insmov != 127)
@@ -703,8 +704,6 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	ps = lbuf_len(xb);
 	lbuf_edit(xb, sb->s, beg, end, o1, o2);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - ps - 1);
-	if (o1 >= 0)
-		xoff = o1;
 	ret:
 	free(sb->s);
 	return NULL;
@@ -762,6 +761,7 @@ static void *ec_delete(char *loc, char *cmd, char *arg)
 		sb.s = "";
 		sb.s_n = 0;
 		p = lbuf_joinsb(xb, beg, end-1, &sb, &o1, &o2);
+		xoff = o1;
 	}
 	lbuf_edit(xb, p, beg, end, o1, o2);
 	free(p);
