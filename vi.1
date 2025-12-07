@@ -542,17 +542,18 @@ Specials in ex
 .
 .Sh EX EXPANSION
 .Bd -literal -compact
-<%> in [args] substitutes current buffer pathname or any buffer
+<%> in [args] expands to current buffer pathname or any buffer
 pathname when followed by a corresponding buffer number.
-"%#" substitutes last swapped buffer pathname.
+"%#" expands to last swapped buffer pathname.
 
-Example: print pathname for buffer 69
-:!echo "%69"
+Example: make a copy of current file and edit it
+:! cp % %_:e %_
+Example: paste current buffer pathname
+:& i%
 
-Every ex command is be able to receive stdout from an external
-program via a special expansion character <!>.
-If closing <!> was not specified, the end of the line becomes
-a terminator.
+<!> in [args] defines and optionally ends a block containing
+external commands. This block executes and expands to stdout
+produced.
 
 Example: substitute "int" with the value of $RANDOM
 :%s/int/!printf "%s" $RANDOM!
@@ -572,12 +573,12 @@ Some ex commands can be prefixed with ranges.
 
 .It Cm [\fIpad\fP][\fI% |\fP][\fI, ;\fP][\fI#\fP][\fIpad\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
 All ranges structure
-.It Cm {\fI> <\fP}[\fIkwd\fP][\fI> <\fP]
-Search range structure
-'It Cm '{<\fImark\fP>}
-Mark range structure
 'It Cm |{\fIcmd\fP}[<\fI|\fP>]
-Ex command range structure
+Ex command structure
+.It Cm {\fI> <\fP}[\fIkwd\fP][\fI> <\fP]
+Search structure
+'It Cm '{<\fImark\fP>}
+Mark structure
 
 .It Cm pad
 <Space> or <Tab>
@@ -596,11 +597,11 @@ Current position
 .It Cm \&$
 Last line of a buffer or end of line
 .It Cm \&'
-Begin mark range
+Begin mark
 .It Cm \&>
-Begin search range forward
+Begin search forward
 .It Cm \&<
-Begin search range backward
+Begin search backward
 .It Cm \&-
 Subtract following number
 .It Cm \&+
