@@ -530,9 +530,9 @@ EX COMMANDS
              Delete line(s)
 
              Example: delete from current position to the start of the buffer
-             :;0;.,1,.d
+             :1,.;0;d
              Example: delete from current position to the end of the buffer
-             :;;$,.,$d
+             :.,$;;$d
      e[path]
              Open a file at a path
 
