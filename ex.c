@@ -221,6 +221,8 @@ static int ex_range(char **num, int n, int *row)
 		}
 		beg = row ? *row : xrow + (xkwddir > 0);
 		end = row ? beg+1 : lbuf_len(xb);
+		if (beg < 0 || beg >= lbuf_len(xb))
+			return -1;
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
 				&off, end, MIN(dir, 0))) {
 			xrerr = xsrerr;
@@ -305,8 +307,6 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 			else
 				*beg = row;
 		}
-		if (row < 0 || row >= lbuf_len(xb))
-			break;
 		while (*loc && *loc != '|' && *loc != ';' && *loc != ',')
 		        loc++;
 	}
