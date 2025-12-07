@@ -842,7 +842,7 @@ end with <;>.
 :g/int/g/;$/& A has a semicolon
 
 Example: extract/print data enclosed in "()"
-:err4:g/./;0\e:|grp2|;>(\e().+\e)>;#>.+(\e))>+1p:err1
+:grp2:err4:g/./;0\e:;>(\e().+\e)>;#>.+(\e))>+1p:err1:grp
 .Ed
 
 .It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIcmd\fP}
