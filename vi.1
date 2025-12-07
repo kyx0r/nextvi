@@ -787,7 +787,7 @@ Example: insert "hello" at end of line
 Example: insert "hello" at line 5 and end of line
 :5;$c hello<^M><ESC>
 Example: delete 5 characters from current position
-:;.;+5c<^M><ESC>
+:;;+5c<^M><ESC>
 .Ed
 
 .It Cm [\fIrange\fP]d
@@ -841,8 +841,7 @@ end with <;>.
 :g/int/g/;$/& A has a semicolon
 
 Example: extract/print data enclosed in "()"
-:g/\e(.+\e)/;0;>\e(.+\e)>\e:.;.+1k a\e:grp 2\e:;>\e)*(\e))>\e:
-grp\e:k s\e:.;'a;'sp
+:err4:g/./;0\e:|grp2|;>(\e().+\e)>;#>.+(\e))>+1p:err1
 .Ed
 
 .It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIkwd\fP]{<\fI*\fP>}{\fIcmd\fP}
@@ -865,7 +864,7 @@ Example: calculate 75 - 100
 .It Cm [\fIvrange\fP]k{<\fImark\fP>}
 Set a line mark
 .Bd -literal
-Valid marks: <a-z> <`> <'> <[> <]> <*>
+Valid marks: <a-z ` ' [ ] *>
 The character offset is set to the current position.
 .Ed
 
@@ -929,11 +928,11 @@ Example: repeat chain of ex commands 10 times
 Example: calculate directory only if :cd succeeded
 :? cd /blah:fd
 Example: print a line only if it contains "int" at offset 5
-:? ;5;>^int>:p
+:? ;5;#>^int>:p
 Example: allow :led while branching only :p command
-:led:1,2? ;5;>^int>:led:p
+:led:1,2? ;5;#>^int>:led:p
 Example: branch multiple commands
-:led:1,2,3? ;5;>^int>:led:&i2 not branched:p:p
+:led:1,2,3? ;5;#>^int>:led:&i2 not branched:p:p
 Example: edit vi.c only if it exists
 :? \e![ -f ./vi.c ]:e ./vi.c:mpt
 .Ed
@@ -1057,7 +1056,7 @@ Example: use sed to replace "int" with "uint"
 Example: pipe in result of ls command without replace
 :;$+1!ls
 Example: capitalize word at current position using tr
-:;.;>\e\e>>!tr '[\e:lower\e:]' '[\e:upper\e:]'
+:;;>\e\e>>!tr '[\e:lower\e:]' '[\e:upper\e:]'
 .Ed
 
 .It Cm ft[\fIfiletype\fP]
@@ -1365,6 +1364,17 @@ Control horizontal scroll
 .Bd -literal
 No argument sets the value to 0.
 hscroll computes the value using: xcols / 2 * hscroll
+.Ed
+
+.It Cm err[\fIval=1\fP]
+Control Ex errors
+.Bd -literal
+Example: silence and ignore errors
+:err 4
+Example: report and abort on first error
+:err 3
+Example: report and consider only last command for error status
+:err 1
 .Ed
 .
 .El
