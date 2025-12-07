@@ -574,7 +574,7 @@ EX COMMANDS
              :g/int/g/;$/& A has a semicolon
 
              Example: extract/print data enclosed in "()"
-             :err4:g/./;0\:|grp2|;>(\().+\)>;#>.+(\))>+1p:err1
+             :grp2:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
      [vrange]g!{<*>}[kwd]{<*>}{cmd}
              Inverted global command
