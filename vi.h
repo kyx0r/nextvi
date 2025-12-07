@@ -412,6 +412,7 @@ extern int xpr;
 extern int xsep;
 extern int xlim;
 extern int xseq;
+extern int xerr;
 /* global variables */
 extern int xrow, xoff, xtop;
 extern int xbufcur;
