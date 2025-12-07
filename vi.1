@@ -28,11 +28,11 @@ for years to come.
 .Sh OPTIONS
 .Bl -tag -width Ds -compact
 .It Fl e
-Enter Ex mode on startup
+Enter ex mode on startup
 .It Fl m
 Disable initial file read message
 .It Fl s
-Enter raw Ex mode on startup
+Enter raw ex mode on startup
 .It Fl v
 Enter visual mode on startup (Default)
 .El
@@ -1317,7 +1317,7 @@ Example: store a line printed with :p
 .It Cm sep[\fIval=:\fP]
 Ex separator
 .Bd -literal
-Set Ex command separator character.
+Set ex command separator character.
 Ex separator must not collide with any ex/range special characters.
 Changing default <:> separator will break some built-in commands/macros.
 
@@ -1367,7 +1367,7 @@ hscroll computes the value using: xcols / 2 * hscroll
 .Ed
 
 .It Cm err[\fIval=1\fP]
-Control Ex errors
+Control ex errors
 .Bd -literal
 Example: silence and ignore errors
 :err 4
@@ -1522,7 +1522,7 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 522 vi.h | definitions/aux
+ 523 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  307 conf.c | hl/ft/td config
@@ -1532,9 +1532,9 @@ _
  613 uc.c | UTF-8 support
  708 led.c | insert mode/output
  756 regex.c | pikevm
- 1480 ex.c | ex options/commands
+ 1487 ex.c | ex options/commands
  1863 vi.c | normal mode/general
- 7061 total | wc -l *.c\(basort
+ 7068 total | wc -l *.c\(basort
 _
 .TE
 .
