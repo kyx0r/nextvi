@@ -21,6 +21,8 @@ int xpr;			/* ex_cprint register */
 int xsep = ':';			/* ex command separator */
 int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
+int xerr = 1;			/* error handling -
+				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
 
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xbufcur;			/* number of active buffers */
@@ -1236,7 +1238,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 
 EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
 EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
-EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
+EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
 
 _EO(left,
 	if (*loc)
@@ -1270,6 +1272,7 @@ static struct excmd {
 	EO(ai),
 	{"ac", ec_setacreg},
 	{"a", ec_insert},
+	EO(err),
 	{"ea!", ec_editapprox},
 	{"ea", ec_editapprox},
 	{"e!", ec_edit},
@@ -1425,21 +1428,25 @@ void *ex_exec(const char *ln)
 		lbuf_mark(xb, '*', xrow, xoff);
 	sbuf_smake(sb, strlen(ln) + 4)
 	for (int i = 0; *ln; i++) {
+		sbuf_cut(sb, 0)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
-		if (i >= r1 && i <= r2)
-			continue;
-		if (arg >= 0) {
+		if ((i < r1 || i > r2) && arg >= 0) {
 			ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
-			if (ret && !*ret) {
+			if (!ret)
+				continue;
+			if (!*ret) {
 				r1 = ((int*)ret)[1] + i;
 				r2 = ((int*)ret)[2] + i;
-			} else if (ret && ret != xuerr)
+				continue;
+			}
+			if (ret != xuerr && xerr & 1)
 				ex_print(ret, msg_ft)
+			if (xerr & 2)
+				break;
 		}
-		sbuf_cut(sb, 0)
 	}
 	free(sb->s);
-	return ret;
+	return xerr & 4 ? NULL : ret;
 }
 
 /* ex main loop */
