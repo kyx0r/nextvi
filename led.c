@@ -621,7 +621,9 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
 			preserve(int, ftidx,)
 			led_modeswap();
 			restore(ftidx)
-			if (bidx < 0 && ex_buf != tmpex_buf) {
+			if (bidx < 0) {
+				if (ex_buf == tmpex_buf)
+					continue;
 				restore(ex_buf)
 				exbuf_load(ex_buf)
 			} else if (bidx != ex_buf - bufs && bidx < xbufcur) {
