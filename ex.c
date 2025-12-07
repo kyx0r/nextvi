@@ -260,39 +260,63 @@ static int ex_range(char **num, int n, int *row)
 #define ex_vregion(loc, beg, end) ex_region(loc, beg, end, &xoff, &xoff)
 static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	if (!strcmp("%", loc) || !lbuf_len(xb)) {
-		*beg = 0;
-		*end = MAX(0, lbuf_len(xb));
-		return 0;
-	}
-	int vaddr = 0, haddr = 0, ooff = xoff, row;
+	int vaddr = 0, haddr = 0, update = 0, row = xrow, ooff = xoff, nulled;
 	xrerr = xirerr;
+	if (*loc == '%') {
+		loc++;
+		vaddr = 3;
+		update = 1;
+		row = lbuf_len(xb);
+		*beg = 0;
+		*end = row;
+	}
 	while (*loc) {
-		if (*loc == ';') {
-			loc++;
-			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
-			if (row < 0 || row >= lbuf_len(xb))
+		if (*loc == '|') {
+			char *cmd = ++loc;
+			for (; *loc && *loc != '|'; loc++)
+				if (*loc == '\\' && loc[1] == '|')
+					loc++;
+			nulled = *loc;
+			*loc = '\0';
+			if (ex_exec(cmd)) {
+				xrerr = "ex command error";
 				return 1;
-			if ((ooff = ex_range(&loc, xoff, &row)) < 0)
+			}
+			if (nulled)
+				*loc++ = '|';
+			continue;
+		} else if (*loc == ';') {
+			update = loc[1] == '#';
+			loc += 1 + update;
+			if ((ooff = ex_range(&loc, update ? ooff : xoff, &row)) < 0)
 				return 1;
 			if (haddr++ % 2)
 				*o2 = ooff;
 			else
 				*o1 = ooff;
 		} else {
-			if (*loc == ',')
-				loc++;
+			if (*loc == ',') {
+				update = loc[1] == '#';
+				loc += 1 + update;
+			}
+			row = ex_range(&loc, update ? row : xrow, NULL);
 			if (vaddr++ % 2)
-				*end = ex_range(&loc, xrow, NULL) + 1;
+				*end = row + 1;
 			else
-				*beg = ex_range(&loc, xrow, NULL);
+				*beg = row;
 		}
-		while (*loc && *loc != ';' && *loc != ',')
+		if (row < 0 || row >= lbuf_len(xb))
+			break;
+		while (*loc && *loc != '|' && *loc != ';' && *loc != ',')
 		        loc++;
 	}
-	if (!vaddr) {
+	if (!lbuf_len(xb)) {
+		*beg = 0;
+		*end = 0;
+		return 0;
+	} else if (!vaddr) {
 		*beg = xrow;
-		*end = MIN(lbuf_len(xb), xrow + 1);
+		*end = MIN(lbuf_len(xb), *beg + 1);
 	} else if (vaddr == 1)
 		*end = *beg + 1;
 	if (*beg < 0 || *beg >= lbuf_len(xb))
@@ -443,7 +467,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 			fd < 0 || rd ? 'f' : 'r');
 	if (!(xvis & 8))
 		ex_print(msg, bar_ft)
-	return fd < 0 || rd ? xuerr : NULL;
+	return (fd < 0 || rd) && *arg ? xuerr : NULL;
 }
 
 static void *ec_editapprox(char *loc, char *cmd, char *arg)
@@ -694,7 +718,6 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			goto ret;
 		char *p = lbuf_joinsb(xb, beg, end-1, sb, &o1, &o2);
 		o1 -= sb->s[0] == '\n';
-		xoff = o1;
 		free(sb->s);
 		sb->s = p;
 	} else if (!(xvis & 2) && vi_insmov != 127)
@@ -704,6 +727,8 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	ps = lbuf_len(xb);
 	lbuf_edit(xb, sb->s, beg, end, o1, o2);
 	xrow = MIN(lbuf_len(xb) - 1, end + lbuf_len(xb) - ps - 1);
+	if (o1 >= 0)
+		xoff = o1;
 	ret:
 	free(sb->s);
 	return NULL;
@@ -1361,10 +1386,10 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	char *dst = sb->s;
 	while (*src == xsep || *src == ' ' || *src == '\t')
 		src += !!src[0];
-	while (memchr(" \t0123456789+-.,<>/$';%*", *src, 24)) {
+	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
-		if (*src == '>' || *src == '<') {
+		if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {
 				*dst++ = *src++;
