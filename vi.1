@@ -1,4 +1,4 @@
-.Dd Dec  5, 2025
+.Dd Dec  7, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -570,21 +570,27 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [\fIpad\fP][\fI%\fP][\fI, ;\fP][\fIpad\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
+.It Cm [\fIpad\fP][\fI% |\fP][\fI, ;\fP][\fI#\fP][\fIpad\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
 All ranges structure
 .It Cm {\fI> <\fP}[\fIkwd\fP][\fI> <\fP]
 Search range structure
 'It Cm '{<\fImark\fP>}
 Mark range structure
+'It Cm |{\fIcmd\fP}[<\fI|\fP>]
+Ex command range structure
 
 .It Cm pad
 <Space> or <Tab>
 .It Cm \&%
 Range from first to last line
+.It Cm \&|
+Begin ex command
 .It Cm \&,
 Vertical range separator
 .It Cm \&;
 Horizontal range separator
+.It Cm \&#
+Rebase to previous value in range structure
 .It Cm \&.
 Current position
 .It Cm \&$
@@ -647,12 +653,14 @@ Goto end of line
 Search for "int" on line 5
 .It Cm :.;<int<
 Search for "int" in reverse on the current line
-.It Cm :;>int>+3;>>p
-Print text enclosed by "int" on the current line
-.It Cm :5,+10=
-+10 is relative to the initial current line, not 5
 .It Cm :;5;+10=
 +10 is relative to the initial current offset, not 5
+.It Cm :;5;#+10=
++10 is relative to 5
+.It Cm :;>int>+3;#>>p
+Print text enclosed by "int" on the current line
+.It Cm :|grp2|;>(a)+>+1|grp|;#>>p
+Print text enclosed by a non deterministic pattern "a+"
 .El
 .
 .Sh EX COMMANDS
@@ -1311,9 +1319,11 @@ Example: store a line printed with :p
 Ex separator
 .Bd -literal
 Set Ex command separator character.
+Ex separator must not collide with any ex/range special characters.
 Changing default <:> separator will break some built-in commands/macros.
-Example: set separator to <|>
-:sep |
+
+Example: set separator to <s>
+:sep s
 Example: disable separator
 :sep 0
 .Ed
@@ -1512,9 +1522,9 @@ _
  613 uc.c | UTF-8 support
  708 led.c | insert mode/output
  756 regex.c | pikevm
- 1455 ex.c | ex options/commands
+ 1480 ex.c | ex options/commands
  1863 vi.c | normal mode/general
- 7036 total | wc -l *.c\(basort
+ 7061 total | wc -l *.c\(basort
 _
 .TE
 .
