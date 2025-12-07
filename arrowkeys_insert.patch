@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 9cf2c778..b394738b 100644
+index d790be10..8559f0f0 100644
 --- a/led.c
 +++ b/led.c
 @@ -281,7 +281,7 @@ static int led_lastword(char *s)
@@ -55,7 +55,7 @@ index 9cf2c778..b394738b 100644
  		case TK_CTL('o'): {
  			if (!*modpost) {
  				*post = uc_dup(*post);
-@@ -641,6 +658,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -643,6 +660,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index 9cf2c778..b394738b 100644
  	*key = c;
  }
  
-@@ -681,7 +699,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int lsh)
+@@ -683,7 +701,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int lsh)
  			return n;
  		}
  		sbuf_chr(sb, key)

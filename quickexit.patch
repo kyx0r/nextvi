@@ -27,7 +27,7 @@ index 84133f08..88a04ffc 100644
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index 9cf2c778..850302a9 100644
+index d790be10..a0701264 100644
 --- a/led.c
 +++ b/led.c
 @@ -406,6 +406,14 @@ void led_modeswap(void)
@@ -53,7 +53,7 @@ index 9cf2c778..850302a9 100644
  	while (1) {
  		led_printparts(sb, pre, ps, *post, postn, ai_max);
  		len = sb->s_n;
-@@ -629,7 +638,21 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -631,7 +640,21 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
  				exbuf_load(ex_buf)
  			}
  			continue; }
