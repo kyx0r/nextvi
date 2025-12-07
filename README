@@ -19,9 +19,9 @@ DESCRIPTION
      for years to come.
 
 OPTIONS
-     -e      Enter Ex mode on startup
+     -e      Enter ex mode on startup
      -m      Disable initial file read message
-     -s      Enter raw Ex mode on startup
+     -s      Enter raw ex mode on startup
      -v      Enter visual mode on startup (Default)
 
 MANPAGE NOTATION
@@ -976,7 +976,7 @@ EX OPTIONS
      sep[val=:]
              Ex separator
 
-             Set Ex command separator character.
+             Set ex command separator character.
              Ex separator must not collide with any ex/range special characters.
              Changing default <:> separator will break some built-in commands/macros.
 
@@ -1028,7 +1028,7 @@ EX OPTIONS
              :err 4
              Example: report and abort on first error
              :err 3
-             Example: report and consider only last command as error status
+             Example: report and consider only last command for error status
              :err 1
 
 EXINIT ENV VAR
