@@ -320,17 +320,18 @@ EX ESCAPES
      % ! :   Specials in ex
 
 EX EXPANSION
-     <%> in [args] substitutes current buffer pathname or any buffer
+     <%> in [args] expands to current buffer pathname or any buffer
      pathname when followed by a corresponding buffer number.
-     "%#" substitutes last swapped buffer pathname.
+     "%#" expands to last swapped buffer pathname.
 
-     Example: print pathname for buffer 69
-     :!echo "%69"
+     Example: make a copy of current file and edit it
+     :! cp % %_:e %_
+     Example: paste current buffer pathname
+     :& i%
 
-     Every ex command is be able to receive stdout from an external
-     program via a special expansion character <!>.
-     If closing <!> was not specified, the end of the line becomes
-     a terminator.
+     <!> in [args] defines and optionally ends a block containing
+     external commands. This block executes and expands to stdout
+     produced.
 
      Example: substitute "int" with the value of $RANDOM
      :%s/int/!printf "%s" $RANDOM!
@@ -346,12 +347,12 @@ EX RANGES
 
      [pad][% |][, ;][#][pad][. $ ' > <][- + * / %][0-9]
              All ranges structure
-     {> <}[kwd][> <]
-             Search range structure
-     '{<mark>}
-             Mark range structure
      |{cmd}[<|>]
-             Ex command range structure
+             Ex command structure
+     {> <}[kwd][> <]
+             Search structure
+     '{<mark>}
+             Mark structure
 
      pad     <Space> or <Tab>
      %       Range from first to last line
@@ -361,9 +362,9 @@ EX RANGES
      #       Rebase to previous value in range structure
      .       Current position
      $       Last line of a buffer or end of line
-     '       Begin mark range
-     >       Begin search range forward
-     <       Begin search range backward
+     '       Begin mark
+     >       Begin search forward
+     <       Begin search backward
      -       Subtract following number
      +       Add following number
      *       Multiply by the following number
