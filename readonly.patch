@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 168c0b01..10e33e3c 100644
+index 84133f08..e3029ab4 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -45,6 +45,7 @@ static char xserr[] = "syntax error";
+@@ -47,6 +47,7 @@ static char xserr[] = "syntax error";
  static char xirerr[] = "invalid range";
  static char xsrerr[] = "range not found";
  static char *xrerr;
@@ -10,7 +10,7 @@ index 168c0b01..10e33e3c 100644
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
-@@ -106,6 +107,7 @@ static int bufs_open(const char *path, int len)
+@@ -108,6 +109,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -18,7 +18,7 @@ index 168c0b01..10e33e3c 100644
  	return i;
  }
  
-@@ -432,6 +434,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -459,6 +461,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -27,7 +27,7 @@ index 168c0b01..10e33e3c 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -593,6 +597,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -623,6 +627,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf.s);
  	} else {
  		if (!strchr(cmd, '!')) {
@@ -36,7 +36,7 @@ index 168c0b01..10e33e3c 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1182,6 +1188,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1222,6 +1228,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index 168c0b01..10e33e3c 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1254,6 +1266,7 @@ static struct excmd {
+@@ -1295,6 +1307,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,7 +58,7 @@ index 168c0b01..10e33e3c 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index cbad0b34..6c8a96b3 100644
+index 57171e8c..ce82dee7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1838,9 +1838,11 @@ int main(int argc, char *argv[])
@@ -75,7 +75,7 @@ index cbad0b34..6c8a96b3 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index c94de90d..0e9a84c2 100644
+index e08ab7e6..40924f97 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -387,6 +387,7 @@ struct buf {
@@ -86,7 +86,7 @@ index c94de90d..0e9a84c2 100644
  };
  /* ex options */
  extern int xleft;
-@@ -520,3 +521,4 @@ extern char vi_msg[512];
+@@ -521,3 +522,4 @@ extern char vi_msg[512];
  extern rset *fsincl;
  extern char *fs_exdir;
  void dir_calc(char *path);

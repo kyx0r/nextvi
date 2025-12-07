@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 4b0a55f9..94c44d58 100644
+index 58f88972..f968f4f0 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -12,10 +12,10 @@ index 4b0a55f9..94c44d58 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 168c0b01..5c34a0dc 100644
+index 84133f08..fdce923e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -877,7 +877,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -916,7 +916,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 168c0b01..5c34a0dc 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -929,6 +929,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -968,6 +968,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -254,7 +254,7 @@ index f0243e27..7361d3c7 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index cbad0b34..3a3d9aea 100644
+index 57171e8c..177da5fc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -141,7 +141,8 @@ static void vi_drawrow(int row)
@@ -320,10 +320,10 @@ index cbad0b34..3a3d9aea 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index c94de90d..3c4a6bea 100644
+index e08ab7e6..51aaafab 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -475,7 +475,7 @@ extern const int ftslen;
+@@ -476,7 +476,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */
