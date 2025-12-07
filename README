@@ -523,7 +523,7 @@ EX COMMANDS
              Example: insert "hello" at line 5 and end of line
              :5;$c hello<^M><ESC>
              Example: delete 5 characters from current position
-             :;.;+5c<^M><ESC>
+             :;;+5c<^M><ESC>
 
      [range]d
              Delete line(s)
@@ -573,8 +573,7 @@ EX COMMANDS
              :g/int/g/;$/& A has a semicolon
 
              Example: extract/print data enclosed in "()"
-             :g/\(.+\)/;0;>\(.+\)>\:.;.+1k a\:grp 2\:;>\)*(\))>\:
-             grp\:k s\:.;'a;'sp
+             :err4:g/./;0\:|grp2|;>(\().+\)>;#>.+(\))>+1p:err1
 
      [vrange]g!{<*>}[kwd]{<*>}{cmd}
              Inverted global command
@@ -595,7 +594,7 @@ EX COMMANDS
      [vrange]k{<mark>}
              Set a line mark
 
-             Valid marks: <a-z> <`> <'> <[> <]> <*>
+             Valid marks: <a-z ` ' [ ] *>
              The character offset is set to the current position.
 
      &{macro}
@@ -656,11 +655,11 @@ EX COMMANDS
              Example: calculate directory only if :cd succeeded
              :? cd /blah:fd
              Example: print a line only if it contains "int" at offset 5
-             :? ;5;>^int>:p
+             :? ;5;#>^int>:p
              Example: allow :led while branching only :p command
-             :led:1,2? ;5;>^int>:led:p
+             :led:1,2? ;5;#>^int>:led:p
              Example: branch multiple commands
-             :led:1,2,3? ;5;>^int>:led:&i2 not branched:p:p
+             :led:1,2,3? ;5;#>^int>:led:&i2 not branched:p:p
              Example: edit vi.c only if it exists
              :? \![ -f ./vi.c ]:e ./vi.c:mpt
 
@@ -770,7 +769,7 @@ EX COMMANDS
              Example: pipe in result of ls command without replace
              :;$+1!ls
              Example: capitalize word at current position using tr
-             :;.;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
+             :;;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
 
      ft[filetype]
              Set a filetype
@@ -1022,6 +1021,16 @@ EX OPTIONS
              No argument sets the value to 0.
              hscroll computes the value using: xcols / 2 * hscroll
 
+     err[val=1]
+             Control ex errors
+
+             Example: silence and ignore errors
+             :err 4
+             Example: report and abort on first error
+             :err 3
+             Example: report and consider only last command as error status
+             :err 1
+
 EXINIT ENV VAR
      EXINIT defines a sequence of vi/ex commands to be performed
      at startup. Consequently, this is the primary way for scripting
@@ -1118,7 +1127,7 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 522 vi.h     |  definitions/aux     |
+     | 523 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 307 conf.c   |  hl/ft/td config     |
@@ -1128,9 +1137,9 @@ CODE MAP
      | 613 uc.c     |  UTF-8 support       |
      | 708 led.c    |  insert mode/output  |
      | 756 regex.c  |  pikevm              |
-     | 1480 ex.c    |  ex options/commands |
+     | 1487 ex.c    |  ex options/commands |
      | 1863 vi.c    |  normal mode/general |
-     | 7061 total   |  wc -l *.c|sort      |
+     | 7068 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
