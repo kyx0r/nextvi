@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 4b0a55f9..708def91 100644
+index 58f88972..6756de6d 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -18,13 +18,13 @@ index 4b0a55f9..708def91 100644
 +	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 +
  	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
- 	{ex_ft, ":[ \t]*((((?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
- [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*)[ \t]*(?:([,;])[ \t]*\
+ 	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$))?(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
+ [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*(?:\\|.*?(?:(?<^\\\\)\\||$))?)[ \t]*(?:([,;]#?)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 168c0b01..821413e9 100644
+index 12795b0a..22977182 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -33,7 +33,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
+@@ -35,7 +35,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
  rset *xkwdrs;			/* the last searched keyword rset */
  sbuf *xregs[256];		/* string registers */
  struct buf *bufs;		/* main buffers */
@@ -34,7 +34,7 @@ index 168c0b01..821413e9 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index cbad0b34..f764ed1f 100644
+index 57171e8c..c047006c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -505,12 +505,12 @@ void dir_calc(char *path)
@@ -170,10 +170,10 @@ index cbad0b34..f764ed1f 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c94de90d..066296ec 100644
+index e08ab7e6..457c5b12 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -424,7 +424,7 @@ extern sbuf *xacreg;
+@@ -425,7 +425,7 @@ extern sbuf *xacreg;
  extern rset *xkwdrs;
  extern sbuf *xregs[256];
  extern struct buf *bufs;

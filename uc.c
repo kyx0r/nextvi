@@ -59,10 +59,10 @@ int uc_off(char *s, int off)
 	return i;
 }
 
-char *uc_subl(char *s, int beg, int end, int *rlen, int *rn)
+char *uc_subl(char *s, int beg, int end, int *rlen)
 {
 	char *sbeg = uc_chr(s, beg);
-	char *send = uc_chrn(sbeg, end - beg, rn);
+	char *send = uc_chr(sbeg, end - beg);
 	int len = sbeg < send ? send - sbeg : 0;
 	char *r = emalloc(len + 4);
 	memcpy(r, sbeg, len);
@@ -73,8 +73,9 @@ char *uc_subl(char *s, int beg, int end, int *rlen, int *rn)
 
 char *uc_dup(const char *s)
 {
-	char *r = emalloc(strlen(s) + 1);
-	return r ? strcpy(r, s) : NULL;
+	int n = strlen(s) + 1;
+	char *r = emalloc(n);
+	return memcpy(r, s, n);
 }
 
 int uc_kind(char *c)

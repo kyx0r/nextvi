@@ -168,7 +168,7 @@ index f8efac26..2d366550 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 049ccc8d..ece3a6f9 100644
+index 421ea124..13c0f852 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -186,7 +186,7 @@ index 049ccc8d..ece3a6f9 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index cbad0b34..1311db79 100644
+index 57171e8c..3be7c687 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -198,7 +198,7 @@ index cbad0b34..1311db79 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index c94de90d..448e2fda 100644
+index e08ab7e6..6b9610d6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -266,7 +266,8 @@ int syn_addhl(char *reg, int id);

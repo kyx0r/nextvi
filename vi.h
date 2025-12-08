@@ -291,9 +291,9 @@ int uc_slen(char *s);
 char *uc_chrn(char *s, int off, int *n);
 char *uc_chr(char *s, int off) { int n; return uc_chrn(s, off, &n); }
 int uc_off(char *s, int off);
-char *uc_subl(char *s, int beg, int end, int *rlen, int *rn);
+char *uc_subl(char *s, int beg, int end, int *rlen);
 char *uc_sub(char *s, int beg, int end)
-	{ int l; return uc_subl(s, beg, end, &l, &l); }
+	{ int l; return uc_subl(s, beg, end, &l); }
 char *uc_dup(const char *s);
 #define uc_isspace(s) ((unsigned char)*s < 0x7f && isspace((unsigned char)*s))
 #define uc_isprint(s) ((unsigned char)*s > 0x7f || isprint((unsigned char)*s))
@@ -412,6 +412,7 @@ extern int xpr;
 extern int xsep;
 extern int xlim;
 extern int xseq;
+extern int xerr;
 /* global variables */
 extern int xrow, xoff, xtop;
 extern int xbufcur;

@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 9cf2c778..b394738b 100644
+index 842fd180..d4d07dcb 100644
 --- a/led.c
 +++ b/led.c
 @@ -281,7 +281,7 @@ static int led_lastword(char *s)
@@ -24,7 +24,7 @@ index 9cf2c778..b394738b 100644
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
  	sbufn_cut(sb, psn)
  	rstate -= 2;
-@@ -414,7 +416,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -414,7 +416,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
@@ -34,7 +34,7 @@ index 9cf2c778..b394738b 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -611,6 +614,20 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -611,6 +614,20 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  			else
  				led_redraw(sb->s, 0, orow, lsh, crow, ctop);
  			continue;
@@ -53,9 +53,9 @@ index 9cf2c778..b394738b 100644
 +			fcntl(STDIN_FILENO, F_SETFL, fl);
 +			goto leave;
  		case TK_CTL('o'): {
- 			if (!*modpost) {
- 				*post = uc_dup(*post);
-@@ -641,6 +658,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+ 			if (!*postref)
+ 				*postref = *post = uc_dup(*post);
+@@ -641,6 +658,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  	}
  leave:
  	vi_insmov = c;
@@ -73,7 +73,7 @@ index 9cf2c778..b394738b 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index cbad0b34..9883cc33 100644
+index 57171e8c..2d7b0d74 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -858,6 +858,8 @@ static void vi_indents(char *ln, int *l)
@@ -86,9 +86,9 @@ index cbad0b34..9883cc33 100644
  {
  	char *post, *ln = lbuf_get(xb, r1);
 @@ -889,6 +891,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+ 	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
- 	free(post);
 +	lmodified = 1;
  }
  

@@ -407,7 +407,7 @@ void led_modeswap(void)
 }
 
 /* read a line from the terminal */
-static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *modpost,
+static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
 	int ai_max, int *key, int *kmap, int orow, int lsh, int crow, int ctop)
 {
 	int len, t_row = -2, p_reg = 0;
@@ -612,16 +612,16 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
 				led_redraw(sb->s, 0, orow, lsh, crow, ctop);
 			continue;
 		case TK_CTL('o'): {
-			if (!*modpost) {
-				*post = uc_dup(*post);
-				*modpost = 1;
-			}
+			if (!*postref)
+				*postref = *post = uc_dup(*post);
 			preserve(struct buf*, ex_buf,)
 			int bidx = istempbuf(ex_buf) ? -1 : ex_buf - bufs;
 			preserve(int, ftidx,)
 			led_modeswap();
 			restore(ftidx)
-			if (bidx < 0 && ex_buf != tmpex_buf) {
+			if (bidx < 0) {
+				if (ex_buf == tmpex_buf)
+					continue;
 				restore(ex_buf)
 				exbuf_load(ex_buf)
 			} else if (bidx != ex_buf - bufs && bidx < xbufcur) {
@@ -646,13 +646,13 @@ leave:
 
 void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist)
 {
-	int n = sb->s_n, modpost = 1;
-	char *post = "";
+	int n = sb->s_n;
+	char *post = "", *postref = post;
 	vi_lncol = 0;
 	if (insert)
 		sbuf_str(sb, insert)
 	preserve(int, xtd, xtd = 2;)
-	led_line(sb, ps, n, &post, 0, &modpost, -1, key, kmap, 0, 0, xrow, xtop);
+	led_line(sb, ps, n, &post, 0, &postref, -1, key, kmap, 0, 0, xrow, xtop);
 	restore(xtd)
 	if (*key == '\n' && hist) {
 		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
@@ -663,10 +663,11 @@ void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist)
 
 int led_input(sbuf *sb, char *post, int postn, int row, int lsh)
 {
-	int ai_max = 128 * xai, modpost = 0;
+	int ai_max = 128 * xai;
 	int n, key, ps = 0, crow = xrow, ctop = xtop;
+	char *postref = NULL;
 	while (1) {
-		led_line(sb, ps, sb->s_n, &post, postn, &modpost,
+		led_line(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &key, &xkmap, row, lsh, crow, ctop);
 		if (key != '\n') {
 			n = sb->s_n;
@@ -675,8 +676,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int lsh)
 				sbufn_str(sb, post)
 			} else
 				sb->s[n] = *post;
-			if (modpost)
-				free(post);
+			free(postref);
 			xrow = crow;
 			return n;
 		}

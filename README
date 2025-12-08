@@ -19,9 +19,9 @@ DESCRIPTION
      for years to come.
 
 OPTIONS
-     -e      Enter Ex mode on startup
+     -e      Enter ex mode on startup
      -m      Disable initial file read message
-     -s      Enter raw Ex mode on startup
+     -s      Enter raw ex mode on startup
      -v      Enter visual mode on startup (Default)
 
 MANPAGE NOTATION
@@ -170,8 +170,9 @@ VI NORMAL
      vj            Toggle space padding when joining lines
      [#]y{arg}     Yank arg region # times
      [#]Y          Yank # lines
-     [#]p          Paste default register # times
-     [#]P          Paste default register below current line or behind cursor
+     [#]p          Paste default register below current line or after cursor
+                   position # times
+     [#]P          Paste default register above current line or before cursor
                    position # times
      m{a-z ` ' [] *}
                    Set buffer local line mark
@@ -319,17 +320,18 @@ EX ESCAPES
      % ! :   Specials in ex
 
 EX EXPANSION
-     <%> in [args] substitutes current buffer pathname or any buffer
+     <%> in [args] expands to current buffer pathname or any buffer
      pathname when followed by a corresponding buffer number.
-     "%#" substitutes last swapped buffer pathname.
+     "%#" expands to last swapped buffer pathname.
 
-     Example: print pathname for buffer 69
-     :!echo "%69"
+     Example: make a copy of current file and edit it
+     :! cp % %_:e %_
+     Example: paste current buffer pathname
+     :& i%
 
-     Every ex command is be able to receive stdout from an external
-     program via a special expansion character <!>.
-     If closing <!> was not specified, the end of the line becomes
-     a terminator.
+     <!> in [args] defines and optionally ends a block containing
+     external commands. This block executes and expands to stdout
+     produced.
 
      Example: substitute "int" with the value of $RANDOM
      :%s/int/!printf "%s" $RANDOM!
@@ -343,22 +345,26 @@ EX RANGES
      [range] implements vertical and horizontal ranges.
      [vrange] implements vertical range and horizontal position.
 
-     [pad][%][, ;][pad][. $ ' > <][- + * / %][0-9]
+     [pad][% |][, ;][#][pad][. $ ' > <][- + * / %][0-9]
              All ranges structure
+     |{cmd}[<|>]
+             Ex command structure
      {> <}[kwd][> <]
-             Search range structure
+             Search structure
      '{<mark>}
-             Mark range structure
+             Mark structure
 
      pad     <Space> or <Tab>
      %       Range from first to last line
+     |       Begin ex command
      ,       Vertical range separator
      ;       Horizontal range separator
+     #       Rebase to previous value in range structure
      .       Current position
      $       Last line of a buffer or end of line
-     '       Begin mark range
-     >       Begin search range forward
-     <       Begin search range backward
+     '       Begin mark
+     >       Begin search forward
+     <       Begin search backward
      -       Subtract following number
      +       Add following number
      *       Multiply by the following number
@@ -395,8 +401,14 @@ EX RANGES
              Search for "int" on line 5
      :.;<int<
              Search for "int" in reverse on the current line
-     :;>int>+3;>>p
+     :;5;+10=
+             +10 is relative to the initial current offset, not 5
+     :;5;#+10=
+             +10 is relative to 5
+     :;>int>+3;#>>p
              Print text enclosed by "int" on the current line
+     :|grp2|;>(a)+>+1|grp|;#>>p
+             Print text enclosed by a non deterministic pattern "a+"
 
 EX COMMANDS
      [vrange]f{> <}[kwd]
@@ -512,10 +524,15 @@ EX COMMANDS
              Example: insert "hello" at line 5 and end of line
              :5;$c hello<^M><ESC>
              Example: delete 5 characters from current position
-             :;.;+5c<^M><ESC>
+             :;;+5c<^M><ESC>
 
-     [vrange]d
+     [range]d
              Delete line(s)
+
+             Example: delete from current position to the start of the buffer
+             :1,.;0;d
+             Example: delete from current position to the end of the buffer
+             :.,$;;$d
      e[path]
              Open a file at a path
 
@@ -557,8 +574,7 @@ EX COMMANDS
              :g/int/g/;$/& A has a semicolon
 
              Example: extract/print data enclosed in "()"
-             :g/\(.+\)/;0;>\(.+\)>\:.;.+1k a\:grp 2\:;>\)*(\))>\:
-             grp\:k s\:.;'a;'sp
+             :grp2:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
      [vrange]g!{<*>}[kwd]{<*>}{cmd}
              Inverted global command
@@ -579,7 +595,7 @@ EX COMMANDS
      [vrange]k{<mark>}
              Set a line mark
 
-             Valid marks: <a-z> <`> <'> <[> <]> <*>
+             Valid marks: <a-z ` ' [ ] *>
              The character offset is set to the current position.
 
      &{macro}
@@ -640,11 +656,11 @@ EX COMMANDS
              Example: calculate directory only if :cd succeeded
              :? cd /blah:fd
              Example: print a line only if it contains "int" at offset 5
-             :? ;5;>^int>:p
+             :? ;5;#>^int>:p
              Example: allow :led while branching only :p command
-             :led:1,2? ;5;>^int>:led:p
+             :led:1,2? ;5;#>^int>:led:p
              Example: branch multiple commands
-             :led:1,2,3? ;5;>^int>:led:&i2 not branched:p:p
+             :led:1,2,3? ;5;#>^int>:led:&i2 not branched:p:p
              Example: edit vi.c only if it exists
              :? \![ -f ./vi.c ]:e ./vi.c:mpt
 
@@ -754,7 +770,7 @@ EX COMMANDS
              Example: pipe in result of ls command without replace
              :;$+1!ls
              Example: capitalize word at current position using tr
-             :;.;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
+             :;;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
 
      ft[filetype]
              Set a filetype
@@ -782,6 +798,9 @@ EX COMMANDS
 
      cd[path]
              Set a working directory
+
+             No argument relinks the current directory in case it got removed
+             or unmounted.
 
              Currently open buffers' file paths will be automatically adjusted
              to reflect a newly set working directory.
@@ -958,10 +977,12 @@ EX OPTIONS
      sep[val=:]
              Ex separator
 
-             Set Ex command separator character.
+             Set ex command separator character.
+             Ex separator must not collide with any ex/range special characters.
              Changing default <:> separator will break some built-in commands/macros.
-             Example: set separator to <|>
-             :sep |
+
+             Example: set separator to <s>
+             :sep s
              Example: disable separator
              :sep 0
 
@@ -1000,6 +1021,16 @@ EX OPTIONS
 
              No argument sets the value to 0.
              hscroll computes the value using: xcols / 2 * hscroll
+
+     err[val=1]
+             Control ex errors
+
+             Example: silence and ignore errors
+             :err 4
+             Example: report and abort on first error
+             :err 3
+             Example: report and consider only last command for error status
+             :err 1
 
 EXINIT ENV VAR
      EXINIT defines a sequence of vi/ex commands to be performed
@@ -1097,19 +1128,19 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 522 vi.h     |  definitions/aux     |
+     | 523 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
      | 307 conf.c   |  hl/ft/td config     |
      | 345 term.c   |  low level IO        |
      | 411 ren.c    |  positioning/syntax  |
      | 578 lbuf.c   |  file/line buffer    |
-     | 613 uc.c     |  UTF-8 support       |
+     | 614 uc.c     |  UTF-8 support       |
      | 708 led.c    |  insert mode/output  |
      | 756 regex.c  |  pikevm              |
-     | 1442 ex.c    |  ex options/commands |
+     | 1484 ex.c    |  ex options/commands |
      | 1863 vi.c    |  normal mode/general |
-     | 7023 total   |  wc -l *.c|sort      |
+     | 7066 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1181,7 +1212,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.7                   December 2, 2025                   Linux 6.17.7
+Linux 6.17.7                   December 8, 2025                   Linux 6.17.7
 
 NEXTVI PATCHES
 ==============

@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 168c0b01..96ebed57 100644
+index 12795b0a..0ad69b29 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1426,7 +1426,7 @@ void ex(void)
+@@ -1468,7 +1468,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -11,7 +11,7 @@ index 168c0b01..96ebed57 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1439,4 +1439,6 @@ void ex_init(char **files, int n)
+@@ -1481,4 +1481,6 @@ void ex_init(char **files, int n)
  	xvis &= ~8;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -19,7 +19,7 @@ index 168c0b01..96ebed57 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index cbad0b34..14f6f6d3 100644
+index 57171e8c..ff179156 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1817,7 +1817,8 @@ static int setup_signals(void)
@@ -50,8 +50,8 @@ index cbad0b34..14f6f6d3 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-2.4 Usage: %s [-emsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-2.4 Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-2.5 Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-2.5 Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
@@ -64,10 +64,10 @@ index cbad0b34..14f6f6d3 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index c94de90d..d57b7bff 100644
+index e08ab7e6..7794b6e8 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -452,7 +452,7 @@ void *ex_exec(const char *ln);
+@@ -453,7 +453,7 @@ void *ex_exec(const char *ln);
  void ex_cprint(char *line, char *ft, int r, int c, int ln);
  #define ex_print(line, ft) \
  { preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }

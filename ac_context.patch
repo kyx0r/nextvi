@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 9cf2c778..fde2bbcc 100644
+index 842fd180..366d6f4c 100644
 --- a/led.c
 +++ b/led.c
 @@ -11,25 +11,30 @@ int dstrlen(const char *s, char delim)
@@ -39,7 +39,7 @@ index 9cf2c778..fde2bbcc 100644
  	}
  	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
  	free(sylsb->s);
-@@ -413,6 +418,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -413,6 +418,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  	int len, t_row = -2, p_reg = 0;
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
@@ -48,7 +48,7 @@ index 9cf2c778..fde2bbcc 100644
  	while (1) {
  		led_printparts(sb, pre, ps, *post, postn, ai_max);
  		len = sb->s_n;
-@@ -520,7 +527,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -520,7 +527,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  		case TK_CTL('n'):
  			if (!suggestsb)
  				continue;
@@ -57,7 +57,7 @@ index 9cf2c778..fde2bbcc 100644
  			if (_sug) {
  				if (suggestsb->s_n == sug - suggestsb->s)
  					continue;
-@@ -531,13 +538,14 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -531,13 +538,14 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  				}
  				suggest:
  				*_sug = '\0';
@@ -75,7 +75,7 @@ index 9cf2c778..fde2bbcc 100644
  				sug = suggestsb->s;
  				if (!(_sug = strchr(sug, '\n')))
  					continue;
-@@ -551,8 +559,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -551,8 +559,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  				int r = crow-ctop+1;
  				if (sug)
  					goto pac_;

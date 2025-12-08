@@ -21,6 +21,8 @@ int xpr;			/* ex_cprint register */
 int xsep = ':';			/* ex command separator */
 int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
+int xerr = 1;			/* error handling -
+				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
 
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xbufcur;			/* number of active buffers */
@@ -193,7 +195,7 @@ static char *ex_reread(char ***re, int *dir)
 	return NULL;
 }
 
-static int ex_range(char **num, int n, int *row)
+static int ex_range(char *ploc, char **num, int n, int *row)
 {
 	int dir, off, beg, end, adj = 0;
 	while (**num == ' ' || **num == '\t')
@@ -202,6 +204,9 @@ static int ex_range(char **num, int n, int *row)
 	case '.':
 		++*num;
 		break;
+	case '%':
+		if (ploc != *num)
+			break;
 	case '$':
 		n = row ? lbuf_eol(xb, *row, 2) : lbuf_len(xb) - 1;
 		++*num;
@@ -221,6 +226,8 @@ static int ex_range(char **num, int n, int *row)
 		}
 		beg = row ? *row : xrow + (xkwddir > 0);
 		end = row ? beg+1 : lbuf_len(xb);
+		if (beg < 0 || beg >= lbuf_len(xb))
+			return -1;
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
 				&off, end, MIN(dir, 0))) {
 			xrerr = xsrerr;
@@ -242,12 +249,12 @@ static int ex_range(char **num, int n, int *row)
 			n -= dir;
 		else if (**num == '+')
 			n += dir;
-		else if (**num == '/')
-			n /= dir ? dir : 1;
 		else if (**num == '*')
 			n *= dir;
-		else if (**num == '%')
-			n %= dir ? dir : 1;
+		else if (**num == '/' && dir)
+			n /= dir;
+		else if (**num == '%' && dir)
+			n %= dir;
 		else
 			break;
 		for (++*num; isdigit((unsigned char)**num);)
@@ -260,45 +267,62 @@ static int ex_range(char **num, int n, int *row)
 #define ex_vregion(loc, beg, end) ex_region(loc, beg, end, &xoff, &xoff)
 static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	if (!strcmp("%", loc) || !lbuf_len(xb)) {
-		*beg = 0;
-		*end = MAX(0, lbuf_len(xb));
-		return 0;
-	}
-	int vaddr = 0, haddr = 0, ooff = xoff, row;
+	int vaddr = 0, haddr = 0, update = 0, row = xrow, ooff = xoff;
+	char *ploc = loc;
 	xrerr = xirerr;
+	if (*loc == '%') {
+		vaddr = 1;
+		*beg = 0;
+	}
 	while (*loc) {
-		if (*loc == ';') {
-			loc++;
-			row = vaddr ? vaddr % 2 ? *beg : *end-1 : xrow;
-			if ((ooff = ex_range(&loc, ooff, &row)) < 0)
+		if (*loc == '|') {
+			char *cmd = ++loc;
+			for (; *loc && *loc != '|'; loc++)
+				if (*loc == '\\' && loc[1] == '|')
+					loc++;
+			int nulled = *loc;
+			*loc = '\0';
+			void *err = ex_exec(cmd);
+			if (nulled)
+				*loc++ = '|';
+			if (err) {
+				xrerr = "ex command error";
+				return 1;
+			}
+			continue;
+		} else if (*loc == ';') {
+			update = loc[1] == '#';
+			loc += 1 + update;
+			if ((ooff = ex_range(ploc, &loc, update ? ooff : xoff, &row)) < 0)
 				return 1;
 			if (haddr++ % 2)
 				*o2 = ooff;
 			else
 				*o1 = ooff;
 		} else {
-			if (*loc == ',')
-				loc++;
-			if (vaddr++ % 2) {
-				*end = ex_range(&loc, xrow, NULL) + 1;
-				if (*end <= *beg || *end > lbuf_len(xb))
-					return 1;
-			} else {
-				*beg = ex_range(&loc, xrow, NULL);
-				if (*beg < 0 || *beg >= lbuf_len(xb))
-					return 1;
+			if (*loc == ',') {
+				update = loc[1] == '#';
+				loc += 1 + update;
 			}
+			row = ex_range(ploc, &loc, update ? row : xrow, NULL);
+			if (vaddr++ % 2)
+				*end = row + 1;
+			else
+				*beg = row;
 		}
-		while (*loc && *loc != ';' && *loc != ',')
+		while (*loc && *loc != '|' && *loc != ';' && *loc != ',')
 		        loc++;
 	}
-	if (!vaddr) {
+	if (!lbuf_len(xb)) {
+		*beg = 0;
+		*end = 0;
+		return 0;
+	} else if (!vaddr) {
 		*beg = xrow;
-		*end = MIN(lbuf_len(xb), xrow + 1);
+		*end = MIN(lbuf_len(xb), *beg + 1);
 	} else if (vaddr == 1)
 		*end = *beg + 1;
-	return 0;
+	return *beg < 0 || *beg >= lbuf_len(xb) || *end <= *beg || *end > lbuf_len(xb);
 }
 
 static void *ec_find(char *loc, char *cmd, char *arg)
@@ -442,7 +466,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 			fd < 0 || rd ? 'f' : 'r');
 	if (!(xvis & 8))
 		ex_print(msg, bar_ft)
-	return fd < 0 || rd ? xuerr : NULL;
+	return (fd < 0 || rd) && *arg ? xuerr : NULL;
 }
 
 static void *ec_editapprox(char *loc, char *cmd, char *arg)
@@ -455,6 +479,7 @@ static void *ec_editapprox(char *loc, char *cmd, char *arg)
 	sbuf_str(fuzz, arg)
 	for (z = 0;; z++) {
 		sbuf_null(fuzz)
+		term_record = !!term_sbuf;
 		for (c = 0, pos = 0; pos < lbuf_len(lb); pos++) {
 			path = lb->ln[pos];
 			for (i = lbuf_s(path)->len; i > 0 && path[i] != '/'; i--);
@@ -465,6 +490,8 @@ static void *ec_editapprox(char *loc, char *cmd, char *arg)
 				RS(2, ex_cprint(path, msg_ft, -1, xleft ? 0 : (p - buf) + 1, 1))
 			}
 		}
+		if (term_record)
+			term_commit();
 		if ((inst < 0 && c > 1) || (z && !c)) {
 			RS(2, ex_cprint(fuzz->s, msg_ft, -1, 0, 0))
 			inst = term_read();
@@ -688,7 +715,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (o1 >= 0 && cmd[0] == 'c') {
 		if (!sb->s_n && o2 <= o1)
 			goto ret;
-		char *p = lbuf_joinsb(xb, beg, beg, sb, &o1, &o2);
+		char *p = lbuf_joinsb(xb, beg, end-1, sb, &o1, &o2);
 		o1 -= sb->s[0] == '\n';
 		free(sb->s);
 		sb->s = p;
@@ -749,10 +776,19 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 
 static void *ec_delete(char *loc, char *cmd, char *arg)
 {
-	int beg, end;
-	if (ex_vregion(loc, &beg, &end) || !lbuf_len(xb))
+	int beg, end, o1 = -1, o2 = -1;
+	sbuf sb;
+	char *p = NULL;
+	if (ex_region(loc, &beg, &end, &o1, &o2) || !lbuf_len(xb))
 		return xrerr;
-	lbuf_edit(xb, NULL, beg, end, 0, 0);
+	if (o1 >= 0) {
+		sb.s = "";
+		sb.s_n = 0;
+		p = lbuf_joinsb(xb, beg, end-1, &sb, &o1, &o2);
+		xoff = o1;
+	}
+	lbuf_edit(xb, p, beg, end, o1, o2);
+	free(p);
 	xrow = beg;
 	return NULL;
 }
@@ -1059,13 +1095,14 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 	if (!getcwd(oldpath, sizeof(oldpath)))
 		if ((opath = getenv("PWD")))
 			strncpy(oldpath, opath, sizeof(oldpath)-1);
-	if (*arg && chdir(arg))
+	plen = strlen(oldpath);
+	i = plen == sizeof(oldpath)-1;
+	if (chdir(*arg ? arg : oldpath))
 		return "chdir error";
 	if (!getcwd(newpath, sizeof(newpath)))
 		return "getcwd error";
 	setenv("PWD", newpath, 1);
-	plen = strlen(oldpath);
-	if (plen == sizeof(oldpath)-1)
+	if (i)
 		return "oldpath >= 4096";
 	if (plen && oldpath[plen-1] != '/')
 		oldpath[plen++] = '/';
@@ -1198,7 +1235,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 
 EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
 EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
-EO(hl) EO(lim) EO(led) EO(vis) EO(mpt)
+EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
 
 _EO(left,
 	if (*loc)
@@ -1232,6 +1269,7 @@ static struct excmd {
 	EO(ai),
 	{"ac", ec_setacreg},
 	{"a", ec_insert},
+	EO(err),
 	{"ea!", ec_editapprox},
 	{"ea", ec_editapprox},
 	{"e!", ec_edit},
@@ -1348,10 +1386,10 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	char *dst = sb->s;
 	while (*src == xsep || *src == ' ' || *src == '\t')
 		src += !!src[0];
-	while (memchr(" \t0123456789+-.,<>/$';%*", *src, 24)) {
+	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
-		if (*src == '>' || *src == '<') {
+		if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {
 				*dst++ = *src++;
@@ -1387,21 +1425,25 @@ void *ex_exec(const char *ln)
 		lbuf_mark(xb, '*', xrow, xoff);
 	sbuf_smake(sb, strlen(ln) + 4)
 	for (int i = 0; *ln; i++) {
+		sbuf_cut(sb, 0)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
-		if (i >= r1 && i <= r2)
-			continue;
-		if (arg >= 0) {
+		if ((i < r1 || i > r2) && arg >= 0) {
 			ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
-			if (ret && !*ret) {
+			if (!ret)
+				continue;
+			if (!*ret) {
 				r1 = ((int*)ret)[1] + i;
 				r2 = ((int*)ret)[2] + i;
-			} else if (ret && ret != xuerr)
+				continue;
+			}
+			if (ret != xuerr && xerr & 1)
 				ex_print(ret, msg_ft)
+			if (xerr & 2)
+				break;
 		}
-		sbuf_cut(sb, 0)
 	}
 	free(sb->s);
-	return ret;
+	return xerr & 4 ? NULL : ret;
 }
 
 /* ex main loop */
