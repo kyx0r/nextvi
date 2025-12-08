@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index d790be10..8559f0f0 100644
+index 842fd180..d4d07dcb 100644
 --- a/led.c
 +++ b/led.c
 @@ -281,7 +281,7 @@ static int led_lastword(char *s)
@@ -24,7 +24,7 @@ index d790be10..8559f0f0 100644
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
  	sbufn_cut(sb, psn)
  	rstate -= 2;
-@@ -414,7 +416,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -414,7 +416,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
  	while (1) {
@@ -34,7 +34,7 @@ index d790be10..8559f0f0 100644
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -611,6 +614,20 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+@@ -611,6 +614,20 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  			else
  				led_redraw(sb->s, 0, orow, lsh, crow, ctop);
  			continue;
@@ -53,9 +53,9 @@ index d790be10..8559f0f0 100644
 +			fcntl(STDIN_FILENO, F_SETFL, fl);
 +			goto leave;
  		case TK_CTL('o'): {
- 			if (!*modpost) {
- 				*post = uc_dup(*post);
-@@ -643,6 +660,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, int *mod
+ 			if (!*postref)
+ 				*postref = *post = uc_dup(*post);
+@@ -641,6 +658,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  	}
  leave:
  	vi_insmov = c;
@@ -63,7 +63,7 @@ index d790be10..8559f0f0 100644
  	*key = c;
  }
  
-@@ -683,7 +701,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int lsh)
+@@ -681,7 +699,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int lsh)
  			return n;
  		}
  		sbuf_chr(sb, key)

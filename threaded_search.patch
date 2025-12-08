@@ -168,7 +168,7 @@ index f8efac26..2d366550 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 0aef9db9..aab14e73 100644
+index 421ea124..13c0f852 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
