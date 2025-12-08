@@ -73,8 +73,9 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
 
 char *uc_dup(const char *s)
 {
-	char *r = emalloc(strlen(s) + 1);
-	return r ? strcpy(r, s) : NULL;
+	int n = strlen(s) + 1;
+	char *r = emalloc(n);
+	return memcpy(r, s, n);
 }
 
 int uc_kind(char *c)
