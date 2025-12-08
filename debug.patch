@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 84133f08..ec78898c 100644
+index 12795b0a..5acb25f8 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1485,3 +1485,16 @@ void ex_init(char **files, int n)
+@@ -1482,3 +1482,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }

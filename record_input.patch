@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 84133f08..c43368a6 100644
+index 12795b0a..4dad6912 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
@@ -10,7 +10,7 @@ index 84133f08..c43368a6 100644
  
  int xrow, xoff, xtop;		/* current row, column, and top row */
  int xbufcur;			/* number of active buffers */
-@@ -1239,6 +1240,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1236,6 +1237,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
@@ -18,7 +18,7 @@ index 84133f08..c43368a6 100644
  
  _EO(left,
  	if (*loc)
-@@ -1293,6 +1295,7 @@ static struct excmd {
+@@ -1290,6 +1292,7 @@ static struct excmd {
  	{"k", ec_mark},
  	{"q!", ec_quit},
  	{"q", ec_quit},

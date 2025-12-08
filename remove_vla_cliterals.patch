@@ -12,10 +12,10 @@ index 58f88972..f968f4f0 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 84133f08..fdce923e 100644
+index 12795b0a..fe2b17a1 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -916,7 +916,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -913,7 +913,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 84133f08..fdce923e 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -968,6 +968,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -965,6 +965,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);

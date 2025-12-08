@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 84133f08..51678e0c 100644
+index 12795b0a..0ad69b29 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1471,7 +1471,7 @@ void ex(void)
+@@ -1468,7 +1468,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -11,7 +11,7 @@ index 84133f08..51678e0c 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1484,4 +1484,6 @@ void ex_init(char **files, int n)
+@@ -1481,4 +1481,6 @@ void ex_init(char **files, int n)
  	xvis &= ~8;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
