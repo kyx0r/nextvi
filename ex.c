@@ -195,7 +195,7 @@ static char *ex_reread(char ***re, int *dir)
 	return NULL;
 }
 
-static int ex_range(char **num, int n, int *row)
+static int ex_range(char *ploc, char **num, int n, int *row)
 {
 	int dir, off, beg, end, adj = 0;
 	while (**num == ' ' || **num == '\t')
@@ -204,6 +204,9 @@ static int ex_range(char **num, int n, int *row)
 	case '.':
 		++*num;
 		break;
+	case '%':
+		if (ploc != *num)
+			break;
 	case '$':
 		n = row ? lbuf_eol(xb, *row, 2) : lbuf_len(xb) - 1;
 		++*num;
@@ -246,12 +249,12 @@ static int ex_range(char **num, int n, int *row)
 			n -= dir;
 		else if (**num == '+')
 			n += dir;
-		else if (**num == '/')
-			n /= dir ? dir : 1;
 		else if (**num == '*')
 			n *= dir;
-		else if (**num == '%')
-			n %= dir ? dir : 1;
+		else if (**num == '/' && dir)
+			n /= dir;
+		else if (**num == '%' && dir)
+			n %= dir;
 		else
 			break;
 		for (++*num; isdigit((unsigned char)**num);)
@@ -264,15 +267,12 @@ static int ex_range(char **num, int n, int *row)
 #define ex_vregion(loc, beg, end) ex_region(loc, beg, end, &xoff, &xoff)
 static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	int vaddr = 0, haddr = 0, update = 0, row = xrow, ooff = xoff, nulled;
+	int vaddr = 0, haddr = 0, update = 0, row = xrow, ooff = xoff;
+	char *ploc = loc;
 	xrerr = xirerr;
 	if (*loc == '%') {
-		loc++;
-		vaddr = 3;
-		update = 1;
-		row = lbuf_len(xb);
+		vaddr = 1;
 		*beg = 0;
-		*end = row;
 	}
 	while (*loc) {
 		if (*loc == '|') {
@@ -280,19 +280,20 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 			for (; *loc && *loc != '|'; loc++)
 				if (*loc == '\\' && loc[1] == '|')
 					loc++;
-			nulled = *loc;
+			int nulled = *loc;
 			*loc = '\0';
-			if (ex_exec(cmd)) {
+			void *err = ex_exec(cmd);
+			if (nulled)
+				*loc++ = '|';
+			if (err) {
 				xrerr = "ex command error";
 				return 1;
 			}
-			if (nulled)
-				*loc++ = '|';
 			continue;
 		} else if (*loc == ';') {
 			update = loc[1] == '#';
 			loc += 1 + update;
-			if ((ooff = ex_range(&loc, update ? ooff : xoff, &row)) < 0)
+			if ((ooff = ex_range(ploc, &loc, update ? ooff : xoff, &row)) < 0)
 				return 1;
 			if (haddr++ % 2)
 				*o2 = ooff;
@@ -303,7 +304,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 				update = loc[1] == '#';
 				loc += 1 + update;
 			}
-			row = ex_range(&loc, update ? row : xrow, NULL);
+			row = ex_range(ploc, &loc, update ? row : xrow, NULL);
 			if (vaddr++ % 2)
 				*end = row + 1;
 			else
@@ -321,11 +322,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		*end = MIN(lbuf_len(xb), *beg + 1);
 	} else if (vaddr == 1)
 		*end = *beg + 1;
-	if (*beg < 0 || *beg >= lbuf_len(xb))
-		return 1;
-	if (*end <= *beg || *end > lbuf_len(xb))
-		return 1;
-	return 0;
+	return *beg < 0 || *beg >= lbuf_len(xb) || *end <= *beg || *end > lbuf_len(xb);
 }
 
 static void *ec_find(char *loc, char *cmd, char *arg)
