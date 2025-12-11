@@ -1332,20 +1332,24 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 		if (*src == '%') {
 			int n = -1;
 			struct buf *pbuf = ex_buf;
+			sbuf *buf;
 			src++;
-			if (*src == '#') {
+			if (*src == '@' && src[1] && src[1] != '\\') {
+				if ((buf = xregs[(unsigned char)src[1]]))
+					sbuf_str(sb, buf->s)
+				src += 2;
+			} else if (*src == '#') {
 				src++;
 				pbuf = ex_pbuf;
-			} else if ((*src ^ '0') < 10)
-				pbuf = &bufs[n = atoi(src)];
-			if (pbuf < bufs || pbuf >= &bufs[xbufcur] || !pbuf->path[0]) {
-				ex_print("\"#\" or \"%\" is not set", msg_ft)
-				*arg = -1;
-			} else
-				sbuf_str(sb, pbuf->path)
-			if (n >= 0)
-				src += snprintf(0, 0, "%d", n);
-			src += *src == '\\' && src[-1] != '#' && (src[1] ^ '0') < 10;
+			} else {
+				if ((*src ^ '0') < 10)
+					pbuf = &bufs[n = atoi(src)];
+				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
+					sbuf_str(sb, pbuf->path)
+				if (n >= 0)
+					src += snprintf(0, 0, "%d", n);
+				src += *src == '\\' && (src[1] ^ '0') < 10;
+			}
 		} else if (*src == '!') {
 			int n = sb->s_n;
 			src++;
@@ -1421,7 +1425,7 @@ void *ex_exec(const char *ln)
 	for (int i = 0; *ln; i++) {
 		sbuf_cut(sb, 0)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
-		if ((i < r1 || i > r2) && arg >= 0) {
+		if (i < r1 || i > r2) {
 			ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
 			if (!ret)
 				continue;
