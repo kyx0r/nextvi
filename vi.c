@@ -1369,7 +1369,7 @@ void vi(int init)
 				break;
 			case TK_CTL('k'):;
 				static struct lbuf *writexb;
-				if ((cs = ex_exec("w")) && xb == writexb)
+				if ((cs = ex_exec("w")) && writexb && xb == writexb)
 					cs = ex_exec("mpt0:w!");
 				writexb = cs ? xb : NULL;
 				break;
