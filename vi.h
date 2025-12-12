@@ -57,7 +57,7 @@ typedef struct sbuf {
 #define sbuf_chr(sb, c) \
 { \
 	if (sb->s_n + 1 >= sb->s_sz) { \
-		sb->s_sz = NEXTSZ(sb->s_sz, 1); \
+		sb->s_sz = NEXTSZ(sb->s_n, 1); \
 		sb->s = erealloc(sb->s, sb->s_sz); \
 	} \
 	sb->s[sb->s_n++] = c; \
@@ -65,11 +65,16 @@ typedef struct sbuf {
 
 #define sbuf_(sb, x, len, func) \
 if (sb->s_n + len >= sb->s_sz) { \
-	char *__s_ = sb->s; \
-	sb->s_sz = NEXTSZ(sb->s_sz, len); \
-	sb->s = emalloc(sb->s_sz); \
-	memcpy(sb->s, __s_, sb->s_n); \
-	free(__s_); \
+	if (sb->s_n < sb->s_sz >> 2) { \
+		char *__s_ = sb->s; \
+		sb->s_sz = NEXTSZ(sb->s_n, len); \
+		sb->s = emalloc(sb->s_sz); \
+		memcpy(sb->s, __s_, sb->s_n); \
+		free(__s_); \
+	} else { \
+		sb->s_sz = NEXTSZ(sb->s_n, len); \
+		sb->s = erealloc(sb->s, sb->s_sz); \
+	} \
 } \
 mem##func(sb->s + sb->s_n, x, len); \
 sb->s_n += len; \
@@ -79,7 +84,7 @@ sb->s_n += len; \
 #define sbuf_free(sb) { free(sb->s); free(sb); }
 #define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
 #define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
-#define sbuf_str(sb, s) { const char *__p_ = s; while(*__p_) sbuf_chr(sb, *__p_++) }
+#define sbuf_str(sb, s) { int __l_ = strlen(s); sbuf_mem(sb, s, __l_) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that NULL terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
