@@ -46,15 +46,6 @@ typedef struct sbuf {
 	int s_sz;	/* size of memory allocated for s[] */
 } sbuf;
 
-#define sbuf_extend(sb, newsz) \
-{ \
-	char *__s_ = sb->s; \
-	sb->s_sz = newsz; \
-	sb->s = emalloc(sb->s_sz); \
-	memcpy(sb->s, __s_, sb->s_n); \
-	free(__s_); \
-} \
-
 #define _sbuf_make(sb, newsz, alloc) \
 { \
 	alloc \
@@ -65,14 +56,21 @@ typedef struct sbuf {
 
 #define sbuf_chr(sb, c) \
 { \
-	if (sb->s_n + 1 >= sb->s_sz) \
-		sbuf_extend(sb, NEXTSZ(sb->s_sz, 1)) \
+	if (sb->s_n + 1 >= sb->s_sz) { \
+		sb->s_sz = NEXTSZ(sb->s_sz, 1); \
+		sb->s = erealloc(sb->s, sb->s_sz); \
+	} \
 	sb->s[sb->s_n++] = c; \
 } \
 
 #define sbuf_(sb, x, len, func) \
-if (sb->s_n + len >= sb->s_sz) \
-	sbuf_extend(sb, NEXTSZ(sb->s_sz, len)) \
+if (sb->s_n + len >= sb->s_sz) { \
+	char *__s_ = sb->s; \
+	sb->s_sz = NEXTSZ(sb->s_sz, len); \
+	sb->s = emalloc(sb->s_sz); \
+	memcpy(sb->s, __s_, sb->s_n); \
+	free(__s_); \
+} \
 mem##func(sb->s + sb->s_n, x, len); \
 sb->s_n += len; \
 

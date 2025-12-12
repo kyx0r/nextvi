@@ -1330,25 +1330,25 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 	*arg = sb->s_n;
 	while (*src && *src != xsep) {
 		if (*src == '%') {
-			int n = -1;
-			struct buf *pbuf = ex_buf;
-			sbuf *buf;
 			src++;
 			if (*src == '@' && src[1] && src[1] != '\\') {
-				if ((buf = xregs[(unsigned char)src[1]]))
-					sbuf_str(sb, buf->s)
+				sbuf *reg = xregs[(unsigned char)src[1]];
+				if (reg)
+					sbuf_str(sb, reg->s)
 				src += 2;
-			} else if (*src == '#') {
-				src++;
-				pbuf = ex_pbuf;
 			} else {
-				if ((*src ^ '0') < 10)
+				struct buf *pbuf = ex_buf;
+				int n;
+				if (*src == '#') {
+					src++;
+					pbuf = ex_pbuf;
+				} else if ((*src ^ '0') < 10) {
 					pbuf = &bufs[n = atoi(src)];
+					src += snprintf(0, 0, "%d", n);
+				}
+				src += *src == '\\' && src[-1] != '#' && (src[1] ^ '0') < 10;
 				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
 					sbuf_str(sb, pbuf->path)
-				if (n >= 0)
-					src += snprintf(0, 0, "%d", n);
-				src += *src == '\\' && (src[1] ^ '0') < 10;
 			}
 		} else if (*src == '!') {
 			int n = sb->s_n;
