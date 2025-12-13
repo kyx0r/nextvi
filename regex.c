@@ -691,7 +691,7 @@ rset *rset_make(int n, char **re, int flg)
 		rs->setgrpcnt[i] = re_groupcount(re[i]) + 1;
 		rs->grpcnt += rs->setgrpcnt[i];
 	}
-	sbuf_set(sb, '\0', 4)
+	sbufn_null(sb)
 	sz = re_sizecode(sb->s, &laidx) * sizeof(int);
 	if (sz > 0) {
 		rs->regex = emalloc(sizeof(rcode)+sz);

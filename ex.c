@@ -798,8 +798,7 @@ void ex_regput(unsigned char c, const char *s, int append)
 		if (!append)
 			sbuf_cut(sb, 0)
 		sbuf_str(sb, s)
-		sbuf_set(sb, '\0', 4)
-		sb->s_n -= 4;
+		sbufn_null(sb)
 	} else if (sb) {
 		sbuf_free(sb)
 		xregs[c] = NULL;

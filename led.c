@@ -33,8 +33,7 @@ static int search(const char *pattern, int l)
 	}
 	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
 	free(sylsb->s);
-	sbuf_set(suggestsb, '\0', 4)
-	suggestsb->s_n -= 4;
+	sbufn_null(suggestsb)
 	return suggestsb->s_n;
 }
 
@@ -200,7 +199,7 @@ void led_render(char *s0, int cbeg, int cend)
 			stt[i] = att[i];
 			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
 		}
-		sbuf_set(bsb, '\0', 4)
+		sbufn_null(bsb)
 		bound = bsb->s;
 	}
 	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
@@ -284,13 +283,12 @@ static void led_printparts(sbuf *sb, int pre, int ps,
 	char *post, int postn, int ai_max)
 {
 	if (!xled) {
-		sbuf_set(sb, '\0', 4)
-		sb->s_n -= 4;
+		sbufn_null(sb)
 		return;
 	}
 	int dir, off, pos, psn = sb->s_n;
 	sbuf_str(sb, post)
-	sbuf_set(sb, '\0', 4)
+	sbufn_null(sb)
 	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
 	For correctness, rstate must be recomputed. */
 	rstate += 2;
@@ -374,7 +372,7 @@ static void led_redraw(char *cs, int r, int orow, int lsh, int crow, int ctop)
 			sbuf_smake(cb, 128)
 			nl = dstrlen(cs, '\n');
 			sbuf_mem(cb, cs, nl+!!cs[nl])
-			sbuf_set(cb, '\0', 4)
+			sbufn_null(cb)
 			rstate->s = NULL;
 			led_crender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
 			free(cb->s);
@@ -466,7 +464,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 				sbuf_chr(sb, p_reg ? p_reg : '~')
 				sbuf_chr(sb, ' ')
 				sbuf_mem(sb, xregs[p_reg]->s, xregs[p_reg]->s_n)
-				sbuf_set(sb, '\0', 4)
+				sbufn_null(sb)
 				led_info(sb->s + len)
 				sbuf_cut(sb, len)
 			} else if (!i++)
