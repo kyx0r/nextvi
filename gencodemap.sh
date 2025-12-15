@@ -1,5 +1,5 @@
 #!/bin/sh
-EXINIT="led0:1!wc -l *.h|sort:\$k a:\$!wc -l *.c|sort"
+EXINIT="led0:1!wc -l *.h|sort:\$m a:\$!wc -l *.c|sort"
 EXINIT="${EXINIT}:1:&G:&O_:ya:g/^[0-9]/&I :1"
 EXINIT="${EXINIT}:>vi\.h>:&A | definitions/aux"
 EXINIT="${EXINIT}:1:>kmap\.h>:&A | keymap translation"
