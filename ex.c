@@ -484,7 +484,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
 	int dir, off, obeg, beg, end;
-	if (!*arg || *arg != '>' || *arg != '<')
+	if (!*arg || (*arg != '>' && *arg != '<'))
 		return ec_fuzz(loc, cmd, arg + (*arg == '\\' && arg[1]));
 	char **s = &arg;
 	char *err = ex_reread(&s, &dir);
@@ -1090,6 +1090,16 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	return !ret || addr == 1 ? NULL : memcpy(_skip, skip, sizeof(skip));
 }
 
+static void *ec_join(char *loc, char *cmd, char *arg)
+{
+	int beg, end, o2 = 0;
+	if (ex_vregion(loc, &beg, &end))
+		return xrerr;
+	lbuf_join(xb, beg, end+1, xoff, &o2, arg[0]);
+	xrow = beg;
+	return NULL;
+}
+
 static void *ec_setdir(char *loc, char *cmd, char *arg)
 {
 	free(fs_exdir);
@@ -1329,6 +1339,7 @@ static struct excmd {
 	{"cm", ec_cmap},
 	{"cd", ec_chdir},
 	{"c", ec_insert},
+	{"j", ec_join},
 	EO(tbs),
 	EO(td),
 	EO(order),

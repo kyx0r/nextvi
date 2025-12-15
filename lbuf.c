@@ -299,6 +299,32 @@ char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2)
 	return p;
 }
 
+int lbuf_join(struct lbuf *lb, int beg, int end, int o1, int *o2, int flg)
+{
+	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
+		return 1;
+	sbuf_smake(sb, 1024)
+	for (int i = beg; i < end; i++) {
+		char *ln = lbuf_get(xb, i);
+		char *lnend = ln + lbuf_s(ln)->len;
+		if (i > beg) {
+			while (ln[0] == ' ' || ln[0] == '\t')
+				ln++;
+			if (flg && sb->s_n && *ln != ')' &&
+					sb->s[sb->s_n-1] != ' ') {
+				sbuf_chr(sb, ' ')
+				*o2 += 1;
+			}
+		}
+		*o2 += (i+1 == end) ? 0 : uc_slen(ln) - 1;
+		sbuf_mem(sb, ln, lnend - ln)
+	}
+	sbufn_chr(sb, '\n')
+	lbuf_edit(xb, sb->s, beg, end, o1, *o2);
+	free(sb->s);
+	return 0;
+}
+
 char *lbuf_get(struct lbuf *lb, int pos)
 {
 	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;

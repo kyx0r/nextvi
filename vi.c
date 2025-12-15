@@ -45,7 +45,6 @@ static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_cndir = 1;		/* ^n direction */
 static int vi_status;			/* always show status */
 static int vi_tsm;			/* type of the status message */
-static int vi_joinmode = 1;		/* 1: insert extra space for pad 0: raw line join */
 static int vi_nlword;			/* new line mode for eEwWbB */
 
 void *emalloc(size_t size)
@@ -1098,31 +1097,10 @@ static int vc_put(int cmd)
 
 static void vc_join(int spc, int cnt)
 {
-	int beg = xrow;
-	int end = xrow + cnt;
-	int off = 0;
-	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
+	int o2 = 0;
+	if (lbuf_join(xb, xrow, xrow + cnt, xoff, &o2, spc))
 		return;
-	sbuf_smake(sb, 1024)
-	for (int i = beg; i < end; i++) {
-		char *ln = lbuf_get(xb, i);
-		char *lnend = ln + lbuf_s(ln)->len;
-		if (i > beg) {
-			while (ln[0] == ' ' || ln[0] == '\t')
-				ln++;
-			if (spc && sb->s_n && *ln != ')' &&
-					sb->s[sb->s_n-1] != ' ') {
-				sbuf_chr(sb, ' ')
-				off++;
-			}
-		}
-		off += (i+1 == end) ? 0 : uc_slen(ln) - 1;
-		sbuf_mem(sb, ln, lnend - ln)
-	}
-	sbufn_chr(sb, '\n')
-	lbuf_edit(xb, sb->s, beg, end, xoff, off);
-	xoff = off;
-	free(sb->s);
+	xoff = o2;
 	vi_mod |= 1;
 }
 
@@ -1398,9 +1376,6 @@ void vi(int init)
 						vi_arg--;
 					}
 					break;
-				case 'j':
-					vi_joinmode = !vi_joinmode;
-					break;
 				case 'w':
 					vi_nlword = !vi_nlword;
 					break;
@@ -1544,7 +1519,7 @@ void vi(int init)
 					xoff--;
 				break;
 			case 'J':
-				vc_join(vi_joinmode, vi_arg <= 1 ? 2 : vi_arg);
+				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
 				break;
 			case 'K': {
 				preserve(int, xled, xled = 0;)
