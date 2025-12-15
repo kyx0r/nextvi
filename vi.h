@@ -263,7 +263,7 @@ void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 int syn_merge(int old, int new);
-void syn_reloadft(int hl);
+void syn_reloadft(int hl, int flg);
 int syn_findhl(int id);
 int syn_addhl(char *reg, int id);
 void syn_init(void);
@@ -362,8 +362,8 @@ typedef struct {
 } led_att;
 extern sbuf *led_attsb;
 void led_modeswap(void);
-void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist);
-int led_input(sbuf *sb, char *post, int postn, int row, int lsh);
+void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int flg);
+int led_input(sbuf *sb, char *post, int postn, int row, int flg);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
 { \

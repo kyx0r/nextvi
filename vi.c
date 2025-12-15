@@ -1054,7 +1054,7 @@ static void vc_insert(int cmd)
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
 	sbuf_mem(sb, ln, l1)
-	postn = led_input(sb, post, postn, row, cmdo);
+	postn = led_input(sb, post, postn, row, cmdo << 2);
 	if (postn != l1 || cmdo || !ln)
 		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
 	free(sb->s);
@@ -1372,6 +1372,7 @@ void vi(int init)
 				if ((cs = ex_exec("w")) && writexb && xb == writexb)
 					cs = ex_exec("mpt0:w!");
 				writexb = cs ? xb : NULL;
+				vi_mod |= 1;
 				break;
 			case '#':
 				if (vi_lnnum & vi_arg)
@@ -1670,6 +1671,7 @@ void vi(int init)
 				break;
 			case 'R':
 				ex_exec("left:reg");
+				vi_mod |= 1;
 				break;
 			case 'Q':
 				term_pos(xrow - xtop, 0);
@@ -1735,7 +1737,7 @@ void vi(int init)
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
 				if (!word || strcmp(word, cs)) {
-					syn_reloadft(syn_addhl(cs, 1));
+					syn_reloadft(syn_addhl(cs, 1), 0);
 					free(word);
 					word = cs;
 					vi_mod |= 1;
@@ -1778,9 +1780,9 @@ void vi(int init)
 				if (!(vi_mod & 1) && !*vi_word)
 					vi_drawrow(orow);
 			syn_blockhl = -1;
-			syn_reloadft(syn_addhl("^.+", 2));
+			syn_reloadft(syn_addhl("^.+", 2), 0);
 			vi_drawrow(xrow);
-			syn_reloadft(syn_addhl(NULL, 2));
+			syn_reloadft(syn_addhl(NULL, 2), 0);
 		} else if (vi_mod & 2 && !(vi_mod & 1)) {
 			syn_blockhl = -1;
 			vi_drawrow(xrow);

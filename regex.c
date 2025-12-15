@@ -619,6 +619,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 {
 	if (!*s)
 		return 0;
+	flg = prog->flg | flg;
 	const char *sp = s, *_sp = s, *s0, *s1;
 	int *pcs[prog->splits], *npc, *pc, *insts = prog->insts;
 	rsub *subs[prog->splits];
@@ -632,7 +633,6 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	unsigned int sdense[prog->sparsesz], sparsesz = 0;
 	char nsubs[prog->sub];
-	flg = prog->flg | flg;
 	for (i = 0; i < prog->laidx; i++)
 		lb[i] = NULL;
 	if (eol_ch)

@@ -236,7 +236,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 ((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?[.$]?(?:'[a-z'`[\\]*])?\
 ([0-9]*)?)(?:([-*-+/%])([0-9]+))*(?:\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 ((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|left|lim|led|vis|mpt|err)\
-|[@&!?=dk]|b[psx]?|p[uh]?|ac?|e[a!]?!?|f(?:\\+?[ \t]?([><])|[tdp+])?|inc|i|\
+|[@&!?=dm]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f(?:\\+?[ \t]?([><])|[tdp+])?|inc|i|\
 (?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
 	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
@@ -254,6 +254,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{bar_ft, "^.*$", A(AY1 | SYN_BD)},
 
 	{msg_ft, ".+", A(AY1 | SYN_BD)},
+	{msg_ft, NULL, A(RE1 | SYN_BD), 1, 1},
 };
 const int hlslen = LEN(hls);
 
