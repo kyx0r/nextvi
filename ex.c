@@ -407,7 +407,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	struct lbuf *lb = *cmd == 'f' ? xb : tempbufs[1].lb;
 	rset *rs;
 	char *path, *p, buf[32], trunc[100];
-	int z, c, pos, inst, lnum = -1, max = xrows * 10;
+	int z, c, pos, inst, subs[2], lnum = -1, max = xrows * 10;
 	if (*loc)
 		max = *loc == '$' ? INT_MAX : atoi(loc);
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max); 
@@ -452,6 +452,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 			inst -= '0';
 			break;
 		}
+		rset_free(rs);
 		sbuf_cut(sb, 0)
 		if (c && xvis & 4)
 			ex_print("", NULL)
@@ -467,17 +468,18 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	xmpt = xmpt >= 0 ? 0 : xmpt;
 	free(fuzz->s);
 	free(sb->s);
-	if (*cmd == 'f') {
-		if (lnum >= 0)
-			xrow = lnum;
-		return NULL;
-	}
-	path = lbuf_get(tempbufs[1].lb, lnum);
-	if (path) {
+	path = lbuf_get(lb, lnum);
+	if (*cmd == 'f' && path) {
+		rs->setgrpcnt[0] = 1;
+		rset_find(rs, path, subs, 0);
+		xrow = lnum;
+		xoff = subs[0];
+	} else if (path) {
 		path[lbuf_s(path)->len] = '\0';
 		ec_edit(loc, cmd, path);
 		path[lbuf_s(path)->len] = '\n';
 	}
+	rset_free(rs);
 	return NULL;
 }
 
