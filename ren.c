@@ -250,7 +250,7 @@ static int blockatt;
 int ftidx;
 int syn_blockhl;
 
-static int syn_initft(int fti, int n, char *name)
+static int syn_initft(int fti, int n, char *name, int flg)
 {
 	int i = n, set = hls[i].set;
 	char *pats[hlslen];
@@ -258,7 +258,7 @@ static int syn_initft(int fti, int n, char *name)
 		pats[i - n] = hls[i].pat;
 	ftmap[fti].setbidx = n;
 	ftmap[fti].ft = name;
-	ftmap[fti].rs = rset_make(i - n, pats, 0);
+	ftmap[fti].rs = rset_make(i - n, pats, flg);
 	ftmap[fti].seteidx = i;
 	return i < hlslen && hls[i].ft == name && hls[i].set != set;
 }
@@ -277,7 +277,7 @@ char *syn_setft(char *ft)
 		if (!strcmp(ft, hls[i].ft)) {
 			default_hl:
 			ftidx = ftmidx;
-			while (syn_initft(ftmidx++, i, hls[i].ft))
+			while (syn_initft(ftmidx++, i, hls[i].ft, 0))
 				i = ftmap[ftmidx-1].seteidx;
 			return ftmap[ftidx].ft;
 		}
@@ -368,14 +368,14 @@ char *syn_filetype(char *path)
 	return hl >= 0 && hl < ftslen ? fts[hl].ft : hls[0].ft;
 }
 
-void syn_reloadft(int hl)
+void syn_reloadft(int hl, int flg)
 {
 	if (hl >= 0) {
 		int fti = ftidx;
 		while (fti < ftmidx - 1 && hl >= ftmap[fti].seteidx)
 			fti++;
 		rset *rs = ftmap[fti].rs;
-		syn_initft(fti, ftmap[fti].setbidx, ftmap[fti].ft);
+		syn_initft(fti, ftmap[fti].setbidx, ftmap[fti].ft, flg);
 		if (!ftmap[fti].rs)
 			ftmap[fti].rs = rs;
 		else
