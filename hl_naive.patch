@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 842fd180..e95bd8a7 100644
+index d5a188d0..c062b818 100644
 --- a/led.c
 +++ b/led.c
-@@ -117,7 +117,7 @@ for (i = 0; i < cterm;) { \
+@@ -116,7 +116,7 @@ for (i = 0; i < cterm;) { \
  	o = off[i]; \
  	if (o >= 0) { \
  		for (l = i; off[i] == o; i++); \
@@ -11,7 +11,7 @@ index 842fd180..e95bd8a7 100644
  		if (att_new != att_old) \
  			sbuf_str(out, term_att(att_new)) \
  		char *s = ren_translate(chrs[o], s0); \
-@@ -148,13 +148,11 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -147,13 +147,11 @@ void led_render(char *s0, int cbeg, int cend)
  		return;
  	ren_state *r = ren_position(s0);
  	int j, c, l, i, o, n = r->n;
@@ -28,7 +28,7 @@ index 842fd180..e95bd8a7 100644
  	int ctx = r->ctx;
  	off[cterm] = -1;
  	if (ctx < 0) {
-@@ -165,72 +163,14 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -164,72 +162,14 @@ void led_render(char *s0, int cbeg, int cend)
  		for (c = cbeg; c < cend; c++)
  			off[c - cbeg] = c <= r->cmax ? r->col[c] : -1;
  	}
@@ -103,7 +103,7 @@ index 842fd180..e95bd8a7 100644
  		}
  	}
  	if (xhlr && xhl) {
-@@ -243,7 +183,7 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -242,7 +182,7 @@ void led_render(char *s0, int cbeg, int cend)
  				continue;
  			if (r->pos[o + 1] + r->wid[o + 1] != r->pos[o])
  				continue;
