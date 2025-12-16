@@ -576,8 +576,10 @@ Some ex commands can be prefixed with ranges.
 All ranges structure
 'It Cm |{\fIcmd\fP}[<\fI|\fP>]
 Ex command structure
-.It Cm {\fI> <\fP}[\fIkwd\fP][\fI> <\fP]
-Search structure
+.It Cm {\fI>\fP}[\fIkwd\fP][\fI>\fP]
+Search forward structure
+.It Cm {\fI<\fP}[\fIkwd\fP][\fI<\fP]
+Search backward structure
 'It Cm '{<\fImark\fP>}
 Mark structure
 
@@ -667,7 +669,8 @@ Print text enclosed by a non deterministic pattern "a+"
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [\fIvrange\fP]f{\fI> <\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f{\fI>\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f{\fI<\fP}[\fIkwd\fP]
 Ranged regex search
 .Bd -literal
 Example: no range given, current line only
@@ -678,7 +681,8 @@ Example: range given
 :10,100f>int
 .Ed
 
-.It Cm [\fIvrange\fP]f+{\fI> <\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+{\fI>\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+{\fI<\fP}[\fIkwd\fP]
 Incrementing ranged search
 .Bd -literal
 Equivalent to the :f command, except subsequent commands within
