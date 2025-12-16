@@ -67,7 +67,7 @@ index 842fd180..e95bd8a7 100644
 -			stt[i] = att[i];
 -			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
 -		}
--		sbuf_set(bsb, '\0', 4)
+-		sbufn_null(bsb)
 -		bound = bsb->s;
 -	}
 -	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
