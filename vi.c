@@ -45,7 +45,6 @@ static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_cndir = 1;		/* ^n direction */
 static int vi_status;			/* always show status */
 static int vi_tsm;			/* type of the status message */
-static int vi_joinmode = 1;		/* 1: insert extra space for pad 0: raw line join */
 static int vi_nlword;			/* new line mode for eEwWbB */
 
 void *emalloc(size_t size)
@@ -1054,7 +1053,7 @@ static void vc_insert(int cmd)
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
 	sbuf_mem(sb, ln, l1)
-	postn = led_input(sb, post, postn, row, cmdo);
+	postn = led_input(sb, post, postn, row, cmdo << 2);
 	if (postn != l1 || cmdo || !ln)
 		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
 	free(sb->s);
@@ -1098,31 +1097,10 @@ static int vc_put(int cmd)
 
 static void vc_join(int spc, int cnt)
 {
-	int beg = xrow;
-	int end = xrow + cnt;
-	int off = 0;
-	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
+	int o2 = 0;
+	if (lbuf_join(xb, xrow, xrow + cnt, xoff, &o2, spc))
 		return;
-	sbuf_smake(sb, 1024)
-	for (int i = beg; i < end; i++) {
-		char *ln = lbuf_get(xb, i);
-		char *lnend = ln + lbuf_s(ln)->len;
-		if (i > beg) {
-			while (ln[0] == ' ' || ln[0] == '\t')
-				ln++;
-			if (spc && sb->s_n && *ln != ')' &&
-					sb->s[sb->s_n-1] != ' ') {
-				sbuf_chr(sb, ' ')
-				off++;
-			}
-		}
-		off += (i+1 == end) ? 0 : uc_slen(ln) - 1;
-		sbuf_mem(sb, ln, lnend - ln)
-	}
-	sbufn_chr(sb, '\n')
-	lbuf_edit(xb, sb->s, beg, end, xoff, off);
-	xoff = off;
-	free(sb->s);
+	xoff = o2;
 	vi_mod |= 1;
 }
 
@@ -1369,9 +1347,10 @@ void vi(int init)
 				break;
 			case TK_CTL('k'):;
 				static struct lbuf *writexb;
-				if ((cs = ex_exec("w")) && xb == writexb)
+				if ((cs = ex_exec("w")) && writexb && xb == writexb)
 					cs = ex_exec("mpt0:w!");
 				writexb = cs ? xb : NULL;
+				vi_mod |= 1;
 				break;
 			case '#':
 				if (vi_lnnum & vi_arg)
@@ -1396,9 +1375,6 @@ void vi(int init)
 						}
 						vi_arg--;
 					}
-					break;
-				case 'j':
-					vi_joinmode = !vi_joinmode;
 					break;
 				case 'w':
 					vi_nlword = !vi_nlword;
@@ -1543,7 +1519,7 @@ void vi(int init)
 					xoff--;
 				break;
 			case 'J':
-				vc_join(vi_joinmode, vi_arg <= 1 ? 2 : vi_arg);
+				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
 				break;
 			case 'K': {
 				preserve(int, xled, xled = 0;)
@@ -1670,6 +1646,7 @@ void vi(int init)
 				break;
 			case 'R':
 				ex_exec("left:reg");
+				vi_mod |= 1;
 				break;
 			case 'Q':
 				term_pos(xrow - xtop, 0);
@@ -1735,7 +1712,7 @@ void vi(int init)
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
 				if (!word || strcmp(word, cs)) {
-					syn_reloadft(syn_addhl(cs, 1));
+					syn_reloadft(syn_addhl(cs, 1), 0);
 					free(word);
 					word = cs;
 					vi_mod |= 1;
@@ -1778,9 +1755,9 @@ void vi(int init)
 				if (!(vi_mod & 1) && !*vi_word)
 					vi_drawrow(orow);
 			syn_blockhl = -1;
-			syn_reloadft(syn_addhl("^.+", 2));
+			syn_reloadft(syn_addhl("^.+", 2), 0);
 			vi_drawrow(xrow);
-			syn_reloadft(syn_addhl(NULL, 2));
+			syn_reloadft(syn_addhl(NULL, 2), 0);
 		} else if (vi_mod & 2 && !(vi_mod & 1)) {
 			syn_blockhl = -1;
 			vi_drawrow(xrow);

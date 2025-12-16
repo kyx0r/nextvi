@@ -46,15 +46,6 @@ typedef struct sbuf {
 	int s_sz;	/* size of memory allocated for s[] */
 } sbuf;
 
-#define sbuf_extend(sb, newsz) \
-{ \
-	char *__s_ = sb->s; \
-	sb->s_sz = newsz; \
-	sb->s = emalloc(sb->s_sz); \
-	memcpy(sb->s, __s_, sb->s_n); \
-	free(__s_); \
-} \
-
 #define _sbuf_make(sb, newsz, alloc) \
 { \
 	alloc \
@@ -65,26 +56,38 @@ typedef struct sbuf {
 
 #define sbuf_chr(sb, c) \
 { \
-	if (sb->s_n + 1 >= sb->s_sz) \
-		sbuf_extend(sb, NEXTSZ(sb->s_sz, 1)) \
+	if (sb->s_n + 1 >= sb->s_sz) { \
+		sb->s_sz = NEXTSZ(sb->s_n, 1) + 1; \
+		sb->s = erealloc(sb->s, sb->s_sz); \
+	} \
 	sb->s[sb->s_n++] = c; \
 } \
 
 #define sbuf_(sb, x, len, func) \
-if (sb->s_n + len >= sb->s_sz) \
-	sbuf_extend(sb, NEXTSZ(sb->s_sz, len)) \
+if (sb->s_n + len >= sb->s_sz) { \
+	if (sb->s_n < sb->s_sz >> 2) { \
+		char *__s_ = sb->s; \
+		sb->s_sz = NEXTSZ(sb->s_n, len) + 1; \
+		sb->s = emalloc(sb->s_sz); \
+		memcpy(sb->s, __s_, sb->s_n); \
+		free(__s_); \
+	} else { \
+		sb->s_sz = NEXTSZ(sb->s_n, len) + 1; \
+		sb->s = erealloc(sb->s, sb->s_sz); \
+	} \
+} \
 mem##func(sb->s + sb->s_n, x, len); \
-sb->s_n += len; \
 
 #define sbuf_smake(sb, newsz) sbuf _##sb, *sb = &_##sb; _sbuf_make(sb, newsz,)
 #define sbuf_make(sb, newsz) { _sbuf_make(sb, newsz, sb = emalloc(sizeof(*sb));) }
 #define sbuf_free(sb) { free(sb->s); free(sb); }
-#define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) }
-#define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) }
-#define sbuf_str(sb, s) { const char *__p_ = s; while(*__p_) sbuf_chr(sb, *__p_++) }
+#define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) sb->s_n += len; }
+#define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) sb->s_n += len; }
+#define sbuf_str(sb, s) { int __l_ = strlen(s); sbuf_mem(sb, s, __l_) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that NULL terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
+#define sbufn_null(sb) { sbuf_(sb, '\0', 4, set) }
 #define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
 #define sbufn_mem(sb, s, len) { sbuf_mem(sb, s, len) sbuf_null(sb) }
 #define sbufn_str(sb, s) { sbuf_str(sb, s) sbuf_null(sb) }
@@ -169,6 +172,7 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
 void lbuf_edit(struct lbuf *lb, char *s, int beg, int end, int o1, int o2);
 void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2);
 char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2);
+int lbuf_join(struct lbuf *lb, int beg, int end, int o1, int *o2, int flg);
 char *lbuf_get(struct lbuf *lb, int pos);
 void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
@@ -260,7 +264,7 @@ void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
 char *syn_filetype(char *path);
 int syn_merge(int old, int new);
-void syn_reloadft(int hl);
+void syn_reloadft(int hl, int flg);
 int syn_findhl(int id);
 int syn_addhl(char *reg, int id);
 void syn_init(void);
@@ -359,8 +363,8 @@ typedef struct {
 } led_att;
 extern sbuf *led_attsb;
 void led_modeswap(void);
-void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int hist);
-int led_input(sbuf *sb, char *post, int postn, int row, int lsh);
+void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int flg);
+int led_input(sbuf *sb, char *post, int postn, int row, int flg);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
 { \
