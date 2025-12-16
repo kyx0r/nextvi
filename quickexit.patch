@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 12795b0a..56a721b4 100644
+index 7a11cbc9..9577d886 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -13,6 +13,7 @@ int xtd = +1;			/* current text direction */
@@ -10,7 +10,7 @@ index 12795b0a..56a721b4 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1236,6 +1237,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1263,6 +1264,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
@@ -18,19 +18,19 @@ index 12795b0a..56a721b4 100644
  
  _EO(left,
  	if (*loc)
-@@ -1288,6 +1290,7 @@ static struct excmd {
- 	{"g!", ec_glob},
+@@ -1316,6 +1318,7 @@ static struct excmd {
  	{"g", ec_glob},
- 	{"k", ec_mark},
+ 	EO(mpt),
+ 	{"m", ec_mark},
 +	EO(qe),
  	{"q!", ec_quit},
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index 842fd180..a7958551 100644
+index d5a188d0..95397471 100644
 --- a/led.c
 +++ b/led.c
-@@ -406,6 +406,14 @@ void led_modeswap(void)
+@@ -404,6 +404,14 @@ void led_modeswap(void)
  	restore(xvis)
  }
  
@@ -44,16 +44,16 @@ index 842fd180..a7958551 100644
 +
  /* read a line from the terminal */
  static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
- 	int ai_max, int *key, int *kmap, int orow, int lsh, int crow, int ctop)
-@@ -413,6 +421,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
+ 	int ai_max, int *key, int *kmap, int orow, int crow, int ctop, int flg)
+@@ -411,6 +419,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  	int len, t_row = -2, p_reg = 0;
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
 +	int quickexit = 0;
- 	while (1) {
+ 	do {
  		led_printparts(sb, pre, ps, *post, postn, ai_max);
  		len = sb->s_n;
-@@ -629,7 +638,21 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
+@@ -627,7 +636,21 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  				exbuf_load(ex_buf)
  			}
  			continue; }
@@ -76,7 +76,7 @@ index 842fd180..a7958551 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 57171e8c..b6738da3 100644
+index a18c54ac..b854623d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -87,7 +87,7 @@ index 57171e8c..b6738da3 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1530,6 +1531,8 @@ void vi(int init)
+@@ -1506,6 +1507,8 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -97,10 +97,10 @@ index 57171e8c..b6738da3 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index e08ab7e6..00ea7d53 100644
+index 27cec23e..8803c328 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -404,6 +404,7 @@ extern int xtd;
+@@ -408,6 +408,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xtbs;
