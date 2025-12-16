@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 12795b0a..37fe9a36 100644
+index 7a11cbc9..25232acc 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1219,6 +1219,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1246,6 +1246,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -19,7 +19,7 @@ index 12795b0a..37fe9a36 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1300,6 +1310,7 @@ static struct excmd {
+@@ -1328,6 +1338,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -28,7 +28,7 @@ index 12795b0a..37fe9a36 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index 2dab3b6e..a18739fe 100644
+index 14d583f0..3610fc8b 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -3,6 +3,7 @@ struct lbuf *lbuf_make(void)
@@ -159,7 +159,7 @@ index 2dab3b6e..a18739fe 100644
  		lb->hist_n = lb->hist_u;
  		if (lb->hist_n == lb->hist_sz) {
  			int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -362,10 +449,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -388,10 +475,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  void lbuf_saved(struct lbuf *lb, int clear)
  {
  	if (clear) {
@@ -173,10 +173,10 @@ index 2dab3b6e..a18739fe 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index e08ab7e6..0433f15e 100644
+index 27cec23e..ff5e31d4 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -148,6 +148,7 @@ struct linfo {
+@@ -151,6 +151,7 @@ struct linfo {
  struct lbuf {
  	char **ln;			/* buffer lines */
  	struct lopt *hist;		/* buffer history */
@@ -184,7 +184,7 @@ index e08ab7e6..0433f15e 100644
  	int mark[NMARKS * 2];		/* mark rows & offs */
  	int tmp_mark[4];		/* aux mark state */
  	int ln_n;			/* number of lines in ln[] */
-@@ -184,6 +185,8 @@ int lbuf_next(struct lbuf *lb, int dir, int *r, int *o);
+@@ -188,6 +189,8 @@ int lbuf_next(struct lbuf *lb, int dir, int *r, int *o);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip);

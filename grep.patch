@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index 58f88972..6756de6d 100644
+index 2668609a..def660e1 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -18,10 +18,10 @@ index 58f88972..6756de6d 100644
 +	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 +
  	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
- 	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$))?(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
- [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*(?:\\|.*?(?:(?<^\\\\)\\||$))?)[ \t]*(?:([,;]#?)[ \t]*\
+ 	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
+ [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*(?:\\|.*?(?:(?<^\\\\)\\||$))*)[ \t]*(?:([,;]#?)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 12795b0a..22977182 100644
+index 7a11cbc9..ff0a8209 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -34,10 +34,10 @@ index 12795b0a..22977182 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 57171e8c..c047006c 100644
+index a18c54ac..60a9d407 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -505,12 +505,12 @@ void dir_calc(char *path)
+@@ -504,12 +504,12 @@ void dir_calc(char *path)
  	free(sb->s);
  }
  
@@ -52,7 +52,7 @@ index 57171e8c..c047006c 100644
  	*row = xrow; *off = xoff; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -521,14 +521,14 @@ if (ret && xrow) { \
+@@ -520,14 +520,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -70,7 +70,7 @@ index 57171e8c..c047006c 100644
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -544,7 +544,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -543,7 +543,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
  		path = tempbufs[1].lb->ln[fspos];
@@ -79,7 +79,7 @@ index 57171e8c..c047006c 100644
  	}
  	return 0;
  }
-@@ -719,6 +719,7 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -718,6 +718,7 @@ static int vi_motion(int vc, int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* this is also ^5 on some systems */
@@ -87,7 +87,7 @@ index 57171e8c..c047006c 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -737,8 +738,42 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -736,8 +737,42 @@ static int vi_motion(int vc, int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -131,7 +131,7 @@ index 57171e8c..c047006c 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1316,7 +1351,17 @@ void vi(int init)
+@@ -1294,7 +1329,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -150,7 +150,7 @@ index 57171e8c..c047006c 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1465,6 +1510,10 @@ void vi(int init)
+@@ -1441,6 +1486,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &n);
  					goto do_excmd; }
@@ -161,7 +161,7 @@ index 57171e8c..c047006c 100644
  				default:
  					term_dec()
  				}
-@@ -1824,6 +1873,7 @@ int main(int argc, char *argv[])
+@@ -1801,6 +1850,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
@@ -170,10 +170,10 @@ index 57171e8c..c047006c 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index e08ab7e6..457c5b12 100644
+index 27cec23e..5e920458 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -425,7 +425,7 @@ extern sbuf *xacreg;
+@@ -429,7 +429,7 @@ extern sbuf *xacreg;
  extern rset *xkwdrs;
  extern sbuf *xregs[256];
  extern struct buf *bufs;

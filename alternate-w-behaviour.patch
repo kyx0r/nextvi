@@ -1,8 +1,8 @@
 diff --git a/vi.c b/vi.c
-index 57171e8c..e93771be 100644
+index a18c54ac..b084a372 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -665,9 +665,13 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -664,9 +664,13 @@ static int vi_motion(int vc, int *row, int *off)
  		break;
  	case 'w':
  	case 'W':
