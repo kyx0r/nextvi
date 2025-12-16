@@ -351,8 +351,10 @@ EX RANGES
              All ranges structure
      |{cmd}[<|>]
              Ex command structure
-     {> <}[kwd][> <]
-             Search structure
+     {>}[kwd][>]
+             Search forward structure
+     {<}[kwd][<]
+             Search backward structure
      '{<mark>}
              Mark structure
 
@@ -413,7 +415,8 @@ EX RANGES
              Print text enclosed by a non deterministic pattern "a+"
 
 EX COMMANDS
-     [vrange]f{> <}[kwd]
+     [vrange]f{>}[kwd]
+     [vrange]f{<}[kwd]
              Ranged regex search
 
              Example: no range given, current line only
@@ -423,7 +426,8 @@ EX COMMANDS
              Example: range given
              :10,100f>int
 
-     [vrange]f+{> <}[kwd]
+     [vrange]f+{>}[kwd]
+     [vrange]f+{<}[kwd]
              Incrementing ranged search
 
              Equivalent to the :f command, except subsequent commands within
