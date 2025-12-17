@@ -680,29 +680,36 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
 
 void ex_cprint(char *line, char *ft, int r, int c, int flg)
 {
-	syn_blockhl = -1;
-	if (!(xvis & 4) && !(flg & 2)) {
-		term_pos(xrows, 0);
-		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
-	}
-	if (xpr)
+	int lntest;
+	if (xpr) {
 		ex_regput(xpr, line, 1);
+		if (isupper(xpr) && !strchr(line, '\n'))
+			ex_regput(xpr, "\n", 1);
+	}
 	if (xvis & 2) {
 		term_write(line, dstrlen(line, '\n'))
 		term_write("\n", 1)
 		return;
 	}
+	syn_blockhl = -1;
+	if (!(xvis & 4)) {
+		if (!(flg & 2)) {
+			term_pos(xrows, 0);
+			snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
+		}
+		lntest = xmpt;
+		if (lntest == 1)
+			term_chr('\n');
+		xmpt += lntest >= 0 && (flg & 1 || lntest == 1);
+	} else
+		lntest = 1;
 	if (ft)
 		syn_setft(ft);
 	led_crender(line, r, c, xleft, xleft + xcols - c)
 	if (ft)
 		syn_setft(xb_ft);
-	if (flg & 1) {
+	if (flg & 1 && lntest > 0)
 		term_chr('\n');
-		if (isupper(xpr) && !strchr(line, '\n'))
-			ex_regput(xpr, "\n", 1);
-	}
-	xmpt += !(xvis & 4) && xmpt >= 0 && (flg & 1 || xmpt);
 }
 
 static void *ec_insert(char *loc, char *cmd, char *arg)
