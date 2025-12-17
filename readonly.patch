@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 065cbf04..e82d7015 100644
+index 115d4ecb..cea9df0d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -47,6 +47,7 @@ static char xserr[] = "syntax error";

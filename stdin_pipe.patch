@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 065cbf04..f0bb64d3 100644
+index 115d4ecb..9fdbe17b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -375,7 +375,9 @@ int ex_edit(const char *path, int len)

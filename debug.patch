@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 065cbf04..6eedc893 100644
+index 115d4ecb..29652380 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1530,3 +1530,16 @@ void ex_init(char **files, int n)

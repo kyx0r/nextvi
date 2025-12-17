@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 065cbf04..8b06c8b0 100644
+index 115d4ecb..547c8721 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -32,7 +32,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -31,10 +31,10 @@ index 065cbf04..8b06c8b0 100644
 -	rset *rs;
 +	rstr *rs;
  	char *path, *p, buf[32], trunc[100];
- 	int z, c, pos, subs[2], inst = -1, lnum = -1;
+ 	int c, pos, subs[2], inst = -1, lnum = -1;
  	int beg, end, max = INT_MAX;
 @@ -428,14 +428,14 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
- 	for (z = 0;; z++) {
+ 	while(1) {
  		sbuf_null(fuzz)
  		c = 0;
 -		rs = rset_smake(fuzz->s, xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
