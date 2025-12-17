@@ -454,9 +454,9 @@ void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
 void *ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); ex_regput(':', ln, 0); }
-void ex_cprint(char *line, char *ft, int r, int c, int ln);
-#define ex_print(line, ft) \
-{ preserve(int, xleft, xleft = 0;) RS(2, ex_cprint(line, ft, -1, 0, 1)); restore(xleft) }
+void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+#define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
+#define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
