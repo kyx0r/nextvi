@@ -683,7 +683,9 @@ void ex_cprint(char *line, char *ft, int r, int c, int flg)
 	int lntest;
 	if (xpr) {
 		ex_regput(xpr, line, 1);
-		if (isupper(xpr) && !strchr(line, '\n'))
+		if (flg & 1 && isupper(xpr) &&
+				xregs[xpr] && xregs[xpr]->s_n &&
+				xregs[xpr]->s[xregs[xpr]->s_n-1] != '\n')
 			ex_regput(xpr, "\n", 1);
 	}
 	if (xvis & 2) {
