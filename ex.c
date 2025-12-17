@@ -245,7 +245,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 	}
 	while (**num) {
 		dir = atoi(*num+1);
-		if (**num == '-') 
+		if (**num == '-')
 			n -= dir;
 		else if (**num == '+')
 			n += dir;
@@ -410,7 +410,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	int z, c, pos, inst, subs[2], lnum = -1, max = xrows * 10;
 	if (*loc)
 		max = *loc == '$' ? INT_MAX : atoi(loc);
-	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max); 
+	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
 	sbuf_smake(sb, 128)
 	sbuf_smake(fuzz, 16)
 	sbuf_str(fuzz, arg)
@@ -427,12 +427,12 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 				if (rset_find(rs, path, NULL, 0) >= 0) {
 					sbuf_mem(sb, &pos, (int)sizeof(pos))
 					p = itoa(c++, buf);
-					RS(2, ex_cprint(buf, NULL, -1, 0, 2))
-					RS(2, ex_cprint(path, NULL, -1, xleft ? 0 : (p - buf) + 1, 3))
+					ex_cprint2(buf, NULL, -1, 0, 0, 2)
+					ex_cprint2(path, NULL, -1, xleft ? 0 : (p - buf) + 1, 0, 3)
 				}
 			}
 			if (c == max)
-				RS(2, ex_cprint(trunc, NULL, -1, 0, 3))
+				ex_cprint2(trunc, NULL, -1, 0, 0, 3)
 			if (term_record)
 				term_commit();
 		}
@@ -465,7 +465,6 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		lnum = *((int*)sb->s + (c == 1 ? 0 : inst));
 	ret:
 	syn_setft(xb_ft);
-	xmpt = xmpt >= 0 ? 0 : xmpt;
 	free(fuzz->s);
 	free(sb->s);
 	path = lbuf_get(lb, lnum);
@@ -678,7 +677,7 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-void ex_cprint(char *line, char *ft, int r, int c, int flg)
+void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 {
 	int lntest;
 	if (xpr) {
@@ -694,11 +693,9 @@ void ex_cprint(char *line, char *ft, int r, int c, int flg)
 		return;
 	}
 	syn_blockhl = -1;
-	if (!(xvis & 4)) {
-		if (!(flg & 2)) {
-			term_pos(xrows, 0);
-			snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
-		}
+	if (!(xvis & 4) && !(flg & 2)) {
+		term_pos(xrows, 0);
+		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
 		lntest = xmpt;
 		if (lntest == 1)
 			term_chr('\n');
@@ -707,7 +704,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int flg)
 		lntest = 1;
 	if (ft)
 		syn_setft(ft);
-	led_crender(line, r, c, xleft, xleft + xcols - c)
+	led_crender(line, r, c, left, left + xcols - c)
 	if (ft)
 		syn_setft(xb_ft);
 	if (flg & 1 && lntest > 0)
@@ -788,12 +785,10 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		else {
 			if (xvis & 4 && beg == end-1)
 				xleft = ren_position(ln)->pos[MIN(xoff, rstate->n)];
-			ex_cprint(ln, msg_ft, -1, 0, 1);
+			ex_cprint(ln, msg_ft, -1, 0, xleft, 1);
 			continue;
 		}
-		preserve(int, xleft, xleft = 0;)
-		ex_cprint(o, msg_ft, -1, 0, 1);
-		restore(xleft)
+		ex_cprint(o, msg_ft, -1, 0, 0, 1);
 		free(o);
 	}
 	rstate--;
@@ -1212,8 +1207,8 @@ static void *ec_regprint(char *loc, char *cmd, char *arg)
 	for (int i = 1; i < LEN(xregs); i++) {
 		if (xregs[i] && i != xpr) {
 			*buf = i;
-			RS(2, ex_cprint(buf, msg_ft, -1, 0, 0))
-			RS(2, ex_cprint(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, 1))
+			ex_cprint2(buf, msg_ft, -1, 0, 0, 0)
+			ex_cprint2(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, 0, 1)
 		}
 	}
 	restore(xtd)
