@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 065cbf04..17cdeb37 100644
+index 065cbf04..8b06c8b0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -32,7 +32,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -18,7 +18,7 @@ index 065cbf04..17cdeb37 100644
 -			|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
 -		rset_free(xkwdrs);
 -		xkwdrs = rset_smake(kwd, xic ? REG_ICASE : 0);
-+			|| (xkwdrs->icase != xic))) {
++			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 +		rstr_free(xkwdrs);
 +		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
  		xkwdcnt++;
@@ -41,7 +41,7 @@ index 065cbf04..17cdeb37 100644
 +		rs = rstr_make(fuzz->s, xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
  		if (rs) {
 -			syn_reloadft(syn_addhl(fuzz->s, 1), rs->regex->flg);
-+			syn_reloadft(syn_addhl(fuzz->s, 1), xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
++			syn_reloadft(syn_addhl(fuzz->s, 1), rs->flg);
  			term_record = !!term_sbuf;
  			end = MIN(end, lbuf_len(xb));
  			for (pos = beg; c < max && pos < end; pos++) {
@@ -210,10 +210,10 @@ index 14d583f0..63f5b1b8 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 93c20c58..06c6cbfd 100644
+index 93c20c58..5b7777ab 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -754,3 +754,126 @@ char *re_read(char **src)
+@@ -754,3 +754,127 @@ char *re_read(char **src)
  	*src = *s ? s + 1 : s;
  	sbufn_ret(sb, sb->s)
  }
@@ -260,8 +260,8 @@ index 93c20c58..06c6cbfd 100644
 +{
 +	rstr *rs = emalloc(sizeof(*rs));
 +	memset(rs, 0, sizeof(*rs));
-+	rs->icase = flg & REG_ICASE;
-+	if (rstr_simple(rs, re, rs->icase))
++	rs->flg = flg;
++	if (rstr_simple(rs, re, flg & REG_ICASE))
 +		rs->rs = rset_make(1, &re, flg);
 +	if (!rs->rs && !rs->str) {
 +		free(rs);
@@ -311,6 +311,7 @@ index 93c20c58..06c6cbfd 100644
 +	char *beg, *end, *r, *t, *m;
 +	if (rs->rs)
 +		return rset_find(rs->rs, s, grps, flg);
++	flg = rs->flg | flg;
 +	if ((rs->lbeg && (flg & REG_NOTBOL)) || (rs->lend && (flg & REG_NOTEOL)))
 +		return -1;
 +	if (!*s)
@@ -324,10 +325,10 @@ index 93c20c58..06c6cbfd 100644
 +		beg = end;
 +	if (rs->lbeg)
 +		end = s;
-+	if (!rs->icase) {
-+		template(3, *t != *m)
-+	} else {
++	if (flg & REG_ICASE) {
 +		template(4, tolower((unsigned char) *t) != *m)
++	} else {
++		template(3, *t != *m)
 +	}
 +	return -1;
 +}
@@ -363,7 +364,7 @@ index c35a20e5..895d5c56 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..206f19eb 100644
+index 1f1a6fdc..dbbb0f02 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -125,12 +125,23 @@ typedef struct {
@@ -374,7 +375,7 @@ index 1f1a6fdc..206f19eb 100644
 +	rset *rs;		/* only for regex patterns */
 +	char *str;		/* for simple, non-regex patterns  */
 +	int len;		/* str length */
-+	int icase;		/* ignore case */
++	int flg;		/* flags */
 +	int lbeg, lend;		/* match line beg/end */
 +	int wbeg, wend;		/* match word beg/end */
 +} rstr;
