@@ -407,8 +407,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	rset *rs;
 	char *path, *p, buf[32], trunc[100];
 	int z, c, pos, subs[2], inst = -1, lnum = -1;
-	int beg, end;
-	struct lbuf *lb;
+	int beg, end, max = INT_MAX;
 	if (*cmd !='f')
 		temp_switch(1, 0);
 	if (ex_vregion(loc, &beg, &end)) {
@@ -418,10 +417,10 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	}
 	if (!*loc) {
 		beg = 0;
-		end = xrows * 10;
-	} else
-		end -= beg;
-	snprintf(trunc, sizeof(trunc), "truncated to %d lines", end);
+		end = lbuf_len(xb);
+		max = xrows * 10;
+	}
+	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
 	sbuf_smake(sb, 128)
 	sbuf_smake(fuzz, 16)
 	sbuf_str(fuzz, arg)
@@ -429,13 +428,13 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	for (z = 0;; z++) {
 		sbuf_null(fuzz)
 		c = 0;
-		lb = xb;
 		rs = rset_smake(fuzz->s, xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
 		if (rs) {
 			syn_reloadft(syn_addhl(fuzz->s, 1), rs->regex->flg);
 			term_record = !!term_sbuf;
-			for (pos = beg; c < end && pos < lbuf_len(lb); pos++) {
-				path = lb->ln[pos];
+			end = MIN(end, lbuf_len(xb));
+			for (pos = beg; c < max && pos < end; pos++) {
+				path = xb->ln[pos];
 				if (rset_find(rs, path, NULL, 0) >= 0) {
 					sbuf_mem(sb, &pos, (int)sizeof(pos))
 					p = itoa(c++, buf);
@@ -443,7 +442,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 					ex_cprint2(path, NULL, -1, xleft ? 0 : (p - buf) + 1, 0, 3)
 				}
 			}
-			if (c == end && c != lbuf_len(lb))
+			if (c == max && c != end)
 				ex_cprint2(trunc, NULL, -1, 0, 0, 3)
 			if (term_record)
 				term_commit();
