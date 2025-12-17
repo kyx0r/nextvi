@@ -1,4 +1,4 @@
-.Dd Dec 16, 2025
+.Dd Dec 17, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -690,7 +690,7 @@ range move to the next match just like vi normal [#]n or [#]N
 commands.
 .Ed
 
-.It Cm [\fI# <$>\fP]f[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f[\fIkwd\fP]
 Fuzzy regex search
 .Bd -literal
 Enters a fuzzy regex search prompt with a list of matches.
@@ -699,8 +699,9 @@ using numbers 0-9.
 <^C> or <ESC> to abort.
 <^M> or <Enter> to input a number larger than 9.
 
-Prefix specifies the maximum number of matches printed or infinite
-with <$> and defaults to xrows * 10.
+No range evaluates to <%> range.
+No range defaults to xrows * 10 as the maximum number of matches
+to display, not a buffer bound search limit.
 .Ed
 
 .It Cm b[\fI#\fP]
@@ -739,7 +740,7 @@ Example: print current line from offset 5 to 10
 :.;5;10p
 .Ed
 
-.It Cm [\fI# <$>\fP]ef[\fIkwd\fP]
+.It Cm [\fIvrange\fP]ef[\fIkwd\fP]
 Open file using fuzzy regex search prompt
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
@@ -1556,9 +1557,9 @@ _
  614 uc.c | UTF-8 support
  706 led.c | insert mode/output
  756 regex.c | pikevm
- 1516 ex.c | ex options/commands
- 1840 vi.c | normal mode/general
- 7100 total | wc -l *.c\(basort
+ 1532 ex.c | ex options/commands
+ 1838 vi.c | normal mode/general
+ 7114 total | wc -l *.c\(basort
 _
 .TE
 .
