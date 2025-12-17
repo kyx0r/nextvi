@@ -406,7 +406,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 {
 	rset *rs;
 	char *path, *p, buf[32], trunc[100];
-	int z, c, pos, subs[2], inst = -1, lnum = -1;
+	int c, pos, subs[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX;
 	if (*cmd !='f')
 		temp_switch(1, 0);
@@ -418,14 +418,14 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	if (!*loc) {
 		beg = 0;
 		end = lbuf_len(xb);
-		max = xrows * 10;
+		max = xrows * 3;
 	}
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
 	sbuf_smake(sb, 128)
 	sbuf_smake(fuzz, 16)
 	sbuf_str(fuzz, arg)
 	syn_setft(msg_ft);
-	for (z = 0;; z++) {
+	while(1) {
 		sbuf_null(fuzz)
 		c = 0;
 		rs = rset_smake(fuzz->s, xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
