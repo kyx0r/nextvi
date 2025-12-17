@@ -1350,7 +1350,6 @@ void vi(int init)
 				if ((cs = ex_exec("w")) && writexb && xb == writexb)
 					cs = ex_exec("mpt0:w!");
 				writexb = cs ? xb : NULL;
-				vi_mod |= 1;
 				break;
 			case '#':
 				if (vi_lnnum & vi_arg)
@@ -1645,8 +1644,7 @@ void vi(int init)
 				vi_mod |= vc_replace();
 				break;
 			case 'R':
-				ex_exec("left:reg");
-				vi_mod |= 1;
+				ex_exec("reg");
 				break;
 			case 'Q':
 				term_pos(xrow - xtop, 0);
