@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 7a11cbc9..04f9f7b1 100644
+index 065cbf04..e82d7015 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -47,6 +47,7 @@ static char xserr[] = "syntax error";
@@ -27,7 +27,7 @@ index 7a11cbc9..04f9f7b1 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -641,6 +645,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -652,6 +656,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf.s);
  	} else {
  		if (!strchr(cmd, '!')) {
@@ -36,7 +36,7 @@ index 7a11cbc9..04f9f7b1 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1246,6 +1252,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1262,6 +1268,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index 7a11cbc9..04f9f7b1 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1320,6 +1332,7 @@ static struct excmd {
+@@ -1336,6 +1348,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,10 +58,10 @@ index 7a11cbc9..04f9f7b1 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index a18c54ac..ee152943 100644
+index c35a20e5..ec98186a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1815,9 +1815,11 @@ int main(int argc, char *argv[])
+@@ -1813,9 +1813,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -75,7 +75,7 @@ index a18c54ac..ee152943 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 27cec23e..3289c76c 100644
+index 1f1a6fdc..0dae22d5 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -391,6 +391,7 @@ struct buf {

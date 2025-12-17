@@ -73,7 +73,7 @@ index d5a188d0..4970a297 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index a18c54ac..98fb9f77 100644
+index c35a20e5..13b236ef 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -857,6 +857,8 @@ static void vi_indents(char *ln, int *l)
@@ -106,7 +106,7 @@ index a18c54ac..98fb9f77 100644
  	free(sb->s);
  }
  
-@@ -1506,6 +1512,37 @@ void vi(int init)
+@@ -1505,6 +1511,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -144,7 +144,7 @@ index a18c54ac..98fb9f77 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1518,6 +1555,9 @@ void vi(int init)
+@@ -1517,6 +1554,9 @@ void vi(int init)
  				if (c != 'A' && c != 'C')
  					xoff--;
  				break;

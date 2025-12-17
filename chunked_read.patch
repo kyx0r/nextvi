@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 7a11cbc9..af448e1b 100644
+index 065cbf04..60b55f94 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -349,10 +349,10 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int flg)
@@ -146,7 +146,7 @@ index 14d583f0..588beb70 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 27cec23e..c749a643 100644
+index 1f1a6fdc..e6034364 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -167,7 +167,8 @@ struct lbuf {
