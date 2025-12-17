@@ -349,7 +349,7 @@ EX RANGES
 
      [pad][% |][, ;][#][pad][. $ ' > <][- + * / %][0-9]
              All ranges structure
-     |{cmd}[<|>]
+     {|}{cmd}[|]
              Ex command structure
      {>}[kwd][>]
              Search forward structure
@@ -430,12 +430,12 @@ EX COMMANDS
      [vrange]f+{<}[kwd]
              Incrementing ranged search
 
-             Equivalent to the :f command, except subsequent commands within
+             Equivalent to the :f> and :f< commands, except subsequent commands within
              range move to the next match just like vi normal [#]n or [#]N
              commands.
 
      [vrange]f[kwd]
-             Fuzzy regex search
+             Fuzzy regex search prompt
 
              Enters a fuzzy regex search prompt with a list of matches.
              If the number of matches is less than 10, match can be picked
@@ -444,8 +444,7 @@ EX COMMANDS
              <^M> or <Enter> to input a number larger than 9.
 
              No range evaluates to <%> range.
-             No range defaults to xrows * 10 as the maximum number of matches
-             to display, not a buffer bound search limit.
+             No range displays a maximum of xrows * 3 matches.
 
      b[#]    Print buffers or switch to a buffer
 

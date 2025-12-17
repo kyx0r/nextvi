@@ -574,7 +574,7 @@ Some ex commands can be prefixed with ranges.
 
 .It Cm [\fIpad\fP][\fI% |\fP][\fI, ;\fP][\fI#\fP][\fIpad\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
 All ranges structure
-'It Cm |{\fIcmd\fP}[<\fI|\fP>]
+'It Cm {\fI|\fP}{\fIcmd\fP}[\fI|\fP]
 Ex command structure
 .It Cm {\fI>\fP}[\fIkwd\fP][\fI>\fP]
 Search forward structure
@@ -685,13 +685,13 @@ Example: range given
 .It Cm [\fIvrange\fP]f+{\fI<\fP}[\fIkwd\fP]
 Incrementing ranged search
 .Bd -literal
-Equivalent to the :f command, except subsequent commands within
+Equivalent to the :f> and :f< commands, except subsequent commands within
 range move to the next match just like vi normal [#]n or [#]N
 commands.
 .Ed
 
 .It Cm [\fIvrange\fP]f[\fIkwd\fP]
-Fuzzy regex search
+Fuzzy regex search prompt
 .Bd -literal
 Enters a fuzzy regex search prompt with a list of matches.
 If the number of matches is less than 10, match can be picked
@@ -700,8 +700,7 @@ using numbers 0-9.
 <^M> or <Enter> to input a number larger than 9.
 
 No range evaluates to <%> range.
-No range defaults to xrows * 10 as the maximum number of matches
-to display, not a buffer bound search limit.
+No range displays a maximum of xrows * 3 matches.
 .Ed
 
 .It Cm b[\fI#\fP]
