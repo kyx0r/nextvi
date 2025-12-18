@@ -461,7 +461,8 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		inst = fuzz->s_n ? fuzz->s[fuzz->s_n-1] : -1;
 		if (c && c < 10 && isdigit(inst)) {
 			inst -= '0';
-			break;
+			if (inst < c)
+				break;
 		}
 		rset_free(rs);
 		sbuf_cut(sb, 0)
@@ -1220,7 +1221,7 @@ static void *ec_regprint(char *loc, char *cmd, char *arg)
 		if (xregs[i] && i != xpr) {
 			*buf = i;
 			ex_cprint2(buf, msg_ft, -1, 0, 0, 0)
-			ex_cprint2(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, 0, 1)
+			ex_cprint2(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, xleft, 1)
 		}
 	}
 	restore(xtd)
