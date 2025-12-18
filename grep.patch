@@ -21,7 +21,7 @@ index 2668609a..def660e1 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
  [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*(?:\\|.*?(?:(?<^\\\\)\\||$))*)[ \t]*(?:([,;]#?)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 115d4ecb..ed2d0051 100644
+index 910e5e49..a7f032c2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -34,7 +34,7 @@ index 115d4ecb..ed2d0051 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index c35a20e5..bb56fce9 100644
+index eca4d956..96d4dc2b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -504,12 +504,12 @@ void dir_calc(char *path)
