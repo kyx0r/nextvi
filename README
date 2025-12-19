@@ -1159,13 +1159,13 @@ CODE MAP
      | 308 conf.c   |  hl/ft/td config     |
      | 345 term.c   |  low level IO        |
      | 411 ren.c    |  positioning/syntax  |
-     | 604 lbuf.c   |  file/line buffer    |
+     | 608 lbuf.c   |  file/line buffer    |
      | 614 uc.c     |  UTF-8 support       |
      | 706 led.c    |  insert mode/output  |
      | 756 regex.c  |  pikevm              |
      | 1533 ex.c    |  ex options/commands |
      | 1838 vi.c    |  normal mode/general |
-     | 7115 total   |  wc -l *.c|sort      |
+     | 7119 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1237,4 +1237,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.7                   December 18, 2025                  Linux 6.17.7
+Linux 6.17.7                   December 19, 2025                  Linux 6.17.7
