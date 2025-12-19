@@ -1,8 +1,8 @@
 diff --git a/led.c b/led.c
-index 842fd180..d4d07dcb 100644
+index d5a188d0..4970a297 100644
 --- a/led.c
 +++ b/led.c
-@@ -281,7 +281,7 @@ static int led_lastword(char *s)
+@@ -280,7 +280,7 @@ static int led_lastword(char *s)
  }
  
  static void led_printparts(sbuf *sb, int pre, int ps,
@@ -10,8 +10,8 @@ index 842fd180..d4d07dcb 100644
 +	char *post, int postn, int ai_max, int print)
  {
  	if (!xled) {
- 		sbuf_set(sb, '\0', 4)
-@@ -309,8 +309,10 @@ static void led_printparts(sbuf *sb, int pre, int ps,
+ 		sbufn_null(sb)
+@@ -307,8 +307,10 @@ static void led_printparts(sbuf *sb, int pre, int ps,
  	}
  	if (pos >= xleft + xcols || pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
@@ -24,19 +24,19 @@ index 842fd180..d4d07dcb 100644
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
  	sbufn_cut(sb, psn)
  	rstate -= 2;
-@@ -414,7 +416,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
+@@ -412,7 +414,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  	int c, i, lsug = 0, sug_pt = -1;
  	char *cs, *sug = NULL, *_sug = NULL;
- 	while (1) {
+ 	do {
 -		led_printparts(sb, pre, ps, *post, postn, ai_max);
 +		led_printparts(sb, pre, ps, *post, postn, ai_max, !memchr("ABCD", vi_insmov, 4));
 +		vi_insmov = -1;
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -611,6 +614,20 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
+@@ -609,6 +612,20 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
  			else
- 				led_redraw(sb->s, 0, orow, lsh, crow, ctop);
+ 				led_redraw(sb->s, 0, orow, crow, ctop, flg);
  			continue;
 +		case '\033':;	/* Arrow keys */
 +			char cbuf[1];
@@ -55,15 +55,15 @@ index 842fd180..d4d07dcb 100644
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -641,6 +658,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
- 	}
+@@ -639,6 +656,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
+ 	} while(!(flg & 2));
  leave:
  	vi_insmov = c;
 +_leave:
  	*key = c;
  }
  
-@@ -681,7 +699,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int lsh)
+@@ -679,7 +697,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg)
  			return n;
  		}
  		sbuf_chr(sb, key)
@@ -73,10 +73,10 @@ index 842fd180..d4d07dcb 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 57171e8c..2d7b0d74 100644
+index 2144d7b4..4351de3a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -858,6 +858,8 @@ static void vi_indents(char *ln, int *l)
+@@ -857,6 +857,8 @@ static void vi_indents(char *ln, int *l)
  	*l = ln - pln;
  }
  
@@ -85,7 +85,7 @@ index 57171e8c..2d7b0d74 100644
  static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *post, *ln = lbuf_get(xb, r1);
-@@ -889,6 +891,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -888,6 +890,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
@@ -93,10 +93,10 @@ index 57171e8c..2d7b0d74 100644
  }
  
  static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1055,8 +1058,11 @@ static void vc_insert(int cmd)
+@@ -1054,8 +1057,11 @@ static void vc_insert(int cmd)
  	term_room(cmdo);
  	sbuf_mem(sb, ln, l1)
- 	postn = led_input(sb, post, postn, row, cmdo);
+ 	postn = led_input(sb, post, postn, row, cmdo << 2);
 -	if (postn != l1 || cmdo || !ln)
 +	if (postn != l1 || cmdo || !ln) {
  		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
@@ -106,7 +106,7 @@ index 57171e8c..2d7b0d74 100644
  	free(sb->s);
  }
  
-@@ -1530,6 +1536,37 @@ void vi(int init)
+@@ -1505,6 +1511,37 @@ void vi(int init)
  				vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -144,7 +144,7 @@ index 57171e8c..2d7b0d74 100644
  				if (vi_insmov == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1542,6 +1579,9 @@ void vi(int init)
+@@ -1517,6 +1554,9 @@ void vi(int init)
  				if (c != 'A' && c != 'C')
  					xoff--;
  				break;
@@ -152,5 +152,5 @@ index 57171e8c..2d7b0d74 100644
 +				vi_mod = 0;
 +				break;
  			case 'J':
- 				vc_join(vi_joinmode, vi_arg <= 1 ? 2 : vi_arg);
+ 				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
  				break;

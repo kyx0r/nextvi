@@ -1,4 +1,4 @@
-.Dd Dec  8, 2025
+.Dd Dec 19, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -301,8 +301,6 @@ Replace # characters with arg from cursor forward
 Split a line # times
 .It Cm [\fI#\fP]J
 Join # lines
-.It Cm vj
-Toggle space padding when joining lines
 .It Cm [\fI#\fP]y{\fIarg\fP}
 Yank arg region # times
 .It Cm [\fI#\fP]Y
@@ -518,8 +516,8 @@ is recommended to always use a pad between [cmd] and [args].
 Examples:
 .It Cm :evi.c
 Evaluates to ":e vi.c"
-.It Cm :eabc
-Evaluates to ":ea bc" not ":e abc"
+.It Cm :efbc
+Evaluates to ":ef bc" not ":e fbc"
 .It Cm :e \& vi.c
 Edit " vi.c". <pad> is required
 .El
@@ -545,22 +543,25 @@ Specials in ex
 <%> in [args] expands to current buffer pathname or any buffer
 pathname when followed by a corresponding buffer number.
 "%#" expands to last swapped buffer pathname.
+"%@" expands to register specified.
 
-Example: make a copy of current file and edit it
-:! cp % %_:e %_
-Example: paste current buffer pathname
-:& i%
+Example: make a copy of the current file and edit it
+:!cp % %_:e %_
+Example: insert current buffer pathname
+:&i%
+Example: echo the value of <a> register
+:!echo "%@a"
 
-<!> in [args] defines and optionally ends a block containing
+<!> in [args] starts and optionally ends a block containing
 external commands. This block executes and expands to stdout
 produced.
 
 Example: substitute "int" with the value of $RANDOM
 :%s/int/!printf "%s" $RANDOM!
 Example: insert output of ls shell command
-:& i!ls
+:&i!ls
 Example: insert output of ls more efficiently
-:;c !ls!<^V><ESC>
+:;c!ls!<^V><ESC>
 .Ed
 .
 .Sh EX RANGES
@@ -573,10 +574,12 @@ Some ex commands can be prefixed with ranges.
 
 .It Cm [\fIpad\fP][\fI% |\fP][\fI, ;\fP][\fI#\fP][\fIpad\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
 All ranges structure
-'It Cm |{\fIcmd\fP}[<\fI|\fP>]
+'It Cm {\fI|\fP}{\fIcmd\fP}[\fI|\fP]
 Ex command structure
-.It Cm {\fI> <\fP}[\fIkwd\fP][\fI> <\fP]
-Search structure
+.It Cm {\fI>\fP}[\fIkwd\fP][\fI>\fP]
+Search forward structure
+.It Cm {\fI<\fP}[\fIkwd\fP][\fI<\fP]
+Search backward structure
 'It Cm '{<\fImark\fP>}
 Mark structure
 
@@ -585,7 +588,7 @@ Mark structure
 .It Cm \&%
 Range from first to last line
 .It Cm \&|
-Begin ex command
+Begin ex command structure
 .It Cm \&,
 Vertical range separator
 .It Cm \&;
@@ -597,11 +600,11 @@ Current position
 .It Cm \&$
 Last line of a buffer or end of line
 .It Cm \&'
-Begin mark
+Begin mark structure
 .It Cm \&>
-Begin search forward
+Begin search forward structure
 .It Cm \&<
-Begin search backward
+Begin search backward structure
 .It Cm \&-
 Subtract following number
 .It Cm \&+
@@ -666,8 +669,9 @@ Print text enclosed by a non deterministic pattern "a+"
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [\fIvrange\fP]f{\fI> <\fP}[\fIkwd\fP]
-Ranged search
+.It Cm [\fIvrange\fP]f{\fI>\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f{\fI<\fP}[\fIkwd\fP]
+Ranged regex search
 .Bd -literal
 Example: no range given, current line only
 :f>int
@@ -677,12 +681,26 @@ Example: range given
 :10,100f>int
 .Ed
 
-.It Cm [\fIvrange\fP]f+{\fI> <\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+{\fI>\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+{\fI<\fP}[\fIkwd\fP]
 Incrementing ranged search
 .Bd -literal
-Equivalent to the :f command, except subsequent commands within
+Equivalent to the :f> and :f< commands, except subsequent commands within
 range move to the next match just like vi normal [#]n or [#]N
 commands.
+.Ed
+
+.It Cm [\fIvrange\fP]f[\fIkwd\fP]
+Fuzzy regex search prompt
+.Bd -literal
+Enters a fuzzy regex search prompt with a list of matches.
+If the number of matches is less than 10, match can be picked
+using numbers 0-9.
+<^C> or <ESC> to abort.
+<^M> or <Enter> to input a number larger than 9.
+
+No range evaluates to <%> range.
+No range displays a maximum of xrows * 3 matches.
 .Ed
 
 .It Cm b[\fI#\fP]
@@ -721,8 +739,8 @@ Example: print current line from offset 5 to 10
 :.;5;10p
 .Ed
 
-.It Cm [\fI#\fP]ea[\fIkwd\fP]
-Open file based on filename substring
+.It Cm [\fIvrange\fP]ef[\fIkwd\fP]
+Open file using fuzzy regex search prompt
 .Bd -literal
 Requires directory listing in b-2 backfilled prior.
 
@@ -731,23 +749,16 @@ Example: backfill b-2 using :fd
 Example: backfill b-2 using find
 :b-2:%!find .
 
-If kwd matches more than one filename, a list of matches
-and a fuzzy find prompt will be shown. If the number of matches
-is less than 10, match can be picked using numbers 0-9.
-<^C> or <ESC> to abort.
-<^M> or <Enter> to input a number larger than 9.
-Prefix is a number selected ahead of time.
+Prompt behavior is equivalent to the :f command.
 
-Example: print entire listing
-:ea
-Example: open filename containing "v"
-:ea v
-Example: open path at index 15
-:15ea
+Example: enter prompt & print entire listing
+:ef
+Example: search for pathname containing "v"
+:ef v
 .Ed
 
-.It Cm [\fI#\fP]ea![\fIkwd\fP]
-Forced version of ea
+.It Cm [\fI#\fP]ef![\fIkwd\fP]
+Forced version of ef
 
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
 Enter ex insert mode before specified position
@@ -799,6 +810,18 @@ Example: delete from current position to the start of the buffer
 Example: delete from current position to the end of the buffer
 :.,$;;$d
 .Ed
+
+.It Cm [\fIvrange\fP]j[*]
+Join line(s)
+.Bd -literal
+Any argument activates padding mode
+
+Example: join all lines
+:%-1j
+Example: join all lines with space padding
+:%-1jj
+.Ed
+
 .It Cm e[\fIpath\fP]
 Open a file at a path
 .Bd -literal
@@ -859,10 +882,10 @@ Example: print current character offset only
 Example: print value of mark <a>
 :'a=
 Example: calculate 75 - 100
-:1,75-100=1p
+:,75-100=1p
 .Ed
 
-.It Cm [\fIvrange\fP]k{<\fImark\fP>}
+.It Cm [\fIvrange\fP]m{<\fImark\fP>}
 Set a line mark
 .Bd -literal
 Valid marks: <a-z ` ' [ ] *>
@@ -1110,6 +1133,10 @@ Example: exclude .git and submodule folders
 
 .It Cm reg
 Print registers and their contents
+.Bd -literal
+Example: shift the printing position to view offscreen register parts
+:1left:reg:left
+.Ed
 
 .It Cm bx[\fI#\fP]
 Set max number of buffers allowed
@@ -1523,19 +1550,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 523 vi.h | definitions/aux
+ 527 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
- 307 conf.c | hl/ft/td config
+ 308 conf.c | hl/ft/td config
  345 term.c | low level IO
  411 ren.c | positioning/syntax
- 578 lbuf.c | file/line buffer
+ 608 lbuf.c | file/line buffer
  614 uc.c | UTF-8 support
- 708 led.c | insert mode/output
+ 706 led.c | insert mode/output
  756 regex.c | pikevm
- 1484 ex.c | ex options/commands
- 1863 vi.c | normal mode/general
- 7066 total | wc -l *.c\(basort
+ 1533 ex.c | ex options/commands
+ 1838 vi.c | normal mode/general
+ 7119 total | wc -l *.c\(basort
 _
 .TE
 .

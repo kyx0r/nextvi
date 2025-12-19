@@ -167,7 +167,6 @@ VI NORMAL
      [#]r{arg}     Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
-     vj            Toggle space padding when joining lines
      [#]y{arg}     Yank arg region # times
      [#]Y          Yank # lines
      [#]p          Paste default register below current line or after cursor
@@ -304,8 +303,8 @@ EX PARSING
      Examples:
      :evi.c
              Evaluates to ":e vi.c"
-     :eabc
-             Evaluates to ":ea bc" not ":e abc"
+     :efbc
+             Evaluates to ":ef bc" not ":e fbc"
      :e  vi.c
              Edit " vi.c". <pad> is required
 
@@ -323,22 +322,25 @@ EX EXPANSION
      <%> in [args] expands to current buffer pathname or any buffer
      pathname when followed by a corresponding buffer number.
      "%#" expands to last swapped buffer pathname.
+     "%@" expands to register specified.
 
-     Example: make a copy of current file and edit it
-     :! cp % %_:e %_
-     Example: paste current buffer pathname
-     :& i%
+     Example: make a copy of the current file and edit it
+     :!cp % %_:e %_
+     Example: insert current buffer pathname
+     :&i%
+     Example: echo the value of <a> register
+     :!echo "%@a"
 
-     <!> in [args] defines and optionally ends a block containing
+     <!> in [args] starts and optionally ends a block containing
      external commands. This block executes and expands to stdout
      produced.
 
      Example: substitute "int" with the value of $RANDOM
      :%s/int/!printf "%s" $RANDOM!
      Example: insert output of ls shell command
-     :& i!ls
+     :&i!ls
      Example: insert output of ls more efficiently
-     :;c !ls!<^V><ESC>
+     :;c!ls!<^V><ESC>
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
@@ -347,24 +349,26 @@ EX RANGES
 
      [pad][% |][, ;][#][pad][. $ ' > <][- + * / %][0-9]
              All ranges structure
-     |{cmd}[<|>]
+     {|}{cmd}[|]
              Ex command structure
-     {> <}[kwd][> <]
-             Search structure
+     {>}[kwd][>]
+             Search forward structure
+     {<}[kwd][<]
+             Search backward structure
      '{<mark>}
              Mark structure
 
      pad     <Space> or <Tab>
      %       Range from first to last line
-     |       Begin ex command
+     |       Begin ex command structure
      ,       Vertical range separator
      ;       Horizontal range separator
      #       Rebase to previous value in range structure
      .       Current position
      $       Last line of a buffer or end of line
-     '       Begin mark
-     >       Begin search forward
-     <       Begin search backward
+     '       Begin mark structure
+     >       Begin search forward structure
+     <       Begin search backward structure
      -       Subtract following number
      +       Add following number
      *       Multiply by the following number
@@ -411,8 +415,9 @@ EX RANGES
              Print text enclosed by a non deterministic pattern "a+"
 
 EX COMMANDS
-     [vrange]f{> <}[kwd]
-             Ranged search
+     [vrange]f{>}[kwd]
+     [vrange]f{<}[kwd]
+             Ranged regex search
 
              Example: no range given, current line only
              :f>int
@@ -421,12 +426,25 @@ EX COMMANDS
              Example: range given
              :10,100f>int
 
-     [vrange]f+{> <}[kwd]
+     [vrange]f+{>}[kwd]
+     [vrange]f+{<}[kwd]
              Incrementing ranged search
 
-             Equivalent to the :f command, except subsequent commands within
+             Equivalent to the :f> and :f< commands, except subsequent commands within
              range move to the next match just like vi normal [#]n or [#]N
              commands.
+
+     [vrange]f[kwd]
+             Fuzzy regex search prompt
+
+             Enters a fuzzy regex search prompt with a list of matches.
+             If the number of matches is less than 10, match can be picked
+             using numbers 0-9.
+             <^C> or <ESC> to abort.
+             <^M> or <Enter> to input a number larger than 9.
+
+             No range evaluates to <%> range.
+             No range displays a maximum of xrows * 3 matches.
 
      b[#]    Print buffers or switch to a buffer
 
@@ -459,8 +477,8 @@ EX COMMANDS
              Example: print current line from offset 5 to 10
              :.;5;10p
 
-     [#]ea[kwd]
-             Open file based on filename substring
+     [vrange]ef[kwd]
+             Open file using fuzzy regex search prompt
 
              Requires directory listing in b-2 backfilled prior.
 
@@ -469,22 +487,15 @@ EX COMMANDS
              Example: backfill b-2 using find
              :b-2:%!find .
 
-             If kwd matches more than one filename, a list of matches
-             and a fuzzy find prompt will be shown. If the number of matches
-             is less than 10, match can be picked using numbers 0-9.
-             <^C> or <ESC> to abort.
-             <^M> or <Enter> to input a number larger than 9.
-             Prefix is a number selected ahead of time.
+             Prompt behavior is equivalent to the :f command.
 
-             Example: print entire listing
-             :ea
-             Example: open filename containing "v"
-             :ea v
-             Example: open path at index 15
-             :15ea
+             Example: enter prompt & print entire listing
+             :ef
+             Example: search for pathname containing "v"
+             :ef v
 
-     [#]ea![kwd]
-             Forced version of ea
+     [#]ef![kwd]
+             Forced version of ef
 
      [vrange]i[str]
              Enter ex insert mode before specified position
@@ -533,6 +544,17 @@ EX COMMANDS
              :1,.;0;d
              Example: delete from current position to the end of the buffer
              :.,$;;$d
+
+     [vrange]j[*]
+             Join line(s)
+
+             Any argument activates padding mode
+
+             Example: join all lines
+             :%-1j
+             Example: join all lines with space padding
+             :%-1jj
+
      e[path]
              Open a file at a path
 
@@ -590,9 +612,9 @@ EX COMMANDS
              Example: print value of mark <a>
              :'a=
              Example: calculate 75 - 100
-             :1,75-100=1p
+             :,75-100=1p
 
-     [vrange]k{<mark>}
+     [vrange]m{<mark>}
              Set a line mark
 
              Valid marks: <a-z ` ' [ ] *>
@@ -816,6 +838,9 @@ EX COMMANDS
              :inc (^(?\:(?\!^\.git|^submodule).)+[^/]+$)
 
      reg     Print registers and their contents
+
+             Example: shift the printing position to view offscreen register parts
+             :1left:reg:left
 
      bx[#]   Set max number of buffers allowed
 
@@ -1128,19 +1153,19 @@ SPECIAL REGISTERS
 
 CODE MAP
      +--------------+----------------------+
-     | 523 vi.h     |  definitions/aux     |
+     | 527 vi.h     |  definitions/aux     |
      | 537 kmap.h   |  keymap translation  |
      +--------------+----------------------+
-     | 307 conf.c   |  hl/ft/td config     |
+     | 308 conf.c   |  hl/ft/td config     |
      | 345 term.c   |  low level IO        |
      | 411 ren.c    |  positioning/syntax  |
-     | 578 lbuf.c   |  file/line buffer    |
+     | 608 lbuf.c   |  file/line buffer    |
      | 614 uc.c     |  UTF-8 support       |
-     | 708 led.c    |  insert mode/output  |
+     | 706 led.c    |  insert mode/output  |
      | 756 regex.c  |  pikevm              |
-     | 1484 ex.c    |  ex options/commands |
-     | 1863 vi.c    |  normal mode/general |
-     | 7066 total   |  wc -l *.c|sort      |
+     | 1533 ex.c    |  ex options/commands |
+     | 1838 vi.c    |  normal mode/general |
+     | 7119 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1212,7 +1237,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.7                   December 8, 2025                   Linux 6.17.7
+Linux 6.17.7                   December 19, 2025                  Linux 6.17.7
 
 NEXTVI PATCHES
 ==============
@@ -1446,4 +1471,4 @@ Use to create patch and diff files fast. It relies on
 you not saving the file prior to running the macro.
 @z = control character mapping placeholders
 
-export EXINIT="$(printf '%b' 'led:ish:      1io{\n}kA\n	\x1b:1,3;0;$yaq:        1iA {jo}koa\x1b:;0;$yaw:     1i\\:e \!p $c\x1b:;0;$yae:     1iI/*A*/\x1b:;0;$yaa:     1ii/*A*/\x1b:;0;$yas:      1i/\/\*\n2x/\*\/\n2x\x1b:1,3;0;$yad:     1i>\%<<$\%<<\x1b:;0;$yax:     1i\\:\!cp \% \%_\\:w\\:\!git diff --no-index \%_ \%\x1b:;0;$yal:      1i\\:cd \!p $c\x1b:;0;$yaf:       1i\\:ph1 1 2 1^A\\:ph2 2 2 1^B\\:ph3 3 2 1^C\\:ph4 4 2 1^D\\:ph5 5 2 1^E\\:ph6 6 2 1^F\\:ph7 7 2 1^G\\:ph8 8 2 1^H\\:ph9 9 2 1^I\\:ph10 10 2 1^J\\:ph11 11 2 1^K\\:ph12 12 2 1^L\\:ph13 13 2 1^M\\:ph14 14 2 1^N\\:ph15 15 2 1^O\\:ph16 16 2 1^P\\:ph17 17 2 1^Q\\:ph18 18 2 1^R\\:ph19 19 2 1^S\\:ph20 20 2 1^T\\:ph21 21 2 1^U\\:ph22 22 2 1^V\\:ph23 23 2 1^W\\:ph24 24 2 1^X\\:ph25 25 2 1^Y\\:ph26 26 2 1^Z\\:ph27 27 2 1^[\\:ph28 28 2 1^\\\\\\:ph29 29 2 1^]\\:ph30 30 2 1^^\\:ph31 31 2 1^_\x1b:;0;$yaz:         inc (^(?\:(?\!^\.git).)+[^/]+$):u:1:pac:led')"
+export EXINIT="$(printf '%b' 'led:ish:      1io{\n}kA\n	\x1b:1,3;0;$yaq:        1iA {jo}koa\x1b:;0;$yaw:     1i\\:e \!p $c\x1b:;0;$yae:     1iI/*A*/\x1b:;0;$yaa:     1ii/*A*/\x1b:;0;$yas:      1i/\/\*\n2x/\*\/\n2x\x1b:1,3;0;$yad:     1i>\%<<$\%<<\x1b:;0;$yax:     1i\\:\!cp \% \%_\\:w\\:\!git diff --no-index \%_ \%\x1b:;0;$yal:      1i\\:cd \!p $c\x1b:;0;$yaf:       1i\\:ph1 1 2 1^A\\:ph2 2 2 1^B\\:ph3 3 2 1^C\\:ph4 4 2 1^D\\:ph5 5 2 1^E\\:ph6 6 2 1^F\\:ph7 7 2 1^G\\:ph8 8 2 1^H\\:ph9 9 2 1^I\\:ph10 10 2 1^J\\:ph11 11 2 1^K\\:ph12 12 2 1^L\\:ph13 13 2 1^M\\:ph14 14 2 1^N\\:ph15 15 2 1^O\\:ph16 16 2 1^P\\:ph17 17 2 1^Q\\:ph18 18 2 1^R\\:ph19 19 2 1^S\\:ph20 20 2 1^T\\:ph21 21 2 1^U\\:ph22 22 2 1^V\\:ph23 23 2 1^W\\:ph24 24 2 1^X\\:ph25 25 2 1^Y\\:ph26 26 2 1^Z\\:ph27 27 2 1^[\\:ph28 28 2 1^\\\\\\:ph29 29 2 1^]\\:ph30 30 2 1^^\\:ph31 31 2 1^_\x1b:;0;$yaz:         inc (^(?\:(?\!^\.git).)+[^/]+$):u:pac:led')"

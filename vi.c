@@ -45,7 +45,6 @@ static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_cndir = 1;		/* ^n direction */
 static int vi_status;			/* always show status */
 static int vi_tsm;			/* type of the status message */
-static int vi_joinmode = 1;		/* 1: insert extra space for pad 0: raw line join */
 static int vi_nlword;			/* new line mode for eEwWbB */
 
 void *emalloc(size_t size)
@@ -120,7 +119,7 @@ nrow = xrow; \
 noff = xoff; \
 for (i = 0, ret = 0;; i++) { \
 	l1 = ren_next(c, ren_pos(c, noff), 1)-1-xleft+vi_lncol; \
-	if (l1 > xcols || l1 < 0 || ret) \
+	if (l1 > xcols || l1 < 0 || ret || l1 >= rstate->cmax) \
 		break; \
 	i = i > 99 ? i % 100 : i; \
 	itoa(i%10 ? i%10 : i, snum); \
@@ -133,7 +132,7 @@ static void vi_drawrow(int row)
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
 	static char ch[5] = "~";
-	if (*vi_word) {
+	if (*vi_word && xled) {
 		int noff, nrow, ret;
 		s = lbuf_get(xb, row - vi_rshift);
 		c = lbuf_get(xb, xrow);
@@ -173,7 +172,7 @@ static void vi_drawrow(int row)
 	rstate += row != xrow;
 	if (!s)
 		s = row ? ch : ch+1;
-	else if (lnnum) {
+	else if (lnnum && xled) {
 		char tmp[32], tmp1[32], *p;
 		c = tmp, i = 0, i1 = 0;
 		if (lnnum == 1 || lnnum & 2) {
@@ -195,7 +194,7 @@ static void vi_drawrow(int row)
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
 		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		syn_setft(nn_ft);
-		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
+		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
 					memchr(" \t", *rstate->chrs[ren_off(s, i1)], 2);)
 				i1 = ren_next(s, i1, 1);
@@ -1054,7 +1053,7 @@ static void vc_insert(int cmd)
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
 	sbuf_mem(sb, ln, l1)
-	postn = led_input(sb, post, postn, row, cmdo);
+	postn = led_input(sb, post, postn, row, cmdo << 2);
 	if (postn != l1 || cmdo || !ln)
 		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
 	free(sb->s);
@@ -1098,31 +1097,10 @@ static int vc_put(int cmd)
 
 static void vc_join(int spc, int cnt)
 {
-	int beg = xrow;
-	int end = xrow + cnt;
-	int off = 0;
-	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
+	int o2 = 0;
+	if (lbuf_join(xb, xrow, xrow + cnt, xoff, &o2, spc))
 		return;
-	sbuf_smake(sb, 1024)
-	for (int i = beg; i < end; i++) {
-		char *ln = lbuf_get(xb, i);
-		char *lnend = ln + lbuf_s(ln)->len;
-		if (i > beg) {
-			while (ln[0] == ' ' || ln[0] == '\t')
-				ln++;
-			if (spc && sb->s_n && *ln != ')' &&
-					sb->s[sb->s_n-1] != ' ') {
-				sbuf_chr(sb, ' ')
-				off++;
-			}
-		}
-		off += (i+1 == end) ? 0 : uc_slen(ln) - 1;
-		sbuf_mem(sb, ln, lnend - ln)
-	}
-	sbufn_chr(sb, '\n')
-	lbuf_edit(xb, sb->s, beg, end, xoff, off);
-	xoff = off;
-	free(sb->s);
+	xoff = o2;
 	vi_mod |= 1;
 }
 
@@ -1369,7 +1347,7 @@ void vi(int init)
 				break;
 			case TK_CTL('k'):;
 				static struct lbuf *writexb;
-				if ((cs = ex_exec("w")) && xb == writexb)
+				if ((cs = ex_exec("w")) && writexb && xb == writexb)
 					cs = ex_exec("mpt0:w!");
 				writexb = cs ? xb : NULL;
 				break;
@@ -1396,9 +1374,6 @@ void vi(int init)
 						}
 						vi_arg--;
 					}
-					break;
-				case 'j':
-					vi_joinmode = !vi_joinmode;
 					break;
 				case 'w':
 					vi_nlword = !vi_nlword;
@@ -1543,7 +1518,7 @@ void vi(int init)
 					xoff--;
 				break;
 			case 'J':
-				vc_join(vi_joinmode, vi_arg <= 1 ? 2 : vi_arg);
+				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
 				break;
 			case 'K': {
 				preserve(int, xled, xled = 0;)
@@ -1735,7 +1710,7 @@ void vi(int init)
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
 				if (!word || strcmp(word, cs)) {
-					syn_reloadft(syn_addhl(cs, 1));
+					syn_reloadft(syn_addhl(cs, 1), 0);
 					free(word);
 					word = cs;
 					vi_mod |= 1;
@@ -1778,9 +1753,9 @@ void vi(int init)
 				if (!(vi_mod & 1) && !*vi_word)
 					vi_drawrow(orow);
 			syn_blockhl = -1;
-			syn_reloadft(syn_addhl("^.+", 2));
+			syn_reloadft(syn_addhl("^.+", 2), 0);
 			vi_drawrow(xrow);
-			syn_reloadft(syn_addhl(NULL, 2));
+			syn_reloadft(syn_addhl(NULL, 2), 0);
 		} else if (vi_mod & 2 && !(vi_mod & 1)) {
 			syn_blockhl = -1;
 			vi_drawrow(xrow);
@@ -1840,7 +1815,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-2.5 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-3.0 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

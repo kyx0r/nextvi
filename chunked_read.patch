@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 12795b0a..c0ed1de6 100644
+index 910e5e49..44548b80 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -416,10 +416,10 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int hist)
+@@ -349,10 +349,10 @@ static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int flg)
  	return 0;
  }
  
@@ -15,7 +15,7 @@ index 12795b0a..c0ed1de6 100644
  	close(fd); \
  } \
  
-@@ -435,7 +435,7 @@ int ex_edit(const char *path, int len)
+@@ -368,7 +368,7 @@ int ex_edit(const char *path, int len)
  		return 1;
  	}
  	bufs_switch(bufs_open(path, len));
@@ -24,7 +24,7 @@ index 12795b0a..c0ed1de6 100644
  	return 0;
  }
  
-@@ -456,7 +456,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -389,7 +389,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -34,7 +34,7 @@ index 12795b0a..c0ed1de6 100644
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
 diff --git a/lbuf.c b/lbuf.c
-index 2dab3b6e..4548927c 100644
+index 50443824..c99370bd 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -203,32 +203,85 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -76,13 +76,22 @@ index 2dab3b6e..4548927c 100644
 +			} else if (n == sz) {
 +				sz++;
 +				step = 0;
-+			}
-+		}
+ 			}
+-			sz = n * 2;
+-			s = erealloc(s, sz--);
+-			step = 1;
+-		} else if (n == sz) {
+-			sz++;
+-			step = 0;
+ 		}
 +		s[n] = '\0';
 +		lbuf_edit(lb, s, beg, end, 0, 0);
 +		free(s);
 +		return nr != 0;
-+	}
+ 	}
+-	s[n] = '\0';
+-	lbuf_edit(lb, s, beg, end, 0, 0);
+-	free(s);
 +	long nr, l, nins = 0, nl = 0;
 +	struct linfo *n, *cn = NULL;
 +	const int rchunk = 4096;
@@ -111,13 +120,7 @@ index 2dab3b6e..4548927c 100644
 +				cn = NULL;
 +				memset(&ln[n->len + 1], 0, 5);	/* fault tolerance pad */
 +				ln[n->len] = '\n';
- 			}
--			sz = n * 2;
--			s = erealloc(s, sz--);
--			step = 1;
--		} else if (n == sz) {
--			sz++;
--			step = 0;
++			}
 +			sbuf_mem(sb, &ln, (int)sizeof(ln))
 +			s += l;
 +		}
@@ -129,11 +132,8 @@ index 2dab3b6e..4548927c 100644
 +			cn = n;
 +			nins--;
 +			sb->s_n -= sizeof(ln);
- 		}
- 	}
--	s[n] = '\0';
--	lbuf_edit(lb, s, beg, end, 0, 0);
--	free(s);
++		}
++	}
 +	sbuf_null(sb)
 +	lbuf_edit(lb, sb->s, beg, end, 0, 0);
 +	lb->ln_n = nins;
@@ -146,10 +146,10 @@ index 2dab3b6e..4548927c 100644
  }
  
 diff --git a/vi.h b/vi.h
-index e08ab7e6..d7f98b26 100644
+index 1f1a6fdc..e6034364 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -164,7 +164,8 @@ struct lbuf {
+@@ -167,7 +167,8 @@ struct lbuf {
  #define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
  struct lbuf *lbuf_make(void);
  void lbuf_free(struct lbuf *lb);
