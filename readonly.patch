@@ -69,8 +69,8 @@ index eca4d956..b9571f4f 100644
 +				readonly = 1;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-2.6 Usage: %s [-emsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-2.6 Usage: %s [-emRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-3.0 Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-3.0 Usage: %s [-emRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
