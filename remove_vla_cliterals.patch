@@ -33,10 +33,10 @@ index 910e5e49..352470b1 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 14d583f0..180c5d46 100644
+index 50443824..e32df6a1 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -433,7 +433,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -437,7 +437,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
@@ -45,7 +45,7 @@ index 14d583f0..180c5d46 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (skip >= 0 && s)
-@@ -458,14 +458,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
+@@ -462,14 +462,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  				break;
  			*o = _o;
  			*r = i;
@@ -254,7 +254,7 @@ index 73a4943c..0df8dfe6 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index eca4d956..0bd2a141 100644
+index 2144d7b4..327f6e0b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
