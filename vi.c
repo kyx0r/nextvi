@@ -119,7 +119,7 @@ nrow = xrow; \
 noff = xoff; \
 for (i = 0, ret = 0;; i++) { \
 	l1 = ren_next(c, ren_pos(c, noff), 1)-1-xleft+vi_lncol; \
-	if (l1 > xcols || l1 < 0 || ret) \
+	if (l1 > xcols || l1 < 0 || ret || l1 >= rstate->cmax) \
 		break; \
 	i = i > 99 ? i % 100 : i; \
 	itoa(i%10 ? i%10 : i, snum); \
@@ -132,7 +132,7 @@ static void vi_drawrow(int row)
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
 	static char ch[5] = "~";
-	if (*vi_word) {
+	if (*vi_word && xled) {
 		int noff, nrow, ret;
 		s = lbuf_get(xb, row - vi_rshift);
 		c = lbuf_get(xb, xrow);
@@ -172,7 +172,7 @@ static void vi_drawrow(int row)
 	rstate += row != xrow;
 	if (!s)
 		s = row ? ch : ch+1;
-	else if (lnnum) {
+	else if (lnnum && xled) {
 		char tmp[32], tmp1[32], *p;
 		c = tmp, i = 0, i1 = 0;
 		if (lnnum == 1 || lnnum & 2) {
@@ -194,7 +194,7 @@ static void vi_drawrow(int row)
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
 		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		syn_setft(nn_ft);
-		if ((lnnum == 1 || lnnum & 4) && xled && !xleft && vi_lncol) {
+		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
 					memchr(" \t", *rstate->chrs[ren_off(s, i1)], 2);)
 				i1 = ren_next(s, i1, 1);

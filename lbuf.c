@@ -85,12 +85,12 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
 		for (; *s; n_ins++) {
 			int l = linelength(s);
 			int l_nonl = l - (s[l - !!l] == '\n');
-			struct linfo *n = emalloc(l_nonl + 7 + sizeof(struct linfo));
+			struct linfo *n = emalloc(l_nonl + 5 + sizeof(struct linfo));
 			n->len = l_nonl;
 			n->grec = 0;
 			char *ln = (char*)(n + 1);
 			memcpy(ln, s, l_nonl);
-			memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
+			memset(&ln[l_nonl + 1], 0, 4);	/* fault tolerance pad */
 			ln[l_nonl] = '\n';
 			sbuf_mem(sb, &ln, (int)sizeof(s))
 			s += l;
