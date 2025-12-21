@@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
 		xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
 	if (!rs)
 		return;
-	int subs[rs->grpcnt * 2];
+	int subs[rs->nsubc];
 	sbuf_smake(ibuf, 1024)
 	for (n = 1; n <= acsb->s_n; n++)
 		if (acsb->s[n - 1] == '\n')

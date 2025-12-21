@@ -48,8 +48,8 @@ pc += num;
 #define EMIT(at, byte) (code ? (code[at] = byte) : at)
 #define PC (prog->unilen)
 
-static int re_sizecode(char *re, int *laidx);
-static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags);
+static int re_sizecode(char *re, int *nsub, int *laidx, int flg);
+static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg);
 
 static void reg_free(rcode *p)
 {
@@ -126,10 +126,9 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			int sub, sz, laidx, bal, la_static;
 			if (re[1] == '?') {
 				re += 2;
-				if (*re == ':') {
-					cap_stack[capc++] = 0;
+				if (*re == ':')
 					goto non_capture;
-				} else if (*re == '#') {
+				else if (*re == '#') {
 					lb_start = atoi(re+1);
 					if (!(re = strchr(re, ')')))
 						return -1;
@@ -153,8 +152,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 						bal++;
 						la_static = 0;
 					} else if (*s == ')') {
-						bal--;
-						if (!bal)
+						if (--bal == 0)
 							break;
 					} else if (code && la_static && strchr("|.*+?[]{}$", *s))
 						la_static = 0;
@@ -176,11 +174,11 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 						}
 						EMIT(PC-2, p - (char*)(prog->la[prog->laidx]+1));
 					} else {
-						sz = re_sizecode(re, &laidx) * sizeof(int);
+						sz = re_sizecode(re, &sub, &laidx, REG_NOCAP) * sizeof(int);
 						if (sz < 0)
 							return -1;
 						prog->la[prog->laidx] = emalloc(sizeof(rcode)+sz);
-						if (reg_comp(prog->la[prog->laidx], re, 0, laidx, flg)) {
+						if (reg_comp(prog->la[prog->laidx], re, sub, laidx, flg | REG_NOCAP)) {
 							reg_free(prog->la[prog->laidx]);
 							return -1;
 						}
@@ -191,11 +189,15 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 				re = s;
 				break;
 			}
-			sub = ++prog->sub;
-			EMIT(PC++, SAVE);
-			EMIT(PC++, sub);
-			cap_stack[capc++] = 1;
-			non_capture:
+			if (flg & REG_NOCAP) {
+				non_capture:
+				cap_stack[capc++] = 0;
+			} else {
+				sub = ++prog->sub;
+				EMIT(PC++, SAVE);
+				EMIT(PC++, sub);
+				cap_stack[capc++] = 1;
+			}
 			cap_stack[capc++] = term;
 			cap_stack[capc++] = alt_label;
 			cap_stack[capc++] = start;
@@ -337,27 +339,29 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 	return capc ? -1 : 0;
 }
 
-static int re_sizecode(char *re, int *laidx)
+static int re_sizecode(char *re, int *nsub, int *laidx, int flg)
 {
 	rcode dummyprog;
 	dummyprog.unilen = 4;
+	dummyprog.sub = 0;
 	dummyprog.laidx = 0;
-	int res = compilecode(re, &dummyprog, 1, 0);
+	int res = compilecode(re, &dummyprog, 1, flg);
+	*nsub = dummyprog.sub;
 	*laidx = dummyprog.laidx;
 	return res < 0 ? res : dummyprog.unilen;
 }
 
-static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
+static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
 {
 	prog->len = 0;
 	prog->unilen = 0;
 	prog->sub = 0;
-	prog->presub = nsubs;
+	prog->presub = nsubc;
 	prog->splits = 0;
 	prog->laidx = 0;
-	prog->flg = flags;
+	prog->flg = flg;
 	prog->la = laidx ? emalloc(laidx * sizeof(rcode*)) : NULL;
-	if (compilecode(re, prog, 0, flags) < 0)
+	if (compilecode(re, prog, 0, flg) < 0)
 		return -1;
 	int icnt = 0, scnt = SPLIT;
 	for (int i = 0; i < prog->unilen; i++)
@@ -389,7 +393,7 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
 	prog->insts[prog->unilen++] = MATCH;
 	prog->splits = MAX((scnt - SPLIT) / 2, 1);
 	prog->len = icnt + 3;
-	prog->presub = sizeof(rsub) + (sizeof(char*) * (nsubs + 1) * 2);
+	prog->presub = sizeof(rsub) + (sizeof(char*) * (nsubc + 1) * 2);
 	prog->sub = prog->presub * (icnt + 6);
 	prog->sparsesz = scnt;
 	return 0;
@@ -442,7 +446,7 @@ subs[si++] = nsub; \
 goto next##nn; \
 
 #define saveclist() \
-if (npc[1] > (nsubp >> 1) && nsub->ref > 1) { \
+if (npc[1] > (nsubc >> 1) && nsub->ref > 1) { \
 	nsub->ref--; \
 	newsub(memcpy(sub->sub, nsub->sub, osubp);, \
 	memcpy(sub->sub, nsub->sub, osubp >> 1);) \
@@ -532,7 +536,7 @@ if (spc > JMP) { \
 		for (j = npc[3], cnt = 0; cnt < j && s0[cnt] == s1[cnt]; cnt++); \
 		cnt = cnt == j; \
 	} else if (!lb[j] || s0 > lb[j]) { \
-		cnt = re_pikevm(prog->la[j], s0, _subp, 1, 0); \
+		cnt = re_pikevm(prog->la[j], s0, _subp, 2, 0); \
 		lb[j] = cnt ? _subp[0] : NULL; \
 	} else \
 		cnt = !!lb[j]; \
@@ -590,9 +594,9 @@ for (;; sp = _sp) { \
 				matched = nsub; \
 			} \
 			if (sp == _sp || nlistidx == 1) { \
-				for (i = 0; i < nsubp; i+=2) { \
+				for (i = 0; i < nsubc; i+=2) { \
 					subp[i] = matched->sub[i >> 1]; \
-					subp[i+1] = matched->sub[(nsubp >> 1) + (i >> 1)]; \
+					subp[i+1] = matched->sub[(nsubc >> 1) + (i >> 1)]; \
 				} \
 				_return(1) \
 			} \
@@ -615,7 +619,7 @@ for (;; sp = _sp) { \
 } \
 _return(0) \
 
-static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, int flg)
+static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, int flg)
 {
 	if (!*s)
 		return 0;
@@ -628,7 +632,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
 	rthread *clist = _clist, *nlist = _nlist, *tmp;
 	const char *_subp[2], *lb[prog->laidx+1];
 	int rsubsize = prog->presub, suboff = 0;
-	int cnt, spc, i, c, j, osubp = nsubp * sizeof(char*);
+	int cnt, spc, i, c, j, osubp = nsubc * sizeof(char*);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 	unsigned int sdense[prog->sparsesz], sparsesz = 0;
@@ -665,19 +669,19 @@ void rset_free(rset *rs)
 
 rset *rset_make(int n, char **re, int flg)
 {
-	int i, laidx, sz, c = 0;
+	int i, laidx, sz, nsubc, c = 0;
 	rset *rs = emalloc(sizeof(*rs) + (((n + 1) * sizeof(rs->grp[0])) * 2));
 	rs->grp = (int*)(rs + 1);
-	rs->setgrpcnt = rs->grp + n + 1;
+	rs->grpnsubc = rs->grp + n + 1;
 	sbuf_smake(sb, 1024)
 	rs->n = n;
 	for (i = 0; i < n; i++)
 		if (!re[i])
 			c++;
-	rs->grpcnt = (n - c) > 1;
+	nsubc = ((n - c) > 1) * 2;
 	for (i = 0; i < n; i++) {
 		if (!re[i]) {
-			rs->grp[i] = -1;
+			rs->grp[i] = -2;
 			continue;
 		}
 		if (sb->s_n > 0)
@@ -687,44 +691,44 @@ rset *rset_make(int n, char **re, int flg)
 		sbuf_str(sb, re[i])
 		if ((n - c) > 1)
 			sbuf_chr(sb, ')')
-		rs->grp[i] = rs->grpcnt;
-		rs->setgrpcnt[i] = re_groupcount(re[i]) + 1;
-		rs->grpcnt += rs->setgrpcnt[i];
+		rs->grp[i] = nsubc;
+		rs->grpnsubc[i] = flg & REG_NOCAP ? 2 : (re_groupcount(re[i]) + 1) * 2;
+		nsubc += rs->grpnsubc[i];
 	}
 	sbufn_null(sb)
-	sz = re_sizecode(sb->s, &laidx) * sizeof(int);
+	sz = re_sizecode(sb->s, &nsubc, &laidx, flg & REG_NOCAP ? flg : 0);
 	if (sz > 0) {
-		rs->regex = emalloc(sizeof(rcode)+sz);
-		if (!reg_comp(rs->regex, sb->s,
-				MAX(rs->grpcnt-1, 0), laidx, flg))
-			goto success;
+		rs->regex = emalloc(sizeof(rcode) + (sz * sizeof(int)));
+		if (!reg_comp(rs->regex, sb->s, nsubc, laidx, flg)) {
+			rs->nsubc = (nsubc + 1) * 2;
+			free(sb->s);
+			return rs;
+		}
 		reg_free(rs->regex);
 	}
 	free(rs);
-	rs = NULL;
-	success:
 	free(sb->s);
-	return rs;
+	return NULL;
 }
 
 /* return the index of the matching regular expression or -1 if none matches */
 int rset_find(rset *rs, char *s, int *grps, int flg)
 {
-	regmatch_t subs[rs->grpcnt+1];
-	regmatch_t *sub = subs+1;
-	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
-		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
+	const char *subs[rs->nsubc+2];
+	const char **sub = subs+2;
+	if (re_pikevm(rs->regex, s, sub, rs->nsubc, flg)) {
+		subs[1] = NULL; /* make sure sub[-1] never matches */
 		for (int i = rs->n-1; i >= 0; i--) {
-			if (sub[rs->grp[i]].rm_eo) {
-				int grp, n = grps ? rs->setgrpcnt[i] : 0;
-				for (int gi = 0; gi < n; gi++) {
-					grp = rs->grp[i] + gi;
-					if (sub[grp].rm_eo && sub[grp].rm_so) {
-						grps[gi * 2] = sub[grp].rm_so - s;
-						grps[gi * 2 + 1] = sub[grp].rm_eo - s;
+			if (sub[rs->grp[i] + 1]) {
+				int n = grps ? rs->grpnsubc[i] : 0;
+				for (int gi = 0; gi < n; gi += 2) {
+					int grp = rs->grp[i] + gi;
+					if (sub[grp] && sub[grp + 1]) {
+						grps[gi] = sub[grp] - s;
+						grps[gi + 1] = sub[grp + 1] - s;
 					} else {
-						grps[gi * 2] = -1;
-						grps[gi * 2 + 1] = -1;
+						grps[gi] = -1;
+						grps[gi + 1] = -1;
 					}
 				}
 				return i;
@@ -732,6 +736,11 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
 		}
 	}
 	return -1;
+}
+
+int rset_match(rset *rs, char *s, int flg)
+{
+	return re_pikevm(rs->regex, s, NULL, 0, flg);
 }
 
 /* read a regular expression enclosed in a delimiter */

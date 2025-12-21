@@ -21,21 +21,20 @@ static int dir_reorder(char *s, char *se, int *ord, int end, int dir)
 {
 	rset *rs = dir < 0 ? dir_rsrl : dir_rslr;
 	int beg = 0, off, c_beg, c_end;
-	int subs[LEN(dmarks[0].dir) * 2], gdir, found, i;
+	int subs[LEN(dmarks[0].dir) * 2], found, i;
 	int flg = se > s && se[-1] == '\n' ? REG_NEWLINE : 0;
 	while (se > s && (found = rset_find(rs, s, subs, flg)) >= 0) {
 		for (i = 0; i < end; i++)
 			ord[i] = i;
 		end = -1;
 		c_end = 0;
-		for (i = 0; i < rs->setgrpcnt[found]; i++) {
-			gdir = dmarks[found].dir[i];
-			off = subs[i * 2];
-			if (off < 0 || gdir >= 0)
+		for (i = 0; i < rs->grpnsubc[found]; i += 2) {
+			off = subs[i];
+			if (off < 0 || dmarks[found].dir[i >> 1] >= 0)
 				continue;
 			c_beg = uc_off(s, off);
-			c_end = c_beg + uc_off(s + off, subs[i * 2 + 1] - off);
-			off = subs[i * 2 + 1];
+			c_end = c_beg + uc_off(s + off, subs[i + 1] - off);
+			off = subs[i + 1];
 			dir_reverse(ord, beg+c_beg, beg+c_end);
 		}
 		beg += c_end ? c_end : 1;
@@ -307,22 +306,21 @@ void syn_highlight(int *att, char *s, int n)
 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
 	re:;
 	rset *rs = ftmap[fti].rs;
-	int subs[rs->grpcnt * 2 + 1], *catt, *iatt, sl, c;
-	int cend, sidx = 0, flg = 0, hl, j, i;
+	int subs[rs->nsubc], *catt, *iatt, sl, c;
+	int cend, sidx = 0, flg = 0, hl, j, i, ii;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
 		cend = 1;
 		hl = sl + ftmap[fti].setbidx;
-		sl = rs->setgrpcnt[sl];
+		sl = rs->grpnsubc[sl];
 		catt = hls[hl].att;
-		for (i = 0; i < sl; i++) {
-			if (subs[i * 2] < 0 || SYN_IGNSET(catt[i]))
+		for (i = 0, ii = i; ii < sl; ii += 2, i++) {
+			if (subs[ii] < 0 || SYN_IGNSET(catt[i]))
 				continue;
-			cend = MAX(cend, subs[i * 2 + 1]);
-			int beg = uc_off(s, sidx + subs[i * 2]);
-			int end = beg + uc_off(s + sidx + subs[i * 2],
-					subs[i * 2 + 1] - subs[i * 2]);
+			cend = MAX(cend, subs[ii + 1]);
+			int beg = uc_off(s, sidx + subs[ii]);
+			int end = beg + uc_off(s + sidx + subs[ii], subs[ii + 1] - subs[ii]);
 			if (SYN_ATTSET(catt[i])) {
-				iatt = &catt[sl];
+				iatt = &catt[sl >> 1];
 				c = *iatt;
 				if (SYN_ATTSET(catt[i]) == SYN_ATT) {
 					for (j = beg; c && j < end; j++)

@@ -484,7 +484,7 @@ void dir_calc(char *path)
 				memcpy(cpath, ptrs[i], pathlen + len);
 				plen[i++] = pathlen + len;
 			} else if (ret >= 0 && S_ISREG(statbuf.st_mode))
-				if (!fsincl || rset_find(fsincl, cpath, NULL, 0) >= 0) {
+				if (!fsincl || rset_match(fsincl, cpath, 0)) {
 					sbuf_mem(sb, cpath, (int)(pathlen + len))
 					sbuf_chr(sb, '\n')
 				}
@@ -1711,10 +1711,10 @@ void vi(int init)
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
 				if (!word || strcmp(word, cs)) {
 					syn_reloadft(syn_addhl(cs, 1), 0);
-					free(word);
-					word = cs;
 					vi_mod |= 1;
 				}
+				free(word);
+				word = cs;
 			}
 		}
 		if (xhlp && (k = syn_findhl(3)) >= 0) {
@@ -1815,7 +1815,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-3.0 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-3.1 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

@@ -100,10 +100,7 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define REG_NEWLINE	0x02	/* Unlike posix, controls termination by '\n' */
 #define REG_NOTBOL	0x04
 #define REG_NOTEOL	0x08
-typedef struct {
-	char *rm_so;
-	char *rm_eo;
-} regmatch_t;
+#define REG_NOCAP	0x10	/* Computes only the default match group */
 typedef struct rcode rcode;
 struct rcode {
 	rcode **la;		/* lookahead expressions */
@@ -120,15 +117,16 @@ struct rcode {
 /* regular expression set */
 typedef struct {
 	rcode *regex;		/* the combined regular expression */
-	int *grp;		/* the group assigned to each subgroup */
-	int *setgrpcnt;		/* number of groups in each regular expression */
+	int *grp;		/* subgroup index */
+	int *grpnsubc;		/* sub count in each subgroup */
+	int nsubc;		/* total sub count */
 	int n;			/* number of regular expressions in this set */
-	int grpcnt;		/* group count */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
 rset *rset_smake(char *pat, int flg)
 	{ char *ss[1] = {pat}; return rset_make(1, ss, flg); }
 int rset_find(rset *re, char *s, int *grps, int flg);
+int rset_match(rset *rs, char *s, int flg);
 void rset_free(rset *re);
 char *re_read(char **src);
 
