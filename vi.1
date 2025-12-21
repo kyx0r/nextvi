@@ -1,4 +1,4 @@
-.Dd Dec 19, 2025
+.Dd Dec 21, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -1499,8 +1499,7 @@ that would be impossible to construct without them. They can
 be used anywhere within a regex, though some considerations
 must be taken into account.
 Aspect 1:
-	Lookarounds contain a full regex, but should use non-capturing
-	groups to avoid incorrect results and performance issues.
+	Lookarounds contain a full regular expression.
 Aspect 2:
 	Lookarounds can have nested lookarounds.
 Aspect 3:
@@ -1550,19 +1549,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 527 vi.h | definitions/aux
+ 525 vi.h | definitions/aux
  537 kmap.h | keymap translation
 _
  308 conf.c | hl/ft/td config
  345 term.c | low level IO
- 411 ren.c | positioning/syntax
+ 409 ren.c | positioning/syntax
  608 lbuf.c | file/line buffer
  614 uc.c | UTF-8 support
  706 led.c | insert mode/output
- 756 regex.c | pikevm
+ 765 regex.c | pikevm
  1533 ex.c | ex options/commands
  1838 vi.c | normal mode/general
- 7119 total | wc -l *.c\(basort
+ 7126 total | wc -l *.c\(basort
 _
 .TE
 .
