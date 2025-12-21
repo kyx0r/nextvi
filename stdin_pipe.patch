@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 910e5e49..8eb7405b 100644
+index 64498432..1b05e71f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -375,7 +375,9 @@ int ex_edit(const char *path, int len)
@@ -147,7 +147,7 @@ index 757c26eb..22b91105 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 2144d7b4..86683580 100644
+index 3b43ae4a..02c48ba6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1785,7 +1785,8 @@ static int setup_signals(void)
@@ -171,10 +171,10 @@ index 2144d7b4..86683580 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..3c703f8f 100644
+index 23162165..8a4ac3a8 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -521,6 +521,7 @@ extern int vi_hidch;
+@@ -519,6 +519,7 @@ extern int vi_hidch;
  extern int vi_insmov;
  extern int vi_lncol;
  extern char vi_msg[512];

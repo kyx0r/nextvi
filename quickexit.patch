@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 910e5e49..38e79b3c 100644
+index 64498432..cae448f2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -13,6 +13,7 @@ int xtd = +1;			/* current text direction */
@@ -27,7 +27,7 @@ index 910e5e49..38e79b3c 100644
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index d5a188d0..95397471 100644
+index 42ebdc54..06c03c5b 100644
 --- a/led.c
 +++ b/led.c
 @@ -404,6 +404,14 @@ void led_modeswap(void)
@@ -76,7 +76,7 @@ index d5a188d0..95397471 100644
  				goto leave;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 2144d7b4..9ad4d854 100644
+index 3b43ae4a..884a5f9d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -97,10 +97,10 @@ index 2144d7b4..9ad4d854 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..b5db85af 100644
+index 23162165..118eec48 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -408,6 +408,7 @@ extern int xtd;
+@@ -406,6 +406,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xtbs;

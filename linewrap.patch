@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 910e5e49..febf28a2 100644
+index 64498432..77305fb0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
@@ -43,7 +43,7 @@ index 910e5e49..febf28a2 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
 diff --git a/lbuf.c b/lbuf.c
-index 50443824..2ebffe04 100644
+index 6148570f..c9dc1b9e 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -82,16 +82,50 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -107,7 +107,7 @@ index 50443824..2ebffe04 100644
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
 diff --git a/vi.c b/vi.c
-index 2144d7b4..9c770bf8 100644
+index 3b43ae4a..43a33a99 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -168,6 +168,22 @@ static void vi_drawrow(int row)
@@ -134,10 +134,10 @@ index 2144d7b4..9c770bf8 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..63473100 100644
+index 23162165..723ee644 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -147,6 +147,8 @@ struct lopt {
+@@ -145,6 +145,8 @@ struct lopt {
  struct linfo {
  	int len;
  	int grec;
