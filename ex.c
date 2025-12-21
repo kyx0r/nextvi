@@ -408,6 +408,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	char *path, *p, buf[32], trunc[100];
 	int c, pos, subs[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX;
+	int flg = REG_NEWLINE | REG_NOCAP;
 	if (*cmd !='f')
 		temp_switch(1, 0);
 	if (ex_vregion(loc, &beg, &end)) {
@@ -428,14 +429,14 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	while(1) {
 		sbuf_null(fuzz)
 		c = 0;
-		rs = rset_smake(fuzz->s, xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
+		rs = rset_smake(fuzz->s, xic ? flg | REG_ICASE : flg);
 		if (rs) {
 			syn_reloadft(syn_addhl(fuzz->s, 1), rs->regex->flg);
 			term_record = !!term_sbuf;
 			end = MIN(end, lbuf_len(xb));
 			for (pos = beg; c < max && pos < end; pos++) {
 				path = xb->ln[pos];
-				if (rset_find(rs, path, NULL, 0) >= 0) {
+				if (rset_match(rs, path, 0)) {
 					sbuf_mem(sb, &pos, (int)sizeof(pos))
 					p = itoa(c++, buf);
 					ex_cprint2(buf, NULL, -1, 0, 0, 2)
@@ -481,7 +482,6 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	free(sb->s);
 	path = lbuf_get(xb, lnum);
 	if (*cmd == 'f' && path) {
-		rs->setgrpcnt[0] = 1;
 		rset_find(rs, path, subs, 0);
 		xrow = lnum;
 		xoff = subs[0];
@@ -947,7 +947,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		rep = re_read(&s);
 	}
 	free(pat);
-	int offs[rs->grpcnt * 2];
+	int offs[rs->nsubc];
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
@@ -966,7 +966,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 					}
 					_rep++;
 					grp = abs((*_rep - '0') * 2);
-					if (grp + 1 >= rs->grpcnt * 2)
+					if (grp + 1 >= rs->nsubc)
 						sbuf_chr(r, (unsigned char)*_rep)
 					else if (offs[grp] >= 0)
 						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
@@ -1073,7 +1073,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	for (i = beg; i < lbuf_len(xb);) {
 		char *ln = lbuf_get(xb, i);
 		lbuf_s(ln)->grec &= ~xgdep;
-		if ((rset_find(rs, ln, NULL, REG_NEWLINE) < 0) == not) {
+		if (rset_match(rs, ln, REG_NEWLINE) != not) {
 			xrow = i;
 			if (ex_exec(s))
 				break;
