@@ -437,7 +437,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 			int *o, int ln_n, int skip)
 {
 	int r0 = *r, o0 = *o;
-	int offs[re->grpcnt * 2], i = r0;
+	int offs[re->nsubc], i = r0;
 	char *s = lbuf_get(lb, i);
 	int off, g1, g2, _o, step, flg;
 	if (skip >= 0 && s)
