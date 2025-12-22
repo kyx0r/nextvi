@@ -424,6 +424,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
 	sbuf_smake(sb, 128)
 	sbuf_smake(fuzz, 16)
+	sbuf_smake(cmdbuf, 16)
 	sbuf_str(fuzz, arg)
 	syn_setft(msg_ft);
 	while(1) {
@@ -451,9 +452,8 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		if (!ex_read(fuzz, "", NULL, 0, 2) && c) {
 			if (c == 1)
 				break;
-			sbuf_cut(fuzz, 0)
-			if (!ex_read(fuzz, "", NULL, 0, 0)) {
-				inst = atoi(fuzz->s);
+			if (!ex_read(cmdbuf, "", NULL, 0, 0)) {
+				inst = atoi(cmdbuf->s);
 				break;
 			}
 		}
@@ -462,8 +462,10 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		inst = fuzz->s_n ? fuzz->s[fuzz->s_n-1] : -1;
 		if (c && c < 10 && isdigit(inst)) {
 			inst -= '0';
-			if (inst < c)
+			if (inst < c) {
+				fuzz->s_n--;
 				break;
+			}
 		}
 		rset_free(rs);
 		sbuf_cut(sb, 0)
@@ -478,6 +480,14 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		lnum = *((int*)sb->s + (c == 1 ? 0 : inst));
 	ret:
 	syn_setft(xb_ft);
+	sbuf_cut(cmdbuf, 0)
+	sbuf_str(cmdbuf, cmd)
+	sbuf_chr(cmdbuf, ' ')
+	sbufn_mem(cmdbuf, fuzz->s, fuzz->s_n)
+	lbuf_dedup(tempbufs[0].lb, cmdbuf->s, cmdbuf->s_n)
+	temp_pos(0, -1, 0, 0);
+	temp_write(0, cmdbuf->s);
+	free(cmdbuf->s);
 	free(fuzz->s);
 	free(sb->s);
 	path = lbuf_get(xb, lnum);
