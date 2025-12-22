@@ -480,13 +480,15 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		lnum = *((int*)sb->s + (c == 1 ? 0 : inst));
 	ret:
 	syn_setft(xb_ft);
-	sbuf_cut(cmdbuf, 0)
-	sbuf_str(cmdbuf, cmd)
-	sbuf_chr(cmdbuf, ' ')
-	sbufn_mem(cmdbuf, fuzz->s, fuzz->s_n)
-	lbuf_dedup(tempbufs[0].lb, cmdbuf->s, cmdbuf->s_n)
-	temp_pos(0, -1, 0, 0);
-	temp_write(0, cmdbuf->s);
+	if (fuzz->s_n) {
+		sbuf_cut(cmdbuf, 0)
+		sbuf_str(cmdbuf, cmd)
+		sbuf_chr(cmdbuf, ' ')
+		sbufn_mem(cmdbuf, fuzz->s, fuzz->s_n)
+		lbuf_dedup(tempbufs[0].lb, cmdbuf->s, cmdbuf->s_n)
+		temp_pos(0, -1, 0, 0);
+		temp_write(0, cmdbuf->s);
+	}
 	free(cmdbuf->s);
 	free(fuzz->s);
 	free(sb->s);
