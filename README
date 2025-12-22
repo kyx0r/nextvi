@@ -1052,7 +1052,7 @@ EX OPTIONS
 
              Example: silence and ignore errors
              :err 4
-             Example: report and abort on first error
+             Example: report and return on first error
              :err 3
              Example: report and consider only last command for error status
              :err 1
@@ -1163,9 +1163,9 @@ CODE MAP
      | 614 uc.c     |  UTF-8 support       |
      | 706 led.c    |  insert mode/output  |
      | 765 regex.c  |  pikevm              |
-     | 1543 ex.c    |  ex options/commands |
+     | 1545 ex.c    |  ex options/commands |
      | 1838 vi.c    |  normal mode/general |
-     | 7136 total   |  wc -l *.c|sort      |
+     | 7138 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
