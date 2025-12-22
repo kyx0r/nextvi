@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 64498432..77305fb0 100644
+index e249b726..286ea07b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
@@ -10,7 +10,7 @@ index 64498432..77305fb0 100644
  
  int xrow, xoff, xtop;		/* current row, column, and top row */
  int xbufcur;			/* number of active buffers */
-@@ -1263,6 +1264,23 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1275,6 +1276,23 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -34,7 +34,7 @@ index 64498432..77305fb0 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1370,6 +1388,7 @@ static struct excmd {
+@@ -1382,6 +1400,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),

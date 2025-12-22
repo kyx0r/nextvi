@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 64498432..f7d0453f 100644
+index e249b726..ee903e5f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -34,6 +34,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -10,7 +10,7 @@ index 64498432..f7d0453f 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1263,6 +1264,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1275,6 +1276,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -52,7 +52,7 @@ index 64498432..f7d0453f 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1349,6 +1385,8 @@ static struct excmd {
+@@ -1361,6 +1397,8 @@ static struct excmd {
  	EO(shape),
  	EO(seq),
  	EO(sep),
