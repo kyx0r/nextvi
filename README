@@ -768,7 +768,7 @@ EX COMMANDS
 
              Argument value range is 0x1-0xff and 0x0 without.
              Any extra argument appends to the register.
-             Default register 0x0 cannot be appended to.
+             Default register cannot be appended to.
 
              Example: append to register <1>
              :ya 1x
@@ -1146,9 +1146,10 @@ SPECIAL MARKS
 SPECIAL REGISTERS
      /       Previous search keyword
      :       Previous ex command
+     <0x0>   Default register
      0       Previous value of default register (atomic)
              Atomic means the operation did not include a <Newline>.
-     1-9     Previous value(s) of default register (nonatomic)
+     <1-9>   Previous value(s) of default register (nonatomic)
 
 CODE MAP
      +--------------+----------------------+
@@ -1162,9 +1163,9 @@ CODE MAP
      | 614 uc.c     |  UTF-8 support       |
      | 706 led.c    |  insert mode/output  |
      | 765 regex.c  |  pikevm              |
-     | 1533 ex.c    |  ex options/commands |
+     | 1543 ex.c    |  ex options/commands |
      | 1838 vi.c    |  normal mode/general |
-     | 7126 total   |  wc -l *.c|sort      |
+     | 7136 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1236,4 +1237,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.7                   December 21, 2025                  Linux 6.17.7
+Linux 6.17.7                   December 22, 2025                  Linux 6.17.7
