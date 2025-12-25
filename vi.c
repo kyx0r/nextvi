@@ -119,7 +119,7 @@ nrow = xrow; \
 noff = xoff; \
 for (i = 0, ret = 0;; i++) { \
 	l1 = ren_next(c, ren_pos(c, noff), 1)-1-xleft+vi_lncol; \
-	if (l1 > xcols || l1 < 0 || ret || l1 >= rstate->cmax) \
+	if (l1 > xcols || l1 < 0 || ret || l1 >= rstate->cmax + vi_lncol) \
 		break; \
 	i = i > 99 ? i % 100 : i; \
 	itoa(i%10 ? i%10 : i, snum); \
