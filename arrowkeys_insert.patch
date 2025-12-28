@@ -73,7 +73,7 @@ index 42ebdc54..a34eb0d5 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 3b43ae4a..118cbb5b 100644
+index d7068dfc..774f8f29 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -857,6 +857,8 @@ static void vi_indents(char *ln, int *l)
