@@ -456,7 +456,6 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		}
 		if (TK_INT(inst))
 			goto ret;
-		inst = fuzz->s_n ? fuzz->s[fuzz->s_n-1] : -1;
 		if (c && c < 10 && isdigit(inst)) {
 			inst -= '0';
 			if (inst < c) {
