@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index e249b726..1b3f35ff 100644
+index 69300cdd..4fa04db6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -32,7 +32,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -24,7 +24,7 @@ index e249b726..1b3f35ff 100644
  		xkwdcnt++;
  		ex_regput('/', kwd, 0);
  		xkwddir = dir;
-@@ -404,7 +404,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -399,7 +399,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  
  static void *ec_fuzz(char *loc, char *cmd, char *arg)
  {
@@ -33,7 +33,7 @@ index e249b726..1b3f35ff 100644
  	char *path, *p, buf[32], trunc[100];
  	int c, pos, subs[2], inst = -1, lnum = -1;
  	int beg, end, max = INT_MAX;
-@@ -430,14 +430,14 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
+@@ -427,14 +427,14 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
  	while(1) {
  		sbuf_null(fuzz)
  		c = 0;
@@ -51,7 +51,7 @@ index e249b726..1b3f35ff 100644
  					sbuf_mem(sb, &pos, (int)sizeof(pos))
  					p = itoa(c++, buf);
  					ex_cprint2(buf, NULL, -1, 0, 0, 2)
-@@ -467,7 +467,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
+@@ -464,7 +464,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
  				break;
  			}
  		}
@@ -60,7 +60,7 @@ index e249b726..1b3f35ff 100644
  		sbuf_cut(sb, 0)
  		if (c && xvis & 4)
  			ex_print("", NULL)
-@@ -494,7 +494,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
+@@ -491,7 +491,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
  	free(sb->s);
  	path = lbuf_get(xb, lnum);
  	if (*cmd == 'f' && path) {
@@ -69,7 +69,7 @@ index e249b726..1b3f35ff 100644
  		xrow = lnum;
  		xoff = subs[0];
  	} else if (path) {
-@@ -503,7 +503,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
+@@ -500,7 +500,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
  		path[lbuf_s(path)->len] = '\n';
  	} else if (*cmd != 'f')
  		temp_switch(1, 1);
@@ -78,7 +78,7 @@ index e249b726..1b3f35ff 100644
  	return NULL;
  }
  
-@@ -942,14 +942,14 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -939,14 +939,14 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	int beg, end, grp;
  	char *pat, *rep = NULL, *_rep;
  	char *s = arg;
@@ -95,7 +95,7 @@ index e249b726..1b3f35ff 100644
  	if (!rs) {
  		free(pat);
  		return xserr;
-@@ -959,11 +959,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -956,11 +956,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -109,7 +109,7 @@ index e249b726..1b3f35ff 100644
  			if (offs[xgrp] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -978,7 +978,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -975,7 +975,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  					}
  					_rep++;
  					grp = abs((*_rep - '0') * 2);
@@ -118,7 +118,7 @@ index e249b726..1b3f35ff 100644
  						sbuf_chr(r, (unsigned char)*_rep)
  					else if (offs[grp] >= 0)
  						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
-@@ -1009,7 +1009,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1006,7 +1006,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		lbuf_emark(xb, lo, last, 0);
  	}
  	if (rs != xkwdrs)
@@ -127,7 +127,7 @@ index e249b726..1b3f35ff 100644
  	free(rep);
  	return NULL;
  }
-@@ -1065,7 +1065,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1062,7 +1062,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  {
  	int i, beg, end, not;
  	char *pat, *s = arg;
@@ -136,7 +136,7 @@ index e249b726..1b3f35ff 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_vregion(loc, &beg, &end))
-@@ -1073,9 +1073,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1070,9 +1070,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	not = !!strchr(cmd, '!');
  	pat = re_read(&s);
  	if (pat && *pat)
@@ -148,7 +148,7 @@ index e249b726..1b3f35ff 100644
  	free(pat);
  	if (!rs)
  		return xserr;
-@@ -1085,7 +1085,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1082,7 +1082,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	for (i = beg; i < lbuf_len(xb);) {
  		char *ln = lbuf_get(xb, i);
  		lbuf_s(ln)->grec &= ~xgdep;
@@ -157,7 +157,7 @@ index e249b726..1b3f35ff 100644
  			xrow = i;
  			if (ex_exec(s))
  				break;
-@@ -1094,7 +1094,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1091,7 +1091,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  		while (i < lbuf_len(xb) && !(lbuf_i(xb, i)->grec & xgdep))
  			i++;
  	}
@@ -166,7 +166,7 @@ index e249b726..1b3f35ff 100644
  	xgdep /= 2;
  	return NULL;
  }
-@@ -1186,10 +1186,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
+@@ -1183,10 +1183,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
  
  static void *ec_setincl(char *loc, char *cmd, char *arg)
  {
@@ -180,7 +180,7 @@ index e249b726..1b3f35ff 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 6148570f..5d4957be 100644
+index ade45e54..530b0e25 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -433,11 +433,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -347,10 +347,10 @@ index e7f40fc6..7a97f911 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index d7068dfc..7b2da0c4 100644
+index dc28866e..4fce9610 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -444,7 +444,7 @@ static void vi_regput(int c, const char *s, int lnmode)
+@@ -443,7 +443,7 @@ static void vi_regput(int c, const char *s, int lnmode)
  	ex_regput(tolower(c), s, isupper(c));
  }
  
@@ -359,7 +359,7 @@ index d7068dfc..7b2da0c4 100644
  char *fs_exdir;
  static int fspos;
  static int fsdir;
-@@ -484,7 +484,7 @@ void dir_calc(char *path)
+@@ -483,7 +483,7 @@ void dir_calc(char *path)
  				memcpy(cpath, ptrs[i], pathlen + len);
  				plen[i++] = pathlen + len;
  			} else if (ret >= 0 && S_ISREG(statbuf.st_mode))
@@ -369,7 +369,7 @@ index d7068dfc..7b2da0c4 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 23162165..b2993bf2 100644
+index a6f6348d..eec8d0a7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -122,6 +122,14 @@ typedef struct {
@@ -407,7 +407,7 @@ index 23162165..b2993bf2 100644
  			int *o, int ln_n, int skip);
  #define lbuf_dedup(lb, str, n) \
  { for (int i = 0; i < lbuf_len(lb);) { \
-@@ -424,7 +436,7 @@ extern int xkmap_alt;
+@@ -440,7 +452,7 @@ extern int xkmap_alt;
  extern int xkwddir;
  extern int xkwdcnt;
  extern sbuf *xacreg;
@@ -416,7 +416,7 @@ index 23162165..b2993bf2 100644
  extern sbuf *xregs[256];
  extern struct buf *bufs;
  extern struct buf tempbufs[2];
-@@ -457,7 +469,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -473,7 +485,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -425,7 +425,7 @@ index 23162165..b2993bf2 100644
  void ex_krsset(char *kwd, int dir);
  int ex_edit(const char *path, int len);
  void ex_regput(unsigned char c, const char *s, int append);
-@@ -520,6 +532,6 @@ extern int vi_insmov;
+@@ -535,6 +547,6 @@ extern int vi_hidch;
  extern int vi_lncol;
  extern char vi_msg[512];
  /* file system */
