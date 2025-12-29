@@ -361,8 +361,24 @@ typedef struct {
 } led_att;
 extern sbuf *led_attsb;
 void led_modeswap(void);
-void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int flg);
-int led_input(sbuf *sb, char *post, int postn, int row, int flg);
+typedef struct {
+	int t_row;
+	int p_reg;
+	int lsug;
+	int sug_pt;
+	char *sug;
+	char *_sug;
+} ins_state;
+#define ins_init(is) \
+is.t_row = -2; \
+is.p_reg = 0; \
+is.lsug = 0; \
+is.sug_pt = -1; \
+is.sug = NULL; \
+is._sug = NULL; \
+
+int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg);
+int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
 { \
@@ -392,7 +408,6 @@ struct buf {
 };
 /* ex options */
 extern int xleft;
-extern int xquit;
 extern int xvis;
 extern int xai;
 extern int xic;
@@ -416,6 +431,7 @@ extern int xlim;
 extern int xseq;
 extern int xerr;
 /* global variables */
+extern int xquit;
 extern int xrow, xoff, xtop;
 extern int xbufcur;
 extern int xgrec;
@@ -516,7 +532,6 @@ char *conf_digraph(int c1, int c2);
 
 /* vi.c */
 extern int vi_hidch;
-extern int vi_insmov;
 extern int vi_lncol;
 extern char vi_msg[512];
 /* file system */

@@ -24,7 +24,6 @@
 #include "uc.c"
 
 int vi_hidch;		/* show hidden chars */
-int vi_insmov;		/* moving in insert outside of insertion sbuf */
 int vi_lncol;		/* line numbers cursor offset */
 char vi_msg[512];	/* current message */
 static int vi_lnnum;	/* line numbers */
@@ -259,7 +258,7 @@ static char *vi_prompt(char *msg, char *ft, char *insert, int *kmap, int *mlen)
 	*mlen = sb->s_n;
 	term_pos(xrows, led_pos(msg, 0));
 	syn_setft(ft);
-	led_prompt(sb, insert, kmap, &key, 0, 1);
+	key = led_prompt(sb, insert, kmap, NULL, 0, 1);
 	syn_setft(xb_ft);
 	strncpy(vi_msg, sb->s, sizeof(vi_msg) - 1);
 	if (key == '\n')
@@ -857,11 +856,11 @@ static void vi_indents(char *ln, int *l)
 	*l = ln - pln;
 }
 
-static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
 {
 	char *post, *ln = lbuf_get(xb, r1);
 	sbuf rsb;
-	int tlen, l1, l2 = 1, postn = 1;
+	int key, tlen, l1, l2 = 1, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (lnmode || !ln) {
 		vi_indents(ln, &l1);
@@ -884,10 +883,11 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	if (r1 < xtop)
 		xtop = r1;
 	sbuf_mem(sb, ln, l1)
-	postn = led_input(sb, post, postn, r1 - (r1 - r2), 0);
+	key = led_input(sb, post, postn, r1 - (r1 - r2), 0, &postn);
 	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
 		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
 	free(sb->s);
+	return key;
 }
 
 static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
@@ -963,7 +963,7 @@ static void vi_shift(int r1, int r2, int dir, int count)
 	free(sb->s);
 }
 
-static void vc_motion(int cmd)
+static int vc_motion(int cmd)
 {
 	int r1 = xrow, r2 = xrow;	/* region rows */
 	int o1 = xoff, o2;		/* visual region columns */
@@ -977,9 +977,9 @@ static void vc_motion(int cmd)
 	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
 		o2 = -1;
 	else if (!(mv = vi_motion(1, &r2, &o2)))
-		return;
+		return 0;
 	if (mv < 0)
-		return;
+		return 0;
 	lnmode = o2 < 0;
 	if (lnmode) {
 		o1 = 0;
@@ -998,13 +998,13 @@ static void vc_motion(int cmd)
 			o2++;
 	if (cmd == 'y') {
 		vi_yank(r1, o1, r2, o2, lnmode);
-		return;
+		return 0;
 	}
 	mv = lbuf_len(xb);
 	if (cmd == 'd')
 		vi_delete(r1, o1, r2, o2, lnmode);
 	else if (cmd == 'c')
-		vi_change(r1, o1, r2, o2, lnmode);
+		return vi_change(r1, o1, r2, o2, lnmode);
 	else if (cmd == '~' || cmd == 'u' || cmd == 'U')
 		vi_case(r1, o1, r2, o2, lnmode, cmd);
 	else if (cmd == '!')
@@ -1015,12 +1015,13 @@ static void vc_motion(int cmd)
 	else if (cmd == TK_CTL('w'))
 		vi_shift(r1, r2, -1, INT_MAX / 2);
 	vi_mod |= r1 != r2 || mv != lbuf_len(xb) ? 1 : 2;
+	return 0;
 }
 
-static void vc_insert(int cmd)
+static int vc_insert(int cmd)
 {
 	char *post, *ln = lbuf_get(xb, xrow);
-	int row, cmdo, l1, off, postn = 1;
+	int row, cmdo, l1, off, key, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (cmd == 'I')
 		xoff = lbuf_indents(xb, xrow);
@@ -1053,10 +1054,11 @@ static void vc_insert(int cmd)
 	term_pos(row - xtop, 0);
 	term_room(cmdo);
 	sbuf_mem(sb, ln, l1)
-	postn = led_input(sb, post, postn, row, cmdo << 2);
+	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
 	if (postn != l1 || cmdo || !ln)
 		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
 	free(sb->s);
+	return key;
 }
 
 static int vc_put(int cmd)
@@ -1492,7 +1494,7 @@ void vi(int init)
 			case '>':
 			case '<':
 			case TK_CTL('w'):
-				vc_motion(c);
+				k = vc_motion(c);
 				if (c == 'c')
 					goto ins;
 				break;
@@ -1502,10 +1504,10 @@ void vi(int init)
 			case 'A':
 			case 'o':
 			case 'O':
-				vc_insert(c);
+				k = vc_insert(c);
 				ins:
 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-				if (vi_insmov == 127) {
+				if (k == 127) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
 						xrow--;
 						vc_join(0, 2);
@@ -1541,8 +1543,7 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case 'm':
-				if ((k = term_read()) > 0 && islower(k))
-					lbuf_mark(xb, k, xrow, xoff);
+				lbuf_mark(xb, term_read(), xrow, xoff);
 				break;
 			case 'p':
 			case 'P':
