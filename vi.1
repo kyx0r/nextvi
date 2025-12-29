@@ -1,4 +1,4 @@
-.Dd Dec 19, 2025
+.Dd Dec 29, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -757,7 +757,7 @@ Example: search for pathname containing "v"
 :ef v
 .Ed
 
-.It Cm [\fI#\fP]ef![\fIkwd\fP]
+.It Cm [\fIvrange\fP]ef![\fIkwd\fP]
 Forced version of ef
 
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
@@ -1055,7 +1055,7 @@ Yank into a register
 .Bd -literal
 Argument value range is 0x1-0xff and 0x0 without.
 Any extra argument appends to the register.
-Default register 0x0 cannot be appended to.
+Default register cannot be appended to.
 
 Example: append to register <1>
 :ya 1x
@@ -1399,7 +1399,7 @@ Control ex errors
 .Bd -literal
 Example: silence and ignore errors
 :err 4
-Example: report and abort on first error
+Example: report and return on first error
 :err 3
 Example: report and consider only last command for error status
 :err 1
@@ -1499,8 +1499,7 @@ that would be impossible to construct without them. They can
 be used anywhere within a regex, though some considerations
 must be taken into account.
 Aspect 1:
-	Lookarounds contain a full regex, but should use non-capturing
-	groups to avoid incorrect results and performance issues.
+	Lookarounds contain a full regular expression.
 Aspect 2:
 	Lookarounds can have nested lookarounds.
 Aspect 3:
@@ -1536,12 +1535,14 @@ Position of previous line region
 Previous search keyword
 .It Cm \&:
 Previous ex command
+.It Cm <0x0>
+Default register
 .It Cm 0
 Previous value of default register (atomic)
 .Bd -literal -compact
 Atomic means the operation did not include a <Newline>.
 .Ed
-.It Cm 1-9
+.It Cm <1-9>
 Previous value(s) of default register (nonatomic)
 .El
 .
@@ -1550,19 +1551,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 527 vi.h | definitions/aux
  537 kmap.h | keymap translation
+ 540 vi.h | definitions/aux
 _
  308 conf.c | hl/ft/td config
  345 term.c | low level IO
- 411 ren.c | positioning/syntax
+ 409 ren.c | positioning/syntax
  608 lbuf.c | file/line buffer
  614 uc.c | UTF-8 support
- 706 led.c | insert mode/output
- 756 regex.c | pikevm
- 1533 ex.c | ex options/commands
- 1838 vi.c | normal mode/general
- 7119 total | wc -l *.c\(basort
+ 712 led.c | insert mode/output
+ 765 regex.c | pikevm
+ 1542 ex.c | ex options/commands
+ 1839 vi.c | normal mode/general
+ 7142 total | wc -l *.c\(basort
 _
 .TE
 .

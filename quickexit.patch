@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 910e5e49..38e79b3c 100644
+index 8108d905..f5747fdb 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -13,6 +13,7 @@ int xtd = +1;			/* current text direction */
+@@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
  int xorder = 1;			/* change the order of characters */
  int xtbs = 8;			/* number of spaces for tab */
@@ -10,7 +10,7 @@ index 910e5e49..38e79b3c 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1280,6 +1281,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1289,6 +1290,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
@@ -18,7 +18,7 @@ index 910e5e49..38e79b3c 100644
  
  _EO(left,
  	if (*loc)
-@@ -1333,6 +1335,7 @@ static struct excmd {
+@@ -1342,6 +1344,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -27,7 +27,7 @@ index 910e5e49..38e79b3c 100644
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index d5a188d0..95397471 100644
+index 157e0cad..8b038335 100644
 --- a/led.c
 +++ b/led.c
 @@ -404,6 +404,14 @@ void led_modeswap(void)
@@ -43,40 +43,29 @@ index d5a188d0..95397471 100644
 +}
 +
  /* read a line from the terminal */
- static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
- 	int ai_max, int *key, int *kmap, int orow, int crow, int ctop, int flg)
-@@ -411,6 +419,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
- 	int len, t_row = -2, p_reg = 0;
- 	int c, i, lsug = 0, sug_pt = -1;
- 	char *cs, *sug = NULL, *_sug = NULL;
-+	int quickexit = 0;
- 	do {
- 		led_printparts(sb, pre, ps, *post, postn, ai_max);
- 		len = sb->s_n;
-@@ -627,7 +636,21 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
+ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
+ 	int ai_max, int *kmap, ins_state *is, int orow, int crow, int ctop, int flg)
+@@ -626,7 +634,18 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
 +		case 'j':
-+			if (xqe && (gettime_ms() - quickexit) < xqe) {
-+				if (sb->s_n) {
-+					if (sb->s[led_lastchar(sb->s)] != 'k')
-+						goto _default;
-+					sbuf_cut(sb, led_lastchar(sb->s))
++			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
++				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
++					term_push("", 2);
++					continue;
 +				}
-+				c = TK_ESC;
-+				goto leave;
 +			}
 +			goto _default;
 +		case 'k':
-+			quickexit = gettime_ms();
++			is->quickexit = gettime_ms();
  		default:
 +_default:
  			if (c == '\n' || TK_INT(c))
- 				goto leave;
+ 				return c;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 2144d7b4..9ad4d854 100644
+index dc28866e..3b1ef902 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -87,20 +76,36 @@ index 2144d7b4..9ad4d854 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1505,6 +1506,8 @@ void vi(int init)
- 				vc_insert(c);
+@@ -1507,6 +1508,8 @@ void vi(int init)
+ 				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 +				if (xqe)
 +					vi_mod |= 2;
- 				if (vi_insmov == 127) {
+ 				if (k == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..b5db85af 100644
+index a6f6348d..b9d2f7cd 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -408,6 +408,7 @@ extern int xtd;
+@@ -366,6 +366,7 @@ typedef struct {
+ 	int p_reg;
+ 	int lsug;
+ 	int sug_pt;
++	int quickexit;
+ 	char *sug;
+ 	char *_sug;
+ } ins_state;
+@@ -374,6 +375,7 @@ is.t_row = -2; \
+ is.p_reg = 0; \
+ is.lsug = 0; \
+ is.sug_pt = -1; \
++is.quickexit = 0; \
+ is.sug = NULL; \
+ is._sug = NULL; \
+ 
+@@ -421,6 +423,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xtbs;

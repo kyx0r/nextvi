@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index 910e5e49..baa77215 100644
+index 8108d905..ae528d6b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -23,6 +23,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
+@@ -22,6 +22,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
  int xseq = 1;			/* undo/redo sequence */
  int xerr = 1;			/* error handling -
  				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
 +int xrec;			/* input recoding register */
  
+ int xquit;			/* exit if positive, force quit if negative */
  int xrow, xoff, xtop;		/* current row, column, and top row */
- int xbufcur;			/* number of active buffers */
-@@ -1280,6 +1281,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1289,6 +1290,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
@@ -18,7 +18,7 @@ index 910e5e49..baa77215 100644
  
  _EO(left,
  	if (*loc)
-@@ -1335,6 +1337,7 @@ static struct excmd {
+@@ -1344,6 +1346,7 @@ static struct excmd {
  	{"m", ec_mark},
  	{"q!", ec_quit},
  	{"q", ec_quit},
@@ -44,14 +44,14 @@ index 757c26eb..5655fd17 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..0a7d96ac 100644
+index a6f6348d..f7272c3c 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -417,6 +417,7 @@ extern int xsep;
+@@ -430,6 +430,7 @@ extern int xsep;
  extern int xlim;
  extern int xseq;
  extern int xerr;
 +extern int xrec;
  /* global variables */
+ extern int xquit;
  extern int xrow, xoff, xtop;
- extern int xbufcur;

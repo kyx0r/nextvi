@@ -1,5 +1,4 @@
 int xleft;			/* the first visible column */
-int xquit;			/* exit if positive, force quit if negative */
 int xvis;			/* visual mode */
 int xai = 1;			/* autoindent option */
 int xic = 1;			/* ignorecase option */
@@ -24,6 +23,7 @@ int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
 
+int xquit;			/* exit if positive, force quit if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xbufcur;			/* number of active buffers */
 int xgrec;			/* global vi/ex recursion depth */
@@ -319,34 +319,29 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 	return *beg < 0 || *beg >= lbuf_len(xb) || *end <= *beg || *end > lbuf_len(xb);
 }
 
-static int ex_read(sbuf *sb, char *msg, char *ft, int ps, int flg)
+static int ex_read(sbuf *sb, char *msg, char *ft, ins_state *is, int ps, int flg)
 {
-	if (!(xvis & 2)) {
-		preserve(int, xleft, xleft = 0;)
-		int n = sb->s_n, key;
-		sbuf_str(sb, msg)
-		if (ft)
-			syn_setft(ft);
-		led_prompt(sb, NULL, &xkmap, &key, ps, flg);
-		if (ft)
-			syn_setft(xb_ft);
-		restore(xleft)
-		if (key != '\n')
-			return 1;
-		else if (!*msg || strcmp(sb->s + n, msg))
-			term_chr('\n');
-		return 0;
+	int n = sb->s_n, key;
+	if (xvis & 2) {
+		while ((key = term_read()) != '\n') {
+			sbuf_chr(sb, key)
+			if (flg & 2 || xquit)
+				break;
+		}
+		sbuf_null(sb)
+		return key;
 	}
-	vi_insmov = 0;
-	for (int c; !xquit && (c = term_read()) != '\n';) {
-		sbuf_chr(sb, c)
-		if (flg & 2)
-			break;
-	}
-	if (xquit)
-		return 1;
-	sbuf_null(sb)
-	return 0;
+	preserve(int, xleft, xleft = 0;)
+	sbuf_str(sb, msg)
+	if (ft)
+		syn_setft(ft);
+	key = led_prompt(sb, NULL, &xkmap, is, ps, flg);
+	if (ft)
+		syn_setft(xb_ft);
+	restore(xleft)
+	if (key == '\n' && (!*msg || strcmp(sb->s + n, msg)))
+		term_chr('\n');
+	return key;
 }
 
 #define readfile(errchk) \
@@ -408,6 +403,9 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	char *path, *p, buf[32], trunc[100];
 	int c, pos, subs[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX;
+	int flg = REG_NEWLINE | REG_NOCAP;
+	ins_state is;
+	ins_init(is)
 	if (*cmd !='f')
 		temp_switch(1, 0);
 	if (ex_vregion(loc, &beg, &end)) {
@@ -423,23 +421,24 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
 	sbuf_smake(sb, 128)
 	sbuf_smake(fuzz, 16)
+	sbuf_smake(cmdbuf, 16)
 	sbuf_str(fuzz, arg)
 	syn_setft(msg_ft);
 	while(1) {
 		sbuf_null(fuzz)
 		c = 0;
-		rs = rset_smake(fuzz->s, xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
+		rs = rset_smake(fuzz->s, xic ? flg | REG_ICASE : flg);
 		if (rs) {
 			syn_reloadft(syn_addhl(fuzz->s, 1), rs->regex->flg);
 			term_record = !!term_sbuf;
 			end = MIN(end, lbuf_len(xb));
 			for (pos = beg; c < max && pos < end; pos++) {
 				path = xb->ln[pos];
-				if (rset_find(rs, path, NULL, 0) >= 0) {
+				if (rset_match(rs, path, 0)) {
 					sbuf_mem(sb, &pos, (int)sizeof(pos))
 					p = itoa(c++, buf);
 					ex_cprint2(buf, NULL, -1, 0, 0, 2)
-					ex_cprint2(path, NULL, -1, xleft ? 0 : (p - buf) + 1, 0, 3)
+					ex_cprint2(path, NULL, -1, (p - buf) + 1, 0, 3)
 				}
 			}
 			if (c == max && c != end)
@@ -447,22 +446,22 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 			if (term_record)
 				term_commit();
 		}
-		if (!ex_read(fuzz, "", NULL, 0, 2) && c) {
+		if ((inst = ex_read(fuzz, "", NULL, &is, 0, 2)) == '\n' && c) {
 			if (c == 1)
 				break;
-			sbuf_cut(fuzz, 0)
-			if (!ex_read(fuzz, "", NULL, 0, 0)) {
-				inst = atoi(fuzz->s);
+			if ((inst = ex_read(cmdbuf, "", NULL, NULL, 0, 0)) == '\n') {
+				inst = atoi(cmdbuf->s);
 				break;
 			}
 		}
-		if (TK_INT(vi_insmov))
+		if (TK_INT(inst))
 			goto ret;
-		inst = fuzz->s_n ? fuzz->s[fuzz->s_n-1] : -1;
 		if (c && c < 10 && isdigit(inst)) {
 			inst -= '0';
-			if (inst < c)
+			if (inst < c) {
+				fuzz->s_n--;
 				break;
+			}
 		}
 		rset_free(rs);
 		sbuf_cut(sb, 0)
@@ -477,11 +476,21 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		lnum = *((int*)sb->s + (c == 1 ? 0 : inst));
 	ret:
 	syn_setft(xb_ft);
+	if (fuzz->s_n) {
+		sbuf_cut(cmdbuf, 0)
+		sbuf_str(cmdbuf, loc)
+		sbuf_str(cmdbuf, cmd)
+		sbuf_chr(cmdbuf, ' ')
+		sbufn_mem(cmdbuf, fuzz->s, fuzz->s_n)
+		lbuf_dedup(tempbufs[0].lb, cmdbuf->s, cmdbuf->s_n)
+		temp_pos(0, -1, 0, 0);
+		temp_write(0, cmdbuf->s);
+	}
+	free(cmdbuf->s);
 	free(fuzz->s);
 	free(sb->s);
 	path = lbuf_get(xb, lnum);
 	if (*cmd == 'f' && path) {
-		rs->setgrpcnt[0] = 1;
 		rset_find(rs, path, subs, 0);
 		xrow = lnum;
 		xoff = subs[0];
@@ -726,13 +735,13 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 
 static void *ec_insert(char *loc, char *cmd, char *arg)
 {
-	int beg = 0, end = 0, o1 = -1, o2 = -1, ps = 0;
+	int key, beg = 0, end = 0, o1 = -1, o2 = -1, ps = 0;
 	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	sbuf_smake(sb, 128)
 	if (*arg)
 		term_push(arg, strlen(arg));
-	while (!ex_read(sb, "", msg_ft, ps, 0)) {
+	while ((key = ex_read(sb, "", msg_ft, NULL, ps, 0)) == '\n') {
 		if (xvis & 2 && !strcmp(".", sb->s + ps)) {
 			sb->s_n--;
 			break;
@@ -740,9 +749,9 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		sbuf_chr(sb, '\n')
 		ps = sb->s_n;
 	}
-	if (vi_insmov == TK_CTL('c'))
+	if (key == TK_CTL('c'))
 		goto ret;
-	if (vi_insmov == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
+	if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
 		sb->s_n--;
 	sbuf_null(sb)
 	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
@@ -756,7 +765,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		o1 -= sb->s[0] == '\n';
 		free(sb->s);
 		sb->s = p;
-	} else if (!(xvis & 2) && vi_insmov != 127)
+	} else if (!(xvis & 2) && key != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
 		goto ret;
@@ -947,7 +956,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		rep = re_read(&s);
 	}
 	free(pat);
-	int offs[rs->grpcnt * 2];
+	int offs[rs->nsubc];
 	for (i = beg; i < end; i++) {
 		char *ln = lbuf_get(xb, i);
 		sbuf *r = NULL;
@@ -966,7 +975,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 					}
 					_rep++;
 					grp = abs((*_rep - '0') * 2);
-					if (grp + 1 >= rs->grpcnt * 2)
+					if (grp + 1 >= rs->nsubc)
 						sbuf_chr(r, (unsigned char)*_rep)
 					else if (offs[grp] >= 0)
 						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
@@ -981,7 +990,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		if (r) {
 			if (first < 0) {
 				first = i;
-				lo = lbuf_opt(xb, NULL, xrow, xoff, 0);
+				lo = lbuf_opt(xb, xrow, xoff, 0);
 				lbuf_smark(xb, lo, i, 0);
 				lbuf_emark(xb, lo, 0, 0);
 			}
@@ -992,7 +1001,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		}
 	}
 	if (first >= 0) {
-		lo = lbuf_opt(xb, NULL, xrow, xoff, 0);
+		lo = lbuf_opt(xb, xrow, xoff, 0);
 		lbuf_smark(xb, lo, first, 0);
 		lbuf_emark(xb, lo, last, 0);
 	}
@@ -1073,7 +1082,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	for (i = beg; i < lbuf_len(xb);) {
 		char *ln = lbuf_get(xb, i);
 		lbuf_s(ln)->grec &= ~xgdep;
-		if ((rset_find(rs, ln, NULL, REG_NEWLINE) < 0) == not) {
+		if (rset_match(rs, ln, REG_NEWLINE) != not) {
 			xrow = i;
 			if (ex_exec(s))
 				break;
@@ -1502,7 +1511,7 @@ void ex(void)
 	int esc = 0;
 	sbuf_smake(sb, xcols)
 	while (!xquit) {
-		if (!ex_read(sb, ":", ex_ft, 0, 1)) {
+		if (ex_read(sb, ":", ex_ft, NULL, 0, 1) == '\n') {
 			if (!strcmp(sb->s, ":") && esc)
 				ex_exec(xregs[':']->s);
 			else

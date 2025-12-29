@@ -100,10 +100,7 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define REG_NEWLINE	0x02	/* Unlike posix, controls termination by '\n' */
 #define REG_NOTBOL	0x04
 #define REG_NOTEOL	0x08
-typedef struct {
-	char *rm_so;
-	char *rm_eo;
-} regmatch_t;
+#define REG_NOCAP	0x10	/* Computes only the default match group */
 typedef struct rcode rcode;
 struct rcode {
 	rcode **la;		/* lookahead expressions */
@@ -120,15 +117,16 @@ struct rcode {
 /* regular expression set */
 typedef struct {
 	rcode *regex;		/* the combined regular expression */
-	int *grp;		/* the group assigned to each subgroup */
-	int *setgrpcnt;		/* number of groups in each regular expression */
+	int *grp;		/* subgroup index */
+	int *grpnsubc;		/* sub count in each subgroup */
+	int nsubc;		/* total sub count */
 	int n;			/* number of regular expressions in this set */
-	int grpcnt;		/* group count */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
 rset *rset_smake(char *pat, int flg)
 	{ char *ss[1] = {pat}; return rset_make(1, ss, flg); }
 int rset_find(rset *re, char *s, int *grps, int flg);
+int rset_match(rset *rs, char *s, int flg);
 void rset_free(rset *re);
 char *re_read(char **src);
 
@@ -176,7 +174,7 @@ int lbuf_join(struct lbuf *lb, int beg, int end, int o1, int *o2, int flg);
 char *lbuf_get(struct lbuf *lb, int pos);
 void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
-struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del);
+struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del);
 void lbuf_mark(struct lbuf *lb, int mark, int pos, int off);
 int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off);
 int lbuf_undo(struct lbuf *lb, int *row, int *off);
@@ -363,8 +361,24 @@ typedef struct {
 } led_att;
 extern sbuf *led_attsb;
 void led_modeswap(void);
-void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int flg);
-int led_input(sbuf *sb, char *post, int postn, int row, int flg);
+typedef struct {
+	int t_row;
+	int p_reg;
+	int lsug;
+	int sug_pt;
+	char *sug;
+	char *_sug;
+} ins_state;
+#define ins_init(is) \
+is.t_row = -2; \
+is.p_reg = 0; \
+is.lsug = 0; \
+is.sug_pt = -1; \
+is.sug = NULL; \
+is._sug = NULL; \
+
+int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg);
+int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren);
 void led_render(char *s0, int cbeg, int cend);
 #define _led_render(msg, row, col, beg, end, kill) \
 { \
@@ -394,7 +408,6 @@ struct buf {
 };
 /* ex options */
 extern int xleft;
-extern int xquit;
 extern int xvis;
 extern int xai;
 extern int xic;
@@ -418,6 +431,7 @@ extern int xlim;
 extern int xseq;
 extern int xerr;
 /* global variables */
+extern int xquit;
 extern int xrow, xoff, xtop;
 extern int xbufcur;
 extern int xgrec;
@@ -518,7 +532,6 @@ char *conf_digraph(int c1, int c2);
 
 /* vi.c */
 extern int vi_hidch;
-extern int vi_insmov;
 extern int vi_lncol;
 extern char vi_msg[512];
 /* file system */

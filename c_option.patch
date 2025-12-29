@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 910e5e49..41dbb925 100644
+index 8108d905..68b1ca70 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1517,7 +1517,7 @@ void ex(void)
+@@ -1526,7 +1526,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -11,7 +11,7 @@ index 910e5e49..41dbb925 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1530,4 +1530,6 @@ void ex_init(char **files, int n)
+@@ -1539,4 +1539,6 @@ void ex_init(char **files, int n)
  	xvis &= ~8;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -19,10 +19,10 @@ index 910e5e49..41dbb925 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 2144d7b4..510fce23 100644
+index dc28866e..fa86bcab 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1792,7 +1792,8 @@ static int setup_signals(void)
+@@ -1793,7 +1793,8 @@ static int setup_signals(void)
  
  int main(int argc, char *argv[])
  {
@@ -32,7 +32,7 @@ index 2144d7b4..510fce23 100644
  	if (!setup_signals())
  		return EXIT_FAILURE;
  	dir_init();
-@@ -1813,16 +1814,27 @@ int main(int argc, char *argv[])
+@@ -1814,16 +1815,27 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -50,8 +50,8 @@ index 2144d7b4..510fce23 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-3.0 Usage: %s [-emsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-3.0 Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-3.1 Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-3.1 Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
@@ -64,10 +64,10 @@ index 2144d7b4..510fce23 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..df4d1e67 100644
+index a6f6348d..8337fc7f 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -457,7 +457,7 @@ void *ex_exec(const char *ln);
+@@ -471,7 +471,7 @@ void *ex_exec(const char *ln);
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }

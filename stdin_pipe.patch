@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 910e5e49..8eb7405b 100644
+index 8108d905..069bbb30 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -375,7 +375,9 @@ int ex_edit(const char *path, int len)
+@@ -370,7 +370,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index 910e5e49..8eb7405b 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -394,6 +396,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -389,6 +391,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -23,7 +23,7 @@ index 910e5e49..8eb7405b 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1519,15 +1524,35 @@ void ex(void)
+@@ -1528,15 +1533,35 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -147,10 +147,10 @@ index 757c26eb..22b91105 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 2144d7b4..86683580 100644
+index dc28866e..ca169a7a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1785,7 +1785,8 @@ static int setup_signals(void)
+@@ -1786,7 +1786,8 @@ static int setup_signals(void)
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -160,7 +160,7 @@ index 2144d7b4..86683580 100644
  		return 0;
  	return 1;
  }
-@@ -1803,7 +1804,8 @@ int main(int argc, char *argv[])
+@@ -1804,7 +1805,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -171,11 +171,11 @@ index 2144d7b4..86683580 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..3c703f8f 100644
+index a6f6348d..3deb7995 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -521,6 +521,7 @@ extern int vi_hidch;
- extern int vi_insmov;
+@@ -534,6 +534,7 @@ char *conf_digraph(int c1, int c2);
+ extern int vi_hidch;
  extern int vi_lncol;
  extern char vi_msg[512];
 +extern int stdin_fd;

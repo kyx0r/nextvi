@@ -12,19 +12,19 @@ index 2668609a..34a601e3 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 910e5e49..352470b1 100644
+index 8108d905..e92d1202 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -947,7 +947,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -956,7 +956,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
--	int offs[rs->grpcnt * 2];
-+	int *offs = emalloc(rs->grpcnt * 2 * sizeof(int));
+-	int offs[rs->nsubc];
++	int *offs = emalloc(rs->nsubc * sizeof(int));
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -999,6 +999,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1008,6 +1008,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -33,15 +33,15 @@ index 910e5e49..352470b1 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 50443824..e32df6a1 100644
+index ade45e54..df58c285 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -437,7 +437,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
  			int *o, int ln_n, int skip)
  {
  	int r0 = *r, o0 = *o;
--	int offs[re->grpcnt * 2], i = r0;
-+	int *offs = emalloc(re->grpcnt * 2 * sizeof(int)), i = r0;
+-	int offs[re->nsubc], i = r0;
++	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (skip >= 0 && s)
@@ -65,15 +65,15 @@ index 50443824..e32df6a1 100644
  }
  
 diff --git a/led.c b/led.c
-index d5a188d0..ef5af9d8 100644
+index 157e0cad..3d9ec6f2 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
  		xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
  	if (!rs)
  		return;
--	int subs[rs->grpcnt * 2];
-+	int *subs = emalloc(rs->grpcnt * 2 * sizeof(int));
+-	int subs[rs->nsubc];
++	int *subs = emalloc(rs->nsubc * sizeof(int));
  	sbuf_smake(ibuf, 1024)
  	for (n = 1; n <= acsb->s_n; n++)
  		if (acsb->s[n - 1] == '\n')
@@ -121,10 +121,10 @@ index d5a188d0..ef5af9d8 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 93c20c58..c3fc9a5e 100644
+index e7f40fc6..2f78d211 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -395,7 +395,15 @@ static int reg_comp(rcode *prog, char *re, int nsubs, int laidx, int flags)
+@@ -399,7 +399,15 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
  	return 0;
  }
  
@@ -141,7 +141,7 @@ index 93c20c58..c3fc9a5e 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -621,18 +629,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubp, i
+@@ -625,18 +633,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
  		return 0;
  	flg = prog->flg | flg;
  	const char *sp = s, *_sp = s, *s0, *s1;
@@ -158,7 +158,7 @@ index 93c20c58..c3fc9a5e 100644
 -	const char *_subp[2], *lb[prog->laidx+1];
 +	const char *_subp[2], **lb = emalloc(prog->laidx * sizeof(lb[0]));
  	int rsubsize = prog->presub, suboff = 0;
- 	int cnt, spc, i, c, j, osubp = nsubp * sizeof(char*);
+ 	int cnt, spc, i, c, j, osubp = nsubc * sizeof(char*);
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
 -	unsigned int sdense[prog->sparsesz], sparsesz = 0;
@@ -167,17 +167,17 @@ index 93c20c58..c3fc9a5e 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
  	if (eol_ch)
-@@ -710,7 +719,7 @@ rset *rset_make(int n, char **re, int flg)
+@@ -714,7 +723,7 @@ rset *rset_make(int n, char **re, int flg)
  /* return the index of the matching regular expression or -1 if none matches */
  int rset_find(rset *rs, char *s, int *grps, int flg)
  {
--	regmatch_t subs[rs->grpcnt+1];
-+	regmatch_t *subs = emalloc((rs->grpcnt+1) * sizeof(regmatch_t));
- 	regmatch_t *sub = subs+1;
- 	if (re_pikevm(rs->regex, s, (const char**)sub, rs->grpcnt * 2, flg)) {
- 		subs[0].rm_eo = NULL; /* make sure sub[-1] never matches */
-@@ -727,10 +736,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
- 						grps[gi * 2 + 1] = -1;
+-	const char *subs[rs->nsubc+2];
++	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
+ 	const char **sub = subs+2;
+ 	if (re_pikevm(rs->regex, s, sub, rs->nsubc, flg)) {
+ 		subs[1] = NULL; /* make sure sub[-1] never matches */
+@@ -731,10 +740,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
+ 						grps[gi + 1] = -1;
  					}
  				}
 +				free(subs);
@@ -190,10 +190,10 @@ index 93c20c58..c3fc9a5e 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 73a4943c..0df8dfe6 100644
+index e0e39ecc..f7d1aadb 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -253,13 +253,14 @@ int syn_blockhl;
+@@ -252,13 +252,14 @@ int syn_blockhl;
  static int syn_initft(int fti, int n, char *name, int flg)
  {
  	int i = n, set = hls[i].set;
@@ -209,16 +209,16 @@ index 73a4943c..0df8dfe6 100644
  	return i < hlslen && hls[i].ft == name && hls[i].set != set;
  }
  
-@@ -307,7 +308,7 @@ void syn_highlight(int *att, char *s, int n)
+@@ -306,7 +307,7 @@ void syn_highlight(int *att, char *s, int n)
  	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
  	re:;
  	rset *rs = ftmap[fti].rs;
--	int subs[rs->grpcnt * 2 + 1], *catt, *iatt, sl, c;
-+	int *subs = emalloc(rs->grpcnt * 2 * sizeof(int)), *catt, *iatt, sl, c;
- 	int cend, sidx = 0, flg = 0, hl, j, i;
+-	int subs[rs->nsubc], *catt, *iatt, sl, c;
++	int *subs = emalloc(rs->nsubc * sizeof(int)), *catt, *iatt, sl, c;
+ 	int cend, sidx = 0, flg = 0, hl, j, i, ii;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
  		cend = 1;
-@@ -351,15 +352,20 @@ void syn_highlight(int *att, char *s, int n)
+@@ -349,15 +350,20 @@ void syn_highlight(int *att, char *s, int n)
  		flg = REG_NOTBOL;
  	}
  	fti++;
@@ -241,7 +241,7 @@ index 73a4943c..0df8dfe6 100644
  }
  
  char *syn_filetype(char *path)
-@@ -403,9 +409,10 @@ int syn_addhl(char *reg, int id)
+@@ -401,9 +407,10 @@ int syn_addhl(char *reg, int id)
  
  void syn_init(void)
  {
@@ -254,10 +254,10 @@ index 73a4943c..0df8dfe6 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 2144d7b4..327f6e0b 100644
+index dc28866e..e058a0ab 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -140,7 +140,8 @@ static void vi_drawrow(int row)
+@@ -139,7 +139,8 @@ static void vi_drawrow(int row)
  			vi_rshift = 0;
  		if (row != xrow+1 || !c || *c == '\n')
  			goto skip;
@@ -267,7 +267,7 @@ index 2144d7b4..327f6e0b 100644
  		memset(tmp, ' ', xcols+1);
  		tmp[xcols+1] = '\n';
  		tmp[xcols+2] = '\0';
-@@ -165,6 +166,8 @@ static void vi_drawrow(int row)
+@@ -164,6 +165,8 @@ static void vi_drawrow(int row)
  		restore(xorder)
  		restore(syn_blockhl)
  		restore(xtd)
@@ -276,7 +276,7 @@ index 2144d7b4..327f6e0b 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1291,10 +1294,11 @@ void vi(int init)
+@@ -1293,10 +1296,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -289,7 +289,7 @@ index 2144d7b4..327f6e0b 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1418,7 +1422,7 @@ void vi(int init)
+@@ -1420,7 +1424,7 @@ void vi(int init)
  					strcpy(vi_msg, "arg2:(0|#)");
  					vi_drawmsg();
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -298,7 +298,7 @@ index 2144d7b4..327f6e0b 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1428,10 +1432,11 @@ void vi(int init)
+@@ -1430,10 +1434,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -311,7 +311,7 @@ index 2144d7b4..327f6e0b 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1439,6 +1444,7 @@ void vi(int init)
+@@ -1441,6 +1446,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &n);
@@ -320,10 +320,10 @@ index 2144d7b4..327f6e0b 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 1f1a6fdc..c802f0b8 100644
+index a6f6348d..dd143e4f 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -480,7 +480,7 @@ extern const int ftslen;
+@@ -494,7 +494,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */
