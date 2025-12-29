@@ -990,7 +990,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		if (r) {
 			if (first < 0) {
 				first = i;
-				lo = lbuf_opt(xb, NULL, xrow, xoff, 0);
+				lo = lbuf_opt(xb, xrow, xoff, 0);
 				lbuf_smark(xb, lo, i, 0);
 				lbuf_emark(xb, lo, 0, 0);
 			}
@@ -1001,7 +1001,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		}
 	}
 	if (first >= 0) {
-		lo = lbuf_opt(xb, NULL, xrow, xoff, 0);
+		lo = lbuf_opt(xb, xrow, xoff, 0);
 		lbuf_smark(xb, lo, first, 0);
 		lbuf_emark(xb, lo, last, 0);
 	}

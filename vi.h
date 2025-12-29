@@ -174,7 +174,7 @@ int lbuf_join(struct lbuf *lb, int beg, int end, int o1, int *o2, int flg);
 char *lbuf_get(struct lbuf *lb, int pos);
 void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
-struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del);
+struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del);
 void lbuf_mark(struct lbuf *lb, int mark, int pos, int off);
 int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off);
 int lbuf_undo(struct lbuf *lb, int *row, int *off);
