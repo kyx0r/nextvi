@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 42ebdc54..a34eb0d5 100644
+index 157e0cad..004751fc 100644
 --- a/led.c
 +++ b/led.c
 @@ -280,7 +280,7 @@ static int led_lastword(char *s)
@@ -19,22 +19,31 @@ index 42ebdc54..a34eb0d5 100644
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
 +		syn_blockhl = -1;
-+		led_crender(sb->s+ps, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
++		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
  	sbufn_cut(sb, psn)
  	rstate -= 2;
-@@ -412,7 +414,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
- 	int c, i, lsug = 0, sug_pt = -1;
- 	char *cs, *sug = NULL, *_sug = NULL;
+@@ -404,6 +406,8 @@ void led_modeswap(void)
+ 	restore(xvis)
+ }
+ 
++static int vi_insmov;
++
+ /* read a line from the terminal */
+ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
+ 	int ai_max, int *kmap, ins_state *is, int orow, int crow, int ctop, int flg)
+@@ -411,7 +415,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 	char *cs;
+ 	int len, c, i; 
  	do {
 -		led_printparts(sb, pre, ps, *post, postn, ai_max);
-+		led_printparts(sb, pre, ps, *post, postn, ai_max, !memchr("ABCD", vi_insmov, 4));
-+		vi_insmov = -1;
++		led_printparts(sb, pre, ps, *post, postn, ai_max, !vi_insmov);
++		vi_insmov = 0;
  		len = sb->s_n;
  		c = term_read();
  		switch (c) {
-@@ -609,6 +612,20 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
+@@ -608,6 +613,20 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else
  				led_redraw(sb->s, 0, orow, crow, ctop, flg);
  			continue;
@@ -46,25 +55,17 @@ index 42ebdc54..a34eb0d5 100644
 +			read(STDIN_FILENO, cbuf, 1);
 +			if (*cbuf == '[') {
 +				read(STDIN_FILENO, cbuf, 1);
-+				vi_insmov = *cbuf;
 +				fcntl(STDIN_FILENO, F_SETFL, fl);
-+				goto _leave;
++				vi_insmov = *cbuf;
++				return *cbuf;
 +			}
 +			fcntl(STDIN_FILENO, F_SETFL, fl);
-+			goto leave;
++			return c;
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -639,6 +656,7 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
- 	} while(!(flg & 2));
- leave:
- 	vi_insmov = c;
-+_leave:
- 	*key = c;
- }
- 
-@@ -679,7 +697,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg)
- 			return n;
+@@ -685,7 +704,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+ 			return key;
  		}
  		sbuf_chr(sb, key)
 -		led_printparts(sb, -1, ps, "", 0, 0);
@@ -73,30 +74,30 @@ index 42ebdc54..a34eb0d5 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index d7068dfc..774f8f29 100644
+index dc28866e..05583948 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -857,6 +857,8 @@ static void vi_indents(char *ln, int *l)
+@@ -856,6 +856,8 @@ static void vi_indents(char *ln, int *l)
  	*l = ln - pln;
  }
  
 +static int lmodified;
 +
- static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *post, *ln = lbuf_get(xb, r1);
-@@ -888,6 +890,7 @@ static void vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -887,6 +889,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
 +	lmodified = 1;
+ 	return key;
  }
  
- static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
-@@ -1054,8 +1057,11 @@ static void vc_insert(int cmd)
+@@ -1055,8 +1058,11 @@ static int vc_insert(int cmd)
  	term_room(cmdo);
  	sbuf_mem(sb, ln, l1)
- 	postn = led_input(sb, post, postn, row, cmdo << 2);
+ 	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
 -	if (postn != l1 || cmdo || !ln)
 +	if (postn != l1 || cmdo || !ln) {
  		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
@@ -104,13 +105,13 @@ index d7068dfc..774f8f29 100644
 +	} else
 +		lmodified = 0;
  	free(sb->s);
+ 	return key;
  }
- 
-@@ -1505,6 +1511,37 @@ void vi(int init)
- 				vc_insert(c);
+@@ -1507,6 +1513,37 @@ void vi(int init)
+ 				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-+				switch (vi_insmov) {
++				switch (k) {
 +				case 'A':	/* ↑ */
 +					term_back(!lmodified ? c : 'i');
 +					if (lmodified)
@@ -141,10 +142,10 @@ index d7068dfc..774f8f29 100644
 +						vi_col = vi_off2col(xb, xrow, xoff);
 +					goto _break;
 +				}
- 				if (vi_insmov == 127) {
+ 				if (k == 127) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1517,6 +1554,9 @@ void vi(int init)
+@@ -1519,6 +1556,9 @@ void vi(int init)
  				if (c != 'A' && c != 'C')
  					xoff--;
  				break;
