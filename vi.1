@@ -1,4 +1,4 @@
-.Dd Dec 22, 2025
+.Dd Dec 29, 2025
 .Dt Nextvi 1
 .Os
 .
@@ -757,7 +757,7 @@ Example: search for pathname containing "v"
 :ef v
 .Ed
 
-.It Cm [\fI#\fP]ef![\fIkwd\fP]
+.It Cm [\fIvrange\fP]ef![\fIkwd\fP]
 Forced version of ef
 
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
@@ -1551,19 +1551,19 @@ Previous value(s) of default register (nonatomic)
 tab(|);
 | l | l |.
 _
- 525 vi.h | definitions/aux
  537 kmap.h | keymap translation
+ 540 vi.h | definitions/aux
 _
  308 conf.c | hl/ft/td config
  345 term.c | low level IO
  409 ren.c | positioning/syntax
  608 lbuf.c | file/line buffer
  614 uc.c | UTF-8 support
- 706 led.c | insert mode/output
+ 712 led.c | insert mode/output
  765 regex.c | pikevm
- 1545 ex.c | ex options/commands
- 1838 vi.c | normal mode/general
- 7138 total | wc -l *.c\(basort
+ 1542 ex.c | ex options/commands
+ 1839 vi.c | normal mode/general
+ 7142 total | wc -l *.c\(basort
 _
 .TE
 .
