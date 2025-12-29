@@ -878,7 +878,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	vi_regput(vi_ybuf, rsb.s, lnmode);
 	free(rsb.s);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
-	term_room(r1 < xtop ? xtop - xrow : r1 - r2);
+	term_room(r1 < xtop ? xtop - xrow : r1 - r2 - !!*vi_word);
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
