@@ -438,7 +438,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 					sbuf_mem(sb, &pos, (int)sizeof(pos))
 					p = itoa(c++, buf);
 					ex_cprint2(buf, NULL, -1, 0, 0, 2)
-					ex_cprint2(path, NULL, -1, xleft ? 0 : (p - buf) + 1, 0, 3)
+					ex_cprint2(path, NULL, -1, (p - buf) + 1, 0, 3)
 				}
 			}
 			if (c == max && c != end)
@@ -479,6 +479,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	syn_setft(xb_ft);
 	if (fuzz->s_n) {
 		sbuf_cut(cmdbuf, 0)
+		sbuf_str(cmdbuf, loc)
 		sbuf_str(cmdbuf, cmd)
 		sbuf_chr(cmdbuf, ' ')
 		sbufn_mem(cmdbuf, fuzz->s, fuzz->s_n)
