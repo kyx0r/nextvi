@@ -405,12 +405,11 @@ void led_modeswap(void)
 }
 
 /* read a line from the terminal */
-static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
-	int ai_max, int *key, int *kmap, int orow, int crow, int ctop, int flg)
+static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
+	int ai_max, int *kmap, ins_state *is, int orow, int crow, int ctop, int flg)
 {
-	int len, t_row = -2, p_reg = 0;
-	int c, i, lsug = 0, sug_pt = -1;
-	char *cs, *sug = NULL, *_sug = NULL;
+	char *cs;
+	int len, c, i; 
 	do {
 		led_printparts(sb, pre, ps, *post, postn, ai_max);
 		len = sb->s_n;
@@ -422,10 +421,10 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 			if (len - pre > 0)
 				sbuf_cut(sb, led_lastchar(sb->s + pre) + pre)
 			else
-				goto leave;
+				return c;
 			break;
 		case TK_CTL('u'):
-			sbuf_cut(sb, sug_pt > pre && len > sug_pt ? sug_pt : pre)
+			sbuf_cut(sb, is->sug_pt > pre && len > is->sug_pt ? is->sug_pt : pre)
 			break;
 		case TK_CTL('w'):
 			if (len - pre > 0)
@@ -453,17 +452,17 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 			i = 0;
 			retry:
 			if (c == TK_CTL(']')) {
-				if (!p_reg || p_reg == '9')
-					p_reg = '/';
-				while (p_reg < '9' && !xregs[++p_reg]);
+				if (!is->p_reg || is->p_reg == '9')
+					is->p_reg = '/';
+				while (is->p_reg < '9' && !xregs[++is->p_reg]);
 			} else {
 				c = term_read();
-				p_reg = c == TK_CTL('\\') ? 0 : c;
+				is->p_reg = c == TK_CTL('\\') ? 0 : c;
 			}
-			if (xregs[p_reg]) {
-				sbuf_chr(sb, p_reg ? p_reg : '~')
+			if (xregs[is->p_reg]) {
+				sbuf_chr(sb, is->p_reg ? is->p_reg : '~')
 				sbuf_chr(sb, ' ')
-				sbuf_mem(sb, xregs[p_reg]->s, xregs[p_reg]->s_n)
+				sbuf_mem(sb, xregs[is->p_reg]->s, xregs[is->p_reg]->s_n)
 				sbufn_null(sb)
 				led_info(sb->s + len)
 				sbuf_cut(sb, len)
@@ -471,8 +470,8 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 				goto retry;
 			continue;
 		case TK_CTL('p'):
-			if (xregs[p_reg])
-				sbuf_mem(sb, xregs[p_reg]->s, xregs[p_reg]->s_n)
+			if (xregs[is->p_reg])
+				sbuf_mem(sb, xregs[is->p_reg]->s, xregs[is->p_reg]->s_n)
 			break;
 		case TK_CTL('g'):
 			if (!suggestsb) {
@@ -489,18 +488,18 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 		case TK_CTL('r'):
 			if (!suggestsb || !suggestsb->s_n)
 				continue;
-			if (!sug)
-				sug = suggestsb->s;
-			if (suggestsb->s_n == sug - suggestsb->s)
-				sug--;
-			for (c = 0; sug != suggestsb->s; sug--) {
-				if (!*sug) {
-					c++;
-					if (c == 3) {
-						sug++;
+			if (!is->sug)
+				is->sug = suggestsb->s;
+			if (suggestsb->s_n == is->sug - suggestsb->s)
+				is->sug--;
+			for (i = 0; is->sug != suggestsb->s; is->sug--) {
+				if (!*is->sug) {
+					i++;
+					if (i == 3) {
+						is->sug++;
 						goto redo_suggest;
 					} else
-						*sug = '\n';
+						*is->sug = '\n';
 				}
 			}
 			goto redo_suggest;
@@ -510,34 +509,34 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 				led_redraw(sb->s, 0, orow, crow, ctop, flg);
 			continue;
 		case TK_CTL('x'):
-			sug_pt = sug_pt == len ? -1 : len;
+			is->sug_pt = is->sug_pt == len ? -1 : len;
 			char buf[100];
-			itoa(sug_pt, buf);
+			itoa(is->sug_pt, buf);
 			led_info(buf)
 			continue;
 		case TK_CTL('n'):
 			if (!suggestsb)
 				continue;
-			lsug = sug_pt >= 0 ? sug_pt : led_lastword(sb->s + pre) + pre;
-			if (_sug) {
-				if (suggestsb->s_n == sug - suggestsb->s)
+			is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s + pre) + pre;
+			if (is->_sug) {
+				if (suggestsb->s_n == is->sug - suggestsb->s)
 					continue;
 				redo_suggest:
-				if (!(_sug = strchr(sug, '\n'))) {
-					sug = suggestsb->s;
+				if (!(is->_sug = strchr(is->sug, '\n'))) {
+					is->sug = suggestsb->s;
 					goto lookup;
 				}
 				suggest:
-				*_sug = '\0';
-				sbuf_cut(sb, lsug)
-				sbuf_str(sb, sug)
-				sug = _sug+1;
+				*is->_sug = '\0';
+				sbuf_cut(sb, is->lsug)
+				sbuf_str(sb, is->sug)
+				is->sug = is->_sug+1;
 				continue;
 			}
 			lookup:
-			if (search(sb->s + lsug, len - lsug)) {
-				sug = suggestsb->s;
-				if (!(_sug = strchr(sug, '\n')))
+			if (search(sb->s + is->lsug, len - is->lsug)) {
+				is->sug = suggestsb->s;
+				if (!(is->_sug = strchr(is->sug, '\n')))
 					continue;
 				goto suggest;
 			}
@@ -547,16 +546,16 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 				pac:;
 				sbuf_null(sb)
 				int r = crow-ctop+1;
-				if (sug)
+				if (is->sug)
 					goto pac_;
-				c = sug_pt >= 0 ? sug_pt : led_lastword(sb->s + pre) + pre;
-				if (suggestsb && search(sb->s + c, sb->s_n - c)) {
-					sug = suggestsb->s;
+				i = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s + pre) + pre;
+				if (suggestsb && search(sb->s + i, sb->s_n - i)) {
+					is->sug = suggestsb->s;
 					pac_:
 					syn_setft(ac_ft);
 					preserve(int, xtd, xtd = 2;)
 					for (int left = 0; r < xrows; r++) {
-						RS(2, led_crender(sug, r, 0, left, left+xcols))
+						RS(2, led_crender(is->sug, r, 0, left, left+xcols))
 						left += xcols;
 						if (left >= rstates[2].pos[rstates[2].n])
 							break;
@@ -592,12 +591,12 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 			term_pos(xrows, 0);
 			if (xquit > 0)
 				restore(xquit)
-			t_row = tempbufs[0].row;
+			is->t_row = tempbufs[0].row;
 		case TK_CTL('a'):
-			t_row = t_row < -1 ? tempbufs[0].row : t_row;
-			t_row += lbuf_len(tempbufs[0].lb);
-			t_row = t_row % MAX(1, lbuf_len(tempbufs[0].lb));
-			if ((cs = lbuf_get(tempbufs[0].lb, t_row--))) {
+			is->t_row = is->t_row < -1 ? tempbufs[0].row : is->t_row;
+			is->t_row += lbuf_len(tempbufs[0].lb);
+			is->t_row = is->t_row % MAX(1, lbuf_len(tempbufs[0].lb));
+			if ((cs = lbuf_get(tempbufs[0].lb, is->t_row--))) {
 				sbuf_cut(sb, pre)
 				sbuf_str(sb, cs)
 				sb->s_n--;
@@ -629,54 +628,61 @@ static void led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **p
 			continue; }
 		default:
 			if (c == '\n' || TK_INT(c))
-				goto leave;
+				return c;
 			if ((cs = led_read(kmap, c)))
 				sbuf_str(sb, cs)
 		}
-		sug = NULL; _sug = NULL;
+		is->sug = NULL;
+		is->_sug = NULL;
 		if (ai_max >= 0 && xpac)
 			goto pac;
-	} while(!(flg & 2));
-leave:
-	vi_insmov = c;
-	*key = c;
+	} while (!(flg & 2));
+	return c;
 }
 
-void led_prompt(sbuf *sb, char *insert, int *kmap, int *key, int ps, int flg)
+int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
 {
-	int n = !(flg & 2) ? sb->s_n : 0;
+	int n = !(flg & 2) ? sb->s_n : 0, key;
 	char *post = "", *postref = post;
+	ins_state _is;
 	vi_lncol = 0;
 	if (insert)
 		sbuf_str(sb, insert)
+	if (!is) {
+		ins_init(_is)
+		is = &_is;
+	}
 	preserve(int, xtd, xtd = 2;)
-	led_line(sb, ps, n, &post, 0, &postref, -1, key, kmap, 0, xrow, xtop, flg);
+	key = led_line(sb, ps, n, &post, 0, &postref, -1, kmap, is, 0, xrow, xtop, flg);
 	restore(xtd)
-	if (*key == '\n' && flg & 1) {
+	if (key == '\n' && flg & 1) {
 		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
 		temp_pos(0, -1, 0, 0);
 		temp_write(0, sb->s + n);
 	}
+	return key;
 }
 
-int led_input(sbuf *sb, char *post, int postn, int row, int flg)
+int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
 {
 	int ai_max = 128 * xai;
 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char *postref = NULL;
+	ins_state is;
 	while (1) {
-		led_line(sb, ps, sb->s_n, &post, postn, &postref,
-			ai_max, &key, &xkmap, row, crow, ctop, flg);
+		ins_init(is)
+		key = led_line(sb, ps, sb->s_n, &post, postn, &postref,
+			ai_max, &xkmap, &is, row, crow, ctop, flg);
 		if (key != '\n') {
-			n = sb->s_n;
+			*pren = sb->s_n;
 			if (!xled) {
 				xoff = uc_slen(sb->s+ps);
 				sbufn_str(sb, post)
 			} else
-				sb->s[n] = *post;
+				sb->s[*pren] = *post;
 			free(postref);
 			xrow = crow;
-			return n;
+			return key;
 		}
 		sbuf_chr(sb, key)
 		led_printparts(sb, -1, ps, "", 0, 0);
