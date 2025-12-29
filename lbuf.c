@@ -143,7 +143,7 @@ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2)
 }
 
 /* append undo/redo history */
-struct lopt *lbuf_opt(struct lbuf *lb, char *buf, int beg, int o1, int n_del)
+struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del)
 {
 	struct lopt *lo;
 	static struct lopt slo;
@@ -188,7 +188,7 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
 		end = lb->ln_n;
 	if (beg == end && !buf)
 		return;
-	struct lopt *lo = lbuf_opt(lb, buf, beg, o1, end - beg);
+	struct lopt *lo = lbuf_opt(lb, beg, o1, end - beg);
 	sbuf_smake(sb, sizeof(lo->ins[0])+1)
 	lo->n_ins = lbuf_replace(lb, sb, buf, lo, lo->n_del, 0);
 	if (lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq)
@@ -305,11 +305,11 @@ char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2)
 
 int lbuf_join(struct lbuf *lb, int beg, int end, int o1, int *o2, int flg)
 {
-	if (!lbuf_get(xb, beg) || !lbuf_get(xb, end - 1))
+	if (!lbuf_get(lb, beg) || !lbuf_get(lb, end - 1))
 		return 1;
 	sbuf_smake(sb, 1024)
 	for (int i = beg; i < end; i++) {
-		char *ln = lbuf_get(xb, i);
+		char *ln = lbuf_get(lb, i);
 		char *lnend = ln + lbuf_s(ln)->len;
 		if (i > beg) {
 			while (ln[0] == ' ' || ln[0] == '\t')
@@ -324,7 +324,7 @@ int lbuf_join(struct lbuf *lb, int beg, int end, int o1, int *o2, int flg)
 		sbuf_mem(sb, ln, lnend - ln)
 	}
 	sbufn_chr(sb, '\n')
-	lbuf_edit(xb, sb->s, beg, end, o1, *o2);
+	lbuf_edit(lb, sb->s, beg, end, o1, *o2);
 	free(sb->s);
 	return 0;
 }
