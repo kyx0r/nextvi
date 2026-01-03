@@ -409,7 +409,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 	int ai_max, int *kmap, ins_state *is, int orow, int crow, int ctop, int flg)
 {
 	char *cs;
-	int len, c, i; 
+	int len, c, i;
 	do {
 		led_printparts(sb, pre, ps, *post, postn, ai_max);
 		len = sb->s_n;
