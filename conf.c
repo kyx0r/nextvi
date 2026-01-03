@@ -7,7 +7,7 @@ const int conf_mode = 0600;
 #define FT(ft) ft_##ft
 FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(msg)
 FTGEN(mk) FTGEN(sh) FTGEN(py) FTGEN(js)
-FTGEN(html) FTGEN(diff)
+FTGEN(html) FTGEN(diff) FTGEN(go)
 
 struct filetype fts[] = {
 	{FT(c), "\\.(c|h|cpp|hpp|cc|cs)$"},			/* C */
@@ -19,7 +19,8 @@ struct filetype fts[] = {
 	{FT(py), "\\.py$"},					/* python */
 	{FT(js), "\\.js$"},					/* javascript */
 	{FT(html), "\\.(html?|css)$"},				/* html,css */
-	{FT(diff), "\\.(patch|diff)$"}				/* diff */
+	{FT(diff), "\\.(patch|diff)$"},				/* diff */
+	{FT(go), "\\.go$"}					/* go */
 };
 const int ftslen = LEN(fts);
 
@@ -214,10 +215,30 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{FT(diff), "^@.*", A(CY)},
 	{FT(diff), "^diff .*", A(SYN_BD)},
 
+	{FT(go), NULL, A(CY1 | SYN_BD), 1, 2},
+	{FT(go), "(/\\*(?:(?!^\\*/).)*)|((?#-1)(?:(?!^/\\*).)*\\*/(?<\".*\\*/.*\"))",
+		A(BL | SYN_IT, BL | SYN_BS, BL | SYN_BE)},
+	{FT(go), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
+	{FT(go), NULL, A(RE1), 0, 1},
+	{FT(go), "\\<(?:any|bool|byte|comparable|complex64|complex128|error|float32|float64|\
+int|int8|int16|int32|int64|rune|string|uint|uint8|uint16|uint32|uint64|uintptr|\
+chan|interface|map|struct|\
+(true|false|iota|nil|append|cap|close|complex|copy|delete|imag|len|make|new|\
+panic|print|println|real|recover)|(break|case|const|continue|default|defer|\
+else|fallthrough|for|func|go|goto|if|import|package|range|\
+return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+	{FT(go), "//.*", A(BL | SYN_IT)},
+	{FT(go), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
+	{FT(go), "`[^`]*`", A(MA)},
+	{FT(go), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
+	{FT(go), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{2}|\\\\u[0-9a-fA-F]{4}|\\\\U[0-9a-fA-F]{8}|\\\\[0-7]{3})'", A(MA)},
+	{FT(go), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|0[oO][0-7]+|0[bB][01]+|[0-9]+\\.?[0-9eEi]*|[0-9]+)\\>", A(RE1)},
+
 	{fm_ft, "^.+\n$", A(AY1), 1},
 	{fm_ft, "(^\\.?\\.?)/|(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
 	{fm_ft, "[^/]*\\.sh\n$", A(GR)},
 	{fm_ft, "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", A(MA)},
+	{fm_ft, "[^/]*\\.go\n$", A(CY)},
 
 	{n_ft, "[0lewEW]", A(CY1 | SYN_BD)},
 	{n_ft, "1([ \t]*[1-9][ \t]*)9", A(RE1, MA1 | SYN_BD)},
