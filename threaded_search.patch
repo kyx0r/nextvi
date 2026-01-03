@@ -143,7 +143,7 @@ index ade45e54..7439ec5e 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index e7f40fc6..fc81f5fe 100644
+index 4a0addb8..a486d162 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -399,7 +399,7 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
@@ -186,7 +186,7 @@ index 421ea124..13c0f852 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index dc28866e..0bcaff8d 100644
+index b8dd9d17..000e231f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@

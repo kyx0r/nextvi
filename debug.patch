@@ -20,7 +20,7 @@ index 8108d905..374bd2e7 100644
 +	free(bufs);
 +}
 diff --git a/regex.c b/regex.c
-index e7f40fc6..a5f28614 100644
+index 4a0addb8..560c1da7 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -636,6 +636,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
@@ -67,7 +67,7 @@ index e0e39ecc..762578c8 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index dc28866e..e6ebc44d 100644
+index b8dd9d17..bd448092 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -443,6 +443,13 @@ static void vi_regput(int c, const char *s, int lnmode)
