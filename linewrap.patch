@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8108d905..8a1b32b9 100644
+index 78ceca6d..27dd1a1f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
@@ -43,7 +43,7 @@ index 8108d905..8a1b32b9 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
 diff --git a/lbuf.c b/lbuf.c
-index ade45e54..1f698f50 100644
+index ade45e54..76d0d48c 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -82,16 +82,50 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -97,7 +97,56 @@ index ade45e54..1f698f50 100644
  			sbuf_mem(sb, &ln, (int)sizeof(s))
  			s += l;
  		}
-@@ -237,7 +271,7 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
+@@ -188,9 +222,48 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
+ 		end = lb->ln_n;
+ 	if (beg == end && !buf)
+ 		return;
++	/* save chain boundary pointers before edit */
++	char *chain_pred = NULL, *chain_succ = NULL;
++	if (xlw) {
++		if (beg < end) {
++			/* deletion case: save the chain links of deleted range */
++			chain_pred = lbuf_s(lb->ln[beg])->lw_prev;
++			chain_succ = lbuf_s(lb->ln[end - 1])->lw_next;
++		} else if (beg > 0 && beg < lb->ln_n) {
++			/* pure insertion: check if inserting into middle of a chain */
++			char *prev_ln = lb->ln[beg - 1];
++			char *next_ln = lb->ln[beg];
++			if (lbuf_s(prev_ln)->lw_next == next_ln) {
++				/* inserting into a chain - need to break/relink */
++				chain_pred = prev_ln;
++				chain_succ = next_ln;
++			}
++		}
++	}
+ 	struct lopt *lo = lbuf_opt(lb, beg, o1, end - beg);
+ 	sbuf_smake(sb, sizeof(lo->ins[0])+1)
+ 	lo->n_ins = lbuf_replace(lb, sb, buf, lo, lo->n_del, 0);
++	/* relink the chain after edit */
++	if (xlw && (chain_pred || chain_succ)) {
++		if (lo->n_ins > 0) {
++			char *first_new = lb->ln[beg];
++			char *last_new = lb->ln[beg + lo->n_ins - 1];
++			if (chain_pred) {
++				lbuf_s(chain_pred)->lw_next = first_new;
++				lbuf_s(first_new)->lw_prev = chain_pred;
++			}
++			if (chain_succ) {
++				lbuf_s(last_new)->lw_next = chain_succ;
++				lbuf_s(chain_succ)->lw_prev = last_new;
++			}
++		} else {
++			/* no new lines inserted, link predecessor to successor */
++			if (chain_pred)
++				lbuf_s(chain_pred)->lw_next = chain_succ;
++			if (chain_succ)
++				lbuf_s(chain_succ)->lw_prev = chain_pred;
++		}
++	}
+ 	if (lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq)
+ 		lbuf_smark(lb, lo, beg, o1);
+ 	lbuf_emark(lb, lo, beg + (lo->n_ins ? lo->n_ins - 1 : 0), o2);
+@@ -237,7 +310,7 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lb->ln[i];
  		long nw = 0;
@@ -106,6 +155,62 @@ index ade45e54..1f698f50 100644
  		while (nw < nl) {
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
+@@ -351,6 +424,27 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
+ 		lo->ref = 1;
+ 		sb.s = (char*)lo->del;
+ 		lbuf_replace(lb, &sb, NULL, lo, lo->n_ins, lo->n_del);
++		/* relink chain: restored lines have original pointers */
++		if (xlw) {
++			for (int i = 0; i < lo->n_del; i++) {
++				char *ln = lo->del[i];
++				char *prev = lbuf_s(ln)->lw_prev;
++				char *next = lbuf_s(ln)->lw_next;
++				if (prev)
++					lbuf_s(prev)->lw_next = ln;
++				if (next)
++					lbuf_s(next)->lw_prev = ln;
++			}
++			/* pure insertion undo: link the chain around removed lines */
++			if (lo->n_ins > 0 && lo->n_del == 0) {
++				char *pred = lbuf_s(lo->ins[0])->lw_prev;
++				char *succ = lbuf_s(lo->ins[lo->n_ins - 1])->lw_next;
++				if (pred)
++					lbuf_s(pred)->lw_next = succ;
++				if (succ)
++					lbuf_s(succ)->lw_prev = pred;
++			}
++		}
+ 	}
+ 	*row = lo->pos;
+ 	*off = MAX(0, lo->pos_off);
+@@ -373,6 +467,27 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+ 		lo->ref = 2;
+ 		sb.s = (char*)lo->ins;
+ 		lbuf_replace(lb, &sb, NULL, lo, lo->n_del, lo->n_ins);
++		/* relink chain: restored lines have their pointers from edit time */
++		if (xlw) {
++			for (int i = 0; i < lo->n_ins; i++) {
++				char *ln = lo->ins[i];
++				char *prev = lbuf_s(ln)->lw_prev;
++				char *next = lbuf_s(ln)->lw_next;
++				if (prev)
++					lbuf_s(prev)->lw_next = ln;
++				if (next)
++					lbuf_s(next)->lw_prev = ln;
++			}
++			/* pure deletion redo: link the chain around removed lines */
++			if (lo->n_del > 0 && lo->n_ins == 0) {
++				char *pred = lbuf_s(lo->del[0])->lw_prev;
++				char *succ = lbuf_s(lo->del[lo->n_del - 1])->lw_next;
++				if (pred)
++					lbuf_s(pred)->lw_next = succ;
++				if (succ)
++					lbuf_s(succ)->lw_prev = pred;
++			}
++		}
+ 	}
+ 	*row = lo->pos;
+ 	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
 index b8dd9d17..7a3f249b 100644
 --- a/vi.c
@@ -134,7 +239,7 @@ index b8dd9d17..7a3f249b 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index a6f6348d..1c20339a 100644
+index a6f6348d..d7d3c70d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -145,6 +145,8 @@ struct lopt {
@@ -146,3 +251,11 @@ index a6f6348d..1c20339a 100644
  };
  struct lbuf {
  	char **ln;			/* buffer lines */
+@@ -430,6 +432,7 @@ extern int xsep;
+ extern int xlim;
+ extern int xseq;
+ extern int xerr;
++extern int xlw;
+ /* global variables */
+ extern int xquit;
+ extern int xrow, xoff, xtop;
