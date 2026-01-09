@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8108d905..3d08acd8 100644
+index 78ceca6d..e95e9cf7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -47,6 +47,7 @@ static char xserr[] = "syntax error";
@@ -58,7 +58,7 @@ index 8108d905..3d08acd8 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index dc28866e..e6fcf353 100644
+index b8dd9d17..fb3319ed 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1814,9 +1814,11 @@ int main(int argc, char *argv[])
@@ -69,8 +69,8 @@ index dc28866e..e6fcf353 100644
 +				readonly = 1;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-3.1 Usage: %s [-emsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-3.1 Usage: %s [-emRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-3.2 Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-3.2 Usage: %s [-emRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

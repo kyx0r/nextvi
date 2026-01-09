@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8108d905..68b1ca70 100644
+index 78ceca6d..418409c8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1526,7 +1526,7 @@ void ex(void)
@@ -19,7 +19,7 @@ index 8108d905..68b1ca70 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index dc28866e..fa86bcab 100644
+index b8dd9d17..f85a34ff 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1793,7 +1793,8 @@ static int setup_signals(void)
@@ -50,8 +50,8 @@ index dc28866e..fa86bcab 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-3.1 Usage: %s [-emsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-3.1 Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-3.2 Usage: %s [-emsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-3.2 Usage: %s [-emsv] [-c cmd] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

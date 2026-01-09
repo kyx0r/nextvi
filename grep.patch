@@ -1,8 +1,8 @@
 diff --git a/conf.c b/conf.c
-index 2668609a..def660e1 100644
+index a6d30006..6055bb18 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -28,6 +28,7 @@ char fm_ft[] = "/fm";	/* file manager */
+@@ -29,6 +29,7 @@ char fm_ft[] = "/fm";	/* file manager */
  char n_ft[] = "/#";	/* numbers highlight for ^v */
  char nn_ft[] = "/##";	/* numbers highlight for # */
  char ac_ft[] = "/ac";	/* autocomplete dropdown */
@@ -10,7 +10,7 @@ index 2668609a..def660e1 100644
  char ex_ft[] = "/ex";	/* ex mode (is never '\n' terminated) */
  char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
  char bar_ft[] = "/-";	/* status bar (is never '\n' terminated) */
-@@ -230,6 +231,9 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
+@@ -251,6 +252,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
  	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
  
@@ -21,7 +21,7 @@ index 2668609a..def660e1 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
  [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*(?:\\|.*?(?:(?<^\\\\)\\||$))*)[ \t]*(?:([,;]#?)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 8108d905..546ef6e5 100644
+index 78ceca6d..d5f5bd77 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -34,7 +34,7 @@ index 8108d905..546ef6e5 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index dc28866e..f005f94b 100644
+index b8dd9d17..64dfe7f7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -503,12 +503,12 @@ void dir_calc(char *path)

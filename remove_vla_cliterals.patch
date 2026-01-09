@@ -1,8 +1,8 @@
 diff --git a/conf.c b/conf.c
-index 2668609a..34a601e3 100644
+index a6d30006..d863a634 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -50,7 +50,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
+@@ -51,7 +51,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
  #define CY1	14	/* bright cyan */
  #define WH1	15	/* bright white */
  
@@ -12,7 +12,7 @@ index 2668609a..34a601e3 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 8108d905..e92d1202 100644
+index 78ceca6d..5abe6b5f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -956,7 +956,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
@@ -65,7 +65,7 @@ index ade45e54..df58c285 100644
  }
  
 diff --git a/led.c b/led.c
-index 157e0cad..3d9ec6f2 100644
+index 98ad4070..60f8a2d1 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -121,7 +121,7 @@ index 157e0cad..3d9ec6f2 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index e7f40fc6..2f78d211 100644
+index 4a0addb8..1fc7adc5 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -399,7 +399,15 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
@@ -254,7 +254,7 @@ index e0e39ecc..f7d1aadb 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index dc28866e..e058a0ab 100644
+index b8dd9d17..0cd7d11e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -139,7 +139,8 @@ static void vi_drawrow(int row)

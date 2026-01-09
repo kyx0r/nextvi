@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8108d905..ae528d6b 100644
+index 78ceca6d..ba975f63 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
