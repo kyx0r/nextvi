@@ -166,7 +166,9 @@ to autocomplete in more desired situations.
 
 linewrap.patch
 --------------
-Soft line wrap proof of concept
+Soft line wrap
+Adds new :lw command which can be used to specify the max column to which
+soft linewrap lines.
 
 ex-scripting.patch
 --------------
@@ -192,6 +194,12 @@ record_input.patch
 --------------
 Adds ex option "rec". This option specifies a register in which
 to record all user input. Makes it easier to record macros.
+
+splits.patch
+--------------
+Implements :sp and :vs commands for vertical and horizontal splits.
+Adds vc and vd normal commands to switch and close views. View
+can also be closed using :q
 
 My current EXINIT setup:
 --------------
