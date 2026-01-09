@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 8108d905..7508adf5 100644
+index 78ceca6d..9435cdaa 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
