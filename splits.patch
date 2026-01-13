@@ -321,10 +321,21 @@ index 78ceca6d..1afd16dc 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 98ad4070..8ea29cc5 100644
+index 98ad4070..9bbf4eef 100644
 --- a/led.c
 +++ b/led.c
-@@ -287,6 +287,9 @@ static void led_printparts(sbuf *sb, int pre, int ps,
+@@ -93,8 +93,9 @@ static char *kmap_map(int kmap, int c)
+ /* map cursor horizontal position to terminal column number */
+ int led_pos(char *s, int pos)
+ {
++	int ww = curwin ? curwin->w : xcols;
+ 	if (dir_context(s) < 0)
+-		return xleft + xcols - pos - 1;
++		return xleft + ww - pos - 1;
+ 	return pos - xleft;
+ }
+ 
+@@ -287,6 +288,9 @@ static void led_printparts(sbuf *sb, int pre, int ps,
  		return;
  	}
  	int dir, off, pos, psn = sb->s_n;
@@ -334,7 +345,7 @@ index 98ad4070..8ea29cc5 100644
  	sbuf_str(sb, post)
  	sbufn_null(sb)
  	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
-@@ -305,11 +308,11 @@ static void led_printparts(sbuf *sb, int pre, int ps,
+@@ -305,11 +309,11 @@ static void led_printparts(sbuf *sb, int pre, int ps,
  			pos = ren_cursor(r->s, r->pos[off-two]);
  		pos += dir < 0 ? -1 : 1;
  	}
@@ -350,7 +361,7 @@ index 98ad4070..8ea29cc5 100644
  	sbufn_cut(sb, psn)
  	rstate -= 2;
  }
-@@ -360,12 +363,16 @@ RS(2, led_crender(str, ctop+xrows, 0, 0, xcols)) \
+@@ -360,12 +364,16 @@ RS(2, led_crender(str, ctop+xrows, 0, 0, xcols)) \
  if (ai_max >= 0) \
  	term_pos(crow - ctop, 0); \
  
@@ -370,7 +381,7 @@ index 98ad4070..8ea29cc5 100644
  			term_kill();
  		}
  		if (r >= orow-ctop && r < crow-ctop) {
-@@ -374,16 +381,16 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
+@@ -374,16 +382,16 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
  			sbuf_mem(cb, cs, nl+!!cs[nl])
  			sbufn_null(cb)
  			rstate->s = NULL;
@@ -390,7 +401,7 @@ index 98ad4070..8ea29cc5 100644
  	rstate--;
  }
  
-@@ -506,7 +513,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -506,7 +514,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('z'):
  			term_suspend();
  			if (ai_max >= 0)
@@ -399,7 +410,7 @@ index 98ad4070..8ea29cc5 100644
  			continue;
  		case TK_CTL('x'):
  			is->sug_pt = is->sug_pt == len ? -1 : len;
-@@ -564,7 +571,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -564,7 +572,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  					syn_setft(xb_ft);
  					r++;
  				}
@@ -408,7 +419,7 @@ index 98ad4070..8ea29cc5 100644
  				continue;
  			}
  			temp_pos(0, -1, 0, 0);
-@@ -585,6 +592,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -585,6 +593,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else
  				restore(ex_buf)
  			exbuf_load(ex_buf)
@@ -417,7 +428,7 @@ index 98ad4070..8ea29cc5 100644
  			syn_setft(xb_ft);
  			vi(1); /* redraw past screen */
  			restore(ftidx)
-@@ -606,7 +615,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -606,7 +616,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			if (ai_max < 0)
  				term_clean();
  			else
@@ -427,7 +438,7 @@ index 98ad4070..8ea29cc5 100644
  		case TK_CTL('o'): {
  			if (!*postref)
 diff --git a/vi.c b/vi.c
-index b8dd9d17..e43e7910 100644
+index b8dd9d17..083c6796 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -103,6 +103,23 @@ static void vi_drawmsg(void)
@@ -454,6 +465,15 @@ index b8dd9d17..e43e7910 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
+@@ -118,7 +135,7 @@ nrow = xrow; \
+ noff = xoff; \
+ for (i = 0, ret = 0;; i++) { \
+ 	l1 = ren_next(c, ren_pos(c, noff), 1)-1-xleft+vi_lncol; \
+-	if (l1 > xcols || l1 < 0 || ret || l1 >= rstate->cmax + vi_lncol) \
++	if (l1 > wcols || l1 < 0 || ret || l1 >= rstate->cmax + vi_lncol) \
+ 		break; \
+ 	i = i > 99 ? i % 100 : i; \
+ 	itoa(i%10 ? i%10 : i, snum); \
 @@ -126,23 +143,44 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
@@ -751,7 +771,19 @@ index b8dd9d17..e43e7910 100644
  				vi_status = vi_status ? xrows - 1: vi_status;
  				vi_mod |= 1;
  				break;
-@@ -1738,19 +1853,29 @@ void vi(int init)
+@@ -1703,8 +1818,9 @@ void vi(int init)
+ 		}
+ 		if (vi_mod)
+ 			vi_col = vi_off2col(xb, xrow, xoff);
+-		if (vi_col >= xleft + xcols || vi_col < xleft)
+-			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
++		{ int _ww = win_width();
++		if (vi_col >= xleft + _ww || vi_col < xleft)
++			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
+ 		n = led_pos(ln, ren_cursor(ln, vi_col));
+ 		vi_wait();
+ 		if (xhlw) {
+@@ -1738,19 +1854,29 @@ void vi(int init)
  			}
  		}
  		term_record = 1;
@@ -786,7 +818,7 @@ index b8dd9d17..e43e7910 100644
  				if (!(vi_mod & 1) && !*vi_word)
  					vi_drawrow(orow);
  			syn_blockhl = -1;
-@@ -1768,7 +1893,7 @@ void vi(int init)
+@@ -1768,7 +1894,7 @@ void vi(int init)
  			vi_msg[0] = '\0';
  		} else
  			vi_drawmsg();
