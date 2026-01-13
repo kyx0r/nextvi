@@ -22,7 +22,7 @@ Adds arrows keys support in normal mode.
 
 arrowkeys_insert.patch
 --------------
-Adds arrows keys support in insert mode.
+Adds arrows keys support in insert mode and command modes.
 
 threaded_search.patch
 --------------
