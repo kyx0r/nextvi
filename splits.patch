@@ -12,7 +12,7 @@ index a6d30006..29967834 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 78ceca6d..1e0cc9cc 100644
+index 78ceca6d..1afd16dc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,9 @@ struct buf *bufs;		/* main buffers */
@@ -108,7 +108,7 @@ index 78ceca6d..1e0cc9cc 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  };
-@@ -1526,6 +1558,209 @@ void ex(void)
+@@ -1526,6 +1558,211 @@ void ex(void)
  	xgrec--;
  }
  
@@ -127,16 +127,18 @@ index 78ceca6d..1e0cc9cc 100644
 +static void curwin_load(void)
 +{
 +	if (curwin) {
++		/* Save old buffer state BEFORE loading new window positions */
++		if (curwin->buf != ex_buf) {
++			exbuf_save(ex_buf)
++			ex_buf = curwin->buf;
++			xtd = ex_buf->td;
++			syn_setft(xb_ft);
++		}
++		/* Load window-specific position (not buffer position) */
 +		xrow = curwin->row;
 +		xoff = curwin->off;
 +		xtop = curwin->top;
 +		xleft = curwin->left;
-+		if (curwin->buf != ex_buf) {
-+			exbuf_save(ex_buf)
-+			ex_buf = curwin->buf;
-+			exbuf_load(ex_buf)
-+			syn_setft(xb_ft);
-+		}
 +	}
 +}
 +
