@@ -45,7 +45,7 @@ static int xgdep;		/* global command recursion depth */
 static char xuerr[] = "unreported error";
 static char xserr[] = "syntax error";
 static char xirerr[] = "invalid range";
-static char xsrerr[] = "range not found";
+static char xrnferr[] = "range not found";
 static char *xrerr;
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
@@ -180,21 +180,6 @@ void ex_krsset(char *kwd, int dir)
 		xkwddir = dir / 2;
 }
 
-static char *ex_reread(char ***re, int *dir)
-{
-	*dir = ***re == '>' ? 2 : -2;
-	if (*dir < 0 && ***re != '<')
-		return xserr;
-	char *e = re_read(*re);
-	if (!e)
-		return xserr;
-	ex_krsset(e, *dir);
-	free(e);
-	if (!xkwdrs)
-		return xserr;
-	return NULL;
-}
-
 static int ex_range(char *ploc, char **num, int n, int *row)
 {
 	int dir, off, beg, end, adj = 0;
@@ -219,18 +204,22 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		break;
 	case '>':
 	case '<':
+		dir = **num == '>' ? 2 : -2;
 		off = row ? n : 0;
-		if (off < 0 || ex_reread(&num, &dir)) {
-			xrerr = off < 0 ? xsrerr : xserr;
+		beg = row ? *row : xrow + (dir > 0);
+		end = row ? beg+1 : lbuf_len(xb);
+		if (off < 0 || beg < 0 || beg >= lbuf_len(xb))
+			return -1;
+		char *e = re_read(num);
+		ex_krsset(e, dir);
+		free(e);
+		if (!xkwdrs) {
+			xrerr = xserr;
 			return -1;
 		}
-		beg = row ? *row : xrow + (xkwddir > 0);
-		end = row ? beg+1 : lbuf_len(xb);
-		if (beg < 0 || beg >= lbuf_len(xb))
-			return -1;
 		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
 				&off, end, MIN(dir, 0))) {
-			xrerr = xsrerr;
+			xrerr = xrnferr;
 			return -1;
 		}
 		n = row ? off : beg;
@@ -476,7 +465,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		lnum = *((int*)sb->s + (c == 1 ? 0 : inst));
 	ret:
 	syn_setft(xb_ft);
-	if (fuzz->s_n) {
+	if (fuzz->s_n > 0) {
 		sbuf_cut(cmdbuf, 0)
 		sbuf_str(cmdbuf, loc)
 		sbuf_str(cmdbuf, cmd)
@@ -507,14 +496,12 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
 	int dir, off, obeg, beg, end;
-	if (!*arg || (*arg != '>' && *arg != '<'))
-		return ec_fuzz(loc, cmd, arg + (*arg == '\\' && arg[1]));
-	char **s = &arg;
-	char *err = ex_reread(&s, &dir);
-	if (err)
-		return err;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
+	dir = cmd[1] == '>' || cmd[2] == '>' ? 2 : -2;
+	ex_krsset(arg, dir);
+	if (!xkwdrs)
+		return xserr;
 	off = xoff;
 	obeg = beg;
 	if (xrow < beg || xrow > end) {
@@ -1330,8 +1317,11 @@ static struct excmd {
 	{"ft", ec_ft},
 	{"fd", ec_setdir},
 	{"fp", ec_setdir},
-	{"f+", ec_find},
-	{"f", ec_find},
+	{"f+>", ec_find},
+	{"f+<", ec_find},
+	{"f>", ec_find},
+	{"f<", ec_find},
+	{"f", ec_fuzz},
 	EO(ish),
 	{"inc", ec_setincl},
 	EO(ic),
