@@ -426,8 +426,8 @@ EX COMMANDS
              Example: range given
              :10,100f>int
 
-     [vrange]f+>[kwd]
-     [vrange]f+<[kwd]
+     [vrange]f+[kwd]
+     [vrange]f-[kwd]
              Incrementing ranged search
 
              Equivalent to the :f> and :f< commands, except subsequent commands within
