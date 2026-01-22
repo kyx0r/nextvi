@@ -1,10 +1,10 @@
 diff --git a/ex.c b/ex.c
-index 78ceca6d..e95e9cf7 100644
+index 413319dc..cfbf7d41 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -47,6 +47,7 @@ static char xserr[] = "syntax error";
  static char xirerr[] = "invalid range";
- static char xsrerr[] = "range not found";
+ static char xrnferr[] = "range not found";
  static char *xrerr;
 +char readonly = 0;		/* commandline readonly option */
  
@@ -18,7 +18,7 @@ index 78ceca6d..e95e9cf7 100644
  	return i;
  }
  
-@@ -384,6 +386,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -373,6 +375,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -27,7 +27,7 @@ index 78ceca6d..e95e9cf7 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -662,6 +666,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -649,6 +653,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf.s);
  	} else {
  		if (!strchr(cmd, '!')) {
@@ -36,7 +36,7 @@ index 78ceca6d..e95e9cf7 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1272,6 +1278,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1259,6 +1265,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index 78ceca6d..e95e9cf7 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1346,6 +1358,7 @@ static struct excmd {
+@@ -1336,6 +1348,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,7 +58,7 @@ index 78ceca6d..e95e9cf7 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index b8dd9d17..fb3319ed 100644
+index 15dcd18e..0d09ddd9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1814,9 +1814,11 @@ int main(int argc, char *argv[])

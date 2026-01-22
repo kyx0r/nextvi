@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 78ceca6d..117298c0 100644
+index 413319dc..122f082e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -370,7 +370,9 @@ int ex_edit(const char *path, int len)
+@@ -359,7 +359,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[128];
@@ -13,7 +13,7 @@ index 78ceca6d..117298c0 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -389,6 +391,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -378,6 +380,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -23,7 +23,7 @@ index 78ceca6d..117298c0 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1528,15 +1533,35 @@ void ex(void)
+@@ -1518,15 +1523,35 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -147,7 +147,7 @@ index 757c26eb..22b91105 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index b8dd9d17..14791511 100644
+index 15dcd18e..632f048a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1786,7 +1786,8 @@ static int setup_signals(void)
