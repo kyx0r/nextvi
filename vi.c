@@ -1597,7 +1597,7 @@ void vi(int init)
 						vi_col = vi_off2col(xb, xrow, xoff+1);
 						if (vi_col <= n)
 							break;
-						if (ex_exec("?f>[^ \t]*[ \t]+(?\\\\:.$|(.)):;c\n\x1b"))
+						if (ex_exec("?f+[^ \t]*[ \t]+(?\\\\:.$|(.)):;c\n\x1b"))
 							break;
 					}
 					restore(xled)
@@ -1816,7 +1816,7 @@ int main(int argc, char *argv[])
 				xvis &= ~4;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-3.3 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-4.0 Usage: %s [-emsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
