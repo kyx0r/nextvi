@@ -498,7 +498,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	int dir, off, obeg, beg, end;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
-	dir = cmd[1] == '>' || cmd[2] == '>' ? 2 : -2;
+	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
 	ex_krsset(arg, dir);
 	if (!xkwdrs)
 		return xserr;
@@ -1317,8 +1317,8 @@ static struct excmd {
 	{"ft", ec_ft},
 	{"fd", ec_setdir},
 	{"fp", ec_setdir},
-	{"f+>", ec_find},
-	{"f+<", ec_find},
+	{"f+", ec_find},
+	{"f-", ec_find},
 	{"f>", ec_find},
 	{"f<", ec_find},
 	{"f", ec_fuzz},
