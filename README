@@ -415,8 +415,8 @@ EX RANGES
              Print text enclosed by a non deterministic pattern "a+"
 
 EX COMMANDS
-     [vrange]f{>}[kwd]
-     [vrange]f{<}[kwd]
+     [vrange]f>[kwd]
+     [vrange]f<[kwd]
              Ranged regex search
 
              Example: no range given, current line only
@@ -426,8 +426,8 @@ EX COMMANDS
              Example: range given
              :10,100f>int
 
-     [vrange]f+{>}[kwd]
-     [vrange]f+{<}[kwd]
+     [vrange]f+>[kwd]
+     [vrange]f+<[kwd]
              Incrementing ranged search
 
              Equivalent to the :f> and :f< commands, except subsequent commands within
@@ -1163,9 +1163,9 @@ CODE MAP
      | 614 uc.c     |  UTF-8 support       |
      | 712 led.c    |  insert mode/output  |
      | 765 regex.c  |  pikevm              |
-     | 1542 ex.c    |  ex options/commands |
+     | 1532 ex.c    |  ex options/commands |
      | 1839 vi.c    |  normal mode/general |
-     | 7163 total   |  wc -l *.c|sort      |
+     | 7153 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1237,4 +1237,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.17.7                    January 3, 2026                   Linux 6.17.7
+Linux 6.18.3                   January 22, 2026                   Linux 6.18.3

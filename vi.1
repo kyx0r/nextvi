@@ -1,4 +1,4 @@
-.Dd Jan  3, 2026
+.Dd Jan 22, 2026
 .Dt Nextvi 1
 .Os
 .
@@ -669,8 +669,8 @@ Print text enclosed by a non deterministic pattern "a+"
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [\fIvrange\fP]f{\fI>\fP}[\fIkwd\fP]
-.It Cm [\fIvrange\fP]f{\fI<\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f>[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f<[\fIkwd\fP]
 Ranged regex search
 .Bd -literal
 Example: no range given, current line only
@@ -681,8 +681,8 @@ Example: range given
 :10,100f>int
 .Ed
 
-.It Cm [\fIvrange\fP]f+{\fI>\fP}[\fIkwd\fP]
-.It Cm [\fIvrange\fP]f+{\fI<\fP}[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+>[\fIkwd\fP]
+.It Cm [\fIvrange\fP]f+<[\fIkwd\fP]
 Incrementing ranged search
 .Bd -literal
 Equivalent to the :f> and :f< commands, except subsequent commands within
@@ -1561,9 +1561,9 @@ _
  614 uc.c | UTF-8 support
  712 led.c | insert mode/output
  765 regex.c | pikevm
- 1542 ex.c | ex options/commands
+ 1532 ex.c | ex options/commands
  1839 vi.c | normal mode/general
- 7163 total | wc -l *.c\(basort
+ 7153 total | wc -l *.c\(basort
 _
 .TE
 .
