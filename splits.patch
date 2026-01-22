@@ -1,18 +1,18 @@
 diff --git a/conf.c b/conf.c
-index a6d30006..29967834 100644
+index 4fcc1a8b..8e9f3a00 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -257,7 +257,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  ((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?[.$]?(?:'[a-z'`[\\]*])?\
  ([0-9]*)?)(?:([-*-+/%])([0-9]+))*(?:\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|left|lim|led|vis|mpt|err)\
--|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f(?:\\+?[ \t]?([><])|[tdp+])?|inc|i|\
-+|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f(?:\\+?[ \t]?([><])|[tdp+])?|inc|i|sp|vs|\
+-|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|\
++|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sp|vs\
  (?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
- 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1, MA1)},
+ 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 78ceca6d..1afd16dc 100644
+index 413319dc..d94f5550 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,9 @@ struct buf *bufs;		/* main buffers */
@@ -45,7 +45,7 @@ index 78ceca6d..1afd16dc 100644
  }
  
  void temp_write(int i, char *str)
-@@ -558,11 +567,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -545,11 +554,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
@@ -70,7 +70,7 @@ index 78ceca6d..1afd16dc 100644
  	return NULL;
  }
  
-@@ -1298,6 +1318,16 @@ _EO(left,
+@@ -1285,6 +1305,16 @@ _EO(left,
  	return NULL;
  )
  
@@ -87,7 +87,7 @@ index 78ceca6d..1afd16dc 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1355,9 +1385,12 @@ static struct excmd {
+@@ -1345,9 +1375,12 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
@@ -100,7 +100,7 @@ index 78ceca6d..1afd16dc 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1379,7 +1412,6 @@ static struct excmd {
+@@ -1369,7 +1402,6 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -108,7 +108,7 @@ index 78ceca6d..1afd16dc 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  };
-@@ -1526,6 +1558,211 @@ void ex(void)
+@@ -1516,6 +1548,211 @@ void ex(void)
  	xgrec--;
  }
  
@@ -438,7 +438,7 @@ index 98ad4070..9bbf4eef 100644
  		case TK_CTL('o'): {
  			if (!*postref)
 diff --git a/vi.c b/vi.c
-index b8dd9d17..083c6796 100644
+index 15dcd18e..69f309b0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -103,6 +103,23 @@ static void vi_drawmsg(void)
