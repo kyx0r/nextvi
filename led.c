@@ -652,9 +652,11 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
 		ins_init(_is)
 		is = &_is;
 	}
+	preserve(int, xleft, xleft = 0;)
 	preserve(int, xtd, xtd = 2;)
 	key = led_line(sb, ps, n, &post, 0, &postref, -1, kmap, is, 0, xrow, xtop, flg);
 	restore(xtd)
+	restore(xleft)
 	if (key == '\n' && flg & 1) {
 		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
 		temp_pos(0, -1, 0, 0);

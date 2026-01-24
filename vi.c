@@ -23,12 +23,12 @@
 #include "term.c"
 #include "uc.c"
 
-int vi_hidch;		/* show hidden chars */
-int vi_lncol;		/* line numbers cursor offset */
-char vi_msg[512];	/* current message */
-static int vi_lnnum;	/* line numbers */
-static int vi_mod;	/* screen should be redrawn -
-			bit 1: whole screen, bit 2: current line, bit 3: update vi_col) */
+int vi_hidch;			/* show hidden chars */
+int vi_lncol;			/* line numbers cursor offset */
+static char vi_msg[512];	/* current message */
+static int vi_lnnum;		/* line numbers */
+/* screen redraw - bit 1: whole screen, bit 2: current line, bit 3: update vi_col */
+static int vi_mod;
 static char vi_word_m[] = "\0leEwW";	/* line word navigation */
 static char *vi_word = vi_word_m;
 static char *_vi_word = vi_word_m;
@@ -93,7 +93,7 @@ char *itoa(int n, char s[])
 
 static void vi_drawmsg(void)
 {
-	if (vi_msg[0]) {
+	if (vi_msg[0] && xmpt != 1) {
 		syn_blockhl = -1;
 		syn_setft(bar_ft);
 		preserve(int, xtd, xtd = 2;)
@@ -131,6 +131,8 @@ static void vi_drawrow(int row)
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
 	static char ch[5] = "~";
+	if (xmpt == 1 && row == xtop + xrows - 1)
+		return;
 	if (*vi_word && xled) {
 		int noff, nrow, ret;
 		s = lbuf_get(xb, row - vi_rshift);
@@ -236,18 +238,6 @@ static void vi_drawupdate(int i)
 		for (i = n-1; i >= 0; i--)
 			vi_drawrow(xtop + i);
 	}
-}
-
-static void vi_wait(void)
-{
-	if (xmpt > 1) {
-		strcpy(vi_msg, "[any key to continue] ");
-		vi_drawmsg();
-		term_read();
-		vi_msg[0] = '\0';
-		vi_mod |= 1;
-	}
-	xmpt = xmpt > 0 ? 0 : xmpt;
 }
 
 static char *vi_prompt(char *msg, char *ft, char *insert, int *kmap, int *mlen)
@@ -1304,8 +1294,7 @@ void vi(int init)
 			case TK_CTL('_'):	/* this is also ^7 on some systems */
 				if (vi_arg > 0)
 					goto switchbuf;
-				xleft = 0;
-				ex_exec("b");
+				ex_exec("left0:b");
 				vi_arg = vi_digit();
 				if (vi_arg > -1 && vi_arg < xbufcur) {
 					switchbuf:
@@ -1645,11 +1634,11 @@ void vi(int init)
 				vi_mod |= vc_replace();
 				break;
 			case 'R':
-				ex_exec("left:reg");
+				ex_exec("left0:reg");
 				break;
 			case 'Q':
 				term_pos(xrow - xtop, 0);
-				xoff = vi_arg ? xoff : 0;
+				xleft = vi_arg ? xleft : 0;
 				led_modeswap();
 				vi_mod |= 1;
 				break;
@@ -1706,7 +1695,13 @@ void vi(int init)
 		if (vi_col >= xleft + xcols || vi_col < xleft)
 			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
 		n = led_pos(ln, ren_cursor(ln, vi_col));
-		vi_wait();
+		if (xmpt > 1) {
+			strcpy(vi_msg, "[any key to continue] ");
+			vi_drawmsg();
+			term_read();
+			vi_msg[0] = '\0';
+			vi_mod |= 1;
+		}
 		if (xhlw) {
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
@@ -1771,6 +1766,7 @@ void vi(int init)
 		term_pos(xrow - xtop, n + vi_lncol);
 		term_commit();
 		xb->useq += xseq;
+		xmpt = xmpt > 0 ? 0 : xmpt;
 	}
 	xgrec--;
 }

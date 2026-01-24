@@ -320,14 +320,12 @@ static int ex_read(sbuf *sb, char *msg, char *ft, ins_state *is, int ps, int flg
 		sbuf_null(sb)
 		return key;
 	}
-	preserve(int, xleft, xleft = 0;)
 	sbuf_str(sb, msg)
 	if (ft)
 		syn_setft(ft);
 	key = led_prompt(sb, NULL, &xkmap, is, ps, flg);
 	if (ft)
 		syn_setft(xb_ft);
-	restore(xleft)
 	if (key == '\n' && (!*msg || strcmp(sb->s + n, msg)))
 		term_chr('\n');
 	return key;
@@ -704,7 +702,6 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 	syn_blockhl = -1;
 	if (!(xvis & 4) && !(flg & 2)) {
 		term_pos(xrows, 0);
-		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
 		lntest = xmpt;
 		if (lntest == 1)
 			term_chr('\n');
@@ -792,8 +789,6 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		else if (o2 >= 0 && i == end-1)
 			o = uc_sub(ln, 0, o2);
 		else {
-			if (xvis & 4 && beg == end-1)
-				xleft = ren_position(ln)->pos[MIN(xoff, rstate->n)];
 			ex_cprint(ln, msg_ft, -1, 0, xleft, 1);
 			continue;
 		}
@@ -1280,8 +1275,10 @@ EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
 _EO(left,
 	if (*loc)
 		xleft = (xcols / 2) * atoi(loc);
+	else if (*arg)
+		xleft = atoi(arg);
 	else
-		xleft = *arg ? atoi(arg) : 0;
+		xleft = ren_position(lbuf_get(xb, xrow))->pos[MIN(xoff, rstate->n)];
 	return NULL;
 )
 
