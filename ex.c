@@ -1519,6 +1519,7 @@ void ex_init(char **files, int n)
 	ec_setbufsmax(NULL, NULL, "");
 	char *s = files[0] ? files[0] : "";
 	do {
+		xmpt = 0;
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
