@@ -502,7 +502,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 		return xserr;
 	off = xoff;
 	obeg = beg;
-	if (xrow < beg || xrow > end) {
+	if (xrow < beg || xrow >= end) {
 		off = 0;
 		beg = xkwddir > 0 ? beg : end++;
 	} else
