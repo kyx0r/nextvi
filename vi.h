@@ -533,7 +533,6 @@ char *conf_digraph(int c1, int c2);
 /* vi.c */
 extern int vi_hidch;
 extern int vi_lncol;
-extern char vi_msg[512];
 /* file system */
 extern rset *fsincl;
 extern char *fs_exdir;
