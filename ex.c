@@ -356,7 +356,7 @@ int ex_edit(const char *path, int len)
 
 static void *ec_edit(char *loc, char *cmd, char *arg)
 {
-	char msg[128];
+	char msg[512];
 	int fd, len, rd = 0, cd = 0;
 	if (arg[0] == '.' && arg[1] == '/')
 		cd = 2;
@@ -1522,7 +1522,6 @@ void ex_init(char **files, int n)
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
-	xmpt = 0;
 	xvis &= ~8;
 	if ((s = getenv("EXINIT")))
 		ex_command(s)
