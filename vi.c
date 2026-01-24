@@ -99,8 +99,8 @@ static void vi_drawmsg(char *msg)
 	RS(2, led_crender(msg, xrows, 0, 0, xcols))
 	syn_setft(xb_ft);
 	restore(xtd)
-	xmpt = !xmpt ? 1 : xmpt;
 }
+#define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); xmpt = !xmpt ? 1 : xmpt; }
 
 static int vi_nextcol(char *ln, int dir, int *off)
 {
@@ -239,27 +239,22 @@ static void vi_drawupdate(int i)
 	}
 }
 
-static char *vi_prompt(char *msg, char *ft, char *insert, int *kmap, int *mlen)
+static char *vi_prompt(char *msg, char *ft, char *insert, int *ret, int *kmap, int *mlen)
 {
-	int key;
 	sbuf_smake(sb, xcols)
 	sbuf_str(sb, msg)
 	*mlen = sb->s_n;
 	term_pos(xrows, led_pos(msg, 0));
 	syn_setft(ft);
-	key = led_prompt(sb, insert, kmap, NULL, 0, 1);
+	*ret = led_prompt(sb, insert, kmap, NULL, 0, 1) == '\n';
 	syn_setft(xb_ft);
-	vi_drawmsg(sb->s);
-	if (key == '\n')
-		return sb->s;
-	free(sb->s);
-	return NULL;
+	return sb->s;
 }
 
-static char *vi_enprompt(char *msg, char *insert, int *mlen)
+static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
 {
 	int kmap = 0;
-	return vi_prompt(msg, ex_ft, insert, &kmap, mlen);
+	return vi_prompt(msg, ex_ft, insert, ret, &kmap, mlen);
 }
 
 static int vi_yankbuf(void)
@@ -311,15 +306,18 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
 
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
-	int i, dir;
+	int i, dir, ret;
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
-		char *kw = vi_prompt(sign, vs_ft, NULL, &xkmap, &i);
-		if (!kw)
+		char *kw = vi_prompt(sign, vs_ft, NULL, &ret, &xkmap, &i);
+		vi_drawmsg_mpt(kw)
+		if (!ret) {
+			free(kw);
 			return 1;
+		}
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
 		if (!xkwdrs)
-			vi_drawmsg("syntax error");
+			vi_drawmsg_mpt("syntax error")
 		free(kw);
 	} else if (msg)
 		ex_krsset(xregs['/'] ? xregs['/']->s : NULL, xkwddir);
@@ -332,7 +330,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			if (msg) {
 				snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
 						xregs['/'] ? xregs['/']->s : "", i, cnt);
-				vi_drawmsg(vi_msg);
+				vi_drawmsg_mpt(vi_msg)
 			}
 			return 1;
 		}
@@ -560,7 +558,7 @@ static void vc_status(int type)
 			xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
 			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs);
 	}
-	vi_drawmsg(vi_msg);
+	vi_drawmsg_mpt(vi_msg)
 }
 
 /* read a motion */
@@ -915,7 +913,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 
 static void vi_pipe(int r1, int r2)
 {
-	int mlen;
+	int mlen, ret;
 	char region[64], *p = region;
 	if (r1 == r2 && !vi_arg)
 		*p++ = '.';
@@ -926,9 +924,11 @@ static void vi_pipe(int r1, int r2)
 	}
 	*p++ = '!';
 	*p = '\0';
-	char *cmd = vi_enprompt(":", region, &mlen);
-	if (cmd)
+	char *cmd = vi_enprompt(":", region, &ret, &mlen);
+	if (ret)
 		ex_command(cmd + mlen)
+	if (!xmpt)
+		vi_drawmsg_mpt(cmd)
 	free(cmd);
 }
 
@@ -1061,7 +1061,7 @@ static int vc_put(int cmd)
 	sbuf *buf = xregs[vi_ybuf];
 	char *ln;
 	if (!buf)
-		vi_drawmsg("yank buffer empty");
+		vi_drawmsg_mpt("yank buffer empty")
 	if (!buf || !buf->s_n)
 		return 0;
 	sbuf_smake(sb, 1024)
@@ -1156,7 +1156,7 @@ static void vc_execute(int cmd)
 	if (exec_buf >= 0)
 		buf = xregs[exec_buf];
 	if (!buf) {
-		vi_drawmsg("exec buffer empty");
+		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
 	for (i = 0; i < n; i++)
@@ -1314,7 +1314,7 @@ void vi(int init)
 					vi_arg--;
 					goto undo;
 				} else if (!vi_arg)
-					vi_drawmsg("undo failed");
+					vi_drawmsg_mpt("undo failed")
 				break;
 			case TK_CTL('r'):
 				redo:
@@ -1323,7 +1323,7 @@ void vi(int init)
 					vi_arg--;
 					goto redo;
 				} else if (!vi_arg)
-					vi_drawmsg("redo failed");
+					vi_drawmsg_mpt("redo failed")
 				break;
 			case TK_CTL('g'):
 				vi_tsm = 0;
@@ -1389,22 +1389,21 @@ void vi(int init)
 						strcpy(restr, "%s/^ {");
 						strcpy(itoa(vi_arg, restr+6), "}/\t/g");
 					}
-					ln = vi_enprompt(":", restr, &n);
+					ln = vi_enprompt(":", restr, &k, &n);
 					goto do_excmd;
 				case 'b':
 				case 'v':
 					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
 					break;
 				case ';':
-					ln = vi_enprompt(":", "!", &n);
+					ln = vi_enprompt(":", "!", &k, &n);
 					goto do_excmd;
 				case '/':
 					cs = vi_curword(xb, xrow, xoff, vi_arg);
-					ln = vi_prompt("xkwd:", vs_ft, cs, &xkmap, &n);
-					if (ln)
+					ln = vi_prompt("xkwd:", vs_ft, cs, &k, &xkmap, &n);
+					if (k)
 						ex_krsset(ln + n, +1);
-					if (ln && !xkwdrs)
-						vi_drawmsg("syntax error");
+					vi_drawmsg_mpt(k && !xkwdrs ? "syntax error" : ln)
 					free(ln);
 					free(cs);
 					break;
@@ -1420,7 +1419,7 @@ void vi(int init)
 						strcat(buf1, "/");
 						free(cs);
 					}
-					ln = vi_enprompt(":", buf, &n);
+					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				case 'r': {
 					cs = vi_curword(xb, xrow, xoff, vi_arg);
@@ -1431,7 +1430,7 @@ void vi(int init)
 						strcat(buf, "/");
 						free(cs);
 					}
-					ln = vi_enprompt(":", buf, &n);
+					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				default:
 					term_dec()
@@ -1452,13 +1451,12 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case ':':
-				ln = vi_enprompt(":", 0, &n);
+				ln = vi_enprompt(":", NULL, &k, &n);
 				do_excmd:
-				if (ln && ln[n]) {
-					xmpt = xmpt > 0 ? 0 : xmpt;
+				if (k && ln[n])
 					ex_command(ln + n)
-					xmpt = !xmpt ? 1 : xmpt;
-				}
+				if (!xmpt)
+					vi_drawmsg_mpt(ln)
 				free(ln);
 				vi_mod |= xgrec > 1 || xquit == 0;
 				break;
