@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 413319dc..5dda047f 100644
+index 99238c2f..65597a6d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
@@ -10,7 +10,7 @@ index 413319dc..5dda047f 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1276,6 +1277,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1270,6 +1271,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
  EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
@@ -18,7 +18,7 @@ index 413319dc..5dda047f 100644
  
  _EO(left,
  	if (*loc)
-@@ -1332,6 +1334,7 @@ static struct excmd {
+@@ -1328,6 +1330,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -27,7 +27,7 @@ index 413319dc..5dda047f 100644
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index 98ad4070..07d638b5 100644
+index 33f52887..8fe22c14 100644
 --- a/led.c
 +++ b/led.c
 @@ -404,6 +404,14 @@ void led_modeswap(void)
@@ -65,7 +65,7 @@ index 98ad4070..07d638b5 100644
  				return c;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 15dcd18e..281c391e 100644
+index 80c42982..ce3b532a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -76,7 +76,7 @@ index 15dcd18e..281c391e 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1507,6 +1508,8 @@ void vi(int init)
+@@ -1499,6 +1500,8 @@ void vi(int init)
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -86,7 +86,7 @@ index 15dcd18e..281c391e 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index a6f6348d..b9d2f7cd 100644
+index dbea64cb..bef381bc 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -366,6 +366,7 @@ typedef struct {

@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 413319dc..bc4dda89 100644
+index 99238c2f..a1ee8db7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -34,6 +34,7 @@ int xkwdcnt;			/* number of search kwd changes */
@@ -10,7 +10,7 @@ index 413319dc..bc4dda89 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1259,6 +1260,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1253,6 +1254,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -52,7 +52,7 @@ index 413319dc..bc4dda89 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1348,6 +1384,8 @@ static struct excmd {
+@@ -1344,6 +1380,8 @@ static struct excmd {
  	EO(shape),
  	EO(seq),
  	EO(sep),
@@ -78,7 +78,7 @@ index 757c26eb..39154c30 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index a6f6348d..4e527fe0 100644
+index dbea64cb..7a796e4f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

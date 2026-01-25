@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 413319dc..cab18911 100644
+index 99238c2f..6a8410be 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1267,6 +1267,50 @@ static int eo_val(char *arg)
+@@ -1261,6 +1261,50 @@ static int eo_val(char *arg)
  	return val;
  }
  
@@ -53,7 +53,7 @@ index 413319dc..cab18911 100644
  #define _EO(opt, inner) \
  static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
-@@ -1356,6 +1400,7 @@ static struct excmd {
+@@ -1352,6 +1396,7 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},
