@@ -766,13 +766,13 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 {
 	int i, beg, end, o1 = -1, o2 = -1;
 	char *o, *ln;
-	if (!cmd[0] && !loc[0] && arg[0])
+	if (!*cmd && !*loc && *arg)
 		return "unknown command";
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	if (o1 >= 0)
 		xoff = MAX(o1, o2);
-	if (!cmd[0] && loc[0]) {
+	if (!*cmd && *loc) {
 		xrow = MAX(beg, end - 1);
 		return NULL;
 	}
@@ -788,7 +788,7 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		else if (o2 >= 0 && i == end-1)
 			o = uc_sub(ln, 0, o2);
 		else {
-			ex_cprint(ln, msg_ft, -1, 0, xleft, 1);
+			ex_cprint(ln, msg_ft, -1, 0, *loc ? 0 : xleft, 1);
 			continue;
 		}
 		ex_cprint(o, msg_ft, -1, 0, 0, 1);
