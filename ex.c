@@ -320,14 +320,12 @@ static int ex_read(sbuf *sb, char *msg, char *ft, ins_state *is, int ps, int flg
 		sbuf_null(sb)
 		return key;
 	}
-	preserve(int, xleft, xleft = 0;)
 	sbuf_str(sb, msg)
 	if (ft)
 		syn_setft(ft);
 	key = led_prompt(sb, NULL, &xkmap, is, ps, flg);
 	if (ft)
 		syn_setft(xb_ft);
-	restore(xleft)
 	if (key == '\n' && (!*msg || strcmp(sb->s + n, msg)))
 		term_chr('\n');
 	return key;
@@ -358,7 +356,7 @@ int ex_edit(const char *path, int len)
 
 static void *ec_edit(char *loc, char *cmd, char *arg)
 {
-	char msg[128];
+	char msg[512];
 	int fd, len, rd = 0, cd = 0;
 	if (arg[0] == '.' && arg[1] == '/')
 		cd = 2;
@@ -504,7 +502,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 		return xserr;
 	off = xoff;
 	obeg = beg;
-	if (xrow < beg || xrow > end) {
+	if (xrow < beg || xrow >= end) {
 		off = 0;
 		beg = xkwddir > 0 ? beg : end++;
 	} else
@@ -548,8 +546,7 @@ static void *ec_quit(char *loc, char *cmd, char *arg)
 	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
 		if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
 			return "buffers modified";
-	if (!xquit)
-		xquit = !strchr(cmd, '!') ? 1 : -1;
+	xquit = strchr(cmd, '!') ? -1 : !xquit ? 1 : xquit;
 	return NULL;
 }
 
@@ -621,9 +618,9 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 static void *ex_pipeout(char *cmd, sbuf *buf)
 {
 	int ret = 0;
-	if (!(xvis & 4)) {
+	if (!(xvis & 4) && xmpt >= 0) {
 		term_chr('\n');
-		xmpt = xmpt >= 0 ? 2 : xmpt;
+		xmpt = 2;
 	}
 	cmd_pipe(cmd, buf, 0, &ret);
 	return ret ? xuerr : NULL;
@@ -704,7 +701,6 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 	syn_blockhl = -1;
 	if (!(xvis & 4) && !(flg & 2)) {
 		term_pos(xrows, 0);
-		snprintf(vi_msg+c, sizeof(vi_msg)-c, "%s", line);
 		lntest = xmpt;
 		if (lntest == 1)
 			term_chr('\n');
@@ -792,8 +788,6 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		else if (o2 >= 0 && i == end-1)
 			o = uc_sub(ln, 0, o2);
 		else {
-			if (xvis & 4 && beg == end-1)
-				xleft = ren_position(ln)->pos[MIN(xoff, rstate->n)];
 			ex_cprint(ln, msg_ft, -1, 0, xleft, 1);
 			continue;
 		}
@@ -1280,8 +1274,10 @@ EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
 _EO(left,
 	if (*loc)
 		xleft = (xcols / 2) * atoi(loc);
+	else if (*arg)
+		xleft = atoi(arg);
 	else
-		xleft = *arg ? atoi(arg) : 0;
+		xleft = ren_position(lbuf_get(xb, xrow))->pos[MIN(xoff, rstate->n)];
 	return NULL;
 )
 
@@ -1522,10 +1518,10 @@ void ex_init(char **files, int n)
 	ec_setbufsmax(NULL, NULL, "");
 	char *s = files[0] ? files[0] : "";
 	do {
+		xmpt = 0;
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
-	xmpt = 0;
 	xvis &= ~8;
 	if ((s = getenv("EXINIT")))
 		ex_command(s)

@@ -23,12 +23,12 @@
 #include "term.c"
 #include "uc.c"
 
-int vi_hidch;		/* show hidden chars */
-int vi_lncol;		/* line numbers cursor offset */
-char vi_msg[512];	/* current message */
-static int vi_lnnum;	/* line numbers */
-static int vi_mod;	/* screen should be redrawn -
-			bit 1: whole screen, bit 2: current line, bit 3: update vi_col) */
+int vi_hidch;			/* show hidden chars */
+int vi_lncol;			/* line numbers cursor offset */
+static char vi_msg[512];	/* current message */
+static int vi_lnnum;		/* line numbers */
+/* screen redraw - bit 1: whole screen, bit 2: current line, bit 3: update vi_col */
+static int vi_mod;
 static char vi_word_m[] = "\0leEwW";	/* line word navigation */
 static char *vi_word = vi_word_m;
 static char *_vi_word = vi_word_m;
@@ -91,17 +91,16 @@ char *itoa(int n, char s[])
 	return &s[i];
 }
 
-static void vi_drawmsg(void)
+static void vi_drawmsg(char *msg)
 {
-	if (vi_msg[0]) {
-		syn_blockhl = -1;
-		syn_setft(bar_ft);
-		preserve(int, xtd, xtd = 2;)
-		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
-		restore(xtd)
-		syn_setft(xb_ft);
-	}
+	syn_blockhl = -1;
+	preserve(int, xtd, xtd = 2;)
+	syn_setft(bar_ft);
+	RS(2, led_crender(msg, xrows, 0, 0, xcols))
+	syn_setft(xb_ft);
+	restore(xtd)
 }
+#define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); xmpt = !xmpt ? 1 : xmpt; }
 
 static int vi_nextcol(char *ln, int dir, int *off)
 {
@@ -131,6 +130,8 @@ static void vi_drawrow(int row)
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
 	static char ch[5] = "~";
+	if (xmpt == 1 && row == xtop + xrows - 1)
+		return;
 	if (*vi_word && xled) {
 		int noff, nrow, ret;
 		s = lbuf_get(xb, row - vi_rshift);
@@ -238,39 +239,22 @@ static void vi_drawupdate(int i)
 	}
 }
 
-static void vi_wait(void)
+static char *vi_prompt(char *msg, char *ft, char *insert, int *ret, int *kmap, int *mlen)
 {
-	if (xmpt > 1) {
-		strcpy(vi_msg, "[any key to continue] ");
-		vi_drawmsg();
-		term_read();
-		vi_msg[0] = '\0';
-		vi_mod |= 1;
-	}
-	xmpt = xmpt > 0 ? 0 : xmpt;
-}
-
-static char *vi_prompt(char *msg, char *ft, char *insert, int *kmap, int *mlen)
-{
-	int key;
 	sbuf_smake(sb, xcols)
 	sbuf_str(sb, msg)
 	*mlen = sb->s_n;
 	term_pos(xrows, led_pos(msg, 0));
 	syn_setft(ft);
-	key = led_prompt(sb, insert, kmap, NULL, 0, 1);
+	*ret = led_prompt(sb, insert, kmap, NULL, 0, 1) == '\n';
 	syn_setft(xb_ft);
-	strncpy(vi_msg, sb->s, sizeof(vi_msg) - 1);
-	if (key == '\n')
-		return sb->s;
-	free(sb->s);
-	return NULL;
+	return sb->s;
 }
 
-static char *vi_enprompt(char *msg, char *insert, int *mlen)
+static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
 {
 	int kmap = 0;
-	return vi_prompt(msg, ex_ft, insert, &kmap, mlen);
+	return vi_prompt(msg, ex_ft, insert, ret, &kmap, mlen);
 }
 
 static int vi_yankbuf(void)
@@ -322,15 +306,18 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
 
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
-	int i, dir;
+	int i, dir, ret;
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
-		char *kw = vi_prompt(sign, vs_ft, NULL, &xkmap, &i);
-		if (!kw)
+		char *kw = vi_prompt(sign, vs_ft, NULL, &ret, &xkmap, &i);
+		vi_drawmsg_mpt(kw)
+		if (!ret) {
+			free(kw);
 			return 1;
+		}
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
 		if (!xkwdrs)
-			ex_print("syntax error", msg_ft)
+			vi_drawmsg_mpt("syntax error")
 		free(kw);
 	} else if (msg)
 		ex_krsset(xregs['/'] ? xregs['/']->s : NULL, xkwddir);
@@ -340,8 +327,11 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 	for (i = 0; i < cnt; i++) {
 		if (lbuf_search(xb, xkwdrs, dir, row, off,
 				lbuf_len(xb), msg ? dir : -1)) {
-			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
-					xregs['/'] ? xregs['/']->s : "", i, cnt);
+			if (msg) {
+				snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
+						xregs['/'] ? xregs['/']->s : "", i, cnt);
+				vi_drawmsg_mpt(vi_msg)
+			}
 			return 1;
 		}
 	}
@@ -560,14 +550,15 @@ static void vc_status(int type)
 		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x %dL %dW S%td O%d C%d",
 			cbuf, cp, l, rstate->wid[xoff], c - lbuf_get(xb, xrow),
 			xoff, col);
-		return;
+	} else {
+		snprintf(vi_msg, sizeof(vi_msg),
+			"\"%s\"%s%dL %d%% L%d C%d B%td",
+			xb_path[0] ? xb_path : "unnamed",
+			xb->modified ? "* " : " ", lbuf_len(xb),
+			xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
+			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs);
 	}
-	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%s%dL %d%% L%d C%d B%td",
-		xb_path[0] ? xb_path : "unnamed",
-		xb->modified ? "* " : " ", lbuf_len(xb),
-		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
-		istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs);
+	vi_drawmsg_mpt(vi_msg)
 }
 
 /* read a motion */
@@ -922,7 +913,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 
 static void vi_pipe(int r1, int r2)
 {
-	int mlen;
+	int mlen, ret;
 	char region[64], *p = region;
 	if (r1 == r2 && !vi_arg)
 		*p++ = '.';
@@ -933,9 +924,11 @@ static void vi_pipe(int r1, int r2)
 	}
 	*p++ = '!';
 	*p = '\0';
-	char *cmd = vi_enprompt(":", region, &mlen);
-	if (cmd)
+	char *cmd = vi_enprompt(":", region, &ret, &mlen);
+	if (ret)
 		ex_command(cmd + mlen)
+	if (!xmpt)
+		vi_drawmsg_mpt(cmd)
 	free(cmd);
 }
 
@@ -1068,7 +1061,7 @@ static int vc_put(int cmd)
 	sbuf *buf = xregs[vi_ybuf];
 	char *ln;
 	if (!buf)
-		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty");
+		vi_drawmsg_mpt("yank buffer empty")
 	if (!buf || !buf->s_n)
 		return 0;
 	sbuf_smake(sb, 1024)
@@ -1163,7 +1156,7 @@ static void vc_execute(int cmd)
 	if (exec_buf >= 0)
 		buf = xregs[exec_buf];
 	if (!buf) {
-		snprintf(vi_msg, sizeof(vi_msg), "exec buffer empty");
+		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
 	for (i = 0; i < n; i++)
@@ -1197,7 +1190,6 @@ void vi(int init)
 		topfix()
 		vi_col = vi_off2col(xb, xrow, xoff);
 		vi_drawagain(xtop);
-		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col));
 	}
 	while (!xquit) {
@@ -1217,10 +1209,12 @@ void vi(int init)
 			vi_lncol = 0;
 			vi_mod |= 1;
 		}
-		if (vi_msg[0]) {
-			vi_msg[0] = '\0';
-			if (!vi_status)
+		if (xmpt > 0) {
+			if (xmpt == 1 && !vi_status) {
+				xmpt = 0;
 				vi_drawrow(otop + xrows - 1);
+			} else
+				xmpt = 0;
 		}
 		if (led_attsb)
 			sbuf_cut(led_attsb, 0)
@@ -1304,8 +1298,7 @@ void vi(int init)
 			case TK_CTL('_'):	/* this is also ^7 on some systems */
 				if (vi_arg > 0)
 					goto switchbuf;
-				xleft = 0;
-				ex_exec("b");
+				ex_exec("left0:b:mpt0");
 				vi_arg = vi_digit();
 				if (vi_arg > -1 && vi_arg < xbufcur) {
 					switchbuf:
@@ -1313,7 +1306,6 @@ void vi(int init)
 					vc_status(0);
 				}
 				vi_mod |= 1;
-				xmpt = xmpt >= 0 ? 0 : xmpt;
 				break;
 			case 'u':
 				undo:
@@ -1322,7 +1314,7 @@ void vi(int init)
 					vi_arg--;
 					goto undo;
 				} else if (!vi_arg)
-					snprintf(vi_msg, sizeof(vi_msg), "undo failed");
+					vi_drawmsg_mpt("undo failed")
 				break;
 			case TK_CTL('r'):
 				redo:
@@ -1331,7 +1323,7 @@ void vi(int init)
 					vi_arg--;
 					goto redo;
 				} else if (!vi_arg)
-					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
+					vi_drawmsg_mpt("redo failed")
 				break;
 			case TK_CTL('g'):
 				vi_tsm = 0;
@@ -1397,28 +1389,26 @@ void vi(int init)
 						strcpy(restr, "%s/^ {");
 						strcpy(itoa(vi_arg, restr+6), "}/\t/g");
 					}
-					ln = vi_enprompt(":", restr, &n);
+					ln = vi_enprompt(":", restr, &k, &n);
 					goto do_excmd;
 				case 'b':
 				case 'v':
 					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
 					break;
 				case ';':
-					ln = vi_enprompt(":", "!", &n);
+					ln = vi_enprompt(":", "!", &k, &n);
 					goto do_excmd;
 				case '/':
 					cs = vi_curword(xb, xrow, xoff, vi_arg);
-					ln = vi_prompt("xkwd:", vs_ft, cs, &xkmap, &n);
-					if (ln)
+					ln = vi_prompt("xkwd:", vs_ft, cs, &k, &xkmap, &n);
+					if (k)
 						ex_krsset(ln + n, +1);
-					if (ln && !xkwdrs)
-						ex_print("syntax error", msg_ft)
+					vi_drawmsg_mpt(k && !xkwdrs ? "syntax error" : ln)
 					free(ln);
 					free(cs);
 					break;
 				case 't': {
-					strcpy(vi_msg, "arg2:(0|#)");
-					vi_drawmsg();
+					vi_drawmsg("arg2:(0|#)");
 					cs = vi_curword(xb, xrow, xoff, vi_prefix());
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, ".,.+");
@@ -1429,7 +1419,7 @@ void vi(int init)
 						strcat(buf1, "/");
 						free(cs);
 					}
-					ln = vi_enprompt(":", buf, &n);
+					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				case 'r': {
 					cs = vi_curword(xb, xrow, xoff, vi_arg);
@@ -1440,7 +1430,7 @@ void vi(int init)
 						strcat(buf, "/");
 						free(cs);
 					}
-					ln = vi_enprompt(":", buf, &n);
+					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				default:
 					term_dec()
@@ -1461,10 +1451,12 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case ':':
-				ln = vi_enprompt(":", 0, &n);
+				ln = vi_enprompt(":", NULL, &k, &n);
 				do_excmd:
-				if (ln && ln[n])
+				if (k && ln[n])
 					ex_command(ln + n)
+				if (!xmpt)
+					vi_drawmsg_mpt(ln)
 				free(ln);
 				vi_mod |= xgrec > 1 || xquit == 0;
 				break;
@@ -1645,11 +1637,11 @@ void vi(int init)
 				vi_mod |= vc_replace();
 				break;
 			case 'R':
-				ex_exec("left:reg");
+				ex_exec("left0:reg");
 				break;
 			case 'Q':
 				term_pos(xrow - xtop, 0);
-				xoff = vi_arg ? xoff : 0;
+				xleft = vi_arg ? xleft : 0;
 				led_modeswap();
 				vi_mod |= 1;
 				break;
@@ -1706,7 +1698,11 @@ void vi(int init)
 		if (vi_col >= xleft + xcols || vi_col < xleft)
 			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
 		n = led_pos(ln, ren_cursor(ln, vi_col));
-		vi_wait();
+		if (xmpt > 1) {
+			vi_drawmsg("[any key to continue] ");
+			term_read();
+			vi_mod |= 1;
+		}
 		if (xhlw) {
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
@@ -1761,13 +1757,10 @@ void vi(int init)
 			syn_blockhl = -1;
 			vi_drawrow(xrow);
 		}
-		if (vi_status && !vi_msg[0]) {
+		if (vi_status && !xmpt) {
 			xrows = vi_status != xrows ? vi_status : xrows;
 			vc_status(vi_tsm);
-			vi_drawmsg();
-			vi_msg[0] = '\0';
-		} else
-			vi_drawmsg();
+		}
 		term_pos(xrow - xtop, n + vi_lncol);
 		term_commit();
 		xb->useq += xseq;
