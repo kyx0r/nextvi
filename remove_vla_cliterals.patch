@@ -12,10 +12,10 @@ index 4fcc1a8b..d5eb501a 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 413319dc..8be813d9 100644
+index 99238c2f..3022a348 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -943,7 +943,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -937,7 +937,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 413319dc..8be813d9 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -995,6 +995,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -989,6 +989,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -65,7 +65,7 @@ index ade45e54..df58c285 100644
  }
  
 diff --git a/led.c b/led.c
-index 98ad4070..60f8a2d1 100644
+index 33f52887..74ee5bbe 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -254,7 +254,7 @@ index e0e39ecc..f7d1aadb 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 15dcd18e..5af8dd55 100644
+index 80c42982..839c152d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -139,7 +139,8 @@ static void vi_drawrow(int row)
@@ -276,7 +276,7 @@ index 15dcd18e..5af8dd55 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1293,10 +1296,11 @@ void vi(int init)
+@@ -1287,10 +1290,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -289,19 +289,19 @@ index 15dcd18e..5af8dd55 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1420,7 +1424,7 @@ void vi(int init)
- 					strcpy(vi_msg, "arg2:(0|#)");
- 					vi_drawmsg();
+@@ -1410,7 +1414,7 @@ void vi(int init)
+ 				case 't': {
+ 					vi_drawmsg("arg2:(0|#)");
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
 -					char buf[cs ? strlen(cs)+30 : 30];
 +					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1430,10 +1434,11 @@ void vi(int init)
+@@ -1420,10 +1424,11 @@ void vi(int init)
  						free(cs);
  					}
- 					ln = vi_enprompt(":", buf, &n);
+ 					ln = vi_enprompt(":", buf, &k, &n);
 +					free(buf);
  					goto do_excmd; }
  				case 'r': {
@@ -311,16 +311,16 @@ index 15dcd18e..5af8dd55 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1441,6 +1446,7 @@ void vi(int init)
+@@ -1431,6 +1436,7 @@ void vi(int init)
  						free(cs);
  					}
- 					ln = vi_enprompt(":", buf, &n);
+ 					ln = vi_enprompt(":", buf, &k, &n);
 +					free(buf);
  					goto do_excmd; }
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index a6f6348d..dd143e4f 100644
+index dbea64cb..0e93a4d8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -494,7 +494,7 @@ extern const int ftslen;
