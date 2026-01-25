@@ -1,11 +1,11 @@
 diff --git a/ex.c b/ex.c
-index 413319dc..122f082e 100644
+index 99238c2f..57b2189b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -359,7 +359,9 @@ int ex_edit(const char *path, int len)
+@@ -357,7 +357,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
- 	char msg[128];
+ 	char msg[512];
 -	int fd, len, rd = 0, cd = 0;
 +	int fd = 0, len, rd = 0, cd = 0;
 +	if (!cmd)
@@ -13,7 +13,7 @@ index 413319dc..122f082e 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -378,6 +380,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -376,6 +378,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -23,7 +23,7 @@ index 413319dc..122f082e 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1518,15 +1523,35 @@ void ex(void)
+@@ -1514,15 +1519,35 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -33,6 +33,7 @@ index 413319dc..122f082e 100644
  	char *s = files[0] ? files[0] : "";
 +	int i = n;
  	do {
+ 		xmpt = 0;
 -		ec_edit("", "e", s);
 +		ec_edit(!n && stdin_fd ? NULL : "", "e", s);
  		s = *(++files);
@@ -55,7 +56,6 @@ index 413319dc..122f082e 100644
 +			exit(1);
 +		}
 +	}
- 	xmpt = 0;
  	xvis &= ~8;
 +	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
  	if ((s = getenv("EXINIT")))
@@ -147,10 +147,10 @@ index 757c26eb..22b91105 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 15dcd18e..632f048a 100644
+index 80c42982..132b4b5c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1786,7 +1786,8 @@ static int setup_signals(void)
+@@ -1779,7 +1779,8 @@ static int setup_signals(void)
  	struct sigaction sa;
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
@@ -160,7 +160,7 @@ index 15dcd18e..632f048a 100644
  		return 0;
  	return 1;
  }
-@@ -1804,7 +1805,8 @@ int main(int argc, char *argv[])
+@@ -1797,7 +1798,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -171,13 +171,13 @@ index 15dcd18e..632f048a 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index a6f6348d..3deb7995 100644
+index dbea64cb..441ac12d 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -534,6 +534,7 @@ char *conf_digraph(int c1, int c2);
+@@ -533,6 +533,7 @@ char *conf_digraph(int c1, int c2);
+ /* vi.c */
  extern int vi_hidch;
  extern int vi_lncol;
- extern char vi_msg[512];
 +extern int stdin_fd;
  /* file system */
  extern rset *fsincl;
