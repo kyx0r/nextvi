@@ -201,8 +201,8 @@ VI NORMAL
      zl            Set td ex option to 1
      zr            Set td ex option to -1
      zR            Set td ex option to -2
-     [#]/          Regex search, move down 1 or # matches
-     [#]?          Regex search, move up 1 or # matches
+     [#]/          Regex search prompt, move down 1 or # matches
+     [#]?          Regex search prompt, move up 1 or # matches
      [#]n
      [#]N
                    Repeat regex search, move [down up] 1 or # matches
@@ -842,7 +842,7 @@ EX COMMANDS
      reg     Print registers and their contents
 
              Example: shift the printing position to view offscreen register parts
-             :1left:reg:left
+             :1left:reg
 
      bx[#]   Set max number of buffers allowed
 

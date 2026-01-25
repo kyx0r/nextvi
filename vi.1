@@ -353,9 +353,9 @@ Set td ex option to -1
 .It Cm zR
 Set td ex option to -2
 .It Cm [\fI#\fP]/
-Regex search, move down 1 or # matches
+Regex search prompt, move down 1 or # matches
 .It Cm [\fI#\fP]?
-Regex search, move up 1 or # matches
+Regex search prompt, move up 1 or # matches
 .It Cm [\fI#\fP]n
 .It Cm [\fI#\fP]N
 .Bd -compact
@@ -1137,7 +1137,7 @@ Example: exclude .git and submodule folders
 Print registers and their contents
 .Bd -literal
 Example: shift the printing position to view offscreen register parts
-:1left:reg:left
+:1left:reg
 .Ed
 
 .It Cm bx[\fI#\fP]
