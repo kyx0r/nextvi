@@ -25,7 +25,6 @@
 
 int vi_hidch;			/* show hidden chars */
 int vi_lncol;			/* line numbers cursor offset */
-static char vi_msg[512];	/* current message */
 static int vi_lnnum;		/* line numbers */
 /* screen redraw - bit 1: whole screen, bit 2: current line, bit 3: update vi_col */
 static int vi_mod;
@@ -307,6 +306,7 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
 	int i, dir, ret;
+	char vi_msg[512];
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
 		char *kw = vi_prompt(sign, vs_ft, NULL, &ret, &xkmap, &i);
@@ -328,7 +328,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		if (lbuf_search(xb, xkwdrs, dir, row, off,
 				lbuf_len(xb), msg ? dir : -1)) {
 			if (msg) {
-				snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
+				snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found %d/%d",
 						xregs['/'] ? xregs['/']->s : "", i, cnt);
 				vi_drawmsg_mpt(vi_msg)
 			}
@@ -540,7 +540,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 static void vc_status(int type)
 {
 	int cp, l, col;
-	char cbuf[8] = "", *c;
+	char cbuf[8] = "", vi_msg[512], *c;
 	col = vi_off2col(xb, xrow, xoff);
 	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
 	if (type && lbuf_get(xb, xrow)) {
@@ -775,7 +775,7 @@ static int vi_motion(int vc, int *row, int *off)
 	case '?':
 	case 'n':
 	case 'N':
-		if (vi_search(mv, cnt, row, off, sizeof(vi_msg)))
+		if (vi_search(mv, cnt, row, off, 1))
 			return -1;
 		xtop = MAX(0, *row - xrows / 2);
 		vi_mod |= mv == '/' || mv == '?';
@@ -788,7 +788,7 @@ static int vi_motion(int vc, int *row, int *off)
 			ex_krsset(cs, +1);
 			free(cs);
 		}
-		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
+		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
 			cadir = -cadir;
 		else if (*row < xtop || *row >= xtop + xrows - 1)
 			xtop = MAX(0, *row - xrows / 2);
