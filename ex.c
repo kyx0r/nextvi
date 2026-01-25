@@ -1276,7 +1276,7 @@ _EO(left,
 		xleft = (xcols / 2) * atoi(loc);
 	else if (*arg)
 		xleft = atoi(arg);
-	else
+	else if (lbuf_get(xb, xrow))
 		xleft = ren_position(lbuf_get(xb, xrow))->pos[MIN(xoff, rstate->n)];
 	return NULL;
 )
