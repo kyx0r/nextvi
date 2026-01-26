@@ -217,8 +217,8 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 			xrerr = xserr;
 			return -1;
 		}
-		if (lbuf_search(xb, xkwdrs, xkwddir, beg, end,
-				MIN(dir, 0), 0, &beg, &off)) {
+		if (lbuf_search(xb, xkwdrs, xkwddir, row ? beg : 0, end,
+				MIN(dir, 0), !row, &beg, &off)) {
 			xrerr = xrnferr;
 			return -1;
 		}
