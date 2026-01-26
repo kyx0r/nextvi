@@ -33,6 +33,7 @@ char ex_ft[] = "/ex";	/* ex mode (is never '\n' terminated) */
 char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
 char bar_ft[] = "/-";	/* status bar (is never '\n' terminated) */
 char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
+char msg_ft2[] = "/>>";	/* ex message (is never '\n' terminated) */
 
 #define IN	0	/* inverse | black */
 #define RE	1	/* red */
@@ -275,7 +276,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{bar_ft, "^.*$", A(AY1 | SYN_BD)},
 
 	{msg_ft, ".+", A(AY1 | SYN_BD)},
-	{msg_ft, NULL, A(RE1 | SYN_BD), 1, 1},
+
+	{msg_ft2, ".+", A(AY1 | SYN_BD)},
+	{msg_ft2, NULL, A(RE1 | SYN_BD), 1, 1},
 };
 const int hlslen = LEN(hls);
 

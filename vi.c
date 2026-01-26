@@ -94,10 +94,11 @@ static void vi_drawmsg(char *msg)
 {
 	syn_blockhl = -1;
 	preserve(int, xtd, xtd = 2;)
+	preserve(int, ftidx,)
 	syn_setft(bar_ft);
 	RS(2, led_crender(msg, xrows, 0, 0, xcols))
-	syn_setft(xb_ft);
 	restore(xtd)
+	restore(ftidx)
 }
 #define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); xmpt = !xmpt ? 1 : xmpt; }
 
@@ -157,13 +158,14 @@ static void vi_drawrow(int row)
 		preserve(int, xorder, xorder = 0;)
 		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
-		vi_rshift = (row != xtop + xrows-1);
+		preserve(int, ftidx,)
 		syn_setft(n_ft);
 		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
-		syn_setft(xb_ft);
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
+		restore(ftidx)
+		vi_rshift = (row != xtop + xrows-1);
 		return;
 	}
 	s = lbuf_get(xb, row);
@@ -177,13 +179,13 @@ static void vi_drawrow(int row)
 		if (lnnum == 1 || lnnum & 2) {
 			c = itoa(row+1-vi_rshift, tmp);
 			*c++ = ' ';
-			i = snprintf(0, 0, "%d", xtop+xrows);
+			i = snprintf(NULL, 0, "%d", xtop+xrows);
 		}
 		p = c;
 		if (lnnum == 1 || lnnum & 4 || lnnum & 8) {
 			c = itoa(abs(xrow-row+vi_rshift), c);
 			*c++ = ' ';
-			i1 = snprintf(0, 0, "%d", xrows);
+			i1 = snprintf(NULL, 0, "%d", xrows);
 		}
 		*c = '\0';
 		l1 = (c - tmp) + (i+i1 - (strlen(tmp) - !!i - !!i1));
@@ -192,6 +194,7 @@ static void vi_drawrow(int row)
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
 		preserve(int, syn_blockhl, syn_blockhl = -1;)
+		preserve(int, ftidx,)
 		syn_setft(nn_ft);
 		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
@@ -204,8 +207,8 @@ static void vi_drawrow(int row)
 			}
 		}
 		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
-		syn_setft(xb_ft);
 		restore(syn_blockhl)
+		restore(ftidx)
 		return;
 	}
 	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
