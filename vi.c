@@ -325,8 +325,8 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, xkwdrs, dir, row, off,
-				lbuf_len(xb), msg ? dir : -1)) {
+		if (lbuf_search(xb, xkwdrs, dir, 0, lbuf_len(xb),
+				msg ? dir : -1, 1, row, off)) {
 			if (msg) {
 				snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found %d/%d",
 						xregs['/'] ? xregs['/']->s : "", i, cnt);

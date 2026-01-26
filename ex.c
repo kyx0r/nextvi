@@ -206,7 +206,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 	case '<':
 		dir = **num == '>' ? 2 : -2;
 		off = row ? n : 0;
-		beg = row ? *row : xrow + (dir > 0);
+		beg = row ? *row : n + (dir > 0);
 		end = row ? beg+1 : lbuf_len(xb);
 		if (off < 0 || beg < 0 || beg >= lbuf_len(xb))
 			return -1;
@@ -217,8 +217,8 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 			xrerr = xserr;
 			return -1;
 		}
-		if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
-				&off, end, MIN(dir, 0))) {
+		if (lbuf_search(xb, xkwdrs, xkwddir, beg, end,
+				MIN(dir, 0), 0, &beg, &off)) {
 			xrerr = xrnferr;
 			return -1;
 		}
@@ -493,7 +493,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
-	int dir, off, obeg, beg, end;
+	int pskip, dir, off, nbeg, beg, end;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
@@ -501,18 +501,19 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	if (!xkwdrs)
 		return xserr;
 	off = xoff;
-	obeg = beg;
 	if (xrow < beg || xrow >= end) {
 		off = 0;
-		beg = xkwddir > 0 ? beg : end++;
-	} else
-		beg = xrow;
-	if (lbuf_search(xb, xkwdrs, xkwddir, &beg,
-			&off, end, cmd[1] == '+' ? xkwddir : MIN(dir, 0)))
+		nbeg = dir > 0 ? beg : end - (cmd[1] == '<');
+		end += cmd[1] == '-';
+		pskip = -1;
+	} else {
+		nbeg = xrow;
+		pskip = cmd[1] == '+' ? 1 : MIN(dir, 0);
+	}
+	if (lbuf_search(xb, xkwdrs, xkwddir, beg, end,
+			pskip, cmd[1] == '-', &nbeg, &off))
 		return xuerr;
-	if (beg < obeg)
-		return xuerr;
-	xrow = beg;
+	xrow = nbeg;
 	xoff = off;
 	return NULL;
 }
@@ -908,10 +909,12 @@ static void *ec_bufsave(char *loc, char *cmd, char *arg)
 
 static void *ec_mark(char *loc, char *cmd, char *arg)
 {
-	int beg, end;
-	if (ex_vregion(loc, &beg, &end))
+	int beg, end, o1 = xoff, o2 = xoff;
+	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	lbuf_mark(xb, (unsigned char)*arg, end - 1, xoff);
+	for (int i = 0; *arg; i++)
+		lbuf_mark(xb, (unsigned char)*arg++,
+			i % 2 ? end - 1 : beg, i % 2 ? o2 : o1);
 	return NULL;
 }
 

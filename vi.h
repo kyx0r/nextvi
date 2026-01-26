@@ -184,8 +184,8 @@ int lbuf_indents(struct lbuf *lb, int r);
 int lbuf_eol(struct lbuf *lb, int r, int state);
 int lbuf_next(struct lbuf *lb, int dir, int *r, int *o);
 int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
-int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
-			int *o, int ln_n, int skip);
+int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+		int nskip, int *r, int *o);
 #define lbuf_dedup(lb, str, n) \
 { for (int i = 0; i < lbuf_len(lb);) { \
 	char *s = lbuf_get(lb, i); \

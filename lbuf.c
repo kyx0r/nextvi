@@ -433,19 +433,19 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
 	return n != 0;
 }
 
-int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
-			int *o, int ln_n, int skip)
+int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+		int nskip, int *r, int *o)
 {
 	int r0 = *r, o0 = *o;
 	int offs[re->nsubc], i = r0;
 	char *s = lbuf_get(lb, i);
 	int off, g1, g2, _o, step, flg;
-	if (skip >= 0 && s)
-		off = rstate->s == s ? rstate->chrs[MIN(o0 + skip, rstate->n)] - s
-					: uc_chr(s, o0 + skip) - s;
+	if (pskip >= 0 && s)
+		off = rstate->s == s ? rstate->chrs[MIN(o0 + pskip, rstate->n)] - s
+					: uc_chr(s, o0 + pskip) - s;
 	else
 		off = 0;
-	for (; i >= 0 && i < ln_n; i += dir) {
+	for (; i >= beg && i < end; i += dir) {
 		_o = 0;
 		step = 0;
 		flg = REG_NEWLINE;
@@ -458,7 +458,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 				continue;
 			}
 			_o += uc_off(s + step, off + g1 - step);
-			if (dir < 0 && r0 == i && _o >= o0)
+			if (dir < 0 && r0 == i && _o > o0 - nskip)
 				break;
 			*o = _o;
 			*r = i;
@@ -466,11 +466,11 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
 				return 0;
 			step = off + g1;
 			off += g2 > 0 ? g2 : 1;
-			ln_n = -1; /* break outer loop efficiently */
+			end = -1; /* break outer loop efficiently */
 		}
 		off = 0;
 	}
-	return ln_n < 0 ? 0 : 1;
+	return end < 0 ? 0 : 1;
 }
 
 int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
