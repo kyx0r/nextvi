@@ -308,7 +308,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 	return *beg < 0 || *beg >= lbuf_len(xb) || *end <= *beg || *end > lbuf_len(xb);
 }
 
-static int ex_read(sbuf *sb, char *msg, char *ft, ins_state *is, int ps, int flg)
+static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
 {
 	int n = sb->s_n, key;
 	if (xvis & 2) {
@@ -321,11 +321,7 @@ static int ex_read(sbuf *sb, char *msg, char *ft, ins_state *is, int ps, int flg
 		return key;
 	}
 	sbuf_str(sb, msg)
-	if (ft)
-		syn_setft(ft);
 	key = led_prompt(sb, NULL, &xkmap, is, ps, flg);
-	if (ft)
-		syn_setft(xb_ft);
 	if (key == '\n' && (!*msg || strcmp(sb->s + n, msg)))
 		term_chr('\n');
 	return key;
@@ -387,9 +383,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 static void *ec_fuzz(char *loc, char *cmd, char *arg)
 {
 	rset *rs;
-	char *path, *p, buf[32], trunc[100];
+	char *path, *p, buf[128], trunc[128], *sret = NULL;
 	int c, pos, subs[2], inst = -1, lnum = -1;
-	int beg, end, max = INT_MAX;
+	int beg, end, max = INT_MAX, dwid1, dwid2;
 	int flg = REG_NEWLINE | REG_NOCAP;
 	ins_state is;
 	ins_init(is)
@@ -406,11 +402,12 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		max = xrows * 3;
 	}
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
+	dwid1 = snprintf(NULL, 0, "%d", max);
 	sbuf_smake(sb, 128)
 	sbuf_smake(fuzz, 16)
 	sbuf_smake(cmdbuf, 16)
 	sbuf_str(fuzz, arg)
-	syn_setft(msg_ft);
+	syn_setft(msg_ft2);
 	while(1) {
 		sbuf_null(fuzz)
 		c = 0;
@@ -419,24 +416,33 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 			syn_reloadft(syn_addhl(fuzz->s, 1), rs->regex->flg);
 			term_record = !!term_sbuf;
 			end = MIN(end, lbuf_len(xb));
+			dwid2 = snprintf(NULL, 0, "%d", end);
+			dwid1 = max == INT_MAX ? dwid2 : MIN(dwid1, dwid2);
 			for (pos = beg; c < max && pos < end; pos++) {
 				path = xb->ln[pos];
 				if (rset_match(rs, path, 0)) {
 					sbuf_mem(sb, &pos, (int)sizeof(pos))
 					p = itoa(c++, buf);
-					ex_cprint2(buf, NULL, -1, 0, 0, 2)
+					int z, wid = p - buf;
+					for (z = dwid1 + 1 - wid; z; z--)
+						*p++ = ' ';
+					wid = snprintf(NULL, 0, "%d", pos+1);
+					for (z = dwid2 - wid; z; z--)
+						*p++ = ' ';
+					p = itoa(pos+1, p);
+					ex_cprint2(buf, msg_ft, -1, 0, 0, 2)
 					ex_cprint2(path, NULL, -1, (p - buf) + 1, 0, 3)
 				}
 			}
 			if (c == max && c != end)
-				ex_cprint2(trunc, NULL, -1, 0, 0, 3)
+				ex_cprint2(trunc, msg_ft, -1, 0, 0, 3)
 			if (term_record)
 				term_commit();
 		}
-		if ((inst = ex_read(fuzz, "", NULL, &is, 0, 2)) == '\n' && c) {
+		if ((inst = ex_read(fuzz, "", &is, 0, 2)) == '\n' && c) {
 			if (c == 1)
 				break;
-			if ((inst = ex_read(cmdbuf, "", NULL, NULL, 0, 0)) == '\n') {
+			if ((inst = ex_read(cmdbuf, "", NULL, 0, 0)) == '\n') {
 				inst = atoi(cmdbuf->s);
 				break;
 			}
@@ -483,12 +489,12 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		xoff = subs[0];
 	} else if (path) {
 		path[lbuf_s(path)->len] = '\0';
-		ec_edit(loc, cmd, path);
+		sret = ec_edit(loc, cmd, path);
 		path[lbuf_s(path)->len] = '\n';
 	} else if (*cmd != 'f')
 		temp_switch(1, 1);
 	rset_free(rs);
-	return NULL;
+	return sret;
 }
 
 static void *ec_find(char *loc, char *cmd, char *arg)
@@ -708,11 +714,11 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 		xmpt += lntest >= 0 && (flg & 1 || lntest == 1);
 	} else
 		lntest = 1;
+	preserve(int, ftidx,)
 	if (ft)
 		syn_setft(ft);
 	led_crender(line, r, c, left, left + xcols - c)
-	if (ft)
-		syn_setft(xb_ft);
+	restore(ftidx)
 	if (flg & 1 && lntest > 0)
 		term_chr('\n');
 }
@@ -725,7 +731,10 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	sbuf_smake(sb, 128)
 	if (*arg)
 		term_push(arg, strlen(arg));
-	while ((key = ex_read(sb, "", msg_ft, NULL, ps, 0)) == '\n') {
+	while (1) {
+		syn_setft(msg_ft);
+		if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
+			break;
 		if (xvis & 2 && !strcmp(".", sb->s + ps)) {
 			sb->s_n--;
 			break;
@@ -733,6 +742,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		sbuf_chr(sb, '\n')
 		ps = sb->s_n;
 	}
+	syn_setft(xb_ft);
 	if (key == TK_CTL('c'))
 		goto ret;
 	if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
@@ -1020,7 +1030,9 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 
 static void *ec_ft(char *loc, char *cmd, char *arg)
 {
-	xb_ft = syn_setft(arg[0] ? arg : xb_ft);
+	if (!(loc = syn_setft(*arg ? arg : xb_ft)))
+		return "filetype not found";
+	xb_ft = loc;
 	ex_print(xb_ft, msg_ft)
 	if (led_attsb) {
 		sbuf_free(led_attsb)
@@ -1393,7 +1405,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 					pbuf = ex_pbuf;
 				} else if ((*src ^ '0') < 10) {
 					pbuf = &bufs[n = atoi(src)];
-					src += snprintf(0, 0, "%d", n);
+					src += snprintf(NULL, 0, "%d", n);
 				}
 				src += *src == '\\' && src[-1] != '#' && (src[1] ^ '0') < 10;
 				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
@@ -1500,7 +1512,8 @@ void ex(void)
 	int esc = 0;
 	sbuf_smake(sb, xcols)
 	while (!xquit) {
-		if (ex_read(sb, ":", ex_ft, NULL, 0, 1) == '\n') {
+		syn_setft(ex_ft);
+		if (ex_read(sb, ":", NULL, 0, 1) == '\n') {
 			if (!strcmp(sb->s, ":") && esc)
 				ex_exec(xregs[':']->s);
 			else
@@ -1511,6 +1524,7 @@ void ex(void)
 			esc = 0;
 		sbuf_cut(sb, 0)
 	}
+	syn_setft(xb_ft);
 	free(sb->s);
 	xgrec--;
 }
