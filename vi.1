@@ -1,4 +1,4 @@
-.Dd Jan 25, 2026
+.Dd Jan 26, 2026
 .Dt Nextvi 1
 .Os
 .
@@ -887,11 +887,13 @@ Example: calculate 75 - 100
 :,75-100=1p
 .Ed
 
-.It Cm [\fIvrange\fP]m{<\fImark\fP>}
-Set a line mark
+.It Cm [\fIrange\fP]m{\fImarks\fP}
+Set a line mark(s)
 .Bd -literal
 Valid marks: <a-z ` ' [ ] *>
-The character offset is set to the current position.
+
+Example: store ranges in <a> and <s> for later reuse in :f>
+:>top>,#>bottom>m as:'a,'sf>middle
 .Ed
 
 .It Cm &{\fImacro\fP}
@@ -1563,9 +1565,9 @@ _
  614 uc.c | UTF-8 support
  714 led.c | insert mode/output
  765 regex.c | pikevm
- 1528 ex.c | ex options/commands
+ 1531 ex.c | ex options/commands
  1832 vi.c | normal mode/general
- 7144 total | wc -l *.c\(basort
+ 7147 total | wc -l *.c\(basort
 _
 .TE
 .
