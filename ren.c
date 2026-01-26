@@ -281,7 +281,7 @@ char *syn_setft(char *ft)
 			return ftmap[ftidx].ft;
 		}
 	if (ftmidx)
-		return ftmap[ftidx].ft;
+		return NULL;
 	i = 0;
 	goto default_hl;
 }

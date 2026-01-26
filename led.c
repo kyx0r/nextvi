@@ -551,9 +551,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 				i = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s + pre) + pre;
 				if (suggestsb && search(sb->s + i, sb->s_n - i)) {
 					is->sug = suggestsb->s;
-					pac_:
-					syn_setft(ac_ft);
+					pac_:;
 					preserve(int, xtd, xtd = 2;)
+					preserve(int, ftidx,)
+					syn_setft(ac_ft);
 					for (int left = 0; r < xrows; r++) {
 						RS(2, led_crender(is->sug, r, 0, left, left+xcols))
 						left += xcols;
@@ -561,7 +562,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 							break;
 					}
 					restore(xtd)
-					syn_setft(xb_ft);
+					restore(ftidx)
 					r++;
 				}
 				led_redraw(sb->s, r, orow, crow, ctop, flg);
