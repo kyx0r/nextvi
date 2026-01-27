@@ -11,7 +11,7 @@ index 2372d3b8..3b294bc7 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 02ff38b1..96851de2 100644
+index 02ff38b1..9eb3d3a5 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -433,24 +433,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -66,7 +66,7 @@ index 02ff38b1..96851de2 100644
  			}
  			_o += uc_off(s + step, off + g1 - step);
 -			if (dir < 0 && r0 == i && _o > o0 - nskip)
-+			if (a->dir < 0 && r0 == i && _o >= o0 - a->nskip)
++			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
  				break;
 -			*o = _o;
 -			*r = i;
