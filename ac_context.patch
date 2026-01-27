@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 33f52887..a5710d53 100644
+index b41abf0e..568815f1 100644
 --- a/led.c
 +++ b/led.c
 @@ -11,25 +11,30 @@ int dstrlen(const char *s, char delim)
@@ -86,5 +86,5 @@ index 33f52887..a5710d53 100644
 +				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 +				if (suggestsb && search(sb, is->lsug, pre)) {
  					is->sug = suggestsb->s;
- 					pac_:
- 					syn_setft(ac_ft);
+ 					pac_:;
+ 					preserve(int, xtd, xtd = 2;)

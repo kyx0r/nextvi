@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 99238c2f..b9872f42 100644
+index 2347f42a..9092bb29 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -47,6 +47,7 @@ static char xserr[] = "syntax error";
@@ -18,7 +18,7 @@ index 99238c2f..b9872f42 100644
  	return i;
  }
  
-@@ -371,6 +373,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -367,6 +369,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -27,7 +27,7 @@ index 99238c2f..b9872f42 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -646,6 +650,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -653,6 +657,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf.s);
  	} else {
  		if (!strchr(cmd, '!')) {
@@ -36,7 +36,7 @@ index 99238c2f..b9872f42 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1253,6 +1259,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1268,6 +1274,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,7 +49,7 @@ index 99238c2f..b9872f42 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1332,6 +1344,7 @@ static struct excmd {
+@@ -1347,6 +1359,7 @@ static struct excmd {
  	{"q", ec_quit},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -58,10 +58,10 @@ index 99238c2f..b9872f42 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 80c42982..38aa973d 100644
+index 2d226140..7f43556a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1807,9 +1807,11 @@ int main(int argc, char *argv[])
+@@ -1810,9 +1810,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -75,7 +75,7 @@ index 80c42982..38aa973d 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index dbea64cb..d5257598 100644
+index 0c3e52bb..56c40822 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -405,6 +405,7 @@ struct buf {
