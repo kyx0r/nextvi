@@ -45,7 +45,7 @@ index 02ff38b1..72767898 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 2d226140..89e82211 100644
+index 2d226140..4d3c424d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1443,6 +1443,17 @@ void vi(int init)
@@ -55,7 +55,7 @@ index 2d226140..89e82211 100644
 +			case TK_CTL('o'):
 +				next_hop:
 +				if (lbuf_undojump(xb, &xrow, &xoff))
-+					snprintf(vi_msg, sizeof(vi_msg), "undo jmp failed");
++					vi_drawmsg_mpt("undo jmp failed")
 +				else if (xrow == nrow)
 +					goto next_hop;
 +				vi_col = vi_off2col(xb, xrow, xoff);
