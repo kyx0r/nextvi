@@ -1,18 +1,18 @@
 diff --git a/conf.c b/conf.c
-index 4fcc1a8b..8e9f3a00 100644
+index 926d306f..c71e288f 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -257,7 +257,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -258,7 +258,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  ((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?[.$]?(?:'[a-z'`[\\]*])?\
  ([0-9]*)?)(?:([-*-+/%])([0-9]+))*(?:\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|left|lim|led|vis|mpt|err)\
 -|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|\
-+|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sp|vs\
++|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sp|vs|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 99238c2f..9c21e1ce 100644
+index 2347f42a..8f2bb45f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,9 @@ struct buf *bufs;		/* main buffers */
@@ -45,7 +45,7 @@ index 99238c2f..9c21e1ce 100644
  }
  
  void temp_write(int i, char *str)
-@@ -543,10 +552,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -550,10 +559,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
@@ -56,7 +56,7 @@ index 99238c2f..9c21e1ce 100644
 +		return NULL;
 +	}
 +	/* if multiple windows, close current window */
-+	if (nwins > 1) {
++	if (!(xvis & 4) && nwins > 1) {
 +		win_close();
 +		return NULL;
 +	}
@@ -70,7 +70,7 @@ index 99238c2f..9c21e1ce 100644
  	return NULL;
  }
  
-@@ -1281,6 +1302,16 @@ _EO(left,
+@@ -1296,6 +1317,16 @@ _EO(left,
  	return NULL;
  )
  
@@ -87,7 +87,7 @@ index 99238c2f..9c21e1ce 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1341,9 +1372,12 @@ static struct excmd {
+@@ -1356,9 +1387,12 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
@@ -100,7 +100,7 @@ index 99238c2f..9c21e1ce 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1365,7 +1399,6 @@ static struct excmd {
+@@ -1380,7 +1414,6 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -108,7 +108,7 @@ index 99238c2f..9c21e1ce 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  };
-@@ -1512,6 +1545,211 @@ void ex(void)
+@@ -1529,6 +1562,205 @@ void ex(void)
  	xgrec--;
  }
  
@@ -241,20 +241,13 @@ index 99238c2f..9c21e1ce 100644
 +{
 +	struct win *newwin;
 +	int newh, neww;
-+
-+	if (vertical) {
-+		if (curwin->w < 10)
-+			return "window too narrow";
-+		neww = curwin->w / 2;
-+	} else {
-+		if (curwin->h < 4)
-+			return "window too small";
-+		newh = curwin->h / 2;
-+	}
++	if (curwin->h < 4 || curwin->w < 10)
++		return "window too small";
 +
 +	newwin = emalloc(sizeof(struct win));
 +	if (vertical) {
 +		/* vertical split: new window on right */
++		neww = curwin->w / 2;
 +		newwin->y = curwin->y;
 +		newwin->x = curwin->x + neww + 1;  /* +1 for separator */
 +		newwin->h = curwin->h;
@@ -262,6 +255,7 @@ index 99238c2f..9c21e1ce 100644
 +		curwin->w = neww;
 +	} else {
 +		/* horizontal split: new window below */
++		newh = curwin->h / 2;
 +		newwin->y = curwin->y + newh + 1;  /* +1 for separator */
 +		newwin->x = curwin->x;
 +		newwin->h = curwin->h - newh - 1;
@@ -321,7 +315,7 @@ index 99238c2f..9c21e1ce 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 33f52887..72d05b2c 100644
+index b41abf0e..c3d3c6f6 100644
 --- a/led.c
 +++ b/led.c
 @@ -93,8 +93,9 @@ static char *kmap_map(int kmap, int c)
@@ -410,8 +404,8 @@ index 33f52887..72d05b2c 100644
  			continue;
  		case TK_CTL('x'):
  			is->sug_pt = is->sug_pt == len ? -1 : len;
-@@ -564,7 +572,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
- 					syn_setft(xb_ft);
+@@ -565,7 +573,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 					restore(ftidx)
  					r++;
  				}
 -				led_redraw(sb->s, r, orow, crow, ctop, flg);
@@ -419,7 +413,7 @@ index 33f52887..72d05b2c 100644
  				continue;
  			}
  			temp_pos(0, -1, 0, 0);
-@@ -585,6 +593,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -586,6 +594,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else
  				restore(ex_buf)
  			exbuf_load(ex_buf)
@@ -428,7 +422,7 @@ index 33f52887..72d05b2c 100644
  			syn_setft(xb_ft);
  			vi(1); /* redraw past screen */
  			restore(ftidx)
-@@ -606,7 +616,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -607,7 +617,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			if (ai_max < 0)
  				term_clean();
  			else
@@ -438,10 +432,10 @@ index 33f52887..72d05b2c 100644
  		case TK_CTL('o'): {
  			if (!*postref)
 diff --git a/vi.c b/vi.c
-index 80c42982..f257367f 100644
+index 2d226140..2a467a60 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -101,6 +101,23 @@ static void vi_drawmsg(char *msg)
+@@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
  }
  #define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); xmpt = !xmpt ? 1 : xmpt; }
  
@@ -465,7 +459,7 @@ index 80c42982..f257367f 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
-@@ -116,7 +133,7 @@ nrow = xrow; \
+@@ -117,7 +134,7 @@ nrow = xrow; \
  noff = xoff; \
  for (i = 0, ret = 0;; i++) { \
  	l1 = ren_next(c, ren_pos(c, noff), 1)-1-xleft+vi_lncol; \
@@ -474,7 +468,7 @@ index 80c42982..f257367f 100644
  		break; \
  	i = i > 99 ? i % 100 : i; \
  	itoa(i%10 ? i%10 : i, snum); \
-@@ -124,9 +141,30 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,9 +142,30 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
@@ -505,7 +499,7 @@ index 80c42982..f257367f 100644
  	char *c, *s;
  	static char ch[5] = "~";
  	if (xmpt == 1 && row == xtop + xrows - 1)
-@@ -135,14 +173,14 @@ static void vi_drawrow(int row)
+@@ -136,14 +174,14 @@ static void vi_drawrow(int row)
  		int noff, nrow, ret;
  		s = lbuf_get(xb, row - vi_rshift);
  		c = lbuf_get(xb, xrow);
@@ -525,43 +519,25 @@ index 80c42982..f257367f 100644
  		i1 = isupper((unsigned char)*vi_word);
  		if (*vi_word == 'e' || *vi_word == 'E')
  			vi_drawnum(lbuf_wordend(xb, i1, 2, &nrow, &noff))
-@@ -157,9 +195,9 @@ static void vi_drawrow(int row)
- 		preserve(int, xorder, xorder = 0;)
- 		preserve(int, syn_blockhl, syn_blockhl = -1;)
+@@ -160,7 +198,7 @@ static void vi_drawrow(int row)
  		preserve(int, xtd, xtd = dir_context(c) * 2;)
--		vi_rshift = (row != xtop + xrows-1);
-+		vi_rshift = (row != xtop + wrows-1);
+ 		preserve(int, ftidx,)
  		syn_setft(n_ft);
 -		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
 +		RS(2, led_crender(tmp, scrrow, curwin ? curwin->x : 0, 0, wcols))
- 		syn_setft(xb_ft);
  		restore(xorder)
  		restore(syn_blockhl)
-@@ -177,20 +215,20 @@ static void vi_drawrow(int row)
- 		if (lnnum == 1 || lnnum & 2) {
- 			c = itoa(row+1-vi_rshift, tmp);
- 			*c++ = ' ';
--			i = snprintf(0, 0, "%d", xtop+xrows);
-+			i = snprintf(0, 0, "%d", xtop+wrows);
- 		}
- 		p = c;
- 		if (lnnum == 1 || lnnum & 4 || lnnum & 8) {
- 			c = itoa(abs(xrow-row+vi_rshift), c);
- 			*c++ = ' ';
--			i1 = snprintf(0, 0, "%d", xrows);
-+			i1 = snprintf(0, 0, "%d", wrows);
- 		}
- 		*c = '\0';
- 		l1 = (c - tmp) + (i+i1 - (strlen(tmp) - !!i - !!i1));
+ 		restore(xtd)
+@@ -192,7 +230,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
 -		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
 +		led_crender(s, scrrow, (curwin ? curwin->x : 0) + l1, xleft, xleft + wcols - l1)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
+ 		preserve(int, ftidx,)
  		syn_setft(nn_ft);
- 		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
-@@ -200,39 +238,85 @@ static void vi_drawrow(int row)
+@@ -203,39 +241,85 @@ static void vi_drawrow(int row)
  			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
  			if (i1 >= 0) {
  				memset(p, ' ', strlen(p));
@@ -571,8 +547,8 @@ index 80c42982..f257367f 100644
  		}
 -		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
 +		RS(2, led_prender(tmp, scrrow, curwin ? curwin->x : 0, 0, l1))
- 		syn_setft(xb_ft);
  		restore(syn_blockhl)
+ 		restore(ftidx)
  		return;
  	}
 -	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
@@ -655,7 +631,7 @@ index 80c42982..f257367f 100644
  		for (i = n-1; i >= 0; i--)
  			vi_drawrow(xtop + i);
  	}
-@@ -1172,14 +1256,15 @@ static void vi_argcmd(int arg, char cmd)
+@@ -1175,14 +1259,15 @@ static void vi_argcmd(int arg, char cmd)
  }
  
  #define topfix() \
@@ -676,7 +652,7 @@ index 80c42982..f257367f 100644
  
  void vi(int init)
  {
-@@ -1187,10 +1272,21 @@ void vi(int init)
+@@ -1190,10 +1275,21 @@ void vi(int init)
  	int mv, n, k, c;
  	xgrec++;
  	if (init) {
@@ -700,7 +676,7 @@ index 80c42982..f257367f 100644
  	}
  	while (!xquit) {
  		int nrow = xrow;
-@@ -1240,12 +1336,12 @@ void vi(int init)
+@@ -1243,12 +1339,12 @@ void vi(int init)
  			c = term_read();
  			switch (c) {
  			case TK_CTL('b'):
@@ -715,7 +691,7 @@ index 80c42982..f257367f 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1264,7 +1360,7 @@ void vi(int init)
+@@ -1267,7 +1363,7 @@ void vi(int init)
  					break;
  				if (vi_arg)
  					vi_scrollud = vi_arg;
@@ -724,7 +700,7 @@ index 80c42982..f257367f 100644
  				xrow = MAX(0, xrow - n);
  				if (xtop > 0)
  					xtop = MAX(0, xtop - n);
-@@ -1276,10 +1372,10 @@ void vi(int init)
+@@ -1279,10 +1375,10 @@ void vi(int init)
  					break;
  				if (vi_arg)
  					vi_scrollud = vi_arg;
@@ -738,7 +714,7 @@ index 80c42982..f257367f 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1395,6 +1491,24 @@ void vi(int init)
+@@ -1398,6 +1494,24 @@ void vi(int init)
  				case 'v':
  					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
  					break;
@@ -763,7 +739,7 @@ index 80c42982..f257367f 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1531,6 +1645,7 @@ void vi(int init)
+@@ -1534,6 +1648,7 @@ void vi(int init)
  					term_done();
  					term_init();
  				}
@@ -771,7 +747,7 @@ index 80c42982..f257367f 100644
  				vi_status = vi_status ? xrows - 1: vi_status;
  				vi_mod |= 1;
  				break;
-@@ -1695,8 +1810,9 @@ void vi(int init)
+@@ -1698,8 +1813,9 @@ void vi(int init)
  		}
  		if (vi_mod)
  			vi_col = vi_off2col(xb, xrow, xoff);
@@ -783,7 +759,7 @@ index 80c42982..f257367f 100644
  		n = led_pos(ln, ren_cursor(ln, vi_col));
  		if (xmpt > 1) {
  			vi_drawmsg("[any key to continue] ");
-@@ -1734,19 +1850,29 @@ void vi(int init)
+@@ -1737,19 +1853,29 @@ void vi(int init)
  			}
  		}
  		term_record = 1;
@@ -818,7 +794,7 @@ index 80c42982..f257367f 100644
  				if (!(vi_mod & 1) && !*vi_word)
  					vi_drawrow(orow);
  			syn_blockhl = -1;
-@@ -1761,7 +1887,7 @@ void vi(int init)
+@@ -1764,7 +1890,7 @@ void vi(int init)
  			xrows = vi_status != xrows ? vi_status : xrows;
  			vc_status(vi_tsm);
  		}
@@ -828,7 +804,7 @@ index 80c42982..f257367f 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index dbea64cb..cbf49b7b 100644
+index 0c3e52bb..1c6ff8d6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -406,6 +406,25 @@ struct buf {
