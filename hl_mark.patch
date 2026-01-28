@@ -27,10 +27,10 @@ index 2d75f3be..32b3e67a 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 072d4d60..a4a34f11 100644
+index b78c070b..24dcbb02 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1716,6 +1716,21 @@ void vi(int init)
+@@ -1715,6 +1715,21 @@ void vi(int init)
  				word = cs;
  			}
  		}

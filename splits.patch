@@ -432,12 +432,12 @@ index b41abf0e..c3d3c6f6 100644
  		case TK_CTL('o'): {
  			if (!*postref)
 diff --git a/vi.c b/vi.c
-index 072d4d60..db259468 100644
+index b78c070b..3b3f1257 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
  }
- #define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); xmpt = !xmpt ? 1 : xmpt; }
+ #define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); if (!xmpt) xmpt = 1; }
  
 +/* draw horizontal separator line at screen row */
 +static void vi_draw_hsep(int row)
@@ -676,7 +676,7 @@ index 072d4d60..db259468 100644
  	}
  	while (!xquit) {
  		int nrow = xrow;
-@@ -1241,12 +1337,12 @@ void vi(int init)
+@@ -1240,12 +1336,12 @@ void vi(int init)
  			c = term_read();
  			switch (c) {
  			case TK_CTL('b'):
@@ -691,7 +691,7 @@ index 072d4d60..db259468 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1265,7 +1361,7 @@ void vi(int init)
+@@ -1264,7 +1360,7 @@ void vi(int init)
  					break;
  				if (vi_arg)
  					vi_scrollud = vi_arg;
@@ -700,7 +700,7 @@ index 072d4d60..db259468 100644
  				xrow = MAX(0, xrow - n);
  				if (xtop > 0)
  					xtop = MAX(0, xtop - n);
-@@ -1277,10 +1373,10 @@ void vi(int init)
+@@ -1276,10 +1372,10 @@ void vi(int init)
  					break;
  				if (vi_arg)
  					vi_scrollud = vi_arg;
@@ -714,7 +714,7 @@ index 072d4d60..db259468 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1396,6 +1492,24 @@ void vi(int init)
+@@ -1395,6 +1491,24 @@ void vi(int init)
  				case 'v':
  					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
  					break;
@@ -739,7 +739,7 @@ index 072d4d60..db259468 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1532,6 +1646,7 @@ void vi(int init)
+@@ -1531,6 +1645,7 @@ void vi(int init)
  					term_done();
  					term_init();
  				}
@@ -747,7 +747,7 @@ index 072d4d60..db259468 100644
  				vi_status = vi_status ? xrows - 1: vi_status;
  				vi_mod |= 1;
  				break;
-@@ -1696,8 +1811,9 @@ void vi(int init)
+@@ -1695,8 +1810,9 @@ void vi(int init)
  		}
  		if (vi_mod)
  			vi_col = vi_off2col(xb, xrow, xoff);
@@ -759,7 +759,7 @@ index 072d4d60..db259468 100644
  		n = led_pos(ln, ren_cursor(ln, vi_col));
  		if (xmpt > 1) {
  			vi_drawmsg("[any key to continue] ");
-@@ -1736,19 +1852,29 @@ void vi(int init)
+@@ -1735,19 +1851,29 @@ void vi(int init)
  			}
  		}
  		term_record = 1;
@@ -794,9 +794,9 @@ index 072d4d60..db259468 100644
  				if (!(vi_mod & 1) && !*vi_word)
  					vi_drawrow(orow);
  			syn_blockhl = -1;
-@@ -1763,7 +1889,7 @@ void vi(int init)
- 			xrows = vi_status != xrows ? vi_status : xrows;
- 			vc_status(vi_tsm);
+@@ -1764,7 +1890,7 @@ void vi(int init)
+ 			if (xmpt > 0)
+ 				xmpt = 0;
  		}
 -		term_pos(xrow - xtop, n + vi_lncol);
 +		term_pos((curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) + n + vi_lncol);

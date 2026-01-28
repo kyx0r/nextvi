@@ -58,10 +58,10 @@ index 2d75f3be..6d854072 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 072d4d60..246e9c47 100644
+index b78c070b..90b576c8 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1809,9 +1809,11 @@ int main(int argc, char *argv[])
+@@ -1810,9 +1810,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
