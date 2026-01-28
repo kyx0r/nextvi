@@ -100,7 +100,7 @@ static void vi_drawmsg(char *msg)
 	restore(xtd)
 	restore(ftidx)
 }
-#define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); xmpt = !xmpt ? 1 : xmpt; }
+#define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); if (!xmpt) xmpt = 1; }
 
 static int vi_nextcol(char *ln, int dir, int *off)
 {
@@ -1214,8 +1214,7 @@ void vi(int init)
 		}
 		if (xmpt == 1) {
 			xmpt = 0;
-			if (!vi_status)
-				vi_drawrow(otop + xrows - 1);
+			vi_drawrow(otop + xrows - 1);
 		}
 		if (led_attsb)
 			sbuf_cut(led_attsb, 0)
@@ -1762,6 +1761,8 @@ void vi(int init)
 		if (vi_status && xmpt < 1) {
 			xrows = vi_status != xrows ? vi_status : xrows;
 			vc_status(vi_tsm);
+			if (xmpt > 0)
+				xmpt = 0;
 		}
 		term_pos(xrow - xtop, n + vi_lncol);
 		term_commit();
