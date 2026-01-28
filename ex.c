@@ -399,10 +399,10 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	if (!*loc) {
 		beg = 0;
 		end = lbuf_len(xb);
-		max = xrows * 3;
+		max = xrows ? xrows * 3 : end;
 	}
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
-	dwid1 = snprintf(NULL, 0, "%d", max);
+	dwid1 = snprintf(NULL, 0, "%d", max - 1);
 	sbuf_smake(sb, 128)
 	sbuf_smake(fuzz, 16)
 	sbuf_smake(cmdbuf, 16)
