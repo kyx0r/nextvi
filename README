@@ -430,9 +430,9 @@ EX COMMANDS
      [vrange]f-[regex]
              Incrementing ranged search
 
-             Equivalent to the :f> and :f< commands, except subsequent commands within
-             range move to the next match just like vi normal [#]n or [#]N
-             commands.
+             Equivalent to the :f> and :f< commands, except subsequent commands
+             within range move to the next match just like vi normal [#]n
+             or [#]N commands.
 
      [vrange]f[regex]
              Fuzzy search prompt
@@ -1242,4 +1242,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.18.3                   January 27, 2026                   Linux 6.18.3
+Linux 6.18.3                   January 28, 2026                   Linux 6.18.3
