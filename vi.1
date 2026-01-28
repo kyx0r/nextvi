@@ -1,4 +1,4 @@
-.Dd Jan 27, 2026
+.Dd Jan 28, 2026
 .Dt Nextvi 1
 .Os
 .
@@ -685,9 +685,9 @@ Example: range given
 .It Cm [\fIvrange\fP]f-[\fIregex\fP]
 Incrementing ranged search
 .Bd -literal
-Equivalent to the :f> and :f< commands, except subsequent commands within
-range move to the next match just like vi normal [#]n or [#]N
-commands.
+Equivalent to the :f> and :f< commands, except subsequent commands
+within range move to the next match just like vi normal [#]n
+or [#]N commands.
 .Ed
 
 .It Cm [\fIvrange\fP]f[\fIregex\fP]
@@ -695,7 +695,7 @@ Fuzzy search prompt
 .Bd -literal
 Enters a fuzzy search prompt with a list of matches.
 Matches are prefixed by selection numbers and line numbers.
-Match can be selected using numbers 0-9 if there are less than 
+Match can be selected using numbers 0-9 if there are less than
 10 matches.
 <^C> or <ESC> to abort.
 <^M> or <Enter> to input a selection number larger than 9.
