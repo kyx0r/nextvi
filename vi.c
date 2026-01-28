@@ -1212,12 +1212,10 @@ void vi(int init)
 			vi_lncol = 0;
 			vi_mod |= 1;
 		}
-		if (xmpt > 0) {
-			if (xmpt == 1 && !vi_status) {
-				xmpt = 0;
+		if (xmpt == 1) {
+			xmpt = 0;
+			if (!vi_status)
 				vi_drawrow(otop + xrows - 1);
-			} else
-				xmpt = 0;
 		}
 		if (led_attsb)
 			sbuf_cut(led_attsb, 0)
@@ -1704,6 +1702,7 @@ void vi(int init)
 		if (xmpt > 1) {
 			vi_drawmsg("[any key to continue] ");
 			term_read();
+			xmpt = 0;
 			vi_mod |= 1;
 		}
 		if (xhlw) {
@@ -1760,7 +1759,7 @@ void vi(int init)
 			syn_blockhl = -1;
 			vi_drawrow(xrow);
 		}
-		if (vi_status && !xmpt) {
+		if (vi_status && xmpt < 1) {
 			xrows = vi_status != xrows ? vi_status : xrows;
 			vc_status(vi_tsm);
 		}
