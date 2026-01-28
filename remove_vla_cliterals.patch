@@ -12,7 +12,7 @@ index 926d306f..1f293a89 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 2347f42a..868f9d62 100644
+index 2d75f3be..20ad8920 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -950,7 +950,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
@@ -254,7 +254,7 @@ index 8d68d054..0df9fc61 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 2d226140..b6e53c70 100644
+index 072d4d60..d1f2ef0a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -276,7 +276,7 @@ index 2d226140..b6e53c70 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1290,10 +1293,11 @@ void vi(int init)
+@@ -1288,10 +1291,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -289,7 +289,7 @@ index 2d226140..b6e53c70 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1413,7 +1417,7 @@ void vi(int init)
+@@ -1411,7 +1415,7 @@ void vi(int init)
  				case 't': {
  					vi_drawmsg("arg2:(0|#)");
  					cs = vi_curword(xb, xrow, xoff, vi_prefix());
@@ -298,7 +298,7 @@ index 2d226140..b6e53c70 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1423,10 +1427,11 @@ void vi(int init)
+@@ -1421,10 +1425,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
@@ -311,7 +311,7 @@ index 2d226140..b6e53c70 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1434,6 +1439,7 @@ void vi(int init)
+@@ -1432,6 +1437,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);

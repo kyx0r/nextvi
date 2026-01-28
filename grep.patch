@@ -21,7 +21,7 @@ index 926d306f..ad3a948c 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
  [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*(?:\\|.*?(?:(?<^\\\\)\\||$))*)[ \t]*(?:([,;]#?)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 2347f42a..121e4850 100644
+index 2d75f3be..d447d015 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -34,7 +34,7 @@ index 2347f42a..121e4850 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 2d226140..cf16ed8f 100644
+index 072d4d60..5a61fdd8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -496,12 +496,12 @@ void dir_calc(char *path)
@@ -131,7 +131,7 @@ index 2d226140..cf16ed8f 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1293,7 +1328,17 @@ void vi(int init)
+@@ -1291,7 +1326,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -150,7 +150,7 @@ index 2d226140..cf16ed8f 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1435,6 +1480,10 @@ void vi(int init)
+@@ -1433,6 +1478,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
  					goto do_excmd; }
@@ -161,7 +161,7 @@ index 2d226140..cf16ed8f 100644
  				default:
  					term_dec()
  				}
-@@ -1796,6 +1845,7 @@ int main(int argc, char *argv[])
+@@ -1795,6 +1844,7 @@ int main(int argc, char *argv[])
  	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);

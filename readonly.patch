@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2347f42a..9092bb29 100644
+index 2d75f3be..6d854072 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -47,6 +47,7 @@ static char xserr[] = "syntax error";
@@ -58,10 +58,10 @@ index 2347f42a..9092bb29 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 2d226140..7f43556a 100644
+index 072d4d60..246e9c47 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1810,9 +1810,11 @@ int main(int argc, char *argv[])
+@@ -1809,9 +1809,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;

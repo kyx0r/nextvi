@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2347f42a..316f6be5 100644
+index 2d75f3be..1c70391f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
@@ -65,7 +65,7 @@ index b41abf0e..331a68e7 100644
  				return c;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 2d226140..2af7ed67 100644
+index 072d4d60..4493d953 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -76,7 +76,7 @@ index 2d226140..2af7ed67 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1502,6 +1503,8 @@ void vi(int init)
+@@ -1500,6 +1501,8 @@ void vi(int init)
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;

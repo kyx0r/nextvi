@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2347f42a..6f29df7a 100644
+index 2d75f3be..d9b3bd5b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
@@ -212,7 +212,7 @@ index 02ff38b1..09d7faf5 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index 2d226140..d50f3f9f 100644
+index 072d4d60..acbfc825 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -169,6 +169,22 @@ static void vi_drawrow(int row)

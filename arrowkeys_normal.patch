@@ -1,5 +1,5 @@
 diff --git a/vi.c b/vi.c
-index 2d226140..6408315f 100644
+index 072d4d60..8bad40a4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -346,6 +346,28 @@ static int vi_motionln(int *row, int cmd, int cnt)

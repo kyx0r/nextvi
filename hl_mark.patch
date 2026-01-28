@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2347f42a..12cdc17a 100644
+index 2d75f3be..32b3e67a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -27,10 +27,10 @@ index 2347f42a..12cdc17a 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 2d226140..3a880033 100644
+index 072d4d60..a4a34f11 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1717,6 +1717,21 @@ void vi(int init)
+@@ -1716,6 +1716,21 @@ void vi(int init)
  				word = cs;
  			}
  		}

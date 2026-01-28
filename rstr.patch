@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 2347f42a..d96dbcdb 100644
+index 2d75f3be..b85dce12 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -32,7 +32,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
@@ -349,7 +349,7 @@ index 4a0addb8..cd08bd1b 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 2d226140..1f638966 100644
+index 072d4d60..54abc75c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -436,7 +436,7 @@ static void vi_regput(int c, const char *s, int lnmode)

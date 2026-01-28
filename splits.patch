@@ -12,7 +12,7 @@ index 926d306f..c71e288f 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 2347f42a..8f2bb45f 100644
+index 2d75f3be..8468996d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,9 @@ struct buf *bufs;		/* main buffers */
@@ -432,7 +432,7 @@ index b41abf0e..c3d3c6f6 100644
  		case TK_CTL('o'): {
  			if (!*postref)
 diff --git a/vi.c b/vi.c
-index 2d226140..2a467a60 100644
+index 072d4d60..db259468 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -676,7 +676,7 @@ index 2d226140..2a467a60 100644
  	}
  	while (!xquit) {
  		int nrow = xrow;
-@@ -1243,12 +1339,12 @@ void vi(int init)
+@@ -1241,12 +1337,12 @@ void vi(int init)
  			c = term_read();
  			switch (c) {
  			case TK_CTL('b'):
@@ -691,7 +691,7 @@ index 2d226140..2a467a60 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1267,7 +1363,7 @@ void vi(int init)
+@@ -1265,7 +1361,7 @@ void vi(int init)
  					break;
  				if (vi_arg)
  					vi_scrollud = vi_arg;
@@ -700,7 +700,7 @@ index 2d226140..2a467a60 100644
  				xrow = MAX(0, xrow - n);
  				if (xtop > 0)
  					xtop = MAX(0, xtop - n);
-@@ -1279,10 +1375,10 @@ void vi(int init)
+@@ -1277,10 +1373,10 @@ void vi(int init)
  					break;
  				if (vi_arg)
  					vi_scrollud = vi_arg;
@@ -714,7 +714,7 @@ index 2d226140..2a467a60 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1398,6 +1494,24 @@ void vi(int init)
+@@ -1396,6 +1492,24 @@ void vi(int init)
  				case 'v':
  					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
  					break;
@@ -739,7 +739,7 @@ index 2d226140..2a467a60 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1534,6 +1648,7 @@ void vi(int init)
+@@ -1532,6 +1646,7 @@ void vi(int init)
  					term_done();
  					term_init();
  				}
@@ -747,7 +747,7 @@ index 2d226140..2a467a60 100644
  				vi_status = vi_status ? xrows - 1: vi_status;
  				vi_mod |= 1;
  				break;
-@@ -1698,8 +1813,9 @@ void vi(int init)
+@@ -1696,8 +1811,9 @@ void vi(int init)
  		}
  		if (vi_mod)
  			vi_col = vi_off2col(xb, xrow, xoff);
@@ -759,7 +759,7 @@ index 2d226140..2a467a60 100644
  		n = led_pos(ln, ren_cursor(ln, vi_col));
  		if (xmpt > 1) {
  			vi_drawmsg("[any key to continue] ");
-@@ -1737,19 +1853,29 @@ void vi(int init)
+@@ -1736,19 +1852,29 @@ void vi(int init)
  			}
  		}
  		term_record = 1;
@@ -794,7 +794,7 @@ index 2d226140..2a467a60 100644
  				if (!(vi_mod & 1) && !*vi_word)
  					vi_drawrow(orow);
  			syn_blockhl = -1;
-@@ -1764,7 +1890,7 @@ void vi(int init)
+@@ -1763,7 +1889,7 @@ void vi(int init)
  			xrows = vi_status != xrows ? vi_status : xrows;
  			vc_status(vi_tsm);
  		}
