@@ -1294,9 +1294,9 @@ the "[any key to continue]" prompt.
 If mpt is negative, the prompt will remain disabled.
 
 Example: block the prompt and the last print
-:p:p:p:mpt0
-Example: block the prompt while showing the last print
-:p:p:p:mpt1
+:p:p:p:mpt 0
+Example: block the prompt but not the last print
+:p:p:p:mpt 1
 .Ed
 
 .It Cm order[\fIval=1\fP]
@@ -1571,9 +1571,9 @@ _
  614 uc.c | UTF-8 support
  715 led.c | insert mode/output
  765 regex.c | pikevm
- 1555 ex.c | ex options/commands
+ 1553 ex.c | ex options/commands
  1840 vi.c | normal mode/general
- 7183 total | wc -l *.c\(basort
+ 7181 total | wc -l *.c\(basort
 _
 .TE
 .
