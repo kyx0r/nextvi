@@ -436,10 +436,10 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 					ex_cprint2(path, NULL, -1, (p - buf) + 1, 0, !pflg)
 				}
 			}
-			if (c == max && c != end) {
+			if (c == max && c != end)
 				ex_cprint2(trunc, msg_ft, -1, 0, 0, pflg)
+			if (pflg)
 				term_chr('\n');
-			}
 			if (term_record)
 				term_commit();
 		}
