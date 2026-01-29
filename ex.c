@@ -438,7 +438,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 			}
 			if (c == max && c != end)
 				ex_cprint2(trunc, msg_ft, -1, 0, 0, pflg)
-			if (pflg)
+			if (pflg && c)
 				term_chr('\n');
 			if (term_record)
 				term_commit();
