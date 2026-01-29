@@ -31,6 +31,7 @@ int xkmap;			/* the current keymap */
 int xkmap_alt = 1;		/* the alternate keymap */
 int xkwddir;			/* the last search direction */
 int xkwdcnt;			/* number of search kwd changes */
+int xpln;			/* tracks newline from ex print and pipe stdout */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 sbuf *xregs[256];		/* string registers */
@@ -387,6 +388,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	int c, pos, subs[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;
 	int flg = REG_NEWLINE | REG_NOCAP;
+	int pflg = (xvis & 4) == 0;
 	ins_state is;
 	ins_init(is)
 	if (*cmd !='f')
@@ -408,6 +410,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	sbuf_smake(cmdbuf, 16)
 	sbuf_str(fuzz, arg)
 	syn_setft(msg_ft2);
+	preserve(int, xmpt,)
 	while(1) {
 		sbuf_null(fuzz)
 		c = 0;
@@ -430,12 +433,14 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 					for (z = dwid2 - wid; z; z--)
 						*p++ = ' ';
 					p = itoa(pos+1, p);
-					ex_cprint2(buf, msg_ft, -1, 0, 0, 2)
-					ex_cprint2(path, NULL, -1, (p - buf) + 1, 0, 3)
+					ex_cprint2(buf, msg_ft, -1, 0, 0, pflg)
+					ex_cprint2(path, NULL, -1, (p - buf) + 1, 0, !pflg)
 				}
 			}
-			if (c == max && c != end)
-				ex_cprint2(trunc, msg_ft, -1, 0, 0, 3)
+			if (c == max && c != end) {
+				ex_cprint2(trunc, msg_ft, -1, 0, 0, pflg)
+				term_chr('\n');
+			}
 			if (term_record)
 				term_commit();
 		}
@@ -458,7 +463,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		}
 		rset_free(rs);
 		sbuf_cut(sb, 0)
-		if (c && xvis & 4)
+		if (c && !pflg)
 			ex_print("", NULL)
 		else if (c) {
 			term_clean();
@@ -468,6 +473,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	if ((inst >= 0 && inst < c) || c == 1)
 		lnum = *((int*)sb->s + (c == 1 ? 0 : inst));
 	ret:
+	restore(xmpt)
 	syn_setft(xb_ft);
 	if (fuzz->s_n > 0) {
 		sbuf_cut(cmdbuf, 0)
@@ -625,8 +631,9 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 static void *ex_pipeout(char *cmd, sbuf *buf)
 {
 	int ret = 0;
-	if (!(xvis & 4) && xmpt >= 0) {
+	if ((!(xvis & 4) && xmpt >= 0 && !xpln) || xpln == 2) {
 		term_chr('\n');
+		xpln = 1;
 		xmpt = 2;
 	}
 	cmd_pipe(cmd, buf, 0, &ret);
@@ -692,7 +699,6 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
 
 void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 {
-	int lntest;
 	if (xpr) {
 		ex_regput(xpr, line, 1);
 		if (flg & 1 && isupper(xpr) &&
@@ -706,20 +712,19 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 		return;
 	}
 	syn_blockhl = -1;
-	if (!(xvis & 4) && !(flg & 2)) {
+	if (flg && !(xvis & 4)) {
 		term_pos(xrows, 0);
-		lntest = xmpt;
-		if (lntest == 1)
+		xmpt += xmpt >= 0;
+		if (!xpln)
 			term_chr('\n');
-		xmpt += lntest >= 0 && (flg & 1 || lntest == 1);
-	} else
-		lntest = 1;
+	}
+	xpln = 0;
 	preserve(int, ftidx,)
 	if (ft)
 		syn_setft(ft);
 	led_crender(line, r, c, left, left + xcols - c)
 	restore(ftidx)
-	if (flg & 1 && lntest > 0)
+	if (flg && xvis & 4)
 		term_chr('\n');
 }
 
@@ -1221,12 +1226,13 @@ static void *ec_setbufsmax(char *loc, char *cmd, char *arg)
 static void *ec_regprint(char *loc, char *cmd, char *arg)
 {
 	static char buf[5] = "  ";
+	int flg = (xvis & 4) == 0;
 	preserve(int, xtd, xtd = 2;)
 	for (int i = 1; i < LEN(xregs); i++) {
 		if (xregs[i] && i != xpr) {
 			*buf = i;
-			ex_cprint2(buf, msg_ft, -1, 0, 0, 0)
-			ex_cprint2(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, xleft, 1)
+			ex_cprint2(buf, msg_ft, -1, 0, 0, flg)
+			ex_cprint2(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, xleft, !flg)
 		}
 	}
 	restore(xtd)
@@ -1514,9 +1520,10 @@ void ex(void)
 	while (!xquit) {
 		syn_setft(ex_ft);
 		if (ex_read(sb, ":", NULL, 0, 1) == '\n') {
-			if (!strcmp(sb->s, ":") && esc)
+			if (!strcmp(sb->s, ":") && esc) {
+				xpln = 2;
 				ex_exec(xregs[':']->s);
-			else
+			} else
 				ex_command(sb->s)
 			xb->useq += xseq;
 			esc = 1;

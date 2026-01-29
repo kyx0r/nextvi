@@ -439,6 +439,7 @@ extern int xkmap;
 extern int xkmap_alt;
 extern int xkwddir;
 extern int xkwdcnt;
+extern int xpln;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
 extern sbuf *xregs[256];

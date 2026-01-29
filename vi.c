@@ -1299,6 +1299,7 @@ void vi(int init)
 				if (vi_arg > 0)
 					goto switchbuf;
 				ex_exec("left0:b:mpt0");
+				term_chr('\n');
 				vi_arg = vi_digit();
 				if (vi_arg > -1 && vi_arg < xbufcur) {
 					switchbuf:
@@ -1344,6 +1345,7 @@ void vi(int init)
 				if ((cs = ex_exec("w")) && writexb && xb == writexb)
 					cs = ex_exec("mpt0:w!");
 				writexb = cs ? xb : NULL;
+				vi_mod |= 1;
 				break;
 			case '#':
 				if (vi_lnnum & vi_arg)
@@ -1699,6 +1701,9 @@ void vi(int init)
 			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
 		n = led_pos(ln, ren_cursor(ln, vi_col));
 		if (xmpt > 1) {
+			if (!xpln)
+				term_chr('\n');
+			xpln = 0;
 			vi_drawmsg("[any key to continue] ");
 			term_read();
 			xmpt = 0;
