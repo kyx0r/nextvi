@@ -715,9 +715,9 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 	syn_blockhl = -1;
 	if (flg && !(xvis & 4)) {
 		term_pos(xrows, 0);
-		xmpt += xmpt >= 0 && flg == 1;
-		if (!xpln)
+		if ((!xpln && xmpt > 0) || flg == 2)
 			term_chr('\n');
+		xmpt += xmpt >= 0 && flg == 1;
 	}
 	xpln = 0;
 	preserve(int, ftidx,)
