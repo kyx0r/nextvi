@@ -388,7 +388,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	int c, pos, subs[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;
 	int flg = REG_NEWLINE | REG_NOCAP;
-	int pflg = (xvis & 4) == 0;
+	int pflg = ((xvis & 4) == 0) * 2;
 	ins_state is;
 	ins_init(is)
 	if (*cmd !='f')
@@ -410,7 +410,6 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	sbuf_smake(cmdbuf, 16)
 	sbuf_str(fuzz, arg)
 	syn_setft(msg_ft2);
-	preserve(int, xmpt,)
 	while(1) {
 		sbuf_null(fuzz)
 		c = 0;
@@ -473,7 +472,6 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	if ((inst >= 0 && inst < c) || c == 1)
 		lnum = *((int*)sb->s + (c == 1 ? 0 : inst));
 	ret:
-	restore(xmpt)
 	syn_setft(xb_ft);
 	if (fuzz->s_n > 0) {
 		sbuf_cut(cmdbuf, 0)
@@ -717,7 +715,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 	syn_blockhl = -1;
 	if (flg && !(xvis & 4)) {
 		term_pos(xrows, 0);
-		xmpt += xmpt >= 0;
+		xmpt += xmpt >= 0 && flg == 1;
 		if (!xpln)
 			term_chr('\n');
 	}
