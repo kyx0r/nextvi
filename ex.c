@@ -631,10 +631,13 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 static void *ex_pipeout(char *cmd, sbuf *buf)
 {
 	int ret = 0;
-	if ((!(xvis & 4) && xmpt >= 0 && !xpln) || xpln == 2) {
+	if (!(xvis & 4) && xmpt >= 0 && !xpln) {
 		term_chr('\n');
 		xpln = 1;
 		xmpt = 2;
+	} else if (xvis & 4 && xpln == 2) {
+		term_chr('\n');
+		xpln = 0;
 	}
 	cmd_pipe(cmd, buf, 0, &ret);
 	return ret ? xuerr : NULL;
