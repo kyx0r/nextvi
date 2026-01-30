@@ -934,8 +934,8 @@ EX OPTIONS
 
              The value of grp must be divisible by 2.
 
-             Example: ignore spaces at the start of the line
-             :grp 2:%f+>^[ ]+(.+):grp
+             Example: position on a character prefixed by "int"
+             :grp 2:%f+int(.):grp
 
      hl[val=1]
              Highlight text based on rules defined in conf.c
@@ -1247,4 +1247,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Linux 6.18.3                   January 29, 2026                   Linux 6.18.3
+Linux 6.18.3                   January 30, 2026                   Linux 6.18.3
