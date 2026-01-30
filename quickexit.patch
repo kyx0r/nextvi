@@ -1,24 +1,24 @@
 diff --git a/ex.c b/ex.c
-index 2d75f3be..1c70391f 100644
+index b9659be4..ce8f19e6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
  int xorder = 1;			/* change the order of characters */
- int xtbs = 8;			/* number of spaces for tab */
+ int xts = 8;			/* number of spaces for tab */
 +int xqe = 1000;			/* exit insert via kj (delay in ms) */
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1285,6 +1286,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1292,6 +1293,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
- EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
+ EO(sep) EO(ts) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
  EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
 +EO(qe)
  
  _EO(left,
  	if (*loc)
-@@ -1343,6 +1345,7 @@ static struct excmd {
+@@ -1350,6 +1352,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -65,7 +65,7 @@ index b41abf0e..331a68e7 100644
  				return c;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index b78c070b..a338f4ff 100644
+index 40178ca9..a34ca241 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -76,7 +76,7 @@ index b78c070b..a338f4ff 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1499,6 +1500,8 @@ void vi(int init)
+@@ -1501,6 +1502,8 @@ void vi(int init)
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -86,7 +86,7 @@ index b78c070b..a338f4ff 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index 0c3e52bb..eac67673 100644
+index ae589ef4..84535e9f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -366,6 +366,7 @@ typedef struct {
@@ -108,7 +108,7 @@ index 0c3e52bb..eac67673 100644
 @@ -421,6 +423,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
- extern int xtbs;
+ extern int xts;
 +extern int xqe;
  extern int xish;
  extern int xgrp;
