@@ -432,7 +432,7 @@ index b41abf0e..c3d3c6f6 100644
  		case TK_CTL('o'): {
  			if (!*postref)
 diff --git a/vi.c b/vi.c
-index 40178ca9..111c7281 100644
+index 40178ca9..b76b1497 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -468,7 +468,7 @@ index 40178ca9..111c7281 100644
  		break; \
  	i = i > 99 ? i % 100 : i; \
  	itoa(i%10 ? i%10 : i, snum); \
-@@ -125,9 +142,30 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,25 +142,46 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
@@ -498,8 +498,10 @@ index 40178ca9..111c7281 100644
 +	int scrrow = win_scrrow(row);
  	char *c, *s;
  	static char ch[5] = "~";
- 	if (xmpt == 1 && row == xtop + xrows - 1)
-@@ -136,14 +174,14 @@ static void vi_drawrow(int row)
+-	if (xmpt == 1 && row == xtop + xrows - 1)
++	if (xmpt == 1 && scrrow == xrows - 1)
+ 		return;
+ 	if (*vi_word && xled) {
  		int noff, nrow, ret;
  		s = lbuf_get(xb, row - vi_rshift);
  		c = lbuf_get(xb, xrow);
