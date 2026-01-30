@@ -70,7 +70,7 @@ rstr.patch
 --------------
 Adaptation from upstream Neatvi, where simple operations are optimized by
 running a specialized search code instead of full regex engine. rstr can
-yeild up to 3X faster search on non regex patterns. This is not included in
+yeild up to 30% faster search on non regex patterns. This is not included in
 base nextvi due to underlying complexity.
 
 stdin_pipe.patch
