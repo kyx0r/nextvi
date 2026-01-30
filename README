@@ -200,6 +200,8 @@ splits.patch
 Implements :sp and :vs commands for vertical and horizontal splits.
 Adds vc and vd normal commands to switch and close views. View
 can also be closed using :q
+New command :eq can be used to balance the vertical and horizontal 
+split space in the nearest dimension.
 
 alt_sections.patch
 --------------
