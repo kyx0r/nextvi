@@ -1381,7 +1381,7 @@ void vi(int init)
 				case 'I':;
 				case 'i':;
 					char restr[100] = "%s/^\t/";
-					vi_arg = MIN(vi_arg ? vi_arg : xtbs, 80);
+					vi_arg = MIN(vi_arg ? vi_arg : xts, 80);
 					if (k == 'I') {
 						cmd = restr+6;
 						while (vi_arg--)

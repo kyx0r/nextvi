@@ -420,7 +420,7 @@ extern int xled;
 extern int xtd;
 extern int xshape;
 extern int xorder;
-extern int xtbs;
+extern int xts;
 extern int xish;
 extern int xgrp;
 extern int xpac;

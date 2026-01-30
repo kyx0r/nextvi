@@ -11,7 +11,7 @@ int xled = 1;			/* use the line editor */
 int xtd = +1;			/* current text direction */
 int xshape = 1;			/* perform letter shaping */
 int xorder = 1;			/* change the order of characters */
-int xtbs = 8;			/* number of spaces for tab */
+int xts = 8;			/* number of spaces for tab */
 int xish;			/* interactive shell */
 int xgrp;			/* regex search group */
 int xpac;			/* print autocomplete options */
@@ -1290,7 +1290,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
 EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
-EO(sep) EO(tbs) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
+EO(sep) EO(ts) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
 EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
 
 _EO(left,
@@ -1376,7 +1376,7 @@ static struct excmd {
 	{"cd", ec_chdir},
 	{"c", ec_insert},
 	{"j", ec_join},
-	EO(tbs),
+	EO(ts),
 	EO(td),
 	EO(order),
 	EO(hll),
