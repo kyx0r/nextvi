@@ -1,4 +1,4 @@
-.Dd Jan 29, 2026
+.Dd Jan 30, 2026
 .Dt Nextvi 1
 .Os
 .
@@ -1249,8 +1249,8 @@ be based on some group rather than default match group.
 
 The value of grp must be divisible by 2.
 
-Example: ignore spaces at the start of the line
-:grp 2:%f+>^[ ]+(.+):grp
+Example: position on a character prefixed by "int"
+:grp 2:%f+int(.):grp
 .Ed
 
 .
