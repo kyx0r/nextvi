@@ -490,7 +490,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	if (*cmd == 'f' && path) {
 		rset_find(rs, path, subs, 0);
 		xrow = lnum;
-		xoff = subs[0];
+		xoff = uc_off(path, subs[0]);
 	} else if (path) {
 		path[lbuf_s(path)->len] = '\0';
 		sret = ec_edit(loc, cmd, path);
