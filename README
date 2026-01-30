@@ -980,7 +980,7 @@ EX OPTIONS
              Perform Arabic script letter shaping
      pac[val=0]
              Print autocomplete suggestions on the fly
-     tbs[val=8]
+     ts[val=8]
              Number of spaces used to represent a tab
      td[val=1]
              Current text direction context
