@@ -1,21 +1,21 @@
 diff --git a/conf.c b/conf.c
-index 926d306f..c71e288f 100644
+index cb1ae142..6b060c4b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -258,7 +258,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  ((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?[.$]?(?:'[a-z'`[\\]*])?\
  ([0-9]*)?)(?:([-*-+/%])([0-9]+))*(?:\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
- ((pac|pr|ai|ish|ic|grp|shape|seq|sep|tbs|td|order|hl[lwpr]?|left|lim|led|vis|mpt|err)\
+ ((pac|pr|ai|ish|ic|grp|shape|seq|sep|ts|td|order|hl[lwpr]?|left|lim|led|vis|mpt|err)\
 -|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|\
 +|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sp|vs|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 2d75f3be..8468996d 100644
+index b9659be4..dd913e41 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -38,6 +38,9 @@ struct buf *bufs;		/* main buffers */
+@@ -39,6 +39,9 @@ struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
  struct buf *ex_pbuf;		/* prev buffer */
@@ -25,7 +25,7 @@ index 2d75f3be..8468996d 100644
  static struct buf *ex_tpbuf;	/* temp prev buffer */
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -91,6 +94,9 @@ void bufs_switch(int idx)
+@@ -92,6 +95,9 @@ void bufs_switch(int idx)
  		ex_buf = &bufs[idx];
  	}
  	exbuf_load(ex_buf)
@@ -35,7 +35,7 @@ index 2d75f3be..8468996d 100644
  }
  
  static int bufs_open(const char *path, int len)
-@@ -152,6 +158,9 @@ void temp_switch(int i, int swap)
+@@ -153,6 +159,9 @@ void temp_switch(int i, int swap)
  	}
  	exbuf_load(ex_buf)
  	syn_setft(xb_ft);
@@ -45,7 +45,7 @@ index 2d75f3be..8468996d 100644
  }
  
  void temp_write(int i, char *str)
-@@ -550,10 +559,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -554,10 +563,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
@@ -70,7 +70,7 @@ index 2d75f3be..8468996d 100644
  	return NULL;
  }
  
-@@ -1296,6 +1317,16 @@ _EO(left,
+@@ -1303,6 +1324,16 @@ _EO(left,
  	return NULL;
  )
  
@@ -87,7 +87,7 @@ index 2d75f3be..8468996d 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1356,9 +1387,12 @@ static struct excmd {
+@@ -1363,9 +1394,12 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
@@ -100,7 +100,7 @@ index 2d75f3be..8468996d 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1380,7 +1414,6 @@ static struct excmd {
+@@ -1387,7 +1421,6 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -108,7 +108,7 @@ index 2d75f3be..8468996d 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  };
-@@ -1529,6 +1562,205 @@ void ex(void)
+@@ -1537,6 +1570,205 @@ void ex(void)
  	xgrec--;
  }
  
@@ -432,7 +432,7 @@ index b41abf0e..c3d3c6f6 100644
  		case TK_CTL('o'): {
  			if (!*postref)
 diff --git a/vi.c b/vi.c
-index b78c070b..3b3f1257 100644
+index 40178ca9..111c7281 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -631,6 +631,66 @@ index b78c070b..3b3f1257 100644
  		for (i = n-1; i >= 0; i--)
  			vi_drawrow(xtop + i);
  	}
+@@ -368,10 +452,10 @@ static int vi_motionln(int *row, int cmd, int cnt)
+ 		*row = MIN(xtop + cnt - 1, lbuf_len(xb) - 1);
+ 		break;
+ 	case 'L':
+-		*row = MIN(xtop + xrows - 1 - cnt + 1, lbuf_len(xb) - 1);
++		*row = MIN(xtop + win_height() - 1 - cnt + 1, lbuf_len(xb) - 1);
+ 		break;
+ 	case 'M':
+-		*row = MIN(xtop + xrows / 2, lbuf_len(xb) - 1);
++		*row = MIN(xtop + win_height() / 2, lbuf_len(xb) - 1);
+ 		break;
+ 	default:
+ 		if (c == cmd) {
+@@ -747,7 +831,7 @@ static int vi_motion(int vc, int *row, int *off)
+ 			ex_bufpostfix(&bufs[i], 1);
+ 		syn_setft(xb_ft);
+ 		vc_status(0);
+-		xtop = MAX(0, *row - xrows / 2);
++		xtop = MAX(0, *row - win_height() / 2);
+ 		vi_mod |= 1;
+ 		break;
+ 	case TK_CTL('t'):
+@@ -780,7 +864,7 @@ static int vi_motion(int vc, int *row, int *off)
+ 	case 'N':
+ 		if (vi_search(mv, cnt, row, off, 1))
+ 			return -1;
+-		xtop = MAX(0, *row - xrows / 2);
++		xtop = MAX(0, *row - win_height() / 2);
+ 		vi_mod |= mv == '/' || mv == '?';
+ 		break;
+ 	case '*':
+@@ -793,8 +877,8 @@ static int vi_motion(int vc, int *row, int *off)
+ 		}
+ 		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
+ 			cadir = -cadir;
+-		else if (*row < xtop || *row >= xtop + xrows - 1)
+-			xtop = MAX(0, *row - xrows / 2);
++		else if (*row < xtop || *row >= xtop + win_height() - 1)
++			xtop = MAX(0, *row - win_height() / 2);
+ 		break;
+ 	case '`':
+ 		if ((mark = term_read()) <= 0)
+@@ -1025,7 +1109,7 @@ static int vc_insert(int cmd)
+ 		xoff = lbuf_eol(xb, xrow, 1);
+ 	else if (cmd == 'o') {
+ 		xrow++;
+-		if (xrow - xtop == xrows)
++		if (xrow - xtop == win_height())
+ 			vi_drawagain(++xtop);
+ 	}
+ 	xoff = ren_noeol(ln, xoff);
+@@ -1111,7 +1195,7 @@ static void vi_scrollforward(int cnt)
+ static void vi_scrollbackward(int cnt)
+ {
+ 	xtop = MAX(0, xtop - cnt);
+-	xrow = MIN(xrow, xtop + xrows - 1);
++	xrow = MIN(xrow, xtop + win_height() - 1);
+ }
+ 
+ static int vc_replace(void)
 @@ -1175,14 +1259,15 @@ static void vi_argcmd(int arg, char cmd)
  }
  
@@ -714,7 +774,7 @@ index b78c070b..3b3f1257 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1395,6 +1491,24 @@ void vi(int init)
+@@ -1397,6 +1493,24 @@ void vi(int init)
  				case 'v':
  					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
  					break;
@@ -739,7 +799,7 @@ index b78c070b..3b3f1257 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1531,6 +1645,7 @@ void vi(int init)
+@@ -1533,6 +1647,7 @@ void vi(int init)
  					term_done();
  					term_init();
  				}
@@ -747,7 +807,7 @@ index b78c070b..3b3f1257 100644
  				vi_status = vi_status ? xrows - 1: vi_status;
  				vi_mod |= 1;
  				break;
-@@ -1695,8 +1810,9 @@ void vi(int init)
+@@ -1697,8 +1812,9 @@ void vi(int init)
  		}
  		if (vi_mod)
  			vi_col = vi_off2col(xb, xrow, xoff);
@@ -758,8 +818,8 @@ index b78c070b..3b3f1257 100644
 +			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
  		n = led_pos(ln, ren_cursor(ln, vi_col));
  		if (xmpt > 1) {
- 			vi_drawmsg("[any key to continue] ");
-@@ -1735,19 +1851,29 @@ void vi(int init)
+ 			if (!xpln)
+@@ -1740,19 +1856,29 @@ void vi(int init)
  			}
  		}
  		term_record = 1;
@@ -794,7 +854,7 @@ index b78c070b..3b3f1257 100644
  				if (!(vi_mod & 1) && !*vi_word)
  					vi_drawrow(orow);
  			syn_blockhl = -1;
-@@ -1764,7 +1890,7 @@ void vi(int init)
+@@ -1769,7 +1895,7 @@ void vi(int init)
  			if (xmpt > 0)
  				xmpt = 0;
  		}
@@ -804,7 +864,7 @@ index b78c070b..3b3f1257 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 0c3e52bb..1c6ff8d6 100644
+index ae589ef4..944bfd1a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -406,6 +406,25 @@ struct buf {
