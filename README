@@ -201,6 +201,16 @@ Implements :sp and :vs commands for vertical and horizontal splits.
 Adds vc and vd normal commands to switch and close views. View
 can also be closed using :q
 
+alt_sections.patch
+--------------
+Implements closer to standard vi(1) sections keybinding:
+[#])          Move to next sentence boundary down # times
+[#](          Move to next sentence boundary up # times
+[#]]          Move to next <{> section down # times
+[#][          Move to next <{> section up # times
+[#]}          Move to next <Newline> section down # times
+[#]{          Move to next <Newline> section up # times
+
 My current EXINIT setup:
 --------------
 How it works:
