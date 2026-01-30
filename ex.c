@@ -409,7 +409,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	sbuf_smake(fuzz, 16)
 	sbuf_smake(cmdbuf, 16)
 	sbuf_str(fuzz, arg)
-	syn_setft(msg_ft2);
+	syn_setft(fuzz_ft);
 	while(1) {
 		sbuf_null(fuzz)
 		c = 0;
