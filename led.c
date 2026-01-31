@@ -607,11 +607,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			i = term_winch;
 			term_done();
 			term_init();
-			if (ai_max < 0) {
-				if (!i)
-					term_clean();
-			} else
+			if (ai_max >= 0)
 				led_redraw(sb->s, 0, orow, crow, ctop, flg);
+			else if (!i)
+				term_clean();
 			continue;
 		case TK_CTL('o'): {
 			if (!*postref)
