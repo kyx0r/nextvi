@@ -462,12 +462,11 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		}
 		rset_free(rs);
 		sbuf_cut(sb, 0)
-		if (c && !pflg)
-			ex_print("", NULL)
-		else if (c) {
+		if (pflg) {
 			term_clean();
 			term_pos(xrows, 0);
-		}
+		} else if (c)
+			ex_print("", NULL)
 	}
 	if ((inst >= 0 && inst < c) || c == 1)
 		lnum = *((int*)sb->s + (c == 1 ? 0 : inst));
