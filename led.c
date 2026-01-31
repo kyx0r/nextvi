@@ -328,14 +328,14 @@ char *led_read(int *kmap, int c)
 			*kmap = 0;
 			break;
 		case TK_CTL('v'):	/* literal character */
-			buf[0] = term_read();
+			buf[0] = term_read(0);
 			buf[1] = '\0';
 			return buf;
 		case TK_CTL('k'):	/* digraph */
-			c1 = term_read();
+			c1 = term_read(0);
 			if (TK_INT(c1))
 				return NULL;
-			c2 = term_read();
+			c2 = term_read(0);
 			if (TK_INT(c2))
 				return NULL;
 			return conf_digraph(c1, c2);
@@ -344,13 +344,13 @@ char *led_read(int *kmap, int c)
 				buf[0] = c;
 				n = uc_len(buf);
 				for (i = 1; i < n; i++)
-					buf[i] = term_read();
+					buf[i] = term_read(0);
 				buf[n] = '\0';
 				return buf;
 			}
 			return kmap_map(*kmap, c);
 		}
-		c = term_read();
+		c = term_read(0);
 	}
 	return NULL;
 }
@@ -413,7 +413,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 	do {
 		led_printparts(sb, pre, ps, *post, postn, ai_max);
 		len = sb->s_n;
-		c = term_read();
+		c = term_read(TK_CTL('l'));
 		switch (c) {
 		case TK_CTL('h'):
 		case 127:
@@ -456,7 +456,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 					is->p_reg = '/';
 				while (is->p_reg < '9' && !xregs[++is->p_reg]);
 			} else {
-				c = term_read();
+				c = term_read(0);
 				is->p_reg = c == TK_CTL('\\') ? 0 : c;
 			}
 			if (xregs[is->p_reg]) {
@@ -604,9 +604,13 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			}
 			break;
 		case TK_CTL('l'):
-			if (ai_max < 0)
-				term_clean();
-			else
+			c = term_winch;
+			term_done();
+			term_init();
+			if (ai_max < 0) {
+				if (!c)
+					term_clean();
+			} else
 				led_redraw(sb->s, 0, orow, crow, ctop, flg);
 			continue;
 		case TK_CTL('o'): {

@@ -261,9 +261,9 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
 
 static int vi_yankbuf(void)
 {
-	int c = term_read();
+	int c = term_read(TK_CTL('l'));
 	if (c == '"')
-		return term_read();
+		return term_read(TK_CTL('l'));
 	term_dec()
 	return 0;
 }
@@ -271,11 +271,11 @@ static int vi_yankbuf(void)
 static int vi_prefix(void)
 {
 	int n = 0;
-	int c = term_read();
+	int c = term_read(TK_CTL('l'));
 	if (c >= '1' && c <= '9') {
 		while (c >= '0' && c <= '9') {
 			n = n * 10 + c - '0';
-			c = term_read();
+			c = term_read(TK_CTL('l'));
 		}
 	}
 	return n;
@@ -283,7 +283,7 @@ static int vi_prefix(void)
 
 static int vi_digit(void)
 {
-	int c = term_read();
+	int c = term_read(0);
 	if (c >= '0' && c <= '9')
 		return c - '0';
 	return -1;
@@ -344,7 +344,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 /* read a line motion */
 static int vi_motionln(int *row, int cmd, int cnt)
 {
-	int mark, c = term_read();
+	int mark, c = term_read(TK_CTL('l'));
 	switch (c) {
 	case '\n':
 	case '+':
@@ -356,7 +356,7 @@ static int vi_motionln(int *row, int cmd, int cnt)
 		*row = MAX(*row - cnt, 0);
 		break;
 	case '\'':
-		if ((mark = term_read()) <= 0)
+		if ((mark = term_read(0)) <= 0)
 			return -1;
 		if (lbuf_jump(xb, mark, row, &mark))
 			return -1;
@@ -579,7 +579,7 @@ static int vi_motion(int vc, int *row, int *off)
 		*off = -1;
 		return mv;
 	}
-	mv = term_read();
+	mv = term_read(TK_CTL('l'));
 	switch (mv) {
 	case ',':
 	case ';':
@@ -634,7 +634,7 @@ static int vi_motion(int vc, int *row, int *off)
 	case 'F':
 	case 't':
 	case 'T':
-		if (!(cs = led_read(&xkmap, term_read())))
+		if (!(cs = led_read(&xkmap, term_read(0))))
 			return -1;
 		strcpy(vi_charlast, cs);
 		vi_charcmd = mv;
@@ -797,7 +797,7 @@ static int vi_motion(int vc, int *row, int *off)
 			xtop = MAX(0, *row - xrows / 2);
 		break;
 	case '`':
-		if ((mark = term_read()) <= 0)
+		if ((mark = term_read(0)) <= 0)
 			return -1;
 		if (lbuf_jump(xb, mark, row, off))
 			return -1;
@@ -1117,7 +1117,7 @@ static void vi_scrollbackward(int cnt)
 static int vc_replace(void)
 {
 	int cnt = MAX(1, vi_arg);
-	char *cs = led_read(&xkmap, term_read());
+	char *cs = led_read(&xkmap, term_read(0));
 	char *ln = lbuf_get(xb, xrow);
 	int off, i;
 	if (!ln || !cs)
@@ -1149,7 +1149,7 @@ static void vc_repeat(void)
 static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
-	int c = term_read(), i, n = MAX(1, vi_arg);
+	int c = term_read(0), i, n = MAX(1, vi_arg);
 	sbuf *buf = NULL;
 	if (TK_INT(c))
 		return;
@@ -1237,7 +1237,7 @@ void vi(int init)
 			char *cmd;
 			term_dec()
 			re_motion:
-			c = term_read();
+			c = term_read(TK_CTL('l'));
 			switch (c) {
 			case TK_CTL('b'):
 				vi_scrollbackward(MAX(1, vi_arg) * (xrows - 1));
@@ -1357,7 +1357,7 @@ void vi(int init)
 				break;
 			case 'v':
 				vi_mod |= 2;
-				k = term_read();
+				k = term_read(0);
 				switch (k) {
 				case '.':
 					while (vi_arg) {
@@ -1464,9 +1464,9 @@ void vi(int init)
 				break;
 			case 'c':
 			case 'd':
-				k = term_read();
+				k = term_read(0);
 				if (k == 'i') {
-					k = term_read();
+					k = term_read(0);
 					switch(k) {
 					case ')':
 						term_push("F(ldt)", 6);
@@ -1537,14 +1537,14 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case 'm':
-				lbuf_mark(xb, term_read(), xrow, xoff);
+				lbuf_mark(xb, term_read(0), xrow, xoff);
 				break;
 			case 'p':
 			case 'P':
 				vi_mod |= vc_put(c);
 				break;
 			case 'z':
-				k = term_read();
+				k = term_read(0);
 				switch (k) {
 				case '\n':
 					xtop = xrow;
@@ -1576,7 +1576,7 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case 'g':
-				k = term_read();
+				k = term_read(0);
 				if (k == 'g')
 					term_push("1G", 2);
 				else if (k == 'a') {
@@ -1648,7 +1648,7 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case 'Z':
-				k = term_read();
+				k = term_read(0);
 				if (k == 'Z')
 					ex_exec("x");
 				else if (k == 'z') {
@@ -1705,7 +1705,7 @@ void vi(int init)
 				term_chr('\n');
 			xpln = 0;
 			vi_drawmsg("[any key to continue] ");
-			term_read();
+			term_read(0);
 			xmpt = 0;
 			vi_mod |= 1;
 		}
@@ -1778,25 +1778,21 @@ void vi(int init)
 
 static void sighandler(int signo)
 {
-	if (term_sbuf && !(xvis & 4) && signo == SIGWINCH)
-		term_exec("", 1, '&')
+	term_winch++;
 }
 
-static int setup_signals(void)
+static void setup_signals(void)
 {
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = sighandler;
-	if (sigaction(SIGWINCH, &sa, NULL))
-		return 0;
-	return 1;
+	sigaction(SIGWINCH, &sa, NULL);
 }
 
 int main(int argc, char *argv[])
 {
 	int i, j;
-	if (!setup_signals())
-		return EXIT_FAILURE;
+	setup_signals();
 	dir_init();
 	syn_init();
 	temp_open(0, "/hist/", _ft);
