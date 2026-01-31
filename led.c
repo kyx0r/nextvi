@@ -604,11 +604,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			}
 			break;
 		case TK_CTL('l'):
-			c = term_winch;
+			i = term_winch;
 			term_done();
 			term_init();
 			if (ai_max < 0) {
-				if (!c)
+				if (!i)
 					term_clean();
 			} else
 				led_redraw(sb->s, 0, orow, crow, ctop, flg);
