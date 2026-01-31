@@ -313,7 +313,7 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
 {
 	int n = sb->s_n, key;
 	if (xvis & 2) {
-		while ((key = term_read()) != '\n') {
+		while ((key = term_read(0)) != '\n') {
 			sbuf_chr(sb, key)
 			if (flg & 2 || xquit)
 				break;

@@ -310,6 +310,7 @@ char *uc_shape(char *beg, char *s, int c);
 /* term.c managing the terminal */
 extern sbuf *term_sbuf;
 extern int term_record;
+extern int term_winch;
 extern int xrows, xcols;
 extern unsigned int ibuf_pos, ibuf_cnt, ibuf_sz, icmd_pos;
 extern unsigned char *ibuf, icmd[4096];
@@ -323,7 +324,7 @@ void term_chr(int ch);
 void term_pos(int r, int c);
 void term_kill(void);
 void term_room(int n);
-int term_read(void);
+int term_read(int winch);
 void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
