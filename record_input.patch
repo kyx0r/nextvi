@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b9659be4..01a27ee5 100644
+index 0ea9b87c..39ab5685 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -22,6 +22,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
@@ -27,11 +27,11 @@ index b9659be4..01a27ee5 100644
  	{"rd", ec_undoredo},
  	{"r", ec_read},
 diff --git a/term.c b/term.c
-index 757c26eb..5655fd17 100644
+index 7d955999..bd7ddaa6 100644
 --- a/term.c
 +++ b/term.c
-@@ -160,6 +160,12 @@ int term_read(void)
- 		}
+@@ -174,6 +174,12 @@ int term_read(int winch)
+ 		ret:
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 +		if (xrec && *ibuf) {
@@ -44,10 +44,10 @@ index 757c26eb..5655fd17 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index ae589ef4..acbb3502 100644
+index b613b0ec..6cec2bb1 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -430,6 +430,7 @@ extern int xsep;
+@@ -431,6 +431,7 @@ extern int xsep;
  extern int xlim;
  extern int xseq;
  extern int xerr;

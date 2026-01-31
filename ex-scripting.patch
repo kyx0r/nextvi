@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b9659be4..27095cf9 100644
+index 0ea9b87c..49f75747 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,6 +35,7 @@ int xpln;			/* tracks newline from ex print and pipe stdout */
@@ -62,10 +62,10 @@ index b9659be4..27095cf9 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 757c26eb..39154c30 100644
+index 7d955999..c583ec38 100644
 --- a/term.c
 +++ b/term.c
-@@ -224,7 +224,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -238,7 +238,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}
@@ -78,7 +78,7 @@ index 757c26eb..39154c30 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index ae589ef4..10b683cd 100644
+index b613b0ec..c7bf7fa4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple

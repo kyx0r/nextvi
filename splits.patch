@@ -12,7 +12,7 @@ index cb1ae142..0e49751c 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index b9659be4..7ec7c285 100644
+index 0ea9b87c..c17c0ec7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -39,6 +39,9 @@ struct buf *bufs;		/* main buffers */
@@ -446,7 +446,7 @@ index b9659be4..7ec7c285 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index b41abf0e..c3d3c6f6 100644
+index 81753cd8..407d8cb3 100644
 --- a/led.c
 +++ b/led.c
 @@ -93,8 +93,9 @@ static char *kmap_map(int kmap, int c)
@@ -553,7 +553,7 @@ index b41abf0e..c3d3c6f6 100644
  			syn_setft(xb_ft);
  			vi(1); /* redraw past screen */
  			restore(ftidx)
-@@ -607,7 +617,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -609,7 +619,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			if (ai_max < 0)
  				term_clean();
  			else
@@ -563,7 +563,7 @@ index b41abf0e..c3d3c6f6 100644
  		case TK_CTL('o'): {
  			if (!*postref)
 diff --git a/vi.c b/vi.c
-index 40178ca9..aa268107 100644
+index 2745ebd9..d6e6e408 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -816,7 +816,7 @@ index 40178ca9..aa268107 100644
 +			xtop = MAX(0, *row - win_height() / 2);
  		break;
  	case '`':
- 		if ((mark = term_read()) <= 0)
+ 		if ((mark = term_read(0)) <= 0)
 @@ -1025,7 +1120,7 @@ static int vc_insert(int cmd)
  		xoff = lbuf_eol(xb, xrow, 1);
  	else if (cmd == 'o') {
@@ -881,7 +881,7 @@ index 40178ca9..aa268107 100644
  	while (!xquit) {
  		int nrow = xrow;
 @@ -1240,12 +1347,12 @@ void vi(int init)
- 			c = term_read();
+ 			c = term_read(TK_CTL('l'));
  			switch (c) {
  			case TK_CTL('b'):
 -				vi_scrollbackward(MAX(1, vi_arg) * (xrows - 1));
@@ -964,7 +964,7 @@ index 40178ca9..aa268107 100644
 -				break;
 +				break; }
  			case 'm':
- 				lbuf_mark(xb, term_read(), xrow, xoff);
+ 				lbuf_mark(xb, term_read(0), xrow, xoff);
  				break;
 @@ -1697,8 +1825,9 @@ void vi(int init)
  		}
@@ -1023,10 +1023,10 @@ index 40178ca9..aa268107 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index ae589ef4..944bfd1a 100644
+index b613b0ec..6e6559f4 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -406,6 +406,25 @@ struct buf {
+@@ -407,6 +407,25 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };

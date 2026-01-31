@@ -12,7 +12,7 @@ index cb1ae142..5b0615ad 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index b9659be4..e88fd602 100644
+index 0ea9b87c..e3d1b2d3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -956,7 +956,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
@@ -65,7 +65,7 @@ index 02ff38b1..fc65a009 100644
  }
  
 diff --git a/led.c b/led.c
-index b41abf0e..7d900391 100644
+index 81753cd8..e542c930 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -254,7 +254,7 @@ index cf6a8dc5..09609fcc 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 40178ca9..eb921476 100644
+index 2745ebd9..f439aa9c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -320,10 +320,10 @@ index 40178ca9..eb921476 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index ae589ef4..1bb430c2 100644
+index b613b0ec..a4e7408e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -495,7 +495,7 @@ extern const int ftslen;
+@@ -496,7 +496,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */

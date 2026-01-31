@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b9659be4..ce8f19e6 100644
+index 0ea9b87c..58df72de 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
@@ -27,7 +27,7 @@ index b9659be4..ce8f19e6 100644
  	{"q", ec_quit},
  	{"reg", ec_regprint},
 diff --git a/led.c b/led.c
-index b41abf0e..331a68e7 100644
+index 81753cd8..ef311888 100644
 --- a/led.c
 +++ b/led.c
 @@ -404,6 +404,14 @@ void led_modeswap(void)
@@ -45,7 +45,7 @@ index b41abf0e..331a68e7 100644
  /* read a line from the terminal */
  static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
  	int ai_max, int *kmap, ins_state *is, int orow, int crow, int ctop, int flg)
-@@ -627,7 +635,18 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -629,7 +637,18 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
@@ -65,7 +65,7 @@ index b41abf0e..331a68e7 100644
  				return c;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 40178ca9..a34ca241 100644
+index 2745ebd9..84e3f4e9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -86,10 +86,10 @@ index 40178ca9..a34ca241 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index ae589ef4..84535e9f 100644
+index b613b0ec..c38c3caf 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -366,6 +366,7 @@ typedef struct {
+@@ -367,6 +367,7 @@ typedef struct {
  	int p_reg;
  	int lsug;
  	int sug_pt;
@@ -97,7 +97,7 @@ index ae589ef4..84535e9f 100644
  	char *sug;
  	char *_sug;
  } ins_state;
-@@ -374,6 +375,7 @@ is.t_row = -2; \
+@@ -375,6 +376,7 @@ is.t_row = -2; \
  is.p_reg = 0; \
  is.lsug = 0; \
  is.sug_pt = -1; \
@@ -105,7 +105,7 @@ index ae589ef4..84535e9f 100644
  is.sug = NULL; \
  is._sug = NULL; \
  
-@@ -421,6 +423,7 @@ extern int xtd;
+@@ -422,6 +424,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;

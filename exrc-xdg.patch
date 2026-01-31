@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b9659be4..8950d5d4 100644
+index 0ea9b87c..e669f28d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,6 +35,7 @@ int xpln;			/* tracks newline from ex print and pipe stdout */

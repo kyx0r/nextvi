@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b9659be4..2cbbde9b 100644
+index 0ea9b87c..c3d70383 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -48,6 +48,7 @@ static char xserr[] = "syntax error";
@@ -58,10 +58,10 @@ index b9659be4..2cbbde9b 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 40178ca9..cb49e5b2 100644
+index 2745ebd9..512d7b13 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1815,9 +1815,11 @@ int main(int argc, char *argv[])
+@@ -1811,9 +1811,11 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis &= ~4;
@@ -75,10 +75,10 @@ index 40178ca9..cb49e5b2 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index ae589ef4..4e2bfecb 100644
+index b613b0ec..6e38d4c8 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -405,6 +405,7 @@ struct buf {
+@@ -406,6 +406,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -86,7 +86,7 @@ index ae589ef4..4e2bfecb 100644
  };
  /* ex options */
  extern int xleft;
-@@ -538,3 +539,4 @@ extern int vi_lncol;
+@@ -539,3 +540,4 @@ extern int vi_lncol;
  extern rset *fsincl;
  extern char *fs_exdir;
  void dir_calc(char *path);

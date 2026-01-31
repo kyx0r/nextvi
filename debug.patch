@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b9659be4..5630d63e 100644
+index 0ea9b87c..45ca039d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1551,3 +1551,16 @@ void ex_init(char **files, int n)
@@ -67,7 +67,7 @@ index cf6a8dc5..ed9a9e6e 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 40178ca9..2106b489 100644
+index 2745ebd9..86b71966 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -436,6 +436,13 @@ static void vi_regput(int c, const char *s, int lnmode)
@@ -84,7 +84,7 @@ index 40178ca9..2106b489 100644
  rset *fsincl;
  char *fs_exdir;
  static int fspos;
-@@ -1829,12 +1836,19 @@ int main(int argc, char *argv[])
+@@ -1825,12 +1832,19 @@ int main(int argc, char *argv[])
  		ex();
  	else
  		vi(1);
@@ -105,7 +105,7 @@ index 40178ca9..2106b489 100644
  	return EXIT_SUCCESS;
  }
 diff --git a/vi.h b/vi.h
-index ae589ef4..b15594dd 100644
+index b613b0ec..f031af27 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -228,6 +228,7 @@ char *ren_translate(char *s, char *ln);
@@ -124,7 +124,7 @@ index ae589ef4..b15594dd 100644
  
  /* uc.c utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -474,6 +476,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -475,6 +477,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
