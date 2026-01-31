@@ -446,7 +446,7 @@ index 6a67c5a8..ce2a5e84 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index c7fe4b0b..a28419a6 100644
+index ceead0e1..cd99f8d5 100644
 --- a/led.c
 +++ b/led.c
 @@ -93,8 +93,9 @@ static char *kmap_map(int kmap, int c)
@@ -553,15 +553,15 @@ index c7fe4b0b..a28419a6 100644
  			syn_setft(xb_ft);
  			vi(1); /* redraw past screen */
  			restore(ftidx)
-@@ -611,7 +621,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
- 				if (!i)
- 					term_clean();
- 			} else
+@@ -608,7 +618,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 			term_done();
+ 			term_init();
+ 			if (ai_max >= 0)
 -				led_redraw(sb->s, 0, orow, crow, ctop, flg);
 +				led_redraw(sb->s, 0, orow, crow, ctop, flg, ai_max);
+ 			else if (!i)
+ 				term_clean();
  			continue;
- 		case TK_CTL('o'): {
- 			if (!*postref)
 diff --git a/vi.c b/vi.c
 index 2745ebd9..d6e6e408 100644
 --- a/vi.c
