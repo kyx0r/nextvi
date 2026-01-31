@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index b9659be4..0d2e3f8e 100644
+index 0ea9b87c..fbfaf66d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -354,7 +354,9 @@ int ex_edit(const char *path, int len)
@@ -62,10 +62,10 @@ index b9659be4..0d2e3f8e 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 757c26eb..22b91105 100644
+index 7d955999..f8724d26 100644
 --- a/term.c
 +++ b/term.c
-@@ -5,6 +5,8 @@ int xrows, xcols;
+@@ -6,6 +6,8 @@ int xrows, xcols;
  unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
  unsigned char *ibuf, icmd[4096];
  unsigned int texec, tn;
@@ -74,9 +74,9 @@ index 757c26eb..22b91105 100644
  
  void term_init(void)
  {
-@@ -13,20 +15,24 @@ void term_init(void)
- 	struct winsize win;
+@@ -15,20 +17,24 @@ void term_init(void)
  	struct termios newtermios;
+ 	term_winch = 0;
  	sbuf_make(term_sbuf, 2048)
 -	tcgetattr(0, &termios);
 +	tcgetattr(stdin_fd, &termios);
@@ -103,32 +103,31 @@ index 757c26eb..22b91105 100644
  }
  
  void term_done(void)
-@@ -36,7 +42,7 @@ void term_done(void)
+@@ -37,7 +43,7 @@ void term_done(void)
+ 		return;
  	term_commit();
  	sbuf_free(term_sbuf)
- 	term_sbuf = NULL;
 -	tcsetattr(0, 0, &termios);
 +	tcsetattr(stdin_fd, 0, &termios);
  }
  
  void term_clean(void)
-@@ -149,12 +155,12 @@ int term_read(void)
- 			if (texec == '&')
- 				goto err;
+@@ -156,11 +162,12 @@ int term_read(int winch)
+ 			goto ret;
  		}
--		ufds[0].fd = STDIN_FILENO;
-+		ufds[0].fd = stdin_fd;
- 		ufds[0].events = POLLIN;
+ 		cw = 0;
++		ufd.fd = stdin_fd;
+ 		re:
  		/* read a single input character */
- 		if (xquit < 0 || poll(ufds, 1, -1) <= 0 ||
+ 		if (xquit < 0 || poll(&ufd, 1, -1) <= 0 ||
 -				read(STDIN_FILENO, ibuf, 1) <= 0) {
 -			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 +				read(stdin_fd, ibuf, 1) <= 0) {
 +			xquit = !isatty(stdin_fd) ? -1 : xquit;
- 			err:
- 			*ibuf = 0;
- 		}
-@@ -289,7 +295,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+ 			if (term_winch && winch && xquit >= 0) {
+ 				*ibuf = winch;
+ 				goto ret;
+@@ -303,7 +310,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	fds[0].events = POLLIN;
  	fds[1].fd = ifd;
  	fds[1].events = POLLOUT;
@@ -137,7 +136,7 @@ index 757c26eb..22b91105 100644
  	fds[2].events = POLLIN;
  	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
  		if (fds[0].revents & POLLIN) {
-@@ -332,7 +338,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -346,7 +353,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  		close(ifd);
  	waitpid(pid, status, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -147,20 +146,18 @@ index 757c26eb..22b91105 100644
  	if (!ibuf) {
  		term_init();
 diff --git a/vi.c b/vi.c
-index 40178ca9..a6a9547c 100644
+index 2745ebd9..eb796896 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1787,7 +1787,8 @@ static int setup_signals(void)
- 	struct sigaction sa;
+@@ -1787,6 +1787,7 @@ static void setup_signals(void)
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
--	if (sigaction(SIGWINCH, &sa, NULL))
-+	if (sigaction(SIGWINCH, &sa, NULL)
-+			|| sigaction(SIGINT, &sa, NULL))
- 		return 0;
- 	return 1;
+ 	sigaction(SIGWINCH, &sa, NULL);
++	sigaction(SIGINT, &sa, NULL);
  }
-@@ -1805,7 +1806,8 @@ int main(int argc, char *argv[])
+ 
+ int main(int argc, char *argv[])
+@@ -1801,7 +1802,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -171,10 +168,10 @@ index 40178ca9..a6a9547c 100644
  			if (argv[i][j] == 's')
  				xvis |= 2|4;
 diff --git a/vi.h b/vi.h
-index ae589ef4..b67295dd 100644
+index b613b0ec..536d0ab8 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -534,6 +534,7 @@ char *conf_digraph(int c1, int c2);
+@@ -535,6 +535,7 @@ char *conf_digraph(int c1, int c2);
  /* vi.c */
  extern int vi_hidch;
  extern int vi_lncol;
