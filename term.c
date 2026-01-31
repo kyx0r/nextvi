@@ -1,6 +1,7 @@
 static struct termios termios;
 sbuf *term_sbuf;
 int term_record;
+int term_winch;
 int xrows, xcols;
 unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char *ibuf, icmd[4096];
@@ -12,6 +13,7 @@ void term_init(void)
 		return;
 	struct winsize win;
 	struct termios newtermios;
+	term_winch = 0;
 	sbuf_make(term_sbuf, 2048)
 	tcgetattr(0, &termios);
 	newtermios = termios;
@@ -35,7 +37,6 @@ void term_done(void)
 		return;
 	term_commit();
 	sbuf_free(term_sbuf)
-	term_sbuf = NULL;
 	tcsetattr(0, 0, &termios);
 }
 
@@ -140,24 +141,37 @@ void term_back(int c)
 	term_push(s, 1);
 }
 
-int term_read(void)
+int term_read(int winch)
 {
-	struct pollfd ufds[1];
+	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
+	int cw;
 	if (ibuf_pos >= ibuf_cnt) {
 		if (texec) {
 			xquit = !xquit ? 1 : xquit;
 			if (texec == '&')
 				goto err;
 		}
-		ufds[0].fd = STDIN_FILENO;
-		ufds[0].events = POLLIN;
+		if (term_winch && winch) {
+			*ibuf = winch;	/* yield until term_winch is cleared */
+			goto ret;
+		}
+		cw = 0;
+		re:
 		/* read a single input character */
-		if (xquit < 0 || poll(ufds, 1, -1) <= 0 ||
+		if (xquit < 0 || poll(&ufd, 1, -1) <= 0 ||
 				read(STDIN_FILENO, ibuf, 1) <= 0) {
 			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
+			if (term_winch && winch && xquit >= 0) {
+				*ibuf = winch;
+				goto ret;
+			} else if (term_winch != cw && !winch && xquit >= 0) {
+				cw = term_winch;
+				goto re;
+			}
 			err:
 			*ibuf = 0;
 		}
+		ret:
 		ibuf_cnt = 1;
 		ibuf_pos = 0;
 	}
