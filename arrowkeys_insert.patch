@@ -1,5 +1,5 @@
 diff --git a/led.c b/led.c
-index 81753cd8..249ad779 100644
+index ceead0e1..bcfbe54b 100644
 --- a/led.c
 +++ b/led.c
 @@ -3,6 +3,7 @@
@@ -42,9 +42,9 @@ index 81753cd8..249ad779 100644
  		len = sb->s_n;
  		c = term_read(TK_CTL('l'));
  		switch (c) {
-@@ -611,6 +615,56 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
- 			else
- 				led_redraw(sb->s, 0, orow, crow, ctop, flg);
+@@ -612,6 +616,56 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 			else if (!i)
+ 				term_clean();
  			continue;
 +		case '\033':;	/* Arrow keys */
 +			char cbuf[1];
@@ -99,7 +99,7 @@ index 81753cd8..249ad779 100644
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -646,7 +700,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -647,7 +701,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
  {
  	int n = !(flg & 2) ? sb->s_n : 0, key;
@@ -108,7 +108,7 @@ index 81753cd8..249ad779 100644
  	ins_state _is;
  	vi_lncol = 0;
  	if (insert)
-@@ -660,6 +714,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
+@@ -661,6 +715,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  	key = led_line(sb, ps, n, &post, 0, &postref, -1, kmap, is, 0, xrow, xtop, flg);
  	restore(xtd)
  	restore(xleft)
@@ -117,7 +117,7 @@ index 81753cd8..249ad779 100644
  	if (key == '\n' && flg & 1) {
  		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
  		temp_pos(0, -1, 0, 0);
-@@ -690,7 +746,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -691,7 +747,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  			return key;
  		}
  		sbuf_chr(sb, key)

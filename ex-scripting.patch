@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 0ea9b87c..49f75747 100644
+index 6a67c5a8..97ca1950 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,6 +35,7 @@ int xpln;			/* tracks newline from ex print and pipe stdout */
@@ -10,7 +10,7 @@ index 0ea9b87c..49f75747 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1275,6 +1276,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1274,6 +1275,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -52,7 +52,7 @@ index 0ea9b87c..49f75747 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1366,6 +1402,8 @@ static struct excmd {
+@@ -1365,6 +1401,8 @@ static struct excmd {
  	EO(shape),
  	EO(seq),
  	EO(sep),

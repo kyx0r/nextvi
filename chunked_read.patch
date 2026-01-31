@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 0ea9b87c..d04ed122 100644
+index 6a67c5a8..d6dbe415 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -328,10 +328,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
