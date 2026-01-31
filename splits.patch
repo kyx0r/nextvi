@@ -12,7 +12,7 @@ index cb1ae142..0e49751c 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ea9b87c..c17c0ec7 100644
+index 6a67c5a8..ce2a5e84 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -39,6 +39,9 @@ struct buf *bufs;		/* main buffers */
@@ -45,7 +45,7 @@ index 0ea9b87c..c17c0ec7 100644
  }
  
  void temp_write(int i, char *str)
-@@ -554,10 +563,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -553,10 +562,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
@@ -70,7 +70,7 @@ index 0ea9b87c..c17c0ec7 100644
  	return NULL;
  }
  
-@@ -1303,6 +1324,106 @@ _EO(left,
+@@ -1302,6 +1323,106 @@ _EO(left,
  	return NULL;
  )
  
@@ -177,7 +177,7 @@ index 0ea9b87c..c17c0ec7 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1330,6 +1451,7 @@ static struct excmd {
+@@ -1329,6 +1450,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -185,7 +185,7 @@ index 0ea9b87c..c17c0ec7 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1363,9 +1485,12 @@ static struct excmd {
+@@ -1362,9 +1484,12 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
@@ -198,7 +198,7 @@ index 0ea9b87c..c17c0ec7 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1387,7 +1512,6 @@ static struct excmd {
+@@ -1386,7 +1511,6 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -206,7 +206,7 @@ index 0ea9b87c..c17c0ec7 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  };
-@@ -1537,6 +1661,238 @@ void ex(void)
+@@ -1536,6 +1660,238 @@ void ex(void)
  	xgrec--;
  }
  
@@ -446,7 +446,7 @@ index 0ea9b87c..c17c0ec7 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 81753cd8..407d8cb3 100644
+index c7fe4b0b..a28419a6 100644
 --- a/led.c
 +++ b/led.c
 @@ -93,8 +93,9 @@ static char *kmap_map(int kmap, int c)
@@ -553,10 +553,10 @@ index 81753cd8..407d8cb3 100644
  			syn_setft(xb_ft);
  			vi(1); /* redraw past screen */
  			restore(ftidx)
-@@ -609,7 +619,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
- 			if (ai_max < 0)
- 				term_clean();
- 			else
+@@ -611,7 +621,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 				if (!i)
+ 					term_clean();
+ 			} else
 -				led_redraw(sb->s, 0, orow, crow, ctop, flg);
 +				led_redraw(sb->s, 0, orow, crow, ctop, flg, ai_max);
  			continue;
