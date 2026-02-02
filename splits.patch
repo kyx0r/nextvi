@@ -1,21 +1,21 @@
 diff --git a/conf.c b/conf.c
-index cb1ae142..0e49751c 100644
+index 19ae736c..666a21a2 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -258,7 +258,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  ((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?[.$]?(?:'[a-z'`[\\]*])?\
  ([0-9]*)?)(?:([-*-+/%])([0-9]+))*(?:\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
- ((pac|pr|ai|ish|ic|grp|shape|seq|sep|ts|td|order|hl[lwpr]?|left|lim|led|vis|mpt|err)\
--|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|\
-+|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|eq|e[f!]?!?|f[-+><tdp]?|inc|i|sp|vs|\
+ ((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+-|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!?=dmj]|b[psx]?|p[uh]?|ac?|eq|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 6a67c5a8..ce2a5e84 100644
+index 8f13ceb3..dc601f02 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -39,6 +39,9 @@ struct buf *bufs;		/* main buffers */
+@@ -41,6 +41,9 @@ struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
  struct buf *ex_pbuf;		/* prev buffer */
@@ -25,7 +25,7 @@ index 6a67c5a8..ce2a5e84 100644
  static struct buf *ex_tpbuf;	/* temp prev buffer */
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -92,6 +95,9 @@ void bufs_switch(int idx)
+@@ -96,6 +99,9 @@ void bufs_switch(int idx)
  		ex_buf = &bufs[idx];
  	}
  	exbuf_load(ex_buf)
@@ -35,7 +35,7 @@ index 6a67c5a8..ce2a5e84 100644
  }
  
  static int bufs_open(const char *path, int len)
-@@ -153,6 +159,9 @@ void temp_switch(int i, int swap)
+@@ -157,6 +163,9 @@ void temp_switch(int i, int swap)
  	}
  	exbuf_load(ex_buf)
  	syn_setft(xb_ft);
@@ -45,7 +45,7 @@ index 6a67c5a8..ce2a5e84 100644
  }
  
  void temp_write(int i, char *str)
-@@ -553,10 +562,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -557,10 +566,22 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
@@ -70,7 +70,7 @@ index 6a67c5a8..ce2a5e84 100644
  	return NULL;
  }
  
-@@ -1302,6 +1323,106 @@ _EO(left,
+@@ -1326,6 +1347,106 @@ _EO(left,
  	return NULL;
  )
  
@@ -177,7 +177,7 @@ index 6a67c5a8..ce2a5e84 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1329,6 +1450,7 @@ static struct excmd {
+@@ -1353,6 +1474,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -185,7 +185,7 @@ index 6a67c5a8..ce2a5e84 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1362,9 +1484,12 @@ static struct excmd {
+@@ -1387,10 +1509,13 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
@@ -193,12 +193,13 @@ index 6a67c5a8..ce2a5e84 100644
 +	{"vs", ec_vsplit},
  	EO(shape),
  	EO(seq),
- 	EO(sep),
+ 	{"sc!", ec_specials},
+ 	{"sc", ec_specials},
 +	{"sp", ec_split},
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1386,7 +1511,6 @@ static struct excmd {
+@@ -1412,7 +1537,6 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -206,7 +207,7 @@ index 6a67c5a8..ce2a5e84 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  };
-@@ -1536,6 +1660,238 @@ void ex(void)
+@@ -1571,6 +1695,238 @@ void ex(void)
  	xgrec--;
  }
  
@@ -1023,7 +1024,7 @@ index 2745ebd9..d6e6e408 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index b613b0ec..6e6559f4 100644
+index dcdcc3ca..1486a77e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -407,6 +407,25 @@ struct buf {
