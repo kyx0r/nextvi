@@ -1,27 +1,27 @@
 diff --git a/ex.c b/ex.c
-index 6a67c5a8..37fc79db 100644
+index 8f13ceb3..0979b27d 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -22,6 +22,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
- int xseq = 1;			/* undo/redo sequence */
- int xerr = 1;			/* error handling -
+@@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
  				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
+ int xrcm = 1;			/* range command model -
+ 				0: exec at command parse 1: exec at command */
 +int xrec;			/* input recoding register */
  
  int xquit;			/* exit if positive, force quit if negative */
  int xrow, xoff, xtop;		/* current row, column, and top row */
-@@ -1291,6 +1292,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
- EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
- EO(sep) EO(ts) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
- EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
+@@ -1315,6 +1316,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+ EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+ EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(rec)
  
  _EO(left,
  	if (*loc)
-@@ -1351,6 +1353,7 @@ static struct excmd {
- 	{"m", ec_mark},
+@@ -1376,6 +1378,7 @@ static struct excmd {
  	{"q!", ec_quit},
  	{"q", ec_quit},
+ 	EO(rcm),
 +	EO(rec),
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
@@ -44,10 +44,10 @@ index 7d955999..bd7ddaa6 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index b613b0ec..6cec2bb1 100644
+index dcdcc3ca..a964144e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -431,6 +431,7 @@ extern int xsep;
+@@ -430,6 +430,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;
