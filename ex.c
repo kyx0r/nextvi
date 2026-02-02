@@ -1278,17 +1278,14 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 
 static void *ec_specials(char *loc, char *cmd, char *arg)
 {
-	if (!*arg && !*loc) {
-		xsep = cmd[2] ? 0 : ':';
-		xexp = cmd[2] ? 0 : '%';
-		xexe = cmd[2] ? 0 : '!';
-		return NULL;
-	}
 	int i = 0;
 	if (*loc) {
 		i = atoi(loc);
 		goto direct;
 	}
+	xsep = cmd[2] ? 0 : ':';
+	xexp = cmd[2] ? 0 : '%';
+	xexe = cmd[2] ? 0 : '!';
 	for (; *arg; arg++, i++) {
 		direct:
 		if (i == 0)
