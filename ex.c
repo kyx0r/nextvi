@@ -1278,8 +1278,6 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
-
 static void *ec_specials(char *loc, char *cmd, char *arg)
 {
 	if (!*arg) {
@@ -1336,8 +1334,6 @@ static struct excmd {
 	char *name;
 	void *(*ec)(char *loc, char *cmd, char *arg);
 } excmds[] = {
-	{"", ec_print}, /* do not remove */
-	{"", ec_null},	/* do not remove */
 	{"@", ec_termexec},
 	{"&", ec_termexec},
 	{"!", ec_exec},
@@ -1418,6 +1414,7 @@ static struct excmd {
 	EO(led),
 	EO(vis),
 	{"=", ec_num},
+	{"", ec_print}, /* do not remove */
 };
 
 /* parse command argument expanding % and ! */
@@ -1476,7 +1473,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 /* parse range and command */
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
-	int i = 0, j;
+	int i, j;
 	char *dst = sb->s, *pdst, *err;
 	while (*src == xsep || *src == ' ' || *src == '\t')
 		src += !!src[0];
@@ -1492,7 +1489,6 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 			if (j == '|' && !xrcm) {
 				if (*src)
 					src++;
-				i = 1;
 				*dst = '\0';
 				dst = pdst;
 				err = ex_exec(pdst+1);
@@ -1505,9 +1501,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	}
 	*dst++ = '\0';
 	sb->s_n = dst - sb->s;
-	if (*src)
-		i = 2;
-	for (; i < LEN(excmds); i++) {
+	for (i = 0; i < LEN(excmds); i++) {
 		for (j = 0; excmds[i].name[j]; j++)
 			if (!src[j] || src[j] != excmds[i].name[j])
 				break;
@@ -1565,7 +1559,7 @@ void ex(void)
 				xpln = 2;
 				ex_exec(xregs[':']->s);
 			} else
-				ex_command(sb->s+1)
+				ex_command(sb->s + !(xvis & 2))
 			xb->useq += xseq;
 			esc = 1;
 		} else
