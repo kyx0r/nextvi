@@ -862,6 +862,19 @@ EX COMMANDS
              Example: autocomplete using whole lines from a buffer
              :ac .+
 
+     [0-2]sc[sep][exp][exe]
+             Set special characters
+
+             No argument resets to the default <: % !> specials.
+             Prefix selects a specific character to change.
+
+             Example: change <%> to <a>
+             :1sc a
+             Example: change all to <a> <b> <c>
+             :sc abc
+
+     sc!     Disable ex <: % !> specials
+
      uc      Toggle multibyte utf-8 decoding
 
              This command is particularly useful when editing files with
@@ -1009,17 +1022,12 @@ EX OPTIONS
              Example: store a line printed with :p
              :pr A:ya! A:p
 
-     sep[val=:]
-             Ex separator
+     rcm[val=1]
+             Range command model
 
-             Set ex command separator character.
-             Ex separator must not collide with any ex/range special characters.
-             Changing default <:> separator will break some built-in commands/macros.
-
-             Example: set separator to <s>
-             :sep s
-             Example: disable separator
-             :sep 0
+             Controls when an ex command nested inside ex range executes.
+             0 - exec at command parse
+             1 - exec at command range
 
      lim[val=-1]
              Line length render limit
@@ -1171,11 +1179,11 @@ CODE MAP
      | 409 ren.c    |  positioning/syntax  |
      | 608 lbuf.c   |  file/line buffer    |
      | 614 uc.c     |  UTF-8 support       |
-     | 717 led.c    |  insert mode/output  |
+     | 718 led.c    |  insert mode/output  |
      | 765 regex.c  |  pikevm              |
-     | 1553 ex.c    |  ex options/commands |
+     | 1587 ex.c    |  ex options/commands |
      | 1836 vi.c    |  normal mode/general |
-     | 7193 total   |  wc -l *.c|sort      |
+     | 7228 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1247,4 +1255,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     January 31, 2026                     Nextvi 4.0
+Nextvi 4.0                     February 2, 2026                     Nextvi 4.0
