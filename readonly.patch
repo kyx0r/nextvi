@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 6a67c5a8..fd0de256 100644
+index 8f13ceb3..b75c81c4 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -48,6 +48,7 @@ static char xserr[] = "syntax error";
+@@ -52,6 +52,7 @@ static char xserr[] = "syntax error";
  static char xirerr[] = "invalid range";
  static char xrnferr[] = "range not found";
  static char *xrerr;
@@ -10,7 +10,7 @@ index 6a67c5a8..fd0de256 100644
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
-@@ -109,6 +110,7 @@ static int bufs_open(const char *path, int len)
+@@ -113,6 +114,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -18,7 +18,7 @@ index 6a67c5a8..fd0de256 100644
  	return i;
  }
  
-@@ -368,6 +370,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -372,6 +374,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -27,7 +27,7 @@ index 6a67c5a8..fd0de256 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -660,6 +664,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -664,6 +668,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf.s);
  	} else {
  		if (!strchr(cmd, '!')) {
@@ -36,7 +36,7 @@ index 6a67c5a8..fd0de256 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1274,6 +1280,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1298,6 +1304,12 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -49,8 +49,8 @@ index 6a67c5a8..fd0de256 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1353,6 +1365,7 @@ static struct excmd {
- 	{"q", ec_quit},
+@@ -1378,6 +1390,7 @@ static struct excmd {
+ 	EO(rcm),
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
 +	{"ro", ec_readonly},
@@ -75,7 +75,7 @@ index 2745ebd9..512d7b13 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index b613b0ec..6e38d4c8 100644
+index dcdcc3ca..772133f8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -406,6 +406,7 @@ struct buf {

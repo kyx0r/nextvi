@@ -1,5 +1,5 @@
 diff --git a/conf.c b/conf.c
-index cb1ae142..5b0615ad 100644
+index 19ae736c..d4a324ac 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -52,7 +52,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -12,10 +12,10 @@ index cb1ae142..5b0615ad 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 6a67c5a8..898a43b7 100644
+index 8f13ceb3..3949ef97 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -955,7 +955,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -959,7 +959,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s);
  	}
  	free(pat);
@@ -24,7 +24,7 @@ index 6a67c5a8..898a43b7 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -1007,6 +1007,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1011,6 +1011,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -320,7 +320,7 @@ index 2745ebd9..f439aa9c 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index b613b0ec..a4e7408e 100644
+index dcdcc3ca..b84cc712 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -496,7 +496,7 @@ extern const int ftslen;
