@@ -17,7 +17,6 @@ int xgrp;			/* regex search group */
 int xpac;			/* print autocomplete options */
 int xmpt;			/* whether to prompt after printing > 1 lines in vi */
 int xpr;			/* ex_cprint register */
-int xsep = ':';			/* ex command separator */
 int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
@@ -34,6 +33,7 @@ int xkmap_alt = 1;		/* the alternate keymap */
 int xkwddir;			/* the last search direction */
 int xkwdcnt;			/* number of search kwd changes */
 int xpln;			/* tracks newline from ex print and pipe stdout */
+int xsep = ':';			/* ex command separator */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 sbuf *xregs[256];		/* string registers */
@@ -45,6 +45,8 @@ static struct buf *ex_tpbuf;	/* temp prev buffer */
 static int xbufsmax;		/* number of buffers */
 static int xbufsalloc = 10;	/* initial number of buffers */
 static int xgdep;		/* global command recursion depth */
+static int xexp = '%';		/* ex command internal state expand  */
+static int xexe = '!';		/* ex command external command expand */
 static char xuerr[] = "unreported error";
 static char xserr[] = "syntax error";
 static char xirerr[] = "invalid range";
@@ -1278,6 +1280,26 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 
 static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
 
+static void *ec_specials(char *loc, char *cmd, char *arg)
+{
+	if (!*arg) {
+		xsep = cmd[2] ? 0 : ':';
+		xexp = cmd[2] ? 0 : '%';
+		xexe = cmd[2] ? 0 : '!';
+		return NULL;
+	}
+	int i = *loc ? atoi(loc) : 0;
+	for (; *arg; arg++, i++) {
+		if (i == 0)
+			xsep = *arg;
+		else if (i == 1)
+			xexp = *arg;
+		else if (i == 2)
+			xexe = *arg;
+	}
+	return NULL;
+}
+
 static int eo_val(char *arg)
 {
 	int val = atoi(arg);
@@ -1293,7 +1315,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
 EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
-EO(shape) EO(seq) EO(sep) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
 _EO(left,
@@ -1371,7 +1393,8 @@ static struct excmd {
 	{"u", ec_undoredo},
 	EO(shape),
 	EO(seq),
-	EO(sep),
+	{"sc!", ec_specials},
+	{"sc", ec_specials},
 	{"s", ec_substitute},
 	{"x!", ec_write},
 	{"x", ec_write},
@@ -1402,7 +1425,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 {
 	*arg = sb->s_n;
 	while (*src && *src != xsep) {
-		if (*src == '%') {
+		if (*src == xexp) {
 			src++;
 			if (*src == '@' && src[1] && src[1] != '\\') {
 				sbuf *reg = xregs[(unsigned char)src[1]];
@@ -1423,11 +1446,11 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
 					sbuf_str(sb, pbuf->path)
 			}
-		} else if (*src == '!') {
+		} else if (*src == xexe) {
 			int n = sb->s_n;
 			src++;
-			while (*src && *src != '!') {
-				if (*src == '\\' && src[1] == '!')
+			while (*src && *src != xexe) {
+				if (*src == '\\' && src[1] == xexe)
 					src++;
 				sbuf_chr(sb, *src++)
 			}
@@ -1440,8 +1463,8 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 				sbuf_free(str)
 			}
 		} else {
-			if (*src == '\\' && (src[1] == xsep || src[1] == '%'
-					|| src[1] == '!') && src[1])
+			if (*src == '\\' && (src[1] == xsep || src[1] == xexp
+					|| src[1] == xexe) && src[1])
 				src++;
 			sbuf_chr(sb, *src++)
 		}
