@@ -1164,8 +1164,8 @@ Example: autocomplete using whole lines from a buffer
 .It Cm [0-2]sc[sep][exp][exe]
 Set ex special characters
 .Bd -literal
-No argument resets to the default <: % !> specials.
 Prefix selects a specific character to change.
+Missing arguments are set to their default values.
 
 Example: change <%> to <a>
 :1sc a
@@ -1173,8 +1173,14 @@ Example: change all to <a> <b> <c>
 :sc abc
 .Ed
 
-.It Cm sc!
-Disable ex <: % !> specials
+.It Cm [0-2]sc![sep][exp][exe]
+Set ex special characters
+.Bd -literal
+Missing arguments are set to <0x0>.
+
+Example: disable [exp] and [exe]
+:sc! \e:
+.Ed
 
 .It Cm uc
 Toggle multibyte utf-8 decoding
@@ -1365,14 +1371,6 @@ Example: paste current buffer list exactly like from :b command
 :pr A:ya! A: b:pu A
 Example: store a line printed with :p
 :pr A:ya! A:p
-.Ed
-
-.It Cm rcm[\fIval=1\fP]
-Range command model
-.Bd -literal
-Controls when an ex command nested inside ex range executes.
-0 - exec at command parse
-1 - exec at command range
 .Ed
 
 .It Cm lim[\fIval=-1\fP]
@@ -1581,9 +1579,9 @@ _
  614 uc.c | UTF-8 support
  718 led.c | insert mode/output
  765 regex.c | pikevm
- 1587 ex.c | ex options/commands
+ 1577 ex.c | ex options/commands
  1836 vi.c | normal mode/general
- 7228 total | wc -l *.c\(basort
+ 7218 total | wc -l *.c\(basort
 _
 .TE
 .
