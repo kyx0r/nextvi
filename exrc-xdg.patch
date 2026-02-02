@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 6a67c5a8..9eedc3c0 100644
+index 8f13ceb3..d61f84b5 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -35,6 +35,7 @@ int xpln;			/* tracks newline from ex print and pipe stdout */
+@@ -37,6 +37,7 @@ int xsep = ':';			/* ex command separator */
  sbuf *xacreg;			/* autocomplete db filter regex */
  rset *xkwdrs;			/* the last searched keyword rset */
  sbuf *xregs[256];		/* string registers */
@@ -10,15 +10,15 @@ index 6a67c5a8..9eedc3c0 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1291,6 +1292,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
- EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
- EO(sep) EO(ts) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
- EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
+@@ -1315,6 +1316,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+ EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+ EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(exrc)
  
  _EO(left,
  	if (*loc)
-@@ -1326,6 +1328,7 @@ static struct excmd {
+@@ -1350,6 +1352,7 @@ static struct excmd {
  	EO(ai),
  	{"ac", ec_setacreg},
  	{"a", ec_insert},
@@ -26,7 +26,7 @@ index 6a67c5a8..9eedc3c0 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1536,6 +1539,51 @@ void ex(void)
+@@ -1571,6 +1574,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -78,7 +78,7 @@ index 6a67c5a8..9eedc3c0 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1547,6 +1595,30 @@ void ex_init(char **files, int n)
+@@ -1582,6 +1630,30 @@ void ex_init(char **files, int n)
  		s = *(++files);
  	} while (--n > 0);
  	xvis &= ~8;
