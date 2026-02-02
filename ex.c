@@ -21,8 +21,6 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
-int xrcm = 1;			/* range command model -
-				0: exec at command parse 1: exec at command */
 
 int xquit;			/* exit if positive, force quit if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
@@ -1280,14 +1278,19 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 
 static void *ec_specials(char *loc, char *cmd, char *arg)
 {
-	if (!*arg) {
+	if (!*arg && !*loc) {
 		xsep = cmd[2] ? 0 : ':';
 		xexp = cmd[2] ? 0 : '%';
 		xexe = cmd[2] ? 0 : '!';
 		return NULL;
 	}
-	int i = *loc ? atoi(loc) : 0;
+	int i = 0;
+	if (*loc) {
+		i = atoi(loc);
+		goto direct;
+	}
 	for (; *arg; arg++, i++) {
+		direct:
 		if (i == 0)
 			xsep = *arg;
 		else if (i == 1)
@@ -1312,7 +1315,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 #define EO(opt) \
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
-EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt)
 EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
@@ -1375,7 +1378,6 @@ static struct excmd {
 	{"m", ec_mark},
 	{"q!", ec_quit},
 	{"q", ec_quit},
-	EO(rcm),
 	{"reg", ec_regprint},
 	{"rd", ec_undoredo},
 	{"r", ec_read},
@@ -1474,27 +1476,18 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
 	int i, j;
-	char *dst = sb->s, *pdst, *err;
+	char *dst = sb->s;
 	while (*src && (*src == xsep || *src == ' ' || *src == '\t'))
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
 		if (*src == '>' || *src == '<' || *src == '|') {
-			pdst = dst;
 			j = *src;
 			do {
 				*dst++ = *src++;
 			} while (*src && (*src != j || src[-1] == '\\'));
-			if (j == '|' && !xrcm) {
-				if (*src)
-					src++;
-				*dst = '\0';
-				dst = pdst;
-				err = ex_exec(pdst+1);
-				if (err && err != xuerr && xerr & 1)
-					ex_print("parse command error", msg_ft)
-			} else if (*src)
+			if (*src)
 				*dst++ = *src++;
 		} else
 			*dst++ = *src++;
