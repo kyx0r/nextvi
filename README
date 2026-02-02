@@ -172,14 +172,14 @@ soft linewrap lines.
 
 ex-scripting.patch
 --------------
-Adds new commands :sc and :sx
+Adds new commands :sr and :sx
 NEXTVI_FT - current buffer filetype
 NEXTVI_ROW - current line number
 NEXTVI_OFF - current byte offset
 NEXTVI_COFF - current character offset
 NEXTVI_LINE - current line
 NEXTVI_WORD - current word
-:sc runs a command with the environment variables above
+:sr runs a command with the environment variables above
 :sx runs a command with the environment variables above and
 executes its stdout as ex commands
 
