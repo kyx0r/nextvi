@@ -1,4 +1,4 @@
-.Dd Jan 31, 2026
+.Dd Feb  2, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -1164,15 +1164,16 @@ Example: autocomplete using whole lines from a buffer
 .It Cm [0-2]sc[sep][exp][exe]
 Set special characters
 .Bd -literal
-No argument resets to the default <: % !> specials
-Prefix selects a specific special to change.
+No argument resets to the default <: % !> specials.
+Prefix selects a specific character to change.
 
 Example: change <%> to <a>
 :1sc a
 Example: change all to <a> <b> <c>
 :sc abc
 .Ed
-.It Cm [#]sc!
+
+.It Cm sc!
 Disable ex <: % !> specials
 
 .It Cm uc
@@ -1578,11 +1579,11 @@ _
  409 ren.c | positioning/syntax
  608 lbuf.c | file/line buffer
  614 uc.c | UTF-8 support
- 717 led.c | insert mode/output
+ 718 led.c | insert mode/output
  765 regex.c | pikevm
- 1553 ex.c | ex options/commands
+ 1587 ex.c | ex options/commands
  1836 vi.c | normal mode/general
- 7193 total | wc -l *.c\(basort
+ 7228 total | wc -l *.c\(basort
 _
 .TE
 .
