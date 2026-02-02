@@ -865,15 +865,21 @@ EX COMMANDS
      [0-2]sc[sep][exp][exe]
              Set ex special characters
 
-             No argument resets to the default <: % !> specials.
              Prefix selects a specific character to change.
+             Missing arguments are set to their default values.
 
              Example: change <%> to <a>
              :1sc a
              Example: change all to <a> <b> <c>
              :sc abc
 
-     sc!     Disable ex <: % !> specials
+     [0-2]sc![sep][exp][exe]
+             Set ex special characters
+
+             Missing arguments are set to <0x0>.
+
+             Example: disable [exp] and [exe]
+             :sc! \:
 
      uc      Toggle multibyte utf-8 decoding
 
@@ -1021,13 +1027,6 @@ EX OPTIONS
              :pr A:ya! A: b:pu A
              Example: store a line printed with :p
              :pr A:ya! A:p
-
-     rcm[val=1]
-             Range command model
-
-             Controls when an ex command nested inside ex range executes.
-             0 - exec at command parse
-             1 - exec at command range
 
      lim[val=-1]
              Line length render limit
@@ -1181,9 +1180,9 @@ CODE MAP
      | 614 uc.c     |  UTF-8 support       |
      | 718 led.c    |  insert mode/output  |
      | 765 regex.c  |  pikevm              |
-     | 1587 ex.c    |  ex options/commands |
+     | 1577 ex.c    |  ex options/commands |
      | 1836 vi.c    |  normal mode/general |
-     | 7228 total   |  wc -l *.c|sort      |
+     | 7218 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
