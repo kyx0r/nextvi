@@ -1502,29 +1502,29 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 /* execute a single ex command */
 void *ex_exec(const char *ln)
 {
-	int arg, idx = 0, r1 = -1, r2 = -1;
+	int arg, i = 0, idx = 0, r1 = -1, r2 = -1;
 	char *ret = NULL;
 	if (!xgdep)
 		lbuf_mark(xb, '*', xrow, xoff);
 	sbuf_smake(sb, strlen(ln) + 4)
-	for (int i = 0; *ln; i++) {
+	do {
 		sbuf_cut(sb, 0)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
 		if (i < r1 || i > r2) {
 			ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
-			if (!ret)
-				continue;
-			if (!*ret) {
-				r1 = ((int*)ret)[1] + i;
-				r2 = ((int*)ret)[2] + i;
-				continue;
+			if (ret) {
+				if (!*ret) {
+					r1 = ((int*)ret)[1] + i;
+					r2 = ((int*)ret)[2] + i;
+				} else if (ret != xuerr && xerr & 1) {
+					ex_print(ret, msg_ft)
+					if (xerr & 2)
+						break;
+				}
 			}
-			if (ret != xuerr && xerr & 1)
-				ex_print(ret, msg_ft)
-			if (xerr & 2)
-				break;
 		}
-	}
+		i++;
+	} while (*ln);
 	free(sb->s);
 	return xerr & 4 ? NULL : ret;
 }
@@ -1542,7 +1542,7 @@ void ex(void)
 				xpln = 2;
 				ex_exec(xregs[':']->s);
 			} else
-				ex_command(sb->s)
+				ex_command(sb->s+1)
 			xb->useq += xseq;
 			esc = 1;
 		} else
