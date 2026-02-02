@@ -1475,8 +1475,8 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
 	int i, j;
 	char *dst = sb->s, *pdst, *err;
-	while (*src == xsep || *src == ' ' || *src == '\t')
-		src += !!src[0];
+	while (*src && (*src == xsep || *src == ' ' || *src == '\t'))
+		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
