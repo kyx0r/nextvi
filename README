@@ -863,7 +863,7 @@ EX COMMANDS
              :ac .+
 
      [0-2]sc[sep][exp][exe]
-             Set special characters
+             Set ex special characters
 
              No argument resets to the default <: % !> specials.
              Prefix selects a specific character to change.
