@@ -1161,6 +1161,20 @@ Example: autocomplete using whole lines from a buffer
 :ac .+
 .Ed
 
+.It Cm [0-2]sc[sep][exp][exe]
+Set special characters
+.Bd -literal
+No argument resets to the default <: % !> specials
+Prefix selects a specific special to change.
+
+Example: change <%> to <a>
+:1sc a
+Example: change all to <a> <b> <c>
+:sc abc
+.Ed
+.It Cm [#]sc!
+Disable ex <: % !> specials
+
 .It Cm uc
 Toggle multibyte utf-8 decoding
 .Bd -literal
@@ -1352,17 +1366,12 @@ Example: store a line printed with :p
 :pr A:ya! A:p
 .Ed
 
-.It Cm sep[\fIval=:\fP]
-Ex separator
+.It Cm rcm[\fIval=1\fP]
+Range command model
 .Bd -literal
-Set ex command separator character.
-Ex separator must not collide with any ex/range special characters.
-Changing default <:> separator will break some built-in commands/macros.
-
-Example: set separator to <s>
-:sep s
-Example: disable separator
-:sep 0
+Controls when an ex command nested inside ex range executes.
+0 - exec at command parse
+1 - exec at command range
 .Ed
 
 .It Cm lim[\fIval=-1\fP]
