@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 6a67c5a8..97ca1950 100644
+index 8f13ceb3..a0c83478 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -35,6 +35,7 @@ int xpln;			/* tracks newline from ex print and pipe stdout */
+@@ -37,6 +37,7 @@ int xsep = ':';			/* ex command separator */
  sbuf *xacreg;			/* autocomplete db filter regex */
  rset *xkwdrs;			/* the last searched keyword rset */
  sbuf *xregs[256];		/* string registers */
@@ -10,7 +10,7 @@ index 6a67c5a8..97ca1950 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1274,6 +1275,41 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1298,6 +1299,41 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -52,11 +52,11 @@ index 6a67c5a8..97ca1950 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1365,6 +1401,8 @@ static struct excmd {
- 	EO(shape),
+@@ -1391,6 +1427,8 @@ static struct excmd {
  	EO(seq),
- 	EO(sep),
-+	{"sc", ec_script},
+ 	{"sc!", ec_specials},
+ 	{"sc", ec_specials},
++	{"sr", ec_script},
 +	{"sx", ec_script},
  	{"s", ec_substitute},
  	{"x!", ec_write},
@@ -78,7 +78,7 @@ index 7d955999..c583ec38 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index b613b0ec..c7bf7fa4 100644
+index dcdcc3ca..b1485457 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple
