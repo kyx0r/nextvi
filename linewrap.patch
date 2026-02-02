@@ -1,16 +1,16 @@
 diff --git a/ex.c b/ex.c
-index 6a67c5a8..d4b1d6c8 100644
+index 8f13ceb3..7a6bd23e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -22,6 +22,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
- int xseq = 1;			/* undo/redo sequence */
- int xerr = 1;			/* error handling -
+@@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
  				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
+ int xrcm = 1;			/* range command model -
+ 				0: exec at command parse 1: exec at command */
 +int xlw;			/* soft linewrap col */
  
  int xquit;			/* exit if positive, force quit if negative */
  int xrow, xoff, xtop;		/* current row, column, and top row */
-@@ -1274,6 +1275,23 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
+@@ -1298,6 +1299,23 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -34,7 +34,7 @@ index 6a67c5a8..d4b1d6c8 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1386,6 +1404,7 @@ static struct excmd {
+@@ -1412,6 +1430,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -239,7 +239,7 @@ index 2745ebd9..134d153e 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index b613b0ec..74390fd9 100644
+index dcdcc3ca..bbb6be14 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -145,6 +145,8 @@ struct lopt {
@@ -251,7 +251,7 @@ index b613b0ec..74390fd9 100644
  };
  struct lbuf {
  	char **ln;			/* buffer lines */
-@@ -431,6 +433,7 @@ extern int xsep;
+@@ -430,6 +432,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;
