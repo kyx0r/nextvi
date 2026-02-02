@@ -1,5 +1,5 @@
 diff --git a/ex.c b/ex.c
-index 6a67c5a8..1649f1dc 100644
+index 8f13ceb3..b4c5cb2b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
@@ -10,22 +10,22 @@ index 6a67c5a8..1649f1dc 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1291,6 +1292,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
- EO(pac) EO(pr) EO(ai) EO(ish) EO(ic) EO(grp) EO(shape) EO(seq)
- EO(sep) EO(ts) EO(td) EO(order) EO(hll) EO(hlw) EO(hlp) EO(hlr)
- EO(hl) EO(lim) EO(led) EO(vis) EO(mpt) EO(err)
+@@ -1315,6 +1316,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+ EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+ EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(qe)
  
  _EO(left,
  	if (*loc)
-@@ -1349,6 +1351,7 @@ static struct excmd {
+@@ -1373,6 +1375,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
 +	EO(qe),
  	{"q!", ec_quit},
  	{"q", ec_quit},
- 	{"reg", ec_regprint},
+ 	EO(rcm),
 diff --git a/led.c b/led.c
 index ceead0e1..48582b3d 100644
 --- a/led.c
@@ -86,7 +86,7 @@ index 2745ebd9..84e3f4e9 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index b613b0ec..c38c3caf 100644
+index dcdcc3ca..ebbe9120 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -367,6 +367,7 @@ typedef struct {
