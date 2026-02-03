@@ -1028,6 +1028,13 @@ EX OPTIONS
              Example: store a line printed with :p
              :pr A:ya! A:p
 
+     rcm[val=1]
+             Range command model
+
+             Controls when an ex command nested inside ex range executes.
+             0 - exec at command parse
+             1 - exec at command range
+
      lim[val=-1]
              Line length render limit
 
@@ -1180,9 +1187,9 @@ CODE MAP
      | 614 uc.c     |  UTF-8 support       |
      | 718 led.c    |  insert mode/output  |
      | 765 regex.c  |  pikevm              |
-     | 1577 ex.c    |  ex options/commands |
+     | 1584 ex.c    |  ex options/commands |
      | 1836 vi.c    |  normal mode/general |
-     | 7218 total   |  wc -l *.c|sort      |
+     | 7225 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1254,4 +1261,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 2, 2026                     Nextvi 4.0
+Nextvi 4.0                     February 3, 2026                     Nextvi 4.0
