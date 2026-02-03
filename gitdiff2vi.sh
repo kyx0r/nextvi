@@ -4,4 +4,5 @@
 
 output="${1:-tmp.sh}"
 git diff | ./patch2vi > "$output"
+chmod +x "$output"
 echo "Generated: $output"

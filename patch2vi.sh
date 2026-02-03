@@ -19,4 +19,5 @@ else
 fi
 
 ./patch2vi < "$input" > "$output"
+chmod +x "$output"
 echo "Generated: $output"
