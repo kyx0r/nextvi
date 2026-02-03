@@ -6,3 +6,4 @@ vi
 file
 *.orig
 *.rej
+patch2vi
