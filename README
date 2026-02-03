@@ -1,7 +1,12 @@
 NEXTVI PATCHES
 ==============
 Optional patches for Nextvi.
-Apply: patch < name.patch
+Apply: ./name.sh
+
+Shell scripts use Nextvi to patch itself. This system will be
+more flexible as it matures and will scratch the limits of what
+is possible with Nextvi. The plan is to lessen the burden of
+maintaining patches by inventing smarter ways of patching.
 
 64bit.sh
 --------------
@@ -16,21 +21,21 @@ gen-widechars.sh
 --------------
 A script I use to update zwchars and dwchars in uc.c
 
-arrowkeys_normal.patch
+arrowkeys_normal.sh
 --------------
 Adds arrows keys support in normal mode.
 
-arrowkeys_insert.patch
+arrowkeys_insert.sh
 --------------
 Adds arrows keys support in insert mode and command modes.
 
-threaded_search.patch
+threaded_search.sh
 --------------
 Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
 aka libpthread
 
-hl_part.patch
+hl_part.sh
 --------------
 Allow syntax highlight to continue past the terminal dimensions up to a
 certain limit. To customize the depth, adjust LEDFORW and LEDBACK definitions
@@ -39,12 +44,12 @@ Patch will alter the meaning of <^> <$> assertions in syntax highlight
 regex, as the line would be considered to start/end beyond the visible columns.
 Patch works in reverse direction and with reordered text.
 
-hl_naive.patch
+hl_naive.sh
 --------------
 Allow syntax highlight to continue past the terminal dimensions unlimited.
 Performance will degrade on very long lines.
 
-debug.patch
+debug.sh
 --------------
 Cleanup reachable memory upon termination.
 Use for debugging.
@@ -52,7 +57,7 @@ Note: in some features leaks won't be freed - for example hlw (which is not
 enabled by default) Also initializes sdense in regex.c so that valgrind stops
 freaking out.
 
-grep.patch
+grep.sh
 --------------
 Adds a special temporary buffer /grep/ much like the default /hist/ or /fm/.
 When new keybind ^x is executed vi performs fs_search on every file and
@@ -66,21 +71,21 @@ grep -r -n "str" .
 The feature can be substituted with a pipe command in case of a higher performing
 grep implementation or loading of cached results from script.
 
-rstr.patch
+rstr.sh
 --------------
 Adaptation from upstream Neatvi, where simple operations are optimized by
 running a specialized search code instead of full regex engine. rstr can
 yeild up to 30% faster search on non regex patterns. This is not included in
 base nextvi due to underlying complexity.
 
-stdin_pipe.patch
+stdin_pipe.sh
 --------------
 Allows the user to use vi like less except you need to specify
 - as command line arg (just like in vim).
 Example:
 $ dmesg | vi -
 
-ec_closebuf.patch
+ec_closebuf.sh
 --------------
 Allows the user to close the buffer using new ex command :cx
 Specify a number as an arg for what buffer to close.
@@ -93,19 +98,19 @@ Omiting the parameter of the range assumes current buffer
 index for that parameter (not inclusive and either begin or end
 of the range). Example :cx-5 or :cx5-
 
-filetype_shebang.patch
+filetype_shebang.sh
 --------------
 Detect and set the corresponding filetype based on the shebang
 or specific data in the file. Currently supports only shell
 and python.
 
-kbd_layout.patch
+kbd_layout.sh
 --------------
 Changes hjkl to work well with other keyboard layouts.
 In this example hjkl is changed to yneo (workman keyboard layout)
 Note: this patch can be used as a base for remapping any base keybinds.
 
-quickexit.patch
+quickexit.sh
 --------------
 Added quickexit to insert mode keybind: kj
 It's important to understand that this has a caveat, if input comes too fast,
@@ -114,63 +119,63 @@ mode will be cancelled mid way and paste will be wrong. Luckily this almost
 never happens because such letter combination is extremely rare.
 Delay time (in ms) can be set via :qe N or disabled by setting N to 0.
 
-hl_mark.patch
+hl_mark.sh
 -------------
 Adds new ex option "mhl" which will highlight lbuf marks. Each mark has
 different color up to 16. Higher marks may duplicate the colors.
 Lazy redraw, use <^L> if needed.
 
-c_option.patch
+c_option.sh
 -------------
 Adds -c commandline option. This can be used to pass in ex commands instead
 of EXINIT.
 
-exrc.patch
+exrc.sh
 -------------
 Adds support for reading ~/.exrc file. This can be used to pass in ex
 commands instead of EXINIT.
 
-exrc-xdg.patch
+exrc-xdg.sh
 -------------
 Adds XDG dir support for exrc.patch.
 
-readonly.patch
+readonly.sh
 -------------
 Adds new ex option "ro" and commandline readonly option -R
 
-remove_vla_cliterals.patch
+remove_vla_cliterals.sh
 --------------
 Removes variable length arrays and compound literals for portability reasons.
 
-undojump.patch
+undojump.sh
 --------------
 Adds a new keybind ^o which allows to jump through the undo marks
 without actually doing undo.
 
-undo_branches.patch
+undo_branches.sh
 --------------
 Adds a basic multi-level undo implementation. Use the new ex command :up
 to print the divergent changes. Each path has an index, to switch to it
 use :up with a number as an argument. Example: :up1
 The current undo branch is stored as the last index before swapping.
 
-alternate-w-behaviour.patch
+alternate-w-behaviour.sh
 --------------
 Implements more vim/like d/c/yw
 
-ac_context.patch
+ac_context.sh
 --------------
 Improvements to autocomplete, now the word completion will also use
 text that prefixes the insert when it makes sense. Makes it possible
 to autocomplete in more desired situations.
 
-linewrap.patch
+linewrap.sh
 --------------
 Soft line wrap
 Adds new :lw command which can be used to specify the max column to which
 soft linewrap lines.
 
-ex-scripting.patch
+ex-scripting.sh
 --------------
 Adds new commands :sr and :sx
 NEXTVI_FT - current buffer filetype
@@ -183,27 +188,27 @@ NEXTVI_WORD - current word
 :sx runs a command with the environment variables above and
 executes its stdout as ex commands
 
-chunked_read.patch
+chunked_read.sh
 --------------
 Allows nextvi to read files in chunks instead of reading the whole
 file into the memory right away. This patch optimizes the reading of
 binary files, since it would be truncated earlier before loading
 the whole file into memory.
 
-record_input.patch
+record_input.sh
 --------------
 Adds ex option "rec". This option specifies a register in which
 to record all user input. Makes it easier to record macros.
 
-splits.patch
+splits.sh
 --------------
 Implements :sp and :vs commands for vertical and horizontal splits.
 Adds vc and vd normal commands to switch and close views. View
 can also be closed using :q
-New command :eq can be used to balance the vertical and horizontal 
+New command :eq can be used to balance the vertical and horizontal
 split space in the nearest dimension.
 
-alt_sections.patch
+alt_sections.sh
 --------------
 Implements closer to standard vi(1) sections keybinding:
 [#])          Move to next sentence boundary down # times
