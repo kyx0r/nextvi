@@ -1,8 +1,8 @@
 diff --git a/ex.c b/ex.c
-index 8f13ceb3..919e9f27 100644
+index 436e178d..64c93064 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -358,7 +358,9 @@ int ex_edit(const char *path, int len)
+@@ -352,7 +352,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
@@ -13,7 +13,7 @@ index 8f13ceb3..919e9f27 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -377,6 +379,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -371,6 +373,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -23,7 +23,7 @@ index 8f13ceb3..919e9f27 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1573,15 +1578,35 @@ void ex(void)
+@@ -1570,15 +1575,35 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
