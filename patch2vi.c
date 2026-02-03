@@ -416,6 +416,12 @@ int main(int argc, char **argv)
 	printf("set -e\n");
 	printf("\n# Path to nextvi (adjust as needed)\n");
 	printf("VI=${VI:-vi}\n");
+	printf("\n# Verify that VI is nextvi\n");
+	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
+	printf("    echo \"Error: $VI is not nextvi\" >&2\n");
+	printf("    echo \"Set VI environment variable to point to nextvi\" >&2\n");
+	printf("    exit 1\n");
+	printf("fi\n");
 
 	/* Emit script for each file */
 	for (int i = 0; i < nfiles; i++)
