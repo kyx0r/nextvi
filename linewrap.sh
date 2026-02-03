@@ -6,6 +6,13 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Verify that VI is nextvi
+if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
+    echo "Error: $VI is not nextvi" >&2
+    echo "Set VI environment variable to point to nextvi" >&2
+    exit 1
+fi
+
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1412a 	{\"lw\", ec_linewrap},
 .
