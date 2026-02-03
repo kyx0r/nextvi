@@ -751,9 +751,10 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
 		sb->s_n--;
 	sbuf_null(sb)
-	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
+	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb))) {
 		beg++;
-	else if (cmd[0] == 'i')
+		end = beg;
+	} else if (cmd[0] == 'i')
 		end = beg;
 	if (o1 >= 0 && cmd[0] == 'c') {
 		if (!sb->s_n && o2 <= o1)
