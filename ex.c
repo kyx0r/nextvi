@@ -21,6 +21,8 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
+int xrcm = 1;			/* range command model -
+				0: exec at command parse 1: exec at command */
 
 int xquit;			/* exit if positive, force quit if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
@@ -266,15 +268,9 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		*beg = 0;
 	while (*loc) {
 		if (*loc == '|') {
-			char *cmd = ++loc;
-			for (; *loc && *loc != '|'; loc++)
-				if (*loc == '\\' && loc[1] == '|')
-					loc++;
-			int nulled = *loc;
-			*loc = '\0';
+			char *cmd = re_read(&loc);
 			void *err = ex_exec(cmd);
-			if (nulled)
-				*loc++ = '|';
+			free(cmd);
 			if (err) {
 				xrerr = "ex command error";
 				return 1;
@@ -1298,6 +1294,8 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
+static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
+
 static int eo_val(char *arg)
 {
 	int val = atoi(arg);
@@ -1312,7 +1310,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 #define EO(opt) \
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
-EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt)
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
 EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
@@ -1375,6 +1373,7 @@ static struct excmd {
 	{"m", ec_mark},
 	{"q!", ec_quit},
 	{"q", ec_quit},
+	EO(rcm),
 	{"reg", ec_regprint},
 	{"rd", ec_undoredo},
 	{"r", ec_read},
@@ -1414,6 +1413,7 @@ static struct excmd {
 	EO(vis),
 	{"=", ec_num},
 	{"", ec_print}, /* do not remove */
+	{"", ec_null}, /* do not remove */
 };
 
 /* parse command argument expanding % and ! */
@@ -1472,14 +1472,21 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 /* parse range and command */
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
-	int i, j;
-	char *dst = sb->s;
+	int i, j, nullfunc = 0;
+	char *dst = sb->s, *cmd, *err;
 	while (*src && (*src == xsep || *src == ' ' || *src == '\t'))
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
-		if (*src == '>' || *src == '<' || *src == '|') {
+		if (*src == '|' && !xrcm) {
+			cmd = re_read((char**)&src);
+			err = ex_exec(cmd);
+			if (err && err != xuerr && xerr & 1)
+				ex_print("parse command error", msg_ft)
+			free(cmd);
+			nullfunc = 1;
+		} else if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {
 				*dst++ = *src++;
@@ -1496,7 +1503,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 			if (!src[j] || src[j] != excmds[i].name[j])
 				break;
 		if (!excmds[i].name[j]) {
-			*idx = i;
+			*idx = i + (nullfunc && i == LEN(excmds) - 2);
 			src += j;
 			break;
 		}
