@@ -5,6 +5,7 @@ do
 	printf "%s\n" "RUNNING: $s"
 	./"$s"
 	[ "$1" = "1" ] && ./cbuild.sh build
+	[ "$1" = "2" ] && git diff > "${s%.sh}.patch"
 	git checkout . &>/dev/null
 	printf "\n"
 done
