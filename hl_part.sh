@@ -14,11 +14,11 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@217c 				i = p->off - stt[atti];
+EXINIT="rcm:|sc! @|vis 6@217;21;22c atti
 .
-@vis 4@vis 6@207c 		syn_highlight(att, bound ? bound : s0, MIN(n, fcterm));
+@vis 4@vis 6@207;48;48c f
 .
-@vis 4@vis 6@205c 	memset(att, 0, MIN(n, fcterm+1) * sizeof(att[0]));
+@vis 4@vis 6@205;23;23c f
 .
 @vis 4@vis 6@183a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {

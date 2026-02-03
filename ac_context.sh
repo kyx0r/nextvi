@@ -17,13 +17,13 @@ fi
 EXINIT="rcm:|sc! @|vis 6@551,552c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
 .
-@vis 4@vis 6@537c 			if (search(sb, is->lsug, pre)) {
+@vis 4@vis 6@537;16;46c , is->lsug, pre
 .
 @vis 4@vis 6@531,532c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
 .
-@vis 4@vis 6@520c 			is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
+@vis 4@vis 6@520;63;76c )
 .
 @vis 4@vis 6@412a 	if (ai_max >= 0 && xpac) {
 		c = 0;
@@ -36,9 +36,9 @@ EXINIT="rcm:|sc! @|vis 6@551,552c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : 
 		l = pre;
 		goto again;
 .
-@vis 4@vis 6@29c 			else if (l >= pre)
+@vis 4@vis 6@29;7;7c  if (l >= pre)
 .
-@vis 4@vis 6@26c 		if (len++ != sb->s_n - l) {
+@vis 4@vis 6@26;15;15c sb->s_n - 
 .
 @vis 4@vis 6@20c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);

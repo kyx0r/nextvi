@@ -35,11 +35,11 @@ EXINIT="rcm:|sc! @|vis 6@1582a 	signal(SIGINT, SIG_DFL); /* got past init? ok re
 		}
 	}
 .
-@vis 4@vis 6@1579c 		ec_edit(!n && stdin_fd ? NULL : \"\", \"e\", s);
+@vis 4@vis 6@1579;10;10c !n && stdin_fd ? NULL : 
 .
 @vis 4@vis 6@1576a 	int i = n;
 .
-@vis 4@vis 6@1574c 	xbufsalloc = MAX(n + !!stdin_fd, xbufsalloc);
+@vis 4@vis 6@1574;19;19c  + !!stdin_fd
 .
 @vis 4@vis 6@373a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
@@ -52,20 +52,20 @@ EXINIT="rcm:|sc! @|vis 6@1582a 	signal(SIGINT, SIG_DFL); /* got past init? ok re
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@349c 	tcsetpgrp(stdin_fd, getpgrp());
+EXINIT="rcm:|sc! @|vis 6@349;11;23c stdin_fd
 .
-@vis 4@vis 6@306c 	fds[2].fd = ibuf ? stdin_fd : -1;
+@vis 4@vis 6@306;20;21c stdin_fd
 .
 @vis 4@vis 6@162,163c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 .
 @vis 4@vis 6@158a 		ufd.fd = stdin_fd;
 .
-@vis 4@vis 6@40c 	tcsetattr(stdin_fd, 0, &termios);
+@vis 4@vis 6@40;11;12c stdin_fd
 .
 @vis 4@vis 6@31a 	isig = 1;
 .
-@vis 4@vis 6@26c 	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
+@vis 4@vis 6@26;12;13c stdin_fd
 .
 @vis 4@vis 6@20,21c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
@@ -73,7 +73,7 @@ EXINIT="rcm:|sc! @|vis 6@349c 	tcsetpgrp(stdin_fd, getpgrp());
 		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
 .
-@vis 4@vis 6@18c 	tcgetattr(stdin_fd, &termios);
+@vis 4@vis 6@18;11;12c stdin_fd
 .
 @vis 4@vis 6@8a int stdin_fd;
 static int isig;

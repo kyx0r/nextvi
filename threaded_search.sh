@@ -119,16 +119,16 @@ static void *lsearch(void *arg)
 EXINIT="rcm:|sc! @|vis 6@643a 	else
 		flg &= ~REG_NEWLINE;
 .
-@vis 4@vis 6@642c 	if (eol_ch && utf8_length[eol_ch])
+@vis 4@vis 6@642;11;11c  && utf8_length[eol_ch]
 .
-@vis 4@vis 6@402c #define _return(state) { if (flg & REG_NEWLINE) utf8_length[eol_ch] = 1; return state; } \\
+@vis 4@vis 6@402;29;35c flg & REG_NEWLINE
 .
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: uc.c
 EXINIT="rcm:|sc! @|vis 6@19a unsigned char *utf8_length = _utf8_length;
 .
-@vis 4@vis 6@1c unsigned char _utf8_length[256] = {
+@vis 4@vis 6@1;14;14c _
 .
 @vis 4@wq" $VI -e 'uc.c'
 

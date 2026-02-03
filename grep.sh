@@ -23,7 +23,7 @@ EXINIT="rcm:|sc! @|vis 6@254a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY
 @vis 4@wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@41c struct buf tempbufs[3];		/* temporary buffers, for internal use */
+EXINIT="rcm:|sc! @|vis 6@41;20;21c 3
 .
 @vis 4@wq" $VI -e 'ex.c'
 
@@ -82,25 +82,25 @@ EXINIT="rcm:|sc! @|vis 6@1799a 	temp_open(2, \"/grep/\", grep_ft);
 			*off = 0;
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
 .
-@vis 4@vis 6@732c 			fs_search(0, 1, row, off);
+@vis 4@vis 6@732;13;13c 0, 
 .
 @vis 4@vis 6@713a 	case TK_CTL('x'):
 .
-@vis 4@vis 6@538c 		fssearch(ret && xrow)
+@vis 4@vis 6@538;11;11c ret && xrow
 .
-@vis 4@vis 6@522c 		fssearch(ret && xrow && again != 2)
+@vis 4@vis 6@522;11;11c ret && xrow && again != 2
 .
-@vis 4@vis 6@518c 	int ret, len;
+@vis 4@vis 6@518;5;16c 
 .
-@vis 4@vis 6@515c static int fs_search(int again, int cnt, int *row, int *off)
+@vis 4@vis 6@515;25;25c again, int 
 .
-@vis 4@vis 6@504c if (isbuffer) { \\
+@vis 4@vis 6@504;4;15c isbuffer
 .
-@vis 4@vis 6@499c #define fssearch(isbuffer) \\
+@vis 4@vis 6@499;17;17c isbuffer
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@448c extern struct buf tempbufs[3];
+EXINIT="rcm:|sc! @|vis 6@448;27;28c 3
 .
 @vis 4@wq" $VI -e 'vi.h'

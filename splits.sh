@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! #|vis 6#261c |[@&!?=dmj]|b[psx]?|p[uh]?|ac?|eq|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\\
+EXINIT="rcm:|sc! #|vis 6#261;32;62c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
 .
 #vis 4#wq" $VI -e 'conf.c'
 
@@ -391,31 +391,31 @@ int nwins;			/* number of windows */
 #vis 4#wq" $VI -e 'ex.c'
 
 # Patch: led.c
-EXINIT="rcm:|sc! #|vis 6#611c 				led_redraw(sb->s, 0, orow, crow, ctop, flg, ai_max);
+EXINIT="rcm:|sc! #|vis 6#611;46;46c , ai_max
 .
 #vis 4#vis 6#588a 			if (curwin)
 				curwin->buf = ex_buf;
 .
-#vis 4#vis 6#568c 				led_redraw(sb->s, r, orow, crow, ctop, flg, ai_max);
+#vis 4#vis 6#568;46;46c , ai_max
 .
-#vis 4#vis 6#509c 				led_redraw(sb->s, 0, orow, crow, ctop, flg, ai_max);
+#vis 4#vis 6#509;46;46c , ai_max
 .
-#vis 4#vis 6#386c 	term_pos(crow - ctop, winx);
+#vis 4#vis 6#386;23;24c winx
 .
 #vis 4#vis 6#384c 			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
 .
-#vis 4#vis 6#377c 			led_crender(cb->s, r, winx + vi_lncol, xleft, xleft + winw - vi_lncol)
+#vis 4#vis 6#377;25;55c winx + vi_lncol, xleft, xleft + winw
 .
-#vis 4#vis 6#368c 			term_pos(r, winx);
+#vis 4#vis 6#368;15;16c winx
 .
-#vis 4#vis 6#366c 	for (int nl = 0; r < winh; r++) {
+#vis 4#vis 6#366;22;27c winh
 .
 #vis 4#vis 6#364a 	/* window offset for vsplit (not for prompts) */
 	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
 	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 	int winh = (ai_max >= 0 && curwin) ? curwin->h : xrows;
 .
-#vis 4#vis 6#363c static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg, int ai_max)
+#vis 4#vis 6#363;77;77c , int ai_max
 .
 #vis 4#vis 6#311,312c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
 	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
@@ -427,21 +427,21 @@ EXINIT="rcm:|sc! #|vis 6#611c 				led_redraw(sb->s, 0, orow, crow, ctop, flg, ai
 	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
 	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 .
-#vis 4#vis 6#97c 		return xleft + ww - pos - 1;
+#vis 4#vis 6#97;17;22c ww
 .
 #vis 4#vis 6#95a 	int ww = curwin ? curwin->w : xcols;
 .
 #vis 4#wq" $VI -e 'led.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! #|vis 6#1772c 		term_pos((curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) + n + vi_lncol);
+EXINIT="rcm:|sc! #|vis 6#1772;11;23c (curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +
 .
-#vis 4#vis 6#1755c 			if (xrow != orow && orow >= xtop && orow < xtop + win_height())
+#vis 4#vis 6#1755;53;58c win_height()
 .
 #vis 4#vis 6#1747,1748c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-#vis 4#vis 6#1745c 				|| (*vi_word && orow != xrow)) {
+#vis 4#vis 6#1745;34;34c  {
 .
 #vis 4#vis 6#1743c 		/* save cursor position to current window */
 		if (curwin) {
@@ -459,7 +459,7 @@ EXINIT="rcm:|sc! #|vis 6#1772c 		term_pos((curwin ? curwin->y : 0) + xrow - xtop
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
-#vis 4#vis 6#1538c 				break; }
+#vis 4#vis 6#1538;10;10c  }
 .
 #vis 4#vis 6#1535a 				if (xrows != orows || xcols != ocols)
 					win_size();
@@ -489,13 +489,13 @@ EXINIT="rcm:|sc! #|vis 6#1772c 		term_pos((curwin ? curwin->y : 0) + xrow - xtop
 #vis 4#vis 6#1281,1282c 				if (xtop < lbuf_len(xb) - win_height())
 					xtop = MIN(lbuf_len(xb) - win_height(), xtop + n);
 .
-#vis 4#vis 6#1279c 				n = vi_scrollud ? vi_scrollud : win_height() / 2;
+#vis 4#vis 6#1279;36;41c win_height()
 .
-#vis 4#vis 6#1267c 				n = vi_scrollud ? vi_scrollud : win_height() / 2;
+#vis 4#vis 6#1267;36;41c win_height()
 .
-#vis 4#vis 6#1248c 				vi_scrollforward(MAX(1, vi_arg) * (win_height() - 1));
+#vis 4#vis 6#1248;39;44c win_height()
 .
-#vis 4#vis 6#1243c 				vi_scrollbackward(MAX(1, vi_arg) * (win_height() - 1));
+#vis 4#vis 6#1243;40;45c win_height()
 .
 #vis 4#vis 6#1195,1196c 		if (nwins > 1) {
 			if (curwin) {
@@ -520,26 +520,26 @@ if (xtop + _wh <= xrow) \\
 .
 #vis 4#vis 6#1177a { int _wh = win_height(); \\
 .
-#vis 4#vis 6#1114c 	xrow = MIN(xrow, xtop + win_height() - 1);
+#vis 4#vis 6#1114;25;30c win_height()
 .
-#vis 4#vis 6#1028c 		if (xrow - xtop == win_height())
+#vis 4#vis 6#1028;21;26c win_height()
 .
 #vis 4#vis 6#796,797c 		else if (*row < xtop || *row >= xtop + win_height() - 1)
 			xtop = MAX(0, *row - win_height() / 2);
 .
-#vis 4#vis 6#783c 		xtop = MAX(0, *row - win_height() / 2);
+#vis 4#vis 6#783;23;28c win_height()
 .
-#vis 4#vis 6#750c 		xtop = MAX(0, *row - win_height() / 2);
+#vis 4#vis 6#750;23;28c win_height()
 .
-#vis 4#vis 6#374c 		*row = MIN(xtop + win_height() / 2, lbuf_len(xb) - 1);
+#vis 4#vis 6#374;20;25c win_height()
 .
-#vis 4#vis 6#371c 		*row = MIN(xtop + win_height() - 1 - cnt + 1, lbuf_len(xb) - 1);
+#vis 4#vis 6#371;20;25c win_height()
 .
-#vis 4#vis 6#238c 		n = MIN(i, wrows);
+#vis 4#vis 6#238;13;14c w
 .
-#vis 4#vis 6#236c 			vi_drawrow(xtop + wrows - n + i);
+#vis 4#vis 6#236;21;22c w
 .
-#vis 4#vis 6#234c 		n = MIN(-i, wrows);
+#vis 4#vis 6#234;14;15c w
 .
 #vis 4#vis 6#230c 	int wrows = win_height();
 	term_pos(curwin ? curwin->y : 0, 0);
@@ -600,28 +600,28 @@ static void vi_draw_allwins(void)
 }
 
 .
-#vis 4#vis 6#222c 	for (; i < xtop + wrows; i++)
+#vis 4#vis 6#222;19;20c w
 .
 #vis 4#vis 6#220a 	int wrows = win_height();
 .
 #vis 4#vis 6#214c 	led_crender(s, scrrow, curwin ? curwin->x : 0, xleft, xleft + wcols)
 .
-#vis 4#vis 6#209c 		RS(2, led_prender(tmp, scrrow, curwin ? curwin->x : 0, 0, l1))
+#vis 4#vis 6#209;25;36c scrrow, curwin ? curwin->x :
 .
-#vis 4#vis 6#206c 				RS(2, led_prender(tmp1, scrrow, (curwin ? curwin->x : 0) + l1+i1, 0, l1))
+#vis 4#vis 6#206;28;39c scrrow, (curwin ? curwin->x : 0) +
 .
 #vis 4#vis 6#195c 		led_crender(s, scrrow, (curwin ? curwin->x : 0) + l1, xleft, xleft + wcols - l1)
 .
-#vis 4#vis 6#163c 		RS(2, led_crender(tmp, scrrow, curwin ? curwin->x : 0, 0, wcols))
+#vis 4#vis 6#163;25;44c scrrow, curwin ? curwin->x : 0, 0, w
 .
 #vis 4#vis 6#143,146c 		char tmp[wcols+3], snum[32];
 		memset(tmp, ' ', wcols+1);
 		tmp[wcols+1] = '\\n';
 		tmp[wcols+2] = '\\0';
 .
-#vis 4#vis 6#139c 		if (row == xtop + wrows-1 || !c || *c == '\\n')
+#vis 4#vis 6#139;20;21c w
 .
-#vis 4#vis 6#133c 	if (xmpt == 1 && scrrow == xrows - 1)
+#vis 4#vis 6#133;18;31c scrrow ==
 .
 #vis 4#vis 6#130a 	int wrows = win_height();
 	int wcols = win_width();
@@ -646,7 +646,7 @@ static int win_height(void)
 }
 
 .
-#vis 4#vis 6#120c 	if (l1 > wcols || l1 < 0 || ret || l1 >= rstate->cmax + vi_lncol) \\
+#vis 4#vis 6#120;10;11c w
 .
 #vis 4#vis 6#104a /* draw horizontal separator line at screen row, from x for w columns */
 static void vi_draw_hsep(int row, int x, int w)

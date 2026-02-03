@@ -14,60 +14,60 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1189c 	else if (!(fsincl = rstr_make(arg, xic ? REG_ICASE : 0)))
+EXINIT="rcm:|sc! @|vis 6@1189;23;27c tr_
 .
-@vis 4@vis 6@1186c 	rstr_free(fsincl);
+@vis 4@vis 6@1186;3;5c tr
 .
-@vis 4@vis 6@1094c 	rstr_free(rs);
+@vis 4@vis 6@1094;3;5c tr
 .
-@vis 4@vis 6@1085c 		if (rstr_match(rs, ln, REG_NEWLINE) != not) {
+@vis 4@vis 6@1085;8;10c tr
 .
-@vis 4@vis 6@1075c 		rs = rstr_make(xregs['/'] ? xregs['/']->s : \"\", xic ? REG_ICASE : 0);
+@vis 4@vis 6@1075;9;13c tr_
 .
-@vis 4@vis 6@1073c 		rs = rstr_make(pat, xic ? REG_ICASE : 0);
+@vis 4@vis 6@1073;9;13c tr_
 .
-@vis 4@vis 6@1065c 	rstr *rs;
+@vis 4@vis 6@1065;3;5c tr
 .
-@vis 4@vis 6@1007c 		rstr_free(rs);
+@vis 4@vis 6@1007;4;6c tr
 .
-@vis 4@vis 6@976c 					if (grp + 1 >= (rs->rs ? rs->rs->nsubc : 2))
+@vis 4@vis 6@976;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
-@vis 4@vis 6@961c 		while (rstr_find(rs, ln, offs, REG_NEWLINE) >= 0) {
+@vis 4@vis 6@961;11;13c tr
 .
-@vis 4@vis 6@957c 	int offs[rs->rs ? rs->rs->nsubc : 2];
+@vis 4@vis 6@957;14;19c rs ? rs->rs->nsubc : 2
 .
-@vis 4@vis 6@947c 		rs = rstr_make(pat, xic ? REG_ICASE : 0);
+@vis 4@vis 6@947;9;13c tr_
 .
-@vis 4@vis 6@940c 	rstr *rs = xkwdrs;
+@vis 4@vis 6@940;3;5c tr
 .
-@vis 4@vis 6@497c 	rstr_free(rs);
+@vis 4@vis 6@497;3;5c tr
 .
-@vis 4@vis 6@488c 		rstr_find(rs, path, subs, 0);
+@vis 4@vis 6@488;4;6c tr
 .
-@vis 4@vis 6@461c 		rstr_free(rs);
+@vis 4@vis 6@461;4;6c tr
 .
-@vis 4@vis 6@423c 				if (rstr_match(rs, path, 0)) {
+@vis 4@vis 6@423;10;12c tr
 .
-@vis 4@vis 6@416c 			syn_reloadft(syn_addhl(fuzz->s, 1), rs->flg);
+@vis 4@vis 6@416;43;50c 
 .
-@vis 4@vis 6@414c 		rs = rstr_make(fuzz->s, xic ? flg | REG_ICASE : flg);
+@vis 4@vis 6@414;9;13c tr_
 .
-@vis 4@vis 6@384c 	rstr *rs;
+@vis 4@vis 6@384;3;5c tr
 .
 @vis 4@vis 6@177,179c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 .
-@vis 4@vis 6@38c rstr *xkwdrs;			/* the last searched keyword rset */
+@vis 4@vis 6@38;2;4c tr
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@453c 		while (rstr_find(re, s + off, offs, flg) >= 0) {
+EXINIT="rcm:|sc! @|vis 6@453;11;13c tr
 .
-@vis 4@vis 6@440c 	int offs[re->rs ? re->rs->nsubc : 2], i = r0;
+@vis 4@vis 6@440;14;19c rs ? re->rs->nsubc : 2
 .
-@vis 4@vis 6@436c int lbuf_search(struct lbuf *lb, rstr *re, int dir, int beg, int end, int pskip,
+@vis 4@vis 6@436;35;37c tr
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -208,22 +208,22 @@ void rstr_free(rstr *rs)
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@479c 				if (!fsincl || rstr_match(fsincl, cpath, 0)) {
+EXINIT="rcm:|sc! @|vis 6@479;21;23c tr
 .
-@vis 4@vis 6@439c rstr *fsincl;
+@vis 4@vis 6@439;2;4c tr
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@539c extern rstr *fsincl;
+EXINIT="rcm:|sc! @|vis 6@539;9;11c tr
 .
-@vis 4@vis 6@478c int ex_krs(rstr **krs, int *dir);
+@vis 4@vis 6@478;13;15c tr
 .
-@vis 4@vis 6@445c extern rstr *xkwdrs;
+@vis 4@vis 6@445;9;11c tr
 .
 @vis 4@vis 6@188a 
 .
-@vis 4@vis 6@187c int lbuf_search(struct lbuf *lb, rstr *re, int dir, int beg, int end, int pskip,
+@vis 4@vis 6@187;35;37c tr
 .
 @vis 4@vis 6@131a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);

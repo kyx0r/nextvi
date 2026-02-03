@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@245c 			j = o;
+EXINIT="rcm:|sc! @|vis 6@245;7;26c 
 .
 @vis 4@vis 6@214,232c 			att[p->off] = syn_merge(p->att, att[p->off]);
 .
@@ -25,6 +25,6 @@ EXINIT="rcm:|sc! @|vis 6@245c 			j = o;
 .
 @vis 4@vis 6@150,151c 	int att_old = 0, cterm = cend - cbeg;
 .
-@vis 4@vis 6@119c 		att_new = att[o]; \\
+@vis 4@vis 6@119;16;38c 
 .
 @vis 4@wq" $VI -e 'led.c'

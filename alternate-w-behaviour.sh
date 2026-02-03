@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@662c 			if (lbuf_wordbeg(xb, mark, dir, row, off))
+EXINIT="rcm:|sc! @|vis 6@662;30;41c dir
 .
 @vis 4@vis 6@659a 		if (vc && cnt == 1)
 			dir = 2;

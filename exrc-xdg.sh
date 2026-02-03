@@ -39,7 +39,7 @@ EXINIT="rcm:|sc! @|vis 6@1584a 	} else {
 			load_exrc(\".exrc\");
 	}
 .
-@vis 4@vis 6@1583c 	if ((s = getenv(\"EXINIT\"))) {
+@vis 4@vis 6@1583;28;28c  {
 .
 @vis 4@vis 6@1571a void ex_script(FILE *fp)
 {

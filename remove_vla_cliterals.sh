@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! @|vis 6@55c #define A(...) {__VA_ARGS__}
+EXINIT="rcm:|sc! @|vis 6@55;15;22c 
 .
 @vis 4@wq" $VI -e 'conf.c'
 
@@ -66,7 +66,7 @@ EXINIT="rcm:|sc! @|vis 6@737a 	free(subs);
 .
 @vis 4@vis 6@638,639c 	char *nsubs = emalloc(prog->sub);
 .
-@vis 4@vis 6@633c 	const char *_subp[2], **lb = emalloc(prog->laidx * sizeof(lb[0]));
+@vis 4@vis 6@633;24;41c *lb = emalloc(prog->laidx * sizeof(lb[0]))
 .
 @vis 4@vis 6@631c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
 .
@@ -104,7 +104,7 @@ EXINIT="rcm:|sc! @|vis 6@408a 	free(pats);
 @vis 4@vis 6@352c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
 		free(subs);
 .
-@vis 4@vis 6@309c 	int *subs = emalloc(rs->nsubc * sizeof(int)), *catt, *iatt, sl, c;
+@vis 4@vis 6@309;5;20c *subs = emalloc(rs->nsubc * sizeof(int))
 .
 @vis 4@vis 6@261a 	free(pats);
 .
@@ -134,6 +134,6 @@ EXINIT="rcm:|sc! @|vis 6@1435a 					free(buf);
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@499c 	int att[16];		/* attributes of the matched groups */
+EXINIT="rcm:|sc! @|vis 6@499;5;9c att[16]
 .
 @vis 4@wq" $VI -e 'vi.h'

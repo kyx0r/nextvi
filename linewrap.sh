@@ -83,7 +83,7 @@ EXINIT="rcm:|sc! @|vis 6@375a 		/* relink chain: restored lines have their point
 			}
 		}
 .
-@vis 4@vis 6@240c 		long nl = lbuf_s(ln)->len + (!lbuf_s(ln)->lw_next);
+@vis 4@vis 6@240;30;31c (!lbuf_s(ln)->lw_next)
 .
 @vis 4@vis 6@193a 	/* relink the chain after edit */
 	if (xlw && (chain_pred || chain_succ)) {
