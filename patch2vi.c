@@ -247,7 +247,7 @@ static void emit_horizontal_change(FILE *out, int line, int char_start, int char
 {
 	fprintf(out, "vis 6%c%d;%d;%dc ", sep, line, char_start, char_end);
 	emit_escaped_line(out, new_text);
-	fprintf(out, "\n.%cvis 4%c", sep, sep);
+	fprintf(out, "\n.\n%cvis 4%c", sep, sep);
 }
 
 /* Emit ex commands for changing lines (delete and insert) */
