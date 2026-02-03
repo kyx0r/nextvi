@@ -500,7 +500,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
-	int pskip, dir, off, nbeg, beg, end;
+	int pskip, nskip, dir, off, nbeg, beg, end;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
@@ -510,15 +510,18 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	off = xoff;
 	if (xrow < beg || xrow >= end) {
 		off = 0;
-		nbeg = dir > 0 ? beg : end - (cmd[1] == '<');
-		end += cmd[1] == '-';
+		end--;
+		nbeg = dir > 0 ? beg : end;
+		end += dir < 0;
 		pskip = -1;
+		nskip = 0;
 	} else {
 		nbeg = xrow;
 		pskip = cmd[1] == '+' ? 1 : MIN(dir, 0);
+		nskip = cmd[1] == '-';
 	}
 	if (lbuf_search(xb, xkwdrs, xkwddir, beg, end,
-			pskip, cmd[1] == '-', &nbeg, &off))
+			pskip, nskip, &nbeg, &off))
 		return xuerr;
 	xrow = nbeg;
 	xoff = off;
@@ -739,7 +742,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
 			break;
 		if (xvis & 2 && !strcmp(".", sb->s + ps)) {
-			sb->s_n--;
+			sb->s_n -= 1 + (o1 >= 0);
 			break;
 		}
 		sbuf_chr(sb, '\n')
@@ -751,9 +754,10 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
 		sb->s_n--;
 	sbuf_null(sb)
-	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb)))
+	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb))) {
 		beg++;
-	else if (cmd[0] == 'i')
+		end = beg;
+	} else if (cmd[0] == 'i')
 		end = beg;
 	if (o1 >= 0 && cmd[0] == 'c') {
 		if (!sb->s_n && o2 <= o1)
