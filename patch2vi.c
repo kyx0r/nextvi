@@ -54,6 +54,92 @@ static void chomp(char *s)
 		s[--n] = '\0';
 }
 
+/* Count UTF-8 characters in a string */
+static int utf8_len(const char *s)
+{
+	int len = 0;
+	for (; *s; s++)
+		if ((*s & 0xC0) != 0x80)  /* not a continuation byte */
+			len++;
+	return len;
+}
+
+/* Get byte offset for UTF-8 character position */
+static int utf8_byte_offset(const char *s, int charpos)
+{
+	const char *p = s;
+	int chars = 0;
+	while (*p && chars < charpos) {
+		if ((*p & 0xC0) != 0x80)
+			chars++;
+		p++;
+	}
+	return p - s;
+}
+
+/* Get UTF-8 character position for byte offset */
+static int utf8_char_offset(const char *s, int bytepos)
+{
+	int chars = 0;
+	for (int i = 0; i < bytepos && s[i]; i++)
+		if ((s[i] & 0xC0) != 0x80)
+			chars++;
+	return chars;
+}
+
+/*
+ * Compare two lines and find the differing portion.
+ * Returns 1 if suitable for horizontal edit, 0 otherwise.
+ * Sets *start to first differing UTF-8 char position,
+ * *old_end to end position in old string,
+ * *new_text to the replacement text (allocated).
+ */
+static int find_line_diff(const char *old, const char *new,
+			int *start, int *old_end, char **new_text)
+{
+	int old_len = strlen(old);
+	int new_len = strlen(new);
+
+	/* Find common prefix (in bytes) */
+	int prefix = 0;
+	while (old[prefix] && new[prefix] && old[prefix] == new[prefix])
+		prefix++;
+
+	/* Find common suffix (in bytes), but don't overlap with prefix */
+	int suffix = 0;
+	while (suffix < old_len - prefix && suffix < new_len - prefix &&
+				 old[old_len - 1 - suffix] == new[new_len - 1 - suffix])
+		suffix++;
+
+	/* Calculate the differing regions */
+	int old_diff_start = prefix;
+	int old_diff_end = old_len - suffix;
+	int new_diff_start = prefix;
+	int new_diff_end = new_len - suffix;
+
+	/* Require at least 50% of the line to be common */
+	int common = prefix + suffix;
+	if (common < old_len / 2 && common < new_len / 2)
+		return 0;
+
+	/* Don't bother with horizontal edit if most of line changes */
+	int old_diff_len = old_diff_end - old_diff_start;
+	int new_diff_len = new_diff_end - new_diff_start;
+	if (old_diff_len > old_len / 2 && new_diff_len > new_len / 2)
+		return 0;
+
+	/* Convert byte positions to UTF-8 character positions */
+	*start = utf8_char_offset(old, old_diff_start);
+	*old_end = utf8_char_offset(old, old_diff_end);
+
+	/* Extract the new text */
+	*new_text = malloc(new_diff_len + 1);
+	memcpy(*new_text, new + new_diff_start, new_diff_len);
+	(*new_text)[new_diff_len] = '\0';
+
+	return 1;
+}
+
 /* Mark all bytes in a string as used */
 static void mark_bytes_used(const char *s)
 {
@@ -90,7 +176,7 @@ static int find_unused_byte(void)
 
 /* Parse a hunk header: @@ -old_start,old_count +new_start,new_count @@ */
 static int parse_hunk_header(const char *line, int *old_start, int *old_count,
-                             int *new_start, int *new_count)
+				 int *new_start, int *new_count)
 {
 	if (strncmp(line, "@@ -", 4) != 0)
 		return 0;
@@ -155,6 +241,15 @@ static void emit_delete(FILE *out, int from, int to, int sep)
 		fprintf(out, "%d,%dd%c", from, to, sep);
 }
 
+/* Emit ex command for horizontal (character-level) edit */
+static void emit_horizontal_change(FILE *out, int line, int char_start, int char_end,
+					const char *new_text, int sep)
+{
+	fprintf(out, "vis 6%c%d;%d,%dc ", sep, line, char_start, char_end);
+	emit_escaped_line(out, new_text);
+	fprintf(out, "\n.%cvis 4%c", sep, sep);
+}
+
 /* Emit ex commands for changing lines (delete and insert) */
 static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, int sep)
 {
@@ -194,6 +289,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 	typedef struct {
 		int del_start, del_end;  /* 0 if no deletes */
 		char **add_texts;
+		char **del_texts;        /* deleted line contents */
+		int ndel;
 		int nadd;
 		int add_after;  /* line to add after (for pure adds) */
 	} group_t;
@@ -206,6 +303,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		group_t *g = &groups[ngroups];
 		g->del_start = g->del_end = 0;
 		g->add_texts = NULL;
+		g->del_texts = NULL;
+		g->ndel = 0;
 		g->nadd = 0;
 		g->add_after = 0;
 
@@ -216,6 +315,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			break;
 
 		/* Collect consecutive deletes */
+		int del_start_idx = i;
 		if (fp->ops[i].type == 'd') {
 			g->del_start = fp->ops[i].oline;
 			g->del_end = fp->ops[i].oline;
@@ -226,6 +326,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				i++;
 			}
 		}
+		g->ndel = i - del_start_idx;
+		g->del_texts = malloc(g->ndel * sizeof(char*));
+		for (int j = 0; j < g->ndel; j++)
+		  g->del_texts[j] = fp->ops[del_start_idx + j].text;
 
 		/* Collect consecutive adds */
 		int add_start = i;
@@ -250,12 +354,29 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 	for (int gi = ngroups - 1; gi >= 0; gi--) {
 		group_t *g = &groups[gi];
 		if (g->del_start && g->nadd) {
-			emit_change(out, g->del_start, g->del_end, g->add_texts, g->nadd, sep);
+			/* Try horizontal edit for single-line changes */
+			if (g->ndel == 1 && g->nadd == 1 &&
+			g->del_texts[0] && g->add_texts[0]) {
+			int start, old_end;
+			char *new_text;
+			if (find_line_diff(g->del_texts[0], g->add_texts[0],
+					&start, &old_end, &new_text)) {
+				emit_horizontal_change(out, g->del_start, start, old_end,
+				new_text, sep);
+				free(new_text);
+			} else {
+				emit_change(out, g->del_start, g->del_end,
+				g->add_texts, g->nadd, sep);
+			}
+			} else {
+				emit_change(out, g->del_start, g->del_end, g->add_texts, g->nadd, sep);
+			}
 		} else if (g->del_start) {
 			emit_delete(out, g->del_start, g->del_end, sep);
 		} else if (g->nadd) {
 			emit_insert_after(out, g->add_after, g->add_texts, g->nadd, sep);
 		}
+		free(g->del_texts);
 		free(g->add_texts);
 	}
 
@@ -380,8 +501,8 @@ int main(int argc, char **argv)
 			add_op('c', old_line, NULL);
 			old_line++;
 		} else if (line[0] == '-') {
-			/* Delete line */
-			add_op('d', old_line, NULL);
+			/* Delete line - store content for horizontal edit detection */
+			add_op('d', old_line, line + 1);
 			old_line++;
 		} else if (line[0] == '+') {
 			/* Add line */
