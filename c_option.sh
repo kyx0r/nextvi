@@ -17,7 +17,7 @@ fi
 EXINIT="rcm:|sc! @|vis 6@1583a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 .
-@vis 4@vis 6@1571c void ex_init(char **files, int n, char **cmds, int cmdnum)
+@vis 4@vis 6@1572c void ex_init(char **files, int n, char **cmds, int cmdnum)
 .
 @vis 4@wq" $VI -e 'ex.c'
 
