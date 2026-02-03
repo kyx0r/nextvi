@@ -19,7 +19,7 @@ EXINIT="rcm:|sc! #|vis 6#261;32;62c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
 #vis 4#wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! #|vis 6#1571a /* window management functions */
+EXINIT="rcm:|sc! #|vis 6#1574a /* window management functions */
 static void curwin_save(void)
 {
 	if (curwin) {
@@ -252,14 +252,14 @@ void *win_split(int vertical, char *arg)
 }
 
 .
-#vis 4#1414d#vis 6#1392a 	{\"sp\", ec_split},
+#vis 4#1417d#vis 6#1395a 	{\"sp\", ec_split},
 .
-#vis 4#vis 6#1388a 	EO(vis),
+#vis 4#vis 6#1391a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
-#vis 4#vis 6#1354a 	{\"eq\", ec_equalize},
+#vis 4#vis 6#1357a 	{\"eq\", ec_equalize},
 .
-#vis 4#vis 6#1327a static void *ec_split(char *loc, char *cmd, char *arg)
+#vis 4#vis 6#1330a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
 }
@@ -360,10 +360,10 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 }
 
 .
-#vis 4#vis 6#557c 	if (!xquit)
+#vis 4#vis 6#560c 	if (!xquit)
 		xquit = 1;
 .
-#vis 4#vis 6#554c 	/* q! always force quits */
+#vis 4#vis 6#557c 	/* q! always force quits */
 	if (strchr(cmd, '!')) {
 		xquit = -1;
 		return NULL;
