@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1583a 	for (int i = 0; i < cmdnum; i++)
+EXINIT="rcm:|sc! @|vis 6@1584a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 .
 @vis 4@vis 6@1572c void ex_init(char **files, int n, char **cmds, int cmdnum)

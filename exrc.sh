@@ -31,7 +31,7 @@ EXINIT="rcm:|sc! @|vis 6@1584a 	} else {
 .
 @vis 4@vis 6@1583c 	if ((s = getenv(\"EXINIT\"))) {
 .
-@vis 4@vis 6@1570a void ex_script(FILE *fp)
+@vis 4@vis 6@1571a void ex_script(FILE *fp)
 {
 	char done = 0;
 	do {
@@ -77,9 +77,9 @@ void load_exrc(char *exrc)
 }
 
 .
-@vis 4@vis 6@1350a 	EO(exrc),
+@vis 4@vis 6@1351a 	EO(exrc),
 .
-@vis 4@vis 6@1315a EO(exrc)
+@vis 4@vis 6@1316a EO(exrc)
 .
 @vis 4@vis 6@39a int xexrc = 0;			/* read .exrc from the current directory */
 .

@@ -19,7 +19,7 @@ EXINIT="rcm:|sc! @|vis 6@55c #define A(...) {__VA_ARGS__}
 @vis 4@wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1007a 	free(offs);
+EXINIT="rcm:|sc! @|vis 6@1008a 	free(offs);
 .
 @vis 4@vis 6@957c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 .

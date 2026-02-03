@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1378a 	{\"ro\", ec_readonly},
+EXINIT="rcm:|sc! @|vis 6@1379a 	{\"ro\", ec_readonly},
 .
-@vis 4@vis 6@1298a static void *ec_readonly(char *loc, char *cmd, char *arg)
+@vis 4@vis 6@1299a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;

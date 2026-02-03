@@ -19,7 +19,7 @@ EXINIT="rcm:|sc! #|vis 6#261c |[@&!?=dmj]|b[psx]?|p[uh]?|ac?|eq|e[f!]?!?|f[-+><t
 #vis 4#wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! #|vis 6#1570a /* window management functions */
+EXINIT="rcm:|sc! #|vis 6#1571a /* window management functions */
 static void curwin_save(void)
 {
 	if (curwin) {
@@ -252,14 +252,14 @@ void *win_split(int vertical, char *arg)
 }
 
 .
-#vis 4#1413d#vis 6#1391a 	{\"sp\", ec_split},
+#vis 4#1414d#vis 6#1392a 	{\"sp\", ec_split},
 .
-#vis 4#vis 6#1387a 	EO(vis),
+#vis 4#vis 6#1388a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
-#vis 4#vis 6#1353a 	{\"eq\", ec_equalize},
+#vis 4#vis 6#1354a 	{\"eq\", ec_equalize},
 .
-#vis 4#vis 6#1326a static void *ec_split(char *loc, char *cmd, char *arg)
+#vis 4#vis 6#1327a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
 }

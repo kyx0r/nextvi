@@ -14,31 +14,31 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1188c 	else if (!(fsincl = rstr_make(arg, xic ? REG_ICASE : 0)))
+EXINIT="rcm:|sc! @|vis 6@1189c 	else if (!(fsincl = rstr_make(arg, xic ? REG_ICASE : 0)))
 .
-@vis 4@vis 6@1185c 	rstr_free(fsincl);
+@vis 4@vis 6@1186c 	rstr_free(fsincl);
 .
-@vis 4@vis 6@1093c 	rstr_free(rs);
+@vis 4@vis 6@1094c 	rstr_free(rs);
 .
-@vis 4@vis 6@1084c 		if (rstr_match(rs, ln, REG_NEWLINE) != not) {
+@vis 4@vis 6@1085c 		if (rstr_match(rs, ln, REG_NEWLINE) != not) {
 .
-@vis 4@vis 6@1074c 		rs = rstr_make(xregs['/'] ? xregs['/']->s : \"\", xic ? REG_ICASE : 0);
+@vis 4@vis 6@1075c 		rs = rstr_make(xregs['/'] ? xregs['/']->s : \"\", xic ? REG_ICASE : 0);
 .
-@vis 4@vis 6@1072c 		rs = rstr_make(pat, xic ? REG_ICASE : 0);
+@vis 4@vis 6@1073c 		rs = rstr_make(pat, xic ? REG_ICASE : 0);
 .
-@vis 4@vis 6@1064c 	rstr *rs;
+@vis 4@vis 6@1065c 	rstr *rs;
 .
-@vis 4@vis 6@1006c 		rstr_free(rs);
+@vis 4@vis 6@1007c 		rstr_free(rs);
 .
-@vis 4@vis 6@975c 					if (grp + 1 >= (rs->rs ? rs->rs->nsubc : 2))
+@vis 4@vis 6@976c 					if (grp + 1 >= (rs->rs ? rs->rs->nsubc : 2))
 .
-@vis 4@vis 6@960c 		while (rstr_find(rs, ln, offs, REG_NEWLINE) >= 0) {
+@vis 4@vis 6@961c 		while (rstr_find(rs, ln, offs, REG_NEWLINE) >= 0) {
 .
-@vis 4@vis 6@956c 	int offs[rs->rs ? rs->rs->nsubc : 2];
+@vis 4@vis 6@957c 	int offs[rs->rs ? rs->rs->nsubc : 2];
 .
-@vis 4@vis 6@946c 		rs = rstr_make(pat, xic ? REG_ICASE : 0);
+@vis 4@vis 6@947c 		rs = rstr_make(pat, xic ? REG_ICASE : 0);
 .
-@vis 4@vis 6@939c 	rstr *rs = xkwdrs;
+@vis 4@vis 6@940c 	rstr *rs = xkwdrs;
 .
 @vis 4@vis 6@497c 	rstr_free(rs);
 .
