@@ -739,7 +739,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
 			break;
 		if (xvis & 2 && !strcmp(".", sb->s + ps)) {
-			sb->s_n--;
+			sb->s_n -= 1 + (o1 >= 0);
 			break;
 		}
 		sbuf_chr(sb, '\n')
