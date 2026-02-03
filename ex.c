@@ -268,15 +268,9 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		*beg = 0;
 	while (*loc) {
 		if (*loc == '|') {
-			char *cmd = ++loc;
-			for (; *loc && *loc != '|'; loc++)
-				if (*loc == '\\' && loc[1] == '|')
-					loc++;
-			int nulled = *loc;
-			*loc = '\0';
+			char *cmd = re_read(&loc);
 			void *err = ex_exec(cmd);
-			if (nulled)
-				*loc++ = '|';
+			free(cmd);
 			if (err) {
 				xrerr = "ex command error";
 				return 1;
@@ -1280,14 +1274,16 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 
 static void *ec_specials(char *loc, char *cmd, char *arg)
 {
-	if (!*arg) {
-		xsep = cmd[2] ? 0 : ':';
-		xexp = cmd[2] ? 0 : '%';
-		xexe = cmd[2] ? 0 : '!';
-		return NULL;
+	int i = 0;
+	if (*loc) {
+		i = atoi(loc);
+		goto direct;
 	}
-	int i = *loc ? atoi(loc) : 0;
+	xsep = cmd[2] ? 0 : ':';
+	xexp = cmd[2] ? 0 : '%';
+	xexe = cmd[2] ? 0 : '!';
 	for (; *arg; arg++, i++) {
+		direct:
 		if (i == 0)
 			xsep = *arg;
 		else if (i == 1)
@@ -1297,6 +1293,8 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 	}
 	return NULL;
 }
+
+static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
 
 static int eo_val(char *arg)
 {
@@ -1415,6 +1413,7 @@ static struct excmd {
 	EO(vis),
 	{"=", ec_num},
 	{"", ec_print}, /* do not remove */
+	{"", ec_null}, /* do not remove */
 };
 
 /* parse command argument expanding % and ! */
@@ -1473,28 +1472,26 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 /* parse range and command */
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
-	int i, j;
-	char *dst = sb->s, *pdst, *err;
+	int i, j, nullfunc = 0;
+	char *dst = sb->s, *cmd, *err;
 	while (*src && (*src == xsep || *src == ' ' || *src == '\t'))
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
-		if (*src == '>' || *src == '<' || *src == '|') {
-			pdst = dst;
+		if (*src == '|' && !xrcm) {
+			cmd = re_read((char**)&src);
+			err = ex_exec(cmd);
+			if (err && err != xuerr && xerr & 1)
+				ex_print("parse command error", msg_ft)
+			free(cmd);
+			nullfunc = 1;
+		} else if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {
 				*dst++ = *src++;
 			} while (*src && (*src != j || src[-1] == '\\'));
-			if (j == '|' && !xrcm) {
-				if (*src)
-					src++;
-				*dst = '\0';
-				dst = pdst;
-				err = ex_exec(pdst+1);
-				if (err && err != xuerr && xerr & 1)
-					ex_print("parse command error", msg_ft)
-			} else if (*src)
+			if (*src)
 				*dst++ = *src++;
 		} else
 			*dst++ = *src++;
@@ -1506,7 +1503,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 			if (!src[j] || src[j] != excmds[i].name[j])
 				break;
 		if (!excmds[i].name[j]) {
-			*idx = i;
+			*idx = i + (nullfunc && i == LEN(excmds) - 2);
 			src += j;
 			break;
 		}
