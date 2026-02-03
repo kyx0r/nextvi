@@ -3,6 +3,6 @@
 # Usage: gitdiff2vi.sh [output.sh]
 
 output="${1:-tmp.sh}"
-git diff | ./patch2vi > "$output"
+git diff -- ":!$output" | ./patch2vi > "$output"
 chmod +x "$output"
 echo "Generated: $output"
