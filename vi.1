@@ -938,14 +938,12 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [\fI#0\fP <\fI$\fP>][,{\fI#1\fP <\fI$\fP>}][,{\fI#2\fP <\fI$\fP>}]?{\fIcmd\fP}
+.It Cm [\fIcount\fP <\fI$\fP>]?{\fIcond\fP}[?][then][?][else]
 While loop conditional
 .Bd -literal
 Repeat cmd #0 times or infinite with <$>.
 While loop is broken once cmd returns an error or count exceeded.
-If while fails with error, #1 and #2 specify a range of the separated
-ex commands to skip that follow next in chain.
-No prefix creates a conditional with all # parameters set to 1.
+No prefix creates a conditional with count set to 1.
 
 Example: attempt to join every line in file using arbitrary count
 :10000? & J
@@ -954,15 +952,11 @@ Example: undo everything
 Example: repeat chain of ex commands 10 times
 :10? 1p\e:5p\e:10p
 Example: calculate directory only if :cd succeeded
-:? cd /blah:fd
+:? cd /blah?fd
 Example: print a line only if it contains "int" at offset 5
-:? ;5;#>^int>:p
-Example: allow :led while branching only :p command
-:led:1,2? ;5;#>^int>:led:p
-Example: branch multiple commands
-:led:1,2,3? ;5;#>^int>:led:&i2 not branched:p:p
+:? ;5;#>^int>?p
 Example: edit vi.c only if it exists
-:? \e![ -f ./vi.c ]:e ./vi.c:mpt1
+:? \e![ -f ./vi.c ]?e ./vi.c:mpt1
 .Ed
 
 .It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
@@ -1585,10 +1579,10 @@ _
  608 lbuf.c | file/line buffer
  614 uc.c | UTF-8 support
  718 led.c | insert mode/output
- 765 regex.c | pikevm
- 1592 ex.c | ex options/commands
+ 766 regex.c | pikevm
+ 1581 ex.c | ex options/commands
  1836 vi.c | normal mode/general
- 7233 total | wc -l *.c\(basort
+ 7223 total | wc -l *.c\(basort
 _
 .TE
 .
