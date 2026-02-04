@@ -294,11 +294,12 @@ EX
 
 EX PARSING
      Parsing follows the structure:
-     [<sep>][range][pad][cmd][<pad>][args]
+     [<sep>][range][cmd][<pad>][args]
      Ex commands are initiated and separated by <:> prefix. Fields
-     can be padded by <Space> or <Tab>. There can only be one pad
-     in between [cmd] and [args]. To avoid ambiguity in scripts, it
-     is recommended to always use a pad between [cmd] and [args].
+     can be padded by <Space> or <Tab>. Padding inside [range] structure
+     is collapsed. There can only be one pad in between [cmd] and
+     [args]. To avoid ambiguity in scripts, it is recommended to always
+     use a pad between [cmd] and [args].
 
      Examples:
      :evi.c
@@ -347,7 +348,7 @@ EX RANGES
      [range] implements vertical and horizontal ranges.
      [vrange] implements vertical range and horizontal position.
 
-     [pad][% |][, ;][#][pad][. $ ' > <][- + * / %][0-9]
+     [% |][, ;][#][. $ ' > <][- + * / %][0-9]
              All ranges structure
      {|}{cmd}[|]
              Ex command structure
@@ -358,7 +359,6 @@ EX RANGES
      '{<mark>}
              Mark structure
 
-     pad     <Space> or <Tab>
      %       Range from first to last line
      |       Begin ex command structure
      ,       Vertical range separator
@@ -1187,9 +1187,9 @@ CODE MAP
      | 614 uc.c     |  UTF-8 support       |
      | 718 led.c    |  insert mode/output  |
      | 765 regex.c  |  pikevm              |
-     | 1584 ex.c    |  ex options/commands |
+     | 1592 ex.c    |  ex options/commands |
      | 1836 vi.c    |  normal mode/general |
-     | 7225 total   |  wc -l *.c|sort      |
+     | 7233 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1261,4 +1261,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 3, 2026                     Nextvi 4.0
+Nextvi 4.0                     February 4, 2026                     Nextvi 4.0
