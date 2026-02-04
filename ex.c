@@ -188,8 +188,6 @@ void ex_krsset(char *kwd, int dir)
 static int ex_range(char *ploc, char **num, int n, int *row)
 {
 	int dir, off, beg, end, adj = 0;
-	while (**num == ' ' || **num == '\t')
-		++*num;
 	switch ((unsigned char)**num) {
 	case '.':
 		++*num;
@@ -1478,7 +1476,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
 	int i, j, nullfunc = 0;
 	char *dst = sb->s, *cmd, *err;
-	while (*src && (*src == xsep || *src == ' ' || *src == '\t'))
+	if (*src && *src == xsep)
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
@@ -1497,11 +1495,17 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 			} while (*src && (*src != j || src[-1] == '\\'));
 			if (*src)
 				*dst++ = *src++;
-		} else
+		} else if (*src == ' ' || *src == '\t')
+			src++;
+		else
 			*dst++ = *src++;
 	}
 	*dst++ = '\0';
 	sb->s_n = dst - sb->s;
+	if (*src == xsep) {
+		*idx = LEN(excmds) - 2;
+		return src;
+	}
 	for (i = 0; i < LEN(excmds); i++) {
 		for (j = 0; excmds[i].name[j]; j++)
 			if (!src[j] || src[j] != excmds[i].name[j])
