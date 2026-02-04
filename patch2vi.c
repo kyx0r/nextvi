@@ -249,12 +249,12 @@ static void emit_insert_after(FILE *out, int line, char **texts, int ntexts, int
 	if (ntexts == 0)
 		return;
 
-	fprintf(out, "vis 6%c%da ", sep, line);
+	fprintf(out, "%da ", line);
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_line(out, texts[i]);
 		fputc('\n', out);
 	}
-	fprintf(out, ".\n%cvis 4%c", sep, sep);
+	fprintf(out, ".\n%c", sep);
 }
 
 /* Emit ex commands for deleting lines from N to M inclusive */
@@ -271,11 +271,11 @@ static void emit_horizontal_change(FILE *out, int line, int char_start, int char
 					const char *new_text, int sep)
 {
 	if (char_start == char_end)
-		fprintf(out, "vis 6%c%d;%dc ", sep, line, char_start);
+		fprintf(out, "%d;%dc ", line, char_start);
 	else
-		fprintf(out, "vis 6%c%d;%d;%dc ", sep, line, char_start, char_end);
+		fprintf(out, "%d;%d;%dc ", line, char_start, char_end);
 	emit_escaped_line(out, new_text);
-	fprintf(out, "\n.\n%cvis 4%c", sep, sep);
+	fprintf(out, "\n.\n%c", sep);
 }
 
 /* Emit ex commands for changing lines (delete and insert) */
@@ -286,7 +286,6 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, i
 		return;
 	}
 
-	fprintf(out, "vis 6%c", sep);
 	if (from == to)
 		fprintf(out, "%dc ", from);
 	else
@@ -296,7 +295,7 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, i
 		emit_escaped_line(out, texts[i]);
 		fputc('\n', out);
 	}
-	fprintf(out, ".\n%cvis 4%c", sep, sep);
+	fprintf(out, ".\n%c", sep);
 }
 
 /*
@@ -334,14 +333,13 @@ static void emit_relative_insert(FILE *out, const char *anchor, int offset,
 	if (ntexts == 0)
 		return;
 
-	fprintf(out, "vis 6%c", sep);
 	emit_pattern_pos(out, anchor, offset, sep);
 	fprintf(out, "a ");
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_line(out, texts[i]);
 		fputc('\n', out);
 	}
-	fprintf(out, ".\n%cvis 4%c", sep, sep);
+	fprintf(out, ".\n%c", sep);
 }
 
 /* Emit change using relative pattern */
@@ -353,7 +351,6 @@ static void emit_relative_change(FILE *out, const char *anchor, int offset,
 		return;
 	}
 
-	fprintf(out, "vis 6%c", sep);
 	emit_pattern_pos(out, anchor, offset, sep);
 	if (del_count == 1)
 		fprintf(out, "c ");
@@ -364,7 +361,7 @@ static void emit_relative_change(FILE *out, const char *anchor, int offset,
 		emit_escaped_line(out, texts[i]);
 		fputc('\n', out);
 	}
-	fprintf(out, ".\n%cvis 4%c", sep, sep);
+	fprintf(out, ".\n%c", sep);
 }
 
 /* Emit horizontal change using relative pattern */
@@ -372,14 +369,13 @@ static void emit_relative_horizontal(FILE *out, const char *anchor, int offset,
                                       int char_start, int char_end,
                                       const char *new_text, int sep)
 {
-	fprintf(out, "vis 6%c", sep);
 	emit_pattern_pos(out, anchor, offset, sep);
 	if (char_start == char_end)
 		fprintf(out, ";%dc ", char_start);
 	else
 		fprintf(out, ";%d;%dc ", char_start, char_end);
 	emit_escaped_line(out, new_text);
-	fprintf(out, "\n.\n%cvis 4%c", sep, sep);
+	fprintf(out, "\n.\n%c", sep);
 }
 
 /* Process operations for one file and emit script */
@@ -389,7 +385,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		return;
 
 	fprintf(out, "\n# Patch: %s\n", fp->path);
-	fprintf(out, "EXINIT=\"rcm:|sc! %c|", sep);
+	fprintf(out, "EXINIT=\"rcm:|sc! %c|vis 6%c", sep, sep);
 
 	/*
 	 * Strategy: process operations in groups.
