@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1190;23;27c tr_
+EXINIT="rcm:|sc! @|vis 6@1187;23;27c tr_
 .
-@1187;3;5c tr
+@1184;3;5c tr
 .
 @1095;3;5c tr
 .
@@ -72,7 +72,7 @@ EXINIT="rcm:|sc! @|vis 6@453;11;13c tr
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@765a 
+EXINIT="rcm:|sc! @|vis 6@766a 
 /* return zero if a simple pattern is given */
 static int rstr_simple(rstr *rs, char *re, int icase)
 {

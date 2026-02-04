@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1589a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
+EXINIT="rcm:|sc! @|vis 6@1578a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
-@1588a 	if (stdin_fd) {
+@1577a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
 		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
@@ -35,11 +35,11 @@ EXINIT="rcm:|sc! @|vis 6@1589a 	signal(SIGINT, SIG_DFL); /* got past init? ok re
 		}
 	}
 .
-@1586;10c !n && stdin_fd ? NULL : 
+@1575;10c !n && stdin_fd ? NULL : 
 .
-@1583a 	int i = n;
+@1572a 	int i = n;
 .
-@1581;19c  + !!stdin_fd
+@1570;19c  + !!stdin_fd
 .
 @371a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
