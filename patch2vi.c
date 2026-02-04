@@ -543,7 +543,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		free(g->add_texts);
 	}
 
-	fprintf(out, "wq\" $VI -e '%s'\n", fp->path);
+	fprintf(out, "vis 4%cwq\" $VI -e '%s'\n", sep, fp->path);
 }
 
 static void new_file(const char *path)
