@@ -128,7 +128,7 @@ rset *rset_smake(char *pat, int flg)
 int rset_find(rset *re, char *s, int *grps, int flg);
 int rset_match(rset *rs, char *s, int flg);
 void rset_free(rset *re);
-char *re_read(char **src);
+char *re_read(char **src, int delim);
 
 /* lbuf.c line buffer, managing a number of lines */
 #define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
