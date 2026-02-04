@@ -305,7 +305,7 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, i
 static void emit_pattern_pos(FILE *out, const char *anchor, int offset, int sep)
 {
 	char *escaped = escape_regex(anchor);
-	fprintf(out, "0%c>%s>", sep, escaped);
+	fprintf(out, "1%c>%s>", sep, escaped);
 	if (offset > 0)
 		fprintf(out, "+%d", offset);
 	else if (offset < 0)
