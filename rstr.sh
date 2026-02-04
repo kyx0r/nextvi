@@ -14,45 +14,45 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1192;23;27c tr_
+EXINIT="rcm:|sc! @|vis 6@1190;23;27c tr_
 .
-@vis 4@vis 6@1189;3;5c tr
+@vis 4@vis 6@1187;3;5c tr
 .
-@vis 4@vis 6@1097;3;5c tr
+@vis 4@vis 6@1095;3;5c tr
 .
-@vis 4@vis 6@1088;8;10c tr
-.
-@vis 4@vis 6@1078;9;13c tr_
+@vis 4@vis 6@1086;8;10c tr
 .
 @vis 4@vis 6@1076;9;13c tr_
 .
-@vis 4@vis 6@1068;3;5c tr
+@vis 4@vis 6@1074;9;13c tr_
 .
-@vis 4@vis 6@1010;4;6c tr
+@vis 4@vis 6@1066;3;5c tr
 .
-@vis 4@vis 6@979;20;29c (rs->rs ? rs->rs->nsubc : 2)
+@vis 4@vis 6@1008;4;6c tr
 .
-@vis 4@vis 6@964;11;13c tr
+@vis 4@vis 6@977;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
-@vis 4@vis 6@960;14;19c rs ? rs->rs->nsubc : 2
+@vis 4@vis 6@962;11;13c tr
 .
-@vis 4@vis 6@950;9;13c tr_
+@vis 4@vis 6@958;14;19c rs ? rs->rs->nsubc : 2
 .
-@vis 4@vis 6@943;3;5c tr
+@vis 4@vis 6@948;9;13c tr_
 .
-@vis 4@vis 6@497;3;5c tr
+@vis 4@vis 6@941;3;5c tr
 .
-@vis 4@vis 6@488;4;6c tr
+@vis 4@vis 6@495;3;5c tr
 .
-@vis 4@vis 6@461;4;6c tr
+@vis 4@vis 6@486;4;6c tr
 .
-@vis 4@vis 6@423;10;12c tr
+@vis 4@vis 6@459;4;6c tr
 .
-@vis 4@vis 6@416;43;50c 
+@vis 4@vis 6@421;10;12c tr
 .
-@vis 4@vis 6@414;9;13c tr_
+@vis 4@vis 6@414;43;50c 
 .
-@vis 4@vis 6@384;3;5c tr
+@vis 4@vis 6@412;9;13c tr_
+.
+@vis 4@vis 6@382;3;5c tr
 .
 @vis 4@vis 6@177,179c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);

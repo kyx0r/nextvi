@@ -87,9 +87,9 @@ void load_exrc(char *exrc)
 }
 
 .
-@vis 4@vis 6@1354a 	EO(exrc),
+@vis 4@vis 6@1352a 	EO(exrc),
 .
-@vis 4@vis 6@1319a EO(exrc)
+@vis 4@vis 6@1317a EO(exrc)
 .
 @vis 4@vis 6@39a int xexrc = 0;			/* read .exrc from the current directory */
 .

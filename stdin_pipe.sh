@@ -41,11 +41,11 @@ EXINIT="rcm:|sc! @|vis 6@1589a 	signal(SIGINT, SIG_DFL); /* got past init? ok re
 .
 @vis 4@vis 6@1581;19;19c  + !!stdin_fd
 .
-@vis 4@vis 6@373a 	if (!loc)
+@vis 4@vis 6@371a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 .
-@vis 4@vis 6@355c 	int fd = 0, len, rd = 0, cd = 0;
+@vis 4@vis 6@353c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
 .
