@@ -19,7 +19,7 @@ EXINIT="rcm:|sc! #|vis 6#261;32;62c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
 #vis 4#wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! #|vis 6#1574a /* window management functions */
+EXINIT="rcm:|sc! #|vis 6#1578a /* window management functions */
 static void curwin_save(void)
 {
 	if (curwin) {

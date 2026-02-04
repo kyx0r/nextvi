@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1588a 
+EXINIT="rcm:|sc! @|vis 6@1592a 
 void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
