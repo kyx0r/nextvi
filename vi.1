@@ -1,4 +1,4 @@
-.Dd Feb  3, 2026
+.Dd Feb  4, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -506,11 +506,12 @@ into a purely command-line interface (CLI) when desired.
 .Sh EX PARSING
 .Bd -literal -compact
 Parsing follows the structure:
-[<\fIsep\fP>][\fIrange\fP][\fIpad\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
+[<\fIsep\fP>][\fIrange\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
 Ex commands are initiated and separated by <:> prefix. Fields
-can be padded by <Space> or <Tab>. There can only be one pad
-in between [cmd] and [args]. To avoid ambiguity in scripts, it
-is recommended to always use a pad between [cmd] and [args].
+can be padded by <Space> or <Tab>. Padding inside [range] structure
+is collapsed. There can only be one pad in between [cmd] and
+[args]. To avoid ambiguity in scripts, it is recommended to always
+use a pad between [cmd] and [args].
 .Bl -tag -width Ds -compact
 
 Examples:
@@ -572,7 +573,7 @@ Some ex commands can be prefixed with ranges.
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm [\fIpad\fP][\fI% |\fP][\fI, ;\fP][\fI#\fP][\fIpad\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
+.It Cm [\fI% |\fP][\fI, ;\fP][\fI#\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI0-9\fP]
 All ranges structure
 'It Cm {\fI|\fP}{\fIcmd\fP}[\fI|\fP]
 Ex command structure
@@ -583,8 +584,6 @@ Search backward structure
 'It Cm '{<\fImark\fP>}
 Mark structure
 
-.It Cm pad
-<Space> or <Tab>
 .It Cm \&%
 Range from first to last line
 .It Cm \&|
@@ -1587,9 +1586,9 @@ _
  614 uc.c | UTF-8 support
  718 led.c | insert mode/output
  765 regex.c | pikevm
- 1584 ex.c | ex options/commands
+ 1592 ex.c | ex options/commands
  1836 vi.c | normal mode/general
- 7225 total | wc -l *.c\(basort
+ 7233 total | wc -l *.c\(basort
 _
 .TE
 .
