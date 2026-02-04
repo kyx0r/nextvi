@@ -79,19 +79,19 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	utf8_length['\\n'] = 1;
 	return 1;
 .
-@vis 4@vis 6@469c 			a->end = -1; /* break outer loop efficiently */
+@469c 			a->end = -1; /* break outer loop efficiently */
 			if (a->dir > 0)
 				return NULL;
 .
-@vis 4@vis 6@463,466c 			*a->o = _o;
+@463,466c 			*a->o = _o;
 			*a->r = i;
 .
-@vis 4@vis 6@461c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
+@461c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
 .
-@vis 4@vis 6@452,453c 		s = a->lb->ln[i];
+@452,453c 		s = a->lb->ln[i];
 		while (rset_find(a->re, s + off, offs, flg) >= 0) {
 .
-@vis 4@vis 6@439,448c 	struct lbuf *lb;
+@439,448c 	struct lbuf *lb;
 	rset *re;
 	int dir;
 	int beg;
@@ -111,7 +111,7 @@ static void *lsearch(void *arg)
 	int off = a->off, g1, g2, _o, step, flg;
 	for (; i >= a->beg && i < a->end; i += a->dir) {
 .
-@vis 4@vis 6@436,437c struct lsparams
+@436,437c struct lsparams
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -119,16 +119,16 @@ static void *lsearch(void *arg)
 EXINIT="rcm:|sc! @|vis 6@643a 	else
 		flg &= ~REG_NEWLINE;
 .
-@vis 4@vis 6@642;11c  && utf8_length[eol_ch]
+@642;11c  && utf8_length[eol_ch]
 .
-@vis 4@vis 6@402;29;35c flg & REG_NEWLINE
+@402;29;35c flg & REG_NEWLINE
 .
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: uc.c
 EXINIT="rcm:|sc! @|vis 6@19a unsigned char *utf8_length = _utf8_length;
 .
-@vis 4@vis 6@1;14c _
+@1;14c _
 .
 @vis 4@wq" $VI -e 'uc.c'
 

@@ -16,9 +16,9 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1406a 	EO(hlm),
 .
-@vis 4@vis 6@1317a EO(hlm)
+@1317a EO(hlm)
 .
-@vis 4@vis 6@9a int xhlm;			/* highlight marks */
+@9a int xhlm;			/* highlight marks */
 .
 @vis 4@wq" $VI -e 'ex.c'
 

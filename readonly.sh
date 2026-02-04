@@ -16,29 +16,29 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1380a 	{\"ro\", ec_readonly},
 .
-@vis 4@vis 6@1300a static void *ec_readonly(char *loc, char *cmd, char *arg)
+@1300a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
 .
-@vis 4@vis 6@661a 			if (ex_buf->readonly)
+@661a 			if (ex_buf->readonly)
 				return \"write failed: readonly option is set\";
 .
-@vis 4@vis 6@366a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
+@366a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 		ex_buf->readonly = 1;
 .
-@vis 4@vis 6@115a 	bufs[i].readonly = readonly;
+@115a 	bufs[i].readonly = readonly;
 .
-@vis 4@vis 6@54a char readonly = 0;		/* commandline readonly option */
+@54a char readonly = 0;		/* commandline readonly option */
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 EXINIT="rcm:|sc! @|vis 6@1816;46c R
 .
-@vis 4@vis 6@1813a 			else if (argv[i][j] == 'R')
+@1813a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
 @vis 4@wq" $VI -e 'vi.c'
@@ -46,6 +46,6 @@ EXINIT="rcm:|sc! @|vis 6@1816;46c R
 # Patch: vi.h
 EXINIT="rcm:|sc! @|vis 6@541a extern char readonly;
 .
-@vis 4@vis 6@408a 	char readonly;			/* read only */
+@408a 	char readonly;			/* read only */
 .
 @vis 4@wq" $VI -e 'vi.h'

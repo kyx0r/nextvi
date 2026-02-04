@@ -16,7 +16,7 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1401a 	{\"cx\", ec_closebuf},
 .
-@vis 4@vis 6@1308a static void *ec_closebuf(char *loc, char *cmd, char *arg)
+@1308a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
 	int istmp = istempbuf(ex_buf);

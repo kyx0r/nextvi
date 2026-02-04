@@ -16,7 +16,7 @@ fi
 # Patch: vi.c
 EXINIT="rcm:|sc! @|vis 6@662;30;41c dir
 .
-@vis 4@vis 6@659a 		if (vc && cnt == 1)
+@659a 		if (vc && cnt == 1)
 			dir = 2;
 		else
 			dir = vi_nlword+1;

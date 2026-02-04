@@ -16,9 +16,9 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1378a 	EO(rec),
 .
-@vis 4@vis 6@1317a EO(rec)
+@1317a EO(rec)
 .
-@vis 4@vis 6@25a int xrec;			/* input recoding register */
+@25a int xrec;			/* input recoding register */
 .
 @vis 4@wq" $VI -e 'ex.c'
 

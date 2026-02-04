@@ -17,6 +17,6 @@ fi
 EXINIT="rcm:|sc! @|vis 6@707,708c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		mark = mv == '[' || mv == ']' ? '{' : '\\n';
 .
-@vis 4@vis 6@667;15;16c )
+@667;15;16c )
 .
 @vis 4@wq" $VI -e 'vi.c'

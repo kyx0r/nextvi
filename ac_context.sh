@@ -17,34 +17,34 @@ fi
 EXINIT="rcm:|sc! @|vis 6@551,552c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
 .
-@vis 4@vis 6@537;16;46c , is->lsug, pre
+@537;16;46c , is->lsug, pre
 .
-@vis 4@vis 6@531,532c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
+@531,532c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
 .
-@vis 4@vis 6@520;63;76c )
+@520;63;76c )
 .
-@vis 4@vis 6@412a 	if (ai_max >= 0 && xpac) {
+@412a 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
 	}
 .
-@vis 4@vis 6@32c 		part = strstr(part+len, sb->s+l);
+@32c 		part = strstr(part+len, sb->s+l);
 	}
 	if (l < pre && sb->s[pre]) {
 		l = pre;
 		goto again;
 .
-@vis 4@vis 6@29;7c  if (l >= pre)
+@29;7c  if (l >= pre)
 .
-@vis 4@vis 6@26;15c sb->s_n - 
+@26;15c sb->s_n - 
 .
-@vis 4@vis 6@20c 	again:;
+@20c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);
 .
-@vis 4@vis 6@16c 	if (!sb->s[l])
+@16c 	if (!sb->s[l])
 .
-@vis 4@vis 6@14c static int search(sbuf *sb, int l, int pre)
+@14c static int search(sbuf *sb, int l, int pre)
 .
 @vis 4@wq" $VI -e 'led.c'

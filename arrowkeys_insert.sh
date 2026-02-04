@@ -16,12 +16,12 @@ fi
 # Patch: led.c
 EXINIT="rcm:|sc! @|vis 6@694;37c , 1
 .
-@vis 4@vis 6@663a 	sbufn_str(sb, post)
+@663a 	sbufn_str(sb, post)
 	free(postref);
 .
-@vis 4@vis 6@650;29;33c NULL
+@650;29;33c NULL
 .
-@vis 4@vis 6@614a 		case '\\033':;	/* Arrow keys */
+@614a 		case '\\033':;	/* Arrow keys */
 			char cbuf[1];
 			cbuf[0] = '\\0';
 			int fl = fcntl(STDIN_FILENO, F_GETFL);
@@ -72,17 +72,17 @@ EXINIT="rcm:|sc! @|vis 6@694;37c , 1
 			fcntl(STDIN_FILENO, F_SETFL, fl);
 			return c;
 .
-@vis 4@vis 6@414c 		led_printparts(sb, pre, ps, *post, postn, ai_max, !vi_insmov);
+@414c 		led_printparts(sb, pre, ps, *post, postn, ai_max, !vi_insmov);
 		vi_insmov = 0;
 .
-@vis 4@vis 6@310,311c 	if (print) {
+@310,311c 	if (print) {
 		syn_blockhl = -1;
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
 .
-@vis 4@vis 6@283;34c , int print
+@283;34c , int print
 .
-@vis 4@vis 6@5a static int vi_insmov;
+@5a static int vi_insmov;
 .
 @vis 4@wq" $VI -e 'led.c'
 
@@ -91,7 +91,7 @@ EXINIT="rcm:|sc! @|vis 6@1515a 				_break:
 				vi_mod = 0;
 				break;
 .
-@vis 4@vis 6@1512a 				switch (k) {
+@1512a 				switch (k) {
 				case 'A':	/* ↑ */
 					term_back(!lmodified ? c : 'i');
 					if (lmodified)
@@ -123,15 +123,15 @@ EXINIT="rcm:|sc! @|vis 6@1515a 				_break:
 					goto _break;
 				}
 .
-@vis 4@vis 6@1055a 		lmodified = 1;
+@1055a 		lmodified = 1;
 	} else
 		lmodified = 0;
 .
-@vis 4@vis 6@1054;32c  {
+@1054;32c  {
 .
-@vis 4@vis 6@883a 	lmodified = 1;
+@883a 	lmodified = 1;
 .
-@vis 4@vis 6@852a static int lmodified;
+@852a static int lmodified;
 
 .
 @vis 4@wq" $VI -e 'vi.c'

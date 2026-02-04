@@ -16,7 +16,7 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1414a 	{\"lw\", ec_linewrap},
 .
-@vis 4@vis 6@1300a static void *ec_linewrap(char *loc, char *cmd, char *arg)
+@1300a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
 	if (xb->modified)
@@ -34,7 +34,7 @@ EXINIT="rcm:|sc! @|vis 6@1414a 	{\"lw\", ec_linewrap},
 }
 
 .
-@vis 4@vis 6@25a int xlw;			/* soft linewrap col */
+@25a int xlw;			/* soft linewrap col */
 .
 @vis 4@wq" $VI -e 'ex.c'
 
@@ -61,7 +61,7 @@ EXINIT="rcm:|sc! @|vis 6@375a 		/* relink chain: restored lines have their point
 			}
 		}
 .
-@vis 4@vis 6@353a 		/* relink chain: restored lines have original pointers */
+@353a 		/* relink chain: restored lines have original pointers */
 		if (xlw) {
 			for (int i = 0; i < lo->n_del; i++) {
 				char *ln = lo->del[i];
@@ -83,9 +83,9 @@ EXINIT="rcm:|sc! @|vis 6@375a 		/* relink chain: restored lines have their point
 			}
 		}
 .
-@vis 4@vis 6@240;30;31c (!lbuf_s(ln)->lw_next)
+@240;30;31c (!lbuf_s(ln)->lw_next)
 .
-@vis 4@vis 6@193a 	/* relink the chain after edit */
+@193a 	/* relink the chain after edit */
 	if (xlw && (chain_pred || chain_succ)) {
 		if (lo->n_ins > 0) {
 			char *first_new = lb->ln[beg];
@@ -107,7 +107,7 @@ EXINIT="rcm:|sc! @|vis 6@375a 		/* relink chain: restored lines have their point
 		}
 	}
 .
-@vis 4@vis 6@190a 	/* save chain boundary pointers before edit */
+@190a 	/* save chain boundary pointers before edit */
 	char *chain_pred = NULL, *chain_succ = NULL;
 	if (xlw) {
 		if (beg < end) {
@@ -126,7 +126,7 @@ EXINIT="rcm:|sc! @|vis 6@375a 		/* relink chain: restored lines have their point
 		}
 	}
 .
-@vis 4@vis 6@94a 			if (xlw) {
+@94a 			if (xlw) {
 				rstate->s = NULL;
 				ren_state *r = ren_position(ln);
 				if (r->cmax > xlw) {
@@ -158,10 +158,10 @@ EXINIT="rcm:|sc! @|vis 6@375a 		/* relink chain: restored lines have their point
 			}
 			too_small:
 .
-@vis 4@vis 6@90a 			n->lw_prev = NULL;
+@90a 			n->lw_prev = NULL;
 			n->lw_next = NULL;
 .
-@vis 4@vis 6@84a 		char *lwp = NULL;
+@84a 		char *lwp = NULL;
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -188,7 +188,7 @@ EXINIT="rcm:|sc! @|vis 6@171a 	if (xlw && s) {
 # Patch: vi.h
 EXINIT="rcm:|sc! @|vis 6@432a extern int xlw;
 .
-@vis 4@vis 6@147a 	char *lw_prev;
+@147a 	char *lw_prev;
 	char *lw_next;
 .
 @vis 4@wq" $VI -e 'vi.h'

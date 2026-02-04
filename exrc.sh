@@ -29,9 +29,9 @@ EXINIT="rcm:|sc! @|vis 6@1591a 	} else {
 			load_exrc(\".exrc\");
 	}
 .
-@vis 4@vis 6@1590;28c  {
+@1590;28c  {
 .
-@vis 4@vis 6@1578a void ex_script(FILE *fp)
+@1578a void ex_script(FILE *fp)
 {
 	char done = 0;
 	do {
@@ -77,10 +77,10 @@ void load_exrc(char *exrc)
 }
 
 .
-@vis 4@vis 6@1352a 	EO(exrc),
+@1352a 	EO(exrc),
 .
-@vis 4@vis 6@1317a EO(exrc)
+@1317a EO(exrc)
 .
-@vis 4@vis 6@39a int xexrc = 0;			/* read .exrc from the current directory */
+@39a int xexrc = 0;			/* read .exrc from the current directory */
 .
 @vis 4@wq" $VI -e 'ex.c'

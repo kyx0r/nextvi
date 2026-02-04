@@ -21,19 +21,19 @@ EXINIT="rcm:|sc! @|vis 6@55;15;22c
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1009a 	free(offs);
 .
-@vis 4@vis 6@958c 	int *offs = emalloc(rs->nsubc * sizeof(int));
+@958c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 EXINIT="rcm:|sc! @|vis 6@472a 	free(offs);
 .
-@vis 4@vis 6@466a 			}
+@466a 			}
 .
-@vis 4@vis 6@465c 			if (dir > 0) {
+@465c 			if (dir > 0) {
 				free(offs);
 .
-@vis 4@vis 6@440c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
+@440c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -43,39 +43,39 @@ EXINIT="rcm:|sc! @|vis 6@259a 	free(off);
 	free(stt);
 	free(ctt);
 .
-@vis 4@vis 6@177a 		stt = emalloc((cterm+1) * sizeof(int));
+@177a 		stt = emalloc((cterm+1) * sizeof(int));
 		ctt = emalloc((cterm+1) * sizeof(int));
 .
-@vis 4@vis 6@153,156c 	int *off = emalloc((cterm+1) * sizeof(int));	/* off[i]: the character at screen position i */
+@153,156c 	int *off = emalloc((cterm+1) * sizeof(int));	/* off[i]: the character at screen position i */
 	int *att = emalloc((cterm+1) * sizeof(int));	/* att[i]: the attributes of i-th character */
 	int *stt = NULL;	/* stt[i]: remap off indexes */
 	int *ctt = NULL;	/* ctt[i]: cterm bound attrs */
 .
-@vis 4@vis 6@82a 	free(subs);
+@82a 	free(subs);
 .
-@vis 4@vis 6@50c 	int *subs = emalloc(rs->nsubc * sizeof(int));
+@50c 	int *subs = emalloc(rs->nsubc * sizeof(int));
 .
 @vis 4@wq" $VI -e 'led.c'
 
 # Patch: regex.c
 EXINIT="rcm:|sc! @|vis 6@737a 	free(subs);
 .
-@vis 4@vis 6@733a 				free(subs);
+@733a 				free(subs);
 .
-@vis 4@vis 6@717c 	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
+@717c 	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
 .
-@vis 4@vis 6@638,639c 	char *nsubs = emalloc(prog->sub);
+@638,639c 	char *nsubs = emalloc(prog->sub);
 .
-@vis 4@vis 6@633;24;41c *lb = emalloc(prog->laidx * sizeof(lb[0]))
+@633;24;41c *lb = emalloc(prog->laidx * sizeof(lb[0]))
 .
-@vis 4@vis 6@631c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
+@631c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
 .
-@vis 4@vis 6@628,629c 	int *npc, *pc, *insts = prog->insts;
+@628,629c 	int *npc, *pc, *insts = prog->insts;
 	int **pcs = emalloc((prog->splits) * sizeof(int*));
 	rsub **subs = emalloc(prog->splits * sizeof(rsub*));
 	unsigned int *sdense = emalloc(prog->sparsesz * sizeof(unsigned int)), sparsesz = 0;
 .
-@vis 4@vis 6@402c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \\
+@402c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \\
 free(pcs); \\
 free(subs); \\
 free(sdense); \\
@@ -90,45 +90,45 @@ return state; } \\
 # Patch: ren.c
 EXINIT="rcm:|sc! @|vis 6@408a 	free(pats);
 .
-@vis 4@vis 6@404c 	char **pats = emalloc(ftslen * sizeof(char *));
+@404c 	char **pats = emalloc(ftslen * sizeof(char *));
 .
-@vis 4@vis 6@360a 	free(subs);
+@360a 	free(subs);
 .
-@vis 4@vis 6@357a 	}
+@357a 	}
 .
-@vis 4@vis 6@356c 	if (syn_blockhl < 0 || blockhl < 0) {
+@356c 	if (syn_blockhl < 0 || blockhl < 0) {
 		free(subs);
 .
-@vis 4@vis 6@353a 	}
+@353a 	}
 .
-@vis 4@vis 6@352c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
+@352c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
 		free(subs);
 .
-@vis 4@vis 6@309;5;20c *subs = emalloc(rs->nsubc * sizeof(int))
+@309;5;20c *subs = emalloc(rs->nsubc * sizeof(int))
 .
-@vis 4@vis 6@261a 	free(pats);
+@261a 	free(pats);
 .
-@vis 4@vis 6@255c 	char **pats = emalloc(hlslen * sizeof(char *));
+@255c 	char **pats = emalloc(hlslen * sizeof(char *));
 .
 @vis 4@wq" $VI -e 'ren.c'
 
 # Patch: vi.c
 EXINIT="rcm:|sc! @|vis 6@1435a 					free(buf);
 .
-@vis 4@vis 6@1428c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
+@1428c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
-@vis 4@vis 6@1424a 					free(buf);
+@1424a 					free(buf);
 .
-@vis 4@vis 6@1415c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
+@1415c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
-@vis 4@vis 6@1293a 				free(buf);
+@1293a 				free(buf);
 .
-@vis 4@vis 6@1290c 				char *buf = emalloc(strlen(ln)+4);
+@1290c 				char *buf = emalloc(strlen(ln)+4);
 .
-@vis 4@vis 6@168a 		free(tmp);
+@168a 		free(tmp);
 		free(snum);
 .
-@vis 4@vis 6@143c 		char *tmp = emalloc(xcols+3);
+@143c 		char *tmp = emalloc(xcols+3);
 		char *snum = emalloc(32);
 .
 @vis 4@wq" $VI -e 'vi.c'

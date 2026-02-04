@@ -18,7 +18,7 @@ EXINIT="rcm:|sc! F|vis 6F254a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
 .
-Fvis 4Fvis 6F31a char grep_ft[] = \"/g\";	/* grep buffer */
+F31a char grep_ft[] = \"/g\";	/* grep buffer */
 .
 Fvis 4Fwq" $VI -e 'conf.c'
 
@@ -30,12 +30,12 @@ Fvis 4Fwq" $VI -e 'ex.c'
 # Patch: vi.c
 EXINIT="rcm:|sc! F|vis 6F1799a 	temp_open(2, \"/grep/\", grep_ft);
 .
-Fvis 4Fvis 6F1436a 				case 'x':
+F1436a 				case 'x':
 					temp_switch(2, 1);
 					vi_mod = 1;
 					break;
 .
-Fvis 4Fvis 6F1293c 				if (!strcmp(xb_path, \"/grep/\")) {
+F1293c 				if (!strcmp(xb_path, \"/grep/\")) {
 					int subs[2];
 					rset *rs = rset_make(1, (char*[]){\":[0-9]+:\"}, 0);
 					if (rset_find(rs, buf, subs, 0) >= 0) {
@@ -47,7 +47,7 @@ Fvis 4Fvis 6F1293c 				if (!strcmp(xb_path, \"/grep/\")) {
 				}
 				term_push(buf, strlen(buf));
 .
-Fvis 4Fvis 6F733a 		} else if (mv == TK_CTL('x')) {
+F733a 		} else if (mv == TK_CTL('x')) {
 			term_exec(\"\", 1, '&')
 			temp_pos(2, -1, 0, 0);
 			temp_switch(2, 0);
@@ -82,21 +82,21 @@ Fvis 4Fvis 6F733a 		} else if (mv == TK_CTL('x')) {
 			*off = 0;
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
 .
-Fvis 4Fvis 6F732;13c 0, 
+F732;13c 0, 
 .
-Fvis 4Fvis 6F713a 	case TK_CTL('x'):
+F713a 	case TK_CTL('x'):
 .
-Fvis 4Fvis 6F538;11c ret && xrow
+F538;11c ret && xrow
 .
-Fvis 4Fvis 6F522;11c ret && xrow && again != 2
+F522;11c ret && xrow && again != 2
 .
-Fvis 4Fvis 6F518;5;16c 
+F518;5;16c 
 .
-Fvis 4Fvis 6F515;25c again, int 
+F515;25c again, int 
 .
-Fvis 4Fvis 6F504;4;15c isbuffer
+F504;4;15c isbuffer
 .
-Fvis 4Fvis 6F499;17c isbuffer
+F499;17c isbuffer
 .
 Fvis 4Fwq" $VI -e 'vi.c'
 

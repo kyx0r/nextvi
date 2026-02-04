@@ -36,7 +36,7 @@ EXINIT="rcm:|sc! @|vis 6@583a 	case '\\033':	/* Arrow keys */
 			return 0;
 		break;
 .
-@vis 4@vis 6@348a 	case '\\033':	/* Arrow keys */
+@348a 	case '\\033':	/* Arrow keys */
 		c = term_read(0);
 		if (c == '[') {
 			c = term_read(0);

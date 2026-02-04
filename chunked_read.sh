@@ -16,11 +16,11 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@367;14c , cd == 3
 .
-@vis 4@vis 6@346;10c , 1
+@346;10c , 1
 .
-@vis 4@vis 6@330c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\
+@330c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\
 .
-@vis 4@vis 6@327;23c , init
+@327;23c , init
 .
 @vis 4@wq" $VI -e 'ex.c'
 
@@ -76,12 +76,12 @@ EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
 .
-@vis 4@vis 6@227a 		s[n] = '\\0';
+@227a 		s[n] = '\\0';
 		lbuf_edit(lb, s, beg, end, 0, 0);
 		free(s);
 		return nr != 0;
 .
-@vis 4@221,226d@vis 6@208,219c 	if (!init) {
+@221,226d@208,219c 	if (!init) {
 		struct stat st;
 		long nr;	/* 1048575 caps at 2147481600 on 32 bit */
 		int sz = 1048575, step = 1, n = 0;
@@ -102,7 +102,7 @@ EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
 				sz++;
 				step = 0;
 .
-@vis 4@vis 6@206c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
+@206c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 

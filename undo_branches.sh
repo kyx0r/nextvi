@@ -16,7 +16,7 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1388a 	{\"up\", ec_undoleafs},
 .
-@vis 4@vis 6@1300a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+@1300a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)
@@ -32,15 +32,15 @@ EXINIT="rcm:|sc! @|vis 6@1388a 	{\"up\", ec_undoleafs},
 # Patch: lbuf.c
 EXINIT="rcm:|sc! @|vis 6@398a 		sbuf_make(lb->rehist, 128)
 .
-@vis 4@vis 6@395,396c 		lbuf_freeleafs(lb);
+@395,396c 		lbuf_freeleafs(lb);
 .
-@vis 4@vis 6@153,154c 		int i = lb->hist_n - lb->hist_u;
+@153,154c 		int i = lb->hist_n - lb->hist_u;
 		if (i) {
 			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
 			sbuf_mem(lb->rehist, lb->hist, (int)(lb->hist_n * sizeof(lb->hist[0])));
 		}
 .
-@vis 4@vis 6@144a void lbuf_setleaf(struct lbuf *lb, int leaf)
+@144a void lbuf_setleaf(struct lbuf *lb, int leaf)
 {
 	char *ptr1 = lb->rehist->s, *ptr2;
 	int n, i, off = -1;
@@ -98,9 +98,9 @@ char *lbuf_getleafs(struct lbuf *lb)
 }
 
 .
-@vis 4@vis 6@67,68c 	lbuf_freeleafs(lb);
+@67,68c 	lbuf_freeleafs(lb);
 .
-@vis 4@vis 6@61a static void lbuf_freeleafs(struct lbuf *lb)
+@61a static void lbuf_freeleafs(struct lbuf *lb)
 {
 	char *ptr = lb->rehist->s;
 	struct lopt *hist;
@@ -128,7 +128,7 @@ char *lbuf_getleafs(struct lbuf *lb)
 }
 
 .
-@vis 4@vis 6@5a 	sbuf_make(lb->rehist, 128)
+@5a 	sbuf_make(lb->rehist, 128)
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -136,6 +136,6 @@ char *lbuf_getleafs(struct lbuf *lb)
 EXINIT="rcm:|sc! @|vis 6@188a void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
 .
-@vis 4@vis 6@151a 	sbuf *rehist;		/* alternate redo timelines */
+@151a 	sbuf *rehist;		/* alternate redo timelines */
 .
 @vis 4@wq" $VI -e 'vi.h'

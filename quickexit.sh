@@ -16,16 +16,16 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1375a 	EO(qe),
 .
-@vis 4@vis 6@1317a EO(qe)
+@1317a EO(qe)
 .
-@vis 4@vis 6@14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
+@14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: led.c
 EXINIT="rcm:|sc! @|vis 6@633a _default:
 .
-@vis 4@vis 6@632a 		case 'j':
+@632a 		case 'j':
 			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
 				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
 					term_push(\"\", 2);
@@ -36,7 +36,7 @@ EXINIT="rcm:|sc! @|vis 6@633a _default:
 		case 'k':
 			is->quickexit = gettime_ms();
 .
-@vis 4@vis 6@406a static int gettime_ms(void)
+@406a static int gettime_ms(void)
 {
 	struct timespec t;
 	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
@@ -51,15 +51,15 @@ EXINIT="rcm:|sc! @|vis 6@633a _default:
 EXINIT="rcm:|sc! @|vis 6@1503a 				if (xqe)
 					vi_mod |= 2;
 .
-@vis 4@vis 6@9a #include <time.h>
+@9a #include <time.h>
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="rcm:|sc! @|vis 6@424a extern int xqe;
 .
-@vis 4@vis 6@377a is.quickexit = 0; \\
+@377a is.quickexit = 0; \\
 .
-@vis 4@vis 6@369a 	int quickexit;
+@369a 	int quickexit;
 .
 @vis 4@wq" $VI -e 'vi.h'

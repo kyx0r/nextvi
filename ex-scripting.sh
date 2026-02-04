@@ -17,7 +17,7 @@ fi
 EXINIT="rcm:|sc! @|vis 6@1393a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 .
-@vis 4@vis 6@1300a static void *ec_script(char *loc, char *cmd, char *arg)
+@1300a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
 	char buf[100];
@@ -53,7 +53,7 @@ EXINIT="rcm:|sc! @|vis 6@1393a 	{\"sr\", ec_script},
 }
 
 .
-@vis 4@vis 6@39a char **xenvp;
+@39a char **xenvp;
 .
 @vis 4@wq" $VI -e 'ex.c'
 

@@ -16,7 +16,7 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1589a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
-@vis 4@vis 6@1588a 	if (stdin_fd) {
+@1588a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
 		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
@@ -35,17 +35,17 @@ EXINIT="rcm:|sc! @|vis 6@1589a 	signal(SIGINT, SIG_DFL); /* got past init? ok re
 		}
 	}
 .
-@vis 4@vis 6@1586;10c !n && stdin_fd ? NULL : 
+@1586;10c !n && stdin_fd ? NULL : 
 .
-@vis 4@vis 6@1583a 	int i = n;
+@1583a 	int i = n;
 .
-@vis 4@vis 6@1581;19c  + !!stdin_fd
+@1581;19c  + !!stdin_fd
 .
-@vis 4@vis 6@371a 	if (!loc)
+@371a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 .
-@vis 4@vis 6@353c 	int fd = 0, len, rd = 0, cd = 0;
+@353c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
 .
@@ -54,28 +54,28 @@ EXINIT="rcm:|sc! @|vis 6@1589a 	signal(SIGINT, SIG_DFL); /* got past init? ok re
 # Patch: term.c
 EXINIT="rcm:|sc! @|vis 6@349;11;23c stdin_fd
 .
-@vis 4@vis 6@306;20;21c stdin_fd
+@306;20;21c stdin_fd
 .
-@vis 4@vis 6@162,163c 				read(stdin_fd, ibuf, 1) <= 0) {
+@162,163c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 .
-@vis 4@vis 6@158a 		ufd.fd = stdin_fd;
+@158a 		ufd.fd = stdin_fd;
 .
-@vis 4@vis 6@40;11;12c stdin_fd
+@40;11;12c stdin_fd
 .
-@vis 4@vis 6@31a 	isig = 1;
+@31a 	isig = 1;
 .
-@vis 4@vis 6@26;12;13c stdin_fd
+@26;12;13c stdin_fd
 .
-@vis 4@vis 6@20,21c 	if (!isig && stdin_fd)
+@20,21c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
 	else
 		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
 .
-@vis 4@vis 6@18;11;12c stdin_fd
+@18;11;12c stdin_fd
 .
-@vis 4@vis 6@8a int stdin_fd;
+@8a int stdin_fd;
 static int isig;
 .
 @vis 4@wq" $VI -e 'term.c'
@@ -84,7 +84,7 @@ static int isig;
 EXINIT="rcm:|sc! @|vis 6@1804c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
 .
-@vis 4@vis 6@1789a 	sigaction(SIGINT, &sa, NULL);
+@1789a 	sigaction(SIGINT, &sa, NULL);
 .
 @vis 4@wq" $VI -e 'vi.c'
 

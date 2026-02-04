@@ -252,14 +252,14 @@ void *win_split(int vertical, char *arg)
 }
 
 .
-Jvis 4J1415dJvis 6J1393a 	{\"sp\", ec_split},
+J1415dJ1393a 	{\"sp\", ec_split},
 .
-Jvis 4Jvis 6J1389a 	EO(vis),
+J1389a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
-Jvis 4Jvis 6J1355a 	{\"eq\", ec_equalize},
+J1355a 	{\"eq\", ec_equalize},
 .
-Jvis 4Jvis 6J1328a static void *ec_split(char *loc, char *cmd, char *arg)
+J1328a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
 }
@@ -360,10 +360,10 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 }
 
 .
-Jvis 4Jvis 6J558c 	if (!xquit)
+J558c 	if (!xquit)
 		xquit = 1;
 .
-Jvis 4Jvis 6J555c 	/* q! always force quits */
+J555c 	/* q! always force quits */
 	if (strchr(cmd, '!')) {
 		xquit = -1;
 		return NULL;
@@ -376,15 +376,15 @@ Jvis 4Jvis 6J555c 	/* q! always force quits */
 	/* single window: check for modified buffers and quit */
 	for (int i = 0; i < xbufcur; i++)
 .
-Jvis 4Jvis 6J159a 	/* update current window's buffer reference */
+J159a 	/* update current window's buffer reference */
 	if (curwin)
 		curwin->buf = ex_buf;
 .
-Jvis 4Jvis 6J98a 	/* update current window's buffer reference */
+J98a 	/* update current window's buffer reference */
 	if (curwin)
 		curwin->buf = ex_buf;
 .
-Jvis 4Jvis 6J43a struct win *wins;		/* head of window list */
+J43a struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 .
@@ -393,57 +393,57 @@ Jvis 4Jwq" $VI -e 'ex.c'
 # Patch: led.c
 EXINIT="rcm:|sc! J|vis 6J611;46c , ai_max
 .
-Jvis 4Jvis 6J588a 			if (curwin)
+J588a 			if (curwin)
 				curwin->buf = ex_buf;
 .
-Jvis 4Jvis 6J568;46c , ai_max
+J568;46c , ai_max
 .
-Jvis 4Jvis 6J509;46c , ai_max
+J509;46c , ai_max
 .
-Jvis 4Jvis 6J386;23;24c winx
+J386;23;24c winx
 .
-Jvis 4Jvis 6J384c 			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
+J384c 			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
 .
-Jvis 4Jvis 6J377;25;55c winx + vi_lncol, xleft, xleft + winw
+J377;25;55c winx + vi_lncol, xleft, xleft + winw
 .
-Jvis 4Jvis 6J368;15;16c winx
+J368;15;16c winx
 .
-Jvis 4Jvis 6J366;22;27c winh
+J366;22;27c winh
 .
-Jvis 4Jvis 6J364a 	/* window offset for vsplit (not for prompts) */
+J364a 	/* window offset for vsplit (not for prompts) */
 	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
 	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 	int winh = (ai_max >= 0 && curwin) ? curwin->h : xrows;
 .
-Jvis 4Jvis 6J363;77c , int ai_max
+J363;77c , int ai_max
 .
-Jvis 4Jvis 6J311,312c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
+J311,312c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
 	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
 .
-Jvis 4Jvis 6J308,309c 	if (pos >= xleft + winw || pos < xleft)
+J308,309c 	if (pos >= xleft + winw || pos < xleft)
 		xleft = pos < winw ? 0 : pos - winw / 2;
 .
-Jvis 4Jvis 6J289a 	/* window offset for vsplit (not for prompts) */
+J289a 	/* window offset for vsplit (not for prompts) */
 	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
 	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 .
-Jvis 4Jvis 6J97;17;22c ww
+J97;17;22c ww
 .
-Jvis 4Jvis 6J95a 	int ww = curwin ? curwin->w : xcols;
+J95a 	int ww = curwin ? curwin->w : xcols;
 .
 Jvis 4Jwq" $VI -e 'led.c'
 
 # Patch: vi.c
 EXINIT="rcm:|sc! J|vis 6J1772;11;23c (curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +
 .
-Jvis 4Jvis 6J1755;53;58c win_height()
+J1755;53;58c win_height()
 .
-Jvis 4Jvis 6J1747,1748c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
+J1747,1748c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-Jvis 4Jvis 6J1745;34c  {
+J1745;34c  {
 .
-Jvis 4Jvis 6J1743c 		/* save cursor position to current window */
+J1743c 		/* save cursor position to current window */
 		if (curwin) {
 			curwin->row = xrow;
 			curwin->off = xoff;
@@ -455,19 +455,19 @@ Jvis 4Jvis 6J1743c 		/* save cursor position to current window */
 			vi_draw_allwins();
 		} else if (vi_mod & 1 || xleft != oleft
 .
-Jvis 4Jvis 6J1700,1701c 		{ int _ww = win_width();
+J1700,1701c 		{ int _ww = win_width();
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
-Jvis 4Jvis 6J1538;10c  }
+J1538;10c  }
 .
-Jvis 4Jvis 6J1535a 				if (xrows != orows || xcols != ocols)
+J1535a 				if (xrows != orows || xcols != ocols)
 					win_size();
 .
-Jvis 4Jvis 6J1528c 			case TK_CTL('l'): {
+J1528c 			case TK_CTL('l'): {
 				int orows = xrows, ocols = xcols;
 .
-Jvis 4Jvis 6J1399a 				case 'c':
+J1399a 				case 'c':
 					/* switch to next window */
 					if (nwins > 1) {
 						curwin->row = xrow;
@@ -486,18 +486,18 @@ Jvis 4Jvis 6J1399a 				case 'c':
 					}
 					break;
 .
-Jvis 4Jvis 6J1281,1282c 				if (xtop < lbuf_len(xb) - win_height())
+J1281,1282c 				if (xtop < lbuf_len(xb) - win_height())
 					xtop = MIN(lbuf_len(xb) - win_height(), xtop + n);
 .
-Jvis 4Jvis 6J1279;36;41c win_height()
+J1279;36;41c win_height()
 .
-Jvis 4Jvis 6J1267;36;41c win_height()
+J1267;36;41c win_height()
 .
-Jvis 4Jvis 6J1248;39;44c win_height()
+J1248;39;44c win_height()
 .
-Jvis 4Jvis 6J1243;40;45c win_height()
+J1243;40;45c win_height()
 .
-Jvis 4Jvis 6J1195,1196c 		if (nwins > 1) {
+J1195,1196c 		if (nwins > 1) {
 			if (curwin) {
 				curwin->row = xrow;
 				curwin->off = xoff;
@@ -510,41 +510,41 @@ Jvis 4Jvis 6J1195,1196c 		if (nwins > 1) {
 		term_pos((curwin ? curwin->y : 0) + xrow - xtop,
 			(curwin ? curwin->x : 0) + led_pos(lbuf_get(xb, xrow), vi_col));
 .
-Jvis 4Jvis 6J1192a 		win_init();
+J1192a 		win_init();
 .
-Jvis 4Jvis 6J1181,1185c 	xtop = xtop - _wh / 2 > xrow ? \\
+J1181,1185c 	xtop = xtop - _wh / 2 > xrow ? \\
 			MAX(0, xrow - _wh / 2) : xrow; \\
 if (xtop + _wh <= xrow) \\
 	xtop = xtop + _wh + _wh / 2 <= xrow ? \\
 			xrow - _wh / 2 : xrow - _wh + 1; } \\
 .
-Jvis 4Jvis 6J1177a { int _wh = win_height(); \\
+J1177a { int _wh = win_height(); \\
 .
-Jvis 4Jvis 6J1114;25;30c win_height()
+J1114;25;30c win_height()
 .
-Jvis 4Jvis 6J1028;21;26c win_height()
+J1028;21;26c win_height()
 .
-Jvis 4Jvis 6J796,797c 		else if (*row < xtop || *row >= xtop + win_height() - 1)
+J796,797c 		else if (*row < xtop || *row >= xtop + win_height() - 1)
 			xtop = MAX(0, *row - win_height() / 2);
 .
-Jvis 4Jvis 6J783;23;28c win_height()
+J783;23;28c win_height()
 .
-Jvis 4Jvis 6J750;23;28c win_height()
+J750;23;28c win_height()
 .
-Jvis 4Jvis 6J374;20;25c win_height()
+J374;20;25c win_height()
 .
-Jvis 4Jvis 6J371;20;25c win_height()
+J371;20;25c win_height()
 .
-Jvis 4Jvis 6J238;13;14c w
+J238;13;14c w
 .
-Jvis 4Jvis 6J236;21;22c w
+J236;21;22c w
 .
-Jvis 4Jvis 6J234;14;15c w
+J234;14;15c w
 .
-Jvis 4Jvis 6J230c 	int wrows = win_height();
+J230c 	int wrows = win_height();
 	term_pos(curwin ? curwin->y : 0, 0);
 .
-Jvis 4Jvis 6J225a /* draw all windows and separators */
+J225a /* draw all windows and separators */
 static void vi_draw_allwins(void)
 {
 	struct win *w = wins;
@@ -600,34 +600,34 @@ static void vi_draw_allwins(void)
 }
 
 .
-Jvis 4Jvis 6J222;19;20c w
+J222;19;20c w
 .
-Jvis 4Jvis 6J220a 	int wrows = win_height();
+J220a 	int wrows = win_height();
 .
-Jvis 4Jvis 6J214c 	led_crender(s, scrrow, curwin ? curwin->x : 0, xleft, xleft + wcols)
+J214c 	led_crender(s, scrrow, curwin ? curwin->x : 0, xleft, xleft + wcols)
 .
-Jvis 4Jvis 6J209;25;36c scrrow, curwin ? curwin->x :
+J209;25;36c scrrow, curwin ? curwin->x :
 .
-Jvis 4Jvis 6J206;28;39c scrrow, (curwin ? curwin->x : 0) +
+J206;28;39c scrrow, (curwin ? curwin->x : 0) +
 .
-Jvis 4Jvis 6J195c 		led_crender(s, scrrow, (curwin ? curwin->x : 0) + l1, xleft, xleft + wcols - l1)
+J195c 		led_crender(s, scrrow, (curwin ? curwin->x : 0) + l1, xleft, xleft + wcols - l1)
 .
-Jvis 4Jvis 6J163;25;44c scrrow, curwin ? curwin->x : 0, 0, w
+J163;25;44c scrrow, curwin ? curwin->x : 0, 0, w
 .
-Jvis 4Jvis 6J143,146c 		char tmp[wcols+3], snum[32];
+J143,146c 		char tmp[wcols+3], snum[32];
 		memset(tmp, ' ', wcols+1);
 		tmp[wcols+1] = '\\n';
 		tmp[wcols+2] = '\\0';
 .
-Jvis 4Jvis 6J139;20;21c w
+J139;20;21c w
 .
-Jvis 4Jvis 6J133;18;31c scrrow ==
+J133;18;31c scrrow ==
 .
-Jvis 4Jvis 6J130a 	int wrows = win_height();
+J130a 	int wrows = win_height();
 	int wcols = win_width();
 	int scrrow = win_scrrow(row);
 .
-Jvis 4Jvis 6J127a /* calculate screen row for buffer row in current window */
+J127a /* calculate screen row for buffer row in current window */
 static int win_scrrow(int row)
 {
 	return curwin ? curwin->y + (row - xtop) : row - xtop;
@@ -646,9 +646,9 @@ static int win_height(void)
 }
 
 .
-Jvis 4Jvis 6J120;10;11c w
+J120;10;11c w
 .
-Jvis 4Jvis 6J104a /* draw horizontal separator line at screen row, from x for w columns */
+J104a /* draw horizontal separator line at screen row, from x for w columns */
 static void vi_draw_hsep(int row, int x, int w)
 {
 	term_pos(row, x);

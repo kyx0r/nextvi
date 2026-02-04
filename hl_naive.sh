@@ -16,15 +16,15 @@ fi
 # Patch: led.c
 EXINIT="rcm:|sc! @|vis 6@245;7;26c 
 .
-@vis 4@vis 6@214,232c 			att[p->off] = syn_merge(p->att, att[p->off]);
+@214,232c 			att[p->off] = syn_merge(p->att, att[p->off]);
 .
-@vis 4@vis 6@207,208c 		syn_highlight(att, s0, n);
+@207,208c 		syn_highlight(att, s0, n);
 .
-@vis 4@167,205d@vis 6@154,156c 	int *att = emalloc(n * sizeof(att[0]));
+@167,205d@154,156c 	int *att = emalloc(n * sizeof(att[0]));
 	memset(att, 0, n * sizeof(att[0]));
 .
-@vis 4@vis 6@150,151c 	int att_old = 0, cterm = cend - cbeg;
+@150,151c 	int att_old = 0, cterm = cend - cbeg;
 .
-@vis 4@vis 6@119;16;38c 
+@119;16;38c 
 .
 @vis 4@wq" $VI -e 'led.c'

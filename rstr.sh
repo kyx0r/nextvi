@@ -16,58 +16,58 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! @|vis 6@1190;23;27c tr_
 .
-@vis 4@vis 6@1187;3;5c tr
+@1187;3;5c tr
 .
-@vis 4@vis 6@1095;3;5c tr
+@1095;3;5c tr
 .
-@vis 4@vis 6@1086;8;10c tr
+@1086;8;10c tr
 .
-@vis 4@vis 6@1076;9;13c tr_
+@1076;9;13c tr_
 .
-@vis 4@vis 6@1074;9;13c tr_
+@1074;9;13c tr_
 .
-@vis 4@vis 6@1066;3;5c tr
+@1066;3;5c tr
 .
-@vis 4@vis 6@1008;4;6c tr
+@1008;4;6c tr
 .
-@vis 4@vis 6@977;20;29c (rs->rs ? rs->rs->nsubc : 2)
+@977;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
-@vis 4@vis 6@962;11;13c tr
+@962;11;13c tr
 .
-@vis 4@vis 6@958;14;19c rs ? rs->rs->nsubc : 2
+@958;14;19c rs ? rs->rs->nsubc : 2
 .
-@vis 4@vis 6@948;9;13c tr_
+@948;9;13c tr_
 .
-@vis 4@vis 6@941;3;5c tr
+@941;3;5c tr
 .
-@vis 4@vis 6@495;3;5c tr
+@495;3;5c tr
 .
-@vis 4@vis 6@486;4;6c tr
+@486;4;6c tr
 .
-@vis 4@vis 6@459;4;6c tr
+@459;4;6c tr
 .
-@vis 4@vis 6@421;10;12c tr
+@421;10;12c tr
 .
-@vis 4@vis 6@414;43;50c 
+@414;43;50c 
 .
-@vis 4@vis 6@412;9;13c tr_
+@412;9;13c tr_
 .
-@vis 4@vis 6@382;3;5c tr
+@382;3;5c tr
 .
-@vis 4@vis 6@177,179c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
+@177,179c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 .
-@vis 4@vis 6@38;2;4c tr
+@38;2;4c tr
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 EXINIT="rcm:|sc! @|vis 6@453;11;13c tr
 .
-@vis 4@vis 6@440;14;19c rs ? re->rs->nsubc : 2
+@440;14;19c rs ? re->rs->nsubc : 2
 .
-@vis 4@vis 6@436;35;37c tr
+@436;35;37c tr
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -210,27 +210,27 @@ void rstr_free(rstr *rs)
 # Patch: vi.c
 EXINIT="rcm:|sc! @|vis 6@479;21;23c tr
 .
-@vis 4@vis 6@439;2;4c tr
+@439;2;4c tr
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="rcm:|sc! @|vis 6@539;9;11c tr
 .
-@vis 4@vis 6@478;13;15c tr
+@478;13;15c tr
 .
-@vis 4@vis 6@445;9;11c tr
+@445;9;11c tr
 .
-@vis 4@vis 6@188a 
+@188a 
 .
-@vis 4@vis 6@187;35;37c tr
+@187;35;37c tr
 .
-@vis 4@vis 6@131a rstr *rstr_make(char *re, int flg);
+@131a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
 .
-@vis 4@vis 6@124a typedef struct {
+@124a typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */
 	int len;		/* str length */

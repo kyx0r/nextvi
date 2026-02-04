@@ -44,7 +44,7 @@ void syn_done(void)
 	rset_free(syn_ftrs);
 }
 .
-@vis 4@vis 6@92a void ren_done(void)
+@92a void ren_done(void)
 {
 	rset_free(dir_rslr);
 	rset_free(dir_rsrl);
@@ -66,12 +66,12 @@ EXINIT="rcm:|sc! @|vis 6@1834a 	vi_regdone();
 	ren_done();
 	led_done();
 .
-@vis 4@vis 6@1828a 	free(ibuf);
+@1828a 	free(ibuf);
 	rset_free(fsincl);
 .
-@vis 4@vis 6@1827a 	ex_done();
+@1827a 	ex_done();
 .
-@vis 4@vis 6@438a static void vi_regdone(void)
+@438a static void vi_regdone(void)
 {
 	for (int i = 0; i < LEN(xregs); i++)
 		if (xregs[i])
@@ -84,8 +84,8 @@ EXINIT="rcm:|sc! @|vis 6@1834a 	vi_regdone();
 # Patch: vi.h
 EXINIT="rcm:|sc! @|vis 6@477a void ex_done(void);
 .
-@vis 4@vis 6@268a void syn_done(void);
+@268a void syn_done(void);
 .
-@vis 4@vis 6@230a void dir_done(void);
+@230a void dir_done(void);
 .
 @vis 4@wq" $VI -e 'vi.h'

@@ -16,11 +16,11 @@ fi
 # Patch: led.c
 EXINIT="rcm:|sc! @|vis 6@217;21;22c atti
 .
-@vis 4@vis 6@207;48c f
+@207;48c f
 .
-@vis 4@vis 6@205;23c f
+@205;23c f
 .
-@vis 4@vis 6@183a 		l = cend <= r->cmax ? r->col[cend] : -1;
+@183a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
 				att[c++] = l;
@@ -28,7 +28,7 @@ EXINIT="rcm:|sc! @|vis 6@217;21;22c atti
 			l += ctx;
 		}
 .
-@vis 4@vis 6@178c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
+@178c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
 			if (r->pos[l] < cbeg && c < fcterm) {
 				atti++;
@@ -38,17 +38,17 @@ EXINIT="rcm:|sc! @|vis 6@217;21;22c atti
 		}
 		for (i = 0; i < cterm;) {
 .
-@vis 4@vis 6@167a 		c = 0;
+@167a 		c = 0;
 .
-@vis 4@vis 6@154,156c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
+@154,156c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
 .
-@vis 4@vis 6@148a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
+@148a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
 .
-@vis 4@vis 6@142a #define LEDBACK 300
+@142a #define LEDBACK 300
 #define LEDFORW 300
 
 .
