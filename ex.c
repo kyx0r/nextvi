@@ -1532,11 +1532,10 @@ void *ex_exec(const char *ln)
 		sbuf_cut(sb, 0)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
 		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
-		if (ret && ret != xuerr && xerr & 1) {
+		if (ret && ret != xuerr && xerr & 1)
 			ex_print(ret, msg_ft)
-			if (xerr & 2)
-				break;
-		}
+		if (ret && xerr & 2)
+			break;
 	} while (*ln);
 	free(sb->s);
 	return xerr & 4 ? NULL : ret;
