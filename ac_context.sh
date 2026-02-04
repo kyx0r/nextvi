@@ -36,9 +36,9 @@ EXINIT="rcm:|sc! @|vis 6@551,552c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : 
 		l = pre;
 		goto again;
 .
-@vis 4@vis 6@29;7;7c  if (l >= pre)
+@vis 4@vis 6@29;7c  if (l >= pre)
 .
-@vis 4@vis 6@26;15;15c sb->s_n - 
+@vis 4@vis 6@26;15c sb->s_n - 
 .
 @vis 4@vis 6@20c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);

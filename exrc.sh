@@ -29,7 +29,7 @@ EXINIT="rcm:|sc! @|vis 6@1591a 	} else {
 			load_exrc(\".exrc\");
 	}
 .
-@vis 4@vis 6@1590;28;28c  {
+@vis 4@vis 6@1590;28c  {
 .
 @vis 4@vis 6@1578a void ex_script(FILE *fp)
 {

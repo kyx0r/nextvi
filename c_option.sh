@@ -17,14 +17,14 @@ fi
 EXINIT="rcm:|sc! @|vis 6@1591a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 .
-@vis 4@vis 6@1579;32;32c , char **cmds, int cmdnum
+@vis 4@vis 6@1579;32c , char **cmds, int cmdnum
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1823;27;27c , ex_cmds, cmdnum
+EXINIT="rcm:|sc! @|vis 6@1823;27c , ex_cmds, cmdnum
 .
-@vis 4@vis 6@1816;46;46c c
+@vis 4@vis 6@1816;46c c
 .
 @vis 4@vis 6@1814c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
@@ -45,6 +45,6 @@ EXINIT="rcm:|sc! @|vis 6@1823;27;27c , ex_cmds, cmdnum
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@476;32;32c , char** cmds, int cmdnum
+EXINIT="rcm:|sc! @|vis 6@476;32c , char** cmds, int cmdnum
 .
 @vis 4@wq" $VI -e 'vi.h'

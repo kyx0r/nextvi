@@ -36,7 +36,7 @@ EXINIT="rcm:|sc! @|vis 6@1380a 	{\"ro\", ec_readonly},
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1816;46;46c R
+EXINIT="rcm:|sc! @|vis 6@1816;46c R
 .
 @vis 4@vis 6@1813a 			else if (argv[i][j] == 'R')
 				readonly = 1;

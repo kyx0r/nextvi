@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@694;37;37c , 1
+EXINIT="rcm:|sc! @|vis 6@694;37c , 1
 .
 @vis 4@vis 6@663a 	sbufn_str(sb, post)
 	free(postref);
@@ -80,7 +80,7 @@ EXINIT="rcm:|sc! @|vis 6@694;37;37c , 1
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
 .
-@vis 4@vis 6@283;34;34c , int print
+@vis 4@vis 6@283;34c , int print
 .
 @vis 4@vis 6@5a static int vi_insmov;
 .
@@ -127,7 +127,7 @@ EXINIT="rcm:|sc! @|vis 6@1515a 				_break:
 	} else
 		lmodified = 0;
 .
-@vis 4@vis 6@1054;32;32c  {
+@vis 4@vis 6@1054;32c  {
 .
 @vis 4@vis 6@883a 	lmodified = 1;
 .

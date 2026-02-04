@@ -82,21 +82,21 @@ Fvis 4Fvis 6F733a 		} else if (mv == TK_CTL('x')) {
 			*off = 0;
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
 .
-Fvis 4Fvis 6F732;13;13c 0, 
+Fvis 4Fvis 6F732;13c 0, 
 .
 Fvis 4Fvis 6F713a 	case TK_CTL('x'):
 .
-Fvis 4Fvis 6F538;11;11c ret && xrow
+Fvis 4Fvis 6F538;11c ret && xrow
 .
-Fvis 4Fvis 6F522;11;11c ret && xrow && again != 2
+Fvis 4Fvis 6F522;11c ret && xrow && again != 2
 .
 Fvis 4Fvis 6F518;5;16c 
 .
-Fvis 4Fvis 6F515;25;25c again, int 
+Fvis 4Fvis 6F515;25c again, int 
 .
 Fvis 4Fvis 6F504;4;15c isbuffer
 .
-Fvis 4Fvis 6F499;17;17c isbuffer
+Fvis 4Fvis 6F499;17c isbuffer
 .
 Fvis 4Fwq" $VI -e 'vi.c'
 

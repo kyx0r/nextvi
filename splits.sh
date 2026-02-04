@@ -391,14 +391,14 @@ int nwins;			/* number of windows */
 Jvis 4Jwq" $VI -e 'ex.c'
 
 # Patch: led.c
-EXINIT="rcm:|sc! J|vis 6J611;46;46c , ai_max
+EXINIT="rcm:|sc! J|vis 6J611;46c , ai_max
 .
 Jvis 4Jvis 6J588a 			if (curwin)
 				curwin->buf = ex_buf;
 .
-Jvis 4Jvis 6J568;46;46c , ai_max
+Jvis 4Jvis 6J568;46c , ai_max
 .
-Jvis 4Jvis 6J509;46;46c , ai_max
+Jvis 4Jvis 6J509;46c , ai_max
 .
 Jvis 4Jvis 6J386;23;24c winx
 .
@@ -415,7 +415,7 @@ Jvis 4Jvis 6J364a 	/* window offset for vsplit (not for prompts) */
 	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 	int winh = (ai_max >= 0 && curwin) ? curwin->h : xrows;
 .
-Jvis 4Jvis 6J363;77;77c , int ai_max
+Jvis 4Jvis 6J363;77c , int ai_max
 .
 Jvis 4Jvis 6J311,312c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
 	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
@@ -441,7 +441,7 @@ Jvis 4Jvis 6J1755;53;58c win_height()
 Jvis 4Jvis 6J1747,1748c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-Jvis 4Jvis 6J1745;34;34c  {
+Jvis 4Jvis 6J1745;34c  {
 .
 Jvis 4Jvis 6J1743c 		/* save cursor position to current window */
 		if (curwin) {
@@ -459,7 +459,7 @@ Jvis 4Jvis 6J1700,1701c 		{ int _ww = win_width();
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
-Jvis 4Jvis 6J1538;10;10c  }
+Jvis 4Jvis 6J1538;10c  }
 .
 Jvis 4Jvis 6J1535a 				if (xrows != orows || xcols != ocols)
 					win_size();

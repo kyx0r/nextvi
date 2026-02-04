@@ -14,13 +14,13 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@367;14;14c , cd == 3
+EXINIT="rcm:|sc! @|vis 6@367;14c , cd == 3
 .
-@vis 4@vis 6@346;10;10c , 1
+@vis 4@vis 6@346;10c , 1
 .
 @vis 4@vis 6@330c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\
 .
-@vis 4@vis 6@327;23;23c , init
+@vis 4@vis 6@327;23c , init
 .
 @vis 4@wq" $VI -e 'ex.c'
 
