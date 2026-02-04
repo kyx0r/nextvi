@@ -482,7 +482,22 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 	/* Emit groups in reverse order to preserve line numbers */
 	for (int gi = ngroups - 1; gi >= 0; gi--) {
 		group_t *g = &groups[gi];
-		int use_relative = relative_mode && g->anchor;
+
+		/* Determine anchor for relative mode with fallbacks */
+		const char *rel_anchor = NULL;
+		int rel_offset = 0;
+		if (relative_mode) {
+			if (g->anchor && g->anchor[0]) {
+				/* Use context line as anchor */
+				rel_anchor = g->anchor;
+				rel_offset = g->anchor_offset;
+			} else if (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
+				/* Fallback: use first deleted line with offset 0 */
+				rel_anchor = g->del_texts[0];
+				rel_offset = 0;
+			}
+			/* If neither works, rel_anchor stays NULL -> use line numbers */
+		}
 
 		if (g->del_start && g->nadd) {
 			/* Try horizontal edit for single-line changes */
@@ -492,38 +507,38 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				char *new_text;
 				if (find_line_diff(g->del_texts[0], g->add_texts[0],
 				                   &start, &old_end, &new_text)) {
-					if (use_relative)
-						emit_relative_horizontal(out, g->anchor,
-						    g->anchor_offset, start, old_end, new_text, sep);
+					if (rel_anchor)
+						emit_relative_horizontal(out, rel_anchor,
+						    rel_offset, start, old_end, new_text, sep);
 					else
 						emit_horizontal_change(out, g->del_start, start,
 						    old_end, new_text, sep);
 					free(new_text);
 				} else {
-					if (use_relative)
-						emit_relative_change(out, g->anchor, g->anchor_offset,
+					if (rel_anchor)
+						emit_relative_change(out, rel_anchor, rel_offset,
 						    g->ndel, g->add_texts, g->nadd, sep);
 					else
 						emit_change(out, g->del_start, g->del_end,
 						    g->add_texts, g->nadd, sep);
 				}
 			} else {
-				if (use_relative)
-					emit_relative_change(out, g->anchor, g->anchor_offset,
+				if (rel_anchor)
+					emit_relative_change(out, rel_anchor, rel_offset,
 					    g->ndel, g->add_texts, g->nadd, sep);
 				else
 					emit_change(out, g->del_start, g->del_end,
 					    g->add_texts, g->nadd, sep);
 			}
 		} else if (g->del_start) {
-			if (use_relative)
-				emit_relative_delete(out, g->anchor, g->anchor_offset,
+			if (rel_anchor)
+				emit_relative_delete(out, rel_anchor, rel_offset,
 				    g->ndel, sep);
 			else
 				emit_delete(out, g->del_start, g->del_end, sep);
 		} else if (g->nadd) {
-			if (use_relative)
-				emit_relative_insert(out, g->anchor, g->anchor_offset - 1,
+			if (rel_anchor)
+				emit_relative_insert(out, rel_anchor, rel_offset - 1,
 				    g->add_texts, g->nadd, sep);
 			else
 				emit_insert_after(out, g->add_after, g->add_texts, g->nadd, sep);
