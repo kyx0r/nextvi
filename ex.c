@@ -213,7 +213,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		end = row ? beg+1 : lbuf_len(xb);
 		if (off < 0 || beg < 0 || beg >= lbuf_len(xb))
 			return -1;
-		char *e = re_read(num);
+		char *e = re_read(num, 0);
 		ex_krsset(e, dir);
 		free(e);
 		if (!xkwdrs) {
@@ -266,7 +266,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		*beg = 0;
 	while (*loc) {
 		if (*loc == '|') {
-			char *cmd = re_read(&loc);
+			char *cmd = re_read(&loc, 0);
 			void *err = ex_exec(cmd);
 			free(cmd);
 			if (err) {
@@ -943,7 +943,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	struct lopt *lo;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
-	pat = re_read(&s);
+	pat = re_read(&s, 0);
 	if (pat && (*pat || !rs))
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	if (!rs) {
@@ -952,7 +952,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	if (pat && *s) {
 		s--;
-		rep = re_read(&s);
+		rep = re_read(&s, 0);
 	}
 	free(pat);
 	int offs[rs->nsubc];
@@ -1069,7 +1069,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	not = !!strchr(cmd, '!');
-	pat = re_read(&s);
+	pat = re_read(&s, 0);
 	if (pat && *pat)
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	else
@@ -1099,24 +1099,21 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
-	int beg = 1, addr = 0, skip[3] = {0, 1, 1};
+	int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
+	char *cond = re_read(&arg, *cmd);
+	char *then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
+	char *else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	void *ret = NULL;
-	static int _skip[3];
-	for (; *loc && addr < 3; addr++) {
-		if (*loc == ',')
-			loc++;
-		if (!addr)
-			beg = *loc == '$' ? INT_MAX : atoi(loc);
-		else
-			skip[addr] = *loc == '$' ? INT_MAX : atoi(loc);
-		while (*loc && *loc != ',')
-			loc++;
+	for (; count && !ret; count--) {
+		void *cond_ret = cond && *cond ? ex_exec(cond) : NULL;
+		char *branch = cond_ret ? else_cmd : then_cmd;
+		if (branch && *branch)
+			ret = ex_exec(branch);
 	}
-	if (addr == 2)
-		skip[2] = skip[1];
-	for (; beg && !ret; beg--)
-		ret = ex_exec(arg);
-	return !ret || addr == 1 ? NULL : memcpy(_skip, skip, sizeof(skip));
+	free(cond);
+	free(then_cmd);
+	free(else_cmd);
+	return ret;
 }
 
 static void *ec_join(char *loc, char *cmd, char *arg)
@@ -1482,7 +1479,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
 		if (*src == '|' && !xrcm) {
-			cmd = re_read((char**)&src);
+			cmd = re_read((char**)&src, 0);
 			err = ex_exec(cmd);
 			if (err && err != xuerr && xerr & 1)
 				ex_print("parse command error", msg_ft)
@@ -1524,7 +1521,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 /* execute a single ex command */
 void *ex_exec(const char *ln)
 {
-	int arg, i = 0, idx = 0, r1 = -1, r2 = -1;
+	int arg, idx = 0;
 	char *ret = NULL;
 	if (!xgdep)
 		lbuf_mark(xb, '*', xrow, xoff);
@@ -1532,20 +1529,12 @@ void *ex_exec(const char *ln)
 	do {
 		sbuf_cut(sb, 0)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
-		if (i < r1 || i > r2) {
-			ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
-			if (ret) {
-				if (!*ret) {
-					r1 = ((int*)ret)[1] + i;
-					r2 = ((int*)ret)[2] + i;
-				} else if (ret != xuerr && xerr & 1) {
-					ex_print(ret, msg_ft)
-					if (xerr & 2)
-						break;
-				}
-			}
+		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
+		if (ret && ret != xuerr && xerr & 1) {
+			ex_print(ret, msg_ft)
+			if (xerr & 2)
+				break;
 		}
-		i++;
 	} while (*ln);
 	free(sb->s);
 	return xerr & 4 ? NULL : ret;
