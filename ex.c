@@ -1099,15 +1099,15 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
-	int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
 	char *cond = re_read(&arg, *cmd);
+	int count = *loc ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
 	char *then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	char *else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
-	void *ret = NULL;
+	char *ret = NULL, *branch;
 	for (; count && !ret; count--) {
-		void *cond_ret = cond && *cond ? ex_exec(cond) : NULL;
-		char *branch = cond_ret ? else_cmd : then_cmd;
-		if (branch && *branch)
+		ret = cond ? ex_exec(cond) : NULL;
+		branch = ret ? else_cmd : then_cmd;
+		if (branch)
 			ret = ex_exec(branch);
 	}
 	free(cond);
