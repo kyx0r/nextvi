@@ -1478,7 +1478,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
 	int i, j, nullfunc = 0;
 	char *dst = sb->s, *cmd, *err;
-	while (*src && (*src == xsep || *src == ' ' || *src == '\t'))
+	if (*src && *src == xsep)
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
@@ -1502,6 +1502,10 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	}
 	*dst++ = '\0';
 	sb->s_n = dst - sb->s;
+	if (*src == xsep) {
+		*idx = LEN(excmds) - 2;
+		return src;
+	}
 	for (i = 0; i < LEN(excmds); i++) {
 		for (j = 0; excmds[i].name[j]; j++)
 			if (!src[j] || src[j] != excmds[i].name[j])
