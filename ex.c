@@ -188,8 +188,6 @@ void ex_krsset(char *kwd, int dir)
 static int ex_range(char *ploc, char **num, int n, int *row)
 {
 	int dir, off, beg, end, adj = 0;
-	while (**num == ' ' || **num == '\t')
-		++*num;
 	switch ((unsigned char)**num) {
 	case '.':
 		++*num;
@@ -1497,7 +1495,9 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 			} while (*src && (*src != j || src[-1] == '\\'));
 			if (*src)
 				*dst++ = *src++;
-		} else
+		} else if (*src == ' ' || *src == '\t')
+			src++;
+		else
 			*dst++ = *src++;
 	}
 	*dst++ = '\0';
