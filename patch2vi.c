@@ -32,6 +32,7 @@ typedef struct {
 
 static file_patch_t files[256];
 static int nfiles = 0;
+static int relative_mode = 0;  /* -r flag: use regex patterns instead of line numbers */
 
 /* Track which bytes appear in patch content */
 static unsigned char byte_used[256];
@@ -52,6 +53,30 @@ static void chomp(char *s)
 	int n = strlen(s);
 	while (n > 0 && (s[n-1] == '\n' || s[n-1] == '\r'))
 		s[--n] = '\0';
+}
+
+/* Escape regex metacharacters for use in search pattern */
+static char *escape_regex(const char *s)
+{
+	/* Metacharacters that need escaping in regex */
+	const char *meta = "\\^$.*+?[](){}|";
+	int len = strlen(s);
+	int extra = 0;
+
+	/* Count how many escapes needed */
+	for (const char *p = s; *p; p++)
+		if (strchr(meta, *p))
+			extra++;
+
+	char *result = malloc(len + extra + 1);
+	char *dst = result;
+	for (const char *p = s; *p; p++) {
+		if (strchr(meta, *p))
+			*dst++ = '\\';
+		*dst++ = *p;
+	}
+	*dst = '\0';
+	return result;
 }
 
 /* Count UTF-8 characters in a string */
@@ -150,8 +175,8 @@ static void mark_bytes_used(const char *s)
 /* Find an unused byte to use as separator (prefer printable) */
 static int find_unused_byte(void)
 {
-	/* First try printable non-special chars */
-	const char *preferred = "@#&;,~`+=[]{}";
+	/* First try printable non-special chars (avoid ex range chars) */
+	const char *preferred = "@&~=[]{}";
 	for (const char *p = preferred; *p; p++) {
 		if (!byte_used[(unsigned char)*p])
 			return *p;
@@ -271,6 +296,86 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, i
 	fprintf(out, ".\n%cvis 4%c", sep, sep);
 }
 
+/*
+ * Relative mode emit functions - use regex patterns instead of line numbers
+ * Format: :0:>anchor_pattern>+offset_cmd
+ */
+
+/* Emit pattern-based position: :0:>pattern>+offset */
+static void emit_pattern_pos(FILE *out, const char *anchor, int offset, int sep)
+{
+	char *escaped = escape_regex(anchor);
+	fprintf(out, "0%c>%s>", sep, escaped);
+	if (offset > 0)
+		fprintf(out, "+%d", offset);
+	else if (offset < 0)
+		fprintf(out, "%d", offset);
+	free(escaped);
+}
+
+/* Emit delete using relative pattern */
+static void emit_relative_delete(FILE *out, const char *anchor, int offset,
+                                  int count, int sep)
+{
+	emit_pattern_pos(out, anchor, offset, sep);
+	if (count == 1)
+		fprintf(out, "d%c", sep);
+	else
+		fprintf(out, ",%d+d%c", count - 1, sep);
+}
+
+/* Emit insert using relative pattern */
+static void emit_relative_insert(FILE *out, const char *anchor, int offset,
+                                  char **texts, int ntexts, int sep)
+{
+	if (ntexts == 0)
+		return;
+
+	fprintf(out, "vis 6%c", sep);
+	emit_pattern_pos(out, anchor, offset, sep);
+	fprintf(out, "a ");
+	for (int i = 0; i < ntexts; i++) {
+		emit_escaped_line(out, texts[i]);
+		fputc('\n', out);
+	}
+	fprintf(out, ".\n%cvis 4%c", sep, sep);
+}
+
+/* Emit change using relative pattern */
+static void emit_relative_change(FILE *out, const char *anchor, int offset,
+                                  int del_count, char **texts, int ntexts, int sep)
+{
+	if (ntexts == 0) {
+		emit_relative_delete(out, anchor, offset, del_count, sep);
+		return;
+	}
+
+	fprintf(out, "vis 6%c", sep);
+	emit_pattern_pos(out, anchor, offset, sep);
+	if (del_count == 1)
+		fprintf(out, "c ");
+	else
+		fprintf(out, ",%d+c ", del_count - 1);
+
+	for (int i = 0; i < ntexts; i++) {
+		emit_escaped_line(out, texts[i]);
+		fputc('\n', out);
+	}
+	fprintf(out, ".\n%cvis 4%c", sep, sep);
+}
+
+/* Emit horizontal change using relative pattern */
+static void emit_relative_horizontal(FILE *out, const char *anchor, int offset,
+                                      int char_start, int char_end,
+                                      const char *new_text, int sep)
+{
+	fprintf(out, "vis 6%c", sep);
+	emit_pattern_pos(out, anchor, offset, sep);
+	fprintf(out, ";%d;%dc ", char_start, char_end);
+	emit_escaped_line(out, new_text);
+	fprintf(out, "\n.\n%cvis 4%c", sep, sep);
+}
+
 /* Process operations for one file and emit script */
 static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 {
@@ -293,6 +398,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		int ndel;
 		int nadd;
 		int add_after;  /* line to add after (for pure adds) */
+		/* For relative mode: */
+		char *anchor;            /* preceding context line text */
+		int anchor_offset;       /* lines from anchor to first change */
 	} group_t;
 
 	group_t groups[MAX_OPS];
@@ -307,12 +415,27 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		g->ndel = 0;
 		g->nadd = 0;
 		g->add_after = 0;
+		g->anchor = NULL;
+		g->anchor_offset = 0;
 
-		/* Skip context lines */
-		while (i < fp->nops && fp->ops[i].type == 'c')
+		/* Skip context lines, but remember last one for relative mode */
+		char *last_ctx = NULL;
+		int last_ctx_line = 0;
+		while (i < fp->nops && fp->ops[i].type == 'c') {
+			last_ctx = fp->ops[i].text;
+			last_ctx_line = fp->ops[i].oline;
 			i++;
+		}
 		if (i >= fp->nops)
 			break;
+
+		/* Store anchor info for relative mode */
+		g->anchor = last_ctx;
+		if (last_ctx) {
+			/* Offset from anchor to first change line */
+			int first_change_line = fp->ops[i].oline;
+			g->anchor_offset = first_change_line - last_ctx_line;
+		}
 
 		/* Collect consecutive deletes */
 		int del_start_idx = i;
@@ -353,28 +476,51 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 	/* Emit groups in reverse order to preserve line numbers */
 	for (int gi = ngroups - 1; gi >= 0; gi--) {
 		group_t *g = &groups[gi];
+		int use_relative = relative_mode && g->anchor;
+
 		if (g->del_start && g->nadd) {
 			/* Try horizontal edit for single-line changes */
 			if (g->ndel == 1 && g->nadd == 1 &&
-			g->del_texts[0] && g->add_texts[0]) {
-			int start, old_end;
-			char *new_text;
-			if (find_line_diff(g->del_texts[0], g->add_texts[0],
-					&start, &old_end, &new_text)) {
-				emit_horizontal_change(out, g->del_start, start, old_end,
-				new_text, sep);
-				free(new_text);
+			    g->del_texts[0] && g->add_texts[0]) {
+				int start, old_end;
+				char *new_text;
+				if (find_line_diff(g->del_texts[0], g->add_texts[0],
+				                   &start, &old_end, &new_text)) {
+					if (use_relative)
+						emit_relative_horizontal(out, g->anchor,
+						    g->anchor_offset, start, old_end, new_text, sep);
+					else
+						emit_horizontal_change(out, g->del_start, start,
+						    old_end, new_text, sep);
+					free(new_text);
+				} else {
+					if (use_relative)
+						emit_relative_change(out, g->anchor, g->anchor_offset,
+						    g->ndel, g->add_texts, g->nadd, sep);
+					else
+						emit_change(out, g->del_start, g->del_end,
+						    g->add_texts, g->nadd, sep);
+				}
 			} else {
-				emit_change(out, g->del_start, g->del_end,
-				g->add_texts, g->nadd, sep);
-			}
-			} else {
-				emit_change(out, g->del_start, g->del_end, g->add_texts, g->nadd, sep);
+				if (use_relative)
+					emit_relative_change(out, g->anchor, g->anchor_offset,
+					    g->ndel, g->add_texts, g->nadd, sep);
+				else
+					emit_change(out, g->del_start, g->del_end,
+					    g->add_texts, g->nadd, sep);
 			}
 		} else if (g->del_start) {
-			emit_delete(out, g->del_start, g->del_end, sep);
+			if (use_relative)
+				emit_relative_delete(out, g->anchor, g->anchor_offset,
+				    g->ndel, sep);
+			else
+				emit_delete(out, g->del_start, g->del_end, sep);
 		} else if (g->nadd) {
-			emit_insert_after(out, g->add_after, g->add_texts, g->nadd, sep);
+			if (use_relative)
+				emit_relative_insert(out, g->anchor, g->anchor_offset - 1,
+				    g->add_texts, g->nadd, sep);
+			else
+				emit_insert_after(out, g->add_after, g->add_texts, g->nadd, sep);
 		}
 		free(g->del_texts);
 		free(g->add_texts);
@@ -411,8 +557,9 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-r] [input.patch]\n", prog);
 	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
+	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
 	exit(1);
 }
 
@@ -425,22 +572,25 @@ int main(int argc, char **argv)
 
 	/* Initialize byte tracking */
 	memset(byte_used, 0, sizeof(byte_used));
-	/* Mark common chars as used to prefer less common separators */
+	/* Mark chars that cannot be ex separators (part of ex range syntax) */
+	const char *ex_range_chars = " \t0123456789+-.,<>/$';%*#|";
+	for (const char *p = ex_range_chars; *p; p++)
+		byte_used[(unsigned char)*p] = 1;
+	/* Mark other problematic chars */
 	byte_used[':'] = 1;  /* Default ex separator */
-	byte_used['%'] = 1;  /* Filename placeholder */
 	byte_used['!'] = 1;  /* Shell escape */
 	byte_used['"'] = 1;  /* Shell quote */
-	byte_used['$'] = 1;  /* Shell variable */
 	byte_used['\\'] = 1; /* Escape char */
 	byte_used['`'] = 1;  /* Shell backtick */
 	byte_used['\n'] = 1; /* Newline */
 	byte_used['\r'] = 1; /* Carriage return */
-	byte_used['.'] = 1;  /* Insert terminator */
 
 	/* Parse arguments */
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
 			usage(argv[0]);
+		} else if (strcmp(argv[i], "-r") == 0) {
+			relative_mode = 1;
 		} else if (argv[i][0] == '-') {
 			fprintf(stderr, "Unknown option: %s\n", argv[i]);
 			usage(argv[0]);
@@ -497,8 +647,8 @@ int main(int argc, char **argv)
 
 		/* Process hunk content */
 		if (line[0] == ' ') {
-			/* Context line */
-			add_op('c', old_line, NULL);
+			/* Context line - store content for relative mode */
+			add_op('c', old_line, line + 1);
 			old_line++;
 		} else if (line[0] == '-') {
 			/* Delete line - store content for horizontal edit detection */
