@@ -1104,9 +1104,10 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	char *then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	char *else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	char *ret = NULL, *branch;
+	int inv = cmd[1] == '!';
 	for (; count && !ret; count--) {
 		ret = cond ? ex_exec(cond) : NULL;
-		branch = ret ? else_cmd : then_cmd;
+		branch = (ret != NULL) ^ inv ? else_cmd : then_cmd;
 		if (branch)
 			ret = ex_exec(branch);
 	}
@@ -1334,6 +1335,7 @@ static struct excmd {
 	{"@", ec_termexec},
 	{"&", ec_termexec},
 	{"!", ec_exec},
+	{"?!", ec_while},
 	{"?", ec_while},
 	{"bp", ec_setpath},
 	{"bs", ec_bufsave},
