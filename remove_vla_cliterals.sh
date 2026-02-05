@@ -23,6 +23,11 @@ EXINIT="rcm:|sc! @|vis 6@1027a 	free(offs);
 .
 @976c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 .
+@523a 		free(offs);
+.
+@510c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
+		int flg = 0, soff = 0;
+.
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
