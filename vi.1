@@ -1,4 +1,4 @@
-.Dd Feb  4, 2026
+.Dd Feb  5, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -668,19 +668,24 @@ Print text enclosed by a non deterministic pattern "a+"
 .
 .Sh EX COMMANDS
 .Bl -tag -width Ds -compact
-.It Cm [\fIvrange\fP]f>[\fIregex\fP]
+.It Cm [\fIrange\fP]f>[\fIregex\fP]
 .It Cm [\fIvrange\fP]f<[\fIregex\fP]
 Ranged search
 .Bd -literal
+Horizontal range performs a scoped multiline search forward.
+In multiline mode, <Newline> is a regular character.
+
 Example: no range given, current line only
 :f>int
 Example: reverse
 :f<int
 Example: range given
 :10,100f>int
+Example: search for "int" followed by "void" on next line
+:%;0f>int.void
 .Ed
 
-.It Cm [\fIvrange\fP]f+[\fIregex\fP]
+.It Cm [\fIrange\fP]f+[\fIregex\fP]
 .It Cm [\fIvrange\fP]f-[\fIregex\fP]
 Incrementing ranged search
 .Bd -literal
@@ -831,6 +836,7 @@ No argument opens "unnamed" buffer.
 Files larger than 2.0GB are truncated on a 32 bit build.
 Line breaking happens until the first null terminator or EOF.
 .Ed
+
 .It Cm e![\fIpath\fP]
 Force open a file at a path
 .Bd -literal
@@ -872,6 +878,7 @@ Example: extract/print data enclosed in "()"
 
 .It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIcmd\fP}
 Inverted global command
+
 .It Cm [\fIrange\fP]=[<\fI0-3\fP \fI*\fP>][\fI*\fP]
 Print range numbers
 .Bd -literal
@@ -938,7 +945,7 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [\fIcount\fP <\fI$\fP>]?{\fIcond\fP}[?][then][?][else]
+.It Cm [\fIcount\fP <\fI$\fP>]?{\fIcond\fP}[<\fI?\fP>][\fIthen\fP][<\fI?\fP>][\fIelse\fP]
 While loop conditional
 .Bd -literal
 Repeat cmd #0 times or infinite with <$>.
@@ -958,6 +965,9 @@ Example: print a line only if it contains "int" at offset 5
 Example: edit vi.c only if it exists
 :? \e![ -f ./vi.c ]?e ./vi.c:mpt1
 .Ed
+
+.It Cm [\fIcount\fP <\fI$\fP>]?!{\fIcond\fP}[<\fI?\fP>][\fIelse\fP][<\fI?\fP>][\fIthen\fP]
+Inverted while loop conditional
 
 .It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
 Paste or pipe a register
@@ -1479,7 +1489,7 @@ Match a set of alternate ranges N to M
 .It Cm {\fIN\fP,\fIM\fP}
 Match N to M times
 .It Cm ()
-Grouping
+Capture grouping
 .It Cm (?:)
 Non capture grouping
 .It Cm *
@@ -1571,18 +1581,18 @@ tab(|);
 | l | l |.
 _
  537 kmap.h | keymap translation
- 541 vi.h | definitions/aux
+ 543 vi.h | definitions/aux
 _
  332 conf.c | hl/ft/td config
  359 term.c | low level IO
  409 ren.c | positioning/syntax
- 608 lbuf.c | file/line buffer
  614 uc.c | UTF-8 support
+ 654 lbuf.c | file/line buffer
  718 led.c | insert mode/output
  766 regex.c | pikevm
- 1581 ex.c | ex options/commands
+ 1600 ex.c | ex options/commands
  1836 vi.c | normal mode/general
- 7223 total | wc -l *.c\(basort
+ 7288 total | wc -l *.c\(basort
 _
 .TE
 .
