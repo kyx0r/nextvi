@@ -277,6 +277,52 @@ void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2)
 	sbuf_null(sb)
 }
 
+/* convert (row, off) position to byte offset within region (r1,o1)-(r2,o2) */
+int lbuf_pos2off(struct lbuf *lb, int r1, int o1, int r2, int o2, int row, int off)
+{
+	int boff = 0, i, sub;
+	char *ln = lbuf_get(lb, r1), *start;
+	if (!ln || row < r1 || row > r2)
+		return -1;
+	sub = uc_chr(ln, o1) - ln;
+	for (i = r1; ln && i <= row;) {
+		if (i == row) {
+			start = i == r1 ? uc_chr(ln, o1) : ln;
+			if (off < o1 && i == r1)
+				return -1;
+			boff += uc_chr(ln, off) - start;
+			return boff;
+		}
+		boff += lbuf_i(lb, i)->len + 1 - sub;
+		sub = 0;
+		ln = lbuf_get(lb, ++i);
+	}
+	return -1;
+}
+
+/* convert byte offset within region (r1,o1)-(r2,o2) to (row, off) position */
+int lbuf_off2pos(struct lbuf *lb, int r1, int o1, int r2, int o2, int boff, int *row, int *off)
+{
+	int acc = 0, i, sub, lbytes, coff = o1;
+	char *ln = lbuf_get(lb, r1);
+	if (!ln)
+		return 1;
+	sub = uc_chr(ln, o1) - ln;
+	for (i = r1; ln && i <= r2;) {
+		lbytes = lbuf_i(lb, i)->len + 1 - sub;
+		if (acc + lbytes > boff) {
+			*row = i;
+			*off = coff + uc_off(ln + sub, boff - acc);
+			return 0;
+		}
+		acc += lbytes;
+		sub = 0;
+		coff = 0;
+		ln = lbuf_get(lb, ++i);
+	}
+	return 1;
+}
+
 char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2)
 {
 	char *s = lbuf_get(lb, r1), *e, *se, *p;

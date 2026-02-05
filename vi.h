@@ -169,6 +169,8 @@ int lbuf_rd(struct lbuf *lb, int fd, int beg, int end);
 int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
 void lbuf_edit(struct lbuf *lb, char *s, int beg, int end, int o1, int o2);
 void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2);
+int lbuf_pos2off(struct lbuf *lb, int r1, int o1, int r2, int o2, int row, int off);
+int lbuf_off2pos(struct lbuf *lb, int r1, int o1, int r2, int o2, int boff, int *row, int *off);
 char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2);
 int lbuf_join(struct lbuf *lb, int beg, int end, int o1, int *o2, int flg);
 char *lbuf_get(struct lbuf *lb, int pos);
