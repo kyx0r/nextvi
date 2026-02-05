@@ -19,21 +19,21 @@ EXINIT="rcm:|sc! @|vis 6@55;15;22c
 @vis 4@wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1009a 	free(offs);
+EXINIT="rcm:|sc! @|vis 6@1027a 	free(offs);
 .
-@958c 	int *offs = emalloc(rs->nsubc * sizeof(int));
+@976c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@472a 	free(offs);
+EXINIT="rcm:|sc! @|vis 6@518a 	free(offs);
 .
-@466a 			}
+@512a 			}
 .
-@465c 			if (dir > 0) {
+@511c 			if (dir > 0) {
 				free(offs);
 .
-@440c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
+@486c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -134,6 +134,6 @@ EXINIT="rcm:|sc! @|vis 6@1435a 					free(buf);
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@499;5;9c att[16]
+EXINIT="rcm:|sc! @|vis 6@501;5;9c att[16]
 .
 @vis 4@wq" $VI -e 'vi.h'

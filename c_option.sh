@@ -14,10 +14,10 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1581a 	for (int i = 0; i < cmdnum; i++)
+EXINIT="rcm:|sc! @|vis 6@1599a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 .
-@1569;32c , char **cmds, int cmdnum
+@1587;32c , char **cmds, int cmdnum
 .
 @vis 4@wq" $VI -e 'ex.c'
 
@@ -45,6 +45,6 @@ EXINIT="rcm:|sc! @|vis 6@1823;27c , ex_cmds, cmdnum
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@476;32c , char** cmds, int cmdnum
+EXINIT="rcm:|sc! @|vis 6@478;32c , char** cmds, int cmdnum
 .
 @vis 4@wq" $VI -e 'vi.h'

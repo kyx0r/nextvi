@@ -81,7 +81,9 @@ EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
 		free(s);
 		return nr != 0;
 .
-@221,226d@208,219c 	if (!init) {
+@221,226d@206,219c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
+{
+	if (!init) {
 		struct stat st;
 		long nr;	/* 1048575 caps at 2147481600 on 32 bit */
 		int sz = 1048575, step = 1, n = 0;
@@ -101,8 +103,6 @@ EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
 			} else if (n == sz) {
 				sz++;
 				step = 0;
-.
-@206c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 

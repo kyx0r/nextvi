@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1387a 	{\"up\", ec_undoleafs},
+EXINIT="rcm:|sc! @|vis 6@1405a 	{\"up\", ec_undoleafs},
 .
-@1298a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+@1316a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)
@@ -30,9 +30,9 @@ EXINIT="rcm:|sc! @|vis 6@1387a 	{\"up\", ec_undoleafs},
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@398a 		sbuf_make(lb->rehist, 128)
+EXINIT="rcm:|sc! @|vis 6@444a 		sbuf_make(lb->rehist, 128)
 .
-@395,396c 		lbuf_freeleafs(lb);
+@441,442c 		lbuf_freeleafs(lb);
 .
 @153,154c 		int i = lb->hist_n - lb->hist_u;
 		if (i) {
@@ -133,7 +133,7 @@ char *lbuf_getleafs(struct lbuf *lb)
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@188a void lbuf_setleaf(struct lbuf *lb, int leaf);
+EXINIT="rcm:|sc! @|vis 6@190a void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
 .
 @151a 	sbuf *rehist;		/* alternate redo timelines */

@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1374a 	EO(qe),
+EXINIT="rcm:|sc! @|vis 6@1392a 	EO(qe),
 .
-@1315a EO(qe)
+@1333a EO(qe)
 .
 @14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
@@ -56,10 +56,10 @@ EXINIT="rcm:|sc! @|vis 6@1503a 				if (xqe)
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@424a extern int xqe;
+EXINIT="rcm:|sc! @|vis 6@426a extern int xqe;
 .
-@377a is.quickexit = 0; \\
+@379a is.quickexit = 0; \\
 .
-@369a 	int quickexit;
+@371a 	int quickexit;
 .
 @vis 4@wq" $VI -e 'vi.h'

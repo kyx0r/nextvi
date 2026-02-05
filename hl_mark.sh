@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1405a 	EO(hlm),
+EXINIT="rcm:|sc! @|vis 6@1423a 	EO(hlm),
 .
-@1315a EO(hlm)
+@1333a EO(hlm)
 .
 @9a int xhlm;			/* highlight marks */
 .

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1581a 	} else {
+EXINIT="rcm:|sc! @|vis 6@1599a 	} else {
 		char *homeenv = getenv(\"HOME\");
 		char *xdgconfighomeenv = getenv(\"XDG_CONFIG_HOME\");
 		if (xdgconfighomeenv) {
@@ -39,9 +39,9 @@ EXINIT="rcm:|sc! @|vis 6@1581a 	} else {
 			load_exrc(\".exrc\");
 	}
 .
-@1580;28c  {
+@1598;28c  {
 .
-@1568a void ex_script(FILE *fp)
+@1586a void ex_script(FILE *fp)
 {
 	char done = 0;
 	do {
@@ -87,9 +87,9 @@ void load_exrc(char *exrc)
 }
 
 .
-@1351a 	EO(exrc),
+@1369a 	EO(exrc),
 .
-@1315a EO(exrc)
+@1333a EO(exrc)
 .
 @39a int xexrc = 0;			/* read .exrc from the current directory */
 .

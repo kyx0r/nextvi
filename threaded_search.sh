@@ -19,7 +19,7 @@ EXINIT="rcm:|sc! @|vis 6@49a -lpthread \\
 @vis 4@wq" $VI -e 'cbuild.sh'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@473c 	return NULL;
+EXINIT="rcm:|sc! @|vis 6@519c 	return NULL;
 }
 
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
@@ -79,19 +79,21 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	utf8_length['\\n'] = 1;
 	return 1;
 .
-@469c 			a->end = -1; /* break outer loop efficiently */
+@515c 			a->end = -1; /* break outer loop efficiently */
 			if (a->dir > 0)
 				return NULL;
 .
-@463,466c 			*a->o = _o;
+@509,512c 			*a->o = _o;
 			*a->r = i;
 .
-@461c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
+@507c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
 .
-@452,453c 		s = a->lb->ln[i];
+@498,499c 		s = a->lb->ln[i];
 		while (rset_find(a->re, s + off, offs, flg) >= 0) {
 .
-@439,448c 	struct lbuf *lb;
+@482,494c struct lsparams
+{
+	struct lbuf *lb;
 	rset *re;
 	int dir;
 	int beg;
@@ -110,8 +112,6 @@ static void *lsearch(void *arg)
 	char *s;
 	int off = a->off, g1, g2, _o, step, flg;
 	for (; i >= a->beg && i < a->end; i += a->dir) {
-.
-@436,437c struct lsparams
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -138,7 +138,7 @@ EXINIT="rcm:|sc! @|vis 6@15a #include <pthread.h>
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@271c extern unsigned char _utf8_length[256];
+EXINIT="rcm:|sc! @|vis 6@273c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 .
 @vis 4@wq" $VI -e 'vi.h'

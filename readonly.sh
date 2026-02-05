@@ -14,16 +14,16 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1379a 	{\"ro\", ec_readonly},
+EXINIT="rcm:|sc! @|vis 6@1397a 	{\"ro\", ec_readonly},
 .
-@1298a static void *ec_readonly(char *loc, char *cmd, char *arg)
+@1316a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
 .
-@661a 			if (ex_buf->readonly)
+@679a 			if (ex_buf->readonly)
 				return \"write failed: readonly option is set\";
 .
 @366a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
@@ -44,8 +44,8 @@ EXINIT="rcm:|sc! @|vis 6@1816;46c R
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@541a extern char readonly;
+EXINIT="rcm:|sc! @|vis 6@543a extern char readonly;
 .
-@408a 	char readonly;			/* read only */
+@410a 	char readonly;			/* read only */
 .
 @vis 4@wq" $VI -e 'vi.h'

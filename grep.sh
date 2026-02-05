@@ -101,6 +101,6 @@ F499;17c isbuffer
 Fvis 4Fwq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! F|vis 6F448;27;28c 3
+EXINIT="rcm:|sc! F|vis 6F450;27;28c 3
 .
 Fvis 4Fwq" $VI -e 'vi.h'

@@ -14,31 +14,31 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1188;23;27c tr_
+EXINIT="rcm:|sc! @|vis 6@1206;23;27c tr_
 .
-@1185;3;5c tr
+@1203;3;5c tr
 .
-@1095;3;5c tr
+@1113;3;5c tr
 .
-@1086;8;10c tr
+@1104;8;10c tr
 .
-@1076;9;13c tr_
+@1094;9;13c tr_
 .
-@1074;9;13c tr_
+@1092;9;13c tr_
 .
-@1066;3;5c tr
+@1084;3;5c tr
 .
-@1008;4;6c tr
+@1026;4;6c tr
 .
-@977;20;29c (rs->rs ? rs->rs->nsubc : 2)
+@995;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
-@962;11;13c tr
+@980;11;13c tr
 .
-@958;14;19c rs ? rs->rs->nsubc : 2
+@976;14;19c rs ? rs->rs->nsubc : 2
 .
-@948;9;13c tr_
+@966;9;13c tr_
 .
-@941;3;5c tr
+@959;3;5c tr
 .
 @495;3;5c tr
 .
@@ -63,11 +63,11 @@ EXINIT="rcm:|sc! @|vis 6@1188;23;27c tr_
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@453;11;13c tr
+EXINIT="rcm:|sc! @|vis 6@499;11;13c tr
 .
-@440;14;19c rs ? re->rs->nsubc : 2
+@486;14;19c rs ? re->rs->nsubc : 2
 .
-@436;35;37c tr
+@482;35;37c tr
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
@@ -215,15 +215,15 @@ EXINIT="rcm:|sc! @|vis 6@479;21;23c tr
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@539;9;11c tr
+EXINIT="rcm:|sc! @|vis 6@541;9;11c tr
 .
-@478;13;15c tr
+@480;13;15c tr
 .
-@445;9;11c tr
+@447;9;11c tr
 .
-@188a 
+@190a 
 .
-@187;35;37c tr
+@189;35;37c tr
 .
 @131a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
