@@ -13,19 +13,21 @@ void term_init(void)
 		return;
 	struct winsize win;
 	struct termios newtermios;
+	char *s;
 	term_winch = 0;
 	sbuf_make(term_sbuf, 2048)
 	tcgetattr(0, &termios);
 	newtermios = termios;
 	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 	tcsetattr(0, TCSAFLUSH, &newtermios);
-	if (getenv("LINES"))
-		xrows = atoi(getenv("LINES"));
-	if (getenv("COLUMNS"))
-		xcols = atoi(getenv("COLUMNS"));
 	if (!ioctl(0, TIOCGWINSZ, &win)) {
 		xcols = win.ws_col;
 		xrows = win.ws_row;
+	} else {
+		if ((s = getenv("LINES")))
+			xrows = atoi(s);
+		if ((s = getenv("COLUMNS")))
+			xcols = atoi(s);
 	}
 	xcols = xcols ? xcols : 80;
 	xrows = xrows ? xrows : 25;
