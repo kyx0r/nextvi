@@ -40,6 +40,10 @@ EXINIT="rcm:|sc! @|vis 6@1206;23;27c tr_
 .
 @959;3;5c tr
 .
+@519;8;10c tr
+.
+@510;19;24c rs ? xkwdrs->rs->nsubc : 2
+.
 @495;3;5c tr
 .
 @486;4;6c tr
