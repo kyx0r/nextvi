@@ -708,19 +708,17 @@ No range evaluates to <%> range.
 No range displays a maximum of xrows * 3 matches.
 .Ed
 
-.It Cm b[\fI#\fP]
+.It Cm b[\fIindex\fP]
 Print buffers or switch to a buffer
 .Bd -literal
-There are two temporary buffers which are separate from
-the main buffers.
-b-1 = /hist/ ex history buffer
-b-2 = /fm/ directory listing buffer
+Temporary buffers are separate from the main buffers
+and are selected by a negative index.
 
 Example: switch to the 5th buffer
 :b5
-Example: switch to the b-1 buffer
+Example: switch to the /hist/ ex history buffer
 :b-1
-Example: switch to the b-2 buffer
+Example: switch to the /fm/ directory listing buffer
 :b-2
 .Ed
 
