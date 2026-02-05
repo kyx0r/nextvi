@@ -26,7 +26,7 @@ EXINIT="rcm:|sc! @|vis 6@2a 	['y'] = \"h\",
 @vis 4@wq" $VI -e 'kmap.h'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@173a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
+EXINIT="rcm:|sc! @|vis 6@175a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
 .
 @vis 4@wq" $VI -e 'term.c'

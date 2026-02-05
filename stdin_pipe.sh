@@ -52,28 +52,27 @@ EXINIT="rcm:|sc! @|vis 6@1579a 	signal(SIGINT, SIG_DFL); /* got past init? ok re
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@349;11;23c stdin_fd
+EXINIT="rcm:|sc! @|vis 6@351;11;23c stdin_fd
 .
-@306;20;21c stdin_fd
+@308;20;21c stdin_fd
 .
-@162,163c 				read(stdin_fd, ibuf, 1) <= 0) {
+@164,165c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 .
-@158a 		ufd.fd = stdin_fd;
+@160a 		ufd.fd = stdin_fd;
 .
-@40;11;12c stdin_fd
+@42;11;12c stdin_fd
 .
-@31a 	isig = 1;
+@33a 	isig = 1;
 .
-@26;12;13c stdin_fd
-.
-@20,21c 	if (!isig && stdin_fd)
+@21,23c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
 	else
 		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
+	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
 .
-@18;11;12c stdin_fd
+@19;11;12c stdin_fd
 .
 @8a int stdin_fd;
 static int isig;

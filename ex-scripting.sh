@@ -58,7 +58,7 @@ EXINIT="rcm:|sc! @|vis 6@1392a 	{\"sr\", ec_script},
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@241c 		if (xenvp)
+EXINIT="rcm:|sc! @|vis 6@243c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);

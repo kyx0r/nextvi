@@ -23,7 +23,7 @@ EXINIT="rcm:|sc! @|vis 6@1377a 	EO(rec),
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@176a 		if (xrec && *ibuf) {
+EXINIT="rcm:|sc! @|vis 6@178a 		if (xrec && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
 			buf[1] = '\\0';
