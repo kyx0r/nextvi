@@ -498,13 +498,31 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
-	int pskip, nskip, dir, off, nbeg, beg, end;
-	if (ex_vregion(loc, &beg, &end))
+	int pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
+	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
 	ex_krsset(arg, dir);
 	if (!xkwdrs)
 		return xserr;
+	if (o1 >= 0 && dir > 0) {
+		sbuf sb;
+		int offs[xkwdrs->nsubc], flg = 0, soff = 0;
+		int r2 = end - 1;
+		int skip = cmd[1] == '+' ? 1 : 0;
+		void *ret = NULL;
+		lbuf_region(xb, &sb, beg, o1, r2, o2);
+		if (xrow >= beg && xrow <= r2 && (xrow > beg || xoff >= o1))
+			soff = lbuf_pos2off(xb, beg, o1, r2, o2, xrow, xoff + skip);
+		if (soff < 0)
+			soff = 0;
+		if (rset_find(xkwdrs, sb.s + soff, offs, flg) < 0 || offs[xgrp] < 0
+				|| lbuf_off2pos(xb, beg, o1, r2, o2,
+						soff + offs[xgrp], &xrow, &xoff))
+			ret = xuerr;
+		free(sb.s);
+		return ret;
+	}
 	off = xoff;
 	if (xrow < beg || xrow >= end) {
 		off = 0;
