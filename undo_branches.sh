@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1385a 	{\"up\", ec_undoleafs},
+EXINIT="rcm:|sc! @|vis 6@1387a 	{\"up\", ec_undoleafs},
 .
-@1297a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+@1298a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)

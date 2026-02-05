@@ -14,12 +14,12 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! J|vis 6J261;32;62c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
+EXINIT="rcm:|sc! J|vis 6J261c |[@&!=dmj]|\\\\?!?||b[psx]?|p[uh]?|ac?|eq|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\\
 .
 Jvis 4Jwq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! J|vis 6J1567a /* window management functions */
+EXINIT="rcm:|sc! J|vis 6J1568a /* window management functions */
 static void curwin_save(void)
 {
 	if (curwin) {
@@ -252,14 +252,14 @@ void *win_split(int vertical, char *arg)
 }
 
 .
-J1412dJ1390a 	{\"sp\", ec_split},
+J1414dJ1392a 	{\"sp\", ec_split},
 .
-J1386a 	EO(vis),
+J1388a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
-J1352a 	{\"eq\", ec_equalize},
+J1354a 	{\"eq\", ec_equalize},
 .
-J1325a static void *ec_split(char *loc, char *cmd, char *arg)
+J1326a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
 }
