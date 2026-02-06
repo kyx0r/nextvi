@@ -365,11 +365,32 @@ static void emit_escaped_regex_exarg(FILE *out, const char *s)
 	free(regex_esc);
 }
 
+/* Write a regex-escaped string with re_read delimiter + shell escaping.
+ * Escapes > for re_read delimiter context, then shell-escapes.
+ * Used for >pattern> single-line searches. */
+static void emit_escaped_regex_reread(FILE *out, const char *s)
+{
+	char *regex_esc = escape_regex(s);
+	for (const char *p = regex_esc; *p; p++) {
+		if (*p == '>' || *p == '<') {
+			fputc('\\', out);  /* shell-escaped \ for re_read delimiter escape */
+			fputc('\\', out);
+			fputc(*p, out);
+		} else if (*p == '\\' || *p == '$' || *p == '`' || *p == '"') {
+			fputc('\\', out);
+			fputc(*p, out);
+		} else {
+			fputc(*p, out);
+		}
+	}
+	free(regex_esc);
+}
+
 /* Emit forward single-line search position (no leading 1<sep>) */
 static void emit_fwd_pos(FILE *out, const char *anchor, int offset, int sep)
 {
 	fputc('>', out);
-	emit_escaped_regex(out, anchor);
+	emit_escaped_regex_reread(out, anchor);
 	fputc('>', out);
 	if (offset > 0)
 		fprintf(out, "+%d", offset);
@@ -397,7 +418,7 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 static void emit_follow_pos(FILE *out, const char *follow, int offset, int sep)
 {
 	fputc('>', out);
-	emit_escaped_regex(out, follow);
+	emit_escaped_regex_reread(out, follow);
 	fputc('>', out);
 	if (offset > 0)
 		fprintf(out, "-%d", offset);
@@ -448,11 +469,11 @@ static void emit_cond_search(FILE *out, rel_ctx_t *rc, int sep, int first)
 		}
 	} else if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
 		fputc('>', out);
-		emit_escaped_regex(out, rc->anchors[0]);
+		emit_escaped_regex_reread(out, rc->anchors[0]);
 		fputc('>', out);
 	} else if (rc->follow_ctx && rc->follow_ctx[0]) {
 		fputc('>', out);
-		emit_escaped_regex(out, rc->follow_ctx);
+		emit_escaped_regex_reread(out, rc->follow_ctx);
 		fputc('>', out);
 	}
 }
