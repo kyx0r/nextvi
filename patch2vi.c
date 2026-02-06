@@ -339,7 +339,7 @@ static void emit_fwd_pos(FILE *out, const char *anchor, int offset, int sep)
 static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 				int offset, int sep, int first)
 {
-	fprintf(out, "%%;0f%c", first ? '>' : '+');
+	fprintf(out, "%%;0f%c ", first ? '>' : '+');
 	for (int i = 0; i < nanchors; i++) {
 		char *escaped = escape_regex(anchors[i]);
 		fprintf(out, "%s", escaped);
@@ -399,7 +399,7 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
 static void emit_cond_search(FILE *out, rel_ctx_t *rc, int sep, int first)
 {
 	if (rc->nanchors >= 2) {
-		fprintf(out, "%%;0f%c", first ? '>' : '+');
+		fprintf(out, "%%;0f%c ", first ? '>' : '+');
 		for (int i = 0; i < rc->nanchors; i++) {
 			char *escaped = escape_regex(rc->anchors[i]);
 			fprintf(out, "%s", escaped);
