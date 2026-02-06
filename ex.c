@@ -848,7 +848,7 @@ static void *ec_delete(char *loc, char *cmd, char *arg)
 	}
 	lbuf_edit(xb, p, beg, end, o1, o2);
 	free(p);
-	xrow = beg;
+	xrow = MIN(beg, lbuf_len(xb) - 1);
 	return NULL;
 }
 
