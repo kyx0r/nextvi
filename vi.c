@@ -179,13 +179,13 @@ static void vi_drawrow(int row)
 		if (lnnum == 1 || lnnum & 2) {
 			c = itoa(row+1-vi_rshift, tmp);
 			*c++ = ' ';
-			i = snprintf(NULL, 0, "%d", xtop+xrows);
+			i = itoalen(xtop+xrows);
 		}
 		p = c;
 		if (lnnum == 1 || lnnum & 4 || lnnum & 8) {
 			c = itoa(abs(xrow-row+vi_rshift), c);
 			*c++ = ' ';
-			i1 = snprintf(NULL, 0, "%d", xrows);
+			i1 = itoalen(xrows);
 		}
 		*c = '\0';
 		l1 = (c - tmp) + (i+i1 - (strlen(tmp) - !!i - !!i1));
