@@ -356,7 +356,7 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 		if (i < nanchors - 1)
 			fputc('\n', out);  /* literal newline between context lines */
 	}
-	fprintf(out, "%c", sep);
+	fprintf(out, "%c;=\n%c", sep, sep);
 	/* After f>/f+, cursor is at match position; use .+offset for target */
 	fprintf(out, ".+%d", offset);
 }
