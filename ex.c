@@ -400,7 +400,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		max = xrows ? xrows * 3 : end;
 	}
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
-	dwid1 = snprintf(NULL, 0, "%d", max - 1);
+	dwid1 = itoalen(max - 1);
 	sbuf_smake(sb, 128)
 	sbuf_smake(fuzz, 16)
 	sbuf_smake(cmdbuf, 16)
@@ -414,7 +414,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 			syn_reloadft(syn_addhl(fuzz->s, 1), rs->regex->flg);
 			term_record = !!term_sbuf;
 			end = MIN(end, lbuf_len(xb));
-			dwid2 = snprintf(NULL, 0, "%d", end);
+			dwid2 = itoalen(end);
 			dwid1 = max == INT_MAX ? dwid2 : MIN(dwid1, dwid2);
 			for (pos = beg; c < max && pos < end; pos++) {
 				path = xb->ln[pos];
@@ -424,7 +424,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 					int z, wid = p - buf;
 					for (z = dwid1 + 1 - wid; z; z--)
 						*p++ = ' ';
-					wid = snprintf(NULL, 0, "%d", pos+1);
+					wid = itoalen(pos+1);
 					for (z = dwid2 - wid; z; z--)
 						*p++ = ' ';
 					p = itoa(pos+1, p);
@@ -1455,7 +1455,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 					pbuf = ex_pbuf;
 				} else if ((*src ^ '0') < 10) {
 					pbuf = &bufs[n = atoi(src)];
-					src += snprintf(NULL, 0, "%d", n);
+					src += itoalen(n);
 				}
 				src += *src == '\\' && src[-1] != '#' && (src[1] ^ '0') < 10;
 				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])

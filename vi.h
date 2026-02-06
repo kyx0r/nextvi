@@ -32,6 +32,7 @@ void *emalloc(size_t size);
 void *erealloc(void *p, size_t size);
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
+int itoalen(int n) { char s[32]; return itoa(n, s) - s; }
 void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
 
 /* main functions */
