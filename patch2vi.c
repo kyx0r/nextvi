@@ -322,16 +322,27 @@ typedef struct {
 	int anchor_offset;   /* lines from last anchor to first change */
 } rel_ctx_t;
 
+/* Write a regex-escaped string with shell double-quote escaping.
+ * escape_regex handles regex metacharacters, then emit_escaped_line
+ * handles shell special chars (\, $, `, ") so backslashes survive
+ * the shell's double-quote processing. */
+static void emit_escaped_regex(FILE *out, const char *s)
+{
+	char *escaped = escape_regex(s);
+	emit_escaped_line(out, escaped);
+	free(escaped);
+}
+
 /* Emit forward single-line search position (no leading 1<sep>) */
 static void emit_fwd_pos(FILE *out, const char *anchor, int offset, int sep)
 {
-	char *escaped = escape_regex(anchor);
-	fprintf(out, ">%s>", escaped);
+	fputc('>', out);
+	emit_escaped_regex(out, anchor);
+	fputc('>', out);
 	if (offset > 0)
 		fprintf(out, "+%d", offset);
 	else if (offset < 0)
 		fprintf(out, "%d", offset);
-	free(escaped);
 }
 
 /* Emit multiline f>/f+ position using 2+ context lines.
@@ -341,9 +352,7 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 {
 	fprintf(out, "%%;0f%c ", first ? '>' : '+');
 	for (int i = 0; i < nanchors; i++) {
-		char *escaped = escape_regex(anchors[i]);
-		fprintf(out, "%s", escaped);
-		free(escaped);
+		emit_escaped_regex(out, anchors[i]);
 		if (i < nanchors - 1)
 			fputc('\n', out);  /* literal newline between context lines */
 	}
@@ -355,12 +364,12 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 /* Emit following context search with negative offset */
 static void emit_follow_pos(FILE *out, const char *follow, int offset, int sep)
 {
-	char *escaped = escape_regex(follow);
-	fprintf(out, ">%s>", escaped);
+	fputc('>', out);
+	emit_escaped_regex(out, follow);
+	fputc('>', out);
 	if (offset > 0)
 		fprintf(out, "-%d", offset);
 	/* offset==0 means the follow ctx IS at the change line - unusual but handle it */
-	free(escaped);
 }
 
 /*
@@ -401,20 +410,18 @@ static void emit_cond_search(FILE *out, rel_ctx_t *rc, int sep, int first)
 	if (rc->nanchors >= 2) {
 		fprintf(out, "%%;0f%c ", first ? '>' : '+');
 		for (int i = 0; i < rc->nanchors; i++) {
-			char *escaped = escape_regex(rc->anchors[i]);
-			fprintf(out, "%s", escaped);
-			free(escaped);
+			emit_escaped_regex(out, rc->anchors[i]);
 			if (i < rc->nanchors - 1)
 				fputc('\n', out);
 		}
 	} else if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
-		char *escaped = escape_regex(rc->anchors[0]);
-		fprintf(out, ">%s>", escaped);
-		free(escaped);
+		fputc('>', out);
+		emit_escaped_regex(out, rc->anchors[0]);
+		fputc('>', out);
 	} else if (rc->follow_ctx && rc->follow_ctx[0]) {
-		char *escaped = escape_regex(rc->follow_ctx);
-		fprintf(out, ">%s>", escaped);
-		free(escaped);
+		fputc('>', out);
+		emit_escaped_regex(out, rc->follow_ctx);
+		fputc('>', out);
 	}
 }
 
