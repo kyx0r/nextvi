@@ -1124,7 +1124,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 {
 	int isdq = cmd[1] == '?';
 	char *cond = isdq ? NULL : re_read(&arg, *cmd);
-	int count = *loc ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
+	int count = *loc && !isdq ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
 	char *then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	char *else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	char *ret = NULL, *branch;
