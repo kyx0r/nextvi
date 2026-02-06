@@ -350,7 +350,7 @@ static void emit_fwd_pos(FILE *out, const char *anchor, int offset, int sep)
 static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 				int offset, int sep, int first)
 {
-	fprintf(out, "%s;0f%c ", first ? "%" : ".,$", first ? '>' : '+');
+	fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
 	for (int i = 0; i < nanchors; i++) {
 		emit_escaped_regex(out, anchors[i]);
 		if (i < nanchors - 1)
@@ -378,7 +378,7 @@ static void emit_follow_pos(FILE *out, const char *follow, int offset, int sep)
  *          1 = two-command positioning (f>/f+ then .+offset as separate cmd)
  *
  * For single-line: emits ">anchor>+offset" (caller appends action)
- * For multiline:   emits "%;0f>ctx1\nctx2<sep>.+offset" (first) or f+ (subsequent)
+ * For multiline:   emits "%;f>ctx1\nctx2<sep>.+offset" (first) or f+ (subsequent)
  * For follow ctx:  emits ">follow>-offset" (caller appends action)
  *
  * *first_ml: pointer to flag, 1 for first multiline search (uses f>),
@@ -408,7 +408,7 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
 static void emit_cond_search(FILE *out, rel_ctx_t *rc, int sep, int first)
 {
 	if (rc->nanchors >= 2) {
-		fprintf(out, "%s;0f%c ", first ? "%" : ".,$", first ? '>' : '+');
+		fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
 		for (int i = 0; i < rc->nanchors; i++) {
 			emit_escaped_regex(out, rc->anchors[i]);
 			if (i < rc->nanchors - 1)
