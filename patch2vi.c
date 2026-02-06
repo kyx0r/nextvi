@@ -32,7 +32,7 @@ typedef struct {
 
 static file_patch_t files[256];
 static int nfiles = 0;
-static int relative_mode = 0;  /* -r flag: use regex patterns instead of line numbers */
+static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r), 2=relative block (-rb) */
 
 /* Track which bytes appear in patch content */
 static unsigned char byte_used[256];
@@ -320,8 +320,9 @@ typedef struct {
 	char *follow_ctx;
 	int follow_offset;
 	int anchor_offset;   /* lines from last anchor to first change */
-	int use_offset;      /* use .+offset_val instead of searching */
+	int use_offset;      /* use .+offset_val instead of searching (-rb) */
 	int offset_val;      /* offset from current xrow */
+	int backstep;        /* emit .-1 before search to include current line (-r) */
 } rel_ctx_t;
 
 /* Write a regex-escaped string with shell double-quote escaping.
@@ -449,6 +450,10 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
 		else
 			fprintf(out, ".%d", rc->offset_val);
 		return 0;
+	}
+	if (rc->backstep) {
+		/* Back up one line so >pattern> search includes current line */
+		fprintf(out, ".-%d%c", 1, sep);
 	}
 	if (rc->nanchors >= 2) {
 		/* Multiline: f>/f+ search, then .+offset as position for next command */
@@ -740,8 +745,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		if (relative_mode) {
 			rc.use_offset = 0;
 			rc.offset_val = 0;
-			/* Interior groups: use .+N offset from predicted cursor */
-			if (prev_xrow > 0) {
+			rc.backstep = 0;
+			if (relative_mode == 2 && prev_xrow > 0) {
+				/* -rb: interior groups use .+N offset */
 				int target;
 				if (g->del_start)
 					target = g->del_start + cum_delta;
@@ -757,6 +763,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				rc.follow_ctx = g->follow_ctx;
 				rc.follow_offset = g->follow_offset;
 				rc.anchor_offset = g->anchor_offset;
+				/* -r: interior groups back up 1 so search includes current line */
+				if (relative_mode == 1 && gi > gi_start)
+					rc.backstep = 1;
 				/* Check if we have any usable anchor */
 				if (rc.nanchors > 0 || (rc.follow_ctx && rc.follow_ctx[0]))
 					has_rel = 1;
@@ -822,8 +831,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			} else
 				emit_insert_after(out, g->add_after, g->add_texts, g->nadd, sep);
 		}
-		/* Track cursor position for interior group offsets */
-		if (relative_mode) {
+		/* Track cursor position for interior group offsets (-rb only) */
+		if (relative_mode == 2) {
 			int target;
 			if (g->del_start)
 				target = g->del_start + cum_delta;
@@ -878,9 +887,10 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-r] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-r|-rb] [input.patch]\n", prog);
 	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
-	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
+	fprintf(stderr, "  -r   Use relative regex patterns instead of line numbers\n");
+	fprintf(stderr, "  -rb  Relative block mode: first group searched, rest offset-based\n");
 	exit(1);
 }
 
@@ -910,6 +920,8 @@ int main(int argc, char **argv)
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
 			usage(argv[0]);
+		} else if (strcmp(argv[i], "-rb") == 0) {
+			relative_mode = 2;
 		} else if (strcmp(argv[i], "-r") == 0) {
 			relative_mode = 1;
 		} else if (argv[i][0] == '-') {
