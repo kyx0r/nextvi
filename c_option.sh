@@ -14,19 +14,30 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1608a 	for (int i = 0; i < cmdnum; i++)
-		ex_command(cmds[i])
+EXINIT="rcm:|sc! @|vis 6@%;f> 	xgrec--;
+\\\\}
+@;=
+@.+3;32c , char **cmds, int cmdnum
 .
-@1596;32c , char **cmds, int cmdnum
+@.,$;f+ 	xvis &= ~8;
+	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)@;=
+@.+2a 	for (int i = 0; i < cmdnum; i++)
+		ex_command(cmds[i])
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1823;27c , ex_cmds, cmdnum
+EXINIT="rcm:|sc! @|vis 6@%;f> 
+int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
+\\\\{@;=
+@.+3c 	int i, j, cmdnum = 0;
+	char *ex_cmds[argc - 1];
 .
-@1816;46c c
-.
-@1814c 			else if (argv[i][j] == 'c') {
+@.,$;f+ 				xvis \\\\|= 8;
+			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
+				xvis &= ~4;@;=
+@.+3c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
 					break;
@@ -34,17 +45,24 @@ EXINIT="rcm:|sc! @|vis 6@1823;27c , ex_cmds, cmdnum
 					ex_cmds[cmdnum++] = argv[++i];
 					break;
 				} else {
-					fprintf(stderr, \"Missing argument for -c\\n\");
+					fprintf(stderr, \"Missing argument for -c\\\\n\");
 					return EXIT_FAILURE;
 				}
 			} else {
 .
-@1794c 	int i, j, cmdnum = 0;
-	char *ex_cmds[argc - 1];
+@.-1@>				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\\]\\);>+1;46c c
+.
+@.,$;f+ 	\\\\}
+	ibuf = emalloc\\\\(ibuf_sz\\\\);
+	term_init\\\\(\\\\);@;=
+@.+3;27c , ex_cmds, cmdnum
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@479;32c , char** cmds, int cmdnum
+EXINIT="rcm:|sc! @|vis 6@%;f> void ex_cprint\\\\(char \\\\*line, char \\\\*ft, int r, int c, int left, int flg\\\\);
+#define ex_cprint2\\\\(line, ft, r, c, left, flg\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, r, c, left, flg\\\\)\\\\); \\\\}
+#define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}@;=
+@.+3;32c , char** cmds, int cmdnum
 .
 @vis 4@wq" $VI -e 'vi.h'

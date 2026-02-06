@@ -14,12 +14,63 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: cbuild.sh
-EXINIT="rcm:|sc! @|vis 6@49a -lpthread \\
+EXINIT="rcm:|sc! @|vis 6@%;f> -Wno-unused-parameter \\\\\\\\
+-Wno-unused-result \\\\\\\\
+-Wfatal-errors -std=c99 \\\\\\\\@;=
+@.+2a -lpthread \\\\
 .
 @vis 4@wq" $VI -e 'cbuild.sh'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@519c 	return NULL;
+EXINIT="rcm:|sc! @|vis 6@%;f> 	return n != 0;
+\\\\}
+@;=
+@.+3,#+12c struct lsparams
+{
+	struct lbuf *lb;
+	rset *re;
+	int dir;
+	int beg;
+	int end;
+	int *r;
+	int *o;
+	int off;
+	int nskip;
+};
+
+static void *lsearch(void *arg)
+{
+	struct lsparams *a = arg;
+	int r0 = *a->r, o0 = *a->o;
+	int offs[a->re->nsubc], i = r0;
+	char *s;
+	int off = a->off, g1, g2, _o, step, flg;
+	for (; i >= a->beg && i < a->end; i += a->dir) {
+.
+@.,$;f+ 		_o = 0;
+		step = 0;
+		flg = REG_NEWLINE;@;=
+@.+3,#+1c 		s = a->lb->ln[i];
+		while (rset_find(a->re, s + off, offs, flg) >= 0) {
+.
+@.,$;f+ 				continue;
+			\\\\}
+			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);@;=
+@.+3c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
+.
+@.-1@>				break;>+1,#+3c 			*a->o = _o;
+			*a->r = i;
+.
+@.,$;f+ 			step = off \\\\+ g1;
+			off \\\\+= g2 > 0 \\\\? g2 : 1;@;=
+@.+2c 			a->end = -1; /* break outer loop efficiently */
+			if (a->dir > 0)
+				return NULL;
+.
+@.,$;f+ 		\\\\}
+		off = 0;
+	\\\\}@;=
+@.+3c 	return NULL;
 }
 
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
@@ -39,7 +90,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 					: uc_chr(s, *o + pskip) - s;
 	else
 		off = 0;
-	utf8_length['\\n'] = 0;
+	utf8_length['\\\\n'] = 0;
 	for (i = 0; i < NUM_THREADS; i++) {
 		if (*r + step > end || *r + step * dir < 0)
 			break;
@@ -72,73 +123,54 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 			for (int z = i+1; z < step; z++)
 				pthread_join(threads[z], NULL);
 			utf8_length = _utf8_length;
-			utf8_length['\\n'] = 1;
+			utf8_length['\\\\n'] = 1;
 			return 0;
 		}
 	}
-	utf8_length['\\n'] = 1;
+	utf8_length['\\\\n'] = 1;
 	return 1;
-.
-@515c 			a->end = -1; /* break outer loop efficiently */
-			if (a->dir > 0)
-				return NULL;
-.
-@509,512c 			*a->o = _o;
-			*a->r = i;
-.
-@507c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
-.
-@498,499c 		s = a->lb->ln[i];
-		while (rset_find(a->re, s + off, offs, flg) >= 0) {
-.
-@482,494c struct lsparams
-{
-	struct lbuf *lb;
-	rset *re;
-	int dir;
-	int beg;
-	int end;
-	int *r;
-	int *o;
-	int off;
-	int nskip;
-};
-
-static void *lsearch(void *arg)
-{
-	struct lsparams *a = arg;
-	int r0 = *a->r, o0 = *a->o;
-	int offs[a->re->nsubc], i = r0;
-	char *s;
-	int off = a->off, g1, g2, _o, step, flg;
-	for (; i >= a->beg && i < a->end; i += a->dir) {
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@643a 	else
+EXINIT="rcm:|sc! @|vis 6@%;f> 	return 0;
+\\\\}
+@;=
+@.+3;29;35c flg & REG_NEWLINE
+.
+@.,$;f+ 	char nsubs\\\\[prog->sub\\\\];
+	for \\\\(i = 0; i < prog->laidx; i\\\\+\\\\+\\\\)
+		lb\\\\[i\\\\] = NULL;@;=
+@.+3;11c  && utf8_length[eol_ch]
+.
+@.-1@>		utf8_length\\[eol_ch\\] = 0;>a 	else
 		flg &= ~REG_NEWLINE;
-.
-@642;11c  && utf8_length[eol_ch]
-.
-@402;29;35c flg & REG_NEWLINE
 .
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: uc.c
-EXINIT="rcm:|sc! @|vis 6@19a unsigned char *utf8_length = _utf8_length;
+EXINIT="rcm:|sc! @|vis 6@>	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\*/>-1;14c _
 .
-@1;14c _
+@%;f> 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	/\\\\* F \\\\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
+\\\\};@;=
+@.+2a unsigned char *utf8_length = _utf8_length;
 .
 @vis 4@wq" $VI -e 'uc.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@15a #include <pthread.h>
+EXINIT="rcm:|sc! @|vis 6@%;f> #include <sys/stat\\\\.h>
+#include <sys/ioctl\\\\.h>
+#include <sys/wait\\\\.h>@;=
+@.+2a #include <pthread.h>
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@274c extern unsigned char _utf8_length[256];
+EXINIT="rcm:|sc! @|vis 6@%;f> void syn_init\\\\(void\\\\);
+
+/\\\\* uc\\\\.c utf-8 helper functions \\\\*/@;=
+@.+3c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 .
 @vis 4@wq" $VI -e 'vi.h'

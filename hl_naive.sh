@@ -14,17 +14,34 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@245;7;26c 
+EXINIT="rcm:|sc! @|vis 6@%;f> 	o = off\\\\[i\\\\]; \\\\\\\\
+	if \\\\(o >= 0\\\\) \\\\{ \\\\\\\\
+		for \\\\(l = i; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\); \\\\\\\\@;=
+@.+3;16;38c 
 .
-@214,232c 			att[p->off] = syn_merge(p->att, att[p->off]);
+@.,$;f+ 		return;
+	ren_state \\\\*r = ren_position\\\\(s0\\\\);
+	int j, c, l, i, o, n = r->n;@;=
+@.+3,#+1c 	int att_old = 0, cterm = cend - cbeg;
 .
-@207,208c 		syn_highlight(att, s0, n);
-.
-@167,205d@154,156c 	int *att = emalloc(n * sizeof(att[0]));
+@.,$;f+ 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/@;=
+@.+2,#+2c 	int *att = emalloc(n * sizeof(att[0]));
 	memset(att, 0, n * sizeof(att[0]));
 .
-@150,151c 	int att_old = 0, cterm = cend - cbeg;
+@.,$;f+ 		for \\\\(c = cbeg; c < cend; c\\\\+\\\\+\\\\)
+			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
+	\\\\}@;=
+@.+3,#+38d@.-1@>	if \\(xhl\\)>+1,#+1c 		syn_highlight(att, s0, n);
 .
-@119;16;38c 
+@.,$;f+ 		for \\\\(; \\\\(char\\\\*\\\\)p < &led_attsb->s\\\\[led_attsb->s_n\\\\]; p\\\\+\\\\+\\\\) \\\\{
+			if \\\\(p->s != s0\\\\)
+				continue;@;=
+@.+3,#+18c 			att[p->off] = syn_merge(p->att, att[p->off]);
+.
+@.,$;f+ 				continue;
+			if \\\\(r->pos\\\\[o \\\\+ 1\\\\] \\\\+ r->wid\\\\[o \\\\+ 1\\\\] != r->pos\\\\[o\\\\]\\\\)
+				continue;@;=
+@.+3;7;26c 
 .
 @vis 4@wq" $VI -e 'led.c'

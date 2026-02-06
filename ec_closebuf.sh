@@ -14,9 +14,10 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1426a 	{\"cx\", ec_closebuf},
-.
-@1330a static void *ec_closebuf(char *loc, char *cmd, char *arg)
+EXINIT="rcm:|sc! @|vis 6@%;f> 	return val;
+\\\\}
+@;=
+@.+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
 	int istmp = istempbuf(ex_buf);
@@ -24,7 +25,7 @@ EXINIT="rcm:|sc! @|vis 6@1426a 	{\"cx\", ec_closebuf},
 	if (!*arg) {
 		idx = istmp ? -1 : ex_buf - bufs;
 	} else {
-		while (*arg == ' ' || *arg == '\\t')
+		while (*arg == ' ' || *arg == '\\\\t')
 			arg++;
 		idx = atoi(arg);
 		if (idx < 0 && !istmp)
@@ -60,5 +61,10 @@ EXINIT="rcm:|sc! @|vis 6@1426a 	{\"cx\", ec_closebuf},
 }
 
 
+.
+@.,$;f+ 	\\\\{\"cm!\", ec_cmap\\\\},
+	\\\\{\"cm\", ec_cmap\\\\},
+	\\\\{\"cd\", ec_chdir\\\\},@;=
+@.+2a 	{\"cx\", ec_closebuf},
 .
 @vis 4@wq" $VI -e 'ex.c'

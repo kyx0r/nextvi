@@ -14,11 +14,16 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@662;30;41c dir
-.
-@659a 		if (vc && cnt == 1)
+EXINIT="rcm:|sc! @|vis 6@%;f> 		break;
+	case 'w':
+	case 'W':@;=
+@.+2a 		if (vc && cnt == 1)
 			dir = 2;
 		else
 			dir = vi_nlword+1;
+.
+@.,$;f+ 		mark = mv == 'W';
+		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)@;=
+@.+2;30;41c dir
 .
 @vis 4@wq" $VI -e 'vi.c'

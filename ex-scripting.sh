@@ -14,10 +14,15 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1418a 	{\"sr\", ec_script},
-	{\"sx\", ec_script},
+EXINIT="rcm:|sc! @|vis 6@%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
+rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/@;=
+@.+2a char **xenvp;
 .
-@1322a static void *ec_script(char *loc, char *cmd, char *arg)
+@.,$;f+ 
+static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
+@;=
+@.+2a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
 	char buf[100];
@@ -40,7 +45,7 @@ EXINIT="rcm:|sc! @|vis 6@1418a 	{\"sr\", ec_script},
 	} else
 		setenv(\"NEXTVI_WORD\", \"\", 1);
 	if (!(xvis & 4) && cmd[1] == 'c') {
-		term_chr('\\n');
+		term_chr('\\\\n');
 		xmpt = xmpt >= 0 ? 2 : xmpt;
 	}
 	xenvp = environ;
@@ -53,12 +58,19 @@ EXINIT="rcm:|sc! @|vis 6@1418a 	{\"sr\", ec_script},
 }
 
 .
-@39a char **xenvp;
+@.,$;f+ 	EO\\\\(seq\\\\),
+	\\\\{\"sc!\", ec_specials\\\\},
+	\\\\{\"sc\", ec_specials\\\\},@;=
+@.+2a 	{\"sr\", ec_script},
+	{\"sx\", ec_script},
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@243c 		if (xenvp)
+EXINIT="rcm:|sc! @|vis 6@%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
+			close\\\\(pipefds1\\\\[1\\\\]\\\\);
+		\\\\}@;=
+@.+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
@@ -66,7 +78,10 @@ EXINIT="rcm:|sc! @|vis 6@243c 		if (xenvp)
 @vis 4@wq" $VI -e 'term.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@11a #ifdef __APPLE__
+EXINIT="rcm:|sc! @|vis 6@%;f> files and thus is never static\\\\.
+\\\\*/
+@;=
+@.+2a #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())
 #else

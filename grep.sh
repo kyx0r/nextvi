@@ -14,40 +14,69 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! F|vis 6F254a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
+EXINIT="rcm:|sc! F|vis 6F%;f> char n_ft\\\\[\\\\] = \"/#\";	/\\\\* numbers highlight for \\\\^v \\\\*/
+char nn_ft\\\\[\\\\] = \"/##\";	/\\\\* numbers highlight for # \\\\*/
+char ac_ft\\\\[\\\\] = \"/ac\";	/\\\\* autocomplete dropdown \\\\*/F;=
+F.+2a char grep_ft[] = \"/g\";	/* grep buffer */
+.
+F.,$;f+ 		A\\\\(IN, SYN_BGMK\\\\(RE1\\\\), SYN_BGMK\\\\(AY1\\\\), SYN_BGMK\\\\(AY\\\\)\\\\)\\\\},
+	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(IN, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
+F;=
+F.+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
-.
-F31a char grep_ft[] = \"/g\";	/* grep buffer */
 .
 Fvis 4Fwq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! F|vis 6F41;20;21c 3
+EXINIT="rcm:|sc! F|vis 6F%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/
+struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/F;=
+F.+3;20;21c 3
 .
 Fvis 4Fwq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! F|vis 6F1799a 	temp_open(2, \"/grep/\", grep_ft);
+EXINIT="rcm:|sc! F|vis 6F%;f> 	free\\\\(sb->s\\\\);
+\\\\}
+F;=
+F.+3;17c isbuffer
 .
-F1436a 				case 'x':
-					temp_switch(2, 1);
-					vi_mod = 1;
-					break;
+F.,$;f+ path\\\\[len\\\\] = '\\\\\\\\0'; \\\\\\\\
+ret = ex_edit\\\\(path, len\\\\); \\\\\\\\
+path\\\\[len\\\\] = '\\\\\\\\n'; \\\\\\\\F;=
+F.+3;4;15c isbuffer
 .
-F1293c 				if (!strcmp(xb_path, \"/grep/\")) {
-					int subs[2];
-					rset *rs = rset_make(1, (char*[]){\":[0-9]+:\"}, 0);
-					if (rset_find(rs, buf, subs, 0) >= 0) {
-						buf[subs[0]] = xsep;
-						buf[subs[1]-1] = '\\n';
-						buf[subs[1]] = '\\0';
-					}
-					rset_free(rs);
-				}
-				term_push(buf, strlen(buf));
+F.,$;f+ if \\\\(!vi_search\\\\(\\\\*row \\\\? 'N' : 'n', cnt, row, off, 0\\\\)\\\\) \\\\\\\\
+	return 1; \\\\\\\\
+F;=
+F.+3;25c again, int 
 .
-F733a 		} else if (mv == TK_CTL('x')) {
+F.,$;f+ \\\\{
+	char \\\\*path;F;=
+F.+2;5;16c 
+.
+F.,$;f+ 	wrap:
+	while \\\\(fspos < lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\) \\\\{
+		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\+\\\\+\\\\];F;=
+F.+3;11c ret && xrow && again != 2
+.
+F.,$;f+ 	int ret, len;
+	while \\\\(--fspos >= 0\\\\) \\\\{
+		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\];F;=
+F.+3;11c ret && xrow
+.
+F.,$;f+ 				break;
+		break;
+	case TK_CTL\\\\('\\\\]'\\\\):	/\\\\* this is also \\\\^5 on some systems \\\\*/F;=
+F.+2a 	case TK_CTL('x'):
+.
+F.,$;f+ 			lkwdcnt = xkwdcnt;
+			fspos \\\\+= fsdir < 0 \\\\? 1 : 0;
+			fspos = MIN\\\\(fspos, lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\);F;=
+F.+3;13c 0, 
+.
+F.-1F>			fsdir = 1;>a 		} else if (mv == TK_CTL('x')) {
 			term_exec(\"\", 1, '&')
 			temp_pos(2, -1, 0, 0);
 			temp_switch(2, 0);
@@ -59,13 +88,13 @@ F733a 		} else if (mv == TK_CTL('x')) {
 				sbuf_str(gstats, xb_path)
 				sbuf_chr(gstats, ':')
 				colpos = gstats->s_n;
-				#define nextrow() \\
-				itoa((*row)+1, nbuf); \\
-				sbuf_str(gstats, nbuf) \\
-				sbuf_chr(gstats, ':') \\
-				sbufn_str(gstats, lbuf_get(xb, *row)) \\
-				temp_write(2, gstats->s); \\
-				(*row)++; \\
+				#define nextrow() \\\\
+				itoa((*row)+1, nbuf); \\\\
+				sbuf_str(gstats, nbuf) \\\\
+				sbuf_chr(gstats, ':') \\\\
+				sbufn_str(gstats, lbuf_get(xb, *row)) \\\\
+				temp_write(2, gstats->s); \\\\
+				(*row)++; \\\\
 
 				nextrow()
 				while (!vi_search('n', cnt, row, off, 0)) {
@@ -82,25 +111,40 @@ F733a 		} else if (mv == TK_CTL('x')) {
 			*off = 0;
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
 .
-F732;13c 0, 
+F.,$;f+ 				char buf\\\\[strlen\\\\(ln\\\\)\\\\+4\\\\];
+				strcpy\\\\(buf, \":e \"\\\\);
+				strcpy\\\\(buf\\\\+3, ln\\\\);F;=
+F.+3c 				if (!strcmp(xb_path, \"/grep/\")) {
+					int subs[2];
+					rset *rs = rset_make(1, (char*[]){\":[0-9]+:\"}, 0);
+					if (rset_find(rs, buf, subs, 0) >= 0) {
+						buf[subs[0]] = xsep;
+						buf[subs[1]-1] = '\\\\n';
+						buf[subs[1]] = '\\\\0';
+					}
+					rset_free(rs);
+				}
+				term_push(buf, strlen(buf));
 .
-F713a 	case TK_CTL('x'):
+F.,$;f+ 					\\\\}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);
+					goto do_excmd; \\\\}F;=
+F.+2a 				case 'x':
+					temp_switch(2, 1);
+					vi_mod = 1;
+					break;
 .
-F538;11c ret && xrow
-.
-F522;11c ret && xrow && again != 2
-.
-F518;5;16c 
-.
-F515;25c again, int 
-.
-F504;4;15c isbuffer
-.
-F499;17c isbuffer
+F.,$;f+ 	syn_init\\\\(\\\\);
+	temp_open\\\\(0, \"/hist/\", _ft\\\\);
+	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);F;=
+F.+2a 	temp_open(2, \"/grep/\", grep_ft);
 .
 Fvis 4Fwq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! F|vis 6F451;27;28c 3
+EXINIT="rcm:|sc! F|vis 6F%;f> extern rset \\\\*xkwdrs;
+extern sbuf \\\\*xregs\\\\[256\\\\];
+extern struct buf \\\\*bufs;F;=
+F.+3;27;28c 3
 .
 Fvis 4Fwq" $VI -e 'vi.h'

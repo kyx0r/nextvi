@@ -14,131 +14,238 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! @|vis 6@55;15;22c 
+EXINIT="rcm:|sc! @|vis 6@%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
+#define WH1	15	/\\\\* bright white \\\\*/
+@;=
+@.+3;15;22c 
 .
 @vis 4@wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1032a 	free(offs);
-.
-@981c 	int *offs = emalloc(rs->nsubc * sizeof(int));
-.
-@524a 		free(offs);
-.
-@511c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
+EXINIT="rcm:|sc! @|vis 6@%;f> 		return xserr;
+	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
+		sbuf sb;@;=
+@.+3c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 		int flg = 0, soff = 0;
+.
+@.,$;f+ 						soff \\\\+ offs\\\\[xgrp\\\\], &xrow, &xoff\\\\)\\\\)
+			ret = xuerr;
+		free\\\\(sb\\\\.s\\\\);@;=
+@.+2a 		free(offs);
+.
+@.,$;f+ 		rep = re_read\\\\(&s, 0\\\\);
+	\\\\}
+	free\\\\(pat\\\\);@;=
+@.+3c 	int *offs = emalloc(rs->nsubc * sizeof(int));
+.
+@.,$;f+ 	if \\\\(rs != xkwdrs\\\\)
+		rset_free\\\\(rs\\\\);
+	free\\\\(rep\\\\);@;=
+@.+2a 	free(offs);
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@518a 	free(offs);
+EXINIT="rcm:|sc! @|vis 6@%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
+\\\\{
+	int r0 = \\\\*r, o0 = \\\\*o;@;=
+@.+3c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
 .
-@512a 			}
-.
-@511c 			if (dir > 0) {
+@.,$;f+ 				break;
+			\\\\*o = _o;
+			\\\\*r = i;@;=
+@.+3c 			if (dir > 0) {
 				free(offs);
 .
-@486c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
+@.-1@>				return 0;>a 			}
+.
+@.,$;f+ 		\\\\}
+		off = 0;
+	\\\\}@;=
+@.+2a 	free(offs);
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@259a 	free(off);
-	free(att);
-	free(stt);
-	free(ctt);
+EXINIT="rcm:|sc! @|vis 6@%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_NEWLINE\\\\);
+	if \\\\(!rs\\\\)
+		return;@;=
+@.+3c 	int *subs = emalloc(rs->nsubc * sizeof(int));
 .
-@177a 		stt = emalloc((cterm+1) * sizeof(int));
-		ctt = emalloc((cterm+1) * sizeof(int));
+@.,$;f+ 	sbuf_null\\\\(acsb\\\\)
+	free\\\\(ibuf->s\\\\);
+	rset_free\\\\(rs\\\\);@;=
+@.+2a 	free(subs);
 .
-@153,156c 	int *off = emalloc((cterm+1) * sizeof(int));	/* off[i]: the character at screen position i */
+@.,$;f+ 	int att_old = 0, atti = 0, cterm = cend - cbeg;
+	char \\\\*bound = NULL;
+	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/@;=
+@.+3,#+3c 	int *off = emalloc((cterm+1) * sizeof(int));	/* off[i]: the character at screen position i */
 	int *att = emalloc((cterm+1) * sizeof(int));	/* att[i]: the attributes of i-th character */
 	int *stt = NULL;	/* stt[i]: remap off indexes */
 	int *ctt = NULL;	/* ctt[i]: cterm bound attrs */
 .
-@82a 	free(subs);
+@.,$;f+ 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
+			while \\\\(off\\\\[i\\\\] == o\\\\)
+				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;@;=
+@.+2a 		stt = emalloc((cterm+1) * sizeof(int));
+		ctt = emalloc((cterm+1) * sizeof(int));
 .
-@50c 	int *subs = emalloc(rs->nsubc * sizeof(int));
+@.,$;f+ 		memcpy\\\\(chrs\\\\[n\\\\], r->nullhole, r->holelen\\\\);
+		r->holelen = 0;
+	\\\\}@;=
+@.+2a 	free(off);
+	free(att);
+	free(stt);
+	free(ctt);
 .
 @vis 4@wq" $VI -e 'led.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@737a 	free(subs);
+EXINIT="rcm:|sc! @|vis 6@%;f> 	return 0;
+\\\\}
+@;=
+@.+3c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \\\\
+free(pcs); \\\\
+free(subs); \\\\
+free(sdense); \\\\
+free(_clist); \\\\
+free(_nlist); \\\\
+free(nsubs); \\\\
+free(lb); \\\\
+return state; } \\\\
 .
-@733a 				free(subs);
-.
-@717c 	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
-.
-@638,639c 	char *nsubs = emalloc(prog->sub);
-.
-@633;24;41c *lb = emalloc(prog->laidx * sizeof(lb[0]))
-.
-@631c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
-.
-@628,629c 	int *npc, *pc, *insts = prog->insts;
+@.,$;f+ 		return 0;
+	flg = prog->flg \\\\| flg;
+	const char \\\\*sp = s, \\\\*_sp = s, \\\\*s0, \\\\*s1;@;=
+@.+3,#+1c 	int *npc, *pc, *insts = prog->insts;
 	int **pcs = emalloc((prog->splits) * sizeof(int*));
 	rsub **subs = emalloc(prog->splits * sizeof(rsub*));
 	unsigned int *sdense = emalloc(prog->sparsesz * sizeof(unsigned int)), sparsesz = 0;
 .
-@402c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \\
-free(pcs); \\
-free(subs); \\
-free(sdense); \\
-free(_clist); \\
-free(_nlist); \\
-free(nsubs); \\
-free(lb); \\
-return state; } \\
+@.-1@>	rsub \\*nsub, \\*sub, \\*matched = NULL, \\*freesub = NULL;>+1c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
+.
+@.-1@>	rthread \\*clist = _clist, \\*nlist = _nlist, \\*tmp;>+1;24;41c *lb = emalloc(prog->laidx * sizeof(lb[0]))
+.
+@.,$;f+ 	int cnt, spc, i, c, j, osubp = nsubc \\\\* sizeof\\\\(char\\\\*\\\\);
+	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
+	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;@;=
+@.+3,#+1c 	char *nsubs = emalloc(prog->sub);
+.
+@.,$;f+ /\\\\* return the index of the matching regular expression or -1 if none matches \\\\*/
+int rset_find\\\\(rset \\\\*rs, char \\\\*s, int \\\\*grps, int flg\\\\)
+\\\\{@;=
+@.+3c 	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
+.
+@.,$;f+ 						grps\\\\[gi \\\\+ 1\\\\] = -1;
+					\\\\}
+				\\\\}@;=
+@.+2a 				free(subs);
+.
+@.,$;f+ 			\\\\}
+		\\\\}
+	\\\\}@;=
+@.+2a 	free(subs);
 .
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: ren.c
-EXINIT="rcm:|sc! @|vis 6@408a 	free(pats);
+EXINIT="rcm:|sc! @|vis 6@%;f> static int syn_initft\\\\(int fti, int n, char \\\\*name, int flg\\\\)
+\\\\{
+	int i = n, set = hls\\\\[i\\\\]\\\\.set;@;=
+@.+3c 	char **pats = emalloc(hlslen * sizeof(char *));
 .
-@404c 	char **pats = emalloc(ftslen * sizeof(char *));
+@.,$;f+ 	ftmap\\\\[fti\\\\]\\\\.ft = name;
+	ftmap\\\\[fti\\\\]\\\\.rs = rset_make\\\\(i - n, pats, flg\\\\);
+	ftmap\\\\[fti\\\\]\\\\.seteidx = i;@;=
+@.+2a 	free(pats);
 .
-@360a 	free(subs);
+@.,$;f+ 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
+	re:;
+	rset \\\\*rs = ftmap\\\\[fti\\\\]\\\\.rs;@;=
+@.+3;5;20c *subs = emalloc(rs->nsubc * sizeof(int))
 .
-@357a 	}
-.
-@356c 	if (syn_blockhl < 0 || blockhl < 0) {
+@.,$;f+ 		flg = REG_NOTBOL;
+	\\\\}
+	fti\\\\+\\\\+;@;=
+@.+3c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
 		free(subs);
 .
-@353a 	}
+@.-1@>		goto re;>a 	}
 .
-@352c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
+@.,$;f+ 	if \\\\(blockca >= 0 && SYN_BSSET\\\\(blockca\\\\) && !SYN_BESET\\\\(blockca\\\\) && last_scdir > 0\\\\)
+		syn_blockhl = -1;@;=
+@.+2c 	if (syn_blockhl < 0 || blockhl < 0) {
 		free(subs);
 .
-@309;5;20c *subs = emalloc(rs->nsubc * sizeof(int))
+@.-1@>		return;>a 	}
 .
-@261a 	free(pats);
+@.,$;f+ 	for \\\\(j = 0; j < n; j\\\\+\\\\+\\\\)
+		if \\\\(!att\\\\[j\\\\] \\\\|\\\\| !SYN_BPSET\\\\(blockatt\\\\)\\\\)
+			att\\\\[j\\\\] = blockatt;@;=
+@.+2a 	free(subs);
 .
-@255c 	char **pats = emalloc(hlslen * sizeof(char *));
+@.,$;f+ 
+void syn_init\\\\(void\\\\)
+\\\\{@;=
+@.+3c 	char **pats = emalloc(ftslen * sizeof(char *));
+.
+@.,$;f+ 	for \\\\(; i < ftslen; i\\\\+\\\\+\\\\)
+		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
+	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);@;=
+@.+2a 	free(pats);
 .
 @vis 4@wq" $VI -e 'ren.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1435a 					free(buf);
+EXINIT="rcm:|sc! @|vis 6@%;f> 			vi_rshift = 0;
+		if \\\\(row != xrow\\\\+1 \\\\|\\\\| !c \\\\|\\\\| \\\\*c == '\\\\\\\\n'\\\\)
+			goto skip;@;=
+@.+3c 		char *tmp = emalloc(xcols+3);
+		char *snum = emalloc(32);
 .
-@1428c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
-.
-@1424a 					free(buf);
-.
-@1415c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
-.
-@1293a 				free(buf);
-.
-@1290c 				char *buf = emalloc(strlen(ln)+4);
-.
-@168a 		free(tmp);
+@.,$;f+ 		restore\\\\(xtd\\\\)
+		restore\\\\(ftidx\\\\)
+		vi_rshift = \\\\(row != xtop \\\\+ xrows-1\\\\);@;=
+@.+2a 		free(tmp);
 		free(snum);
 .
-@143c 		char *tmp = emalloc(xcols+3);
-		char *snum = emalloc(32);
+@.,$;f+ 				if \\\\(!\\\\(ln = lbuf_get\\\\(xb, xrow\\\\)\\\\)\\\\)
+					break;
+				ln \\\\+= xoff;@;=
+@.+3c 				char *buf = emalloc(strlen(ln)+4);
+.
+@.,$;f+ 				strcpy\\\\(buf, \":e \"\\\\);
+				strcpy\\\\(buf\\\\+3, ln\\\\);
+				term_push\\\\(buf, strlen\\\\(ln\\\\)\\\\+3\\\\);@;=
+@.+2a 				free(buf);
+.
+@.,$;f+ 				case 't': \\\\{
+					vi_drawmsg\\\\(\"arg2:\\\\(0\\\\|#\\\\)\"\\\\);
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\)\\\\);@;=
+@.+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
+.
+@.,$;f+ 						free\\\\(cs\\\\);
+					\\\\}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);@;=
+@.+2a 					free(buf);
+.
+@.,$;f+ 					goto do_excmd; \\\\}
+				case 'r': \\\\{
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg\\\\);@;=
+@.+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
+.
+@.,$;f+ 						free\\\\(cs\\\\);
+					\\\\}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);@;=
+@.+2a 					free(buf);
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@502;5;9c att[16]
+EXINIT="rcm:|sc! @|vis 6@%;f> struct highlight \\\\{
+	char \\\\*ft;		/\\\\* the filetype of this pattern \\\\*/
+	char \\\\*pat;		/\\\\* regular expression \\\\*/@;=
+@.+3;5;9c att[16]
 .
 @vis 4@wq" $VI -e 'vi.h'

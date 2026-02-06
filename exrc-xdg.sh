@@ -14,7 +14,76 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1608a 	} else {
+EXINIT="rcm:|sc! @|vis 6@%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
+rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/@;=
+@.+2a int xexrc = 0;			/* read .exrc from the current directory */
+.
+@.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
+EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@;=
+@.+2a EO(exrc)
+.
+@.,$;f+ 	EO\\\\(ai\\\\),
+	\\\\{\"ac\", ec_setacreg\\\\},
+	\\\\{\"a\", ec_insert\\\\},@;=
+@.+2a 	EO(exrc),
+.
+@.,$;f+ 	xgrec--;
+\\\\}
+@;=
+@.+2a void ex_script(FILE *fp)
+{
+	char done = 0;
+	do {
+		size_t n = 128, i = 0;
+		int c;
+		char *ln = malloc(128);
+		while ((c = fgetc(fp)) != EOF && c != '\\\\n') {
+			if (i >= n - 2) {
+				n += 128;
+				ln = erealloc(ln, n);
+			}
+			ln[i++] = c;
+		}
+		if (!i) {
+			free(ln);
+			done = 1;
+			break;
+		}
+		ln[i] = '\\\\0';
+		ex_command(ln);
+		free(ln);
+	} while(!done);
+}
+
+void load_exrc(char *exrc)
+{
+	struct stat st;
+	if (stat(exrc, &st) == 0) {
+		if (st.st_uid == getuid() && !(st.st_mode & S_IWGRP) && !(st.st_mode & S_IWOTH)) {
+			FILE *fp = fopen(exrc, \"r\");
+			if (fp) {
+				ex_script(fp);
+				fclose(fp);
+			} else {
+				fprintf(stderr, \"Cannot open %s\\\\n\", exrc);
+				exit(EXIT_FAILURE);
+			}
+		} else {
+			fprintf(stderr, \"Bad permissions on %s\\\\n\", exrc);
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+.
+@.,$;f+ 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+	\\\\} while \\\\(--n > 0\\\\);
+	xvis &= ~8;@;=
+@.+3;28c  {
+.
+@.-1@>		ex_command\\(s\\)>a 	} else {
 		char *homeenv = getenv(\"HOME\");
 		char *xdgconfighomeenv = getenv(\"XDG_CONFIG_HOME\");
 		if (xdgconfighomeenv) {
@@ -38,59 +107,5 @@ EXINIT="rcm:|sc! @|vis 6@1608a 	} else {
 		if (strcmp(buf, getenv(\"HOME\")) != 0)
 			load_exrc(\".exrc\");
 	}
-.
-@1607;28c  {
-.
-@1595a void ex_script(FILE *fp)
-{
-	char done = 0;
-	do {
-		size_t n = 128, i = 0;
-		int c;
-		char *ln = malloc(128);
-		while ((c = fgetc(fp)) != EOF && c != '\\n') {
-			if (i >= n - 2) {
-				n += 128;
-				ln = erealloc(ln, n);
-			}
-			ln[i++] = c;
-		}
-		if (!i) {
-			free(ln);
-			done = 1;
-			break;
-		}
-		ln[i] = '\\0';
-		ex_command(ln);
-		free(ln);
-	} while(!done);
-}
-
-void load_exrc(char *exrc)
-{
-	struct stat st;
-	if (stat(exrc, &st) == 0) {
-		if (st.st_uid == getuid() && !(st.st_mode & S_IWGRP) && !(st.st_mode & S_IWOTH)) {
-			FILE *fp = fopen(exrc, \"r\");
-			if (fp) {
-				ex_script(fp);
-				fclose(fp);
-			} else {
-				fprintf(stderr, \"Cannot open %s\\n\", exrc);
-				exit(EXIT_FAILURE);
-			}
-		} else {
-			fprintf(stderr, \"Bad permissions on %s\\n\", exrc);
-			exit(EXIT_FAILURE);
-		}
-	}
-}
-
-.
-@1377a 	EO(exrc),
-.
-@1339a EO(exrc)
-.
-@39a int xexrc = 0;			/* read .exrc from the current directory */
 .
 @vis 4@wq" $VI -e 'ex.c'

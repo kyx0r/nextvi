@@ -14,28 +14,70 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@368;14c , cd == 3
+EXINIT="rcm:|sc! @|vis 6@%;f> 	return key;
+\\\\}
+@;=
+@.+3;23c , init
 .
-@347;10c , 1
+@.,$;f+ fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\@;=
+@.+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
 .
-@331c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\
+@.,$;f+ 		return 1;
+	\\\\}
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);@;=
+@.+3;10c , 1
 .
-@328;23c , init
+@.,$;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
+	\\\\}@;=
+@.+3;14c , cd == 3
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
+EXINIT="rcm:|sc! @|vis 6@%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
+\\\\}
+@;=
+@.+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
+{
+	if (!init) {
+		struct stat st;
+		long nr;	/* 1048575 caps at 2147481600 on 32 bit */
+		int sz = 1048575, step = 1, n = 0;
+		if (fstat(fd, &st) >= 0 && S_ISREG(st.st_mode))
+			sz = st.st_size >= INT_MAX ? INT_MAX : st.st_size + step;
+		char *s = emalloc(sz--);
+		while ((nr = read(fd, s + n, sz - n)) > 0) {
+			n += nr;
+			if (n >= sz + step) {
+				if (n > INT_MAX / 2) {
+					n -= nr;
+					break;
+				}
+				sz = n * 2;
+				s = erealloc(s, sz--);
+				step = 1;
+			} else if (n == sz) {
+				sz++;
+				step = 0;
+.
+@.-1@>			\\}>+1,#+5d@.-1@>		\\}>a 		s[n] = '\\\\0';
+		lbuf_edit(lb, s, beg, end, 0, 0);
+		free(s);
+		return nr != 0;
+.
+@.-1@>	\\}>+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	struct linfo *n, *cn = NULL;
 	const int rchunk = 4096;
 	char sm[rchunk+1], *s, *ln;
 	sbuf_smake(sb, 0)
 	while ((nr = read(fd, sm, rchunk)) > 0) {
 		s = sm;
-		s[nr] = '\\0';
+		s[nr] = '\\\\0';
 		for (; *s; nins++) {
 			l = linelength(s);
-			nl = (s[l - !!l] == '\\n');
+			nl = (s[l - !!l] == '\\\\n');
 			int l_nonl = l - nl;
 			if (!cn) {
 				n = emalloc(l_nonl + 7 + sizeof(struct linfo));
@@ -44,7 +86,7 @@ EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
 				ln = (char*)(n + 1);
 				memcpy(ln, s, l_nonl);
 				memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
-				ln[l_nonl] = '\\n';
+				ln[l_nonl] = '\\\\n';
 			} else {
 				n = erealloc(cn, cn->len + l_nonl + 7 + sizeof(struct linfo));
 				ln = (char*)(n + 1);
@@ -52,7 +94,7 @@ EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
 				n->len += l_nonl;
 				cn = NULL;
 				memset(&ln[n->len + 1], 0, 5);	/* fault tolerance pad */
-				ln[n->len] = '\\n';
+				ln[n->len] = '\\\\n';
 			}
 			sbuf_mem(sb, &ln, (int)sizeof(ln))
 			s += l;
@@ -76,38 +118,13 @@ EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
 .
-@227a 		s[n] = '\\0';
-		lbuf_edit(lb, s, beg, end, 0, 0);
-		free(s);
-		return nr != 0;
-.
-@221,226d@206,219c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
-{
-	if (!init) {
-		struct stat st;
-		long nr;	/* 1048575 caps at 2147481600 on 32 bit */
-		int sz = 1048575, step = 1, n = 0;
-		if (fstat(fd, &st) >= 0 && S_ISREG(st.st_mode))
-			sz = st.st_size >= INT_MAX ? INT_MAX : st.st_size + step;
-		char *s = emalloc(sz--);
-		while ((nr = read(fd, s + n, sz - n)) > 0) {
-			n += nr;
-			if (n >= sz + step) {
-				if (n > INT_MAX / 2) {
-					n -= nr;
-					break;
-				}
-				sz = n * 2;
-				s = erealloc(s, sz--);
-				step = 1;
-			} else if (n == sz) {
-				sz++;
-				step = 0;
-.
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@169c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
+EXINIT="rcm:|sc! @|vis 6@%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
+struct lbuf \\\\*lbuf_make\\\\(void\\\\);
+void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);@;=
+@.+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
 .
 @vis 4@wq" $VI -e 'vi.h'

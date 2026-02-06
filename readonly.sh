@@ -14,38 +14,67 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1405a 	{\"ro\", ec_readonly},
+EXINIT="rcm:|sc! @|vis 6@%;f> static char xrnferr\\\\[\\\\] = \"range not found\";
+static char \\\\*xrerr;
+static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/@;=
+@.+2a char readonly = 0;		/* commandline readonly option */
 .
-@1322a static void *ec_readonly(char *loc, char *cmd, char *arg)
+@.,$;f+ 	bufs\\\\[i\\\\]\\\\.top = 0;
+	bufs\\\\[i\\\\]\\\\.td = \\\\+1;
+	bufs\\\\[i\\\\]\\\\.mtime = -1;@;=
+@.+2a 	bufs[i].readonly = readonly;
+.
+@.,$;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
+	\\\\}@;=
+@.+2a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
+		ex_buf->readonly = 1;
+.
+@.,$;f+ 		free\\\\(ibuf\\\\.s\\\\);
+	\\\\} else \\\\{
+		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{@;=
+@.+2a 			if (ex_buf->readonly)
+				return \"write failed: readonly option is set\";
+.
+@.,$;f+ 
+static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
+@;=
+@.+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
 .
-@680a 			if (ex_buf->readonly)
-				return \"write failed: readonly option is set\";
-.
-@367a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
-		ex_buf->readonly = 1;
-.
-@116a 	bufs[i].readonly = readonly;
-.
-@55a char readonly = 0;		/* commandline readonly option */
+@.,$;f+ 	EO\\\\(rcm\\\\),
+	\\\\{\"reg\", ec_regprint\\\\},
+	\\\\{\"rd\", ec_undoredo\\\\},@;=
+@.+2a 	{\"ro\", ec_readonly},
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1816;46c R
-.
-@1813a 			else if (argv[i][j] == 'R')
+EXINIT="rcm:|sc! @|vis 6@%;f> 				xvis \\\\|= 8;
+			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
+				xvis &= ~4;@;=
+@.+2a 			else if (argv[i][j] == 'R')
 				readonly = 1;
+.
+@.,$;f+ 			else \\\\{
+				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);@;=
+@.+2;46c R
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@544a extern char readonly;
+EXINIT="rcm:|sc! @|vis 6@%;f> 	int plen, row, off, top;
+	long mtime;			/\\\\* modification time \\\\*/
+	signed char td;			/\\\\* text direction \\\\*/@;=
+@.+2a 	char readonly;			/* read only */
 .
-@411a 	char readonly;			/* read only */
+@.,$;f+ extern rset \\\\*fsincl;
+extern char \\\\*fs_exdir;
+void dir_calc\\\\(char \\\\*path\\\\);@;=
+@.+2a extern char readonly;
 .
 @vis 4@wq" $VI -e 'vi.h'

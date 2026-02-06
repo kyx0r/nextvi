@@ -14,7 +14,10 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@382a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
+EXINIT="rcm:|sc! @|vis 6@%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->ln\\\\[pos\\\\] : NULL;
+\\\\}
+@;=
+@.+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
 	struct lopt *lo;
 	static int last_hist_u;
@@ -53,7 +56,10 @@ EXINIT="rcm:|sc! @|vis 6@382a int lbuf_undojump(struct lbuf *lb, int *pos, int *
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1444a 			case TK_CTL('o'):
+EXINIT="rcm:|sc! @|vis 6@%;f> 				vi_hidch = !vi_hidch;
+				vi_mod \\\\|= 1;
+				break;@;=
+@.+2a 			case TK_CTL('o'):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
 					vi_drawmsg_mpt(\"undo jmp failed\")
@@ -68,6 +74,9 @@ EXINIT="rcm:|sc! @|vis 6@1444a 			case TK_CTL('o'):
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@180a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
+EXINIT="rcm:|sc! @|vis 6@%;f> void lbuf_smark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int beg, int o1\\\\);
+void lbuf_emark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int end, int o2\\\\);
+struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);@;=
+@.+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
 .
 @vis 4@wq" $VI -e 'vi.h'

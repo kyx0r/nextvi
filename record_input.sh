@@ -14,25 +14,40 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1403a 	EO(rec),
+EXINIT="rcm:|sc! @|vis 6@%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
+int xrcm = 1;			/\\\\* range command model -
+				0: exec at command parse 1: exec at command \\\\*/@;=
+@.+2a int xrec;			/* input recoding register */
 .
-@1339a EO(rec)
+@.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
+EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@;=
+@.+2a EO(rec)
 .
-@25a int xrec;			/* input recoding register */
+@.,$;f+ 	\\\\{\"q!\", ec_quit\\\\},
+	\\\\{\"q\", ec_quit\\\\},
+	EO\\\\(rcm\\\\),@;=
+@.+2a 	EO(rec),
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@178a 		if (xrec && *ibuf) {
+EXINIT="rcm:|sc! @|vis 6@%;f> 		ret:
+		ibuf_cnt = 1;
+		ibuf_pos = 0;@;=
+@.+2a 		if (xrec && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
-			buf[1] = '\\0';
+			buf[1] = '\\\\0';
 			ex_regput(xrec, buf, 1);
 		}
 .
 @vis 4@wq" $VI -e 'term.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@435a extern int xrec;
+EXINIT="rcm:|sc! @|vis 6@%;f> extern int xlim;
+extern int xseq;
+extern int xerr;@;=
+@.+2a extern int xrec;
 .
 @vis 4@wq" $VI -e 'vi.h'

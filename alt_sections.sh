@@ -14,9 +14,15 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@707,708c 		dir = mv == '}' || mv == ']' ? 1 : -1;
-		mark = mv == '[' || mv == ']' ? '{' : '\\n';
+EXINIT="rcm:|sc! @|vis 6@%;f> 		break;
+	case '\\\\(':
+	case '\\\\)':@;=
+@.+3;15;16c )
 .
-@667;15;16c )
+@.,$;f+ 	case '\\\\}':
+	case '\\\\[':
+	case '\\\\]':@;=
+@.+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
+		mark = mv == '[' || mv == ']' ? '{' : '\\\\n';
 .
 @vis 4@wq" $VI -e 'vi.c'

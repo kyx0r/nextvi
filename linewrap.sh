@@ -14,9 +14,15 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1439a 	{\"lw\", ec_linewrap},
+EXINIT="rcm:|sc! @|vis 6@%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
+int xrcm = 1;			/\\\\* range command model -
+				0: exec at command parse 1: exec at command \\\\*/@;=
+@.+2a int xlw;			/* soft linewrap col */
 .
-@1322a static void *ec_linewrap(char *loc, char *cmd, char *arg)
+@.,$;f+ 
+static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
+@;=
+@.+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
 	if (xb->modified)
@@ -34,58 +40,86 @@ EXINIT="rcm:|sc! @|vis 6@1439a 	{\"lw\", ec_linewrap},
 }
 
 .
-@25a int xlw;			/* soft linewrap col */
+@.,$;f+ 	EO\\\\(left\\\\),
+	EO\\\\(lim\\\\),
+	EO\\\\(led\\\\),@;=
+@.+2a 	{\"lw\", ec_linewrap},
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@421a 		/* relink chain: restored lines have their pointers from edit time */
-		if (xlw) {
-			for (int i = 0; i < lo->n_ins; i++) {
-				char *ln = lo->ins[i];
-				char *prev = lbuf_s(ln)->lw_prev;
-				char *next = lbuf_s(ln)->lw_next;
-				if (prev)
-					lbuf_s(prev)->lw_next = ln;
-				if (next)
-					lbuf_s(next)->lw_prev = ln;
+EXINIT="rcm:|sc! @|vis 6@%;f> \\\\{
+	int i, pos = lo->pos;
+	if \\\\(s\\\\) \\\\{@;=
+@.+2a 		char *lwp = NULL;
+.
+@.,$;f+ 			struct linfo \\\\*n = emalloc\\\\(l_nonl \\\\+ 5 \\\\+ sizeof\\\\(struct linfo\\\\)\\\\);
+			n->len = l_nonl;
+			n->grec = 0;@;=
+@.+2a 			n->lw_prev = NULL;
+			n->lw_next = NULL;
+.
+@.,$;f+ 			memcpy\\\\(ln, s, l_nonl\\\\);
+			memset\\\\(&ln\\\\[l_nonl \\\\+ 1\\\\], 0, 4\\\\);	/\\\\* fault tolerance pad \\\\*/
+			ln\\\\[l_nonl\\\\] = '\\\\\\\\n';@;=
+@.+2a 			if (xlw) {
+				rstate->s = NULL;
+				ren_state *r = ren_position(ln);
+				if (r->cmax > xlw) {
+					l_nonl = l;
+					l = uc_chr(r->s, r->col[xlw]) - r->s;
+					if (l <= 0) {
+						l = l_nonl;
+						goto too_small;
+					}
+					l_nonl = l - (ln[l - !!l] == '\\\\n');
+					n = erealloc(n, l_nonl + 5 + sizeof(struct linfo));
+					n->len = l_nonl;
+					n->grec = 0;
+					n->lw_prev = lwp;
+					n->lw_next = NULL;
+					ln = (char*)(n + 1);
+					if (lwp)
+						lbuf_s(lwp)->lw_next = ln;
+					lwp = ln;
+					memcpy(ln, s, l_nonl);
+					memset(&ln[l_nonl + 1], 0, 4);	/* fault tolerance pad */
+					ln[l_nonl] = '\\\\n';
+				} else {
+					if (lwp)
+						lbuf_s(lwp)->lw_next = ln;
+					n->lw_prev = lwp;
+					lwp = NULL;
+				}
 			}
-			/* pure deletion redo: link the chain around removed lines */
-			if (lo->n_del > 0 && lo->n_ins == 0) {
-				char *pred = lbuf_s(lo->del[0])->lw_prev;
-				char *succ = lbuf_s(lo->del[lo->n_del - 1])->lw_next;
-				if (pred)
-					lbuf_s(pred)->lw_next = succ;
-				if (succ)
-					lbuf_s(succ)->lw_prev = pred;
+			too_small:
+.
+@.,$;f+ 		end = lb->ln_n;
+	if \\\\(beg == end && !buf\\\\)
+		return;@;=
+@.+2a 	/* save chain boundary pointers before edit */
+	char *chain_pred = NULL, *chain_succ = NULL;
+	if (xlw) {
+		if (beg < end) {
+			/* deletion case: save the chain links of deleted range */
+			chain_pred = lbuf_s(lb->ln[beg])->lw_prev;
+			chain_succ = lbuf_s(lb->ln[end - 1])->lw_next;
+		} else if (beg > 0 && beg < lb->ln_n) {
+			/* pure insertion: check if inserting into middle of a chain */
+			char *prev_ln = lb->ln[beg - 1];
+			char *next_ln = lb->ln[beg];
+			if (lbuf_s(prev_ln)->lw_next == next_ln) {
+				/* inserting into a chain - need to break/relink */
+				chain_pred = prev_ln;
+				chain_succ = next_ln;
 			}
 		}
+	}
 .
-@399a 		/* relink chain: restored lines have original pointers */
-		if (xlw) {
-			for (int i = 0; i < lo->n_del; i++) {
-				char *ln = lo->del[i];
-				char *prev = lbuf_s(ln)->lw_prev;
-				char *next = lbuf_s(ln)->lw_next;
-				if (prev)
-					lbuf_s(prev)->lw_next = ln;
-				if (next)
-					lbuf_s(next)->lw_prev = ln;
-			}
-			/* pure insertion undo: link the chain around removed lines */
-			if (lo->n_ins > 0 && lo->n_del == 0) {
-				char *pred = lbuf_s(lo->ins[0])->lw_prev;
-				char *succ = lbuf_s(lo->ins[lo->n_ins - 1])->lw_next;
-				if (pred)
-					lbuf_s(pred)->lw_next = succ;
-				if (succ)
-					lbuf_s(succ)->lw_prev = pred;
-			}
-		}
-.
-@240;30;31c (!lbuf_s(ln)->lw_next)
-.
-@193a 	/* relink the chain after edit */
+@.,$;f+ 	struct lopt \\\\*lo = lbuf_opt\\\\(lb, beg, o1, end - beg\\\\);
+	sbuf_smake\\\\(sb, sizeof\\\\(lo->ins\\\\[0\\\\]\\\\)\\\\+1\\\\)
+	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);@;=
+@.+2a 	/* relink the chain after edit */
 	if (xlw && (chain_pred || chain_succ)) {
 		if (lo->n_ins > 0) {
 			char *first_new = lb->ln[beg];
@@ -107,66 +141,68 @@ EXINIT="rcm:|sc! @|vis 6@421a 		/* relink chain: restored lines have their point
 		}
 	}
 .
-@190a 	/* save chain boundary pointers before edit */
-	char *chain_pred = NULL, *chain_succ = NULL;
-	if (xlw) {
-		if (beg < end) {
-			/* deletion case: save the chain links of deleted range */
-			chain_pred = lbuf_s(lb->ln[beg])->lw_prev;
-			chain_succ = lbuf_s(lb->ln[end - 1])->lw_next;
-		} else if (beg > 0 && beg < lb->ln_n) {
-			/* pure insertion: check if inserting into middle of a chain */
-			char *prev_ln = lb->ln[beg - 1];
-			char *next_ln = lb->ln[beg];
-			if (lbuf_s(prev_ln)->lw_next == next_ln) {
-				/* inserting into a chain - need to break/relink */
-				chain_pred = prev_ln;
-				chain_succ = next_ln;
+@.,$;f+ 	for \\\\(int i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
+		char \\\\*ln = lb->ln\\\\[i\\\\];
+		long nw = 0;@;=
+@.+3;30;31c (!lbuf_s(ln)->lw_next)
+.
+@.,$;f+ 		lo->ref = 1;
+		sb\\\\.s = \\\\(char\\\\*\\\\)lo->del;
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);@;=
+@.+2a 		/* relink chain: restored lines have original pointers */
+		if (xlw) {
+			for (int i = 0; i < lo->n_del; i++) {
+				char *ln = lo->del[i];
+				char *prev = lbuf_s(ln)->lw_prev;
+				char *next = lbuf_s(ln)->lw_next;
+				if (prev)
+					lbuf_s(prev)->lw_next = ln;
+				if (next)
+					lbuf_s(next)->lw_prev = ln;
+			}
+			/* pure insertion undo: link the chain around removed lines */
+			if (lo->n_ins > 0 && lo->n_del == 0) {
+				char *pred = lbuf_s(lo->ins[0])->lw_prev;
+				char *succ = lbuf_s(lo->ins[lo->n_ins - 1])->lw_next;
+				if (pred)
+					lbuf_s(pred)->lw_next = succ;
+				if (succ)
+					lbuf_s(succ)->lw_prev = pred;
 			}
 		}
-	}
 .
-@94a 			if (xlw) {
-				rstate->s = NULL;
-				ren_state *r = ren_position(ln);
-				if (r->cmax > xlw) {
-					l_nonl = l;
-					l = uc_chr(r->s, r->col[xlw]) - r->s;
-					if (l <= 0) {
-						l = l_nonl;
-						goto too_small;
-					}
-					l_nonl = l - (ln[l - !!l] == '\\n');
-					n = erealloc(n, l_nonl + 5 + sizeof(struct linfo));
-					n->len = l_nonl;
-					n->grec = 0;
-					n->lw_prev = lwp;
-					n->lw_next = NULL;
-					ln = (char*)(n + 1);
-					if (lwp)
-						lbuf_s(lwp)->lw_next = ln;
-					lwp = ln;
-					memcpy(ln, s, l_nonl);
-					memset(&ln[l_nonl + 1], 0, 4);	/* fault tolerance pad */
-					ln[l_nonl] = '\\n';
-				} else {
-					if (lwp)
-						lbuf_s(lwp)->lw_next = ln;
-					n->lw_prev = lwp;
-					lwp = NULL;
-				}
+@.,$;f+ 		lo->ref = 2;
+		sb\\\\.s = \\\\(char\\\\*\\\\)lo->ins;
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);@;=
+@.+2a 		/* relink chain: restored lines have their pointers from edit time */
+		if (xlw) {
+			for (int i = 0; i < lo->n_ins; i++) {
+				char *ln = lo->ins[i];
+				char *prev = lbuf_s(ln)->lw_prev;
+				char *next = lbuf_s(ln)->lw_next;
+				if (prev)
+					lbuf_s(prev)->lw_next = ln;
+				if (next)
+					lbuf_s(next)->lw_prev = ln;
 			}
-			too_small:
-.
-@90a 			n->lw_prev = NULL;
-			n->lw_next = NULL;
-.
-@84a 		char *lwp = NULL;
+			/* pure deletion redo: link the chain around removed lines */
+			if (lo->n_del > 0 && lo->n_ins == 0) {
+				char *pred = lbuf_s(lo->del[0])->lw_prev;
+				char *succ = lbuf_s(lo->del[lo->n_del - 1])->lw_next;
+				if (pred)
+					lbuf_s(pred)->lw_next = succ;
+				if (succ)
+					lbuf_s(succ)->lw_prev = pred;
+			}
+		}
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@171a 	if (xlw && s) {
+EXINIT="rcm:|sc! @|vis 6@%;f> 		return;
+	\\\\}
+	s = lbuf_get\\\\(xb, row\\\\);@;=
+@.+2a 	if (xlw && s) {
 		led_att la;
 		if (!led_attsb)
 			sbuf_make(led_attsb, sizeof(la))
@@ -186,9 +222,15 @@ EXINIT="rcm:|sc! @|vis 6@171a 	if (xlw && s) {
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@435a extern int xlw;
-.
-@148a 	char *lw_prev;
+EXINIT="rcm:|sc! @|vis 6@%;f> struct linfo \\\\{
+	int len;
+	int grec;@;=
+@.+2a 	char *lw_prev;
 	char *lw_next;
+.
+@.,$;f+ extern int xlim;
+extern int xseq;
+extern int xerr;@;=
+@.+2a extern int xlw;
 .
 @vis 4@wq" $VI -e 'vi.h'

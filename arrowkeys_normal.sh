@@ -14,7 +14,36 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@583a 	case '\\033':	/* Arrow keys */
+EXINIT="rcm:|sc! @|vis 6@%;f> \\\\{
+	int mark, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
+	switch \\\\(c\\\\) \\\\{@;=
+@.+2a 	case '\\\\033':	/* Arrow keys */
+		c = term_read(0);
+		if (c == '[') {
+			c = term_read(0);
+			switch (c) {
+			case 'A':	/* ↑ */
+				*row = MAX(*row - cnt, 0);
+				c = 'k';
+				break;
+			case 'B':	/* ↓ */
+				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
+				c = 'j';
+				break;
+			default:	/* Not a line motion so we put back all the arrow characters */
+				term_back('\\\\033');
+				term_back('[');
+				term_back(c);
+				return 0;
+			}
+		} else	/* Not an arrow sequence so we abort */
+			return 0;
+		break;
+.
+@.,$;f+ 	\\\\}
+	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
+	switch \\\\(mv\\\\) \\\\{@;=
+@.+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {
 			if (!(cs = lbuf_get(xb, *row)))
@@ -33,29 +62,6 @@ EXINIT="rcm:|sc! @|vis 6@583a 	case '\\033':	/* Arrow keys */
 				return 0;
 			}
 		} else	/* Not a 033[X command so we abort */
-			return 0;
-		break;
-.
-@348a 	case '\\033':	/* Arrow keys */
-		c = term_read(0);
-		if (c == '[') {
-			c = term_read(0);
-			switch (c) {
-			case 'A':	/* ↑ */
-				*row = MAX(*row - cnt, 0);
-				c = 'k';
-				break;
-			case 'B':	/* ↓ */
-				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-				c = 'j';
-				break;
-			default:	/* Not a line motion so we put back all the arrow characters */
-				term_back('\\033');
-				term_back('[');
-				term_back(c);
-				return 0;
-			}
-		} else	/* Not an arrow sequence so we abort */
 			return 0;
 		break;
 .

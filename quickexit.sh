@@ -14,18 +14,40 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1400a 	EO(qe),
+EXINIT="rcm:|sc! @|vis 6@%;f> int xshape = 1;			/\\\\* perform letter shaping \\\\*/
+int xorder = 1;			/\\\\* change the order of characters \\\\*/
+int xts = 8;			/\\\\* number of spaces for tab \\\\*/@;=
+@.+2a int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
-@1339a EO(qe)
+@.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
+EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@;=
+@.+2a EO(qe)
 .
-@14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
+@.,$;f+ 	\\\\{\"g\", ec_glob\\\\},
+	EO\\\\(mpt\\\\),
+	\\\\{\"m\", ec_mark\\\\},@;=
+@.+2a 	EO(qe),
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@633a _default:
+EXINIT="rcm:|sc! @|vis 6@%;f> 	restore\\\\(xvis\\\\)
+\\\\}
+@;=
+@.+2a static int gettime_ms(void)
+{
+	struct timespec t;
+	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
+		return 0;
+	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
+}
+
 .
-@632a 		case 'j':
+@.,$;f+ 				exbuf_load\\\\(ex_buf\\\\)
+			\\\\}
+			continue; \\\\}@;=
+@.+2a 		case 'j':
 			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
 				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
 					term_push(\"\", 2);
@@ -36,30 +58,38 @@ EXINIT="rcm:|sc! @|vis 6@633a _default:
 		case 'k':
 			is->quickexit = gettime_ms();
 .
-@406a static int gettime_ms(void)
-{
-	struct timespec t;
-	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
-		return 0;
-	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
-}
-
+@.-1@>		default:>a _default:
 .
 @vis 4@wq" $VI -e 'led.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1503a 				if (xqe)
-					vi_mod |= 2;
+EXINIT="rcm:|sc! @|vis 6@%;f> #include <dirent\\\\.h>
+#include <signal\\\\.h>
+#include <unistd\\\\.h>@;=
+@.+2a #include <time.h>
 .
-@9a #include <time.h>
+@.,$;f+ 				k = vc_insert\\\\(c\\\\);
+				ins:
+				vi_mod \\\\|= !xpac && xrow == orow \\\\? 8 : 1;@;=
+@.+2a 				if (xqe)
+					vi_mod |= 2;
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@427a extern int xqe;
+EXINIT="rcm:|sc! @|vis 6@%;f> 	int p_reg;
+	int lsug;
+	int sug_pt;@;=
+@.+2a 	int quickexit;
 .
-@380a is.quickexit = 0; \\
+@.,$;f+ is\\\\.p_reg = 0; \\\\\\\\
+is\\\\.lsug = 0; \\\\\\\\
+is\\\\.sug_pt = -1; \\\\\\\\@;=
+@.+2a is.quickexit = 0; \\\\
 .
-@372a 	int quickexit;
+@.,$;f+ extern int xshape;
+extern int xorder;
+extern int xts;@;=
+@.+2a extern int xqe;
 .
 @vis 4@wq" $VI -e 'vi.h'

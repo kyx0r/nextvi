@@ -14,12 +14,154 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! J|vis 6J261;47;77c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
+EXINIT="rcm:|sc! J|vis 6J%;f> \\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\
+\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\
+\\\\(\\\\(pac\\\\|pr\\\\|ai\\\\|ish\\\\|err\\\\|ic\\\\|grp\\\\|mpt\\\\|rcm\\\\|shape\\\\|seq\\\\|ts\\\\|td\\\\|order\\\\|hl\\\\[lwpr\\\\]\\\\?\\\\|left\\\\|lim\\\\|led\\\\|vis\\\\)\\\\\\\\J;=
+J.+3;47;77c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
 .
 Jvis 4Jwq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! J|vis 6J1595a /* window management functions */
+EXINIT="rcm:|sc! J|vis 6J%;f> struct buf tempbufs\\\\[2\\\\];		/\\\\* temporary buffers, for internal use \\\\*/
+struct buf \\\\*ex_buf;		/\\\\* current buffer \\\\*/
+struct buf \\\\*ex_pbuf;		/\\\\* prev buffer \\\\*/J;=
+J.+2a struct win *wins;		/* head of window list */
+struct win *curwin;		/* current active window */
+int nwins;			/* number of windows */
+.
+J.+56a 	/* update current window's buffer reference */
+	if (curwin)
+		curwin->buf = ex_buf;
+.
+J.+61a 	/* update current window's buffer reference */
+	if (curwin)
+		curwin->buf = ex_buf;
+.
+J.+414c 	/* q! always force quits */
+	if (strchr(cmd, '!')) {
+		xquit = -1;
+		return NULL;
+	}
+	/* if multiple windows, close current window */
+	if (!(xvis & 4) && nwins > 1) {
+		win_close();
+		return NULL;
+	}
+	/* single window: check for modified buffers and quit */
+	for (int i = 0; i < xbufcur; i++)
+.
+J.+3c 	if (!xquit)
+		xquit = 1;
+.
+J.+773a static void *ec_split(char *loc, char *cmd, char *arg)
+{
+	return win_split(0, arg);
+}
+
+static void *ec_vsplit(char *loc, char *cmd, char *arg)
+{
+	return win_split(1, arg);
+}
+
+static void *ec_equalize(char *loc, char *cmd, char *arg)
+{
+	struct win *w, **group;
+	int ngroup = 0, i, j;
+	if (nwins <= 1)
+		return NULL;
+	group = emalloc(nwins * sizeof(struct win *));
+	/* try horizontal grouping: same y and h as curwin */
+	w = wins;
+	do {
+		if (w->y == curwin->y && w->h == curwin->h)
+			group[ngroup++] = w;
+		w = w->next;
+	} while (w != wins);
+	if (ngroup > 1) {
+		/* sort by x */
+		for (i = 0; i < ngroup - 1; i++)
+			for (j = i + 1; j < ngroup; j++)
+				if (group[j]->x < group[i]->x) {
+					struct win *tmp = group[i];
+					group[i] = group[j];
+					group[j] = tmp;
+				}
+		/* check contiguity */
+		int contiguous = 1;
+		for (i = 0; i < ngroup - 1; i++) {
+			if (group[i]->x + group[i]->w + 1 != group[i+1]->x) {
+				contiguous = 0;
+				break;
+			}
+		}
+		if (contiguous) {
+			/* redistribute width evenly */
+			int total = group[ngroup-1]->x + group[ngroup-1]->w - group[0]->x;
+			int new_w = (total - (ngroup - 1)) / ngroup;
+			int extra = (total - (ngroup - 1)) % ngroup;
+			int x = group[0]->x;
+			for (i = 0; i < ngroup; i++) {
+				group[i]->x = x;
+				group[i]->w = new_w + (i < extra ? 1 : 0);
+				x += group[i]->w + 1;
+			}
+			free(group);
+			return NULL;
+		}
+	}
+	/* try vertical grouping: same x and w as curwin */
+	ngroup = 0;
+	w = wins;
+	do {
+		if (w->x == curwin->x && w->w == curwin->w)
+			group[ngroup++] = w;
+		w = w->next;
+	} while (w != wins);
+	if (ngroup > 1) {
+		/* sort by y */
+		for (i = 0; i < ngroup - 1; i++)
+			for (j = i + 1; j < ngroup; j++)
+				if (group[j]->y < group[i]->y) {
+					struct win *tmp = group[i];
+					group[i] = group[j];
+					group[j] = tmp;
+				}
+		/* check contiguity */
+		int contiguous = 1;
+		for (i = 0; i < ngroup - 1; i++) {
+			if (group[i]->y + group[i]->h + 1 != group[i+1]->y) {
+				contiguous = 0;
+				break;
+			}
+		}
+		if (contiguous) {
+			/* redistribute height evenly */
+			int total = group[ngroup-1]->y + group[ngroup-1]->h - group[0]->y;
+			int new_h = (total - (ngroup - 1)) / ngroup;
+			int extra = (total - (ngroup - 1)) % ngroup;
+			int y = group[0]->y;
+			for (i = 0; i < ngroup; i++) {
+				group[i]->y = y;
+				group[i]->h = new_h + (i < extra ? 1 : 0);
+				y += group[i]->h + 1;
+			}
+			free(group);
+			return NULL;
+		}
+	}
+	free(group);
+	return NULL;
+}
+
+.
+J.+30a 	{\"eq\", ec_equalize},
+.
+J.+34a 	EO(vis),
+	{\"vs\", ec_vsplit},
+.
+J.+4a 	{\"sp\", ec_split},
+.
+J.+22dJ.+154a /* window management functions */
 static void curwin_save(void)
 {
 	if (curwin) {
@@ -252,299 +394,125 @@ void *win_split(int vertical, char *arg)
 }
 
 .
-J1440dJ1418a 	{\"sp\", ec_split},
-.
-J1414a 	EO(vis),
-	{\"vs\", ec_vsplit},
-.
-J1380a 	{\"eq\", ec_equalize},
-.
-J1350a static void *ec_split(char *loc, char *cmd, char *arg)
-{
-	return win_split(0, arg);
-}
-
-static void *ec_vsplit(char *loc, char *cmd, char *arg)
-{
-	return win_split(1, arg);
-}
-
-static void *ec_equalize(char *loc, char *cmd, char *arg)
-{
-	struct win *w, **group;
-	int ngroup = 0, i, j;
-	if (nwins <= 1)
-		return NULL;
-	group = emalloc(nwins * sizeof(struct win *));
-	/* try horizontal grouping: same y and h as curwin */
-	w = wins;
-	do {
-		if (w->y == curwin->y && w->h == curwin->h)
-			group[ngroup++] = w;
-		w = w->next;
-	} while (w != wins);
-	if (ngroup > 1) {
-		/* sort by x */
-		for (i = 0; i < ngroup - 1; i++)
-			for (j = i + 1; j < ngroup; j++)
-				if (group[j]->x < group[i]->x) {
-					struct win *tmp = group[i];
-					group[i] = group[j];
-					group[j] = tmp;
-				}
-		/* check contiguity */
-		int contiguous = 1;
-		for (i = 0; i < ngroup - 1; i++) {
-			if (group[i]->x + group[i]->w + 1 != group[i+1]->x) {
-				contiguous = 0;
-				break;
-			}
-		}
-		if (contiguous) {
-			/* redistribute width evenly */
-			int total = group[ngroup-1]->x + group[ngroup-1]->w - group[0]->x;
-			int new_w = (total - (ngroup - 1)) / ngroup;
-			int extra = (total - (ngroup - 1)) % ngroup;
-			int x = group[0]->x;
-			for (i = 0; i < ngroup; i++) {
-				group[i]->x = x;
-				group[i]->w = new_w + (i < extra ? 1 : 0);
-				x += group[i]->w + 1;
-			}
-			free(group);
-			return NULL;
-		}
-	}
-	/* try vertical grouping: same x and w as curwin */
-	ngroup = 0;
-	w = wins;
-	do {
-		if (w->x == curwin->x && w->w == curwin->w)
-			group[ngroup++] = w;
-		w = w->next;
-	} while (w != wins);
-	if (ngroup > 1) {
-		/* sort by y */
-		for (i = 0; i < ngroup - 1; i++)
-			for (j = i + 1; j < ngroup; j++)
-				if (group[j]->y < group[i]->y) {
-					struct win *tmp = group[i];
-					group[i] = group[j];
-					group[j] = tmp;
-				}
-		/* check contiguity */
-		int contiguous = 1;
-		for (i = 0; i < ngroup - 1; i++) {
-			if (group[i]->y + group[i]->h + 1 != group[i+1]->y) {
-				contiguous = 0;
-				break;
-			}
-		}
-		if (contiguous) {
-			/* redistribute height evenly */
-			int total = group[ngroup-1]->y + group[ngroup-1]->h - group[0]->y;
-			int new_h = (total - (ngroup - 1)) / ngroup;
-			int extra = (total - (ngroup - 1)) % ngroup;
-			int y = group[0]->y;
-			for (i = 0; i < ngroup; i++) {
-				group[i]->y = y;
-				group[i]->h = new_h + (i < extra ? 1 : 0);
-				y += group[i]->h + 1;
-			}
-			free(group);
-			return NULL;
-		}
-	}
-	free(group);
-	return NULL;
-}
-
-.
-J577c 	if (!xquit)
-		xquit = 1;
-.
-J574c 	/* q! always force quits */
-	if (strchr(cmd, '!')) {
-		xquit = -1;
-		return NULL;
-	}
-	/* if multiple windows, close current window */
-	if (!(xvis & 4) && nwins > 1) {
-		win_close();
-		return NULL;
-	}
-	/* single window: check for modified buffers and quit */
-	for (int i = 0; i < xbufcur; i++)
-.
-J160a 	/* update current window's buffer reference */
-	if (curwin)
-		curwin->buf = ex_buf;
-.
-J99a 	/* update current window's buffer reference */
-	if (curwin)
-		curwin->buf = ex_buf;
-.
-J43a struct win *wins;		/* head of window list */
-struct win *curwin;		/* current active window */
-int nwins;			/* number of windows */
-.
 Jvis 4Jwq" $VI -e 'ex.c'
 
 # Patch: led.c
-EXINIT="rcm:|sc! J|vis 6J611;46c , ai_max
+EXINIT="rcm:|sc! J|vis 6J%;f> /\\\\* map cursor horizontal position to terminal column number \\\\*/
+int led_pos\\\\(char \\\\*s, int pos\\\\)
+\\\\{J;=
+J.+2a 	int ww = curwin ? curwin->w : xcols;
 .
-J588a 			if (curwin)
-				curwin->buf = ex_buf;
+J.+2;17;22c ww
 .
-J568;46c , ai_max
+J.+192a 	/* window offset for vsplit (not for prompts) */
+	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
+	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 .
-J509;46c , ai_max
+J.+19,#+1c 	if (pos >= xleft + winw || pos < xleft)
+		xleft = pos < winw ? 0 : pos - winw / 2;
 .
-J386;23;24c winx
+J.+2,#+1c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
+	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
 .
-J384c 			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
+J.+51;77c , int ai_max
 .
-J377;25;55c winx + vi_lncol, xleft, xleft + winw
-.
-J368;15;16c winx
-.
-J366;22;27c winh
-.
-J364a 	/* window offset for vsplit (not for prompts) */
+J.+1a 	/* window offset for vsplit (not for prompts) */
 	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
 	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 	int winh = (ai_max >= 0 && curwin) ? curwin->h : xrows;
 .
-J363;77c , int ai_max
+J.+2;22;27c winh
 .
-J311,312c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
-	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
+J.+2;15;16c winx
 .
-J308,309c 	if (pos >= xleft + winw || pos < xleft)
-		xleft = pos < winw ? 0 : pos - winw / 2;
+J.+9;25;55c winx + vi_lncol, xleft, xleft + winw
 .
-J289a 	/* window offset for vsplit (not for prompts) */
-	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
-	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
+J.+7c 			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
 .
-J97;17;22c ww
+J.+2;23;24c winx
 .
-J95a 	int ww = curwin ? curwin->w : xcols;
+J.+123;46c , ai_max
+.
+J.+59;46c , ai_max
+.
+J.+20a 			if (curwin)
+				curwin->buf = ex_buf;
+.
+J.+23;46c , ai_max
 .
 Jvis 4Jwq" $VI -e 'led.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! J|vis 6J1772;11;23c (curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +
+EXINIT="rcm:|sc! J|vis 6J%;f> \\\\}
+#define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; \\\\}
+J;=
+J.+2a /* draw horizontal separator line at screen row, from x for w columns */
+static void vi_draw_hsep(int row, int x, int w)
+{
+	term_pos(row, x);
+	for (int i = 0; i < w; i++)
+		term_chr('-');
+}
+
+/* draw vertical separator line at screen column */
+static void vi_draw_vsep(int col, int y, int h)
+{
+	for (int i = 0; i < h; i++) {
+		term_pos(y + i, col);
+		term_chr('|');
+	}
+}
+
 .
-J1755;53;58c win_height()
+J.+16;10;11c w
 .
-J1747,1748c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
-				&& xrow+1 < xtop + win_height()) {
+J.+7a /* calculate screen row for buffer row in current window */
+static int win_scrrow(int row)
+{
+	return curwin ? curwin->y + (row - xtop) : row - xtop;
+}
+
+/* calculate effective window width */
+static int win_width(void)
+{
+	return curwin ? curwin->w : xcols;
+}
+
+/* calculate effective window height (rows visible) */
+static int win_height(void)
+{
+	return curwin ? curwin->h : xrows;
+}
+
 .
-J1745;34c  {
+J.+3a 	int wrows = win_height();
+	int wcols = win_width();
+	int scrrow = win_scrrow(row);
 .
-J1743c 		/* save cursor position to current window */
-		if (curwin) {
-			curwin->row = xrow;
-			curwin->off = xoff;
-			curwin->top = xtop;
-			curwin->left = xleft;
-		}
-		/* always do full redraw when multiple windows are active */
-		if (nwins > 1) {
-			vi_draw_allwins();
-		} else if (vi_mod & 1 || xleft != oleft
+J.+3;18;31c scrrow ==
 .
-J1700,1701c 		{ int _ww = win_width();
-		if (vi_col >= xleft + _ww || vi_col < xleft)
-			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
+J.+6;20;21c w
 .
-J1538;10c  }
+J.+4,#+3c 		char tmp[wcols+3], snum[32];
+		memset(tmp, ' ', wcols+1);
+		tmp[wcols+1] = '\\\\n';
+		tmp[wcols+2] = '\\\\0';
 .
-J1535a 				if (xrows != orows || xcols != ocols)
-					win_size();
+J.+17;25;44c scrrow, curwin ? curwin->x : 0, 0, w
 .
-J1528c 			case TK_CTL('l'): {
-				int orows = xrows, ocols = xcols;
+J.+32c 		led_crender(s, scrrow, (curwin ? curwin->x : 0) + l1, xleft, xleft + wcols - l1)
 .
-J1399a 				case 'c':
-					/* switch to next window */
-					if (nwins > 1) {
-						curwin->row = xrow;
-						curwin->off = xoff;
-						curwin->top = xtop;
-						curwin->left = xleft;
-						win_switch(curwin->next);
-						vi_mod |= 1;
-					}
-					break;
-				case 'd':
-					/* close current window */
-					if (nwins > 1) {
-						win_close();
-						vi_mod |= 1;
-					}
-					break;
+J.+11;28;39c scrrow, (curwin ? curwin->x : 0) +
 .
-J1281,1282c 				if (xtop < lbuf_len(xb) - win_height())
-					xtop = MIN(lbuf_len(xb) - win_height(), xtop + n);
+J.+3;25;36c scrrow, curwin ? curwin->x :
 .
-J1279;36;41c win_height()
+J.+5c 	led_crender(s, scrrow, curwin ? curwin->x : 0, xleft, xleft + wcols)
 .
-J1267;36;41c win_height()
+J.+6a 	int wrows = win_height();
 .
-J1248;39;44c win_height()
+J.+2;19;20c w
 .
-J1243;40;45c win_height()
-.
-J1195,1196c 		if (nwins > 1) {
-			if (curwin) {
-				curwin->row = xrow;
-				curwin->off = xoff;
-				curwin->top = xtop;
-				curwin->left = xleft;
-			}
-			vi_draw_allwins();
-		} else
-			vi_drawagain(xtop);
-		term_pos((curwin ? curwin->y : 0) + xrow - xtop,
-			(curwin ? curwin->x : 0) + led_pos(lbuf_get(xb, xrow), vi_col));
-.
-J1192a 		win_init();
-.
-J1181,1185c 	xtop = xtop - _wh / 2 > xrow ? \\
-			MAX(0, xrow - _wh / 2) : xrow; \\
-if (xtop + _wh <= xrow) \\
-	xtop = xtop + _wh + _wh / 2 <= xrow ? \\
-			xrow - _wh / 2 : xrow - _wh + 1; } \\
-.
-J1177a { int _wh = win_height(); \\
-.
-J1114;25;30c win_height()
-.
-J1028;21;26c win_height()
-.
-J796,797c 		else if (*row < xtop || *row >= xtop + win_height() - 1)
-			xtop = MAX(0, *row - win_height() / 2);
-.
-J783;23;28c win_height()
-.
-J750;23;28c win_height()
-.
-J374;20;25c win_height()
-.
-J371;20;25c win_height()
-.
-J238;13;14c w
-.
-J236;21;22c w
-.
-J234;14;15c w
-.
-J230c 	int wrows = win_height();
-	term_pos(curwin ? curwin->y : 0, 0);
-.
-J225a /* draw all windows and separators */
+J.+3a /* draw all windows and separators */
 static void vi_draw_allwins(void)
 {
 	struct win *w = wins;
@@ -600,76 +568,123 @@ static void vi_draw_allwins(void)
 }
 
 .
-J222;19;20c w
+J.+5c 	int wrows = win_height();
+	term_pos(curwin ? curwin->y : 0, 0);
 .
-J220a 	int wrows = win_height();
+J.+4;14;15c w
 .
-J214c 	led_crender(s, scrrow, curwin ? curwin->x : 0, xleft, xleft + wcols)
+J.+2;21;22c w
 .
-J209;25;36c scrrow, curwin ? curwin->x :
+J.+2;13;14c w
 .
-J206;28;39c scrrow, (curwin ? curwin->x : 0) +
+J.+133;20;25c win_height()
 .
-J195c 		led_crender(s, scrrow, (curwin ? curwin->x : 0) + l1, xleft, xleft + wcols - l1)
+J.+3;20;25c win_height()
 .
-J163;25;44c scrrow, curwin ? curwin->x : 0, 0, w
+J.+376;23;28c win_height()
 .
-J143,146c 		char tmp[wcols+3], snum[32];
-		memset(tmp, ' ', wcols+1);
-		tmp[wcols+1] = '\\n';
-		tmp[wcols+2] = '\\0';
+J.+33;23;28c win_height()
 .
-J139;20;21c w
+J.+13,#+1c 		else if (*row < xtop || *row >= xtop + win_height() - 1)
+			xtop = MAX(0, *row - win_height() / 2);
 .
-J133;18;31c scrrow ==
+J.+231;21;26c win_height()
 .
-J130a 	int wrows = win_height();
-	int wcols = win_width();
-	int scrrow = win_scrrow(row);
+J.+86;25;30c win_height()
 .
-J127a /* calculate screen row for buffer row in current window */
-static int win_scrrow(int row)
-{
-	return curwin ? curwin->y + (row - xtop) : row - xtop;
-}
-
-/* calculate effective window width */
-static int win_width(void)
-{
-	return curwin ? curwin->w : xcols;
-}
-
-/* calculate effective window height (rows visible) */
-static int win_height(void)
-{
-	return curwin ? curwin->h : xrows;
-}
-
+J.+63a { int _wh = win_height(); \\\\
 .
-J120;10;11c w
+J.+4,#+4c 	xtop = xtop - _wh / 2 > xrow ? \\\\
+			MAX(0, xrow - _wh / 2) : xrow; \\\\
+if (xtop + _wh <= xrow) \\\\
+	xtop = xtop + _wh + _wh / 2 <= xrow ? \\\\
+			xrow - _wh / 2 : xrow - _wh + 1; } \\\\
 .
-J104a /* draw horizontal separator line at screen row, from x for w columns */
-static void vi_draw_hsep(int row, int x, int w)
-{
-	term_pos(row, x);
-	for (int i = 0; i < w; i++)
-		term_chr('-');
-}
-
-/* draw vertical separator line at screen column */
-static void vi_draw_vsep(int col, int y, int h)
-{
-	for (int i = 0; i < h; i++) {
-		term_pos(y + i, col);
-		term_chr('|');
-	}
-}
-
+J.+7a 		win_init();
+.
+J.+3,#+1c 		if (nwins > 1) {
+			if (curwin) {
+				curwin->row = xrow;
+				curwin->off = xoff;
+				curwin->top = xtop;
+				curwin->left = xleft;
+			}
+			vi_draw_allwins();
+		} else
+			vi_drawagain(xtop);
+		term_pos((curwin ? curwin->y : 0) + xrow - xtop,
+			(curwin ? curwin->x : 0) + led_pos(lbuf_get(xb, xrow), vi_col));
+.
+J.+47;40;45c win_height()
+.
+J.+5;39;44c win_height()
+.
+J.+19;36;41c win_height()
+.
+J.+12;36;41c win_height()
+.
+J.+2,#+1c 				if (xtop < lbuf_len(xb) - win_height())
+					xtop = MIN(lbuf_len(xb) - win_height(), xtop + n);
+.
+J.+117a 				case 'c':
+					/* switch to next window */
+					if (nwins > 1) {
+						curwin->row = xrow;
+						curwin->off = xoff;
+						curwin->top = xtop;
+						curwin->left = xleft;
+						win_switch(curwin->next);
+						vi_mod |= 1;
+					}
+					break;
+				case 'd':
+					/* close current window */
+					if (nwins > 1) {
+						win_close();
+						vi_mod |= 1;
+					}
+					break;
+.
+J.+129c 			case TK_CTL('l'): {
+				int orows = xrows, ocols = xcols;
+.
+J.+7a 				if (xrows != orows || xcols != ocols)
+					win_size();
+.
+J.+3;10c  }
+.
+J.+162,#+1c 		{ int _ww = win_width();
+		if (vi_col >= xleft + _ww || vi_col < xleft)
+			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
+.
+J.+42c 		/* save cursor position to current window */
+		if (curwin) {
+			curwin->row = xrow;
+			curwin->off = xoff;
+			curwin->top = xtop;
+			curwin->left = xleft;
+		}
+		/* always do full redraw when multiple windows are active */
+		if (nwins > 1) {
+			vi_draw_allwins();
+		} else if (vi_mod & 1 || xleft != oleft
+.
+J.+2;34c  {
+.
+J.+2,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
+				&& xrow+1 < xtop + win_height()) {
+.
+J.+7;53;58c win_height()
+.
+J.+17;11;23c (curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +
 .
 Jvis 4Jwq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! J|vis 6J412a 
+EXINIT="rcm:|sc! J|vis 6J%;f> 	long mtime;			/\\\\* modification time \\\\*/
+	signed char td;			/\\\\* text direction \\\\*/
+\\\\};J;=
+J.+2a 
 /* window management for splits */
 struct win {
 	struct buf *buf;		/* buffer displayed in this window */

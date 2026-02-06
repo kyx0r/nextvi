@@ -14,13 +14,16 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@377a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
+EXINIT="rcm:|sc! @|vis 6@%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
+	if \\\\(!\\\\(xvis & 8\\\\)\\\\)
+		ex_print\\\\(msg, bar_ft\\\\)@;=
+@.+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
-		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\n')
+		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\\\n')
 			adv++;
 		struct filetype lfts[] = {
-			{FT(sh), \"^#!.*/(env[ \\t]*)?(sh|bash|zsh|dash)([ \\t]*.*)?\$\"},
-			{FT(py), \"^#!.*/(env[ \\t]*)?python3?([ \\t]*.*)?\$\"}
+			{FT(sh), \"^#!.*/(env[ \\\\t]*)?(sh|bash|zsh|dash)([ \\\\t]*.*)?\$\"},
+			{FT(py), \"^#!.*/(env[ \\\\t]*)?python3?([ \\\\t]*.*)?\$\"}
 		};
 		char *pats[LEN(lfts)];
 		for (int i = 0; i < LEN(lfts); i++)

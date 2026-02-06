@@ -14,9 +14,36 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1606a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
+EXINIT="rcm:|sc! @|vis 6@%;f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
+\\\\{
+	char msg\\\\[512\\\\];@;=
+@.+3c 	int fd = 0, len, rd = 0, cd = 0;
+	if (!cmd)
+		goto ret;
 .
-@1605a 	if (stdin_fd) {
+@.,$;f+ 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
+		syn_setft\\\\(xb_ft\\\\);
+	\\\\}@;=
+@.+2a 	if (!loc)
+		return fd < 0 || rd ? xuerr : NULL;
+	ret:
+.
+@.,$;f+ 
+void ex_init\\\\(char \\\\*\\\\*files, int n\\\\)
+\\\\{@;=
+@.+3;19c  + !!stdin_fd
+.
+@.,$;f+ 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";@;=
+@.+1a 	int i = n;
+.
+@.,$;f+ 	do \\\\{
+		xmpt = 0;@;=
+@.+2;10c !n && stdin_fd ? NULL : 
+.
+@.,$;f+ 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+	\\\\} while \\\\(--n > 0\\\\);@;=
+@.+1a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
 		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
@@ -29,65 +56,86 @@ EXINIT="rcm:|sc! @|vis 6@1606a 	signal(SIGINT, SIG_DFL); /* got past init? ok re
 			ec_edit(\"\", NULL, \"\"); /* shebang patch compat */
 		close(0);
 		if (dup2(stdin_fd, 0) == -1) {
-			fprintf(stderr, \"error: %s\\n\", \"dup2\");
+			fprintf(stderr, \"error: %s\\\\n\", \"dup2\");
 			close(stdin_fd);
 			exit(1);
 		}
 	}
 .
-@1603;10c !n && stdin_fd ? NULL : 
-.
-@1600a 	int i = n;
-.
-@1598;19c  + !!stdin_fd
-.
-@372a 	if (!loc)
-		return fd < 0 || rd ? xuerr : NULL;
-	ret:
-.
-@354c 	int fd = 0, len, rd = 0, cd = 0;
-	if (!cmd)
-		goto ret;
+@.-1@>	xvis &= ~8;>a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@351;11;23c stdin_fd
+EXINIT="rcm:|sc! @|vis 6@%;f> unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+unsigned char \\\\*ibuf, icmd\\\\[4096\\\\];
+unsigned int texec, tn;@;=
+@.+2a int stdin_fd;
+static int isig;
 .
-@308;20;21c stdin_fd
+@.,$;f+ 	char \\\\*s;
+	term_winch = 0;
+	sbuf_make\\\\(term_sbuf, 2048\\\\)@;=
+@.+3;11;12c stdin_fd
 .
-@164,165c 				read(stdin_fd, ibuf, 1) <= 0) {
-			xquit = !isatty(stdin_fd) ? -1 : xquit;
-.
-@160a 		ufd.fd = stdin_fd;
-.
-@42;11;12c stdin_fd
-.
-@33a 	isig = 1;
-.
-@21,23c 	if (!isig && stdin_fd)
+@.-1@>	newtermios = termios;>+1,#+2c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
 	else
 		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
 	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
 .
-@19;11;12c stdin_fd
+@.,$;f+ 	\\\\}
+	xcols = xcols \\\\? xcols : 80;
+	xrows = xrows \\\\? xrows : 25;@;=
+@.+2a 	isig = 1;
 .
-@8a int stdin_fd;
-static int isig;
+@.,$;f+ 		return;
+	term_commit\\\\(\\\\);
+	sbuf_free\\\\(term_sbuf\\\\)@;=
+@.+3;11;12c stdin_fd
+.
+@.,$;f+ 			goto ret;
+		\\\\}
+		cw = 0;@;=
+@.+2a 		ufd.fd = stdin_fd;
+.
+@.,$;f+ 		re:
+		/\\\\* read a single input character \\\\*/
+		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|@;=
+@.+3,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
+			xquit = !isatty(stdin_fd) ? -1 : xquit;
+.
+@.,$;f+ 	fds\\\\[0\\\\]\\\\.events = POLLIN;
+	fds\\\\[1\\\\]\\\\.fd = ifd;
+	fds\\\\[1\\\\]\\\\.events = POLLOUT;@;=
+@.+3;20;21c stdin_fd
+.
+@.,$;f+ 		close\\\\(ifd\\\\);
+	waitpid\\\\(pid, status, 0\\\\);
+	signal\\\\(SIGTTOU, SIG_IGN\\\\);@;=
+@.+3;11;23c stdin_fd
 .
 @vis 4@wq" $VI -e 'term.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1804c 		} else if (!argv[i][1])
-			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
+EXINIT="rcm:|sc! @|vis 6@%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
+	sa\\\\.sa_handler = sighandler;
+	sigaction\\\\(SIGWINCH, &sa, NULL\\\\);@;=
+@.+2a 	sigaction(SIGINT, &sa, NULL);
 .
-@1789a 	sigaction(SIGINT, &sa, NULL);
+@.,$;f+ 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
+			i\\\\+\\\\+;
+			break;@;=
+@.+3c 		} else if (!argv[i][1])
+			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@540a extern int stdin_fd;
+EXINIT="rcm:|sc! @|vis 6@%;f> /\\\\* vi\\\\.c \\\\*/
+extern int vi_hidch;
+extern int vi_lncol;@;=
+@.+2a extern int stdin_fd;
 .
 @vis 4@wq" $VI -e 'vi.h'

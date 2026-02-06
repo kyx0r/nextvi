@@ -14,7 +14,10 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1609a 
+EXINIT="rcm:|sc! @|vis 6@%;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)
+\\\\}@;=
+@.+2a 
 void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -31,20 +34,18 @@ void ex_done(void)
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@638a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+EXINIT="rcm:|sc! @|vis 6@%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
+	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;
+	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;@;=
+@.+2a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 .
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: ren.c
-EXINIT="rcm:|sc! @|vis 6@409a 
-void syn_done(void)
-{
-	for (; ftmidx >= 0; ftmidx--)
-		rset_free(ftmap[ftmidx].rs);
-	rset_free(syn_ftrs);
-}
-.
-@92a void ren_done(void)
+EXINIT="rcm:|sc! @|vis 6@%;f> ren_state rstates\\\\[3\\\\]; /\\\\* 0 = current line, 1 = all other lines, 2 = aux rendering \\\\*/
+ren_state \\\\*rstate = rstates;
+@;=
+@.+2a void ren_done(void)
 {
 	rset_free(dir_rslr);
 	rset_free(dir_rsrl);
@@ -58,20 +59,24 @@ void syn_done(void)
 }
 
 .
+@.,$;f+ 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
+	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
+\\\\}@;=
+@.+2a 
+void syn_done(void)
+{
+	for (; ftmidx >= 0; ftmidx--)
+		rset_free(ftmap[ftmidx].rs);
+	rset_free(syn_ftrs);
+}
+.
 @vis 4@wq" $VI -e 'ren.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1834a 	vi_regdone();
-	syn_done();
-	ren_done();
-	led_done();
-.
-@1828a 	free(ibuf);
-	rset_free(fsincl);
-.
-@1827a 	ex_done();
-.
-@438a static void vi_regdone(void)
+EXINIT="rcm:|sc! @|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
+\\\\}
+@;=
+@.+2a static void vi_regdone(void)
 {
 	for (int i = 0; i < LEN(xregs); i++)
 		if (xregs[i])
@@ -79,13 +84,38 @@ EXINIT="rcm:|sc! @|vis 6@1834a 	vi_regdone();
 }
 
 .
+@.,$;f+ 		ex\\\\(\\\\);
+	else
+		vi\\\\(1\\\\);@;=
+@.+2a 	ex_done();
+.
+@.-1@>	term_done\\(\\);>a 	free(ibuf);
+	rset_free(fsincl);
+.
+@.,$;f+ 		term_pos\\\\(xrows - !vi_status, 0\\\\);
+		term_kill\\\\(\\\\);
+	\\\\}@;=
+@.+2a 	vi_regdone();
+	syn_done();
+	ren_done();
+	led_done();
+.
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@480a void ex_done(void);
+EXINIT="rcm:|sc! @|vis 6@%;f> /\\\\* text direction \\\\*/
+int dir_context\\\\(char \\\\*s\\\\);
+void dir_init\\\\(void\\\\);@;=
+@.+2a void dir_done(void);
 .
-@271a void syn_done(void);
+@.,$;f+ int syn_findhl\\\\(int id\\\\);
+int syn_addhl\\\\(char \\\\*reg, int id\\\\);
+void syn_init\\\\(void\\\\);@;=
+@.+2a void syn_done(void);
 .
-@233a void dir_done(void);
+@.,$;f+ #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
+void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);@;=
+@.+2a void ex_done(void);
 .
 @vis 4@wq" $VI -e 'vi.h'

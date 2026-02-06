@@ -14,16 +14,28 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1431a 	EO(hlm),
+EXINIT="rcm:|sc! @|vis 6@%;f> int xhlw;			/\\\\* highlight current word \\\\*/
+int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
+int xhlr;			/\\\\* highlight text in reverse direction \\\\*/@;=
+@.+2a int xhlm;			/* highlight marks */
 .
-@1339a EO(hlm)
+@.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
+EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@;=
+@.+2a EO(hlm)
 .
-@9a int xhlm;			/* highlight marks */
+@.,$;f+ 	EO\\\\(ts\\\\),
+	EO\\\\(td\\\\),
+	EO\\\\(order\\\\),@;=
+@.+2a 	EO(hlm),
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@1722a 		if (xhlm) {
+EXINIT="rcm:|sc! @|vis 6@%;f> 				word = cs;
+			\\\\}
+		\\\\}@;=
+@.+2a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";
 			led_att la;

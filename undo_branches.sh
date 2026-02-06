@@ -14,9 +14,10 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1413a 	{\"up\", ec_undoleafs},
-.
-@1322a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+EXINIT="rcm:|sc! @|vis 6@%;f> 
+static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
+@;=
+@.+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)
@@ -27,20 +28,59 @@ EXINIT="rcm:|sc! @|vis 6@1413a 	{\"up\", ec_undoleafs},
 }
 
 .
+@.,$;f+ 	\\\\{\"uc\", ec_setenc\\\\},
+	\\\\{\"uz\", ec_setenc\\\\},
+	\\\\{\"ub\", ec_setenc\\\\},@;=
+@.+2a 	{\"up\", ec_undoleafs},
+.
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@444a 		sbuf_make(lb->rehist, 128)
+EXINIT="rcm:|sc! @|vis 6@%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
+	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
+	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);@;=
+@.+2a 	sbuf_make(lb->rehist, 128)
 .
-@441,442c 		lbuf_freeleafs(lb);
-.
-@153,154c 		int i = lb->hist_n - lb->hist_u;
-		if (i) {
-			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
-			sbuf_mem(lb->rehist, lb->hist, (int)(lb->hist_n * sizeof(lb->hist[0])));
+@.,$;f+ 	return 0;
+\\\\}
+@;=
+@.+2a static void lbuf_freeleafs(struct lbuf *lb)
+{
+	char *ptr = lb->rehist->s;
+	struct lopt *hist;
+	int n, i, c;
+	sbuf *freedsb; sbuf_make(freedsb, 128)
+	for (i = 0; i < lb->hist_n; i++) {
+		sbuf_mem(freedsb, &lb->hist[i].mark, (int)sizeof(void*))
+		lopt_done(&lb->hist[i]);
+	}
+	while (lb->rehist->s_n > ptr - lb->rehist->s) {
+		n = *(int*)ptr;
+		hist = (struct lopt*)&ptr[sizeof(n)];
+		for (i = 0; i < n; i++) {
+			for (c = 0; c < freedsb->s_n; c+=sizeof(void*))
+				if (*(void**)((char*)freedsb->s + c) == hist[i].mark)
+					goto skip;
+			sbuf_mem(freedsb, &hist[i].mark, (int)sizeof(void*))
+			lopt_done(&hist[i]);
+			skip:;
 		}
+		ptr += n * sizeof(lb->hist[0]) + sizeof(n);
+	}
+	sbuf_free(lb->rehist)
+	sbuf_free(freedsb)
+}
+
 .
-@144a void lbuf_setleaf(struct lbuf *lb, int leaf)
+@.,$;f+ 	int i;
+	for \\\\(i = 0; i < lb->ln_n; i\\\\+\\\\+\\\\)
+		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);@;=
+@.+3,#+1c 	lbuf_freeleafs(lb);
+.
+@.,$;f+ 		lopt_done\\\\(lo\\\\);
+\\\\}
+@;=
+@.+2a void lbuf_setleaf(struct lbuf *lb, int leaf)
 {
 	char *ptr1 = lb->rehist->s, *ptr2;
 	int n, i, off = -1;
@@ -90,7 +130,7 @@ char *lbuf_getleafs(struct lbuf *lb)
 		*bptr++ = '=';
 		bptr = itoa(n, bptr);
 		*bptr++ = '|';
-		*bptr++ = '\\0';
+		*bptr++ = '\\\\0';
 		sbuf_str(sb, buf);
 		ptr += n * sizeof(lb->hist[0]) + sizeof(lb->hist_n);
 	}
@@ -98,44 +138,36 @@ char *lbuf_getleafs(struct lbuf *lb)
 }
 
 .
-@67,68c 	lbuf_freeleafs(lb);
-.
-@61a static void lbuf_freeleafs(struct lbuf *lb)
-{
-	char *ptr = lb->rehist->s;
-	struct lopt *hist;
-	int n, i, c;
-	sbuf *freedsb; sbuf_make(freedsb, 128)
-	for (i = 0; i < lb->hist_n; i++) {
-		sbuf_mem(freedsb, &lb->hist[i].mark, (int)sizeof(void*))
-		lopt_done(&lb->hist[i]);
-	}
-	while (lb->rehist->s_n > ptr - lb->rehist->s) {
-		n = *(int*)ptr;
-		hist = (struct lopt*)&ptr[sizeof(n)];
-		for (i = 0; i < n; i++) {
-			for (c = 0; c < freedsb->s_n; c+=sizeof(void*))
-				if (*(void**)((char*)freedsb->s + c) == hist[i].mark)
-					goto skip;
-			sbuf_mem(freedsb, &hist[i].mark, (int)sizeof(void*))
-			lopt_done(&hist[i]);
-			skip:;
+@.,$;f+ 	if \\\\(xseq < 0\\\\)
+		lo = &slo;
+	else \\\\{@;=
+@.+3,#+1c 		int i = lb->hist_n - lb->hist_u;
+		if (i) {
+			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
+			sbuf_mem(lb->rehist, lb->hist, (int)(lb->hist_n * sizeof(lb->hist[0])));
 		}
-		ptr += n * sizeof(lb->hist[0]) + sizeof(n);
-	}
-	sbuf_free(lb->rehist)
-	sbuf_free(freedsb)
-}
-
 .
-@5a 	sbuf_make(lb->rehist, 128)
+@.,$;f+ void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
+\\\\{
+	if \\\\(clear\\\\) \\\\{@;=
+@.+3,#+1c 		lbuf_freeleafs(lb);
+.
+@.,$;f+ 		lb->hist_n = 0;
+		lb->hist_u = 0;@;=
+@.+1a 		sbuf_make(lb->rehist, 128)
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@191a void lbuf_setleaf(struct lbuf *lb, int leaf);
-char *lbuf_getleafs(struct lbuf *lb);
+EXINIT="rcm:|sc! @|vis 6@%;f> struct lbuf \\\\{
+	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
+	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/@;=
+@.+2a 	sbuf *rehist;		/* alternate redo timelines */
 .
-@152a 	sbuf *rehist;		/* alternate redo timelines */
+@.,$;f+ int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);
+int lbuf_search\\\\(struct lbuf \\\\*lb, rset \\\\*re, int dir, int beg, int end, int pskip,
+		int nskip, int \\\\*r, int \\\\*o\\\\);@;=
+@.+2a void lbuf_setleaf(struct lbuf *lb, int leaf);
+char *lbuf_getleafs(struct lbuf *lb);
 .
 @vis 4@wq" $VI -e 'vi.h'

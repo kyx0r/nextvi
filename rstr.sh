@@ -14,69 +14,78 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1212;23;27c tr_
+EXINIT="rcm:|sc! @|vis 6@%;f> int xpln;			/\\\\* tracks newline from ex print and pipe stdout \\\\*/
+int xsep = ':';			/\\\\* ex command separator \\\\*/
+sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/@;=
+@.+3;2;4c tr
 .
-@1209;3;5c tr
-.
-@1118;3;5c tr
-.
-@1109;8;10c tr
-.
-@1099;9;13c tr_
-.
-@1097;9;13c tr_
-.
-@1089;3;5c tr
-.
-@1031;4;6c tr
-.
-@1000;20;29c (rs->rs ? rs->rs->nsubc : 2)
-.
-@985;11;13c tr
-.
-@981;14;19c rs ? rs->rs->nsubc : 2
-.
-@971;9;13c tr_
-.
-@964;3;5c tr
-.
-@520;8;10c tr
-.
-@511;19;24c rs ? xkwdrs->rs->nsubc : 2
-.
-@496;3;5c tr
-.
-@487;4;6c tr
-.
-@460;4;6c tr
-.
-@422;10;12c tr
-.
-@415;43;50c 
-.
-@413;9;13c tr_
-.
-@383;3;5c tr
-.
-@178,180c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
+@.+140,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 .
-@38;2;4c tr
+@.+203;3;5c tr
+.
+@.+30;9;13c tr_
+.
+@.+2;43;50c 
+.
+@.+7;10;12c tr
+.
+@.+38;4;6c tr
+.
+@.+27;4;6c tr
+.
+@.+9;3;5c tr
+.
+@.+15;19;24c rs ? xkwdrs->rs->nsubc : 2
+.
+@.+9;8;10c tr
+.
+@.+444;3;5c tr
+.
+@.+7;9;13c tr_
+.
+@.+10;14;19c rs ? rs->rs->nsubc : 2
+.
+@.+4;11;13c tr
+.
+@.+15;20;29c (rs->rs ? rs->rs->nsubc : 2)
+.
+@.+31;4;6c tr
+.
+@.+58;3;5c tr
+.
+@.+8;9;13c tr_
+.
+@.+2;9;13c tr_
+.
+@.+10;8;10c tr
+.
+@.+9;3;5c tr
+.
+@.+91;3;5c tr
+.
+@.+3;23;27c tr_
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@499;11;13c tr
+EXINIT="rcm:|sc! @|vis 6@%;f> 	return n != 0;
+\\\\}
+@;=
+@.+3;35;37c tr
 .
-@486;14;19c rs ? re->rs->nsubc : 2
+@.+4;14;19c rs ? re->rs->nsubc : 2
 .
-@482;35;37c tr
+@.+13;11;13c tr
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@766a 
+EXINIT="rcm:|sc! @|vis 6@%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
+	sbufn_ret\\\\(sb, sb->s\\\\)
+\\\\}@;=
+@.+2a 
 /* return zero if a simple pattern is given */
 static int rstr_simple(rstr *rs, char *re, int icase)
 {
@@ -87,14 +96,14 @@ static int rstr_simple(rstr *rs, char *re, int icase)
 	rs->lbeg = re[0] == '^';
 	if (rs->lbeg)
 		re++;
-	rs->wbeg = re[0] == '\\\\' && re[1] == '<';
+	rs->wbeg = re[0] == '\\\\\\\\' && re[1] == '<';
 	if (rs->wbeg)
 		re += 2;
 	beg = re;
-	while (re[0] && !strchr(\"\\\\.*+?[]{}()\$\", (unsigned char) re[0]))
+	while (re[0] && !strchr(\"\\\\\\\\.*+?[]{}()\$\", (unsigned char) re[0]))
 		re++;
 	end = re;
-	rs->wend = re[0] == '\\\\' && re[1] == '>';
+	rs->wend = re[0] == '\\\\\\\\' && re[1] == '>';
 	if (rs->wend)
 		re += 2;
 	rs->lend = re[0] == '\$';
@@ -104,7 +113,7 @@ static int rstr_simple(rstr *rs, char *re, int icase)
 		int len = end - beg;
 		rs->len = len;
 		rs->str = emalloc(len + 1);
-		rs->str[len] = '\\0';
+		rs->str[len] = '\\\\0';
 		if (icase) {
 			while (--len >= 0)
 				rs->str[len] = tolower((unsigned char)beg[len]);
@@ -129,39 +138,39 @@ rstr *rstr_make(char *re, int flg)
 	return rs;
 }
 
-#define rstr_cmp(gen, wbeg, wend, cmpcase) \\
-wbeg wend \\
-m = rs->str; t = r; \\
-for (; *m && *t; t++, m++) { \\
-	if (cmpcase) \\
-		goto break##gen; \\
-} \\
-if (!*m) { \\
-	if (grps) { \\
-		grps[0] = r - s; \\
-		grps[1] = r - s + len; \\
-	} \\
-	return 0; \\
-} \\
-break##gen:; \\
+#define rstr_cmp(gen, wbeg, wend, cmpcase) \\\\
+wbeg wend \\\\
+m = rs->str; t = r; \\\\
+for (; *m && *t; t++, m++) { \\\\
+	if (cmpcase) \\\\
+		goto break##gen; \\\\
+} \\\\
+if (!*m) { \\\\
+	if (grps) { \\\\
+		grps[0] = r - s; \\\\
+		grps[1] = r - s + len; \\\\
+	} \\\\
+	return 0; \\\\
+} \\\\
+break##gen:; \\\\
 
-#define rstr_match1(gen, wbeg, wend, cmpcase) \\
-{ for (r = beg; r <= end; r++) { \\
-	rstr_cmp(2##gen, wbeg, wend, cmpcase) \\
-} } \\
+#define rstr_match1(gen, wbeg, wend, cmpcase) \\\\
+{ for (r = beg; r <= end; r++) { \\\\
+	rstr_cmp(2##gen, wbeg, wend, cmpcase) \\\\
+} } \\\\
 
 #define _wbeg if (r > s && (isword(r - 1) || !isword(r))) continue;
 #define _wend if (r[len] && (!isword(r + len - 1) || isword(r + len))) continue;
 
-#define template(gen, cmpcase) \\
-if (!rs->wbeg && !rs->wend) \\
-	rstr_match1(1##gen, /*nop*/, /*nop*/, cmpcase) \\
-else if (rs->wbeg && !rs->wend) \\
-	rstr_match1(2##gen, _wbeg, /*nop*/, cmpcase) \\
-else if (!rs->wbeg && rs->wend) \\
-	rstr_match1(3##gen, /*nop*/, _wend, cmpcase) \\
-else \\
-	rstr_match1(4##gen, _wbeg, _wend, cmpcase) \\
+#define template(gen, cmpcase) \\\\
+if (!rs->wbeg && !rs->wend) \\\\
+	rstr_match1(1##gen, /*nop*/, /*nop*/, cmpcase) \\\\
+else if (rs->wbeg && !rs->wend) \\\\
+	rstr_match1(2##gen, _wbeg, /*nop*/, cmpcase) \\\\
+else if (!rs->wbeg && rs->wend) \\\\
+	rstr_match1(3##gen, /*nop*/, _wend, cmpcase) \\\\
+else \\\\
+	rstr_match1(4##gen, _wbeg, _wend, cmpcase) \\\\
 
 /* return zero if an occurrence is found */
 int rstr_find(rstr *rs, char *s, int *grps, int flg)
@@ -212,29 +221,20 @@ void rstr_free(rstr *rs)
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@479;21;23c tr
+EXINIT="rcm:|sc! @|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
+\\\\}
+@;=
+@.+3;2;4c tr
 .
-@439;2;4c tr
+@.+40;21;23c tr
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@542;9;11c tr
-.
-@481;13;15c tr
-.
-@448;9;11c tr
-.
-@191a 
-.
-@190;35;37c tr
-.
-@132a rstr *rstr_make(char *re, int flg);
-int rstr_find(rstr *rs, char *s, int *grps, int flg);
-int rstr_match(rstr *rs, char *s, int flg);
-void rstr_free(rstr *rs);
-.
-@125a typedef struct {
+EXINIT="rcm:|sc! @|vis 6@%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
+	int n;			/\\\\* number of regular expressions in this set \\\\*/
+\\\\} rset;@;=
+@.+2a typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */
 	int len;		/* str length */
@@ -242,5 +242,20 @@ void rstr_free(rstr *rs);
 	int lbeg, lend;		/* match line beg/end */
 	int wbeg, wend;		/* match word beg/end */
 } rstr;
+.
+@.+7a rstr *rstr_make(char *re, int flg);
+int rstr_find(rstr *rs, char *s, int *grps, int flg);
+int rstr_match(rstr *rs, char *s, int flg);
+void rstr_free(rstr *rs);
+.
+@.+58;35;37c tr
+.
+@.+1a 
+.
+@.+257;9;11c tr
+.
+@.+33;13;15c tr
+.
+@.+61;9;11c tr
 .
 @vis 4@wq" $VI -e 'vi.h'

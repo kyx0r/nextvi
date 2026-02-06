@@ -14,37 +14,65 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@551,552c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
-				if (suggestsb && search(sb, is->lsug, pre)) {
+EXINIT="rcm:|sc! @|vis 6@%;f> 	return i-s;
+\\\\}
+@;=
+@.+3c static int search(sbuf *sb, int l, int pre)
 .
-@537;16;46c , is->lsug, pre
+@.-1@>\\{>+1c 	if (!sb->s[l])
 .
-@531,532c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
-				sbuf_cut(sb, MAX(is->lsug+i, pre))
-				sbuf_str(sb, is->sug+i)
+@.,$;f+ 		return 0;
+	sbuf_cut\\\\(suggestsb, 0\\\\)
+	sbuf_smake\\\\(sylsb, 1024\\\\)@;=
+@.+3c 	again:;
+	char *part = strstr(acsb->s, sb->s+l);
 .
-@520;63;76c )
+@.,$;f+ 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
+			part--;
+		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);@;=
+@.+3;15c sb->s_n - 
 .
-@412a 	if (ai_max >= 0 && xpac) {
-		c = 0;
-		goto pac;
-	}
+@.,$;f+ 			if \\\\(part == part1\\\\)
+				sbuf_mem\\\\(suggestsb, part, len\\\\)@;=
+@.+2;7c  if (l >= pre)
 .
-@32c 		part = strstr(part+len, sb->s+l);
+@.,$;f+ 				sbuf_mem\\\\(sylsb, part, len\\\\)
+		\\\\}@;=
+@.+2c 		part = strstr(part+len, sb->s+l);
 	}
 	if (l < pre && sb->s[pre]) {
 		l = pre;
 		goto again;
 .
-@29;7c  if (l >= pre)
+@.,$;f+ \\\\{
+	char \\\\*cs;
+	int len, c, i;@;=
+@.+2a 	if (ai_max >= 0 && xpac) {
+		c = 0;
+		goto pac;
+	}
 .
-@26;15c sb->s_n - 
+@.,$;f+ 		case TK_CTL\\\\('n'\\\\):
+			if \\\\(!suggestsb\\\\)
+				continue;@;=
+@.+3;63;76c )
 .
-@20c 	again:;
-	char *part = strstr(acsb->s, sb->s+l);
+@.,$;f+ 				\\\\}
+				suggest:
+				\\\\*is->_sug = '\\\\\\\\0';@;=
+@.+3,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
+				sbuf_cut(sb, MAX(is->lsug+i, pre))
+				sbuf_str(sb, is->sug+i)
 .
-@16c 	if (!sb->s[l])
+@.,$;f+ 				continue;
+			\\\\}
+			lookup:@;=
+@.+3;16;46c , is->lsug, pre
 .
-@14c static int search(sbuf *sb, int l, int pre)
+@.,$;f+ 				int r = crow-ctop\\\\+1;
+				if \\\\(is->sug\\\\)
+					goto pac_;@;=
+@.+3,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
+				if (suggestsb && search(sb, is->lsug, pre)) {
 .
 @vis 4@wq" $VI -e 'led.c'
