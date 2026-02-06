@@ -802,6 +802,10 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 	char *o, *ln;
 	if (!*cmd && !*loc && *arg)
 		return "unknown command";
+	if (*cmd && *arg) {
+		ex_print(arg, msg_ft)
+		return NULL;
+	}
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	if (o1 >= 0)
