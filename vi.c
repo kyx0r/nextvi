@@ -1591,7 +1591,7 @@ void vi(int init)
 						vi_col = vi_off2col(xb, xrow, xoff+1);
 						if (vi_col <= n)
 							break;
-						if (ex_exec("?f>[^ \t]*[ \t]+(\\?\\\\:.$|(.))?;c\n\x1b"))
+						if (ex_exec("f>[^ \t]*[ \t]+(?\\:.$|(.)):??;c\n\x1b"))
 							break;
 					}
 					restore(xled)
