@@ -243,6 +243,8 @@ static void emit_escaped_line(FILE *out, const char *s)
 	}
 }
 
+static void emit_escaped_text(FILE *out, const char *s);
+
 /* Emit ex commands for inserting text after line N */
 static void emit_insert_after(FILE *out, int line, char **texts, int ntexts, int sep)
 {
@@ -251,7 +253,7 @@ static void emit_insert_after(FILE *out, int line, char **texts, int ntexts, int
 
 	fprintf(out, "%da ", line);
 	for (int i = 0; i < ntexts; i++) {
-		emit_escaped_line(out, texts[i]);
+		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
 	fprintf(out, ".\n%c", sep);
@@ -274,7 +276,7 @@ static void emit_horizontal_change(FILE *out, int line, int char_start, int char
 		fprintf(out, "%d;%dc ", line, char_start);
 	else
 		fprintf(out, "%d;%d;%dc ", line, char_start, char_end);
-	emit_escaped_line(out, new_text);
+	emit_escaped_text(out, new_text);
 	fprintf(out, "\n.\n%c", sep);
 }
 
@@ -292,7 +294,7 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, i
 		fprintf(out, "%d,%dc ", from, to);
 
 	for (int i = 0; i < ntexts; i++) {
-		emit_escaped_line(out, texts[i]);
+		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
 	fprintf(out, ".\n%c", sep);
@@ -354,6 +356,16 @@ static char *escape_exarg(const char *s)
 	}
 	*dst = '\0';
 	return result;
+}
+
+/* Emit text that passes through ex_arg then shell double-quotes.
+ * ex_arg consumes \\ -> \, so backslashes need doubling for ex_arg,
+ * then doubling again for shell. */
+static void emit_escaped_text(FILE *out, const char *s)
+{
+	char *exarg_esc = escape_exarg(s);
+	emit_escaped_line(out, exarg_esc);
+	free(exarg_esc);
 }
 
 /* Write a regex-escaped string with ex_arg + shell escaping.
@@ -529,7 +541,7 @@ static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
 		fprintf(out, "a ");
 	}
 	for (int i = 0; i < ntexts; i++) {
-		emit_escaped_line(out, texts[i]);
+		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
 	fprintf(out, ".\n%c", sep);
@@ -560,7 +572,7 @@ static void emit_relative_change(FILE *out, rel_ctx_t *rc,
 	}
 
 	for (int i = 0; i < ntexts; i++) {
-		emit_escaped_line(out, texts[i]);
+		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
 	fprintf(out, ".\n%c", sep);
@@ -576,7 +588,7 @@ static void emit_relative_horizontal(FILE *out, rel_ctx_t *rc,
 		fprintf(out, ";%dc ", char_start);
 	else
 		fprintf(out, ";%d;%dc ", char_start, char_end);
-	emit_escaped_line(out, new_text);
+	emit_escaped_text(out, new_text);
 	fprintf(out, "\n.\n%c", sep);
 }
 
