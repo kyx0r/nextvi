@@ -325,12 +325,44 @@ typedef struct {
 /* Write a regex-escaped string with shell double-quote escaping.
  * escape_regex handles regex metacharacters, then emit_escaped_line
  * handles shell special chars (\, $, `, ") so backslashes survive
- * the shell's double-quote processing. */
+ * the shell's double-quote processing.
+ * Used for patterns parsed by re_read (>pattern> searches). */
 static void emit_escaped_regex(FILE *out, const char *s)
 {
 	char *escaped = escape_regex(s);
 	emit_escaped_line(out, escaped);
 	free(escaped);
+}
+
+/* Double backslashes for ex_arg level escaping.
+ * ex_arg treats \\ as escaped \, so \\\\ is needed to preserve \\. */
+static char *escape_exarg(const char *s)
+{
+	int len = strlen(s);
+	int extra = 0;
+	for (const char *p = s; *p; p++)
+		if (*p == '\\') extra++;
+	char *result = malloc(len + extra + 1);
+	char *dst = result;
+	for (const char *p = s; *p; p++) {
+		if (*p == '\\')
+			*dst++ = '\\';
+		*dst++ = *p;
+	}
+	*dst = '\0';
+	return result;
+}
+
+/* Write a regex-escaped string with ex_arg + shell escaping.
+ * Three layers: regex metachar escaping → ex_arg \\ escaping → shell escaping.
+ * Used for patterns parsed by ex_arg (f>/f+ multiline search). */
+static void emit_escaped_regex_exarg(FILE *out, const char *s)
+{
+	char *regex_esc = escape_regex(s);
+	char *exarg_esc = escape_exarg(regex_esc);
+	emit_escaped_line(out, exarg_esc);
+	free(exarg_esc);
+	free(regex_esc);
 }
 
 /* Emit forward single-line search position (no leading 1<sep>) */
@@ -352,7 +384,7 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 {
 	fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
 	for (int i = 0; i < nanchors; i++) {
-		emit_escaped_regex(out, anchors[i]);
+		emit_escaped_regex_exarg(out, anchors[i]);
 		if (i < nanchors - 1)
 			fputc('\n', out);  /* literal newline between context lines */
 	}
@@ -410,7 +442,7 @@ static void emit_cond_search(FILE *out, rel_ctx_t *rc, int sep, int first)
 	if (rc->nanchors >= 2) {
 		fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
 		for (int i = 0; i < rc->nanchors; i++) {
-			emit_escaped_regex(out, rc->anchors[i]);
+			emit_escaped_regex_exarg(out, rc->anchors[i]);
 			if (i < rc->nanchors - 1)
 				fputc('\n', out);
 		}
