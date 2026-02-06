@@ -14,10 +14,10 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1410a 	{\"sr\", ec_script},
+EXINIT="rcm:|sc! @|vis 6@1414a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 .
-@1316a static void *ec_script(char *loc, char *cmd, char *arg)
+@1320a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
 	char buf[100];

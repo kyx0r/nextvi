@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1395a 	EO(rec),
+EXINIT="rcm:|sc! @|vis 6@1399a 	EO(rec),
 .
-@1333a EO(rec)
+@1337a EO(rec)
 .
 @25a int xrec;			/* input recoding register */
 .
@@ -33,6 +33,6 @@ EXINIT="rcm:|sc! @|vis 6@178a 		if (xrec && *ibuf) {
 @vis 4@wq" $VI -e 'term.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@434a extern int xrec;
+EXINIT="rcm:|sc! @|vis 6@435a extern int xrec;
 .
 @vis 4@wq" $VI -e 'vi.h'

@@ -68,6 +68,6 @@ EXINIT="rcm:|sc! @|vis 6@1444a 			case TK_CTL('o'):
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@179a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
+EXINIT="rcm:|sc! @|vis 6@180a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
 .
 @vis 4@wq" $VI -e 'vi.h'

@@ -14,31 +14,31 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1206;23;27c tr_
+EXINIT="rcm:|sc! @|vis 6@1210;23;27c tr_
 .
-@1203;3;5c tr
+@1207;3;5c tr
 .
-@1113;3;5c tr
+@1117;3;5c tr
 .
-@1104;8;10c tr
+@1108;8;10c tr
 .
-@1094;9;13c tr_
+@1098;9;13c tr_
 .
-@1092;9;13c tr_
+@1096;9;13c tr_
 .
-@1084;3;5c tr
+@1088;3;5c tr
 .
-@1026;4;6c tr
+@1030;4;6c tr
 .
-@995;20;29c (rs->rs ? rs->rs->nsubc : 2)
+@999;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
-@980;11;13c tr
+@984;11;13c tr
 .
-@976;14;19c rs ? rs->rs->nsubc : 2
+@980;14;19c rs ? rs->rs->nsubc : 2
 .
-@966;9;13c tr_
+@970;9;13c tr_
 .
-@959;3;5c tr
+@963;3;5c tr
 .
 @519;8;10c tr
 .
@@ -219,22 +219,22 @@ EXINIT="rcm:|sc! @|vis 6@479;21;23c tr
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@541;9;11c tr
+EXINIT="rcm:|sc! @|vis 6@542;9;11c tr
 .
-@480;13;15c tr
+@481;13;15c tr
 .
-@447;9;11c tr
+@448;9;11c tr
 .
-@190a 
+@191a 
 .
-@189;35;37c tr
+@190;35;37c tr
 .
-@131a rstr *rstr_make(char *re, int flg);
+@132a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
 .
-@124a typedef struct {
+@125a typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */
 	int len;		/* str length */

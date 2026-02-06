@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1600a 
+EXINIT="rcm:|sc! @|vis 6@1604a 
 void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -82,10 +82,10 @@ EXINIT="rcm:|sc! @|vis 6@1834a 	vi_regdone();
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@479a void ex_done(void);
+EXINIT="rcm:|sc! @|vis 6@480a void ex_done(void);
 .
-@270a void syn_done(void);
+@271a void syn_done(void);
 .
-@232a void dir_done(void);
+@233a void dir_done(void);
 .
 @vis 4@wq" $VI -e 'vi.h'

@@ -138,7 +138,7 @@ EXINIT="rcm:|sc! @|vis 6@15a #include <pthread.h>
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@273c extern unsigned char _utf8_length[256];
+EXINIT="rcm:|sc! @|vis 6@274c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 .
 @vis 4@wq" $VI -e 'vi.h'

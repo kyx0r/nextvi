@@ -107,7 +107,7 @@ EXINIT="rcm:|sc! @|vis 6@229,231c 	long nr, l, nins = 0, nl = 0;
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@168c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
+EXINIT="rcm:|sc! @|vis 6@169c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
 .
 @vis 4@wq" $VI -e 'vi.h'

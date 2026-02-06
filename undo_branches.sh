@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1405a 	{\"up\", ec_undoleafs},
+EXINIT="rcm:|sc! @|vis 6@1409a 	{\"up\", ec_undoleafs},
 .
-@1316a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+@1320a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)
@@ -133,9 +133,9 @@ char *lbuf_getleafs(struct lbuf *lb)
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@190a void lbuf_setleaf(struct lbuf *lb, int leaf);
+EXINIT="rcm:|sc! @|vis 6@191a void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
 .
-@151a 	sbuf *rehist;		/* alternate redo timelines */
+@152a 	sbuf *rehist;		/* alternate redo timelines */
 .
 @vis 4@wq" $VI -e 'vi.h'

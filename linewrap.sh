@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1431a 	{\"lw\", ec_linewrap},
+EXINIT="rcm:|sc! @|vis 6@1435a 	{\"lw\", ec_linewrap},
 .
-@1316a static void *ec_linewrap(char *loc, char *cmd, char *arg)
+@1320a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
 	if (xb->modified)
@@ -186,9 +186,9 @@ EXINIT="rcm:|sc! @|vis 6@171a 	if (xlw && s) {
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@434a extern int xlw;
+EXINIT="rcm:|sc! @|vis 6@435a extern int xlw;
 .
-@147a 	char *lw_prev;
+@148a 	char *lw_prev;
 	char *lw_next;
 .
 @vis 4@wq" $VI -e 'vi.h'

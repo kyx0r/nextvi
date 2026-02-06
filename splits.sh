@@ -19,7 +19,7 @@ EXINIT="rcm:|sc! J|vis 6J261c |[@&!=dmj]|\\\\?!?||b[psx]?|p[uh]?|ac?|eq|e[f!]?!?
 Jvis 4Jwq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! J|vis 6J1586a /* window management functions */
+EXINIT="rcm:|sc! J|vis 6J1590a /* window management functions */
 static void curwin_save(void)
 {
 	if (curwin) {
@@ -252,14 +252,14 @@ void *win_split(int vertical, char *arg)
 }
 
 .
-J1432dJ1410a 	{\"sp\", ec_split},
+J1436dJ1414a 	{\"sp\", ec_split},
 .
-J1406a 	EO(vis),
+J1410a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
-J1372a 	{\"eq\", ec_equalize},
+J1376a 	{\"eq\", ec_equalize},
 .
-J1344a static void *ec_split(char *loc, char *cmd, char *arg)
+J1348a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
 }
@@ -669,7 +669,7 @@ static void vi_draw_vsep(int col, int y, int h)
 Jvis 4Jwq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! J|vis 6J411a 
+EXINIT="rcm:|sc! J|vis 6J412a 
 /* window management for splits */
 struct win {
 	struct buf *buf;		/* buffer displayed in this window */
