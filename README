@@ -472,10 +472,11 @@ EX COMMANDS
 
              Argument resets undo/redo history
 
-     [range]p
+     [range]p[str]
              Print line(s) from a buffer
 
              No range prints a line based on the value of left ex option.
+             Argument prints the evaluated argument.
 
              Example: utilize character offset ranges
              :1,10;5;5p
@@ -483,6 +484,8 @@ EX COMMANDS
              :1;5,10;5p
              Example: print current line from offset 5 to 10
              :.;5;10p
+             Example: print buffer pathname
+             :p %
 
      [vrange]ef[regex]
              Open file using fuzzy search prompt
@@ -1181,18 +1184,18 @@ SPECIAL REGISTERS
 CODE MAP
      +--------------+----------------------+
      | 537 kmap.h   |  keymap translation  |
-     | 543 vi.h     |  definitions/aux     |
+     | 544 vi.h     |  definitions/aux     |
      +--------------+----------------------+
      | 332 conf.c   |  hl/ft/td config     |
-     | 359 term.c   |  low level IO        |
+     | 361 term.c   |  low level IO        |
      | 409 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
      | 654 lbuf.c   |  file/line buffer    |
      | 718 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1600 ex.c    |  ex options/commands |
+     | 1604 ex.c    |  ex options/commands |
      | 1836 vi.c    |  normal mode/general |
-     | 7288 total   |  wc -l *.c|sort      |
+     | 7294 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1264,4 +1267,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 5, 2026                     Nextvi 4.0
+Nextvi 4.0                     February 6, 2026                     Nextvi 4.0
