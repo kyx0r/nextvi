@@ -970,17 +970,17 @@ Example: edit vi.c only if it exists
 .It Cm [\fIcount\fP <\fI$\fP>]?!{\fIcond\fP}[<\fI?\fP>][\fIelse\fP][<\fI?\fP>][\fIthen\fP]
 Inverted while loop conditional
 
-.It Cm [\fIcount\fP <\fI$\fP>]??{\fIthen\fP}[<\fI?\fP>][\fIelse\fP]
-Quested while loop conditional
+.It Cm ??{\fIthen\fP}[<\fI?\fP>][\fIelse\fP]
+Conditional
 .Bd -literal
-Unlike regular conditional, branching depends on the error
+Unlike while loop conditional, branching depends on the error
 status of the last command.
-This can be used to make single conditionals a lot cleaner reducing 
+This can be used to make single conditionals a lot cleaner reducing
 the amount of escapes required.
 .Ed
 
-.It Cm [\fIcount\fP <\fI$\fP>]??{\fIelse\fP}[<\fI?\fP>][\fIthen\fP]
-Inverted quested while loop conditional
+.It Cm ??!{\fIelse\fP}[<\fI?\fP>][\fIthen\fP]
+Inverted conditional
 
 .It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
 Paste or pipe a register

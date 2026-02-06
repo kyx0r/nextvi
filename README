@@ -697,16 +697,16 @@ EX COMMANDS
      [count <$>]?!{cond}[<?>][else][<?>][then]
              Inverted while loop conditional
 
-     [count <$>]??{then}[<?>][else]
-             Quested while loop conditional
+     ??{then}[<?>][else]
+             Conditional
 
-             Unlike regular conditional, branching depends on the error
+             Unlike while loop conditional, branching depends on the error
              status of the last command.
              This can be used to make single conditionals a lot cleaner reducing
              the amount of escapes required.
 
-     [count <$>]??{else}[<?>][then]
-             Inverted quested while loop conditional
+     ??!{else}[<?>][then]
+             Inverted conditional
 
      [range]pu[<reg>][*][\!{cmd}]
              Paste or pipe a register
