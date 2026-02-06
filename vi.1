@@ -970,6 +970,18 @@ Example: edit vi.c only if it exists
 .It Cm [\fIcount\fP <\fI$\fP>]?!{\fIcond\fP}[<\fI?\fP>][\fIelse\fP][<\fI?\fP>][\fIthen\fP]
 Inverted while loop conditional
 
+.It Cm [\fIcount\fP <\fI$\fP>]??{\fIthen\fP}[<\fI?\fP>][\fIelse\fP]
+Quested while loop conditional
+.Bd -literal
+Unlike regular conditional, branching depends on the error
+status of the last command.
+This can be used to make single conditionals a lot cleaner reducing 
+the amount of escapes required.
+.Ed
+
+.It Cm [\fIcount\fP <\fI$\fP>]??{\fIelse\fP}[<\fI?\fP>][\fIthen\fP]
+Inverted quested while loop conditional
+
 .It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
 Paste or pipe a register
 .Bd -literal
@@ -1591,9 +1603,9 @@ _
  654 lbuf.c | file/line buffer
  718 led.c | insert mode/output
  766 regex.c | pikevm
- 1604 ex.c | ex options/commands
+ 1609 ex.c | ex options/commands
  1836 vi.c | normal mode/general
- 7294 total | wc -l *.c\(basort
+ 7299 total | wc -l *.c\(basort
 _
 .TE
 .

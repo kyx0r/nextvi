@@ -697,6 +697,17 @@ EX COMMANDS
      [count <$>]?!{cond}[<?>][else][<?>][then]
              Inverted while loop conditional
 
+     [count <$>]??{then}[<?>][else]
+             Quested while loop conditional
+
+             Unlike regular conditional, branching depends on the error
+             status of the last command.
+             This can be used to make single conditionals a lot cleaner reducing
+             the amount of escapes required.
+
+     [count <$>]??{else}[<?>][then]
+             Inverted quested while loop conditional
+
      [range]pu[<reg>][*][\!{cmd}]
              Paste or pipe a register
 
@@ -1193,9 +1204,9 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 718 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1604 ex.c    |  ex options/commands |
+     | 1609 ex.c    |  ex options/commands |
      | 1836 vi.c    |  normal mode/general |
-     | 7294 total   |  wc -l *.c|sort      |
+     | 7299 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
