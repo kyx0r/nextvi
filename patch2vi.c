@@ -451,10 +451,6 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
 			fprintf(out, ".%d", rc->offset_val);
 		return 0;
 	}
-	if (rc->backstep) {
-		/* Back up one line so >pattern> search includes current line */
-		fprintf(out, ".-%d%c", 1, sep);
-	}
 	if (rc->nanchors >= 2) {
 		/* Multiline: f>/f+ search, then .+offset as position for next command */
 		int offset = rc->nanchors + rc->anchor_offset - 1;
@@ -463,10 +459,14 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
 		return 1;
 	}
 	if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
+		if (rc->backstep)
+			fprintf(out, ".-%d%c", 1, sep);
 		emit_fwd_pos(out, rc->anchors[0], rc->anchor_offset, sep);
 		return 0;
 	}
 	if (rc->follow_ctx && rc->follow_ctx[0]) {
+		if (rc->backstep)
+			fprintf(out, ".-%d%c", 1, sep);
 		emit_follow_pos(out, rc->follow_ctx, rc->follow_offset, sep);
 		return 0;
 	}
