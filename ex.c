@@ -1487,7 +1487,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			}
 		} else {
 			if (*src == '\\' && (src[1] == xsep || src[1] == xexp
-					|| src[1] == xexe) && src[1])
+					|| src[1] == xexe || src[1] == '\\') && src[1])
 				src++;
 			sbuf_chr(sb, *src++)
 		}
