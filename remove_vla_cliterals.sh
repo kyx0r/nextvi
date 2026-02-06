@@ -19,13 +19,13 @@ EXINIT="rcm:|sc! @|vis 6@55;15;22c
 @vis 4@wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1031a 	free(offs);
+EXINIT="rcm:|sc! @|vis 6@1032a 	free(offs);
 .
-@980c 	int *offs = emalloc(rs->nsubc * sizeof(int));
+@981c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 .
-@523a 		free(offs);
+@524a 		free(offs);
 .
-@510c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
+@511c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 		int flg = 0, soff = 0;
 .
 @vis 4@wq" $VI -e 'ex.c'

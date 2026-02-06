@@ -14,9 +14,9 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1422a 	{\"cx\", ec_closebuf},
+EXINIT="rcm:|sc! @|vis 6@1426a 	{\"cx\", ec_closebuf},
 .
-@1328a static void *ec_closebuf(char *loc, char *cmd, char *arg)
+@1330a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
 	int istmp = istempbuf(ex_buf);

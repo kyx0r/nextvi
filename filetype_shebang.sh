@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@376a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
+EXINIT="rcm:|sc! @|vis 6@377a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\n')
 			adv++;

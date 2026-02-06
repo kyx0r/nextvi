@@ -14,12 +14,12 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! J|vis 6J261c |[@&!=dmj]|\\\\?!?||b[psx]?|p[uh]?|ac?|eq|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\\
+EXINIT="rcm:|sc! J|vis 6J261;47;77c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
 .
 Jvis 4Jwq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! J|vis 6J1590a /* window management functions */
+EXINIT="rcm:|sc! J|vis 6J1595a /* window management functions */
 static void curwin_save(void)
 {
 	if (curwin) {
@@ -252,14 +252,14 @@ void *win_split(int vertical, char *arg)
 }
 
 .
-J1436dJ1414a 	{\"sp\", ec_split},
+J1440dJ1418a 	{\"sp\", ec_split},
 .
-J1410a 	EO(vis),
+J1414a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
-J1376a 	{\"eq\", ec_equalize},
+J1380a 	{\"eq\", ec_equalize},
 .
-J1348a static void *ec_split(char *loc, char *cmd, char *arg)
+J1350a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
 }
@@ -360,10 +360,10 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 }
 
 .
-J576c 	if (!xquit)
+J577c 	if (!xquit)
 		xquit = 1;
 .
-J573c 	/* q! always force quits */
+J574c 	/* q! always force quits */
 	if (strchr(cmd, '!')) {
 		xquit = -1;
 		return NULL;
@@ -376,11 +376,11 @@ J573c 	/* q! always force quits */
 	/* single window: check for modified buffers and quit */
 	for (int i = 0; i < xbufcur; i++)
 .
-J159a 	/* update current window's buffer reference */
+J160a 	/* update current window's buffer reference */
 	if (curwin)
 		curwin->buf = ex_buf;
 .
-J98a 	/* update current window's buffer reference */
+J99a 	/* update current window's buffer reference */
 	if (curwin)
 		curwin->buf = ex_buf;
 .

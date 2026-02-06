@@ -14,51 +14,51 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@1210;23;27c tr_
+EXINIT="rcm:|sc! @|vis 6@1212;23;27c tr_
 .
-@1207;3;5c tr
+@1209;3;5c tr
 .
-@1117;3;5c tr
+@1118;3;5c tr
 .
-@1108;8;10c tr
+@1109;8;10c tr
 .
-@1098;9;13c tr_
+@1099;9;13c tr_
 .
-@1096;9;13c tr_
+@1097;9;13c tr_
 .
-@1088;3;5c tr
+@1089;3;5c tr
 .
-@1030;4;6c tr
+@1031;4;6c tr
 .
-@999;20;29c (rs->rs ? rs->rs->nsubc : 2)
+@1000;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
-@984;11;13c tr
+@985;11;13c tr
 .
-@980;14;19c rs ? rs->rs->nsubc : 2
+@981;14;19c rs ? rs->rs->nsubc : 2
 .
-@970;9;13c tr_
+@971;9;13c tr_
 .
-@963;3;5c tr
+@964;3;5c tr
 .
-@519;8;10c tr
+@520;8;10c tr
 .
-@510;19;24c rs ? xkwdrs->rs->nsubc : 2
+@511;19;24c rs ? xkwdrs->rs->nsubc : 2
 .
-@495;3;5c tr
+@496;3;5c tr
 .
-@486;4;6c tr
+@487;4;6c tr
 .
-@459;4;6c tr
+@460;4;6c tr
 .
-@421;10;12c tr
+@422;10;12c tr
 .
-@414;43;50c 
+@415;43;50c 
 .
-@412;9;13c tr_
+@413;9;13c tr_
 .
-@382;3;5c tr
+@383;3;5c tr
 .
-@177,179c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
+@178,180c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 .
