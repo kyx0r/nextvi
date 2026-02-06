@@ -52,6 +52,7 @@ static char xserr[] = "syntax error";
 static char xirerr[] = "invalid range";
 static char xrnferr[] = "range not found";
 static char *xrerr;
+static void *xpret;		/* previous ex command return value */
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
 {
@@ -1121,14 +1122,15 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
-	char *cond = re_read(&arg, *cmd);
+	int isdq = cmd[1] == '?';
+	char *cond = isdq ? NULL : re_read(&arg, *cmd);
 	int count = *loc ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
 	char *then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	char *else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	char *ret = NULL, *branch;
-	int inv = cmd[1] == '!';
+	int inv = cmd[1 + isdq] == '!';
 	for (; count && !ret; count--) {
-		ret = cond ? ex_exec(cond) : NULL;
+		ret = isdq ? xpret : (cond ? ex_exec(cond) : NULL);
 		branch = (ret != NULL) ^ inv ? else_cmd : then_cmd;
 		if (branch)
 			ret = ex_exec(branch);
@@ -1357,6 +1359,8 @@ static struct excmd {
 	{"@", ec_termexec},
 	{"&", ec_termexec},
 	{"!", ec_exec},
+	{"?\?!", ec_while},
+	{"??", ec_while},
 	{"?!", ec_while},
 	{"?", ec_while},
 	{"bp", ec_setpath},
@@ -1554,6 +1558,7 @@ void *ex_exec(const char *ln)
 		sbuf_cut(sb, 0)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
 		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
+		xpret = ret;
 		if (ret && ret != xuerr && xerr & 1)
 			ex_print(ret, msg_ft)
 		if (ret && xerr & 2)
