@@ -299,15 +299,34 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, i
 }
 
 /*
- * Relative mode emit functions - use regex patterns instead of line numbers
- * Format: :0:>anchor_pattern>+offset_cmd
+ * Relative mode emit functions - use regex patterns instead of line numbers.
+ *
+ * Forward processing: groups are processed top-to-bottom.
+ * Each >anchor> search starts from current cursor position (xrow)
+ * and finds the next occurrence forward. After each edit, the cursor
+ * advances, so subsequent searches naturally find the correct occurrence.
+ *
+ * Multi-line context: when 2+ context lines are available, uses f> command
+ * for multiline search (newlines become regular characters in the search).
+ *
+ * Conditional wrapping: each edit is wrapped in ? so if anchor doesn't
+ * match, the edit is skipped rather than corrupting the wrong location.
  */
 
-/* Emit pattern-based position: :0:>pattern>+offset */
-static void emit_pattern_pos(FILE *out, const char *anchor, int offset, int sep)
+typedef struct {
+	char **anchors;
+	int nanchors;
+	int anchor_start_line;
+	char *follow_ctx;
+	int follow_offset;
+	int anchor_offset;   /* lines from last anchor to first change */
+} rel_ctx_t;
+
+/* Emit forward single-line search position (no leading 1<sep>) */
+static void emit_fwd_pos(FILE *out, const char *anchor, int offset, int sep)
 {
 	char *escaped = escape_regex(anchor);
-	fprintf(out, "1%c>%s>", sep, escaped);
+	fprintf(out, ">%s>", escaped);
 	if (offset > 0)
 		fprintf(out, "+%d", offset);
 	else if (offset < 0)
@@ -315,26 +334,118 @@ static void emit_pattern_pos(FILE *out, const char *anchor, int offset, int sep)
 	free(escaped);
 }
 
-/* Emit delete using relative pattern */
-static void emit_relative_delete(FILE *out, const char *anchor, int offset,
-                                  int count, int sep)
+/* Emit multiline f> position using 2+ context lines */
+static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
+				int offset, int sep)
 {
-	emit_pattern_pos(out, anchor, offset, sep);
-	if (count == 1)
-		fprintf(out, "d%c", sep);
-	else
-		fprintf(out, ",#+%dd%c", count - 1, sep);
+	fprintf(out, ".,$;0f>");
+	for (int i = 0; i < nanchors; i++) {
+		char *escaped = escape_regex(anchors[i]);
+		fprintf(out, "%s", escaped);
+		free(escaped);
+		if (i < nanchors - 1)
+			fputc('.', out);  /* . matches \n in multiline mode */
+	}
+	fprintf(out, "%c", sep);
+	/* After f>, cursor is at match position; use .+offset for target */
+	fprintf(out, ".+%d", offset);
 }
 
-/* Emit insert using relative pattern */
-static void emit_relative_insert(FILE *out, const char *anchor, int offset,
-                                  char **texts, int ntexts, int sep)
+/* Emit following context search with negative offset */
+static void emit_follow_pos(FILE *out, const char *follow, int offset, int sep)
+{
+	char *escaped = escape_regex(follow);
+	fprintf(out, ">%s>", escaped);
+	if (offset > 0)
+		fprintf(out, "-%d", offset);
+	/* offset==0 means the follow ctx IS at the change line - unusual but handle it */
+	free(escaped);
+}
+
+/*
+ * Emit the search/positioning part for a relative group.
+ * Returns: 0 = single-command positioning (pos is part of final cmd),
+ *          1 = two-command positioning (f> then .+offset as separate cmd)
+ *
+ * For single-line: emits ">anchor>+offset" (caller appends action)
+ * For multiline:   emits ".,$;0f>ctx1.ctx2<sep>.+offset" (caller appends action)
+ * For follow ctx:  emits ">follow>-offset" (caller appends action)
+ */
+static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep)
+{
+	if (rc->nanchors >= 2) {
+		/* Multiline: f> search, then .+offset as position for next command */
+		int offset = rc->nanchors + rc->anchor_offset - 1;
+		emit_multiline_pos(out, rc->anchors, rc->nanchors, offset, sep);
+		return 1;
+	}
+	if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
+		emit_fwd_pos(out, rc->anchors[0], rc->anchor_offset, sep);
+		return 0;
+	}
+	if (rc->follow_ctx && rc->follow_ctx[0]) {
+		emit_follow_pos(out, rc->follow_ctx, rc->follow_offset, sep);
+		return 0;
+	}
+	return -1;  /* no anchor available */
+}
+
+/* Emit the conditional search part for ? wrapping */
+static void emit_cond_search(FILE *out, rel_ctx_t *rc, int sep)
+{
+	if (rc->nanchors >= 2) {
+		fprintf(out, ".,$;0f>");
+		for (int i = 0; i < rc->nanchors; i++) {
+			char *escaped = escape_regex(rc->anchors[i]);
+			fprintf(out, "%s", escaped);
+			free(escaped);
+			if (i < rc->nanchors - 1)
+				fputc('.', out);
+		}
+	} else if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
+		char *escaped = escape_regex(rc->anchors[0]);
+		fprintf(out, ">%s>", escaped);
+		free(escaped);
+	} else if (rc->follow_ctx && rc->follow_ctx[0]) {
+		char *escaped = escape_regex(rc->follow_ctx);
+		fprintf(out, ">%s>", escaped);
+		free(escaped);
+	}
+}
+
+/* Emit delete using relative pattern with ? conditional */
+static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count, int sep)
+{
+	int mode = emit_rel_pos(out, rc, sep);
+	if (mode == 1) {
+		/* multiline: pos is ".+N", append delete action */
+		if (count == 1)
+			fprintf(out, "d%c", sep);
+		else
+			fprintf(out, ",#+%dd%c", count - 1, sep);
+	} else {
+		/* single-line: pos already emitted, append delete */
+		if (count == 1)
+			fprintf(out, "d%c", sep);
+		else
+			fprintf(out, ",#+%dd%c", count - 1, sep);
+	}
+}
+
+/* Emit insert using relative pattern with ? conditional */
+static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
+				  char **texts, int ntexts, int sep)
 {
 	if (ntexts == 0)
 		return;
 
-	emit_pattern_pos(out, anchor, offset, sep);
-	fprintf(out, "a ");
+	int mode = emit_rel_pos(out, rc, sep);
+	if (mode == 1) {
+		/* After multiline f>, we have .+offset as position */
+		fprintf(out, "a ");
+	} else {
+		fprintf(out, "a ");
+	}
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_line(out, texts[i]);
 		fputc('\n', out);
@@ -342,20 +453,28 @@ static void emit_relative_insert(FILE *out, const char *anchor, int offset,
 	fprintf(out, ".\n%c", sep);
 }
 
-/* Emit change using relative pattern */
-static void emit_relative_change(FILE *out, const char *anchor, int offset,
-                                  int del_count, char **texts, int ntexts, int sep)
+/* Emit change using relative pattern with ? conditional */
+static void emit_relative_change(FILE *out, rel_ctx_t *rc,
+				  int del_count, char **texts, int ntexts, int sep)
 {
 	if (ntexts == 0) {
-		emit_relative_delete(out, anchor, offset, del_count, sep);
+		emit_relative_delete(out, rc, del_count, sep);
 		return;
 	}
 
-	emit_pattern_pos(out, anchor, offset, sep);
-	if (del_count == 1)
-		fprintf(out, "c ");
-	else
-		fprintf(out, ",#+%dc ", del_count - 1);
+	int mode = emit_rel_pos(out, rc, sep);
+	if (mode == 1) {
+		/* multiline pos emitted .+offset, append change */
+		if (del_count == 1)
+			fprintf(out, "c ");
+		else
+			fprintf(out, ",#+%dc ", del_count - 1);
+	} else {
+		if (del_count == 1)
+			fprintf(out, "c ");
+		else
+			fprintf(out, ",#+%dc ", del_count - 1);
+	}
 
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_line(out, texts[i]);
@@ -365,11 +484,11 @@ static void emit_relative_change(FILE *out, const char *anchor, int offset,
 }
 
 /* Emit horizontal change using relative pattern */
-static void emit_relative_horizontal(FILE *out, const char *anchor, int offset,
-                                      int char_start, int char_end,
-                                      const char *new_text, int sep)
+static void emit_relative_horizontal(FILE *out, rel_ctx_t *rc,
+				      int char_start, int char_end,
+				      const char *new_text, int sep)
 {
-	emit_pattern_pos(out, anchor, offset, sep);
+	emit_rel_pos(out, rc, sep);
 	if (char_start == char_end)
 		fprintf(out, ";%dc ", char_start);
 	else
@@ -401,8 +520,13 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		int nadd;
 		int add_after;  /* line to add after (for pure adds) */
 		/* For relative mode: */
-		char *anchor;            /* preceding context line text */
+		char *anchor;            /* last preceding context line text */
 		int anchor_offset;       /* lines from anchor to first change */
+		char *anchors[3];        /* up to 3 consecutive preceding context lines */
+		int nanchors;            /* count of anchor lines */
+		int anchor_start_line;   /* line number of first anchor line */
+		char *follow_ctx;        /* first following context line */
+		int follow_offset;       /* lines from first change to follow_ctx */
 	} group_t;
 
 	group_t groups[MAX_OPS];
@@ -419,13 +543,28 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		g->add_after = 0;
 		g->anchor = NULL;
 		g->anchor_offset = 0;
+		g->nanchors = 0;
+		g->anchor_start_line = 0;
+		g->follow_ctx = NULL;
+		g->follow_offset = 0;
 
-		/* Skip context lines, but remember last one for relative mode */
+		/* Skip context lines, collecting up to 3 consecutive for relative mode */
 		char *last_ctx = NULL;
 		int last_ctx_line = 0;
+		char *ctx_ring[3] = {NULL, NULL, NULL};
+		int ctx_line_ring[3] = {0, 0, 0};
+		int ctx_count = 0;
 		while (i < fp->nops && fp->ops[i].type == 'c') {
 			last_ctx = fp->ops[i].text;
 			last_ctx_line = fp->ops[i].oline;
+			/* Shift ring buffer */
+			ctx_ring[0] = ctx_ring[1];
+			ctx_line_ring[0] = ctx_line_ring[1];
+			ctx_ring[1] = ctx_ring[2];
+			ctx_line_ring[1] = ctx_line_ring[2];
+			ctx_ring[2] = fp->ops[i].text;
+			ctx_line_ring[2] = fp->ops[i].oline;
+			ctx_count++;
 			i++;
 		}
 		if (i >= fp->nops)
@@ -434,9 +573,25 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		/* Store anchor info for relative mode */
 		g->anchor = last_ctx;
 		if (last_ctx) {
-			/* Offset from anchor to first change line */
 			int first_change_line = fp->ops[i].oline;
 			g->anchor_offset = first_change_line - last_ctx_line;
+		}
+		/* Store multi-line anchors (up to 3 consecutive context lines before change) */
+		if (ctx_count >= 3) {
+			g->anchors[0] = ctx_ring[0];
+			g->anchors[1] = ctx_ring[1];
+			g->anchors[2] = ctx_ring[2];
+			g->nanchors = 3;
+			g->anchor_start_line = ctx_line_ring[0];
+		} else if (ctx_count == 2) {
+			g->anchors[0] = ctx_ring[1];
+			g->anchors[1] = ctx_ring[2];
+			g->nanchors = 2;
+			g->anchor_start_line = ctx_line_ring[1];
+		} else if (ctx_count == 1) {
+			g->anchors[0] = ctx_ring[2];
+			g->nanchors = 1;
+			g->anchor_start_line = ctx_line_ring[2];
 		}
 
 		/* Collect consecutive deletes */
@@ -471,28 +626,57 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			}
 		}
 
+		/* Peek at following context for fallback when no preceding context */
+		if (g->nanchors == 0 && i < fp->nops && fp->ops[i].type == 'c') {
+			g->follow_ctx = fp->ops[i].text;
+			/* Distance from first change to following context */
+			int first_change_line = g->del_start ? g->del_start : g->add_after + 1;
+			g->follow_offset = fp->ops[i].oline - first_change_line;
+		}
+
 		if (g->del_start || g->nadd)
 			ngroups++;
 	}
 
-	/* Emit groups in reverse order to preserve line numbers */
-	for (int gi = ngroups - 1; gi >= 0; gi--) {
+	/*
+	 * Emit groups.
+	 * Absolute mode: reverse order (bottom-to-top) to preserve line numbers.
+	 * Relative mode: forward order (top-to-bottom) with content-based search.
+	 *   Each >anchor> search starts from cursor position which advances
+	 *   after each edit, so subsequent searches find the correct occurrence.
+	 */
+	int gi_start = relative_mode ? 0 : ngroups - 1;
+	int gi_end = relative_mode ? ngroups : -1;
+	int gi_step = relative_mode ? 1 : -1;
+
+	if (relative_mode)
+		fprintf(out, "1%c", sep);  /* Position cursor at line 1 */
+
+	for (int gi = gi_start; gi != gi_end; gi += gi_step) {
 		group_t *g = &groups[gi];
 
-		/* Determine anchor for relative mode with fallbacks */
-		const char *rel_anchor = NULL;
-		int rel_offset = 0;
+		/* Build rel_ctx_t for relative mode */
+		rel_ctx_t rc;
+		int has_rel = 0;
 		if (relative_mode) {
-			if (g->anchor && g->anchor[0]) {
-				/* Use context line as anchor */
-				rel_anchor = g->anchor;
-				rel_offset = g->anchor_offset;
-			} else if (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
-				/* Fallback: use first deleted line with offset 0 */
-				rel_anchor = g->del_texts[0];
-				rel_offset = 0;
+			rc.anchors = g->anchors;
+			rc.nanchors = g->nanchors;
+			rc.anchor_start_line = g->anchor_start_line;
+			rc.follow_ctx = g->follow_ctx;
+			rc.follow_offset = g->follow_offset;
+			rc.anchor_offset = g->anchor_offset;
+			/* Check if we have any usable anchor */
+			if (rc.nanchors > 0 || (rc.follow_ctx && rc.follow_ctx[0]))
+				has_rel = 1;
+			/* Fallback: use first deleted line as anchor */
+			if (!has_rel && g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
+				rc.anchors = g->del_texts;
+				rc.nanchors = 1;
+				rc.anchor_offset = 0;
+				rc.follow_ctx = NULL;
+				rc.follow_offset = 0;
+				has_rel = 1;
 			}
-			/* If neither works, rel_anchor stays NULL -> use line numbers */
 		}
 
 		if (g->del_start && g->nadd) {
@@ -503,40 +687,46 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				char *new_text;
 				if (find_line_diff(g->del_texts[0], g->add_texts[0],
 				                   &start, &old_end, &new_text)) {
-					if (rel_anchor)
-						emit_relative_horizontal(out, rel_anchor,
-						    rel_offset, start, old_end, new_text, sep);
+					if (has_rel)
+						emit_relative_horizontal(out, &rc,
+						    start, old_end, new_text, sep);
 					else
 						emit_horizontal_change(out, g->del_start, start,
 						    old_end, new_text, sep);
 					free(new_text);
 				} else {
-					if (rel_anchor)
-						emit_relative_change(out, rel_anchor, rel_offset,
+					if (has_rel)
+						emit_relative_change(out, &rc,
 						    g->ndel, g->add_texts, g->nadd, sep);
 					else
 						emit_change(out, g->del_start, g->del_end,
 						    g->add_texts, g->nadd, sep);
 				}
 			} else {
-				if (rel_anchor)
-					emit_relative_change(out, rel_anchor, rel_offset,
+				if (has_rel)
+					emit_relative_change(out, &rc,
 					    g->ndel, g->add_texts, g->nadd, sep);
 				else
 					emit_change(out, g->del_start, g->del_end,
 					    g->add_texts, g->nadd, sep);
 			}
 		} else if (g->del_start) {
-			if (rel_anchor)
-				emit_relative_delete(out, rel_anchor, rel_offset,
-				    g->ndel, sep);
+			if (has_rel)
+				emit_relative_delete(out, &rc, g->ndel, sep);
 			else
 				emit_delete(out, g->del_start, g->del_end, sep);
 		} else if (g->nadd) {
-			if (rel_anchor)
-				emit_relative_insert(out, rel_anchor, rel_offset - 1,
+			if (has_rel) {
+				/* For pure insert, adjust: search goes to anchor,
+				   but insert should be after the anchor line */
+				if (rc.nanchors > 0) {
+					rc.anchor_offset -= 1;
+				} else if (rc.follow_ctx) {
+					rc.follow_offset += 1;
+				}
+				emit_relative_insert(out, &rc,
 				    g->add_texts, g->nadd, sep);
-			else
+			} else
 				emit_insert_after(out, g->add_after, g->add_texts, g->nadd, sep);
 		}
 		free(g->del_texts);
