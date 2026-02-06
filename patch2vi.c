@@ -320,6 +320,8 @@ typedef struct {
 	char *follow_ctx;
 	int follow_offset;
 	int anchor_offset;   /* lines from last anchor to first change */
+	int use_offset;      /* use .+offset_val instead of searching */
+	int offset_val;      /* offset from current xrow */
 } rel_ctx_t;
 
 /* Write a regex-escaped string with shell double-quote escaping.
@@ -439,6 +441,15 @@ static void emit_follow_pos(FILE *out, const char *follow, int offset, int sep)
  */
 static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
 {
+	if (rc->use_offset) {
+		if (rc->offset_val == 0)
+			fprintf(out, ".");
+		else if (rc->offset_val > 0)
+			fprintf(out, ".+%d", rc->offset_val);
+		else
+			fprintf(out, ".%d", rc->offset_val);
+		return 0;
+	}
 	if (rc->nanchors >= 2) {
 		/* Multiline: f>/f+ search, then .+offset as position for next command */
 		int offset = rc->nanchors + rc->anchor_offset - 1;
@@ -717,7 +728,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 	int gi_step = relative_mode ? 1 : -1;
 
 	int first_ml = 1;  /* first multiline search uses f>, subsequent use f+ */
-
+	int prev_xrow = 0;  /* 1-indexed predicted xrow after previous group, 0 = unset */
+	int cum_delta = 0;   /* cumulative line count change from previous groups */
 
 	for (int gi = gi_start; gi != gi_end; gi += gi_step) {
 		group_t *g = &groups[gi];
@@ -726,23 +738,37 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		rel_ctx_t rc;
 		int has_rel = 0;
 		if (relative_mode) {
-			rc.anchors = g->anchors;
-			rc.nanchors = g->nanchors;
-			rc.anchor_start_line = g->anchor_start_line;
-			rc.follow_ctx = g->follow_ctx;
-			rc.follow_offset = g->follow_offset;
-			rc.anchor_offset = g->anchor_offset;
-			/* Check if we have any usable anchor */
-			if (rc.nanchors > 0 || (rc.follow_ctx && rc.follow_ctx[0]))
+			rc.use_offset = 0;
+			rc.offset_val = 0;
+			/* Interior groups: use .+N offset from predicted cursor */
+			if (prev_xrow > 0) {
+				int target;
+				if (g->del_start)
+					target = g->del_start + cum_delta;
+				else
+					target = g->add_after + cum_delta;
+				rc.use_offset = 1;
+				rc.offset_val = target - prev_xrow;
 				has_rel = 1;
-			/* Fallback: use first deleted line as anchor */
-			if (!has_rel && g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
-				rc.anchors = g->del_texts;
-				rc.nanchors = 1;
-				rc.anchor_offset = 0;
-				rc.follow_ctx = NULL;
-				rc.follow_offset = 0;
-				has_rel = 1;
+			} else {
+				rc.anchors = g->anchors;
+				rc.nanchors = g->nanchors;
+				rc.anchor_start_line = g->anchor_start_line;
+				rc.follow_ctx = g->follow_ctx;
+				rc.follow_offset = g->follow_offset;
+				rc.anchor_offset = g->anchor_offset;
+				/* Check if we have any usable anchor */
+				if (rc.nanchors > 0 || (rc.follow_ctx && rc.follow_ctx[0]))
+					has_rel = 1;
+				/* Fallback: use first deleted line as anchor */
+				if (!has_rel && g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
+					rc.anchors = g->del_texts;
+					rc.nanchors = 1;
+					rc.anchor_offset = 0;
+					rc.follow_ctx = NULL;
+					rc.follow_offset = 0;
+					has_rel = 1;
+				}
 			}
 		}
 
@@ -795,6 +821,27 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				    g->add_texts, g->nadd, sep, &first_ml);
 			} else
 				emit_insert_after(out, g->add_after, g->add_texts, g->nadd, sep);
+		}
+		/* Track cursor position for interior group offsets */
+		if (relative_mode) {
+			int target;
+			if (g->del_start)
+				target = g->del_start + cum_delta;
+			else
+				target = g->add_after + cum_delta;
+			if (g->del_start && g->nadd) {
+				/* change: xrow = beg + nadd - 1 (0-indexed) = target + nadd - 1 (1-indexed) */
+				prev_xrow = target + g->nadd - 1;
+				cum_delta += g->nadd - g->ndel;
+			} else if (g->del_start) {
+				/* delete: xrow = beg (0-indexed) = target (1-indexed) */
+				prev_xrow = target;
+				cum_delta -= g->ndel;
+			} else if (g->nadd) {
+				/* insert after target: xrow = target + nadd (1-indexed) */
+				prev_xrow = target + g->nadd;
+				cum_delta += g->nadd;
+			}
 		}
 		free(g->del_texts);
 		free(g->add_texts);
