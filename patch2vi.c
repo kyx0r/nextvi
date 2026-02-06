@@ -665,8 +665,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 
 	int first_ml = 1;  /* first multiline search uses f>, subsequent use f+ */
 
-	if (relative_mode)
-		fprintf(out, "1%c", sep);  /* Position cursor at line 1 */
 
 	for (int gi = gi_start; gi != gi_end; gi += gi_step) {
 		group_t *g = &groups[gi];
