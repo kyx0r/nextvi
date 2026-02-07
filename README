@@ -702,9 +702,7 @@ EX COMMANDS
              Conditional
 
              Unlike while loop conditional, branching depends on the error
-             status of the last command.
-             This can be used to make single conditionals a lot cleaner reducing
-             the amount of escapes required.
+             status of the last command, reducing the number of escapes required.
 
      ??!{else}[<?>][then]
              Inverted conditional
