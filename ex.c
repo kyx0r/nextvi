@@ -1567,7 +1567,7 @@ void *ex_exec(const char *ln)
 			ex_print(ret, msg_ft)
 		if (ret && xerr & 2)
 			break;
-	} while (*ln);
+	} while (*ln && !xquit);
 	free(sb->s);
 	return xerr & 4 ? NULL : ret;
 }
