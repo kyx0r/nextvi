@@ -431,7 +431,7 @@ int led_pos\\\\(char \\\\*s, int pos\\\\)
 \\\\{J;=
 J.+2a 	int ww = curwin ? curwin->w : xcols;
 .
-J.-1J>	if \\(dir_context\\(s\\) \\< 0\\)>+1;17;22c ww
+J.-1J>	if \\(dir_context\\(s\\) < 0\\)>+1;17;22c ww
 .
 J.,$;f+ 		return;
 	\\\\}
@@ -672,7 +672,7 @@ J.,$;f+ 	term_room\\\\(i\\\\);
 	if \\\\(i < 0\\\\) \\\\{J;=
 J.+3;14;15c w
 .
-J.-1J>		for \\(i = 0; i \\< n; i\\+\\+\\)>+1;21;22c w
+J.-1J>		for \\(i = 0; i < n; i\\+\\+\\)>+1;21;22c w
 .
 J.-1J>	\\} else \\{>+1;13;14c w
 .

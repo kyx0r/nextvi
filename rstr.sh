@@ -45,7 +45,7 @@ static void \\\\*ec_fuzz\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
 .
 @.,$;f+ 				break;
 			\\\\}
-		\\\\}@;=
+		\\\\}@.,$;f+@;=
 @.+3;4;6c tr
 .
 @.,$;f+ 	free\\\\(sb->s\\\\);
