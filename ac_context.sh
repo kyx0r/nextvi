@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	return i-s;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return i-s;
 \\\\}
 @;=
 @.+3c static int search(sbuf *sb, int l, int pre)

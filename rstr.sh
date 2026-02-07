@@ -14,75 +14,143 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> int xpln;			/\\\\* tracks newline from ex print and pipe stdout \\\\*/
-int xsep = ':';			/\\\\* ex command separator \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> int xsep = ':';			/\\\\* ex command separator \\\\*/
+int xesc = '\\\\\\\\\\\\\\\\';		/\\\\* ex command arg escape character \\\\*/
 sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/@;=
 @.+3;2;4c tr
 .
-@.+140,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
+@.,$;f+ \\\\{
+	sbuf \\\\*reg = xregs\\\\['/'\\\\];
+	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)@;=
+@.+3,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 .
-@.+203;3;5c tr
+@.,$;f+ 
+static void \\\\*ec_fuzz\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
+\\\\{@;=
+@.+3;3;5c tr
 .
-@.+30;9;13c tr_
+@.,$;f+ 	while\\\\(1\\\\) \\\\{
+		sbuf_null\\\\(fuzz\\\\)
+		c = 0;@;=
+@.+3;9;13c tr_
 .
-@.+2;43;50c 
+@.-1@>		if \\(rs\\) \\{>+1;43;50c 
 .
-@.+7;10;12c tr
+@.,$;f+ 			dwid1 = max == INT_MAX \\\\? dwid2 : MIN\\\\(dwid1, dwid2\\\\);
+			for \\\\(pos = beg; c < max && pos < end; pos\\\\+\\\\+\\\\) \\\\{
+				path = xb->ln\\\\[pos\\\\];@;=
+@.+3;10;12c tr
 .
-@.+38;4;6c tr
+@.,$;f+ 				break;
+			\\\\}
+		\\\\}@;=
+@.+3;4;6c tr
 .
-@.+27;4;6c tr
+@.,$;f+ 	free\\\\(sb->s\\\\);
+	path = lbuf_get\\\\(xb, lnum\\\\);
+	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{@;=
+@.+3;4;6c tr
 .
-@.+9;3;5c tr
+@.,$;f+ 		path\\\\[lbuf_s\\\\(path\\\\)->len\\\\] = '\\\\\\\\n';
+	\\\\} else if \\\\(\\\\*cmd != 'f'\\\\)
+		temp_switch\\\\(1, 1\\\\);@;=
+@.+3;3;5c tr
 .
-@.+15;19;24c rs ? xkwdrs->rs->nsubc : 2
+@.,$;f+ 		return xserr;
+	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
+		sbuf sb;@;=
+@.+3;19;24c rs ? xkwdrs->rs->nsubc : 2
 .
-@.+9;8;10c tr
+@.,$;f+ 			soff = lbuf_pos2off\\\\(xb, beg, o1, r2, o2, xrow, xoff \\\\+ skip\\\\);
+		if \\\\(soff < 0\\\\)
+			soff = 0;@;=
+@.+3;8;10c tr
 .
-@.+444;3;5c tr
+@.,$;f+ 	int beg, end, grp;
+	char \\\\*pat, \\\\*rep = NULL, \\\\*_rep;
+	char \\\\*s = arg;@;=
+@.+3;3;5c tr
 .
-@.+7;9;13c tr_
+@.,$;f+ 		return xrerr;
+	pat = re_read\\\\(&s, 0\\\\);
+	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)@;=
+@.+3;9;13c tr_
 .
-@.+10;14;19c rs ? rs->rs->nsubc : 2
+@.,$;f+ 		rep = re_read\\\\(&s, 0\\\\);
+	\\\\}
+	free\\\\(pat\\\\);@;=
+@.+3;14;19c rs ? rs->rs->nsubc : 2
 .
-@.+4;11;13c tr
+@.,$;f+ 	for \\\\(i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
+		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
+		sbuf \\\\*r = NULL;@;=
+@.+3;11;13c tr
 .
-@.+15;20;29c (rs->rs ? rs->rs->nsubc : 2)
+@.,$;f+ 					\\\\}
+					_rep\\\\+\\\\+;
+					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);@;=
+@.+3;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
-@.+31;4;6c tr
+@.,$;f+ 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
+	\\\\}
+	if \\\\(rs != xkwdrs\\\\)@;=
+@.+3;4;6c tr
 .
-@.+58;3;5c tr
+@.,$;f+ \\\\{
+	int i, beg, end, not;
+	char \\\\*pat, \\\\*s = arg;@;=
+@.+3;3;5c tr
 .
-@.+8;9;13c tr_
+@.,$;f+ 	not = !!strchr\\\\(cmd, '!'\\\\);
+	pat = re_read\\\\(&s, 0\\\\);
+	if \\\\(pat && \\\\*pat\\\\)@;=
+@.+3;9;13c tr_
 .
-@.+2;9;13c tr_
+@.-1@>	else>+1;9;13c tr_
 .
-@.+10;8;10c tr
+@.,$;f+ 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
+		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
+		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;@;=
+@.+3;8;10c tr
 .
-@.+9;3;5c tr
+@.,$;f+ 		while \\\\(i < lbuf_len\\\\(xb\\\\) && !\\\\(lbuf_i\\\\(xb, i\\\\)->grec & xgdep\\\\)\\\\)
+			i\\\\+\\\\+;
+	\\\\}@;=
+@.+3;3;5c tr
 .
-@.+91;3;5c tr
+@.,$;f+ 
+static void \\\\*ec_setincl\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
+\\\\{@;=
+@.+3;3;5c tr
 .
-@.+3;23;27c tr_
+@.,$;f+ 	if \\\\(!\\\\*arg\\\\)
+		fsincl = NULL;@;=
+@.+2;23;27c tr_
 .
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	return n != 0;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return n != 0;
 \\\\}
 @;=
 @.+3;35;37c tr
 .
-@.+4;14;19c rs ? re->rs->nsubc : 2
+@.,$;f+ 		int nskip, int \\\\*r, int \\\\*o\\\\)
+\\\\{
+	int r0 = \\\\*r, o0 = \\\\*o;@;=
+@.+3;14;19c rs ? re->rs->nsubc : 2
 .
-@.+13;11;13c tr
+@.,$;f+ 		step = 0;
+		flg = REG_NEWLINE;
+		s = lb->ln\\\\[i\\\\];@;=
+@.+3;11;13c tr
 .
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
 	sbufn_ret\\\\(sb, sb->s\\\\)
 \\\\}@;=
 @.+2a 
@@ -221,17 +289,20 @@ void rstr_free(rstr *rs)
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 \\\\}
 @;=
 @.+3;2;4c tr
 .
-@.+40;21;23c tr
+@.,$;f+ 				memcpy\\\\(cpath, ptrs\\\\[i\\\\], pathlen \\\\+ len\\\\);
+				plen\\\\[i\\\\+\\\\+\\\\] = pathlen \\\\+ len;
+			\\\\} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)@;=
+@.+3;21;23c tr
 .
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
 	int n;			/\\\\* number of regular expressions in this set \\\\*/
 \\\\} rset;@;=
 @.+2a typedef struct {
@@ -243,19 +314,34 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
 	int wbeg, wend;		/* match word beg/end */
 } rstr;
 .
-@.+7a rstr *rstr_make(char *re, int flg);
+@.,$;f+ int rset_match\\\\(rset \\\\*rs, char \\\\*s, int flg\\\\);
+void rset_free\\\\(rset \\\\*re\\\\);
+char \\\\*re_read\\\\(char \\\\*\\\\*src, int delim\\\\);@;=
+@.+2a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
 .
-@.+58;35;37c tr
+@.,$;f+ int lbuf_eol\\\\(struct lbuf \\\\*lb, int r, int state\\\\);
+int lbuf_next\\\\(struct lbuf \\\\*lb, int dir, int \\\\*r, int \\\\*o\\\\);
+int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);@;=
+@.+3;35;37c tr
 .
-@.+1a 
+@.-1@>		int nskip, int \\*r, int \\*o\\);>a 
 .
-@.+257;9;11c tr
+@.,$;f+ extern int xsep;
+extern int xesc;
+extern sbuf \\\\*xacreg;@;=
+@.+3;9;11c tr
 .
-@.+33;13;15c tr
+@.,$;f+ #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
+void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);@;=
+@.+3;13;15c tr
 .
-@.+61;9;11c tr
+@.,$;f+ extern int vi_hidch;
+extern int vi_lncol;
+/\\\\* file system \\\\*/@;=
+@.+3;9;11c tr
 .
 @vis 4@wq" $VI -e 'vi.h'

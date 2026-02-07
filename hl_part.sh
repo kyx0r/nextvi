@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	att_old = att_new; \\\\\\\\
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	att_old = att_new; \\\\\\\\
 \\\\} \\\\} \\\\\\\\
 @;=
 @.+2a #define LEDBACK 300

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@%;f> static sbuf \\\\*suggestsb;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static sbuf \\\\*suggestsb;
 static sbuf \\\\*acsb;
 sbuf \\\\*led_attsb;@;=
 @.+2a static int vi_insmov;
@@ -111,7 +111,7 @@ static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,@;=
 @vis 4@wq" $VI -e 'led.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	\\\\*l = ln - pln;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	\\\\*l = ln - pln;
 \\\\}
 @;=
 @.+2a static int lmodified;

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
 int xrcm = 1;			/\\\\* range command model -
 				0: exec at command parse 1: exec at command \\\\*/@;=
 @.+2a int xrec;			/* input recoding register */
@@ -32,7 +32,7 @@ EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) E
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 		ret:
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		ret:
 		ibuf_cnt = 1;
 		ibuf_pos = 0;@;=
 @.+2a 		if (xrec && *ibuf) {
@@ -45,7 +45,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 		ret:
 @vis 4@wq" $VI -e 'term.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> extern int xlim;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> extern int xlim;
 extern int xseq;
 extern int xerr;@;=
 @.+2a extern int xrec;

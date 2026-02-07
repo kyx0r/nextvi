@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> static char xrnferr\\\\[\\\\] = \"range not found\";
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static char xrnferr\\\\[\\\\] = \"range not found\";
 static char \\\\*xrerr;
 static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/@;=
 @.+2a char readonly = 0;		/* commandline readonly option */
@@ -54,7 +54,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 				xvis \\\\|= 8;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				xvis \\\\|= 8;
 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
 				xvis &= ~4;@;=
 @.+2a 			else if (argv[i][j] == 'R')
@@ -67,7 +67,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 				xvis \\\\|= 8;
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> 	int plen, row, off, top;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int plen, row, off, top;
 	long mtime;			/\\\\* modification time \\\\*/
 	signed char td;			/\\\\* text direction \\\\*/@;=
 @.+2a 	char readonly;			/* read only */

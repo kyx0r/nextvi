@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	return key;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return key;
 \\\\}
 @;=
 @.+3;23c , init
@@ -36,7 +36,7 @@ if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\@;=
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 \\\\}
 @;=
 @.+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
@@ -121,7 +121,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
 struct lbuf \\\\*lbuf_make\\\\(void\\\\);
 void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);@;=
 @.+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);

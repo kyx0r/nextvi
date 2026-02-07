@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/@;=
 @.+2a char **xenvp;
@@ -67,7 +67,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
 		\\\\}@;=
 @.+3c 		if (xenvp)
@@ -78,7 +78,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 @vis 4@wq" $VI -e 'term.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> files and thus is never static\\\\.
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> files and thus is never static\\\\.
 \\\\*/
 @;=
 @.+2a #ifdef __APPLE__

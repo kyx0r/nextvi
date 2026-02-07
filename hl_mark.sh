@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> int xhlw;			/\\\\* highlight current word \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> int xhlw;			/\\\\* highlight current word \\\\*/
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
 int xhlr;			/\\\\* highlight text in reverse direction \\\\*/@;=
 @.+2a int xhlm;			/* highlight marks */
@@ -32,7 +32,7 @@ EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) E
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 				word = cs;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				word = cs;
 			\\\\}
 		\\\\}@;=
 @.+2a 		if (xhlm) {

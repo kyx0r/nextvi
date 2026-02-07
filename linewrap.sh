@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
 int xrcm = 1;			/\\\\* range command model -
 				0: exec at command parse 1: exec at command \\\\*/@;=
 @.+2a int xlw;			/* soft linewrap col */
@@ -48,7 +48,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@%;f> \\\\{
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 	int i, pos = lo->pos;
 	if \\\\(s\\\\) \\\\{@;=
 @.+2a 		char *lwp = NULL;
@@ -199,7 +199,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> \\\\{
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 		return;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		return;
 	\\\\}
 	s = lbuf_get\\\\(xb, row\\\\);@;=
 @.+2a 	if (xlw && s) {
@@ -222,7 +222,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 		return;
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> struct linfo \\\\{
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> struct linfo \\\\{
 	int len;
 	int grec;@;=
 @.+2a 	char *lw_prev;

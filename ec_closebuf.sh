@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	return val;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return val;
 \\\\}
 @;=
 @.+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)

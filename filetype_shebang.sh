@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
 	if \\\\(!\\\\(xvis & 8\\\\)\\\\)
 		ex_print\\\\(msg, bar_ft\\\\)@;=
 @.+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
 \\\\{
 	char msg\\\\[512\\\\];@;=
 @.+3c 	int fd = 0, len, rd = 0, cd = 0;
@@ -67,7 +67,7 @@ void ex_init\\\\(char \\\\*\\\\*files, int n\\\\)
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@%;f> unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \\\\*ibuf, icmd\\\\[4096\\\\];
 unsigned int texec, tn;@;=
 @.+2a int stdin_fd;
@@ -119,7 +119,7 @@ static int isig;
 @vis 4@wq" $VI -e 'term.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
 	sa\\\\.sa_handler = sighandler;
 	sigaction\\\\(SIGWINCH, &sa, NULL\\\\);@;=
 @.+2a 	sigaction(SIGINT, &sa, NULL);
@@ -133,7 +133,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> /\\\\* vi\\\\.c \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> /\\\\* vi\\\\.c \\\\*/
 extern int vi_hidch;
 extern int vi_lncol;@;=
 @.+2a extern int stdin_fd;

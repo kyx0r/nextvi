@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> \\\\{
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 	int mark, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
 	switch \\\\(c\\\\) \\\\{@;=
 @.+2a 	case '\\\\033':	/* Arrow keys */

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! F|vis 6F%;f> char n_ft\\\\[\\\\] = \"/#\";	/\\\\* numbers highlight for \\\\^v \\\\*/
+EXINIT="rcm:|sc! \\\\F|vis 6F%;f> char n_ft\\\\[\\\\] = \"/#\";	/\\\\* numbers highlight for \\\\^v \\\\*/
 char nn_ft\\\\[\\\\] = \"/##\";	/\\\\* numbers highlight for # \\\\*/
 char ac_ft\\\\[\\\\] = \"/ac\";	/\\\\* autocomplete dropdown \\\\*/F;=
 F.+2a char grep_ft[] = \"/g\";	/* grep buffer */
@@ -29,7 +29,7 @@ F.+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 Fvis 4Fwq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! F|vis 6F%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
+EXINIT="rcm:|sc! \\\\F|vis 6F%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/
 struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/F;=
 F.+3;20;21c 3
@@ -37,7 +37,7 @@ F.+3;20;21c 3
 Fvis 4Fwq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! F|vis 6F%;f> 	free\\\\(sb->s\\\\);
+EXINIT="rcm:|sc! \\\\F|vis 6F%;f> 	free\\\\(sb->s\\\\);
 \\\\}
 F;=
 F.+3;17c isbuffer
@@ -142,7 +142,7 @@ F.+2a 	temp_open(2, \"/grep/\", grep_ft);
 Fvis 4Fwq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! F|vis 6F%;f> extern rset \\\\*xkwdrs;
+EXINIT="rcm:|sc! \\\\F|vis 6F%;f> extern rset \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
 extern struct buf \\\\*bufs;F;=
 F.+3;27;28c 3

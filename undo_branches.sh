@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
 @;=
 @.+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
@@ -36,7 +36,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);@;=
 @.+2a 	sbuf_make(lb->rehist, 128)
@@ -159,7 +159,7 @@ char *lbuf_getleafs(struct lbuf *lb)
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> struct lbuf \\\\{
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> struct lbuf \\\\{
 	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
 	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/@;=
 @.+2a 	sbuf *rehist;		/* alternate redo timelines */

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> int xshape = 1;			/\\\\* perform letter shaping \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> int xshape = 1;			/\\\\* perform letter shaping \\\\*/
 int xorder = 1;			/\\\\* change the order of characters \\\\*/
 int xts = 8;			/\\\\* number of spaces for tab \\\\*/@;=
 @.+2a int xqe = 1000;			/* exit insert via kj (delay in ms) */
@@ -32,7 +32,7 @@ EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) E
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	restore\\\\(xvis\\\\)
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	restore\\\\(xvis\\\\)
 \\\\}
 @;=
 @.+2a static int gettime_ms(void)
@@ -63,7 +63,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 	restore\\\\(xvis\\\\)
 @vis 4@wq" $VI -e 'led.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> #include <dirent\\\\.h>
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #include <dirent\\\\.h>
 #include <signal\\\\.h>
 #include <unistd\\\\.h>@;=
 @.+2a #include <time.h>
@@ -77,7 +77,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> #include <dirent\\\\.h>
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> 	int p_reg;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int p_reg;
 	int lsug;
 	int sug_pt;@;=
 @.+2a 	int quickexit;

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	xgrec--;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	xgrec--;
 \\\\}
 @;=
 @.+3;32c , char **cmds, int cmdnum
@@ -28,7 +28,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 	xgrec--;
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 
 int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
 \\\\{@;=
 @.+3c 	int i, j, cmdnum = 0;
@@ -60,7 +60,7 @@ int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> void ex_cprint\\\\(char \\\\*line, char \\\\*ft, int r, int c, int left, int flg\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> void ex_cprint\\\\(char \\\\*line, char \\\\*ft, int r, int c, int left, int flg\\\\);
 #define ex_cprint2\\\\(line, ft, r, c, left, flg\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, r, c, left, flg\\\\)\\\\); \\\\}
 #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}@;=
 @.+3;32c , char** cmds, int cmdnum

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 		break;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		break;
 	case 'w':
 	case 'W':@;=
 @.+2a 		if (vc && cnt == 1)

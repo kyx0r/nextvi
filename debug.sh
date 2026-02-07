@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
 		ex_command\\\\(s\\\\)
 \\\\}@;=
 @.+2a 
@@ -34,7 +34,7 @@ void ex_done(void)
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;
 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;@;=
 @.+2a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
@@ -42,7 +42,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: ren.c
-EXINIT="rcm:|sc! @|vis 6@%;f> ren_state rstates\\\\[3\\\\]; /\\\\* 0 = current line, 1 = all other lines, 2 = aux rendering \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> ren_state rstates\\\\[3\\\\]; /\\\\* 0 = current line, 1 = all other lines, 2 = aux rendering \\\\*/
 ren_state \\\\*rstate = rstates;
 @;=
 @.+2a void ren_done(void)
@@ -73,7 +73,7 @@ void syn_done(void)
 @vis 4@wq" $VI -e 'ren.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 \\\\}
 @;=
 @.+2a static void vi_regdone(void)
@@ -103,7 +103,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> /\\\\* text direction \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> /\\\\* text direction \\\\*/
 int dir_context\\\\(char \\\\*s\\\\);
 void dir_init\\\\(void\\\\);@;=
 @.+2a void dir_done(void);

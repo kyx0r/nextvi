@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-EXINIT="rcm:|sc! @|vis 6@%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
 #define WH1	15	/\\\\* bright white \\\\*/
 @;=
 @.+3;15;22c 
@@ -22,7 +22,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
 @vis 4@wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 		return xserr;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		return xserr;
 	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
 		sbuf sb;@;=
 @.+3c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
@@ -46,7 +46,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 		return xserr;
 @vis 4@wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
 	int r0 = \\\\*r, o0 = \\\\*o;@;=
 @.+3c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
@@ -67,7 +67,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_NEWLINE\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_NEWLINE\\\\);
 	if \\\\(!rs\\\\)
 		return;@;=
 @.+3c 	int *subs = emalloc(rs->nsubc * sizeof(int));
@@ -102,7 +102,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_NEWL
 @vis 4@wq" $VI -e 'led.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	return 0;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return 0;
 \\\\}
 @;=
 @.+3c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \\\\
@@ -150,7 +150,7 @@ int rset_find\\\\(rset \\\\*rs, char \\\\*s, int \\\\*grps, int flg\\\\)
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: ren.c
-EXINIT="rcm:|sc! @|vis 6@%;f> static int syn_initft\\\\(int fti, int n, char \\\\*name, int flg\\\\)
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static int syn_initft\\\\(int fti, int n, char \\\\*name, int flg\\\\)
 \\\\{
 	int i = n, set = hls\\\\[i\\\\]\\\\.set;@;=
 @.+3c 	char **pats = emalloc(hlslen * sizeof(char *));
@@ -198,7 +198,7 @@ void syn_init\\\\(void\\\\)
 @vis 4@wq" $VI -e 'ren.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 			vi_rshift = 0;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			vi_rshift = 0;
 		if \\\\(row != xrow\\\\+1 \\\\|\\\\| !c \\\\|\\\\| \\\\*c == '\\\\\\\\n'\\\\)
 			goto skip;@;=
 @.+3c 		char *tmp = emalloc(xcols+3);
@@ -222,7 +222,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 			vi_rshift = 0;
 .
 @.,$;f+ 				case 't': \\\\{
 					vi_drawmsg\\\\(\"arg2:\\\\(0\\\\|#\\\\)\"\\\\);
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\)\\\\);@;=
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);@;=
 @.+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
 @.,$;f+ 						free\\\\(cs\\\\);
@@ -232,7 +232,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 			vi_rshift = 0;
 .
 @.,$;f+ 					goto do_excmd; \\\\}
 				case 'r': \\\\{
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg\\\\);@;=
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);@;=
 @.+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
 @.,$;f+ 						free\\\\(cs\\\\);
@@ -243,7 +243,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 			vi_rshift = 0;
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> struct highlight \\\\{
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> struct highlight \\\\{
 	char \\\\*ft;		/\\\\* the filetype of this pattern \\\\*/
 	char \\\\*pat;		/\\\\* regular expression \\\\*/@;=
 @.+3;5;9c att[16]

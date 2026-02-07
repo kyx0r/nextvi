@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: kmap.h
-EXINIT="rcm:|sc! @|vis 6@%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
 	\\\\[0\\\\] = \"en\",@;=
 @.+1a 	['y'] = \"h\",
 	['n'] = \"j\",
@@ -28,7 +28,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
 @vis 4@wq" $VI -e 'kmap.h'
 
 # Patch: term.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 			err:
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			err:
 			\\\\*ibuf = 0;
 		\\\\}@;=
 @.+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])

@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	o = off\\\\[i\\\\]; \\\\\\\\
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	o = off\\\\[i\\\\]; \\\\\\\\
 	if \\\\(o >= 0\\\\) \\\\{ \\\\\\\\
 		for \\\\(l = i; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\); \\\\\\\\@;=
 @.+3;16;38c 

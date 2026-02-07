@@ -14,7 +14,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: cbuild.sh
-EXINIT="rcm:|sc! @|vis 6@%;f> -Wno-unused-parameter \\\\\\\\
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> -Wno-unused-parameter \\\\\\\\
 -Wno-unused-result \\\\\\\\
 -Wfatal-errors -std=c99 \\\\\\\\@;=
 @.+2a -lpthread \\\\
@@ -22,7 +22,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> -Wno-unused-parameter \\\\\\\\
 @vis 4@wq" $VI -e 'cbuild.sh'
 
 # Patch: lbuf.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	return n != 0;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return n != 0;
 \\\\}
 @;=
 @.+3,#+12c struct lsparams
@@ -133,7 +133,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 @vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
-EXINIT="rcm:|sc! @|vis 6@%;f> 	return 0;
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return 0;
 \\\\}
 @;=
 @.+3;29;35c flg & REG_NEWLINE
@@ -149,7 +149,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> 	return 0;
 @vis 4@wq" $VI -e 'regex.c'
 
 # Patch: uc.c
-EXINIT="rcm:|sc! @|vis 6@>	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\*/>-1;14c _
+EXINIT="rcm:|sc! \\\\@|vis 6@>	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\*/>-1;14c _
 .
 @%;f> 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\\\\* F \\\\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
@@ -159,7 +159,7 @@ EXINIT="rcm:|sc! @|vis 6@>	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \
 @vis 4@wq" $VI -e 'uc.c'
 
 # Patch: vi.c
-EXINIT="rcm:|sc! @|vis 6@%;f> #include <sys/stat\\\\.h>
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #include <sys/stat\\\\.h>
 #include <sys/ioctl\\\\.h>
 #include <sys/wait\\\\.h>@;=
 @.+2a #include <pthread.h>
@@ -167,7 +167,7 @@ EXINIT="rcm:|sc! @|vis 6@%;f> #include <sys/stat\\\\.h>
 @vis 4@wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="rcm:|sc! @|vis 6@%;f> void syn_init\\\\(void\\\\);
+EXINIT="rcm:|sc! \\\\@|vis 6@%;f> void syn_init\\\\(void\\\\);
 
 /\\\\* uc\\\\.c utf-8 helper functions \\\\*/@;=
 @.+3c extern unsigned char _utf8_length[256];
