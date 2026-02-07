@@ -317,7 +317,7 @@ EX ESCAPES
              Specials in regex "[]" expression
      ( ) { } + * ? ^ $ [ ] | \ . \< \>
              Specials in regex
-     : \ % !
+     \ : % !
              Specials in ex
 
 EX EXPANSION
@@ -878,24 +878,24 @@ EX COMMANDS
              Example: autocomplete using whole lines from a buffer
              :ac .+
 
-     [0-2]sc[sep][esc][exp][exe]
+     [0-2]sc[esc][sep][exp][exe]
              Set ex special characters
 
              Prefix selects a specific character to change.
-             Missing arguments default to <: \ % !>.
+             Missing arguments default to <\ : % !>.
 
              Example: change <%> to <a>
              :2sc a
              Example: change all to <a> <b> <c> <d>
              :sc abcd
 
-     [0-2]sc![sep][esc][exp][exe]
+     [0-2]sc![esc][sep][exp][exe]
              Set ex special characters
 
              Missing arguments default to <0x0>.
 
              Example: disable [exp] and [exe]
-             :sc! \:\\
+             :sc! \\\:
 
      uc      Toggle multibyte utf-8 decoding
 
