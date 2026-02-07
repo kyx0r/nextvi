@@ -34,6 +34,7 @@ int xkwddir;			/* the last search direction */
 int xkwdcnt;			/* number of search kwd changes */
 int xpln;			/* tracks newline from ex print and pipe stdout */
 int xsep = ':';			/* ex command separator */
+int xesc = '\\';		/* ex command arg escape character */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 sbuf *xregs[256];		/* string registers */
@@ -1306,6 +1307,7 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 	xsep = cmd[2] ? 0 : ':';
 	xexp = cmd[2] ? 0 : '%';
 	xexe = cmd[2] ? 0 : '!';
+	xesc = cmd[2] ? 0 : '\\';
 	for (; *arg; arg++, i++) {
 		direct:
 		if (i == 0)
@@ -1314,6 +1316,8 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 			xexp = *arg;
 		else if (i == 2)
 			xexe = *arg;
+		else if (i == 3)
+			xesc = *arg;
 	}
 	return NULL;
 }
@@ -1450,7 +1454,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 	while (*src && *src != xsep) {
 		if (*src == xexp) {
 			src++;
-			if (*src == '@' && src[1] && src[1] != '\\') {
+			if (*src == '@' && src[1] && src[1] != xesc) {
 				sbuf *reg = xregs[(unsigned char)src[1]];
 				if (reg)
 					sbuf_str(sb, reg->s)
@@ -1465,7 +1469,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 					pbuf = &bufs[n = atoi(src)];
 					src += itoalen(n);
 				}
-				src += *src == '\\' && src[-1] != '#' && (src[1] ^ '0') < 10;
+				src += *src == xesc && src[-1] != '#' && (src[1] ^ '0') < 10;
 				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
 					sbuf_str(sb, pbuf->path)
 			}
@@ -1473,7 +1477,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			int n = sb->s_n;
 			src++;
 			while (*src && *src != xexe) {
-				if (*src == '\\' && src[1] == xexe)
+				if (*src == xesc && src[1] == xexe)
 					src++;
 				sbuf_chr(sb, *src++)
 			}
@@ -1486,8 +1490,8 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 				sbuf_free(str)
 			}
 		} else {
-			if (*src == '\\' && (src[1] == xsep || src[1] == xexp
-					|| src[1] == xexe || src[1] == '\\') && src[1])
+			if (*src == xesc && (src[1] == xsep || src[1] == xexp
+					|| src[1] == xexe || src[1] == xesc) && src[1])
 				src++;
 			sbuf_chr(sb, *src++)
 		}
