@@ -599,7 +599,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		return;
 
 	fprintf(out, "\n# Patch: %s\n", fp->path);
-	fprintf(out, "EXINIT=\"rcm:|sc! %c|vis 6%c", sep, sep);
+	fprintf(out, "EXINIT=\"rcm:|sc! \x5c\x5c\x5c\x5c%c|vis 6%c", sep, sep);
 
 	/*
 	 * Strategy: process operations in groups.
