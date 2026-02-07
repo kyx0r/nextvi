@@ -387,7 +387,7 @@ static void emit_escaped_regex_reread(FILE *out, const char *s)
 {
 	char *regex_esc = escape_regex(s);
 	for (const char *p = regex_esc; *p; p++) {
-		if (*p == '>' || *p == '<') {
+		if (*p == '>') {
 			fputc('\\', out);  /* shell-escaped \ for re_read delimiter escape */
 			fputc('\\', out);
 			fputc(*p, out);
