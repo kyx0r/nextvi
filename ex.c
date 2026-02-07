@@ -1304,16 +1304,16 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 		i = atoi(loc);
 		goto direct;
 	}
-	xsep = cmd[2] ? 0 : ':';
 	xesc = cmd[2] ? 0 : '\\';
+	xsep = cmd[2] ? 0 : ':';
 	xexp = cmd[2] ? 0 : '%';
 	xexe = cmd[2] ? 0 : '!';
 	for (; *arg; arg++, i++) {
 		direct:
 		if (i == 0)
-			xsep = *arg;
-		else if (i == 1)
 			xesc = *arg;
+		else if (i == 1)
+			xsep = *arg;
 		else if (i == 2)
 			xexp = *arg;
 		else if (i == 3)
