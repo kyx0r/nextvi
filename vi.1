@@ -535,7 +535,7 @@ with <\\>.
 Specials in regex "[]" expression
 .It Cm \&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&. \\\\< \\\\>
 Specials in regex
-.It Cm \&: \e \&% \&!
+.It Cm \e \&: \&% \&!
 Specials in ex
 .El
 .
@@ -1175,11 +1175,11 @@ Example: autocomplete using whole lines from a buffer
 :ac .+
 .Ed
 
-.It Cm [0-2]sc[sep][esc][exp][exe]
+.It Cm [0-2]sc[esc][sep][exp][exe]
 Set ex special characters
 .Bd -literal
 Prefix selects a specific character to change.
-Missing arguments default to <: \e % !>.
+Missing arguments default to <\e : % !>.
 
 Example: change <%> to <a>
 :2sc a
@@ -1187,13 +1187,13 @@ Example: change all to <a> <b> <c> <d>
 :sc abcd
 .Ed
 
-.It Cm [0-2]sc![sep][esc][exp][exe]
+.It Cm [0-2]sc![esc][sep][exp][exe]
 Set ex special characters
 .Bd -literal
 Missing arguments default to <0x0>.
 
 Example: disable [exp] and [exe]
-:sc! \e:\e\e
+:sc! \e\e\e:
 .Ed
 
 .It Cm uc
