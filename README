@@ -317,7 +317,8 @@ EX ESCAPES
              Specials in regex "[]" expression
      ( ) { } + * ? ^ $ [ ] | \ . \< \>
              Specials in regex
-     % ! :   Specials in ex
+     : \ % !
+             Specials in ex
 
 EX EXPANSION
      <%> in [args] expands to current buffer pathname or any buffer
@@ -701,9 +702,7 @@ EX COMMANDS
              Conditional
 
              Unlike while loop conditional, branching depends on the error
-             status of the last command.
-             This can be used to make single conditionals a lot cleaner reducing
-             the amount of escapes required.
+             status of the last command, reducing the number of escapes required.
 
      ??!{else}[<?>][then]
              Inverted conditional
@@ -879,24 +878,24 @@ EX COMMANDS
              Example: autocomplete using whole lines from a buffer
              :ac .+
 
-     [0-2]sc[sep][exp][exe]
+     [0-2]sc[sep][esc][exp][exe]
              Set ex special characters
 
              Prefix selects a specific character to change.
-             Missing arguments are set to their default values.
+             Missing arguments default to <: \ % !>.
 
              Example: change <%> to <a>
-             :1sc a
-             Example: change all to <a> <b> <c>
-             :sc abc
+             :2sc a
+             Example: change all to <a> <b> <c> <d>
+             :sc abcd
 
-     [0-2]sc![sep][exp][exe]
+     [0-2]sc![sep][esc][exp][exe]
              Set ex special characters
 
-             Missing arguments are set to <0x0>.
+             Missing arguments default to <0x0>.
 
              Example: disable [exp] and [exe]
-             :sc! \:
+             :sc! \:\\
 
      uc      Toggle multibyte utf-8 decoding
 
@@ -1195,7 +1194,7 @@ SPECIAL REGISTERS
 CODE MAP
      +--------------+----------------------+
      | 537 kmap.h   |  keymap translation  |
-     | 544 vi.h     |  definitions/aux     |
+     | 545 vi.h     |  definitions/aux     |
      +--------------+----------------------+
      | 332 conf.c   |  hl/ft/td config     |
      | 361 term.c   |  low level IO        |
@@ -1204,9 +1203,9 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 718 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1609 ex.c    |  ex options/commands |
-     | 1836 vi.c    |  normal mode/general |
-     | 7299 total   |  wc -l *.c|sort      |
+     | 1613 ex.c    |  ex options/commands |
+     | 1839 vi.c    |  normal mode/general |
+     | 7306 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1278,4 +1277,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 6, 2026                     Nextvi 4.0
+Nextvi 4.0                     February 7, 2026                     Nextvi 4.0
