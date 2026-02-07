@@ -392,7 +392,7 @@ static int vi_motionln(int *row, int cmd, int cnt)
 	return c;
 }
 
-static char *vi_curword(struct lbuf *lb, int row, int off, int n)
+static char *vi_curword(struct lbuf *lb, int row, int off, int n, int ex)
 {
 	char *ln = lbuf_get(lb, row);
 	if (!ln || !n)
@@ -409,8 +409,10 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	sbuf_smake(sb, 64)
 	if (n > 1) {
 		for (; off < end; off++) {
-			if (*chrs[off] == xsep)
-				sbuf_chr(sb, '\\')
+			if (ex && (*chrs[off] == xsep || *chrs[off] == '\\')) {
+				ln = "\\\\" + (*chrs[off] == xsep);
+				sbuf_str(sb, ln)
+			}
 			if (strchr("!%{}[]().?\\^$|*/+", *chrs[off]))
 				sbuf_chr(sb, '\\')
 			sbuf_chr(sb, *chrs[off])
@@ -718,7 +720,7 @@ static int vi_motion(int vc, int *row, int *off)
 			ex_edit(savepath[n]->s, savepath[n]->s_n); \
 		} \
 
-		if (vi_arg && (cs = vi_curword(xb, *row, *off, cnt))) {
+		if (vi_arg && (cs = vi_curword(xb, *row, *off, cnt, 0))) {
 			ex_krsset(cs, +1);
 			free(cs);
 		}
@@ -786,7 +788,7 @@ static int vi_motion(int vc, int *row, int *off)
 	case '*':
 	case TK_CTL('a'):
 		if (mv == TK_CTL('a') || vi_arg) {
-			if (!(cs = vi_curword(xb, *row, *off, cnt)))
+			if (!(cs = vi_curword(xb, *row, *off, cnt, 0)))
 				return -1;
 			ex_krsset(cs, +1);
 			free(cs);
@@ -1401,7 +1403,7 @@ void vi(int init)
 					ln = vi_enprompt(":", "!", &k, &n);
 					goto do_excmd;
 				case '/':
-					cs = vi_curword(xb, xrow, xoff, vi_arg);
+					cs = vi_curword(xb, xrow, xoff, vi_arg, 0);
 					ln = vi_prompt("xkwd:", vs_ft, cs, &k, &xkmap, &n);
 					if (k)
 						ex_krsset(ln + n, +1);
@@ -1411,7 +1413,7 @@ void vi(int init)
 					break;
 				case 't': {
 					vi_drawmsg("arg2:(0|#)");
-					cs = vi_curword(xb, xrow, xoff, vi_prefix());
+					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, ".,.+");
 					char *buf1 = itoa(vi_arg, buf+4);
@@ -1424,7 +1426,7 @@ void vi(int init)
 					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				case 'r': {
-					cs = vi_curword(xb, xrow, xoff, vi_arg);
+					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, "%s/");
 					if (cs) {
@@ -1711,7 +1713,7 @@ void vi(int init)
 		}
 		if (xhlw) {
 			static char *word;
-			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
+			if ((cs = vi_curword(xb, xrow, xoff, xhlw, 0))) {
 				if (!word || strcmp(word, cs)) {
 					syn_reloadft(syn_addhl(cs, 1), 0);
 					vi_mod |= 1;
