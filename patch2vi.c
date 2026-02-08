@@ -348,6 +348,8 @@ static void emit_err_check(FILE *out, int line)
 	EMIT_ESCSEP(out);
 	fprintf(out, "p FAIL line %d", line);
 	EMIT_ESCSEP(out);
+	fputs("vis 4", out);
+	EMIT_ESCSEP(out);
 	fputs("q!", out);
 	EMIT_SEP(out);
 }
