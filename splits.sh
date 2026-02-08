@@ -464,7 +464,8 @@ ${SEP}.-1${SEP}>\\{>a 	/* window offset for vsplit (not for prompts) */
 .
 ${SEP}??!.-5,.+5p\\${SEP}p FAIL line 364\\${SEP}vis 4\\${SEP}q!${SEP}.-1${SEP}>	rstate\\+\\+;>+1;22;27c winh
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 366\\${SEP}vis 4\\${SEP}q!${SEP}.-1${SEP}>		if \\(vi_lncol\\) \\{>+1;15;16c winx
+${SEP}??!.-5,.+5p\\${SEP}p FAIL line 366\\${SEP}vis 4\\${SEP}q!${SEP}.-1${SEP}>		if \\(vi_lncol\\) \\{>+1,#+1c 			term_pos(r, winx);
+			if (nwins > 1) term_killn(winw); else term_kill();
 .
 ${SEP}??!.-5,.+5p\\${SEP}p FAIL line 368\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 			sbuf_mem\\\\(cb, cs, nl\\\\+!!cs\\\\[nl\\\\]\\\\)
 			sbufn_null\\\\(cb\\\\)
@@ -483,6 +484,20 @@ ${SEP}??!.-5,.+5p\\${SEP}p FAIL line 386\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 		ca
 			if \\\\(ai_max >= 0\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 509\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+3;46c , ai_max
 .
+${SEP}.,$;f+ 				pac:;
+				sbuf_null\\\\(sb\\\\)
+				int r = crow-ctop\\\\+1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 548\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}.+2a 				int pwx = curwin ? curwin->x : 0;
+				int pww = curwin ? curwin->w : xcols;
+				int pwh = curwin ? curwin->h : xrows;
+.
+${SEP}.,$;f+ 					preserve\\\\(int, xtd, xtd = 2;\\\\)
+					preserve\\\\(int, ftidx,\\\\)
+					syn_setft\\\\(ac_ft\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 558\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}.+3,#+2c 					for (int left = 0; r < pwh; r++) {
+						RS(2, led_crender(is->sug, r, pwx, left, left+pww))
+						left += pww;
+.
 ${SEP}.,$;f+ 					restore\\\\(ftidx\\\\)
 					r\\\\+\\\\+;
 				\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 568\\${SEP}vis 4\\${SEP}q!${SEP};=
@@ -500,6 +515,23 @@ ${SEP}.,$;f+ 			term_done\\\\(\\\\);
 ${SEP}.+3;46c , ai_max
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'led.c'
+
+# Patch: term.c
+SEP="$(printf '\x01')"
+EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	term_out\\\\(\"\\\\\\\\33\\\\[K\"\\\\);
+\\\\}
+${SEP}??!.-5,.+5p\\${SEP}p FAIL line 83\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}.+2a void term_killn(int n)
+{
+	char cmd[32] = \"\\\\33[\";
+	char *s = itoa(n, cmd+2);
+	s[0] = 'X';
+	s[1] = '\\\\0';
+	term_out(cmd);
+}
+
+.
+${SEP}vis 4${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
@@ -609,38 +641,20 @@ ${SEP}.-1${SEP}>	syn_scdir\\(0\\);>+1;19;20c w
 ${SEP}??!.-5,.+5p\\${SEP}p FAIL line 222\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 		vi_drawrow\\\\(i\\\\);
 \\\\}
 ${SEP}??!.-5,.+5p\\${SEP}p FAIL line 225\\${SEP}vis 4\\${SEP}q!${SEP};=
-${SEP}.+2a /* draw all windows and separators */
-static void vi_draw_allwins(void)
+${SEP}.+2a /* draw all window separators */
+static void vi_draw_separators(void)
 {
-	struct win *w = wins;
-	struct win *saved = curwin;
-	/* draw each window */
+	struct win *w = wins, *w2;
 	do {
-		curwin = w;
-		/* temporarily load window state */
-		xrow = w->row;
-		xoff = w->off;
-		xtop = w->top;
-		xleft = w->left;
-		if (w->buf != ex_buf) {
-			ex_buf = w->buf;
-			syn_setft(xb_ft);
-		}
-		syn_scdir(0);
-		for (int i = xtop; i < xtop + w->h; i++)
-			vi_drawrow(i);
-		/* draw separators based on actual adjacency */
-		struct win *w2 = wins;
+		w2 = wins;
 		do {
 			if (w2 != w) {
-				/* vertical separator: w2 is to the right of w */
 				if (w2->x == w->x + w->w + 1) {
 					int y1 = MAX(w->y, w2->y);
 					int y2 = MIN(w->y + w->h, w2->y + w2->h);
 					if (y1 < y2)
 						vi_draw_vsep(w->x + w->w, y1, y2 - y1);
 				}
-				/* horizontal separator: w2 is below w */
 				if (w2->y == w->y + w->h + 1) {
 					int x1 = MAX(w->x, w2->x);
 					int x2 = MIN(w->x + w->w, w2->x + w2->w);
@@ -652,14 +666,38 @@ static void vi_draw_allwins(void)
 		} while (w2 != wins);
 		w = w->next;
 	} while (w != wins);
-	/* restore current window */
+}
+
+/* draw all windows and separators */
+static void vi_draw_allwins(void)
+{
+	struct win *w = wins;
+	struct win *saved = curwin;
+	struct buf *savebuf = ex_buf;
+	int srow = xrow, soff = xoff, stop = xtop, sleft = xleft;
+	do {
+		curwin = w;
+		xrow = w->row;
+		xoff = w->off;
+		xtop = w->top;
+		xleft = w->left;
+		if (w->buf != ex_buf) {
+			ex_buf = w->buf;
+			syn_setft(xb_ft);
+		}
+		syn_scdir(0);
+		for (int i = xtop; i < xtop + w->h; i++)
+			vi_drawrow(i);
+		w = w->next;
+	} while (w != wins);
+	vi_draw_separators();
 	curwin = saved;
-	xrow = saved->row;
-	xoff = saved->off;
-	xtop = saved->top;
-	xleft = saved->left;
-	if (saved->buf != ex_buf) {
-		ex_buf = saved->buf;
+	xrow = srow;
+	xoff = soff;
+	xtop = stop;
+	xleft = sleft;
+	if (savebuf != ex_buf) {
+		ex_buf = savebuf;
 		syn_setft(xb_ft);
 	}
 }
@@ -827,20 +865,30 @@ ${SEP}.+3c 		/* save cursor position to current window */
 			curwin->top = xtop;
 			curwin->left = xleft;
 		}
-		/* always do full redraw when multiple windows are active */
-		if (nwins > 1) {
-			vi_draw_allwins();
-		} else if (vi_mod & 1 || xleft != oleft
+		if (vi_mod & 1) {
+			if (nwins > 1)
+				vi_draw_allwins();
+			else
+				vi_drawagain(xtop);
+		} else if (xleft != oleft
 .
 ${SEP}.-1${SEP}>				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)>+1;34c  {
 .
 ${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1748\\${SEP}vis 4\\${SEP}q!${SEP}.-1${SEP}>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1750\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 			vi_drawupdate\\\\(otop - xtop\\\\);
-		if \\\\(xhll\\\\) \\\\{
+${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1750\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 			vi_drawrow\\\\(xrow\\\\+1\\\\);
+			vi_rshift = 0;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1754\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}.+2,#+1c 		} else if (xtop != otop) {
+			if (nwins > 1)
+				vi_drawagain(xtop);
+			else
+				vi_drawupdate(otop - xtop);
+		}
+.
+${SEP}.,$;f+ 		if \\\\(xhll\\\\) \\\\{
 			syn_blockhl = -1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1758\\${SEP}vis 4\\${SEP}q!${SEP};=
-${SEP}.+3;53;58c win_height()
+${SEP}.+2;53;58c win_height()
 .
 ${SEP}.,$;f+ 			if \\\\(xmpt > 0\\\\)
 				xmpt = 0;
@@ -851,7 +899,18 @@ ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	long mtime;			/\\\\* modification time \\\\*/
+EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> void term_chr\\\\(int ch\\\\);
+void term_pos\\\\(int r, int c\\\\);
+void term_kill\\\\(void\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 328\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}.+2a void term_killn(int n);
+.
+${SEP}.,$;f+ \\\\} \\\\\\\\
+
+#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 399\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}.+3c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \\\\
+	if (nwins > 1) term_killn(end - beg); else term_kill();)
+.
+${SEP}.,$;f+ 	long mtime;			/\\\\* modification time \\\\*/
 	signed char td;			/\\\\* text direction \\\\*/
 \\\\};${SEP}??!.-5,.+5p\\${SEP}p FAIL line 412\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2a 
