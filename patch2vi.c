@@ -332,7 +332,7 @@ typedef struct {
  * On failure: prints surrounding lines, error message, and quits. */
 static void emit_err_check(FILE *out, int line, int sep)
 {
-	fprintf(out, "?" "?!.-5,.+5p\\%cp FAIL line %d\\%cq!?%c",
+	fprintf(out, "?" "?!.-5,.+5p\\%cp FAIL line %d\\%cq!%c",
 		sep, line, sep, sep);
 }
 
