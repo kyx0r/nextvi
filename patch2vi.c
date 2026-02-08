@@ -325,7 +325,16 @@ typedef struct {
 	int use_offset;      /* use .+offset_val instead of searching (-rb) */
 	int offset_val;      /* offset from current xrow */
 	int backstep;        /* emit .-1 before search to include current line (-r) */
+	int target_line;     /* original line number for error reporting */
 } rel_ctx_t;
+
+/* Emit ??! error check after a regex search command.
+ * On failure: prints surrounding lines, error message, and quits. */
+static void emit_err_check(FILE *out, int line, int sep)
+{
+	fprintf(out, "?" "?!.-5,.+5p\\%cp FAIL line %d\\%cq!?%c",
+		sep, line, sep, sep);
+}
 
 /* Write a regex-escaped string with shell double-quote escaping.
  * escape_regex handles regex metacharacters, then emit_escaped_line
@@ -416,7 +425,7 @@ static void emit_fwd_pos(FILE *out, const char *anchor, int offset, int sep)
 /* Emit multiline f>/f+ position using 2+ context lines.
  * first=1 uses f> (search from current pos), first=0 uses f+ (skip past current) */
 static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
-				int offset, int sep, int first)
+				int offset, int sep, int first, int target_line)
 {
 	fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
 	for (int i = 0; i < nanchors; i++) {
@@ -424,7 +433,9 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 		if (i < nanchors - 1)
 			fputc('\n', out);  /* literal newline between context lines */
 	}
-	fprintf(out, "%c;=\n%c", sep, sep);
+	fprintf(out, "%c", sep);
+	emit_err_check(out, target_line, sep);
+	fprintf(out, ";=\n%c", sep);
 	/* After f>/f+, cursor is at match position; use .+offset for target */
 	fprintf(out, ".+%d", offset);
 }
@@ -466,7 +477,7 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
 	if (rc->nanchors >= 2) {
 		/* Multiline: f>/f+ search, then .+offset as position for next command */
 		int offset = rc->nanchors + rc->anchor_offset - 1;
-		emit_multiline_pos(out, rc->anchors, rc->nanchors, offset, sep, *first_ml);
+		emit_multiline_pos(out, rc->anchors, rc->nanchors, offset, sep, *first_ml, rc->target_line);
 		*first_ml = 0;
 		return 1;
 	}
@@ -511,19 +522,12 @@ static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count, int sep,
 				  int *first_ml)
 {
 	int mode = emit_rel_pos(out, rc, sep, first_ml);
-	if (mode == 1) {
-		/* multiline: pos is ".+N", append delete action */
-		if (count == 1)
-			fprintf(out, "d%c", sep);
-		else
-			fprintf(out, ",#+%dd%c", count - 1, sep);
-	} else {
-		/* single-line: pos already emitted, append delete */
-		if (count == 1)
-			fprintf(out, "d%c", sep);
-		else
-			fprintf(out, ",#+%dd%c", count - 1, sep);
-	}
+	if (count == 1)
+		fprintf(out, "d%c", sep);
+	else
+		fprintf(out, ",#+%dd%c", count - 1, sep);
+	if (mode == 0 && !rc->use_offset)
+		emit_err_check(out, rc->target_line, sep);
 }
 
 /* Emit insert using relative pattern */
@@ -534,17 +538,14 @@ static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
 		return;
 
 	int mode = emit_rel_pos(out, rc, sep, first_ml);
-	if (mode == 1) {
-		/* After multiline f>, we have .+offset as position */
-		fprintf(out, "a ");
-	} else {
-		fprintf(out, "a ");
-	}
+	fprintf(out, "a ");
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
 	fprintf(out, ".\n%c", sep);
+	if (mode == 0 && !rc->use_offset)
+		emit_err_check(out, rc->target_line, sep);
 }
 
 /* Emit change using relative pattern */
@@ -558,24 +559,18 @@ static void emit_relative_change(FILE *out, rel_ctx_t *rc,
 	}
 
 	int mode = emit_rel_pos(out, rc, sep, first_ml);
-	if (mode == 1) {
-		/* multiline pos emitted .+offset, append change */
-		if (del_count == 1)
-			fprintf(out, "c ");
-		else
-			fprintf(out, ",#+%dc ", del_count - 1);
-	} else {
-		if (del_count == 1)
-			fprintf(out, "c ");
-		else
-			fprintf(out, ",#+%dc ", del_count - 1);
-	}
+	if (del_count == 1)
+		fprintf(out, "c ");
+	else
+		fprintf(out, ",#+%dc ", del_count - 1);
 
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
 	fprintf(out, ".\n%c", sep);
+	if (mode == 0 && !rc->use_offset)
+		emit_err_check(out, rc->target_line, sep);
 }
 
 /* Emit horizontal change using relative pattern */
@@ -583,13 +578,15 @@ static void emit_relative_horizontal(FILE *out, rel_ctx_t *rc,
 				      int char_start, int char_end,
 				      const char *new_text, int sep, int *first_ml)
 {
-	emit_rel_pos(out, rc, sep, first_ml);
+	int mode = emit_rel_pos(out, rc, sep, first_ml);
 	if (char_start == char_end)
 		fprintf(out, ";%dc ", char_start);
 	else
 		fprintf(out, ";%d;%dc ", char_start, char_end);
 	emit_escaped_text(out, new_text);
 	fprintf(out, "\n.\n%c", sep);
+	if (mode == 0 && !rc->use_offset)
+		emit_err_check(out, rc->target_line, sep);
 }
 
 /* Process operations for one file and emit script */
@@ -758,6 +755,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			rc.use_offset = 0;
 			rc.offset_val = 0;
 			rc.backstep = 0;
+			rc.target_line = g->del_start ? g->del_start : g->add_after;
 			if (relative_mode == 2 && prev_xrow > 0) {
 				/* -rb: interior groups use .+N offset */
 				int target;
