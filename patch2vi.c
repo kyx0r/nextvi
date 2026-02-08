@@ -172,10 +172,28 @@ static void mark_bytes_used(const char *s)
 		byte_used[(unsigned char)*s] = 1;
 }
 
-/* Find an unused byte to use as separator (prefer printable) */
+/* Check if byte is a usable control char (not 0, \n, \r, \t) */
+static int is_usable_ctrl(int c)
+{
+	return c >= 1 && c < 32 && c != '\n' && c != '\r' && c != '\t';
+}
+
+/* Find an unused byte to use as separator.
+ * Prefer non-printable bytes so printable chars stay available
+ * for ex commands and patterns. */
 static int find_unused_byte(void)
 {
-	/* First try printable non-special chars (avoid ex range chars) */
+	/* First try control chars - least likely to conflict */
+	for (int c = 1; c < 32; c++) {
+		if (is_usable_ctrl(c) && !byte_used[c])
+			return c;
+	}
+	/* Then try high bytes */
+	for (int c = 128; c < 256; c++) {
+		if (!byte_used[c])
+			return c;
+	}
+	/* Then try printable non-special chars */
 	const char *preferred = "@&~=[]{}";
 	for (const char *p = preferred; *p; p++) {
 		if (!byte_used[(unsigned char)*p])
@@ -186,16 +204,6 @@ static int find_unused_byte(void)
 		if (!byte_used[c])
 			return c;
 	}
-	/* Then try high bytes */
-	for (int c = 128; c < 256; c++) {
-		if (!byte_used[c])
-			return c;
-	}
-	/* Then try low control chars (except 0, \n, \r, \t) */
-	for (int c = 1; c < 32; c++) {
-		if (c != '\n' && c != '\r' && c != '\t' && !byte_used[c])
-			return c;
-	}
 	return -1;  /* All bytes used - very unlikely */
 }
 
@@ -204,22 +212,24 @@ static void list_unused_bytes(FILE *out)
 {
 	int n = 0;
 	fprintf(out, "# Available separators:");
-	const char *preferred = "@&~=[]{}";
-	for (const char *p = preferred; *p; p++) {
-		if (!byte_used[(unsigned char)*p]) {
-			fprintf(out, " %c", *p);
+	/* Control chars first (preferred) */
+	for (int c = 1; c < 32; c++) {
+		if (is_usable_ctrl(c) && !byte_used[c]) {
+			fprintf(out, " 0x%02x", c);
 			n++;
 		}
 	}
-	for (int c = '!'; c <= '~'; c++) {
-		if (!byte_used[c] && !strchr(preferred, c)) {
-			fprintf(out, " %c", c);
-			n++;
-		}
-	}
+	/* High bytes */
 	for (int c = 128; c < 256; c++) {
 		if (!byte_used[c]) {
 			fprintf(out, " 0x%02x", c);
+			n++;
+		}
+	}
+	/* Printable */
+	for (int c = '!'; c <= '~'; c++) {
+		if (!byte_used[c]) {
+			fprintf(out, " %c", c);
 			n++;
 		}
 	}
@@ -628,7 +638,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		return;
 
 	fprintf(out, "\n# Patch: %s\n", fp->path);
-	fprintf(out, "SEP='%c'\n", sep);
+	if (sep >= 32 && sep < 127)
+		fprintf(out, "SEP='%c'\n", sep);
+	else
+		fprintf(out, "SEP=\"$(printf '\\x%02x')\"\n", sep);
 	fputs("EXINIT=\"rcm:|sc! \\\\\\\\${SEP}|vis 6${SEP}", out);
 
 	/*
