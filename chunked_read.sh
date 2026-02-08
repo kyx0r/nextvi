@@ -16,21 +16,21 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return key;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 329\@q!@;=
 @.+3;23c , init
 .
 @.,$;f+ fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
-if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\@;=
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\@??!.-5,.+5p\@p FAIL line 332\@q!@;=
 @.+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
 .
 @.,$;f+ 		return 1;
 	\\\\}
-	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);@;=
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);@??!.-5,.+5p\@p FAIL line 348\@q!@;=
 @.+3;10c , 1
 .
 @.,$;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 369\@q!@;=
 @.+3;14c , cd == 3
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -38,7 +38,7 @@ if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\@;=
 # Patch: lbuf.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 206\@q!@;=
 @.+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 {
 	if (!init) {
@@ -62,12 +62,12 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 				sz++;
 				step = 0;
 .
-@.-1@>			\\}>+1,#+5d@.-1@>		\\}>a 		s[n] = '\\\\0';
+@.-1@>			\\}>+1,#+5d@??!.-5,.+5p\@p FAIL line 221\@q!@.-1@>		\\}>a 		s[n] = '\\\\0';
 		lbuf_edit(lb, s, beg, end, 0, 0);
 		free(s);
 		return nr != 0;
 .
-@.-1@>	\\}>+1,#+2c 	long nr, l, nins = 0, nl = 0;
+@??!.-5,.+5p\@p FAIL line 227\@q!@.-1@>	\\}>+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	struct linfo *n, *cn = NULL;
 	const int rchunk = 4096;
 	char sm[rchunk+1], *s, *ln;
@@ -118,12 +118,12 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
 .
-@vis 4@wq" $VI -e 'lbuf.c'
+@??!.-5,.+5p\@p FAIL line 229\@q!@vis 4@wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
 struct lbuf \\\\*lbuf_make\\\\(void\\\\);
-void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);@;=
+void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);@??!.-5,.+5p\@p FAIL line 169\@q!@;=
 @.+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
 .

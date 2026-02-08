@@ -16,17 +16,17 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> int xshape = 1;			/\\\\* perform letter shaping \\\\*/
 int xorder = 1;			/\\\\* change the order of characters \\\\*/
-int xts = 8;			/\\\\* number of spaces for tab \\\\*/@;=
+int xts = 8;			/\\\\* number of spaces for tab \\\\*/@??!.-5,.+5p\@p FAIL line 14\@q!@;=
 @.+2a int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
 @.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
 EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@;=
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@??!.-5,.+5p\@p FAIL line 1343\@q!@;=
 @.+2a EO(qe)
 .
 @.,$;f+ 	\\\\{\"g\", ec_glob\\\\},
 	EO\\\\(mpt\\\\),
-	\\\\{\"m\", ec_mark\\\\},@;=
+	\\\\{\"m\", ec_mark\\\\},@??!.-5,.+5p\@p FAIL line 1404\@q!@;=
 @.+2a 	EO(qe),
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -34,7 +34,7 @@ EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) E
 # Patch: led.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	restore\\\\(xvis\\\\)
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 406\@q!@;=
 @.+2a static int gettime_ms(void)
 {
 	struct timespec t;
@@ -46,7 +46,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	restore\\\\(xvis\\\\)
 .
 @.,$;f+ 				exbuf_load\\\\(ex_buf\\\\)
 			\\\\}
-			continue; \\\\}@;=
+			continue; \\\\}@??!.-5,.+5p\@p FAIL line 632\@q!@;=
 @.+2a 		case 'j':
 			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
 				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
@@ -60,17 +60,17 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	restore\\\\(xvis\\\\)
 .
 @.-1@>		default:>a _default:
 .
-@vis 4@wq" $VI -e 'led.c'
+@??!.-5,.+5p\@p FAIL line 633\@q!@vis 4@wq" $VI -e 'led.c'
 
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #include <dirent\\\\.h>
 #include <signal\\\\.h>
-#include <unistd\\\\.h>@;=
+#include <unistd\\\\.h>@??!.-5,.+5p\@p FAIL line 9\@q!@;=
 @.+2a #include <time.h>
 .
 @.,$;f+ 				k = vc_insert\\\\(c\\\\);
 				ins:
-				vi_mod \\\\|= !xpac && xrow == orow \\\\? 8 : 1;@;=
+				vi_mod \\\\|= !xpac && xrow == orow \\\\? 8 : 1;@??!.-5,.+5p\@p FAIL line 1506\@q!@;=
 @.+2a 				if (xqe)
 					vi_mod |= 2;
 .
@@ -79,17 +79,17 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #include <dirent\\\\.h>
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int p_reg;
 	int lsug;
-	int sug_pt;@;=
+	int sug_pt;@??!.-5,.+5p\@p FAIL line 372\@q!@;=
 @.+2a 	int quickexit;
 .
 @.,$;f+ is\\\\.p_reg = 0; \\\\\\\\
 is\\\\.lsug = 0; \\\\\\\\
-is\\\\.sug_pt = -1; \\\\\\\\@;=
+is\\\\.sug_pt = -1; \\\\\\\\@??!.-5,.+5p\@p FAIL line 380\@q!@;=
 @.+2a is.quickexit = 0; \\\\
 .
 @.,$;f+ extern int xshape;
 extern int xorder;
-extern int xts;@;=
+extern int xts;@??!.-5,.+5p\@p FAIL line 427\@q!@;=
 @.+2a extern int xqe;
 .
 @vis 4@wq" $VI -e 'vi.h'

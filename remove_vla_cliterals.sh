@@ -16,7 +16,7 @@ fi
 # Patch: conf.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
 #define WH1	15	/\\\\* bright white \\\\*/
-@;=
+@??!.-5,.+5p\@p FAIL line 55\@q!@;=
 @.+3;15;22c 
 .
 @vis 4@wq" $VI -e 'conf.c'
@@ -24,23 +24,23 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		return xserr;
 	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
-		sbuf sb;@;=
+		sbuf sb;@??!.-5,.+5p\@p FAIL line 512\@q!@;=
 @.+3c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 		int flg = 0, soff = 0;
 .
 @.,$;f+ 						soff \\\\+ offs\\\\[xgrp\\\\], &xrow, &xoff\\\\)\\\\)
 			ret = xuerr;
-		free\\\\(sb\\\\.s\\\\);@;=
+		free\\\\(sb\\\\.s\\\\);@??!.-5,.+5p\@p FAIL line 525\@q!@;=
 @.+2a 		free(offs);
 .
 @.,$;f+ 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);@;=
+	free\\\\(pat\\\\);@??!.-5,.+5p\@p FAIL line 982\@q!@;=
 @.+3c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 .
 @.,$;f+ 	if \\\\(rs != xkwdrs\\\\)
 		rset_free\\\\(rs\\\\);
-	free\\\\(rep\\\\);@;=
+	free\\\\(rep\\\\);@??!.-5,.+5p\@p FAIL line 1033\@q!@;=
 @.+2a 	free(offs);
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -48,20 +48,20 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		return xserr;
 # Patch: lbuf.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
-	int r0 = \\\\*r, o0 = \\\\*o;@;=
+	int r0 = \\\\*r, o0 = \\\\*o;@??!.-5,.+5p\@p FAIL line 486\@q!@;=
 @.+3c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
 .
 @.,$;f+ 				break;
 			\\\\*o = _o;
-			\\\\*r = i;@;=
+			\\\\*r = i;@??!.-5,.+5p\@p FAIL line 511\@q!@;=
 @.+3c 			if (dir > 0) {
 				free(offs);
 .
 @.-1@>				return 0;>a 			}
 .
-@.,$;f+ 		\\\\}
+@??!.-5,.+5p\@p FAIL line 512\@q!@.,$;f+ 		\\\\}
 		off = 0;
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 518\@q!@;=
 @.+2a 	free(offs);
 .
 @vis 4@wq" $VI -e 'lbuf.c'
@@ -69,17 +69,17 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 # Patch: led.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_NEWLINE\\\\);
 	if \\\\(!rs\\\\)
-		return;@;=
+		return;@??!.-5,.+5p\@p FAIL line 50\@q!@;=
 @.+3c 	int *subs = emalloc(rs->nsubc * sizeof(int));
 .
 @.,$;f+ 	sbuf_null\\\\(acsb\\\\)
 	free\\\\(ibuf->s\\\\);
-	rset_free\\\\(rs\\\\);@;=
+	rset_free\\\\(rs\\\\);@??!.-5,.+5p\@p FAIL line 82\@q!@;=
 @.+2a 	free(subs);
 .
 @.,$;f+ 	int att_old = 0, atti = 0, cterm = cend - cbeg;
 	char \\\\*bound = NULL;
-	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/@;=
+	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/@??!.-5,.+5p\@p FAIL line 153\@q!@;=
 @.+3,#+3c 	int *off = emalloc((cterm+1) * sizeof(int));	/* off[i]: the character at screen position i */
 	int *att = emalloc((cterm+1) * sizeof(int));	/* att[i]: the attributes of i-th character */
 	int *stt = NULL;	/* stt[i]: remap off indexes */
@@ -87,13 +87,13 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_
 .
 @.,$;f+ 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
-				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;@;=
+				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;@??!.-5,.+5p\@p FAIL line 177\@q!@;=
 @.+2a 		stt = emalloc((cterm+1) * sizeof(int));
 		ctt = emalloc((cterm+1) * sizeof(int));
 .
 @.,$;f+ 		memcpy\\\\(chrs\\\\[n\\\\], r->nullhole, r->holelen\\\\);
 		r->holelen = 0;
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 259\@q!@;=
 @.+2a 	free(off);
 	free(att);
 	free(stt);
@@ -104,7 +104,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_
 # Patch: regex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return 0;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 402\@q!@;=
 @.+3c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \\\\
 free(pcs); \\\\
 free(subs); \\\\
@@ -117,7 +117,7 @@ return state; } \\\\
 .
 @.,$;f+ 		return 0;
 	flg = prog->flg \\\\| flg;
-	const char \\\\*sp = s, \\\\*_sp = s, \\\\*s0, \\\\*s1;@;=
+	const char \\\\*sp = s, \\\\*_sp = s, \\\\*s0, \\\\*s1;@??!.-5,.+5p\@p FAIL line 628\@q!@;=
 @.+3,#+1c 	int *npc, *pc, *insts = prog->insts;
 	int **pcs = emalloc((prog->splits) * sizeof(int*));
 	rsub **subs = emalloc(prog->splits * sizeof(rsub*));
@@ -125,26 +125,26 @@ return state; } \\\\
 .
 @.-1@>	rsub \\*nsub, \\*sub, \\*matched = NULL, \\*freesub = NULL;>+1c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
 .
-@.-1@>	rthread \\*clist = _clist, \\*nlist = _nlist, \\*tmp;>+1;24;41c *lb = emalloc(prog->laidx * sizeof(lb[0]))
+@??!.-5,.+5p\@p FAIL line 631\@q!@.-1@>	rthread \\*clist = _clist, \\*nlist = _nlist, \\*tmp;>+1;24;41c *lb = emalloc(prog->laidx * sizeof(lb[0]))
 .
-@.,$;f+ 	int cnt, spc, i, c, j, osubp = nsubc \\\\* sizeof\\\\(char\\\\*\\\\);
+@??!.-5,.+5p\@p FAIL line 633\@q!@.,$;f+ 	int cnt, spc, i, c, j, osubp = nsubc \\\\* sizeof\\\\(char\\\\*\\\\);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
-	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;@;=
+	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;@??!.-5,.+5p\@p FAIL line 638\@q!@;=
 @.+3,#+1c 	char *nsubs = emalloc(prog->sub);
 .
 @.,$;f+ /\\\\* return the index of the matching regular expression or -1 if none matches \\\\*/
 int rset_find\\\\(rset \\\\*rs, char \\\\*s, int \\\\*grps, int flg\\\\)
-\\\\{@;=
+\\\\{@??!.-5,.+5p\@p FAIL line 717\@q!@;=
 @.+3c 	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
 .
 @.,$;f+ 						grps\\\\[gi \\\\+ 1\\\\] = -1;
 					\\\\}
-				\\\\}@;=
+				\\\\}@??!.-5,.+5p\@p FAIL line 733\@q!@;=
 @.+2a 				free(subs);
 .
 @.,$;f+ 			\\\\}
 		\\\\}
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 737\@q!@;=
 @.+2a 	free(subs);
 .
 @vis 4@wq" $VI -e 'regex.c'
@@ -152,47 +152,47 @@ int rset_find\\\\(rset \\\\*rs, char \\\\*s, int \\\\*grps, int flg\\\\)
 # Patch: ren.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static int syn_initft\\\\(int fti, int n, char \\\\*name, int flg\\\\)
 \\\\{
-	int i = n, set = hls\\\\[i\\\\]\\\\.set;@;=
+	int i = n, set = hls\\\\[i\\\\]\\\\.set;@??!.-5,.+5p\@p FAIL line 255\@q!@;=
 @.+3c 	char **pats = emalloc(hlslen * sizeof(char *));
 .
 @.,$;f+ 	ftmap\\\\[fti\\\\]\\\\.ft = name;
 	ftmap\\\\[fti\\\\]\\\\.rs = rset_make\\\\(i - n, pats, flg\\\\);
-	ftmap\\\\[fti\\\\]\\\\.seteidx = i;@;=
+	ftmap\\\\[fti\\\\]\\\\.seteidx = i;@??!.-5,.+5p\@p FAIL line 261\@q!@;=
 @.+2a 	free(pats);
 .
 @.,$;f+ 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
 	re:;
-	rset \\\\*rs = ftmap\\\\[fti\\\\]\\\\.rs;@;=
+	rset \\\\*rs = ftmap\\\\[fti\\\\]\\\\.rs;@??!.-5,.+5p\@p FAIL line 309\@q!@;=
 @.+3;5;20c *subs = emalloc(rs->nsubc * sizeof(int))
 .
 @.,$;f+ 		flg = REG_NOTBOL;
 	\\\\}
-	fti\\\\+\\\\+;@;=
+	fti\\\\+\\\\+;@??!.-5,.+5p\@p FAIL line 352\@q!@;=
 @.+3c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
 		free(subs);
 .
 @.-1@>		goto re;>a 	}
 .
-@.,$;f+ 	if \\\\(blockca >= 0 && SYN_BSSET\\\\(blockca\\\\) && !SYN_BESET\\\\(blockca\\\\) && last_scdir > 0\\\\)
-		syn_blockhl = -1;@;=
+@??!.-5,.+5p\@p FAIL line 353\@q!@.,$;f+ 	if \\\\(blockca >= 0 && SYN_BSSET\\\\(blockca\\\\) && !SYN_BESET\\\\(blockca\\\\) && last_scdir > 0\\\\)
+		syn_blockhl = -1;@??!.-5,.+5p\@p FAIL line 356\@q!@;=
 @.+2c 	if (syn_blockhl < 0 || blockhl < 0) {
 		free(subs);
 .
 @.-1@>		return;>a 	}
 .
-@.,$;f+ 	for \\\\(j = 0; j < n; j\\\\+\\\\+\\\\)
+@??!.-5,.+5p\@p FAIL line 357\@q!@.,$;f+ 	for \\\\(j = 0; j < n; j\\\\+\\\\+\\\\)
 		if \\\\(!att\\\\[j\\\\] \\\\|\\\\| !SYN_BPSET\\\\(blockatt\\\\)\\\\)
-			att\\\\[j\\\\] = blockatt;@;=
+			att\\\\[j\\\\] = blockatt;@??!.-5,.+5p\@p FAIL line 360\@q!@;=
 @.+2a 	free(subs);
 .
 @.,$;f+ 
 void syn_init\\\\(void\\\\)
-\\\\{@;=
+\\\\{@??!.-5,.+5p\@p FAIL line 404\@q!@;=
 @.+3c 	char **pats = emalloc(ftslen * sizeof(char *));
 .
 @.,$;f+ 	for \\\\(; i < ftslen; i\\\\+\\\\+\\\\)
 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
-	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);@;=
+	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);@??!.-5,.+5p\@p FAIL line 408\@q!@;=
 @.+2a 	free(pats);
 .
 @vis 4@wq" $VI -e 'ren.c'
@@ -200,44 +200,44 @@ void syn_init\\\\(void\\\\)
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			vi_rshift = 0;
 		if \\\\(row != xrow\\\\+1 \\\\|\\\\| !c \\\\|\\\\| \\\\*c == '\\\\\\\\n'\\\\)
-			goto skip;@;=
+			goto skip;@??!.-5,.+5p\@p FAIL line 143\@q!@;=
 @.+3c 		char *tmp = emalloc(xcols+3);
 		char *snum = emalloc(32);
 .
 @.,$;f+ 		restore\\\\(xtd\\\\)
 		restore\\\\(ftidx\\\\)
-		vi_rshift = \\\\(row != xtop \\\\+ xrows-1\\\\);@;=
+		vi_rshift = \\\\(row != xtop \\\\+ xrows-1\\\\);@??!.-5,.+5p\@p FAIL line 168\@q!@;=
 @.+2a 		free(tmp);
 		free(snum);
 .
 @.,$;f+ 				if \\\\(!\\\\(ln = lbuf_get\\\\(xb, xrow\\\\)\\\\)\\\\)
 					break;
-				ln \\\\+= xoff;@;=
+				ln \\\\+= xoff;@??!.-5,.+5p\@p FAIL line 1293\@q!@;=
 @.+3c 				char *buf = emalloc(strlen(ln)+4);
 .
 @.,$;f+ 				strcpy\\\\(buf, \":e \"\\\\);
 				strcpy\\\\(buf\\\\+3, ln\\\\);
-				term_push\\\\(buf, strlen\\\\(ln\\\\)\\\\+3\\\\);@;=
+				term_push\\\\(buf, strlen\\\\(ln\\\\)\\\\+3\\\\);@??!.-5,.+5p\@p FAIL line 1296\@q!@;=
 @.+2a 				free(buf);
 .
 @.,$;f+ 				case 't': \\\\{
 					vi_drawmsg\\\\(\"arg2:\\\\(0\\\\|#\\\\)\"\\\\);
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);@;=
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);@??!.-5,.+5p\@p FAIL line 1418\@q!@;=
 @.+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
 @.,$;f+ 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);@;=
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);@??!.-5,.+5p\@p FAIL line 1427\@q!@;=
 @.+2a 					free(buf);
 .
 @.,$;f+ 					goto do_excmd; \\\\}
 				case 'r': \\\\{
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);@;=
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);@??!.-5,.+5p\@p FAIL line 1431\@q!@;=
 @.+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
 @.,$;f+ 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);@;=
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);@??!.-5,.+5p\@p FAIL line 1438\@q!@;=
 @.+2a 					free(buf);
 .
 @vis 4@wq" $VI -e 'vi.c'
@@ -245,7 +245,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			vi_rshift = 0;
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> struct highlight \\\\{
 	char \\\\*ft;		/\\\\* the filetype of this pattern \\\\*/
-	char \\\\*pat;		/\\\\* regular expression \\\\*/@;=
+	char \\\\*pat;		/\\\\* regular expression \\\\*/@??!.-5,.+5p\@p FAIL line 503\@q!@;=
 @.+3;5;9c att[16]
 .
 @vis 4@wq" $VI -e 'vi.h'

@@ -16,22 +16,22 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
-sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/@;=
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/@??!.-5,.+5p\@p FAIL line 40\@q!@;=
 @.+2a int xexrc = 0;			/* read .exrc from the current directory */
 .
 @.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
 EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@;=
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@??!.-5,.+5p\@p FAIL line 1343\@q!@;=
 @.+2a EO(exrc)
 .
 @.,$;f+ 	EO\\\\(ai\\\\),
 	\\\\{\"ac\", ec_setacreg\\\\},
-	\\\\{\"a\", ec_insert\\\\},@;=
+	\\\\{\"a\", ec_insert\\\\},@??!.-5,.+5p\@p FAIL line 1381\@q!@;=
 @.+2a 	EO(exrc),
 .
 @.,$;f+ 	xgrec--;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 1599\@q!@;=
 @.+2a void ex_script(FILE *fp)
 {
 	char done = 0;
@@ -80,7 +80,7 @@ void load_exrc(char *exrc)
 .
 @.,$;f+ 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~8;@;=
+	xvis &= ~8;@??!.-5,.+5p\@p FAIL line 1611\@q!@;=
 @.+3;28c  {
 .
 @.-1@>		ex_command\\(s\\)>a 	} else {
@@ -98,4 +98,4 @@ void load_exrc(char *exrc)
 			load_exrc(\".exrc\");
 	}
 .
-@vis 4@wq" $VI -e 'ex.c'
+@??!.-5,.+5p\@p FAIL line 1612\@q!@vis 4@wq" $VI -e 'ex.c'

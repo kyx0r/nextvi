@@ -16,12 +16,12 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
-sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/@;=
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/@??!.-5,.+5p\@p FAIL line 40\@q!@;=
 @.+2a char **xenvp;
 .
 @.,$;f+ 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 1326\@q!@;=
 @.+2a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
@@ -60,7 +60,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 .
 @.,$;f+ 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},@;=
+	\\\\{\"sc\", ec_specials\\\\},@??!.-5,.+5p\@p FAIL line 1422\@q!@;=
 @.+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 .
@@ -69,7 +69,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 # Patch: term.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}@;=
+		\\\\}@??!.-5,.+5p\@p FAIL line 243\@q!@;=
 @.+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
@@ -80,7 +80,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> files and thus is never static\\\\.
 \\\\*/
-@;=
+@??!.-5,.+5p\@p FAIL line 11\@q!@;=
 @.+2a #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())

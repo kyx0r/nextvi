@@ -16,33 +16,33 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
 \\\\{
-	char msg\\\\[512\\\\];@;=
+	char msg\\\\[512\\\\];@??!.-5,.+5p\@p FAIL line 355\@q!@;=
 @.+3c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
 .
 @.,$;f+ 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
 		syn_setft\\\\(xb_ft\\\\);
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 373\@q!@;=
 @.+2a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 .
 @.,$;f+ 
 void ex_init\\\\(char \\\\*\\\\*files, int n\\\\)
-\\\\{@;=
+\\\\{@??!.-5,.+5p\@p FAIL line 1602\@q!@;=
 @.+3;19c  + !!stdin_fd
 .
 @.,$;f+ 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
-	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";@;=
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";@??!.-5,.+5p\@p FAIL line 1604\@q!@;=
 @.+1a 	int i = n;
 .
 @.,$;f+ 	do \\\\{
-		xmpt = 0;@;=
+		xmpt = 0;@??!.-5,.+5p\@p FAIL line 1607\@q!@;=
 @.+2;10c !n && stdin_fd ? NULL : 
 .
 @.,$;f+ 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	\\\\} while \\\\(--n > 0\\\\);@;=
+	\\\\} while \\\\(--n > 0\\\\);@??!.-5,.+5p\@p FAIL line 1609\@q!@;=
 @.+1a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
@@ -64,18 +64,18 @@ void ex_init\\\\(char \\\\*\\\\*files, int n\\\\)
 .
 @.-1@>	xvis &= ~8;>a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
-@vis 4@wq" $VI -e 'ex.c'
+@??!.-5,.+5p\@p FAIL line 1610\@q!@vis 4@wq" $VI -e 'ex.c'
 
 # Patch: term.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \\\\*ibuf, icmd\\\\[4096\\\\];
-unsigned int texec, tn;@;=
+unsigned int texec, tn;@??!.-5,.+5p\@p FAIL line 8\@q!@;=
 @.+2a int stdin_fd;
 static int isig;
 .
 @.,$;f+ 	char \\\\*s;
 	term_winch = 0;
-	sbuf_make\\\\(term_sbuf, 2048\\\\)@;=
+	sbuf_make\\\\(term_sbuf, 2048\\\\)@??!.-5,.+5p\@p FAIL line 19\@q!@;=
 @.+3;11;12c stdin_fd
 .
 @.-1@>	newtermios = termios;>+1,#+2c 	if (!isig && stdin_fd)
@@ -85,35 +85,35 @@ static int isig;
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
 	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
 .
-@.,$;f+ 	\\\\}
+@??!.-5,.+5p\@p FAIL line 21\@q!@.,$;f+ 	\\\\}
 	xcols = xcols \\\\? xcols : 80;
-	xrows = xrows \\\\? xrows : 25;@;=
+	xrows = xrows \\\\? xrows : 25;@??!.-5,.+5p\@p FAIL line 33\@q!@;=
 @.+2a 	isig = 1;
 .
 @.,$;f+ 		return;
 	term_commit\\\\(\\\\);
-	sbuf_free\\\\(term_sbuf\\\\)@;=
+	sbuf_free\\\\(term_sbuf\\\\)@??!.-5,.+5p\@p FAIL line 42\@q!@;=
 @.+3;11;12c stdin_fd
 .
 @.,$;f+ 			goto ret;
 		\\\\}
-		cw = 0;@;=
+		cw = 0;@??!.-5,.+5p\@p FAIL line 160\@q!@;=
 @.+2a 		ufd.fd = stdin_fd;
 .
 @.,$;f+ 		re:
 		/\\\\* read a single input character \\\\*/
-		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|@;=
+		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|@??!.-5,.+5p\@p FAIL line 164\@q!@;=
 @.+3,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 .
 @.,$;f+ 	fds\\\\[0\\\\]\\\\.events = POLLIN;
 	fds\\\\[1\\\\]\\\\.fd = ifd;
-	fds\\\\[1\\\\]\\\\.events = POLLOUT;@;=
+	fds\\\\[1\\\\]\\\\.events = POLLOUT;@??!.-5,.+5p\@p FAIL line 308\@q!@;=
 @.+3;20;21c stdin_fd
 .
 @.,$;f+ 		close\\\\(ifd\\\\);
 	waitpid\\\\(pid, status, 0\\\\);
-	signal\\\\(SIGTTOU, SIG_IGN\\\\);@;=
+	signal\\\\(SIGTTOU, SIG_IGN\\\\);@??!.-5,.+5p\@p FAIL line 351\@q!@;=
 @.+3;11;23c stdin_fd
 .
 @vis 4@wq" $VI -e 'term.c'
@@ -121,12 +121,12 @@ static int isig;
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
 	sa\\\\.sa_handler = sighandler;
-	sigaction\\\\(SIGWINCH, &sa, NULL\\\\);@;=
+	sigaction\\\\(SIGWINCH, &sa, NULL\\\\);@??!.-5,.+5p\@p FAIL line 1792\@q!@;=
 @.+2a 	sigaction(SIGINT, &sa, NULL);
 .
 @.,$;f+ 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
 			i\\\\+\\\\+;
-			break;@;=
+			break;@??!.-5,.+5p\@p FAIL line 1807\@q!@;=
 @.+3c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
 .
@@ -135,7 +135,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> /\\\\* vi\\\\.c \\\\*/
 extern int vi_hidch;
-extern int vi_lncol;@;=
+extern int vi_lncol;@??!.-5,.+5p\@p FAIL line 541\@q!@;=
 @.+2a extern int stdin_fd;
 .
 @vis 4@wq" $VI -e 'vi.h'

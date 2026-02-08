@@ -16,7 +16,7 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return val;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 1334\@q!@;=
 @.+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
@@ -64,7 +64,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return val;
 .
 @.,$;f+ 	\\\\{\"cm!\", ec_cmap\\\\},
 	\\\\{\"cm\", ec_cmap\\\\},
-	\\\\{\"cd\", ec_chdir\\\\},@;=
+	\\\\{\"cd\", ec_chdir\\\\},@??!.-5,.+5p\@p FAIL line 1430\@q!@;=
 @.+2a 	{\"cx\", ec_closebuf},
 .
 @vis 4@wq" $VI -e 'ex.c'

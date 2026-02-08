@@ -16,14 +16,14 @@ fi
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		break;
 	case 'w':
-	case 'W':@;=
+	case 'W':@??!.-5,.+5p\@p FAIL line 662\@q!@;=
 @.+2a 		if (vc && cnt == 1)
 			dir = 2;
 		else
 			dir = vi_nlword+1;
 .
 @.,$;f+ 		mark = mv == 'W';
-		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)@;=
+		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)@??!.-5,.+5p\@p FAIL line 665\@q!@;=
 @.+2;30;41c dir
 .
 @vis 4@wq" $VI -e 'vi.c'

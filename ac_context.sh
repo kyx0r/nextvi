@@ -16,28 +16,28 @@ fi
 # Patch: led.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return i-s;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 14\@q!@;=
 @.+3c static int search(sbuf *sb, int l, int pre)
 .
 @.-1@>\\{>+1c 	if (!sb->s[l])
 .
-@.,$;f+ 		return 0;
+@??!.-5,.+5p\@p FAIL line 16\@q!@.,$;f+ 		return 0;
 	sbuf_cut\\\\(suggestsb, 0\\\\)
-	sbuf_smake\\\\(sylsb, 1024\\\\)@;=
+	sbuf_smake\\\\(sylsb, 1024\\\\)@??!.-5,.+5p\@p FAIL line 20\@q!@;=
 @.+3c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);
 .
 @.,$;f+ 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
 			part--;
-		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);@;=
+		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);@??!.-5,.+5p\@p FAIL line 26\@q!@;=
 @.+3;15c sb->s_n - 
 .
 @.,$;f+ 			if \\\\(part == part1\\\\)
-				sbuf_mem\\\\(suggestsb, part, len\\\\)@;=
+				sbuf_mem\\\\(suggestsb, part, len\\\\)@??!.-5,.+5p\@p FAIL line 29\@q!@;=
 @.+2;7c  if (l >= pre)
 .
 @.,$;f+ 				sbuf_mem\\\\(sylsb, part, len\\\\)
-		\\\\}@;=
+		\\\\}@??!.-5,.+5p\@p FAIL line 32\@q!@;=
 @.+2c 		part = strstr(part+len, sb->s+l);
 	}
 	if (l < pre && sb->s[pre]) {
@@ -46,7 +46,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return i-s;
 .
 @.,$;f+ \\\\{
 	char \\\\*cs;
-	int len, c, i;@;=
+	int len, c, i;@??!.-5,.+5p\@p FAIL line 412\@q!@;=
 @.+2a 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
@@ -54,24 +54,24 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return i-s;
 .
 @.,$;f+ 		case TK_CTL\\\\('n'\\\\):
 			if \\\\(!suggestsb\\\\)
-				continue;@;=
+				continue;@??!.-5,.+5p\@p FAIL line 520\@q!@;=
 @.+3;63;76c )
 .
 @.,$;f+ 				\\\\}
 				suggest:
-				\\\\*is->_sug = '\\\\\\\\0';@;=
+				\\\\*is->_sug = '\\\\\\\\0';@??!.-5,.+5p\@p FAIL line 531\@q!@;=
 @.+3,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
 .
 @.,$;f+ 				continue;
 			\\\\}
-			lookup:@;=
+			lookup:@??!.-5,.+5p\@p FAIL line 537\@q!@;=
 @.+3;16;46c , is->lsug, pre
 .
 @.,$;f+ 				int r = crow-ctop\\\\+1;
 				if \\\\(is->sug\\\\)
-					goto pac_;@;=
+					goto pac_;@??!.-5,.+5p\@p FAIL line 551\@q!@;=
 @.+3,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
 .

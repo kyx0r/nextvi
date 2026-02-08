@@ -16,17 +16,17 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> int xhlw;			/\\\\* highlight current word \\\\*/
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
-int xhlr;			/\\\\* highlight text in reverse direction \\\\*/@;=
+int xhlr;			/\\\\* highlight text in reverse direction \\\\*/@??!.-5,.+5p\@p FAIL line 9\@q!@;=
 @.+2a int xhlm;			/* highlight marks */
 .
 @.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
 EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@;=
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@??!.-5,.+5p\@p FAIL line 1343\@q!@;=
 @.+2a EO(hlm)
 .
 @.,$;f+ 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),@;=
+	EO\\\\(order\\\\),@??!.-5,.+5p\@p FAIL line 1435\@q!@;=
 @.+2a 	EO(hlm),
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -34,7 +34,7 @@ EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) E
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				word = cs;
 			\\\\}
-		\\\\}@;=
+		\\\\}@??!.-5,.+5p\@p FAIL line 1725\@q!@;=
 @.+2a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";

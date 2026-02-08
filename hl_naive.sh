@@ -16,32 +16,32 @@ fi
 # Patch: led.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	o = off\\\\[i\\\\]; \\\\\\\\
 	if \\\\(o >= 0\\\\) \\\\{ \\\\\\\\
-		for \\\\(l = i; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\); \\\\\\\\@;=
+		for \\\\(l = i; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\); \\\\\\\\@??!.-5,.+5p\@p FAIL line 119\@q!@;=
 @.+3;16;38c 
 .
 @.,$;f+ 		return;
 	ren_state \\\\*r = ren_position\\\\(s0\\\\);
-	int j, c, l, i, o, n = r->n;@;=
+	int j, c, l, i, o, n = r->n;@??!.-5,.+5p\@p FAIL line 150\@q!@;=
 @.+3,#+1c 	int att_old = 0, cterm = cend - cbeg;
 .
 @.,$;f+ 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
-	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/@;=
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/@??!.-5,.+5p\@p FAIL line 154\@q!@;=
 @.+2,#+2c 	int *att = emalloc(n * sizeof(att[0]));
 	memset(att, 0, n * sizeof(att[0]));
 .
 @.,$;f+ 		for \\\\(c = cbeg; c < cend; c\\\\+\\\\+\\\\)
 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 167\@q!@;=
 @.+3,#+38d@.-1@>	if \\(xhl\\)>+1,#+1c 		syn_highlight(att, s0, n);
 .
-@.,$;f+ 		for \\\\(; \\\\(char\\\\*\\\\)p < &led_attsb->s\\\\[led_attsb->s_n\\\\]; p\\\\+\\\\+\\\\) \\\\{
+@??!.-5,.+5p\@p FAIL line 207\@q!@.,$;f+ 		for \\\\(; \\\\(char\\\\*\\\\)p < &led_attsb->s\\\\[led_attsb->s_n\\\\]; p\\\\+\\\\+\\\\) \\\\{
 			if \\\\(p->s != s0\\\\)
-				continue;@;=
+				continue;@??!.-5,.+5p\@p FAIL line 214\@q!@;=
 @.+3,#+18c 			att[p->off] = syn_merge(p->att, att[p->off]);
 .
 @.,$;f+ 				continue;
 			if \\\\(r->pos\\\\[o \\\\+ 1\\\\] \\\\+ r->wid\\\\[o \\\\+ 1\\\\] != r->pos\\\\[o\\\\]\\\\)
-				continue;@;=
+				continue;@??!.-5,.+5p\@p FAIL line 245\@q!@;=
 @.+3;7;26c 
 .
 @vis 4@wq" $VI -e 'led.c'

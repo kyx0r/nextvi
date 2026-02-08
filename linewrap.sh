@@ -16,12 +16,12 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
 int xrcm = 1;			/\\\\* range command model -
-				0: exec at command parse 1: exec at command \\\\*/@;=
+				0: exec at command parse 1: exec at command \\\\*/@??!.-5,.+5p\@p FAIL line 25\@q!@;=
 @.+2a int xlw;			/* soft linewrap col */
 .
 @.,$;f+ 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 1326\@q!@;=
 @.+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
@@ -42,7 +42,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 .
 @.,$;f+ 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),@;=
+	EO\\\\(led\\\\),@??!.-5,.+5p\@p FAIL line 1443\@q!@;=
 @.+2a 	{\"lw\", ec_linewrap},
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -50,18 +50,18 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 # Patch: lbuf.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 	int i, pos = lo->pos;
-	if \\\\(s\\\\) \\\\{@;=
+	if \\\\(s\\\\) \\\\{@??!.-5,.+5p\@p FAIL line 84\@q!@;=
 @.+2a 		char *lwp = NULL;
 .
 @.,$;f+ 			struct linfo \\\\*n = emalloc\\\\(l_nonl \\\\+ 5 \\\\+ sizeof\\\\(struct linfo\\\\)\\\\);
 			n->len = l_nonl;
-			n->grec = 0;@;=
+			n->grec = 0;@??!.-5,.+5p\@p FAIL line 90\@q!@;=
 @.+2a 			n->lw_prev = NULL;
 			n->lw_next = NULL;
 .
 @.,$;f+ 			memcpy\\\\(ln, s, l_nonl\\\\);
 			memset\\\\(&ln\\\\[l_nonl \\\\+ 1\\\\], 0, 4\\\\);	/\\\\* fault tolerance pad \\\\*/
-			ln\\\\[l_nonl\\\\] = '\\\\\\\\n';@;=
+			ln\\\\[l_nonl\\\\] = '\\\\\\\\n';@??!.-5,.+5p\@p FAIL line 94\@q!@;=
 @.+2a 			if (xlw) {
 				rstate->s = NULL;
 				ren_state *r = ren_position(ln);
@@ -96,7 +96,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 .
 @.,$;f+ 		end = lb->ln_n;
 	if \\\\(beg == end && !buf\\\\)
-		return;@;=
+		return;@??!.-5,.+5p\@p FAIL line 190\@q!@;=
 @.+2a 	/* save chain boundary pointers before edit */
 	char *chain_pred = NULL, *chain_succ = NULL;
 	if (xlw) {
@@ -118,7 +118,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 .
 @.,$;f+ 	struct lopt \\\\*lo = lbuf_opt\\\\(lb, beg, o1, end - beg\\\\);
 	sbuf_smake\\\\(sb, sizeof\\\\(lo->ins\\\\[0\\\\]\\\\)\\\\+1\\\\)
-	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);@;=
+	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);@??!.-5,.+5p\@p FAIL line 193\@q!@;=
 @.+2a 	/* relink the chain after edit */
 	if (xlw && (chain_pred || chain_succ)) {
 		if (lo->n_ins > 0) {
@@ -143,12 +143,12 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 .
 @.,$;f+ 	for \\\\(int i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lb->ln\\\\[i\\\\];
-		long nw = 0;@;=
+		long nw = 0;@??!.-5,.+5p\@p FAIL line 240\@q!@;=
 @.+3;30;31c (!lbuf_s(ln)->lw_next)
 .
 @.,$;f+ 		lo->ref = 1;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->del;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);@;=
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);@??!.-5,.+5p\@p FAIL line 399\@q!@;=
 @.+2a 		/* relink chain: restored lines have original pointers */
 		if (xlw) {
 			for (int i = 0; i < lo->n_del; i++) {
@@ -173,7 +173,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 .
 @.,$;f+ 		lo->ref = 2;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->ins;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);@;=
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);@??!.-5,.+5p\@p FAIL line 421\@q!@;=
 @.+2a 		/* relink chain: restored lines have their pointers from edit time */
 		if (xlw) {
 			for (int i = 0; i < lo->n_ins; i++) {
@@ -201,7 +201,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		return;
 	\\\\}
-	s = lbuf_get\\\\(xb, row\\\\);@;=
+	s = lbuf_get\\\\(xb, row\\\\);@??!.-5,.+5p\@p FAIL line 171\@q!@;=
 @.+2a 	if (xlw && s) {
 		led_att la;
 		if (!led_attsb)
@@ -224,13 +224,13 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		return;
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> struct linfo \\\\{
 	int len;
-	int grec;@;=
+	int grec;@??!.-5,.+5p\@p FAIL line 148\@q!@;=
 @.+2a 	char *lw_prev;
 	char *lw_next;
 .
 @.,$;f+ extern int xlim;
 extern int xseq;
-extern int xerr;@;=
+extern int xerr;@??!.-5,.+5p\@p FAIL line 435\@q!@;=
 @.+2a extern int xlw;
 .
 @vis 4@wq" $VI -e 'vi.h'

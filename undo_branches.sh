@@ -16,7 +16,7 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 1326\@q!@;=
 @.+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
@@ -30,7 +30,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 .
 @.,$;f+ 	\\\\{\"uc\", ec_setenc\\\\},
 	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},@;=
+	\\\\{\"ub\", ec_setenc\\\\},@??!.-5,.+5p\@p FAIL line 1417\@q!@;=
 @.+2a 	{\"up\", ec_undoleafs},
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -38,12 +38,12 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 # Patch: lbuf.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
-	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);@;=
+	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);@??!.-5,.+5p\@p FAIL line 5\@q!@;=
 @.+2a 	sbuf_make(lb->rehist, 128)
 .
 @.,$;f+ 	return 0;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 61\@q!@;=
 @.+2a static void lbuf_freeleafs(struct lbuf *lb)
 {
 	char *ptr = lb->rehist->s;
@@ -74,12 +74,12 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(
 .
 @.,$;f+ 	int i;
 	for \\\\(i = 0; i < lb->ln_n; i\\\\+\\\\+\\\\)
-		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);@;=
+		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);@??!.-5,.+5p\@p FAIL line 67\@q!@;=
 @.+3,#+1c 	lbuf_freeleafs(lb);
 .
 @.,$;f+ 		lopt_done\\\\(lo\\\\);
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 144\@q!@;=
 @.+2a void lbuf_setleaf(struct lbuf *lb, int leaf)
 {
 	char *ptr1 = lb->rehist->s, *ptr2;
@@ -140,7 +140,7 @@ char *lbuf_getleafs(struct lbuf *lb)
 .
 @.,$;f+ 	if \\\\(xseq < 0\\\\)
 		lo = &slo;
-	else \\\\{@;=
+	else \\\\{@??!.-5,.+5p\@p FAIL line 153\@q!@;=
 @.+3,#+1c 		int i = lb->hist_n - lb->hist_u;
 		if (i) {
 			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
@@ -149,11 +149,11 @@ char *lbuf_getleafs(struct lbuf *lb)
 .
 @.,$;f+ void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
 \\\\{
-	if \\\\(clear\\\\) \\\\{@;=
+	if \\\\(clear\\\\) \\\\{@??!.-5,.+5p\@p FAIL line 441\@q!@;=
 @.+3,#+1c 		lbuf_freeleafs(lb);
 .
 @.,$;f+ 		lb->hist_n = 0;
-		lb->hist_u = 0;@;=
+		lb->hist_u = 0;@??!.-5,.+5p\@p FAIL line 444\@q!@;=
 @.+1a 		sbuf_make(lb->rehist, 128)
 .
 @vis 4@wq" $VI -e 'lbuf.c'
@@ -161,12 +161,12 @@ char *lbuf_getleafs(struct lbuf *lb)
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> struct lbuf \\\\{
 	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
-	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/@;=
+	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/@??!.-5,.+5p\@p FAIL line 152\@q!@;=
 @.+2a 	sbuf *rehist;		/* alternate redo timelines */
 .
 @.,$;f+ int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);
 int lbuf_search\\\\(struct lbuf \\\\*lb, rset \\\\*re, int dir, int beg, int end, int pskip,
-		int nskip, int \\\\*r, int \\\\*o\\\\);@;=
+		int nskip, int \\\\*r, int \\\\*o\\\\);@??!.-5,.+5p\@p FAIL line 191\@q!@;=
 @.+2a void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
 .

@@ -16,12 +16,12 @@ fi
 # Patch: conf.c
 EXINIT="rcm:|sc! \\\\F|vis 6F%;f> char n_ft\\\\[\\\\] = \"/#\";	/\\\\* numbers highlight for \\\\^v \\\\*/
 char nn_ft\\\\[\\\\] = \"/##\";	/\\\\* numbers highlight for # \\\\*/
-char ac_ft\\\\[\\\\] = \"/ac\";	/\\\\* autocomplete dropdown \\\\*/F;=
+char ac_ft\\\\[\\\\] = \"/ac\";	/\\\\* autocomplete dropdown \\\\*/F??!.-5,.+5p\Fp FAIL line 31\Fq!F;=
 F.+2a char grep_ft[] = \"/g\";	/* grep buffer */
 .
 F.,$;f+ 		A\\\\(IN, SYN_BGMK\\\\(RE1\\\\), SYN_BGMK\\\\(AY1\\\\), SYN_BGMK\\\\(AY\\\\)\\\\)\\\\},
 	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(IN, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
-F;=
+F??!.-5,.+5p\Fp FAIL line 254\Fq!F;=
 F.+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
@@ -31,7 +31,7 @@ Fvis 4Fwq" $VI -e 'conf.c'
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\F|vis 6F%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/
-struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/F;=
+struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/F??!.-5,.+5p\Fp FAIL line 42\Fq!F;=
 F.+3;20;21c 3
 .
 Fvis 4Fwq" $VI -e 'ex.c'
@@ -39,41 +39,41 @@ Fvis 4Fwq" $VI -e 'ex.c'
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\F|vis 6F%;f> 	free\\\\(sb->s\\\\);
 \\\\}
-F;=
+F??!.-5,.+5p\Fp FAIL line 502\Fq!F;=
 F.+3;17c isbuffer
 .
 F.,$;f+ path\\\\[len\\\\] = '\\\\\\\\0'; \\\\\\\\
 ret = ex_edit\\\\(path, len\\\\); \\\\\\\\
-path\\\\[len\\\\] = '\\\\\\\\n'; \\\\\\\\F;=
+path\\\\[len\\\\] = '\\\\\\\\n'; \\\\\\\\F??!.-5,.+5p\Fp FAIL line 507\Fq!F;=
 F.+3;4;15c isbuffer
 .
 F.,$;f+ if \\\\(!vi_search\\\\(\\\\*row \\\\? 'N' : 'n', cnt, row, off, 0\\\\)\\\\) \\\\\\\\
 	return 1; \\\\\\\\
-F;=
+F??!.-5,.+5p\Fp FAIL line 518\Fq!F;=
 F.+3;25c again, int 
 .
 F.,$;f+ \\\\{
-	char \\\\*path;F;=
+	char \\\\*path;F??!.-5,.+5p\Fp FAIL line 521\Fq!F;=
 F.+2;5;16c 
 .
 F.,$;f+ 	wrap:
 	while \\\\(fspos < lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\) \\\\{
-		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\+\\\\+\\\\];F;=
+		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\+\\\\+\\\\];F??!.-5,.+5p\Fp FAIL line 525\Fq!F;=
 F.+3;11c ret && xrow && again != 2
 .
 F.,$;f+ 	int ret, len;
 	while \\\\(--fspos >= 0\\\\) \\\\{
-		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\];F;=
+		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\];F??!.-5,.+5p\Fp FAIL line 541\Fq!F;=
 F.+3;11c ret && xrow
 .
 F.,$;f+ 				break;
 		break;
-	case TK_CTL\\\\('\\\\]'\\\\):	/\\\\* this is also \\\\^5 on some systems \\\\*/F;=
+	case TK_CTL\\\\('\\\\]'\\\\):	/\\\\* this is also \\\\^5 on some systems \\\\*/F??!.-5,.+5p\Fp FAIL line 716\Fq!F;=
 F.+2a 	case TK_CTL('x'):
 .
 F.,$;f+ 			lkwdcnt = xkwdcnt;
 			fspos \\\\+= fsdir < 0 \\\\? 1 : 0;
-			fspos = MIN\\\\(fspos, lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\);F;=
+			fspos = MIN\\\\(fspos, lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\);F??!.-5,.+5p\Fp FAIL line 735\Fq!F;=
 F.+3;13c 0, 
 .
 F.-1F>			fsdir = 1;>a 		} else if (mv == TK_CTL('x')) {
@@ -111,9 +111,9 @@ F.-1F>			fsdir = 1;>a 		} else if (mv == TK_CTL('x')) {
 			*off = 0;
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
 .
-F.,$;f+ 				char buf\\\\[strlen\\\\(ln\\\\)\\\\+4\\\\];
+F??!.-5,.+5p\Fp FAIL line 736\Fq!F.,$;f+ 				char buf\\\\[strlen\\\\(ln\\\\)\\\\+4\\\\];
 				strcpy\\\\(buf, \":e \"\\\\);
-				strcpy\\\\(buf\\\\+3, ln\\\\);F;=
+				strcpy\\\\(buf\\\\+3, ln\\\\);F??!.-5,.+5p\Fp FAIL line 1296\Fq!F;=
 F.+3c 				if (!strcmp(xb_path, \"/grep/\")) {
 					int subs[2];
 					rset *rs = rset_make(1, (char*[]){\":[0-9]+:\"}, 0);
@@ -128,7 +128,7 @@ F.+3c 				if (!strcmp(xb_path, \"/grep/\")) {
 .
 F.,$;f+ 					\\\\}
 					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);
-					goto do_excmd; \\\\}F;=
+					goto do_excmd; \\\\}F??!.-5,.+5p\Fp FAIL line 1428\Fq!F;=
 F.+2a 				case 'x':
 					temp_switch(2, 1);
 					vi_mod = 1;
@@ -136,7 +136,7 @@ F.+2a 				case 'x':
 .
 F.,$;f+ 	syn_init\\\\(\\\\);
 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
-	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);F;=
+	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);F??!.-5,.+5p\Fp FAIL line 1802\Fq!F;=
 F.+2a 	temp_open(2, \"/grep/\", grep_ft);
 .
 Fvis 4Fwq" $VI -e 'vi.c'
@@ -144,7 +144,7 @@ Fvis 4Fwq" $VI -e 'vi.c'
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\F|vis 6F%;f> extern rset \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
-extern struct buf \\\\*bufs;F;=
+extern struct buf \\\\*bufs;F??!.-5,.+5p\Fp FAIL line 452\Fq!F;=
 F.+3;27;28c 3
 .
 Fvis 4Fwq" $VI -e 'vi.h'

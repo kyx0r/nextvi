@@ -16,117 +16,117 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> int xsep = ':';			/\\\\* ex command separator \\\\*/
 int xesc = '\\\\\\\\\\\\\\\\';		/\\\\* ex command arg escape character \\\\*/
-sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/@;=
+sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/@??!.-5,.+5p\@p FAIL line 39\@q!@;=
 @.+3;2;4c tr
 .
 @.,$;f+ \\\\{
 	sbuf \\\\*reg = xregs\\\\['/'\\\\];
-	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)@;=
+	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)@??!.-5,.+5p\@p FAIL line 179\@q!@;=
 @.+3,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 .
 @.,$;f+ 
 static void \\\\*ec_fuzz\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{@;=
+\\\\{@??!.-5,.+5p\@p FAIL line 384\@q!@;=
 @.+3;3;5c tr
 .
 @.,$;f+ 	while\\\\(1\\\\) \\\\{
 		sbuf_null\\\\(fuzz\\\\)
-		c = 0;@;=
+		c = 0;@??!.-5,.+5p\@p FAIL line 414\@q!@;=
 @.+3;9;13c tr_
 .
 @.-1@>		if \\(rs\\) \\{>+1;43;50c 
 .
-@.,$;f+ 			dwid1 = max == INT_MAX \\\\? dwid2 : MIN\\\\(dwid1, dwid2\\\\);
+@??!.-5,.+5p\@p FAIL line 416\@q!@.,$;f+ 			dwid1 = max == INT_MAX \\\\? dwid2 : MIN\\\\(dwid1, dwid2\\\\);
 			for \\\\(pos = beg; c < max && pos < end; pos\\\\+\\\\+\\\\) \\\\{
-				path = xb->ln\\\\[pos\\\\];@;=
+				path = xb->ln\\\\[pos\\\\];@??!.-5,.+5p\@p FAIL line 423\@q!@;=
 @.+3;10;12c tr
 .
 @.,$;f+ 				break;
 			\\\\}
-		\\\\}@.,$;f+@;=
+		\\\\}@??!.-5,.+5p\@p FAIL line 461\@q!@;=
 @.+3;4;6c tr
 .
 @.,$;f+ 	free\\\\(sb->s\\\\);
 	path = lbuf_get\\\\(xb, lnum\\\\);
-	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{@;=
+	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{@??!.-5,.+5p\@p FAIL line 488\@q!@;=
 @.+3;4;6c tr
 .
 @.,$;f+ 		path\\\\[lbuf_s\\\\(path\\\\)->len\\\\] = '\\\\\\\\n';
 	\\\\} else if \\\\(\\\\*cmd != 'f'\\\\)
-		temp_switch\\\\(1, 1\\\\);@;=
+		temp_switch\\\\(1, 1\\\\);@??!.-5,.+5p\@p FAIL line 497\@q!@;=
 @.+3;3;5c tr
 .
 @.,$;f+ 		return xserr;
 	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
-		sbuf sb;@;=
+		sbuf sb;@??!.-5,.+5p\@p FAIL line 512\@q!@;=
 @.+3;19;24c rs ? xkwdrs->rs->nsubc : 2
 .
 @.,$;f+ 			soff = lbuf_pos2off\\\\(xb, beg, o1, r2, o2, xrow, xoff \\\\+ skip\\\\);
 		if \\\\(soff < 0\\\\)
-			soff = 0;@;=
+			soff = 0;@??!.-5,.+5p\@p FAIL line 521\@q!@;=
 @.+3;8;10c tr
 .
 @.,$;f+ 	int beg, end, grp;
 	char \\\\*pat, \\\\*rep = NULL, \\\\*_rep;
-	char \\\\*s = arg;@;=
+	char \\\\*s = arg;@??!.-5,.+5p\@p FAIL line 965\@q!@;=
 @.+3;3;5c tr
 .
 @.,$;f+ 		return xrerr;
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)@;=
+	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)@??!.-5,.+5p\@p FAIL line 972\@q!@;=
 @.+3;9;13c tr_
 .
 @.,$;f+ 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);@;=
+	free\\\\(pat\\\\);@??!.-5,.+5p\@p FAIL line 982\@q!@;=
 @.+3;14;19c rs ? rs->rs->nsubc : 2
 .
 @.,$;f+ 	for \\\\(i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		sbuf \\\\*r = NULL;@;=
+		sbuf \\\\*r = NULL;@??!.-5,.+5p\@p FAIL line 986\@q!@;=
 @.+3;11;13c tr
 .
 @.,$;f+ 					\\\\}
 					_rep\\\\+\\\\+;
-					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);@;=
+					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);@??!.-5,.+5p\@p FAIL line 1001\@q!@;=
 @.+3;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
 @.,$;f+ 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
 	\\\\}
-	if \\\\(rs != xkwdrs\\\\)@;=
+	if \\\\(rs != xkwdrs\\\\)@??!.-5,.+5p\@p FAIL line 1032\@q!@;=
 @.+3;4;6c tr
 .
 @.,$;f+ \\\\{
 	int i, beg, end, not;
-	char \\\\*pat, \\\\*s = arg;@;=
+	char \\\\*pat, \\\\*s = arg;@??!.-5,.+5p\@p FAIL line 1090\@q!@;=
 @.+3;3;5c tr
 .
 @.,$;f+ 	not = !!strchr\\\\(cmd, '!'\\\\);
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\*pat\\\\)@;=
+	if \\\\(pat && \\\\*pat\\\\)@??!.-5,.+5p\@p FAIL line 1098\@q!@;=
 @.+3;9;13c tr_
 .
 @.-1@>	else>+1;9;13c tr_
 .
-@.,$;f+ 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
+@??!.-5,.+5p\@p FAIL line 1100\@q!@.,$;f+ 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;@;=
+		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;@??!.-5,.+5p\@p FAIL line 1110\@q!@;=
 @.+3;8;10c tr
 .
 @.,$;f+ 		while \\\\(i < lbuf_len\\\\(xb\\\\) && !\\\\(lbuf_i\\\\(xb, i\\\\)->grec & xgdep\\\\)\\\\)
 			i\\\\+\\\\+;
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 1119\@q!@;=
 @.+3;3;5c tr
 .
 @.,$;f+ 
 static void \\\\*ec_setincl\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{@;=
+\\\\{@??!.-5,.+5p\@p FAIL line 1210\@q!@;=
 @.+3;3;5c tr
 .
 @.,$;f+ 	if \\\\(!\\\\*arg\\\\)
-		fsincl = NULL;@;=
+		fsincl = NULL;@??!.-5,.+5p\@p FAIL line 1213\@q!@;=
 @.+2;23;27c tr_
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -134,17 +134,17 @@ static void \\\\*ec_setincl\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
 # Patch: lbuf.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return n != 0;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 482\@q!@;=
 @.+3;35;37c tr
 .
 @.,$;f+ 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
-	int r0 = \\\\*r, o0 = \\\\*o;@;=
+	int r0 = \\\\*r, o0 = \\\\*o;@??!.-5,.+5p\@p FAIL line 486\@q!@;=
 @.+3;14;19c rs ? re->rs->nsubc : 2
 .
 @.,$;f+ 		step = 0;
 		flg = REG_NEWLINE;
-		s = lb->ln\\\\[i\\\\];@;=
+		s = lb->ln\\\\[i\\\\];@??!.-5,.+5p\@p FAIL line 499\@q!@;=
 @.+3;11;13c tr
 .
 @vis 4@wq" $VI -e 'lbuf.c'
@@ -152,7 +152,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return n != 0;
 # Patch: regex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
 	sbufn_ret\\\\(sb, sb->s\\\\)
-\\\\}@;=
+\\\\}@??!.-5,.+5p\@p FAIL line 766\@q!@;=
 @.+2a 
 /* return zero if a simple pattern is given */
 static int rstr_simple(rstr *rs, char *re, int icase)
@@ -291,12 +291,12 @@ void rstr_free(rstr *rs)
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 442\@q!@;=
 @.+3;2;4c tr
 .
 @.,$;f+ 				memcpy\\\\(cpath, ptrs\\\\[i\\\\], pathlen \\\\+ len\\\\);
 				plen\\\\[i\\\\+\\\\+\\\\] = pathlen \\\\+ len;
-			\\\\} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)@;=
+			\\\\} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)@??!.-5,.+5p\@p FAIL line 482\@q!@;=
 @.+3;21;23c tr
 .
 @vis 4@wq" $VI -e 'vi.c'
@@ -304,7 +304,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
 	int n;			/\\\\* number of regular expressions in this set \\\\*/
-\\\\} rset;@;=
+\\\\} rset;@??!.-5,.+5p\@p FAIL line 125\@q!@;=
 @.+2a typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */
@@ -316,7 +316,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
 .
 @.,$;f+ int rset_match\\\\(rset \\\\*rs, char \\\\*s, int flg\\\\);
 void rset_free\\\\(rset \\\\*re\\\\);
-char \\\\*re_read\\\\(char \\\\*\\\\*src, int delim\\\\);@;=
+char \\\\*re_read\\\\(char \\\\*\\\\*src, int delim\\\\);@??!.-5,.+5p\@p FAIL line 132\@q!@;=
 @.+2a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
@@ -324,24 +324,24 @@ void rstr_free(rstr *rs);
 .
 @.,$;f+ int lbuf_eol\\\\(struct lbuf \\\\*lb, int r, int state\\\\);
 int lbuf_next\\\\(struct lbuf \\\\*lb, int dir, int \\\\*r, int \\\\*o\\\\);
-int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);@;=
+int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);@??!.-5,.+5p\@p FAIL line 190\@q!@;=
 @.+3;35;37c tr
 .
 @.-1@>		int nskip, int \\*r, int \\*o\\);>a 
 .
-@.,$;f+ extern int xsep;
+@??!.-5,.+5p\@p FAIL line 191\@q!@.,$;f+ extern int xsep;
 extern int xesc;
-extern sbuf \\\\*xacreg;@;=
+extern sbuf \\\\*xacreg;@??!.-5,.+5p\@p FAIL line 449\@q!@;=
 @.+3;9;11c tr
 .
 @.,$;f+ #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
 void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
-void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);@;=
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);@??!.-5,.+5p\@p FAIL line 482\@q!@;=
 @.+3;13;15c tr
 .
 @.,$;f+ extern int vi_hidch;
 extern int vi_lncol;
-/\\\\* file system \\\\*/@;=
+/\\\\* file system \\\\*/@??!.-5,.+5p\@p FAIL line 543\@q!@;=
 @.+3;9;11c tr
 .
 @vis 4@wq" $VI -e 'vi.h'

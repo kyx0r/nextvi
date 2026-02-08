@@ -16,7 +16,7 @@ fi
 # Patch: conf.c
 EXINIT="rcm:|sc! \\\\J|vis 6J%;f> \\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\
 \\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\
-\\\\(\\\\(pac\\\\|pr\\\\|ai\\\\|ish\\\\|err\\\\|ic\\\\|grp\\\\|mpt\\\\|rcm\\\\|shape\\\\|seq\\\\|ts\\\\|td\\\\|order\\\\|hl\\\\[lwpr\\\\]\\\\?\\\\|left\\\\|lim\\\\|led\\\\|vis\\\\)\\\\\\\\J;=
+\\\\(\\\\(pac\\\\|pr\\\\|ai\\\\|ish\\\\|err\\\\|ic\\\\|grp\\\\|mpt\\\\|rcm\\\\|shape\\\\|seq\\\\|ts\\\\|td\\\\|order\\\\|hl\\\\[lwpr\\\\]\\\\?\\\\|left\\\\|lim\\\\|led\\\\|vis\\\\)\\\\\\\\J??!.-5,.+5p\Jp FAIL line 261\Jq!J;=
 J.+3;47;77c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
 .
 Jvis 4Jwq" $VI -e 'conf.c'
@@ -24,28 +24,28 @@ Jvis 4Jwq" $VI -e 'conf.c'
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\J|vis 6J%;f> struct buf tempbufs\\\\[2\\\\];		/\\\\* temporary buffers, for internal use \\\\*/
 struct buf \\\\*ex_buf;		/\\\\* current buffer \\\\*/
-struct buf \\\\*ex_pbuf;		/\\\\* prev buffer \\\\*/J;=
+struct buf \\\\*ex_pbuf;		/\\\\* prev buffer \\\\*/J??!.-5,.+5p\Jp FAIL line 44\Jq!J;=
 J.+2a struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 .
 J.,$;f+ 		ex_buf = &bufs\\\\[idx\\\\];
 	\\\\}
-	exbuf_load\\\\(ex_buf\\\\)J;=
+	exbuf_load\\\\(ex_buf\\\\)J??!.-5,.+5p\Jp FAIL line 100\Jq!J;=
 J.+2a 	/* update current window's buffer reference */
 	if (curwin)
 		curwin->buf = ex_buf;
 .
 J.,$;f+ 	\\\\}
 	exbuf_load\\\\(ex_buf\\\\)
-	syn_setft\\\\(xb_ft\\\\);J;=
+	syn_setft\\\\(xb_ft\\\\);J??!.-5,.+5p\Jp FAIL line 161\Jq!J;=
 J.+2a 	/* update current window's buffer reference */
 	if (curwin)
 		curwin->buf = ex_buf;
 .
 J.,$;f+ 
 static void \\\\*ec_quit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{J;=
+\\\\{J??!.-5,.+5p\Jp FAIL line 575\Jq!J;=
 J.+3c 	/* q! always force quits */
 	if (strchr(cmd, '!')) {
 		xquit = -1;
@@ -60,13 +60,13 @@ J.+3c 	/* q! always force quits */
 	for (int i = 0; i < xbufcur; i++)
 .
 J.,$;f+ 		if \\\\(\\\\(xquit < 0 \\\\|\\\\| xgrec < 2\\\\) && bufs\\\\[i\\\\]\\\\.lb->modified\\\\)
-			return \"buffers modified\";J;=
+			return \"buffers modified\";J??!.-5,.+5p\Jp FAIL line 578\Jq!J;=
 J.+2c 	if (!xquit)
 		xquit = 1;
 .
 J.,$;f+ 	return NULL;
 \\\\)
-J;=
+J??!.-5,.+5p\Jp FAIL line 1354\Jq!J;=
 J.+2a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
@@ -170,26 +170,26 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 .
 J.,$;f+ 	EO\\\\(err\\\\),
 	\\\\{\"ef!\", ec_fuzz\\\\},
-	\\\\{\"ef\", ec_fuzz\\\\},J;=
+	\\\\{\"ef\", ec_fuzz\\\\},J??!.-5,.+5p\Jp FAIL line 1384\Jq!J;=
 J.+2a 	{\"eq\", ec_equalize},
 .
 J.,$;f+ 	\\\\{\"uz\", ec_setenc\\\\},
 	\\\\{\"ub\", ec_setenc\\\\},
-	\\\\{\"u\", ec_undoredo\\\\},J;=
+	\\\\{\"u\", ec_undoredo\\\\},J??!.-5,.+5p\Jp FAIL line 1418\Jq!J;=
 J.+2a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
 J.,$;f+ 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},J;=
+	\\\\{\"sc\", ec_specials\\\\},J??!.-5,.+5p\Jp FAIL line 1422\Jq!J;=
 J.+2a 	{\"sp\", ec_split},
 .
 J.,$;f+ 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),J;=
+	EO\\\\(led\\\\),J??!.-5,.+5p\Jp FAIL line 1444\Jq!J;=
 J.+3dJ.,$;f+ 	xgrec--;
 \\\\}
-J;=
+J??!.-5,.+5p\Jp FAIL line 1599\Jq!J;=
 J.+2a /* window management functions */
 static void curwin_save(void)
 {
@@ -428,30 +428,30 @@ Jvis 4Jwq" $VI -e 'ex.c'
 # Patch: led.c
 EXINIT="rcm:|sc! \\\\J|vis 6J%;f> /\\\\* map cursor horizontal position to terminal column number \\\\*/
 int led_pos\\\\(char \\\\*s, int pos\\\\)
-\\\\{J;=
+\\\\{J??!.-5,.+5p\Jp FAIL line 95\Jq!J;=
 J.+2a 	int ww = curwin ? curwin->w : xcols;
 .
 J.-1J>	if \\(dir_context\\(s\\) < 0\\)>+1;17;22c ww
 .
-J.,$;f+ 		return;
+J??!.-5,.+5p\Jp FAIL line 97\Jq!J.,$;f+ 		return;
 	\\\\}
-	int dir, off, pos, psn = sb->s_n;J;=
+	int dir, off, pos, psn = sb->s_n;J??!.-5,.+5p\Jp FAIL line 289\Jq!J;=
 J.+2a 	/* window offset for vsplit (not for prompts) */
 	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
 	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 .
 J.,$;f+ 			pos = ren_cursor\\\\(r->s, r->pos\\\\[off-two\\\\]\\\\);
 		pos \\\\+= dir < 0 \\\\? -1 : 1;
-	\\\\}J;=
+	\\\\}J??!.-5,.+5p\Jp FAIL line 308\Jq!J;=
 J.+3,#+1c 	if (pos >= xleft + winw || pos < xleft)
 		xleft = pos < winw ? 0 : pos - winw / 2;
 .
 J.-1J>	syn_blockhl = -1;>+1,#+1c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
 	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
 .
-J.,$;f+ if \\\\(ai_max >= 0\\\\) \\\\\\\\
+J??!.-5,.+5p\Jp FAIL line 311\Jq!J.,$;f+ if \\\\(ai_max >= 0\\\\) \\\\\\\\
 	term_pos\\\\(crow - ctop, 0\\\\); \\\\\\\\
-J;=
+J??!.-5,.+5p\Jp FAIL line 363\Jq!J;=
 J.+3;77c , int ai_max
 .
 J.-1J>\\{>a 	/* window offset for vsplit (not for prompts) */
@@ -459,41 +459,41 @@ J.-1J>\\{>a 	/* window offset for vsplit (not for prompts) */
 	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
 	int winh = (ai_max >= 0 && curwin) ? curwin->h : xrows;
 .
-J.-1J>	rstate\\+\\+;>+1;22;27c winh
+J??!.-5,.+5p\Jp FAIL line 364\Jq!J.-1J>	rstate\\+\\+;>+1;22;27c winh
 .
-J.-1J>		if \\(vi_lncol\\) \\{>+1;15;16c winx
+J??!.-5,.+5p\Jp FAIL line 366\Jq!J.-1J>		if \\(vi_lncol\\) \\{>+1;15;16c winx
 .
-J.,$;f+ 			sbuf_mem\\\\(cb, cs, nl\\\\+!!cs\\\\[nl\\\\]\\\\)
+J??!.-5,.+5p\Jp FAIL line 368\Jq!J.,$;f+ 			sbuf_mem\\\\(cb, cs, nl\\\\+!!cs\\\\[nl\\\\]\\\\)
 			sbufn_null\\\\(cb\\\\)
-			rstate->s = NULL;J;=
+			rstate->s = NULL;J??!.-5,.+5p\Jp FAIL line 377\Jq!J;=
 J.+3;25;55c winx + vi_lncol, xleft, xleft + winw
 .
 J.,$;f+ 		\\\\}
 		nl = r < crow-ctop \\\\? r\\\\+ctop : \\\\(r-\\\\(crow-orow\\\\+!!\\\\(flg & 4\\\\)\\\\)\\\\)\\\\+ctop;
-		led_crender\\\\(lbuf_get\\\\(xb, nl\\\\) \\\\? lbuf_get\\\\(xb, nl\\\\) : \"~\", r,J;=
+		led_crender\\\\(lbuf_get\\\\(xb, nl\\\\) \\\\? lbuf_get\\\\(xb, nl\\\\) : \"~\", r,J??!.-5,.+5p\Jp FAIL line 384\Jq!J;=
 J.+3c 			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
 .
 J.-1J>	\\}>+1;23;24c winx
 .
-J.,$;f+ 		case TK_CTL\\\\('z'\\\\):
+J??!.-5,.+5p\Jp FAIL line 386\Jq!J.,$;f+ 		case TK_CTL\\\\('z'\\\\):
 			term_suspend\\\\(\\\\);
-			if \\\\(ai_max >= 0\\\\)J;=
+			if \\\\(ai_max >= 0\\\\)J??!.-5,.+5p\Jp FAIL line 509\Jq!J;=
 J.+3;46c , ai_max
 .
 J.,$;f+ 					restore\\\\(ftidx\\\\)
 					r\\\\+\\\\+;
-				\\\\}J;=
+				\\\\}J??!.-5,.+5p\Jp FAIL line 568\Jq!J;=
 J.+3;46c , ai_max
 .
 J.,$;f+ 			else
 				restore\\\\(ex_buf\\\\)
-			exbuf_load\\\\(ex_buf\\\\)J;=
+			exbuf_load\\\\(ex_buf\\\\)J??!.-5,.+5p\Jp FAIL line 588\Jq!J;=
 J.+2a 			if (curwin)
 				curwin->buf = ex_buf;
 .
 J.,$;f+ 			term_done\\\\(\\\\);
 			term_init\\\\(\\\\);
-			if \\\\(ai_max >= 0\\\\)J;=
+			if \\\\(ai_max >= 0\\\\)J??!.-5,.+5p\Jp FAIL line 611\Jq!J;=
 J.+3;46c , ai_max
 .
 Jvis 4Jwq" $VI -e 'led.c'
@@ -501,7 +501,7 @@ Jvis 4Jwq" $VI -e 'led.c'
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\J|vis 6J%;f> \\\\}
 #define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; \\\\}
-J;=
+J??!.-5,.+5p\Jp FAIL line 104\Jq!J;=
 J.+2a /* draw horizontal separator line at screen row, from x for w columns */
 static void vi_draw_hsep(int row, int x, int w)
 {
@@ -522,12 +522,12 @@ static void vi_draw_vsep(int col, int y, int h)
 .
 J.,$;f+ noff = xoff; \\\\\\\\
 for \\\\(i = 0, ret = 0;; i\\\\+\\\\+\\\\) \\\\{ \\\\\\\\
-	l1 = ren_next\\\\(c, ren_pos\\\\(c, noff\\\\), 1\\\\)-1-xleft\\\\+vi_lncol; \\\\\\\\J;=
+	l1 = ren_next\\\\(c, ren_pos\\\\(c, noff\\\\), 1\\\\)-1-xleft\\\\+vi_lncol; \\\\\\\\J??!.-5,.+5p\Jp FAIL line 120\Jq!J;=
 J.+3;10;11c w
 .
 J.,$;f+ 	ret = func; \\\\\\\\
 \\\\} \\\\} \\\\\\\\
-J;=
+J??!.-5,.+5p\Jp FAIL line 127\Jq!J;=
 J.+2a /* calculate screen row for buffer row in current window */
 static int win_scrrow(int row)
 {
@@ -549,23 +549,23 @@ static int win_height(void)
 .
 J.,$;f+ static void vi_drawrow\\\\(int row\\\\)
 \\\\{
-	int l1, i, i1, lnnum = vi_lnnum;J;=
+	int l1, i, i1, lnnum = vi_lnnum;J??!.-5,.+5p\Jp FAIL line 130\Jq!J;=
 J.+2a 	int wrows = win_height();
 	int wcols = win_width();
 	int scrrow = win_scrrow(row);
 .
 J.,$;f+ 	char \\\\*c, \\\\*s;
-	static char ch\\\\[5\\\\] = \"~\";J;=
+	static char ch\\\\[5\\\\] = \"~\";J??!.-5,.+5p\Jp FAIL line 133\Jq!J;=
 J.+2;18;31c scrrow ==
 .
 J.,$;f+ 		int noff, nrow, ret;
 		s = lbuf_get\\\\(xb, row - vi_rshift\\\\);
-		c = lbuf_get\\\\(xb, xrow\\\\);J;=
+		c = lbuf_get\\\\(xb, xrow\\\\);J??!.-5,.+5p\Jp FAIL line 139\Jq!J;=
 J.+3;20;21c w
 .
 J.,$;f+ 			vi_rshift = 0;
 		if \\\\(row != xrow\\\\+1 \\\\|\\\\| !c \\\\|\\\\| \\\\*c == '\\\\\\\\n'\\\\)
-			goto skip;J;=
+			goto skip;J??!.-5,.+5p\Jp FAIL line 143\Jq!J;=
 J.+3,#+3c 		char tmp[wcols+3], snum[32];
 		memset(tmp, ' ', wcols+1);
 		tmp[wcols+1] = '\\\\n';
@@ -573,38 +573,38 @@ J.+3,#+3c 		char tmp[wcols+3], snum[32];
 .
 J.,$;f+ 		preserve\\\\(int, xtd, xtd = dir_context\\\\(c\\\\) \\\\* 2;\\\\)
 		preserve\\\\(int, ftidx,\\\\)
-		syn_setft\\\\(n_ft\\\\);J;=
+		syn_setft\\\\(n_ft\\\\);J??!.-5,.+5p\Jp FAIL line 163\Jq!J;=
 J.+3;25;44c scrrow, curwin ? curwin->x : 0, 0, w
 .
 J.,$;f+ 		vi_lncol = dir_context\\\\(s\\\\) < 0 \\\\? 0 : l1;
 		memset\\\\(c, ' ', l1 - \\\\(c - tmp\\\\)\\\\);
-		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';J;=
+		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';J??!.-5,.+5p\Jp FAIL line 195\Jq!J;=
 J.+3c 		led_crender(s, scrrow, (curwin ? curwin->x : 0) + l1, xleft, xleft + wcols - l1)
 .
 J.,$;f+ 			i1 -= \\\\(itoa\\\\(abs\\\\(xrow-row\\\\+vi_rshift\\\\), tmp1\\\\) - tmp1\\\\)\\\\+1;
 			if \\\\(i1 >= 0\\\\) \\\\{
-				memset\\\\(p, ' ', strlen\\\\(p\\\\)\\\\);J;=
+				memset\\\\(p, ' ', strlen\\\\(p\\\\)\\\\);J??!.-5,.+5p\Jp FAIL line 206\Jq!J;=
 J.+3;28;39c scrrow, (curwin ? curwin->x : 0) +
 .
 J.,$;f+ 			\\\\}
-		\\\\}J;=
+		\\\\}J??!.-5,.+5p\Jp FAIL line 209\Jq!J;=
 J.+2;25;36c scrrow, curwin ? curwin->x :
 .
 J.,$;f+ 		restore\\\\(ftidx\\\\)
 		return;
-	\\\\}J;=
+	\\\\}J??!.-5,.+5p\Jp FAIL line 214\Jq!J;=
 J.+3c 	led_crender(s, scrrow, curwin ? curwin->x : 0, xleft, xleft + wcols)
 .
 J.,$;f+ /\\\\* redraw the screen \\\\*/
 static void vi_drawagain\\\\(int i\\\\)
-\\\\{J;=
+\\\\{J??!.-5,.+5p\Jp FAIL line 220\Jq!J;=
 J.+2a 	int wrows = win_height();
 .
 J.-1J>	syn_scdir\\(0\\);>+1;19;20c w
 .
-J.,$;f+ 		vi_drawrow\\\\(i\\\\);
+J??!.-5,.+5p\Jp FAIL line 222\Jq!J.,$;f+ 		vi_drawrow\\\\(i\\\\);
 \\\\}
-J;=
+J??!.-5,.+5p\Jp FAIL line 225\Jq!J;=
 J.+2a /* draw all windows and separators */
 static void vi_draw_allwins(void)
 {
@@ -663,62 +663,62 @@ static void vi_draw_allwins(void)
 .
 J.,$;f+ static void vi_drawupdate\\\\(int i\\\\)
 \\\\{
-	int n;J;=
+	int n;J??!.-5,.+5p\Jp FAIL line 230\Jq!J;=
 J.+3c 	int wrows = win_height();
 	term_pos(curwin ? curwin->y : 0, 0);
 .
 J.,$;f+ 	term_room\\\\(i\\\\);
 	syn_scdir\\\\(i\\\\);
-	if \\\\(i < 0\\\\) \\\\{J;=
+	if \\\\(i < 0\\\\) \\\\{J??!.-5,.+5p\Jp FAIL line 234\Jq!J;=
 J.+3;14;15c w
 .
 J.-1J>		for \\(i = 0; i < n; i\\+\\+\\)>+1;21;22c w
 .
-J.-1J>	\\} else \\{>+1;13;14c w
+J??!.-5,.+5p\Jp FAIL line 236\Jq!J.-1J>	\\} else \\{>+1;13;14c w
 .
-J.,$;f+ 		\\\\*row = MIN\\\\(xtop \\\\+ cnt - 1, lbuf_len\\\\(xb\\\\) - 1\\\\);
+J??!.-5,.+5p\Jp FAIL line 238\Jq!J.,$;f+ 		\\\\*row = MIN\\\\(xtop \\\\+ cnt - 1, lbuf_len\\\\(xb\\\\) - 1\\\\);
 		break;
-	case 'L':J;=
+	case 'L':J??!.-5,.+5p\Jp FAIL line 371\Jq!J;=
 J.+3;20;25c win_height()
 .
 J.,$;f+ 		break;
-	case 'M':J;=
+	case 'M':J??!.-5,.+5p\Jp FAIL line 374\Jq!J;=
 J.+2;20;25c win_height()
 .
 J.,$;f+ 			ex_bufpostfix\\\\(&bufs\\\\[i\\\\], 1\\\\);
 		syn_setft\\\\(xb_ft\\\\);
-		vc_status\\\\(0\\\\);J;=
+		vc_status\\\\(0\\\\);J??!.-5,.+5p\Jp FAIL line 753\Jq!J;=
 J.+3;23;28c win_height()
 .
 J.,$;f+ 	case 'N':
 		if \\\\(vi_search\\\\(mv, cnt, row, off, 1\\\\)\\\\)
-			return -1;J;=
+			return -1;J??!.-5,.+5p\Jp FAIL line 786\Jq!J;=
 J.+3;23;28c win_height()
 .
 J.,$;f+ 		\\\\}
 		if \\\\(vi_search\\\\(cadir < 0 \\\\? 'N' : 'n', 1, row, off, 1\\\\)\\\\)
-			cadir = -cadir;J;=
+			cadir = -cadir;J??!.-5,.+5p\Jp FAIL line 799\Jq!J;=
 J.+3,#+1c 		else if (*row < xtop || *row >= xtop + win_height() - 1)
 			xtop = MAX(0, *row - win_height() / 2);
 .
 J.,$;f+ 		xoff = lbuf_eol\\\\(xb, xrow, 1\\\\);
 	else if \\\\(cmd == 'o'\\\\) \\\\{
-		xrow\\\\+\\\\+;J;=
+		xrow\\\\+\\\\+;J??!.-5,.+5p\Jp FAIL line 1031\Jq!J;=
 J.+3;21;26c win_height()
 .
 J.,$;f+ static void vi_scrollbackward\\\\(int cnt\\\\)
 \\\\{
-	xtop = MAX\\\\(0, xtop - cnt\\\\);J;=
+	xtop = MAX\\\\(0, xtop - cnt\\\\);J??!.-5,.+5p\Jp FAIL line 1117\Jq!J;=
 J.+3;25;30c win_height()
 .
 J.,$;f+ \\\\}
 
-#define topfix\\\\(\\\\) \\\\\\\\J;=
+#define topfix\\\\(\\\\) \\\\\\\\J??!.-5,.+5p\Jp FAIL line 1180\Jq!J;=
 J.+2a { int _wh = win_height(); \\\\
 .
 J.,$;f+ if \\\\(xrow < 0 \\\\|\\\\| xrow >= lbuf_len\\\\(xb\\\\)\\\\) \\\\\\\\
 	xrow = lbuf_len\\\\(xb\\\\) \\\\? lbuf_len\\\\(xb\\\\) - 1 : 0; \\\\\\\\
-if \\\\(xtop > xrow\\\\) \\\\\\\\J;=
+if \\\\(xtop > xrow\\\\) \\\\\\\\J??!.-5,.+5p\Jp FAIL line 1184\Jq!J;=
 J.+3,#+4c 	xtop = xtop - _wh / 2 > xrow ? \\\\
 			MAX(0, xrow - _wh / 2) : xrow; \\\\
 if (xtop + _wh <= xrow) \\\\
@@ -727,11 +727,11 @@ if (xtop + _wh <= xrow) \\\\
 .
 J.,$;f+ 	int mv, n, k, c;
 	xgrec\\\\+\\\\+;
-	if \\\\(init\\\\) \\\\{J;=
+	if \\\\(init\\\\) \\\\{J??!.-5,.+5p\Jp FAIL line 1195\Jq!J;=
 J.+2a 		win_init();
 .
 J.,$;f+ 		topfix\\\\(\\\\)
-		vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);J;=
+		vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);J??!.-5,.+5p\Jp FAIL line 1198\Jq!J;=
 J.+2,#+1c 		if (nwins > 1) {
 			if (curwin) {
 				curwin->row = xrow;
@@ -747,30 +747,30 @@ J.+2,#+1c 		if (nwins > 1) {
 .
 J.,$;f+ 			c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
 			switch \\\\(c\\\\) \\\\{
-			case TK_CTL\\\\('b'\\\\):J;=
+			case TK_CTL\\\\('b'\\\\):J??!.-5,.+5p\Jp FAIL line 1246\Jq!J;=
 J.+3;40;45c win_height()
 .
 J.,$;f+ 				vi_mod \\\\|= 4;
 				break;
-			case TK_CTL\\\\('f'\\\\):J;=
+			case TK_CTL\\\\('f'\\\\):J??!.-5,.+5p\Jp FAIL line 1251\Jq!J;=
 J.+3;39;44c win_height()
 .
 J.,$;f+ 					break;
 				if \\\\(vi_arg\\\\)
-					vi_scrollud = vi_arg;J;=
+					vi_scrollud = vi_arg;J??!.-5,.+5p\Jp FAIL line 1270\Jq!J;=
 J.+3;36;41c win_height()
 .
 J.,$;f+ 					break;
 				if \\\\(vi_arg\\\\)
-					vi_scrollud = vi_arg;J;=
+					vi_scrollud = vi_arg;J??!.-5,.+5p\Jp FAIL line 1282\Jq!J;=
 J.+3;36;41c win_height()
 .
 J.-1J>				xrow = MIN\\(MAX\\(0, lbuf_len\\(xb\\) - 1\\), xrow \\+ n\\);>+1,#+1c 				if (xtop < lbuf_len(xb) - win_height())
 					xtop = MIN(lbuf_len(xb) - win_height(), xtop + n);
 .
-J.,$;f+ 				case 'v':
+J??!.-5,.+5p\Jp FAIL line 1284\Jq!J.,$;f+ 				case 'v':
 					term_push\\\\(k == 'v' \\\\? \":\\\\\\\\x01\" : \":\\\\\\\\x02\", 2\\\\); /\\\\* \\\\^a : \\\\^b \\\\*/
-					break;J;=
+					break;J??!.-5,.+5p\Jp FAIL line 1402\Jq!J;=
 J.+2a 				case 'c':
 					/* switch to next window */
 					if (nwins > 1) {
@@ -792,30 +792,30 @@ J.+2a 				case 'c':
 .
 J.,$;f+ 				vi_mod \\\\|= 1;
 				break; \\\\}
-			case TK_CTL\\\\('z'\\\\):J;=
+			case TK_CTL\\\\('z'\\\\):J??!.-5,.+5p\Jp FAIL line 1531\Jq!J;=
 J.+3c 			case TK_CTL('l'): {
 				int orows = xrows, ocols = xcols;
 .
 J.,$;f+ 					term_done\\\\(\\\\);
 					term_init\\\\(\\\\);
-				\\\\}J;=
+				\\\\}J??!.-5,.+5p\Jp FAIL line 1538\Jq!J;=
 J.+2a 				if (xrows != orows || xcols != ocols)
 					win_size();
 .
 J.,$;f+ 				vi_status = vi_status \\\\? xrows - 1: vi_status;
-				vi_mod \\\\|= 1;J;=
+				vi_mod \\\\|= 1;J??!.-5,.+5p\Jp FAIL line 1541\Jq!J;=
 J.+2;10c  }
 .
 J.,$;f+ 		\\\\}
 		if \\\\(vi_mod\\\\)
-			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);J;=
+			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);J??!.-5,.+5p\Jp FAIL line 1703\Jq!J;=
 J.+3,#+1c 		{ int _ww = win_width();
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
 J.,$;f+ 			\\\\}
 		\\\\}
-		term_record = 1;J;=
+		term_record = 1;J??!.-5,.+5p\Jp FAIL line 1746\Jq!J;=
 J.+3c 		/* save cursor position to current window */
 		if (curwin) {
 			curwin->row = xrow;
@@ -830,17 +830,17 @@ J.+3c 		/* save cursor position to current window */
 .
 J.-1J>				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)>+1;34c  {
 .
-J.-1J>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
+J??!.-5,.+5p\Jp FAIL line 1748\Jq!J.-1J>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-J.,$;f+ 			vi_drawupdate\\\\(otop - xtop\\\\);
+J??!.-5,.+5p\Jp FAIL line 1750\Jq!J.,$;f+ 			vi_drawupdate\\\\(otop - xtop\\\\);
 		if \\\\(xhll\\\\) \\\\{
-			syn_blockhl = -1;J;=
+			syn_blockhl = -1;J??!.-5,.+5p\Jp FAIL line 1758\Jq!J;=
 J.+3;53;58c win_height()
 .
 J.,$;f+ 			if \\\\(xmpt > 0\\\\)
 				xmpt = 0;
-		\\\\}J;=
+		\\\\}J??!.-5,.+5p\Jp FAIL line 1775\Jq!J;=
 J.+3;11;23c (curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +
 .
 Jvis 4Jwq" $VI -e 'vi.c'
@@ -848,7 +848,7 @@ Jvis 4Jwq" $VI -e 'vi.c'
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\J|vis 6J%;f> 	long mtime;			/\\\\* modification time \\\\*/
 	signed char td;			/\\\\* text direction \\\\*/
-\\\\};J;=
+\\\\};J??!.-5,.+5p\Jp FAIL line 412\Jq!J;=
 J.+2a 
 /* window management for splits */
 struct win {

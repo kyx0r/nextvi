@@ -16,7 +16,7 @@ fi
 # Patch: lbuf.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->ln\\\\[pos\\\\] : NULL;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 382\@q!@;=
 @.+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
 	struct lopt *lo;
@@ -58,7 +58,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->l
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\\\|= 1;
-				break;@;=
+				break;@??!.-5,.+5p\@p FAIL line 1447\@q!@;=
 @.+2a 			case TK_CTL('o'):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
@@ -76,7 +76,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				vi_hidch = !vi_hidch;
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> void lbuf_smark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int beg, int o1\\\\);
 void lbuf_emark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int end, int o2\\\\);
-struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);@;=
+struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);@??!.-5,.+5p\@p FAIL line 180\@q!@;=
 @.+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
 .
 @vis 4@wq" $VI -e 'vi.h'

@@ -16,29 +16,29 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static char xrnferr\\\\[\\\\] = \"range not found\";
 static char \\\\*xrerr;
-static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/@;=
+static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/@??!.-5,.+5p\@p FAIL line 56\@q!@;=
 @.+2a char readonly = 0;		/* commandline readonly option */
 .
 @.,$;f+ 	bufs\\\\[i\\\\]\\\\.top = 0;
 	bufs\\\\[i\\\\]\\\\.td = \\\\+1;
-	bufs\\\\[i\\\\]\\\\.mtime = -1;@;=
+	bufs\\\\[i\\\\]\\\\.mtime = -1;@??!.-5,.+5p\@p FAIL line 117\@q!@;=
 @.+2a 	bufs[i].readonly = readonly;
 .
 @.,$;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 368\@q!@;=
 @.+2a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 		ex_buf->readonly = 1;
 .
 @.,$;f+ 		free\\\\(ibuf\\\\.s\\\\);
 	\\\\} else \\\\{
-		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{@;=
+		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{@??!.-5,.+5p\@p FAIL line 681\@q!@;=
 @.+2a 			if (ex_buf->readonly)
 				return \"write failed: readonly option is set\";
 .
 @.,$;f+ 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 1326\@q!@;=
 @.+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
@@ -48,7 +48,7 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 .
 @.,$;f+ 	EO\\\\(rcm\\\\),
 	\\\\{\"reg\", ec_regprint\\\\},
-	\\\\{\"rd\", ec_undoredo\\\\},@;=
+	\\\\{\"rd\", ec_undoredo\\\\},@??!.-5,.+5p\@p FAIL line 1409\@q!@;=
 @.+2a 	{\"ro\", ec_readonly},
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -56,12 +56,12 @@ static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				xvis \\\\|= 8;
 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
-				xvis &= ~4;@;=
+				xvis &= ~4;@??!.-5,.+5p\@p FAIL line 1816\@q!@;=
 @.+2a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
 @.,$;f+ 			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);@;=
+				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);@??!.-5,.+5p\@p FAIL line 1819\@q!@;=
 @.+2;46c R
 .
 @vis 4@wq" $VI -e 'vi.c'
@@ -69,12 +69,12 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				xvis \\\\|= 8;
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int plen, row, off, top;
 	long mtime;			/\\\\* modification time \\\\*/
-	signed char td;			/\\\\* text direction \\\\*/@;=
+	signed char td;			/\\\\* text direction \\\\*/@??!.-5,.+5p\@p FAIL line 411\@q!@;=
 @.+2a 	char readonly;			/* read only */
 .
 @.,$;f+ extern rset \\\\*fsincl;
 extern char \\\\*fs_exdir;
-void dir_calc\\\\(char \\\\*path\\\\);@;=
+void dir_calc\\\\(char \\\\*path\\\\);@??!.-5,.+5p\@p FAIL line 545\@q!@;=
 @.+2a extern char readonly;
 .
 @vis 4@wq" $VI -e 'vi.h'

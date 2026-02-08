@@ -16,33 +16,33 @@ fi
 # Patch: led.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	att_old = att_new; \\\\\\\\
 \\\\} \\\\} \\\\\\\\
-@;=
+@??!.-5,.+5p\@p FAIL line 142\@q!@;=
 @.+2a #define LEDBACK 300
 #define LEDFORW 300
 
 .
 @.,$;f+ 	if \\\\(!xled\\\\)
 		return;
-	ren_state \\\\*r = ren_position\\\\(s0\\\\);@;=
+	ren_state \\\\*r = ren_position\\\\(s0\\\\);@??!.-5,.+5p\@p FAIL line 148\@q!@;=
 @.+2a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
 .
 @.,$;f+ 	char \\\\*bound = NULL;
 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
-	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/@;=
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/@??!.-5,.+5p\@p FAIL line 154\@q!@;=
 @.+3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
 .
 @.,$;f+ 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
 	\\\\}
-	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{@;=
+	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{@??!.-5,.+5p\@p FAIL line 167\@q!@;=
 @.+2a 		c = 0;
 .
 @.,$;f+ 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
-				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;@;=
+				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;@??!.-5,.+5p\@p FAIL line 178\@q!@;=
 @.+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
 			if (r->pos[l] < cbeg && c < fcterm) {
@@ -55,7 +55,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	att_old = att_new; \\\\\\\\
 .
 @.,$;f+ 				for \\\\(; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\);
 			\\\\}
-		\\\\}@;=
+		\\\\}@??!.-5,.+5p\@p FAIL line 183\@q!@;=
 @.+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
@@ -66,14 +66,14 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	att_old = att_new; \\\\\\\\
 .
 @.,$;f+ 		sbufn_null\\\\(bsb\\\\)
 		bound = bsb->s;
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 205\@q!@;=
 @.+3;23c f
 .
 @.-1@>	if \\(xhl\\)>+1;48c f
 .
-@.,$;f+ 			if \\\\(!bound\\\\)
+@??!.-5,.+5p\@p FAIL line 207\@q!@.,$;f+ 			if \\\\(!bound\\\\)
 				att\\\\[p->off\\\\] = syn_merge\\\\(p->att, att\\\\[p->off\\\\]\\\\);
-			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{@;=
+			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{@??!.-5,.+5p\@p FAIL line 217\@q!@;=
 @.+3;21;22c atti
 .
 @vis 4@wq" $VI -e 'led.c'

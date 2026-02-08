@@ -16,12 +16,12 @@ fi
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		break;
 	case '\\\\(':
-	case '\\\\)':@;=
+	case '\\\\)':@??!.-5,.+5p\@p FAIL line 670\@q!@;=
 @.+3;15;16c )
 .
 @.,$;f+ 	case '\\\\}':
 	case '\\\\[':
-	case '\\\\]':@;=
+	case '\\\\]':@??!.-5,.+5p\@p FAIL line 710\@q!@;=
 @.+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		mark = mv == '[' || mv == ']' ? '{' : '\\\\n';
 .

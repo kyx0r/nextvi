@@ -16,7 +16,7 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
 	if \\\\(!\\\\(xvis & 8\\\\)\\\\)
-		ex_print\\\\(msg, bar_ft\\\\)@;=
+		ex_print\\\\(msg, bar_ft\\\\)@??!.-5,.+5p\@p FAIL line 378\@q!@;=
 @.+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\\\n')

@@ -16,7 +16,7 @@ fi
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 	int mark, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(c\\\\) \\\\{@;=
+	switch \\\\(c\\\\) \\\\{@??!.-5,.+5p\@p FAIL line 348\@q!@;=
 @.+2a 	case '\\\\033':	/* Arrow keys */
 		c = term_read(0);
 		if (c == '[') {
@@ -42,7 +42,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> \\\\{
 .
 @.,$;f+ 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(mv\\\\) \\\\{@;=
+	switch \\\\(mv\\\\) \\\\{@??!.-5,.+5p\@p FAIL line 586\@q!@;=
 @.+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {

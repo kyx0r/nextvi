@@ -16,7 +16,7 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
 		ex_command\\\\(s\\\\)
-\\\\}@;=
+\\\\}@??!.-5,.+5p\@p FAIL line 1613\@q!@;=
 @.+2a 
 void ex_done(void)
 {
@@ -36,7 +36,7 @@ void ex_done(void)
 # Patch: regex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;
-	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;@;=
+	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;@??!.-5,.+5p\@p FAIL line 638\@q!@;=
 @.+2a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 .
 @vis 4@wq" $VI -e 'regex.c'
@@ -44,7 +44,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = M
 # Patch: ren.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> ren_state rstates\\\\[3\\\\]; /\\\\* 0 = current line, 1 = all other lines, 2 = aux rendering \\\\*/
 ren_state \\\\*rstate = rstates;
-@;=
+@??!.-5,.+5p\@p FAIL line 92\@q!@;=
 @.+2a void ren_done(void)
 {
 	rset_free(dir_rslr);
@@ -61,7 +61,7 @@ ren_state \\\\*rstate = rstates;
 .
 @.,$;f+ 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
-\\\\}@;=
+\\\\}@??!.-5,.+5p\@p FAIL line 409\@q!@;=
 @.+2a 
 void syn_done(void)
 {
@@ -75,7 +75,7 @@ void syn_done(void)
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 441\@q!@;=
 @.+2a static void vi_regdone(void)
 {
 	for (int i = 0; i < LEN(xregs); i++)
@@ -86,15 +86,15 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\
 .
 @.,$;f+ 		ex\\\\(\\\\);
 	else
-		vi\\\\(1\\\\);@;=
+		vi\\\\(1\\\\);@??!.-5,.+5p\@p FAIL line 1830\@q!@;=
 @.+2a 	ex_done();
 .
 @.-1@>	term_done\\(\\);>a 	free(ibuf);
 	rset_free(fsincl);
 .
-@.,$;f+ 		term_pos\\\\(xrows - !vi_status, 0\\\\);
+@??!.-5,.+5p\@p FAIL line 1831\@q!@.,$;f+ 		term_pos\\\\(xrows - !vi_status, 0\\\\);
 		term_kill\\\\(\\\\);
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 1837\@q!@;=
 @.+2a 	vi_regdone();
 	syn_done();
 	ren_done();
@@ -105,17 +105,17 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> /\\\\* text direction \\\\*/
 int dir_context\\\\(char \\\\*s\\\\);
-void dir_init\\\\(void\\\\);@;=
+void dir_init\\\\(void\\\\);@??!.-5,.+5p\@p FAIL line 233\@q!@;=
 @.+2a void dir_done(void);
 .
 @.,$;f+ int syn_findhl\\\\(int id\\\\);
 int syn_addhl\\\\(char \\\\*reg, int id\\\\);
-void syn_init\\\\(void\\\\);@;=
+void syn_init\\\\(void\\\\);@??!.-5,.+5p\@p FAIL line 271\@q!@;=
 @.+2a void syn_done(void);
 .
 @.,$;f+ #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
 void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
-void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);@;=
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);@??!.-5,.+5p\@p FAIL line 481\@q!@;=
 @.+2a void ex_done(void);
 .
 @vis 4@wq" $VI -e 'vi.h'

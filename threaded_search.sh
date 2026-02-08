@@ -16,7 +16,7 @@ fi
 # Patch: cbuild.sh
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> -Wno-unused-parameter \\\\\\\\
 -Wno-unused-result \\\\\\\\
--Wfatal-errors -std=c99 \\\\\\\\@;=
+-Wfatal-errors -std=c99 \\\\\\\\@??!.-5,.+5p\@p FAIL line 49\@q!@;=
 @.+2a -lpthread \\\\
 .
 @vis 4@wq" $VI -e 'cbuild.sh'
@@ -24,7 +24,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> -Wno-unused-parameter \\\\\\\\
 # Patch: lbuf.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return n != 0;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 482\@q!@;=
 @.+3,#+12c struct lsparams
 {
 	struct lbuf *lb;
@@ -49,27 +49,27 @@ static void *lsearch(void *arg)
 .
 @.,$;f+ 		_o = 0;
 		step = 0;
-		flg = REG_NEWLINE;@;=
+		flg = REG_NEWLINE;@??!.-5,.+5p\@p FAIL line 498\@q!@;=
 @.+3,#+1c 		s = a->lb->ln[i];
 		while (rset_find(a->re, s + off, offs, flg) >= 0) {
 .
 @.,$;f+ 				continue;
 			\\\\}
-			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);@;=
+			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);@??!.-5,.+5p\@p FAIL line 507\@q!@;=
 @.+3c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
 .
 @.-1@>				break;>+1,#+3c 			*a->o = _o;
 			*a->r = i;
 .
-@.,$;f+ 			step = off \\\\+ g1;
-			off \\\\+= g2 > 0 \\\\? g2 : 1;@;=
+@??!.-5,.+5p\@p FAIL line 509\@q!@.,$;f+ 			step = off \\\\+ g1;
+			off \\\\+= g2 > 0 \\\\? g2 : 1;@??!.-5,.+5p\@p FAIL line 515\@q!@;=
 @.+2c 			a->end = -1; /* break outer loop efficiently */
 			if (a->dir > 0)
 				return NULL;
 .
 @.,$;f+ 		\\\\}
 		off = 0;
-	\\\\}@;=
+	\\\\}@??!.-5,.+5p\@p FAIL line 519\@q!@;=
 @.+3c 	return NULL;
 }
 
@@ -135,25 +135,25 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 # Patch: regex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	return 0;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 402\@q!@;=
 @.+3;29;35c flg & REG_NEWLINE
 .
 @.,$;f+ 	char nsubs\\\\[prog->sub\\\\];
 	for \\\\(i = 0; i < prog->laidx; i\\\\+\\\\+\\\\)
-		lb\\\\[i\\\\] = NULL;@;=
+		lb\\\\[i\\\\] = NULL;@??!.-5,.+5p\@p FAIL line 642\@q!@;=
 @.+3;11c  && utf8_length[eol_ch]
 .
 @.-1@>		utf8_length\\[eol_ch\\] = 0;>a 	else
 		flg &= ~REG_NEWLINE;
 .
-@vis 4@wq" $VI -e 'regex.c'
+@??!.-5,.+5p\@p FAIL line 643\@q!@vis 4@wq" $VI -e 'regex.c'
 
 # Patch: uc.c
 EXINIT="rcm:|sc! \\\\@|vis 6@>	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\*/>-1;14c _
 .
-@%;f> 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+@??!.-5,.+5p\@p FAIL line 1\@q!@%;f> 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\\\\* F \\\\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
-\\\\};@;=
+\\\\};@??!.-5,.+5p\@p FAIL line 19\@q!@;=
 @.+2a unsigned char *utf8_length = _utf8_length;
 .
 @vis 4@wq" $VI -e 'uc.c'
@@ -161,7 +161,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@>	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E 
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #include <sys/stat\\\\.h>
 #include <sys/ioctl\\\\.h>
-#include <sys/wait\\\\.h>@;=
+#include <sys/wait\\\\.h>@??!.-5,.+5p\@p FAIL line 15\@q!@;=
 @.+2a #include <pthread.h>
 .
 @vis 4@wq" $VI -e 'vi.c'
@@ -169,7 +169,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> #include <sys/stat\\\\.h>
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> void syn_init\\\\(void\\\\);
 
-/\\\\* uc\\\\.c utf-8 helper functions \\\\*/@;=
+/\\\\* uc\\\\.c utf-8 helper functions \\\\*/@??!.-5,.+5p\@p FAIL line 274\@q!@;=
 @.+3c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 .

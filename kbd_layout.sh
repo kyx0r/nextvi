@@ -15,7 +15,7 @@ fi
 
 # Patch: kmap.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
-	\\\\[0\\\\] = \"en\",@;=
+	\\\\[0\\\\] = \"en\",@??!.-5,.+5p\@p FAIL line 2\@q!@;=
 @.+1a 	['y'] = \"h\",
 	['n'] = \"j\",
 	['e'] = \"k\",
@@ -30,7 +30,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
 # Patch: term.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 			err:
 			\\\\*ibuf = 0;
-		\\\\}@;=
+		\\\\}@??!.-5,.+5p\@p FAIL line 175\@q!@;=
 @.+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
 .

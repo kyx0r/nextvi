@@ -16,17 +16,17 @@ fi
 # Patch: led.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> static sbuf \\\\*suggestsb;
 static sbuf \\\\*acsb;
-sbuf \\\\*led_attsb;@;=
+sbuf \\\\*led_attsb;@??!.-5,.+5p\@p FAIL line 5\@q!@;=
 @.+2a static int vi_insmov;
 .
 @.,$;f+ \\\\}
 
-static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,@;=
+static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,@??!.-5,.+5p\@p FAIL line 283\@q!@;=
 @.+3;34c , int print
 .
 @.,$;f+ 	\\\\}
 	if \\\\(pos >= xleft \\\\+ xcols \\\\|\\\\| pos < xleft\\\\)
-		xleft = pos < xcols \\\\? 0 : pos - xcols / 2;@;=
+		xleft = pos < xcols \\\\? 0 : pos - xcols / 2;@??!.-5,.+5p\@p FAIL line 310\@q!@;=
 @.+3,#+1c 	if (print) {
 		syn_blockhl = -1;
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
@@ -34,13 +34,13 @@ static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,@;=
 .
 @.,$;f+ 	char \\\\*cs;
 	int len, c, i;
-	do \\\\{@;=
+	do \\\\{@??!.-5,.+5p\@p FAIL line 414\@q!@;=
 @.+3c 		led_printparts(sb, pre, ps, *post, postn, ai_max, !vi_insmov);
 		vi_insmov = 0;
 .
 @.,$;f+ 			else if \\\\(!i\\\\)
 				term_clean\\\\(\\\\);
-			continue;@;=
+			continue;@??!.-5,.+5p\@p FAIL line 614\@q!@;=
 @.+2a 		case '\\\\033':;	/* Arrow keys */
 			char cbuf[1];
 			cbuf[0] = '\\\\0';
@@ -94,18 +94,18 @@ static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,@;=
 .
 @.,$;f+ int led_prompt\\\\(sbuf \\\\*sb, char \\\\*insert, int \\\\*kmap, ins_state \\\\*is, int ps, int flg\\\\)
 \\\\{
-	int n = !\\\\(flg & 2\\\\) \\\\? sb->s_n : 0, key;@;=
+	int n = !\\\\(flg & 2\\\\) \\\\? sb->s_n : 0, key;@??!.-5,.+5p\@p FAIL line 650\@q!@;=
 @.+3;29;33c NULL
 .
 @.,$;f+ 	key = led_line\\\\(sb, ps, n, &post, 0, &postref, -1, kmap, is, 0, xrow, xtop, flg\\\\);
 	restore\\\\(xtd\\\\)
-	restore\\\\(xleft\\\\)@;=
+	restore\\\\(xleft\\\\)@??!.-5,.+5p\@p FAIL line 663\@q!@;=
 @.+2a 	sbufn_str(sb, post)
 	free(postref);
 .
 @.,$;f+ 			return key;
 		\\\\}
-		sbuf_chr\\\\(sb, key\\\\)@;=
+		sbuf_chr\\\\(sb, key\\\\)@??!.-5,.+5p\@p FAIL line 694\@q!@;=
 @.+3;37c , 1
 .
 @vis 4@wq" $VI -e 'led.c'
@@ -113,27 +113,27 @@ static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,@;=
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	\\\\*l = ln - pln;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 855\@q!@;=
 @.+2a static int lmodified;
 
 .
 @.,$;f+ 	if \\\\(postn \\\\+ l2 != tlen \\\\|\\\\| memcmp\\\\(ln \\\\+ l1, sb->s \\\\+ l1, tlen - l2 - l1\\\\)\\\\)
 		lbuf_edit\\\\(xb, sb->s, r1, r2 \\\\+ 1, o1, xoff\\\\);
-	free\\\\(sb->s\\\\);@;=
+	free\\\\(sb->s\\\\);@??!.-5,.+5p\@p FAIL line 886\@q!@;=
 @.+2a 	lmodified = 1;
 .
 @.,$;f+ 	term_room\\\\(cmdo\\\\);
 	sbuf_mem\\\\(sb, ln, l1\\\\)
-	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);@;=
+	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);@??!.-5,.+5p\@p FAIL line 1057\@q!@;=
 @.+3;32c  {
 .
 @.-1@>		lbuf_edit\\(xb, sb-\\>s, row, row \\+ !cmdo, off, xoff\\);>a 		lmodified = 1;
 	} else
 		lmodified = 0;
 .
-@.,$;f+ 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
+@??!.-5,.+5p\@p FAIL line 1058\@q!@.,$;f+ 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
 					break;
-				\\\\}@;=
+				\\\\}@??!.-5,.+5p\@p FAIL line 1515\@q!@;=
 @.+2a 				switch (k) {
 				case 'A':	/* ↑ */
 					term_back(!lmodified ? c : 'i');
@@ -168,7 +168,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	\\\\*l = ln - pln;
 .
 @.,$;f+ 				if \\\\(c != 'A' && c != 'C'\\\\)
 					xoff--;
-				break;@;=
+				break;@??!.-5,.+5p\@p FAIL line 1518\@q!@;=
 @.+2a 				_break:
 				vi_mod = 0;
 				break;

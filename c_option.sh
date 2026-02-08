@@ -16,12 +16,12 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	xgrec--;
 \\\\}
-@;=
+@??!.-5,.+5p\@p FAIL line 1600\@q!@;=
 @.+3;32c , char **cmds, int cmdnum
 .
 @.,$;f+ 	xvis &= ~8;
 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)@;=
+		ex_command\\\\(s\\\\)@??!.-5,.+5p\@p FAIL line 1612\@q!@;=
 @.+2a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 .
@@ -30,13 +30,13 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 	xgrec--;
 # Patch: vi.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 
 int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
-\\\\{@;=
+\\\\{@??!.-5,.+5p\@p FAIL line 1797\@q!@;=
 @.+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 .
 @.,$;f+ 				xvis \\\\|= 8;
 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
-				xvis &= ~4;@;=
+				xvis &= ~4;@??!.-5,.+5p\@p FAIL line 1817\@q!@;=
 @.+3c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -52,9 +52,9 @@ int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
 .
 @.-1@>				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\\]\\);>+1;46c c
 .
-@.,$;f+ 	\\\\}
+@??!.-5,.+5p\@p FAIL line 1819\@q!@.,$;f+ 	\\\\}
 	ibuf = emalloc\\\\(ibuf_sz\\\\);
-	term_init\\\\(\\\\);@;=
+	term_init\\\\(\\\\);@??!.-5,.+5p\@p FAIL line 1826\@q!@;=
 @.+3;27c , ex_cmds, cmdnum
 .
 @vis 4@wq" $VI -e 'vi.c'
@@ -62,7 +62,7 @@ int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> void ex_cprint\\\\(char \\\\*line, char \\\\*ft, int r, int c, int left, int flg\\\\);
 #define ex_cprint2\\\\(line, ft, r, c, left, flg\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, r, c, left, flg\\\\)\\\\); \\\\}
-#define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}@;=
+#define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}@??!.-5,.+5p\@p FAIL line 480\@q!@;=
 @.+3;32c , char** cmds, int cmdnum
 .
 @vis 4@wq" $VI -e 'vi.h'

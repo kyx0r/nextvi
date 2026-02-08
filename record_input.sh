@@ -16,17 +16,17 @@ fi
 # Patch: ex.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
 int xrcm = 1;			/\\\\* range command model -
-				0: exec at command parse 1: exec at command \\\\*/@;=
+				0: exec at command parse 1: exec at command \\\\*/@??!.-5,.+5p\@p FAIL line 25\@q!@;=
 @.+2a int xrec;			/* input recoding register */
 .
 @.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
 EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@;=
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)@??!.-5,.+5p\@p FAIL line 1343\@q!@;=
 @.+2a EO(rec)
 .
 @.,$;f+ 	\\\\{\"q!\", ec_quit\\\\},
 	\\\\{\"q\", ec_quit\\\\},
-	EO\\\\(rcm\\\\),@;=
+	EO\\\\(rcm\\\\),@??!.-5,.+5p\@p FAIL line 1407\@q!@;=
 @.+2a 	EO(rec),
 .
 @vis 4@wq" $VI -e 'ex.c'
@@ -34,7 +34,7 @@ EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) E
 # Patch: term.c
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		ret:
 		ibuf_cnt = 1;
-		ibuf_pos = 0;@;=
+		ibuf_pos = 0;@??!.-5,.+5p\@p FAIL line 178\@q!@;=
 @.+2a 		if (xrec && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
@@ -47,7 +47,7 @@ EXINIT="rcm:|sc! \\\\@|vis 6@%;f> 		ret:
 # Patch: vi.h
 EXINIT="rcm:|sc! \\\\@|vis 6@%;f> extern int xlim;
 extern int xseq;
-extern int xerr;@;=
+extern int xerr;@??!.-5,.+5p\@p FAIL line 435\@q!@;=
 @.+2a extern int xrec;
 .
 @vis 4@wq" $VI -e 'vi.h'
