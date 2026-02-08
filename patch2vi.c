@@ -172,38 +172,14 @@ static void mark_bytes_used(const char *s)
 		byte_used[(unsigned char)*s] = 1;
 }
 
-/* Check if byte is a usable control char (not 0, \n, \r, \t) */
-static int is_usable_ctrl(int c)
-{
-	return c >= 1 && c < 32 && c != '\n' && c != '\r' && c != '\t';
-}
-
 /* Find an unused byte to use as separator.
  * Prefer non-printable bytes so printable chars stay available
  * for ex commands and patterns. */
 static int find_unused_byte(void)
 {
-	/* First try control chars - least likely to conflict */
-	for (int c = 1; c < 32; c++) {
-		if (is_usable_ctrl(c) && !byte_used[c])
-			return c;
-	}
-	/* Then try high bytes */
-	for (int c = 128; c < 256; c++) {
+	for (int c = 1; c < 256; c++)
 		if (!byte_used[c])
 			return c;
-	}
-	/* Then try printable non-special chars */
-	const char *preferred = "@&~=[]{}";
-	for (const char *p = preferred; *p; p++) {
-		if (!byte_used[(unsigned char)*p])
-			return *p;
-	}
-	/* Then try any printable */
-	for (int c = '!'; c <= '~'; c++) {
-		if (!byte_used[c])
-			return c;
-	}
 	return -1;  /* All bytes used - very unlikely */
 }
 
@@ -213,23 +189,9 @@ static void list_unused_bytes(FILE *out)
 	int n = 0;
 	fprintf(out, "# Available separators:");
 	/* Control chars first (preferred) */
-	for (int c = 1; c < 32; c++) {
-		if (is_usable_ctrl(c) && !byte_used[c]) {
-			fprintf(out, " 0x%02x", c);
-			n++;
-		}
-	}
-	/* High bytes */
-	for (int c = 128; c < 256; c++) {
+	for (int c = 1; c < 256; c++) {
 		if (!byte_used[c]) {
 			fprintf(out, " 0x%02x", c);
-			n++;
-		}
-	}
-	/* Printable */
-	for (int c = '!'; c <= '~'; c++) {
-		if (!byte_used[c]) {
-			fprintf(out, " %c", c);
 			n++;
 		}
 	}
@@ -959,8 +921,6 @@ int main(int argc, char **argv)
 	int old_line = 0;
 	const char *input_file = NULL;
 
-	/* Initialize byte tracking */
-	memset(byte_used, 0, sizeof(byte_used));
 	/* Mark chars that cannot be ex separators (part of ex range syntax) */
 	const char *ex_range_chars = " \t0123456789+-.,<>/$';%*#|";
 	for (const char *p = ex_range_chars; *p; p++)
