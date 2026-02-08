@@ -923,19 +923,6 @@ int main(int argc, char **argv)
 	int old_line = 0;
 	const char *input_file = NULL;
 
-	/* Mark chars that cannot be ex separators (part of ex range syntax) */
-	const char *ex_range_chars = " \t0123456789+-.,<>/$';%*#|";
-	for (const char *p = ex_range_chars; *p; p++)
-		byte_used[(unsigned char)*p] = 1;
-	/* Mark other problematic chars */
-	byte_used[':'] = 1;  /* Default ex separator */
-	byte_used['!'] = 1;  /* Shell escape */
-	byte_used['"'] = 1;  /* Shell quote */
-	byte_used['\\'] = 1; /* Escape char */
-	byte_used['`'] = 1;  /* Shell backtick */
-	byte_used['\n'] = 1; /* Newline */
-	byte_used['\r'] = 1; /* Carriage return */
-
 	/* Parse arguments */
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
@@ -952,11 +939,25 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* Mark chars used by ??! error check commands so they
-	 * cannot collide with the chosen separator character.
-	 * Covers: ??!.-5,.+5p FAIL line N q! */
+	/* Mark chars that cannot be ex separators (part of ex range syntax) */
+	const char *ex_range_chars = " \t0123456789+-.,<>/$';%*#|";
+	for (const char *p = ex_range_chars; *p; p++)
+		byte_used[(unsigned char)*p] = 1;
+	/* Mark chars that cannot be ex separators (part of ex commands) */
+	const char *ex_cmd_chars = "@&!?bpaefidgmqrwusxycjtohlv=";
+	for (const char *p = ex_cmd_chars; *p; p++)
+		byte_used[(unsigned char)*p] = 1;
+	/* Mark other problematic chars */
+	byte_used[':'] = 1;  /* Default ex separator */
+	byte_used['!'] = 1;  /* Shell escape */
+	byte_used['"'] = 1;  /* Shell quote */
+	byte_used['\\'] = 1; /* Escape char */
+	byte_used['`'] = 1;  /* Shell backtick */
+	byte_used['\n'] = 1; /* Newline */
+	byte_used['\r'] = 1; /* Carriage return */
+
 	if (relative_mode) {
-		const char *err_chars = "?pFAILlineq";
+		const char *err_chars = "FAILline";
 		for (const char *p = err_chars; *p; p++)
 			byte_used[(unsigned char)*p] = 1;
 	}
