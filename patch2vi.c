@@ -199,7 +199,7 @@ static int find_unused_byte(void)
 	return -1;  /* All bytes used - very unlikely */
 }
 
-/* List all unused printable bytes suitable as separators */
+/* List all unused bytes suitable as separators */
 static void list_unused_bytes(FILE *out)
 {
 	int n = 0;
@@ -217,8 +217,14 @@ static void list_unused_bytes(FILE *out)
 			n++;
 		}
 	}
+	for (int c = 128; c < 256; c++) {
+		if (!byte_used[c]) {
+			fprintf(out, " 0x%02x", c);
+			n++;
+		}
+	}
 	if (!n)
-		fprintf(out, " (none printable)");
+		fprintf(out, " (none)");
 	fputc('\n', out);
 }
 
