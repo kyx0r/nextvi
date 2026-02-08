@@ -878,7 +878,7 @@ EX COMMANDS
              Example: autocomplete using whole lines from a buffer
              :ac .+
 
-     [0-2]sc[esc][sep][exp][exe]
+     [0-3]sc[esc][sep][exp][exe]
              Set ex special characters
 
              Prefix selects a specific character to change.
@@ -889,7 +889,7 @@ EX COMMANDS
              Example: change all to <a> <b> <c> <d>
              :sc abcd
 
-     [0-2]sc![esc][sep][exp][exe]
+     [0-3]sc![esc][sep][exp][exe]
              Set ex special characters
 
              Missing arguments default to <0x0>.
@@ -1277,4 +1277,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 7, 2026                     Nextvi 4.0
+Nextvi 4.0                     February 8, 2026                     Nextvi 4.0
