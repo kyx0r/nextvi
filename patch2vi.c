@@ -199,6 +199,29 @@ static int find_unused_byte(void)
 	return -1;  /* All bytes used - very unlikely */
 }
 
+/* List all unused printable bytes suitable as separators */
+static void list_unused_bytes(FILE *out)
+{
+	int n = 0;
+	fprintf(out, "# Available separators:");
+	const char *preferred = "@&~=[]{}";
+	for (const char *p = preferred; *p; p++) {
+		if (!byte_used[(unsigned char)*p]) {
+			fprintf(out, " %c", *p);
+			n++;
+		}
+	}
+	for (int c = '!'; c <= '~'; c++) {
+		if (!byte_used[c] && !strchr(preferred, c)) {
+			fprintf(out, " %c", c);
+			n++;
+		}
+	}
+	if (!n)
+		fprintf(out, " (none printable)");
+	fputc('\n', out);
+}
+
 /* Parse a hunk header: @@ -old_start,old_count +new_start,new_count @@ */
 static int parse_hunk_header(const char *line, int *old_start, int *old_count,
 				 int *new_start, int *new_count)
@@ -245,8 +268,13 @@ static void emit_escaped_line(FILE *out, const char *s)
 
 static void emit_escaped_text(FILE *out, const char *s);
 
+/* separator: shell expands ${SEP} in double-quoted EXINIT */
+#define EMIT_SEP(out) fputs("${SEP}", out)
+/* escaped separator inside ??! block: \<sep> for ex_arg */
+#define EMIT_ESCSEP(out) fputs("\\\\${SEP}", out)
+
 /* Emit ex commands for inserting text after line N */
-static void emit_insert_after(FILE *out, int line, char **texts, int ntexts, int sep)
+static void emit_insert_after(FILE *out, int line, char **texts, int ntexts)
 {
 	if (ntexts == 0)
 		return;
@@ -256,35 +284,38 @@ static void emit_insert_after(FILE *out, int line, char **texts, int ntexts, int
 		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
-	fprintf(out, ".\n%c", sep);
+	fputs(".\n", out);
+	EMIT_SEP(out);
 }
 
 /* Emit ex commands for deleting lines from N to M inclusive */
-static void emit_delete(FILE *out, int from, int to, int sep)
+static void emit_delete(FILE *out, int from, int to)
 {
 	if (from == to)
-		fprintf(out, "%dd%c", from, sep);
+		fprintf(out, "%dd", from);
 	else
-		fprintf(out, "%d,%dd%c", from, to, sep);
+		fprintf(out, "%d,%dd", from, to);
+	EMIT_SEP(out);
 }
 
 /* Emit ex command for horizontal (character-level) edit */
 static void emit_horizontal_change(FILE *out, int line, int char_start, int char_end,
-					const char *new_text, int sep)
+					const char *new_text)
 {
 	if (char_start == char_end)
 		fprintf(out, "%d;%dc ", line, char_start);
 	else
 		fprintf(out, "%d;%d;%dc ", line, char_start, char_end);
 	emit_escaped_text(out, new_text);
-	fprintf(out, "\n.\n%c", sep);
+	fputs("\n.\n", out);
+	EMIT_SEP(out);
 }
 
 /* Emit ex commands for changing lines (delete and insert) */
-static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, int sep)
+static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
 {
 	if (ntexts == 0) {
-		emit_delete(out, from, to, sep);
+		emit_delete(out, from, to);
 		return;
 	}
 
@@ -297,7 +328,8 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, i
 		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
-	fprintf(out, ".\n%c", sep);
+	fputs(".\n", out);
+	EMIT_SEP(out);
 }
 
 /*
@@ -311,8 +343,8 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts, i
  * Multi-line context: when 2+ context lines are available, uses f> command
  * for multiline search (newlines become regular characters in the search).
  *
- * Conditional wrapping: each edit is wrapped in ? so if anchor doesn't
- * match, the edit is skipped rather than corrupting the wrong location.
+ * Error checking: each search is followed by ??! to detect failure,
+ * print debug info, and quit before corrupting the file.
  */
 
 typedef struct {
@@ -330,10 +362,16 @@ typedef struct {
 
 /* Emit ??! error check after a regex search command.
  * On failure: prints surrounding lines, error message, and quits. */
-static void emit_err_check(FILE *out, int line, int sep)
+static void emit_err_check(FILE *out, int line)
 {
-	fprintf(out, "?" "?!.-5,.+5p\\%cp FAIL line %d\\%cq!%c",
-		sep, line, sep, sep);
+	/* ??! = if last command failed, run the else branch
+	 * \<sep> separates commands inside the branch */
+	fputs("?" "?!.-5,.+5p", out);
+	EMIT_ESCSEP(out);
+	fprintf(out, "p FAIL line %d", line);
+	EMIT_ESCSEP(out);
+	fputs("q!", out);
+	EMIT_SEP(out);
 }
 
 /* Write a regex-escaped string with shell double-quote escaping.
@@ -411,7 +449,7 @@ static void emit_escaped_regex_reread(FILE *out, const char *s)
 }
 
 /* Emit forward single-line search position (no leading 1<sep>) */
-static void emit_fwd_pos(FILE *out, const char *anchor, int offset, int sep)
+static void emit_fwd_pos(FILE *out, const char *anchor, int offset)
 {
 	fputc('>', out);
 	emit_escaped_regex_reread(out, anchor);
@@ -425,7 +463,7 @@ static void emit_fwd_pos(FILE *out, const char *anchor, int offset, int sep)
 /* Emit multiline f>/f+ position using 2+ context lines.
  * first=1 uses f> (search from current pos), first=0 uses f+ (skip past current) */
 static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
-				int offset, int sep, int first, int target_line)
+				int offset, int first, int target_line)
 {
 	fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
 	for (int i = 0; i < nanchors; i++) {
@@ -433,15 +471,16 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 		if (i < nanchors - 1)
 			fputc('\n', out);  /* literal newline between context lines */
 	}
-	fprintf(out, "%c", sep);
-	emit_err_check(out, target_line, sep);
-	fprintf(out, ";=\n%c", sep);
+	EMIT_SEP(out);
+	emit_err_check(out, target_line);
+	fputs(";=\n", out);
+	EMIT_SEP(out);
 	/* After f>/f+, cursor is at match position; use .+offset for target */
 	fprintf(out, ".+%d", offset);
 }
 
 /* Emit following context search with negative offset */
-static void emit_follow_pos(FILE *out, const char *follow, int offset, int sep)
+static void emit_follow_pos(FILE *out, const char *follow, int offset)
 {
 	fputc('>', out);
 	emit_escaped_regex_reread(out, follow);
@@ -463,7 +502,7 @@ static void emit_follow_pos(FILE *out, const char *follow, int offset, int sep)
  * *first_ml: pointer to flag, 1 for first multiline search (uses f>),
  *            cleared to 0 after first use (subsequent use f+)
  */
-static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
+static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
 {
 	if (rc->use_offset) {
 		if (rc->offset_val == 0)
@@ -477,88 +516,73 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int sep, int *first_ml)
 	if (rc->nanchors >= 2) {
 		/* Multiline: f>/f+ search, then .+offset as position for next command */
 		int offset = rc->nanchors + rc->anchor_offset - 1;
-		emit_multiline_pos(out, rc->anchors, rc->nanchors, offset, sep, *first_ml, rc->target_line);
+		emit_multiline_pos(out, rc->anchors, rc->nanchors, offset, *first_ml, rc->target_line);
 		*first_ml = 0;
 		return 1;
 	}
 	if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
-		if (rc->backstep)
-			fprintf(out, ".-%d%c", 1, sep);
-		emit_fwd_pos(out, rc->anchors[0], rc->anchor_offset, sep);
+		if (rc->backstep) {
+			fprintf(out, ".-%d", 1);
+			EMIT_SEP(out);
+		}
+		emit_fwd_pos(out, rc->anchors[0], rc->anchor_offset);
 		return 0;
 	}
 	if (rc->follow_ctx && rc->follow_ctx[0]) {
-		if (rc->backstep)
-			fprintf(out, ".-%d%c", 1, sep);
-		emit_follow_pos(out, rc->follow_ctx, rc->follow_offset, sep);
+		if (rc->backstep) {
+			fprintf(out, ".-%d", 1);
+			EMIT_SEP(out);
+		}
+		emit_follow_pos(out, rc->follow_ctx, rc->follow_offset);
 		return 0;
 	}
 	return -1;  /* no anchor available */
 }
 
-/* Emit the conditional search part for ? wrapping */
-static void emit_cond_search(FILE *out, rel_ctx_t *rc, int sep, int first)
-{
-	if (rc->nanchors >= 2) {
-		fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
-		for (int i = 0; i < rc->nanchors; i++) {
-			emit_escaped_regex_exarg(out, rc->anchors[i]);
-			if (i < rc->nanchors - 1)
-				fputc('\n', out);
-		}
-	} else if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
-		fputc('>', out);
-		emit_escaped_regex_reread(out, rc->anchors[0]);
-		fputc('>', out);
-	} else if (rc->follow_ctx && rc->follow_ctx[0]) {
-		fputc('>', out);
-		emit_escaped_regex_reread(out, rc->follow_ctx);
-		fputc('>', out);
-	}
-}
-
 /* Emit delete using relative pattern */
-static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count, int sep,
+static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count,
 				  int *first_ml)
 {
-	int mode = emit_rel_pos(out, rc, sep, first_ml);
+	int mode = emit_rel_pos(out, rc, first_ml);
 	if (count == 1)
-		fprintf(out, "d%c", sep);
+		fputc('d', out);
 	else
-		fprintf(out, ",#+%dd%c", count - 1, sep);
+		fprintf(out, ",#+%dd", count - 1);
+	EMIT_SEP(out);
 	if (mode == 0 && !rc->use_offset)
-		emit_err_check(out, rc->target_line, sep);
+		emit_err_check(out, rc->target_line);
 }
 
 /* Emit insert using relative pattern */
 static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
-				  char **texts, int ntexts, int sep, int *first_ml)
+				  char **texts, int ntexts, int *first_ml)
 {
 	if (ntexts == 0)
 		return;
 
-	int mode = emit_rel_pos(out, rc, sep, first_ml);
+	int mode = emit_rel_pos(out, rc, first_ml);
 	fprintf(out, "a ");
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
-	fprintf(out, ".\n%c", sep);
+	fputs(".\n", out);
+	EMIT_SEP(out);
 	if (mode == 0 && !rc->use_offset)
-		emit_err_check(out, rc->target_line, sep);
+		emit_err_check(out, rc->target_line);
 }
 
 /* Emit change using relative pattern */
 static void emit_relative_change(FILE *out, rel_ctx_t *rc,
-				  int del_count, char **texts, int ntexts, int sep,
+				  int del_count, char **texts, int ntexts,
 				  int *first_ml)
 {
 	if (ntexts == 0) {
-		emit_relative_delete(out, rc, del_count, sep, first_ml);
+		emit_relative_delete(out, rc, del_count, first_ml);
 		return;
 	}
 
-	int mode = emit_rel_pos(out, rc, sep, first_ml);
+	int mode = emit_rel_pos(out, rc, first_ml);
 	if (del_count == 1)
 		fprintf(out, "c ");
 	else
@@ -568,25 +592,27 @@ static void emit_relative_change(FILE *out, rel_ctx_t *rc,
 		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
-	fprintf(out, ".\n%c", sep);
+	fputs(".\n", out);
+	EMIT_SEP(out);
 	if (mode == 0 && !rc->use_offset)
-		emit_err_check(out, rc->target_line, sep);
+		emit_err_check(out, rc->target_line);
 }
 
 /* Emit horizontal change using relative pattern */
 static void emit_relative_horizontal(FILE *out, rel_ctx_t *rc,
 				      int char_start, int char_end,
-				      const char *new_text, int sep, int *first_ml)
+				      const char *new_text, int *first_ml)
 {
-	int mode = emit_rel_pos(out, rc, sep, first_ml);
+	int mode = emit_rel_pos(out, rc, first_ml);
 	if (char_start == char_end)
 		fprintf(out, ";%dc ", char_start);
 	else
 		fprintf(out, ";%d;%dc ", char_start, char_end);
 	emit_escaped_text(out, new_text);
-	fprintf(out, "\n.\n%c", sep);
+	fputs("\n.\n", out);
+	EMIT_SEP(out);
 	if (mode == 0 && !rc->use_offset)
-		emit_err_check(out, rc->target_line, sep);
+		emit_err_check(out, rc->target_line);
 }
 
 /* Process operations for one file and emit script */
@@ -596,7 +622,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		return;
 
 	fprintf(out, "\n# Patch: %s\n", fp->path);
-	fprintf(out, "EXINIT=\"rcm:|sc! \x5c\x5c\x5c\x5c%c|vis 6%c", sep, sep);
+	fprintf(out, "SEP='%c'\n", sep);
+	fputs("EXINIT=\"rcm:|sc! \\\\\\\\${SEP}|vis 6${SEP}", out);
 
 	/*
 	 * Strategy: process operations in groups.
@@ -801,32 +828,32 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				                   &start, &old_end, &new_text)) {
 					if (has_rel)
 						emit_relative_horizontal(out, &rc,
-						    start, old_end, new_text, sep, &first_ml);
+						    start, old_end, new_text, &first_ml);
 					else
 						emit_horizontal_change(out, g->del_start, start,
-						    old_end, new_text, sep);
+						    old_end, new_text);
 					free(new_text);
 				} else {
 					if (has_rel)
 						emit_relative_change(out, &rc,
-						    g->ndel, g->add_texts, g->nadd, sep, &first_ml);
+						    g->ndel, g->add_texts, g->nadd, &first_ml);
 					else
 						emit_change(out, g->del_start, g->del_end,
-						    g->add_texts, g->nadd, sep);
+						    g->add_texts, g->nadd);
 				}
 			} else {
 				if (has_rel)
 					emit_relative_change(out, &rc,
-					    g->ndel, g->add_texts, g->nadd, sep, &first_ml);
+					    g->ndel, g->add_texts, g->nadd, &first_ml);
 				else
 					emit_change(out, g->del_start, g->del_end,
-					    g->add_texts, g->nadd, sep);
+					    g->add_texts, g->nadd);
 			}
 		} else if (g->del_start) {
 			if (has_rel)
-				emit_relative_delete(out, &rc, g->ndel, sep, &first_ml);
+				emit_relative_delete(out, &rc, g->ndel, &first_ml);
 			else
-				emit_delete(out, g->del_start, g->del_end, sep);
+				emit_delete(out, g->del_start, g->del_end);
 		} else if (g->nadd) {
 			if (has_rel) {
 				/* For pure insert, adjust: search goes to anchor,
@@ -837,9 +864,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 					rc.follow_offset += 1;
 				}
 				emit_relative_insert(out, &rc,
-				    g->add_texts, g->nadd, sep, &first_ml);
+				    g->add_texts, g->nadd, &first_ml);
 			} else
-				emit_insert_after(out, g->add_after, g->add_texts, g->nadd, sep);
+				emit_insert_after(out, g->add_after, g->add_texts, g->nadd);
 		}
 		/* Track cursor position for interior group offsets (-rb only) */
 		if (relative_mode == 2) {
@@ -866,7 +893,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		free(g->add_texts);
 	}
 
-	fprintf(out, "vis 4%cwq\" $VI -e '%s'\n", sep, fp->path);
+	fputs("vis 4${SEP}wq\" $VI -e '", out);
+	fputs(fp->path, out);
+	fputs("'\n", out);
 }
 
 static void new_file(const char *path)
@@ -940,6 +969,15 @@ int main(int argc, char **argv)
 		} else {
 			input_file = argv[i];
 		}
+	}
+
+	/* Mark chars used by ??! error check commands so they
+	 * cannot collide with the chosen separator character.
+	 * Covers: ??!.-5,.+5p FAIL line N q! */
+	if (relative_mode) {
+		const char *err_chars = "?pFAILlineq";
+		for (const char *p = err_chars; *p; p++)
+			byte_used[(unsigned char)*p] = 1;
 	}
 
 	FILE *in = stdin;
@@ -1022,11 +1060,7 @@ int main(int argc, char **argv)
 	/* Emit shell script header */
 	printf("#!/bin/sh\n");
 	printf("# Generated by patch2vi from unified diff\n");
-	printf("# Separator: ");
-	if (sep >= 32 && sep < 127)
-		printf("'%c'\n", sep);
-	else
-		printf("0x%02x\n", sep);
+	list_unused_bytes(stdout);
 	printf("set -e\n");
 	printf("\n# Path to nextvi (adjust as needed)\n");
 	printf("VI=${VI:-vi}\n");
