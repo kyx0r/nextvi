@@ -49,7 +49,11 @@ ${SEP}.+3;10;12c tr
 .
 ${SEP}.,$;f+ 				break;
 			\\\\}
-		\\\\}${SEP}.,$;f+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 461\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		\\\\}
+		rset_free\\\\(rs\\\\);
+		sbuf_cut\\\\(sb, 0\\\\)
+		if \\\\(pflg\\\\) \\\\{
+			term_clean\\\\(\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 461\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;4;6c tr
 .
 ${SEP}.,$;f+ 	free\\\\(sb->s\\\\);
