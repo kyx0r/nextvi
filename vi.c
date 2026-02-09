@@ -1654,9 +1654,11 @@ void vi(int init)
 				break;
 			case 'Z':
 				k = term_read(0);
-				if (k == 'Z')
+				if (k == 'Z') {
 					ex_exec("x");
-				else if (!TK_INT(k)) {
+					if (xgrec == 1)
+						goto quit;
+				} else if (!TK_INT(k)) {
 					xquit = texec == '&' ? -1 : 1;
 					if (xgrec > 1) {
 						if (k == 'z')
@@ -1664,7 +1666,7 @@ void vi(int init)
 					} else if (k == 'z') {
 						quit:
 						term_pos(xrows - !vi_status, 0);
-						term_kill();
+						term_chr('\n');
 					} else
 						term_clean();
 				}
