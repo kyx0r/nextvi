@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #define MAX_LINE 8192
 #define MAX_OPS 65536
@@ -775,6 +776,14 @@ static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
 
 	fclose(tmp);
 
+	/* Record mtime before editor */
+	struct stat st_before;
+	if (stat(tmppath, &st_before) < 0) {
+		perror("stat");
+		unlink(tmppath);
+		return 0;
+	}
+
 	/* Open editor */
 	const char *editor = getenv("EDITOR");
 	if (!editor)
@@ -787,6 +796,20 @@ static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
 	int ret = system(cmd);
 	if (ret != 0) {
 		fprintf(stderr, "editor exited with error %d\n", ret);
+		unlink(tmppath);
+		return 0;
+	}
+
+	/* Check if file was saved (mtime changed) */
+	struct stat st_after;
+	if (stat(tmppath, &st_after) < 0) {
+		perror("stat");
+		unlink(tmppath);
+		return 0;
+	}
+	if (st_before.st_mtim.tv_sec == st_after.st_mtim.tv_sec &&
+	    st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec) {
+		/* File not saved - use default behavior */
 		unlink(tmppath);
 		return 0;
 	}
@@ -850,31 +873,7 @@ static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
 	fclose(rd);
 	unlink(tmppath);
 
-	/* Check if command changed */
-	const char *orig_cmd = default_cmd ? default_cmd : "";
-	int cmd_changed = strcmp(edited_cmd, orig_cmd) != 0;
-
-	/* Check if pattern changed */
-	int pat_changed = 0;
-	if (nlines != g->nblock || edited_offset != g->block_change_idx)
-		pat_changed = 1;
-	if (!pat_changed) {
-		for (int i = 0; i < nlines; i++) {
-			if (strcmp(lines[i], g->block_lines[i]) != 0) {
-				pat_changed = 1;
-				break;
-			}
-		}
-	}
-
-	if (!cmd_changed && !pat_changed) {
-		for (int i = 0; i < nlines; i++)
-			free(lines[i]);
-		free(lines);
-		return 0;
-	}
-
-	/* Store custom data */
+	/* File was saved - use the edited block */
 	g->custom_lines = lines;
 	g->ncustom = nlines;
 	g->custom_offset = edited_offset;
@@ -883,7 +882,9 @@ static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
 		if (i >= g->nblock || strcmp(lines[i], g->block_lines[i]) != 0)
 			g->custom_modified[i] = 1;
 	}
-	if (cmd_changed && edited_cmd[0])
+	/* Store command if different from default */
+	const char *orig_cmd = default_cmd ? default_cmd : "";
+	if (strcmp(edited_cmd, orig_cmd) != 0 && edited_cmd[0])
 		g->custom_cmd = xstrdup(edited_cmd);
 	return 1;
 }
