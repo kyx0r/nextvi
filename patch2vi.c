@@ -783,7 +783,7 @@ static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
 		editor = "vi";
 
 	char cmd[MAX_LINE];
-	snprintf(cmd, sizeof(cmd), "%s '%s'", editor, tmppath);
+	snprintf(cmd, sizeof(cmd), "%s '%s' </dev/tty >/dev/tty", editor, tmppath);
 	int ret = system(cmd);
 	if (ret != 0) {
 		fprintf(stderr, "editor exited with error %d\n", ret);
