@@ -1332,11 +1332,12 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-r|-rb|--ri] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-rbih] [input.patch]\n", prog);
 	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
-	fprintf(stderr, "  -r   Use relative regex patterns instead of line numbers\n");
-	fprintf(stderr, "  -rb  Relative block mode: first group searched, rest offset-based\n");
-	fprintf(stderr, "  --ri Interactive relative mode: edit search patterns in $EDITOR\n");
+	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
+	fprintf(stderr, "  -b  Block mode: first group searched, rest offset-based\n");
+	fprintf(stderr, "  -i  Interactive mode: edit search patterns in $EDITOR\n");
+	fprintf(stderr, "  -h  Show this help\n");
 	exit(1);
 }
 
@@ -1346,25 +1347,36 @@ int main(int argc, char **argv)
 	int in_hunk = 0;
 	int old_line = 0;
 	const char *input_file = NULL;
+	int i, j;
+	int block_mode = 0;
 
 	/* Parse arguments */
-	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-			usage(argv[0]);
-		} else if (strcmp(argv[i], "--ri") == 0) {
-			relative_mode = 1;
-			interactive_mode = 1;
-		} else if (strcmp(argv[i], "-rb") == 0) {
-			relative_mode = 2;
-		} else if (strcmp(argv[i], "-r") == 0) {
-			relative_mode = 1;
-		} else if (argv[i][0] == '-') {
-			fprintf(stderr, "Unknown option: %s\n", argv[i]);
-			usage(argv[0]);
-		} else {
-			input_file = argv[i];
+	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
+		if (argv[i][1] == '-' && !argv[i][2]) {
+			i++;
+			break;
+		}
+		for (j = 1; argv[i][j]; j++) {
+			if (argv[i][j] == 'r')
+				relative_mode = 1;
+			else if (argv[i][j] == 'b')
+				block_mode = 1;
+			else if (argv[i][j] == 'i')
+				interactive_mode = 1;
+			else if (argv[i][j] == 'h')
+				usage(argv[0]);
+			else {
+				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+				usage(argv[0]);
+			}
 		}
 	}
+	if (block_mode && relative_mode)
+		relative_mode = 2;
+	if (interactive_mode)
+		relative_mode = 1;
+	if (i < argc)
+		input_file = argv[i];
 
 	/* Mark chars that cannot be ex separators (part of ex range syntax) */
 	const char *ex_range_chars = " \t0123456789+-.,<>/$';%*#|";
