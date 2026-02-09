@@ -850,14 +850,14 @@ ${SEP}.+2;10c  }
 .
 ${SEP}.,$;f+ 		\\\\}
 		if \\\\(vi_mod\\\\)
-			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1709\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1711\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+1c 		{ int _ww = win_width();
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
 ${SEP}.,$;f+ 			\\\\}
 		\\\\}
-		term_record = 1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1752\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		term_record = 1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1754\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 		/* save cursor position to current window */
 		if (curwin) {
 			curwin->row = xrow;
@@ -874,11 +874,11 @@ ${SEP}.+3c 		/* save cursor position to current window */
 .
 ${SEP}.-1${SEP}>				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)>+1;34c  {
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1754\\${SEP}vis 4\\${SEP}q! 1}${SEP}.-1${SEP}>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1756\\${SEP}vis 4\\${SEP}q! 1}${SEP}.-1${SEP}>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1756\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 			vi_drawrow\\\\(xrow\\\\+1\\\\);
-			vi_rshift = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1760\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1758\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 			vi_drawrow\\\\(xrow\\\\+1\\\\);
+			vi_rshift = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1762\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2,#+1c 		} else if (xtop != otop) {
 			if (nwins > 1)
 				vi_drawagain(xtop);
@@ -887,12 +887,12 @@ ${SEP}.+2,#+1c 		} else if (xtop != otop) {
 		}
 .
 ${SEP}.,$;f+ 		if \\\\(xhll\\\\) \\\\{
-			syn_blockhl = -1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1764\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+			syn_blockhl = -1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1766\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2;53;58c win_height()
 .
 ${SEP}.,$;f+ 			if \\\\(xmpt > 0\\\\)
 				xmpt = 0;
-		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1781\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1783\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;11;23c (curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'

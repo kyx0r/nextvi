@@ -127,12 +127,12 @@ ${SEP}vis 4${SEP}wq" $VI -e 'term.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
 	sa\\\\.sa_handler = sighandler;
-	sigaction\\\\(SIGWINCH, &sa, NULL\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1798\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	sigaction\\\\(SIGWINCH, &sa, NULL\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1800\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	sigaction(SIGINT, &sa, NULL);
 .
 ${SEP}.,$;f+ 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
 			i\\\\+\\\\+;
-			break;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1813\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+			break;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1815\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
 .

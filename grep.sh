@@ -142,7 +142,7 @@ ${SEP}.+2a 				case 'x':
 .
 ${SEP}.,$;f+ 	syn_init\\\\(\\\\);
 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
-	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1808\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1810\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	temp_open(2, \"/grep/\", grep_ft);
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'

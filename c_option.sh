@@ -35,13 +35,13 @@ ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 
 int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
-\\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1803\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+\\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1805\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 .
 ${SEP}.,$;f+ 				xvis \\\\|= 8;
 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
-				xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1823\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+				xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1825\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -57,9 +57,9 @@ ${SEP}.+3c 			else if (argv[i][j] == 'c') {
 .
 ${SEP}.-1${SEP}>				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\\]\\);>+1;46c c
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1825\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 	\\\\}
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1827\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 	\\\\}
 	ibuf = emalloc\\\\(ibuf_sz\\\\);
-	term_init\\\\(\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1832\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	term_init\\\\(\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1834\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;27c , ex_cmds, cmdnum
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'

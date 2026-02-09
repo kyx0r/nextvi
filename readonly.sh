@@ -61,12 +61,12 @@ ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 				xvis \\\\|= 8;
 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
-				xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1822\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+				xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1824\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
 ${SEP}.,$;f+ 			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1825\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1827\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2;46c R
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
