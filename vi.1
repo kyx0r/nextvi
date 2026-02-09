@@ -1,4 +1,4 @@
-.Dd Feb  8, 2026
+.Dd Feb  9, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -1025,10 +1025,12 @@ Example: pipe out only first 10 lines
 .It Cm [\fIrange\fP]w![\fIpath\fP]
 Force write to a file
 
-.It Cm q
-Exit
-.It Cm q!
-Force quit
+.It Cm q[\fI#\fP]
+.It Cm q![\fI#\fP]
+Exit or force quit
+.Bd -literal
+# specifies shell exit code.
+.Ed
 
 .It Cm wq
 .It Cm x
@@ -1601,9 +1603,9 @@ _
  654 lbuf.c | file/line buffer
  718 led.c | insert mode/output
  766 regex.c | pikevm
- 1613 ex.c | ex options/commands
+ 1617 ex.c | ex options/commands
  1839 vi.c | normal mode/general
- 7306 total | wc -l *.c\(basort
+ 7310 total | wc -l *.c\(basort
 _
 .TE
 .
