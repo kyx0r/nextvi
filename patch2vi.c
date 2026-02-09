@@ -503,6 +503,7 @@ typedef struct {
 	int ncustom;
 	int *custom_modified;    /* per-line: 1 if user changed it */
 	int custom_offset;       /* user-edited offset value */
+	char *custom_cmd;        /* user-edited search command prefix */
 } group_t;
 
 /* Emit a line with exarg + shell escaping only (no regex escaping).
@@ -516,12 +517,16 @@ static void emit_escaped_exarg_only(FILE *out, const char *s)
 
 /* Emit multiline f>/f+ position using custom edited lines.
  * Per-line escaping: unchanged lines get regex+exarg+shell escaping,
- * changed lines get exarg+shell escaping only (user regex passes through). */
+ * changed lines get exarg+shell escaping only (user regex passes through).
+ * If cmd is non-NULL, use it as the command prefix instead of the default. */
 static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 				      int *modified, int offset, int first,
-				      int target_line)
+				      int target_line, const char *cmd)
 {
-	fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
+	if (cmd)
+		fprintf(out, "%s ", cmd);
+	else
+		fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
 	for (int i = 0; i < nlines; i++) {
 		if (modified[i])
 			emit_escaped_exarg_only(out, lines[i]);
@@ -575,10 +580,18 @@ static void emit_custom_fwd_pos(FILE *out, const char *line,
 static int emit_custom_pos(FILE *out, group_t *g, int *first_ml)
 {
 	int target_line = g->del_start ? g->del_start : g->add_after;
+	/* Custom command forces multiline-style emission (f> path) */
+	if (g->custom_cmd) {
+		emit_custom_multiline_pos(out, g->custom_lines, g->ncustom,
+					  g->custom_modified, g->custom_offset,
+					  *first_ml, target_line, g->custom_cmd);
+		*first_ml = 0;
+		return 1;
+	}
 	if (g->ncustom >= 2) {
 		emit_custom_multiline_pos(out, g->custom_lines, g->ncustom,
 					  g->custom_modified, g->custom_offset,
-					  *first_ml, target_line);
+					  *first_ml, target_line, NULL);
 		*first_ml = 0;
 		return 1;
 	}
@@ -716,12 +729,13 @@ static void emit_relative_horizontal(FILE *out, rel_ctx_t *rc,
 }
 
 /*
- * Interactive editing of a group's search block.
- * Opens $EDITOR with diff context (read-only section) and editable search block.
- * Returns 1 if user edited the block, 0 if unchanged.
+ * Interactive editing of a group's search block and command.
+ * Opens $EDITOR with diff context (read-only section), editable command,
+ * and editable search block.
+ * Returns 1 if user edited anything, 0 if unchanged.
  */
 static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
-				  int target_line)
+				  int target_line, const char *default_cmd)
 {
 	if (g->nblock == 0)
 		return 0;
@@ -747,6 +761,10 @@ static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
 		fprintf(tmp, "-%s\n", g->del_texts[i]);
 	for (int i = 0; i < g->nadd; i++)
 		fprintf(tmp, "+%s\n", g->add_texts[i]);
+
+	/* Search command section */
+	fprintf(tmp, "=== SEARCH COMMAND ===\n");
+	fprintf(tmp, "%s\n", default_cmd ? default_cmd : "");
 
 	/* Separator with offset */
 	fprintf(tmp, "=== SEARCH PATTERN (offset: %d) ===\n", g->block_change_idx);
@@ -781,27 +799,43 @@ static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
 		return 0;
 	}
 
-	/* Skip section 1 (everything up to and including separator line) */
+	/* Parse sections from edited file */
 	char line[MAX_LINE];
-	int found_sep = 0;
+	char edited_cmd[MAX_LINE] = "";
 	int edited_offset = g->block_change_idx;
+	int found_cmd_sep = 0;
+	int found_pat_sep = 0;
+
+	/* Skip to SEARCH COMMAND section */
 	while (fgets(line, sizeof(line), rd)) {
-		if (strncmp(line, "=== SEARCH PATTERN (offset:", 27) == 0) {
-			/* Parse offset value */
-			const char *p = line + 27;
-			while (*p == ' ') p++;
-			edited_offset = atoi(p);
-			found_sep = 1;
+		if (strncmp(line, "=== SEARCH COMMAND ===", 22) == 0) {
+			found_cmd_sep = 1;
 			break;
 		}
 	}
-	if (!found_sep) {
+	/* Read command line(s) until SEARCH PATTERN separator */
+	if (found_cmd_sep) {
+		while (fgets(line, sizeof(line), rd)) {
+			if (strncmp(line, "=== SEARCH PATTERN (offset:", 27) == 0) {
+				const char *p = line + 27;
+				while (*p == ' ') p++;
+				edited_offset = atoi(p);
+				found_pat_sep = 1;
+				break;
+			}
+			/* Take the first non-empty line as the command */
+			chomp(line);
+			if (line[0] && !edited_cmd[0])
+				snprintf(edited_cmd, sizeof(edited_cmd), "%s", line);
+		}
+	}
+	if (!found_pat_sep) {
 		fclose(rd);
 		unlink(tmppath);
 		return 0;
 	}
 
-	/* Read section 2 lines */
+	/* Read pattern lines */
 	int cap = g->nblock > 0 ? g->nblock * 2 : 16;
 	char **lines = malloc(cap * sizeof(char*));
 	int nlines = 0;
@@ -816,35 +850,41 @@ static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
 	fclose(rd);
 	unlink(tmppath);
 
-	/* Check if anything changed */
-	int changed = 0;
+	/* Check if command changed */
+	const char *orig_cmd = default_cmd ? default_cmd : "";
+	int cmd_changed = strcmp(edited_cmd, orig_cmd) != 0;
+
+	/* Check if pattern changed */
+	int pat_changed = 0;
 	if (nlines != g->nblock || edited_offset != g->block_change_idx)
-		changed = 1;
-	if (!changed) {
+		pat_changed = 1;
+	if (!pat_changed) {
 		for (int i = 0; i < nlines; i++) {
 			if (strcmp(lines[i], g->block_lines[i]) != 0) {
-				changed = 1;
+				pat_changed = 1;
 				break;
 			}
 		}
 	}
 
-	if (!changed) {
+	if (!cmd_changed && !pat_changed) {
 		for (int i = 0; i < nlines; i++)
 			free(lines[i]);
 		free(lines);
 		return 0;
 	}
 
-	/* Set custom_modified flags: compare each line with original */
+	/* Store custom data */
 	g->custom_lines = lines;
 	g->ncustom = nlines;
 	g->custom_offset = edited_offset;
 	g->custom_modified = calloc(nlines, sizeof(int));
 	for (int i = 0; i < nlines; i++) {
 		if (i >= g->nblock || strcmp(lines[i], g->block_lines[i]) != 0)
-			g->custom_modified[i] = 1;  /* changed or added line */
+			g->custom_modified[i] = 1;
 	}
+	if (cmd_changed && edited_cmd[0])
+		g->custom_cmd = xstrdup(edited_cmd);
 	return 1;
 }
 
@@ -896,6 +936,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		g->ncustom = 0;
 		g->custom_modified = NULL;
 		g->custom_offset = 0;
+		g->custom_cmd = NULL;
 
 		/* Skip context lines, collecting up to 3 consecutive for relative mode */
 		char *last_ctx = NULL;
@@ -1035,10 +1076,17 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 
 	/* Interactive mode: open $EDITOR for each group's search pattern */
 	if (interactive_mode) {
+		int sim_first_ml = 1;
 		for (int gi = 0; gi < ngroups; gi++) {
 			group_t *g = &groups[gi];
 			int target = g->del_start ? g->del_start : g->add_after;
-			interactive_edit_group(g, gi, ngroups, target);
+			/* Compute default search command */
+			const char *default_cmd = NULL;
+			if (g->nblock >= 2) {
+				default_cmd = sim_first_ml ? "%;f>" : ".,$;f+";
+				sim_first_ml = 0;
+			}
+			interactive_edit_group(g, gi, ngroups, target, default_cmd);
 		}
 	}
 
@@ -1247,6 +1295,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			free(g->custom_lines);
 		}
 		free(g->custom_modified);
+		free(g->custom_cmd);
 	}
 
 	fputs("vis 4${SEP}wq\" $VI -e '", out);
