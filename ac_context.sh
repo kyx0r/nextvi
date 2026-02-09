@@ -6,6 +6,9 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Uncomment to enter interactive vi on patch failure
+#DBG="|sc|vis 4:e $0:@Q:q!1"
+
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
@@ -17,28 +20,28 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	return i-s;
 \\\\}
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 14\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 14\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c static int search(sbuf *sb, int l, int pre)
 .
 ${SEP}.-1${SEP}>\\{>+1c 	if (!sb->s[l])
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 16\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 		return 0;
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 16\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 		return 0;
 	sbuf_cut\\\\(suggestsb, 0\\\\)
-	sbuf_smake\\\\(sylsb, 1024\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 20\\${SEP}vis 4\\${SEP}q!${SEP};=
+	sbuf_smake\\\\(sylsb, 1024\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 20\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);
 .
 ${SEP}.,$;f+ 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
 			part--;
-		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 26\\${SEP}vis 4\\${SEP}q!${SEP};=
+		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 26\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;15c sb->s_n - 
 .
 ${SEP}.,$;f+ 			if \\\\(part == part1\\\\)
-				sbuf_mem\\\\(suggestsb, part, len\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 29\\${SEP}vis 4\\${SEP}q!${SEP};=
+				sbuf_mem\\\\(suggestsb, part, len\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 29\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2;7c  if (l >= pre)
 .
 ${SEP}.,$;f+ 				sbuf_mem\\\\(sylsb, part, len\\\\)
-		\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 32\\${SEP}vis 4\\${SEP}q!${SEP};=
+		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 32\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2c 		part = strstr(part+len, sb->s+l);
 	}
 	if (l < pre && sb->s[pre]) {
@@ -47,7 +50,7 @@ ${SEP}.+2c 		part = strstr(part+len, sb->s+l);
 .
 ${SEP}.,$;f+ \\\\{
 	char \\\\*cs;
-	int len, c, i;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 412\\${SEP}vis 4\\${SEP}q!${SEP};=
+	int len, c, i;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 412\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
@@ -55,24 +58,24 @@ ${SEP}.+2a 	if (ai_max >= 0 && xpac) {
 .
 ${SEP}.,$;f+ 		case TK_CTL\\\\('n'\\\\):
 			if \\\\(!suggestsb\\\\)
-				continue;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 520\\${SEP}vis 4\\${SEP}q!${SEP};=
+				continue;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 520\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;63;76c )
 .
 ${SEP}.,$;f+ 				\\\\}
 				suggest:
-				\\\\*is->_sug = '\\\\\\\\0';${SEP}??!.-5,.+5p\\${SEP}p FAIL line 531\\${SEP}vis 4\\${SEP}q!${SEP};=
+				\\\\*is->_sug = '\\\\\\\\0';${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 531\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
 .
 ${SEP}.,$;f+ 				continue;
 			\\\\}
-			lookup:${SEP}??!.-5,.+5p\\${SEP}p FAIL line 537\\${SEP}vis 4\\${SEP}q!${SEP};=
+			lookup:${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 537\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;16;46c , is->lsug, pre
 .
 ${SEP}.,$;f+ 				int r = crow-ctop\\\\+1;
 				if \\\\(is->sug\\\\)
-					goto pac_;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 551\\${SEP}vis 4\\${SEP}q!${SEP};=
+					goto pac_;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 551\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
 .

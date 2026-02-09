@@ -6,6 +6,9 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Uncomment to enter interactive vi on patch failure
+#DBG="|sc|vis 4:e $0:@Q:q!1"
+
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
@@ -17,12 +20,12 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 		break;
 	case '\\\\(':
-	case '\\\\)':${SEP}??!.-5,.+5p\\${SEP}p FAIL line 670\\${SEP}vis 4\\${SEP}q!${SEP};=
+	case '\\\\)':${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 670\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;15;16c )
 .
 ${SEP}.,$;f+ 	case '\\\\}':
 	case '\\\\[':
-	case '\\\\]':${SEP}??!.-5,.+5p\\${SEP}p FAIL line 710\\${SEP}vis 4\\${SEP}q!${SEP};=
+	case '\\\\]':${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 710\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		mark = mv == '[' || mv == ']' ? '{' : '\\\\n';
 .

@@ -6,6 +6,9 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Uncomment to enter interactive vi on patch failure
+#DBG="|sc|vis 4:e $0:@Q:q!1"
+
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
@@ -17,12 +20,12 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
-sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!.-5,.+5p\\${SEP}p FAIL line 40\\${SEP}vis 4\\${SEP}q!${SEP};=
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 40\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a char **xenvp;
 .
 ${SEP}.,$;f+ 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1326\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1330\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
@@ -61,7 +64,7 @@ ${SEP}.+2a static void *ec_script(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,$;f+ 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1422\\${SEP}vis 4\\${SEP}q!${SEP};=
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1426\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 .
@@ -71,7 +74,7 @@ ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 243\\${SEP}vis 4\\${SEP}q!${SEP};=
+		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 243\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
@@ -83,7 +86,7 @@ ${SEP}vis 4${SEP}wq" $VI -e 'term.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> files and thus is never static\\\\.
 \\\\*/
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 11\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 11\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())

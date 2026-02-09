@@ -6,6 +6,9 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Uncomment to enter interactive vi on patch failure
+#DBG="|sc|vis 4:e $0:@Q:q!1"
+
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
@@ -17,7 +20,7 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
 		ex_command\\\\(s\\\\)
-\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1613\\${SEP}vis 4\\${SEP}q!${SEP};=
+\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1617\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 
 void ex_done(void)
 {
@@ -38,7 +41,7 @@ ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;
-	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 638\\${SEP}vis 4\\${SEP}q!${SEP};=
+	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 638\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'regex.c'
@@ -47,7 +50,7 @@ ${SEP}vis 4${SEP}wq" $VI -e 'regex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> ren_state rstates\\\\[3\\\\]; /\\\\* 0 = current line, 1 = all other lines, 2 = aux rendering \\\\*/
 ren_state \\\\*rstate = rstates;
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 92\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 92\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void ren_done(void)
 {
 	rset_free(dir_rslr);
@@ -64,7 +67,7 @@ ${SEP}.+2a void ren_done(void)
 .
 ${SEP}.,$;f+ 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
-\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 409\\${SEP}vis 4\\${SEP}q!${SEP};=
+\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 409\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 
 void syn_done(void)
 {
@@ -75,52 +78,21 @@ void syn_done(void)
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'ren.c'
 
-# Patch: vi.c
-SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
-\\\\}
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 441\\${SEP}vis 4\\${SEP}q!${SEP};=
-${SEP}.+2a static void vi_regdone(void)
-{
-	for (int i = 0; i < LEN(xregs); i++)
-		if (xregs[i])
-			sbuf_free(xregs[i])
-}
-
-.
-${SEP}.,$;f+ 		ex\\\\(\\\\);
-	else
-		vi\\\\(1\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1830\\${SEP}vis 4\\${SEP}q!${SEP};=
-${SEP}.+2a 	ex_done();
-.
-${SEP}.-1${SEP}>	term_done\\(\\);>a 	free(ibuf);
-	rset_free(fsincl);
-.
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1831\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 		term_pos\\\\(xrows - !vi_status, 0\\\\);
-		term_kill\\\\(\\\\);
-	\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1837\\${SEP}vis 4\\${SEP}q!${SEP};=
-${SEP}.+2a 	vi_regdone();
-	syn_done();
-	ren_done();
-	led_done();
-.
-${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
-
 # Patch: vi.h
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> /\\\\* text direction \\\\*/
 int dir_context\\\\(char \\\\*s\\\\);
-void dir_init\\\\(void\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 233\\${SEP}vis 4\\${SEP}q!${SEP};=
+void dir_init\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 233\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void dir_done(void);
 .
 ${SEP}.,$;f+ int syn_findhl\\\\(int id\\\\);
 int syn_addhl\\\\(char \\\\*reg, int id\\\\);
-void syn_init\\\\(void\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 271\\${SEP}vis 4\\${SEP}q!${SEP};=
+void syn_init\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 271\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void syn_done(void);
 .
 ${SEP}.,$;f+ #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
 void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
-void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 481\\${SEP}vis 4\\${SEP}q!${SEP};=
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 481\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void ex_done(void);
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'vi.h'

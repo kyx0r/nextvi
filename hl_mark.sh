@@ -6,6 +6,9 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Uncomment to enter interactive vi on patch failure
+#DBG="|sc|vis 4:e $0:@Q:q!1"
+
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
@@ -17,17 +20,17 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> int xhlw;			/\\\\* highlight current word \\\\*/
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
-int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!.-5,.+5p\\${SEP}p FAIL line 9\\${SEP}vis 4\\${SEP}q!${SEP};=
+int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 9\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a int xhlm;			/* highlight marks */
 .
 ${SEP}.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
 EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1343\\${SEP}vis 4\\${SEP}q!${SEP};=
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1347\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a EO(hlm)
 .
 ${SEP}.,$;f+ 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1435\\${SEP}vis 4\\${SEP}q!${SEP};=
+	EO\\\\(order\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1439\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	EO(hlm),
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
@@ -36,7 +39,7 @@ ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 				word = cs;
 			\\\\}
-		\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1725\\${SEP}vis 4\\${SEP}q!${SEP};=
+		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1731\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";

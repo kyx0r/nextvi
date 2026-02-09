@@ -6,6 +6,9 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Uncomment to enter interactive vi on patch failure
+#DBG="|sc|vis 4:e $0:@Q:q!1"
+
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
@@ -17,33 +20,33 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	att_old = att_new; \\\\\\\\
 \\\\} \\\\} \\\\\\\\
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 142\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 142\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a #define LEDBACK 300
 #define LEDFORW 300
 
 .
 ${SEP}.,$;f+ 	if \\\\(!xled\\\\)
 		return;
-	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 148\\${SEP}vis 4\\${SEP}q!${SEP};=
+	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 148\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
 .
 ${SEP}.,$;f+ 	char \\\\*bound = NULL;
 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
-	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!.-5,.+5p\\${SEP}p FAIL line 154\\${SEP}vis 4\\${SEP}q!${SEP};=
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 154\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
 .
 ${SEP}.,$;f+ 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
 	\\\\}
-	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!.-5,.+5p\\${SEP}p FAIL line 167\\${SEP}vis 4\\${SEP}q!${SEP};=
+	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 167\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 		c = 0;
 .
 ${SEP}.,$;f+ 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
-				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 178\\${SEP}vis 4\\${SEP}q!${SEP};=
+				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 178\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
 			if (r->pos[l] < cbeg && c < fcterm) {
@@ -56,7 +59,7 @@ ${SEP}.+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 .
 ${SEP}.,$;f+ 				for \\\\(; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\);
 			\\\\}
-		\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 183\\${SEP}vis 4\\${SEP}q!${SEP};=
+		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 183\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
@@ -67,14 +70,14 @@ ${SEP}.+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
 .
 ${SEP}.,$;f+ 		sbufn_null\\\\(bsb\\\\)
 		bound = bsb->s;
-	\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 205\\${SEP}vis 4\\${SEP}q!${SEP};=
+	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 205\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;23c f
 .
 ${SEP}.-1${SEP}>	if \\(xhl\\)>+1;48c f
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 207\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 			if \\\\(!bound\\\\)
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 207\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 			if \\\\(!bound\\\\)
 				att\\\\[p->off\\\\] = syn_merge\\\\(p->att, att\\\\[p->off\\\\]\\\\);
-			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!.-5,.+5p\\${SEP}p FAIL line 217\\${SEP}vis 4\\${SEP}q!${SEP};=
+			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 217\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;21;22c atti
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'led.c'

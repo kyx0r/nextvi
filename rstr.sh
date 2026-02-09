@@ -6,6 +6,9 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Uncomment to enter interactive vi on patch failure
+#DBG="|sc|vis 4:e $0:@Q:q!1"
+
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
@@ -17,117 +20,117 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> int xsep = ':';			/\\\\* ex command separator \\\\*/
 int xesc = '\\\\\\\\\\\\\\\\';		/\\\\* ex command arg escape character \\\\*/
-sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/${SEP}??!.-5,.+5p\\${SEP}p FAIL line 39\\${SEP}vis 4\\${SEP}q!${SEP};=
+sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 39\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;2;4c tr
 .
 ${SEP}.,$;f+ \\\\{
 	sbuf \\\\*reg = xregs\\\\['/'\\\\];
-	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 179\\${SEP}vis 4\\${SEP}q!${SEP};=
+	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 179\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 .
 ${SEP}.,$;f+ 
 static void \\\\*ec_fuzz\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!.-5,.+5p\\${SEP}p FAIL line 384\\${SEP}vis 4\\${SEP}q!${SEP};=
+\\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 384\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
 ${SEP}.,$;f+ 	while\\\\(1\\\\) \\\\{
 		sbuf_null\\\\(fuzz\\\\)
-		c = 0;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 414\\${SEP}vis 4\\${SEP}q!${SEP};=
+		c = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 414\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;9;13c tr_
 .
 ${SEP}.-1${SEP}>		if \\(rs\\) \\{>+1;43;50c 
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 416\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 			dwid1 = max == INT_MAX \\\\? dwid2 : MIN\\\\(dwid1, dwid2\\\\);
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 416\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 			dwid1 = max == INT_MAX \\\\? dwid2 : MIN\\\\(dwid1, dwid2\\\\);
 			for \\\\(pos = beg; c < max && pos < end; pos\\\\+\\\\+\\\\) \\\\{
-				path = xb->ln\\\\[pos\\\\];${SEP}??!.-5,.+5p\\${SEP}p FAIL line 423\\${SEP}vis 4\\${SEP}q!${SEP};=
+				path = xb->ln\\\\[pos\\\\];${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 423\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;10;12c tr
 .
 ${SEP}.,$;f+ 				break;
 			\\\\}
-		\\\\}${SEP}.,$;f+${SEP}??!.-5,.+5p\\${SEP}p FAIL line 461\\${SEP}vis 4\\${SEP}q!${SEP};=
+		\\\\}${SEP}.,$;f+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 461\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;4;6c tr
 .
 ${SEP}.,$;f+ 	free\\\\(sb->s\\\\);
 	path = lbuf_get\\\\(xb, lnum\\\\);
-	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{${SEP}??!.-5,.+5p\\${SEP}p FAIL line 488\\${SEP}vis 4\\${SEP}q!${SEP};=
+	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 488\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;4;6c tr
 .
 ${SEP}.,$;f+ 		path\\\\[lbuf_s\\\\(path\\\\)->len\\\\] = '\\\\\\\\n';
 	\\\\} else if \\\\(\\\\*cmd != 'f'\\\\)
-		temp_switch\\\\(1, 1\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 497\\${SEP}vis 4\\${SEP}q!${SEP};=
+		temp_switch\\\\(1, 1\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 497\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
 ${SEP}.,$;f+ 		return xserr;
 	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
-		sbuf sb;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 512\\${SEP}vis 4\\${SEP}q!${SEP};=
+		sbuf sb;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 512\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;19;24c rs ? xkwdrs->rs->nsubc : 2
 .
 ${SEP}.,$;f+ 			soff = lbuf_pos2off\\\\(xb, beg, o1, r2, o2, xrow, xoff \\\\+ skip\\\\);
 		if \\\\(soff < 0\\\\)
-			soff = 0;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 521\\${SEP}vis 4\\${SEP}q!${SEP};=
+			soff = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 521\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;8;10c tr
 .
 ${SEP}.,$;f+ 	int beg, end, grp;
 	char \\\\*pat, \\\\*rep = NULL, \\\\*_rep;
-	char \\\\*s = arg;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 965\\${SEP}vis 4\\${SEP}q!${SEP};=
+	char \\\\*s = arg;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 969\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
 ${SEP}.,$;f+ 		return xrerr;
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 972\\${SEP}vis 4\\${SEP}q!${SEP};=
+	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 976\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;9;13c tr_
 .
 ${SEP}.,$;f+ 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 982\\${SEP}vis 4\\${SEP}q!${SEP};=
+	free\\\\(pat\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 986\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;14;19c rs ? rs->rs->nsubc : 2
 .
 ${SEP}.,$;f+ 	for \\\\(i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		sbuf \\\\*r = NULL;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 986\\${SEP}vis 4\\${SEP}q!${SEP};=
+		sbuf \\\\*r = NULL;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 990\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;11;13c tr
 .
 ${SEP}.,$;f+ 					\\\\}
 					_rep\\\\+\\\\+;
-					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1001\\${SEP}vis 4\\${SEP}q!${SEP};=
+					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1005\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;20;29c (rs->rs ? rs->rs->nsubc : 2)
 .
 ${SEP}.,$;f+ 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
 	\\\\}
-	if \\\\(rs != xkwdrs\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1032\\${SEP}vis 4\\${SEP}q!${SEP};=
+	if \\\\(rs != xkwdrs\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1036\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;4;6c tr
 .
 ${SEP}.,$;f+ \\\\{
 	int i, beg, end, not;
-	char \\\\*pat, \\\\*s = arg;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1090\\${SEP}vis 4\\${SEP}q!${SEP};=
+	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1094\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
 ${SEP}.,$;f+ 	not = !!strchr\\\\(cmd, '!'\\\\);
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\*pat\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1098\\${SEP}vis 4\\${SEP}q!${SEP};=
+	if \\\\(pat && \\\\*pat\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1102\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;9;13c tr_
 .
 ${SEP}.-1${SEP}>	else>+1;9;13c tr_
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1100\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1104\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1110\\${SEP}vis 4\\${SEP}q!${SEP};=
+		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1114\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;8;10c tr
 .
 ${SEP}.,$;f+ 		while \\\\(i < lbuf_len\\\\(xb\\\\) && !\\\\(lbuf_i\\\\(xb, i\\\\)->grec & xgdep\\\\)\\\\)
 			i\\\\+\\\\+;
-	\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1119\\${SEP}vis 4\\${SEP}q!${SEP};=
+	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1123\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
 ${SEP}.,$;f+ 
 static void \\\\*ec_setincl\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1210\\${SEP}vis 4\\${SEP}q!${SEP};=
+\\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1214\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
 ${SEP}.,$;f+ 	if \\\\(!\\\\*arg\\\\)
-		fsincl = NULL;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1213\\${SEP}vis 4\\${SEP}q!${SEP};=
+		fsincl = NULL;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1217\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2;23;27c tr_
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
@@ -136,17 +139,17 @@ ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	return n != 0;
 \\\\}
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;35;37c tr
 .
 ${SEP}.,$;f+ 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
-	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 486\\${SEP}vis 4\\${SEP}q!${SEP};=
+	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 486\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;14;19c rs ? re->rs->nsubc : 2
 .
 ${SEP}.,$;f+ 		step = 0;
 		flg = REG_NEWLINE;
-		s = lb->ln\\\\[i\\\\];${SEP}??!.-5,.+5p\\${SEP}p FAIL line 499\\${SEP}vis 4\\${SEP}q!${SEP};=
+		s = lb->ln\\\\[i\\\\];${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 499\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;11;13c tr
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'lbuf.c'
@@ -155,7 +158,7 @@ ${SEP}vis 4${SEP}wq" $VI -e 'lbuf.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
 	sbufn_ret\\\\(sb, sb->s\\\\)
-\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 766\\${SEP}vis 4\\${SEP}q!${SEP};=
+\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 766\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 
 /* return zero if a simple pattern is given */
 static int rstr_simple(rstr *rs, char *re, int icase)
@@ -295,12 +298,12 @@ ${SEP}vis 4${SEP}wq" $VI -e 'regex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 \\\\}
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 442\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 442\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;2;4c tr
 .
 ${SEP}.,$;f+ 				memcpy\\\\(cpath, ptrs\\\\[i\\\\], pathlen \\\\+ len\\\\);
 				plen\\\\[i\\\\+\\\\+\\\\] = pathlen \\\\+ len;
-			\\\\} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)${SEP}??!.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 4\\${SEP}q!${SEP};=
+			\\\\} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;21;23c tr
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
@@ -309,7 +312,7 @@ ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
 	int n;			/\\\\* number of regular expressions in this set \\\\*/
-\\\\} rset;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 125\\${SEP}vis 4\\${SEP}q!${SEP};=
+\\\\} rset;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 125\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */
@@ -321,7 +324,7 @@ ${SEP}.+2a typedef struct {
 .
 ${SEP}.,$;f+ int rset_match\\\\(rset \\\\*rs, char \\\\*s, int flg\\\\);
 void rset_free\\\\(rset \\\\*re\\\\);
-char \\\\*re_read\\\\(char \\\\*\\\\*src, int delim\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 132\\${SEP}vis 4\\${SEP}q!${SEP};=
+char \\\\*re_read\\\\(char \\\\*\\\\*src, int delim\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 132\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
@@ -329,24 +332,24 @@ void rstr_free(rstr *rs);
 .
 ${SEP}.,$;f+ int lbuf_eol\\\\(struct lbuf \\\\*lb, int r, int state\\\\);
 int lbuf_next\\\\(struct lbuf \\\\*lb, int dir, int \\\\*r, int \\\\*o\\\\);
-int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 190\\${SEP}vis 4\\${SEP}q!${SEP};=
+int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 190\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;35;37c tr
 .
 ${SEP}.-1${SEP}>		int nskip, int \\*r, int \\*o\\);>a 
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 191\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ extern int xsep;
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 191\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ extern int xsep;
 extern int xesc;
-extern sbuf \\\\*xacreg;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 449\\${SEP}vis 4\\${SEP}q!${SEP};=
+extern sbuf \\\\*xacreg;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 449\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;9;11c tr
 .
 ${SEP}.,$;f+ #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
 void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
-void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 4\\${SEP}q!${SEP};=
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;13;15c tr
 .
 ${SEP}.,$;f+ extern int vi_hidch;
 extern int vi_lncol;
-/\\\\* file system \\\\*/${SEP}??!.-5,.+5p\\${SEP}p FAIL line 543\\${SEP}vis 4\\${SEP}q!${SEP};=
+/\\\\* file system \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 543\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;9;11c tr
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'vi.h'

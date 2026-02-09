@@ -6,6 +6,9 @@ set -e
 # Path to nextvi (adjust as needed)
 VI=${VI:-vi}
 
+# Uncomment to enter interactive vi on patch failure
+#DBG="|sc|vis 4:e $0:@Q:q!1"
+
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
@@ -17,7 +20,7 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> \\\\{
 	int mark, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(c\\\\) \\\\{${SEP}??!.-5,.+5p\\${SEP}p FAIL line 348\\${SEP}vis 4\\${SEP}q!${SEP};=
+	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 348\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	case '\\\\033':	/* Arrow keys */
 		c = term_read(0);
 		if (c == '[') {
@@ -43,7 +46,7 @@ ${SEP}.+2a 	case '\\\\033':	/* Arrow keys */
 .
 ${SEP}.,$;f+ 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(mv\\\\) \\\\{${SEP}??!.-5,.+5p\\${SEP}p FAIL line 586\\${SEP}vis 4\\${SEP}q!${SEP};=
+	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 586\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {
