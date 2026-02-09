@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define MAX_LINE 8192
 #define MAX_OPS 65536
@@ -33,6 +34,7 @@ typedef struct {
 static file_patch_t files[256];
 static int nfiles = 0;
 static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r), 2=relative block (-rb) */
+static int interactive_mode = 0; /* 1=interactive editing of search patterns (--ri) */
 
 /* Track which bytes appear in patch content */
 static unsigned char byte_used[256];
@@ -474,6 +476,120 @@ static void emit_follow_pos(FILE *out, const char *follow, int offset)
 	/* offset==0 means the follow ctx IS at the change line - unusual but handle it */
 }
 
+typedef struct {
+	int del_start, del_end;  /* 0 if no deletes */
+	char **add_texts;
+	char **del_texts;        /* deleted line contents */
+	int ndel;
+	int nadd;
+	int add_after;  /* line to add after (for pure adds) */
+	/* For relative mode: */
+	char *anchor;            /* last preceding context line text */
+	int anchor_offset;       /* lines from anchor to first change */
+	char *anchors[3];        /* up to 3 consecutive preceding context lines */
+	int nanchors;            /* count of anchor lines */
+	int anchor_start_line;   /* line number of first anchor line */
+	char *follow_ctx;        /* first following context line */
+	int follow_offset;       /* lines from first change to follow_ctx */
+	/* For interactive mode (--ri): */
+	char **all_pre_ctx;      /* all context lines before change */
+	int nall_pre_ctx;
+	char **post_ctx;         /* post-change context lines (up to 3) */
+	int npost_ctx;
+	char **block_lines;      /* assembled: all_pre_ctx + del_texts + post_ctx */
+	int nblock;
+	int block_change_idx;    /* index of first del/change line in block */
+	char **custom_lines;     /* edited lines from $EDITOR */
+	int ncustom;
+	int *custom_modified;    /* per-line: 1 if user changed it */
+	int custom_offset;       /* user-edited offset value */
+} group_t;
+
+/* Emit a line with exarg + shell escaping only (no regex escaping).
+ * Used for user-edited regex lines in interactive mode. */
+static void emit_escaped_exarg_only(FILE *out, const char *s)
+{
+	char *exarg_esc = escape_exarg(s);
+	emit_escaped_line(out, exarg_esc);
+	free(exarg_esc);
+}
+
+/* Emit multiline f>/f+ position using custom edited lines.
+ * Per-line escaping: unchanged lines get regex+exarg+shell escaping,
+ * changed lines get exarg+shell escaping only (user regex passes through). */
+static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
+				      int *modified, int offset, int first,
+				      int target_line)
+{
+	fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
+	for (int i = 0; i < nlines; i++) {
+		if (modified[i])
+			emit_escaped_exarg_only(out, lines[i]);
+		else
+			emit_escaped_regex_exarg(out, lines[i]);
+		if (i < nlines - 1)
+			fputc('\n', out);
+	}
+	EMIT_SEP(out);
+	emit_err_check(out, target_line);
+	fputs(";=\n", out);
+	EMIT_SEP(out);
+	fprintf(out, ".+%d", offset);
+}
+
+/* Emit single-line custom search position.
+ * For user-regex lines: exarg+shell escaping only.
+ * For unchanged lines: regex+exarg+shell escaping (via reread). */
+static void emit_custom_fwd_pos(FILE *out, const char *line,
+				int modified, int offset)
+{
+	fputc('>', out);
+	if (modified) {
+		/* User regex: only escape > for re_read delimiter + shell escaping */
+		char *exarg_esc = escape_exarg(line);
+		for (const char *p = exarg_esc; *p; p++) {
+			if (*p == '>') {
+				fputc('\\', out);
+				fputc('\\', out);
+				fputc(*p, out);
+			} else if (*p == '\\' || *p == '$' || *p == '`' || *p == '"') {
+				fputc('\\', out);
+				fputc(*p, out);
+			} else {
+				fputc(*p, out);
+			}
+		}
+		free(exarg_esc);
+	} else {
+		emit_escaped_regex_reread(out, line);
+	}
+	fputc('>', out);
+	if (offset > 0)
+		fprintf(out, "+%d", offset);
+	else if (offset < 0)
+		fprintf(out, "%d", offset);
+}
+
+/* Emit positioning for a custom-edited group.
+ * Returns: 0 = single-command, 1 = two-command (multiline). */
+static int emit_custom_pos(FILE *out, group_t *g, int *first_ml)
+{
+	int target_line = g->del_start ? g->del_start : g->add_after;
+	if (g->ncustom >= 2) {
+		emit_custom_multiline_pos(out, g->custom_lines, g->ncustom,
+					  g->custom_modified, g->custom_offset,
+					  *first_ml, target_line);
+		*first_ml = 0;
+		return 1;
+	}
+	if (g->ncustom == 1) {
+		emit_custom_fwd_pos(out, g->custom_lines[0],
+				    g->custom_modified[0], g->custom_offset);
+		return 0;
+	}
+	return -1;
+}
+
 /*
  * Emit the search/positioning part for a relative group.
  * Returns: 0 = single-command positioning (pos is part of final cmd),
@@ -599,6 +715,139 @@ static void emit_relative_horizontal(FILE *out, rel_ctx_t *rc,
 		emit_err_check(out, rc->target_line);
 }
 
+/*
+ * Interactive editing of a group's search block.
+ * Opens $EDITOR with diff context (read-only section) and editable search block.
+ * Returns 1 if user edited the block, 0 if unchanged.
+ */
+static int interactive_edit_group(group_t *g, int group_idx, int ngroups,
+				  int target_line)
+{
+	if (g->nblock == 0)
+		return 0;
+
+	char tmppath[] = "/tmp/patch2vi_XXXXXX";
+	int fd = mkstemp(tmppath);
+	if (fd < 0) {
+		perror("mkstemp");
+		return 0;
+	}
+	FILE *tmp = fdopen(fd, "w");
+	if (!tmp) {
+		perror("fdopen");
+		close(fd);
+		unlink(tmppath);
+		return 0;
+	}
+
+	/* Section 1: read-only diff context */
+	fprintf(tmp, "=== CHANGE (group %d/%d, line %d) ===\n",
+		group_idx + 1, ngroups, target_line);
+	for (int i = 0; i < g->ndel; i++)
+		fprintf(tmp, "-%s\n", g->del_texts[i]);
+	for (int i = 0; i < g->nadd; i++)
+		fprintf(tmp, "+%s\n", g->add_texts[i]);
+
+	/* Separator with offset */
+	fprintf(tmp, "=== SEARCH PATTERN (offset: %d) ===\n", g->block_change_idx);
+
+	/* Section 2: editable search block */
+	for (int i = 0; i < g->nblock; i++)
+		fprintf(tmp, "%s\n", g->block_lines[i]);
+
+	fclose(tmp);
+
+	/* Open editor */
+	const char *editor = getenv("EDITOR");
+	if (!editor)
+		editor = getenv("VISUAL");
+	if (!editor)
+		editor = "vi";
+
+	char cmd[MAX_LINE];
+	snprintf(cmd, sizeof(cmd), "%s '%s'", editor, tmppath);
+	int ret = system(cmd);
+	if (ret != 0) {
+		fprintf(stderr, "editor exited with error %d\n", ret);
+		unlink(tmppath);
+		return 0;
+	}
+
+	/* Read back the file */
+	FILE *rd = fopen(tmppath, "r");
+	if (!rd) {
+		perror("fopen");
+		unlink(tmppath);
+		return 0;
+	}
+
+	/* Skip section 1 (everything up to and including separator line) */
+	char line[MAX_LINE];
+	int found_sep = 0;
+	int edited_offset = g->block_change_idx;
+	while (fgets(line, sizeof(line), rd)) {
+		if (strncmp(line, "=== SEARCH PATTERN (offset:", 27) == 0) {
+			/* Parse offset value */
+			const char *p = line + 27;
+			while (*p == ' ') p++;
+			edited_offset = atoi(p);
+			found_sep = 1;
+			break;
+		}
+	}
+	if (!found_sep) {
+		fclose(rd);
+		unlink(tmppath);
+		return 0;
+	}
+
+	/* Read section 2 lines */
+	int cap = g->nblock > 0 ? g->nblock * 2 : 16;
+	char **lines = malloc(cap * sizeof(char*));
+	int nlines = 0;
+	while (fgets(line, sizeof(line), rd)) {
+		chomp(line);
+		if (nlines >= cap) {
+			cap *= 2;
+			lines = realloc(lines, cap * sizeof(char*));
+		}
+		lines[nlines++] = xstrdup(line);
+	}
+	fclose(rd);
+	unlink(tmppath);
+
+	/* Check if anything changed */
+	int changed = 0;
+	if (nlines != g->nblock || edited_offset != g->block_change_idx)
+		changed = 1;
+	if (!changed) {
+		for (int i = 0; i < nlines; i++) {
+			if (strcmp(lines[i], g->block_lines[i]) != 0) {
+				changed = 1;
+				break;
+			}
+		}
+	}
+
+	if (!changed) {
+		for (int i = 0; i < nlines; i++)
+			free(lines[i]);
+		free(lines);
+		return 0;
+	}
+
+	/* Set custom_modified flags: compare each line with original */
+	g->custom_lines = lines;
+	g->ncustom = nlines;
+	g->custom_offset = edited_offset;
+	g->custom_modified = calloc(nlines, sizeof(int));
+	for (int i = 0; i < nlines; i++) {
+		if (i >= g->nblock || strcmp(lines[i], g->block_lines[i]) != 0)
+			g->custom_modified[i] = 1;  /* changed or added line */
+	}
+	return 1;
+}
+
 /* Process operations for one file and emit script */
 static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 {
@@ -618,24 +867,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 	 * We process from end to start to avoid line number shifts.
 	 */
 
-	typedef struct {
-		int del_start, del_end;  /* 0 if no deletes */
-		char **add_texts;
-		char **del_texts;        /* deleted line contents */
-		int ndel;
-		int nadd;
-		int add_after;  /* line to add after (for pure adds) */
-		/* For relative mode: */
-		char *anchor;            /* last preceding context line text */
-		int anchor_offset;       /* lines from anchor to first change */
-		char *anchors[3];        /* up to 3 consecutive preceding context lines */
-		int nanchors;            /* count of anchor lines */
-		int anchor_start_line;   /* line number of first anchor line */
-		char *follow_ctx;        /* first following context line */
-		int follow_offset;       /* lines from first change to follow_ctx */
-	} group_t;
-
-	group_t groups[MAX_OPS];
+	static group_t groups[MAX_OPS];
 	int ngroups = 0;
 	int i = 0;
 
@@ -653,6 +885,17 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		g->anchor_start_line = 0;
 		g->follow_ctx = NULL;
 		g->follow_offset = 0;
+		g->all_pre_ctx = NULL;
+		g->nall_pre_ctx = 0;
+		g->post_ctx = NULL;
+		g->npost_ctx = 0;
+		g->block_lines = NULL;
+		g->nblock = 0;
+		g->block_change_idx = 0;
+		g->custom_lines = NULL;
+		g->ncustom = 0;
+		g->custom_modified = NULL;
+		g->custom_offset = 0;
 
 		/* Skip context lines, collecting up to 3 consecutive for relative mode */
 		char *last_ctx = NULL;
@@ -660,6 +903,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		char *ctx_ring[3] = {NULL, NULL, NULL};
 		int ctx_line_ring[3] = {0, 0, 0};
 		int ctx_count = 0;
+		/* For interactive mode: collect ALL context lines */
+		char **all_ctx = NULL;
+		int nall_ctx = 0;
+		int all_ctx_cap = 0;
 		while (i < fp->nops && fp->ops[i].type == 'c') {
 			last_ctx = fp->ops[i].text;
 			last_ctx_line = fp->ops[i].oline;
@@ -671,10 +918,19 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			ctx_ring[2] = fp->ops[i].text;
 			ctx_line_ring[2] = fp->ops[i].oline;
 			ctx_count++;
+			if (interactive_mode) {
+				if (nall_ctx >= all_ctx_cap) {
+					all_ctx_cap = all_ctx_cap ? all_ctx_cap * 2 : 16;
+					all_ctx = realloc(all_ctx, all_ctx_cap * sizeof(char*));
+				}
+				all_ctx[nall_ctx++] = fp->ops[i].text;
+			}
 			i++;
 		}
-		if (i >= fp->nops)
+		if (i >= fp->nops) {
+			free(all_ctx);
 			break;
+		}
 
 		/* Store anchor info for relative mode */
 		g->anchor = last_ctx;
@@ -740,8 +996,50 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			g->follow_offset = fp->ops[i].oline - first_change_line;
 		}
 
+		/* Interactive mode: collect post-change context and build block */
+		if (interactive_mode && (g->del_start || g->nadd)) {
+			g->all_pre_ctx = all_ctx;
+			g->nall_pre_ctx = nall_ctx;
+			/* Peek at up to 3 following context lines */
+			int post_cap = 3;
+			int post_avail = 0;
+			int pi = i;
+			while (pi < fp->nops && fp->ops[pi].type == 'c' && post_avail < post_cap) {
+				post_avail++;
+				pi++;
+			}
+			if (post_avail > 0) {
+				g->post_ctx = malloc(post_avail * sizeof(char*));
+				g->npost_ctx = post_avail;
+				for (int j = 0; j < post_avail; j++)
+					g->post_ctx[j] = fp->ops[i + j].text;
+			}
+			/* Build block_lines = all_pre_ctx + del_texts + post_ctx */
+			g->nblock = g->nall_pre_ctx + g->ndel + g->npost_ctx;
+			g->block_lines = malloc(g->nblock * sizeof(char*));
+			g->block_change_idx = g->nall_pre_ctx;
+			int bi = 0;
+			for (int j = 0; j < g->nall_pre_ctx; j++)
+				g->block_lines[bi++] = g->all_pre_ctx[j];
+			for (int j = 0; j < g->ndel; j++)
+				g->block_lines[bi++] = g->del_texts[j];
+			for (int j = 0; j < g->npost_ctx; j++)
+				g->block_lines[bi++] = g->post_ctx[j];
+		} else {
+			free(all_ctx);
+		}
+
 		if (g->del_start || g->nadd)
 			ngroups++;
+	}
+
+	/* Interactive mode: open $EDITOR for each group's search pattern */
+	if (interactive_mode) {
+		for (int gi = 0; gi < ngroups; gi++) {
+			group_t *g = &groups[gi];
+			int target = g->del_start ? g->del_start : g->add_after;
+			interactive_edit_group(g, gi, ngroups, target);
+		}
 	}
 
 	/*
@@ -805,6 +1103,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			}
 		}
 
+		/* Custom interactive path: use edited search pattern */
+		int has_custom = g->custom_lines != NULL;
+
 		if (g->del_start && g->nadd) {
 			/* Try horizontal edit for single-line changes */
 			if (g->ndel == 1 && g->nadd == 1 &&
@@ -813,7 +1114,18 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				char *new_text;
 				if (find_line_diff(g->del_texts[0], g->add_texts[0],
 				                   &start, &old_end, &new_text)) {
-					if (has_rel)
+					if (has_custom) {
+						int mode = emit_custom_pos(out, g, &first_ml);
+						if (start == old_end)
+							fprintf(out, ";%dc ", start);
+						else
+							fprintf(out, ";%d;%dc ", start, old_end);
+						emit_escaped_text(out, new_text);
+						fputs("\n.\n", out);
+						EMIT_SEP(out);
+						if (mode == 0)
+							emit_err_check(out, g->del_start);
+					} else if (has_rel)
 						emit_relative_horizontal(out, &rc,
 						    start, old_end, new_text, &first_ml);
 					else
@@ -821,7 +1133,21 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 						    old_end, new_text);
 					free(new_text);
 				} else {
-					if (has_rel)
+					if (has_custom) {
+						int mode = emit_custom_pos(out, g, &first_ml);
+						if (g->ndel == 1)
+							fprintf(out, "c ");
+						else
+							fprintf(out, ",#+%dc ", g->ndel - 1);
+						for (int k = 0; k < g->nadd; k++) {
+							emit_escaped_text(out, g->add_texts[k]);
+							fputc('\n', out);
+						}
+						fputs(".\n", out);
+						EMIT_SEP(out);
+						if (mode == 0)
+							emit_err_check(out, g->del_start);
+					} else if (has_rel)
 						emit_relative_change(out, &rc,
 						    g->ndel, g->add_texts, g->nadd, &first_ml);
 					else
@@ -829,7 +1155,21 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 						    g->add_texts, g->nadd);
 				}
 			} else {
-				if (has_rel)
+				if (has_custom) {
+					int mode = emit_custom_pos(out, g, &first_ml);
+					if (g->ndel == 1)
+						fprintf(out, "c ");
+					else
+						fprintf(out, ",#+%dc ", g->ndel - 1);
+					for (int k = 0; k < g->nadd; k++) {
+						emit_escaped_text(out, g->add_texts[k]);
+						fputc('\n', out);
+					}
+					fputs(".\n", out);
+					EMIT_SEP(out);
+					if (mode == 0)
+						emit_err_check(out, g->del_start);
+				} else if (has_rel)
 					emit_relative_change(out, &rc,
 					    g->ndel, g->add_texts, g->nadd, &first_ml);
 				else
@@ -837,12 +1177,32 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 					    g->add_texts, g->nadd);
 			}
 		} else if (g->del_start) {
-			if (has_rel)
+			if (has_custom) {
+				int mode = emit_custom_pos(out, g, &first_ml);
+				if (g->ndel == 1)
+					fputc('d', out);
+				else
+					fprintf(out, ",#+%dd", g->ndel - 1);
+				EMIT_SEP(out);
+				if (mode == 0)
+					emit_err_check(out, g->del_start);
+			} else if (has_rel)
 				emit_relative_delete(out, &rc, g->ndel, &first_ml);
 			else
 				emit_delete(out, g->del_start, g->del_end);
 		} else if (g->nadd) {
-			if (has_rel) {
+			if (has_custom) {
+				int mode = emit_custom_pos(out, g, &first_ml);
+				fprintf(out, "a ");
+				for (int k = 0; k < g->nadd; k++) {
+					emit_escaped_text(out, g->add_texts[k]);
+					fputc('\n', out);
+				}
+				fputs(".\n", out);
+				EMIT_SEP(out);
+				if (mode == 0)
+					emit_err_check(out, g->add_after);
+			} else if (has_rel) {
 				/* For pure insert, adjust: search goes to anchor,
 				   but insert should be after the anchor line */
 				if (rc.nanchors > 0) {
@@ -878,6 +1238,15 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		}
 		free(g->del_texts);
 		free(g->add_texts);
+		free(g->all_pre_ctx);
+		free(g->post_ctx);
+		free(g->block_lines);
+		if (g->custom_lines) {
+			for (int k = 0; k < g->ncustom; k++)
+				free(g->custom_lines[k]);
+			free(g->custom_lines);
+		}
+		free(g->custom_modified);
 	}
 
 	fputs("vis 4${SEP}wq\" $VI -e '", out);
@@ -913,10 +1282,11 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-r|-rb] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-r|-rb|--ri] [input.patch]\n", prog);
 	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -r   Use relative regex patterns instead of line numbers\n");
 	fprintf(stderr, "  -rb  Relative block mode: first group searched, rest offset-based\n");
+	fprintf(stderr, "  --ri Interactive relative mode: edit search patterns in $EDITOR\n");
 	exit(1);
 }
 
@@ -931,6 +1301,9 @@ int main(int argc, char **argv)
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
 			usage(argv[0]);
+		} else if (strcmp(argv[i], "--ri") == 0) {
+			relative_mode = 1;
+			interactive_mode = 1;
 		} else if (strcmp(argv[i], "-rb") == 0) {
 			relative_mode = 2;
 		} else if (strcmp(argv[i], "-r") == 0) {
