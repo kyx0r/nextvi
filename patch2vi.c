@@ -1050,8 +1050,10 @@ int main(int argc, char **argv)
 	printf("set -e\n");
 	printf("\n# Path to nextvi (adjust as needed)\n");
 	printf("VI=${VI:-vi}\n");
-	if (relative_mode)
-		printf("\n# Set DBG=@Q to enter interactive vi on patch failure\n");
+	if (relative_mode) {
+		printf("\n# Uncomment to enter interactive vi on patch failure\n");
+		printf("#DBG=\"|sc|vis 4:e $0:@Q:q!1\"\n");
+	}
 	printf("\n# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
 	printf("    echo \"Error: $VI is not nextvi\" >&2\n");
