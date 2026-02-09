@@ -575,7 +575,11 @@ static void *ec_quit(char *loc, char *cmd, char *arg)
 	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
 		if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
 			return "buffers modified";
-	xquit = strchr(cmd, '!') ? -1 : !xquit ? 1 : xquit;
+	xquit = !xquit ? 1 : xquit;
+	if (*arg)
+		xquit = abs(atoi(arg)) + 1;
+	if (strchr(cmd, '!'))
+		xquit = -xquit;
 	return NULL;
 }
 

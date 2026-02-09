@@ -1463,7 +1463,9 @@ void vi(int init)
 				if (!xmpt)
 					vi_drawmsg_mpt(ln)
 				free(ln);
-				vi_mod |= xgrec > 1 || xquit == 0;
+				if (xquit && xgrec == 1)
+					goto quit;
+				vi_mod |= 1;
 				break;
 			case 'c':
 			case 'd':
@@ -1654,14 +1656,18 @@ void vi(int init)
 				k = term_read(0);
 				if (k == 'Z')
 					ex_exec("x");
-				else if (k == 'z') {
+				else if (!TK_INT(k)) {
 					xquit = texec == '&' ? -1 : 1;
 					if (xgrec > 1) {
-						term_push("\n", 1);
-						break;
-					}
-				} else if (!TK_INT(k))
-					xquit = texec == '&' ? -2 : 2;
+						if (k == 'z')
+							term_push("\n", 1);
+					} else if (k == 'z') {
+						quit:
+						term_pos(xrows - !vi_status, 0);
+						term_kill();
+					} else
+						term_clean();
+				}
 				continue;
 			case '.':
 				vc_repeat();
@@ -1829,11 +1835,5 @@ int main(int argc, char *argv[])
 	else
 		vi(1);
 	term_done();
-	if (abs(xquit) == 2)
-		term_clean();
-	else if (!(xvis & 4)) {
-		term_pos(xrows - !vi_status, 0);
-		term_kill();
-	}
-	return EXIT_SUCCESS;
+	return abs(xquit) - 1;
 }
