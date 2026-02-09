@@ -48,27 +48,24 @@ ${SEP}.+2a 	/* update current window's buffer reference */
 ${SEP}.,$;f+ 
 static void \\\\*ec_quit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
 \\\\{${SEP}??!.-5,.+5p\\${SEP}p FAIL line 575\\${SEP}vis 4\\${SEP}q!${SEP};=
-${SEP}.+3c 	/* q! always force quits */
-	if (strchr(cmd, '!')) {
-		xquit = -1;
-		return NULL;
+${SEP}.+3,#+3c 	/* q! always force quits */
+	if (!strchr(cmd, '!')) {
+		/* if multiple windows, close current window */
+		if (!(xvis & 4) && nwins > 1) {
+			win_close();
+			return NULL;
+		}
+		/* single window: check for modified buffers and quit */
+		for (int i = 0; i < xbufcur; i++)
+			if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
+				return \"buffers modified\";
 	}
-	/* if multiple windows, close current window */
-	if (!(xvis & 4) && nwins > 1) {
-		win_close();
-		return NULL;
-	}
-	/* single window: check for modified buffers and quit */
-	for (int i = 0; i < xbufcur; i++)
-.
-${SEP}.,$;f+ 		if \\\\(\\\\(xquit < 0 \\\\|\\\\| xgrec < 2\\\\) && bufs\\\\[i\\\\]\\\\.lb->modified\\\\)
-			return \"buffers modified\";${SEP}??!.-5,.+5p\\${SEP}p FAIL line 578\\${SEP}vis 4\\${SEP}q!${SEP};=
-${SEP}.+2c 	if (!xquit)
+	if (!xquit)
 		xquit = 1;
 .
 ${SEP}.,$;f+ 	return NULL;
 \\\\)
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1354\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1358\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
@@ -172,26 +169,26 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,$;f+ 	EO\\\\(err\\\\),
 	\\\\{\"ef!\", ec_fuzz\\\\},
-	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1384\\${SEP}vis 4\\${SEP}q!${SEP};=
+	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1388\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2a 	{\"eq\", ec_equalize},
 .
 ${SEP}.,$;f+ 	\\\\{\"uz\", ec_setenc\\\\},
 	\\\\{\"ub\", ec_setenc\\\\},
-	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1418\\${SEP}vis 4\\${SEP}q!${SEP};=
+	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1422\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
 ${SEP}.,$;f+ 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1422\\${SEP}vis 4\\${SEP}q!${SEP};=
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1426\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2a 	{\"sp\", ec_split},
 .
 ${SEP}.,$;f+ 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1444\\${SEP}vis 4\\${SEP}q!${SEP};=
+	EO\\\\(led\\\\),${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1448\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+3d${SEP}.,$;f+ 	xgrec--;
 \\\\}
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1599\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1603\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2a /* window management functions */
 static void curwin_save(void)
 {
@@ -834,30 +831,30 @@ ${SEP}.+2a 				case 'c':
 .
 ${SEP}.,$;f+ 				vi_mod \\\\|= 1;
 				break; \\\\}
-			case TK_CTL\\\\('z'\\\\):${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1531\\${SEP}vis 4\\${SEP}q!${SEP};=
+			case TK_CTL\\\\('z'\\\\):${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1533\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+3c 			case TK_CTL('l'): {
 				int orows = xrows, ocols = xcols;
 .
 ${SEP}.,$;f+ 					term_done\\\\(\\\\);
 					term_init\\\\(\\\\);
-				\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1538\\${SEP}vis 4\\${SEP}q!${SEP};=
+				\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1540\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2a 				if (xrows != orows || xcols != ocols)
 					win_size();
 .
 ${SEP}.,$;f+ 				vi_status = vi_status \\\\? xrows - 1: vi_status;
-				vi_mod \\\\|= 1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1541\\${SEP}vis 4\\${SEP}q!${SEP};=
+				vi_mod \\\\|= 1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1543\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2;10c  }
 .
 ${SEP}.,$;f+ 		\\\\}
 		if \\\\(vi_mod\\\\)
-			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1703\\${SEP}vis 4\\${SEP}q!${SEP};=
+			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1709\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+3,#+1c 		{ int _ww = win_width();
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
 ${SEP}.,$;f+ 			\\\\}
 		\\\\}
-		term_record = 1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1746\\${SEP}vis 4\\${SEP}q!${SEP};=
+		term_record = 1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1752\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+3c 		/* save cursor position to current window */
 		if (curwin) {
 			curwin->row = xrow;
@@ -874,11 +871,11 @@ ${SEP}.+3c 		/* save cursor position to current window */
 .
 ${SEP}.-1${SEP}>				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)>+1;34c  {
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1748\\${SEP}vis 4\\${SEP}q!${SEP}.-1${SEP}>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
+${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1754\\${SEP}vis 4\\${SEP}q!${SEP}.-1${SEP}>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1750\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 			vi_drawrow\\\\(xrow\\\\+1\\\\);
-			vi_rshift = 0;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1754\\${SEP}vis 4\\${SEP}q!${SEP};=
+${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1756\\${SEP}vis 4\\${SEP}q!${SEP}.,$;f+ 			vi_drawrow\\\\(xrow\\\\+1\\\\);
+			vi_rshift = 0;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1760\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2,#+1c 		} else if (xtop != otop) {
 			if (nwins > 1)
 				vi_drawagain(xtop);
@@ -887,12 +884,12 @@ ${SEP}.+2,#+1c 		} else if (xtop != otop) {
 		}
 .
 ${SEP}.,$;f+ 		if \\\\(xhll\\\\) \\\\{
-			syn_blockhl = -1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1758\\${SEP}vis 4\\${SEP}q!${SEP};=
+			syn_blockhl = -1;${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1764\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+2;53;58c win_height()
 .
 ${SEP}.,$;f+ 			if \\\\(xmpt > 0\\\\)
 				xmpt = 0;
-		\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1775\\${SEP}vis 4\\${SEP}q!${SEP};=
+		\\\\}${SEP}??!.-5,.+5p\\${SEP}p FAIL line 1781\\${SEP}vis 4\\${SEP}q!${SEP};=
 ${SEP}.+3;11;23c (curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
