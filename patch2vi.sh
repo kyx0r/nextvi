@@ -7,9 +7,9 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
-input="$1"
-if [ -n "$2" ]; then
-	output="$2"
+input="$2"
+if [ -n "$3" ]; then
+	output="$3"
 else
 	# Replace .patch extension with .sh, or append .sh if no .patch ext
 	case "$input" in
@@ -18,6 +18,6 @@ else
 	esac
 fi
 
-./patch2vi < "$input" > "$output"
+./patch2vi "$1" < "$input" > "$output"
 chmod +x "$output"
 echo "Generated: $output"
