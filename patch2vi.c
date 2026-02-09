@@ -339,18 +339,22 @@ typedef struct {
 } rel_ctx_t;
 
 /* Emit ??! error check after a regex search command.
- * On failure: prints surrounding lines, error message, and quits. */
+ * On failure: ${DBG} overrides the default handler.
+ * Default: prints surrounding lines, error message, and quits with error.
+ * DBG=@Q: enters interactive vi mode to fix the issue manually. */
 static void emit_err_check(FILE *out, int line)
 {
 	/* ??! = if last command failed, run the else branch
+	 * ${DBG:-...} allows override via environment variable
 	 * \<sep> separates commands inside the branch */
-	fputs("?" "?!.-5,.+5p", out);
+	fputs("?" "?!${DBG:-", out);
+	fputs(".-5,.+5p", out);
 	EMIT_ESCSEP(out);
 	fprintf(out, "p FAIL line %d", line);
 	EMIT_ESCSEP(out);
 	fputs("vis 4", out);
 	EMIT_ESCSEP(out);
-	fputs("q!", out);
+	fputs("q! 1}", out);
 	EMIT_SEP(out);
 }
 
@@ -1046,6 +1050,8 @@ int main(int argc, char **argv)
 	printf("set -e\n");
 	printf("\n# Path to nextvi (adjust as needed)\n");
 	printf("VI=${VI:-vi}\n");
+	if (relative_mode)
+		printf("\n# Set DBG=@Q to enter interactive vi on patch failure\n");
 	printf("\n# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
 	printf("    echo \"Error: $VI is not nextvi\" >&2\n");
