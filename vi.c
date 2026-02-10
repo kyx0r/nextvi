@@ -1460,12 +1460,13 @@ void vi(int init)
 				do_excmd:
 				if (k && ln[n])
 					ex_command(ln + n)
-				if (!xmpt)
+				vi_mod |= 1;
+				if (xquit) {
+					free(ln);
+					goto quit;
+				} else if (!xmpt)
 					vi_drawmsg_mpt(ln)
 				free(ln);
-				if (xquit && xgrec == 1)
-					goto quit;
-				vi_mod |= 1;
 				break;
 			case 'c':
 			case 'd':
@@ -1656,18 +1657,24 @@ void vi(int init)
 				k = term_read(0);
 				if (k == 'Z')
 					ex_exec("x");
-				else if (!TK_INT(k)) {
+				else if (k == 'z') {
 					xquit = texec == '&' ? -1 : 1;
-					if (xgrec > 1) {
-						if (k == 'z')
-							term_push("\n", 1);
-					} else if (k == 'z') {
-						quit:
-						term_pos(xrows - !vi_status, 0);
-						term_kill();
-					} else
+					term_push("\n", 1);
+				} else if (!TK_INT(k)) {
+					xquit = texec == '&' ? -1 : 1;
+					if (xgrec == 1)
 						term_clean();
-				}
+					continue;
+				} else
+					continue;
+				quit:
+				if (xgrec > 1 || !xquit)
+					continue;
+				term_pos(xrows - !vi_status, 0);
+				if (xmpt > 0 && !xpln)
+					term_chr('\n');
+				else
+					term_kill();
 				continue;
 			case '.':
 				vc_repeat();
