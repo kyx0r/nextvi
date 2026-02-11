@@ -310,7 +310,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
 {
 	int n = sb->s_n, key;
-	if (xvis & 2) {
+	if (xvis & 1) {
 		while ((key = term_read(0)) != '\n') {
 			sbuf_chr(sb, key)
 			if (flg & 2 || xquit)
@@ -374,7 +374,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
 			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
 			fd < 0 || rd ? 'f' : 'r');
-	if (!(xvis & 8))
+	if (!(xvis & 4))
 		ex_print(msg, bar_ft)
 	return (fd < 0 || rd) && *arg ? xuerr : NULL;
 }
@@ -386,7 +386,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	int c, pos, subs[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;
 	int flg = REG_NEWLINE | REG_NOCAP;
-	int pflg = ((xvis & 4) == 0) * 2;
+	int pflg = ((xvis & 2) == 0) * 2;
 	ins_state is;
 	ins_init(is)
 	if (*cmd !='f')
@@ -651,11 +651,11 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 static void *ex_pipeout(char *cmd, sbuf *buf)
 {
 	int ret = 0;
-	if (!(xvis & 4) && xmpt >= 0 && !xpln) {
+	if (!(xvis & 2) && xmpt >= 0 && !xpln) {
 		term_chr('\n');
 		xpln = 1;
 		xmpt = 2;
-	} else if (xvis & 4 && xpln == 2) {
+	} else if (xvis & 2 && xpln == 2) {
 		term_chr('\n');
 		xpln = 0;
 	}
@@ -729,13 +729,13 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 				xregs[xpr]->s[xregs[xpr]->s_n-1] != '\n')
 			ex_regput(xpr, "\n", 1);
 	}
-	if (xvis & 2) {
+	if (xvis & 1) {
 		term_write(line, dstrlen(line, '\n'))
 		term_write("\n", 1)
 		return;
 	}
 	syn_blockhl = -1;
-	if (flg && !(xvis & 4)) {
+	if (flg && !(xvis & 2)) {
 		term_pos(xrows, 0);
 		if ((!xpln && xmpt > 0) || flg == 2)
 			term_chr('\n');
@@ -747,7 +747,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 		syn_setft(ft);
 	led_crender(line, r, c, left, left + xcols - c)
 	restore(ftidx)
-	if (flg && xvis & 4)
+	if (flg && xvis & 2)
 		term_chr('\n');
 }
 
@@ -763,7 +763,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		syn_setft(msg_ft);
 		if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
 			break;
-		if (xvis & 2 && !strcmp(".", sb->s + ps)) {
+		if (xvis & 1 && !strcmp(".", sb->s + ps)) {
 			sb->s_n -= 1 + (o1 >= 0);
 			break;
 		}
@@ -788,7 +788,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		o1 -= sb->s[0] == '\n';
 		free(sb->s);
 		sb->s = p;
-	} else if (!(xvis & 2) && key != 127)
+	} else if (!(xvis & 1) && key != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
 		goto ret;
@@ -1254,7 +1254,7 @@ static void *ec_setbufsmax(char *loc, char *cmd, char *arg)
 static void *ec_regprint(char *loc, char *cmd, char *arg)
 {
 	static char buf[5] = "  ";
-	int flg = (xvis & 4) == 0;
+	int flg = (xvis & 2) == 0;
 	preserve(int, xtd, xtd = 2;)
 	for (int i = 1; i < LEN(xregs); i++) {
 		if (xregs[i] && i != xpr) {
@@ -1590,7 +1590,7 @@ void ex(void)
 				xpln = 2;
 				ex_exec(xregs[':']->s);
 			} else
-				ex_command(sb->s + !(xvis & 2))
+				ex_command(sb->s + !(xvis & 1))
 			xb->useq += xseq;
 			esc = 1;
 		} else
@@ -1612,7 +1612,7 @@ void ex_init(char **files, int n)
 		ec_edit("", "e", s);
 		s = *(++files);
 	} while (--n > 0);
-	xvis &= ~8;
+	xvis &= ~4;
 	if ((s = getenv("EXINIT")))
 		ex_command(s)
 }
