@@ -84,7 +84,7 @@ void load_exrc(char *exrc)
 .
 ${SEP}.,$;f+ 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~8;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1616\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1616\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;28c  {
 .
 ${SEP}.-1${SEP}>		ex_command\\(s\\)>a 	} else {
