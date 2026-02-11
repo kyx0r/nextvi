@@ -34,7 +34,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> r... \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/
 struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 42\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;20;21c 3
@@ -149,9 +149,9 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> extern rset \\\\*xkwdrs;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> extern r... \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
-extern struct buf \\\\*bufs;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 452\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+extern struct buf \\\\*bufs;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 454\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;27;28c 3
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
