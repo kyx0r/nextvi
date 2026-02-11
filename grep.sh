@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 2:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -18,68 +18,68 @@ fi
 
 # Patch: conf.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> char n_ft\\\\[\\\\] = \"/#\";	/\\\\* numbers highlight for \\\\^v \\\\*/
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> char n_ft\\\\[\\\\] = \"/#\";	/\\\\* numbers highlight for \\\\^v \\\\*/
 char nn_ft\\\\[\\\\] = \"/##\";	/\\\\* numbers highlight for # \\\\*/
-char ac_ft\\\\[\\\\] = \"/ac\";	/\\\\* autocomplete dropdown \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 31\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+char ac_ft\\\\[\\\\] = \"/ac\";	/\\\\* autocomplete dropdown \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 31\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a char grep_ft[] = \"/g\";	/* grep buffer */
 .
 ${SEP}.,$;f+ 		A\\\\(IN, SYN_BGMK\\\\(RE1\\\\), SYN_BGMK\\\\(AY1\\\\), SYN_BGMK\\\\(AY\\\\)\\\\)\\\\},
 	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(IN, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 254\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 254\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
 .
-${SEP}vis 4${SEP}wq" $VI -e 'conf.c'
+${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> r... \\\\*xkwdrs;			/\\\\* the last searched keyword r... \\\\*/
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/
-struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 42\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 42\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;20;21c 3
 .
-${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	free\\\\(sb->s\\\\);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	free\\\\(sb->s\\\\);
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 502\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 502\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;17c isbuffer
 .
 ${SEP}.,$;f+ path\\\\[len\\\\] = '\\\\\\\\0'; \\\\\\\\
 ret = ex_edit\\\\(path, len\\\\); \\\\\\\\
-path\\\\[len\\\\] = '\\\\\\\\n'; \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 507\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+path\\\\[len\\\\] = '\\\\\\\\n'; \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 507\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;4;15c isbuffer
 .
 ${SEP}.,$;f+ if \\\\(!vi_search\\\\(\\\\*row \\\\? 'N' : 'n', cnt, row, off, 0\\\\)\\\\) \\\\\\\\
 	return 1; \\\\\\\\
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 518\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 518\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;25c again, int 
 .
 ${SEP}.,$;f+ \\\\{
-	char \\\\*path;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 521\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	char \\\\*path;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 521\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2;5;16c 
 .
 ${SEP}.,$;f+ 	wrap:
 	while \\\\(fspos < lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\) \\\\{
-		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\+\\\\+\\\\];${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 525\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\+\\\\+\\\\];${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 525\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;11c ret && xrow && again != 2
 .
 ${SEP}.,$;f+ 	int ret, len;
 	while \\\\(--fspos >= 0\\\\) \\\\{
-		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\];${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 541\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\];${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 541\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;11c ret && xrow
 .
 ${SEP}.,$;f+ 				break;
 		break;
-	case TK_CTL\\\\('\\\\]'\\\\):	/\\\\* this is also \\\\^5 on some systems \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 716\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	case TK_CTL\\\\('\\\\]'\\\\):	/\\\\* this is also \\\\^5 on some systems \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 716\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	case TK_CTL('x'):
 .
 ${SEP}.,$;f+ 			lkwdcnt = xkwdcnt;
 			fspos \\\\+= fsdir < 0 \\\\? 1 : 0;
-			fspos = MIN\\\\(fspos, lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 735\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+			fspos = MIN\\\\(fspos, lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 735\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;13c 0, 
 .
 ${SEP}.-1${SEP}>			fsdir = 1;>a 		} else if (mv == TK_CTL('x')) {
@@ -117,9 +117,9 @@ ${SEP}.-1${SEP}>			fsdir = 1;>a 		} else if (mv == TK_CTL('x')) {
 			*off = 0;
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 736\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 				char buf\\\\[strlen\\\\(ln\\\\)\\\\+4\\\\];
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 736\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 				char buf\\\\[strlen\\\\(ln\\\\)\\\\+4\\\\];
 				strcpy\\\\(buf, \":e \"\\\\);
-				strcpy\\\\(buf\\\\+3, ln\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1296\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+				strcpy\\\\(buf\\\\+3, ln\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1296\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 				if (!strcmp(xb_path, \"/grep/\")) {
 					int subs[2];
 					rset *rs = rset_make(1, (char*[]){\":[0-9]+:\"}, 0);
@@ -134,7 +134,7 @@ ${SEP}.+3c 				if (!strcmp(xb_path, \"/grep/\")) {
 .
 ${SEP}.,$;f+ 					\\\\}
 					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);
-					goto do_excmd; \\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1428\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+					goto do_excmd; \\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1428\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 				case 'x':
 					temp_switch(2, 1);
 					vi_mod = 1;
@@ -142,16 +142,16 @@ ${SEP}.+2a 				case 'x':
 .
 ${SEP}.,$;f+ 	syn_init\\\\(\\\\);
 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
-	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1810\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1815\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	temp_open(2, \"/grep/\", grep_ft);
 .
-${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
+${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> extern r... \\\\*xkwdrs;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> extern rset \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
-extern struct buf \\\\*bufs;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 452\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+extern struct buf \\\\*bufs;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 452\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;27;28c 3
 .
-${SEP}vis 4${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}wq" $VI -e 'vi.h'

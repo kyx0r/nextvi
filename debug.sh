@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 2:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -18,9 +18,9 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
 		ex_command\\\\(s\\\\)
-\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1617\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1618\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 
 void ex_done(void)
 {
@@ -35,22 +35,22 @@ void ex_done(void)
 	free(bufs);
 }
 .
-${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: regex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;
-	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 638\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 638\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 .
-${SEP}vis 4${SEP}wq" $VI -e 'regex.c'
+${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: ren.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> ren_state rstates\\\\[3\\\\]; /\\\\* 0 = current line, 1 = all other lines, 2 = aux rendering \\\\*/
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> ren_state rstates\\\\[3\\\\]; /\\\\* 0 = current line, 1 = all other lines, 2 = aux rendering \\\\*/
 ren_state \\\\*rstate = rstates;
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 92\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 92\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void ren_done(void)
 {
 	rset_free(dir_rslr);
@@ -67,7 +67,7 @@ ${SEP}.+2a void ren_done(void)
 .
 ${SEP}.,$;f+ 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
-\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 409\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 409\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 
 void syn_done(void)
 {
@@ -76,23 +76,23 @@ void syn_done(void)
 	rset_free(syn_ftrs);
 }
 .
-${SEP}vis 4${SEP}wq" $VI -e 'ren.c'
+${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> /\\\\* text direction \\\\*/
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> /\\\\* text direction \\\\*/
 int dir_context\\\\(char \\\\*s\\\\);
-void dir_init\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 233\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+void dir_init\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 233\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void dir_done(void);
 .
 ${SEP}.,$;f+ int syn_findhl\\\\(int id\\\\);
 int syn_addhl\\\\(char \\\\*reg, int id\\\\);
-void syn_init\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 271\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+void syn_init\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 271\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void syn_done(void);
 .
 ${SEP}.,$;f+ #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
 void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
-void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 481\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 481\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void ex_done(void);
 .
-${SEP}vis 4${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}wq" $VI -e 'vi.h'

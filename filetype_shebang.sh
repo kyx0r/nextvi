@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 2:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -18,9 +18,9 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
 	if \\\\(!\\\\(xvis & 8\\\\)\\\\)
-		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 378\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 378\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\\\n')
@@ -39,4 +39,4 @@ ${SEP}.+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		rset_free(rs);
 	}
 .
-${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}wq" $VI -e 'ex.c'

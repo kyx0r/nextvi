@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 2:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -18,8 +18,8 @@ fi
 
 # Patch: kmap.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
-	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 2\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
+	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 2\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+1a 	['y'] = \"h\",
 	['n'] = \"j\",
 	['e'] = \"k\",
@@ -29,14 +29,14 @@ ${SEP}.+1a 	['y'] = \"h\",
 	['k'] = \"e\",
 	['l'] = \"o\",
 .
-${SEP}vis 4${SEP}wq" $VI -e 'kmap.h'
+${SEP}vis 2${SEP}wq" $VI -e 'kmap.h'
 
 # Patch: term.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 			err:
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			err:
 			\\\\*ibuf = 0;
-		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 175\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 175\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
 .
-${SEP}vis 4${SEP}wq" $VI -e 'term.c'
+${SEP}vis 2${SEP}wq" $VI -e 'term.c'

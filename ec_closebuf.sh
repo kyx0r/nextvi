@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 2:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -18,9 +18,9 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	return val;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return val;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1338\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1339\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
@@ -68,7 +68,7 @@ ${SEP}.+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,$;f+ 	\\\\{\"cm!\", ec_cmap\\\\},
 	\\\\{\"cm\", ec_cmap\\\\},
-	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1434\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1435\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	{\"cx\", ec_closebuf},
 .
-${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}wq" $VI -e 'ex.c'

@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 2:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -18,30 +18,30 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	xgrec--;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	xgrec--;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1604\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1605\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;32c , char **cmds, int cmdnum
 .
 ${SEP}.,$;f+ 	xvis &= ~8;
 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1616\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		ex_command\\\\(s\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1617\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 .
-${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
 int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
-\\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1805\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+\\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1810\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 .
 ${SEP}.,$;f+ 				xvis \\\\|= 8;
 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
-				xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1825\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+				xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1830\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -57,18 +57,18 @@ ${SEP}.+3c 			else if (argv[i][j] == 'c') {
 .
 ${SEP}.-1${SEP}>				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\\]\\);>+1;46c c
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1827\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 	\\\\}
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1832\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 	\\\\}
 	ibuf = emalloc\\\\(ibuf_sz\\\\);
-	term_init\\\\(\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1834\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	term_init\\\\(\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1839\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;27c , ex_cmds, cmdnum
 .
-${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
+${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> void ex_cprint\\\\(char \\\\*line, char \\\\*ft, int r, int c, int left, int flg\\\\);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void ex_cprint\\\\(char \\\\*line, char \\\\*ft, int r, int c, int left, int flg\\\\);
 #define ex_cprint2\\\\(line, ft, r, c, left, flg\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, r, c, left, flg\\\\)\\\\); \\\\}
-#define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 480\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+#define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 480\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;32c , char** cmds, int cmdnum
 .
-${SEP}vis 4${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}wq" $VI -e 'vi.h'

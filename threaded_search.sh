@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 2:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -18,18 +18,18 @@ fi
 
 # Patch: cbuild.sh
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> -Wno-unused-parameter \\\\\\\\
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> -Wno-unused-parameter \\\\\\\\
 -Wno-unused-result \\\\\\\\
--Wfatal-errors -std=c99 \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 49\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+-Wfatal-errors -std=c99 \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 49\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a -lpthread \\\\
 .
-${SEP}vis 4${SEP}wq" $VI -e 'cbuild.sh'
+${SEP}vis 2${SEP}wq" $VI -e 'cbuild.sh'
 
 # Patch: lbuf.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	return n != 0;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return n != 0;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+12c struct lsparams
 {
 	struct lbuf *lb;
@@ -54,27 +54,27 @@ static void *lsearch(void *arg)
 .
 ${SEP}.,$;f+ 		_o = 0;
 		step = 0;
-		flg = REG_NEWLINE;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 498\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		flg = REG_NEWLINE;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 498\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+1c 		s = a->lb->ln[i];
 		while (rset_find(a->re, s + off, offs, flg) >= 0) {
 .
 ${SEP}.,$;f+ 				continue;
 			\\\\}
-			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 507\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 507\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
 .
 ${SEP}.-1${SEP}>				break;>+1,#+3c 			*a->o = _o;
 			*a->r = i;
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 509\\${SEP}vis 4\\${SEP}q! 1}${SEP}.,$;f+ 			step = off \\\\+ g1;
-			off \\\\+= g2 > 0 \\\\? g2 : 1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 515\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 509\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 			step = off \\\\+ g1;
+			off \\\\+= g2 > 0 \\\\? g2 : 1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 515\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2c 			a->end = -1; /* break outer loop efficiently */
 			if (a->dir > 0)
 				return NULL;
 .
 ${SEP}.,$;f+ 		\\\\}
 		off = 0;
-	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 519\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 519\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 	return NULL;
 }
 
@@ -135,51 +135,51 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	utf8_length['\\\\n'] = 1;
 	return 1;
 .
-${SEP}vis 4${SEP}wq" $VI -e 'lbuf.c'
+${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	return 0;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return 0;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 402\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 402\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;29;35c flg & REG_NEWLINE
 .
 ${SEP}.,$;f+ 	char nsubs\\\\[prog->sub\\\\];
 	for \\\\(i = 0; i < prog->laidx; i\\\\+\\\\+\\\\)
-		lb\\\\[i\\\\] = NULL;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 642\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		lb\\\\[i\\\\] = NULL;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 642\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;11c  && utf8_length[eol_ch]
 .
 ${SEP}.-1${SEP}>		utf8_length\\[eol_ch\\] = 0;>a 	else
 		flg &= ~REG_NEWLINE;
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 643\\${SEP}vis 4\\${SEP}q! 1}${SEP}vis 4${SEP}wq" $VI -e 'regex.c'
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 643\\${SEP}vis 2\\${SEP}q! 1}${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: uc.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}>	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\*/>-1;14c _
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}>	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\*/>-1;14c _
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1\\${SEP}vis 4\\${SEP}q! 1}${SEP}%;f> 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1\\${SEP}vis 2\\${SEP}q! 1}${SEP}%;f> 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\\\\* F \\\\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
-\\\\};${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 19\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+\\\\};${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 19\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a unsigned char *utf8_length = _utf8_length;
 .
-${SEP}vis 4${SEP}wq" $VI -e 'uc.c'
+${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> #include <sys/stat\\\\.h>
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #include <sys/stat\\\\.h>
 #include <sys/ioctl\\\\.h>
-#include <sys/wait\\\\.h>${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 15\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+#include <sys/wait\\\\.h>${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 15\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a #include <pthread.h>
 .
-${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
+${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> void syn_init\\\\(void\\\\);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void syn_init\\\\(void\\\\);
 
-/\\\\* uc\\\\.c utf-8 helper functions \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 274\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+/\\\\* uc\\\\.c utf-8 helper functions \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 274\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 .
-${SEP}vis 4${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}wq" $VI -e 'vi.h'

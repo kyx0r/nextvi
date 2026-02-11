@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 2:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -18,32 +18,32 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	return key;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return key;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 329\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 329\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;23c , init
 .
 ${SEP}.,$;f+ fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
-if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 332\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 332\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
 .
 ${SEP}.,$;f+ 		return 1;
 	\\\\}
-	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 348\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 348\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;10c , 1
 .
 ${SEP}.,$;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 369\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 369\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;14c , cd == 3
 .
-${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 206\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 206\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 {
 	if (!init) {
@@ -67,12 +67,12 @@ ${SEP}.+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init
 				sz++;
 				step = 0;
 .
-${SEP}.-1${SEP}>			\\}>+1,#+5d${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 221\\${SEP}vis 4\\${SEP}q! 1}${SEP}.-1${SEP}>		\\}>a 		s[n] = '\\\\0';
+${SEP}.-1${SEP}>			\\}>+1,#+5d${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 221\\${SEP}vis 2\\${SEP}q! 1}${SEP}.-1${SEP}>		\\}>a 		s[n] = '\\\\0';
 		lbuf_edit(lb, s, beg, end, 0, 0);
 		free(s);
 		return nr != 0;
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 227\\${SEP}vis 4\\${SEP}q! 1}${SEP}.-1${SEP}>	\\}>+1,#+2c 	long nr, l, nins = 0, nl = 0;
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 227\\${SEP}vis 2\\${SEP}q! 1}${SEP}.-1${SEP}>	\\}>+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	struct linfo *n, *cn = NULL;
 	const int rchunk = 4096;
 	char sm[rchunk+1], *s, *ln;
@@ -123,14 +123,14 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 227\\${SEP}vis 4\\${SEP}q! 1}${SEP}.
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 229\\${SEP}vis 4\\${SEP}q! 1}${SEP}vis 4${SEP}wq" $VI -e 'lbuf.c'
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 229\\${SEP}vis 2\\${SEP}q! 1}${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
 struct lbuf \\\\*lbuf_make\\\\(void\\\\);
-void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 169\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 169\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
 .
-${SEP}vis 4${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
