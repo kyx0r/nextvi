@@ -49,7 +49,11 @@ ${SEP}.+3;10;12c tr
 .
 ${SEP}.,$;f+ 				break;
 			\\\\}
-		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 461\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+		\\\\}
+		rset_free\\\\(rs\\\\);
+		sbuf_cut\\\\(sb, 0\\\\)
+		if \\\\(pflg\\\\) \\\\{
+			term_clean\\\\(\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 461\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;4;6c tr
 .
 ${SEP}.,$;f+ 	free\\\\(sb->s\\\\);
@@ -347,17 +351,17 @@ ${SEP}.-1${SEP}>		int nskip, int \\*r, int \\*o\\);>a
 .
 ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 191\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ extern int xsep;
 extern int xesc;
-extern sbuf \\\\*xacreg;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 449\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+extern sbuf \\\\*xacreg;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 451\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;9;11c tr
 .
 ${SEP}.,$;f+ #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
 void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
-void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 482\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 484\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;13;15c tr
 .
 ${SEP}.,$;f+ extern int vi_hidch;
 extern int vi_lncol;
-/\\\\* file system \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 543\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+/\\\\* file system \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 545\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;9;11c tr
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
