@@ -66,7 +66,7 @@ ${SEP}.+1a 	if (stdin_fd) {
 		}
 	}
 .
-${SEP}.-1${SEP}>	xvis &= ~8;>a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
+${SEP}.-1${SEP}>	xvis &= ~4;>a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
 ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1615\\${SEP}vis 2\\${SEP}q! 1}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -95,10 +95,9 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 21\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,
 	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 33\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	isig = 1;
 .
-${SEP}.,$;f+ 		return;
-	term_commit\\\\(\\\\);
+${SEP}.,$;f+ term_commit\\\\(\\\\);
 	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 42\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;11;12c stdin_fd
+${SEP}.+2;11;12c stdin_fd
 .
 ${SEP}.,$;f+ 			goto ret;
 		\\\\}
