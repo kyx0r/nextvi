@@ -66,6 +66,7 @@ ${SEP}.+1a 	if (stdin_fd) {
 			close(stdin_fd);
 			exit(1);
 		}
+		xmpt = MIN(xmpt, 1);
 	}
 .
 ${SEP}.-1${SEP}>	xvis &= ~4;>a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
@@ -97,29 +98,30 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 21\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,
 	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 33\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	isig = 1;
 .
-${SEP}.,$;f+ term_commit\\\\(\\\\);
-	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 42\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2;11;12c stdin_fd
+${SEP}.,$;f+ 		term_scrl;
+	term_commit\\\\(\\\\);
+	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 46\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}.+3;11;12c stdin_fd
 .
 ${SEP}.,$;f+ 			goto ret;
 		\\\\}
-		cw = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 160\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+		cw = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 164\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 		ufd.fd = stdin_fd;
 .
 ${SEP}.,$;f+ 		re:
 		/\\\\* read a single input character \\\\*/
-		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 164\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 168\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 .
 ${SEP}.,$;f+ 	fds\\\\[0\\\\]\\\\.events = POLLIN;
 	fds\\\\[1\\\\]\\\\.fd = ifd;
-	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 308\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 312\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;20;21c stdin_fd
 .
 ${SEP}.,$;f+ 		close\\\\(ifd\\\\);
 	waitpid\\\\(pid, status, 0\\\\);
-	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 351\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 355\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;11;23c stdin_fd
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
@@ -143,7 +145,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> /\\\\* vi\\\\.c \\\\*/
 extern int vi_hidch;
-extern int vi_lncol;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 541\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+extern int vi_lncol;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 543\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a extern int stdin_fd;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
