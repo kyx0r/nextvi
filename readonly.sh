@@ -67,10 +67,8 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				xvis \\\\|= 4;
 ${SEP}.+2a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
-${SEP}.,$;f+ 				xvis = 0;
-			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1834\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;46c R
+${SEP}.,$;f+ fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1834\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}.+1;46c R
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
