@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-#DBG="|sc|vis 4:e $0:@Q:q!1"
+DBG="|sc|vis 4:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -107,7 +107,7 @@ ${SEP}.,$;f+ 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
 ${SEP}.+3;4;6c tr
 .
 ${SEP}.,$;f+ \\\\{
-	int i, beg, end, not;
+	int i, beg, end, not.*;
 	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1094\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
