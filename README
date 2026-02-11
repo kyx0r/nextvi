@@ -4,7 +4,7 @@ NAME
      Nextvi - A small vi/ex terminal text editor
 
 SYNOPSIS
-     vi [-emsv] [file ...]
+     vi [-aemsv] [file ...]
 
 DESCRIPTION
      Nextvi is a modern clone of the command-line text editor vi(1),
