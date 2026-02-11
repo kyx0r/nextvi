@@ -54,7 +54,7 @@ static void \\\\*ec_quit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
 ${SEP}.+3,#+3c 	/* q! always force quits */
 	if (!strchr(cmd, '!')) {
 		/* if multiple windows, close current window */
-		if (!(xvis & 4) && nwins > 1) {
+		if (!(xvis & 2) && nwins > 1) {
 			win_close();
 			return NULL;
 		}
@@ -520,7 +520,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	term_out\\\\(\"\\\\\\\\33\\\\[K\"\\\\);
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 83\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 87\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void term_killn(int n)
 {
 	char cmd[32] = \"\\\\33[\";
@@ -901,18 +901,18 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void term_chr\\\\(int ch\\\\);
 void term_pos\\\\(int r, int c\\\\);
-void term_kill\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 328\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+void term_kill\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 330\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a void term_killn(int n);
 .
 ${SEP}.,$;f+ \\\\} \\\\\\\\
 
-#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 399\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 401\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \\\\
 	if (nwins > 1) term_killn(end - beg); else term_kill();)
 .
 ${SEP}.,$;f+ 	long mtime;			/\\\\* modification time \\\\*/
 	signed char td;			/\\\\* text direction \\\\*/
-\\\\};${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 412\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+\\\\};${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 414\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 
 /* window management for splits */
 struct win {
