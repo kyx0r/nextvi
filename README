@@ -218,12 +218,6 @@ Implements closer to standard vi(1) sections keybinding:
 [#]}          Move to next <Newline> section down # times
 [#]{          Move to next <Newline> section up # times
 
-alt_screen.sh
---------------
-Adds alternate screen buffer support.
-New quit keybind Zx restores the original contents of terminal
-prior to running the TUI. This also includes ^Z suspend.
-
 My current EXINIT setup:
 --------------
 How it works:
