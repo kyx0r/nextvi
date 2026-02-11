@@ -1540,6 +1540,8 @@ int main(int argc, char **argv)
 	if (relative_mode) {
 		printf("\n# Uncomment to enter interactive vi on patch failure\n");
 		printf("#DBG=\"|sc|vis 2:e $0:@Q:q!1\"\n");
+		printf("# Uncomment to nop the errors\n");
+		printf("#DBG=\"p\"\n");
 	}
 	printf("\n# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
