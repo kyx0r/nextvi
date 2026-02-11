@@ -41,10 +41,9 @@ int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
 ${SEP}.+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 .
-${SEP}.,$;f+ 				xvis \\\\|= 8;
-			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
+${SEP}.,$;f+ else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
 				xvis = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1832\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3c 			else if (argv[i][j] == 'c') {
+${SEP}.+2c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
 					break;
