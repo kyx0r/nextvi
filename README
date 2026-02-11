@@ -23,7 +23,7 @@ OPTIONS
      -e      Enter ex mode on startup
      -m      Disable initial file read message
      -s      Enter raw ex mode on startup
-     -v      Enter visual mode on startup (Default)
+     -v      Unset all options
 
 MANPAGE NOTATION
      <x>     A closure where x represents character literal
