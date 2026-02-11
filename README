@@ -4,7 +4,7 @@ NAME
      Nextvi - A small vi/ex terminal text editor
 
 SYNOPSIS
-     vi [-emsv] [file ...]
+     vi [-aemsv] [file ...]
 
 DESCRIPTION
      Nextvi is a modern clone of the command-line text editor vi(1),
@@ -19,6 +19,7 @@ DESCRIPTION
      for years to come.
 
 OPTIONS
+     -a      Enable alternate terminal screen
      -e      Enter ex mode on startup
      -m      Disable initial file read message
      -s      Enter raw ex mode on startup
@@ -991,13 +992,13 @@ EX OPTIONS
              Control startup flags
 
              Example: disable :e message in ex mode
-             :vis 12
-             Example: disable :e message in vi mode
-             :vis 8
-             Example: enable raw ex mode
              :vis 6
-             Example: disable raw ex mode
+             Example: disable :e message in vi mode
              :vis 4
+             Example: enable raw ex mode
+             :vis 3
+             Example: disable raw ex mode
+             :vis 2
 
      mpt[val=0]
              Control vi prompts
@@ -1196,18 +1197,18 @@ SPECIAL REGISTERS
 CODE MAP
      +--------------+----------------------+
      | 537 kmap.h   |  keymap translation  |
-     | 545 vi.h     |  definitions/aux     |
+     | 547 vi.h     |  definitions/aux     |
      +--------------+----------------------+
      | 332 conf.c   |  hl/ft/td config     |
-     | 361 term.c   |  low level IO        |
+     | 365 term.c   |  low level IO        |
      | 409 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
      | 654 lbuf.c   |  file/line buffer    |
      | 718 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1617 ex.c    |  ex options/commands |
-     | 1839 vi.c    |  normal mode/general |
-     | 7310 total   |  wc -l *.c|sort      |
+     | 1618 ex.c    |  ex options/commands |
+     | 1848 vi.c    |  normal mode/general |
+     | 7324 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1279,4 +1280,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 9, 2026                     Nextvi 4.0
+Nextvi 4.0                     February 11, 2026                    Nextvi 4.0
