@@ -3,7 +3,7 @@
  *
  * Usage: patch2vi [input.patch]
  *
- * Uses raw ex mode (:vis 6) with dynamic separator selection via :sc!
+ * Uses raw ex mode (:vis 3) with dynamic separator selection via :sc!
  * to avoid conflicts with : % ! characters in patch content.
  *
  * The generated script uses EXINIT with ex commands to apply changes.
@@ -355,7 +355,7 @@ static void emit_err_check(FILE *out, int line)
 	EMIT_ESCSEP(out);
 	fprintf(out, "p FAIL line %d", line);
 	EMIT_ESCSEP(out);
-	fputs("vis 4", out);
+	fputs("vis 2", out);
 	EMIT_ESCSEP(out);
 	fputs("q! 1}", out);
 	EMIT_SEP(out);
@@ -962,7 +962,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		fprintf(out, "SEP='%c'\n", sep);
 	else
 		fprintf(out, "SEP=\"$(printf '\\x%02x')\"\n", sep);
-	fputs("EXINIT=\"rcm:|sc! \\\\\\\\${SEP}|vis 6${SEP}", out);
+	fputs("EXINIT=\"rcm:|sc! \\\\\\\\${SEP}|vis 3${SEP}", out);
 
 	/*
 	 * Strategy: process operations in groups.
@@ -1351,7 +1351,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		free(g->custom_cmd);
 	}
 
-	fputs("vis 4${SEP}wq\" $VI -e '", out);
+	fputs("vis 2${SEP}wq\" $VI -e '", out);
 	fputs(fp->path, out);
 	fputs("'\n", out);
 }
@@ -1539,7 +1539,7 @@ int main(int argc, char **argv)
 	printf("VI=${VI:-vi}\n");
 	if (relative_mode) {
 		printf("\n# Uncomment to enter interactive vi on patch failure\n");
-		printf("#DBG=\"|sc|vis 4:e $0:@Q:q!1\"\n");
+		printf("#DBG=\"|sc|vis 2:e $0:@Q:q!1\"\n");
 	}
 	printf("\n# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
