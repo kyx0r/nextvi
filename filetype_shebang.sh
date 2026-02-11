@@ -19,7 +19,7 @@ fi
 # Patch: ex.c
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
-	if \\\\(!\\\\(xvis & 8\\\\)\\\\)
+	if \\\\(!\\\\(xvis & 4\\\\)\\\\)
 		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 378\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
