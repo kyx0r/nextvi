@@ -323,6 +323,8 @@ void term_init(void);
 void term_done(void);
 void term_clean(void);
 void term_suspend(void);
+#define term_scrl	term_write("\033[?1049l", 8)
+#define term_scrh	term_write("\033[?1049h", 8)
 void term_chr(int ch);
 void term_pos(int r, int c);
 void term_kill(void);

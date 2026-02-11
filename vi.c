@@ -1820,16 +1820,18 @@ int main(int argc, char *argv[])
 		}
 		for (j = 1; argv[i][j]; j++) {
 			if (argv[i][j] == 's')
-				xvis |= 2|4;
+				xvis |= 1|2;
 			else if (argv[i][j] == 'e')
-				xvis |= 4;
+				xvis |= 2;
 			else if (argv[i][j] == 'm')
-				xvis |= 8;
+				xvis |= 4;
 			else if (argv[i][j] == 'v')
-				xvis &= ~4;
+				xvis &= ~2;
+			else if (argv[i][j] == 'a')
+				xvis |= 8;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-4.0 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
@@ -1837,7 +1839,7 @@ int main(int argc, char *argv[])
 	ibuf = emalloc(ibuf_sz);
 	term_init();
 	ex_init(argv + i, argc - i);
-	if (xvis & 4)
+	if (xvis & 2)
 		ex();
 	else
 		vi(1);
