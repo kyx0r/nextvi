@@ -1,4 +1,4 @@
-.Dd Feb  9, 2026
+.Dd Feb 11, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -27,6 +27,8 @@ for years to come.
 .
 .Sh OPTIONS
 .Bl -tag -width Ds -compact
+.It Fl a
+Enable alternate terminal screen
 .It Fl e
 Enter ex mode on startup
 .It Fl m
@@ -1314,13 +1316,13 @@ Enable all terminal output
 Control startup flags
 .Bd -literal
 Example: disable :e message in ex mode
-:vis 12
-Example: disable :e message in vi mode
-:vis 8
-Example: enable raw ex mode
 :vis 6
-Example: disable raw ex mode
+Example: disable :e message in vi mode
 :vis 4
+Example: enable raw ex mode
+:vis 3
+Example: disable raw ex mode
+:vis 2
 .Ed
 
 .It Cm mpt[\fIval=0\fP]
@@ -1594,18 +1596,18 @@ tab(|);
 | l | l |.
 _
  537 kmap.h | keymap translation
- 545 vi.h | definitions/aux
+ 547 vi.h | definitions/aux
 _
  332 conf.c | hl/ft/td config
- 361 term.c | low level IO
+ 365 term.c | low level IO
  409 ren.c | positioning/syntax
  614 uc.c | UTF-8 support
  654 lbuf.c | file/line buffer
  718 led.c | insert mode/output
  766 regex.c | pikevm
- 1617 ex.c | ex options/commands
- 1839 vi.c | normal mode/general
- 7310 total | wc -l *.c\(basort
+ 1618 ex.c | ex options/commands
+ 1848 vi.c | normal mode/general
+ 7324 total | wc -l *.c\(basort
 _
 .TE
 .
