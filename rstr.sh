@@ -7,7 +7,7 @@ set -e
 VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
-DBG="|sc|vis 4:e $0:@Q:q!1"
+#DBG="|sc|vis 4:e $0:@Q:q!1"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -107,7 +107,7 @@ ${SEP}.,$;f+ 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
 ${SEP}.+3;4;6c tr
 .
 ${SEP}.,$;f+ \\\\{
-	int i, beg, end, not.*;
+	int i, beg, end, not, matched = 0;
 	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1094\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
@@ -125,16 +125,16 @@ ${SEP}.+3;8;10c tr
 .
 ${SEP}.,$;f+ 		while \\\\(i < lbuf_len\\\\(xb\\\\) && !\\\\(lbuf_i\\\\(xb, i\\\\)->grec & xgdep\\\\)\\\\)
 			i\\\\+\\\\+;
-	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1123\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1124\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
 ${SEP}.,$;f+ 
 static void \\\\*ec_setincl\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1214\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+\\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1215\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;3;5c tr
 .
 ${SEP}.,$;f+ 	if \\\\(!\\\\*arg\\\\)
-		fsincl = NULL;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1217\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+		fsincl = NULL;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1218\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
 ${SEP}.+2;23;27c tr_
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'ex.c'
@@ -232,23 +232,23 @@ if (!*m) { \\\\
 } \\\\
 break##gen:; \\\\
 
-#define rstr_match1(gen, wbeg, wend, cmpcase) \\\\
-{ for (r = beg; r <= end; r++) { \\\\
+#define rstr_match1(gen, wbeg, wend, cmpcase, stopcond) \\\\
+{ for (r = beg; stopcond; r++) { \\\\
 	rstr_cmp(2##gen, wbeg, wend, cmpcase) \\\\
 } } \\\\
 
 #define _wbeg if (r > s && (isword(r - 1) || !isword(r))) continue;
 #define _wend if (r[len] && (!isword(r + len - 1) || isword(r + len))) continue;
 
-#define template(gen, cmpcase) \\\\
+#define template(gen, cmpcase, stopcond) \\\\
 if (!rs->wbeg && !rs->wend) \\\\
-	rstr_match1(1##gen, /*nop*/, /*nop*/, cmpcase) \\\\
+	rstr_match1(1##gen, /*nop*/, /*nop*/, cmpcase, stopcond) \\\\
 else if (rs->wbeg && !rs->wend) \\\\
-	rstr_match1(2##gen, _wbeg, /*nop*/, cmpcase) \\\\
+	rstr_match1(2##gen, _wbeg, /*nop*/, cmpcase, stopcond) \\\\
 else if (!rs->wbeg && rs->wend) \\\\
-	rstr_match1(3##gen, /*nop*/, _wend, cmpcase) \\\\
+	rstr_match1(3##gen, /*nop*/, _wend, cmpcase, stopcond) \\\\
 else \\\\
-	rstr_match1(4##gen, _wbeg, _wend, cmpcase) \\\\
+	rstr_match1(4##gen, _wbeg, _wend, cmpcase, stopcond) \\\\
 
 /* return zero if an occurrence is found */
 int rstr_find(rstr *rs, char *s, int *grps, int flg)
@@ -264,17 +264,25 @@ int rstr_find(rstr *rs, char *s, int *grps, int flg)
 		return -1;
 	len = rs->len;
 	beg = s;
-	end = s + strlen(s) - len - (flg & REG_NEWLINE ? 1 : 0);
-	if (end < beg)
-		return -1;
-	if (rs->lend)
-		beg = end;
-	if (rs->lbeg)
-		end = s;
-	if (flg & REG_ICASE) {
-		template(4, tolower((unsigned char) *t) != *m)
+	if (rs->lbeg || rs->lend || !len) {
+		end = s + strlen(s) - len - (flg & REG_NEWLINE ? 1 : 0);
+		if (end < beg)
+			return -1;
+		if (rs->lend)
+			beg = end;
+		if (rs->lbeg)
+			end = s;
+		if (flg & REG_ICASE) {
+			template(4, tolower((unsigned char) *t) != *m, r <= end)
+		} else {
+			template(3, *t != *m, r <= end)
+		}
 	} else {
-		template(3, *t != *m)
+		if (flg & REG_ICASE) {
+			template(2, tolower((unsigned char) *t) != *m, r[len - 1])
+		} else {
+			template(1, *t != *m, r[len - 1])
+		}
 	}
 	return -1;
 }
