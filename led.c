@@ -391,8 +391,8 @@ void led_modeswap(void)
 {
 	preserve(int, xquit, xquit = 0;)
 	preserve(int, texec, if (texec == '@') texec = 0;)
-	preserve(int, xvis, xvis ^= 4;)
-	if (xvis & 4)
+	preserve(int, xvis, xvis ^= 2;)
+	if (xvis & 2)
 		ex();
 	else {
 		syn_setft(xb_ft);

@@ -9,7 +9,7 @@ unsigned int texec, tn;
 
 void term_init(void)
 {
-	if (xvis & 2)
+	if (xvis & 1)
 		return;
 	struct winsize win;
 	struct termios newtermios;
@@ -31,12 +31,16 @@ void term_init(void)
 	}
 	xcols = xcols ? xcols : 80;
 	xrows = xrows ? xrows : 25;
+	if (xvis & 8)
+		term_scrh;
 }
 
 void term_done(void)
 {
-	if (xvis & 2)
+	if (xvis & 1)
 		return;
+	if (xvis & 8)
+		term_scrl;
 	term_commit();
 	sbuf_free(term_sbuf)
 	tcsetattr(0, 0, &termios);
