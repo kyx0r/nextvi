@@ -21,7 +21,8 @@ SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> 	\\\\}
 	xcols = xcols \\\\? xcols : 80;
 	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 33\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	term_write(\"\\\\033[?1049h\", 8);
+${SEP}.+2a 	if (!(xvis & 4))
+		term_write(\"\\\\033[?1049h\", 8);
 .
 ${SEP}.,$;f+ 	term_write\\\\(\"\\\\\\\\x1b\\\\[H\", 3\\\\)		/\\\\* cursor topleft \\\\*/
 \\\\}
@@ -34,7 +35,8 @@ ${SEP}.+2a void term_scrl(void)
 .
 ${SEP}.,$;f+ void term_suspend\\\\(void\\\\)
 \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 52\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
-${SEP}.+1a 	term_scrl();
+${SEP}.+1a 	if (!(xvis & 4))
+		term_scrl();
 .
 ${SEP}vis 4${SEP}wq" $VI -e 'term.c'
 
@@ -53,6 +55,9 @@ ${SEP}vis 4${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}>void term_clean\\(void\\);>+1a void term_scrl(void);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 6${SEP}%;f> void term_done\\\\(void\\\\);
+void term_clean\\\\(void\\\\);
+void term_suspend\\\\(void\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 325\\${SEP}vis 4\\${SEP}q! 1}${SEP};=
+${SEP}.+2a void term_scrl(void);
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 324\\${SEP}vis 4\\${SEP}q! 1}${SEP}vis 4${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 4${SEP}wq" $VI -e 'vi.h'
