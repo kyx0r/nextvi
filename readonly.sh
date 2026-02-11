@@ -59,9 +59,9 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				xvis \\\\|= 8;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				xvis \\\\|= 4;
 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
-				xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1829\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+				xvis &= ~2;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1829\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
