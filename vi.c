@@ -1825,10 +1825,10 @@ int main(int argc, char *argv[])
 				xvis |= 2;
 			else if (argv[i][j] == 'm')
 				xvis |= 4;
-			else if (argv[i][j] == 'v')
-				xvis &= ~2;
 			else if (argv[i][j] == 'a')
 				xvis |= 8;
+			else if (argv[i][j] == 'v')
+				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
 				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
