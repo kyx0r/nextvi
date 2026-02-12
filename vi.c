@@ -1461,12 +1461,12 @@ void vi(int init)
 				if (k && ln[n])
 					ex_command(ln + n)
 				vi_mod |= 1;
-				if (xquit) {
-					free(ln);
-					goto quit;
-				} else if (!xmpt)
+				k = xmpt;
+				if (!k)
 					vi_drawmsg_mpt(ln)
 				free(ln);
+				if (xquit)
+					goto quit;
 				break;
 			case 'c':
 			case 'd':
@@ -1667,11 +1667,12 @@ void vi(int init)
 					continue;
 				} else
 					continue;
+				k = xmpt;
 				quit:
 				if (xgrec > 1 || !xquit)
 					continue;
 				term_pos(xrows - !vi_status, 0);
-				if (xmpt > 0 && !xpln)
+				if (k > 0 && !xpln)
 					term_chr('\n');
 				else
 					term_kill();
