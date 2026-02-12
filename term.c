@@ -285,7 +285,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	struct pollfd fds[3];
 	char buf[512];
 	int ifd = -1, ofd = -1;
-	int nw = 0;
+	int nw = 0, vis;
 	char *argv[5];
 	argv[0] = xgetenv(sh);
 	argv[1] = xish ? "-i" : argv[0];
@@ -302,6 +302,8 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	sbuf_make(sb, sizeof(buf)+1)
 	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
+		vis = xvis;
+		xvis &= ~8;
 		term_done();
 	} else if (ifd >= 0)
 		fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
@@ -356,6 +358,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	signal(SIGTTOU, SIG_DFL);
 	if (!ibuf) {
 		term_init();
+		xvis = vis;
 		signal(SIGINT, SIG_DFL);
 	}
 	if (oproc)
