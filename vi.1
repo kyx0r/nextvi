@@ -1,4 +1,4 @@
-.Dd Feb 11, 2026
+.Dd Feb 12, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -824,7 +824,7 @@ Example: delete from current position to the end of the buffer
 .It Cm [\fIvrange\fP]j[*]
 Join line(s)
 .Bd -literal
-Any argument activates padding mode
+Any argument activates padding mode.
 
 Example: join all lines
 :%-1j
@@ -1025,24 +1025,27 @@ Example: pipe out only first 10 lines
 .Ed
 
 .It Cm [\fIrange\fP]w![\fIpath\fP]
-Force write to a file
+Force write a file
+
+.It Cm [\fIrange\fP]wq[\fIpath\fP]
+.It Cm [\fIrange\fP]wq[\e!{\fIcmd\fP}]
+Write a file or a pipe and exit
+
+.It Cm [\fIrange\fP]wq![\fIpath\fP]
+.It Cm [\fIrange\fP]wq![\e!{\fIcmd\fP}]
+Force write a file or a pipe and force quit
+
+.It Cm [\fIrange\fP]x[\fIpath\fP]
+Write unsaved changes and exit
+
+.It Cm [\fIrange\fP]x![\fIpath\fP]
+Force write unsaved changes and force quit
 
 .It Cm q[\fI#\fP]
 .It Cm q![\fI#\fP]
 Exit or force quit
 .Bd -literal
 # specifies shell exit code.
-.Ed
-
-.It Cm wq
-.It Cm x
-.Bd -compact
-Write and exit
-.Ed
-.It Cm wq!
-.It Cm x!
-.Bd -compact
-Force write and quit
 .Ed
 
 .It Cm u
@@ -1599,15 +1602,15 @@ _
  547 vi.h | definitions/aux
 _
  332 conf.c | hl/ft/td config
- 365 term.c | low level IO
+ 368 term.c | low level IO
  409 ren.c | positioning/syntax
  614 uc.c | UTF-8 support
  654 lbuf.c | file/line buffer
  718 led.c | insert mode/output
  766 regex.c | pikevm
  1618 ex.c | ex options/commands
- 1848 vi.c | normal mode/general
- 7324 total | wc -l *.c\(basort
+ 1849 vi.c | normal mode/general
+ 7328 total | wc -l *.c\(basort
 _
 .TE
 .
