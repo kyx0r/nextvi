@@ -34,7 +34,7 @@ static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 .
 ${SEP}.,$;f+ 	return NULL;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1329\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 548\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a static void *ec_map(char *loc, char *cmd, char *arg)
 {
 	char **map = cmd[0] == 'n' ? nmaps[xkmap] : imaps[xkmap];
@@ -64,10 +64,17 @@ ${SEP}.+2a static void *ec_map(char *loc, char *cmd, char *arg)
 
 int map_read(int mode, int winch)
 {
+	static int mapped;
+	if (mapped > 0) {
+		mapped--;
+		return term_read(winch);
+	}
 	int c = term_read(winch);
 	char **map = mode ? imaps[xkmap] : nmaps[xkmap];
 	if (c > 0 && c < 256 && map[c]) {
-		term_push(map[c], strlen(map[c]));
+		int len = strlen(map[c]);
+		term_push(map[c], len);
+		mapped = len;
 		return term_read(winch);
 	}
 	return c;
@@ -76,13 +83,13 @@ int map_read(int mode, int winch)
 .
 ${SEP}.,$;f+ 	EO\\\\(ish\\\\),
 	\\\\{\"inc\", ec_setincl\\\\},
-	EO\\\\(ic\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1402\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	EO\\\\(ic\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1409\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
 .
 ${SEP}.,$;f+ 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1408\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1415\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
 .
@@ -117,7 +124,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..6932a9b1 100644
+index 7ce6e247..96d38870 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -54,6 +54,8 @@ static char xirerr[] = "invalid range";
@@ -129,7 +136,7 @@ index 7ce6e247..6932a9b1 100644
  
  static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
  {
-@@ -546,6 +548,44 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -546,6 +548,51 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -162,10 +169,17 @@ index 7ce6e247..6932a9b1 100644
 +
 +int map_read(int mode, int winch)
 +{
++	static int mapped;
++	if (mapped > 0) {
++		mapped--;
++		return term_read(winch);
++	}
 +	int c = term_read(winch);
 +	char **map = mode ? imaps[xkmap] : nmaps[xkmap];
 +	if (c > 0 && c < 256 && map[c]) {
-+		term_push(map[c], strlen(map[c]));
++		int len = strlen(map[c]);
++		term_push(map[c], len);
++		mapped = len;
 +		return term_read(winch);
 +	}
 +	return c;
@@ -174,7 +188,7 @@ index 7ce6e247..6932a9b1 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	if (!arg[0]) {
-@@ -1407,12 +1447,16 @@ static struct excmd {
+@@ -1407,12 +1454,16 @@ static struct excmd {
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
