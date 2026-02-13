@@ -1298,6 +1298,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				emit_delete(out, g->del_start, g->del_end);
 		} else if (g->nadd) {
 			if (has_custom) {
+				g->custom_offset -= 1;
 				int mode = emit_custom_pos(out, g, &first_ml, gi > gi_start);
 				fprintf(out, "a ");
 				for (int k = 0; k < g->nadd; k++) {
