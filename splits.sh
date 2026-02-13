@@ -27,8 +27,7 @@ fi
 # Patch: conf.c
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\
-\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\
-\\\\(\\\\(pac\\\\|pr\\\\|ai\\\\|ish\\\\|err\\\\|ic\\\\|grp\\\\|mpt\\\\|rcm\\\\|shape\\\\|seq\\\\|ts\\\\|td\\\\|order\\\\|hl\\\\[lwpr\\\\]\\\\?\\\\|left\\\\|lim\\\\|led\\\\|vis\\\\)\\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 261\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 261\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;47;77c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
@@ -76,7 +75,7 @@ ${SEP}.+3,#+3c 	/* q! always force quits */
 .
 ${SEP}.,$;f+ 	return NULL;
 \\\\)
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1359\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1366\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
@@ -180,26 +179,26 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,$;f+ 	EO\\\\(err\\\\),
 	\\\\{\"ef!\", ec_fuzz\\\\},
-	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1389\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1396\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	{\"eq\", ec_equalize},
 .
 ${SEP}.,$;f+ 	\\\\{\"uz\", ec_setenc\\\\},
 	\\\\{\"ub\", ec_setenc\\\\},
-	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1423\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1431\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
 ${SEP}.,$;f+ 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1427\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1435\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	{\"sp\", ec_split},
 .
 ${SEP}.,$;f+ 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1449\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	EO\\\\(led\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1457\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3d${SEP}.,$;f+ 	xgrec--;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1604\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1612\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a /* window management functions */
 static void curwin_save(void)
 {
@@ -858,14 +857,14 @@ ${SEP}.+2;10c  }
 .
 ${SEP}.,$;f+ 		\\\\}
 		if \\\\(vi_mod\\\\)
-			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1716\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1717\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3,#+1c 		{ int _ww = win_width();
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
 ${SEP}.,$;f+ 			\\\\}
 		\\\\}
-		term_record = 1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1759\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+		term_record = 1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1760\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3c 		/* save cursor position to current window */
 		if (curwin) {
 			curwin->row = xrow;
@@ -882,11 +881,11 @@ ${SEP}.+3c 		/* save cursor position to current window */
 .
 ${SEP}.-1${SEP}>				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)>+1;34c  {
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1761\\${SEP}vis 2\\${SEP}q! 1}${SEP}.-1${SEP}>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1762\\${SEP}vis 2\\${SEP}q! 1}${SEP}.-1${SEP}>			vi_drawagain\\(xtop\\);>+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1763\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 			vi_drawrow\\\\(xrow\\\\+1\\\\);
-			vi_rshift = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1767\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1764\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 			vi_drawrow\\\\(xrow\\\\+1\\\\);
+			vi_rshift = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1768\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2,#+1c 		} else if (xtop != otop) {
 			if (nwins > 1)
 				vi_drawagain(xtop);
@@ -895,12 +894,12 @@ ${SEP}.+2,#+1c 		} else if (xtop != otop) {
 		}
 .
 ${SEP}.,$;f+ 		if \\\\(xhll\\\\) \\\\{
-			syn_blockhl = -1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1771\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+			syn_blockhl = -1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1772\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2;53;58c win_height()
 .
 ${SEP}.,$;f+ 			if \\\\(xmpt > 0\\\\)
 				xmpt = 0;
-		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1788\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1789\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3;11;23c (curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
