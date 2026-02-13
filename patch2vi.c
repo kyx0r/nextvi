@@ -37,6 +37,10 @@ static int nfiles = 0;
 static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r), 2=relative block (-rb) */
 static int interactive_mode = 0; /* 1=interactive editing of search patterns (--ri) */
 
+/* Raw input lines for embedding in output */
+static char *raw_lines[MAX_OPS * 4];
+static int nraw = 0;
+
 /* Track which bytes appear in patch content */
 static unsigned char byte_used[256];
 
@@ -1390,6 +1394,7 @@ static void usage(const char *prog)
 	fprintf(stderr, "  -b  Block mode: first group searched, rest offset-based\n");
 	fprintf(stderr, "  -i  Interactive mode: edit search patterns in $EDITOR\n");
 	fprintf(stderr, "  -h  Show this help\n");
+	fprintf(stderr, "Input can be a unified diff or a previously generated patch2vi script\n");
 	exit(1);
 }
 
@@ -1462,8 +1467,27 @@ int main(int argc, char **argv)
 		}
 	}
 
+	/* Detect if input is a previously generated patch2vi script */
+	if (fgets(line, sizeof(line), in)) {
+		if (strncmp(line, "#!/bin/sh", 9) == 0) {
+			/* Skip until "exit 0" line; embedded patch follows */
+			while (fgets(line, sizeof(line), in)) {
+				chomp(line);
+				if (strcmp(line, "exit 0") == 0)
+					break;
+			}
+		} else {
+			/* Not a script; store and process this first line */
+			raw_lines[nraw++] = xstrdup(line);
+			chomp(line);
+			goto process_line;
+		}
+	}
+
 	while (fgets(line, sizeof(line), in)) {
+		raw_lines[nraw++] = xstrdup(line);
 		chomp(line);
+process_line:
 
 		/* New file: +++ b/path */
 		if (strncmp(line, "+++ ", 4) == 0) {
@@ -1553,6 +1577,11 @@ int main(int argc, char **argv)
 	/* Emit script for each file */
 	for (int i = 0; i < nfiles; i++)
 		emit_file_script(stdout, &files[i], sep);
+
+	/* Embed the original patch after exit 0 */
+	printf("\nexit 0\n");
+	for (int i = 0; i < nraw; i++)
+		fputs(raw_lines[i], stdout);
 
 	return 0;
 }
