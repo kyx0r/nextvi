@@ -944,3 +944,1135 @@ void *win_split(int vertical, char *arg);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/conf.c b/conf.c
+index 20e147d9..cf080454 100644
+--- a/conf.c
++++ b/conf.c
+@@ -258,7 +258,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+ ((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?[.$]?(?:'[a-z'`[\\]*])?\
+ ([0-9]*)?)(?:([-*-+/%])([0-9]+))*(?:\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+ ((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+-|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|eq|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
+ (?:g!?|s)[ \t]?(.)?|q!?|reg!?|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
+ 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+ 	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+diff --git a/ex.c b/ex.c
+index 7ce6e247..607af81a 100644
+--- a/ex.c
++++ b/ex.c
+@@ -42,6 +42,9 @@ struct buf *bufs;		/* main buffers */
+ struct buf tempbufs[2];		/* temporary buffers, for internal use */
+ struct buf *ex_buf;		/* current buffer */
+ struct buf *ex_pbuf;		/* prev buffer */
++struct win *wins;		/* head of window list */
++struct win *curwin;		/* current active window */
++int nwins;			/* number of windows */
+ static struct buf *ex_tpbuf;	/* temp prev buffer */
+ static int xbufsmax;		/* number of buffers */
+ static int xbufsalloc = 10;	/* initial number of buffers */
+@@ -98,6 +101,9 @@ void bufs_switch(int idx)
+ 		ex_buf = &bufs[idx];
+ 	}
+ 	exbuf_load(ex_buf)
++	/* update current window's buffer reference */
++	if (curwin)
++		curwin->buf = ex_buf;
+ }
+ 
+ static int bufs_open(const char *path, int len)
+@@ -159,6 +165,9 @@ void temp_switch(int i, int swap)
+ 	}
+ 	exbuf_load(ex_buf)
+ 	syn_setft(xb_ft);
++	/* update current window's buffer reference */
++	if (curwin)
++		curwin->buf = ex_buf;
+ }
+ 
+ void temp_write(int i, char *str)
+@@ -572,10 +581,20 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+ 
+ static void *ec_quit(char *loc, char *cmd, char *arg)
+ {
+-	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
+-		if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
+-			return "buffers modified";
+-	xquit = !xquit ? 1 : xquit;
++	/* q! always force quits */
++	if (!strchr(cmd, '!')) {
++		/* if multiple windows, close current window */
++		if (!(xvis & 2) && nwins > 1) {
++			win_close();
++			return NULL;
++		}
++		/* single window: check for modified buffers and quit */
++		for (int i = 0; i < xbufcur; i++)
++			if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
++				return "buffers modified";
++	}
++	if (!xquit)
++		xquit = 1;
+ 	if (*arg)
+ 		xquit = abs(atoi(arg)) + 1;
+ 	if (strchr(cmd, '!'))
+@@ -1364,6 +1383,106 @@ _EO(left,
+ 	return NULL;
+ )
+ 
++static void *ec_split(char *loc, char *cmd, char *arg)
++{
++	return win_split(0, arg);
++}
++
++static void *ec_vsplit(char *loc, char *cmd, char *arg)
++{
++	return win_split(1, arg);
++}
++
++static void *ec_equalize(char *loc, char *cmd, char *arg)
++{
++	struct win *w, **group;
++	int ngroup = 0, i, j;
++	if (nwins <= 1)
++		return NULL;
++	group = emalloc(nwins * sizeof(struct win *));
++	/* try horizontal grouping: same y and h as curwin */
++	w = wins;
++	do {
++		if (w->y == curwin->y && w->h == curwin->h)
++			group[ngroup++] = w;
++		w = w->next;
++	} while (w != wins);
++	if (ngroup > 1) {
++		/* sort by x */
++		for (i = 0; i < ngroup - 1; i++)
++			for (j = i + 1; j < ngroup; j++)
++				if (group[j]->x < group[i]->x) {
++					struct win *tmp = group[i];
++					group[i] = group[j];
++					group[j] = tmp;
++				}
++		/* check contiguity */
++		int contiguous = 1;
++		for (i = 0; i < ngroup - 1; i++) {
++			if (group[i]->x + group[i]->w + 1 != group[i+1]->x) {
++				contiguous = 0;
++				break;
++			}
++		}
++		if (contiguous) {
++			/* redistribute width evenly */
++			int total = group[ngroup-1]->x + group[ngroup-1]->w - group[0]->x;
++			int new_w = (total - (ngroup - 1)) / ngroup;
++			int extra = (total - (ngroup - 1)) % ngroup;
++			int x = group[0]->x;
++			for (i = 0; i < ngroup; i++) {
++				group[i]->x = x;
++				group[i]->w = new_w + (i < extra ? 1 : 0);
++				x += group[i]->w + 1;
++			}
++			free(group);
++			return NULL;
++		}
++	}
++	/* try vertical grouping: same x and w as curwin */
++	ngroup = 0;
++	w = wins;
++	do {
++		if (w->x == curwin->x && w->w == curwin->w)
++			group[ngroup++] = w;
++		w = w->next;
++	} while (w != wins);
++	if (ngroup > 1) {
++		/* sort by y */
++		for (i = 0; i < ngroup - 1; i++)
++			for (j = i + 1; j < ngroup; j++)
++				if (group[j]->y < group[i]->y) {
++					struct win *tmp = group[i];
++					group[i] = group[j];
++					group[j] = tmp;
++				}
++		/* check contiguity */
++		int contiguous = 1;
++		for (i = 0; i < ngroup - 1; i++) {
++			if (group[i]->y + group[i]->h + 1 != group[i+1]->y) {
++				contiguous = 0;
++				break;
++			}
++		}
++		if (contiguous) {
++			/* redistribute height evenly */
++			int total = group[ngroup-1]->y + group[ngroup-1]->h - group[0]->y;
++			int new_h = (total - (ngroup - 1)) / ngroup;
++			int extra = (total - (ngroup - 1)) % ngroup;
++			int y = group[0]->y;
++			for (i = 0; i < ngroup; i++) {
++				group[i]->y = y;
++				group[i]->h = new_h + (i < extra ? 1 : 0);
++				y += group[i]->h + 1;
++			}
++			free(group);
++			return NULL;
++		}
++	}
++	free(group);
++	return NULL;
++}
++
+ #undef EO
+ #define EO(opt) {#opt, eo_##opt}
+ 
+@@ -1394,6 +1513,7 @@ static struct excmd {
+ 	EO(err),
+ 	{"ef!", ec_fuzz},
+ 	{"ef", ec_fuzz},
++	{"eq", ec_equalize},
+ 	{"e!", ec_edit},
+ 	{"e", ec_edit},
+ 	{"ft", ec_ft},
+@@ -1429,10 +1549,13 @@ static struct excmd {
+ 	{"uz", ec_setenc},
+ 	{"ub", ec_setenc},
+ 	{"u", ec_undoredo},
++	EO(vis),
++	{"vs", ec_vsplit},
+ 	EO(shape),
+ 	EO(seq),
+ 	{"sc!", ec_specials},
+ 	{"sc", ec_specials},
++	{"sp", ec_split},
+ 	{"s", ec_substitute},
+ 	{"x!", ec_write},
+ 	{"x", ec_write},
+@@ -1454,7 +1577,6 @@ static struct excmd {
+ 	EO(left),
+ 	EO(lim),
+ 	EO(led),
+-	EO(vis),
+ 	{"=", ec_num},
+ 	{"", ec_print}, /* do not remove */
+ 	{"", ec_null}, /* do not remove */
+@@ -1610,6 +1732,238 @@ void ex(void)
+ 	xgrec--;
+ }
+ 
++/* window management functions */
++static void curwin_save(void)
++{
++	if (curwin) {
++		curwin->row = xrow;
++		curwin->off = xoff;
++		curwin->top = xtop;
++		curwin->left = xleft;
++		curwin->buf = ex_buf;
++	}
++}
++
++static void curwin_load(void)
++{
++	if (curwin) {
++		/* Save old buffer state BEFORE loading new window positions */
++		if (curwin->buf != ex_buf) {
++			exbuf_save(ex_buf)
++			ex_buf = curwin->buf;
++			xtd = ex_buf->td;
++			syn_setft(xb_ft);
++		}
++		/* Load window-specific position (not buffer position) */
++		xrow = curwin->row;
++		xoff = curwin->off;
++		xtop = curwin->top;
++		xleft = curwin->left;
++	}
++}
++
++void win_init(void)
++{
++	if (!wins) {
++		wins = emalloc(sizeof(struct win));
++		wins->buf = ex_buf;
++		wins->y = 0;
++		wins->x = 0;
++		wins->h = xrows;
++		wins->w = xcols;
++		wins->row = 0;
++		wins->off = 0;
++		wins->top = 0;
++		wins->left = 0;
++		wins->vsplit = 0;
++		wins->next = wins;  /* circular list */
++		curwin = wins;
++		nwins = 1;
++	}
++}
++
++void win_size(void)
++{
++	/* recalculate window sizes after terminal resize */
++	struct win *w = wins;
++	if (!w || nwins == 1) {
++		if (w) {
++			w->h = xrows;
++			w->w = xcols;
++			w->y = 0;
++			w->x = 0;
++		}
++		return;
++	}
++	/* for multiple windows, redistribute proportionally */
++	int y = 0, x = 0;
++	/* check if this is a vertical split layout */
++	int is_vsplit = wins->next->vsplit;
++	do {
++		if (!is_vsplit) {
++			/* horizontal split: stacked vertically */
++			w->h = (xrows - (nwins - 1)) / nwins;
++			w->w = xcols;
++			w->y = y;
++			w->x = 0;
++			y += w->h + 1;  /* +1 for separator */
++		} else {
++			/* vertical split: side by side */
++			w->w = (xcols - (nwins - 1)) / nwins;
++			w->h = xrows;
++			w->x = x;
++			w->y = 0;
++			x += w->w + 1;  /* +1 for separator */
++		}
++		w = w->next;
++	} while (w != wins);
++}
++
++void win_switch(struct win *w)
++{
++	if (w && w != curwin) {
++		curwin_save();
++		curwin = w;
++		curwin_load();
++	}
++}
++
++void win_close(void)
++{
++	struct win *w, *prev, *closing;
++	if (nwins <= 1)
++		return;
++	closing = curwin;
++	/* find previous window in circular list */
++	prev = curwin;
++	while (prev->next != curwin)
++		prev = prev->next;
++	/* find adjacent window to absorb closed window's space */
++	w = wins;
++	do {
++		if (w != closing) {
++			/* horizontal neighbors: same y and h */
++			if (w->y == closing->y && w->h == closing->h) {
++				if (w->x + w->w + 1 == closing->x) {
++					/* w is LEFT of closing, expand right */
++					w->w += closing->w + 1;
++					break;
++				}
++				if (closing->x + closing->w + 1 == w->x) {
++					/* w is RIGHT of closing, expand left */
++					w->x = closing->x;
++					w->w += closing->w + 1;
++					break;
++				}
++			}
++			/* vertical neighbors: same x and w */
++			if (w->x == closing->x && w->w == closing->w) {
++				if (w->y + w->h + 1 == closing->y) {
++					/* w is ABOVE closing, expand down */
++					w->h += closing->h + 1;
++					break;
++				}
++				if (closing->y + closing->h + 1 == w->y) {
++					/* w is BELOW closing, expand up */
++					w->y = closing->y;
++					w->h += closing->h + 1;
++					break;
++				}
++			}
++		}
++		w = w->next;
++	} while (w != wins);
++	/* remove curwin from list */
++	prev->next = closing->next;
++	if (wins == closing)
++		wins = closing->next;
++	curwin = prev->next;
++	free(closing);
++	nwins--;
++	/* single window fills entire screen */
++	if (nwins == 1) {
++		wins->y = 0;
++		wins->x = 0;
++		wins->h = xrows;
++		wins->w = xcols;
++	}
++	curwin_load();
++}
++
++void *win_split(int vertical, char *arg)
++{
++	struct win *newwin;
++	int newh, neww;
++	if (curwin->h < 4 || curwin->w < 10)
++		return "window too small";
++
++	newwin = emalloc(sizeof(struct win));
++	if (vertical) {
++		/* vertical split: new window on right */
++		neww = curwin->w / 2;
++		newwin->y = curwin->y;
++		newwin->x = curwin->x + neww + 1;  /* +1 for separator */
++		newwin->h = curwin->h;
++		newwin->w = curwin->w - neww - 1;
++		curwin->w = neww;
++	} else {
++		/* horizontal split: new window below */
++		newh = curwin->h / 2;
++		newwin->y = curwin->y + newh + 1;  /* +1 for separator */
++		newwin->x = curwin->x;
++		newwin->h = curwin->h - newh - 1;
++		newwin->w = curwin->w;
++		curwin->h = newh;
++	}
++
++	/* copy cursor state from current window */
++	curwin_save();
++	newwin->row = curwin->row;
++	newwin->off = curwin->off;
++	newwin->top = curwin->top;
++	newwin->left = curwin->left;
++	newwin->vsplit = vertical;
++
++	/* handle buffer for new window */
++	if (arg && *arg) {
++		/* save original buffer for current window */
++		struct buf *origbuf = curwin->buf;
++		/* open specified file */
++		int fd = bufs_find(arg, strlen(arg));
++		if (fd >= 0) {
++			newwin->buf = &bufs[fd];
++		} else {
++			bufs_switch(bufs_open(arg, strlen(arg)));
++			newwin->buf = ex_buf;
++			int f = open(xb_path, O_RDONLY);
++			if (f >= 0) {
++				lbuf_rd(xb, f, 0, lbuf_len(xb));
++				close(f);
++			}
++			ex_bufpostfix(ex_buf, arg[0]);
++		}
++		/* restore current window's buffer and global state */
++		curwin->buf = origbuf;
++		ex_buf = origbuf;
++		exbuf_load(ex_buf)
++		syn_setft(xb_ft);
++		newwin->row = 0;
++		newwin->off = 0;
++		newwin->top = 0;
++		newwin->left = 0;
++	} else {
++		/* same buffer as current window */
++		newwin->buf = curwin->buf;
++	}
++
++	/* insert into circular list after current window */
++	newwin->next = curwin->next;
++	curwin->next = newwin;
++	nwins++;
++
++	return NULL;
++}
++
+ void ex_init(char **files, int n)
+ {
+ 	xbufsalloc = MAX(n, xbufsalloc);
+diff --git a/led.c b/led.c
+index 7aba6ef6..0932c83c 100644
+--- a/led.c
++++ b/led.c
+@@ -93,8 +93,9 @@ static char *kmap_map(int kmap, int c)
+ /* map cursor horizontal position to terminal column number */
+ int led_pos(char *s, int pos)
+ {
++	int ww = curwin ? curwin->w : xcols;
+ 	if (dir_context(s) < 0)
+-		return xleft + xcols - pos - 1;
++		return xleft + ww - pos - 1;
+ 	return pos - xleft;
+ }
+ 
+@@ -287,6 +288,9 @@ static void led_printparts(sbuf *sb, int pre, int ps,
+ 		return;
+ 	}
+ 	int dir, off, pos, psn = sb->s_n;
++	/* window offset for vsplit (not for prompts) */
++	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
++	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
+ 	sbuf_str(sb, post)
+ 	sbufn_null(sb)
+ 	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
+@@ -305,11 +309,11 @@ static void led_printparts(sbuf *sb, int pre, int ps,
+ 			pos = ren_cursor(r->s, r->pos[off-two]);
+ 		pos += dir < 0 ? -1 : 1;
+ 	}
+-	if (pos >= xleft + xcols || pos < xleft)
+-		xleft = pos < xcols ? 0 : pos - xcols / 2;
++	if (pos >= xleft + winw || pos < xleft)
++		xleft = pos < winw ? 0 : pos - winw / 2;
+ 	syn_blockhl = -1;
+-	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
+-	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
++	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
++	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
+ 	sbufn_cut(sb, psn)
+ 	rstate -= 2;
+ }
+@@ -360,13 +364,17 @@ RS(2, led_crender(str, ctop+xrows, 0, 0, xcols)) \
+ if (ai_max >= 0) \
+ 	term_pos(crow - ctop, 0); \
+ 
+-static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
++static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg, int ai_max)
+ {
++	/* window offset for vsplit (not for prompts) */
++	int winx = (ai_max >= 0 && curwin) ? curwin->x : 0;
++	int winw = (ai_max >= 0 && curwin) ? curwin->w : xcols;
++	int winh = (ai_max >= 0 && curwin) ? curwin->h : xrows;
+ 	rstate++;
+-	for (int nl = 0; r < xrows; r++) {
++	for (int nl = 0; r < winh; r++) {
+ 		if (vi_lncol) {
+-			term_pos(r, 0);
+-			term_kill();
++			term_pos(r, winx);
++			if (nwins > 1) term_killn(winw); else term_kill();
+ 		}
+ 		if (r >= orow-ctop && r < crow-ctop) {
+ 			sbuf_smake(cb, 128)
+@@ -374,16 +382,16 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
+ 			sbuf_mem(cb, cs, nl+!!cs[nl])
+ 			sbufn_null(cb)
+ 			rstate->s = NULL;
+-			led_crender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
++			led_crender(cb->s, r, winx + vi_lncol, xleft, xleft + winw - vi_lncol)
+ 			free(cb->s);
+ 			cs += nl+!!cs[nl];
+ 			continue;
+ 		}
+ 		nl = r < crow-ctop ? r+ctop : (r-(crow-orow+!!(flg & 4)))+ctop;
+ 		led_crender(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", r,
+-			vi_lncol, xleft, xleft + xcols - vi_lncol)
++			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
+ 	}
+-	term_pos(crow - ctop, 0);
++	term_pos(crow - ctop, winx);
+ 	rstate--;
+ }
+ 
+@@ -506,7 +514,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 		case TK_CTL('z'):
+ 			term_suspend();
+ 			if (ai_max >= 0)
+-				led_redraw(sb->s, 0, orow, crow, ctop, flg);
++				led_redraw(sb->s, 0, orow, crow, ctop, flg, ai_max);
+ 			continue;
+ 		case TK_CTL('x'):
+ 			is->sug_pt = is->sug_pt == len ? -1 : len;
+@@ -546,6 +554,9 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 				pac:;
+ 				sbuf_null(sb)
+ 				int r = crow-ctop+1;
++				int pwx = curwin ? curwin->x : 0;
++				int pww = curwin ? curwin->w : xcols;
++				int pwh = curwin ? curwin->h : xrows;
+ 				if (is->sug)
+ 					goto pac_;
+ 				i = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s + pre) + pre;
+@@ -555,9 +566,9 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 					preserve(int, xtd, xtd = 2;)
+ 					preserve(int, ftidx,)
+ 					syn_setft(ac_ft);
+-					for (int left = 0; r < xrows; r++) {
+-						RS(2, led_crender(is->sug, r, 0, left, left+xcols))
+-						left += xcols;
++					for (int left = 0; r < pwh; r++) {
++						RS(2, led_crender(is->sug, r, pwx, left, left+pww))
++						left += pww;
+ 						if (left >= rstates[2].pos[rstates[2].n])
+ 							break;
+ 					}
+@@ -565,7 +576,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 					restore(ftidx)
+ 					r++;
+ 				}
+-				led_redraw(sb->s, r, orow, crow, ctop, flg);
++				led_redraw(sb->s, r, orow, crow, ctop, flg, ai_max);
+ 				continue;
+ 			}
+ 			temp_pos(0, -1, 0, 0);
+@@ -586,6 +597,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 			else
+ 				restore(ex_buf)
+ 			exbuf_load(ex_buf)
++			if (curwin)
++				curwin->buf = ex_buf;
+ 			syn_setft(xb_ft);
+ 			vi(1); /* redraw past screen */
+ 			restore(ftidx)
+@@ -608,7 +621,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 			term_done();
+ 			term_init();
+ 			if (ai_max >= 0)
+-				led_redraw(sb->s, 0, orow, crow, ctop, flg);
++				led_redraw(sb->s, 0, orow, crow, ctop, flg, ai_max);
+ 			else if (!i)
+ 				term_clean();
+ 			continue;
+diff --git a/term.c b/term.c
+index ef1b0927..8233801b 100644
+--- a/term.c
++++ b/term.c
+@@ -85,6 +85,15 @@ void term_kill(void)
+ 	term_out("\33[K");
+ }
+ 
++void term_killn(int n)
++{
++	char cmd[32] = "\33[";
++	char *s = itoa(n, cmd+2);
++	s[0] = 'X';
++	s[1] = '\0';
++	term_out(cmd);
++}
++
+ void term_room(int n)
+ {
+ 	char cmd[64] = "\33[";
+diff --git a/vi.c b/vi.c
+index 535ef11e..7392f72b 100644
+--- a/vi.c
++++ b/vi.c
+@@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
+ }
+ #define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); if (!xmpt) xmpt = 1; }
+ 
++/* draw horizontal separator line at screen row, from x for w columns */
++static void vi_draw_hsep(int row, int x, int w)
++{
++	term_pos(row, x);
++	for (int i = 0; i < w; i++)
++		term_chr('-');
++}
++
++/* draw vertical separator line at screen column */
++static void vi_draw_vsep(int col, int y, int h)
++{
++	for (int i = 0; i < h; i++) {
++		term_pos(y + i, col);
++		term_chr('|');
++	}
++}
++
+ static int vi_nextcol(char *ln, int dir, int *off)
+ {
+ 	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
+@@ -117,7 +134,7 @@ nrow = xrow; \
+ noff = xoff; \
+ for (i = 0, ret = 0;; i++) { \
+ 	l1 = ren_next(c, ren_pos(c, noff), 1)-1-xleft+vi_lncol; \
+-	if (l1 > xcols || l1 < 0 || ret || l1 >= rstate->cmax + vi_lncol) \
++	if (l1 > wcols || l1 < 0 || ret || l1 >= rstate->cmax + vi_lncol) \
+ 		break; \
+ 	i = i > 99 ? i % 100 : i; \
+ 	itoa(i%10 ? i%10 : i, snum); \
+@@ -125,25 +142,46 @@ for (i = 0, ret = 0;; i++) { \
+ 	ret = func; \
+ } } \
+ 
++/* calculate screen row for buffer row in current window */
++static int win_scrrow(int row)
++{
++	return curwin ? curwin->y + (row - xtop) : row - xtop;
++}
++
++/* calculate effective window width */
++static int win_width(void)
++{
++	return curwin ? curwin->w : xcols;
++}
++
++/* calculate effective window height (rows visible) */
++static int win_height(void)
++{
++	return curwin ? curwin->h : xrows;
++}
++
+ static void vi_drawrow(int row)
+ {
+ 	int l1, i, i1, lnnum = vi_lnnum;
++	int wrows = win_height();
++	int wcols = win_width();
++	int scrrow = win_scrrow(row);
+ 	char *c, *s;
+ 	static char ch[5] = "~";
+-	if (xmpt == 1 && row == xtop + xrows - 1)
++	if (xmpt == 1 && scrrow == xrows - 1)
+ 		return;
+ 	if (*vi_word && xled) {
+ 		int noff, nrow, ret;
+ 		s = lbuf_get(xb, row - vi_rshift);
+ 		c = lbuf_get(xb, xrow);
+-		if (row == xtop + xrows-1 || !c || *c == '\n')
++		if (row == xtop + wrows-1 || !c || *c == '\n')
+ 			vi_rshift = 0;
+ 		if (row != xrow+1 || !c || *c == '\n')
+ 			goto skip;
+-		char tmp[xcols+3], snum[32];
+-		memset(tmp, ' ', xcols+1);
+-		tmp[xcols+1] = '\n';
+-		tmp[xcols+2] = '\0';
++		char tmp[wcols+3], snum[32];
++		memset(tmp, ' ', wcols+1);
++		tmp[wcols+1] = '\n';
++		tmp[wcols+2] = '\0';
+ 		i1 = isupper((unsigned char)*vi_word);
+ 		if (*vi_word == 'e' || *vi_word == 'E')
+ 			vi_drawnum(lbuf_wordend(xb, i1, 2, &nrow, &noff))
+@@ -160,7 +198,7 @@ static void vi_drawrow(int row)
+ 		preserve(int, xtd, xtd = dir_context(c) * 2;)
+ 		preserve(int, ftidx,)
+ 		syn_setft(n_ft);
+-		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
++		RS(2, led_crender(tmp, scrrow, curwin ? curwin->x : 0, 0, wcols))
+ 		restore(xorder)
+ 		restore(syn_blockhl)
+ 		restore(xtd)
+@@ -192,7 +230,7 @@ static void vi_drawrow(int row)
+ 		vi_lncol = dir_context(s) < 0 ? 0 : l1;
+ 		memset(c, ' ', l1 - (c - tmp));
+ 		c[l1 - (c - tmp)] = '\0';
+-		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
++		led_crender(s, scrrow, (curwin ? curwin->x : 0) + l1, xleft, xleft + wcols - l1)
+ 		preserve(int, syn_blockhl, syn_blockhl = -1;)
+ 		preserve(int, ftidx,)
+ 		syn_setft(nn_ft);
+@@ -203,39 +241,102 @@ static void vi_drawrow(int row)
+ 			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
+ 			if (i1 >= 0) {
+ 				memset(p, ' ', strlen(p));
+-				RS(2, led_prender(tmp1, row - xtop, l1+i1, 0, l1))
++				RS(2, led_prender(tmp1, scrrow, (curwin ? curwin->x : 0) + l1+i1, 0, l1))
+ 			}
+ 		}
+-		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
++		RS(2, led_prender(tmp, scrrow, curwin ? curwin->x : 0, 0, l1))
+ 		restore(syn_blockhl)
+ 		restore(ftidx)
+ 		return;
+ 	}
+-	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
++	led_crender(s, scrrow, curwin ? curwin->x : 0, xleft, xleft + wcols)
+ 	rstate = rstates;
+ }
+ 
+ /* redraw the screen */
+ static void vi_drawagain(int i)
+ {
++	int wrows = win_height();
+ 	syn_scdir(0);
+-	for (; i < xtop + xrows; i++)
++	for (; i < xtop + wrows; i++)
+ 		vi_drawrow(i);
+ }
+ 
++/* draw all window separators */
++static void vi_draw_separators(void)
++{
++	struct win *w = wins, *w2;
++	do {
++		w2 = wins;
++		do {
++			if (w2 != w) {
++				if (w2->x == w->x + w->w + 1) {
++					int y1 = MAX(w->y, w2->y);
++					int y2 = MIN(w->y + w->h, w2->y + w2->h);
++					if (y1 < y2)
++						vi_draw_vsep(w->x + w->w, y1, y2 - y1);
++				}
++				if (w2->y == w->y + w->h + 1) {
++					int x1 = MAX(w->x, w2->x);
++					int x2 = MIN(w->x + w->w, w2->x + w2->w);
++					if (x1 < x2)
++						vi_draw_hsep(w->y + w->h, x1, x2 - x1);
++				}
++			}
++			w2 = w2->next;
++		} while (w2 != wins);
++		w = w->next;
++	} while (w != wins);
++}
++
++/* draw all windows and separators */
++static void vi_draw_allwins(void)
++{
++	struct win *w = wins;
++	struct win *saved = curwin;
++	struct buf *savebuf = ex_buf;
++	int srow = xrow, soff = xoff, stop = xtop, sleft = xleft;
++	do {
++		curwin = w;
++		xrow = w->row;
++		xoff = w->off;
++		xtop = w->top;
++		xleft = w->left;
++		if (w->buf != ex_buf) {
++			ex_buf = w->buf;
++			syn_setft(xb_ft);
++		}
++		syn_scdir(0);
++		for (int i = xtop; i < xtop + w->h; i++)
++			vi_drawrow(i);
++		w = w->next;
++	} while (w != wins);
++	vi_draw_separators();
++	curwin = saved;
++	xrow = srow;
++	xoff = soff;
++	xtop = stop;
++	xleft = sleft;
++	if (savebuf != ex_buf) {
++		ex_buf = savebuf;
++		syn_setft(xb_ft);
++	}
++}
++
+ /* update the screen */
+ static void vi_drawupdate(int i)
+ {
+ 	int n;
+-	term_pos(0, 0);
++	int wrows = win_height();
++	term_pos(curwin ? curwin->y : 0, 0);
+ 	term_room(i);
+ 	syn_scdir(i);
+ 	if (i < 0) {
+-		n = MIN(-i, xrows);
++		n = MIN(-i, wrows);
+ 		for (i = 0; i < n; i++)
+-			vi_drawrow(xtop + xrows - n + i);
++			vi_drawrow(xtop + wrows - n + i);
+ 	} else {
+-		n = MIN(i, xrows);
++		n = MIN(i, wrows);
+ 		for (i = n-1; i >= 0; i--)
+ 			vi_drawrow(xtop + i);
+ 	}
+@@ -368,10 +469,10 @@ static int vi_motionln(int *row, int cmd, int cnt)
+ 		*row = MIN(xtop + cnt - 1, lbuf_len(xb) - 1);
+ 		break;
+ 	case 'L':
+-		*row = MIN(xtop + xrows - 1 - cnt + 1, lbuf_len(xb) - 1);
++		*row = MIN(xtop + win_height() - 1 - cnt + 1, lbuf_len(xb) - 1);
+ 		break;
+ 	case 'M':
+-		*row = MIN(xtop + xrows / 2, lbuf_len(xb) - 1);
++		*row = MIN(xtop + win_height() / 2, lbuf_len(xb) - 1);
+ 		break;
+ 	default:
+ 		if (c == cmd) {
+@@ -750,7 +851,7 @@ static int vi_motion(int vc, int *row, int *off)
+ 			ex_bufpostfix(&bufs[i], 1);
+ 		syn_setft(xb_ft);
+ 		vc_status(0);
+-		xtop = MAX(0, *row - xrows / 2);
++		xtop = MAX(0, *row - win_height() / 2);
+ 		vi_mod |= 1;
+ 		break;
+ 	case TK_CTL('t'):
+@@ -783,7 +884,7 @@ static int vi_motion(int vc, int *row, int *off)
+ 	case 'N':
+ 		if (vi_search(mv, cnt, row, off, 1))
+ 			return -1;
+-		xtop = MAX(0, *row - xrows / 2);
++		xtop = MAX(0, *row - win_height() / 2);
+ 		vi_mod |= mv == '/' || mv == '?';
+ 		break;
+ 	case '*':
+@@ -796,8 +897,8 @@ static int vi_motion(int vc, int *row, int *off)
+ 		}
+ 		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
+ 			cadir = -cadir;
+-		else if (*row < xtop || *row >= xtop + xrows - 1)
+-			xtop = MAX(0, *row - xrows / 2);
++		else if (*row < xtop || *row >= xtop + win_height() - 1)
++			xtop = MAX(0, *row - win_height() / 2);
+ 		break;
+ 	case '`':
+ 		if ((mark = term_read(0)) <= 0)
+@@ -1028,7 +1129,7 @@ static int vc_insert(int cmd)
+ 		xoff = lbuf_eol(xb, xrow, 1);
+ 	else if (cmd == 'o') {
+ 		xrow++;
+-		if (xrow - xtop == xrows)
++		if (xrow - xtop == win_height())
+ 			vi_drawagain(++xtop);
+ 	}
+ 	xoff = ren_noeol(ln, xoff);
+@@ -1114,7 +1215,7 @@ static void vi_scrollforward(int cnt)
+ static void vi_scrollbackward(int cnt)
+ {
+ 	xtop = MAX(0, xtop - cnt);
+-	xrow = MIN(xrow, xtop + xrows - 1);
++	xrow = MIN(xrow, xtop + win_height() - 1);
+ }
+ 
+ static int vc_replace(void)
+@@ -1178,14 +1279,15 @@ static void vi_argcmd(int arg, char cmd)
+ }
+ 
+ #define topfix() \
++{ int _wh = win_height(); \
+ if (xrow < 0 || xrow >= lbuf_len(xb)) \
+ 	xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0; \
+ if (xtop > xrow) \
+-	xtop = xtop - xrows / 2 > xrow ? \
+-			MAX(0, xrow - xrows / 2) : xrow; \
+-if (xtop + xrows <= xrow) \
+-	xtop = xtop + xrows + xrows / 2 <= xrow ? \
+-			xrow - xrows / 2 : xrow - xrows + 1; \
++	xtop = xtop - _wh / 2 > xrow ? \
++			MAX(0, xrow - _wh / 2) : xrow; \
++if (xtop + _wh <= xrow) \
++	xtop = xtop + _wh + _wh / 2 <= xrow ? \
++			xrow - _wh / 2 : xrow - _wh + 1; } \
+ 
+ void vi(int init)
+ {
+@@ -1193,10 +1295,21 @@ void vi(int init)
+ 	int mv, n, k, c;
+ 	xgrec++;
+ 	if (init) {
++		win_init();
+ 		topfix()
+ 		vi_col = vi_off2col(xb, xrow, xoff);
+-		vi_drawagain(xtop);
+-		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col));
++		if (nwins > 1) {
++			if (curwin) {
++				curwin->row = xrow;
++				curwin->off = xoff;
++				curwin->top = xtop;
++				curwin->left = xleft;
++			}
++			vi_draw_allwins();
++		} else
++			vi_drawagain(xtop);
++		term_pos((curwin ? curwin->y : 0) + xrow - xtop,
++			(curwin ? curwin->x : 0) + led_pos(lbuf_get(xb, xrow), vi_col));
+ 	}
+ 	while (!xquit) {
+ 		int nrow = xrow;
+@@ -1243,12 +1356,12 @@ void vi(int init)
+ 			c = term_read(TK_CTL('l'));
+ 			switch (c) {
+ 			case TK_CTL('b'):
+-				vi_scrollbackward(MAX(1, vi_arg) * (xrows - 1));
++				vi_scrollbackward(MAX(1, vi_arg) * (win_height() - 1));
+ 				xoff = lbuf_indents(xb, xrow);
+ 				vi_mod |= 4;
+ 				break;
+ 			case TK_CTL('f'):
+-				vi_scrollforward(MAX(1, vi_arg) * (xrows - 1));
++				vi_scrollforward(MAX(1, vi_arg) * (win_height() - 1));
+ 				xoff = lbuf_indents(xb, xrow);
+ 				vi_mod |= 4;
+ 				break;
+@@ -1267,7 +1380,7 @@ void vi(int init)
+ 					break;
+ 				if (vi_arg)
+ 					vi_scrollud = vi_arg;
+-				n = vi_scrollud ? vi_scrollud : xrows / 2;
++				n = vi_scrollud ? vi_scrollud : win_height() / 2;
+ 				xrow = MAX(0, xrow - n);
+ 				if (xtop > 0)
+ 					xtop = MAX(0, xtop - n);
+@@ -1279,10 +1392,10 @@ void vi(int init)
+ 					break;
+ 				if (vi_arg)
+ 					vi_scrollud = vi_arg;
+-				n = vi_scrollud ? vi_scrollud : xrows / 2;
++				n = vi_scrollud ? vi_scrollud : win_height() / 2;
+ 				xrow = MIN(MAX(0, lbuf_len(xb) - 1), xrow + n);
+-				if (xtop < lbuf_len(xb) - xrows)
+-					xtop = MIN(lbuf_len(xb) - xrows, xtop + n);
++				if (xtop < lbuf_len(xb) - win_height())
++					xtop = MIN(lbuf_len(xb) - win_height(), xtop + n);
+ 				xoff = lbuf_indents(xb, xrow);
+ 				vi_mod |= 4;
+ 				break;
+@@ -1400,6 +1513,24 @@ void vi(int init)
+ 				case 'v':
+ 					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
+ 					break;
++				case 'c':
++					/* switch to next window */
++					if (nwins > 1) {
++						curwin->row = xrow;
++						curwin->off = xoff;
++						curwin->top = xtop;
++						curwin->left = xleft;
++						win_switch(curwin->next);
++						vi_mod |= 1;
++					}
++					break;
++				case 'd':
++					/* close current window */
++					if (nwins > 1) {
++						win_close();
++						vi_mod |= 1;
++					}
++					break;
+ 				case ';':
+ 					ln = vi_enprompt(":", "!", &k, &n);
+ 					goto do_excmd;
+@@ -1531,7 +1662,8 @@ void vi(int init)
+ 				vi_mod |= 1;
+ 				break; }
+ 			case TK_CTL('z'):
+-			case TK_CTL('l'):
++			case TK_CTL('l'): {
++				int orows = xrows, ocols = xcols;
+ 				if (c == TK_CTL('z')) {
+ 					term_pos(xrows, 0);
+ 					term_suspend();
+@@ -1539,9 +1671,11 @@ void vi(int init)
+ 					term_done();
+ 					term_init();
+ 				}
++				if (xrows != orows || xcols != ocols)
++					win_size();
+ 				vi_status = vi_status ? xrows - 1: vi_status;
+ 				vi_mod |= 1;
+-				break;
++				break; }
+ 			case 'm':
+ 				lbuf_mark(xb, term_read(0), xrow, xoff);
+ 				break;
+@@ -1714,8 +1848,9 @@ void vi(int init)
+ 		}
+ 		if (vi_mod)
+ 			vi_col = vi_off2col(xb, xrow, xoff);
+-		if (vi_col >= xleft + xcols || vi_col < xleft)
+-			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
++		{ int _ww = win_width();
++		if (vi_col >= xleft + _ww || vi_col < xleft)
++			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
+ 		n = led_pos(ln, ren_cursor(ln, vi_col));
+ 		if (xmpt > 1) {
+ 			if (!xpln)
+@@ -1757,19 +1892,35 @@ void vi(int init)
+ 			}
+ 		}
+ 		term_record = 1;
+-		if (vi_mod & 1 || xleft != oleft
++		/* save cursor position to current window */
++		if (curwin) {
++			curwin->row = xrow;
++			curwin->off = xoff;
++			curwin->top = xtop;
++			curwin->left = xleft;
++		}
++		if (vi_mod & 1) {
++			if (nwins > 1)
++				vi_draw_allwins();
++			else
++				vi_drawagain(xtop);
++		} else if (xleft != oleft
+ 				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
+-				|| (*vi_word && orow != xrow))
++				|| (*vi_word && orow != xrow)) {
+ 			vi_drawagain(xtop);
+-		else if (*vi_word && (ooff != xoff || vi_mod & 2)
+-				&& xrow+1 < xtop + xrows) {
++		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
++				&& xrow+1 < xtop + win_height()) {
+ 			vi_drawrow(xrow+1);
+ 			vi_rshift = 0;
+-		} else if (xtop != otop)
+-			vi_drawupdate(otop - xtop);
++		} else if (xtop != otop) {
++			if (nwins > 1)
++				vi_drawagain(xtop);
++			else
++				vi_drawupdate(otop - xtop);
++		}
+ 		if (xhll) {
+ 			syn_blockhl = -1;
+-			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
++			if (xrow != orow && orow >= xtop && orow < xtop + win_height())
+ 				if (!(vi_mod & 1) && !*vi_word)
+ 					vi_drawrow(orow);
+ 			syn_blockhl = -1;
+@@ -1786,7 +1937,7 @@ void vi(int init)
+ 			if (xmpt > 0)
+ 				xmpt = 0;
+ 		}
+-		term_pos(xrow - xtop, n + vi_lncol);
++		term_pos((curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) + n + vi_lncol);
+ 		term_commit();
+ 		xb->useq += xseq;
+ 	}
+diff --git a/vi.h b/vi.h
+index 4726dfbf..9764d938 100644
+--- a/vi.h
++++ b/vi.h
+@@ -328,6 +328,7 @@ void term_suspend(void);
+ void term_chr(int ch);
+ void term_pos(int r, int c);
+ void term_kill(void);
++void term_killn(int n);
+ void term_room(int n);
+ int term_read(int winch);
+ void term_commit(void);
+@@ -398,7 +399,8 @@ void led_render(char *s0, int cbeg, int cend);
+ } \
+ 
+ #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end,)
+-#define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
++#define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \
++	if (nwins > 1) term_killn(end - beg); else term_kill();)
+ char *led_read(int *kmap, int c);
+ int led_pos(char *s, int pos);
+ void led_done(void);
+@@ -412,6 +414,25 @@ struct buf {
+ 	long mtime;			/* modification time */
+ 	signed char td;			/* text direction */
+ };
++
++/* window management for splits */
++struct win {
++	struct buf *buf;		/* buffer displayed in this window */
++	int y, x;			/* top-left screen position */
++	int h, w;			/* height and width */
++	int row, off, top;		/* cursor position within window */
++	int left;			/* horizontal scroll offset */
++	int vsplit;			/* 1 if created by vertical split */
++	struct win *next;		/* next window (circular list) */
++};
++extern struct win *wins;		/* head of window list */
++extern struct win *curwin;		/* current active window */
++extern int nwins;			/* number of windows */
++void win_init(void);
++void win_size(void);
++void win_switch(struct win *w);
++void win_close(void);
++void *win_split(int vertical, char *arg);
+ /* ex options */
+ extern int xleft;
+ extern int xvis;

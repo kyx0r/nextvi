@@ -67,3 +67,57 @@ ${SEP}.+2a 		if (xhlm) {
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..48768d61 100644
+--- a/ex.c
++++ b/ex.c
+@@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
+ int xhlw;			/* highlight current word */
+ int xhlp;			/* highlight {}[]() pair */
+ int xhlr;			/* highlight text in reverse direction */
++int xhlm;			/* highlight marks */
+ int xled = 1;			/* use the line editor */
+ int xtd = +1;			/* current text direction */
+ int xshape = 1;			/* perform letter shaping */
+@@ -1353,6 +1354,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+ EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+ EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
++EO(hlm)
+ 
+ _EO(left,
+ 	if (*loc)
+@@ -1446,6 +1448,7 @@ static struct excmd {
+ 	EO(ts),
+ 	EO(td),
+ 	EO(order),
++	EO(hlm),
+ 	EO(hll),
+ 	EO(hlw),
+ 	EO(hlp),
+diff --git a/vi.c b/vi.c
+index 535ef11e..e1820ff6 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1737,6 +1737,21 @@ void vi(int init)
+ 				word = cs;
+ 			}
+ 		}
++		if (xhlm) {
++			int mrow, moff;
++			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`*";
++			led_att la;
++			if (!led_attsb)
++				sbuf_make(led_attsb, sizeof(la))
++			for (int i = 0; i < LEN(marks); i++) {
++				if (lbuf_jump(xb, marks[i], &mrow, &moff))
++					continue;
++				la.s = lbuf_get(xb, mrow);
++				la.off = moff;
++				la.att = SYN_BGMK(((i % 15) + 1));
++				sbuf_mem(led_attsb, &la, (int)sizeof(la))
++			}
++		}
+ 		if (xhlp && (k = syn_findhl(3)) >= 0) {
+ 			int row = xrow, off = xoff, row1, off1;
+ 			led_att la;

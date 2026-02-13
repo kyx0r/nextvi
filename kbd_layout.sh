@@ -50,3 +50,34 @@ ${SEP}.+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 exit 0
+diff --git a/kmap.h b/kmap.h
+index d025f5f1..e549d13b 100644
+--- a/kmap.h
++++ b/kmap.h
+@@ -1,5 +1,13 @@
+ static char *kmap_en[256] = {
+ 	[0] = "en",
++	['y'] = "h",
++	['n'] = "j",
++	['e'] = "k",
++	['o'] = "l",
++	['h'] = "y",
++	['j'] = "n",
++	['k'] = "e",
++	['l'] = "o",
+ };
+ 
+ static char *kmap_fa[256] = {
+diff --git a/term.c b/term.c
+index ef1b0927..6c66d8d0 100644
+--- a/term.c
++++ b/term.c
+@@ -177,6 +177,8 @@ int term_read(int winch)
+ 			err:
+ 			*ibuf = 0;
+ 		}
++		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
++			*ibuf = *conf_kmap(0)[*ibuf];
+ 		ret:
+ 		ibuf_cnt = 1;
+ 		ibuf_pos = 0;

@@ -82,3 +82,66 @@ ${SEP}.+2a 	{\"cx\", ec_closebuf},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..d3d2bf30 100644
+--- a/ex.c
++++ b/ex.c
+@@ -1344,6 +1344,50 @@ static int eo_val(char *arg)
+ 	return val;
+ }
+ 
++static void *ec_closebuf(char *loc, char *cmd, char *arg)
++{
++	int idx, ridx = 0;
++	int istmp = istempbuf(ex_buf);
++	char *s;
++	if (!*arg) {
++		idx = istmp ? -1 : ex_buf - bufs;
++	} else {
++		while (*arg == ' ' || *arg == '\t')
++			arg++;
++		idx = atoi(arg);
++		if (idx < 0 && !istmp)
++			idx = ex_buf - bufs + 1;
++		s = strchr(arg, '-');
++		if (s) {
++			ridx = atoi(s+1) - idx;
++			if (ridx <= 0 && !istmp)
++				ridx = (ex_buf - bufs) - idx - 1;
++		}
++	}
++	for (int b = 0; b <= ridx; b++) {
++		if (idx < 0 || (!idx && xbufcur < 2) || idx >= xbufcur)
++			return "invalid buffer index";
++		bufs_free(idx);
++		for (int i = idx; i < xbufcur; i++)
++			bufs[i] = bufs[i+1];
++		xbufcur--;
++		if (!istmp) {
++			ex_buf = idx == ex_buf - bufs ? bufs : ex_buf;
++			ex_buf = idx < ex_buf - bufs ? ex_buf - 1 : ex_buf;
++			ex_pbuf = idx == ex_pbuf - bufs ? bufs : ex_pbuf;
++			ex_pbuf = idx < ex_pbuf - bufs ? ex_pbuf - 1 : ex_pbuf;
++		} else {
++			ex_pbuf = idx == ex_pbuf - bufs ? bufs : ex_pbuf;
++			ex_pbuf = idx < ex_pbuf - bufs ? ex_pbuf - 1 : ex_pbuf;
++			ex_tpbuf = idx == ex_tpbuf - bufs ? bufs : ex_tpbuf;
++			ex_tpbuf = idx < ex_tpbuf - bufs ? ex_tpbuf - 1 : ex_tpbuf;
++		}
++		syn_setft(ex_ft);
++	}
++	return NULL;
++}
++
++
+ #define _EO(opt, inner) \
+ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ 
+@@ -1441,6 +1485,7 @@ static struct excmd {
+ 	{"cm!", ec_cmap},
+ 	{"cm", ec_cmap},
+ 	{"cd", ec_chdir},
++	{"cx", ec_closebuf},
+ 	{"c", ec_insert},
+ 	{"j", ec_join},
+ 	EO(ts),

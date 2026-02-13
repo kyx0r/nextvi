@@ -92,3 +92,98 @@ ${SEP}.+2a extern char readonly;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..7c534ece 100644
+--- a/ex.c
++++ b/ex.c
+@@ -54,6 +54,7 @@ static char xirerr[] = "invalid range";
+ static char xrnferr[] = "range not found";
+ static char *xrerr;
+ static void *xpret;		/* previous ex command return value */
++char readonly = 0;		/* commandline readonly option */
+ 
+ static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
+ {
+@@ -115,6 +116,7 @@ static int bufs_open(const char *path, int len)
+ 	bufs[i].top = 0;
+ 	bufs[i].td = +1;
+ 	bufs[i].mtime = -1;
++	bufs[i].readonly = readonly;
+ 	return i;
+ }
+ 
+@@ -366,6 +368,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+ 		bufs_switch(bufs_open(arg+cd, len));
+ 		cd = 3; /* XXX: quick hack to indicate new lbuf */
+ 	}
++	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
++		ex_buf->readonly = 1;
+ 	readfile(rd =)
+ 	if (cd == 3 || (!rd && fd >= 0)) {
+ 		ex_bufpostfix(ex_buf, arg[0]);
+@@ -683,6 +687,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+ 		free(ibuf.s);
+ 	} else {
+ 		if (!strchr(cmd, '!')) {
++			if (ex_buf->readonly)
++				return "write failed: readonly option is set";
+ 			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
+ 				return "write failed: file changed";
+ 			if (arg[0] && mtime(path) >= 0)
+@@ -1336,6 +1342,12 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+ 
+ static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
+ 
++static void *ec_readonly(char *loc, char *cmd, char *arg)
++{
++	ex_buf->readonly = !ex_buf->readonly;
++	return NULL;
++}
++
+ static int eo_val(char *arg)
+ {
+ 	int val = atoi(arg);
+@@ -1420,6 +1432,7 @@ static struct excmd {
+ 	{"reg!", ec_regprint},
+ 	{"reg", ec_regprint},
+ 	{"rd", ec_undoredo},
++	{"ro", ec_readonly},
+ 	{"r", ec_read},
+ 	{"wq!", ec_write},
+ 	{"wq", ec_write},
+diff --git a/vi.c b/vi.c
+index 535ef11e..4e50baca 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1828,11 +1828,13 @@ int main(int argc, char *argv[])
+ 				xvis |= 4;
+ 			else if (argv[i][j] == 'a')
+ 				xvis |= 8;
++			else if (argv[i][j] == 'R')
++				readonly = 1;
+ 			else if (argv[i][j] == 'v')
+ 				xvis = 0;
+ 			else {
+ 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+-				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
+ 				return EXIT_FAILURE;
+ 			}
+ 		}
+diff --git a/vi.h b/vi.h
+index 4726dfbf..9e1c7c6e 100644
+--- a/vi.h
++++ b/vi.h
+@@ -411,6 +411,7 @@ struct buf {
+ 	int plen, row, off, top;
+ 	long mtime;			/* modification time */
+ 	signed char td;			/* text direction */
++	char readonly;			/* read only */
+ };
+ /* ex options */
+ extern int xleft;
+@@ -545,3 +546,4 @@ extern int vi_lncol;
+ extern rset *fsincl;
+ extern char *fs_exdir;
+ void dir_calc(char *path);
++extern char readonly;

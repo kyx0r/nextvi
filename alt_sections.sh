@@ -40,3 +40,27 @@ ${SEP}.+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
+diff --git a/vi.c b/vi.c
+index 535ef11e..920ad0d0 100644
+--- a/vi.c
++++ b/vi.c
+@@ -667,7 +667,7 @@ static int vi_motion(int vc, int *row, int *off)
+ 		break;
+ 	case '(':
+ 	case ')':
+-		dir = mv == '(' ? 1 : -1;
++		dir = mv == ')' ? 1 : -1;
+ 		if (!bre)
+ 			bre = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
+ 		int subs[2], org;
+@@ -707,8 +707,8 @@ static int vi_motion(int vc, int *row, int *off)
+ 	case '}':
+ 	case '[':
+ 	case ']':
+-		dir = mv == '{' || mv == '[' ? 1 : -1;
+-		mark = mv == '[' || mv == ']' ? '\n' : '{';
++		dir = mv == '}' || mv == ']' ? 1 : -1;
++		mark = mv == '[' || mv == ']' ? '{' : '\n';
+ 		for (i = 0; i < cnt; i++)
+ 			if (lbuf_sectionbeg(xb, dir, row, off, mark))
+ 				break;

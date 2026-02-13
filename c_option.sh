@@ -81,3 +81,81 @@ ${SEP}.+3;32c , char** cmds, int cmdnum
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..d5dd178a 100644
+--- a/ex.c
++++ b/ex.c
+@@ -1610,7 +1610,7 @@ void ex(void)
+ 	xgrec--;
+ }
+ 
+-void ex_init(char **files, int n)
++void ex_init(char **files, int n, char **cmds, int cmdnum)
+ {
+ 	xbufsalloc = MAX(n, xbufsalloc);
+ 	ec_setbufsmax(NULL, NULL, "");
+@@ -1623,4 +1623,6 @@ void ex_init(char **files, int n)
+ 	xvis &= ~4;
+ 	if ((s = getenv("EXINIT")))
+ 		ex_command(s)
++	for (int i = 0; i < cmdnum; i++)
++		ex_command(cmds[i])
+ }
+diff --git a/vi.c b/vi.c
+index 535ef11e..548467e9 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1808,7 +1808,8 @@ static void setup_signals(void)
+ 
+ int main(int argc, char *argv[])
+ {
+-	int i, j;
++	int i, j, cmdnum = 0;
++	char *ex_cmds[argc - 1];
+ 	setup_signals();
+ 	dir_init();
+ 	syn_init();
+@@ -1830,16 +1831,27 @@ int main(int argc, char *argv[])
+ 				xvis |= 8;
+ 			else if (argv[i][j] == 'v')
+ 				xvis = 0;
+-			else {
++			else if (argv[i][j] == 'c') {
++				if (argv[i][j+1]) {
++					ex_cmds[cmdnum++] = argv[i] + j + 1;
++					break;
++				} else if (i + 1 < argc) {
++					ex_cmds[cmdnum++] = argv[++i];
++					break;
++				} else {
++					fprintf(stderr, "Missing argument for -c\n");
++					return EXIT_FAILURE;
++				}
++			} else {
+ 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+-				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
+ 				return EXIT_FAILURE;
+ 			}
+ 		}
+ 	}
+ 	ibuf = emalloc(ibuf_sz);
+ 	term_init();
+-	ex_init(argv + i, argc - i);
++	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
+ 	if (xvis & 2)
+ 		ex();
+ 	else
+diff --git a/vi.h b/vi.h
+index 4726dfbf..aace2643 100644
+--- a/vi.h
++++ b/vi.h
+@@ -479,7 +479,7 @@ void *ex_exec(const char *ln);
+ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+ #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
+ #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
+-void ex_init(char **files, int n);
++void ex_init(char **files, int n, char** cmds, int cmdnum);
+ void ex_bufpostfix(struct buf *p, int clear);
+ int ex_krs(rset **krs, int *dir);
+ void ex_krsset(char *kwd, int dir);

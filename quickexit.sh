@@ -110,3 +110,118 @@ ${SEP}.+2a extern int xqe;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..0045083b 100644
+--- a/ex.c
++++ b/ex.c
+@@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
+ int xshape = 1;			/* perform letter shaping */
+ int xorder = 1;			/* change the order of characters */
+ int xts = 8;			/* number of spaces for tab */
++int xqe = 1000;			/* exit insert via kj (delay in ms) */
+ int xish;			/* interactive shell */
+ int xgrp;			/* regex search group */
+ int xpac;			/* print autocomplete options */
+@@ -1353,6 +1354,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+ EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+ EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
++EO(qe)
+ 
+ _EO(left,
+ 	if (*loc)
+@@ -1414,6 +1416,7 @@ static struct excmd {
+ 	{"g", ec_glob},
+ 	EO(mpt),
+ 	{"m", ec_mark},
++	EO(qe),
+ 	{"q!", ec_quit},
+ 	{"q", ec_quit},
+ 	EO(rcm),
+diff --git a/led.c b/led.c
+index 7aba6ef6..abbaf3df 100644
+--- a/led.c
++++ b/led.c
+@@ -404,6 +404,14 @@ void led_modeswap(void)
+ 	restore(xvis)
+ }
+ 
++static int gettime_ms(void)
++{
++	struct timespec t;
++	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
++		return 0;
++	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
++}
++
+ /* read a line from the terminal */
+ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
+ 	int ai_max, int *kmap, ins_state *is, int orow, int crow, int ctop, int flg)
+@@ -630,7 +638,18 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 				exbuf_load(ex_buf)
+ 			}
+ 			continue; }
++		case 'j':
++			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
++				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
++					term_push("", 2);
++					continue;
++				}
++			}
++			goto _default;
++		case 'k':
++			is->quickexit = gettime_ms();
+ 		default:
++_default:
+ 			if (c == '\n' || TK_INT(c))
+ 				return c;
+ 			if ((cs = led_read(kmap, c)))
+diff --git a/vi.c b/vi.c
+index 535ef11e..c974bd7c 100644
+--- a/vi.c
++++ b/vi.c
+@@ -7,6 +7,7 @@
+ #include <dirent.h>
+ #include <signal.h>
+ #include <unistd.h>
++#include <time.h>
+ #include <poll.h>
+ #include <termios.h>
+ #include <limits.h>
+@@ -1507,6 +1508,8 @@ void vi(int init)
+ 				k = vc_insert(c);
+ 				ins:
+ 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
++				if (xqe)
++					vi_mod |= 2;
+ 				if (k == 127) {
+ 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
+ 						xrow--;
+diff --git a/vi.h b/vi.h
+index 4726dfbf..f491fe36 100644
+--- a/vi.h
++++ b/vi.h
+@@ -372,6 +372,7 @@ typedef struct {
+ 	int p_reg;
+ 	int lsug;
+ 	int sug_pt;
++	int quickexit;
+ 	char *sug;
+ 	char *_sug;
+ } ins_state;
+@@ -380,6 +381,7 @@ is.t_row = -2; \
+ is.p_reg = 0; \
+ is.lsug = 0; \
+ is.sug_pt = -1; \
++is.quickexit = 0; \
+ is.sug = NULL; \
+ is._sug = NULL; \
+ 
+@@ -427,6 +429,7 @@ extern int xtd;
+ extern int xshape;
+ extern int xorder;
+ extern int xts;
++extern int xqe;
+ extern int xish;
+ extern int xgrp;
+ extern int xpac;

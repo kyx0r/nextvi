@@ -116,3 +116,116 @@ ${SEP}.+2a int map_read(int mode, int winch);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..6932a9b1 100644
+--- a/ex.c
++++ b/ex.c
+@@ -54,6 +54,8 @@ static char xirerr[] = "invalid range";
+ static char xrnferr[] = "range not found";
+ static char *xrerr;
+ static void *xpret;		/* previous ex command return value */
++static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
++static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
+ 
+ static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
+ {
+@@ -546,6 +548,44 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+ 	return NULL;
+ }
+ 
++static void *ec_map(char *loc, char *cmd, char *arg)
++{
++	char **map = cmd[0] == 'n' ? nmaps[xkmap] : imaps[xkmap];
++	int unmap = !!strchr(cmd, '!');
++	if (!arg[0]) {
++		char msg[64];
++		for (int i = 0; i < 256; i++) {
++			if (map[i]) {
++				snprintf(msg, sizeof(msg), "%c\t%s", i, map[i]);
++				ex_print(msg, msg_ft)
++			}
++		}
++		return NULL;
++	}
++	int c = (unsigned char)arg[0];
++	if (unmap) {
++		free(map[c]);
++		map[c] = NULL;
++	} else {
++		if (!arg[1])
++			return "missing rhs";
++		free(map[c]);
++		map[c] = uc_dup(arg + 1);
++	}
++	return NULL;
++}
++
++int map_read(int mode, int winch)
++{
++	int c = term_read(winch);
++	char **map = mode ? imaps[xkmap] : nmaps[xkmap];
++	if (c > 0 && c < 256 && map[c]) {
++		term_push(map[c], strlen(map[c]));
++		return term_read(winch);
++	}
++	return c;
++}
++
+ static void *ec_buffer(char *loc, char *cmd, char *arg)
+ {
+ 	if (!arg[0]) {
+@@ -1407,12 +1447,16 @@ static struct excmd {
+ 	EO(ish),
+ 	{"inc", ec_setincl},
+ 	EO(ic),
++	{"im!", ec_map},
++	{"im", ec_map},
+ 	{"i", ec_insert},
+ 	{"d", ec_delete},
+ 	EO(grp),
+ 	{"g!", ec_glob},
+ 	{"g", ec_glob},
+ 	EO(mpt),
++	{"nm!", ec_map},
++	{"nm", ec_map},
+ 	{"m", ec_mark},
+ 	{"q!", ec_quit},
+ 	{"q", ec_quit},
+diff --git a/led.c b/led.c
+index 7aba6ef6..0272109c 100644
+--- a/led.c
++++ b/led.c
+@@ -413,7 +413,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ 	do {
+ 		led_printparts(sb, pre, ps, *post, postn, ai_max);
+ 		len = sb->s_n;
+-		c = term_read(TK_CTL('l'));
++		c = map_read(1, TK_CTL('l'));
+ 		switch (c) {
+ 		case TK_CTL('h'):
+ 		case 127:
+diff --git a/vi.c b/vi.c
+index 535ef11e..a6e2e210 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1240,7 +1240,7 @@ void vi(int init)
+ 			char *cmd;
+ 			term_dec()
+ 			re_motion:
+-			c = term_read(TK_CTL('l'));
++			c = map_read(0, TK_CTL('l'));
+ 			switch (c) {
+ 			case TK_CTL('b'):
+ 				vi_scrollbackward(MAX(1, vi_arg) * (xrows - 1));
+diff --git a/vi.h b/vi.h
+index 4726dfbf..de5a54f9 100644
+--- a/vi.h
++++ b/vi.h
+@@ -486,6 +486,7 @@ void ex_krsset(char *kwd, int dir);
+ int ex_edit(const char *path, int len);
+ void ex_regput(unsigned char c, const char *s, int append);
+ void bufs_switch(int idx);
++int map_read(int mode, int winch);
+ #define bufs_switchwft(idx) \
+ { if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
+ 

@@ -107,3 +107,101 @@ extern char **xenvp;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..38ffd845 100644
+--- a/ex.c
++++ b/ex.c
+@@ -38,6 +38,7 @@ int xesc = '\\';		/* ex command arg escape character */
+ sbuf *xacreg;			/* autocomplete db filter regex */
+ rset *xkwdrs;			/* the last searched keyword rset */
+ sbuf *xregs[256];		/* string registers */
++char **xenvp;
+ struct buf *bufs;		/* main buffers */
+ struct buf tempbufs[2];		/* temporary buffers, for internal use */
+ struct buf *ex_buf;		/* current buffer */
+@@ -1336,6 +1337,41 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+ 
+ static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
+ 
++static void *ec_script(char *loc, char *cmd, char *arg)
++{
++	char *rep;
++	char buf[100];
++	int row = xrow, off = xoff, ret = 0;
++	char *ln = lbuf_get(xb, row);
++	if (!*arg)
++		return xserr;
++	setenv("NEXTVI_FT", ex_ft, 1);
++	itoa(row, buf);
++	setenv("NEXTVI_ROW", buf, 1);
++	itoa(ln ? uc_chr(ln, off) - ln : 0, buf);
++	setenv("NEXTVI_OFF", buf, 1);
++	itoa(off, buf);
++	setenv("NEXTVI_COFF", buf, 1);
++	setenv("NEXTVI_LINE", ln ? ln : "", 1);
++	if (!lbuf_wordend(xb, 0, 1, &row, &off)) {
++		rep = uc_sub(lbuf_get(xb, row), xoff, off+1);
++		setenv("NEXTVI_WORD", rep, 1);
++		free(rep);
++	} else
++		setenv("NEXTVI_WORD", "", 1);
++	if (!(xvis & 4) && cmd[1] == 'c') {
++		term_chr('\n');
++		xmpt = xmpt >= 0 ? 2 : xmpt;
++	}
++	xenvp = environ;
++	sbuf *sb = cmd_pipe(arg, NULL, cmd[1] == 'x', &ret);
++	xenvp = NULL;
++	if (sb && cmd[1] == 'x')
++		ex_exec(sb->s);
++	free(sb);
++	return ret ? xuerr : NULL;
++}
++
+ static int eo_val(char *arg)
+ {
+ 	int val = atoi(arg);
+@@ -1433,6 +1469,8 @@ static struct excmd {
+ 	EO(seq),
+ 	{"sc!", ec_specials},
+ 	{"sc", ec_specials},
++	{"sr", ec_script},
++	{"sx", ec_script},
+ 	{"s", ec_substitute},
+ 	{"x!", ec_write},
+ 	{"x", ec_write},
+diff --git a/term.c b/term.c
+index ef1b0927..c98ecd95 100644
+--- a/term.c
++++ b/term.c
+@@ -244,7 +244,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+ 			close(pipefds1[0]);
+ 			close(pipefds1[1]);
+ 		}
+-		execvp(argv[0], argv);
++		if (xenvp)
++			execve(argv[0], argv, xenvp);
++		else
++			execvp(argv[0], argv);
+ 		exit(1);
+ 	}
+ 	if (ifd)
+diff --git a/vi.h b/vi.h
+index 4726dfbf..44d54c31 100644
+--- a/vi.h
++++ b/vi.h
+@@ -9,6 +9,14 @@ If something is listed here, it must be used across multiple
+ files and thus is never static.
+ */
+ 
++#ifdef __APPLE__
++#include <crt_externs.h>
++#define environ (*_NSGetEnviron())
++#else
++extern char **environ;
++#endif
++extern char **xenvp;
++
+ /* helper macros */
+ #define LEN(a)		(int)(sizeof(a) / sizeof((a)[0]))
+ #define MIN(a, b)	((a) < (b) ? (a) : (b))

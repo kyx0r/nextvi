@@ -157,3 +157,183 @@ ${SEP}.+2a extern int stdin_fd;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..4b7f87f7 100644
+--- a/ex.c
++++ b/ex.c
+@@ -352,7 +352,9 @@ int ex_edit(const char *path, int len)
+ static void *ec_edit(char *loc, char *cmd, char *arg)
+ {
+ 	char msg[512];
+-	int fd, len, rd = 0, cd = 0;
++	int fd = 0, len, rd = 0, cd = 0;
++	if (!cmd)
++		goto ret;
+ 	if (arg[0] == '.' && arg[1] == '/')
+ 		cd = 2;
+ 	len = strlen(arg+cd);
+@@ -371,6 +373,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+ 		ex_bufpostfix(ex_buf, arg[0]);
+ 		syn_setft(xb_ft);
+ 	}
++	if (!loc)
++		return fd < 0 || rd ? xuerr : NULL;
++	ret:
+ 	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
+ 			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
+ 			fd < 0 || rd ? 'f' : 'r');
+@@ -1612,15 +1617,36 @@ void ex(void)
+ 
+ void ex_init(char **files, int n)
+ {
+-	xbufsalloc = MAX(n, xbufsalloc);
++	xbufsalloc = MAX(n + !!stdin_fd, xbufsalloc);
+ 	ec_setbufsmax(NULL, NULL, "");
+ 	char *s = files[0] ? files[0] : "";
++	int i = n;
+ 	do {
+ 		xmpt = 0;
+-		ec_edit("", "e", s);
++		ec_edit(!n && stdin_fd ? NULL : "", "e", s);
+ 		s = *(++files);
+ 	} while (--n > 0);
++	if (stdin_fd) {
++		if (i)
++			ec_edit(NULL, "", "");
++		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
++		term_done();
++		term_init();
++		lbuf_saved(xb, 1);
++		if (i)
++			ex_print("stdin read failed", msg_ft)
++		else
++			ec_edit("", NULL, ""); /* shebang patch compat */
++		close(0);
++		if (dup2(stdin_fd, 0) == -1) {
++			fprintf(stderr, "error: %s\n", "dup2");
++			close(stdin_fd);
++			exit(1);
++		}
++		xmpt = MIN(xmpt, 1);
++	}
+ 	xvis &= ~4;
++	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
+ 	if ((s = getenv("EXINIT")))
+ 		ex_command(s)
+ }
+diff --git a/term.c b/term.c
+index ef1b0927..f4cadb2b 100644
+--- a/term.c
++++ b/term.c
+@@ -6,6 +6,8 @@ int xrows, xcols;
+ unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+ unsigned char *ibuf, icmd[4096];
+ unsigned int texec, tn;
++int stdin_fd;
++static int isig;
+ 
+ void term_init(void)
+ {
+@@ -16,11 +18,14 @@ void term_init(void)
+ 	char *s;
+ 	term_winch = 0;
+ 	sbuf_make(term_sbuf, 2048)
+-	tcgetattr(0, &termios);
++	tcgetattr(stdin_fd, &termios);
+ 	newtermios = termios;
+-	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
+-	tcsetattr(0, TCSAFLUSH, &newtermios);
+-	if (!ioctl(0, TIOCGWINSZ, &win)) {
++	if (!isig && stdin_fd)
++		newtermios.c_lflag &= ~(ICANON);
++	else
++		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
++	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
++	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
+ 		xcols = win.ws_col;
+ 		xrows = win.ws_row;
+ 	} else {
+@@ -31,6 +36,7 @@ void term_init(void)
+ 	}
+ 	xcols = xcols ? xcols : 80;
+ 	xrows = xrows ? xrows : 25;
++	isig = 1;
+ 	if (xvis & 8)
+ 		term_scrh;
+ }
+@@ -43,7 +49,7 @@ void term_done(void)
+ 		term_scrl;
+ 	term_commit();
+ 	sbuf_free(term_sbuf)
+-	tcsetattr(0, 0, &termios);
++	tcsetattr(stdin_fd, 0, &termios);
+ }
+ 
+ void term_clean(void)
+@@ -162,11 +168,12 @@ int term_read(int winch)
+ 			goto ret;
+ 		}
+ 		cw = 0;
++		ufd.fd = stdin_fd;
+ 		re:
+ 		/* read a single input character */
+ 		if (xquit < 0 || poll(&ufd, 1, -1) <= 0 ||
+-				read(STDIN_FILENO, ibuf, 1) <= 0) {
+-			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
++				read(stdin_fd, ibuf, 1) <= 0) {
++			xquit = !isatty(stdin_fd) ? -1 : xquit;
+ 			if (term_winch && winch && xquit >= 0) {
+ 				*ibuf = winch;
+ 				goto ret;
+@@ -311,7 +318,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+ 	fds[0].events = POLLIN;
+ 	fds[1].fd = ifd;
+ 	fds[1].events = POLLOUT;
+-	fds[2].fd = ibuf ? 0 : -1;
++	fds[2].fd = ibuf ? stdin_fd : -1;
+ 	fds[2].events = POLLIN;
+ 	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
+ 		if (fds[0].revents & POLLIN) {
+@@ -354,7 +361,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+ 		close(ifd);
+ 	waitpid(pid, status, 0);
+ 	signal(SIGTTOU, SIG_IGN);
+-	tcsetpgrp(STDIN_FILENO, getpgrp());
++	tcsetpgrp(stdin_fd, getpgrp());
+ 	signal(SIGTTOU, SIG_DFL);
+ 	if (!ibuf) {
+ 		term_init();
+diff --git a/vi.c b/vi.c
+index 535ef11e..371b2df6 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1804,6 +1804,7 @@ static void setup_signals(void)
+ 	memset(&sa, 0, sizeof(sa));
+ 	sa.sa_handler = sighandler;
+ 	sigaction(SIGWINCH, &sa, NULL);
++	sigaction(SIGINT, &sa, NULL);
+ }
+ 
+ int main(int argc, char *argv[])
+@@ -1818,7 +1819,8 @@ int main(int argc, char *argv[])
+ 		if (argv[i][1] == '-' && !argv[i][2]) {
+ 			i++;
+ 			break;
+-		}
++		} else if (!argv[i][1])
++			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
+ 		for (j = 1; argv[i][j]; j++) {
+ 			if (argv[i][j] == 's')
+ 				xvis |= 1|2;
+diff --git a/vi.h b/vi.h
+index 4726dfbf..6ca7ffa2 100644
+--- a/vi.h
++++ b/vi.h
+@@ -541,6 +541,7 @@ char *conf_digraph(int c1, int c2);
+ /* vi.c */
+ extern int vi_hidch;
+ extern int vi_lncol;
++extern int stdin_fd;
+ /* file system */
+ extern rset *fsincl;
+ extern char *fs_exdir;

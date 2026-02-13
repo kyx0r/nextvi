@@ -113,3 +113,105 @@ ${SEP}.-1${SEP}>		ex_command\\(s\\)>a 	} else {
 ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1617\\${SEP}vis 2\\${SEP}q! 1}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..72fea9b1 100644
+--- a/ex.c
++++ b/ex.c
+@@ -38,6 +38,7 @@ int xesc = '\\';		/* ex command arg escape character */
+ sbuf *xacreg;			/* autocomplete db filter regex */
+ rset *xkwdrs;			/* the last searched keyword rset */
+ sbuf *xregs[256];		/* string registers */
++int xexrc = 0;			/* read .exrc from the current directory */
+ struct buf *bufs;		/* main buffers */
+ struct buf tempbufs[2];		/* temporary buffers, for internal use */
+ struct buf *ex_buf;		/* current buffer */
+@@ -1353,6 +1354,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+ EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+ EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
++EO(exrc)
+ 
+ _EO(left,
+ 	if (*loc)
+@@ -1391,6 +1393,7 @@ static struct excmd {
+ 	EO(ai),
+ 	{"ac", ec_setacreg},
+ 	{"a", ec_insert},
++	EO(exrc),
+ 	EO(err),
+ 	{"ef!", ec_fuzz},
+ 	{"ef", ec_fuzz},
+@@ -1610,6 +1613,51 @@ void ex(void)
+ 	xgrec--;
+ }
+ 
++void ex_script(FILE *fp)
++{
++	char done = 0;
++	do {
++		size_t n = 128, i = 0;
++		int c;
++		char *ln = malloc(128);
++		while ((c = fgetc(fp)) != EOF && c != '\n') {
++			if (i >= n - 2) {
++				n += 128;
++				ln = erealloc(ln, n);
++			}
++			ln[i++] = c;
++		}
++		if (!i) {
++			free(ln);
++			done = 1;
++			break;
++		}
++		ln[i] = '\0';
++		ex_command(ln);
++		free(ln);
++	} while(!done);
++}
++
++void load_exrc(char *exrc)
++{
++	struct stat st;
++	if (stat(exrc, &st) == 0) {
++		if (st.st_uid == getuid() && !(st.st_mode & S_IWGRP) && !(st.st_mode & S_IWOTH)) {
++			FILE *fp = fopen(exrc, "r");
++			if (fp) {
++				ex_script(fp);
++				fclose(fp);
++			} else {
++				fprintf(stderr, "Cannot open ~/.exrc\n");
++				exit(EXIT_FAILURE);
++			}
++		} else {
++			fprintf(stderr, "Bad permissions on ~/.exrc\n");
++			exit(EXIT_FAILURE);
++		}
++	}
++}
++
+ void ex_init(char **files, int n)
+ {
+ 	xbufsalloc = MAX(n, xbufsalloc);
+@@ -1621,6 +1669,20 @@ void ex_init(char **files, int n)
+ 		s = *(++files);
+ 	} while (--n > 0);
+ 	xvis &= ~4;
+-	if ((s = getenv("EXINIT")))
++	if ((s = getenv("EXINIT"))) {
+ 		ex_command(s)
++	} else {
++		char *homeenv = getenv("HOME");
++		if (homeenv) {
++			char exrc[PATH_MAX];
++			snprintf(exrc, sizeof(exrc), "%s/.exrc", homeenv);
++			load_exrc(exrc);
++		}
++	}
++	if (xexrc) {
++		char buf[PATH_MAX];
++		getcwd(buf, PATH_MAX);
++		if (strcmp(buf, getenv("HOME")) != 0)
++			load_exrc(".exrc");
++	}
+ }

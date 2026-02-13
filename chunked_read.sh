@@ -144,3 +144,165 @@ ${SEP}.+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..12b53aa2 100644
+--- a/ex.c
++++ b/ex.c
+@@ -326,10 +326,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
+ 	return key;
+ }
+ 
+-#define readfile(errchk) \
++#define readfile(errchk, init) \
+ fd = open(xb_path, O_RDONLY); \
+ if (fd >= 0) { \
+-	errchk lbuf_rd(xb, fd, 0, lbuf_len(xb)); \
++	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \
+ 	close(fd); \
+ } \
+ 
+@@ -345,7 +345,7 @@ int ex_edit(const char *path, int len)
+ 		return 1;
+ 	}
+ 	bufs_switch(bufs_open(path, len));
+-	readfile()
++	readfile(, 1)
+ 	return 0;
+ }
+ 
+@@ -366,7 +366,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+ 		bufs_switch(bufs_open(arg+cd, len));
+ 		cd = 3; /* XXX: quick hack to indicate new lbuf */
+ 	}
+-	readfile(rd =)
++	readfile(rd =, cd == 3)
+ 	if (cd == 3 || (!rd && fd >= 0)) {
+ 		ex_bufpostfix(ex_buf, arg[0]);
+ 		syn_setft(xb_ft);
+diff --git a/lbuf.c b/lbuf.c
+index 1ebfea46..70bfad87 100644
+--- a/lbuf.c
++++ b/lbuf.c
+@@ -203,32 +203,85 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
+ 		lo->ins = (char**)sb->s;
+ }
+ 
+-int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
+-{
+-	struct stat st;
+-	long nr;	/* 1048575 caps at 2147481600 on 32 bit */
+-	int sz = 1048575, step = 1, n = 0;
+-	if (fstat(fd, &st) >= 0 && S_ISREG(st.st_mode))
+-		sz = st.st_size >= INT_MAX ? INT_MAX : st.st_size + step;
+-	char *s = emalloc(sz--);
+-	while ((nr = read(fd, s + n, sz - n)) > 0) {
+-		n += nr;
+-		if (n >= sz + step) {
+-			if (n > INT_MAX / 2) {
+-				n -= nr;
+-				break;
++int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
++{
++	if (!init) {
++		struct stat st;
++		long nr;	/* 1048575 caps at 2147481600 on 32 bit */
++		int sz = 1048575, step = 1, n = 0;
++		if (fstat(fd, &st) >= 0 && S_ISREG(st.st_mode))
++			sz = st.st_size >= INT_MAX ? INT_MAX : st.st_size + step;
++		char *s = emalloc(sz--);
++		while ((nr = read(fd, s + n, sz - n)) > 0) {
++			n += nr;
++			if (n >= sz + step) {
++				if (n > INT_MAX / 2) {
++					n -= nr;
++					break;
++				}
++				sz = n * 2;
++				s = erealloc(s, sz--);
++				step = 1;
++			} else if (n == sz) {
++				sz++;
++				step = 0;
+ 			}
+-			sz = n * 2;
+-			s = erealloc(s, sz--);
+-			step = 1;
+-		} else if (n == sz) {
+-			sz++;
+-			step = 0;
+ 		}
++		s[n] = '\0';
++		lbuf_edit(lb, s, beg, end, 0, 0);
++		free(s);
++		return nr != 0;
+ 	}
+-	s[n] = '\0';
+-	lbuf_edit(lb, s, beg, end, 0, 0);
+-	free(s);
++	long nr, l, nins = 0, nl = 0;
++	struct linfo *n, *cn = NULL;
++	const int rchunk = 4096;
++	char sm[rchunk+1], *s, *ln;
++	sbuf_smake(sb, 0)
++	while ((nr = read(fd, sm, rchunk)) > 0) {
++		s = sm;
++		s[nr] = '\0';
++		for (; *s; nins++) {
++			l = linelength(s);
++			nl = (s[l - !!l] == '\n');
++			int l_nonl = l - nl;
++			if (!cn) {
++				n = emalloc(l_nonl + 7 + sizeof(struct linfo));
++				n->len = l_nonl;
++				n->grec = 0;
++				ln = (char*)(n + 1);
++				memcpy(ln, s, l_nonl);
++				memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
++				ln[l_nonl] = '\n';
++			} else {
++				n = erealloc(cn, cn->len + l_nonl + 7 + sizeof(struct linfo));
++				ln = (char*)(n + 1);
++				memcpy(ln + n->len, s, l_nonl);
++				n->len += l_nonl;
++				cn = NULL;
++				memset(&ln[n->len + 1], 0, 5);	/* fault tolerance pad */
++				ln[n->len] = '\n';
++			}
++			sbuf_mem(sb, &ln, (int)sizeof(ln))
++			s += l;
++		}
++		if (s - sm != rchunk) {
++			nr = 0;
++			break;
++		}
++		if (!nl) {
++			cn = n;
++			nins--;
++			sb->s_n -= sizeof(ln);
++		}
++	}
++	sbuf_null(sb)
++	lbuf_edit(lb, sb->s, beg, end, 0, 0);
++	lb->ln_n = nins;
++	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));
++	lb->ln_sz = nins + 512;
++	for (int i = 0; i < nins; i++)
++		lb->ln[i] = *((char**)sb->s + i);
++	free(sb->s);
+ 	return nr != 0;
+ }
+ 
+diff --git a/vi.h b/vi.h
+index 4726dfbf..d3ecce10 100644
+--- a/vi.h
++++ b/vi.h
+@@ -166,7 +166,8 @@ struct lbuf {
+ #define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
+ struct lbuf *lbuf_make(void);
+ void lbuf_free(struct lbuf *lb);
+-int lbuf_rd(struct lbuf *lb, int fd, int beg, int end);
++int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
++#define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
+ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
+ void lbuf_edit(struct lbuf *lb, char *s, int beg, int end, int o1, int o2);
+ void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2);

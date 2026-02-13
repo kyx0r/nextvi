@@ -67,3 +67,60 @@ ${SEP}.+2a extern int xrec;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+diff --git a/ex.c b/ex.c
+index 7ce6e247..65c2214f 100644
+--- a/ex.c
++++ b/ex.c
+@@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
+ 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
+ int xrcm = 1;			/* range command model -
+ 				0: exec at command parse 1: exec at command */
++int xrec;			/* input recoding register */
+ 
+ int xquit;			/* exit if positive, force quit if negative */
+ int xrow, xoff, xtop;		/* current row, column, and top row */
+@@ -1353,6 +1354,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+ EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+ EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
++EO(rec)
+ 
+ _EO(left,
+ 	if (*loc)
+@@ -1417,6 +1419,7 @@ static struct excmd {
+ 	{"q!", ec_quit},
+ 	{"q", ec_quit},
+ 	EO(rcm),
++	EO(rec),
+ 	{"reg!", ec_regprint},
+ 	{"reg", ec_regprint},
+ 	{"rd", ec_undoredo},
+diff --git a/term.c b/term.c
+index ef1b0927..c517b2f4 100644
+--- a/term.c
++++ b/term.c
+@@ -180,6 +180,12 @@ int term_read(int winch)
+ 		ret:
+ 		ibuf_cnt = 1;
+ 		ibuf_pos = 0;
++		if (xrec && *ibuf) {
++			char buf[2];
++			buf[0] = *ibuf;
++			buf[1] = '\0';
++			ex_regput(xrec, buf, 1);
++		}
+ 	}
+ 	if (icmd_pos < sizeof(icmd))
+ 		icmd[icmd_pos++] = ibuf[ibuf_pos];
+diff --git a/vi.h b/vi.h
+index 4726dfbf..723e6c78 100644
+--- a/vi.h
++++ b/vi.h
+@@ -435,6 +435,7 @@ extern int xpr;
+ extern int xlim;
+ extern int xseq;
+ extern int xerr;
++extern int xrec;
+ /* global variables */
+ extern int xquit;
+ extern int xrow, xoff, xtop;

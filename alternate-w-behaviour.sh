@@ -41,3 +41,22 @@ ${SEP}.+2;30;41c dir
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
+diff --git a/vi.c b/vi.c
+index 535ef11e..9c4439ad 100644
+--- a/vi.c
++++ b/vi.c
+@@ -660,9 +660,13 @@ static int vi_motion(int vc, int *row, int *off)
+ 		break;
+ 	case 'w':
+ 	case 'W':
++		if (vc && cnt == 1)
++			dir = 2;
++		else
++			dir = vi_nlword+1;
+ 		mark = mv == 'W';
+ 		for (i = 0; i < cnt; i++)
+-			if (lbuf_wordbeg(xb, mark, vi_nlword+1, row, off))
++			if (lbuf_wordbeg(xb, mark, dir, row, off))
+ 				break;
+ 		break;
+ 	case '(':
