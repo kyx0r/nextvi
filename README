@@ -868,10 +868,18 @@ EX COMMANDS
              Example: exclude .git and submodule folders
              :inc (^(?\:(?\!^\.git|^submodule).)+[^/]+$)
 
-     reg     Print registers and their contents
+     [0-255]reg[str]
+             Print registers or put into a register
+
+             Prefix selects a register and argument replaces its contents.
 
              Example: shift the printing position to view offscreen register parts
              :1left:reg
+             Example: put "hello" into register <1>
+             :1reg hello
+
+     [0-255]reg![str]
+             Print registers or append to a register
 
      bx[#]   Set max number of buffers allowed
 
@@ -1197,7 +1205,7 @@ SPECIAL REGISTERS
      /       Previous regex keyword
      :       Previous ex command
      <0x0>   Default register
-     0       Previous value of default register (atomic)
+     <0>     Previous value of default register (atomic)
              Atomic means the operation did not include a <Newline>.
      <1-9>   Previous value(s) of default register (nonatomic)
 
@@ -1213,9 +1221,9 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 718 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1618 ex.c    |  ex options/commands |
+     | 1626 ex.c    |  ex options/commands |
      | 1849 vi.c    |  normal mode/general |
-     | 7328 total   |  wc -l *.c|sort      |
+     | 7336 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1287,4 +1295,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 12, 2026                    Nextvi 4.0
+Nextvi 4.0                     February 13, 2026                    Nextvi 4.0
