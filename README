@@ -218,6 +218,15 @@ Implements closer to standard vi(1) sections keybinding:
 [#]}          Move to next <Newline> section down # times
 [#]{          Move to next <Newline> section up # times
 
+key_remap_cmds.sh
+--------------
+Adds :im :im! and :nm :nm! commands to dynamically remap keybinds
+in normal and insert modes.
+Remapping a to b:
+:im a b
+Remapping a to abc:
+:im a hello
+
 My current EXINIT setup:
 --------------
 How it works:
