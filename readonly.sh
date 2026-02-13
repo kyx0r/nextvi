@@ -9,7 +9,7 @@ VI=${VI:-vi}
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
 # Uncomment to nop the errors
-#DBG="p"
+DBG="p"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -52,10 +52,9 @@ ${SEP}.+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 }
 
 .
-${SEP}.,$;f+ 	EO\\\\(rcm\\\\),
-	\\\\{\"reg\", ec_regprint\\\\},
+${SEP}.,$;f+ \\\\{\"reg\", ec_regprint\\\\},
 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1414\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	{\"ro\", ec_readonly},
+${SEP}.+1a 	{\"ro\", ec_readonly},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
