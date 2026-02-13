@@ -1,4 +1,4 @@
-.Dd Feb 12, 2026
+.Dd Feb 13, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -1157,12 +1157,19 @@ Example: exclude .git and submodule folders
 :inc (^(?\e:(?\e!^\e.git|^submodule).)+[^/]+$)
 .Ed
 
-.It Cm reg
-Print registers and their contents
+.It Cm [\fI0-255\fP]reg[\fIstr\fP]
+Print registers or put into a register
 .Bd -literal
+Prefix selects a register and argument replaces its contents.
+
 Example: shift the printing position to view offscreen register parts
 :1left:reg
+Example: put "hello" into register <1>
+:1reg hello
 .Ed
+
+.It Cm [\fI0-255\fP]reg![\fIstr\fP]
+Print registers or append to a register
 
 .It Cm bx[\fI#\fP]
 Set max number of buffers allowed
@@ -1584,7 +1591,7 @@ Previous regex keyword
 Previous ex command
 .It Cm <0x0>
 Default register
-.It Cm 0
+.It Cm <0>
 Previous value of default register (atomic)
 .Bd -literal -compact
 Atomic means the operation did not include a <Newline>.
@@ -1608,9 +1615,9 @@ _
  654 lbuf.c | file/line buffer
  718 led.c | insert mode/output
  766 regex.c | pikevm
- 1618 ex.c | ex options/commands
+ 1626 ex.c | ex options/commands
  1849 vi.c | normal mode/general
- 7328 total | wc -l *.c\(basort
+ 7336 total | wc -l *.c\(basort
 _
 .TE
 .
