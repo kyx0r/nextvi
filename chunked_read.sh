@@ -93,20 +93,20 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 227\\${SEP}vis 2\\${SEP}q! 1}${SEP}.
 			nl = (s[l - !!l] == '\\\\n');
 			int l_nonl = l - nl;
 			if (!cn) {
-				n = emalloc(l_nonl + 7 + sizeof(struct linfo));
+				n = emalloc(l_nonl + 5 + sizeof(struct linfo));
 				n->len = l_nonl;
 				n->grec = 0;
 				ln = (char*)(n + 1);
 				memcpy(ln, s, l_nonl);
-				memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
+				memset(&ln[l_nonl + 1], 0, 4);	/* fault tolerance pad */
 				ln[l_nonl] = '\\\\n';
 			} else {
-				n = erealloc(cn, cn->len + l_nonl + 7 + sizeof(struct linfo));
+				n = erealloc(cn, cn->len + l_nonl + 5 + sizeof(struct linfo));
 				ln = (char*)(n + 1);
 				memcpy(ln + n->len, s, l_nonl);
 				n->len += l_nonl;
 				cn = NULL;
-				memset(&ln[n->len + 1], 0, 5);	/* fault tolerance pad */
+				memset(&ln[n->len + 1], 0, 4);	/* fault tolerance pad */
 				ln[n->len] = '\\\\n';
 			}
 			sbuf_mem(sb, &ln, (int)sizeof(ln))
@@ -180,7 +180,7 @@ index 7ce6e247..12b53aa2 100644
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
 diff --git a/lbuf.c b/lbuf.c
-index 1ebfea46..70bfad87 100644
+index 1ebfea46..c07ad1fa 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -203,32 +203,85 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -252,20 +252,20 @@ index 1ebfea46..70bfad87 100644
 +			nl = (s[l - !!l] == '\n');
 +			int l_nonl = l - nl;
 +			if (!cn) {
-+				n = emalloc(l_nonl + 7 + sizeof(struct linfo));
++				n = emalloc(l_nonl + 5 + sizeof(struct linfo));
 +				n->len = l_nonl;
 +				n->grec = 0;
 +				ln = (char*)(n + 1);
 +				memcpy(ln, s, l_nonl);
-+				memset(&ln[l_nonl + 1], 0, 5);	/* fault tolerance pad */
++				memset(&ln[l_nonl + 1], 0, 4);	/* fault tolerance pad */
 +				ln[l_nonl] = '\n';
 +			} else {
-+				n = erealloc(cn, cn->len + l_nonl + 7 + sizeof(struct linfo));
++				n = erealloc(cn, cn->len + l_nonl + 5 + sizeof(struct linfo));
 +				ln = (char*)(n + 1);
 +				memcpy(ln + n->len, s, l_nonl);
 +				n->len += l_nonl;
 +				cn = NULL;
-+				memset(&ln[n->len + 1], 0, 5);	/* fault tolerance pad */
++				memset(&ln[n->len + 1], 0, 4);	/* fault tolerance pad */
 +				ln[n->len] = '\n';
 +			}
 +			sbuf_mem(sb, &ln, (int)sizeof(ln))
