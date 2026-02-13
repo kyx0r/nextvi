@@ -1253,6 +1253,13 @@ static void *ec_setbufsmax(char *loc, char *cmd, char *arg)
 
 static void *ec_regprint(char *loc, char *cmd, char *arg)
 {
+	if (*loc && *arg) {
+		int reg = atoi(loc);
+		if (reg < 0 || reg > 255)
+			return xserr;
+		ex_regput(reg, arg, cmd[3] == '!');
+		return NULL;
+	}
 	static char buf[5] = "  ";
 	int flg = (xvis & 2) == 0;
 	preserve(int, xtd, xtd = 2;)
@@ -1410,6 +1417,7 @@ static struct excmd {
 	{"q!", ec_quit},
 	{"q", ec_quit},
 	EO(rcm),
+	{"reg!", ec_regprint},
 	{"reg", ec_regprint},
 	{"rd", ec_undoredo},
 	{"r", ec_read},
