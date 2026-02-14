@@ -321,12 +321,18 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * Relative mode emit functions - use regex patterns instead of line numbers.
  *
  * Forward processing: groups are processed top-to-bottom.
- * Each >anchor> search starts from current cursor position (xrow)
+ * Each f>/f+ search starts from current cursor position (xrow)
  * and finds the next occurrence forward. After each edit, the cursor
  * advances, so subsequent searches naturally find the correct occurrence.
  *
- * Multi-line context: when 2+ context lines are available, uses f> command
- * for multiline search (newlines become regular characters in the search).
+ * Single-line context: uses %f> (first) or .,$f+ (subsequent) for
+ * single-line anchor search. No semicolon prefix.
+ *
+ * Multi-line context: when 2+ context lines are available, uses %;f>
+ * (first) or .,$;f+ (subsequent) for multiline search (semicolon joins
+ * lines for horizontal range matching).
+ *
+ * All search paths use ex_arg escaping uniformly via emit_escaped_regex_exarg.
  *
  * Error checking: each search is followed by ??! to detect failure,
  * print debug info, and quit before corrupting the file.
@@ -341,7 +347,6 @@ typedef struct {
 	int anchor_offset;   /* lines from last anchor to first change */
 	int use_offset;      /* use .+offset_val instead of searching (-rb) */
 	int offset_val;      /* offset from current xrow */
-	int backstep;        /* emit .-1 before search to include current line (-r) */
 	int target_line;     /* original line number for error reporting */
 } rel_ctx_t;
 
@@ -363,18 +368,6 @@ static void emit_err_check(FILE *out, int line)
 	EMIT_ESCSEP(out);
 	fputs("q! 1}", out);
 	EMIT_SEP(out);
-}
-
-/* Write a regex-escaped string with shell double-quote escaping.
- * escape_regex handles regex metacharacters, then emit_escaped_line
- * handles shell special chars (\, $, `, ") so backslashes survive
- * the shell's double-quote processing.
- * Used for patterns parsed by re_read (>pattern> searches). */
-static void emit_escaped_regex(FILE *out, const char *s)
-{
-	char *escaped = escape_regex(s);
-	emit_escaped_line(out, escaped);
-	free(escaped);
 }
 
 /* Double backslashes for ex_arg level escaping.
@@ -418,37 +411,24 @@ static void emit_escaped_regex_exarg(FILE *out, const char *s)
 	free(regex_esc);
 }
 
-/* Write a regex-escaped string with re_read delimiter + shell escaping.
- * Escapes > for re_read delimiter context, then shell-escapes.
- * Used for >pattern> single-line searches. */
-static void emit_escaped_regex_reread(FILE *out, const char *s)
+/* Emit a single-line f>/f+ search with error check.
+ * first=1 uses %f> (search from start), first=0 uses .,$f+ (skip past current).
+ * Uses emit_escaped_regex_exarg for uniform escaping (same as multiline path). */
+static void emit_line_search(FILE *out, const char *pattern, int offset,
+			      int first, int target_line)
 {
-	char *regex_esc = escape_regex(s);
-	for (const char *p = regex_esc; *p; p++) {
-		if (*p == '>') {
-			fputc('\\', out);  /* shell-escaped \ for re_read delimiter escape */
-			fputc('\\', out);
-			fputc(*p, out);
-		} else if (*p == '\\' || *p == '$' || *p == '`' || *p == '"') {
-			fputc('\\', out);
-			fputc(*p, out);
-		} else {
-			fputc(*p, out);
-		}
-	}
-	free(regex_esc);
-}
-
-/* Emit forward single-line search position (no leading 1<sep>) */
-static void emit_fwd_pos(FILE *out, const char *anchor, int offset)
-{
-	fputc('>', out);
-	emit_escaped_regex_reread(out, anchor);
-	fputc('>', out);
-	if (offset > 0)
-		fprintf(out, "+%d", offset);
-	else if (offset < 0)
-		fprintf(out, "%d", offset);
+	fprintf(out, "%sf%c ", first ? "%" : ".,$", first ? '>' : '+');
+	emit_escaped_regex_exarg(out, pattern);
+	EMIT_SEP(out);
+	emit_err_check(out, target_line);
+	fputs(";=\n", out);
+	EMIT_SEP(out);
+	if (offset == 0)
+		fprintf(out, ".");
+	else if (offset > 0)
+		fprintf(out, ".+%d", offset);
+	else
+		fprintf(out, ".%d", offset);
 }
 
 /* Emit multiline f>/f+ position using 2+ context lines.
@@ -468,17 +448,6 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 	EMIT_SEP(out);
 	/* After f>/f+, cursor is at match position; use .+offset for target */
 	fprintf(out, ".+%d", offset);
-}
-
-/* Emit following context search with negative offset */
-static void emit_follow_pos(FILE *out, const char *follow, int offset)
-{
-	fputc('>', out);
-	emit_escaped_regex_reread(out, follow);
-	fputc('>', out);
-	if (offset > 0)
-		fprintf(out, "-%d", offset);
-	/* offset==0 means the follow ctx IS at the change line - unusual but handle it */
 }
 
 typedef struct {
@@ -542,35 +511,28 @@ static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 	fprintf(out, ".+%d", offset);
 }
 
-/* Emit single-line custom search position.
- * Line is pre-escaped regex: escape > for re_read delimiter + shell escaping. */
-static void emit_custom_fwd_pos(FILE *out, const char *line, int offset)
+/* Emit single-line custom f>/f+ search with error check.
+ * Line is pre-escaped regex: apply exarg+shell escaping only. */
+static void emit_custom_line_search(FILE *out, const char *line, int offset,
+				     int first, int target_line)
 {
-	/* >pattern> uses re_read, no ex_arg layer — only shell-escape */
-	fputc('>', out);
-	for (const char *p = line; *p; p++) {
-		if (*p == '>') {
-			fputc('\\', out);
-			fputc('\\', out);
-			fputc(*p, out);
-		} else if (*p == '\\' || *p == '$' || *p == '`' || *p == '"') {
-			fputc('\\', out);
-			fputc(*p, out);
-		} else {
-			fputc(*p, out);
-		}
-	}
-	fputc('>', out);
-	if (offset > 0)
-		fprintf(out, "+%d", offset);
-	else if (offset < 0)
-		fprintf(out, "%d", offset);
+	fprintf(out, "%sf%c ", first ? "%" : ".,$", first ? '>' : '+');
+	emit_escaped_exarg_only(out, line);
+	EMIT_SEP(out);
+	emit_err_check(out, target_line);
+	fputs(";=\n", out);
+	EMIT_SEP(out);
+	if (offset == 0)
+		fprintf(out, ".");
+	else if (offset > 0)
+		fprintf(out, ".+%d", offset);
+	else
+		fprintf(out, ".%d", offset);
 }
 
 /* Emit positioning for a custom-edited group.
- * backstep: emit .-1 before single-line search (interior groups in -r mode)
- * Returns: 0 = single-command, 1 = two-command (multiline). */
-static int emit_custom_pos(FILE *out, group_t *g, int *first_ml, int backstep)
+ * Returns: 0 = unused, 1 = two-command (search then offset). */
+static int emit_custom_pos(FILE *out, group_t *g, int *first_ml)
 {
 	int target_line = g->del_start ? g->del_start : g->add_after;
 	/* Custom command forces multiline-style emission (f> path) */
@@ -589,12 +551,11 @@ static int emit_custom_pos(FILE *out, group_t *g, int *first_ml, int backstep)
 		return 1;
 	}
 	if (g->ncustom == 1) {
-		if (backstep) {
-			fprintf(out, ".-%d", 1);
-			EMIT_SEP(out);
-		}
-		emit_custom_fwd_pos(out, g->custom_lines[0], g->custom_offset);
-		return 0;
+		emit_custom_line_search(out, g->custom_lines[0],
+					g->custom_offset,
+					*first_ml, target_line);
+		*first_ml = 0;
+		return 1;
 	}
 	return -1;
 }
@@ -604,11 +565,11 @@ static int emit_custom_pos(FILE *out, group_t *g, int *first_ml, int backstep)
  * Returns: 0 = single-command positioning (pos is part of final cmd),
  *          1 = two-command positioning (f>/f+ then .+offset as separate cmd)
  *
- * For single-line: emits ">anchor>+offset" (caller appends action)
- * For multiline:   emits "%;f>ctx1\nctx2<sep>.+offset" (first) or f+ (subsequent)
- * For follow ctx:  emits ">follow>-offset" (caller appends action)
+ * For single-line: emits "%f> pattern" or ".,$f+ pattern" with error check
+ * For multiline:   emits "%;f>ctx1\nctx2" (first) or ";f+" (subsequent)
+ * For follow ctx:  emits "%f> follow" or ".,$f+ follow" with negative offset
  *
- * *first_ml: pointer to flag, 1 for first multiline search (uses f>),
+ * *first_ml: pointer to flag, 1 for first search (uses f>),
  *            cleared to 0 after first use (subsequent use f+)
  */
 static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
@@ -630,20 +591,16 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
 		return 1;
 	}
 	if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
-		if (rc->backstep) {
-			fprintf(out, ".-%d", 1);
-			EMIT_SEP(out);
-		}
-		emit_fwd_pos(out, rc->anchors[0], rc->anchor_offset);
-		return 0;
+		emit_line_search(out, rc->anchors[0], rc->anchor_offset,
+				 *first_ml, rc->target_line);
+		*first_ml = 0;
+		return 1;
 	}
 	if (rc->follow_ctx && rc->follow_ctx[0]) {
-		if (rc->backstep) {
-			fprintf(out, ".-%d", 1);
-			EMIT_SEP(out);
-		}
-		emit_follow_pos(out, rc->follow_ctx, rc->follow_offset);
-		return 0;
+		emit_line_search(out, rc->follow_ctx, -(rc->follow_offset),
+				 *first_ml, rc->target_line);
+		*first_ml = 0;
+		return 1;
 	}
 	return -1;  /* no anchor available */
 }
@@ -768,6 +725,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups)
 			sim_first_ml = 0;
 		} else if (g->nanchors == 1) {
 			default_offset = g->anchor_offset;
+			dcmd = sim_first_ml ? "%f>" : ".,$f+";
+			sim_first_ml = 0;
 		} else {
 			default_offset = g->block_change_idx;
 		}
@@ -1152,7 +1111,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 	 * Emit groups.
 	 * Absolute mode: reverse order (bottom-to-top) to preserve line numbers.
 	 * Relative mode: forward order (top-to-bottom) with content-based search.
-	 *   Each >anchor> search starts from cursor position which advances
+	 *   Each f>/f+ search starts from cursor position which advances
 	 *   after each edit, so subsequent searches find the correct occurrence.
 	 */
 	int gi_start = relative_mode ? 0 : ngroups - 1;
@@ -1172,7 +1131,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		if (relative_mode) {
 			rc.use_offset = 0;
 			rc.offset_val = 0;
-			rc.backstep = 0;
 			rc.target_line = g->del_start ? g->del_start : g->add_after;
 			if (relative_mode == 2 && prev_xrow > 0) {
 				/* -rb: interior groups use .+N offset */
@@ -1191,9 +1149,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				rc.follow_ctx = g->follow_ctx;
 				rc.follow_offset = g->follow_offset;
 				rc.anchor_offset = g->anchor_offset;
-				/* -r: interior groups back up 1 so search includes current line */
-				if (relative_mode == 1 && gi > gi_start)
-					rc.backstep = 1;
 				/* Check if we have any usable anchor */
 				if (rc.nanchors > 0 || (rc.follow_ctx && rc.follow_ctx[0]))
 					has_rel = 1;
@@ -1221,7 +1176,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				if (find_line_diff(g->del_texts[0], g->add_texts[0],
 				                   &start, &old_end, &new_text)) {
 					if (has_custom) {
-						int mode = emit_custom_pos(out, g, &first_ml, gi > gi_start);
+						int mode = emit_custom_pos(out, g, &first_ml);
 						if (start == old_end)
 							fprintf(out, ";%dc ", start);
 						else
@@ -1240,7 +1195,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 					free(new_text);
 				} else {
 					if (has_custom) {
-						int mode = emit_custom_pos(out, g, &first_ml, gi > gi_start);
+						int mode = emit_custom_pos(out, g, &first_ml);
 						if (g->ndel == 1)
 							fprintf(out, "c ");
 						else
@@ -1262,7 +1217,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				}
 			} else {
 				if (has_custom) {
-					int mode = emit_custom_pos(out, g, &first_ml, gi > gi_start);
+					int mode = emit_custom_pos(out, g, &first_ml);
 					if (g->ndel == 1)
 						fprintf(out, "c ");
 					else
@@ -1284,7 +1239,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			}
 		} else if (g->del_start) {
 			if (has_custom) {
-				int mode = emit_custom_pos(out, g, &first_ml, gi > gi_start);
+				int mode = emit_custom_pos(out, g, &first_ml);
 				if (g->ndel == 1)
 					fputc('d', out);
 				else
@@ -1299,7 +1254,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		} else if (g->nadd) {
 			if (has_custom) {
 				g->custom_offset -= 1;
-				int mode = emit_custom_pos(out, g, &first_ml, gi > gi_start);
+				int mode = emit_custom_pos(out, g, &first_ml);
 				fprintf(out, "a ");
 				for (int k = 0; k < g->nadd; k++) {
 					emit_escaped_text(out, g->add_texts[k]);
