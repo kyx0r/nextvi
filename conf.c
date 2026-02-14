@@ -269,7 +269,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 		A(SYN_BD, BL1, WH1, YE)},
 
 	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
-	{bar_ft, "^<(.+)> [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
+	{bar_ft, "^<(.+)> [^ ]+ [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
 		A(AY1 | SYN_BD, RE1, BL, YE, MA, CY1, YE1)},
 	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
 		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
