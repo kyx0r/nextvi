@@ -1189,7 +1189,7 @@ Example: autocomplete using whole lines from a buffer
 :ac .+
 .Ed
 
-.It Cm [0-3]sc[esc][sep][exp][exe]
+.It Cm [\fI0-3\fP]sc[<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
 Set ex special characters
 .Bd -literal
 Prefix selects a specific character to change.
@@ -1197,16 +1197,16 @@ Missing arguments default to <\e : % !>.
 
 Example: change <%> to <a>
 :2sc a
-Example: change all to <a> <b> <c> <d>
-:sc abcd
+Example: change <sep> to <a> in same command context
+:rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
 .Ed
 
-.It Cm [0-3]sc![esc][sep][exp][exe]
+.It Cm [\fI0-3\fP]sc![<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
 Set ex special characters
 .Bd -literal
 Missing arguments default to <0x0>.
 
-Example: disable [exp] and [exe]
+Example: disable <exp> and <exe>
 :sc! \e\e\e:
 .Ed
 
@@ -1615,9 +1615,9 @@ _
  654 lbuf.c | file/line buffer
  718 led.c | insert mode/output
  766 regex.c | pikevm
- 1626 ex.c | ex options/commands
+ 1627 ex.c | ex options/commands
  1849 vi.c | normal mode/general
- 7336 total | wc -l *.c\(basort
+ 7337 total | wc -l *.c\(basort
 _
 .TE
 .
