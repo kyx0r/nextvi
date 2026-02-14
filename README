@@ -876,7 +876,7 @@ EX COMMANDS
              Example: shift the printing position to view offscreen register parts
              :1left:reg
              Example: put "hello" into register <1>
-             :1reg hello
+             :49reg hello
 
      [0-255]reg![str]
              Print registers or append to a register
@@ -1130,7 +1130,7 @@ EXINIT ENV VAR
      export EXINIT='b-1:r ./vi.c:b-1'
              Load vi.c into a history buffer
 
-     export EXINIT="$(printf '%b' 'e:& io{\n}\x16\x3kA\x3:& 1G:& 2"aY')"
+     export EXINIT="$(printf '%b' '97reg o{\n}\x3kA\n\t')"
              Setup @ macro in register <a>
 
              @a macro creates <{> and closing <}> below the cursor leaving
@@ -1295,4 +1295,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 13, 2026                    Nextvi 4.0
+Nextvi 4.0                     February 14, 2026                    Nextvi 4.0

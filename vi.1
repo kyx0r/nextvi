@@ -1,4 +1,4 @@
-.Dd Feb 13, 2026
+.Dd Feb 14, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -1165,7 +1165,7 @@ Prefix selects a register and argument replaces its contents.
 Example: shift the printing position to view offscreen register parts
 :1left:reg
 Example: put "hello" into register <1>
-:1reg hello
+:49reg hello
 .Ed
 
 .It Cm [\fI0-255\fP]reg![\fIstr\fP]
@@ -1479,7 +1479,7 @@ Index vi.c for autocomplete
 .It Cm export EXINIT='b-1:r ./vi.c:b-1'
 Load vi.c into a history buffer
 
-.It Cm export EXINIT="$(printf '%b' 'e:& io{\en}\ex16\ex3kA\ex3:& 1G:& 2"aY')"
+.It Cm export EXINIT="$(printf '%b' '97reg o{\en}\ex3kA\en\et')"
 Setup @ macro in register <a>
 
 @a macro creates <{> and closing <}> below the cursor leaving
