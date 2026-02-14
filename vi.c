@@ -1838,12 +1838,17 @@ int main(int argc, char *argv[])
 		}
 	}
 	ibuf = emalloc(ibuf_sz);
-	term_init();
+	if (!(xvis & 1))
+		term_init();
+	if (xvis & 8)
+		term_scrh;
 	ex_init(argv + i, argc - i);
 	if (xvis & 2)
 		ex();
 	else
 		vi(1);
 	term_done();
+	if (xvis & 8)
+		term_scrl;
 	return abs(xquit) - 1;
 }

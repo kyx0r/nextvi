@@ -9,8 +9,6 @@ unsigned int texec, tn;
 
 void term_init(void)
 {
-	if (xvis & 1)
-		return;
 	struct winsize win;
 	struct termios newtermios;
 	char *s;
@@ -31,16 +29,12 @@ void term_init(void)
 	}
 	xcols = xcols ? xcols : 80;
 	xrows = xrows ? xrows : 25;
-	if (xvis & 8)
-		term_scrh;
 }
 
 void term_done(void)
 {
-	if (xvis & 1)
+	if (!term_sbuf)
 		return;
-	if (xvis & 8)
-		term_scrl;
 	term_commit();
 	sbuf_free(term_sbuf)
 	tcsetattr(0, 0, &termios);
@@ -54,9 +48,13 @@ void term_clean(void)
 
 void term_suspend(void)
 {
+	if (xvis & 8)
+		term_scrl;
 	term_done();
 	kill(0, SIGSTOP);
 	term_init();
+	if (xvis & 8)
+		term_scrh;
 }
 
 void term_commit(void)
@@ -285,7 +283,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	struct pollfd fds[3];
 	char buf[512];
 	int ifd = -1, ofd = -1;
-	int nw = 0, vis;
+	int nw = 0;
 	char *argv[5];
 	argv[0] = xgetenv(sh);
 	argv[1] = xish ? "-i" : argv[0];
@@ -302,8 +300,6 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	sbuf_make(sb, sizeof(buf)+1)
 	if (!ibuf) {
 		signal(SIGINT, SIG_IGN);
-		vis = xvis;
-		xvis &= ~8;
 		term_done();
 	} else if (ifd >= 0)
 		fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
@@ -357,8 +353,8 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	tcsetpgrp(STDIN_FILENO, getpgrp());
 	signal(SIGTTOU, SIG_DFL);
 	if (!ibuf) {
-		term_init();
-		xvis = vis;
+		if (term_sbuf)
+			term_init();
 		signal(SIGINT, SIG_DFL);
 	}
 	if (oproc)
