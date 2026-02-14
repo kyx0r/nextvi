@@ -1545,7 +1545,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	*dst++ = '\0';
 	sb->s_n = dst - sb->s;
 	if (*src == xsep) {
-		*idx = LEN(excmds) - 2;
+		*idx = LEN(excmds) - 2 + nullfunc;
 		return src;
 	}
 	for (i = 0; i < LEN(excmds); i++) {
