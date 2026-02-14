@@ -417,7 +417,7 @@ static void emit_escaped_regex_exarg(FILE *out, const char *s)
 static void emit_line_search(FILE *out, const char *pattern, int offset,
 			      int first, int target_line)
 {
-	fprintf(out, "%sf%c ", first ? "%" : ".,$", first ? '>' : '+');
+	fprintf(out, "%sf%c ", first ? "%" : ".,\\$", first ? '>' : '+');
 	emit_escaped_regex_exarg(out, pattern);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
@@ -436,7 +436,7 @@ static void emit_line_search(FILE *out, const char *pattern, int offset,
 static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 				int offset, int first, int target_line)
 {
-	fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
+	fprintf(out, "%s;f%c ", first ? "%" : ".,\\$", first ? '>' : '+');
 	for (int i = 0; i < nanchors; i++) {
 		emit_escaped_regex_exarg(out, anchors[i]);
 		if (i < nanchors - 1)
@@ -498,7 +498,7 @@ static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 	if (cmd)
 		fprintf(out, "%s ", cmd);
 	else
-		fprintf(out, "%s;f%c ", first ? "%" : ".,$", first ? '>' : '+');
+		fprintf(out, "%s;f%c ", first ? "%" : ".,\\$", first ? '>' : '+');
 	for (int i = 0; i < nlines; i++) {
 		emit_escaped_exarg_only(out, lines[i]);
 		if (i < nlines - 1)
@@ -516,7 +516,7 @@ static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 static void emit_custom_line_search(FILE *out, const char *line, int offset,
 				     int first, int target_line)
 {
-	fprintf(out, "%sf%c ", first ? "%" : ".,$", first ? '>' : '+');
+	fprintf(out, "%sf%c ", first ? "%" : ".,\\$", first ? '>' : '+');
 	emit_escaped_exarg_only(out, line);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
@@ -721,11 +721,11 @@ static void interactive_edit_groups(group_t *groups, int ngroups)
 		const char *dcmd = NULL;
 		if (g->nanchors >= 2) {
 			default_offset = g->nanchors + g->anchor_offset - 1;
-			dcmd = sim_first_ml ? "%;f>" : ".,$;f+";
+			dcmd = sim_first_ml ? "%;f>" : ".,\\$;f+";
 			sim_first_ml = 0;
 		} else if (g->nanchors == 1) {
 			default_offset = g->anchor_offset;
-			dcmd = sim_first_ml ? "%f>" : ".,$f+";
+			dcmd = sim_first_ml ? "%f>" : ".,\\$f+";
 			sim_first_ml = 0;
 		} else {
 			default_offset = g->block_change_idx;
