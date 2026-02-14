@@ -66,7 +66,7 @@ ${SEP}.-1${SEP}>				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\
 .
 ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1834\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 	\\\\}
 	ibuf = emalloc\\\\(ibuf_sz\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1841\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;27c , ex_cmds, cmdnum
+${SEP}.+6;27c , ex_cmds, cmdnum
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
