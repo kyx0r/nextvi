@@ -715,9 +715,9 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 
 static void *ec_termexec(char *loc, char *cmd, char *arg)
 {
-	if (*arg)
+	if (*arg && term_sbuf)
 		term_exec(arg, strlen(arg), cmd[0])
-	return NULL;
+	return term_sbuf ? NULL : "unsupported command";
 }
 
 void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
