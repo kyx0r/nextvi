@@ -127,7 +127,8 @@ static int utf8_char_offset(const char *s, int bytepos)
  * *new_text to the replacement text (allocated).
  */
 static int find_line_diff(const char *old, const char *new,
-			int *start, int *old_end, char **new_text)
+			int *start, int *old_end,
+			char **old_text, char **new_text)
 {
 	int old_len = strlen(old);
 	int new_len = strlen(new);
@@ -163,6 +164,11 @@ static int find_line_diff(const char *old, const char *new,
 	/* Convert byte positions to UTF-8 character positions */
 	*start = utf8_char_offset(old, old_diff_start);
 	*old_end = utf8_char_offset(old, old_diff_end);
+
+	/* Extract the old text */
+	*old_text = malloc(old_diff_len + 1);
+	memcpy(*old_text, old + old_diff_start, old_diff_len);
+	(*old_text)[old_diff_len] = '\0';
 
 	/* Extract the new text */
 	*new_text = malloc(new_diff_len + 1);
@@ -664,18 +670,82 @@ static void emit_relative_change(FILE *out, rel_ctx_t *rc,
 		emit_err_check(out, rc->target_line);
 }
 
-/* Emit horizontal change using relative pattern */
-static void emit_relative_horizontal(FILE *out, rel_ctx_t *rc,
-				      int char_start, int char_end,
+/* Escape replacement text for substitute command.
+ * In nextvi :s replacement, only \ is special (for backreferences \0-\9).
+ * \ must be doubled to produce a literal \. The delimiter must also be escaped.
+ * Returns allocated string with re_read-level escaping (no ex_arg/shell yet). */
+static char *escape_sub_repl(const char *s, char delim)
+{
+	int len = strlen(s);
+	int extra = 0;
+	for (const char *p = s; *p; p++)
+		if (*p == '\\' || *p == delim)
+			extra++;
+	char *result = malloc(len + extra + 1);
+	char *dst = result;
+	for (const char *p = s; *p; p++) {
+		if (*p == '\\' || *p == delim)
+			*dst++ = '\\';
+		*dst++ = *p;
+	}
+	*dst = '\0';
+	return result;
+}
+
+/* Escape regex pattern for substitute command.
+ * Like escape_regex() but also escapes the delimiter for re_read. */
+static char *escape_sub_pat(const char *s, char delim)
+{
+	const char *meta = "\\^$.*+?[](){}|";
+	int len = strlen(s);
+	int extra = 0;
+	for (const char *p = s; *p; p++) {
+		if (strchr(meta, *p))
+			extra++;
+		else if (*p == delim)
+			extra++;
+	}
+	char *result = malloc(len + extra + 1);
+	char *dst = result;
+	for (const char *p = s; *p; p++) {
+		if (strchr(meta, *p))
+			*dst++ = '\\';
+		else if (*p == delim)
+			*dst++ = '\\';
+		*dst++ = *p;
+	}
+	*dst = '\0';
+	return result;
+}
+
+/* Emit the s/old/new/ substitute command (no positioning).
+ * Escapes old_text as regex pattern and new_text as replacement,
+ * both through re_read delimiter + ex_arg + shell layers. */
+static void emit_substitute_cmd(FILE *out, const char *old_text,
+				const char *new_text)
+{
+	char *pat = escape_sub_pat(old_text, '/');
+	char *repl = escape_sub_repl(new_text, '/');
+	fputs("s/", out);
+	char *pat_ea = escape_exarg(pat);
+	emit_escaped_line(out, pat_ea);
+	fputc('/', out);
+	char *repl_ea = escape_exarg(repl);
+	emit_escaped_line(out, repl_ea);
+	fputc('/', out);
+	free(repl_ea);
+	free(pat_ea);
+	free(repl);
+	free(pat);
+}
+
+/* Emit substitute using relative pattern positioning */
+static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
+				      const char *old_text,
 				      const char *new_text, int *first_ml)
 {
 	int mode = emit_rel_pos(out, rc, first_ml);
-	if (char_start == char_end)
-		fprintf(out, ";%dc ", char_start);
-	else
-		fprintf(out, ";%d;%dc ", char_start, char_end);
-	emit_escaped_text(out, new_text);
-	fputs("\n.\n", out);
+	emit_substitute_cmd(out, old_text, new_text);
 	EMIT_SEP(out);
 	if (mode == 0 && !rc->use_offset)
 		emit_err_check(out, rc->target_line);
@@ -1172,26 +1242,21 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			if (g->ndel == 1 && g->nadd == 1 &&
 			    g->del_texts[0] && g->add_texts[0]) {
 				int start, old_end;
-				char *new_text;
+				char *old_text, *new_text;
 				if (find_line_diff(g->del_texts[0], g->add_texts[0],
-				                   &start, &old_end, &new_text)) {
+				                   &start, &old_end,
+				                   &old_text, &new_text)) {
 					if (has_custom) {
-						int mode = emit_custom_pos(out, g, &first_ml);
-						if (start == old_end)
-							fprintf(out, ";%dc ", start);
-						else
-							fprintf(out, ";%d;%dc ", start, old_end);
-						emit_escaped_text(out, new_text);
-						fputs("\n.\n", out);
+						emit_custom_pos(out, g, &first_ml);
+						emit_substitute_cmd(out, old_text, new_text);
 						EMIT_SEP(out);
-						if (mode == 0)
-							emit_err_check(out, g->del_start);
 					} else if (has_rel)
-						emit_relative_horizontal(out, &rc,
-						    start, old_end, new_text, &first_ml);
+						emit_relative_substitute(out, &rc,
+						    old_text, new_text, &first_ml);
 					else
 						emit_horizontal_change(out, g->del_start, start,
 						    old_end, new_text);
+					free(old_text);
 					free(new_text);
 				} else {
 					if (has_custom) {
