@@ -412,12 +412,12 @@ static void emit_escaped_regex_exarg(FILE *out, const char *s)
 }
 
 /* Emit a single-line f>/f+ search with error check.
- * first=1 uses %f> (search from start), first=0 uses .,$f+ (skip past current).
+ * first=1 uses %f> (search whole file), first=0 uses .,$f> (current to end).
  * Uses emit_escaped_regex_exarg for uniform escaping (same as multiline path). */
 static void emit_line_search(FILE *out, const char *pattern, int offset,
 			      int first, int target_line)
 {
-	fprintf(out, "%sf%c ", first ? "%" : ".,\\$", first ? '>' : '+');
+	fprintf(out, "%sf> ", first ? "%" : ".,\\$");
 	emit_escaped_regex_exarg(out, pattern);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
@@ -432,11 +432,11 @@ static void emit_line_search(FILE *out, const char *pattern, int offset,
 }
 
 /* Emit multiline f>/f+ position using 2+ context lines.
- * first=1 uses f> (search from current pos), first=0 uses f+ (skip past current) */
+ * first=1 uses %;f> (search whole file), first=0 uses .,$;f> (current to end) */
 static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 				int offset, int first, int target_line)
 {
-	fprintf(out, "%s;f%c ", first ? "%" : ".,\\$", first ? '>' : '+');
+	fprintf(out, "%s;f> ", first ? "%" : ".,\\$");
 	for (int i = 0; i < nanchors; i++) {
 		emit_escaped_regex_exarg(out, anchors[i]);
 		if (i < nanchors - 1)
@@ -446,7 +446,7 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 	emit_err_check(out, target_line);
 	fputs(";=\n", out);
 	EMIT_SEP(out);
-	/* After f>/f+, cursor is at match position; use .+offset for target */
+	/* After f>, cursor is at match position; use .+offset for target */
 	fprintf(out, ".+%d", offset);
 }
 
@@ -498,7 +498,7 @@ static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 	if (cmd)
 		fprintf(out, "%s ", cmd);
 	else
-		fprintf(out, "%s;f%c ", first ? "%" : ".,\\$", first ? '>' : '+');
+		fprintf(out, "%s;f> ", first ? "%" : ".,\\$");
 	for (int i = 0; i < nlines; i++) {
 		emit_escaped_exarg_only(out, lines[i]);
 		if (i < nlines - 1)
@@ -511,12 +511,12 @@ static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 	fprintf(out, ".+%d", offset);
 }
 
-/* Emit single-line custom f>/f+ search with error check.
+/* Emit single-line custom f> search with error check.
  * Line is pre-escaped regex: apply exarg+shell escaping only. */
 static void emit_custom_line_search(FILE *out, const char *line, int offset,
 				     int first, int target_line)
 {
-	fprintf(out, "%sf%c ", first ? "%" : ".,\\$", first ? '>' : '+');
+	fprintf(out, "%sf> ", first ? "%" : ".,\\$");
 	emit_escaped_exarg_only(out, line);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
@@ -567,10 +567,10 @@ static int emit_custom_pos(FILE *out, group_t *g, int *first_ml)
  *
  * For single-line: emits "%f> pattern" or ".,$f+ pattern" with error check
  * For multiline:   emits "%;f>ctx1\nctx2" (first) or ";f+" (subsequent)
- * For follow ctx:  emits "%f> follow" or ".,$f+ follow" with negative offset
+ * For follow ctx:  emits "%f> follow" or ".,$f> follow" with negative offset
  *
- * *first_ml: pointer to flag, 1 for first search (uses f>),
- *            cleared to 0 after first use (subsequent use f+)
+ * *first_ml: pointer to flag, 1 for first search (uses %f>),
+ *            cleared to 0 after first use (subsequent use .,$f>)
  */
 static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
 {
@@ -584,7 +584,7 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
 		return 0;
 	}
 	if (rc->nanchors >= 2) {
-		/* Multiline: f>/f+ search, then .+offset as position for next command */
+		/* Multiline: f> search, then .+offset as position for next command */
 		int offset = rc->nanchors + rc->anchor_offset - 1;
 		emit_multiline_pos(out, rc->anchors, rc->nanchors, offset, *first_ml, rc->target_line);
 		*first_ml = 0;
@@ -721,11 +721,11 @@ static void interactive_edit_groups(group_t *groups, int ngroups)
 		const char *dcmd = NULL;
 		if (g->nanchors >= 2) {
 			default_offset = g->nanchors + g->anchor_offset - 1;
-			dcmd = sim_first_ml ? "%;f>" : ".,\\$;f+";
+			dcmd = sim_first_ml ? "%;f>" : ".,\\$;f>";
 			sim_first_ml = 0;
 		} else if (g->nanchors == 1) {
 			default_offset = g->anchor_offset;
-			dcmd = sim_first_ml ? "%f>" : ".,\\$f+";
+			dcmd = sim_first_ml ? "%f>" : ".,\\$f>";
 			sim_first_ml = 0;
 		} else {
 			default_offset = g->block_change_idx;
