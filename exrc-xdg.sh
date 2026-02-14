@@ -124,7 +124,7 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1617\\${SEP}vis 2\\${SEP}q! 1}${SEP}
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..1f85d4ce 100644
+index 834ec4b4..6e72c7a7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ int xesc = '\\';		/* ex command arg escape character */
@@ -151,7 +151,7 @@ index 7ce6e247..1f85d4ce 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1610,6 +1613,51 @@ void ex(void)
+@@ -1611,6 +1614,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -203,7 +203,7 @@ index 7ce6e247..1f85d4ce 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1621,6 +1669,30 @@ void ex_init(char **files, int n)
+@@ -1622,6 +1670,30 @@ void ex_init(char **files, int n)
  		s = *(++files);
  	} while (--n > 0);
  	xvis &= ~4;

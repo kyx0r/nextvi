@@ -944,7 +944,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/conf.c b/conf.c
-index 20e147d9..cf080454 100644
+index 46f335b6..9ec027b3 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -258,7 +258,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -957,7 +957,7 @@ index 20e147d9..cf080454 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7ce6e247..607af81a 100644
+index 834ec4b4..cdf6f740 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,6 +42,9 @@ struct buf *bufs;		/* main buffers */
@@ -1152,7 +1152,7 @@ index 7ce6e247..607af81a 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  	{"", ec_null}, /* do not remove */
-@@ -1610,6 +1732,238 @@ void ex(void)
+@@ -1611,6 +1733,238 @@ void ex(void)
  	xgrec--;
  }
  
@@ -1534,10 +1534,10 @@ index 7aba6ef6..0932c83c 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index ef1b0927..8233801b 100644
+index 8c674664..e33a78e3 100644
 --- a/term.c
 +++ b/term.c
-@@ -85,6 +85,15 @@ void term_kill(void)
+@@ -83,6 +83,15 @@ void term_kill(void)
  	term_out("\33[K");
  }
  
@@ -1554,7 +1554,7 @@ index ef1b0927..8233801b 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 535ef11e..7392f72b 100644
+index 85af37d2..9e19e5eb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)

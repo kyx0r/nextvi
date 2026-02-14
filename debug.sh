@@ -107,10 +107,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..46232d6a 100644
+index 834ec4b4..17c26ee3 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1624,3 +1624,16 @@ void ex_init(char **files, int n)
+@@ -1625,3 +1625,16 @@ void ex_init(char **files, int n)
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
  }

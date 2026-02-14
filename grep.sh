@@ -166,7 +166,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/conf.c b/conf.c
-index 20e147d9..4ce6da89 100644
+index 46f335b6..05df4f1c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -29,6 +29,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -188,7 +188,7 @@ index 20e147d9..4ce6da89 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?\
  [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*(?:\\|.*?(?:(?<^\\\\)\\||$))*)[ \t]*(?:([,;]#?)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 7ce6e247..890d0bd1 100644
+index 834ec4b4..e61989f7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -39,7 +39,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -201,7 +201,7 @@ index 7ce6e247..890d0bd1 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 535ef11e..9e77055d 100644
+index 85af37d2..cb6ad582 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -499,12 +499,12 @@ void dir_calc(char *path)

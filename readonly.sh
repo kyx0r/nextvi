@@ -93,7 +93,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..7c534ece 100644
+index 834ec4b4..bec795fe 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -54,6 +54,7 @@ static char xirerr[] = "invalid range";
@@ -152,7 +152,7 @@ index 7ce6e247..7c534ece 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 535ef11e..4e50baca 100644
+index 85af37d2..a677864c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1828,11 +1828,13 @@ int main(int argc, char *argv[])

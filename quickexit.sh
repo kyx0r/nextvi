@@ -120,7 +120,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/conf.c b/conf.c
-index 20e147d9..1de38812 100644
+index 46f335b6..947d3264 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -257,7 +257,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -133,7 +133,7 @@ index 20e147d9..1de38812 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg!?|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 7ce6e247..0045083b 100644
+index 834ec4b4..8e7395e8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
@@ -199,7 +199,7 @@ index 7aba6ef6..abbaf3df 100644
  				return c;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 535ef11e..c974bd7c 100644
+index 85af37d2..9bf7eeb0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@

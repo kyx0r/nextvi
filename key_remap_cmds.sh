@@ -130,7 +130,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/conf.c b/conf.c
-index 20e147d9..4c90a89f 100644
+index 46f335b6..2f055f53 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -258,7 +258,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -143,7 +143,7 @@ index 20e147d9..4c90a89f 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7ce6e247..96d38870 100644
+index 834ec4b4..769e55f3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -54,6 +54,8 @@ static char xirerr[] = "invalid range";
@@ -238,7 +238,7 @@ index 7aba6ef6..0272109c 100644
  		case TK_CTL('h'):
  		case 127:
 diff --git a/vi.c b/vi.c
-index 535ef11e..a6e2e210 100644
+index 85af37d2..f69e2b2c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1240,7 +1240,7 @@ void vi(int init)

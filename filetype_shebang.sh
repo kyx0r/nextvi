@@ -51,7 +51,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..d8e6d9b8 100644
+index 834ec4b4..c7411245 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -376,6 +376,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)

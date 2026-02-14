@@ -188,7 +188,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..3bebd69d 100644
+index 834ec4b4..4474d776 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1336,6 +1336,16 @@ static void *ec_specials(char *loc, char *cmd, char *arg)

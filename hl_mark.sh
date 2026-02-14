@@ -68,7 +68,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..48768d61 100644
+index 834ec4b4..79f3a0c3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -96,7 +96,7 @@ index 7ce6e247..48768d61 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 535ef11e..e1820ff6 100644
+index 85af37d2..c0c5405a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1737,6 +1737,21 @@ void vi(int init)

@@ -108,7 +108,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..38ffd845 100644
+index 834ec4b4..410f93d6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ int xesc = '\\';		/* ex command arg escape character */
@@ -171,10 +171,10 @@ index 7ce6e247..38ffd845 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index ef1b0927..c98ecd95 100644
+index 8c674664..b0b76d52 100644
 --- a/term.c
 +++ b/term.c
-@@ -244,7 +244,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -242,7 +242,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}

@@ -252,7 +252,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..e9a651f7 100644
+index 834ec4b4..04012c7c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
@@ -465,7 +465,7 @@ index 1ebfea46..629f48d1 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index 535ef11e..144cb14e 100644
+index 85af37d2..a2559cfe 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -169,6 +169,22 @@ static void vi_drawrow(int row)

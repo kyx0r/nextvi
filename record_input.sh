@@ -68,7 +68,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..65c2214f 100644
+index 834ec4b4..3c4b6cd9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
@@ -96,10 +96,10 @@ index 7ce6e247..65c2214f 100644
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
 diff --git a/term.c b/term.c
-index ef1b0927..c517b2f4 100644
+index 8c674664..9a1ddb71 100644
 --- a/term.c
 +++ b/term.c
-@@ -180,6 +180,12 @@ int term_read(int winch)
+@@ -178,6 +178,12 @@ int term_read(int winch)
  		ret:
  		ibuf_cnt = 1;
  		ibuf_pos = 0;

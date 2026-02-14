@@ -81,7 +81,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 diff --git a/vi.c b/vi.c
-index 535ef11e..08362d83 100644
+index 85af37d2..85e28408 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -346,6 +346,28 @@ static int vi_motionln(int *row, int cmd, int cnt)

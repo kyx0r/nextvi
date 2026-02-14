@@ -157,7 +157,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..4b7f87f7 100644
+index 834ec4b4..b459e6f6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -352,7 +352,9 @@ int ex_edit(const char *path, int len)
@@ -181,7 +181,7 @@ index 7ce6e247..4b7f87f7 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1612,15 +1617,36 @@ void ex(void)
+@@ -1613,15 +1618,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -221,7 +221,7 @@ index 7ce6e247..4b7f87f7 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index ef1b0927..f4cadb2b 100644
+index 8c674664..142a4c94 100644
 --- a/term.c
 +++ b/term.c
 @@ -6,6 +6,8 @@ int xrows, xcols;
@@ -233,7 +233,7 @@ index ef1b0927..f4cadb2b 100644
  
  void term_init(void)
  {
-@@ -16,11 +18,14 @@ void term_init(void)
+@@ -14,11 +16,14 @@ void term_init(void)
  	char *s;
  	term_winch = 0;
  	sbuf_make(term_sbuf, 2048)
@@ -252,16 +252,16 @@ index ef1b0927..f4cadb2b 100644
  		xcols = win.ws_col;
  		xrows = win.ws_row;
  	} else {
-@@ -31,6 +36,7 @@ void term_init(void)
+@@ -29,6 +34,7 @@ void term_init(void)
  	}
  	xcols = xcols ? xcols : 80;
  	xrows = xrows ? xrows : 25;
 +	isig = 1;
- 	if (xvis & 8)
- 		term_scrh;
  }
-@@ -43,7 +49,7 @@ void term_done(void)
- 		term_scrl;
+ 
+ void term_done(void)
+@@ -37,7 +43,7 @@ void term_done(void)
+ 		return;
  	term_commit();
  	sbuf_free(term_sbuf)
 -	tcsetattr(0, 0, &termios);
@@ -269,7 +269,7 @@ index ef1b0927..f4cadb2b 100644
  }
  
  void term_clean(void)
-@@ -162,11 +168,12 @@ int term_read(int winch)
+@@ -160,11 +166,12 @@ int term_read(int winch)
  			goto ret;
  		}
  		cw = 0;
@@ -284,7 +284,7 @@ index ef1b0927..f4cadb2b 100644
  			if (term_winch && winch && xquit >= 0) {
  				*ibuf = winch;
  				goto ret;
-@@ -311,7 +318,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -307,7 +314,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	fds[0].events = POLLIN;
  	fds[1].fd = ifd;
  	fds[1].events = POLLOUT;
@@ -293,7 +293,7 @@ index ef1b0927..f4cadb2b 100644
  	fds[2].events = POLLIN;
  	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
  		if (fds[0].revents & POLLIN) {
-@@ -354,7 +361,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -350,7 +357,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  		close(ifd);
  	waitpid(pid, status, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -301,9 +301,9 @@ index ef1b0927..f4cadb2b 100644
 +	tcsetpgrp(stdin_fd, getpgrp());
  	signal(SIGTTOU, SIG_DFL);
  	if (!ibuf) {
- 		term_init();
+ 		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index 535ef11e..371b2df6 100644
+index 85af37d2..371455ea 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1804,6 +1804,7 @@ static void setup_signals(void)

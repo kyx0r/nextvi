@@ -81,10 +81,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..d5dd178a 100644
+index 834ec4b4..a4d4d830 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1610,7 +1610,7 @@ void ex(void)
+@@ -1611,7 +1611,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -93,7 +93,7 @@ index 7ce6e247..d5dd178a 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1623,4 +1623,6 @@ void ex_init(char **files, int n)
+@@ -1624,4 +1624,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -101,7 +101,7 @@ index 7ce6e247..d5dd178a 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 535ef11e..548467e9 100644
+index 85af37d2..c298548f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1808,7 +1808,8 @@ static void setup_signals(void)
@@ -114,7 +114,7 @@ index 535ef11e..548467e9 100644
  	setup_signals();
  	dir_init();
  	syn_init();
-@@ -1830,16 +1831,27 @@ int main(int argc, char *argv[])
+@@ -1830,9 +1831,20 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis = 0;
@@ -137,9 +137,10 @@ index 535ef11e..548467e9 100644
  				return EXIT_FAILURE;
  			}
  		}
- 	}
- 	ibuf = emalloc(ibuf_sz);
- 	term_init();
+@@ -1842,7 +1854,7 @@ int main(int argc, char *argv[])
+ 		term_init();
+ 	if (xvis & 8)
+ 		term_scrh;
 -	ex_init(argv + i, argc - i);
 +	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
  	if (xvis & 2)

@@ -376,7 +376,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..d635e7c9 100644
+index 834ec4b4..b00bb3bd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -36,7 +36,7 @@ int xpln;			/* tracks newline from ex print and pipe stdout */
@@ -752,7 +752,7 @@ index ff88bb41..fc39e70f 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 535ef11e..302be80b 100644
+index 85af37d2..4d5326d3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -439,7 +439,7 @@ static void vi_regput(int c, const char *s, int lnmode)

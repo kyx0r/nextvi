@@ -145,7 +145,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 7ce6e247..12b53aa2 100644
+index 834ec4b4..96c5f213 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -326,10 +326,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
