@@ -104,10 +104,9 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 21\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,
 	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 33\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+2a 	isig = 1;
 .
-${SEP}.,$;f+ 		term_scrl;
-	term_commit\\\\(\\\\);
+${SEP}.,$;f+ term_commit\\\\(\\\\);
 	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 46\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;11;12c stdin_fd
+${SEP}.+2;11;12c stdin_fd
 .
 ${SEP}.,$;f+ 			goto ret;
 		\\\\}
