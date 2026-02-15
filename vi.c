@@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_cndir = 1;		/* ^n direction */
-static int vi_status;			/* always show status */
+static int vi_status;			/* rows reserved for permanent status bar */
 static int vi_tsm;			/* type of the status message */
 static int vi_nlword;			/* new line mode for eEwWbB */
 
@@ -130,7 +130,7 @@ static void vi_drawrow(int row)
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
 	static char ch[5] = "~";
-	if (xmpt == 1 && row == xtop + xrows - 1)
+	if (xmpt == 1 && !vi_status && row == xtop + xrows - 1)
 		return;
 	if (*vi_word && xled) {
 		int noff, nrow, ret;
@@ -1333,8 +1333,9 @@ void vi(int init)
 				vi_tsm = 0;
 				status:
 				if (vi_arg) {
-					vi_status = vi_arg % 2 ? xrows - vi_arg : 0;
-					xrows += vi_status ? 0 : vi_arg - 1;
+					xrows += vi_status;
+					vi_status = vi_arg % 2 ? vi_arg : 0;
+					xrows -= vi_status;
 				}
 				vc_status(vi_tsm);
 				break;
@@ -1539,7 +1540,7 @@ void vi(int init)
 					term_done();
 					term_init();
 				}
-				vi_status = vi_status ? xrows - 1: vi_status;
+				xrows -= vi_status;
 				vi_mod |= 1;
 				break;
 			case 'm':
@@ -1781,7 +1782,6 @@ void vi(int init)
 			vi_drawrow(xrow);
 		}
 		if (vi_status && xmpt < 1) {
-			xrows = vi_status != xrows ? vi_status : xrows;
 			vc_status(vi_tsm);
 			if (xmpt > 0)
 				xmpt = 0;
