@@ -890,7 +890,7 @@ EX COMMANDS
              Example: put "hello" into register <1>
              :49reg hello
 
-     [0-255]reg![str]
+     [0-255]reg+[str]
              Print registers or append to a register
 
      bx[#]   Set max number of buffers allowed
