@@ -347,6 +347,141 @@ end
 "
 
 echo ""
+echo "=== Substitute uniqueness expansion tests ==="
+
+# When a substitute pattern appears multiple times on a line, patch2vi
+# should expand the diff region with surrounding context until it's unique.
+
+check "duplicate substring: change second foo" \
+	"ctx1
+ctx2
+ctx3
+foo bar foo baz
+end
+" \
+	"ctx1
+ctx2
+ctx3
+foo bar qux baz
+end
+"
+
+check "triple duplicate: change middle occurrence" \
+	"ctx1
+ctx2
+ctx3
+aa foo bb foo cc foo dd
+end
+" \
+	"ctx1
+ctx2
+ctx3
+aa foo bb qux cc foo dd
+end
+"
+
+check "adjacent duplicates" \
+	"ctx1
+ctx2
+ctx3
+abab cdcd abab
+end
+" \
+	"ctx1
+ctx2
+ctx3
+abab cdcd efef
+end
+"
+
+check "duplicate with regex metacharacters" \
+	"ctx1
+ctx2
+ctx3
+a.b+c a.b+c end
+end
+" \
+	"ctx1
+ctx2
+ctx3
+a.b+c a.x+c end
+end
+"
+
+check_script "expansion includes context for uniqueness" \
+	"ctx1
+ctx2
+ctx3
+foo bar foo baz
+end
+" \
+	"ctx1
+ctx2
+ctx3
+foo bar qux baz
+end
+" \
+	's/' ''
+
+# When the diff covers the entire old line (can't make unique), should
+# fall back to full-line change instead of substitute
+check "full-line fallback when substring not unique" \
+	"ctx1
+ctx2
+ctx3
+abab
+end
+" \
+	"ctx1
+ctx2
+ctx3
+acab
+end
+"
+
+check "duplicate at start of line" \
+	"ctx1
+ctx2
+ctx3
+xx yy xx zz
+end
+" \
+	"ctx1
+ctx2
+ctx3
+xx yy QQ zz
+end
+"
+
+check "duplicate at end of line" \
+	"ctx1
+ctx2
+ctx3
+aa xx bb xx
+end
+" \
+	"ctx1
+ctx2
+ctx3
+aa QQ bb xx
+end
+"
+
+check "UTF-8 duplicate expansion" \
+	"ctx1
+ctx2
+ctx3
+café bon café fin
+end
+" \
+	"ctx1
+ctx2
+ctx3
+café bon thé fin
+end
+"
+
+echo ""
 echo "=== End-to-end apply tests (block mode) ==="
 
 check "block mode simple" \

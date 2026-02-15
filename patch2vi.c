@@ -119,6 +119,18 @@ static int utf8_char_offset(const char *s, int bytepos)
 	return chars;
 }
 
+/* Count how many times substring needle appears in haystack */
+static int count_occurrences(const char *haystack, const char *needle, int needle_len)
+{
+	int count = 0;
+	const char *p = haystack;
+	while ((p = strstr(p, needle)) != NULL) {
+		count++;
+		p += (needle_len > 0 ? needle_len : 1);
+	}
+	return count;
+}
+
 /*
  * Compare two lines and find the differing portion.
  * Returns 1 if suitable for horizontal edit, 0 otherwise.
@@ -160,6 +172,55 @@ static int find_line_diff(const char *old, const char *new,
 	int new_diff_len = new_diff_end - new_diff_start;
 	if (old_diff_len > old_len / 2 && new_diff_len > new_len / 2)
 		return 0;
+
+	/* Expand diff region until old_text is unique on the line.
+	 * Since prefix and suffix are shared between old and new,
+	 * expanding symmetrically keeps both regions aligned. */
+	while (old_diff_end - old_diff_start > 0) {
+		/* Build a temporary substring to check uniqueness */
+		int dlen = old_diff_end - old_diff_start;
+		char tmp[dlen + 1];
+		memcpy(tmp, old + old_diff_start, dlen);
+		tmp[dlen] = '\0';
+		if (count_occurrences(old, tmp, dlen) <= 1)
+			break;
+		/* Expand: prefer left, then right */
+		int expanded = 0;
+		if (old_diff_start > 0) {
+			old_diff_start--;
+			new_diff_start--;
+			/* Align to UTF-8 char boundary (skip continuation bytes) */
+			while (old_diff_start > 0 &&
+			       (old[old_diff_start] & 0xC0) == 0x80) {
+				old_diff_start--;
+				new_diff_start--;
+			}
+			expanded = 1;
+		}
+		if (!expanded || count_occurrences(old, old + old_diff_start,
+		    old_diff_end - old_diff_start) > 1) {
+			if (old_diff_end < old_len) {
+				old_diff_end++;
+				new_diff_end++;
+				/* Skip past UTF-8 continuation bytes */
+				while (old_diff_end < old_len &&
+				       (old[old_diff_end] & 0xC0) == 0x80) {
+					old_diff_end++;
+					new_diff_end++;
+				}
+				expanded = 1;
+			}
+		}
+		if (!expanded)
+			break;
+		/* If we've covered the whole line, fall back */
+		if (old_diff_start == 0 && old_diff_end == old_len)
+			return 0;
+	}
+
+	/* Recalculate diff lengths after expansion */
+	old_diff_len = old_diff_end - old_diff_start;
+	new_diff_len = new_diff_end - new_diff_start;
 
 	/* Convert byte positions to UTF-8 character positions */
 	*start = utf8_char_offset(old, old_diff_start);
