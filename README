@@ -222,10 +222,10 @@ key_remap_cmds.sh
 --------------
 Adds :im :im! and :nm :nm! commands to dynamically remap keybinds
 in normal and insert modes.
-Remapping a to b:
-:im a b
-Remapping a to abc:
+Remapping a to hello in insert mode
 :im a hello
+Remapping a to i in normal mode
+:nm a i
 
 My current EXINIT setup:
 --------------
@@ -235,6 +235,7 @@ How it works:
 :97reg - put macro into a register
 :inc (^(?\:(?\!^\.git).)+[^/]+$) always exclude .git folder from :fd
 :pac - print autocomplete options
+:sc - default special characters
 
 Macros:
 @q = creates structure like this:
