@@ -252,7 +252,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..04012c7c 100644
+index ebf30902..8aa85c5b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
@@ -263,7 +263,7 @@ index 834ec4b4..04012c7c 100644
  
  int xquit;			/* exit if positive, force quit if negative */
  int xrow, xoff, xtop;		/* current row, column, and top row */
-@@ -1336,6 +1337,23 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1363,6 +1364,23 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  
  static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
  
@@ -287,7 +287,7 @@ index 834ec4b4..04012c7c 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1454,6 +1472,7 @@ static struct excmd {
+@@ -1481,6 +1499,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),

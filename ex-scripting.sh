@@ -108,7 +108,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..410f93d6 100644
+index ebf30902..e779dd4b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ int xesc = '\\';		/* ex command arg escape character */
@@ -119,7 +119,7 @@ index 834ec4b4..410f93d6 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1336,6 +1337,41 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1363,6 +1364,41 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  
  static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
  
@@ -161,7 +161,7 @@ index 834ec4b4..410f93d6 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1433,6 +1469,8 @@ static struct excmd {
+@@ -1460,6 +1496,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},

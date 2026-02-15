@@ -51,10 +51,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..c7411245 100644
+index ebf30902..0b76c589 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -376,6 +376,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -378,6 +378,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  			fd < 0 || rd ? 'f' : 'r');
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)

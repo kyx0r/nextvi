@@ -145,10 +145,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..96c5f213 100644
+index ebf30902..18eed216 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -326,10 +326,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
+@@ -328,10 +328,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
  	return key;
  }
  
@@ -161,7 +161,7 @@ index 834ec4b4..96c5f213 100644
  	close(fd); \
  } \
  
-@@ -345,7 +345,7 @@ int ex_edit(const char *path, int len)
+@@ -347,7 +347,7 @@ int ex_edit(const char *path, int len)
  		return 1;
  	}
  	bufs_switch(bufs_open(path, len));
@@ -170,7 +170,7 @@ index 834ec4b4..96c5f213 100644
  	return 0;
  }
  
-@@ -366,7 +366,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -368,7 +368,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}

@@ -114,7 +114,7 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1617\\${SEP}vis 2\\${SEP}q! 1}${SEP}
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..a15cae2b 100644
+index ebf30902..f774b294 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ int xesc = '\\';		/* ex command arg escape character */
@@ -125,7 +125,7 @@ index 834ec4b4..a15cae2b 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[2];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1353,6 +1354,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1380,6 +1381,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -133,7 +133,7 @@ index 834ec4b4..a15cae2b 100644
  
  _EO(left,
  	if (*loc)
-@@ -1391,6 +1393,7 @@ static struct excmd {
+@@ -1418,6 +1420,7 @@ static struct excmd {
  	EO(ai),
  	{"ac", ec_setacreg},
  	{"a", ec_insert},
@@ -141,7 +141,7 @@ index 834ec4b4..a15cae2b 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1611,6 +1614,51 @@ void ex(void)
+@@ -1643,6 +1646,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -193,7 +193,7 @@ index 834ec4b4..a15cae2b 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1622,6 +1670,20 @@ void ex_init(char **files, int n)
+@@ -1654,6 +1702,20 @@ void ex_init(char **files, int n)
  		s = *(++files);
  	} while (--n > 0);
  	xvis &= ~4;

@@ -957,7 +957,7 @@ index 46f335b6..9ec027b3 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 834ec4b4..cdf6f740 100644
+index ebf30902..bd0e02bf 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,6 +42,9 @@ struct buf *bufs;		/* main buffers */
@@ -970,7 +970,7 @@ index 834ec4b4..cdf6f740 100644
  static struct buf *ex_tpbuf;	/* temp prev buffer */
  static int xbufsmax;		/* number of buffers */
  static int xbufsalloc = 10;	/* initial number of buffers */
-@@ -98,6 +101,9 @@ void bufs_switch(int idx)
+@@ -100,6 +103,9 @@ void bufs_switch(int idx)
  		ex_buf = &bufs[idx];
  	}
  	exbuf_load(ex_buf)
@@ -980,7 +980,7 @@ index 834ec4b4..cdf6f740 100644
  }
  
  static int bufs_open(const char *path, int len)
-@@ -159,6 +165,9 @@ void temp_switch(int i, int swap)
+@@ -161,6 +167,9 @@ void temp_switch(int i, int swap)
  	}
  	exbuf_load(ex_buf)
  	syn_setft(xb_ft);
@@ -990,7 +990,7 @@ index 834ec4b4..cdf6f740 100644
  }
  
  void temp_write(int i, char *str)
-@@ -572,10 +581,20 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -574,10 +583,20 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
@@ -1015,7 +1015,7 @@ index 834ec4b4..cdf6f740 100644
  	if (*arg)
  		xquit = abs(atoi(arg)) + 1;
  	if (strchr(cmd, '!'))
-@@ -1364,6 +1383,106 @@ _EO(left,
+@@ -1391,6 +1410,106 @@ _EO(left,
  	return NULL;
  )
  
@@ -1122,7 +1122,7 @@ index 834ec4b4..cdf6f740 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1394,6 +1513,7 @@ static struct excmd {
+@@ -1421,6 +1540,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -1130,7 +1130,7 @@ index 834ec4b4..cdf6f740 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1429,10 +1549,13 @@ static struct excmd {
+@@ -1456,10 +1576,13 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
@@ -1144,7 +1144,7 @@ index 834ec4b4..cdf6f740 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1454,7 +1577,6 @@ static struct excmd {
+@@ -1481,7 +1604,6 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -1152,7 +1152,7 @@ index 834ec4b4..cdf6f740 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  	{"", ec_null}, /* do not remove */
-@@ -1611,6 +1733,238 @@ void ex(void)
+@@ -1643,6 +1765,238 @@ void ex(void)
  	xgrec--;
  }
  

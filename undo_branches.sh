@@ -188,10 +188,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..4474d776 100644
+index ebf30902..54dd8b8a 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1336,6 +1336,16 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1363,6 +1363,16 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  
  static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
  
@@ -208,7 +208,7 @@ index 834ec4b4..4474d776 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1428,6 +1438,7 @@ static struct excmd {
+@@ -1455,6 +1465,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},

@@ -143,7 +143,7 @@ index 46f335b6..2f055f53 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 834ec4b4..769e55f3 100644
+index ebf30902..c749cb84 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -54,6 +54,8 @@ static char xirerr[] = "invalid range";
@@ -152,10 +152,10 @@ index 834ec4b4..769e55f3 100644
  static void *xpret;		/* previous ex command return value */
 +static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 +static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
+ static sbuf *xanchor;		/* anchored error status buffer */
+ static int xexec_dep;		/* ex_exec recursion depth */
  
- static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
- {
-@@ -546,6 +548,51 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -548,6 +550,51 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -207,7 +207,7 @@ index 834ec4b4..769e55f3 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	if (!arg[0]) {
-@@ -1407,12 +1454,16 @@ static struct excmd {
+@@ -1434,12 +1481,16 @@ static struct excmd {
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),

@@ -157,10 +157,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..b459e6f6 100644
+index ebf30902..cd7b8ba9 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -352,7 +352,9 @@ int ex_edit(const char *path, int len)
+@@ -354,7 +354,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
@@ -171,7 +171,7 @@ index 834ec4b4..b459e6f6 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -371,6 +373,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -373,6 +375,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -181,7 +181,7 @@ index 834ec4b4..b459e6f6 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1613,15 +1618,36 @@ void ex(void)
+@@ -1645,15 +1650,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {

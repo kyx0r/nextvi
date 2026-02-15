@@ -133,7 +133,7 @@ index 46f335b6..947d3264 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg!?|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 834ec4b4..8e7395e8 100644
+index ebf30902..ff5bf8ba 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
@@ -144,7 +144,7 @@ index 834ec4b4..8e7395e8 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -1353,6 +1354,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1380,6 +1381,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -152,7 +152,7 @@ index 834ec4b4..8e7395e8 100644
  
  _EO(left,
  	if (*loc)
-@@ -1414,6 +1416,7 @@ static struct excmd {
+@@ -1441,6 +1443,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},

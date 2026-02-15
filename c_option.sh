@@ -81,10 +81,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..a4d4d830 100644
+index ebf30902..cf9c1eca 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1611,7 +1611,7 @@ void ex(void)
+@@ -1643,7 +1643,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -93,7 +93,7 @@ index 834ec4b4..a4d4d830 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1624,4 +1624,6 @@ void ex_init(char **files, int n)
+@@ -1656,4 +1656,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)

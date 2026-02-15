@@ -68,7 +68,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..79f3a0c3 100644
+index ebf30902..fec92ae4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -79,7 +79,7 @@ index 834ec4b4..79f3a0c3 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1353,6 +1354,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1380,6 +1381,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -87,7 +87,7 @@ index 834ec4b4..79f3a0c3 100644
  
  _EO(left,
  	if (*loc)
-@@ -1446,6 +1448,7 @@ static struct excmd {
+@@ -1473,6 +1475,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),

@@ -93,7 +93,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 834ec4b4..bec795fe 100644
+index ebf30902..38c0a432 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -54,6 +54,7 @@ static char xirerr[] = "invalid range";
@@ -101,10 +101,10 @@ index 834ec4b4..bec795fe 100644
  static char *xrerr;
  static void *xpret;		/* previous ex command return value */
 +char readonly = 0;		/* commandline readonly option */
+ static sbuf *xanchor;		/* anchored error status buffer */
+ static int xexec_dep;		/* ex_exec recursion depth */
  
- static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
- {
-@@ -115,6 +116,7 @@ static int bufs_open(const char *path, int len)
+@@ -117,6 +118,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -112,7 +112,7 @@ index 834ec4b4..bec795fe 100644
  	return i;
  }
  
-@@ -366,6 +368,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -368,6 +370,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -121,7 +121,7 @@ index 834ec4b4..bec795fe 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -683,6 +687,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -685,6 +689,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf.s);
  	} else {
  		if (!strchr(cmd, '!')) {
@@ -130,7 +130,7 @@ index 834ec4b4..bec795fe 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1336,6 +1342,12 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1363,6 +1369,12 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  
  static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
  
@@ -143,7 +143,7 @@ index 834ec4b4..bec795fe 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1420,6 +1432,7 @@ static struct excmd {
+@@ -1447,6 +1459,7 @@ static struct excmd {
  	{"reg!", ec_regprint},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},

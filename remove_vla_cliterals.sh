@@ -284,10 +284,10 @@ index 46f335b6..9f459fcb 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 834ec4b4..9453316e 100644
+index ebf30902..31ca0fe6 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -509,7 +509,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -511,7 +511,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  		return xserr;
  	if (o1 >= 0 && dir > 0) {
  		sbuf sb;
@@ -297,7 +297,7 @@ index 834ec4b4..9453316e 100644
  		int r2 = end - 1;
  		int skip = cmd[1] == '+' ? 1 : 0;
  		void *ret = NULL;
-@@ -523,6 +524,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -525,6 +526,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  						soff + offs[xgrp], &xrow, &xoff))
  			ret = xuerr;
  		free(sb.s);
@@ -305,7 +305,7 @@ index 834ec4b4..9453316e 100644
  		return ret;
  	}
  	off = xoff;
-@@ -983,7 +985,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -985,7 +987,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s, 0);
  	}
  	free(pat);
@@ -314,7 +314,7 @@ index 834ec4b4..9453316e 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -1035,6 +1037,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1037,6 +1039,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
