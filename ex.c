@@ -54,6 +54,8 @@ static char xirerr[] = "invalid range";
 static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
+static sbuf *xanchor;		/* anchored error status buffer */
+static int xexec_dep;		/* ex_exec recursion depth */
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
 {
@@ -1131,15 +1133,40 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	int isdq = cmd[1] == '?';
 	char *cond = isdq ? NULL : re_read(&arg, *cmd);
 	int count = *loc && !isdq ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
-	char *then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
-	char *else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 	char *ret = NULL, *branch;
-	int inv = cmd[1 + isdq] == '!';
-	for (; count && !ret; count--) {
-		ret = isdq ? xpret : (cond ? ex_exec(cond) : NULL);
-		branch = (ret != NULL) ^ inv ? else_cmd : then_cmd;
-		if (branch)
-			ret = ex_exec(branch);
+	int inv = cmd[1 + isdq] == '!', i;
+	char *then_cmd, *else_cmd;
+	if (isdq && *loc) {
+		int id = atoi(loc);
+		if (!*arg) {
+			int err = xpret != NULL;
+			if (!xanchor)
+				sbuf_make(xanchor, 4 * (int)sizeof(int))
+			sbuf_mem(xanchor, &id, (int)sizeof(id))
+			sbuf_mem(xanchor, &err, (int)sizeof(err))
+			return ret;
+		} else if (!xanchor)
+			return ret;
+		then_cmd = re_read(&arg, *cmd);
+		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
+		int *ap = (int*)xanchor->s;
+		for (i = xanchor->s_n / (int)sizeof(int) - 2; i >= 0; i -= 2) {
+			if (ap[i] == id) {
+				branch = ap[i + 1] ^ inv ? else_cmd : then_cmd;
+				if (branch)
+					ret = ex_exec(branch);
+				break;
+			}
+		}
+	} else {
+		then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
+		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
+		for (; count && !ret; count--) {
+			ret = isdq ? xpret : (cond ? ex_exec(cond) : NULL);
+			branch = (ret != NULL) ^ inv ? else_cmd : then_cmd;
+			if (branch)
+				ret = ex_exec(branch);
+		}
 	}
 	free(cond);
 	free(then_cmd);
@@ -1571,6 +1598,7 @@ void *ex_exec(const char *ln)
 	char *ret = NULL;
 	if (!xgdep)
 		lbuf_mark(xb, '*', xrow, xoff);
+	xexec_dep++;
 	sbuf_smake(sb, strlen(ln) + 4)
 	do {
 		sbuf_cut(sb, 0)
@@ -1583,6 +1611,10 @@ void *ex_exec(const char *ln)
 			break;
 	} while (*ln && xquit == oqt);
 	free(sb->s);
+	if (!--xexec_dep && xanchor) {
+		sbuf_free(xanchor)
+		xanchor = NULL;
+	}
 	return xerr & 4 ? NULL : ret;
 }
 
