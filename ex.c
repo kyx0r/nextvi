@@ -1284,7 +1284,7 @@ static void *ec_regprint(char *loc, char *cmd, char *arg)
 		int reg = atoi(loc);
 		if (reg < 0 || reg > 255)
 			return xserr;
-		ex_regput(reg, arg, cmd[3] == '!');
+		ex_regput(reg, arg, cmd[3] == '+');
 		return NULL;
 	}
 	static char buf[5] = "  ";
@@ -1444,7 +1444,7 @@ static struct excmd {
 	{"q!", ec_quit},
 	{"q", ec_quit},
 	EO(rcm),
-	{"reg!", ec_regprint},
+	{"reg+", ec_regprint},
 	{"reg", ec_regprint},
 	{"rd", ec_undoredo},
 	{"r", ec_read},
