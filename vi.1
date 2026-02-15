@@ -1,4 +1,4 @@
-.Dd Feb 14, 2026
+.Dd Feb 15, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -1197,7 +1197,7 @@ Missing arguments default to <\e : % !>.
 
 Example: change <%> to <a>
 :2sc a
-Example: change <sep> to <a> in same command context
+Example: utilize newly set separator in a single command chain
 :rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
 .Ed
 
@@ -1609,15 +1609,15 @@ _
  547 vi.h | definitions/aux
 _
  332 conf.c | hl/ft/td config
- 368 term.c | low level IO
+ 364 term.c | low level IO
  409 ren.c | positioning/syntax
  614 uc.c | UTF-8 support
  654 lbuf.c | file/line buffer
  718 led.c | insert mode/output
  766 regex.c | pikevm
  1627 ex.c | ex options/commands
- 1849 vi.c | normal mode/general
- 7337 total | wc -l *.c\(basort
+ 1854 vi.c | normal mode/general
+ 7338 total | wc -l *.c\(basort
 _
 .TE
 .
