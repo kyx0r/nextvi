@@ -271,7 +271,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/conf.c b/conf.c
-index 46f335b6..9f459fcb 100644
+index 51ec63a9..d1501607 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -52,7 +52,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
@@ -284,7 +284,7 @@ index 46f335b6..9f459fcb 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index ebf30902..31ca0fe6 100644
+index 81878d89..f58ccc3d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -511,7 +511,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)

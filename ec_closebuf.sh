@@ -83,7 +83,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..6a38972c 100644
+index 81878d89..3190a8ce 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1371,6 +1371,50 @@ static int eo_val(char *arg)

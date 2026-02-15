@@ -93,7 +93,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..38c0a432 100644
+index 81878d89..d2ea878b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -54,6 +54,7 @@ static char xirerr[] = "invalid range";
@@ -144,7 +144,7 @@ index ebf30902..38c0a432 100644
  {
  	int val = atoi(arg);
 @@ -1447,6 +1459,7 @@ static struct excmd {
- 	{"reg!", ec_regprint},
+ 	{"reg+", ec_regprint},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
 +	{"ro", ec_readonly},

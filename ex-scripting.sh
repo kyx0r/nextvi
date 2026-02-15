@@ -108,7 +108,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..e779dd4b 100644
+index 81878d89..25466a76 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ int xesc = '\\';		/* ex command arg escape character */

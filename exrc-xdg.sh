@@ -124,7 +124,7 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1617\\${SEP}vis 2\\${SEP}q! 1}${SEP}
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..74a446d8 100644
+index 81878d89..d0bb0162 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,6 +38,7 @@ int xesc = '\\';		/* ex command arg escape character */

@@ -81,7 +81,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..cf9c1eca 100644
+index 81878d89..f86bd874 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1643,7 +1643,7 @@ void ex(void)

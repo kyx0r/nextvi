@@ -68,7 +68,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..d6d5539b 100644
+index 81878d89..741c4aa7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
@@ -92,7 +92,7 @@ index ebf30902..d6d5539b 100644
  	{"q", ec_quit},
  	EO(rcm),
 +	EO(rec),
- 	{"reg!", ec_regprint},
+ 	{"reg+", ec_regprint},
  	{"reg", ec_regprint},
  	{"rd", ec_undoredo},
 diff --git a/term.c b/term.c

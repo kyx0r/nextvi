@@ -68,7 +68,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..fec92ae4 100644
+index 81878d89..1345a755 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */

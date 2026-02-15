@@ -376,7 +376,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..1fb1baf9 100644
+index 81878d89..f4d525bb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -36,7 +36,7 @@ int xpln;			/* tracks newline from ex print and pipe stdout */

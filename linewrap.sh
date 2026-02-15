@@ -252,7 +252,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index ebf30902..8aa85c5b 100644
+index 81878d89..b131adab 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
