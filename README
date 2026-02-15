@@ -699,13 +699,25 @@ EX COMMANDS
      [count <$>]?!{cond}[<?>][else][<?>][then]
              Inverted while loop conditional
 
-     ??{then}[<?>][else]
+     [#id]??{then}[<?>][else]
+     {#id}??
              Conditional
 
              Unlike while loop conditional, branching depends on the error
              status of the last command, reducing the number of escapes required.
 
-     ??!{else}[<?>][then]
+             A prefix id without arguments captures the current error status
+             at that point in a command chain. A conditional with the same
+             id branches based on the most recent capture. If no capture exists
+             for the given id, neither branch executes. Id tags are global
+             across all nested command contexts.
+
+             Example: capture error status at id 5, branch later
+             :>int>:5??:;=:5??p
+             Example: skip if tag was never set
+             :2??.=?.=
+
+     [#id]??!{else}[<?>][then]
              Inverted conditional
 
      [range]pu[<reg>][*][\!{cmd}]
@@ -1221,9 +1233,9 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 718 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1627 ex.c    |  ex options/commands |
+     | 1659 ex.c    |  ex options/commands |
      | 1854 vi.c    |  normal mode/general |
-     | 7338 total   |  wc -l *.c|sort      |
+     | 7370 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
