@@ -26,7 +26,7 @@ OPTIONS
      -v      Unset all options
 
 MANPAGE NOTATION
-     <x>     A closure where x represents character literal
+     <x>     A closure where x represents a character literal
      [x]     A closure where x represents optional argument
      {x}     A closure where x represents required argument
      "x"     A closure where x represents a string
@@ -73,7 +73,7 @@ VI NORMAL
      [#]<^H>
      [#]<Backspace>
                    Move # characters backward, multiline
-     %             Move to closest <] ) }><[ ( {> pair
+     %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
      '{a-z ` ' [] *}
                    Move to a line mark
@@ -228,7 +228,7 @@ VI REGIONS
      Commands described with the word "move" define a region.
 
      j + <^M> <Enter> - k h l f F t T , ; B E b e W w ( ) { } [ ] ^ 0 $
-             <Space> <^H> <Backspace> % ' ` G H L M / ? n N <^A>
+             <Space> <^H> <Backspace> % ' ` G H L M / ? n N * <^A>
 
              All regions
 
@@ -256,7 +256,7 @@ VI/EX INSERT
      <^H>
      <Backspace>
                    Delete a character, reset ex mode when empty
-     <^U>          Delete util <^X> mark or everything
+     <^U>          Delete until <^X> mark or everything
      <^W>          Delete a word
      <^T>          Increase indent
      <^D>          Decrease indent
@@ -1270,7 +1270,7 @@ PHILOSOPHY
      on the code. If you want to customize anything, you should be
      able to do it using only core commands or a mix with some specific
      C code for more difficult tasks. Simple and flexible design
-     allows for straight forward solutions to any problem long term
+     allows for straightforward solutions to any problem long term
      and filters bad inconsistent ideas.
 
      "All software sucks, but some do more than others."
