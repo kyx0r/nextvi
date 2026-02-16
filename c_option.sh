@@ -14,10 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
-# Set QF empty to continue despite errors (errors are still printed)
-#QF=
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -65,7 +65,9 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 			} else {
 .
 ${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/em/ecm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}.,\$;f> 		term_init\\\\(\\\\);
+${SEP}+1${SEP}.;46c c
+.
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}.,\$;f> 		term_init\\\\(\\\\);
 	if \\\\(xvis & 8\\\\)
 		term_scrh;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1845\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1845\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
