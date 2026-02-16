@@ -482,7 +482,7 @@ static void emit_err_check(FILE *out, int line)
 	 * ${DBG:-...} allows override via environment variable
 	 * \<sep> separates commands inside the branch */
 	fputs("?" "?!${DBG:-", out);
-	fputs(".-5,.+5p", out);
+	fputs("-5,+5p", out);
 	EMIT_ESCSEP(out);
 	fprintf(out, "p FAIL line %d", line);
 	EMIT_ESCSEP(out);
