@@ -978,12 +978,14 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 
 		/* Strategy selection block - uncomment one to override default */
 		fprintf(tmp, "=== STRATEGY (default: %s) ===\n", def_strat);
-		fprintf(tmp, "#abs\n");
-		if (has_anchors)
+		if (strcmp(def_strat, "abs") != 0)
+			fprintf(tmp, "#abs\n");
+		if (has_anchors && strcmp(def_strat, "rel") != 0)
 			fprintf(tmp, "#rel\n");
-		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff)
+		if (has_anchors && g->ndel == 1 && g->nadd == 1 &&
+		    g->has_line_diff && strcmp(def_strat, "relc") != 0)
 			fprintf(tmp, "#relc\n");
-		if (has_offset)
+		if (has_offset && strcmp(def_strat, "offset") != 0)
 			fprintf(tmp, "#offset\n");
 
 		/* Search command */
