@@ -397,7 +397,10 @@ static void emit_insert_after(FILE *out, int line, char **texts, int ntexts)
 	if (ntexts == 0)
 		return;
 
-	fprintf(out, "%da ", line);
+	if (line == -1)
+		fprintf(out, "i ");
+	else
+		fprintf(out, "%da ", line);
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
