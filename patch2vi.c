@@ -479,7 +479,7 @@ typedef struct {
  * On failure: ${DBG} overrides the default handler.
  * Default: prints surrounding lines, error message, then ${QF} (quit action).
  * DBG=@Q: enters interactive vi mode to fix the issue manually.
- * QF can be set empty to continue despite errors (errors are still printed). */
+ * QF can be set to . to continue despite errors (errors are still printed). */
 static void emit_err_check(FILE *out, int line)
 {
 	/* ??! = if last command failed, run the else branch
@@ -1732,10 +1732,10 @@ process_line:
 	if (relative_mode) {
 		printf("\n# Uncomment to enter interactive vi on patch failure\n");
 		printf("#DBG=\"|sc|vis 2:e $0:@Q:q!1\"\n");
-		printf("# Uncomment to nop the errors\n");
-		printf("#DBG=\"p\"\n");
-		printf("# Set QF empty to continue despite errors (errors are still printed)\n");
-		printf("#QF=\n");
+		printf("# Uncomment to skip errors (. = silent nop)\n");
+		printf("#DBG=\".\"\n");
+		printf("# Set QF=. to continue despite errors (errors are still printed)\n");
+		printf("#QF=.\n");
 	}
 	printf("\n# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
