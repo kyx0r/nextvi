@@ -199,7 +199,7 @@ index 7aba6ef6..abbaf3df 100644
  				return c;
  			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index 85af37d2..9bf7eeb0 100644
+index a3d3876c..47661a22 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -210,7 +210,7 @@ index 85af37d2..9bf7eeb0 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1507,6 +1508,8 @@ void vi(int init)
+@@ -1508,6 +1509,8 @@ void vi(int init)
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;

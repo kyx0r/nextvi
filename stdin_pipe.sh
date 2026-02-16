@@ -303,7 +303,7 @@ index 8c674664..142a4c94 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index 85af37d2..371455ea 100644
+index a3d3876c..f6df1e03 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1804,6 +1804,7 @@ static void setup_signals(void)

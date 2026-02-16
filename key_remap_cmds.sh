@@ -238,7 +238,7 @@ index 7aba6ef6..0272109c 100644
  		case TK_CTL('h'):
  		case 127:
 diff --git a/vi.c b/vi.c
-index 85af37d2..f69e2b2c 100644
+index a3d3876c..68b4178b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1240,7 +1240,7 @@ void vi(int init)

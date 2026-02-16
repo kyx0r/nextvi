@@ -318,7 +318,7 @@ index 7aba6ef6..fe13f236 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 85af37d2..dd55520d 100644
+index a3d3876c..a23e6f14 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -853,6 +853,8 @@ static void vi_indents(char *ln, int *l)
@@ -351,7 +351,7 @@ index 85af37d2..dd55520d 100644
  	free(sb->s);
  	return key;
  }
-@@ -1516,9 +1522,43 @@ void vi(int init)
+@@ -1517,9 +1523,43 @@ void vi(int init)
  					term_back(xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a');
  					break;
  				}
