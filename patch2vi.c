@@ -843,13 +843,21 @@ static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
  * If file saved: all groups use the edited patterns.
  * If file not saved (mtime unchanged): all groups use default behavior.
  */
-static void interactive_edit_groups(group_t *groups, int ngroups)
+static void interactive_edit_groups(group_t *groups, int ngroups,
+				    const char *filepath)
 {
 	if (ngroups == 0)
 		return;
 
-	char tmppath[] = "/tmp/patch2vi_XXXXXX.diff";
-	int fd = mkstemps(tmppath, 5);
+	/* Extract basename from filepath for the temp filename */
+	const char *base = strrchr(filepath, '/');
+	base = base ? base + 1 : filepath;
+	/* Template: /tmp/patch2vi_XXXXXX_<base>.diff */
+	int sufflen = strlen(base) + 6;  /* _<base>.diff */
+	char tmppath[256];
+	snprintf(tmppath, sizeof(tmppath),
+		 "/tmp/patch2vi_XXXXXX_%s.diff", base);
+	int fd = mkstemps(tmppath, sufflen);
 	if (fd < 0) {
 		perror("mkstemp");
 		return;
@@ -1260,7 +1268,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 
 	/* Interactive mode: open $EDITOR for all groups at once */
 	if (interactive_mode)
-		interactive_edit_groups(groups, ngroups);
+		interactive_edit_groups(groups, ngroups, fp->path);
 
 	/*
 	 * Emit groups.
