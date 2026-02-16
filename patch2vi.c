@@ -349,6 +349,37 @@ static void emit_escaped_text(FILE *out, const char *s);
 /* escaped separator inside ??! block: \<sep> for ex_arg */
 #define EMIT_ESCSEP(out) fputs("\\\\${SEP}", out)
 
+/*
+ * Ex commands emitted by patch2vi and their default range (no address given):
+ *
+ * All commands default to the current line (xrow) when no range is given,
+ * per ex_region(): beg = xrow, end = xrow+1 when vaddr == 0.
+ *
+ * Commands that advance xrow (and thus affect subsequent relative addresses):
+ *   a (append)     - ec_insert: xrow = beg + inserted_lines - 1
+ *   c (change)     - ec_insert: xrow = end + inserted_lines - deleted - 1
+ *   d (delete)     - ec_delete: xrow = beg (or last line if past end)
+ *   f>/f+/f- (find)- ec_find: xrow = matched line, xoff = match position
+ *   (bare address) - ec_print (!*cmd && *loc): xrow = end - 1
+ *                    This is how +N / -N move xrow without a command.
+ *
+ * Commands that do NOT advance xrow:
+ *   s (substitute) - ec_substitute: does not modify xrow/xoff
+ *   p (print)      - ec_print: xrow = end - 1 (but only used for debug)
+ *
+ * Commands used for setup/teardown (no range relevance):
+ *   vis (visual)   - ec_print: sets xvis mode
+ *   wq (write+quit)- ec_write: writes file and quits
+ *   q! (quit)      - ec_quit: quits without saving
+ *   sc! (specials) - ec_specials: sets ex separator character
+ *   rcm (option)   - eo_rcm: sets range command mode
+ *   ??! (while)    - ec_while: conditional execution (error check)
+ *
+ * When emitting relative-mode positions (offset from search result),
+ * +N / -N are equivalent to .+N / .-N since +/- default to current line.
+ * Offset 0 needs no address since ex commands already default to current line.
+ */
+
 /* Emit ex commands for inserting text after line N */
 static void emit_insert_after(FILE *out, int line, char **texts, int ntexts)
 {
@@ -514,12 +545,12 @@ static void emit_line_search(FILE *out, const char *pattern, int offset,
 	emit_err_check(out, target_line);
 	fputs(";=\n", out);
 	EMIT_SEP(out);
-	if (offset == 0)
-		fprintf(out, ".");
-	else if (offset > 0)
-		fprintf(out, ".+%d", offset);
+	/* Emit offset; . needed at offset 0 to avoid empty command
+	 * between consecutive separators (would trigger ec_print). */
+	if (offset)
+		fprintf(out, "%+d", offset);
 	else
-		fprintf(out, ".%d", offset);
+		fputc('.', out);
 }
 
 /* Emit multiline f>/f+ position using 2+ context lines.
@@ -537,8 +568,11 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 	emit_err_check(out, target_line);
 	fputs(";=\n", out);
 	EMIT_SEP(out);
-	/* After f>, cursor is at match position; use .+offset for target */
-	fprintf(out, ".+%d", offset);
+	/* After f>, cursor is at match position; use +offset for target */
+	if (offset)
+		fprintf(out, "%+d", offset);
+	else
+		fputc('.', out);
 }
 
 typedef struct {
@@ -599,7 +633,10 @@ static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 	emit_err_check(out, target_line);
 	fputs(";=\n", out);
 	EMIT_SEP(out);
-	fprintf(out, ".+%d", offset);
+	if (offset)
+		fprintf(out, "%+d", offset);
+	else
+		fputc('.', out);
 }
 
 /* Emit single-line custom f> search with error check.
@@ -613,12 +650,10 @@ static void emit_custom_line_search(FILE *out, const char *line, int offset,
 	emit_err_check(out, target_line);
 	fputs(";=\n", out);
 	EMIT_SEP(out);
-	if (offset == 0)
-		fprintf(out, ".");
-	else if (offset > 0)
-		fprintf(out, ".+%d", offset);
+	if (offset)
+		fprintf(out, "%+d", offset);
 	else
-		fprintf(out, ".%d", offset);
+		fputc('.', out);
 }
 
 /* Emit positioning for a custom-edited group.
@@ -666,12 +701,8 @@ static int emit_custom_pos(FILE *out, group_t *g, int *first_ml)
 static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
 {
 	if (rc->use_offset) {
-		if (rc->offset_val == 0)
-			fprintf(out, ".");
-		else if (rc->offset_val > 0)
-			fprintf(out, ".+%d", rc->offset_val);
-		else
-			fprintf(out, ".%d", rc->offset_val);
+		if (rc->offset_val)
+			fprintf(out, "%+d", rc->offset_val);
 		return 0;
 	}
 	if (rc->nanchors >= 2) {
