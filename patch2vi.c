@@ -173,6 +173,31 @@ static int find_line_diff(const char *old, const char *new,
 	if (old_diff_len > old_len / 2 && new_diff_len > new_len / 2)
 		return 0;
 
+	/* Pure insertion: old_text is empty, expand to get searchable context.
+	 * Empty search pattern in s// is never valid. */
+	if (old_diff_end == old_diff_start) {
+		if (old_diff_start > 0) {
+			old_diff_start--;
+			new_diff_start--;
+			while (old_diff_start > 0 &&
+			       (old[old_diff_start] & 0xC0) == 0x80) {
+				old_diff_start--;
+				new_diff_start--;
+			}
+		}
+		if (old_diff_end < old_len) {
+			old_diff_end++;
+			new_diff_end++;
+			while (old_diff_end < old_len &&
+			       (old[old_diff_end] & 0xC0) == 0x80) {
+				old_diff_end++;
+				new_diff_end++;
+			}
+		}
+		if (old_diff_end == old_diff_start)
+			return 0;
+	}
+
 	/* Expand diff region until old_text is unique on the line.
 	 * Since prefix and suffix are shared between old and new,
 	 * expanding symmetrically keeps both regions aligned. */
@@ -213,9 +238,8 @@ static int find_line_diff(const char *old, const char *new,
 		}
 		if (!expanded)
 			break;
-		/* If we've covered the whole line, fall back */
 		if (old_diff_start == 0 && old_diff_end == old_len)
-			return 0;
+			break;
 	}
 
 	/* Recalculate diff lengths after expansion */

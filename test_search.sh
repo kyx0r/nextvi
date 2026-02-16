@@ -482,6 +482,98 @@ end
 "
 
 echo ""
+echo "=== Pure insertion substitute tests ==="
+
+# When a line change is a pure insertion (old_text empty), patch2vi must
+# expand to include surrounding context so s// never has an empty pattern.
+
+check "pure insertion at end of args" \
+	"ctx1
+ctx2
+ctx3
+static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
+end
+" \
+	"ctx1
+ctx2
+ctx3
+static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg, int ai_max)
+end
+"
+
+check_script "pure insertion produces non-empty s/ pattern" \
+	"ctx1
+ctx2
+ctx3
+static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
+end
+" \
+	"ctx1
+ctx2
+ctx3
+static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg, int ai_max)
+end
+" \
+	's/.' 's//'
+
+check "pure insertion at start of line" \
+	"ctx1
+ctx2
+ctx3
+world
+end
+" \
+	"ctx1
+ctx2
+ctx3
+hello world
+end
+"
+
+check "pure insertion in middle" \
+	"ctx1
+ctx2
+ctx3
+foo bar
+end
+" \
+	"ctx1
+ctx2
+ctx3
+foo baz bar
+end
+"
+
+check "empty old line changed to non-empty" \
+	"ctx1
+ctx2
+ctx3
+
+end
+" \
+	"ctx1
+ctx2
+ctx3
+something
+end
+"
+
+check_script "empty old line uses c not s/" \
+	"ctx1
+ctx2
+ctx3
+
+end
+" \
+	"ctx1
+ctx2
+ctx3
+something
+end
+" \
+	'c ' 's/'
+
+echo ""
 echo "=== End-to-end apply tests (block mode) ==="
 
 check "block mode simple" \
