@@ -14,10 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
-# Set QF empty to continue despite errors (errors are still printed)
-#QF=
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -78,7 +78,9 @@ ${SEP}+2a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
 ${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/em/eRm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}+1${SEP}.;46c R
+.
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
