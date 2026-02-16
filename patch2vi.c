@@ -377,7 +377,10 @@ static void emit_escaped_text(FILE *out, const char *s);
  *
  * When emitting relative-mode positions (offset from search result),
  * +N / -N are equivalent to .+N / .-N since +/- default to current line.
- * Offset 0 needs no address since ex commands already default to current line.
+ * Offset 0 emits . in search functions to avoid empty commands between
+ * consecutive separators (which would trigger ec_print output).
+ * In the use_offset path, offset 0 emits nothing since the command
+ * follows directly with no intervening separator.
  */
 
 /* Emit ex commands for inserting text after line N */
@@ -472,23 +475,23 @@ typedef struct {
 	int target_line;     /* original line number for error reporting */
 } rel_ctx_t;
 
-/* Emit ??! error check after a regex search command.
+/* Emit ??! error check after a command that may fail.
  * On failure: ${DBG} overrides the default handler.
- * Default: prints surrounding lines, error message, and quits with error.
- * DBG=@Q: enters interactive vi mode to fix the issue manually. */
+ * Default: prints surrounding lines, error message, then ${QF} (quit action).
+ * DBG=@Q: enters interactive vi mode to fix the issue manually.
+ * QF can be set empty to continue despite errors (errors are still printed). */
 static void emit_err_check(FILE *out, int line)
 {
 	/* ??! = if last command failed, run the else branch
 	 * ${DBG:-...} allows override via environment variable
-	 * \<sep> separates commands inside the branch */
+	 * \<sep> separates commands inside the branch
+	 * ${QF} controls quit behavior (default: vis 2 + q! 1) */
 	fputs("?" "?!${DBG:-", out);
 	fputs("-5,+5p", out);
 	EMIT_ESCSEP(out);
 	fprintf(out, "p FAIL line %d", line);
 	EMIT_ESCSEP(out);
-	fputs("vis 2", out);
-	EMIT_ESCSEP(out);
-	fputs("q! 1}", out);
+	fputs("${QF}}", out);
 	EMIT_SEP(out);
 }
 
@@ -864,10 +867,11 @@ static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
 	/* Separate position from substitute: s/ doesn't move xrow,
 	 * so make position a standalone command to advance cursor first */
 	EMIT_SEP(out);
-	emit_substitute_cmd(out, old_text, new_text);
-	EMIT_SEP(out);
 	if (mode == 0 && !rc->use_offset)
 		emit_err_check(out, rc->target_line);
+	emit_substitute_cmd(out, old_text, new_text);
+	EMIT_SEP(out);
+	emit_err_check(out, rc->target_line);
 }
 
 /*
@@ -1118,10 +1122,13 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		return;
 
 	fprintf(out, "\n# Patch: %s\n", fp->path);
-	if (sep >= 32 && sep < 127)
+	if (sep >= 32 && sep < 127) {
 		fprintf(out, "SEP='%c'\n", sep);
-	else
+		fprintf(out, "QF=${QF-'vis 2\\%cq! 1'}\n", sep);
+	} else {
 		fprintf(out, "SEP=\"$(printf '\\x%02x')\"\n", sep);
+		fprintf(out, "QF=${QF-\"$(printf 'vis 2\\\\\\x%02xq! 1')\"}\n", sep);
+	}
 	fputs("EXINIT=\"rcm:|sc! \\\\\\\\${SEP}|vis 3${SEP}", out);
 
 	/*
@@ -1384,6 +1391,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 						EMIT_SEP(out);
 						emit_substitute_cmd(out, old_text, new_text);
 						EMIT_SEP(out);
+						emit_err_check(out, g->del_start);
 					} else if (has_rel)
 						emit_relative_substitute(out, &rc,
 						    old_text, new_text, &first_ml);
@@ -1726,6 +1734,8 @@ process_line:
 		printf("#DBG=\"|sc|vis 2:e $0:@Q:q!1\"\n");
 		printf("# Uncomment to nop the errors\n");
 		printf("#DBG=\"p\"\n");
+		printf("# Set QF empty to continue despite errors (errors are still printed)\n");
+		printf("#QF=\n");
 	}
 	printf("\n# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
