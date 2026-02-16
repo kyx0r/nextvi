@@ -606,7 +606,7 @@ ${SEP}.+2a 	int wrows = win_height();
 .
 ${SEP}.,\$;f> 	char \\\\*c, \\\\*s;
 	static char ch\\\\[5\\\\] = \"~\";${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 133\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2${SEP}s/ r/ scrr/${SEP}.,\$;f> 		int noff, nrow, ret;
+${SEP}.+2${SEP}s/row == xtop \\\\+/scrrow ==/${SEP}.,\$;f> 		int noff, nrow, ret;
 		s = lbuf_get\\\\(xb, row - vi_rshift\\\\);
 		c = lbuf_get\\\\(xb, xrow\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 139\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
 ${SEP}.+3${SEP}s/\\\\+ x/+ w/${SEP}.,\$;f> 			vi_rshift = 0;
@@ -1571,7 +1571,7 @@ index 8c674664..e33a78e3 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index a3d3876c..c22eaa28 100644
+index a3d3876c..307970c9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
@@ -1647,7 +1647,7 @@ index a3d3876c..c22eaa28 100644
  	char *c, *s;
  	static char ch[5] = "~";
 -	if (xmpt == 1 && !vi_status && row == xtop + xrows - 1)
-+	if (xmpt == 1 && !vi_status && scrrow == xtop + xrows - 1)
++	if (xmpt == 1 && !vi_status && scrrow == xrows - 1)
  		return;
  	if (*vi_word && xled) {
  		int noff, nrow, ret;
