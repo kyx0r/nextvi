@@ -15,7 +15,7 @@ VI=${VI:-vi}
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
 # Uncomment to nop the errors
-DBG="p"
+#DBG="p"
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -28,39 +28,40 @@ fi
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static char xrnferr\\\\[\\\\] = \"range not found\";
 static char \\\\*xrerr;
-static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 56\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a char readonly = 0;		/* commandline readonly option */
+static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 56\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a char readonly = 0;		/* commandline readonly option */
 .
-${SEP}.,$;f+ 	bufs\\\\[i\\\\]\\\\.top = 0;
+${SEP}.,\$;f> 	bufs\\\\[i\\\\]\\\\.top = 0;
 	bufs\\\\[i\\\\]\\\\.td = \\\\+1;
-	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 117\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	bufs[i].readonly = readonly;
+	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 119\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a 	bufs[i].readonly = readonly;
 .
-${SEP}.,$;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 368\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
+	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 370\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 		ex_buf->readonly = 1;
 .
-${SEP}.,$;f+ 		free\\\\(ibuf\\\\.s\\\\);
+${SEP}.,\$;f> 		free\\\\(ibuf\\\\.s\\\\);
 	\\\\} else \\\\{
-		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 685\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 			if (ex_buf->readonly)
+		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 687\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a 			if (ex_buf->readonly)
 				return \"write failed: readonly option is set\";
 .
-${SEP}.,$;f+ 
+${SEP}.,\$;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1331\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1365\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
 .
-${SEP}.,$;f+ \\\\{\"reg\", ec_regprint\\\\},
-	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1414\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+1a 	{\"ro\", ec_readonly},
+${SEP}.,\$;f> 	\\\\{\"reg\\\\+\", ec_regprint\\\\},
+	\\\\{\"reg\", ec_regprint\\\\},
+	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1449\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a 	{\"ro\", ec_readonly},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -68,26 +69,24 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				xvis \\\\|= 4;
 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'a'\\\\)
-				xvis \\\\|= 8;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1829\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 			else if (argv[i][j] == 'R')
+				xvis \\\\|= 8;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1830\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
-${SEP}.,$;f+ fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1834\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+1;46c R
-.
-${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+1${SEP}s/em/eRm/${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int plen, row, off, top;
 	long mtime;			/\\\\* modification time \\\\*/
-	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 413\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	char readonly;			/* read only */
+	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 413\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a 	char readonly;			/* read only */
 .
-${SEP}.,$;f+ extern rset \\\\*fsincl;
+${SEP}.,\$;f> extern rset \\\\*fsincl;
 extern char \\\\*fs_exdir;
-void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 547\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a extern char readonly;
+void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 547\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}+2a extern char readonly;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
