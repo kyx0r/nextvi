@@ -41,6 +41,7 @@ enum strategy {
 	STRAT_DEFAULT = 0,  /* use global mode default */
 	STRAT_ABS,          /* absolute line numbers (;c for single-line diffs) */
 	STRAT_REL,          /* f> regex search (s// for single-line diffs) */
+	STRAT_RELC,         /* f> regex search + ;c horizontal edit */
 	STRAT_OFFSET,       /* .+N offset from previous cursor */
 };
 
@@ -978,6 +979,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		fprintf(tmp, "#abs\n");
 		if (has_anchors)
 			fprintf(tmp, "#rel\n");
+		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff)
+			fprintf(tmp, "#relc\n");
 		if (has_offset)
 			fprintf(tmp, "#offset\n");
 
@@ -1137,6 +1140,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 					edited_strategy = STRAT_ABS;
 				else if (strcmp(line, "rel") == 0)
 					edited_strategy = STRAT_REL;
+				else if (strcmp(line, "relc") == 0)
+					edited_strategy = STRAT_RELC;
 				else if (strcmp(line, "offset") == 0)
 					edited_strategy = STRAT_OFFSET;
 				continue;
@@ -1481,6 +1486,12 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			strat = has_anchors ? STRAT_REL : STRAT_ABS;
 		if (strat == STRAT_REL && !has_anchors)
 			strat = STRAT_ABS;
+		if (strat == STRAT_RELC) {
+			if (!has_anchors)
+				strat = STRAT_ABS;
+			else if (!(g->ndel == 1 && g->nadd == 1 && g->has_line_diff))
+				strat = STRAT_REL;  /* fall back to s// if no ;c data */
+		}
 		/* Setup rel_ctx_t for REL/OFFSET strategies */
 		if (strat == STRAT_OFFSET && prev_xrow > 0) {
 			int target;
@@ -1511,6 +1522,21 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 					emit_relative_change(out, &rc,
 					    g->ndel, g->add_texts, g->nadd, &first_ml);
 				}
+			} else if (strat == STRAT_RELC) {
+				/* Rel search + horizontal ;c edit */
+				if (has_custom) {
+					emit_custom_pos(out, g, &first_ml);
+					EMIT_SEP(out);
+				} else {
+					int mode = emit_rel_pos(out, &rc, &first_ml);
+					if (mode == 1)
+						EMIT_SEP(out);
+				}
+				fprintf(out, ".;%d;%dc ", g->ld_start, g->ld_end);
+				emit_escaped_text(out, g->ld_new_text);
+				fputs("\n.\n", out);
+				EMIT_SEP(out);
+				emit_err_check(out, g->del_start);
 			} else if (strat == STRAT_REL) {
 				/* Relative search positioning */
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
