@@ -616,9 +616,11 @@ typedef struct {
 	/* Per-group strategy selection (interactive mode) */
 	int strategy;            /* enum strategy */
 	int has_line_diff;       /* whether find_line_diff() succeeded */
-	int ld_start, ld_end;   /* char positions for ;c */
-	char *ld_old_text;       /* diff text for s// or ;c */
-	char *ld_new_text;       /* replacement text for s// or ;c */
+	int ld_start, ld_end;   /* expanded char positions for s// */
+	char *ld_old_text;       /* expanded diff text for s// */
+	char *ld_new_text;       /* expanded replacement text for s// */
+	int ldc_start, ldc_end; /* minimal char positions for ;c */
+	char *ldc_new_text;      /* minimal replacement text for ;c */
 } group_t;
 
 /* Emit a line with exarg + shell escaping only (no regex escaping).
@@ -1250,6 +1252,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		g->ld_start = g->ld_end = 0;
 		g->ld_old_text = NULL;
 		g->ld_new_text = NULL;
+		g->ldc_start = g->ldc_end = 0;
+		g->ldc_new_text = NULL;
 
 		/* Skip context lines, collecting up to 3 consecutive for relative mode */
 		char *last_ctx = NULL;
@@ -1394,6 +1398,25 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				g->del_texts[0], g->add_texts[0],
 				&g->ld_start, &g->ld_end,
 				&g->ld_old_text, &g->ld_new_text);
+			if (g->has_line_diff) {
+				/* Minimal diff positions for ;c (no uniqueness expansion) */
+				const char *old = g->del_texts[0];
+				const char *new = g->add_texts[0];
+				int olen = strlen(old), nlen = strlen(new);
+				int prefix = 0;
+				while (old[prefix] && new[prefix] && old[prefix] == new[prefix])
+					prefix++;
+				int suffix = 0;
+				while (suffix < olen - prefix && suffix < nlen - prefix &&
+				       old[olen-1-suffix] == new[nlen-1-suffix])
+					suffix++;
+				g->ldc_start = utf8_char_offset(old, prefix);
+				g->ldc_end = utf8_char_offset(old, olen - suffix);
+				int ns = prefix, ne = nlen - suffix;
+				g->ldc_new_text = malloc(ne - ns + 1);
+				memcpy(g->ldc_new_text, new + ns, ne - ns);
+				g->ldc_new_text[ne - ns] = '\0';
+			}
 		}
 
 		if (g->del_start || g->nadd)
@@ -1514,8 +1537,11 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 					/* Offset + horizontal ;c edit */
 					emit_rel_pos(out, &rc, &first_ml);
 					EMIT_SEP(out);
-					fprintf(out, ".;%d;%dc ", g->ld_start, g->ld_end);
-					emit_escaped_text(out, g->ld_new_text);
+					if (g->ldc_start == g->ldc_end)
+						fprintf(out, ".;%dc ", g->ldc_start);
+					else
+						fprintf(out, ".;%d;%dc ", g->ldc_start, g->ldc_end);
+					emit_escaped_text(out, g->ldc_new_text);
 					fputs("\n.\n", out);
 					EMIT_SEP(out);
 				} else {
@@ -1532,8 +1558,11 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 					if (mode == 1)
 						EMIT_SEP(out);
 				}
-				fprintf(out, ".;%d;%dc ", g->ld_start, g->ld_end);
-				emit_escaped_text(out, g->ld_new_text);
+				if (g->ldc_start == g->ldc_end)
+					fprintf(out, ".;%dc ", g->ldc_start);
+				else
+					fprintf(out, ".;%d;%dc ", g->ldc_start, g->ldc_end);
+				emit_escaped_text(out, g->ldc_new_text);
 				fputs("\n.\n", out);
 				EMIT_SEP(out);
 				emit_err_check(out, g->del_start);
@@ -1575,7 +1604,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
 					int adj = forward ? cum_delta : 0;
 					emit_horizontal_change(out, g->del_start + adj,
-					    g->ld_start, g->ld_end, g->ld_new_text);
+					    g->ldc_start, g->ldc_end, g->ldc_new_text);
 				} else {
 					int adj = forward ? cum_delta : 0;
 					emit_change(out, g->del_start + adj, g->del_end + adj,
@@ -1669,6 +1698,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		free(g->custom_cmd);
 		free(g->ld_old_text);
 		free(g->ld_new_text);
+		free(g->ldc_new_text);
 	}
 
 	fputs("vis 2${SEP}wq\" $VI -e '", out);
