@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,21 +28,23 @@ fi
 
 # Patch: conf.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\
-\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}+3${SEP}s/\\\\|sc!\\\\?/m?|sc!?|nm/${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\|sc!\\\\?/m?|sc!?|nm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static char xrnferr\\\\[\\\\] = \"range not found\";
 static char \\\\*xrerr;
-static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 56\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 56\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 .
 ${SEP}.,\$;f> 	return NULL;
 \\\\}
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 550\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 550\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static void *ec_map(char *loc, char *cmd, char *arg)
 {
 	char **map = cmd[0] == 'n' ? nmaps[xkmap] : imaps[xkmap];
@@ -89,13 +93,13 @@ int map_read(int mode, int winch)
 .
 ${SEP}.,\$;f> 	EO\\\\(ish\\\\),
 	\\\\{\"inc\", ec_setincl\\\\},
-	EO\\\\(ic\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1436\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	EO\\\\(ic\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1436\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
 .
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1442\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1442\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
 .
@@ -103,23 +107,26 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	do \\\\{
 		led_printparts\\\\(sb, pre, ps, \\\\*post, postn, ai_max\\\\);
-		len = sb->s_n;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 416\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}+3${SEP}s/term_read\\\\(/map_read(1, /${SEP}vis 2${SEP}wq" $VI -e 'led.c'
+		len = sb->s_n;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 416\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/term_read\\\\(/map_read(1, /${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 416\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			char \\\\*cmd;
 			term_dec\\\\(\\\\)
-			re_motion:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1243\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+			re_motion:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1243\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1243\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int ex_edit\\\\(const char \\\\*path, int len\\\\);
 void ex_regput\\\\(unsigned char c, const char \\\\*s, int append\\\\);
-void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 488\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
+void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 488\\${SEP}${QF}}${SEP};=
 ${SEP}+2a int map_read(int mode, int winch);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
