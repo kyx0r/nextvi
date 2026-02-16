@@ -973,19 +973,13 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		for (int i = 0; i < g->nadd; i++)
 			fprintf(tmp, "+%s\n", g->add_texts[i]);
 
-		/* Strategy selection block */
+		/* Strategy selection block - uncomment one to override default */
 		fprintf(tmp, "=== STRATEGY (default: %s) ===\n", def_strat);
-		/* abs: always available */
-		fprintf(tmp, "%sabs\n",
-			strcmp(def_strat, "abs") == 0 ? "" : "#");
-		/* rel: shown when anchors/context exist */
+		fprintf(tmp, "#abs\n");
 		if (has_anchors)
-			fprintf(tmp, "%srel\n",
-				strcmp(def_strat, "rel") == 0 ? "" : "#");
-		/* offset: shown when not the first group */
+			fprintf(tmp, "#rel\n");
 		if (has_offset)
-			fprintf(tmp, "%soffset\n",
-				strcmp(def_strat, "offset") == 0 ? "" : "#");
+			fprintf(tmp, "#offset\n");
 
 		/* Search command */
 		fprintf(tmp, "=== SEARCH COMMAND ===\n");
