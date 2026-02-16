@@ -830,6 +830,9 @@ static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
 				      const char *new_text, int *first_ml)
 {
 	int mode = emit_rel_pos(out, rc, first_ml);
+	/* Separate position from substitute: s/ doesn't move xrow,
+	 * so make position a standalone command to advance cursor first */
+	EMIT_SEP(out);
 	emit_substitute_cmd(out, old_text, new_text);
 	EMIT_SEP(out);
 	if (mode == 0 && !rc->use_offset)
@@ -1341,6 +1344,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				                   &old_text, &new_text)) {
 					if (has_custom) {
 						emit_custom_pos(out, g, &first_ml);
+						EMIT_SEP(out);
 						emit_substitute_cmd(out, old_text, new_text);
 						EMIT_SEP(out);
 					} else if (has_rel)
