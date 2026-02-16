@@ -40,10 +40,8 @@ static int interactive_mode = 0; /* 1=interactive editing of search patterns (-i
 enum strategy {
 	STRAT_DEFAULT = 0,  /* use global mode default */
 	STRAT_ABS,          /* absolute line numbers (;c for single-line diffs) */
-	STRAT_REL,          /* f> regex search */
+	STRAT_REL,          /* f> regex search (s// for single-line diffs) */
 	STRAT_OFFSET,       /* .+N offset from previous cursor */
-	STRAT_SUB,          /* s/old/new/ substitute (single-line only) */
-	STRAT_HORIZ,        /* ;c horizontal char edit (single-line only) */
 };
 
 /* Raw input lines for embedding in output */
@@ -939,8 +937,6 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			|| (g->follow_ctx && g->follow_ctx[0])
 			|| (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]);
 		int has_offset = (sim_prev_xrow > 0);
-		int is_single = (g->ndel == 1 && g->nadd == 1);
-		int has_ld = g->has_line_diff;
 
 		/* Determine default -r offset and command */
 		int default_offset;
@@ -990,12 +986,6 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		if (has_offset)
 			fprintf(tmp, "%soffset\n",
 				strcmp(def_strat, "offset") == 0 ? "" : "#");
-		/* sub: single-line with find_line_diff success */
-		if (is_single && has_ld)
-			fprintf(tmp, "#sub\n");
-		/* horiz: single-line with find_line_diff success */
-		if (is_single && has_ld)
-			fprintf(tmp, "#horiz\n");
 
 		/* Search command */
 		fprintf(tmp, "=== SEARCH COMMAND ===\n");
@@ -1155,10 +1145,6 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 					edited_strategy = STRAT_REL;
 				else if (strcmp(line, "offset") == 0)
 					edited_strategy = STRAT_OFFSET;
-				else if (strcmp(line, "sub") == 0)
-					edited_strategy = STRAT_SUB;
-				else if (strcmp(line, "horiz") == 0)
-					edited_strategy = STRAT_HORIZ;
 				continue;
 			}
 			/* Extra separator still present = skip lines below */
@@ -1501,10 +1487,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			strat = has_anchors ? STRAT_REL : STRAT_ABS;
 		if (strat == STRAT_REL && !has_anchors)
 			strat = STRAT_ABS;
-		if ((strat == STRAT_SUB || strat == STRAT_HORIZ) &&
-		    !(g->ndel == 1 && g->nadd == 1 && g->has_line_diff))
-			strat = has_anchors ? STRAT_REL : STRAT_ABS;
-
 		/* Setup rel_ctx_t for REL/OFFSET strategies */
 		if (strat == STRAT_OFFSET && prev_xrow > 0) {
 			int target;
@@ -1521,24 +1503,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 
 		/* Dispatch per strategy */
 		if (g->del_start && g->nadd) {
-			if (strat == STRAT_SUB && g->has_line_diff) {
-				/* Substitute: use s/old/new/ */
-				if (has_custom) {
-					emit_custom_pos(out, g, &first_ml);
-					EMIT_SEP(out);
-					emit_substitute_cmd(out, g->ld_old_text, g->ld_new_text);
-					EMIT_SEP(out);
-					emit_err_check(out, g->del_start);
-				} else if (strat == STRAT_SUB) {
-					emit_relative_substitute(out, &rc,
-					    g->ld_old_text, g->ld_new_text, &first_ml);
-				}
-			} else if (strat == STRAT_HORIZ && g->has_line_diff) {
-				/* Horizontal char edit: ;c */
-				int adj = forward ? cum_delta : 0;
-				emit_horizontal_change(out, g->del_start + adj,
-				    g->ld_start, g->ld_end, g->ld_new_text);
-			} else if (strat == STRAT_REL || strat == STRAT_OFFSET) {
+			if (strat == STRAT_REL || strat == STRAT_OFFSET) {
 				/* Relative/offset positioning */
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
 					if (has_custom) {
