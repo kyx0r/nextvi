@@ -1224,8 +1224,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			}
 		}
 
-		/* Peek at following context for fallback when no preceding context */
-		if (g->nanchors == 0 && i < fp->nops && fp->ops[i].type == 'c') {
+		/* Peek at following context for fallback */
+		if (i < fp->nops && fp->ops[i].type == 'c') {
 			g->follow_ctx = fp->ops[i].text;
 			/* Distance from first change to following context */
 			int first_change_line = g->del_start ? g->del_start : g->add_after + 1;
@@ -1315,8 +1315,14 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				rc.follow_ctx = g->follow_ctx;
 				rc.follow_offset = g->follow_offset;
 				rc.anchor_offset = g->anchor_offset;
-				/* Check if we have any usable anchor */
-				if (rc.nanchors > 0 || (rc.follow_ctx && rc.follow_ctx[0]))
+				/* Check if we have any usable anchor.
+			 * Must match emit_rel_pos conditions exactly:
+			 * nanchors>=2 always works; nanchors==1 requires
+			 * non-empty anchor; follow_ctx requires non-empty. */
+				if (rc.nanchors >= 2
+				    || (rc.nanchors == 1 && rc.anchors[0]
+				        && rc.anchors[0][0])
+				    || (rc.follow_ctx && rc.follow_ctx[0]))
 					has_rel = 1;
 				/* Fallback: use first deleted line as anchor */
 				if (!has_rel && g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {

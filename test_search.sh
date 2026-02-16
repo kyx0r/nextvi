@@ -611,6 +611,83 @@ eee
 	"-rb"
 
 echo ""
+echo "=== Consecutive substitute positioning tests ==="
+
+# When two substitutes are emitted in a row, the second must have
+# proper positioning. Previously empty context lines between changes
+# caused has_rel/emit_rel_pos mismatch: has_rel=1 but no output.
+
+check "consecutive substitutes with empty line between" \
+	"ctx1
+ctx2
+ctx3
+hello old1 world
+
+goodbye old2 world
+end
+" \
+	"ctx1
+ctx2
+ctx3
+hello new1 world
+
+goodbye new2 world
+end
+"
+
+check "consecutive substitutes no context between" \
+	"ctx1
+ctx2
+ctx3
+the old1 value
+the old2 value
+end
+" \
+	"ctx1
+ctx2
+ctx3
+the new1 value
+the new2 value
+end
+"
+
+check "consecutive substitutes with empty line between (block mode)" \
+	"ctx1
+ctx2
+ctx3
+hello old1 world
+
+goodbye old2 world
+end
+" \
+	"ctx1
+ctx2
+ctx3
+hello new1 world
+
+goodbye new2 world
+end
+" \
+	"-rb"
+
+check "consecutive substitutes no context between (block mode)" \
+	"ctx1
+ctx2
+ctx3
+the old1 value
+the old2 value
+end
+" \
+	"ctx1
+ctx2
+ctx3
+the new1 value
+the new2 value
+end
+" \
+	"-rb"
+
+echo ""
 echo "=== Results ==="
 echo "Passed: $PASS"
 echo "Failed: $FAIL"
