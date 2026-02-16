@@ -1497,8 +1497,22 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 
 		/* Dispatch per strategy */
 		if (g->del_start && g->nadd) {
-			if (strat == STRAT_REL || strat == STRAT_OFFSET) {
-				/* Relative/offset positioning */
+			if (strat == STRAT_OFFSET) {
+				/* Offset positioning: .+N then ;c or c */
+				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
+					/* Offset + horizontal ;c edit */
+					emit_rel_pos(out, &rc, &first_ml);
+					EMIT_SEP(out);
+					fprintf(out, ".;%d;%dc ", g->ld_start, g->ld_end);
+					emit_escaped_text(out, g->ld_new_text);
+					fputs("\n.\n", out);
+					EMIT_SEP(out);
+				} else {
+					emit_relative_change(out, &rc,
+					    g->ndel, g->add_texts, g->nadd, &first_ml);
+				}
+			} else if (strat == STRAT_REL) {
+				/* Relative search positioning */
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
 					if (has_custom) {
 						emit_custom_pos(out, g, &first_ml);
@@ -1543,7 +1557,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				}
 			}
 		} else if (g->del_start) {
-			if (strat == STRAT_REL || strat == STRAT_OFFSET) {
+			if (strat == STRAT_OFFSET) {
+				emit_relative_delete(out, &rc, g->ndel, &first_ml);
+			} else if (strat == STRAT_REL) {
 				if (has_custom) {
 					int mode = emit_custom_pos(out, g, &first_ml);
 					if (g->ndel == 1)
@@ -1562,7 +1578,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				emit_delete(out, g->del_start + adj, g->del_end + adj);
 			}
 		} else if (g->nadd) {
-			if (strat == STRAT_REL || strat == STRAT_OFFSET) {
+			if (strat == STRAT_OFFSET) {
+				emit_relative_insert(out, &rc,
+				    g->add_texts, g->nadd, &first_ml);
+			} else if (strat == STRAT_REL) {
 				if (has_custom) {
 					g->custom_offset -= 1;
 					int mode = emit_custom_pos(out, g, &first_ml);
