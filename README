@@ -26,7 +26,7 @@ OPTIONS
      -v      Unset all options
 
 MANPAGE NOTATION
-     <x>     A closure where x represents character literal
+     <x>     A closure where x represents a character literal
      [x]     A closure where x represents optional argument
      {x}     A closure where x represents required argument
      "x"     A closure where x represents a string
@@ -73,7 +73,7 @@ VI NORMAL
      [#]<^H>
      [#]<Backspace>
                    Move # characters backward, multiline
-     %             Move to closest <] ) }><[ ( {> pair
+     %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
      '{a-z ` ' [] *}
                    Move to a line mark
@@ -228,7 +228,7 @@ VI REGIONS
      Commands described with the word "move" define a region.
 
      j + <^M> <Enter> - k h l f F t T , ; B E b e W w ( ) { } [ ] ^ 0 $
-             <Space> <^H> <Backspace> % ' ` G H L M / ? n N <^A>
+             <Space> <^H> <Backspace> % ' ` G H L M / ? n N * <^A>
 
              All regions
 
@@ -256,7 +256,7 @@ VI/EX INSERT
      <^H>
      <Backspace>
                    Delete a character, reset ex mode when empty
-     <^U>          Delete util <^X> mark or everything
+     <^U>          Delete until <^X> mark or everything
      <^W>          Delete a word
      <^T>          Increase indent
      <^D>          Decrease indent
@@ -699,13 +699,25 @@ EX COMMANDS
      [count <$>]?!{cond}[<?>][else][<?>][then]
              Inverted while loop conditional
 
-     ??{then}[<?>][else]
+     [#id]??{then}[<?>][else]
+     {#id}??
              Conditional
 
              Unlike while loop conditional, branching depends on the error
              status of the last command, reducing the number of escapes required.
 
-     ??!{else}[<?>][then]
+             A prefix id without arguments captures the current error status
+             at that point in a command chain. A conditional with the same
+             id branches based on the most recent capture. If no capture exists
+             for the given id, neither branch executes. Id tags are global
+             across all nested command contexts.
+
+             Example: capture error status at id 5, branch later
+             :>int>:5??:;=:5??p
+             Example: skip if tag was never set
+             :2??.=?.=
+
+     [#id]??!{else}[<?>][then]
              Inverted conditional
 
      [range]pu[<reg>][*][\!{cmd}]
@@ -878,7 +890,7 @@ EX COMMANDS
              Example: put "hello" into register <1>
              :49reg hello
 
-     [0-255]reg![str]
+     [0-255]reg+[str]
              Print registers or append to a register
 
      bx[#]   Set max number of buffers allowed
@@ -896,7 +908,7 @@ EX COMMANDS
              Example: autocomplete using whole lines from a buffer
              :ac .+
 
-     [0-3]sc[esc][sep][exp][exe]
+     [0-3]sc[<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
              Prefix selects a specific character to change.
@@ -904,15 +916,15 @@ EX COMMANDS
 
              Example: change <%> to <a>
              :2sc a
-             Example: change all to <a> <b> <c> <d>
-             :sc abcd
+             Example: utilize newly set separator in a single command chain
+             :rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
 
-     [0-3]sc![esc][sep][exp][exe]
+     [0-3]sc![<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
              Missing arguments default to <0x0>.
 
-             Example: disable [exp] and [exe]
+             Example: disable <exp> and <exe>
              :sc! \\\:
 
      uc      Toggle multibyte utf-8 decoding
@@ -1215,15 +1227,15 @@ CODE MAP
      | 547 vi.h     |  definitions/aux     |
      +--------------+----------------------+
      | 332 conf.c   |  hl/ft/td config     |
-     | 368 term.c   |  low level IO        |
+     | 364 term.c   |  low level IO        |
      | 409 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
      | 654 lbuf.c   |  file/line buffer    |
      | 718 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1626 ex.c    |  ex options/commands |
-     | 1849 vi.c    |  normal mode/general |
-     | 7336 total   |  wc -l *.c|sort      |
+     | 1659 ex.c    |  ex options/commands |
+     | 1854 vi.c    |  normal mode/general |
+     | 7370 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1258,7 +1270,7 @@ PHILOSOPHY
      on the code. If you want to customize anything, you should be
      able to do it using only core commands or a mix with some specific
      C code for more difficult tasks. Simple and flexible design
-     allows for straight forward solutions to any problem long term
+     allows for straightforward solutions to any problem long term
      and filters bad inconsistent ideas.
 
      "All software sucks, but some do more than others."
@@ -1295,4 +1307,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 14, 2026                    Nextvi 4.0
+Nextvi 4.0                     February 15, 2026                    Nextvi 4.0
