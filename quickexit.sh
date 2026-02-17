@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,38 +28,29 @@ fi
 
 # Patch: conf.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\[\\\\.%\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[0-9\\\\]\\\\+\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\
-\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\
-\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 260\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;2c qe|
-.
-${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\[\\\\.%\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[0-9\\\\]\\\\+\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int xshape = 1;			/\\\\* perform letter shaping \\\\*/
-int xorder = 1;			/\\\\* change the order of characters \\\\*/
-int xts = 8;			/\\\\* number of spaces for tab \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 14\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a int xqe = 1000;			/* exit insert via kj (delay in ms) */
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
-${SEP}.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
-EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1355\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a EO(qe)
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
+${SEP}+2a EO(qe)
 .
-${SEP}.,$;f+ 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),
-	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1416\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	EO(qe),
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1443\\${SEP}${QF}}${SEP};=
+${SEP}.a 	EO(qe),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	restore\\\\(xvis\\\\)
-\\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 406\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static int gettime_ms(void)
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 406\\${SEP}${QF}}${SEP};=
+${SEP}.a static int gettime_ms(void)
 {
 	struct timespec t;
 	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
@@ -66,10 +59,10 @@ ${SEP}.+2a static int gettime_ms(void)
 }
 
 .
-${SEP}.,$;f+ 				exbuf_load\\\\(ex_buf\\\\)
+${SEP}.,\$;f> 				exbuf_load\\\\(ex_buf\\\\)
 			\\\\}
-			continue; \\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 632\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 		case 'j':
+			continue; \\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 632\\${SEP}${QF}}${SEP};=
+${SEP}+2a 		case 'j':
 			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
 				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
 					term_push(\"\", 2);
@@ -80,41 +73,34 @@ ${SEP}.+2a 		case 'j':
 		case 'k':
 			is->quickexit = gettime_ms();
 .
-${SEP}.-1${SEP}>		default:>a _default:
+${SEP}.,\$f> 		default:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 633\\${SEP}${QF}}${SEP};=
+${SEP}.a _default:
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 633\\${SEP}vis 2\\${SEP}q! 1}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
+${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #include <dirent\\\\.h>
-#include <signal\\\\.h>
-#include <unistd\\\\.h>${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 9\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a #include <time.h>
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}9a #include <time.h>
 .
-${SEP}.,$;f+ 				k = vc_insert\\\\(c\\\\);
-				ins:
-				vi_mod \\\\|= !xpac && xrow == orow \\\\? 8 : 1;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1509\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 				if (xqe)
+${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
+				ins:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1510\\${SEP}${QF}}${SEP};=
+${SEP}+2a 				if (xqe)
 					vi_mod |= 2;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int p_reg;
-	int lsug;
-	int sug_pt;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 374\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	int quickexit;
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}374a 	int quickexit;
 .
-${SEP}.,$;f+ is\\\\.p_reg = 0; \\\\\\\\
+${SEP}%;f> is\\\\.p_reg = 0; \\\\\\\\
 is\\\\.lsug = 0; \\\\\\\\
-is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 382\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a is.quickexit = 0; \\\\
+is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 382\\${SEP}${QF}}${SEP};=
+${SEP}+2a is.quickexit = 0; \\\\
 .
-${SEP}.,$;f+ extern int xshape;
-extern int xorder;
-extern int xts;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 429\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a extern int xqe;
+${SEP}+47a extern int xqe;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
