@@ -108,6 +108,7 @@ SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return n != 0;
 \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP}.,\$;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
@@ -271,6 +272,7 @@ SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 442\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 442\\${SEP}${QF}}${SEP}.,\$;f> 				memcpy\\\\(cpath, ptrs\\\\[i\\\\], pathlen \\\\+ len\\\\);
 				plen\\\\[i\\\\+\\\\+\\\\] = pathlen \\\\+ len;
@@ -319,8 +321,9 @@ ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 545\\${SEP}${QF}
 
 exit 0
 === PATCH2VI DELTA ===
---- /tmp/patch2vi_j0BLuw_ex.c.diff.orig	2026-02-17 11:30:12.150638351 -0100
-+++ /tmp/patch2vi_j0BLuw_ex.c.diff	2026-02-17 11:30:52.867564753 -0100
+=== DELTA ex.c ===
+--- /tmp/patch2vi_vdTy7g_ex.c.diff.orig	2026-02-17 12:54:40.730116848 -0100
++++ /tmp/patch2vi_vdTy7g_ex.c.diff	2026-02-17 12:54:51.523817578 -0100
 @@ -131,8 +131,8 @@
  				break;
  			\}
