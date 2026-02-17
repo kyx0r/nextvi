@@ -198,6 +198,19 @@ record_input.sh
 Adds ex option "rec". This option specifies a register in which
 to record all user input. Makes it easier to record macros.
 
+visual.sh
+--------------
+Adds character-wise (v) and line-wise (V) visual selection modes.
+Move the cursor to extend the selection, which is highlighted (colors inverted).
+Pressing v or V again while in that mode exits it. ESC also exits.
+Status bar shows -- VISUAL -- or -- VISUAL LINE -- while active.
+Supported operators on the selection:
+y yank, d delete, c change, > indent, < dedent, ! pipe through shell command,
+~ toggle case, u lowercase, U uppercase
+The former v-prefix commands are remapped to g-prefix to free up v:
+g. gW go gI gi gb gv g; g/ gt gr
+The former V (toggle hidden chars) is remapped to gV.
+
 splits.sh
 --------------
 Implements :sp and :vs commands for vertical and horizontal splits.
