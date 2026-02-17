@@ -29,9 +29,7 @@ fi
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{
-	char msg\\\\[512\\\\];${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 357\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 357\\${SEP}${QF}}${SEP};=
 ${SEP}+3c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
@@ -74,7 +72,10 @@ ${SEP}+1a 	if (stdin_fd) {
 		xmpt = MIN(xmpt, 1);
 	}
 .
-${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1656\\${SEP}${QF}}${SEP};=
+${SEP}.,\$;f> 	xvis &= ~4;
+	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)
+\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1656\\${SEP}${QF}}${SEP};=
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -82,13 +83,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 # Patch: term.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
-unsigned char \\\\*ibuf, icmd\\\\[4096\\\\];
-unsigned int texec, tn;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 8\\${SEP}${QF}}${SEP};=
-${SEP}+2a int stdin_fd;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}8a int stdin_fd;
 static int isig;
 .
-${SEP}.,\$;f> 	char \\\\*s;
+${SEP}%;f> 	char \\\\*s;
 	term_winch = 0;
 	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP}.,\$f> 	newtermios = termios;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 19\\${SEP}${QF}}${SEP};=
@@ -130,8 +128,7 @@ ${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
-	sa\\\\.sa_handler = sighandler;
-	sigaction\\\\(SIGWINCH, &sa, NULL\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1806\\${SEP}${QF}}${SEP};=
+	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1806\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
 .
 ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
@@ -145,15 +142,68 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> /\\\\* vi\\\\.c \\\\*/
-extern int vi_hidch;
-extern int vi_lncol;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 543\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> /\\\\* vi\\\\.c \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 543\\${SEP}${QF}}${SEP};=
 ${SEP}+2a extern int stdin_fd;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- /tmp/patch2vi_p6kg9p_ex.c.diff.orig	2026-02-17 19:22:36.905995313 -0100
++++ /tmp/patch2vi_p6kg9p_ex.c.diff	2026-02-17 19:25:24.247993362 -0100
+@@ -9,8 +9,6 @@
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+ static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
+-\{
+-	char msg\[512\];
+ --- extra (delete to include) ---
+ 	int fd, len, rd = 0, cd = 0;
+ 	if \(arg\[0\] == '\.' && arg\[1\] == '/'\)
+@@ -130,7 +128,6 @@
+ .,\$f>
+ === SEARCH PATTERN (offset: 1) ===
+ 	xvis &= ~4;
+---- extra (delete to include) ---
+ 	if \(\(s = getenv\("EXINIT"\)\)\)
+ 		ex_command\(s\)
+ \}
+=== DELTA term.c ===
+--- /tmp/patch2vi_eVmjjZ_term.c.diff.orig	2026-02-17 19:25:24.250644764 -0100
++++ /tmp/patch2vi_eVmjjZ_term.c.diff	2026-02-17 19:26:01.767995245 -0100
+@@ -2,7 +2,7 @@
+ +int stdin_fd;
+ +static int isig;
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+=== DELTA vi.c ===
+--- /tmp/patch2vi_SYSbRz_vi.c.diff.orig	2026-02-17 19:26:01.770387538 -0100
++++ /tmp/patch2vi_SYSbRz_vi.c.diff	2026-02-17 19:26:34.515996888 -0100
+@@ -7,7 +7,6 @@
+ === SEARCH PATTERN (offset: 3) ===
+ 	memset\(&sa, 0, sizeof\(sa\)\);
+ 	sa\.sa_handler = sighandler;
+-	sigaction\(SIGWINCH, &sa, NULL\);
+ --- extra (delete to include) ---
+ \}
+ 
+=== DELTA vi.h ===
+--- /tmp/patch2vi_AKPAyC_vi.h.diff.orig	2026-02-17 19:26:34.518576265 -0100
++++ /tmp/patch2vi_AKPAyC_vi.h.diff	2026-02-17 19:26:51.801997756 -0100
+@@ -6,8 +6,6 @@
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+ /\* vi\.c \*/
+-extern int vi_hidch;
+-extern int vi_lncol;
+ --- extra (delete to include) ---
+ /\* file system \*/
+ extern rset \*fsincl;
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..0c839f23 100644
