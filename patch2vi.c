@@ -113,14 +113,14 @@ static int utf8_char_offset(const char *s, int bytepos)
 	return chars;
 }
 
-/* Count how many times substring needle appears in haystack */
-static int count_occurrences(const char *haystack, const char *needle, int needle_len)
+/* Count how many times substring needle appears in haystack (including overlaps) */
+static int count_occurrences(const char *haystack, const char *needle)
 {
 	int count = 0;
 	const char *p = haystack;
 	while ((p = strstr(p, needle)) != NULL) {
 		count++;
-		p += (needle_len > 0 ? needle_len : 1);
+		p++;
 	}
 	return count;
 }
@@ -201,7 +201,7 @@ static int find_line_diff(const char *old, const char *new,
 		char tmp[dlen + 1];
 		memcpy(tmp, old + old_diff_start, dlen);
 		tmp[dlen] = '\0';
-		if (count_occurrences(old, tmp, dlen) <= 1)
+		if (count_occurrences(old, tmp) <= 1)
 			break;
 		/* Expand: prefer left, then right */
 		int expanded = 0;
@@ -216,8 +216,13 @@ static int find_line_diff(const char *old, const char *new,
 			}
 			expanded = 1;
 		}
-		if (!expanded || count_occurrences(old, old + old_diff_start,
-		    old_diff_end - old_diff_start) > 1) {
+		/* Check if left expansion alone achieved uniqueness.
+		 * Use a null-terminated copy of the expanded region. */
+		int elen = old_diff_end - old_diff_start;
+		char etmp[elen + 1];
+		memcpy(etmp, old + old_diff_start, elen);
+		etmp[elen] = '\0';
+		if (!expanded || count_occurrences(old, etmp) > 1) {
 			if (old_diff_end < old_len) {
 				old_diff_end++;
 				new_diff_end++;
