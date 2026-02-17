@@ -294,30 +294,20 @@ ${SEP}+2a typedef struct {
 	int wbeg, wend;		/* match word beg/end */
 } rstr;
 .
-${SEP}.,\$;f> int rset_match\\\\(rset \\\\*rs, char \\\\*s, int flg\\\\);
-void rset_free\\\\(rset \\\\*re\\\\);
-char \\\\*re_read\\\\(char \\\\*\\\\*src, int delim\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 132\\${SEP}${QF}}${SEP};=
-${SEP}+2a rstr *rstr_make(char *re, int flg);
+${SEP}.,\$f> void rset_free${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 132\\${SEP}${QF}}${SEP};=
+${SEP}.a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
 .
-${SEP}.,\$;f> int lbuf_eol\\\\(struct lbuf \\\\*lb, int r, int state\\\\);
-int lbuf_next\\\\(struct lbuf \\\\*lb, int dir, int \\\\*r, int \\\\*o\\\\);
-int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 190\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 190\\${SEP}${QF}}${SEP}.,\$f> 		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 191\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> int lbuf_search${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 190\\${SEP}${QF}}${SEP};=
+${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 190\\${SEP}${QF}}${SEP}.,\$f> 		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 191\\${SEP}${QF}}${SEP};=
 ${SEP}.a 
 .
-${SEP}.,\$;f> extern int xsep;
-extern int xesc;
-extern sbuf \\\\*xacreg;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 451\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 451\\${SEP}${QF}}${SEP}.,\$;f> #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
-void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
-void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 484\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 484\\${SEP}${QF}}${SEP}.,\$;f> extern int vi_hidch;
-extern int vi_lncol;
-/\\\\* file system \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 545\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 545\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}.,\$f> extern rset \\\\*xkwdrs;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 451\\${SEP}${QF}}${SEP};=
+${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 451\\${SEP}${QF}}${SEP}.,\$f> int ex_krs${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 484\\${SEP}${QF}}${SEP};=
+${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 484\\${SEP}${QF}}${SEP}.,\$f> extern rset \\\\*fsincl;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 545\\${SEP}${QF}}${SEP};=
+${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 545\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
@@ -334,6 +324,88 @@ exit 0
  		sbuf_cut\(sb, 0\)
  		if \(pflg\) \{
  			term_clean\(\);
+=== DELTA vi.h ===
+--- /tmp/patch2vi_r1RqYE_vi.h.diff.orig	2026-02-17 19:38:22.129180268 -0100
++++ /tmp/patch2vi_r1RqYE_vi.h.diff	2026-02-17 19:39:41.780036391 -0100
+@@ -31,10 +31,8 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-int rset_match\(rset \*rs, char \*s, int flg\);
+-void rset_free\(rset \*re\);
+-char \*re_read\(char \*\*src, int delim\);
++=== SEARCH PATTERN (offset: 1) ===
++void rset_free
+ --- extra (delete to include) ---
+ 
+ /\* lbuf\.c line buffer, managing a number of lines \*/
+@@ -50,13 +48,8 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-int lbuf_eol\(struct lbuf \*lb, int r, int state\);
+-int lbuf_next\(struct lbuf \*lb, int dir, int \*r, int \*o\);
+-int lbuf_findchar\(struct lbuf \*lb, char \*cs, int cmd, int n, int \*r, int \*o\);
+---- extra (delete to include) ---
+-int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,
+-		int nskip, int \*r, int \*o\);
++=== SEARCH PATTERN (offset: 0) ===
++int lbuf_search
+ === END GROUP ===
+ 
+ === GROUP 4/7 (line 191) ===
+@@ -83,15 +76,8 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-extern int xsep;
+-extern int xesc;
+-extern sbuf \*xacreg;
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: 0) ===
+ extern rset \*xkwdrs;
+-extern sbuf \*xregs\[256\];
+-extern struct buf \*bufs;
+-extern struct buf tempbufs\[2\];
+ === END GROUP ===
+ 
+ === GROUP 6/7 (line 484) ===
+@@ -103,15 +89,8 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); \}
+-void ex_init\(char \*\*files, int n\);
+-void ex_bufpostfix\(struct buf \*p, int clear\);
+---- extra (delete to include) ---
+-int ex_krs\(rset \*\*krs, int \*dir\);
+-void ex_krsset\(char \*kwd, int dir\);
+-int ex_edit\(const char \*path, int len\);
+-void ex_regput\(unsigned char c, const char \*s, int append\);
++=== SEARCH PATTERN (offset: 0) ===
++int ex_krs
+ === END GROUP ===
+ 
+ === GROUP 7/7 (line 545) ===
+@@ -123,13 +102,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-extern int vi_hidch;
+-extern int vi_lncol;
+-/\* file system \*/
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: 0) ===
+ extern rset \*fsincl;
+-extern char \*fs_exdir;
+-void dir_calc\(char \*path\);
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..f4d525bb 100644
