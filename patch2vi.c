@@ -41,6 +41,7 @@ static int delta_mode = 0;      /* 1=re-apply previous delta from script (-d) */
 /* Delta diff: customization changes captured from interactive editing */
 static char **delta_lines = NULL;
 static int ndelta = 0;
+static int delta_cap = 0;
 
 /* Input delta: read from previously generated script when -d is set */
 static char **input_delta_lines = NULL;
@@ -1098,7 +1099,6 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		FILE *dp = popen(cmd, "r");
 		if (dp) {
 			char dline[MAX_LINE];
-			int delta_cap = 0;
 			while (fgets(dline, sizeof(dline), dp)) {
 				if (ndelta >= delta_cap) {
 					delta_cap = delta_cap ? delta_cap * 2 : 16;
