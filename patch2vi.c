@@ -575,6 +575,9 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 		if (i < nanchors - 1)
 			fputc('\n', out);  /* literal newline between context lines */
 	}
+	/* Ensure trailing newline when last anchor is empty */
+	if (nanchors > 0 && anchors[nanchors - 1][0] == '\0')
+		fputc('\n', out);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
 	fputs(";=\n", out);
