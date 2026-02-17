@@ -29,36 +29,26 @@ fi
 # Patch: conf.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\[\\\\.%\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[0-9\\\\]\\\\+\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\
-\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\
-\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\[\\\\.%\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[0-9\\\\]\\\\+\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int xshape = 1;			/\\\\* perform letter shaping \\\\*/
-int xorder = 1;			/\\\\* change the order of characters \\\\*/
-int xts = 8;			/\\\\* number of spaces for tab \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 14\\${SEP}${QF}}${SEP};=
-${SEP}+2a int xqe = 1000;			/* exit insert via kj (delay in ms) */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
-${SEP}.,\$;f> EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
-EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
 ${SEP}+2a EO(qe)
 .
-${SEP}.,\$;f> 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),
-	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1443\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	EO(qe),
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1443\\${SEP}${QF}}${SEP};=
+${SEP}.a 	EO(qe),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> /\\\\* line editing and drawing \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP};=
-${SEP}.a static int gettime_ms(void)
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1a static int gettime_ms(void)
 {
 	struct timespec t;
 	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
@@ -67,7 +57,7 @@ ${SEP}.a static int gettime_ms(void)
 }
 
 .
-${SEP}.,\$;f> 				exbuf_load\\\\(ex_buf\\\\)
+${SEP}%;f> 				exbuf_load\\\\(ex_buf\\\\)
 			\\\\}
 			continue; \\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 632\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		case 'j':
@@ -89,14 +79,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 # Patch: vi.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #include <dirent\\\\.h>
-#include <signal\\\\.h>
-#include <unistd\\\\.h>${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 9\\${SEP}${QF}}${SEP};=
-${SEP}+2a #include <time.h>
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}9a #include <time.h>
 .
-${SEP}.,\$;f> 				k = vc_insert\\\\(c\\\\);
-				ins:
-				vi_mod \\\\|= !xpac && xrow == orow \\\\? 8 : 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1510\\${SEP}${QF}}${SEP};=
+${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
+				ins:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1510\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 				if (xqe)
 					vi_mod |= 2;
 .
@@ -115,15 +101,103 @@ is\\\\.lsug = 0; \\\\\\\\
 is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 382\\${SEP}${QF}}${SEP};=
 ${SEP}+2a is.quickexit = 0; \\\\
 .
-${SEP}.,\$;f> extern int xshape;
-extern int xorder;
-extern int xts;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 429\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 429\\${SEP}${QF}}${SEP};=
 ${SEP}+2a extern int xqe;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA conf.c ===
+--- /tmp/patch2vi_wkfUF2_conf.c.diff.orig	2026-02-17 19:13:19.519319556 -0100
++++ /tmp/patch2vi_wkfUF2_conf.c.diff	2026-02-17 19:13:25.931957319 -0100
+@@ -8,8 +8,6 @@
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+ \[\.%\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\[0-9\]\+\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\)\[ \\t\]\*\(\?:\(\[,;\]#\?\)\[ \\t\]\*\\
+-\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\?\[\.\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\\
+-\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\(\[0-9\]\+\)\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+ --- extra (delete to include) ---
+ \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
+ \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
+=== DELTA ex.c ===
+--- /tmp/patch2vi_KeazK1_ex.c.diff.orig	2026-02-17 19:13:25.934625972 -0100
++++ /tmp/patch2vi_KeazK1_ex.c.diff	2026-02-17 19:13:51.145958585 -0100
+@@ -1,7 +1,7 @@
+ === GROUP 1/3 (line 14) ===
+ +int xqe = 1000;			/* exit insert via kj (delay in ms) */
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+@@ -22,9 +22,7 @@
+ === SEARCH COMMAND ===
+ .,\$;f>
+ === SEARCH PATTERN (offset: 3) ===
+-EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(grp\) EO\(mpt\) EO\(rcm\)
+-EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
+-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
++EO\(pac\)
+ --- extra (delete to include) ---
+ 
+ _EO\(left,
+@@ -38,9 +36,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	\{"g", ec_glob\},
+-	EO\(mpt\),
++=== SEARCH PATTERN (offset: 1) ===
+ 	\{"m", ec_mark\},
+ --- extra (delete to include) ---
+ 	\{"q!", ec_quit\},
+=== DELTA led.c ===
+--- /tmp/patch2vi_2sjpSj_led.c.diff.orig	2026-02-17 19:13:51.148245499 -0100
++++ /tmp/patch2vi_2sjpSj_led.c.diff	2026-02-17 19:14:37.538960912 -0100
+@@ -8,7 +8,7 @@
+ +}
+ +
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %f>
+ === SEARCH PATTERN (offset: 1) ===
+=== DELTA vi.c ===
+--- /tmp/patch2vi_fqMh7T_vi.c.diff.orig	2026-02-17 19:14:37.541939861 -0100
++++ /tmp/patch2vi_fqMh7T_vi.c.diff	2026-02-17 19:15:16.479962866 -0100
+@@ -1,7 +1,7 @@
+ === GROUP 1/2 (line 9) ===
+ +#include <time.h>
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+@@ -25,7 +25,6 @@
+ === SEARCH PATTERN (offset: 3) ===
+ 				k = vc_insert\(c\);
+ 				ins:
+-				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
+ --- extra (delete to include) ---
+ 				if \(k == 127\) \{
+ 					if \(xrow && !\(xoff > 0 && lbuf_eol\(xb, xrow, 1\)\)\) \{
+=== DELTA vi.h ===
+--- /tmp/patch2vi_lKDyRX_vi.h.diff.orig	2026-02-17 19:15:16.482674421 -0100
++++ /tmp/patch2vi_lKDyRX_vi.h.diff	2026-02-17 19:16:02.897965195 -0100
+@@ -40,8 +40,6 @@
+ .,\$;f>
+ === SEARCH PATTERN (offset: 3) ===
+ extern int xshape;
+-extern int xorder;
+-extern int xts;
+ --- extra (delete to include) ---
+ extern int xish;
+ extern int xgrp;
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 51ec63a9..9dc0faba 100644
