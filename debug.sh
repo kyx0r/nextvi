@@ -29,8 +29,8 @@ fi
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1659\\${SEP}${QF}}${SEP};=
-${SEP}-1a 
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1645\\${SEP}${QF}}${SEP};=
+${SEP}.i 
 void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -57,8 +57,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 # Patch: ren.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> ren_state rstates\\\\[.\\\\];${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 92\\${SEP}${QF}}${SEP};=
-${SEP}-1a void ren_done(void)
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> ren_state rstates${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 89\\${SEP}${QF}}${SEP};=
+${SEP}.i void ren_done(void)
 {
 	rset_free(dir_rslr);
 	rset_free(dir_rsrl);
