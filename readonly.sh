@@ -29,15 +29,10 @@ fi
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static char xrnferr\\\\[\\\\] = \"range not found\";
-static char \\\\*xrerr;
-static void \\\\*xpret;		/\\\\* previous ex command return value \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 56\\${SEP}${QF}}${SEP};=
-${SEP}+2a char readonly = 0;		/* commandline readonly option */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}56a char readonly = 0;		/* commandline readonly option */
 .
-${SEP}.,\$;f> 	bufs\\\\[i\\\\]\\\\.top = 0;
-	bufs\\\\[i\\\\]\\\\.td = \\\\+1;
-	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 119\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	bufs[i].readonly = readonly;
+${SEP}%f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 119\\${SEP}${QF}}${SEP};=
+${SEP}.a 	bufs[i].readonly = readonly;
 .
 ${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
@@ -53,6 +48,7 @@ ${SEP}+2a 			if (ex_buf->readonly)
 .
 ${SEP}.,\$;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1365\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
@@ -61,44 +57,117 @@ ${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 }
 
 .
-${SEP}.,\$;f> 	\\\\{\"reg\\\\+\", ec_regprint\\\\},
-	\\\\{\"reg\", ec_regprint\\\\},
-	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1449\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	{\"ro\", ec_readonly},
+${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1449\\${SEP}${QF}}${SEP};=
+${SEP}.a 	{\"ro\", ec_readonly},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				xvis \\\\|= 4;
-			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'a'\\\\)
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'a'\\\\)
 				xvis \\\\|= 8;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1830\\${SEP}${QF}}${SEP};=
-${SEP}+2a 			else if (argv[i][j] == 'R')
+${SEP}+1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
 ${SEP}.,\$;f> 				xvis = 0;
 			else \\\\{
 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/em/eRm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}+3${SEP}.;46c R
+.
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int plen, row, off, top;
-	long mtime;			/\\\\* modification time \\\\*/
-	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 413\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	char readonly;			/* read only */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 413\\${SEP}${QF}}${SEP};=
+${SEP}.a 	char readonly;			/* read only */
 .
-${SEP}.,\$;f> extern rset \\\\*fsincl;
-extern char \\\\*fs_exdir;
-void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 547\\${SEP}${QF}}${SEP};=
-${SEP}+2a extern char readonly;
+${SEP}548a extern char readonly;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- /tmp/patch2vi_E7apBA_ex.c.diff.orig	2026-02-17 12:17:44.404270511 -0100
++++ /tmp/patch2vi_E7apBA_ex.c.diff	2026-02-17 12:18:22.484707738 -0100
+@@ -1,7 +1,7 @@
+ === GROUP 1/6 (line 56) ===
+ +char readonly = 0;		/* commandline readonly option */
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+@@ -21,9 +21,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	bufs\[i\]\.top = 0;
+-	bufs\[i\]\.td = \+1;
++=== SEARCH PATTERN (offset: 1) ===
+ 	bufs\[i\]\.mtime = -1;
+ --- extra (delete to include) ---
+ 	return i;
+@@ -96,9 +94,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	\{"reg\+", ec_regprint\},
+-	\{"reg", ec_regprint\},
++=== SEARCH PATTERN (offset: 1) ===
+ 	\{"rd", ec_undoredo\},
+ --- extra (delete to include) ---
+ 	\{"r", ec_read\},
+=== DELTA vi.c ===
+--- /tmp/patch2vi_zIlyEp_vi.c.diff.orig	2026-02-17 12:18:22.486688686 -0100
++++ /tmp/patch2vi_zIlyEp_vi.c.diff	2026-02-17 12:18:38.676708551 -0100
+@@ -5,8 +5,7 @@
+ #abs
+ === SEARCH COMMAND ===
+ %;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-				xvis \|= 4;
++=== SEARCH PATTERN (offset: 2) ===
+ 			else if \(argv\[i\]\[j\] == 'a'\)
+ 				xvis \|= 8;
+ --- extra (delete to include) ---
+@@ -20,7 +19,7 @@
+ +				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
+ === STRATEGY (default: rel) ===
+ #abs
+-#relc
++relc
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+=== DELTA vi.h ===
+--- /tmp/patch2vi_CFUyNP_vi.h.diff.orig	2026-02-17 12:18:38.679238021 -0100
++++ /tmp/patch2vi_CFUyNP_vi.h.diff	2026-02-17 12:19:03.183709780 -0100
+@@ -4,9 +4,7 @@
+ #abs
+ === SEARCH COMMAND ===
+ %;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	int plen, row, off, top;
+-	long mtime;			/\* modification time \*/
++=== SEARCH PATTERN (offset: 1) ===
+ 	signed char td;			/\* text direction \*/
+ --- extra (delete to include) ---
+ \};
+@@ -17,7 +15,7 @@
+ === GROUP 2/2 (line 547) ===
+ +extern char readonly;
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..d2ea878b 100644
