@@ -545,7 +545,8 @@ static int fs_searchback(int cnt, int *row, int *off)
 
 static void vc_status(int type)
 {
-	int cp, l, col;
+	int l, col;
+	unsigned int cp;
 	char cbuf[8] = "", vi_msg[512], *c;
 	col = vi_off2col(xb, xrow, xoff);
 	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
