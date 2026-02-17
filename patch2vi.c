@@ -1102,8 +1102,25 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			goto cleanup_orig;
 		}
 		if (st_before.st_mtim.tv_sec == st_after.st_mtim.tv_sec &&
-		    st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec)
+		    st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec) {
+			/* -d: preserve existing delta when file unchanged */
+			if (delta_mode) {
+				for (int di = 0; di < nin_deltas; di++) {
+					if (strcmp(in_deltas[di].filepath, filepath) == 0) {
+						file_delta_t *src = &in_deltas[di];
+						file_delta_t *od = &out_deltas[nout_deltas++];
+						od->filepath = xstrdup(src->filepath);
+						od->lines = malloc(src->nlines * sizeof(char*));
+						od->nlines = src->nlines;
+						od->cap = src->nlines;
+						for (int k = 0; k < src->nlines; k++)
+							od->lines[k] = xstrdup(src->lines[k]);
+						break;
+					}
+				}
+			}
 			goto cleanup_orig;
+		}
 	}
 
 	/* Compute delta: diff between original and edited tmp file */
