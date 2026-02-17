@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,10 +28,11 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
 	if \\\\(!\\\\(xvis & 4\\\\)\\\\)
-		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 378\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
+		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 380\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\\\n')
 			adv++;
