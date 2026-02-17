@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -53,6 +53,8 @@ ${SEP}+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..0664686e 100644
 --- a/ex.c

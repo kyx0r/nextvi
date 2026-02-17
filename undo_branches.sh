@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,10 +28,11 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1331\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1365\\${SEP}${QF}}${SEP};=
+${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)
@@ -40,24 +43,25 @@ ${SEP}.+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 }
 
 .
-${SEP}.,$;f+ 	\\\\{\"uc\", ec_setenc\\\\},
+${SEP}.,\$;f> 	\\\\{\"uc\", ec_setenc\\\\},
 	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1422\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	{\"up\", ec_undoleafs},
+	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1457\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	{\"up\", ec_undoleafs},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
-	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 5\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	sbuf_make(lb->rehist, 128)
+	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 5\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	sbuf_make(lb->rehist, 128)
 .
-${SEP}.,$;f+ 	return 0;
+${SEP}.,\$;f> 	return 0;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 61\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static void lbuf_freeleafs(struct lbuf *lb)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 61\\${SEP}${QF}}${SEP};=
+${SEP}+2a static void lbuf_freeleafs(struct lbuf *lb)
 {
 	char *ptr = lb->rehist->s;
 	struct lopt *hist;
@@ -85,15 +89,15 @@ ${SEP}.+2a static void lbuf_freeleafs(struct lbuf *lb)
 }
 
 .
-${SEP}.,$;f+ 	int i;
+${SEP}.,\$;f> 	int i;
 	for \\\\(i = 0; i < lb->ln_n; i\\\\+\\\\+\\\\)
-		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 67\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+1c 	lbuf_freeleafs(lb);
+		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 67\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 	lbuf_freeleafs(lb);
 .
-${SEP}.,$;f+ 		lopt_done\\\\(lo\\\\);
+${SEP}.,\$;f> 		lopt_done\\\\(lo\\\\);
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 144\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a void lbuf_setleaf(struct lbuf *lb, int leaf)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 144\\${SEP}${QF}}${SEP};=
+${SEP}+2a void lbuf_setleaf(struct lbuf *lb, int leaf)
 {
 	char *ptr1 = lb->rehist->s, *ptr2;
 	int n, i, off = -1;
@@ -151,42 +155,45 @@ char *lbuf_getleafs(struct lbuf *lb)
 }
 
 .
-${SEP}.,$;f+ 	if \\\\(xseq < 0\\\\)
+${SEP}.,\$;f> 	if \\\\(xseq < 0\\\\)
 		lo = &slo;
-	else \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 153\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+1c 		int i = lb->hist_n - lb->hist_u;
+	else \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 153\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 		int i = lb->hist_n - lb->hist_u;
 		if (i) {
 			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
 			sbuf_mem(lb->rehist, lb->hist, (int)(lb->hist_n * sizeof(lb->hist[0])));
 		}
 .
-${SEP}.,$;f+ void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
+${SEP}.,\$;f> void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
 \\\\{
-	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 441\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+1c 		lbuf_freeleafs(lb);
+	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 441\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 		lbuf_freeleafs(lb);
 .
-${SEP}.,$;f+ 		lb->hist_n = 0;
-		lb->hist_u = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 444\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+1a 		sbuf_make(lb->rehist, 128)
+${SEP}.,\$;f> 		lb->hist_n = 0;
+		lb->hist_u = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 444\\${SEP}${QF}}${SEP};=
+${SEP}+1a 		sbuf_make(lb->rehist, 128)
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct lbuf \\\\{
 	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
-	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 152\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	sbuf *rehist;		/* alternate redo timelines */
+	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 152\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	sbuf *rehist;		/* alternate redo timelines */
 .
-${SEP}.,$;f+ int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);
+${SEP}.,\$;f> int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);
 int lbuf_search\\\\(struct lbuf \\\\*lb, rset \\\\*re, int dir, int beg, int end, int pskip,
-		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 191\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a void lbuf_setleaf(struct lbuf *lb, int leaf);
+		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 191\\${SEP}${QF}}${SEP};=
+${SEP}+2a void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..5a75711e 100644
 --- a/ex.c

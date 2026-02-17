@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -30,7 +30,8 @@ fi
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 357\\${SEP}${QF}}${SEP};=
+\\\\{
+	char msg\\\\[512\\\\];${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 357\\${SEP}${QF}}${SEP};=
 ${SEP}+3c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
@@ -42,8 +43,10 @@ ${SEP}+2a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 .
-${SEP}.,\$f> 	xbufsalloc = MAX\\\\(n, xbufsalloc\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1648\\${SEP}${QF}}${SEP};=
-${SEP}.${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1648\\${SEP}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
+${SEP}.,\$;f> 
+void ex_init\\\\(char \\\\*\\\\*files, int n\\\\)
+\\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1648\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1648\\${SEP}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
 	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1650\\${SEP}${QF}}${SEP};=
 ${SEP}+1a 	int i = n;
 .
@@ -79,11 +82,16 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 # Patch: term.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}8a int stdin_fd;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+unsigned char \\\\*ibuf, icmd\\\\[4096\\\\];
+unsigned int texec, tn;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 8\\${SEP}${QF}}${SEP};=
+${SEP}+2a int stdin_fd;
 static int isig;
 .
-${SEP}%f> 	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/0/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP}.,\$f> 	newtermios = termios;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 19\\${SEP}${QF}}${SEP};=
+${SEP}.,\$;f> 	char \\\\*s;
+	term_winch = 0;
+	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP}.,\$f> 	newtermios = termios;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 19\\${SEP}${QF}}${SEP};=
 ${SEP}+1,#+2c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
 	else
@@ -91,9 +99,10 @@ ${SEP}+1,#+2c 	if (!isig && stdin_fd)
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
 	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
 .
-${SEP}.,\$;f> 	xcols = xcols \\\\? xcols : 80;
+${SEP}.,\$;f> 	\\\\}
+	xcols = xcols \\\\? xcols : 80;
 	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 31\\${SEP}${QF}}${SEP};=
-${SEP}+1a 	isig = 1;
+${SEP}+2a 	isig = 1;
 .
 ${SEP}.,\$;f> 		return;
 	term_commit\\\\(\\\\);
@@ -103,9 +112,10 @@ ${SEP}+3${SEP}s/\\\\(0/(stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 40\\$
 		cw = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 162\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		ufd.fd = stdin_fd;
 .
-${SEP}.,\$;f> 				read\\\\(STDIN_FILENO, ibuf, 1\\\\) <= 0\\\\) \\\\{
-			xquit = !isatty\\\\(STDIN_FILENO\\\\) \\\\? -1 : xquit;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 166\\${SEP}${QF}}${SEP};=
-${SEP}.,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
+${SEP}.,\$;f> 		re:
+		/\\\\* read a single input character \\\\*/
+		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 166\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 .
 ${SEP}.,\$;f> 	fds\\\\[0\\\\]\\\\.events = POLLIN;
@@ -120,7 +130,8 @@ ${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
-	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1806\\${SEP}${QF}}${SEP};=
+	sa\\\\.sa_handler = sighandler;
+	sigaction\\\\(SIGWINCH, &sa, NULL\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1806\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
 .
 ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
@@ -134,11 +145,16 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}543a extern int stdin_fd;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> /\\\\* vi\\\\.c \\\\*/
+extern int vi_hidch;
+extern int vi_lncol;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 543\\${SEP}${QF}}${SEP};=
+${SEP}+2a extern int stdin_fd;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..0c839f23 100644
 --- a/ex.c

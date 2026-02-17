@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,29 +28,31 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
 int xrcm = 1;			/\\\\* range command model -
-				0: exec at command parse 1: exec at command \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 25\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a int xrec;			/* input recoding register */
+				0: exec at command parse 1: exec at command \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 25\\${SEP}${QF}}${SEP};=
+${SEP}+2a int xrec;			/* input recoding register */
 .
-${SEP}.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
+${SEP}.,\$;f> EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
 EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1348\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a EO(rec)
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
+${SEP}+2a EO(rec)
 .
-${SEP}.,$;f+ 	\\\\{\"q!\", ec_quit\\\\},
+${SEP}.,\$;f> 	\\\\{\"q!\", ec_quit\\\\},
 	\\\\{\"q\", ec_quit\\\\},
-	EO\\\\(rcm\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1412\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	EO(rec),
+	EO\\\\(rcm\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1446\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	EO(rec),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: term.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		ret:
 		ibuf_cnt = 1;
-		ibuf_pos = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 178\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 		if (xrec && *ibuf) {
+		ibuf_pos = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 180\\${SEP}${QF}}${SEP};=
+${SEP}+2a 		if (xrec && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
 			buf[1] = '\\\\0';
@@ -59,14 +63,17 @@ ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> extern int xlim;
 extern int xseq;
-extern int xerr;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 435\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a extern int xrec;
+extern int xerr;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 437\\${SEP}${QF}}${SEP};=
+${SEP}+2a extern int xrec;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..741c4aa7 100644
 --- a/ex.c

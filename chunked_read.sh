@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,33 +28,29 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return key;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 329\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;23c , init
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 331\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 331\\${SEP}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 334\\${SEP}${QF}}${SEP};=
+${SEP}+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
 .
-${SEP}.,$;f+ fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
-if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 332\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
-.
-${SEP}.,$;f+ 		return 1;
+${SEP}.,\$;f> 		return 1;
 	\\\\}
-	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 348\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;10c , 1
-.
-${SEP}.,$;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 350\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 350\\${SEP}${QF}}${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 369\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;14c , cd == 3
-.
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 371\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 371\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 206\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 206\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 {
 	if (!init) {
 		struct stat st;
@@ -75,12 +73,15 @@ ${SEP}.+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init
 				sz++;
 				step = 0;
 .
-${SEP}.-1${SEP}>			\\}>+1,#+5d${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 221\\${SEP}vis 2\\${SEP}q! 1}${SEP}.-1${SEP}>		\\}>a 		s[n] = '\\\\0';
+${SEP}.,\$f> 			\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 221\\${SEP}${QF}}${SEP};=
+${SEP}+1,#+5d${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 227\\${SEP}${QF}}${SEP};=
+${SEP}.a 		s[n] = '\\\\0';
 		lbuf_edit(lb, s, beg, end, 0, 0);
 		free(s);
 		return nr != 0;
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 227\\${SEP}vis 2\\${SEP}q! 1}${SEP}.-1${SEP}>	\\}>+1,#+2c 	long nr, l, nins = 0, nl = 0;
+${SEP}.,\$f> 	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 229\\${SEP}${QF}}${SEP};=
+${SEP}+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	struct linfo *n, *cn = NULL;
 	const int rchunk = 4096;
 	char sm[rchunk+1], *s, *ln;
@@ -131,19 +132,22 @@ ${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 227\\${SEP}vis 2\\${SEP}q! 1}${SEP}.
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 229\\${SEP}vis 2\\${SEP}q! 1}${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
+${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
 struct lbuf \\\\*lbuf_make\\\\(void\\\\);
-void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 169\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
+void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 169\\${SEP}${QF}}${SEP};=
+${SEP}+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..b1d19cd3 100644
 --- a/ex.c

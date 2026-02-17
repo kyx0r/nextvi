@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,21 +28,22 @@ fi
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		break;
 	case 'w':
-	case 'W':${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 662\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 		if (vc && cnt == 1)
+	case 'W':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 662\\${SEP}${QF}}${SEP};=
+${SEP}+2a 		if (vc && cnt == 1)
 			dir = 2;
 		else
 			dir = vi_nlword+1;
 .
-${SEP}.,$;f+ 		mark = mv == 'W';
-		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 665\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2;30;41c dir
-.
-${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}.,\$;f> 		mark = mv == 'W';
+		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 665\\${SEP}${QF}}${SEP};=
+${SEP}+2${SEP}s/vi_nlword\\\\+1/dir/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 665\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index a3d3876c..340f5449 100644
 --- a/vi.c

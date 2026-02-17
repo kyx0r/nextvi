@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,70 +28,66 @@ fi
 
 # Patch: led.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return i-s;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 14\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3c static int search(sbuf *sb, int l, int pre)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 14\\${SEP}${QF}}${SEP};=
+${SEP}+3c static int search(sbuf *sb, int l, int pre)
 .
-${SEP}.-1${SEP}>\\{>+1c 	if (!sb->s[l])
+${SEP}.,\$f> \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 16\\${SEP}${QF}}${SEP};=
+${SEP}+1c 	if (!sb->s[l])
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 16\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 		return 0;
+${SEP}.,\$;f> 		return 0;
 	sbuf_cut\\\\(suggestsb, 0\\\\)
-	sbuf_smake\\\\(sylsb, 1024\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 20\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3c 	again:;
+	sbuf_smake\\\\(sylsb, 1024\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 20\\${SEP}${QF}}${SEP};=
+${SEP}+3c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);
 .
-${SEP}.,$;f+ 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
+${SEP}.,\$;f> 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
 			part--;
-		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 26\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;15c sb->s_n - 
-.
-${SEP}.,$;f+ 			if \\\\(part == part1\\\\)
-				sbuf_mem\\\\(suggestsb, part, len\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 29\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2;7c  if (l >= pre)
-.
-${SEP}.,$;f+ 				sbuf_mem\\\\(sylsb, part, len\\\\)
-		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 32\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2c 		part = strstr(part+len, sb->s+l);
+		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 26\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/ l/ sb->s_n - l/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 26\\${SEP}${QF}}${SEP}.,\$;f> 			if \\\\(part == part1\\\\)
+				sbuf_mem\\\\(suggestsb, part, len\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 29\\${SEP}${QF}}${SEP};=
+${SEP}+2${SEP}s/se/se if (l >= pre)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 29\\${SEP}${QF}}${SEP}.,\$;f> 				sbuf_mem\\\\(sylsb, part, len\\\\)
+		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 32\\${SEP}${QF}}${SEP};=
+${SEP}+2c 		part = strstr(part+len, sb->s+l);
 	}
 	if (l < pre && sb->s[pre]) {
 		l = pre;
 		goto again;
 .
-${SEP}.,$;f+ \\\\{
+${SEP}.,\$;f> \\\\{
 	char \\\\*cs;
-	int len, c, i;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 412\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	if (ai_max >= 0 && xpac) {
+	int len, c, i;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 412\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
 	}
 .
-${SEP}.,$;f+ 		case TK_CTL\\\\('n'\\\\):
+${SEP}.,\$;f> 		case TK_CTL\\\\('n'\\\\):
 			if \\\\(!suggestsb\\\\)
-				continue;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 520\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;63;76c )
-.
-${SEP}.,$;f+ 				\\\\}
+				continue;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 520\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/ \\\\+ pre\\\\) \\\\+ pre/)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 520\\${SEP}${QF}}${SEP}.,\$;f> 				\\\\}
 				suggest:
-				\\\\*is->_sug = '\\\\\\\\0';${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 531\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
+				\\\\*is->_sug = '\\\\\\\\0';${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 531\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
 .
-${SEP}.,$;f+ 				continue;
+${SEP}.,\$;f> 				continue;
 			\\\\}
-			lookup:${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 537\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;16;46c , is->lsug, pre
-.
-${SEP}.,$;f+ 				int r = crow-ctop\\\\+1;
+			lookup:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 537\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/->s \\\\+ is->lsug, len - is->lsug/, is->lsug, pre/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 537\\${SEP}${QF}}${SEP}.,\$;f> 				int r = crow-ctop\\\\+1;
 				if \\\\(is->sug\\\\)
-					goto pac_;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 551\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
+					goto pac_;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 551\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
 index 7aba6ef6..a51a66bf 100644
 --- a/led.c

@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,34 +28,33 @@ fi
 
 # Patch: led.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static sbuf \\\\*suggestsb;
 static sbuf \\\\*acsb;
-sbuf \\\\*led_attsb;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 5\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static int vi_insmov;
+sbuf \\\\*led_attsb;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 5\\${SEP}${QF}}${SEP};=
+${SEP}+2a static int vi_insmov;
 .
-${SEP}.,$;f+ \\\\}
+${SEP}.,\$;f> \\\\}
 
-static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 283\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;34c , int print
-.
-${SEP}.,$;f+ 	\\\\}
+static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 283\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/x\\\\)/x, int print)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 283\\${SEP}${QF}}${SEP}.,\$;f> 	\\\\}
 	if \\\\(pos >= xleft \\\\+ xcols \\\\|\\\\| pos < xleft\\\\)
-		xleft = pos < xcols \\\\? 0 : pos - xcols / 2;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 310\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+1c 	if (print) {
+		xleft = pos < xcols \\\\? 0 : pos - xcols / 2;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 310\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 	if (print) {
 		syn_blockhl = -1;
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
 .
-${SEP}.,$;f+ 	char \\\\*cs;
+${SEP}.,\$;f> 	char \\\\*cs;
 	int len, c, i;
-	do \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 414\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3c 		led_printparts(sb, pre, ps, *post, postn, ai_max, !vi_insmov);
+	do \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 414\\${SEP}${QF}}${SEP};=
+${SEP}+3c 		led_printparts(sb, pre, ps, *post, postn, ai_max, !vi_insmov);
 		vi_insmov = 0;
 .
-${SEP}.,$;f+ 			else if \\\\(!i\\\\)
+${SEP}.,\$;f> 			else if \\\\(!i\\\\)
 				term_clean\\\\(\\\\);
-			continue;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 614\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 		case '\\\\033':;	/* Arrow keys */
+			continue;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 614\\${SEP}${QF}}${SEP};=
+${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 			char cbuf[1];
 			cbuf[0] = '\\\\0';
 			int fl = fcntl(STDIN_FILENO, F_GETFL);
@@ -104,50 +105,46 @@ ${SEP}.+2a 		case '\\\\033':;	/* Arrow keys */
 			fcntl(STDIN_FILENO, F_SETFL, fl);
 			return c;
 .
-${SEP}.,$;f+ int led_prompt\\\\(sbuf \\\\*sb, char \\\\*insert, int \\\\*kmap, ins_state \\\\*is, int ps, int flg\\\\)
+${SEP}.,\$;f> int led_prompt\\\\(sbuf \\\\*sb, char \\\\*insert, int \\\\*kmap, ins_state \\\\*is, int ps, int flg\\\\)
 \\\\{
-	int n = !\\\\(flg & 2\\\\) \\\\? sb->s_n : 0, key;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 650\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;29;33c NULL
-.
-${SEP}.,$;f+ 	key = led_line\\\\(sb, ps, n, &post, 0, &postref, -1, kmap, is, 0, xrow, xtop, flg\\\\);
+	int n = !\\\\(flg & 2\\\\) \\\\? sb->s_n : 0, key;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 650\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/ post/ NULL/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 650\\${SEP}${QF}}${SEP}.,\$;f> 	key = led_line\\\\(sb, ps, n, &post, 0, &postref, -1, kmap, is, 0, xrow, xtop, flg\\\\);
 	restore\\\\(xtd\\\\)
-	restore\\\\(xleft\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 663\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	sbufn_str(sb, post)
+	restore\\\\(xleft\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 663\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	sbufn_str(sb, post)
 	free(postref);
 .
-${SEP}.,$;f+ 			return key;
+${SEP}.,\$;f> 			return key;
 		\\\\}
-		sbuf_chr\\\\(sb, key\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 694\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;37c , 1
-.
-${SEP}vis 2${SEP}wq" $VI -e 'led.c'
+		sbuf_chr\\\\(sb, key\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 694\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/0\\\\)/0, 1)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 694\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	\\\\*l = ln - pln;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 855\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static int lmodified;
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 855\\${SEP}${QF}}${SEP};=
+${SEP}+2a static int lmodified;
 
 .
-${SEP}.,$;f+ 	if \\\\(postn \\\\+ l2 != tlen \\\\|\\\\| memcmp\\\\(ln \\\\+ l1, sb->s \\\\+ l1, tlen - l2 - l1\\\\)\\\\)
+${SEP}.,\$;f> 	if \\\\(postn \\\\+ l2 != tlen \\\\|\\\\| memcmp\\\\(ln \\\\+ l1, sb->s \\\\+ l1, tlen - l2 - l1\\\\)\\\\)
 		lbuf_edit\\\\(xb, sb->s, r1, r2 \\\\+ 1, o1, xoff\\\\);
-	free\\\\(sb->s\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 886\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	lmodified = 1;
+	free\\\\(sb->s\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 886\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	lmodified = 1;
 .
-${SEP}.,$;f+ 	term_room\\\\(cmdo\\\\);
+${SEP}.,\$;f> 	term_room\\\\(cmdo\\\\);
 	sbuf_mem\\\\(sb, ln, l1\\\\)
-	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1057\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;32c  {
-.
-${SEP}.-1${SEP}>		lbuf_edit\\(xb, sb-\\>s, row, row \\+ !cmdo, off, xoff\\);>a 		lmodified = 1;
+	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1057\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1057\\${SEP}${QF}}${SEP}.,\$f> 		lbuf_edit\\\\(xb, sb->s, row, row \\\\+ !cmdo, off, xoff\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1058\\${SEP}${QF}}${SEP};=
+${SEP}.a 		lmodified = 1;
 	} else
 		lmodified = 0;
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1058\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
+${SEP}.,\$;f> 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
 					break;
-				\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1518\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 				switch (k) {
+				\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1519\\${SEP}${QF}}${SEP};=
+${SEP}+2a 				switch (k) {
 				case 'A':	/* ↑ */
 					term_back(!lmodified ? c : 'i');
 					if (lmodified)
@@ -179,16 +176,18 @@ ${SEP}.+2a 				switch (k) {
 					goto _break;
 				}
 .
-${SEP}.,$;f+ 				if \\\\(c != 'A' && c != 'C'\\\\)
+${SEP}.,\$;f> 				if \\\\(c != 'A' && c != 'C'\\\\)
 					xoff--;
-				break;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1521\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 				_break:
+				break;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1522\\${SEP}${QF}}${SEP};=
+${SEP}+2a 				_break:
 				vi_mod = 0;
 				break;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
 index 7aba6ef6..fe13f236 100644
 --- a/led.c

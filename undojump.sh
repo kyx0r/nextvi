@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,10 +28,11 @@ fi
 
 # Patch: lbuf.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->ln\\\\[pos\\\\] : NULL;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 382\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 382\\${SEP}${QF}}${SEP};=
+${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
 	struct lopt *lo;
 	static int last_hist_u;
@@ -69,10 +72,11 @@ ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1447\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 			case TK_CTL('o'):
+				break;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1448\\${SEP}${QF}}${SEP};=
+${SEP}+2a 			case TK_CTL('o'):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
 					vi_drawmsg_mpt(\"undo jmp failed\")
@@ -88,14 +92,17 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void lbuf_smark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int beg, int o1\\\\);
 void lbuf_emark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int end, int o2\\\\);
-struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 180\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
+struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 180\\${SEP}${QF}}${SEP};=
+${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
 index 1ebfea46..87cdbe0f 100644
 --- a/lbuf.c

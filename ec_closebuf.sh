@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,10 +28,11 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return val;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1339\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1373\\${SEP}${QF}}${SEP};=
+${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
 	int istmp = istempbuf(ex_buf);
@@ -74,14 +77,16 @@ ${SEP}.+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 
 
 .
-${SEP}.,$;f+ 	\\\\{\"cm!\", ec_cmap\\\\},
+${SEP}.,\$;f> 	\\\\{\"cm!\", ec_cmap\\\\},
 	\\\\{\"cm\", ec_cmap\\\\},
-	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1435\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	{\"cx\", ec_closebuf},
+	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1470\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	{\"cx\", ec_closebuf},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..3190a8ce 100644
 --- a/ex.c

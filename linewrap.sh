@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,15 +28,16 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
 int xrcm = 1;			/\\\\* range command model -
-				0: exec at command parse 1: exec at command \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 25\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a int xlw;			/* soft linewrap col */
+				0: exec at command parse 1: exec at command \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 25\\${SEP}${QF}}${SEP};=
+${SEP}+2a int xlw;			/* soft linewrap col */
 .
-${SEP}.,$;f+ 
+${SEP}.,\$;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1331\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1365\\${SEP}${QF}}${SEP};=
+${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
 	if (xb->modified)
@@ -52,30 +55,31 @@ ${SEP}.+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 }
 
 .
-${SEP}.,$;f+ 	EO\\\\(left\\\\),
+${SEP}.,\$;f> 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1448\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	{\"lw\", ec_linewrap},
+	EO\\\\(led\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1483\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	{\"lw\", ec_linewrap},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\{
 	int i, pos = lo->pos;
-	if \\\\(s\\\\) \\\\{${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 84\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 		char *lwp = NULL;
+	if \\\\(s\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 84\\${SEP}${QF}}${SEP};=
+${SEP}+2a 		char *lwp = NULL;
 .
-${SEP}.,$;f+ 			struct linfo \\\\*n = emalloc\\\\(l_nonl \\\\+ 5 \\\\+ sizeof\\\\(struct linfo\\\\)\\\\);
+${SEP}.,\$;f> 			struct linfo \\\\*n = emalloc\\\\(l_nonl \\\\+ 5 \\\\+ sizeof\\\\(struct linfo\\\\)\\\\);
 			n->len = l_nonl;
-			n->grec = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 90\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 			n->lw_prev = NULL;
+			n->grec = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 90\\${SEP}${QF}}${SEP};=
+${SEP}+2a 			n->lw_prev = NULL;
 			n->lw_next = NULL;
 .
-${SEP}.,$;f+ 			memcpy\\\\(ln, s, l_nonl\\\\);
+${SEP}.,\$;f> 			memcpy\\\\(ln, s, l_nonl\\\\);
 			memset\\\\(&ln\\\\[l_nonl \\\\+ 1\\\\], 0, 4\\\\);	/\\\\* fault tolerance pad \\\\*/
-			ln\\\\[l_nonl\\\\] = '\\\\\\\\n';${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 94\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 			if (xlw) {
+			ln\\\\[l_nonl\\\\] = '\\\\\\\\n';${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 94\\${SEP}${QF}}${SEP};=
+${SEP}+2a 			if (xlw) {
 				rstate->s = NULL;
 				ren_state *r = ren_position(ln);
 				if (r->cmax > xlw) {
@@ -107,10 +111,10 @@ ${SEP}.+2a 			if (xlw) {
 			}
 			too_small:
 .
-${SEP}.,$;f+ 		end = lb->ln_n;
+${SEP}.,\$;f> 		end = lb->ln_n;
 	if \\\\(beg == end && !buf\\\\)
-		return;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 190\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	/* save chain boundary pointers before edit */
+		return;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 190\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	/* save chain boundary pointers before edit */
 	char *chain_pred = NULL, *chain_succ = NULL;
 	if (xlw) {
 		if (beg < end) {
@@ -129,10 +133,10 @@ ${SEP}.+2a 	/* save chain boundary pointers before edit */
 		}
 	}
 .
-${SEP}.,$;f+ 	struct lopt \\\\*lo = lbuf_opt\\\\(lb, beg, o1, end - beg\\\\);
+${SEP}.,\$;f> 	struct lopt \\\\*lo = lbuf_opt\\\\(lb, beg, o1, end - beg\\\\);
 	sbuf_smake\\\\(sb, sizeof\\\\(lo->ins\\\\[0\\\\]\\\\)\\\\+1\\\\)
-	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 193\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	/* relink the chain after edit */
+	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 193\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	/* relink the chain after edit */
 	if (xlw && (chain_pred || chain_succ)) {
 		if (lo->n_ins > 0) {
 			char *first_new = lb->ln[beg];
@@ -154,15 +158,13 @@ ${SEP}.+2a 	/* relink the chain after edit */
 		}
 	}
 .
-${SEP}.,$;f+ 	for \\\\(int i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
+${SEP}.,\$;f> 	for \\\\(int i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lb->ln\\\\[i\\\\];
-		long nw = 0;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 240\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;30;31c (!lbuf_s(ln)->lw_next)
-.
-${SEP}.,$;f+ 		lo->ref = 1;
+		long nw = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 240\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/1/(!lbuf_s(ln)->lw_next)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 240\\${SEP}${QF}}${SEP}.,\$;f> 		lo->ref = 1;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->del;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 399\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 		/* relink chain: restored lines have original pointers */
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 399\\${SEP}${QF}}${SEP};=
+${SEP}+2a 		/* relink chain: restored lines have original pointers */
 		if (xlw) {
 			for (int i = 0; i < lo->n_del; i++) {
 				char *ln = lo->del[i];
@@ -184,10 +186,10 @@ ${SEP}.+2a 		/* relink chain: restored lines have original pointers */
 			}
 		}
 .
-${SEP}.,$;f+ 		lo->ref = 2;
+${SEP}.,\$;f> 		lo->ref = 2;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->ins;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 421\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 		/* relink chain: restored lines have their pointers from edit time */
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 421\\${SEP}${QF}}${SEP};=
+${SEP}+2a 		/* relink chain: restored lines have their pointers from edit time */
 		if (xlw) {
 			for (int i = 0; i < lo->n_ins; i++) {
 				char *ln = lo->ins[i];
@@ -213,10 +215,11 @@ ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		return;
 	\\\\}
-	s = lbuf_get\\\\(xb, row\\\\);${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 171\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	if (xlw && s) {
+	s = lbuf_get\\\\(xb, row\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 171\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	if (xlw && s) {
 		led_att la;
 		if (!led_attsb)
 			sbuf_make(led_attsb, sizeof(la))
@@ -237,20 +240,23 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct linfo \\\\{
 	int len;
-	int grec;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 148\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	char *lw_prev;
+	int grec;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 148\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	char *lw_prev;
 	char *lw_next;
 .
-${SEP}.,$;f+ extern int xlim;
+${SEP}.,\$;f> extern int xlim;
 extern int xseq;
-extern int xerr;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 435\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a extern int xlw;
+extern int xerr;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 437\\${SEP}${QF}}${SEP};=
+${SEP}+2a extern int xlw;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..b131adab 100644
 --- a/ex.c

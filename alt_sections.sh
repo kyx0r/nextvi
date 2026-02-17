@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,20 +28,21 @@ fi
 
 # Patch: vi.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		break;
 	case '\\\\(':
-	case '\\\\)':${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 670\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;15;16c )
-.
-${SEP}.,$;f+ 	case '\\\\}':
+	case '\\\\)':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 670\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 670\\${SEP}${QF}}${SEP}.,\$;f> 	case '\\\\}':
 	case '\\\\[':
-	case '\\\\]':${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 710\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
+	case '\\\\]':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 710\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		mark = mv == '[' || mv == ']' ? '{' : '\\\\n';
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index a3d3876c..ff9c23ec 100644
 --- a/vi.c

@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,25 +28,26 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
-sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 40\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a int xexrc = 0;			/* read .exrc from the current directory */
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 40\\${SEP}${QF}}${SEP};=
+${SEP}+2a int xexrc = 0;			/* read .exrc from the current directory */
 .
-${SEP}.,$;f+ EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
+${SEP}.,\$;f> EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
 EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1348\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a EO(exrc)
+EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
+${SEP}+2a EO(exrc)
 .
-${SEP}.,$;f+ 	EO\\\\(ai\\\\),
+${SEP}.,\$;f> 	EO\\\\(ai\\\\),
 	\\\\{\"ac\", ec_setacreg\\\\},
-	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1386\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	EO(exrc),
+	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1420\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	EO(exrc),
 .
-${SEP}.,$;f+ 	xgrec--;
+${SEP}.,\$;f> 	xgrec--;
 \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1604\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a void ex_script(FILE *fp)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1645\\${SEP}${QF}}${SEP};=
+${SEP}+2a void ex_script(FILE *fp)
 {
 	char done = 0;
 	do {
@@ -90,12 +93,11 @@ void load_exrc(char *exrc)
 }
 
 .
-${SEP}.,$;f+ 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~4;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1616\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;28c  {
-.
-${SEP}.-1${SEP}>		ex_command\\(s\\)>a 	} else {
+	xvis &= ~4;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1657\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1657\\${SEP}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1658\\${SEP}${QF}}${SEP};=
+${SEP}.a 	} else {
 		char *homeenv = getenv(\"HOME\");
 		char *xdgconfighomeenv = getenv(\"XDG_CONFIG_HOME\");
 		if (xdgconfighomeenv) {
@@ -120,9 +122,11 @@ ${SEP}.-1${SEP}>		ex_command\\(s\\)>a 	} else {
 			load_exrc(\".exrc\");
 	}
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1617\\${SEP}vis 2\\${SEP}q! 1}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..d0bb0162 100644
 --- a/ex.c

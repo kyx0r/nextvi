@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,9 +28,10 @@ fi
 
 # Patch: kmap.h
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
-	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 2\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+1a 	['y'] = \"h\",
+	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 2\\${SEP}${QF}}${SEP};=
+${SEP}+1a 	['y'] = \"h\",
 	['n'] = \"j\",
 	['e'] = \"k\",
 	['o'] = \"l\",
@@ -41,15 +44,18 @@ ${SEP}vis 2${SEP}wq" $VI -e 'kmap.h'
 
 # Patch: term.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			err:
 			\\\\*ibuf = 0;
-		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 175\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
+		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 177\\${SEP}${QF}}${SEP};=
+${SEP}+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/kmap.h b/kmap.h
 index d025f5f1..e549d13b 100644
 --- a/kmap.h

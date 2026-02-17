@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -29,8 +29,7 @@ fi
 # Patch: led.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 142\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> /\\\\* line editing and drawing \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP};=
 ${SEP}.a #define LEDBACK 300
 #define LEDFORW 300
 
@@ -42,10 +41,10 @@ ${SEP}+2a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
 .
-${SEP}.,\$;f> 	int att\\\\[cterm\\\\+1\\\\];	/\\\\* att\\\\[i\\\\]: the attributes of i-th character \\\\*/
-	int stt\\\\[cterm\\\\+1\\\\];	/\\\\* stt\\\\[i\\\\]: remap off indexes \\\\*/
-	int ctt\\\\[cterm\\\\+1\\\\];	/\\\\* ctt\\\\[i\\\\]: cterm bound attrs \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 154\\${SEP}${QF}}${SEP};=
-${SEP}.,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
+${SEP}.,\$;f> 	char \\\\*bound = NULL;
+	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 154\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
 .
@@ -88,20 +87,21 @@ ${SEP}+1${SEP}s/ c/ fc/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 207\\${SEP}${QF
 ${SEP}+3${SEP}s/0/atti/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 217\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 7aba6ef6..8b8650d2 100644
+index 7aba6ef6..8c05446f 100644
 --- a/led.c
 +++ b/led.c
-@@ -140,20 +140,26 @@ for (i = 0; i < cterm;) { \
- 	att_old = att_new; \
- } } \
- 
+@@ -1,4 +1,7 @@
+ /* line editing and drawing */
 +#define LEDBACK 300
 +#define LEDFORW 300
 +
- /* render and highlight a line */
- void led_render(char *s0, int cbeg, int cend)
- {
+ 
+ static sbuf *suggestsb;
+ static sbuf *acsb;
+@@ -146,14 +149,17 @@ void led_render(char *s0, int cbeg, int cend)
  	if (!xled)
  		return;
  	ren_state *r = ren_position(s0);

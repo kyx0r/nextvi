@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,15 +28,16 @@ fi
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
-sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 40\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a char **xenvp;
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 40\\${SEP}${QF}}${SEP};=
+${SEP}+2a char **xenvp;
 .
-${SEP}.,$;f+ 
+${SEP}.,\$;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1331\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a static void *ec_script(char *loc, char *cmd, char *arg)
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1365\\${SEP}${QF}}${SEP};=
+${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
 	char buf[100];
@@ -70,20 +73,21 @@ ${SEP}.+2a static void *ec_script(char *loc, char *cmd, char *arg)
 }
 
 .
-${SEP}.,$;f+ 	EO\\\\(seq\\\\),
+${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 1427\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a 	{\"sr\", ec_script},
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1462\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: term.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 243\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3c 		if (xenvp)
+		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 245\\${SEP}${QF}}${SEP};=
+${SEP}+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
@@ -92,10 +96,11 @@ ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> files and thus is never static\\\\.
 \\\\*/
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 11\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2a #ifdef __APPLE__
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 11\\${SEP}${QF}}${SEP};=
+${SEP}+2a #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())
 #else
@@ -107,6 +112,8 @@ extern char **xenvp;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..25466a76 100644
 --- a/ex.c

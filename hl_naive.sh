@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -14,8 +14,10 @@ VI=${VI:-vi}
 
 # Uncomment to enter interactive vi on patch failure
 #DBG="|sc|vis 2:e $0:@Q:q!1"
-# Uncomment to nop the errors
-#DBG="p"
+# Uncomment to skip errors (. = silent nop)
+#DBG="."
+# Set QF=. to continue despite errors (errors are still printed)
+#QF=.
 
 # Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
@@ -26,39 +28,39 @@ fi
 
 # Patch: led.c
 SEP="$(printf '\x01')"
+QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	o = off\\\\[i\\\\]; \\\\\\\\
 	if \\\\(o >= 0\\\\) \\\\{ \\\\\\\\
-		for \\\\(l = i; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\); \\\\\\\\${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 119\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;16;38c 
-.
-${SEP}.,$;f+ 		return;
+		for \\\\(l = i; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\); \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 119\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/bound \\\\? ctt\\\\[atti\\\\+\\\\+\\\\] : //${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 119\\${SEP}${QF}}${SEP}.,\$;f> 		return;
 	ren_state \\\\*r = ren_position\\\\(s0\\\\);
-	int j, c, l, i, o, n = r->n;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 150\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+1c 	int att_old = 0, cterm = cend - cbeg;
+	int j, c, l, i, o, n = r->n;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 150\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+1c 	int att_old = 0, cterm = cend - cbeg;
 .
-${SEP}.,$;f+ 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
-	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 154\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+2,#+2c 	int *att = emalloc(n * sizeof(att[0]));
+${SEP}.,\$;f> 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 154\\${SEP}${QF}}${SEP};=
+${SEP}+2,#+2c 	int *att = emalloc(n * sizeof(att[0]));
 	memset(att, 0, n * sizeof(att[0]));
 .
-${SEP}.,$;f+ 		for \\\\(c = cbeg; c < cend; c\\\\+\\\\+\\\\)
+${SEP}.,\$;f> 		for \\\\(c = cbeg; c < cend; c\\\\+\\\\+\\\\)
 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
-	\\\\}${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 167\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+38d${SEP}.-1${SEP}>	if \\(xhl\\)>+1,#+1c 		syn_highlight(att, s0, n);
+	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 167\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+38d${SEP}.,\$f> 	if \\\\(xhl\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 207\\${SEP}${QF}}${SEP};=
+${SEP}+1,#+1c 		syn_highlight(att, s0, n);
 .
-${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 207\\${SEP}vis 2\\${SEP}q! 1}${SEP}.,$;f+ 		for \\\\(; \\\\(char\\\\*\\\\)p < &led_attsb->s\\\\[led_attsb->s_n\\\\]; p\\\\+\\\\+\\\\) \\\\{
+${SEP}.,\$;f> 		for \\\\(; \\\\(char\\\\*\\\\)p < &led_attsb->s\\\\[led_attsb->s_n\\\\]; p\\\\+\\\\+\\\\) \\\\{
 			if \\\\(p->s != s0\\\\)
-				continue;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 214\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3,#+18c 			att[p->off] = syn_merge(p->att, att[p->off]);
+				continue;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 214\\${SEP}${QF}}${SEP};=
+${SEP}+3,#+18c 			att[p->off] = syn_merge(p->att, att[p->off]);
 .
-${SEP}.,$;f+ 				continue;
+${SEP}.,\$;f> 				continue;
 			if \\\\(r->pos\\\\[o \\\\+ 1\\\\] \\\\+ r->wid\\\\[o \\\\+ 1\\\\] != r->pos\\\\[o\\\\]\\\\)
-				continue;${SEP}??!${DBG:-.-5,.+5p\\${SEP}p FAIL line 245\\${SEP}vis 2\\${SEP}q! 1}${SEP};=
-${SEP}.+3;7;26c 
-.
-${SEP}vis 2${SEP}wq" $VI -e 'led.c'
+				continue;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 245\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/bound \\\\? ctt\\\\[l-1\\\\] : //${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 245\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
 index 7aba6ef6..c0bcc7f7 100644
 --- a/led.c

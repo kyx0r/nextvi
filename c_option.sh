@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -49,9 +49,10 @@ int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
 ${SEP}+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 .
-${SEP}.,\$;f> 			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1833\\${SEP}${QF}}${SEP};=
-${SEP}.c 			else if (argv[i][j] == 'c') {
+${SEP}.,\$;f> 				xvis \\\\|= 8;
+			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
+				xvis = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1833\\${SEP}${QF}}${SEP};=
+${SEP}+3c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
 					break;
@@ -65,9 +66,7 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 			} else {
 .
 ${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}.;46c c
-.
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}.,\$;f> 		term_init\\\\(\\\\);
+${SEP}+1${SEP}s/em/ecm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}.,\$;f> 		term_init\\\\(\\\\);
 	if \\\\(xvis & 8\\\\)
 		term_scrh;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1845\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1845\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -81,6 +80,8 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void ex_cprint\\\\(char \\\\*line, c
 ${SEP}+3${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..f86bd874 100644
 --- a/ex.c

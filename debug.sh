@@ -5,7 +5,7 @@ set -e
 
 # Pass any argument to use patch(1) instead of nextvi ex commands
 if [ -n "$1" ]; then
-    sed '1,/^exit 0$/d' "$0" | patch -p1 --merge=diff3
+    sed '1,/^=== PATCH2VI PATCH ===$/d' "$0" | patch -p1 --merge=diff3
     exit $?
 fi
 
@@ -29,8 +29,10 @@ fi
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1645\\${SEP}${QF}}${SEP};=
-${SEP}.i 
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	xgrec--;
+\\\\}
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1645\\${SEP}${QF}}${SEP};=
+${SEP}+2a 
 void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -49,16 +51,20 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 # Patch: regex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 638\\${SEP}${QF}}${SEP};=
-${SEP}.a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
+	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;
+	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 638\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: ren.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> ren_state rstates${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 89\\${SEP}${QF}}${SEP};=
-${SEP}.i void ren_done(void)
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return uc_wid\\\\(c\\\\);
+\\\\}
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 89\\${SEP}${QF}}${SEP};=
+${SEP}+2a void ren_done(void)
 {
 	rset_free(dir_rslr);
 	rset_free(dir_rsrl);
@@ -88,15 +94,26 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 # Patch: vi.h
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}233a void dir_done(void);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> /\\\\* text direction \\\\*/
+int dir_context\\\\(char \\\\*s\\\\);
+void dir_init\\\\(void\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 233\\${SEP}${QF}}${SEP};=
+${SEP}+2a void dir_done(void);
 .
-${SEP}272a void syn_done(void);
+${SEP}.,\$;f> int syn_findhl\\\\(int id\\\\);
+int syn_addhl\\\\(char \\\\*reg, int id\\\\);
+void syn_init\\\\(void\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 271\\${SEP}${QF}}${SEP};=
+${SEP}+2a void syn_done(void);
 .
-${SEP}485a void ex_done(void);
+${SEP}.,\$;f> #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
+void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
+void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 483\\${SEP}${QF}}${SEP};=
+${SEP}+2a void ex_done(void);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
+=== PATCH2VI DELTA ===
+=== PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..3222c0ee 100644
 --- a/ex.c
