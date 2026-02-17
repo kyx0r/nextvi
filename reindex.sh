@@ -8,7 +8,7 @@ do
 	git diff > /tmp/tmp.patch
 	git checkout . &>/dev/null
 	# Replace embedded patch: keep everything up to "exit 0", append new diff
-	sed '/^exit 0$/q' "$s" > /tmp/tmp.sh
+	sed '/^=== PATCH2VI PATCH ===$/q' "$s" > /tmp/tmp.sh
 	cat /tmp/tmp.patch >> /tmp/tmp.sh
 	cp /tmp/tmp.sh "$s"
 	chmod +x "$s"
