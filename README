@@ -3,10 +3,8 @@ NEXTVI PATCHES
 Optional patches for Nextvi.
 Apply: ./name.sh
 
-Shell scripts use Nextvi to patch itself. This system will be
-more flexible as it matures and will scratch the limits of what
-is possible with Nextvi. The plan is to lessen the burden of
-maintaining patches by inventing smarter ways of patching.
+Nextvi features a robust, context aware and customizable patching system.
+patch2vi support program facilitates script transformations.
 
 64bit.sh
 --------------
