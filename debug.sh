@@ -98,13 +98,13 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 diff --git a/ex.c b/ex.c
-index 81878d89..f85f4325 100644
+index 81878d89..3222c0ee 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1657,3 +1657,16 @@ void ex_init(char **files, int n)
- 	if ((s = getenv("EXINIT")))
- 		ex_command(s)
+@@ -1643,6 +1643,19 @@ void ex(void)
+ 	xgrec--;
  }
+ 
 +
 +void ex_done(void)
 +{
@@ -118,6 +118,9 @@ index 81878d89..f85f4325 100644
 +	rset_free(xkwdrs);
 +	free(bufs);
 +}
+ void ex_init(char **files, int n)
+ {
+ 	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/regex.c b/regex.c
 index ff88bb41..42399e6a 100644
 --- a/regex.c
@@ -131,12 +134,12 @@ index ff88bb41..42399e6a 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index cf6a8dc5..ed9a9e6e 100644
+index cf6a8dc5..9cc68351 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -90,6 +90,19 @@ static int ren_cwid(char *s, int pos)
- ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
- ren_state *rstate = rstates;
+@@ -87,6 +87,19 @@ static int ren_cwid(char *s, int pos)
+ 	return uc_wid(c);
+ }
  
 +void ren_done(void)
 +{
@@ -151,9 +154,9 @@ index cf6a8dc5..ed9a9e6e 100644
 +	}
 +}
 +
- /* specify the screen position of the characters in s */
- ren_state *ren_position(char *s)
- {
+ ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
+ ren_state *rstate = rstates;
+ 
 @@ -407,3 +420,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);

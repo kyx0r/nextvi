@@ -147,13 +147,11 @@ index 81878d89..5c9e1bf4 100644
  	{"q", ec_quit},
  	EO(rcm),
 diff --git a/led.c b/led.c
-index 7aba6ef6..abbaf3df 100644
+index 7aba6ef6..fc47abee 100644
 --- a/led.c
 +++ b/led.c
-@@ -404,6 +404,14 @@ void led_modeswap(void)
- 	restore(xvis)
- }
- 
+@@ -1,4 +1,12 @@
+ /* line editing and drawing */
 +static int gettime_ms(void)
 +{
 +	struct timespec t;
@@ -162,9 +160,9 @@ index 7aba6ef6..abbaf3df 100644
 +	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
 +}
 +
- /* read a line from the terminal */
- static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **postref,
- 	int ai_max, int *kmap, ins_state *is, int orow, int crow, int ctop, int flg)
+ 
+ static sbuf *suggestsb;
+ static sbuf *acsb;
 @@ -630,7 +638,18 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
