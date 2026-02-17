@@ -651,6 +651,9 @@ static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 		if (i < nlines - 1)
 			fputc('\n', out);
 	}
+	/* Ensure trailing newline when last line is empty */
+	if (nlines > 0 && !lines[nlines - 1][0])
+		fputc('\n', out);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
 	fputs(";=\n", out);
@@ -691,7 +694,8 @@ static int emit_custom_pos(FILE *out, group_t *g, int *first_ml)
 		*first_ml = 0;
 		return 1;
 	}
-	if (g->ncustom >= 2) {
+	if (g->ncustom >= 2 ||
+	    (g->ncustom == 1 && !g->custom_lines[0][0])) {
 		emit_custom_multiline_pos(out, g->custom_lines, g->ncustom,
 					  g->custom_offset,
 					  *first_ml, target_line, NULL);
