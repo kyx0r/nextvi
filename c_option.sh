@@ -29,13 +29,10 @@ fi
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	xgrec--;
-\\\\}
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1646\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1646\\${SEP}${QF}}${SEP}.,\$;f> 	xvis &= ~4;
-	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1646\\${SEP}${QF}}${SEP};=
+${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1646\\${SEP}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
 		ex_command\\\\(s\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1658\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	for (int i = 0; i < cmdnum; i++)
+${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -44,15 +41,13 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
-int main\\\\(int argc, char \\\\*argv\\\\[\\\\]\\\\)
-\\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1811\\${SEP}${QF}}${SEP};=
+int main\\\\(int argc${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1811\\${SEP}${QF}}${SEP};=
 ${SEP}+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 .
-${SEP}.,\$;f> 				xvis \\\\|= 8;
-			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'v'\\\\)
-				xvis = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1833\\${SEP}${QF}}${SEP};=
-${SEP}+3c 			else if (argv[i][j] == 'c') {
+${SEP}.,\$;f> 			else \\\\{
+				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1833\\${SEP}${QF}}${SEP};=
+${SEP}.c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
 					break;
@@ -66,21 +61,116 @@ ${SEP}+3c 			else if (argv[i][j] == 'c') {
 			} else {
 .
 ${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/em/ecm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}.,\$;f> 		term_init\\\\(\\\\);
-	if \\\\(xvis & 8\\\\)
+${SEP}+1${SEP}.;46c c
+.
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
 		term_scrh;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1845\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1845\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1845\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void ex_cprint\\\\(char \\\\*line, char \\\\*ft, int r, int c, int left, int flg\\\\);
-#define ex_cprint2\\\\(line, ft, r, c, left, flg\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, r, c, left, flg\\\\)\\\\); \\\\}
-#define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP};=
+${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- /tmp/patch2vi_eBpNdd_ex.c.diff.orig
++++ /tmp/patch2vi_eBpNdd_ex.c.diff
+@@ -6,15 +6,8 @@
+ #relc
+ === SEARCH COMMAND ===
+ %;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	xgrec--;
+-\}
+-
+---- extra (delete to include) ---
+-void ex_init\(char \*\*files, int n\)
+-\{
+-	xbufsalloc = MAX\(n, xbufsalloc\);
+-	ec_setbufsmax\(NULL, NULL, ""\);
++=== SEARCH PATTERN (offset: 0) ===
++void ex_init\(char
+ === END GROUP ===
+ 
+ === GROUP 2/2 (line 1658) ===
+@@ -25,8 +18,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	xvis &= ~4;
++=== SEARCH PATTERN (offset: 2) ===
+ 	if \(\(s = getenv\("EXINIT"\)\)\)
+ 		ex_command\(s\)
+ --- extra (delete to include) ---
+=== DELTA vi.c ===
+--- /tmp/patch2vi_MFBgMG_vi.c.diff.orig
++++ /tmp/patch2vi_MFBgMG_vi.c.diff
+@@ -8,8 +8,7 @@
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+ 
+-int main\(int argc, char \*argv\[\]\)
+-\{
++int main\(int argc
+ --- extra (delete to include) ---
+ 	int i, j;
+ 	setup_signals\(\);
+@@ -36,11 +35,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-				xvis \|= 8;
+-			else if \(argv\[i\]\[j\] == 'v'\)
+-				xvis = 0;
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: 0) ===
+ 			else \{
+ 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
+ === END GROUP ===
+@@ -50,7 +45,7 @@
+ +				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
+ === STRATEGY (default: rel) ===
+ #abs
+-#relc
++relc
+ #offset
+ === SEARCH COMMAND ===
+ .,\$f>
+@@ -72,8 +67,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-		term_init\(\);
++=== SEARCH PATTERN (offset: 2) ===
+ 	if \(xvis & 8\)
+ 		term_scrh;
+ --- extra (delete to include) ---
+=== DELTA vi.h ===
+--- /tmp/patch2vi_KJJGGn_vi.h.diff.orig
++++ /tmp/patch2vi_KJJGGn_vi.h.diff
+@@ -6,14 +6,7 @@
+ #relc
+ === SEARCH COMMAND ===
+ %;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);
+-#define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); \}
+-#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); \}
+---- extra (delete to include) ---
+-void ex_init\(char \*\*files, int n\);
+-void ex_bufpostfix\(struct buf \*p, int clear\);
+-int ex_krs\(rset \*\*krs, int \*dir\);
+-void ex_krsset\(char \*kwd, int dir\);
++=== SEARCH PATTERN (offset: 0) ===
++void ex_init\(char
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..f86bd874 100644
