@@ -29,22 +29,17 @@ fi
 # Patch: conf.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\
-\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\
-\\\\(\\\\(pac\\\\|pr\\\\|ai\\\\|ish\\\\|err\\\\|ic\\\\|grp\\\\|mpt\\\\|rcm\\\\|shape\\\\|seq\\\\|ts\\\\|td\\\\|order\\\\|hl\\\\[lwpr\\\\]\\\\?\\\\|left\\\\|lim\\\\|led\\\\|vis\\\\)\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/\\\\[f!\\\\]\\\\?!\\\\?\\\\|f\\\\[-\\\\+><tdp\\\\]\\\\?\\\\|inc\\\\|i\\\\|sc!\\\\?/q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct buf tempbufs\\\\[2\\\\];		/\\\\* temporary buffers, for internal use \\\\*/
-struct buf \\\\*ex_buf;		/\\\\* current buffer \\\\*/
-struct buf \\\\*ex_pbuf;		/\\\\* prev buffer \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 44\\${SEP}${QF}}${SEP};=
-${SEP}+2a struct win *wins;		/* head of window list */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}44a struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 .
-${SEP}.,\$;f> 		ex_buf = &bufs\\\\[idx\\\\];
+${SEP}%;f> 		ex_buf = &bufs\\\\[idx\\\\];
 	\\\\}
 	exbuf_load\\\\(ex_buf\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 102\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	/* update current window's buffer reference */
@@ -78,6 +73,7 @@ ${SEP}+3,#+3c 	/* q! always force quits */
 .
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1393\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static void *ec_split(char *loc, char *cmd, char *arg)
 {
@@ -186,27 +182,20 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 }
 
 .
-${SEP}.,\$;f> 	EO\\\\(err\\\\),
-	\\\\{\"ef!\", ec_fuzz\\\\},
-	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1423\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	{\"eq\", ec_equalize},
+${SEP}.,\$f> 	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1423\\${SEP}${QF}}${SEP};=
+${SEP}.a 	{\"eq\", ec_equalize},
 .
-${SEP}.,\$;f> 	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},
-	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1458\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	EO(vis),
+${SEP}.,\$f> 	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1458\\${SEP}${QF}}${SEP};=
+${SEP}.a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
-${SEP}.,\$;f> 	EO\\\\(seq\\\\),
-	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1462\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	{\"sp\", ec_split},
+${SEP}.,\$f> 	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1462\\${SEP}${QF}}${SEP};=
+${SEP}.a 	{\"sp\", ec_split},
 .
-${SEP}.,\$;f> 	EO\\\\(left\\\\),
-	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1484\\${SEP}${QF}}${SEP};=
-${SEP}+3d${SEP}.,\$;f> 	xgrec--;
+${SEP}.,\$f> 	EO\\\\(vis\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1484\\${SEP}${QF}}${SEP};=
+${SEP}.d${SEP}.,\$;f> 	xgrec--;
 \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1645\\${SEP}${QF}}${SEP};=
 ${SEP}+2a /* window management functions */
 static void curwin_save(void)
@@ -540,6 +529,7 @@ SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	term_out\\\\(\"\\\\\\\\33\\\\[K\"\\\\);
 \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 85\\${SEP}${QF}}${SEP};=
 ${SEP}+2a void term_killn(int n)
 {
@@ -561,6 +551,7 @@ static int vi_scrolley;			/\\\\* scroll amount for \\\\^e and \\\\^y \\\\*/
 static int vi_cndir = 1;		/\\\\* \\\\^n direction \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 44\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/static int vi_status;/int vi_status;	/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 44\\${SEP}${QF}}${SEP}.,\$;f> \\\\}
 #define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 104\\${SEP}${QF}}${SEP};=
 ${SEP}+2a /* draw horizontal separator line at screen row, from x for w columns */
 static void vi_draw_hsep(int row, int x, int w)
@@ -585,6 +576,7 @@ for \\\\(i = 0, ret = 0;; i\\\\+\\\\+\\\\) \\\\{ \\\\\\\\
 	l1 = ren_next\\\\(c, ren_pos\\\\(c, noff\\\\), 1\\\\)-1-xleft\\\\+vi_lncol; \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 120\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/ x/ w/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 120\\${SEP}${QF}}${SEP}.,\$;f> 	ret = func; \\\\\\\\
 \\\\} \\\\} \\\\\\\\
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 127\\${SEP}${QF}}${SEP};=
 ${SEP}+2a /* calculate screen row for buffer row in current window */
 static int win_scrrow(int row)
@@ -651,6 +643,7 @@ ${SEP}+2a 	int wrows = win_height();
 ${SEP}.,\$f> 	syn_scdir\\\\(0\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 222\\${SEP}${QF}}${SEP};=
 ${SEP}+1${SEP}s/ xr/ wr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 222\\${SEP}${QF}}${SEP}.,\$;f> 		vi_drawrow\\\\(i\\\\);
 \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 225\\${SEP}${QF}}${SEP};=
 ${SEP}+2a /* draw all window separators */
 static void vi_draw_separators(void)
@@ -952,6 +945,80 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA conf.c ===
+--- /tmp/patch2vi_nrt5VR_conf.c.diff.orig	2026-02-17 19:16:49.680035285 -0100
++++ /tmp/patch2vi_nrt5VR_conf.c.diff	2026-02-17 19:16:58.627967992 -0100
+@@ -8,8 +8,6 @@
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+ \(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\?\[\.\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\\
+-\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\(\[0-9\]\+\)\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+-\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
+ --- extra (delete to include) ---
+ \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
+ \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
+=== DELTA ex.c ===
+--- /tmp/patch2vi_bi5AGG_ex.c.diff.orig	2026-02-17 19:17:12.561242488 -0100
++++ /tmp/patch2vi_bi5AGG_ex.c.diff	2026-02-17 19:20:14.061977798 -0100
+@@ -3,7 +3,7 @@
+ +struct win *curwin;		/* current active window */
+ +int nwins;			/* number of windows */
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+@@ -221,9 +221,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	EO\(err\),
+-	\{"ef!", ec_fuzz\},
++=== SEARCH PATTERN (offset: 1) ===
+ 	\{"ef", ec_fuzz\},
+ --- extra (delete to include) ---
+ 	\{"e!", ec_edit\},
+@@ -239,9 +237,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	\{"uz", ec_setenc\},
+-	\{"ub", ec_setenc\},
++=== SEARCH PATTERN (offset: 1) ===
+ 	\{"u", ec_undoredo\},
+ --- extra (delete to include) ---
+ 	EO\(shape\),
+@@ -256,9 +252,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	EO\(seq\),
+-	\{"sc!", ec_specials\},
++=== SEARCH PATTERN (offset: 1) ===
+ 	\{"sc", ec_specials\},
+ --- extra (delete to include) ---
+ 	\{"s", ec_substitute\},
+@@ -273,15 +267,8 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	EO\(left\),
+-	EO\(lim\),
+-	EO\(led\),
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: 0) ===
+ 	EO\(vis\),
+-	\{"=", ec_num\},
+-	\{"", ec_print\}, /\* do not remove \*/
+-	\{"", ec_null\}, /\* do not remove \*/
+ === END GROUP ===
+ 
+ === GROUP 10/10 (line 1645) ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 51ec63a9..6fd6b96e 100644
