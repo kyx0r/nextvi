@@ -38,14 +38,19 @@ static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r), 2=relative
 static int interactive_mode = 0; /* 1=interactive editing of search patterns (-i) */
 static int delta_mode = 0;      /* 1=re-apply previous delta from script (-d) */
 
-/* Delta diff: customization changes captured from interactive editing */
-static char **delta_lines = NULL;
-static int ndelta = 0;
-static int delta_cap = 0;
+/* Per-file delta: customization diffs from interactive editing */
+typedef struct {
+	char *filepath;
+	char **lines;
+	int nlines;
+	int cap;
+} file_delta_t;
 
-/* Input delta: read from previously generated script when -d is set */
-static char **input_delta_lines = NULL;
-static int ninput_delta = 0;
+static file_delta_t out_deltas[256];   /* output: captured from editor */
+static int nout_deltas = 0;
+
+static file_delta_t in_deltas[256];    /* input: read from script */
+static int nin_deltas = 0;
 
 enum strategy {
 	STRAT_DEFAULT = 0,  /* use global mode default */
@@ -1038,20 +1043,30 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		if (dst) fclose(dst);
 	}
 
-	/* Apply previous delta if -d mode and delta available */
-	if (delta_mode && ninput_delta > 0) {
-		char deltapath[263];
-		snprintf(deltapath, sizeof(deltapath), "%s.delta", tmppath);
-		FILE *df = fopen(deltapath, "w");
-		if (df) {
-			for (int di = 0; di < ninput_delta; di++)
-				fputs(input_delta_lines[di], df);
-			fclose(df);
-			char cmd[MAX_LINE];
-			snprintf(cmd, sizeof(cmd),
-				 "patch -s '%s' '%s' 2>/dev/null", tmppath, deltapath);
-			system(cmd);
-			unlink(deltapath);
+	/* Apply previous delta if -d mode and matching delta available */
+	if (delta_mode) {
+		file_delta_t *ind = NULL;
+		for (int di = 0; di < nin_deltas; di++) {
+			if (strcmp(in_deltas[di].filepath, filepath) == 0) {
+				ind = &in_deltas[di];
+				break;
+			}
+		}
+		if (ind && ind->nlines > 0) {
+			char deltapath[263];
+			snprintf(deltapath, sizeof(deltapath), "%s.delta", tmppath);
+			FILE *df = fopen(deltapath, "w");
+			if (df) {
+				for (int di = 0; di < ind->nlines; di++)
+					fputs(ind->lines[di], df);
+				fclose(df);
+				char cmd[MAX_LINE];
+				snprintf(cmd, sizeof(cmd),
+					 "patch -s '%s' '%s' 2>/dev/null",
+					 tmppath, deltapath);
+				system(cmd);
+				unlink(deltapath);
+			}
 		}
 	}
 
@@ -1098,14 +1113,19 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			 "diff -u '%s' '%s' 2>/dev/null", tmppath_orig, tmppath);
 		FILE *dp = popen(cmd, "r");
 		if (dp) {
+			file_delta_t *od = &out_deltas[nout_deltas++];
+			od->filepath = xstrdup(filepath);
+			od->lines = NULL;
+			od->nlines = 0;
+			od->cap = 0;
 			char dline[MAX_LINE];
 			while (fgets(dline, sizeof(dline), dp)) {
-				if (ndelta >= delta_cap) {
-					delta_cap = delta_cap ? delta_cap * 2 : 16;
-					delta_lines = realloc(delta_lines,
-						delta_cap * sizeof(char*));
+				if (od->nlines >= od->cap) {
+					od->cap = od->cap ? od->cap * 2 : 16;
+					od->lines = realloc(od->lines,
+						od->cap * sizeof(char*));
 				}
-				delta_lines[ndelta++] = xstrdup(dline);
+				od->lines[od->nlines++] = xstrdup(dline);
 			}
 			pclose(dp);
 		}
@@ -1904,21 +1924,39 @@ int main(int argc, char **argv)
 					break;
 			}
 			/* Read delta section (between DELTA and PATCH markers) */
-			while (fgets(line, sizeof(line), in)) {
-				chomp(line);
-				if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
-					continue;
-				if (strncmp(line, "=== PATCH2VI PATCH ===", 22) == 0)
-					break;
-				/* Delta line - store if -d mode */
-				if (delta_mode) {
-					int delta_cap = ninput_delta + 1;
-					input_delta_lines = realloc(input_delta_lines,
-						delta_cap * sizeof(char*));
-					/* Re-add newline since chomp removed it */
-					char *dl = malloc(strlen(line) + 2);
-					sprintf(dl, "%s\n", line);
-					input_delta_lines[ninput_delta++] = dl;
+			{
+				file_delta_t *cur_delta = NULL;
+				while (fgets(line, sizeof(line), in)) {
+					chomp(line);
+					if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
+						continue;
+					if (strncmp(line, "=== PATCH2VI PATCH ===", 22) == 0)
+						break;
+					/* Per-file delta marker: === DELTA filepath === */
+					if (strncmp(line, "=== DELTA ", 10) == 0) {
+						if (delta_mode) {
+							char *p = line + 10;
+							char *end = strstr(p, " ===");
+							if (end) *end = '\0';
+							cur_delta = &in_deltas[nin_deltas++];
+							cur_delta->filepath = xstrdup(p);
+							cur_delta->lines = NULL;
+							cur_delta->nlines = 0;
+							cur_delta->cap = 0;
+						}
+						continue;
+					}
+					/* Delta content line */
+					if (delta_mode && cur_delta) {
+						if (cur_delta->nlines >= cur_delta->cap) {
+							cur_delta->cap = cur_delta->cap ? cur_delta->cap * 2 : 16;
+							cur_delta->lines = realloc(cur_delta->lines,
+								cur_delta->cap * sizeof(char*));
+						}
+						char *dl = malloc(strlen(line) + 2);
+						sprintf(dl, "%s\n", line);
+						cur_delta->lines[cur_delta->nlines++] = dl;
+					}
 				}
 			}
 		} else {
@@ -2033,8 +2071,12 @@ process_line:
 	/* Embed delta and original patch after exit 0 */
 	printf("\nexit 0\n");
 	printf("=== PATCH2VI DELTA ===\n");
-	for (int i = 0; i < ndelta; i++)
-		fputs(delta_lines[i], stdout);
+	for (int i = 0; i < nout_deltas; i++) {
+		file_delta_t *od = &out_deltas[i];
+		printf("=== DELTA %s ===\n", od->filepath);
+		for (int j = 0; j < od->nlines; j++)
+			fputs(od->lines[j], stdout);
+	}
 	printf("=== PATCH2VI PATCH ===\n");
 	for (int i = 0; i < nraw; i++)
 		fputs(raw_lines[i], stdout);
