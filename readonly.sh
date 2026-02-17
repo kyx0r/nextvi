@@ -70,10 +70,8 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			else if \\\\(argv\\\\[i\\\\]\\\\[
 ${SEP}+1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 .
-${SEP}.,\$;f> 				xvis = 0;
-			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}.;46c R
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}.;46c R
 .
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
@@ -124,8 +122,8 @@ exit 0
  --- extra (delete to include) ---
  	\{"r", ec_read\},
 === DELTA vi.c ===
---- /tmp/patch2vi_zIlyEp_vi.c.diff.orig	2026-02-17 12:18:22.486688686 -0100
-+++ /tmp/patch2vi_zIlyEp_vi.c.diff	2026-02-17 12:18:38.676708551 -0100
+--- /tmp/patch2vi_CdHHeP_vi.c.diff.orig
++++ /tmp/patch2vi_CdHHeP_vi.c.diff
 @@ -5,8 +5,7 @@
  #abs
  === SEARCH COMMAND ===
@@ -136,7 +134,7 @@ exit 0
  			else if \(argv\[i\]\[j\] == 'a'\)
  				xvis \|= 8;
  --- extra (delete to include) ---
-@@ -20,7 +19,7 @@
+@@ -20,13 +19,11 @@
  +				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
  === STRATEGY (default: rel) ===
  #abs
@@ -145,6 +143,13 @@ exit 0
  #offset
  === SEARCH COMMAND ===
  .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-				xvis = 0;
+-			else \{
++=== SEARCH PATTERN (offset: 1) ===
+ 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
+ --- extra (delete to include) ---
+ 				fprintf\(stderr, "Nextvi-4\.0 Usage: %s \[-aemsv\] \[file \.\.\.\]\\n", argv\[0\]\);
 === DELTA vi.h ===
 --- /tmp/patch2vi_CFUyNP_vi.h.diff.orig	2026-02-17 12:18:38.679238021 -0100
 +++ /tmp/patch2vi_CFUyNP_vi.h.diff	2026-02-17 12:19:03.183709780 -0100
