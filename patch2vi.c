@@ -1044,6 +1044,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 	}
 
 	/* Apply previous delta if -d mode and matching delta available */
+	int delta_applied = 0;
 	if (delta_mode) {
 		file_delta_t *ind = NULL;
 		for (int di = 0; di < nin_deltas; di++) {
@@ -1064,7 +1065,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				snprintf(cmd, sizeof(cmd),
 					 "patch -s '%s' '%s' 2>/dev/null",
 					 tmppath, deltapath);
-				system(cmd);
+				if (system(cmd) == 0)
+					delta_applied = 1;
 				unlink(deltapath);
 			}
 		}
@@ -1103,23 +1105,23 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		}
 		if (st_before.st_mtim.tv_sec == st_after.st_mtim.tv_sec &&
 		    st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec) {
-			/* -d: preserve existing delta when file unchanged */
-			if (delta_mode) {
-				for (int di = 0; di < nin_deltas; di++) {
-					if (strcmp(in_deltas[di].filepath, filepath) == 0) {
-						file_delta_t *src = &in_deltas[di];
-						file_delta_t *od = &out_deltas[nout_deltas++];
-						od->filepath = xstrdup(src->filepath);
-						od->lines = malloc(src->nlines * sizeof(char*));
-						od->nlines = src->nlines;
-						od->cap = src->nlines;
-						for (int k = 0; k < src->nlines; k++)
-							od->lines[k] = xstrdup(src->lines[k]);
-						break;
-					}
+			if (!delta_applied)
+				goto cleanup_orig;
+			/* -d with applied delta: preserve delta and read
+			 * back customizations from delta-applied file */
+			for (int di = 0; di < nin_deltas; di++) {
+				if (strcmp(in_deltas[di].filepath, filepath) == 0) {
+					file_delta_t *src = &in_deltas[di];
+					file_delta_t *od = &out_deltas[nout_deltas++];
+					od->filepath = xstrdup(src->filepath);
+					od->lines = malloc(src->nlines * sizeof(char*));
+					od->nlines = src->nlines;
+					od->cap = src->nlines;
+					for (int k = 0; k < src->nlines; k++)
+						od->lines[k] = xstrdup(src->lines[k]);
+					break;
 				}
 			}
-			goto cleanup_orig;
 		}
 	}
 
