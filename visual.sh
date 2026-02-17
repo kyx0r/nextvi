@@ -91,7 +91,7 @@ ${SEP}+2a 	vi_visual_attrib(s, row);
 ${SEP}.,\$;f> 	free\\\\(sb->s\\\\);
 \\\\}
 
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 965\\${SEP}${QF}}${SEP};=
+static int vc_motion\\\\(int cmd\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 965\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static int vc_visual_op(int cmd)
 {
 	int r1 = vi_vrow, o1 = vi_voff;
@@ -309,8 +309,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
---- /tmp/patch2vi_2V71eo_vi.c.diff.orig	2026-02-17 21:50:22.218604414 -0100
-+++ /tmp/patch2vi_2V71eo_vi.c.diff	2026-02-17 21:50:48.380431113 -0100
+--- /tmp/patch2vi_DOoGJM_vi.c.diff.orig
++++ /tmp/patch2vi_DOoGJM_vi.c.diff
 @@ -6,9 +6,7 @@
  #abs
  === SEARCH COMMAND ===
@@ -322,6 +322,16 @@ exit 0
  static int vi_nlword;			/\* new line mode for eEwWbB \*/
  --- extra (delete to include) ---
  
+@@ -154,8 +152,8 @@
+ 	free\(sb->s\);
+ \}
+ 
+---- extra (delete to include) ---
+ static int vc_motion\(int cmd\)
++--- extra (delete to include) ---
+ \{
+ 	int r1 = xrow, r2 = xrow;	/\* region rows \*/
+ === END GROUP ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index bc0eb301..113cfe28 100644
