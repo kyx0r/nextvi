@@ -36,6 +36,15 @@ static file_patch_t files[256];
 static int nfiles = 0;
 static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r), 2=relative block (-rb) */
 static int interactive_mode = 0; /* 1=interactive editing of search patterns (-i) */
+static int delta_mode = 0;      /* 1=re-apply previous delta from script (-d) */
+
+/* Delta diff: customization changes captured from interactive editing */
+static char **delta_lines = NULL;
+static int ndelta = 0;
+
+/* Input delta: read from previously generated script when -d is set */
+static char **input_delta_lines = NULL;
+static int ninput_delta = 0;
 
 enum strategy {
 	STRAT_DEFAULT = 0,  /* use global mode default */
@@ -92,29 +101,6 @@ static char *escape_regex(const char *s)
 	}
 	*dst = '\0';
 	return result;
-}
-
-/* Count UTF-8 characters in a string */
-static int utf8_len(const char *s)
-{
-	int len = 0;
-	for (; *s; s++)
-		if ((*s & 0xC0) != 0x80)  /* not a continuation byte */
-			len++;
-	return len;
-}
-
-/* Get byte offset for UTF-8 character position */
-static int utf8_byte_offset(const char *s, int charpos)
-{
-	const char *p = s;
-	int chars = 0;
-	while (*p && chars < charpos) {
-		if ((*p & 0xC0) != 0x80)
-			chars++;
-		p++;
-	}
-	return p - s;
 }
 
 /* Get UTF-8 character position for byte offset */
@@ -1031,11 +1017,43 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 	}
 	fclose(tmp);
 
+	/* Save a copy of the original tmp file for delta computation */
+	char tmppath_orig[262];
+	snprintf(tmppath_orig, sizeof(tmppath_orig), "%s.orig", tmppath);
+	{
+		FILE *src = fopen(tmppath, "r");
+		FILE *dst = fopen(tmppath_orig, "w");
+		if (src && dst) {
+			char buf[MAX_LINE];
+			while (fgets(buf, sizeof(buf), src))
+				fputs(buf, dst);
+		}
+		if (src) fclose(src);
+		if (dst) fclose(dst);
+	}
+
+	/* Apply previous delta if -d mode and delta available */
+	if (delta_mode && ninput_delta > 0) {
+		char deltapath[263];
+		snprintf(deltapath, sizeof(deltapath), "%s.delta", tmppath);
+		FILE *df = fopen(deltapath, "w");
+		if (df) {
+			for (int di = 0; di < ninput_delta; di++)
+				fputs(input_delta_lines[di], df);
+			fclose(df);
+			char cmd[MAX_LINE];
+			snprintf(cmd, sizeof(cmd),
+				 "patch -s '%s' '%s' 2>/dev/null", tmppath, deltapath);
+			system(cmd);
+			unlink(deltapath);
+		}
+	}
+
 	/* Record mtime before editor */
 	struct stat st_before;
 	if (stat(tmppath, &st_before) < 0) {
 		perror("stat");
-		goto cleanup;
+		goto cleanup_orig;
 	}
 
 	/* Open editor */
@@ -1051,7 +1069,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		int ret = system(cmd);
 		if (ret != 0) {
 			fprintf(stderr, "editor exited with error %d\n", ret);
-			goto cleanup;
+			goto cleanup_orig;
 		}
 	}
 
@@ -1060,11 +1078,32 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		struct stat st_after;
 		if (stat(tmppath, &st_after) < 0) {
 			perror("stat");
-			goto cleanup;
+			goto cleanup_orig;
 		}
 		if (st_before.st_mtim.tv_sec == st_after.st_mtim.tv_sec &&
 		    st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec)
-			goto cleanup;
+			goto cleanup_orig;
+	}
+
+	/* Compute delta: diff between original and edited tmp file */
+	{
+		char cmd[MAX_LINE];
+		snprintf(cmd, sizeof(cmd),
+			 "diff -u '%s' '%s' 2>/dev/null", tmppath_orig, tmppath);
+		FILE *dp = popen(cmd, "r");
+		if (dp) {
+			char dline[MAX_LINE];
+			int delta_cap = 0;
+			while (fgets(dline, sizeof(dline), dp)) {
+				if (ndelta >= delta_cap) {
+					delta_cap = delta_cap ? delta_cap * 2 : 16;
+					delta_lines = realloc(delta_lines,
+						delta_cap * sizeof(char*));
+				}
+				delta_lines[ndelta++] = xstrdup(dline);
+			}
+			pclose(dp);
+		}
 	}
 
 	/* Read back all groups from the edited file */
@@ -1072,7 +1111,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		FILE *rd = fopen(tmppath, "r");
 		if (!rd) {
 			perror("fopen");
-			goto cleanup;
+			goto cleanup_orig;
 		}
 
 		char line[MAX_LINE];
@@ -1198,7 +1237,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		fclose(rd);
 	}
 
-cleanup:
+cleanup_orig:
+	unlink(tmppath_orig);
 	unlink(tmppath);
 	for (int gi = 0; gi < ngroups; gi++)
 		free(default_cmds[gi]);
@@ -1768,11 +1808,12 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-rbih] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-rbidh] [input.patch]\n", prog);
 	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
 	fprintf(stderr, "  -b  Block mode: first group searched, rest offset-based\n");
 	fprintf(stderr, "  -i  Interactive mode: edit search patterns in $EDITOR\n");
+	fprintf(stderr, "  -d  Delta mode: re-apply previous customizations from script (-d implies -i)\n");
 	fprintf(stderr, "  -h  Show this help\n");
 	fprintf(stderr, "Input can be a unified diff or a previously generated patch2vi script\n");
 	exit(1);
@@ -1800,7 +1841,10 @@ int main(int argc, char **argv)
 				block_mode = 1;
 			else if (argv[i][j] == 'i')
 				interactive_mode = 1;
-			else if (argv[i][j] == 'h')
+			else if (argv[i][j] == 'd') {
+				delta_mode = 1;
+				interactive_mode = 1;
+			} else if (argv[i][j] == 'h')
 				usage(argv[0]);
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
@@ -1848,11 +1892,29 @@ int main(int argc, char **argv)
 	/* Detect if input is a previously generated patch2vi script */
 	if (fgets(line, sizeof(line), in)) {
 		if (strncmp(line, "#!/bin/sh", 9) == 0) {
-			/* Skip until "exit 0" line; embedded patch follows */
+			/* Skip until "exit 0" line */
 			while (fgets(line, sizeof(line), in)) {
 				chomp(line);
 				if (strcmp(line, "exit 0") == 0)
 					break;
+			}
+			/* Read delta section (between DELTA and PATCH markers) */
+			while (fgets(line, sizeof(line), in)) {
+				chomp(line);
+				if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
+					continue;
+				if (strncmp(line, "=== PATCH2VI PATCH ===", 22) == 0)
+					break;
+				/* Delta line - store if -d mode */
+				if (delta_mode) {
+					int delta_cap = ninput_delta + 1;
+					input_delta_lines = realloc(input_delta_lines,
+						delta_cap * sizeof(char*));
+					/* Re-add newline since chomp removed it */
+					char *dl = malloc(strlen(line) + 2);
+					sprintf(dl, "%s\n", line);
+					input_delta_lines[ninput_delta++] = dl;
+				}
 			}
 		} else {
 			/* Not a script; store and process this first line */
@@ -1939,7 +2001,7 @@ process_line:
 	printf("set -e\n");
 	printf("\n# Pass any argument to use patch(1) instead of nextvi ex commands\n");
 	printf("if [ -n \"$1\" ]; then\n");
-	printf("    sed '1,/^exit 0$/d' \"$0\" | patch -p1 --merge=diff3\n");
+	printf("    sed '1,/^=== PATCH2VI PATCH ===$/d' \"$0\" | patch -p1 --merge=diff3\n");
 	printf("    exit $?\n");
 	printf("fi\n");
 	printf("\n# Path to nextvi (adjust as needed)\n");
@@ -1963,8 +2025,12 @@ process_line:
 	for (int i = 0; i < nfiles; i++)
 		emit_file_script(stdout, &files[i], sep);
 
-	/* Embed the original patch after exit 0 */
+	/* Embed delta and original patch after exit 0 */
 	printf("\nexit 0\n");
+	printf("=== PATCH2VI DELTA ===\n");
+	for (int i = 0; i < ndelta; i++)
+		fputs(delta_lines[i], stdout);
+	printf("=== PATCH2VI PATCH ===\n");
 	for (int i = 0; i < nraw; i++)
 		fputs(raw_lines[i], stdout);
 
