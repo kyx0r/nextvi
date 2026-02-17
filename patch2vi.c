@@ -1647,9 +1647,15 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				    g->add_texts, g->nadd, &first_ml);
 			} else if (strat == STRAT_REL) {
 				if (has_custom) {
-					g->custom_offset -= 1;
+					const char *icmd;
+					if (g->custom_offset > 0) {
+						g->custom_offset -= 1;
+						icmd = "a ";
+					} else {
+						icmd = "i ";
+					}
 					int mode = emit_custom_pos(out, g, &first_ml);
-					fprintf(out, "a ");
+					fputs(icmd, out);
 					for (int k = 0; k < g->nadd; k++) {
 						emit_escaped_text(out, g->add_texts[k]);
 						fputc('\n', out);
@@ -1660,14 +1666,33 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 						emit_err_check(out, g->add_after);
 				} else {
 					/* For pure insert, adjust: search goes to anchor,
-					   but insert should be after the anchor line */
+					   but insert should be after the anchor line.
+					   If offset would go negative, use insert (i)
+					   instead of append (a). */
+					int use_i = 0;
 					if (rc.nanchors > 0) {
-						rc.anchor_offset -= 1;
+						if (rc.anchor_offset > 0)
+							rc.anchor_offset -= 1;
+						else
+							use_i = 1;
 					} else if (rc.follow_ctx) {
 						rc.follow_offset += 1;
 					}
-					emit_relative_insert(out, &rc,
-					    g->add_texts, g->nadd, &first_ml);
+					if (use_i) {
+						int mode = emit_rel_pos(out, &rc, &first_ml);
+						fprintf(out, "i ");
+						for (int k = 0; k < g->nadd; k++) {
+							emit_escaped_text(out, g->add_texts[k]);
+							fputc('\n', out);
+						}
+						fputs(".\n", out);
+						EMIT_SEP(out);
+						if (mode == 0 && !rc.use_offset)
+							emit_err_check(out, rc.target_line);
+					} else {
+						emit_relative_insert(out, &rc,
+						    g->add_texts, g->nadd, &first_ml);
+					}
 				}
 			} else {
 				/* STRAT_ABS */
