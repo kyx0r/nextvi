@@ -1122,6 +1122,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 					break;
 				}
 			}
+			goto read_back;
 		}
 	}
 
@@ -1150,6 +1151,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		}
 	}
 
+read_back:
 	/* Read back all groups from the edited file */
 	{
 		FILE *rd = fopen(tmppath, "r");
