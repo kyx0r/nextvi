@@ -45,13 +45,30 @@ ${SEP}+2a 		if (vc == 'c') {
 			dir = vi_nlword+1;
 .
 ${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/vi_nlword\\\\+1/dir/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP}.,\$;f> 	o2 = o1;
-	if \\\\(\\\\(mv = vi_motionln\\\\(&r2, cmd, vi_arg \\\\? vi_arg : 1\\\\)\\\\)\\\\)
-		o2 = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/1/cmd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}+1${SEP}s/vi_nlword\\\\+1/dir/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP};=
+${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA vi.c ===
+--- /tmp/patch2vi_QHJsMX_vi.c.diff.orig	2026-02-18 17:17:08.904948107 -0100
++++ /tmp/patch2vi_QHJsMX_vi.c.diff	2026-02-18 17:18:34.689946833 -0100
+@@ -49,14 +49,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	o2 = o1;
+-	if \(\(mv = vi_motionln\(&r2, cmd, vi_arg \? vi_arg : 1\)\)\)
+-		o2 = -1;
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: 0) ===
+ 	else if \(!\(mv = vi_motion\(1, &r2, &o2\)\)\)
+-		return 0;
+-	if \(mv < 0\)
+-		return 0;
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index 5479b948..8d1a8d6f 100644
