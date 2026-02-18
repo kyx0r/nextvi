@@ -86,10 +86,8 @@ QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}8a int stdin_fd;
 static int isig;
 .
-${SEP}%;f> 	char \\\\*s;
-	term_winch = 0;
-	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP}.,\$f> 	newtermios = termios;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 19\\${SEP}${QF}}${SEP};=
+${SEP}%f> 	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/0/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 17\\${SEP}${QF}}${SEP}.,\$f> 	newtermios = termios;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 19\\${SEP}${QF}}${SEP};=
 ${SEP}+1,#+2c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
 	else
@@ -170,8 +168,8 @@ exit 0
  		ex_command\(s\)
  \}
 === DELTA term.c ===
---- /tmp/patch2vi_eVmjjZ_term.c.diff.orig	2026-02-17 19:25:24.250644764 -0100
-+++ /tmp/patch2vi_eVmjjZ_term.c.diff	2026-02-17 19:26:01.767995245 -0100
+--- /tmp/patch2vi_0vp6EZ_term.c.diff.orig	2026-02-18 09:22:48.331738776 -0100
++++ /tmp/patch2vi_0vp6EZ_term.c.diff	2026-02-18 09:23:31.016516603 -0100
 @@ -2,7 +2,7 @@
  +int stdin_fd;
  +static int isig;
@@ -181,6 +179,17 @@ exit 0
  === SEARCH COMMAND ===
  %;f>
  === SEARCH PATTERN (offset: 3) ===
+@@ -24,9 +24,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	char \*s;
+-	term_winch = 0;
++=== SEARCH PATTERN (offset: 1) ===
+ 	sbuf_make\(term_sbuf, 2048\)
+ --- extra (delete to include) ---
+ 	tcgetattr\(0, &termios\);
 === DELTA vi.c ===
 --- /tmp/patch2vi_SYSbRz_vi.c.diff.orig	2026-02-17 19:26:01.770387538 -0100
 +++ /tmp/patch2vi_SYSbRz_vi.c.diff	2026-02-17 19:26:34.515996888 -0100
