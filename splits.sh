@@ -35,11 +35,14 @@ ${SEP}+3${SEP}s/\\\\[f!\\\\]\\\\?!\\\\?\\\\|f\\\\[-\\\\+><tdp\\\\]\\\\?\\\\|inc\
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}44a struct win *wins;		/* head of window list */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct buf tempbufs\\\\[2\\\\];		/\\\\* temporary buffers, for internal use \\\\*/
+struct buf \\\\*ex_buf;		/\\\\* current buffer \\\\*/
+struct buf \\\\*ex_pbuf;		/\\\\* prev buffer \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 44\\${SEP}${QF}}${SEP};=
+${SEP}+2a struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 .
-${SEP}%;f> 		ex_buf = &bufs\\\\[idx\\\\];
+${SEP}.,\$;f> 		ex_buf = &bufs\\\\[idx\\\\];
 	\\\\}
 	exbuf_load\\\\(ex_buf\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 102\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	/* update current window's buffer reference */
@@ -160,7 +163,7 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 			/* redistribute height evenly */
 			int is_bottom = (group[ngroup-1]->y + group[ngroup-1]->h == xrows);
 			int total = group[ngroup-1]->y + group[ngroup-1]->h
-				+ (is_bottom ? vi_status : 0) - group[0]->y;
+				+ (is_bottom ? !!vi_status : 0) - group[0]->y;
 			int new_h = (total - (ngroup - 1)) / ngroup;
 			int extra = (total - (ngroup - 1)) % ngroup;
 			int y = group[0]->y;
@@ -170,7 +173,7 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 				if (extra > 0) extra--;
 				/* bottom window absorbs vi_status cost */
 				if (i == ngroup - 1 && is_bottom)
-					group[i]->h -= vi_status;
+					group[i]->h -= !!vi_status;
 				y += group[i]->h + 1;
 			}
 			free(group);
@@ -182,18 +185,26 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 }
 
 .
-${SEP}.,\$f> 	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1423\\${SEP}${QF}}${SEP};=
-${SEP}.a 	{\"eq\", ec_equalize},
+${SEP}.,\$;f> 	EO\\\\(err\\\\),
+	\\\\{\"ef!\", ec_fuzz\\\\},
+	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1423\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	{\"eq\", ec_equalize},
 .
-${SEP}.,\$f> 	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1458\\${SEP}${QF}}${SEP};=
-${SEP}.a 	EO(vis),
+${SEP}.,\$;f> 	\\\\{\"uz\", ec_setenc\\\\},
+	\\\\{\"ub\", ec_setenc\\\\},
+	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1458\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
-${SEP}.,\$f> 	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1462\\${SEP}${QF}}${SEP};=
-${SEP}.a 	{\"sp\", ec_split},
+${SEP}.,\$;f> 	EO\\\\(seq\\\\),
+	\\\\{\"sc!\", ec_specials\\\\},
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1462\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	{\"sp\", ec_split},
 .
-${SEP}.,\$f> 	EO\\\\(vis\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1484\\${SEP}${QF}}${SEP};=
-${SEP}.d${SEP}.,\$;f> 	xgrec--;
+${SEP}.,\$;f> 	EO\\\\(left\\\\),
+	EO\\\\(lim\\\\),
+	EO\\\\(led\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1484\\${SEP}${QF}}${SEP};=
+${SEP}+3d${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1645\\${SEP}${QF}}${SEP};=
@@ -264,7 +275,7 @@ void win_size(void)
 	int y = 0, x = 0;
 	/* check if this is a vertical split layout */
 	int is_vsplit = wins->next->vsplit;
-	int avail = xrows + vi_status;
+	int avail = xrows;
 	do {
 		if (!is_vsplit) {
 			/* horizontal split: stacked vertically */
@@ -274,7 +285,7 @@ void win_size(void)
 			w->x = 0;
 			/* bottom window absorbs vi_status cost */
 			if (w->next == wins)
-				w->h -= vi_status;
+				w->h -= !!vi_status;
 			y += w->h + 1;  /* +1 for separator */
 		} else {
 			/* vertical split: side by side */
@@ -378,11 +389,11 @@ void *win_split(int vertical, char *arg)
 	} else {
 		/* horizontal split: new window below */
 		int is_bottom = (curwin->y + curwin->h == xrows);
-		int true_h = curwin->h + (is_bottom ? vi_status : 0);
+		int true_h = curwin->h + (is_bottom ? !!vi_status : 0);
 		newh = true_h / 2;
 		newwin->y = curwin->y + newh + 1;  /* +1 for separator */
 		newwin->x = curwin->x;
-		newwin->h = true_h - newh - 1 - (is_bottom ? vi_status : 0);
+		newwin->h = true_h - newh - 1 - (is_bottom ? !!vi_status : 0);
 		newwin->w = curwin->w;
 		curwin->h = newh;
 	}
@@ -530,7 +541,7 @@ QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	term_out\\\\(\"\\\\\\\\33\\\\[K\"\\\\);
 \\\\}
 
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 85\\${SEP}${QF}}${SEP};=
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 87\\${SEP}${QF}}${SEP};=
 ${SEP}+2a void term_killn(int n)
 {
 	char cmd[32] = \"\\\\33[\";
@@ -725,39 +736,39 @@ ${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 371
 	case 'M':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 374\\${SEP}${QF}}${SEP};=
 ${SEP}+2${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 374\\${SEP}${QF}}${SEP}.,\$;f> 			ex_bufpostfix\\\\(&bufs\\\\[i\\\\], 1\\\\);
 		syn_setft\\\\(xb_ft\\\\);
-		vc_status\\\\(0\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 753\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 753\\${SEP}${QF}}${SEP}.,\$;f> 	case 'N':
+		vc_status\\\\(0\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 754\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 754\\${SEP}${QF}}${SEP}.,\$;f> 	case 'N':
 		if \\\\(vi_search\\\\(mv, cnt, row, off, 1\\\\)\\\\)
-			return -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 786\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 786\\${SEP}${QF}}${SEP}.,\$;f> 		\\\\}
+			return -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 787\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 787\\${SEP}${QF}}${SEP}.,\$;f> 		\\\\}
 		if \\\\(vi_search\\\\(cadir < 0 \\\\? 'N' : 'n', 1, row, off, 1\\\\)\\\\)
-			cadir = -cadir;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 799\\${SEP}${QF}}${SEP};=
+			cadir = -cadir;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 800\\${SEP}${QF}}${SEP};=
 ${SEP}+3,#+1c 		else if (*row < xtop || *row >= xtop + win_height() - 1)
 			xtop = MAX(0, *row - win_height() / 2);
 .
 ${SEP}.,\$;f> 	\\\\}
 	vi_regput\\\\(vi_ybuf, rsb\\\\.s, lnmode\\\\);
-	free\\\\(rsb\\\\.s\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 877\\${SEP}${QF}}${SEP};=
+	free\\\\(rsb\\\\.s\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 878\\${SEP}${QF}}${SEP};=
 ${SEP}+3c 	{ int wy = curwin ? curwin->y : 0, wx = curwin ? curwin->x : 0;
 	term_pos(r1 - xtop < 0 ? wy : wy + r1 - xtop, wx); }
 .
 ${SEP}.,\$;f> 		xoff = lbuf_eol\\\\(xb, xrow, 1\\\\);
 	else if \\\\(cmd == 'o'\\\\) \\\\{
-		xrow\\\\+\\\\+;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1031\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1031\\${SEP}${QF}}${SEP}.,\$;f> 		postn = rstate->n - off;
+		xrow\\\\+\\\\+;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1032\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1032\\${SEP}${QF}}${SEP}.,\$;f> 		postn = rstate->n - off;
 		post = ln \\\\+ l1;
-	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1053\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/row - xtop,/(curwin ? curwin->y : 0) + row - xtop, curwin ? curwin->x :/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1053\\${SEP}${QF}}${SEP}.,\$;f> static void vi_scrollbackward\\\\(int cnt\\\\)
+	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1054\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/row - xtop,/(curwin ? curwin->y : 0) + row - xtop, curwin ? curwin->x :/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1054\\${SEP}${QF}}${SEP}.,\$;f> static void vi_scrollbackward\\\\(int cnt\\\\)
 \\\\{
-	xtop = MAX\\\\(0, xtop - cnt\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1117\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1117\\${SEP}${QF}}${SEP}.,\$;f> \\\\}
+	xtop = MAX\\\\(0, xtop - cnt\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1118\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1118\\${SEP}${QF}}${SEP}.,\$;f> \\\\}
 
-#define topfix\\\\(\\\\) \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1180\\${SEP}${QF}}${SEP};=
+#define topfix\\\\(\\\\) \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1181\\${SEP}${QF}}${SEP};=
 ${SEP}+2a { int _wh = win_height(); \\\\
 .
 ${SEP}.,\$;f> if \\\\(xrow < 0 \\\\|\\\\| xrow >= lbuf_len\\\\(xb\\\\)\\\\) \\\\\\\\
 	xrow = lbuf_len\\\\(xb\\\\) \\\\? lbuf_len\\\\(xb\\\\) - 1 : 0; \\\\\\\\
-if \\\\(xtop > xrow\\\\) \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1184\\${SEP}${QF}}${SEP};=
+if \\\\(xtop > xrow\\\\) \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1185\\${SEP}${QF}}${SEP};=
 ${SEP}+3,#+4c 	xtop = xtop - _wh / 2 > xrow ? \\\\
 			MAX(0, xrow - _wh / 2) : xrow; \\\\
 if (xtop + _wh <= xrow) \\\\
@@ -766,11 +777,11 @@ if (xtop + _wh <= xrow) \\\\
 .
 ${SEP}.,\$;f> 	int mv, n, k, c;
 	xgrec\\\\+\\\\+;
-	if \\\\(init\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1195\\${SEP}${QF}}${SEP};=
+	if \\\\(init\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1196\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		win_init();
 .
 ${SEP}.,\$;f> 		topfix\\\\(\\\\)
-		vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1198\\${SEP}${QF}}${SEP};=
+		vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1199\\${SEP}${QF}}${SEP};=
 ${SEP}+2,#+1c 		if (nwins > 1) {
 			if (curwin) {
 				curwin->row = xrow;
@@ -786,26 +797,26 @@ ${SEP}+2,#+1c 		if (nwins > 1) {
 .
 ${SEP}.,\$;f> 		\\\\}
 		if \\\\(xmpt == 1\\\\) \\\\{
-			xmpt = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1220\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1220\\${SEP}${QF}}${SEP}.,\$;f> 			c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
+			xmpt = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1221\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1221\\${SEP}${QF}}${SEP}.,\$;f> 			c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
 			switch \\\\(c\\\\) \\\\{
-			case TK_CTL\\\\('b'\\\\):${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1246\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1246\\${SEP}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 4;
+			case TK_CTL\\\\('b'\\\\):${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1247\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1247\\${SEP}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 4;
 				break;
-			case TK_CTL\\\\('f'\\\\):${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1251\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1251\\${SEP}${QF}}${SEP}.,\$;f> 					break;
+			case TK_CTL\\\\('f'\\\\):${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1252\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1252\\${SEP}${QF}}${SEP}.,\$;f> 					break;
 				if \\\\(vi_arg\\\\)
-					vi_scrollud = vi_arg;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1270\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1270\\${SEP}${QF}}${SEP}.,\$;f> 					break;
+					vi_scrollud = vi_arg;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1271\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1271\\${SEP}${QF}}${SEP}.,\$;f> 					break;
 				if \\\\(vi_arg\\\\)
-					vi_scrollud = vi_arg;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1282\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1282\\${SEP}${QF}}${SEP}.,\$f> 				xrow = MIN\\\\(MAX\\\\(0, lbuf_len\\\\(xb\\\\) - 1\\\\), xrow \\\\+ n\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1284\\${SEP}${QF}}${SEP};=
+					vi_scrollud = vi_arg;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1283\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1283\\${SEP}${QF}}${SEP}.,\$f> 				xrow = MIN\\\\(MAX\\\\(0, lbuf_len\\\\(xb\\\\) - 1\\\\), xrow \\\\+ n\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1285\\${SEP}${QF}}${SEP};=
 ${SEP}+1,#+1c 				if (xtop < lbuf_len(xb) - win_height())
 					xtop = MIN(lbuf_len(xb) - win_height(), xtop + n);
 .
 ${SEP}.,\$;f> 				vi_tsm = 0;
 				status:
-				if \\\\(vi_arg\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1335\\${SEP}${QF}}${SEP};=
+				if \\\\(vi_arg\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1336\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 					int old_xrows = xrows;
 .
 ${SEP}.,\$;f> 					vi_status = vi_arg > 1 \\\\? 0 : term_resized;
@@ -847,25 +858,27 @@ ${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 ${SEP}+3c 			case TK_CTL('l'): {
 				int orows = xrows, ocols = xcols;
 .
-${SEP}.,\$;f> 					term_init\\\\(\\\\);
-				\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1543\\${SEP}${QF}}${SEP};=
-${SEP}+1a 				if (xrows != orows || xcols != ocols)
+${SEP}.,\$;f> 					term_done\\\\(\\\\);
+					term_init\\\\(\\\\);
+				\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1542\\${SEP}${QF}}${SEP};=
+${SEP}+2a 				orows += !!vi_status;
+				if (xrows != orows || xcols != ocols)
 					win_size();
 .
-${SEP}.,\$f> 				vi_mod \\\\|= 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1545\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/;/; }/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1545\\${SEP}${QF}}${SEP}.,\$;f> 				ex_exec\\\\(\"left0:reg\"\\\\);
+${SEP}.,\$f> 				vi_mod \\\\|= 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1544\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/;/; }/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1544\\${SEP}${QF}}${SEP}.,\$;f> 				ex_exec\\\\(\"left0:reg\"\\\\);
 				break;
-			case 'Q':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1652\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, curwin ? curwin->x :/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1652\\${SEP}${QF}}${SEP}.,\$;f> 		\\\\}
+			case 'Q':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1651\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, curwin ? curwin->x :/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1651\\${SEP}${QF}}${SEP}.,\$;f> 		\\\\}
 		if \\\\(vi_mod\\\\)
-			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1718\\${SEP}${QF}}${SEP};=
+			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1717\\${SEP}${QF}}${SEP};=
 ${SEP}+3,#+1c 		{ int _ww = win_width();
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
 ${SEP}.,\$;f> 			\\\\}
 		\\\\}
-		term_record = 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1761\\${SEP}${QF}}${SEP};=
+		term_record = 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1760\\${SEP}${QF}}${SEP};=
 ${SEP}+3c 		/* save cursor position to current window */
 		if (curwin) {
 			curwin->row = xrow;
@@ -880,13 +893,13 @@ ${SEP}+3c 		/* save cursor position to current window */
 				vi_drawagain(xtop);
 		} else if (xleft != oleft
 .
-${SEP}.,\$f> 				\\\\|\\\\| \\\\(vi_lnnum && orow != xrow && !\\\\(vi_lnnum == 2\\\\)\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1763\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/\\\\)\\\\)/)) {/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1763\\${SEP}${QF}}${SEP}.,\$f> 			vi_drawagain\\\\(xtop\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1765\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> 				\\\\|\\\\| \\\\(vi_lnnum && orow != xrow && !\\\\(vi_lnnum == 2\\\\)\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1762\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/\\\\)\\\\)/)) {/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1762\\${SEP}${QF}}${SEP}.,\$f> 			vi_drawagain\\\\(xtop\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1764\\${SEP}${QF}}${SEP};=
 ${SEP}+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
 ${SEP}.,\$;f> 			vi_drawrow\\\\(xrow\\\\+1\\\\);
-			vi_rshift = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1769\\${SEP}${QF}}${SEP};=
+			vi_rshift = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1768\\${SEP}${QF}}${SEP};=
 ${SEP}+2,#+1c 		} else if (xtop != otop) {
 			if (nwins > 1)
 				vi_drawagain(xtop);
@@ -895,29 +908,29 @@ ${SEP}+2,#+1c 		} else if (xtop != otop) {
 		}
 .
 ${SEP}.,\$;f> 		if \\\\(xhll\\\\) \\\\{
-			syn_blockhl = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1773\\${SEP}${QF}}${SEP};=
-${SEP}+2${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1773\\${SEP}${QF}}${SEP}.,\$;f> 			if \\\\(xmpt > 0\\\\)
+			syn_blockhl = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1772\\${SEP}${QF}}${SEP};=
+${SEP}+2${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1772\\${SEP}${QF}}${SEP}.,\$;f> 			if \\\\(xmpt > 0\\\\)
 				xmpt = 0;
-		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1789\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1789\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1790\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1790\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void term_chr\\\\(int ch\\\\);
 void term_pos\\\\(int r, int c\\\\);
-void term_kill\\\\(void\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 330\\${SEP}${QF}}${SEP};=
+void term_kill\\\\(void\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 331\\${SEP}${QF}}${SEP};=
 ${SEP}+2a void term_killn(int n);
 .
 ${SEP}.,\$;f> \\\\} \\\\\\\\
 
-#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 401\\${SEP}${QF}}${SEP};=
+#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 402\\${SEP}${QF}}${SEP};=
 ${SEP}+3c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \\\\
 	if (nwins > 1) term_killn(end - beg); else term_kill();)
 .
 ${SEP}.,\$;f> 	long mtime;			/\\\\* modification time \\\\*/
 	signed char td;			/\\\\* text direction \\\\*/
-\\\\};${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 414\\${SEP}${QF}}${SEP};=
+\\\\};${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 415\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 
 /* window management for splits */
 struct win {
@@ -932,7 +945,7 @@ struct win {
 extern struct win *wins;		/* head of window list */
 extern struct win *curwin;		/* current active window */
 extern int nwins;			/* number of windows */
-extern int vi_status;			/* rows reserved for permanent status bar */
+extern int vi_status;			/* permanent status bar */
 void win_init(void);
 void win_size(void);
 void win_switch(struct win *w);
@@ -944,8 +957,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_nrt5VR_conf.c.diff.orig	2026-02-17 19:16:49.680035285 -0100
-+++ /tmp/patch2vi_nrt5VR_conf.c.diff	2026-02-17 19:16:58.627967992 -0100
+--- /tmp/patch2vi_ljXlc6_conf.c.diff.orig	2026-02-18 09:09:31.721932172 -0100
++++ /tmp/patch2vi_ljXlc6_conf.c.diff	2026-02-18 09:09:35.258474667 -0100
 @@ -8,8 +8,6 @@
  %;f>
  === SEARCH PATTERN (offset: 3) ===
@@ -955,97 +968,6 @@ exit 0
  --- extra (delete to include) ---
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
-=== DELTA ex.c ===
---- /tmp/patch2vi_bi5AGG_ex.c.diff.orig	2026-02-17 19:17:12.561242488 -0100
-+++ /tmp/patch2vi_bi5AGG_ex.c.diff	2026-02-17 19:20:14.061977798 -0100
-@@ -3,7 +3,7 @@
- +struct win *curwin;		/* current active window */
- +int nwins;			/* number of windows */
- === STRATEGY (default: rel) ===
--#abs
-+abs
- === SEARCH COMMAND ===
- %;f>
- === SEARCH PATTERN (offset: 3) ===
-@@ -221,9 +221,7 @@
- #offset
- === SEARCH COMMAND ===
- .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
--	EO\(err\),
--	\{"ef!", ec_fuzz\},
-+=== SEARCH PATTERN (offset: 1) ===
- 	\{"ef", ec_fuzz\},
- --- extra (delete to include) ---
- 	\{"e!", ec_edit\},
-@@ -239,9 +237,7 @@
- #offset
- === SEARCH COMMAND ===
- .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
--	\{"uz", ec_setenc\},
--	\{"ub", ec_setenc\},
-+=== SEARCH PATTERN (offset: 1) ===
- 	\{"u", ec_undoredo\},
- --- extra (delete to include) ---
- 	EO\(shape\),
-@@ -256,9 +252,7 @@
- #offset
- === SEARCH COMMAND ===
- .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
--	EO\(seq\),
--	\{"sc!", ec_specials\},
-+=== SEARCH PATTERN (offset: 1) ===
- 	\{"sc", ec_specials\},
- --- extra (delete to include) ---
- 	\{"s", ec_substitute\},
-@@ -273,15 +267,8 @@
- #offset
- === SEARCH COMMAND ===
- .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
--	EO\(left\),
--	EO\(lim\),
--	EO\(led\),
----- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
- 	EO\(vis\),
--	\{"=", ec_num\},
--	\{"", ec_print\}, /\* do not remove \*/
--	\{"", ec_null\}, /\* do not remove \*/
- === END GROUP ===
- 
- === GROUP 10/10 (line 1645) ===
-=== DELTA vi.c ===
---- /tmp/patch2vi_B6j3I9_vi.c.diff.orig	2026-02-18 08:40:54.744606911 -0100
-+++ /tmp/patch2vi_B6j3I9_vi.c.diff	2026-02-18 08:41:39.967390606 -0100
-@@ -891,10 +891,9 @@
- #offset
- === SEARCH COMMAND ===
- .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
--					xrows \+= vi_status;
--					vi_status = vi_arg % 2 \? vi_arg : 0;
--					xrows -= vi_status;
-+=== SEARCH PATTERN (offset: 2) ===
-+					vi_status = vi_arg > 1 \? 0 : term_resized;
-+					xrows \+= vi_status \? -1 : 1;
- --- extra (delete to include) ---
- 				\}
- 				vc_status\(vi_tsm\);
-@@ -963,10 +962,9 @@
- #offset
- === SEARCH COMMAND ===
- .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
-+=== SEARCH PATTERN (offset: 2) ===
- 					term_init\(\);
- 				\}
--				xrows -= vi_status;
- --- extra (delete to include) ---
- 				vi_mod \|= 1;
- === END GROUP ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 51ec63a9..6fd6b96e 100644
@@ -1061,7 +983,7 @@ index 51ec63a9..6fd6b96e 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 81878d89..a33ece51 100644
+index 81878d89..d69f3ad4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,6 +42,9 @@ struct buf *bufs;		/* main buffers */
@@ -1208,7 +1130,7 @@ index 81878d89..a33ece51 100644
 +			/* redistribute height evenly */
 +			int is_bottom = (group[ngroup-1]->y + group[ngroup-1]->h == xrows);
 +			int total = group[ngroup-1]->y + group[ngroup-1]->h
-+				+ (is_bottom ? vi_status : 0) - group[0]->y;
++				+ (is_bottom ? !!vi_status : 0) - group[0]->y;
 +			int new_h = (total - (ngroup - 1)) / ngroup;
 +			int extra = (total - (ngroup - 1)) % ngroup;
 +			int y = group[0]->y;
@@ -1218,7 +1140,7 @@ index 81878d89..a33ece51 100644
 +				if (extra > 0) extra--;
 +				/* bottom window absorbs vi_status cost */
 +				if (i == ngroup - 1 && is_bottom)
-+					group[i]->h -= vi_status;
++					group[i]->h -= !!vi_status;
 +				y += group[i]->h + 1;
 +			}
 +			free(group);
@@ -1333,7 +1255,7 @@ index 81878d89..a33ece51 100644
 +	int y = 0, x = 0;
 +	/* check if this is a vertical split layout */
 +	int is_vsplit = wins->next->vsplit;
-+	int avail = xrows + vi_status;
++	int avail = xrows;
 +	do {
 +		if (!is_vsplit) {
 +			/* horizontal split: stacked vertically */
@@ -1343,7 +1265,7 @@ index 81878d89..a33ece51 100644
 +			w->x = 0;
 +			/* bottom window absorbs vi_status cost */
 +			if (w->next == wins)
-+				w->h -= vi_status;
++				w->h -= !!vi_status;
 +			y += w->h + 1;  /* +1 for separator */
 +		} else {
 +			/* vertical split: side by side */
@@ -1447,11 +1369,11 @@ index 81878d89..a33ece51 100644
 +	} else {
 +		/* horizontal split: new window below */
 +		int is_bottom = (curwin->y + curwin->h == xrows);
-+		int true_h = curwin->h + (is_bottom ? vi_status : 0);
++		int true_h = curwin->h + (is_bottom ? !!vi_status : 0);
 +		newh = true_h / 2;
 +		newwin->y = curwin->y + newh + 1;  /* +1 for separator */
 +		newwin->x = curwin->x;
-+		newwin->h = true_h - newh - 1 - (is_bottom ? vi_status : 0);
++		newwin->h = true_h - newh - 1 - (is_bottom ? !!vi_status : 0);
 +		newwin->w = curwin->w;
 +		curwin->h = newh;
 +	}
@@ -1656,10 +1578,10 @@ index 7aba6ef6..696550c2 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index 8c674664..e33a78e3 100644
+index 68990b78..e2d214f8 100644
 --- a/term.c
 +++ b/term.c
-@@ -83,6 +83,15 @@ void term_kill(void)
+@@ -85,6 +85,15 @@ void term_kill(void)
  	term_out("\33[K");
  }
  
@@ -1676,15 +1598,15 @@ index 8c674664..e33a78e3 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index a3d3876c..307970c9 100644
+index 5479b948..41f9fb2b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
  static int vi_scrollud;			/* scroll amount for ^u and ^d */
  static int vi_scrolley;			/* scroll amount for ^e and ^y */
  static int vi_cndir = 1;		/* ^n direction */
--static int vi_status;			/* rows reserved for permanent status bar */
-+int vi_status;				/* rows reserved for permanent status bar */
+-static int vi_status;			/* permanent status bar */
++int vi_status;				/* permanent status bar */
  static int vi_tsm;			/* type of the status message */
  static int vi_nlword;			/* new line mode for eEwWbB */
  
@@ -1916,7 +1838,7 @@ index a3d3876c..307970c9 100644
  		break;
  	default:
  		if (c == cmd) {
-@@ -750,7 +851,7 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -751,7 +852,7 @@ static int vi_motion(int vc, int *row, int *off)
  			ex_bufpostfix(&bufs[i], 1);
  		syn_setft(xb_ft);
  		vc_status(0);
@@ -1925,7 +1847,7 @@ index a3d3876c..307970c9 100644
  		vi_mod |= 1;
  		break;
  	case TK_CTL('t'):
-@@ -783,7 +884,7 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -784,7 +885,7 @@ static int vi_motion(int vc, int *row, int *off)
  	case 'N':
  		if (vi_search(mv, cnt, row, off, 1))
  			return -1;
@@ -1934,7 +1856,7 @@ index a3d3876c..307970c9 100644
  		vi_mod |= mv == '/' || mv == '?';
  		break;
  	case '*':
-@@ -796,8 +897,8 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -797,8 +898,8 @@ static int vi_motion(int vc, int *row, int *off)
  		}
  		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
  			cadir = -cadir;
@@ -1945,7 +1867,7 @@ index a3d3876c..307970c9 100644
  		break;
  	case '`':
  		if ((mark = term_read(0)) <= 0)
-@@ -874,7 +975,8 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -875,7 +976,8 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	}
  	vi_regput(vi_ybuf, rsb.s, lnmode);
  	free(rsb.s);
@@ -1955,7 +1877,7 @@ index a3d3876c..307970c9 100644
  	term_room(r1 < xtop ? xtop - xrow : r1 - r2 - !!*vi_word);
  	xrow = r1;
  	if (r1 < xtop)
-@@ -1028,7 +1130,7 @@ static int vc_insert(int cmd)
+@@ -1029,7 +1131,7 @@ static int vc_insert(int cmd)
  		xoff = lbuf_eol(xb, xrow, 1);
  	else if (cmd == 'o') {
  		xrow++;
@@ -1964,7 +1886,7 @@ index a3d3876c..307970c9 100644
  			vi_drawagain(++xtop);
  	}
  	xoff = ren_noeol(ln, xoff);
-@@ -1050,7 +1152,7 @@ static int vc_insert(int cmd)
+@@ -1051,7 +1153,7 @@ static int vc_insert(int cmd)
  		postn = rstate->n - off;
  		post = ln + l1;
  	}
@@ -1973,7 +1895,7 @@ index a3d3876c..307970c9 100644
  	term_room(cmdo);
  	sbuf_mem(sb, ln, l1)
  	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
-@@ -1114,7 +1216,7 @@ static void vi_scrollforward(int cnt)
+@@ -1115,7 +1217,7 @@ static void vi_scrollforward(int cnt)
  static void vi_scrollbackward(int cnt)
  {
  	xtop = MAX(0, xtop - cnt);
@@ -1982,7 +1904,7 @@ index a3d3876c..307970c9 100644
  }
  
  static int vc_replace(void)
-@@ -1178,14 +1280,15 @@ static void vi_argcmd(int arg, char cmd)
+@@ -1179,14 +1281,15 @@ static void vi_argcmd(int arg, char cmd)
  }
  
  #define topfix() \
@@ -2003,7 +1925,7 @@ index a3d3876c..307970c9 100644
  
  void vi(int init)
  {
-@@ -1193,10 +1296,21 @@ void vi(int init)
+@@ -1194,10 +1297,21 @@ void vi(int init)
  	int mv, n, k, c;
  	xgrec++;
  	if (init) {
@@ -2027,7 +1949,7 @@ index a3d3876c..307970c9 100644
  	}
  	while (!xquit) {
  		int nrow = xrow;
-@@ -1217,7 +1331,7 @@ void vi(int init)
+@@ -1218,7 +1332,7 @@ void vi(int init)
  		}
  		if (xmpt == 1) {
  			xmpt = 0;
@@ -2036,7 +1958,7 @@ index a3d3876c..307970c9 100644
  		}
  		if (led_attsb)
  			sbuf_cut(led_attsb, 0)
-@@ -1243,12 +1357,12 @@ void vi(int init)
+@@ -1244,12 +1358,12 @@ void vi(int init)
  			c = term_read(TK_CTL('l'));
  			switch (c) {
  			case TK_CTL('b'):
@@ -2051,7 +1973,7 @@ index a3d3876c..307970c9 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1267,7 +1381,7 @@ void vi(int init)
+@@ -1268,7 +1382,7 @@ void vi(int init)
  					break;
  				if (vi_arg)
  					vi_scrollud = vi_arg;
@@ -2060,7 +1982,7 @@ index a3d3876c..307970c9 100644
  				xrow = MAX(0, xrow - n);
  				if (xtop > 0)
  					xtop = MAX(0, xtop - n);
-@@ -1279,10 +1393,10 @@ void vi(int init)
+@@ -1280,10 +1394,10 @@ void vi(int init)
  					break;
  				if (vi_arg)
  					vi_scrollud = vi_arg;
@@ -2074,14 +1996,13 @@ index a3d3876c..307970c9 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1333,9 +1447,18 @@ void vi(int init)
+@@ -1334,8 +1448,17 @@ void vi(int init)
  				vi_tsm = 0;
  				status:
  				if (vi_arg) {
 +					int old_xrows = xrows;
- 					xrows += vi_status;
- 					vi_status = vi_arg % 2 ? vi_arg : 0;
- 					xrows -= vi_status;
+ 					vi_status = vi_arg > 1 ? 0 : term_resized;
+ 					xrows += vi_status ? -1 : 1;
 +					if (wins) {
 +						struct win *w = wins;
 +						do {
@@ -2128,10 +2049,11 @@ index a3d3876c..307970c9 100644
  				if (c == TK_CTL('z')) {
  					term_pos(xrows, 0);
  					term_suspend();
-@@ -1541,8 +1683,10 @@ void vi(int init)
+@@ -1540,8 +1682,11 @@ void vi(int init)
+ 					term_done();
  					term_init();
  				}
- 				xrows -= vi_status;
++				orows += !!vi_status;
 +				if (xrows != orows || xcols != ocols)
 +					win_size();
  				vi_mod |= 1;
@@ -2140,7 +2062,7 @@ index a3d3876c..307970c9 100644
  			case 'm':
  				lbuf_mark(xb, term_read(0), xrow, xoff);
  				break;
-@@ -1649,7 +1793,7 @@ void vi(int init)
+@@ -1648,7 +1793,7 @@ void vi(int init)
  				ex_exec("left0:reg");
  				break;
  			case 'Q':
@@ -2149,7 +2071,7 @@ index a3d3876c..307970c9 100644
  				xleft = vi_arg ? xleft : 0;
  				led_modeswap();
  				vi_mod |= 1;
-@@ -1715,8 +1859,9 @@ void vi(int init)
+@@ -1714,8 +1859,9 @@ void vi(int init)
  		}
  		if (vi_mod)
  			vi_col = vi_off2col(xb, xrow, xoff);
@@ -2161,7 +2083,7 @@ index a3d3876c..307970c9 100644
  		n = led_pos(ln, ren_cursor(ln, vi_col));
  		if (xmpt > 1) {
  			if (!xpln)
-@@ -1758,19 +1903,35 @@ void vi(int init)
+@@ -1757,19 +1903,35 @@ void vi(int init)
  			}
  		}
  		term_record = 1;
@@ -2204,7 +2126,7 @@ index a3d3876c..307970c9 100644
  				if (!(vi_mod & 1) && !*vi_word)
  					vi_drawrow(orow);
  			syn_blockhl = -1;
-@@ -1786,7 +1947,7 @@ void vi(int init)
+@@ -1787,7 +1949,7 @@ void vi(int init)
  			if (xmpt > 0)
  				xmpt = 0;
  		}
@@ -2214,10 +2136,10 @@ index a3d3876c..307970c9 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 4726dfbf..ad7b9999 100644
+index cba8d35b..8e407fcc 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -328,6 +328,7 @@ void term_suspend(void);
+@@ -329,6 +329,7 @@ void term_suspend(void);
  void term_chr(int ch);
  void term_pos(int r, int c);
  void term_kill(void);
@@ -2225,7 +2147,7 @@ index 4726dfbf..ad7b9999 100644
  void term_room(int n);
  int term_read(int winch);
  void term_commit(void);
-@@ -398,7 +399,8 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -399,7 +400,8 @@ void led_render(char *s0, int cbeg, int cend);
  } \
  
  #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end,)
@@ -2235,7 +2157,7 @@ index 4726dfbf..ad7b9999 100644
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
  void led_done(void);
-@@ -412,6 +414,26 @@ struct buf {
+@@ -413,6 +415,26 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -2253,7 +2175,7 @@ index 4726dfbf..ad7b9999 100644
 +extern struct win *wins;		/* head of window list */
 +extern struct win *curwin;		/* current active window */
 +extern int nwins;			/* number of windows */
-+extern int vi_status;			/* rows reserved for permanent status bar */
++extern int vi_status;			/* permanent status bar */
 +void win_init(void);
 +void win_size(void);
 +void win_switch(struct win *w);
