@@ -808,10 +808,9 @@ ${SEP}.,\$;f> 				vi_tsm = 0;
 				if \\\\(vi_arg\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1335\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 					int old_xrows = xrows;
 .
-${SEP}.,\$;f> 					xrows \\\\+= vi_status;
-					vi_status = vi_arg % 2 \\\\? vi_arg : 0;
-					xrows -= vi_status;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1338\\${SEP}${QF}}${SEP};=
-${SEP}+2a 					if (wins) {
+${SEP}.,\$;f> 					vi_status = vi_arg > 1 \\\\? 0 : term_resized;
+					xrows \\\\+= vi_status \\\\? -1 : 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1338\\${SEP}${QF}}${SEP};=
+${SEP}+1a 					if (wins) {
 						struct win *w = wins;
 						do {
 							if (w->y + w->h == old_xrows)
@@ -849,9 +848,8 @@ ${SEP}+3c 			case TK_CTL('l'): {
 				int orows = xrows, ocols = xcols;
 .
 ${SEP}.,\$;f> 					term_init\\\\(\\\\);
-				\\\\}
-				xrows -= vi_status;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1543\\${SEP}${QF}}${SEP};=
-${SEP}+2a 				if (xrows != orows || xcols != ocols)
+				\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1543\\${SEP}${QF}}${SEP};=
+${SEP}+1a 				if (xrows != orows || xcols != ocols)
 					win_size();
 .
 ${SEP}.,\$f> 				vi_mod \\\\|= 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1545\\${SEP}${QF}}${SEP};=
@@ -1019,6 +1017,35 @@ exit 0
  === END GROUP ===
  
  === GROUP 10/10 (line 1645) ===
+=== DELTA vi.c ===
+--- /tmp/patch2vi_B6j3I9_vi.c.diff.orig	2026-02-18 08:40:54.744606911 -0100
++++ /tmp/patch2vi_B6j3I9_vi.c.diff	2026-02-18 08:41:39.967390606 -0100
+@@ -891,10 +891,9 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-					xrows \+= vi_status;
+-					vi_status = vi_arg % 2 \? vi_arg : 0;
+-					xrows -= vi_status;
++=== SEARCH PATTERN (offset: 2) ===
++					vi_status = vi_arg > 1 \? 0 : term_resized;
++					xrows \+= vi_status \? -1 : 1;
+ --- extra (delete to include) ---
+ 				\}
+ 				vc_status\(vi_tsm\);
+@@ -963,10 +962,9 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
++=== SEARCH PATTERN (offset: 2) ===
+ 					term_init\(\);
+ 				\}
+-				xrows -= vi_status;
+ --- extra (delete to include) ---
+ 				vi_mod \|= 1;
+ === END GROUP ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 51ec63a9..6fd6b96e 100644
