@@ -314,6 +314,7 @@ char *uc_shape(char *beg, char *s, int c);
 extern sbuf *term_sbuf;
 extern int term_record;
 extern int term_winch;
+extern int term_resized;
 extern int xrows, xcols;
 extern unsigned int ibuf_pos, ibuf_cnt, ibuf_sz, icmd_pos;
 extern unsigned char *ibuf, icmd[4096];
