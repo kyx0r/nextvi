@@ -2,6 +2,7 @@ static struct termios termios;
 sbuf *term_sbuf;
 int term_record;
 int term_winch;
+int term_resized;
 int xrows, xcols;
 unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char *ibuf, icmd[4096];
@@ -13,6 +14,7 @@ void term_init(void)
 	struct termios newtermios;
 	char *s;
 	term_winch = 0;
+	term_resized++;
 	sbuf_make(term_sbuf, 2048)
 	tcgetattr(0, &termios);
 	newtermios = termios;
