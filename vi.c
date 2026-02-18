@@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_cndir = 1;		/* ^n direction */
-static int vi_status;			/* rows reserved for permanent status bar */
+static int vi_status;			/* permanent status bar */
 static int vi_tsm;			/* type of the status message */
 static int vi_nlword;			/* new line mode for eEwWbB */
 
@@ -1334,9 +1334,8 @@ void vi(int init)
 				vi_tsm = 0;
 				status:
 				if (vi_arg) {
-					xrows += vi_status;
-					vi_status = vi_arg % 2 ? vi_arg : 0;
-					xrows -= vi_status;
+					vi_status = vi_arg > 1 ? 0 : term_resized;
+					xrows += vi_status ? -1 : 1;
 				}
 				vc_status(vi_tsm);
 				break;
@@ -1541,7 +1540,6 @@ void vi(int init)
 					term_done();
 					term_init();
 				}
-				xrows -= vi_status;
 				vi_mod |= 1;
 				break;
 			case 'm':
@@ -1783,6 +1781,8 @@ void vi(int init)
 			vi_drawrow(xrow);
 		}
 		if (vi_status && xmpt < 1) {
+			xrows -= term_resized != vi_status;
+			vi_status = term_resized;
 			vc_status(vi_tsm);
 			if (xmpt > 0)
 				xmpt = 0;
