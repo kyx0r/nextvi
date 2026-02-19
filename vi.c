@@ -1462,12 +1462,13 @@ void vi(int init)
 				if (k && ln[n])
 					ex_command(ln + n)
 				vi_mod |= 1;
-				k = xmpt;
-				if (!k)
-					vi_drawmsg_mpt(ln)
+				if (!xmpt)
+					vi_drawmsg(ln);
 				free(ln);
 				if (xquit)
-					goto quit;
+					continue;
+				if (!xmpt)
+					xmpt = 1;
 				break;
 			case 'c':
 			case 'd':
@@ -1652,30 +1653,22 @@ void vi(int init)
 				xleft = vi_arg ? xleft : 0;
 				led_modeswap();
 				vi_mod |= 1;
+				if (xquit)
+					continue;
 				break;
 			case 'Z':
 				k = term_read(0);
-				if (k == 'Z')
+				if (k == 'Z') {
 					ex_exec("x");
-				else if (k == 'z') {
-					xquit = texec == '&' ? -1 : 1;
+					continue;
+				}
+				xquit = texec == '&' ? -1 : 1;
+				if (k == 'z')
 					term_push("\n", 1);
-				} else if (!TK_INT(k)) {
-					xquit = texec == '&' ? -1 : 1;
-					if (xgrec == 1)
-						term_clean();
-					continue;
-				} else
-					continue;
-				k = xmpt;
-				quit:
-				if (xgrec > 1 || !xquit)
-					continue;
-				term_pos(xrows - !vi_status, 0);
-				if (k > 0 && !xpln)
-					term_chr('\n');
-				else
-					term_kill();
+				else if (xgrec == 1) {
+					term_clean();
+					xgrec = 0;
+				}
 				continue;
 			case '.':
 				vc_repeat();
@@ -1791,7 +1784,13 @@ void vi(int init)
 		term_commit();
 		xb->useq += xseq;
 	}
-	xgrec--;
+	if (--xgrec == 0) {
+		term_pos(xrows - !vi_status, 0);
+		if (xmpt > 0 && !xpln)
+			term_chr('\n');
+		else
+			term_kill();
+	}
 }
 
 static void sighandler(int signo)
