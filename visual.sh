@@ -176,10 +176,10 @@ ${SEP}+1c 				if (vi_visual == 'V') {
 					vi_voff = xoff;
 				}
 .
-${SEP}.,\$;f> 					goto quit;
-				break;
-			case 'c':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1473\\${SEP}${QF}}${SEP};=
-${SEP}+2a 				if (vi_visual) {
+${SEP}.,\$;f> 				break;
+			case 'c':
+			case 'd':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1473\\${SEP}${QF}}${SEP};=
+${SEP}+1a 				if (vi_visual) {
 					k = vc_visual_op('c');
 					goto ins;
 				}
@@ -309,8 +309,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
---- /tmp/patch2vi_DOoGJM_vi.c.diff.orig
-+++ /tmp/patch2vi_DOoGJM_vi.c.diff
+--- /tmp/patch2vi_MOJJGP_vi.c.diff.orig
++++ /tmp/patch2vi_MOJJGP_vi.c.diff
 @@ -6,9 +6,7 @@
  #abs
  === SEARCH COMMAND ===
@@ -332,6 +332,19 @@ exit 0
  \{
  	int r1 = xrow, r2 = xrow;	/\* region rows \*/
  === END GROUP ===
+@@ -443,11 +441,9 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-					goto quit;
++=== SEARCH PATTERN (offset: 2) ===
+ 				break;
+ 			case 'c':
+---- extra (delete to include) ---
+ 			case 'd':
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index bc0eb301..113cfe28 100644
