@@ -448,6 +448,7 @@ extern int xkwdcnt;
 extern int xpln;
 extern int xsep;
 extern int xesc;
+extern int xexec_dep;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
 extern sbuf *xregs[256];
