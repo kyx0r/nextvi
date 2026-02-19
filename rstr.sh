@@ -30,9 +30,8 @@ fi
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int xsep = ':';			/\\\\* ex command separator \\\\*/
-int xesc = '\\\\\\\\\\\\\\\\';		/\\\\* ex command arg escape character \\\\*/
-sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 39\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/rset \\\\*x/rstr *x/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 39\\${SEP}${QF}}${SEP}.,\$;f> \\\\{
+int xesc = '\\\\\\\\\\\\\\\\';		/\\\\* ex command arg escape character \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 39\\${SEP}${QF}}${SEP};=
+${SEP}+4${SEP}s/rset \\\\*x/rstr *x/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 39\\${SEP}${QF}}${SEP}.,\$;f> \\\\{
 	sbuf \\\\*reg = xregs\\\\['/'\\\\];
 	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 181\\${SEP}${QF}}${SEP};=
 ${SEP}+3,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
@@ -312,9 +311,21 @@ ${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 545\\${SEP}${QF}}
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_vdTy7g_ex.c.diff.orig	2026-02-17 12:54:40.730116848 -0100
-+++ /tmp/patch2vi_vdTy7g_ex.c.diff	2026-02-17 12:54:51.523817578 -0100
-@@ -131,8 +131,8 @@
+--- /tmp/patch2vi_lhifON_ex.c.diff.orig
++++ /tmp/patch2vi_lhifON_ex.c.diff
+@@ -6,10 +6,9 @@
+ #relc
+ === SEARCH COMMAND ===
+ %;f>
+-=== SEARCH PATTERN (offset: 3) ===
++=== SEARCH PATTERN (offset: 4) ===
+ int xsep = ':';			/\* ex command separator \*/
+ int xesc = '\\\\';		/\* ex command arg escape character \*/
+-sbuf \*xacreg;			/\* autocomplete db filter regex \*/
+ --- extra (delete to include) ---
+ rset \*xkwdrs;			/\* the last searched keyword rset \*/
+ sbuf \*xregs\[256\];		/\* string registers \*/
+@@ -131,8 +130,8 @@
  				break;
  			\}
  		\}
