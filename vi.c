@@ -1465,9 +1465,10 @@ void vi(int init)
 				if (!xmpt)
 					vi_drawmsg(ln);
 				free(ln);
-				if (xquit)
+				if (xquit) {
+					xmpt = xmpt ? xmpt : (xgrec > 1);
 					continue;
-				if (!xmpt)
+				} else if (!xmpt)
 					xmpt = 1;
 				break;
 			case 'c':
