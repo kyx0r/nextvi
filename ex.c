@@ -1594,9 +1594,9 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 void *ex_exec(const char *ln)
 {
 	int arg, idx = 0;
-	int oqt = xquit;
 	char *ret = NULL;
-	if (!xgdep)
+	preserve(int, xquit, xquit = 0;)
+	if (!xexec_dep)
 		lbuf_mark(xb, '*', xrow, xoff);
 	xexec_dep++;
 	sbuf_smake(sb, strlen(ln) + 4)
@@ -1609,12 +1609,15 @@ void *ex_exec(const char *ln)
 			ex_print(ret, msg_ft)
 		if (ret && xerr & 2)
 			break;
-	} while (*ln && xquit == oqt);
+	} while (*ln && !xquit);
 	free(sb->s);
-	if (!--xexec_dep && xanchor) {
-		sbuf_free(xanchor)
-		xanchor = NULL;
-	}
+	if (--xexec_dep == 0) {
+		if (xanchor) {
+			sbuf_free(xanchor)
+			xanchor = NULL;
+		}
+	} else if (xquit > 0)
+		restore(xquit)
 	return xerr & 4 ? NULL : ret;
 }
 
