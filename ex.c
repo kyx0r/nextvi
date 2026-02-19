@@ -35,6 +35,7 @@ int xkwdcnt;			/* number of search kwd changes */
 int xpln;			/* tracks newline from ex print and pipe stdout */
 int xsep = ':';			/* ex command separator */
 int xesc = '\\';		/* ex command arg escape character */
+int xexec_dep;			/* ex_exec recursion depth */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 sbuf *xregs[256];		/* string registers */
@@ -55,7 +56,6 @@ static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
 static sbuf *xanchor;		/* anchored error status buffer */
-static int xexec_dep;		/* ex_exec recursion depth */
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
 {
@@ -1594,9 +1594,9 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 void *ex_exec(const char *ln)
 {
 	int arg, idx = 0;
-	int oqt = xquit;
 	char *ret = NULL;
-	if (!xgdep)
+	preserve(int, xquit, xquit = 0;)
+	if (!xexec_dep)
 		lbuf_mark(xb, '*', xrow, xoff);
 	xexec_dep++;
 	sbuf_smake(sb, strlen(ln) + 4)
@@ -1609,12 +1609,15 @@ void *ex_exec(const char *ln)
 			ex_print(ret, msg_ft)
 		if (ret && xerr & 2)
 			break;
-	} while (*ln && xquit == oqt);
+	} while (*ln && !xquit);
 	free(sb->s);
-	if (!--xexec_dep && xanchor) {
-		sbuf_free(xanchor)
-		xanchor = NULL;
-	}
+	if (--xexec_dep == 0) {
+		if (xanchor) {
+			sbuf_free(xanchor)
+			xanchor = NULL;
+		}
+	} else if (xquit > 0)
+		restore(xquit)
 	return xerr & 4 ? NULL : ret;
 }
 
