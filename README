@@ -201,15 +201,25 @@ to record all user input. Makes it easier to record macros.
 visual.sh
 --------------
 Adds character-wise (v) and line-wise (V) visual selection modes.
-Move the cursor to extend the selection, which is highlighted (colors inverted).
-Pressing v or V again while in that mode exits it. ESC also exits.
-Status bar shows -- VISUAL -- or -- VISUAL LINE -- while active.
-Supported operators on the selection:
-y yank, d delete, c change, > indent, < dedent, ! pipe through shell command,
-~ toggle case, u lowercase, U uppercase
-The former v-prefix commands are remapped to g-prefix to free up v:
-g. gW go gI gi gb gv g; g/ gt gr
-The former V (toggle hidden chars) is remapped to gV.
+Enter with v (charwise) or V (linewise). Move the cursor to extend the
+selection; the selected region is highlighted with inverted colors.
+Press v or V again to exit visual mode; ESC also cancels the selection.
+The current mode (-- VISUAL -- or -- VISUAL LINE --) appears in the
+^g status bar; when the permanent status bar is enabled it shows
+continuously alongside the file information.
+Supported operators applied to the selection:
+  y  yank          d  delete         c  change
+  >  indent        <  dedent         !  pipe through shell command
+  ~  toggle case   u  lowercase      U  uppercase
+The former v-prefix sub-commands are remapped to the g prefix to free
+up v for visual mode:
+  g.  repeat on subsequent lines   gW  new-line word navigation toggle
+  go  clean line endings           gI  convert tabs to spaces
+  gi  convert spaces to tabs       gb  go to beginning of ex line
+  gv  go to end of ex line         g;  shell command prompt
+  g/  keyword search               gt  substitution template
+  gr  regex substitution template
+The former V (toggle hidden chars display) is remapped to gV.
 
 splits.sh
 --------------
