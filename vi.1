@@ -1,4 +1,4 @@
-.Dd Feb 19, 2026
+.Dd Feb 21, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -1053,11 +1053,15 @@ Write unsaved changes and exit
 .It Cm [\fIrange\fP]x![\fIpath\fP]
 Force write unsaved changes and force quit
 
-.It Cm q[\fI#\fP]
-.It Cm q![\fI#\fP]
+.It Cm [\fI#lvl\fP]q[\fI#code\fP]
+.It Cm [\fI#lvl\fP]q![\fI#code\fP]
 Exit or force quit
 .Bd -literal
-# specifies shell exit code.
+#code specifies shell exit code.
+#lvl defines the number of scopes to exit.
+
+Example: conditionally exit this scope and 1 above
+:%f>marker:??!p no marker\e:1q:s/old/new/g:w:q
 .Ed
 
 .It Cm u
@@ -1627,9 +1631,9 @@ _
  654 lbuf.c | file/line buffer
  720 led.c | insert mode/output
  766 regex.c | pikevm
- 1662 ex.c | ex options/commands
+ 1666 ex.c | ex options/commands
  1855 vi.c | normal mode/general
- 7378 total | wc -l *.c\(basort
+ 7382 total | wc -l *.c\(basort
 _
 .TE
 .
