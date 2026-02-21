@@ -56,6 +56,7 @@ static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
 static sbuf *xanchor;		/* anchored error status buffer */
+static int xqprop;		/* number of ex_exec levels :q propagates */
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
 {
@@ -578,6 +579,8 @@ static void *ec_quit(char *loc, char *cmd, char *arg)
 		if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
 			return "buffers modified";
 	xquit = !xquit ? 1 : xquit;
+	if (*loc)
+		xqprop = atoi(loc);
 	if (*arg)
 		xquit = abs(atoi(arg)) + 1;
 	if (strchr(cmd, '!'))
@@ -1616,7 +1619,8 @@ void *ex_exec(const char *ln)
 			sbuf_free(xanchor)
 			xanchor = NULL;
 		}
-	} else if (xquit > 0)
+		xqprop = 0;
+	} else if (xquit > 0 && --xqprop < 0)
 		restore(xquit)
 	return xerr & 4 ? NULL : ret;
 }
