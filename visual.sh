@@ -148,6 +148,9 @@ static int vc_block_insert(int vcmd, int r1, int r2, int col)
 	while (ins_byte < old_nbytes && snap[ins_byte] == new_ln[ins_byte])
 		ins_byte++;
 	char *ins_text = new_ln + ins_byte;
+	int added_chars = 0;
+	for (char *t = ins_text; t < ins_text + added; t += uc_len(t))
+		added_chars++;
 	for (int r = r1 + 1; r <= r2; r++) {
 		char *ln = lbuf_get(xb, r);
 		if (!ln)
@@ -170,7 +173,7 @@ static int vc_block_insert(int vcmd, int r1, int r2, int col)
 		memcpy(new_ln2 + pre_bytes, ins_text, added);
 		memcpy(new_ln2 + pre_bytes + added, p, post_bytes);
 		new_ln2[pre_bytes + added + post_bytes] = '\\\\0';
-		lbuf_edit(xb, new_ln2, r, r + 1, 0, 0);
+		lbuf_edit(xb, new_ln2, r, r + 1, pos, pos + added_chars);
 		free(new_ln2);
 	}
 	free(snap);
@@ -532,7 +535,7 @@ index 51ec63a9..34885d31 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 4136cb88..3fdbf45b 100644
+index 4136cb88..9e58bdab 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -638,7 +641,7 @@ index 4136cb88..3fdbf45b 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -963,6 +1013,204 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -963,6 +1013,207 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
@@ -669,6 +672,9 @@ index 4136cb88..3fdbf45b 100644
 +	while (ins_byte < old_nbytes && snap[ins_byte] == new_ln[ins_byte])
 +		ins_byte++;
 +	char *ins_text = new_ln + ins_byte;
++	int added_chars = 0;
++	for (char *t = ins_text; t < ins_text + added; t += uc_len(t))
++		added_chars++;
 +	for (int r = r1 + 1; r <= r2; r++) {
 +		char *ln = lbuf_get(xb, r);
 +		if (!ln)
@@ -691,7 +697,7 @@ index 4136cb88..3fdbf45b 100644
 +		memcpy(new_ln2 + pre_bytes, ins_text, added);
 +		memcpy(new_ln2 + pre_bytes + added, p, post_bytes);
 +		new_ln2[pre_bytes + added + post_bytes] = '\0';
-+		lbuf_edit(xb, new_ln2, r, r + 1, 0, 0);
++		lbuf_edit(xb, new_ln2, r, r + 1, pos, pos + added_chars);
 +		free(new_ln2);
 +	}
 +	free(snap);
@@ -843,7 +849,7 @@ index 4136cb88..3fdbf45b 100644
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1237,6 +1485,8 @@ void vi(int init)
+@@ -1237,6 +1488,8 @@ void vi(int init)
  				lbuf_mark(xb, '`', xrow, ooff);
  			xrow = nrow;
  			xoff = noff;
@@ -852,7 +858,7 @@ index 4136cb88..3fdbf45b 100644
  		} else if (mv == 0) {
  			char *cmd;
  			term_dec()
-@@ -1313,6 +1563,10 @@ void vi(int init)
+@@ -1313,6 +1566,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -863,7 +869,7 @@ index 4136cb88..3fdbf45b 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1360,95 +1614,44 @@ void vi(int init)
+@@ -1360,95 +1617,44 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'v':
@@ -990,7 +996,7 @@ index 4136cb88..3fdbf45b 100644
  				if (vi_arg && vi_arg <= 5) {
  					vi_wsel = vi_arg;
  					vi_word = _vi_word + vi_arg;
-@@ -1472,7 +1675,16 @@ void vi(int init)
+@@ -1472,7 +1678,16 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -1007,7 +1013,7 @@ index 4136cb88..3fdbf45b 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1497,6 +1709,10 @@ void vi(int init)
+@@ -1497,6 +1712,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1018,7 +1024,7 @@ index 4136cb88..3fdbf45b 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto ins;
-@@ -1507,6 +1723,13 @@ void vi(int init)
+@@ -1507,6 +1726,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1032,7 +1038,7 @@ index 4136cb88..3fdbf45b 100644
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-@@ -1615,6 +1838,81 @@ void vi(int init)
+@@ -1615,6 +1841,81 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
@@ -1114,7 +1120,7 @@ index 4136cb88..3fdbf45b 100644
  				}
  				break;
  			case 'x':
-@@ -1630,6 +1928,10 @@ void vi(int init)
+@@ -1630,6 +1931,10 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1125,7 +1131,7 @@ index 4136cb88..3fdbf45b 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1685,6 +1987,13 @@ void vi(int init)
+@@ -1685,6 +1990,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
