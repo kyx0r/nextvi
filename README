@@ -200,17 +200,22 @@ to record all user input. Makes it easier to record macros.
 
 visual.sh
 --------------
-Adds character-wise (v) and line-wise (V) visual selection modes.
-Enter with v (charwise) or V (linewise). Move the cursor to extend the
-selection; the selected region is highlighted with inverted colors.
-Press v or V again to exit visual mode; ESC also cancels the selection.
-The current mode (-- VISUAL -- or -- VISUAL LINE --) appears in the
-^g status bar; when the permanent status bar is enabled it shows
-continuously alongside the file information.
+Adds character-wise (v), line-wise (V), and block (^V) visual selection
+modes. Enter with v, V, or ^V. Move the cursor to extend the selection;
+the selected region is highlighted with inverted colors. Press the same
+key again to exit that mode; ESC also cancels the selection.
+The current mode (-- VISUAL --, -- VISUAL LINE --, -- VISUAL BLOCK --)
+appears in the ^g status bar; when the permanent status bar is enabled
+it shows continuously alongside the file information.
 Supported operators applied to the selection:
   y  yank          d  delete         c  change
   >  indent        <  dedent         !  pipe through shell command
   ~  toggle case   u  lowercase      U  uppercase
+Block mode (^V) also supports:
+  I  insert at the left edge of the block on every selected line;
+     lines shorter than the left edge are skipped
+  A  append after the right edge of the block on every selected line;
+     for lines shorter than the right edge, text is appended at EOL
 The former v-prefix sub-commands are remapped to the g prefix to free
 up v for visual mode:
   g.  repeat on subsequent lines   gW  new-line word navigation toggle
@@ -220,6 +225,7 @@ up v for visual mode:
   g/  keyword search               gt  substitution template
   gr  regex substitution template
 The former V (toggle hidden chars display) is remapped to gV.
+The former ^V (word-display cycle) is now triggered by ^C instead.
 
 splits.sh
 --------------
