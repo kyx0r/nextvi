@@ -21,7 +21,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
-int xrcm = 1;			/* range command model -
+int xrcm = 1;			/* range command mode -
 				0: exec at command parse 1: exec at command */
 
 int xquit;			/* exit if positive, force quit if negative */
