@@ -1189,10 +1189,13 @@ static void *ec_join(char *loc, char *cmd, char *arg)
 
 static void *ec_setdir(char *loc, char *cmd, char *arg)
 {
-	free(fs_exdir);
-	fs_exdir = uc_dup(*arg ? arg : ".");
+	static char *exdir;
+	if (*arg || cmd[1] == 'p') {
+		free(exdir);
+		exdir = *arg ? uc_dup(arg) : NULL;
+	}
 	if (cmd[1] == 'd')
-		dir_calc(fs_exdir);
+		dir_calc(exdir ? exdir : ".");
 	return NULL;
 }
 

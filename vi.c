@@ -440,7 +440,6 @@ static void vi_regput(int c, const char *s, int lnmode)
 }
 
 rset *fsincl;
-char *fs_exdir;
 static int fspos;
 static int fsdir;
 
