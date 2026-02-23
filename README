@@ -348,6 +348,7 @@ EX RANGES
      Some ex commands can be prefixed with ranges.
      [range] prefix implements vertical and horizontal ranges.
      [vrange] prefix implements vertical range and horizontal position.
+     Without [cmd], [range] replaces [prefix] and changes position.
 
      [% |][, ;][#][. $ ' > <][- + * / %][0-9]
              All ranges structure
