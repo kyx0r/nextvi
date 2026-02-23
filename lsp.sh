@@ -1490,9 +1490,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> extern rset \\\\*fsincl;
-extern char \\\\*fs_exdir;
 void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 548\\${SEP}${QF}}${SEP};=
-${SEP}+2a 
+${SEP}+1a 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
 extern int lsp_nfds;
@@ -1512,6 +1511,20 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA vi.h ===
+--- /tmp/patch2vi_eeFnkE_vi.h.diff.orig
++++ /tmp/patch2vi_eeFnkE_vi.h.diff
+@@ -18,9 +18,8 @@
+ #abs
+ === SEARCH COMMAND ===
+ %;f>
+-=== SEARCH PATTERN (offset: 3) ===
++=== SEARCH PATTERN (offset: 2) ===
+ extern rset \*fsincl;
+-extern char \*fs_exdir;
+ void dir_calc\(char \*path\);
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..c51a3f7e 100644
