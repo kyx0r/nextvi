@@ -1142,14 +1142,13 @@ No argument prints the current keymap name.
 Set an alternative keymap
 
 .It Cm fd[\fIpath\fP]
-Set a secondary directory
+Calculate directory listing in b-2 buffer
 .Bd -literal
-Recalculates directory listing in b-2 buffer.
-No argument implies current secondary directory path.
+No argument uses secondary or a working directory path.
 .Ed
 
 .It Cm fp[\fIpath\fP]
-Set a secondary directory path
+Clear or set a secondary directory path
 
 .It Cm cd[\fIpath\fP]
 Set a working directory
@@ -1630,9 +1629,9 @@ _
  654 lbuf.c | file/line buffer
  720 led.c | insert mode/output
  766 regex.c | pikevm
- 1669 ex.c | ex options/commands
+ 1668 ex.c | ex options/commands
  1857 vi.c | normal mode/general
- 7387 total | wc -l *.c\(basort
+ 7386 total | wc -l *.c\(basort
 _
 .TE
 .

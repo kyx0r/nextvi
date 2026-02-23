@@ -857,13 +857,12 @@ EX COMMANDS
              Set an alternative keymap
 
      fd[path]
-             Set a secondary directory
+             Calculate directory listing in b-2 buffer
 
-             Recalculates directory listing in b-2 buffer.
-             No argument implies current secondary directory path.
+             No argument uses secondary or a working directory path.
 
      fp[path]
-             Set a secondary directory path
+             Clear or set a secondary directory path
 
      cd[path]
              Set a working directory
@@ -1237,9 +1236,9 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 720 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1669 ex.c    |  ex options/commands |
+     | 1668 ex.c    |  ex options/commands |
      | 1857 vi.c    |  normal mode/general |
-     | 7387 total   |  wc -l *.c|sort      |
+     | 7386 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
