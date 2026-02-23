@@ -440,7 +440,6 @@ static void vi_regput(int c, const char *s, int lnmode)
 }
 
 rset *fsincl;
-char *fs_exdir;
 static int fspos;
 static int fsdir;
 
@@ -1679,9 +1678,12 @@ void vi(int init)
 				vc_execute(c);
 				break;
 			case '\\':
-				ex_exec("b-2");
-				if (vi_arg && xb == tempbufs[1].lb)
-					ex_exec("%d:fd:b-2");
+				if (!vi_arg)
+					ex_exec("b-2");
+				else if (xb != tempbufs[1].lb)
+					ex_exec("b-2:%d:fd:b-2");
+				else
+					ex_exec("%d:fd");
 				vc_status(0);
 				vi_mod |= 1;
 				break;
