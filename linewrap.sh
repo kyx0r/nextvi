@@ -30,12 +30,13 @@ fi
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
-int xrcm = 1;			/\\\\* range command model -
+int xrcm = 1;			/\\\\* range command mode -
 				0: exec at command parse 1: exec at command \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 25\\${SEP}${QF}}${SEP};=
 ${SEP}+2a int xlw;			/* soft linewrap col */
 .
 ${SEP}.,\$;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1365\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
@@ -256,6 +257,18 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- /tmp/patch2vi_fkJJpb_ex.c.diff.orig
++++ /tmp/patch2vi_fkJJpb_ex.c.diff
+@@ -6,7 +6,7 @@
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+ 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \*/
+-int xrcm = 1;			/\* range command model -
++int xrcm = 1;			/\* range command mode -
+ 				0: exec at command parse 1: exec at command \*/
+ --- extra (delete to include) ---
+ 
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..b131adab 100644
