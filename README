@@ -58,7 +58,7 @@ VI NORMAL
      [#]b          Move to start of word backward # times
      [#]W          Move to start of word forward # times, skip punctuation
      [#]w          Move to start of word forward # times
-     vw            Toggle line only mode for <E e B b W w>
+     vw            Toggle one-line mode for <E e B b W w> regions
      [#](          Move to next sentence boundary down # times
      [#])          Move to next sentence boundary up # times
      [#]{          Move to next <{> section down # times
@@ -102,7 +102,7 @@ VI NORMAL
      8#            Toggle show relative line numbers permanently
      V             Toggle show hidden characters:<Space Tab Newline>
      <^C>          Toggle show line motion numbers for <l h e b E B w W>
-     {1-5}<^C>     Switch to line motion number mode #
+     {1-5}<^C>     Select line motion number mode 1-5
      <^V>          Loop through line motion number modes
      [#]<^R>       Redo # times
      [#]u          Undo # times
@@ -117,9 +117,8 @@ VI NORMAL
      R             Print registers and their contents
      [#]&{arg}     Execute arg register macro in non-blocking mode # times
      [#]@{arg}     Execute arg register macro in blocking mode # times
-     [#]@@
-     [#]&&
-                   Execute a last executed register macro # times
+     [#]@@         Execute last macro # times, blocking
+     [#]&&         Execute last macro # times, non-blocking
      [#].          Repeat last normal command # times
      [#]v.         Repeat last normal command moving down across # lines
      [#]Q          Enter ex mode. # retains current horizontal scroll
@@ -191,7 +190,7 @@ VI NORMAL
                    Swap to previous buffer
      [#]<^N>       Swap to next buffer, # changes direction [forward backward]
      \             Swap to /fm/ buffer b-2
-     {#}\          Swap from /fm/ buffer b-2 and backfill directory listing
+     {#}\          Refresh secondary directory listing in b-2
      vb            Recurse into b-1 history buffer. Insert current line into
                    ex prompt on exit
      z1            Set alternative keymap to Farsi keymap
@@ -256,7 +255,7 @@ VI/EX INSERT
      <^H>
      <Backspace>
                    Delete a character, reset ex mode when empty
-     <^U>          Delete until <^X> mark or everything
+     <^U>          Delete until <^X> mark or all
      <^W>          Delete a word
      <^T>          Increase indent
      <^D>          Decrease indent
@@ -295,9 +294,9 @@ EX
 
 EX PARSING
      Parsing follows the structure:
-     [<sep>][range][cmd][<pad>][args]
-     Ex commands are initiated and separated by <:> prefix. Fields
-     can be padded by <Space> or <Tab>. Padding inside [range] structure
+     [<sep>][prefix][cmd][<pad>][args]
+     Ex commands are initiated and separated by <:>. Fields can be
+     padded by <Space> or <Tab>. Padding inside [range] structure
      is collapsed. There can only be one pad in between [cmd] and
      [args]. To avoid ambiguity in scripts, it is recommended to always
      use a pad between [cmd] and [args].
@@ -347,8 +346,8 @@ EX EXPANSION
 
 EX RANGES
      Some ex commands can be prefixed with ranges.
-     [range] implements vertical and horizontal ranges.
-     [vrange] implements vertical range and horizontal position.
+     [range] prefix implements vertical and horizontal ranges.
+     [vrange] prefix implements vertical range and horizontal position.
 
      [% |][, ;][#][. $ ' > <][- + * / %][0-9]
              All ranges structure
@@ -565,7 +564,7 @@ EX COMMANDS
              Example: join all lines
              :%-1j
              Example: join all lines with space padding
-             :%-1jj
+             :%-1j x
 
      e[path]
              Open a file at a path
@@ -784,7 +783,7 @@ EX COMMANDS
              #lvl defines the number of scopes to exit.
 
              Example: conditionally exit this scope and 1 above
-             :%f>marker:??!p no marker\:1q:s/old/new/g:w:q
+             :%f>marker:??!p no marker\:1q:s/old/new/g:w
 
      u       Undo
      rd      Redo
@@ -861,10 +860,10 @@ EX COMMANDS
              Set a secondary directory
 
              Recalculates directory listing in b-2 buffer.
-             No argument implies current directory.
+             No argument implies current secondary directory path.
 
      fp[path]
-             Set a directory path for :fd command
+             Set a secondary directory path
 
      cd[path]
              Set a working directory
@@ -1080,7 +1079,7 @@ EX OPTIONS
              :pr A:ya! A:p
 
      rcm[val=1]
-             Range command model
+             Range command mode
 
              Controls when an ex command nested inside ex range executes.
              0 - exec at command parse
@@ -1229,7 +1228,7 @@ SPECIAL REGISTERS
 CODE MAP
      +--------------+----------------------+
      | 537 kmap.h   |  keymap translation  |
-     | 549 vi.h     |  definitions/aux     |
+     | 548 vi.h     |  definitions/aux     |
      +--------------+----------------------+
      | 332 conf.c   |  hl/ft/td config     |
      | 366 term.c   |  low level IO        |
@@ -1238,9 +1237,9 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 720 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1666 ex.c    |  ex options/commands |
-     | 1855 vi.c    |  normal mode/general |
-     | 7382 total   |  wc -l *.c|sort      |
+     | 1669 ex.c    |  ex options/commands |
+     | 1857 vi.c    |  normal mode/general |
+     | 7387 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1312,4 +1311,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 21, 2026                    Nextvi 4.0
+Nextvi 4.0                     February 23, 2026                    Nextvi 4.0

@@ -1,4 +1,4 @@
-.Dd Feb 21, 2026
+.Dd Feb 23, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -102,7 +102,7 @@ Move to start of word forward # times, skip punctuation
 .It Cm [\fI#\fP]w
 Move to start of word forward # times
 .It Cm vw
-Toggle line only mode for <E e B b W w>
+Toggle one-line mode for <E e B b W w> regions
 .It Cm [\fI#\fP](
 Move to next sentence boundary down # times
 .It Cm [\fI#\fP])
@@ -182,7 +182,7 @@ Toggle show hidden characters:<Space Tab Newline>
 .It Cm <^C>
 Toggle show line motion numbers for <l h e b E B w W>
 .It Cm {\fI1-5\fP}<^C>
-Switch to line motion number mode #
+Select line motion number mode 1-5
 .It Cm <^V>
 Loop through line motion number modes
 .It Cm [\fI#\fP]<^R>
@@ -211,10 +211,9 @@ Execute arg register macro in non-blocking mode # times
 .It Cm [\fI#\fP]@{\fIarg\fP}
 Execute arg register macro in blocking mode # times
 .It Cm [\fI#\fP]@@
+Execute last macro # times, blocking
 .It Cm [\fI#\fP]&&
-.Bd -compact
-Execute a last executed register macro # times
-.Ed
+Execute last macro # times, non-blocking
 .It Cm [\fI#\fP].
 Repeat last normal command # times
 .It Cm [\fI#\fP]v.
@@ -335,7 +334,7 @@ Swap to next buffer, # changes direction [forward backward]
 .It Cm \e
 Swap to /fm/ buffer b-2
 .It Cm {\fI#\fP}\e
-Swap from /fm/ buffer b-2 and backfill directory listing
+Refresh secondary directory listing in b-2
 .It Cm vb
 Recurse into b-1 history buffer. Insert current line into ex prompt on exit
 .It Cm z1
@@ -442,7 +441,7 @@ Append a word to <a> register
 Delete a character, reset ex mode when empty
 .Ed
 .It Cm <^U>
-Delete until <^X> mark or everything
+Delete until <^X> mark or all
 .It Cm <^W>
 Delete a word
 .It Cm <^T>
@@ -508,9 +507,9 @@ into a purely command-line interface (CLI) when desired.
 .Sh EX PARSING
 .Bd -literal -compact
 Parsing follows the structure:
-[<\fIsep\fP>][\fIrange\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
-Ex commands are initiated and separated by <:> prefix. Fields
-can be padded by <Space> or <Tab>. Padding inside [range] structure
+[<\fIsep\fP>][\fIprefix\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
+Ex commands are initiated and separated by <:>. Fields can be
+padded by <Space> or <Tab>. Padding inside [range] structure
 is collapsed. There can only be one pad in between [cmd] and
 [args]. To avoid ambiguity in scripts, it is recommended to always
 use a pad between [cmd] and [args].
@@ -570,8 +569,8 @@ Example: insert output of ls more efficiently
 .Sh EX RANGES
 .Bd -literal -compact
 Some ex commands can be prefixed with ranges.
-[range] implements vertical and horizontal ranges.
-[vrange] implements vertical range and horizontal position.
+[range] prefix implements vertical and horizontal ranges.
+[vrange] prefix implements vertical range and horizontal position.
 .Ed
 .Bl -tag -width Ds -compact
 
@@ -829,7 +828,7 @@ Any argument activates padding mode.
 Example: join all lines
 :%-1j
 Example: join all lines with space padding
-:%-1jj
+:%-1j x
 .Ed
 
 .It Cm e[\fIpath\fP]
@@ -1061,7 +1060,7 @@ Exit or force quit
 #lvl defines the number of scopes to exit.
 
 Example: conditionally exit this scope and 1 above
-:%f>marker:??!p no marker\e:1q:s/old/new/g:w:q
+:%f>marker:??!p no marker\e:1q:s/old/new/g:w
 .Ed
 
 .It Cm u
@@ -1146,11 +1145,11 @@ Set an alternative keymap
 Set a secondary directory
 .Bd -literal
 Recalculates directory listing in b-2 buffer.
-No argument implies current directory.
+No argument implies current secondary directory path.
 .Ed
 
 .It Cm fp[\fIpath\fP]
-Set a directory path for :fd command
+Set a secondary directory path
 
 .It Cm cd[\fIpath\fP]
 Set a working directory
@@ -1418,7 +1417,7 @@ Example: store a line printed with :p
 .Ed
 
 .It Cm rcm[\fIval=1\fP]
-Range command model
+Range command mode
 .Bd -literal
 Controls when an ex command nested inside ex range executes.
 0 - exec at command parse
@@ -1622,7 +1621,7 @@ tab(|);
 | l | l |.
 _
  537 kmap.h | keymap translation
- 549 vi.h | definitions/aux
+ 548 vi.h | definitions/aux
 _
  332 conf.c | hl/ft/td config
  366 term.c | low level IO
@@ -1631,9 +1630,9 @@ _
  654 lbuf.c | file/line buffer
  720 led.c | insert mode/output
  766 regex.c | pikevm
- 1666 ex.c | ex options/commands
- 1855 vi.c | normal mode/general
- 7382 total | wc -l *.c\(basort
+ 1669 ex.c | ex options/commands
+ 1857 vi.c | normal mode/general
+ 7387 total | wc -l *.c\(basort
 _
 .TE
 .
