@@ -545,5 +545,4 @@ extern int vi_hidch;
 extern int vi_lncol;
 /* file system */
 extern rset *fsincl;
-extern char *fs_exdir;
 void dir_calc(char *path);
