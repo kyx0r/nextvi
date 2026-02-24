@@ -509,9 +509,10 @@ into a purely command-line interface (CLI) when desired.
 Parsing follows the structure:
 [<\fIsep\fP>][\fIprefix\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
 Ex commands are initiated and separated by <:>. Fields can be
-padded by <Space> or <Tab>. There can only be one pad in between
-[cmd] and [args]. To avoid ambiguity in scripts, it is recommended
-to always use a pad between [cmd] and [args].
+padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd].
+There can only be one pad in between [cmd] and [args]. To avoid
+ambiguity in scripts, it is recommended to always use a pad between
+[cmd] and [args].
 .Bl -tag -width Ds -compact
 
 Examples:
@@ -949,10 +950,10 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [\fIcount\fP <\fI$\fP>]?{\fIcond\fP}[<\fI?\fP>][\fIthen\fP][<\fI?\fP>][\fIelse\fP]
+.It Cm [\fI#\fP <\fI$\fP>]?{\fIcond\fP}[<\fI?\fP>][\fIthen\fP][<\fI?\fP>][\fIelse\fP]
 While loop conditional
 .Bd -literal
-Repeat cmd #0 times or infinite with <$>.
+Repeat cond # times or infinite with <$>.
 While loop is broken once cmd returns an error or count exceeded.
 No prefix creates a conditional with count set to 1.
 
@@ -970,7 +971,7 @@ Example: edit vi.c only if it exists
 :? \e![ -f ./vi.c ]?e ./vi.c:mpt1
 .Ed
 
-.It Cm [\fIcount\fP <\fI$\fP>]?!{\fIcond\fP}[<\fI?\fP>][\fIelse\fP][<\fI?\fP>][\fIthen\fP]
+.It Cm [\fI#\fP <\fI$\fP>]?!{\fIcond\fP}[<\fI?\fP>][\fIelse\fP][<\fI?\fP>][\fIthen\fP]
 Inverted while loop conditional
 
 .It Cm [\fI#id\fP]??{\fIthen\fP}[<\fI?\fP>][\fIelse\fP]
@@ -1341,10 +1342,11 @@ Enable all terminal output
 .It Cm vis[\fIval=0\fP]
 Control startup flags
 .Bd -literal
-Example: disable :e message in ex mode
-:vis 6
-Example: disable :e message in vi mode
-:vis 4
+bit 1: raw ex mode
+bit 2: ex mode
+bit 3: disable :e message
+bit 4: alternate terminal screen
+
 Example: enable raw ex mode
 :vis 3
 Example: disable raw ex mode
@@ -1467,6 +1469,10 @@ hscroll computes the value using: xcols / 2 * hscroll
 .It Cm err[\fIval=1\fP]
 Control ex errors
 .Bd -literal
+bit 1: print errors
+bit 2: early return
+bit 3: ignore errors
+
 Example: silence and ignore errors
 :err 4
 Example: report and return on first error
