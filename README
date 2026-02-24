@@ -296,10 +296,9 @@ EX PARSING
      Parsing follows the structure:
      [<sep>][prefix][cmd][<pad>][args]
      Ex commands are initiated and separated by <:>. Fields can be
-     padded by <Space> or <Tab>. Padding inside [range] structure
-     is collapsed. There can only be one pad in between [cmd] and
-     [args]. To avoid ambiguity in scripts, it is recommended to always
-     use a pad between [cmd] and [args].
+     padded by <Space> or <Tab>. There can only be one pad in between
+     [cmd] and [args]. To avoid ambiguity in scripts, it is recommended
+     to always use a pad between [cmd] and [args].
 
      Examples:
      :evi.c
@@ -349,6 +348,8 @@ EX RANGES
      [range] prefix implements vertical and horizontal ranges.
      [vrange] prefix implements vertical range and horizontal position.
      Without [cmd], [range] replaces [prefix] and changes position.
+     Padding inside range structures is collapsed, except within nested
+     structures.
 
      [% |][, ;][#][. $ ' > <][- + * / %][0-9]
              All ranges structure
@@ -1311,4 +1312,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 23, 2026                    Nextvi 4.0
+Nextvi 4.0                     February 24, 2026                    Nextvi 4.0
