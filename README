@@ -296,10 +296,10 @@ EX PARSING
      Parsing follows the structure:
      [<sep>][prefix][cmd][<pad>][args]
      Ex commands are initiated and separated by <:>. Fields can be
-     padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd].
-     There can only be one pad in between [cmd] and [args]. To avoid
-     ambiguity in scripts, it is recommended to always use a pad between
-     [cmd] and [args].
+     padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
+     which accepts [range] structure characters. There can only be
+     one pad in between [cmd] and [args]. To avoid ambiguity in scripts,
+     it is recommended to always use a pad between [cmd] and [args].
 
      Examples:
      :evi.c
