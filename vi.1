@@ -1,4 +1,4 @@
-.Dd Feb 23, 2026
+.Dd Feb 24, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -509,10 +509,9 @@ into a purely command-line interface (CLI) when desired.
 Parsing follows the structure:
 [<\fIsep\fP>][\fIprefix\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
 Ex commands are initiated and separated by <:>. Fields can be
-padded by <Space> or <Tab>. Padding inside [range] structure
-is collapsed. There can only be one pad in between [cmd] and
-[args]. To avoid ambiguity in scripts, it is recommended to always
-use a pad between [cmd] and [args].
+padded by <Space> or <Tab>. There can only be one pad in between
+[cmd] and [args]. To avoid ambiguity in scripts, it is recommended
+to always use a pad between [cmd] and [args].
 .Bl -tag -width Ds -compact
 
 Examples:
@@ -572,6 +571,8 @@ Some ex commands can be prefixed with ranges.
 [range] prefix implements vertical and horizontal ranges.
 [vrange] prefix implements vertical range and horizontal position.
 Without [cmd], [range] replaces [prefix] and changes position.
+Padding inside range structures is collapsed, except within nested
+structures.
 .Ed
 .Bl -tag -width Ds -compact
 
