@@ -682,8 +682,8 @@ EX COMMANDS
              While loop conditional
 
              Repeat cond # times or infinite with <$>.
-             While loop is broken once cmd returns an error or count exceeded.
-             No prefix creates a conditional with count set to 1.
+             While loop is broken once cond returns an error or count exceeded.
+             No prefix creates a conditional with # set to 1.
 
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
