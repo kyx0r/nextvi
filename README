@@ -58,7 +58,7 @@ VI NORMAL
      [#]b          Move to start of word backward # times
      [#]W          Move to start of word forward # times, skip punctuation
      [#]w          Move to start of word forward # times
-     vw            Toggle one-line mode for <E e B b W w> regions
+     vw            Toggle single-line mode for <E e B b W w> regions
      [#](          Move to next sentence boundary down # times
      [#])          Move to next sentence boundary up # times
      [#]{          Move to next <{> section down # times
@@ -69,10 +69,10 @@ VI NORMAL
      0             Move to start of line
      $             Move to end of line
      [#]|          Goto # col
-     [#]<Space>    Move # characters forward, multiline
+     [#]<Space>    Move # characters forward, multi-line
      [#]<^H>
      [#]<Backspace>
-                   Move # characters backward, multiline
+                   Move # characters backward, multi-line
      %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
      '{a-z ` ' [] *}
@@ -423,8 +423,8 @@ EX COMMANDS
      [vrange]f<[regex]
              Ranged search
 
-             Horizontal range performs a scoped multiline search forward.
-             In multiline mode, <Newline> is a regular character.
+             Horizontal range performs a scoped multi-line search forward.
+             In multi-line mode, <Newline> is a regular character.
 
              Example: no range given, current line only
              :f>int
@@ -933,7 +933,7 @@ EX COMMANDS
              Example: disable <exp> and <exe>
              :sc! \\\:
 
-     uc      Toggle multibyte utf-8 decoding
+     uc      Toggle multi-byte utf-8 decoding
 
              This command is particularly useful when editing files with
              mixed encodings, binary files, or when the terminal does not
@@ -945,9 +945,9 @@ EX COMMANDS
 
              Use only if you need to hide zero width characters.
 
-     ub      Toggle combining multicodepoint placeholders
+     ub      Toggle combining multi-codepoint placeholders
 
-             Use only if your terminal can render multicodepoint utf-8 (emojis).
+             Use only if your terminal can render multi-codepoint utf-8 (emojis).
 
      ph[#clow] [#chigh] [#width] [#blen][*char]
              Redefine placeholders
@@ -1318,4 +1318,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 24, 2026                    Nextvi 4.0
+Nextvi 4.0                     February 26, 2026                    Nextvi 4.0
