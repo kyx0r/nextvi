@@ -10,7 +10,7 @@ DESCRIPTION
      Nextvi is a modern clone of the command-line text editor vi(1),
      initially developed by Bill Joy in 1976 for Unix-based systems.
      Nextvi builds upon many standard features from vi(1) including
-     unique modal interface that allows users to switch between normal,
+     a unique modal interface that allows users to switch between normal,
      insert, and command modes, for efficient text manipulation.
      Additional enhancements include an unrestricted macro system,
      syntax highlighting, keymaps, bidirectional UTF-8 support, and
@@ -58,7 +58,7 @@ VI NORMAL
      [#]b          Move to start of word backward # times
      [#]W          Move to start of word forward # times, skip punctuation
      [#]w          Move to start of word forward # times
-     vw            Toggle one-line mode for <E e B b W w> regions
+     vw            Toggle single-line mode for <E e B b W w> regions
      [#](          Move to next sentence boundary down # times
      [#])          Move to next sentence boundary up # times
      [#]{          Move to next <{> section down # times
@@ -69,10 +69,10 @@ VI NORMAL
      0             Move to start of line
      $             Move to end of line
      [#]|          Goto # col
-     [#]<Space>    Move # characters forward, multiline
+     [#]<Space>    Move # characters forward, multi-line
      [#]<^H>
      [#]<Backspace>
-                   Move # characters backward, multiline
+                   Move # characters backward, multi-line
      %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
      '{a-z ` ' [] *}
@@ -136,7 +136,7 @@ VI NORMAL
      [#]vI         Enter %s/ ex prompt. Contains regex for changing tabs to
                    spaces. # modifies tab width
      vo            Remove trailing white spaces and <\r> line endings
-     <^G>          Print buffer status infos
+     <^G>          Print buffer status info
      1<^G>         Enable permanent status bar row
      2<^G>         Disable permanent status bar row
      ga            Print character info
@@ -275,7 +275,7 @@ VI/EX INSERT
      <^Z>          Suspend vi/ex
      <^L>          Redraw screen in vi mode, clean terminal in ex
      <^O>          Switch between vi and ex modes recursively
-     <^E>          Switch to english keymap
+     <^E>          Switch to English keymap
      <^F>          Switch to alternative keymap
      <^V>{arg}     Read a literal character arg
      <^K>{arg}     Read a digraph sequence arg
@@ -416,15 +416,15 @@ EX RANGES
      :;>int>+3;#>>p
              Print text enclosed by "int" on the current line
      :|grp2|;>(a)+>+1|grp|;#>>p
-             Print text enclosed by a non deterministic pattern "a+"
+             Print text enclosed by a non-deterministic pattern "a+"
 
 EX COMMANDS
      [range]f>[regex]
      [vrange]f<[regex]
              Ranged search
 
-             Horizontal range performs a scoped multiline search forward.
-             In multiline mode, <Newline> is a regular character.
+             Horizontal range performs a scoped multi-line search forward.
+             In multi-line mode, <Newline> is a regular character.
 
              Example: no range given, current line only
              :f>int
@@ -494,7 +494,7 @@ EX COMMANDS
      [vrange]ef[regex]
              Open file using fuzzy search prompt
 
-             Requires directory listing in b-2 backfilled prior.
+             Requires the b-2 buffer to have a directory listing backfilled.
 
              Example: backfill b-2 using :fd
              :fd
@@ -682,8 +682,8 @@ EX COMMANDS
              While loop conditional
 
              Repeat cond # times or infinite with <$>.
-             While loop is broken once cmd returns an error or count exceeded.
-             No prefix creates a conditional with count set to 1.
+             While loop is broken once cond returns an error or count exceeded.
+             No prefix creates a conditional with # set to 1.
 
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
@@ -839,7 +839,7 @@ EX COMMANDS
              :%!sort
              Example: use sed to replace "int" with "uint"
              :%!sed -e 's/int/uint/g'
-             Example: pipe in result of ls command without replace
+             Example: pipe in result of ls command without line replacement
              :;$+1!ls
              Example: capitalize word at current position using tr
              :;;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
@@ -933,21 +933,21 @@ EX COMMANDS
              Example: disable <exp> and <exe>
              :sc! \\\:
 
-     uc      Toggle multibyte utf-8 decoding
+     uc      Toggle multi-byte utf-8 decoding
 
              This command is particularly useful when editing files with
              mixed encodings, binary files, or when the terminal does not
              support UTF-8 or lacks the necessary fonts to display UTF-8
-             characters. It's often paired with :ph command to achieve
+             characters. It is often paired with :ph command to achieve
              hex editor-like functionality.
 
      uz      Toggle zero width placeholders
 
              Use only if you need to hide zero width characters.
 
-     ub      Toggle combining multicodepoint placeholders
+     ub      Toggle combining multi-codepoint placeholders
 
-             Use only if your terminal can render multicodepoint utf-8 (emojis).
+             Use only if your terminal can render multi-codepoint utf-8 (emojis).
 
      ph[#clow] [#chigh] [#width] [#blen][*char]
              Redefine placeholders
@@ -1000,8 +1000,8 @@ EX OPTIONS
              Regex search group
 
              Defines a target search group for any regex search operation.
-             This becomes necessary when the result of regex search is to
-             be based on some group rather than default match group.
+             This becomes necessary when the result of a regex search is to
+             be based on some group rather than the default match group.
 
              The value of grp must be divisible by 2.
 
@@ -1274,7 +1274,7 @@ COMPILING
 PHILOSOPHY
      In most text editors, flexibility is a minor or irrelevant design
      goal. Nextvi is designed to be flexible where the editor adapts
-     to the user needs. This flexibility is achieved by heavily chaining
+     to the user's needs. This flexibility is achieved by heavily chaining
      basic commands and allowing them to create new ones with completely
      different functionality. Command reuse keeps the editor small
      without infringing on your freedom to quickly get a good grasp
@@ -1290,8 +1290,8 @@ PHILOSOPHY
 SEE ALSO
      New functionality can be obtained through optional patches provided
      in the patches branch. If you have a meaningful contribution
-     and would love to be made public the patch can be submitted
-     via email or github pull request.
+     and would love to make it public, the patch can be submitted
+     via email or GitHub pull request.
      https://github.com/kyx0r/nextvi/tree/patches
 
      Scripts used to generate this manual are located in the manual
@@ -1318,4 +1318,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 24, 2026                    Nextvi 4.0
+Nextvi 4.0                     February 26, 2026                    Nextvi 4.0
