@@ -16,7 +16,7 @@
 Nextvi is a modern clone of the command-line text editor vi(1),
 initially developed by Bill Joy in 1976 for Unix-based systems.
 Nextvi builds upon many standard features from vi(1) including
-unique modal interface that allows users to switch between normal,
+a unique modal interface that allows users to switch between normal,
 insert, and command modes, for efficient text manipulation.
 Additional enhancements include an unrestricted macro system,
 syntax highlighting, keymaps, bidirectional UTF-8 support, and
@@ -241,7 +241,7 @@ Enter %s/ ex prompt. Contains regex for changing tabs to spaces. # modifies tab 
 .It Cm vo
 Remove trailing white spaces and <\er> line endings
 .It Cm <^G>
-Print buffer status infos
+Print buffer status info
 .It Cm 1<^G>
 Enable permanent status bar row
 .It Cm 2<^G>
@@ -477,7 +477,7 @@ Redraw screen in vi mode, clean terminal in ex
 .It Cm <^O>
 Switch between vi and ex modes recursively
 .It Cm <^E>
-Switch to english keymap
+Switch to English keymap
 .It Cm <^F>
 Switch to alternative keymap
 .It Cm <^V>{arg}
@@ -667,7 +667,7 @@ Search for "int" in reverse on the current line
 .It Cm :;>int>+3;#>>p
 Print text enclosed by "int" on the current line
 .It Cm :|grp2|;>(a)+>+1|grp|;#>>p
-Print text enclosed by a non deterministic pattern "a+"
+Print text enclosed by a non-deterministic pattern "a+"
 .El
 .
 .Sh EX COMMANDS
@@ -754,7 +754,7 @@ Example: print buffer pathname
 .It Cm [\fIvrange\fP]ef[\fIregex\fP]
 Open file using fuzzy search prompt
 .Bd -literal
-Requires directory listing in b-2 backfilled prior.
+Requires the b-2 buffer to have a directory listing backfilled.
 
 Example: backfill b-2 using :fd
 :fd
@@ -1121,7 +1121,7 @@ Example: infamously sort a buffer
 :%!sort
 Example: use sed to replace "int" with "uint"
 :%!sed -e 's/int/uint/g'
-Example: pipe in result of ls command without replace
+Example: pipe in result of ls command without line replacement
 :;$+1!ls
 Example: capitalize word at current position using tr
 :;;>\e\e>>!tr '[\e:lower\e:]' '[\e:upper\e:]'
@@ -1233,7 +1233,7 @@ Toggle multi-byte utf-8 decoding
 This command is particularly useful when editing files with
 mixed encodings, binary files, or when the terminal does not
 support UTF-8 or lacks the necessary fonts to display UTF-8
-characters. It's often paired with :ph command to achieve
+characters. It is often paired with :ph command to achieve
 hex editor-like functionality.
 .Ed
 
@@ -1310,8 +1310,8 @@ Precondition 3:
 Regex search group
 .Bd -literal
 Defines a target search group for any regex search operation.
-This becomes necessary when the result of regex search is to
-be based on some group rather than default match group.
+This becomes necessary when the result of a regex search is to
+be based on some group rather than the default match group.
 
 The value of grp must be divisible by 2.
 
@@ -1670,7 +1670,7 @@ Performance bench test 2000 word deletions on vi.c
 .Bd -literal -compact
 In most text editors, flexibility is a minor or irrelevant design
 goal. Nextvi is designed to be flexible where the editor adapts
-to the user needs. This flexibility is achieved by heavily chaining
+to the user's needs. This flexibility is achieved by heavily chaining
 basic commands and allowing them to create new ones with completely
 different functionality. Command reuse keeps the editor small
 without infringing on your freedom to quickly get a good grasp
@@ -1688,8 +1688,8 @@ and filters bad inconsistent ideas.
 .Bd -literal -compact
 New functionality can be obtained through optional patches provided
 in the patches branch. If you have a meaningful contribution
-and would love to be made public the patch can be submitted
-via email or github pull request.
+and would love to make it public, the patch can be submitted
+via email or GitHub pull request.
 .Lk https://github.com/kyx0r/nextvi/tree/patches
 
 Scripts used to generate this manual are located in the manual
