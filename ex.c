@@ -1182,9 +1182,8 @@ static void *ec_join(char *loc, char *cmd, char *arg)
 	int beg, end, o2 = 0;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
-	lbuf_join(xb, beg, end+1, xoff, &o2, arg[0]);
 	xrow = beg;
-	return NULL;
+	return lbuf_join(xb, beg, end+1, xoff, &o2, arg[0]) ? xuerr : NULL;
 }
 
 static void *ec_setdir(char *loc, char *cmd, char *arg)
@@ -1545,7 +1544,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 	return src;
 }
 
-/* parse range and command */
+/* parse prefix and command */
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
 	int i, j, nullfunc = 0;
@@ -1595,7 +1594,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	return src;
 }
 
-/* execute a single ex command */
+/* execute a single ex command chain */
 void *ex_exec(const char *ln)
 {
 	int arg, idx = 0;
@@ -1610,8 +1609,10 @@ void *ex_exec(const char *ln)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
 		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
 		xpret = ret;
-		if (ret && ret != xuerr && xerr & 1)
+		if (ret && ret != xuerr && xerr & 1) {
 			ex_print(ret, msg_ft)
+			ret = xuerr;
+		}
 		if (ret && xerr & 2)
 			break;
 	} while (*ln && !xquit);
