@@ -44,6 +44,13 @@ run_vi() {
 	cat "$OUTFILE" 2>/dev/null
 }
 
+# run_mac: pass EXINIT for ex+macro tests (-e mode); writes to OUTFILE
+run_mac() {
+	rm -f "$OUTFILE"
+	EXINIT="$1" "$VI" -e "$TMPFILE" </dev/null >/dev/null 2>&1
+	cat "$OUTFILE" 2>/dev/null
+}
+
 # ─── Section A: Ex Mode Tests ─────────────────────────────────────────────────
 
 # A1: Print commands ───────────────────────────────────────────────────────────
@@ -454,6 +461,141 @@ check 'vi fw+x: find char then delete it' 'hello orld' "$out"
 printf 'hello world\n' > "$TMPFILE"
 out=$(run_vi "$(printf '5lK')")
 check 'vi K: split line at cursor' "$(printf 'hello \nworld')" "$out"
+
+# ─── Section E: Macro system (:& / vi &a / &&) ────────────────────────────────
+
+# E1: :& takes raw vi input; to use a register, expand it via %@a
+printf 'hello world\n' > "$TMPFILE"
+check 'E1 :& %@a — register expansion used as raw vi input' 'world' \
+	"$(run_mac ":97reg dw:& %@a:w! $OUTFILE:q!")"
+
+# E2: \:cmd inside & macro; a newline (0x0A) is required to submit the ex cmd
+printf 'hello\n' > "$TMPFILE"
+check 'E2 :& \:s// — ex cmd from macro (newline submits)' 'world' \
+	"$(run_mac "$(printf ':& \\:s/hello/world/\n:w! %s:q' "$OUTFILE")")"
+
+# E3: vi normal &a — executes register 'a' as a non-blocking macro
+printf 'hello world\n' > "$TMPFILE"
+check 'E3 vi &a — executes register as non-blocking macro' 'world' \
+	"$(run_mac ":97reg dw:& &a:w! $OUTFILE:q!")"
+
+# E4: vi normal && — repeats the last & macro
+printf 'hello world foo\n' > "$TMPFILE"
+check 'E4 vi && — repeats last & macro' 'foo' \
+	"$(run_mac ":97reg dw:& &a&&:w! $OUTFILE:q!")"
+
+# ─── Section G: ya! — free a named register ───────────────────────────────────
+
+# ya! a frees register a; pu a on a freed register raises "uninitialized
+# register" — with err 4 (silence+ignore) the paste is skipped silently.
+printf 'line1\nline2\n' > "$TMPFILE"
+out=$(run_ex ':1ya a:ya! a:err 4:$pu a:%p:q!')
+check 'G1 ya! frees named reg; pu a silently skipped (err 4)' \
+	"$(printf 'line1\nline2')" "$out"
+
+# ─── Section H: ?? id capture ─────────────────────────────────────────────────
+
+# {#id}?? captures the current error status into id; [#id]?? branches on it.
+# An intervening command that changes the error status does NOT override it.
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':f>void:5??:s/hello/world/:5??p found?p notfound:q!')
+check 'H1 ?? id captures fail; intervening success does not override' 'notfound' "$out"
+
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':f>hello:5??:f>void:5??p found?p notfound:q')
+check 'H2 ?? id captures success; intervening fail does not override' 'found' "$out"
+
+# ─── Section I: ??! inverted conditional and ?! inverted while loop ────────────
+
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':f>void:??!p not found?p found:q')
+check 'I1 ??! — fail takes first branch' 'not found' "$out"
+
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':f>hello:??!p not found?p found:q')
+check 'I2 ??! — success takes second branch' 'found' "$out"
+
+# ?! runs the body while the condition fails; 1d modifies buffer state and
+# persists across iterations until 'yes' surfaces to line 1.
+printf 'no\nno\nyes\nno\n' > "$TMPFILE"
+out=$(run_ex ':10?! f>yes?1d:.p:q!')
+check 'I3 ?! while: 1d deletes first line each pass until f>yes succeeds' 'yes' "$out"
+
+# ─── Section J: seq — undo sequencing ─────────────────────────────────────────
+
+# seq 0 groups all subsequent changes into a single undo step
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':seq 0:s/hello/step1/:s/step1/step2/:s/step2/final/:seq:u:%p:q!')
+check 'J1 seq 0 — batch changes undo as one step' 'hello' "$out"
+
+# seq -1 disables undo tracking entirely; :u has no effect
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':seq -1:s/hello/world/:u:%p:seq:q!')
+check 'J2 seq -1 — undo tracking disabled; u has no effect' 'world' "$out"
+
+# ─── Section K: pr — capture :p output into a register ───────────────────────
+
+# pr N redirects :p output to register N; led 0 suppresses double-printing
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':led 0:pr 97:ya! a:p hello captured:pr 0:led:pu a:%p:q!')
+check 'K1 pr+led 0 — :p output captured into register, then pasted' \
+	"$(printf 'hello\nhello captured')" "$out"
+
+# ─── Section L: special marks ─────────────────────────────────────────────────
+
+printf 'a\nb\nc\nd\n' > "$TMPFILE"
+out=$(run_ex ":2,3s/./X/:'[p:q!")
+check "L1 '[ marks first changed line" 'X' "$out"
+
+printf 'a\nb\nc\nd\n' > "$TMPFILE"
+out=$(run_ex ":2,3s/./X/:']p:q!")
+check "L2 '] marks last changed line" 'X' "$out"
+
+# '* = cursor position saved BEFORE the previous ex command ran
+printf 'a\nb\nc\nd\n' > "$TMPFILE"
+out=$(run_ex ":3p:'*p:q")
+check "L3 '* = cursor saved before previous ex command" \
+	"$(printf 'c\na')" "$out"
+
+# ─── Section M: %@/ — previous regex register ─────────────────────────────────
+
+printf 'hello world\n' > "$TMPFILE"
+out=$(run_ex ':f>hello:p %@/:q')
+check 'M1 %@/ expands to the previous regex keyword' 'hello' "$out"
+
+# ─── Section N: range arithmetic ──────────────────────────────────────────────
+
+# $*5/10 — navigate to 50% of the file (integer arithmetic on last line)
+printf 'a\nb\nc\nd\ne\nf\ng\nh\ni\nj\n' > "$TMPFILE"
+out=$(run_ex ':$*5/10p:q')
+check 'N1 $*5/10 — navigate to 50% of file' 'e' "$out"
+
+# ;5;#+10 — # rebases to the previous semicolon value (5), so +10 = 15;
+# = 3 prints the second char offset (the final computed value).
+printf 'hello world extra\n' > "$TMPFILE"
+out=$(run_ex ':;5;#+10= 3:q')
+check 'N2 ;5;#+10= 3 — second char offset via # rebase is 15' '15' "$out"
+
+# ─── Section O: vi bracket matching (%) ───────────────────────────────────────
+
+# f( lands on (; \% passes a literal % (not buffer path) to the & macro
+printf 'foo(bar)qux\n' > "$TMPFILE"
+out=$(run_vi 'f(\%x')
+check 'O1 vi f(\%)x — find (, jump to matching ), delete )' 'foo(barqux' "$out"
+
+# ─── Section P: :pu and :w with external pipe ─────────────────────────────────
+
+rm -f "$OUTFILE"
+printf 'test\n' > "$TMPFILE"
+run_ex ":97reg hello world:pu a \!tr a-z A-Z > $OUTFILE:q" >/dev/null 2>/dev/null
+check 'P1 :pu a \!cmd — pipe register content to external command' \
+	'HELLO WORLD' "$(cat $OUTFILE 2>/dev/null)"
+
+rm -f "$OUTFILE"
+printf 'hello world\n' > "$TMPFILE"
+run_ex ":1,1w \!tr a-z A-Z > $OUTFILE:q" >/dev/null 2>/dev/null
+check 'P2 :w \!cmd — write buffer range to external command' \
+	'HELLO WORLD' "$(tr -d '\n' < $OUTFILE 2>/dev/null)"
 
 # ─── Summary ──────────────────────────────────────────────────────────────────
 
