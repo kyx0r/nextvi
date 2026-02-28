@@ -1156,6 +1156,11 @@ static void vc_execute(int cmd)
 		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
+	if (c == ':') {
+		for (i = 0; i < n; i++)
+			ex_exec(buf->s);
+		return;
+	}
 	for (i = 0; i < n; i++)
 		term_exec(buf->s, buf->s_n, cmd)
 }
