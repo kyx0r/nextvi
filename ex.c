@@ -579,8 +579,7 @@ static void *ec_quit(char *loc, char *cmd, char *arg)
 		if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
 			return "buffers modified";
 	xquit = !xquit ? 1 : xquit;
-	if (*loc)
-		xqprop = atoi(loc);
+	xqprop = *loc ? atoi(loc) : -1;
 	if (*arg)
 		xquit = abs(atoi(arg)) + 1;
 	if (strchr(cmd, '!'))
@@ -1617,14 +1616,16 @@ void *ex_exec(const char *ln)
 			break;
 	} while (*ln && !xquit);
 	free(sb->s);
-	if (--xexec_dep == 0) {
+	xexec_dep--;
+	if (xquit > 0 && (xexec_dep || xqprop >= 0) && --xqprop < 0)
+		restore(xquit)
+	if (!xexec_dep) {
 		if (xanchor) {
 			sbuf_free(xanchor)
 			xanchor = NULL;
 		}
 		xqprop = 0;
-	} else if (xquit > 0 && --xqprop < 0)
-		restore(xquit)
+	}
 	return xerr & 4 ? NULL : ret;
 }
 
