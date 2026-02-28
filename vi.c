@@ -407,13 +407,12 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int ex)
 	if (!end || --end == off)
 		return NULL;
 	sbuf_smake(sb, 64)
-	if (n > 1) {
-		ex_regesc(sb, chrs[off], chrs[end], ex);
-	} else {
+	if (n <= 1) {
 		sbuf_str(sb, "\\<")
 		sbuf_mem(sb, chrs[off], chrs[end] - chrs[off])
 		sbuf_str(sb, "\\>")
-	}
+	} else
+		ex_regesc(sb, chrs[off], chrs[end], ex);
 	sbufn_ret(sb, sb->s)
 }
 
