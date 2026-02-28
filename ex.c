@@ -1364,9 +1364,35 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
+void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
+{
+	for (char *s = beg; s < end; s++) {
+		if (ex && (*s == xsep || *s == xesc)) {
+			sbuf_chr(sb, xesc)
+			if (*s == '\\')
+				sbuf_chr(sb, '\\')
+		}
+		if (strchr("!%{}[]().?\\^$|*/+", *s))
+			sbuf_chr(sb, '\\')
+		sbuf_chr(sb, *s)
+	}
+}
+
 static void *ec_krsset(char *loc, char *cmd, char *arg)
 {
-	if (*arg)
+	if (*loc) {
+		int beg, end, o1 = 0, o2 = -1;
+		if (ex_region(loc, &beg, &end, &o1, &o2))
+			return xrerr;
+		sbuf reg;
+		lbuf_region(xb, &reg, beg, o1, end - 1, o2);
+		sbuf_smake(sb, 64)
+		ex_regesc(sb, reg.s, reg.s + reg.s_n, 1);
+		free(reg.s);
+		sbuf_null(sb)
+		ex_krsset(sb->s, +1);
+		free(sb->s);
+	} else if (*arg)
 		ex_krsset(arg, +1);
 	return xkwdrs ? NULL : xserr;
 }
