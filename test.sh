@@ -597,6 +597,15 @@ run_ex ":1,1w \!tr a-z A-Z > $OUTFILE:q" >/dev/null 2>/dev/null
 check 'P2 :w \!cmd — write buffer range to external command' \
 	'HELLO WORLD' "$(tr -d '\n' < $OUTFILE 2>/dev/null)"
 
+# ─── Section Q: xqprop — 1q scope propagation ─────────────────────────────────
+
+# 1q inside a nested ??! branch propagates xquit through 2 ex_exec levels but
+# must restore it at the outermost so vi keeps running. Without the base case
+# in ex_exec, xquit=6 escapes to vi and produces exit code 5.
+printf 'hello\n' > "$TMPFILE"
+EXINIT=":f>void:??!1q 5:q" "$VI" -sm "$TMPFILE" </dev/null >/dev/null 2>&1; rc=$?
+check_exit 'Q1 1q in nested ??! scope does not propagate quit to vi' '0' "$rc"
+
 # ─── Summary ──────────────────────────────────────────────────────────────────
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
