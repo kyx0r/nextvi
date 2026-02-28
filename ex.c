@@ -1380,7 +1380,9 @@ void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
 
 static void *ec_krsset(char *loc, char *cmd, char *arg)
 {
-	if (*loc) {
+	if (*arg && !*loc)
+		ex_krsset(arg, +1);
+	else {
 		int beg, end, o1 = 0, o2 = -1;
 		if (ex_region(loc, &beg, &end, &o1, &o2))
 			return xrerr;
@@ -1392,8 +1394,7 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
 		sbuf_null(sb)
 		ex_krsset(sb->s, +1);
 		free(sb->s);
-	} else if (*arg)
-		ex_krsset(arg, +1);
+	}
 	return xkwdrs ? NULL : xserr;
 }
 
