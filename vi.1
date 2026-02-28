@@ -1,4 +1,4 @@
-.Dd Feb 26, 2026
+.Dd Feb 28, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.0
 .
@@ -214,6 +214,11 @@ Execute arg register macro in blocking mode # times
 Execute last macro # times, blocking
 .It Cm [\fI#\fP]&&
 Execute last macro # times, non-blocking
+.It Cm [\fI#\fP]@:
+.It Cm [\fI#\fP]&:
+.Bd -compact
+Execute <:> register as an ex command # times
+.Ed
 .It Cm [\fI#\fP].
 Repeat last normal command # times
 .It Cm [\fI#\fP]v.
@@ -231,7 +236,7 @@ Enter %s/ ex prompt. Insert # words from cursor
 .It Cm [\fI#\fP]vt[\fI#arg\fP]
 Enter .,.+0s/ ex prompt. Insert # of lines from cursor. Insert #arg words from cursor
 .It Cm [\fI#\fP]v/
-Enter xkwd prompt to set regex keyword. Insert # words from cursor
+Enter re ex prompt to set regex keyword. Insert # words from cursor
 .It Cm v;
 Enter ! ex prompt
 .It Cm [\fI#\fP]vi
@@ -1188,6 +1193,17 @@ Example: put "hello" into register <1>
 .It Cm [\fI0-255\fP]reg+[\fIstr\fP]
 Print registers or append to a register
 
+.It Cm [\fIrange\fP]re[\fIregex\fP]
+Set regex keyword
+.Bd -literal
+Range escapes its text and uses it as the regex.
+
+Example: set keyword to "int"
+:re int
+Example: set keyword from lines 1 to 3
+:1,3re
+.Ed
+
 .It Cm bx[\fI#\fP]
 Set max number of buffers allowed
 .Bd -literal
@@ -1628,7 +1644,7 @@ tab(|);
 | l | l |.
 _
  537 kmap.h | keymap translation
- 548 vi.h | definitions/aux
+ 549 vi.h | definitions/aux
 _
  332 conf.c | hl/ft/td config
  366 term.c | low level IO
@@ -1637,9 +1653,9 @@ _
  654 lbuf.c | file/line buffer
  720 led.c | insert mode/output
  766 regex.c | pikevm
- 1668 ex.c | ex options/commands
- 1857 vi.c | normal mode/general
- 7386 total | wc -l *.c\(basort
+ 1705 ex.c | ex options/commands
+ 1852 vi.c | normal mode/general
+ 7418 total | wc -l *.c\(basort
 _
 .TE
 .
