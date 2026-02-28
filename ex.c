@@ -1366,15 +1366,15 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 
 void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
 {
-	for (char *s = beg; s < end; s++) {
-		if (ex && (*s == xsep || *s == xesc)) {
+	for (; beg < end; beg++) {
+		if (ex && (*beg == xsep || *beg == xesc)) {
 			sbuf_chr(sb, xesc)
-			if (*s == '\\')
+			if (*beg == '\\')
 				sbuf_chr(sb, '\\')
 		}
-		if (strchr("!%{}[]().?\\^$|*/+", *s))
+		if (strchr("!%{}[]().?\\^$|*/+", *beg))
 			sbuf_chr(sb, '\\')
-		sbuf_chr(sb, *s)
+		sbuf_chr(sb, *beg)
 	}
 }
 
