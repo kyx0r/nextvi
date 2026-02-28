@@ -1403,15 +1403,15 @@ void vi(int init)
 				case ';':
 					ln = vi_enprompt(":", "!", &k, &n);
 					goto do_excmd;
-				case '/':
-					cs = vi_curword(xb, xrow, xoff, vi_arg, 0);
-					ln = vi_prompt("xkwd:", vs_ft, cs, &k, &xkmap, &n);
-					if (k)
-						ex_krsset(ln + n, +1);
-					vi_drawmsg_mpt(k && !xkwdrs ? "syntax error" : ln)
-					free(ln);
+				case '/': {
+					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
+					char buf[cs ? strlen(cs)+30 : 30];
+					strcpy(buf, "re ");
+					if (cs)
+						strcat(buf, cs);
 					free(cs);
-					break;
+					ln = vi_enprompt(":", buf, &k, &n);
+					goto do_excmd; }
 				case 't': {
 					vi_drawmsg("arg2:(0|#)");
 					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);

@@ -1364,6 +1364,13 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
+static void *ec_krsset(char *loc, char *cmd, char *arg)
+{
+	if (*arg)
+		ex_krsset(arg, +1);
+	return xkwdrs ? NULL : xserr;
+}
+
 static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
 
 static int eo_val(char *arg)
@@ -1449,6 +1456,7 @@ static struct excmd {
 	EO(rcm),
 	{"reg+", ec_regprint},
 	{"reg", ec_regprint},
+	{"re", ec_krsset},
 	{"rd", ec_undoredo},
 	{"r", ec_read},
 	{"wq!", ec_write},
