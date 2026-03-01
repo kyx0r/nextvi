@@ -338,7 +338,7 @@ EX EXPANSION
 
      <!> in [args] starts and optionally ends a block containing
      external commands. This block executes and expands to stdout
-     produced.
+     and stderr produced.
 
      Example: substitute "int" with the value of $RANDOM
      :%s/int/!printf "%s" $RANDOM!
@@ -835,8 +835,8 @@ EX COMMANDS
              Run an external program
 
              When a range is specified, the buffer's data is piped to an external
-             program. The resulting stdout is then piped back into the buffer,
-             replacing the contents of the original range.
+             program. The resulting stdout and stderr are then piped back into the
+             buffer, replacing the contents of the original range.
 
              Example: infamously sort a buffer
              :%!sort
@@ -1006,8 +1006,8 @@ EX OPTIONS
                      The environment variable $SHELL determines the default
                      shell, otherwise it defaults to /bin/sh.
              Precondition 3:
-                     There must be no stdout output created by .rc file
-                     for <!> commands to return expected results.
+                     There must be no stdout or stderr output created by .rc
+                     file for <!> commands to return expected results.
 
      grp[val=0]
              Regex search group
@@ -1172,6 +1172,11 @@ EXINIT ENV VAR
              @a macro creates <{> and closing <}> below the cursor leaving
              cursor in insert mode in between the braces.
 
+     export EXINIT='98reg \:mpt-1\:;;$w \\\!xclip -selection clipboard\:mpt'
+             Setup @ macro in register <b>
+
+             @b macro pipes the current line into X11 clipboard.
+
      export EXINIT='td 2:order 0:lim 5000'
              Set ex options for optimal long line performance
 
@@ -1257,9 +1262,9 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 720 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1706 ex.c    |  ex options/commands |
-     | 1851 vi.c    |  normal mode/general |
-     | 7418 total   |  wc -l *.c|sort      |
+     | 1705 ex.c    |  ex options/commands |
+     | 1853 vi.c    |  normal mode/general |
+     | 7419 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
