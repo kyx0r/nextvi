@@ -656,7 +656,6 @@ static void *ex_pipeout(char *cmd, sbuf *buf)
 {
 	int ret = 0;
 	if (!(xvis & 2) && xmpt >= 0 && !xpln) {
-		term_pos(xrows, 0);
 		term_chr('\n');
 		xpln = 1;
 		xmpt = 2;
