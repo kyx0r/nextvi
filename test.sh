@@ -606,6 +606,32 @@ printf 'hello\n' > "$TMPFILE"
 EXINIT=":f>void:??!1q 5:q" "$VI" -sm "$TMPFILE" </dev/null >/dev/null 2>&1; rc=$?
 check_exit 'Q1 1q in nested ??! scope does not propagate quit to vi' '0' "$rc"
 
+# ─── Section R: :re — set search keyword ─────────────────────────────────────
+
+# R1: :re word sets the keyword; %@/ reflects it
+printf 'hello world\n' > "$TMPFILE"
+out=$(run_ex ':re world:p %@/:q')
+check 'R1 :re word — sets keyword; %@/ returns it' 'world' "$out"
+
+# R2: :re word sets the keyword; :g// (empty pattern) reuses it
+printf 'hello\nworld\nhello world\n' > "$TMPFILE"
+out=$(run_ex ':re hello:g//p:q')
+check 'R2 :re word; :g// uses set keyword to match lines' \
+	"$(printf 'hello\nhello world')" "$out"
+
+# R3: :re sets keyword without moving the cursor (unlike :f>)
+printf 'foo\nbar\nbaz\n' > "$TMPFILE"
+out=$(run_ex ':3:re bar:.p:q')
+check 'R3 :re does not navigate; cursor stays on current line' 'baz' "$out"
+
+# R4: range form :1re escapes regex-special chars; verify via %@/
+# Buffer line 1 is "a.b"; ex_regesc turns "." into "\.".
+# (The trailing \n from lbuf_region is included so %@/ output is "a\.b"
+# after command-substitution strips the trailing newline.)
+printf 'a.b\naXb\n' > "$TMPFILE"
+out=$(run_ex ':1re:p %@/:q')
+check 'R4 range :re — escapes regex chars; %@/ reflects escaped pattern' 'a\.b' "$out"
+
 # ─── Summary ──────────────────────────────────────────────────────────────────
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
