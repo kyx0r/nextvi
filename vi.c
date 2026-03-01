@@ -1143,14 +1143,13 @@ static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
 	int c = term_read(0), i, n = MAX(1, vi_arg);
-	sbuf **buf = NULL;
+	sbuf **buf;
 	if (TK_INT(c))
 		return;
-	if (c == cmd)
+	if (c == cmd && exec_buf >= 0)
 		c = exec_buf;
-	if (c >= 0)
-		buf = &xregs[c];
-	if (!buf || !*buf) {
+	buf = &xregs[c];
+	if (!*buf) {
 		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
