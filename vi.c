@@ -246,7 +246,7 @@ static char *vi_prompt(char *msg, char *ft, char *insert, int *ret, int *kmap, i
 	sbuf_smake(sb, xcols)
 	sbuf_str(sb, msg)
 	*mlen = sb->s_n;
-	term_pos(xrows, led_pos(msg, 0));
+	term_pos(xrows, 0);
 	syn_setft(ft);
 	*ret = led_prompt(sb, insert, kmap, NULL, 0, 1) == '\n';
 	syn_setft(xb_ft);
@@ -1155,8 +1155,10 @@ static void vc_execute(int cmd)
 	}
 	exec_buf = c;
 	if (c == ':') {
+		term_pos(xrows, 0);
 		for (i = 0; i < n && *buf; i++)
 			ex_exec((*buf)->s);
+		vi_mod |= 1;
 		return;
 	}
 	for (i = 0; i < n && *buf; i++)
@@ -1710,12 +1712,12 @@ void vi(int init)
 		if (xmpt > 1) {
 			if (!xpln)
 				term_chr('\n');
-			xpln = 0;
 			vi_drawmsg("[any key to continue] ");
 			term_read(0);
 			xmpt = 0;
 			vi_mod |= 1;
 		}
+		xpln = 0;
 		if (xhlw) {
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw, 0))) {
