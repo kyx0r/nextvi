@@ -1181,9 +1181,8 @@ static void *ec_join(char *loc, char *cmd, char *arg)
 	int beg, end, o2 = 0;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
-	lbuf_join(xb, beg, end+1, xoff, &o2, arg[0]);
 	xrow = beg;
-	return NULL;
+	return lbuf_join(xb, beg, end+1, xoff, &o2, arg[0]) ? xuerr : NULL;
 }
 
 static void *ec_setdir(char *loc, char *cmd, char *arg)
@@ -1365,6 +1364,40 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
+void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
+{
+	for (; beg < end; beg++) {
+		if (ex && (*beg == xsep || *beg == xesc)) {
+			sbuf_chr(sb, xesc)
+			if (*beg == '\\')
+				sbuf_chr(sb, '\\')
+		}
+		if (strchr("!%{}[]().?\\^$|*/+", *beg))
+			sbuf_chr(sb, '\\')
+		sbuf_chr(sb, *beg)
+	}
+}
+
+static void *ec_krsset(char *loc, char *cmd, char *arg)
+{
+	if (*arg && !*loc)
+		ex_krsset(arg, +1);
+	else {
+		int beg, end, o1 = 0, o2 = -1;
+		if (ex_region(loc, &beg, &end, &o1, &o2))
+			return xrerr;
+		sbuf reg;
+		lbuf_region(xb, &reg, beg, o1, end - 1, o2);
+		sbuf_smake(sb, 64)
+		ex_regesc(sb, reg.s, reg.s + reg.s_n, 1);
+		free(reg.s);
+		sbuf_null(sb)
+		ex_krsset(sb->s, +1);
+		free(sb->s);
+	}
+	return xkwdrs ? NULL : xserr;
+}
+
 static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
 
 static int eo_val(char *arg)
@@ -1450,6 +1483,7 @@ static struct excmd {
 	EO(rcm),
 	{"reg+", ec_regprint},
 	{"reg", ec_regprint},
+	{"re", ec_krsset},
 	{"rd", ec_undoredo},
 	{"r", ec_read},
 	{"wq!", ec_write},
@@ -1544,7 +1578,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 	return src;
 }
 
-/* parse range and command */
+/* parse prefix and command */
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
 	int i, j, nullfunc = 0;
@@ -1594,7 +1628,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	return src;
 }
 
-/* execute a single ex command */
+/* execute a single ex command chain */
 void *ex_exec(const char *ln)
 {
 	int arg, idx = 0;
@@ -1609,8 +1643,10 @@ void *ex_exec(const char *ln)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
 		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
 		xpret = ret;
-		if (ret && ret != xuerr && xerr & 1)
+		if (ret && ret != xuerr && xerr & 1) {
 			ex_print(ret, msg_ft)
+			ret = xuerr;
+		}
 		if (ret && xerr & 2)
 			break;
 	} while (*ln && !xquit);
