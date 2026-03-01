@@ -632,6 +632,119 @@ printf 'a.b\naXb\n' > "$TMPFILE"
 out=$(run_ex ':1re:p %@/:q')
 check 'R4 range :re — escapes regex chars; %@/ reflects escaped pattern' 'a\.b' "$out"
 
+# ─── Section S: Range addresses with inline search ────────────────────────────
+
+printf 'void a;\nint b;\nvoid c;\n' > "$TMPFILE"
+out=$(run_ex ':>int>p:q')
+check 'S1 >int>p — forward inline-search range address prints found line' 'int b;' "$out"
+
+printf 'void a;\nint b;\nvoid c;\n' > "$TMPFILE"
+out=$(run_ex ':3:<int<p:q')
+check 'S2 3:<int<p — backward inline-search range address' 'int b;' "$out"
+
+printf 'void a;\nvoid b;\nint c;\n' > "$TMPFILE"
+out=$(run_ex ':.,>int>p:q')
+check 'S3 .,>int>p — range from current line to forward match' \
+	"$(printf 'void a;\nvoid b;\nint c;')" "$out"
+
+printf 'a\nb\nc\nd\ne\nf\ng\n' > "$TMPFILE"
+out=$(run_ex ':4:.-2,.+2p:q')
+check 'S4 .-2,.+2p — relative arithmetic prints 5 lines around line 4' \
+	"$(printf 'b\nc\nd\ne\nf')" "$out"
+
+# ─── Section T: = command (print range numbers) ───────────────────────────────
+
+printf 'hello world\n' > "$TMPFILE"
+out=$(run_ex ':;5= 2:q')
+check 'T1 ;5= 2 — print character offset 5' '5' "$out"
+
+printf 'a\nb\nc\nd\n' > "$TMPFILE"
+out=$(run_ex ":3m a:'a= 0:q")
+check "T2 'a= 0 — print stored row index of mark a" '2' "$out"
+
+printf 'hello world extra padding here\n' > "$TMPFILE"
+out=$(run_ex ':;5;+10= 3:q')
+check 'T3 ;5;+10= 3 — second offset from initial (0+10=10), not from 5' '10' "$out"
+
+# ─── Section U: README examples ───────────────────────────────────────────────
+
+# U1: g/^$/d — remove all blank lines
+printf 'a\n\nb\n\nc\n' > "$TMPFILE"
+out=$(run_ex ':g/^$/d:%p:q!')
+check 'U1 g/^$/d — removes all blank lines' "$(printf 'a\nb\nc')" "$out"
+
+# U2: g/int/g/;$/& — nested global appends text; & requires -e mode
+printf 'int a;\nvoid b;\nint c;\n' > "$TMPFILE"
+out=$(run_mac ':g/int/g/;$/& A has a semicolon:w! '"$OUTFILE"':q')
+check 'U2 g/int/g/;$/& A has a semicolon — nested global appends text' \
+	"$(printf 'int a; has a semicolon\nvoid b;\nint c; has a semicolon')" "$out"
+
+# U3: err 1 — print errors but continue chain
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:s/void/x/:p after:q')
+check 'U3 err=1 — prints error; chain continues' 'after' "$out"
+
+# U4: 2??.=?.= — unset id tag; neither branch executes
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':2??.=?.=:p reached:q')
+check 'U4 2??.=?.= — unset id; neither branch runs; chain continues' 'reached' "$out"
+
+# U5: grp 2:%f+int(.):grp — save char position after "int("
+printf 'void int(x)\n' > "$TMPFILE"
+out=$(run_ex ':grp 2:%f+int(.):grp:;= 2:q')
+check 'U5 grp 2:%f+int(.):grp — char offset after "int(" is 8' '8' "$out"
+
+# U6: ;5;#+10= 3 — #+10 is relative to previous offset 5 (not initial)
+printf 'hello world extra padding here\n' > "$TMPFILE"
+out=$(run_ex ':;5;#+10= 3:q')
+check 'U6 ;5;#+10= 3 — #+10 relative to 5; offset = 15' '15' "$out"
+
+# U7: 2,4f>int — ranged :f> restricts search to lines 2-4
+printf 'a\nb\nint c;\nd\nint e;\nf\n' > "$TMPFILE"
+out=$(run_ex ':2,4f>int:.p:q')
+check 'U7 2,4f>int — ranged :f> restricts search to given line range' 'int c;' "$out"
+
+# U8: :%f>marker:??!p no marker\:1q:%s/old/new/g:w
+# (U8a removed — Q1 covers the abort case)
+# When marker found: ??! else branch skipped; :s and :w execute
+printf 'marker here\nold text\n' > "$TMPFILE"
+EXINIT=":%f>marker:??!p no marker\:1q:%s/old/new/g:w! $OUTFILE" \
+	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null
+check 'U8b marker found — else skipped; :s and :w execute' \
+	"$(printf 'marker here\nnew text')" "$(cat $OUTFILE 2>/dev/null)"
+
+# U9: :%!sort — pipe buffer through external command
+printf 'c\na\nb\n' > "$TMPFILE"
+out=$(run_ex ':%!sort:%p:q!')
+check 'U9 :%!sort — pipe buffer through sort; output replaces buffer' \
+	"$(printf 'a\nb\nc')" "$out"
+
+# U10: g/int/ya ax — global appends matching lines to register a
+printf 'int a;\nvoid b;\nint c;\n' > "$TMPFILE"
+out=$(run_ex ':led 0:g/int/ya ax:led:1pu a:%p:q!')
+check 'U10 g/int/ya ax — global appends matching lines to register a' \
+	"$(printf 'int a;\nint a;\nint c;\nvoid b;\nint c;')" "$out"
+
+# U11: substitution backreference \0 captures first matched group
+printf 'this has int or void\n' > "$TMPFILE"
+out=$(run_ex ':%s/(int)|(void)/pre\0after:%p:q!')
+check 'U11 :%s/(int)|(void)/pre\0after — backref \0 replaces first match' \
+	'this has preintafter or void' "$out"
+
+# U12: 3,5r \!printf — range selects lines 3-5 from pipe; inserts before current line
+printf 'start\n' > "$TMPFILE"
+out=$(EXINIT=':led 0:3,5r \!printf '"'"'a\nb\nc\nd\ne\nf\n'"'"':led:%p:q!' \
+	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
+check 'U12 3,5r \!printf — read only lines 3-5 from pipe output' \
+	"$(printf 'c\nd\ne\nstart')" "$out"
+
+# U13: ;$+1!echo world — insert cmd output after end-of-line
+printf 'hello\n' > "$TMPFILE"
+out=$(EXINIT=':;$+1!echo world:%p:q!' \
+	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
+check 'U13 ;$+1!echo world — cmd output inserted at end; original preserved' \
+	"$(printf 'hello\nworld')" "$out"
+
 # ─── Summary ──────────────────────────────────────────────────────────────────
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
