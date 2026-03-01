@@ -916,7 +916,7 @@ Example: store ranges in <a> and <s> for later reuse in :f>
 .It Cm &{\fImacro\fP}
 Global non-blocking macro
 .Bd -literal
-Execute raw vi/ex input sequence.
+Execute raw vi input sequence.
 A non-blocking macro shall not wait for input when the end of
 the sequence is reached. A non-blocking macro executing other
 macros will always reach a terminating point.
@@ -936,7 +936,7 @@ Example: enable permanent vi line numbers
 .It Cm @{\fImacro\fP}
 Global blocking macro
 .Bd -literal
-Execute raw vi/ex input sequence.
+Execute raw vi input sequence.
 A blocking macro shall wait for input when the end of the sequence
 is reached. A blocking macro executing other macros may cause
 input congestion.
@@ -1501,7 +1501,7 @@ Example: report and consider only last command for error status
 .
 .Sh EXINIT ENV VAR
 .Bd -literal
-EXINIT defines a sequence of vi/ex commands to be performed
+EXINIT defines a sequence of ex commands to be performed
 at startup. Consequently, this is the primary way for scripting
 and customizing Nextvi outside of C.
 Many standard text processing utils such as grep, awk, sed
