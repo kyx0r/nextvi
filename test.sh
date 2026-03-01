@@ -51,7 +51,7 @@ run_mac() {
 	cat "$OUTFILE" 2>/dev/null
 }
 
-# ─── Section A: Ex Mode Tests ─────────────────────────────────────────────────
+printf '\n%s\n' '─── Section A: Ex Mode Tests ─────────────────────────────────────────────────'
 
 # A1: Print commands ───────────────────────────────────────────────────────────
 
@@ -215,7 +215,7 @@ printf 'test\n' > "$TMPFILE"
 out=$(run_ex ':f>nosuch:p ok:q')
 check 'xuerr is silent and chain continues' 'ok' "$out"
 
-# ─── Section B: Vi Normal Mode Tests ─────────────────────────────────────────
+printf '\n%s\n' '─── Section B: Vi Normal Mode Tests ─────────────────────────────────────────'
 
 printf 'hello world\n' > "$TMPFILE"
 out=$(run_vi 'dw')
@@ -261,7 +261,7 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_vi "$(printf 'A world\033')")
 check 'vi A...<ESC>: append at end of line' 'hello world' "$out"
 
-# ─── Section C: More Ex Mode Tests ───────────────────────────────────────────
+printf '\n%s\n' '─── Section C: More Ex Mode Tests ───────────────────────────────────────────'
 
 # C1: Undo / Redo ──────────────────────────────────────────────────────────────
 
@@ -400,7 +400,7 @@ out=$(run_ex ':1ya a:3ya b:1pu b:1pu a:%p:q!')
 check 'yank two registers and paste both' \
 	"$(printf 'line1\nline1\nline3\nline2\nline3')" "$out"
 
-# ─── Section D: More Vi Mode Tests ────────────────────────────────────────────
+printf '\n%s\n' '─── Section D: More Vi Mode Tests ────────────────────────────────────────────'
 
 printf 'old new\n' > "$TMPFILE"
 out=$(run_vi "$(printf 'cwfresh\033')")
@@ -462,7 +462,7 @@ printf 'hello world\n' > "$TMPFILE"
 out=$(run_vi "$(printf '5lK')")
 check 'vi K: split line at cursor' "$(printf 'hello \nworld')" "$out"
 
-# ─── Section E: Macro system (:& / vi &a / &&) ────────────────────────────────
+printf '\n%s\n' '─── Section E: Macro system (:& / vi &a / &&) ────────────────────────────────'
 
 # E1: :& takes raw vi input; to use a register, expand it via %@a
 printf 'hello world\n' > "$TMPFILE"
@@ -484,7 +484,7 @@ printf 'hello world foo\n' > "$TMPFILE"
 check 'E4 vi && — repeats last & macro' 'foo' \
 	"$(run_mac ":97reg dw:& &a&&:w! $OUTFILE:q!")"
 
-# ─── Section G: ya! — free a named register ───────────────────────────────────
+printf '\n%s\n' '─── Section G: ya! — free a named register ───────────────────────────────────'
 
 # ya! a frees register a; pu a on a freed register raises "uninitialized
 # register" — with err 4 (silence+ignore) the paste is skipped silently.
@@ -493,7 +493,7 @@ out=$(run_ex ':1ya a:ya! a:err 4:$pu a:%p:q!')
 check 'G1 ya! frees named reg; pu a silently skipped (err 4)' \
 	"$(printf 'line1\nline2')" "$out"
 
-# ─── Section H: ?? id capture ─────────────────────────────────────────────────
+printf '\n%s\n' '─── Section H: ?? id capture ─────────────────────────────────────────────────'
 
 # {#id}?? captures the current error status into id; [#id]?? branches on it.
 # An intervening command that changes the error status does NOT override it.
@@ -505,7 +505,7 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':f>hello:5??:f>void:5??p found?p notfound:q')
 check 'H2 ?? id captures success; intervening fail does not override' 'found' "$out"
 
-# ─── Section I: ??! inverted conditional and ?! inverted while loop ────────────
+printf '\n%s\n' '─── Section I: ??! inverted conditional and ?! inverted while loop ────────────'
 
 printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':f>void:??!p not found?p found:q')
@@ -521,7 +521,7 @@ printf 'no\nno\nyes\nno\n' > "$TMPFILE"
 out=$(run_ex ':10?! f>yes?1d:.p:q!')
 check 'I3 ?! while: 1d deletes first line each pass until f>yes succeeds' 'yes' "$out"
 
-# ─── Section J: seq — undo sequencing ─────────────────────────────────────────
+printf '\n%s\n' '─── Section J: seq — undo sequencing ─────────────────────────────────────────'
 
 # seq 0 groups all subsequent changes into a single undo step
 printf 'hello\n' > "$TMPFILE"
@@ -533,7 +533,7 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':seq -1:s/hello/world/:u:%p:seq:q!')
 check 'J2 seq -1 — undo tracking disabled; u has no effect' 'world' "$out"
 
-# ─── Section K: pr — capture :p output into a register ───────────────────────
+printf '\n%s\n' '─── Section K: pr — capture :p output into a register ───────────────────────'
 
 # pr N redirects :p output to register N; led 0 suppresses double-printing
 printf 'hello\n' > "$TMPFILE"
@@ -541,7 +541,7 @@ out=$(run_ex ':led 0:pr 97:ya! a:p hello captured:pr 0:led:pu a:%p:q!')
 check 'K1 pr+led 0 — :p output captured into register, then pasted' \
 	"$(printf 'hello\nhello captured')" "$out"
 
-# ─── Section L: special marks ─────────────────────────────────────────────────
+printf '\n%s\n' '─── Section L: special marks ─────────────────────────────────────────────────'
 
 printf 'a\nb\nc\nd\n' > "$TMPFILE"
 out=$(run_ex ":2,3s/./X/:'[p:q!")
@@ -557,13 +557,13 @@ out=$(run_ex ":3p:'*p:q")
 check "L3 '* = cursor saved before previous ex command" \
 	"$(printf 'c\na')" "$out"
 
-# ─── Section M: %@/ — previous regex register ─────────────────────────────────
+printf '\n%s\n' '─── Section M: %@/ — previous regex register ─────────────────────────────────'
 
 printf 'hello world\n' > "$TMPFILE"
 out=$(run_ex ':f>hello:p %@/:q')
 check 'M1 %@/ expands to the previous regex keyword' 'hello' "$out"
 
-# ─── Section N: range arithmetic ──────────────────────────────────────────────
+printf '\n%s\n' '─── Section N: range arithmetic ──────────────────────────────────────────────'
 
 # $*5/10 — navigate to 50% of the file (integer arithmetic on last line)
 printf 'a\nb\nc\nd\ne\nf\ng\nh\ni\nj\n' > "$TMPFILE"
@@ -576,14 +576,14 @@ printf 'hello world extra\n' > "$TMPFILE"
 out=$(run_ex ':;5;#+10= 3:q')
 check 'N2 ;5;#+10= 3 — second char offset via # rebase is 15' '15' "$out"
 
-# ─── Section O: vi bracket matching (%) ───────────────────────────────────────
+printf '\n%s\n' '─── Section O: vi bracket matching (%) ───────────────────────────────────────'
 
 # f( lands on (; \% passes a literal % (not buffer path) to the & macro
 printf 'foo(bar)qux\n' > "$TMPFILE"
 out=$(run_vi 'f(\%x')
 check 'O1 vi f(\%)x — find (, jump to matching ), delete )' 'foo(barqux' "$out"
 
-# ─── Section P: :pu and :w with external pipe ─────────────────────────────────
+printf '\n%s\n' '─── Section P: :pu and :w with external pipe ─────────────────────────────────'
 
 rm -f "$OUTFILE"
 printf 'test\n' > "$TMPFILE"
@@ -597,7 +597,7 @@ run_ex ":1,1w \!tr a-z A-Z > $OUTFILE:q" >/dev/null 2>/dev/null
 check 'P2 :w \!cmd — write buffer range to external command' \
 	'HELLO WORLD' "$(tr -d '\n' < $OUTFILE 2>/dev/null)"
 
-# ─── Section Q: xqprop — 1q scope propagation ─────────────────────────────────
+printf '\n%s\n' '─── Section Q: xqprop — 1q scope propagation ─────────────────────────────────'
 
 # 1q inside a nested ??! branch propagates xquit through 2 ex_exec levels but
 # must restore it at the outermost so vi keeps running. Without the base case
@@ -606,7 +606,7 @@ printf 'hello\n' > "$TMPFILE"
 EXINIT=":f>void:??!1q 5:q" "$VI" -sm "$TMPFILE" </dev/null >/dev/null 2>&1; rc=$?
 check_exit 'Q1 1q in nested ??! scope does not propagate quit to vi' '0' "$rc"
 
-# ─── Section R: :re — set search keyword ─────────────────────────────────────
+printf '\n%s\n' '─── Section R: :re — set search keyword ─────────────────────────────────────'
 
 # R1: :re word sets the keyword; %@/ reflects it
 printf 'hello world\n' > "$TMPFILE"
@@ -632,7 +632,7 @@ printf 'a.b\naXb\n' > "$TMPFILE"
 out=$(run_ex ':1re:p %@/:q')
 check 'R4 range :re — escapes regex chars; %@/ reflects escaped pattern' 'a\.b' "$out"
 
-# ─── Section S: Range addresses with inline search ────────────────────────────
+printf '\n%s\n' '─── Section S: Range addresses with inline search ────────────────────────────'
 
 printf 'void a;\nint b;\nvoid c;\n' > "$TMPFILE"
 out=$(run_ex ':>int>p:q')
@@ -652,7 +652,7 @@ out=$(run_ex ':4:.-2,.+2p:q')
 check 'S4 .-2,.+2p — relative arithmetic prints 5 lines around line 4' \
 	"$(printf 'b\nc\nd\ne\nf')" "$out"
 
-# ─── Section T: = command (print range numbers) ───────────────────────────────
+printf '\n%s\n' '─── Section T: = command (print range numbers) ───────────────────────────────'
 
 printf 'hello world\n' > "$TMPFILE"
 out=$(run_ex ':;5= 2:q')
@@ -666,7 +666,7 @@ printf 'hello world extra padding here\n' > "$TMPFILE"
 out=$(run_ex ':;5;+10= 3:q')
 check 'T3 ;5;+10= 3 — second offset from initial (0+10=10), not from 5' '10' "$out"
 
-# ─── Section U: README examples ───────────────────────────────────────────────
+printf '\n%s\n' '─── Section U: README examples ───────────────────────────────────────────────'
 
 # U1: g/^$/d — remove all blank lines
 printf 'a\n\nb\n\nc\n' > "$TMPFILE"
@@ -709,7 +709,7 @@ check 'U7 2,4f>int — ranged :f> restricts search to given line range' 'int c;'
 # When marker found: ??! else branch skipped; :s and :w execute
 printf 'marker here\nold text\n' > "$TMPFILE"
 EXINIT=":%f>marker:??!p no marker\:1q:%s/old/new/g:w! $OUTFILE" \
-	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null
+	"$VI" -sm "$TMPFILE" </dev/null >/dev/null 2>&1
 check 'U8b marker found — else skipped; :s and :w execute' \
 	"$(printf 'marker here\nnew text')" "$(cat $OUTFILE 2>/dev/null)"
 
@@ -745,7 +745,7 @@ out=$(EXINIT=':;$+1!echo world:%p:q!' \
 check 'U13 ;$+1!echo world — cmd output inserted at end; original preserved' \
 	"$(printf 'hello\nworld')" "$out"
 
-# ─── Summary ──────────────────────────────────────────────────────────────────
+printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]
