@@ -1143,25 +1143,24 @@ static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
 	int c = term_read(0), i, n = MAX(1, vi_arg);
-	sbuf *buf = NULL;
+	sbuf **buf;
 	if (TK_INT(c))
 		return;
-	if (c == cmd)
+	if (c == cmd && exec_buf >= 0)
 		c = exec_buf;
-	exec_buf = c;
-	if (exec_buf >= 0)
-		buf = xregs[exec_buf];
-	if (!buf) {
+	buf = &xregs[c];
+	if (!*buf) {
 		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
+	exec_buf = c;
 	if (c == ':') {
-		for (i = 0; i < n; i++)
-			ex_exec(buf->s);
+		for (i = 0; i < n && *buf; i++)
+			ex_exec((*buf)->s);
 		return;
 	}
-	for (i = 0; i < n; i++)
-		term_exec(buf->s, buf->s_n, cmd)
+	for (i = 0; i < n && *buf; i++)
+		term_exec((*buf)->s, (*buf)->s_n, cmd)
 }
 
 static void vi_argcmd(int arg, char cmd)

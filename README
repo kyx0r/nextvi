@@ -644,7 +644,7 @@ EX COMMANDS
      &{macro}
              Global non-blocking macro
 
-             Execute raw vi/ex input sequence.
+             Execute raw vi input sequence.
              A non-blocking macro shall not wait for input when the end of
              the sequence is reached. A non-blocking macro executing other
              macros will always reach a terminating point.
@@ -663,7 +663,7 @@ EX COMMANDS
      @{macro}
              Global blocking macro
 
-             Execute raw vi/ex input sequence.
+             Execute raw vi input sequence.
              A blocking macro shall wait for input when the end of the sequence
              is reached. A blocking macro executing other macros may cause
              input congestion.
@@ -1152,7 +1152,7 @@ EX OPTIONS
              :err 1
 
 EXINIT ENV VAR
-     EXINIT defines a sequence of vi/ex commands to be performed
+     EXINIT defines a sequence of ex commands to be performed
      at startup. Consequently, this is the primary way for scripting
      and customizing Nextvi outside of C.
      Many standard text processing utils such as grep, awk, sed
@@ -1257,8 +1257,8 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 720 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1705 ex.c    |  ex options/commands |
-     | 1852 vi.c    |  normal mode/general |
+     | 1706 ex.c    |  ex options/commands |
+     | 1851 vi.c    |  normal mode/general |
      | 7418 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
@@ -1307,9 +1307,17 @@ SEE ALSO
      via email or GitHub pull request.
      https://github.com/kyx0r/nextvi/tree/patches
 
-     Scripts used to generate this manual are located in the manual
-     branch.
+     Patch2vi support utility
+     https://github.com/kyx0r/nextvi/tree/patch2vi
+
+     Unit tests
+     https://github.com/kyx0r/nextvi/tree/test
+
+     Scripts used to generate this manual
      https://github.com/kyx0r/nextvi/tree/manual
+
+     Unified tagged releases
+     https://github.com/kyx0r/nextvi/tree/release
 
      Original Neatvi repository
      https://github.com/aligrudi/neatvi
@@ -1331,4 +1339,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                     February 28, 2026                    Nextvi 4.0
+Nextvi 4.0                       March 1, 2026                      Nextvi 4.0
