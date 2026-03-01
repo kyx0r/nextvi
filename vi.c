@@ -246,7 +246,7 @@ static char *vi_prompt(char *msg, char *ft, char *insert, int *ret, int *kmap, i
 	sbuf_smake(sb, xcols)
 	sbuf_str(sb, msg)
 	*mlen = sb->s_n;
-	term_pos(xrows, led_pos(msg, 0));
+	term_pos(xrows, 0);
 	syn_setft(ft);
 	*ret = led_prompt(sb, insert, kmap, NULL, 0, 1) == '\n';
 	syn_setft(xb_ft);
@@ -407,22 +407,12 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int ex)
 	if (!end || --end == off)
 		return NULL;
 	sbuf_smake(sb, 64)
-	if (n > 1) {
-		for (; off < end; off++) {
-			if (ex && (*chrs[off] == xsep || *chrs[off] == xesc)) {
-				sbuf_chr(sb, xesc)
-				if (*chrs[off] == '\\')
-					sbuf_chr(sb, '\\')
-			}
-			if (strchr("!%{}[]().?\\^$|*/+", *chrs[off]))
-				sbuf_chr(sb, '\\')
-			sbuf_chr(sb, *chrs[off])
-		}
-	} else {
+	if (n <= 1) {
 		sbuf_str(sb, "\\<")
 		sbuf_mem(sb, chrs[off], chrs[end] - chrs[off])
 		sbuf_str(sb, "\\>")
-	}
+	} else
+		ex_regesc(sb, chrs[off], chrs[end], ex);
 	sbufn_ret(sb, sb->s)
 }
 
@@ -1153,20 +1143,26 @@ static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
 	int c = term_read(0), i, n = MAX(1, vi_arg);
-	sbuf *buf = NULL;
+	sbuf **buf;
 	if (TK_INT(c))
 		return;
-	if (c == cmd)
+	if (c == cmd && exec_buf >= 0)
 		c = exec_buf;
-	exec_buf = c;
-	if (exec_buf >= 0)
-		buf = xregs[exec_buf];
-	if (!buf) {
+	buf = &xregs[c];
+	if (!*buf) {
 		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
-	for (i = 0; i < n; i++)
-		term_exec(buf->s, buf->s_n, cmd)
+	exec_buf = c;
+	if (c == ':') {
+		term_pos(xrows, 0);
+		for (i = 0; i < n && *buf; i++)
+			ex_exec((*buf)->s);
+		vi_mod |= 1;
+		return;
+	}
+	for (i = 0; i < n && *buf; i++)
+		term_exec((*buf)->s, (*buf)->s_n, cmd)
 }
 
 static void vi_argcmd(int arg, char cmd)
@@ -1403,15 +1399,15 @@ void vi(int init)
 				case ';':
 					ln = vi_enprompt(":", "!", &k, &n);
 					goto do_excmd;
-				case '/':
-					cs = vi_curword(xb, xrow, xoff, vi_arg, 0);
-					ln = vi_prompt("xkwd:", vs_ft, cs, &k, &xkmap, &n);
-					if (k)
-						ex_krsset(ln + n, +1);
-					vi_drawmsg_mpt(k && !xkwdrs ? "syntax error" : ln)
-					free(ln);
+				case '/': {
+					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
+					char buf[cs ? strlen(cs)+30 : 30];
+					strcpy(buf, "re ");
+					if (cs)
+						strcat(buf, cs);
 					free(cs);
-					break;
+					ln = vi_enprompt(":", buf, &k, &n);
+					goto do_excmd; }
 				case 't': {
 					vi_drawmsg("arg2:(0|#)");
 					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
@@ -1716,12 +1712,12 @@ void vi(int init)
 		if (xmpt > 1) {
 			if (!xpln)
 				term_chr('\n');
-			xpln = 0;
 			vi_drawmsg("[any key to continue] ");
 			term_read(0);
 			xmpt = 0;
 			vi_mod |= 1;
 		}
+		xpln = 0;
 		if (xhlw) {
 			static char *word;
 			if ((cs = vi_curword(xb, xrow, xoff, xhlw, 0))) {

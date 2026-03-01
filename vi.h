@@ -485,6 +485,7 @@ void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
+void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
 int ex_edit(const char *path, int len);
 void ex_regput(unsigned char c, const char *s, int append);
 void bufs_switch(int idx);
