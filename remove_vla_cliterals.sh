@@ -226,16 +226,13 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 # Patch: vi.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			vi_rshift = 0;
-		if \\\\(row != xrow\\\\+1 \\\\|\\\\| !c \\\\|\\\\| \\\\*c == '\\\\\\\\n'\\\\)
-			goto skip;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 143\\${SEP}${QF}}${SEP};=
-${SEP}+3c 		char *tmp = emalloc(xcols+3);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 		char tmp\\\\[xcols\\\\+3\\\\], snum\\\\[32\\\\];${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 143\\${SEP}${QF}}${SEP};=
+${SEP}.c 		char *tmp = emalloc(xcols+3);
 		char *snum = emalloc(32);
 .
 ${SEP}.,\$;f> 		restore\\\\(xtd\\\\)
-		restore\\\\(ftidx\\\\)
-		vi_rshift = \\\\(row != xtop \\\\+ xrows-1\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 168\\${SEP}${QF}}${SEP};=
-${SEP}+2a 		free(tmp);
+		restore\\\\(ftidx\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 168\\${SEP}${QF}}${SEP};=
+${SEP}+1a 		free(tmp);
 		free(snum);
 .
 ${SEP}.,\$;f> 				if \\\\(!\\\\(ln = lbuf_get\\\\(xb, xrow\\\\)\\\\)\\\\)
@@ -290,6 +287,38 @@ ${SEP}+3${SEP}s/\\\\*att/att[16]/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 508\\
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA vi.c ===
+--- /tmp/patch2vi_MNiBHK_vi.c.diff.orig
++++ /tmp/patch2vi_MNiBHK_vi.c.diff
+@@ -6,15 +6,8 @@
+ #abs
+ === SEARCH COMMAND ===
+ %;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-			vi_rshift = 0;
+-		if \(row != xrow\+1 \|\| !c \|\| \*c == '\\n'\)
+-			goto skip;
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: 0) ===
+ 		char tmp\[xcols\+3\], snum\[32\];
+-		memset\(tmp, ' ', xcols\+1\);
+-		tmp\[xcols\+1\] = '\\n';
+-		tmp\[xcols\+2\] = '\\0';
+ === END GROUP ===
+ 
+ === GROUP 2/10 (line 168) ===
+@@ -25,10 +18,9 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
++=== SEARCH PATTERN (offset: 2) ===
+ 		restore\(xtd\)
+ 		restore\(ftidx\)
+-		vi_rshift = \(row != xtop \+ xrows-1\);
+ --- extra (delete to include) ---
+ 		return;
+ 	\}
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 30358ac1..5c5a584a 100644
