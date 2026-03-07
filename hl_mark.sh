@@ -34,9 +34,7 @@ int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
 int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 9\\${SEP}${QF}}${SEP};=
 ${SEP}+2a int xhlm;			/* highlight marks */
 .
-${SEP}.,\$;f> EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
-EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
 ${SEP}+2a EO(hlm)
 .
 ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
@@ -72,6 +70,20 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- /tmp/patch2vi_JBoaEc_ex.c.diff.orig
++++ /tmp/patch2vi_JBoaEc_ex.c.diff
+@@ -22,9 +22,7 @@
+ === SEARCH COMMAND ===
+ .,\$;f>
+ === SEARCH PATTERN (offset: 3) ===
+-EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(grp\) EO\(mpt\) EO\(rcm\)
+-EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
+-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
++EO\(pac\)
+ --- extra (delete to include) ---
+ 
+ _EO\(left,
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..1345a755 100644
