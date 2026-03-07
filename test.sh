@@ -689,10 +689,10 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':2??.=?.=:p reached:q')
 check 'U4 2??.=?.= — unset id; neither branch runs; chain continues' 'reached' "$out"
 
-# U5: grp 2:%f+int(.):grp — save char position after "int("
+# U5: grp 1:%f+int(.):grp — save char position after "int("
 printf 'void int(x)\n' > "$TMPFILE"
-out=$(run_ex ':grp 2:%f+int(.):grp:;= 2:q')
-check 'U5 grp 2:%f+int(.):grp — char offset after "int(" is 8' '8' "$out"
+out=$(run_ex ':grp 1:%f+int(.):grp:;= 2:q')
+check 'U5 grp 1:%f+int(.):grp — char offset after "int(" is 8' '8' "$out"
 
 # U6: ;5;#+10= 3 — #+10 is relative to previous offset 5 (not initial)
 printf 'hello world extra padding here\n' > "$TMPFILE"
