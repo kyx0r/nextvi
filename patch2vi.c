@@ -913,12 +913,13 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 	/* Extract basename from filepath for the temp filename */
 	const char *base = strrchr(filepath, '/');
 	base = base ? base + 1 : filepath;
-	/* Template: /tmp/patch2vi_XXXXXX_<base>.diff */
-	int sufflen = strlen(base) + 6;  /* _<base>.diff */
+	char tmptmp[32];
 	char tmppath[256];
-	snprintf(tmppath, sizeof(tmppath),
-		 "/tmp/patch2vi_XXXXXX_%s.diff", base);
-	int fd = mkstemps(tmppath, sufflen);
+	snprintf(tmptmp, sizeof(tmptmp), "/tmp/patch2vi_XXXXXX");
+	int fd = mkstemp(tmptmp);
+	snprintf(tmppath, sizeof(tmppath), "%s_%s.diff", tmptmp, base);
+	if (rename(tmptmp, tmppath) < 0)
+		snprintf(tmppath, sizeof(tmppath), "%s", tmptmp);
 	if (fd < 0) {
 		perror("mkstemp");
 		return;
