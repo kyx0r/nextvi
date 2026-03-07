@@ -134,12 +134,12 @@ static void vi_drawrow(int row)
 		return;
 	if (*vi_word && xled) {
 		int noff, nrow, ret;
-		s = lbuf_get(xb, row - vi_rshift);
 		c = lbuf_get(xb, xrow);
-		if (row == xtop + xrows-1 || !c || *c == '\n')
-			vi_rshift = 0;
-		if (row != xrow+1 || !c || *c == '\n')
+		if (row != xrow+1 || !c || *c == '\n') {
+			vi_rshift = (row > xrow+1 && c && *c != '\n');
+			s = lbuf_get(xb, row - vi_rshift);
 			goto skip;
+		}
 		char tmp[xcols+3], snum[32];
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
@@ -165,7 +165,6 @@ static void vi_drawrow(int row)
 		restore(syn_blockhl)
 		restore(xtd)
 		restore(ftidx)
-		vi_rshift = (row != xtop + xrows-1);
 		return;
 	}
 	s = lbuf_get(xb, row);
@@ -865,7 +864,8 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	vi_regput(vi_ybuf, rsb.s, lnmode);
 	free(rsb.s);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
-	term_room(r1 < xtop ? xtop - xrow : r1 - r2 - !!*vi_word);
+	term_room(r1 < xtop ? xtop - xrow : r1 - r2 -
+			(*vi_word && ln && *ln != '\n' && r1 != r2));
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
@@ -1449,6 +1449,7 @@ void vi(int init)
 					vi_word = _vi_word + vi_arg;
 				} else
 					vi_word = _vi_word + (!*vi_word * vi_wsel);
+				vi_rshift = 0;
 				vi_mod |= 1;
 				break;
 			case ':':
@@ -1754,15 +1755,14 @@ void vi(int init)
 				|| (*vi_word && orow != xrow))
 			vi_drawagain(xtop);
 		else if (*vi_word && (ooff != xoff || vi_mod & 2)
-				&& xrow+1 < xtop + xrows) {
+				&& xrow+1 < xtop + xrows)
 			vi_drawrow(xrow+1);
-			vi_rshift = 0;
-		} else if (xtop != otop)
+		else if (xtop != otop)
 			vi_drawupdate(otop - xtop);
 		if (xhll) {
 			syn_blockhl = -1;
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
-				if (!(vi_mod & 1) && !*vi_word)
+				if (!(vi_mod & 1))
 					vi_drawrow(orow);
 			syn_blockhl = -1;
 			syn_reloadft(syn_addhl("^.+", 2), 0);

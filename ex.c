@@ -575,9 +575,10 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
 
 static void *ec_quit(char *loc, char *cmd, char *arg)
 {
-	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
-		if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
-			return "buffers modified";
+	if (xexec_dep == 1 && xgrec == 1 && !strchr(cmd, '!') && xquit >= 0)
+		for (int i = 0; i < xbufcur; i++)
+			if (bufs[i].lb->modified)
+				return "buffers modified";
 	xquit = !xquit ? 1 : xquit;
 	xqprop = *loc ? atoi(loc) : -1;
 	if (*arg)
@@ -1414,9 +1415,11 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 #define EO(opt) \
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
-EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt) EO(rcm)
 EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+
+_EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
 
 _EO(left,
 	if (*loc)
