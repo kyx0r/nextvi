@@ -67,17 +67,16 @@ ${SEP}+3,#+3c 	/* q! always force quits */
 			return NULL;
 		}
 		/* single window: check for modified buffers and quit */
-		for (int i = 0; i < xbufcur; i++)
-			if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
-				return \"buffers modified\";
+		if (xexec_dep == 1 && xgrec == 1 && xquit >= 0)
+			for (int i = 0; i < xbufcur; i++)
+				if (bufs[i].lb->modified)
+					return \"buffers modified\";
 	}
-	if (!xquit)
-		xquit = 1;
 .
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1430\\${SEP}${QF}}${SEP};=
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1433\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
@@ -187,27 +186,27 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,\$;f> 	EO\\\\(err\\\\),
 	\\\\{\"ef!\", ec_fuzz\\\\},
-	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1460\\${SEP}${QF}}${SEP};=
+	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1463\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	{\"eq\", ec_equalize},
 .
 ${SEP}.,\$;f> 	\\\\{\"uz\", ec_setenc\\\\},
 	\\\\{\"ub\", ec_setenc\\\\},
-	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1496\\${SEP}${QF}}${SEP};=
+	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1499\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	EO(vis),
 	{\"vs\", ec_vsplit},
 .
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1500\\${SEP}${QF}}${SEP};=
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1503\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	{\"sp\", ec_split},
 .
 ${SEP}.,\$;f> 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1522\\${SEP}${QF}}${SEP};=
+	EO\\\\(led\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1525\\${SEP}${QF}}${SEP};=
 ${SEP}+3d${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1691\\${SEP}${QF}}${SEP};=
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1694\\${SEP}${QF}}${SEP};=
 ${SEP}+2a /* window management functions */
 static void curwin_save(void)
 {
@@ -952,8 +951,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_EchELc_conf.c.diff.orig
-+++ /tmp/patch2vi_EchELc_conf.c.diff
+--- /tmp/patch2vi_HcJAjO_conf.c.diff.orig
++++ /tmp/patch2vi_HcJAjO_conf.c.diff
 @@ -8,8 +8,6 @@
  %;f>
  === SEARCH PATTERN (offset: 3) ===
@@ -978,7 +977,7 @@ index 30358ac1..e04bd203 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 2817580b..04521797 100644
+index 89622029..f086b831 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -43,6 +43,9 @@ struct buf *bufs;		/* main buffers */
@@ -1011,14 +1010,14 @@ index 2817580b..04521797 100644
  }
  
  void temp_write(int i, char *str)
-@@ -575,10 +584,20 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -575,10 +584,19 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
--	for (int i = 0; !strchr(cmd, '!') && i < xbufcur; i++)
--		if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
--			return "buffers modified";
--	xquit = !xquit ? 1 : xquit;
+-	if (xexec_dep == 1 && xgrec == 1 && !strchr(cmd, '!') && xquit >= 0)
+-		for (int i = 0; i < xbufcur; i++)
+-			if (bufs[i].lb->modified)
+-				return "buffers modified";
 +	/* q! always force quits */
 +	if (!strchr(cmd, '!')) {
 +		/* if multiple windows, close current window */
@@ -1027,16 +1026,15 @@ index 2817580b..04521797 100644
 +			return NULL;
 +		}
 +		/* single window: check for modified buffers and quit */
-+		for (int i = 0; i < xbufcur; i++)
-+			if ((xquit < 0 || xgrec < 2) && bufs[i].lb->modified)
-+				return "buffers modified";
++		if (xexec_dep == 1 && xgrec == 1 && xquit >= 0)
++			for (int i = 0; i < xbufcur; i++)
++				if (bufs[i].lb->modified)
++					return "buffers modified";
 +	}
-+	if (!xquit)
-+		xquit = 1;
+ 	xquit = !xquit ? 1 : xquit;
  	xqprop = *loc ? atoi(loc) : -1;
  	if (*arg)
- 		xquit = abs(atoi(arg)) + 1;
-@@ -1428,6 +1447,112 @@ _EO(left,
+@@ -1431,6 +1449,112 @@ _EO(left,
  	return NULL;
  )
  
@@ -1149,7 +1147,7 @@ index 2817580b..04521797 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1458,6 +1583,7 @@ static struct excmd {
+@@ -1461,6 +1585,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -1157,7 +1155,7 @@ index 2817580b..04521797 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1494,10 +1620,13 @@ static struct excmd {
+@@ -1497,10 +1622,13 @@ static struct excmd {
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
  	{"u", ec_undoredo},
@@ -1171,7 +1169,7 @@ index 2817580b..04521797 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1519,7 +1648,6 @@ static struct excmd {
+@@ -1522,7 +1650,6 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -1179,7 +1177,7 @@ index 2817580b..04521797 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  	{"", ec_null}, /* do not remove */
-@@ -1689,6 +1817,244 @@ void ex(void)
+@@ -1692,6 +1819,244 @@ void ex(void)
  	xgrec--;
  }
  
