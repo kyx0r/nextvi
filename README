@@ -418,7 +418,7 @@ EX RANGES
              +10 is relative to 5
      :;>int>+3;#>>p
              Print text enclosed by "int" on the current line
-     :|grp2|;>(a)+>+1|grp|;#>>p
+     :|grp1|;>(a)+>+1|grp|;#>>p
              Print text enclosed by a non-deterministic pattern "a+"
 
 EX COMMANDS
@@ -614,7 +614,7 @@ EX COMMANDS
              :g/int/g/;$/& A has a semicolon
 
              Example: extract/print data enclosed in "()"
-             :grp2:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
+             :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
      [vrange]g!{<*>}[regex]{<*>}{cmd}
              Inverted global command
@@ -1016,10 +1016,8 @@ EX OPTIONS
              This becomes necessary when the result of a regex search is to
              be based on some group rather than the default match group.
 
-             The value of grp must be divisible by 2.
-
              Example: position on a character prefixed by "int"
-             :grp 2:%f+int(.):grp
+             :grp 1:%f+int(.):grp
 
      hl[val=1]
              Highlight text based on rules defined in conf.c
@@ -1262,9 +1260,9 @@ CODE MAP
      | 654 lbuf.c   |  file/line buffer    |
      | 720 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1705 ex.c    |  ex options/commands |
+     | 1708 ex.c    |  ex options/commands |
      | 1853 vi.c    |  normal mode/general |
-     | 7419 total   |  wc -l *.c|sort      |
+     | 7422 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1344,4 +1342,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                       March 1, 2026                      Nextvi 4.0
+Nextvi 4.0                       March 7, 2026                      Nextvi 4.0
