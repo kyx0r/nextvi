@@ -34,9 +34,7 @@ rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 40\\${SEP}${QF}}${SEP};=
 ${SEP}+2a int xexrc = 0;			/* read .exrc from the current directory */
 .
-${SEP}.,\$;f> EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(grp\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
-EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
 ${SEP}+2a EO(exrc)
 .
 ${SEP}.,\$;f> 	EO\\\\(ai\\\\),
@@ -46,6 +44,7 @@ ${SEP}+2a 	EO(exrc),
 .
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
+
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1645\\${SEP}${QF}}${SEP};=
 ${SEP}+2a void ex_script(FILE *fp)
 {
@@ -126,6 +125,20 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- /tmp/patch2vi_lCGDIK_ex.c.diff.orig
++++ /tmp/patch2vi_lCGDIK_ex.c.diff
+@@ -22,9 +22,7 @@
+ === SEARCH COMMAND ===
+ .,\$;f>
+ === SEARCH PATTERN (offset: 3) ===
+-EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(grp\) EO\(mpt\) EO\(rcm\)
+-EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
+-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
++EO\(pac\)
+ --- extra (delete to include) ---
+ 
+ _EO\(left,
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..d0bb0162 100644
