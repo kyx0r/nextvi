@@ -1135,7 +1135,6 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 {
 	int isdq = cmd[1] == '?';
 	char *cond = isdq ? NULL : re_read(&arg, *cmd);
-	int count = *loc && !isdq ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
 	char *ret = NULL, *branch;
 	int inv = cmd[1 + isdq] == '!', i;
 	char *then_cmd, *else_cmd;
@@ -1162,6 +1161,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			}
 		}
 	} else {
+		int count = *loc ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
 		then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 		for (; count && !ret; count--) {
