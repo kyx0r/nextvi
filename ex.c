@@ -40,7 +40,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 sbuf *xregs[256];		/* string registers */
 struct buf *bufs;		/* main buffers */
-struct buf tempbufs[2];		/* temporary buffers, for internal use */
+struct buf tempbufs[3];		/* temporary buffers, for internal use */
 struct buf *ex_buf;		/* current buffer */
 struct buf *ex_pbuf;		/* prev buffer */
 static struct buf *ex_tpbuf;	/* temp prev buffer */
@@ -1136,12 +1136,12 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	int isdq = cmd[1] == '?';
 	char *cond = isdq ? NULL : re_read(&arg, *cmd);
 	char *ret = NULL, *branch;
-	int inv = cmd[1 + isdq] == '!', i;
+	int inv = cmd[1 + isdq] == '!';
 	char *then_cmd, *else_cmd;
 	if (isdq && *loc) {
 		int id = atoi(loc);
 		if (!*arg) {
-			int err = xpret != NULL;
+			int err = (xpret != NULL) ^ inv;
 			if (!xanchor)
 				sbuf_make(xanchor, 4 * (int)sizeof(int))
 			sbuf_mem(xanchor, &id, (int)sizeof(id))
@@ -1151,14 +1151,26 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			return ret;
 		then_cmd = re_read(&arg, *cmd);
 		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
-		int *ap = (int*)xanchor->s;
-		for (i = xanchor->s_n / (int)sizeof(int) - 2; i >= 0; i -= 2) {
-			if (ap[i] == id) {
-				branch = ap[i + 1] ^ inv ? else_cmd : then_cmd;
+		int *ap = (int*)xanchor->s, n = xanchor->s_n / (int)sizeof(int);
+		int and_res = 0, or_res = 1;
+		for (int i = n; i >= 2;) {
+			i -= 2;
+			if (ap[i] != id)
+				continue;
+			and_res |= ap[i + 1];
+			while (*loc && *loc != ',' && *loc != ';') loc++;
+			if (!*loc || *loc == ';') {
+				 or_res &= and_res;
+				 and_res = 0;
+			}
+			if (!*loc) {
+				branch = or_res ^ inv ? else_cmd : then_cmd;
 				if (branch)
 					ret = ex_exec(branch);
 				break;
 			}
+			id = atoi(++loc);
+			i = n;
 		}
 	} else {
 		int count = *loc ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
