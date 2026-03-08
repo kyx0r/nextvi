@@ -744,10 +744,11 @@ int rset_match(rset *rs, char *s, int flg)
 }
 
 /* read a regular expression enclosed in a delimiter */
-char *re_read(char **src)
+char *re_read(char **src, int delim)
 {
 	char *s = *src;
-	int delim = (unsigned char) *s++;
+	if (!delim)
+		delim = (unsigned char) *s++;
 	if (!delim)
 		return NULL;
 	sbuf_smake(sb, 256)

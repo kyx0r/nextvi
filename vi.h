@@ -32,6 +32,7 @@ void *emalloc(size_t size);
 void *erealloc(void *p, size_t size);
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
+int itoalen(int n) { char s[32]; return itoa(n, s) - s; }
 void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
 
 /* main functions */
@@ -128,7 +129,7 @@ rset *rset_smake(char *pat, int flg)
 int rset_find(rset *re, char *s, int *grps, int flg);
 int rset_match(rset *rs, char *s, int flg);
 void rset_free(rset *re);
-char *re_read(char **src);
+char *re_read(char **src, int delim);
 
 /* lbuf.c line buffer, managing a number of lines */
 #define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
@@ -169,6 +170,8 @@ int lbuf_rd(struct lbuf *lb, int fd, int beg, int end);
 int lbuf_wr(struct lbuf *lb, int fd, int beg, int end);
 void lbuf_edit(struct lbuf *lb, char *s, int beg, int end, int o1, int o2);
 void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2);
+int lbuf_pos2off(struct lbuf *lb, int r1, int o1, int r2, int o2, int row, int off);
+int lbuf_off2pos(struct lbuf *lb, int r1, int o1, int r2, int o2, int boff, int *row, int *off);
 char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2);
 int lbuf_join(struct lbuf *lb, int beg, int end, int o1, int *o2, int flg);
 char *lbuf_get(struct lbuf *lb, int pos);
@@ -184,8 +187,8 @@ int lbuf_indents(struct lbuf *lb, int r);
 int lbuf_eol(struct lbuf *lb, int r, int state);
 int lbuf_next(struct lbuf *lb, int dir, int *r, int *o);
 int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
-int lbuf_search(struct lbuf *lb, rset *re, int dir, int *r,
-			int *o, int ln_n, int skip);
+int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+		int nskip, int *r, int *o);
 #define lbuf_dedup(lb, str, n) \
 { for (int i = 0; i < lbuf_len(lb);) { \
 	char *s = lbuf_get(lb, i); \
@@ -310,6 +313,8 @@ char *uc_shape(char *beg, char *s, int c);
 /* term.c managing the terminal */
 extern sbuf *term_sbuf;
 extern int term_record;
+extern int term_winch;
+extern int term_resized;
 extern int xrows, xcols;
 extern unsigned int ibuf_pos, ibuf_cnt, ibuf_sz, icmd_pos;
 extern unsigned char *ibuf, icmd[4096];
@@ -319,11 +324,13 @@ void term_init(void);
 void term_done(void);
 void term_clean(void);
 void term_suspend(void);
+#define term_scrl	term_write("\033[?1049l", 8)
+#define term_scrh	term_write("\033[?1049h", 8)
 void term_chr(int ch);
 void term_pos(int r, int c);
 void term_kill(void);
 void term_room(int n);
-int term_read(void);
+int term_read(int winch);
 void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
@@ -420,13 +427,12 @@ extern int xled;
 extern int xtd;
 extern int xshape;
 extern int xorder;
-extern int xtbs;
+extern int xts;
 extern int xish;
 extern int xgrp;
 extern int xpac;
 extern int xmpt;
 extern int xpr;
-extern int xsep;
 extern int xlim;
 extern int xseq;
 extern int xerr;
@@ -439,11 +445,15 @@ extern int xkmap;
 extern int xkmap_alt;
 extern int xkwddir;
 extern int xkwdcnt;
+extern int xpln;
+extern int xsep;
+extern int xesc;
+extern int xexec_dep;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
 extern sbuf *xregs[256];
 extern struct buf *bufs;
-extern struct buf tempbufs[2];
+extern struct buf tempbufs[3];
 extern struct buf *ex_buf;
 extern struct buf *ex_pbuf;
 #define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
@@ -475,6 +485,7 @@ void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
+void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
 int ex_edit(const char *path, int len);
 void ex_regput(unsigned char c, const char *s, int append);
 void bufs_switch(int idx);
@@ -533,8 +544,6 @@ char *conf_digraph(int c1, int c2);
 /* vi.c */
 extern int vi_hidch;
 extern int vi_lncol;
-extern char vi_msg[512];
 /* file system */
 extern rset *fsincl;
-extern char *fs_exdir;
 void dir_calc(char *path);

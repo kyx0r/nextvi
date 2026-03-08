@@ -14,4 +14,4 @@ EXINIT="${EXINIT}:1:>\<ex\.c\\\>>:&A | ex options/commands"
 EXINIT="${EXINIT}:1:>vi\.c>:&A | normal mode/general"
 EXINIT="${EXINIT}:1:>total>:&A | wc -l *.c\(basort"
 EXINIT="${EXINIT}:\$:pu:'a:-1:pu"
-EXINIT="${EXINIT}:led:vis6:1,\$p:vis4:q!" vi -em
+EXINIT="${EXINIT}:led:vis3:1,\$p:vis2:q!" vi -em

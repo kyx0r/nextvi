@@ -23,12 +23,11 @@
 #include "term.c"
 #include "uc.c"
 
-int vi_hidch;		/* show hidden chars */
-int vi_lncol;		/* line numbers cursor offset */
-char vi_msg[512];	/* current message */
-static int vi_lnnum;	/* line numbers */
-static int vi_mod;	/* screen should be redrawn -
-			bit 1: whole screen, bit 2: current line, bit 3: update vi_col) */
+int vi_hidch;			/* show hidden chars */
+int vi_lncol;			/* line numbers cursor offset */
+static int vi_lnnum;		/* line numbers */
+/* screen redraw - bit 1: whole screen, bit 2: current line, bit 3: update vi_col */
+static int vi_mod;
 static char vi_word_m[] = "\0leEwW";	/* line word navigation */
 static char *vi_word = vi_word_m;
 static char *_vi_word = vi_word_m;
@@ -42,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_cndir = 1;		/* ^n direction */
-static int vi_status;			/* always show status */
+static int vi_status;			/* permanent status bar */
 static int vi_tsm;			/* type of the status message */
 static int vi_nlword;			/* new line mode for eEwWbB */
 
@@ -91,17 +90,17 @@ char *itoa(int n, char s[])
 	return &s[i];
 }
 
-static void vi_drawmsg(void)
+static void vi_drawmsg(char *msg)
 {
-	if (vi_msg[0]) {
-		syn_blockhl = -1;
-		syn_setft(bar_ft);
-		preserve(int, xtd, xtd = 2;)
-		RS(2, led_crender(vi_msg, xrows, 0, 0, xcols))
-		restore(xtd)
-		syn_setft(xb_ft);
-	}
+	syn_blockhl = -1;
+	preserve(int, xtd, xtd = 2;)
+	preserve(int, ftidx,)
+	syn_setft(bar_ft);
+	RS(2, led_crender(msg, xrows, 0, 0, xcols))
+	restore(xtd)
+	restore(ftidx)
 }
+#define vi_drawmsg_mpt(msg) { vi_drawmsg(msg); if (!xmpt) xmpt = 1; }
 
 static int vi_nextcol(char *ln, int dir, int *off)
 {
@@ -131,14 +130,16 @@ static void vi_drawrow(int row)
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
 	static char ch[5] = "~";
+	if (xmpt == 1 && !vi_status && row == xtop + xrows - 1)
+		return;
 	if (*vi_word && xled) {
 		int noff, nrow, ret;
-		s = lbuf_get(xb, row - vi_rshift);
 		c = lbuf_get(xb, xrow);
-		if (row == xtop + xrows-1 || !c || *c == '\n')
-			vi_rshift = 0;
-		if (row != xrow+1 || !c || *c == '\n')
+		if (row != xrow+1 || !c || *c == '\n') {
+			vi_rshift = (row > xrow+1 && c && *c != '\n');
+			s = lbuf_get(xb, row - vi_rshift);
 			goto skip;
+		}
 		char tmp[xcols+3], snum[32];
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
@@ -157,13 +158,13 @@ static void vi_drawrow(int row)
 		preserve(int, xorder, xorder = 0;)
 		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
-		vi_rshift = (row != xtop + xrows-1);
+		preserve(int, ftidx,)
 		syn_setft(n_ft);
 		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
-		syn_setft(xb_ft);
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
+		restore(ftidx)
 		return;
 	}
 	s = lbuf_get(xb, row);
@@ -177,13 +178,13 @@ static void vi_drawrow(int row)
 		if (lnnum == 1 || lnnum & 2) {
 			c = itoa(row+1-vi_rshift, tmp);
 			*c++ = ' ';
-			i = snprintf(0, 0, "%d", xtop+xrows);
+			i = itoalen(xtop+xrows);
 		}
 		p = c;
 		if (lnnum == 1 || lnnum & 4 || lnnum & 8) {
 			c = itoa(abs(xrow-row+vi_rshift), c);
 			*c++ = ' ';
-			i1 = snprintf(0, 0, "%d", xrows);
+			i1 = itoalen(xrows);
 		}
 		*c = '\0';
 		l1 = (c - tmp) + (i+i1 - (strlen(tmp) - !!i - !!i1));
@@ -192,6 +193,7 @@ static void vi_drawrow(int row)
 		c[l1 - (c - tmp)] = '\0';
 		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
 		preserve(int, syn_blockhl, syn_blockhl = -1;)
+		preserve(int, ftidx,)
 		syn_setft(nn_ft);
 		if ((lnnum == 1 || lnnum & 4) && !xleft && vi_lncol) {
 			for (i1 = 0; i1 < rstate->cmax &&
@@ -204,8 +206,8 @@ static void vi_drawrow(int row)
 			}
 		}
 		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
-		syn_setft(xb_ft);
 		restore(syn_blockhl)
+		restore(ftidx)
 		return;
 	}
 	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
@@ -238,46 +240,29 @@ static void vi_drawupdate(int i)
 	}
 }
 
-static void vi_wait(void)
+static char *vi_prompt(char *msg, char *ft, char *insert, int *ret, int *kmap, int *mlen)
 {
-	if (xmpt > 1) {
-		strcpy(vi_msg, "[any key to continue] ");
-		vi_drawmsg();
-		term_read();
-		vi_msg[0] = '\0';
-		vi_mod |= 1;
-	}
-	xmpt = xmpt > 0 ? 0 : xmpt;
-}
-
-static char *vi_prompt(char *msg, char *ft, char *insert, int *kmap, int *mlen)
-{
-	int key;
 	sbuf_smake(sb, xcols)
 	sbuf_str(sb, msg)
 	*mlen = sb->s_n;
-	term_pos(xrows, led_pos(msg, 0));
+	term_pos(xrows, 0);
 	syn_setft(ft);
-	key = led_prompt(sb, insert, kmap, NULL, 0, 1);
+	*ret = led_prompt(sb, insert, kmap, NULL, 0, 1) == '\n';
 	syn_setft(xb_ft);
-	strncpy(vi_msg, sb->s, sizeof(vi_msg) - 1);
-	if (key == '\n')
-		return sb->s;
-	free(sb->s);
-	return NULL;
+	return sb->s;
 }
 
-static char *vi_enprompt(char *msg, char *insert, int *mlen)
+static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
 {
 	int kmap = 0;
-	return vi_prompt(msg, ex_ft, insert, &kmap, mlen);
+	return vi_prompt(msg, ex_ft, insert, ret, &kmap, mlen);
 }
 
 static int vi_yankbuf(void)
 {
-	int c = term_read();
+	int c = term_read(TK_CTL('l'));
 	if (c == '"')
-		return term_read();
+		return term_read(TK_CTL('l'));
 	term_dec()
 	return 0;
 }
@@ -285,11 +270,11 @@ static int vi_yankbuf(void)
 static int vi_prefix(void)
 {
 	int n = 0;
-	int c = term_read();
+	int c = term_read(TK_CTL('l'));
 	if (c >= '1' && c <= '9') {
 		while (c >= '0' && c <= '9') {
 			n = n * 10 + c - '0';
-			c = term_read();
+			c = term_read(TK_CTL('l'));
 		}
 	}
 	return n;
@@ -297,7 +282,7 @@ static int vi_prefix(void)
 
 static int vi_digit(void)
 {
-	int c = term_read();
+	int c = term_read(0);
 	if (c >= '0' && c <= '9')
 		return c - '0';
 	return -1;
@@ -322,15 +307,19 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
 
 static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 {
-	int i, dir;
+	int i, dir, ret;
+	char vi_msg[512];
 	if (cmd == '/' || cmd == '?') {
 		char sign[4] = {cmd};
-		char *kw = vi_prompt(sign, vs_ft, NULL, &xkmap, &i);
-		if (!kw)
+		char *kw = vi_prompt(sign, vs_ft, NULL, &ret, &xkmap, &i);
+		vi_drawmsg_mpt(kw)
+		if (!ret) {
+			free(kw);
 			return 1;
+		}
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
 		if (!xkwdrs)
-			ex_print("syntax error", msg_ft)
+			vi_drawmsg_mpt("syntax error")
 		free(kw);
 	} else if (msg)
 		ex_krsset(xregs['/'] ? xregs['/']->s : NULL, xkwddir);
@@ -338,10 +327,13 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
-		if (lbuf_search(xb, xkwdrs, dir, row, off,
-				lbuf_len(xb), msg ? dir : -1)) {
-			snprintf(vi_msg, msg, "\"%s\" not found %d/%d",
-					xregs['/'] ? xregs['/']->s : "", i, cnt);
+		if (lbuf_search(xb, xkwdrs, dir, 0, lbuf_len(xb),
+				msg ? dir : -1, 1, row, off)) {
+			if (msg) {
+				snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found %d/%d",
+						xregs['/'] ? xregs['/']->s : "", i, cnt);
+				vi_drawmsg_mpt(vi_msg)
+			}
 			return 1;
 		}
 	}
@@ -351,7 +343,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 /* read a line motion */
 static int vi_motionln(int *row, int cmd, int cnt)
 {
-	int mark, c = term_read();
+	int mark, c = term_read(TK_CTL('l'));
 	switch (c) {
 	case '\n':
 	case '+':
@@ -363,7 +355,7 @@ static int vi_motionln(int *row, int cmd, int cnt)
 		*row = MAX(*row - cnt, 0);
 		break;
 	case '\'':
-		if ((mark = term_read()) <= 0)
+		if ((mark = term_read(0)) <= 0)
 			return -1;
 		if (lbuf_jump(xb, mark, row, &mark))
 			return -1;
@@ -399,7 +391,7 @@ static int vi_motionln(int *row, int cmd, int cnt)
 	return c;
 }
 
-static char *vi_curword(struct lbuf *lb, int row, int off, int n)
+static char *vi_curword(struct lbuf *lb, int row, int off, int n, int ex)
 {
 	char *ln = lbuf_get(lb, row);
 	if (!ln || !n)
@@ -414,19 +406,12 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n)
 	if (!end || --end == off)
 		return NULL;
 	sbuf_smake(sb, 64)
-	if (n > 1) {
-		for (; off < end; off++) {
-			if (*chrs[off] == xsep)
-				sbuf_chr(sb, '\\')
-			if (strchr("!%{}[]().?\\^$|*/+", *chrs[off]))
-				sbuf_chr(sb, '\\')
-			sbuf_chr(sb, *chrs[off])
-		}
-	} else {
+	if (n <= 1) {
 		sbuf_str(sb, "\\<")
 		sbuf_mem(sb, chrs[off], chrs[end] - chrs[off])
 		sbuf_str(sb, "\\>")
-	}
+	} else
+		ex_regesc(sb, chrs[off], chrs[end], ex);
 	sbufn_ret(sb, sb->s)
 }
 
@@ -444,7 +429,6 @@ static void vi_regput(int c, const char *s, int lnmode)
 }
 
 rset *fsincl;
-char *fs_exdir;
 static int fspos;
 static int fsdir;
 
@@ -549,25 +533,27 @@ static int fs_searchback(int cnt, int *row, int *off)
 
 static void vc_status(int type)
 {
-	int cp, l, col;
-	char cbuf[8] = "", *c;
+	int l, col;
+	unsigned int cp;
+	char cbuf[8] = "", vi_msg[512], *c;
 	col = vi_off2col(xb, xrow, xoff);
 	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
 	if (type && lbuf_get(xb, xrow)) {
 		c = rstate->chrs[xoff];
 		uc_code(cp, c, l)
 		memcpy(cbuf, c, l);
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> %08x %dL %dW S%td O%d C%d",
-			cbuf, cp, l, rstate->wid[xoff], c - lbuf_get(xb, xrow),
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x %u %dL %dW S%td O%d C%d",
+			cbuf, cp, cp, l, rstate->wid[xoff], c - lbuf_get(xb, xrow),
 			xoff, col);
-		return;
+	} else {
+		snprintf(vi_msg, sizeof(vi_msg),
+			"\"%s\"%s%dL %d%% L%d C%d B%td",
+			xb_path[0] ? xb_path : "unnamed",
+			xb->modified ? "* " : " ", lbuf_len(xb),
+			xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
+			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs);
 	}
-	snprintf(vi_msg, sizeof(vi_msg),
-		"\"%s\"%s%dL %d%% L%d C%d B%td",
-		xb_path[0] ? xb_path : "unnamed",
-		xb->modified ? "* " : " ", lbuf_len(xb),
-		xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
-		istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs);
+	vi_drawmsg_mpt(vi_msg)
 }
 
 /* read a motion */
@@ -585,7 +571,7 @@ static int vi_motion(int vc, int *row, int *off)
 		*off = -1;
 		return mv;
 	}
-	mv = term_read();
+	mv = term_read(TK_CTL('l'));
 	switch (mv) {
 	case ',':
 	case ';':
@@ -640,7 +626,7 @@ static int vi_motion(int vc, int *row, int *off)
 	case 'F':
 	case 't':
 	case 'T':
-		if (!(cs = led_read(&xkmap, term_read())))
+		if (!(cs = led_read(&xkmap, term_read(0))))
 			return -1;
 		strcpy(vi_charlast, cs);
 		vi_charcmd = mv;
@@ -724,7 +710,7 @@ static int vi_motion(int vc, int *row, int *off)
 			ex_edit(savepath[n]->s, savepath[n]->s_n); \
 		} \
 
-		if (vi_arg && (cs = vi_curword(xb, *row, *off, cnt))) {
+		if (vi_arg && (cs = vi_curword(xb, *row, *off, cnt, 0))) {
 			ex_krsset(cs, +1);
 			free(cs);
 		}
@@ -784,7 +770,7 @@ static int vi_motion(int vc, int *row, int *off)
 	case '?':
 	case 'n':
 	case 'N':
-		if (vi_search(mv, cnt, row, off, sizeof(vi_msg)))
+		if (vi_search(mv, cnt, row, off, 1))
 			return -1;
 		xtop = MAX(0, *row - xrows / 2);
 		vi_mod |= mv == '/' || mv == '?';
@@ -792,18 +778,18 @@ static int vi_motion(int vc, int *row, int *off)
 	case '*':
 	case TK_CTL('a'):
 		if (mv == TK_CTL('a') || vi_arg) {
-			if (!(cs = vi_curword(xb, *row, *off, cnt)))
+			if (!(cs = vi_curword(xb, *row, *off, cnt, 0)))
 				return -1;
 			ex_krsset(cs, +1);
 			free(cs);
 		}
-		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, sizeof(vi_msg)))
+		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
 			cadir = -cadir;
 		else if (*row < xtop || *row >= xtop + xrows - 1)
 			xtop = MAX(0, *row - xrows / 2);
 		break;
 	case '`':
-		if ((mark = term_read()) <= 0)
+		if ((mark = term_read(0)) <= 0)
 			return -1;
 		if (lbuf_jump(xb, mark, row, off))
 			return -1;
@@ -878,7 +864,8 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	vi_regput(vi_ybuf, rsb.s, lnmode);
 	free(rsb.s);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
-	term_room(r1 < xtop ? xtop - xrow : r1 - r2 - !!*vi_word);
+	term_room(r1 < xtop ? xtop - xrow : r1 - r2 -
+			(*vi_word && ln && *ln != '\n' && r1 != r2));
 	xrow = r1;
 	if (r1 < xtop)
 		xtop = r1;
@@ -922,7 +909,7 @@ static void vi_case(int r1, int o1, int r2, int o2, int lnmode, int cmd)
 
 static void vi_pipe(int r1, int r2)
 {
-	int mlen;
+	int mlen, ret;
 	char region[64], *p = region;
 	if (r1 == r2 && !vi_arg)
 		*p++ = '.';
@@ -933,9 +920,11 @@ static void vi_pipe(int r1, int r2)
 	}
 	*p++ = '!';
 	*p = '\0';
-	char *cmd = vi_enprompt(":", region, &mlen);
-	if (cmd)
+	char *cmd = vi_enprompt(":", region, &ret, &mlen);
+	if (ret)
 		ex_command(cmd + mlen)
+	if (!xmpt)
+		vi_drawmsg_mpt(cmd)
 	free(cmd);
 }
 
@@ -1068,7 +1057,7 @@ static int vc_put(int cmd)
 	sbuf *buf = xregs[vi_ybuf];
 	char *ln;
 	if (!buf)
-		snprintf(vi_msg, sizeof(vi_msg), "yank buffer empty");
+		vi_drawmsg_mpt("yank buffer empty")
 	if (!buf || !buf->s_n)
 		return 0;
 	sbuf_smake(sb, 1024)
@@ -1121,7 +1110,7 @@ static void vi_scrollbackward(int cnt)
 static int vc_replace(void)
 {
 	int cnt = MAX(1, vi_arg);
-	char *cs = led_read(&xkmap, term_read());
+	char *cs = led_read(&xkmap, term_read(0));
 	char *ln = lbuf_get(xb, xrow);
 	int off, i;
 	if (!ln || !cs)
@@ -1153,21 +1142,27 @@ static void vc_repeat(void)
 static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
-	int c = term_read(), i, n = MAX(1, vi_arg);
-	sbuf *buf = NULL;
+	int c = term_read(0), i, n = MAX(1, vi_arg);
+	sbuf **buf;
 	if (TK_INT(c))
 		return;
-	if (c == cmd)
+	if (c == cmd && exec_buf >= 0)
 		c = exec_buf;
-	exec_buf = c;
-	if (exec_buf >= 0)
-		buf = xregs[exec_buf];
-	if (!buf) {
-		snprintf(vi_msg, sizeof(vi_msg), "exec buffer empty");
+	buf = &xregs[c];
+	if (!*buf) {
+		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
-	for (i = 0; i < n; i++)
-		term_exec(buf->s, buf->s_n, cmd)
+	exec_buf = c;
+	if (c == ':') {
+		term_pos(xrows, 0);
+		for (i = 0; i < n && *buf; i++)
+			ex_exec((*buf)->s);
+		vi_mod |= 1;
+		return;
+	}
+	for (i = 0; i < n && *buf; i++)
+		term_exec((*buf)->s, (*buf)->s_n, cmd)
 }
 
 static void vi_argcmd(int arg, char cmd)
@@ -1197,7 +1192,6 @@ void vi(int init)
 		topfix()
 		vi_col = vi_off2col(xb, xrow, xoff);
 		vi_drawagain(xtop);
-		vi_drawmsg();
 		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col));
 	}
 	while (!xquit) {
@@ -1217,10 +1211,9 @@ void vi(int init)
 			vi_lncol = 0;
 			vi_mod |= 1;
 		}
-		if (vi_msg[0]) {
-			vi_msg[0] = '\0';
-			if (!vi_status)
-				vi_drawrow(otop + xrows - 1);
+		if (xmpt == 1) {
+			xmpt = 0;
+			vi_drawrow(otop + xrows - 1);
 		}
 		if (led_attsb)
 			sbuf_cut(led_attsb, 0)
@@ -1243,7 +1236,7 @@ void vi(int init)
 			char *cmd;
 			term_dec()
 			re_motion:
-			c = term_read();
+			c = term_read(TK_CTL('l'));
 			switch (c) {
 			case TK_CTL('b'):
 				vi_scrollbackward(MAX(1, vi_arg) * (xrows - 1));
@@ -1304,8 +1297,8 @@ void vi(int init)
 			case TK_CTL('_'):	/* this is also ^7 on some systems */
 				if (vi_arg > 0)
 					goto switchbuf;
-				xleft = 0;
-				ex_exec("b");
+				ex_exec("left0:b:mpt0");
+				term_chr('\n');
 				vi_arg = vi_digit();
 				if (vi_arg > -1 && vi_arg < xbufcur) {
 					switchbuf:
@@ -1313,7 +1306,6 @@ void vi(int init)
 					vc_status(0);
 				}
 				vi_mod |= 1;
-				xmpt = xmpt >= 0 ? 0 : xmpt;
 				break;
 			case 'u':
 				undo:
@@ -1322,7 +1314,7 @@ void vi(int init)
 					vi_arg--;
 					goto undo;
 				} else if (!vi_arg)
-					snprintf(vi_msg, sizeof(vi_msg), "undo failed");
+					vi_drawmsg_mpt("undo failed")
 				break;
 			case TK_CTL('r'):
 				redo:
@@ -1331,14 +1323,14 @@ void vi(int init)
 					vi_arg--;
 					goto redo;
 				} else if (!vi_arg)
-					snprintf(vi_msg, sizeof(vi_msg), "redo failed");
+					vi_drawmsg_mpt("redo failed")
 				break;
 			case TK_CTL('g'):
 				vi_tsm = 0;
 				status:
 				if (vi_arg) {
-					vi_status = vi_arg % 2 ? xrows - vi_arg : 0;
-					xrows += vi_status ? 0 : vi_arg - 1;
+					vi_status = vi_arg > 1 ? 0 : term_resized;
+					xrows += vi_status ? -1 : 1;
 				}
 				vc_status(vi_tsm);
 				break;
@@ -1352,6 +1344,7 @@ void vi(int init)
 				if ((cs = ex_exec("w")) && writexb && xb == writexb)
 					cs = ex_exec("mpt0:w!");
 				writexb = cs ? xb : NULL;
+				vi_mod |= 1;
 				break;
 			case '#':
 				if (vi_lnnum & vi_arg)
@@ -1363,7 +1356,7 @@ void vi(int init)
 				break;
 			case 'v':
 				vi_mod |= 2;
-				k = term_read();
+				k = term_read(0);
 				switch (k) {
 				case '.':
 					while (vi_arg) {
@@ -1387,7 +1380,7 @@ void vi(int init)
 				case 'I':;
 				case 'i':;
 					char restr[100] = "%s/^\t/";
-					vi_arg = MIN(vi_arg ? vi_arg : xtbs, 80);
+					vi_arg = MIN(vi_arg ? vi_arg : xts, 80);
 					if (k == 'I') {
 						cmd = restr+6;
 						while (vi_arg--)
@@ -1397,29 +1390,27 @@ void vi(int init)
 						strcpy(restr, "%s/^ {");
 						strcpy(itoa(vi_arg, restr+6), "}/\t/g");
 					}
-					ln = vi_enprompt(":", restr, &n);
+					ln = vi_enprompt(":", restr, &k, &n);
 					goto do_excmd;
 				case 'b':
 				case 'v':
 					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
 					break;
 				case ';':
-					ln = vi_enprompt(":", "!", &n);
+					ln = vi_enprompt(":", "!", &k, &n);
 					goto do_excmd;
-				case '/':
-					cs = vi_curword(xb, xrow, xoff, vi_arg);
-					ln = vi_prompt("xkwd:", vs_ft, cs, &xkmap, &n);
-					if (ln)
-						ex_krsset(ln + n, +1);
-					if (ln && !xkwdrs)
-						ex_print("syntax error", msg_ft)
-					free(ln);
+				case '/': {
+					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
+					char buf[cs ? strlen(cs)+30 : 30];
+					strcpy(buf, "re ");
+					if (cs)
+						strcat(buf, cs);
 					free(cs);
-					break;
+					ln = vi_enprompt(":", buf, &k, &n);
+					goto do_excmd; }
 				case 't': {
-					strcpy(vi_msg, "arg2:(0|#)");
-					vi_drawmsg();
-					cs = vi_curword(xb, xrow, xoff, vi_prefix());
+					vi_drawmsg("arg2:(0|#)");
+					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, ".,.+");
 					char *buf1 = itoa(vi_arg, buf+4);
@@ -1429,10 +1420,10 @@ void vi(int init)
 						strcat(buf1, "/");
 						free(cs);
 					}
-					ln = vi_enprompt(":", buf, &n);
+					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				case 'r': {
-					cs = vi_curword(xb, xrow, xoff, vi_arg);
+					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
 					char buf[cs ? strlen(cs)+30 : 30];
 					strcpy(buf, "%s/");
 					if (cs) {
@@ -1440,7 +1431,7 @@ void vi(int init)
 						strcat(buf, "/");
 						free(cs);
 					}
-					ln = vi_enprompt(":", buf, &n);
+					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				default:
 					term_dec()
@@ -1458,21 +1449,29 @@ void vi(int init)
 					vi_word = _vi_word + vi_arg;
 				} else
 					vi_word = _vi_word + (!*vi_word * vi_wsel);
+				vi_rshift = 0;
 				vi_mod |= 1;
 				break;
 			case ':':
-				ln = vi_enprompt(":", 0, &n);
+				ln = vi_enprompt(":", NULL, &k, &n);
 				do_excmd:
-				if (ln && ln[n])
+				if (k && ln[n])
 					ex_command(ln + n)
+				vi_mod |= 1;
+				if (!xmpt)
+					vi_drawmsg(ln);
 				free(ln);
-				vi_mod |= xgrec > 1 || xquit == 0;
+				if (xquit) {
+					xmpt = xmpt ? xmpt : (xgrec > 1);
+					continue;
+				} else if (!xmpt)
+					xmpt = 1;
 				break;
 			case 'c':
 			case 'd':
-				k = term_read();
+				k = term_read(0);
 				if (k == 'i') {
-					k = term_read();
+					k = term_read(0);
 					switch(k) {
 					case ')':
 						term_push("F(ldt)", 6);
@@ -1539,18 +1538,17 @@ void vi(int init)
 					term_done();
 					term_init();
 				}
-				vi_status = vi_status ? xrows - 1: vi_status;
 				vi_mod |= 1;
 				break;
 			case 'm':
-				lbuf_mark(xb, term_read(), xrow, xoff);
+				lbuf_mark(xb, term_read(0), xrow, xoff);
 				break;
 			case 'p':
 			case 'P':
 				vi_mod |= vc_put(c);
 				break;
 			case 'z':
-				k = term_read();
+				k = term_read(0);
 				switch (k) {
 				case '\n':
 					xtop = xrow;
@@ -1582,7 +1580,7 @@ void vi(int init)
 				vi_mod |= 1;
 				break;
 			case 'g':
-				k = term_read();
+				k = term_read(0);
 				if (k == 'g')
 					term_push("1G", 2);
 				else if (k == 'a') {
@@ -1597,7 +1595,7 @@ void vi(int init)
 						vi_col = vi_off2col(xb, xrow, xoff+1);
 						if (vi_col <= n)
 							break;
-						if (ex_exec("?f>[^ \t]*[ \t]+(?\\\\:.$|(.)):;c\n\x1b"))
+						if (ex_exec("f>[^ \t]*[ \t]+(?\\:.$|(.)):??;c\n\x1b"))
 							break;
 					}
 					restore(xled)
@@ -1645,26 +1643,29 @@ void vi(int init)
 				vi_mod |= vc_replace();
 				break;
 			case 'R':
-				ex_exec("left:reg");
+				ex_exec("left0:reg");
 				break;
 			case 'Q':
 				term_pos(xrow - xtop, 0);
-				xoff = vi_arg ? xoff : 0;
+				xleft = vi_arg ? xleft : 0;
 				led_modeswap();
 				vi_mod |= 1;
+				if (xquit)
+					continue;
 				break;
 			case 'Z':
-				k = term_read();
-				if (k == 'Z')
+				k = term_read(0);
+				if (k == 'Z') {
 					ex_exec("x");
-				else if (k == 'z') {
-					xquit = texec == '&' ? -1 : 1;
-					if (xgrec > 1) {
-						term_push("\n", 1);
-						break;
-					}
-				} else if (!TK_INT(k))
-					xquit = texec == '&' ? -2 : 2;
+					continue;
+				}
+				xquit = texec == '&' ? -1 : 1;
+				if (k == 'z')
+					term_push("\n", 1);
+				else if (xgrec == 1) {
+					term_clean();
+					xgrec = 0;
+				}
 				continue;
 			case '.':
 				vc_repeat();
@@ -1674,9 +1675,12 @@ void vi(int init)
 				vc_execute(c);
 				break;
 			case '\\':
-				ex_exec("b-2");
-				if (vi_arg && xb == tempbufs[1].lb)
-					ex_exec("%d:fd:b-2");
+				if (!vi_arg)
+					ex_exec("b-2");
+				else if (xb != tempbufs[1].lb)
+					ex_exec("b-2:%d:fd:b-2");
+				else
+					ex_exec("%d:fd");
 				vc_status(0);
 				vi_mod |= 1;
 				break;
@@ -1706,10 +1710,18 @@ void vi(int init)
 		if (vi_col >= xleft + xcols || vi_col < xleft)
 			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
 		n = led_pos(ln, ren_cursor(ln, vi_col));
-		vi_wait();
+		if (xmpt > 1) {
+			if (!xpln)
+				term_chr('\n');
+			vi_drawmsg("[any key to continue] ");
+			term_read(0);
+			xmpt = 0;
+			vi_mod |= 1;
+		}
+		xpln = 0;
 		if (xhlw) {
 			static char *word;
-			if ((cs = vi_curword(xb, xrow, xoff, xhlw))) {
+			if ((cs = vi_curword(xb, xrow, xoff, xhlw, 0))) {
 				if (!word || strcmp(word, cs)) {
 					syn_reloadft(syn_addhl(cs, 1), 0);
 					vi_mod |= 1;
@@ -1743,15 +1755,14 @@ void vi(int init)
 				|| (*vi_word && orow != xrow))
 			vi_drawagain(xtop);
 		else if (*vi_word && (ooff != xoff || vi_mod & 2)
-				&& xrow+1 < xtop + xrows) {
+				&& xrow+1 < xtop + xrows)
 			vi_drawrow(xrow+1);
-			vi_rshift = 0;
-		} else if (xtop != otop)
+		else if (xtop != otop)
 			vi_drawupdate(otop - xtop);
 		if (xhll) {
 			syn_blockhl = -1;
 			if (xrow != orow && orow >= xtop && orow < xtop + xrows)
-				if (!(vi_mod & 1) && !*vi_word)
+				if (!(vi_mod & 1))
 					vi_drawrow(orow);
 			syn_blockhl = -1;
 			syn_reloadft(syn_addhl("^.+", 2), 0);
@@ -1761,45 +1772,48 @@ void vi(int init)
 			syn_blockhl = -1;
 			vi_drawrow(xrow);
 		}
-		if (vi_status && !vi_msg[0]) {
-			xrows = vi_status != xrows ? vi_status : xrows;
+		if (vi_status && xmpt < 1) {
+			xrows -= term_resized != vi_status;
+			vi_status = term_resized;
 			vc_status(vi_tsm);
-			vi_drawmsg();
-			vi_msg[0] = '\0';
-		} else
-			vi_drawmsg();
+			if (xmpt > 0)
+				xmpt = 0;
+		}
 		term_pos(xrow - xtop, n + vi_lncol);
 		term_commit();
 		xb->useq += xseq;
 	}
-	xgrec--;
+	if (--xgrec == 0) {
+		term_pos(xrows - !vi_status, 0);
+		if (xmpt > 0 && !xpln)
+			term_chr('\n');
+		else
+			term_kill();
+	}
 }
 
 static void sighandler(int signo)
 {
-	if (term_sbuf && !(xvis & 4) && signo == SIGWINCH)
-		term_exec("", 1, '&')
+	term_winch++;
 }
 
-static int setup_signals(void)
+static void setup_signals(void)
 {
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = sighandler;
-	if (sigaction(SIGWINCH, &sa, NULL))
-		return 0;
-	return 1;
+	sigaction(SIGWINCH, &sa, NULL);
 }
 
 int main(int argc, char *argv[])
 {
 	int i, j;
-	if (!setup_signals())
-		return EXIT_FAILURE;
+	setup_signals();
 	dir_init();
 	syn_init();
 	temp_open(0, "/hist/", _ft);
 	temp_open(1, "/fm/", fm_ft);
+	temp_open(2, "/sc/", _ft);
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == '-' && !argv[i][2]) {
 			i++;
@@ -1807,33 +1821,34 @@ int main(int argc, char *argv[])
 		}
 		for (j = 1; argv[i][j]; j++) {
 			if (argv[i][j] == 's')
-				xvis |= 2|4;
+				xvis |= 1|2;
 			else if (argv[i][j] == 'e')
-				xvis |= 4;
+				xvis |= 2;
 			else if (argv[i][j] == 'm')
+				xvis |= 4;
+			else if (argv[i][j] == 'a')
 				xvis |= 8;
 			else if (argv[i][j] == 'v')
-				xvis &= ~4;
+				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-3.2 Usage: %s [-emsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
 	}
 	ibuf = emalloc(ibuf_sz);
-	term_init();
+	if (!(xvis & 1))
+		term_init();
+	if (xvis & 8)
+		term_scrh;
 	ex_init(argv + i, argc - i);
-	if (xvis & 4)
+	if (xvis & 2)
 		ex();
 	else
 		vi(1);
 	term_done();
-	if (abs(xquit) == 2)
-		term_clean();
-	else if (!(xvis & 4)) {
-		term_pos(xrows - !vi_status, 0);
-		term_kill();
-	}
-	return EXIT_SUCCESS;
+	if (xvis & 8)
+		term_scrl;
+	return abs(xquit) - 1;
 }
