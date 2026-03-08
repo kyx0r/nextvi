@@ -386,7 +386,7 @@ Filesystem regex search backward
 Suspend vi
 .It Cm <^L>
 Force redraw whole screen and update terminal dimensions
-.It Cm Z{*}
+.It Cm Z{\fI*\fP}
 Exit and clean terminal, force quit in an & macro
 .It Cm Zz
 Exit and submit history command, force quit in an & macro
@@ -455,7 +455,7 @@ Increase indent
 Decrease indent
 .It Cm <^]>
 Select paste register from 0-9 registers in a loop
-.It Cm <^\e>{arg}
+.It Cm <^\e>{\fIarg\fP}
 Select paste register arg. <^\e> selects default register
 .It Cm <^P>
 Paste a register
@@ -485,9 +485,9 @@ Switch between vi and ex modes recursively
 Switch to English keymap
 .It Cm <^F>
 Switch to alternative keymap
-.It Cm <^V>{arg}
+.It Cm <^V>{\fIarg\fP}
 Read a literal character arg
-.It Cm <^K>{arg}
+.It Cm <^K>{\fIarg\fP}
 Read a digraph sequence arg
 .It Cm <^C>
 .It Cm <ESC>
@@ -742,7 +742,7 @@ Set current buffer saved
 Argument resets undo/redo history
 .Ed
 
-.It Cm [\fIrange\fP]p[str]
+.It Cm [\fIrange\fP]p[\fIstr\fP]
 Print line(s) from a buffer
 .Bd -literal
 No range prints a line based on the value of left ex option.
@@ -830,7 +830,7 @@ Example: delete from current position to the end of the buffer
 :.,$;;$d
 .Ed
 
-.It Cm [\fIvrange\fP]j[*]
+.It Cm [\fIvrange\fP]j[\fI*\fP]
 Join line(s)
 .Bd -literal
 Any argument activates padding mode.
@@ -1567,7 +1567,7 @@ Disregard manpage notation in this section.
 .Bl -tag -width Ds -compact
 
 .It Cm \&.
-Match any single char
+Match any single character
 .It Cm [\fIN\fP-\fIM\fP]
 Match a set of alternate ranges N to M
 .It Cm {\fIN\fP,\fIM\fP}
