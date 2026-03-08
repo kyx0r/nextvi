@@ -729,6 +729,8 @@ Example: switch to the /hist/ ex history buffer
 :b-1
 Example: switch to the /fm/ directory listing buffer
 :b-2
+Example: switch to the /sc/ scratch buffer
+:b-3
 .Ed
 
 .It Cm bp[\fIpath\fP]
@@ -979,26 +981,42 @@ Example: edit vi.c only if it exists
 .It Cm [\fI#\fP <\fI$\fP>]?!{\fIcond\fP}[<\fI?\fP>][\fIelse\fP][<\fI?\fP>][\fIthen\fP]
 Inverted while loop conditional
 
-.It Cm [\fI#id\fP]??{\fIthen\fP}[<\fI?\fP>][\fIelse\fP]
-.It Cm {\fI#id\fP}??
+.It Cm [\fIprefix\fP]??{\fIthen\fP}[<\fI?\fP>][\fIelse\fP]
+.It Cm {\fIprefix\fP}??
 Conditional
 .Bd -literal
 Unlike while loop conditional, branching depends on the error
 status of the last command, reducing the number of escapes required.
 
-A prefix id without arguments captures the current error status
-at that point in a command chain. A conditional with the same
-id branches based on the most recent capture. If no capture exists
-for the given id, neither branch executes. Id tags are global
-across all nested command contexts.
+A prefix without arguments captures the current error status
+at that point in a command chain. Id tags are global across all
+nested command contexts.
+
+A prefix with arguments branches based on the boolean expression
+in DNF over the most recent captures of each referenced id.
+If any id has no capture, neither branch executes.
+
+Prefix operators:
+# id tag
+, AND (higher precedence)
+; OR (lower precedence)
 
 Example: capture error status at id 5, branch later
 :>int>:5??:;=:5??p
 Example: skip if tag was never set
 :2??.=?.=
+Example: AND -- branch only if both ids captured success
+:f>int:1??:f>void:2??:1,2??p found both
+Example: OR -- branch if either id captured success
+:f>int:1??:f>void:2??:1;2??p found one
+Example: DNF -- (1 AND 2) OR 3
+:1,2;3??p then?p else
+Example: inverted capture -- capture NOT of last status
+:f>int:1??!:1??p int was absent
 .Ed
 
-.It Cm [\fI#id\fP]??!{\fIelse\fP}[<\fI?\fP>][\fIthen\fP]
+.It Cm [\fIprefix\fP]??!{\fIelse\fP}[<\fI?\fP>][\fIthen\fP]
+.It Cm {\fIprefix\fP}??!
 Inverted conditional
 
 .It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
