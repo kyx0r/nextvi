@@ -745,6 +745,104 @@ out=$(EXINIT=':;$+1!echo world:%p:q!' \
 check 'U13 ;$+1!echo world — cmd output inserted at end; original preserved' \
 	"$(printf 'hello\nworld')" "$out"
 
+printf '\n%s\n' '─── Section V: Multi-id ?? conditionals ──────────────────────────────────────'
+
+# V1: AND — both succeed → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1,2??p then?p else:q')
+check 'V1 1,2?? AND — both succeed → then' 'then' "$out"
+
+# V2: AND — first fails → else
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:1,2??p then?p else:q')
+check 'V2 1,2?? AND — first fails → else' 'else' "$out"
+
+# V3: AND — second fails → else
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:f>nomatch:2??:1,2??p then?p else:q')
+check 'V3 1,2?? AND — second fails → else' 'else' "$out"
+
+# V4: OR — first succeeds → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:f>nomatch:2??:1;2??p then?p else:q')
+check 'V4 1;2?? OR — first succeeds → then' 'then' "$out"
+
+# V5: OR — first fails, second succeeds → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:1;2??p then?p else:q')
+check 'V5 1;2?? OR — second succeeds → then' 'then' "$out"
+
+# V6: OR — both fail → else
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:1;2??p then?p else:q')
+check 'V6 1;2?? OR — both fail → else' 'else' "$out"
+
+# V7: mixed (1,2;3) — AND group fails, id3 succeeds → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:f>hello:3??:1,2;3??p then?p else:q')
+check 'V7 1,2;3?? — AND group fails, id3 succeeds → then' 'then' "$out"
+
+# V8: mixed (1,2;3) — AND group succeeds, id3 fails → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:f>nomatch:3??:1,2;3??p then?p else:q')
+check 'V8 1,2;3?? — AND group succeeds, id3 fails → then' 'then' "$out"
+
+# V9: mixed (1,2;3) — all fail → else
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:1,2;3??p then?p else:q')
+check 'V9 1,2;3?? — all fail → else' 'else' "$out"
+
+# V10: unset id in AND → nop, chain continues
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:1,99??p then?p else:p reached:q')
+check 'V10 1,99?? — id 99 unset → nop, chain continues' 'reached' "$out"
+
+# V11: unset id in OR → nop even if other id is set
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:1;99??p then?p else:p reached:q')
+check 'V11 1;99?? — id 99 unset → nop, chain continues' 'reached' "$out"
+
+# V12: single unset id → nop
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:99??p then?p else:p reached:q')
+check 'V16 99?? — single unset id → nop, chain continues' 'reached' "$out"
+
+# V13: unset id in AND within complex prefix (1,99;2) → nop
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1,99;2??p then?p else:p reached:q')
+check 'V17 1,99;2?? — unset id in AND position → nop' 'reached' "$out"
+
+# V14: unset id in first OR position (99;1) → nop
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:99;1??p then?p else:p reached:q')
+check 'V18 99;1?? — unset id in first OR position → nop' 'reached' "$out"
+
+# V15: unset id in middle OR position (1;99;2) → nop
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1;99;2??p then?p else:p reached:q')
+check 'V19 1;99;2?? — unset id in middle OR position → nop' 'reached' "$out"
+
+# V16-V19: interleaved 1,2;3,4,5;6 = (1 AND 2) OR (3 AND 4 AND 5) OR 6
+# V16: first AND group succeeds → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:f>nomatch:3??:f>nomatch:4??:f>nomatch:5??:f>nomatch:6??:1,2;3,4,5;6??p then?p else:q')
+check 'V16 1,2;3,4,5;6?? — first group (1 AND 2) succeeds → then' 'then' "$out"
+
+# V17: only middle AND group succeeds → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:f>hello:3??:f>hello:4??:f>hello:5??:f>nomatch:6??:1,2;3,4,5;6??p then?p else:q')
+check 'V17 1,2;3,4,5;6?? — middle group (3 AND 4 AND 5) succeeds → then' 'then' "$out"
+
+# V18: only last OR operand succeeds → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:f>hello:4??:f>hello:5??:f>hello:6??:1,2;3,4,5;6??p then?p else:q')
+check 'V18 1,2;3,4,5;6?? — last operand (6) succeeds → then' 'then' "$out"
+
+# V19: all groups fail → else
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:f>nomatch:4??:f>nomatch:5??:f>nomatch:6??:1,2;3,4,5;6??p then?p else:q')
+check 'V19 1,2;3,4,5;6?? — all groups fail → else' 'else' "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
