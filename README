@@ -1211,7 +1211,7 @@ REGEX
      Pikevm's syntax is akin to regexp(7) from Plan 9.
      Disregard manpage notation in this section.
 
-     .       Match any single char
+     .       Match any single character
      [N-M]   Match a set of alternate ranges N to M
      {N,M}   Match N to M times
      ()      Capture grouping
