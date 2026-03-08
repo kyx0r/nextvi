@@ -1141,7 +1141,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	if (isdq && *loc) {
 		int id = atoi(loc);
 		if (!*arg) {
-			int err = xpret != NULL;
+			int err = (xpret != NULL) ^ inv;
 			if (!xanchor)
 				sbuf_make(xanchor, 4 * (int)sizeof(int))
 			sbuf_mem(xanchor, &id, (int)sizeof(id))
