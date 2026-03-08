@@ -714,8 +714,8 @@ EX COMMANDS
              status of the last command, reducing the number of escapes required.
 
              A prefix without arguments captures the current error status
-             at that point in a command chain. Id tags are global across all
-             nested command contexts.
+             at that point in a command chain into id tag specified.
+             Id tags are global across all nested command contexts.
 
              A prefix with arguments branches based on the boolean expression
              in DNF over the most recent captures of each referenced id.
@@ -734,8 +734,8 @@ EX COMMANDS
              :f>int:1??:f>void:2??:1,2??p found both
              Example: OR -- branch if either id captured success
              :f>int:1??:f>void:2??:1;2??p found one
-             Example: DNF -- (1 AND 2) OR 3
-             :1,2;3??p then?p else
+             Example: DNF -- (1 AND 2) OR (3 AND 4)
+             :1,2;3,4??p then?p else
              Example: inverted capture -- capture NOT of last status
              :f>int:1??!:1??p int was absent
 
