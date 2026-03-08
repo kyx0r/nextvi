@@ -843,6 +843,33 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:f>nomatch:4??:f>nomatch:5??:f>nomatch:6??:1,2;3,4,5;6??p then?p else:q')
 check 'V19 1,2;3,4,5;6?? — all groups fail → else' 'else' "$out"
 
+printf '\n%s\n' '─── Section W: Inverted capture ??! ──────────────────────────────────────────'
+
+# W1: command succeeds, ??! captures as failure → else
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??!:1??p then?p else:q')
+check 'W1 ??! — success captured as failure → else' 'else' "$out"
+
+# W2: command fails, ??! captures as success → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??!:1??p then?p else:q')
+check 'W2 ??! — failure captured as success → then' 'then' "$out"
+
+# W3: inverted capture used in AND with normal capture
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nomatch:1??!:f>hello:2??:1,2??p then?p else:q')
+check 'W3 ??! in AND — NOT(fail) AND success → then' 'then' "$out"
+
+# W4: inverted capture in OR — NOT(success) OR success → then
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??!:f>hello:2??:1;2??p then?p else:q')
+check 'W4 ??! in OR — NOT(success) OR success → then' 'then' "$out"
+
+# W5: both inverted — NOT(success) AND NOT(success) → else
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:1??!:f>hello:2??!:1,2??p then?p else:q')
+check 'W5 ??! both inverted — NOT(success) AND NOT(success) → else' 'else' "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
