@@ -35,14 +35,11 @@ ${SEP}+3${SEP}s/\\\\[f!\\\\]\\\\?!\\\\?\\\\|f\\\\[-\\\\+><tdp\\\\]\\\\?\\\\|inc\
 # Patch: ex.c
 SEP="$(printf '\x01')"
 QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct buf tempbufs\\\\[2\\\\];		/\\\\* temporary buffers, for internal use \\\\*/
-struct buf \\\\*ex_buf;		/\\\\* current buffer \\\\*/
-struct buf \\\\*ex_pbuf;		/\\\\* prev buffer \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 45\\${SEP}${QF}}${SEP};=
-${SEP}+2a struct win *wins;		/* head of window list */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}45a struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 .
-${SEP}.,\$;f> 		ex_buf = &bufs\\\\[idx\\\\];
+${SEP}%;f> 		ex_buf = &bufs\\\\[idx\\\\];
 	\\\\}
 	exbuf_load\\\\(ex_buf\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 103\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	/* update current window's buffer reference */
@@ -962,6 +959,18 @@ exit 0
  --- extra (delete to include) ---
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
+=== DELTA ex.c ===
+--- /tmp/patch2vi_CDLGHM_ex.c.diff.orig
++++ /tmp/patch2vi_CDLGHM_ex.c.diff
+@@ -3,7 +3,7 @@
+ +struct win *curwin;		/* current active window */
+ +int nwins;			/* number of windows */
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 30358ac1..e04bd203 100644
