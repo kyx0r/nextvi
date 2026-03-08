@@ -1813,6 +1813,7 @@ int main(int argc, char *argv[])
 	syn_init();
 	temp_open(0, "/hist/", _ft);
 	temp_open(1, "/fm/", fm_ft);
+	temp_open(2, "/sc/", _ft);
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == '-' && !argv[i][2]) {
 			i++;
