@@ -1518,7 +1518,12 @@ Example: report and consider only last command for error status
 .Sh EXINIT ENV VAR
 .Bd -literal
 EXINIT defines a sequence of ex commands to be performed
-at startup. Consequently, this is the primary way for scripting
+at startup, executed once after all files are opened.
+Any ex command or ex option from the EX COMMANDS and EX OPTIONS
+sections is valid inside EXINIT. Commands are separated by <:>,
+identical to the interactive ex prompt. Use printf '%b' to embed
+control characters (e.g. <ESC> as \ex1b, <^C> as \ex3).
+Consequently, this is the primary way for scripting
 and customizing Nextvi outside of C.
 Many standard text processing utils such as grep, awk, sed
 can be replaced by Nextvi with EXINIT in mind.
