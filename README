@@ -972,13 +972,14 @@ EX COMMANDS
              characters. It is often paired with :ph command to achieve
              hex editor-like functionality.
 
-     uz      Toggle zero width placeholders
+     uz      Toggle zero-width character placeholders
 
-             Use only if you need to hide zero width characters.
+             Hides zero-width characters rather than rendering them as placeholders.
 
-     ub      Toggle combining multi-codepoint placeholders
+     ub      Toggle multi-codepoint sequence placeholders
 
-             Use only if your terminal can render multi-codepoint utf-8 (emojis).
+             Passes multi-codepoint sequences to the terminal for native rendering
+             rather than substituting placeholders.
 
      ph[#clow] [#chigh] [#width] [#blen][*char]
              Redefine placeholders
