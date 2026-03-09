@@ -1168,19 +1168,25 @@ EX OPTIONS
              :err 1
 
 EXINIT ENV VAR
-     EXINIT defines a sequence of ex commands to be performed
-     at startup. Consequently, this is the primary way for scripting
-     and customizing Nextvi outside of C.
-     Many standard text processing utils such as grep, awk, sed
-     can be replaced by Nextvi with EXINIT in mind.
+     EXINIT defines a chain of ex commands to be performed at startup,
+     executed once after all files are opened. This is the only way
+     for scripting and customizing Nextvi outside of C or Unix pipes.
+     Many standard text processing utils such as grep, awk, sed can
+     be replaced by Nextvi with EXINIT in mind.
+
+     printf '%b' is the standard way to embed control characters into
+     EXINIT.
 
      Examples:
 
-     export EXINIT="$(printf '%b' 'e ./vi.c:& i\x7\x3:bx 1:bx')"
-             Index vi.c for autocomplete
+     export EXINIT='td 2:order 0:lim 5000'
+             Set ex options for optimal long line performance
 
      export EXINIT='b-1:r ./vi.c:b-1'
              Load vi.c into a history buffer
+
+     export EXINIT="$(printf '%b' 'e ./vi.c:& i\x7\x3:bx 1:bx')"
+             Index vi.c for autocomplete
 
      export EXINIT="$(printf '%b' '97reg o{\n}\x3kA\n\t')"
              Setup @ macro in register <a>
@@ -1192,9 +1198,6 @@ EXINIT ENV VAR
              Setup @ macro in register <b>
 
              @b macro pipes the current line into X11 clipboard.
-
-     export EXINIT='td 2:order 0:lim 5000'
-             Set ex options for optimal long line performance
 
 REGEX
      Pikevm is a fast non backtracking NFA simulation regex engine
@@ -1360,4 +1363,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                       March 8, 2026                      Nextvi 4.0
+Nextvi 4.1                       March 9, 2026                      Nextvi 4.1
