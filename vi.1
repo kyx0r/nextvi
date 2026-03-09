@@ -1272,15 +1272,16 @@ hex editor-like functionality.
 .Ed
 
 .It Cm uz
-Toggle zero width placeholders
+Toggle zero-width character placeholders
 .Bd -literal
-Use only if you need to hide zero width characters.
+Hides zero-width characters rather than rendering them as placeholders.
 .Ed
 
 .It Cm ub
-Toggle combining multi-codepoint placeholders
+Toggle multi-codepoint sequence placeholders
 .Bd -literal
-Use only if your terminal can render multi-codepoint utf-8 (emojis).
+Passes multi-codepoint sequences to the terminal for native rendering
+rather than substituting placeholders.
 .Ed
 
 .It Cm ph[\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
