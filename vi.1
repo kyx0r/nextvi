@@ -1,6 +1,6 @@
 .Dd Mar  8, 2026
 .Dt Nextvi 1
-.Os Nextvi 4.0
+.Os Nextvi 4.1
 .
 .Sh NAME
 .Nm Nextvi
@@ -1517,26 +1517,27 @@ Example: report and consider only last command for error status
 .
 .Sh EXINIT ENV VAR
 .Bd -literal
-EXINIT defines a sequence of ex commands to be performed
-at startup, executed once after all files are opened.
-Any ex command or ex option from the EX COMMANDS and EX OPTIONS
-sections is valid inside EXINIT. Commands are separated by <:>,
-identical to the interactive ex prompt. Use printf '%b' to embed
-control characters (e.g. <ESC> as \ex1b, <^C> as \ex3).
-Consequently, this is the primary way for scripting
-and customizing Nextvi outside of C.
-Many standard text processing utils such as grep, awk, sed
-can be replaced by Nextvi with EXINIT in mind.
+EXINIT defines a chain of ex commands to be performed at startup,
+executed once after all files are opened. This is the only way
+for scripting and customizing Nextvi outside of C.
+Many standard text processing utils such as grep, awk, sed can
+be replaced by Nextvi with EXINIT in mind.
+
+printf '%b' is the standard way to embed control characters into
+EXINIT.
 
 Examples:
 .Ed
 
 .Bl -tag -width Ds -compact
-.It Cm export EXINIT="$(printf '%b' 'e ./vi.c:& i\ex7\ex3:bx 1:bx')"
-Index vi.c for autocomplete
+.It Cm export EXINIT='td 2:order 0:lim 5000'
+Set ex options for optimal long line performance
 
 .It Cm export EXINIT='b-1:r ./vi.c:b-1'
 Load vi.c into a history buffer
+
+.It Cm export EXINIT="$(printf '%b' 'e ./vi.c:& i\ex7\ex3:bx 1:bx')"
+Index vi.c for autocomplete
 
 .It Cm export EXINIT="$(printf '%b' '97reg o{\en}\ex3kA\en\et')"
 Setup @ macro in register <a>
@@ -1548,9 +1549,6 @@ cursor in insert mode in between the braces.
 Setup @ macro in register <b>
 
 @b macro pipes the current line into X11 clipboard.
-
-.It Cm export EXINIT='td 2:order 0:lim 5000'
-Set ex options for optimal long line performance
 .El
 .
 .Sh REGEX
