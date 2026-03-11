@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
 #define WH1	15	/\\\\* bright white \\\\*/
 
@@ -36,8 +36,8 @@ ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 55\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/\\\\(int\\\\[\\\\]\\\\)//${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 55\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		return xserr;
 	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
 		sbuf sb;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 515\\${SEP}${QF}}${SEP};=
@@ -62,8 +62,8 @@ ${SEP}+2a 	free(offs);
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
 	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 486\\${SEP}${QF}}${SEP};=
@@ -86,8 +86,8 @@ ${SEP}+2a 	free(offs);
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: led.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_NEWLINE\\\\);
 	if \\\\(!rs\\\\)
 		return;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 50\\${SEP}${QF}}${SEP};=
@@ -123,8 +123,8 @@ ${SEP}+2a 	free(off);
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: regex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return 0;
 \\\\}
 
@@ -174,8 +174,8 @@ ${SEP}+2a 	free(subs);
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: ren.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static int syn_initft\\\\(int fti, int n, char \\\\*name, int flg\\\\)
 \\\\{
 	int i = n, set = hls\\\\[i\\\\]\\\\.set;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 255\\${SEP}${QF}}${SEP};=
@@ -224,8 +224,8 @@ ${SEP}+2a 	free(pats);
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 		char tmp\\\\[xcols\\\\+3\\\\], snum\\\\[32\\\\];${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 143\\${SEP}${QF}}${SEP};=
 ${SEP}.c 		char *tmp = emalloc(xcols+3);
 		char *snum = emalloc(32);
@@ -278,8 +278,8 @@ ${SEP}+2a 					free(buf);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct highlight \\\\{
 	char \\\\*ft;		/\\\\* the filetype of this pattern \\\\*/
 	char \\\\*pat;		/\\\\* regular expression \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 508\\${SEP}${QF}}${SEP};=

@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> /\\\\* line editing and drawing \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP};=
 ${SEP}.a #define LEDBACK 300
 #define LEDFORW 300

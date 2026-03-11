@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 40\\${SEP}${QF}}${SEP};=
@@ -82,8 +82,8 @@ ${SEP}+2a 	{\"sr\", ec_script},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: term.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
 		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 245\\${SEP}${QF}}${SEP};=
@@ -95,8 +95,8 @@ ${SEP}+3c 		if (xenvp)
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> files and thus is never static\\\\.
 \\\\*/
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 11\\${SEP}${QF}}${SEP};=

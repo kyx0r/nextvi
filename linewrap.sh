@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
 int xrcm = 1;			/\\\\* range command mode -
 				0: exec at command parse 1: exec at command \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 25\\${SEP}${QF}}${SEP};=
@@ -64,8 +64,8 @@ ${SEP}+2a 	{\"lw\", ec_linewrap},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\{
 	int i, pos = lo->pos;
 	if \\\\(s\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 84\\${SEP}${QF}}${SEP};=
@@ -215,8 +215,8 @@ ${SEP}+2a 		/* relink chain: restored lines have their pointers from edit time *
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		return;
 	\\\\}
 	s = lbuf_get\\\\(xb, row\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 171\\${SEP}${QF}}${SEP};=
@@ -240,8 +240,8 @@ ${SEP}+2a 	if (xlw && s) {
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct linfo \\\\{
 	int len;
 	int grec;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 148\\${SEP}${QF}}${SEP};=

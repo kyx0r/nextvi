@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> char n_ft\\\\[\\\\] = \"/#\";	/\\\\* numbers highlight for \\\\^v \\\\*/
 char nn_ft\\\\[\\\\] = \"/##\";	/\\\\* numbers highlight for # \\\\*/
 char ac_ft\\\\[\\\\] = \"/ac\";	/\\\\* autocomplete dropdown \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 31\\${SEP}${QF}}${SEP};=
@@ -45,16 +45,16 @@ ${SEP}+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 ${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/
 struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 43\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 43\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	free\\\\(sb->s\\\\);
 \\\\}
 
@@ -149,8 +149,8 @@ ${SEP}+2a 	temp_open(3, \"/grep/\", grep_ft);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> extern rset \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
 extern struct buf \\\\*bufs;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 456\\${SEP}${QF}}${SEP};=

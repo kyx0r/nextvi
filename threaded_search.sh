@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: cbuild.sh
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> -Wno-unused-parameter \\\\\\\\
 -Wno-unused-result \\\\\\\\
 -Wfatal-errors -std=c99 \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 49\\${SEP}${QF}}${SEP};=
@@ -37,8 +37,8 @@ ${SEP}+2a -lpthread \\\\
 ${SEP}vis 2${SEP}wq" $VI -e 'cbuild.sh'
 
 # Patch: lbuf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return n != 0;
 \\\\}
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP};=
@@ -151,8 +151,8 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return 0;
 \\\\}
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 402\\${SEP}${QF}}${SEP};=
@@ -166,8 +166,8 @@ ${SEP}.a 	else
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: uc.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 	/\\\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP};=
 ${SEP}-1${SEP}s/ u/ _u/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP}.,\$;f> 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\\\\* F \\\\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
@@ -177,8 +177,8 @@ ${SEP}+2a unsigned char *utf8_length = _utf8_length;
 ${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #include <sys/stat\\\\.h>
 #include <sys/ioctl\\\\.h>
 #include <sys/wait\\\\.h>${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 15\\${SEP}${QF}}${SEP};=
@@ -187,8 +187,8 @@ ${SEP}+2a #include <pthread.h>
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void syn_init\\\\(void\\\\);
 
 /\\\\* uc\\\\.c utf-8 helper functions \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 274\\${SEP}${QF}}${SEP};=

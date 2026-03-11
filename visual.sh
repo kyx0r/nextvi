@@ -27,16 +27,16 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		A\\\\(SYN_BD, BL1, WH1, YE\\\\)\\\\},
 
 	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 272\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 272\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static int vi_status;			/\\\\* permanent status bar \\\\*/
 static int vi_tsm;			/\\\\* type of the status message \\\\*/
 static int vi_nlword;			/\\\\* new line mode for eEwWbB \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 46\\${SEP}${QF}}${SEP};=

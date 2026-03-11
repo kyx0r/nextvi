@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 357\\${SEP}${QF}}${SEP};=
 ${SEP}+3c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
@@ -81,8 +81,8 @@ ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: term.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}8a int stdin_fd;
 static int isig;
 .
@@ -123,8 +123,8 @@ ${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 310\\${SEP}
 ${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 353\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
 	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1806\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
@@ -138,8 +138,8 @@ ${SEP}+3c 		} else if (!argv[i][1])
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> /\\\\* vi\\\\.c \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 543\\${SEP}${QF}}${SEP};=
 ${SEP}+2a extern int stdin_fd;
 .

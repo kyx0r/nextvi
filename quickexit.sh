@@ -27,14 +27,14 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 		A\\\\(BL1 \\\\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP};=
 ${SEP}-3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
 ${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
@@ -46,8 +46,8 @@ ${SEP}.a 	EO(qe),
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1a static int gettime_ms(void)
 {
 	struct timespec t;
@@ -77,8 +77,8 @@ ${SEP}.a _default:
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}9a #include <time.h>
 .
 ${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
@@ -89,8 +89,8 @@ ${SEP}+2a 				if (xqe)
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int p_reg;
 	int lsug;
 	int sug_pt;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 374\\${SEP}${QF}}${SEP};=

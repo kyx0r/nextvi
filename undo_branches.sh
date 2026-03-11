@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1365\\${SEP}${QF}}${SEP};=
@@ -51,8 +51,8 @@ ${SEP}+2a 	{\"up\", ec_undoleafs},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 5\\${SEP}${QF}}${SEP};=
@@ -176,8 +176,8 @@ ${SEP}+1a 		sbuf_make(lb->rehist, 128)
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct lbuf \\\\{
 	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
 	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 152\\${SEP}${QF}}${SEP};=

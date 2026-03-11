@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	xgrec--;
 \\\\}
 
@@ -50,16 +50,16 @@ void ex_done(void)
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: regex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 638\\${SEP}${QF}}${SEP};=
 ${SEP}.a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: ren.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> ren_state rstates${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 89\\${SEP}${QF}}${SEP};=
 ${SEP}.i void ren_done(void)
 {
@@ -89,8 +89,8 @@ void syn_done(void)
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> dir_init${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 233\\${SEP}${QF}}${SEP};=
 ${SEP}.a void dir_done(void);
 .

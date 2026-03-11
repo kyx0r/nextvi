@@ -27,14 +27,14 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 		A\\\\(BL1 \\\\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP};=
 ${SEP}-2${SEP}s/\\\\[f!\\\\]\\\\?!\\\\?\\\\|f\\\\[-\\\\+><tdp\\\\]\\\\?\\\\|inc\\\\|i\\\\|sc!\\\\?/q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}45a struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
@@ -446,8 +446,8 @@ void *win_split(int vertical, char *arg)
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> /\\\\* map cursor horizontal position to terminal column number \\\\*/
 int led_pos\\\\(char \\\\*s, int pos\\\\)
 \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 95\\${SEP}${QF}}${SEP};=
@@ -532,8 +532,8 @@ ${SEP}.,\$;f> 			term_done\\\\(\\\\);
 ${SEP}+3${SEP}s/g\\\\)/g, ai_max)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 613\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: term.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	term_out\\\\(\"\\\\\\\\33\\\\[K\"\\\\);
 \\\\}
 
@@ -551,8 +551,8 @@ ${SEP}+2a void term_killn(int n)
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static int vi_scrollud;			/\\\\* scroll amount for \\\\^u and \\\\^d \\\\*/
 static int vi_scrolley;			/\\\\* scroll amount for \\\\^e and \\\\^y \\\\*/
 static int vi_cndir = 1;		/\\\\* \\\\^n direction \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 44\\${SEP}${QF}}${SEP};=
@@ -906,8 +906,8 @@ ${SEP}+2${SEP}s/xrows/win_height()/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 176
 ${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1782\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void term_chr\\\\(int ch\\\\);
 void term_pos\\\\(int r, int c\\\\);
 void term_kill\\\\(void\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 331\\${SEP}${QF}}${SEP};=

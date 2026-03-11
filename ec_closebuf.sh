@@ -27,16 +27,16 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		A\\\\(BL1 \\\\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\\\)\\\\},
 	\\\\{ex_ft, \"\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\(\\\\.\\\\)\", A\\\\(AY1 \\\\| SYN_BD, YE\\\\)\\\\},
 	\\\\{ex_ft, \"!\\\\(\\\\?:\\\\[\\\\^!\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]\\\\|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\.\\\\)\\\\*!\\\\?\\\\|%\\\\(\\\\?:#\\\\|\\\\[0-9\\\\]\\\\+\\\\|@\\\\(\\\\[\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\)\\\\?\", A\\\\(WH1 \\\\| SYN_BD, CY1\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 262\\${SEP}${QF}}${SEP};=
 ${SEP}-1${SEP}s/cd\\\\?/c[dx]/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 262\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return val;
 \\\\}
 

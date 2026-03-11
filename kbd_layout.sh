@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: kmap.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
 	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 2\\${SEP}${QF}}${SEP};=
 ${SEP}+1a 	['y'] = \"h\",
@@ -43,8 +43,8 @@ ${SEP}+1a 	['y'] = \"h\",
 ${SEP}vis 2${SEP}wq" $VI -e 'kmap.h'
 
 # Patch: term.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 			err:
 			\\\\*ibuf = 0;
 		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 177\\${SEP}${QF}}${SEP};=
