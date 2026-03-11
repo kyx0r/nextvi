@@ -1524,8 +1524,8 @@ for scripting and customizing Nextvi outside of C or Unix pipes.
 Many standard text processing utils such as grep, awk, sed can
 be replaced by Nextvi with EXINIT in mind.
 
-printf '%b' is the standard way to embed control characters into
-EXINIT.
+printf with octal escapes is the standard way to embed control
+characters into EXINIT.
 
 Examples:
 .Ed
@@ -1537,10 +1537,10 @@ Set ex options for optimal long line performance
 .It Cm export EXINIT='b-1:r ./vi.c:b-1'
 Load vi.c into a history buffer
 
-.It Cm export EXINIT="$(printf '%b' 'e ./vi.c:& i\ex7\ex3:bx 1:bx')"
+.It Cm export EXINIT="$(printf 'e ./vi.c:& i\e007\e003:bx 1:bx')"
 Index vi.c for autocomplete
 
-.It Cm export EXINIT="$(printf '%b' '97reg o{\en}\ex3kA\en\et')"
+.It Cm export EXINIT="$(printf '97reg o{\en}\e003kA\en\et')"
 Setup @ macro in register <a>
 
 @a macro creates <{> and closing <}> below the cursor leaving
