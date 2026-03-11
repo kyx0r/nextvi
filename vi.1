@@ -515,9 +515,11 @@ Parsing follows the structure:
 [<\fIsep\fP>][\fIprefix\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
 Ex commands are initiated and separated by <:>. Fields can be
 padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
-which accepts [range] structure characters. There can only be
-one pad in between [cmd] and [args]. To avoid ambiguity in scripts,
-it is recommended to always use a pad between [cmd] and [args].
+which accepts [range] structure characters. Padding inside [prefix]
+structure is collapsed, except within nested structures. There
+can only be one pad in between [cmd] and [args]. To avoid ambiguity
+in scripts, it is recommended to always use a pad between [cmd]
+and [args].
 .Bl -tag -width Ds -compact
 
 Examples:
@@ -577,8 +579,6 @@ Some ex commands can be prefixed with ranges.
 [range] prefix implements vertical and horizontal ranges.
 [vrange] prefix implements vertical range and horizontal position.
 Without [cmd], [range] replaces [prefix] and changes position.
-Padding inside range structures is collapsed, except within nested
-structures.
 .Ed
 .Bl -tag -width Ds -compact
 
