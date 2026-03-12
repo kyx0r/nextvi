@@ -3,26 +3,11 @@
 
 /* access mode of new files */
 const int conf_mode = 0600;
-#define FTGEN(ft) static char ft_##ft[] = #ft;
-#define FT(ft) ft_##ft
-FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(msg)
+#define FTGEN(ft) static char ft##_ft[] = #ft;
+#define FT(ft) ft##_ft
+FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(mbox)
 FTGEN(mk) FTGEN(sh) FTGEN(py) FTGEN(js)
 FTGEN(html) FTGEN(diff) FTGEN(go)
-
-struct filetype fts[] = {
-	{FT(c), "\\.(c|h|cpp|hpp|cc|cs)$"},			/* C */
-	{FT(roff), "\\.(ms|tr|roff|tmac|txt|[1-9])$"},		/* troff */
-	{FT(tex), "\\.tex$"},					/* tex */
-	{FT(msg), "letter$|mbox$|mail$"},			/* email */
-	{FT(mk), "[Mm]akefile$|\\.mk$"},			/* makefile */
-	{FT(sh), "\\.(ba|z)?sh$|(ba|z|k)shrc$|profile$"},	/* shell script */
-	{FT(py), "\\.py$"},					/* python */
-	{FT(js), "\\.js$"},					/* javascript */
-	{FT(html), "\\.(html?|css)$"},				/* html,css */
-	{FT(diff), "\\.(patch|diff)$"},				/* diff */
-	{FT(go), "\\.go$"}					/* go */
-};
-const int ftslen = LEN(fts);
 
 char _ft[] = "/";	/* default hl */
 char fm_ft[] = "/fm";	/* file manager */
@@ -34,6 +19,31 @@ char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
 char bar_ft[] = "/-";	/* status bar (is never '\n' terminated) */
 char fuzz_ft[] = "/f";	/* fuzzy search prompt (is never '\n' terminated) */
 char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
+
+struct filetype fts[] = {
+	{FT(c), "\\.(c|h|cpp|hpp|cc|cs)$"},			/* C */
+	{FT(roff), "\\.(ms|tr|roff|tmac|txt|[1-9])$"},		/* troff */
+	{FT(tex), "\\.tex$"},					/* tex */
+	{FT(mbox), "letter$|mbox$|mail$"},			/* email */
+	{FT(mk), "[Mm]akefile$|\\.mk$"},			/* makefile */
+	{FT(sh), "\\.(ba|z)?sh$|(ba|z|k)shrc$|profile$"},	/* shell script */
+	{FT(py), "\\.py$"},					/* python */
+	{FT(js), "\\.js$"},					/* javascript */
+	{FT(html), "\\.(html?|css)$"},				/* html,css */
+	{FT(diff), "\\.(patch|diff)$"},				/* diff */
+	{FT(go), "\\.go$"},					/* go */
+	{_ft, NULL},
+	{fm_ft, NULL},
+	{n_ft, NULL},
+	{nn_ft, NULL},
+	{ac_ft, NULL},
+	{ex_ft, NULL},
+	{vs_ft, NULL},
+	{bar_ft, NULL},
+	{fuzz_ft, NULL},
+	{msg_ft, NULL}
+};
+const int ftslen = LEN(fts);
 
 #define IN	0	/* inverse | black */
 #define RE	1	/* red */
@@ -99,15 +109,15 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(tex), "\\$[^$]+\\$", A(YE)},
 	{FT(tex), "%.*", A(GR | SYN_IT)},
 
-	{FT(msg), NULL, A(CY1 | SYN_BD), 1, 2},
-	{FT(msg), NULL, A(RE1), 0, 1},
-	{FT(msg), "^From .*20..\n$", A(CY | SYN_BD)},
-	{FT(msg), "^Subject: (.*)", A(CY | SYN_BD, BL | SYN_BD)},
-	{FT(msg), "^From: (.*)", A(CY | SYN_BD, GR | SYN_BD)},
-	{FT(msg), "^To: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
-	{FT(msg), "^Cc: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
-	{FT(msg), "^[-A-Za-z]+: .+", A(CY | SYN_BD)},
-	{FT(msg), "^> .*", A(GR | SYN_IT)},
+	{FT(mbox), NULL, A(CY1 | SYN_BD), 1, 2},
+	{FT(mbox), NULL, A(RE1), 0, 1},
+	{FT(mbox), "^From .*20..\n$", A(CY | SYN_BD)},
+	{FT(mbox), "^Subject: (.*)", A(CY | SYN_BD, BL | SYN_BD)},
+	{FT(mbox), "^From: (.*)", A(CY | SYN_BD, GR | SYN_BD)},
+	{FT(mbox), "^To: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
+	{FT(mbox), "^Cc: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
+	{FT(mbox), "^[-A-Za-z]+: .+", A(CY | SYN_BD)},
+	{FT(mbox), "^> .*", A(GR | SYN_IT)},
 
 	{FT(mk), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(mk), NULL, A(RE1), 0, 1},
