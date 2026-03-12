@@ -268,12 +268,12 @@ char *syn_setft(char *ft)
 	for (i = 1; i < 4; i++)
 		syn_addhl(NULL, i);
 	for (i = 0; i < ftmidx; i++)
-		if (!strcmp(ft, ftmap[i].ft)) {
+		if (ft == ftmap[i].ft) {
 			ftidx = i;
 			return ftmap[ftidx].ft;
 		}
 	for (i = 0; i < hlslen; i++)
-		if (!strcmp(ft, hls[i].ft)) {
+		if (ft == hls[i].ft) {
 			default_hl:
 			ftidx = ftmidx;
 			while (syn_initft(ftmidx++, i, hls[i].ft, 0))
