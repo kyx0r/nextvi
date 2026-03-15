@@ -43,39 +43,15 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return NULL;
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1451\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static void modal_dispatch(char *tape)
 {
-	char *s = tape;
-	sbuf_smake(out, 64)
-	while (*s) {
-		while (*s == ' ') s++;
-		if (!*s) break;
-		char *end = walk(s);
-		if (*s == '(' && s[1] == '\$') {
-			char cmd[512];
-			char *p = s + 2;
-			char *cap = end - 1;
-			int len = (int)(cap - p);
-			if (len > 0 && len < (int)sizeof(cmd) - 1) {
-				memcpy(cmd, p, len);
-				cmd[len] = '\\\\0';
-				ex_exec(cmd);
-			}
-		} else {
-			sbuf_mem(out, s, end - s)
-			sbuf_chr(out, ' ')
-		}
-		s = end;
-	}
-	if (out->s_n > 0) {
-		sbufn_null(out)
-		ex_print(out->s, NULL)
-	}
-	free(out->s);
+	while (*tape == ' ') tape++;
+	if (*tape)
+		ex_print(tape, NULL);
 }
 
 static void *ec_modal(char *loc, char *cmd, char *arg)
 {
 	/* reset modal state */
-	flip = 0;
+	flip = 0; safe_offset = 0;
 	src_ = bank_a; dst_ = bank_b;
 	rules_ = rules; dict_ = dict;
 	stack_ = stack;
@@ -106,23 +82,12 @@ static void *ec_modal(char *loc, char *cmd, char *arg)
 	while (ptr > src_ && *(ptr - 1) <= ' ') ptr--;
 	*ptr = '\\\\0';
 
-	/* set up output capture */
-	sbuf_smake(out, 64)
-	modal_output = out;
 	cycles = 0x200000;
 
 	/* rewrite loop */
 	for (int rw = 0; rewrite(); rw++)
-		if (!--cycles) {
-			free(out->s);
+		if (!--cycles)
 			return \"modal: rewrites exceeded\";
-		}
-	/* flush string output captured via device_write */
-	if (out->s_n > 0) {
-		sbufn_null(out)
-		ex_print(out->s, NULL)
-	}
-	free(out->s);
 
 	/* dispatch (\$cmd...) forms and print residue */
 	modal_dispatch(src_);
@@ -142,13 +107,11 @@ SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i #include <stdio.h>
 
-static sbuf *modal_output;
-
 typedef struct {
 	char *a, *b;
 } rule;
 
-static int flip, cycles = 0x200000;
+static int flip, cycles = 0x200000, safe_offset = 0;
 static rule rules[0x1000], *rules_ = rules;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
@@ -160,7 +123,8 @@ static char *regs[0x100], stack[0x10], *stack_ = stack;
 
 static char *copy(char *src, char *dst, int length)
 {
-	while (length--) *dst++ = *src++;
+	while (length--)
+		*dst++ = *src++;
 	return dst;
 }
 
@@ -170,12 +134,16 @@ static char *walk(char *s)
 	int depth = 0;
 	if (*s == '(') {
 		while ((c = *s++)) {
-			if (c == '(') depth++;
-			if (c == ')') --depth;
-			if (!depth) return s;
+			if (c == '(')
+				depth++;
+			if (c == ')')
+				--depth;
+			if (!depth)
+				return s;
 		}
 	}
-	while ((c = *s) && !spacer(c)) s++;
+	while ((c = *s) && !spacer(c))
+		s++;
 	return s;
 }
 
@@ -185,57 +153,42 @@ static int sint(char *s)
 	int r = 0, n = 1;
 	if (c == '#') {
 		s++;
-		while ((c = *s) && s++ < cap) r = (r << 4) | chex(c);
+		while ((c = *s) && s++ < cap)
+			r = (r << 4) | chex(c);
 		return r;
 	}
-	if (c == '-') { n = -1, s++; }
-	while ((c = *s) && s++ < cap) r = r * 10 + c - '0';
+	if (c == '-') {
+		n = -1;
+		s++;
+	}
+	while ((c = *s) && s++ < cap)
+		r = r * 10 + c - '0';
 	return r * n;
 }
 
 static void device_write(char *s)
 {
 	char **reg = regs + '0';
-	/* phase: ALU */
-	if (*reg) {
-		int hex = **reg == '#', acc = sint(*reg++);
-		/* clang-format off */
-		switch(*s) {
-		case '+': while (*reg) acc += sint(*reg++); break;
-		case '-': while (*reg) acc -= sint(*reg++); break;
-		case '*': while (*reg) acc *= sint(*reg++); break;
-		case '/': while (*reg) acc /= sint(*reg++); break;
-		case '%': while (*reg) acc %= sint(*reg++); break;
-		case '&': while (*reg) acc &= sint(*reg++); break;
-		case '^': while (*reg) acc ^= sint(*reg++); break;
-		case '|': while (*reg) acc |= sint(*reg++); break;
-		case '=': while (*reg) acc = acc == sint(*reg++); break;
-		case '!': while (*reg) acc = acc != sint(*reg++); break;
-		case '>': while (*reg) acc = acc > sint(*reg++); break;
-		case '<': while (*reg) acc = acc < sint(*reg++); break;
-		}
-		/* clang-format on */
-		dst_ += snprintf(dst_, 0x10, hex ? \"#%x\" : \"%d\", acc);
+	if (!*reg)
 		return;
+	int hex = **reg == '#', acc = sint(*reg++);
+	/* clang-format off */
+	switch(*s) {
+	case '+': while (*reg) acc += sint(*reg++); break;
+	case '-': while (*reg) acc -= sint(*reg++); break;
+	case '*': while (*reg) acc *= sint(*reg++); break;
+	case '/': while (*reg) acc /= sint(*reg++); break;
+	case '%': while (*reg) acc %= sint(*reg++); break;
+	case '&': while (*reg) acc &= sint(*reg++); break;
+	case '^': while (*reg) acc ^= sint(*reg++); break;
+	case '|': while (*reg) acc |= sint(*reg++); break;
+	case '=': while (*reg) acc = acc == sint(*reg++); break;
+	case '!': while (*reg) acc = acc != sint(*reg++); break;
+	case '>': while (*reg) acc = acc > sint(*reg++); break;
+	case '<': while (*reg) acc = acc < sint(*reg++); break;
 	}
-	/* phase: string */
-	char *cap = walk(s);
-	if (*s == '(') s++, --cap;
-	while (s < cap) {
-		char c = *s++, hb, lb;
-		if (c == '\\\\\\\\') {
-			unsigned char wc = 0;
-			switch(*s++) {
-			case 't': wc = 0x09; break;
-			case 'n': wc = 0x0a; break;
-			case 's': wc = 0x20; break;
-			case '#': hb = *s++, lb = *s++; wc = (chex(hb) << 4) | chex(lb); break;
-			}
-			if (wc)
-				sbuf_chr(modal_output, wc)
-		} else
-			sbuf_chr(modal_output, c)
-	}
+	/* clang-format on */
+	dst_ += snprintf(dst_, 0x10, hex ? \"#%x\" : \"%d\", acc);
 }
 
 static void write_reg(char r, char *reg)
@@ -271,7 +224,7 @@ static void write_reg(char r, char *reg)
 		} else /* token */
 			while ((c = *reg++) && !spacer(c))
 				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
-		for(i = 0; i < depth; i++) *dst_++ = ')';
+		for (i = 0; i < depth; i++) *dst_++ = ')';
 		return;
 	default:
 		dst_ = copy(reg, dst_, walk(reg) - reg);
@@ -301,11 +254,16 @@ static int apply_rule(rule *r, char *s)
 	while ((c = *a++)) {
 		if (c == '?') {
 			char *pcap = walk(s);
+			if (pcap == s)
+				return 0;
 			rid = *a++;
 			if ((reg = regs[rid])) { /* reg cmp */
 				char *rcap = walk(reg), *pp = s;
-				while (reg < rcap || pp < pcap)
-					if (*reg++ != *pp++) return 0;
+				if (rcap - reg != pcap - pp)
+					return 0;
+				while (reg < rcap)
+					if (*reg++ != *pp++)
+						return 0;
 			} else /* reg set */
 				regs[rid] = s, *stack_++ = rid;
 			s = pcap;
@@ -322,8 +280,10 @@ static int apply_rule(rule *r, char *s)
 		else
 			*dst_++ = c;
 	if (dst_ == origin) {
-		while (*s == ' ') s++;
-		if (*s == ')' && *(dst_ - 1) == ' ') dst_--;
+		while (*s == ' ')
+			s++;
+		if (*s == ')' && *(dst_ - 1) == ' ')
+			dst_--;
 	}
 	return write_tail(s, r);
 }
@@ -352,7 +312,10 @@ static char *parse_frag(char **side, char *s)
 static rule *find_rule(char *s, char *cap)
 {
 	rule *r = rules;
-	if (*s == '(') s++, cap--;
+	if (*s == '(') {
+		s++;
+		cap--;
+	}
 	while (r < rules_) {
 		char *ss = s, *a = r->a;
 		while (*ss++ == *a++)
@@ -382,9 +345,9 @@ static void remove_rule(rule *r)
 static int rewrite(void)
 {
 	char c, last = 0, *cap, *s = src_;
-	while (*s == ' ') s++;
+	while (*s == ' ')
+		s++;
 	while ((c = *s)) {
-		ex_print(s, NULL)
 		if (c == '(' || spacer(last)) {
 			rule *r;
 			/* phase: undefine */
@@ -408,8 +371,6 @@ static int rewrite(void)
 					rules_++;
 				while (*s == ' ')
 					s++;
-				printf(\"\\\\nr->a: %s r->b: %s\\\\n\", r->a, r->b);
-				printf(\"\\\\ndict: %s\\\\n\", dict);
 				return write_tail(s, NULL);
 			}
 			/* phase: lambda */
@@ -419,14 +380,34 @@ static int rewrite(void)
 				r = rules_;
 				parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				s = cap;
-				while (*s == ' ') s++;
+				while (*s == ' ')
+					s++;
 				if (!*r->a || !apply_rule(r, s))
 					write_tail(s, NULL);
 				dict_ = d;
 				return 1;
 			}
+			/* phase: exec */
+			if (c == '(' && s[1] == '\$') {
+				cap = walk(s);
+				char *p = s + 2, *q = p;
+				while (q < cap - 1 && *q != '(')
+					q++;
+				if (q == cap - 1) {
+					char cmd[512];
+					int len = (int)(cap - 1 - p);
+					if (len > 0 && len < (int)sizeof(cmd) - 1) {
+						memcpy(cmd, p, len);
+						cmd[len] = '\\\\0';
+						ex_exec(cmd);
+					}
+					while (*cap == ' ')
+						cap++;
+					return write_tail(cap, NULL);
+				}
+			}
 			/* phase: match */
-			for(r = rules; r < rules_; r++)
+			for (r = rules; r < rules_; r++)
 				if (apply_rule(r, s))
 					return 1;
 		}
@@ -456,9 +437,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'modal.c'
 # Patch: test
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i 
-<> (?0 ?: ?1) (?:)
-<> (out ?r) (\$p ?r)
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i <> (?0 ?: ?1) (?:)
+<> (out (?x)) (\$p ?x)
 
 (out (3 + 9 - 5 + 23 / 10))
 .
@@ -491,48 +471,24 @@ index b7cb7e09..3b729bd1 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 3ab335dd..263f5345 100644
+index 3ab335dd..c660aafc 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1449,6 +1449,94 @@ _EO(left,
+@@ -1449,6 +1449,59 @@ _EO(left,
  	return NULL;
  )
  
 +static void modal_dispatch(char *tape)
 +{
-+	char *s = tape;
-+	sbuf_smake(out, 64)
-+	while (*s) {
-+		while (*s == ' ') s++;
-+		if (!*s) break;
-+		char *end = walk(s);
-+		if (*s == '(' && s[1] == '$') {
-+			char cmd[512];
-+			char *p = s + 2;
-+			char *cap = end - 1;
-+			int len = (int)(cap - p);
-+			if (len > 0 && len < (int)sizeof(cmd) - 1) {
-+				memcpy(cmd, p, len);
-+				cmd[len] = '\0';
-+				ex_exec(cmd);
-+			}
-+		} else {
-+			sbuf_mem(out, s, end - s)
-+			sbuf_chr(out, ' ')
-+		}
-+		s = end;
-+	}
-+	if (out->s_n > 0) {
-+		sbufn_null(out)
-+		ex_print(out->s, NULL)
-+	}
-+	free(out->s);
++	while (*tape == ' ') tape++;
++	if (*tape)
++		ex_print(tape, NULL);
 +}
 +
 +static void *ec_modal(char *loc, char *cmd, char *arg)
 +{
 +	/* reset modal state */
-+	flip = 0;
++	flip = 0; safe_offset = 0;
 +	src_ = bank_a; dst_ = bank_b;
 +	rules_ = rules; dict_ = dict;
 +	stack_ = stack;
@@ -563,23 +519,12 @@ index 3ab335dd..263f5345 100644
 +	while (ptr > src_ && *(ptr - 1) <= ' ') ptr--;
 +	*ptr = '\0';
 +
-+	/* set up output capture */
-+	sbuf_smake(out, 64)
-+	modal_output = out;
 +	cycles = 0x200000;
 +
 +	/* rewrite loop */
 +	for (int rw = 0; rewrite(); rw++)
-+		if (!--cycles) {
-+			free(out->s);
++		if (!--cycles)
 +			return "modal: rewrites exceeded";
-+		}
-+	/* flush string output captured via device_write */
-+	if (out->s_n > 0) {
-+		sbufn_null(out)
-+		ex_print(out->s, NULL)
-+	}
-+	free(out->s);
 +
 +	/* dispatch ($cmd...) forms and print residue */
 +	modal_dispatch(src_);
@@ -589,7 +534,7 @@ index 3ab335dd..263f5345 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1498,6 +1586,7 @@ static struct excmd {
+@@ -1498,6 +1551,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -599,19 +544,17 @@ index 3ab335dd..263f5345 100644
  	{"q", ec_quit},
 diff --git a/modal.c b/modal.c
 new file mode 100644
-index 00000000..5ef66f60
+index 00000000..ea441d58
 --- /dev/null
 +++ b/modal.c
-@@ -0,0 +1,310 @@
+@@ -0,0 +1,326 @@
 +#include <stdio.h>
-+
-+static sbuf *modal_output;
 +
 +typedef struct {
 +	char *a, *b;
 +} rule;
 +
-+static int flip, cycles = 0x200000;
++static int flip, cycles = 0x200000, safe_offset = 0;
 +static rule rules[0x1000], *rules_ = rules;
 +static char dict[0x8000], *dict_ = dict;
 +static char bank_a[0x4000], *src_ = bank_a;
@@ -623,7 +566,8 @@ index 00000000..5ef66f60
 +
 +static char *copy(char *src, char *dst, int length)
 +{
-+	while (length--) *dst++ = *src++;
++	while (length--)
++		*dst++ = *src++;
 +	return dst;
 +}
 +
@@ -633,12 +577,16 @@ index 00000000..5ef66f60
 +	int depth = 0;
 +	if (*s == '(') {
 +		while ((c = *s++)) {
-+			if (c == '(') depth++;
-+			if (c == ')') --depth;
-+			if (!depth) return s;
++			if (c == '(')
++				depth++;
++			if (c == ')')
++				--depth;
++			if (!depth)
++				return s;
 +		}
 +	}
-+	while ((c = *s) && !spacer(c)) s++;
++	while ((c = *s) && !spacer(c))
++		s++;
 +	return s;
 +}
 +
@@ -648,57 +596,42 @@ index 00000000..5ef66f60
 +	int r = 0, n = 1;
 +	if (c == '#') {
 +		s++;
-+		while ((c = *s) && s++ < cap) r = (r << 4) | chex(c);
++		while ((c = *s) && s++ < cap)
++			r = (r << 4) | chex(c);
 +		return r;
 +	}
-+	if (c == '-') { n = -1, s++; }
-+	while ((c = *s) && s++ < cap) r = r * 10 + c - '0';
++	if (c == '-') {
++		n = -1;
++		s++;
++	}
++	while ((c = *s) && s++ < cap)
++		r = r * 10 + c - '0';
 +	return r * n;
 +}
 +
 +static void device_write(char *s)
 +{
 +	char **reg = regs + '0';
-+	/* phase: ALU */
-+	if (*reg) {
-+		int hex = **reg == '#', acc = sint(*reg++);
-+		/* clang-format off */
-+		switch(*s) {
-+		case '+': while (*reg) acc += sint(*reg++); break;
-+		case '-': while (*reg) acc -= sint(*reg++); break;
-+		case '*': while (*reg) acc *= sint(*reg++); break;
-+		case '/': while (*reg) acc /= sint(*reg++); break;
-+		case '%': while (*reg) acc %= sint(*reg++); break;
-+		case '&': while (*reg) acc &= sint(*reg++); break;
-+		case '^': while (*reg) acc ^= sint(*reg++); break;
-+		case '|': while (*reg) acc |= sint(*reg++); break;
-+		case '=': while (*reg) acc = acc == sint(*reg++); break;
-+		case '!': while (*reg) acc = acc != sint(*reg++); break;
-+		case '>': while (*reg) acc = acc > sint(*reg++); break;
-+		case '<': while (*reg) acc = acc < sint(*reg++); break;
-+		}
-+		/* clang-format on */
-+		dst_ += snprintf(dst_, 0x10, hex ? "#%x" : "%d", acc);
++	if (!*reg)
 +		return;
++	int hex = **reg == '#', acc = sint(*reg++);
++	/* clang-format off */
++	switch(*s) {
++	case '+': while (*reg) acc += sint(*reg++); break;
++	case '-': while (*reg) acc -= sint(*reg++); break;
++	case '*': while (*reg) acc *= sint(*reg++); break;
++	case '/': while (*reg) acc /= sint(*reg++); break;
++	case '%': while (*reg) acc %= sint(*reg++); break;
++	case '&': while (*reg) acc &= sint(*reg++); break;
++	case '^': while (*reg) acc ^= sint(*reg++); break;
++	case '|': while (*reg) acc |= sint(*reg++); break;
++	case '=': while (*reg) acc = acc == sint(*reg++); break;
++	case '!': while (*reg) acc = acc != sint(*reg++); break;
++	case '>': while (*reg) acc = acc > sint(*reg++); break;
++	case '<': while (*reg) acc = acc < sint(*reg++); break;
 +	}
-+	/* phase: string */
-+	char *cap = walk(s);
-+	if (*s == '(') s++, --cap;
-+	while (s < cap) {
-+		char c = *s++, hb, lb;
-+		if (c == '\\') {
-+			unsigned char wc = 0;
-+			switch(*s++) {
-+			case 't': wc = 0x09; break;
-+			case 'n': wc = 0x0a; break;
-+			case 's': wc = 0x20; break;
-+			case '#': hb = *s++, lb = *s++; wc = (chex(hb) << 4) | chex(lb); break;
-+			}
-+			if (wc)
-+				sbuf_chr(modal_output, wc)
-+		} else
-+			sbuf_chr(modal_output, c)
-+	}
++	/* clang-format on */
++	dst_ += snprintf(dst_, 0x10, hex ? "#%x" : "%d", acc);
 +}
 +
 +static void write_reg(char r, char *reg)
@@ -734,7 +667,7 @@ index 00000000..5ef66f60
 +		} else /* token */
 +			while ((c = *reg++) && !spacer(c))
 +				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
-+		for(i = 0; i < depth; i++) *dst_++ = ')';
++		for (i = 0; i < depth; i++) *dst_++ = ')';
 +		return;
 +	default:
 +		dst_ = copy(reg, dst_, walk(reg) - reg);
@@ -764,11 +697,16 @@ index 00000000..5ef66f60
 +	while ((c = *a++)) {
 +		if (c == '?') {
 +			char *pcap = walk(s);
++			if (pcap == s)
++				return 0;
 +			rid = *a++;
 +			if ((reg = regs[rid])) { /* reg cmp */
 +				char *rcap = walk(reg), *pp = s;
-+				while (reg < rcap || pp < pcap)
-+					if (*reg++ != *pp++) return 0;
++				if (rcap - reg != pcap - pp)
++					return 0;
++				while (reg < rcap)
++					if (*reg++ != *pp++)
++						return 0;
 +			} else /* reg set */
 +				regs[rid] = s, *stack_++ = rid;
 +			s = pcap;
@@ -785,8 +723,10 @@ index 00000000..5ef66f60
 +		else
 +			*dst_++ = c;
 +	if (dst_ == origin) {
-+		while (*s == ' ') s++;
-+		if (*s == ')' && *(dst_ - 1) == ' ') dst_--;
++		while (*s == ' ')
++			s++;
++		if (*s == ')' && *(dst_ - 1) == ' ')
++			dst_--;
 +	}
 +	return write_tail(s, r);
 +}
@@ -815,7 +755,10 @@ index 00000000..5ef66f60
 +static rule *find_rule(char *s, char *cap)
 +{
 +	rule *r = rules;
-+	if (*s == '(') s++, cap--;
++	if (*s == '(') {
++		s++;
++		cap--;
++	}
 +	while (r < rules_) {
 +		char *ss = s, *a = r->a;
 +		while (*ss++ == *a++)
@@ -845,9 +788,9 @@ index 00000000..5ef66f60
 +static int rewrite(void)
 +{
 +	char c, last = 0, *cap, *s = src_;
-+	while (*s == ' ') s++;
++	while (*s == ' ')
++		s++;
 +	while ((c = *s)) {
-+		ex_print(s, NULL)
 +		if (c == '(' || spacer(last)) {
 +			rule *r;
 +			/* phase: undefine */
@@ -871,8 +814,6 @@ index 00000000..5ef66f60
 +					rules_++;
 +				while (*s == ' ')
 +					s++;
-+				printf("\nr->a: %s r->b: %s\n", r->a, r->b);
-+				printf("\ndict: %s\n", dict);
 +				return write_tail(s, NULL);
 +			}
 +			/* phase: lambda */
@@ -882,14 +823,34 @@ index 00000000..5ef66f60
 +				r = rules_;
 +				parse_frag(&r->b, parse_frag(&r->a, s + 2));
 +				s = cap;
-+				while (*s == ' ') s++;
++				while (*s == ' ')
++					s++;
 +				if (!*r->a || !apply_rule(r, s))
 +					write_tail(s, NULL);
 +				dict_ = d;
 +				return 1;
 +			}
++			/* phase: exec */
++			if (c == '(' && s[1] == '$') {
++				cap = walk(s);
++				char *p = s + 2, *q = p;
++				while (q < cap - 1 && *q != '(')
++					q++;
++				if (q == cap - 1) {
++					char cmd[512];
++					int len = (int)(cap - 1 - p);
++					if (len > 0 && len < (int)sizeof(cmd) - 1) {
++						memcpy(cmd, p, len);
++						cmd[len] = '\0';
++						ex_exec(cmd);
++					}
++					while (*cap == ' ')
++						cap++;
++					return write_tail(cap, NULL);
++				}
++			}
 +			/* phase: match */
-+			for(r = rules; r < rules_; r++)
++			for (r = rules; r < rules_; r++)
 +				if (apply_rule(r, s))
 +					return 1;
 +		}
@@ -915,13 +876,12 @@ index 00000000..5ef66f60
 +}
 diff --git a/test b/test
 new file mode 100644
-index 00000000..f2d25432
+index 00000000..315de261
 --- /dev/null
 +++ b/test
-@@ -0,0 +1,5 @@
-+
+@@ -0,0 +1,4 @@
 +<> (?0 ?: ?1) (?:)
-+<> (out ?r) ($p ?r)
++<> (out (?x)) ($p ?x)
 +
 +(out (3 + 9 - 5 + 23 / 10))
 diff --git a/vi.c b/vi.c
