@@ -50,7 +50,8 @@ ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 		beg = 0;
 		end = lbuf_len(xb);
 	}
-	modal_t *ms = ecalloc(1, sizeof(modal_t));
+	modal_t *ms = emalloc(sizeof(modal_t));
+	memset(ms->regs, 0, sizeof(ms->regs));
 	rules = rules_ = ms->rules;
 	dict = dict_ = ms->dict;
 	bank_a = src_ = ms->bank_a;
@@ -475,10 +476,10 @@ index b7cb7e09..3b729bd1 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 3ab335dd..c19ba19b 100644
+index 3ab335dd..19d91c26 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1449,6 +1449,52 @@ _EO(left,
+@@ -1449,6 +1449,53 @@ _EO(left,
  	return NULL;
  )
  
@@ -491,7 +492,8 @@ index 3ab335dd..c19ba19b 100644
 +		beg = 0;
 +		end = lbuf_len(xb);
 +	}
-+	modal_t *ms = ecalloc(1, sizeof(modal_t));
++	modal_t *ms = emalloc(sizeof(modal_t));
++	memset(ms->regs, 0, sizeof(ms->regs));
 +	rules = rules_ = ms->rules;
 +	dict = dict_ = ms->dict;
 +	bank_a = src_ = ms->bank_a;
@@ -531,7 +533,7 @@ index 3ab335dd..c19ba19b 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1498,6 +1544,7 @@ static struct excmd {
+@@ -1498,6 +1545,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
