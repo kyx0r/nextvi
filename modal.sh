@@ -41,14 +41,7 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return NULL;
 \\\\)
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1451\\${SEP}${QF}}${SEP};=
-${SEP}+2a static void modal_dispatch(char *tape)
-{
-	while (*tape == ' ') tape++;
-	if (*tape)
-		ex_print(tape, NULL);
-}
-
-static void *ec_modal(char *loc, char *cmd, char *arg)
+${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 {
 	/* reset modal state */
 	flip = 0; safe_offset = 0;
@@ -57,7 +50,6 @@ static void *ec_modal(char *loc, char *cmd, char *arg)
 	stack_ = stack;
 	memset(regs, 0, sizeof(regs));
 	bank_a[0] = bank_b[0] = 0;
-
 	/* load rules from lbuf range into src_ */
 	char *ptr = src_;
 	if (loc[0] && lbuf_len(xb)) {
@@ -73,24 +65,18 @@ static void *ec_modal(char *loc, char *cmd, char *arg)
 			}
 		}
 	}
-
 	/* append arg (initial tape) to src_ */
 	if (*arg)
 		ptr = mem_import(arg, ptr);
-
 	/* trim trailing whitespace and null-terminate */
-	while (ptr > src_ && *(ptr - 1) <= ' ') ptr--;
+	while (ptr > src_ && *(ptr - 1) <= ' ')
+		ptr--;
 	*ptr = '\\\\0';
-
 	cycles = 0x200000;
-
 	/* rewrite loop */
 	for (int rw = 0; rewrite(); rw++)
 		if (!--cycles)
 			return \"modal: rewrites exceeded\";
-
-	/* dispatch (\$cmd...) forms and print residue */
-	modal_dispatch(src_);
 	return NULL;
 }
 
@@ -471,20 +457,13 @@ index b7cb7e09..3b729bd1 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 3ab335dd..c660aafc 100644
+index 3ab335dd..c39a4840 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1449,6 +1449,59 @@ _EO(left,
+@@ -1449,6 +1449,45 @@ _EO(left,
  	return NULL;
  )
  
-+static void modal_dispatch(char *tape)
-+{
-+	while (*tape == ' ') tape++;
-+	if (*tape)
-+		ex_print(tape, NULL);
-+}
-+
 +static void *ec_modal(char *loc, char *cmd, char *arg)
 +{
 +	/* reset modal state */
@@ -494,7 +473,6 @@ index 3ab335dd..c660aafc 100644
 +	stack_ = stack;
 +	memset(regs, 0, sizeof(regs));
 +	bank_a[0] = bank_b[0] = 0;
-+
 +	/* load rules from lbuf range into src_ */
 +	char *ptr = src_;
 +	if (loc[0] && lbuf_len(xb)) {
@@ -510,31 +488,25 @@ index 3ab335dd..c660aafc 100644
 +			}
 +		}
 +	}
-+
 +	/* append arg (initial tape) to src_ */
 +	if (*arg)
 +		ptr = mem_import(arg, ptr);
-+
 +	/* trim trailing whitespace and null-terminate */
-+	while (ptr > src_ && *(ptr - 1) <= ' ') ptr--;
++	while (ptr > src_ && *(ptr - 1) <= ' ')
++		ptr--;
 +	*ptr = '\0';
-+
 +	cycles = 0x200000;
-+
 +	/* rewrite loop */
 +	for (int rw = 0; rewrite(); rw++)
 +		if (!--cycles)
 +			return "modal: rewrites exceeded";
-+
-+	/* dispatch ($cmd...) forms and print residue */
-+	modal_dispatch(src_);
 +	return NULL;
 +}
 +
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1498,6 +1551,7 @@ static struct excmd {
+@@ -1498,6 +1537,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
