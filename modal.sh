@@ -43,26 +43,30 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return NULL;
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1451\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 {
-	/* reset modal state */
-	flip = 0; safe_offset = 0;
-	src_ = bank_a; dst_ = bank_b;
-	rules_ = rules; dict_ = dict;
-	stack_ = stack;
-	memset(regs, 0, sizeof(regs));
-	bank_a[0] = bank_b[0] = 0;
+	int beg = 0, end = 0, o1 = 0, o2 = -1;
+	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
+		return xrerr;
+	if (!*loc) {
+		beg = 0;
+		end = lbuf_len(xb);
+	}
+	modal_t *ms = ecalloc(1, sizeof(modal_t));
+	rules = rules_ = ms->rules;
+	dict = dict_ = ms->dict;
+	bank_a = src_ = ms->bank_a;
+	bank_b = dst_ = ms->bank_b;
+	regs = ms->regs;
+	stack = stack_ = ms->stack;
+	flip = safe_offset = 0;
+	cycles = 0x200000;
 	/* load rules from lbuf range into src_ */
 	char *ptr = src_;
-	if (loc[0] && lbuf_len(xb)) {
-		int beg = 0, end = 0, o1 = 0, o2 = -1;
-		if (ex_region(loc, &beg, &end, &o1, &o2))
-			return xrerr;
-		for (int i = beg; i < end; i++) {
-			char *ln = lbuf_get(xb, i);
-			if (ln) {
-				ptr = mem_import(ln, ptr);
-				if (ptr < src_ + sizeof(bank_a) - 1)
-					*ptr++ = ' ';
-			}
+	for (int i = beg; i < end; i++) {
+		char *ln = lbuf_get(xb, i);
+		if (ln) {
+			ptr = mem_import(ln, ptr);
+			if (ptr < src_ + sizeof(ms->bank_a) - 1)
+				*ptr++ = ' ';
 		}
 	}
 	/* append arg (initial tape) to src_ */
@@ -72,12 +76,15 @@ ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 	while (ptr > src_ && *(ptr - 1) <= ' ')
 		ptr--;
 	*ptr = '\\\\0';
-	cycles = 0x200000;
 	/* rewrite loop */
+	void *ret = NULL;
 	for (int rw = 0; rewrite(); rw++)
-		if (!--cycles)
-			return \"modal: rewrites exceeded\";
-	return NULL;
+		if (!--cycles) {
+			ret = \"modal: rewrites exceeded\";
+			break;
+		}
+	free(ms);
+	return ret;
 }
 
 .
@@ -97,12 +104,20 @@ typedef struct {
 	char *a, *b;
 } rule;
 
-static int flip, cycles = 0x200000, safe_offset = 0;
-static rule rules[0x1000], *rules_ = rules;
-static char dict[0x8000], *dict_ = dict;
-static char bank_a[0x4000], *src_ = bank_a;
-static char bank_b[0x4000], *dst_ = bank_b;
-static char *regs[0x100], stack[0x10], *stack_ = stack;
+typedef struct {
+	rule rules[0x1000];
+	char dict[0x8000];
+	char bank_a[0x4000];
+	char bank_b[0x4000];
+	char *regs[0x100];
+	char stack[0x10];
+} modal_t;
+
+static int flip, cycles, safe_offset;
+static rule *rules, *rules_;
+static char *dict, *dict_;
+static char *bank_a, *bank_b, *src_, *dst_;
+static char **regs, *stack, *stack_;
 
 #define spacer(c) (c <= ' ' || c == '(' || c == ')')
 #define chex(c) (0xf & (c - (c <= '9' ? '0' : 0x57)))
@@ -250,8 +265,10 @@ static int apply_rule(rule *r, char *s)
 				while (reg < rcap)
 					if (*reg++ != *pp++)
 						return 0;
-			} else /* reg set */
-				regs[rid] = s, *stack_++ = rid;
+			} else { /* reg set */
+				regs[rid] = s;
+				*stack_++ = rid;
+			}
 			s = pcap;
 		} else if (c != *s++)
 			return 0;
@@ -427,6 +444,7 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i <> (?0 ?: ?1) (?:)
 <> (out (?x)) (\$p ?x)
 
 (out (3 + 9 - 5 + 23 / 10))
+(out (asd3+9))
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'test'
 
@@ -457,35 +475,39 @@ index b7cb7e09..3b729bd1 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 3ab335dd..c39a4840 100644
+index 3ab335dd..c19ba19b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1449,6 +1449,45 @@ _EO(left,
+@@ -1449,6 +1449,52 @@ _EO(left,
  	return NULL;
  )
  
 +static void *ec_modal(char *loc, char *cmd, char *arg)
 +{
-+	/* reset modal state */
-+	flip = 0; safe_offset = 0;
-+	src_ = bank_a; dst_ = bank_b;
-+	rules_ = rules; dict_ = dict;
-+	stack_ = stack;
-+	memset(regs, 0, sizeof(regs));
-+	bank_a[0] = bank_b[0] = 0;
++	int beg = 0, end = 0, o1 = 0, o2 = -1;
++	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
++		return xrerr;
++	if (!*loc) {
++		beg = 0;
++		end = lbuf_len(xb);
++	}
++	modal_t *ms = ecalloc(1, sizeof(modal_t));
++	rules = rules_ = ms->rules;
++	dict = dict_ = ms->dict;
++	bank_a = src_ = ms->bank_a;
++	bank_b = dst_ = ms->bank_b;
++	regs = ms->regs;
++	stack = stack_ = ms->stack;
++	flip = safe_offset = 0;
++	cycles = 0x200000;
 +	/* load rules from lbuf range into src_ */
 +	char *ptr = src_;
-+	if (loc[0] && lbuf_len(xb)) {
-+		int beg = 0, end = 0, o1 = 0, o2 = -1;
-+		if (ex_region(loc, &beg, &end, &o1, &o2))
-+			return xrerr;
-+		for (int i = beg; i < end; i++) {
-+			char *ln = lbuf_get(xb, i);
-+			if (ln) {
-+				ptr = mem_import(ln, ptr);
-+				if (ptr < src_ + sizeof(bank_a) - 1)
-+					*ptr++ = ' ';
-+			}
++	for (int i = beg; i < end; i++) {
++		char *ln = lbuf_get(xb, i);
++		if (ln) {
++			ptr = mem_import(ln, ptr);
++			if (ptr < src_ + sizeof(ms->bank_a) - 1)
++				*ptr++ = ' ';
 +		}
 +	}
 +	/* append arg (initial tape) to src_ */
@@ -495,18 +517,21 @@ index 3ab335dd..c39a4840 100644
 +	while (ptr > src_ && *(ptr - 1) <= ' ')
 +		ptr--;
 +	*ptr = '\0';
-+	cycles = 0x200000;
 +	/* rewrite loop */
++	void *ret = NULL;
 +	for (int rw = 0; rewrite(); rw++)
-+		if (!--cycles)
-+			return "modal: rewrites exceeded";
-+	return NULL;
++		if (!--cycles) {
++			ret = "modal: rewrites exceeded";
++			break;
++		}
++	free(ms);
++	return ret;
 +}
 +
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1498,6 +1537,7 @@ static struct excmd {
+@@ -1498,6 +1544,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -516,22 +541,30 @@ index 3ab335dd..c39a4840 100644
  	{"q", ec_quit},
 diff --git a/modal.c b/modal.c
 new file mode 100644
-index 00000000..ea441d58
+index 00000000..dbaed0bf
 --- /dev/null
 +++ b/modal.c
-@@ -0,0 +1,326 @@
+@@ -0,0 +1,336 @@
 +#include <stdio.h>
 +
 +typedef struct {
 +	char *a, *b;
 +} rule;
 +
-+static int flip, cycles = 0x200000, safe_offset = 0;
-+static rule rules[0x1000], *rules_ = rules;
-+static char dict[0x8000], *dict_ = dict;
-+static char bank_a[0x4000], *src_ = bank_a;
-+static char bank_b[0x4000], *dst_ = bank_b;
-+static char *regs[0x100], stack[0x10], *stack_ = stack;
++typedef struct {
++	rule rules[0x1000];
++	char dict[0x8000];
++	char bank_a[0x4000];
++	char bank_b[0x4000];
++	char *regs[0x100];
++	char stack[0x10];
++} modal_t;
++
++static int flip, cycles, safe_offset;
++static rule *rules, *rules_;
++static char *dict, *dict_;
++static char *bank_a, *bank_b, *src_, *dst_;
++static char **regs, *stack, *stack_;
 +
 +#define spacer(c) (c <= ' ' || c == '(' || c == ')')
 +#define chex(c) (0xf & (c - (c <= '9' ? '0' : 0x57)))
@@ -679,8 +712,10 @@ index 00000000..ea441d58
 +				while (reg < rcap)
 +					if (*reg++ != *pp++)
 +						return 0;
-+			} else /* reg set */
-+				regs[rid] = s, *stack_++ = rid;
++			} else { /* reg set */
++				regs[rid] = s;
++				*stack_++ = rid;
++			}
 +			s = pcap;
 +		} else if (c != *s++)
 +			return 0;
@@ -848,14 +883,15 @@ index 00000000..ea441d58
 +}
 diff --git a/test b/test
 new file mode 100644
-index 00000000..315de261
+index 00000000..683c8fe6
 --- /dev/null
 +++ b/test
-@@ -0,0 +1,4 @@
+@@ -0,0 +1,5 @@
 +<> (?0 ?: ?1) (?:)
 +<> (out (?x)) ($p ?x)
 +
 +(out (3 + 9 - 5 + 23 / 10))
++(out (asd3+9))
 diff --git a/vi.c b/vi.c
 index 00929032..aedc522d 100644
 --- a/vi.c
