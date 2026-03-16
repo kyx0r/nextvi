@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
 		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 374\\${SEP}${QF}}${SEP};=
@@ -71,8 +71,8 @@ ${SEP}+2a 	{\"lsp\", ec_lsp},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: jsmn.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i /*
  * MIT License
  *
@@ -548,8 +548,8 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 ${SEP}vis 2${SEP}wq" $VI -e 'jsmn.h'
 
 # Patch: lsp.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i /* lsp.c - Language Server Protocol client for nextvi */
 #include \"jsmn.h\"
 #include <errno.h>
@@ -1385,8 +1385,8 @@ const char *lsp_diag_for_line(const char *path, int line)
 ${SEP}vis 2${SEP}wq" $VI -e 'lsp.c'
 
 # Patch: term.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
 int term_read\\\\(int winch\\\\)
 \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 152\\${SEP}${QF}}${SEP};=
@@ -1446,8 +1446,8 @@ ${SEP}.a 		err:
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #include \"ren\\\\.c\"
 #include \"term\\\\.c\"
 #include \"uc\\\\.c\"${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 24\\${SEP}${QF}}${SEP};=
@@ -1487,8 +1487,8 @@ ${SEP}+2a 	lsp_init();
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> extern rset \\\\*fsincl;
 void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 548\\${SEP}${QF}}${SEP};=
 ${SEP}+1a 

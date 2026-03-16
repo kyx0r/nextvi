@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int xsep = ':';			/\\\\* ex command separator \\\\*/
 int xesc = '\\\\\\\\\\\\\\\\';		/\\\\* ex command arg escape character \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 39\\${SEP}${QF}}${SEP};=
 ${SEP}+4${SEP}s/rset \\\\*x/rstr *x/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 39\\${SEP}${QF}}${SEP}.,\$;f> \\\\{
@@ -103,8 +103,8 @@ ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1242\\${SEP}${QF
 ${SEP}+2${SEP}s/et_s/tr_/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1245\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return n != 0;
 \\\\}
 
@@ -118,8 +118,8 @@ ${SEP}+3${SEP}s/nsubc/rs ? re->rs->nsubc : 2/${SEP}??!${DBG:--5,+5p\\${SEP}p FAI
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 499\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
 	sbufn_ret\\\\(sb, sb->s\\\\)
 \\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 766\\${SEP}${QF}}${SEP};=
@@ -267,8 +267,8 @@ void rstr_free(rstr *rs)
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 \\\\}
 
@@ -279,8 +279,8 @@ ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 442\\${SEP}${QF}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
 	int n;			/\\\\* number of regular expressions in this set \\\\*/
 \\\\} rset;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 125\\${SEP}${QF}}${SEP};=

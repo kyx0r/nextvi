@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1646\\${SEP}${QF}}${SEP};=
 ${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1646\\${SEP}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
 		ex_command\\\\(s\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1658\\${SEP}${QF}}${SEP};=
@@ -38,8 +38,8 @@ ${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
 int main\\\\(int argc${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1811\\${SEP}${QF}}${SEP};=
 ${SEP}+3c 	int i, j, cmdnum = 0;
@@ -68,8 +68,8 @@ ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1835\\${SEP}${QF}}${SEP}.,\$;f> 	if \\
 ${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1845\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP};=
 ${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 482\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 

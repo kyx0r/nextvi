@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: led.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> static sbuf \\\\*suggestsb;
 static sbuf \\\\*acsb;
 sbuf \\\\*led_attsb;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 5\\${SEP}${QF}}${SEP};=
@@ -120,8 +120,8 @@ ${SEP}.,\$;f> 			return key;
 ${SEP}+3${SEP}s/0\\\\)/0, 1)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 694\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	\\\\*l = ln - pln;
 \\\\}
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 855\\${SEP}${QF}}${SEP};=

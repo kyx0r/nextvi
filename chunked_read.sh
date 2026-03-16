@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return key;
 \\\\}
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 331\\${SEP}${QF}}${SEP};=
@@ -45,8 +45,8 @@ ${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 350\\
 ${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 371\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 \\\\}
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 206\\${SEP}${QF}}${SEP};=
@@ -135,8 +135,8 @@ ${SEP}+1,#+2c 	long nr, l, nins = 0, nl = 0;
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
 struct lbuf \\\\*lbuf_make\\\\(void\\\\);
 void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 169\\${SEP}${QF}}${SEP};=

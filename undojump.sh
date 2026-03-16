@@ -27,8 +27,8 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: lbuf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->ln\\\\[pos\\\\] : NULL;
 \\\\}
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 382\\${SEP}${QF}}${SEP};=
@@ -71,8 +71,8 @@ ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\\\|= 1;
 				break;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1448\\${SEP}${QF}}${SEP};=
@@ -91,8 +91,8 @@ ${SEP}+2a 			case TK_CTL('o'):
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void lbuf_smark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int beg, int o1\\\\);
 void lbuf_emark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int end, int o2\\\\);
 struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 180\\${SEP}${QF}}${SEP};=

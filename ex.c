@@ -1068,6 +1068,12 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 
 static void *ec_ft(char *loc, char *cmd, char *arg)
 {
+	int i;
+	for (i = 0; *arg && i < ftslen; i++)
+		if (!strcmp(fts[i].ft, arg)) {
+			arg = fts[i].ft;
+			break;
+		}
 	if (!(loc = syn_setft(*arg ? arg : xb_ft)))
 		return "filetype not found";
 	xb_ft = loc;
@@ -1076,7 +1082,7 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
 		sbuf_free(led_attsb)
 		led_attsb = NULL;
 	}
-	for (int i = 1; i < 4; i++)
+	for (i = 1; i < 4; i++)
 		syn_reloadft(syn_findhl(i), 0);
 	return NULL;
 }

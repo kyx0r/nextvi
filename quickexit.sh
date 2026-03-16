@@ -27,14 +27,14 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 # Patch: conf.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\[\\\\.%\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\(\\\\[0-9\\\\]\\\\*\\\\)\\\\?\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[0-9\\\\]\\\\+\\\\)\\\\*\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 		A\\\\(BL1 \\\\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP};=
+${SEP}-3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
 ${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
@@ -46,8 +46,8 @@ ${SEP}.a 	EO(qe),
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1a static int gettime_ms(void)
 {
 	struct timespec t;
@@ -77,8 +77,8 @@ ${SEP}.a _default:
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}9a #include <time.h>
 .
 ${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
@@ -89,8 +89,8 @@ ${SEP}+2a 				if (xqe)
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-SEP="$(printf '\x01')"
-QF=${QF-"$(printf 'vis 2\\\x01q! 1')"}
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int p_reg;
 	int lsug;
 	int sug_pt;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 374\\${SEP}${QF}}${SEP};=
@@ -109,17 +109,24 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_wkfUF2_conf.c.diff.orig	2026-02-17 19:13:19.519319556 -0100
-+++ /tmp/patch2vi_wkfUF2_conf.c.diff	2026-02-17 19:13:25.931957319 -0100
-@@ -8,8 +8,6 @@
+--- /tmp/patch2vi_kccINf_conf.c.diff.orig
++++ /tmp/patch2vi_kccINf_conf.c.diff
+@@ -6,14 +6,7 @@
+ #relc
+ === SEARCH COMMAND ===
  %;f>
- === SEARCH PATTERN (offset: 3) ===
- \[\.%\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\[0-9\]\+\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\)\[ \\t\]\*\(\?:\(\[,;\]#\?\)\[ \\t\]\*\\
+-=== SEARCH PATTERN (offset: 3) ===
+-\[\.%\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\[0-9\]\+\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\)\[ \\t\]\*\(\?:\(\[,;\]#\?\)\[ \\t\]\*\\
 -\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\?\[\.\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\\
 -\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\(\[0-9\]\+\)\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
- --- extra (delete to include) ---
- \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
- \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
+---- extra (delete to include) ---
+-\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
+-\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
+-\(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
++=== SEARCH PATTERN (offset: -3) ===
+ 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
+ === END GROUP ===
+ 
 === DELTA ex.c ===
 --- /tmp/patch2vi_KeazK1_ex.c.diff.orig	2026-02-17 19:13:25.934625972 -0100
 +++ /tmp/patch2vi_KeazK1_ex.c.diff	2026-02-17 19:13:51.145958585 -0100

@@ -294,7 +294,7 @@ static void list_unused_bytes(FILE *out)
 	/* Control chars first (preferred) */
 	for (int c = 1; c < 256; c++) {
 		if (!byte_used[c]) {
-			fprintf(out, " 0x%02x", c);
+			fprintf(out, " 0%03o", c);
 			n++;
 		}
 	}
@@ -1306,8 +1306,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		fprintf(out, "SEP='%c'\n", sep);
 		fprintf(out, "QF=${QF-'vis 2\\%cq! 1'}\n", sep);
 	} else {
-		fprintf(out, "SEP=\"$(printf '\\x%02x')\"\n", sep);
-		fprintf(out, "QF=${QF-\"$(printf 'vis 2\\\\\\x%02xq! 1')\"}\n", sep);
+		fprintf(out, "SEP=\"$(printf '\\%03o')\"\n", sep);
+		fprintf(out, "QF=${QF-\"$(printf 'vis 2\\\\\\%03oq! 1')\"}\n", sep);
 	}
 	fputs("EXINIT=\"rcm:|sc! \\\\\\\\${SEP}|vis 3${SEP}", out);
 

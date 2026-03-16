@@ -300,9 +300,11 @@ EX PARSING
      [<sep>][prefix][cmd][<pad>][args]
      Ex commands are initiated and separated by <:>. Fields can be
      padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
-     which accepts [range] structure characters. There can only be
-     one pad in between [cmd] and [args]. To avoid ambiguity in scripts,
-     it is recommended to always use a pad between [cmd] and [args].
+     which accepts [range] structure characters. Padding inside [prefix]
+     structure is collapsed, except within nested structures. There
+     can only be one pad in between [cmd] and [args]. To avoid ambiguity
+     in scripts, it is recommended to always use a pad between [cmd]
+     and [args].
 
      Examples:
      :evi.c
@@ -352,8 +354,6 @@ EX RANGES
      [range] prefix implements vertical and horizontal ranges.
      [vrange] prefix implements vertical range and horizontal position.
      Without [cmd], [range] replaces [prefix] and changes position.
-     Padding inside range structures is collapsed, except within nested
-     structures.
 
      [% |][, ;][#][. $ ' > <][- + * / %][0-9]
              All ranges structure
@@ -972,13 +972,14 @@ EX COMMANDS
              characters. It is often paired with :ph command to achieve
              hex editor-like functionality.
 
-     uz      Toggle zero width placeholders
+     uz      Toggle zero-width character placeholders
 
-             Use only if you need to hide zero width characters.
+             Hides zero-width characters rather than rendering them as placeholders.
 
-     ub      Toggle combining multi-codepoint placeholders
+     ub      Toggle multi-codepoint sequence placeholders
 
-             Use only if your terminal can render multi-codepoint utf-8 (emojis).
+             Passes multi-codepoint sequences to the terminal for native rendering
+             rather than substituting placeholders.
 
      ph[#clow] [#chigh] [#width] [#blen][*char]
              Redefine placeholders
@@ -1168,21 +1169,27 @@ EX OPTIONS
              :err 1
 
 EXINIT ENV VAR
-     EXINIT defines a sequence of ex commands to be performed
-     at startup. Consequently, this is the primary way for scripting
-     and customizing Nextvi outside of C.
-     Many standard text processing utils such as grep, awk, sed
-     can be replaced by Nextvi with EXINIT in mind.
+     EXINIT defines a chain of ex commands to be performed at startup,
+     executed once after all files are opened. This is the only way
+     for scripting and customizing Nextvi outside of C or Unix pipes.
+     Many standard text processing utils such as grep, awk, sed can
+     be replaced by Nextvi with EXINIT in mind.
+
+     printf with octal escapes is the standard way to embed control
+     characters into EXINIT.
 
      Examples:
 
-     export EXINIT="$(printf '%b' 'e ./vi.c:& i\x7\x3:bx 1:bx')"
-             Index vi.c for autocomplete
+     export EXINIT='td 2:order 0:lim 5000'
+             Set ex options for optimal long line performance
 
      export EXINIT='b-1:r ./vi.c:b-1'
              Load vi.c into a history buffer
 
-     export EXINIT="$(printf '%b' '97reg o{\n}\x3kA\n\t')"
+     export EXINIT="$(printf 'e ./vi.c:& i\007\003:bx 1:bx')"
+             Index vi.c for autocomplete
+
+     export EXINIT="$(printf '97reg o{\n}\003kA\n\t')"
              Setup @ macro in register <a>
 
              @a macro creates <{> and closing <}> below the cursor leaving
@@ -1192,9 +1199,6 @@ EXINIT ENV VAR
              Setup @ macro in register <b>
 
              @b macro pipes the current line into X11 clipboard.
-
-     export EXINIT='td 2:order 0:lim 5000'
-             Set ex options for optimal long line performance
 
 REGEX
      Pikevm is a fast non backtracking NFA simulation regex engine
@@ -1271,17 +1275,17 @@ CODE MAP
      | 537 kmap.h      |  keymap translation  |
      | 549 vi.h        |  definitions/aux     |
      +-----------------+----------------------+
-     | 332 conf.c      |  hl/ft/td config     |
+     | 342 conf.c      |  hl/ft/td config     |
      | 366 term.c      |  low level IO        |
      | 409 ren.c       |  positioning/syntax  |
      | 614 uc.c        |  UTF-8 support       |
      | 654 lbuf.c      |  file/line buffer    |
      | 720 led.c       |  insert mode/output  |
      | 766 regex.c     |  pikevm              |
-     | 1720 ex.c       |  ex options/commands |
+     | 1726 ex.c       |  ex options/commands |
      | 1854 vi.c       |  normal mode/general |
      | 2110 patch2vi.c |                      |
-     | 9545 total      |  wc -l *.c|sort      |
+     | 9561 total      |  wc -l *.c|sort      |
      +-----------------+----------------------+
 
 COMPILING
@@ -1361,7 +1365,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.0                       March 8, 2026                      Nextvi 4.0
+Nextvi 4.1                      March 16, 2026                      Nextvi 4.1
 
 NEXTVI PATCHES
 ==============
@@ -1618,6 +1622,19 @@ Remapping a to hello in insert mode
 :im a hello
 Remapping a to i in normal mode
 :nm a i
+
+modal.sh
+--------------
+Integrates modal programming language interpreter.
+https://wiki.xxiivv.com/site/modal.html
+New ex command [vrange]md[script] evaluates the contents of the
+current buffer and argument as a modal script.
+Implements a new phase - ($ ...) to execute ex command
+chains from within the modal script.
+
+lsp.sh
+--------------
+Defunct lsp support skeleton
 
 My current EXINIT setup:
 --------------
