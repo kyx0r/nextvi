@@ -254,6 +254,19 @@ Remapping a to hello in insert mode
 Remapping a to i in normal mode
 :nm a i
 
+modal.sh
+--------------
+Integrates modal programming language interpreter.
+https://wiki.xxiivv.com/site/modal.html
+New ex command [vrange]md[script] evaluates the contents of the
+current buffer and argument as a modal script.
+Implements a new phase - ($ ...) to execute ex command
+chains from within the modal script.
+
+lsp.sh
+--------------
+Defunct lsp support skeleton
+
 My current EXINIT setup:
 --------------
 How it works:
