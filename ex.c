@@ -1164,7 +1164,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			if (ap[i] != id)
 				continue;
 			and_res |= ap[i + 1];
-			while (*loc && *loc != ',' && *loc != ';') loc++;
+			for (; *loc && *loc != ',' && *loc != ';'; loc++);
 			if (!*loc || *loc == ';') {
 				 or_res &= and_res;
 				 and_res = 0;
