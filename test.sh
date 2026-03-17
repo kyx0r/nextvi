@@ -870,6 +870,50 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':err 1:f>hello:1??!:f>hello:2??!:1,2??p then?p else:q')
 check 'W5 ??! both inverted — NOT(success) AND NOT(success) → else' 'else' "$out"
 
+printf '\n%s\n' '─── Section M: Mark Tests ─────────────────────────────────────────────────────'
+
+# M1/M2: pure deletion BEFORE mark — mark shifts down, undo restores
+printf 'a\nb\nc\nd\ne\n' > "$TMPFILE"
+out=$(run_ex ":4ma:1,2d:'a=1:q")
+check 'mark: pure delete before → mark shifts' '2' "$out"
+out=$(run_ex ":4ma:1,2d:u:'a=1:q")
+check 'mark: undo pure delete before → mark restored' '4' "$out"
+
+# M3/M4: pure deletion AFTER mark — mark unchanged, undo leaves mark unchanged
+printf 'a\nb\nc\nd\ne\n' > "$TMPFILE"
+out=$(run_ex ":2ma:4,5d:'a=1:q")
+check 'mark: pure delete after → mark unchanged' '2' "$out"
+out=$(run_ex ":2ma:4,5d:u:'a=1:q")
+check 'mark: undo pure delete after → mark unchanged' '2' "$out"
+
+# M5: pure deletion AT mark — mark invalidated, undo restores it
+printf 'a\nb\nc\nd\ne\n' > "$TMPFILE"
+out=$(run_ex ":3ma:3d:u:'a=1:q")
+check 'mark: undo pure delete at mark → mark restored' '3' "$out"
+
+# M6/M7: replacement COVERING mark (n_ins>0, n_del>0) — mark clamped, undo restores
+# :1,3;0;d joins lines 1-3 into one replacement line; mark at line 3 is clamped to 1
+printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
+out=$(run_ex ":3ma:1,3;0;d:'a=1:q")
+check 'mark: replacement covers mark → mark clamped' '1' "$out"
+out=$(run_ex ":3ma:1,3;0;d:u:'a=1:q")
+check 'mark: undo replacement covering mark → mark restored' '3' "$out"
+
+# M8/M9: replacement BEFORE mark — mark adjusts, undo restores
+# :1,2;0;d replaces lines 1-2 with one line; mark at line 4 shifts to 3
+printf 'aa\nbb\ncc\ndd\n' > "$TMPFILE"
+out=$(run_ex ":4ma:1,2;0;d:'a=1:q")
+check 'mark: replacement before → mark adjusts' '3' "$out"
+out=$(run_ex ":4ma:1,2;0;d:u:'a=1:q")
+check 'mark: undo replacement before → mark restored' '4' "$out"
+
+# M10/M11: replacement AFTER mark — mark unchanged, undo leaves mark unchanged
+printf 'aa\nbb\ncc\ndd\n' > "$TMPFILE"
+out=$(run_ex ":1ma:3,4;0;d:'a=1:q")
+check 'mark: replacement after → mark unchanged' '1' "$out"
+out=$(run_ex ":1ma:3,4;0;d:u:'a=1:q")
+check 'mark: undo replacement after → mark unchanged' '1' "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
