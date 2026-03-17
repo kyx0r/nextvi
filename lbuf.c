@@ -115,7 +115,6 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
 		if (lb->mark[i] >= pos + n_ins && lb->mark[i] < pos + n_del) {
 			lbuf_movemark(lo->mark, i, lb->mark, i)
 			lb->mark[i] = n_ins ? pos + n_ins - 1 : -1;
-			continue;
 		} else if (lb->mark[i] >= pos + n_del)
 			lb->mark[i] += n_ins - n_del;
 		else if (lo->mark[i] >= 0)
