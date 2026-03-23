@@ -1,4 +1,3 @@
-/* nextvi configuration file */
 #include "kmap.h"
 
 /* access mode of new files */
