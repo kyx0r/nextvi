@@ -98,10 +98,9 @@ ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> header.*
-
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 11\\${SEP}${QF}}${SEP};=
-${SEP}+1a #ifdef __APPLE__
+${SEP}.a #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())
 #else
@@ -115,17 +114,16 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.h ===
---- /tmp/patch2vi_JEfJFi_vi.h.diff.orig
-+++ /tmp/patch2vi_JEfJFi_vi.h.diff
-@@ -11,9 +11,8 @@
+--- /tmp/patch2vi_oEdjEM_vi.h.diff.orig
++++ /tmp/patch2vi_oEdjEM_vi.h.diff
+@@ -11,9 +11,7 @@
  #abs
  === SEARCH COMMAND ===
  %;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -files and thus is never static\.
 -\*/
-+=== SEARCH PATTERN (offset: 2) ===
-+header.*
++=== SEARCH PATTERN (offset: 1) ===
  
  --- extra (delete to include) ---
  /\* helper macros \*/
