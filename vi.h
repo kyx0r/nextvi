@@ -1,13 +1,4 @@
-/*
-Nextvi main header
-==================
-The purpose of this file is to provide high level overview
-of entire Nextvi. Due to absence of any build system some of
-these definitions may not be required to successfully compile
-Nextvi. They are kept here for your benefit and organization.
-If something is listed here, it must be used across multiple
-files and thus is never static.
-*/
+/* Nextvi master header: shared definitions across files. */
 
 /* helper macros */
 #define LEN(a)		(int)(sizeof(a) / sizeof((a)[0]))
