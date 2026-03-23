@@ -774,6 +774,18 @@ static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
 	if (ntexts == 0)
 		return;
 
+	/* Insert before line 1: -1a would resolve to line 0 (invalid).
+	 * Use 1i (insert before line 1) instead. */
+	if (rc->use_offset && rc->target_line <= 0) {
+		fprintf(out, "1i ");
+		for (int i = 0; i < ntexts; i++) {
+			emit_escaped_text(out, texts[i]);
+			fputc('\n', out);
+		}
+		fputs(".\n", out);
+		EMIT_SEP(out);
+		return;
+	}
 	int mode = emit_rel_pos(out, rc, first_ml);
 	fprintf(out, "a ");
 	for (int i = 0; i < ntexts; i++) {
@@ -1766,7 +1778,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 						else
 							use_i = 1;
 					} else if (rc.follow_ctx) {
-						rc.follow_offset += 1;
+						if (g->add_after <= 0)
+							use_i = 1;
+						else
+							rc.follow_offset += 1;
 					}
 					if (use_i) {
 						int mode = emit_rel_pos(out, &rc, &first_ml);

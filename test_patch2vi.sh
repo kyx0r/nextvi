@@ -688,6 +688,47 @@ end
 	"-rb"
 
 echo ""
+echo "=== Insert before first line tests ==="
+
+check "insert before line 1 (offset mode)" \
+	"first line
+second line
+third line
+" \
+	"new header
+first line
+second line
+third line
+" \
+	"-rb"
+
+check "insert before line 1 (relative mode)" \
+	"first line
+second line
+third line
+" \
+	"new header
+first line
+second line
+third line
+" \
+	"-r"
+
+check "multi-line insert before line 1" \
+	"first line
+second line
+third line
+" \
+	"header1
+header2
+header3
+first line
+second line
+third line
+" \
+	"-rb"
+
+echo ""
 echo "=== Results ==="
 echo "Passed: $PASS"
 echo "Failed: $FAIL"
