@@ -321,10 +321,10 @@ exit 0
  	\}
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 30358ac1..5c5a584a 100644
+index 45585e31..562eb9e1 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -52,7 +52,7 @@ char msg_ft[] = "/>";	/* ex message (is never '\n' terminated) */
+@@ -62,7 +62,7 @@ const int ftslen = LEN(fts);
  #define CY1	14	/* bright cyan */
  #define WH1	15	/* bright white */
  
@@ -334,7 +334,7 @@ index 30358ac1..5c5a584a 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 2817580b..ae1a6938 100644
+index 105545c5..ac4b2c0d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -512,7 +512,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -355,7 +355,7 @@ index 2817580b..ae1a6938 100644
  		return ret;
  	}
  	off = xoff;
-@@ -987,7 +989,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -988,7 +990,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s, 0);
  	}
  	free(pat);
@@ -364,7 +364,7 @@ index 2817580b..ae1a6938 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -1039,6 +1041,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1040,6 +1042,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -373,10 +373,10 @@ index 2817580b..ae1a6938 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 1ebfea46..962c7888 100644
+index 8ca8a9e0..aaf39407 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -483,7 +483,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+@@ -480,7 +480,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
  		int nskip, int *r, int *o)
  {
  	int r0 = *r, o0 = *o;
@@ -385,7 +385,7 @@ index 1ebfea46..962c7888 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (pskip >= 0 && s)
-@@ -508,14 +508,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+@@ -505,14 +505,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
  				break;
  			*o = _o;
  			*r = i;
@@ -530,7 +530,7 @@ index ff88bb41..3ed5bf64 100644
  }
  
 diff --git a/ren.c b/ren.c
-index cf6a8dc5..09609fcc 100644
+index 00d29ba8..34714df2 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -252,13 +252,14 @@ int syn_blockhl;
@@ -594,23 +594,23 @@ index cf6a8dc5..09609fcc 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index b2babc29..cc90a6e2 100644
+index 167a597e..b697cbb6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
- 			vi_rshift = 0;
- 		if (row != xrow+1 || !c || *c == '\n')
+ 			s = lbuf_get(xb, row - vi_rshift);
  			goto skip;
+ 		}
 -		char tmp[xcols+3], snum[32];
 +		char *tmp = emalloc(xcols+3);
 +		char *snum = emalloc(32);
  		memset(tmp, ' ', xcols+1);
  		tmp[xcols+1] = '\n';
  		tmp[xcols+2] = '\0';
-@@ -166,6 +167,8 @@ static void vi_drawrow(int row)
+@@ -165,6 +166,8 @@ static void vi_drawrow(int row)
+ 		restore(syn_blockhl)
  		restore(xtd)
  		restore(ftidx)
- 		vi_rshift = (row != xtop + xrows-1);
 +		free(tmp);
 +		free(snum);
  		return;
@@ -672,7 +672,7 @@ index b2babc29..cc90a6e2 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 14d8e368..14f0ed1e 100644
+index 2d5f2838..4fb6f809 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -505,7 +505,7 @@ extern const int ftslen;
