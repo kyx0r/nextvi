@@ -29,7 +29,7 @@ struct filetype fts[] = {
 	{FT(py), "\\.py$"},					/* python */
 	{FT(js), "\\.js$"},					/* javascript */
 	{FT(html), "\\.(html?|css)$"},				/* html,css */
-	{FT(diff), "\\.(patch|diff)$"},				/* diff */
+	{FT(diff), "\\.(patch|diff|rej)$"},			/* diff */
 	{FT(go), "\\.go$"},					/* go */
 	{_ft, NULL},
 	{fm_ft, NULL},
