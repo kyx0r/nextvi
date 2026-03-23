@@ -1,5 +1,3 @@
-/* rendering strings */
-
 static rset *dir_rslr;	/* pattern of marks for left-to-right strings */
 static rset *dir_rsrl;	/* pattern of marks for right-to-left strings */
 static rset *dir_rsctx;	/* direction context patterns */

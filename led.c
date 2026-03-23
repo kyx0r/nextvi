@@ -1,5 +1,3 @@
-/* line editing and drawing */
-
 static sbuf *suggestsb;
 static sbuf *acsb;
 sbuf *led_attsb;
