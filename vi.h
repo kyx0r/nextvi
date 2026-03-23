@@ -18,13 +18,6 @@ value \
 #define restore(name) \
 name = tmp##name; \
 
-/* vi.c: main */
-void vi(int init);
-extern int vi_hidch;
-extern int vi_lncol;
-/* filesystem */
-extern rset *fsincl;
-void dir_calc(char *path);
 /* utility funcs */
 void *emalloc(size_t size);
 void *erealloc(void *p, size_t size);
@@ -536,3 +529,11 @@ extern const int conf_hlrev;
 char **conf_kmap(int id);
 int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
+
+/* vi.c: main */
+void vi(int init);
+extern int vi_hidch;
+extern int vi_lncol;
+/* filesystem */
+extern rset *fsincl;
+void dir_calc(char *path);
