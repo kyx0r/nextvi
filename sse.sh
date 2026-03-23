@@ -58,23 +58,20 @@ ${SEP}+3,#+7c 	} else {
 			/* align to 16 bytes for safe page-boundary loads */
 			while ((uintptr_t)ss & 15) {
 				l = uc_len(ss);
-				if (!l) goto count_done;
+				if (!l)
+					goto count_done;
 				n++;
 				ss += l;
 			}
 			for (;;) {
-				__m128i chunk = _mm_load_si128(
-						(const __m128i*)ss);
-				int null_mask = _mm_movemask_epi8(
-						_mm_cmpeq_epi8(chunk, v_zero));
+				__m128i chunk = _mm_load_si128((const __m128i*)ss);
+				int null_mask = _mm_movemask_epi8(_mm_cmpeq_epi8(chunk, v_zero));
 				__m128i masked = _mm_and_si128(chunk, v_mask);
-				int cont_mask = _mm_movemask_epi8(
-						_mm_cmpeq_epi8(masked, v_cont));
+				int cont_mask = _mm_movemask_epi8(_mm_cmpeq_epi8(masked, v_cont));
 				if (null_mask) {
 					int end = __builtin_ctz(null_mask);
 					int valid = (1 << end) - 1;
-					n += __builtin_popcount(~cont_mask
-							& valid);
+					n += __builtin_popcount(~cont_mask & valid);
 					ss += end;
 					goto count_done;
 				}
@@ -85,8 +82,7 @@ ${SEP}+3,#+7c 	} else {
 #endif
 		for (; (l = uc_len(ss)); n++)
 			ss += l;
-count_done:
-		;
+count_done:;
 	}
 	unsigned int b = n + 1;
 	unsigned int pos_need = (b * 2 * sizeof(pos[0])) + b * sizeof(char*);
@@ -138,8 +134,7 @@ ${SEP}+3c 		i = 0;
 			__m128i v_lo = _mm_set1_epi8(0x1f);
 			__m128i v_hi = _mm_set1_epi8(0x7f);
 			while (i + 16 <= n) {
-				__m128i chunk = _mm_loadu_si128(
-						(const __m128i*)(s + i));
+				__m128i chunk = _mm_loadu_si128((const __m128i*)(s + i));
 				__m128i gt = _mm_cmpgt_epi8(chunk, v_lo);
 				__m128i lt = _mm_cmpgt_epi8(v_hi, chunk);
 				if (_mm_movemask_epi8(_mm_and_si128(gt, lt))
@@ -186,33 +181,32 @@ int uc_slen\\\\(char \\\\*s\\\\)
 \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 24\\${SEP}${QF}}${SEP};=
 ${SEP}+3,#+2c 	int n = 0, l;
 #ifdef __SSE2__
-	if (utf8_length[0xc0] != 1) {
+	if (utf8_length[0xc0] == 1) {
 		__m128i v_mask = _mm_set1_epi8((char)0xc0);
 		__m128i v_cont = _mm_set1_epi8((char)0x80);
 		__m128i v_zero = _mm_setzero_si128();
 		while ((uintptr_t)s & 15) {
 			l = uc_len(s);
-			if (!l) return n;
+			if (!l)
+				return n;
 			n++;
 			s += l;
 		}
 		for (;;) {
 			__m128i chunk = _mm_load_si128((const __m128i*)s);
-			int null_mask = _mm_movemask_epi8(
-					_mm_cmpeq_epi8(chunk, v_zero));
+			int null_mask = _mm_movemask_epi8(_mm_cmpeq_epi8(chunk, v_zero));
 			__m128i masked = _mm_and_si128(chunk, v_mask);
-			int cont_mask = _mm_movemask_epi8(
-					_mm_cmpeq_epi8(masked, v_cont));
+			int cont_mask = _mm_movemask_epi8(_mm_cmpeq_epi8(masked, v_cont));
 			if (null_mask) {
 				int end = __builtin_ctz(null_mask);
 				int valid = (1 << end) - 1;
-				return n + __builtin_popcount(
-						~cont_mask & valid);
+				return n + __builtin_popcount(~cont_mask & valid);
 			}
 			n += 16 - __builtin_popcount(cont_mask);
 			s += 16;
 		}
-	} else
+		return n;
+	}
 #endif
 	for (; (l = uc_len(s)); n++)
 		s += l;
@@ -222,10 +216,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 # Patch: vi.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #include <sys/stat\\\\.h>
-#include <sys/ioctl\\\\.h>
-#include <sys/wait\\\\.h>${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 15\\${SEP}${QF}}${SEP};=
-${SEP}+2a #ifdef __SSE2__
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> #include <ctype\\\\.h>${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 0\\${SEP}${QF}}${SEP};=
+${SEP}.i #ifdef __SSE2__
 #include <stdint.h>
 #include <emmintrin.h>
 #endif
@@ -247,10 +239,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ren.c b/ren.c
-index 00d29ba8..5e48590b 100644
+index 00d29ba8..383cae40 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -95,29 +95,70 @@ ren_state *ren_position(char *s)
+@@ -95,29 +95,66 @@ ren_state *ren_position(char *s)
  {
  	if (rstate->s == s)
  		return rstate;
@@ -293,23 +285,20 @@ index 00d29ba8..5e48590b 100644
 +			/* align to 16 bytes for safe page-boundary loads */
 +			while ((uintptr_t)ss & 15) {
 +				l = uc_len(ss);
-+				if (!l) goto count_done;
++				if (!l)
++					goto count_done;
 +				n++;
 +				ss += l;
 +			}
 +			for (;;) {
-+				__m128i chunk = _mm_load_si128(
-+						(const __m128i*)ss);
-+				int null_mask = _mm_movemask_epi8(
-+						_mm_cmpeq_epi8(chunk, v_zero));
++				__m128i chunk = _mm_load_si128((const __m128i*)ss);
++				int null_mask = _mm_movemask_epi8(_mm_cmpeq_epi8(chunk, v_zero));
 +				__m128i masked = _mm_and_si128(chunk, v_mask);
-+				int cont_mask = _mm_movemask_epi8(
-+						_mm_cmpeq_epi8(masked, v_cont));
++				int cont_mask = _mm_movemask_epi8(_mm_cmpeq_epi8(masked, v_cont));
 +				if (null_mask) {
 +					int end = __builtin_ctz(null_mask);
 +					int valid = (1 << end) - 1;
-+					n += __builtin_popcount(~cont_mask
-+							& valid);
++					n += __builtin_popcount(~cont_mask & valid);
 +					ss += end;
 +					goto count_done;
 +				}
@@ -320,8 +309,7 @@ index 00d29ba8..5e48590b 100644
 +#endif
 +		for (; (l = uc_len(ss)); n++)
 +			ss += l;
-+count_done:
-+		;
++count_done:;
 +	}
 +	unsigned int b = n + 1;
 +	unsigned int pos_need = (b * 2 * sizeof(pos[0])) + b * sizeof(char*);
@@ -337,7 +325,7 @@ index 00d29ba8..5e48590b 100644
  	if (xorder && dir_reorder(s, ss, off, n, rstate->ctx)) {
  		for (i = 0; i < b; i++) {
  			chrs[i] = s;
-@@ -126,28 +167,77 @@ ren_state *ren_position(char *s)
+@@ -126,28 +163,76 @@ ren_state *ren_position(char *s)
  		int *wids = emalloc(n * sizeof(wids[0]));
  		for (i = 0; i < n; i++) {
  			pos[off[i]] = cpos;
@@ -381,8 +369,7 @@ index 00d29ba8..5e48590b 100644
 +			__m128i v_lo = _mm_set1_epi8(0x1f);
 +			__m128i v_hi = _mm_set1_epi8(0x7f);
 +			while (i + 16 <= n) {
-+				__m128i chunk = _mm_loadu_si128(
-+						(const __m128i*)(s + i));
++				__m128i chunk = _mm_loadu_si128((const __m128i*)(s + i));
 +				__m128i gt = _mm_cmpgt_epi8(chunk, v_lo);
 +				__m128i lt = _mm_cmpgt_epi8(v_hi, chunk);
 +				if (_mm_movemask_epi8(_mm_and_si128(gt, lt))
@@ -423,10 +410,10 @@ index 00d29ba8..5e48590b 100644
  			wid = pos[i+1] - pos[i];
  			off[i] = wid;
 diff --git a/uc.c b/uc.c
-index 421ea124..af9c9ce7 100644
+index 421ea124..d301b77a 100644
 --- a/uc.c
 +++ b/uc.c
-@@ -21,9 +21,38 @@ unsigned char utf8_length[256] = {
+@@ -21,9 +21,37 @@ unsigned char utf8_length[256] = {
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
  {
@@ -435,33 +422,32 @@ index 421ea124..af9c9ce7 100644
 -		s += uc_len(s);
 +	int n = 0, l;
 +#ifdef __SSE2__
-+	if (utf8_length[0xc0] != 1) {
++	if (utf8_length[0xc0] == 1) {
 +		__m128i v_mask = _mm_set1_epi8((char)0xc0);
 +		__m128i v_cont = _mm_set1_epi8((char)0x80);
 +		__m128i v_zero = _mm_setzero_si128();
 +		while ((uintptr_t)s & 15) {
 +			l = uc_len(s);
-+			if (!l) return n;
++			if (!l)
++				return n;
 +			n++;
 +			s += l;
 +		}
 +		for (;;) {
 +			__m128i chunk = _mm_load_si128((const __m128i*)s);
-+			int null_mask = _mm_movemask_epi8(
-+					_mm_cmpeq_epi8(chunk, v_zero));
++			int null_mask = _mm_movemask_epi8(_mm_cmpeq_epi8(chunk, v_zero));
 +			__m128i masked = _mm_and_si128(chunk, v_mask);
-+			int cont_mask = _mm_movemask_epi8(
-+					_mm_cmpeq_epi8(masked, v_cont));
++			int cont_mask = _mm_movemask_epi8(_mm_cmpeq_epi8(masked, v_cont));
 +			if (null_mask) {
 +				int end = __builtin_ctz(null_mask);
 +				int valid = (1 << end) - 1;
-+				return n + __builtin_popcount(
-+						~cont_mask & valid);
++				return n + __builtin_popcount(~cont_mask & valid);
 +			}
 +			n += 16 - __builtin_popcount(cont_mask);
 +			s += 16;
 +		}
-+	} else
++		return n;
++	}
 +#endif
 +	for (; (l = uc_len(s)); n++)
 +		s += l;
@@ -469,20 +455,17 @@ index 421ea124..af9c9ce7 100644
  }
  
 diff --git a/vi.c b/vi.c
-index 167a597e..dc970a80 100644
+index 167a597e..a886a4a7 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -13,6 +13,10 @@
- #include <sys/stat.h>
- #include <sys/ioctl.h>
- #include <sys/wait.h>
+@@ -1,3 +1,7 @@
 +#ifdef __SSE2__
 +#include <stdint.h>
 +#include <emmintrin.h>
 +#endif
- #include "vi.h"
- #include "conf.c"
- #include "ex.c"
+ #include <ctype.h>
+ #include <fcntl.h>
+ #include <stdio.h>
 diff --git a/vi.h b/vi.h
 index 2d5f2838..4e8238fa 100644
 --- a/vi.h
