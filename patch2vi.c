@@ -1061,6 +1061,9 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 
 	/* Apply previous delta if -d mode and matching delta available */
 	int delta_applied = 0;
+	int delta_rejected = 0;
+	char rejpath[260];
+	snprintf(rejpath, sizeof(rejpath), "%s.rej", tmppath);
 	if (delta_mode) {
 		file_delta_t *ind = NULL;
 		for (int di = 0; di < nin_deltas; di++) {
@@ -1079,10 +1082,12 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				fclose(df);
 				char cmd[MAX_LINE];
 				snprintf(cmd, sizeof(cmd),
-					 "patch -s '%s' '%s' 2>/dev/null",
+					 "patch -s '%s' '%s' >/dev/null 2>&1",
 					 tmppath, deltapath);
 				if (system(cmd) == 0)
 					delta_applied = 1;
+				else
+					delta_rejected = 1;
 				unlink(deltapath);
 			}
 		}
@@ -1103,9 +1108,17 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		if (!editor)
 			editor = "vi";
 		char cmd[MAX_LINE];
-		snprintf(cmd, sizeof(cmd), "%s '%s' </dev/tty >/dev/tty",
-			 editor, tmppath);
+		if (delta_rejected)
+			snprintf(cmd, sizeof(cmd),
+				 "%s '%s' '%s' </dev/tty >/dev/tty",
+				 editor, tmppath, rejpath);
+		else
+			snprintf(cmd, sizeof(cmd),
+				 "%s '%s' </dev/tty >/dev/tty",
+				 editor, tmppath);
 		int ret = system(cmd);
+		if (delta_rejected)
+			unlink(rejpath);
 		if (ret != 0) {
 			fprintf(stderr, "editor exited with error %d\n", ret);
 			goto cleanup_orig;
