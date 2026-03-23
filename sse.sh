@@ -29,14 +29,7 @@ fi
 # Patch: ren.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> /\\\\* rendering strings \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 0\\${SEP}${QF}}${SEP};=
-${SEP}-1a #ifdef __SSE2__
-#include <stdint.h>
-#include <emmintrin.h>
-#endif
-
-.
-${SEP}.,\$;f> \\\\{
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\{
 	if \\\\(rstate->s == s\\\\)
 		return rstate;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 98\\${SEP}${QF}}${SEP};=
 ${SEP}+3,#+3d${SEP}.,\$;f> 	rstate->s = s;
@@ -226,6 +219,19 @@ ${SEP}+3,#+2c 	int n = 0, l;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 
+# Patch: vi.c
+SEP="$(printf '\001')"
+QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> #include <sys/stat\\\\.h>
+#include <sys/ioctl\\\\.h>
+#include <sys/wait\\\\.h>${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 15\\${SEP}${QF}}${SEP};=
+${SEP}+2a #ifdef __SSE2__
+#include <stdint.h>
+#include <emmintrin.h>
+#endif
+.
+${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
@@ -241,19 +247,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ren.c b/ren.c
-index 00d29ba8..f11a57e3 100644
+index 00d29ba8..5e48590b 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -1,3 +1,8 @@
-+#ifdef __SSE2__
-+#include <stdint.h>
-+#include <emmintrin.h>
-+#endif
-+
- /* rendering strings */
- 
- static rset *dir_rslr;	/* pattern of marks for left-to-right strings */
-@@ -95,29 +100,70 @@ ren_state *ren_position(char *s)
+@@ -95,29 +95,70 @@ ren_state *ren_position(char *s)
  {
  	if (rstate->s == s)
  		return rstate;
@@ -340,7 +337,7 @@ index 00d29ba8..f11a57e3 100644
  	if (xorder && dir_reorder(s, ss, off, n, rstate->ctx)) {
  		for (i = 0; i < b; i++) {
  			chrs[i] = s;
-@@ -126,28 +172,77 @@ ren_state *ren_position(char *s)
+@@ -126,28 +167,77 @@ ren_state *ren_position(char *s)
  		int *wids = emalloc(n * sizeof(wids[0]));
  		for (i = 0; i < n; i++) {
  			pos[off[i]] = cpos;
@@ -471,6 +468,21 @@ index 421ea124..af9c9ce7 100644
  	return n;
  }
  
+diff --git a/vi.c b/vi.c
+index 167a597e..dc970a80 100644
+--- a/vi.c
++++ b/vi.c
+@@ -13,6 +13,10 @@
+ #include <sys/stat.h>
+ #include <sys/ioctl.h>
+ #include <sys/wait.h>
++#ifdef __SSE2__
++#include <stdint.h>
++#include <emmintrin.h>
++#endif
+ #include "vi.h"
+ #include "conf.c"
+ #include "ex.c"
 diff --git a/vi.h b/vi.h
 index 2d5f2838..4e8238fa 100644
 --- a/vi.h
