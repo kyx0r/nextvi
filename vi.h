@@ -1,13 +1,4 @@
-/*
-Nextvi main header
-==================
-The purpose of this file is to provide high level overview
-of entire Nextvi. Due to absence of any build system some of
-these definitions may not be required to successfully compile
-Nextvi. They are kept here for your benefit and organization.
-If something is listed here, it must be used across multiple
-files and thus is never static.
-*/
+/* Nextvi master header: shared definitions across files. */
 
 /* helper macros */
 #define LEN(a)		(int)(sizeof(a) / sizeof((a)[0]))
@@ -32,8 +23,8 @@ void *emalloc(size_t size);
 void *erealloc(void *p, size_t size);
 int dstrlen(const char *s, char delim);
 char *itoa(int n, char s[]);
-int itoalen(int n) { char s[32]; return itoa(n, s) - s; }
-void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
+static int itoalen(int n) { char s[32]; return itoa(n, s) - s; }
+static void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
 
 /* main functions */
 void vi(int init);
@@ -124,7 +115,7 @@ typedef struct {
 	int n;			/* number of regular expressions in this set */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
-rset *rset_smake(char *pat, int flg)
+static rset *rset_smake(char *pat, int flg)
 	{ char *ss[1] = {pat}; return rset_make(1, ss, flg); }
 int rset_find(rset *re, char *s, int *grps, int flg);
 int rset_match(rset *rs, char *s, int flg);
@@ -294,10 +285,10 @@ else \
 int uc_wid(int c);
 int uc_slen(char *s);
 char *uc_chrn(char *s, int off, int *n);
-char *uc_chr(char *s, int off) { int n; return uc_chrn(s, off, &n); }
+static char *uc_chr(char *s, int off) { int n; return uc_chrn(s, off, &n); }
 int uc_off(char *s, int off);
 char *uc_subl(char *s, int beg, int end, int *rlen);
-char *uc_sub(char *s, int beg, int end)
+static char *uc_sub(char *s, int beg, int end)
 	{ int l; return uc_subl(s, beg, end, &l); }
 char *uc_dup(const char *s);
 #define uc_isspace(s) ((unsigned char)*s < 0x7f && isspace((unsigned char)*s))
