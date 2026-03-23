@@ -1,4 +1,4 @@
-/* Nextvi master header: shared definitions across files. */
+/* vi.h: shared definitions across files */
 
 /* helper macros */
 #define LEN(a)		(int)(sizeof(a) / sizeof((a)[0]))
@@ -18,6 +18,13 @@ value \
 #define restore(name) \
 name = tmp##name; \
 
+/* vi.c: main */
+void vi(int init);
+extern int vi_hidch;
+extern int vi_lncol;
+/* filesystem */
+extern rset *fsincl;
+void dir_calc(char *path);
 /* utility funcs */
 void *emalloc(size_t size);
 void *erealloc(void *p, size_t size);
@@ -26,11 +33,7 @@ char *itoa(int n, char s[]);
 static int itoalen(int n) { char s[32]; return itoa(n, s) - s; }
 static void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
 
-/* main functions */
-void vi(int init);
-void ex(void);
-
-/* sbuf string buffer, variable-sized string */
+/* sbuf: variable-sized buffer/string */
 #define NEXTSZ(o, r)	o + r + ((o + r) >> 1)
 typedef struct sbuf {
 	char *s;	/* allocated buffer */
@@ -77,7 +80,7 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) sb->s_n += len; }
 #define sbuf_str(sb, s) { int __l_ = strlen(s); sbuf_mem(sb, s, __l_) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
-/* sbuf functions that NULL terminate strings */
+/* sbuf functions that null-terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
 #define sbufn_null(sb) { sbuf_(sb, '\0', 4, set) }
 #define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
@@ -87,12 +90,12 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_null(sb) }
 #define sbufn_ret(sb, str) { sbuf_null(sb) return str; }
 
-/* regex.c regular expression sets */
+/* regex.c: regular expressions */
 #define REG_ICASE	0x01
-#define REG_NEWLINE	0x02	/* Unlike posix, controls termination by '\n' */
+#define REG_NEWLINE	0x02	/* unlike posix, controls termination by '\n' */
 #define REG_NOTBOL	0x04
 #define REG_NOTEOL	0x08
-#define REG_NOCAP	0x10	/* Computes only the default match group */
+#define REG_NOCAP	0x10	/* computes only the default match group */
 typedef struct rcode rcode;
 struct rcode {
 	rcode **la;		/* lookahead expressions */
@@ -122,7 +125,7 @@ int rset_match(rset *rs, char *s, int flg);
 void rset_free(rset *re);
 char *re_read(char **src, int delim);
 
-/* lbuf.c line buffer, managing a number of lines */
+/* lbuf.c: line buffer */
 #define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
 #define NMARKS			30	/* adj: '`* nonadj: [] */
 struct lopt {
@@ -195,7 +198,7 @@ int lbuf_wordbeg(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_pair(struct lbuf *lb, int *row, int *off);
 
-/* ren.c rendering lines */
+/* ren.c: rendering lines */
 typedef struct {
 	char **chrs;
 	char *s;	/* to prevent redundant computations, ensure pointer uniqueness */
@@ -261,13 +264,13 @@ int syn_findhl(int id);
 int syn_addhl(char *reg, int id);
 void syn_init(void);
 
-/* uc.c utf-8 helper functions */
+/* uc.c: utf-8 helper functions */
 extern unsigned char utf8_length[256];
 extern int zwlen, def_zwlen;
 extern int bclen, def_bclen;
-/* return the length of a utf-8 character */
+/* the length of a given utf-8 character */
 #define uc_len(s) utf8_length[(unsigned char)s[0]]
-/* the unicode codepoint of the given utf-8 character */
+/* the unicode codepoint of a given utf-8 character */
 #define uc_code(dst, s, l) \
 dst = (unsigned char)s[0]; \
 l = utf8_length[dst]; \
@@ -301,7 +304,7 @@ int uc_acomb(int c);
 char *uc_beg(char *beg, char *s);
 char *uc_shape(char *beg, char *s, int c);
 
-/* term.c managing the terminal */
+/* term.c: managing the terminal */
 extern sbuf *term_sbuf;
 extern int term_record;
 extern int term_winch;
@@ -351,7 +354,7 @@ char *xgetenv(char* q[]);
 #define TK_CTL(x)	(x & 037)
 #define TK_INT(c)	(!c || c == TK_ESC || c == TK_CTL('c'))
 
-/* led.c line-oriented input and output */
+/* led.c: line-oriented input and output */
 typedef struct {
 	char *s;
 	int off;
@@ -395,7 +398,7 @@ char *led_read(int *kmap, int c);
 int led_pos(char *s, int pos);
 void led_done(void);
 
-/* ex.c ex commands */
+/* ex.c: command mode */
 struct buf {
 	char *ft;			/* file type */
 	char *path;			/* file path */
@@ -463,10 +466,15 @@ extern struct buf *ex_pbuf;
 	buf->top = xtop; \
 	buf->td = xtd; \
 
+#define bufs_switchwft(idx) \
+{ if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
+
+void bufs_switch(int idx);
 void temp_open(int i, char *name, char *ft);
 void temp_switch(int i, int swap);
 void temp_write(int i, char *str);
 void temp_pos(int i, int row, int off, int top);
+void ex(void);
 void *ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); ex_regput(':', ln, 0); }
 void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
@@ -479,11 +487,8 @@ void ex_krsset(char *kwd, int dir);
 void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
 int ex_edit(const char *path, int len);
 void ex_regput(unsigned char c, const char *s, int append);
-void bufs_switch(int idx);
-#define bufs_switchwft(idx) \
-{ if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
 
-/* conf.c configuration variables */
+/* conf.c: configuration variables */
 /* map file names to file types */
 extern const int conf_mode;
 struct filetype {
@@ -502,14 +507,14 @@ struct highlight {
 };
 extern struct highlight hls[];
 extern const int hlslen;
-/* direction context patterns; specifies the direction of a whole line */
+/* direction context: specifies the direction of a whole line */
 struct dircontext {
 	char *pat;
 	int dir;
 };
 extern struct dircontext dctxs[];
 extern const int dctxlen;
-/* direction marks; the direction of a few words in a line */
+/* direction marks: the direction of patterns in a line */
 struct dirmark {
 	char *pat;
 	int ctx;	/* the direction context for this mark; 0 means any */
@@ -531,10 +536,3 @@ extern const int conf_hlrev;
 char **conf_kmap(int id);
 int conf_kmapfind(char *name);
 char *conf_digraph(int c1, int c2);
-
-/* vi.c */
-extern int vi_hidch;
-extern int vi_lncol;
-/* file system */
-extern rset *fsincl;
-void dir_calc(char *path);
