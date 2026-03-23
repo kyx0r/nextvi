@@ -29,26 +29,10 @@ fi
 # Patch: ren.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\{
-	if \\\\(rstate->s == s\\\\)
-		return rstate;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 98\\${SEP}${QF}}${SEP};=
-${SEP}+3,#+3d${SEP}.,\$;f> 	rstate->s = s;
-	rstate->ctx = dir_context\\\\(s\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 104\\${SEP}${QF}}${SEP};=
-${SEP}+2c 	unsigned int n, c = 2, i;
-	int l, cpos = 0, wid, *col, *pos, *off;
-.
-${SEP}.,\$f> 	char \\\\*ss = s;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 105\\${SEP}${QF}}${SEP};=
-${SEP}.a 	char **chrs;
-.
-${SEP}.,\$f> 	if \\\\(xlim >= 0 && rstate == rstates\\\\+1\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 107\\${SEP}${QF}}${SEP};=
-${SEP}+1,#+2c 		unsigned int max = (unsigned int)xlim;
-		for (n = 0; n < max && (l = uc_len(ss)); n++)
-			ss += l;
-.
-${SEP}.,\$;f> 		rstate->holelen = uc_len\\\\(ss\\\\);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		rstate->holelen = uc_len\\\\(ss\\\\);
 		memcpy\\\\(rstate->nullhole, ss, rstate->holelen\\\\);
 		memset\\\\(ss, 0, rstate->holelen\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 113\\${SEP}${QF}}${SEP};=
-${SEP}+3,#+7c 	} else {
+${SEP}+3,#+1c 	} else {
 		n = 0;
 #ifdef __SSE2__
 		if (utf8_length[0xc0] != 1) {
@@ -81,74 +65,20 @@ ${SEP}+3,#+7c 	} else {
 		} else
 #endif
 		for (; (l = uc_len(ss)); n++)
-			ss += l;
-count_done:;
+.
+${SEP}.,\$f> 			ss \\\\+= l;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 115\\${SEP}${QF}}${SEP};=
+${SEP}.a count_done:;
 	}
-	unsigned int b = n + 1;
-	unsigned int pos_need = (b * 2 * sizeof(pos[0])) + b * sizeof(char*);
-	if (rstate->pos_cap >= pos_need) {
-		pos = rstate->pos;
-	} else {
-		free(rstate->pos);
-		rstate->pos_cap = pos_need;
-		pos = emalloc(pos_need);
-	}
-	off = &pos[b];
-	chrs = (char**)&off[b];
-.
-${SEP}.,\$;f> 		int \\\\*wids = emalloc\\\\(n \\\\* sizeof\\\\(wids\\\\[0\\\\]\\\\)\\\\);
-		for \\\\(i = 0; i < n; i\\\\+\\\\+\\\\) \\\\{
-			pos\\\\[off\\\\[i\\\\]\\\\] = cpos;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 129\\${SEP}${QF}}${SEP};=
-${SEP}+3c 			wid = ren_cwid(chrs[off[i]], cpos);
-			wids[off[i]] = wid;
-			cpos += wid;
-.
-${SEP}.,\$;f> 		\\\\}
-		pos\\\\[n\\\\] = cpos;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 132\\${SEP}${QF}}${SEP};=
-${SEP}+2c 		unsigned int col_need = (unsigned int)(cpos + 2) * sizeof(col[0]);
-		if (rstate->col_cap >= col_need) {
-			col = rstate->col - 2;
-		} else {
-			if (rstate->col)
-				free(rstate->col - 2);
-			rstate->col_cap = col_need;
-			col = emalloc(col_need);
-		}
-.
-${SEP}.,\$f> 		for \\\\(i = 0; i < n; i\\\\+\\\\+\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 134\\${SEP}${QF}}${SEP};=
-${SEP}+1,#+1c 			wid = wids[off[i]];
-.
-${SEP}.,\$;f> 		memcpy\\\\(off, wids, n \\\\* sizeof\\\\(wids\\\\[0\\\\]\\\\)\\\\);
-		free\\\\(wids\\\\);
-	\\\\} else \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 142\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/i < n/(l = uc_len(s))/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 142\\${SEP}${QF}}${SEP}.,\$;f> 			chrs\\\\[i\\\\] = s;
-			pos\\\\[i\\\\] = cpos;
-			cpos \\\\+= ren_cwid\\\\(s, cpos\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 146\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/uc_len\\\\(s\\\\)/l/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 146\\${SEP}${QF}}${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 147\\${SEP}${QF}}${SEP};=
-${SEP}.a 		n = i;
-.
-${SEP}.,\$;f> 		chrs\\\\[n\\\\] = s;
-		pos\\\\[n\\\\] = cpos;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 150\\${SEP}${QF}}${SEP};=
-${SEP}+2c 		unsigned int col_need = (unsigned int)(cpos + 2) * sizeof(col[0]);
-		if (rstate->col_cap >= col_need) {
-			col = rstate->col - 2;
-		} else {
-			if (rstate->col)
-				free(rstate->col - 2);
-			rstate->col_cap = col_need;
-			col = emalloc(col_need);
-		}
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
 # Patch: uc.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> /\\\\* the number of utf-8 characters in a fat nulled s \\\\*/
-int uc_slen\\\\(char \\\\*s\\\\)
-\\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 24\\${SEP}${QF}}${SEP};=
-${SEP}+3,#+2c 	int n = 0, l;
-#ifdef __SSE2__
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int uc_slen\\\\(char \\\\*s\\\\)
+\\\\{
+	int n = 0, l;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 24\\${SEP}${QF}}${SEP};=
+${SEP}+2a #ifdef __SSE2__
 	if (utf8_length[0xc0] != 1) {
 		__m128i v_mask = _mm_set1_epi8((char)0xc0);
 		__m128i v_cont = _mm_set1_epi8((char)0x80);
@@ -176,8 +106,6 @@ ${SEP}+3,#+2c 	int n = 0, l;
 		return n;
 	}
 #endif
-	for (; (l = uc_len(s)); n++)
-		s += l;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 
@@ -192,57 +120,19 @@ ${SEP}.i #ifdef __SSE2__
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
-# Patch: vi.h
-SEP="$(printf '\001')"
-QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int \\\\*wid;
-	int \\\\*col;
-	int \\\\*pos;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 213\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	unsigned int pos_cap;	/* allocation capacity in bytes */
-	unsigned int col_cap;	/* allocation capacity in bytes */
-.
-${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
-
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ren.c b/ren.c
-index 00d29ba8..0a9288c8 100644
+index 22011279..21be2416 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -95,29 +95,66 @@ ren_state *ren_position(char *s)
- {
- 	if (rstate->s == s)
- 		return rstate;
--	else if (rstate->col) {
--		free(rstate->col - 2);
--		free(rstate->pos);
--	}
- 	rstate->s = s;
- 	rstate->ctx = dir_context(s);
--	unsigned int n, max;
-+	unsigned int n, c = 2, i;
-+	int l, cpos = 0, wid, *col, *pos, *off;
- 	char *ss = s;
-+	char **chrs;
- 	if (xlim >= 0 && rstate == rstates+1) {
--		max = (unsigned int)xlim;
--		for (n = 0; n < max && uc_len(ss); n++)
--			ss += uc_len(ss);
-+		unsigned int max = (unsigned int)xlim;
-+		for (n = 0; n < max && (l = uc_len(ss)); n++)
-+			ss += l;
+@@ -110,9 +110,42 @@ ren_state *ren_position(char *s)
  		rstate->holelen = uc_len(ss);
  		memcpy(rstate->nullhole, ss, rstate->holelen);
  		memset(ss, 0, rstate->holelen);
 -	} else
--		for (n = 0; uc_len(ss); n++)
--			ss += uc_len(ss);
--	unsigned int b = n + 1, c = 2, i;
--	int cpos = 0, wid, *col;
--	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
--	int *off = &pos[b];
--	char **chrs = (char**)&off[b];
+-		for (n = 0; (l = uc_len(ss)); n++)
 +	} else {
 +		n = 0;
 +#ifdef __SSE2__
@@ -276,89 +166,20 @@ index 00d29ba8..0a9288c8 100644
 +		} else
 +#endif
 +		for (; (l = uc_len(ss)); n++)
-+			ss += l;
+ 			ss += l;
 +count_done:;
 +	}
-+	unsigned int b = n + 1;
-+	unsigned int pos_need = (b * 2 * sizeof(pos[0])) + b * sizeof(char*);
-+	if (rstate->pos_cap >= pos_need) {
-+		pos = rstate->pos;
-+	} else {
-+		free(rstate->pos);
-+		rstate->pos_cap = pos_need;
-+		pos = emalloc(pos_need);
-+	}
-+	off = &pos[b];
-+	chrs = (char**)&off[b];
- 	if (xorder && dir_reorder(s, ss, off, n, rstate->ctx)) {
- 		for (i = 0; i < b; i++) {
- 			chrs[i] = s;
-@@ -126,28 +163,46 @@ ren_state *ren_position(char *s)
- 		int *wids = emalloc(n * sizeof(wids[0]));
- 		for (i = 0; i < n; i++) {
- 			pos[off[i]] = cpos;
--			cpos += ren_cwid(chrs[off[i]], cpos);
-+			wid = ren_cwid(chrs[off[i]], cpos);
-+			wids[off[i]] = wid;
-+			cpos += wid;
- 		}
- 		pos[n] = cpos;
--		col = emalloc((cpos + 2) * sizeof(col[0]));
-+		unsigned int col_need = (unsigned int)(cpos + 2) * sizeof(col[0]);
-+		if (rstate->col_cap >= col_need) {
-+			col = rstate->col - 2;
-+		} else {
-+			if (rstate->col)
-+				free(rstate->col - 2);
-+			rstate->col_cap = col_need;
-+			col = emalloc(col_need);
-+		}
- 		for (i = 0; i < n; i++) {
--			wid = ren_cwid(chrs[off[i]], pos[off[i]]);
--			wids[off[i]] = wid;
-+			wid = wids[off[i]];
- 			while (wid--)
- 				col[c++] = off[i];
- 		}
- 		memcpy(off, wids, n * sizeof(wids[0]));
- 		free(wids);
- 	} else {
--		for (i = 0; i < n; i++) {
-+		for (i = 0; (l = uc_len(s)); i++) {
- 			chrs[i] = s;
- 			pos[i] = cpos;
- 			cpos += ren_cwid(s, cpos);
--			s += uc_len(s);
-+			s += l;
- 		}
-+		n = i;
- 		chrs[n] = s;
- 		pos[n] = cpos;
--		col = emalloc((cpos + 2) * sizeof(col[0]));
-+		unsigned int col_need = (unsigned int)(cpos + 2) * sizeof(col[0]);
-+		if (rstate->col_cap >= col_need) {
-+			col = rstate->col - 2;
-+		} else {
-+			if (rstate->col)
-+				free(rstate->col - 2);
-+			rstate->col_cap = col_need;
-+			col = emalloc(col_need);
-+		}
- 		for (i = 0; i < n; i++) {
- 			wid = pos[i+1] - pos[i];
- 			off[i] = wid;
+ 	unsigned int b = n + 1, c = 2, i;
+ 	int cpos = 0, wid, *col;
+ 	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
 diff --git a/uc.c b/uc.c
-index 421ea124..6d0c30b6 100644
+index 875905a8..6d0c30b6 100644
 --- a/uc.c
 +++ b/uc.c
-@@ -21,9 +21,37 @@ unsigned char utf8_length[256] = {
- /* the number of utf-8 characters in a fat nulled s */
+@@ -22,6 +22,34 @@ unsigned char utf8_length[256] = {
  int uc_slen(char *s)
  {
--	int n;
--	for (n = 0; uc_len(s); n++)
--		s += uc_len(s);
-+	int n = 0, l;
+ 	int n = 0, l;
 +#ifdef __SSE2__
 +	if (utf8_length[0xc0] != 1) {
 +		__m128i v_mask = _mm_set1_epi8((char)0xc0);
@@ -387,11 +208,9 @@ index 421ea124..6d0c30b6 100644
 +		return n;
 +	}
 +#endif
-+	for (; (l = uc_len(s)); n++)
-+		s += l;
+ 	for (; (l = uc_len(s)); n++)
+ 		s += l;
  	return n;
- }
- 
 diff --git a/vi.c b/vi.c
 index 167a597e..a886a4a7 100644
 --- a/vi.c
@@ -404,16 +223,3 @@ index 167a597e..a886a4a7 100644
  #include <ctype.h>
  #include <fcntl.h>
  #include <stdio.h>
-diff --git a/vi.h b/vi.h
-index 2d5f2838..4e8238fa 100644
---- a/vi.h
-+++ b/vi.h
-@@ -211,6 +211,8 @@ typedef struct {
- 	int *wid;
- 	int *col;
- 	int *pos;
-+	unsigned int pos_cap;	/* allocation capacity in bytes */
-+	unsigned int col_cap;	/* allocation capacity in bytes */
- 	int n;
- 	int cmax;
- 	int ctx;
