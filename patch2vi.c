@@ -774,6 +774,18 @@ static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
 	if (ntexts == 0)
 		return;
 
+	/* Insert before line 1: -1a would resolve to line 0 (invalid).
+	 * Use 1i (insert before line 1) instead. */
+	if (rc->use_offset && rc->target_line <= 0) {
+		fprintf(out, "1i ");
+		for (int i = 0; i < ntexts; i++) {
+			emit_escaped_text(out, texts[i]);
+			fputc('\n', out);
+		}
+		fputs(".\n", out);
+		EMIT_SEP(out);
+		return;
+	}
 	int mode = emit_rel_pos(out, rc, first_ml);
 	fprintf(out, "a ");
 	for (int i = 0; i < ntexts; i++) {
@@ -1049,6 +1061,9 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 
 	/* Apply previous delta if -d mode and matching delta available */
 	int delta_applied = 0;
+	int delta_rejected = 0;
+	char rejpath[260];
+	snprintf(rejpath, sizeof(rejpath), "%s.rej", tmppath);
 	if (delta_mode) {
 		file_delta_t *ind = NULL;
 		for (int di = 0; di < nin_deltas; di++) {
@@ -1067,10 +1082,12 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				fclose(df);
 				char cmd[MAX_LINE];
 				snprintf(cmd, sizeof(cmd),
-					 "patch -s '%s' '%s' 2>/dev/null",
+					 "patch -s '%s' '%s' >/dev/null 2>&1",
 					 tmppath, deltapath);
 				if (system(cmd) == 0)
 					delta_applied = 1;
+				else
+					delta_rejected = 1;
 				unlink(deltapath);
 			}
 		}
@@ -1091,9 +1108,17 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		if (!editor)
 			editor = "vi";
 		char cmd[MAX_LINE];
-		snprintf(cmd, sizeof(cmd), "%s '%s' </dev/tty >/dev/tty",
-			 editor, tmppath);
+		if (delta_rejected)
+			snprintf(cmd, sizeof(cmd),
+				 "%s '%s' '%s' </dev/tty >/dev/tty",
+				 editor, tmppath, rejpath);
+		else
+			snprintf(cmd, sizeof(cmd),
+				 "%s '%s' </dev/tty >/dev/tty",
+				 editor, tmppath);
 		int ret = system(cmd);
+		if (delta_rejected)
+			unlink(rejpath);
 		if (ret != 0) {
 			fprintf(stderr, "editor exited with error %d\n", ret);
 			goto cleanup_orig;
@@ -1766,7 +1791,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 						else
 							use_i = 1;
 					} else if (rc.follow_ctx) {
-						rc.follow_offset += 1;
+						if (g->add_after <= 0)
+							use_i = 1;
+						else
+							rc.follow_offset += 1;
 					}
 					if (use_i) {
 						int mode = emit_rel_pos(out, &rc, &first_ml);

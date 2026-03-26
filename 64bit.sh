@@ -22,6 +22,7 @@ for p in *.c *.h; do
 	EXINIT="${EXINIT}:%s/\%d/\%ld/g"
 	EXINIT="${EXINIT}:%s/\%\+d/\%+ld/g"
 	EXINIT="${EXINIT}:%s/\%x/\%lx/g"
+	EXINIT="${EXINIT}:%s/\%o/\%lo/g"
 	EXINIT="${EXINIT}:%s/\%u/\%lu/g"
 	EXINIT="${EXINIT}:%s/s64 signo/int signo/g"
 	EXINIT="${EXINIT}:%s/s64 pipefds/int pipefds/g"

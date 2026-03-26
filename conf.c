@@ -1,4 +1,3 @@
-/* nextvi configuration file */
 #include "kmap.h"
 
 /* access mode of new files */
@@ -30,7 +29,7 @@ struct filetype fts[] = {
 	{FT(py), "\\.py$"},					/* python */
 	{FT(js), "\\.js$"},					/* javascript */
 	{FT(html), "\\.(html?|css)$"},				/* html,css */
-	{FT(diff), "\\.(patch|diff)$"},				/* diff */
+	{FT(diff), "\\.(patch|diff|rej)$"},			/* diff */
 	{FT(go), "\\.go$"},					/* go */
 	{_ft, NULL},
 	{fm_ft, NULL},
@@ -90,7 +89,8 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(c), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
 	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", A(RE1)},
 	{FT(c), "(\"[^\"]*\\\\\n$)|^(.*\"(?!\\\\\n$))",
-		A(MA | SYN_IGN, MA | SYN_BS | SYN_SATT, MA | SYN_BE | SYN_EATT, 2, IN, CY1), 3},
+		A(MA | SYN_IGN, MA | SYN_BS | SYN_SATT | SYN_OWR,
+			MA | SYN_BE | SYN_EATT | SYN_OWR, 2, IN, CY1), 3},
 	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SATT, YE | SYN_SATT, 2, IN, CY1), 4},
 
 	{FT(roff), NULL, A(CY1 | SYN_BD), 1, 2},

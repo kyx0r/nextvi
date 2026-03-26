@@ -21,9 +21,9 @@ unsigned char utf8_length[256] = {
 /* the number of utf-8 characters in a fat nulled s */
 int uc_slen(char *s)
 {
-	int n;
-	for (n = 0; uc_len(s); n++)
-		s += uc_len(s);
+	int n = 0, l;
+	for (; (l = uc_len(s)); n++)
+		s += l;
 	return n;
 }
 

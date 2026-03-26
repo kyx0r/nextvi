@@ -1,5 +1,3 @@
-/* rendering strings */
-
 static rset *dir_rslr;	/* pattern of marks for left-to-right strings */
 static rset *dir_rsrl;	/* pattern of marks for right-to-left strings */
 static rset *dir_rsctx;	/* direction context patterns */
@@ -101,18 +99,18 @@ ren_state *ren_position(char *s)
 	}
 	rstate->s = s;
 	rstate->ctx = dir_context(s);
-	unsigned int n, max;
+	unsigned int n, max, l;
 	char *ss = s;
 	if (xlim >= 0 && rstate == rstates+1) {
 		max = (unsigned int)xlim;
-		for (n = 0; n < max && uc_len(ss); n++)
-			ss += uc_len(ss);
+		for (n = 0; n < max && (l = uc_len(ss)); n++)
+			ss += l;
 		rstate->holelen = uc_len(ss);
 		memcpy(rstate->nullhole, ss, rstate->holelen);
 		memset(ss, 0, rstate->holelen);
 	} else
-		for (n = 0; uc_len(ss); n++)
-			ss += uc_len(ss);
+		for (n = 0; (l = uc_len(ss)); n++)
+			ss += l;
 	unsigned int b = n + 1, c = 2, i;
 	int cpos = 0, wid, *col;
 	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
@@ -125,14 +123,15 @@ ren_state *ren_position(char *s)
 		}
 		int *wids = emalloc(n * sizeof(wids[0]));
 		for (i = 0; i < n; i++) {
+			wid = ren_cwid(chrs[off[i]], cpos);
 			pos[off[i]] = cpos;
-			cpos += ren_cwid(chrs[off[i]], cpos);
+			wids[off[i]] = wid;
+			cpos += wid;
 		}
 		pos[n] = cpos;
 		col = emalloc((cpos + 2) * sizeof(col[0]));
 		for (i = 0; i < n; i++) {
-			wid = ren_cwid(chrs[off[i]], pos[off[i]]);
-			wids[off[i]] = wid;
+			wid = wids[off[i]];
 			while (wid--)
 				col[c++] = off[i];
 		}
@@ -296,6 +295,8 @@ void syn_scdir(int scdir)
 
 int syn_merge(int old, int new)
 {
+	if (new & SYN_OWR)
+		return new & ~SYN_OWR;
 	int fg = SYN_FGSET(new) ? SYN_FG(new) : SYN_FG(old);
 	int bg = SYN_BGSET(new) ? SYN_BG(new) : SYN_BG(old);
 	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
