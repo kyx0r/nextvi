@@ -459,62 +459,50 @@ EX COMMANDS
              No range evaluates to <%> range.
              No range displays a maximum of xrows * 3 matches.
 
-     b[index]
-             Print buffers or switch to a buffer
+     [vrange]g{<*>}[regex]{<*>}{cmd}
+             Global command
 
-             Temporary buffers are separate from the main buffers
-             and are selected by a negative index.
+             Execute an ex command on a range of lines that matches an
+             enclosed regex.
 
-             Example: switch to the 5th buffer
-             :b5
-             Example: switch to the /hist/ ex history buffer
-             :b-1
-             Example: switch to the /fm/ directory listing buffer
-             :b-2
-             Example: switch to the /sc/ scratch buffer
-             :b-3
+             No range evaluates to <%> range or <.> range when nested.
 
-     bp[path]
-             Set current buffer path
+             Example: remove all empty lines
+             :g/^$/d
 
-     bs[*]   Set current buffer saved
+             Example: print lines matching previously set regex
+             :g//p
 
-             Argument resets undo/redo history
+             Multiple ex commands can be chained in one global command.
+             To chain commands, the ex separator <:> must be escaped once.
 
-     [range]p[str]
-             Print line(s) from a buffer
+             Example: print and append lines matching "int" to register <a>
+             :g/int/p\:ya ax
 
-             No range prints a line based on the value of left ex option.
-             Argument prints the evaluated argument.
+             It is possible to nest global commands inside of global commands.
+             The first global command will not be executed on lines that
+             were changed by a nested global command.
 
-             Example: utilize character offset ranges
-             :1,10;5;5p
-             Example: interleaved character offset ranges
-             :1;5,10;5p
-             Example: print current line from offset 5 to 10
-             :.;5;10p
-             Example: print buffer pathname
-             :p %
+             Example: nested global command
+             Append "has a semicolon" to all lines that contain "int" and
+             end with <;>.
+             :g/int/g/;$/& A has a semicolon
 
-     [vrange]ef[regex]
-             Open file using fuzzy search prompt
+             Example: extract/print data enclosed in "()"
+             :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
-             Requires the b-2 buffer to have a directory listing backfilled.
+     [vrange]g!{<*>}[regex]{<*>}{cmd}
+             Inverted global command
 
-             Example: backfill b-2 using :fd
-             :fd
-             Example: backfill b-2 using find
-             :b-2:%!find .
+     [range]re[regex]
+             Set regex keyword
 
-             Prompt behavior is equivalent to the :f command.
+             Range escapes its text and uses it as the regex.
 
-             Example: enter prompt & print entire listing
-             :ef
-             Example: search for pathname containing "v"
-             :ef v
-
-     [vrange]ef![regex]
-             Forced version of :ef
+             Example: set keyword to "int"
+             :re int
+             Example: set keyword from lines 1 to 3
+             :1,3re
 
      [vrange]i[str]
              Enter ex insert mode before specified position
@@ -574,52 +562,45 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     e[path]
-             Open a file at a path
+     [vrange]s{<*>}[regex]{<*>}{str}[<*>][<g>]
+             Substitute
 
-             No argument opens "unnamed" buffer.
-             Files larger than 2.0GB are truncated on a 32 bit build.
-             Line breaking happens until the first null terminator or EOF.
+             Find and replace text in a range of lines that matches an
+             enclosed regex with an enclosed replacement string.
 
-     e![path]
-             Force open a file at a path
+             Example: global replacement
+             :%s/term1/term2/g
 
-             No argument re-reads the current buffer from the filesystem.
+             Example: replace matching previously set regex
+             :%s//term2/g
 
-     [vrange]g{<*>}[regex]{<*>}{cmd}
-             Global command
+             Substitution backreference inserts the text of matched group
+             specified by \x where x is group number.
 
-             Execute an ex command on a range of lines that matches an
-             enclosed regex.
+             Example: substitution backreference
+             this is an example text for subs and has int or void
+             :%s/(int)|(void)/pre\0after
+             this is an example text for subs and has preintafter or void
+             :%s/(int)|(void)/pre\2after/g
+             this is an example text for subs and has prepreafterafter or prevoidafter
 
-             No range evaluates to <%> range or <.> range when nested.
+     u       Undo
+     rd      Redo
 
-             Example: remove all empty lines
-             :g/^$/d
+     [range]p[str]
+             Print line(s) from a buffer
 
-             Example: print lines matching previously set regex
-             :g//p
+             No range prints a line based on the value of left ex option.
+             Argument prints the evaluated argument.
 
-             Multiple ex commands can be chained in one global command.
-             To chain commands, the ex separator <:> must be escaped once.
-
-             Example: print and append lines matching "int" to register <a>
-             :g/int/p\:ya ax
-
-             It is possible to nest global commands inside of global commands.
-             The first global command will not be executed on lines that
-             were changed by a nested global command.
-
-             Example: nested global command
-             Append "has a semicolon" to all lines that contain "int" and
-             end with <;>.
-             :g/int/g/;$/& A has a semicolon
-
-             Example: extract/print data enclosed in "()"
-             :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
-
-     [vrange]g!{<*>}[regex]{<*>}{cmd}
-             Inverted global command
+             Example: utilize character offset ranges
+             :1,10;5;5p
+             Example: interleaved character offset ranges
+             :1;5,10;5p
+             Example: print current line from offset 5 to 10
+             :.;5;10p
+             Example: print buffer pathname
+             :p %
 
      [range]=[<0-3 *>][*]
              Print range numbers
@@ -642,6 +623,203 @@ EX COMMANDS
 
              Example: store ranges in <a> and <s> for later reuse in :f>
              :>top>,#>bottom>m as:'a,'sf>middle
+
+     [range]ya[<reg>][*]
+             Yank into a register
+
+             Argument value range is 0x1-0xff and 0x0 without.
+             Any extra argument appends to the register.
+             Default register cannot be appended to.
+
+             Example: append to register <1>
+             :ya 1x
+             Example: yank into <a> using ranges
+             :1,5;5;5ya a
+
+     ya![<reg>]
+             Free a register
+
+     [range]pu[<reg>][*][\!{cmd}]
+             Paste or pipe a register
+
+             Example: paste <a> at line 1 character offset 5
+             :1;5pu a
+             Example: copy default register to X11 clipboard
+             :pu \!xclip -selection clipboard
+             Example: copy register <a> to X11 clipboard
+             :pu a \!xclip -selection clipboard
+
+     [0-255]reg[str]
+             Print registers or put into a register
+
+             Prefix selects a register and argument replaces its contents.
+
+             Example: shift the printing position to view offscreen register parts
+             :1left:reg
+             Example: put "hello" into register <1>
+             :49reg hello
+
+     [0-255]reg+[str]
+             Print registers or append to a register
+
+     e[path]
+             Open a file at a path
+
+             No argument opens "unnamed" buffer.
+             Files larger than 2.0GB are truncated on a 32 bit build.
+             Line breaking happens until the first null terminator or EOF.
+
+     e![path]
+             Force open a file at a path
+
+             No argument re-reads the current buffer from the filesystem.
+
+     [vrange]ef[regex]
+             Open file using fuzzy search prompt
+
+             Requires the b-2 buffer to have a directory listing backfilled.
+
+             Example: backfill b-2 using :fd
+             :fd
+             Example: backfill b-2 using find
+             :b-2:%!find .
+
+             Prompt behavior is equivalent to the :f command.
+
+             Example: enter prompt & print entire listing
+             :ef
+             Example: search for pathname containing "v"
+             :ef v
+
+     [vrange]ef![regex]
+             Forced version of :ef
+
+     [range]r[path]
+     [range]r[\!{cmd}]
+             Read a file or a pipe
+
+             Range is computed on a target.
+             No range evaluates to <%> range.
+             No argument evaluates to current buffer path.
+
+             Example: read a file
+             :r vi.c
+             Example: pipe in all data
+             :r \!ls
+             Example: pipe in only lines 3,5
+             :3,5r \!ls
+
+     [range]w[path]
+     [range]w[\!{cmd}]
+             Write a file or a pipe
+
+             No range evaluates to <%> range.
+             No argument evaluates to current buffer path.
+
+             Example: write a file
+             :w vi.c
+             Example: pipe out all data into less
+             :w \!less
+             Example: pipe out only first 10 lines
+             :1,10w \!less
+
+     [range]w![path]
+             Force write a file
+
+     [range]wq[path]
+     [range]wq[\!{cmd}]
+             Write a file or a pipe and exit
+
+     [range]wq![path]
+     [range]wq![\!{cmd}]
+             Force write a file or a pipe and force quit
+
+     [range]x[path]
+             Write unsaved changes and exit
+
+     [range]x![path]
+             Force write unsaved changes and force quit
+
+     [#lvl]q[#code]
+     [#lvl]q![#code]
+             Exit or force quit
+
+             #code specifies shell exit code.
+             #lvl defines the number of scopes to exit.
+
+             Example: conditionally exit this scope and 1 above
+             :%f>marker:??!p no marker\:1q:s/old/new/g:w
+
+     b[index]
+             Print buffers or switch to a buffer
+
+             Temporary buffers are separate from the main buffers
+             and are selected by a negative index.
+
+             Example: switch to the 5th buffer
+             :b5
+             Example: switch to the /hist/ ex history buffer
+             :b-1
+             Example: switch to the /fm/ directory listing buffer
+             :b-2
+             Example: switch to the /sc/ scratch buffer
+             :b-3
+
+     bp[path]
+             Set current buffer path
+
+     bs[*]   Set current buffer saved
+
+             Argument resets undo/redo history
+
+     bx[#]   Set max number of buffers allowed
+
+             Buffers will be deallocated if the number specified is lower
+             than the number of buffers currently in use.
+             No argument will reset to the default value of 10.
+
+     cd[path]
+             Set a working directory
+
+             No argument relinks the current directory in case it got removed
+             or unmounted.
+
+             Currently open buffers' file paths will be automatically adjusted
+             to reflect a newly set working directory.
+
+     fp[path]
+             Clear or set a secondary directory path
+
+     fd[path]
+             Calculate directory listing in b-2 buffer
+
+             No argument uses secondary or a working directory path.
+
+     inc[regex]
+             Include regex for :fd calculation
+
+             No argument disables the filter.
+
+             Example: include only files in submodule directory that end with .c
+             :inc submodule.*\.c$
+             Example: exclude .git and submodule folders
+             :inc (^(?\:(?\!^\.git|^submodule).)+[^/]+$)
+
+     [range]![cmd]
+             Run an external program
+
+             When a range is specified, the buffer's data is piped to an external
+             program. The resulting stdout and stderr are then piped back into the
+             buffer, replacing the contents of the original range.
+
+             Example: infamously sort a buffer
+             :%!sort
+             Example: replace "int" with "uint" using sed
+             :%!sed -e 's/int/uint/g'
+             Example: pipe in result of ls command without line replacement
+             :;$+1!ls
+             Example: capitalize word at current position using tr
+             :;;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
 
      &{macro}
              Global non-blocking macro
@@ -743,128 +921,6 @@ EX COMMANDS
      {prefix}??!
              Inverted conditional
 
-     [range]pu[<reg>][*][\!{cmd}]
-             Paste or pipe a register
-
-             Example: paste <a> at line 1 character offset 5
-             :1;5pu a
-             Example: copy default register to X11 clipboard
-             :pu \!xclip -selection clipboard
-             Example: copy register <a> to X11 clipboard
-             :pu a \!xclip -selection clipboard
-
-     [range]r[path]
-     [range]r[\!{cmd}]
-             Read a file or a pipe
-
-             Range is computed on a target.
-             No range evaluates to <%> range.
-             No argument evaluates to current buffer path.
-
-             Example: read a file
-             :r vi.c
-             Example: pipe in all data
-             :r \!ls
-             Example: pipe in only lines 3,5
-             :3,5r \!ls
-
-     [range]w[path]
-     [range]w[\!{cmd}]
-             Write a file or a pipe
-
-             No range evaluates to <%> range.
-             No argument evaluates to current buffer path.
-
-             Example: write a file
-             :w vi.c
-             Example: pipe out all data into less
-             :w \!less
-             Example: pipe out only first 10 lines
-             :1,10w \!less
-
-     [range]w![path]
-             Force write a file
-
-     [range]wq[path]
-     [range]wq[\!{cmd}]
-             Write a file or a pipe and exit
-
-     [range]wq![path]
-     [range]wq![\!{cmd}]
-             Force write a file or a pipe and force quit
-
-     [range]x[path]
-             Write unsaved changes and exit
-
-     [range]x![path]
-             Force write unsaved changes and force quit
-
-     [#lvl]q[#code]
-     [#lvl]q![#code]
-             Exit or force quit
-
-             #code specifies shell exit code.
-             #lvl defines the number of scopes to exit.
-
-             Example: conditionally exit this scope and 1 above
-             :%f>marker:??!p no marker\:1q:s/old/new/g:w
-
-     u       Undo
-     rd      Redo
-
-     [vrange]s{<*>}[regex]{<*>}{str}[<*>][<g>]
-             Substitute
-
-             Find and replace text in a range of lines that matches an
-             enclosed regex with an enclosed replacement string.
-
-             Example: global replacement
-             :%s/term1/term2/g
-
-             Example: replace matching previously set regex
-             :%s//term2/g
-
-             Substitution backreference inserts the text of matched group
-             specified by \x where x is group number.
-
-             Example: substitution backreference
-             this is an example text for subs and has int or void
-             :%s/(int)|(void)/pre\0after
-             this is an example text for subs and has preintafter or void
-             :%s/(int)|(void)/pre\2after/g
-             this is an example text for subs and has prepreafterafter or prevoidafter
-
-     [range]ya[<reg>][*]
-             Yank into a register
-
-             Argument value range is 0x1-0xff and 0x0 without.
-             Any extra argument appends to the register.
-             Default register cannot be appended to.
-
-             Example: append to register <1>
-             :ya 1x
-             Example: yank into <a> using ranges
-             :1,5;5;5ya a
-
-     ya![<reg>]
-             Free a register
-
-     [range]![cmd]
-             Run an external program
-
-             When a range is specified, the buffer's data is piped to an external
-             program. The resulting stdout and stderr are then piped back into the
-             buffer, replacing the contents of the original range.
-
-             Example: infamously sort a buffer
-             :%!sort
-             Example: use sed to replace "int" with "uint"
-             :%!sed -e 's/int/uint/g'
-             Example: pipe in result of ls command without line replacement
-             :;$+1!ls
-             Example: capitalize word at current position using tr
-             :;;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
-
      ft[filetype]
              Set a filetype
 
@@ -879,62 +935,6 @@ EX COMMANDS
 
      cm![keymap]
              Set an alternative keymap
-
-     fd[path]
-             Calculate directory listing in b-2 buffer
-
-             No argument uses secondary or a working directory path.
-
-     fp[path]
-             Clear or set a secondary directory path
-
-     cd[path]
-             Set a working directory
-
-             No argument relinks the current directory in case it got removed
-             or unmounted.
-
-             Currently open buffers' file paths will be automatically adjusted
-             to reflect a newly set working directory.
-
-     inc[regex]
-             Include regex for :fd calculation
-
-             No argument disables the filter.
-
-             Example: include only files in submodule directory that end with .c
-             :inc submodule.*\.c$
-             Example: exclude .git and submodule folders
-             :inc (^(?\:(?\!^\.git|^submodule).)+[^/]+$)
-
-     [0-255]reg[str]
-             Print registers or put into a register
-
-             Prefix selects a register and argument replaces its contents.
-
-             Example: shift the printing position to view offscreen register parts
-             :1left:reg
-             Example: put "hello" into register <1>
-             :49reg hello
-
-     [0-255]reg+[str]
-             Print registers or append to a register
-
-     [range]re[regex]
-             Set regex keyword
-
-             Range escapes its text and uses it as the regex.
-
-             Example: set keyword to "int"
-             :re int
-             Example: set keyword from lines 1 to 3
-             :1,3re
-
-     bx[#]   Set max number of buffers allowed
-
-             Buffers will be deallocated if the number specified is lower
-             than the number of buffers currently in use.
-             No argument will reset to the default value of 10.
 
      ac[regex]
              Set autocomplete filter regex
@@ -978,8 +978,8 @@ EX COMMANDS
 
      ub      Toggle multi-codepoint sequence placeholders
 
-             Passes multi-codepoint sequences to the terminal for native rendering
-             rather than substituting placeholders.
+             Passes multi-codepoint sequences such as emojis to the terminal
+             for native rendering rather than substituting placeholders.
 
      ph[#clow] [#chigh] [#width] [#blen][*char]
              Redefine placeholders
@@ -1019,8 +1019,8 @@ EX OPTIONS
              This makes it possible to use predefined functions, aliases
              and ENV variables from the .rc file.
              Precondition 1:
-                     The .rc filename is shell specific, such as .bashrc in Bash
-                     and .zshrc in Zsh.
+                     .rc refers to a shell-specific filename, such as .bashrc
+                     in Bash or .zshrc in Zsh.
              Precondition 2:
                      The environment variable $SHELL determines the default
                      shell, otherwise it defaults to /bin/sh.
@@ -1273,18 +1273,18 @@ SPECIAL REGISTERS
 CODE MAP
      +--------------+----------------------+
      | 537 kmap.h   |  keymap translation  |
-     | 549 vi.h     |  definitions/aux     |
+     | 540 vi.h     |  definitions/aux     |
      +--------------+----------------------+
      | 342 conf.c   |  hl/ft/td config     |
      | 366 term.c   |  low level IO        |
-     | 409 ren.c    |  positioning/syntax  |
+     | 410 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
      | 651 lbuf.c   |  file/line buffer    |
-     | 720 led.c    |  insert mode/output  |
+     | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
      | 1726 ex.c    |  ex options/commands |
      | 1854 vi.c    |  normal mode/general |
-     | 7448 total   |  wc -l *.c|sort      |
+     | 7454 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1363,4 +1363,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>
 
-Nextvi 4.2                      March 19, 2026                      Nextvi 4.2
+Nextvi 4.2                      March 26, 2026                      Nextvi 4.2
