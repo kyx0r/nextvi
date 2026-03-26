@@ -717,67 +717,52 @@ No range evaluates to <%> range.
 No range displays a maximum of xrows * 3 matches.
 .Ed
 
-.It Cm b[\fIindex\fP]
-Print buffers or switch to a buffer
+.It Cm [\fIvrange\fP]g{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIcmd\fP}
+Global command
 .Bd -literal
-Temporary buffers are separate from the main buffers
-and are selected by a negative index.
+Execute an ex command on a range of lines that matches an
+enclosed regex.
 
-Example: switch to the 5th buffer
-:b5
-Example: switch to the /hist/ ex history buffer
-:b-1
-Example: switch to the /fm/ directory listing buffer
-:b-2
-Example: switch to the /sc/ scratch buffer
-:b-3
+No range evaluates to <%> range or <.> range when nested.
+
+Example: remove all empty lines
+:g/^$/d
+
+Example: print lines matching previously set regex
+:g//p
+
+Multiple ex commands can be chained in one global command.
+To chain commands, the ex separator <:> must be escaped once.
+
+Example: print and append lines matching "int" to register <a>
+:g/int/p\e:ya ax
+
+It is possible to nest global commands inside of global commands.
+The first global command will not be executed on lines that
+were changed by a nested global command.
+
+Example: nested global command
+Append "has a semicolon" to all lines that contain "int" and
+end with <;>.
+:g/int/g/;$/& A has a semicolon
+
+Example: extract/print data enclosed in "()"
+:grp1:err4:g/./;0\e:;>(\e().+\e)>;#>.+(\e))>+1p:err1:grp
 .Ed
 
-.It Cm bp[\fIpath\fP]
-Set current buffer path
+.It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIcmd\fP}
+Inverted global command
 
-.It Cm bs[\fI*\fP]
-Set current buffer saved
+.It Cm [\fIrange\fP]re[\fIregex\fP]
+Set regex keyword
 .Bd -literal
-Argument resets undo/redo history
+Range escapes its text and uses it as the regex.
+
+Example: set keyword to "int"
+:re int
+Example: set keyword from lines 1 to 3
+:1,3re
 .Ed
-
-.It Cm [\fIrange\fP]p[\fIstr\fP]
-Print line(s) from a buffer
-.Bd -literal
-No range prints a line based on the value of left ex option.
-Argument prints the evaluated argument.
-
-Example: utilize character offset ranges
-:1,10;5;5p
-Example: interleaved character offset ranges
-:1;5,10;5p
-Example: print current line from offset 5 to 10
-:.;5;10p
-Example: print buffer pathname
-:p %
-.Ed
-
-.It Cm [\fIvrange\fP]ef[\fIregex\fP]
-Open file using fuzzy search prompt
-.Bd -literal
-Requires the b-2 buffer to have a directory listing backfilled.
-
-Example: backfill b-2 using :fd
-:fd
-Example: backfill b-2 using find
-:b-2:%!find .
-
-Prompt behavior is equivalent to the :f command.
-
-Example: enter prompt & print entire listing
-:ef
-Example: search for pathname containing "v"
-:ef v
-.Ed
-
-.It Cm [\fIvrange\fP]ef![\fIregex\fP]
-Forced version of :ef
 
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
 Enter ex insert mode before specified position
@@ -841,55 +826,49 @@ Example: join all lines with space padding
 :%-1j x
 .Ed
 
-.It Cm e[\fIpath\fP]
-Open a file at a path
+.It Cm [\fIvrange\fP]s{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIstr\fP}[<\fI*\fP>][<\fIg\fP>]
+Substitute
 .Bd -literal
-No argument opens "unnamed" buffer.
-Files larger than 2.0GB are truncated on a 32 bit build.
-Line breaking happens until the first null terminator or EOF.
+Find and replace text in a range of lines that matches an
+enclosed regex with an enclosed replacement string.
+
+Example: global replacement
+:%s/term1/term2/g
+
+Example: replace matching previously set regex
+:%s//term2/g
+
+Substitution backreference inserts the text of matched group
+specified by \ex where x is group number.
+
+Example: substitution backreference
+this is an example text for subs and has int or void
+:%s/(int)|(void)/pre\e0after
+this is an example text for subs and has preintafter or void
+:%s/(int)|(void)/pre\e2after/g
+this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
-.It Cm e![\fIpath\fP]
-Force open a file at a path
+.It Cm u
+Undo
+.It Cm rd
+Redo
+
+.It Cm [\fIrange\fP]p[\fIstr\fP]
+Print line(s) from a buffer
 .Bd -literal
-No argument re-reads the current buffer from the filesystem.
+No range prints a line based on the value of left ex option.
+Argument prints the evaluated argument.
+
+Example: utilize character offset ranges
+:1,10;5;5p
+Example: interleaved character offset ranges
+:1;5,10;5p
+Example: print current line from offset 5 to 10
+:.;5;10p
+Example: print buffer pathname
+:p %
 .Ed
-
-.It Cm [\fIvrange\fP]g{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIcmd\fP}
-Global command
-.Bd -literal
-Execute an ex command on a range of lines that matches an
-enclosed regex.
-
-No range evaluates to <%> range or <.> range when nested.
-
-Example: remove all empty lines
-:g/^$/d
-
-Example: print lines matching previously set regex
-:g//p
-
-Multiple ex commands can be chained in one global command.
-To chain commands, the ex separator <:> must be escaped once.
-
-Example: print and append lines matching "int" to register <a>
-:g/int/p\e:ya ax
-
-It is possible to nest global commands inside of global commands.
-The first global command will not be executed on lines that
-were changed by a nested global command.
-
-Example: nested global command
-Append "has a semicolon" to all lines that contain "int" and
-end with <;>.
-:g/int/g/;$/& A has a semicolon
-
-Example: extract/print data enclosed in "()"
-:grp1:err4:g/./;0\e:;>(\e().+\e)>;#>.+(\e))>+1p:err1:grp
-.Ed
-
-.It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIcmd\fP}
-Inverted global command
 
 .It Cm [\fIrange\fP]=[<\fI0-3\fP \fI*\fP>][\fI*\fP]
 Print range numbers
@@ -913,6 +892,221 @@ Valid marks: <a-z ` ' [ ] *>
 
 Example: store ranges in <a> and <s> for later reuse in :f>
 :>top>,#>bottom>m as:'a,'sf>middle
+.Ed
+
+.It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fI*\fP]
+Yank into a register
+.Bd -literal
+Argument value range is 0x1-0xff and 0x0 without.
+Any extra argument appends to the register.
+Default register cannot be appended to.
+
+Example: append to register <1>
+:ya 1x
+Example: yank into <a> using ranges
+:1,5;5;5ya a
+.Ed
+
+.It Cm ya![<\fIreg\fP>]
+Free a register
+
+.It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
+Paste or pipe a register
+.Bd -literal
+Example: paste <a> at line 1 character offset 5
+:1;5pu a
+Example: copy default register to X11 clipboard
+:pu \e!xclip -selection clipboard
+Example: copy register <a> to X11 clipboard
+:pu a \e!xclip -selection clipboard
+.Ed
+
+.It Cm [\fI0-255\fP]reg[\fIstr\fP]
+Print registers or put into a register
+.Bd -literal
+Prefix selects a register and argument replaces its contents.
+
+Example: shift the printing position to view offscreen register parts
+:1left:reg
+Example: put "hello" into register <1>
+:49reg hello
+.Ed
+
+.It Cm [\fI0-255\fP]reg+[\fIstr\fP]
+Print registers or append to a register
+
+.It Cm e[\fIpath\fP]
+Open a file at a path
+.Bd -literal
+No argument opens "unnamed" buffer.
+Files larger than 2.0GB are truncated on a 32 bit build.
+Line breaking happens until the first null terminator or EOF.
+.Ed
+
+.It Cm e![\fIpath\fP]
+Force open a file at a path
+.Bd -literal
+No argument re-reads the current buffer from the filesystem.
+.Ed
+
+.It Cm [\fIrange\fP]r[\fIpath\fP]
+.It Cm [\fIrange\fP]r[\e!{\fIcmd\fP}]
+Read a file or a pipe
+.Bd -literal
+Range is computed on a target.
+No range evaluates to <%> range.
+No argument evaluates to current buffer path.
+
+Example: read a file
+:r vi.c
+Example: pipe in all data
+:r \e!ls
+Example: pipe in only lines 3,5
+:3,5r \e!ls
+.Ed
+
+.It Cm [\fIrange\fP]w[\fIpath\fP]
+.It Cm [\fIrange\fP]w[\e!{\fIcmd\fP}]
+Write a file or a pipe
+.Bd -literal
+No range evaluates to <%> range.
+No argument evaluates to current buffer path.
+
+Example: write a file
+:w vi.c
+Example: pipe out all data into less
+:w \e!less
+Example: pipe out only first 10 lines
+:1,10w \e!less
+.Ed
+
+.It Cm [\fIrange\fP]w![\fIpath\fP]
+Force write a file
+
+.It Cm [\fIrange\fP]wq[\fIpath\fP]
+.It Cm [\fIrange\fP]wq[\e!{\fIcmd\fP}]
+Write a file or a pipe and exit
+
+.It Cm [\fIrange\fP]wq![\fIpath\fP]
+.It Cm [\fIrange\fP]wq![\e!{\fIcmd\fP}]
+Force write a file or a pipe and force quit
+
+.It Cm [\fIrange\fP]x[\fIpath\fP]
+Write unsaved changes and exit
+
+.It Cm [\fIrange\fP]x![\fIpath\fP]
+Force write unsaved changes and force quit
+
+.It Cm [\fI#lvl\fP]q[\fI#code\fP]
+.It Cm [\fI#lvl\fP]q![\fI#code\fP]
+Exit or force quit
+.Bd -literal
+#code specifies shell exit code.
+#lvl defines the number of scopes to exit.
+
+Example: conditionally exit this scope and 1 above
+:%f>marker:??!p no marker\e:1q:s/old/new/g:w
+.Ed
+
+.It Cm b[\fIindex\fP]
+Print buffers or switch to a buffer
+.Bd -literal
+Temporary buffers are separate from the main buffers
+and are selected by a negative index.
+
+Example: switch to the 5th buffer
+:b5
+Example: switch to the /hist/ ex history buffer
+:b-1
+Example: switch to the /fm/ directory listing buffer
+:b-2
+Example: switch to the /sc/ scratch buffer
+:b-3
+.Ed
+
+.It Cm bp[\fIpath\fP]
+Set current buffer path
+
+.It Cm bs[\fI*\fP]
+Set current buffer saved
+.Bd -literal
+Argument resets undo/redo history
+.Ed
+
+.It Cm bx[\fI#\fP]
+Set max number of buffers allowed
+.Bd -literal
+Buffers will be deallocated if the number specified is lower
+than the number of buffers currently in use.
+No argument will reset to the default value of 10.
+.Ed
+
+.It Cm cd[\fIpath\fP]
+Set a working directory
+.Bd -literal
+No argument relinks the current directory in case it got removed
+or unmounted.
+
+Currently open buffers' file paths will be automatically adjusted
+to reflect a newly set working directory.
+.Ed
+
+.It Cm fp[\fIpath\fP]
+Clear or set a secondary directory path
+
+.It Cm fd[\fIpath\fP]
+Calculate directory listing in b-2 buffer
+.Bd -literal
+No argument uses secondary or a working directory path.
+.Ed
+
+.It Cm inc[\fIregex\fP]
+Include regex for :fd calculation
+.Bd -literal
+No argument disables the filter.
+
+Example: include only files in submodule directory that end with .c
+:inc submodule.*\e.c$
+Example: exclude .git and submodule folders
+:inc (^(?\e:(?\e!^\e.git|^submodule).)+[^/]+$)
+.Ed
+
+.It Cm [\fIvrange\fP]ef[\fIregex\fP]
+Open file using fuzzy search prompt
+.Bd -literal
+Requires the b-2 buffer to have a directory listing backfilled.
+
+Example: backfill b-2 using :fd
+:fd
+Example: backfill b-2 using find
+:b-2:%!find .
+
+Prompt behavior is equivalent to the :f command.
+
+Example: enter prompt & print entire listing
+:ef
+Example: search for pathname containing "v"
+:ef v
+.Ed
+
+.It Cm [\fIvrange\fP]ef![\fIregex\fP]
+Forced version of :ef
+
+.It Cm [\fIrange\fP]![\fIcmd\fP]
+Run an external program
+.Bd -literal
+When a range is specified, the buffer's data is piped to an external
+program. The resulting stdout and stderr are then piped back into the
+buffer, replacing the contents of the original range.
+
+Example: infamously sort a buffer
+:%!sort
+Example: replace "int" with "uint" using sed
+:%!sed -e 's/int/uint/g'
+Example: pipe in result of ls command without line replacement
+:;$+1!ls
+Example: capitalize word at current position using tr
+:;;>\e\e>>!tr '[\e:lower\e:]' '[\e:upper\e:]'
 .Ed
 
 .It Cm &{\fImacro\fP}
@@ -1019,137 +1213,6 @@ Example: inverted capture -- capture NOT of last status
 .It Cm {\fIprefix\fP}??!
 Inverted conditional
 
-.It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
-Paste or pipe a register
-.Bd -literal
-Example: paste <a> at line 1 character offset 5
-:1;5pu a
-Example: copy default register to X11 clipboard
-:pu \e!xclip -selection clipboard
-Example: copy register <a> to X11 clipboard
-:pu a \e!xclip -selection clipboard
-.Ed
-
-.It Cm [\fIrange\fP]r[\fIpath\fP]
-.It Cm [\fIrange\fP]r[\e!{\fIcmd\fP}]
-Read a file or a pipe
-.Bd -literal
-Range is computed on a target.
-No range evaluates to <%> range.
-No argument evaluates to current buffer path.
-
-Example: read a file
-:r vi.c
-Example: pipe in all data
-:r \e!ls
-Example: pipe in only lines 3,5
-:3,5r \e!ls
-.Ed
-
-.It Cm [\fIrange\fP]w[\fIpath\fP]
-.It Cm [\fIrange\fP]w[\e!{\fIcmd\fP}]
-Write a file or a pipe
-.Bd -literal
-No range evaluates to <%> range.
-No argument evaluates to current buffer path.
-
-Example: write a file
-:w vi.c
-Example: pipe out all data into less
-:w \e!less
-Example: pipe out only first 10 lines
-:1,10w \e!less
-.Ed
-
-.It Cm [\fIrange\fP]w![\fIpath\fP]
-Force write a file
-
-.It Cm [\fIrange\fP]wq[\fIpath\fP]
-.It Cm [\fIrange\fP]wq[\e!{\fIcmd\fP}]
-Write a file or a pipe and exit
-
-.It Cm [\fIrange\fP]wq![\fIpath\fP]
-.It Cm [\fIrange\fP]wq![\e!{\fIcmd\fP}]
-Force write a file or a pipe and force quit
-
-.It Cm [\fIrange\fP]x[\fIpath\fP]
-Write unsaved changes and exit
-
-.It Cm [\fIrange\fP]x![\fIpath\fP]
-Force write unsaved changes and force quit
-
-.It Cm [\fI#lvl\fP]q[\fI#code\fP]
-.It Cm [\fI#lvl\fP]q![\fI#code\fP]
-Exit or force quit
-.Bd -literal
-#code specifies shell exit code.
-#lvl defines the number of scopes to exit.
-
-Example: conditionally exit this scope and 1 above
-:%f>marker:??!p no marker\e:1q:s/old/new/g:w
-.Ed
-
-.It Cm u
-Undo
-.It Cm rd
-Redo
-
-.It Cm [\fIvrange\fP]s{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIstr\fP}[<\fI*\fP>][<\fIg\fP>]
-Substitute
-.Bd -literal
-Find and replace text in a range of lines that matches an
-enclosed regex with an enclosed replacement string.
-
-Example: global replacement
-:%s/term1/term2/g
-
-Example: replace matching previously set regex
-:%s//term2/g
-
-Substitution backreference inserts the text of matched group
-specified by \ex where x is group number.
-
-Example: substitution backreference
-this is an example text for subs and has int or void
-:%s/(int)|(void)/pre\e0after
-this is an example text for subs and has preintafter or void
-:%s/(int)|(void)/pre\e2after/g
-this is an example text for subs and has prepreafterafter or prevoidafter
-.Ed
-
-.It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fI*\fP]
-Yank into a register
-.Bd -literal
-Argument value range is 0x1-0xff and 0x0 without.
-Any extra argument appends to the register.
-Default register cannot be appended to.
-
-Example: append to register <1>
-:ya 1x
-Example: yank into <a> using ranges
-:1,5;5;5ya a
-.Ed
-
-.It Cm ya![<\fIreg\fP>]
-Free a register
-
-.It Cm [\fIrange\fP]![\fIcmd\fP]
-Run an external program
-.Bd -literal
-When a range is specified, the buffer's data is piped to an external
-program. The resulting stdout and stderr are then piped back into the
-buffer, replacing the contents of the original range.
-
-Example: infamously sort a buffer
-:%!sort
-Example: replace "int" with "uint" using sed
-:%!sed -e 's/int/uint/g'
-Example: pipe in result of ls command without line replacement
-:;$+1!ls
-Example: capitalize word at current position using tr
-:;;>\e\e>>!tr '[\e:lower\e:]' '[\e:upper\e:]'
-.Ed
-
 .It Cm ft[\fIfiletype\fP]
 Set a filetype
 .Bd -literal
@@ -1166,69 +1229,6 @@ No argument prints the current keymap name.
 
 .It Cm cm![\fIkeymap\fP]
 Set an alternative keymap
-
-.It Cm fd[\fIpath\fP]
-Calculate directory listing in b-2 buffer
-.Bd -literal
-No argument uses secondary or a working directory path.
-.Ed
-
-.It Cm fp[\fIpath\fP]
-Clear or set a secondary directory path
-
-.It Cm cd[\fIpath\fP]
-Set a working directory
-.Bd -literal
-No argument relinks the current directory in case it got removed
-or unmounted.
-
-Currently open buffers' file paths will be automatically adjusted
-to reflect a newly set working directory.
-.Ed
-
-.It Cm inc[\fIregex\fP]
-Include regex for :fd calculation
-.Bd -literal
-No argument disables the filter.
-
-Example: include only files in submodule directory that end with .c
-:inc submodule.*\e.c$
-Example: exclude .git and submodule folders
-:inc (^(?\e:(?\e!^\e.git|^submodule).)+[^/]+$)
-.Ed
-
-.It Cm [\fI0-255\fP]reg[\fIstr\fP]
-Print registers or put into a register
-.Bd -literal
-Prefix selects a register and argument replaces its contents.
-
-Example: shift the printing position to view offscreen register parts
-:1left:reg
-Example: put "hello" into register <1>
-:49reg hello
-.Ed
-
-.It Cm [\fI0-255\fP]reg+[\fIstr\fP]
-Print registers or append to a register
-
-.It Cm [\fIrange\fP]re[\fIregex\fP]
-Set regex keyword
-.Bd -literal
-Range escapes its text and uses it as the regex.
-
-Example: set keyword to "int"
-:re int
-Example: set keyword from lines 1 to 3
-:1,3re
-.Ed
-
-.It Cm bx[\fI#\fP]
-Set max number of buffers allowed
-.Bd -literal
-Buffers will be deallocated if the number specified is lower
-than the number of buffers currently in use.
-No argument will reset to the default value of 10.
-.Ed
 
 .It Cm ac[\fIregex\fP]
 Set autocomplete filter regex
