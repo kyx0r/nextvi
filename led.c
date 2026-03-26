@@ -371,6 +371,9 @@ char *led_read(int *kmap, int c)
 	sbufn_cut(sb, len) \
 	sbuf_free(led_attsb) \
 	led_attsb = prev_attsb; \
+	c = term_read(TK_CTL('l')); \
+	led_printparts(sb, pre, ps, *post, postn, poff); \
+	goto noredraw; \
 } \
 
 static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
@@ -427,9 +430,9 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 	int len, c, i;
 	do {
 		led_printparts(sb, pre, ps, *post, postn, poff);
-		noredraw:
 		len = sb->s_n;
 		c = term_read(TK_CTL('l'));
+		noredraw:
 		switch (c) {
 		case TK_CTL('h'):
 		case 127:
@@ -465,10 +468,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			break;
 		case TK_CTL(']'):
 		case TK_CTL('\\'):
-			i = 0;
-			retry:
 			if (c == TK_CTL(']')) {
-				if (!is->p_reg || is->p_reg == '9')
+				if (is->p_reg < '/' || is->p_reg >= '9')
 					is->p_reg = '/';
 				while (is->p_reg < '9' && !xregs[++is->p_reg]);
 			} else {
@@ -477,9 +478,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			}
 			if (xregs[is->p_reg])
 				led_info(xregs[is->p_reg]->s)
-			else if (!i++)
-				goto retry;
-			goto noredraw;
+			continue;
 		case TK_CTL('p'):
 			if (xregs[is->p_reg])
 				sbuf_mem(sb, xregs[is->p_reg]->s, xregs[is->p_reg]->s_n)
@@ -524,7 +523,6 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			char buf[100];
 			itoa(is->sug_pt, buf);
 			led_info(buf)
-			goto noredraw;
 		case TK_CTL('n'):
 			if (!suggestsb)
 				continue;
