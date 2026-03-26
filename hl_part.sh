@@ -112,18 +112,18 @@ exit 0
  				if \(i < c && stt\[i\] == p->off\) \{
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 7aba6ef6..8c05446f 100644
+index 8cf9a736..f0b195b3 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,7 @@
- /* line editing and drawing */
+ static sbuf *suggestsb;
 +#define LEDBACK 300
 +#define LEDFORW 300
 +
- 
- static sbuf *suggestsb;
  static sbuf *acsb;
-@@ -146,14 +149,17 @@ void led_render(char *s0, int cbeg, int cend)
+ sbuf *led_attsb;
+ 
+@@ -144,14 +147,17 @@ void led_render(char *s0, int cbeg, int cend)
  	if (!xled)
  		return;
  	ren_state *r = ren_position(s0);
@@ -144,7 +144,7 @@ index 7aba6ef6..8c05446f 100644
  	int ctx = r->ctx;
  	off[cterm] = -1;
  	if (ctx < 0) {
-@@ -165,6 +171,7 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -163,6 +169,7 @@ void led_render(char *s0, int cbeg, int cend)
  			off[c - cbeg] = c <= r->cmax ? r->col[c] : -1;
  	}
  	if (r->cmax > cterm || cbeg) {
@@ -152,7 +152,7 @@ index 7aba6ef6..8c05446f 100644
  		i = ctx < 0 ? cterm-1 : 0;
  		o = off[i];
  		if (o >= 0 && cbeg && r->pos[o] < cbeg)
-@@ -175,12 +182,27 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -173,12 +180,27 @@ void led_render(char *s0, int cbeg, int cend)
  		if (o >= 0 && r->cmax > cterm && r->pos[o] + r->wid[o] > cend)
  			while (off[i] == o)
  				off[ctx < 0 ? i++ : i--] = -1;
@@ -181,7 +181,7 @@ index 7aba6ef6..8c05446f 100644
  		stt[0] = 0;
  		for (i = 1; i < c; i++) {
  			int key0 = att[i];
-@@ -202,9 +224,9 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -200,9 +222,9 @@ void led_render(char *s0, int cbeg, int cend)
  		sbufn_null(bsb)
  		bound = bsb->s;
  	}
@@ -193,12 +193,12 @@ index 7aba6ef6..8c05446f 100644
  	free(bound);
  	if (led_attsb && xhl) {
  		led_att *p = (led_att*)led_attsb->s;
-@@ -214,7 +236,7 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -212,7 +234,7 @@ void led_render(char *s0, int cbeg, int cend)
  			if (!bound)
- 				att[p->off] = syn_merge(p->att, att[p->off]);
+ 				att[p->off] = syn_merge(att[p->off], p->att);
  			else if (c && stt[0] <= p->off && stt[c-1] >= p->off) {
 -				i = p->off - stt[0];
 +				i = p->off - stt[atti];
  				if (i < c && stt[i] == p->off) {
- 					att[i] = syn_merge(p->att, att[i]);
+ 					att[i] = syn_merge(att[i], p->att);
  					continue; /* text not reordered */
