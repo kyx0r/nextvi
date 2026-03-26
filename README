@@ -11,7 +11,7 @@ DESCRIPTION
      initially developed by Bill Joy in 1976 for Unix-based systems.
      Nextvi builds upon many standard features from vi(1) including
      a unique modal interface that allows users to switch between normal,
-     insert, and command modes, for efficient text manipulation.
+     insert, and command modes for efficient text manipulation.
      Additional enhancements include an unrestricted macro system,
      syntax highlighting, keymaps, bidirectional UTF-8 support, and
      numerous other features. Nextvi remains highly efficient, portable,
@@ -1201,7 +1201,7 @@ EXINIT ENV VAR
              @b macro pipes the current line into X11 clipboard.
 
 REGEX
-     Pikevm is a fast non backtracking NFA simulation regex engine
+     Pikevm is a fast non-backtracking NFA simulation regex engine
      developed for Nextvi. It ensures regular expressions are evaluated
      in constant space and O(n + k) time complexity where <n> is
      the input string length and <k> represents the regex's structural
@@ -1257,8 +1257,8 @@ REGEX
 
 SPECIAL MARKS
      *       Position of previous ex command
-     [       First line of previous change
-     ]       Last line of previous change
+     [       First position of previous change
+     ]       Last position of previous change
      '       Position of previous line region
      `       Position of previous line region
 
@@ -1361,6 +1361,6 @@ SEE ALSO
 AUTHORS
      Nextvi was written by Kyryl Melekhin <k.melekhin@gmail.com>.  It is based
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
-     manual page was inspired by nepeta <nepeta@canaglie.net>
+     manual page was inspired by nepeta <nepeta@canaglie.net>.
 
 Nextvi 4.2                      March 26, 2026                      Nextvi 4.2
