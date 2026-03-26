@@ -471,10 +471,7 @@ ${SEP}.,\$f> 	syn_blockhl = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 308\\${
 ${SEP}+1,#+1c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
 	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
 .
-${SEP}.,\$;f> 		sbuf_mem\\\\(led_attsb, &la, \\\\(int\\\\)sizeof\\\\(la\\\\)\\\\) \\\\\\\\
-	\\\\} \\\\\\\\
-	sbuf_str\\\\(sb, buf\\\\) \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 367\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/&i/poff/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 367\\${SEP}${QF}}${SEP}.,\$;f> 	goto noredraw; \\\\\\\\
+${SEP}.,\$;f> 	goto noredraw; \\\\\\\\
 \\\\} \\\\\\\\
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 376\\${SEP}${QF}}${SEP};=
@@ -911,12 +908,9 @@ ${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? c
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void term_chr\\\\(int ch\\\\);
-void term_pos\\\\(int r, int c\\\\);
-void term_kill\\\\(void\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 319\\${SEP}${QF}}${SEP};=
-${SEP}+2a void term_killn(int n);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}319a void term_killn(int n);
 .
-${SEP}.,\$;f> \\\\} \\\\\\\\
+${SEP}%;f> \\\\} \\\\\\\\
 
 #define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 390\\${SEP}${QF}}${SEP};=
 ${SEP}+3c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \\\\
@@ -951,8 +945,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_1ys4aY_conf.c.diff.orig	2026-03-26 18:27:11.896666918 -0100
-+++ /tmp/patch2vi_1ys4aY_conf.c.diff	2026-03-26 18:27:31.279673543 -0100
+--- /tmp/patch2vi_ehI5h0_conf.c.diff.orig	2026-03-26 18:38:58.353182863 -0100
++++ /tmp/patch2vi_ehI5h0_conf.c.diff	2026-03-26 18:39:05.705661060 -0100
 @@ -8,8 +8,6 @@
  %;f>
  === SEARCH PATTERN (offset: 3) ===
@@ -963,11 +957,23 @@ exit 0
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 === DELTA ex.c ===
---- /tmp/patch2vi_Jtuarz_ex.c.diff.orig	2026-03-26 18:27:31.281946900 -0100
-+++ /tmp/patch2vi_Jtuarz_ex.c.diff	2026-03-26 18:28:19.024672685 -0100
+--- /tmp/patch2vi_v8dbjx_ex.c.diff.orig	2026-03-26 18:39:05.708656455 -0100
++++ /tmp/patch2vi_v8dbjx_ex.c.diff	2026-03-26 18:39:08.289661014 -0100
 @@ -3,7 +3,7 @@
  +struct win *curwin;		/* current active window */
  +int nwins;			/* number of windows */
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+=== DELTA vi.h ===
+--- /tmp/patch2vi_cwg3OG_vi.h.diff.orig	2026-03-26 18:39:25.315161414 -0100
++++ /tmp/patch2vi_cwg3OG_vi.h.diff	2026-03-26 18:39:47.523660308 -0100
+@@ -1,7 +1,7 @@
+ === GROUP 1/3 (line 319) ===
+ +void term_killn(int n);
  === STRATEGY (default: rel) ===
 -#abs
 +abs
@@ -1435,7 +1441,7 @@ index 95a85a2d..e41881ab 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 8cf9a736..3b0b74f6 100644
+index 6a5e065f..3b0b74f6 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,8 +91,9 @@ static char *kmap_map(int kmap, int c)
@@ -1475,15 +1481,6 @@ index 8cf9a736..3b0b74f6 100644
  	sbufn_cut(sb, psn)
  	rstate -= 2;
  }
-@@ -364,7 +368,7 @@ char *led_read(int *kmap, int c)
- 		sbuf_mem(led_attsb, &la, (int)sizeof(la)) \
- 	} \
- 	sbuf_str(sb, buf) \
--	led_printparts(sb, pre, ps, *post, postn, &i); \
-+	led_printparts(sb, pre, ps, *post, postn, poff); \
- 	sbuf_cut(sb, len) \
- 	sbuf_free(led_attsb) \
- 	led_attsb = prev_attsb; \
 @@ -373,13 +377,18 @@ char *led_read(int *kmap, int c)
  	goto noredraw; \
  } \
