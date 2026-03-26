@@ -1142,7 +1142,7 @@ buffer, replacing the contents of the original range.
 
 Example: infamously sort a buffer
 :%!sort
-Example: use sed to replace "int" with "uint"
+Example: replace "int" with "uint" using sed
 :%!sed -e 's/int/uint/g'
 Example: pipe in result of ls command without line replacement
 :;$+1!ls
@@ -1280,8 +1280,8 @@ Hides zero-width characters rather than rendering them as placeholders.
 .It Cm ub
 Toggle multi-codepoint sequence placeholders
 .Bd -literal
-Passes multi-codepoint sequences to the terminal for native rendering
-rather than substituting placeholders.
+Passes multi-codepoint sequences such as emojis to the terminal
+for native rendering rather than substituting placeholders.
 .Ed
 
 .It Cm ph[\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
@@ -1331,8 +1331,8 @@ The shell will source the .rc file before command execution.
 This makes it possible to use predefined functions, aliases
 and ENV variables from the .rc file.
 Precondition 1:
-	The .rc filename is shell specific, such as .bashrc in Bash
-	and .zshrc in Zsh.
+	.rc refers to a shell-specific filename, such as .bashrc
+	in Bash or .zshrc in Zsh.
 Precondition 2:
 	The environment variable $SHELL determines the default
 	shell, otherwise it defaults to /bin/sh.
