@@ -83,15 +83,14 @@ ${SEP}.,\$;f> 		sbufn_null\\\\(bsb\\\\)
 	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 205\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/ c/ fc/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 205\\${SEP}${QF}}${SEP}.,\$f> 	if \\\\(xhl\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 207\\${SEP}${QF}}${SEP};=
 ${SEP}+1${SEP}s/ c/ fc/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 207\\${SEP}${QF}}${SEP}.,\$;f> 			if \\\\(!bound\\\\)
-				att\\\\[p->off\\\\] = syn_merge\\\\(p->att, att\\\\[p->off\\\\]\\\\);
-			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 217\\${SEP}${QF}}${SEP};=
+				att\\\\[p->off\\\\] = syn_merge\\\\(.*\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 217\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/0/atti/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 217\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA led.c ===
---- /tmp/patch2vi_dFNhGc_led.c.diff.orig
-+++ /tmp/patch2vi_dFNhGc_led.c.diff
+--- /tmp/patch2vi_lHFmV2_led.c.diff.orig	2026-03-26 18:03:25.762507840 -0100
++++ /tmp/patch2vi_lHFmV2_led.c.diff	2026-03-26 18:04:08.806698754 -0100
 @@ -7,7 +7,7 @@
  === SEARCH COMMAND ===
  %f>
@@ -101,6 +100,16 @@ exit 0
  --- extra (delete to include) ---
  
  static sbuf \*suggestsb;
+@@ -172,8 +172,7 @@
+ .,\$;f>
+ === SEARCH PATTERN (offset: 3) ===
+ 			if \(!bound\)
+-				att\[p->off\] = syn_merge\(p->att, att\[p->off\]\);
+-			else if \(c && stt\[0\] <= p->off && stt\[c-1\] >= p->off\) \{
++				att\[p->off\] = syn_merge\(.*\);
+ --- extra (delete to include) ---
+ 				i = p->off - stt\[0\];
+ 				if \(i < c && stt\[i\] == p->off\) \{
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
 index 7aba6ef6..8c05446f 100644
