@@ -364,7 +364,7 @@ char *led_read(int *kmap, int c)
 		sbuf_mem(led_attsb, &la, (int)sizeof(la)) \
 	} \
 	sbuf_str(sb, buf) \
-	led_printparts(sb, pre, ps, *post, postn, &i); \
+	led_printparts(sb, pre, ps, *post, postn, poff); \
 	sbuf_cut(sb, len) \
 	sbuf_free(led_attsb) \
 	led_attsb = prev_attsb; \
