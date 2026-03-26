@@ -242,7 +242,7 @@ void led_render(char *s0, int cbeg, int cend)
 				continue;
 			j = bound ? ctt[l-1] : o;
 			att[j] = syn_merge(att[j], conf_hlrev);
-			att[j+1] = syn_merge(conf_hlrev, att[j+1]);
+			att[j+1] = syn_merge(att[j+1], conf_hlrev);
 		}
 	}
 	/* generate term output */
