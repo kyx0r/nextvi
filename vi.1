@@ -949,6 +949,27 @@ Force open a file at a path
 No argument re-reads the current buffer from the filesystem.
 .Ed
 
+.It Cm [\fIvrange\fP]ef[\fIregex\fP]
+Open file using fuzzy search prompt
+.Bd -literal
+Requires the b-2 buffer to have a directory listing backfilled.
+
+Example: backfill b-2 using :fd
+:fd
+Example: backfill b-2 using find
+:b-2:%!find .
+
+Prompt behavior is equivalent to the :f command.
+
+Example: enter prompt & print entire listing
+:ef
+Example: search for pathname containing "v"
+:ef v
+.Ed
+
+.It Cm [\fIvrange\fP]ef![\fIregex\fP]
+Forced version of :ef
+
 .It Cm [\fIrange\fP]r[\fIpath\fP]
 .It Cm [\fIrange\fP]r[\e!{\fIcmd\fP}]
 Read a file or a pipe
@@ -1070,27 +1091,6 @@ Example: include only files in submodule directory that end with .c
 Example: exclude .git and submodule folders
 :inc (^(?\e:(?\e!^\e.git|^submodule).)+[^/]+$)
 .Ed
-
-.It Cm [\fIvrange\fP]ef[\fIregex\fP]
-Open file using fuzzy search prompt
-.Bd -literal
-Requires the b-2 buffer to have a directory listing backfilled.
-
-Example: backfill b-2 using :fd
-:fd
-Example: backfill b-2 using find
-:b-2:%!find .
-
-Prompt behavior is equivalent to the :f command.
-
-Example: enter prompt & print entire listing
-:ef
-Example: search for pathname containing "v"
-:ef v
-.Ed
-
-.It Cm [\fIvrange\fP]ef![\fIregex\fP]
-Forced version of :ef
 
 .It Cm [\fIrange\fP]![\fIcmd\fP]
 Run an external program
