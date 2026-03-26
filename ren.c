@@ -295,6 +295,8 @@ void syn_scdir(int scdir)
 
 int syn_merge(int old, int new)
 {
+	if (new & SYN_OWR)
+		return new & ~SYN_OWR;
 	int fg = SYN_FGSET(new) ? SYN_FG(new) : SYN_FG(old);
 	int bg = SYN_BGSET(new) ? SYN_BG(new) : SYN_BG(old);
 	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
