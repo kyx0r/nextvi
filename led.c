@@ -366,9 +366,6 @@ char *led_read(int *kmap, int c)
 	sbuf_str(sb, buf) \
 	led_printparts(sb, pre, ps, *post, postn, &i); \
 	sbuf_cut(sb, len) \
-	sbuf_str(sb, *post) \
-	sbufn_null(sb) \
-	sbufn_cut(sb, len) \
 	sbuf_free(led_attsb) \
 	led_attsb = prev_attsb; \
 	c = term_read(TK_CTL('l')); \
