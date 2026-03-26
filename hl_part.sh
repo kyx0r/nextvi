@@ -29,34 +29,33 @@ fi
 # Patch: led.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> static sbuf \\\\*suggestsb;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP};=
 ${SEP}.a #define LEDBACK 300
 #define LEDFORW 300
 
 .
 ${SEP}.,\$;f> 	if \\\\(!xled\\\\)
 		return;
-	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 148\\${SEP}${QF}}${SEP};=
+	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 146\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
 .
 ${SEP}.,\$;f> 	char \\\\*bound = NULL;
 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
-	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 154\\${SEP}${QF}}${SEP};=
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 152\\${SEP}${QF}}${SEP};=
 ${SEP}+3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
 .
 ${SEP}.,\$;f> 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
 	\\\\}
-	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 167\\${SEP}${QF}}${SEP};=
+	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 165\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		c = 0;
 .
 ${SEP}.,\$;f> 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
-				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 178\\${SEP}${QF}}${SEP};=
+				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 176\\${SEP}${QF}}${SEP};=
 ${SEP}+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
 			if (r->pos[l] < cbeg && c < fcterm) {
@@ -69,7 +68,7 @@ ${SEP}+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 .
 ${SEP}.,\$;f> 				for \\\\(; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\);
 			\\\\}
-		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 183\\${SEP}${QF}}${SEP};=
+		\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 181\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
@@ -80,36 +79,15 @@ ${SEP}+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
 .
 ${SEP}.,\$;f> 		sbufn_null\\\\(bsb\\\\)
 		bound = bsb->s;
-	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 205\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/ c/ fc/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 205\\${SEP}${QF}}${SEP}.,\$f> 	if \\\\(xhl\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 207\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/ c/ fc/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 207\\${SEP}${QF}}${SEP}.,\$;f> 			if \\\\(!bound\\\\)
-				att\\\\[p->off\\\\] = syn_merge\\\\(.*\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 217\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/0/atti/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 217\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
+	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 203\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/ c/ fc/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 203\\${SEP}${QF}}${SEP}.,\$f> 	if \\\\(xhl\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 205\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/ c/ fc/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 205\\${SEP}${QF}}${SEP}.,\$;f> 			if \\\\(!bound\\\\)
+				att\\\\[p->off\\\\] = syn_merge\\\\(att\\\\[p->off\\\\], p->att\\\\);
+			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 215\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/0/atti/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 215\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 exit 0
 === PATCH2VI DELTA ===
-=== DELTA led.c ===
---- /tmp/patch2vi_lHFmV2_led.c.diff.orig	2026-03-26 18:03:25.762507840 -0100
-+++ /tmp/patch2vi_lHFmV2_led.c.diff	2026-03-26 18:04:08.806698754 -0100
-@@ -7,7 +7,7 @@
- === SEARCH COMMAND ===
- %f>
- === SEARCH PATTERN (offset: 1) ===
--/\* line editing and drawing \*/
-+
- --- extra (delete to include) ---
- 
- static sbuf \*suggestsb;
-@@ -172,8 +172,7 @@
- .,\$;f>
- === SEARCH PATTERN (offset: 3) ===
- 			if \(!bound\)
--				att\[p->off\] = syn_merge\(p->att, att\[p->off\]\);
--			else if \(c && stt\[0\] <= p->off && stt\[c-1\] >= p->off\) \{
-+				att\[p->off\] = syn_merge\(.*\);
- --- extra (delete to include) ---
- 				i = p->off - stt\[0\];
- 				if \(i < c && stt\[i\] == p->off\) \{
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
 index 8cf9a736..f0b195b3 100644
