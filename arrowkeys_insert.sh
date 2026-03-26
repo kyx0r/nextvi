@@ -48,7 +48,7 @@ ${SEP}+3,#+1c 	if (print) {
 ${SEP}.,\$;f> 		sbuf_mem\\\\(led_attsb, &la, \\\\(int\\\\)sizeof\\\\(la\\\\)\\\\) \\\\\\\\
 	\\\\} \\\\\\\\
 	sbuf_str\\\\(sb, buf\\\\) \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 367\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/i\\\\)/i, 1)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 367\\${SEP}${QF}}${SEP}.,\$;f> 	sbuf_free\\\\(led_attsb\\\\) \\\\\\\\
+${SEP}+3${SEP}s/f\\\\)/f, 1)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 367\\${SEP}${QF}}${SEP}.,\$;f> 	sbuf_free\\\\(led_attsb\\\\) \\\\\\\\
 	led_attsb = prev_attsb; \\\\\\\\
 	c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\); \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 372\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/f\\\\)/f, !vi_insmov)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 372\\${SEP}${QF}}${SEP}.,\$;f> 	char \\\\*cs;
@@ -196,7 +196,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index e85c962e..e3bf20d3 100644
+index 6a5e065f..e9a31062 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -233,8 +233,8 @@ index e85c962e..e3bf20d3 100644
  		sbuf_mem(led_attsb, &la, (int)sizeof(la)) \
  	} \
  	sbuf_str(sb, buf) \
--	led_printparts(sb, pre, ps, *post, postn, &i); \
-+	led_printparts(sb, pre, ps, *post, postn, &i, 1); \
+-	led_printparts(sb, pre, ps, *post, postn, poff); \
++	led_printparts(sb, pre, ps, *post, postn, poff, 1); \
  	sbuf_cut(sb, len) \
  	sbuf_free(led_attsb) \
  	led_attsb = prev_attsb; \
