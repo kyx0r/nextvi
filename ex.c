@@ -1,5 +1,5 @@
 int xleft;			/* the first visible column */
-int xvis;			/* visual mode */
+int xvis;			/* startup flags */
 int xai = 1;			/* autoindent option */
 int xic = 1;			/* ignorecase option */
 int xhl = 1;			/* syntax highlight option */

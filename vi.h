@@ -237,6 +237,7 @@ void dir_init(void);
 #define SYN_SATT	0x4000000	/* grp inclusion check at start offset */
 #define SYN_EATT	0x8000000	/* grp inclusion check at end offset */
 #define SYN_ATT		0xc000000	/* grp inclusion check from start to end */
+#define SYN_OWR		0x10000000	/* attribute overwrite */
 #define SYN_BSSET(a)	(a & SYN_BS)
 #define SYN_BESET(a)	(a & SYN_BE)
 #define SYN_BSESET(a)	(a & SYN_BSE)
@@ -482,8 +483,8 @@ int ex_edit(const char *path, int len);
 void ex_regput(unsigned char c, const char *s, int append);
 
 /* conf.c: configuration variables */
-/* map file names to file types */
 extern const int conf_mode;
+/* map file names to file types */
 struct filetype {
 	char *ft;		/* file type */
 	char *pat;		/* file name pattern */
