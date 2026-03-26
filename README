@@ -267,6 +267,10 @@ lsp.sh
 --------------
 Defunct lsp support skeleton
 
+sse.sh
+--------------
+SIMD optimizations for Nextvi.
+
 My current EXINIT setup:
 --------------
 How it works:
