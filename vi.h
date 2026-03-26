@@ -482,8 +482,8 @@ int ex_edit(const char *path, int len);
 void ex_regput(unsigned char c, const char *s, int append);
 
 /* conf.c: configuration variables */
-/* map file names to file types */
 extern const int conf_mode;
+/* map file names to file types */
 struct filetype {
 	char *ft;		/* file type */
 	char *pat;		/* file name pattern */

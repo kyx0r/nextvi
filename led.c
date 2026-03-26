@@ -207,7 +207,7 @@ void led_render(char *s0, int cbeg, int cend)
 	if (led_attsb && xhl) {
 		led_att *p = (led_att*)led_attsb->s;
 		for (; (char*)p < &led_attsb->s[led_attsb->s_n]; p++) {
-			if (p->s != s0)
+			if (p->s != s0 && p->s)
 				continue;
 			if (!bound)
 				att[p->off] = syn_merge(p->att, att[p->off]);
@@ -353,10 +353,26 @@ char *led_read(int *kmap, int c)
 	return NULL;
 }
 
-#define led_info(str) \
-RS(2, led_crender(str, ctop+xrows, 0, 0, xcols)) \
-if (ai_max >= 0) \
-	term_pos(crow - ctop, 0); \
+#define led_info(buf) \
+{ \
+	led_att la; \
+	la.s = NULL; \
+	la.att = WH1 | SYN_BD; \
+	sbuf *prev_attsb = led_attsb; \
+	sbuf_make(led_attsb, sizeof(la) * 2) \
+	for (i = uc_slen(buf) - 1; i >= 0; i--) { \
+		la.off = xoff + i; \
+		sbuf_mem(led_attsb, &la, (int)sizeof(la)) \
+	} \
+	sbuf_str(sb, buf) \
+	led_printparts(sb, pre, ps, *post, postn, -1); \
+	sbuf_cut(sb, len) \
+	sbuf_str(sb, *post) \
+	sbufn_null(sb) \
+	sbufn_cut(sb, len) \
+	sbuf_free(led_attsb) \
+	led_attsb = prev_attsb; \
+} \
 
 static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
 {
@@ -412,6 +428,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 	int len, c, i;
 	do {
 		led_printparts(sb, pre, ps, *post, postn, ai_max);
+		noredraw:
 		len = sb->s_n;
 		c = term_read(TK_CTL('l'));
 		switch (c) {
@@ -459,16 +476,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 				c = term_read(0);
 				is->p_reg = c == TK_CTL('\\') ? 0 : c;
 			}
-			if (xregs[is->p_reg]) {
-				sbuf_chr(sb, is->p_reg ? is->p_reg : '~')
-				sbuf_chr(sb, ' ')
-				sbuf_mem(sb, xregs[is->p_reg]->s, xregs[is->p_reg]->s_n)
-				sbufn_null(sb)
-				led_info(sb->s + len)
-				sbuf_cut(sb, len)
-			} else if (!i++)
+			if (xregs[is->p_reg])
+				led_info(xregs[is->p_reg]->s)
+			else if (!i++)
 				goto retry;
-			continue;
+			goto noredraw;
 		case TK_CTL('p'):
 			if (xregs[is->p_reg])
 				sbuf_mem(sb, xregs[is->p_reg]->s, xregs[is->p_reg]->s_n)
@@ -513,7 +525,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			char buf[100];
 			itoa(is->sug_pt, buf);
 			led_info(buf)
-			continue;
+			goto noredraw;
 		case TK_CTL('n'):
 			if (!suggestsb)
 				continue;
