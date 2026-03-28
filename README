@@ -1203,7 +1203,7 @@ EXINIT ENV VAR
 REGEX
      Pikevm is a fast non-backtracking NFA simulation regex engine
      developed for Nextvi. It ensures regular expressions are evaluated
-     in constant space and O(n + k) time complexity where <n> is
+     in constant space and O(n * k) time complexity where <n> is
      the input string length and <k> represents the regex's structural
      complexity (e.g., state transitions or alternations). While
      this does not guarantee strict O(n) linear runtime performance,
@@ -1363,4 +1363,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 4.2                      March 26, 2026                      Nextvi 4.2
+Nextvi 4.2                      March 28, 2026                      Nextvi 4.2
