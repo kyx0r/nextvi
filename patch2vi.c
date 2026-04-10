@@ -1132,8 +1132,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			perror("stat");
 			goto cleanup_orig;
 		}
-		if (st_before.st_mtim.tv_sec == st_after.st_mtim.tv_sec &&
-		    st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec) {
+		if (st_before.st_mtime == st_after.st_mtime) {
 			if (!delta_applied)
 				goto cleanup_orig;
 			/* -d with applied delta: preserve delta and read
