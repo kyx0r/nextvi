@@ -10,7 +10,7 @@ patch2vi support program facilitates script transformations.
 --------------
 Convert entire codebase to 64 bit integers instead of 32 bit.
 This will enable Nextvi to read files & buffers up to 9,223,372 Terabytes.
-In addition, this will improve performance on 64 bit CPUs due to
+In addition, this may improve performance on 64 bit CPUs due to
 matching pointer <---> integer alignment and possibly more compiler
 optimizations.
 Run this after you've applied the patches.
@@ -31,7 +31,7 @@ threaded_search.sh
 --------------
 Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
-aka libpthread
+aka libpthread.
 
 hl_part.sh
 --------------
@@ -78,7 +78,7 @@ base nextvi due to underlying complexity.
 
 stdin_pipe.sh
 --------------
-Allows the user to use vi like less except you need to specify
+Allows the user to use vi like a pager (less) except you need to specify
 - as command line arg (just like in vim).
 Example:
 $ dmesg | vi -
