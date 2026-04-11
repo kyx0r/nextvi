@@ -957,29 +957,29 @@ exit 0
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 === DELTA ex.c ===
---- /tmp/patch2vi_v8dbjx_ex.c.diff.orig	2026-03-26 18:39:05.708656455 -0100
-+++ /tmp/patch2vi_v8dbjx_ex.c.diff	2026-03-26 18:39:08.289661014 -0100
+--- /tmp/patch2vi_dpiKNK_ex.c.diff.orig	2026-04-11 09:03:50.796011713 -0100
++++ /tmp/patch2vi_dpiKNK_ex.c.diff	2026-04-11 09:04:15.957113966 -0100
 @@ -3,7 +3,7 @@
  +struct win *curwin;		/* current active window */
  +int nwins;			/* number of windows */
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ 45a
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
 === DELTA vi.h ===
---- /tmp/patch2vi_cwg3OG_vi.h.diff.orig	2026-03-26 18:39:25.315161414 -0100
-+++ /tmp/patch2vi_cwg3OG_vi.h.diff	2026-03-26 18:39:47.523660308 -0100
+--- /tmp/patch2vi_TTOV9o_vi.h.diff.orig	2026-04-11 09:04:25.362707689 -0100
++++ /tmp/patch2vi_TTOV9o_vi.h.diff	2026-04-11 09:04:47.837110693 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/3 (line 319) ===
  +void term_killn(int n);
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ 319a
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 543211a1..07bb2aa7 100644
