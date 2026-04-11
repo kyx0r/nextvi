@@ -80,7 +80,7 @@ ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 							lc = led_lastchar(sb->s + pre) + pre;
 							clen = len - lc;
 							plen = strlen(*post);
-							newpost = malloc(plen + clen + 1);
+							newpost = emalloc(plen + clen + 1);
 							memcpy(newpost, sb->s + lc, clen);
 							memcpy(newpost + clen, *post, plen + 1);
 							free(*postref);
@@ -94,7 +94,7 @@ ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 							clen = uc_len(*post);
 							sbuf_mem(sb, *post, clen)
 							plen = strlen(*post);
-							newpost = malloc(plen - clen + 1);
+							newpost = emalloc(plen - clen + 1);
 							memcpy(newpost, *post + clen, plen - clen + 1);
 							free(*postref);
 							*postref = *post = newpost;
@@ -113,7 +113,7 @@ ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 							sbuf_cut(sb, pre)
 							sbuf_str(sb, cs)
 							sb->s_n--;
-							newpost = malloc(1);
+							newpost = emalloc(1);
 							*newpost = '\\\\0';
 							free(*postref);
 							*postref = *post = newpost;
@@ -213,7 +213,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 6a5e065f..18381d60 100644
+index 6a5e065f..d48e40f8 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -295,7 +295,7 @@ index 6a5e065f..18381d60 100644
 +							lc = led_lastchar(sb->s + pre) + pre;
 +							clen = len - lc;
 +							plen = strlen(*post);
-+							newpost = malloc(plen + clen + 1);
++							newpost = emalloc(plen + clen + 1);
 +							memcpy(newpost, sb->s + lc, clen);
 +							memcpy(newpost + clen, *post, plen + 1);
 +							free(*postref);
@@ -309,7 +309,7 @@ index 6a5e065f..18381d60 100644
 +							clen = uc_len(*post);
 +							sbuf_mem(sb, *post, clen)
 +							plen = strlen(*post);
-+							newpost = malloc(plen - clen + 1);
++							newpost = emalloc(plen - clen + 1);
 +							memcpy(newpost, *post + clen, plen - clen + 1);
 +							free(*postref);
 +							*postref = *post = newpost;
@@ -328,7 +328,7 @@ index 6a5e065f..18381d60 100644
 +							sbuf_cut(sb, pre)
 +							sbuf_str(sb, cs)
 +							sb->s_n--;
-+							newpost = malloc(1);
++							newpost = emalloc(1);
 +							*newpost = '\0';
 +							free(*postref);
 +							*postref = *post = newpost;
