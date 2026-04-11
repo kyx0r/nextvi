@@ -107,9 +107,9 @@ exit 0
  		ex_command\(s\)
  --- extra (delete to include) ---
 === DELTA vi.c ===
---- /tmp/patch2vi_MFBgMG_vi.c.diff.orig
-+++ /tmp/patch2vi_MFBgMG_vi.c.diff
-@@ -8,8 +8,7 @@
+--- /tmp/patch2vi_9Ndeb3_vi.c.diff.orig	2026-04-11 14:50:04.585550492 +0000
++++ /tmp/patch2vi_9Ndeb3_vi.c.diff	2026-04-11 14:50:48.062901980 +0000
+@@ -9,8 +9,7 @@
  %;f>
  === SEARCH PATTERN (offset: 3) ===
  
@@ -119,9 +119,9 @@ exit 0
  --- extra (delete to include) ---
  	int i, j;
  	setup_signals\(\);
-@@ -36,11 +35,7 @@
- #offset
- === SEARCH COMMAND ===
+@@ -39,11 +38,7 @@
+ +20c
+ #rel
  .,\$;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -				xvis \|= 8;
@@ -132,18 +132,18 @@ exit 0
  			else \{
  				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
  === END GROUP ===
-@@ -50,7 +45,7 @@
- +				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
- === STRATEGY (default: rel) ===
- #abs
+@@ -56,7 +51,7 @@
+ 1835c
+ #offset
+ -10c
 -#relc
 +relc
- #offset
- === SEARCH COMMAND ===
  .,\$f>
-@@ -72,8 +67,7 @@
- #offset
- === SEARCH COMMAND ===
+ #rel
+ .,\$f>
+@@ -81,8 +76,7 @@
+ .,\$;f>
+ #rel
  .,\$;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -		term_init\(\);
