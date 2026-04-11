@@ -291,11 +291,19 @@ static void list_unused_bytes(FILE *out)
 {
 	int n = 0;
 	fprintf(out, "# Available separators:");
-	/* Control chars first (preferred) */
-	for (int c = 1; c < 256; c++) {
-		if (!byte_used[c]) {
-			fprintf(out, " 0%03o", c);
+	int range_start = -1;
+	for (int c = 1; c <= 256; c++) {
+		int unused = (c < 256) && !byte_used[c];
+		if (unused && range_start < 0) {
+			range_start = c;
+		} else if (!unused && range_start >= 0) {
+			int range_end = c - 1;
+			if (range_end == range_start)
+				fprintf(out, " 0%03o", range_start);
+			else
+				fprintf(out, " 0%03o-0%03o", range_start, range_end);
 			n++;
+			range_start = -1;
 		}
 	}
 	if (!n)
