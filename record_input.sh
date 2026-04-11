@@ -59,26 +59,27 @@ ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}437a extern int xrec;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 437\\${SEP}${QF}}${SEP};=
+${SEP}.i extern int xrec;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_PnaBed_ex.c.diff.orig
-+++ /tmp/patch2vi_PnaBed_ex.c.diff
+--- /tmp/patch2vi_7AaEO5_ex.c.diff.orig	2026-04-11 14:30:53.777406815 +0000
++++ /tmp/patch2vi_7AaEO5_ex.c.diff	2026-04-11 14:31:06.714938933 +0000
 @@ -1,7 +1,7 @@
  === GROUP 1/3 (line 25) ===
  +int xrec;			/* input recoding register */
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ 25a
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
-@@ -22,9 +22,7 @@
- === SEARCH COMMAND ===
+@@ -25,9 +25,7 @@
+ #rel
  .,\$;f>
  === SEARCH PATTERN (offset: 3) ===
 -EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(grp\) EO\(mpt\) EO\(rcm\)
@@ -89,17 +90,23 @@ exit 0
  
  _EO\(left,
 === DELTA vi.h ===
---- /tmp/patch2vi_BoKGob_vi.h.diff.orig
-+++ /tmp/patch2vi_BoKGob_vi.h.diff
-@@ -1,7 +1,7 @@
- === GROUP 1/1 (line 437) ===
- +extern int xrec;
- === STRATEGY (default: rel) ===
--#abs
-+abs
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_ATqlSq_vi.h.diff.orig	2026-04-11 14:32:24.354554278 +0000
++++ /tmp/patch2vi_ATqlSq_vi.h.diff	2026-04-11 14:32:32.939936236 +0000
+@@ -5,13 +5,7 @@
+ 437a
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
+-=== SEARCH PATTERN (offset: 3) ===
+-extern int xlim;
+-extern int xseq;
+-extern int xerr;
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: 0) ===
+ /\* global variables \*/
+-extern int xquit;
+-extern int xrow, xoff, xtop;
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..741c4aa7 100644
