@@ -983,7 +983,42 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		} else {
 			default_offset = g->block_change_idx;
 		}
-		default_cmds[gi] = dcmd ? xstrdup(dcmd) : NULL;
+
+		/* Compute abs default command (address+action, no trailing space) */
+		char abs_cmd[64] = "";
+		{
+			int from = g->del_start, to = g->del_end, after = g->add_after;
+			if (from && g->nadd) {
+				if (from == to)
+					snprintf(abs_cmd, sizeof(abs_cmd), "%dc", from);
+				else
+					snprintf(abs_cmd, sizeof(abs_cmd), "%d,%dc", from, to);
+			} else if (from) {
+				if (from == to)
+					snprintf(abs_cmd, sizeof(abs_cmd), "%dd", from);
+				else
+					snprintf(abs_cmd, sizeof(abs_cmd), "%d,%dd", from, to);
+			} else if (g->nadd) {
+				if (after == -1)
+					snprintf(abs_cmd, sizeof(abs_cmd), "i");
+				else
+					snprintf(abs_cmd, sizeof(abs_cmd), "%da", after);
+			}
+		}
+
+		/* Compute offset default command (offset+action, no trailing space) */
+		char off_cmd[64] = "";
+		if (has_offset) {
+			int off = target - sim_prev_xrow;
+			const char *act = (g->del_start && g->nadd) ? "c" :
+			                   g->del_start ? "d" : "a";
+			if (off > 0)
+				snprintf(off_cmd, sizeof(off_cmd), "+%d%s", off, act);
+			else if (off < 0)
+				snprintf(off_cmd, sizeof(off_cmd), "%d%s", off, act);
+			else
+				snprintf(off_cmd, sizeof(off_cmd), ".%s", act);
+		}
 
 		/* Compute default strategy */
 		const char *def_strat;
@@ -996,6 +1031,12 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		else
 			def_strat = "abs";
 
+		/* Choose default command to display based on resolved strategy */
+		const char *show_cmd = dcmd ? dcmd :
+		    (strcmp(def_strat, "offset") == 0 && off_cmd[0]) ? off_cmd :
+		    abs_cmd[0] ? abs_cmd : "";
+		default_cmds[gi] = show_cmd[0] ? xstrdup(show_cmd) : NULL;
+
 		/* Group header (read-only diff context) */
 		fprintf(tmp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
@@ -1004,21 +1045,15 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		for (int i = 0; i < g->nadd; i++)
 			fprintf(tmp, "+%s\n", g->add_texts[i]);
 
-		/* Strategy selection block - uncomment one to override default */
-		fprintf(tmp, "=== STRATEGY (default: %s) ===\n", def_strat);
-		if (strcmp(def_strat, "abs") != 0)
-			fprintf(tmp, "#abs\n");
-		if (has_anchors && strcmp(def_strat, "rel") != 0)
-			fprintf(tmp, "#rel\n");
-		if (has_anchors && g->ndel == 1 && g->nadd == 1 &&
-		    g->has_line_diff && strcmp(def_strat, "relc") != 0)
-			fprintf(tmp, "#relc\n");
-		if (has_offset && strcmp(def_strat, "offset") != 0)
-			fprintf(tmp, "#offset\n");
-
-		/* Search command */
-		fprintf(tmp, "=== SEARCH COMMAND ===\n");
-		fprintf(tmp, "%s\n", dcmd ? dcmd : "");
+		/* Combined command+strategy: #strat\ncmd pairs, all commented */
+		fprintf(tmp, "=== COMMAND STRATEGY (default: %s) ===\n", def_strat);
+		fprintf(tmp, "#abs\n%s\n", abs_cmd);
+		if (has_offset)
+			fprintf(tmp, "#offset\n%s\n", off_cmd);
+		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff)
+			fprintf(tmp, "#relc\n%s\n", dcmd ? dcmd : "");
+		if (has_anchors)
+			fprintf(tmp, "#rel\n%s\n", dcmd ? dcmd : "");
 
 		/* Search pattern: top = -r anchors (default) */
 		fprintf(tmp, "=== SEARCH PATTERN (offset: %d) ===\n",
@@ -1198,7 +1233,9 @@ read_back:
 
 		char line[MAX_LINE];
 		int cur_gi = -1;
-		int in_pattern = 0, in_command = 0, in_strategy = 0;
+		int in_pattern = 0, in_cmdstrat = 0;
+		int cmdstrat_want_cmd = 0, cmdstrat_take = 0;
+		int cmdstrat_strat = STRAT_DEFAULT;
 		int skip_extra = 0;
 		char edited_cmd[MAX_LINE] = "";
 		int edited_offset = 0;
@@ -1213,16 +1250,18 @@ read_back:
 				/* Flush previous group */
 				if (cur_gi >= 0 && cur_gi < ngroups) {
 					groups[cur_gi].strategy = edited_strategy;
-					if (nlines > 0) {
-						groups[cur_gi].custom_lines = lines;
-						groups[cur_gi].ncustom = nlines;
-						groups[cur_gi].custom_offset = edited_offset;
+					{
 						const char *orig = default_cmds[cur_gi]
 							? default_cmds[cur_gi] : "";
 						if (strcmp(edited_cmd, orig) != 0
 						    && edited_cmd[0])
 							groups[cur_gi].custom_cmd =
 								xstrdup(edited_cmd);
+					}
+					if (nlines > 0) {
+						groups[cur_gi].custom_lines = lines;
+						groups[cur_gi].ncustom = nlines;
+						groups[cur_gi].custom_offset = edited_offset;
 						lines = NULL;
 						nlines = 0;
 						line_cap = 0;
@@ -1230,24 +1269,20 @@ read_back:
 				}
 				cur_gi = atoi(line + 10) - 1;
 				in_pattern = 0;
-				in_command = 0;
-				in_strategy = 0;
+				in_cmdstrat = 0;
+				cmdstrat_want_cmd = 0;
+				cmdstrat_take = 0;
 				skip_extra = 0;
 				edited_cmd[0] = '\0';
 				edited_offset = 0;
 				edited_strategy = STRAT_DEFAULT;
 				continue;
 			}
-			if (strncmp(line, "=== STRATEGY", 12) == 0) {
-				in_strategy = 1;
+			if (strncmp(line, "=== COMMAND STRATEGY", 20) == 0) {
+				in_cmdstrat = 1;
 				in_pattern = 0;
-				in_command = 0;
-				continue;
-			}
-			if (strncmp(line, "=== SEARCH COMMAND ===", 22) == 0) {
-				in_command = 1;
-				in_pattern = 0;
-				in_strategy = 0;
+				cmdstrat_want_cmd = 0;
+				cmdstrat_take = 0;
 				continue;
 			}
 			if (strncmp(line, "=== SEARCH PATTERN (offset:", 27)
@@ -1256,26 +1291,45 @@ read_back:
 				while (*p == ' ') p++;
 				edited_offset = atoi(p);
 				in_pattern = 1;
-				in_command = 0;
-				in_strategy = 0;
+				in_cmdstrat = 0;
+				cmdstrat_want_cmd = 0;
 				continue;
 			}
 			if (strncmp(line, "=== END GROUP ===", 17) == 0) {
 				in_pattern = 0;
-				in_command = 0;
-				in_strategy = 0;
+				in_cmdstrat = 0;
+				cmdstrat_want_cmd = 0;
 				continue;
 			}
-			/* Parse strategy: uncommented lines set strategy */
-			if (in_strategy && line[0] != '#') {
-				if (strcmp(line, "abs") == 0)
-					edited_strategy = STRAT_ABS;
-				else if (strcmp(line, "rel") == 0)
-					edited_strategy = STRAT_REL;
-				else if (strcmp(line, "relc") == 0)
-					edited_strategy = STRAT_RELC;
-				else if (strcmp(line, "offset") == 0)
-					edited_strategy = STRAT_OFFSET;
+			/* Parse command+strategy pairs: strat line then cmd line */
+			if (in_cmdstrat) {
+				if (cmdstrat_want_cmd) {
+					if (cmdstrat_take &&
+					    edited_strategy == STRAT_DEFAULT)
+					{
+						edited_strategy = cmdstrat_strat;
+						snprintf(edited_cmd,
+							 sizeof(edited_cmd),
+							 "%s", line);
+					}
+					cmdstrat_want_cmd = 0;
+					cmdstrat_take = 0;
+				} else {
+					const char *name = (line[0] == '#')
+						? line + 1 : line;
+					cmdstrat_take = (line[0] != '#');
+					if (strcmp(name, "abs") == 0)
+						cmdstrat_strat = STRAT_ABS;
+					else if (strcmp(name, "rel") == 0)
+						cmdstrat_strat = STRAT_REL;
+					else if (strcmp(name, "relc") == 0)
+						cmdstrat_strat = STRAT_RELC;
+					else if (strcmp(name, "offset") == 0)
+						cmdstrat_strat = STRAT_OFFSET;
+					else
+						cmdstrat_take = 0;
+					cmdstrat_want_cmd = 1;
+				}
 				continue;
 			}
 			/* Extra separator still present = skip lines below */
@@ -1284,10 +1338,6 @@ read_back:
 				skip_extra = 1;
 				continue;
 			}
-
-			if (in_command && line[0] && !edited_cmd[0])
-				snprintf(edited_cmd, sizeof(edited_cmd),
-					 "%s", line);
 
 			if (in_pattern && !skip_extra) {
 				if (nlines >= line_cap) {
@@ -1301,15 +1351,17 @@ read_back:
 		/* Flush last group */
 		if (cur_gi >= 0 && cur_gi < ngroups) {
 			groups[cur_gi].strategy = edited_strategy;
-			if (nlines > 0) {
-				groups[cur_gi].custom_lines = lines;
-				groups[cur_gi].ncustom = nlines;
-				groups[cur_gi].custom_offset = edited_offset;
+			{
 				const char *orig = default_cmds[cur_gi]
 					? default_cmds[cur_gi] : "";
 				if (strcmp(edited_cmd, orig) != 0 && edited_cmd[0])
 					groups[cur_gi].custom_cmd =
 						xstrdup(edited_cmd);
+			}
+			if (nlines > 0) {
+				groups[cur_gi].custom_lines = lines;
+				groups[cur_gi].ncustom = nlines;
+				groups[cur_gi].custom_offset = edited_offset;
 			} else {
 				free(lines);
 			}
@@ -1325,6 +1377,25 @@ cleanup_orig:
 	for (int gi = 0; gi < ngroups; gi++)
 		free(default_cmds[gi]);
 	free(default_cmds);
+}
+
+/* Emit a raw abs/offset custom command: custom_cmd + content (if nadd>0) + SEP.
+ * custom_cmd for delete: "42d" (complete, no content)
+ * custom_cmd for change/insert: "42c" or "42a" (space auto-added before content) */
+static void emit_custom_raw(FILE *out, group_t *g)
+{
+	fputs(g->custom_cmd, out);
+	if (g->nadd > 0) {
+		size_t len = strlen(g->custom_cmd);
+		if (len > 0 && g->custom_cmd[len - 1] != ' ')
+			fputc(' ', out);
+		for (int k = 0; k < g->nadd; k++) {
+			emit_escaped_text(out, g->add_texts[k]);
+			fputc('\n', out);
+		}
+		fputs(".\n", out);
+	}
+	EMIT_SEP(out);
 }
 
 /* Process operations for one file and emit script */
@@ -1662,7 +1733,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 
 		/* Dispatch per strategy */
 		if (g->del_start && g->nadd) {
-			if (strat == STRAT_OFFSET) {
+			if ((strat == STRAT_ABS || strat == STRAT_OFFSET) && g->custom_cmd) {
+				emit_custom_raw(out, g);
+			} else if (strat == STRAT_OFFSET) {
 				/* Offset positioning: .+N then ;c or c */
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
 					/* Offset + horizontal ;c edit */
@@ -1743,7 +1816,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				}
 			}
 		} else if (g->del_start) {
-			if (strat == STRAT_OFFSET) {
+			if ((strat == STRAT_ABS || strat == STRAT_OFFSET) && g->custom_cmd) {
+				emit_custom_raw(out, g);
+			} else if (strat == STRAT_OFFSET) {
 				emit_relative_delete(out, &rc, g->ndel, &first_ml);
 			} else if (strat == STRAT_REL) {
 				if (has_custom) {
@@ -1764,7 +1839,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				emit_delete(out, g->del_start + adj, g->del_end + adj);
 			}
 		} else if (g->nadd) {
-			if (strat == STRAT_OFFSET) {
+			if ((strat == STRAT_ABS || strat == STRAT_OFFSET) && g->custom_cmd) {
+				emit_custom_raw(out, g);
+			} else if (strat == STRAT_OFFSET) {
 				emit_relative_insert(out, &rc,
 				    g->add_texts, g->nadd, &first_ml);
 			} else if (strat == STRAT_REL) {
