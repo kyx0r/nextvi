@@ -271,6 +271,13 @@ sse.sh
 --------------
 SIMD optimizations for Nextvi.
 
+mouse_normal.sh
+--------------
+Adds mouse support in normal mode. Adds a new ex option :ms
+to toggle the mouse support. Clicking positions the cursor
+and mouse wheel scrolls using ^Y or ^E. Terminal mouse selections
+can still be made while holding Shift on most terminal emulators.
+
 My current EXINIT setup:
 --------------
 How it works:
