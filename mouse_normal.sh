@@ -52,7 +52,7 @@ ${SEP}+2a _EO(ms,
 
 .
 ${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1500\\${SEP}${QF}}${SEP};=
-${SEP}-1i 	EO(ms),
+${SEP}.i 	EO(ms),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -80,7 +80,7 @@ ${SEP}+2a 	term_mouse_off();
 ${SEP}.,\$;f> 	restore\\\\(xtd\\\\)
 	restore\\\\(xleft\\\\)
 	if \\\\(key == '\\\\\\\\n' && flg & 1\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 668\\${SEP}${QF}}${SEP};=
-${SEP}-1i 	term_mouse_on();
+${SEP}.i 	term_mouse_on();
 .
 ${SEP}.,\$f> 	ins_state is;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 684\\${SEP}${QF}}${SEP};=
 ${SEP}.a 	term_mouse_off();
@@ -261,8 +261,8 @@ exit 0
  --- extra (delete to include) ---
  \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
 === DELTA ex.c ===
---- /tmp/patch2vi_HxhrOt_ex.c.diff.orig	2026-04-11 01:34:18.025804891 -0100
-+++ /tmp/patch2vi_HxhrOt_ex.c.diff	2026-04-11 01:35:14.971879679 -0100
+--- /tmp/patch2vi_YMky4N_ex.c.diff.orig	2026-04-11 01:48:08.089658406 -0100
++++ /tmp/patch2vi_YMky4N_ex.c.diff	2026-04-11 01:48:25.394798536 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/3 (line 25) ===
  +int xms = 1;			/* mouse in normal mode */
@@ -281,15 +281,15 @@ exit 0
 -	\{"g", ec_glob\},
 -	EO\(mpt\),
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: -1) ===
++=== SEARCH PATTERN (offset: 0) ===
  	\{"m", ec_mark\},
 -	\{"q!", ec_quit\},
 -	\{"q", ec_quit\},
  === END GROUP ===
  
 === DELTA led.c ===
---- /tmp/patch2vi_6FVKn0_led.c.diff.orig	2026-04-11 01:35:14.975280811 -0100
-+++ /tmp/patch2vi_6FVKn0_led.c.diff	2026-04-11 01:41:15.052842714 -0100
+--- /tmp/patch2vi_cuZTHY_led.c.diff.orig	2026-04-11 01:53:05.296552862 -0100
++++ /tmp/patch2vi_cuZTHY_led.c.diff	2026-04-11 01:53:11.488769166 -0100
 @@ -44,10 +44,7 @@
  #offset
  === SEARCH COMMAND ===
@@ -298,7 +298,7 @@ exit 0
 -	key = led_line\(sb, ps, n, &post, 0, &postref, -1,
 -			&off, kmap, is, 0, xrow, xtop, flg\);
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: -1) ===
++=== SEARCH PATTERN (offset: 0) ===
  	restore\(xtd\)
  	restore\(xleft\)
  	if \(key == '\\n' && flg & 1\) \{
