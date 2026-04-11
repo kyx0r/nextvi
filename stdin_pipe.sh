@@ -168,20 +168,20 @@ exit 0
  		ex_command\(s\)
  \}
 === DELTA term.c ===
---- /tmp/patch2vi_0vp6EZ_term.c.diff.orig	2026-02-18 09:22:48.331738776 -0100
-+++ /tmp/patch2vi_0vp6EZ_term.c.diff	2026-02-18 09:23:31.016516603 -0100
+--- /tmp/patch2vi_XNPCUW_term.c.diff.orig	2026-04-11 14:15:19.492241498 +0000
++++ /tmp/patch2vi_XNPCUW_term.c.diff	2026-04-11 14:15:32.892968144 +0000
 @@ -2,7 +2,7 @@
  +int stdin_fd;
  +static int isig;
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ 8a
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
-@@ -24,9 +24,7 @@
- #offset
- === SEARCH COMMAND ===
+@@ -28,9 +28,7 @@
+ .,\$;f>
+ #rel
  .,\$;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -	char \*s;
