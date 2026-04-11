@@ -128,19 +128,19 @@ exit 0
  === END GROUP ===
  
 === DELTA ex.c ===
---- /tmp/patch2vi_KeazK1_ex.c.diff.orig	2026-02-17 19:13:25.934625972 -0100
-+++ /tmp/patch2vi_KeazK1_ex.c.diff	2026-02-17 19:13:51.145958585 -0100
+--- /tmp/patch2vi_tae6JS_ex.c.diff.orig	2026-04-11 14:08:18.600513751 +0000
++++ /tmp/patch2vi_tae6JS_ex.c.diff	2026-04-11 14:08:36.995981153 +0000
 @@ -1,7 +1,7 @@
  === GROUP 1/3 (line 14) ===
  +int xqe = 1000;			/* exit insert via kj (delay in ms) */
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ 14a
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
-@@ -22,9 +22,7 @@
- === SEARCH COMMAND ===
+@@ -25,9 +25,7 @@
+ #rel
  .,\$;f>
  === SEARCH PATTERN (offset: 3) ===
 -EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(grp\) EO\(mpt\) EO\(rcm\)
@@ -150,9 +150,9 @@ exit 0
  --- extra (delete to include) ---
  
  _EO\(left,
-@@ -38,9 +36,7 @@
- #offset
- === SEARCH COMMAND ===
+@@ -43,9 +41,7 @@
+ +60a
+ #rel
  .,\$;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -	\{"g", ec_glob\},
@@ -162,30 +162,30 @@ exit 0
  --- extra (delete to include) ---
  	\{"q!", ec_quit\},
 === DELTA led.c ===
---- /tmp/patch2vi_2sjpSj_led.c.diff.orig	2026-02-17 19:13:51.148245499 -0100
-+++ /tmp/patch2vi_2sjpSj_led.c.diff	2026-02-17 19:14:37.538960912 -0100
+--- /tmp/patch2vi_pLe7Ft_led.c.diff.orig	2026-04-11 14:08:37.027469926 +0000
++++ /tmp/patch2vi_pLe7Ft_led.c.diff	2026-04-11 14:10:43.791977187 +0000
 @@ -8,7 +8,7 @@
  +}
  +
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ 1a
+ #rel
  %f>
- === SEARCH PATTERN (offset: 1) ===
 === DELTA vi.c ===
---- /tmp/patch2vi_fqMh7T_vi.c.diff.orig	2026-02-17 19:14:37.541939861 -0100
-+++ /tmp/patch2vi_fqMh7T_vi.c.diff	2026-02-17 19:15:16.479962866 -0100
+--- /tmp/patch2vi_6Ym8R7_vi.c.diff.orig	2026-04-11 14:10:43.798096054 +0000
++++ /tmp/patch2vi_6Ym8R7_vi.c.diff	2026-04-11 14:12:02.877974713 +0000
 @@ -1,7 +1,7 @@
  === GROUP 1/2 (line 9) ===
  +#include <time.h>
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ 9a
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
-@@ -25,7 +25,6 @@
+@@ -28,7 +28,6 @@
  === SEARCH PATTERN (offset: 3) ===
  				k = vc_insert\(c\);
  				ins:
