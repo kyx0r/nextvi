@@ -68,12 +68,13 @@ ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 			read(STDIN_FILENO, cbuf, 1);
 			if (*cbuf == '[') {
 				read(STDIN_FILENO, cbuf, 1);
+				c = *cbuf;
 				fcntl(STDIN_FILENO, F_SETFL, fl);
 				if (ai_max < 0) {
 					/* Prompt mode: handle arrows internally */
 					int lc, clen, plen;
 					char *newpost;
-					switch (*cbuf) {
+					switch (c) {
 					case 'D':  /* ← */
 						if (len > pre) {
 							lc = led_lastchar(sb->s + pre) + pre;
@@ -104,9 +105,9 @@ ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 					case 'B':  /* ↓ - history */
 						if (is->t_row < -1)
 							is->t_row = tempbufs[0].row;
-						else if (*cbuf == 'A' && is->t_row > 0)
+						else if (c == 'A' && is->t_row > 0)
 							is->t_row--;
-						else if (*cbuf == 'B' && is->t_row < lbuf_len(tempbufs[0].lb) - 1)
+						else if (c == 'B' && is->t_row < lbuf_len(tempbufs[0].lb) - 1)
 							is->t_row++;
 						if ((cs = lbuf_get(tempbufs[0].lb, is->t_row))) {
 							sbuf_cut(sb, pre)
@@ -116,8 +117,8 @@ ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 						continue;
 					}
 				}
-				vi_insmov = *cbuf;
-				return *cbuf;
+				vi_insmov = c;
+				return c;
 			}
 			fcntl(STDIN_FILENO, F_SETFL, fl);
 			return c;
@@ -207,7 +208,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 6a5e065f..475c6eff 100644
+index 6a5e065f..05c2d588 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -265,7 +266,7 @@ index 6a5e065f..475c6eff 100644
  		len = sb->s_n;
  		c = term_read(TK_CTL('l'));
  		noredraw:
-@@ -618,6 +622,67 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -618,6 +622,68 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else if (!i)
  				term_clean();
  			continue;
@@ -277,12 +278,13 @@ index 6a5e065f..475c6eff 100644
 +			read(STDIN_FILENO, cbuf, 1);
 +			if (*cbuf == '[') {
 +				read(STDIN_FILENO, cbuf, 1);
++				c = *cbuf;
 +				fcntl(STDIN_FILENO, F_SETFL, fl);
 +				if (ai_max < 0) {
 +					/* Prompt mode: handle arrows internally */
 +					int lc, clen, plen;
 +					char *newpost;
-+					switch (*cbuf) {
++					switch (c) {
 +					case 'D':  /* ← */
 +						if (len > pre) {
 +							lc = led_lastchar(sb->s + pre) + pre;
@@ -313,9 +315,9 @@ index 6a5e065f..475c6eff 100644
 +					case 'B':  /* ↓ - history */
 +						if (is->t_row < -1)
 +							is->t_row = tempbufs[0].row;
-+						else if (*cbuf == 'A' && is->t_row > 0)
++						else if (c == 'A' && is->t_row > 0)
 +							is->t_row--;
-+						else if (*cbuf == 'B' && is->t_row < lbuf_len(tempbufs[0].lb) - 1)
++						else if (c == 'B' && is->t_row < lbuf_len(tempbufs[0].lb) - 1)
 +							is->t_row++;
 +						if ((cs = lbuf_get(tempbufs[0].lb, is->t_row))) {
 +							sbuf_cut(sb, pre)
@@ -325,15 +327,15 @@ index 6a5e065f..475c6eff 100644
 +						continue;
 +					}
 +				}
-+				vi_insmov = *cbuf;
-+				return *cbuf;
++				vi_insmov = c;
++				return c;
 +			}
 +			fcntl(STDIN_FILENO, F_SETFL, fl);
 +			return c;
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -653,7 +718,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -653,7 +719,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
  {
  	int n = !(flg & 2) ? sb->s_n : 0, key, off;
@@ -342,7 +344,7 @@ index 6a5e065f..475c6eff 100644
  	ins_state _is;
  	vi_lncol = 0;
  	if (insert)
-@@ -668,6 +733,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
+@@ -668,6 +734,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  			&off, kmap, is, 0, xrow, xtop, flg);
  	restore(xtd)
  	restore(xleft)
@@ -351,7 +353,7 @@ index 6a5e065f..475c6eff 100644
  	if (key == '\n' && flg & 1) {
  		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
  		temp_pos(0, -1, 0, 0);
-@@ -698,7 +765,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -698,7 +766,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  			return key;
  		}
  		sbuf_chr(sb, key)
