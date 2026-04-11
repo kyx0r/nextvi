@@ -113,6 +113,11 @@ ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 							sbuf_cut(sb, pre)
 							sbuf_str(sb, cs)
 							sb->s_n--;
+							newpost = malloc(1);
+							*newpost = '\\\\0';
+							free(*postref);
+							*postref = *post = newpost;
+							postn = 0;
 						}
 						continue;
 					}
@@ -208,7 +213,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 6a5e065f..05c2d588 100644
+index 6a5e065f..18381d60 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -266,7 +271,7 @@ index 6a5e065f..05c2d588 100644
  		len = sb->s_n;
  		c = term_read(TK_CTL('l'));
  		noredraw:
-@@ -618,6 +622,68 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -618,6 +622,73 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else if (!i)
  				term_clean();
  			continue;
@@ -323,6 +328,11 @@ index 6a5e065f..05c2d588 100644
 +							sbuf_cut(sb, pre)
 +							sbuf_str(sb, cs)
 +							sb->s_n--;
++							newpost = malloc(1);
++							*newpost = '\0';
++							free(*postref);
++							*postref = *post = newpost;
++							postn = 0;
 +						}
 +						continue;
 +					}
@@ -335,7 +345,7 @@ index 6a5e065f..05c2d588 100644
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -653,7 +719,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -653,7 +724,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
  {
  	int n = !(flg & 2) ? sb->s_n : 0, key, off;
@@ -344,7 +354,7 @@ index 6a5e065f..05c2d588 100644
  	ins_state _is;
  	vi_lncol = 0;
  	if (insert)
-@@ -668,6 +734,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
+@@ -668,6 +739,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  			&off, kmap, is, 0, xrow, xtop, flg);
  	restore(xtd)
  	restore(xleft)
@@ -353,7 +363,7 @@ index 6a5e065f..05c2d588 100644
  	if (key == '\n' && flg & 1) {
  		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
  		temp_pos(0, -1, 0, 0);
-@@ -698,7 +766,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -698,7 +771,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  			return key;
  		}
  		sbuf_chr(sb, key)
