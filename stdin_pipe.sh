@@ -42,7 +42,7 @@ ${SEP}+2a 	if (!loc)
 	ret:
 .
 ${SEP}.,\$;f> 
-void ex_init\\\\(char \\\\*\\\\*files, int n\\\\)
+void ex_init\\\\(.*\\\\)
 \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1715\\${SEP}${QF}}${SEP};=
 ${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1715\\${SEP}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
 	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1717\\${SEP}${QF}}${SEP};=
@@ -74,8 +74,7 @@ ${SEP}+1a 	if (stdin_fd) {
 .
 ${SEP}.,\$;f> 	xvis &= ~4;
 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)
-\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1723\\${SEP}${QF}}${SEP};=
+		ex_command\\\\(s\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1723\\${SEP}${QF}}${SEP};=
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -148,9 +147,9 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_p6kg9p_ex.c.diff.orig	2026-02-17 19:22:36.905995313 -0100
-+++ /tmp/patch2vi_p6kg9p_ex.c.diff	2026-02-17 19:25:24.247993362 -0100
-@@ -9,8 +9,6 @@
+--- /tmp/patch2vi_9Pvuqk_ex.c.diff.orig	2026-04-11 14:55:03.449901073 +0000
++++ /tmp/patch2vi_9Pvuqk_ex.c.diff	2026-04-11 14:55:36.707892951 +0000
+@@ -10,8 +10,6 @@
  %;f>
  === SEARCH PATTERN (offset: 3) ===
  static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
@@ -159,14 +158,25 @@ exit 0
  --- extra (delete to include) ---
  	int fd, len, rd = 0, cd = 0;
  	if \(arg\[0\] == '\.' && arg\[1\] == '/'\)
-@@ -130,7 +128,6 @@
+@@ -54,7 +52,7 @@
+ .,\$;f>
+ === SEARCH PATTERN (offset: 3) ===
+ 
+-void ex_init\(char \*\*files, int n\)
++void ex_init\(.*\)
+ \{
+ --- extra (delete to include) ---
+ 	xbufsalloc = MAX\(n, xbufsalloc\);
+@@ -145,9 +143,7 @@
  .,\$f>
  === SEARCH PATTERN (offset: 1) ===
  	xvis &= ~4;
 ---- extra (delete to include) ---
  	if \(\(s = getenv\("EXINIT"\)\)\)
  		ex_command\(s\)
- \}
+-\}
+ === END GROUP ===
+ 
 === DELTA term.c ===
 --- /tmp/patch2vi_Inf1Z0_term.c.diff.orig	2026-04-11 14:17:37.450238457 +0000
 +++ /tmp/patch2vi_Inf1Z0_term.c.diff	2026-04-11 14:19:01.780961610 +0000
