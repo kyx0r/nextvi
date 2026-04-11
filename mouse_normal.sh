@@ -29,20 +29,15 @@ fi
 # Patch: conf.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\
-\\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\
-\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/\\\\|r/|ms|r/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/\\\\|r/|ms|r/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\\\*/
-int xrcm = 1;			/\\\\* range command mode -
-				0: exec at command parse 1: exec at command \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 25\\${SEP}${QF}}${SEP};=
-${SEP}+2a int xms = 1;			/* mouse in normal mode */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}25a int xms = 1;			/* mouse in normal mode */
 .
-${SEP}.,\$;f> 	return NULL;
+${SEP}%;f> 	return NULL;
 \\\\)
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1451\\${SEP}${QF}}${SEP};=
@@ -56,10 +51,8 @@ ${SEP}+2a _EO(ms,
 )
 
 .
-${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
-	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1500\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	EO(ms),
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1500\\${SEP}${QF}}${SEP};=
+${SEP}-1i 	EO(ms),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -84,35 +77,27 @@ ${SEP}.,\$;f> 	\\\\}
 	preserve\\\\(int, xtd, xtd = 2;\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	term_mouse_off();
 .
-${SEP}.,\$;f> 	key = led_line\\\\(sb, ps, n, &post, 0, &postref, -1,
-			&off, kmap, is, 0, xrow, xtop, flg\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 668\\${SEP}${QF}}${SEP};=
-${SEP}+1a 	term_mouse_on();
+${SEP}.,\$;f> 	restore\\\\(xtd\\\\)
+	restore\\\\(xleft\\\\)
+	if \\\\(key == '\\\\\\\\n' && flg & 1\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 668\\${SEP}${QF}}${SEP};=
+${SEP}-1i 	term_mouse_on();
 .
-${SEP}.,\$;f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
-	char \\\\*postref = NULL;
-	ins_state is;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 684\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	term_mouse_off();
+${SEP}.,\$f> 	ins_state is;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 684\\${SEP}${QF}}${SEP};=
+${SEP}.a 	term_mouse_off();
 .
-${SEP}.,\$;f> 				sb->s\\\\[\\\\*pren\\\\] = \\\\*post;
-			free\\\\(postref\\\\);
+${SEP}.,\$;f> 			free\\\\(postref\\\\);
 			xrow = crow;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 697\\${SEP}${QF}}${SEP};=
-${SEP}+2a 			term_mouse_on();
+${SEP}+1a 			term_mouse_on();
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: term.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int term_winch;
-int term_resized;
-int xrows, xcols;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 6\\${SEP}${QF}}${SEP};=
-${SEP}+2a int xmouse_col, xmouse_row;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}6a int xmouse_col, xmouse_row;
 .
-${SEP}.,\$;f> unsigned char \\\\*ibuf, icmd\\\\[4096\\\\];
-unsigned int texec, tn;
-
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 10\\${SEP}${QF}}${SEP};=
-${SEP}+2a void term_mouse_on(void)
+${SEP}%f> unsigned int texec, tn;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 10\\${SEP}${QF}}${SEP};=
+${SEP}+1a void term_mouse_on(void)
 {
 	write(1, \"\\\\x1b[?1000h\\\\x1b[?1006h\", 16);
 }
@@ -206,15 +191,11 @@ ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 # Patch: vi.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	vi_drawmsg_mpt\\\\(vi_msg\\\\)
-\\\\}
-
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 558\\${SEP}${QF}}${SEP};=
-${SEP}+2a static void vi_scrollforward(int cnt);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}558a static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
 
 .
-${SEP}.,\$;f> 		return mv;
+${SEP}%;f> 		return mv;
 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 574\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	while (mv == 27 && xms) {
@@ -250,33 +231,173 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> void term_kill\\\\(void\\\\);
-void term_room\\\\(int n\\\\);
-int term_read\\\\(int winch\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 321\\${SEP}${QF}}${SEP};=
-${SEP}+2a int term_try_mouse(void);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}321a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
 .
-${SEP}.,\$;f> #define led_crender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end, term_kill\\\\(\\\\);\\\\)
-char \\\\*led_read\\\\(int \\\\*kmap, int c\\\\);
-int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 392\\${SEP}${QF}}${SEP};=
-${SEP}+2a int led_col(char *s, int col);
+${SEP}395a int led_col(char *s, int col);
 .
-${SEP}.,\$;f> 	long mtime;			/\\\\* modification time \\\\*/
-	signed char td;			/\\\\* text direction \\\\*/
-\\\\};${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 403\\${SEP}${QF}}${SEP};=
-${SEP}+2a /* mouse state */
+${SEP}407a /* mouse state */
 extern int xmouse_col, xmouse_row;
 .
-${SEP}.,\$;f> extern int xlim;
-extern int xseq;
-extern int xerr;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 426\\${SEP}${QF}}${SEP};=
-${SEP}+2a extern int xms;
+${SEP}432a extern int xms;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA conf.c ===
+--- /tmp/patch2vi_FI3N1a_conf.c.diff.orig	2026-04-11 01:33:45.985995172 -0100
++++ /tmp/patch2vi_FI3N1a_conf.c.diff	2026-04-11 01:34:18.018885526 -0100
+@@ -6,9 +6,7 @@
+ #relc
+ === SEARCH COMMAND ===
+ %;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
+-\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
++=== SEARCH PATTERN (offset: 1) ===
+ \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+ --- extra (delete to include) ---
+ \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
+=== DELTA ex.c ===
+--- /tmp/patch2vi_HxhrOt_ex.c.diff.orig	2026-04-11 01:34:18.025804891 -0100
++++ /tmp/patch2vi_HxhrOt_ex.c.diff	2026-04-11 01:35:14.971879679 -0100
+@@ -1,7 +1,7 @@
+ === GROUP 1/3 (line 25) ===
+ +int xms = 1;			/* mouse in normal mode */
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+@@ -46,13 +46,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	\{"g!", ec_glob\},
+-	\{"g", ec_glob\},
+-	EO\(mpt\),
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: -1) ===
+ 	\{"m", ec_mark\},
+-	\{"q!", ec_quit\},
+-	\{"q", ec_quit\},
+ === END GROUP ===
+ 
+=== DELTA led.c ===
+--- /tmp/patch2vi_6FVKn0_led.c.diff.orig	2026-04-11 01:35:14.975280811 -0100
++++ /tmp/patch2vi_6FVKn0_led.c.diff	2026-04-11 01:41:15.052842714 -0100
+@@ -44,10 +44,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 2) ===
+-	key = led_line\(sb, ps, n, &post, 0, &postref, -1,
+-			&off, kmap, is, 0, xrow, xtop, flg\);
+---- extra (delete to include) ---
++=== SEARCH PATTERN (offset: -1) ===
+ 	restore\(xtd\)
+ 	restore\(xleft\)
+ 	if \(key == '\\n' && flg & 1\) \{
+@@ -60,9 +57,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-	int n, key, ps = 0, crow = xrow, ctop = xtop;
+-	char \*postref = NULL;
++=== SEARCH PATTERN (offset: 1) ===
+ 	ins_state is;
+ --- extra (delete to include) ---
+ 	while \(1\) \{
+@@ -77,8 +72,7 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-				sb->s\[\*pren\] = \*post;
++=== SEARCH PATTERN (offset: 2) ===
+ 			free\(postref\);
+ 			xrow = crow;
+ --- extra (delete to include) ---
+=== DELTA term.c ===
+--- /tmp/patch2vi_WDd5mV_term.c.diff.orig	2026-04-11 01:41:15.055715676 -0100
++++ /tmp/patch2vi_WDd5mV_term.c.diff	2026-04-11 01:42:17.574836296 -0100
+@@ -1,7 +1,7 @@
+ === GROUP 1/5 (line 6) ===
+ +int xmouse_col, xmouse_row;
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+@@ -30,10 +30,8 @@
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+-=== SEARCH PATTERN (offset: 3) ===
+-unsigned char \*ibuf, icmd\[4096\];
++=== SEARCH PATTERN (offset: 2) ===
+ unsigned int texec, tn;
+-
+ --- extra (delete to include) ---
+ void term_init\(void\)
+ \{
+=== DELTA vi.c ===
+--- /tmp/patch2vi_c4UJAX_vi.c.diff.orig	2026-04-11 01:42:17.578302483 -0100
++++ /tmp/patch2vi_c4UJAX_vi.c.diff	2026-04-11 01:42:49.050833064 -0100
+@@ -3,7 +3,7 @@
+ +static void vi_scrollbackward(int cnt);
+ +
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+=== DELTA vi.h ===
+--- /tmp/patch2vi_ZfYmR9_vi.h.diff.orig	2026-04-11 01:42:49.053696838 -0100
++++ /tmp/patch2vi_ZfYmR9_vi.h.diff	2026-04-11 01:43:50.951826710 -0100
+@@ -3,7 +3,7 @@
+ +void term_mouse_on(void);
+ +void term_mouse_off(void);
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ === SEARCH COMMAND ===
+ %;f>
+ === SEARCH PATTERN (offset: 3) ===
+@@ -19,7 +19,7 @@
+ === GROUP 2/4 (line 392) ===
+ +int led_col(char *s, int col);
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+@@ -37,7 +37,7 @@
+ +/* mouse state */
+ +extern int xmouse_col, xmouse_row;
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
+@@ -54,7 +54,7 @@
+ === GROUP 4/4 (line 426) ===
+ +extern int xms;
+ === STRATEGY (default: rel) ===
+-#abs
++abs
+ #offset
+ === SEARCH COMMAND ===
+ .,\$;f>
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 543211a1..185952e1 100644
