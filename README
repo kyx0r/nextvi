@@ -25,7 +25,8 @@ Adds arrows keys support in normal mode.
 
 arrowkeys_insert.sh
 --------------
-Adds arrows keys support in insert mode and command modes.
+Adds arrows keys support in insert and command modes. In command
+modes, Up/Down arrow selects lines from history buffer.
 
 threaded_search.sh
 --------------
