@@ -88,20 +88,20 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_E7apBA_ex.c.diff.orig	2026-02-17 12:17:44.404270511 -0100
-+++ /tmp/patch2vi_E7apBA_ex.c.diff	2026-02-17 12:18:22.484707738 -0100
+--- /tmp/patch2vi_gC9KSI_ex.c.diff.orig	2026-04-11 08:55:01.067866513 -0100
++++ /tmp/patch2vi_gC9KSI_ex.c.diff	2026-04-11 08:55:26.014168369 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/6 (line 56) ===
  +char readonly = 0;		/* commandline readonly option */
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ 56a
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
-@@ -21,9 +21,7 @@
- #offset
- === SEARCH COMMAND ===
+@@ -24,9 +24,7 @@
+ +62a
+ #rel
  .,\$;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -	bufs\[i\]\.top = 0;
@@ -110,9 +110,9 @@ exit 0
  	bufs\[i\]\.mtime = -1;
  --- extra (delete to include) ---
  	return i;
-@@ -96,9 +94,7 @@
- #offset
- === SEARCH COMMAND ===
+@@ -107,9 +105,7 @@
+ +78a
+ #rel
  .,\$;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -	\{"reg\+", ec_regprint\},
@@ -122,11 +122,11 @@ exit 0
  --- extra (delete to include) ---
  	\{"r", ec_read\},
 === DELTA vi.c ===
---- /tmp/patch2vi_CdHHeP_vi.c.diff.orig
-+++ /tmp/patch2vi_CdHHeP_vi.c.diff
-@@ -5,8 +5,7 @@
- #abs
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_fqJ2t3_vi.c.diff.orig	2026-04-11 08:55:26.017072670 -0100
++++ /tmp/patch2vi_fqJ2t3_vi.c.diff	2026-04-11 08:55:42.721166654 -0100
+@@ -6,8 +6,7 @@
+ 1830a
+ #rel
  %;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -				xvis \|= 4;
@@ -134,14 +134,14 @@ exit 0
  			else if \(argv\[i\]\[j\] == 'a'\)
  				xvis \|= 8;
  --- extra (delete to include) ---
-@@ -20,13 +19,11 @@
- +				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
- === STRATEGY (default: rel) ===
- #abs
+@@ -24,13 +23,11 @@
+ 1835c
+ #offset
+ +3c
 -#relc
 +relc
- #offset
- === SEARCH COMMAND ===
+ .,\$;f>
+ #rel
  .,\$;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -				xvis = 0;
@@ -151,11 +151,11 @@ exit 0
  --- extra (delete to include) ---
  				fprintf\(stderr, "Nextvi-4\.0 Usage: %s \[-aemsv\] \[file \.\.\.\]\\n", argv\[0\]\);
 === DELTA vi.h ===
---- /tmp/patch2vi_CFUyNP_vi.h.diff.orig	2026-02-17 12:18:38.679238021 -0100
-+++ /tmp/patch2vi_CFUyNP_vi.h.diff	2026-02-17 12:19:03.183709780 -0100
-@@ -4,9 +4,7 @@
- #abs
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_Sn0uTg_vi.h.diff.orig	2026-04-11 08:55:42.723310337 -0100
++++ /tmp/patch2vi_Sn0uTg_vi.h.diff	2026-04-11 08:56:01.146164762 -0100
+@@ -5,9 +5,7 @@
+ 413a
+ #rel
  %;f>
 -=== SEARCH PATTERN (offset: 3) ===
 -	int plen, row, off, top;
@@ -164,15 +164,17 @@ exit 0
  	signed char td;			/\* text direction \*/
  --- extra (delete to include) ---
  \};
-@@ -17,7 +15,7 @@
+@@ -18,8 +16,8 @@
  === GROUP 2/2 (line 547) ===
  +extern char readonly;
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
+-547a
 +abs
++\$a
  #offset
- === SEARCH COMMAND ===
- .,\$;f>
+ +133a
+ #rel
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..d2ea878b 100644
