@@ -411,7 +411,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	sbuf_smake(cmdbuf, 16)
 	sbuf_str(fuzz, arg)
 	syn_setft(fuzz_ft);
-	while(1) {
+	while (1) {
 		sbuf_null(fuzz)
 		c = 0;
 		rs = rset_smake(fuzz->s, xic ? flg | REG_ICASE : flg);
