@@ -35,12 +35,11 @@ ${SEP}+3${SEP}s/f!\\\\](.*)\\\\\\\\/qf!]\\\\1vs|sp|\\\\\\\\/${SEP}??!${DBG:--5,+
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP};=
-${SEP}.a struct win *wins;		/* head of window list */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 .
-${SEP}.,\$;f> 		ex_buf = &bufs\\\\[idx\\\\];
+${SEP}%;f> 		ex_buf = &bufs\\\\[idx\\\\];
 	\\\\}
 	exbuf_load\\\\(ex_buf\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 103\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	/* update current window's buffer reference */
@@ -962,6 +961,18 @@ exit 0
 +s/f!\](.*)\\/qf!]\1vs|sp|\\/
  === END GROUP ===
  
+=== DELTA ex.c ===
+--- /tmp/patch2vi_s429Tm_ex.c.diff.orig	2026-04-12 18:43:19.701843018 -0100
++++ /tmp/patch2vi_s429Tm_ex.c.diff	2026-04-12 18:43:26.816676834 -0100
+@@ -3,7 +3,7 @@
+ +struct win *curwin;		/* current active window */
+ +int nwins;			/* number of windows */
+ === COMMAND STRATEGY (default: rel) ===
+-#abs
++abs
+ #rel
+ 
+ === SEARCH PATTERN ===
 === DELTA vi.h ===
 --- /tmp/patch2vi_pCilFf_vi.h.diff.orig
 +++ /tmp/patch2vi_pCilFf_vi.h.diff
@@ -998,17 +1009,16 @@ index 543211a1..f1f6755a 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 15e5046c..a3292f3f 100644
+index 15e5046c..da6c3e16 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1,4 +1,7 @@
- int xleft;			/* the first visible column */
+@@ -1,3 +1,6 @@
 +struct win *wins;		/* head of window list */
 +struct win *curwin;		/* current active window */
 +int nwins;			/* number of windows */
+ int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
- int xic = 1;			/* ignorecase option */
 @@ -101,6 +104,9 @@ void bufs_switch(int idx)
  		ex_buf = &bufs[idx];
  	}
