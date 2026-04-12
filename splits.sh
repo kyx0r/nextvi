@@ -30,16 +30,17 @@ fi
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 271\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/\\\\\\\\\$/vs|sp|\\\\\\\\/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 271\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+${SEP}+3${SEP}s/f!\\\\](.*)\\\\\\\\/qf!]\\\\1vs|sp|\\\\\\\\/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 271\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1a struct win *wins;		/* head of window list */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1\\${SEP}${QF}}${SEP};=
+${SEP}.a struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 .
-${SEP}%;f> 		ex_buf = &bufs\\\\[idx\\\\];
+${SEP}.,\$;f> 		ex_buf = &bufs\\\\[idx\\\\];
 	\\\\}
 	exbuf_load\\\\(ex_buf\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 103\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	/* update current window's buffer reference */
@@ -186,21 +187,17 @@ ${SEP}.,\$;f> 	EO\\\\(err\\\\),
 	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1481\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	{\"eq\", ec_equalize},
 .
-${SEP}.,\$;f> 	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},
-	\\\\{\"u\", ec_undoredo\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1517\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	EO(vis),
-	{\"vs\", ec_vsplit},
-.
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
 	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1521\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	{\"sp\", ec_split},
 .
-${SEP}.,\$;f> 	EO\\\\(left\\\\),
-	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1543\\${SEP}${QF}}${SEP};=
-${SEP}+3d${SEP}.,\$;f> 	xgrec--;
+${SEP}.,\$;f> 	EO\\\\(lim\\\\),
+	EO\\\\(led\\\\),
+	EO\\\\(vis\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1543\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	{\"vs\", ec_vsplit},
+.
+${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1712\\${SEP}${QF}}${SEP};=
@@ -946,8 +943,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_hDMIol_conf.c.diff.orig
-+++ /tmp/patch2vi_hDMIol_conf.c.diff
+--- /tmp/patch2vi_aijsi4_conf.c.diff.orig	2026-04-12 18:14:03.671548470 -0100
++++ /tmp/patch2vi_aijsi4_conf.c.diff	2026-04-12 18:14:54.621852605 -0100
 @@ -9,8 +9,6 @@
  %;f>
  === SEARCH PATTERN ===
@@ -958,34 +955,13 @@ exit 0
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 @@ -23,6 +21,6 @@
- .;47;77c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
+ .;48;77c qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
  === EDIT COMMAND (rel) ===
  +3
--s/\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?/q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/
-+s/\\$/vs|sp|\\/
+-s/f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?/qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/
++s/f!\](.*)\\/qf!]\1vs|sp|\\/
  === END GROUP ===
  
-=== DELTA ex.c ===
---- /tmp/patch2vi_oadngA_ex.c.diff.orig
-+++ /tmp/patch2vi_oadngA_ex.c.diff
-@@ -3,7 +3,7 @@
- +struct win *curwin;		/* current active window */
- +int nwins;			/* number of windows */
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %;f>
- === SEARCH PATTERN ===
-@@ -15,7 +15,7 @@
- static int xbufsmax;		/\* number of buffers \*/
- static int xbufsalloc = 10;	/\* initial number of buffers \*/
- === EDIT COMMAND (abs) ===
--45a struct win *wins;		/* head of window list */
-+1a struct win *wins;		/* head of window list */
- struct win *curwin;		/* current active window */
- int nwins;			/* number of windows */
- === EDIT COMMAND (rel) ===
 === DELTA vi.h ===
 --- /tmp/patch2vi_pCilFf_vi.h.diff.orig
 +++ /tmp/patch2vi_pCilFf_vi.h.diff
@@ -1009,7 +985,7 @@ exit 0
  === GROUP 2/3 (line 390) ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 543211a1..07bb2aa7 100644
+index 543211a1..f1f6755a 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -268,7 +268,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -1017,24 +993,22 @@ index 543211a1..07bb2aa7 100644
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
-+|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|eq|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
++|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 95a85a2d..e41881ab 100644
+index 15e5046c..a3292f3f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -43,6 +43,9 @@ struct buf *bufs;		/* main buffers */
- struct buf tempbufs[3];		/* temporary buffers, for internal use */
- struct buf *ex_buf;		/* current buffer */
- struct buf *ex_pbuf;		/* prev buffer */
+@@ -1,4 +1,7 @@
+ int xleft;			/* the first visible column */
 +struct win *wins;		/* head of window list */
 +struct win *curwin;		/* current active window */
 +int nwins;			/* number of windows */
- static struct buf *ex_tpbuf;	/* temp prev buffer */
- static int xbufsmax;		/* number of buffers */
- static int xbufsalloc = 10;	/* initial number of buffers */
+ int xvis;			/* startup flags */
+ int xai = 1;			/* autoindent option */
+ int xic = 1;			/* ignorecase option */
 @@ -101,6 +104,9 @@ void bufs_switch(int idx)
  		ex_buf = &bufs[idx];
  	}
@@ -1200,13 +1174,7 @@ index 95a85a2d..e41881ab 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1515,10 +1640,13 @@ static struct excmd {
- 	{"uz", ec_setenc},
- 	{"ub", ec_setenc},
- 	{"u", ec_undoredo},
-+	EO(vis),
-+	{"vs", ec_vsplit},
- 	EO(shape),
+@@ -1519,6 +1644,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -1214,11 +1182,11 @@ index 95a85a2d..e41881ab 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1540,7 +1668,6 @@ static struct excmd {
- 	EO(left),
+@@ -1541,6 +1667,7 @@ static struct excmd {
  	EO(lim),
  	EO(led),
--	EO(vis),
+ 	EO(vis),
++	{"vs", ec_vsplit},
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  	{"", ec_null}, /* do not remove */
