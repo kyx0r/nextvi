@@ -35,7 +35,7 @@ ${SEP}.${SEP}s/\\\\|r/|ms|r/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}25a int xms = 1;			/* mouse in normal mode */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1i int xms = 1;			/* mouse in normal mode */
 .
 ${SEP}%;f> 	return NULL;
 \\\\)
@@ -94,9 +94,11 @@ ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 # Patch: term.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}6a int xmouse_col, xmouse_row;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1i int xmouse_col, xmouse_row;
 .
-${SEP}%f> unsigned int texec, tn;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 10\\${SEP}${QF}}${SEP};=
+${SEP}%;f> unsigned int texec, tn;
+
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 10\\${SEP}${QF}}${SEP};=
 ${SEP}+1a void term_mouse_on(void)
 {
 	write(1, \"\\\\x1b[?1000h\\\\x1b[?1006h\", 16);
@@ -236,12 +238,12 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 321\\${SEP}${QF}}${SEP};=
-${SEP}.i int term_try_mouse(void);
+${SEP}.a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
 .
 ${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 392\\${SEP}${QF}}${SEP};=
-${SEP}.i int led_col(char *s, int col);
+${SEP}.a int led_col(char *s, int col);
 .
 ${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 403\\${SEP}${QF}}${SEP};=
 ${SEP}.i /* mouse state */
@@ -255,13 +257,12 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_al8ZA1_conf.c.diff.orig	2026-04-11 14:43:49.349657086 +0000
-+++ /tmp/patch2vi_al8ZA1_conf.c.diff	2026-04-11 14:44:40.349913482 +0000
-@@ -8,14 +8,7 @@
- %;f>
+--- /tmp/patch2vi_fdM9ae_conf.c.diff.orig	2026-04-12 08:06:53.715143224 -0100
++++ /tmp/patch2vi_fdM9ae_conf.c.diff	2026-04-12 08:07:18.204595156 -0100
+@@ -8,21 +8,14 @@
  #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
 -\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
 -\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
@@ -270,151 +271,233 @@ exit 0
 -\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
 -\(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 -		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
-+=== SEARCH PATTERN (offset: 0) ===
 +\(\(.*pac.*\)\\
+ === EDIT COMMAND (abs) ===
+ 270c ((pac|pr|ai|ish|err|ic|grp|mpt|ms|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ === EDIT COMMAND (relc) ===
+ +3
+ .;31c ms|
+ === EDIT COMMAND (rel) ===
+-+3
+++0
+ s/\|r/|ms|r/
  === END GROUP ===
  
 === DELTA ex.c ===
---- /tmp/patch2vi_X5jYKJ_ex.c.diff.orig	2026-04-11 09:06:04.747544460 -0100
-+++ /tmp/patch2vi_X5jYKJ_ex.c.diff	2026-04-11 09:06:15.157101729 -0100
+--- /tmp/patch2vi_KCvScU_ex.c.diff.orig	2026-04-12 08:07:18.206705355 -0100
++++ /tmp/patch2vi_KCvScU_ex.c.diff	2026-04-12 08:08:26.724588122 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/3 (line 25) ===
  +int xms = 1;			/* mouse in normal mode */
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 25a
  #rel
  %;f>
-@@ -51,13 +51,7 @@
- +40a
+ === SEARCH PATTERN ===
+@@ -13,7 +13,7 @@
+ int xquit;			/\* exit if positive, force quit if negative \*/
+ int xrow, xoff, xtop;		/\* current row, column, and top row \*/
+ === EDIT COMMAND (abs) ===
+-25a int xms = 1;			/* mouse in normal mode */
++1i int xms = 1;			/* mouse in normal mode */
+ === EDIT COMMAND (rel) ===
+ +2a int xms = 1;			/* mouse in normal mode */
+ === END GROUP ===
+@@ -81,18 +81,12 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	\{"g!", ec_glob\},
 -	\{"g", ec_glob\},
 -	EO\(mpt\),
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  	\{"m", ec_mark\},
 -	\{"q!", ec_quit\},
 -	\{"q", ec_quit\},
+ === EDIT COMMAND (abs) ===
+ 1500a 	EO(ms),
+ === EDIT COMMAND (offset) ===
+ +40a 	EO(ms),
+ === EDIT COMMAND (rel) ===
+-+2a 	EO(ms),
++i 	EO(ms),
  === END GROUP ===
  
 === DELTA led.c ===
---- /tmp/patch2vi_cuZTHY_led.c.diff.orig	2026-04-11 01:53:05.296552862 -0100
-+++ /tmp/patch2vi_cuZTHY_led.c.diff	2026-04-11 01:53:11.488769166 -0100
-@@ -44,10 +44,7 @@
- #offset
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_5yaQPt_led.c.diff.orig	2026-04-12 08:14:57.345406569 -0100
++++ /tmp/patch2vi_5yaQPt_led.c.diff	2026-04-12 08:16:00.514541536 -0100
+@@ -69,9 +69,6 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 2) ===
+ === SEARCH PATTERN ===
 -	key = led_line\(sb, ps, n, &post, 0, &postref, -1,
 -			&off, kmap, is, 0, xrow, xtop, flg\);
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  	restore\(xtd\)
  	restore\(xleft\)
  	if \(key == '\\n' && flg & 1\) \{
-@@ -60,9 +57,7 @@
- #offset
- === SEARCH COMMAND ===
+@@ -80,7 +77,7 @@
+ === EDIT COMMAND (offset) ===
+ +1a 	term_mouse_on();
+ === EDIT COMMAND (rel) ===
+-+1a 	term_mouse_on();
++i 	term_mouse_on();
+ === END GROUP ===
+ 
+ === GROUP 4/5 (line 684) ===
+@@ -91,8 +88,6 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	int n, key, ps = 0, crow = xrow, ctop = xtop;
 -	char \*postref = NULL;
-+=== SEARCH PATTERN (offset: 1) ===
  	ins_state is;
  --- extra (delete to include) ---
  	while \(1\) \{
-@@ -77,8 +72,7 @@
- #offset
- === SEARCH COMMAND ===
+@@ -103,7 +98,7 @@
+ === EDIT COMMAND (offset) ===
+ +15a 	term_mouse_off();
+ === EDIT COMMAND (rel) ===
+-+2a 	term_mouse_off();
++a 	term_mouse_off();
+ === END GROUP ===
+ 
+ === GROUP 5/5 (line 697) ===
+@@ -114,7 +109,6 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -				sb->s\[\*pren\] = \*post;
-+=== SEARCH PATTERN (offset: 2) ===
  			free\(postref\);
  			xrow = crow;
  --- extra (delete to include) ---
+@@ -126,6 +120,6 @@
+ === EDIT COMMAND (offset) ===
+ +12a 			term_mouse_on();
+ === EDIT COMMAND (rel) ===
+-+2a 			term_mouse_on();
+++1a 			term_mouse_on();
+ === END GROUP ===
+ 
 === DELTA term.c ===
---- /tmp/patch2vi_YKOXUT_term.c.diff.orig	2026-04-11 09:06:22.153600967 -0100
-+++ /tmp/patch2vi_YKOXUT_term.c.diff	2026-04-11 09:06:36.893099497 -0100
+--- /tmp/patch2vi_BzG2oh_term.c.diff.orig	2026-04-12 08:10:56.594710977 -0100
++++ /tmp/patch2vi_BzG2oh_term.c.diff	2026-04-12 08:12:27.773563376 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/5 (line 6) ===
  +int xmouse_col, xmouse_row;
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 6a
  #rel
  %;f>
-@@ -33,10 +33,8 @@
- +3a
+ === SEARCH PATTERN ===
+@@ -13,7 +13,7 @@
+ unsigned char \*ibuf, icmd\[4096\];
+ unsigned int texec, tn;
+ === EDIT COMMAND (abs) ===
+-6a int xmouse_col, xmouse_row;
++1i int xmouse_col, xmouse_row;
+ === EDIT COMMAND (rel) ===
+ +2a int xmouse_col, xmouse_row;
+ === END GROUP ===
+@@ -35,7 +35,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -unsigned char \*ibuf, icmd\[4096\];
-+=== SEARCH PATTERN (offset: 2) ===
  unsigned int texec, tn;
--
+ 
  --- extra (delete to include) ---
- void term_init\(void\)
- \{
+@@ -65,7 +64,7 @@
+ }
+ 
+ === EDIT COMMAND (rel) ===
+-+2a void term_mouse_on(void)
+++1a void term_mouse_on(void)
+ {
+ 	write(1, "\x1b[?1000h\x1b[?1006h", 16);
+ }
 === DELTA vi.h ===
---- /tmp/patch2vi_ZuqXG0_vi.h.diff.orig	2026-04-11 09:07:00.073140271 -0100
-+++ /tmp/patch2vi_ZuqXG0_vi.h.diff	2026-04-11 09:09:36.430081067 -0100
-@@ -7,9 +7,7 @@
- 321a
+--- /tmp/patch2vi_SSzefG_vi.h.diff.orig	2026-04-12 08:12:33.740911124 -0100
++++ /tmp/patch2vi_SSzefG_vi.h.diff	2026-04-12 08:14:05.219553372 -0100
+@@ -7,8 +7,6 @@
  #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -void term_kill\(void\);
 -void term_room\(int n\);
-+=== SEARCH PATTERN (offset: 0) ===
  int term_read\(int winch\);
  --- extra (delete to include) ---
  void term_commit\(void\);
-@@ -26,9 +24,7 @@
- +68a
+@@ -19,7 +17,7 @@
+ void term_mouse_on(void);
+ void term_mouse_off(void);
+ === EDIT COMMAND (rel) ===
+-+2a int term_try_mouse(void);
++a int term_try_mouse(void);
+ void term_mouse_on(void);
+ void term_mouse_off(void);
+ === END GROUP ===
+@@ -32,8 +30,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -#define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\)
 -char \*led_read\(int \*kmap, int c\);
-+=== SEARCH PATTERN (offset: 0) ===
  int led_pos\(char \*s, int pos\);
  --- extra (delete to include) ---
  void led_done\(void\);
-@@ -46,14 +42,8 @@
- +10a
+@@ -44,7 +40,7 @@
+ === EDIT COMMAND (offset) ===
+ +68a int led_col(char *s, int col);
+ === EDIT COMMAND (rel) ===
+-+2a int led_col(char *s, int col);
++a int led_col(char *s, int col);
+ === END GROUP ===
+ 
+ === GROUP 3/4 (line 403) ===
+@@ -56,13 +52,7 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	long mtime;			/\* modification time \*/
 -	signed char td;			/\* text direction \*/
 -\};
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  /\* ex options \*/
 -extern int xleft;
 -extern int xvis;
+ === EDIT COMMAND (abs) ===
+ 403a /* mouse state */
+ extern int xmouse_col, xmouse_row;
+@@ -70,7 +60,7 @@
+ +10a /* mouse state */
+ extern int xmouse_col, xmouse_row;
+ === EDIT COMMAND (rel) ===
+-+2a /* mouse state */
++i /* mouse state */
+ extern int xmouse_col, xmouse_row;
  === END GROUP ===
  
- === GROUP 4/4 (line 426) ===
-@@ -65,13 +55,7 @@
- +21a
+@@ -82,18 +72,12 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -extern int xlim;
 -extern int xseq;
 -extern int xerr;
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  /\* global variables \*/
 -extern int xquit;
 -extern int xrow, xoff, xtop;
+ === EDIT COMMAND (abs) ===
+ 426a extern int xms;
+ === EDIT COMMAND (offset) ===
+ +21a extern int xms;
+ === EDIT COMMAND (rel) ===
+-+2a extern int xms;
++i extern int xms;
  === END GROUP ===
  
 === PATCH2VI PATCH ===
