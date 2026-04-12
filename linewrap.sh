@@ -37,7 +37,7 @@ ${SEP}+2a int xlw;			/* soft linewrap col */
 ${SEP}.,\$;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
 
-${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1365\\${SEP}${QF}}${SEP};=
+${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1421\\${SEP}${QF}}${SEP};=
 ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
@@ -58,7 +58,7 @@ ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,\$;f> 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1483\\${SEP}${QF}}${SEP};=
+	EO\\\\(led\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1542\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	{\"lw\", ec_linewrap},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -114,7 +114,7 @@ ${SEP}+2a 			if (xlw) {
 .
 ${SEP}.,\$;f> 		end = lb->ln_n;
 	if \\\\(beg == end && !buf\\\\)
-		return;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 190\\${SEP}${QF}}${SEP};=
+		return;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 187\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	/* save chain boundary pointers before edit */
 	char *chain_pred = NULL, *chain_succ = NULL;
 	if (xlw) {
@@ -136,7 +136,7 @@ ${SEP}+2a 	/* save chain boundary pointers before edit */
 .
 ${SEP}.,\$;f> 	struct lopt \\\\*lo = lbuf_opt\\\\(lb, beg, o1, end - beg\\\\);
 	sbuf_smake\\\\(sb, sizeof\\\\(lo->ins\\\\[0\\\\]\\\\)\\\\+1\\\\)
-	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 193\\${SEP}${QF}}${SEP};=
+	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 190\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	/* relink the chain after edit */
 	if (xlw && (chain_pred || chain_succ)) {
 		if (lo->n_ins > 0) {
@@ -161,10 +161,10 @@ ${SEP}+2a 	/* relink the chain after edit */
 .
 ${SEP}.,\$;f> 	for \\\\(int i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lb->ln\\\\[i\\\\];
-		long nw = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 240\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/1/(!lbuf_s(ln)->lw_next)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 240\\${SEP}${QF}}${SEP}.,\$;f> 		lo->ref = 1;
+		long nw = 0;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 237\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/1/(!lbuf_s(ln)->lw_next)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 237\\${SEP}${QF}}${SEP}.,\$;f> 		lo->ref = 1;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->del;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 399\\${SEP}${QF}}${SEP};=
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 396\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		/* relink chain: restored lines have original pointers */
 		if (xlw) {
 			for (int i = 0; i < lo->n_del; i++) {
@@ -189,7 +189,7 @@ ${SEP}+2a 		/* relink chain: restored lines have original pointers */
 .
 ${SEP}.,\$;f> 		lo->ref = 2;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->ins;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 421\\${SEP}${QF}}${SEP};=
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 418\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		/* relink chain: restored lines have their pointers from edit time */
 		if (xlw) {
 			for (int i = 0; i < lo->n_ins; i++) {
@@ -219,7 +219,7 @@ SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		return;
 	\\\\}
-	s = lbuf_get\\\\(xb, row\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 171\\${SEP}${QF}}${SEP};=
+	s = lbuf_get\\\\(xb, row\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 170\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	if (xlw && s) {
 		led_att la;
 		if (!led_attsb)
@@ -244,45 +244,33 @@ SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> struct linfo \\\\{
 	int len;
-	int grec;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 148\\${SEP}${QF}}${SEP};=
+	int grec;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 135\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	char *lw_prev;
 	char *lw_next;
 .
 ${SEP}.,\$;f> extern int xlim;
 extern int xseq;
-extern int xerr;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 437\\${SEP}${QF}}${SEP};=
+extern int xerr;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 426\\${SEP}${QF}}${SEP};=
 ${SEP}+2a extern int xlw;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
-=== DELTA ex.c ===
---- /tmp/patch2vi_fkJJpb_ex.c.diff.orig
-+++ /tmp/patch2vi_fkJJpb_ex.c.diff
-@@ -6,7 +6,7 @@
- %;f>
- === SEARCH PATTERN (offset: 3) ===
- 				bit 1: print errors, bit 2: early return, bit 3: ignore errors \*/
--int xrcm = 1;			/\* range command model -
-+int xrcm = 1;			/\* range command mode -
- 				0: exec at command parse 1: exec at command \*/
- --- extra (delete to include) ---
- 
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 81878d89..b131adab 100644
+index 15e5046c..47567db0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
  				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
- int xrcm = 1;			/* range command model -
+ int xrcm = 1;			/* range command mode -
  				0: exec at command parse 1: exec at command */
 +int xlw;			/* soft linewrap col */
  
  int xquit;			/* exit if positive, force quit if negative */
  int xrow, xoff, xtop;		/* current row, column, and top row */
-@@ -1363,6 +1364,23 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1419,6 +1420,23 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  
  static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
  
@@ -306,7 +294,7 @@ index 81878d89..b131adab 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1481,6 +1499,7 @@ static struct excmd {
+@@ -1540,6 +1558,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -315,7 +303,7 @@ index 81878d89..b131adab 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
 diff --git a/lbuf.c b/lbuf.c
-index 1ebfea46..629f48d1 100644
+index 8ca8a9e0..4054c7d8 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -82,16 +82,50 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -369,7 +357,7 @@ index 1ebfea46..629f48d1 100644
  			sbuf_mem(sb, &ln, (int)sizeof(s))
  			s += l;
  		}
-@@ -188,9 +222,48 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
+@@ -185,9 +219,48 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  		end = lb->ln_n;
  	if (beg == end && !buf)
  		return;
@@ -418,7 +406,7 @@ index 1ebfea46..629f48d1 100644
  	if (lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq)
  		lbuf_smark(lb, lo, beg, o1);
  	lbuf_emark(lb, lo, beg + (lo->n_ins ? lo->n_ins - 1 : 0), o2);
-@@ -237,7 +310,7 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
+@@ -234,7 +307,7 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lb->ln[i];
  		long nw = 0;
@@ -427,7 +415,7 @@ index 1ebfea46..629f48d1 100644
  		while (nw < nl) {
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
-@@ -397,6 +470,27 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
+@@ -394,6 +467,27 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
  		lo->ref = 1;
  		sb.s = (char*)lo->del;
  		lbuf_replace(lb, &sb, NULL, lo, lo->n_ins, lo->n_del);
@@ -455,7 +443,7 @@ index 1ebfea46..629f48d1 100644
  	}
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
-@@ -419,6 +513,27 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -416,6 +510,27 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  		lo->ref = 2;
  		sb.s = (char*)lo->ins;
  		lbuf_replace(lb, &sb, NULL, lo, lo->n_del, lo->n_ins);
@@ -484,10 +472,10 @@ index 1ebfea46..629f48d1 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index a3d3876c..927cad2d 100644
+index 167a597e..88d39b3a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -169,6 +169,22 @@ static void vi_drawrow(int row)
+@@ -168,6 +168,22 @@ static void vi_drawrow(int row)
  		return;
  	}
  	s = lbuf_get(xb, row);
@@ -511,10 +499,10 @@ index a3d3876c..927cad2d 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index 4726dfbf..ae2f37e8 100644
+index 0c984c04..2d782591 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -146,6 +146,8 @@ struct lopt {
+@@ -133,6 +133,8 @@ struct lopt {
  struct linfo {
  	int len;
  	int grec;
@@ -523,7 +511,7 @@ index 4726dfbf..ae2f37e8 100644
  };
  struct lbuf {
  	char **ln;			/* buffer lines */
-@@ -435,6 +437,7 @@ extern int xpr;
+@@ -424,6 +426,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;
