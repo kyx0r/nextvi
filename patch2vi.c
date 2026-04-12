@@ -1142,7 +1142,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			if (g->ndel == 1) fprintf(tmp, "%dd\n", g->del_start);
 			else fprintf(tmp, "%d,%dd\n", g->del_start, g->del_end);
 		} else if (g->nadd) {
-			if (g->add_after == -1) fputs("i", tmp);
+			if (g->add_after <= 0) fputs("i", tmp);
 			else fprintf(tmp, "%da", g->add_after);
 			WRITE_CONTENT(tmp);
 		}
@@ -1152,13 +1152,19 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			const char *act = (g->del_start && g->nadd) ? "c" :
 			                   g->del_start ? "d" : "a";
 			fputs("=== EDIT COMMAND (offset) ===\n", tmp);
-			if (off > 0)       fprintf(tmp, "+%d%s", off, act);
-			else if (off < 0)  fprintf(tmp, "%d%s", off, act);
-			else               fprintf(tmp, ".%s", act);
-			if (g->del_start && !g->nadd)
-				fputc('\n', tmp);  /* delete: no content */
-			else
+			/* Pure add before file start: non-interactive uses 1i */
+			if (!g->del_start && g->nadd && target <= 0) {
+				fputs("1i", tmp);
 				WRITE_CONTENT(tmp);
+			} else {
+				if (off > 0)       fprintf(tmp, "+%d%s", off, act);
+				else if (off < 0)  fprintf(tmp, "%d%s", off, act);
+				else               fprintf(tmp, ".%s", act);
+				if (g->del_start && !g->nadd)
+					fputc('\n', tmp);  /* delete: no content */
+				else
+					WRITE_CONTENT(tmp);
+			}
 		}
 
 		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
@@ -1201,11 +1207,14 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			} else if (g->nadd) {
 				/* Non-interactive subtracts 1 from anchor_offset for 'a'
 				 * (append goes after anchor+offset-1, not anchor+offset).
-				 * Match that so the displayed default is accurate. */
+				 * When result <= 0, non-interactive uses 'i' (insert). */
 				int aoff = default_offset - 1;
-				if (aoff > 0) fprintf(tmp, "%+d", aoff);
-				else if (aoff < 0) fprintf(tmp, "%d", aoff);
-				fputs("a", tmp);
+				if (aoff > 0) {
+					fprintf(tmp, "%+d", aoff);
+					fputs("a", tmp);
+				} else {
+					fputs("i", tmp);
+				}
 				WRITE_CONTENT(tmp);
 			}
 		}
