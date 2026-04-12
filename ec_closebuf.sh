@@ -93,37 +93,50 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_OPBNlo_conf.c.diff.orig
-+++ /tmp/patch2vi_OPBNlo_conf.c.diff
-@@ -6,13 +6,7 @@
- #relc
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_c8KPuO_conf.c.diff.orig	2026-04-12 18:52:39.240054637 -0100
++++ /tmp/patch2vi_c8KPuO_conf.c.diff	2026-04-12 18:53:27.065615213 -0100
+@@ -8,12 +8,6 @@
+ #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
 -\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
 -\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
 ---- extra (delete to include) ---
 -\(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 -		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
-+=== SEARCH PATTERN (offset: -2) ===
  	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)\},
  	\{ex_ft, "!\(\?:\[\^!\\\\\\\\\]\|\\\\\\\\\.\)\*!\?\|%\(\?:#\|\[0-9\]\+\|@\(\[\^\\\\\\\\\]\)\)\?", A\(WH1 \| SYN_BD, CY1\)\},
+ === EDIT COMMAND (abs) ===
+@@ -22,7 +16,7 @@
+ +3
+ .;74;75c [dx]
+ === EDIT COMMAND (rel) ===
+-+3
++-2
+ s/cd/c[dx]/
  === END GROUP ===
+ 
 === DELTA ex.c ===
---- /tmp/patch2vi_PFaBMn_ex.c.diff.orig
-+++ /tmp/patch2vi_PFaBMn_ex.c.diff
-@@ -64,9 +64,7 @@
- #offset
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_ALAhZ9_ex.c.diff.orig	2026-04-12 18:53:27.067584541 -0100
++++ /tmp/patch2vi_ALAhZ9_ex.c.diff	2026-04-12 18:53:54.812612365 -0100
+@@ -155,8 +155,6 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	\{"cm!", ec_cmap\},
 -	\{"cm", ec_cmap\},
-+=== SEARCH PATTERN (offset: 1) ===
  	\{"cd", ec_chdir\},
  --- extra (delete to include) ---
  	\{"c", ec_insert\},
+@@ -167,6 +165,6 @@
+ === EDIT COMMAND (offset) ===
+ +56a 	{"cx", ec_closebuf},
+ === EDIT COMMAND (rel) ===
+-+2a 	{"cx", ec_closebuf},
++a 	{"cx", ec_closebuf},
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 3ad1249c..ad010a18 100644
