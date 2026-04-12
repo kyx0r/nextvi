@@ -30,12 +30,12 @@ fi
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 271\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/\\\\[f!\\\\]\\\\?!\\\\?\\\\|f\\\\[-\\\\+><tdp\\\\]\\\\?\\\\|inc\\\\|i\\\\|sc!\\\\?/q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 271\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+${SEP}+3${SEP}s/\\\\\\\\\$/vs|sp|\\\\\\\\/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 271\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}45a struct win *wins;		/* head of window list */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1a struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 .
@@ -908,9 +908,10 @@ ${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? c
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}319a void term_killn(int n);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void term_kill\\\\(void\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 319\\${SEP}${QF}}${SEP};=
+${SEP}.a void term_killn(int n);
 .
-${SEP}%;f> \\\\} \\\\\\\\
+${SEP}.,\$;f> \\\\} \\\\\\\\
 
 #define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 390\\${SEP}${QF}}${SEP};=
 ${SEP}+3c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \\\\
@@ -945,41 +946,67 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_ehI5h0_conf.c.diff.orig	2026-03-26 18:38:58.353182863 -0100
-+++ /tmp/patch2vi_ehI5h0_conf.c.diff	2026-03-26 18:39:05.705661060 -0100
-@@ -8,8 +8,6 @@
+--- /tmp/patch2vi_hDMIol_conf.c.diff.orig
++++ /tmp/patch2vi_hDMIol_conf.c.diff
+@@ -9,8 +9,6 @@
  %;f>
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
  \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
 -\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
 -\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
  --- extra (delete to include) ---
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
+@@ -23,6 +21,6 @@
+ .;47;77c q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
+ === EDIT COMMAND (rel) ===
+ +3
+-s/\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?/q|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/
++s/\\$/vs|sp|\\/
+ === END GROUP ===
+ 
 === DELTA ex.c ===
---- /tmp/patch2vi_dpiKNK_ex.c.diff.orig	2026-04-11 09:03:50.796011713 -0100
-+++ /tmp/patch2vi_dpiKNK_ex.c.diff	2026-04-11 09:04:15.957113966 -0100
+--- /tmp/patch2vi_oadngA_ex.c.diff.orig
++++ /tmp/patch2vi_oadngA_ex.c.diff
 @@ -3,7 +3,7 @@
  +struct win *curwin;		/* current active window */
  +int nwins;			/* number of windows */
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 45a
  #rel
  %;f>
+ === SEARCH PATTERN ===
+@@ -15,7 +15,7 @@
+ static int xbufsmax;		/\* number of buffers \*/
+ static int xbufsalloc = 10;	/\* initial number of buffers \*/
+ === EDIT COMMAND (abs) ===
+-45a struct win *wins;		/* head of window list */
++1a struct win *wins;		/* head of window list */
+ struct win *curwin;		/* current active window */
+ int nwins;			/* number of windows */
+ === EDIT COMMAND (rel) ===
 === DELTA vi.h ===
---- /tmp/patch2vi_TTOV9o_vi.h.diff.orig	2026-04-11 09:04:25.362707689 -0100
-+++ /tmp/patch2vi_TTOV9o_vi.h.diff	2026-04-11 09:04:47.837110693 -0100
-@@ -1,7 +1,7 @@
- === GROUP 1/3 (line 319) ===
- +void term_killn(int n);
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- 319a
+--- /tmp/patch2vi_pCilFf_vi.h.diff.orig
++++ /tmp/patch2vi_pCilFf_vi.h.diff
+@@ -5,8 +5,6 @@
  #rel
  %;f>
+ === SEARCH PATTERN ===
+-void term_chr\(int ch\);
+-void term_pos\(int r, int c\);
+ void term_kill\(void\);
+ --- extra (delete to include) ---
+ void term_room\(int n\);
+@@ -15,7 +13,7 @@
+ === EDIT COMMAND (abs) ===
+ 319a void term_killn(int n);
+ === EDIT COMMAND (rel) ===
+-+2a void term_killn(int n);
++a void term_killn(int n);
+ === END GROUP ===
+ 
+ === GROUP 2/3 (line 390) ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 543211a1..07bb2aa7 100644
