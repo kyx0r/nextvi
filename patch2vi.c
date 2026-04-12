@@ -632,6 +632,14 @@ typedef struct {
 	char *ld_new_text;       /* expanded replacement text for s// */
 	int ldc_start, ldc_end; /* minimal char positions for ;c */
 	char *ldc_new_text;      /* minimal replacement text for ;c */
+	/* Per-group custom edit commands from EDIT COMMAND sections.
+	 * lines[0] = "cmd [inline-content]", lines[1..] = extra content lines.
+	 * Content is raw text (NOT pre-escaped); escaping applied at emit time.
+	 * Substitute format: lines[0] = "s/pat/repl/" (pre-escaped, exarg layer). */
+	char **custom_abs_lines;    int custom_abs_nlines;
+	char **custom_offset_lines; int custom_offset_nlines;
+	char **custom_relc_lines;   int custom_relc_nlines;
+	char **custom_rel_lines;    int custom_rel_nlines;
 } group_t;
 
 /* Emit a line with exarg + shell escaping only (no regex escaping).
@@ -917,6 +925,34 @@ static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
 	emit_err_check(out, rc->target_line);
 }
 
+/* Parse and strip relative offset prefix from custom edit lines (rel/relc).
+ * "+N" or "-N" alone as lines[0]: offset-only line (substitute with offset).
+ *   Extract offset, remove lines[0], shift remaining lines down, decrement *nlines.
+ * "+N" or "-N" followed immediately by verb (e.g. "+3a text"): embedded prefix.
+ *   Extract offset number, strip prefix from lines[0] in-place.
+ * Returns the extracted offset (0 if no prefix found). */
+static int parse_ecmd_offset(char **lines, int *nlines)
+{
+	if (*nlines == 0) return 0;
+	char *first = lines[0];
+	if (first[0] != '+' && first[0] != '-') return 0;
+	int i = 1;
+	while (first[i] >= '0' && first[i] <= '9') i++;
+	if (i == 1) return 0; /* sign but no digits */
+	int offset = atoi(first);
+	if (first[i] == '\0') {
+		/* Offset-only line: remove it, shift remaining */
+		free(lines[0]);
+		for (int k = 0; k < *nlines - 1; k++)
+			lines[k] = lines[k + 1];
+		(*nlines)--;
+	} else {
+		/* Prefix embedded in verb line: strip leading "+N" */
+		memmove(first, first + i, strlen(first + i) + 1);
+	}
+	return offset;
+}
+
 /*
  * Interactive editing of all groups' search patterns in one file.
  * Opens $EDITOR once with all groups. Pattern lines are shown
@@ -1045,19 +1081,19 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		for (int i = 0; i < g->nadd; i++)
 			fprintf(tmp, "+%s\n", g->add_texts[i]);
 
-		/* Combined command+strategy: #strat\ncmd pairs, all commented */
+		/* Combined command+strategy: for abs/offset just the tag (cmd
+		 * moved to EDIT COMMAND sections); for rel/relc tag + search cmd */
 		fprintf(tmp, "=== COMMAND STRATEGY (default: %s) ===\n", def_strat);
-		fprintf(tmp, "#abs\n%s\n", abs_cmd);
+		fprintf(tmp, "#abs\n");
 		if (has_offset)
-			fprintf(tmp, "#offset\n%s\n", off_cmd);
+			fprintf(tmp, "#offset\n");
 		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff)
 			fprintf(tmp, "#relc\n%s\n", dcmd ? dcmd : "");
 		if (has_anchors)
 			fprintf(tmp, "#rel\n%s\n", dcmd ? dcmd : "");
 
 		/* Search pattern: top = -r anchors (default) */
-		fprintf(tmp, "=== SEARCH PATTERN (offset: %d) ===\n",
-			default_offset);
+		fprintf(tmp, "=== SEARCH PATTERN ===\n");
 		for (int i = 0; i < g->nanchors; i++) {
 			char *esc = escape_regex(g->anchors[i]);
 			fprintf(tmp, "%s\n", esc);
@@ -1080,6 +1116,100 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				free(esc);
 			}
 		}
+		/* EDIT COMMAND sections: default edit commands with content inline.
+		 * Content is raw text; escaping applied at emit time.
+		 * Format: "cmd first_line\nextra_line\n..." (no "." terminator shown). */
+
+		/* Helper: write content lines (add_texts) after the command prefix. */
+		#define WRITE_CONTENT(fp) do { \
+			if (g->nadd > 0) { \
+				fputc(' ', (fp)); \
+				fputs(g->add_texts[0], (fp)); \
+				fputc('\n', (fp)); \
+				for (int _k = 1; _k < g->nadd; _k++) { \
+					fputs(g->add_texts[_k], (fp)); \
+					fputc('\n', (fp)); \
+				} \
+			} else { fputc('\n', (fp)); } \
+		} while (0)
+
+		fputs("=== EDIT COMMAND (abs) ===\n", tmp);
+		if (g->del_start && g->nadd) {
+			if (g->ndel == 1) fprintf(tmp, "%dc", g->del_start);
+			else fprintf(tmp, "%d,%dc", g->del_start, g->del_end);
+			WRITE_CONTENT(tmp);
+		} else if (g->del_start) {
+			if (g->ndel == 1) fprintf(tmp, "%dd\n", g->del_start);
+			else fprintf(tmp, "%d,%dd\n", g->del_start, g->del_end);
+		} else if (g->nadd) {
+			if (g->add_after == -1) fputs("i", tmp);
+			else fprintf(tmp, "%da", g->add_after);
+			WRITE_CONTENT(tmp);
+		}
+
+		if (has_offset) {
+			int off = target - sim_prev_xrow;
+			const char *act = (g->del_start && g->nadd) ? "c" :
+			                   g->del_start ? "d" : "a";
+			fputs("=== EDIT COMMAND (offset) ===\n", tmp);
+			if (off > 0)       fprintf(tmp, "+%d%s", off, act);
+			else if (off < 0)  fprintf(tmp, "%d%s", off, act);
+			else               fprintf(tmp, ".%s", act);
+			if (g->del_start && !g->nadd)
+				fputc('\n', tmp);  /* delete: no content */
+			else
+				WRITE_CONTENT(tmp);
+		}
+
+		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
+			if (default_offset != 0) {
+				if (g->ldc_start == g->ldc_end)
+					fprintf(tmp, "=== EDIT COMMAND (relc) ===\n%+d\n.;%dc %s\n",
+						default_offset, g->ldc_start, g->ldc_new_text);
+				else
+					fprintf(tmp, "=== EDIT COMMAND (relc) ===\n%+d\n.;%d;%dc %s\n",
+						default_offset, g->ldc_start, g->ldc_end, g->ldc_new_text);
+			} else {
+				if (g->ldc_start == g->ldc_end)
+					fprintf(tmp, "=== EDIT COMMAND (relc) ===\n.;%dc %s\n",
+						g->ldc_start, g->ldc_new_text);
+				else
+					fprintf(tmp, "=== EDIT COMMAND (relc) ===\n.;%d;%dc %s\n",
+						g->ldc_start, g->ldc_end, g->ldc_new_text);
+			}
+		}
+
+		if (has_anchors) {
+			fputs("=== EDIT COMMAND (rel) ===\n", tmp);
+			if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
+				char *esc_pat = escape_sub_pat(g->ld_old_text, '/');
+				char *esc_rep = escape_sub_repl(g->ld_new_text, '/');
+				if (default_offset != 0)
+					fprintf(tmp, "%+d\n", default_offset);
+				fprintf(tmp, "s/%s/%s/\n", esc_pat, esc_rep);
+				free(esc_pat);
+				free(esc_rep);
+			} else if (g->del_start && g->nadd) {
+				if (default_offset != 0) fprintf(tmp, "%+d", default_offset);
+				if (g->ndel == 1) fputs("c", tmp);
+				else fprintf(tmp, ",#+%dc", g->ndel - 1);
+				WRITE_CONTENT(tmp);
+			} else if (g->del_start) {
+				if (default_offset != 0) fprintf(tmp, "%+d", default_offset);
+				if (g->ndel == 1) fputs("d\n", tmp);
+				else fprintf(tmp, ",#+%dd\n", g->ndel - 1);
+			} else if (g->nadd) {
+				/* Non-interactive subtracts 1 from anchor_offset for 'a'
+				 * (append goes after anchor+offset-1, not anchor+offset).
+				 * Match that so the displayed default is accurate. */
+				int aoff = default_offset - 1;
+				if (aoff > 0) fprintf(tmp, "%+d", aoff);
+				else if (aoff < 0) fprintf(tmp, "%d", aoff);
+				fputs("a", tmp);
+				WRITE_CONTENT(tmp);
+			}
+		}
+		#undef WRITE_CONTENT
 		fprintf(tmp, "=== END GROUP ===\n\n");
 
 		/* Simulate cursor tracking for offset availability */
@@ -1233,18 +1363,64 @@ read_back:
 
 		char line[MAX_LINE];
 		int cur_gi = -1;
-		int in_pattern = 0, in_cmdstrat = 0;
+		int in_pattern = 0, in_cmdstrat = 0, in_edit_cmd = 0;
 		int cmdstrat_want_cmd = 0, cmdstrat_take = 0;
 		int cmdstrat_strat = STRAT_DEFAULT;
+		int edit_cmd_strat = STRAT_DEFAULT;
 		int skip_extra = 0;
 		char edited_cmd[MAX_LINE] = "";
 		int edited_offset = 0;
 		int edited_strategy = STRAT_DEFAULT;
+		/* Dynamic accumulator for current EDIT COMMAND section */
+		char **ecmd_lines = NULL;
+		int necmd = 0, ecmd_cap = 0;
+		/* Pattern lines accumulator */
 		char **lines = NULL;
 		int nlines = 0, line_cap = 0;
 
+		/* Flush accumulated ecmd_lines into the appropriate group field */
+#define FLUSH_ECMD() do { \
+		if (necmd > 0 && cur_gi >= 0 && cur_gi < ngroups) { \
+			group_t *_eg = &groups[cur_gi]; \
+			switch (edit_cmd_strat) { \
+			case STRAT_ABS: \
+				_eg->custom_abs_lines = ecmd_lines; \
+				_eg->custom_abs_nlines = necmd; \
+				break; \
+			case STRAT_OFFSET: \
+				_eg->custom_offset_lines = ecmd_lines; \
+				_eg->custom_offset_nlines = necmd; \
+				break; \
+			case STRAT_RELC: \
+				_eg->custom_offset = parse_ecmd_offset(ecmd_lines, &necmd); \
+				_eg->custom_relc_lines = ecmd_lines; \
+				_eg->custom_relc_nlines = necmd; \
+				break; \
+			case STRAT_REL: \
+				_eg->custom_offset = parse_ecmd_offset(ecmd_lines, &necmd); \
+				_eg->custom_rel_lines = ecmd_lines; \
+				_eg->custom_rel_nlines = necmd; \
+				break; \
+			default: \
+				for (int _j = 0; _j < necmd; _j++) free(ecmd_lines[_j]); \
+				free(ecmd_lines); \
+				break; \
+			} \
+		} else { \
+			for (int _j = 0; _j < necmd; _j++) free(ecmd_lines[_j]); \
+			free(ecmd_lines); \
+		} \
+		ecmd_lines = NULL; necmd = 0; ecmd_cap = 0; \
+} while (0)
+
 		while (fgets(line, sizeof(line), rd)) {
 			chomp(line);
+
+			/* Any section header ends the current EDIT COMMAND section */
+			if (strncmp(line, "=== ", 4) == 0 && in_edit_cmd) {
+				FLUSH_ECMD();
+				in_edit_cmd = 0;
+			}
 
 			if (strncmp(line, "=== GROUP ", 10) == 0) {
 				/* Flush previous group */
@@ -1261,7 +1437,8 @@ read_back:
 					if (nlines > 0) {
 						groups[cur_gi].custom_lines = lines;
 						groups[cur_gi].ncustom = nlines;
-						groups[cur_gi].custom_offset = edited_offset;
+						if (edited_offset != 0)
+							groups[cur_gi].custom_offset = edited_offset;
 						lines = NULL;
 						nlines = 0;
 						line_cap = 0;
@@ -1285,14 +1462,35 @@ read_back:
 				cmdstrat_take = 0;
 				continue;
 			}
-			if (strncmp(line, "=== SEARCH PATTERN (offset:", 27)
-			    == 0) {
-				const char *p = line + 27;
-				while (*p == ' ') p++;
-				edited_offset = atoi(p);
+			if (strncmp(line, "=== SEARCH PATTERN", 18) == 0) {
+				/* Support both old format (offset: N) and new (no offset) */
+				const char *p = strstr(line, "(offset:");
+				if (p) {
+					p += 8;
+					while (*p == ' ') p++;
+					edited_offset = atoi(p);
+				}
 				in_pattern = 1;
 				in_cmdstrat = 0;
 				cmdstrat_want_cmd = 0;
+				continue;
+			}
+			if (strncmp(line, "=== EDIT COMMAND (", 18) == 0) {
+				const char *p = line + 18;
+				in_edit_cmd = 1;
+				in_pattern = 0;
+				in_cmdstrat = 0;
+				cmdstrat_want_cmd = 0;
+				if (strncmp(p, "abs)", 4) == 0)
+					edit_cmd_strat = STRAT_ABS;
+				else if (strncmp(p, "offset)", 7) == 0)
+					edit_cmd_strat = STRAT_OFFSET;
+				else if (strncmp(p, "relc)", 5) == 0)
+					edit_cmd_strat = STRAT_RELC;
+				else if (strncmp(p, "rel)", 4) == 0)
+					edit_cmd_strat = STRAT_REL;
+				else
+					edit_cmd_strat = STRAT_DEFAULT;
 				continue;
 			}
 			if (strncmp(line, "=== END GROUP ===", 17) == 0) {
@@ -1301,7 +1499,18 @@ read_back:
 				cmdstrat_want_cmd = 0;
 				continue;
 			}
-			/* Parse command+strategy pairs: strat line then cmd line */
+			/* Accumulate EDIT COMMAND content lines */
+			if (in_edit_cmd) {
+				if (necmd >= ecmd_cap) {
+					ecmd_cap = ecmd_cap ? ecmd_cap * 2 : 4;
+					ecmd_lines = realloc(ecmd_lines,
+						ecmd_cap * sizeof(char *));
+				}
+				ecmd_lines[necmd++] = xstrdup(line);
+				continue;
+			}
+			/* Parse command+strategy pairs: strat line then cmd line.
+			 * abs/offset have no cmd line (cmd is in EDIT COMMAND section). */
 			if (in_cmdstrat) {
 				if (cmdstrat_want_cmd) {
 					if (cmdstrat_take &&
@@ -1318,17 +1527,30 @@ read_back:
 					const char *name = (line[0] == '#')
 						? line + 1 : line;
 					cmdstrat_take = (line[0] != '#');
-					if (strcmp(name, "abs") == 0)
+					if (strcmp(name, "abs") == 0) {
 						cmdstrat_strat = STRAT_ABS;
-					else if (strcmp(name, "rel") == 0)
-						cmdstrat_strat = STRAT_REL;
-					else if (strcmp(name, "relc") == 0)
-						cmdstrat_strat = STRAT_RELC;
-					else if (strcmp(name, "offset") == 0)
-						cmdstrat_strat = STRAT_OFFSET;
-					else
+						if (cmdstrat_take &&
+						    edited_strategy == STRAT_DEFAULT)
+							edited_strategy = STRAT_ABS;
 						cmdstrat_take = 0;
-					cmdstrat_want_cmd = 1;
+						cmdstrat_want_cmd = 0;
+					} else if (strcmp(name, "offset") == 0) {
+						cmdstrat_strat = STRAT_OFFSET;
+						if (cmdstrat_take &&
+						    edited_strategy == STRAT_DEFAULT)
+							edited_strategy = STRAT_OFFSET;
+						cmdstrat_take = 0;
+						cmdstrat_want_cmd = 0;
+					} else if (strcmp(name, "rel") == 0) {
+						cmdstrat_strat = STRAT_REL;
+						cmdstrat_want_cmd = 1;
+					} else if (strcmp(name, "relc") == 0) {
+						cmdstrat_strat = STRAT_RELC;
+						cmdstrat_want_cmd = 1;
+					} else {
+						cmdstrat_take = 0;
+						cmdstrat_want_cmd = 0;
+					}
 				}
 				continue;
 			}
@@ -1348,6 +1570,10 @@ read_back:
 				lines[nlines++] = xstrdup(line);
 			}
 		}
+		/* Flush trailing EDIT COMMAND section (no closing === seen) */
+		if (in_edit_cmd)
+			FLUSH_ECMD();
+#undef FLUSH_ECMD
 		/* Flush last group */
 		if (cur_gi >= 0 && cur_gi < ngroups) {
 			groups[cur_gi].strategy = edited_strategy;
@@ -1361,7 +1587,8 @@ read_back:
 			if (nlines > 0) {
 				groups[cur_gi].custom_lines = lines;
 				groups[cur_gi].ncustom = nlines;
-				groups[cur_gi].custom_offset = edited_offset;
+				if (edited_offset != 0)
+					groups[cur_gi].custom_offset = edited_offset;
 			} else {
 				free(lines);
 			}
@@ -1379,23 +1606,41 @@ cleanup_orig:
 	free(default_cmds);
 }
 
-/* Emit a raw abs/offset custom command: custom_cmd + content (if nadd>0) + SEP.
- * custom_cmd for delete: "42d" (complete, no content)
- * custom_cmd for change/insert: "42c" or "42a" (space auto-added before content) */
-static void emit_custom_raw(FILE *out, group_t *g)
+
+/* Emit a custom EDIT COMMAND lines array + trailing SEP.
+ * lines[0] = "cmd [first-content]", lines[1..n] = extra content lines.
+ * s/pat/repl/: emit_escaped_exarg_only; no ".\n" appended.
+ * cmd first-line: cmd prefix verbatim, content via emit_escaped_text, ".\n".
+ * bare cmd (d, etc.): output verbatim; no ".\n". */
+static void emit_custom_edit_lines(FILE *out, char **lines, int nlines)
 {
-	fputs(g->custom_cmd, out);
-	if (g->nadd > 0) {
-		size_t len = strlen(g->custom_cmd);
-		if (len > 0 && g->custom_cmd[len - 1] != ' ')
-			fputc(' ', out);
-		for (int k = 0; k < g->nadd; k++) {
-			emit_escaped_text(out, g->add_texts[k]);
+	if (nlines == 0)
+		return;
+	const char *first = lines[0];
+	/* Detect substitute: s + non-alphanumeric separator */
+	if (first[0] == 's' && first[1] &&
+	    !((unsigned char)first[1] >= 'a' && (unsigned char)first[1] <= 'z') &&
+	    !((unsigned char)first[1] >= 'A' && (unsigned char)first[1] <= 'Z') &&
+	    !((unsigned char)first[1] >= '0' && (unsigned char)first[1] <= '9')) {
+		emit_escaped_exarg_only(out, first);
+		return;
+	}
+	/* Find first space: split command prefix from inline content */
+	const char *sp = strchr(first, ' ');
+	if (sp) {
+		fwrite(first, 1, sp - first, out);  /* command prefix verbatim */
+		fputc(' ', out);
+		emit_escaped_text(out, sp + 1);     /* first content line escaped */
+		fputc('\n', out);
+		for (int k = 1; k < nlines; k++) {
+			emit_escaped_text(out, lines[k]);
 			fputc('\n', out);
 		}
 		fputs(".\n", out);
+	} else {
+		/* No content (d, ,#+Nd, etc.) */
+		fputs(first, out);
 	}
-	EMIT_SEP(out);
 }
 
 /* Process operations for one file and emit script */
@@ -1456,6 +1701,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		g->ld_new_text = NULL;
 		g->ldc_start = g->ldc_end = 0;
 		g->ldc_new_text = NULL;
+		g->custom_abs_lines = NULL;    g->custom_abs_nlines = 0;
+		g->custom_offset_lines = NULL; g->custom_offset_nlines = 0;
+		g->custom_relc_lines = NULL;   g->custom_relc_nlines = 0;
+		g->custom_rel_lines = NULL;    g->custom_rel_nlines = 0;
 
 		/* Skip context lines, collecting up to 3 consecutive for relative mode */
 		char *last_ctx = NULL;
@@ -1731,10 +1980,44 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		/* Custom interactive path: use edited search pattern */
 		int has_custom = g->custom_lines != NULL && g->ncustom > 0;
 
+		/* Helper: emit rel position then a custom edit command (lines array).
+		 * Substitute (lines[0] starts s+non-alnum): extra SEP before, exarg escaping.
+		 * Otherwise: direct append to position address. */
+#define EMIT_REL_EDIT(rlines, rnlines, tline) do { \
+		int _mode = has_custom \
+			? emit_custom_pos(out, g, &first_ml) \
+			: emit_rel_pos(out, &rc, &first_ml); \
+		const char *_f = (rlines)[0]; \
+		int _is_sub = (_f[0] == 's' && _f[1] && \
+		               !(_f[1] >= 'a' && _f[1] <= 'z') && \
+		               !(_f[1] >= 'A' && _f[1] <= 'Z') && \
+		               !(_f[1] >= '0' && _f[1] <= '9')); \
+		if (_is_sub) { \
+			EMIT_SEP(out); \
+			if (_mode == 0 && !rc.use_offset) \
+				emit_err_check(out, (tline)); \
+			emit_escaped_exarg_only(out, _f); \
+			EMIT_SEP(out); \
+			emit_err_check(out, (tline)); \
+		} else { \
+			emit_custom_edit_lines(out, (rlines), (rnlines)); \
+			EMIT_SEP(out); \
+			if (_mode == 0 && !rc.use_offset) \
+				emit_err_check(out, (tline)); \
+		} \
+} while (0)
+
 		/* Dispatch per strategy */
 		if (g->del_start && g->nadd) {
-			if ((strat == STRAT_ABS || strat == STRAT_OFFSET) && g->custom_cmd) {
-				emit_custom_raw(out, g);
+			if (strat == STRAT_ABS && g->custom_abs_lines) {
+				emit_custom_edit_lines(out, g->custom_abs_lines,
+				                       g->custom_abs_nlines);
+				EMIT_SEP(out);
+			} else if (strat == STRAT_OFFSET &&
+			           g->custom_offset_lines) {
+				emit_custom_edit_lines(out, g->custom_offset_lines,
+				                       g->custom_offset_nlines);
+				EMIT_SEP(out);
 			} else if (strat == STRAT_OFFSET) {
 				/* Offset positioning: .+N then ;c or c */
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
@@ -1762,26 +2045,38 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 					if (mode == 1)
 						EMIT_SEP(out);
 				}
-				if (g->ldc_start == g->ldc_end)
-					fprintf(out, ".;%dc ", g->ldc_start);
-				else
-					fprintf(out, ".;%d;%dc ", g->ldc_start, g->ldc_end);
-				emit_escaped_text(out, g->ldc_new_text);
-				fputs("\n.\n", out);
+				if (g->custom_relc_lines && g->custom_relc_nlines > 0) {
+					/* custom relc: lines[0] = ".;N;Mc content" */
+					emit_custom_edit_lines(out, g->custom_relc_lines,
+					                       g->custom_relc_nlines);
+				} else {
+					if (g->ldc_start == g->ldc_end)
+						fprintf(out, ".;%dc", g->ldc_start);
+					else
+						fprintf(out, ".;%d;%dc", g->ldc_start, g->ldc_end);
+					fputc(' ', out);
+					emit_escaped_text(out, g->ldc_new_text);
+					fputs("\n.\n", out);
+				}
 				EMIT_SEP(out);
 				emit_err_check(out, g->del_start);
 			} else if (strat == STRAT_REL) {
-				/* Relative search positioning */
-				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
+				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
+					EMIT_REL_EDIT(g->custom_rel_lines,
+					              g->custom_rel_nlines, g->del_start);
+				} else if (g->ndel == 1 && g->nadd == 1 &&
+				           g->has_line_diff) {
 					if (has_custom) {
 						emit_custom_pos(out, g, &first_ml);
 						EMIT_SEP(out);
-						emit_substitute_cmd(out, g->ld_old_text, g->ld_new_text);
+						emit_substitute_cmd(out, g->ld_old_text,
+						                    g->ld_new_text);
 						EMIT_SEP(out);
 						emit_err_check(out, g->del_start);
 					} else {
 						emit_relative_substitute(out, &rc,
-						    g->ld_old_text, g->ld_new_text, &first_ml);
+						    g->ld_old_text, g->ld_new_text,
+						    &first_ml);
 					}
 				} else {
 					if (has_custom) {
@@ -1800,7 +2095,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 							emit_err_check(out, g->del_start);
 					} else {
 						emit_relative_change(out, &rc,
-						    g->ndel, g->add_texts, g->nadd, &first_ml);
+						    g->ndel, g->add_texts, g->nadd,
+						    &first_ml);
 					}
 				}
 			} else {
@@ -1816,12 +2112,21 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				}
 			}
 		} else if (g->del_start) {
-			if ((strat == STRAT_ABS || strat == STRAT_OFFSET) && g->custom_cmd) {
-				emit_custom_raw(out, g);
+			if (strat == STRAT_ABS && g->custom_abs_lines) {
+				emit_custom_edit_lines(out, g->custom_abs_lines,
+				                       g->custom_abs_nlines);
+				EMIT_SEP(out);
+			} else if (strat == STRAT_OFFSET && g->custom_offset_lines) {
+				emit_custom_edit_lines(out, g->custom_offset_lines,
+				                       g->custom_offset_nlines);
+				EMIT_SEP(out);
 			} else if (strat == STRAT_OFFSET) {
 				emit_relative_delete(out, &rc, g->ndel, &first_ml);
 			} else if (strat == STRAT_REL) {
-				if (has_custom) {
+				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
+					EMIT_REL_EDIT(g->custom_rel_lines,
+					              g->custom_rel_nlines, g->del_start);
+				} else if (has_custom) {
 					int mode = emit_custom_pos(out, g, &first_ml);
 					if (g->ndel == 1)
 						fputc('d', out);
@@ -1839,13 +2144,22 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				emit_delete(out, g->del_start + adj, g->del_end + adj);
 			}
 		} else if (g->nadd) {
-			if ((strat == STRAT_ABS || strat == STRAT_OFFSET) && g->custom_cmd) {
-				emit_custom_raw(out, g);
+			if (strat == STRAT_ABS && g->custom_abs_lines) {
+				emit_custom_edit_lines(out, g->custom_abs_lines,
+				                       g->custom_abs_nlines);
+				EMIT_SEP(out);
+			} else if (strat == STRAT_OFFSET && g->custom_offset_lines) {
+				emit_custom_edit_lines(out, g->custom_offset_lines,
+				                       g->custom_offset_nlines);
+				EMIT_SEP(out);
 			} else if (strat == STRAT_OFFSET) {
 				emit_relative_insert(out, &rc,
 				    g->add_texts, g->nadd, &first_ml);
 			} else if (strat == STRAT_REL) {
-				if (has_custom) {
+				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
+					EMIT_REL_EDIT(g->custom_rel_lines,
+					              g->custom_rel_nlines, g->add_after);
+				} else if (has_custom) {
 					const char *icmd;
 					if (g->custom_offset > 0) {
 						g->custom_offset -= 1;
@@ -1903,6 +2217,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				    g->add_texts, g->nadd);
 			}
 		}
+#undef EMIT_REL_EDIT
 		/* Track cursor position for all forward modes */
 		if (forward) {
 			int target;
