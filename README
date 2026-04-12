@@ -140,11 +140,11 @@ VI NORMAL
                    spaces. # modifies tab width
      vo            Remove trailing white spaces and <\r> line endings
      <^G>          Print buffer status info
-     1<^G>         Enable permanent status bar row
-     2<^G>         Disable permanent status bar row
+     1<^G>         Enable permanent status row
+     2<^G>         Disable permanent status row
      ga            Print character info
-     1ga           Enable permanent character info bar row
-     2ga           Disable permanent character info bar row
+     1ga           Enable permanent character info row
+     2ga           Disable permanent character info row
      [#]gw         Hard word wrap a line to # col limit. Default: 80
      [#]gq         Hard word wrap a buffer to # col limit. Default: 80
      [#]g~{arg}    Switch character case for arg region # times
@@ -1363,4 +1363,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 4.2                      March 28, 2026                      Nextvi 4.2
+Nextvi 4.2                      April 12, 2026                      Nextvi 4.2
