@@ -31,8 +31,8 @@ SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		A\\\\(SYN_BD, BL1, WH1, YE\\\\)\\\\},
 
-	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 272\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 272\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 282\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 282\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: vi.c
 SEP="$(printf '\001')"
@@ -93,31 +93,31 @@ ${SEP}+2a static void vi_visual_attrib(char *s, int row)
 .
 ${SEP}.,\$;f> 		vi_lncol = dir_context\\\\(s\\\\) < 0 \\\\? 0 : l1;
 		memset\\\\(c, ' ', l1 - \\\\(c - tmp\\\\)\\\\);
-		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 194\\${SEP}${QF}}${SEP};=
+		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 193\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		vi_visual_attrib(s, row);
 .
 ${SEP}.,\$;f> 		restore\\\\(ftidx\\\\)
 		return;
-	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 213\\${SEP}${QF}}${SEP};=
+	\\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 212\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	vi_visual_attrib(s, row);
 .
 ${SEP}.,\$;f> 	char cbuf\\\\[8\\\\] = \"\", vi_msg\\\\[512\\\\], \\\\*c;
 	col = vi_off2col\\\\(xb, xrow, xoff\\\\);
-	col = ren_cursor\\\\(lbuf_get\\\\(xb, xrow\\\\), col\\\\) \\\\+ 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 541\\${SEP}${QF}}${SEP};=
+	col = ren_cursor\\\\(lbuf_get\\\\(xb, xrow\\\\), col\\\\) \\\\+ 1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 540\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	char *vs = vi_visual == 'V' ? \"-- VISUAL LINE -- \" :
 		   vi_visual == 'b' ? \"-- VISUAL BLOCK -- \" :
 		   vi_visual ? \"-- VISUAL -- \" : \"\";
 .
 ${SEP}.,\$;f> 		c = rstate->chrs\\\\[xoff\\\\];
 		uc_code\\\\(cp, c, l\\\\)
-		memcpy\\\\(cbuf, c, l\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 546\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/d\"/d %s\"/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 546\\${SEP}${QF}}${SEP}.,\$f> 			cbuf, cp, cp, cp, l, rstate->wid\\\\[xoff\\\\], c - lbuf_get\\\\(xb, xrow\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 548\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/l\\\\)/l, vs)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 548\\${SEP}${QF}}${SEP}.,\$;f> 	\\\\} else \\\\{
-		snprintf\\\\(vi_msg, sizeof\\\\(vi_msg\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 551\\${SEP}${QF}}${SEP};=
-${SEP}+2${SEP}s/d\"/d %s\"/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 551\\${SEP}${QF}}${SEP}.,\$;f> 			xb_path\\\\[0\\\\] \\\\? xb_path : \"unnamed\",
+		memcpy\\\\(cbuf, c, l\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 545\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/d\"/d %s\"/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 545\\${SEP}${QF}}${SEP}.,\$f> 			cbuf, cp, cp, cp, l, rstate->wid\\\\[xoff\\\\], c - lbuf_get\\\\(xb, xrow\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 547\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/l\\\\)/l, vs)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 547\\${SEP}${QF}}${SEP}.,\$;f> 	\\\\} else \\\\{
+		snprintf\\\\(vi_msg, sizeof\\\\(vi_msg\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 550\\${SEP}${QF}}${SEP};=
+${SEP}+2${SEP}s/d\"/d %s\"/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 550\\${SEP}${QF}}${SEP}.,\$;f> 			xb_path\\\\[0\\\\] \\\\? xb_path : \"unnamed\",
 			xb->modified \\\\? \"\\\\* \" : \" \", lbuf_len\\\\(xb\\\\),
-			xrow \\\\* 100 / MAX\\\\(1, lbuf_len\\\\(xb\\\\)-1\\\\), xrow\\\\+1, col,${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 555\\${SEP}${QF}}${SEP};=
-${SEP}+3${SEP}s/s\\\\)/s, vs)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 555\\${SEP}${QF}}${SEP}.,\$;f> 	free\\\\(sb->s\\\\);
+			xrow \\\\* 100 / MAX\\\\(1, lbuf_len\\\\(xb\\\\)-1\\\\), xrow\\\\+1, col,${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 554\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/s\\\\)/s, vs)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 554\\${SEP}${QF}}${SEP}.,\$;f> 	free\\\\(sb->s\\\\);
 \\\\}
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 954\\${SEP}${QF}}${SEP};=
@@ -386,14 +386,14 @@ ${SEP}.a 				if (!vi_arg)
 .
 ${SEP}.,\$;f> 					xmpt = 1;
 				break;
-			case 'c':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1469\\${SEP}${QF}}${SEP};=
+			case 'c':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1470\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 				if (vi_visual) {
 					k = vc_visual_op('c');
 					goto ins;
 				}
 				/* fall through */
 .
-${SEP}.,\$f> 			case 'd':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1470\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> 			case 'd':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1471\\${SEP}${QF}}${SEP};=
 ${SEP}.a 				if (vi_visual) {
 					vc_visual_op('d');
 					break;
@@ -401,7 +401,7 @@ ${SEP}.a 				if (vi_visual) {
 .
 ${SEP}.,\$;f> 			case '>':
 			case '<':
-			case TK_CTL\\\\('w'\\\\):${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1494\\${SEP}${QF}}${SEP};=
+			case TK_CTL\\\\('w'\\\\):${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1495\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 				if (vi_visual && c != TK_CTL('w')) {
 					vc_visual_op(c);
 					break;
@@ -409,7 +409,7 @@ ${SEP}+2a 				if (vi_visual && c != TK_CTL('w')) {
 .
 ${SEP}.,\$;f> 			case 'A':
 			case 'o':
-			case 'O':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1504\\${SEP}${QF}}${SEP};=
+			case 'O':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1505\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 					int r1b = MIN(vi_vrow, xrow), r2b = MAX(vi_vrow, xrow);
 					int c_left = MIN(vi_voff, xoff), c_right = MAX(vi_voff, xoff);
@@ -420,7 +420,7 @@ ${SEP}+2a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 .
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1612\\${SEP}${QF}}${SEP};=
+					goto rep;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1613\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 				} else if (k == '.') {
 					vi_mod |= 2;
 					while (vi_arg) {
@@ -499,7 +499,7 @@ ${SEP}+2a 				} else if (k == '.') {
 .
 ${SEP}.,\$;f> 				term_push\\\\(\"yy\", 2\\\\);
 				goto motion;
-			case '~':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1627\\${SEP}${QF}}${SEP};=
+			case '~':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1628\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 				if (vi_visual) {
 					vc_visual_op('~');
 					break;
@@ -507,7 +507,7 @@ ${SEP}+2a 				if (vi_visual) {
 .
 ${SEP}.,\$;f> 				vc_status\\\\(0\\\\);
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1685\\${SEP}${QF}}${SEP};=
+				break;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1686\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 			case TK_ESC:
 				if (vi_visual) {
 					vi_visual = 0;
@@ -520,34 +520,22 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
-=== DELTA vi.c ===
---- /tmp/patch2vi_CzoJCX_vi.c.diff.orig	2026-03-16 07:54:54.476745790 -0100
-+++ /tmp/patch2vi_CzoJCX_vi.c.diff	2026-03-16 07:55:24.683556430 -0100
-@@ -155,7 +155,7 @@
- === SEARCH COMMAND ===
- .,\$f>
- === SEARCH PATTERN (offset: 1) ===
--			cbuf, cp, cp, l, rstate->wid\[xoff\], c - lbuf_get\(xb, xrow\),
-+			cbuf, cp, cp, cp, l, rstate->wid\[xoff\], c - lbuf_get\(xb, xrow\),
- --- extra (delete to include) ---
- 			xoff, col\);
- 	\} else \{
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 30358ac1..d28fa702 100644
+index 543211a1..e57439f4 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -269,7 +269,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -279,7 +279,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  		A(SYN_BD, BL1, WH1, YE)},
  
  	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
--	{bar_ft, "^<(.+)> [^ ]+ [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
-+	{bar_ft, "^<(.+)> [^ ]+ [^ ]+ ([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+).*$",
+-	{bar_ft, "^<(.+)> (?:[^ ]+ )*([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",
++	{bar_ft, "^<(.+)> (?:[^ ]+ )*([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+).*$",
  		A(AY1 | SYN_BD, RE1, BL, YE, MA, CY1, YE1)},
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index b2babc29..2df91cb8 100644
+index 167a597e..269e74a5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -609,7 +597,7 @@ index b2babc29..2df91cb8 100644
  static void vi_drawrow(int row)
  {
  	int l1, i, i1, lnnum = vi_lnnum;
-@@ -192,6 +237,7 @@ static void vi_drawrow(int row)
+@@ -191,6 +236,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -617,7 +605,7 @@ index b2babc29..2df91cb8 100644
  		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
-@@ -211,6 +257,7 @@ static void vi_drawrow(int row)
+@@ -210,6 +256,7 @@ static void vi_drawrow(int row)
  		restore(ftidx)
  		return;
  	}
@@ -625,7 +613,7 @@ index b2babc29..2df91cb8 100644
  	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
  	rstate = rstates;
  }
-@@ -539,20 +586,23 @@ static void vc_status(int type)
+@@ -538,20 +585,23 @@ static void vc_status(int type)
  	char cbuf[8] = "", vi_msg[512], *c;
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -636,9 +624,9 @@ index b2babc29..2df91cb8 100644
  		c = rstate->chrs[xoff];
  		uc_code(cp, c, l)
  		memcpy(cbuf, c, l);
--		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x %u %dL %dW S%td O%d C%d",
-+		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x %u %dL %dW S%td O%d C%d %s",
- 			cbuf, cp, cp, l, rstate->wid[xoff], c - lbuf_get(xb, xrow),
+-		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d",
++		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",
+ 			cbuf, cp, cp, cp, l, rstate->wid[xoff], c - lbuf_get(xb, xrow),
 -			xoff, col);
 +			xoff, col, vs);
  	} else {
@@ -1008,7 +996,7 @@ index b2babc29..2df91cb8 100644
  				if (vi_arg && vi_arg <= 5) {
  					vi_wsel = vi_arg;
  					vi_word = _vi_word + vi_arg;
-@@ -1467,7 +1673,16 @@ void vi(int init)
+@@ -1468,7 +1674,16 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -1025,7 +1013,7 @@ index b2babc29..2df91cb8 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1492,6 +1707,10 @@ void vi(int init)
+@@ -1493,6 +1708,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1036,7 +1024,7 @@ index b2babc29..2df91cb8 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto ins;
-@@ -1502,6 +1721,13 @@ void vi(int init)
+@@ -1503,6 +1722,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1050,7 +1038,7 @@ index b2babc29..2df91cb8 100644
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-@@ -1610,6 +1836,81 @@ void vi(int init)
+@@ -1611,6 +1837,81 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
@@ -1132,7 +1120,7 @@ index b2babc29..2df91cb8 100644
  				}
  				break;
  			case 'x':
-@@ -1625,6 +1926,10 @@ void vi(int init)
+@@ -1626,6 +1927,10 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1143,7 +1131,7 @@ index b2babc29..2df91cb8 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1683,6 +1988,13 @@ void vi(int init)
+@@ -1684,6 +1989,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
