@@ -200,22 +200,27 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.h ===
---- /tmp/patch2vi_jOGmGH_vi.h.diff.orig
-+++ /tmp/patch2vi_jOGmGH_vi.h.diff
-@@ -6,14 +6,7 @@
- #abs
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_LOBoij_vi.h.diff.orig
++++ /tmp/patch2vi_LOBoij_vi.h.diff
+@@ -7,19 +7,12 @@
+ #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -void syn_init\(void\);
 -
 -/\* uc\.c utf-8 helper functions \*/
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  extern unsigned char utf8_length\[256\];
 -extern int zwlen, def_zwlen;
 -extern int bclen, def_bclen;
 -/\* return the length of a utf-8 character \*/
+ === EDIT COMMAND (abs) ===
+ 274c extern unsigned char _utf8_length[256];
+ extern unsigned char *utf8_length;
+ === EDIT COMMAND (rel) ===
+-+3c extern unsigned char _utf8_length[256];
++c extern unsigned char _utf8_length[256];
+ extern unsigned char *utf8_length;
  === END GROUP ===
  
 === PATCH2VI PATCH ===
