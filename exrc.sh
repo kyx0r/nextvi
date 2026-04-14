@@ -116,12 +116,12 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_FOleoI_ex.c.diff.orig
-+++ /tmp/patch2vi_FOleoI_ex.c.diff
-@@ -22,9 +22,7 @@
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_FiY172_ex.c.diff.orig	2026-04-14 10:25:52.263916250 -0100
++++ /tmp/patch2vi_FiY172_ex.c.diff	2026-04-14 10:26:02.642001243 -0100
+@@ -26,9 +26,7 @@
+ #rel
  .,\$;f>
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(grp\) EO\(mpt\) EO\(rcm\)
 -EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 -EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
