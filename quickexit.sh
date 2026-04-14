@@ -29,18 +29,18 @@ fi
 # Patch: conf.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 		A\\\\(BL1 \\\\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP};=
-${SEP}-3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 260\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}14a int xqe = 1000;			/* exit insert via kj (delay in ms) */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1382\\${SEP}${QF}}${SEP};=
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1438\\${SEP}${QF}}${SEP};=
 ${SEP}+2a EO(qe)
 .
-${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1443\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1501\\${SEP}${QF}}${SEP};=
 ${SEP}.a 	EO(qe),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -59,7 +59,7 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1a static int gettime_ms(void)
 .
 ${SEP}%;f> 				exbuf_load\\\\(ex_buf\\\\)
 			\\\\}
-			continue; \\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 632\\${SEP}${QF}}${SEP};=
+			continue; \\\\}${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 638\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		case 'j':
 			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
 				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
@@ -70,9 +70,7 @@ ${SEP}+2a 		case 'j':
 			goto _default;
 		case 'k':
 			is->quickexit = gettime_ms();
-.
-${SEP}.,\$f> 		default:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 633\\${SEP}${QF}}${SEP};=
-${SEP}.a _default:
+_default:
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
@@ -82,7 +80,7 @@ QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}9a #include <time.h>
 .
 ${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
-				ins:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1510\\${SEP}${QF}}${SEP};=
+				ins:${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1508\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 				if (xqe)
 					vi_mod |= 2;
 .
@@ -93,15 +91,15 @@ SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	int p_reg;
 	int lsug;
-	int sug_pt;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 374\\${SEP}${QF}}${SEP};=
+	int sug_pt;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 363\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	int quickexit;
 .
 ${SEP}.,\$;f> is\\\\.p_reg = 0; \\\\\\\\
 is\\\\.lsug = 0; \\\\\\\\
-is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 382\\${SEP}${QF}}${SEP};=
+is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 371\\${SEP}${QF}}${SEP};=
 ${SEP}+2a is.quickexit = 0; \\\\
 .
-${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 429\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 418\\${SEP}${QF}}${SEP};=
 ${SEP}+2a extern int xqe;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
@@ -109,84 +107,83 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_kccINf_conf.c.diff.orig
-+++ /tmp/patch2vi_kccINf_conf.c.diff
-@@ -6,14 +6,7 @@
- #relc
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_DnFeGC_conf.c.diff.orig
++++ /tmp/patch2vi_DnFeGC_conf.c.diff
+@@ -9,8 +9,6 @@
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
--\[\.%\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\[0-9\]\+\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\)\[ \\t\]\*\(\?:\(\[,;\]#\?\)\[ \\t\]\*\\
--\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\?\[\.\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\\
--\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\(\[0-9\]\+\)\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
----- extra (delete to include) ---
--\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
--\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
--\(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
-+=== SEARCH PATTERN (offset: -3) ===
- 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
- === END GROUP ===
- 
+ === SEARCH PATTERN ===
+ \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
+-\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
+-\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+ --- extra (delete to include) ---
+ \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
+ \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
 === DELTA ex.c ===
---- /tmp/patch2vi_tae6JS_ex.c.diff.orig	2026-04-11 14:08:18.600513751 +0000
-+++ /tmp/patch2vi_tae6JS_ex.c.diff	2026-04-11 14:08:36.995981153 +0000
+--- /tmp/patch2vi_FBkDaC_ex.c.diff.orig
++++ /tmp/patch2vi_FBkDaC_ex.c.diff
 @@ -1,7 +1,7 @@
- === GROUP 1/3 (line 14) ===
+ === GROUP 1/3 (line 0) ===
  +int xqe = 1000;			/* exit insert via kj (delay in ms) */
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 14a
+ #rel
+ 
+ === SEARCH PATTERN ===
+@@ -23,9 +23,7 @@
  #rel
  %;f>
-@@ -25,9 +25,7 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN (offset: 3) ===
--EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(grp\) EO\(mpt\) EO\(rcm\)
+ === SEARCH PATTERN ===
+-EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(mpt\) EO\(rcm\)
 -EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 -EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 +EO\(pac\)
  --- extra (delete to include) ---
  
- _EO\(left,
-@@ -43,9 +41,7 @@
- +60a
+ _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
+@@ -46,8 +44,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	\{"g", ec_glob\},
 -	EO\(mpt\),
-+=== SEARCH PATTERN (offset: 1) ===
  	\{"m", ec_mark\},
  --- extra (delete to include) ---
  	\{"q!", ec_quit\},
+@@ -58,6 +54,6 @@
+ === EDIT COMMAND (offset) ===
+ +62a 	EO(qe),
+ === EDIT COMMAND (rel) ===
+-+2a 	EO(qe),
++a 	EO(qe),
+ === END GROUP ===
+ 
 === DELTA led.c ===
---- /tmp/patch2vi_pLe7Ft_led.c.diff.orig	2026-04-11 14:08:37.027469926 +0000
-+++ /tmp/patch2vi_pLe7Ft_led.c.diff	2026-04-11 14:10:43.791977187 +0000
+--- /tmp/patch2vi_cCIldL_led.c.diff.orig
++++ /tmp/patch2vi_cCIldL_led.c.diff
 @@ -8,7 +8,7 @@
  +}
  +
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 1a
  #rel
  %f>
+ === SEARCH PATTERN ===
 === DELTA vi.c ===
---- /tmp/patch2vi_6Ym8R7_vi.c.diff.orig	2026-04-11 14:10:43.798096054 +0000
-+++ /tmp/patch2vi_6Ym8R7_vi.c.diff	2026-04-11 14:12:02.877974713 +0000
+--- /tmp/patch2vi_DNCbak_vi.c.diff.orig
++++ /tmp/patch2vi_DNCbak_vi.c.diff
 @@ -1,7 +1,7 @@
  === GROUP 1/2 (line 9) ===
  +#include <time.h>
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 9a
  #rel
  %;f>
-@@ -28,7 +28,6 @@
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
+@@ -29,7 +29,6 @@
+ === SEARCH PATTERN ===
  				k = vc_insert\(c\);
  				ins:
 -				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
@@ -207,39 +204,36 @@ exit 0
  extern int xgrp;
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 51ec63a9..9dc0faba 100644
+index 543211a1..24a5d976 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -257,7 +257,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
- [.%$]?(?:'[a-z'`[\\]*])?([0-9]*)?)(?:([-*-+/%])[0-9]+)*(?:\\|.*?(?:(?<^\\\\)\\||$))*)[ \t]*(?:([,;]#?)[ \t]*\
- ((?:\\|.*?(?:(?<^\\\\)\\||$))*(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))?[.$]?(?:'[a-z'`[\\]*])?\
- ([0-9]*)?)(?:([-*-+/%])([0-9]+))*(?:\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+@@ -267,7 +267,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+ (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+ (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+ (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 -((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +((qe|pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
- (?:g!?|s)[ \t]?(.)?|q!?|reg\\+?|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
+ (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 81878d89..5c9e1bf4 100644
+index 15e5046c..a643058b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -12,6 +12,7 @@ int xtd = +1;			/* current text direction */
- int xshape = 1;			/* perform letter shaping */
- int xorder = 1;			/* change the order of characters */
- int xts = 8;			/* number of spaces for tab */
+@@ -1,3 +1,4 @@
 +int xqe = 1000;			/* exit insert via kj (delay in ms) */
- int xish;			/* interactive shell */
- int xgrp;			/* regex search group */
- int xpac;			/* print autocomplete options */
-@@ -1380,6 +1381,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
- EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(grp) EO(mpt) EO(rcm)
+ int xleft;			/* the first visible column */
+ int xvis;			/* startup flags */
+ int xai = 1;			/* autoindent option */
+@@ -1436,6 +1437,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt) EO(rcm)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(qe)
  
- _EO(left,
- 	if (*loc)
-@@ -1441,6 +1443,7 @@ static struct excmd {
+ _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
+ 
+@@ -1499,6 +1501,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -248,11 +242,11 @@ index 81878d89..5c9e1bf4 100644
  	{"q", ec_quit},
  	EO(rcm),
 diff --git a/led.c b/led.c
-index 7aba6ef6..fc47abee 100644
+index 6a5e065f..1b43d40d 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
- /* line editing and drawing */
+ static sbuf *suggestsb;
 +static int gettime_ms(void)
 +{
 +	struct timespec t;
@@ -261,10 +255,10 @@ index 7aba6ef6..fc47abee 100644
 +	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
 +}
 +
- 
- static sbuf *suggestsb;
  static sbuf *acsb;
-@@ -630,7 +638,18 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+ sbuf *led_attsb;
+ 
+@@ -636,6 +644,17 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
@@ -278,13 +272,12 @@ index 7aba6ef6..fc47abee 100644
 +			goto _default;
 +		case 'k':
 +			is->quickexit = gettime_ms();
- 		default:
 +_default:
+ 		default:
  			if (c == '\n' || TK_INT(c))
  				return c;
- 			if ((cs = led_read(kmap, c)))
 diff --git a/vi.c b/vi.c
-index a3d3876c..47661a22 100644
+index 167a597e..ea214387 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -295,7 +288,7 @@ index a3d3876c..47661a22 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1508,6 +1509,8 @@ void vi(int init)
+@@ -1506,6 +1507,8 @@ void vi(int init)
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -305,10 +298,10 @@ index a3d3876c..47661a22 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index 4726dfbf..f491fe36 100644
+index 0c984c04..210d8f95 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -372,6 +372,7 @@ typedef struct {
+@@ -361,6 +361,7 @@ typedef struct {
  	int p_reg;
  	int lsug;
  	int sug_pt;
@@ -316,7 +309,7 @@ index 4726dfbf..f491fe36 100644
  	char *sug;
  	char *_sug;
  } ins_state;
-@@ -380,6 +381,7 @@ is.t_row = -2; \
+@@ -369,6 +370,7 @@ is.t_row = -2; \
  is.p_reg = 0; \
  is.lsug = 0; \
  is.sug_pt = -1; \
@@ -324,7 +317,7 @@ index 4726dfbf..f491fe36 100644
  is.sug = NULL; \
  is._sug = NULL; \
  
-@@ -427,6 +429,7 @@ extern int xtd;
+@@ -416,6 +418,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;
