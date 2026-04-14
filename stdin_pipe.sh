@@ -72,9 +72,7 @@ ${SEP}+1a 	if (stdin_fd) {
 		xmpt = MIN(xmpt, 1);
 	}
 .
-${SEP}.,\$;f> 	xvis &= ~4;
-	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1723\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1723\\${SEP}${QF}}${SEP};=
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -147,59 +145,70 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_9Pvuqk_ex.c.diff.orig	2026-04-11 14:55:03.449901073 +0000
-+++ /tmp/patch2vi_9Pvuqk_ex.c.diff	2026-04-11 14:55:36.707892951 +0000
-@@ -10,8 +10,6 @@
+--- /tmp/patch2vi_pHAPiO_ex.c.diff.orig
++++ /tmp/patch2vi_pHAPiO_ex.c.diff
+@@ -9,8 +9,6 @@
  %;f>
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
  static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
 -\{
 -	char msg\[512\];
  --- extra (delete to include) ---
  	int fd, len, rd = 0, cd = 0;
  	if \(arg\[0\] == '\.' && arg\[1\] == '/'\)
-@@ -54,7 +52,7 @@
+@@ -69,7 +67,7 @@
  .,\$;f>
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
  
 -void ex_init\(char \*\*files, int n\)
 +void ex_init\(.*\)
  \{
  --- extra (delete to include) ---
  	xbufsalloc = MAX\(n, xbufsalloc\);
-@@ -145,9 +143,7 @@
- .,\$f>
- === SEARCH PATTERN (offset: 1) ===
- 	xvis &= ~4;
----- extra (delete to include) ---
+@@ -241,12 +239,11 @@
+ --- extra (delete to include) ---
  	if \(\(s = getenv\("EXINIT"\)\)\)
  		ex_command\(s\)
 -\}
+ === EDIT COMMAND (abs) ===
+ 1723a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
+ === EDIT COMMAND (offset) ===
+ -18a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
+ === EDIT COMMAND (rel) ===
+-i 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
++a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
  === END GROUP ===
  
 === DELTA term.c ===
---- /tmp/patch2vi_Inf1Z0_term.c.diff.orig	2026-04-11 14:17:37.450238457 +0000
-+++ /tmp/patch2vi_Inf1Z0_term.c.diff	2026-04-11 14:19:01.780961610 +0000
+--- /tmp/patch2vi_cfJhIA_term.c.diff.orig
++++ /tmp/patch2vi_cfJhIA_term.c.diff
 @@ -2,7 +2,7 @@
  +int stdin_fd;
  +static int isig;
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 8a
  #rel
  %;f>
-@@ -28,9 +28,7 @@
- .,\$;f>
+ === SEARCH PATTERN ===
+@@ -32,8 +32,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	term_winch = 0;
 -	term_resized\+\+;
-+=== SEARCH PATTERN (offset: 1) ===
  	sbuf_make\(term_sbuf, 2048\)
  --- extra (delete to include) ---
  	tcgetattr\(0, &termios\);
+@@ -46,7 +44,7 @@
+ +3
+ .;11;12c stdin_fd
+ === EDIT COMMAND (rel) ===
+-+3
+++1
+ s/0/stdin_fd/
+ === END GROUP ===
+ 
 === DELTA vi.c ===
 --- /tmp/patch2vi_SYSbRz_vi.c.diff.orig	2026-02-17 19:26:01.770387538 -0100
 +++ /tmp/patch2vi_SYSbRz_vi.c.diff	2026-02-17 19:26:34.515996888 -0100
@@ -212,19 +221,25 @@ exit 0
  \}
  
 === DELTA vi.h ===
---- /tmp/patch2vi_qaTEVN_vi.h.diff.orig	2026-04-11 14:19:07.895888757 +0000
-+++ /tmp/patch2vi_qaTEVN_vi.h.diff	2026-04-11 14:19:51.044960069 +0000
-@@ -5,9 +5,7 @@
- 534a
+--- /tmp/patch2vi_OahCGM_vi.h.diff.orig
++++ /tmp/patch2vi_OahCGM_vi.h.diff
+@@ -5,8 +5,6 @@
  #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -char \*conf_digraph\(int c1, int c2\);
 -
-+=== SEARCH PATTERN (offset: 1) ===
  /\* vi\.c: main \*/
  --- extra (delete to include) ---
  void vi\(int init\);
+@@ -15,6 +13,6 @@
+ === EDIT COMMAND (abs) ===
+ 534a extern int stdin_fd;
+ === EDIT COMMAND (rel) ===
+-+2a extern int stdin_fd;
++a extern int stdin_fd;
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 95a85a2d..f8f775c5 100644
