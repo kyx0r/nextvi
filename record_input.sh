@@ -35,7 +35,7 @@ ${SEP}.${SEP}s/m\\\\|s/m|rec|s/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}25a int xrec;			/* input recoding register */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i int xrec;			/* input recoding register */
 .
 ${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1438\\${SEP}${QF}}${SEP};=
 ${SEP}+2a EO(rec)
@@ -71,41 +71,55 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_xMcpPJ_conf.c.diff.orig	2026-04-11 14:37:14.226763687 +0000
-+++ /tmp/patch2vi_xMcpPJ_conf.c.diff	2026-04-11 14:37:43.661926516 +0000
-@@ -8,14 +8,7 @@
- %;f>
+--- /tmp/patch2vi_AfcAmk_conf.c.diff.orig
++++ /tmp/patch2vi_AfcAmk_conf.c.diff
+@@ -8,10 +8,11 @@
  #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
--\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
--\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
--\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
----- extra (delete to include) ---
--\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
--\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
--\(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
--		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
-+=== SEARCH PATTERN (offset: 0) ===
+ === SEARCH PATTERN ===
 +\(\(.*pac.*\)\\
++--- extra (delete to include) ---
+ \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
+ \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
+ \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+---- extra (delete to include) ---
+ \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
+ \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
+ \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
+@@ -22,7 +23,7 @@
+ +3
+ .;35c rec|
+ === EDIT COMMAND (rel) ===
+-+3
+++0
+ s/m\|s/m|rec|s/
  === END GROUP ===
  
 === DELTA ex.c ===
---- /tmp/patch2vi_TyuVYG_ex.c.diff.orig	2026-04-11 14:37:43.669101030 +0000
-+++ /tmp/patch2vi_TyuVYG_ex.c.diff	2026-04-11 14:38:23.411925273 +0000
+--- /tmp/patch2vi_NnPHPD_ex.c.diff.orig
++++ /tmp/patch2vi_NnPHPD_ex.c.diff
 @@ -1,7 +1,7 @@
  === GROUP 1/3 (line 25) ===
  +int xrec;			/* input recoding register */
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 25a
  #rel
  %;f>
-@@ -25,9 +25,7 @@
+ === SEARCH PATTERN ===
+@@ -13,7 +13,7 @@
+ int xquit;			/\* exit if positive, force quit if negative \*/
+ int xrow, xoff, xtop;		/\* current row, column, and top row \*/
+ === EDIT COMMAND (abs) ===
+-25a int xrec;			/* input recoding register */
++i int xrec;			/* input recoding register */
+ === EDIT COMMAND (rel) ===
+ +2a int xrec;			/* input recoding register */
+ === END GROUP ===
+@@ -26,9 +26,7 @@
  #rel
  .,\$;f>
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(mpt\) EO\(rcm\)
 -EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 -EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
@@ -113,33 +127,43 @@ exit 0
  --- extra (delete to include) ---
  
  _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
-@@ -43,9 +41,7 @@
- +65a
+@@ -49,8 +47,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	\{"q!", ec_quit\},
 -	\{"q", ec_quit\},
-+=== SEARCH PATTERN (offset: 1) ===
  	EO\(rcm\),
  --- extra (delete to include) ---
  	\{"reg\+", ec_regprint\},
+@@ -61,6 +57,6 @@
+ === EDIT COMMAND (offset) ===
+ +65a 	EO(rec),
+ === EDIT COMMAND (rel) ===
+-+2a 	EO(rec),
++a 	EO(rec),
+ === END GROUP ===
+ 
 === DELTA vi.h ===
---- /tmp/patch2vi_gS6Myc_vi.h.diff.orig	2026-04-11 14:38:30.759670047 +0000
-+++ /tmp/patch2vi_gS6Myc_vi.h.diff	2026-04-11 14:38:45.318924588 +0000
-@@ -5,13 +5,7 @@
- 426a
+--- /tmp/patch2vi_KlBLoo_vi.h.diff.orig
++++ /tmp/patch2vi_KlBLoo_vi.h.diff
+@@ -5,16 +5,13 @@
  #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -extern int xlim;
 -extern int xseq;
 -extern int xerr;
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  /\* global variables \*/
--extern int xquit;
--extern int xrow, xoff, xtop;
++--- extra (delete to include) ---
+ extern int xquit;
+ extern int xrow, xoff, xtop;
+ === EDIT COMMAND (abs) ===
+ 426a extern int xrec;
+ === EDIT COMMAND (rel) ===
+-+2a extern int xrec;
++i extern int xrec;
  === END GROUP ===
  
 === PATCH2VI PATCH ===
