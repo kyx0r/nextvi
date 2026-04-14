@@ -1016,6 +1016,12 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			default_offset = g->anchor_offset;
 			dcmd = sim_first_ml ? "%f>" : ".,\\$f>";
 			sim_first_ml = 0;
+		} else if ((g->follow_ctx && g->follow_ctx[0])
+			   || (g->ndel > 0 && g->del_texts[0]
+			       && g->del_texts[0][0])) {
+			default_offset = g->block_change_idx;
+			dcmd = sim_first_ml ? "%f>" : ".,\\$f>";
+			sim_first_ml = 0;
 		} else {
 			default_offset = g->block_change_idx;
 		}
@@ -1104,7 +1110,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		 * user deletes the separator line to merge them in) */
 		int has_extra = g->ndel > 0 || g->npost_ctx > 0;
 		if (has_extra) {
-			fprintf(tmp, "--- extra (delete to include) ---\n");
+			if (g->nanchors > 0)
+				fprintf(tmp, "--- extra (delete to include) ---\n");
 			for (int i = 0; i < g->ndel; i++) {
 				char *esc = escape_regex(g->del_texts[i]);
 				fprintf(tmp, "%s\n", esc);
