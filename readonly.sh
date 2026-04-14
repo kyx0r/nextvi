@@ -29,7 +29,7 @@ fi
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}56a char readonly = 0;		/* commandline readonly option */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i char readonly = 0;		/* commandline readonly option */
 .
 ${SEP}%f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 119\\${SEP}${QF}}${SEP};=
 ${SEP}.a 	bufs[i].readonly = readonly;
@@ -88,93 +88,146 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_gC9KSI_ex.c.diff.orig	2026-04-11 08:55:01.067866513 -0100
-+++ /tmp/patch2vi_gC9KSI_ex.c.diff	2026-04-11 08:55:26.014168369 -0100
+--- /tmp/patch2vi_Wpw6vC_ex.c.diff.orig	2026-04-14 10:29:25.867483507 -0100
++++ /tmp/patch2vi_Wpw6vC_ex.c.diff	2026-04-14 10:31:17.453968925 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/6 (line 56) ===
  +char readonly = 0;		/* commandline readonly option */
  === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- 56a
  #rel
  %;f>
-@@ -24,9 +24,7 @@
- +62a
+ === SEARCH PATTERN ===
+@@ -13,7 +13,7 @@
+ static int xexec_dep;		/\* ex_exec recursion depth \*/
+ 
+ === EDIT COMMAND (abs) ===
+-56a char readonly = 0;		/* commandline readonly option */
++i char readonly = 0;		/* commandline readonly option */
+ === EDIT COMMAND (rel) ===
+ +2a char readonly = 0;		/* commandline readonly option */
+ === END GROUP ===
+@@ -26,8 +26,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	bufs\[i\]\.top = 0;
 -	bufs\[i\]\.td = \+1;
-+=== SEARCH PATTERN (offset: 1) ===
  	bufs\[i\]\.mtime = -1;
  --- extra (delete to include) ---
  	return i;
-@@ -107,9 +105,7 @@
- +78a
+@@ -38,7 +36,7 @@
+ === EDIT COMMAND (offset) ===
+ +62a 	bufs[i].readonly = readonly;
+ === EDIT COMMAND (rel) ===
+-+2a 	bufs[i].readonly = readonly;
++a 	bufs[i].readonly = readonly;
+ === END GROUP ===
+ 
+ === GROUP 3/6 (line 370) ===
+@@ -146,8 +144,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	\{"reg\+", ec_regprint\},
 -	\{"reg", ec_regprint\},
-+=== SEARCH PATTERN (offset: 1) ===
  	\{"rd", ec_undoredo\},
  --- extra (delete to include) ---
  	\{"r", ec_read\},
+@@ -158,6 +154,6 @@
+ === EDIT COMMAND (offset) ===
+ +78a 	{"ro", ec_readonly},
+ === EDIT COMMAND (rel) ===
+-+2a 	{"ro", ec_readonly},
++a 	{"ro", ec_readonly},
+ === END GROUP ===
+ 
 === DELTA vi.c ===
---- /tmp/patch2vi_fqJ2t3_vi.c.diff.orig	2026-04-11 08:55:26.017072670 -0100
-+++ /tmp/patch2vi_fqJ2t3_vi.c.diff	2026-04-11 08:55:42.721166654 -0100
-@@ -6,8 +6,7 @@
- 1830a
+--- /tmp/patch2vi_GJ8jZC_vi.c.diff.orig	2026-04-14 10:34:52.999764925 -0100
++++ /tmp/patch2vi_GJ8jZC_vi.c.diff	2026-04-14 10:35:14.855944554 -0100
+@@ -6,7 +6,6 @@
  #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -				xvis \|= 4;
-+=== SEARCH PATTERN (offset: 2) ===
  			else if \(argv\[i\]\[j\] == 'a'\)
  				xvis \|= 8;
  --- extra (delete to include) ---
-@@ -24,13 +23,11 @@
- 1835c
+@@ -17,7 +16,7 @@
+ 1830a 			else if (argv[i][j] == 'R')
+ 				readonly = 1;
+ === EDIT COMMAND (rel) ===
+-+2a 			else if (argv[i][j] == 'R')
+++1a 			else if (argv[i][j] == 'R')
+ 				readonly = 1;
+ === END GROUP ===
+ 
+@@ -27,13 +26,11 @@
+ === COMMAND STRATEGY (default: rel) ===
+ #abs
  #offset
- +3c
 -#relc
 +relc
  .,\$;f>
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -				xvis = 0;
 -			else \{
-+=== SEARCH PATTERN (offset: 1) ===
  				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
  --- extra (delete to include) ---
  				fprintf\(stderr, "Nextvi-4\.0 Usage: %s \[-aemsv\] \[file \.\.\.\]\\n", argv\[0\]\);
+@@ -45,10 +42,10 @@
+ === EDIT COMMAND (offset) ===
+ +3c 				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
+ === EDIT COMMAND (relc) ===
+-+3
+++1
+ .;46c R
+ === EDIT COMMAND (rel) ===
+-+3
+++1
+ s/em/eRm/
+ === END GROUP ===
+ 
 === DELTA vi.h ===
---- /tmp/patch2vi_Sn0uTg_vi.h.diff.orig	2026-04-11 08:55:42.723310337 -0100
-+++ /tmp/patch2vi_Sn0uTg_vi.h.diff	2026-04-11 08:56:01.146164762 -0100
-@@ -5,9 +5,7 @@
- 413a
+--- /tmp/patch2vi_SY7ydl_vi.h.diff.orig	2026-04-14 10:33:43.234565104 -0100
++++ /tmp/patch2vi_SY7ydl_vi.h.diff	2026-04-14 10:33:48.964953371 -0100
+@@ -5,8 +5,6 @@
  #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	int plen, row, off, top;
 -	long mtime;			/\* modification time \*/
-+=== SEARCH PATTERN (offset: 1) ===
  	signed char td;			/\* text direction \*/
  --- extra (delete to include) ---
  \};
-@@ -18,8 +16,8 @@
+@@ -15,13 +13,13 @@
+ === EDIT COMMAND (abs) ===
+ 413a 	char readonly;			/* read only */
+ === EDIT COMMAND (rel) ===
+-+2a 	char readonly;			/* read only */
++a 	char readonly;			/* read only */
+ === END GROUP ===
+ 
  === GROUP 2/2 (line 547) ===
  +extern char readonly;
  === COMMAND STRATEGY (default: rel) ===
 -#abs
--547a
 +abs
-+\$a
  #offset
- +133a
  #rel
+ .,\$;f>
+@@ -30,7 +28,7 @@
+ extern char \*fs_exdir;
+ void dir_calc\(char \*path\);
+ === EDIT COMMAND (abs) ===
+-547a extern char readonly;
++\$a extern char readonly;
+ === EDIT COMMAND (offset) ===
+ +133a extern char readonly;
+ === EDIT COMMAND (rel) ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..d2ea878b 100644
