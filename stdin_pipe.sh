@@ -145,8 +145,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_pHAPiO_ex.c.diff.orig
-+++ /tmp/patch2vi_pHAPiO_ex.c.diff
+--- /tmp/patch2vi_uVVsyk_ex.c.diff.orig	2026-04-14 10:01:03.499851821 -0100
++++ /tmp/patch2vi_uVVsyk_ex.c.diff	2026-04-14 10:01:15.006153961 -0100
 @@ -9,8 +9,6 @@
  %;f>
  === SEARCH PATTERN ===
@@ -165,7 +165,7 @@ exit 0
  \{
  --- extra (delete to include) ---
  	xbufsalloc = MAX\(n, xbufsalloc\);
-@@ -241,12 +239,11 @@
+@@ -241,7 +239,6 @@
  --- extra (delete to include) ---
  	if \(\(s = getenv\("EXINIT"\)\)\)
  		ex_command\(s\)
@@ -173,12 +173,6 @@ exit 0
  === EDIT COMMAND (abs) ===
  1723a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
  === EDIT COMMAND (offset) ===
- -18a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
- === EDIT COMMAND (rel) ===
--i 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
-+a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
- === END GROUP ===
- 
 === DELTA term.c ===
 --- /tmp/patch2vi_cfJhIA_term.c.diff.orig
 +++ /tmp/patch2vi_cfJhIA_term.c.diff
