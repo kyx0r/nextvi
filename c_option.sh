@@ -76,13 +76,12 @@ ${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:--5,+5p\\${SEP}
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_eBpNdd_ex.c.diff.orig
-+++ /tmp/patch2vi_eBpNdd_ex.c.diff
-@@ -6,15 +6,8 @@
- #relc
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_mcPfoa_ex.c.diff.orig
++++ /tmp/patch2vi_mcPfoa_ex.c.diff
+@@ -8,21 +8,14 @@
+ #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	xgrec--;
 -\}
 -
@@ -91,27 +90,41 @@ exit 0
 -\{
 -	xbufsalloc = MAX\(n, xbufsalloc\);
 -	ec_setbufsmax\(NULL, NULL, ""\);
-+=== SEARCH PATTERN (offset: 0) ===
 +void ex_init\(char
+ === EDIT COMMAND (abs) ===
+ 1646c void ex_init(char **files, int n, char **cmds, int cmdnum)
+ === EDIT COMMAND (relc) ===
+ +3
+ .;32c , char **cmds, int cmdnum
+ === EDIT COMMAND (rel) ===
+-+3
+++0
+ s/n\)/n, char **cmds, int cmdnum)/
  === END GROUP ===
  
- === GROUP 2/2 (line 1658) ===
-@@ -25,8 +18,7 @@
- #offset
- === SEARCH COMMAND ===
+@@ -35,7 +28,6 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	xvis &= ~4;
-+=== SEARCH PATTERN (offset: 2) ===
  	if \(\(s = getenv\("EXINIT"\)\)\)
  		ex_command\(s\)
  --- extra (delete to include) ---
+@@ -47,7 +39,7 @@
+ +11a 	for (int i = 0; i < cmdnum; i++)
+ 		ex_command(cmds[i])
+ === EDIT COMMAND (rel) ===
+-+2a 	for (int i = 0; i < cmdnum; i++)
+++1a 	for (int i = 0; i < cmdnum; i++)
+ 		ex_command(cmds[i])
+ === END GROUP ===
+ 
 === DELTA vi.c ===
---- /tmp/patch2vi_9Ndeb3_vi.c.diff.orig	2026-04-11 14:50:04.585550492 +0000
-+++ /tmp/patch2vi_9Ndeb3_vi.c.diff	2026-04-11 14:50:48.062901980 +0000
-@@ -9,8 +9,7 @@
+--- /tmp/patch2vi_pjFlFM_vi.c.diff.orig
++++ /tmp/patch2vi_pjFlFM_vi.c.diff
+@@ -8,8 +8,7 @@
  %;f>
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
  
 -int main\(int argc, char \*argv\[\]\)
 -\{
@@ -119,46 +132,68 @@ exit 0
  --- extra (delete to include) ---
  	int i, j;
  	setup_signals\(\);
-@@ -39,11 +38,7 @@
- +20c
+@@ -43,10 +42,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -				xvis \|= 8;
 -			else if \(argv\[i\]\[j\] == 'v'\)
 -				xvis = 0;
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  			else \{
  				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
- === END GROUP ===
-@@ -56,7 +51,7 @@
- 1835c
+ === EDIT COMMAND (abs) ===
+@@ -76,7 +71,7 @@
+ 				}
+ 			} else {
+ === EDIT COMMAND (rel) ===
+-+3c 			else if (argv[i][j] == 'c') {
++c 			else if (argv[i][j] == 'c') {
+ 				if (argv[i][j+1]) {
+ 					ex_cmds[cmdnum++] = argv[i] + j + 1;
+ 					break;
+@@ -96,7 +91,7 @@
+ === COMMAND STRATEGY (default: rel) ===
+ #abs
  #offset
- -10c
 -#relc
 +relc
  .,\$f>
  #rel
  .,\$f>
-@@ -81,8 +76,7 @@
- .,\$;f>
+@@ -112,7 +107,7 @@
+ === EDIT COMMAND (offset) ===
+ -10c 				fprintf(stderr, "Nextvi-4.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
+ === EDIT COMMAND (relc) ===
+-+1
+++0
+ .;46c c
+ === EDIT COMMAND (rel) ===
+ +1
+@@ -130,7 +125,6 @@
  #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -		term_init\(\);
-+=== SEARCH PATTERN (offset: 2) ===
  	if \(xvis & 8\)
  		term_scrh;
  --- extra (delete to include) ---
+@@ -146,7 +140,7 @@
+ +3
+ .;27c , ex_cmds, cmdnum
+ === EDIT COMMAND (rel) ===
+-+3
+++2
+ s/i\)/i, ex_cmds, cmdnum)/
+ === END GROUP ===
+ 
 === DELTA vi.h ===
---- /tmp/patch2vi_KJJGGn_vi.h.diff.orig
-+++ /tmp/patch2vi_KJJGGn_vi.h.diff
-@@ -6,14 +6,7 @@
- #relc
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_fAKPeB_vi.h.diff.orig
++++ /tmp/patch2vi_fAKPeB_vi.h.diff
+@@ -8,21 +8,14 @@
+ #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);
 -#define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); \}
 -#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); \}
@@ -167,8 +202,16 @@ exit 0
 -void ex_bufpostfix\(struct buf \*p, int clear\);
 -int ex_krs\(rset \*\*krs, int \*dir\);
 -void ex_krsset\(char \*kwd, int dir\);
-+=== SEARCH PATTERN (offset: 0) ===
 +void ex_init\(char
+ === EDIT COMMAND (abs) ===
+ 482c void ex_init(char **files, int n, char** cmds, int cmdnum);
+ === EDIT COMMAND (relc) ===
+ +3
+ .;32c , char** cmds, int cmdnum
+ === EDIT COMMAND (rel) ===
+-+3
+++0
+ s/n\)/n, char** cmds, int cmdnum)/
  === END GROUP ===
  
 === PATCH2VI PATCH ===
