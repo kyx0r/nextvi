@@ -1209,8 +1209,9 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				 * (append goes after anchor+offset-1, not anchor+offset).
 				 * When result <= 0, non-interactive uses 'i' (insert). */
 				int aoff = default_offset - 1;
-				if (aoff > 0) {
-					fprintf(tmp, "%+d", aoff);
+				if (aoff >= 0) {
+					if (aoff)
+						fprintf(tmp, "%+d", aoff);
 					fputs("a", tmp);
 				} else {
 					fputs("i", tmp);
