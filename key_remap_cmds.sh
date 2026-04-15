@@ -119,8 +119,8 @@ ${SEP}+1${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> bufs_switch\\\\(.*\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 465\\${SEP}${QF}}${SEP};=
-${SEP}+2a int map_read(int mode, int winch);
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 465\\${SEP}${QF}}${SEP};=
+${SEP}.i int map_read(int mode, int winch);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
@@ -212,9 +212,9 @@ exit 0
  === END GROUP ===
  
 === DELTA vi.h ===
---- /tmp/patch2vi_gGpvci_vi.h.diff.orig	2026-04-15 10:04:54.914508866 -0100
-+++ /tmp/patch2vi_gGpvci_vi.h.diff	2026-04-15 10:05:28.741258242 -0100
-@@ -5,13 +5,7 @@
+--- /tmp/patch2vi_OlO9RL_vi.h.diff.orig	2026-04-15 10:07:49.056623265 -0100
++++ /tmp/patch2vi_OlO9RL_vi.h.diff	2026-04-15 10:08:55.447237022 -0100
+@@ -5,16 +5,10 @@
  #rel
  %;f>
  === SEARCH PATTERN ===
@@ -222,13 +222,16 @@ exit 0
 -\{ if \(&bufs\[idx\] != ex_buf\) \{ bufs_switch\(idx\); syn_setft\(xb_ft\); \} \} \\
 -
 ---- extra (delete to include) ---
--void bufs_switch\(int idx\);
+ void bufs_switch\(int idx\);
 -void temp_open\(int i, char \*name, char \*ft\);
 -void temp_switch\(int i, int swap\);
-+bufs_switch\(.*\);
  === EDIT COMMAND (abs) ===
  465a int map_read(int mode, int winch);
  === EDIT COMMAND (rel) ===
+-+2a int map_read(int mode, int winch);
++i int map_read(int mode, int winch);
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 543211a1..af1b2dc8 100644
