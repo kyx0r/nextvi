@@ -211,27 +211,34 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA led.c ===
---- /tmp/patch2vi_xaLsbb_led.c.diff.orig	2026-04-11 04:26:29.314551936 -0100
-+++ /tmp/patch2vi_xaLsbb_led.c.diff	2026-04-11 04:26:39.538823884 -0100
-@@ -46,16 +46,9 @@
- #offset
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_VupyYT_led.c.diff.orig	2026-04-15 09:46:39.965402223 -0100
++++ /tmp/patch2vi_VupyYT_led.c.diff	2026-04-15 09:47:03.623371692 -0100
+@@ -62,15 +62,8 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	\}
 -	if \(pos >= xleft \+ xcols \|\| pos < xleft\)
 -		xleft = pos < xcols \? 0 : pos - xcols / 2;
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  	syn_blockhl = -1;
 -	led_crender\(r->s, -1, vi_lncol, xleft, xleft \+ xcols - vi_lncol\);
 -	term_pos\(-1, led_pos\(r->s, pos\) \+ vi_lncol\);
 -	sbufn_cut\(sb, psn\)
 -	rstate -= 2;
 +	led_crender\(.*\);
- === END GROUP ===
- 
- === GROUP 4/10 (line 367) ===
+ === EDIT COMMAND (abs) ===
+ 307,308c 	if (print) {
+ 		syn_blockhl = -1;
+@@ -82,7 +75,7 @@
+ 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
+ 	}
+ === EDIT COMMAND (rel) ===
+-+3,#+1c 	if (print) {
+++0,#+1c 	if (print) {
+ 		syn_blockhl = -1;
+ 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
+ 	}
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
 index 6a5e065f..d48e40f8 100644
