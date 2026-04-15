@@ -61,7 +61,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> ren_state rstates${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 89\\${SEP}${QF}}${SEP};=
-${SEP}.i void ren_done(void)
+${SEP}.a void ren_done(void)
 {
 	rset_free(dir_rslr);
 	rset_free(dir_rsrl);
@@ -91,7 +91,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> dir_init${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 233\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 233\\${SEP}${QF}}${SEP};=
 ${SEP}.a void dir_done(void);
 .
 ${SEP}.,\$f> syn_init${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 271\\${SEP}${QF}}${SEP};=
@@ -105,27 +105,32 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA regex.c ===
---- /tmp/patch2vi_lLhbDd_regex.c.diff.orig
-+++ /tmp/patch2vi_lLhbDd_regex.c.diff
-@@ -4,9 +4,7 @@
- #abs
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_7f1tO4_regex.c.diff.orig	2026-04-15 09:17:26.047976315 -0100
++++ /tmp/patch2vi_7f1tO4_regex.c.diff	2026-04-15 09:17:42.069552530 -0100
+@@ -5,8 +5,6 @@
+ #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 -	int eol_ch = flg & REG_NEWLINE \? '\\n' : 0;
-+=== SEARCH PATTERN (offset: 1) ===
  	unsigned int sdense\[prog->sparsesz\], sparsesz = 0;
  --- extra (delete to include) ---
  	char nsubs\[prog->sub\];
+@@ -15,6 +13,6 @@
+ === EDIT COMMAND (abs) ===
+ 638a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+ === EDIT COMMAND (rel) ===
+-+2a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
++a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+ === END GROUP ===
+ 
 === DELTA ren.c ===
---- /tmp/patch2vi_ABHmoP_ren.c.diff.orig
-+++ /tmp/patch2vi_ABHmoP_ren.c.diff
-@@ -16,14 +16,8 @@
- #abs
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_paWtcI_ren.c.diff.orig	2026-04-15 09:17:42.071462587 -0100
++++ /tmp/patch2vi_paWtcI_ren.c.diff	2026-04-15 09:19:35.798540855 -0100
+@@ -17,13 +17,7 @@
+ #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	return uc_wid\(c\);
 -\}
 -
@@ -133,53 +138,79 @@ exit 0
 -ren_state rstates\[3\]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/
 -ren_state \*rstate = rstates;
 -
-+=== SEARCH PATTERN (offset: 0) ===
 +ren_state rstates
- === END GROUP ===
+ === EDIT COMMAND (abs) ===
+ 89a void ren_done(void)
+ {
+@@ -39,7 +33,7 @@
+ }
  
- === GROUP 2/2 (line 409) ===
+ === EDIT COMMAND (rel) ===
+-+2a void ren_done(void)
++a void ren_done(void)
+ {
+ 	rset_free(dir_rslr);
+ 	rset_free(dir_rsrl);
 === DELTA vi.h ===
---- /tmp/patch2vi_jJnHgM_vi.h.diff.orig
-+++ /tmp/patch2vi_jJnHgM_vi.h.diff
-@@ -4,10 +4,8 @@
- #abs
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_rFxVBb_vi.h.diff.orig	2026-04-15 09:22:24.363738662 -0100
++++ /tmp/patch2vi_rFxVBb_vi.h.diff	2026-04-15 09:22:45.152521416 -0100
+@@ -6,8 +6,6 @@
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
--/\* text direction \*/
+ === SEARCH PATTERN ===
+ /\* text direction \*/
 -int dir_context\(char \*s\);
 -void dir_init\(void\);
-+=== SEARCH PATTERN (offset: 1) ===
-+dir_init
  --- extra (delete to include) ---
  /\* syntax highlighting \*/
  #define SYN_BD		0x10000
-@@ -21,10 +19,8 @@
- #offset
- === SEARCH COMMAND ===
+@@ -15,7 +13,7 @@
+ === EDIT COMMAND (abs) ===
+ 233a void dir_done(void);
+ === EDIT COMMAND (rel) ===
+-+2a void dir_done(void);
++a void dir_done(void);
+ === END GROUP ===
+ 
+ === GROUP 2/3 (line 271) ===
+@@ -26,9 +24,7 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -int syn_findhl\(int id\);
 -int syn_addhl\(char \*reg, int id\);
 -void syn_init\(void\);
-+=== SEARCH PATTERN (offset: 1) ===
 +syn_init
  --- extra (delete to include) ---
  
  /\* uc\.c utf-8 helper functions \*/
-@@ -38,10 +34,8 @@
- #offset
- === SEARCH COMMAND ===
+@@ -38,7 +34,7 @@
+ === EDIT COMMAND (offset) ===
+ +37a void syn_done(void);
+ === EDIT COMMAND (rel) ===
+-+2a void syn_done(void);
++a void syn_done(void);
+ === END GROUP ===
+ 
+ === GROUP 3/3 (line 483) ===
+@@ -49,9 +45,7 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); \}
 -void ex_init\(char \*\*files, int n\);
 -void ex_bufpostfix\(struct buf \*p, int clear\);
-+=== SEARCH PATTERN (offset: 1) ===
 +ex_init
  --- extra (delete to include) ---
  int ex_krs\(rset \*\*krs, int \*dir\);
  void ex_krsset\(char \*kwd, int dir\);
+@@ -61,6 +55,6 @@
+ === EDIT COMMAND (offset) ===
+ +211a void ex_done(void);
+ === EDIT COMMAND (rel) ===
+-+2a void ex_done(void);
++a void ex_done(void);
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..3222c0ee 100644
