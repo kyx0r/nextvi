@@ -55,22 +55,30 @@ ${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
---- /tmp/patch2vi_AhHPio_vi.c.diff.orig
-+++ /tmp/patch2vi_AhHPio_vi.c.diff
-@@ -53,14 +53,7 @@
- #offset
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_1VMgTn_vi.c.diff.orig	2026-04-15 09:54:03.647316688 -0100
++++ /tmp/patch2vi_1VMgTn_vi.c.diff	2026-04-15 09:55:00.873322698 -0100
+@@ -98,14 +98,7 @@
+ #rel
  .,\$;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	o2 = o1;
 -	if \(\(mv = vi_motionln\(&r2, cmd, vi_arg \? vi_arg : 1\)\)\)
 -		o2 = -1;
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  	else if \(!\(mv = vi_motion\(1, &r2, &o2\)\)\)
 -		return 0;
 -	if \(mv < 0\)
 -		return 0;
+ === EDIT COMMAND (abs) ===
+ 979c 	else if (!(mv = vi_motion(cmd, &r2, &o2)))
+ === EDIT COMMAND (offset) ===
+@@ -114,7 +107,7 @@
+ +3
+ .;27;28c cmd
+ === EDIT COMMAND (rel) ===
+-+3
+++0
+ s/1/cmd/
  === END GROUP ===
  
 === PATCH2VI PATCH ===
