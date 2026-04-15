@@ -29,14 +29,13 @@ fi
 # Patch: conf.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		A\\\\(BL1 \\\\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\\\)\\\\},
-	\\\\{ex_ft, \"\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\(\\\\.\\\\)\", A\\\\(AY1 \\\\| SYN_BD, YE\\\\)\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP};=
-${SEP}-2${SEP}s/\\\\|sc!\\\\?/m?|sc!?|nm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\?\\\\[\\\\.\\\\\$\\\\]\\\\?\\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\?\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\|sc!\\\\?/m?|sc!?|nm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 261\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}56a static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 .
 ${SEP}%;f> 	return NULL;
@@ -106,8 +105,9 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 # Patch: led.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> 		c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 416\\${SEP}${QF}}${SEP};=
-${SEP}.${SEP}s/term_read\\\\(/map_read(1, /${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 416\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 		len = sb->s_n;
+		c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 416\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/term_read\\\\(/map_read(1, /${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 416\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
 SEP="$(printf '\001')"
@@ -119,7 +119,7 @@ ${SEP}+1${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL
 # Patch: vi.h
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> bufs_switch${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 488\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> bufs_switch\\\\(.*\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 488\\${SEP}${QF}}${SEP};=
 ${SEP}+2a int map_read(int mode, int winch);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
@@ -127,84 +127,100 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_hcaEoK_conf.c.diff.orig
-+++ /tmp/patch2vi_hcaEoK_conf.c.diff
-@@ -6,13 +6,7 @@
- #relc
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_no75Wt_conf.c.diff.orig	2026-04-15 09:57:19.416908688 -0100
++++ /tmp/patch2vi_no75Wt_conf.c.diff	2026-04-15 09:57:49.091305429 -0100
+@@ -9,8 +9,6 @@
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
--\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\?\[\.\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\\
+ === SEARCH PATTERN ===
+ \(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\?\[\.\$\]\?\(\?:'\[a-z'`\[\\\\\]\*\]\)\?\\
 -\(\[0-9\]\*\)\?\)\(\?:\(\[-\*-\+/%\]\)\(\[0-9\]\+\)\)\*\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
 -\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
----- extra (delete to include) ---
--\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
--\(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
-+=== SEARCH PATTERN (offset: -2) ===
- 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
- 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)\},
- === END GROUP ===
+ --- extra (delete to include) ---
+ \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
+ \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 === DELTA ex.c ===
---- /tmp/patch2vi_lDLPHA_ex.c.diff.orig
-+++ /tmp/patch2vi_lDLPHA_ex.c.diff
+--- /tmp/patch2vi_m7CLuA_ex.c.diff.orig	2026-04-15 09:57:49.093714535 -0100
++++ /tmp/patch2vi_m7CLuA_ex.c.diff	2026-04-15 09:58:22.660301983 -0100
 @@ -2,7 +2,7 @@
  +static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
  +static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
- === STRATEGY (default: rel) ===
+ === COMMAND STRATEGY (default: rel) ===
 -#abs
 +abs
- === SEARCH COMMAND ===
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
+@@ -14,7 +14,7 @@
+ static int xexec_dep;		/\* ex_exec recursion depth \*/
+ 
+ === EDIT COMMAND (abs) ===
+-56a static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
++i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
+ static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
+ === EDIT COMMAND (rel) ===
+ +2a static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 === DELTA led.c ===
---- /tmp/patch2vi_NAOCje_led.c.diff.orig
-+++ /tmp/patch2vi_NAOCje_led.c.diff
-@@ -6,14 +6,7 @@
- #relc
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_9xcPsV_led.c.diff.orig	2026-04-15 09:58:22.663346813 -0100
++++ /tmp/patch2vi_9xcPsV_led.c.diff	2026-04-15 10:00:16.975290248 -0100
+@@ -8,11 +8,9 @@
+ #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -	do \{
 -		led_printparts\(sb, pre, ps, \*post, postn, ai_max\);
--		len = sb->s_n;
+ 		len = sb->s_n;
 ---- extra (delete to include) ---
-+=== SEARCH PATTERN (offset: 0) ===
  		c = term_read\(TK_CTL\('l'\)\);
--		switch \(c\) \{
--		case TK_CTL\('h'\):
--		case 127:
++--- extra (delete to include) ---
+ 		switch \(c\) \{
+ 		case TK_CTL\('h'\):
+ 		case 127:
+@@ -22,7 +20,7 @@
+ +3
+ .;6;16c map_read(1, 
+ === EDIT COMMAND (rel) ===
+-+3
+++1
+ s/term_read\(/map_read(1, /
  === END GROUP ===
  
 === DELTA vi.c ===
---- /tmp/patch2vi_EIGPiO_vi.c.diff.orig
-+++ /tmp/patch2vi_EIGPiO_vi.c.diff
-@@ -6,14 +6,8 @@
- #relc
- === SEARCH COMMAND ===
+--- /tmp/patch2vi_hrjO4X_vi.c.diff.orig	2026-04-15 10:00:16.977917806 -0100
++++ /tmp/patch2vi_hrjO4X_vi.c.diff	2026-04-15 10:01:07.212285091 -0100
+@@ -8,21 +8,15 @@
+ #rel
  %;f>
--=== SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -			char \*cmd;
 -			term_dec\(\)
-+=== SEARCH PATTERN (offset: 1) ===
  			re_motion:
 ---- extra (delete to include) ---
  			c = term_read\(TK_CTL\('l'\)\);
 -			switch \(c\) \{
 -			case TK_CTL\('b'\):
 -				vi_scrollbackward\(MAX\(1, vi_arg\) \* \(xrows - 1\)\);
+ === EDIT COMMAND (abs) ===
+ 1243c 			c = map_read(0, TK_CTL('l'));
+ === EDIT COMMAND (relc) ===
+ +3
+ .;7;17c map_read(0, 
+ === EDIT COMMAND (rel) ===
+-+3
+++1
+ s/term_read\(/map_read(0, /
  === END GROUP ===
  
 === DELTA vi.h ===
---- /tmp/patch2vi_HJOCnA_vi.h.diff.orig
-+++ /tmp/patch2vi_HJOCnA_vi.h.diff
+--- /tmp/patch2vi_X9fIZ1_vi.h.diff.orig	2026-04-15 10:01:07.214925942 -0100
++++ /tmp/patch2vi_X9fIZ1_vi.h.diff	2026-04-15 10:01:50.970280598 -0100
 @@ -5,9 +5,7 @@
- === SEARCH COMMAND ===
+ #rel
  %;f>
- === SEARCH PATTERN (offset: 3) ===
+ === SEARCH PATTERN ===
 -int ex_edit\(const char \*path, int len\);
 -void ex_regput\(unsigned char c, const char \*s, int append\);
 -void bufs_switch\(int idx\);
-+bufs_switch
++bufs_switch\(.*\);
  --- extra (delete to include) ---
  #define bufs_switchwft\(idx\) \\
  \{ if \(&bufs\[idx\] != ex_buf\) \{ bufs_switch\(idx\); syn_setft\(xb_ft\); \} \} \\
