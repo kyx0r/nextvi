@@ -386,8 +386,8 @@ static void emit_insert_after(FILE *out, int line, char **texts, int ntexts)
 	if (ntexts == 0)
 		return;
 
-	if (line == -1)
-		fprintf(out, "i ");
+	if (line <= 0)
+		fprintf(out, "1i ");
 	else
 		fprintf(out, "%da ", line);
 	for (int i = 0; i < ntexts; i++) {
