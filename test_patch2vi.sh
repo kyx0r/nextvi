@@ -574,43 +574,6 @@ end
 	'c ' 's/'
 
 echo ""
-echo "=== End-to-end apply tests (block mode) ==="
-
-check "block mode simple" \
-	"line1
-line2
-line3
-old
-line5
-" \
-	"line1
-line2
-line3
-new
-line5
-" \
-	"-rb"
-
-check "block mode multiple groups" \
-	"aaa
-old1
-bbb
-ccc
-ddd
-old2
-eee
-" \
-	"aaa
-new1
-bbb
-ccc
-ddd
-new2
-eee
-" \
-	"-rb"
-
-echo ""
 echo "=== Consecutive substitute positioning tests ==="
 
 # When two substitutes are emitted in a row, the second must have
@@ -651,56 +614,8 @@ the new2 value
 end
 "
 
-check "consecutive substitutes with empty line between (block mode)" \
-	"ctx1
-ctx2
-ctx3
-hello old1 world
-
-goodbye old2 world
-end
-" \
-	"ctx1
-ctx2
-ctx3
-hello new1 world
-
-goodbye new2 world
-end
-" \
-	"-rb"
-
-check "consecutive substitutes no context between (block mode)" \
-	"ctx1
-ctx2
-ctx3
-the old1 value
-the old2 value
-end
-" \
-	"ctx1
-ctx2
-ctx3
-the new1 value
-the new2 value
-end
-" \
-	"-rb"
-
 echo ""
 echo "=== Insert before first line tests ==="
-
-check "insert before line 1 (offset mode)" \
-	"first line
-second line
-third line
-" \
-	"new header
-first line
-second line
-third line
-" \
-	"-rb"
 
 check "insert before line 1 (relative mode)" \
 	"first line
@@ -713,20 +628,6 @@ second line
 third line
 " \
 	"-r"
-
-check "multi-line insert before line 1" \
-	"first line
-second line
-third line
-" \
-	"header1
-header2
-header3
-first line
-second line
-third line
-" \
-	"-rb"
 
 echo ""
 echo "=== Results ==="

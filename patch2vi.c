@@ -1046,9 +1046,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 
 		/* Compute default strategy */
 		const char *def_strat;
-		if (relative_mode == 2 && has_offset)
-			def_strat = "offset";
-		else if (relative_mode && has_anchors)
+		if (relative_mode && has_anchors)
 			def_strat = "rel";
 		else if (has_anchors)
 			def_strat = "rel";
@@ -1873,17 +1871,13 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 
 		if (!interactive_mode) {
 			/* Non-interactive: original behavior */
-			if (relative_mode == 2 && prev_xrow > 0)
-				strat = STRAT_OFFSET;
-			else if (relative_mode && has_anchors)
+			if (relative_mode && has_anchors)
 				strat = STRAT_REL;
 			else
 				strat = STRAT_ABS;
 		} else if (strat == STRAT_DEFAULT) {
 			/* Interactive default resolution */
-			if (relative_mode == 2 && prev_xrow > 0)
-				strat = STRAT_OFFSET;
-			else if (relative_mode && has_anchors)
+			if (relative_mode && has_anchors)
 				strat = STRAT_REL;
 			else if (has_anchors)
 				strat = STRAT_REL;
@@ -2223,7 +2217,6 @@ static void usage(const char *prog)
 	fprintf(stderr, "Usage: %s [-rbidh] [input.patch]\n", prog);
 	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
-	fprintf(stderr, "  -b  Block mode: first group searched, rest offset-based\n");
 	fprintf(stderr, "  -i  Interactive mode: edit search patterns in $EDITOR\n");
 	fprintf(stderr, "  -d  Delta mode: re-apply previous customizations from script (-d implies -i)\n");
 	fprintf(stderr, "  -h  Show this help\n");
@@ -2238,7 +2231,6 @@ int main(int argc, char **argv)
 	int old_line = 0;
 	const char *input_file = NULL;
 	int i, j;
-	int block_mode = 0;
 
 	/* Parse arguments */
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
@@ -2249,8 +2241,6 @@ int main(int argc, char **argv)
 		for (j = 1; argv[i][j]; j++) {
 			if (argv[i][j] == 'r')
 				relative_mode = 1;
-			else if (argv[i][j] == 'b')
-				block_mode = 1;
 			else if (argv[i][j] == 'i')
 				interactive_mode = 1;
 			else if (argv[i][j] == 'd') {
@@ -2264,8 +2254,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	if (block_mode && relative_mode)
-		relative_mode = 2;
 	if (i < argc)
 		input_file = argv[i];
 
