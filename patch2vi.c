@@ -139,7 +139,6 @@ static int count_occurrences(const char *haystack, const char *needle)
  * *new_text to the replacement text (allocated).
  */
 static int find_line_diff(const char *old, const char *new,
-			int *start, int *old_end,
 			char **old_text, char **new_text)
 {
 	int old_len = strlen(old);
@@ -251,10 +250,6 @@ static int find_line_diff(const char *old, const char *new,
 	old_diff_len = old_diff_end - old_diff_start;
 	new_diff_len = new_diff_end - new_diff_start;
 
-	/* Convert byte positions to UTF-8 character positions */
-	*start = utf8_char_offset(old, old_diff_start);
-	*old_end = utf8_char_offset(old, old_diff_end);
-
 	/* Extract the old text */
 	*old_text = malloc(old_diff_len + 1);
 	memcpy(*old_text, old + old_diff_start, old_diff_len);
@@ -312,8 +307,7 @@ static void list_unused_bytes(FILE *out)
 }
 
 /* Parse a hunk header: @@ -old_start,old_count +new_start,new_count @@ */
-static int parse_hunk_header(const char *line, int *old_start, int *old_count,
-				 int *new_start, int *new_count)
+static int parse_hunk_header(const char *line, int *old_start, int *old_count)
 {
 	if (strncmp(line, "@@ -", 4) != 0)
 		return 0;
@@ -326,20 +320,10 @@ static int parse_hunk_header(const char *line, int *old_start, int *old_count,
 		p++;
 		*old_count = atoi(p);
 	}
+	/* Verify '+' field exists to confirm it's a valid hunk header */
 	while (*p && *p != '+')
 		p++;
-	if (*p != '+')
-		return 0;
-	p++;
-	*new_start = atoi(p);
-	*new_count = 1;
-	while (*p && *p != ',' && *p != ' ')
-		p++;
-	if (*p == ',') {
-		p++;
-		*new_count = atoi(p);
-	}
-	return 1;
+	return *p == '+';
 }
 
 /* Escape a string for shell double-quoted string */
@@ -482,7 +466,6 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
 typedef struct {
 	char **anchors;
 	int nanchors;
-	int anchor_start_line;
 	char *follow_ctx;
 	int follow_offset;
 	int anchor_offset;   /* lines from last anchor to first change */
@@ -605,11 +588,9 @@ typedef struct {
 	int nadd;
 	int add_after;  /* line to add after (for pure adds) */
 	/* For relative mode: */
-	char *anchor;            /* last preceding context line text */
 	int anchor_offset;       /* lines from anchor to first change */
 	char *anchors[3];        /* up to 3 consecutive preceding context lines */
 	int nanchors;            /* count of anchor lines */
-	int anchor_start_line;   /* line number of first anchor line */
 	char *follow_ctx;        /* first following context line */
 	int follow_offset;       /* lines from first change to follow_ctx */
 	/* For interactive mode (--ri): */
@@ -617,8 +598,6 @@ typedef struct {
 	int nall_pre_ctx;
 	char **post_ctx;         /* post-change context lines (up to 3) */
 	int npost_ctx;
-	char **block_lines;      /* assembled: all_pre_ctx + del_texts + post_ctx */
-	int nblock;
 	int block_change_idx;    /* index of first del/change line in block */
 	char **custom_lines;     /* edited lines from $EDITOR (pre-escaped regex) */
 	int ncustom;
@@ -627,7 +606,6 @@ typedef struct {
 	/* Per-group strategy selection (interactive mode) */
 	int strategy;            /* enum strategy */
 	int has_line_diff;       /* whether find_line_diff() succeeded */
-	int ld_start, ld_end;   /* expanded char positions for s// */
 	char *ld_old_text;       /* expanded diff text for s// */
 	char *ld_new_text;       /* expanded replacement text for s// */
 	int ldc_start, ldc_end; /* minimal char positions for ;c */
@@ -998,7 +976,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 	char **default_cmds = calloc(ngroups, sizeof(char*));
 	for (int gi = 0; gi < ngroups; gi++) {
 		group_t *g = &groups[gi];
-		if (g->nblock == 0 && !g->del_start && !g->nadd)
+		if (!g->del_start && !g->nadd)
 			continue;
 		int target = g->del_start ? g->del_start : g->add_after;
 
@@ -1685,7 +1663,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		memset(g, 0, sizeof(group_t));
 
 		/* Skip context lines, collecting up to 3 consecutive for relative mode */
-		char *last_ctx = NULL;
 		int last_ctx_line = 0;
 		char *ctx_ring[3] = {NULL, NULL, NULL};
 		int ctx_line_ring[3] = {0, 0, 0};
@@ -1695,7 +1672,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		int nall_ctx = 0;
 		int all_ctx_cap = 0;
 		while (i < fp->nops && fp->ops[i].type == 'c') {
-			last_ctx = fp->ops[i].text;
 			last_ctx_line = fp->ops[i].oline;
 			/* Shift ring buffer */
 			ctx_ring[0] = ctx_ring[1];
@@ -1724,8 +1700,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		}
 
 		/* Store anchor info for relative mode */
-		g->anchor = last_ctx;
-		if (last_ctx) {
+		if (last_ctx_line) {
 			int first_change_line = fp->ops[i].oline;
 			g->anchor_offset = first_change_line - last_ctx_line;
 		}
@@ -1735,16 +1710,13 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 			g->anchors[1] = ctx_ring[1];
 			g->anchors[2] = ctx_ring[2];
 			g->nanchors = 3;
-			g->anchor_start_line = ctx_line_ring[0];
 		} else if (ctx_count == 2) {
 			g->anchors[0] = ctx_ring[1];
 			g->anchors[1] = ctx_ring[2];
 			g->nanchors = 2;
-			g->anchor_start_line = ctx_line_ring[1];
 		} else if (ctx_count == 1) {
 			g->anchors[0] = ctx_ring[2];
 			g->nanchors = 1;
-			g->anchor_start_line = ctx_line_ring[2];
 		}
 
 		/* Collect consecutive deletes */
@@ -1805,17 +1777,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				for (int j = 0; j < post_avail; j++)
 					g->post_ctx[j] = fp->ops[i + j].text;
 			}
-			/* Build block_lines = all_pre_ctx + del_texts + post_ctx */
-			g->nblock = g->nall_pre_ctx + g->ndel + g->npost_ctx;
-			g->block_lines = malloc(g->nblock * sizeof(char*));
 			g->block_change_idx = g->nall_pre_ctx;
-			int bi = 0;
-			for (int j = 0; j < g->nall_pre_ctx; j++)
-				g->block_lines[bi++] = g->all_pre_ctx[j];
-			for (int j = 0; j < g->ndel; j++)
-				g->block_lines[bi++] = g->del_texts[j];
-			for (int j = 0; j < g->npost_ctx; j++)
-				g->block_lines[bi++] = g->post_ctx[j];
 		} else {
 			free(all_ctx);
 		}
@@ -1825,7 +1787,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		    g->del_texts[0] && g->add_texts[0]) {
 			g->has_line_diff = find_line_diff(
 				g->del_texts[0], g->add_texts[0],
-				&g->ld_start, &g->ld_end,
 				&g->ld_old_text, &g->ld_new_text);
 			if (g->has_line_diff) {
 				/* Minimal diff positions for ;c (no uniqueness expansion) */
@@ -1893,7 +1854,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		rc.target_line = target_line;
 		rc.anchors = g->anchors;
 		rc.nanchors = g->nanchors;
-		rc.anchor_start_line = g->anchor_start_line;
 		rc.follow_ctx = g->follow_ctx;
 		rc.follow_offset = g->follow_offset;
 		rc.anchor_offset = g->anchor_offset;
@@ -1917,8 +1877,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 				strat = STRAT_OFFSET;
 			else if (relative_mode && has_anchors)
 				strat = STRAT_REL;
-			else if (relative_mode)
-				strat = STRAT_ABS;
 			else
 				strat = STRAT_ABS;
 		} else if (strat == STRAT_DEFAULT) {
@@ -2218,7 +2176,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		free(g->add_texts);
 		free(g->all_pre_ctx);
 		free(g->post_ctx);
-		free(g->block_lines);
 		if (g->custom_lines) {
 			for (int k = 0; k < g->ncustom; k++)
 				free(g->custom_lines[k]);
@@ -2426,8 +2383,8 @@ process_line:
 			continue;
 
 		/* Hunk header */
-		int os, oc, ns, nc;
-		if (parse_hunk_header(line, &os, &oc, &ns, &nc)) {
+		int os, oc;
+		if (parse_hunk_header(line, &os, &oc)) {
 			in_hunk = 1;
 			old_line = os;
 			continue;
