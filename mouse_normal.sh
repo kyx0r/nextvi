@@ -35,9 +35,10 @@ ${SEP}.${SEP}s/\\\\|r/|ms|r/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1i int xms = 1;			/* mouse in normal mode */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 0\\${SEP}${QF}}${SEP};=
+${SEP}.i int xms = 1;			/* mouse in normal mode */
 .
-${SEP}%;f> 	return NULL;
+${SEP}.,\$;f> 	return NULL;
 \\\\)
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1451\\${SEP}${QF}}${SEP};=
@@ -51,8 +52,10 @@ ${SEP}+2a _EO(ms,
 )
 
 .
-${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1500\\${SEP}${QF}}${SEP};=
-${SEP}.i 	EO(ms),
+${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
+	\\\\{\"g\", ec_glob\\\\},
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1500\\${SEP}${QF}}${SEP};=
+${SEP}+2a 	EO(ms),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -94,12 +97,14 @@ ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 # Patch: term.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}1i int xmouse_col, xmouse_row;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> static struct termios termios;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 0\\${SEP}${QF}}${SEP};=
+${SEP}.i int xmouse_col, xmouse_row;
 .
-${SEP}%;f> unsigned int texec, tn;
+${SEP}.,\$;f> unsigned char \\\\*ibuf, icmd\\\\[4096\\\\];
+unsigned int texec, tn;
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 10\\${SEP}${QF}}${SEP};=
-${SEP}+1a void term_mouse_on(void)
+${SEP}+2a void term_mouse_on(void)
 {
 	write(1, \"\\\\x1b[?1000h\\\\x1b[?1006h\", 16);
 }
@@ -231,6 +236,14 @@ ${SEP}+2a 	while (mv == 27 && xms) {
 			break;
 		mv = term_read(TK_CTL('l'));
 	}
+	if (mv != 27) {
+		term_back(mv);
+		if ((mv = vi_motionln(row, 0, cnt))) {
+			*off = -1;
+			return mv;
+		}
+		mv = term_read(TK_CTL('l'));
+	}
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
@@ -281,47 +294,6 @@ exit 0
 -+3
 ++0
  s/\|r/|ms|r/
- === END GROUP ===
- 
-=== DELTA ex.c ===
---- /tmp/patch2vi_KCvScU_ex.c.diff.orig	2026-04-12 08:07:18.206705355 -0100
-+++ /tmp/patch2vi_KCvScU_ex.c.diff	2026-04-12 08:08:26.724588122 -0100
-@@ -1,7 +1,7 @@
- === GROUP 1/3 (line 25) ===
- +int xms = 1;			/* mouse in normal mode */
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %;f>
- === SEARCH PATTERN ===
-@@ -13,7 +13,7 @@
- int xquit;			/\* exit if positive, force quit if negative \*/
- int xrow, xoff, xtop;		/\* current row, column, and top row \*/
- === EDIT COMMAND (abs) ===
--25a int xms = 1;			/* mouse in normal mode */
-+1i int xms = 1;			/* mouse in normal mode */
- === EDIT COMMAND (rel) ===
- +2a int xms = 1;			/* mouse in normal mode */
- === END GROUP ===
-@@ -81,18 +81,12 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	\{"g!", ec_glob\},
--	\{"g", ec_glob\},
--	EO\(mpt\),
----- extra (delete to include) ---
- 	\{"m", ec_mark\},
--	\{"q!", ec_quit\},
--	\{"q", ec_quit\},
- === EDIT COMMAND (abs) ===
- 1500a 	EO(ms),
- === EDIT COMMAND (offset) ===
- +40a 	EO(ms),
- === EDIT COMMAND (rel) ===
--+2a 	EO(ms),
-+i 	EO(ms),
  === END GROUP ===
  
 === DELTA led.c ===
@@ -380,44 +352,6 @@ exit 0
 ++1a 			term_mouse_on();
  === END GROUP ===
  
-=== DELTA term.c ===
---- /tmp/patch2vi_BzG2oh_term.c.diff.orig	2026-04-12 08:10:56.594710977 -0100
-+++ /tmp/patch2vi_BzG2oh_term.c.diff	2026-04-12 08:12:27.773563376 -0100
-@@ -1,7 +1,7 @@
- === GROUP 1/5 (line 6) ===
- +int xmouse_col, xmouse_row;
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %;f>
- === SEARCH PATTERN ===
-@@ -13,7 +13,7 @@
- unsigned char \*ibuf, icmd\[4096\];
- unsigned int texec, tn;
- === EDIT COMMAND (abs) ===
--6a int xmouse_col, xmouse_row;
-+1i int xmouse_col, xmouse_row;
- === EDIT COMMAND (rel) ===
- +2a int xmouse_col, xmouse_row;
- === END GROUP ===
-@@ -35,7 +35,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--unsigned char \*ibuf, icmd\[4096\];
- unsigned int texec, tn;
- 
- --- extra (delete to include) ---
-@@ -65,7 +64,7 @@
- }
- 
- === EDIT COMMAND (rel) ===
--+2a void term_mouse_on(void)
-++1a void term_mouse_on(void)
- {
- 	write(1, "\x1b[?1000h\x1b[?1006h", 16);
- }
 === DELTA vi.h ===
 --- /tmp/patch2vi_SSzefG_vi.h.diff.orig	2026-04-12 08:12:33.740911124 -0100
 +++ /tmp/patch2vi_SSzefG_vi.h.diff	2026-04-12 08:14:05.219553372 -0100
@@ -515,17 +449,14 @@ index 543211a1..185952e1 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 95a85a2d..714084b6 100644
+index 15e5046c..fe67a2ff 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
- 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
- int xrcm = 1;			/* range command mode -
- 				0: exec at command parse 1: exec at command */
+@@ -1,3 +1,4 @@
 +int xms = 1;			/* mouse in normal mode */
- 
- int xquit;			/* exit if positive, force quit if negative */
- int xrow, xoff, xtop;		/* current row, column, and top row */
+ int xleft;			/* the first visible column */
+ int xvis;			/* startup flags */
+ int xai = 1;			/* autoindent option */
 @@ -1449,6 +1450,15 @@ _EO(left,
  	return NULL;
  )
@@ -597,15 +528,15 @@ index 6a5e065f..cd953b77 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 68990b78..8a49ed35 100644
+index 68990b78..70b8a8b0 100644
 --- a/term.c
 +++ b/term.c
-@@ -4,10 +4,21 @@ int term_record;
- int term_winch;
- int term_resized;
- int xrows, xcols;
+@@ -1,3 +1,4 @@
 +int xmouse_col, xmouse_row;
- unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+ static struct termios termios;
+ sbuf *term_sbuf;
+ int term_record;
+@@ -8,6 +9,16 @@ unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
  unsigned char *ibuf, icmd[4096];
  unsigned int texec, tn;
  
@@ -708,7 +639,7 @@ index 68990b78..8a49ed35 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 167a597e..9e71a6fc 100644
+index 167a597e..393edcad 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -556,6 +556,9 @@ static void vc_status(int type)
@@ -721,7 +652,7 @@ index 167a597e..9e71a6fc 100644
  /* read a motion */
  static int vi_motion(int vc, int *row, int *off)
  {
-@@ -572,6 +575,33 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -572,6 +575,41 @@ static int vi_motion(int vc, int *row, int *off)
  		return mv;
  	}
  	mv = term_read(TK_CTL('l'));
@@ -750,6 +681,14 @@ index 167a597e..9e71a6fc 100644
 +		}
 +		if (r != 2)
 +			break;
++		mv = term_read(TK_CTL('l'));
++	}
++	if (mv != 27) {
++		term_back(mv);
++		if ((mv = vi_motionln(row, 0, cnt))) {
++			*off = -1;
++			return mv;
++		}
 +		mv = term_read(TK_CTL('l'));
 +	}
  	switch (mv) {
