@@ -636,10 +636,14 @@ typedef struct {
 	 * lines[0] = "cmd [inline-content]", lines[1..] = extra content lines.
 	 * Content is raw text (NOT pre-escaped); escaping applied at emit time.
 	 * Substitute format: lines[0] = "s/pat/repl/" (pre-escaped, exarg layer). */
-	char **custom_abs_lines;    int custom_abs_nlines;
-	char **custom_offset_lines; int custom_offset_nlines;
-	char **custom_relc_lines;   int custom_relc_nlines;
-	char **custom_rel_lines;    int custom_rel_nlines;
+	char **custom_abs_lines;
+	char **custom_offset_lines;
+	char **custom_relc_lines;
+	char **custom_rel_lines;
+	int custom_abs_nlines;
+	int custom_offset_nlines;
+	int custom_relc_nlines;
+	int custom_rel_nlines;
 } group_t;
 
 /* Emit a line with exarg + shell escaping only (no regex escaping).
@@ -1142,31 +1146,39 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 
 		fputs("=== EDIT COMMAND (abs) ===\n", tmp);
 		if (g->del_start && g->nadd) {
-			if (g->ndel == 1) fprintf(tmp, "%dc", g->del_start);
-			else fprintf(tmp, "%d,%dc", g->del_start, g->del_end);
+			if (g->ndel == 1)
+				fprintf(tmp, "%dc", g->del_start);
+			else
+				fprintf(tmp, "%d,%dc", g->del_start, g->del_end);
 			WRITE_CONTENT(tmp);
 		} else if (g->del_start) {
-			if (g->ndel == 1) fprintf(tmp, "%dd\n", g->del_start);
-			else fprintf(tmp, "%d,%dd\n", g->del_start, g->del_end);
+			if (g->ndel == 1)
+				fprintf(tmp, "%dd\n", g->del_start);
+			else
+				fprintf(tmp, "%d,%dd\n", g->del_start, g->del_end);
 		} else if (g->nadd) {
-			if (g->add_after <= 0) fputs("i", tmp);
-			else fprintf(tmp, "%da", g->add_after);
+			if (g->add_after <= 0)
+				fputs("i", tmp);
+			else
+				fprintf(tmp, "%da", g->add_after);
 			WRITE_CONTENT(tmp);
 		}
 
 		if (has_offset) {
 			int off = target - sim_prev_xrow;
-			const char *act = (g->del_start && g->nadd) ? "c" :
-			                   g->del_start ? "d" : "a";
+			const char *act = (g->del_start && g->nadd) ? "c" : g->del_start ? "d" : "a";
 			fputs("=== EDIT COMMAND (offset) ===\n", tmp);
 			/* Pure add before file start: non-interactive uses 1i */
 			if (!g->del_start && g->nadd && target <= 0) {
 				fputs("1i", tmp);
 				WRITE_CONTENT(tmp);
 			} else {
-				if (off > 0)       fprintf(tmp, "+%d%s", off, act);
-				else if (off < 0)  fprintf(tmp, "%d%s", off, act);
-				else               fprintf(tmp, ".%s", act);
+				if (off > 0)
+					fprintf(tmp, "+%d%s", off, act);
+				else if (off < 0)
+					fprintf(tmp, "%d%s", off, act);
+				else
+					fprintf(tmp, ".%s", act);
 				if (g->del_start && !g->nadd)
 					fputc('\n', tmp);  /* delete: no content */
 				else
@@ -1245,8 +1257,10 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			while (fgets(buf, sizeof(buf), src))
 				fputs(buf, dst);
 		}
-		if (src) fclose(src);
-		if (dst) fclose(dst);
+		if (src)
+			fclose(src);
+		if (dst)
+			fclose(dst);
 	}
 
 	/* Apply previous delta if -d mode and matching delta available */
@@ -1443,14 +1457,9 @@ read_back:
 				/* Flush previous group */
 				if (cur_gi >= 0 && cur_gi < ngroups) {
 					groups[cur_gi].strategy = edited_strategy;
-					{
-						const char *orig = default_cmds[cur_gi]
-							? default_cmds[cur_gi] : "";
-						if (strcmp(edited_cmd, orig) != 0
-						    && edited_cmd[0])
-							groups[cur_gi].custom_cmd =
-								xstrdup(edited_cmd);
-					}
+					const char *orig = default_cmds[cur_gi] ? default_cmds[cur_gi] : "";
+					if (strcmp(edited_cmd, orig) != 0 && edited_cmd[0])
+						groups[cur_gi].custom_cmd = xstrdup(edited_cmd);
 					if (nlines > 0) {
 						groups[cur_gi].custom_lines = lines;
 						groups[cur_gi].ncustom = nlines;
@@ -1480,13 +1489,6 @@ read_back:
 				continue;
 			}
 			if (strncmp(line, "=== SEARCH PATTERN", 18) == 0) {
-				/* Support both old format (offset: N) and new (no offset) */
-				const char *p = strstr(line, "(offset:");
-				if (p) {
-					p += 8;
-					while (*p == ' ') p++;
-					edited_offset = atoi(p);
-				}
 				in_pattern = 1;
 				in_cmdstrat = 0;
 				cmdstrat_want_cmd = 0;
@@ -1530,9 +1532,7 @@ read_back:
 			 * abs/offset have no cmd line (cmd is in EDIT COMMAND section). */
 			if (in_cmdstrat) {
 				if (cmdstrat_want_cmd) {
-					if (cmdstrat_take &&
-					    edited_strategy == STRAT_DEFAULT)
-					{
+					if (cmdstrat_take && edited_strategy == STRAT_DEFAULT) {
 						edited_strategy = cmdstrat_strat;
 						snprintf(edited_cmd,
 							 sizeof(edited_cmd),
@@ -1572,8 +1572,7 @@ read_back:
 				continue;
 			}
 			/* Extra separator still present = skip lines below */
-			if (in_pattern &&
-			    strncmp(line, "--- extra", 9) == 0) {
+			if (in_pattern && strncmp(line, "--- extra", 9) == 0) {
 				skip_extra = 1;
 				continue;
 			}
@@ -1590,17 +1589,12 @@ read_back:
 		/* Flush trailing EDIT COMMAND section (no closing === seen) */
 		if (in_edit_cmd)
 			FLUSH_ECMD();
-#undef FLUSH_ECMD
 		/* Flush last group */
 		if (cur_gi >= 0 && cur_gi < ngroups) {
 			groups[cur_gi].strategy = edited_strategy;
-			{
-				const char *orig = default_cmds[cur_gi]
-					? default_cmds[cur_gi] : "";
-				if (strcmp(edited_cmd, orig) != 0 && edited_cmd[0])
-					groups[cur_gi].custom_cmd =
-						xstrdup(edited_cmd);
-			}
+			const char *orig = default_cmds[cur_gi] ? default_cmds[cur_gi] : "";
+			if (strcmp(edited_cmd, orig) != 0 && edited_cmd[0])
+				groups[cur_gi].custom_cmd = xstrdup(edited_cmd);
 			if (nlines > 0) {
 				groups[cur_gi].custom_lines = lines;
 				groups[cur_gi].ncustom = nlines;
@@ -1688,40 +1682,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 
 	while (i < fp->nops) {
 		group_t *g = &groups[ngroups];
-		g->del_start = g->del_end = 0;
-		g->add_texts = NULL;
-		g->del_texts = NULL;
-		g->ndel = 0;
-		g->nadd = 0;
-		g->add_after = 0;
-		g->anchor = NULL;
-		g->anchor_offset = 0;
-		g->nanchors = 0;
-		g->anchor_start_line = 0;
-		g->follow_ctx = NULL;
-		g->follow_offset = 0;
-		g->all_pre_ctx = NULL;
-		g->nall_pre_ctx = 0;
-		g->post_ctx = NULL;
-		g->npost_ctx = 0;
-		g->block_lines = NULL;
-		g->nblock = 0;
-		g->block_change_idx = 0;
-		g->custom_lines = NULL;
-		g->ncustom = 0;
-		g->custom_offset = 0;
-		g->custom_cmd = NULL;
-		g->strategy = STRAT_DEFAULT;
-		g->has_line_diff = 0;
-		g->ld_start = g->ld_end = 0;
-		g->ld_old_text = NULL;
-		g->ld_new_text = NULL;
-		g->ldc_start = g->ldc_end = 0;
-		g->ldc_new_text = NULL;
-		g->custom_abs_lines = NULL;    g->custom_abs_nlines = 0;
-		g->custom_offset_lines = NULL; g->custom_offset_nlines = 0;
-		g->custom_relc_lines = NULL;   g->custom_relc_nlines = 0;
-		g->custom_rel_lines = NULL;    g->custom_rel_nlines = 0;
+		memset(g, 0, sizeof(group_t));
 
 		/* Skip context lines, collecting up to 3 consecutive for relative mode */
 		char *last_ctx = NULL;
