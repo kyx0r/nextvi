@@ -34,7 +34,7 @@ typedef struct {
 
 static file_patch_t files[256];
 static int nfiles = 0;
-static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r), 2=relative block (-rb) */
+static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode = 0; /* 1=interactive editing of search patterns (-i) */
 static int delta_mode = 0;      /* 1=re-apply previous delta from script (-d) */
 
@@ -2214,8 +2214,9 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-ridh] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-aridh] [input.patch]\n", prog);
 	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
+	fprintf(stderr, "  -a  Use absolute line numbers\n");
 	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
 	fprintf(stderr, "  -i  Interactive mode: edit search patterns in $EDITOR\n");
 	fprintf(stderr, "  -d  Delta mode: re-apply previous customizations from script (-d implies -i)\n");
@@ -2239,7 +2240,9 @@ int main(int argc, char **argv)
 			break;
 		}
 		for (j = 1; argv[i][j]; j++) {
-			if (argv[i][j] == 'r')
+			if (argv[i][j] == 'a')
+				relative_mode = 0;
+			else if (argv[i][j] == 'r')
 				relative_mode = 1;
 			else if (argv[i][j] == 'i')
 				interactive_mode = 1;
