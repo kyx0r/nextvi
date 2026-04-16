@@ -29,12 +29,9 @@ fi
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
-rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
-sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 41\\${SEP}${QF}}${SEP};=
-${SEP}+2a char **xenvp;
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i char **xenvp;
 .
-${SEP}.,\$;f> 
+${SEP}%;f> 
 static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1421\\${SEP}${QF}}${SEP};=
@@ -112,6 +109,27 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- /tmp/patch2vi_jBMf9X_ex.c.diff.orig	2026-04-16 09:48:01.468121597 -0100
++++ /tmp/patch2vi_jBMf9X_ex.c.diff	2026-04-16 09:48:11.274495077 -0100
+@@ -1,7 +1,7 @@
+ === GROUP 1/3 (line 41) ===
+ +char **xenvp;
+ === COMMAND STRATEGY (default: rel) ===
+-#abs
++abs
+ #rel
+ %;f>
+ === SEARCH PATTERN ===
+@@ -13,7 +13,7 @@
+ struct buf tempbufs\[3\];		/\* temporary buffers, for internal use \*/
+ struct buf \*ex_buf;		/\* current buffer \*/
+ === EDIT COMMAND (abs) ===
+-41a char **xenvp;
++i char **xenvp;
+ === EDIT COMMAND (rel) ===
+ +2a char **xenvp;
+ === END GROUP ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 15e5046c..03fda84c 100644
