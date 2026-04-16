@@ -35,13 +35,10 @@ ${SEP}+3${SEP}s/\\\\|sc/m!?|i|sc!?|nm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int xleft;			/\\\\* the first visible column \\\\*/
-int xvis;			/\\\\* startup flags \\\\*/
-int xai = 1;			/\\\\* autoindent option \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 0\\${SEP}${QF}}${SEP};=
-${SEP}.i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 .
-${SEP}.,\$;f> 	return NULL;
+${SEP}%;f> 	return NULL;
 \\\\}
 
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 551\\${SEP}${QF}}${SEP};=
@@ -169,8 +166,17 @@ exit 0
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 === DELTA ex.c ===
---- /tmp/patch2vi_oBklld_ex.c.diff.orig
-+++ /tmp/patch2vi_oBklld_ex.c.diff
+--- /tmp/patch2vi_ADp5Sx_ex.c.diff.orig	2026-04-16 12:11:53.981310744 -0100
++++ /tmp/patch2vi_ADp5Sx_ex.c.diff	2026-04-16 12:12:01.145609149 -0100
+@@ -2,7 +2,7 @@
+ +static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
+ +static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
+ === COMMAND STRATEGY (default: rel) ===
+-#abs
++abs
+ #rel
+ %f>
+ === SEARCH PATTERN ===
 @@ -205,7 +205,6 @@
  #rel
  .,\$;f>
