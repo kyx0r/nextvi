@@ -35,7 +35,9 @@ ${SEP}+3${SEP}s/\\\\|sc/m!?|i|sc!?|nm/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 
 # Patch: ex.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 0\\${SEP}${QF}}${SEP};=
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> int xleft;			/\\\\* the first visible column \\\\*/
+int xvis;			/\\\\* startup flags \\\\*/
+int xai = 1;			/\\\\* autoindent option \\\\*/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 0\\${SEP}${QF}}${SEP};=
 ${SEP}.i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 .
@@ -84,16 +86,13 @@ int map_read(int mode, int winch)
 }
 
 .
-${SEP}.,\$;f> 	EO\\\\(ish\\\\),
-	\\\\{\"inc\", ec_setincl\\\\},
+${SEP}.,\$;f> 	\\\\{\"inc\", ec_setincl\\\\},
 	EO\\\\(ic\\\\),${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1494\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	{\"im!\", ec_map},
+${SEP}+1a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
 .
-${SEP}.,\$;f> 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),
-	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1501\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	{\"nm!\", ec_map},
+${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1501\\${SEP}${QF}}${SEP};=
+${SEP}.i 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -169,6 +168,49 @@ exit 0
  --- extra (delete to include) ---
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
+=== DELTA ex.c ===
+--- /tmp/patch2vi_oBklld_ex.c.diff.orig
++++ /tmp/patch2vi_oBklld_ex.c.diff
+@@ -205,7 +205,6 @@
+ #rel
+ .,\$;f>
+ === SEARCH PATTERN ===
+-	EO\(ish\),
+ 	\{"inc", ec_setincl\},
+ 	EO\(ic\),
+ --- extra (delete to include) ---
+@@ -219,7 +218,7 @@
+ +903a 	{"im!", ec_map},
+ 	{"im", ec_map},
+ === EDIT COMMAND (rel) ===
+-+2a 	{"im!", ec_map},
+++1a 	{"im!", ec_map},
+ 	{"im", ec_map},
+ === END GROUP ===
+ 
+@@ -232,13 +231,7 @@
+ #rel
+ .,\$;f>
+ === SEARCH PATTERN ===
+-	\{"g", ec_glob\},
+-	EO\(mpt\),
+-	\{"m", ec_mark\},
+---- extra (delete to include) ---
+ 	\{"q!", ec_quit\},
+-	\{"q", ec_quit\},
+-	EO\(rcm\),
+ === EDIT COMMAND (abs) ===
+ 1501a 	{"nm!", ec_map},
+ 	{"nm", ec_map},
+@@ -246,7 +239,7 @@
+ +5a 	{"nm!", ec_map},
+ 	{"nm", ec_map},
+ === EDIT COMMAND (rel) ===
+-+2a 	{"nm!", ec_map},
++i 	{"nm!", ec_map},
+ 	{"nm", ec_map},
+ === END GROUP ===
+ 
 === DELTA led.c ===
 --- /tmp/patch2vi_KpLZVI_led.c.diff.orig	2026-04-15 10:03:29.412549798 -0100
 +++ /tmp/patch2vi_KpLZVI_led.c.diff	2026-04-15 10:04:12.537266065 -0100
