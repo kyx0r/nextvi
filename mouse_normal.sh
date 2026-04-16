@@ -235,14 +235,15 @@ ${SEP}+2a 	while (mv == 27 && xms) {
 		if (r != 2)
 			break;
 		mv = term_read(TK_CTL('l'));
-	}
-	if (mv != 27) {
-		term_back(mv);
-		if ((mv = vi_motionln(row, 0, cnt))) {
-			*off = -1;
-			return mv;
+		if (mv != 27) {
+			term_back(mv);
+			if ((mv = vi_motionln(row, 0, cnt))) {
+				*off = -1;
+				return mv;
+			}
+			mv = term_read(TK_CTL('l'));
+			break;
 		}
-		mv = term_read(TK_CTL('l'));
 	}
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -639,7 +640,7 @@ index 68990b78..70b8a8b0 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 167a597e..393edcad 100644
+index 167a597e..cd4334db 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -556,6 +556,9 @@ static void vc_status(int type)
@@ -652,7 +653,7 @@ index 167a597e..393edcad 100644
  /* read a motion */
  static int vi_motion(int vc, int *row, int *off)
  {
-@@ -572,6 +575,41 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -572,6 +575,42 @@ static int vi_motion(int vc, int *row, int *off)
  		return mv;
  	}
  	mv = term_read(TK_CTL('l'));
@@ -682,14 +683,15 @@ index 167a597e..393edcad 100644
 +		if (r != 2)
 +			break;
 +		mv = term_read(TK_CTL('l'));
-+	}
-+	if (mv != 27) {
-+		term_back(mv);
-+		if ((mv = vi_motionln(row, 0, cnt))) {
-+			*off = -1;
-+			return mv;
++		if (mv != 27) {
++			term_back(mv);
++			if ((mv = vi_motionln(row, 0, cnt))) {
++				*off = -1;
++				return mv;
++			}
++			mv = term_read(TK_CTL('l'));
++			break;
 +		}
-+		mv = term_read(TK_CTL('l'));
 +	}
  	switch (mv) {
  	case ',':
