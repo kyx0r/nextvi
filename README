@@ -140,11 +140,11 @@ VI NORMAL
                    spaces. # modifies tab width
      vo            Remove trailing white spaces and <\r> line endings
      <^G>          Print buffer status info
-     1<^G>         Enable permanent status bar row
-     2<^G>         Disable permanent status bar row
+     1<^G>         Enable permanent status row
+     2<^G>         Disable permanent status row
      ga            Print character info
-     1ga           Enable permanent character info bar row
-     2ga           Disable permanent character info bar row
+     1ga           Enable permanent character info row
+     2ga           Disable permanent character info row
      [#]gw         Hard word wrap a line to # col limit. Default: 80
      [#]gq         Hard word wrap a buffer to # col limit. Default: 80
      [#]g~{arg}    Switch character case for arg region # times
@@ -1203,7 +1203,7 @@ EXINIT ENV VAR
 REGEX
      Pikevm is a fast non-backtracking NFA simulation regex engine
      developed for Nextvi. It ensures regular expressions are evaluated
-     in constant space and O(n + k) time complexity where <n> is
+     in constant space and O(n * k) time complexity where <n> is
      the input string length and <k> represents the regex's structural
      complexity (e.g., state transitions or alternations). While
      this does not guarantee strict O(n) linear runtime performance,
@@ -1271,22 +1271,22 @@ SPECIAL REGISTERS
      <1-9>   Previous value(s) of default register (nonatomic)
 
 CODE MAP
-     +-----------------+----------------------+
-     | 537 kmap.h      |  keymap translation  |
-     | 540 vi.h        |  definitions/aux     |
-     +-----------------+----------------------+
-     | 342 conf.c      |  hl/ft/td config     |
-     | 366 term.c      |  low level IO        |
-     | 410 ren.c       |  positioning/syntax  |
-     | 614 uc.c        |  UTF-8 support       |
-     | 651 lbuf.c      |  file/line buffer    |
-     | 725 led.c       |  insert mode/output  |
-     | 766 regex.c     |  pikevm              |
-     | 1726 ex.c       |  ex options/commands |
-     | 1854 vi.c       |  normal mode/general |
-     | 2138 patch2vi.c |                      |
-     | 9592 total      |  wc -l *.c|sort      |
-     +-----------------+----------------------+
+     +------------------+----------------------+
+     | 537 kmap.h       |  keymap translation  |
+     | 540 vi.h         |  definitions/aux     |
+     +------------------+----------------------+
+     | 342 conf.c       |  hl/ft/td config     |
+     | 366 term.c       |  low level IO        |
+     | 410 ren.c        |  positioning/syntax  |
+     | 614 uc.c         |  UTF-8 support       |
+     | 651 lbuf.c       |  file/line buffer    |
+     | 725 led.c        |  insert mode/output  |
+     | 766 regex.c      |  pikevm              |
+     | 1726 ex.c        |  ex options/commands |
+     | 1854 vi.c        |  normal mode/general |
+     | 2463 patch2vi.c  |  patch converter     |
+     | 9917 total       |  wc -l *.c|sort      |
+     +------------------+----------------------+
 
 COMPILING
      export CC='g++ -x c'
@@ -1364,7 +1364,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 4.2                      March 26, 2026                      Nextvi 4.2
+Nextvi 4.2                      April 16, 2026                      Nextvi 4.2
 
 NEXTVI PATCHES
 ==============
@@ -1378,7 +1378,7 @@ patch2vi support program facilitates script transformations.
 --------------
 Convert entire codebase to 64 bit integers instead of 32 bit.
 This will enable Nextvi to read files & buffers up to 9,223,372 Terabytes.
-In addition, this will improve performance on 64 bit CPUs due to
+In addition, this may improve performance on 64 bit CPUs due to
 matching pointer <---> integer alignment and possibly more compiler
 optimizations.
 Run this after you've applied the patches.
@@ -1393,13 +1393,14 @@ Adds arrows keys support in normal mode.
 
 arrowkeys_insert.sh
 --------------
-Adds arrows keys support in insert mode and command modes.
+Adds arrows keys support in insert and command modes. In command
+modes, Up/Down arrow selects lines from history buffer.
 
 threaded_search.sh
 --------------
 Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
-aka libpthread
+aka libpthread.
 
 hl_part.sh
 --------------
@@ -1446,7 +1447,7 @@ base nextvi due to underlying complexity.
 
 stdin_pipe.sh
 --------------
-Allows the user to use vi like less except you need to specify
+Allows the user to use vi like a pager (less) except you need to specify
 - as command line arg (just like in vim).
 Example:
 $ dmesg | vi -
@@ -1618,9 +1619,9 @@ key_remap_cmds.sh
 Adds :im :im! and :nm :nm! commands to dynamically remap keybinds
 in normal and insert modes.
 Remapping a to hello in insert mode
-:im a hello
+:im ahello
 Remapping a to i in normal mode
-:nm a i
+:nm ai
 
 modal.sh
 --------------
@@ -1638,6 +1639,13 @@ Defunct lsp support skeleton
 sse.sh
 --------------
 SIMD optimizations for Nextvi.
+
+mouse_normal.sh
+--------------
+Adds mouse support in normal mode. Adds a new ex option :ms
+to toggle the mouse support. Clicking positions the cursor
+and mouse wheel scrolls using ^Y or ^E. Terminal mouse selections
+can still be made while holding Shift on most terminal emulators.
 
 My current EXINIT setup:
 --------------
