@@ -251,9 +251,9 @@ key_remap_cmds.sh
 Adds :im :im! and :nm :nm! commands to dynamically remap keybinds
 in normal and insert modes.
 Remapping a to hello in insert mode
-:im a hello
+:im ahello
 Remapping a to i in normal mode
-:nm a i
+:nm ai
 
 modal.sh
 --------------
