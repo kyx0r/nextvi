@@ -2214,7 +2214,7 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-rbidh] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-ridh] [input.patch]\n", prog);
 	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
 	fprintf(stderr, "  -i  Interactive mode: edit search patterns in $EDITOR\n");
