@@ -953,7 +953,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 	base = base ? base + 1 : filepath;
 	char tmptmp[32];
 	char tmppath[256];
-	snprintf(tmptmp, sizeof(tmptmp), "/tmp/patch2vi_XXXXXX");
+	snprintf(tmptmp, sizeof(tmptmp), "patch2vi_XXXXXX");
 	int fd = mkstemp(tmptmp);
 	snprintf(tmppath, sizeof(tmppath), "%s_%s.diff", tmptmp, base);
 	if (rename(tmptmp, tmppath) < 0)
