@@ -80,9 +80,7 @@ ${SEP}.,\$;f> 	\\\\}
 	preserve\\\\(int, xtd, xtd = 2;\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	term_mouse_off();
 .
-${SEP}.,\$;f> 	restore\\\\(xtd\\\\)
-	restore\\\\(xleft\\\\)
-	if \\\\(key == '\\\\\\\\n' && flg & 1\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 668\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> 	if \\\\(key == '\\\\\\\\n' && flg & 1\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 668\\${SEP}${QF}}${SEP};=
 ${SEP}.i 	term_mouse_on();
 .
 ${SEP}.,\$f> 	ins_state is;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 684\\${SEP}${QF}}${SEP};=
@@ -298,19 +296,20 @@ exit 0
  === END GROUP ===
  
 === DELTA led.c ===
---- /tmp/patch2vi_5yaQPt_led.c.diff.orig	2026-04-12 08:14:57.345406569 -0100
-+++ /tmp/patch2vi_5yaQPt_led.c.diff	2026-04-12 08:16:00.514541536 -0100
-@@ -69,9 +69,6 @@
+--- patch2vi_EszCRO_led.c.diff.orig	2026-04-17 04:46:36.230479851 +0000
++++ patch2vi_EszCRO_led.c.diff	2026-04-17 04:47:02.214479841 +0000
+@@ -69,18 +69,13 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
 -	key = led_line\(sb, ps, n, &post, 0, &postref, -1,
 -			&off, kmap, is, 0, xrow, xtop, flg\);
 ---- extra (delete to include) ---
- 	restore\(xtd\)
- 	restore\(xleft\)
+-	restore\(xtd\)
+-	restore\(xleft\)
  	if \(key == '\\n' && flg & 1\) \{
-@@ -80,7 +77,7 @@
+ === EDIT COMMAND (abs) ===
+ 668a 	term_mouse_on();
  === EDIT COMMAND (offset) ===
  +1a 	term_mouse_on();
  === EDIT COMMAND (rel) ===
@@ -319,7 +318,7 @@ exit 0
  === END GROUP ===
  
  === GROUP 4/5 (line 684) ===
-@@ -91,8 +88,6 @@
+@@ -91,8 +86,6 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
@@ -328,7 +327,7 @@ exit 0
  	ins_state is;
  --- extra (delete to include) ---
  	while \(1\) \{
-@@ -103,7 +98,7 @@
+@@ -103,7 +96,7 @@
  === EDIT COMMAND (offset) ===
  +15a 	term_mouse_off();
  === EDIT COMMAND (rel) ===
@@ -337,7 +336,7 @@ exit 0
  === END GROUP ===
  
  === GROUP 5/5 (line 697) ===
-@@ -114,7 +109,6 @@
+@@ -114,7 +107,6 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
@@ -345,7 +344,7 @@ exit 0
  			free\(postref\);
  			xrow = crow;
  --- extra (delete to include) ---
-@@ -126,6 +120,6 @@
+@@ -126,6 +118,6 @@
  === EDIT COMMAND (offset) ===
  +12a 			term_mouse_on();
  === EDIT COMMAND (rel) ===
