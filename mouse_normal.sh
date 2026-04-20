@@ -45,9 +45,9 @@ ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 1451\\${SEP}${QF}}${SEP};=
 ${SEP}+2a _EO(ms,
 	xms = !*arg ? !xms : eo_val(arg);
 	if (xms)
-		term_mouse_on();
+		write(1, \"\\\\x1b[?1000h\\\\x1b[?1006h\", 16); /* mouse on */
 	else
-		term_mouse_off();
+		write(1, \"\\\\x1b[?1000l\\\\x1b[?1006l\", 16); /* mouse off */
 	return NULL;
 )
 
@@ -104,12 +104,14 @@ unsigned int texec, tn;
 ${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 10\\${SEP}${QF}}${SEP};=
 ${SEP}+2a void term_mouse_on(void)
 {
-	write(1, \"\\\\x1b[?1000h\\\\x1b[?1006h\", 16);
+	if (xms)
+		write(1, \"\\\\x1b[?1000h\\\\x1b[?1006h\", 16);
 }
 
 void term_mouse_off(void)
 {
-	write(1, \"\\\\x1b[?1000l\\\\x1b[?1006l\", 16);
+	if (xms)
+		write(1, \"\\\\x1b[?1000l\\\\x1b[?1006l\", 16);
 }
 
 .
@@ -461,7 +463,7 @@ index b40f1d6f..78f286cf 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czb]?|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 15e5046c..fe67a2ff 100644
+index 15e5046c..18495c11 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -476,9 +478,9 @@ index 15e5046c..fe67a2ff 100644
 +_EO(ms,
 +	xms = !*arg ? !xms : eo_val(arg);
 +	if (xms)
-+		term_mouse_on();
++		write(1, "\x1b[?1000h\x1b[?1006h", 16); /* mouse on */
 +	else
-+		term_mouse_off();
++		write(1, "\x1b[?1000l\x1b[?1006l", 16); /* mouse off */
 +	return NULL;
 +)
 +
@@ -542,7 +544,7 @@ index 6a5e065f..3224aa01 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 68990b78..f31ad971 100644
+index 68990b78..ab71e48e 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,4 @@
@@ -550,24 +552,26 @@ index 68990b78..f31ad971 100644
  static struct termios termios;
  sbuf *term_sbuf;
  int term_record;
-@@ -8,6 +9,16 @@ unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+@@ -8,6 +9,18 @@ unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
  unsigned char *ibuf, icmd[4096];
  unsigned int texec, tn;
  
 +void term_mouse_on(void)
 +{
-+	write(1, "\x1b[?1000h\x1b[?1006h", 16);
++	if (xms)
++		write(1, "\x1b[?1000h\x1b[?1006h", 16);
 +}
 +
 +void term_mouse_off(void)
 +{
-+	write(1, "\x1b[?1000l\x1b[?1006l", 16);
++	if (xms)
++		write(1, "\x1b[?1000l\x1b[?1006l", 16);
 +}
 +
  void term_init(void)
  {
  	struct winsize win;
-@@ -31,12 +42,14 @@ void term_init(void)
+@@ -31,12 +44,14 @@ void term_init(void)
  	}
  	xcols = xcols ? xcols : 80;
  	xrows = xrows ? xrows : 25;
@@ -582,7 +586,7 @@ index 68990b78..f31ad971 100644
  	term_commit();
  	sbuf_free(term_sbuf)
  	tcsetattr(0, 0, &termios);
-@@ -147,6 +160,91 @@ void term_back(int c)
+@@ -147,6 +162,91 @@ void term_back(int c)
  	term_push(s, 1);
  }
  
