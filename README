@@ -584,7 +584,7 @@ EX COMMANDS
              :%s/(int)|(void)/pre\2after/g
              this is an example text for subs and has prepreafterafter or prevoidafter
 
-     u       Undo
+     ud      Undo
      rd      Redo
 
      [range]p[str]
@@ -871,7 +871,7 @@ EX COMMANDS
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
              Example: undo everything
-             :$? u
+             :$? ud
              Example: repeat chain of ex commands 10 times
              :10? 1p\:5p\:10p
              Example: calculate directory only if :cd succeeded
@@ -1363,4 +1363,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 4.3                      April 20, 2026                      Nextvi 4.3
+Nextvi 5.0                      April 20, 2026                      Nextvi 5.0

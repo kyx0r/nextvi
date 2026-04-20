@@ -1,6 +1,6 @@
 .Dd Apr 20, 2026
 .Dt Nextvi 1
-.Os Nextvi 4.3
+.Os Nextvi 5.0
 .
 .Sh NAME
 .Nm Nextvi
@@ -849,7 +849,7 @@ this is an example text for subs and has preintafter or void
 this is an example text for subs and has prepreafterafter or prevoidafter
 .Ed
 
-.It Cm u
+.It Cm ud
 Undo
 .It Cm rd
 Redo
@@ -1161,7 +1161,7 @@ No prefix creates a conditional with # set to 1.
 Example: attempt to join every line in file using arbitrary count
 :10000? & J
 Example: undo everything
-:$? u
+:$? ud
 Example: repeat chain of ex commands 10 times
 :10? 1p\e:5p\e:10p
 Example: calculate directory only if :cd succeeded
