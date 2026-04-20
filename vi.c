@@ -1832,7 +1832,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-4.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-4.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
