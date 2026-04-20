@@ -207,7 +207,7 @@ static void vi_scrollbackward(int cnt);
 ${SEP}.,\$;f> 		return mv;
 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 574\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	if (mv == 27 && xms) {
+${SEP}+2a 	while (mv == 27 && xms) {
 		int r = term_try_mouse();
 		if (r == 1) {
 			char *mln;
@@ -229,9 +229,9 @@ ${SEP}+2a 	if (mv == 27 && xms) {
 				vi_scrollforward(MAX(1, vi_scrolley));
 			vi_mod |= 4;
 			return -1;
-		}
-		if (r == 2)      /* stray release from a prior click; restart */
+		} else if (r == 2)	/* stray release from a prior click; restart */
 			return -1;
+		break;
 	}
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -632,7 +632,7 @@ index 68990b78..70b8a8b0 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 0e3d4363..3ee645c2 100644
+index 0e3d4363..d6792914 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -556,6 +556,9 @@ static void vc_status(int type)
@@ -649,7 +649,7 @@ index 0e3d4363..3ee645c2 100644
  		return mv;
  	}
  	mv = term_read(TK_CTL('l'));
-+	if (mv == 27 && xms) {
++	while (mv == 27 && xms) {
 +		int r = term_try_mouse();
 +		if (r == 1) {
 +			char *mln;
@@ -671,9 +671,9 @@ index 0e3d4363..3ee645c2 100644
 +				vi_scrollforward(MAX(1, vi_scrolley));
 +			vi_mod |= 4;
 +			return -1;
-+		}
-+		if (r == 2)      /* stray release from a prior click; restart */
++		} else if (r == 2)	/* stray release from a prior click; restart */
 +			return -1;
++		break;
 +	}
  	switch (mv) {
  	case ',':
