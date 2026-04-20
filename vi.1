@@ -1,4 +1,4 @@
-.Dd Apr 12, 2026
+.Dd Apr 20, 2026
 .Dt Nextvi 1
 .Os Nextvi 4.2
 .
@@ -122,7 +122,7 @@ Move to start of line
 .It Cm $
 Move to end of line
 .It Cm [\fI#\fP]|
-Goto # col
+Goto # column
 .It Cm [\fI#\fP]<Space>
 Move # characters forward, multi-line
 .It Cm [\fI#\fP]<^H>
@@ -258,9 +258,9 @@ Enable permanent character info row
 .It Cm 2ga
 Disable permanent character info row
 .It Cm [\fI#\fP]gw
-Hard word wrap a line to # col limit. Default: 80
+Hard word wrap a line to # column limit. Default: 80
 .It Cm [\fI#\fP]gq
-Hard word wrap a buffer to # col limit. Default: 80
+Hard word wrap a buffer to # column limit. Default: 80
 .It Cm [\fI#\fP]g~{\fIarg\fP}
 Switch character case for arg region # times
 .It Cm [\fI#\fP]gu{\fIarg\fP}
@@ -1671,7 +1671,7 @@ _
  537 kmap.h | keymap translation
  540 vi.h | definitions/aux
 _
- 342 conf.c | hl/ft/td config
+ 361 conf.c | hl/ft/td config
  366 term.c | low level IO
  410 ren.c | positioning/syntax
  614 uc.c | UTF-8 support
@@ -1680,7 +1680,7 @@ _
  766 regex.c | pikevm
  1726 ex.c | ex options/commands
  1854 vi.c | normal mode/general
- 7454 total | wc -l *.c\(basort
+ 7473 total | wc -l *.c\(basort
 _
 .TE
 .

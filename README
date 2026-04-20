@@ -68,7 +68,7 @@ VI NORMAL
      ^             Move to start of line after indent
      0             Move to start of line
      $             Move to end of line
-     [#]|          Goto # col
+     [#]|          Goto # column
      [#]<Space>    Move # characters forward, multi-line
      [#]<^H>
      [#]<Backspace>
@@ -145,8 +145,8 @@ VI NORMAL
      ga            Print character info
      1ga           Enable permanent character info row
      2ga           Disable permanent character info row
-     [#]gw         Hard word wrap a line to # col limit. Default: 80
-     [#]gq         Hard word wrap a buffer to # col limit. Default: 80
+     [#]gw         Hard word wrap a line to # column limit. Default: 80
+     [#]gq         Hard word wrap a buffer to # column limit. Default: 80
      [#]g~{arg}    Switch character case for arg region # times
      [#]gu{arg}    Switch arg region to lowercase # times
      [#]gU{arg}    Switch arg region to uppercase # times
@@ -1275,7 +1275,7 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      | 540 vi.h     |  definitions/aux     |
      +--------------+----------------------+
-     | 342 conf.c   |  hl/ft/td config     |
+     | 361 conf.c   |  hl/ft/td config     |
      | 366 term.c   |  low level IO        |
      | 410 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
@@ -1284,7 +1284,7 @@ CODE MAP
      | 766 regex.c  |  pikevm              |
      | 1726 ex.c    |  ex options/commands |
      | 1854 vi.c    |  normal mode/general |
-     | 7454 total   |  wc -l *.c|sort      |
+     | 7473 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1363,4 +1363,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 4.2                      April 12, 2026                      Nextvi 4.2
+Nextvi 4.2                      April 20, 2026                      Nextvi 4.2
