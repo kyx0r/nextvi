@@ -6,7 +6,7 @@ const int conf_mode = 0600;
 #define FT(ft) ft##_ft
 FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(mbox)
 FTGEN(mk) FTGEN(sh) FTGEN(py) FTGEN(js)
-FTGEN(html) FTGEN(diff) FTGEN(go)
+FTGEN(html) FTGEN(diff) FTGEN(go) FTGEN(md)
 
 char _ft[] = "/";	/* default hl */
 char fm_ft[] = "/fm";	/* file manager */
@@ -31,6 +31,7 @@ struct filetype fts[] = {
 	{FT(html), "\\.(html?|css)$"},				/* html,css */
 	{FT(diff), "\\.(patch|diff|rej)$"},			/* diff */
 	{FT(go), "\\.go$"},					/* go */
+	{FT(md), "\\.md$"},					/* markdown */
 	{_ft, NULL},
 	{fm_ft, NULL},
 	{n_ft, NULL},
@@ -78,7 +79,7 @@ struct highlight hls[] = {
 	{FT(c), NULL, A(RE1), 0, 1},
 	{FT(c), "\\<(?:signed|unsigned|char|short|int|[a-z0-9_]+_t|FILE|DIR|\
 long|f(?:loat|64|32)|double|void|enum|union|typedef|static|extern|register|struct|\
-s(?:64|32|16|8)|u(?:64|32|16|8)|b32|bool|const|inline|restrict|\
+s(?:64|32|16|8)|u(?:64|32|16|8)|b32|bool|const|inline|restrict|auto|\
 (true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|malloc|free|realloc|NULL|std(?:in|\
 out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|\
 default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -244,6 +245,24 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(go), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
 	{FT(go), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{2}|\\\\u[0-9a-fA-F]{4}|\\\\U[0-9a-fA-F]{8}|\\\\[0-7]{3})'", A(MA)},
 	{FT(go), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|0[oO][0-7]+|0[bB][01]+|[0-9]+\\.?[0-9eEi]*|[0-9]+)\\>", A(RE1)},
+
+	{FT(md), "^# .*", A(RE | SYN_BD)},
+	{FT(md), "^## .*", A(GR | SYN_BD)},
+	{FT(md), "^### .*", A(YE | SYN_BD)},
+	{FT(md), "^#### .*", A(BL | SYN_BD)},
+	{FT(md), "^##### .*", A(MA | SYN_BD)},
+	{FT(md), "^###### .*", A(CY | SYN_BD)},
+	{FT(md), "[*][*][^*]+[*][*]", A(YE | SYN_BD)},
+	{FT(md), "[*][^*]+[*]", A(YE | SYN_IT)},
+	{FT(md), "~~[^~]+~~", A(BL | SYN_BD)},
+	{FT(md), "`[^`]*`", A(CY)},
+	{FT(md), "---", A(BL)},
+	{FT(md), "(  )\n$", A(SYN_IGN, SYN_BGMK(MA))},
+	{FT(md), "^> .*", A(MA)},
+	{FT(md), "[*\\-+] ", A(YE)},
+	{FT(md), "[0-9][.] ", A(YE)},
+	{FT(md), "[[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(CY)},
+	{FT(md), "![[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(MA)},
 
 	{fm_ft, "^.+\n$", A(AY1), 1},
 	{fm_ft, "(^\\.?\\.?)/|(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
