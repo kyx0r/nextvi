@@ -29,8 +29,8 @@ fi
 # Patch: conf.c
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
-EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP}${QF}}${SEP};=
-${SEP}.${SEP}s/\\\\|r/|ms|r/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 270\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 289\\${SEP}${QF}}${SEP};=
+${SEP}.${SEP}s/\\\\|r/|ms|r/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 289\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 SEP="$(printf '\001')"
@@ -80,7 +80,7 @@ ${SEP}.,\$;f> 	\\\\}
 	preserve\\\\(int, xtd, xtd = 2;\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	term_mouse_off();
 .
-${SEP}.,\$f> 	if \\\\(key == '\\\\\\\\n' && flg & 1\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 668\\${SEP}${QF}}${SEP};=
+${SEP}.,\$f> 	if \\\\(key == '\\\\\\\\n' && flg & 1\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 670\\${SEP}${QF}}${SEP};=
 ${SEP}.i 	term_mouse_on();
 .
 ${SEP}.,\$f> 	ins_state is;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 684\\${SEP}${QF}}${SEP};=
@@ -207,7 +207,7 @@ static void vi_scrollbackward(int cnt);
 ${SEP}.,\$;f> 		return mv;
 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 574\\${SEP}${QF}}${SEP};=
-${SEP}+2a 	while (mv == 27 && xms) {
+${SEP}+2a 	if (mv == 27 && xms) {
 		int r = term_try_mouse();
 		if (r == 1) {
 			char *mln;
@@ -230,18 +230,8 @@ ${SEP}+2a 	while (mv == 27 && xms) {
 			vi_mod |= 4;
 			return -1;
 		}
-		if (r != 2)
-			break;
-		mv = term_read(TK_CTL('l'));
-		if (mv != 27) {
-			term_back(mv);
-			if ((mv = vi_motionln(row, 0, cnt))) {
-				*off = -1;
-				return mv;
-			}
-			mv = term_read(TK_CTL('l'));
-			break;
-		}
+		if (r == 2)      /* stray release from a prior click; restart */
+			return -1;
 	}
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -269,8 +259,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_fdM9ae_conf.c.diff.orig	2026-04-12 08:06:53.715143224 -0100
-+++ /tmp/patch2vi_fdM9ae_conf.c.diff	2026-04-12 08:07:18.204595156 -0100
+--- patch2vi_KGk0kP_conf.c.diff.orig	2026-04-20 17:25:25.688544101 -0100
++++ patch2vi_KGk0kP_conf.c.diff	2026-04-20 17:27:52.976299270 -0100
 @@ -8,21 +8,14 @@
  #rel
  %;f>
@@ -285,7 +275,7 @@ exit 0
 -		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
 +\(\(.*pac.*\)\\
  === EDIT COMMAND (abs) ===
- 270c ((pac|pr|ai|ish|err|ic|grp|mpt|ms|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ 289c ((pac|pr|ai|ish|err|ic|grp|mpt|ms|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  === EDIT COMMAND (relc) ===
  +3
  .;31c ms|
@@ -296,29 +286,30 @@ exit 0
  === END GROUP ===
  
 === DELTA led.c ===
---- patch2vi_EszCRO_led.c.diff.orig	2026-04-17 04:46:36.230479851 +0000
-+++ patch2vi_EszCRO_led.c.diff	2026-04-17 04:47:02.214479841 +0000
-@@ -69,18 +69,13 @@
+--- patch2vi_TGsJ0d_led.c.diff.orig	2026-04-20 17:27:54.880503277 -0100
++++ patch2vi_TGsJ0d_led.c.diff	2026-04-20 17:29:31.760296953 -0100
+@@ -70,19 +70,13 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
--	key = led_line\(sb, ps, n, &post, 0, &postref, -1,
 -			&off, kmap, is, 0, xrow, xtop, flg\);
----- extra (delete to include) ---
 -	restore\(xtd\)
 -	restore\(xleft\)
+---- extra (delete to include) ---
  	if \(key == '\\n' && flg & 1\) \{
+-		lbuf_dedup\(tempbufs\[0\]\.lb, sb->s \+ n, sb->s_n - n\)
+-		temp_pos\(0, -1, 0, 0\);
  === EDIT COMMAND (abs) ===
- 668a 	term_mouse_on();
+ 670a 	term_mouse_on();
  === EDIT COMMAND (offset) ===
- +1a 	term_mouse_on();
+ +3a 	term_mouse_on();
  === EDIT COMMAND (rel) ===
--+1a 	term_mouse_on();
+-+2a 	term_mouse_on();
 +i 	term_mouse_on();
  === END GROUP ===
  
  === GROUP 4/5 (line 684) ===
-@@ -91,8 +86,6 @@
+@@ -93,8 +87,6 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
@@ -327,16 +318,16 @@ exit 0
  	ins_state is;
  --- extra (delete to include) ---
  	while \(1\) \{
-@@ -103,7 +96,7 @@
+@@ -105,7 +97,7 @@
  === EDIT COMMAND (offset) ===
- +15a 	term_mouse_off();
+ +13a 	term_mouse_off();
  === EDIT COMMAND (rel) ===
 -+2a 	term_mouse_off();
 +a 	term_mouse_off();
  === END GROUP ===
  
  === GROUP 5/5 (line 697) ===
-@@ -114,7 +107,6 @@
+@@ -116,7 +108,6 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
@@ -344,7 +335,7 @@ exit 0
  			free\(postref\);
  			xrow = crow;
  --- extra (delete to include) ---
-@@ -126,6 +118,6 @@
+@@ -128,6 +119,6 @@
  === EDIT COMMAND (offset) ===
  +12a 			term_mouse_on();
  === EDIT COMMAND (rel) ===
@@ -436,10 +427,10 @@ exit 0
  
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 543211a1..185952e1 100644
+index b40f1d6f..78f286cf 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -267,7 +267,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -286,7 +286,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
@@ -482,7 +473,7 @@ index 15e5046c..fe67a2ff 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index 6a5e065f..cd953b77 100644
+index 6a5e065f..3224aa01 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -500,17 +491,19 @@ index 6a5e065f..cd953b77 100644
  #define print_ch1(out) sbuf_mem(out, chrs[o], l)
  #define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
  
-@@ -664,8 +672,10 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
+@@ -664,10 +672,12 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  	}
  	preserve(int, xleft, xleft = 0;)
  	preserve(int, xtd, xtd = 2;)
 +	term_mouse_off();
  	key = led_line(sb, ps, n, &post, 0, &postref, -1,
  			&off, kmap, is, 0, xrow, xtop, flg);
-+	term_mouse_on();
  	restore(xtd)
  	restore(xleft)
++	term_mouse_on();
  	if (key == '\n' && flg & 1) {
+ 		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
+ 		temp_pos(0, -1, 0, 0);
 @@ -682,6 +692,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  	int n, key, ps = 0, crow = xrow, ctop = xtop;
  	char *postref = NULL;
@@ -639,7 +632,7 @@ index 68990b78..70b8a8b0 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 167a597e..cd4334db 100644
+index 0e3d4363..3ee645c2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -556,6 +556,9 @@ static void vc_status(int type)
@@ -652,11 +645,11 @@ index 167a597e..cd4334db 100644
  /* read a motion */
  static int vi_motion(int vc, int *row, int *off)
  {
-@@ -572,6 +575,42 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -572,6 +575,32 @@ static int vi_motion(int vc, int *row, int *off)
  		return mv;
  	}
  	mv = term_read(TK_CTL('l'));
-+	while (mv == 27 && xms) {
++	if (mv == 27 && xms) {
 +		int r = term_try_mouse();
 +		if (r == 1) {
 +			char *mln;
@@ -679,18 +672,8 @@ index 167a597e..cd4334db 100644
 +			vi_mod |= 4;
 +			return -1;
 +		}
-+		if (r != 2)
-+			break;
-+		mv = term_read(TK_CTL('l'));
-+		if (mv != 27) {
-+			term_back(mv);
-+			if ((mv = vi_motionln(row, 0, cnt))) {
-+				*off = -1;
-+				return mv;
-+			}
-+			mv = term_read(TK_CTL('l'));
-+			break;
-+		}
++		if (r == 2)      /* stray release from a prior click; restart */
++			return -1;
 +	}
  	switch (mv) {
  	case ',':
