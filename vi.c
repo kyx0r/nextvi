@@ -603,8 +603,10 @@ static int vi_motion(int vc, int *row, int *off)
 		mark = cs ? ren_position(cs)->n : 0;
 		i = *off;
 		*off += cnt * dir;
-		if (!vi_nlmode)
+		if (vi_nlmode) {
+			*off = *off < 0 ? 0 : *off;
 			break;
+		}
 		if (*off < 0 || *off >= mark) {
 			cnt -= dir > 0 ? mark - i : i;
 			*off = dir > 0 ? mark : 0;
