@@ -31,7 +31,7 @@ SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	case 'w':
 	case 'W':
-		mark = mv == 'W';${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 664\\${SEP}${QF}}${SEP};=
+		var = mv == 'W';${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 654\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 		if (vc && cnt == 1)
 			dir = 2;
 		else
@@ -40,7 +40,7 @@ ${SEP}+2a 		if (vc && cnt == 1)
 			/* vim: cw/cW acts like ce/cE (no trailing whitespace) */
 			int prow = *row, poff = *off;
 			for (i = 0; i < cnt; i++)
-				if (lbuf_wordend(xb, mark, dir, row, off))
+				if (lbuf_wordend(xb, var, dir, row, off))
 					break;
 			if (prow == *row)
 				return mv == 'w' ? 'e' : 'E';
@@ -48,49 +48,33 @@ ${SEP}+2a 		if (vc && cnt == 1)
 			*off = poff;
 		}
 .
-${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP};=
-${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 656\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 656\\${SEP}${QF}}${SEP}.,\$;f> 	o2 = o1;
+	if \\\\(\\\\(mv = vi_motionln\\\\(&r2, cmd, vi_arg \\\\? vi_arg : 1\\\\)\\\\)\\\\)
+		o2 = -1;${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 968\\${SEP}${QF}}${SEP};=
+${SEP}+3${SEP}s/1/cmd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 968\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
---- patch2vi_1waoEe_vi.c.diff.orig	2026-04-21 14:03:05.940160700 -0400
-+++ patch2vi_1waoEe_vi.c.diff	2026-04-21 14:14:25.343885600 -0400
-@@ -44,7 +44,7 @@
- +2a 		if (vc && cnt == 1)
- 			dir = 2;
- 		else
--			dir = vi_nlword+1;
-+			dir = vi_nlmode+1;
- 		if (vc == 'c') {
- 			/* vim: cw/cW acts like ce/cE (no trailing whitespace) */
- 			int prow = *row, poff = *off;
-@@ -84,7 +84,7 @@
- .;30;41c dir
- === EDIT COMMAND (rel) ===
- +1
--s/vi_nlword\+1/dir/
-+s/vi_nlmode\+1/dir/
- === END GROUP ===
- 
- === GROUP 3/3 (line 979) ===
-@@ -98,14 +98,7 @@
+--- patch2vi_sxJwz9_vi.c.diff.orig	2026-04-21 21:27:09.778666968 -0100
++++ patch2vi_sxJwz9_vi.c.diff	2026-04-21 21:27:54.317934822 -0100
+@@ -98,14 +98,8 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
 -	o2 = o1;
 -	if \(\(mv = vi_motionln\(&r2, cmd, vi_arg \? vi_arg : 1\)\)\)
 -		o2 = -1;
----- extra (delete to include) ---
+ --- extra (delete to include) ---
  	else if \(!\(mv = vi_motion\(1, &r2, &o2\)\)\)
 -		return 0;
 -	if \(mv < 0\)
 -		return 0;
  === EDIT COMMAND (abs) ===
- 979c 	else if (!(mv = vi_motion(cmd, &r2, &o2)))
+ 968c 	else if (!(mv = vi_motion(cmd, &r2, &o2)))
  === EDIT COMMAND (offset) ===
-@@ -114,7 +107,7 @@
+@@ -114,7 +108,7 @@
  +3
  .;27;28c cmd
  === EDIT COMMAND (rel) ===
@@ -101,22 +85,22 @@ exit 0
  
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 5479b948..0eb5c1f0 100644
+index 11897a2b..58d84227 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -662,8 +662,23 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -652,8 +652,23 @@ static int vi_motion(int vc, int *row, int *off)
  	case 'w':
  	case 'W':
- 		mark = mv == 'W';
+ 		var = mv == 'W';
 +		if (vc && cnt == 1)
 +			dir = 2;
 +		else
-+			dir = vi_nlword+1;
++			dir = vi_nlmode+1;
 +		if (vc == 'c') {
 +			/* vim: cw/cW acts like ce/cE (no trailing whitespace) */
 +			int prow = *row, poff = *off;
 +			for (i = 0; i < cnt; i++)
-+				if (lbuf_wordend(xb, mark, dir, row, off))
++				if (lbuf_wordend(xb, var, dir, row, off))
 +					break;
 +			if (prow == *row)
 +				return mv == 'w' ? 'e' : 'E';
@@ -124,12 +108,12 @@ index 5479b948..0eb5c1f0 100644
 +			*off = poff;
 +		}
  		for (i = 0; i < cnt; i++)
--			if (lbuf_wordbeg(xb, mark, vi_nlword+1, row, off))
-+			if (lbuf_wordbeg(xb, mark, dir, row, off))
+-			if (lbuf_wordbeg(xb, var, vi_nlmode+1, row, off))
++			if (lbuf_wordbeg(xb, var, dir, row, off))
  				break;
  		break;
  	case '(':
-@@ -976,7 +991,7 @@ static int vc_motion(int cmd)
+@@ -965,7 +980,7 @@ static int vc_motion(int cmd)
  	o2 = o1;
  	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
  		o2 = -1;
