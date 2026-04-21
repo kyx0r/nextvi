@@ -509,7 +509,7 @@ into a purely command-line interface (CLI) when desired.
 .Bd -literal -compact
 Parsing follows the structure:
 [<\fIsep\fP>][\fIprefix\fP][\fIcmd\fP][<\fIpad\fP>][\fIargs\fP]
-Ex commands are initiated and separated by <:>. Fields can be
+Ex commands are initiated and separated by <sep>. Fields can be
 padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
 which accepts [range] structure characters. Padding inside [prefix]
 structure is collapsed, except within nested structures. There
@@ -1675,8 +1675,8 @@ _
  725 led.c | insert mode/output
  766 regex.c | pikevm
  1726 ex.c | ex options/commands
- 1878 vi.c | normal mode/general
- 7496 total | wc -l *.c\(basort
+ 1876 vi.c | normal mode/general
+ 7494 total | wc -l *.c\(basort
 _
 .TE
 .
