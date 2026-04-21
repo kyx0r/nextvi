@@ -30,7 +30,7 @@ fi
 SEP="$(printf '\001')"
 QF=${QF-"$(printf 'vis 2\\\001q! 1')"}
 EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> \\\\{
-	int mark, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
+	int var, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
 	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 348\\${SEP}${QF}}${SEP};=
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		c = term_read(0);
@@ -84,6 +84,18 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA vi.c ===
+--- patch2vi_rwPZr7_vi.c.diff.orig	2026-04-21 21:29:43.573875830 -0100
++++ patch2vi_rwPZr7_vi.c.diff	2026-04-21 21:30:10.330931632 -0100
+@@ -27,7 +27,7 @@
+ %;f>
+ === SEARCH PATTERN ===
+ \{
+-	int mark, c = term_read\(TK_CTL\('l'\)\);
++	int var, c = term_read\(TK_CTL\('l'\)\);
+ 	switch \(c\) \{
+ --- extra (delete to include) ---
+ 	case '\\n':
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index a3d3876c..920c01e6 100644
