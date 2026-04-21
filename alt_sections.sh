@@ -36,12 +36,51 @@ ${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 670\\${SEP}${Q
 	case '\\\\[':
 	case '\\\\]':${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 710\\${SEP}${QF}}${SEP};=
 ${SEP}+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
-		mark = mv == '[' || mv == ']' ? '{' : '\\\\n';
+		var = mv == '[' || mv == ']' ? '{' : '\\\\n';
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA vi.c ===
+--- patch2vi_oRXZ1T_vi.c.diff.orig	2026-04-21 21:31:16.817648892 -0100
++++ patch2vi_oRXZ1T_vi.c.diff	2026-04-21 21:31:24.882929883 -0100
+@@ -28,9 +28,9 @@
+ 
+ === GROUP 2/2 (line 710) ===
+ -		dir = mv == '{' || mv == '[' ? 1 : -1;
+--		mark = mv == '[' || mv == ']' ? '\n' : '{';
++-		var = mv == '[' || mv == ']' ? '\n' : '{';
+ +		dir = mv == '}' || mv == ']' ? 1 : -1;
+-+		mark = mv == '[' || mv == ']' ? '{' : '\n';
+++		var = mv == '[' || mv == ']' ? '{' : '\n';
+ === COMMAND STRATEGY (default: rel) ===
+ #abs
+ #offset
+@@ -42,18 +42,18 @@
+ 	case '\]':
+ --- extra (delete to include) ---
+ 		dir = mv == '\{' \|\| mv == '\[' \? 1 : -1;
+-		mark = mv == '\[' \|\| mv == '\]' \? '\\n' : '\{';
++		var = mv == '\[' \|\| mv == '\]' \? '\\n' : '\{';
+ 		for \(i = 0; i < cnt; i\+\+\)
+-			if \(lbuf_sectionbeg\(xb, dir, row, off, mark\)\)
++			if \(lbuf_sectionbeg\(xb, dir, row, off, var\)\)
+ 				break;
+ === EDIT COMMAND (abs) ===
+ 710,711c 		dir = mv == '}' || mv == ']' ? 1 : -1;
+-		mark = mv == '[' || mv == ']' ? '{' : '\n';
++		var = mv == '[' || mv == ']' ? '{' : '\n';
+ === EDIT COMMAND (offset) ===
+ +39c 		dir = mv == '}' || mv == ']' ? 1 : -1;
+-		mark = mv == '[' || mv == ']' ? '{' : '\n';
++		var = mv == '[' || mv == ']' ? '{' : '\n';
+ === EDIT COMMAND (rel) ===
+ +3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
+-		mark = mv == '[' || mv == ']' ? '{' : '\n';
++		var = mv == '[' || mv == ']' ? '{' : '\n';
+ === END GROUP ===
+ 
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index a3d3876c..ff9c23ec 100644
