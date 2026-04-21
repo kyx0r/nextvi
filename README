@@ -31,8 +31,6 @@ MANPAGE NOTATION
      {x}     A closure where x represents required argument
      "x"     A closure where x represents a string
      <^X>    Represents a ctrl key X
-     #       Represents a positive number in a closure
-     *       Represents any character(s) in a closure
      < >     Separates alternatives in a closure
      x-y     Range from x to y
 
@@ -46,10 +44,10 @@ VI NORMAL
      [#]-          Move # lines up, cursor after indent
      [#]h          Move # columns left
      [#]l          Move # columns right
-     [#]f{arg}     Move to arg character found forward # times
-     [#]F{arg}     Move to arg character found backward # times
-     [#]t{arg}     Move until arg character found forward # times
-     [#]T{arg}     Move until arg character found backward # times
+     [#]f{<arg>}   Move to arg found forward # times
+     [#]F{<arg>}   Move to arg found backward # times
+     [#]t{<arg>}   Move until arg found forward # times
+     [#]T{<arg>}   Move until arg found backward # times
      [#],          Repeat last <f F t T> move backward # times
      [#];          Repeat last <f F t T> move forward # times
      [#]E          Move to end of word # times, skip punctuation
@@ -58,7 +56,8 @@ VI NORMAL
      [#]b          Move to start of word backward # times
      [#]W          Move to start of word forward # times, skip punctuation
      [#]w          Move to start of word forward # times
-     vw            Toggle single-line mode for <E e B b W w> regions
+     vw            Toggle single-line mode for <E e B b W w Space Backspace>
+                   regions
      [#](          Move to next sentence boundary down # times
      [#])          Move to next sentence boundary up # times
      [#]{          Move to next <{> section down # times
@@ -69,15 +68,15 @@ VI NORMAL
      0             Move to start of line
      $             Move to end of line
      [#]|          Goto # column
-     [#]<Space>    Move # characters forward, multi-line
+     [#]<Space>    Move # characters forward
      [#]<^H>
      [#]<Backspace>
-                   Move # characters backward, multi-line
+                   Move # characters backward
      %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
-     '{a-z ` ' [] *}
+     '{<a-z ` ' [ ] *>}
                    Move to a line mark
-     `{a-z ` ' [] *}
+     `{<a-z ` ' [ ] *>}
                    Move to a line mark with cursor position
      gg            Goto first line in buffer
      [#]G          Move to last line in buffer or # line
@@ -102,7 +101,7 @@ VI NORMAL
      8#            Toggle show relative line numbers permanently
      V             Toggle show hidden characters:<Space Tab Newline>
      <^C>          Toggle show line motion numbers for <l h e b E B w W>
-     {1-5}<^C>     Select line motion number mode 1-5
+     {<1-5>}<^C>   Select line motion number mode 1-5
      <^V>          Loop through line motion number modes
      [#]<^R>       Redo # times
      [#]u          Undo # times
@@ -113,10 +112,11 @@ VI NORMAL
      [#]<^W>{arg}  Unindent arg region # times
      [#]<{arg}     Indent left arg region # times
      [#]>{arg}     Indent right arg region # times
-     "{arg}{arg1}  Operate on arg register according to arg1 motion
+     "{<arg>}{arg1}
+                   Operate on arg register according to arg1 motion
      R             Print registers and their contents
-     [#]&{arg}     Execute arg register macro in non-blocking mode # times
-     [#]@{arg}     Execute arg register macro in blocking mode # times
+     [#]&{<arg>}   Execute arg register macro in non-blocking mode # times
+     [#]@{<arg>}   Execute arg register macro in blocking mode # times
      [#]@@         Execute last macro # times, blocking
      [#]&&         Execute last macro # times, non-blocking
      [#]@:
@@ -165,9 +165,9 @@ VI NORMAL
      D             Delete from cursor to end of line
      [#]x          Delete # characters from cursor forward
      [#]X          Delete # characters from cursor backward
-     di{arg}       Delete inside arg pairs <( ) ">
-     ci{arg}       Change inside arg pairs <( ) ">
-     [#]r{arg}     Replace # characters with arg from cursor forward
+     di{<arg>}     Delete inside arg pairs
+     ci{<arg>}     Change inside arg pairs
+     [#]r{<arg>}   Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
      [#]y{arg}     Yank arg region # times
@@ -176,16 +176,16 @@ VI NORMAL
                    position # times
      [#]P          Paste default register above current line or before cursor
                    position # times
-     m{a-z ` ' [] *}
+     m{<a-z ` ' [ ] *>}
                    Set buffer local line mark
      <^T>          Set global line mark 0. Global marks are always valid
-     {0 2 4 6 8}<^T>
+     {<0 2 4 6 8>}<^T>
                    Set a global line mark #
-     {1 3 5 7 9}<^T>
+     {<1 3 5 7 9>}<^T>
                    Switch to a global line mark #
-     [#]<^7>{0-9}
-     [#]<^_>{0-9}
-     [#]<^/>{0-9}
+     [#]<^7>{<0-9>}
+     [#]<^_>{<0-9>}
+     [#]<^/>{<0-9>}
                    Show buffer list and switch based on # or 0-9 index when
                    prompted
      <^^>
@@ -221,7 +221,7 @@ VI NORMAL
      [#]<^P>       Filesystem regex search backward
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
-     Z{*}          Exit and clean terminal, force quit in an & macro
+     Z{<Any>}      Exit and clean terminal, force quit in an & macro
      Zz            Exit and submit history command, force quit in an & macro
      ZZ            Exit and write unsaved changes to a file
 
@@ -263,7 +263,7 @@ VI/EX INSERT
      <^T>          Increase indent
      <^D>          Decrease indent
      <^]>          Select paste register from 0-9 registers in a loop
-     <^\>{arg}     Select paste register arg. <^\> selects default register
+     <^\>{<arg>}   Select paste register arg. <^\> selects default register
      <^P>          Paste a register
      <^X>          Mark autocomplete and <^U> starting position. <^X> resets
                    the mark
@@ -280,7 +280,7 @@ VI/EX INSERT
      <^O>          Switch between vi and ex modes recursively
      <^E>          Switch to English keymap
      <^F>          Switch to alternative keymap
-     <^V>{arg}     Read a literal character arg
+     <^V>{<arg>}   Read a literal character arg
      <^K>{arg}     Read a digraph sequence arg
      <^C>
      <ESC>
@@ -353,7 +353,7 @@ EX RANGES
      Some ex commands can be prefixed with ranges.
      [range] prefix implements vertical and horizontal ranges.
      [vrange] prefix implements vertical range and horizontal position.
-     Without [cmd], [range] replaces [prefix] and changes position.
+     Without [cmd], [range] replaces [prefix].
 
      [% |][, ;][#][. $ ' > <][- + * / %][0-9]
              All ranges structure
@@ -459,7 +459,7 @@ EX COMMANDS
              No range evaluates to <%> range.
              No range displays a maximum of xrows * 3 matches.
 
-     [vrange]g{<*>}[regex]{<*>}{cmd}
+     [vrange]g{<Any>}[regex]{<Any>}{cmd}
              Global command
 
              Execute an ex command on a range of lines that matches an
@@ -491,7 +491,7 @@ EX COMMANDS
              Example: extract/print data enclosed in "()"
              :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
-     [vrange]g!{<*>}[regex]{<*>}{cmd}
+     [vrange]g!{<Any>}[regex]{<Any>}{cmd}
              Inverted global command
 
      [range]re[regex]
@@ -552,7 +552,7 @@ EX COMMANDS
              Example: delete from current position to the end of the buffer
              :.,$;;$d
 
-     [vrange]j[*]
+     [vrange]j[any]
              Join line(s)
 
              Any argument activates padding mode.
@@ -562,7 +562,7 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [vrange]s{<*>}[regex]{<*>}{str}[<*>][<g>]
+     [vrange]s{<Any>}[regex]{<Any>}{str}[<Any>][<g>]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -584,7 +584,7 @@ EX COMMANDS
              :%s/(int)|(void)/pre\2after/g
              this is an example text for subs and has prepreafterafter or prevoidafter
 
-     u       Undo
+     ud      Undo
      rd      Redo
 
      [range]p[str]
@@ -602,7 +602,7 @@ EX COMMANDS
              Example: print buffer pathname
              :p %
 
-     [range]=[<0-3 *>][*]
+     [range]=[<0-3 Any>][any]
              Print range numbers
 
              Argument 0-3 selects a specific number.
@@ -624,7 +624,7 @@ EX COMMANDS
              Example: store ranges in <a> and <s> for later reuse in :f>
              :>top>,#>bottom>m as:'a,'sf>middle
 
-     [range]ya[<reg>][*]
+     [range]ya[<reg>][any]
              Yank into a register
 
              Argument value range is 0x1-0xff and 0x0 without.
@@ -639,7 +639,7 @@ EX COMMANDS
      ya![<reg>]
              Free a register
 
-     [range]pu[<reg>][*][\!{cmd}]
+     [range]pu[<reg>][any][\!{cmd}]
              Paste or pipe a register
 
              Example: paste <a> at line 1 character offset 5
@@ -768,7 +768,8 @@ EX COMMANDS
      bp[path]
              Set current buffer path
 
-     bs[*]   Set current buffer saved
+     bs[any]
+             Set current buffer saved
 
              Argument resets undo/redo history
 
@@ -871,7 +872,7 @@ EX COMMANDS
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
              Example: undo everything
-             :$? u
+             :$? ud
              Example: repeat chain of ex commands 10 times
              :10? 1p\:5p\:10p
              Example: calculate directory only if :cd succeeded
@@ -900,7 +901,7 @@ EX COMMANDS
              If any id has no capture, neither branch executes.
 
              Prefix operators:
-             # id tag
+             Numerical id tag
              , AND (higher precedence)
              ; OR (lower precedence)
 
@@ -945,7 +946,7 @@ EX COMMANDS
              Example: autocomplete using whole lines from a buffer
              :ac .+
 
-     [0-3]sc[<esc>][<sep>][<exp>][<exe>]
+     [<0-3>]sc[<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
              Prefix selects a specific character to change.
@@ -956,7 +957,7 @@ EX COMMANDS
              Example: utilize newly set separator in a single command chain
              :rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
 
-     [0-3]sc![<esc>][<sep>][<exp>][<exe>]
+     [<0-3>]sc![<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
              Missing arguments default to <0x0>.
@@ -981,7 +982,7 @@ EX COMMANDS
              Passes multi-codepoint sequences such as emojis to the terminal
              for native rendering rather than substituting placeholders.
 
-     ph[#clow] [#chigh] [#width] [#blen][*char]
+     ph[#clow] [#chigh] [#width] [#blen][str]
              Redefine placeholders
 
              This command replaces placeholders defined in conf.c
@@ -1001,7 +1002,7 @@ EX COMMANDS
 EX OPTIONS
      Ex options are ex commands designed to alter global variables.
      Values hold a signed integer. Values may represent a character.
-     Default value is specified in val=* as part of an argument notation.
+     Default value is specified in val= as part of an argument notation.
      No argument inverts the current value, unless stated otherwise.
 
      ai[val=1]
@@ -1279,12 +1280,12 @@ CODE MAP
      | 366 term.c   |  low level IO        |
      | 410 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
-     | 651 lbuf.c   |  file/line buffer    |
+     | 650 lbuf.c   |  file/line buffer    |
      | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
      | 1726 ex.c    |  ex options/commands |
-     | 1854 vi.c    |  normal mode/general |
-     | 7473 total   |  wc -l *.c|sort      |
+     | 1878 vi.c    |  normal mode/general |
+     | 7496 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1363,4 +1364,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 4.3                      April 20, 2026                      Nextvi 4.3
+Nextvi 5.0                      April 21, 2026                      Nextvi 5.0

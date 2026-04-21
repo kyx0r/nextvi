@@ -1514,7 +1514,7 @@ static struct excmd {
 	{"uc", ec_setenc},
 	{"uz", ec_setenc},
 	{"ub", ec_setenc},
-	{"u", ec_undoredo},
+	{"ud", ec_undoredo},
 	EO(shape),
 	EO(seq),
 	{"sc!", ec_specials},
