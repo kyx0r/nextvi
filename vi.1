@@ -1,4 +1,4 @@
-.Dd Apr 20, 2026
+.Dd Apr 21, 2026
 .Dt Nextvi 1
 .Os Nextvi 5.0
 .
@@ -102,7 +102,7 @@ Move to start of word forward # times, skip punctuation
 .It Cm [\fI#\fP]w
 Move to start of word forward # times
 .It Cm vw
-Toggle single-line mode for <E e B b W w> regions
+Toggle single-line mode for <E e B b W w Space Backspace> regions
 .It Cm [\fI#\fP](
 Move to next sentence boundary down # times
 .It Cm [\fI#\fP])
@@ -124,11 +124,11 @@ Move to end of line
 .It Cm [\fI#\fP]|
 Goto # column
 .It Cm [\fI#\fP]<Space>
-Move # characters forward, multi-line
+Move # characters forward
 .It Cm [\fI#\fP]<^H>
 .It Cm [\fI#\fP]<Backspace>
 .Bd -compact
-Move # characters backward, multi-line
+Move # characters backward
 .Ed
 .It Cm %
 Move to closest <] ) } [ ( {> pair
@@ -297,10 +297,10 @@ Delete from cursor to end of line
 Delete # characters from cursor forward
 .It Cm [\fI#\fP]X
 Delete # characters from cursor backward
-.It Cm di{\fIarg\fP}
-Delete inside arg pairs <( ) \&">
-.It Cm ci{\fIarg\fP}
-Change inside arg pairs <( ) \&">
+.It Cm di{\fI<arg>\fP}
+Delete inside arg pairs
+.It Cm ci{\fI<arg>\fP}
+Change inside arg pairs
 .It Cm [\fI#\fP]r{\fIarg\fP}
 Replace # characters with arg from cursor forward
 .It Cm [\fI#\fP]K
@@ -1675,12 +1675,12 @@ _
  366 term.c | low level IO
  410 ren.c | positioning/syntax
  614 uc.c | UTF-8 support
- 651 lbuf.c | file/line buffer
+ 650 lbuf.c | file/line buffer
  725 led.c | insert mode/output
  766 regex.c | pikevm
  1726 ex.c | ex options/commands
- 1854 vi.c | normal mode/general
- 7473 total | wc -l *.c\(basort
+ 1878 vi.c | normal mode/general
+ 7496 total | wc -l *.c\(basort
 _
 .TE
 .

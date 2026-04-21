@@ -58,7 +58,8 @@ VI NORMAL
      [#]b          Move to start of word backward # times
      [#]W          Move to start of word forward # times, skip punctuation
      [#]w          Move to start of word forward # times
-     vw            Toggle single-line mode for <E e B b W w> regions
+     vw            Toggle single-line mode for <E e B b W w Space Backspace>
+                   regions
      [#](          Move to next sentence boundary down # times
      [#])          Move to next sentence boundary up # times
      [#]{          Move to next <{> section down # times
@@ -69,10 +70,10 @@ VI NORMAL
      0             Move to start of line
      $             Move to end of line
      [#]|          Goto # column
-     [#]<Space>    Move # characters forward, multi-line
+     [#]<Space>    Move # characters forward
      [#]<^H>
      [#]<Backspace>
-                   Move # characters backward, multi-line
+                   Move # characters backward
      %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
      '{a-z ` ' [] *}
@@ -165,8 +166,8 @@ VI NORMAL
      D             Delete from cursor to end of line
      [#]x          Delete # characters from cursor forward
      [#]X          Delete # characters from cursor backward
-     di{arg}       Delete inside arg pairs <( ) ">
-     ci{arg}       Change inside arg pairs <( ) ">
+     di{<arg>}     Delete inside arg pairs
+     ci{<arg>}     Change inside arg pairs
      [#]r{arg}     Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
@@ -1279,12 +1280,12 @@ CODE MAP
      | 366 term.c   |  low level IO        |
      | 410 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
-     | 651 lbuf.c   |  file/line buffer    |
+     | 650 lbuf.c   |  file/line buffer    |
      | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
      | 1726 ex.c    |  ex options/commands |
-     | 1854 vi.c    |  normal mode/general |
-     | 7473 total   |  wc -l *.c|sort      |
+     | 1878 vi.c    |  normal mode/general |
+     | 7496 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1363,4 +1364,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.0                      April 20, 2026                      Nextvi 5.0
+Nextvi 5.0                      April 21, 2026                      Nextvi 5.0
