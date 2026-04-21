@@ -623,18 +623,17 @@ int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off)
 }
 
 /* move to the matching character */
-int lbuf_pair(struct lbuf *lb, int *row, int *off)
+int lbuf_pair(struct lbuf *lb, char *pairs, int *row, int *off)
 {
 	int r = *row, o = *off;
-	char *pairs = "()[]{}";
 	int p, c, dep = 1;
 	if (!lbuf_get(lb, r))
 		return 1;
 	ren_state *rs = ren_position(lbuf_get(lb, r));
-	for (; o < rs->n-1 && !memchr(pairs, *rs->chrs[o], 6); o++);
-	if (!memchr(pairs, *rs->chrs[o], 6))
+	for (; o < rs->n-1 && !strchr(pairs, *rs->chrs[o]); o++);
+	if (!strchr(pairs, *rs->chrs[o]))
 		return 1;
-	p = (char*)memchr(pairs, *rs->chrs[o], 6) - pairs;
+	p = strchr(pairs, *rs->chrs[o]) - pairs;
 	while (!lbuf_next(lb, (p & 1) ? -1 : +1, &r, &o)) {
 		c = *rstate->chrs[o];
 		if (c == pairs[p ^ 1])
