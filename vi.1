@@ -130,9 +130,9 @@ Move # characters backward
 Move to closest <] ) } [ ( {> pair
 .It Cm {\fI#\fP}%
 Move to # percent line number
-.It Cm '{<\fIa-z ` ' [ ] *\fP>}
+.It Cm '{<\fIa-z ` ' \&[ \&] \&*\fP>}
 Move to a line mark
-.It Cm `{<\fIa-z ` ' [ ] *\fP>}
+.It Cm `{<\fIa-z ` ' \&[ \&] \&*\fP>}
 Move to a line mark with cursor position
 .It Cm gg
 Goto first line in buffer
@@ -177,7 +177,7 @@ Toggle show relative line numbers permanently
 Toggle show hidden characters:<Space Tab Newline>
 .It Cm <^C>
 Toggle show line motion numbers for <l h e b E B w W>
-.It Cm {\fI1-5\fP}<^C>
+.It Cm {<\fI1-5\fP>}<^C>
 Select line motion number mode 1-5
 .It Cm <^V>
 Loop through line motion number modes
@@ -311,17 +311,17 @@ Yank # lines
 Paste default register below current line or after cursor position # times
 .It Cm [\fI#\fP]P
 Paste default register above current line or before cursor position # times
-.It Cm m{<\fIa-z ` ' [] *\fP>}
+.It Cm m{<\fIa-z ` ' \&[ \&] \&*\fP>}
 Set buffer local line mark
 .It Cm <^T>
 Set global line mark 0. Global marks are always valid
-.It Cm {\fI0 2 4 6 8\fP}<^T>
+.It Cm {<\fI0 2 4 6 8\fP>}<^T>
 Set a global line mark #
-.It Cm {\fI1 3 5 7 9\fP}<^T>
+.It Cm {<\fI1 3 5 7 9\fP>}<^T>
 Switch to a global line mark #
-.It Cm [\fI#\fP]<^7>{\fI0-9\fP}
-.It Cm [\fI#\fP]<^_>{\fI0-9\fP}
-.It Cm [\fI#\fP]<^/>{\fI0-9\fP}
+.It Cm [\fI#\fP]<^7>{<\fI0-9\fP>}
+.It Cm [\fI#\fP]<^_>{<\fI0-9\fP>}
+.It Cm [\fI#\fP]<^/>{<\fI0-9\fP>}
 .Bd -compact
 Show buffer list and switch based on # or 0-9 index when prompted
 .Ed
@@ -451,7 +451,7 @@ Increase indent
 Decrease indent
 .It Cm <^]>
 Select paste register from 0-9 registers in a loop
-.It Cm <^\e>{\fIarg\fP}
+.It Cm <^\e>{<\fIarg\fP>}
 Select paste register arg. <^\e> selects default register
 .It Cm <^P>
 Paste a register
@@ -508,7 +508,7 @@ into a purely command-line interface (CLI) when desired.
 .Sh EX PARSING
 .Bd -literal -compact
 Parsing follows the structure:
-[<\fIsep\fP>][\fIprefix\fP][\fIcmd\fP][\fI<pad>\fP][\fIargs\fP]
+[<\fIsep\fP>][\fIprefix\fP][\fIcmd\fP][<\fIpad\fP>][\fIargs\fP]
 Ex commands are initiated and separated by <:>. Fields can be
 padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
 which accepts [range] structure characters. Padding inside [prefix]
@@ -811,7 +811,7 @@ Example: delete from current position to the end of the buffer
 :.,$;;$d
 .Ed
 
-.It Cm [\fIvrange\fP]j[\fIAny\fP]
+.It Cm [\fIvrange\fP]j[\fIany\fP]
 Join line(s)
 .Bd -literal
 Any argument activates padding mode.
@@ -866,7 +866,7 @@ Example: print buffer pathname
 :p %
 .Ed
 
-.It Cm [\fIrange\fP]=[<\fI0-3\fP \fIAny\fP>][\fIAny\fP]
+.It Cm [\fIrange\fP]=[<\fI0-3\fP \fIAny\fP>][\fIany\fP]
 Print range numbers
 .Bd -literal
 Argument 0-3 selects a specific number.
@@ -890,7 +890,7 @@ Example: store ranges in <a> and <s> for later reuse in :f>
 :>top>,#>bottom>m as:'a,'sf>middle
 .Ed
 
-.It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fIAny\fP]
+.It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fIany\fP]
 Yank into a register
 .Bd -literal
 Argument value range is 0x1-0xff and 0x0 without.
@@ -906,7 +906,7 @@ Example: yank into <a> using ranges
 .It Cm ya![<\fIreg\fP>]
 Free a register
 
-.It Cm [\fIrange\fP]pu[<\fIreg\fP>][Any][\e!{\fIcmd\fP}]
+.It Cm [\fIrange\fP]pu[<\fIreg\fP>][any][\e!{\fIcmd\fP}]
 Paste or pipe a register
 .Bd -literal
 Example: paste <a> at line 1 character offset 5
@@ -1044,7 +1044,7 @@ Example: switch to the /sc/ scratch buffer
 .It Cm bp[\fIpath\fP]
 Set current buffer path
 
-.It Cm bs[\fIAny\fP]
+.It Cm bs[\fIany\fP]
 Set current buffer saved
 .Bd -literal
 Argument resets undo/redo history
@@ -1187,7 +1187,7 @@ in DNF over the most recent captures of each referenced id.
 If any id has no capture, neither branch executes.
 
 Prefix operators:
-# id tag
+Numerical id tag
 , AND (higher precedence)
 ; OR (lower precedence)
 
@@ -1236,7 +1236,7 @@ Example: autocomplete using whole lines from a buffer
 :ac .+
 .Ed
 
-.It Cm [\fI0-3\fP]sc[<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
+.It Cm [<\fI0-3\fP>]sc[<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
 Set ex special characters
 .Bd -literal
 Prefix selects a specific character to change.
@@ -1248,7 +1248,7 @@ Example: utilize newly set separator in a single command chain
 :rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
 .Ed
 
-.It Cm [\fI0-3\fP]sc![<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
+.It Cm [<\fI0-3\fP>]sc![<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
 Set ex special characters
 .Bd -literal
 Missing arguments default to <0x0>.
