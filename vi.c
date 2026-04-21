@@ -43,7 +43,7 @@ static int vi_scrolley;			/* scroll amount for ^e and ^y */
 static int vi_cndir = 1;		/* ^n direction */
 static int vi_status;			/* permanent status bar */
 static int vi_tsm;			/* type of the status message */
-static int vi_nlword;			/* new line mode for eEwWbB */
+static int vi_nlmode;			/* new line mode for vi regions */
 
 void *emalloc(size_t size)
 {
@@ -603,6 +603,8 @@ static int vi_motion(int vc, int *row, int *off)
 		mark = cs ? ren_position(cs)->n : 0;
 		i = *off;
 		*off += cnt * dir;
+		if (!vi_nlmode)
+			break;
 		if (*off < 0 || *off >= mark) {
 			cnt -= dir > 0 ? mark - i : i;
 			*off = dir > 0 ? mark : 0;
@@ -637,21 +639,21 @@ static int vi_motion(int vc, int *row, int *off)
 	case 'B':
 		mark = mv == 'B';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordend(xb, mark, -(vi_nlword+1), row, off))
+			if (lbuf_wordend(xb, mark, -(vi_nlmode+1), row, off))
 				break;
 		break;
 	case 'e':
 	case 'E':
 		mark = mv == 'E';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordend(xb, mark, vi_nlword+1, row, off))
+			if (lbuf_wordend(xb, mark, vi_nlmode+1, row, off))
 				break;
 		break;
 	case 'w':
 	case 'W':
 		mark = mv == 'W';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordbeg(xb, mark, vi_nlword+1, row, off))
+			if (lbuf_wordbeg(xb, mark, vi_nlmode+1, row, off))
 				break;
 		break;
 	case '(':
@@ -795,7 +797,7 @@ static int vi_motion(int vc, int *row, int *off)
 			return -1;
 		break;
 	case '%':
-		if (lbuf_pair(xb, row, off))
+		if (lbuf_pair(xb, "()[]{}", row, off))
 			return -1;
 		break;
 	default:
@@ -1371,7 +1373,7 @@ void vi(int init)
 					}
 					break;
 				case 'w':
-					vi_nlword = !vi_nlword;
+					vi_nlmode = !vi_nlmode;
 					break;
 				case 'o':
 					ex_command("%s/\x0d//g:%s/[ \t]+$//g")
@@ -1472,19 +1474,41 @@ void vi(int init)
 				k = term_read(0);
 				if (k == 'i') {
 					k = term_read(0);
+					char open, close, pairs[3] = "";
 					switch(k) {
-					case ')':
-						term_push("F(ldt)", 6);
-						break;
-					case '(':
-						term_push("f(ldt)", 6);
-						break;
-					case '"':
-						term_push("f\"ldt\"", 6);
-						break;
+					case ')': case '(': open='('; close=')'; break;
+					case ']': case '[': open='['; close=']'; break;
+					case '}': case '{': open='{'; close='}'; break;
+					case '>': case '<': open='<'; close='>'; break;
+					default: open = k; close = k; break;
 					}
-					if (c == 'c')
-						term_back('i');
+					if (!open)
+						break;
+					pairs[0] = open; pairs[1] = close;
+					int r1 = xrow, o1 = xoff, r2, o2;
+					int dir = (k == close && open != close) ? -1 : 1;
+					int pair_found = 0;
+					ren_position(lbuf_get(xb, r1));
+					while (*rstate->chrs[o1] != open)
+						if (lbuf_next(xb, dir, &r1, &o1))
+							goto out;
+					r2 = r1;
+					o2 = o1;
+					if (open == close) {
+						while (!lbuf_next(xb, 1, &r2, &o2))
+							if (*rstate->chrs[o2] == close) {
+								pair_found = 1;
+								break;
+							}
+					} else
+						pair_found = !lbuf_pair(xb, pairs, &r2, &o2);
+					if (pair_found && !lbuf_next(xb, 1, &r1, &o1)) {
+						vi_delete(r1, o1, r2, o2, 0);
+						if (c == 'c')
+							term_back('i');
+						vi_mod |= 1;
+					}
+					out:
 					break;
 				}
 				term_dec()
@@ -1735,9 +1759,9 @@ void vi(int init)
 			led_att la;
 			if (!led_attsb)
 				sbuf_make(led_attsb, sizeof(la) * 2)
-			if (!lbuf_pair(xb, &row, &off)) {
+			if (!lbuf_pair(xb, "()[]{}", &row, &off)) {
 				row1 = row; off1 = off;
-				if (!lbuf_pair(xb, &row, &off)) {
+				if (!lbuf_pair(xb, "()[]{}", &row, &off)) {
 					la.s = ln;
 					la.off = off;
 					la.att = hls[k].att[0];
