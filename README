@@ -31,8 +31,6 @@ MANPAGE NOTATION
      {x}     A closure where x represents required argument
      "x"     A closure where x represents a string
      <^X>    Represents a ctrl key X
-     #       Represents a positive number in a closure
-     *       Represents any character(s) in a closure
      < >     Separates alternatives in a closure
      x-y     Range from x to y
 
@@ -76,9 +74,9 @@ VI NORMAL
                    Move # characters backward
      %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
-     '{a-z ` ' [] *}
+     '{<a-z ` ' [] *>}
                    Move to a line mark
-     `{a-z ` ' [] *}
+     `{<a-z ` ' [] *>}
                    Move to a line mark with cursor position
      gg            Goto first line in buffer
      [#]G          Move to last line in buffer or # line
@@ -117,8 +115,8 @@ VI NORMAL
      "{<arg>}{arg1}
                    Operate on arg register according to arg1 motion
      R             Print registers and their contents
-     [#]&{arg}     Execute arg register macro in non-blocking mode # times
-     [#]@{arg}     Execute arg register macro in blocking mode # times
+     [#]&{<arg>}   Execute arg register macro in non-blocking mode # times
+     [#]@{<arg>}   Execute arg register macro in blocking mode # times
      [#]@@         Execute last macro # times, blocking
      [#]&&         Execute last macro # times, non-blocking
      [#]@:
@@ -178,7 +176,7 @@ VI NORMAL
                    position # times
      [#]P          Paste default register above current line or before cursor
                    position # times
-     m{a-z ` ' [] *}
+     m{<a-z ` ' [] *>}
                    Set buffer local line mark
      <^T>          Set global line mark 0. Global marks are always valid
      {0 2 4 6 8}<^T>
@@ -223,7 +221,7 @@ VI NORMAL
      [#]<^P>       Filesystem regex search backward
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
-     Z{*}          Exit and clean terminal, force quit in an & macro
+     Z{<Any>}      Exit and clean terminal, force quit in an & macro
      Zz            Exit and submit history command, force quit in an & macro
      ZZ            Exit and write unsaved changes to a file
 
@@ -461,7 +459,7 @@ EX COMMANDS
              No range evaluates to <%> range.
              No range displays a maximum of xrows * 3 matches.
 
-     [vrange]g{<*>}[regex]{<*>}{cmd}
+     [vrange]g{<Any>}[regex]{<Any>}{cmd}
              Global command
 
              Execute an ex command on a range of lines that matches an
@@ -493,7 +491,7 @@ EX COMMANDS
              Example: extract/print data enclosed in "()"
              :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
-     [vrange]g!{<*>}[regex]{<*>}{cmd}
+     [vrange]g!{<Any>}[regex]{<Any>}{cmd}
              Inverted global command
 
      [range]re[regex]
@@ -554,7 +552,7 @@ EX COMMANDS
              Example: delete from current position to the end of the buffer
              :.,$;;$d
 
-     [vrange]j[*]
+     [vrange]j[Any]
              Join line(s)
 
              Any argument activates padding mode.
@@ -564,7 +562,7 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [vrange]s{<*>}[regex]{<*>}{str}[<*>][<g>]
+     [vrange]s{<Any>}[regex]{<Any>}{str}[<Any>][<g>]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -604,7 +602,7 @@ EX COMMANDS
              Example: print buffer pathname
              :p %
 
-     [range]=[<0-3 *>][*]
+     [range]=[<0-3 Any>][Any]
              Print range numbers
 
              Argument 0-3 selects a specific number.
@@ -626,7 +624,7 @@ EX COMMANDS
              Example: store ranges in <a> and <s> for later reuse in :f>
              :>top>,#>bottom>m as:'a,'sf>middle
 
-     [range]ya[<reg>][*]
+     [range]ya[<reg>][Any]
              Yank into a register
 
              Argument value range is 0x1-0xff and 0x0 without.
@@ -641,7 +639,7 @@ EX COMMANDS
      ya![<reg>]
              Free a register
 
-     [range]pu[<reg>][*][\!{cmd}]
+     [range]pu[<reg>][Any][\!{cmd}]
              Paste or pipe a register
 
              Example: paste <a> at line 1 character offset 5
@@ -770,7 +768,8 @@ EX COMMANDS
      bp[path]
              Set current buffer path
 
-     bs[*]   Set current buffer saved
+     bs[Any]
+             Set current buffer saved
 
              Argument resets undo/redo history
 
@@ -983,7 +982,7 @@ EX COMMANDS
              Passes multi-codepoint sequences such as emojis to the terminal
              for native rendering rather than substituting placeholders.
 
-     ph[#clow] [#chigh] [#width] [#blen][*char]
+     ph[#clow] [#chigh] [#width] [#blen][str]
              Redefine placeholders
 
              This command replaces placeholders defined in conf.c
@@ -1003,7 +1002,7 @@ EX COMMANDS
 EX OPTIONS
      Ex options are ex commands designed to alter global variables.
      Values hold a signed integer. Values may represent a character.
-     Default value is specified in val=* as part of an argument notation.
+     Default value is specified in val= as part of an argument notation.
      No argument inverts the current value, unless stated otherwise.
 
      ai[val=1]
