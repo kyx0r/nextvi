@@ -74,9 +74,9 @@ VI NORMAL
                    Move # characters backward
      %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
-     '{<a-z ` ' [] *>}
+     '{<a-z ` ' [ ] *>}
                    Move to a line mark
-     `{<a-z ` ' [] *>}
+     `{<a-z ` ' [ ] *>}
                    Move to a line mark with cursor position
      gg            Goto first line in buffer
      [#]G          Move to last line in buffer or # line
@@ -101,7 +101,7 @@ VI NORMAL
      8#            Toggle show relative line numbers permanently
      V             Toggle show hidden characters:<Space Tab Newline>
      <^C>          Toggle show line motion numbers for <l h e b E B w W>
-     {1-5}<^C>     Select line motion number mode 1-5
+     {<1-5>}<^C>   Select line motion number mode 1-5
      <^V>          Loop through line motion number modes
      [#]<^R>       Redo # times
      [#]u          Undo # times
@@ -176,16 +176,16 @@ VI NORMAL
                    position # times
      [#]P          Paste default register above current line or before cursor
                    position # times
-     m{<a-z ` ' [] *>}
+     m{<a-z ` ' [ ] *>}
                    Set buffer local line mark
      <^T>          Set global line mark 0. Global marks are always valid
-     {0 2 4 6 8}<^T>
+     {<0 2 4 6 8>}<^T>
                    Set a global line mark #
-     {1 3 5 7 9}<^T>
+     {<1 3 5 7 9>}<^T>
                    Switch to a global line mark #
-     [#]<^7>{0-9}
-     [#]<^_>{0-9}
-     [#]<^/>{0-9}
+     [#]<^7>{<0-9>}
+     [#]<^_>{<0-9>}
+     [#]<^/>{<0-9>}
                    Show buffer list and switch based on # or 0-9 index when
                    prompted
      <^^>
@@ -263,7 +263,7 @@ VI/EX INSERT
      <^T>          Increase indent
      <^D>          Decrease indent
      <^]>          Select paste register from 0-9 registers in a loop
-     <^\>{arg}     Select paste register arg. <^\> selects default register
+     <^\>{<arg>}   Select paste register arg. <^\> selects default register
      <^P>          Paste a register
      <^X>          Mark autocomplete and <^U> starting position. <^X> resets
                    the mark
@@ -552,7 +552,7 @@ EX COMMANDS
              Example: delete from current position to the end of the buffer
              :.,$;;$d
 
-     [vrange]j[Any]
+     [vrange]j[any]
              Join line(s)
 
              Any argument activates padding mode.
@@ -602,7 +602,7 @@ EX COMMANDS
              Example: print buffer pathname
              :p %
 
-     [range]=[<0-3 Any>][Any]
+     [range]=[<0-3 Any>][any]
              Print range numbers
 
              Argument 0-3 selects a specific number.
@@ -624,7 +624,7 @@ EX COMMANDS
              Example: store ranges in <a> and <s> for later reuse in :f>
              :>top>,#>bottom>m as:'a,'sf>middle
 
-     [range]ya[<reg>][Any]
+     [range]ya[<reg>][any]
              Yank into a register
 
              Argument value range is 0x1-0xff and 0x0 without.
@@ -639,7 +639,7 @@ EX COMMANDS
      ya![<reg>]
              Free a register
 
-     [range]pu[<reg>][Any][\!{cmd}]
+     [range]pu[<reg>][any][\!{cmd}]
              Paste or pipe a register
 
              Example: paste <a> at line 1 character offset 5
@@ -768,7 +768,7 @@ EX COMMANDS
      bp[path]
              Set current buffer path
 
-     bs[Any]
+     bs[any]
              Set current buffer saved
 
              Argument resets undo/redo history
@@ -901,7 +901,7 @@ EX COMMANDS
              If any id has no capture, neither branch executes.
 
              Prefix operators:
-             # id tag
+             Numerical id tag
              , AND (higher precedence)
              ; OR (lower precedence)
 
@@ -946,7 +946,7 @@ EX COMMANDS
              Example: autocomplete using whole lines from a buffer
              :ac .+
 
-     [0-3]sc[<esc>][<sep>][<exp>][<exe>]
+     [<0-3>]sc[<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
              Prefix selects a specific character to change.
@@ -957,7 +957,7 @@ EX COMMANDS
              Example: utilize newly set separator in a single command chain
              :rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
 
-     [0-3]sc![<esc>][<sep>][<exp>][<exe>]
+     [<0-3>]sc![<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
              Missing arguments default to <0x0>.
