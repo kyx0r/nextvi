@@ -266,11 +266,11 @@ printf '\n%s\n' '─── Section C: More Ex Mode Tests ───────�
 # C1: Undo / Redo ──────────────────────────────────────────────────────────────
 
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':%s/hello/world/:u:%p:q!')
-check 'ex :u undoes substitute' 'hello' "$out"
+out=$(run_ex ':%s/hello/world/:ud:%p:q!')
+check 'ex :ud undoes substitute' 'hello' "$out"
 
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':%s/hello/world/:u:rd:%p:q!')
+out=$(run_ex ':%s/hello/world/:ud:rd:%p:q!')
 check 'ex :rd redoes after undo' 'world' "$out"
 
 # C2: Line marks ───────────────────────────────────────────────────────────────
@@ -525,12 +525,12 @@ printf '\n%s\n' '─── Section J: seq — undo sequencing ──────
 
 # seq 0 groups all subsequent changes into a single undo step
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':seq 0:s/hello/step1/:s/step1/step2/:s/step2/final/:seq:u:%p:q!')
+out=$(run_ex ':seq 0:s/hello/step1/:s/step1/step2/:s/step2/final/:seq:ud:%p:q!')
 check 'J1 seq 0 — batch changes undo as one step' 'hello' "$out"
 
-# seq -1 disables undo tracking entirely; :u has no effect
+# seq -1 disables undo tracking entirely; :ud has no effect
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':seq -1:s/hello/world/:u:%p:seq:q!')
+out=$(run_ex ':seq -1:s/hello/world/:ud:%p:seq:q!')
 check 'J2 seq -1 — undo tracking disabled; u has no effect' 'world' "$out"
 
 printf '\n%s\n' '─── Section K: pr — capture :p output into a register ───────────────────────'
@@ -876,19 +876,19 @@ printf '\n%s\n' '─── Section M: Mark Tests ──────────�
 printf 'a\nb\nc\nd\ne\n' > "$TMPFILE"
 out=$(run_ex ":4ma:1,2d:'a=1:q")
 check 'mark: pure delete before → mark shifts' '2' "$out"
-out=$(run_ex ":4ma:1,2d:u:'a=1:q")
+out=$(run_ex ":4ma:1,2d:ud:'a=1:q")
 check 'mark: undo pure delete before → mark restored' '4' "$out"
 
 # M3/M4: pure deletion AFTER mark — mark unchanged, undo leaves mark unchanged
 printf 'a\nb\nc\nd\ne\n' > "$TMPFILE"
 out=$(run_ex ":2ma:4,5d:'a=1:q")
 check 'mark: pure delete after → mark unchanged' '2' "$out"
-out=$(run_ex ":2ma:4,5d:u:'a=1:q")
+out=$(run_ex ":2ma:4,5d:ud:'a=1:q")
 check 'mark: undo pure delete after → mark unchanged' '2' "$out"
 
 # M5: pure deletion AT mark — mark invalidated, undo restores it
 printf 'a\nb\nc\nd\ne\n' > "$TMPFILE"
-out=$(run_ex ":3ma:3d:u:'a=1:q")
+out=$(run_ex ":3ma:3d:ud:'a=1:q")
 check 'mark: undo pure delete at mark → mark restored' '3' "$out"
 
 # M6/M7: replacement COVERING mark (n_ins>0, n_del>0) — mark clamped, undo restores
@@ -896,7 +896,7 @@ check 'mark: undo pure delete at mark → mark restored' '3' "$out"
 printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(run_ex ":3ma:1,3;0;d:'a=1:q")
 check 'mark: replacement covers mark → mark clamped' '1' "$out"
-out=$(run_ex ":3ma:1,3;0;d:u:'a=1:q")
+out=$(run_ex ":3ma:1,3;0;d:ud:'a=1:q")
 check 'mark: undo replacement covering mark → mark restored' '3' "$out"
 
 # M8/M9: replacement BEFORE mark — mark adjusts, undo restores
@@ -904,14 +904,14 @@ check 'mark: undo replacement covering mark → mark restored' '3' "$out"
 printf 'aa\nbb\ncc\ndd\n' > "$TMPFILE"
 out=$(run_ex ":4ma:1,2;0;d:'a=1:q")
 check 'mark: replacement before → mark adjusts' '3' "$out"
-out=$(run_ex ":4ma:1,2;0;d:u:'a=1:q")
+out=$(run_ex ":4ma:1,2;0;d:ud:'a=1:q")
 check 'mark: undo replacement before → mark restored' '4' "$out"
 
 # M10/M11: replacement AFTER mark — mark unchanged, undo leaves mark unchanged
 printf 'aa\nbb\ncc\ndd\n' > "$TMPFILE"
 out=$(run_ex ":1ma:3,4;0;d:'a=1:q")
 check 'mark: replacement after → mark unchanged' '1' "$out"
-out=$(run_ex ":1ma:3,4;0;d:u:'a=1:q")
+out=$(run_ex ":1ma:3,4;0;d:ud:'a=1:q")
 check 'mark: undo replacement after → mark unchanged' '1' "$out"
 
 printf '\n%s\n' '─── Section M2: Mark Tests with :c (n_ins and n_del both nonzero) ────────────'
@@ -930,7 +930,7 @@ printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':4ma:2,4c xx\nyy\n.\n:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: :c lossy zone (n_ins=2,n_del=3) → mark clamped' '3' "$out"
-out=$(EXINIT="$(printf ':4ma:2,4c xx\nyy\n.\n:u:'"'"'a=1:q')" \
+out=$(EXINIT="$(printf ':4ma:2,4c xx\nyy\n.\n:ud:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c lossy zone → mark restored' '4' "$out"
 
@@ -940,7 +940,7 @@ printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':3ma:2,4c xx\nyy\n.\n:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: :c mark before lossy zone → mark unchanged' '3' "$out"
-out=$(EXINIT="$(printf ':3ma:2,4c xx\nyy\n.\n:u:'"'"'a=1:q')" \
+out=$(EXINIT="$(printf ':3ma:2,4c xx\nyy\n.\n:ud:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c; mark was before lossy zone → still unchanged' '3' "$out"
 
@@ -951,7 +951,7 @@ printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':3ma:2,4c xx\n.\n:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: :c fully steps over mark (n_ins=1,n_del=3) → mark clamped' '2' "$out"
-out=$(EXINIT="$(printf ':3ma:2,4c xx\n.\n:u:'"'"'a=1:q')" \
+out=$(EXINIT="$(printf ':3ma:2,4c xx\n.\n:ud:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c fully stepping over mark → mark restored' '3' "$out"
 
@@ -960,7 +960,7 @@ printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':5ma:2,4c xx\nyy\n.\n:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: :c before mark (n_ins<n_del) → mark adjusts down' '4' "$out"
-out=$(EXINIT="$(printf ':5ma:2,4c xx\nyy\n.\n:u:'"'"'a=1:q')" \
+out=$(EXINIT="$(printf ':5ma:2,4c xx\nyy\n.\n:ud:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c before mark (n_ins<n_del) → mark restored' '5' "$out"
 
@@ -971,7 +971,7 @@ printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':3ma:2,3c xx\nyy\nzz\n.\n:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: :c deleted row within new range (n_ins>n_del) → not invalidated' '3' "$out"
-out=$(EXINIT="$(printf ':3ma:2,3c xx\nyy\nzz\n.\n:u:'"'"'a=1:q')" \
+out=$(EXINIT="$(printf ':3ma:2,3c xx\nyy\nzz\n.\n:ud:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c deleted row within new range → mark unchanged' '3' "$out"
 
@@ -981,7 +981,7 @@ printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':5ma:2,3c xx\nyy\nzz\n.\n:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: :c before mark (n_ins>n_del) → mark adjusts up' '6' "$out"
-out=$(EXINIT="$(printf ':5ma:2,3c xx\nyy\nzz\n.\n:u:'"'"'a=1:q')" \
+out=$(EXINIT="$(printf ':5ma:2,3c xx\nyy\nzz\n.\n:ud:'"'"'a=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c before mark (n_ins>n_del) → mark restored' '5' "$out"
 
