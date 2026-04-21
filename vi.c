@@ -343,7 +343,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 /* read a line motion */
 static int vi_motionln(int *row, int cmd, int cnt)
 {
-	int mark, c = term_read(TK_CTL('l'));
+	int var, c = term_read(TK_CTL('l'));
 	switch (c) {
 	case '\n':
 	case '+':
@@ -355,9 +355,7 @@ static int vi_motionln(int *row, int cmd, int cnt)
 		*row = MAX(*row - cnt, 0);
 		break;
 	case '\'':
-		if ((mark = term_read(0)) <= 0)
-			return -1;
-		if (lbuf_jump(xb, mark, row, &mark))
+		if (lbuf_jump(xb, term_read(0), row, &var))
 			return -1;
 		break;
 	case 'G':
@@ -565,7 +563,7 @@ static int vi_motion(int vc, int *row, int *off)
 	static int cadir = 1;
 	char *cs;
 	int cnt = vi_arg ? vi_arg : 1;
-	int mv, i, dir, mark;
+	int mv, i, dir, var;
 
 	if ((mv = vi_motionln(row, 0, cnt))) {
 		*off = -1;
@@ -600,28 +598,28 @@ static int vi_motion(int vc, int *row, int *off)
 	case TK_CTL('h'):
 		dir = mv == ' ' ? +1 : -1;
 		cs = lbuf_get(xb, *row);
-		mark = cs ? ren_position(cs)->n : 0;
+		var = cs ? ren_position(cs)->n : 0;
 		i = *off;
 		*off += cnt * dir;
 		if (vi_nlmode) {
 			*off = *off < 0 ? 0 : *off;
 			break;
 		}
-		if (*off < 0 || *off >= mark) {
-			cnt -= dir > 0 ? mark - i : i;
-			*off = dir > 0 ? mark : 0;
+		if (*off < 0 || *off >= var) {
+			cnt -= dir > 0 ? var - i : i;
+			*off = dir > 0 ? var : 0;
 			while ((cs = lbuf_get(xb, *row + dir))) {
 				*row += dir;
-				mark = uc_slen(cs);
-				if (cnt - mark <= 0) {
-					*off = dir < 0 ? mark - cnt : cnt;
+				var = uc_slen(cs);
+				if (cnt - var <= 0) {
+					*off = dir < 0 ? var - cnt : cnt;
 					break;
 				}
-				cnt -= mark;
+				cnt -= var;
 			}
 		}
 		if (!vc && dir > 0 && lbuf_get(xb, *row + dir)
-				&& (mark < 2 || *off >= mark - 1)) {
+				&& (var < 2 || *off >= var - 1)) {
 			*row += dir;
 			*off = 0;
 		}
@@ -639,23 +637,23 @@ static int vi_motion(int vc, int *row, int *off)
 		break;
 	case 'b':
 	case 'B':
-		mark = mv == 'B';
+		var = mv == 'B';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordend(xb, mark, -(vi_nlmode+1), row, off))
+			if (lbuf_wordend(xb, var, -(vi_nlmode+1), row, off))
 				break;
 		break;
 	case 'e':
 	case 'E':
-		mark = mv == 'E';
+		var = mv == 'E';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordend(xb, mark, vi_nlmode+1, row, off))
+			if (lbuf_wordend(xb, var, vi_nlmode+1, row, off))
 				break;
 		break;
 	case 'w':
 	case 'W':
-		mark = mv == 'W';
+		var = mv == 'W';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_wordbeg(xb, mark, vi_nlmode+1, row, off))
+			if (lbuf_wordbeg(xb, var, vi_nlmode+1, row, off))
 				break;
 		break;
 	case '(':
@@ -665,10 +663,10 @@ static int vi_motion(int vc, int *row, int *off)
 			bre = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
 		int subs[2], org;
 		for (i = 0; i < cnt; i++) {
-			mark = *row;
+			var = *row;
 			org = *off;
 			for (; (cs = lbuf_get(xb, *row)) && *cs == '\n'; *row += dir);
-			if (*row != mark) {
+			if (*row != var) {
 				*off = MAX(0, lbuf_indents(xb, *row));
 				if (dir > 0)
 					continue;
@@ -677,15 +675,15 @@ static int vi_motion(int vc, int *row, int *off)
 			while (!lbuf_next(xb, dir, row, off)) {
 				cs = rstate->chrs[*off];
 				if (*off == 0 && *cs == '\n') {
-					if (dir < 0 && (mark - *row) > 1)
+					if (dir < 0 && (var - *row) > 1)
 						*row += 1;
 					*off = MAX(0, lbuf_indents(xb, *row));
 					break;
 				} else if (rset_find(bre, cs, subs, 0) >= 0) {
-					if (mark == *row && rstate->chrs[org] == cs + subs[1])
+					if (var == *row && rstate->chrs[org] == cs + subs[1])
 						continue;
 					if (!cs[subs[1]]) {
-						if (dir < 0 && *row + 1 == mark)
+						if (dir < 0 && *row + 1 == var)
 							continue;
 						*row += 1;
 						*off = MAX(0, lbuf_indents(xb, *row));
@@ -701,9 +699,9 @@ static int vi_motion(int vc, int *row, int *off)
 	case '[':
 	case ']':
 		dir = mv == '{' || mv == '[' ? 1 : -1;
-		mark = mv == '[' || mv == ']' ? '\n' : '{';
+		var = mv == '[' || mv == ']' ? '\n' : '{';
 		for (i = 0; i < cnt; i++)
-			if (lbuf_sectionbeg(xb, dir, row, off, mark))
+			if (lbuf_sectionbeg(xb, dir, row, off, var))
 				break;
 		break;
 	case TK_CTL(']'):	/* this is also ^5 on some systems */
@@ -793,9 +791,7 @@ static int vi_motion(int vc, int *row, int *off)
 			xtop = MAX(0, *row - xrows / 2);
 		break;
 	case '`':
-		if ((mark = term_read(0)) <= 0)
-			return -1;
-		if (lbuf_jump(xb, mark, row, off))
+		if (lbuf_jump(xb, term_read(0), row, off))
 			return -1;
 		break;
 	case '%':
