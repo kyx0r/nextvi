@@ -46,10 +46,10 @@ VI NORMAL
      [#]-          Move # lines up, cursor after indent
      [#]h          Move # columns left
      [#]l          Move # columns right
-     [#]f{arg}     Move to arg character found forward # times
-     [#]F{arg}     Move to arg character found backward # times
-     [#]t{arg}     Move until arg character found forward # times
-     [#]T{arg}     Move until arg character found backward # times
+     [#]f{<arg>}   Move to arg found forward # times
+     [#]F{<arg>}   Move to arg found backward # times
+     [#]t{<arg>}   Move until arg found forward # times
+     [#]T{<arg>}   Move until arg found backward # times
      [#],          Repeat last <f F t T> move backward # times
      [#];          Repeat last <f F t T> move forward # times
      [#]E          Move to end of word # times, skip punctuation
@@ -114,7 +114,8 @@ VI NORMAL
      [#]<^W>{arg}  Unindent arg region # times
      [#]<{arg}     Indent left arg region # times
      [#]>{arg}     Indent right arg region # times
-     "{arg}{arg1}  Operate on arg register according to arg1 motion
+     "{<arg>}{arg1}
+                   Operate on arg register according to arg1 motion
      R             Print registers and their contents
      [#]&{arg}     Execute arg register macro in non-blocking mode # times
      [#]@{arg}     Execute arg register macro in blocking mode # times
@@ -168,7 +169,7 @@ VI NORMAL
      [#]X          Delete # characters from cursor backward
      di{<arg>}     Delete inside arg pairs
      ci{<arg>}     Change inside arg pairs
-     [#]r{arg}     Replace # characters with arg from cursor forward
+     [#]r{<arg>}   Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
      [#]y{arg}     Yank arg region # times
@@ -281,7 +282,7 @@ VI/EX INSERT
      <^O>          Switch between vi and ex modes recursively
      <^E>          Switch to English keymap
      <^F>          Switch to alternative keymap
-     <^V>{arg}     Read a literal character arg
+     <^V>{<arg>}   Read a literal character arg
      <^K>{arg}     Read a digraph sequence arg
      <^C>
      <ESC>

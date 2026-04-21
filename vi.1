@@ -77,14 +77,14 @@ Move # lines up, cursor after indent
 Move # columns left
 .It Cm [\fI#\fP]l
 Move # columns right
-.It Cm [\fI#\fP]f{\fIarg\fP}
-Move to arg character found forward # times
-.It Cm [\fI#\fP]F{\fIarg\fP}
-Move to arg character found backward # times
-.It Cm [\fI#\fP]t{\fIarg\fP}
-Move until arg character found forward # times
-.It Cm [\fI#\fP]T{\fIarg\fP}
-Move until arg character found backward # times
+.It Cm [\fI#\fP]f{<\fIarg\fP>}
+Move to arg found forward # times
+.It Cm [\fI#\fP]F{<\fIarg\fP>}
+Move to arg found backward # times
+.It Cm [\fI#\fP]t{<\fIarg\fP>}
+Move until arg found forward # times
+.It Cm [\fI#\fP]T{<\fIarg\fP>}
+Move until arg found backward # times
 .It Cm [\fI#\fP],
 Repeat last <f F t T> move backward # times
 .It Cm [\fI#\fP];
@@ -202,7 +202,7 @@ Unindent arg region # times
 Indent left arg region # times
 .It Cm [\fI#\fP]>{\fIarg\fP}
 Indent right arg region # times
-.It Cm \&"{\fIarg\fP}{\fIarg1\fP}
+.It Cm \&"{<\fIarg\fP>}{\fIarg1\fP}
 Operate on arg register according to arg1 motion
 .It Cm R
 Print registers and their contents
@@ -297,11 +297,11 @@ Delete from cursor to end of line
 Delete # characters from cursor forward
 .It Cm [\fI#\fP]X
 Delete # characters from cursor backward
-.It Cm di{\fI<arg>\fP}
+.It Cm di{<\fIarg\fP>}
 Delete inside arg pairs
-.It Cm ci{\fI<arg>\fP}
+.It Cm ci{<\fIarg\fP>}
 Change inside arg pairs
-.It Cm [\fI#\fP]r{\fIarg\fP}
+.It Cm [\fI#\fP]r{<\fIarg\fP>}
 Replace # characters with arg from cursor forward
 .It Cm [\fI#\fP]K
 Split a line # times
@@ -485,7 +485,7 @@ Switch between vi and ex modes recursively
 Switch to English keymap
 .It Cm <^F>
 Switch to alternative keymap
-.It Cm <^V>{\fIarg\fP}
+.It Cm <^V>{<\fIarg\fP>}
 Read a literal character arg
 .It Cm <^K>{\fIarg\fP}
 Read a digraph sequence arg
