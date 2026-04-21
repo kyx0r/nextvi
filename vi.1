@@ -50,10 +50,6 @@ A closure where x represents required argument
 A closure where x represents a string
 .It Cm <^\fIX\fP>
 Represents a ctrl key X
-.It Cm #
-Represents a positive number in a closure
-.It Cm *
-Represents any character(s) in a closure
 .It Cm < >
 Separates alternatives in a closure
 .It Cm x-y
@@ -134,9 +130,9 @@ Move # characters backward
 Move to closest <] ) } [ ( {> pair
 .It Cm {\fI#\fP}%
 Move to # percent line number
-.It Cm '{\fIa-z ` ' [ ] *\fP}
+.It Cm '{<\fIa-z ` ' [ ] *\fP>}
 Move to a line mark
-.It Cm `{\fIa-z ` ' [ ] *\fP}
+.It Cm `{<\fIa-z ` ' [ ] *\fP>}
 Move to a line mark with cursor position
 .It Cm gg
 Goto first line in buffer
@@ -206,9 +202,9 @@ Indent right arg region # times
 Operate on arg register according to arg1 motion
 .It Cm R
 Print registers and their contents
-.It Cm [\fI#\fP]&{\fIarg\fP}
+.It Cm [\fI#\fP]&{<\fIarg\fP>}
 Execute arg register macro in non-blocking mode # times
-.It Cm [\fI#\fP]@{\fIarg\fP}
+.It Cm [\fI#\fP]@{<\fIarg\fP>}
 Execute arg register macro in blocking mode # times
 .It Cm [\fI#\fP]@@
 Execute last macro # times, blocking
@@ -315,7 +311,7 @@ Yank # lines
 Paste default register below current line or after cursor position # times
 .It Cm [\fI#\fP]P
 Paste default register above current line or before cursor position # times
-.It Cm m{\fIa-z ` ' [] *\fP}
+.It Cm m{<\fIa-z ` ' [] *\fP>}
 Set buffer local line mark
 .It Cm <^T>
 Set global line mark 0. Global marks are always valid
@@ -386,7 +382,7 @@ Filesystem regex search backward
 Suspend vi
 .It Cm <^L>
 Force redraw whole screen and update terminal dimensions
-.It Cm Z{\fI*\fP}
+.It Cm Z{<\fIAny\fP>}
 Exit and clean terminal, force quit in an & macro
 .It Cm Zz
 Exit and submit history command, force quit in an & macro
@@ -717,7 +713,7 @@ No range evaluates to <%> range.
 No range displays a maximum of xrows * 3 matches.
 .Ed
 
-.It Cm [\fIvrange\fP]g{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIcmd\fP}
+.It Cm [\fIvrange\fP]g{<\fIAny\fP>}[\fIregex\fP]{<\fIAny\fP>}{\fIcmd\fP}
 Global command
 .Bd -literal
 Execute an ex command on a range of lines that matches an
@@ -750,7 +746,7 @@ Example: extract/print data enclosed in "()"
 :grp1:err4:g/./;0\e:;>(\e().+\e)>;#>.+(\e))>+1p:err1:grp
 .Ed
 
-.It Cm [\fIvrange\fP]g!{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIcmd\fP}
+.It Cm [\fIvrange\fP]g!{<\fIAny\fP>}[\fIregex\fP]{<\fIAny\fP>}{\fIcmd\fP}
 Inverted global command
 
 .It Cm [\fIrange\fP]re[\fIregex\fP]
@@ -815,7 +811,7 @@ Example: delete from current position to the end of the buffer
 :.,$;;$d
 .Ed
 
-.It Cm [\fIvrange\fP]j[\fI*\fP]
+.It Cm [\fIvrange\fP]j[\fIAny\fP]
 Join line(s)
 .Bd -literal
 Any argument activates padding mode.
@@ -826,7 +822,7 @@ Example: join all lines with space padding
 :%-1j x
 .Ed
 
-.It Cm [\fIvrange\fP]s{<\fI*\fP>}[\fIregex\fP]{<\fI*\fP>}{\fIstr\fP}[<\fI*\fP>][<\fIg\fP>]
+.It Cm [\fIvrange\fP]s{<\fIAny\fP>}[\fIregex\fP]{<\fIAny\fP>}{\fIstr\fP}[<\fIAny\fP>][<\fIg\fP>]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -870,7 +866,7 @@ Example: print buffer pathname
 :p %
 .Ed
 
-.It Cm [\fIrange\fP]=[<\fI0-3\fP \fI*\fP>][\fI*\fP]
+.It Cm [\fIrange\fP]=[<\fI0-3\fP \fIAny\fP>][\fIAny\fP]
 Print range numbers
 .Bd -literal
 Argument 0-3 selects a specific number.
@@ -894,7 +890,7 @@ Example: store ranges in <a> and <s> for later reuse in :f>
 :>top>,#>bottom>m as:'a,'sf>middle
 .Ed
 
-.It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fI*\fP]
+.It Cm [\fIrange\fP]ya[<\fIreg\fP>][\fIAny\fP]
 Yank into a register
 .Bd -literal
 Argument value range is 0x1-0xff and 0x0 without.
@@ -910,7 +906,7 @@ Example: yank into <a> using ranges
 .It Cm ya![<\fIreg\fP>]
 Free a register
 
-.It Cm [\fIrange\fP]pu[<\fIreg\fP>][*][\e!{\fIcmd\fP}]
+.It Cm [\fIrange\fP]pu[<\fIreg\fP>][Any][\e!{\fIcmd\fP}]
 Paste or pipe a register
 .Bd -literal
 Example: paste <a> at line 1 character offset 5
@@ -1048,7 +1044,7 @@ Example: switch to the /sc/ scratch buffer
 .It Cm bp[\fIpath\fP]
 Set current buffer path
 
-.It Cm bs[\fI*\fP]
+.It Cm bs[\fIAny\fP]
 Set current buffer saved
 .Bd -literal
 Argument resets undo/redo history
@@ -1284,7 +1280,7 @@ Passes multi-codepoint sequences such as emojis to the terminal
 for native rendering rather than substituting placeholders.
 .Ed
 
-.It Cm ph[\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fI*char\fP]
+.It Cm ph[\fI#clow\fP] [\fI#chigh\fP] [\fI#width\fP] [\fI#blen\fP][\fIstr\fP]
 Redefine placeholders
 .Bd -literal
 This command replaces placeholders defined in conf.c
@@ -1308,7 +1304,7 @@ Example: disable default placeholders in conf.c
 .Bd -literal -compact
 Ex options are ex commands designed to alter global variables.
 Values hold a signed integer. Values may represent a character.
-Default value is specified in val=* as part of an argument notation.
+Default value is specified in val= as part of an argument notation.
 No argument inverts the current value, unless stated otherwise.
 .Ed
 
