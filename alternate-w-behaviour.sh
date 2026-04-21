@@ -35,7 +35,7 @@ EXINIT="rcm:|sc! \\\\${SEP}|vis 3${SEP}%;f> 	case 'w':
 ${SEP}+2a 		if (vc && cnt == 1)
 			dir = 2;
 		else
-			dir = vi_nlword+1;
+			dir = vi_nlmode+1;
 		if (vc == 'c') {
 			/* vim: cw/cW acts like ce/cE (no trailing whitespace) */
 			int prow = *row, poff = *off;
@@ -49,14 +49,32 @@ ${SEP}+2a 		if (vc && cnt == 1)
 		}
 .
 ${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP};=
-${SEP}+1${SEP}s/vi_nlword\\\\+1/dir/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP};=
+${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 666\\${SEP}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP};=
 ${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:--5,+5p\\${SEP}p FAIL line 979\\${SEP}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
---- /tmp/patch2vi_1VMgTn_vi.c.diff.orig	2026-04-15 09:54:03.647316688 -0100
-+++ /tmp/patch2vi_1VMgTn_vi.c.diff	2026-04-15 09:55:00.873322698 -0100
+--- patch2vi_1waoEe_vi.c.diff.orig	2026-04-21 14:03:05.940160700 -0400
++++ patch2vi_1waoEe_vi.c.diff	2026-04-21 14:14:25.343885600 -0400
+@@ -44,7 +44,7 @@
+ +2a 		if (vc && cnt == 1)
+ 			dir = 2;
+ 		else
+-			dir = vi_nlword+1;
++			dir = vi_nlmode+1;
+ 		if (vc == 'c') {
+ 			/* vim: cw/cW acts like ce/cE (no trailing whitespace) */
+ 			int prow = *row, poff = *off;
+@@ -84,7 +84,7 @@
+ .;30;41c dir
+ === EDIT COMMAND (rel) ===
+ +1
+-s/vi_nlword\+1/dir/
++s/vi_nlmode\+1/dir/
+ === END GROUP ===
+ 
+ === GROUP 3/3 (line 979) ===
 @@ -98,14 +98,7 @@
  #rel
  .,\$;f>
