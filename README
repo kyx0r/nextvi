@@ -956,7 +956,7 @@ EX COMMANDS
              Example: change <%> to <a>
              :2sc a
              Example: utilize newly set separator in a single command chain
-             :rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
+             :|1sc a|: p cmd1 a p cmd2 a|sc|a??
 
      [<0-3>]sc![<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
@@ -1112,13 +1112,6 @@ EX OPTIONS
              :pr A:ya! A: b:pu A
              Example: store a line printed with :p
              :pr A:ya! A:p
-
-     rcm[val=1]
-             Range command mode
-
-             Controls when an ex command nested inside ex range executes.
-             0 - exec at command parse
-             1 - exec at command range
 
      lim[val=-1]
              Line length render limit
@@ -1284,9 +1277,9 @@ CODE MAP
      | 650 lbuf.c   |  file/line buffer    |
      | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1726 ex.c    |  ex options/commands |
+     | 1714 ex.c    |  ex options/commands |
      | 1880 vi.c    |  normal mode/general |
-     | 7498 total   |  wc -l *.c|sort      |
+     | 7486 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
