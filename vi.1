@@ -1247,7 +1247,7 @@ Missing arguments default to <\e : % !>.
 Example: change <%> to <a>
 :2sc a
 Example: utilize newly set separator in a single command chain
-:rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
+:|1sc a|: p cmd1 a p cmd2 a|sc|a??
 .Ed
 
 .It Cm [<\fI0-3\fP>]sc![<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
@@ -1448,14 +1448,6 @@ Example: paste current buffer list exactly like from :b command
 :pr A:ya! A: b:pu A
 Example: store a line printed with :p
 :pr A:ya! A:p
-.Ed
-
-.It Cm rcm[\fIval=1\fP]
-Range command mode
-.Bd -literal
-Controls when an ex command nested inside ex range executes.
-0 - exec at command parse
-1 - exec at command range
 .Ed
 
 .It Cm lim[\fIval=-1\fP]
@@ -1676,9 +1668,9 @@ _
  650 lbuf.c | file/line buffer
  725 led.c | insert mode/output
  766 regex.c | pikevm
- 1726 ex.c | ex options/commands
+ 1714 ex.c | ex options/commands
  1880 vi.c | normal mode/general
- 7498 total | wc -l *.c\(basort
+ 7486 total | wc -l *.c\(basort
 _
 .TE
 .
