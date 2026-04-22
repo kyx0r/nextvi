@@ -1010,6 +1010,7 @@ EX OPTIONS
              Indent new lines
 
              This is a max indent length multiplier: val * 128
+
      ic[val=1]
              Ignore case in regular expressions
 
