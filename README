@@ -224,8 +224,7 @@ VI NORMAL
      Z{<Any>}      Exit and clean terminal, force quit in an & macro
      Zz            Exit and submit history command, force quit in an & macro
      ZZ            Exit and write unsaved changes to a file
-     <^C>
-     <ESC>         Cancel any pending input or command
+     <ESC ^C>      Cancel any pending input or command
 
 VI REGIONS
      Regions are vi normal commands that define [h v]range for vi motions.
