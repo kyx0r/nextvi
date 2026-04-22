@@ -444,7 +444,7 @@ extern struct buf *bufs;
 extern struct buf tempbufs[3];
 extern struct buf *ex_buf;
 extern struct buf *ex_pbuf;
-#define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
+#define istempbuf(buf) (buf >= tempbufs && buf < tempbufs + LEN(tempbufs))
 #define xb_path ex_buf->path
 #define xb_ft ex_buf->ft
 #define xb ex_buf->lb
