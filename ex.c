@@ -1618,7 +1618,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	}
 	*dst++ = '\0';
 	sb->s_n = dst - sb->s;
-	if (*src && *src == xsep) {
+	if (*src == xsep) {
 		*idx = LEN(excmds) - 1;
 		return src;
 	}
