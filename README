@@ -44,10 +44,10 @@ VI NORMAL
      [#]-          Move # lines up, cursor after indent
      [#]h          Move # columns left
      [#]l          Move # columns right
-     [#]f{<arg>}   Move to arg found forward # times
-     [#]F{<arg>}   Move to arg found backward # times
-     [#]t{<arg>}   Move until arg found forward # times
-     [#]T{<arg>}   Move until arg found backward # times
+     [#]f{arg}     Move to arg character found forward # times
+     [#]F{arg}     Move to arg character found backward # times
+     [#]t{arg}     Move until arg character found forward # times
+     [#]T{arg}     Move until arg character found backward # times
      [#],          Repeat last <f F t T> move backward # times
      [#];          Repeat last <f F t T> move forward # times
      [#]E          Move to end of word # times, skip punctuation
@@ -167,7 +167,7 @@ VI NORMAL
      [#]X          Delete # characters from cursor backward
      di{<arg>}     Delete inside arg pairs
      ci{<arg>}     Change inside arg pairs
-     [#]r{<arg>}   Replace # characters with arg from cursor forward
+     [#]r{arg}     Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
      [#]y{arg}     Yank arg region # times
@@ -224,6 +224,7 @@ VI NORMAL
      Z{<Any>}      Exit and clean terminal, force quit in an & macro
      Zz            Exit and submit history command, force quit in an & macro
      ZZ            Exit and write unsaved changes to a file
+     <ESC ^C>      Cancel any pending input or command
 
 VI REGIONS
      Regions are vi normal commands that define [h v]range for vi motions.
@@ -1284,8 +1285,8 @@ CODE MAP
      | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
      | 1726 ex.c    |  ex options/commands |
-     | 1876 vi.c    |  normal mode/general |
-     | 7494 total   |  wc -l *.c|sort      |
+     | 1880 vi.c    |  normal mode/general |
+     | 7498 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1364,4 +1365,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.0                      April 21, 2026                      Nextvi 5.0
+Nextvi 5.0                      April 22, 2026                      Nextvi 5.0
