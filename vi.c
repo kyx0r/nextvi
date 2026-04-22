@@ -557,9 +557,9 @@ static void vc_status(int type)
 /* read a motion */
 static int vi_motion(int vc, int *row, int *off)
 {
-	static sbuf *savepath[10];
+	static sbuf *savepath[5];
 	static rset *bre;
-	static int srow[10], soff[10], lkwdcnt;
+	static int srow[5], soff[5], lkwdcnt;
 	static int cadir = 1;
 	char *cs;
 	int cnt = vi_arg ? vi_arg : 1;
@@ -745,7 +745,9 @@ static int vi_motion(int vc, int *row, int *off)
 		vi_mod |= 1;
 		break;
 	case TK_CTL('t'):
-		if (vi_arg % 2 == 0 && vi_arg < LEN(srow) * 2) {
+		if (vi_arg >= LEN(savepath) * 2)
+			break;
+		if (vi_arg % 2 == 0) {
 			vi_arg /= 2;
 			if (!savepath[vi_arg])
 				sbuf_make(savepath[vi_arg], 128)
