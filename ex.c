@@ -21,8 +21,6 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
-int xrcm = 1;			/* range command mode -
-				0: exec at command parse 1: exec at command */
 
 int xquit;			/* exit if positive, force quit if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
@@ -1417,8 +1415,6 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
 	return xkwdrs ? NULL : xserr;
 }
 
-static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
-
 static int eo_val(char *arg)
 {
 	int val = atoi(arg);
@@ -1433,7 +1429,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 #define EO(opt) \
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
-EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt) EO(rcm)
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
 EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
@@ -1501,7 +1497,6 @@ static struct excmd {
 	{"m", ec_mark},
 	{"q!", ec_quit},
 	{"q", ec_quit},
-	EO(rcm),
 	{"reg+", ec_regprint},
 	{"reg", ec_regprint},
 	{"re", ec_krsset},
@@ -1543,7 +1538,7 @@ static struct excmd {
 	EO(vis),
 	{"=", ec_num},
 	{"", ec_print}, /* do not remove */
-	{"", ec_null}, /* do not remove */
+	{"", ec_print}, /* do not remove */
 };
 
 /* parse command argument expanding % and ! */
@@ -1556,7 +1551,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			if (*src == '@' && src[1] && src[1] != xesc) {
 				sbuf *reg = xregs[(unsigned char)src[1]];
 				if (reg)
-					sbuf_str(sb, reg->s)
+					sbuf_mem(sb, reg->s, reg->s_n)
 				src += 2;
 			} else {
 				struct buf *pbuf = ex_buf;
@@ -1602,21 +1597,14 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 /* parse prefix and command */
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
-	int i, j, nullfunc = 0;
-	char *dst = sb->s, *cmd, *err;
-	if (*src && *src == xsep)
+	int i, j;
+	char *dst = sb->s;
+	if ((*src && *src == xsep) || (*idx == LEN(excmds) - 1))
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
-		if (*src == '|' && !xrcm) {
-			cmd = re_read((char**)&src, 0);
-			err = ex_exec(cmd);
-			if (err && err != xuerr && xerr & 1)
-				ex_print("parse command error", msg_ft)
-			free(cmd);
-			nullfunc = 1;
-		} else if (*src == '>' || *src == '<' || *src == '|') {
+		if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {
 				*dst++ = *src++;
@@ -1630,8 +1618,8 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	}
 	*dst++ = '\0';
 	sb->s_n = dst - sb->s;
-	if (*src == xsep) {
-		*idx = LEN(excmds) - 2 + nullfunc;
+	if (*src && *src == xsep) {
+		*idx = LEN(excmds) - 1;
 		return src;
 	}
 	for (i = 0; i < LEN(excmds); i++) {
@@ -1639,7 +1627,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 			if (!src[j] || src[j] != excmds[i].name[j])
 				break;
 		if (!excmds[i].name[j]) {
-			*idx = i + (nullfunc && i == LEN(excmds) - 2);
+			*idx = i;
 			src += j;
 			break;
 		}
