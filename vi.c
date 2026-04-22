@@ -1480,7 +1480,7 @@ void vi(int init)
 					case '>': case '<': open='<'; close='>'; break;
 					default: open = k; close = k; break;
 					}
-					if (!open)
+					if (TK_INT(open))
 						break;
 					pairs[0] = open; pairs[1] = close;
 					int r1 = xrow, o1 = xoff, r2, o2;
@@ -1677,6 +1677,8 @@ void vi(int init)
 				break;
 			case 'Z':
 				k = term_read(0);
+				if (TK_INT(k))
+					continue;
 				if (k == 'Z') {
 					ex_exec("x");
 					continue;
