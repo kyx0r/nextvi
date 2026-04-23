@@ -30,10 +30,10 @@ ${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL li
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
 .
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1438\\${SEP}p FAIL line 1438${INTR}${QF}}${SEP};=
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP};=
 ${SEP}+2a EO(qe)
 .
-${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-re p FAIL line 1501\\${SEP}p FAIL line 1501${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-re p FAIL line 1500\\${SEP}p FAIL line 1500${INTR}${QF}}${SEP};=
 ${SEP}.a 	EO(qe),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -106,8 +106,8 @@ exit 0
  \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
 === DELTA ex.c ===
---- /tmp/patch2vi_FBkDaC_ex.c.diff.orig
-+++ /tmp/patch2vi_FBkDaC_ex.c.diff
+--- patch2vi_L0zf1a_ex.c.diff.orig	2026-04-23 13:13:49.229885745 -0100
++++ patch2vi_L0zf1a_ex.c.diff	2026-04-23 13:13:59.800576659 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/3 (line 0) ===
  +int xqe = 1000;			/* exit insert via kj (delay in ms) */
@@ -115,20 +115,20 @@ exit 0
 -#abs
 +abs
  #rel
- 
+ %f>
  === SEARCH PATTERN ===
-@@ -23,9 +23,7 @@
+@@ -21,9 +21,7 @@
  #rel
- %;f>
+ .,\$;f>
  === SEARCH PATTERN ===
--EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(mpt\) EO\(rcm\)
+-EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(mpt\)
 -EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 -EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 +EO\(pac\)
  --- extra (delete to include) ---
  
  _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
-@@ -46,8 +44,6 @@
+@@ -41,8 +39,6 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
@@ -137,9 +137,9 @@ exit 0
  	\{"m", ec_mark\},
  --- extra (delete to include) ---
  	\{"q!", ec_quit\},
-@@ -58,6 +54,6 @@
- === EDIT COMMAND (offset) ===
- +62a 	EO(qe),
+@@ -51,6 +47,6 @@
+ === EDIT COMMAND (abs) ===
+ 1500a 	EO(qe),
  === EDIT COMMAND (rel) ===
 -+2a 	EO(qe),
 +a 	EO(qe),
@@ -191,20 +191,20 @@ exit 0
  extern int xgrp;
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d4fb320..e09333b6 100644
+index d45d10a6..352facd4 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -286,7 +286,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
--((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+((qe|pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+-((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((qe|pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..f326b85a 100644
+index c195038b..fe5988a8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -212,22 +212,22 @@ index 36b8a6d6..f326b85a 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1436,6 +1437,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
- EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt) EO(rcm)
+@@ -1435,6 +1436,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(qe)
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1499,6 +1501,7 @@ static struct excmd {
+@@ -1498,6 +1500,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
 +	EO(qe),
  	{"q!", ec_quit},
  	{"q", ec_quit},
- 	EO(rcm),
+ 	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
 index 6a5e065f..1b43d40d 100644
 --- a/led.c
