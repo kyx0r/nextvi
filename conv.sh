@@ -9,7 +9,7 @@ do
 	fi
 	./gitdiff2vi.sh -d $s
 	git add $s
-	git commit -m "$s: conv"
+	git diff --cached --quiet || git commit -m "$s: conv"
 	git reset --hard
 	if [ -n "$new_files" ]; then
 		printf '%s\n' $new_files | xargs rm -f
