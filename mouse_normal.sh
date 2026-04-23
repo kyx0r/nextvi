@@ -84,14 +84,14 @@ ${SEP}+1a 			term_mouse_on();
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: term.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static struct termios termios;${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static struct termios termios;
+sbuf \\\\*term_sbuf;
+int term_record;${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
 ${SEP}.i int xmouse_col, xmouse_row;
 .
-${SEP}.,\$;f> unsigned char \\\\*ibuf, icmd\\\\[4096\\\\];
-unsigned int texec, tn;
-
+${SEP}.,\$;f> 
 ${SEP}??!${DBG:-re p FAIL line 10\\${SEP}p FAIL line 10${INTR}${QF}}${SEP};=
-${SEP}+2a void term_mouse_on(void)
+${SEP}.a void term_mouse_on(void)
 {
 	if (xms)
 		write(1, \"\\\\x1b[?1000h\\\\x1b[?1006h\", 16);
@@ -349,6 +349,27 @@ exit 0
 ++1a 			term_mouse_on();
  === END GROUP ===
  
+=== DELTA term.c ===
+--- patch2vi_NGJ88q_term.c.diff.orig	2026-04-23 13:18:22.968976479 -0100
++++ patch2vi_NGJ88q_term.c.diff	2026-04-23 13:19:20.979569125 -0100
+@@ -32,8 +32,6 @@
+ #rel
+ .,\$;f>
+ === SEARCH PATTERN ===
+-unsigned char \*ibuf, icmd\[4096\];
+-unsigned int texec, tn;
+ 
+ --- extra (delete to include) ---
+ void term_init\(void\)
+@@ -53,7 +51,7 @@
+ }
+ 
+ === EDIT COMMAND (rel) ===
+-+2a void term_mouse_on(void)
++a void term_mouse_on(void)
+ {
+ 	if (xms)
+ 		write(1, "\x1b[?1000h\x1b[?1006h", 16);
 === DELTA vi.h ===
 --- patch2vi_DG7les_vi.h.diff.orig	2026-04-23 11:54:19.498754892 -0100
 +++ patch2vi_DG7les_vi.h.diff	2026-04-23 11:55:06.353687689 -0100
