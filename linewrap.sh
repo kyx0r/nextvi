@@ -24,12 +24,14 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 #DBG="0\?"
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xlw;			/* soft linewrap col */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
+${SEP}.i int xlw;			/* soft linewrap col */
 .
-${SEP}%;f> static int eo_val\\\\(char \\\\*arg\\\\)
-\\\\{
-	int val = atoi\\\\(arg\\\\);${SEP}??!${DBG:-re p FAIL line 1421\\${SEP}p FAIL line 1421${INTR}${QF}}${SEP};=
-${SEP}.i static void *ec_linewrap(char *loc, char *cmd, char *arg)
+${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
+\\\\}
+
+${SEP}??!${DBG:-re p FAIL line 1420\\${SEP}p FAIL line 1420${INTR}${QF}}${SEP};=
+${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
 	if (xb->modified)
@@ -49,7 +51,7 @@ ${SEP}.i static void *ec_linewrap(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,\$;f> 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:-re p FAIL line 1542\\${SEP}p FAIL line 1542${INTR}${QF}}${SEP};=
+	EO\\\\(led\\\\),${SEP}??!${DBG:-re p FAIL line 1540\\${SEP}p FAIL line 1540${INTR}${QF}}${SEP};=
 ${SEP}+2a 	{\"lw\", ec_linewrap},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -242,63 +244,19 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
-=== DELTA ex.c ===
---- patch2vi_Qos4aJ_ex.c.diff.orig	2026-04-23 12:24:26.010557713 -0100
-+++ patch2vi_Qos4aJ_ex.c.diff	2026-04-23 12:25:14.871645268 -0100
-@@ -1,7 +1,7 @@
- === GROUP 1/3 (line 25) ===
- +int xlw;			/* soft linewrap col */
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %;f>
- === SEARCH PATTERN ===
-@@ -13,7 +13,7 @@
- int xquit;			/\* exit if positive, force quit if negative \*/
- int xrow, xoff, xtop;		/\* current row, column, and top row \*/
- === EDIT COMMAND (abs) ===
--25a int xlw;			/* soft linewrap col */
-+i int xlw;			/* soft linewrap col */
- === EDIT COMMAND (rel) ===
- +2a int xlw;			/* soft linewrap col */
- === END GROUP ===
-@@ -41,10 +41,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--
--static void \*ec_null\(char \*loc, char \*cmd, char \*arg\) \{ return NULL; \}
--
----- extra (delete to include) ---
- static int eo_val\(char \*arg\)
- \{
- 	int val = atoi\(arg\);
-@@ -67,7 +63,7 @@
- }
- 
- === EDIT COMMAND (rel) ===
--+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
-+i static void *ec_linewrap(char *loc, char *cmd, char *arg)
- {
- 	int fd;
- 	if (xb->modified)
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..ed507048 100644
+index c195038b..ed17c9cf 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -23,6 +23,7 @@ int xerr = 1;			/* error handling -
- 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
- int xrcm = 1;			/* range command mode -
- 				0: exec at command parse 1: exec at command */
+@@ -1,3 +1,4 @@
 +int xlw;			/* soft linewrap col */
- 
- int xquit;			/* exit if positive, force quit if negative */
- int xrow, xoff, xtop;		/* current row, column, and top row */
-@@ -1419,6 +1420,23 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
- 
- static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
+ int xleft;			/* the first visible column */
+ int xvis;			/* startup flags */
+ int xai = 1;			/* autoindent option */
+@@ -1418,6 +1419,23 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+ 	return xkwdrs ? NULL : xserr;
+ }
  
 +static void *ec_linewrap(char *loc, char *cmd, char *arg)
 +{
@@ -320,7 +278,7 @@ index 36b8a6d6..ed507048 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1540,6 +1558,7 @@ static struct excmd {
+@@ -1538,6 +1556,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
