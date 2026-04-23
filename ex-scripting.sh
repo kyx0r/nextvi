@@ -24,14 +24,15 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 #DBG="0\?"
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> int xleft;			/\\\\* the first visible column \\\\*/
+int xvis;			/\\\\* startup flags \\\\*/
+int xai = 1;			/\\\\* autoindent option \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
 ${SEP}.i char **xenvp;
 .
-${SEP}.,\$;f> 
-static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-
-${SEP}??!${DBG:-re p FAIL line 1421\\${SEP}p FAIL line 1421${INTR}${QF}}${SEP};=
-${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
+${SEP}.,\$;f> static int eo_val\\\\(char \\\\*arg\\\\)
+\\\\{
+	int val = atoi\\\\(arg\\\\);${SEP}??!${DBG:-re p FAIL line 1421\\${SEP}p FAIL line 1421${INTR}${QF}}${SEP};=
+${SEP}.i static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
 	char buf[100];
@@ -101,6 +102,29 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- patch2vi_RByueq_ex.c.diff.orig	2026-04-23 12:17:13.232922998 -0100
++++ patch2vi_RByueq_ex.c.diff	2026-04-23 12:17:58.657655500 -0100
+@@ -55,10 +55,6 @@
+ #rel
+ .,\$;f>
+ === SEARCH PATTERN ===
+-
+-static void \*ec_null\(char \*loc, char \*cmd, char \*arg\) \{ return NULL; \}
+-
+---- extra (delete to include) ---
+ static int eo_val\(char \*arg\)
+ \{
+ 	int val = atoi\(arg\);
+@@ -99,7 +95,7 @@
+ }
+ 
+ === EDIT COMMAND (rel) ===
+-+2a static void *ec_script(char *loc, char *cmd, char *arg)
++i static void *ec_script(char *loc, char *cmd, char *arg)
+ {
+ 	char *rep;
+ 	char buf[100];
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 36b8a6d6..551956c1 100644
