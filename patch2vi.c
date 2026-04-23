@@ -468,21 +468,15 @@ typedef struct {
 	int target_line;     /* original line number for error reporting */
 } rel_ctx_t;
 
-/* Emit ??! error check after a command that may fail.
- * On failure: ${DBG} overrides the default handler.
- * Default: prints surrounding lines, error message, then ${QF} (quit action).
- * DBG=@Q: enters interactive vi mode to fix the issue manually.
- * QF can be set to . to continue despite errors (errors are still printed). */
+/* Emit ??! error check after a command that may fail. */
 static void emit_err_check(FILE *out, int line)
 {
-	/* ??! = if last command failed, run the else branch
-	 * ${DBG:-...} allows override via environment variable
-	 * \<sep> separates commands inside the branch
-	 * ${QF} controls quit behavior (default: vis 2 + q! 1) */
 	fputs("?" "?!${DBG:-", out);
-	fputs("-5,+5p", out);
+	fprintf(out, "49reg %d", line);
 	EMIT_ESCSEP(out);
 	fprintf(out, "p FAIL line %d", line);
+	EMIT_ESCSEP(out);
+	fputs("${INTR}", out);
 	EMIT_ESCSEP(out);
 	fputs("${QF}}", out);
 	EMIT_SEP(out);
@@ -2274,7 +2268,6 @@ process_line:
 	printf("    exit $?\n");
 	printf("fi\n\n");
 	printf("VI=${VI:-vi}\n");
-	printf("# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
 	printf("    echo \"Error: $VI is not nextvi\" >&2\n");
 	printf("    echo \"Set VI environment variable to point to nextvi binary\" >&2\n");
@@ -2284,7 +2277,7 @@ process_line:
 	printf("QF=\"vis 2${SEP}q!1\"\n");
 	if (relative_mode || interactive_mode) {
 		printf("\n# Uncomment to enter interactive vi on patch failure\n");
-		printf("#DBG=\"|sc|${SEP}vis 2:e $0:@Q:q!1\"\n");
+		printf("#INTR=\"|sc|${SEP}vis 2:e $0:@Q:q!1\"\n");
 		printf("# Uncomment to skip errors (0? = silent nop)\n");
 		printf("#DBG=\"0\\?\"\n");
 		printf("# Set QF=0? to continue despite errors (errors are still printed)\n");
