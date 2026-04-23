@@ -46,10 +46,14 @@ ${SEP}+2a #ifdef __SSE2__
 	}
 #else
 .
+
+.
 ${SEP}.,\$;f> 	register const char \\\\*i;
 	for \\\\(i=s; \\\\*i && \\\\*i != delim; \\\\+\\\\+i\\\\);
 	return i-s;${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP};=
 ${SEP}+2a #endif
+.
+
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
@@ -91,9 +95,13 @@ ${SEP}+3,#+1c 	} else {
 #endif
 		for (; (l = uc_len(ss)); n++)
 .
+
+.
 ${SEP}.,\$f> 			ss \\\\+= l;${SEP}??!${DBG:-re p FAIL line 113\\${SEP}p FAIL line 113${INTR}${QF}}${SEP};=
 ${SEP}.a count_done:;
 	}
+.
+
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
@@ -130,6 +138,8 @@ ${SEP}+2a #ifdef __SSE2__
 	}
 #endif
 .
+
+.
 ${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 
 # Patch: vi.c
@@ -139,16 +149,18 @@ ${SEP}.i #ifdef __SSE2__
 #include <emmintrin.h>
 #endif
 .
+
+.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 6a5e065f..c5a41390 100644
+index 6a5e065f..265362d4 100644
 --- a/led.c
 +++ b/led.c
-@@ -4,9 +4,28 @@ sbuf *led_attsb;
+@@ -4,9 +4,32 @@ sbuf *led_attsb;
  
  int dstrlen(const char *s, char delim)
  {
@@ -170,18 +182,22 @@ index 6a5e065f..c5a41390 100644
 +		i += 16;
 +	}
 +#else
++.
++
  	register const char *i;
  	for (i=s; *i && *i != delim; ++i);
  	return i-s;
 +#endif
++.
++
  }
  
  static int search(const char *pattern, int l)
 diff --git a/ren.c b/ren.c
-index a98fc3fa..967e6722 100644
+index a98fc3fa..8afd35f9 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -108,9 +108,42 @@ ren_state *ren_position(char *s)
+@@ -108,9 +108,46 @@ ren_state *ren_position(char *s)
  		rstate->holelen = uc_len(ss);
  		memcpy(rstate->nullhole, ss, rstate->holelen);
  		memset(ss, 0, rstate->holelen);
@@ -220,17 +236,21 @@ index a98fc3fa..967e6722 100644
 +		} else
 +#endif
 +		for (; (l = uc_len(ss)); n++)
++.
++
  			ss += l;
 +count_done:;
 +	}
++.
++
  	unsigned int b = n + 1, c = 2, i;
  	int cpos = 0, wid, *col;
  	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
 diff --git a/uc.c b/uc.c
-index 875905a8..6d0c30b6 100644
+index 875905a8..cd7045b1 100644
 --- a/uc.c
 +++ b/uc.c
-@@ -22,6 +22,34 @@ unsigned char utf8_length[256] = {
+@@ -22,6 +22,36 @@ unsigned char utf8_length[256] = {
  int uc_slen(char *s)
  {
  	int n = 0, l;
@@ -262,18 +282,22 @@ index 875905a8..6d0c30b6 100644
 +		return n;
 +	}
 +#endif
++.
++
  	for (; (l = uc_len(s)); n++)
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index 628bb946..37569fc6 100644
+index 628bb946..110cc6c4 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1,3 +1,7 @@
+@@ -1,3 +1,9 @@
 +#ifdef __SSE2__
 +#include <stdint.h>
 +#include <emmintrin.h>
 +#endif
++.
++
  #include <ctype.h>
  #include <fcntl.h>
  #include <stdio.h>
