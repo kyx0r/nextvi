@@ -472,12 +472,10 @@ typedef struct {
 static void emit_err_check(FILE *out, int line)
 {
 	fputs("?" "?!${DBG:-", out);
-	fprintf(out, "49reg %d", line);
+	fprintf(out, "re p FAIL line %d", line);
 	EMIT_ESCSEP(out);
 	fprintf(out, "p FAIL line %d", line);
-	EMIT_ESCSEP(out);
 	fputs("${INTR}", out);
-	EMIT_ESCSEP(out);
 	fputs("${QF}}", out);
 	EMIT_SEP(out);
 }
@@ -2274,14 +2272,13 @@ process_line:
 	printf("    exit 1\n");
 	printf("fi\n\n");
 	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
-	printf("QF=\"vis 2${SEP}q!1\"\n");
+	printf("# Comment to continue despite errors (errors are still printed)\n");
+	printf("QF=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n");
 	if (relative_mode || interactive_mode) {
-		printf("\n# Uncomment to enter interactive vi on patch failure\n");
-		printf("#INTR=\"|sc|${SEP}vis 2:e $0:@Q:q!1\"\n");
+		printf("# Uncomment to enter interactive vi on patch failure\n");
+		printf("#INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:e $0:%%f>:@Q:q!1\"\n");
 		printf("# Uncomment to skip errors (0? = silent nop)\n");
 		printf("#DBG=\"0\\?\"\n");
-		printf("# Set QF=0? to continue despite errors (errors are still printed)\n");
-		printf("#QF=\"0\\?\"\n");
 	}
 
 	/* Emit script for each file */
