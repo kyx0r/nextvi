@@ -26,24 +26,25 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i char readonly = 0;		/* commandline readonly option */
 .
-${SEP}%f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-re p FAIL line 120\\${SEP}p FAIL line 120${INTR}${QF}}${SEP};=
+${SEP}%f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-re p FAIL line 118\\${SEP}p FAIL line 118${INTR}${QF}}${SEP};=
 ${SEP}.a 	bufs[i].readonly = readonly;
 .
 ${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-re p FAIL line 371\\${SEP}p FAIL line 371${INTR}${QF}}${SEP};=
+	\\\\}${SEP}??!${DBG:-re p FAIL line 372\\${SEP}p FAIL line 372${INTR}${QF}}${SEP};=
 ${SEP}+2a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 		ex_buf->readonly = 1;
 .
 ${SEP}.,\$;f> 		free\\\\(ibuf\\\\.s\\\\);
 	\\\\} else \\\\{
-		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 690\\${SEP}p FAIL line 690${INTR}${QF}}${SEP};=
+		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 691\\${SEP}p FAIL line 691${INTR}${QF}}${SEP};=
 ${SEP}+2a 			if (ex_buf->readonly)
 				return \"write failed: readonly option is set\";
 .
-${SEP}.,\$;f> static int eo_val\\\\(char \\\\*arg\\\\)
-\\\\{
-	int val = atoi\\\\(arg\\\\);${SEP}??!${DBG:-re p FAIL line 1421\\${SEP}p FAIL line 1421${INTR}${QF}}${SEP};=
+${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
+\\\\}
+
+${SEP}??!${DBG:-re p FAIL line 1420\\${SEP}p FAIL line 1420${INTR}${QF}}${SEP};=
 ${SEP}.i static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
@@ -51,7 +52,7 @@ ${SEP}.i static void *ec_readonly(char *loc, char *cmd, char *arg)
 }
 
 .
-${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-re p FAIL line 1508\\${SEP}p FAIL line 1508${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-re p FAIL line 1506\\${SEP}p FAIL line 1506${INTR}${QF}}${SEP};=
 ${SEP}.a 	{\"ro\", ec_readonly},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -78,8 +79,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- patch2vi_KyFOGU_ex.c.diff.orig	2026-04-23 12:32:21.635396936 -0100
-+++ patch2vi_KyFOGU_ex.c.diff	2026-04-23 12:32:56.691634435 -0100
+--- patch2vi_ucryw7_ex.c.diff.orig	2026-04-23 12:36:37.933958263 -0100
++++ patch2vi_ucryw7_ex.c.diff	2026-04-23 12:36:39.939629198 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/6 (line 0) ===
  +char readonly = 0;		/* commandline readonly option */
@@ -100,25 +101,14 @@ exit 0
  	return i;
 @@ -31,7 +29,7 @@
  === EDIT COMMAND (abs) ===
- 120a 	bufs[i].readonly = readonly;
+ 118a 	bufs[i].readonly = readonly;
  === EDIT COMMAND (rel) ===
 -+2a 	bufs[i].readonly = readonly;
 +a 	bufs[i].readonly = readonly;
  === END GROUP ===
  
- === GROUP 3/6 (line 371) ===
-@@ -92,10 +90,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--
--static void \*ec_null\(char \*loc, char \*cmd, char \*arg\) \{ return NULL; \}
--
----- extra (delete to include) ---
- static int eo_val\(char \*arg\)
- \{
- 	int val = atoi\(arg\);
-@@ -107,7 +101,7 @@
+ === GROUP 3/6 (line 372) ===
+@@ -107,7 +105,7 @@
  }
  
  === EDIT COMMAND (rel) ===
@@ -127,7 +117,7 @@ exit 0
  {
  	ex_buf->readonly = !ex_buf->readonly;
  	return NULL;
-@@ -122,8 +116,6 @@
+@@ -122,8 +120,6 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
@@ -136,9 +126,9 @@ exit 0
  	\{"rd", ec_undoredo\},
  --- extra (delete to include) ---
  	\{"r", ec_read\},
-@@ -132,6 +124,6 @@
+@@ -132,6 +128,6 @@
  === EDIT COMMAND (abs) ===
- 1508a 	{"ro", ec_readonly},
+ 1506a 	{"ro", ec_readonly},
  === EDIT COMMAND (rel) ===
 -+2a 	{"ro", ec_readonly},
 +a 	{"ro", ec_readonly},
@@ -231,7 +221,7 @@ exit 0
  === END GROUP ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..9ba08223 100644
+index c195038b..a439a5ff 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -239,7 +229,7 @@ index 36b8a6d6..9ba08223 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -118,6 +119,7 @@ static int bufs_open(const char *path, int len)
+@@ -116,6 +117,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -247,7 +237,7 @@ index 36b8a6d6..9ba08223 100644
  	return i;
  }
  
-@@ -369,6 +371,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -370,6 +372,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -256,7 +246,7 @@ index 36b8a6d6..9ba08223 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -688,6 +692,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -689,6 +693,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf.s);
  	} else {
  		if (!strchr(cmd, '!')) {
@@ -265,9 +255,9 @@ index 36b8a6d6..9ba08223 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1419,6 +1425,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
- 
- static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
+@@ -1418,6 +1424,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+ 	return xkwdrs ? NULL : xserr;
+ }
  
 +static void *ec_readonly(char *loc, char *cmd, char *arg)
 +{
@@ -278,7 +268,7 @@ index 36b8a6d6..9ba08223 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1506,6 +1518,7 @@ static struct excmd {
+@@ -1504,6 +1516,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
