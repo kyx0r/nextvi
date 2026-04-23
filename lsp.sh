@@ -1474,10 +1474,8 @@ ${SEP}+2a 	lsp_init();
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> extern rset \\\\*fsincl;
-extern char \\\\*fs_exdir;
-void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-re p FAIL line 548\\${SEP}p FAIL line 548${INTR}${QF}}${SEP};=
-${SEP}+2a 
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-re p FAIL line 548\\${SEP}p FAIL line 548${INTR}${QF}}${SEP};=
+${SEP}.a 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
 extern int lsp_nfds;
@@ -1497,6 +1495,27 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA vi.h ===
+--- patch2vi_3NAVXP_vi.h.diff.orig	2026-04-23 13:06:11.273434441 -0100
++++ patch2vi_3NAVXP_vi.h.diff	2026-04-23 13:06:43.077586903 -0100
+@@ -19,8 +19,6 @@
+ #rel
+ %;f>
+ === SEARCH PATTERN ===
+-extern rset \*fsincl;
+-extern char \*fs_exdir;
+ void dir_calc\(char \*path\);
+ === EDIT COMMAND (abs) ===
+ 548a 
+@@ -39,7 +37,7 @@
+ void lsp_list(void);
+ void lsp_show_msg(char *msg);
+ === EDIT COMMAND (rel) ===
+-+2a 
++a 
+ /* lsp.c */
+ #define LSP_NFDS_MAX	8
+ extern int lsp_nfds;
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 81878d89..c51a3f7e 100644
