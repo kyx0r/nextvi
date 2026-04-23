@@ -2281,7 +2281,7 @@ process_line:
 	printf("    exit 1\n");
 	printf("fi\n\n");
 	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
-	printf("QF=\"$(printf 'vis 2${SEP}q!1')\"\n");
+	printf("QF=\"vis 2${SEP}q!1\"\n");
 	if (relative_mode || interactive_mode) {
 		printf("\n# Uncomment to enter interactive vi on patch failure\n");
 		printf("#DBG=\"|sc|${SEP}vis 2:e $0:@Q:q!1\"\n");
