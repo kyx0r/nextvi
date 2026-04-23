@@ -25,21 +25,17 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 
 # Patch: conf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP};=
-${SEP}.${SEP}s/m\\\\|s/m|rec|s/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+${SEP}.${SEP}s/mpt\\\\|/mpt|rec|/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
-${SEP}.i int xrec;			/* input recoding register */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xrec;			/* input recoding register */
 .
-${SEP}.,\$;f> EO\\\\(pac\\\\) EO\\\\(pr\\\\) EO\\\\(ai\\\\) EO\\\\(err\\\\) EO\\\\(ish\\\\) EO\\\\(ic\\\\) EO\\\\(mpt\\\\) EO\\\\(rcm\\\\)
-EO\\\\(shape\\\\) EO\\\\(seq\\\\) EO\\\\(ts\\\\) EO\\\\(td\\\\) EO\\\\(order\\\\) EO\\\\(hll\\\\) EO\\\\(hlw\\\\)
-EO\\\\(hlp\\\\) EO\\\\(hlr\\\\) EO\\\\(hl\\\\) EO\\\\(lim\\\\) EO\\\\(led\\\\) EO\\\\(vis\\\\)${SEP}??!${DBG:-re p FAIL line 1438\\${SEP}p FAIL line 1438${INTR}${QF}}${SEP};=
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1438\\${SEP}p FAIL line 1438${INTR}${QF}}${SEP};=
 ${SEP}+2a EO(rec)
 .
 ${SEP}.,\$;f> 	\\\\{\"q!\", ec_quit\\\\},
-	\\\\{\"q\", ec_quit\\\\},
-	EO\\\\(rcm\\\\),${SEP}??!${DBG:-re p FAIL line 1504\\${SEP}p FAIL line 1504${INTR}${QF}}${SEP};=
-${SEP}+2a 	EO(rec),
+	\\\\{\"q\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1504\\${SEP}p FAIL line 1504${INTR}${QF}}${SEP};=
+${SEP}+1a 	EO(rec),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -65,8 +61,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_AfcAmk_conf.c.diff.orig
-+++ /tmp/patch2vi_AfcAmk_conf.c.diff
+--- patch2vi_aWkrDe_conf.c.diff.orig	2026-04-23 12:37:55.868192420 -0100
++++ patch2vi_aWkrDe_conf.c.diff	2026-04-23 12:40:11.612624233 -0100
 @@ -8,10 +8,11 @@
  #rel
  %;f>
@@ -79,14 +75,54 @@ exit 0
 ---- extra (delete to include) ---
  \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
  \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
- \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
+ \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czbd\]\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 @@ -22,7 +23,7 @@
  +3
  .;35c rec|
  === EDIT COMMAND (rel) ===
 -+3
+-s/m\|s/m|rec|s/
 ++0
- s/m\|s/m|rec|s/
++s/mpt\|/mpt|rec|/
+ === END GROUP ===
+ 
+=== DELTA ex.c ===
+--- patch2vi_1d9BhT_ex.c.diff.orig	2026-04-23 12:40:28.330159716 -0100
++++ patch2vi_1d9BhT_ex.c.diff	2026-04-23 12:41:21.915622584 -0100
+@@ -1,7 +1,7 @@
+ === GROUP 1/3 (line 0) ===
+ +int xrec;			/* input recoding register */
+ === COMMAND STRATEGY (default: rel) ===
+-#abs
++abs
+ #rel
+ %f>
+ === SEARCH PATTERN ===
+@@ -21,9 +21,7 @@
+ #rel
+ .,\$;f>
+ === SEARCH PATTERN ===
+-EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(mpt\) EO\(rcm\)
+-EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
+-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
++EO\(pac\)
+ --- extra (delete to include) ---
+ 
+ _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
+@@ -43,7 +41,6 @@
+ === SEARCH PATTERN ===
+ 	\{"q!", ec_quit\},
+ 	\{"q", ec_quit\},
+-	EO\(rcm\),
+ --- extra (delete to include) ---
+ 	\{"reg\+", ec_regprint\},
+ 	\{"reg", ec_regprint\},
+@@ -51,6 +48,6 @@
+ === EDIT COMMAND (abs) ===
+ 1504a 	EO(rec),
+ === EDIT COMMAND (rel) ===
+-+2a 	EO(rec),
+++1a 	EO(rec),
  === END GROUP ===
  
 === DELTA vi.h ===
