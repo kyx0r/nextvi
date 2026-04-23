@@ -368,7 +368,6 @@ static void emit_escaped_text(FILE *out, const char *s);
  *   wq (write+quit)- ec_write: writes file and quits
  *   q! (quit)      - ec_quit: quits without saving
  *   sc! (specials) - ec_specials: sets ex separator character
- *   rcm (option)   - eo_rcm: sets range command mode
  *   ??! (while)    - ec_while: conditional execution (error check)
  *
  * When emitting relative-mode positions (offset from search result),
@@ -1560,7 +1559,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp, int sep)
 		fprintf(out, "SEP=\"$(printf '\\%03o')\"\n", sep);
 		fprintf(out, "QF=${QF-\"$(printf 'vis 2\\\\\\%03oq! 1')\"}\n", sep);
 	}
-	fputs("EXINIT=\"rcm:|sc! \\\\\\\\${SEP}|vis 3${SEP}", out);
+	fputs("EXINIT=\"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", out);
 
 	/*
 	 * Strategy: process operations in groups.
@@ -2286,11 +2285,11 @@ process_line:
 	printf("VI=${VI:-vi}\n");
 	if (relative_mode || interactive_mode) {
 		printf("\n# Uncomment to enter interactive vi on patch failure\n");
-		printf("#DBG=\"|sc|vis 2:e $0:@Q:q!1\"\n");
-		printf("# Uncomment to skip errors (. = silent nop)\n");
-		printf("#DBG=\".\"\n");
-		printf("# Set QF=. to continue despite errors (errors are still printed)\n");
-		printf("#QF=.\n");
+		printf("#DBG=\"|sc|${SEP}vis 2:e $0:@Q:q!1\"\n");
+		printf("# Uncomment to skip errors (?? = silent nop)\n");
+		printf("#DBG=\"??\"\n");
+		printf("# Set QF=?? to continue despite errors (errors are still printed)\n");
+		printf("#QF=\"??\"\n");
 	}
 	printf("\n# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
