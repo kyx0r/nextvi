@@ -262,18 +262,19 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 #define ex_vregion(loc, beg, end) ex_region(loc, beg, end, &xoff, &xoff)
 static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	int vaddr = *loc == '%', haddr = 0, update = 0, row = xrow, ooff = xoff;
-	char *ploc = loc;
+	int vaddr = *loc == '%', haddr = 0, update = 0;
+	int row = xrow, ooff = xoff, ret = 1;
+	char *ploc = loc, *cmd = NULL;
 	xrerr = xirerr;
 	if (vaddr)
 		*beg = 0;
 	while (*loc) {
 		if (*loc == '|') {
-			char *cmd = re_read(&loc, 0);
+			cmd = re_read(&loc, 0);
 			void *err = ex_exec(cmd);
 			free(cmd);
 			if (err) {
-				xrerr = "ex command error";
+				xrerr = "subcommand error";
 				return 1;
 			}
 			continue;
@@ -303,9 +304,11 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 	if (!vaddr) {
 		*beg = xrow;
 		*end = MIN(lbuf_len(xb), *beg + 1);
+		ret += cmd && !haddr;
 	} else if (vaddr == 1)
 		*end = *beg + 1;
-	return *beg < 0 || *beg >= lbuf_len(xb) || *end <= *beg || *end > lbuf_len(xb);
+	return (*beg < 0 || *beg >= lbuf_len(xb) ||
+		*end <= *beg || *end > lbuf_len(xb)) * ret;
 }
 
 static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
@@ -815,8 +818,8 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		ex_print(arg, msg_ft)
 		return NULL;
 	}
-	if (ex_region(loc, &beg, &end, &o1, &o2))
-		return xrerr;
+	if ((i = ex_region(loc, &beg, &end, &o1, &o2)))
+		return i == 2 && !*cmd ? NULL : xrerr;
 	if (o1 >= 0)
 		xoff = MAX(o1, o2);
 	if (!*cmd && *loc) {
