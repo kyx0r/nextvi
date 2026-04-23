@@ -2286,10 +2286,10 @@ process_line:
 	if (relative_mode || interactive_mode) {
 		printf("\n# Uncomment to enter interactive vi on patch failure\n");
 		printf("#DBG=\"|sc|${SEP}vis 2:e $0:@Q:q!1\"\n");
-		printf("# Uncomment to skip errors (?? = silent nop)\n");
-		printf("#DBG=\"??\"\n");
-		printf("# Set QF=?? to continue despite errors (errors are still printed)\n");
-		printf("#QF=\"??\"\n");
+		printf("# Uncomment to skip errors (0? = silent nop)\n");
+		printf("#DBG=\"0\\?\"\n");
+		printf("# Set QF=0? to continue despite errors (errors are still printed)\n");
+		printf("#QF=\"0\\?\"\n");
 	}
 	printf("\n# Verify that VI is nextvi\n");
 	printf("if ! $VI -? 2>&1 | grep -q 'Nextvi'; then\n");
