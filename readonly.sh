@@ -45,7 +45,7 @@ ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
 ${SEP}??!${DBG:-re p FAIL line 1420\\${SEP}p FAIL line 1420${INTR}${QF}}${SEP};=
-${SEP}.i static void *ec_readonly(char *loc, char *cmd, char *arg)
+${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
@@ -79,8 +79,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- patch2vi_ucryw7_ex.c.diff.orig	2026-04-23 12:36:37.933958263 -0100
-+++ patch2vi_ucryw7_ex.c.diff	2026-04-23 12:36:39.939629198 -0100
+--- patch2vi_9t7tkz_ex.c.diff.orig	2026-04-23 13:09:45.782330596 -0100
++++ patch2vi_9t7tkz_ex.c.diff	2026-04-23 13:09:55.824582382 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/6 (line 0) ===
  +char readonly = 0;		/* commandline readonly option */
@@ -108,15 +108,6 @@ exit 0
  === END GROUP ===
  
  === GROUP 3/6 (line 372) ===
-@@ -107,7 +105,7 @@
- }
- 
- === EDIT COMMAND (rel) ===
--+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
-+i static void *ec_readonly(char *loc, char *cmd, char *arg)
- {
- 	ex_buf->readonly = !ex_buf->readonly;
- 	return NULL;
 @@ -122,8 +120,6 @@
  #rel
  .,\$;f>
