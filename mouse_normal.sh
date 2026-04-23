@@ -25,7 +25,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 
 # Patch: conf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP};=
-${SEP}.${SEP}s/mpt\\\\|/mpt|ms|/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
@@ -34,7 +34,7 @@ ${SEP}.i int xms = 1;			/* mouse in normal mode */
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-re p FAIL line 1451\\${SEP}p FAIL line 1451${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 1450\\${SEP}p FAIL line 1450${INTR}${QF}}${SEP};=
 ${SEP}+2a _EO(ms,
 	xms = !*arg ? !xms : eo_val(arg);
 	if (xms)
@@ -47,7 +47,7 @@ ${SEP}+2a _EO(ms,
 .
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-re p FAIL line 1500\\${SEP}p FAIL line 1500${INTR}${QF}}${SEP};=
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-re p FAIL line 1499\\${SEP}p FAIL line 1499${INTR}${QF}}${SEP};=
 ${SEP}+2a 	EO(ms),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -267,8 +267,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- patch2vi_BihysP_conf.c.diff.orig	2026-04-23 12:30:06.550449006 -0100
-+++ patch2vi_BihysP_conf.c.diff	2026-04-23 12:30:50.690637391 -0100
+--- patch2vi_1NHKI2_conf.c.diff.orig	2026-04-23 12:31:08.676581098 -0100
++++ patch2vi_1NHKI2_conf.c.diff	2026-04-23 12:31:33.608636384 -0100
 @@ -8,21 +8,14 @@
  #rel
  %;f>
@@ -277,21 +277,20 @@ exit 0
 -\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
 -\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
 ---- extra (delete to include) ---
--\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
+-\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
 -\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
 -\(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czbd\]\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
 -		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
 +\(\(.*pac.*\)\\
  === EDIT COMMAND (abs) ===
- 289c ((pac|pr|ai|ish|err|ic|grp|mpt|ms|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ 289c ((pac|pr|ai|ish|err|ic|grp|mpt|ms|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  === EDIT COMMAND (relc) ===
  +3
  .;31c ms|
  === EDIT COMMAND (rel) ===
 -+3
--s/\|r/|ms|r/
 ++0
-+s/mpt\|/mpt|ms|/
+ s/t\|s/t|ms|s/
  === END GROUP ===
  
 === DELTA led.c ===
@@ -430,20 +429,20 @@ exit 0
  
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d4fb320..a5485b1c 100644
+index d45d10a6..0c639553 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -286,7 +286,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
--((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+((pac|pr|ai|ish|err|ic|grp|mpt|ms|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+-((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|pr|ai|ish|err|ic|grp|mpt|ms|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..97ffaa27 100644
+index c195038b..ce10bc88 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -451,7 +450,7 @@ index 36b8a6d6..97ffaa27 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1449,6 +1450,15 @@ _EO(left,
+@@ -1448,6 +1449,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -467,7 +466,7 @@ index 36b8a6d6..97ffaa27 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1498,6 +1508,7 @@ static struct excmd {
+@@ -1497,6 +1507,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
