@@ -41,11 +41,10 @@ ${SEP}.,\$;f> 		free\\\\(ibuf\\\\.s\\\\);
 ${SEP}+2a 			if (ex_buf->readonly)
 				return \"write failed: readonly option is set\";
 .
-${SEP}.,\$;f> 
-static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-
-${SEP}??!${DBG:-re p FAIL line 1421\\${SEP}p FAIL line 1421${INTR}${QF}}${SEP};=
-${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
+${SEP}.,\$;f> static int eo_val\\\\(char \\\\*arg\\\\)
+\\\\{
+	int val = atoi\\\\(arg\\\\);${SEP}??!${DBG:-re p FAIL line 1421\\${SEP}p FAIL line 1421${INTR}${QF}}${SEP};=
+${SEP}.i static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
@@ -79,8 +78,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- patch2vi_nVA8Vw_ex.c.diff.orig	2026-04-23 11:55:14.362568029 -0100
-+++ patch2vi_nVA8Vw_ex.c.diff	2026-04-23 11:56:50.667685242 -0100
+--- patch2vi_KyFOGU_ex.c.diff.orig	2026-04-23 12:32:21.635396936 -0100
++++ patch2vi_KyFOGU_ex.c.diff	2026-04-23 12:32:56.691634435 -0100
 @@ -1,7 +1,7 @@
  === GROUP 1/6 (line 0) ===
  +char readonly = 0;		/* commandline readonly option */
@@ -108,7 +107,27 @@ exit 0
  === END GROUP ===
  
  === GROUP 3/6 (line 371) ===
-@@ -122,8 +120,6 @@
+@@ -92,10 +90,6 @@
+ #rel
+ .,\$;f>
+ === SEARCH PATTERN ===
+-
+-static void \*ec_null\(char \*loc, char \*cmd, char \*arg\) \{ return NULL; \}
+-
+---- extra (delete to include) ---
+ static int eo_val\(char \*arg\)
+ \{
+ 	int val = atoi\(arg\);
+@@ -107,7 +101,7 @@
+ }
+ 
+ === EDIT COMMAND (rel) ===
+-+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
++i static void *ec_readonly(char *loc, char *cmd, char *arg)
+ {
+ 	ex_buf->readonly = !ex_buf->readonly;
+ 	return NULL;
+@@ -122,8 +116,6 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
@@ -117,7 +136,7 @@ exit 0
  	\{"rd", ec_undoredo\},
  --- extra (delete to include) ---
  	\{"r", ec_read\},
-@@ -132,6 +128,6 @@
+@@ -132,6 +124,6 @@
  === EDIT COMMAND (abs) ===
  1508a 	{"ro", ec_readonly},
  === EDIT COMMAND (rel) ===
