@@ -25,13 +25,13 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 
 # Patch: conf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-re p FAIL line 291\\${SEP}p FAIL line 291${INTR}${QF}}${SEP};=
-${SEP}+1${SEP}s/cd/c[dx]/${SEP}??!${DBG:-re p FAIL line 291\\${SEP}p FAIL line 291${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+${SEP}+3${SEP}s/cd/c[dx]/${SEP}??!${DBG:-re p FAIL line 291\\${SEP}p FAIL line 291${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return val;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1429\\${SEP}p FAIL line 1429${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 1428\\${SEP}p FAIL line 1428${INTR}${QF}}${SEP};=
 ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
@@ -77,7 +77,7 @@ ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 
 
 .
-${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-re p FAIL line 1529\\${SEP}p FAIL line 1529${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-re p FAIL line 1527\\${SEP}p FAIL line 1527${INTR}${QF}}${SEP};=
 ${SEP}.a 	{\"cx\", ec_closebuf},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -85,30 +85,21 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- patch2vi_87o8BQ_conf.c.diff.orig	2026-04-23 11:47:52.624852181 -0100
-+++ patch2vi_87o8BQ_conf.c.diff	2026-04-23 11:49:08.438696085 -0100
+--- patch2vi_ydbQov_conf.c.diff.orig	2026-04-23 12:15:14.984815651 -0100
++++ patch2vi_ydbQov_conf.c.diff	2026-04-23 12:15:24.078659126 -0100
 @@ -9,8 +9,6 @@
  %;f>
  === SEARCH PATTERN ===
  \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
--\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
+-\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
 -\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
  --- extra (delete to include) ---
  \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czbd\]\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
  		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
-@@ -22,7 +20,7 @@
- +3
- .;74;75c [dx]
- === EDIT COMMAND (rel) ===
--+3
-++1
- s/cd/c[dx]/
- === END GROUP ===
- 
 === DELTA ex.c ===
---- /tmp/patch2vi_ALAhZ9_ex.c.diff.orig	2026-04-12 18:53:27.067584541 -0100
-+++ /tmp/patch2vi_ALAhZ9_ex.c.diff	2026-04-12 18:53:54.812612365 -0100
-@@ -155,8 +155,6 @@
+--- patch2vi_mun6I3_ex.c.diff.orig	2026-04-23 12:11:25.245928219 -0100
++++ patch2vi_mun6I3_ex.c.diff	2026-04-23 12:11:57.268663977 -0100
+@@ -154,8 +154,6 @@
  #rel
  .,\$;f>
  === SEARCH PATTERN ===
@@ -117,9 +108,9 @@ exit 0
  	\{"cd", ec_chdir\},
  --- extra (delete to include) ---
  	\{"c", ec_insert\},
-@@ -167,6 +165,6 @@
- === EDIT COMMAND (offset) ===
- +56a 	{"cx", ec_closebuf},
+@@ -164,6 +162,6 @@
+ === EDIT COMMAND (abs) ===
+ 1527a 	{"cx", ec_closebuf},
  === EDIT COMMAND (rel) ===
 -+2a 	{"cx", ec_closebuf},
 +a 	{"cx", ec_closebuf},
@@ -127,12 +118,12 @@ exit 0
  
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d4fb320..1203e075 100644
+index d45d10a6..38f60ded 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -288,7 +288,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
- ((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 -(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
 +(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|c[dx]?)?",
@@ -140,10 +131,10 @@ index 0d4fb320..1203e075 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..5fa18609 100644
+index c195038b..dff87e11 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1427,6 +1427,50 @@ static int eo_val(char *arg)
+@@ -1426,6 +1426,50 @@ static int eo_val(char *arg)
  	return val;
  }
  
@@ -194,7 +185,7 @@ index 36b8a6d6..5fa18609 100644
  #define _EO(opt, inner) \
  static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
-@@ -1527,6 +1571,7 @@ static struct excmd {
+@@ -1525,6 +1569,7 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},
