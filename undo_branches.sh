@@ -24,11 +24,10 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 #DBG="0\?"
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 
-static void \\\\*ec_null\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\) \\\\{ return NULL; \\\\}
-
-${SEP}??!${DBG:-re p FAIL line 1421\\${SEP}p FAIL line 1421${INTR}${QF}}${SEP};=
-${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static int eo_val\\\\(char \\\\*arg\\\\)
+\\\\{
+	int val = atoi\\\\(arg\\\\);${SEP}??!${DBG:-re p FAIL line 1421\\${SEP}p FAIL line 1421${INTR}${QF}}${SEP};=
+${SEP}.i static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)
@@ -187,6 +186,29 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA ex.c ===
+--- patch2vi_Ij55ld_ex.c.diff.orig	2026-04-23 12:44:48.313696220 -0100
++++ patch2vi_Ij55ld_ex.c.diff	2026-04-23 12:45:06.809617309 -0100
+@@ -14,10 +14,6 @@
+ #rel
+ %;f>
+ === SEARCH PATTERN ===
+-
+-static void \*ec_null\(char \*loc, char \*cmd, char \*arg\) \{ return NULL; \}
+-
+---- extra (delete to include) ---
+ static int eo_val\(char \*arg\)
+ \{
+ 	int val = atoi\(arg\);
+@@ -33,7 +29,7 @@
+ }
+ 
+ === EDIT COMMAND (rel) ===
+-+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
++i static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+ {
+ 	char *s = lbuf_getleafs(xb);
+ 	if (*arg)
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 36b8a6d6..2c136687 100644
