@@ -25,7 +25,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 
 # Patch: conf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP};=
-${SEP}.${SEP}s/\\\\|r/|ms|r/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+${SEP}.${SEP}s/mpt\\\\|/mpt|ms|/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
@@ -267,8 +267,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- patch2vi_C17AcL_conf.c.diff.orig	2026-04-23 11:53:06.106429153 -0100
-+++ patch2vi_C17AcL_conf.c.diff	2026-04-23 11:53:37.529689773 -0100
+--- patch2vi_BihysP_conf.c.diff.orig	2026-04-23 12:30:06.550449006 -0100
++++ patch2vi_BihysP_conf.c.diff	2026-04-23 12:30:50.690637391 -0100
 @@ -8,21 +8,14 @@
  #rel
  %;f>
@@ -289,8 +289,9 @@ exit 0
  .;31c ms|
  === EDIT COMMAND (rel) ===
 -+3
+-s/\|r/|ms|r/
 ++0
- s/\|r/|ms|r/
++s/mpt\|/mpt|ms|/
  === END GROUP ===
  
 === DELTA led.c ===
