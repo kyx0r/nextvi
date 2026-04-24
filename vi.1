@@ -1149,7 +1149,7 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [\fI#\fP <\fI$\fP>]?{\fIcond\fP}[<\fI?\fP>][\fIthen\fP][<\fI?\fP>][\fIelse\fP]
+.It Cm [\fI#\fP <\fI$\fP>]?[\fIcond\fP][<\fI?\fP>][\fIthen\fP][<\fI?\fP>][\fIelse\fP]
 While loop conditional
 .Bd -literal
 Repeat cond # times or infinite with <$>.
@@ -1170,10 +1170,10 @@ Example: edit vi.c only if it exists
 :? \e![ -f ./vi.c ]?e ./vi.c:mpt1
 .Ed
 
-.It Cm [\fI#\fP <\fI$\fP>]?!{\fIcond\fP}[<\fI?\fP>][\fIelse\fP][<\fI?\fP>][\fIthen\fP]
+.It Cm [\fI#\fP <\fI$\fP>]?![\fIcond\fP][<\fI?\fP>][\fIelse\fP][<\fI?\fP>][\fIthen\fP]
 Inverted while loop conditional
 
-.It Cm [\fIprefix\fP]??{\fIthen\fP}[<\fI?\fP>][\fIelse\fP]
+.It Cm [\fIprefix\fP]??[\fIthen\fP][<\fI?\fP>][\fIelse\fP]
 .It Cm {\fIprefix\fP}??
 Conditional
 .Bd -literal
@@ -1207,7 +1207,7 @@ Example: inverted capture -- capture NOT of last status
 :f>int:1??!:1??p int was absent
 .Ed
 
-.It Cm [\fIprefix\fP]??!{\fIelse\fP}[<\fI?\fP>][\fIthen\fP]
+.It Cm [\fIprefix\fP]??![\fIelse\fP][<\fI?\fP>][\fIthen\fP]
 .It Cm {\fIprefix\fP}??!
 Inverted conditional
 
