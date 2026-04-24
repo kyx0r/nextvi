@@ -27,7 +27,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1712\\${SEP}p FAIL line 1712${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP};=
 ${SEP}+2a 
 void ex_done(void)
 {
@@ -94,118 +94,54 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA regex.c ===
---- /tmp/patch2vi_7f1tO4_regex.c.diff.orig	2026-04-15 09:17:26.047976315 -0100
-+++ /tmp/patch2vi_7f1tO4_regex.c.diff	2026-04-15 09:17:42.069552530 -0100
-@@ -5,8 +5,6 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
--	int eol_ch = flg & REG_NEWLINE \? '\\n' : 0;
- 	unsigned int sdense\[prog->sparsesz\], sparsesz = 0;
- --- extra (delete to include) ---
- 	char nsubs\[prog->sub\];
-@@ -15,6 +13,6 @@
- === EDIT COMMAND (abs) ===
- 638a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
- === EDIT COMMAND (rel) ===
--+2a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-+a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
- === END GROUP ===
- 
+GROUP 1
+pattern:
+	unsigned int sdense\[prog->sparsesz\], sparsesz = 0;
+edit_cmd_rel:
+a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+=== END DELTA ===
 === DELTA ren.c ===
---- patch2vi_AMkVSA_ren.c.diff.orig	2026-04-23 11:45:08.022143858 -0100
-+++ patch2vi_AMkVSA_ren.c.diff	2026-04-23 11:46:17.631700091 -0100
-@@ -17,13 +17,7 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--\}
--
--ren_state rstates\[3\]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/
----- extra (delete to include) ---
--ren_state \*rstate = rstates;
--
--/\* specify the screen position of the characters in s \*/
-+ren_state rstates
- === EDIT COMMAND (abs) ===
- 88a void ren_done(void)
- {
-@@ -39,7 +33,7 @@
- }
- 
- === EDIT COMMAND (rel) ===
--+2a void ren_done(void)
-+a void ren_done(void)
- {
- 	rset_free(dir_rslr);
- 	rset_free(dir_rsrl);
+GROUP 1
+pattern:
+ren_state rstates
+edit_cmd_rel:
+a void ren_done(void)
+{
+	rset_free(dir_rslr);
+	rset_free(dir_rsrl);
+	rset_free(dir_rsctx);
+	for (int i = 0; i < LEN(rstates); i++) {
+		if (rstate[i].col) {
+			free(rstate[i].col - 2);
+			free(rstate[i].pos);
+		}
+	}
+}
+
+=== END DELTA ===
 === DELTA vi.h ===
---- patch2vi_xVBj1d_vi.h.diff.orig	2026-04-23 11:46:17.634277245 -0100
-+++ patch2vi_xVBj1d_vi.h.diff	2026-04-23 11:47:52.606697863 -0100
-@@ -5,8 +5,6 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--int ren_off\(char \*s, int p\);
--char \*ren_translate\(char \*s, char \*ln\);
- /\* text direction \*/
- --- extra (delete to include) ---
- int dir_context\(char \*s\);
-@@ -15,7 +13,7 @@
- === EDIT COMMAND (abs) ===
- 218a void dir_done(void);
- === EDIT COMMAND (rel) ===
--+2a void dir_done(void);
-+a void dir_done(void);
- === END GROUP ===
- 
- === GROUP 2/3 (line 259) ===
-@@ -25,9 +23,7 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--int syn_findhl\(int id\);
--int syn_addhl\(char \*reg, int id\);
--void syn_init\(void\);
-+syn_init
- --- extra (delete to include) ---
- 
- /\* uc\.c: utf-8 helper functions \*/
-@@ -35,7 +31,7 @@
- === EDIT COMMAND (abs) ===
- 259a void syn_done(void);
- === EDIT COMMAND (rel) ===
--+2a void syn_done(void);
-+a void syn_done(void);
- === END GROUP ===
- 
- === GROUP 3/3 (line 477) ===
-@@ -45,9 +41,7 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--#define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); \}
--#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); \}
--void ex_init\(char \*\*files, int n\);
-+ex_init
- --- extra (delete to include) ---
- void ex_bufpostfix\(struct buf \*p, int clear\);
- int ex_krs\(rset \*\*krs, int \*dir\);
-@@ -55,6 +49,6 @@
- === EDIT COMMAND (abs) ===
- 477a void ex_done(void);
- === EDIT COMMAND (rel) ===
--+2a void ex_done(void);
-+a void ex_done(void);
- === END GROUP ===
- 
+GROUP 1
+pattern:
+/\* text direction \*/
+edit_cmd_rel:
+a void dir_done(void);
+GROUP 2
+pattern:
+syn_init
+edit_cmd_rel:
+a void syn_done(void);
+GROUP 3
+pattern:
+ex_init
+edit_cmd_rel:
+a void ex_done(void);
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..4899a76f 100644
+index c195038b..653899c8 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1710,6 +1710,19 @@ void ex(void)
+@@ -1701,6 +1701,19 @@ void ex(void)
  	xgrec--;
  }
  
