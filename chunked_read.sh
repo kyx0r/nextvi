@@ -27,18 +27,18 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return key;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 332\\${SEP}p FAIL line 332${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:-re p FAIL line 332\\${SEP}p FAIL line 332${INTR}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
-if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-re p FAIL line 335\\${SEP}p FAIL line 335${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 333\\${SEP}p FAIL line 333${INTR}${QF}}${SEP};=
+${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:-re p FAIL line 333\\${SEP}p FAIL line 333${INTR}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-re p FAIL line 336\\${SEP}p FAIL line 336${INTR}${QF}}${SEP};=
 ${SEP}+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
 .
 ${SEP}.,\$;f> 		return 1;
 	\\\\}
-	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-re p FAIL line 351\\${SEP}p FAIL line 351${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-re p FAIL line 351\\${SEP}p FAIL line 351${INTR}${QF}}${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-re p FAIL line 352\\${SEP}p FAIL line 352${INTR}${QF}}${SEP};=
+${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-re p FAIL line 352\\${SEP}p FAIL line 352${INTR}${QF}}${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-re p FAIL line 372\\${SEP}p FAIL line 372${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-re p FAIL line 372\\${SEP}p FAIL line 372${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+	\\\\}${SEP}??!${DBG:-re p FAIL line 373\\${SEP}p FAIL line 373${INTR}${QF}}${SEP};=
+${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-re p FAIL line 373\\${SEP}p FAIL line 373${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
@@ -142,10 +142,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..d44d01a6 100644
+index c195038b..49bc9f52 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -329,10 +329,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
+@@ -330,10 +330,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
  	return key;
  }
  
@@ -158,7 +158,7 @@ index 36b8a6d6..d44d01a6 100644
  	close(fd); \
  } \
  
-@@ -348,7 +348,7 @@ int ex_edit(const char *path, int len)
+@@ -349,7 +349,7 @@ int ex_edit(const char *path, int len)
  		return 1;
  	}
  	bufs_switch(bufs_open(path, len));
@@ -167,7 +167,7 @@ index 36b8a6d6..d44d01a6 100644
  	return 0;
  }
  
-@@ -369,7 +369,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -370,7 +370,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
