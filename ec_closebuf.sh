@@ -85,37 +85,17 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- patch2vi_ydbQov_conf.c.diff.orig	2026-04-23 12:15:14.984815651 -0100
-+++ patch2vi_ydbQov_conf.c.diff	2026-04-23 12:15:24.078659126 -0100
-@@ -9,8 +9,6 @@
- %;f>
- === SEARCH PATTERN ===
- \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
--\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
--\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
- --- extra (delete to include) ---
- \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czbd\]\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
- 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
+GROUP 1
+pattern:
+\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+=== END DELTA ===
 === DELTA ex.c ===
---- patch2vi_mun6I3_ex.c.diff.orig	2026-04-23 12:11:25.245928219 -0100
-+++ patch2vi_mun6I3_ex.c.diff	2026-04-23 12:11:57.268663977 -0100
-@@ -154,8 +154,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	\{"cm!", ec_cmap\},
--	\{"cm", ec_cmap\},
- 	\{"cd", ec_chdir\},
- --- extra (delete to include) ---
- 	\{"c", ec_insert\},
-@@ -164,6 +162,6 @@
- === EDIT COMMAND (abs) ===
- 1527a 	{"cx", ec_closebuf},
- === EDIT COMMAND (rel) ===
--+2a 	{"cx", ec_closebuf},
-+a 	{"cx", ec_closebuf},
- === END GROUP ===
- 
+GROUP 2
+pattern:
+	\{"cd", ec_chdir\},
+edit_cmd_rel:
+a 	{"cx", ec_closebuf},
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index d45d10a6..38f60ded 100644
