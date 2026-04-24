@@ -47,8 +47,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/
-struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/${SEP}??!${DBG:-re p FAIL line 43\\${SEP}p FAIL line 43${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-re p FAIL line 43\\${SEP}p FAIL line 43${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/${SEP}??!${DBG:-re p FAIL line 41\\${SEP}p FAIL line 41${INTR}${QF}}${SEP};=
+${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-re p FAIL line 41\\${SEP}p FAIL line 41${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	free\\\\(sb->s\\\\);
@@ -154,7 +154,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d4fb320..163f422e 100644
+index d45d10a6..cbfd3b5d 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -184,10 +184,10 @@ index 0d4fb320..163f422e 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..e3991598 100644
+index c195038b..0642985f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -40,7 +40,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
+@@ -38,7 +38,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
  rset *xkwdrs;			/* the last searched keyword rset */
  sbuf *xregs[256];		/* string registers */
  struct buf *bufs;		/* main buffers */
