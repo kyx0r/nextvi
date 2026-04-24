@@ -44,15 +44,15 @@ ${SEP}+2a 		if (vc && cnt == 1)
 		}
 .
 ${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP};=
-${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}.,\$;f> 	o2 = o1;
-	if \\\\(\\\\(mv = vi_motionln\\\\(&r2, cmd, vi_arg \\\\? vi_arg : 1\\\\)\\\\)\\\\)
-		o2 = -1;${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/1/cmd/${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP};=
+${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
 GROUP 3
+pattern:
+	else if \(!\(mv = vi_motion\(1, &r2, &o2\)\)\)
 edit_cmd_rel:
 +0
 s/1/cmd/
