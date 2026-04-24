@@ -34,21 +34,21 @@ int nwins;			/* number of windows */
 .
 ${SEP}%;f> 		ex_buf = &bufs\\\\[idx\\\\];
 	\\\\}
-	exbuf_load\\\\(ex_buf\\\\)${SEP}??!${DBG:-re p FAIL line 103\\${SEP}p FAIL line 103${INTR}${QF}}${SEP};=
+	exbuf_load\\\\(ex_buf\\\\)${SEP}??!${DBG:-re p FAIL line 101\\${SEP}p FAIL line 101${INTR}${QF}}${SEP};=
 ${SEP}+2a 	/* update current window's buffer reference */
 	if (curwin)
 		curwin->buf = ex_buf;
 .
 ${SEP}.,\$;f> 	\\\\}
 	exbuf_load\\\\(ex_buf\\\\)
-	syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-re p FAIL line 164\\${SEP}p FAIL line 164${INTR}${QF}}${SEP};=
+	syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-re p FAIL line 162\\${SEP}p FAIL line 162${INTR}${QF}}${SEP};=
 ${SEP}+2a 	/* update current window's buffer reference */
 	if (curwin)
 		curwin->buf = ex_buf;
 .
 ${SEP}.,\$;f> 
 static void \\\\*ec_quit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 578\\${SEP}p FAIL line 578${INTR}${QF}}${SEP};=
+\\\\{${SEP}??!${DBG:-re p FAIL line 579\\${SEP}p FAIL line 579${INTR}${QF}}${SEP};=
 ${SEP}+3,#+3c 	/* q! always force quits */
 	if (!strchr(cmd, '!')) {
 		/* if multiple windows, close current window */
@@ -66,7 +66,7 @@ ${SEP}+3,#+3c 	/* q! always force quits */
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-re p FAIL line 1451\\${SEP}p FAIL line 1451${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 1450\\${SEP}p FAIL line 1450${INTR}${QF}}${SEP};=
 ${SEP}+2a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
@@ -176,23 +176,23 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,\$;f> 	EO\\\\(err\\\\),
 	\\\\{\"ef!\", ec_fuzz\\\\},
-	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:-re p FAIL line 1481\\${SEP}p FAIL line 1481${INTR}${QF}}${SEP};=
+	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:-re p FAIL line 1480\\${SEP}p FAIL line 1480${INTR}${QF}}${SEP};=
 ${SEP}+2a 	{\"eq\", ec_equalize},
 .
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-re p FAIL line 1521\\${SEP}p FAIL line 1521${INTR}${QF}}${SEP};=
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-re p FAIL line 1519\\${SEP}p FAIL line 1519${INTR}${QF}}${SEP};=
 ${SEP}+2a 	{\"sp\", ec_split},
 .
 ${SEP}.,\$;f> 	EO\\\\(lim\\\\),
 	EO\\\\(led\\\\),
-	EO\\\\(vis\\\\),${SEP}??!${DBG:-re p FAIL line 1543\\${SEP}p FAIL line 1543${INTR}${QF}}${SEP};=
+	EO\\\\(vis\\\\),${SEP}??!${DBG:-re p FAIL line 1541\\${SEP}p FAIL line 1541${INTR}${QF}}${SEP};=
 ${SEP}+2a 	{\"vs\", ec_vsplit},
 .
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1712\\${SEP}p FAIL line 1712${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP};=
 ${SEP}+2a /* window management functions */
 static void curwin_save(void)
 {
@@ -927,74 +927,40 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_aijsi4_conf.c.diff.orig	2026-04-12 18:14:03.671548470 -0100
-+++ /tmp/patch2vi_aijsi4_conf.c.diff	2026-04-12 18:14:54.621852605 -0100
-@@ -9,8 +9,6 @@
- %;f>
- === SEARCH PATTERN ===
- \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
--\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
--\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
- --- extra (delete to include) ---
- \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
- \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
-@@ -23,6 +21,6 @@
- .;48;77c qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp
- === EDIT COMMAND (rel) ===
- +3
--s/f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?/qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/
-+s/f!\](.*)\\/qf!]\1vs|sp|\\/
- === END GROUP ===
- 
+GROUP 1
+pattern:
+\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
+edit_cmd_rel:
++3
+s/f!\](.*)\\/qf!]\1vs|sp|\\/
+=== END DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_s429Tm_ex.c.diff.orig	2026-04-12 18:43:19.701843018 -0100
-+++ /tmp/patch2vi_s429Tm_ex.c.diff	2026-04-12 18:43:26.816676834 -0100
-@@ -3,7 +3,7 @@
- +struct win *curwin;		/* current active window */
- +int nwins;			/* number of windows */
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- 
- === SEARCH PATTERN ===
+GROUP 1
+strategy: abs
+=== END DELTA ===
 === DELTA vi.h ===
---- /tmp/patch2vi_pCilFf_vi.h.diff.orig
-+++ /tmp/patch2vi_pCilFf_vi.h.diff
-@@ -5,8 +5,6 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--void term_chr\(int ch\);
--void term_pos\(int r, int c\);
- void term_kill\(void\);
- --- extra (delete to include) ---
- void term_room\(int n\);
-@@ -15,7 +13,7 @@
- === EDIT COMMAND (abs) ===
- 319a void term_killn(int n);
- === EDIT COMMAND (rel) ===
--+2a void term_killn(int n);
-+a void term_killn(int n);
- === END GROUP ===
- 
- === GROUP 2/3 (line 390) ===
+GROUP 1
+pattern:
+void term_kill\(void\);
+edit_cmd_rel:
+a void term_killn(int n);
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d4fb320..6427a941 100644
+index d45d10a6..90a5db99 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -287,7 +287,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
- ((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..226202df 100644
+index c195038b..c0548f7c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -1004,7 +970,7 @@ index 36b8a6d6..226202df 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -101,6 +104,9 @@ void bufs_switch(int idx)
+@@ -99,6 +102,9 @@ void bufs_switch(int idx)
  		ex_buf = &bufs[idx];
  	}
  	exbuf_load(ex_buf)
@@ -1014,7 +980,7 @@ index 36b8a6d6..226202df 100644
  }
  
  static int bufs_open(const char *path, int len)
-@@ -162,6 +168,9 @@ void temp_switch(int i, int swap)
+@@ -160,6 +166,9 @@ void temp_switch(int i, int swap)
  	}
  	exbuf_load(ex_buf)
  	syn_setft(xb_ft);
@@ -1024,7 +990,7 @@ index 36b8a6d6..226202df 100644
  }
  
  void temp_write(int i, char *str)
-@@ -575,10 +584,19 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -576,10 +585,19 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
@@ -1048,7 +1014,7 @@ index 36b8a6d6..226202df 100644
  	xquit = !xquit ? 1 : xquit;
  	xqprop = *loc ? atoi(loc) : -1;
  	if (*arg)
-@@ -1449,6 +1467,112 @@ _EO(left,
+@@ -1448,6 +1466,112 @@ _EO(left,
  	return NULL;
  )
  
@@ -1161,7 +1127,7 @@ index 36b8a6d6..226202df 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1479,6 +1603,7 @@ static struct excmd {
+@@ -1478,6 +1602,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -1169,7 +1135,7 @@ index 36b8a6d6..226202df 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1519,6 +1644,7 @@ static struct excmd {
+@@ -1517,6 +1642,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -1177,15 +1143,15 @@ index 36b8a6d6..226202df 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1541,6 +1667,7 @@ static struct excmd {
+@@ -1539,6 +1665,7 @@ static struct excmd {
  	EO(lim),
  	EO(led),
  	EO(vis),
 +	{"vs", ec_vsplit},
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
- 	{"", ec_null}, /* do not remove */
-@@ -1710,6 +1837,244 @@ void ex(void)
+ 	{"", ec_print}, /* do not remove */
+@@ -1701,6 +1828,244 @@ void ex(void)
  	xgrec--;
  }
  
