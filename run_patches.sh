@@ -5,7 +5,17 @@ do
 	printf "%s\n" "RUNNING: $s"
 	./"$s"
 	[ "$1" = "1" ] && ./cbuild.sh build
-	[ "$1" = "2" ] && git diff > "${s%.sh}.patch"
+	new_files=$(git ls-files --others --exclude-standard)
+	if [ "$1" = "2" ]; then
+		if [ -n "$new_files" ]; then
+			printf '%s\n' $new_files | xargs git add -N
+		fi
+		git diff > "${s%.sh}.patch"
+	fi
 	git checkout . &>/dev/null
+	if [ -n "$new_files" ]; then
+		printf '%s\n' $new_files | xargs git reset HEAD -- &>/dev/null
+		printf '%s\n' $new_files | xargs rm -f
+	fi
 	printf "\n"
 done
