@@ -1,4 +1,4 @@
-.Dd Apr 23, 2026
+.Dd Apr 24, 2026
 .Dt Nextvi 1
 .Os Nextvi 5.0
 .
@@ -715,7 +715,7 @@ No range evaluates to <%> range.
 No range displays a maximum of xrows * 3 matches.
 .Ed
 
-.It Cm [\fIvrange\fP]g{<\fIAny\fP>}[\fIregex\fP]{<\fIAny\fP>}{\fIcmd\fP}
+.It Cm [\fIvrange\fP]g[<\fIAny\fP>][\fIregex\fP][<\fIAny\fP>][\fIcmd\fP]
 Global command
 .Bd -literal
 Execute an ex command on a range of lines that matches an
@@ -748,7 +748,7 @@ Example: extract/print data enclosed in "()"
 :grp1:err4:g/./;0\e:;>(\e().+\e)>;#>.+(\e))>+1p:err1:grp
 .Ed
 
-.It Cm [\fIvrange\fP]g!{<\fIAny\fP>}[\fIregex\fP]{<\fIAny\fP>}{\fIcmd\fP}
+.It Cm [\fIvrange\fP]g![<\fIAny\fP>][\fIregex\fP][<\fIAny\fP>][\fIcmd\fP]
 Inverted global command
 
 .It Cm [\fIrange\fP]re[\fIregex\fP]
@@ -824,7 +824,7 @@ Example: join all lines with space padding
 :%-1j x
 .Ed
 
-.It Cm [\fIvrange\fP]s{<\fIAny\fP>}[\fIregex\fP]{<\fIAny\fP>}{\fIstr\fP}[<\fIAny\fP>][<\fIg\fP>]
+.It Cm [\fIvrange\fP]s[<\fIAny\fP>][\fIregex\fP][<\fIAny\fP>][\fIstr\fP][<\fIAny\fP>][<\fIg\fP>]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -1247,7 +1247,7 @@ Missing arguments default to <\e : % !>.
 Example: change <%> to <a>
 :2sc a
 Example: utilize newly set separator in a single command chain
-:|1sc a|: p cmd1 a p cmd2 a|sc|a??
+:|1sc a|: p cmd1 a p cmd2 a|sc|a0?:p cmd3
 .Ed
 
 .It Cm [<\fI0-3\fP>]sc![<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
