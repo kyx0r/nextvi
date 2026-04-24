@@ -5,7 +5,7 @@ do
 	printf "%s\n" "RUNNING: $s"
 	./"$s"
 	[ "$1" = "1" ] && ./cbuild.sh build
-	new_files=$(git ls-files --others --exclude-standard)
+	new_files=$(git ls-files --others --exclude-standard | grep -v '\.patch$')
 	if [ "$1" = "2" ]; then
 		if [ -n "$new_files" ]; then
 			printf '%s\n' $new_files | xargs git add -N
