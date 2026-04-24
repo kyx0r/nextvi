@@ -60,79 +60,29 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- patch2vi_6sjA1Y_conf.c.diff.orig	2026-04-23 12:42:29.878190612 -0100
-+++ patch2vi_6sjA1Y_conf.c.diff	2026-04-23 12:42:44.216620654 -0100
-@@ -9,8 +9,6 @@
- %;f>
- === SEARCH PATTERN ===
- \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
--\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
--\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
- --- extra (delete to include) ---
- \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
- \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
+GROUP 1
+pattern:
+\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
+=== END DELTA ===
 === DELTA ex.c ===
---- patch2vi_ZxxPwN_ex.c.diff.orig	2026-04-23 12:42:44.221602083 -0100
-+++ patch2vi_ZxxPwN_ex.c.diff	2026-04-23 12:43:50.152619107 -0100
-@@ -1,7 +1,7 @@
- === GROUP 1/3 (line 0) ===
- +int xrec;			/* input recoding register */
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %f>
- === SEARCH PATTERN ===
-@@ -21,9 +21,7 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(mpt\)
--EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
--EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
-+EO\(pac\)
- --- extra (delete to include) ---
- 
- _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
-@@ -41,8 +39,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	\{"m", ec_mark\},
--	\{"q!", ec_quit\},
- 	\{"q", ec_quit\},
- --- extra (delete to include) ---
- 	\{"reg\+", ec_regprint\},
-@@ -51,6 +47,6 @@
- === EDIT COMMAND (abs) ===
- 1502a 	EO(rec),
- === EDIT COMMAND (rel) ===
--+2a 	EO(rec),
-+a 	EO(rec),
- === END GROUP ===
- 
+GROUP 1
+strategy: abs
+GROUP 2
+pattern:
+EO\(pac\)
+GROUP 3
+pattern:
+	\{"q", ec_quit\},
+edit_cmd_rel:
+a 	EO(rec),
+=== END DELTA ===
 === DELTA vi.h ===
---- /tmp/patch2vi_KlBLoo_vi.h.diff.orig
-+++ /tmp/patch2vi_KlBLoo_vi.h.diff
-@@ -5,16 +5,13 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--extern int xlim;
--extern int xseq;
--extern int xerr;
----- extra (delete to include) ---
- /\* global variables \*/
-+--- extra (delete to include) ---
- extern int xquit;
- extern int xrow, xoff, xtop;
- === EDIT COMMAND (abs) ===
- 426a extern int xrec;
- === EDIT COMMAND (rel) ===
--+2a extern int xrec;
-+i extern int xrec;
- === END GROUP ===
- 
+GROUP 1
+pattern:
+/\* global variables \*/
+edit_cmd_rel:
+i extern int xrec;
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index d45d10a6..0529482d 100644
