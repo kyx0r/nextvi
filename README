@@ -863,7 +863,7 @@ EX COMMANDS
              Example: execute vi "dw" command after user exits insert
              :@i:@dw
 
-     [# <$>]?{cond}[<?>][then][<?>][else]
+     [# <$>]?[cond][<?>][then][<?>][else]
              While loop conditional
 
              Repeat cond # times or infinite with <$>.
@@ -883,10 +883,10 @@ EX COMMANDS
              Example: edit vi.c only if it exists
              :? \![ -f ./vi.c ]?e ./vi.c:mpt1
 
-     [# <$>]?!{cond}[<?>][else][<?>][then]
+     [# <$>]?![cond][<?>][else][<?>][then]
              Inverted while loop conditional
 
-     [prefix]??{then}[<?>][else]
+     [prefix]??[then][<?>][else]
      {prefix}??
              Conditional
 
@@ -919,7 +919,7 @@ EX COMMANDS
              Example: inverted capture -- capture NOT of last status
              :f>int:1??!:1??p int was absent
 
-     [prefix]??!{else}[<?>][then]
+     [prefix]??![else][<?>][then]
      {prefix}??!
              Inverted conditional
 
