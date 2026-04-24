@@ -24,29 +24,29 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 #DBG="0\?"
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-re p FAIL line 358\\${SEP}p FAIL line 358${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-re p FAIL line 359\\${SEP}p FAIL line 359${INTR}${QF}}${SEP};=
 ${SEP}+3c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
 .
 ${SEP}.,\$;f> 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
 		syn_setft\\\\(xb_ft\\\\);
-	\\\\}${SEP}??!${DBG:-re p FAIL line 376\\${SEP}p FAIL line 376${INTR}${QF}}${SEP};=
+	\\\\}${SEP}??!${DBG:-re p FAIL line 377\\${SEP}p FAIL line 377${INTR}${QF}}${SEP};=
 ${SEP}+2a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 .
 ${SEP}.,\$;f> 
 void ex_init\\\\(.*\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
-	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-re p FAIL line 1717\\${SEP}p FAIL line 1717${INTR}${QF}}${SEP};=
+\\\\{${SEP}??!${DBG:-re p FAIL line 1706\\${SEP}p FAIL line 1706${INTR}${QF}}${SEP};=
+${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-re p FAIL line 1706\\${SEP}p FAIL line 1706${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-re p FAIL line 1708\\${SEP}p FAIL line 1708${INTR}${QF}}${SEP};=
 ${SEP}+1a 	int i = n;
 .
 ${SEP}.,\$;f> 	do \\\\{
-		xmpt = 0;${SEP}??!${DBG:-re p FAIL line 1720\\${SEP}p FAIL line 1720${INTR}${QF}}${SEP};=
-${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-re p FAIL line 1720\\${SEP}p FAIL line 1720${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-re p FAIL line 1722\\${SEP}p FAIL line 1722${INTR}${QF}}${SEP};=
+		xmpt = 0;${SEP}??!${DBG:-re p FAIL line 1711\\${SEP}p FAIL line 1711${INTR}${QF}}${SEP};=
+${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-re p FAIL line 1711\\${SEP}p FAIL line 1711${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-re p FAIL line 1713\\${SEP}p FAIL line 1713${INTR}${QF}}${SEP};=
 ${SEP}+1a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
@@ -67,7 +67,7 @@ ${SEP}+1a 	if (stdin_fd) {
 		xmpt = MIN(xmpt, 1);
 	}
 .
-${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1723\\${SEP}p FAIL line 1723${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1714\\${SEP}p FAIL line 1714${INTR}${QF}}${SEP};=
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -134,101 +134,44 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_uVVsyk_ex.c.diff.orig	2026-04-14 10:01:03.499851821 -0100
-+++ /tmp/patch2vi_uVVsyk_ex.c.diff	2026-04-14 10:01:15.006153961 -0100
-@@ -9,8 +9,6 @@
- %;f>
- === SEARCH PATTERN ===
- static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
--\{
--	char msg\[512\];
- --- extra (delete to include) ---
- 	int fd, len, rd = 0, cd = 0;
- 	if \(arg\[0\] == '\.' && arg\[1\] == '/'\)
-@@ -69,7 +67,7 @@
- .,\$;f>
- === SEARCH PATTERN ===
- 
--void ex_init\(char \*\*files, int n\)
-+void ex_init\(.*\)
- \{
- --- extra (delete to include) ---
- 	xbufsalloc = MAX\(n, xbufsalloc\);
-@@ -241,7 +239,6 @@
- --- extra (delete to include) ---
- 	if \(\(s = getenv\("EXINIT"\)\)\)
- 		ex_command\(s\)
--\}
- === EDIT COMMAND (abs) ===
- 1723a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
- === EDIT COMMAND (offset) ===
+GROUP 1
+pattern:
+static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
+GROUP 3
+pattern:
+
+void ex_init\(.*\)
+\{
+=== END DELTA ===
 === DELTA term.c ===
---- /tmp/patch2vi_cfJhIA_term.c.diff.orig
-+++ /tmp/patch2vi_cfJhIA_term.c.diff
-@@ -2,7 +2,7 @@
- +int stdin_fd;
- +static int isig;
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %;f>
- === SEARCH PATTERN ===
-@@ -32,8 +32,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	term_winch = 0;
--	term_resized\+\+;
- 	sbuf_make\(term_sbuf, 2048\)
- --- extra (delete to include) ---
- 	tcgetattr\(0, &termios\);
-@@ -46,7 +44,7 @@
- +3
- .;11;12c stdin_fd
- === EDIT COMMAND (rel) ===
--+3
-++1
- s/0/stdin_fd/
- === END GROUP ===
- 
+GROUP 1
+strategy: abs
+GROUP 2
+pattern:
+	sbuf_make\(term_sbuf, 2048\)
+edit_cmd_rel:
++1
+s/0/stdin_fd/
+=== END DELTA ===
 === DELTA vi.c ===
---- /tmp/patch2vi_SYSbRz_vi.c.diff.orig	2026-02-17 19:26:01.770387538 -0100
-+++ /tmp/patch2vi_SYSbRz_vi.c.diff	2026-02-17 19:26:34.515996888 -0100
-@@ -7,7 +7,6 @@
- === SEARCH PATTERN (offset: 3) ===
- 	memset\(&sa, 0, sizeof\(sa\)\);
- 	sa\.sa_handler = sighandler;
--	sigaction\(SIGWINCH, &sa, NULL\);
- --- extra (delete to include) ---
- \}
- 
+GROUP 1
+pattern:
+	memset\(&sa, 0, sizeof\(sa\)\);
+	sa\.sa_handler = sighandler;
+=== END DELTA ===
 === DELTA vi.h ===
---- /tmp/patch2vi_OahCGM_vi.h.diff.orig
-+++ /tmp/patch2vi_OahCGM_vi.h.diff
-@@ -5,8 +5,6 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--char \*conf_digraph\(int c1, int c2\);
--
- /\* vi\.c: main \*/
- --- extra (delete to include) ---
- void vi\(int init\);
-@@ -15,6 +13,6 @@
- === EDIT COMMAND (abs) ===
- 534a extern int stdin_fd;
- === EDIT COMMAND (rel) ===
--+2a extern int stdin_fd;
-+a extern int stdin_fd;
- === END GROUP ===
- 
+GROUP 1
+pattern:
+/\* vi\.c: main \*/
+edit_cmd_rel:
+a extern int stdin_fd;
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..b4e989e8 100644
+index c195038b..7838a354 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -355,7 +355,9 @@ int ex_edit(const char *path, int len)
+@@ -356,7 +356,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
@@ -239,7 +182,7 @@ index 36b8a6d6..b4e989e8 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -374,6 +376,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -375,6 +377,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -249,7 +192,7 @@ index 36b8a6d6..b4e989e8 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1712,15 +1717,36 @@ void ex(void)
+@@ -1703,15 +1708,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
