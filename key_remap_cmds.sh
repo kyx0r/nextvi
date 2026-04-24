@@ -34,7 +34,7 @@ static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 ${SEP}%;f> 	return NULL;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 551\\${SEP}p FAIL line 551${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 552\\${SEP}p FAIL line 552${INTR}${QF}}${SEP};=
 ${SEP}+2a static void *ec_map(char *loc, char *cmd, char *arg)
 {
 	char **map = cmd[0] == 'n' ? nmaps[xkmap] : imaps[xkmap];
@@ -77,11 +77,11 @@ int map_read(int mode, int winch)
 
 .
 ${SEP}.,\$;f> 	\\\\{\"inc\", ec_setincl\\\\},
-	EO\\\\(ic\\\\),${SEP}??!${DBG:-re p FAIL line 1494\\${SEP}p FAIL line 1494${INTR}${QF}}${SEP};=
+	EO\\\\(ic\\\\),${SEP}??!${DBG:-re p FAIL line 1493\\${SEP}p FAIL line 1493${INTR}${QF}}${SEP};=
 ${SEP}+1a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
 .
-${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1501\\${SEP}p FAIL line 1501${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1500\\${SEP}p FAIL line 1500${INTR}${QF}}${SEP};=
 ${SEP}.i 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
 .
@@ -141,132 +141,59 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_H9hLJD_conf.c.diff.orig	2026-04-15 10:03:12.617726122 -0100
-+++ /tmp/patch2vi_H9hLJD_conf.c.diff	2026-04-15 10:03:27.226270717 -0100
-@@ -9,8 +9,6 @@
- %;f>
- === SEARCH PATTERN ===
- \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
--\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
--\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
- --- extra (delete to include) ---
- \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
- \(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czb\]\?\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
+GROUP 1
+pattern:
+\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
+=== END DELTA ===
 === DELTA ex.c ===
---- /tmp/patch2vi_ADp5Sx_ex.c.diff.orig	2026-04-16 12:11:53.981310744 -0100
-+++ /tmp/patch2vi_ADp5Sx_ex.c.diff	2026-04-16 12:12:01.145609149 -0100
-@@ -2,7 +2,7 @@
- +static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
- +static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %f>
- === SEARCH PATTERN ===
-@@ -205,7 +205,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	EO\(ish\),
- 	\{"inc", ec_setincl\},
- 	EO\(ic\),
- --- extra (delete to include) ---
-@@ -219,7 +218,7 @@
- +903a 	{"im!", ec_map},
- 	{"im", ec_map},
- === EDIT COMMAND (rel) ===
--+2a 	{"im!", ec_map},
-++1a 	{"im!", ec_map},
- 	{"im", ec_map},
- === END GROUP ===
- 
-@@ -232,13 +231,7 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	\{"g", ec_glob\},
--	EO\(mpt\),
--	\{"m", ec_mark\},
----- extra (delete to include) ---
- 	\{"q!", ec_quit\},
--	\{"q", ec_quit\},
--	EO\(rcm\),
- === EDIT COMMAND (abs) ===
- 1501a 	{"nm!", ec_map},
- 	{"nm", ec_map},
-@@ -246,7 +239,7 @@
- +5a 	{"nm!", ec_map},
- 	{"nm", ec_map},
- === EDIT COMMAND (rel) ===
--+2a 	{"nm!", ec_map},
-+i 	{"nm!", ec_map},
- 	{"nm", ec_map},
- === END GROUP ===
- 
+GROUP 1
+strategy: abs
+GROUP 3
+pattern:
+	\{"inc", ec_setincl\},
+	EO\(ic\),
+edit_cmd_rel:
++1a 	{"im!", ec_map},
+	{"im", ec_map},
+GROUP 4
+pattern:
+	\{"q!", ec_quit\},
+edit_cmd_rel:
+i 	{"nm!", ec_map},
+	{"nm", ec_map},
+=== END DELTA ===
 === DELTA led.c ===
---- /tmp/patch2vi_KpLZVI_led.c.diff.orig	2026-04-15 10:03:29.412549798 -0100
-+++ /tmp/patch2vi_KpLZVI_led.c.diff	2026-04-15 10:04:12.537266065 -0100
-@@ -8,21 +8,15 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--	do \{
--		led_printparts\(sb, pre, ps, \*post, postn, poff\);
- 		len = sb->s_n;
----- extra (delete to include) ---
- 		c = term_read\(TK_CTL\('l'\)\);
--		noredraw:
--		switch \(c\) \{
--		case TK_CTL\('h'\):
- === EDIT COMMAND (abs) ===
- 431c 		c = map_read(1, TK_CTL('l'));
- === EDIT COMMAND (relc) ===
- +3
- .;6;16c map_read(1, 
- === EDIT COMMAND (rel) ===
--+3
-++1
- s/term_read\(/map_read(1, /
- === END GROUP ===
- 
+GROUP 1
+pattern:
+		len = sb->s_n;
+		c = term_read\(TK_CTL\('l'\)\);
+edit_cmd_rel:
++1
+s/term_read\(/map_read(1, /
+=== END DELTA ===
 === DELTA vi.h ===
---- /tmp/patch2vi_OlO9RL_vi.h.diff.orig	2026-04-15 10:07:49.056623265 -0100
-+++ /tmp/patch2vi_OlO9RL_vi.h.diff	2026-04-15 10:08:55.447237022 -0100
-@@ -5,16 +5,10 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--#define bufs_switchwft\(idx\) \\
--\{ if \(&bufs\[idx\] != ex_buf\) \{ bufs_switch\(idx\); syn_setft\(xb_ft\); \} \} \\
--
----- extra (delete to include) ---
- void bufs_switch\(int idx\);
--void temp_open\(int i, char \*name, char \*ft\);
--void temp_switch\(int i, int swap\);
- === EDIT COMMAND (abs) ===
- 465a int map_read(int mode, int winch);
- === EDIT COMMAND (rel) ===
--+2a int map_read(int mode, int winch);
-+i int map_read(int mode, int winch);
- === END GROUP ===
- 
+GROUP 1
+pattern:
+void bufs_switch\(int idx\);
+edit_cmd_rel:
+i int map_read(int mode, int winch);
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d4fb320..ff4aa65a 100644
+index d45d10a6..90efd6a5 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -287,7 +287,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
- ((pac|pr|ai|ish|err|ic|grp|mpt|rcm|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|im!?|i|sc!?|nm!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..d11f911a 100644
+index c195038b..41dde426 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -275,7 +202,7 @@ index 36b8a6d6..d11f911a 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -549,6 +551,46 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -550,6 +552,46 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -322,7 +249,7 @@ index 36b8a6d6..d11f911a 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	if (!arg[0]) {
-@@ -1492,6 +1534,8 @@ static struct excmd {
+@@ -1491,6 +1533,8 @@ static struct excmd {
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
@@ -331,7 +258,7 @@ index 36b8a6d6..d11f911a 100644
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
-@@ -1499,6 +1543,8 @@ static struct excmd {
+@@ -1498,6 +1542,8 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -339,7 +266,7 @@ index 36b8a6d6..d11f911a 100644
 +	{"nm", ec_map},
  	{"q!", ec_quit},
  	{"q", ec_quit},
- 	EO(rcm),
+ 	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
 index 6a5e065f..1357b20e 100644
 --- a/led.c
