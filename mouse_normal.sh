@@ -84,14 +84,8 @@ ${SEP}+1a 			term_mouse_on();
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: term.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static struct termios termios;
-sbuf \\\\*term_sbuf;
-int term_record;${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP};=
-${SEP}.i int xmouse_col, xmouse_row;
-.
-${SEP}.,\$;f> 
-${SEP}??!${DBG:-re p FAIL line 10\\${SEP}p FAIL line 10${INTR}${QF}}${SEP};=
-${SEP}.a void term_mouse_on(void)
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xmouse_col, xmouse_row;
+void term_mouse_on(void)
 {
 	if (xms)
 		write(1, \"\\\\x1b[?1000h\\\\x1b[?1006h\", 16);
@@ -104,7 +98,7 @@ void term_mouse_off(void)
 }
 
 .
-${SEP}.,\$;f> 	\\\\}
+${SEP}%;f> 	\\\\}
 	xcols = xcols \\\\? xcols : 80;
 	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-re p FAIL line 33\\${SEP}p FAIL line 33${INTR}${QF}}${SEP};=
 ${SEP}+2a 	term_mouse_on();
@@ -267,187 +261,60 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- patch2vi_1NHKI2_conf.c.diff.orig	2026-04-23 12:31:08.676581098 -0100
-+++ patch2vi_1NHKI2_conf.c.diff	2026-04-23 12:31:33.608636384 -0100
-@@ -8,21 +8,14 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
--\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
--\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
----- extra (delete to include) ---
--\(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
--\|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
--\(\?:g!\?\|s\)\[ \\t\]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!\]\)\?\|u\[czbd\]\|x!\?\|ya!\?\|cm!\?\|cd\?\)\?",
--		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)\},
-+\(\(.*pac.*\)\\
- === EDIT COMMAND (abs) ===
- 289c ((pac|pr|ai|ish|err|ic|grp|mpt|ms|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
- === EDIT COMMAND (relc) ===
- +3
- .;31c ms|
- === EDIT COMMAND (rel) ===
--+3
-++0
- s/t\|s/t|ms|s/
- === END GROUP ===
- 
+GROUP 1
+pattern:
+\(\(.*pac.*\)\\
+edit_cmd_rel:
++0
+s/t\|s/t|ms|s/
+=== END DELTA ===
 === DELTA led.c ===
---- patch2vi_gjzuGI_led.c.diff.orig	2026-04-23 11:53:39.348604981 -0100
-+++ patch2vi_gjzuGI_led.c.diff	2026-04-23 11:54:14.508688905 -0100
-@@ -66,17 +66,11 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--			&off, kmap, is, 0, xrow, xtop, flg\);
--	restore\(xtd\)
--	restore\(xleft\)
----- extra (delete to include) ---
- 	if \(key == '\\n' && flg & 1\) \{
--		lbuf_dedup\(tempbufs\[0\]\.lb, sb->s \+ n, sb->s_n - n\)
--		temp_pos\(0, -1, 0, 0\);
- === EDIT COMMAND (abs) ===
- 670a 	term_mouse_on();
- === EDIT COMMAND (rel) ===
--+2a 	term_mouse_on();
-+i 	term_mouse_on();
- === END GROUP ===
- 
- === GROUP 4/5 (line 684) ===
-@@ -86,8 +80,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	int n, key, ps = 0, crow = xrow, ctop = xtop;
--	char \*postref = NULL;
- 	ins_state is;
- --- extra (delete to include) ---
- 	while \(1\) \{
-@@ -96,7 +88,7 @@
- === EDIT COMMAND (abs) ===
- 684a 	term_mouse_off();
- === EDIT COMMAND (rel) ===
--+2a 	term_mouse_off();
-+a 	term_mouse_off();
- === END GROUP ===
- 
- === GROUP 5/5 (line 697) ===
-@@ -106,7 +98,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--				sb->s\[\*pren\] = \*post;
- 			free\(postref\);
- 			xrow = crow;
- --- extra (delete to include) ---
-@@ -116,6 +107,6 @@
- === EDIT COMMAND (abs) ===
- 697a 			term_mouse_on();
- === EDIT COMMAND (rel) ===
--+2a 			term_mouse_on();
-++1a 			term_mouse_on();
- === END GROUP ===
- 
+GROUP 3
+pattern:
+	if \(key == '\\n' && flg & 1\) \{
+edit_cmd_rel:
+i 	term_mouse_on();
+GROUP 4
+pattern:
+	ins_state is;
+edit_cmd_rel:
+a 	term_mouse_off();
+GROUP 5
+pattern:
+			free\(postref\);
+			xrow = crow;
+edit_cmd_rel:
++1a 			term_mouse_on();
+=== END DELTA ===
 === DELTA term.c ===
---- patch2vi_NGJ88q_term.c.diff.orig	2026-04-23 13:18:22.968976479 -0100
-+++ patch2vi_NGJ88q_term.c.diff	2026-04-23 13:19:20.979569125 -0100
-@@ -32,8 +32,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--unsigned char \*ibuf, icmd\[4096\];
--unsigned int texec, tn;
- 
- --- extra (delete to include) ---
- void term_init\(void\)
-@@ -53,7 +51,7 @@
- }
- 
- === EDIT COMMAND (rel) ===
--+2a void term_mouse_on(void)
-+a void term_mouse_on(void)
- {
- 	if (xms)
- 		write(1, "\x1b[?1000h\x1b[?1006h", 16);
+GROUP 1
+strategy: abs
+=== END DELTA ===
 === DELTA vi.h ===
---- patch2vi_DG7les_vi.h.diff.orig	2026-04-23 11:54:19.498754892 -0100
-+++ patch2vi_DG7les_vi.h.diff	2026-04-23 11:55:06.353687689 -0100
-@@ -7,8 +7,6 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--void term_kill\(void\);
--void term_room\(int n\);
- int term_read\(int winch\);
- --- extra (delete to include) ---
- void term_commit\(void\);
-@@ -19,7 +17,7 @@
- void term_mouse_on(void);
- void term_mouse_off(void);
- === EDIT COMMAND (rel) ===
--+2a int term_try_mouse(void);
-+a int term_try_mouse(void);
- void term_mouse_on(void);
- void term_mouse_off(void);
- === END GROUP ===
-@@ -31,8 +29,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--#define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\)
--char \*led_read\(int \*kmap, int c\);
- int led_pos\(char \*s, int pos\);
- --- extra (delete to include) ---
- void led_done\(void\);
-@@ -41,7 +37,7 @@
- === EDIT COMMAND (abs) ===
- 392a int led_col(char *s, int col);
- === EDIT COMMAND (rel) ===
--+2a int led_col(char *s, int col);
-+a int led_col(char *s, int col);
- === END GROUP ===
- 
- === GROUP 3/4 (line 403) ===
-@@ -52,18 +48,12 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	long mtime;			/\* modification time \*/
--	signed char td;			/\* text direction \*/
--\};
----- extra (delete to include) ---
- /\* ex options \*/
--extern int xleft;
--extern int xvis;
- === EDIT COMMAND (abs) ===
- 403a /* mouse state */
- extern int xmouse_col, xmouse_row;
- === EDIT COMMAND (rel) ===
--+2a /* mouse state */
-+i /* mouse state */
- extern int xmouse_col, xmouse_row;
- === END GROUP ===
- 
-@@ -74,16 +64,13 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--extern int xlim;
--extern int xseq;
--extern int xerr;
----- extra (delete to include) ---
- /\* global variables \*/
-+--- extra (delete to include) ---
- extern int xquit;
- extern int xrow, xoff, xtop;
- === EDIT COMMAND (abs) ===
- 426a extern int xms;
- === EDIT COMMAND (rel) ===
--+2a extern int xms;
-+i extern int xms;
- === END GROUP ===
- 
+GROUP 1
+pattern:
+int term_read\(int winch\);
+edit_cmd_rel:
+a int term_try_mouse(void);
+void term_mouse_on(void);
+void term_mouse_off(void);
+GROUP 2
+pattern:
+int led_pos\(char \*s, int pos\);
+edit_cmd_rel:
+a int led_col(char *s, int col);
+GROUP 3
+pattern:
+/\* ex options \*/
+edit_cmd_rel:
+i /* mouse state */
+extern int xmouse_col, xmouse_row;
+GROUP 4
+pattern:
+/\* global variables \*/
+edit_cmd_rel:
+i extern int xms;
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index d45d10a6..0c639553 100644
@@ -544,18 +411,11 @@ index 6a5e065f..3224aa01 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 68990b78..ab71e48e 100644
+index 68990b78..69513f5b 100644
 --- a/term.c
 +++ b/term.c
-@@ -1,3 +1,4 @@
+@@ -1,3 +1,16 @@
 +int xmouse_col, xmouse_row;
- static struct termios termios;
- sbuf *term_sbuf;
- int term_record;
-@@ -8,6 +9,18 @@ unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
- unsigned char *ibuf, icmd[4096];
- unsigned int texec, tn;
- 
 +void term_mouse_on(void)
 +{
 +	if (xms)
@@ -568,9 +428,9 @@ index 68990b78..ab71e48e 100644
 +		write(1, "\x1b[?1000l\x1b[?1006l", 16);
 +}
 +
- void term_init(void)
- {
- 	struct winsize win;
+ static struct termios termios;
+ sbuf *term_sbuf;
+ int term_record;
 @@ -31,12 +44,14 @@ void term_init(void)
  	}
  	xcols = xcols ? xcols : 80;
