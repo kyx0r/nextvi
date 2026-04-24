@@ -24,9 +24,9 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 #DBG="0\?"
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-re p FAIL line 1713\\${SEP}p FAIL line 1713${INTR}${QF}}${SEP};=
-${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-re p FAIL line 1713\\${SEP}p FAIL line 1713${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1725\\${SEP}p FAIL line 1725${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-re p FAIL line 1704\\${SEP}p FAIL line 1704${INTR}${QF}}${SEP};=
+${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-re p FAIL line 1704\\${SEP}p FAIL line 1704${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1716\\${SEP}p FAIL line 1716${INTR}${QF}}${SEP};=
 ${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 .
@@ -67,150 +67,70 @@ ${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-re p FAIL line
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- patch2vi_HnM1kH_ex.c.diff.orig	2026-04-23 11:43:05.038302043 -0100
-+++ patch2vi_HnM1kH_ex.c.diff	2026-04-23 11:44:05.813703183 -0100
-@@ -8,21 +8,14 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--	xgrec--;
--\}
--
----- extra (delete to include) ---
--void ex_init\(char \*\*files, int n\)
--\{
--	xbufsalloc = MAX\(n, xbufsalloc\);
--	ec_setbufsmax\(NULL, NULL, ""\);
-+void ex_init\(char
- === EDIT COMMAND (abs) ===
- 1713c void ex_init(char **files, int n, char **cmds, int cmdnum)
- === EDIT COMMAND (relc) ===
- +3
- .;32c , char **cmds, int cmdnum
- === EDIT COMMAND (rel) ===
--+3
-++0
- s/n\)/n, char **cmds, int cmdnum)/
- === END GROUP ===
- 
-@@ -34,7 +27,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	xvis &= ~4;
- 	if \(\(s = getenv\("EXINIT"\)\)\)
- 		ex_command\(s\)
- --- extra (delete to include) ---
-@@ -43,7 +35,7 @@
- 1725a 	for (int i = 0; i < cmdnum; i++)
- 		ex_command(cmds[i])
- === EDIT COMMAND (rel) ===
--+2a 	for (int i = 0; i < cmdnum; i++)
-++1a 	for (int i = 0; i < cmdnum; i++)
- 		ex_command(cmds[i])
- === END GROUP ===
- 
+GROUP 1
+pattern:
+void ex_init\(char
+edit_cmd_rel:
++0
+s/n\)/n, char **cmds, int cmdnum)/
+GROUP 2
+pattern:
+	if \(\(s = getenv\("EXINIT"\)\)\)
+		ex_command\(s\)
+edit_cmd_rel:
++1a 	for (int i = 0; i < cmdnum; i++)
+		ex_command(cmds[i])
+=== END DELTA ===
 === DELTA vi.c ===
---- patch2vi_Z06b6X_vi.c.diff.orig	2026-04-23 11:44:05.818209506 -0100
-+++ patch2vi_Z06b6X_vi.c.diff	2026-04-23 11:44:33.057702544 -0100
-@@ -8,8 +8,7 @@
- %;f>
- === SEARCH PATTERN ===
- 
--int main\(int argc, char \*argv\[\]\)
--\{
-+int main\(int argc
- --- extra (delete to include) ---
- 	int i, j;
- 	setup_signals\(\);
-@@ -42,10 +41,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--				xvis \|= 8;
--			else if \(argv\[i\]\[j\] == 'v'\)
--				xvis = 0;
----- extra (delete to include) ---
- 			else \{
- 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
- === EDIT COMMAND (abs) ===
-@@ -62,7 +57,7 @@
- 				}
- 			} else {
- === EDIT COMMAND (rel) ===
--+3c 			else if (argv[i][j] == 'c') {
-+c 			else if (argv[i][j] == 'c') {
- 				if (argv[i][j+1]) {
- 					ex_cmds[cmdnum++] = argv[i] + j + 1;
- 					break;
-@@ -81,7 +76,7 @@
- +				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
- === COMMAND STRATEGY (default: rel) ===
- #abs
--#relc
-+relc
- .,\$f>
- #rel
- .,\$f>
-@@ -95,7 +90,7 @@
- === EDIT COMMAND (abs) ===
- 1861c 				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
- === EDIT COMMAND (relc) ===
--+1
-++0
- .;46c c
- === EDIT COMMAND (rel) ===
- +1
-@@ -112,7 +107,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--		term_init\(\);
- 	if \(xvis & 8\)
- 		term_scrh;
- --- extra (delete to include) ---
-@@ -126,7 +120,7 @@
- +3
- .;27c , ex_cmds, cmdnum
- === EDIT COMMAND (rel) ===
--+3
-++2
- s/i\)/i, ex_cmds, cmdnum)/
- === END GROUP ===
- 
+GROUP 1
+pattern:
+
+int main\(int argc
+GROUP 2
+pattern:
+			else \{
+				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
+edit_cmd_rel:
+c 			else if (argv[i][j] == 'c') {
+				if (argv[i][j+1]) {
+					ex_cmds[cmdnum++] = argv[i] + j + 1;
+					break;
+				} else if (i + 1 < argc) {
+					ex_cmds[cmdnum++] = argv[++i];
+					break;
+				} else {
+					fprintf(stderr, "Missing argument for -c\n");
+					return EXIT_FAILURE;
+				}
+			} else {
+GROUP 3
+strategy: relc
+cmd: .,\$f>
+edit_cmd_relc:
++0
+.;46c c
+GROUP 4
+pattern:
+	if \(xvis & 8\)
+		term_scrh;
+edit_cmd_rel:
++2
+s/i\)/i, ex_cmds, cmdnum)/
+=== END DELTA ===
 === DELTA vi.h ===
---- patch2vi_OlvD05_vi.h.diff.orig	2026-04-23 11:44:33.062348782 -0100
-+++ patch2vi_OlvD05_vi.h.diff	2026-04-23 11:44:58.476701948 -0100
-@@ -8,21 +8,14 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);
--#define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); \}
--#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); \}
----- extra (delete to include) ---
--void ex_init\(char \*\*files, int n\);
--void ex_bufpostfix\(struct buf \*p, int clear\);
--int ex_krs\(rset \*\*krs, int \*dir\);
--void ex_krsset\(char \*kwd, int dir\);
-+void ex_init\(char
- === EDIT COMMAND (abs) ===
- 477c void ex_init(char **files, int n, char** cmds, int cmdnum);
- === EDIT COMMAND (relc) ===
- +3
- .;32c , char** cmds, int cmdnum
- === EDIT COMMAND (rel) ===
--+3
-++0
- s/n\)/n, char** cmds, int cmdnum)/
- === END GROUP ===
- 
+GROUP 1
+pattern:
+void ex_init\(char
+edit_cmd_rel:
++0
+s/n\)/n, char** cmds, int cmdnum)/
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..67df8d41 100644
+index c195038b..51c7c36f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1710,7 +1710,7 @@ void ex(void)
+@@ -1701,7 +1701,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -219,7 +139,7 @@ index 36b8a6d6..67df8d41 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1723,4 +1723,6 @@ void ex_init(char **files, int n)
+@@ -1714,4 +1714,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
