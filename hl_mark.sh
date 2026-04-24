@@ -29,12 +29,12 @@ int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
 int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP};=
 ${SEP}+2a int xhlm;			/* highlight marks */
 .
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1438\\${SEP}p FAIL line 1438${INTR}${QF}}${SEP};=
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP};=
 ${SEP}+2a EO(hlm)
 .
 ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),${SEP}??!${DBG:-re p FAIL line 1534\\${SEP}p FAIL line 1534${INTR}${QF}}${SEP};=
+	EO\\\\(order\\\\),${SEP}??!${DBG:-re p FAIL line 1532\\${SEP}p FAIL line 1532${INTR}${QF}}${SEP};=
 ${SEP}+2a 	EO(hlm),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -64,22 +64,13 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- patch2vi_BIGZXP_ex.c.diff.orig	2026-04-23 11:50:39.300512699 -0100
-+++ patch2vi_BIGZXP_ex.c.diff	2026-04-23 11:50:46.625693782 -0100
-@@ -25,9 +25,7 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(mpt\) EO\(rcm\)
--EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
--EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
-+EO\(pac\)
- --- extra (delete to include) ---
- 
- _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
+GROUP 2
+pattern:
+EO\(pac\)
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 36b8a6d6..01ff9b52 100644
+index c195038b..271747e9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -90,15 +81,15 @@ index 36b8a6d6..01ff9b52 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1436,6 +1437,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
- EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt) EO(rcm)
+@@ -1435,6 +1436,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(hlm)
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1532,6 +1534,7 @@ static struct excmd {
+@@ -1530,6 +1532,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),
