@@ -79,137 +79,50 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
---- patch2vi_9t7tkz_ex.c.diff.orig	2026-04-23 13:09:45.782330596 -0100
-+++ patch2vi_9t7tkz_ex.c.diff	2026-04-23 13:09:55.824582382 -0100
-@@ -1,7 +1,7 @@
- === GROUP 1/6 (line 0) ===
- +char readonly = 0;		/* commandline readonly option */
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %f>
- === SEARCH PATTERN ===
-@@ -21,8 +21,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	bufs\[i\]\.top = 0;
--	bufs\[i\]\.td = \+1;
- 	bufs\[i\]\.mtime = -1;
- --- extra (delete to include) ---
- 	return i;
-@@ -31,7 +29,7 @@
- === EDIT COMMAND (abs) ===
- 118a 	bufs[i].readonly = readonly;
- === EDIT COMMAND (rel) ===
--+2a 	bufs[i].readonly = readonly;
-+a 	bufs[i].readonly = readonly;
- === END GROUP ===
- 
- === GROUP 3/6 (line 372) ===
-@@ -122,8 +120,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	\{"reg", ec_regprint\},
--	\{"re", ec_krsset\},
- 	\{"rd", ec_undoredo\},
- --- extra (delete to include) ---
- 	\{"r", ec_read\},
-@@ -132,6 +128,6 @@
- === EDIT COMMAND (abs) ===
- 1506a 	{"ro", ec_readonly},
- === EDIT COMMAND (rel) ===
--+2a 	{"ro", ec_readonly},
-+a 	{"ro", ec_readonly},
- === END GROUP ===
- 
+GROUP 1
+strategy: abs
+GROUP 2
+pattern:
+	bufs\[i\]\.mtime = -1;
+edit_cmd_rel:
+a 	bufs[i].readonly = readonly;
+GROUP 6
+pattern:
+	\{"rd", ec_undoredo\},
+edit_cmd_rel:
+a 	{"ro", ec_readonly},
+=== END DELTA ===
 === DELTA vi.c ===
---- patch2vi_r5gn7Z_vi.c.diff.orig	2026-04-23 11:56:50.672607679 -0100
-+++ patch2vi_r5gn7Z_vi.c.diff	2026-04-23 11:57:11.770684747 -0100
-@@ -6,7 +6,6 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--				xvis \|= 4;
- 			else if \(argv\[i\]\[j\] == 'a'\)
- 				xvis \|= 8;
- --- extra (delete to include) ---
-@@ -17,7 +16,7 @@
- 1856a 			else if (argv[i][j] == 'R')
- 				readonly = 1;
- === EDIT COMMAND (rel) ===
--+2a 			else if (argv[i][j] == 'R')
-++1a 			else if (argv[i][j] == 'R')
- 				readonly = 1;
- === END GROUP ===
- 
-@@ -26,13 +25,11 @@
- +				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
- === COMMAND STRATEGY (default: rel) ===
- #abs
--#relc
-+relc
- .,\$;f>
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--				xvis = 0;
--			else \{
- 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
- --- extra (delete to include) ---
- 				fprintf\(stderr, "Nextvi-5\.0 Usage: %s \[-aemsv\] \[file \.\.\.\]\\n", argv\[0\]\);
-@@ -42,10 +39,10 @@
- === EDIT COMMAND (abs) ===
- 1861c 				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
- === EDIT COMMAND (relc) ===
--+3
-++1
- .;46c R
- === EDIT COMMAND (rel) ===
--+3
-++1
- s/em/eRm/
- === END GROUP ===
- 
+GROUP 1
+pattern:
+			else if \(argv\[i\]\[j\] == 'a'\)
+				xvis \|= 8;
+edit_cmd_rel:
++1a 			else if (argv[i][j] == 'R')
+				readonly = 1;
+GROUP 2
+strategy: relc
+cmd: .,\$;f>
+pattern:
+				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
+edit_cmd_relc:
++1
+.;46c R
+edit_cmd_rel:
++1
+s/em/eRm/
+=== END DELTA ===
 === DELTA vi.h ===
---- patch2vi_GKDkx8_vi.h.diff.orig	2026-04-23 11:57:11.775297957 -0100
-+++ patch2vi_GKDkx8_vi.h.diff	2026-04-23 11:58:25.034683029 -0100
-@@ -5,8 +5,6 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--	int plen, row, off, top;
--	long mtime;			/\* modification time \*/
- 	signed char td;			/\* text direction \*/
- --- extra (delete to include) ---
- \};
-@@ -15,13 +13,13 @@
- === EDIT COMMAND (abs) ===
- 402a 	char readonly;			/* read only */
- === EDIT COMMAND (rel) ===
--+2a 	char readonly;			/* read only */
-+a 	char readonly;			/* read only */
- === END GROUP ===
- 
- === GROUP 2/2 (line 540) ===
- +extern char readonly;
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
-@@ -29,7 +27,7 @@
- extern rset \*fsincl;
- void dir_calc\(char \*path\);
- === EDIT COMMAND (abs) ===
--540a extern char readonly;
-+\$a extern char readonly;
- === EDIT COMMAND (rel) ===
- +2a extern char readonly;
- === END GROUP ===
+GROUP 1
+pattern:
+	signed char td;			/\* text direction \*/
+edit_cmd_rel:
+a 	char readonly;			/* read only */
+GROUP 2
+strategy: abs
+edit_cmd_abs:
+\$a extern char readonly;
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index c195038b..a439a5ff 100644
