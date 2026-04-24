@@ -26,20 +26,20 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
-		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-re p FAIL line 374\\${SEP}p FAIL line 374${INTR}${QF}}${SEP};=
+		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-re p FAIL line 376\\${SEP}p FAIL line 376${INTR}${QF}}${SEP};=
 ${SEP}+2a 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 .
 ${SEP}.,\$;f> 			ec_setpath\\\\(NULL, NULL, path\\\\);
 		lbuf_saved\\\\(xb, 0\\\\);
-		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-re p FAIL line 711\\${SEP}p FAIL line 711${INTR}${QF}}${SEP};=
+		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-re p FAIL line 715\\${SEP}p FAIL line 715${INTR}${QF}}${SEP};=
 ${SEP}+2a 		if (*xb_path)
 			lsp_save(xb_path);
 .
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-re p FAIL line 1393\\${SEP}p FAIL line 1393${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 1450\\${SEP}p FAIL line 1450${INTR}${QF}}${SEP};=
 ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
@@ -60,7 +60,7 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 .
 ${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
 	EO\\\\(hlr\\\\),
-	EO\\\\(hl\\\\),${SEP}??!${DBG:-re p FAIL line 1480\\${SEP}p FAIL line 1480${INTR}${QF}}${SEP};=
+	EO\\\\(hl\\\\),${SEP}??!${DBG:-re p FAIL line 1537\\${SEP}p FAIL line 1537${INTR}${QF}}${SEP};=
 ${SEP}+2a 	{\"lsp\", ec_lsp},
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -1449,7 +1449,7 @@ ${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 .
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-re p FAIL line 1615\\${SEP}p FAIL line 1615${INTR}${QF}}${SEP};=
+					goto rep;${SEP}??!${DBG:-re p FAIL line 1637\\${SEP}p FAIL line 1637${INTR}${QF}}${SEP};=
 ${SEP}+2a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
@@ -1459,7 +1459,7 @@ ${SEP}+2a 				} else if (k == 'K') {
 .
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
-		\\\\}${SEP}??!${DBG:-re p FAIL line 1782\\${SEP}p FAIL line 1782${INTR}${QF}}${SEP};=
+		\\\\}${SEP}??!${DBG:-re p FAIL line 1800\\${SEP}p FAIL line 1800${INTR}${QF}}${SEP};=
 ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
@@ -1468,14 +1468,13 @@ ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 .
 ${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-re p FAIL line 1815\\${SEP}p FAIL line 1815${INTR}${QF}}${SEP};=
+	syn_init\\\\(\\\\);${SEP}??!${DBG:-re p FAIL line 1839\\${SEP}p FAIL line 1839${INTR}${QF}}${SEP};=
 ${SEP}+2a 	lsp_init();
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-re p FAIL line 548\\${SEP}p FAIL line 548${INTR}${QF}}${SEP};=
-${SEP}.a 
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}\$a 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
 extern int lsp_nfds;
@@ -1496,32 +1495,47 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.h ===
---- patch2vi_3NAVXP_vi.h.diff.orig	2026-04-23 13:06:11.273434441 -0100
-+++ patch2vi_3NAVXP_vi.h.diff	2026-04-23 13:06:43.077586903 -0100
-@@ -19,8 +19,6 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--extern rset \*fsincl;
--extern char \*fs_exdir;
- void dir_calc\(char \*path\);
- === EDIT COMMAND (abs) ===
- 548a 
-@@ -39,7 +37,7 @@
- void lsp_list(void);
- void lsp_show_msg(char *msg);
- === EDIT COMMAND (rel) ===
--+2a 
-+a 
- /* lsp.c */
- #define LSP_NFDS_MAX	8
- extern int lsp_nfds;
+GROUP 1
+strategy: abs
+edit_cmd_abs:
+\$a 
+/* lsp.c */
+#define LSP_NFDS_MAX	8
+extern int lsp_nfds;
+extern int lsp_fds[LSP_NFDS_MAX];
+extern void (*lsp_fd_ready)(int fd);
+void lsp_init(void);
+void lsp_register(const char *ft, const char *cmd);
+void lsp_open(const char *path, const char *ft);
+void lsp_save(const char *path);
+void lsp_hover(const char *path, int row, int off);
+void lsp_definition(const char *path, int row, int off);
+const char *lsp_diag_for_line(const char *path, int line);
+void lsp_list(void);
+void lsp_show_msg(char *msg);
+edit_cmd_rel:
+a 
+/* lsp.c */
+#define LSP_NFDS_MAX	8
+extern int lsp_nfds;
+extern int lsp_fds[LSP_NFDS_MAX];
+extern void (*lsp_fd_ready)(int fd);
+void lsp_init(void);
+void lsp_register(const char *ft, const char *cmd);
+void lsp_open(const char *path, const char *ft);
+void lsp_save(const char *path);
+void lsp_hover(const char *path, int row, int off);
+void lsp_definition(const char *path, int row, int off);
+const char *lsp_diag_for_line(const char *path, int line);
+void lsp_list(void);
+void lsp_show_msg(char *msg);
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 81878d89..c51a3f7e 100644
+index c195038b..32aecd78 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -372,6 +372,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -374,6 +374,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
@@ -1530,7 +1544,7 @@ index 81878d89..c51a3f7e 100644
  	}
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-@@ -709,6 +711,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -713,6 +715,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  			ec_setpath(NULL, NULL, path);
  		lbuf_saved(xb, 0);
  		ex_buf->mtime = mtime(path);
@@ -1539,7 +1553,7 @@ index 81878d89..c51a3f7e 100644
  	}
  	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
  		ec_quit("", cmd, "");
-@@ -1391,6 +1395,23 @@ _EO(left,
+@@ -1448,6 +1452,23 @@ _EO(left,
  	return NULL;
  )
  
@@ -1563,7 +1577,7 @@ index 81878d89..c51a3f7e 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1478,6 +1499,7 @@ static struct excmd {
+@@ -1535,6 +1556,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),
@@ -2964,7 +2978,7 @@ index 68990b78..8b893398 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 5479b948..8ab925b4 100644
+index 628bb946..136895f6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -2984,7 +2998,7 @@ index 5479b948..8ab925b4 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
-@@ -1613,6 +1616,12 @@ void vi(int init)
+@@ -1635,6 +1638,12 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
@@ -2997,7 +3011,7 @@ index 5479b948..8ab925b4 100644
  				}
  				break;
  			case 'x':
-@@ -1780,6 +1789,11 @@ void vi(int init)
+@@ -1798,6 +1807,11 @@ void vi(int init)
  			syn_blockhl = -1;
  			vi_drawrow(xrow);
  		}
@@ -3009,21 +3023,21 @@ index 5479b948..8ab925b4 100644
  		if (vi_status && xmpt < 1) {
  			xrows -= term_resized != vi_status;
  			vi_status = term_resized;
-@@ -1813,6 +1827,7 @@ int main(int argc, char *argv[])
+@@ -1837,6 +1851,7 @@ int main(int argc, char *argv[])
  	setup_signals();
  	dir_init();
  	syn_init();
 +	lsp_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
- 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
+ 	temp_open(2, "/sc/", _ft);
 diff --git a/vi.h b/vi.h
-index cba8d35b..641ae519 100644
+index bd944301..b5b60318 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -546,3 +546,18 @@ extern int vi_lncol;
+@@ -538,3 +538,18 @@ extern int vi_lncol;
+ /* filesystem */
  extern rset *fsincl;
- extern char *fs_exdir;
  void dir_calc(char *path);
 +
 +/* lsp.c */
