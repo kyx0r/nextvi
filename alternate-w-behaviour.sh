@@ -52,32 +52,11 @@ ${SEP}+3${SEP}s/1/cmd/${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970$
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
---- patch2vi_sxJwz9_vi.c.diff.orig	2026-04-21 21:27:09.778666968 -0100
-+++ patch2vi_sxJwz9_vi.c.diff	2026-04-21 21:27:54.317934822 -0100
-@@ -98,14 +98,8 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	o2 = o1;
--	if \(\(mv = vi_motionln\(&r2, cmd, vi_arg \? vi_arg : 1\)\)\)
--		o2 = -1;
- --- extra (delete to include) ---
- 	else if \(!\(mv = vi_motion\(1, &r2, &o2\)\)\)
--		return 0;
--	if \(mv < 0\)
--		return 0;
- === EDIT COMMAND (abs) ===
- 968c 	else if (!(mv = vi_motion(cmd, &r2, &o2)))
- === EDIT COMMAND (offset) ===
-@@ -114,7 +108,7 @@
- +3
- .;27;28c cmd
- === EDIT COMMAND (rel) ===
--+3
-++0
- s/1/cmd/
- === END GROUP ===
- 
+GROUP 3
+edit_cmd_rel:
++0
+s/1/cmd/
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index 628bb946..ab2a1d0d 100644
