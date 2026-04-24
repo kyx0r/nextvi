@@ -38,12 +38,22 @@ static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode = 0; /* 1=interactive editing of search patterns (-i) */
 static int delta_mode = 0;      /* 1=re-apply previous delta from script (-d) */
 
-/* Per-file delta: customization diffs from interactive editing */
+/* Per-group delta: structured customizations from interactive editing */
+typedef struct {
+	int group_idx;      /* 1-based */
+	int strategy;       /* STRAT_DEFAULT = not recorded */
+	char *cmd;
+	char **pattern;  int npattern, pat_cap;
+	char **abs_cmd;  int nabs, abs_cap;
+	char **rel_cmd;  int nrel, rel_cap;
+	char **relc_cmd; int nrelc, relc_cap;
+} grp_delta_t;
+
 typedef struct {
 	char *filepath;
-	char **lines;
-	int nlines;
-	int cap;
+	grp_delta_t *grps;
+	int ngrps;
+	int gcap;
 } file_delta_t;
 
 static file_delta_t out_deltas[256];   /* output: captured from editor */
@@ -106,6 +116,33 @@ static char *escape_regex(const char *s)
 	}
 	*dst = '\0';
 	return result;
+}
+
+/* Append a string to a dynamic array */
+static void arr_append(char ***arr, int *n, int *cap, const char *s)
+{
+	if (*n >= *cap) {
+		*cap = *cap ? *cap * 2 : 4;
+		*arr = realloc(*arr, *cap * sizeof(char *));
+	}
+	(*arr)[(*n)++] = xstrdup(s);
+}
+
+static int lines_equal(char **a, int na, char **b, int nb)
+{
+	if (na != nb) return 0;
+	for (int i = 0; i < na; i++)
+		if (strcmp(a[i], b[i]) != 0) return 0;
+	return 1;
+}
+
+
+static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx)
+{
+	for (int i = 0; fd && i < fd->ngrps; i++)
+		if (fd->grps[i].group_idx == idx)
+			return &fd->grps[i];
+	return NULL;
 }
 
 /* Get UTF-8 character position for byte offset */
@@ -902,57 +939,196 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 	return offset;
 }
 
-/*
- * Interactive editing of all groups' search patterns in one file.
- * Opens $EDITOR once with all groups. Pattern lines are shown
- * regex-escaped (as they'll appear to the regex engine).
- * If file saved: all groups use the edited patterns.
- * If file not saved (mtime unchanged): all groups use default behavior.
- */
-static void interactive_edit_groups(group_t *groups, int ngroups,
-				    const char *filepath)
+/* Per-group parsed data from an interactive temp file (raw, no offset stripping) */
+typedef struct {
+	int strategy;
+	char *cmd;
+	char **pattern;  int npattern, pat_cap;
+	char **abs_cmd;  int nabs, abs_cap;
+	char **rel_cmd;  int nrel, rel_cap;
+	char **relc_cmd; int nrelc, relc_cap;
+} parsed_grp_t;
+
+static void free_parsed_grp(parsed_grp_t *p)
 {
-	if (ngroups == 0)
-		return;
+	free(p->cmd);
+	for (int i = 0; i < p->npattern; i++) free(p->pattern[i]);
+	free(p->pattern);
+	for (int i = 0; i < p->nabs; i++) free(p->abs_cmd[i]);
+	free(p->abs_cmd);
+	for (int i = 0; i < p->nrel; i++) free(p->rel_cmd[i]);
+	free(p->rel_cmd);
+	for (int i = 0; i < p->nrelc; i++) free(p->relc_cmd[i]);
+	free(p->relc_cmd);
+}
 
-	/* Extract basename from filepath for the temp filename */
-	const char *base = strrchr(filepath, '/');
-	base = base ? base + 1 : filepath;
-	char tmptmp[32];
-	char tmppath[256];
-	snprintf(tmptmp, sizeof(tmptmp), "patch2vi_XXXXXX");
-	int fd = mkstemp(tmptmp);
-	snprintf(tmppath, sizeof(tmppath), "%s_%s.diff", tmptmp, base);
-	if (rename(tmptmp, tmppath) < 0)
-		snprintf(tmppath, sizeof(tmppath), "%s", tmptmp);
-	if (fd < 0) {
-		perror("mkstemp");
-		return;
-	}
-	FILE *tmp = fdopen(fd, "w");
-	if (!tmp) {
-		perror("fdopen");
-		close(fd);
-		unlink(tmppath);
-		return;
+/*
+ * Parse an interactive group temp file into results[0..ngroups-1].
+ * Stores raw content (no parse_ecmd_offset stripping) for apples-to-apples
+ * comparison between .orig and edited files.
+ */
+static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
+{
+	FILE *f = fopen(path, "r");
+	if (!f) return;
+
+	memset(results, 0, ngroups * sizeof(parsed_grp_t));
+
+	char line[MAX_LINE];
+	int gi = -1;
+	int in_pat = 0, in_cstrat = 0, in_ecmd = 0;
+	int ecmd_strat = STRAT_DEFAULT;
+	int cs_take = 0, cs_want_cmd = 0;
+	int cs_strat = STRAT_DEFAULT;
+	int skip_extra = 0;
+
+	while (fgets(line, sizeof(line), f)) {
+		chomp(line);
+
+		if (strncmp(line, "=== ", 4) == 0) {
+			in_ecmd = 0;
+			if (in_pat) { in_pat = 0; }
+			in_cstrat = 0;
+			cs_take = 0; cs_want_cmd = 0;
+		}
+
+		if (strncmp(line, "=== GROUP ", 10) == 0) {
+			gi = atoi(line + 10) - 1;
+			skip_extra = 0;
+			continue;
+		}
+		if (strncmp(line, "=== COMMAND STRATEGY", 20) == 0) {
+			in_cstrat = 1; continue;
+		}
+		if (strncmp(line, "=== SEARCH PATTERN", 18) == 0) {
+			in_pat = 1; skip_extra = 0; continue;
+		}
+		if (strncmp(line, "=== EDIT COMMAND (", 18) == 0) {
+			in_ecmd = 1;
+			const char *p = line + 18;
+			if (strncmp(p, "abs)", 4) == 0) ecmd_strat = STRAT_ABS;
+			else if (strncmp(p, "relc)", 5) == 0) ecmd_strat = STRAT_RELC;
+			else if (strncmp(p, "rel)", 4) == 0) ecmd_strat = STRAT_REL;
+			else ecmd_strat = STRAT_DEFAULT;
+			continue;
+		}
+
+		if (in_ecmd && gi >= 0 && gi < ngroups) {
+			parsed_grp_t *pg = &results[gi];
+			if (ecmd_strat == STRAT_ABS)
+				arr_append(&pg->abs_cmd, &pg->nabs, &pg->abs_cap, line);
+			else if (ecmd_strat == STRAT_REL)
+				arr_append(&pg->rel_cmd, &pg->nrel, &pg->rel_cap, line);
+			else if (ecmd_strat == STRAT_RELC)
+				arr_append(&pg->relc_cmd, &pg->nrelc, &pg->relc_cap, line);
+			continue;
+		}
+
+		if (in_cstrat) {
+			if (cs_want_cmd) {
+				if (cs_take && gi >= 0 && gi < ngroups) {
+					parsed_grp_t *pg = &results[gi];
+					if (pg->strategy == STRAT_DEFAULT)
+						pg->strategy = cs_strat;
+					free(pg->cmd);
+					pg->cmd = xstrdup(line);
+				}
+				cs_want_cmd = 0; cs_take = 0;
+			} else {
+				const char *name = (line[0] == '#') ? line + 1 : line;
+				cs_take = (line[0] != '#');
+				if (strcmp(name, "abs") == 0) {
+					if (cs_take && gi >= 0 && gi < ngroups
+					    && results[gi].strategy == STRAT_DEFAULT)
+						results[gi].strategy = STRAT_ABS;
+					cs_strat = STRAT_ABS;
+					cs_take = 0; cs_want_cmd = 0;
+				} else if (strcmp(name, "rel") == 0) {
+					cs_strat = STRAT_REL;
+					cs_want_cmd = 1;
+				} else if (strcmp(name, "relc") == 0) {
+					cs_strat = STRAT_RELC;
+					cs_want_cmd = 1;
+				} else {
+					cs_take = 0; cs_want_cmd = 0;
+				}
+			}
+			continue;
+		}
+
+		if (in_pat && gi >= 0 && gi < ngroups) {
+			if (strncmp(line, "--- extra", 9) == 0) {
+				skip_extra = 1;
+				in_pat = 0;
+				continue;
+			}
+			if (!skip_extra) {
+				parsed_grp_t *pg = &results[gi];
+				arr_append(&pg->pattern, &pg->npattern, &pg->pat_cap, line);
+			}
+		}
 	}
 
-	/* Compute default commands and write all groups */
+	fclose(f);
+}
+
+/* Emit one group's delta in human-readable structured format */
+static void emit_grp_delta(FILE *out, grp_delta_t *gd)
+{
+	fprintf(out, "GROUP %d\n", gd->group_idx);
+	if (gd->strategy != STRAT_DEFAULT) {
+		const char *s = "abs";
+		if (gd->strategy == STRAT_REL) s = "rel";
+		else if (gd->strategy == STRAT_RELC) s = "relc";
+		fprintf(out, "strategy: %s\n", s);
+	}
+	if (gd->cmd)
+		fprintf(out, "cmd: %s\n", gd->cmd);
+	if (gd->npattern > 0) {
+		fputs("pattern:\n", out);
+		for (int i = 0; i < gd->npattern; i++)
+			fprintf(out, "%s\n", gd->pattern[i]);
+	}
+	if (gd->nabs > 0) {
+		fputs("edit_cmd_abs:\n", out);
+		for (int i = 0; i < gd->nabs; i++)
+			fprintf(out, "%s\n", gd->abs_cmd[i]);
+	}
+	if (gd->nrelc > 0) {
+		fputs("edit_cmd_relc:\n", out);
+		for (int i = 0; i < gd->nrelc; i++)
+			fprintf(out, "%s\n", gd->relc_cmd[i]);
+	}
+	if (gd->nrel > 0) {
+		fputs("edit_cmd_rel:\n", out);
+		for (int i = 0; i < gd->nrel; i++)
+			fprintf(out, "%s\n", gd->rel_cmd[i]);
+	}
+}
+
+/*
+ * Write all groups to fp, optionally injecting stored delta from in_fd.
+ * Returns a freshly allocated default_cmds[] array (caller frees entries + array).
+ */
+static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
+				    file_delta_t *in_fd)
+{
 	int sim_first_ml = 1;
-	char **default_cmds = calloc(ngroups, sizeof(char*));
+	char **default_cmds = calloc(ngroups, sizeof(char *));
+
 	for (int gi = 0; gi < ngroups; gi++) {
 		group_t *g = &groups[gi];
 		if (!g->del_start && !g->nadd)
 			continue;
 		int target = g->del_start ? g->del_start : g->add_after;
 
-		/* Determine availability of each strategy */
+		grp_delta_t *gd = find_grp_delta(in_fd, gi + 1);
+
 		int has_anchors = g->nanchors >= 2
 			|| (g->nanchors == 1 && g->anchors[0] && g->anchors[0][0])
 			|| (g->follow_ctx && g->follow_ctx[0])
 			|| (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]);
 
-		/* Determine default -r offset and command */
 		int default_offset;
 		const char *dcmd = NULL;
 		if (g->nanchors >= 2) {
@@ -973,7 +1149,6 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			default_offset = g->block_change_idx;
 		}
 
-		/* Compute abs default command (address+action, no trailing space) */
 		char abs_cmd[64] = "";
 		{
 			int from = g->del_start, to = g->del_end, after = g->add_after;
@@ -995,202 +1170,258 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			}
 		}
 
-		/* Compute default strategy */
-		const char *def_strat;
-		if (has_anchors)
-			def_strat = "rel";
-		else
-			def_strat = "abs";
-
-		/* Choose default command to display based on resolved strategy */
+		const char *def_strat = has_anchors ? "rel" : "abs";
 		const char *show_cmd = dcmd ? dcmd : abs_cmd[0] ? abs_cmd : "";
 		default_cmds[gi] = show_cmd[0] ? xstrdup(show_cmd) : NULL;
 
-		/* Group header (read-only diff context) */
-		fprintf(tmp, "=== GROUP %d/%d (line %d) ===\n",
+		/* Group header */
+		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
 		for (int i = 0; i < g->ndel; i++)
-			fprintf(tmp, "-%s\n", g->del_texts[i]);
+			fprintf(fp, "-%s\n", g->del_texts[i]);
 		for (int i = 0; i < g->nadd; i++)
-			fprintf(tmp, "+%s\n", g->add_texts[i]);
+			fprintf(fp, "+%s\n", g->add_texts[i]);
 
-		/* Combined command+strategy: for abs just the tag (cmd
-		 * moved to EDIT COMMAND sections); for rel/relc tag + search cmd */
-		fprintf(tmp, "=== COMMAND STRATEGY (default: %s) ===\n", def_strat);
-		fprintf(tmp, "#abs\n");
+		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
+		int sel_strat = (gd && gd->strategy != STRAT_DEFAULT)
+			? gd->strategy : STRAT_DEFAULT;
+		const char *use_cmd = (gd && gd->cmd) ? gd->cmd
+			: dcmd ? dcmd : "";
+		fprintf(fp, "=== COMMAND STRATEGY (default: %s) ===\n", def_strat);
+		fprintf(fp, "%sabs\n", sel_strat == STRAT_ABS ? "" : "#");
 		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff)
-			fprintf(tmp, "#relc\n%s\n", dcmd ? dcmd : "");
+			fprintf(fp, "%srelc\n%s\n",
+				sel_strat == STRAT_RELC ? "" : "#", use_cmd);
 		if (has_anchors)
-			fprintf(tmp, "#rel\n%s\n", dcmd ? dcmd : "");
+			fprintf(fp, "%srel\n%s\n",
+				sel_strat == STRAT_REL ? "" : "#", use_cmd);
 
-		/* Search pattern: top = -r anchors (default) */
-		fprintf(tmp, "=== SEARCH PATTERN ===\n");
-		for (int i = 0; i < g->nanchors; i++) {
-			char *esc = escape_regex(g->anchors[i]);
-			fprintf(tmp, "%s\n", esc);
-			free(esc);
+		/* SEARCH PATTERN: inject stored or auto-generate */
+		fprintf(fp, "=== SEARCH PATTERN ===\n");
+		if (gd && gd->npattern > 0) {
+			for (int i = 0; i < gd->npattern; i++)
+				fprintf(fp, "%s\n", gd->pattern[i]);
+		} else {
+			for (int i = 0; i < g->nanchors; i++) {
+				char *esc = escape_regex(g->anchors[i]);
+				fprintf(fp, "%s\n", esc);
+				free(esc);
+			}
 		}
-
-		/* Extra context: del_texts + post_ctx (excluded unless
-		 * user deletes the separator line to merge them in) */
 		int has_extra = g->ndel > 0 || g->npost_ctx > 0;
 		if (has_extra) {
-			if (g->nanchors > 0)
-				fprintf(tmp, "--- extra (delete to include) ---\n");
+			int show_sep = (gd && gd->npattern > 0) || g->nanchors > 0;
+			if (show_sep)
+				fprintf(fp, "--- extra (delete to include) ---\n");
 			for (int i = 0; i < g->ndel; i++) {
 				char *esc = escape_regex(g->del_texts[i]);
-				fprintf(tmp, "%s\n", esc);
+				fprintf(fp, "%s\n", esc);
 				free(esc);
 			}
 			for (int i = 0; i < g->npost_ctx; i++) {
 				char *esc = escape_regex(g->post_ctx[i]);
-				fprintf(tmp, "%s\n", esc);
+				fprintf(fp, "%s\n", esc);
 				free(esc);
 			}
 		}
-		/* EDIT COMMAND sections: default edit commands with content inline.
-		 * Content is raw text; escaping applied at emit time.
-		 * Format: "cmd first_line\nextra_line\n..." (no "." terminator shown). */
 
-		/* Helper: write content lines (add_texts) after the command prefix. */
-		#define WRITE_CONTENT(fp) do { \
-			if (g->nadd > 0) { \
-				fputc(' ', (fp)); \
-				fputs(g->add_texts[0], (fp)); \
-				fputc('\n', (fp)); \
-				for (int _k = 1; _k < g->nadd; _k++) { \
-					fputs(g->add_texts[_k], (fp)); \
-					fputc('\n', (fp)); \
-				} \
-			} else { fputc('\n', (fp)); } \
-		} while (0)
+		/* EDIT COMMAND sections */
+#define WG_CONTENT(fp) do { \
+	if (g->nadd > 0) { \
+		fputc(' ', (fp)); \
+		fputs(g->add_texts[0], (fp)); \
+		fputc('\n', (fp)); \
+		for (int _k = 1; _k < g->nadd; _k++) { \
+			fputs(g->add_texts[_k], (fp)); \
+			fputc('\n', (fp)); \
+		} \
+	} else { fputc('\n', (fp)); } \
+} while (0)
 
-		fputs("=== EDIT COMMAND (abs) ===\n", tmp);
-		if (g->del_start && g->nadd) {
-			if (g->ndel == 1)
-				fprintf(tmp, "%dc", g->del_start);
-			else
-				fprintf(tmp, "%d,%dc", g->del_start, g->del_end);
-			WRITE_CONTENT(tmp);
-		} else if (g->del_start) {
-			if (g->ndel == 1)
-				fprintf(tmp, "%dd\n", g->del_start);
-			else
-				fprintf(tmp, "%d,%dd\n", g->del_start, g->del_end);
-		} else if (g->nadd) {
-			if (g->add_after <= 0)
-				fputs("i", tmp);
-			else
-				fprintf(tmp, "%da", g->add_after);
-			WRITE_CONTENT(tmp);
+		/* abs */
+		fputs("=== EDIT COMMAND (abs) ===\n", fp);
+		if (gd && gd->nabs > 0) {
+			for (int k = 0; k < gd->nabs; k++)
+				fprintf(fp, "%s\n", gd->abs_cmd[k]);
+		} else {
+			if (g->del_start && g->nadd) {
+				if (g->ndel == 1)
+					fprintf(fp, "%dc", g->del_start);
+				else
+					fprintf(fp, "%d,%dc", g->del_start, g->del_end);
+				WG_CONTENT(fp);
+			} else if (g->del_start) {
+				if (g->ndel == 1)
+					fprintf(fp, "%dd\n", g->del_start);
+				else
+					fprintf(fp, "%d,%dd\n", g->del_start, g->del_end);
+			} else if (g->nadd) {
+				if (g->add_after <= 0)
+					fputs("i", fp);
+				else
+					fprintf(fp, "%da", g->add_after);
+				WG_CONTENT(fp);
+			}
 		}
 
-		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
-			if (default_offset != 0) {
+		/* relc */
+		int show_relc = has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff;
+		if (show_relc || (gd && gd->nrelc > 0)) {
+			fputs("=== EDIT COMMAND (relc) ===\n", fp);
+			if (gd && gd->nrelc > 0) {
+				for (int k = 0; k < gd->nrelc; k++)
+					fprintf(fp, "%s\n", gd->relc_cmd[k]);
+			} else if (show_relc) {
+				if (default_offset != 0)
+					fprintf(fp, "%+d\n", default_offset);
 				if (g->ldc_start == g->ldc_end)
-					fprintf(tmp, "=== EDIT COMMAND (relc) ===\n%+d\n.;%dc %s\n",
-						default_offset, g->ldc_start, g->ldc_new_text);
-				else
-					fprintf(tmp, "=== EDIT COMMAND (relc) ===\n%+d\n.;%d;%dc %s\n",
-						default_offset, g->ldc_start, g->ldc_end, g->ldc_new_text);
-			} else {
-				if (g->ldc_start == g->ldc_end)
-					fprintf(tmp, "=== EDIT COMMAND (relc) ===\n.;%dc %s\n",
+					fprintf(fp, ".;%dc %s\n",
 						g->ldc_start, g->ldc_new_text);
 				else
-					fprintf(tmp, "=== EDIT COMMAND (relc) ===\n.;%d;%dc %s\n",
-						g->ldc_start, g->ldc_end, g->ldc_new_text);
+					fprintf(fp, ".;%d;%dc %s\n",
+						g->ldc_start, g->ldc_end,
+						g->ldc_new_text);
 			}
 		}
 
-		if (has_anchors) {
-			fputs("=== EDIT COMMAND (rel) ===\n", tmp);
-			if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
-				char *esc_pat = escape_sub_pat(g->ld_old_text, '/');
-				char *esc_rep = escape_sub_repl(g->ld_new_text, '/');
-				if (default_offset != 0)
-					fprintf(tmp, "%+d\n", default_offset);
-				fprintf(tmp, "s/%s/%s/\n", esc_pat, esc_rep);
-				free(esc_pat);
-				free(esc_rep);
-			} else if (g->del_start && g->nadd) {
-				if (default_offset != 0) fprintf(tmp, "%+d", default_offset);
-				if (g->ndel == 1) fputs("c", tmp);
-				else fprintf(tmp, ",#+%dc", g->ndel - 1);
-				WRITE_CONTENT(tmp);
-			} else if (g->del_start) {
-				if (default_offset != 0) fprintf(tmp, "%+d", default_offset);
-				if (g->ndel == 1) fputs("d\n", tmp);
-				else fprintf(tmp, ",#+%dd\n", g->ndel - 1);
-			} else if (g->nadd) {
-				/* Non-interactive subtracts 1 from anchor_offset for 'a'
-				 * (append goes after anchor+offset-1, not anchor+offset).
-				 * When result <= 0, non-interactive uses 'i' (insert). */
-				int aoff = default_offset - 1;
-				if (aoff >= 0) {
-					if (aoff)
-						fprintf(tmp, "%+d", aoff);
-					fputs("a", tmp);
-				} else {
-					fputs("i", tmp);
+		/* rel */
+		if (has_anchors || (gd && gd->nrel > 0)) {
+			fputs("=== EDIT COMMAND (rel) ===\n", fp);
+			if (gd && gd->nrel > 0) {
+				for (int k = 0; k < gd->nrel; k++)
+					fprintf(fp, "%s\n", gd->rel_cmd[k]);
+			} else if (has_anchors) {
+				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
+					char *esc_pat = escape_sub_pat(g->ld_old_text, '/');
+					char *esc_rep = escape_sub_repl(g->ld_new_text, '/');
+					if (default_offset != 0)
+						fprintf(fp, "%+d\n", default_offset);
+					fprintf(fp, "s/%s/%s/\n", esc_pat, esc_rep);
+					free(esc_pat);
+					free(esc_rep);
+				} else if (g->del_start && g->nadd) {
+					if (default_offset != 0)
+						fprintf(fp, "%+d", default_offset);
+					if (g->ndel == 1)
+						fputs("c", fp);
+					else
+						fprintf(fp, ",#+%dc", g->ndel - 1);
+					WG_CONTENT(fp);
+				} else if (g->del_start) {
+					if (default_offset != 0)
+						fprintf(fp, "%+d", default_offset);
+					if (g->ndel == 1)
+						fputs("d\n", fp);
+					else
+						fprintf(fp, ",#+%dd\n", g->ndel - 1);
+				} else if (g->nadd) {
+					int aoff = default_offset - 1;
+					if (aoff >= 0) {
+						if (aoff)
+							fprintf(fp, "%+d", aoff);
+						fputs("a", fp);
+					} else {
+						fputs("i", fp);
+					}
+					WG_CONTENT(fp);
 				}
-				WRITE_CONTENT(tmp);
 			}
 		}
-		#undef WRITE_CONTENT
-		fprintf(tmp, "=== END GROUP ===\n\n");
+#undef WG_CONTENT
+		fprintf(fp, "=== END GROUP ===\n\n");
 	}
-	fclose(tmp);
+	return default_cmds;
+}
 
-	/* Save a copy of the original tmp file for delta computation */
+/*
+ * Interactive editing of all groups' search patterns in one file.
+ * Opens $EDITOR once with all groups. Pattern lines are shown
+ * regex-escaped (as they'll appear to the regex engine).
+ * If file saved: all groups use the edited patterns.
+ * If file not saved (mtime unchanged): all groups use default behavior.
+ */
+static void interactive_edit_groups(group_t *groups, int ngroups,
+				    const char *filepath)
+{
+	if (ngroups == 0)
+		return;
+
+	/* Extract basename from filepath for the temp filename */
+	const char *base = strrchr(filepath, '/');
+	base = base ? base + 1 : filepath;
+	char tmptmp[32];
+	char tmppath[256];
 	char tmppath_orig[262];
-	snprintf(tmppath_orig, sizeof(tmppath_orig), "%s.orig", tmppath);
-	{
-		FILE *src = fopen(tmppath, "r");
-		FILE *dst = fopen(tmppath_orig, "w");
-		if (src && dst) {
-			char buf[MAX_LINE];
-			while (fgets(buf, sizeof(buf), src))
-				fputs(buf, dst);
-		}
-		if (src)
-			fclose(src);
-		if (dst)
-			fclose(dst);
-	}
-
-	/* Apply previous delta if -d mode and matching delta available */
-	int delta_applied = 0;
-	int delta_rejected = 0;
 	char rejpath[260];
+	snprintf(tmptmp, sizeof(tmptmp), "patch2vi_XXXXXX");
+	int fd = mkstemp(tmptmp);
+	snprintf(tmppath, sizeof(tmppath), "%s_%s.diff", tmptmp, base);
+	if (rename(tmptmp, tmppath) < 0)
+		snprintf(tmppath, sizeof(tmppath), "%s", tmptmp);
+	if (fd < 0) {
+		perror("mkstemp");
+		return;
+	}
+	snprintf(tmppath_orig, sizeof(tmppath_orig), "%s.orig", tmppath);
 	snprintf(rejpath, sizeof(rejpath), "%s.rej", tmppath);
+
+	/* Find stored delta for this file */
+	file_delta_t *in_fd = NULL;
 	if (delta_mode) {
-		file_delta_t *ind = NULL;
-		for (int di = 0; di < nin_deltas; di++) {
+		for (int di = 0; di < nin_deltas; di++)
 			if (strcmp(in_deltas[di].filepath, filepath) == 0) {
-				ind = &in_deltas[di];
+				in_fd = &in_deltas[di];
 				break;
 			}
+	}
+
+	/* Write auto-generated baseline (no injection) for later comparison */
+	{
+		FILE *orig_fp = fopen(tmppath_orig, "w");
+		if (orig_fp) {
+			char **dc = write_groups_to_file(orig_fp, groups, ngroups, NULL);
+			fclose(orig_fp);
+			for (int i = 0; i < ngroups; i++) free(dc[i]);
+			free(dc);
 		}
-		if (ind && ind->nlines > 0) {
-			char deltapath[263];
-			snprintf(deltapath, sizeof(deltapath), "%s.delta", tmppath);
-			FILE *df = fopen(deltapath, "w");
-			if (df) {
-				for (int di = 0; di < ind->nlines; di++)
-					fputs(ind->lines[di], df);
-				fclose(df);
-				char cmd[MAX_LINE];
-				snprintf(cmd, sizeof(cmd),
-					 "patch -s '%s' '%s' >/dev/null 2>&1",
-					 tmppath, deltapath);
-				if (system(cmd) == 0)
-					delta_applied = 1;
-				else
-					delta_rejected = 1;
-				unlink(deltapath);
+	}
+
+	/* Write editor file with stored delta injected */
+	char **default_cmds;
+	{
+		FILE *tmp = fdopen(fd, "w");
+		if (!tmp) {
+			perror("fdopen");
+			close(fd);
+			unlink(tmppath);
+			unlink(tmppath_orig);
+			return;
+		}
+		default_cmds = write_groups_to_file(tmp, groups, ngroups, in_fd);
+		fclose(tmp);
+	}
+
+	/* Write rejection file for stored groups whose index exceeds ngroups */
+	int delta_rejected = 0;
+	if (in_fd) {
+		FILE *rej = NULL;
+		for (int k = 0; k < in_fd->ngrps; k++) {
+			if (in_fd->grps[k].group_idx > ngroups) {
+				if (!rej) {
+					rej = fopen(rejpath, "w");
+					if (rej)
+						fprintf(rej,
+							"# Rejected: index out of range"
+							" (%d groups in current file)\n\n",
+							ngroups);
+				}
+				if (rej)
+					emit_grp_delta(rej, &in_fd->grps[k]);
+				delta_rejected = 1;
 			}
 		}
+		if (rej)
+			fclose(rej);
 	}
 
 	/* Record mtime before editor */
@@ -1233,50 +1464,107 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			goto cleanup_orig;
 		}
 		if (st_before.st_mtime == st_after.st_mtime) {
-			if (!delta_applied)
+			/* User quit without saving. Preserve stored delta if present
+			 * so next -d run still injects the previous customizations. */
+			if (!in_fd || in_fd->ngrps == 0)
 				goto cleanup_orig;
-			/* -d with applied delta: preserve delta and read
-			 * back customizations from delta-applied file */
-			for (int di = 0; di < nin_deltas; di++) {
-				if (strcmp(in_deltas[di].filepath, filepath) == 0) {
-					file_delta_t *src = &in_deltas[di];
-					file_delta_t *od = &out_deltas[nout_deltas++];
-					od->filepath = xstrdup(src->filepath);
-					od->lines = malloc(src->nlines * sizeof(char*));
-					od->nlines = src->nlines;
-					od->cap = src->nlines;
-					for (int k = 0; k < src->nlines; k++)
-						od->lines[k] = xstrdup(src->lines[k]);
-					break;
-				}
+			file_delta_t *od = &out_deltas[nout_deltas++];
+			od->filepath = xstrdup(filepath);
+			od->gcap = in_fd->ngrps;
+			od->grps = malloc(od->gcap * sizeof(grp_delta_t));
+			od->ngrps = in_fd->ngrps;
+			for (int k = 0; k < in_fd->ngrps; k++) {
+				grp_delta_t *src = &in_fd->grps[k];
+				grp_delta_t *dst = &od->grps[k];
+				memset(dst, 0, sizeof(*dst));
+				dst->group_idx = src->group_idx;
+				dst->strategy = src->strategy;
+				if (src->cmd) dst->cmd = xstrdup(src->cmd);
+				for (int j = 0; j < src->npattern; j++)
+					arr_append(&dst->pattern, &dst->npattern,
+						   &dst->pat_cap, src->pattern[j]);
+				for (int j = 0; j < src->nabs; j++)
+					arr_append(&dst->abs_cmd, &dst->nabs,
+						   &dst->abs_cap, src->abs_cmd[j]);
+				for (int j = 0; j < src->nrel; j++)
+					arr_append(&dst->rel_cmd, &dst->nrel,
+						   &dst->rel_cap, src->rel_cmd[j]);
+				for (int j = 0; j < src->nrelc; j++)
+					arr_append(&dst->relc_cmd, &dst->nrelc,
+						   &dst->relc_cap, src->relc_cmd[j]);
 			}
 			goto read_back;
 		}
 	}
 
-	/* Compute delta: diff between original and edited tmp file */
+	/* Compute structured delta: compare .orig (auto-generated baseline)
+	 * against edited file section by section. Only store changed groups. */
 	{
-		char cmd[MAX_LINE];
-		snprintf(cmd, sizeof(cmd),
-			 "diff -u '%s' '%s' 2>/dev/null", tmppath_orig, tmppath);
-		FILE *dp = popen(cmd, "r");
-		if (dp) {
-			file_delta_t *od = &out_deltas[nout_deltas++];
-			od->filepath = xstrdup(filepath);
-			od->lines = NULL;
-			od->nlines = 0;
-			od->cap = 0;
-			char dline[MAX_LINE];
-			while (fgets(dline, sizeof(dline), dp)) {
-				if (od->nlines >= od->cap) {
-					od->cap = od->cap ? od->cap * 2 : 16;
-					od->lines = realloc(od->lines,
-						od->cap * sizeof(char*));
-				}
-				od->lines[od->nlines++] = xstrdup(dline);
+		parsed_grp_t *orig_grps = calloc(ngroups, sizeof(parsed_grp_t));
+		parsed_grp_t *edit_grps = calloc(ngroups, sizeof(parsed_grp_t));
+		parse_tmp_file(tmppath_orig, orig_grps, ngroups);
+		parse_tmp_file(tmppath, edit_grps, ngroups);
+
+		file_delta_t *od = NULL;
+		for (int gi = 0; gi < ngroups; gi++) {
+			parsed_grp_t *og = &orig_grps[gi];
+			parsed_grp_t *eg = &edit_grps[gi];
+
+			int strat_ch = (eg->strategy != og->strategy);
+			int cmd_ch = (eg->cmd != og->cmd) &&
+				((eg->cmd == NULL) != (og->cmd == NULL) ||
+				 (eg->cmd && og->cmd &&
+				  strcmp(eg->cmd, og->cmd) != 0));
+			int pat_ch = !lines_equal(eg->pattern, eg->npattern,
+						  og->pattern, og->npattern);
+			int abs_ch = !lines_equal(eg->abs_cmd, eg->nabs,
+						  og->abs_cmd, og->nabs);
+			int rel_ch = !lines_equal(eg->rel_cmd, eg->nrel,
+						  og->rel_cmd, og->nrel);
+			int relc_ch = !lines_equal(eg->relc_cmd, eg->nrelc,
+						   og->relc_cmd, og->nrelc);
+
+			if (!strat_ch && !cmd_ch && !pat_ch &&
+			    !abs_ch && !rel_ch && !relc_ch)
+				continue;
+
+			if (!od) {
+				od = &out_deltas[nout_deltas++];
+				od->filepath = xstrdup(filepath);
+				od->grps = NULL;
+				od->ngrps = 0;
+				od->gcap = 0;
 			}
-			pclose(dp);
+			if (od->ngrps >= od->gcap) {
+				od->gcap = od->gcap ? od->gcap * 2 : 4;
+				od->grps = realloc(od->grps,
+					od->gcap * sizeof(grp_delta_t));
+			}
+			grp_delta_t *gout = &od->grps[od->ngrps++];
+			memset(gout, 0, sizeof(*gout));
+			gout->group_idx = gi + 1;
+			if (strat_ch) gout->strategy = eg->strategy;
+			if (cmd_ch && eg->cmd) gout->cmd = xstrdup(eg->cmd);
+			for (int j = 0; pat_ch && j < eg->npattern; j++)
+				arr_append(&gout->pattern, &gout->npattern,
+					   &gout->pat_cap, eg->pattern[j]);
+			for (int j = 0; abs_ch && j < eg->nabs; j++)
+				arr_append(&gout->abs_cmd, &gout->nabs,
+					   &gout->abs_cap, eg->abs_cmd[j]);
+			for (int j = 0; rel_ch && j < eg->nrel; j++)
+				arr_append(&gout->rel_cmd, &gout->nrel,
+					   &gout->rel_cap, eg->rel_cmd[j]);
+			for (int j = 0; relc_ch && j < eg->nrelc; j++)
+				arr_append(&gout->relc_cmd, &gout->nrelc,
+					   &gout->relc_cap, eg->relc_cmd[j]);
 		}
+
+		for (int gi = 0; gi < ngroups; gi++) {
+			free_parsed_grp(&orig_grps[gi]);
+			free_parsed_grp(&edit_grps[gi]);
+		}
+		free(orig_grps);
+		free(edit_grps);
 	}
 
 read_back:
@@ -1298,14 +1586,11 @@ read_back:
 		char edited_cmd[MAX_LINE] = "";
 		int edited_offset = 0;
 		int edited_strategy = STRAT_DEFAULT;
-		/* Dynamic accumulator for current EDIT COMMAND section */
 		char **ecmd_lines = NULL;
 		int necmd = 0, ecmd_cap = 0;
-		/* Pattern lines accumulator */
 		char **lines = NULL;
 		int nlines = 0, line_cap = 0;
 
-		/* Flush accumulated ecmd_lines into the appropriate group field */
 #define FLUSH_ECMD() do { \
 		if (necmd > 0 && cur_gi >= 0 && cur_gi < ngroups) { \
 			group_t *_eg = &groups[cur_gi]; \
@@ -1339,24 +1624,25 @@ read_back:
 		while (fgets(line, sizeof(line), rd)) {
 			chomp(line);
 
-			/* Any section header ends the current EDIT COMMAND section */
 			if (strncmp(line, "=== ", 4) == 0 && in_edit_cmd) {
 				FLUSH_ECMD();
 				in_edit_cmd = 0;
 			}
 
 			if (strncmp(line, "=== GROUP ", 10) == 0) {
-				/* Flush previous group */
 				if (cur_gi >= 0 && cur_gi < ngroups) {
 					groups[cur_gi].strategy = edited_strategy;
-					const char *orig = default_cmds[cur_gi] ? default_cmds[cur_gi] : "";
+					const char *orig = default_cmds[cur_gi]
+						? default_cmds[cur_gi] : "";
 					if (strcmp(edited_cmd, orig) != 0 && edited_cmd[0])
-						groups[cur_gi].custom_cmd = xstrdup(edited_cmd);
+						groups[cur_gi].custom_cmd =
+							xstrdup(edited_cmd);
 					if (nlines > 0) {
 						groups[cur_gi].custom_lines = lines;
 						groups[cur_gi].ncustom = nlines;
 						if (edited_offset != 0)
-							groups[cur_gi].custom_offset = edited_offset;
+							groups[cur_gi].custom_offset =
+								edited_offset;
 						lines = NULL;
 						nlines = 0;
 						line_cap = 0;
@@ -1408,7 +1694,6 @@ read_back:
 				cmdstrat_want_cmd = 0;
 				continue;
 			}
-			/* Accumulate EDIT COMMAND content lines */
 			if (in_edit_cmd) {
 				if (necmd >= ecmd_cap) {
 					ecmd_cap = ecmd_cap ? ecmd_cap * 2 : 4;
@@ -1418,11 +1703,10 @@ read_back:
 				ecmd_lines[necmd++] = xstrdup(line);
 				continue;
 			}
-			/* Parse command+strategy pairs: strat line then cmd line.
-			 * abs has no cmd line (cmd is in EDIT COMMAND section). */
 			if (in_cmdstrat) {
 				if (cmdstrat_want_cmd) {
-					if (cmdstrat_take && edited_strategy == STRAT_DEFAULT) {
+					if (cmdstrat_take &&
+					    edited_strategy == STRAT_DEFAULT) {
 						edited_strategy = cmdstrat_strat;
 						snprintf(edited_cmd,
 							 sizeof(edited_cmd),
@@ -1454,28 +1738,25 @@ read_back:
 				}
 				continue;
 			}
-			/* Extra separator still present = skip lines below */
 			if (in_pattern && strncmp(line, "--- extra", 9) == 0) {
 				skip_extra = 1;
 				continue;
 			}
-
 			if (in_pattern && !skip_extra) {
 				if (nlines >= line_cap) {
-					line_cap = line_cap ? line_cap*2 : 16;
+					line_cap = line_cap ? line_cap * 2 : 16;
 					lines = realloc(lines,
-						line_cap * sizeof(char*));
+						line_cap * sizeof(char *));
 				}
 				lines[nlines++] = xstrdup(line);
 			}
 		}
-		/* Flush trailing EDIT COMMAND section (no closing === seen) */
 		if (in_edit_cmd)
 			FLUSH_ECMD();
-		/* Flush last group */
 		if (cur_gi >= 0 && cur_gi < ngroups) {
 			groups[cur_gi].strategy = edited_strategy;
-			const char *orig = default_cmds[cur_gi] ? default_cmds[cur_gi] : "";
+			const char *orig = default_cmds[cur_gi]
+				? default_cmds[cur_gi] : "";
 			if (strcmp(edited_cmd, orig) != 0 && edited_cmd[0])
 				groups[cur_gi].custom_cmd = xstrdup(edited_cmd);
 			if (nlines > 0) {
@@ -1491,6 +1772,7 @@ read_back:
 		}
 		fclose(rd);
 	}
+#undef FLUSH_ECMD
 
 cleanup_orig:
 	unlink(tmppath_orig);
@@ -2142,39 +2424,100 @@ int main(int argc, char **argv)
 				if (strcmp(line, "exit 0") == 0)
 					break;
 			}
-			/* Read delta section (between DELTA and PATCH markers) */
+			/* Read structured delta section */
 			{
-				file_delta_t *cur_delta = NULL;
+				file_delta_t *cur_fd = NULL;
+				grp_delta_t *cur_gd = NULL;
+				int in_sect = 0; /* 1=pat 2=abs 3=rel 4=relc */
 				while (fgets(line, sizeof(line), in)) {
 					chomp(line);
-					if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
-						continue;
 					if (strncmp(line, "=== PATCH2VI PATCH ===", 22) == 0)
 						break;
-					/* Per-file delta marker: === DELTA filepath === */
+					if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
+						continue;
+					if (strncmp(line, "=== END DELTA ===", 17) == 0) {
+						cur_fd = NULL; cur_gd = NULL; in_sect = 0;
+						continue;
+					}
 					if (strncmp(line, "=== DELTA ", 10) == 0) {
+						in_sect = 0; cur_gd = NULL;
 						if (delta_mode) {
 							char *p = line + 10;
 							char *end = strstr(p, " ===");
 							if (end) *end = '\0';
-							cur_delta = &in_deltas[nin_deltas++];
-							cur_delta->filepath = xstrdup(p);
-							cur_delta->lines = NULL;
-							cur_delta->nlines = 0;
-							cur_delta->cap = 0;
+							cur_fd = &in_deltas[nin_deltas++];
+							cur_fd->filepath = xstrdup(p);
+							cur_fd->grps = NULL;
+							cur_fd->ngrps = 0;
+							cur_fd->gcap = 0;
+						} else {
+							cur_fd = NULL;
 						}
 						continue;
 					}
-					/* Delta content line */
-					if (delta_mode && cur_delta) {
-						if (cur_delta->nlines >= cur_delta->cap) {
-							cur_delta->cap = cur_delta->cap ? cur_delta->cap * 2 : 16;
-							cur_delta->lines = realloc(cur_delta->lines,
-								cur_delta->cap * sizeof(char*));
+					if (!delta_mode || !cur_fd) continue;
+					if (strncmp(line, "GROUP ", 6) == 0) {
+						in_sect = 0;
+						if (cur_fd->ngrps >= cur_fd->gcap) {
+							cur_fd->gcap = cur_fd->gcap
+								? cur_fd->gcap * 2 : 4;
+							cur_fd->grps = realloc(
+								cur_fd->grps,
+								cur_fd->gcap *
+								sizeof(grp_delta_t));
 						}
-						char *dl = malloc(strlen(line) + 2);
-						sprintf(dl, "%s\n", line);
-						cur_delta->lines[cur_delta->nlines++] = dl;
+						cur_gd = &cur_fd->grps[cur_fd->ngrps++];
+						memset(cur_gd, 0, sizeof(*cur_gd));
+						cur_gd->group_idx = atoi(line + 6);
+						continue;
+					}
+					if (!cur_gd) continue;
+					if (strncmp(line, "strategy: ", 10) == 0) {
+						in_sect = 0;
+						const char *v = line + 10;
+						if (strcmp(v, "abs") == 0)
+							cur_gd->strategy = STRAT_ABS;
+						else if (strcmp(v, "rel") == 0)
+							cur_gd->strategy = STRAT_REL;
+						else if (strcmp(v, "relc") == 0)
+							cur_gd->strategy = STRAT_RELC;
+						continue;
+					}
+					if (strncmp(line, "cmd: ", 5) == 0) {
+						in_sect = 0;
+						free(cur_gd->cmd);
+						cur_gd->cmd = xstrdup(line + 5);
+						continue;
+					}
+					if (strcmp(line, "pattern:") == 0)
+						{ in_sect = 1; continue; }
+					if (strcmp(line, "edit_cmd_abs:") == 0)
+						{ in_sect = 2; continue; }
+					if (strcmp(line, "edit_cmd_rel:") == 0)
+						{ in_sect = 3; continue; }
+					if (strcmp(line, "edit_cmd_relc:") == 0)
+						{ in_sect = 4; continue; }
+					switch (in_sect) {
+					case 1:
+						arr_append(&cur_gd->pattern,
+							   &cur_gd->npattern,
+							   &cur_gd->pat_cap, line);
+						break;
+					case 2:
+						arr_append(&cur_gd->abs_cmd,
+							   &cur_gd->nabs,
+							   &cur_gd->abs_cap, line);
+						break;
+					case 3:
+						arr_append(&cur_gd->rel_cmd,
+							   &cur_gd->nrel,
+							   &cur_gd->rel_cap, line);
+						break;
+					case 4:
+						arr_append(&cur_gd->relc_cmd,
+							   &cur_gd->nrelc,
+							   &cur_gd->relc_cap, line);
+						break;
 					}
 				}
 			}
@@ -2290,9 +2633,12 @@ process_line:
 	printf("=== PATCH2VI DELTA ===\n");
 	for (int i = 0; i < nout_deltas; i++) {
 		file_delta_t *od = &out_deltas[i];
+		if (od->ngrps == 0)
+			continue;
 		printf("=== DELTA %s ===\n", od->filepath);
-		for (int j = 0; j < od->nlines; j++)
-			fputs(od->lines[j], stdout);
+		for (int j = 0; j < od->ngrps; j++)
+			emit_grp_delta(stdout, &od->grps[j]);
+		printf("=== END DELTA ===\n");
 	}
 	printf("=== PATCH2VI PATCH ===\n");
 	for (int i = 0; i < nraw; i++)
