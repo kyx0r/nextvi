@@ -185,30 +185,13 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.h ===
---- patch2vi_AbSrNp_vi.h.diff.orig	2026-04-23 11:59:43.697833943 -0100
-+++ patch2vi_AbSrNp_vi.h.diff	2026-04-23 12:00:38.889679889 -0100
-@@ -7,11 +7,8 @@
- #rel
- %;f>
- === SEARCH PATTERN ===
--void syn_init\(void\);
--
--/\* uc\.c: utf-8 helper functions \*/
----- extra (delete to include) ---
- extern unsigned char utf8_length\[256\];
-+--- extra (delete to include) ---
- extern int zwlen, def_zwlen;
- extern int bclen, def_bclen;
- /\* the length of a given utf-8 character \*/
-@@ -19,7 +16,7 @@
- 262c extern unsigned char _utf8_length[256];
- extern unsigned char *utf8_length;
- === EDIT COMMAND (rel) ===
--+3c extern unsigned char _utf8_length[256];
-+c extern unsigned char _utf8_length[256];
- extern unsigned char *utf8_length;
- === END GROUP ===
- 
+GROUP 1
+pattern:
+extern unsigned char utf8_length\[256\];
+edit_cmd_rel:
+c extern unsigned char _utf8_length[256];
+extern unsigned char *utf8_length;
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
 index 2372d3b8..3b294bc7 100755
