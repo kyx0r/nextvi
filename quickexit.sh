@@ -94,101 +94,39 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
---- /tmp/patch2vi_DnFeGC_conf.c.diff.orig
-+++ /tmp/patch2vi_DnFeGC_conf.c.diff
-@@ -9,8 +9,6 @@
- %;f>
- === SEARCH PATTERN ===
- \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
--\(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
--\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
- --- extra (delete to include) ---
- \(\(pac\|pr\|ai\|ish\|err\|ic\|grp\|mpt\|rcm\|shape\|seq\|ts\|td\|order\|hl\[lwpr\]\?\|left\|lim\|led\|vis\)\\
- \|\[@&!=dmj\]\|\\\\\?\\\\\?\\\?!\?\|\\\\\?!\|b\[psx\]\?\|p\[uh\]\?\|ac\?\|e\[f!\]\?!\?\|f\[-\+><tdp\]\?\|inc\|i\|sc!\?\|\\
+GROUP 1
+pattern:
+\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
+=== END DELTA ===
 === DELTA ex.c ===
---- patch2vi_L0zf1a_ex.c.diff.orig	2026-04-23 13:13:49.229885745 -0100
-+++ patch2vi_L0zf1a_ex.c.diff	2026-04-23 13:13:59.800576659 -0100
-@@ -1,7 +1,7 @@
- === GROUP 1/3 (line 0) ===
- +int xqe = 1000;			/* exit insert via kj (delay in ms) */
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %f>
- === SEARCH PATTERN ===
-@@ -21,9 +21,7 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(ish\) EO\(ic\) EO\(mpt\)
--EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
--EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
-+EO\(pac\)
- --- extra (delete to include) ---
- 
- _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
-@@ -41,8 +39,6 @@
- #rel
- .,\$;f>
- === SEARCH PATTERN ===
--	\{"g", ec_glob\},
--	EO\(mpt\),
- 	\{"m", ec_mark\},
- --- extra (delete to include) ---
- 	\{"q!", ec_quit\},
-@@ -51,6 +47,6 @@
- === EDIT COMMAND (abs) ===
- 1500a 	EO(qe),
- === EDIT COMMAND (rel) ===
--+2a 	EO(qe),
-+a 	EO(qe),
- === END GROUP ===
- 
+GROUP 1
+strategy: abs
+GROUP 2
+pattern:
+EO\(pac\)
+GROUP 3
+pattern:
+	\{"m", ec_mark\},
+edit_cmd_rel:
+a 	EO(qe),
+=== END DELTA ===
 === DELTA led.c ===
---- /tmp/patch2vi_cCIldL_led.c.diff.orig
-+++ /tmp/patch2vi_cCIldL_led.c.diff
-@@ -8,7 +8,7 @@
- +}
- +
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %f>
- === SEARCH PATTERN ===
+GROUP 1
+strategy: abs
+=== END DELTA ===
 === DELTA vi.c ===
---- /tmp/patch2vi_DNCbak_vi.c.diff.orig
-+++ /tmp/patch2vi_DNCbak_vi.c.diff
-@@ -1,7 +1,7 @@
- === GROUP 1/2 (line 9) ===
- +#include <time.h>
- === COMMAND STRATEGY (default: rel) ===
--#abs
-+abs
- #rel
- %;f>
- === SEARCH PATTERN ===
-@@ -29,7 +29,6 @@
- === SEARCH PATTERN ===
- 				k = vc_insert\(c\);
- 				ins:
--				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
- --- extra (delete to include) ---
- 				if \(k == 127\) \{
- 					if \(xrow && !\(xoff > 0 && lbuf_eol\(xb, xrow, 1\)\)\) \{
+GROUP 1
+strategy: abs
+GROUP 2
+pattern:
+				k = vc_insert\(c\);
+				ins:
+=== END DELTA ===
 === DELTA vi.h ===
---- /tmp/patch2vi_lKDyRX_vi.h.diff.orig	2026-02-17 19:15:16.482674421 -0100
-+++ /tmp/patch2vi_lKDyRX_vi.h.diff	2026-02-17 19:16:02.897965195 -0100
-@@ -40,8 +40,6 @@
- .,\$;f>
- === SEARCH PATTERN (offset: 3) ===
- extern int xshape;
--extern int xorder;
--extern int xts;
- --- extra (delete to include) ---
- extern int xish;
- extern int xgrp;
+GROUP 3
+pattern:
+extern int xshape;
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index d45d10a6..352facd4 100644
