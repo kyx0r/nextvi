@@ -1163,10 +1163,12 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			default_offset = g->anchor_offset;
 			dcmd = sim_first_ml ? "%f>" : ".,\\$f>";
 			sim_first_ml = 0;
-		} else if ((g->follow_ctx && g->follow_ctx[0])
-			   || (g->ndel > 0 && g->del_texts[0]
-			       && g->del_texts[0][0])) {
-			default_offset = g->block_change_idx;
+		} else if (g->follow_ctx && g->follow_ctx[0]) {
+			default_offset = -(g->follow_offset);
+			dcmd = sim_first_ml ? "%f>" : ".,\\$f>";
+			sim_first_ml = 0;
+		} else if (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
+			default_offset = 0;
 			dcmd = sim_first_ml ? "%f>" : ".,\\$f>";
 			sim_first_ml = 0;
 		} else {
