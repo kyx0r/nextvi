@@ -586,7 +586,7 @@ static void emit_line_search(FILE *out, const char *pattern, int offset,
 	emit_escaped_regex_exarg(out, pattern);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
-	fputs(";=\n", out);
+	fputs("${LB}\n", out);
 	EMIT_SEP(out);
 	/* Emit offset; . needed at offset 0 to avoid empty command
 	 * between consecutive separators (would trigger ec_print). */
@@ -612,7 +612,7 @@ static void emit_multiline_pos(FILE *out, char **anchors, int nanchors,
 		fputc('\n', out);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
-	fputs(";=\n", out);
+	fputs("${LB}\n", out);
 	EMIT_SEP(out);
 	/* After f>, cursor is at match position; use +offset for target */
 	if (offset)
@@ -693,7 +693,7 @@ static void emit_custom_multiline_pos(FILE *out, char **lines, int nlines,
 		fputc('\n', out);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
-	fputs(";=\n", out);
+	fputs("${LB}\n", out);
 	EMIT_SEP(out);
 	if (offset)
 		fprintf(out, "%+d", offset);
@@ -710,7 +710,7 @@ static void emit_custom_line_search(FILE *out, const char *line, int offset,
 	emit_escaped_exarg_only(out, line);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
-	fputs(";=\n", out);
+	fputs("${LB}\n", out);
 	EMIT_SEP(out);
 	if (offset)
 		fprintf(out, "%+d", offset);
@@ -2706,9 +2706,11 @@ process_line:
 	printf("    exit 1\n");
 	printf("fi\n\n");
 	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
-	printf("# Comment to continue despite errors (errors are still printed)\n");
-	printf("QF=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n");
 	if (relative_mode || interactive_mode) {
+		printf("# Comment to continue despite errors (errors are still printed)\n");
+		printf("QF=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n");
+		printf("# Command handling readability line breaks\n");
+		printf("LB=\"0?\"\n");
 		printf("# Uncomment to enter interactive vi on patch failure\n");
 		printf("#INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:e $0:%%f>:@Q:q!1\"\n");
 		printf("# Uncomment to skip errors (0? = silent nop)\n");
