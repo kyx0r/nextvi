@@ -41,6 +41,8 @@ static int delta_mode = 0;      /* 1=re-apply previous delta from script (-d) */
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
 	int group_idx;      /* 1-based */
+	char **del_lines; int ndel_lines, del_cap;
+	char **add_lines; int nadd_lines, add_cap;
 	int strategy;       /* STRAT_DEFAULT = not recorded */
 	char *cmd;
 	char **pattern;  int npattern, pat_cap;
@@ -137,11 +139,27 @@ static int lines_equal(char **a, int na, char **b, int nb)
 }
 
 
-static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx)
+static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
+				    char **del_texts, int ndel,
+				    char **add_texts, int nadd)
 {
-	for (int i = 0; fd && i < fd->ngrps; i++)
-		if (fd->grps[i].group_idx == idx)
-			return &fd->grps[i];
+	for (int i = 0; fd && i < fd->ngrps; i++) {
+		grp_delta_t *gd = &fd->grps[i];
+		if (gd->group_idx != idx)
+			continue;
+		/* verify stored content if present */
+		if (gd->ndel_lines > 0 || gd->nadd_lines > 0) {
+			if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
+				return NULL;
+			for (int j = 0; j < ndel; j++)
+				if (strcmp(gd->del_lines[j], del_texts[j]) != 0)
+					return NULL;
+			for (int j = 0; j < nadd; j++)
+				if (strcmp(gd->add_lines[j], add_texts[j]) != 0)
+					return NULL;
+		}
+		return gd;
+	}
 	return NULL;
 }
 
@@ -1076,6 +1094,10 @@ static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
 static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 {
 	fprintf(out, "GROUP %d\n", gd->group_idx);
+	for (int i = 0; i < gd->ndel_lines; i++)
+		fprintf(out, "-%s\n", gd->del_lines[i]);
+	for (int i = 0; i < gd->nadd_lines; i++)
+		fprintf(out, "+%s\n", gd->add_lines[i]);
 	if (gd->strategy != STRAT_DEFAULT) {
 		const char *s = "abs";
 		if (gd->strategy == STRAT_REL) s = "rel";
@@ -1122,7 +1144,9 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			continue;
 		int target = g->del_start ? g->del_start : g->add_after;
 
-		grp_delta_t *gd = find_grp_delta(in_fd, gi + 1);
+		grp_delta_t *gd = find_grp_delta(in_fd, gi + 1,
+					g->del_texts, g->ndel,
+					g->add_texts, g->nadd);
 
 		int has_anchors = g->nanchors >= 2
 			|| (g->nanchors == 1 && g->anchors[0] && g->anchors[0][0])
@@ -1401,22 +1425,35 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		fclose(tmp);
 	}
 
-	/* Write rejection file for stored groups whose index exceeds ngroups */
+	/* Write rejection file for stored groups whose index exceeds ngroups
+	 * or whose stored content no longer matches the group at that index */
 	int delta_rejected = 0;
 	if (in_fd) {
 		FILE *rej = NULL;
 		for (int k = 0; k < in_fd->ngrps; k++) {
-			if (in_fd->grps[k].group_idx > ngroups) {
+			grp_delta_t *stored = &in_fd->grps[k];
+			int rejected = stored->group_idx > ngroups;
+			if (!rejected && (stored->ndel_lines > 0 || stored->nadd_lines > 0)) {
+				group_t *g = &groups[stored->group_idx - 1];
+				rejected = stored->ndel_lines != g->ndel
+					|| stored->nadd_lines != g->nadd;
+				for (int j = 0; j < g->ndel && !rejected; j++)
+					if (strcmp(stored->del_lines[j], g->del_texts[j]) != 0)
+						rejected = 1;
+				for (int j = 0; j < g->nadd && !rejected; j++)
+					if (strcmp(stored->add_lines[j], g->add_texts[j]) != 0)
+						rejected = 1;
+			}
+			if (rejected) {
 				if (!rej) {
 					rej = fopen(rejpath, "w");
 					if (rej)
 						fprintf(rej,
 							"# Rejected: index out of range"
-							" (%d groups in current file)\n\n",
-							ngroups);
+							" or content mismatch\n\n");
 				}
 				if (rej)
-					emit_grp_delta(rej, &in_fd->grps[k]);
+					emit_grp_delta(rej, stored);
 				delta_rejected = 1;
 			}
 		}
@@ -1456,14 +1493,20 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		}
 	}
 
-	/* Check if file was saved (mtime changed) */
+	/* Check if file was saved (mtime or size changed) */
 	{
 		struct stat st_after;
 		if (stat(tmppath, &st_after) < 0) {
 			perror("stat");
 			goto cleanup_orig;
 		}
-		if (st_before.st_mtime == st_after.st_mtime) {
+		int unchanged = st_before.st_mtime == st_after.st_mtime
+			&& st_before.st_size == st_after.st_size;
+#ifdef st_mtime
+		if (unchanged)
+			unchanged = st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec;
+#endif
+		if (unchanged) {
 			/* User quit without saving. Preserve stored delta if present
 			 * so next -d run still injects the previous customizations. */
 			if (!in_fd || in_fd->ngrps == 0)
@@ -1478,6 +1521,12 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				grp_delta_t *dst = &od->grps[k];
 				memset(dst, 0, sizeof(*dst));
 				dst->group_idx = src->group_idx;
+				for (int jj = 0; jj < src->ndel_lines; jj++)
+					arr_append(&dst->del_lines, &dst->ndel_lines,
+						   &dst->del_cap, src->del_lines[jj]);
+				for (int jj = 0; jj < src->nadd_lines; jj++)
+					arr_append(&dst->add_lines, &dst->nadd_lines,
+						   &dst->add_cap, src->add_lines[jj]);
 				dst->strategy = src->strategy;
 				if (src->cmd) dst->cmd = xstrdup(src->cmd);
 				for (int j = 0; j < src->npattern; j++)
@@ -1543,6 +1592,12 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			grp_delta_t *gout = &od->grps[od->ngrps++];
 			memset(gout, 0, sizeof(*gout));
 			gout->group_idx = gi + 1;
+			for (int jj = 0; jj < groups[gi].ndel; jj++)
+				arr_append(&gout->del_lines, &gout->ndel_lines,
+					   &gout->del_cap, groups[gi].del_texts[jj]);
+			for (int jj = 0; jj < groups[gi].nadd; jj++)
+				arr_append(&gout->add_lines, &gout->nadd_lines,
+					   &gout->add_cap, groups[gi].add_texts[jj]);
 			if (strat_ch) gout->strategy = eg->strategy;
 			if (cmd_ch && eg->cmd) gout->cmd = xstrdup(eg->cmd);
 			for (int j = 0; pat_ch && j < eg->npattern; j++)
@@ -2456,8 +2511,8 @@ int main(int argc, char **argv)
 						continue;
 					}
 					if (!delta_mode || !cur_fd) continue;
-					if (strncmp(line, "GROUP ", 6) == 0) {
-						in_sect = 0;
+					if (strncmp(line, "GROUP", 5) == 0 &&
+					    (line[5] == '\0' || line[5] == ' ')) {
 						if (cur_fd->ngrps >= cur_fd->gcap) {
 							cur_fd->gcap = cur_fd->gcap
 								? cur_fd->gcap * 2 : 4;
@@ -2468,10 +2523,25 @@ int main(int argc, char **argv)
 						}
 						cur_gd = &cur_fd->grps[cur_fd->ngrps++];
 						memset(cur_gd, 0, sizeof(*cur_gd));
-						cur_gd->group_idx = atoi(line + 6);
+						cur_gd->group_idx = (line[5] == ' ') ? atoi(line + 6) : 0;
+						in_sect = 5; /* always read diff lines that follow */
 						continue;
 					}
 					if (!cur_gd) continue;
+					if (in_sect == 5) {
+						if (line[0] == '-') {
+							arr_append(&cur_gd->del_lines,
+								   &cur_gd->ndel_lines,
+								   &cur_gd->del_cap, line + 1);
+							continue;
+						} else if (line[0] == '+') {
+							arr_append(&cur_gd->add_lines,
+								   &cur_gd->nadd_lines,
+								   &cur_gd->add_cap, line + 1);
+							continue;
+						}
+						in_sect = 0;
+					}
 					if (strncmp(line, "strategy: ", 10) == 0) {
 						in_sect = 0;
 						const char *v = line + 10;
