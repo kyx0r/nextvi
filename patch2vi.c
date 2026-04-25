@@ -1222,27 +1222,42 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 
 		/* SEARCH PATTERN: inject stored or auto-generate */
 		fprintf(fp, "=== SEARCH PATTERN ===\n");
+		int pattern_has_lines = 0;
 		if (gd && gd->npattern > 0) {
 			for (int i = 0; i < gd->npattern; i++)
 				fprintf(fp, "%s\n", gd->pattern[i]);
+			pattern_has_lines = 1;
 		} else {
 			for (int i = 0; i < g->nanchors; i++) {
 				char *esc = escape_regex(g->anchors[i]);
 				fprintf(fp, "%s\n", esc);
 				free(esc);
 			}
+			pattern_has_lines = g->nanchors > 0;
 		}
 		int has_extra = g->ndel > 0 || g->npost_ctx > 0;
-		if (has_extra) {
-			int show_sep = (gd && gd->npattern > 0) || g->nanchors > 0;
-			if (show_sep)
-				fprintf(fp, "--- extra (delete to include) ---\n");
-			for (int i = 0; i < g->ndel; i++) {
+		int del_extra_start = 0, post_extra_start = 0;
+		if (!pattern_has_lines && has_extra) {
+			/* promote first extra to match non-interactive anchor fallback */
+			char *esc;
+			if (g->ndel > 0) {
+				esc = escape_regex(g->del_texts[0]);
+				del_extra_start = 1;
+			} else {
+				esc = escape_regex(g->post_ctx[0]);
+				post_extra_start = 1;
+			}
+			fprintf(fp, "%s\n", esc);
+			free(esc);
+		}
+		if ((g->ndel - del_extra_start) + (g->npost_ctx - post_extra_start) > 0) {
+			fprintf(fp, "--- extra (delete to include) ---\n");
+			for (int i = del_extra_start; i < g->ndel; i++) {
 				char *esc = escape_regex(g->del_texts[i]);
 				fprintf(fp, "%s\n", esc);
 				free(esc);
 			}
-			for (int i = 0; i < g->npost_ctx; i++) {
+			for (int i = post_extra_start; i < g->npost_ctx; i++) {
 				char *esc = escape_regex(g->post_ctx[i]);
 				fprintf(fp, "%s\n", esc);
 				free(esc);
