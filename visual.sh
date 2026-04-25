@@ -332,51 +332,18 @@ ${SEP}+2a 				if (vi_visual) {
 					break;
 				}
 .
-${SEP}.,\$;f> 				vi_mod \\\\|= 1;
-				break;
-			case 'v':${SEP}??!${DBG:-re p FAIL line 1360\\${SEP}p FAIL line 1360${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+79c 				if (vi_visual == 'v') {
-					vi_visual = 0;
-				} else {
-					vi_visual = 'v';
-					vi_vrow = xrow;
-					vi_voff = xoff;
-.
-${SEP}.,\$f> 				\\\\}${SEP}??!${DBG:-re p FAIL line 1440\\${SEP}p FAIL line 1440${INTR}${QF}}${SEP}${LB}
-${SEP}.a 				vi_mod |= 1;
-.
-${SEP}.,\$f> 				break;${SEP}??!${DBG:-re p FAIL line 1441\\${SEP}p FAIL line 1441${INTR}${QF}}${SEP}${LB}
-${SEP}.a 			case 'U':
-				if (vi_visual) {
+${SEP}.,\$;f> 				vi_lncol = 0;
+				vi_mod \\\\|= 1;
+				break;${SEP}??!${DBG:-re p FAIL line 1358\\${SEP}p FAIL line 1358${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 			case 'U':
+				if (vi_visual)
 					vc_visual_op('U');
-					break;
-				}
-				continue;
-.
-${SEP}.,\$f> 			case 'V':${SEP}??!${DBG:-re p FAIL line 1443\\${SEP}p FAIL line 1443${INTR}${QF}}${SEP}${LB}
-${SEP}+1c 				if (vi_visual == 'V') {
-					vi_visual = 0;
-				} else {
-					vi_visual = 'V';
-					vi_vrow = xrow;
-					vi_voff = xoff;
-				}
-.
-${SEP}.,\$;f> 				vi_mod \\\\|= 1;
-				break;
-			case TK_CTL\\\\('v'\\\\):${SEP}??!${DBG:-re p FAIL line 1447\\${SEP}p FAIL line 1447${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 				if (vi_visual == 'b')
-					vi_visual = 0;
-				else {
-					vi_visual = 'b';
-					vi_vrow = xrow;
-					vi_voff = xoff;
-				}
-				vi_mod |= 1;
 				break;
 .
-${SEP}.,\$f> 			case TK_CTL\\\\('c'\\\\):${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
-${SEP}.a 				if (!vi_arg)
+${SEP}.,\$;f> 			case TK_CTL\\\\('v'\\\\):
+				vi_arg = \\\\(vi_wsel % 5\\\\) \\\\+ !!\\\\*vi_word;
+			case TK_CTL\\\\('c'\\\\):${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 				if (!vi_arg)
 					vi_arg = (vi_wsel % 5) + !!*vi_word;
 .
 ${SEP}.,\$;f> 					xmpt = 1;
@@ -386,7 +353,6 @@ ${SEP}+2a 				if (vi_visual) {
 					k = vc_visual_op('c');
 					goto ins;
 				}
-				/* fall through */
 .
 ${SEP}.,\$f> 			case 'd':${SEP}??!${DBG:-re p FAIL line 1473\\${SEP}p FAIL line 1473${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 				if (vi_visual) {
@@ -416,81 +382,11 @@ ${SEP}+2a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
 					goto rep;${SEP}??!${DBG:-re p FAIL line 1637\\${SEP}p FAIL line 1637${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 				} else if (k == '.') {
-					vi_mod |= 2;
-					while (vi_arg) {
-						term_push(\"j\", 1);
-						term_push(rep_cmd, rep_len);
-						if (strchr(\"iIoOaAsScC\", rep_cmd[0])) {
-							term_push(\"0\", 1);
-							if (noff)
-								vi_argcmd(noff, 'l');
-						}
-						vi_arg--;
-					}
-				} else if (k == 'W') {
-					vi_nlmode = !vi_nlmode;
-				} else if (k == 'o') {
-					ex_command(\"%s/\\\\x0d//g:%s/[ \\\\t]+\$//g\")
+${SEP}+2a 				} else if (k == 'v' || k == 'V' || k == 'b') {
+					vi_visual = vi_visual == k ? 0 : k;
+					vi_vrow = xrow;
+					vi_voff = xoff;
 					vi_mod |= 1;
-				} else if (k == 'I' || k == 'i') {
-					vi_mod |= 2;
-					char restr[100] = \"%s/^\\\\t/\";
-					vi_arg = MIN(vi_arg ? vi_arg : xts, 80);
-					if (k == 'I') {
-						cmd = restr+6;
-						while (vi_arg--)
-							*cmd++ = ' ';
-						strcpy(cmd, \"/g\");
-					} else {
-						strcpy(restr, \"%s/^ {\");
-						strcpy(itoa(vi_arg, restr+6), \"}/\\\\t/g\");
-					}
-					ln = vi_enprompt(\":\", restr, &k, &n);
-					goto do_excmd;
-				} else if (k == 'b' || k == 'v') {
-					term_push(k == 'v' ? \":\\\\x01\" : \":\\\\x02\", 2); /* ^a : ^b */
-				} else if (k == ';') {
-					ln = vi_enprompt(\":\", \"!\", &k, &n);
-				} else if (k == '/') {
-					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
-					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, \"re \");
-					if (cs)
-						strcat(buf, cs);
-					free(cs);
-					ln = vi_enprompt(\":\", buf, &k, &n);
-					goto do_excmd;
-				} else if (k == 't') {
-					vi_drawmsg(\"arg2:(0|#)\");
-					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
-					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, \".,.+\");
-					char *buf1 = itoa(vi_arg, buf+4);
-					strcat(buf1, \"s/\");
-					if (cs) {
-						strcat(buf1, cs);
-						strcat(buf1, \"/\");
-						free(cs);
-					}
-					ln = vi_enprompt(\":\", buf, &k, &n);
-					goto do_excmd;
-				} else if (k == 'r') {
-					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
-					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, \"%s/\");
-					if (cs) {
-						strcat(buf, cs);
-						strcat(buf, \"/\");
-						free(cs);
-					}
-					ln = vi_enprompt(\":\", buf, &k, &n);
-					goto do_excmd;
-				} else if (k == 'V') {
-					vi_hidch = !vi_hidch;
-					vi_mod |= 1;
-				} else {
-					term_dec()
 .
 ${SEP}.,\$;f> 				term_push\\\\(\"yy\", 2\\\\);
 				goto motion;
@@ -530,7 +426,7 @@ index d45d10a6..ce06fae3 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 628bb946..18b403c8 100644
+index 628bb946..ee0457c2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -864,134 +760,27 @@ index 628bb946..18b403c8 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1357,95 +1614,44 @@ void vi(int init)
+@@ -1356,6 +1613,10 @@ void vi(int init)
+ 				vi_lncol = 0;
  				vi_mod |= 1;
- 				break;
- 			case 'v':
--				vi_mod |= 2;
--				k = term_read(0);
--				switch (k) {
--				case '.':
--					while (vi_arg) {
--						term_push("j", 1);
--						term_push(rep_cmd, rep_len);
--						if (strchr("iIoOaAsScC", rep_cmd[0])) {
--							term_push("0", 1);
--							if (noff)
--								vi_argcmd(noff, 'l');
--						}
--						vi_arg--;
--					}
--					break;
--				case 'w':
--					vi_nlmode = !vi_nlmode;
--					break;
--				case 'o':
--					ex_command("%s/\x0d//g:%s/[ \t]+$//g")
--					vi_mod |= 1;
--					break;
--				case 'I':;
--				case 'i':;
--					char restr[100] = "%s/^\t/";
--					vi_arg = MIN(vi_arg ? vi_arg : xts, 80);
--					if (k == 'I') {
--						cmd = restr+6;
--						while (vi_arg--)
--							*cmd++ = ' ';
--						strcpy(cmd, "/g");
--					} else {
--						strcpy(restr, "%s/^ {");
--						strcpy(itoa(vi_arg, restr+6), "}/\t/g");
--					}
--					ln = vi_enprompt(":", restr, &k, &n);
--					goto do_excmd;
--				case 'b':
--				case 'v':
--					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
--					break;
--				case ';':
--					ln = vi_enprompt(":", "!", &k, &n);
--					goto do_excmd;
--				case '/': {
--					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
--					char buf[cs ? strlen(cs)+30 : 30];
--					strcpy(buf, "re ");
--					if (cs)
--						strcat(buf, cs);
--					free(cs);
--					ln = vi_enprompt(":", buf, &k, &n);
--					goto do_excmd; }
--				case 't': {
--					vi_drawmsg("arg2:(0|#)");
--					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
--					char buf[cs ? strlen(cs)+30 : 30];
--					strcpy(buf, ".,.+");
--					char *buf1 = itoa(vi_arg, buf+4);
--					strcat(buf1, "s/");
--					if (cs) {
--						strcat(buf1, cs);
--						strcat(buf1, "/");
--						free(cs);
--					}
--					ln = vi_enprompt(":", buf, &k, &n);
--					goto do_excmd; }
--				case 'r': {
--					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
--					char buf[cs ? strlen(cs)+30 : 30];
--					strcpy(buf, "%s/");
--					if (cs) {
--						strcat(buf, cs);
--						strcat(buf, "/");
--						free(cs);
--					}
--					ln = vi_enprompt(":", buf, &k, &n);
--					goto do_excmd; }
--				default:
--					term_dec()
-+				if (vi_visual == 'v') {
-+					vi_visual = 0;
-+				} else {
-+					vi_visual = 'v';
-+					vi_vrow = xrow;
-+					vi_voff = xoff;
- 				}
-+				vi_mod |= 1;
  				break;
 +			case 'U':
-+				if (vi_visual) {
++				if (vi_visual)
 +					vc_visual_op('U');
-+					break;
-+				}
-+				continue;
- 			case 'V':
--				vi_hidch = !vi_hidch;
-+				if (vi_visual == 'V') {
-+					vi_visual = 0;
-+				} else {
-+					vi_visual = 'V';
-+					vi_vrow = xrow;
-+					vi_voff = xoff;
-+				}
- 				vi_mod |= 1;
- 				break;
- 			case TK_CTL('v'):
--				vi_arg = (vi_wsel % 5) + !!*vi_word;
-+				if (vi_visual == 'b')
-+					vi_visual = 0;
-+				else {
-+					vi_visual = 'b';
-+					vi_vrow = xrow;
-+					vi_voff = xoff;
-+				}
-+				vi_mod |= 1;
 +				break;
+ 			case 'v':
+ 				vi_mod |= 2;
+ 				k = term_read(0);
+@@ -1446,6 +1707,8 @@ void vi(int init)
+ 			case TK_CTL('v'):
+ 				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 +				if (!vi_arg)
 +					vi_arg = (vi_wsel % 5) + !!*vi_word;
  				if (vi_arg && vi_arg <= 5) {
  					vi_wsel = vi_arg;
  					vi_word = _vi_word + vi_arg;
-@@ -1470,7 +1676,16 @@ void vi(int init)
+@@ -1470,7 +1733,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -999,7 +788,6 @@ index 628bb946..18b403c8 100644
 +					k = vc_visual_op('c');
 +					goto ins;
 +				}
-+				/* fall through */
  			case 'd':
 +				if (vi_visual) {
 +					vc_visual_op('d');
@@ -1008,7 +796,7 @@ index 628bb946..18b403c8 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1517,6 +1732,10 @@ void vi(int init)
+@@ -1517,6 +1788,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1019,7 +807,7 @@ index 628bb946..18b403c8 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto ins;
-@@ -1527,6 +1746,13 @@ void vi(int init)
+@@ -1527,6 +1802,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1033,89 +821,19 @@ index 628bb946..18b403c8 100644
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-@@ -1635,6 +1861,81 @@ void vi(int init)
+@@ -1635,6 +1917,11 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
-+				} else if (k == '.') {
-+					vi_mod |= 2;
-+					while (vi_arg) {
-+						term_push("j", 1);
-+						term_push(rep_cmd, rep_len);
-+						if (strchr("iIoOaAsScC", rep_cmd[0])) {
-+							term_push("0", 1);
-+							if (noff)
-+								vi_argcmd(noff, 'l');
-+						}
-+						vi_arg--;
-+					}
-+				} else if (k == 'W') {
-+					vi_nlmode = !vi_nlmode;
-+				} else if (k == 'o') {
-+					ex_command("%s/\x0d//g:%s/[ \t]+$//g")
++				} else if (k == 'v' || k == 'V' || k == 'b') {
++					vi_visual = vi_visual == k ? 0 : k;
++					vi_vrow = xrow;
++					vi_voff = xoff;
 +					vi_mod |= 1;
-+				} else if (k == 'I' || k == 'i') {
-+					vi_mod |= 2;
-+					char restr[100] = "%s/^\t/";
-+					vi_arg = MIN(vi_arg ? vi_arg : xts, 80);
-+					if (k == 'I') {
-+						cmd = restr+6;
-+						while (vi_arg--)
-+							*cmd++ = ' ';
-+						strcpy(cmd, "/g");
-+					} else {
-+						strcpy(restr, "%s/^ {");
-+						strcpy(itoa(vi_arg, restr+6), "}/\t/g");
-+					}
-+					ln = vi_enprompt(":", restr, &k, &n);
-+					goto do_excmd;
-+				} else if (k == 'b' || k == 'v') {
-+					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
-+				} else if (k == ';') {
-+					ln = vi_enprompt(":", "!", &k, &n);
-+				} else if (k == '/') {
-+					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
-+					char buf[cs ? strlen(cs)+30 : 30];
-+					strcpy(buf, "re ");
-+					if (cs)
-+						strcat(buf, cs);
-+					free(cs);
-+					ln = vi_enprompt(":", buf, &k, &n);
-+					goto do_excmd;
-+				} else if (k == 't') {
-+					vi_drawmsg("arg2:(0|#)");
-+					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
-+					char buf[cs ? strlen(cs)+30 : 30];
-+					strcpy(buf, ".,.+");
-+					char *buf1 = itoa(vi_arg, buf+4);
-+					strcat(buf1, "s/");
-+					if (cs) {
-+						strcat(buf1, cs);
-+						strcat(buf1, "/");
-+						free(cs);
-+					}
-+					ln = vi_enprompt(":", buf, &k, &n);
-+					goto do_excmd;
-+				} else if (k == 'r') {
-+					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
-+					char buf[cs ? strlen(cs)+30 : 30];
-+					strcpy(buf, "%s/");
-+					if (cs) {
-+						strcat(buf, cs);
-+						strcat(buf, "/");
-+						free(cs);
-+					}
-+					ln = vi_enprompt(":", buf, &k, &n);
-+					goto do_excmd;
-+				} else if (k == 'V') {
-+					vi_hidch = !vi_hidch;
-+					vi_mod |= 1;
-+				} else {
-+					term_dec()
  				}
  				break;
  			case 'x':
-@@ -1650,6 +1951,10 @@ void vi(int init)
+@@ -1650,6 +1937,10 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1126,7 +844,7 @@ index 628bb946..18b403c8 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1710,6 +2015,13 @@ void vi(int init)
+@@ -1710,6 +2001,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
