@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -26,14 +28,14 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: led.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static sbuf \\\\*suggestsb;
 static sbuf \\\\*acsb;
-sbuf \\\\*led_attsb;${SEP}??!${DBG:-re p FAIL line 3\\${SEP}p FAIL line 3${INTR}${QF}}${SEP};=
+sbuf \\\\*led_attsb;${SEP}??!${DBG:-re p FAIL line 3\\${SEP}p FAIL line 3${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int vi_insmov;
 .
 ${SEP}.,\$;f> \\\\}
 
-static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,${SEP}??!${DBG:-re p FAIL line 281\\${SEP}p FAIL line 281${INTR}${QF}}${SEP};=
+static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,${SEP}??!${DBG:-re p FAIL line 281\\${SEP}p FAIL line 281${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/f\\\\)/f, int print)/${SEP}??!${DBG:-re p FAIL line 281\\${SEP}p FAIL line 281${INTR}${QF}}${SEP}.,\$;f> 	syn_blockhl = -1;
-	led_crender\\\\(.*\\\\);${SEP}??!${DBG:-re p FAIL line 307\\${SEP}p FAIL line 307${INTR}${QF}}${SEP};=
+	led_crender\\\\(.*\\\\);${SEP}??!${DBG:-re p FAIL line 307\\${SEP}p FAIL line 307${INTR}${QF}}${SEP}${LB}
 ${SEP}.,#+1c 	if (print) {
 		syn_blockhl = -1;
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
@@ -41,19 +43,19 @@ ${SEP}.,#+1c 	if (print) {
 .
 ${SEP}.,\$;f> 		sbuf_mem\\\\(led_attsb, &la, \\\\(int\\\\)sizeof\\\\(la\\\\)\\\\) \\\\\\\\
 	\\\\} \\\\\\\\
-	sbuf_str\\\\(sb, buf\\\\) \\\\\\\\${SEP}??!${DBG:-re p FAIL line 367\\${SEP}p FAIL line 367${INTR}${QF}}${SEP};=
+	sbuf_str\\\\(sb, buf\\\\) \\\\\\\\${SEP}??!${DBG:-re p FAIL line 367\\${SEP}p FAIL line 367${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/f\\\\)/f, 1)/${SEP}??!${DBG:-re p FAIL line 367\\${SEP}p FAIL line 367${INTR}${QF}}${SEP}.,\$;f> 	sbuf_free\\\\(led_attsb\\\\) \\\\\\\\
 	led_attsb = prev_attsb; \\\\\\\\
-	c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\); \\\\\\\\${SEP}??!${DBG:-re p FAIL line 372\\${SEP}p FAIL line 372${INTR}${QF}}${SEP};=
+	c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\); \\\\\\\\${SEP}??!${DBG:-re p FAIL line 372\\${SEP}p FAIL line 372${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/f\\\\)/f, !vi_insmov)/${SEP}??!${DBG:-re p FAIL line 372\\${SEP}p FAIL line 372${INTR}${QF}}${SEP}.,\$;f> 	char \\\\*cs;
 	int len, c, i;
-	do \\\\{${SEP}??!${DBG:-re p FAIL line 429\\${SEP}p FAIL line 429${INTR}${QF}}${SEP};=
+	do \\\\{${SEP}??!${DBG:-re p FAIL line 429\\${SEP}p FAIL line 429${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		led_printparts(sb, pre, ps, *post, postn, poff, !vi_insmov);
 		vi_insmov = 0;
 .
 ${SEP}.,\$;f> 			else if \\\\(!i\\\\)
 				term_clean\\\\(\\\\);
-			continue;${SEP}??!${DBG:-re p FAIL line 620\\${SEP}p FAIL line 620${INTR}${QF}}${SEP};=
+			continue;${SEP}??!${DBG:-re p FAIL line 620\\${SEP}p FAIL line 620${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 			char cbuf[1];
 			cbuf[0] = '\\\\0';
@@ -124,42 +126,42 @@ ${SEP}+2a 		case '\\\\033':;	/* Arrow keys */
 .
 ${SEP}.,\$;f> int led_prompt\\\\(sbuf \\\\*sb, char \\\\*insert, int \\\\*kmap, ins_state \\\\*is, int ps, int flg\\\\)
 \\\\{
-	int n = !\\\\(flg & 2\\\\) \\\\? sb->s_n : 0, key, off;${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP};=
+	int n = !\\\\(flg & 2\\\\) \\\\? sb->s_n : 0, key, off;${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/ post/ NULL/${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}.,\$;f> 			&off, kmap, is, 0, xrow, xtop, flg\\\\);
 	restore\\\\(xtd\\\\)
-	restore\\\\(xleft\\\\)${SEP}??!${DBG:-re p FAIL line 670\\${SEP}p FAIL line 670${INTR}${QF}}${SEP};=
+	restore\\\\(xleft\\\\)${SEP}??!${DBG:-re p FAIL line 670\\${SEP}p FAIL line 670${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sbufn_str(sb, post)
 	free(postref);
 .
 ${SEP}.,\$;f> 			return key;
 		\\\\}
-		sbuf_chr\\\\(sb, key\\\\)${SEP}??!${DBG:-re p FAIL line 701\\${SEP}p FAIL line 701${INTR}${QF}}${SEP};=
+		sbuf_chr\\\\(sb, key\\\\)${SEP}??!${DBG:-re p FAIL line 701\\${SEP}p FAIL line 701${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/f\\\\)/f, 1)/${SEP}??!${DBG:-re p FAIL line 701\\${SEP}p FAIL line 701${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	\\\\*l = ln - pln;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 846\\${SEP}p FAIL line 846${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 846\\${SEP}p FAIL line 846${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int lmodified;
 
 .
 ${SEP}.,\$;f> 	if \\\\(postn \\\\+ l2 != tlen \\\\|\\\\| memcmp\\\\(ln \\\\+ l1, sb->s \\\\+ l1, tlen - l2 - l1\\\\)\\\\)
 		lbuf_edit\\\\(xb, sb->s, r1, r2 \\\\+ 1, o1, xoff\\\\);
-	free\\\\(sb->s\\\\);${SEP}??!${DBG:-re p FAIL line 878\\${SEP}p FAIL line 878${INTR}${QF}}${SEP};=
+	free\\\\(sb->s\\\\);${SEP}??!${DBG:-re p FAIL line 878\\${SEP}p FAIL line 878${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lmodified = 1;
 .
 ${SEP}.,\$;f> 	term_room\\\\(cmdo\\\\);
 	sbuf_mem\\\\(sb, ln, l1\\\\)
-	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);${SEP}??!${DBG:-re p FAIL line 1049\\${SEP}p FAIL line 1049${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-re p FAIL line 1049\\${SEP}p FAIL line 1049${INTR}${QF}}${SEP}.,\$f> 		lbuf_edit\\\\(xb, sb->s, row, row \\\\+ !cmdo, off, xoff\\\\);${SEP}??!${DBG:-re p FAIL line 1050\\${SEP}p FAIL line 1050${INTR}${QF}}${SEP};=
+	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);${SEP}??!${DBG:-re p FAIL line 1049\\${SEP}p FAIL line 1049${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-re p FAIL line 1049\\${SEP}p FAIL line 1049${INTR}${QF}}${SEP}.,\$f> 		lbuf_edit\\\\(xb, sb->s, row, row \\\\+ !cmdo, off, xoff\\\\);${SEP}??!${DBG:-re p FAIL line 1050\\${SEP}p FAIL line 1050${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		lmodified = 1;
 	} else
 		lmodified = 0;
 .
 ${SEP}.,\$;f> 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
 					break;
-				\\\\}${SEP}??!${DBG:-re p FAIL line 1541\\${SEP}p FAIL line 1541${INTR}${QF}}${SEP};=
+				\\\\}${SEP}??!${DBG:-re p FAIL line 1541\\${SEP}p FAIL line 1541${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				switch (k) {
 				case 'A':	/* ↑ */
 					term_back(!lmodified ? c : 'i');
@@ -194,7 +196,7 @@ ${SEP}+2a 				switch (k) {
 .
 ${SEP}.,\$;f> 				if \\\\(c != 'A' && c != 'C'\\\\)
 					xoff--;
-				break;${SEP}??!${DBG:-re p FAIL line 1544\\${SEP}p FAIL line 1544${INTR}${QF}}${SEP};=
+				break;${SEP}??!${DBG:-re p FAIL line 1544\\${SEP}p FAIL line 1544${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				_break:
 				vi_mod = 0;
 				break;

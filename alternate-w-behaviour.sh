@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -26,7 +28,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	case 'w':
 	case 'W':
-		var = mv == 'W';${SEP}??!${DBG:-re p FAIL line 654\\${SEP}p FAIL line 654${INTR}${QF}}${SEP};=
+		var = mv == 'W';${SEP}??!${DBG:-re p FAIL line 654\\${SEP}p FAIL line 654${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (vc && cnt == 1)
 			dir = 2;
 		else
@@ -43,8 +45,8 @@ ${SEP}+2a 		if (vc && cnt == 1)
 			*off = poff;
 		}
 .
-${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP};=
-${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0

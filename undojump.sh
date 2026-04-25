@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -27,7 +29,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->ln\\\\[pos\\\\] : NULL;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 379\\${SEP}p FAIL line 379${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 379\\${SEP}p FAIL line 379${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
 	struct lopt *lo;
@@ -69,7 +71,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:-re p FAIL line 1445\\${SEP}p FAIL line 1445${INTR}${QF}}${SEP};=
+				break;${SEP}??!${DBG:-re p FAIL line 1445\\${SEP}p FAIL line 1445${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			case TK_CTL('o'):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
@@ -87,7 +89,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> void lbuf_smark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int beg, int o1\\\\);
 void lbuf_emark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int end, int o2\\\\);
-struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);${SEP}??!${DBG:-re p FAIL line 167\\${SEP}p FAIL line 167${INTR}${QF}}${SEP};=
+struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);${SEP}??!${DBG:-re p FAIL line 167\\${SEP}p FAIL line 167${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'

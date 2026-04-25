@@ -18,13 +18,15 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
 #DBG="0\?"
 
 # Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-re p FAIL line 290\\${SEP}p FAIL line 290${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-re p FAIL line 290\\${SEP}p FAIL line 290${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/\\\\|sc/m!?|i|sc!?|nm/${SEP}??!${DBG:-re p FAIL line 290\\${SEP}p FAIL line 290${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
@@ -34,7 +36,7 @@ static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 ${SEP}%;f> 	return NULL;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 552\\${SEP}p FAIL line 552${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 552\\${SEP}p FAIL line 552${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_map(char *loc, char *cmd, char *arg)
 {
 	char **map = cmd[0] == 'n' ? nmaps[xkmap] : imaps[xkmap];
@@ -77,11 +79,11 @@ int map_read(int mode, int winch)
 
 .
 ${SEP}.,\$;f> 	\\\\{\"inc\", ec_setincl\\\\},
-	EO\\\\(ic\\\\),${SEP}??!${DBG:-re p FAIL line 1493\\${SEP}p FAIL line 1493${INTR}${QF}}${SEP};=
+	EO\\\\(ic\\\\),${SEP}??!${DBG:-re p FAIL line 1493\\${SEP}p FAIL line 1493${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
 .
-${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1500\\${SEP}p FAIL line 1500${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1500\\${SEP}p FAIL line 1500${INTR}${QF}}${SEP}${LB}
 ${SEP}.i 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
 .
@@ -89,51 +91,51 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		len = sb->s_n;
-		c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:-re p FAIL line 431\\${SEP}p FAIL line 431${INTR}${QF}}${SEP};=
+		c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:-re p FAIL line 431\\${SEP}p FAIL line 431${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}s/term_read\\\\(/map_read(1, /${SEP}??!${DBG:-re p FAIL line 431\\${SEP}p FAIL line 431${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 
 static int vi_yankbuf\\\\(void\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 263\\${SEP}p FAIL line 263${INTR}${QF}}${SEP};=
+\\\\{${SEP}??!${DBG:-re p FAIL line 263\\${SEP}p FAIL line 263${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 263\\${SEP}p FAIL line 263${INTR}${QF}}${SEP}.,\$;f> static int vi_prefix\\\\(void\\\\)
 \\\\{
-	int n = 0;${SEP}??!${DBG:-re p FAIL line 273\\${SEP}p FAIL line 273${INTR}${QF}}${SEP};=
+	int n = 0;${SEP}??!${DBG:-re p FAIL line 273\\${SEP}p FAIL line 273${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 273\\${SEP}p FAIL line 273${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(c >= '1' && c <= '9'\\\\) \\\\{
 		while \\\\(c >= '0' && c <= '9'\\\\) \\\\{
-			n = n \\\\* 10 \\\\+ c - '0';${SEP}??!${DBG:-re p FAIL line 277\\${SEP}p FAIL line 277${INTR}${QF}}${SEP};=
+			n = n \\\\* 10 \\\\+ c - '0';${SEP}??!${DBG:-re p FAIL line 277\\${SEP}p FAIL line 277${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 277\\${SEP}p FAIL line 277${INTR}${QF}}${SEP}.,\$;f> 
 static int vi_digit\\\\(void\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 285\\${SEP}p FAIL line 285${INTR}${QF}}${SEP};=
+\\\\{${SEP}??!${DBG:-re p FAIL line 285\\${SEP}p FAIL line 285${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 285\\${SEP}p FAIL line 285${INTR}${QF}}${SEP}.,\$;f> /\\\\* read a line motion \\\\*/
 static int vi_motionln\\\\(int \\\\*row, int cmd, int cnt\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 346\\${SEP}p FAIL line 346${INTR}${QF}}${SEP};=
+\\\\{${SEP}??!${DBG:-re p FAIL line 346\\${SEP}p FAIL line 346${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 346\\${SEP}p FAIL line 346${INTR}${QF}}${SEP}.,\$;f> 		\\\\*off = -1;
 		return mv;
-	\\\\}${SEP}??!${DBG:-re p FAIL line 572\\${SEP}p FAIL line 572${INTR}${QF}}${SEP};=
+	\\\\}${SEP}??!${DBG:-re p FAIL line 572\\${SEP}p FAIL line 572${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 572\\${SEP}p FAIL line 572${INTR}${QF}}${SEP}.,\$;f> 			char \\\\*cmd;
 			term_dec\\\\(\\\\)
-			re_motion:${SEP}??!${DBG:-re p FAIL line 1241\\${SEP}p FAIL line 1241${INTR}${QF}}${SEP};=
+			re_motion:${SEP}??!${DBG:-re p FAIL line 1241\\${SEP}p FAIL line 1241${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1241\\${SEP}p FAIL line 1241${INTR}${QF}}${SEP}.,\$;f> 				break;
 			case 'v':
-				vi_mod \\\\|= 2;${SEP}??!${DBG:-re p FAIL line 1361\\${SEP}p FAIL line 1361${INTR}${QF}}${SEP};=
+				vi_mod \\\\|= 2;${SEP}??!${DBG:-re p FAIL line 1361\\${SEP}p FAIL line 1361${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1361\\${SEP}p FAIL line 1361${INTR}${QF}}${SEP}.,\$;f> 				break;
 			case 'c':
-			case 'd':${SEP}??!${DBG:-re p FAIL line 1474\\${SEP}p FAIL line 1474${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1474\\${SEP}p FAIL line 1474${INTR}${QF}}${SEP}.,\$f> 				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 1476\\${SEP}p FAIL line 1476${INTR}${QF}}${SEP};=
+			case 'd':${SEP}??!${DBG:-re p FAIL line 1474\\${SEP}p FAIL line 1474${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1474\\${SEP}p FAIL line 1474${INTR}${QF}}${SEP}.,\$f> 				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 1476\\${SEP}p FAIL line 1476${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1476\\${SEP}p FAIL line 1476${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
 				break;
-			case 'z':${SEP}??!${DBG:-re p FAIL line 1575\\${SEP}p FAIL line 1575${INTR}${QF}}${SEP};=
+			case 'z':${SEP}??!${DBG:-re p FAIL line 1575\\${SEP}p FAIL line 1575${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1575\\${SEP}p FAIL line 1575${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break;
-			case 'g':${SEP}??!${DBG:-re p FAIL line 1607\\${SEP}p FAIL line 1607${INTR}${QF}}${SEP};=
+			case 'g':${SEP}??!${DBG:-re p FAIL line 1607\\${SEP}p FAIL line 1607${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1607\\${SEP}p FAIL line 1607${INTR}${QF}}${SEP}.,\$;f> 					continue;
 				break;
-			case 'Z':${SEP}??!${DBG:-re p FAIL line 1681\\${SEP}p FAIL line 1681${INTR}${QF}}${SEP};=
+			case 'Z':${SEP}??!${DBG:-re p FAIL line 1681\\${SEP}p FAIL line 1681${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1681\\${SEP}p FAIL line 1681${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-re p FAIL line 465\\${SEP}p FAIL line 465${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-re p FAIL line 465\\${SEP}p FAIL line 465${INTR}${QF}}${SEP}${LB}
 ${SEP}.i int map_read(int mode, int winch);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'

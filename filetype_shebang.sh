@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -26,7 +28,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
 	if \\\\(!\\\\(xvis & 4\\\\)\\\\)
-		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-re p FAIL line 382\\${SEP}p FAIL line 382${INTR}${QF}}${SEP};=
+		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-re p FAIL line 382\\${SEP}p FAIL line 382${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\\\n')

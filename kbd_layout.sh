@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -25,7 +27,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 
 # Patch: kmap.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
-	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:-re p FAIL line 2\\${SEP}p FAIL line 2${INTR}${QF}}${SEP};=
+	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:-re p FAIL line 2\\${SEP}p FAIL line 2${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	['y'] = \"h\",
 	['n'] = \"j\",
 	['e'] = \"k\",
@@ -40,7 +42,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'kmap.h'
 # Patch: term.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			err:
 			\\\\*ibuf = 0;
-		\\\\}${SEP}??!${DBG:-re p FAIL line 179\\${SEP}p FAIL line 179${INTR}${QF}}${SEP};=
+		\\\\}${SEP}??!${DBG:-re p FAIL line 179\\${SEP}p FAIL line 179${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
 .

@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -27,25 +29,25 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return i-s;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 12\\${SEP}p FAIL line 12${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 12\\${SEP}p FAIL line 12${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c static int search(sbuf *sb, int l, int pre)
 .
-${SEP}.,\$f> \\\\{${SEP}??!${DBG:-re p FAIL line 14\\${SEP}p FAIL line 14${INTR}${QF}}${SEP};=
+${SEP}.,\$f> \\\\{${SEP}??!${DBG:-re p FAIL line 14\\${SEP}p FAIL line 14${INTR}${QF}}${SEP}${LB}
 ${SEP}+1c 	if (!sb->s[l])
 .
 ${SEP}.,\$;f> 		return 0;
 	sbuf_cut\\\\(suggestsb, 0\\\\)
-	sbuf_smake\\\\(sylsb, 1024\\\\)${SEP}??!${DBG:-re p FAIL line 18\\${SEP}p FAIL line 18${INTR}${QF}}${SEP};=
+	sbuf_smake\\\\(sylsb, 1024\\\\)${SEP}??!${DBG:-re p FAIL line 18\\${SEP}p FAIL line 18${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);
 .
 ${SEP}.,\$;f> 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
 			part--;
-		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);${SEP}??!${DBG:-re p FAIL line 24\\${SEP}p FAIL line 24${INTR}${QF}}${SEP};=
+		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);${SEP}??!${DBG:-re p FAIL line 24\\${SEP}p FAIL line 24${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/ l/ sb->s_n - l/${SEP}??!${DBG:-re p FAIL line 24\\${SEP}p FAIL line 24${INTR}${QF}}${SEP}.,\$;f> 			if \\\\(part == part1\\\\)
-				sbuf_mem\\\\(suggestsb, part, len\\\\)${SEP}??!${DBG:-re p FAIL line 27\\${SEP}p FAIL line 27${INTR}${QF}}${SEP};=
+				sbuf_mem\\\\(suggestsb, part, len\\\\)${SEP}??!${DBG:-re p FAIL line 27\\${SEP}p FAIL line 27${INTR}${QF}}${SEP}${LB}
 ${SEP}+2${SEP}s/se/se if (l >= pre)/${SEP}??!${DBG:-re p FAIL line 27\\${SEP}p FAIL line 27${INTR}${QF}}${SEP}.,\$;f> 				sbuf_mem\\\\(sylsb, part, len\\\\)
-		\\\\}${SEP}??!${DBG:-re p FAIL line 30\\${SEP}p FAIL line 30${INTR}${QF}}${SEP};=
+		\\\\}${SEP}??!${DBG:-re p FAIL line 30\\${SEP}p FAIL line 30${INTR}${QF}}${SEP}${LB}
 ${SEP}+2c 		part = strstr(part+len, sb->s+l);
 	}
 	if (l < pre && sb->s[pre]) {
@@ -54,7 +56,7 @@ ${SEP}+2c 		part = strstr(part+len, sb->s+l);
 .
 ${SEP}.,\$;f> \\\\{
 	char \\\\*cs;
-	int len, c, i;${SEP}??!${DBG:-re p FAIL line 427\\${SEP}p FAIL line 427${INTR}${QF}}${SEP};=
+	int len, c, i;${SEP}??!${DBG:-re p FAIL line 427\\${SEP}p FAIL line 427${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
@@ -62,20 +64,20 @@ ${SEP}+2a 	if (ai_max >= 0 && xpac) {
 .
 ${SEP}.,\$;f> 		case TK_CTL\\\\('n'\\\\):
 			if \\\\(!suggestsb\\\\)
-				continue;${SEP}??!${DBG:-re p FAIL line 526\\${SEP}p FAIL line 526${INTR}${QF}}${SEP};=
+				continue;${SEP}??!${DBG:-re p FAIL line 526\\${SEP}p FAIL line 526${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/ \\\\+ pre\\\\) \\\\+ pre/)/${SEP}??!${DBG:-re p FAIL line 526\\${SEP}p FAIL line 526${INTR}${QF}}${SEP}.,\$;f> 				\\\\}
 				suggest:
-				\\\\*is->_sug = '\\\\\\\\0';${SEP}??!${DBG:-re p FAIL line 537\\${SEP}p FAIL line 537${INTR}${QF}}${SEP};=
+				\\\\*is->_sug = '\\\\\\\\0';${SEP}??!${DBG:-re p FAIL line 537\\${SEP}p FAIL line 537${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
 .
 ${SEP}.,\$;f> 				continue;
 			\\\\}
-			lookup:${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP};=
+			lookup:${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/->s \\\\+ is->lsug, len - is->lsug/, is->lsug, pre/${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP}.,\$;f> 				int r = crow-ctop\\\\+1;
 				if \\\\(is->sug\\\\)
-					goto pac_;${SEP}??!${DBG:-re p FAIL line 557\\${SEP}p FAIL line 557${INTR}${QF}}${SEP};=
+					goto pac_;${SEP}??!${DBG:-re p FAIL line 557\\${SEP}p FAIL line 557${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
 .

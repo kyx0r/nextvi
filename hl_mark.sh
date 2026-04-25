@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -26,15 +28,15 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> int xhlw;			/\\\\* highlight current word \\\\*/
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
-int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP};=
+int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xhlm;			/* highlight marks */
 .
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP};=
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(hlm)
 .
 ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),${SEP}??!${DBG:-re p FAIL line 1532\\${SEP}p FAIL line 1532${INTR}${QF}}${SEP};=
+	EO\\\\(order\\\\),${SEP}??!${DBG:-re p FAIL line 1532\\${SEP}p FAIL line 1532${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(hlm),
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -42,7 +44,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 				word = cs;
 			\\\\}
-		\\\\}${SEP}??!${DBG:-re p FAIL line 1758\\${SEP}p FAIL line 1758${INTR}${QF}}${SEP};=
+		\\\\}${SEP}??!${DBG:-re p FAIL line 1758\\${SEP}p FAIL line 1758${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";

@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -26,21 +28,21 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
-sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-re p FAIL line 39\\${SEP}p FAIL line 39${INTR}${QF}}${SEP};=
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-re p FAIL line 39\\${SEP}p FAIL line 39${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xexrc = 0;			/* read .exrc from the current directory */
 .
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP};=
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(exrc)
 .
 ${SEP}.,\$;f> 	EO\\\\(ai\\\\),
 	\\\\{\"ac\", ec_setacreg\\\\},
-	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:-re p FAIL line 1477\\${SEP}p FAIL line 1477${INTR}${QF}}${SEP};=
+	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:-re p FAIL line 1477\\${SEP}p FAIL line 1477${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(exrc),
 .
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void ex_script(FILE *fp)
 {
 	char done = 0;
@@ -89,8 +91,8 @@ void load_exrc(char *exrc)
 .
 ${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1716\\${SEP}p FAIL line 1716${INTR}${QF}}${SEP};=
+	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1716\\${SEP}p FAIL line 1716${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	} else {
 		char *homeenv = getenv(\"HOME\");
 		char *xdgconfighomeenv = getenv(\"XDG_CONFIG_HOME\");

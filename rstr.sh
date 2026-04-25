@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -26,95 +28,95 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> int xesc = '\\\\\\\\\\\\\\\\';		/\\\\* ex command arg escape character \\\\*/
 int xexec_dep;			/\\\\* ex_exec recursion depth \\\\*/
-sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/${SEP}??!${DBG:-re p FAIL line 38\\${SEP}p FAIL line 38${INTR}${QF}}${SEP};=
+sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/${SEP}??!${DBG:-re p FAIL line 38\\${SEP}p FAIL line 38${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/rset \\\\*x/rstr *x/${SEP}??!${DBG:-re p FAIL line 38\\${SEP}p FAIL line 38${INTR}${QF}}${SEP}.,\$;f> \\\\{
 	sbuf \\\\*reg = xregs\\\\['/'\\\\];
-	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 180\\${SEP}p FAIL line 180${INTR}${QF}}${SEP};=
+	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 180\\${SEP}p FAIL line 180${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 .
 ${SEP}.,\$;f> 
 static void \\\\*ec_fuzz\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 388\\${SEP}p FAIL line 388${INTR}${QF}}${SEP};=
+\\\\{${SEP}??!${DBG:-re p FAIL line 388\\${SEP}p FAIL line 388${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 388\\${SEP}p FAIL line 388${INTR}${QF}}${SEP}.,\$;f> 	while \\\\(1\\\\) \\\\{
 		sbuf_null\\\\(fuzz\\\\)
-		c = 0;${SEP}??!${DBG:-re p FAIL line 418\\${SEP}p FAIL line 418${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 418\\${SEP}p FAIL line 418${INTR}${QF}}${SEP}.,\$f> 		if \\\\(rs\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 420\\${SEP}p FAIL line 420${INTR}${QF}}${SEP};=
+		c = 0;${SEP}??!${DBG:-re p FAIL line 418\\${SEP}p FAIL line 418${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 418\\${SEP}p FAIL line 418${INTR}${QF}}${SEP}.,\$f> 		if \\\\(rs\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 420\\${SEP}p FAIL line 420${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}s/regex->//${SEP}??!${DBG:-re p FAIL line 420\\${SEP}p FAIL line 420${INTR}${QF}}${SEP}.,\$;f> 			dwid1 = max == INT_MAX \\\\? dwid2 : MIN\\\\(dwid1, dwid2\\\\);
 			for \\\\(pos = beg; c < max && pos < end; pos\\\\+\\\\+\\\\) \\\\{
-				path = xb->ln\\\\[pos\\\\];${SEP}??!${DBG:-re p FAIL line 427\\${SEP}p FAIL line 427${INTR}${QF}}${SEP};=
+				path = xb->ln\\\\[pos\\\\];${SEP}??!${DBG:-re p FAIL line 427\\${SEP}p FAIL line 427${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 427\\${SEP}p FAIL line 427${INTR}${QF}}${SEP}.,\$;f> 				break;
 			\\\\}
 		\\\\}
-		rset_free\\\\(rs\\\\);${SEP}??!${DBG:-re p FAIL line 465\\${SEP}p FAIL line 465${INTR}${QF}}${SEP};=
+		rset_free\\\\(rs\\\\);${SEP}??!${DBG:-re p FAIL line 465\\${SEP}p FAIL line 465${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 465\\${SEP}p FAIL line 465${INTR}${QF}}${SEP}.,\$;f> 	free\\\\(sb->s\\\\);
 	path = lbuf_get\\\\(xb, lnum\\\\);
-	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 492\\${SEP}p FAIL line 492${INTR}${QF}}${SEP};=
+	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 492\\${SEP}p FAIL line 492${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 492\\${SEP}p FAIL line 492${INTR}${QF}}${SEP}.,\$;f> 		path\\\\[lbuf_s\\\\(path\\\\)->len\\\\] = '\\\\\\\\n';
 	\\\\} else if \\\\(\\\\*cmd != 'f'\\\\)
-		temp_switch\\\\(1, 1\\\\);${SEP}??!${DBG:-re p FAIL line 501\\${SEP}p FAIL line 501${INTR}${QF}}${SEP};=
+		temp_switch\\\\(1, 1\\\\);${SEP}??!${DBG:-re p FAIL line 501\\${SEP}p FAIL line 501${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 501\\${SEP}p FAIL line 501${INTR}${QF}}${SEP}.,\$;f> 		return xserr;
 	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
-		sbuf sb;${SEP}??!${DBG:-re p FAIL line 516\\${SEP}p FAIL line 516${INTR}${QF}}${SEP};=
+		sbuf sb;${SEP}??!${DBG:-re p FAIL line 516\\${SEP}p FAIL line 516${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/nsubc/rs ? xkwdrs->rs->nsubc : 2/${SEP}??!${DBG:-re p FAIL line 516\\${SEP}p FAIL line 516${INTR}${QF}}${SEP}.,\$;f> 			soff = lbuf_pos2off\\\\(xb, beg, o1, r2, o2, xrow, xoff \\\\+ skip\\\\);
 		if \\\\(soff < 0\\\\)
-			soff = 0;${SEP}??!${DBG:-re p FAIL line 525\\${SEP}p FAIL line 525${INTR}${QF}}${SEP};=
+			soff = 0;${SEP}??!${DBG:-re p FAIL line 525\\${SEP}p FAIL line 525${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 525\\${SEP}p FAIL line 525${INTR}${QF}}${SEP}.,\$;f> 	int beg, end, grp;
 	char \\\\*pat, \\\\*rep = NULL, \\\\*_rep;
-	char \\\\*s = arg;${SEP}??!${DBG:-re p FAIL line 975\\${SEP}p FAIL line 975${INTR}${QF}}${SEP};=
+	char \\\\*s = arg;${SEP}??!${DBG:-re p FAIL line 975\\${SEP}p FAIL line 975${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 975\\${SEP}p FAIL line 975${INTR}${QF}}${SEP}.,\$;f> 		return xrerr;
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 982\\${SEP}p FAIL line 982${INTR}${QF}}${SEP};=
+	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 982\\${SEP}p FAIL line 982${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 982\\${SEP}p FAIL line 982${INTR}${QF}}${SEP}.,\$;f> 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);${SEP}??!${DBG:-re p FAIL line 992\\${SEP}p FAIL line 992${INTR}${QF}}${SEP};=
+	free\\\\(pat\\\\);${SEP}??!${DBG:-re p FAIL line 992\\${SEP}p FAIL line 992${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/nsubc/rs ? rs->rs->nsubc : 2/${SEP}??!${DBG:-re p FAIL line 992\\${SEP}p FAIL line 992${INTR}${QF}}${SEP}.,\$;f> 	for \\\\(i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		sbuf \\\\*r = NULL;${SEP}??!${DBG:-re p FAIL line 996\\${SEP}p FAIL line 996${INTR}${QF}}${SEP};=
+		sbuf \\\\*r = NULL;${SEP}??!${DBG:-re p FAIL line 996\\${SEP}p FAIL line 996${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 996\\${SEP}p FAIL line 996${INTR}${QF}}${SEP}.,\$;f> 					\\\\}
 					_rep\\\\+\\\\+;
-					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);${SEP}??!${DBG:-re p FAIL line 1011\\${SEP}p FAIL line 1011${INTR}${QF}}${SEP};=
+					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);${SEP}??!${DBG:-re p FAIL line 1011\\${SEP}p FAIL line 1011${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/rs->nsubc/(rs->rs ? rs->rs->nsubc : 2)/${SEP}??!${DBG:-re p FAIL line 1011\\${SEP}p FAIL line 1011${INTR}${QF}}${SEP}.,\$;f> 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
 	\\\\}
-	if \\\\(rs != xkwdrs\\\\)${SEP}??!${DBG:-re p FAIL line 1042\\${SEP}p FAIL line 1042${INTR}${QF}}${SEP};=
+	if \\\\(rs != xkwdrs\\\\)${SEP}??!${DBG:-re p FAIL line 1042\\${SEP}p FAIL line 1042${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1042\\${SEP}p FAIL line 1042${INTR}${QF}}${SEP}.,\$;f> \\\\{
 	int i, beg, end, not, matched = 0;
-	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG:-re p FAIL line 1106\\${SEP}p FAIL line 1106${INTR}${QF}}${SEP};=
+	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG:-re p FAIL line 1106\\${SEP}p FAIL line 1106${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1106\\${SEP}p FAIL line 1106${INTR}${QF}}${SEP}.,\$;f> 	not = !!strchr\\\\(cmd, '!'\\\\);
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\*pat\\\\)${SEP}??!${DBG:-re p FAIL line 1114\\${SEP}p FAIL line 1114${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1114\\${SEP}p FAIL line 1114${INTR}${QF}}${SEP}.,\$f> 	else${SEP}??!${DBG:-re p FAIL line 1116\\${SEP}p FAIL line 1116${INTR}${QF}}${SEP};=
+	if \\\\(pat && \\\\*pat\\\\)${SEP}??!${DBG:-re p FAIL line 1114\\${SEP}p FAIL line 1114${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1114\\${SEP}p FAIL line 1114${INTR}${QF}}${SEP}.,\$f> 	else${SEP}??!${DBG:-re p FAIL line 1116\\${SEP}p FAIL line 1116${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1116\\${SEP}p FAIL line 1116${INTR}${QF}}${SEP}.,\$;f> 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;${SEP}??!${DBG:-re p FAIL line 1126\\${SEP}p FAIL line 1126${INTR}${QF}}${SEP};=
+		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;${SEP}??!${DBG:-re p FAIL line 1126\\${SEP}p FAIL line 1126${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1126\\${SEP}p FAIL line 1126${INTR}${QF}}${SEP}.,\$;f> 		while \\\\(i < lbuf_len\\\\(xb\\\\) && !\\\\(lbuf_i\\\\(xb, i\\\\)->grec & xgdep\\\\)\\\\)
 			i\\\\+\\\\+;
-	\\\\}${SEP}??!${DBG:-re p FAIL line 1136\\${SEP}p FAIL line 1136${INTR}${QF}}${SEP};=
+	\\\\}${SEP}??!${DBG:-re p FAIL line 1136\\${SEP}p FAIL line 1136${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1136\\${SEP}p FAIL line 1136${INTR}${QF}}${SEP}.,\$;f> 
 static void \\\\*ec_setincl\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 1265\\${SEP}p FAIL line 1265${INTR}${QF}}${SEP};=
+\\\\{${SEP}??!${DBG:-re p FAIL line 1265\\${SEP}p FAIL line 1265${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1265\\${SEP}p FAIL line 1265${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(!\\\\*arg\\\\)
-		fsincl = NULL;${SEP}??!${DBG:-re p FAIL line 1268\\${SEP}p FAIL line 1268${INTR}${QF}}${SEP};=
+		fsincl = NULL;${SEP}??!${DBG:-re p FAIL line 1268\\${SEP}p FAIL line 1268${INTR}${QF}}${SEP}${LB}
 ${SEP}+2${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1268\\${SEP}p FAIL line 1268${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return n != 0;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 479\\${SEP}p FAIL line 479${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 479\\${SEP}p FAIL line 479${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 479\\${SEP}p FAIL line 479${INTR}${QF}}${SEP}.,\$;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
-	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:-re p FAIL line 483\\${SEP}p FAIL line 483${INTR}${QF}}${SEP};=
+	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:-re p FAIL line 483\\${SEP}p FAIL line 483${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/nsubc/rs ? re->rs->nsubc : 2/${SEP}??!${DBG:-re p FAIL line 483\\${SEP}p FAIL line 483${INTR}${QF}}${SEP}.,\$;f> 		step = 0;
 		flg = REG_NEWLINE;
-		s = lb->ln\\\\[i\\\\];${SEP}??!${DBG:-re p FAIL line 496\\${SEP}p FAIL line 496${INTR}${QF}}${SEP};=
+		s = lb->ln\\\\[i\\\\];${SEP}??!${DBG:-re p FAIL line 496\\${SEP}p FAIL line 496${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 496\\${SEP}p FAIL line 496${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
 	sbufn_ret\\\\(sb, sb->s\\\\)
-\\\\}${SEP}??!${DBG:-re p FAIL line 766\\${SEP}p FAIL line 766${INTR}${QF}}${SEP};=
+\\\\}${SEP}??!${DBG:-re p FAIL line 766\\${SEP}p FAIL line 766${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 /* return zero if a simple pattern is given */
 static int rstr_simple(rstr *rs, char *re, int icase)
@@ -262,16 +264,16 @@ ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 429\\${SEP}p FAIL line 429${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 429\\${SEP}p FAIL line 429${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 429\\${SEP}p FAIL line 429${INTR}${QF}}${SEP}.,\$;f> 				memcpy\\\\(cpath, ptrs\\\\[i\\\\], pathlen \\\\+ len\\\\);
 				plen\\\\[i\\\\+\\\\+\\\\] = pathlen \\\\+ len;
-			\\\\} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 468\\${SEP}p FAIL line 468${INTR}${QF}}${SEP};=
+			\\\\} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 468\\${SEP}p FAIL line 468${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 468\\${SEP}p FAIL line 468${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
 	int n;			/\\\\* number of regular expressions in this set \\\\*/
-\\\\} rset;${SEP}??!${DBG:-re p FAIL line 112\\${SEP}p FAIL line 112${INTR}${QF}}${SEP};=
+\\\\} rset;${SEP}??!${DBG:-re p FAIL line 112\\${SEP}p FAIL line 112${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */
@@ -281,21 +283,21 @@ ${SEP}+2a typedef struct {
 	int wbeg, wend;		/* match word beg/end */
 } rstr;
 .
-${SEP}.,\$f> void rset_free${SEP}??!${DBG:-re p FAIL line 118\\${SEP}p FAIL line 118${INTR}${QF}}${SEP};=
+${SEP}.,\$f> void rset_free${SEP}??!${DBG:-re p FAIL line 118\\${SEP}p FAIL line 118${INTR}${QF}}${SEP}${LB}
 ${SEP}.a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
 .
-${SEP}.,\$f> int lbuf_search${SEP}??!${DBG:-re p FAIL line 177\\${SEP}p FAIL line 177${INTR}${QF}}${SEP};=
-${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 177\\${SEP}p FAIL line 177${INTR}${QF}}${SEP}.,\$f> 		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-re p FAIL line 178\\${SEP}p FAIL line 178${INTR}${QF}}${SEP};=
+${SEP}.,\$f> int lbuf_search${SEP}??!${DBG:-re p FAIL line 177\\${SEP}p FAIL line 177${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 177\\${SEP}p FAIL line 177${INTR}${QF}}${SEP}.,\$f> 		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-re p FAIL line 178\\${SEP}p FAIL line 178${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 
 .
-${SEP}.,\$f> extern rset \\\\*xkwdrs;${SEP}??!${DBG:-re p FAIL line 441\\${SEP}p FAIL line 441${INTR}${QF}}${SEP};=
-${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 441\\${SEP}p FAIL line 441${INTR}${QF}}${SEP}.,\$f> int ex_krs${SEP}??!${DBG:-re p FAIL line 479\\${SEP}p FAIL line 479${INTR}${QF}}${SEP};=
+${SEP}.,\$f> extern rset \\\\*xkwdrs;${SEP}??!${DBG:-re p FAIL line 441\\${SEP}p FAIL line 441${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 441\\${SEP}p FAIL line 441${INTR}${QF}}${SEP}.,\$f> int ex_krs${SEP}??!${DBG:-re p FAIL line 479\\${SEP}p FAIL line 479${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 479\\${SEP}p FAIL line 479${INTR}${QF}}${SEP}.,\$;f> extern int vi_hidch;
 extern int vi_lncol;
-/\\\\* filesystem \\\\*/${SEP}??!${DBG:-re p FAIL line 539\\${SEP}p FAIL line 539${INTR}${QF}}${SEP};=
+/\\\\* filesystem \\\\*/${SEP}??!${DBG:-re p FAIL line 539\\${SEP}p FAIL line 539${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 539\\${SEP}p FAIL line 539${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

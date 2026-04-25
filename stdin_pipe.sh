@@ -18,35 +18,37 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
 #DBG="0\?"
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-re p FAIL line 359\\${SEP}p FAIL line 359${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-re p FAIL line 359\\${SEP}p FAIL line 359${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
 .
 ${SEP}.,\$;f> 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
 		syn_setft\\\\(xb_ft\\\\);
-	\\\\}${SEP}??!${DBG:-re p FAIL line 377\\${SEP}p FAIL line 377${INTR}${QF}}${SEP};=
+	\\\\}${SEP}??!${DBG:-re p FAIL line 377\\${SEP}p FAIL line 377${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 .
 ${SEP}.,\$;f> 
 void ex_init\\\\(.*\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 1706\\${SEP}p FAIL line 1706${INTR}${QF}}${SEP};=
+\\\\{${SEP}??!${DBG:-re p FAIL line 1706\\${SEP}p FAIL line 1706${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-re p FAIL line 1706\\${SEP}p FAIL line 1706${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
-	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-re p FAIL line 1708\\${SEP}p FAIL line 1708${INTR}${QF}}${SEP};=
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-re p FAIL line 1708\\${SEP}p FAIL line 1708${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	int i = n;
 .
 ${SEP}.,\$;f> 	do \\\\{
-		xmpt = 0;${SEP}??!${DBG:-re p FAIL line 1711\\${SEP}p FAIL line 1711${INTR}${QF}}${SEP};=
+		xmpt = 0;${SEP}??!${DBG:-re p FAIL line 1711\\${SEP}p FAIL line 1711${INTR}${QF}}${SEP}${LB}
 ${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-re p FAIL line 1711\\${SEP}p FAIL line 1711${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-re p FAIL line 1713\\${SEP}p FAIL line 1713${INTR}${QF}}${SEP};=
+	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-re p FAIL line 1713\\${SEP}p FAIL line 1713${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
@@ -67,7 +69,7 @@ ${SEP}+1a 	if (stdin_fd) {
 		xmpt = MIN(xmpt, 1);
 	}
 .
-${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1714\\${SEP}p FAIL line 1714${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1714\\${SEP}p FAIL line 1714${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -76,8 +78,8 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}8a int stdin_fd;
 static int isig;
 .
-${SEP}%f> 	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG:-re p FAIL line 19\\${SEP}p FAIL line 19${INTR}${QF}}${SEP};=
-${SEP}+1${SEP}s/0/stdin_fd/${SEP}??!${DBG:-re p FAIL line 19\\${SEP}p FAIL line 19${INTR}${QF}}${SEP}.,\$f> 	newtermios = termios;${SEP}??!${DBG:-re p FAIL line 21\\${SEP}p FAIL line 21${INTR}${QF}}${SEP};=
+${SEP}%f> 	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG:-re p FAIL line 19\\${SEP}p FAIL line 19${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/0/stdin_fd/${SEP}??!${DBG:-re p FAIL line 19\\${SEP}p FAIL line 19${INTR}${QF}}${SEP}.,\$f> 	newtermios = termios;${SEP}??!${DBG:-re p FAIL line 21\\${SEP}p FAIL line 21${INTR}${QF}}${SEP}${LB}
 ${SEP}+1,#+2c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
 	else
@@ -87,46 +89,46 @@ ${SEP}+1,#+2c 	if (!isig && stdin_fd)
 .
 ${SEP}.,\$;f> 	\\\\}
 	xcols = xcols \\\\? xcols : 80;
-	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-re p FAIL line 33\\${SEP}p FAIL line 33${INTR}${QF}}${SEP};=
+	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-re p FAIL line 33\\${SEP}p FAIL line 33${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	isig = 1;
 .
 ${SEP}.,\$;f> 		return;
 	term_commit\\\\(\\\\);
-	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-re p FAIL line 42\\${SEP}p FAIL line 42${INTR}${QF}}${SEP};=
+	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-re p FAIL line 42\\${SEP}p FAIL line 42${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/\\\\(0/(stdin_fd/${SEP}??!${DBG:-re p FAIL line 42\\${SEP}p FAIL line 42${INTR}${QF}}${SEP}.,\$;f> 			goto ret;
 		\\\\}
-		cw = 0;${SEP}??!${DBG:-re p FAIL line 164\\${SEP}p FAIL line 164${INTR}${QF}}${SEP};=
+		cw = 0;${SEP}??!${DBG:-re p FAIL line 164\\${SEP}p FAIL line 164${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		ufd.fd = stdin_fd;
 .
 ${SEP}.,\$;f> 		re:
 		/\\\\* read a single input character \\\\*/
-		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-re p FAIL line 168\\${SEP}p FAIL line 168${INTR}${QF}}${SEP};=
+		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-re p FAIL line 168\\${SEP}p FAIL line 168${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 .
 ${SEP}.,\$;f> 	fds\\\\[0\\\\]\\\\.events = POLLIN;
 	fds\\\\[1\\\\]\\\\.fd = ifd;
-	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-re p FAIL line 312\\${SEP}p FAIL line 312${INTR}${QF}}${SEP};=
+	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-re p FAIL line 312\\${SEP}p FAIL line 312${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:-re p FAIL line 312\\${SEP}p FAIL line 312${INTR}${QF}}${SEP}.,\$;f> 		close\\\\(ifd\\\\);
 	waitpid\\\\(pid, status, 0\\\\);
-	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-re p FAIL line 355\\${SEP}p FAIL line 355${INTR}${QF}}${SEP};=
+	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-re p FAIL line 355\\${SEP}p FAIL line 355${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-re p FAIL line 355\\${SEP}p FAIL line 355${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
-	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-re p FAIL line 1831\\${SEP}p FAIL line 1831${INTR}${QF}}${SEP};=
+	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-re p FAIL line 1831\\${SEP}p FAIL line 1831${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
 .
 ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
 			i\\\\+\\\\+;
-			break;${SEP}??!${DBG:-re p FAIL line 1847\\${SEP}p FAIL line 1847${INTR}${QF}}${SEP};=
+			break;${SEP}??!${DBG:-re p FAIL line 1847\\${SEP}p FAIL line 1847${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-re p FAIL line 534\\${SEP}p FAIL line 534${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-re p FAIL line 534\\${SEP}p FAIL line 534${INTR}${QF}}${SEP}${LB}
 ${SEP}.a extern int stdin_fd;
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'

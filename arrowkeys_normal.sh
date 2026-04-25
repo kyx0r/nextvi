@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -26,7 +28,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> \\\\{
 	int var, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 347\\${SEP}p FAIL line 347${INTR}${QF}}${SEP};=
+	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 347\\${SEP}p FAIL line 347${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		c = term_read(0);
 		if (c == '[') {
@@ -52,7 +54,7 @@ ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 .
 ${SEP}.,\$;f> 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 573\\${SEP}p FAIL line 573${INTR}${QF}}${SEP};=
+	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 573\\${SEP}p FAIL line 573${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {

@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -26,13 +28,13 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 # Patch: conf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		A\\\\(SYN_BD, BL1, WH1, YE\\\\)\\\\},
 
-	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-re p FAIL line 301\\${SEP}p FAIL line 301${INTR}${QF}}${SEP};=
+	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-re p FAIL line 301\\${SEP}p FAIL line 301${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-re p FAIL line 301\\${SEP}p FAIL line 301${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static int vi_status;			/\\\\* permanent status bar \\\\*/
 static int vi_tsm;			/\\\\* type of the status message \\\\*/
-static int vi_nlmode;			/\\\\* new line mode for vi regions \\\\*/${SEP}??!${DBG:-re p FAIL line 46\\${SEP}p FAIL line 46${INTR}${QF}}${SEP};=
+static int vi_nlmode;			/\\\\* new line mode for vi regions \\\\*/${SEP}??!${DBG:-re p FAIL line 46\\${SEP}p FAIL line 46${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
 static int vi_vrow;			/* selection anchor row */
 static int vi_voff;			/* selection anchor column */
@@ -40,7 +42,7 @@ static int vi_voff;			/* selection anchor column */
 ${SEP}.,\$;f> 	ret = func; \\\\\\\\
 \\\\} \\\\} \\\\\\\\
 
-${SEP}??!${DBG:-re p FAIL line 127\\${SEP}p FAIL line 127${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 127\\${SEP}p FAIL line 127${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void vi_visual_attrib(char *s, int row)
 {
 	if (!vi_visual || !s)
@@ -86,34 +88,34 @@ ${SEP}+2a static void vi_visual_attrib(char *s, int row)
 .
 ${SEP}.,\$;f> 		vi_lncol = dir_context\\\\(s\\\\) < 0 \\\\? 0 : l1;
 		memset\\\\(c, ' ', l1 - \\\\(c - tmp\\\\)\\\\);
-		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';${SEP}??!${DBG:-re p FAIL line 193\\${SEP}p FAIL line 193${INTR}${QF}}${SEP};=
+		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';${SEP}??!${DBG:-re p FAIL line 193\\${SEP}p FAIL line 193${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		vi_visual_attrib(s, row);
 .
 ${SEP}.,\$;f> 		restore\\\\(ftidx\\\\)
 		return;
-	\\\\}${SEP}??!${DBG:-re p FAIL line 212\\${SEP}p FAIL line 212${INTR}${QF}}${SEP};=
+	\\\\}${SEP}??!${DBG:-re p FAIL line 212\\${SEP}p FAIL line 212${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	vi_visual_attrib(s, row);
 .
 ${SEP}.,\$;f> 	char cbuf\\\\[8\\\\] = \"\", vi_msg\\\\[512\\\\], \\\\*c;
 	col = vi_off2col\\\\(xb, xrow, xoff\\\\);
-	col = ren_cursor\\\\(lbuf_get\\\\(xb, xrow\\\\), col\\\\) \\\\+ 1;${SEP}??!${DBG:-re p FAIL line 538\\${SEP}p FAIL line 538${INTR}${QF}}${SEP};=
+	col = ren_cursor\\\\(lbuf_get\\\\(xb, xrow\\\\), col\\\\) \\\\+ 1;${SEP}??!${DBG:-re p FAIL line 538\\${SEP}p FAIL line 538${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	char *vs = vi_visual == 'V' ? \"-- VISUAL LINE -- \" :
 		   vi_visual == 'b' ? \"-- VISUAL BLOCK -- \" :
 		   vi_visual ? \"-- VISUAL -- \" : \"\";
 .
 ${SEP}.,\$;f> 		c = rstate->chrs\\\\[xoff\\\\];
 		uc_code\\\\(cp, c, l\\\\)
-		memcpy\\\\(cbuf, c, l\\\\);${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP};=
-${SEP}+3${SEP}s/d\"/d %s\"/${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP}.,\$f> 			cbuf, cp, cp, cp, l, rstate->wid\\\\[xoff\\\\], c - lbuf_get\\\\(xb, xrow\\\\),${SEP}??!${DBG:-re p FAIL line 545\\${SEP}p FAIL line 545${INTR}${QF}}${SEP};=
+		memcpy\\\\(cbuf, c, l\\\\);${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/d\"/d %s\"/${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP}.,\$f> 			cbuf, cp, cp, cp, l, rstate->wid\\\\[xoff\\\\], c - lbuf_get\\\\(xb, xrow\\\\),${SEP}??!${DBG:-re p FAIL line 545\\${SEP}p FAIL line 545${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}s/l\\\\)/l, vs)/${SEP}??!${DBG:-re p FAIL line 545\\${SEP}p FAIL line 545${INTR}${QF}}${SEP}.,\$;f> 	\\\\} else \\\\{
-		snprintf\\\\(vi_msg, sizeof\\\\(vi_msg\\\\),${SEP}??!${DBG:-re p FAIL line 548\\${SEP}p FAIL line 548${INTR}${QF}}${SEP};=
+		snprintf\\\\(vi_msg, sizeof\\\\(vi_msg\\\\),${SEP}??!${DBG:-re p FAIL line 548\\${SEP}p FAIL line 548${INTR}${QF}}${SEP}${LB}
 ${SEP}+2${SEP}s/d\"/d %s\"/${SEP}??!${DBG:-re p FAIL line 548\\${SEP}p FAIL line 548${INTR}${QF}}${SEP}.,\$;f> 			xb_path\\\\[0\\\\] \\\\? xb_path : \"unnamed\",
 			xb->modified \\\\? \"\\\\* \" : \" \", lbuf_len\\\\(xb\\\\),
-			xrow \\\\* 100 / MAX\\\\(1, lbuf_len\\\\(xb\\\\)-1\\\\), xrow\\\\+1, col,${SEP}??!${DBG:-re p FAIL line 552\\${SEP}p FAIL line 552${INTR}${QF}}${SEP};=
+			xrow \\\\* 100 / MAX\\\\(1, lbuf_len\\\\(xb\\\\)-1\\\\), xrow\\\\+1, col,${SEP}??!${DBG:-re p FAIL line 552\\${SEP}p FAIL line 552${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/s\\\\)/s, vs)/${SEP}??!${DBG:-re p FAIL line 552\\${SEP}p FAIL line 552${INTR}${QF}}${SEP}.,\$;f> 	free\\\\(sb->s\\\\);
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 956\\${SEP}p FAIL line 956${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 956\\${SEP}p FAIL line 956${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int vc_insert(int cmd);
 
 static int vc_block_insert(int vcmd, int r1, int r2, int col)
@@ -318,13 +320,13 @@ static int vc_visual_op(int cmd)
 .
 ${SEP}.,\$;f> 				lbuf_mark\\\\(xb, '\`', xrow, ooff\\\\);
 			xrow = nrow;
-			xoff = noff;${SEP}??!${DBG:-re p FAIL line 1236\\${SEP}p FAIL line 1236${INTR}${QF}}${SEP};=
+			xoff = noff;${SEP}??!${DBG:-re p FAIL line 1236\\${SEP}p FAIL line 1236${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			if (vi_visual)
 				vi_mod |= 1;
 .
 ${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break;
-			case 'u':${SEP}??!${DBG:-re p FAIL line 1312\\${SEP}p FAIL line 1312${INTR}${QF}}${SEP};=
+			case 'u':${SEP}??!${DBG:-re p FAIL line 1312\\${SEP}p FAIL line 1312${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (vi_visual) {
 					vc_visual_op('u');
 					break;
@@ -332,7 +334,7 @@ ${SEP}+2a 				if (vi_visual) {
 .
 ${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break;
-			case 'v':${SEP}??!${DBG:-re p FAIL line 1360\\${SEP}p FAIL line 1360${INTR}${QF}}${SEP};=
+			case 'v':${SEP}??!${DBG:-re p FAIL line 1360\\${SEP}p FAIL line 1360${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+79c 				if (vi_visual == 'v') {
 					vi_visual = 0;
 				} else {
@@ -340,10 +342,10 @@ ${SEP}+3,#+79c 				if (vi_visual == 'v') {
 					vi_vrow = xrow;
 					vi_voff = xoff;
 .
-${SEP}.,\$f> 				\\\\}${SEP}??!${DBG:-re p FAIL line 1440\\${SEP}p FAIL line 1440${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 				\\\\}${SEP}??!${DBG:-re p FAIL line 1440\\${SEP}p FAIL line 1440${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 				vi_mod |= 1;
 .
-${SEP}.,\$f> 				break;${SEP}??!${DBG:-re p FAIL line 1441\\${SEP}p FAIL line 1441${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 				break;${SEP}??!${DBG:-re p FAIL line 1441\\${SEP}p FAIL line 1441${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 			case 'U':
 				if (vi_visual) {
 					vc_visual_op('U');
@@ -351,7 +353,7 @@ ${SEP}.a 			case 'U':
 				}
 				continue;
 .
-${SEP}.,\$f> 			case 'V':${SEP}??!${DBG:-re p FAIL line 1443\\${SEP}p FAIL line 1443${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 			case 'V':${SEP}??!${DBG:-re p FAIL line 1443\\${SEP}p FAIL line 1443${INTR}${QF}}${SEP}${LB}
 ${SEP}+1c 				if (vi_visual == 'V') {
 					vi_visual = 0;
 				} else {
@@ -362,7 +364,7 @@ ${SEP}+1c 				if (vi_visual == 'V') {
 .
 ${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break;
-			case TK_CTL\\\\('v'\\\\):${SEP}??!${DBG:-re p FAIL line 1447\\${SEP}p FAIL line 1447${INTR}${QF}}${SEP};=
+			case TK_CTL\\\\('v'\\\\):${SEP}??!${DBG:-re p FAIL line 1447\\${SEP}p FAIL line 1447${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 				if (vi_visual == 'b')
 					vi_visual = 0;
 				else {
@@ -373,20 +375,20 @@ ${SEP}+3c 				if (vi_visual == 'b')
 				vi_mod |= 1;
 				break;
 .
-${SEP}.,\$f> 			case TK_CTL\\\\('c'\\\\):${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 			case TK_CTL\\\\('c'\\\\):${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 				if (!vi_arg)
 					vi_arg = (vi_wsel % 5) + !!*vi_word;
 .
 ${SEP}.,\$;f> 					xmpt = 1;
 				break;
-			case 'c':${SEP}??!${DBG:-re p FAIL line 1472\\${SEP}p FAIL line 1472${INTR}${QF}}${SEP};=
+			case 'c':${SEP}??!${DBG:-re p FAIL line 1472\\${SEP}p FAIL line 1472${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (vi_visual) {
 					k = vc_visual_op('c');
 					goto ins;
 				}
 				/* fall through */
 .
-${SEP}.,\$f> 			case 'd':${SEP}??!${DBG:-re p FAIL line 1473\\${SEP}p FAIL line 1473${INTR}${QF}}${SEP};=
+${SEP}.,\$f> 			case 'd':${SEP}??!${DBG:-re p FAIL line 1473\\${SEP}p FAIL line 1473${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 				if (vi_visual) {
 					vc_visual_op('d');
 					break;
@@ -394,7 +396,7 @@ ${SEP}.a 				if (vi_visual) {
 .
 ${SEP}.,\$;f> 			case '>':
 			case '<':
-			case TK_CTL\\\\('w'\\\\):${SEP}??!${DBG:-re p FAIL line 1519\\${SEP}p FAIL line 1519${INTR}${QF}}${SEP};=
+			case TK_CTL\\\\('w'\\\\):${SEP}??!${DBG:-re p FAIL line 1519\\${SEP}p FAIL line 1519${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (vi_visual && c != TK_CTL('w')) {
 					vc_visual_op(c);
 					break;
@@ -402,7 +404,7 @@ ${SEP}+2a 				if (vi_visual && c != TK_CTL('w')) {
 .
 ${SEP}.,\$;f> 			case 'A':
 			case 'o':
-			case 'O':${SEP}??!${DBG:-re p FAIL line 1529\\${SEP}p FAIL line 1529${INTR}${QF}}${SEP};=
+			case 'O':${SEP}??!${DBG:-re p FAIL line 1529\\${SEP}p FAIL line 1529${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 					int r1b = MIN(vi_vrow, xrow), r2b = MAX(vi_vrow, xrow);
 					int c_left = MIN(vi_voff, xoff), c_right = MAX(vi_voff, xoff);
@@ -413,7 +415,7 @@ ${SEP}+2a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 .
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-re p FAIL line 1637\\${SEP}p FAIL line 1637${INTR}${QF}}${SEP};=
+					goto rep;${SEP}??!${DBG:-re p FAIL line 1637\\${SEP}p FAIL line 1637${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				} else if (k == '.') {
 					vi_mod |= 2;
 					while (vi_arg) {
@@ -492,7 +494,7 @@ ${SEP}+2a 				} else if (k == '.') {
 .
 ${SEP}.,\$;f> 				term_push\\\\(\"yy\", 2\\\\);
 				goto motion;
-			case '~':${SEP}??!${DBG:-re p FAIL line 1652\\${SEP}p FAIL line 1652${INTR}${QF}}${SEP};=
+			case '~':${SEP}??!${DBG:-re p FAIL line 1652\\${SEP}p FAIL line 1652${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (vi_visual) {
 					vc_visual_op('~');
 					break;
@@ -500,7 +502,7 @@ ${SEP}+2a 				if (vi_visual) {
 .
 ${SEP}.,\$;f> 				vc_status\\\\(0\\\\);
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:-re p FAIL line 1712\\${SEP}p FAIL line 1712${INTR}${QF}}${SEP};=
+				break;${SEP}??!${DBG:-re p FAIL line 1712\\${SEP}p FAIL line 1712${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			case TK_ESC:
 				if (vi_visual) {
 					vi_visual = 0;

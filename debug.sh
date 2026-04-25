@@ -18,6 +18,8 @@ fi
 SEP="$(printf '\001')"
 # Comment to continue despite errors (errors are still printed)
 QF="\\${SEP}vis 2\\${SEP}q!1"
+# Command handling readability line breaks
+LB="0?"
 # Uncomment to enter interactive vi on patch failure
 #INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
 # Uncomment to skip errors (0? = silent nop)
@@ -27,7 +29,7 @@ QF="\\${SEP}vis 2\\${SEP}q!1"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP};=
+${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 void ex_done(void)
 {
@@ -45,13 +47,13 @@ void ex_done(void)
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: regex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-re p FAIL line 638\\${SEP}p FAIL line 638${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-re p FAIL line 638\\${SEP}p FAIL line 638${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: ren.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> ren_state rstates${SEP}??!${DBG:-re p FAIL line 88\\${SEP}p FAIL line 88${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> ren_state rstates${SEP}??!${DBG:-re p FAIL line 88\\${SEP}p FAIL line 88${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void ren_done(void)
 {
 	rset_free(dir_rslr);
@@ -68,7 +70,7 @@ ${SEP}.a void ren_done(void)
 .
 ${SEP}.,\$;f> 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
-\\\\}${SEP}??!${DBG:-re p FAIL line 410\\${SEP}p FAIL line 410${INTR}${QF}}${SEP};=
+\\\\}${SEP}??!${DBG:-re p FAIL line 410\\${SEP}p FAIL line 410${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 void syn_done(void)
 {
@@ -80,13 +82,13 @@ void syn_done(void)
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-re p FAIL line 218\\${SEP}p FAIL line 218${INTR}${QF}}${SEP};=
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-re p FAIL line 218\\${SEP}p FAIL line 218${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void dir_done(void);
 .
-${SEP}.,\$f> syn_init${SEP}??!${DBG:-re p FAIL line 259\\${SEP}p FAIL line 259${INTR}${QF}}${SEP};=
+${SEP}.,\$f> syn_init${SEP}??!${DBG:-re p FAIL line 259\\${SEP}p FAIL line 259${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void syn_done(void);
 .
-${SEP}.,\$f> ex_init${SEP}??!${DBG:-re p FAIL line 477\\${SEP}p FAIL line 477${INTR}${QF}}${SEP};=
+${SEP}.,\$f> ex_init${SEP}??!${DBG:-re p FAIL line 477\\${SEP}p FAIL line 477${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void ex_done(void);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
