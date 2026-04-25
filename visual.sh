@@ -340,12 +340,6 @@ ${SEP}+2a 			case 'U':
 					vc_visual_op('U');
 				break;
 .
-${SEP}.,\$;f> 			case TK_CTL\\\\('v'\\\\):
-				vi_arg = \\\\(vi_wsel % 5\\\\) \\\\+ !!\\\\*vi_word;
-			case TK_CTL\\\\('c'\\\\):${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 				if (!vi_arg)
-					vi_arg = (vi_wsel % 5) + !!*vi_word;
-.
 ${SEP}.,\$;f> 					xmpt = 1;
 				break;
 			case 'c':${SEP}??!${DBG:-re p FAIL line 1472\\${SEP}p FAIL line 1472${INTR}${QF}}${SEP}${LB}
@@ -426,7 +420,7 @@ index d45d10a6..ce06fae3 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 628bb946..ee0457c2 100644
+index 628bb946..380418d6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -771,16 +765,7 @@ index 628bb946..ee0457c2 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1446,6 +1707,8 @@ void vi(int init)
- 			case TK_CTL('v'):
- 				vi_arg = (vi_wsel % 5) + !!*vi_word;
- 			case TK_CTL('c'):
-+				if (!vi_arg)
-+					vi_arg = (vi_wsel % 5) + !!*vi_word;
- 				if (vi_arg && vi_arg <= 5) {
- 					vi_wsel = vi_arg;
- 					vi_word = _vi_word + vi_arg;
-@@ -1470,7 +1733,15 @@ void vi(int init)
+@@ -1470,7 +1731,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -796,7 +781,7 @@ index 628bb946..ee0457c2 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1517,6 +1788,10 @@ void vi(int init)
+@@ -1517,6 +1786,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -807,7 +792,7 @@ index 628bb946..ee0457c2 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto ins;
-@@ -1527,6 +1802,13 @@ void vi(int init)
+@@ -1527,6 +1800,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -821,7 +806,7 @@ index 628bb946..ee0457c2 100644
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-@@ -1635,6 +1917,11 @@ void vi(int init)
+@@ -1635,6 +1915,11 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
@@ -833,7 +818,7 @@ index 628bb946..ee0457c2 100644
  				}
  				break;
  			case 'x':
-@@ -1650,6 +1937,10 @@ void vi(int init)
+@@ -1650,6 +1935,10 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -844,7 +829,7 @@ index 628bb946..ee0457c2 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1710,6 +2001,13 @@ void vi(int init)
+@@ -1710,6 +1999,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
