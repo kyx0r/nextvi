@@ -30,10 +30,9 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!$
 ${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL line 289${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP}${LB}
-${SEP}.i int xms = 1;			/* mouse in normal mode */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xms = 1;			/* mouse in normal mode */
 .
-${SEP}.,\$;f> 	return NULL;
+${SEP}%;f> 	return NULL;
 \\\\)
 
 ${SEP}??!${DBG:-re p FAIL line 1450\\${SEP}p FAIL line 1450${INTR}${QF}}${SEP}${LB}
@@ -271,6 +270,11 @@ pattern:
 edit_cmd_rel:
 +0
 s/t\|s/t|ms|s/
+=== END DELTA ===
+=== DELTA ex.c ===
+GROUP 1
++int xms = 1;			/* mouse in normal mode */
+strategy: abs
 === END DELTA ===
 === DELTA led.c ===
 GROUP 3
