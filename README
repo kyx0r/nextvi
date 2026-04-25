@@ -460,7 +460,7 @@ EX COMMANDS
              No range evaluates to <%> range.
              No range displays a maximum of xrows * 3 matches.
 
-     [vrange]g{<Any>}[regex]{<Any>}{cmd}
+     [vrange]g[<Any>][regex][<Any>][cmd]
              Global command
 
              Execute an ex command on a range of lines that matches an
@@ -492,7 +492,7 @@ EX COMMANDS
              Example: extract/print data enclosed in "()"
              :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
-     [vrange]g!{<Any>}[regex]{<Any>}{cmd}
+     [vrange]g![<Any>][regex][<Any>][cmd]
              Inverted global command
 
      [range]re[regex]
@@ -563,7 +563,7 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [vrange]s{<Any>}[regex]{<Any>}{str}[<Any>][<g>]
+     [vrange]s[<Any>][regex][<Any>][str][<Any>][<g>]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -863,7 +863,7 @@ EX COMMANDS
              Example: execute vi "dw" command after user exits insert
              :@i:@dw
 
-     [# <$>]?{cond}[<?>][then][<?>][else]
+     [# <$>]?[cond][<?>][then][<?>][else]
              While loop conditional
 
              Repeat cond # times or infinite with <$>.
@@ -883,10 +883,10 @@ EX COMMANDS
              Example: edit vi.c only if it exists
              :? \![ -f ./vi.c ]?e ./vi.c:mpt1
 
-     [# <$>]?!{cond}[<?>][else][<?>][then]
+     [# <$>]?![cond][<?>][else][<?>][then]
              Inverted while loop conditional
 
-     [prefix]??{then}[<?>][else]
+     [prefix]??[then][<?>][else]
      {prefix}??
              Conditional
 
@@ -919,7 +919,7 @@ EX COMMANDS
              Example: inverted capture -- capture NOT of last status
              :f>int:1??!:1??p int was absent
 
-     [prefix]??!{else}[<?>][then]
+     [prefix]??![else][<?>][then]
      {prefix}??!
              Inverted conditional
 
@@ -956,7 +956,7 @@ EX COMMANDS
              Example: change <%> to <a>
              :2sc a
              Example: utilize newly set separator in a single command chain
-             :|1sc a|: p cmd1 a p cmd2 a|sc|a??
+             :|1sc a|: p cmd1 a p cmd2 a|sc|a0?:p cmd3
 
      [<0-3>]sc![<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
@@ -1358,4 +1358,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.0                      April 23, 2026                      Nextvi 5.0
+Nextvi 5.0                      April 24, 2026                      Nextvi 5.0
