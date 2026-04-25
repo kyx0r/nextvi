@@ -1238,9 +1238,13 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		int has_extra = g->ndel > 0 || g->npost_ctx > 0;
 		int del_extra_start = 0, post_extra_start = 0;
 		if (!pattern_has_lines && has_extra) {
-			/* promote first extra to match non-interactive anchor fallback */
+			/* promote the same line non-interactive would use as anchor:
+			 * follow_ctx (post_ctx[0]) takes priority, then del_texts[0] */
 			char *esc;
-			if (g->ndel > 0) {
+			if (g->npost_ctx > 0 && g->follow_ctx && g->follow_ctx[0]) {
+				esc = escape_regex(g->post_ctx[0]);
+				post_extra_start = 1;
+			} else if (g->ndel > 0) {
 				esc = escape_regex(g->del_texts[0]);
 				del_extra_start = 1;
 			} else {
