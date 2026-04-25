@@ -262,6 +262,8 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
 GROUP 1
+-((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|pr|ai|ish|err|ic|grp|mpt|ms|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 pattern:
 \(\(.*pac.*\)\\
 edit_cmd_rel:
@@ -270,16 +272,19 @@ s/t\|s/t|ms|s/
 === END DELTA ===
 === DELTA led.c ===
 GROUP 3
++	term_mouse_on();
 pattern:
 	if \(key == '\\n' && flg & 1\) \{
 edit_cmd_rel:
 i 	term_mouse_on();
 GROUP 4
++	term_mouse_off();
 pattern:
 	ins_state is;
 edit_cmd_rel:
 a 	term_mouse_off();
 GROUP 5
++			term_mouse_on();
 pattern:
 			free\(postref\);
 			xrow = crow;
@@ -288,10 +293,26 @@ edit_cmd_rel:
 === END DELTA ===
 === DELTA term.c ===
 GROUP 1
++int xmouse_col, xmouse_row;
++void term_mouse_on(void)
++{
++	if (xms)
++		write(1, "\x1b[?1000h\x1b[?1006h", 16);
++}
++
++void term_mouse_off(void)
++{
++	if (xms)
++		write(1, "\x1b[?1000l\x1b[?1006l", 16);
++}
++
 strategy: abs
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
++int term_try_mouse(void);
++void term_mouse_on(void);
++void term_mouse_off(void);
 pattern:
 int term_read\(int winch\);
 edit_cmd_rel:
@@ -299,17 +320,21 @@ a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
 GROUP 2
++int led_col(char *s, int col);
 pattern:
 int led_pos\(char \*s, int pos\);
 edit_cmd_rel:
 a int led_col(char *s, int col);
 GROUP 3
++/* mouse state */
++extern int xmouse_col, xmouse_row;
 pattern:
 /\* ex options \*/
 edit_cmd_rel:
 i /* mouse state */
 extern int xmouse_col, xmouse_row;
 GROUP 4
++extern int xms;
 pattern:
 /\* global variables \*/
 edit_cmd_rel:

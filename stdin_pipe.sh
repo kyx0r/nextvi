@@ -135,9 +135,15 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
 GROUP 1
+-	int fd, len, rd = 0, cd = 0;
++	int fd = 0, len, rd = 0, cd = 0;
++	if (!cmd)
++		goto ret;
 pattern:
 static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
 GROUP 3
+-	xbufsalloc = MAX(n, xbufsalloc);
++	xbufsalloc = MAX(n + !!stdin_fd, xbufsalloc);
 pattern:
 
 void ex_init\(.*\)
@@ -145,8 +151,12 @@ void ex_init\(.*\)
 === END DELTA ===
 === DELTA term.c ===
 GROUP 1
++int stdin_fd;
++static int isig;
 strategy: abs
 GROUP 2
+-	tcgetattr(0, &termios);
++	tcgetattr(stdin_fd, &termios);
 pattern:
 	sbuf_make\(term_sbuf, 2048\)
 edit_cmd_rel:
@@ -155,12 +165,14 @@ s/0/stdin_fd/
 === END DELTA ===
 === DELTA vi.c ===
 GROUP 1
++	sigaction(SIGINT, &sa, NULL);
 pattern:
 	memset\(&sa, 0, sizeof\(sa\)\);
 	sa\.sa_handler = sighandler;
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
++extern int stdin_fd;
 pattern:
 /\* vi\.c: main \*/
 edit_cmd_rel:

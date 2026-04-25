@@ -112,6 +112,7 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
 GROUP 2
++EO(exrc)
 pattern:
 EO\(pac\)
 === END DELTA ===

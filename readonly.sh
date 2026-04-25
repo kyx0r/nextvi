@@ -80,13 +80,16 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
 GROUP 1
++char readonly = 0;		/* commandline readonly option */
 strategy: abs
 GROUP 2
++	bufs[i].readonly = readonly;
 pattern:
 	bufs\[i\]\.mtime = -1;
 edit_cmd_rel:
 a 	bufs[i].readonly = readonly;
 GROUP 6
++	{"ro", ec_readonly},
 pattern:
 	\{"rd", ec_undoredo\},
 edit_cmd_rel:
@@ -94,6 +97,8 @@ a 	{"ro", ec_readonly},
 === END DELTA ===
 === DELTA vi.c ===
 GROUP 1
++			else if (argv[i][j] == 'R')
++				readonly = 1;
 pattern:
 			else if \(argv\[i\]\[j\] == 'a'\)
 				xvis \|= 8;
@@ -101,6 +106,8 @@ edit_cmd_rel:
 +1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 GROUP 2
+-				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
 strategy: relc
 cmd: .,\$;f>
 pattern:
@@ -114,11 +121,13 @@ s/em/eRm/
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
++	char readonly;			/* read only */
 pattern:
 	signed char td;			/\* text direction \*/
 edit_cmd_rel:
 a 	char readonly;			/* read only */
 GROUP 2
++extern char readonly;
 strategy: abs
 edit_cmd_abs:
 \$a extern char readonly;

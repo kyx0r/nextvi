@@ -88,7 +88,7 @@ ${SEP}+2a 	{\"md\", ec_modal},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: modal.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}1i #include <stdio.h>
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i #include <stdio.h>
 
 typedef struct {
 	char *a, *b;
@@ -428,7 +428,7 @@ static char *mem_import(char *src, char *ptr)
 ${SEP}vis 2${SEP}wq" $VI -e 'modal.c'
 
 # Patch: test
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}1i <> (?0 ?: ?1) (?:)
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i <> (?0 ?: ?1) (?:)
 <> (out (?x)) (\$p ?x)
 
 (out (3 + 9 - 5 + 23 / 10))
@@ -448,6 +448,8 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
 GROUP 1
+-|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!=dj]|md?|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 pattern:
 \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
 === END DELTA ===

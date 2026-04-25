@@ -928,6 +928,8 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
 GROUP 1
+-|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
 pattern:
 \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
 edit_cmd_rel:
@@ -936,10 +938,14 @@ s/f!\](.*)\\/qf!]\1vs|sp|\\/
 === END DELTA ===
 === DELTA ex.c ===
 GROUP 1
++struct win *wins;		/* head of window list */
++struct win *curwin;		/* current active window */
++int nwins;			/* number of windows */
 strategy: abs
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
++void term_killn(int n);
 pattern:
 void term_kill\(void\);
 edit_cmd_rel:

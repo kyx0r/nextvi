@@ -61,16 +61,21 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
 GROUP 1
+-((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|pr|ai|ish|err|ic|grp|mpt|rec|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 pattern:
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
 === END DELTA ===
 === DELTA ex.c ===
 GROUP 1
++int xrec;			/* input recoding register */
 strategy: abs
 GROUP 2
++EO(rec)
 pattern:
 EO\(pac\)
 GROUP 3
++	EO(rec),
 pattern:
 	\{"q", ec_quit\},
 edit_cmd_rel:
@@ -78,6 +83,7 @@ a 	EO(rec),
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
++extern int xrec;
 pattern:
 /\* global variables \*/
 edit_cmd_rel:

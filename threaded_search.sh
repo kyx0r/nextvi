@@ -186,6 +186,9 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.h ===
 GROUP 1
+-extern unsigned char utf8_length[256];
++extern unsigned char _utf8_length[256];
++extern unsigned char *utf8_length;
 pattern:
 extern unsigned char utf8_length\[256\];
 edit_cmd_rel:

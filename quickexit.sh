@@ -95,16 +95,21 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
 GROUP 1
+-((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((qe|pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 pattern:
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
 === END DELTA ===
 === DELTA ex.c ===
 GROUP 1
++int xqe = 1000;			/* exit insert via kj (delay in ms) */
 strategy: abs
 GROUP 2
++EO(qe)
 pattern:
 EO\(pac\)
 GROUP 3
++	EO(qe),
 pattern:
 	\{"m", ec_mark\},
 edit_cmd_rel:
@@ -112,18 +117,30 @@ a 	EO(qe),
 === END DELTA ===
 === DELTA led.c ===
 GROUP 1
++static int gettime_ms(void)
++{
++	struct timespec t;
++	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
++		return 0;
++	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
++}
++
 strategy: abs
 === END DELTA ===
 === DELTA vi.c ===
 GROUP 1
++#include <time.h>
 strategy: abs
 GROUP 2
++				if (xqe)
++					vi_mod |= 2;
 pattern:
 				k = vc_insert\(c\);
 				ins:
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 3
++extern int xqe;
 pattern:
 extern int xshape;
 === END DELTA ===

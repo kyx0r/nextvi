@@ -68,12 +68,16 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
 GROUP 1
+-void ex_init(char **files, int n)
++void ex_init(char **files, int n, char **cmds, int cmdnum)
 pattern:
 void ex_init\(char
 edit_cmd_rel:
 +0
 s/n\)/n, char **cmds, int cmdnum)/
 GROUP 2
++	for (int i = 0; i < cmdnum; i++)
++		ex_command(cmds[i])
 pattern:
 	if \(\(s = getenv\("EXINIT"\)\)\)
 		ex_command\(s\)
@@ -83,10 +87,26 @@ edit_cmd_rel:
 === END DELTA ===
 === DELTA vi.c ===
 GROUP 1
+-	int i, j;
++	int i, j, cmdnum = 0;
++	char *ex_cmds[argc - 1];
 pattern:
 
 int main\(int argc
 GROUP 2
+-			else {
++			else if (argv[i][j] == 'c') {
++				if (argv[i][j+1]) {
++					ex_cmds[cmdnum++] = argv[i] + j + 1;
++					break;
++				} else if (i + 1 < argc) {
++					ex_cmds[cmdnum++] = argv[++i];
++					break;
++				} else {
++					fprintf(stderr, "Missing argument for -c\n");
++					return EXIT_FAILURE;
++				}
++			} else {
 pattern:
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
@@ -104,12 +124,16 @@ c 			else if (argv[i][j] == 'c') {
 				}
 			} else {
 GROUP 3
+-				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
 strategy: relc
 cmd: .,\$f>
 edit_cmd_relc:
 +0
 .;46c c
 GROUP 4
+-	ex_init(argv + i, argc - i);
++	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
 pattern:
 	if \(xvis & 8\)
 		term_scrh;
@@ -119,6 +143,8 @@ s/i\)/i, ex_cmds, cmdnum)/
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
+-void ex_init(char **files, int n);
++void ex_init(char **files, int n, char** cmds, int cmdnum);
 pattern:
 void ex_init\(char
 edit_cmd_rel:

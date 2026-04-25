@@ -302,6 +302,8 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
 GROUP 7
+-		rset_free(rs);
++		rstr_free(rs);
 pattern:
 				break;
 			\}
@@ -310,6 +312,10 @@ pattern:
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 2
++rstr *rstr_make(char *re, int flg);
++int rstr_find(rstr *rs, char *s, int *grps, int flg);
++int rstr_match(rstr *rs, char *s, int flg);
++void rstr_free(rstr *rs);
 pattern:
 void rset_free
 edit_cmd_rel:
@@ -318,18 +324,24 @@ int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
 GROUP 3
+-int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
++int lbuf_search(struct lbuf *lb, rstr *re, int dir, int beg, int end, int pskip,
 pattern:
 int lbuf_search
 edit_cmd_rel:
 +0
 s/et/tr/
 GROUP 5
+-extern rset *xkwdrs;
++extern rstr *xkwdrs;
 pattern:
 extern rset \*xkwdrs;
 edit_cmd_rel:
 +0
 s/et/tr/
 GROUP 6
+-int ex_krs(rset **krs, int *dir);
++int ex_krs(rstr **krs, int *dir);
 pattern:
 int ex_krs
 edit_cmd_rel:

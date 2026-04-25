@@ -66,7 +66,7 @@ ${SEP}+2a 	{\"lsp\", ec_lsp},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: jsmn.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}1i /*
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i /*
  * MIT License
  *
  * Copyright (c) 2010 Serge Zaitsev
@@ -541,7 +541,7 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 ${SEP}vis 2${SEP}wq" $VI -e 'jsmn.h'
 
 # Patch: lsp.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}1i /* lsp.c - Language Server Protocol client for nextvi */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i /* lsp.c - Language Server Protocol client for nextvi */
 #include \"jsmn.h\"
 #include <errno.h>
 
@@ -1496,6 +1496,21 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.h ===
 GROUP 1
++
++/* lsp.c */
++#define LSP_NFDS_MAX	8
++extern int lsp_nfds;
++extern int lsp_fds[LSP_NFDS_MAX];
++extern void (*lsp_fd_ready)(int fd);
++void lsp_init(void);
++void lsp_register(const char *ft, const char *cmd);
++void lsp_open(const char *path, const char *ft);
++void lsp_save(const char *path);
++void lsp_hover(const char *path, int row, int off);
++void lsp_definition(const char *path, int row, int off);
++const char *lsp_diag_for_line(const char *path, int line);
++void lsp_list(void);
++void lsp_show_msg(char *msg);
 strategy: abs
 edit_cmd_abs:
 \$a 

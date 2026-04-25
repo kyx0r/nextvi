@@ -142,13 +142,19 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
 GROUP 1
+-|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!=dmj]|\\?\\?\?!?|\\?!|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|im!?|i|sc!?|nm!?|\
 pattern:
 \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
 === END DELTA ===
 === DELTA ex.c ===
 GROUP 1
++static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
++static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 strategy: abs
 GROUP 3
++	{"im!", ec_map},
++	{"im", ec_map},
 pattern:
 	\{"inc", ec_setincl\},
 	EO\(ic\),
@@ -156,6 +162,8 @@ edit_cmd_rel:
 +1a 	{"im!", ec_map},
 	{"im", ec_map},
 GROUP 4
++	{"nm!", ec_map},
++	{"nm", ec_map},
 pattern:
 	\{"q!", ec_quit\},
 edit_cmd_rel:
@@ -164,6 +172,8 @@ i 	{"nm!", ec_map},
 === END DELTA ===
 === DELTA led.c ===
 GROUP 1
+-		c = term_read(TK_CTL('l'));
++		c = map_read(1, TK_CTL('l'));
 pattern:
 		len = sb->s_n;
 		c = term_read\(TK_CTL\('l'\)\);
@@ -173,6 +183,7 @@ s/term_read\(/map_read(1, /
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
++int map_read(int mode, int winch);
 pattern:
 void bufs_switch\(int idx\);
 edit_cmd_rel:

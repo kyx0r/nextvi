@@ -205,6 +205,12 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA led.c ===
 GROUP 3
+-	syn_blockhl = -1;
+-	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
++	if (print) {
++		syn_blockhl = -1;
++		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
++	}
 pattern:
 	syn_blockhl = -1;
 	led_crender\(.*\);

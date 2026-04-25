@@ -51,6 +51,8 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
 GROUP 3
+-	else if (!(mv = vi_motion(1, &r2, &o2)))
++	else if (!(mv = vi_motion(cmd, &r2, &o2)))
 pattern:
 	else if \(!\(mv = vi_motion\(1, &r2, &o2\)\)\)
 edit_cmd_rel:

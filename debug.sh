@@ -95,6 +95,7 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA regex.c ===
 GROUP 1
++	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 pattern:
 	unsigned int sdense\[prog->sparsesz\], sparsesz = 0;
 edit_cmd_rel:
@@ -102,6 +103,19 @@ a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 === END DELTA ===
 === DELTA ren.c ===
 GROUP 1
++void ren_done(void)
++{
++	rset_free(dir_rslr);
++	rset_free(dir_rsrl);
++	rset_free(dir_rsctx);
++	for (int i = 0; i < LEN(rstates); i++) {
++		if (rstate[i].col) {
++			free(rstate[i].col - 2);
++			free(rstate[i].pos);
++		}
++	}
++}
++
 pattern:
 ren_state rstates
 edit_cmd_rel:
@@ -121,16 +135,19 @@ a void ren_done(void)
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
++void dir_done(void);
 pattern:
 /\* text direction \*/
 edit_cmd_rel:
 a void dir_done(void);
 GROUP 2
++void syn_done(void);
 pattern:
 syn_init
 edit_cmd_rel:
 a void syn_done(void);
 GROUP 3
++void ex_done(void);
 pattern:
 ex_init
 edit_cmd_rel:
