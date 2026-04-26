@@ -762,26 +762,34 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	int key, beg = 0, end = 0, o1 = -1, o2 = -1, ps = 0;
 	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	sbuf_smake(sb, 128)
-	if (*arg)
-		term_push(arg, strlen(arg));
-	while (1) {
-		syn_setft(msg_ft);
-		if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
-			break;
-		if (xvis & 1 && !strcmp(".", sb->s + ps)) {
-			sb->s_n -= 1 + (o1 >= 0);
-			break;
+	sbuf _sb, *sb = &_sb;
+	if (xvis & 1 && *arg) {
+		sb->s = arg;
+		sb->s_n = strlen(arg);
+		sb->s_sz = 0;
+		key = 127;
+	} else {
+		_sbuf_make(sb, 128,)
+		if (*arg)
+			term_push(arg, strlen(arg));
+		while (1) {
+			syn_setft(msg_ft);
+			if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
+				break;
+			if (xvis & 1 && !strcmp(".", sb->s + ps)) {
+				sb->s_n -= 1 + (o1 >= 0);
+				break;
+			}
+			sbuf_chr(sb, '\n')
+			ps = sb->s_n;
 		}
-		sbuf_chr(sb, '\n')
-		ps = sb->s_n;
+		syn_setft(xb_ft);
+		if (key == TK_CTL('c'))
+			goto ret;
+		if (key == 127 && sb->s_n > 0 && sb->s[sb->s_n-1] == '\n')
+			sb->s_n--;
+		sbuf_null(sb)
 	}
-	syn_setft(xb_ft);
-	if (key == TK_CTL('c'))
-		goto ret;
-	if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
-		sb->s_n--;
-	sbuf_null(sb)
 	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb))) {
 		beg++;
 		end = beg;
@@ -792,9 +800,11 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			goto ret;
 		char *p = lbuf_joinsb(xb, beg, end-1, sb, &o1, &o2);
 		o1 -= sb->s[0] == '\n';
-		free(sb->s);
+		if (sb->s_sz)
+			free(sb->s);
 		sb->s = p;
-	} else if (!(xvis & 1) && key != 127)
+		sb->s_sz = 1;
+	} else if (key != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
 		goto ret;
@@ -804,7 +814,8 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (o1 >= 0)
 		xoff = o1;
 	ret:
-	free(sb->s);
+	if (sb->s_sz)
+		free(sb->s);
 	return NULL;
 }
 
