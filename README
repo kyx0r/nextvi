@@ -1275,12 +1275,12 @@ CODE MAP
      | 366 term.c   |  low level IO        |
      | 410 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
-     | 650 lbuf.c   |  file/line buffer    |
+     | 651 lbuf.c   |  file/line buffer    |
      | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
      | 1717 ex.c    |  ex options/commands |
-     | 1880 vi.c    |  normal mode/general |
-     | 7489 total   |  wc -l *.c|sort      |
+     | 1878 vi.c    |  normal mode/general |
+     | 7488 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1359,4 +1359,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.0                      April 24, 2026                      Nextvi 5.0
+Nextvi 5.0                      April 26, 2026                      Nextvi 5.0
