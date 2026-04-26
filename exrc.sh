@@ -30,16 +30,16 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-re p FAIL line 39\\${SEP}p FAIL line 39${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xexrc = 0;			/* read .exrc from the current directory */
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(exrc)
 ${SEP}.,\$;f> 	EO\\\\(ai\\\\),
 	\\\\{\"ac\", ec_setacreg\\\\},
-	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:-re p FAIL line 1477\\${SEP}p FAIL line 1477${INTR}${QF}}${SEP}${LB}
+	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:-re p FAIL line 1488\\${SEP}p FAIL line 1488${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(exrc),
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1714\\${SEP}p FAIL line 1714${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void ex_script(FILE *fp)
 {
 	char done = 0;
@@ -87,8 +87,8 @@ void load_exrc(char *exrc)
 
 ${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1716\\${SEP}p FAIL line 1716${INTR}${QF}}${SEP}${LB}
+	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1726\\${SEP}p FAIL line 1726${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-re p FAIL line 1726\\${SEP}p FAIL line 1726${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1727\\${SEP}p FAIL line 1727${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	} else {
 		char *homeenv = getenv(\"HOME\");
 		if (homeenv) {
@@ -115,7 +115,7 @@ EO\(pac\)
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 01e9adb2..4c509155 100644
+index 45b561b5..9f1d09cf 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,6 +37,7 @@ int xexec_dep;			/* ex_exec recursion depth */
@@ -126,7 +126,7 @@ index 01e9adb2..4c509155 100644
  struct buf *bufs;		/* main buffers */
  struct buf tempbufs[3];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
-@@ -1435,6 +1436,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1446,6 +1447,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -134,7 +134,7 @@ index 01e9adb2..4c509155 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1475,6 +1477,7 @@ static struct excmd {
+@@ -1486,6 +1488,7 @@ static struct excmd {
  	EO(ai),
  	{"ac", ec_setacreg},
  	{"a", ec_insert},
@@ -142,7 +142,7 @@ index 01e9adb2..4c509155 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1701,6 +1704,51 @@ void ex(void)
+@@ -1712,6 +1715,51 @@ void ex(void)
  	xgrec--;
  }
  
@@ -194,7 +194,7 @@ index 01e9adb2..4c509155 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1712,6 +1760,20 @@ void ex_init(char **files, int n)
+@@ -1723,6 +1771,20 @@ void ex_init(char **files, int n)
  		s = *(++files);
  	} while (--n > 0);
  	xvis &= ~4;

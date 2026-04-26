@@ -42,14 +42,14 @@ ${SEP}+2a 			if (ex_buf->readonly)
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1420\\${SEP}p FAIL line 1420${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1431\\${SEP}p FAIL line 1431${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
-${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-re p FAIL line 1506\\${SEP}p FAIL line 1506${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-re p FAIL line 1517\\${SEP}p FAIL line 1517${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	{\"ro\", ec_readonly},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -125,7 +125,7 @@ edit_cmd_abs:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 01e9adb2..16315230 100644
+index 45b561b5..d8415643 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -159,7 +159,7 @@ index 01e9adb2..16315230 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1418,6 +1424,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1429,6 +1435,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -172,7 +172,7 @@ index 01e9adb2..16315230 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1504,6 +1516,7 @@ static struct excmd {
+@@ -1515,6 +1527,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},

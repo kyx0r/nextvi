@@ -33,7 +33,7 @@ ${SEP}+3${SEP}s/mj\\\\]/j]|md?/${SEP}??!${DBG:-re p FAIL line 290\\${SEP}p FAIL 
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-re p FAIL line 1450\\${SEP}p FAIL line 1450${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1461\\${SEP}p FAIL line 1461${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 {
 	int beg = 0, end = 0, o1 = 0, o2 = -1;
@@ -83,7 +83,7 @@ ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-re p FAIL line 1499\\${SEP}p FAIL line 1499${INTR}${QF}}${SEP}${LB}
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-re p FAIL line 1510\\${SEP}p FAIL line 1510${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"md\", ec_modal},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -465,10 +465,10 @@ index d45d10a6..784b674b 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 01e9adb2..cb1a19a4 100644
+index 45b561b5..bcf04625 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1448,6 +1448,53 @@ _EO(left,
+@@ -1459,6 +1459,53 @@ _EO(left,
  	return NULL;
  )
  
@@ -522,7 +522,7 @@ index 01e9adb2..cb1a19a4 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1497,6 +1544,7 @@ static struct excmd {
+@@ -1508,6 +1555,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),

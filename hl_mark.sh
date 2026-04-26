@@ -30,11 +30,11 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> int xhlw;			/\\\\* highlight current wo
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
 int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xhlm;			/* highlight marks */
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(hlm)
 ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),${SEP}??!${DBG:-re p FAIL line 1532\\${SEP}p FAIL line 1532${INTR}${QF}}${SEP}${LB}
+	EO\\\\(order\\\\),${SEP}??!${DBG:-re p FAIL line 1543\\${SEP}p FAIL line 1543${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(hlm),
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -69,7 +69,7 @@ EO\(pac\)
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 01e9adb2..6fe59918 100644
+index 45b561b5..8dd7e336 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -80,7 +80,7 @@ index 01e9adb2..6fe59918 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1435,6 +1436,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1446,6 +1447,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -88,7 +88,7 @@ index 01e9adb2..6fe59918 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1530,6 +1532,7 @@ static struct excmd {
+@@ -1541,6 +1543,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),

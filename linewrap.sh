@@ -35,7 +35,7 @@ ${SEP}.i int xlw;			/* soft linewrap col */
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1420\\${SEP}p FAIL line 1420${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1431\\${SEP}p FAIL line 1431${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
@@ -55,7 +55,7 @@ ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:-re p FAIL line 1540\\${SEP}p FAIL line 1540${INTR}${QF}}${SEP}${LB}
+	EO\\\\(led\\\\),${SEP}??!${DBG:-re p FAIL line 1551\\${SEP}p FAIL line 1551${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lw\", ec_linewrap},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -262,7 +262,7 @@ index d45d10a6..2551655e 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 01e9adb2..abb8730d 100644
+index 45b561b5..dde9b36a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -270,7 +270,7 @@ index 01e9adb2..abb8730d 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1418,6 +1419,23 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1429,6 +1430,23 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -294,7 +294,7 @@ index 01e9adb2..abb8730d 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1538,6 +1556,7 @@ static struct excmd {
+@@ -1549,6 +1567,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),

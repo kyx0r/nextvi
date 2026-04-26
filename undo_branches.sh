@@ -33,7 +33,7 @@ ${SEP}+3${SEP}s/(u\\\\[.*)\\\\]/\\\\1p]/${SEP}??!${DBG:-re p FAIL line 291\\${SE
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1420\\${SEP}p FAIL line 1420${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1431\\${SEP}p FAIL line 1431${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
@@ -46,7 +46,7 @@ ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	\\\\{\"uc\", ec_setenc\\\\},
 	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-re p FAIL line 1514\\${SEP}p FAIL line 1514${INTR}${QF}}${SEP}${LB}
+	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-re p FAIL line 1525\\${SEP}p FAIL line 1525${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"up\", ec_undoleafs},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -207,10 +207,10 @@ index d45d10a6..8c48ba96 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 01e9adb2..bbc1e536 100644
+index 45b561b5..b4ed485d 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1418,6 +1418,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1429,6 +1429,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -227,7 +227,7 @@ index 01e9adb2..bbc1e536 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1512,6 +1522,7 @@ static struct excmd {
+@@ -1523,6 +1533,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},

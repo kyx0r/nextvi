@@ -33,7 +33,7 @@ ${SEP}+3${SEP}s/cd/c[dx]/${SEP}??!${DBG:-re p FAIL line 291\\${SEP}p FAIL line 2
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return val;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1428\\${SEP}p FAIL line 1428${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1439\\${SEP}p FAIL line 1439${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
@@ -78,7 +78,7 @@ ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 }
 
 
-${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-re p FAIL line 1527\\${SEP}p FAIL line 1527${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-re p FAIL line 1538\\${SEP}p FAIL line 1538${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	{\"cx\", ec_closebuf},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -114,10 +114,10 @@ index d45d10a6..38f60ded 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 01e9adb2..13aedc88 100644
+index 45b561b5..8b5d0cb3 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1426,6 +1426,50 @@ static int eo_val(char *arg)
+@@ -1437,6 +1437,50 @@ static int eo_val(char *arg)
  	return val;
  }
  
@@ -168,7 +168,7 @@ index 01e9adb2..13aedc88 100644
  #define _EO(opt, inner) \
  static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
-@@ -1525,6 +1569,7 @@ static struct excmd {
+@@ -1536,6 +1580,7 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},

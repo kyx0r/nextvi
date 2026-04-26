@@ -44,11 +44,11 @@ ${SEP}.,\$;f> 						soff \\\\+ offs\\\\[xgrp\\\\], &xrow, &xoff\\\\)\\\\)
 ${SEP}+2a 		free(offs);
 ${SEP}.,\$;f> 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);${SEP}??!${DBG:-re p FAIL line 992\\${SEP}p FAIL line 992${INTR}${QF}}${SEP}${LB}
+	free\\\\(pat\\\\);${SEP}??!${DBG:-re p FAIL line 1003\\${SEP}p FAIL line 1003${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 ${SEP}.,\$;f> 	if \\\\(rs != xkwdrs\\\\)
 		rset_free\\\\(rs\\\\);
-	free\\\\(rep\\\\);${SEP}??!${DBG:-re p FAIL line 1043\\${SEP}p FAIL line 1043${INTR}${QF}}${SEP}${LB}
+	free\\\\(rep\\\\);${SEP}??!${DBG:-re p FAIL line 1054\\${SEP}p FAIL line 1054${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(offs);
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -249,7 +249,7 @@ index d45d10a6..b22cdc46 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 01e9adb2..b3129663 100644
+index 45b561b5..e56d3879 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -513,7 +513,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -270,7 +270,7 @@ index 01e9adb2..b3129663 100644
  		return ret;
  	}
  	off = xoff;
-@@ -989,7 +991,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1000,7 +1002,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s, 0);
  	}
  	free(pat);
@@ -279,7 +279,7 @@ index 01e9adb2..b3129663 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -1041,6 +1043,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1052,6 +1054,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);

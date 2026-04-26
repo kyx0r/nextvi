@@ -63,41 +63,41 @@ ${SEP}+3${SEP}s/nsubc/rs ? xkwdrs->rs->nsubc : 2/${SEP}??!${DBG:-re p FAIL line 
 			soff = 0;${SEP}??!${DBG:-re p FAIL line 525\\${SEP}p FAIL line 525${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 525\\${SEP}p FAIL line 525${INTR}${QF}}${SEP}.,\$;f> 	int beg, end, grp;
 	char \\\\*pat, \\\\*rep = NULL, \\\\*_rep;
-	char \\\\*s = arg;${SEP}??!${DBG:-re p FAIL line 975\\${SEP}p FAIL line 975${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 975\\${SEP}p FAIL line 975${INTR}${QF}}${SEP}.,\$;f> 		return xrerr;
+	char \\\\*s = arg;${SEP}??!${DBG:-re p FAIL line 986\\${SEP}p FAIL line 986${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 986\\${SEP}p FAIL line 986${INTR}${QF}}${SEP}.,\$;f> 		return xrerr;
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 982\\${SEP}p FAIL line 982${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 982\\${SEP}p FAIL line 982${INTR}${QF}}${SEP}.,\$;f> 		rep = re_read\\\\(&s, 0\\\\);
+	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 993\\${SEP}p FAIL line 993${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 993\\${SEP}p FAIL line 993${INTR}${QF}}${SEP}.,\$;f> 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);${SEP}??!${DBG:-re p FAIL line 992\\${SEP}p FAIL line 992${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/nsubc/rs ? rs->rs->nsubc : 2/${SEP}??!${DBG:-re p FAIL line 992\\${SEP}p FAIL line 992${INTR}${QF}}${SEP}.,\$;f> 	for \\\\(i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
+	free\\\\(pat\\\\);${SEP}??!${DBG:-re p FAIL line 1003\\${SEP}p FAIL line 1003${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/nsubc/rs ? rs->rs->nsubc : 2/${SEP}??!${DBG:-re p FAIL line 1003\\${SEP}p FAIL line 1003${INTR}${QF}}${SEP}.,\$;f> 	for \\\\(i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		sbuf \\\\*r = NULL;${SEP}??!${DBG:-re p FAIL line 996\\${SEP}p FAIL line 996${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 996\\${SEP}p FAIL line 996${INTR}${QF}}${SEP}.,\$;f> 					\\\\}
+		sbuf \\\\*r = NULL;${SEP}??!${DBG:-re p FAIL line 1007\\${SEP}p FAIL line 1007${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1007\\${SEP}p FAIL line 1007${INTR}${QF}}${SEP}.,\$;f> 					\\\\}
 					_rep\\\\+\\\\+;
-					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);${SEP}??!${DBG:-re p FAIL line 1011\\${SEP}p FAIL line 1011${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/rs->nsubc/(rs->rs ? rs->rs->nsubc : 2)/${SEP}??!${DBG:-re p FAIL line 1011\\${SEP}p FAIL line 1011${INTR}${QF}}${SEP}.,\$;f> 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
+					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);${SEP}??!${DBG:-re p FAIL line 1022\\${SEP}p FAIL line 1022${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/rs->nsubc/(rs->rs ? rs->rs->nsubc : 2)/${SEP}??!${DBG:-re p FAIL line 1022\\${SEP}p FAIL line 1022${INTR}${QF}}${SEP}.,\$;f> 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
 	\\\\}
-	if \\\\(rs != xkwdrs\\\\)${SEP}??!${DBG:-re p FAIL line 1042\\${SEP}p FAIL line 1042${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1042\\${SEP}p FAIL line 1042${INTR}${QF}}${SEP}.,\$;f> \\\\{
+	if \\\\(rs != xkwdrs\\\\)${SEP}??!${DBG:-re p FAIL line 1053\\${SEP}p FAIL line 1053${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1053\\${SEP}p FAIL line 1053${INTR}${QF}}${SEP}.,\$;f> \\\\{
 	int i, beg, end, not, matched = 0;
-	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG:-re p FAIL line 1106\\${SEP}p FAIL line 1106${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1106\\${SEP}p FAIL line 1106${INTR}${QF}}${SEP}.,\$;f> 	not = !!strchr\\\\(cmd, '!'\\\\);
+	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG:-re p FAIL line 1117\\${SEP}p FAIL line 1117${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1117\\${SEP}p FAIL line 1117${INTR}${QF}}${SEP}.,\$;f> 	not = !!strchr\\\\(cmd, '!'\\\\);
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\*pat\\\\)${SEP}??!${DBG:-re p FAIL line 1114\\${SEP}p FAIL line 1114${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1114\\${SEP}p FAIL line 1114${INTR}${QF}}${SEP}.,\$f> 	else${SEP}??!${DBG:-re p FAIL line 1116\\${SEP}p FAIL line 1116${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1116\\${SEP}p FAIL line 1116${INTR}${QF}}${SEP}.,\$;f> 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
+	if \\\\(pat && \\\\*pat\\\\)${SEP}??!${DBG:-re p FAIL line 1125\\${SEP}p FAIL line 1125${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1125\\${SEP}p FAIL line 1125${INTR}${QF}}${SEP}.,\$f> 	else${SEP}??!${DBG:-re p FAIL line 1127\\${SEP}p FAIL line 1127${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1127\\${SEP}p FAIL line 1127${INTR}${QF}}${SEP}.,\$;f> 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;${SEP}??!${DBG:-re p FAIL line 1126\\${SEP}p FAIL line 1126${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1126\\${SEP}p FAIL line 1126${INTR}${QF}}${SEP}.,\$;f> 		while \\\\(i < lbuf_len\\\\(xb\\\\) && !\\\\(lbuf_i\\\\(xb, i\\\\)->grec & xgdep\\\\)\\\\)
+		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;${SEP}??!${DBG:-re p FAIL line 1137\\${SEP}p FAIL line 1137${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1137\\${SEP}p FAIL line 1137${INTR}${QF}}${SEP}.,\$;f> 		while \\\\(i < lbuf_len\\\\(xb\\\\) && !\\\\(lbuf_i\\\\(xb, i\\\\)->grec & xgdep\\\\)\\\\)
 			i\\\\+\\\\+;
-	\\\\}${SEP}??!${DBG:-re p FAIL line 1136\\${SEP}p FAIL line 1136${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1136\\${SEP}p FAIL line 1136${INTR}${QF}}${SEP}.,\$;f> 
+	\\\\}${SEP}??!${DBG:-re p FAIL line 1147\\${SEP}p FAIL line 1147${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1147\\${SEP}p FAIL line 1147${INTR}${QF}}${SEP}.,\$;f> 
 static void \\\\*ec_setincl\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 1265\\${SEP}p FAIL line 1265${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1265\\${SEP}p FAIL line 1265${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(!\\\\*arg\\\\)
-		fsincl = NULL;${SEP}??!${DBG:-re p FAIL line 1268\\${SEP}p FAIL line 1268${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1268\\${SEP}p FAIL line 1268${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+\\\\{${SEP}??!${DBG:-re p FAIL line 1276\\${SEP}p FAIL line 1276${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 1276\\${SEP}p FAIL line 1276${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(!\\\\*arg\\\\)
+		fsincl = NULL;${SEP}??!${DBG:-re p FAIL line 1279\\${SEP}p FAIL line 1279${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/et_s/tr_/${SEP}??!${DBG:-re p FAIL line 1279\\${SEP}p FAIL line 1279${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return n != 0;
@@ -347,7 +347,7 @@ s/et/tr/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 01e9adb2..d44dd31b 100644
+index 45b561b5..a35e254f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ int xsep = ':';			/* ex command separator */
@@ -446,7 +446,7 @@ index 01e9adb2..d44dd31b 100644
  				|| lbuf_off2pos(xb, beg, o1, r2, o2,
  						soff + offs[xgrp], &xrow, &xoff))
  			ret = xuerr;
-@@ -972,14 +972,14 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -983,14 +983,14 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	int beg, end, grp;
  	char *pat, *rep = NULL, *_rep;
  	char *s = arg;
@@ -463,7 +463,7 @@ index 01e9adb2..d44dd31b 100644
  	if (!rs) {
  		free(pat);
  		return xserr;
-@@ -989,11 +989,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1000,11 +1000,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s, 0);
  	}
  	free(pat);
@@ -477,7 +477,7 @@ index 01e9adb2..d44dd31b 100644
  			if (offs[xgrp] < 0) {
  				ln += offs[1] > 0 ? offs[1] : 1;
  				continue;
-@@ -1008,7 +1008,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1019,7 +1019,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  					}
  					_rep++;
  					grp = abs((*_rep - '0') * 2);
@@ -486,7 +486,7 @@ index 01e9adb2..d44dd31b 100644
  						sbuf_chr(r, (unsigned char)*_rep)
  					else if (offs[grp] >= 0)
  						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
-@@ -1039,7 +1039,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1050,7 +1050,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		lbuf_emark(xb, lo, last, 0);
  	}
  	if (rs != xkwdrs)
@@ -495,7 +495,7 @@ index 01e9adb2..d44dd31b 100644
  	free(rep);
  	return first < 0 ? xuerr : NULL;
  }
-@@ -1103,7 +1103,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1114,7 +1114,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  {
  	int i, beg, end, not, matched = 0;
  	char *pat, *s = arg;
@@ -504,7 +504,7 @@ index 01e9adb2..d44dd31b 100644
  	if (!loc[0] && !xgdep)
  		loc = "%";
  	if (ex_vregion(loc, &beg, &end))
-@@ -1111,9 +1111,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1122,9 +1122,9 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	not = !!strchr(cmd, '!');
  	pat = re_read(&s, 0);
  	if (pat && *pat)
@@ -516,7 +516,7 @@ index 01e9adb2..d44dd31b 100644
  	free(pat);
  	if (!rs)
  		return xserr;
-@@ -1123,7 +1123,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1134,7 +1134,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  	for (i = beg; i < lbuf_len(xb);) {
  		char *ln = lbuf_get(xb, i);
  		lbuf_s(ln)->grec &= ~xgdep;
@@ -525,7 +525,7 @@ index 01e9adb2..d44dd31b 100644
  			matched = 1;
  			xrow = i;
  			if (ex_exec(s))
-@@ -1133,7 +1133,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
+@@ -1144,7 +1144,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
  		while (i < lbuf_len(xb) && !(lbuf_i(xb, i)->grec & xgdep))
  			i++;
  	}
@@ -534,7 +534,7 @@ index 01e9adb2..d44dd31b 100644
  	xgdep /= 2;
  	return matched ? NULL : xuerr;
  }
-@@ -1262,10 +1262,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
+@@ -1273,10 +1273,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
  
  static void *ec_setincl(char *loc, char *cmd, char *arg)
  {

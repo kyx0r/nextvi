@@ -64,7 +64,7 @@ ${SEP}+3,#+3c 	/* q! always force quits */
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-re p FAIL line 1450\\${SEP}p FAIL line 1450${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1461\\${SEP}p FAIL line 1461${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
@@ -173,20 +173,20 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(err\\\\),
 	\\\\{\"ef!\", ec_fuzz\\\\},
-	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:-re p FAIL line 1480\\${SEP}p FAIL line 1480${INTR}${QF}}${SEP}${LB}
+	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:-re p FAIL line 1491\\${SEP}p FAIL line 1491${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"eq\", ec_equalize},
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-re p FAIL line 1519\\${SEP}p FAIL line 1519${INTR}${QF}}${SEP}${LB}
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-re p FAIL line 1530\\${SEP}p FAIL line 1530${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"sp\", ec_split},
 ${SEP}.,\$;f> 	EO\\\\(lim\\\\),
 	EO\\\\(led\\\\),
-	EO\\\\(vis\\\\),${SEP}??!${DBG:-re p FAIL line 1541\\${SEP}p FAIL line 1541${INTR}${QF}}${SEP}${LB}
+	EO\\\\(vis\\\\),${SEP}??!${DBG:-re p FAIL line 1552\\${SEP}p FAIL line 1552${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"vs\", ec_vsplit},
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1714\\${SEP}p FAIL line 1714${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a /* window management functions */
 static void curwin_save(void)
 {
@@ -918,7 +918,7 @@ index d45d10a6..90a5db99 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 01e9adb2..e1898e6b 100644
+index 45b561b5..5db194ff 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -972,7 +972,7 @@ index 01e9adb2..e1898e6b 100644
  	xquit = !xquit ? 1 : xquit;
  	xqprop = *loc ? atoi(loc) : -1;
  	if (*arg)
-@@ -1448,6 +1466,112 @@ _EO(left,
+@@ -1459,6 +1477,112 @@ _EO(left,
  	return NULL;
  )
  
@@ -1085,7 +1085,7 @@ index 01e9adb2..e1898e6b 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1478,6 +1602,7 @@ static struct excmd {
+@@ -1489,6 +1613,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -1093,7 +1093,7 @@ index 01e9adb2..e1898e6b 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1517,6 +1642,7 @@ static struct excmd {
+@@ -1528,6 +1653,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -1101,7 +1101,7 @@ index 01e9adb2..e1898e6b 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1539,6 +1665,7 @@ static struct excmd {
+@@ -1550,6 +1676,7 @@ static struct excmd {
  	EO(lim),
  	EO(led),
  	EO(vis),
@@ -1109,7 +1109,7 @@ index 01e9adb2..e1898e6b 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
-@@ -1701,6 +1828,244 @@ void ex(void)
+@@ -1712,6 +1839,244 @@ void ex(void)
  	xgrec--;
  }
  

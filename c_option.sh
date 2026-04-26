@@ -26,9 +26,9 @@ LB="0?"
 #DBG="0\?"
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-re p FAIL line 1704\\${SEP}p FAIL line 1704${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-re p FAIL line 1704\\${SEP}p FAIL line 1704${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1716\\${SEP}p FAIL line 1716${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1727\\${SEP}p FAIL line 1727${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -150,10 +150,10 @@ s/n\)/n, char** cmds, int cmdnum)/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 01e9adb2..4a1a1802 100644
+index 45b561b5..1a5b2f26 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1701,7 +1701,7 @@ void ex(void)
+@@ -1712,7 +1712,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -162,7 +162,7 @@ index 01e9adb2..4a1a1802 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1714,4 +1714,6 @@ void ex_init(char **files, int n)
+@@ -1725,4 +1725,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)

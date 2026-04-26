@@ -38,14 +38,14 @@ ${SEP}+2a 	if (!loc)
 	ret:
 ${SEP}.,\$;f> 
 void ex_init\\\\(.*\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 1706\\${SEP}p FAIL line 1706${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-re p FAIL line 1706\\${SEP}p FAIL line 1706${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
-	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-re p FAIL line 1708\\${SEP}p FAIL line 1708${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-re p FAIL line 1717\\${SEP}p FAIL line 1717${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-re p FAIL line 1717\\${SEP}p FAIL line 1717${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-re p FAIL line 1719\\${SEP}p FAIL line 1719${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	int i = n;
 ${SEP}.,\$;f> 	do \\\\{
-		xmpt = 0;${SEP}??!${DBG:-re p FAIL line 1711\\${SEP}p FAIL line 1711${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-re p FAIL line 1711\\${SEP}p FAIL line 1711${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-re p FAIL line 1713\\${SEP}p FAIL line 1713${INTR}${QF}}${SEP}${LB}
+		xmpt = 0;${SEP}??!${DBG:-re p FAIL line 1722\\${SEP}p FAIL line 1722${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-re p FAIL line 1722\\${SEP}p FAIL line 1722${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-re p FAIL line 1724\\${SEP}p FAIL line 1724${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
@@ -65,7 +65,7 @@ ${SEP}+1a 	if (stdin_fd) {
 		}
 		xmpt = MIN(xmpt, 1);
 	}
-${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1714\\${SEP}p FAIL line 1714${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1725\\${SEP}p FAIL line 1725${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -169,7 +169,7 @@ a extern int stdin_fd;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 01e9adb2..d2ff911b 100644
+index 45b561b5..cb335e28 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -356,7 +356,9 @@ int ex_edit(const char *path, int len)
@@ -193,7 +193,7 @@ index 01e9adb2..d2ff911b 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1703,15 +1708,36 @@ void ex(void)
+@@ -1714,15 +1719,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {

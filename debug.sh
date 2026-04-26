@@ -29,7 +29,7 @@ LB="0?"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1703\\${SEP}p FAIL line 1703${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1714\\${SEP}p FAIL line 1714${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 void ex_done(void)
 {
@@ -150,10 +150,10 @@ a void ex_done(void);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 01e9adb2..7299d0d4 100644
+index 45b561b5..df4b36fe 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1701,6 +1701,19 @@ void ex(void)
+@@ -1712,6 +1712,19 @@ void ex(void)
  	xgrec--;
  }
  

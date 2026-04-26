@@ -39,7 +39,7 @@ ${SEP}+2a 		if (*xb_path)
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-re p FAIL line 1450\\${SEP}p FAIL line 1450${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 1461\\${SEP}p FAIL line 1461${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
@@ -59,7 +59,7 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
 	EO\\\\(hlr\\\\),
-	EO\\\\(hl\\\\),${SEP}??!${DBG:-re p FAIL line 1537\\${SEP}p FAIL line 1537${INTR}${QF}}${SEP}${LB}
+	EO\\\\(hl\\\\),${SEP}??!${DBG:-re p FAIL line 1548\\${SEP}p FAIL line 1548${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lsp\", ec_lsp},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -1534,7 +1534,7 @@ void lsp_show_msg(char *msg);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 01e9adb2..c4c660bd 100644
+index 45b561b5..a56f0a4b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -374,6 +374,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -1555,7 +1555,7 @@ index 01e9adb2..c4c660bd 100644
  	}
  	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
  		ec_quit("", cmd, "");
-@@ -1448,6 +1452,23 @@ _EO(left,
+@@ -1459,6 +1463,23 @@ _EO(left,
  	return NULL;
  )
  
@@ -1579,7 +1579,7 @@ index 01e9adb2..c4c660bd 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1535,6 +1556,7 @@ static struct excmd {
+@@ -1546,6 +1567,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),

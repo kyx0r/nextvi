@@ -77,10 +77,10 @@ int map_read(int mode, int winch)
 }
 
 ${SEP}.,\$;f> 	\\\\{\"inc\", ec_setincl\\\\},
-	EO\\\\(ic\\\\),${SEP}??!${DBG:-re p FAIL line 1493\\${SEP}p FAIL line 1493${INTR}${QF}}${SEP}${LB}
+	EO\\\\(ic\\\\),${SEP}??!${DBG:-re p FAIL line 1504\\${SEP}p FAIL line 1504${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
-${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1500\\${SEP}p FAIL line 1500${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1511\\${SEP}p FAIL line 1511${INTR}${QF}}${SEP}${LB}
 ${SEP}.i 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -201,7 +201,7 @@ index d45d10a6..90efd6a5 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 01e9adb2..cdea6642 100644
+index 45b561b5..9e5901e6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -257,7 +257,7 @@ index 01e9adb2..cdea6642 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	if (!arg[0]) {
-@@ -1491,6 +1533,8 @@ static struct excmd {
+@@ -1502,6 +1544,8 @@ static struct excmd {
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
@@ -266,7 +266,7 @@ index 01e9adb2..cdea6642 100644
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
-@@ -1498,6 +1542,8 @@ static struct excmd {
+@@ -1509,6 +1553,8 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
