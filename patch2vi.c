@@ -470,11 +470,17 @@ static void emit_delete(FILE *out, int from, int to)
 static void emit_horizontal_change(FILE *out, int line, int char_start, int char_end,
 					const char *new_text)
 {
-	if (char_start == char_end)
+	if (!*new_text) {
+		if (char_start == char_end)
+			return;
+		fprintf(out, "%d;%d;%dd", line, char_start, char_end);
+	} else if (char_start == char_end) {
 		fprintf(out, "%d;%dc ", line, char_start);
-	else
+		emit_escaped_text(out, new_text);
+	} else {
 		fprintf(out, "%d;%d;%dc ", line, char_start, char_end);
-	emit_escaped_text(out, new_text);
+		emit_escaped_text(out, new_text);
+	}
 	EMIT_SEP(out);
 }
 
@@ -1830,12 +1836,15 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 					emit_custom_edit_lines(out, g->custom_relc_lines,
 					                       g->custom_relc_nlines);
 				} else {
-					if (g->ldc_start == g->ldc_end)
-						fprintf(out, ".;%dc", g->ldc_start);
-					else
-						fprintf(out, ".;%d;%dc", g->ldc_start, g->ldc_end);
-					fputc(' ', out);
-					emit_escaped_text(out, g->ldc_new_text);
+					if (!*g->ldc_new_text && g->ldc_start != g->ldc_end)
+						fprintf(out, ".;%d;%dd", g->ldc_start, g->ldc_end);
+					else if (g->ldc_start == g->ldc_end) {
+						fprintf(out, ".;%dc ", g->ldc_start);
+						emit_escaped_text(out, g->ldc_new_text);
+					} else {
+						fprintf(out, ".;%d;%dc ", g->ldc_start, g->ldc_end);
+						emit_escaped_text(out, g->ldc_new_text);
+					}
 				}
 				EMIT_SEP(out);
 				emit_err_check(out, g->del_start);
