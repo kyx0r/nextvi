@@ -746,11 +746,10 @@ ${SEP}+2a { int _wh = win_height(); \\\\
 ${SEP}.,\$;f> if \\\\(xrow < 0 \\\\|\\\\| xrow >= lbuf_len\\\\(xb\\\\)\\\\) \\\\\\\\
 	xrow = lbuf_len\\\\(xb\\\\) \\\\? lbuf_len\\\\(xb\\\\) - 1 : 0; \\\\\\\\
 if \\\\(xtop > xrow\\\\) \\\\\\\\${SEP}??!${DBG:-re p FAIL line 1182\\${SEP}p FAIL line 1182${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+4c 	xtop = xtop - _wh / 2 > xrow ? \\\\
+${SEP}+3,#+3c 	xtop = xtop - _wh / 2 > xrow ? \\\\
 			MAX(0, xrow - _wh / 2) : xrow; \\\\
 if (xtop + _wh <= xrow) \\\\
-	xtop = xtop + _wh + _wh / 2 <= xrow ? \\\\
-			xrow - _wh / 2 : xrow - _wh + 1; } \\\\
+	xtop = xrow - _wh + 1; } \\\\
 .
 ${SEP}.,\$;f> 	int mv, n, k, c;
 	xgrec\\\\+\\\\+;
@@ -1570,7 +1569,7 @@ index 68990b78..e2d214f8 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index f909fe0d..8ec6b336 100644
+index f909fe0d..814135f5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
@@ -1872,7 +1871,7 @@ index f909fe0d..8ec6b336 100644
  }
  
  static int vc_replace(void)
-@@ -1176,24 +1277,36 @@ static void vi_argcmd(int arg, char cmd)
+@@ -1176,13 +1277,14 @@ static void vi_argcmd(int arg, char cmd)
  }
  
  #define topfix() \
@@ -1884,15 +1883,14 @@ index f909fe0d..8ec6b336 100644
 -			MAX(0, xrow - xrows / 2) : xrow; \
 -if (xtop + xrows <= xrow) \
 -	xtop = xrow - xrows + 1; \
--
 +	xtop = xtop - _wh / 2 > xrow ? \
 +			MAX(0, xrow - _wh / 2) : xrow; \
 +if (xtop + _wh <= xrow) \
-+	xtop = xtop + _wh + _wh / 2 <= xrow ? \
-+			xrow - _wh / 2 : xrow - _wh + 1; } \
++	xtop = xrow - _wh + 1; } \
+ 
  void vi(int init)
  {
- 	char *ln, *cs;
+@@ -1190,10 +1292,21 @@ void vi(int init)
  	int mv, n, k, c;
  	xgrec++;
  	if (init) {
