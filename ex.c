@@ -765,8 +765,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	sbuf _sb, *sb = &_sb;
 	if (xvis & 1 && *arg) {
 		sb->s = arg;
-		sb->s_n = strlen(arg);
-		sb->s_sz = 0;
+		sb->s_n = 1;
 		key = 0;
 	} else {
 		_sbuf_make(sb, 128,)
@@ -796,14 +795,15 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	} else if (cmd[0] == 'i')
 		end = beg;
 	if (o1 >= 0 && cmd[0] == 'c') {
+		if (sb->s == arg)
+			sb->s_n = strlen(arg);
 		if (!sb->s_n && o2 <= o1)
 			goto ret;
 		char *p = lbuf_joinsb(xb, beg, end-1, sb, &o1, &o2);
 		o1 -= sb->s[0] == '\n';
-		if (sb->s_sz)
+		if (sb->s != arg)
 			free(sb->s);
 		sb->s = p;
-		sb->s_sz = 1;
 	} else if (!(xvis & 1) && key != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
@@ -814,7 +814,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (o1 >= 0)
 		xoff = o1;
 	ret:
-	if (sb->s_sz)
+	if (sb->s != arg)
 		free(sb->s);
 	return NULL;
 }
