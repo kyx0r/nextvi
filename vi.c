@@ -1182,8 +1182,7 @@ if (xtop > xrow) \
 	xtop = xtop - xrows / 2 > xrow ? \
 			MAX(0, xrow - xrows / 2) : xrow; \
 if (xtop + xrows <= xrow) \
-	xtop = xtop + xrows + xrows / 2 <= xrow ? \
-			xrow - xrows / 2 : xrow - xrows + 1; \
+	xtop = xrow - xrows + 1; \
 
 void vi(int init)
 {
