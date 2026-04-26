@@ -125,7 +125,7 @@ edit_cmd_abs:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 45b561b5..d8415643 100644
+index d8a2c535..68f08ea9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@

@@ -150,7 +150,7 @@ s/n\)/n, char** cmds, int cmdnum)/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 45b561b5..1a5b2f26 100644
+index d8a2c535..6d090a0d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1712,7 +1712,7 @@ void ex(void)

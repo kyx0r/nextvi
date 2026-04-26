@@ -52,7 +52,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 45b561b5..80f93996 100644
+index d8a2c535..c5904762 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -380,6 +380,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)

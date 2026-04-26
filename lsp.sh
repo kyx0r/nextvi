@@ -1534,7 +1534,7 @@ void lsp_show_msg(char *msg);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 45b561b5..a56f0a4b 100644
+index d8a2c535..16155edb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -374,6 +374,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)

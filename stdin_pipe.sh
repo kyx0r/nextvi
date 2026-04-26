@@ -169,7 +169,7 @@ a extern int stdin_fd;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 45b561b5..cb335e28 100644
+index d8a2c535..6f10c952 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -356,7 +356,9 @@ int ex_edit(const char *path, int len)
