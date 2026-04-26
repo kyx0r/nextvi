@@ -1527,10 +1527,12 @@ static void emit_custom_edit_lines(FILE *out, char **lines, int nlines)
 	/* Find first space: split command prefix from inline content */
 	const char *sp = strchr(first, ' ');
 	if (sp) {
+		int horiz = memchr(first, ';', sp - first) != NULL;
 		fwrite(first, 1, sp - first, out);  /* command prefix verbatim */
 		fputc(' ', out);
 		emit_escaped_text(out, sp + 1);     /* first content line escaped */
-		fputc('\n', out);
+		if (!horiz)
+			fputc('\n', out);
 		for (int k = 1; k < nlines; k++) {
 			emit_escaped_text(out, lines[k]);
 			fputc('\n', out);
