@@ -797,7 +797,7 @@ static int vi_motion(int vc, int *row, int *off)
 			return -1;
 		break;
 	case '%':
-		if (lbuf_pair(xb, "()[]{}", row, off))
+		if (lbuf_pair(xb, "()[]{}", 6, row, off))
 			return -1;
 		break;
 	default:
@@ -1473,7 +1473,7 @@ void vi(int init)
 				k = term_read(0);
 				if (k == 'i') {
 					k = term_read(0);
-					char open, close, pairs[3] = "";
+					char open, close, pairs[2];
 					switch(k) {
 					case ')': case '(': open='('; close=')'; break;
 					case ']': case '[': open='['; close=']'; break;
@@ -1500,7 +1500,7 @@ void vi(int init)
 								break;
 							}
 					} else
-						pair_found = !lbuf_pair(xb, pairs, &r2, &o2);
+						pair_found = !lbuf_pair(xb, pairs, 2, &r2, &o2);
 					if (pair_found && !lbuf_next(xb, 1, &r1, &o1)) {
 						vi_delete(r1, o1, r2, o2, 0);
 						if (c == 'c')
@@ -1760,9 +1760,9 @@ void vi(int init)
 			led_att la;
 			if (!led_attsb)
 				sbuf_make(led_attsb, sizeof(la) * 2)
-			if (!lbuf_pair(xb, "()[]{}", &row, &off)) {
+			if (!lbuf_pair(xb, "()[]{}", 6, &row, &off)) {
 				row1 = row; off1 = off;
-				if (!lbuf_pair(xb, "()[]{}", &row, &off)) {
+				if (!lbuf_pair(xb, "()[]{}", 6, &row, &off)) {
 					la.s = ln;
 					la.off = off;
 					la.att = hls[k].att[0];
