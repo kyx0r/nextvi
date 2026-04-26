@@ -116,12 +116,12 @@ ${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-re p FAIL line 355\\${SEP}
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
-	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-re p FAIL line 1830\\${SEP}p FAIL line 1830${INTR}${QF}}${SEP}${LB}
+	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-re p FAIL line 1829\\${SEP}p FAIL line 1829${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
 .
 ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
 			i\\\\+\\\\+;
-			break;${SEP}??!${DBG:-re p FAIL line 1846\\${SEP}p FAIL line 1846${INTR}${QF}}${SEP}${LB}
+			break;${SEP}??!${DBG:-re p FAIL line 1845\\${SEP}p FAIL line 1845${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
 .
@@ -182,7 +182,7 @@ a extern int stdin_fd;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index c195038b..7838a354 100644
+index 01e9adb2..d2ff911b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -356,7 +356,9 @@ int ex_edit(const char *path, int len)
@@ -328,10 +328,10 @@ index 68990b78..9b3a2a76 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index f909fe0d..e363d518 100644
+index b665a9f3..5d7ad877 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1828,6 +1828,7 @@ static void setup_signals(void)
+@@ -1827,6 +1827,7 @@ static void setup_signals(void)
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
  	sigaction(SIGWINCH, &sa, NULL);
@@ -339,7 +339,7 @@ index f909fe0d..e363d518 100644
  }
  
  int main(int argc, char *argv[])
-@@ -1843,7 +1844,8 @@ int main(int argc, char *argv[])
+@@ -1842,7 +1843,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -350,7 +350,7 @@ index f909fe0d..e363d518 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index bd944301..533cb50a 100644
+index 59f3543e..611ea1f4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -532,6 +532,7 @@ int conf_kmapfind(char *name);

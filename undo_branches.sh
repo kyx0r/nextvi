@@ -218,7 +218,7 @@ index d45d10a6..8c48ba96 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index c195038b..41957882 100644
+index 01e9adb2..bbc1e536 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1418,6 +1418,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
@@ -247,7 +247,7 @@ index c195038b..41957882 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index 09950361..3be397fc 100644
+index 081d478b..4ce7cf14 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -3,6 +3,7 @@ struct lbuf *lbuf_make(void)
@@ -392,7 +392,7 @@ index 09950361..3be397fc 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index bd944301..099f9be8 100644
+index 59f3543e..c1842e67 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -137,6 +137,7 @@ struct linfo {

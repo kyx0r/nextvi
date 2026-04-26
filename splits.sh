@@ -830,31 +830,31 @@ ${SEP}+2a 				case 'c':
 .
 ${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break; \\\\}
-			case TK_CTL\\\\('z'\\\\):${SEP}??!${DBG:-re p FAIL line 1556\\${SEP}p FAIL line 1556${INTR}${QF}}${SEP}${LB}
+			case TK_CTL\\\\('z'\\\\):${SEP}??!${DBG:-re p FAIL line 1555\\${SEP}p FAIL line 1555${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 			case TK_CTL('l'): {
 				int orows = xrows, ocols = xcols;
 .
 ${SEP}.,\$;f> 					term_done\\\\(\\\\);
 					term_init\\\\(\\\\);
-				\\\\}${SEP}??!${DBG:-re p FAIL line 1563\\${SEP}p FAIL line 1563${INTR}${QF}}${SEP}${LB}
+				\\\\}${SEP}??!${DBG:-re p FAIL line 1562\\${SEP}p FAIL line 1562${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				orows += !!vi_status;
 				if (xrows != orows || xcols != ocols)
 					win_size();
 .
-${SEP}.,\$f> 				vi_mod \\\\|= 1;${SEP}??!${DBG:-re p FAIL line 1565\\${SEP}p FAIL line 1565${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/;/; }/${SEP}??!${DBG:-re p FAIL line 1565\\${SEP}p FAIL line 1565${INTR}${QF}}${SEP}.,\$;f> 				ex_exec\\\\(\"left0:reg\"\\\\);
+${SEP}.,\$f> 				vi_mod \\\\|= 1;${SEP}??!${DBG:-re p FAIL line 1564\\${SEP}p FAIL line 1564${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/;/; }/${SEP}??!${DBG:-re p FAIL line 1564\\${SEP}p FAIL line 1564${INTR}${QF}}${SEP}.,\$;f> 				ex_exec\\\\(\"left0:reg\"\\\\);
 				break;
-			case 'Q':${SEP}??!${DBG:-re p FAIL line 1672\\${SEP}p FAIL line 1672${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, curwin ? curwin->x :/${SEP}??!${DBG:-re p FAIL line 1672\\${SEP}p FAIL line 1672${INTR}${QF}}${SEP}.,\$;f> 		\\\\}
+			case 'Q':${SEP}??!${DBG:-re p FAIL line 1671\\${SEP}p FAIL line 1671${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, curwin ? curwin->x :/${SEP}??!${DBG:-re p FAIL line 1671\\${SEP}p FAIL line 1671${INTR}${QF}}${SEP}.,\$;f> 		\\\\}
 		if \\\\(vi_mod\\\\)
-			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:-re p FAIL line 1735\\${SEP}p FAIL line 1735${INTR}${QF}}${SEP}${LB}
+			vi_col = vi_off2col\\\\(xb, xrow, xoff\\\\);${SEP}??!${DBG:-re p FAIL line 1734\\${SEP}p FAIL line 1734${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		{ int _ww = win_width();
 		if (vi_col >= xleft + _ww || vi_col < xleft)
 			xleft = vi_col < _ww ? 0 : vi_col - _ww / 2; }
 .
 ${SEP}.,\$;f> 			\\\\}
 		\\\\}
-		term_record = 1;${SEP}??!${DBG:-re p FAIL line 1778\\${SEP}p FAIL line 1778${INTR}${QF}}${SEP}${LB}
+		term_record = 1;${SEP}??!${DBG:-re p FAIL line 1777\\${SEP}p FAIL line 1777${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		/* save cursor position to current window */
 		if (curwin) {
 			curwin->row = xrow;
@@ -869,12 +869,12 @@ ${SEP}+3c 		/* save cursor position to current window */
 				vi_drawagain(xtop);
 		} else if (xleft != oleft
 .
-${SEP}.,\$f> 				\\\\|\\\\| \\\\(vi_lnnum && orow != xrow && !\\\\(vi_lnnum == 2\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 1780\\${SEP}p FAIL line 1780${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/\\\\)\\\\)/)) {/${SEP}??!${DBG:-re p FAIL line 1780\\${SEP}p FAIL line 1780${INTR}${QF}}${SEP}.,\$f> 			vi_drawagain\\\\(xtop\\\\);${SEP}??!${DBG:-re p FAIL line 1782\\${SEP}p FAIL line 1782${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 				\\\\|\\\\| \\\\(vi_lnnum && orow != xrow && !\\\\(vi_lnnum == 2\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 1779\\${SEP}p FAIL line 1779${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/\\\\)\\\\)/)) {/${SEP}??!${DBG:-re p FAIL line 1779\\${SEP}p FAIL line 1779${INTR}${QF}}${SEP}.,\$f> 			vi_drawagain\\\\(xtop\\\\);${SEP}??!${DBG:-re p FAIL line 1781\\${SEP}p FAIL line 1781${INTR}${QF}}${SEP}${LB}
 ${SEP}+1,#+1c 		} else if (*vi_word && (ooff != xoff || vi_mod & 2)
 				&& xrow+1 < xtop + win_height()) {
 .
-${SEP}.,\$f> 			vi_drawrow\\\\(xrow\\\\+1\\\\);${SEP}??!${DBG:-re p FAIL line 1785\\${SEP}p FAIL line 1785${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 			vi_drawrow\\\\(xrow\\\\+1\\\\);${SEP}??!${DBG:-re p FAIL line 1784\\${SEP}p FAIL line 1784${INTR}${QF}}${SEP}${LB}
 ${SEP}+1,#+1c 		} else if (xtop != otop) {
 			if (nwins > 1)
 				vi_drawagain(xtop);
@@ -883,11 +883,11 @@ ${SEP}+1,#+1c 		} else if (xtop != otop) {
 		}
 .
 ${SEP}.,\$;f> 		if \\\\(xhll\\\\) \\\\{
-			syn_blockhl = -1;${SEP}??!${DBG:-re p FAIL line 1789\\${SEP}p FAIL line 1789${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/xrows/win_height()/${SEP}??!${DBG:-re p FAIL line 1789\\${SEP}p FAIL line 1789${INTR}${QF}}${SEP}.,\$;f> 			if \\\\(xmpt > 0\\\\)
+			syn_blockhl = -1;${SEP}??!${DBG:-re p FAIL line 1788\\${SEP}p FAIL line 1788${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/xrows/win_height()/${SEP}??!${DBG:-re p FAIL line 1788\\${SEP}p FAIL line 1788${INTR}${QF}}${SEP}.,\$;f> 			if \\\\(xmpt > 0\\\\)
 				xmpt = 0;
-		\\\\}${SEP}??!${DBG:-re p FAIL line 1807\\${SEP}p FAIL line 1807${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +/${SEP}??!${DBG:-re p FAIL line 1807\\${SEP}p FAIL line 1807${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+		\\\\}${SEP}??!${DBG:-re p FAIL line 1806\\${SEP}p FAIL line 1806${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +/${SEP}??!${DBG:-re p FAIL line 1806\\${SEP}p FAIL line 1806${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void term_kill\\\\(void\\\\);${SEP}??!${DBG:-re p FAIL line 319\\${SEP}p FAIL line 319${INTR}${QF}}${SEP}${LB}
@@ -967,7 +967,7 @@ index d45d10a6..90a5db99 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index c195038b..c0548f7c 100644
+index 01e9adb2..e1898e6b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -1569,7 +1569,7 @@ index 68990b78..e2d214f8 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index f909fe0d..814135f5 100644
+index b665a9f3..9d2e8758 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
@@ -2004,7 +2004,7 @@ index f909fe0d..814135f5 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1553,7 +1693,8 @@ void vi(int init)
+@@ -1552,7 +1692,8 @@ void vi(int init)
  				vi_mod |= 1;
  				break; }
  			case TK_CTL('z'):
@@ -2014,7 +2014,7 @@ index f909fe0d..814135f5 100644
  				if (c == TK_CTL('z')) {
  					term_pos(xrows, 0);
  					term_suspend();
-@@ -1561,8 +1702,11 @@ void vi(int init)
+@@ -1560,8 +1701,11 @@ void vi(int init)
  					term_done();
  					term_init();
  				}
@@ -2027,7 +2027,7 @@ index f909fe0d..814135f5 100644
  			case 'm':
  				lbuf_mark(xb, term_read(0), xrow, xoff);
  				break;
-@@ -1669,7 +1813,7 @@ void vi(int init)
+@@ -1668,7 +1812,7 @@ void vi(int init)
  				ex_exec("left0:reg");
  				break;
  			case 'Q':
@@ -2036,7 +2036,7 @@ index f909fe0d..814135f5 100644
  				xleft = vi_arg ? xleft : 0;
  				led_modeswap();
  				vi_mod |= 1;
-@@ -1732,8 +1876,9 @@ void vi(int init)
+@@ -1731,8 +1875,9 @@ void vi(int init)
  		}
  		if (vi_mod)
  			vi_col = vi_off2col(xb, xrow, xoff);
@@ -2048,7 +2048,7 @@ index f909fe0d..814135f5 100644
  		n = led_pos(ln, ren_cursor(ln, vi_col));
  		if (xmpt > 1) {
  			if (!xpln)
-@@ -1775,18 +1920,34 @@ void vi(int init)
+@@ -1774,18 +1919,34 @@ void vi(int init)
  			}
  		}
  		term_record = 1;
@@ -2090,7 +2090,7 @@ index f909fe0d..814135f5 100644
  				if (!(vi_mod & 1))
  					vi_drawrow(orow);
  			syn_blockhl = -1;
-@@ -1804,7 +1965,7 @@ void vi(int init)
+@@ -1803,7 +1964,7 @@ void vi(int init)
  			if (xmpt > 0)
  				xmpt = 0;
  		}
@@ -2100,7 +2100,7 @@ index f909fe0d..814135f5 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index bd944301..53cf5cbb 100644
+index 59f3543e..17e70566 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -317,6 +317,7 @@ void term_suspend(void);

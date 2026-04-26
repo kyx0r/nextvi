@@ -211,7 +211,7 @@ index 2372d3b8..3b294bc7 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 09950361..dc4bdc3d 100644
+index 081d478b..184b1b8f 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -476,24 +476,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -391,7 +391,7 @@ index 875905a8..971996f0 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index f909fe0d..e806a03b 100644
+index b665a9f3..460ac304 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -403,7 +403,7 @@ index f909fe0d..e806a03b 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index bd944301..c489ef1f 100644
+index 59f3543e..4c0d8ed1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -259,7 +259,8 @@ int syn_addhl(char *reg, int id);

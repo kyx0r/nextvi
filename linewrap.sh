@@ -275,7 +275,7 @@ index d45d10a6..2551655e 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index c195038b..ed17c9cf 100644
+index 01e9adb2..abb8730d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -316,7 +316,7 @@ index c195038b..ed17c9cf 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
 diff --git a/lbuf.c b/lbuf.c
-index 09950361..672b0206 100644
+index 081d478b..25032e13 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -82,16 +82,50 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -485,7 +485,7 @@ index 09950361..672b0206 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index f909fe0d..f55414f2 100644
+index b665a9f3..c1fdd26d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -168,6 +168,22 @@ static void vi_drawrow(int row)
@@ -512,7 +512,7 @@ index f909fe0d..f55414f2 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index bd944301..9f421c96 100644
+index 59f3543e..2896a2cb 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -133,6 +133,8 @@ struct lopt {

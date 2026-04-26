@@ -141,7 +141,7 @@ ${SEP}+2a 				case 'x':
 .
 ${SEP}.,\$;f> 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
 	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);
-	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-re p FAIL line 1841\\${SEP}p FAIL line 1841${INTR}${QF}}${SEP}${LB}
+	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-re p FAIL line 1840\\${SEP}p FAIL line 1840${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	temp_open(3, \"/grep/\", grep_ft);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -186,7 +186,7 @@ index d45d10a6..cbfd3b5d 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index c195038b..0642985f 100644
+index 01e9adb2..ca1f12ba 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,7 +38,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -199,7 +199,7 @@ index c195038b..0642985f 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index f909fe0d..1f32de73 100644
+index b665a9f3..770ffe43 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -485,12 +485,12 @@ void dir_calc(char *path)
@@ -326,7 +326,7 @@ index f909fe0d..1f32de73 100644
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					char buf[cs ? strlen(cs)+30 : 30];
-@@ -1839,6 +1888,7 @@ int main(int argc, char *argv[])
+@@ -1838,6 +1887,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
@@ -335,7 +335,7 @@ index f909fe0d..1f32de73 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index bd944301..87ac6591 100644
+index 59f3543e..efe2a98e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -441,7 +441,7 @@ extern sbuf *xacreg;

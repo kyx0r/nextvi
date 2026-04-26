@@ -71,7 +71,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}9a #include <time.h>
 .
 ${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
-				ins:${SEP}??!${DBG:-re p FAIL line 1531\\${SEP}p FAIL line 1531${INTR}${QF}}${SEP}${LB}
+				ins:${SEP}??!${DBG:-re p FAIL line 1530\\${SEP}p FAIL line 1530${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (xqe)
 					vi_mod |= 2;
 .
@@ -161,7 +161,7 @@ index d45d10a6..352facd4 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index c195038b..fe5988a8 100644
+index 01e9adb2..54c119b1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -221,7 +221,7 @@ index 6a5e065f..1b43d40d 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index f909fe0d..9683bbfb 100644
+index b665a9f3..d5d598e8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -232,7 +232,7 @@ index f909fe0d..9683bbfb 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1529,6 +1530,8 @@ void vi(int init)
+@@ -1528,6 +1529,8 @@ void vi(int init)
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
@@ -242,7 +242,7 @@ index f909fe0d..9683bbfb 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index bd944301..9b4ef8bf 100644
+index 59f3543e..cfbda0d9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -361,6 +361,7 @@ typedef struct {

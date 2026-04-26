@@ -1451,7 +1451,7 @@ ${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 .
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-re p FAIL line 1636\\${SEP}p FAIL line 1636${INTR}${QF}}${SEP}${LB}
+					goto rep;${SEP}??!${DBG:-re p FAIL line 1635\\${SEP}p FAIL line 1635${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
@@ -1461,7 +1461,7 @@ ${SEP}+2a 				} else if (k == 'K') {
 .
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
-		\\\\}${SEP}??!${DBG:-re p FAIL line 1799\\${SEP}p FAIL line 1799${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-re p FAIL line 1798\\${SEP}p FAIL line 1798${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
@@ -1470,7 +1470,7 @@ ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 .
 ${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-re p FAIL line 1838\\${SEP}p FAIL line 1838${INTR}${QF}}${SEP}${LB}
+	syn_init\\\\(\\\\);${SEP}??!${DBG:-re p FAIL line 1837\\${SEP}p FAIL line 1837${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lsp_init();
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -1549,7 +1549,7 @@ void lsp_show_msg(char *msg);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index c195038b..32aecd78 100644
+index 01e9adb2..c4c660bd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -374,6 +374,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -2995,7 +2995,7 @@ index 68990b78..8b893398 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index f909fe0d..28429a07 100644
+index b665a9f3..e8c6efe0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -3015,7 +3015,7 @@ index f909fe0d..28429a07 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
-@@ -1634,6 +1637,12 @@ void vi(int init)
+@@ -1633,6 +1636,12 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
@@ -3028,7 +3028,7 @@ index f909fe0d..28429a07 100644
  				}
  				break;
  			case 'x':
-@@ -1797,6 +1806,11 @@ void vi(int init)
+@@ -1796,6 +1805,11 @@ void vi(int init)
  			syn_blockhl = -1;
  			vi_drawrow(xrow);
  		}
@@ -3040,7 +3040,7 @@ index f909fe0d..28429a07 100644
  		if (vi_status && xmpt < 1) {
  			xrows -= term_resized != vi_status;
  			vi_status = term_resized;
-@@ -1836,6 +1850,7 @@ int main(int argc, char *argv[])
+@@ -1835,6 +1849,7 @@ int main(int argc, char *argv[])
  	setup_signals();
  	dir_init();
  	syn_init();
@@ -3049,7 +3049,7 @@ index f909fe0d..28429a07 100644
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
 diff --git a/vi.h b/vi.h
-index bd944301..b5b60318 100644
+index 59f3543e..a9e86df8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -538,3 +538,18 @@ extern int vi_lncol;

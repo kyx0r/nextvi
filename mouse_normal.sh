@@ -361,7 +361,7 @@ index d45d10a6..0c639553 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index c195038b..ce10bc88 100644
+index 01e9adb2..f88508cc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -570,7 +570,7 @@ index 68990b78..69513f5b 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index f909fe0d..5709ad28 100644
+index b665a9f3..0b06d5d6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -554,6 +554,9 @@ static void vc_status(int type)
@@ -616,7 +616,7 @@ index f909fe0d..5709ad28 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index bd944301..f40164e9 100644
+index 59f3543e..29493525 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -319,6 +319,9 @@ void term_pos(int r, int c);

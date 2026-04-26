@@ -125,14 +125,14 @@ ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1360\
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1473\\${SEP}p FAIL line 1473${INTR}${QF}}${SEP}.,\$f> 				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 1475\\${SEP}p FAIL line 1475${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1475\\${SEP}p FAIL line 1475${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
 				break;
-			case 'z':${SEP}??!${DBG:-re p FAIL line 1574\\${SEP}p FAIL line 1574${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1574\\${SEP}p FAIL line 1574${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 1;
+			case 'z':${SEP}??!${DBG:-re p FAIL line 1573\\${SEP}p FAIL line 1573${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1573\\${SEP}p FAIL line 1573${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break;
-			case 'g':${SEP}??!${DBG:-re p FAIL line 1606\\${SEP}p FAIL line 1606${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1606\\${SEP}p FAIL line 1606${INTR}${QF}}${SEP}.,\$;f> 					continue;
+			case 'g':${SEP}??!${DBG:-re p FAIL line 1605\\${SEP}p FAIL line 1605${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1605\\${SEP}p FAIL line 1605${INTR}${QF}}${SEP}.,\$;f> 					continue;
 				break;
-			case 'Z':${SEP}??!${DBG:-re p FAIL line 1680\\${SEP}p FAIL line 1680${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1680\\${SEP}p FAIL line 1680${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+			case 'Z':${SEP}??!${DBG:-re p FAIL line 1679\\${SEP}p FAIL line 1679${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1679\\${SEP}p FAIL line 1679${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-re p FAIL line 465\\${SEP}p FAIL line 465${INTR}${QF}}${SEP}${LB}
@@ -206,7 +206,7 @@ index d45d10a6..90efd6a5 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index c195038b..41dde426 100644
+index 01e9adb2..cdea6642 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -294,7 +294,7 @@ index 6a5e065f..1357b20e 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index f909fe0d..8861e340 100644
+index b665a9f3..383440ef 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -374,10 +374,10 @@ index f909fe0d..8861e340 100644
  				if (k == 'i') {
 -					k = term_read(0);
 +					k = map_read(0, 0);
- 					char open, close, pairs[3] = "";
+ 					char pairs[2];
  					switch(k) {
- 					case ')': case '(': open='('; close=')'; break;
-@@ -1571,7 +1571,7 @@ void vi(int init)
+ 					case ')': case '(': pairs[0]='('; pairs[1]=')'; break;
+@@ -1570,7 +1570,7 @@ void vi(int init)
  				vi_mod |= vc_put(c);
  				break;
  			case 'z':
@@ -386,7 +386,7 @@ index f909fe0d..8861e340 100644
  				switch (k) {
  				case '\n':
  					xtop = xrow;
-@@ -1603,7 +1603,7 @@ void vi(int init)
+@@ -1602,7 +1602,7 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'g':
@@ -395,7 +395,7 @@ index f909fe0d..8861e340 100644
  				if (k == 'g')
  					term_push("1G", 2);
  				else if (k == 'a') {
-@@ -1677,7 +1677,7 @@ void vi(int init)
+@@ -1676,7 +1676,7 @@ void vi(int init)
  					continue;
  				break;
  			case 'Z':
@@ -405,7 +405,7 @@ index f909fe0d..8861e340 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index bd944301..4dd9a33e 100644
+index 59f3543e..c7241bd6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -463,6 +463,7 @@ extern struct buf *ex_pbuf;

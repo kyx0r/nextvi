@@ -352,7 +352,7 @@ s/et/tr/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index c195038b..a33aaf62 100644
+index 01e9adb2..d44dd31b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ int xsep = ':';			/* ex command separator */
@@ -553,7 +553,7 @@ index c195038b..a33aaf62 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 09950361..810c1efa 100644
+index 081d478b..df01e784 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -476,11 +476,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -728,7 +728,7 @@ index ff88bb41..fc39e70f 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index f909fe0d..bcb59585 100644
+index b665a9f3..2ef67e64 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -426,7 +426,7 @@ static void vi_regput(int c, const char *s, int lnmode)
@@ -750,7 +750,7 @@ index f909fe0d..bcb59585 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index bd944301..72ef15a9 100644
+index 59f3543e..514eaa3e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -110,12 +110,24 @@ typedef struct {

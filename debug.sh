@@ -157,7 +157,7 @@ a void ex_done(void);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index c195038b..653899c8 100644
+index 01e9adb2..7299d0d4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1701,6 +1701,19 @@ void ex(void)
@@ -228,7 +228,7 @@ index a98fc3fa..34883c30 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.h b/vi.h
-index bd944301..88500262 100644
+index 59f3543e..381578f9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -216,6 +216,7 @@ int ren_noeol(char *s, int p);

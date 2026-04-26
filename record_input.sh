@@ -106,7 +106,7 @@ index d45d10a6..0529482d 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index c195038b..0870171b 100644
+index 01e9adb2..0cc10760 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -148,7 +148,7 @@ index 68990b78..0438e9e2 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index bd944301..2ccd682e 100644
+index 59f3543e..b7185171 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -424,6 +424,7 @@ extern int xpr;

@@ -288,7 +288,7 @@ index d45d10a6..b22cdc46 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index c195038b..c071ac3c 100644
+index 01e9adb2..b3129663 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -513,7 +513,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -327,7 +327,7 @@ index c195038b..c071ac3c 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 09950361..5cb40929 100644
+index 081d478b..0f36d0d7 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -480,7 +480,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
@@ -548,7 +548,7 @@ index a98fc3fa..0d972388 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index f909fe0d..1c0ad2d5 100644
+index b665a9f3..8aaf6c9e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -626,7 +626,7 @@ index f909fe0d..1c0ad2d5 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index bd944301..115bc62e 100644
+index 59f3543e..cd2bad23 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -495,7 +495,7 @@ extern const int ftslen;

@@ -130,7 +130,7 @@ EO\(pac\)
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index c195038b..85f2706d 100644
+index 01e9adb2..0b25ac48 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,6 +37,7 @@ int xexec_dep;			/* ex_exec recursion depth */

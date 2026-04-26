@@ -36,12 +36,12 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 
-int main\\\\(int argc${SEP}??!${DBG:-re p FAIL line 1835\\${SEP}p FAIL line 1835${INTR}${QF}}${SEP}${LB}
+int main\\\\(int argc${SEP}??!${DBG:-re p FAIL line 1834\\${SEP}p FAIL line 1834${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 .
 ${SEP}.,\$;f> 			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}${LB}
+				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1857\\${SEP}p FAIL line 1857${INTR}${QF}}${SEP}${LB}
 ${SEP}.c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -55,12 +55,12 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 				}
 			} else {
 .
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1860\\${SEP}p FAIL line 1860${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1859\\${SEP}p FAIL line 1859${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}.;46c c
 .
-${SEP}??!${DBG:-re p FAIL line 1860\\${SEP}p FAIL line 1860${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
-		term_scrh;${SEP}??!${DBG:-re p FAIL line 1870\\${SEP}p FAIL line 1870${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-re p FAIL line 1870\\${SEP}p FAIL line 1870${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}??!${DBG:-re p FAIL line 1859\\${SEP}p FAIL line 1859${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
+		term_scrh;${SEP}??!${DBG:-re p FAIL line 1869\\${SEP}p FAIL line 1869${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-re p FAIL line 1869\\${SEP}p FAIL line 1869${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-re p FAIL line 477\\${SEP}p FAIL line 477${INTR}${QF}}${SEP}${LB}
@@ -155,7 +155,7 @@ s/n\)/n, char** cmds, int cmdnum)/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index c195038b..51c7c36f 100644
+index 01e9adb2..4a1a1802 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1701,7 +1701,7 @@ void ex(void)
@@ -175,10 +175,10 @@ index c195038b..51c7c36f 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index f909fe0d..654198c7 100644
+index b665a9f3..35375699 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1832,7 +1832,8 @@ static void setup_signals(void)
+@@ -1831,7 +1831,8 @@ static void setup_signals(void)
  
  int main(int argc, char *argv[])
  {
@@ -188,7 +188,7 @@ index f909fe0d..654198c7 100644
  	setup_signals();
  	dir_init();
  	syn_init();
-@@ -1855,9 +1856,20 @@ int main(int argc, char *argv[])
+@@ -1854,9 +1855,20 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis = 0;
@@ -211,7 +211,7 @@ index f909fe0d..654198c7 100644
  				return EXIT_FAILURE;
  			}
  		}
-@@ -1867,7 +1879,7 @@ int main(int argc, char *argv[])
+@@ -1866,7 +1878,7 @@ int main(int argc, char *argv[])
  		term_init();
  	if (xvis & 8)
  		term_scrh;
@@ -221,7 +221,7 @@ index f909fe0d..654198c7 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index bd944301..3ea588a6 100644
+index 59f3543e..8e80297f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -474,7 +474,7 @@ void *ex_exec(const char *ln);
