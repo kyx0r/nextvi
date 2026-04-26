@@ -509,6 +509,8 @@ EX COMMANDS
              Enter ex insert mode before specified position
 
              str specifies initial input into the insertion buffer.
+             str in raw ex mode is injected directly and bypasses the
+             interactive mode.
 
              Example: insert "hello" in vi/ex
              :i hello<^M><ESC>
@@ -519,7 +521,11 @@ EX COMMANDS
              Example: immediately insert "hello"
              :i hello<^V><ESC>
              Example: insert "hello" in raw ex mode
-             i hello<^M>.<^M>
+             i hello
+             Example: insert two lines in raw ex mode
+             i hello<^M>world
+             Example: insert "hello" in raw ex mode (interactive)
+             i<^M>hello<^M>.<^M>
 
      [vrange]a[str]
              Enter ex insert mode after specified position
@@ -1277,9 +1283,9 @@ CODE MAP
      | 651 lbuf.c   |  file/line buffer    |
      | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1717 ex.c    |  ex options/commands |
+     | 1728 ex.c    |  ex options/commands |
      | 1878 vi.c    |  normal mode/general |
-     | 7488 total   |  wc -l *.c|sort      |
+     | 7499 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
