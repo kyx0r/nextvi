@@ -1473,29 +1473,28 @@ void vi(int init)
 				k = term_read(0);
 				if (k == 'i') {
 					k = term_read(0);
-					char open, close, pairs[2];
+					char pairs[2];
 					switch(k) {
-					case ')': case '(': open='('; close=')'; break;
-					case ']': case '[': open='['; close=']'; break;
-					case '}': case '{': open='{'; close='}'; break;
-					case '>': case '<': open='<'; close='>'; break;
-					default: open = k; close = k; break;
+					case ')': case '(': pairs[0]='('; pairs[1]=')'; break;
+					case ']': case '[': pairs[0]='['; pairs[1]=']'; break;
+					case '}': case '{': pairs[0]='{'; pairs[1]='}'; break;
+					case '>': case '<': pairs[0]='<'; pairs[1]='>'; break;
+					default: pairs[0] = k; pairs[1] = k; break;
 					}
-					if (TK_INT(open))
+					if (TK_INT(pairs[0]))
 						break;
-					pairs[0] = open; pairs[1] = close;
 					int r1 = xrow, o1 = xoff, r2, o2;
-					int dir = (k == close && open != close) ? -1 : 1;
+					int dir = (k == pairs[1] && pairs[0] != pairs[1]) ? -1 : 1;
 					int pair_found = 0;
 					ren_position(lbuf_get(xb, r1));
-					while (*rstate->chrs[o1] != open)
+					while (*rstate->chrs[o1] != pairs[0])
 						if (lbuf_next(xb, dir, &r1, &o1))
 							goto out;
 					r2 = r1;
 					o2 = o1;
-					if (open == close) {
+					if (pairs[0] == pairs[1]) {
 						while (!lbuf_next(xb, 1, &r2, &o2))
-							if (*rstate->chrs[o2] == close) {
+							if (*rstate->chrs[o2] == pairs[1]) {
 								pair_found = 1;
 								break;
 							}
