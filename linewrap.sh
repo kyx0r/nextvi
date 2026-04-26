@@ -32,7 +32,6 @@ ${SEP}+3${SEP}s/\\\\\\\\\$/lw|\\\\\\\\/${SEP}??!${DBG:-re p FAIL line 290\\${SEP
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP}${LB}
 ${SEP}.i int xlw;			/* soft linewrap col */
-.
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
@@ -54,12 +53,10 @@ ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-.
 ${SEP}.,\$;f> 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
 	EO\\\\(led\\\\),${SEP}??!${DBG:-re p FAIL line 1540\\${SEP}p FAIL line 1540${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lw\", ec_linewrap},
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
@@ -67,13 +64,11 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> \\\\{
 	int i, pos = lo->pos;
 	if \\\\(s\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 84\\${SEP}p FAIL line 84${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		char *lwp = NULL;
-.
 ${SEP}.,\$;f> 			struct linfo \\\\*n = emalloc\\\\(l_nonl \\\\+ 5 \\\\+ sizeof\\\\(struct linfo\\\\)\\\\);
 			n->len = l_nonl;
 			n->grec = 0;${SEP}??!${DBG:-re p FAIL line 90\\${SEP}p FAIL line 90${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			n->lw_prev = NULL;
 			n->lw_next = NULL;
-.
 ${SEP}.,\$;f> 			memcpy\\\\(ln, s, l_nonl\\\\);
 			memset\\\\(&ln\\\\[l_nonl \\\\+ 1\\\\], 0, 4\\\\);	/\\\\* fault tolerance pad \\\\*/
 			ln\\\\[l_nonl\\\\] = '\\\\\\\\n';${SEP}??!${DBG:-re p FAIL line 94\\${SEP}p FAIL line 94${INTR}${QF}}${SEP}${LB}
@@ -108,7 +103,6 @@ ${SEP}+2a 			if (xlw) {
 				}
 			}
 			too_small:
-.
 ${SEP}.,\$;f> 		end = lb->ln_n;
 	if \\\\(beg == end && !buf\\\\)
 		return;${SEP}??!${DBG:-re p FAIL line 187\\${SEP}p FAIL line 187${INTR}${QF}}${SEP}${LB}
@@ -130,7 +124,6 @@ ${SEP}+2a 	/* save chain boundary pointers before edit */
 			}
 		}
 	}
-.
 ${SEP}.,\$;f> 	struct lopt \\\\*lo = lbuf_opt\\\\(lb, beg, o1, end - beg\\\\);
 	sbuf_smake\\\\(sb, sizeof\\\\(lo->ins\\\\[0\\\\]\\\\)\\\\+1\\\\)
 	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);${SEP}??!${DBG:-re p FAIL line 190\\${SEP}p FAIL line 190${INTR}${QF}}${SEP}${LB}
@@ -155,7 +148,6 @@ ${SEP}+2a 	/* relink the chain after edit */
 				lbuf_s(chain_succ)->lw_prev = chain_pred;
 		}
 	}
-.
 ${SEP}.,\$;f> 	for \\\\(int i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lb->ln\\\\[i\\\\];
 		long nw = 0;${SEP}??!${DBG:-re p FAIL line 237\\${SEP}p FAIL line 237${INTR}${QF}}${SEP}${LB}
@@ -183,7 +175,6 @@ ${SEP}+2a 		/* relink chain: restored lines have original pointers */
 					lbuf_s(succ)->lw_prev = pred;
 			}
 		}
-.
 ${SEP}.,\$;f> 		lo->ref = 2;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->ins;
 		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:-re p FAIL line 418\\${SEP}p FAIL line 418${INTR}${QF}}${SEP}${LB}
@@ -208,7 +199,6 @@ ${SEP}+2a 		/* relink chain: restored lines have their pointers from edit time *
 					lbuf_s(succ)->lw_prev = pred;
 			}
 		}
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
@@ -231,7 +221,6 @@ ${SEP}+2a 	if (xlw && s) {
 			sbuf_mem(led_attsb, &la, (int)sizeof(la))
 		}
 	}
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
@@ -240,12 +229,10 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> struct linfo \\\\{
 	int grec;${SEP}??!${DBG:-re p FAIL line 135\\${SEP}p FAIL line 135${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	char *lw_prev;
 	char *lw_next;
-.
 ${SEP}.,\$;f> extern int xlim;
 extern int xseq;
 extern int xerr;${SEP}??!${DBG:-re p FAIL line 426\\${SEP}p FAIL line 426${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a extern int xlw;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

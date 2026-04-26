@@ -34,7 +34,6 @@ ${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:-re p FAIL line 661\\${SEP}p FAIL line 66
 	case '\\\\]':${SEP}??!${DBG:-re p FAIL line 701\\${SEP}p FAIL line 701${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		var = mv == '[' || mv == ']' ? '{' : '\\\\n';
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0

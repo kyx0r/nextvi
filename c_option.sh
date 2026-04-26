@@ -31,7 +31,6 @@ ${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-re p FAIL line
 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1716\\${SEP}p FAIL line 1716${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
@@ -39,7 +38,6 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f>
 int main\\\\(int argc${SEP}??!${DBG:-re p FAIL line 1834\\${SEP}p FAIL line 1834${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
-.
 ${SEP}.,\$;f> 			else \\\\{
 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1857\\${SEP}p FAIL line 1857${INTR}${QF}}${SEP}${LB}
 ${SEP}.c 			else if (argv[i][j] == 'c') {
@@ -54,11 +52,8 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 					return EXIT_FAILURE;
 				}
 			} else {
-.
 ${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1859\\${SEP}p FAIL line 1859${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}.;46c c
-.
-${SEP}??!${DBG:-re p FAIL line 1859\\${SEP}p FAIL line 1859${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
+${SEP}+1${SEP}.;46c c${SEP}??!${DBG:-re p FAIL line 1859\\${SEP}p FAIL line 1859${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
 		term_scrh;${SEP}??!${DBG:-re p FAIL line 1869\\${SEP}p FAIL line 1869${INTR}${QF}}${SEP}${LB}
 ${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-re p FAIL line 1869\\${SEP}p FAIL line 1869${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 

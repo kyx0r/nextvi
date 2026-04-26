@@ -47,12 +47,10 @@ ${SEP}+2a #ifdef __SSE2__
 		i += 16;
 	}
 #else
-.
 ${SEP}.,\$;f> 	register const char \\\\*i;
 	for \\\\(i=s; \\\\*i && \\\\*i != delim; \\\\+\\\\+i\\\\);
 	return i-s;${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #endif
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: ren.c
@@ -92,11 +90,9 @@ ${SEP}+3,#+1c 	} else {
 		} else
 #endif
 		for (; (l = uc_len(ss)); n++)
-.
 ${SEP}.,\$f> 			ss \\\\+= l;${SEP}??!${DBG:-re p FAIL line 113\\${SEP}p FAIL line 113${INTR}${QF}}${SEP}${LB}
 ${SEP}.a count_done:;
 	}
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
 # Patch: uc.c
@@ -131,7 +127,6 @@ ${SEP}+2a #ifdef __SSE2__
 		return n;
 	}
 #endif
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 
 # Patch: vi.c
@@ -140,7 +135,6 @@ ${SEP}.i #ifdef __SSE2__
 #include <stdint.h>
 #include <emmintrin.h>
 #endif
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0

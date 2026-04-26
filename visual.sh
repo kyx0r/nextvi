@@ -38,7 +38,6 @@ static int vi_nlmode;			/\\\\* new line mode for vi regions \\\\*/${SEP}??!${DBG
 ${SEP}+2a static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
 static int vi_vrow;			/* selection anchor row */
 static int vi_voff;			/* selection anchor column */
-.
 ${SEP}.,\$;f> 	ret = func; \\\\\\\\
 \\\\} \\\\} \\\\\\\\
 
@@ -85,24 +84,20 @@ ${SEP}+2a static void vi_visual_attrib(char *s, int row)
 	}
 }
 
-.
 ${SEP}.,\$;f> 		vi_lncol = dir_context\\\\(s\\\\) < 0 \\\\? 0 : l1;
 		memset\\\\(c, ' ', l1 - \\\\(c - tmp\\\\)\\\\);
 		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';${SEP}??!${DBG:-re p FAIL line 193\\${SEP}p FAIL line 193${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		vi_visual_attrib(s, row);
-.
 ${SEP}.,\$;f> 		restore\\\\(ftidx\\\\)
 		return;
 	\\\\}${SEP}??!${DBG:-re p FAIL line 212\\${SEP}p FAIL line 212${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	vi_visual_attrib(s, row);
-.
 ${SEP}.,\$;f> 	char cbuf\\\\[8\\\\] = \"\", vi_msg\\\\[512\\\\], \\\\*c;
 	col = vi_off2col\\\\(xb, xrow, xoff\\\\);
 	col = ren_cursor\\\\(lbuf_get\\\\(xb, xrow\\\\), col\\\\) \\\\+ 1;${SEP}??!${DBG:-re p FAIL line 538\\${SEP}p FAIL line 538${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	char *vs = vi_visual == 'V' ? \"-- VISUAL LINE -- \" :
 		   vi_visual == 'b' ? \"-- VISUAL BLOCK -- \" :
 		   vi_visual ? \"-- VISUAL -- \" : \"\";
-.
 ${SEP}.,\$;f> 		c = rstate->chrs\\\\[xoff\\\\];
 		uc_code\\\\(cp, c, l\\\\)
 		memcpy\\\\(cbuf, c, l\\\\);${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP}${LB}
@@ -317,13 +312,11 @@ static int vc_visual_op(int cmd)
 	return key;
 }
 
-.
 ${SEP}.,\$;f> 				lbuf_mark\\\\(xb, '\`', xrow, ooff\\\\);
 			xrow = nrow;
 			xoff = noff;${SEP}??!${DBG:-re p FAIL line 1235\\${SEP}p FAIL line 1235${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			if (vi_visual)
 				vi_mod |= 1;
-.
 ${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break;
 			case 'u':${SEP}??!${DBG:-re p FAIL line 1311\\${SEP}p FAIL line 1311${INTR}${QF}}${SEP}${LB}
@@ -331,7 +324,6 @@ ${SEP}+2a 				if (vi_visual) {
 					vc_visual_op('u');
 					break;
 				}
-.
 ${SEP}.,\$;f> 				vi_lncol = 0;
 				vi_mod \\\\|= 1;
 				break;${SEP}??!${DBG:-re p FAIL line 1357\\${SEP}p FAIL line 1357${INTR}${QF}}${SEP}${LB}
@@ -339,7 +331,6 @@ ${SEP}+2a 			case 'U':
 				if (vi_visual)
 					vc_visual_op('U');
 				break;
-.
 ${SEP}.,\$;f> 					xmpt = 1;
 				break;
 			case 'c':${SEP}??!${DBG:-re p FAIL line 1471\\${SEP}p FAIL line 1471${INTR}${QF}}${SEP}${LB}
@@ -347,13 +338,11 @@ ${SEP}+2a 				if (vi_visual) {
 					k = vc_visual_op('c');
 					goto ins;
 				}
-.
 ${SEP}.,\$f> 			case 'd':${SEP}??!${DBG:-re p FAIL line 1472\\${SEP}p FAIL line 1472${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 				if (vi_visual) {
 					vc_visual_op('d');
 					break;
 				}
-.
 ${SEP}.,\$;f> 			case '>':
 			case '<':
 			case TK_CTL\\\\('w'\\\\):${SEP}??!${DBG:-re p FAIL line 1517\\${SEP}p FAIL line 1517${INTR}${QF}}${SEP}${LB}
@@ -361,7 +350,6 @@ ${SEP}+2a 				if (vi_visual && c != TK_CTL('w')) {
 					vc_visual_op(c);
 					break;
 				}
-.
 ${SEP}.,\$;f> 			case 'A':
 			case 'o':
 			case 'O':${SEP}??!${DBG:-re p FAIL line 1527\\${SEP}p FAIL line 1527${INTR}${QF}}${SEP}${LB}
@@ -372,7 +360,6 @@ ${SEP}+2a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 					k = vc_block_insert(c, r1b, r2b, c == 'I' ? c_left : c_right);
 					goto ins;
 				}
-.
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
 					goto rep;${SEP}??!${DBG:-re p FAIL line 1635\\${SEP}p FAIL line 1635${INTR}${QF}}${SEP}${LB}
@@ -381,7 +368,6 @@ ${SEP}+2a 				} else if (k == 'v' || k == 'V' || k == 'b') {
 					vi_vrow = xrow;
 					vi_voff = xoff;
 					vi_mod |= 1;
-.
 ${SEP}.,\$;f> 				term_push\\\\(\"yy\", 2\\\\);
 				goto motion;
 			case '~':${SEP}??!${DBG:-re p FAIL line 1650\\${SEP}p FAIL line 1650${INTR}${QF}}${SEP}${LB}
@@ -389,7 +375,6 @@ ${SEP}+2a 				if (vi_visual) {
 					vc_visual_op('~');
 					break;
 				}
-.
 ${SEP}.,\$;f> 				vc_status\\\\(0\\\\);
 				vi_mod \\\\|= 1;
 				break;${SEP}??!${DBG:-re p FAIL line 1710\\${SEP}p FAIL line 1710${INTR}${QF}}${SEP}${LB}
@@ -400,7 +385,6 @@ ${SEP}+2a 			case TK_ESC:
 					break;
 				}
 				continue;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0

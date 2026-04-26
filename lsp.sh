@@ -31,13 +31,11 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd &&
 		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-re p FAIL line 376\\${SEP}p FAIL line 376${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
-.
 ${SEP}.,\$;f> 			ec_setpath\\\\(NULL, NULL, path\\\\);
 		lbuf_saved\\\\(xb, 0\\\\);
 		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-re p FAIL line 715\\${SEP}p FAIL line 715${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*xb_path)
 			lsp_save(xb_path);
-.
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
@@ -59,12 +57,10 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 	(void)loc; (void)cmd;
 }
 
-.
 ${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
 	EO\\\\(hlr\\\\),
 	EO\\\\(hl\\\\),${SEP}??!${DBG:-re p FAIL line 1537\\${SEP}p FAIL line 1537${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lsp\", ec_lsp},
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: jsmn.h
@@ -539,7 +535,6 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 #endif
 
 #endif /* JSMN_H */
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'jsmn.h'
 
 # Patch: lsp.c
@@ -1374,7 +1369,6 @@ const char *lsp_diag_for_line(const char *path, int line)
 	}
 	return NULL;
 }
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'lsp.c'
 
 # Patch: term.c
@@ -1414,7 +1408,6 @@ ${SEP}+3,#+9c 		re:;
 					*ibuf = winch;
 					goto ret;
 				}
-.
 ${SEP}.,\$;f> 				goto re;
 			\\\\}${SEP}??!${DBG:-re p FAIL line 177\\${SEP}p FAIL line 177${INTR}${QF}}${SEP}${LB}
 ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
@@ -1429,11 +1422,9 @@ ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				goto err;
 			}
 			goto ret;
-.
 ${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-re p FAIL line 179\\${SEP}p FAIL line 179${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		err:
 		*ibuf = 0;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.c
@@ -1441,14 +1432,12 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> #include \"ren\\\\.c\"
 #include \"term\\\\.c\"
 #include \"uc\\\\.c\"${SEP}??!${DBG:-re p FAIL line 24\\${SEP}p FAIL line 24${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #include \"lsp.c\"
-.
 ${SEP}.,\$;f> \\\\}
 #define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; \\\\}
 
 ${SEP}??!${DBG:-re p FAIL line 104\\${SEP}p FAIL line 104${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 
-.
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
 					goto rep;${SEP}??!${DBG:-re p FAIL line 1635\\${SEP}p FAIL line 1635${INTR}${QF}}${SEP}${LB}
@@ -1458,7 +1447,6 @@ ${SEP}+2a 				} else if (k == 'K') {
 				} else if (k == 'd') {
 					if (xb_path && xb_path[0])
 						lsp_definition(xb_path, xrow, xoff);
-.
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
 		\\\\}${SEP}??!${DBG:-re p FAIL line 1798\\${SEP}p FAIL line 1798${INTR}${QF}}${SEP}${LB}
@@ -1467,12 +1455,10 @@ ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 			if (_ldiag)
 				vi_drawmsg((char *)_ldiag);
 		}
-.
 ${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
 	syn_init\\\\(\\\\);${SEP}??!${DBG:-re p FAIL line 1837\\${SEP}p FAIL line 1837${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lsp_init();
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
@@ -1491,7 +1477,6 @@ void lsp_definition(const char *path, int row, int off);
 const char *lsp_diag_for_line(const char *path, int line);
 void lsp_list(void);
 void lsp_show_msg(char *msg);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

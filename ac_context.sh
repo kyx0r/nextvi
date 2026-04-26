@@ -31,16 +31,13 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return i-s;
 
 ${SEP}??!${DBG:-re p FAIL line 12\\${SEP}p FAIL line 12${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c static int search(sbuf *sb, int l, int pre)
-.
 ${SEP}.,\$f> \\\\{${SEP}??!${DBG:-re p FAIL line 14\\${SEP}p FAIL line 14${INTR}${QF}}${SEP}${LB}
 ${SEP}+1c 	if (!sb->s[l])
-.
 ${SEP}.,\$;f> 		return 0;
 	sbuf_cut\\\\(suggestsb, 0\\\\)
 	sbuf_smake\\\\(sylsb, 1024\\\\)${SEP}??!${DBG:-re p FAIL line 18\\${SEP}p FAIL line 18${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);
-.
 ${SEP}.,\$;f> 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
 			part--;
 		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);${SEP}??!${DBG:-re p FAIL line 24\\${SEP}p FAIL line 24${INTR}${QF}}${SEP}${LB}
@@ -53,7 +50,6 @@ ${SEP}+2c 		part = strstr(part+len, sb->s+l);
 	if (l < pre && sb->s[pre]) {
 		l = pre;
 		goto again;
-.
 ${SEP}.,\$;f> \\\\{
 	char \\\\*cs;
 	int len, c, i;${SEP}??!${DBG:-re p FAIL line 427\\${SEP}p FAIL line 427${INTR}${QF}}${SEP}${LB}
@@ -61,7 +57,6 @@ ${SEP}+2a 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
 	}
-.
 ${SEP}.,\$;f> 		case TK_CTL\\\\('n'\\\\):
 			if \\\\(!suggestsb\\\\)
 				continue;${SEP}??!${DBG:-re p FAIL line 526\\${SEP}p FAIL line 526${INTR}${QF}}${SEP}${LB}
@@ -71,7 +66,6 @@ ${SEP}+3${SEP}s/ \\\\+ pre\\\\) \\\\+ pre/)/${SEP}??!${DBG:-re p FAIL line 526\\
 ${SEP}+3,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
-.
 ${SEP}.,\$;f> 				continue;
 			\\\\}
 			lookup:${SEP}??!${DBG:-re p FAIL line 543\\${SEP}p FAIL line 543${INTR}${QF}}${SEP}${LB}
@@ -80,7 +74,6 @@ ${SEP}+3${SEP}s/->s \\\\+ is->lsug, len - is->lsug/, is->lsug, pre/${SEP}??!${DB
 					goto pac_;${SEP}??!${DBG:-re p FAIL line 557\\${SEP}p FAIL line 557${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 exit 0

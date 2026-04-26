@@ -43,13 +43,11 @@ void ex_done(void)
 	rset_free(xkwdrs);
 	free(bufs);
 }
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: regex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-re p FAIL line 638\\${SEP}p FAIL line 638${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: ren.c
@@ -67,7 +65,6 @@ ${SEP}.a void ren_done(void)
 	}
 }
 
-.
 ${SEP}.,\$;f> 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
 \\\\}${SEP}??!${DBG:-re p FAIL line 410\\${SEP}p FAIL line 410${INTR}${QF}}${SEP}${LB}
@@ -78,19 +75,15 @@ void syn_done(void)
 		rset_free(ftmap[ftmidx].rs);
 	rset_free(syn_ftrs);
 }
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-re p FAIL line 218\\${SEP}p FAIL line 218${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void dir_done(void);
-.
 ${SEP}.,\$f> syn_init${SEP}??!${DBG:-re p FAIL line 259\\${SEP}p FAIL line 259${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void syn_done(void);
-.
 ${SEP}.,\$f> ex_init${SEP}??!${DBG:-re p FAIL line 477\\${SEP}p FAIL line 477${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void ex_done(void);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

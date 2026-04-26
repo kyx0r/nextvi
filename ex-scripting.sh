@@ -28,7 +28,6 @@ LB="0?"
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP}${LB}
 ${SEP}.i char **xenvp;
-.
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
@@ -68,13 +67,11 @@ ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 	return ret ? xuerr : NULL;
 }
 
-.
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
 	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-re p FAIL line 1519\\${SEP}p FAIL line 1519${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: term.c
@@ -85,7 +82,6 @@ ${SEP}+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.h
@@ -98,7 +94,6 @@ extern char **environ;
 #endif
 extern char **xenvp;
 
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

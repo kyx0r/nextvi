@@ -36,7 +36,6 @@ ${SEP}+1a 	['y'] = \"h\",
 	['j'] = \"n\",
 	['k'] = \"e\",
 	['l'] = \"o\",
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'kmap.h'
 
 # Patch: term.c
@@ -45,7 +44,6 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			err:
 		\\\\}${SEP}??!${DBG:-re p FAIL line 179\\${SEP}p FAIL line 179${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 exit 0

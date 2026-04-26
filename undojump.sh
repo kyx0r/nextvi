@@ -65,7 +65,6 @@ ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 	return ret;
 }
 
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.c
@@ -83,7 +82,6 @@ ${SEP}+2a 			case TK_CTL('o'):
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
@@ -91,7 +89,6 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> void lbuf_smark\\\\(struct lbuf \\\\*lb
 void lbuf_emark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int end, int o2\\\\);
 struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);${SEP}??!${DBG:-re p FAIL line 167\\${SEP}p FAIL line 167${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

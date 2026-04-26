@@ -51,7 +51,6 @@ ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		} else	/* Not an arrow sequence so we abort */
 			return 0;
 		break;
-.
 ${SEP}.,\$;f> 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
 	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 573\\${SEP}p FAIL line 573${INTR}${QF}}${SEP}${LB}
@@ -76,7 +75,6 @@ ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		} else	/* Not a 033[X command so we abort */
 			return 0;
 		break;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0

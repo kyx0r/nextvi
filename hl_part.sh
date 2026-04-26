@@ -30,26 +30,22 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static sbuf \\\\*suggestsb;${SEP}??!${DB
 ${SEP}.a #define LEDBACK 300
 #define LEDFORW 300
 
-.
 ${SEP}.,\$;f> 	if \\\\(!xled\\\\)
 		return;
 	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG:-re p FAIL line 146\\${SEP}p FAIL line 146${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
-.
 ${SEP}.,\$;f> 	char \\\\*bound = NULL;
 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
 	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:-re p FAIL line 152\\${SEP}p FAIL line 152${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
-.
 ${SEP}.,\$;f> 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
 	\\\\}
 	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 165\\${SEP}p FAIL line 165${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		c = 0;
-.
 ${SEP}.,\$;f> 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
 				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:-re p FAIL line 176\\${SEP}p FAIL line 176${INTR}${QF}}${SEP}${LB}
@@ -62,7 +58,6 @@ ${SEP}+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 			l -= ctx;
 		}
 		for (i = 0; i < cterm;) {
-.
 ${SEP}.,\$;f> 				for \\\\(; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\);
 			\\\\}
 		\\\\}${SEP}??!${DBG:-re p FAIL line 181\\${SEP}p FAIL line 181${INTR}${QF}}${SEP}${LB}
@@ -73,7 +68,6 @@ ${SEP}+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
 			}
 			l += ctx;
 		}
-.
 ${SEP}.,\$;f> 		sbufn_null\\\\(bsb\\\\)
 		bound = bsb->s;
 	\\\\}${SEP}??!${DBG:-re p FAIL line 203\\${SEP}p FAIL line 203${INTR}${QF}}${SEP}${LB}

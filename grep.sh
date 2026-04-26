@@ -30,12 +30,10 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> char n_ft\\\\[\\\\] = \"/#\";	/\\\\* nu
 char nn_ft\\\\[\\\\] = \"/##\";	/\\\\* numbers highlight for # \\\\*/
 char ac_ft\\\\[\\\\] = \"/ac\";	/\\\\* autocomplete dropdown \\\\*/${SEP}??!${DBG:-re p FAIL line 15\\${SEP}p FAIL line 15${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a char grep_ft[] = \"/g\";	/* grep buffer */
-.
 ${SEP}.,\$;f> 	\\\\{n_ft, NULL\\\\},
 	\\\\{nn_ft, NULL\\\\},
 	\\\\{ac_ft, NULL\\\\},${SEP}??!${DBG:-re p FAIL line 39\\${SEP}p FAIL line 39${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{grep_ft, NULL},
-.
 ${SEP}.,\$;f> 		A\\\\(IN, SYN_BGMK\\\\(RE1\\\\), SYN_BGMK\\\\(AY1\\\\), SYN_BGMK\\\\(AY\\\\)\\\\)\\\\},
 	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(IN, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
 
@@ -43,7 +41,6 @@ ${SEP}??!${DBG:-re p FAIL line 283\\${SEP}p FAIL line 283${INTR}${QF}}${SEP}${LB
 ${SEP}+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
@@ -76,7 +73,6 @@ ${SEP}+3${SEP}s/\\\\(\\\\)/(ret && xrow)/${SEP}??!${DBG:-re p FAIL line 527\\${S
 		break;
 	case TK_CTL\\\\('\\\\]'\\\\):	/\\\\* this is also \\\\^5 on some systems \\\\*/${SEP}??!${DBG:-re p FAIL line 707\\${SEP}p FAIL line 707${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case TK_CTL('x'):
-.
 ${SEP}.,\$;f> 			lkwdcnt = xkwdcnt;
 			fspos \\\\+= fsdir < 0 \\\\? 1 : 0;
 			fspos = MIN\\\\(fspos, lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\);${SEP}??!${DBG:-re p FAIL line 726\\${SEP}p FAIL line 726${INTR}${QF}}${SEP}${LB}
@@ -115,7 +111,6 @@ ${SEP}.a 		} else if (mv == TK_CTL('x')) {
 			lbuf_jump(xb, '[', row, off);
 			*off = 0;
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
-.
 ${SEP}.,\$;f> 				char buf\\\\[strlen\\\\(ln\\\\)\\\\+4\\\\];
 				strcpy\\\\(buf, \":e \"\\\\);
 				strcpy\\\\(buf\\\\+3, ln\\\\);${SEP}??!${DBG:-re p FAIL line 1293\\${SEP}p FAIL line 1293${INTR}${QF}}${SEP}${LB}
@@ -130,7 +125,6 @@ ${SEP}+3c 				if (!strcmp(xb_path, \"/grep/\")) {
 					rset_free(rs);
 				}
 				term_push(buf, strlen(buf));
-.
 ${SEP}.,\$;f> 					\\\\}
 					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);
 					goto do_excmd; \\\\}${SEP}??!${DBG:-re p FAIL line 1425\\${SEP}p FAIL line 1425${INTR}${QF}}${SEP}${LB}
@@ -138,12 +132,10 @@ ${SEP}+2a 				case 'x':
 					temp_switch(3, 1);
 					vi_mod = 1;
 					break;
-.
 ${SEP}.,\$;f> 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
 	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);
 	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-re p FAIL line 1840\\${SEP}p FAIL line 1840${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	temp_open(3, \"/grep/\", grep_ft);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h

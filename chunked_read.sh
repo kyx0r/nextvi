@@ -33,7 +33,6 @@ ${SEP}??!${DBG:-re p FAIL line 333\\${SEP}p FAIL line 333${INTR}${QF}}${SEP}${LB
 ${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:-re p FAIL line 333\\${SEP}p FAIL line 333${INTR}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
 if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-re p FAIL line 336\\${SEP}p FAIL line 336${INTR}${QF}}${SEP}${LB}
 ${SEP}+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
-.
 ${SEP}.,\$;f> 		return 1;
 	\\\\}
 	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-re p FAIL line 352\\${SEP}p FAIL line 352${INTR}${QF}}${SEP}${LB}
@@ -69,14 +68,12 @@ ${SEP}+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 			} else if (n == sz) {
 				sz++;
 				step = 0;
-.
 ${SEP}.,\$f> 			\\\\}${SEP}??!${DBG:-re p FAIL line 218\\${SEP}p FAIL line 218${INTR}${QF}}${SEP}${LB}
 ${SEP}+1,#+5d${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-re p FAIL line 224\\${SEP}p FAIL line 224${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		s[n] = '\\\\0';
 		lbuf_edit(lb, s, beg, end, 0, 0);
 		free(s);
 		return nr != 0;
-.
 ${SEP}.,\$f> 	\\\\}${SEP}??!${DBG:-re p FAIL line 226\\${SEP}p FAIL line 226${INTR}${QF}}${SEP}${LB}
 ${SEP}+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	struct linfo *n, *cn = NULL;
@@ -128,7 +125,6 @@ ${SEP}+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	for (int i = 0; i < nins; i++)
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
@@ -137,7 +133,6 @@ struct lbuf \\\\*lbuf_make\\\\(void\\\\);
 void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-re p FAIL line 156\\${SEP}p FAIL line 156${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

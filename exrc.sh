@@ -30,15 +30,12 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
 sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-re p FAIL line 39\\${SEP}p FAIL line 39${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xexrc = 0;			/* read .exrc from the current directory */
-.
 ${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(exrc)
-.
 ${SEP}.,\$;f> 	EO\\\\(ai\\\\),
 	\\\\{\"ac\", ec_setacreg\\\\},
 	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:-re p FAIL line 1477\\${SEP}p FAIL line 1477${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(exrc),
-.
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
@@ -88,7 +85,6 @@ void load_exrc(char *exrc)
 	}
 }
 
-.
 ${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
 	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}${LB}
@@ -107,7 +103,6 @@ ${SEP}.a 	} else {
 		if (strcmp(buf, getenv(\"HOME\")) != 0)
 			load_exrc(\".exrc\");
 	}
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0

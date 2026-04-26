@@ -44,12 +44,10 @@ ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-.
 ${SEP}.,\$;f> 	\\\\{\"uc\", ec_setenc\\\\},
 	\\\\{\"uz\", ec_setenc\\\\},
 	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-re p FAIL line 1514\\${SEP}p FAIL line 1514${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"up\", ec_undoleafs},
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
@@ -57,7 +55,6 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	struct lbuf \\\\*lb = emalloc\\\\(size
 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);${SEP}??!${DBG:-re p FAIL line 5\\${SEP}p FAIL line 5${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sbuf_make(lb->rehist, 128)
-.
 ${SEP}.,\$;f> 	return 0;
 \\\\}
 
@@ -89,12 +86,10 @@ ${SEP}+2a static void lbuf_freeleafs(struct lbuf *lb)
 	sbuf_free(freedsb)
 }
 
-.
 ${SEP}.,\$;f> 	int i;
 	for \\\\(i = 0; i < lb->ln_n; i\\\\+\\\\+\\\\)
 		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);${SEP}??!${DBG:-re p FAIL line 67\\${SEP}p FAIL line 67${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 	lbuf_freeleafs(lb);
-.
 ${SEP}.,\$;f> 		lopt_done\\\\(lo\\\\);
 \\\\}
 
@@ -156,7 +151,6 @@ char *lbuf_getleafs(struct lbuf *lb)
 	sbufn_ret(sb, sb->s)
 }
 
-.
 ${SEP}.,\$;f> 	if \\\\(xseq < 0\\\\)
 		lo = &slo;
 	else \\\\{${SEP}??!${DBG:-re p FAIL line 150\\${SEP}p FAIL line 150${INTR}${QF}}${SEP}${LB}
@@ -165,16 +159,13 @@ ${SEP}+3,#+1c 		int i = lb->hist_n - lb->hist_u;
 			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
 			sbuf_mem(lb->rehist, lb->hist, (int)(lb->hist_n * sizeof(lb->hist[0])));
 		}
-.
 ${SEP}.,\$;f> void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
 \\\\{
 	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 438\\${SEP}p FAIL line 438${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		lbuf_freeleafs(lb);
-.
 ${SEP}.,\$;f> 		lb->hist_n = 0;
 		lb->hist_u = 0;${SEP}??!${DBG:-re p FAIL line 441\\${SEP}p FAIL line 441${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 		sbuf_make(lb->rehist, 128)
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: vi.h
@@ -182,13 +173,11 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> struct lbuf \\\\{
 	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
 	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/${SEP}??!${DBG:-re p FAIL line 139\\${SEP}p FAIL line 139${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sbuf *rehist;		/* alternate redo timelines */
-.
 ${SEP}.,\$;f> int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);
 int lbuf_search\\\\(struct lbuf \\\\*lb, rset \\\\*re, int dir, int beg, int end, int pskip,
 		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-re p FAIL line 178\\${SEP}p FAIL line 178${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

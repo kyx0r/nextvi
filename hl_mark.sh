@@ -30,15 +30,12 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> int xhlw;			/\\\\* highlight current wo
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
 int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xhlm;			/* highlight marks */
-.
 ${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(hlm)
-.
 ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
 	EO\\\\(order\\\\),${SEP}??!${DBG:-re p FAIL line 1532\\${SEP}p FAIL line 1532${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(hlm),
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
@@ -60,7 +57,6 @@ ${SEP}+2a 		if (xhlm) {
 				sbuf_mem(led_attsb, &la, (int)sizeof(la))
 			}
 		}
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0

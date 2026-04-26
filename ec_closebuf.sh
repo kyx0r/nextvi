@@ -78,10 +78,8 @@ ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 }
 
 
-.
 ${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-re p FAIL line 1527\\${SEP}p FAIL line 1527${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	{\"cx\", ec_closebuf},
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0

@@ -46,7 +46,6 @@ ${SEP}+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 			xb_ft = syn_setft(lfts[hl].ft);
 		rset_free(rs);
 	}
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 exit 0

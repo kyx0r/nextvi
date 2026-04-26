@@ -81,12 +81,10 @@ ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 	return ret;
 }
 
-.
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
 	EO\\\\(mpt\\\\),${SEP}??!${DBG:-re p FAIL line 1499\\${SEP}p FAIL line 1499${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"md\", ec_modal},
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: modal.c
@@ -426,7 +424,6 @@ static char *mem_import(char *src, char *ptr)
 	}
 	return ptr;
 }
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'modal.c'
 
 # Patch: test
@@ -435,7 +432,6 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i <> (?0 ?: ?1) (?:)
 
 (out (3 + 9 - 5 + 23 / 10))
 (out (asd3+9))
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'test'
 
 # Patch: vi.c
@@ -443,7 +439,6 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> #include <sys/wait\\\\.h>
 #include \"vi\\\\.h\"
 #include \"conf\\\\.c\"${SEP}??!${DBG:-re p FAIL line 17\\${SEP}p FAIL line 17${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #include \"modal.c\"
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 exit 0

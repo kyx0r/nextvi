@@ -31,13 +31,10 @@ ${SEP}+3${SEP}s/t\\\\|s/t|rec|s/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xrec;			/* input recoding register */
-.
 ${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1437\\${SEP}p FAIL line 1437${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(rec)
-.
 ${SEP}.,\$f> 	\\\\{\"q\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1502\\${SEP}p FAIL line 1502${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	EO(rec),
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: term.c
@@ -50,13 +47,11 @@ ${SEP}+2a 		if (xrec && *ibuf) {
 			buf[1] = '\\\\0';
 			ex_regput(xrec, buf, 1);
 		}
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-re p FAIL line 426\\${SEP}p FAIL line 426${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xrec;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

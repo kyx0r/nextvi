@@ -44,7 +44,6 @@ ${SEP}+2a 		if (vc && cnt == 1)
 			*row = prow;
 			*off = poff;
 		}
-.
 ${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-re p FAIL line 656\\${SEP}p FAIL line 656${INTR}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:-re p FAIL line 970\\${SEP}p FAIL line 970${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'

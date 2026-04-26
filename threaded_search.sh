@@ -30,7 +30,6 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> -Wno-unused-parameter \\\\\\\\
 -Wno-unused-result \\\\\\\\
 -Wfatal-errors -std=c99 \\\\\\\\${SEP}??!${DBG:-re p FAIL line 49\\${SEP}p FAIL line 49${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a -lpthread \\\\
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'cbuild.sh'
 
 # Patch: lbuf.c
@@ -59,28 +58,23 @@ static void *lsearch(void *arg)
 	char *s;
 	int off = a->off, g1, g2, _o, step, flg;
 	for (; i >= a->beg && i < a->end; i += a->dir) {
-.
 ${SEP}.,\$;f> 		_o = 0;
 		step = 0;
 		flg = REG_NEWLINE;${SEP}??!${DBG:-re p FAIL line 495\\${SEP}p FAIL line 495${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		s = a->lb->ln[i];
 		while (rset_find(a->re, s + off, offs, flg) >= 0) {
-.
 ${SEP}.,\$;f> 				continue;
 			\\\\}
 			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);${SEP}??!${DBG:-re p FAIL line 504\\${SEP}p FAIL line 504${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
-.
 ${SEP}.,\$f> 				break;${SEP}??!${DBG:-re p FAIL line 506\\${SEP}p FAIL line 506${INTR}${QF}}${SEP}${LB}
 ${SEP}+1,#+3c 			*a->o = _o;
 			*a->r = i;
-.
 ${SEP}.,\$;f> 			step = off \\\\+ g1;
 			off \\\\+= g2 > 0 \\\\? g2 : 1;${SEP}??!${DBG:-re p FAIL line 512\\${SEP}p FAIL line 512${INTR}${QF}}${SEP}${LB}
 ${SEP}+2c 			a->end = -1; /* break outer loop efficiently */
 			if (a->dir > 0)
 				return NULL;
-.
 ${SEP}.,\$;f> 		\\\\}
 		off = 0;
 	\\\\}${SEP}??!${DBG:-re p FAIL line 516\\${SEP}p FAIL line 516${INTR}${QF}}${SEP}${LB}
@@ -143,7 +137,6 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	}
 	utf8_length['\\\\n'] = 1;
 	return 1;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: regex.c
@@ -157,7 +150,6 @@ ${SEP}+3${SEP}s/\\\\(eol_ch/(flg & REG_NEWLINE/${SEP}??!${DBG:-re p FAIL line 40
 ${SEP}+3${SEP}s/h\\\\)/h && utf8_length[eol_ch])/${SEP}??!${DBG:-re p FAIL line 642\\${SEP}p FAIL line 642${INTR}${QF}}${SEP}.,\$f> 		utf8_length\\\\[eol_ch\\\\] = 0;${SEP}??!${DBG:-re p FAIL line 643\\${SEP}p FAIL line 643${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	else
 		flg &= ~REG_NEWLINE;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: uc.c
@@ -166,7 +158,6 @@ ${SEP}-1${SEP}s/ u/ _u/${SEP}??!${DBG:-re p FAIL line 1\\${SEP}p FAIL line 1${IN
 	/\\\\* F \\\\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
 \\\\};${SEP}??!${DBG:-re p FAIL line 19\\${SEP}p FAIL line 19${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a unsigned char *utf8_length = _utf8_length;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 
 # Patch: vi.c
@@ -174,14 +165,12 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> #include <sys/stat\\\\.h>
 #include <sys/ioctl\\\\.h>
 #include <sys/wait\\\\.h>${SEP}??!${DBG:-re p FAIL line 15\\${SEP}p FAIL line 15${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #include <pthread.h>
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG:-re p FAIL line 262\\${SEP}p FAIL line 262${INTR}${QF}}${SEP}${LB}
 ${SEP}.c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

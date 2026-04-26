@@ -35,7 +35,6 @@ ${SEP}+3${SEP}s/rset \\\\*x/rstr *x/${SEP}??!${DBG:-re p FAIL line 38\\${SEP}p F
 ${SEP}+3,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
-.
 ${SEP}.,\$;f> 
 static void \\\\*ec_fuzz\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
 \\\\{${SEP}??!${DBG:-re p FAIL line 388\\${SEP}p FAIL line 388${INTR}${QF}}${SEP}${LB}
@@ -257,7 +256,6 @@ void rstr_free(rstr *rs)
 	free(rs->str);
 	free(rs);
 }
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: vi.c
@@ -282,17 +280,14 @@ ${SEP}+2a typedef struct {
 	int lbeg, lend;		/* match line beg/end */
 	int wbeg, wend;		/* match word beg/end */
 } rstr;
-.
 ${SEP}.,\$f> void rset_free${SEP}??!${DBG:-re p FAIL line 118\\${SEP}p FAIL line 118${INTR}${QF}}${SEP}${LB}
 ${SEP}.a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
-.
 ${SEP}.,\$f> int lbuf_search${SEP}??!${DBG:-re p FAIL line 177\\${SEP}p FAIL line 177${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 177\\${SEP}p FAIL line 177${INTR}${QF}}${SEP}.,\$f> 		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-re p FAIL line 178\\${SEP}p FAIL line 178${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 
-.
 ${SEP}.,\$f> extern rset \\\\*xkwdrs;${SEP}??!${DBG:-re p FAIL line 441\\${SEP}p FAIL line 441${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 441\\${SEP}p FAIL line 441${INTR}${QF}}${SEP}.,\$f> int ex_krs${SEP}??!${DBG:-re p FAIL line 479\\${SEP}p FAIL line 479${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/et/tr/${SEP}??!${DBG:-re p FAIL line 479\\${SEP}p FAIL line 479${INTR}${QF}}${SEP}.,\$;f> extern int vi_hidch;

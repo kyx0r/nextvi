@@ -32,7 +32,6 @@ ${SEP}+3${SEP}s/\\\\|sc/m!?|i|sc!?|nm/${SEP}??!${DBG:-re p FAIL line 290\\${SEP}
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
-.
 ${SEP}%;f> 	return NULL;
 \\\\}
 
@@ -77,16 +76,13 @@ int map_read(int mode, int winch)
 	return c;
 }
 
-.
 ${SEP}.,\$;f> 	\\\\{\"inc\", ec_setincl\\\\},
 	EO\\\\(ic\\\\),${SEP}??!${DBG:-re p FAIL line 1493\\${SEP}p FAIL line 1493${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
-.
 ${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1500\\${SEP}p FAIL line 1500${INTR}${QF}}${SEP}${LB}
 ${SEP}.i 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
@@ -137,7 +133,6 @@ ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-re p FAIL line 1679\
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-re p FAIL line 465\\${SEP}p FAIL line 465${INTR}${QF}}${SEP}${LB}
 ${SEP}.i int map_read(int mode, int winch);
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0

@@ -31,7 +31,6 @@ ${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-re p FAIL line 289\\${SEP}p FAIL l
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xms = 1;			/* mouse in normal mode */
-.
 ${SEP}%;f> 	return NULL;
 \\\\)
 
@@ -45,12 +44,10 @@ ${SEP}+2a _EO(ms,
 	return NULL;
 )
 
-.
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
 	EO\\\\(mpt\\\\),${SEP}??!${DBG:-re p FAIL line 1499\\${SEP}p FAIL line 1499${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(ms),
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: led.c
@@ -66,22 +63,17 @@ int led_col(char *s, int col)
 	return col + xleft;
 }
 
-.
 ${SEP}.,\$;f> 	\\\\}
 	preserve\\\\(int, xleft, xleft = 0;\\\\)
 	preserve\\\\(int, xtd, xtd = 2;\\\\)${SEP}??!${DBG:-re p FAIL line 666\\${SEP}p FAIL line 666${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	term_mouse_off();
-.
 ${SEP}.,\$f> 	if \\\\(key == '\\\\\\\\n' && flg & 1\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 670\\${SEP}p FAIL line 670${INTR}${QF}}${SEP}${LB}
 ${SEP}.i 	term_mouse_on();
-.
 ${SEP}.,\$f> 	ins_state is;${SEP}??!${DBG:-re p FAIL line 684\\${SEP}p FAIL line 684${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	term_mouse_off();
-.
 ${SEP}.,\$;f> 			free\\\\(postref\\\\);
 			xrow = crow;${SEP}??!${DBG:-re p FAIL line 697\\${SEP}p FAIL line 697${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 			term_mouse_on();
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: term.c
@@ -98,17 +90,14 @@ void term_mouse_off(void)
 		write(1, \"\\\\x1b[?1000l\\\\x1b[?1006l\", 16);
 }
 
-.
 ${SEP}%;f> 	\\\\}
 	xcols = xcols \\\\? xcols : 80;
 	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-re p FAIL line 33\\${SEP}p FAIL line 33${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	term_mouse_on();
-.
 ${SEP}.,\$;f> \\\\{
 	if \\\\(!term_sbuf\\\\)
 		return;${SEP}??!${DBG:-re p FAIL line 39\\${SEP}p FAIL line 39${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	term_mouse_off();
-.
 ${SEP}.,\$;f> 	term_push\\\\(s, 1\\\\);
 \\\\}
 
@@ -198,7 +187,6 @@ int term_try_mouse(void)
 	return 0;
 }
 
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.c
@@ -209,7 +197,6 @@ ${SEP}??!${DBG:-re p FAIL line 556\\${SEP}p FAIL line 556${INTR}${QF}}${SEP}${LB
 ${SEP}+2a static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
 
-.
 ${SEP}.,\$;f> 		return mv;
 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:-re p FAIL line 572\\${SEP}p FAIL line 572${INTR}${QF}}${SEP}${LB}
@@ -238,7 +225,6 @@ ${SEP}+2a 	if (mv == 27 && xms) {
 		} else if (r == 2)	/* stray release from a prior click; restart */
 			return -1;
 	}
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
@@ -246,17 +232,13 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}?
 ${SEP}.a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
-.
 ${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-re p FAIL line 392\\${SEP}p FAIL line 392${INTR}${QF}}${SEP}${LB}
 ${SEP}.a int led_col(char *s, int col);
-.
 ${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-re p FAIL line 403\\${SEP}p FAIL line 403${INTR}${QF}}${SEP}${LB}
 ${SEP}.i /* mouse state */
 extern int xmouse_col, xmouse_row;
-.
 ${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-re p FAIL line 426\\${SEP}p FAIL line 426${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xms;
-.
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
