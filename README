@@ -509,8 +509,8 @@ EX COMMANDS
              Enter ex insert mode before specified position
 
              str specifies initial input into the insertion buffer.
-             str in raw ex mode is injected directly and bypasses the interactive
-             mode.
+             str in raw ex mode is injected directly and bypasses the
+             interactive mode.
 
              Example: insert "hello" in vi/ex
              :i hello<^M><ESC>
