@@ -433,14 +433,13 @@ static void emit_escaped_text(FILE *out, const char *s);
  * consecutive separators (which would trigger ec_print output).
  */
 
-/* Emit content lines for an a/c/i ex command, terminated by ".\n". */
+/* Emit content lines for an a/c/i ex command. */
 static void emit_content(FILE *out, char **texts, int ntexts)
 {
 	for (int i = 0; i < ntexts; i++) {
 		emit_escaped_text(out, texts[i]);
 		fputc('\n', out);
 	}
-	fputs(".\n", out);
 }
 
 /* Emit ex commands for inserting text after line N */
@@ -476,7 +475,6 @@ static void emit_horizontal_change(FILE *out, int line, int char_start, int char
 	else
 		fprintf(out, "%d;%d;%dc ", line, char_start, char_end);
 	emit_escaped_text(out, new_text);
-	fputs("\n.\n", out);
 	EMIT_SEP(out);
 }
 
@@ -1515,9 +1513,8 @@ cleanup_orig:
 
 /* Emit a custom EDIT COMMAND lines array + trailing SEP.
  * lines[0] = "cmd [first-content]", lines[1..n] = extra content lines.
- * s/pat/repl/: emit_escaped_exarg_only; no ".\n" appended.
- * cmd first-line: cmd prefix verbatim, content via emit_escaped_text, ".\n".
- * bare cmd (d, etc.): output verbatim; no ".\n". */
+ * s/pat/repl/: emit_escaped_exarg_only.
+ * bare cmd (d, etc.): output verbatim. */
 static void emit_custom_edit_lines(FILE *out, char **lines, int nlines)
 {
 	if (nlines == 0)
@@ -1538,7 +1535,6 @@ static void emit_custom_edit_lines(FILE *out, char **lines, int nlines)
 			emit_escaped_text(out, lines[k]);
 			fputc('\n', out);
 		}
-		fputs(".\n", out);
 	} else {
 		/* No content (d, ,#+Nd, etc.) */
 		fputs(first, out);
@@ -1838,7 +1834,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 						fprintf(out, ".;%d;%dc", g->ldc_start, g->ldc_end);
 					fputc(' ', out);
 					emit_escaped_text(out, g->ldc_new_text);
-					fputs("\n.\n", out);
 				}
 				EMIT_SEP(out);
 				emit_err_check(out, g->del_start);
