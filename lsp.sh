@@ -1451,7 +1451,7 @@ ${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 .
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-re p FAIL line 1637\\${SEP}p FAIL line 1637${INTR}${QF}}${SEP}${LB}
+					goto rep;${SEP}??!${DBG:-re p FAIL line 1636\\${SEP}p FAIL line 1636${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
@@ -1461,7 +1461,7 @@ ${SEP}+2a 				} else if (k == 'K') {
 .
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
-		\\\\}${SEP}??!${DBG:-re p FAIL line 1800\\${SEP}p FAIL line 1800${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-re p FAIL line 1799\\${SEP}p FAIL line 1799${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
@@ -1470,7 +1470,7 @@ ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 .
 ${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-re p FAIL line 1839\\${SEP}p FAIL line 1839${INTR}${QF}}${SEP}${LB}
+	syn_init\\\\(\\\\);${SEP}??!${DBG:-re p FAIL line 1838\\${SEP}p FAIL line 1838${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lsp_init();
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -2995,7 +2995,7 @@ index 68990b78..8b893398 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 628bb946..136895f6 100644
+index f909fe0d..28429a07 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -3015,7 +3015,7 @@ index 628bb946..136895f6 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
-@@ -1635,6 +1638,12 @@ void vi(int init)
+@@ -1634,6 +1637,12 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
@@ -3028,7 +3028,7 @@ index 628bb946..136895f6 100644
  				}
  				break;
  			case 'x':
-@@ -1798,6 +1807,11 @@ void vi(int init)
+@@ -1797,6 +1806,11 @@ void vi(int init)
  			syn_blockhl = -1;
  			vi_drawrow(xrow);
  		}
@@ -3040,7 +3040,7 @@ index 628bb946..136895f6 100644
  		if (vi_status && xmpt < 1) {
  			xrows -= term_resized != vi_status;
  			vi_status = term_resized;
-@@ -1837,6 +1851,7 @@ int main(int argc, char *argv[])
+@@ -1836,6 +1850,7 @@ int main(int argc, char *argv[])
  	setup_signals();
  	dir_init();
  	syn_init();

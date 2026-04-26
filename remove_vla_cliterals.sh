@@ -225,42 +225,42 @@ ${SEP}+2a 		free(tmp);
 .
 ${SEP}.,\$;f> 				if \\\\(!\\\\(ln = lbuf_get\\\\(xb, xrow\\\\)\\\\)\\\\)
 					break;
-				ln \\\\+= xoff;${SEP}??!${DBG:-re p FAIL line 1291\\${SEP}p FAIL line 1291${INTR}${QF}}${SEP}${LB}
+				ln \\\\+= xoff;${SEP}??!${DBG:-re p FAIL line 1290\\${SEP}p FAIL line 1290${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 				char *buf = emalloc(strlen(ln)+4);
 .
 ${SEP}.,\$;f> 				strcpy\\\\(buf, \":e \"\\\\);
 				strcpy\\\\(buf\\\\+3, ln\\\\);
-				term_push\\\\(buf, strlen\\\\(ln\\\\)\\\\+3\\\\);${SEP}??!${DBG:-re p FAIL line 1294\\${SEP}p FAIL line 1294${INTR}${QF}}${SEP}${LB}
+				term_push\\\\(buf, strlen\\\\(ln\\\\)\\\\+3\\\\);${SEP}??!${DBG:-re p FAIL line 1293\\${SEP}p FAIL line 1293${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				free(buf);
 .
 ${SEP}.,\$;f> 					goto do_excmd;
 				case '/': \\\\{
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-re p FAIL line 1406\\${SEP}p FAIL line 1406${INTR}${QF}}${SEP}${LB}
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-re p FAIL line 1405\\${SEP}p FAIL line 1405${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
 ${SEP}.,\$;f> 						strcat\\\\(buf, cs\\\\);
 					free\\\\(cs\\\\);
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1411\\${SEP}p FAIL line 1411${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1410\\${SEP}p FAIL line 1410${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 .
 ${SEP}.,\$;f> 				case 't': \\\\{
 					vi_drawmsg\\\\(\"arg2:\\\\(0\\\\|#\\\\)\"\\\\);
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);${SEP}??!${DBG:-re p FAIL line 1416\\${SEP}p FAIL line 1416${INTR}${QF}}${SEP}${LB}
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);${SEP}??!${DBG:-re p FAIL line 1415\\${SEP}p FAIL line 1415${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
 ${SEP}.,\$;f> 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1425\\${SEP}p FAIL line 1425${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1424\\${SEP}p FAIL line 1424${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 .
 ${SEP}.,\$;f> 					goto do_excmd; \\\\}
 				case 'r': \\\\{
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-re p FAIL line 1429\\${SEP}p FAIL line 1429${INTR}${QF}}${SEP}${LB}
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-re p FAIL line 1428\\${SEP}p FAIL line 1428${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 .
 ${SEP}.,\$;f> 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1436\\${SEP}p FAIL line 1436${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1435\\${SEP}p FAIL line 1435${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 .
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -548,7 +548,7 @@ index a98fc3fa..0d972388 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 628bb946..787a1c1e 100644
+index f909fe0d..1c0ad2d5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -570,7 +570,7 @@ index 628bb946..787a1c1e 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1288,10 +1291,11 @@ void vi(int init)
+@@ -1287,10 +1290,11 @@ void vi(int init)
  				if (!(ln = lbuf_get(xb, xrow)))
  					break;
  				ln += xoff;
@@ -583,7 +583,7 @@ index 628bb946..787a1c1e 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1403,17 +1407,18 @@ void vi(int init)
+@@ -1402,17 +1406,18 @@ void vi(int init)
  					goto do_excmd;
  				case '/': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
@@ -604,7 +604,7 @@ index 628bb946..787a1c1e 100644
  					strcpy(buf, ".,.+");
  					char *buf1 = itoa(vi_arg, buf+4);
  					strcat(buf1, "s/");
-@@ -1423,10 +1428,11 @@ void vi(int init)
+@@ -1422,10 +1427,11 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
@@ -617,7 +617,7 @@ index 628bb946..787a1c1e 100644
  					strcpy(buf, "%s/");
  					if (cs) {
  						strcat(buf, cs);
-@@ -1434,6 +1440,7 @@ void vi(int init)
+@@ -1433,6 +1439,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);

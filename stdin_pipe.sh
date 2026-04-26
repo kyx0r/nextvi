@@ -116,12 +116,12 @@ ${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-re p FAIL line 355\\${SEP}
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
-	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-re p FAIL line 1831\\${SEP}p FAIL line 1831${INTR}${QF}}${SEP}${LB}
+	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-re p FAIL line 1830\\${SEP}p FAIL line 1830${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
 .
 ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
 			i\\\\+\\\\+;
-			break;${SEP}??!${DBG:-re p FAIL line 1847\\${SEP}p FAIL line 1847${INTR}${QF}}${SEP}${LB}
+			break;${SEP}??!${DBG:-re p FAIL line 1846\\${SEP}p FAIL line 1846${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
 .
@@ -328,10 +328,10 @@ index 68990b78..9b3a2a76 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index 628bb946..d7db7eba 100644
+index f909fe0d..e363d518 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1829,6 +1829,7 @@ static void setup_signals(void)
+@@ -1828,6 +1828,7 @@ static void setup_signals(void)
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
  	sigaction(SIGWINCH, &sa, NULL);
@@ -339,7 +339,7 @@ index 628bb946..d7db7eba 100644
  }
  
  int main(int argc, char *argv[])
-@@ -1844,7 +1845,8 @@ int main(int argc, char *argv[])
+@@ -1843,7 +1844,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;

@@ -728,7 +728,7 @@ index ff88bb41..fc39e70f 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 628bb946..54b85fd1 100644
+index f909fe0d..bcb59585 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -426,7 +426,7 @@ static void vi_regput(int c, const char *s, int lnmode)

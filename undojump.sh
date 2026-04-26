@@ -71,7 +71,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:-re p FAIL line 1445\\${SEP}p FAIL line 1445${INTR}${QF}}${SEP}${LB}
+				break;${SEP}??!${DBG:-re p FAIL line 1444\\${SEP}p FAIL line 1444${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			case TK_CTL('o'):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
@@ -144,10 +144,10 @@ index 09950361..8829daae 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 628bb946..bf804e42 100644
+index f909fe0d..89065704 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1443,6 +1443,17 @@ void vi(int init)
+@@ -1442,6 +1442,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;

@@ -161,7 +161,7 @@ ${SEP}.a 		lmodified = 1;
 .
 ${SEP}.,\$;f> 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
 					break;
-				\\\\}${SEP}??!${DBG:-re p FAIL line 1541\\${SEP}p FAIL line 1541${INTR}${QF}}${SEP}${LB}
+				\\\\}${SEP}??!${DBG:-re p FAIL line 1540\\${SEP}p FAIL line 1540${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				switch (k) {
 				case 'A':	/* ↑ */
 					term_back(!lmodified ? c : 'i');
@@ -196,7 +196,7 @@ ${SEP}+2a 				switch (k) {
 .
 ${SEP}.,\$;f> 				if \\\\(c != 'A' && c != 'C'\\\\)
 					xoff--;
-				break;${SEP}??!${DBG:-re p FAIL line 1544\\${SEP}p FAIL line 1544${INTR}${QF}}${SEP}${LB}
+				break;${SEP}??!${DBG:-re p FAIL line 1543\\${SEP}p FAIL line 1543${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				_break:
 				vi_mod = 0;
 				break;
@@ -384,7 +384,7 @@ index 6a5e065f..d48e40f8 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 628bb946..9373727c 100644
+index f909fe0d..54a99e2d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -844,6 +844,8 @@ static void vi_indents(char *ln, int *l)
@@ -417,7 +417,7 @@ index 628bb946..9373727c 100644
  	free(sb->s);
  	return key;
  }
-@@ -1539,9 +1545,43 @@ void vi(int init)
+@@ -1538,9 +1544,43 @@ void vi(int init)
  					term_back(xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a');
  					break;
  				}
