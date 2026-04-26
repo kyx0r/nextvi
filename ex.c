@@ -767,7 +767,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		sb->s = arg;
 		sb->s_n = strlen(arg);
 		sb->s_sz = 0;
-		key = 127;
+		key = 0;
 	} else {
 		_sbuf_make(sb, 128,)
 		if (*arg)
@@ -804,7 +804,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			free(sb->s);
 		sb->s = p;
 		sb->s_sz = 1;
-	} else if (key != 127)
+	} else if (!(xvis & 1) && key != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
 		goto ret;
