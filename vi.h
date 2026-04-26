@@ -69,9 +69,9 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define sbuf_smake(sb, newsz) sbuf _##sb, *sb = &_##sb; _sbuf_make(sb, newsz,)
 #define sbuf_make(sb, newsz) { _sbuf_make(sb, newsz, sb = emalloc(sizeof(*sb));) }
 #define sbuf_free(sb) { free(sb->s); free(sb); }
-#define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) sb->s_n += len; }
-#define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) sb->s_n += len; }
-#define sbuf_str(sb, s) { int __l_ = strlen(s); sbuf_mem(sb, s, __l_) }
+#define sbuf_set(sb, ch, len) { int __l_ = len; sbuf_(sb, ch, __l_, set) sb->s_n += __l_; }
+#define sbuf_mem(sb, s, len) { int __l_ = len; sbuf_(sb, s, __l_, cpy) sb->s_n += __l_; }
+#define sbuf_str(sb, s) { sbuf_mem(sb, s, strlen(s)) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that null-terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
@@ -189,7 +189,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch);
 int lbuf_wordbeg(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
-int lbuf_pair(struct lbuf *lb, char *pairs, int *row, int *off);
+int lbuf_pair(struct lbuf *lb, char *pairs, int plen, int *row, int *off);
 
 /* ren.c: rendering lines */
 typedef struct {

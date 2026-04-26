@@ -1568,7 +1568,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 				}
 				src += *src == xesc && src[-1] != '#' && (src[1] ^ '0') < 10;
 				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
-					sbuf_str(sb, pbuf->path)
+					sbuf_mem(sb, pbuf->path, pbuf->plen)
 			}
 		} else if (*src == xexe) {
 			int n = sb->s_n;
