@@ -37,7 +37,7 @@ ${SEP}+2a 	{grep_ft, NULL},
 ${SEP}.,\$;f> 		A\\\\(IN, SYN_BGMK\\\\(RE1\\\\), SYN_BGMK\\\\(AY1\\\\), SYN_BGMK\\\\(AY\\\\)\\\\)\\\\},
 	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(IN, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
 
-${SEP}??!${DBG:-re p FAIL line 283\\${SEP}p FAIL line 283${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-re p FAIL line 287\\${SEP}p FAIL line 287${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
@@ -148,7 +148,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index d45d10a6..cbfd3b5d 100644
+index be2bf4a2..ae189b62 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -167,7 +167,7 @@ index d45d10a6..cbfd3b5d 100644
  	{ex_ft, NULL},
  	{vs_ft, NULL},
  	{bar_ft, NULL},
-@@ -281,6 +283,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -285,6 +287,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
  	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
  

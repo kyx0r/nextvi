@@ -28,8 +28,8 @@ LB="0?"
 # Patch: conf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		A\\\\(SYN_BD, BL1, WH1, YE\\\\)\\\\},
 
-	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-re p FAIL line 301\\${SEP}p FAIL line 301${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-re p FAIL line 301\\${SEP}p FAIL line 301${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-re p FAIL line 305\\${SEP}p FAIL line 305${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-re p FAIL line 305\\${SEP}p FAIL line 305${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static int vi_status;			/\\\\* permanent status bar \\\\*/
@@ -391,10 +391,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index d45d10a6..ce06fae3 100644
+index be2bf4a2..f041b099 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -302,7 +302,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  		A(SYN_BD, BL1, WH1, YE)},
  
  	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
