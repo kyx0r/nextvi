@@ -55,11 +55,11 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'a'\\\\)
-				xvis \\\\|= 8;${SEP}??!${DBG:-re p FAIL line 1854\\${SEP}p FAIL line 1854${INTR}${QF}}${SEP}${LB}
+				xvis \\\\|= 8;${SEP}??!${DBG:-re p FAIL line 1853\\${SEP}p FAIL line 1853${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1859\\${SEP}p FAIL line 1859${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}.;46c R${SEP}??!${DBG:-re p FAIL line 1859\\${SEP}p FAIL line 1859${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}.;46c R${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-re p FAIL line 402\\${SEP}p FAIL line 402${INTR}${QF}}${SEP}${LB}
@@ -181,10 +181,10 @@ index d8a2c535..68f08ea9 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index b665a9f3..2c3f7713 100644
+index 276e096a..6cc810a1 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1852,11 +1852,13 @@ int main(int argc, char *argv[])
+@@ -1851,11 +1851,13 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'a')
  				xvis |= 8;

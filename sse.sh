@@ -262,7 +262,7 @@ index 875905a8..6d0c30b6 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index b665a9f3..627c168e 100644
+index 276e096a..99594df3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@

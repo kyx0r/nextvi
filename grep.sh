@@ -113,7 +113,7 @@ ${SEP}.a 		} else if (mv == TK_CTL('x')) {
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
 ${SEP}.,\$;f> 				char buf\\\\[strlen\\\\(ln\\\\)\\\\+4\\\\];
 				strcpy\\\\(buf, \":e \"\\\\);
-				strcpy\\\\(buf\\\\+3, ln\\\\);${SEP}??!${DBG:-re p FAIL line 1293\\${SEP}p FAIL line 1293${INTR}${QF}}${SEP}${LB}
+				strcpy\\\\(buf\\\\+3, ln\\\\);${SEP}??!${DBG:-re p FAIL line 1292\\${SEP}p FAIL line 1292${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 				if (!strcmp(xb_path, \"/grep/\")) {
 					int subs[2];
 					rset *rs = rset_make(1, (char*[]){\":[0-9]+:\"}, 0);
@@ -127,14 +127,14 @@ ${SEP}+3c 				if (!strcmp(xb_path, \"/grep/\")) {
 				term_push(buf, strlen(buf));
 ${SEP}.,\$;f> 					\\\\}
 					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);
-					goto do_excmd; \\\\}${SEP}??!${DBG:-re p FAIL line 1425\\${SEP}p FAIL line 1425${INTR}${QF}}${SEP}${LB}
+					goto do_excmd; \\\\}${SEP}??!${DBG:-re p FAIL line 1424\\${SEP}p FAIL line 1424${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				case 'x':
 					temp_switch(3, 1);
 					vi_mod = 1;
 					break;
 ${SEP}.,\$;f> 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
 	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);
-	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-re p FAIL line 1840\\${SEP}p FAIL line 1840${INTR}${QF}}${SEP}${LB}
+	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-re p FAIL line 1839\\${SEP}p FAIL line 1839${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	temp_open(3, \"/grep/\", grep_ft);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
@@ -191,7 +191,7 @@ index d8a2c535..4ec06d65 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index b665a9f3..770ffe43 100644
+index 276e096a..54169758 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -485,12 +485,12 @@ void dir_calc(char *path)
@@ -288,7 +288,7 @@ index b665a9f3..770ffe43 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1290,7 +1325,17 @@ void vi(int init)
+@@ -1289,7 +1324,17 @@ void vi(int init)
  				char buf[strlen(ln)+4];
  				strcpy(buf, ":e ");
  				strcpy(buf+3, ln);
@@ -307,7 +307,7 @@ index b665a9f3..770ffe43 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1423,6 +1468,10 @@ void vi(int init)
+@@ -1422,6 +1467,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
  					goto do_excmd; }
@@ -318,7 +318,7 @@ index b665a9f3..770ffe43 100644
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					char buf[cs ? strlen(cs)+30 : 30];
-@@ -1838,6 +1887,7 @@ int main(int argc, char *argv[])
+@@ -1837,6 +1886,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);

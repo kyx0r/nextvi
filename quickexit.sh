@@ -65,7 +65,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}9a #include <time.h>
 ${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
-				ins:${SEP}??!${DBG:-re p FAIL line 1530\\${SEP}p FAIL line 1530${INTR}${QF}}${SEP}${LB}
+				ins:${SEP}??!${DBG:-re p FAIL line 1529\\${SEP}p FAIL line 1529${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (xqe)
 					vi_mod |= 2;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
@@ -211,7 +211,7 @@ index 6a5e065f..1b43d40d 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index b665a9f3..d5d598e8 100644
+index 276e096a..d53a9b04 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -222,7 +222,7 @@ index b665a9f3..d5d598e8 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1528,6 +1529,8 @@ void vi(int init)
+@@ -1527,6 +1528,8 @@ void vi(int init)
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
