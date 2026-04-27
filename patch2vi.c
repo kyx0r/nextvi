@@ -80,16 +80,20 @@ enum strategy {
 /* Map "abs"/"rel"/"relc" → strategy (n=length to compare). */
 static int strat_from_name(const char *s, int n)
 {
-	if (n == 3 && !strncmp(s, "abs", 3)) return STRAT_ABS;
-	if (n == 4 && !strncmp(s, "relc", 4)) return STRAT_RELC;
-	if (n == 3 && !strncmp(s, "rel", 3)) return STRAT_REL;
+	if (n == 3 && !strncmp(s, "abs", 3))
+		return STRAT_ABS;
+	if (n == 4 && !strncmp(s, "relc", 4))
+		return STRAT_RELC;
+	if (n == 3 && !strncmp(s, "rel", 3))
+		return STRAT_REL;
 	return STRAT_DEFAULT;
 }
 
 /* Detect substitute command: 's' followed by non-alphanumeric delimiter. */
 static int is_substitute(const char *s)
 {
-	if (s[0] != 's' || !s[1]) return 0;
+	if (s[0] != 's' || !s[1])
+		return 0;
 	unsigned char c = s[1];
 	return !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
 		 (c >= '0' && c <= '9'));
@@ -125,11 +129,13 @@ static char *escape_chars(const char *s, const char *set)
 {
 	int extra = 0;
 	for (const char *p = s; *p; p++)
-		if (strchr(set, *p)) extra++;
+		if (strchr(set, *p))
+			extra++;
 	char *result = malloc(strlen(s) + extra + 1);
 	char *dst = result;
 	for (const char *p = s; *p; p++) {
-		if (strchr(set, *p)) *dst++ = '\\';
+		if (strchr(set, *p))
+			*dst++ = '\\';
 		*dst++ = *p;
 	}
 	*dst = '\0';
@@ -154,9 +160,11 @@ static void arr_append(char ***arr, int *n, int *cap, const char *s)
 
 static int lines_equal(char **a, int na, char **b, int nb)
 {
-	if (na != nb) return 0;
+	if (na != nb)
+		return 0;
 	for (int i = 0; i < na; i++)
-		if (strcmp(a[i], b[i]) != 0) return 0;
+		if (strcmp(a[i], b[i]) != 0)
+			return 0;
 	return 1;
 }
 
@@ -218,10 +226,12 @@ static int count_occurrences(const char *haystack, const char *needle)
 /* Step os back 1 byte and over UTF-8 continuation bytes, mirroring on ns. */
 static int diff_expand_left(const char *old, int *os, int *ns)
 {
-	if (*os <= 0) return 0;
+	if (*os <= 0)
+		return 0;
 	int prev = *os;
 	(*os)--;
-	while (*os > 0 && (old[*os] & 0xC0) == 0x80) (*os)--;
+	while (*os > 0 && (old[*os] & 0xC0) == 0x80)
+		(*os)--;
 	*ns -= (prev - *os);
 	return 1;
 }
@@ -229,10 +239,12 @@ static int diff_expand_left(const char *old, int *os, int *ns)
 /* Step oe forward 1 byte and over UTF-8 continuation bytes, mirroring on ne. */
 static int diff_expand_right(const char *old, int olen, int *oe, int *ne)
 {
-	if (*oe >= olen) return 0;
+	if (*oe >= olen)
+		return 0;
 	int prev = *oe;
 	(*oe)++;
-	while (*oe < olen && (old[*oe] & 0xC0) == 0x80) (*oe)++;
+	while (*oe < olen && (old[*oe] & 0xC0) == 0x80)
+		(*oe)++;
 	*ne += (*oe - prev);
 	return 1;
 }
@@ -835,12 +847,16 @@ static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
  * Returns the extracted offset (0 if no prefix found). */
 static int parse_ecmd_offset(char **lines, int *nlines)
 {
-	if (*nlines == 0) return 0;
+	if (*nlines == 0)
+		return 0;
 	char *first = lines[0];
-	if (first[0] != '+' && first[0] != '-') return 0;
+	if (first[0] != '+' && first[0] != '-')
+		return 0;
 	int i = 1;
-	while (first[i] >= '0' && first[i] <= '9') i++;
-	if (i == 1) return 0; /* sign but no digits */
+	while (first[i] >= '0' && first[i] <= '9')
+		i++;
+	if (i == 1)
+		return 0; /* sign but no digits */
 	int offset = atoi(first);
 	if (first[i] == '\0') {
 		/* Offset-only line: remove it, shift remaining */
@@ -872,13 +888,17 @@ typedef struct {
 static void free_parsed_grp(parsed_grp_t *p)
 {
 	free(p->cmd);
-	for (int i = 0; i < p->npattern; i++) free(p->pattern[i]);
+	for (int i = 0; i < p->npattern; i++)
+		free(p->pattern[i]);
 	free(p->pattern);
-	for (int i = 0; i < p->nabs; i++) free(p->abs_cmd[i]);
+	for (int i = 0; i < p->nabs; i++)
+		free(p->abs_cmd[i]);
 	free(p->abs_cmd);
-	for (int i = 0; i < p->nrel; i++) free(p->rel_cmd[i]);
+	for (int i = 0; i < p->nrel; i++)
+		free(p->rel_cmd[i]);
 	free(p->rel_cmd);
-	for (int i = 0; i < p->nrelc; i++) free(p->relc_cmd[i]);
+	for (int i = 0; i < p->nrelc; i++)
+		free(p->relc_cmd[i]);
 	free(p->relc_cmd);
 }
 
@@ -890,7 +910,8 @@ static void free_parsed_grp(parsed_grp_t *p)
 static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
 {
 	FILE *f = fopen(path, "r");
-	if (!f) return;
+	if (!f)
+		return;
 
 	memset(results, 0, ngroups * sizeof(parsed_grp_t));
 
@@ -1004,8 +1025,10 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
 	if (gd->strategy != STRAT_DEFAULT) {
 		const char *s = "abs";
-		if (gd->strategy == STRAT_REL) s = "rel";
-		else if (gd->strategy == STRAT_RELC) s = "relc";
+		if (gd->strategy == STRAT_REL)
+			s = "rel";
+		else if (gd->strategy == STRAT_RELC)
+			s = "relc";
 		fprintf(out, "strategy: %s\n", s);
 	}
 	if (gd->cmd)
@@ -1074,7 +1097,8 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		} else {
 			default_offset = g->block_change_idx;
 		}
-		if (dcmd) sim_first_ml = 0;
+		if (dcmd)
+			sim_first_ml = 0;
 
 		char abs_cmd[64] = "";
 		int from = g->del_start, to = g->del_end, after = g->add_after;
@@ -1323,7 +1347,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 	if (orig_fp) {
 		char **dc = write_groups_to_file(orig_fp, groups, ngroups, NULL);
 		fclose(orig_fp);
-		for (int i = 0; i < ngroups; i++) free(dc[i]);
+		for (int i = 0; i < ngroups; i++)
+			free(dc[i]);
 		free(dc);
 	}
 
@@ -1432,7 +1457,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				memset(dst, 0, sizeof(*dst));
 				dst->group_idx = src->group_idx;
 				dst->strategy = src->strategy;
-				if (src->cmd) dst->cmd = xstrdup(src->cmd);
+				if (src->cmd)
+					dst->cmd = xstrdup(src->cmd);
 				arr_clone(&dst->del_lines, &dst->ndel_lines, &dst->del_cap, src->del_lines,
 					  src->ndel_lines);
 				arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap, src->add_lines,
@@ -1495,16 +1521,22 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				  groups[gi].del_texts, groups[gi].ndel);
 			arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
 				  groups[gi].add_texts, groups[gi].nadd);
-			if (strat_ch) gout->strategy = eg->strategy;
-			if (cmd_ch && eg->cmd) gout->cmd = xstrdup(eg->cmd);
-			if (pat_ch) arr_clone(&gout->pattern, &gout->npattern, &gout->pat_cap,
-						       eg->pattern, eg->npattern);
-			if (abs_ch) arr_clone(&gout->abs_cmd, &gout->nabs, &gout->abs_cap,
-						       eg->abs_cmd, eg->nabs);
-			if (rel_ch) arr_clone(&gout->rel_cmd, &gout->nrel, &gout->rel_cap,
-						       eg->rel_cmd, eg->nrel);
-			if (relc_ch) arr_clone(&gout->relc_cmd, &gout->nrelc, &gout->relc_cap,
-						       eg->relc_cmd, eg->nrelc);
+			if (strat_ch)
+				gout->strategy = eg->strategy;
+			if (cmd_ch && eg->cmd)
+				gout->cmd = xstrdup(eg->cmd);
+			if (pat_ch)
+				arr_clone(&gout->pattern, &gout->npattern, &gout->pat_cap,
+					  eg->pattern, eg->npattern);
+			if (abs_ch)
+				arr_clone(&gout->abs_cmd, &gout->nabs, &gout->abs_cap,
+					  eg->abs_cmd, eg->nabs);
+			if (rel_ch)
+				arr_clone(&gout->rel_cmd, &gout->nrel, &gout->rel_cap,
+					  eg->rel_cmd, eg->nrel);
+			if (relc_ch)
+				arr_clone(&gout->relc_cmd, &gout->nrelc, &gout->relc_cap,
+					  eg->relc_cmd, eg->nrelc);
 		}
 
 		for (int gi = 0; gi < ngroups; gi++)
@@ -2177,7 +2209,8 @@ int main(int argc, char **argv)
 					if (delta_mode) {
 						char *p = line + 10;
 						char *end = strstr(p, " ===");
-						if (end) *end = '\0';
+						if (end)
+							*end = '\0';
 						cur_fd = &in_deltas[nin_deltas++];
 						cur_fd->filepath = xstrdup(p);
 						cur_fd->grps = NULL;
@@ -2188,7 +2221,8 @@ int main(int argc, char **argv)
 					}
 					continue;
 				}
-				if (!delta_mode || !cur_fd) continue;
+				if (!delta_mode || !cur_fd)
+					continue;
 				if (strncmp(line, "GROUP", 5) == 0 &&
 				    (line[5] == '\0' || line[5] == ' ')) {
 					if (cur_fd->ngrps >= cur_fd->gcap) {
@@ -2205,7 +2239,8 @@ int main(int argc, char **argv)
 					in_sect = 5; /* always read diff lines that follow */
 					continue;
 				}
-				if (!cur_gd) continue;
+				if (!cur_gd)
+					continue;
 				if (in_sect == 5) {
 					if (line[0] == '-') {
 						arr_append(&cur_gd->del_lines,
