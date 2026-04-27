@@ -1179,9 +1179,8 @@ static void vi_argcmd(int arg, char cmd)
 if (xrow < 0 || xrow >= lbuf_len(xb)) \
 	xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0; \
 if (xtop > xrow) \
-	xtop = xtop - xrows / 2 > xrow ? \
-			MAX(0, xrow - xrows / 2) : xrow; \
-if (xtop + xrows <= xrow) \
+	xtop = xrow; \
+else if (xtop + xrows <= xrow) \
 	xtop = xrow - xrows + 1; \
 
 void vi(int init)
