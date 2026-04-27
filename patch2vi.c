@@ -33,22 +33,28 @@ typedef struct {
 } file_patch_t;
 
 static file_patch_t files[256];
-static int nfiles = 0;
-static int relative_mode = 0;  /* 0=absolute, 1=relative search (-r) */
-static int interactive_mode = 0; /* 1=interactive editing of search patterns (-i) */
-static int delta_mode = 0;      /* 1=re-apply previous delta from script (-d) */
+static int nfiles;
+static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
+static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
+static int delta_mode;      /* 1=re-apply previous delta from script (-d) */
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
 	int group_idx;      /* 1-based */
-	char **del_lines; int ndel_lines, del_cap;
-	char **add_lines; int nadd_lines, add_cap;
+	char **del_lines;
+	int ndel_lines, del_cap;
+	char **add_lines;
+	int nadd_lines, add_cap;
 	int strategy;       /* STRAT_DEFAULT = not recorded */
 	char *cmd;
-	char **pattern;  int npattern, pat_cap;
-	char **abs_cmd;  int nabs, abs_cap;
-	char **rel_cmd;  int nrel, rel_cap;
-	char **relc_cmd; int nrelc, relc_cap;
+	char **pattern;
+	int npattern, pat_cap;
+	char **abs_cmd;
+	int nabs, abs_cap;
+	char **rel_cmd;
+	int nrel, rel_cap;
+	char **relc_cmd;
+	int nrelc, relc_cap;
 } grp_delta_t;
 
 typedef struct {
@@ -59,10 +65,10 @@ typedef struct {
 } file_delta_t;
 
 static file_delta_t out_deltas[256];   /* output: captured from editor */
-static int nout_deltas = 0;
+static int nout_deltas;
 
 static file_delta_t in_deltas[256];    /* input: read from script */
-static int nin_deltas = 0;
+static int nin_deltas;
 
 enum strategy {
 	STRAT_DEFAULT = 0,  /* use global mode default */
@@ -131,7 +137,10 @@ static char *escape_chars(const char *s, const char *set)
 }
 
 #define REGEX_META "\\^$.*+?[](){}|"
-static char *escape_regex(const char *s) { return escape_chars(s, REGEX_META); }
+static char *escape_regex(const char *s)
+{
+	return escape_chars(s, REGEX_META);
+}
 
 /* Append a string to a dynamic array */
 static void arr_append(char ***arr, int *n, int *cap, const char *s)
@@ -167,19 +176,19 @@ static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 	if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
 		return 0;
 	return lines_equal(gd->del_lines, gd->ndel_lines, del, ndel)
-		&& lines_equal(gd->add_lines, gd->nadd_lines, add, nadd);
+	       && lines_equal(gd->add_lines, gd->nadd_lines, add, nadd);
 }
 
 static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
-				    char **del_texts, int ndel,
-				    char **add_texts, int nadd)
+				   char **del_texts, int ndel,
+				   char **add_texts, int nadd)
 {
 	for (int i = 0; fd && i < fd->ngrps; i++) {
 		grp_delta_t *gd = &fd->grps[i];
 		if (gd->group_idx != idx)
 			continue;
 		return grp_content_matches(gd, del_texts, ndel, add_texts, nadd)
-			? gd : NULL;
+		       ? gd : NULL;
 	}
 	return NULL;
 }
@@ -236,7 +245,7 @@ static int diff_expand_right(const char *old, int olen, int *oe, int *ne)
  * *new_text to the replacement text (allocated).
  */
 static int find_line_diff(const char *old, const char *new,
-			char **old_text, char **new_text)
+			  char **old_text, char **new_text)
 {
 	int old_len = strlen(old);
 	int new_len = strlen(new);
@@ -249,7 +258,7 @@ static int find_line_diff(const char *old, const char *new,
 	/* Find common suffix (in bytes), but don't overlap with prefix */
 	int suffix = 0;
 	while (suffix < old_len - prefix && suffix < new_len - prefix &&
-				 old[old_len - 1 - suffix] == new[new_len - 1 - suffix])
+	       old[old_len - 1 - suffix] == new[new_len - 1 - suffix])
 		suffix++;
 
 	/* Calculate the differing regions */
@@ -467,8 +476,9 @@ static void emit_delete(FILE *out, int from, int to)
 }
 
 /* Emit ex command for horizontal (character-level) edit */
-static void emit_horizontal_change(FILE *out, int line, int char_start, int char_end,
-					const char *new_text)
+static void emit_horizontal_change(FILE *out, int line, int char_start,
+				   int char_end,
+				   const char *new_text)
 {
 	if (!*new_text) {
 		if (char_start == char_end)
@@ -544,7 +554,10 @@ static void emit_err_check(FILE *out, int line)
 
 /* Double backslashes for ex_arg level escaping.
  * ex_arg treats \\ as escaped \, so \\\\ is needed to preserve \\. */
-static char *escape_exarg(const char *s) { return escape_chars(s, "\\"); }
+static char *escape_exarg(const char *s)
+{
+	return escape_chars(s, "\\");
+}
 
 /* Emit text that passes through ex_arg then shell double-quotes.
  * ex_arg consumes \\ -> \, so backslashes need doubling for ex_arg,
@@ -580,7 +593,8 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 			char *r = escape_regex(anchors[i]);
 			char *e = escape_exarg(r);
 			emit_escaped_line(out, e);
-			free(e); free(r);
+			free(e);
+			free(r);
 		}
 		if (i < nanchors - 1)
 			fputc('\n', out);
@@ -681,17 +695,24 @@ static int emit_custom_pos(FILE *out, group_t *g, int *first_ml)
 static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
 {
 	char *single[1];
-	char **anchors; int n, off, multi;
+	char **anchors;
+	int n, off, multi;
 	if (rc->nanchors >= 2) {
-		anchors = rc->anchors; n = rc->nanchors; multi = 1;
+		anchors = rc->anchors;
+		n = rc->nanchors;
+		multi = 1;
 		off = rc->nanchors + rc->anchor_offset - 1;
 	} else if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
 		single[0] = rc->anchors[0];
-		anchors = single; n = 1; multi = 0;
+		anchors = single;
+		n = 1;
+		multi = 0;
 		off = rc->anchor_offset;
 	} else if (rc->follow_ctx && rc->follow_ctx[0]) {
 		single[0] = rc->follow_ctx;
-		anchors = single; n = 1; multi = 0;
+		anchors = single;
+		n = 1;
+		multi = 0;
 		off = -(rc->follow_offset);
 	} else {
 		return -1;
@@ -703,7 +724,7 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
 
 /* Emit delete using relative pattern */
 static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count,
-				  int *first_ml)
+				 int *first_ml)
 {
 	int mode = emit_rel_pos(out, rc, first_ml);
 	if (count == 1)
@@ -717,7 +738,7 @@ static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count,
 
 /* Emit insert using relative pattern */
 static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
-				  char **texts, int ntexts, int *first_ml)
+				 char **texts, int ntexts, int *first_ml)
 {
 	if (ntexts == 0)
 		return;
@@ -732,8 +753,8 @@ static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
 
 /* Emit change using relative pattern */
 static void emit_relative_change(FILE *out, rel_ctx_t *rc,
-				  int del_count, char **texts, int ntexts,
-				  int *first_ml)
+				 int del_count, char **texts, int ntexts,
+				 int *first_ml)
 {
 	if (ntexts == 0) {
 		emit_relative_delete(out, rc, del_count, first_ml);
@@ -792,8 +813,8 @@ static void emit_substitute_cmd(FILE *out, const char *old_text,
 
 /* Emit substitute using relative pattern positioning */
 static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
-				      const char *old_text,
-				      const char *new_text, int *first_ml)
+				     const char *old_text,
+				     const char *new_text, int *first_ml)
 {
 	int mode = emit_rel_pos(out, rc, first_ml);
 	/* Separate position from substitute: s/ doesn't move xrow,
@@ -838,10 +859,14 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 typedef struct {
 	int strategy;
 	char *cmd;
-	char **pattern;  int npattern, pat_cap;
-	char **abs_cmd;  int nabs, abs_cap;
-	char **rel_cmd;  int nrel, rel_cap;
-	char **relc_cmd; int nrelc, relc_cap;
+	char **pattern;
+	int npattern, pat_cap;
+	char **abs_cmd;
+	int nabs, abs_cap;
+	char **rel_cmd;
+	int nrel, rel_cap;
+	char **relc_cmd;
+	int nrelc, relc_cap;
 } parsed_grp_t;
 
 static void free_parsed_grp(parsed_grp_t *p)
@@ -882,9 +907,12 @@ static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
 
 		if (strncmp(line, "=== ", 4) == 0) {
 			in_ecmd = 0;
-			if (in_pat) { in_pat = 0; }
+			if (in_pat) {
+				in_pat = 0;
+			}
 			in_cstrat = 0;
-			cs_take = 0; cs_want_cmd = 0;
+			cs_take = 0;
+			cs_want_cmd = 0;
 		}
 
 		if (strncmp(line, "=== GROUP ", 10) == 0) {
@@ -893,10 +921,13 @@ static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
 			continue;
 		}
 		if (strncmp(line, "=== COMMAND STRATEGY", 20) == 0) {
-			in_cstrat = 1; continue;
+			in_cstrat = 1;
+			continue;
 		}
 		if (strncmp(line, "=== SEARCH PATTERN", 18) == 0) {
-			in_pat = 1; skip_extra = 0; continue;
+			in_pat = 1;
+			skip_extra = 0;
+			continue;
 		}
 		if (strncmp(line, "=== EDIT COMMAND (", 18) == 0) {
 			in_ecmd = 1;
@@ -927,7 +958,8 @@ static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
 						pg->cmd = xstrdup(line);
 					}
 				}
-				cs_want_cmd = 0; cs_take = 0;
+				cs_want_cmd = 0;
+				cs_take = 0;
 			} else {
 				const char *name = (line[0] == '#') ? line + 1 : line;
 				cs_take = (line[0] != '#');
@@ -1005,7 +1037,7 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
  * Returns a freshly allocated default_cmds[] array (caller frees entries + array).
  */
 static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
-				    file_delta_t *in_fd)
+				   file_delta_t *in_fd)
 {
 	int sim_first_ml = 1;
 	char **default_cmds = calloc(ngroups, sizeof(char *));
@@ -1017,13 +1049,13 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		int target = g->del_start ? g->del_start : g->add_after;
 
 		grp_delta_t *gd = find_grp_delta(in_fd, gi + 1,
-					g->del_texts, g->ndel,
-					g->add_texts, g->nadd);
+						 g->del_texts, g->ndel,
+						 g->add_texts, g->nadd);
 
 		int has_anchors = g->nanchors >= 2
-			|| (g->nanchors == 1 && g->anchors[0] && g->anchors[0][0])
-			|| (g->follow_ctx && g->follow_ctx[0])
-			|| (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]);
+				  || (g->nanchors == 1 && g->anchors[0] && g->anchors[0][0])
+				  || (g->follow_ctx && g->follow_ctx[0])
+				  || (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]);
 
 		int default_offset = 0;
 		const char *dcmd = NULL;
@@ -1077,9 +1109,9 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 
 		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
 		int sel_strat = (gd && gd->strategy != STRAT_DEFAULT)
-			? gd->strategy : STRAT_DEFAULT;
+				? gd->strategy : STRAT_DEFAULT;
 		const char *use_cmd = (gd && gd->cmd) ? gd->cmd
-			: dcmd ? dcmd : "";
+				      : dcmd ? dcmd : "";
 		fprintf(fp, "=== COMMAND STRATEGY (default: %s) ===\n", def_strat);
 		fprintf(fp, "%sabs\n", sel_strat == STRAT_ABS ? "" : "#");
 		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff)
@@ -1318,8 +1350,8 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			if (!rejected) {
 				group_t *g = &groups[stored->group_idx - 1];
 				rejected = !grp_content_matches(stored,
-					g->del_texts, g->ndel,
-					g->add_texts, g->nadd);
+								g->del_texts, g->ndel,
+								g->add_texts, g->nadd);
 			}
 			if (rejected) {
 				if (!rej) {
@@ -1375,7 +1407,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		goto cleanup_orig;
 	}
 	int unchanged = st_before.st_mtime == st_after.st_mtime
-		&& st_before.st_size == st_after.st_size;
+			&& st_before.st_size == st_after.st_size;
 #ifdef st_mtime
 	if (unchanged)
 		unchanged = st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec;
@@ -1401,12 +1433,18 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				dst->group_idx = src->group_idx;
 				dst->strategy = src->strategy;
 				if (src->cmd) dst->cmd = xstrdup(src->cmd);
-				arr_clone(&dst->del_lines, &dst->ndel_lines, &dst->del_cap, src->del_lines, src->ndel_lines);
-				arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap, src->add_lines, src->nadd_lines);
-				arr_clone(&dst->pattern,   &dst->npattern,   &dst->pat_cap, src->pattern,   src->npattern);
-				arr_clone(&dst->abs_cmd,   &dst->nabs,       &dst->abs_cap, src->abs_cmd,   src->nabs);
-				arr_clone(&dst->rel_cmd,   &dst->nrel,       &dst->rel_cap, src->rel_cmd,   src->nrel);
-				arr_clone(&dst->relc_cmd,  &dst->nrelc,      &dst->relc_cap,src->relc_cmd,  src->nrelc);
+				arr_clone(&dst->del_lines, &dst->ndel_lines, &dst->del_cap, src->del_lines,
+					  src->ndel_lines);
+				arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap, src->add_lines,
+					  src->nadd_lines);
+				arr_clone(&dst->pattern, &dst->npattern, &dst->pat_cap, src->pattern,
+					  src->npattern);
+				arr_clone(&dst->abs_cmd, &dst->nabs, &dst->abs_cap, src->abs_cmd,
+					  src->nabs);
+				arr_clone(&dst->rel_cmd, &dst->nrel, &dst->rel_cap, src->rel_cmd,
+					  src->nrel);
+				arr_clone(&dst->relc_cmd, &dst->nrelc, &dst->relc_cap,src->relc_cmd,
+					  src->nrelc);
 			}
 		}
 	} else {
@@ -1422,9 +1460,9 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 
 			int strat_ch = (eg->strategy != og->strategy);
 			int cmd_ch = (eg->cmd != og->cmd) &&
-				((eg->cmd == NULL) != (og->cmd == NULL) ||
-				 (eg->cmd && og->cmd &&
-				  strcmp(eg->cmd, og->cmd) != 0));
+				     ((eg->cmd == NULL) != (og->cmd == NULL) ||
+				      (eg->cmd && og->cmd &&
+				       strcmp(eg->cmd, og->cmd) != 0));
 			int pat_ch = !lines_equal(eg->pattern, eg->npattern,
 						  og->pattern, og->npattern);
 			int abs_ch = !lines_equal(eg->abs_cmd, eg->nabs,
@@ -1448,7 +1486,7 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			if (od->ngrps >= od->gcap) {
 				od->gcap = od->gcap ? od->gcap * 2 : 4;
 				od->grps = realloc(od->grps,
-					od->gcap * sizeof(grp_delta_t));
+						   od->gcap * sizeof(grp_delta_t));
 			}
 			grp_delta_t *gout = &od->grps[od->ngrps++];
 			memset(gout, 0, sizeof(*gout));
@@ -1459,10 +1497,14 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 				  groups[gi].add_texts, groups[gi].nadd);
 			if (strat_ch) gout->strategy = eg->strategy;
 			if (cmd_ch && eg->cmd) gout->cmd = xstrdup(eg->cmd);
-			if (pat_ch)  arr_clone(&gout->pattern,  &gout->npattern, &gout->pat_cap, eg->pattern,  eg->npattern);
-			if (abs_ch)  arr_clone(&gout->abs_cmd,  &gout->nabs,     &gout->abs_cap, eg->abs_cmd,  eg->nabs);
-			if (rel_ch)  arr_clone(&gout->rel_cmd,  &gout->nrel,     &gout->rel_cap, eg->rel_cmd,  eg->nrel);
-			if (relc_ch) arr_clone(&gout->relc_cmd, &gout->nrelc,    &gout->relc_cap, eg->relc_cmd, eg->nrelc);
+			if (pat_ch) arr_clone(&gout->pattern, &gout->npattern, &gout->pat_cap,
+						       eg->pattern, eg->npattern);
+			if (abs_ch) arr_clone(&gout->abs_cmd, &gout->nabs, &gout->abs_cap,
+						       eg->abs_cmd, eg->nabs);
+			if (rel_ch) arr_clone(&gout->rel_cmd, &gout->nrel, &gout->rel_cap,
+						       eg->rel_cmd, eg->nrel);
+			if (relc_ch) arr_clone(&gout->relc_cmd, &gout->nrelc, &gout->relc_cap,
+						       eg->relc_cmd, eg->nrelc);
 		}
 
 		for (int gi = 0; gi < ngroups; gi++)
@@ -1482,12 +1524,16 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		if (eg->npattern > 0) {
 			g->custom_lines = eg->pattern;
 			g->ncustom = eg->npattern;
-			eg->pattern = NULL; eg->npattern = 0; eg->pat_cap = 0;
+			eg->pattern = NULL;
+			eg->npattern = 0;
+			eg->pat_cap = 0;
 		}
 		if (eg->nabs > 0) {
 			g->custom_abs_lines = eg->abs_cmd;
 			g->custom_abs_nlines = eg->nabs;
-			eg->abs_cmd = NULL; eg->nabs = 0; eg->abs_cap = 0;
+			eg->abs_cmd = NULL;
+			eg->nabs = 0;
+			eg->abs_cap = 0;
 		}
 		/* Process in file order (relc before rel) so the last-written
 		 * custom_offset matches the old read_back semantics: whichever
@@ -1496,13 +1542,17 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 			g->custom_offset = parse_ecmd_offset(eg->relc_cmd, &eg->nrelc);
 			g->custom_relc_lines = eg->relc_cmd;
 			g->custom_relc_nlines = eg->nrelc;
-			eg->relc_cmd = NULL; eg->nrelc = 0; eg->relc_cap = 0;
+			eg->relc_cmd = NULL;
+			eg->nrelc = 0;
+			eg->relc_cap = 0;
 		}
 		if (eg->nrel > 0) {
 			g->custom_offset = parse_ecmd_offset(eg->rel_cmd, &eg->nrel);
 			g->custom_rel_lines = eg->rel_cmd;
 			g->custom_rel_nlines = eg->nrel;
-			eg->rel_cmd = NULL; eg->nrel = 0; eg->rel_cap = 0;
+			eg->rel_cmd = NULL;
+			eg->nrel = 0;
+			eg->rel_cap = 0;
 		}
 		free_parsed_grp(eg);
 	}
@@ -1515,7 +1565,6 @@ cleanup_orig:
 		free(default_cmds[gi]);
 	free(default_cmds);
 }
-
 
 /* Emit a custom EDIT COMMAND lines array + trailing SEP.
  * lines[0] = "cmd [first-content]", lines[1..n] = extra content lines.
@@ -1644,7 +1693,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		g->ndel = i - del_start_idx;
 		g->del_texts = malloc(g->ndel * sizeof(char*));
 		for (int j = 0; j < g->ndel; j++)
-		  g->del_texts[j] = fp->ops[del_start_idx + j].text;
+			g->del_texts[j] = fp->ops[del_start_idx + j].text;
 
 		/* Collect consecutive adds */
 		int add_start = i;
@@ -1696,8 +1745,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		if (g->ndel == 1 && g->nadd == 1 &&
 		    g->del_texts[0] && g->add_texts[0]) {
 			g->has_line_diff = find_line_diff(
-				g->del_texts[0], g->add_texts[0],
-				&g->ld_old_text, &g->ld_new_text);
+						   g->del_texts[0], g->add_texts[0],
+						   &g->ld_old_text, &g->ld_new_text);
 			if (g->has_line_diff) {
 				/* Minimal diff positions for ;c (no uniqueness expansion) */
 				const char *old = g->del_texts[0];
@@ -1763,8 +1812,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			.anchor_offset = g->anchor_offset,
 		};
 		int has_anchors = rc.nanchors >= 2
-			|| (rc.nanchors == 1 && rc.anchors[0] && rc.anchors[0][0])
-			|| (rc.follow_ctx && rc.follow_ctx[0]);
+				  || (rc.nanchors == 1 && rc.anchors[0] && rc.anchors[0][0])
+				  || (rc.follow_ctx && rc.follow_ctx[0]);
 		/* Fallback: use first deleted line as anchor */
 		if (!has_anchors && g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
 			rc.anchors = g->del_texts;
@@ -1819,7 +1868,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		if (g->del_start && g->nadd) {
 			if (strat == STRAT_ABS && g->custom_abs_lines) {
 				emit_custom_edit_lines(out, g->custom_abs_lines,
-				                       g->custom_abs_nlines);
+						       g->custom_abs_nlines);
 				EMIT_SEP(out);
 			} else if (strat == STRAT_RELC) {
 				/* Rel search + horizontal ;c edit */
@@ -1834,7 +1883,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				if (g->custom_relc_lines && g->custom_relc_nlines > 0) {
 					/* custom relc: lines[0] = ".;N;Mc content" */
 					emit_custom_edit_lines(out, g->custom_relc_lines,
-					                       g->custom_relc_nlines);
+							       g->custom_relc_nlines);
 				} else {
 					if (!*g->ldc_new_text && g->ldc_start != g->ldc_end)
 						fprintf(out, ".;%d;%dd", g->ldc_start, g->ldc_end);
@@ -1851,20 +1900,20 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			} else if (strat == STRAT_REL) {
 				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
 					EMIT_REL_EDIT(g->custom_rel_lines,
-					              g->custom_rel_nlines, g->del_start);
+						      g->custom_rel_nlines, g->del_start);
 				} else if (g->ndel == 1 && g->nadd == 1 &&
-				           g->has_line_diff) {
+					   g->has_line_diff) {
 					if (has_custom) {
 						emit_custom_pos(out, g, &first_ml);
 						EMIT_SEP(out);
 						emit_substitute_cmd(out, g->ld_old_text,
-						                    g->ld_new_text);
+								    g->ld_new_text);
 						EMIT_SEP(out);
 						emit_err_check(out, g->del_start);
 					} else {
 						emit_relative_substitute(out, &rc,
-						    g->ld_old_text, g->ld_new_text,
-						    &first_ml);
+									 g->ld_old_text, g->ld_new_text,
+									 &first_ml);
 					}
 				} else {
 					if (has_custom) {
@@ -1879,8 +1928,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 							emit_err_check(out, g->del_start);
 					} else {
 						emit_relative_change(out, &rc,
-						    g->ndel, g->add_texts, g->nadd,
-						    &first_ml);
+								     g->ndel, g->add_texts, g->nadd,
+								     &first_ml);
 					}
 				}
 			} else {
@@ -1888,22 +1937,22 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
 					int adj = forward ? cum_delta : 0;
 					emit_horizontal_change(out, g->del_start + adj,
-					    g->ldc_start, g->ldc_end, g->ldc_new_text);
+							       g->ldc_start, g->ldc_end, g->ldc_new_text);
 				} else {
 					int adj = forward ? cum_delta : 0;
 					emit_change(out, g->del_start + adj, g->del_end + adj,
-					    g->add_texts, g->nadd);
+						    g->add_texts, g->nadd);
 				}
 			}
 		} else if (g->del_start) {
 			if (strat == STRAT_ABS && g->custom_abs_lines) {
 				emit_custom_edit_lines(out, g->custom_abs_lines,
-				                       g->custom_abs_nlines);
+						       g->custom_abs_nlines);
 				EMIT_SEP(out);
 			} else if (strat == STRAT_REL) {
 				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
 					EMIT_REL_EDIT(g->custom_rel_lines,
-					              g->custom_rel_nlines, g->del_start);
+						      g->custom_rel_nlines, g->del_start);
 				} else if (has_custom) {
 					int mode = emit_custom_pos(out, g, &first_ml);
 					if (g->ndel == 1)
@@ -1924,12 +1973,12 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		} else if (g->nadd) {
 			if (strat == STRAT_ABS && g->custom_abs_lines) {
 				emit_custom_edit_lines(out, g->custom_abs_lines,
-				                       g->custom_abs_nlines);
+						       g->custom_abs_nlines);
 				EMIT_SEP(out);
 			} else if (strat == STRAT_REL) {
 				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
 					EMIT_REL_EDIT(g->custom_rel_lines,
-					              g->custom_rel_nlines, g->add_after);
+						      g->custom_rel_nlines, g->add_after);
 				} else if (has_custom) {
 					const char *icmd;
 					if (g->custom_offset > 0) {
@@ -1970,14 +2019,14 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 							emit_err_check(out, rc.target_line);
 					} else {
 						emit_relative_insert(out, &rc,
-						    g->add_texts, g->nadd, &first_ml);
+								     g->add_texts, g->nadd, &first_ml);
 					}
 				}
 			} else {
 				/* STRAT_ABS */
 				int adj = forward ? cum_delta : 0;
 				emit_insert_after(out, g->add_after + adj,
-				    g->add_texts, g->nadd);
+						  g->add_texts, g->nadd);
 			}
 		}
 		if (forward)
@@ -2029,13 +2078,16 @@ static void add_op(int type, int oline, const char *text)
 static void usage(const char *prog)
 {
 	fprintf(stderr, "Usage: %s [-aridh] [input.patch]\n", prog);
-	fprintf(stderr, "Converts unified diff to shell script using nextvi ex commands\n");
+	fprintf(stderr,
+		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a  Use absolute line numbers\n");
 	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
 	fprintf(stderr, "  -i  Interactive mode: edit search patterns in $EDITOR\n");
-	fprintf(stderr, "  -d  Delta mode: re-apply previous customizations from script (-d implies -i)\n");
+	fprintf(stderr,
+		"  -d  Delta mode: re-apply previous customizations from script (-d implies -i)\n");
 	fprintf(stderr, "  -h  Show this help\n");
-	fprintf(stderr, "Input can be a unified diff or a previously generated patch2vi script\n");
+	fprintf(stderr,
+		"Input can be a unified diff or a previously generated patch2vi script\n");
 	exit(1);
 }
 
@@ -2114,11 +2166,14 @@ int main(int argc, char **argv)
 				if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
 					continue;
 				if (strncmp(line, "=== END DELTA ===", 17) == 0) {
-					cur_fd = NULL; cur_gd = NULL; in_sect = 0;
+					cur_fd = NULL;
+					cur_gd = NULL;
+					in_sect = 0;
 					continue;
 				}
 				if (strncmp(line, "=== DELTA ", 10) == 0) {
-					in_sect = 0; cur_gd = NULL;
+					in_sect = 0;
+					cur_gd = NULL;
 					if (delta_mode) {
 						char *p = line + 10;
 						char *end = strstr(p, " ===");
@@ -2138,11 +2193,11 @@ int main(int argc, char **argv)
 				    (line[5] == '\0' || line[5] == ' ')) {
 					if (cur_fd->ngrps >= cur_fd->gcap) {
 						cur_fd->gcap = cur_fd->gcap
-							? cur_fd->gcap * 2 : 4;
+							       ? cur_fd->gcap * 2 : 4;
 						cur_fd->grps = realloc(
-							cur_fd->grps,
-							cur_fd->gcap *
-							sizeof(grp_delta_t));
+								       cur_fd->grps,
+								       cur_fd->gcap *
+								       sizeof(grp_delta_t));
 					}
 					cur_gd = &cur_fd->grps[cur_fd->ngrps++];
 					memset(cur_gd, 0, sizeof(*cur_gd));
@@ -2177,14 +2232,22 @@ int main(int argc, char **argv)
 					cur_gd->cmd = xstrdup(line + 5);
 					continue;
 				}
-				if (strcmp(line, "pattern:") == 0)
-					{ in_sect = 1; continue; }
-				if (strcmp(line, "edit_cmd_abs:") == 0)
-					{ in_sect = 2; continue; }
-				if (strcmp(line, "edit_cmd_rel:") == 0)
-					{ in_sect = 3; continue; }
-				if (strcmp(line, "edit_cmd_relc:") == 0)
-					{ in_sect = 4; continue; }
+				if (strcmp(line, "pattern:") == 0) {
+					in_sect = 1;
+					continue;
+				}
+				if (strcmp(line, "edit_cmd_abs:") == 0) {
+					in_sect = 2;
+					continue;
+				}
+				if (strcmp(line, "edit_cmd_rel:") == 0) {
+					in_sect = 3;
+					continue;
+				}
+				if (strcmp(line, "edit_cmd_relc:") == 0) {
+					in_sect = 4;
+					continue;
+				}
 				switch (in_sect) {
 				case 1:
 					arr_append(&cur_gd->pattern,
@@ -2282,7 +2345,8 @@ process_line:
 	/* Find separator character */
 	int sep = find_unused_byte();
 	if (sep < 0) {
-		fprintf(stderr, "error: patch uses all possible byte values, cannot find separator\n");
+		fprintf(stderr,
+			"error: patch uses all possible byte values, cannot find separator\n");
 		return 1;
 	}
 
