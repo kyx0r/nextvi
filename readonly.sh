@@ -59,7 +59,7 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\
 ${SEP}+1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 ${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}.;46c R${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}+1${SEP}s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-re p FAIL line 402\\${SEP}p FAIL line 402${INTR}${QF}}${SEP}${LB}
@@ -99,8 +99,6 @@ edit_cmd_rel:
 GROUP 2
 -				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 +				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
-strategy: relc
-cmd: .,\$;f>
 pattern:
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
 edit_cmd_relc:
@@ -108,7 +106,7 @@ edit_cmd_relc:
 .;46c R
 edit_cmd_rel:
 +1
-s/em/eRm/
+s/(\[-a.*m)/\1R/
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
