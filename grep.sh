@@ -135,7 +135,7 @@ ${SEP}+2a 				case 'x':
 					break;
 ${SEP}.,\$;f> 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
 	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);
-	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1841\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1839\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	temp_open(3, \"/grep/\", grep_ft);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
@@ -192,7 +192,7 @@ index 23903a3e..08729af0 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 7ccc8a86..d14ecb52 100644
+index 956e58e2..f0671f5b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -485,12 +485,12 @@ void dir_calc(char *path)
@@ -319,7 +319,7 @@ index 7ccc8a86..d14ecb52 100644
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					char buf[cs ? strlen(cs)+30 : 30];
-@@ -1839,6 +1888,7 @@ int main(int argc, char *argv[])
+@@ -1837,6 +1886,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);

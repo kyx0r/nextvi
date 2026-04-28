@@ -42,7 +42,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 				word = cs;
 			\\\\}
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1757\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1755\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";
@@ -98,10 +98,10 @@ index 23903a3e..256430c7 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 7ccc8a86..959595bf 100644
+index 956e58e2..9b2e0c6e 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1755,6 +1755,21 @@ void vi(int init)
+@@ -1753,6 +1753,21 @@ void vi(int init)
  				word = cs;
  			}
  		}

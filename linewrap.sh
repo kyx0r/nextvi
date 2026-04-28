@@ -473,7 +473,7 @@ index 081d478b..25032e13 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index 7ccc8a86..439527d3 100644
+index 956e58e2..7a235cc2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -168,6 +168,22 @@ static void vi_drawrow(int row)

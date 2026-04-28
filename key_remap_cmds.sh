@@ -130,8 +130,8 @@ ${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SE
 				if \\\\(k == 'g'\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1604\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1604\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 					continue;
 				break;
-			case 'Z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1680\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1680\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+			case 'Z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1678\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1678\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -341,7 +341,7 @@ index 6a5e065f..1357b20e 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 7ccc8a86..54903887 100644
+index 956e58e2..ed759639 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -442,7 +442,7 @@ index 7ccc8a86..54903887 100644
  				if (k == 'g')
  					term_push("1G", 2);
  				else if (k == 'a') {
-@@ -1677,7 +1677,7 @@ void vi(int init)
+@@ -1675,7 +1675,7 @@ void vi(int init)
  					continue;
  				break;
  			case 'Z':

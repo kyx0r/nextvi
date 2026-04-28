@@ -212,7 +212,7 @@ index 6a5e065f..1b43d40d 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 7ccc8a86..709dd53d 100644
+index 956e58e2..15903f73 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
