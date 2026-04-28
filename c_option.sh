@@ -53,7 +53,7 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 				}
 			} else {
 ${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}.;46c c${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
+${SEP}+1${SEP}s/\\\\[-a/[-ac/${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
 		term_scrh;${SEP}??!${DBG:-re p FAIL line 1868\\${SEP}p FAIL line 1868${INTR}${QF}}${SEP}${LB}
 ${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-re p FAIL line 1868\\${SEP}p FAIL line 1868${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
@@ -123,11 +123,9 @@ c 			else if (argv[i][j] == 'c') {
 GROUP 3
 -				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 +				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
-strategy: relc
-cmd: .,\$f>
-edit_cmd_relc:
-+0
-.;46c c
+edit_cmd_rel:
++1
+s/\[-a/[-ac/
 GROUP 4
 -	ex_init(argv + i, argc - i);
 +	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
