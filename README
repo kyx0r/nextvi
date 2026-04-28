@@ -2,6 +2,7 @@ NEXTVI PATCHES
 ==============
 Optional patches for Nextvi.
 Apply: ./name.sh
+Apply using patch(1): ./name.sh 1
 
 Nextvi features a robust, context aware and customizable patching system.
 patch2vi support program facilitates script transformations.
@@ -111,7 +112,7 @@ Note: this patch can be used as a base for remapping any base keybinds.
 
 quickexit.sh
 --------------
-Added quickexit to insert mode keybind: kj
+Added kj sequence to quickly exit insert mode.
 It's important to understand that this has a caveat, if input comes too fast,
 for example a paste from terminal and the sequence has "kj" in it, insert
 mode will be cancelled mid way and paste will be wrong. Luckily this almost
