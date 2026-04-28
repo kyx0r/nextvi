@@ -1543,11 +1543,11 @@ void vi(int init)
 				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
 				break;
 			case 'K': {
-				preserve(int, xled, xled = 0;)
+				preserve(int, xvis, xvis = 1;)
 				do {
-					ex_exec(";+1c\n\x1b:-1");
+					ex_exec(";+1c\n:-1");
 				} while (vi_arg--);
-				restore(xled)
+				restore(xvis)
 				vi_mod |= 1;
 				break; }
 			case TK_CTL('z'):
@@ -1610,17 +1610,19 @@ void vi(int init)
 				} else if (k == 'w') {
 					preserve(int, xled, xled = 0;)
 					preserve(int, xgrp, xgrp = 2;)
+					preserve(int, xvis, xvis = 1;)
 					n = vi_arg ? vi_arg : 80;
 					while (1) {
 						xoff = vi_col2off(xb, xrow, n);
 						vi_col = vi_off2col(xb, xrow, xoff+1);
 						if (vi_col <= n)
 							break;
-						if (ex_exec("f>[^ \t]*[ \t]+(?\\:.$|(.)):??;c\n\x1b"))
+						if (ex_exec("f>[^ \t]*[ \t]+(?\\:.$|(.)):??;c\n"))
 							break;
 					}
 					restore(xled)
 					restore(xgrp)
+					restore(xvis)
 					vi_mod |= !texec;
 				} else if (k == 'q') {
 					preserve(int, xled, xled = 0;)
