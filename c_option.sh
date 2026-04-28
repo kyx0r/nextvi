@@ -122,7 +122,7 @@ c 			else if (argv[i][j] == 'c') {
 			} else {
 GROUP 3
 -				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.0 Usage: %s [-acemsv] [file ...]\n", argv[0]);
 edit_cmd_rel:
 +1
 s/\[-a/[-ac/
@@ -168,7 +168,7 @@ index d8a2c535..6d090a0d 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 276e096a..ca370a57 100644
+index 276e096a..c98ce027 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1830,7 +1830,8 @@ static void setup_signals(void)
@@ -200,7 +200,7 @@ index 276e096a..ca370a57 100644
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
 -				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aecmsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.0 Usage: %s [-acemsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
