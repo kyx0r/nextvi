@@ -41,7 +41,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 276e096a..130d2b68 100644
+index 7ccc8a86..fd58b43d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -658,7 +658,7 @@ static int vi_motion(int vc, int *row, int *off)
