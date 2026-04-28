@@ -1608,7 +1608,6 @@ void vi(int init)
 					vi_tsm = 1;
 					goto status;
 				} else if (k == 'w') {
-					preserve(int, xled, xled = 0;)
 					preserve(int, xgrp, xgrp = 2;)
 					preserve(int, xvis, xvis = 1;)
 					n = vi_arg ? vi_arg : 80;
@@ -1620,7 +1619,6 @@ void vi(int init)
 						if (ex_exec("f>[^ \t]*[ \t]+(?\\:.$|(.)):??;c\n"))
 							break;
 					}
-					restore(xled)
 					restore(xgrp)
 					restore(xvis)
 					vi_mod |= !texec;
