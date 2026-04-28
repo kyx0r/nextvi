@@ -28,4 +28,4 @@ for p in *.c *.h; do
 	EXINIT="${EXINIT}:%s/INT_MAX/INT64_MAX/g"
 	EXINIT="${EXINIT}:wq" $VI -sm "$p"
 done
-EXINIT="$(printf '%b' '1:i #include <stdint.h>\ntypedef uint64_t u64;\ntypedef int64_t s64;\n.\n:wq')" $VI -sm vi.h
+EXINIT="$(printf '%b' '1:i #include <stdint.h>\ntypedef uint64_t u64;\ntypedef int64_t s64;:wq')" $VI -sm vi.h
