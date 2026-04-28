@@ -556,9 +556,13 @@ typedef struct {
 static void emit_err_check(FILE *out, int line)
 {
 	fputs("?" "?!${DBG:-", out);
-	fprintf(out, "re p FAIL line %d", line);
+	fprintf(out, "ya!p");
+	EMIT_ESCSEP(out);
+	fprintf(out, "prp");
 	EMIT_ESCSEP(out);
 	fprintf(out, "p FAIL line %d", line);
+	EMIT_ESCSEP(out);
+	fprintf(out, "pr");
 	fputs("${INTR}", out);
 	fputs("${QF}}", out);
 	EMIT_SEP(out);
@@ -2401,14 +2405,16 @@ process_line:
 	      "fi\n\n", stdout);
 	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
 	if (relative_mode || interactive_mode)
-		fputs("# Comment to continue despite errors (errors are still printed)\n"
-		      "QF=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
-		      "# Command handling readability line breaks\n"
+		fputs("# Command handling readability line breaks\n"
 		      "LB=\"0?\"\n"
-		      "# Uncomment to enter interactive vi on patch failure\n"
-		      "#INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:e $0:%f>:@Q:q!1\"\n"
-		      "# Uncomment to skip errors (0? = silent nop)\n"
-		      "#DBG=\"0\\?\"\n", stdout);
+		      "# Disable errors\n"
+		      "[ \"$DBG\" = \"1\" ] && DBG=\"0\\?\" || DBG=\n"
+		      "# Ignore errors\n"
+		      "[ \"$QF\" = \"1\" ] && QF= || QF=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
+		      "# Enters vi at failing code line in this script\n"
+		      "# Designed for state inspection mid execution\n"
+		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:"
+		      "|sc! \\\\\\\\\\\\${SEP}|:vis 3\\\\${SEP}q1\" || INTR=\n", stdout);
 
 	/* Emit script for each file */
 	for (int i = 0; i < nfiles; i++)
