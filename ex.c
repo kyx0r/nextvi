@@ -766,7 +766,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (xvis & 1 && *arg) {
 		sb->s = arg;
 		sb->s_n = 1;
-		key = 0;
+		key = 127;
 	} else {
 		_sbuf_make(sb, 128,)
 		if (*arg)
@@ -776,7 +776,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
 				break;
 			if (xvis & 1 && !strcmp(".", sb->s + ps)) {
-				sb->s_n -= 1 + (o1 >= 0);
+				sb->s_n = MAX(0, sb->s_n - 2);
 				break;
 			}
 			sbuf_chr(sb, '\n')
@@ -785,7 +785,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		syn_setft(xb_ft);
 		if (key == TK_CTL('c'))
 			goto ret;
-		if (key == 127 && sb->s_n > 0 && sb->s[sb->s_n-1] == '\n')
+		if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
 			sb->s_n--;
 		sbuf_null(sb)
 	}
@@ -804,7 +804,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 		if (sb->s != arg)
 			free(sb->s);
 		sb->s = p;
-	} else if (!(xvis & 1) && key != 127)
+	} else if (key != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
 		goto ret;
