@@ -16,7 +16,7 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Command handling readability line breaks
+# Command that handles readability line breaks
 LB="0?"
 # Disable errors
 [ "$DBG" = "1" ] && DBG="0\?" || DBG=
