@@ -151,7 +151,7 @@ a void ex_done(void);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index d8a2c535..13c99ce7 100644
+index 23903a3e..1a57f464 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1712,6 +1712,19 @@ void ex(void)
