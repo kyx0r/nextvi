@@ -16,53 +16,54 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i char readonly = 0;		/* commandline readonly option */
-${SEP}%f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-re p FAIL line 118\\${SEP}p FAIL line 118${INTR}${QF}}${SEP}${LB}
+${SEP}%f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 118\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	bufs[i].readonly = readonly;
 ${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-re p FAIL line 372\\${SEP}p FAIL line 372${INTR}${QF}}${SEP}${LB}
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 372\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 		ex_buf->readonly = 1;
 ${SEP}.,\$;f> 		free\\\\(ibuf\\\\.s\\\\);
 	\\\\} else \\\\{
-		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 691\\${SEP}p FAIL line 691${INTR}${QF}}${SEP}${LB}
+		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 691\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			if (ex_buf->readonly)
 				return \"write failed: readonly option is set\";
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1431\\${SEP}p FAIL line 1431${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1431\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
-${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-re p FAIL line 1517\\${SEP}p FAIL line 1517${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1517\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	{\"ro\", ec_readonly},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'a'\\\\)
-				xvis \\\\|= 8;${SEP}??!${DBG:-re p FAIL line 1853\\${SEP}p FAIL line 1853${INTR}${QF}}${SEP}${LB}
+				xvis \\\\|= 8;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1853\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1858\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1858\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-re p FAIL line 402\\${SEP}p FAIL line 402${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	char readonly;			/* read only */
 ${SEP}\$a extern char readonly;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'

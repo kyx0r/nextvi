@@ -16,31 +16,32 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-re p FAIL line 293\\${SEP}p FAIL line 293${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/t\\\\|s/t|rec|s/${SEP}??!${DBG:-re p FAIL line 293\\${SEP}p FAIL line 293${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 293\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/t\\\\|s/t|rec|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 293\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xrec;			/* input recoding register */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1448\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(rec)
-${SEP}.,\$f> 	\\\\{\"q\", ec_quit\\\\},${SEP}??!${DBG:-re p FAIL line 1513\\${SEP}p FAIL line 1513${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"q\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1513\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	EO(rec),
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: term.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		ret:
 		ibuf_cnt = 1;
-		ibuf_pos = 0;${SEP}??!${DBG:-re p FAIL line 182\\${SEP}p FAIL line 182${INTR}${QF}}${SEP}${LB}
+		ibuf_pos = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 182\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xrec && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
@@ -50,7 +51,7 @@ ${SEP}+2a 		if (xrec && *ibuf) {
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-re p FAIL line 426\\${SEP}p FAIL line 426${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 426\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xrec;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 

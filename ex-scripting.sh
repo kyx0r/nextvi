@@ -16,22 +16,23 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 0\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i char **xenvp;
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1431\\${SEP}p FAIL line 1431${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1431\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
@@ -69,7 +70,7 @@ ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-re p FAIL line 1530\\${SEP}p FAIL line 1530${INTR}${QF}}${SEP}${LB}
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1530\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -77,7 +78,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 # Patch: term.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}${SEP}??!${DBG:-re p FAIL line 247\\${SEP}p FAIL line 247${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 247\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
@@ -85,7 +86,7 @@ ${SEP}+3c 		if (xenvp)
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* vi\\\\.h: shared definitions across files \\\\*/${SEP}??!${DBG:-re p FAIL line 1\\${SEP}p FAIL line 1${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* vi\\\\.h: shared definitions across files \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())

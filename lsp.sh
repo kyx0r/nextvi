@@ -16,30 +16,31 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
-		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-re p FAIL line 376\\${SEP}p FAIL line 376${INTR}${QF}}${SEP}${LB}
+		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 376\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ${SEP}.,\$;f> 			ec_setpath\\\\(NULL, NULL, path\\\\);
 		lbuf_saved\\\\(xb, 0\\\\);
-		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-re p FAIL line 715\\${SEP}p FAIL line 715${INTR}${QF}}${SEP}${LB}
+		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 715\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*xb_path)
 			lsp_save(xb_path);
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-re p FAIL line 1461\\${SEP}p FAIL line 1461${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1461\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
@@ -59,7 +60,7 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
 	EO\\\\(hlr\\\\),
-	EO\\\\(hl\\\\),${SEP}??!${DBG:-re p FAIL line 1548\\${SEP}p FAIL line 1548${INTR}${QF}}${SEP}${LB}
+	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1548\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lsp\", ec_lsp},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -1374,10 +1375,10 @@ ${SEP}vis 2${SEP}wq" $VI -e 'lsp.c'
 # Patch: term.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 
 int term_read\\\\(int winch\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 152\\${SEP}p FAIL line 152${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 152\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3d${SEP}.,\$;f> 			goto ret;
 		\\\\}
-		cw = 0;${SEP}??!${DBG:-re p FAIL line 165\\${SEP}p FAIL line 165${INTR}${QF}}${SEP}${LB}
+		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 165\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+9c 		re:;
 		{
 			struct pollfd pfds[1 + LSP_NFDS_MAX];
@@ -1409,7 +1410,7 @@ ${SEP}+3,#+9c 		re:;
 					goto ret;
 				}
 ${SEP}.,\$;f> 				goto re;
-			\\\\}${SEP}??!${DBG:-re p FAIL line 177\\${SEP}p FAIL line 177${INTR}${QF}}${SEP}${LB}
+			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 177\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 				if (term_winch && winch && xquit >= 0) {
@@ -1422,7 +1423,7 @@ ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				goto err;
 			}
 			goto ret;
-${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-re p FAIL line 179\\${SEP}p FAIL line 179${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		err:
 		*ibuf = 0;
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
@@ -1430,17 +1431,17 @@ ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> #include \"ren\\\\.c\"
 #include \"term\\\\.c\"
-#include \"uc\\\\.c\"${SEP}??!${DBG:-re p FAIL line 24\\${SEP}p FAIL line 24${INTR}${QF}}${SEP}${LB}
+#include \"uc\\\\.c\"${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 24\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #include \"lsp.c\"
 ${SEP}.,\$;f> \\\\}
 #define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 104\\${SEP}p FAIL line 104${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 104\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-re p FAIL line 1634\\${SEP}p FAIL line 1634${INTR}${QF}}${SEP}${LB}
+					goto rep;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1634\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
@@ -1449,7 +1450,7 @@ ${SEP}+2a 				} else if (k == 'K') {
 						lsp_definition(xb_path, xrow, xoff);
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
-		\\\\}${SEP}??!${DBG:-re p FAIL line 1797\\${SEP}p FAIL line 1797${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1797\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
@@ -1457,7 +1458,7 @@ ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 		}
 ${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-re p FAIL line 1836\\${SEP}p FAIL line 1836${INTR}${QF}}${SEP}${LB}
+	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1836\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lsp_init();
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 

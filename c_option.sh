@@ -16,30 +16,31 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-re p FAIL line 1715\\${SEP}p FAIL line 1715${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1727\\${SEP}p FAIL line 1727${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1715\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1715\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1727\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 
-int main\\\\(int argc${SEP}??!${DBG:-re p FAIL line 1833\\${SEP}p FAIL line 1833${INTR}${QF}}${SEP}${LB}
+int main\\\\(int argc${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1833\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 ${SEP}.,\$;f> 			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1856\\${SEP}p FAIL line 1856${INTR}${QF}}${SEP}${LB}
+				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1856\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -52,14 +53,14 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 					return EXIT_FAILURE;
 				}
 			} else {
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/\\\\[-a/[-ac/${SEP}??!${DBG:-re p FAIL line 1858\\${SEP}p FAIL line 1858${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
-		term_scrh;${SEP}??!${DBG:-re p FAIL line 1868\\${SEP}p FAIL line 1868${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-re p FAIL line 1868\\${SEP}p FAIL line 1868${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1858\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/\\\\[-a/[-ac/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1858\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
+		term_scrh;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1868\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1868\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-re p FAIL line 477\\${SEP}p FAIL line 477${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-re p FAIL line 477\\${SEP}p FAIL line 477${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 477\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 477\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

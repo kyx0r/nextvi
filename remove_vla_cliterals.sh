@@ -16,84 +16,85 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
 #define WH1	15	/\\\\* bright white \\\\*/
 
-${SEP}??!${DBG:-re p FAIL line 65\\${SEP}p FAIL line 65${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(int\\\\[\\\\]\\\\)//${SEP}??!${DBG:-re p FAIL line 65\\${SEP}p FAIL line 65${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 65\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(int\\\\[\\\\]\\\\)//${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 65\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		return xserr;
 	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
-		sbuf sb;${SEP}??!${DBG:-re p FAIL line 516\\${SEP}p FAIL line 516${INTR}${QF}}${SEP}${LB}
+		sbuf sb;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 516\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 		int flg = 0, soff = 0;
 ${SEP}.,\$;f> 						soff \\\\+ offs\\\\[xgrp\\\\], &xrow, &xoff\\\\)\\\\)
 			ret = xuerr;
-		free\\\\(sb\\\\.s\\\\);${SEP}??!${DBG:-re p FAIL line 529\\${SEP}p FAIL line 529${INTR}${QF}}${SEP}${LB}
+		free\\\\(sb\\\\.s\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 529\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		free(offs);
 ${SEP}.,\$;f> 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);${SEP}??!${DBG:-re p FAIL line 1003\\${SEP}p FAIL line 1003${INTR}${QF}}${SEP}${LB}
+	free\\\\(pat\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1003\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 ${SEP}.,\$;f> 	if \\\\(rs != xkwdrs\\\\)
 		rset_free\\\\(rs\\\\);
-	free\\\\(rep\\\\);${SEP}??!${DBG:-re p FAIL line 1054\\${SEP}p FAIL line 1054${INTR}${QF}}${SEP}${LB}
+	free\\\\(rep\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1054\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(offs);
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
-	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:-re p FAIL line 483\\${SEP}p FAIL line 483${INTR}${QF}}${SEP}${LB}
+	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 483\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
 ${SEP}.,\$;f> 				break;
 			\\\\*o = _o;
-			\\\\*r = i;${SEP}??!${DBG:-re p FAIL line 508\\${SEP}p FAIL line 508${INTR}${QF}}${SEP}${LB}
+			\\\\*r = i;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 508\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 			if (dir > 0) {
 				free(offs);
-${SEP}.,\$f> 				return 0;${SEP}??!${DBG:-re p FAIL line 509\\${SEP}p FAIL line 509${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 				return 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 			}
 ${SEP}.,\$;f> 		\\\\}
 		off = 0;
-	\\\\}${SEP}??!${DBG:-re p FAIL line 515\\${SEP}p FAIL line 515${INTR}${QF}}${SEP}${LB}
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 515\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(offs);
 ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 
 # Patch: led.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_NEWLINE\\\\);
 	if \\\\(!rs\\\\)
-		return;${SEP}??!${DBG:-re p FAIL line 48\\${SEP}p FAIL line 48${INTR}${QF}}${SEP}${LB}
+		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 48\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int *subs = emalloc(rs->nsubc * sizeof(int));
 ${SEP}.,\$;f> 	sbuf_null\\\\(acsb\\\\)
 	free\\\\(ibuf->s\\\\);
-	rset_free\\\\(rs\\\\);${SEP}??!${DBG:-re p FAIL line 80\\${SEP}p FAIL line 80${INTR}${QF}}${SEP}${LB}
+	rset_free\\\\(rs\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 80\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(subs);
 ${SEP}.,\$;f> 	int att_old = 0, atti = 0, cterm = cend - cbeg;
 	char \\\\*bound = NULL;
-	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/${SEP}??!${DBG:-re p FAIL line 151\\${SEP}p FAIL line 151${INTR}${QF}}${SEP}${LB}
+	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 151\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+3c 	int *off = emalloc((cterm+1) * sizeof(int));	/* off[i]: the character at screen position i */
 	int *att = emalloc((cterm+1) * sizeof(int));	/* att[i]: the attributes of i-th character */
 	int *stt = NULL;	/* stt[i]: remap off indexes */
 	int *ctt = NULL;	/* ctt[i]: cterm bound attrs */
 ${SEP}.,\$;f> 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
-				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:-re p FAIL line 175\\${SEP}p FAIL line 175${INTR}${QF}}${SEP}${LB}
+				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 175\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		stt = emalloc((cterm+1) * sizeof(int));
 		ctt = emalloc((cterm+1) * sizeof(int));
 ${SEP}.,\$;f> 		memcpy\\\\(chrs\\\\[n\\\\], r->nullhole, r->holelen\\\\);
 		r->holelen = 0;
-	\\\\}${SEP}??!${DBG:-re p FAIL line 257\\${SEP}p FAIL line 257${INTR}${QF}}${SEP}${LB}
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 257\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(off);
 	free(att);
 	free(stt);
@@ -104,7 +105,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return 0;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 402\\${SEP}p FAIL line 402${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \\\\
 free(pcs); \\\\
 free(subs); \\\\
@@ -116,121 +117,121 @@ free(lb); \\\\
 return state; } \\\\
 ${SEP}.,\$;f> 		return 0;
 	flg = prog->flg \\\\| flg;
-	const char \\\\*sp = s, \\\\*_sp = s, \\\\*s0, \\\\*s1;${SEP}??!${DBG:-re p FAIL line 628\\${SEP}p FAIL line 628${INTR}${QF}}${SEP}${LB}
+	const char \\\\*sp = s, \\\\*_sp = s, \\\\*s0, \\\\*s1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 628\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 	int *npc, *pc, *insts = prog->insts;
 	int **pcs = emalloc((prog->splits) * sizeof(int*));
 	rsub **subs = emalloc(prog->splits * sizeof(rsub*));
 	unsigned int *sdense = emalloc(prog->sparsesz * sizeof(unsigned int)), sparsesz = 0;
-${SEP}.,\$f> 	rsub \\\\*nsub, \\\\*sub, \\\\*matched = NULL, \\\\*freesub = NULL;${SEP}??!${DBG:-re p FAIL line 631\\${SEP}p FAIL line 631${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	rsub \\\\*nsub, \\\\*sub, \\\\*matched = NULL, \\\\*freesub = NULL;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 631\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
-${SEP}.,\$f> 	rthread \\\\*clist = _clist, \\\\*nlist = _nlist, \\\\*tmp;${SEP}??!${DBG:-re p FAIL line 633\\${SEP}p FAIL line 633${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/lb\\\\[prog->laidx\\\\+1\\\\]/*lb = emalloc(prog->laidx * sizeof(lb[0]))/${SEP}??!${DBG:-re p FAIL line 633\\${SEP}p FAIL line 633${INTR}${QF}}${SEP}.,\$;f> 	int cnt, spc, i, c, j, osubp = nsubc \\\\* sizeof\\\\(char\\\\*\\\\);
+${SEP}.,\$f> 	rthread \\\\*clist = _clist, \\\\*nlist = _nlist, \\\\*tmp;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 633\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/lb\\\\[prog->laidx\\\\+1\\\\]/*lb = emalloc(prog->laidx * sizeof(lb[0]))/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 633\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	int cnt, spc, i, c, j, osubp = nsubc \\\\* sizeof\\\\(char\\\\*\\\\);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
-	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;${SEP}??!${DBG:-re p FAIL line 638\\${SEP}p FAIL line 638${INTR}${QF}}${SEP}${LB}
+	int eol_ch = flg & REG_NEWLINE \\\\? '\\\\\\\\n' : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 	char *nsubs = emalloc(prog->sub);
 ${SEP}.,\$;f> /\\\\* return the index of the matching regular expression or -1 if none matches \\\\*/
 int rset_find\\\\(rset \\\\*rs, char \\\\*s, int \\\\*grps, int flg\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 717\\${SEP}p FAIL line 717${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 717\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
 ${SEP}.,\$;f> 						grps\\\\[gi \\\\+ 1\\\\] = -1;
 					\\\\}
-				\\\\}${SEP}??!${DBG:-re p FAIL line 733\\${SEP}p FAIL line 733${INTR}${QF}}${SEP}${LB}
+				\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 733\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				free(subs);
 ${SEP}.,\$;f> 			\\\\}
 		\\\\}
-	\\\\}${SEP}??!${DBG:-re p FAIL line 737\\${SEP}p FAIL line 737${INTR}${QF}}${SEP}${LB}
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 737\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(subs);
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: ren.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static int syn_initft\\\\(int fti, int n, char \\\\*name, int flg\\\\)
 \\\\{
-	int i = n, set = hls\\\\[i\\\\]\\\\.set;${SEP}??!${DBG:-re p FAIL line 254\\${SEP}p FAIL line 254${INTR}${QF}}${SEP}${LB}
+	int i = n, set = hls\\\\[i\\\\]\\\\.set;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 254\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	char **pats = emalloc(hlslen * sizeof(char *));
 ${SEP}.,\$;f> 	ftmap\\\\[fti\\\\]\\\\.ft = name;
 	ftmap\\\\[fti\\\\]\\\\.rs = rset_make\\\\(i - n, pats, flg\\\\);
-	ftmap\\\\[fti\\\\]\\\\.seteidx = i;${SEP}??!${DBG:-re p FAIL line 260\\${SEP}p FAIL line 260${INTR}${QF}}${SEP}${LB}
+	ftmap\\\\[fti\\\\]\\\\.seteidx = i;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 260\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(pats);
 ${SEP}.,\$;f> 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
 	re:;
-	rset \\\\*rs = ftmap\\\\[fti\\\\]\\\\.rs;${SEP}??!${DBG:-re p FAIL line 310\\${SEP}p FAIL line 310${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/subs\\\\[rs->nsubc\\\\]/*subs = emalloc(rs->nsubc * sizeof(int))/${SEP}??!${DBG:-re p FAIL line 310\\${SEP}p FAIL line 310${INTR}${QF}}${SEP}.,\$;f> 		flg = REG_NOTBOL;
+	rset \\\\*rs = ftmap\\\\[fti\\\\]\\\\.rs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 310\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/subs\\\\[rs->nsubc\\\\]/*subs = emalloc(rs->nsubc * sizeof(int))/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 310\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		flg = REG_NOTBOL;
 	\\\\}
-	fti\\\\+\\\\+;${SEP}??!${DBG:-re p FAIL line 353\\${SEP}p FAIL line 353${INTR}${QF}}${SEP}${LB}
+	fti\\\\+\\\\+;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 353\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
 		free(subs);
-${SEP}.,\$f> 		goto re;${SEP}??!${DBG:-re p FAIL line 354\\${SEP}p FAIL line 354${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		goto re;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 354\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	}
 ${SEP}.,\$;f> 	if \\\\(blockca >= 0 && SYN_BSSET\\\\(blockca\\\\) && !SYN_BESET\\\\(blockca\\\\) && last_scdir > 0\\\\)
-		syn_blockhl = -1;${SEP}??!${DBG:-re p FAIL line 357\\${SEP}p FAIL line 357${INTR}${QF}}${SEP}${LB}
+		syn_blockhl = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 357\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2c 	if (syn_blockhl < 0 || blockhl < 0) {
 		free(subs);
-${SEP}.,\$f> 		return;${SEP}??!${DBG:-re p FAIL line 358\\${SEP}p FAIL line 358${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 358\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	}
 ${SEP}.,\$;f> 	for \\\\(j = 0; j < n; j\\\\+\\\\+\\\\)
 		if \\\\(!att\\\\[j\\\\] \\\\|\\\\| !SYN_BPSET\\\\(blockatt\\\\)\\\\)
-			att\\\\[j\\\\] = blockatt;${SEP}??!${DBG:-re p FAIL line 361\\${SEP}p FAIL line 361${INTR}${QF}}${SEP}${LB}
+			att\\\\[j\\\\] = blockatt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 361\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(subs);
 ${SEP}.,\$;f> 
 void syn_init\\\\(void\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 405\\${SEP}p FAIL line 405${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 405\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	char **pats = emalloc(ftslen * sizeof(char *));
 ${SEP}.,\$;f> 	for \\\\(; i < ftslen; i\\\\+\\\\+\\\\)
 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
-	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);${SEP}??!${DBG:-re p FAIL line 409\\${SEP}p FAIL line 409${INTR}${QF}}${SEP}${LB}
+	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 409\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(pats);
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			s = lbuf_get\\\\(xb, row - vi_rshift\\\\);
 			goto skip;
-		\\\\}${SEP}??!${DBG:-re p FAIL line 143\\${SEP}p FAIL line 143${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 143\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		char *tmp = emalloc(xcols+3);
 		char *snum = emalloc(32);
 ${SEP}.,\$;f> 		restore\\\\(syn_blockhl\\\\)
 		restore\\\\(xtd\\\\)
-		restore\\\\(ftidx\\\\)${SEP}??!${DBG:-re p FAIL line 167\\${SEP}p FAIL line 167${INTR}${QF}}${SEP}${LB}
+		restore\\\\(ftidx\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 167\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		free(tmp);
 		free(snum);
 ${SEP}.,\$;f> 				if \\\\(!\\\\(ln = lbuf_get\\\\(xb, xrow\\\\)\\\\)\\\\)
 					break;
-				ln \\\\+= xoff;${SEP}??!${DBG:-re p FAIL line 1289\\${SEP}p FAIL line 1289${INTR}${QF}}${SEP}${LB}
+				ln \\\\+= xoff;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1289\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 				char *buf = emalloc(strlen(ln)+4);
 ${SEP}.,\$;f> 				strcpy\\\\(buf, \":e \"\\\\);
 				strcpy\\\\(buf\\\\+3, ln\\\\);
-				term_push\\\\(buf, strlen\\\\(ln\\\\)\\\\+3\\\\);${SEP}??!${DBG:-re p FAIL line 1292\\${SEP}p FAIL line 1292${INTR}${QF}}${SEP}${LB}
+				term_push\\\\(buf, strlen\\\\(ln\\\\)\\\\+3\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				free(buf);
 ${SEP}.,\$;f> 					goto do_excmd;
 				case '/': \\\\{
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-re p FAIL line 1404\\${SEP}p FAIL line 1404${INTR}${QF}}${SEP}${LB}
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1404\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 ${SEP}.,\$;f> 						strcat\\\\(buf, cs\\\\);
 					free\\\\(cs\\\\);
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1409\\${SEP}p FAIL line 1409${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1409\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 ${SEP}.,\$;f> 				case 't': \\\\{
 					vi_drawmsg\\\\(\"arg2:\\\\(0\\\\|#\\\\)\"\\\\);
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);${SEP}??!${DBG:-re p FAIL line 1414\\${SEP}p FAIL line 1414${INTR}${QF}}${SEP}${LB}
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1414\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 ${SEP}.,\$;f> 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1423\\${SEP}p FAIL line 1423${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1423\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 ${SEP}.,\$;f> 					goto do_excmd; \\\\}
 				case 'r': \\\\{
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-re p FAIL line 1427\\${SEP}p FAIL line 1427${INTR}${QF}}${SEP}${LB}
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
 ${SEP}.,\$;f> 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-re p FAIL line 1434\\${SEP}p FAIL line 1434${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1434\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> struct highlight \\\\{
 	char \\\\*ft;		/\\\\* the filetype of this pattern \\\\*/
-	char \\\\*pat;		/\\\\* regular expression \\\\*/${SEP}??!${DBG:-re p FAIL line 498\\${SEP}p FAIL line 498${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\*att/att[16]/${SEP}??!${DBG:-re p FAIL line 498\\${SEP}p FAIL line 498${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+	char \\\\*pat;		/\\\\* regular expression \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 498\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\*att/att[16]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 498\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

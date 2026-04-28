@@ -16,19 +16,20 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> \\\\{
 	int var, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 347\\${SEP}p FAIL line 347${INTR}${QF}}${SEP}${LB}
+	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 347\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		c = term_read(0);
 		if (c == '[') {
@@ -53,7 +54,7 @@ ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		break;
 ${SEP}.,\$;f> 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 573\\${SEP}p FAIL line 573${INTR}${QF}}${SEP}${LB}
+	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 573\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {

@@ -16,30 +16,31 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/
 rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
-sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-re p FAIL line 39\\${SEP}p FAIL line 39${INTR}${QF}}${SEP}${LB}
+sbuf \\\\*xregs\\\\[256\\\\];		/\\\\* string registers \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 39\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xexrc = 0;			/* read .exrc from the current directory */
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1448\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(exrc)
 ${SEP}.,\$;f> 	EO\\\\(ai\\\\),
 	\\\\{\"ac\", ec_setacreg\\\\},
-	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:-re p FAIL line 1488\\${SEP}p FAIL line 1488${INTR}${QF}}${SEP}${LB}
+	\\\\{\"a\", ec_insert\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1488\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(exrc),
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1714\\${SEP}p FAIL line 1714${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1714\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void ex_script(FILE *fp)
 {
 	char done = 0;
@@ -87,8 +88,8 @@ void load_exrc(char *exrc)
 
 ${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~4;${SEP}??!${DBG:-re p FAIL line 1726\\${SEP}p FAIL line 1726${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-re p FAIL line 1726\\${SEP}p FAIL line 1726${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-re p FAIL line 1727\\${SEP}p FAIL line 1727${INTR}${QF}}${SEP}${LB}
+	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1726\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1726\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1727\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	} else {
 		char *homeenv = getenv(\"HOME\");
 		if (homeenv) {

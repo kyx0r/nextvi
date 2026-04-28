@@ -16,39 +16,40 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: led.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static sbuf \\\\*suggestsb;${SEP}??!${DBG:-re p FAIL line 1\\${SEP}p FAIL line 1${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static sbuf \\\\*suggestsb;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a #define LEDBACK 300
 #define LEDFORW 300
 
 ${SEP}.,\$;f> 	if \\\\(!xled\\\\)
 		return;
-	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG:-re p FAIL line 146\\${SEP}p FAIL line 146${INTR}${QF}}${SEP}${LB}
+	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 146\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
 ${SEP}.,\$;f> 	char \\\\*bound = NULL;
 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
-	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:-re p FAIL line 152\\${SEP}p FAIL line 152${INTR}${QF}}${SEP}${LB}
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 152\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
 ${SEP}.,\$;f> 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
 	\\\\}
-	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 165\\${SEP}p FAIL line 165${INTR}${QF}}${SEP}${LB}
+	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 165\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		c = 0;
 ${SEP}.,\$;f> 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
-				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:-re p FAIL line 176\\${SEP}p FAIL line 176${INTR}${QF}}${SEP}${LB}
+				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 176\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
 			if (r->pos[l] < cbeg && c < fcterm) {
@@ -60,7 +61,7 @@ ${SEP}+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (i = 0; i < cterm;) {
 ${SEP}.,\$;f> 				for \\\\(; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\);
 			\\\\}
-		\\\\}${SEP}??!${DBG:-re p FAIL line 181\\${SEP}p FAIL line 181${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 181\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
@@ -70,12 +71,12 @@ ${SEP}+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		}
 ${SEP}.,\$;f> 		sbufn_null\\\\(bsb\\\\)
 		bound = bsb->s;
-	\\\\}${SEP}??!${DBG:-re p FAIL line 203\\${SEP}p FAIL line 203${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/ c/ fc/${SEP}??!${DBG:-re p FAIL line 203\\${SEP}p FAIL line 203${INTR}${QF}}${SEP}.,\$f> 	if \\\\(xhl\\\\)${SEP}??!${DBG:-re p FAIL line 205\\${SEP}p FAIL line 205${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/ c/ fc/${SEP}??!${DBG:-re p FAIL line 205\\${SEP}p FAIL line 205${INTR}${QF}}${SEP}.,\$;f> 			if \\\\(!bound\\\\)
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/ c/ fc/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 203\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 	if \\\\(xhl\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 205\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/ c/ fc/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 205\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			if \\\\(!bound\\\\)
 				att\\\\[p->off\\\\] = syn_merge\\\\(att\\\\[p->off\\\\], p->att\\\\);
-			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 215\\${SEP}p FAIL line 215${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/0/atti/${SEP}??!${DBG:-re p FAIL line 215\\${SEP}p FAIL line 215${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
+			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 215\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/0/atti/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 215\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 exit 0
 === PATCH2VI DELTA ===

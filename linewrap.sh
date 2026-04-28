@@ -16,26 +16,27 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-re p FAIL line 294\\${SEP}p FAIL line 294${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\\\\\\$/lw|\\\\\\\\/${SEP}??!${DBG:-re p FAIL line 294\\${SEP}p FAIL line 294${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 294\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\\\\\\$/lw|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 294\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 0\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i int xlw;			/* soft linewrap col */
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-re p FAIL line 1431\\${SEP}p FAIL line 1431${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1431\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
@@ -55,23 +56,23 @@ ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:-re p FAIL line 1551\\${SEP}p FAIL line 1551${INTR}${QF}}${SEP}${LB}
+	EO\\\\(led\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1551\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lw\", ec_linewrap},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> \\\\{
 	int i, pos = lo->pos;
-	if \\\\(s\\\\) \\\\{${SEP}??!${DBG:-re p FAIL line 84\\${SEP}p FAIL line 84${INTR}${QF}}${SEP}${LB}
+	if \\\\(s\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 84\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		char *lwp = NULL;
 ${SEP}.,\$;f> 			struct linfo \\\\*n = emalloc\\\\(l_nonl \\\\+ 5 \\\\+ sizeof\\\\(struct linfo\\\\)\\\\);
 			n->len = l_nonl;
-			n->grec = 0;${SEP}??!${DBG:-re p FAIL line 90\\${SEP}p FAIL line 90${INTR}${QF}}${SEP}${LB}
+			n->grec = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 90\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			n->lw_prev = NULL;
 			n->lw_next = NULL;
 ${SEP}.,\$;f> 			memcpy\\\\(ln, s, l_nonl\\\\);
 			memset\\\\(&ln\\\\[l_nonl \\\\+ 1\\\\], 0, 4\\\\);	/\\\\* fault tolerance pad \\\\*/
-			ln\\\\[l_nonl\\\\] = '\\\\\\\\n';${SEP}??!${DBG:-re p FAIL line 94\\${SEP}p FAIL line 94${INTR}${QF}}${SEP}${LB}
+			ln\\\\[l_nonl\\\\] = '\\\\\\\\n';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 94\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			if (xlw) {
 				rstate->s = NULL;
 				ren_state *r = ren_position(ln);
@@ -105,7 +106,7 @@ ${SEP}+2a 			if (xlw) {
 			too_small:
 ${SEP}.,\$;f> 		end = lb->ln_n;
 	if \\\\(beg == end && !buf\\\\)
-		return;${SEP}??!${DBG:-re p FAIL line 187\\${SEP}p FAIL line 187${INTR}${QF}}${SEP}${LB}
+		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 187\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	/* save chain boundary pointers before edit */
 	char *chain_pred = NULL, *chain_succ = NULL;
 	if (xlw) {
@@ -126,7 +127,7 @@ ${SEP}+2a 	/* save chain boundary pointers before edit */
 	}
 ${SEP}.,\$;f> 	struct lopt \\\\*lo = lbuf_opt\\\\(lb, beg, o1, end - beg\\\\);
 	sbuf_smake\\\\(sb, sizeof\\\\(lo->ins\\\\[0\\\\]\\\\)\\\\+1\\\\)
-	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);${SEP}??!${DBG:-re p FAIL line 190\\${SEP}p FAIL line 190${INTR}${QF}}${SEP}${LB}
+	lo->n_ins = lbuf_replace\\\\(lb, sb, buf, lo, lo->n_del, 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 190\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	/* relink the chain after edit */
 	if (xlw && (chain_pred || chain_succ)) {
 		if (lo->n_ins > 0) {
@@ -150,10 +151,10 @@ ${SEP}+2a 	/* relink the chain after edit */
 	}
 ${SEP}.,\$;f> 	for \\\\(int i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lb->ln\\\\[i\\\\];
-		long nw = 0;${SEP}??!${DBG:-re p FAIL line 237\\${SEP}p FAIL line 237${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/1/(!lbuf_s(ln)->lw_next)/${SEP}??!${DBG:-re p FAIL line 237\\${SEP}p FAIL line 237${INTR}${QF}}${SEP}.,\$;f> 		lo->ref = 1;
+		long nw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 237\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/1/(!lbuf_s(ln)->lw_next)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 237\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		lo->ref = 1;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->del;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);${SEP}??!${DBG:-re p FAIL line 396\\${SEP}p FAIL line 396${INTR}${QF}}${SEP}${LB}
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 396\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		/* relink chain: restored lines have original pointers */
 		if (xlw) {
 			for (int i = 0; i < lo->n_del; i++) {
@@ -177,7 +178,7 @@ ${SEP}+2a 		/* relink chain: restored lines have original pointers */
 		}
 ${SEP}.,\$;f> 		lo->ref = 2;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->ins;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:-re p FAIL line 418\\${SEP}p FAIL line 418${INTR}${QF}}${SEP}${LB}
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		/* relink chain: restored lines have their pointers from edit time */
 		if (xlw) {
 			for (int i = 0; i < lo->n_ins; i++) {
@@ -204,7 +205,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		return;
 	\\\\}
-	s = lbuf_get\\\\(xb, row\\\\);${SEP}??!${DBG:-re p FAIL line 170\\${SEP}p FAIL line 170${INTR}${QF}}${SEP}${LB}
+	s = lbuf_get\\\\(xb, row\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 170\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (xlw && s) {
 		led_att la;
 		if (!led_attsb)
@@ -226,12 +227,12 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> struct linfo \\\\{
 	int len;
-	int grec;${SEP}??!${DBG:-re p FAIL line 135\\${SEP}p FAIL line 135${INTR}${QF}}${SEP}${LB}
+	int grec;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 135\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	char *lw_prev;
 	char *lw_next;
 ${SEP}.,\$;f> extern int xlim;
 extern int xseq;
-extern int xerr;${SEP}??!${DBG:-re p FAIL line 426\\${SEP}p FAIL line 426${INTR}${QF}}${SEP}${LB}
+extern int xerr;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 426\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a extern int xlw;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 

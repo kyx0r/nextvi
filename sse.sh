@@ -16,19 +16,20 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: led.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 
 int dstrlen\\\\(const char \\\\*s, char delim\\\\)
-\\\\{${SEP}??!${DBG:-re p FAIL line 6\\${SEP}p FAIL line 6${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 6\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #ifdef __SSE2__
 	const char *i = s;
 	/* scalar prefix until 16-byte aligned */
@@ -49,14 +50,14 @@ ${SEP}+2a #ifdef __SSE2__
 #else
 ${SEP}.,\$;f> 	register const char \\\\*i;
 	for \\\\(i=s; \\\\*i && \\\\*i != delim; \\\\+\\\\+i\\\\);
-	return i-s;${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP}${LB}
+	return i-s;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 9\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #endif
 ${SEP}vis 2${SEP}wq" $VI -e 'led.c'
 
 # Patch: ren.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		rstate->holelen = uc_len\\\\(ss\\\\);
 		memcpy\\\\(rstate->nullhole, ss, rstate->holelen\\\\);
-		memset\\\\(ss, 0, rstate->holelen\\\\);${SEP}??!${DBG:-re p FAIL line 111\\${SEP}p FAIL line 111${INTR}${QF}}${SEP}${LB}
+		memset\\\\(ss, 0, rstate->holelen\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 111\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 	} else {
 		n = 0;
 #ifdef __SSE2__
@@ -90,7 +91,7 @@ ${SEP}+3,#+1c 	} else {
 		} else
 #endif
 		for (; (l = uc_len(ss)); n++)
-${SEP}.,\$f> 			ss \\\\+= l;${SEP}??!${DBG:-re p FAIL line 113\\${SEP}p FAIL line 113${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 			ss \\\\+= l;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 113\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a count_done:;
 	}
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
@@ -98,7 +99,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 # Patch: uc.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> int uc_slen\\\\(char \\\\*s\\\\)
 \\\\{
-	int n = 0, l;${SEP}??!${DBG:-re p FAIL line 24\\${SEP}p FAIL line 24${INTR}${QF}}${SEP}${LB}
+	int n = 0, l;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 24\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #ifdef __SSE2__
 	if (utf8_length[0xc0] != 1) {
 		__m128i v_mask = _mm_set1_epi8((char)0xc0);
@@ -130,7 +131,7 @@ ${SEP}+2a #ifdef __SSE2__
 ${SEP}vis 2${SEP}wq" $VI -e 'uc.c'
 
 # Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> #include <ctype\\\\.h>${SEP}??!${DBG:-re p FAIL line 0\\${SEP}p FAIL line 0${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> #include <ctype\\\\.h>${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 0\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i #ifdef __SSE2__
 #include <stdint.h>
 #include <emmintrin.h>

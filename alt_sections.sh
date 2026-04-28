@@ -16,22 +16,23 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		break;
 	case '\\\\(':
-	case '\\\\)':${SEP}??!${DBG:-re p FAIL line 661\\${SEP}p FAIL line 661${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:-re p FAIL line 661\\${SEP}p FAIL line 661${INTR}${QF}}${SEP}.,\$;f> 	case '\\\\}':
+	case '\\\\)':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 661\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 661\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	case '\\\\}':
 	case '\\\\[':
-	case '\\\\]':${SEP}??!${DBG:-re p FAIL line 701\\${SEP}p FAIL line 701${INTR}${QF}}${SEP}${LB}
+	case '\\\\]':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 701\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		var = mv == '[' || mv == ']' ? '{' : '\\\\n';
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'

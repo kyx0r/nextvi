@@ -16,32 +16,33 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
 fi
 
 SEP="$(printf '\001')"
-# Comment to continue despite errors (errors are still printed)
-QF="\\${SEP}vis 2\\${SEP}q!1"
 # Command handling readability line breaks
 LB="0?"
-# Uncomment to enter interactive vi on patch failure
-#INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:%f>:@Q:q!1"
-# Uncomment to skip errors (0? = silent nop)
-#DBG="0\?"
+# Disable errors
+[ "$DBG" = "1" ] && DBG="0\?" || DBG=
+# Ignore errors
+[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Enters vi at failing code line in this script
+# Designed for state inspection mid execution
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> int xhlw;			/\\\\* highlight current word \\\\*/
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
-int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-re p FAIL line 9\\${SEP}p FAIL line 9${INTR}${QF}}${SEP}${LB}
+int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 9\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xhlm;			/* highlight marks */
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-re p FAIL line 1448\\${SEP}p FAIL line 1448${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1448\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(hlm)
 ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),${SEP}??!${DBG:-re p FAIL line 1543\\${SEP}p FAIL line 1543${INTR}${QF}}${SEP}${LB}
+	EO\\\\(order\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1543\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(hlm),
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 				word = cs;
 			\\\\}
-		\\\\}${SEP}??!${DBG:-re p FAIL line 1755\\${SEP}p FAIL line 1755${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1755\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";
