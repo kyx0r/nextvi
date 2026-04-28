@@ -98,12 +98,9 @@ edit_cmd_rel:
 				readonly = 1;
 GROUP 2
 -				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
 pattern:
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
-edit_cmd_relc:
-+1
-.;46c R
 edit_cmd_rel:
 +1
 s/(\[-a.*m)/\1R/
@@ -179,7 +176,7 @@ index d8a2c535..68f08ea9 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 276e096a..6cc810a1 100644
+index 276e096a..605fe348 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1851,11 +1851,13 @@ int main(int argc, char *argv[])
@@ -193,7 +190,7 @@ index 276e096a..6cc810a1 100644
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
 -				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aeRmsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
