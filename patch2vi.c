@@ -2405,7 +2405,7 @@ process_line:
 	      "fi\n\n", stdout);
 	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
 	if (relative_mode || interactive_mode)
-		fputs("# Command handling readability line breaks\n"
+		fputs("# Command that handles readability line breaks\n"
 		      "LB=\"0?\"\n"
 		      "# Disable errors\n"
 		      "[ \"$DBG\" = \"1\" ] && DBG=\"0\\?\" || DBG=\n"
