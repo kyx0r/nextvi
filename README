@@ -262,7 +262,6 @@ Once the server is up, new normal keybinds can be used:
 gK - show hover documentation for the symbol at cursor
 gd - goto definition of symbol at cursor
 
-
 sse.sh
 --------------
 SIMD optimizations for Nextvi.
