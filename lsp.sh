@@ -53,9 +53,9 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 	ft[n] = '\\\\0';
 	while (arg[n] == ' ') n++;
 	if (!arg[n]) return \"lsp: missing server command\";
+	(void)loc; (void)cmd;
 	lsp_register(ft, arg+n);
 	return NULL;
-	(void)loc; (void)cmd;
 }
 
 ${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
@@ -65,7 +65,7 @@ ${SEP}+2a 	{\"lsp\", ec_lsp},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: jsmn.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i /*
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}1i /*
  * MIT License
  *
  * Copyright (c) 2010 Serge Zaitsev
@@ -539,13 +539,14 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 ${SEP}vis 2${SEP}wq" $VI -e 'jsmn.h'
 
 # Patch: lsp.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i /* lsp.c - Language Server Protocol client for nextvi */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}1i /* lsp.c - Language Server Protocol client for nextvi */
 #include \"jsmn.h\"
 #include <errno.h>
 
 #define LSP_DIAG_MAX	64
 #define LSP_SRV_MAX	8
 #define LSP_RBUF_MAX	65536
+#define LSP_DOCS_MAX	16
 
 typedef struct {
 	int line, col, severity;
@@ -559,6 +560,11 @@ typedef struct {
 } lsp_diagfile;
 
 typedef struct {
+	char path[1024];
+	int version;
+} lsp_doc;
+
+typedef struct {
 	char ft[32], cmd[256];
 	int pid, in_fd, out_fd;
 	char rbuf[LSP_RBUF_MAX];
@@ -567,8 +573,8 @@ typedef struct {
 	char *response_json;
 	int response_len;
 	int initialized, next_id;
-	char open_path[1024];
-	int open_version;
+	lsp_doc docs[LSP_DOCS_MAX];
+	int ndocs;
 } lsp_server;
 
 int lsp_nfds = 0;
@@ -608,6 +614,8 @@ void lsp_register(const char *ft, const char *cmd)
 	lsp_srvs[lsp_nsrvs].in_fd = -1;
 	lsp_srvs[lsp_nsrvs].out_fd = -1;
 	lsp_nsrvs++;
+	if (ex_buf && *xb_path && xb_ft && !strcmp(xb_ft, ft))
+		lsp_open(xb_path, xb_ft);
 }
 
 void lsp_list(void)
@@ -615,7 +623,7 @@ void lsp_list(void)
 	int i;
 	char buf[512];
 	for (i = 0; i < lsp_nsrvs; i++) {
-		snprintf(buf, sizeof(buf), \"lsp %s %s [%s]\",
+		snprintf(buf, sizeof(buf), \"lsp %.31s %.255s [%s]\",
 			lsp_srvs[i].ft, lsp_srvs[i].cmd,
 			lsp_srvs[i].pid > 0 ? \"running\" : \"stopped\");
 		ex_print(buf, bar_ft)
@@ -629,6 +637,24 @@ static lsp_server *lsp_srv_for_ft(const char *ft)
 	int i;
 	for (i = 0; i < lsp_nsrvs; i++)
 		if (!strcmp(lsp_srvs[i].ft, ft))
+			return &lsp_srvs[i];
+	return NULL;
+}
+
+static int lsp_doc_find(lsp_server *srv, const char *path)
+{
+	int i;
+	for (i = 0; i < srv->ndocs; i++)
+		if (!strcmp(srv->docs[i].path, path))
+			return i;
+	return -1;
+}
+
+static lsp_server *lsp_srv_for_path(const char *path)
+{
+	int i;
+	for (i = 0; i < lsp_nsrvs; i++)
+		if (lsp_srvs[i].pid > 0 && lsp_doc_find(&lsp_srvs[i], path) >= 0)
 			return &lsp_srvs[i];
 	return NULL;
 }
@@ -661,16 +687,21 @@ static lsp_server *lsp_find_srv_for_fd(int fd)
 static void lsp_json_escape(const char *src, sbuf *sb)
 {
 	while (*src) {
-		if (*src == '\"') {
+		unsigned char c = (unsigned char)*src;
+		if (c == '\"') {
 			sbuf_mem(sb, \"\\\\\\\\\\\\\"\", 2)
-		} else if (*src == '\\\\\\\\') {
+		} else if (c == '\\\\\\\\') {
 			sbuf_mem(sb, \"\\\\\\\\\\\\\\\\\", 2)
-		} else if (*src == '\\\\n') {
+		} else if (c == '\\\\n') {
 			sbuf_mem(sb, \"\\\\\\\\n\", 2)
-		} else if (*src == '\\\\r') {
+		} else if (c == '\\\\r') {
 			sbuf_mem(sb, \"\\\\\\\\r\", 2)
-		} else if (*src == '\\\\t') {
+		} else if (c == '\\\\t') {
 			sbuf_mem(sb, \"\\\\\\\\t\", 2)
+		} else if (c < 0x20) {
+			char esc[7];
+			snprintf(esc, sizeof(esc), \"\\\\\\\\u%04x\", c);
+			sbuf_mem(sb, esc, 6)
 		} else {
 			sbuf_chr(sb, *src)
 		}
@@ -680,15 +711,59 @@ static void lsp_json_escape(const char *src, sbuf *sb)
 
 static void lsp_uri_from_path(const char *path, char *out, int n)
 {
-	snprintf(out, n, \"file://%s\", path);
+	if (path[0] == '/') {
+		snprintf(out, n, \"file://%s\", path);
+	} else {
+		char cwd[1024];
+		if (getcwd(cwd, sizeof(cwd)))
+			snprintf(out, n, \"file://%s/%s\", cwd, path);
+		else
+			snprintf(out, n, \"file://%s\", path);
+	}
 }
 
 static void lsp_path_from_uri(const char *uri, char *out, int n)
 {
 	if (!strncmp(uri, \"file://\", 7))
-		snprintf(out, n, \"%s\", uri + 7);
+		snprintf(out, n, \"%.*s\", n - 1, uri + 7);
 	else
-		snprintf(out, n, \"%s\", uri);
+		snprintf(out, n, \"%.*s\", n - 1, uri);
+}
+
+static void lsp_print_hover(const char *s)
+{
+	char line[512];
+	int i = 0;
+	while (*s) {
+		if (s[0] == '\\\\\\\\' && s[1]) {
+			char c;
+			switch (s[1]) {
+			case 'n':  c = '\\\\n'; break;
+			case 'r':  c = '\\\\r'; break;
+			case 't':  c = '\\\\t'; break;
+			case '\\\\\\\\': c = '\\\\\\\\'; break;
+			case '\"':  c = '\"';  break;
+			default:   c = s[1]; break;
+			}
+			s += 2;
+			if (c == '\\\\n' || c == '\\\\r') {
+				line[i] = '\\\\0';
+				if (i > 0)
+					ex_print(line, bar_ft)
+				i = 0;
+			} else if (i < (int)sizeof(line) - 1) {
+				line[i++] = c;
+			}
+		} else {
+			if (i < (int)sizeof(line) - 1)
+				line[i++] = *s;
+			s++;
+		}
+	}
+	if (i > 0) {
+		line[i] = '\\\\0';
+		ex_print(line, bar_ft)
+	}
 }
 
 static void lsp_send(lsp_server *srv, const char *json, int len)
@@ -756,18 +831,18 @@ static void lsp_fmt_didopen(lsp_server *srv, sbuf *sb, const char *path,
 	(void)srv;
 }
 
-static void lsp_fmt_didchange(lsp_server *srv, sbuf *sb, const char *path,
+static void lsp_fmt_didchange(sbuf *sb, const char *path, int ver,
 		struct lbuf *lb)
 {
 	char uri[1280];
-	char ver[32];
+	char verstr[32];
 	lsp_uri_from_path(path, uri, sizeof(uri));
-	itoa(++srv->open_version, ver);
+	itoa(ver, verstr);
 	sbuf_str(sb, \"{\\\\\"jsonrpc\\\\\":\\\\\"2.0\\\\\",\\\\\"method\\\\\":\\\\\"textDocument/didChange\\\\\",\")
 	sbuf_str(sb, \"\\\\\"params\\\\\":{\\\\\"textDocument\\\\\":{\\\\\"uri\\\\\":\\\\\"\")
 	sbuf_str(sb, uri)
 	sbuf_str(sb, \"\\\\\",\\\\\"version\\\\\":\")
-	sbuf_str(sb, ver)
+	sbuf_str(sb, verstr)
 	sbuf_str(sb, \"},\\\\\"contentChanges\\\\\":[{\\\\\"text\\\\\":\\\\\"\")
 	lsp_buf_content(lb, sb);
 	sbuf_str(sb, \"\\\\\"}]}}\")
@@ -1016,14 +1091,6 @@ static void lsp_handle_message(lsp_server *srv, char *json, int len)
 			lsp_send_sb(srv, sb2);
 			free(sb2->s);
 			srv->initialized = 1;
-			/* send didOpen if we have a file queued */
-			if (srv->open_path[0] && ex_buf && ex_buf->lb) {
-				sbuf_smake(sb3, 4096)
-				lsp_fmt_didopen(srv, sb3, srv->open_path,
-					srv->ft, ex_buf->lb);
-				lsp_send_sb(srv, sb3);
-				free(sb3->s);
-			}
 		}
 		lsp_handle_response(srv, json, toks, n, id);
 	} else if (method[0]) {
@@ -1063,6 +1130,8 @@ static void lsp_dispatch_messages(lsp_server *srv)
 		int total = hdr_len + clen;
 		if (srv->rbuf_n < total)
 			break; /* wait for more data */
+		if (total >= LSP_RBUF_MAX)
+			break; /* message too large */
 
 		/* process message */
 		hdr_end[clen] = '\\\\0';
@@ -1113,7 +1182,9 @@ static int lsp_srv_ensure(lsp_server *srv)
 {
 	if (srv->pid > 0)
 		return 1;
-	char *argv[] = {\"/bin/sh\", \"-c\", srv->cmd, NULL};
+	char cmd_redir[sizeof(srv->cmd) + 16];
+	snprintf(cmd_redir, sizeof(cmd_redir), \"%s 2>/dev/null\", srv->cmd);
+	char *argv[] = {\"/bin/sh\", \"-c\", cmd_redir, NULL};
 	srv->pid = cmd_make(argv, &srv->in_fd, &srv->out_fd);
 	if (srv->pid <= 0) {
 		srv->pid = -1;
@@ -1146,28 +1217,29 @@ void lsp_open(const char *path, const char *ft)
 	lsp_server *srv = lsp_srv_for_ft(ft);
 	if (!srv)
 		return;
-	/* check if already open */
-	if (!strcmp(srv->open_path, path) && srv->pid > 0) {
-		/* send didChange */
+	if (!lsp_srv_ensure(srv) || !srv->initialized)
+		return;
+	int di = lsp_doc_find(srv, path);
+	if (di >= 0) {
 		if (ex_buf && ex_buf->lb) {
 			sbuf_smake(sb, 4096)
-			lsp_fmt_didchange(srv, sb, path, ex_buf->lb);
+			lsp_fmt_didchange(sb, path, ++srv->docs[di].version, ex_buf->lb);
 			lsp_send_sb(srv, sb);
 			free(sb->s);
 		}
-		return;
-	}
-	snprintf(srv->open_path, sizeof(srv->open_path), \"%s\", path);
-	srv->open_version = 1;
-	if (!lsp_srv_ensure(srv))
-		return;
-	if (!srv->initialized)
-		return;
-	if (ex_buf && ex_buf->lb) {
-		sbuf_smake(sb, 4096)
-		lsp_fmt_didopen(srv, sb, path, ft, ex_buf->lb);
-		lsp_send_sb(srv, sb);
-		free(sb->s);
+	} else {
+		if (srv->ndocs >= LSP_DOCS_MAX)
+			return;
+		snprintf(srv->docs[srv->ndocs].path,
+			sizeof(srv->docs[0].path), \"%s\", path);
+		srv->docs[srv->ndocs].version = 1;
+		srv->ndocs++;
+		if (ex_buf && ex_buf->lb) {
+			sbuf_smake(sb, 4096)
+			lsp_fmt_didopen(srv, sb, path, ft, ex_buf->lb);
+			lsp_send_sb(srv, sb);
+			free(sb->s);
+		}
 	}
 }
 
@@ -1176,7 +1248,7 @@ void lsp_save(const char *path)
 	int i;
 	for (i = 0; i < lsp_nsrvs; i++) {
 		lsp_server *srv = &lsp_srvs[i];
-		if (srv->pid > 0 && !strcmp(srv->open_path, path)) {
+		if (srv->pid > 0 && lsp_doc_find(srv, path) >= 0) {
 			sbuf_smake(sb, 256)
 			lsp_fmt_didsave(sb, path);
 			lsp_send_sb(srv, sb);
@@ -1199,14 +1271,7 @@ static int lsp_byte_offset(struct lbuf *lb, int row, int off)
 
 void lsp_hover(const char *path, int row, int off)
 {
-	lsp_server *srv = NULL;
-	int i;
-	/* find server for this file */
-	for (i = 0; i < lsp_nsrvs; i++)
-		if (lsp_srvs[i].pid > 0 && !strcmp(lsp_srvs[i].open_path, path)) {
-			srv = &lsp_srvs[i];
-			break;
-		}
+	lsp_server *srv = lsp_srv_for_path(path);
 	if (!srv) {
 		lsp_show_msg(\"lsp: no server for file\");
 		return;
@@ -1227,11 +1292,20 @@ void lsp_hover(const char *path, int row, int off)
 	}
 	char *json = srv->response_json;
 	jsmn_parser p;
-	jsmntok_t toks[256];
+	jsmntok_t toks[1024];
 	jsmn_init(&p);
-	int n = jsmn_parse(&p, json, strlen(json), toks, 256);
+	int n = jsmn_parse(&p, json, strlen(json), toks, 1024);
 	if (n < 1) {
 		lsp_show_msg(\"lsp: hover parse error\");
+		return;
+	}
+	int errtok = lsp_find_key(json, toks, n, 0, \"error\");
+	if (errtok >= 0) {
+		char errmsg[256] = \"lsp: error\";
+		int msgtok = lsp_find_key(json, toks, n, errtok, \"message\");
+		if (msgtok >= 0)
+			lsp_tok_str(json, &toks[msgtok], errmsg, sizeof(errmsg));
+		lsp_show_msg(errmsg);
 		return;
 	}
 	int result = lsp_find_key(json, toks, n, 0, \"result\");
@@ -1245,7 +1319,7 @@ void lsp_hover(const char *path, int row, int off)
 		lsp_show_msg(\"lsp: no hover contents\");
 		return;
 	}
-	char msg[512] = \"\";
+	char msg[4096] = \"\";
 	if (toks[contents].type == JSMN_STRING) {
 		lsp_tok_str(json, &toks[contents], msg, sizeof(msg));
 	} else if (toks[contents].type == JSMN_OBJECT) {
@@ -1263,20 +1337,14 @@ void lsp_hover(const char *path, int row, int off)
 		}
 	}
 	if (msg[0])
-		lsp_show_msg(msg);
+		lsp_print_hover(msg);
 	else
 		lsp_show_msg(\"lsp: empty hover\");
 }
 
 void lsp_definition(const char *path, int row, int off)
 {
-	lsp_server *srv = NULL;
-	int i;
-	for (i = 0; i < lsp_nsrvs; i++)
-		if (lsp_srvs[i].pid > 0 && !strcmp(lsp_srvs[i].open_path, path)) {
-			srv = &lsp_srvs[i];
-			break;
-		}
+	lsp_server *srv = lsp_srv_for_path(path);
 	if (!srv) {
 		lsp_show_msg(\"lsp: no server for file\");
 		return;
@@ -1296,11 +1364,20 @@ void lsp_definition(const char *path, int row, int off)
 	}
 	char *json = srv->response_json;
 	jsmn_parser p;
-	jsmntok_t toks[256];
+	jsmntok_t toks[1024];
 	jsmn_init(&p);
-	int n = jsmn_parse(&p, json, strlen(json), toks, 256);
+	int n = jsmn_parse(&p, json, strlen(json), toks, 1024);
 	if (n < 1) {
 		lsp_show_msg(\"lsp: definition parse error\");
+		return;
+	}
+	int errtok = lsp_find_key(json, toks, n, 0, \"error\");
+	if (errtok >= 0) {
+		char errmsg[256] = \"lsp: error\";
+		int msgtok = lsp_find_key(json, toks, n, errtok, \"message\");
+		if (msgtok >= 0)
+			lsp_tok_str(json, &toks[msgtok], errmsg, sizeof(errmsg));
+		lsp_show_msg(errmsg);
 		return;
 	}
 	int result = lsp_find_key(json, toks, n, 0, \"result\");
@@ -1344,9 +1421,14 @@ void lsp_definition(const char *path, int row, int off)
 	}
 	char fpath[1024];
 	lsp_path_from_uri(uri, fpath, sizeof(fpath));
-	/* navigate: open file and go to line */
 	if (strcmp(fpath, path)) {
-		ex_edit(fpath, strlen(fpath));
+		int already_open = ex_edit(fpath, strlen(fpath));
+		if (!already_open) {
+			ex_bufpostfix(ex_buf, 0);
+			syn_setft(xb_ft);
+			if (*xb_path && xb_ft)
+				lsp_open(xb_path, xb_ft);
+		}
 	}
 	xrow = target_line;
 	if (xrow >= lbuf_len(xb))
@@ -1448,6 +1530,7 @@ ${SEP}+2a 				} else if (k == 'K') {
 				} else if (k == 'd') {
 					if (xb_path && xb_path[0])
 						lsp_definition(xb_path, xrow, xoff);
+					vi_mod |= 1;
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1797\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -1463,7 +1546,10 @@ ${SEP}+2a 	lsp_init();
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}\$a 
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> /\\\\* filesystem \\\\*/
+extern rset \\\\*fsincl;
+void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 540\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
 extern int lsp_nfds;
@@ -1482,60 +1568,9 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
-=== DELTA vi.h ===
-GROUP 1
-+
-+/* lsp.c */
-+#define LSP_NFDS_MAX	8
-+extern int lsp_nfds;
-+extern int lsp_fds[LSP_NFDS_MAX];
-+extern void (*lsp_fd_ready)(int fd);
-+void lsp_init(void);
-+void lsp_register(const char *ft, const char *cmd);
-+void lsp_open(const char *path, const char *ft);
-+void lsp_save(const char *path);
-+void lsp_hover(const char *path, int row, int off);
-+void lsp_definition(const char *path, int row, int off);
-+const char *lsp_diag_for_line(const char *path, int line);
-+void lsp_list(void);
-+void lsp_show_msg(char *msg);
-strategy: abs
-edit_cmd_abs:
-\$a 
-/* lsp.c */
-#define LSP_NFDS_MAX	8
-extern int lsp_nfds;
-extern int lsp_fds[LSP_NFDS_MAX];
-extern void (*lsp_fd_ready)(int fd);
-void lsp_init(void);
-void lsp_register(const char *ft, const char *cmd);
-void lsp_open(const char *path, const char *ft);
-void lsp_save(const char *path);
-void lsp_hover(const char *path, int row, int off);
-void lsp_definition(const char *path, int row, int off);
-const char *lsp_diag_for_line(const char *path, int line);
-void lsp_list(void);
-void lsp_show_msg(char *msg);
-edit_cmd_rel:
-a 
-/* lsp.c */
-#define LSP_NFDS_MAX	8
-extern int lsp_nfds;
-extern int lsp_fds[LSP_NFDS_MAX];
-extern void (*lsp_fd_ready)(int fd);
-void lsp_init(void);
-void lsp_register(const char *ft, const char *cmd);
-void lsp_open(const char *path, const char *ft);
-void lsp_save(const char *path);
-void lsp_hover(const char *path, int row, int off);
-void lsp_definition(const char *path, int row, int off);
-const char *lsp_diag_for_line(const char *path, int line);
-void lsp_list(void);
-void lsp_show_msg(char *msg);
-=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23903a3e..9acb01ca 100644
+index 23903a3e..93b59728 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -374,6 +374,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -1572,9 +1607,9 @@ index 23903a3e..9acb01ca 100644
 +	ft[n] = '\0';
 +	while (arg[n] == ' ') n++;
 +	if (!arg[n]) return "lsp: missing server command";
++	(void)loc; (void)cmd;
 +	lsp_register(ft, arg+n);
 +	return NULL;
-+	(void)loc; (void)cmd;
 +}
 +
  #undef EO
@@ -2067,10 +2102,10 @@ index 00000000..8ac14c1b
 +#endif /* JSMN_H */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..42a6a183
+index 00000000..1f2c22da
 --- /dev/null
 +++ b/lsp.c
-@@ -0,0 +1,831 @@
+@@ -0,0 +1,913 @@
 +/* lsp.c - Language Server Protocol client for nextvi */
 +#include "jsmn.h"
 +#include <errno.h>
@@ -2078,6 +2113,7 @@ index 00000000..42a6a183
 +#define LSP_DIAG_MAX	64
 +#define LSP_SRV_MAX	8
 +#define LSP_RBUF_MAX	65536
++#define LSP_DOCS_MAX	16
 +
 +typedef struct {
 +	int line, col, severity;
@@ -2091,6 +2127,11 @@ index 00000000..42a6a183
 +} lsp_diagfile;
 +
 +typedef struct {
++	char path[1024];
++	int version;
++} lsp_doc;
++
++typedef struct {
 +	char ft[32], cmd[256];
 +	int pid, in_fd, out_fd;
 +	char rbuf[LSP_RBUF_MAX];
@@ -2099,8 +2140,8 @@ index 00000000..42a6a183
 +	char *response_json;
 +	int response_len;
 +	int initialized, next_id;
-+	char open_path[1024];
-+	int open_version;
++	lsp_doc docs[LSP_DOCS_MAX];
++	int ndocs;
 +} lsp_server;
 +
 +int lsp_nfds = 0;
@@ -2140,6 +2181,8 @@ index 00000000..42a6a183
 +	lsp_srvs[lsp_nsrvs].in_fd = -1;
 +	lsp_srvs[lsp_nsrvs].out_fd = -1;
 +	lsp_nsrvs++;
++	if (ex_buf && *xb_path && xb_ft && !strcmp(xb_ft, ft))
++		lsp_open(xb_path, xb_ft);
 +}
 +
 +void lsp_list(void)
@@ -2147,7 +2190,7 @@ index 00000000..42a6a183
 +	int i;
 +	char buf[512];
 +	for (i = 0; i < lsp_nsrvs; i++) {
-+		snprintf(buf, sizeof(buf), "lsp %s %s [%s]",
++		snprintf(buf, sizeof(buf), "lsp %.31s %.255s [%s]",
 +			lsp_srvs[i].ft, lsp_srvs[i].cmd,
 +			lsp_srvs[i].pid > 0 ? "running" : "stopped");
 +		ex_print(buf, bar_ft)
@@ -2161,6 +2204,24 @@ index 00000000..42a6a183
 +	int i;
 +	for (i = 0; i < lsp_nsrvs; i++)
 +		if (!strcmp(lsp_srvs[i].ft, ft))
++			return &lsp_srvs[i];
++	return NULL;
++}
++
++static int lsp_doc_find(lsp_server *srv, const char *path)
++{
++	int i;
++	for (i = 0; i < srv->ndocs; i++)
++		if (!strcmp(srv->docs[i].path, path))
++			return i;
++	return -1;
++}
++
++static lsp_server *lsp_srv_for_path(const char *path)
++{
++	int i;
++	for (i = 0; i < lsp_nsrvs; i++)
++		if (lsp_srvs[i].pid > 0 && lsp_doc_find(&lsp_srvs[i], path) >= 0)
 +			return &lsp_srvs[i];
 +	return NULL;
 +}
@@ -2193,16 +2254,21 @@ index 00000000..42a6a183
 +static void lsp_json_escape(const char *src, sbuf *sb)
 +{
 +	while (*src) {
-+		if (*src == '"') {
++		unsigned char c = (unsigned char)*src;
++		if (c == '"') {
 +			sbuf_mem(sb, "\\\"", 2)
-+		} else if (*src == '\\') {
++		} else if (c == '\\') {
 +			sbuf_mem(sb, "\\\\", 2)
-+		} else if (*src == '\n') {
++		} else if (c == '\n') {
 +			sbuf_mem(sb, "\\n", 2)
-+		} else if (*src == '\r') {
++		} else if (c == '\r') {
 +			sbuf_mem(sb, "\\r", 2)
-+		} else if (*src == '\t') {
++		} else if (c == '\t') {
 +			sbuf_mem(sb, "\\t", 2)
++		} else if (c < 0x20) {
++			char esc[7];
++			snprintf(esc, sizeof(esc), "\\u%04x", c);
++			sbuf_mem(sb, esc, 6)
 +		} else {
 +			sbuf_chr(sb, *src)
 +		}
@@ -2212,15 +2278,59 @@ index 00000000..42a6a183
 +
 +static void lsp_uri_from_path(const char *path, char *out, int n)
 +{
-+	snprintf(out, n, "file://%s", path);
++	if (path[0] == '/') {
++		snprintf(out, n, "file://%s", path);
++	} else {
++		char cwd[1024];
++		if (getcwd(cwd, sizeof(cwd)))
++			snprintf(out, n, "file://%s/%s", cwd, path);
++		else
++			snprintf(out, n, "file://%s", path);
++	}
 +}
 +
 +static void lsp_path_from_uri(const char *uri, char *out, int n)
 +{
 +	if (!strncmp(uri, "file://", 7))
-+		snprintf(out, n, "%s", uri + 7);
++		snprintf(out, n, "%.*s", n - 1, uri + 7);
 +	else
-+		snprintf(out, n, "%s", uri);
++		snprintf(out, n, "%.*s", n - 1, uri);
++}
++
++static void lsp_print_hover(const char *s)
++{
++	char line[512];
++	int i = 0;
++	while (*s) {
++		if (s[0] == '\\' && s[1]) {
++			char c;
++			switch (s[1]) {
++			case 'n':  c = '\n'; break;
++			case 'r':  c = '\r'; break;
++			case 't':  c = '\t'; break;
++			case '\\': c = '\\'; break;
++			case '"':  c = '"';  break;
++			default:   c = s[1]; break;
++			}
++			s += 2;
++			if (c == '\n' || c == '\r') {
++				line[i] = '\0';
++				if (i > 0)
++					ex_print(line, bar_ft)
++				i = 0;
++			} else if (i < (int)sizeof(line) - 1) {
++				line[i++] = c;
++			}
++		} else {
++			if (i < (int)sizeof(line) - 1)
++				line[i++] = *s;
++			s++;
++		}
++	}
++	if (i > 0) {
++		line[i] = '\0';
++		ex_print(line, bar_ft)
++	}
 +}
 +
 +static void lsp_send(lsp_server *srv, const char *json, int len)
@@ -2288,18 +2398,18 @@ index 00000000..42a6a183
 +	(void)srv;
 +}
 +
-+static void lsp_fmt_didchange(lsp_server *srv, sbuf *sb, const char *path,
++static void lsp_fmt_didchange(sbuf *sb, const char *path, int ver,
 +		struct lbuf *lb)
 +{
 +	char uri[1280];
-+	char ver[32];
++	char verstr[32];
 +	lsp_uri_from_path(path, uri, sizeof(uri));
-+	itoa(++srv->open_version, ver);
++	itoa(ver, verstr);
 +	sbuf_str(sb, "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",")
 +	sbuf_str(sb, "\"params\":{\"textDocument\":{\"uri\":\"")
 +	sbuf_str(sb, uri)
 +	sbuf_str(sb, "\",\"version\":")
-+	sbuf_str(sb, ver)
++	sbuf_str(sb, verstr)
 +	sbuf_str(sb, "},\"contentChanges\":[{\"text\":\"")
 +	lsp_buf_content(lb, sb);
 +	sbuf_str(sb, "\"}]}}")
@@ -2548,14 +2658,6 @@ index 00000000..42a6a183
 +			lsp_send_sb(srv, sb2);
 +			free(sb2->s);
 +			srv->initialized = 1;
-+			/* send didOpen if we have a file queued */
-+			if (srv->open_path[0] && ex_buf && ex_buf->lb) {
-+				sbuf_smake(sb3, 4096)
-+				lsp_fmt_didopen(srv, sb3, srv->open_path,
-+					srv->ft, ex_buf->lb);
-+				lsp_send_sb(srv, sb3);
-+				free(sb3->s);
-+			}
 +		}
 +		lsp_handle_response(srv, json, toks, n, id);
 +	} else if (method[0]) {
@@ -2595,6 +2697,8 @@ index 00000000..42a6a183
 +		int total = hdr_len + clen;
 +		if (srv->rbuf_n < total)
 +			break; /* wait for more data */
++		if (total >= LSP_RBUF_MAX)
++			break; /* message too large */
 +
 +		/* process message */
 +		hdr_end[clen] = '\0';
@@ -2645,7 +2749,9 @@ index 00000000..42a6a183
 +{
 +	if (srv->pid > 0)
 +		return 1;
-+	char *argv[] = {"/bin/sh", "-c", srv->cmd, NULL};
++	char cmd_redir[sizeof(srv->cmd) + 16];
++	snprintf(cmd_redir, sizeof(cmd_redir), "%s 2>/dev/null", srv->cmd);
++	char *argv[] = {"/bin/sh", "-c", cmd_redir, NULL};
 +	srv->pid = cmd_make(argv, &srv->in_fd, &srv->out_fd);
 +	if (srv->pid <= 0) {
 +		srv->pid = -1;
@@ -2678,28 +2784,29 @@ index 00000000..42a6a183
 +	lsp_server *srv = lsp_srv_for_ft(ft);
 +	if (!srv)
 +		return;
-+	/* check if already open */
-+	if (!strcmp(srv->open_path, path) && srv->pid > 0) {
-+		/* send didChange */
++	if (!lsp_srv_ensure(srv) || !srv->initialized)
++		return;
++	int di = lsp_doc_find(srv, path);
++	if (di >= 0) {
 +		if (ex_buf && ex_buf->lb) {
 +			sbuf_smake(sb, 4096)
-+			lsp_fmt_didchange(srv, sb, path, ex_buf->lb);
++			lsp_fmt_didchange(sb, path, ++srv->docs[di].version, ex_buf->lb);
 +			lsp_send_sb(srv, sb);
 +			free(sb->s);
 +		}
-+		return;
-+	}
-+	snprintf(srv->open_path, sizeof(srv->open_path), "%s", path);
-+	srv->open_version = 1;
-+	if (!lsp_srv_ensure(srv))
-+		return;
-+	if (!srv->initialized)
-+		return;
-+	if (ex_buf && ex_buf->lb) {
-+		sbuf_smake(sb, 4096)
-+		lsp_fmt_didopen(srv, sb, path, ft, ex_buf->lb);
-+		lsp_send_sb(srv, sb);
-+		free(sb->s);
++	} else {
++		if (srv->ndocs >= LSP_DOCS_MAX)
++			return;
++		snprintf(srv->docs[srv->ndocs].path,
++			sizeof(srv->docs[0].path), "%s", path);
++		srv->docs[srv->ndocs].version = 1;
++		srv->ndocs++;
++		if (ex_buf && ex_buf->lb) {
++			sbuf_smake(sb, 4096)
++			lsp_fmt_didopen(srv, sb, path, ft, ex_buf->lb);
++			lsp_send_sb(srv, sb);
++			free(sb->s);
++		}
 +	}
 +}
 +
@@ -2708,7 +2815,7 @@ index 00000000..42a6a183
 +	int i;
 +	for (i = 0; i < lsp_nsrvs; i++) {
 +		lsp_server *srv = &lsp_srvs[i];
-+		if (srv->pid > 0 && !strcmp(srv->open_path, path)) {
++		if (srv->pid > 0 && lsp_doc_find(srv, path) >= 0) {
 +			sbuf_smake(sb, 256)
 +			lsp_fmt_didsave(sb, path);
 +			lsp_send_sb(srv, sb);
@@ -2731,14 +2838,7 @@ index 00000000..42a6a183
 +
 +void lsp_hover(const char *path, int row, int off)
 +{
-+	lsp_server *srv = NULL;
-+	int i;
-+	/* find server for this file */
-+	for (i = 0; i < lsp_nsrvs; i++)
-+		if (lsp_srvs[i].pid > 0 && !strcmp(lsp_srvs[i].open_path, path)) {
-+			srv = &lsp_srvs[i];
-+			break;
-+		}
++	lsp_server *srv = lsp_srv_for_path(path);
 +	if (!srv) {
 +		lsp_show_msg("lsp: no server for file");
 +		return;
@@ -2759,11 +2859,20 @@ index 00000000..42a6a183
 +	}
 +	char *json = srv->response_json;
 +	jsmn_parser p;
-+	jsmntok_t toks[256];
++	jsmntok_t toks[1024];
 +	jsmn_init(&p);
-+	int n = jsmn_parse(&p, json, strlen(json), toks, 256);
++	int n = jsmn_parse(&p, json, strlen(json), toks, 1024);
 +	if (n < 1) {
 +		lsp_show_msg("lsp: hover parse error");
++		return;
++	}
++	int errtok = lsp_find_key(json, toks, n, 0, "error");
++	if (errtok >= 0) {
++		char errmsg[256] = "lsp: error";
++		int msgtok = lsp_find_key(json, toks, n, errtok, "message");
++		if (msgtok >= 0)
++			lsp_tok_str(json, &toks[msgtok], errmsg, sizeof(errmsg));
++		lsp_show_msg(errmsg);
 +		return;
 +	}
 +	int result = lsp_find_key(json, toks, n, 0, "result");
@@ -2777,7 +2886,7 @@ index 00000000..42a6a183
 +		lsp_show_msg("lsp: no hover contents");
 +		return;
 +	}
-+	char msg[512] = "";
++	char msg[4096] = "";
 +	if (toks[contents].type == JSMN_STRING) {
 +		lsp_tok_str(json, &toks[contents], msg, sizeof(msg));
 +	} else if (toks[contents].type == JSMN_OBJECT) {
@@ -2795,20 +2904,14 @@ index 00000000..42a6a183
 +		}
 +	}
 +	if (msg[0])
-+		lsp_show_msg(msg);
++		lsp_print_hover(msg);
 +	else
 +		lsp_show_msg("lsp: empty hover");
 +}
 +
 +void lsp_definition(const char *path, int row, int off)
 +{
-+	lsp_server *srv = NULL;
-+	int i;
-+	for (i = 0; i < lsp_nsrvs; i++)
-+		if (lsp_srvs[i].pid > 0 && !strcmp(lsp_srvs[i].open_path, path)) {
-+			srv = &lsp_srvs[i];
-+			break;
-+		}
++	lsp_server *srv = lsp_srv_for_path(path);
 +	if (!srv) {
 +		lsp_show_msg("lsp: no server for file");
 +		return;
@@ -2828,11 +2931,20 @@ index 00000000..42a6a183
 +	}
 +	char *json = srv->response_json;
 +	jsmn_parser p;
-+	jsmntok_t toks[256];
++	jsmntok_t toks[1024];
 +	jsmn_init(&p);
-+	int n = jsmn_parse(&p, json, strlen(json), toks, 256);
++	int n = jsmn_parse(&p, json, strlen(json), toks, 1024);
 +	if (n < 1) {
 +		lsp_show_msg("lsp: definition parse error");
++		return;
++	}
++	int errtok = lsp_find_key(json, toks, n, 0, "error");
++	if (errtok >= 0) {
++		char errmsg[256] = "lsp: error";
++		int msgtok = lsp_find_key(json, toks, n, errtok, "message");
++		if (msgtok >= 0)
++			lsp_tok_str(json, &toks[msgtok], errmsg, sizeof(errmsg));
++		lsp_show_msg(errmsg);
 +		return;
 +	}
 +	int result = lsp_find_key(json, toks, n, 0, "result");
@@ -2876,9 +2988,14 @@ index 00000000..42a6a183
 +	}
 +	char fpath[1024];
 +	lsp_path_from_uri(uri, fpath, sizeof(fpath));
-+	/* navigate: open file and go to line */
 +	if (strcmp(fpath, path)) {
-+		ex_edit(fpath, strlen(fpath));
++		int already_open = ex_edit(fpath, strlen(fpath));
++		if (!already_open) {
++			ex_bufpostfix(ex_buf, 0);
++			syn_setft(xb_ft);
++			if (*xb_path && xb_ft)
++				lsp_open(xb_path, xb_ft);
++		}
 +	}
 +	xrow = target_line;
 +	if (xrow >= lbuf_len(xb))
@@ -2981,7 +3098,7 @@ index 68990b78..8b893398 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 956e58e2..98d7f2f3 100644
+index 956e58e2..164f7c69 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -3001,7 +3118,7 @@ index 956e58e2..98d7f2f3 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
-@@ -1632,6 +1635,12 @@ void vi(int init)
+@@ -1632,6 +1635,13 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
@@ -3011,10 +3128,11 @@ index 956e58e2..98d7f2f3 100644
 +				} else if (k == 'd') {
 +					if (xb_path && xb_path[0])
 +						lsp_definition(xb_path, xrow, xoff);
++					vi_mod |= 1;
  				}
  				break;
  			case 'x':
-@@ -1795,6 +1804,11 @@ void vi(int init)
+@@ -1795,6 +1805,11 @@ void vi(int init)
  			syn_blockhl = -1;
  			vi_drawrow(xrow);
  		}
@@ -3026,7 +3144,7 @@ index 956e58e2..98d7f2f3 100644
  		if (vi_status && xmpt < 1) {
  			xrows -= term_resized != vi_status;
  			vi_status = term_resized;
-@@ -1834,6 +1848,7 @@ int main(int argc, char *argv[])
+@@ -1834,6 +1849,7 @@ int main(int argc, char *argv[])
  	setup_signals();
  	dir_init();
  	syn_init();
