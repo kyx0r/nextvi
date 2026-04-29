@@ -132,12 +132,8 @@ of EXINIT.
 
 exrc.sh
 -------------
-Adds support for reading ~/.exrc file. This can be used to pass in ex
-commands instead of EXINIT.
-
-exrc-xdg.sh
--------------
-Adds XDG dir support for exrc.patch.
+Adds support for reading .exrc file from XDG, .config or home directories.
+This can be used to pass in ex commands instead of EXINIT.
 
 readonly.sh
 -------------
