@@ -118,8 +118,6 @@ exit 0
 GROUP 1
 +int xexrc = 0;			/* read .exrc from the current directory */
 strategy: abs
-edit_cmd_abs:
-i int xexrc = 0;			/* read .exrc from the current directory */
 GROUP 2
 +EO(exrc)
 pattern:
@@ -133,17 +131,14 @@ i 	EO(exrc),
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23903a3e..41f4dd5e 100644
+index 23903a3e..dbb30394 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -37,6 +37,7 @@ int xexec_dep;			/* ex_exec recursion depth */
- sbuf *xacreg;			/* autocomplete db filter regex */
- rset *xkwdrs;			/* the last searched keyword rset */
- sbuf *xregs[256];		/* string registers */
+@@ -1,3 +1,4 @@
 +int xexrc = 0;			/* read .exrc from the current directory */
- struct buf *bufs;		/* main buffers */
- struct buf tempbufs[3];		/* temporary buffers, for internal use */
- struct buf *ex_buf;		/* current buffer */
+ int xleft;			/* the first visible column */
+ int xvis;			/* startup flags */
+ int xai = 1;			/* autoindent option */
 @@ -1446,6 +1447,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
