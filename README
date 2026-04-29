@@ -253,7 +253,15 @@ chains from within the modal script.
 
 lsp.sh
 --------------
-Defunct lsp support skeleton
+LSP support for Nextvi
+Adds new ex command "lsp" to start the LSP server, for example:
+:lsp c clangd
+Check that it is running:
+:lsp
+Once the server is up, new normal keybinds can be used:
+gK - show hover documentation for the symbol at cursor
+gd - goto definition of symbol at cursor
+
 
 sse.sh
 --------------
