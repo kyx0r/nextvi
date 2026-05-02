@@ -354,7 +354,7 @@ EX RANGES
      Some ex commands can be prefixed with ranges.
      [range] prefix implements vertical and horizontal ranges.
      [vrange] prefix implements vertical range and horizontal position.
-     Without [cmd], [range] replaces [prefix].
+     Without [cmd], [vrange] replaces [prefix].
 
      [% |][, ;][#][. $ ' > <][- + * / %][0-9]
              All ranges structure
@@ -1364,4 +1364,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.0                      April 29, 2026                      Nextvi 5.0
+Nextvi 5.0                        May 2, 2026                       Nextvi 5.0
