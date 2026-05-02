@@ -218,7 +218,7 @@ strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 	{FT(html), "\"(?:[^\"\\\\]|\\\\.)*\"", A(BL1)},
 	{FT(html), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
 	{FT(html), "#\\<[A-Fa-f0-9]+\\>", A(RE1)},
-	{FT(html), "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:px|vw|vh|%|s)?)\\>", A(RE1)},
+	{FT(html), "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9.]+r?em|[0-9]+(?:px|vw|vh|%|s)?)\\>", A(RE1)},
 	{FT(html), "&[a-zA-Z0-9_]+;", A(MA)},
 
 	{FT(diff), NULL, A(CY1 | SYN_BD), 1, 2},
