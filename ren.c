@@ -333,8 +333,18 @@ void syn_highlight(int *att, char *s, int n)
 				if (!c)
 					break;
 			}
-			for (j = beg; j < end; j++)
-				att[j] = syn_merge(att[j], catt[i]);
+			if (SYN_OATTSET(catt[i])) {
+				iatt = &catt[sl >> 1];
+				if (SYN_ATTSET(catt[i]))
+					iatt += *iatt + 1;
+				for (j = beg; j < end; j++) {
+					for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
+					if (c)
+						att[j] = syn_merge(att[j], catt[i]);
+				}
+			} else
+				for (j = beg; j < end; j++)
+					att[j] = syn_merge(att[j], catt[i]);
 			if (SYN_BSESET(catt[i])) {
 				if (syn_blockhl == hl && (SYN_BESET(catt[i]) || last_scdir > 0)) {
 					blockca = -1;
