@@ -31,11 +31,11 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> int xhlw;			/\\\\* highlight current wo
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
 int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 9\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xhlm;			/* highlight marks */
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1448\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(hlm)
 ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1543\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(order\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1541\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(hlm),
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -70,7 +70,7 @@ EO\(pac\)
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23903a3e..256430c7 100644
+index 23058a1e..a294cc1d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -81,7 +81,7 @@ index 23903a3e..256430c7 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1446,6 +1447,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1444,6 +1445,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -89,7 +89,7 @@ index 23903a3e..256430c7 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1541,6 +1543,7 @@ static struct excmd {
+@@ -1539,6 +1541,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),

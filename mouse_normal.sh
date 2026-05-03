@@ -35,7 +35,7 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xms = 1;			/* mouse in normal mode */
 ${SEP}%;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1461\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a _EO(ms,
 	xms = !*arg ? !xms : eo_val(arg);
 	if (xms)
@@ -47,7 +47,7 @@ ${SEP}+2a _EO(ms,
 
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1510\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1508\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(ms),
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -344,7 +344,7 @@ index 0a291fa4..01956c2e 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 23903a3e..4874eaf3 100644
+index 23058a1e..5a40c51b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -352,7 +352,7 @@ index 23903a3e..4874eaf3 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1459,6 +1460,15 @@ _EO(left,
+@@ -1457,6 +1458,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -368,7 +368,7 @@ index 23903a3e..4874eaf3 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1508,6 +1518,7 @@ static struct excmd {
+@@ -1506,6 +1516,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),

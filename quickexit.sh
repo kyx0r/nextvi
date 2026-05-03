@@ -32,9 +32,9 @@ ${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1448\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(qe)
-${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1511\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	EO(qe),
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -152,7 +152,7 @@ index 0a291fa4..a7ede0cd 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 23903a3e..8cf196fa 100644
+index 23058a1e..4c482e0e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -160,7 +160,7 @@ index 23903a3e..8cf196fa 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1446,6 +1447,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1444,6 +1445,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -168,7 +168,7 @@ index 23903a3e..8cf196fa 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1509,6 +1511,7 @@ static struct excmd {
+@@ -1507,6 +1509,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},

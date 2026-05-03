@@ -32,7 +32,7 @@ ${SEP}.i char **xenvp;
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1431\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1429\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
@@ -70,7 +70,7 @@ ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1530\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1528\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
@@ -101,7 +101,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23903a3e..796efbee 100644
+index 23058a1e..5f6e5665 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -109,7 +109,7 @@ index 23903a3e..796efbee 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1429,6 +1430,41 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1427,6 +1428,41 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -151,7 +151,7 @@ index 23903a3e..796efbee 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1528,6 +1564,8 @@ static struct excmd {
+@@ -1526,6 +1562,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},

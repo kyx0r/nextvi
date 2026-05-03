@@ -29,7 +29,7 @@ LB="0?"
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
 	if \\\\(!\\\\(xvis & 4\\\\)\\\\)
-		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 382\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 380\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\\\n')
@@ -53,10 +53,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23903a3e..00105ffe 100644
+index 23058a1e..077d39ed 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -380,6 +380,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -378,6 +378,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  			fd < 0 || rd ? 'f' : 'r');
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)

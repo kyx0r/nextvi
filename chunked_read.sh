@@ -30,17 +30,17 @@ LB="0?"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return key;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 333\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 333\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
-if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 336\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 331\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 331\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 334\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
 ${SEP}.,\$;f> 		return 1;
 	\\\\}
-	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 352\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 352\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 350\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 350\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 373\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 373\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 371\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: lbuf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
@@ -140,10 +140,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23903a3e..8d491162 100644
+index 23058a1e..61246cfe 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -330,10 +330,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
+@@ -328,10 +328,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
  	return key;
  }
  
@@ -156,7 +156,7 @@ index 23903a3e..8d491162 100644
  	close(fd); \
  } \
  
-@@ -349,7 +349,7 @@ int ex_edit(const char *path, int len)
+@@ -347,7 +347,7 @@ int ex_edit(const char *path, int len)
  		return 1;
  	}
  	bufs_switch(bufs_open(path, len));
@@ -165,7 +165,7 @@ index 23903a3e..8d491162 100644
  	return 0;
  }
  
-@@ -370,7 +370,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -368,7 +368,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}

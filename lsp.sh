@@ -33,18 +33,18 @@ ${SEP}+3${SEP}s/\\\\\\\\\$/lsp|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
-		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 376\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ${SEP}.,\$;f> 			ec_setpath\\\\(NULL, NULL, path\\\\);
 		lbuf_saved\\\\(xb, 0\\\\);
-		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 715\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 713\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*xb_path)
 			lsp_save(xb_path);
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1461\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
@@ -64,7 +64,7 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
 	EO\\\\(hlr\\\\),
-	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1548\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1546\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lsp\", ec_lsp},
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -1597,10 +1597,10 @@ index 0a291fa4..60038dd2 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 23903a3e..93b59728 100644
+index 23058a1e..53ae87bc 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -374,6 +374,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -372,6 +372,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
@@ -1609,7 +1609,7 @@ index 23903a3e..93b59728 100644
  	}
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-@@ -713,6 +715,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -711,6 +713,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  			ec_setpath(NULL, NULL, path);
  		lbuf_saved(xb, 0);
  		ex_buf->mtime = mtime(path);
@@ -1618,7 +1618,7 @@ index 23903a3e..93b59728 100644
  	}
  	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
  		ec_quit("", cmd, "");
-@@ -1459,6 +1463,23 @@ _EO(left,
+@@ -1457,6 +1461,23 @@ _EO(left,
  	return NULL;
  )
  
@@ -1642,7 +1642,7 @@ index 23903a3e..93b59728 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1546,6 +1567,7 @@ static struct excmd {
+@@ -1544,6 +1565,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),

@@ -27,26 +27,26 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 359\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 357\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
 ${SEP}.,\$;f> 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
 		syn_setft\\\\(xb_ft\\\\);
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 377\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 375\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 ${SEP}.,\$;f> 
 void ex_init\\\\(.*\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1717\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1717\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
-	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1719\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1715\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1715\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1717\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	int i = n;
 ${SEP}.,\$;f> 	do \\\\{
-		xmpt = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1722\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1722\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1724\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		xmpt = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1720\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1720\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1722\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
@@ -66,7 +66,7 @@ ${SEP}+1a 	if (stdin_fd) {
 		}
 		xmpt = MIN(xmpt, 1);
 	}
-${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1725\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1723\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -170,10 +170,10 @@ a extern int stdin_fd;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23903a3e..84fb6d5f 100644
+index 23058a1e..715c852f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -356,7 +356,9 @@ int ex_edit(const char *path, int len)
+@@ -354,7 +354,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
@@ -184,7 +184,7 @@ index 23903a3e..84fb6d5f 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -375,6 +377,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -373,6 +375,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -194,7 +194,7 @@ index 23903a3e..84fb6d5f 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1714,15 +1719,36 @@ void ex(void)
+@@ -1712,15 +1717,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {

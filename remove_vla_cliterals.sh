@@ -36,20 +36,20 @@ ${SEP}+3${SEP}s/\\\\(int\\\\[\\\\]\\\\)//${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		return xserr;
 	if \\\\(o1 >= 0 && dir > 0\\\\) \\\\{
-		sbuf sb;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 516\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		sbuf sb;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 514\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 		int flg = 0, soff = 0;
 ${SEP}.,\$;f> 						soff \\\\+ offs\\\\[xgrp\\\\], &xrow, &xoff\\\\)\\\\)
 			ret = xuerr;
-		free\\\\(sb\\\\.s\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 529\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		free\\\\(sb\\\\.s\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 527\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		free(offs);
 ${SEP}.,\$;f> 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1003\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	free\\\\(pat\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1001\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 ${SEP}.,\$;f> 	if \\\\(rs != xkwdrs\\\\)
 		rset_free\\\\(rs\\\\);
-	free\\\\(rep\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1054\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	free\\\\(rep\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1052\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(offs);
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
@@ -250,10 +250,10 @@ index 0a291fa4..7a771821 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 23903a3e..b89d8a5a 100644
+index 23058a1e..4b57cbc9 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -513,7 +513,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -511,7 +511,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  		return xserr;
  	if (o1 >= 0 && dir > 0) {
  		sbuf sb;
@@ -263,7 +263,7 @@ index 23903a3e..b89d8a5a 100644
  		int r2 = end - 1;
  		int skip = cmd[1] == '+' ? 1 : 0;
  		void *ret = NULL;
-@@ -527,6 +528,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -525,6 +526,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  						soff + offs[xgrp], &xrow, &xoff))
  			ret = xuerr;
  		free(sb.s);
@@ -271,7 +271,7 @@ index 23903a3e..b89d8a5a 100644
  		return ret;
  	}
  	off = xoff;
-@@ -1000,7 +1002,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -998,7 +1000,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s, 0);
  	}
  	free(pat);
@@ -280,7 +280,7 @@ index 23903a3e..b89d8a5a 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -1052,6 +1054,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1050,6 +1052,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
