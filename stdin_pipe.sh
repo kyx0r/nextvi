@@ -99,11 +99,11 @@ ${SEP}+3,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 ${SEP}.,\$;f> 	fds\\\\[0\\\\]\\\\.events = POLLIN;
 	fds\\\\[1\\\\]\\\\.fd = ifd;
-	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 312\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 312\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		close\\\\(ifd\\\\);
+	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 309\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 309\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		close\\\\(ifd\\\\);
 	waitpid\\\\(pid, status, 0\\\\);
-	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 355\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 355\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'term.c'
+	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 352\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 352\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
@@ -234,7 +234,7 @@ index 23903a3e..84fb6d5f 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 68990b78..9b3a2a76 100644
+index e2eb4ad0..5409e27e 100644
 --- a/term.c
 +++ b/term.c
 @@ -6,6 +6,8 @@ int term_resized;
@@ -297,7 +297,7 @@ index 68990b78..9b3a2a76 100644
  			if (term_winch && winch && xquit >= 0) {
  				*ibuf = winch;
  				goto ret;
-@@ -309,7 +316,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -306,7 +313,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	fds[0].events = POLLIN;
  	fds[1].fd = ifd;
  	fds[1].events = POLLOUT;
@@ -306,7 +306,7 @@ index 68990b78..9b3a2a76 100644
  	fds[2].events = POLLIN;
  	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
  		if (fds[0].revents & POLLIN) {
-@@ -352,7 +359,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -349,7 +356,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  		close(ifd);
  	waitpid(pid, status, 0);
  	signal(SIGTTOU, SIG_IGN);

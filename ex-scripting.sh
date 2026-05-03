@@ -78,7 +78,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 # Patch: term.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 247\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 244\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
@@ -161,10 +161,10 @@ index 23903a3e..796efbee 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 68990b78..b50d0d22 100644
+index e2eb4ad0..a9737b5d 100644
 --- a/term.c
 +++ b/term.c
-@@ -244,7 +244,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -241,7 +241,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}

@@ -425,7 +425,7 @@ index 25856dc8..4535d3b3 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 68990b78..69513f5b 100644
+index e2eb4ad0..95fcb0f4 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,16 @@
