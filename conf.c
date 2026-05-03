@@ -87,12 +87,13 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(c), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
 	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", A(RE1)},
 	{FT(c), "(\"[^\"]*\\\\\n$)|^(.*\"(?!\\\\\n$))",
-		A(MA | SYN_IGN, MA | SYN_BS | SYN_SATT | SYN_OWR,
+		A(MA | SYN_IGN, MA | SYN_BS | SYN_SATT | SYN_OWR, 1, IN,
 			MA | SYN_BE | SYN_EATT | SYN_OWR, 1, IN), 1},
 	{FT(c), "^.+\\\\\n$", A(CY1 | SYN_EATT | SYN_OATT, 2, IN, BL, 1, IN), 2},
 	{FT(c), NULL, A(RE1), 0, 1},
 	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
-	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SATT, YE | SYN_SATT, 2, IN, CY1), 5},
+	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SATT, 2, IN, CY1,
+				YE | SYN_SATT, 2, IN, CY1), 5},
 
 	{FT(roff), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(roff), "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
@@ -173,8 +174,6 @@ name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", A(BL1, CY 
 	{FT(html), "<(/)?[^>]+>", A(YE, MA1), 1},
 	{FT(html), "(\\{)[^}]*|(^[^{]*)?(\\})",
 		A(AY1 | SYN_BP, MA | SYN_BS, AY1, MA | SYN_BE), 1},
-	{FT(html), "([^\t -,.-/:-@[-^{-~]+:).+;", A(IN, YE), 2},
-	/* do not use this regex on DFA engines, causes catastrophic backtracking */
 	{FT(html), "([#.][ \t]*[a-zA-Z0-9_\\-]+\
 (?:(?:[, \t]*[#.][a-zA-Z0-9_\\-]+)?)+)(?:.?""?){1,20}\\{", A(IN, SYN_BD), 2},
 	{FT(html), NULL, A(RE1), 0, 1},
@@ -184,10 +183,10 @@ name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", A(BL1, CY 
 		A(MA | SYN_IT, MA | SYN_BS, MA | SYN_BE)},
 	{FT(html), "\\<(?:accept|accesskey|align|allow|alt|async|\
 auto(?:capitalize|complete|focus|play)|background|\
-bgcolor|border|buffered|challenge|charset|checked|cite|\
+bgcolor|border(?:-box)?|buffered|challenge|charset|checked|cite|\
 class|code(?:base)|color|cols|colspan|content(?:editable)|\
-contextmenu|controls|coords|crossorigin|import|url|\
-csp|data|datetime|decoding|def(?:ault|er)|dir|dirname|\
+contextmenu|controls|coords|crossorigin|import|url|code|\
+csp|data[a-z-]*|datetime|decoding|def(?:ault|er)|dir|dirname|\
 disabled|download|draggable|dropzone|enctype|enterkeyhint|\
 equiv|for|form|action|headers|height|hidden|high|href|http|\
 icon|id|importance|inputmode|integrity|intrinsicsize|ismap|\
@@ -215,11 +214,23 @@ frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
 multicol|nextid|nobr|noembed|noframes|plaintext|spacer|\
 strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
 (fixed;|absolute;|relative;)))\\>", A(GR, CY, MA1)},
+	{FT(html), "@\\<(?:media|import|keyframes|font-face|charset|supports|page|\
+namespace|document|viewport|counter-style|property|layer|container|scope|\
+starting-style|font-feature-values|color-profile)\\>", A(BL1 | SYN_BD)},
+	{FT(html), "::?\\<[a-z-]+\\>", A(MA1)},
+	{FT(html), "!important\\>", A(RE1 | SYN_BD)},
 	{FT(html), "\"(?:[^\"\\\\]|\\\\.)*\"", A(BL1)},
 	{FT(html), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
 	{FT(html), "#\\<[A-Fa-f0-9]+\\>", A(RE1)},
-	{FT(html), "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9.]+r?em|[0-9]+(?:px|vw|vh|%|s)?)\\>", A(RE1)},
+	{FT(html), "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:\\.[0-9]+)?\
+(?:em|rem|px|pt|pc|cm|mm|in|ch|ex|vw|vh|vmin|vmax|dvh|dvw|svh|svw|lvh|lvw|\
+fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1)},
 	{FT(html), "&[a-zA-Z0-9_]+;", A(MA)},
+	{FT(html), "([^\t -,.-/:-@[-^{-~]+:).+?;",
+		A(IN, YE | SYN_OWR | SYN_EATT, 2, IN, AY1), 3},
+	{FT(html), ">([^<]*)<(?:/|[^>]*>([^<]*)<)",
+		A(SYN_IGN, SYN_OATT | SYN_OWR, 3, GR, CY, YE,
+			SYN_OATT | SYN_OWR, 3, GR, CY, YE), 4},
 
 	{FT(diff), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(diff), "^-.*", A(RE)},
