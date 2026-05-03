@@ -144,41 +144,41 @@ ${SEP}+2a 	free(subs);
 ${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
 
 # Patch: ren.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static int syn_initft\\\\(int fti, int n, char \\\\*name, int flg\\\\)
-\\\\{
-	int i = n, set = hls\\\\[i\\\\]\\\\.set;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 254\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	if \\\\(fti >= ftmidx\\\\)
+		ftmap = erealloc\\\\(ftmap, \\\\(fti \\\\+ 1\\\\) \\\\* sizeof\\\\(\\\\*ftmap\\\\)\\\\);
+	int i = n, set = hls\\\\[i\\\\]\\\\.set;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 257\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	char **pats = emalloc(hlslen * sizeof(char *));
 ${SEP}.,\$;f> 	ftmap\\\\[fti\\\\]\\\\.ft = name;
 	ftmap\\\\[fti\\\\]\\\\.rs = rset_make\\\\(i - n, pats, flg\\\\);
-	ftmap\\\\[fti\\\\]\\\\.seteidx = i;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 260\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	ftmap\\\\[fti\\\\]\\\\.seteidx = i;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 263\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(pats);
 ${SEP}.,\$;f> 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
 	re:;
-	rset \\\\*rs = ftmap\\\\[fti\\\\]\\\\.rs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 310\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/subs\\\\[rs->nsubc\\\\]/*subs = emalloc(rs->nsubc * sizeof(int))/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 310\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		flg = REG_NOTBOL;
+	rset \\\\*rs = ftmap\\\\[fti\\\\]\\\\.rs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 315\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/subs\\\\[rs->nsubc\\\\]/*subs = emalloc(rs->nsubc * sizeof(int))/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 315\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		flg = REG_NOTBOL;
 	\\\\}
-	fti\\\\+\\\\+;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	fti\\\\+\\\\+;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 376\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
 		free(subs);
-${SEP}.,\$f> 		goto re;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 372\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		goto re;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 377\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	}
 ${SEP}.,\$;f> 	if \\\\(blockca >= 0 && SYN_BSSET\\\\(blockca\\\\) && !SYN_BESET\\\\(blockca\\\\) && last_scdir > 0\\\\)
-		syn_blockhl = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 375\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		syn_blockhl = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 380\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2c 	if (syn_blockhl < 0 || blockhl < 0) {
 		free(subs);
-${SEP}.,\$f> 		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 376\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 381\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	}
 ${SEP}.,\$;f> 	for \\\\(j = 0; j < n; j\\\\+\\\\+\\\\)
 		if \\\\(!att\\\\[j\\\\] \\\\|\\\\| !SYN_BPSET\\\\(blockatt\\\\)\\\\)
-			att\\\\[j\\\\] = blockatt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 379\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			att\\\\[j\\\\] = blockatt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 384\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(subs);
 ${SEP}.,\$;f> 
 void syn_init\\\\(void\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 423\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	char **pats = emalloc(ftslen * sizeof(char *));
 ${SEP}.,\$;f> 	for \\\\(; i < ftslen; i\\\\+\\\\+\\\\)
 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
-	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 432\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(pats);
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
@@ -446,12 +446,12 @@ index ff88bb41..3ed5bf64 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 47744032..5593414b 100644
+index 86e24e4a..dee00f50 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -251,13 +251,14 @@ int syn_blockhl;
- static int syn_initft(int fti, int n, char *name, int flg)
- {
+@@ -254,13 +254,14 @@ static int syn_initft(int fti, int n, char *name, int flg)
+ 	if (fti >= ftmidx)
+ 		ftmap = erealloc(ftmap, (fti + 1) * sizeof(*ftmap));
  	int i = n, set = hls[i].set;
 -	char *pats[hlslen];
 +	char **pats = emalloc(hlslen * sizeof(char *));
@@ -465,7 +465,7 @@ index 47744032..5593414b 100644
  	return i < hlslen && hls[i].ft == name && hls[i].set != set;
  }
  
-@@ -307,7 +308,7 @@ void syn_highlight(int *att, char *s, int n)
+@@ -312,7 +313,7 @@ void syn_highlight(int *att, char *s, int n)
  	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
  	re:;
  	rset *rs = ftmap[fti].rs;
@@ -474,7 +474,7 @@ index 47744032..5593414b 100644
  	int cend, sidx = 0, flg = 0, hl, j, i, ii;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
  		cend = 1;
-@@ -368,15 +369,20 @@ void syn_highlight(int *att, char *s, int n)
+@@ -373,15 +374,20 @@ void syn_highlight(int *att, char *s, int n)
  		flg = REG_NOTBOL;
  	}
  	fti++;
@@ -497,7 +497,7 @@ index 47744032..5593414b 100644
  }
  
  char *syn_filetype(char *path)
-@@ -420,9 +426,10 @@ int syn_addhl(char *reg, int id)
+@@ -425,9 +431,10 @@ int syn_addhl(char *reg, int id)
  
  void syn_init(void)
  {
