@@ -235,12 +235,13 @@ char *ren_translate(char *s, char *ln)
 }
 
 /* mapping filetypes to regular expression sets */
-static struct ftmap {
+struct ftmap {
 	int setbidx;
 	int seteidx;
 	char *ft;
 	rset *rs;
-} ftmap[100];
+};
+static struct ftmap *ftmap;
 static int ftmidx;
 static rset *syn_ftrs;
 static int last_scdir;
@@ -250,6 +251,8 @@ int syn_blockhl;
 
 static int syn_initft(int fti, int n, char *name, int flg)
 {
+	if (fti >= ftmidx)
+		ftmap = erealloc(ftmap, (fti + 1) * sizeof(*ftmap));
 	int i = n, set = hls[i].set;
 	char *pats[hlslen];
 	for (; i < hlslen && hls[i].ft == name && hls[i].set == set; i++)
@@ -264,8 +267,9 @@ static int syn_initft(int fti, int n, char *name, int flg)
 char *syn_setft(char *ft)
 {
 	int i;
-	for (i = 1; i < 4; i++)
-		syn_addhl(NULL, i);
+	if (ftmidx)
+		for (i = 1; i < 4; i++)
+			syn_addhl(NULL, i);
 	for (i = 0; i < ftmidx; i++)
 		if (ft == ftmap[i].ft) {
 			ftidx = i;
@@ -275,8 +279,9 @@ char *syn_setft(char *ft)
 		if (ft == hls[i].ft) {
 			default_hl:
 			ftidx = ftmidx;
-			while (syn_initft(ftmidx++, i, hls[i].ft, 0))
-				i = ftmap[ftmidx-1].seteidx;
+			while (syn_initft(ftmidx, i, hls[i].ft, 0))
+				i = ftmap[ftmidx++].seteidx;
+			ftmidx++;
 			return ftmap[ftidx].ft;
 		}
 	if (ftmidx)
