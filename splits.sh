@@ -445,7 +445,7 @@ ${SEP}.,\$;f> 			pos = ren_cursor\\\\(r->s, r->pos\\\\[off-two\\\\]\\\\);
 	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 	if (pos >= xleft + winw || pos < xleft)
 		xleft = pos < winw ? 0 : pos - winw / 2;
-${SEP}.,\$f> 	syn_blockhl = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 308\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	syn_scdir${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 308\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1,#+1c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
 	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
 ${SEP}.,\$;f> 	goto noredraw; \\\\\\\\
@@ -893,6 +893,15 @@ GROUP 1
 +struct win *curwin;		/* current active window */
 +int nwins;			/* number of windows */
 strategy: abs
+=== END DELTA ===
+=== DELTA led.c ===
+GROUP 5
+-	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
+-	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
++	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
++	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
+pattern:
+	syn_scdir
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
