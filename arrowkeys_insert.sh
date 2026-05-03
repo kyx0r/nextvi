@@ -34,7 +34,7 @@ ${SEP}+2a static int vi_insmov;
 ${SEP}.,\$;f> \\\\}
 
 static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 281\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/f\\\\)/f, int print)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 281\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	syn_blockhl = -1;
+${SEP}+3${SEP}s/f\\\\)/f, int print)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 281\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	syn_.*\\\\(0\\\\);
 	led_crender\\\\(.*\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 307\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.,#+1c 	if (print) {
 		syn_blockhl = -1;
@@ -205,7 +205,7 @@ GROUP 3
 +		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
 pattern:
-	syn_blockhl = -1;
+	syn_.*\(0\);
 	led_crender\(.*\);
 edit_cmd_rel:
 +0,#+1c 	if (print) {
