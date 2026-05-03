@@ -29,8 +29,8 @@ LB="0?"
 # Patch: conf.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		A\\\\(SYN_BD, BL1, WH1, YE\\\\)\\\\},
 
-	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 305\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 316\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 316\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static int vi_status;			/\\\\* permanent status bar \\\\*/
@@ -392,10 +392,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index eda8cb02..c030cf62 100644
+index 0a291fa4..b2d37bb3 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -302,7 +302,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -313,7 +313,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  		A(SYN_BD, BL1, WH1, YE)},
  
  	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},

@@ -27,8 +27,8 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 293\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 293\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 304\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xms = 1;			/* mouse in normal mode */
@@ -331,10 +331,10 @@ i extern int xms;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index eda8cb02..f1bf38c6 100644
+index 0a291fa4..01956c2e 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -301,7 +301,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\

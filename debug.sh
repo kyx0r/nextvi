@@ -68,7 +68,7 @@ ${SEP}.a void ren_done(void)
 
 ${SEP}.,\$;f> 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
-\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 420\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 void syn_done(void)
 {
@@ -187,7 +187,7 @@ index ff88bb41..42399e6a 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index 992ecf96..49d9b688 100644
+index 47744032..d3826617 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -86,6 +86,19 @@ static int ren_cwid(char *s, int pos)
@@ -210,7 +210,7 @@ index 992ecf96..49d9b688 100644
  ren_state *rstate = rstates;
  
  /* specify the screen position of the characters in s */
-@@ -418,3 +431,10 @@ void syn_init(void)
+@@ -426,3 +439,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
