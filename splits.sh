@@ -843,16 +843,16 @@ ${SEP}+2${SEP}s/xrows/win_height()/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL
 ${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1805\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void term_kill\\\\(void\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 319\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void term_kill\\\\(void\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 321\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void term_killn(int n);
 ${SEP}.,\$;f> \\\\} \\\\\\\\
 
-#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 390\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 392\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \\\\
 	if (nwins > 1) term_killn(end - beg); else term_kill();)
 ${SEP}.,\$;f> 	long mtime;			/\\\\* modification time \\\\*/
 	signed char td;			/\\\\* text direction \\\\*/
-\\\\};${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 403\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\};${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 405\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 /* window management for splits */
 struct win {
@@ -913,7 +913,7 @@ a void term_killn(int n);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..5e3104a1 100644
+index eda8cb02..b00c2022 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -291,7 +291,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -1363,7 +1363,7 @@ index 23903a3e..e9349c8d 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 6a5e065f..3b0b74f6 100644
+index 25856dc8..2dbf656e 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,8 +91,9 @@ static char *kmap_map(int kmap, int c)
@@ -1395,7 +1395,7 @@ index 6a5e065f..3b0b74f6 100644
 -		xleft = pos < xcols ? 0 : pos - xcols / 2;
 +	if (pos >= xleft + winw || pos < xleft)
 +		xleft = pos < winw ? 0 : pos - winw / 2;
- 	syn_blockhl = -1;
+ 	syn_scdir(0);
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 -	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
 +	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
@@ -2056,10 +2056,10 @@ index 956e58e2..25ca07f8 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 59f3543e..17e70566 100644
+index 2120cbee..0b86cbde 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -317,6 +317,7 @@ void term_suspend(void);
+@@ -319,6 +319,7 @@ void term_suspend(void);
  void term_chr(int ch);
  void term_pos(int r, int c);
  void term_kill(void);
@@ -2067,7 +2067,7 @@ index 59f3543e..17e70566 100644
  void term_room(int n);
  int term_read(int winch);
  void term_commit(void);
-@@ -387,7 +388,8 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -389,7 +390,8 @@ void led_render(char *s0, int cbeg, int cend);
  } \
  
  #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end,)
@@ -2077,7 +2077,7 @@ index 59f3543e..17e70566 100644
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
  void led_done(void);
-@@ -401,6 +403,26 @@ struct buf {
+@@ -403,6 +405,26 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
