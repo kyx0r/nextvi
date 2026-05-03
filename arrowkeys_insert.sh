@@ -34,7 +34,7 @@ ${SEP}+2a static int vi_insmov;
 ${SEP}.,\$;f> \\\\}
 
 static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 281\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/f\\\\)/f, int print)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 281\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	syn_.*\\\\(0\\\\);
+${SEP}+3${SEP}s/f\\\\)/f, int print)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 281\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	syn_scdir\\\\(0\\\\);
 	led_crender\\\\(.*\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 307\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.,#+1c 	if (print) {
 		syn_blockhl = -1;
@@ -198,14 +198,14 @@ exit 0
 === PATCH2VI DELTA ===
 === DELTA led.c ===
 GROUP 3
--	syn_blockhl = -1;
+-	syn_scdir(0);
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
 +		syn_blockhl = -1;
 +		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
 pattern:
-	syn_.*\(0\);
+	syn_scdir\(0\);
 	led_crender\(.*\);
 edit_cmd_rel:
 +0,#+1c 	if (print) {
@@ -215,7 +215,7 @@ edit_cmd_rel:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 6a5e065f..d48e40f8 100644
+index 25856dc8..d48e40f8 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -239,7 +239,7 @@ index 6a5e065f..d48e40f8 100644
  	}
  	if (pos >= xleft + xcols || pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
--	syn_blockhl = -1;
+-	syn_scdir(0);
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
 +		syn_blockhl = -1;
