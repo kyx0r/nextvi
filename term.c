@@ -231,16 +231,13 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
 		pipe(pipefds1);
 	if (!(pid = fork())) {
 		if (ifd) {		/* setting up stdin */
-			close(0);
-			dup(pipefds0[0]);
+			dup2(pipefds0[0], 0);
 			close(pipefds0[1]);
 			close(pipefds0[0]);
 		}
 		if (ofd) {		/* setting up stdout and stderr */
-			close(1);
-			dup(pipefds1[1]);
-			close(2);
-			dup(pipefds1[1]);
+			dup2(pipefds1[1], 1);
+			dup2(pipefds1[1], 2);
 			close(pipefds1[0]);
 			close(pipefds1[1]);
 		}
