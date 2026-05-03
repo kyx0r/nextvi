@@ -31,8 +31,7 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	xgrec--;
 \\\\}
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1712\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 
-void ex_done(void)
+${SEP}+2a void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
 		if (tempbufs[i].lb) {
@@ -41,9 +40,13 @@ void ex_done(void)
 		}
 	for (int i = 0; i < xbufcur; i++)
 		bufs_free(i);
+	for (int i = 0; i < LEN(xregs); i++)
+		if (xregs[i])
+			sbuf_free(xregs[i])
 	rset_free(xkwdrs);
 	free(bufs);
 }
+
 ${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
 
 # Patch: regex.c
@@ -72,12 +75,24 @@ ${SEP}.,\$;f> 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 ${SEP}+2a 
 void syn_done(void)
 {
-	for (; ftmidx >= 0; ftmidx--)
+	for (ftmidx--; ftmidx >= 0; ftmidx--)
 		rset_free(ftmap[ftmidx].rs);
 	free(ftmap);
 	rset_free(syn_ftrs);
 }
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
+
+# Patch: vi.c
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	else
+		vi\\\\(1\\\\);
+	term_done\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1873\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 	ex_done();
+	syn_done();
+	ren_done();
+	if (led_attsb)
+		sbuf_free(led_attsb)
+	free(ibuf);
+${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 218\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -152,14 +167,13 @@ a void ex_done(void);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23058a1e..f0056e54 100644
+index 23058a1e..5f8411c6 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1710,6 +1710,19 @@ void ex(void)
+@@ -1710,6 +1710,22 @@ void ex(void)
  	xgrec--;
  }
  
-+
 +void ex_done(void)
 +{
 +	for (int i = 0; i < LEN(tempbufs); i++)
@@ -169,9 +183,13 @@ index 23058a1e..f0056e54 100644
 +		}
 +	for (int i = 0; i < xbufcur; i++)
 +		bufs_free(i);
++	for (int i = 0; i < LEN(xregs); i++)
++		if (xregs[i])
++			sbuf_free(xregs[i])
 +	rset_free(xkwdrs);
 +	free(bufs);
 +}
++
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
@@ -188,7 +206,7 @@ index ff88bb41..42399e6a 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index 86e24e4a..9b85679b 100644
+index 86e24e4a..100afba1 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -86,6 +86,19 @@ static int ren_cwid(char *s, int pos)
@@ -218,11 +236,28 @@ index 86e24e4a..9b85679b 100644
 +
 +void syn_done(void)
 +{
-+	for (; ftmidx >= 0; ftmidx--)
++	for (ftmidx--; ftmidx >= 0; ftmidx--)
 +		rset_free(ftmap[ftmidx].rs);
 +	free(ftmap);
 +	rset_free(syn_ftrs);
 +}
+diff --git a/vi.c b/vi.c
+index 956e58e2..a1396f54 100644
+--- a/vi.c
++++ b/vi.c
+@@ -1871,6 +1871,12 @@ int main(int argc, char *argv[])
+ 	else
+ 		vi(1);
+ 	term_done();
++	ex_done();
++	syn_done();
++	ren_done();
++	if (led_attsb)
++		sbuf_free(led_attsb)
++	free(ibuf);
+ 	if (xvis & 8)
+ 		term_scrl;
+ 	return abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
 index 2120cbee..ec259051 100644
 --- a/vi.h
