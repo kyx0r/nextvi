@@ -74,6 +74,7 @@ void syn_done(void)
 {
 	for (; ftmidx >= 0; ftmidx--)
 		rset_free(ftmap[ftmidx].rs);
+	free(ftmap);
 	rset_free(syn_ftrs);
 }
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
@@ -187,7 +188,7 @@ index ff88bb41..42399e6a 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index 86e24e4a..b8c78cdc 100644
+index 86e24e4a..9b85679b 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -86,6 +86,19 @@ static int ren_cwid(char *s, int pos)
@@ -210,7 +211,7 @@ index 86e24e4a..b8c78cdc 100644
  ren_state *rstate = rstates;
  
  /* specify the screen position of the characters in s */
-@@ -431,3 +444,10 @@ void syn_init(void)
+@@ -431,3 +444,11 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -219,6 +220,7 @@ index 86e24e4a..b8c78cdc 100644
 +{
 +	for (; ftmidx >= 0; ftmidx--)
 +		rset_free(ftmap[ftmidx].rs);
++	free(ftmap);
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.h b/vi.h
