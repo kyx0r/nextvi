@@ -392,7 +392,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..f041b099 100644
+index eda8cb02..c030cf62 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -302,7 +302,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},

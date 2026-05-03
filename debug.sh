@@ -68,7 +68,7 @@ ${SEP}.a void ren_done(void)
 
 ${SEP}.,\$;f> 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
-\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 410\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 420\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 void syn_done(void)
 {
@@ -81,9 +81,9 @@ ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 218\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void dir_done(void);
-${SEP}.,\$f> syn_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 259\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> syn_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 261\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void syn_done(void);
-${SEP}.,\$f> ex_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 477\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> ex_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void ex_done(void);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
@@ -187,7 +187,7 @@ index ff88bb41..42399e6a 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index a98fc3fa..34883c30 100644
+index 992ecf96..49d9b688 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -86,6 +86,19 @@ static int ren_cwid(char *s, int pos)
@@ -210,7 +210,7 @@ index a98fc3fa..34883c30 100644
  ren_state *rstate = rstates;
  
  /* specify the screen position of the characters in s */
-@@ -408,3 +421,10 @@ void syn_init(void)
+@@ -418,3 +431,10 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -222,7 +222,7 @@ index a98fc3fa..34883c30 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.h b/vi.h
-index 59f3543e..381578f9 100644
+index 2120cbee..ec259051 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -216,6 +216,7 @@ int ren_noeol(char *s, int p);
@@ -233,7 +233,7 @@ index 59f3543e..381578f9 100644
  int dir_context(char *s);
  void dir_init(void);
  /* syntax highlighting */
-@@ -257,6 +258,7 @@ void syn_reloadft(int hl, int flg);
+@@ -259,6 +260,7 @@ void syn_reloadft(int hl, int flg);
  int syn_findhl(int id);
  int syn_addhl(char *reg, int id);
  void syn_init(void);
@@ -241,7 +241,7 @@ index 59f3543e..381578f9 100644
  
  /* uc.c: utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -475,6 +477,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -477,6 +479,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);

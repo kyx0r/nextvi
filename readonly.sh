@@ -67,7 +67,7 @@ ${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[
 ${SEP}+1${SEP}s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1858\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 404\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	char readonly;			/* read only */
 ${SEP}\$a extern char readonly;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
@@ -132,7 +132,7 @@ edit_cmd_abs:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..bda72931 100644
+index eda8cb02..69c384df 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -220,10 +220,10 @@ index 956e58e2..aa466fa4 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 59f3543e..19b25815 100644
+index 2120cbee..39ae9123 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -400,6 +400,7 @@ struct buf {
+@@ -402,6 +402,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -231,7 +231,7 @@ index 59f3543e..19b25815 100644
  };
  /* ex options */
  extern int xleft;
-@@ -538,3 +539,4 @@ extern int vi_lncol;
+@@ -540,3 +541,4 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);

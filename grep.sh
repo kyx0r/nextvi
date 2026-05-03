@@ -142,14 +142,14 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> extern rset \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
-extern struct buf \\\\*bufs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 444\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 444\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+extern struct buf \\\\*bufs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 446\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..ae189b62 100644
+index eda8cb02..613a0bc7 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -328,10 +328,10 @@ index 956e58e2..f0671f5b 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 59f3543e..efe2a98e 100644
+index 2120cbee..3358c416 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -441,7 +441,7 @@ extern sbuf *xacreg;
+@@ -443,7 +443,7 @@ extern sbuf *xacreg;
  extern rset *xkwdrs;
  extern sbuf *xregs[256];
  extern struct buf *bufs;

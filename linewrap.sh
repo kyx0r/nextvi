@@ -232,7 +232,7 @@ ${SEP}+2a 	char *lw_prev;
 	char *lw_next;
 ${SEP}.,\$;f> extern int xlim;
 extern int xseq;
-extern int xerr;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 426\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+extern int xerr;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a extern int xlw;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
@@ -250,7 +250,7 @@ s/\\$/lw|\\/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..28654d7b 100644
+index eda8cb02..0bb6d583 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -291,7 +291,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -500,7 +500,7 @@ index 956e58e2..7a235cc2 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index 59f3543e..2896a2cb 100644
+index 2120cbee..e2df7c40 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -133,6 +133,8 @@ struct lopt {
@@ -512,7 +512,7 @@ index 59f3543e..2896a2cb 100644
  };
  struct lbuf {
  	char **ln;			/* buffer lines */
-@@ -424,6 +426,7 @@ extern int xpr;
+@@ -426,6 +428,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

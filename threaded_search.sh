@@ -169,7 +169,7 @@ ${SEP}+2a #include <pthread.h>
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 262\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 264\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
@@ -393,10 +393,10 @@ index 956e58e2..2a6fe8a1 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 59f3543e..4c0d8ed1 100644
+index 2120cbee..4fc437fa 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -259,7 +259,8 @@ int syn_addhl(char *reg, int id);
+@@ -261,7 +261,8 @@ int syn_addhl(char *reg, int id);
  void syn_init(void);
  
  /* uc.c: utf-8 helper functions */

@@ -117,7 +117,7 @@ ${SEP}+3c 		} else if (!argv[i][1])
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 534\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 536\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a extern int stdin_fd;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
@@ -338,10 +338,10 @@ index 956e58e2..c01680ae 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index 59f3543e..611ea1f4 100644
+index 2120cbee..43f4fe42 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -532,6 +532,7 @@ int conf_kmapfind(char *name);
+@@ -534,6 +534,7 @@ int conf_kmapfind(char *name);
  char *conf_digraph(int c1, int c2);
  
  /* vi.c: main */

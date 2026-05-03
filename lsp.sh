@@ -1552,7 +1552,7 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> /\\\\* filesystem \\\\*/
 extern rset \\\\*fsincl;
-void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 540\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 542\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
@@ -1584,7 +1584,7 @@ s/\\$/lsp|\\/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..5169845d 100644
+index eda8cb02..cfe24bce 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -291,7 +291,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -3180,10 +3180,10 @@ index 956e58e2..164f7c69 100644
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
 diff --git a/vi.h b/vi.h
-index 59f3543e..a9e86df8 100644
+index 2120cbee..7f193519 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -538,3 +538,18 @@ extern int vi_lncol;
+@@ -540,3 +540,18 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);

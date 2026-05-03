@@ -229,16 +229,16 @@ ${SEP}+2a 	if (mv == 27 && xms) {
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 321\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 323\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
-${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 392\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 394\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a int led_col(char *s, int col);
-${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 403\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 405\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i /* mouse state */
 extern int xmouse_col, xmouse_row;
-${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 426\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xms;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
@@ -331,7 +331,7 @@ i extern int xms;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..8638298e 100644
+index eda8cb02..f1bf38c6 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -377,7 +377,7 @@ index 23903a3e..4874eaf3 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index 6a5e065f..3224aa01 100644
+index 25856dc8..4535d3b3 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -599,10 +599,10 @@ index 956e58e2..4dc591e4 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 59f3543e..29493525 100644
+index 2120cbee..1bc5d8a5 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -319,6 +319,9 @@ void term_pos(int r, int c);
+@@ -321,6 +321,9 @@ void term_pos(int r, int c);
  void term_kill(void);
  void term_room(int n);
  int term_read(int winch);
@@ -612,7 +612,7 @@ index 59f3543e..29493525 100644
  void term_commit(void);
  char *term_att(int att);
  void term_push(char *s, unsigned int n);
-@@ -390,6 +393,7 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -392,6 +395,7 @@ void led_render(char *s0, int cbeg, int cend);
  #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
@@ -620,7 +620,7 @@ index 59f3543e..29493525 100644
  void led_done(void);
  
  /* ex.c: command mode */
-@@ -401,6 +405,8 @@ struct buf {
+@@ -403,6 +407,8 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -629,7 +629,7 @@ index 59f3543e..29493525 100644
  /* ex options */
  extern int xleft;
  extern int xvis;
-@@ -424,6 +430,7 @@ extern int xpr;
+@@ -426,6 +432,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

@@ -142,7 +142,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 6a5e065f..c5a41390 100644
+index 25856dc8..6681e8a1 100644
 --- a/led.c
 +++ b/led.c
 @@ -4,9 +4,28 @@ sbuf *led_attsb;
@@ -175,7 +175,7 @@ index 6a5e065f..c5a41390 100644
  
  static int search(const char *pattern, int l)
 diff --git a/ren.c b/ren.c
-index a98fc3fa..967e6722 100644
+index 992ecf96..6ea58df4 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -108,9 +108,42 @@ ren_state *ren_position(char *s)

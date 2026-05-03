@@ -157,28 +157,28 @@ ${SEP}.,\$;f> 	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
 	rset \\\\*rs = ftmap\\\\[fti\\\\]\\\\.rs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 310\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/subs\\\\[rs->nsubc\\\\]/*subs = emalloc(rs->nsubc * sizeof(int))/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 310\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		flg = REG_NOTBOL;
 	\\\\}
-	fti\\\\+\\\\+;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 353\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	fti\\\\+\\\\+;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 363\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
 		free(subs);
-${SEP}.,\$f> 		goto re;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 354\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		goto re;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 364\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	}
 ${SEP}.,\$;f> 	if \\\\(blockca >= 0 && SYN_BSSET\\\\(blockca\\\\) && !SYN_BESET\\\\(blockca\\\\) && last_scdir > 0\\\\)
-		syn_blockhl = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 357\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		syn_blockhl = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 367\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2c 	if (syn_blockhl < 0 || blockhl < 0) {
 		free(subs);
-${SEP}.,\$f> 		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 358\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 368\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	}
 ${SEP}.,\$;f> 	for \\\\(j = 0; j < n; j\\\\+\\\\+\\\\)
 		if \\\\(!att\\\\[j\\\\] \\\\|\\\\| !SYN_BPSET\\\\(blockatt\\\\)\\\\)
-			att\\\\[j\\\\] = blockatt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 361\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			att\\\\[j\\\\] = blockatt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(subs);
 ${SEP}.,\$;f> 
 void syn_init\\\\(void\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 405\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 415\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	char **pats = emalloc(ftslen * sizeof(char *));
 ${SEP}.,\$;f> 	for \\\\(; i < ftslen; i\\\\+\\\\+\\\\)
 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
-	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 409\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 419\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(pats);
 ${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
 
@@ -230,14 +230,14 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> struct highlight \\\\{
 	char \\\\*ft;		/\\\\* the filetype of this pattern \\\\*/
-	char \\\\*pat;		/\\\\* regular expression \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 498\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\*att/att[16]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 498\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+	char \\\\*pat;		/\\\\* regular expression \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 500\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\*att/att[16]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 500\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..ba605e20 100644
+index eda8cb02..e7a306d5 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -62,7 +62,7 @@ const int ftslen = LEN(fts);
@@ -321,7 +321,7 @@ index 081d478b..0f36d0d7 100644
  }
  
 diff --git a/led.c b/led.c
-index 6a5e065f..de8ba321 100644
+index 25856dc8..3e8f09ad 100644
 --- a/led.c
 +++ b/led.c
 @@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
@@ -446,7 +446,7 @@ index ff88bb41..3ed5bf64 100644
  }
  
 diff --git a/ren.c b/ren.c
-index a98fc3fa..0d972388 100644
+index 992ecf96..1375a98d 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -251,13 +251,14 @@ int syn_blockhl;
@@ -474,7 +474,7 @@ index a98fc3fa..0d972388 100644
  	int cend, sidx = 0, flg = 0, hl, j, i, ii;
  	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
  		cend = 1;
-@@ -350,15 +351,20 @@ void syn_highlight(int *att, char *s, int n)
+@@ -360,15 +361,20 @@ void syn_highlight(int *att, char *s, int n)
  		flg = REG_NOTBOL;
  	}
  	fti++;
@@ -497,7 +497,7 @@ index a98fc3fa..0d972388 100644
  }
  
  char *syn_filetype(char *path)
-@@ -402,9 +408,10 @@ int syn_addhl(char *reg, int id)
+@@ -412,9 +418,10 @@ int syn_addhl(char *reg, int id)
  
  void syn_init(void)
  {
@@ -588,10 +588,10 @@ index 956e58e2..b02c80ae 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 59f3543e..cd2bad23 100644
+index 2120cbee..988a03da 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -495,7 +495,7 @@ extern const int ftslen;
+@@ -497,7 +497,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */

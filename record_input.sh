@@ -51,7 +51,7 @@ ${SEP}+2a 		if (xrec && *ibuf) {
 ${SEP}vis 2${SEP}wq" $VI -e 'term.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 426\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xrec;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
@@ -89,7 +89,7 @@ i extern int xrec;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..4f5502de 100644
+index eda8cb02..e02685ad 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -144,10 +144,10 @@ index 68990b78..0438e9e2 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 59f3543e..b7185171 100644
+index 2120cbee..58bd347e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -424,6 +424,7 @@ extern int xpr;
+@@ -426,6 +426,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

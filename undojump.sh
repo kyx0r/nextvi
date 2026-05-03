@@ -164,7 +164,7 @@ index 956e58e2..75ec2d83 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 59f3543e..6e8b2d76 100644
+index 2120cbee..5653a35a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -165,6 +165,7 @@ char *lbuf_get(struct lbuf *lb, int pos);

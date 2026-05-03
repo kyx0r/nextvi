@@ -74,13 +74,13 @@ ${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 # Patch: vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	int p_reg;
 	int lsug;
-	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 363\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 365\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	int quickexit;
 ${SEP}.,\$;f> is\\\\.p_reg = 0; \\\\\\\\
 is\\\\.lsug = 0; \\\\\\\\
-is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 373\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a is.quickexit = 0; \\\\
-${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 420\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a extern int xqe;
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
@@ -139,7 +139,7 @@ extern int xshape;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..f335c3c8 100644
+index eda8cb02..e26e2fbd 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -177,7 +177,7 @@ index 23903a3e..8cf196fa 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 6a5e065f..1b43d40d 100644
+index 25856dc8..024a6468 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -233,10 +233,10 @@ index 956e58e2..15903f73 100644
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
 diff --git a/vi.h b/vi.h
-index 59f3543e..cfbda0d9 100644
+index 2120cbee..f49ff5fa 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -361,6 +361,7 @@ typedef struct {
+@@ -363,6 +363,7 @@ typedef struct {
  	int p_reg;
  	int lsug;
  	int sug_pt;
@@ -244,7 +244,7 @@ index 59f3543e..cfbda0d9 100644
  	char *sug;
  	char *_sug;
  } ins_state;
-@@ -369,6 +370,7 @@ is.t_row = -2; \
+@@ -371,6 +372,7 @@ is.t_row = -2; \
  is.p_reg = 0; \
  is.lsug = 0; \
  is.sug_pt = -1; \
@@ -252,7 +252,7 @@ index 59f3543e..cfbda0d9 100644
  is.sug = NULL; \
  is._sug = NULL; \
  
-@@ -416,6 +418,7 @@ extern int xtd;
+@@ -418,6 +420,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;

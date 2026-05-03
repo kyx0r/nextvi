@@ -134,7 +134,7 @@ ${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SE
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1678\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
 
 # Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i int map_read(int mode, int winch);
 ${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
 
@@ -240,7 +240,7 @@ i int map_read(int mode, int winch);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index be2bf4a2..80126170 100644
+index eda8cb02..f6f96dbf 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -291,7 +291,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -328,7 +328,7 @@ index 23903a3e..195a5e14 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 6a5e065f..1357b20e 100644
+index 25856dc8..7eba590a 100644
 --- a/led.c
 +++ b/led.c
 @@ -428,7 +428,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -452,10 +452,10 @@ index 956e58e2..ed759639 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 59f3543e..c7241bd6 100644
+index 2120cbee..98c0b7a6 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -463,6 +463,7 @@ extern struct buf *ex_pbuf;
+@@ -465,6 +465,7 @@ extern struct buf *ex_pbuf;
  #define bufs_switchwft(idx) \
  { if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
  
