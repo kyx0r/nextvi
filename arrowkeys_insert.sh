@@ -37,7 +37,7 @@ static void led_printparts\\\\(sbuf \\\\*sb, int pre, int ps,${SEP}??!${DBG:-ya!
 ${SEP}+3${SEP}s/f\\\\)/f, int print)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 281\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	syn_scdir\\\\(0\\\\);
 	led_crender\\\\(.*\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 307\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.,#+1c 	if (print) {
-		syn_blockhl = -1;
+		syn_scdir(0);
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
 ${SEP}.,\$;f> 		sbuf_mem\\\\(led_attsb, &la, \\\\(int\\\\)sizeof\\\\(la\\\\)\\\\) \\\\\\\\
@@ -201,7 +201,7 @@ GROUP 3
 -	syn_scdir(0);
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
-+		syn_blockhl = -1;
++		syn_scdir(0);
 +		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
 pattern:
@@ -209,13 +209,13 @@ pattern:
 	led_crender\(.*\);
 edit_cmd_rel:
 +0,#+1c 	if (print) {
-		syn_blockhl = -1;
+		syn_scdir(0);
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 25856dc8..d48e40f8 100644
+index 25856dc8..fa48c947 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -242,7 +242,7 @@ index 25856dc8..d48e40f8 100644
 -	syn_scdir(0);
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
-+		syn_blockhl = -1;
++		syn_scdir(0);
 +		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
