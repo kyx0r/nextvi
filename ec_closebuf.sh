@@ -73,11 +73,10 @@ ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 			ex_tpbuf = idx == ex_tpbuf - bufs ? bufs : ex_tpbuf;
 			ex_tpbuf = idx < ex_tpbuf - bufs ? ex_tpbuf - 1 : ex_tpbuf;
 		}
-		syn_setft(ex_ft);
+		syn_setft(xb_ft);
 	}
 	return NULL;
 }
-
 
 ${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1536\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	{\"cx\", ec_closebuf},
@@ -115,10 +114,10 @@ index 0a291fa4..1357b9d8 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 23058a1e..4822c110 100644
+index 23058a1e..1e40f98d 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1435,6 +1435,50 @@ static int eo_val(char *arg)
+@@ -1435,6 +1435,49 @@ static int eo_val(char *arg)
  	return val;
  }
  
@@ -160,16 +159,15 @@ index 23058a1e..4822c110 100644
 +			ex_tpbuf = idx == ex_tpbuf - bufs ? bufs : ex_tpbuf;
 +			ex_tpbuf = idx < ex_tpbuf - bufs ? ex_tpbuf - 1 : ex_tpbuf;
 +		}
-+		syn_setft(ex_ft);
++		syn_setft(xb_ft);
 +	}
 +	return NULL;
 +}
 +
-+
  #define _EO(opt, inner) \
  static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
-@@ -1534,6 +1578,7 @@ static struct excmd {
+@@ -1534,6 +1577,7 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},
