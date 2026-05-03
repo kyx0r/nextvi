@@ -314,15 +314,23 @@ void syn_highlight(int *att, char *s, int n)
 		hl = sl + ftmap[fti].setbidx;
 		sl = rs->grpnsubc[sl];
 		catt = hls[hl].att;
-		for (i = 0, ii = i; ii < sl; ii += 2, i++) {
-			if (subs[ii] < 0 || SYN_IGNSET(catt[i]))
+		for (i = 0, ii = i; ii < sl; ii += 2) {
+			int inc = 1;
+			if (subs[ii] < 0 || SYN_IGNSET(catt[i])) {
+				if (SYN_ATTSET(catt[i]))
+					inc += catt[i + 1] + 1;
+				if (SYN_OATTSET(catt[i]))
+					inc += catt[i + inc] + 1;
+				i += inc;
 				continue;
+			}
 			cend = MAX(cend, subs[ii + 1]);
 			int beg = uc_off(s, sidx + subs[ii]);
 			int end = beg + uc_off(s + sidx + subs[ii], subs[ii + 1] - subs[ii]);
 			if (SYN_ATTSET(catt[i])) {
-				iatt = &catt[sl >> 1];
+				iatt = &catt[i + 1];
 				c = *iatt;
+				inc += c + 1;
 				if (SYN_ATTSET(catt[i]) == SYN_ATT) {
 					for (j = beg; c && j < end; j++)
 						for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
@@ -333,8 +341,17 @@ void syn_highlight(int *att, char *s, int n)
 				if (!c)
 					break;
 			}
-			for (j = beg; j < end; j++)
-				att[j] = syn_merge(att[j], catt[i]);
+			if (SYN_OATTSET(catt[i])) {
+				iatt = &catt[i + inc];
+				inc += *iatt + 1;
+				for (j = beg; j < end; j++) {
+					for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
+					if (c)
+						att[j] = syn_merge(att[j], catt[i]);
+				}
+			} else
+				for (j = beg; j < end; j++)
+					att[j] = syn_merge(att[j], catt[i]);
 			if (SYN_BSESET(catt[i])) {
 				if (syn_blockhl == hl && (SYN_BESET(catt[i]) || last_scdir > 0)) {
 					blockca = -1;
@@ -345,6 +362,7 @@ void syn_highlight(int *att, char *s, int n)
 					blockatt = catt[0];
 				}
 			}
+			i += inc;
 		}
 		sidx += cend;
 		flg = REG_NOTBOL;
