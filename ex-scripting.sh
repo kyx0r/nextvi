@@ -41,7 +41,7 @@ ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 	char *ln = lbuf_get(xb, row);
 	if (!*arg)
 		return xserr;
-	setenv(\"NEXTVI_FT\", ex_ft, 1);
+	setenv(\"NEXTVI_FT\", xb_ft, 1);
 	itoa(row, buf);
 	setenv(\"NEXTVI_ROW\", buf, 1);
 	itoa(ln ? uc_chr(ln, off) - ln : 0, buf);
@@ -101,7 +101,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23058a1e..5f6e5665 100644
+index 23058a1e..94429245 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -121,7 +121,7 @@ index 23058a1e..5f6e5665 100644
 +	char *ln = lbuf_get(xb, row);
 +	if (!*arg)
 +		return xserr;
-+	setenv("NEXTVI_FT", ex_ft, 1);
++	setenv("NEXTVI_FT", xb_ft, 1);
 +	itoa(row, buf);
 +	setenv("NEXTVI_ROW", buf, 1);
 +	itoa(ln ? uc_chr(ln, off) - ln : 0, buf);
