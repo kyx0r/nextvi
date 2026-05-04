@@ -26,15 +26,12 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 306\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/cd/c[dx]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 306\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
-
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return val;
+# Patch: conf.c ex.c
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:306\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/cd/c[dx]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:306\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return val;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1437\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1437\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
@@ -78,9 +75,9 @@ ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1536\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1536\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	{\"cx\", ec_closebuf},
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c'
 
 exit 0
 === PATCH2VI DELTA ===

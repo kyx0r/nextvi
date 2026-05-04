@@ -27,15 +27,15 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		break;
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 		break;
 	case '\\\\(':
-	case '\\\\)':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 661\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 661\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	case '\\\\}':
+	case '\\\\)':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:661\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:661\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	case '\\\\}':
 	case '\\\\[':
-	case '\\\\]':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 701\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	case '\\\\]':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:701\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		var = mv == '[' || mv == ']' ? '{' : '\\\\n';
-${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===

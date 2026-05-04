@@ -26,27 +26,24 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return key;
+# Patch: ex.c lbuf.c vi.h
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	return key;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 331\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 331\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
-if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 334\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:331\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:331\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:334\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
 ${SEP}.,\$;f> 		return 1;
 	\\\\}
-	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 350\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 350\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:350\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:350\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 371\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: lbuf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:371\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 {
 	if (!init) {
@@ -69,13 +66,13 @@ ${SEP}+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 			} else if (n == sz) {
 				sz++;
 				step = 0;
-${SEP}.,\$f> 			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 218\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1,#+5d${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 224\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:218\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1,#+5d${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:224\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		s[n] = '\\\\0';
 		lbuf_edit(lb, s, beg, end, 0, 0);
 		free(s);
 		return nr != 0;
-${SEP}.,\$f> 	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 226\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:226\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	struct linfo *n, *cn = NULL;
 	const int rchunk = 4096;
@@ -126,15 +123,12 @@ ${SEP}+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	for (int i = 0; i < nins; i++)
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
-${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
-
-# Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
+${SEP}b2${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
 struct lbuf \\\\*lbuf_make\\\\(void\\\\);
-void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 156\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:156\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
-${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'lbuf.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

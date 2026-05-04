@@ -26,11 +26,11 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	xgrec--;
+# Patch: ex.c regex.c ren.c vi.c vi.h
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1712\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1712\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -47,15 +47,9 @@ ${SEP}+2a void ex_done(void)
 	free(bufs);
 }
 
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: regex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b1${SEP}%f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-${SEP}vis 2${SEP}wq" $VI -e 'regex.c'
-
-# Patch: ren.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> ren_state rstates${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 88\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b2${SEP}%f> ren_state rstates${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:88\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void ren_done(void)
 {
 	rset_free(dir_rslr);
@@ -71,7 +65,7 @@ ${SEP}.a void ren_done(void)
 
 ${SEP}.,\$;f> 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
 	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
-\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 433\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:433\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 void syn_done(void)
 {
@@ -80,28 +74,22 @@ void syn_done(void)
 	free(ftmap);
 	rset_free(syn_ftrs);
 }
-${SEP}vis 2${SEP}wq" $VI -e 'ren.c'
-
-# Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	else
+${SEP}b3${SEP}%;f> 	else
 		vi\\\\(1\\\\);
-	term_done\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1873\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	term_done\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1873\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	ex_done();
 	syn_done();
 	ren_done();
 	if (led_attsb)
 		sbuf_free(led_attsb)
 	free(ibuf);
-${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
-
-# Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 218\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b4${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:218\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void dir_done(void);
-${SEP}.,\$f> syn_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 261\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> syn_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:261\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void syn_done(void);
-${SEP}.,\$f> ex_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> ex_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void ex_done(void);
-${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'ex.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

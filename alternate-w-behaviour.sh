@@ -27,9 +27,9 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	case 'w':
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	case 'w':
 	case 'W':
-		var = mv == 'W';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 654\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		var = mv == 'W';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:654\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (vc && cnt == 1)
 			dir = 2;
 		else
@@ -45,9 +45,9 @@ ${SEP}+2a 		if (vc && cnt == 1)
 			*row = prow;
 			*off = poff;
 		}
-${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 656\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 656\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 970\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 970\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:656\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:656\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:970\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:970\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===

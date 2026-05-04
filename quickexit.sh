@@ -26,20 +26,14 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 304\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
-
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+# Patch: conf.c ex.c led.c vi.c vi.h
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(qe)
-${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	EO(qe),
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: led.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}1a static int gettime_ms(void)
+${SEP}b2${SEP}1a static int gettime_ms(void)
 {
 	struct timespec t;
 	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
@@ -49,7 +43,7 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}1a static int gettime_ms(void)
 
 ${SEP}%;f> 				exbuf_load\\\\(ex_buf\\\\)
 			\\\\}
-			continue; \\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			continue; \\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		case 'j':
 			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
 				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
@@ -61,28 +55,22 @@ ${SEP}+2a 		case 'j':
 		case 'k':
 			is->quickexit = gettime_ms();
 _default:
-${SEP}vis 2${SEP}wq" $VI -e 'led.c'
-
-# Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}9a #include <time.h>
+${SEP}b3${SEP}9a #include <time.h>
 ${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
-				ins:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1529\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				ins:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1529\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (xqe)
 					vi_mod |= 2;
-${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
-
-# Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	int p_reg;
+${SEP}b4${SEP}%;f> 	int p_reg;
 	int lsug;
-	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 365\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:365\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	int quickexit;
 ${SEP}.,\$;f> is\\\\.p_reg = 0; \\\\\\\\
 is\\\\.lsug = 0; \\\\\\\\
-is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 373\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:373\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a is.quickexit = 0; \\\\
-${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 420\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:420\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a extern int xqe;
-${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

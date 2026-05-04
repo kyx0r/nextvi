@@ -26,25 +26,22 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\\\\\\$/lsp|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 305\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
-
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
+# Patch: conf.c ex.c jsmn.h lsp.c term.c vi.c vi.h
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\\\\\\$/lsp|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:305\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
-		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ${SEP}.,\$;f> 			ec_setpath\\\\(NULL, NULL, path\\\\);
 		lbuf_saved\\\\(xb, 0\\\\);
-		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 713\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:713\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*xb_path)
 			lsp_save(xb_path);
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
@@ -64,12 +61,9 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
 	EO\\\\(hlr\\\\),
-	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1546\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1546\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lsp\", ec_lsp},
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: jsmn.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i /*
+${SEP}b2${SEP}i /*
  * MIT License
  *
  * Copyright (c) 2010 Serge Zaitsev
@@ -540,10 +534,7 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 #endif
 
 #endif /* JSMN_H */
-${SEP}vis 2${SEP}wq" $VI -e 'jsmn.h'
-
-# Patch: lsp.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i /* lsp.c - Language Server Protocol client for nextvi */
+${SEP}b3${SEP}i /* lsp.c - Language Server Protocol client for nextvi */
 #include \"jsmn.h\"
 #include <errno.h>
 
@@ -1456,15 +1447,12 @@ const char *lsp_diag_for_line(const char *path, int line)
 	}
 	return NULL;
 }
-${SEP}vis 2${SEP}wq" $VI -e 'lsp.c'
-
-# Patch: term.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 
+${SEP}b4${SEP}%;f> 
 int term_read\\\\(int winch\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 152\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:152\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3d${SEP}.,\$;f> 			goto ret;
 		\\\\}
-		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 165\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:165\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+9c 		re:;
 		{
 			struct pollfd pfds[1 + LSP_NFDS_MAX];
@@ -1496,7 +1484,7 @@ ${SEP}+3,#+9c 		re:;
 					goto ret;
 				}
 ${SEP}.,\$;f> 				goto re;
-			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 177\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:177\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 				if (term_winch && winch && xquit >= 0) {
@@ -1509,25 +1497,22 @@ ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				goto err;
 			}
 			goto ret;
-${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		err:
 		*ibuf = 0;
-${SEP}vis 2${SEP}wq" $VI -e 'term.c'
-
-# Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> #include \"ren\\\\.c\"
+${SEP}b5${SEP}%;f> #include \"ren\\\\.c\"
 #include \"term\\\\.c\"
-#include \"uc\\\\.c\"${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 24\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+#include \"uc\\\\.c\"${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:24\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #include \"lsp.c\"
 ${SEP}.,\$;f> \\\\}
 #define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 104\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:104\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1634\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					goto rep;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1634\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
@@ -1537,7 +1522,7 @@ ${SEP}+2a 				} else if (k == 'K') {
 					vi_mod |= 1;
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1797\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1797\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
@@ -1545,14 +1530,11 @@ ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 		}
 ${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1836\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1836\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lsp_init();
-${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
-
-# Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> /\\\\* filesystem \\\\*/
+${SEP}b6${SEP}%;f> /\\\\* filesystem \\\\*/
 extern rset \\\\*fsincl;
-void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 542\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:542\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
@@ -1568,7 +1550,7 @@ void lsp_definition(const char *path, int row, int off);
 const char *lsp_diag_for_line(const char *path, int line);
 void lsp_list(void);
 void lsp_show_msg(char *msg);
-${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}b6${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'jsmn.h' 'lsp.c' 'term.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

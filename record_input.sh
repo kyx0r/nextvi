@@ -26,34 +26,25 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/t\\\\|s/t|rec|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 304\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
-
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xrec;			/* input recoding register */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+# Patch: conf.c ex.c term.c vi.h
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/t\\\\|s/t|rec|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xrec;			/* input recoding register */
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(rec)
-${SEP}.,\$f> 	\\\\{\"q\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1511\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"q\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1511\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	EO(rec),
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: term.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 		ret:
+${SEP}b2${SEP}%;f> 		ret:
 		ibuf_cnt = 1;
-		ibuf_pos = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 182\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		ibuf_pos = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:182\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xrec && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
 			buf[1] = '\\\\0';
 			ex_regput(xrec, buf, 1);
 		}
-${SEP}vis 2${SEP}wq" $VI -e 'term.c'
-
-# Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xrec;
-${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'term.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

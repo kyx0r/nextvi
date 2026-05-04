@@ -26,13 +26,13 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 0\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+# Patch: ex.c term.c vi.h
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:0\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i char **xenvp;
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1429\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1429\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
@@ -70,23 +70,17 @@ ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1528\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1528\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: term.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
+${SEP}b1${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 244\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:244\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
-${SEP}vis 2${SEP}wq" $VI -e 'term.c'
-
-# Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> /\\\\* vi\\\\.h: shared definitions across files \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b2${SEP}%f> /\\\\* vi\\\\.h: shared definitions across files \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())
@@ -95,7 +89,7 @@ extern char **environ;
 #endif
 extern char **xenvp;
 
-${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'term.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

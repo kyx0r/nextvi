@@ -26,15 +26,12 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 306\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/(u\\\\[.*)\\\\]/\\\\1p]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 306\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
-
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return xkwdrs \\\\? NULL : xserr;
+# Patch: conf.c ex.c lbuf.c vi.h
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:306\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/(u\\\\[.*)\\\\]/\\\\1p]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:306\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1429\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1429\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
@@ -47,19 +44,16 @@ ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	\\\\{\"uc\", ec_setenc\\\\},
 	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1523\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1523\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"up\", ec_undoleafs},
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: lbuf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
+${SEP}b2${SEP}%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
-	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 5\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:5\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sbuf_make(lb->rehist, 128)
 ${SEP}.,\$;f> 	return 0;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 61\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:61\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void lbuf_freeleafs(struct lbuf *lb)
 {
 	char *ptr = lb->rehist->s;
@@ -89,12 +83,12 @@ ${SEP}+2a static void lbuf_freeleafs(struct lbuf *lb)
 
 ${SEP}.,\$;f> 	int i;
 	for \\\\(i = 0; i < lb->ln_n; i\\\\+\\\\+\\\\)
-		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 67\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:67\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 	lbuf_freeleafs(lb);
 ${SEP}.,\$;f> 		lopt_done\\\\(lo\\\\);
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 141\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:141\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void lbuf_setleaf(struct lbuf *lb, int leaf)
 {
 	char *ptr1 = lb->rehist->s, *ptr2;
@@ -154,7 +148,7 @@ char *lbuf_getleafs(struct lbuf *lb)
 
 ${SEP}.,\$;f> 	if \\\\(xseq < 0\\\\)
 		lo = &slo;
-	else \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 150\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	else \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:150\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		int i = lb->hist_n - lb->hist_u;
 		if (i) {
 			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
@@ -162,24 +156,21 @@ ${SEP}+3,#+1c 		int i = lb->hist_n - lb->hist_u;
 		}
 ${SEP}.,\$;f> void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
 \\\\{
-	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 438\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:438\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		lbuf_freeleafs(lb);
 ${SEP}.,\$;f> 		lb->hist_n = 0;
-		lb->hist_u = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 441\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		lb->hist_u = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:441\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 		sbuf_make(lb->rehist, 128)
-${SEP}vis 2${SEP}wq" $VI -e 'lbuf.c'
-
-# Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> struct lbuf \\\\{
+${SEP}b3${SEP}%;f> struct lbuf \\\\{
 	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
-	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 139\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:139\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sbuf *rehist;		/* alternate redo timelines */
 ${SEP}.,\$;f> int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);
 int lbuf_search\\\\(struct lbuf \\\\*lb, rset \\\\*re, int dir, int beg, int end, int pskip,
-		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 178\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:178\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
-${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

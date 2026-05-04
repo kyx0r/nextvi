@@ -26,9 +26,9 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: kmap.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
-	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 2\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+# Patch: kmap.h term.c
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
+	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL kmap.h:2\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	['y'] = \"h\",
 	['n'] = \"j\",
 	['e'] = \"k\",
@@ -37,15 +37,12 @@ ${SEP}+1a 	['y'] = \"h\",
 	['j'] = \"n\",
 	['k'] = \"e\",
 	['l'] = \"o\",
-${SEP}vis 2${SEP}wq" $VI -e 'kmap.h'
-
-# Patch: term.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			err:
+${SEP}b1${SEP}%;f> 			err:
 			\\\\*ibuf = 0;
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
-${SEP}vis 2${SEP}wq" $VI -e 'term.c'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'kmap.h' 'term.c'
 
 exit 0
 === PATCH2VI DELTA ===

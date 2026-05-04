@@ -27,15 +27,15 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i int xexrc = 0;			/* read .exrc from the current directory */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}i int xexrc = 0;			/* read .exrc from the current directory */
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(exrc)
-${SEP}.,\$f> 	EO\\\\(err\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1486\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	EO\\\\(err\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1486\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i 	EO(exrc),
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1712\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1712\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void ex_script(FILE *fp)
 {
 	char done = 0;
@@ -85,8 +85,8 @@ int load_exrc(char *exrc)
 
 ${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1724\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1724\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1725\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1724\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1724\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1725\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	} else {
 		char exrc[PATH_MAX];
 		char *homeenv = getenv(\"HOME\");
@@ -110,7 +110,7 @@ ${SEP}.a 	} else {
 		if (strcmp(buf, getenv(\"HOME\")) != 0)
 			load_exrc(\".exrc\");
 	}
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'ex.c'
 
 exit 0
 === PATCH2VI DELTA ===

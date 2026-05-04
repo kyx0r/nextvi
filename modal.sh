@@ -26,15 +26,12 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: conf.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/mj\\\\]/j]|md?/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 305\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'conf.c'
-
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 	return NULL;
+# Patch: conf.c ex.c modal.c test vi.c
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/mj\\\\]/j]|md?/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:305\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 {
 	int beg = 0, end = 0, o1 = 0, o2 = -1;
@@ -84,12 +81,9 @@ ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1508\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1508\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"md\", ec_modal},
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: modal.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i #include <stdio.h>
+${SEP}b2${SEP}i #include <stdio.h>
 
 typedef struct {
 	char *a, *b;
@@ -425,22 +419,16 @@ static char *mem_import(char *src, char *ptr)
 	}
 	return ptr;
 }
-${SEP}vis 2${SEP}wq" $VI -e 'modal.c'
-
-# Patch: test
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}i <> (?0 ?: ?1) (?:)
+${SEP}b3${SEP}i <> (?0 ?: ?1) (?:)
 <> (out (?x)) (\$p ?x)
 
 (out (3 + 9 - 5 + 23 / 10))
 (out (asd3+9))
-${SEP}vis 2${SEP}wq" $VI -e 'test'
-
-# Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> #include <sys/wait\\\\.h>
+${SEP}b4${SEP}%;f> #include <sys/wait\\\\.h>
 #include \"vi\\\\.h\"
-#include \"conf\\\\.c\"${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 17\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+#include \"conf\\\\.c\"${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:17\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #include \"modal.c\"
-${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'modal.c' 'test' 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===

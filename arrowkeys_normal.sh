@@ -27,9 +27,9 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> \\\\{
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> \\\\{
 	int var, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 347\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:347\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		c = term_read(0);
 		if (c == '[') {
@@ -54,7 +54,7 @@ ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		break;
 ${SEP}.,\$;f> 	\\\\}
 	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 573\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:573\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {
@@ -76,7 +76,7 @@ ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		} else	/* Not a 033[X command so we abort */
 			return 0;
 		break;
-${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===

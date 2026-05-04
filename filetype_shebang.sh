@@ -27,9 +27,9 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
 	if \\\\(!\\\\(xvis & 4\\\\)\\\\)
-		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 380\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:380\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\\\n')
@@ -47,7 +47,7 @@ ${SEP}+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 			xb_ft = syn_setft(lfts[hl].ft);
 		rset_free(rs);
 	}
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
+${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'ex.c'
 
 exit 0
 === PATCH2VI DELTA ===

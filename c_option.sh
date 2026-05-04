@@ -26,21 +26,18 @@ LB="0?"
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
-# Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1713\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1713\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1725\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+# Patch: ex.c vi.c vi.h
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1713\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1713\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1725\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
-${SEP}vis 2${SEP}wq" $VI -e 'ex.c'
-
-# Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%;f> 
-int main\\\\(int argc${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1833\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b1${SEP}%;f> 
+int main\\\\(int argc${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1833\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 ${SEP}.,\$;f> 			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1856\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1856\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -53,14 +50,11 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 					return EXIT_FAILURE;
 				}
 			} else {
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1858\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/\\\\[-a/[-ac/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1858\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
-		term_scrh;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1868\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 1868\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.c'
-
-# Patch: vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL line 479\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}wq" $VI -e 'vi.h'
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1858\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/\\\\[-a/[-ac/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1858\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
+		term_scrh;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1868\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1868\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:479\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
