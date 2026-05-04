@@ -49,6 +49,12 @@ hl_naive.sh
 Allow syntax highlight to continue past the terminal dimensions unlimited.
 Performance will degrade on very long lines.
 
+blockhl_cache.sh
+--------------
+Cache multiline syntax highlighting blocks. Falls outside of the scope
+of core Nextvi as it violates the immediate mode rendering principle and
+is more complex.
+
 debug.sh
 --------------
 Cleanup reachable memory upon termination.
