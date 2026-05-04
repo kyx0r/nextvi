@@ -235,12 +235,13 @@ char *ren_translate(char *s, char *ln)
 }
 
 /* mapping filetypes to regular expression sets */
-static struct ftmap {
+struct ftmap {
 	int setbidx;
 	int seteidx;
 	char *ft;
 	rset *rs;
-} ftmap[100];
+};
+static struct ftmap *ftmap;
 static int ftmidx;
 static rset *syn_ftrs;
 static int last_scdir;
@@ -250,6 +251,8 @@ int syn_blockhl;
 
 static int syn_initft(int fti, int n, char *name, int flg)
 {
+	if (fti >= ftmidx)
+		ftmap = erealloc(ftmap, (fti + 1) * sizeof(*ftmap));
 	int i = n, set = hls[i].set;
 	char *pats[hlslen];
 	for (; i < hlslen && hls[i].ft == name && hls[i].set == set; i++)
@@ -264,8 +267,9 @@ static int syn_initft(int fti, int n, char *name, int flg)
 char *syn_setft(char *ft)
 {
 	int i;
-	for (i = 1; i < 4; i++)
-		syn_addhl(NULL, i);
+	if (ftmidx)
+		for (i = 1; i < 4; i++)
+			syn_addhl(NULL, i);
 	for (i = 0; i < ftmidx; i++)
 		if (ft == ftmap[i].ft) {
 			ftidx = i;
@@ -275,8 +279,9 @@ char *syn_setft(char *ft)
 		if (ft == hls[i].ft) {
 			default_hl:
 			ftidx = ftmidx;
-			while (syn_initft(ftmidx++, i, hls[i].ft, 0))
-				i = ftmap[ftmidx-1].seteidx;
+			while (syn_initft(ftmidx, i, hls[i].ft, 0))
+				i = ftmap[ftmidx++].seteidx;
+			ftmidx++;
 			return ftmap[ftidx].ft;
 		}
 	if (ftmidx)
@@ -314,15 +319,23 @@ void syn_highlight(int *att, char *s, int n)
 		hl = sl + ftmap[fti].setbidx;
 		sl = rs->grpnsubc[sl];
 		catt = hls[hl].att;
-		for (i = 0, ii = i; ii < sl; ii += 2, i++) {
-			if (subs[ii] < 0 || SYN_IGNSET(catt[i]))
+		for (i = 0, ii = i; ii < sl; ii += 2) {
+			int inc = 1;
+			if (subs[ii] < 0 || SYN_IGNSET(catt[i])) {
+				if (SYN_ATTSET(catt[i]))
+					inc += catt[i + 1] + 1;
+				if (SYN_OATTSET(catt[i]))
+					inc += catt[i + inc] + 1;
+				i += inc;
 				continue;
+			}
 			cend = MAX(cend, subs[ii + 1]);
 			int beg = uc_off(s, sidx + subs[ii]);
 			int end = beg + uc_off(s + sidx + subs[ii], subs[ii + 1] - subs[ii]);
 			if (SYN_ATTSET(catt[i])) {
-				iatt = &catt[sl >> 1];
+				iatt = &catt[i + 1];
 				c = *iatt;
+				inc += c + 1;
 				if (SYN_ATTSET(catt[i]) == SYN_ATT) {
 					for (j = beg; c && j < end; j++)
 						for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
@@ -333,8 +346,17 @@ void syn_highlight(int *att, char *s, int n)
 				if (!c)
 					break;
 			}
-			for (j = beg; j < end; j++)
-				att[j] = syn_merge(att[j], catt[i]);
+			if (SYN_OATTSET(catt[i])) {
+				iatt = &catt[i + inc];
+				inc += *iatt + 1;
+				for (j = beg; j < end; j++) {
+					for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
+					if (c)
+						att[j] = syn_merge(att[j], catt[i]);
+				}
+			} else
+				for (j = beg; j < end; j++)
+					att[j] = syn_merge(att[j], catt[i]);
 			if (SYN_BSESET(catt[i])) {
 				if (syn_blockhl == hl && (SYN_BESET(catt[i]) || last_scdir > 0)) {
 					blockca = -1;
@@ -345,6 +367,7 @@ void syn_highlight(int *att, char *s, int n)
 					blockatt = catt[0];
 				}
 			}
+			i += inc;
 		}
 		sidx += cend;
 		flg = REG_NOTBOL;

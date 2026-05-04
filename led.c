@@ -304,7 +304,7 @@ static void led_printparts(sbuf *sb, int pre, int ps,
 	}
 	if (pos >= xleft + xcols || pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
-	syn_blockhl = -1;
+	syn_scdir(0);
 	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
 	sbufn_cut(sb, psn)
