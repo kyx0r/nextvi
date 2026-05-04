@@ -121,8 +121,6 @@ static int bufs_open(const char *path, int len)
 
 void temp_open(int i, char *name, char *ft)
 {
-	if (tempbufs[i].lb)
-		return;
 	tempbufs[i].path = uc_dup(name);
 	tempbufs[i].lb = lbuf_make();
 	tempbufs[i].row = 0;
