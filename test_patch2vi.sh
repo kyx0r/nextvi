@@ -23,8 +23,8 @@ check() {
 	./patch2vi $flags "$TMPDIR/test.patch" > "$TMPDIR/apply.sh" 2>&1
 	chmod +x "$TMPDIR/apply.sh"
 	cp "$TMPDIR/orig.txt" "$TMPDIR/result.txt"
-	# Fix the filename in the generated script
-	sed -i "s|expected.txt.*'|result.txt'|" "$TMPDIR/apply.sh"
+	# Redirect $VI -e arg from expected.txt to result.txt
+	sed -i "s|\$VI -e '[^']*'|\$VI -e '$TMPDIR/result.txt'|" "$TMPDIR/apply.sh"
 	if VI="$VI" "$TMPDIR/apply.sh" >/dev/null 2>&1 &&
 	   diff -q "$TMPDIR/result.txt" "$TMPDIR/expected.txt" >/dev/null 2>&1; then
 		ok "$name"

@@ -2390,12 +2390,16 @@ int main(int argc, char **argv)
 		chomp(line);
 process_line:
 
-		/* New file: +++ b/path */
+		/* New file: +++ b/path[\ttimestamp] */
 		if (strncmp(line, "+++ ", 4) == 0) {
-			const char *path = line + 4;
+			char *path = line + 4;
 			/* Skip common prefixes like b/ */
 			if (path[0] && path[1] == '/')
 				path += 2;
+			/* Strip trailing tab/space + timestamp (unified diff suffix) */
+			char *t = strpbrk(path, "\t ");
+			if (t)
+				*t = '\0';
 			new_file(path);
 			in_hunk = 0;
 			continue;
