@@ -2513,10 +2513,11 @@ process_line:
 			cur_file_path = active[k]->path;
 			emit_file_script(stdout, active[k]);
 		}
+		fputs("vis 2${SEP}", stdout);
 		/* Write all buffers at the end */
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, "b%d${SEP}w${SEP}", k);
-		fputs("vis 2${SEP}q\" $VI -e", stdout);
+		fputs("q\" $VI -e", stdout);
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " '%s'", active[k]->path);
 		fputc('\n', stdout);
