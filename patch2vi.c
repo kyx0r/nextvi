@@ -26,14 +26,19 @@ typedef struct {
 	char *text;     /* line content (for add operations) */
 } op_t;
 
+struct group_s;
+
 typedef struct {
 	char *path;
 	op_t ops[MAX_OPS];
 	int nops;
+	struct group_s *groups;  /* heap-allocated, set by build_file_groups */
+	int ngroups;
 } file_patch_t;
 
 static file_patch_t files[256];
 static int nfiles;
+static const char *cur_file_path;  /* set per-file for error messages */
 static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
 static int delta_mode;      /* 1=re-apply previous delta from script (-d) */
@@ -560,7 +565,7 @@ static void emit_err_check(FILE *out, int line)
 	EMIT_ESCSEP(out);
 	fprintf(out, "prp");
 	EMIT_ESCSEP(out);
-	fprintf(out, "p FAIL line %d", line);
+	fprintf(out, "p FAIL %s:%d", cur_file_path ? cur_file_path : "?", line);
 	EMIT_ESCSEP(out);
 	fprintf(out, "pr");
 	fputs("${INTR}", out);
@@ -629,7 +634,7 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 		fputc('.', out);
 }
 
-typedef struct {
+typedef struct group_s {
 	int del_start, del_end;  /* 0 if no deletes */
 	char **add_texts;
 	char **del_texts;        /* deleted line contents */
@@ -907,20 +912,22 @@ static void free_parsed_grp(parsed_grp_t *p)
 }
 
 /*
- * Parse an interactive group temp file into results[0..ngroups-1].
- * Stores raw content (no parse_ecmd_offset stripping) for apples-to-apples
- * comparison between .orig and edited files.
+ * Parse a multi-file interactive temp file. Sections marked by
+ * "=== FILE: <path> ===" route subsequent groups to per_file_results[k]
+ * (k = matching index in active[]). Stores raw content (no
+ * parse_ecmd_offset stripping) for apples-to-apples comparison between
+ * .orig and edited files.
  */
-static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
+static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
+			   parsed_grp_t **per_file_results)
 {
 	FILE *f = fopen(path, "r");
 	if (!f)
 		return;
 
-	memset(results, 0, ngroups * sizeof(parsed_grp_t));
-
 	char line[MAX_LINE];
 	int gi = -1;
+	int file_idx = -1;
 	int in_pat = 0, in_cstrat = 0, in_ecmd = 0;
 	int ecmd_strat = STRAT_DEFAULT;
 	int cs_take = 0, cs_want_cmd = 0;
@@ -940,6 +947,21 @@ static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
 			cs_want_cmd = 0;
 		}
 
+		if (strncmp(line, "=== FILE: ", 10) == 0) {
+			const char *p = line + 10;
+			const char *end = strstr(p, " ===");
+			int plen = end ? (int)(end - p) : (int)strlen(p);
+			file_idx = -1;
+			for (int k = 0; k < nactive; k++) {
+				if ((int)strlen(active[k]->path) == plen &&
+				    strncmp(active[k]->path, p, plen) == 0) {
+					file_idx = k;
+					break;
+				}
+			}
+			gi = -1;
+			continue;
+		}
 		if (strncmp(line, "=== GROUP ", 10) == 0) {
 			gi = atoi(line + 10) - 1;
 			skip_extra = 0;
@@ -960,6 +982,11 @@ static void parse_tmp_file(const char *path, parsed_grp_t *results, int ngroups)
 			ecmd_strat = e ? strat_from_name(p, e - p) : STRAT_DEFAULT;
 			continue;
 		}
+
+		if (file_idx < 0)
+			continue;
+		int ngroups = active[file_idx]->ngroups;
+		parsed_grp_t *results = per_file_results[file_idx];
 
 		if (in_ecmd && gi >= 0 && gi < ngroups) {
 			parsed_grp_t *pg = &results[gi];
@@ -1311,22 +1338,18 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
  * If file saved: all groups use the edited patterns.
  * If file not saved (mtime unchanged): all groups use default behavior.
  */
-static void interactive_edit_groups(group_t *groups, int ngroups,
-				    const char *filepath)
+static void interactive_edit_all_files(file_patch_t **active, int nactive)
 {
-	if (ngroups == 0)
+	if (nactive == 0)
 		return;
 
-	/* Extract basename from filepath for the temp filename */
-	const char *base = strrchr(filepath, '/');
-	base = base ? base + 1 : filepath;
 	char tmptmp[32];
 	char tmppath[256];
 	char tmppath_orig[262];
 	char rejpath[260];
 	snprintf(tmptmp, sizeof(tmptmp), "patch2vi_XXXXXX");
 	int fd = mkstemp(tmptmp);
-	snprintf(tmppath, sizeof(tmppath), "%s_%s.diff", tmptmp, base);
+	snprintf(tmppath, sizeof(tmppath), "%s.diff", tmptmp);
 	if (rename(tmptmp, tmppath) < 0)
 		snprintf(tmppath, sizeof(tmppath), "%s", tmptmp);
 	if (fd < 0) {
@@ -1336,24 +1359,29 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 	snprintf(tmppath_orig, sizeof(tmppath_orig), "%s.orig", tmppath);
 	snprintf(rejpath, sizeof(rejpath), "%s.rej", tmppath);
 
-	/* Find stored delta for this file */
-	file_delta_t *in_fd = NULL;
+	/* Per-file in_fd lookup */
+	file_delta_t **in_fd_per = calloc(nactive, sizeof(file_delta_t *));
 	if (delta_mode) {
-		for (int di = 0; di < nin_deltas; di++)
-			if (strcmp(in_deltas[di].filepath, filepath) == 0) {
-				in_fd = &in_deltas[di];
-				break;
-			}
+		for (int k = 0; k < nactive; k++)
+			for (int di = 0; di < nin_deltas; di++)
+				if (strcmp(in_deltas[di].filepath, active[k]->path) == 0) {
+					in_fd_per[k] = &in_deltas[di];
+					break;
+				}
 	}
 
 	/* Write auto-generated baseline (no injection) for later comparison */
 	FILE *orig_fp = fopen(tmppath_orig, "w");
 	if (orig_fp) {
-		char **dc = write_groups_to_file(orig_fp, groups, ngroups, NULL);
+		for (int k = 0; k < nactive; k++) {
+			fprintf(orig_fp, "=== FILE: %s ===\n", active[k]->path);
+			char **dc = write_groups_to_file(orig_fp,
+							 active[k]->groups, active[k]->ngroups, NULL);
+			for (int gi = 0; gi < active[k]->ngroups; gi++)
+				free(dc[gi]);
+			free(dc);
+		}
 		fclose(orig_fp);
-		for (int i = 0; i < ngroups; i++)
-			free(dc[i]);
-		free(dc);
 	}
 
 	/* Write editor file with stored delta injected */
@@ -1363,21 +1391,31 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		close(fd);
 		unlink(tmppath);
 		unlink(tmppath_orig);
+		free(in_fd_per);
 		return;
 	}
-	char **default_cmds = write_groups_to_file(tmp_fp, groups, ngroups, in_fd);
+	char ***default_cmds_per = malloc(nactive * sizeof(char **));
+	for (int k = 0; k < nactive; k++) {
+		fprintf(tmp_fp, "=== FILE: %s ===\n", active[k]->path);
+		default_cmds_per[k] = write_groups_to_file(tmp_fp,
+				      active[k]->groups, active[k]->ngroups, in_fd_per[k]);
+	}
 	fclose(tmp_fp);
 
 	/* Write rejection file for stored groups whose index exceeds ngroups
 	 * or whose stored content no longer matches the group at that index */
 	int delta_rejected = 0;
-	if (in_fd) {
-		FILE *rej = NULL;
-		for (int k = 0; k < in_fd->ngrps; k++) {
-			grp_delta_t *stored = &in_fd->grps[k];
-			int rejected = stored->group_idx > ngroups;
+	FILE *rej = NULL;
+	for (int k = 0; k < nactive; k++) {
+		file_delta_t *in_fd = in_fd_per[k];
+		if (!in_fd)
+			continue;
+		int file_header_written = 0;
+		for (int gi = 0; gi < in_fd->ngrps; gi++) {
+			grp_delta_t *stored = &in_fd->grps[gi];
+			int rejected = stored->group_idx > active[k]->ngroups;
 			if (!rejected) {
-				group_t *g = &groups[stored->group_idx - 1];
+				group_t *g = &active[k]->groups[stored->group_idx - 1];
 				rejected = !grp_content_matches(stored,
 								g->del_texts, g->ndel,
 								g->add_texts, g->nadd);
@@ -1390,14 +1428,20 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 							"# Rejected: index out of range"
 							" or content mismatch\n\n");
 				}
-				if (rej)
+				if (rej) {
+					if (!file_header_written) {
+						fprintf(rej, "=== FILE: %s ===\n",
+							active[k]->path);
+						file_header_written = 1;
+					}
 					emit_grp_delta(rej, stored);
+				}
 				delta_rejected = 1;
 			}
 		}
-		if (rej)
-			fclose(rej);
 	}
+	if (rej)
+		fclose(rej);
 
 	/* Record mtime before editor */
 	struct stat st_before;
@@ -1442,22 +1486,26 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 		unchanged = st_before.st_mtim.tv_nsec == st_after.st_mtim.tv_nsec;
 #endif
 
-	/* Parse the edited file once; reuse for both delta computation
-	 * (vs auto-generated .orig baseline) and apply-to-groups[]. */
-	parsed_grp_t *edit_grps = calloc(ngroups, sizeof(parsed_grp_t));
-	parse_tmp_file(tmppath, edit_grps, ngroups);
+	/* Parse the edited file once per file slot */
+	parsed_grp_t **edit_per = malloc(nactive * sizeof(parsed_grp_t *));
+	for (int k = 0; k < nactive; k++)
+		edit_per[k] = calloc(active[k]->ngroups, sizeof(parsed_grp_t));
+	parse_tmp_file(tmppath, active, nactive, edit_per);
 
 	if (unchanged) {
 		/* User quit without saving. Preserve stored delta if present
 		 * so next -d run still injects the previous customizations. */
-		if (in_fd && in_fd->ngrps > 0) {
+		for (int k = 0; k < nactive; k++) {
+			file_delta_t *in_fd = in_fd_per[k];
+			if (!in_fd || in_fd->ngrps == 0)
+				continue;
 			file_delta_t *od = &out_deltas[nout_deltas++];
-			od->filepath = xstrdup(filepath);
+			od->filepath = xstrdup(active[k]->path);
 			od->gcap = in_fd->ngrps;
 			od->grps = malloc(od->gcap * sizeof(grp_delta_t));
 			od->ngrps = in_fd->ngrps;
-			for (int k = 0; k < in_fd->ngrps; k++) {
-				grp_delta_t *src = &in_fd->grps[k], *dst = &od->grps[k];
+			for (int gi = 0; gi < in_fd->ngrps; gi++) {
+				grp_delta_t *src = &in_fd->grps[gi], *dst = &od->grps[gi];
 				memset(dst, 0, sizeof(*dst));
 				dst->group_idx = src->group_idx;
 				dst->strategy = src->strategy;
@@ -1480,126 +1528,139 @@ static void interactive_edit_groups(group_t *groups, int ngroups,
 	} else {
 		/* Compute structured delta: compare .orig (auto-generated baseline)
 		 * against edited file. Only store changed groups. */
-		parsed_grp_t *orig_grps = calloc(ngroups, sizeof(parsed_grp_t));
-		parse_tmp_file(tmppath_orig, orig_grps, ngroups);
+		parsed_grp_t **orig_per = malloc(nactive * sizeof(parsed_grp_t *));
+		for (int k = 0; k < nactive; k++)
+			orig_per[k] = calloc(active[k]->ngroups, sizeof(parsed_grp_t));
+		parse_tmp_file(tmppath_orig, active, nactive, orig_per);
 
-		file_delta_t *od = NULL;
-		for (int gi = 0; gi < ngroups; gi++) {
-			parsed_grp_t *og = &orig_grps[gi];
-			parsed_grp_t *eg = &edit_grps[gi];
+		for (int k = 0; k < nactive; k++) {
+			file_delta_t *od = NULL;
+			for (int gi = 0; gi < active[k]->ngroups; gi++) {
+				parsed_grp_t *og = &orig_per[k][gi];
+				parsed_grp_t *eg = &edit_per[k][gi];
 
-			int strat_ch = (eg->strategy != og->strategy);
-			int cmd_ch = (eg->cmd != og->cmd) &&
-				     ((eg->cmd == NULL) != (og->cmd == NULL) ||
-				      (eg->cmd && og->cmd &&
-				       strcmp(eg->cmd, og->cmd) != 0));
-			int pat_ch = !lines_equal(eg->pattern, eg->npattern,
-						  og->pattern, og->npattern);
-			int abs_ch = !lines_equal(eg->abs_cmd, eg->nabs,
-						  og->abs_cmd, og->nabs);
-			int rel_ch = !lines_equal(eg->rel_cmd, eg->nrel,
-						  og->rel_cmd, og->nrel);
-			int relc_ch = !lines_equal(eg->relc_cmd, eg->nrelc,
-						   og->relc_cmd, og->nrelc);
+				int strat_ch = (eg->strategy != og->strategy);
+				int cmd_ch = (eg->cmd != og->cmd) &&
+					     ((eg->cmd == NULL) != (og->cmd == NULL) ||
+					      (eg->cmd && og->cmd &&
+					       strcmp(eg->cmd, og->cmd) != 0));
+				int pat_ch = !lines_equal(eg->pattern, eg->npattern,
+							  og->pattern, og->npattern);
+				int abs_ch = !lines_equal(eg->abs_cmd, eg->nabs,
+							  og->abs_cmd, og->nabs);
+				int rel_ch = !lines_equal(eg->rel_cmd, eg->nrel,
+							  og->rel_cmd, og->nrel);
+				int relc_ch = !lines_equal(eg->relc_cmd, eg->nrelc,
+							   og->relc_cmd, og->nrelc);
 
-			if (!strat_ch && !cmd_ch && !pat_ch &&
-			    !abs_ch && !rel_ch && !relc_ch)
-				continue;
+				if (!strat_ch && !cmd_ch && !pat_ch &&
+				    !abs_ch && !rel_ch && !relc_ch)
+					continue;
 
-			if (!od) {
-				od = &out_deltas[nout_deltas++];
-				od->filepath = xstrdup(filepath);
-				od->grps = NULL;
-				od->ngrps = 0;
-				od->gcap = 0;
+				if (!od) {
+					od = &out_deltas[nout_deltas++];
+					od->filepath = xstrdup(active[k]->path);
+					od->grps = NULL;
+					od->ngrps = 0;
+					od->gcap = 0;
+				}
+				if (od->ngrps >= od->gcap) {
+					od->gcap = od->gcap ? od->gcap * 2 : 4;
+					od->grps = realloc(od->grps,
+							   od->gcap * sizeof(grp_delta_t));
+				}
+				grp_delta_t *gout = &od->grps[od->ngrps++];
+				memset(gout, 0, sizeof(*gout));
+				gout->group_idx = gi + 1;
+				arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
+					  active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel);
+				arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
+					  active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd);
+				if (strat_ch)
+					gout->strategy = eg->strategy;
+				if (cmd_ch && eg->cmd)
+					gout->cmd = xstrdup(eg->cmd);
+				if (pat_ch)
+					arr_clone(&gout->pattern, &gout->npattern, &gout->pat_cap,
+						  eg->pattern, eg->npattern);
+				if (abs_ch)
+					arr_clone(&gout->abs_cmd, &gout->nabs, &gout->abs_cap,
+						  eg->abs_cmd, eg->nabs);
+				if (rel_ch)
+					arr_clone(&gout->rel_cmd, &gout->nrel, &gout->rel_cap,
+						  eg->rel_cmd, eg->nrel);
+				if (relc_ch)
+					arr_clone(&gout->relc_cmd, &gout->nrelc, &gout->relc_cap,
+						  eg->relc_cmd, eg->nrelc);
 			}
-			if (od->ngrps >= od->gcap) {
-				od->gcap = od->gcap ? od->gcap * 2 : 4;
-				od->grps = realloc(od->grps,
-						   od->gcap * sizeof(grp_delta_t));
-			}
-			grp_delta_t *gout = &od->grps[od->ngrps++];
-			memset(gout, 0, sizeof(*gout));
-			gout->group_idx = gi + 1;
-			arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
-				  groups[gi].del_texts, groups[gi].ndel);
-			arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
-				  groups[gi].add_texts, groups[gi].nadd);
-			if (strat_ch)
-				gout->strategy = eg->strategy;
-			if (cmd_ch && eg->cmd)
-				gout->cmd = xstrdup(eg->cmd);
-			if (pat_ch)
-				arr_clone(&gout->pattern, &gout->npattern, &gout->pat_cap,
-					  eg->pattern, eg->npattern);
-			if (abs_ch)
-				arr_clone(&gout->abs_cmd, &gout->nabs, &gout->abs_cap,
-					  eg->abs_cmd, eg->nabs);
-			if (rel_ch)
-				arr_clone(&gout->rel_cmd, &gout->nrel, &gout->rel_cap,
-					  eg->rel_cmd, eg->nrel);
-			if (relc_ch)
-				arr_clone(&gout->relc_cmd, &gout->nrelc, &gout->relc_cap,
-					  eg->relc_cmd, eg->nrelc);
 		}
 
-		for (int gi = 0; gi < ngroups; gi++)
-			free_parsed_grp(&orig_grps[gi]);
-		free(orig_grps);
+		for (int k = 0; k < nactive; k++) {
+			for (int gi = 0; gi < active[k]->ngroups; gi++)
+				free_parsed_grp(&orig_per[k][gi]);
+			free(orig_per[k]);
+		}
+		free(orig_per);
 	}
 
-	/* Apply edit_grps to groups[], transferring ownership of arrays.
-	 * Mirrors the old read_back state machine but reuses parse_tmp_file. */
-	for (int gi = 0; gi < ngroups; gi++) {
-		parsed_grp_t *eg = &edit_grps[gi];
-		group_t *g = &groups[gi];
-		g->strategy = eg->strategy;
-		const char *def = default_cmds[gi] ? default_cmds[gi] : "";
-		if (eg->cmd && eg->cmd[0] && strcmp(eg->cmd, def) != 0)
-			g->custom_cmd = xstrdup(eg->cmd);
-		if (eg->npattern > 0) {
-			g->custom_lines = eg->pattern;
-			g->ncustom = eg->npattern;
-			eg->pattern = NULL;
-			eg->npattern = 0;
-			eg->pat_cap = 0;
+	/* Apply edit_per to groups[], transferring ownership of arrays. */
+	for (int k = 0; k < nactive; k++) {
+		for (int gi = 0; gi < active[k]->ngroups; gi++) {
+			parsed_grp_t *eg = &edit_per[k][gi];
+			group_t *g = &active[k]->groups[gi];
+			g->strategy = eg->strategy;
+			const char *def = default_cmds_per[k][gi] ? default_cmds_per[k][gi] : "";
+			if (eg->cmd && eg->cmd[0] && strcmp(eg->cmd, def) != 0)
+				g->custom_cmd = xstrdup(eg->cmd);
+			if (eg->npattern > 0) {
+				g->custom_lines = eg->pattern;
+				g->ncustom = eg->npattern;
+				eg->pattern = NULL;
+				eg->npattern = 0;
+				eg->pat_cap = 0;
+			}
+			if (eg->nabs > 0) {
+				g->custom_abs_lines = eg->abs_cmd;
+				g->custom_abs_nlines = eg->nabs;
+				eg->abs_cmd = NULL;
+				eg->nabs = 0;
+				eg->abs_cap = 0;
+			}
+			/* Process in file order (relc before rel) so the last-written
+			 * custom_offset matches the old read_back semantics: whichever
+			 * section appears last in the file wins. */
+			if (eg->nrelc > 0) {
+				g->custom_offset = parse_ecmd_offset(eg->relc_cmd, &eg->nrelc);
+				g->custom_relc_lines = eg->relc_cmd;
+				g->custom_relc_nlines = eg->nrelc;
+				eg->relc_cmd = NULL;
+				eg->nrelc = 0;
+				eg->relc_cap = 0;
+			}
+			if (eg->nrel > 0) {
+				g->custom_offset = parse_ecmd_offset(eg->rel_cmd, &eg->nrel);
+				g->custom_rel_lines = eg->rel_cmd;
+				g->custom_rel_nlines = eg->nrel;
+				eg->rel_cmd = NULL;
+				eg->nrel = 0;
+				eg->rel_cap = 0;
+			}
+			free_parsed_grp(eg);
 		}
-		if (eg->nabs > 0) {
-			g->custom_abs_lines = eg->abs_cmd;
-			g->custom_abs_nlines = eg->nabs;
-			eg->abs_cmd = NULL;
-			eg->nabs = 0;
-			eg->abs_cap = 0;
-		}
-		/* Process in file order (relc before rel) so the last-written
-		 * custom_offset matches the old read_back semantics: whichever
-		 * section appears last in the file wins. */
-		if (eg->nrelc > 0) {
-			g->custom_offset = parse_ecmd_offset(eg->relc_cmd, &eg->nrelc);
-			g->custom_relc_lines = eg->relc_cmd;
-			g->custom_relc_nlines = eg->nrelc;
-			eg->relc_cmd = NULL;
-			eg->nrelc = 0;
-			eg->relc_cap = 0;
-		}
-		if (eg->nrel > 0) {
-			g->custom_offset = parse_ecmd_offset(eg->rel_cmd, &eg->nrel);
-			g->custom_rel_lines = eg->rel_cmd;
-			g->custom_rel_nlines = eg->nrel;
-			eg->rel_cmd = NULL;
-			eg->nrel = 0;
-			eg->rel_cap = 0;
-		}
-		free_parsed_grp(eg);
+		free(edit_per[k]);
 	}
-	free(edit_grps);
+	free(edit_per);
 
 cleanup_orig:
 	unlink(tmppath_orig);
 	unlink(tmppath);
-	for (int gi = 0; gi < ngroups; gi++)
-		free(default_cmds[gi]);
-	free(default_cmds);
+	for (int k = 0; k < nactive; k++) {
+		for (int gi = 0; gi < active[k]->ngroups; gi++)
+			free(default_cmds_per[k][gi]);
+		free(default_cmds_per[k]);
+	}
+	free(default_cmds_per);
+	free(in_fd_per);
 }
 
 /* Emit a custom EDIT COMMAND lines array + trailing SEP.
@@ -1635,21 +1696,18 @@ static void emit_custom_edit_lines(FILE *out, char **lines, int nlines)
 }
 
 /* Process operations for one file and emit script */
-static void emit_file_script(FILE *out, file_patch_t *fp)
+/*
+ * Build groups[] for a file from its ops[]. A group is a contiguous
+ * sequence of deletes/adds with optional context anchors. Stored in
+ * fp->groups (heap-allocated) for later interactive editing and emission.
+ */
+static void build_file_groups(file_patch_t *fp)
 {
 	if (fp->nops == 0)
 		return;
 
-	fprintf(out, "\n# Patch: %s\n", fp->path);
-	fputs("EXINIT=\"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", out);
-
-	/*
-	 * Strategy: process operations in groups.
-	 * A group is a contiguous sequence of deletes/adds.
-	 * We process from end to start to avoid line number shifts.
-	 */
-
-	static group_t groups[MAX_OPS];
+	fp->groups = calloc(fp->nops + 1, sizeof(group_t));
+	group_t *groups = fp->groups;
 	int ngroups = 0;
 	int i = 0;
 
@@ -1807,10 +1865,21 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		if (g->del_start || g->nadd)
 			ngroups++;
 	}
+	fp->ngroups = ngroups;
+}
 
-	/* Interactive mode: open $EDITOR for all groups at once */
-	if (interactive_mode)
-		interactive_edit_groups(groups, ngroups, fp->path);
+/*
+ * Emit ex commands for one file's groups.
+ * Caller must have built fp->groups via build_file_groups() and run
+ * interactive editing if applicable.
+ */
+static void emit_file_script(FILE *out, file_patch_t *fp)
+{
+	if (fp->ngroups == 0)
+		return;
+
+	group_t *groups = fp->groups;
+	int ngroups = fp->ngroups;
 
 	/*
 	 * Emit groups.
@@ -2079,10 +2148,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		free(g->ld_new_text);
 		free(g->ldc_new_text);
 	}
-
-	fputs("vis 2${SEP}wq\" $VI -e '", out);
-	fputs(fp->path, out);
-	fputs("'\n", out);
 }
 
 static void new_file(const char *path)
@@ -2090,6 +2155,8 @@ static void new_file(const char *path)
 	files[nfiles].path = xstrdup(path);
 	files[nfiles].nops = 0;
 	nfiles++;
+	/* path appears in the FAIL <path>:<line> error message inside EXINIT */
+	mark_bytes_used(path);
 }
 
 static void add_op(int type, int oline, const char *text)
@@ -2171,7 +2238,7 @@ int main(int argc, char **argv)
 		byte_used[(unsigned char)*p] = 1;
 
 	if (relative_mode || interactive_mode)
-		mark_bytes_used("FAILline");
+		mark_bytes_used("FAIL");
 
 	FILE *in = stdin;
 	if (input_file) {
@@ -2416,9 +2483,40 @@ process_line:
 		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:"
 		      "|sc! \\\\\\\\\\\\${SEP}|:vis 3\\\\${SEP}q1\" || INTR=\n", stdout);
 
-	/* Emit script for each file */
+	/* Build groups for every file */
 	for (int i = 0; i < nfiles; i++)
-		emit_file_script(stdout, &files[i]);
+		build_file_groups(&files[i]);
+
+	/* Collect files with groups */
+	file_patch_t *active[256];
+	int nactive = 0;
+	for (int i = 0; i < nfiles; i++)
+		if (files[i].ngroups > 0)
+			active[nactive++] = &files[i];
+
+	/* Interactive editing: one $EDITOR session for all files */
+	if (interactive_mode)
+		interactive_edit_all_files(active, nactive);
+
+	if (nactive > 0) {
+		fputs("\n# Patch:", stdout);
+		for (int k = 0; k < nactive; k++)
+			fprintf(stdout, " %s", active[k]->path);
+		fputc('\n', stdout);
+		fputs("EXINIT=\"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", stdout);
+		for (int k = 0; k < nactive; k++) {
+			fprintf(stdout, "b%d${SEP}", k);
+			cur_file_path = active[k]->path;
+			emit_file_script(stdout, active[k]);
+		}
+		/* Write all buffers at the end */
+		for (int k = 0; k < nactive; k++)
+			fprintf(stdout, "b%d${SEP}w${SEP}", k);
+		fputs("vis 2${SEP}q\" $VI -e", stdout);
+		for (int k = 0; k < nactive; k++)
+			fprintf(stdout, " '%s'", active[k]->path);
+		fputc('\n', stdout);
+	}
 
 	/* Embed delta and original patch after exit 0 */
 	printf("\nexit 0\n");
