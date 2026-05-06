@@ -92,7 +92,7 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
 			memcpy(ln, s, l_nonl);
 			memset(&ln[l_nonl + 1], 0, 4);	/* fault tolerance pad */
 			ln[l_nonl] = '\n';
-			sbuf_mem(sb, &ln, (int)sizeof(s))
+			sbuf_mem(sb, &ln, sizeof(s))
 			s += l;
 		}
 	}
