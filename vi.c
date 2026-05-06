@@ -1764,10 +1764,10 @@ void vi(int init)
 					la.s = ln;
 					la.off = off;
 					la.att = hls[k].att[0];
-					sbuf_mem(led_attsb, &la, (int)sizeof(la))
+					sbuf_mem(led_attsb, &la, sizeof(la))
 					la.s = lbuf_get(xb, row1);
 					la.off = off1;
-					sbuf_mem(led_attsb, &la, (int)sizeof(la))
+					sbuf_mem(led_attsb, &la, sizeof(la))
 					vi_mod |= row1 == row && orow == xrow ? 2 : 1;
 				}
 			}

@@ -49,7 +49,7 @@ static void file_index(struct lbuf *buf)
 	sbuf_smake(ibuf, 1024)
 	for (n = 1; n <= acsb->s_n; n++)
 		if (acsb->s[n - 1] == '\n')
-			sbuf_mem(ibuf, &n, (int)sizeof(n))
+			sbuf_mem(ibuf, &n, sizeof(n))
 	for (int i = 0; i < ln_n; i++) {
 		sidx = 0;
 		while (rset_find(rs, ss[i]+sidx, subs, sidx ? REG_NOTBOL : 0) >= 0) {
@@ -69,7 +69,7 @@ static void file_index(struct lbuf *buf)
 							goto skip;
 				sbuf_mem(acsb, part, len)
 				sbuf_chr(acsb, '\n')
-				sbuf_mem(ibuf, &acsb->s_n, (int)sizeof(n))
+				sbuf_mem(ibuf, &acsb->s_n, sizeof(n))
 			}
 			skip:
 			sidx += subs[grp + 1] > 0 ? subs[grp + 1] : 1;
@@ -361,7 +361,7 @@ char *led_read(int *kmap, int c)
 	sbuf_make(led_attsb, sizeof(la) * 2) \
 	for (i = uc_slen(buf) - 1; i >= 0; i--) { \
 		la.off = *poff + i; \
-		sbuf_mem(led_attsb, &la, (int)sizeof(la)) \
+		sbuf_mem(led_attsb, &la, sizeof(la)) \
 	} \
 	sbuf_str(sb, buf) \
 	led_printparts(sb, pre, ps, *post, postn, poff); \
