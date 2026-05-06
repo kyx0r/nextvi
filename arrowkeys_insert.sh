@@ -40,7 +40,7 @@ ${SEP}.,#+1c 	if (print) {
 		syn_scdir(0);
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
-${SEP}.,\$;f> 		sbuf_mem\\\\(led_attsb, &la, \\\\(int\\\\)sizeof\\\\(la\\\\)\\\\) \\\\\\\\
+${SEP}.,\$;f> 		sbuf_mem\\\\(led_attsb, &la, sizeof\\\\(la\\\\)\\\\) \\\\\\\\
 	\\\\} \\\\\\\\
 	sbuf_str\\\\(sb, buf\\\\) \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:367\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/f\\\\)/f, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:367\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	sbuf_free\\\\(led_attsb\\\\) \\\\\\\\
@@ -212,7 +212,7 @@ edit_cmd_rel:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 25856dc8..fa48c947 100644
+index 260d17d7..a2224e98 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -246,7 +246,7 @@ index 25856dc8..fa48c947 100644
  	sbufn_cut(sb, psn)
  	rstate -= 2;
 @@ -364,12 +367,12 @@ char *led_read(int *kmap, int c)
- 		sbuf_mem(led_attsb, &la, (int)sizeof(la)) \
+ 		sbuf_mem(led_attsb, &la, sizeof(la)) \
  	} \
  	sbuf_str(sb, buf) \
 -	led_printparts(sb, pre, ps, *post, postn, poff); \
@@ -372,7 +372,7 @@ index 25856dc8..fa48c947 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 956e58e2..9fdce3f1 100644
+index ed15bfc7..474f6034 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -844,6 +844,8 @@ static void vi_indents(char *ln, int *l)
