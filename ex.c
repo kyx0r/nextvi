@@ -1193,8 +1193,9 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 		for (; count && !ret; count--) {
-			ret = isdq ? xpret : (cond ? ex_exec(cond) : NULL);
-			branch = (ret != NULL) ^ inv ? else_cmd : then_cmd;
+			ret = cond ? ex_exec(cond) : xpret;
+			ret = inv ? ret ? NULL : xuerr : ret;
+			branch = ret ? else_cmd : then_cmd;
 			if (branch)
 				ret = ex_exec(branch);
 		}
