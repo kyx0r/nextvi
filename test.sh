@@ -870,6 +870,16 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':err 1:f>hello:1??!:f>hello:2??!:1,2??p then?p else:q')
 check 'W5 ??! both inverted — NOT(success) AND NOT(success) → else' 'else' "$out"
 
+# W6: invert the status of last command
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>hello:??!:??p hidden:f>nope:??!:??p show:q')
+check 'W6 ??! inverted the status of last command' 'show' "$out"
+
+# W7: pass the status of last command
+printf 'hello\n' > "$TMPFILE"
+out=$(run_ex ':err 1:f>nope:??:??!p hidden:q')
+check 'W7 ?? pass the status of last command' 'hidden' "$out"
+
 printf '\n%s\n' '─── Section M: Mark Tests ─────────────────────────────────────────────────────'
 
 # M1/M2: pure deletion BEFORE mark — mark shifts down, undo restores
