@@ -423,7 +423,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 			for (pos = beg; c < max && pos < end; pos++) {
 				path = xb->ln[pos];
 				if (rset_match(rs, path, 0)) {
-					sbuf_mem(sb, &pos, (int)sizeof(pos))
+					sbuf_mem(sb, &pos, sizeof(pos))
 					p = itoa(c++, buf);
 					int z, wid = p - buf;
 					for (z = dwid1 + 1 - wid; z; z--)
@@ -1159,15 +1159,15 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		if (!*arg) {
 			int err = (xpret != NULL) ^ inv;
 			if (!xanchor)
-				sbuf_make(xanchor, 4 * (int)sizeof(int))
-			sbuf_mem(xanchor, &id, (int)sizeof(id))
-			sbuf_mem(xanchor, &err, (int)sizeof(err))
+				sbuf_make(xanchor, 4 * sizeof(int))
+			sbuf_mem(xanchor, &id, sizeof(id))
+			sbuf_mem(xanchor, &err, sizeof(err))
 			return ret;
 		} else if (!xanchor)
 			return ret;
 		then_cmd = re_read(&arg, *cmd);
 		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
-		int *ap = (int*)xanchor->s, n = xanchor->s_n / (int)sizeof(int);
+		int *ap = (int*)xanchor->s, n = xanchor->s_n / sizeof(int);
 		int and_res = 0, or_res = 1;
 		for (int i = n; i >= 2;) {
 			i -= 2;
