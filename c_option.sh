@@ -143,7 +143,7 @@ s/n\)/n, char** cmds, int cmdnum)/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23058a1e..98e4f601 100644
+index df8be571..0986703e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1710,7 +1710,7 @@ void ex(void)
@@ -163,7 +163,7 @@ index 23058a1e..98e4f601 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 956e58e2..04323f3f 100644
+index ed15bfc7..6ac221aa 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1830,7 +1830,8 @@ static void setup_signals(void)

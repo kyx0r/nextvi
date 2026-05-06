@@ -67,7 +67,7 @@ EO\(pac\)
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23058a1e..a294cc1d 100644
+index df8be571..79fd7986 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -95,7 +95,7 @@ index 23058a1e..a294cc1d 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 956e58e2..9b2e0c6e 100644
+index ed15bfc7..2d9ef75b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1753,6 +1753,21 @@ void vi(int init)

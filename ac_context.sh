@@ -81,7 +81,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 25856dc8..2daa425f 100644
+index 260d17d7..a9e9c7f8 100644
 --- a/led.c
 +++ b/led.c
 @@ -9,25 +9,30 @@ int dstrlen(const char *s, char delim)

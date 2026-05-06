@@ -241,7 +241,7 @@ index 0a291fa4..8fa78c69 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 23058a1e..9b5c53ee 100644
+index df8be571..70f1e6d8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -316,7 +316,7 @@ index 23058a1e..9b5c53ee 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 25856dc8..7eba590a 100644
+index 260d17d7..00b5ffe7 100644
 --- a/led.c
 +++ b/led.c
 @@ -428,7 +428,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -329,7 +329,7 @@ index 25856dc8..7eba590a 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 956e58e2..ed759639 100644
+index ed15bfc7..bbdb8b26 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)

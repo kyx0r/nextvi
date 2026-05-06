@@ -329,7 +329,7 @@ index 0a291fa4..01956c2e 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 23058a1e..5a40c51b 100644
+index df8be571..52a5996a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -362,7 +362,7 @@ index 23058a1e..5a40c51b 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index 25856dc8..4535d3b3 100644
+index 260d17d7..ed937ce0 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -538,7 +538,7 @@ index e2eb4ad0..95fcb0f4 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 956e58e2..4dc591e4 100644
+index ed15bfc7..448fc5da 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -554,6 +554,9 @@ static void vc_status(int type)

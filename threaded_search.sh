@@ -186,7 +186,7 @@ index 2372d3b8..3b294bc7 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 081d478b..184b1b8f 100644
+index 0a13ff5a..97d6d2ec 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -476,24 +476,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -366,7 +366,7 @@ index 875905a8..971996f0 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 956e58e2..2a6fe8a1 100644
+index ed15bfc7..80c2a705 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@

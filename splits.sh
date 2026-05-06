@@ -911,7 +911,7 @@ index 0a291fa4..f4979463 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 23058a1e..386be9e0 100644
+index df8be571..fc43252f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -1348,7 +1348,7 @@ index 23058a1e..386be9e0 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 25856dc8..2dbf656e 100644
+index 260d17d7..94af800e 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,8 +91,9 @@ static char *kmap_map(int kmap, int c)
@@ -1513,7 +1513,7 @@ index e2eb4ad0..92180d10 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 956e58e2..25ca07f8 100644
+index ed15bfc7..7603eed8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */

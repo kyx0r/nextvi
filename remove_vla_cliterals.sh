@@ -229,7 +229,7 @@ index 0a291fa4..7a771821 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 23058a1e..4b57cbc9 100644
+index df8be571..d0ee1c9a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -511,7 +511,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -268,7 +268,7 @@ index 23058a1e..4b57cbc9 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 081d478b..0f36d0d7 100644
+index 0a13ff5a..ef87fbdf 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -480,7 +480,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
@@ -300,7 +300,7 @@ index 081d478b..0f36d0d7 100644
  }
  
 diff --git a/led.c b/led.c
-index 25856dc8..3e8f09ad 100644
+index 260d17d7..f9feebc3 100644
 --- a/led.c
 +++ b/led.c
 @@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
@@ -489,7 +489,7 @@ index 86e24e4a..dee00f50 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 956e58e2..b02c80ae 100644
+index ed15bfc7..cdfb602b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)

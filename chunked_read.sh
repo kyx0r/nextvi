@@ -134,7 +134,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23058a1e..61246cfe 100644
+index df8be571..96d0896e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -328,10 +328,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
@@ -169,7 +169,7 @@ index 23058a1e..61246cfe 100644
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
 diff --git a/lbuf.c b/lbuf.c
-index 081d478b..95094f4d 100644
+index 0a13ff5a..39eb37c9 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -200,32 +200,85 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)

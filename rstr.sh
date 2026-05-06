@@ -336,7 +336,7 @@ s/et/tr/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 23058a1e..48dd55c6 100644
+index df8be571..0a4e26c9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ int xsep = ':';			/* ex command separator */
@@ -387,7 +387,7 @@ index 23058a1e..48dd55c6 100644
  				path = xb->ln[pos];
 -				if (rset_match(rs, path, 0)) {
 +				if (rstr_match(rs, path, 0)) {
- 					sbuf_mem(sb, &pos, (int)sizeof(pos))
+ 					sbuf_mem(sb, &pos, sizeof(pos))
  					p = itoa(c++, buf);
  					int z, wid = p - buf;
 @@ -460,7 +460,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
@@ -537,7 +537,7 @@ index 23058a1e..48dd55c6 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 081d478b..df01e784 100644
+index 0a13ff5a..23ce957c 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -476,11 +476,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -712,7 +712,7 @@ index ff88bb41..fc39e70f 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 956e58e2..991a6b43 100644
+index ed15bfc7..3823b830 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -426,7 +426,7 @@ static void vi_regput(int c, const char *s, int lnmode)

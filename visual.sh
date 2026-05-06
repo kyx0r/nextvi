@@ -402,7 +402,7 @@ index 0a291fa4..b2d37bb3 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 956e58e2..474925c3 100644
+index ed15bfc7..7e478772 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */

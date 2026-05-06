@@ -136,7 +136,7 @@ index 0a291fa4..2d26cc4c 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 23058a1e..b7ba04ad 100644
+index df8be571..c113bed8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -192,7 +192,7 @@ index 23058a1e..b7ba04ad 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 956e58e2..aa466fa4 100644
+index ed15bfc7..cd1528a3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1851,11 +1851,13 @@ int main(int argc, char *argv[])

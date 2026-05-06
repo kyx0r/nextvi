@@ -1579,7 +1579,7 @@ index 0a291fa4..60038dd2 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 23058a1e..53ae87bc 100644
+index df8be571..e2aea51e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -372,6 +372,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -3107,7 +3107,7 @@ index e2eb4ad0..12763be7 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 956e58e2..164f7c69 100644
+index ed15bfc7..cf3d44f0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@

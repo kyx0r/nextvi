@@ -90,7 +90,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index 081d478b..fb2a551c 100644
+index 0a13ff5a..74171638 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -377,6 +377,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
@@ -136,7 +136,7 @@ index 081d478b..fb2a551c 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 956e58e2..75ec2d83 100644
+index ed15bfc7..4c42d01d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1441,6 +1441,17 @@ void vi(int init)

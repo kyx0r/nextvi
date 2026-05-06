@@ -140,7 +140,7 @@ index 0a291fa4..a7ede0cd 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 23058a1e..4c482e0e 100644
+index df8be571..1f331e94 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -165,7 +165,7 @@ index 23058a1e..4c482e0e 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 25856dc8..024a6468 100644
+index 260d17d7..7ee59aa3 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -200,7 +200,7 @@ index 25856dc8..024a6468 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 956e58e2..15903f73 100644
+index ed15bfc7..1e840af9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@

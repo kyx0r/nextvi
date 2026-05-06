@@ -251,7 +251,7 @@ index 0a291fa4..4d3702d9 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 23058a1e..4af2bd91 100644
+index df8be571..b650c344 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -292,7 +292,7 @@ index 23058a1e..4af2bd91 100644
  	{"=", ec_num},
  	{"", ec_print}, /* do not remove */
 diff --git a/lbuf.c b/lbuf.c
-index 081d478b..25032e13 100644
+index 0a13ff5a..5c1176ab 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -82,16 +82,50 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -343,7 +343,7 @@ index 081d478b..25032e13 100644
 +				}
 +			}
 +			too_small:
- 			sbuf_mem(sb, &ln, (int)sizeof(s))
+ 			sbuf_mem(sb, &ln, sizeof(s))
  			s += l;
  		}
 @@ -185,9 +219,48 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -461,7 +461,7 @@ index 081d478b..25032e13 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index 956e58e2..7a235cc2 100644
+index ed15bfc7..5349b24f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -168,6 +168,22 @@ static void vi_drawrow(int row)
