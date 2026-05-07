@@ -123,7 +123,7 @@ void term_push(char *s, unsigned int n)
 		ibuf_cnt = tibuf_cnt;
 		ibuf_pos = tibuf_cnt;
 	}
-	if (ibuf_cnt + n >= ibuf_sz || ibuf_sz - ibuf_cnt + n > 128) {
+	if (ibuf_cnt + n >= ibuf_sz || ibuf_sz - (ibuf_cnt + n) > 128) {
 		ibuf_sz = ibuf_cnt + n + 128;
 		ibuf = erealloc(ibuf, ibuf_sz);
 	}
