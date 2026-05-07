@@ -938,6 +938,10 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 
 static void *ec_num(char *loc, char *cmd, char *arg)
 {
+	if (cmd[1] == '?') {
+		ex_print(xpret ? xpret : "no error", msg_ft)
+		return *arg ? xpret : NULL;
+	}
 	char msg[128];
 	int arr[4] = {0, 0, -1, -1};
 	int ret = ex_region(loc, &arr[0], &arr[1], &arr[2], &arr[3]);
@@ -1156,7 +1160,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	char *then_cmd, *else_cmd;
 	if (isdq && *loc) {
 		int id = atoi(loc);
-		if (!*arg) {
+		if (!*arg && cmd[2] != '?') {
 			int err = (xpret != NULL) ^ inv;
 			if (!xanchor)
 				sbuf_make(xanchor, 4 * sizeof(int))
@@ -1180,6 +1184,10 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 				 and_res = 0;
 			}
 			if (!*loc) {
+				if (cmd[2] == '?') {
+					ret = or_res ? xuerr : NULL;
+					break;
+				}
 				branch = or_res ^ inv ? else_cmd : then_cmd;
 				if (branch)
 					ret = ex_exec(branch);
@@ -1189,15 +1197,22 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			i = n;
 		}
 	} else {
-		int count = *loc ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
 		then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
-		for (; count && !ret; count--) {
-			ret = cond ? ex_exec(cond) : xpret;
-			ret = inv ? ret ? NULL : xuerr : ret;
+		if (isdq) {
+			ret = inv ? xpret ? NULL : xuerr : xpret;
 			branch = ret ? else_cmd : then_cmd;
 			if (branch)
 				ret = ex_exec(branch);
+		} else {
+			int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
+			for (; count && !ret; count--) {
+				ret = ex_exec(cond);
+				ret = inv ? ret ? NULL : xuerr : ret;
+				branch = ret ? else_cmd : then_cmd;
+				if (branch)
+					ex_exec(branch);
+			}
 		}
 	}
 	free(cond);
@@ -1469,7 +1484,10 @@ static struct excmd {
 	{"@", ec_termexec},
 	{"&", ec_termexec},
 	{"!", ec_exec},
-	{"?\?!", ec_while},
+	{"=?", ec_num},
+	{"=", ec_num},
+	{"???", ec_while},
+	{"?""?!", ec_while},
 	{"??", ec_while},
 	{"?!", ec_while},
 	{"?", ec_while},
@@ -1549,7 +1567,6 @@ static struct excmd {
 	EO(lim),
 	EO(led),
 	EO(vis),
-	{"=", ec_num},
 	{"", ec_print}, /* do not remove */
 	{"", ec_print}, /* do not remove */
 };

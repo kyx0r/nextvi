@@ -508,8 +508,8 @@ EX COMMANDS
      [vrange]i[str]
              Enter ex insert mode before specified position
 
-             str specifies initial input into the insertion buffer.
-             str in raw ex mode is injected directly and bypasses the
+             [str] specifies initial input into the insertion buffer.
+             [str] in raw ex mode is injected directly and bypasses the
              interactive mode.
 
              Example: insert "hello" in vi/ex
@@ -623,8 +623,13 @@ EX COMMANDS
              Example: calculate 75 - 100
              :,75-100=1p
 
+     =?[any]
+             Print last error
+
+             Any argument forwards the error status.
+
      [range]m{marks}
-             Set a line mark(s)
+             Set line mark(s)
 
              Valid marks: <a-z ` ' [ ] *>
 
@@ -751,8 +756,8 @@ EX COMMANDS
      [#lvl]q![#code]
              Exit or force quit
 
-             #code specifies shell exit code.
-             #lvl defines the number of scopes to exit.
+             [#code] specifies shell exit code.
+             [#lvl] defines the number of scopes to exit.
 
              Example: conditionally exit this scope and 1 above
              :%f>marker:??!p no marker\:1q:s/old/new/g:w
@@ -869,12 +874,13 @@ EX COMMANDS
              Example: execute vi "dw" command after user exits insert
              :@i:@dw
 
-     [# <$>]?[cond][<?>][then][<?>][else]
+     [#count <$>]?[cond][<?>][then][<?>][else]
              While loop conditional
 
-             Repeat cond # times or infinite with <$>.
-             While loop is broken once cond returns an error or count exceeded.
-             No prefix creates a conditional with # set to 1.
+             Repeat [cond] [#count] times or infinite with [<$>].
+             While loop is broken once [cond] returns an error or count exceeded.
+             Error status of [cond] is forwarded.
+             No prefix creates a conditional with [#count] set to 1.
 
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
@@ -928,6 +934,15 @@ EX COMMANDS
      [prefix]??![else][<?>][then]
      {prefix}??!
              Inverted conditional
+
+     {prefix}???
+             Evaluate prefix tags
+
+             This is a nop command that evaluates a boolean expression
+             at prefix and returns the result.
+
+             Example: control while loop from its [then] argument
+             $?0\?\?\??+1\:0\?\?\:f>int\:\?\?p
 
      ft[filetype]
              Set a filetype
@@ -1283,9 +1298,9 @@ CODE MAP
      | 651 lbuf.c   |  file/line buffer    |
      | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1726 ex.c    |  ex options/commands |
+     | 1744 ex.c    |  ex options/commands |
      | 1877 vi.c    |  normal mode/general |
-     | 7531 total   |  wc -l *.c|sort      |
+     | 7549 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1364,4 +1379,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.0                        May 4, 2026                       Nextvi 5.0
+Nextvi 5.0                        May 7, 2026                       Nextvi 5.0
