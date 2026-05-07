@@ -118,7 +118,7 @@ index 50b89bc6..f7b7f073 100644
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
 diff --git a/term.c b/term.c
-index e2eb4ad0..b5e9e7f9 100644
+index ce19068f..4f340622 100644
 --- a/term.c
 +++ b/term.c
 @@ -180,6 +180,12 @@ int term_read(int winch)

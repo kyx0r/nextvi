@@ -3029,7 +3029,7 @@ index 00000000..1f2c22da
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index e2eb4ad0..12763be7 100644
+index ce19068f..536d859f 100644
 --- a/term.c
 +++ b/term.c
 @@ -149,7 +149,6 @@ void term_back(int c)
