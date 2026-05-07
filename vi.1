@@ -1,4 +1,4 @@
-.Dd May  4, 2026
+.Dd May  7, 2026
 .Dt Nextvi 1
 .Os Nextvi 5.0
 .
@@ -765,8 +765,8 @@ Example: set keyword from lines 1 to 3
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
 Enter ex insert mode before specified position
 .Bd -literal
-str specifies initial input into the insertion buffer.
-str in raw ex mode is injected directly and bypasses the
+[str] specifies initial input into the insertion buffer.
+[str] in raw ex mode is injected directly and bypasses the
 interactive mode.
 
 Example: insert "hello" in vi/ex
@@ -889,8 +889,14 @@ Example: calculate 75 - 100
 :,75-100=1p
 .Ed
 
+.It Cm =?[\fIany\fP]
+Print last error
+.Bd -literal
+Any argument forwards the error status.
+.Ed
+
 .It Cm [\fIrange\fP]m{\fImarks\fP}
-Set a line mark(s)
+Set line mark(s)
 .Bd -literal
 Valid marks: <a-z ` ' [ ] *>
 
@@ -1026,8 +1032,8 @@ Force write unsaved changes and force quit
 .It Cm [\fI#lvl\fP]q![\fI#code\fP]
 Exit or force quit
 .Bd -literal
-#code specifies shell exit code.
-#lvl defines the number of scopes to exit.
+[#code] specifies shell exit code.
+[#lvl] defines the number of scopes to exit.
 
 Example: conditionally exit this scope and 1 above
 :%f>marker:??!p no marker\e:1q:s/old/new/g:w
@@ -1155,12 +1161,13 @@ Example: execute vi "dw" command after user exits insert
 :@i:@dw
 .Ed
 
-.It Cm [\fI#\fP <\fI$\fP>]?[\fIcond\fP][<\fI?\fP>][\fIthen\fP][<\fI?\fP>][\fIelse\fP]
+.It Cm [\fI#count\fP <\fI$\fP>]?[\fIcond\fP][<\fI?\fP>][\fIthen\fP][<\fI?\fP>][\fIelse\fP]
 While loop conditional
 .Bd -literal
-Repeat cond # times or infinite with <$>.
-While loop is broken once cond returns an error or count exceeded.
-No prefix creates a conditional with # set to 1.
+Repeat [cond] [#count] times or infinite with [<$>].
+While loop is broken once [cond] returns an error or count exceeded.
+Error status of [cond] is forwarded.
+No prefix creates a conditional with [#count] set to 1.
 
 Example: attempt to join every line in file using arbitrary count
 :10000? & J
@@ -1216,6 +1223,16 @@ Example: inverted capture -- capture NOT of last status
 .It Cm [\fIprefix\fP]??![\fIelse\fP][<\fI?\fP>][\fIthen\fP]
 .It Cm {\fIprefix\fP}??!
 Inverted conditional
+
+.It Cm {\fIprefix\fP}???
+Evaluate prefix tags
+.Bd -literal
+This is a nop command that evaluates a boolean expression
+at prefix and returns the result.
+
+Example: control while loop from its [then] argument
+$?0\e?\e?\e??+1\e:0\e?\e?\e:f>int\e:\e?\e?p
+.Ed
 
 .It Cm ft[\fIfiletype\fP]
 Set a filetype
@@ -1672,9 +1689,9 @@ _
  651 lbuf.c | file/line buffer
  725 led.c | insert mode/output
  766 regex.c | pikevm
- 1726 ex.c | ex options/commands
+ 1744 ex.c | ex options/commands
  1877 vi.c | normal mode/general
- 7531 total | wc -l *.c\(basort
+ 7549 total | wc -l *.c\(basort
 _
 .TE
 .
