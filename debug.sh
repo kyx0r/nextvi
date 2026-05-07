@@ -30,7 +30,7 @@ LB="0?"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1712\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1730\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -155,10 +155,10 @@ a void ex_done(void);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index df8be571..636a1e29 100644
+index 50b89bc6..8b137e2b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1710,6 +1710,22 @@ void ex(void)
+@@ -1728,6 +1728,22 @@ void ex(void)
  	xgrec--;
  }
  

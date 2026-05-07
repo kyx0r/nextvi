@@ -42,11 +42,11 @@ ${SEP}.,\$;f> 						soff \\\\+ offs\\\\[xgrp\\\\], &xrow, &xoff\\\\)\\\\)
 ${SEP}+2a 		free(offs);
 ${SEP}.,\$;f> 		rep = re_read\\\\(&s, 0\\\\);
 	\\\\}
-	free\\\\(pat\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1001\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	free\\\\(pat\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1005\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 ${SEP}.,\$;f> 	if \\\\(rs != xkwdrs\\\\)
 		rset_free\\\\(rs\\\\);
-	free\\\\(rep\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1052\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	free\\\\(rep\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1056\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(offs);
 ${SEP}b2${SEP}%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
@@ -216,7 +216,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0a291fa4..7a771821 100644
+index 21b22191..3a36a0e0 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -62,7 +62,7 @@ const int ftslen = LEN(fts);
@@ -229,7 +229,7 @@ index 0a291fa4..7a771821 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index df8be571..d0ee1c9a 100644
+index 50b89bc6..87b9d9cf 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -511,7 +511,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -250,7 +250,7 @@ index df8be571..d0ee1c9a 100644
  		return ret;
  	}
  	off = xoff;
-@@ -998,7 +1000,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1002,7 +1004,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = re_read(&s, 0);
  	}
  	free(pat);
@@ -259,7 +259,7 @@ index df8be571..d0ee1c9a 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -1050,6 +1052,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1054,6 +1056,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
