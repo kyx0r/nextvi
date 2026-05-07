@@ -70,11 +70,12 @@ ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 	*ptr = '\\\\0';
 	/* rewrite loop */
 	void *ret = NULL;
-	for (int rw = 0; rewrite(); rw++)
+	while (rewrite()) {
 		if (!--cycles) {
 			ret = \"modal: rewrites exceeded\";
 			break;
 		}
+	}
 	free(ms);
 	return ret;
 }
@@ -454,10 +455,10 @@ index 21b22191..e1f89bfc 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 50b89bc6..8a8a2ed1 100644
+index 50b89bc6..4f4f52b5 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1473,6 +1473,53 @@ _EO(left,
+@@ -1473,6 +1473,54 @@ _EO(left,
  	return NULL;
  )
  
@@ -499,11 +500,12 @@ index 50b89bc6..8a8a2ed1 100644
 +	*ptr = '\0';
 +	/* rewrite loop */
 +	void *ret = NULL;
-+	for (int rw = 0; rewrite(); rw++)
++	while (rewrite()) {
 +		if (!--cycles) {
 +			ret = "modal: rewrites exceeded";
 +			break;
 +		}
++	}
 +	free(ms);
 +	return ret;
 +}
@@ -511,7 +513,7 @@ index 50b89bc6..8a8a2ed1 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1525,6 +1572,7 @@ static struct excmd {
+@@ -1525,6 +1573,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
