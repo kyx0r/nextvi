@@ -31,8 +31,6 @@ MANPAGE NOTATION
      {x}     A closure where x represents required argument
      "x"     A closure where x represents a string
      <^X>    Represents a ctrl key X
-     #       Represents a positive number in a closure
-     *       Represents any character(s) in a closure
      < >     Separates alternatives in a closure
      x-y     Range from x to y
 
@@ -58,7 +56,8 @@ VI NORMAL
      [#]b          Move to start of word backward # times
      [#]W          Move to start of word forward # times, skip punctuation
      [#]w          Move to start of word forward # times
-     vw            Toggle single-line mode for <E e B b W w> regions
+     vw            Toggle single-line mode for <E e B b W w Space Backspace>
+                   regions
      [#](          Move to next sentence boundary down # times
      [#])          Move to next sentence boundary up # times
      [#]{          Move to next <{> section down # times
@@ -68,16 +67,16 @@ VI NORMAL
      ^             Move to start of line after indent
      0             Move to start of line
      $             Move to end of line
-     [#]|          Goto # col
-     [#]<Space>    Move # characters forward, multi-line
+     [#]|          Goto # column
+     [#]<Space>    Move # characters forward
      [#]<^H>
      [#]<Backspace>
-                   Move # characters backward, multi-line
+                   Move # characters backward
      %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
-     '{a-z ` ' [] *}
+     '{<a-z ` ' [ ] *>}
                    Move to a line mark
-     `{a-z ` ' [] *}
+     `{<a-z ` ' [ ] *>}
                    Move to a line mark with cursor position
      gg            Goto first line in buffer
      [#]G          Move to last line in buffer or # line
@@ -102,7 +101,7 @@ VI NORMAL
      8#            Toggle show relative line numbers permanently
      V             Toggle show hidden characters:<Space Tab Newline>
      <^C>          Toggle show line motion numbers for <l h e b E B w W>
-     {1-5}<^C>     Select line motion number mode 1-5
+     {<1-5>}<^C>   Select line motion number mode 1-5
      <^V>          Loop through line motion number modes
      [#]<^R>       Redo # times
      [#]u          Undo # times
@@ -113,10 +112,11 @@ VI NORMAL
      [#]<^W>{arg}  Unindent arg region # times
      [#]<{arg}     Indent left arg region # times
      [#]>{arg}     Indent right arg region # times
-     "{arg}{arg1}  Operate on arg register according to arg1 motion
+     "{<arg>}{arg1}
+                   Operate on arg register according to arg1 motion
      R             Print registers and their contents
-     [#]&{arg}     Execute arg register macro in non-blocking mode # times
-     [#]@{arg}     Execute arg register macro in blocking mode # times
+     [#]&{<arg>}   Execute arg register macro in non-blocking mode # times
+     [#]@{<arg>}   Execute arg register macro in blocking mode # times
      [#]@@         Execute last macro # times, blocking
      [#]&&         Execute last macro # times, non-blocking
      [#]@:
@@ -145,8 +145,8 @@ VI NORMAL
      ga            Print character info
      1ga           Enable permanent character info row
      2ga           Disable permanent character info row
-     [#]gw         Hard word wrap a line to # col limit. Default: 80
-     [#]gq         Hard word wrap a buffer to # col limit. Default: 80
+     [#]gw         Hard word wrap a line to # column limit. Default: 80
+     [#]gq         Hard word wrap a buffer to # column limit. Default: 80
      [#]g~{arg}    Switch character case for arg region # times
      [#]gu{arg}    Switch arg region to lowercase # times
      [#]gU{arg}    Switch arg region to uppercase # times
@@ -165,8 +165,8 @@ VI NORMAL
      D             Delete from cursor to end of line
      [#]x          Delete # characters from cursor forward
      [#]X          Delete # characters from cursor backward
-     di{arg}       Delete inside arg pairs <( ) ">
-     ci{arg}       Change inside arg pairs <( ) ">
+     di{<arg>}     Delete inside arg pairs
+     ci{<arg>}     Change inside arg pairs
      [#]r{arg}     Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
@@ -176,16 +176,16 @@ VI NORMAL
                    position # times
      [#]P          Paste default register above current line or before cursor
                    position # times
-     m{a-z ` ' [] *}
+     m{<a-z ` ' [ ] *>}
                    Set buffer local line mark
      <^T>          Set global line mark 0. Global marks are always valid
-     {0 2 4 6 8}<^T>
+     {<0 2 4 6 8>}<^T>
                    Set a global line mark #
-     {1 3 5 7 9}<^T>
+     {<1 3 5 7 9>}<^T>
                    Switch to a global line mark #
-     [#]<^7>{0-9}
-     [#]<^_>{0-9}
-     [#]<^/>{0-9}
+     [#]<^7>{<0-9>}
+     [#]<^_>{<0-9>}
+     [#]<^/>{<0-9>}
                    Show buffer list and switch based on # or 0-9 index when
                    prompted
      <^^>
@@ -221,9 +221,11 @@ VI NORMAL
      [#]<^P>       Filesystem regex search backward
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
-     Z{*}          Exit and clean terminal, force quit in an & macro
-     Zz            Exit and submit history command, force quit in an & macro
+     Z{<Any>}      Force exit and clean terminal, force quit in an & macro
+     Zz            Force exit and submit history command, force quit in an &
+                   macro
      ZZ            Exit and write unsaved changes to a file
+     <ESC ^C>      Cancel any pending input or command
 
 VI REGIONS
      Regions are vi normal commands that define [h v]range for vi motions.
@@ -263,7 +265,7 @@ VI/EX INSERT
      <^T>          Increase indent
      <^D>          Decrease indent
      <^]>          Select paste register from 0-9 registers in a loop
-     <^\>{arg}     Select paste register arg. <^\> selects default register
+     <^\>{<arg>}   Select paste register arg. <^\> selects default register
      <^P>          Paste a register
      <^X>          Mark autocomplete and <^U> starting position. <^X> resets
                    the mark
@@ -280,7 +282,7 @@ VI/EX INSERT
      <^O>          Switch between vi and ex modes recursively
      <^E>          Switch to English keymap
      <^F>          Switch to alternative keymap
-     <^V>{arg}     Read a literal character arg
+     <^V>{<arg>}   Read a literal character arg
      <^K>{arg}     Read a digraph sequence arg
      <^C>
      <ESC>
@@ -298,7 +300,7 @@ EX
 EX PARSING
      Parsing follows the structure:
      [<sep>][prefix][cmd][<pad>][args]
-     Ex commands are initiated and separated by <:>. Fields can be
+     Ex commands are initiated and separated by <sep>. Fields can be
      padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
      which accepts [range] structure characters. Padding inside [prefix]
      structure is collapsed, except within nested structures. There
@@ -353,7 +355,7 @@ EX RANGES
      Some ex commands can be prefixed with ranges.
      [range] prefix implements vertical and horizontal ranges.
      [vrange] prefix implements vertical range and horizontal position.
-     Without [cmd], [range] replaces [prefix] and changes position.
+     Without [cmd], [vrange] replaces [prefix].
 
      [% |][, ;][#][. $ ' > <][- + * / %][0-9]
              All ranges structure
@@ -459,7 +461,7 @@ EX COMMANDS
              No range evaluates to <%> range.
              No range displays a maximum of xrows * 3 matches.
 
-     [vrange]g{<*>}[regex]{<*>}{cmd}
+     [vrange]g[<Any>][regex][<Any>][cmd]
              Global command
 
              Execute an ex command on a range of lines that matches an
@@ -491,7 +493,7 @@ EX COMMANDS
              Example: extract/print data enclosed in "()"
              :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
-     [vrange]g!{<*>}[regex]{<*>}{cmd}
+     [vrange]g![<Any>][regex][<Any>][cmd]
              Inverted global command
 
      [range]re[regex]
@@ -507,7 +509,9 @@ EX COMMANDS
      [vrange]i[str]
              Enter ex insert mode before specified position
 
-             str specifies initial input into the insertion buffer.
+             [str] specifies initial input into the insertion buffer.
+             [str] in raw ex mode is injected directly and bypasses the
+             interactive mode.
 
              Example: insert "hello" in vi/ex
              :i hello<^M><ESC>
@@ -518,7 +522,11 @@ EX COMMANDS
              Example: immediately insert "hello"
              :i hello<^V><ESC>
              Example: insert "hello" in raw ex mode
-             i hello<^M>.<^M>
+             i hello
+             Example: insert two lines in raw ex mode
+             i hello<^M>world
+             Example: insert "hello" in raw ex mode (interactive)
+             i<^M>hello<^M>.<^M>
 
      [vrange]a[str]
              Enter ex insert mode after specified position
@@ -552,7 +560,7 @@ EX COMMANDS
              Example: delete from current position to the end of the buffer
              :.,$;;$d
 
-     [vrange]j[*]
+     [vrange]j[any]
              Join line(s)
 
              Any argument activates padding mode.
@@ -562,7 +570,7 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [vrange]s{<*>}[regex]{<*>}{str}[<*>][<g>]
+     [vrange]s[<Any>][regex][<Any>][str][<Any>][<g>]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -584,7 +592,7 @@ EX COMMANDS
              :%s/(int)|(void)/pre\2after/g
              this is an example text for subs and has prepreafterafter or prevoidafter
 
-     u       Undo
+     ud      Undo
      rd      Redo
 
      [range]p[str]
@@ -602,7 +610,7 @@ EX COMMANDS
              Example: print buffer pathname
              :p %
 
-     [range]=[<0-3 *>][*]
+     [range]=[<0-3 Any>][any]
              Print range numbers
 
              Argument 0-3 selects a specific number.
@@ -616,15 +624,20 @@ EX COMMANDS
              Example: calculate 75 - 100
              :,75-100=1p
 
+     =?[any]
+             Print last error
+
+             Any argument forwards the error status.
+
      [range]m{marks}
-             Set a line mark(s)
+             Set line mark(s)
 
              Valid marks: <a-z ` ' [ ] *>
 
              Example: store ranges in <a> and <s> for later reuse in :f>
              :>top>,#>bottom>m as:'a,'sf>middle
 
-     [range]ya[<reg>][*]
+     [range]ya[<reg>][any]
              Yank into a register
 
              Argument value range is 0x1-0xff and 0x0 without.
@@ -639,7 +652,7 @@ EX COMMANDS
      ya![<reg>]
              Free a register
 
-     [range]pu[<reg>][*][\!{cmd}]
+     [range]pu[<reg>][any][\!{cmd}]
              Paste or pipe a register
 
              Example: paste <a> at line 1 character offset 5
@@ -744,8 +757,8 @@ EX COMMANDS
      [#lvl]q![#code]
              Exit or force quit
 
-             #code specifies shell exit code.
-             #lvl defines the number of scopes to exit.
+             [#code] specifies shell exit code.
+             [#lvl] defines the number of scopes to exit.
 
              Example: conditionally exit this scope and 1 above
              :%f>marker:??!p no marker\:1q:s/old/new/g:w
@@ -768,7 +781,8 @@ EX COMMANDS
      bp[path]
              Set current buffer path
 
-     bs[*]   Set current buffer saved
+     bs[any]
+             Set current buffer saved
 
              Argument resets undo/redo history
 
@@ -861,17 +875,18 @@ EX COMMANDS
              Example: execute vi "dw" command after user exits insert
              :@i:@dw
 
-     [# <$>]?{cond}[<?>][then][<?>][else]
+     [#count <$>]?[cond][<?>][then][<?>][else]
              While loop conditional
 
-             Repeat cond # times or infinite with <$>.
-             While loop is broken once cond returns an error or count exceeded.
-             No prefix creates a conditional with # set to 1.
+             Repeat [cond] [#count] times or infinite with [<$>].
+             While loop is broken once [cond] returns an error or count exceeded.
+             Error status of [cond] is forwarded.
+             No prefix creates a conditional with [#count] set to 1.
 
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
              Example: undo everything
-             :$? u
+             :$? ud
              Example: repeat chain of ex commands 10 times
              :10? 1p\:5p\:10p
              Example: calculate directory only if :cd succeeded
@@ -881,10 +896,10 @@ EX COMMANDS
              Example: edit vi.c only if it exists
              :? \![ -f ./vi.c ]?e ./vi.c:mpt1
 
-     [# <$>]?!{cond}[<?>][else][<?>][then]
+     [#count <$>]?![cond][<?>][else][<?>][then]
              Inverted while loop conditional
 
-     [prefix]??{then}[<?>][else]
+     [prefix]??[then][<?>][else]
      {prefix}??
              Conditional
 
@@ -900,7 +915,7 @@ EX COMMANDS
              If any id has no capture, neither branch executes.
 
              Prefix operators:
-             # id tag
+             Numerical id tag
              , AND (higher precedence)
              ; OR (lower precedence)
 
@@ -917,9 +932,18 @@ EX COMMANDS
              Example: inverted capture -- capture NOT of last status
              :f>int:1??!:1??p int was absent
 
-     [prefix]??!{else}[<?>][then]
+     [prefix]??![else][<?>][then]
      {prefix}??!
              Inverted conditional
+
+     {prefix}???
+             Evaluate prefix tags
+
+             This is a nop command that evaluates a boolean expression
+             at prefix and returns the result.
+
+             Example: control while loop from its [then] argument
+             $?0\?\?\??+1\:0\?\?\:f>int\:\?\?p
 
      ft[filetype]
              Set a filetype
@@ -945,7 +969,7 @@ EX COMMANDS
              Example: autocomplete using whole lines from a buffer
              :ac .+
 
-     [0-3]sc[<esc>][<sep>][<exp>][<exe>]
+     [<0-3>]sc[<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
              Prefix selects a specific character to change.
@@ -954,9 +978,9 @@ EX COMMANDS
              Example: change <%> to <a>
              :2sc a
              Example: utilize newly set separator in a single command chain
-             :rcm:|1sc a|a p cmd1 a p cmd2 a|sc|rcm
+             :|1sc a|: p cmd1 a p cmd2 a|sc|a0?:p cmd3
 
-     [0-3]sc![<esc>][<sep>][<exp>][<exe>]
+     [<0-3>]sc![<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
              Missing arguments default to <0x0>.
@@ -981,7 +1005,7 @@ EX COMMANDS
              Passes multi-codepoint sequences such as emojis to the terminal
              for native rendering rather than substituting placeholders.
 
-     ph[#clow] [#chigh] [#width] [#blen][*char]
+     ph[#clow] [#chigh] [#width] [#blen][str]
              Redefine placeholders
 
              This command replaces placeholders defined in conf.c
@@ -1001,13 +1025,14 @@ EX COMMANDS
 EX OPTIONS
      Ex options are ex commands designed to alter global variables.
      Values hold a signed integer. Values may represent a character.
-     Default value is specified in val=* as part of an argument notation.
+     Default value is specified in val= as part of an argument notation.
      No argument inverts the current value, unless stated otherwise.
 
      ai[val=1]
              Indent new lines
 
              This is a max indent length multiplier: val * 128
+
      ic[val=1]
              Ignore case in regular expressions
 
@@ -1110,13 +1135,6 @@ EX OPTIONS
              :pr A:ya! A: b:pu A
              Example: store a line printed with :p
              :pr A:ya! A:p
-
-     rcm[val=1]
-             Range command mode
-
-             Controls when an ex command nested inside ex range executes.
-             0 - exec at command parse
-             1 - exec at command range
 
      lim[val=-1]
              Line length render limit
@@ -1273,19 +1291,19 @@ SPECIAL REGISTERS
 CODE MAP
      +------------------+----------------------+
      | 537 kmap.h       |  keymap translation  |
-     | 540 vi.h         |  definitions/aux     |
+     | 542 vi.h         |  definitions/aux     |
      +------------------+----------------------+
-     | 342 conf.c       |  hl/ft/td config     |
-     | 366 term.c       |  low level IO        |
-     | 410 ren.c        |  positioning/syntax  |
+     | 359 term.c       |  low level IO        |
+     | 376 conf.c       |  hl/ft/td config     |
+     | 433 ren.c        |  positioning/syntax  |
      | 614 uc.c         |  UTF-8 support       |
      | 651 lbuf.c       |  file/line buffer    |
      | 725 led.c        |  insert mode/output  |
      | 766 regex.c      |  pikevm              |
-     | 1726 ex.c        |  ex options/commands |
-     | 1854 vi.c        |  normal mode/general |
-     | 2463 patch2vi.c  |  patch converter     |
-     | 9917 total       |  wc -l *.c|sort      |
+     | 1744 ex.c        |  ex options/commands |
+     | 1877 vi.c        |  normal mode/general |
+     | 2543 patch2vi.c  |  patch converter     |
+     | 10088 total      |  wc -l *.c|sort      |
      +------------------+----------------------+
 
 COMPILING
@@ -1364,12 +1382,13 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 4.2                      April 16, 2026                      Nextvi 4.2
+Nextvi 5.0                       May 10, 2026                       Nextvi 5.0
 
 NEXTVI PATCHES
 ==============
 Optional patches for Nextvi.
 Apply: ./name.sh
+Apply using patch(1): ./name.sh 1
 
 Nextvi features a robust, context aware and customizable patching system.
 patch2vi support program facilitates script transformations.
@@ -1415,6 +1434,12 @@ hl_naive.sh
 --------------
 Allow syntax highlight to continue past the terminal dimensions unlimited.
 Performance will degrade on very long lines.
+
+blockhl_cache.sh
+--------------
+Cache multiline syntax highlighting blocks. Falls outside of the scope
+of core Nextvi as it violates the immediate mode rendering principle and
+is more complex.
 
 debug.sh
 --------------
@@ -1479,7 +1504,7 @@ Note: this patch can be used as a base for remapping any base keybinds.
 
 quickexit.sh
 --------------
-Added quickexit to insert mode keybind: kj
+Added kj sequence to quickly exit insert mode.
 It's important to understand that this has a caveat, if input comes too fast,
 for example a paste from terminal and the sequence has "kj" in it, insert
 mode will be cancelled mid way and paste will be wrong. Luckily this almost
@@ -1499,12 +1524,8 @@ of EXINIT.
 
 exrc.sh
 -------------
-Adds support for reading ~/.exrc file. This can be used to pass in ex
-commands instead of EXINIT.
-
-exrc-xdg.sh
--------------
-Adds XDG dir support for exrc.patch.
+Adds support for reading .exrc file from XDG, .config or home directories.
+This can be used to pass in ex commands instead of EXINIT.
 
 readonly.sh
 -------------
@@ -1569,10 +1590,10 @@ to record all user input. Makes it easier to record macros.
 
 visual.sh
 --------------
-Adds character-wise (v), line-wise (V), and block (^V) visual selection
-modes. Enter with v, V, or ^V. Move the cursor to extend the selection;
-the selected region is highlighted with inverted colors. Press the same
-key again to exit that mode; ESC also cancels the selection.
+Adds character-wise (gv), line-wise (gV), and block (gb) visual selection
+modes. Move the cursor to extend the selection; the selected region is
+highlighted with inverted colors. Press the same key again to exit
+that mode; ESC also cancels the selection.
 The current mode (-- VISUAL --, -- VISUAL LINE --, -- VISUAL BLOCK --)
 appears in the ^g status bar; when the permanent status bar is enabled
 it shows continuously alongside the file information.
@@ -1580,21 +1601,11 @@ Supported operators applied to the selection:
   y  yank          d  delete         c  change
   >  indent        <  dedent         !  pipe through shell command
   ~  toggle case   u  lowercase      U  uppercase
-Block mode (^V) also supports:
+Block mode (gb) also supports:
   I  insert at the left edge of the block on every selected line;
      lines shorter than the left edge are skipped
   A  append after the right edge of the block on every selected line;
      for lines shorter than the right edge, text is appended at EOL
-The former v-prefix sub-commands are remapped to the g prefix to free
-up v for visual mode:
-  g.  repeat on subsequent lines   gW  new-line word navigation toggle
-  go  clean line endings           gI  convert tabs to spaces
-  gi  convert spaces to tabs       gb  go to beginning of ex line
-  gv  go to end of ex line         g;  shell command prompt
-  g/  keyword search               gt  substitution template
-  gr  regex substitution template
-The former V (toggle hidden chars display) is remapped to gV.
-The former ^V (word-display cycle) is now triggered by ^C instead.
 
 splits.sh
 --------------
@@ -1634,7 +1645,14 @@ chains from within the modal script.
 
 lsp.sh
 --------------
-Defunct lsp support skeleton
+LSP support for Nextvi
+Adds new ex command "lsp" to start the LSP server, for example:
+:lsp c clangd
+Check that it is running:
+:lsp
+Once the server is up, new normal keybinds can be used:
+gK - show hover documentation for the symbol at cursor
+gd - goto definition of symbol at cursor
 
 sse.sh
 --------------
@@ -1650,12 +1668,12 @@ can still be made while holding Shift on most terminal emulators.
 My current EXINIT setup:
 --------------
 How it works:
-:rcm0:|sc!||1sc | - disable special characters
+:|sc!||1sc | - disable special characters
 :97reg - put macro into a register
 :ish - enable interactive shell
 :inc (^(?:(?!^\.git).)+[^/]+$) always exclude .git folder from :fd
 :pac - print autocomplete options
-:|sc||rcm1| - default special characters & range execution mode
+:|sc|0? - default special characters
 
 Macros:
 @q = creates structure like this:
@@ -1685,4 +1703,4 @@ you not saving the file prior to running the macro.
 and goto definition based on the current regex keyword
 @r = goto definition in while being in ./tags file
 
-export EXINIT="$(printf '%b' 'rcm0:|sc!||1sc |108reg :!cp % %_:w:!git diff --no-index %_ %113reg o{\n}kA\n	115reg i/*A*/119reg A {jo}koa120reg >%<<$%<<122reg :ph1 1 2 1^A:ph2 2 2 1^B:ph3 3 2 1^C:ph4 4 2 1^D:ph5 5 2 1^E:ph6 6 2 1^F:ph7 7 2 1^G:ph8 8 2 1^H:ph9 9 2 1^I:ph10 10 2 1^J:ph11 11 2 1^K:ph12 12 2 1^L:ph13 13 2 1^M:ph14 14 2 1^N:ph15 15 2 1^O:ph16 16 2 1^P:ph17 17 2 1^Q:ph18 18 2 1^R:ph19 19 2 1^S:ph20 20 2 1^T:ph21 21 2 1^U:ph22 22 2 1^V:ph23 23 2 1^W:ph24 24 2 1^X:ph25 25 2 1^Y:ph26 26 2 1^Z:ph27 27 2 1^[:ph28 28 2 1^\\\\:ph29 29 2 1^]:ph30 30 2 1^^:ph31 31 2 1^_102reg :cd !p $c101reg :e !p $c97reg I/*A*/100reg /\/\*\n2x/\*\/\n2x116reg :51reg %@/:e ./tags:1;0:;>unescaped>:??!\%s/\\\\\\\\\\(.)/\\1/g\:1i unescaped:ic:%f>^%@3	:??!p "%@3" not found in tags\:ic\:e %#\:re %@3\:1q:;>	>+1;#>	>ya1:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya2\:\?\?\!p bad format\\\\\:ic\\\\\:e %#\\\\\:re %@3\\\\\:2q\:e %@1\:\?\%@2\:re %@3\:ic\:1q:e %@1:1:%f>:re %@3:ic114reg :51reg %@/:;>	>+1;#>	>ya1:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya2\:\?\?\!p bad format\\\\\:re %@3\\\\\:2q\:e %@1\:\?\%@2\:re %@3\:1q:e %@1:1:ic:%f>:re %@3:icinc (^(?:(?!^\.git).)+[^/]+$)pacish|sc||rcm1|')"
+export EXINIT="$(printf '%b' '|sc!||1sc |:108reg :!cp % %_:w:!git diff --no-index %_ %113reg o{\n}kA\n	115reg i/*A*/119reg A {jo}koa120reg >%<<$%<<122reg :ph1 1 2 1^A:ph2 2 2 1^B:ph3 3 2 1^C:ph4 4 2 1^D:ph5 5 2 1^E:ph6 6 2 1^F:ph7 7 2 1^G:ph8 8 2 1^H:ph9 9 2 1^I:ph10 10 2 1^J:ph11 11 2 1^K:ph12 12 2 1^L:ph13 13 2 1^M:ph14 14 2 1^N:ph15 15 2 1^O:ph16 16 2 1^P:ph17 17 2 1^Q:ph18 18 2 1^R:ph19 19 2 1^S:ph20 20 2 1^T:ph21 21 2 1^U:ph22 22 2 1^V:ph23 23 2 1^W:ph24 24 2 1^X:ph25 25 2 1^Y:ph26 26 2 1^Z:ph27 27 2 1^[:ph28 28 2 1^\\\\:ph29 29 2 1^]:ph30 30 2 1^^:ph31 31 2 1^_102reg :cd !p $c101reg :e !p $c97reg I/*A*/100reg /\/\*\n2x/\*\/\n2x116reg :51reg %@/:e ./tags:1;0:;>unescaped>:??!\%s/\\\\\\\\\\(.)/\\1/g\:1i unescaped:ic:%f>^%@3	:??!p "%@3" not found in tags\:ic\:e %#\:re %@3\:1q:;>	>+1;#>	>ya1:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya2\:\?\?\!p bad format\\\\\:ic\\\\\:e %#\\\\\:re %@3\\\\\:2q\:e %@1\:\?\%@2\:re %@3\:ic\:1q:e %@1:1:%f>:re %@3:ic114reg :51reg %@/:;>	>+1;#>	>ya1:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya2\:\?\?\!p bad format\\\\\:re %@3\\\\\:2q\:e %@1\:\?\%@2\:re %@3\:1q:e %@1:1:ic:%f>:re %@3:icinc (^(?:(?!^\.git).)+[^/]+$)pacish|sc|0?')"

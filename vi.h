@@ -69,9 +69,9 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define sbuf_smake(sb, newsz) sbuf _##sb, *sb = &_##sb; _sbuf_make(sb, newsz,)
 #define sbuf_make(sb, newsz) { _sbuf_make(sb, newsz, sb = emalloc(sizeof(*sb));) }
 #define sbuf_free(sb) { free(sb->s); free(sb); }
-#define sbuf_set(sb, ch, len) { sbuf_(sb, ch, len, set) sb->s_n += len; }
-#define sbuf_mem(sb, s, len) { sbuf_(sb, s, len, cpy) sb->s_n += len; }
-#define sbuf_str(sb, s) { int __l_ = strlen(s); sbuf_mem(sb, s, __l_) }
+#define sbuf_set(sb, ch, len) { int __l_ = len; sbuf_(sb, ch, __l_, set) sb->s_n += __l_; }
+#define sbuf_mem(sb, s, len) { int __l_ = len; sbuf_(sb, s, __l_, cpy) sb->s_n += __l_; }
+#define sbuf_str(sb, s) { sbuf_mem(sb, s, strlen(s)) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that null-terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
@@ -189,7 +189,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch);
 int lbuf_wordbeg(struct lbuf *lb, int big, int dir, int *row, int *off);
 int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off);
-int lbuf_pair(struct lbuf *lb, int *row, int *off);
+int lbuf_pair(struct lbuf *lb, char *pairs, int plen, int *row, int *off);
 
 /* ren.c: rendering lines */
 typedef struct {
@@ -237,7 +237,8 @@ void dir_init(void);
 #define SYN_SATT	0x4000000	/* grp inclusion check at start offset */
 #define SYN_EATT	0x8000000	/* grp inclusion check at end offset */
 #define SYN_ATT		0xc000000	/* grp inclusion check from start to end */
-#define SYN_OWR		0x10000000	/* attribute overwrite */
+#define SYN_OATT	0x10000000	/* grp overwrite of listed attributes only */
+#define SYN_OWR		0x20000000	/* attribute overwrite */
 #define SYN_BSSET(a)	(a & SYN_BS)
 #define SYN_BESET(a)	(a & SYN_BE)
 #define SYN_BSESET(a)	(a & SYN_BSE)
@@ -246,6 +247,7 @@ void dir_init(void);
 #define SYN_SATTSET(a)	(a & SYN_SATT)
 #define SYN_EATTSET(a)	(a & SYN_EATT)
 #define SYN_ATTSET(a)	(a & SYN_ATT)
+#define SYN_OATTSET(a)	(a & SYN_OATT)
 extern int ftidx;
 extern int syn_blockhl;
 char *syn_setft(char *ft);
@@ -326,18 +328,18 @@ void term_back(int c);
 #define term_dec() ibuf_pos--; icmd_pos--;
 #define term_exec(s, n, type) \
 { \
+	preserve(int, tn, tn = 0;) \
 	preserve(int, ibuf_cnt,) \
 	preserve(int, ibuf_pos, ibuf_pos = ibuf_cnt;) \
 	term_push(s, n); \
 	preserve(int, texec, texec = type;) \
-	tn = 0; \
 	vi(0); \
-	tn = 0; \
 	restore(texec) \
 	if (xquit > 0) \
 		xquit = 0; \
 	restore(ibuf_pos) \
 	restore(ibuf_cnt) \
+	restore(tn) \
 } \
 
 /* process management */
@@ -444,7 +446,7 @@ extern struct buf *bufs;
 extern struct buf tempbufs[3];
 extern struct buf *ex_buf;
 extern struct buf *ex_pbuf;
-#define istempbuf(buf) (buf - bufs < 0 || buf - bufs >= xbufcur)
+#define istempbuf(buf) (buf >= tempbufs && buf < tempbufs + LEN(tempbufs))
 #define xb_path ex_buf->path
 #define xb_ft ex_buf->ft
 #define xb ex_buf->lb

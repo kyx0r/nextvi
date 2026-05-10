@@ -1,12 +1,9 @@
 #!/bin/sh -e
 
-# Path to nextvi (adjust as needed)
 VI=${VI:-vi}
-
-# Verify that VI is nextvi
 if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     echo "Error: $VI is not nextvi" >&2
-    echo "Set VI environment variable to point to nextvi" >&2
+    echo "Set VI environment variable to point to nextvi binary" >&2
     exit 1
 fi
 
@@ -31,4 +28,4 @@ for p in *.c *.h; do
 	EXINIT="${EXINIT}:%s/INT_MAX/INT64_MAX/g"
 	EXINIT="${EXINIT}:wq" $VI -sm "$p"
 done
-EXINIT="$(printf '%b' '1:i #include <stdint.h>\ntypedef uint64_t u64;\ntypedef int64_t s64;\n.\n:wq')" $VI -sm vi.h
+EXINIT="$(printf '%b' '1:i #include <stdint.h>\ntypedef uint64_t u64;\ntypedef int64_t s64;:wq')" $VI -sm vi.h

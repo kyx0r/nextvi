@@ -49,7 +49,7 @@ static void file_index(struct lbuf *buf)
 	sbuf_smake(ibuf, 1024)
 	for (n = 1; n <= acsb->s_n; n++)
 		if (acsb->s[n - 1] == '\n')
-			sbuf_mem(ibuf, &n, (int)sizeof(n))
+			sbuf_mem(ibuf, &n, sizeof(n))
 	for (int i = 0; i < ln_n; i++) {
 		sidx = 0;
 		while (rset_find(rs, ss[i]+sidx, subs, sidx ? REG_NOTBOL : 0) >= 0) {
@@ -69,7 +69,7 @@ static void file_index(struct lbuf *buf)
 							goto skip;
 				sbuf_mem(acsb, part, len)
 				sbuf_chr(acsb, '\n')
-				sbuf_mem(ibuf, &acsb->s_n, (int)sizeof(n))
+				sbuf_mem(ibuf, &acsb->s_n, sizeof(n))
 			}
 			skip:
 			sidx += subs[grp + 1] > 0 ? subs[grp + 1] : 1;
@@ -304,7 +304,7 @@ static void led_printparts(sbuf *sb, int pre, int ps,
 	}
 	if (pos >= xleft + xcols || pos < xleft)
 		xleft = pos < xcols ? 0 : pos - xcols / 2;
-	syn_blockhl = -1;
+	syn_scdir(0);
 	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
 	sbufn_cut(sb, psn)
@@ -361,7 +361,7 @@ char *led_read(int *kmap, int c)
 	sbuf_make(led_attsb, sizeof(la) * 2) \
 	for (i = uc_slen(buf) - 1; i >= 0; i--) { \
 		la.off = *poff + i; \
-		sbuf_mem(led_attsb, &la, (int)sizeof(la)) \
+		sbuf_mem(led_attsb, &la, sizeof(la)) \
 	} \
 	sbuf_str(sb, buf) \
 	led_printparts(sb, pre, ps, *post, postn, poff); \
@@ -403,7 +403,7 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
 void led_modeswap(void)
 {
 	preserve(int, xquit, xquit = 0;)
-	preserve(int, texec, if (texec == '@') texec = 0;)
+	preserve(int, texec, texec = 0;)
 	preserve(int, xvis, xvis ^= 2;)
 	preserve(int, xexec_dep, xexec_dep = 0;)
 	if (xvis & 2)
@@ -458,8 +458,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			break;
 		case TK_CTL('d'):
 			if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
-				sbuf_cut(sb, ps)
-				sbuf_str(sb, sb->s+ps+1)
+				memmove(&sb->s[ps], &sb->s[ps+1], len - ps - 1);
+				sb->s_n--;
 				pre--;
 			}
 			break;
@@ -579,7 +579,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			preserve(struct buf*, ex_buf,)
 			int bidx = istempbuf(ex_buf) ? -1 : ex_buf - bufs;
 			int pidx = ex_pbuf - bufs;
-			preserve(int, texec, if (texec == '@') texec = 0;)
+			preserve(int, texec, texec = 0;)
 			preserve(int, xquit, xquit = 0;)
 			preserve(int, ftidx,)
 			temp_switch(0, 0);

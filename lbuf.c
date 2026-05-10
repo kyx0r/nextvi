@@ -92,7 +92,7 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
 			memcpy(ln, s, l_nonl);
 			memset(&ln[l_nonl + 1], 0, 4);	/* fault tolerance pad */
 			ln[l_nonl] = '\n';
-			sbuf_mem(sb, &ln, (int)sizeof(s))
+			sbuf_mem(sb, &ln, sizeof(s))
 			s += l;
 		}
 	}
@@ -623,18 +623,18 @@ int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off)
 }
 
 /* move to the matching character */
-int lbuf_pair(struct lbuf *lb, int *row, int *off)
+int lbuf_pair(struct lbuf *lb, char *pairs, int plen, int *row, int *off)
 {
 	int r = *row, o = *off;
-	char *pairs = "()[]{}";
 	int p, c, dep = 1;
+	char *m;
 	if (!lbuf_get(lb, r))
 		return 1;
 	ren_state *rs = ren_position(lbuf_get(lb, r));
-	for (; o < rs->n-1 && !memchr(pairs, *rs->chrs[o], 6); o++);
-	if (!memchr(pairs, *rs->chrs[o], 6))
+	for (; o < rs->n-1 && !memchr(pairs, *rs->chrs[o], plen); o++);
+	if (!(m = memchr(pairs, *rs->chrs[o], plen)))
 		return 1;
-	p = (char*)memchr(pairs, *rs->chrs[o], 6) - pairs;
+	p = m - pairs;
 	while (!lbuf_next(lb, (p & 1) ? -1 : +1, &r, &o)) {
 		c = *rstate->chrs[o];
 		if (c == pairs[p ^ 1])

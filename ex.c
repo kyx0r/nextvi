@@ -21,8 +21,6 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
-int xrcm = 1;			/* range command mode -
-				0: exec at command parse 1: exec at command */
 
 int xquit;			/* exit if positive, force quit if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
@@ -123,8 +121,6 @@ static int bufs_open(const char *path, int len)
 
 void temp_open(int i, char *name, char *ft)
 {
-	if (tempbufs[i].lb)
-		return;
 	tempbufs[i].path = uc_dup(name);
 	tempbufs[i].lb = lbuf_make();
 	tempbufs[i].row = 0;
@@ -264,18 +260,19 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 #define ex_vregion(loc, beg, end) ex_region(loc, beg, end, &xoff, &xoff)
 static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
-	int vaddr = *loc == '%', haddr = 0, update = 0, row = xrow, ooff = xoff;
-	char *ploc = loc;
+	int vaddr = *loc == '%', haddr = 0, update = 0;
+	int row = xrow, ooff = xoff, ret = 1;
+	char *ploc = loc, *cmd = NULL;
 	xrerr = xirerr;
 	if (vaddr)
 		*beg = 0;
 	while (*loc) {
 		if (*loc == '|') {
-			char *cmd = re_read(&loc, 0);
+			cmd = re_read(&loc, 0);
 			void *err = ex_exec(cmd);
 			free(cmd);
 			if (err) {
-				xrerr = "ex command error";
+				xrerr = "subcommand error";
 				return 1;
 			}
 			continue;
@@ -305,9 +302,11 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 	if (!vaddr) {
 		*beg = xrow;
 		*end = MIN(lbuf_len(xb), *beg + 1);
+		ret += cmd && !haddr;
 	} else if (vaddr == 1)
 		*end = *beg + 1;
-	return *beg < 0 || *beg >= lbuf_len(xb) || *end <= *beg || *end > lbuf_len(xb);
+	return (*beg < 0 || *beg >= lbuf_len(xb) ||
+		*end <= *beg || *end > lbuf_len(xb)) * ret;
 }
 
 static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
@@ -424,7 +423,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 			for (pos = beg; c < max && pos < end; pos++) {
 				path = xb->ln[pos];
 				if (rset_match(rs, path, 0)) {
-					sbuf_mem(sb, &pos, (int)sizeof(pos))
+					sbuf_mem(sb, &pos, sizeof(pos))
 					p = itoa(c++, buf);
 					int z, wid = p - buf;
 					for (z = dwid1 + 1 - wid; z; z--)
@@ -761,39 +760,49 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	int key, beg = 0, end = 0, o1 = -1, o2 = -1, ps = 0;
 	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	sbuf_smake(sb, 128)
-	if (*arg)
-		term_push(arg, strlen(arg));
-	while (1) {
-		syn_setft(msg_ft);
-		if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
-			break;
-		if (xvis & 1 && !strcmp(".", sb->s + ps)) {
-			sb->s_n -= 1 + (o1 >= 0);
-			break;
+	sbuf _sb, *sb = &_sb;
+	if (xvis & 1 && *arg) {
+		sb->s = arg;
+		sb->s_n = 1;
+		key = 127;
+	} else {
+		_sbuf_make(sb, 128,)
+		if (*arg)
+			term_push(arg, strlen(arg));
+		while (1) {
+			syn_setft(msg_ft);
+			if ((key = ex_read(sb, "", NULL, ps, 0)) != '\n')
+				break;
+			if (xvis & 1 && !strcmp(".", sb->s + ps)) {
+				sb->s_n = MAX(0, sb->s_n - 2);
+				break;
+			}
+			sbuf_chr(sb, '\n')
+			ps = sb->s_n;
 		}
-		sbuf_chr(sb, '\n')
-		ps = sb->s_n;
+		syn_setft(xb_ft);
+		if (key == TK_CTL('c'))
+			goto ret;
+		if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
+			sb->s_n--;
+		sbuf_null(sb)
 	}
-	syn_setft(xb_ft);
-	if (key == TK_CTL('c'))
-		goto ret;
-	if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
-		sb->s_n--;
-	sbuf_null(sb)
 	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb))) {
 		beg++;
 		end = beg;
 	} else if (cmd[0] == 'i')
 		end = beg;
 	if (o1 >= 0 && cmd[0] == 'c') {
+		if (sb->s == arg)
+			sb->s_n = strlen(arg);
 		if (!sb->s_n && o2 <= o1)
 			goto ret;
 		char *p = lbuf_joinsb(xb, beg, end-1, sb, &o1, &o2);
 		o1 -= sb->s[0] == '\n';
-		free(sb->s);
+		if (sb->s != arg)
+			free(sb->s);
 		sb->s = p;
-	} else if (!(xvis & 1) && key != 127)
+	} else if (key != 127)
 		sbufn_chr(sb, '\n')
 	else if (!sb->s_n)
 		goto ret;
@@ -803,7 +812,8 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (o1 >= 0)
 		xoff = o1;
 	ret:
-	free(sb->s);
+	if (sb->s != arg)
+		free(sb->s);
 	return NULL;
 }
 
@@ -817,8 +827,8 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		ex_print(arg, msg_ft)
 		return NULL;
 	}
-	if (ex_region(loc, &beg, &end, &o1, &o2))
-		return xrerr;
+	if ((i = ex_region(loc, &beg, &end, &o1, &o2)))
+		return i == 2 && !*cmd ? NULL : xrerr;
 	if (o1 >= 0)
 		xoff = MAX(o1, o2);
 	if (!*cmd && *loc) {
@@ -928,6 +938,10 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 
 static void *ec_num(char *loc, char *cmd, char *arg)
 {
+	if (cmd[1] == '?') {
+		ex_print(xpret ? xpret : "no error", msg_ft)
+		return *arg ? xpret : NULL;
+	}
 	char msg[128];
 	int arr[4] = {0, 0, -1, -1};
 	int ret = ex_region(loc, &arr[0], &arr[1], &arr[2], &arr[3]);
@@ -1146,18 +1160,18 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	char *then_cmd, *else_cmd;
 	if (isdq && *loc) {
 		int id = atoi(loc);
-		if (!*arg) {
+		if (!*arg && cmd[2] != '?') {
 			int err = (xpret != NULL) ^ inv;
 			if (!xanchor)
-				sbuf_make(xanchor, 4 * (int)sizeof(int))
-			sbuf_mem(xanchor, &id, (int)sizeof(id))
-			sbuf_mem(xanchor, &err, (int)sizeof(err))
+				sbuf_make(xanchor, 4 * sizeof(int))
+			sbuf_mem(xanchor, &id, sizeof(id))
+			sbuf_mem(xanchor, &err, sizeof(err))
 			return ret;
 		} else if (!xanchor)
 			return ret;
 		then_cmd = re_read(&arg, *cmd);
 		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
-		int *ap = (int*)xanchor->s, n = xanchor->s_n / (int)sizeof(int);
+		int *ap = (int*)xanchor->s, n = xanchor->s_n / sizeof(int);
 		int and_res = 0, or_res = 1;
 		for (int i = n; i >= 2;) {
 			i -= 2;
@@ -1170,6 +1184,10 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 				 and_res = 0;
 			}
 			if (!*loc) {
+				if (cmd[2] == '?') {
+					ret = or_res ? xuerr : NULL;
+					break;
+				}
 				branch = or_res ^ inv ? else_cmd : then_cmd;
 				if (branch)
 					ret = ex_exec(branch);
@@ -1179,14 +1197,22 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			i = n;
 		}
 	} else {
-		int count = *loc ? (*loc == '$' && cond ? INT_MAX : atoi(loc)) : 1;
 		then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
-		for (; count && !ret; count--) {
-			ret = isdq ? xpret : (cond ? ex_exec(cond) : NULL);
-			branch = (ret != NULL) ^ inv ? else_cmd : then_cmd;
+		if (isdq) {
+			ret = inv ? xpret ? NULL : xuerr : xpret;
+			branch = ret ? else_cmd : then_cmd;
 			if (branch)
 				ret = ex_exec(branch);
+		} else {
+			int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
+			for (; count && !ret; count--) {
+				ret = ex_exec(cond);
+				ret = inv ? ret ? NULL : xuerr : ret;
+				branch = ret ? else_cmd : then_cmd;
+				if (branch)
+					ex_exec(branch);
+			}
 		}
 	}
 	free(cond);
@@ -1417,8 +1443,6 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
 	return xkwdrs ? NULL : xserr;
 }
 
-static void *ec_null(char *loc, char *cmd, char *arg) { return NULL; }
-
 static int eo_val(char *arg)
 {
 	int val = atoi(arg);
@@ -1433,7 +1457,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 #define EO(opt) \
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
-EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt) EO(rcm)
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
 EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
@@ -1460,7 +1484,10 @@ static struct excmd {
 	{"@", ec_termexec},
 	{"&", ec_termexec},
 	{"!", ec_exec},
-	{"?\?!", ec_while},
+	{"=?", ec_num},
+	{"=", ec_num},
+	{"???", ec_while},
+	{"?""?!", ec_while},
 	{"??", ec_while},
 	{"?!", ec_while},
 	{"?", ec_while},
@@ -1501,7 +1528,6 @@ static struct excmd {
 	{"m", ec_mark},
 	{"q!", ec_quit},
 	{"q", ec_quit},
-	EO(rcm),
 	{"reg+", ec_regprint},
 	{"reg", ec_regprint},
 	{"re", ec_krsset},
@@ -1514,7 +1540,7 @@ static struct excmd {
 	{"uc", ec_setenc},
 	{"uz", ec_setenc},
 	{"ub", ec_setenc},
-	{"u", ec_undoredo},
+	{"ud", ec_undoredo},
 	EO(shape),
 	EO(seq),
 	{"sc!", ec_specials},
@@ -1541,9 +1567,8 @@ static struct excmd {
 	EO(lim),
 	EO(led),
 	EO(vis),
-	{"=", ec_num},
 	{"", ec_print}, /* do not remove */
-	{"", ec_null}, /* do not remove */
+	{"", ec_print}, /* do not remove */
 };
 
 /* parse command argument expanding % and ! */
@@ -1556,7 +1581,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			if (*src == '@' && src[1] && src[1] != xesc) {
 				sbuf *reg = xregs[(unsigned char)src[1]];
 				if (reg)
-					sbuf_str(sb, reg->s)
+					sbuf_mem(sb, reg->s, reg->s_n)
 				src += 2;
 			} else {
 				struct buf *pbuf = ex_buf;
@@ -1570,7 +1595,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 				}
 				src += *src == xesc && src[-1] != '#' && (src[1] ^ '0') < 10;
 				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
-					sbuf_str(sb, pbuf->path)
+					sbuf_mem(sb, pbuf->path, pbuf->plen)
 			}
 		} else if (*src == xexe) {
 			int n = sb->s_n;
@@ -1602,21 +1627,14 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 /* parse prefix and command */
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
-	int i, j, nullfunc = 0;
-	char *dst = sb->s, *cmd, *err;
-	if (*src && *src == xsep)
+	int i, j;
+	char *dst = sb->s;
+	if ((*src && *src == xsep) || (*idx == LEN(excmds) - 1))
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '\'' && src[1])
 			*dst++ = *src++;
-		if (*src == '|' && !xrcm) {
-			cmd = re_read((char**)&src, 0);
-			err = ex_exec(cmd);
-			if (err && err != xuerr && xerr & 1)
-				ex_print("parse command error", msg_ft)
-			free(cmd);
-			nullfunc = 1;
-		} else if (*src == '>' || *src == '<' || *src == '|') {
+		if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {
 				*dst++ = *src++;
@@ -1631,7 +1649,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	*dst++ = '\0';
 	sb->s_n = dst - sb->s;
 	if (*src == xsep) {
-		*idx = LEN(excmds) - 2 + nullfunc;
+		*idx = LEN(excmds) - 1;
 		return src;
 	}
 	for (i = 0; i < LEN(excmds); i++) {
@@ -1639,7 +1657,7 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 			if (!src[j] || src[j] != excmds[i].name[j])
 				break;
 		if (!excmds[i].name[j]) {
-			*idx = i + (nullfunc && i == LEN(excmds) - 2);
+			*idx = i;
 			src += j;
 			break;
 		}
