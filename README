@@ -895,7 +895,7 @@ EX COMMANDS
              Example: edit vi.c only if it exists
              :? \![ -f ./vi.c ]?e ./vi.c:mpt1
 
-     [# <$>]?![cond][<?>][else][<?>][then]
+     [#count <$>]?![cond][<?>][else][<?>][then]
              Inverted while loop conditional
 
      [prefix]??[then][<?>][else]

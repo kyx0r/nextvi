@@ -116,19 +116,16 @@ void term_pos(int r, int c)
 /* read s before reading from the terminal */
 void term_push(char *s, unsigned int n)
 {
-	static unsigned int tibuf_pos, tibuf_cnt;
-	if (texec == '@' && xquit > 0) {
-		xquit = 0;
-		tn = 0;
-		ibuf_cnt = tibuf_cnt;
-		ibuf_pos = tibuf_cnt;
-	}
+	static unsigned int tibuf_pos;
 	if (ibuf_cnt + n >= ibuf_sz || ibuf_sz - (ibuf_cnt + n) > 128) {
 		ibuf_sz = ibuf_cnt + n + 128;
 		ibuf = erealloc(ibuf, ibuf_sz);
 	}
 	if (texec) {
-		if (tibuf_pos != ibuf_pos)
+		if (texec == '@' && xquit > 0) {
+			xquit = 0;
+			tn = 0;
+		} else if (tibuf_pos != ibuf_pos)
 			tn = 0;
 		memmove(ibuf + ibuf_pos + n + tn,
 			ibuf + ibuf_pos + tn, ibuf_cnt - ibuf_pos - tn);
@@ -137,7 +134,6 @@ void term_push(char *s, unsigned int n)
 		tibuf_pos = ibuf_pos;
 	} else
 		memcpy(ibuf + ibuf_cnt, s, n);
-	tibuf_cnt = ibuf_cnt;
 	ibuf_cnt += n;
 }
 
