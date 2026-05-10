@@ -2484,7 +2484,7 @@ process_line:
 		      "[ \"$QF\" = \"1\" ] && QF= || QF=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n"
-		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:"
+		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:"
 		      "|sc! \\\\\\\\\\\\${SEP}|:vis 3\\\\${SEP}q1\" || INTR=\n", stdout);
 
 	/* Build groups for every file */
