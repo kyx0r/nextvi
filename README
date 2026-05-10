@@ -1291,7 +1291,7 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      | 542 vi.h     |  definitions/aux     |
      +--------------+----------------------+
-     | 363 term.c   |  low level IO        |
+     | 359 term.c   |  low level IO        |
      | 376 conf.c   |  hl/ft/td config     |
      | 433 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
@@ -1300,7 +1300,7 @@ CODE MAP
      | 766 regex.c  |  pikevm              |
      | 1744 ex.c    |  ex options/commands |
      | 1877 vi.c    |  normal mode/general |
-     | 7549 total   |  wc -l *.c|sort      |
+     | 7545 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1379,4 +1379,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.0                        May 7, 2026                       Nextvi 5.0
+Nextvi 5.0                       May 10, 2026                       Nextvi 5.0
