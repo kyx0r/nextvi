@@ -221,8 +221,9 @@ VI NORMAL
      [#]<^P>       Filesystem regex search backward
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
-     Z{<Any>}      Exit and clean terminal, force quit in an & macro
-     Zz            Exit and submit history command, force quit in an & macro
+     Z{<Any>}      Force exit and clean terminal, force quit in an & macro
+     Zz            Force exit and submit history command, force quit in an &
+                   macro
      ZZ            Exit and write unsaved changes to a file
      <ESC ^C>      Cancel any pending input or command
 
