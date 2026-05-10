@@ -207,14 +207,16 @@ ${SEP}.,\$;f> 		vi_lncol = dir_context\\\\(s\\\\) < 0 \\\\? 0 : l1;
 		memset\\\\(c, ' ', l1 - \\\\(c - tmp\\\\)\\\\);
 		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:193\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		syn_setrow(xb, s_row);
-${SEP}.,\$f> 		led_crender\\\\(s, row - xtop, l1, xleft, xleft \\\\+ xcols - l1\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:194\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$;f> 		led_crender\\\\(.*\\\\)
+		preserve\\\\(int, syn_blockhl, syn_blockhl = -1;\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:194\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		syn_setrow(NULL, 0);
 ${SEP}.,\$;f> 		restore\\\\(ftidx\\\\)
 		return;
 	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:212\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (s_row >= 0)
 		syn_setrow(xb, s_row);
-${SEP}.,\$f> 	led_crender\\\\(s, row - xtop, 0, xleft, xleft \\\\+ xcols\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:213\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$;f> 	led_crender\\\\(.*\\\\)
+	rstate = rstates;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:213\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	syn_setrow(NULL, 0);
 ${SEP}b3${SEP}%;f> int syn_findhl\\\\(int id\\\\);
 int syn_addhl\\\\(char \\\\*reg, int id\\\\);
@@ -225,6 +227,18 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" 
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA vi.c ===
+GROUP 7
++		syn_setrow(NULL, 0);
+pattern:
+		led_crender\(.*\)
+		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
+GROUP 9
++	syn_setrow(NULL, 0);
+pattern:
+	led_crender\(.*\)
+	rstate = rstates;
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
 index 0a13ff5a..bd86c6f4 100644
