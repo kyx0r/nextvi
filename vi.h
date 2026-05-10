@@ -328,18 +328,18 @@ void term_back(int c);
 #define term_dec() ibuf_pos--; icmd_pos--;
 #define term_exec(s, n, type) \
 { \
+	preserve(int, tn, tn = 0;) \
 	preserve(int, ibuf_cnt,) \
 	preserve(int, ibuf_pos, ibuf_pos = ibuf_cnt;) \
 	term_push(s, n); \
 	preserve(int, texec, texec = type;) \
-	tn = 0; \
 	vi(0); \
-	tn = 0; \
 	restore(texec) \
 	if (xquit > 0) \
 		xquit = 0; \
 	restore(ibuf_pos) \
 	restore(ibuf_cnt) \
+	restore(tn) \
 } \
 
 /* process management */
