@@ -403,7 +403,7 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
 void led_modeswap(void)
 {
 	preserve(int, xquit, xquit = 0;)
-	preserve(int, texec, if (texec == '@') texec = 0;)
+	preserve(int, texec, texec = 0;)
 	preserve(int, xvis, xvis ^= 2;)
 	preserve(int, xexec_dep, xexec_dep = 0;)
 	if (xvis & 2)
@@ -458,8 +458,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			break;
 		case TK_CTL('d'):
 			if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
-				sbuf_cut(sb, ps)
-				sbuf_str(sb, sb->s+ps+1)
+				memmove(&sb->s[ps], &sb->s[ps+1], len - ps - 1);
+				sb->s_n--;
 				pre--;
 			}
 			break;
@@ -579,7 +579,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			preserve(struct buf*, ex_buf,)
 			int bidx = istempbuf(ex_buf) ? -1 : ex_buf - bufs;
 			int pidx = ex_pbuf - bufs;
-			preserve(int, texec, if (texec == '@') texec = 0;)
+			preserve(int, texec, texec = 0;)
 			preserve(int, xquit, xquit = 0;)
 			preserve(int, ftidx,)
 			temp_switch(0, 0);
