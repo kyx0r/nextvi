@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c term.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:0\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -75,7 +75,7 @@ ${SEP}+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 ${SEP}b1${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:244\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:240\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
@@ -155,10 +155,10 @@ index 50b89bc6..8b3258d8 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index ce19068f..b83d1cbb 100644
+index d75be8f7..e285e3c0 100644
 --- a/term.c
 +++ b/term.c
-@@ -241,7 +241,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -237,7 +237,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}
@@ -171,7 +171,7 @@ index ce19068f..b83d1cbb 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 2120cbee..398e6030 100644
+index 96e23938..2521b2bd 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

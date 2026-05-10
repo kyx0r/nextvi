@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: led.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> static sbuf \\\\*suggestsb;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -82,7 +82,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 260d17d7..e7a7464c 100644
+index 163596e2..c75c4f59 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,7 @@

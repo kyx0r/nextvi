@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c term.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:357\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -87,20 +87,20 @@ ${SEP}.,\$;f> 		return;
 	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:42\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/\\\\(0/(stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:42\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			goto ret;
 		\\\\}
-		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:164\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:160\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		ufd.fd = stdin_fd;
 ${SEP}.,\$;f> 		re:
 		/\\\\* read a single input character \\\\*/
-		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:168\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:164\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 ${SEP}.,\$;f> 	fds\\\\[0\\\\]\\\\.events = POLLIN;
 	fds\\\\[1\\\\]\\\\.fd = ifd;
-	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:309\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:309\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		close\\\\(ifd\\\\);
+	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:305\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		close\\\\(ifd\\\\);
 	waitpid\\\\(pid, status, 0\\\\);
-	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:352\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:352\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
+	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:348\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:348\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
 	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1828\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
 ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
@@ -225,7 +225,7 @@ index 50b89bc6..a3b5096b 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index ce19068f..fda32a47 100644
+index d75be8f7..395970eb 100644
 --- a/term.c
 +++ b/term.c
 @@ -6,6 +6,8 @@ int term_resized;
@@ -273,7 +273,7 @@ index ce19068f..fda32a47 100644
  }
  
  void term_clean(void)
-@@ -162,11 +168,12 @@ int term_read(int winch)
+@@ -158,11 +164,12 @@ int term_read(int winch)
  			goto ret;
  		}
  		cw = 0;
@@ -288,7 +288,7 @@ index ce19068f..fda32a47 100644
  			if (term_winch && winch && xquit >= 0) {
  				*ibuf = winch;
  				goto ret;
-@@ -306,7 +313,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -302,7 +309,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	fds[0].events = POLLIN;
  	fds[1].fd = ifd;
  	fds[1].events = POLLOUT;
@@ -297,7 +297,7 @@ index ce19068f..fda32a47 100644
  	fds[2].events = POLLIN;
  	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
  		if (fds[0].revents & POLLIN) {
-@@ -349,7 +356,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -345,7 +352,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  		close(ifd);
  	waitpid(pid, status, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -329,7 +329,7 @@ index ed15bfc7..b7b7e5d4 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index 2120cbee..43f4fe42 100644
+index 96e23938..aa0d04ef 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -534,6 +534,7 @@ int conf_kmapfind(char *name);

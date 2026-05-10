@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1731\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -209,7 +209,7 @@ index ed15bfc7..6ac221aa 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 2120cbee..1dd0a1b2 100644
+index 96e23938..127de749 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -476,7 +476,7 @@ void *ex_exec(const char *ln);

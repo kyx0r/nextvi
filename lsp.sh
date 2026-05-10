@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c jsmn.h lsp.c term.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -1449,10 +1449,10 @@ const char *lsp_diag_for_line(const char *path, int line)
 }
 ${SEP}b4${SEP}%;f> 
 int term_read\\\\(int winch\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:152\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:148\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3d${SEP}.,\$;f> 			goto ret;
 		\\\\}
-		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:165\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:161\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+9c 		re:;
 		{
 			struct pollfd pfds[1 + LSP_NFDS_MAX];
@@ -1484,7 +1484,7 @@ ${SEP}+3,#+9c 		re:;
 					goto ret;
 				}
 ${SEP}.,\$;f> 				goto re;
-			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:177\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:173\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 				if (term_winch && winch && xquit >= 0) {
@@ -1497,7 +1497,7 @@ ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				goto err;
 			}
 			goto ret;
-${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:175\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		err:
 		*ibuf = 0;
 ${SEP}b5${SEP}%;f> #include \"ren\\\\.c\"
@@ -3029,10 +3029,10 @@ index 00000000..1f2c22da
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index ce19068f..536d859f 100644
+index d75be8f7..d0d74ccc 100644
 --- a/term.c
 +++ b/term.c
-@@ -149,7 +149,6 @@ void term_back(int c)
+@@ -145,7 +145,6 @@ void term_back(int c)
  
  int term_read(int winch)
  {
@@ -3040,7 +3040,7 @@ index ce19068f..536d859f 100644
  	int cw;
  	if (ibuf_pos >= ibuf_cnt) {
  		if (texec) {
-@@ -162,21 +161,53 @@ int term_read(int winch)
+@@ -158,21 +157,53 @@ int term_read(int winch)
  			goto ret;
  		}
  		cw = 0;
@@ -3162,7 +3162,7 @@ index ed15bfc7..cf3d44f0 100644
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
 diff --git a/vi.h b/vi.h
-index 2120cbee..7f193519 100644
+index 96e23938..38ae4fda 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -540,3 +540,18 @@ extern int vi_lncol;

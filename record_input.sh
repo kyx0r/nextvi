@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c term.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -35,7 +35,7 @@ ${SEP}.,\$f> 	\\\\{\"q\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p 
 ${SEP}.a 	EO(rec),
 ${SEP}b2${SEP}%;f> 		ret:
 		ibuf_cnt = 1;
-		ibuf_pos = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:182\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		ibuf_pos = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:178\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xrec && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
@@ -118,10 +118,10 @@ index 50b89bc6..f7b7f073 100644
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
 diff --git a/term.c b/term.c
-index ce19068f..4f340622 100644
+index d75be8f7..80023a89 100644
 --- a/term.c
 +++ b/term.c
-@@ -180,6 +180,12 @@ int term_read(int winch)
+@@ -176,6 +176,12 @@ int term_read(int winch)
  		ret:
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
@@ -135,7 +135,7 @@ index ce19068f..4f340622 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 2120cbee..58bd347e 100644
+index 96e23938..f96476f6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -426,6 +426,7 @@ extern int xpr;

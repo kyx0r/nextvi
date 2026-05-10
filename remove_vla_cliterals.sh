@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c lbuf.c led.c regex.c ren.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> #define CY1	14	/\\\\* bright cyan \\\\*/
@@ -300,7 +300,7 @@ index 0a13ff5a..ef87fbdf 100644
  }
  
 diff --git a/led.c b/led.c
-index 260d17d7..f9feebc3 100644
+index 163596e2..439cc721 100644
 --- a/led.c
 +++ b/led.c
 @@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
@@ -567,7 +567,7 @@ index ed15bfc7..cdfb602b 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 2120cbee..988a03da 100644
+index 96e23938..38b894b1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -497,7 +497,7 @@ extern const int ftslen;

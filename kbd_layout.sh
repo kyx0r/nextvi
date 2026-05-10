@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: kmap.h term.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
@@ -39,7 +39,7 @@ ${SEP}+1a 	['y'] = \"h\",
 	['l'] = \"o\",
 ${SEP}b1${SEP}%;f> 			err:
 			\\\\*ibuf = 0;
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:175\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'kmap.h' 'term.c'
@@ -66,10 +66,10 @@ index d025f5f1..e549d13b 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index ce19068f..1efd71db 100644
+index d75be8f7..ecff1b95 100644
 --- a/term.c
 +++ b/term.c
-@@ -177,6 +177,8 @@ int term_read(int winch)
+@@ -173,6 +173,8 @@ int term_read(int winch)
  			err:
  			*ibuf = 0;
  		}

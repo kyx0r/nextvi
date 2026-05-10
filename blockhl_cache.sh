@@ -24,7 +24,7 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:@Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: lbuf.c ren.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> static int lbuf_replace\\\\(struct lbuf \\\\*lb, sbuf \\\\*sb, char \\\\*s, struct lopt \\\\*lo, int n_del, int n_ins\\\\)
@@ -476,7 +476,7 @@ index ed15bfc7..86ec1481 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 2120cbee..e6c30596 100644
+index 96e23938..8c9bcdc4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -259,6 +259,8 @@ void syn_reloadft(int hl, int flg);
