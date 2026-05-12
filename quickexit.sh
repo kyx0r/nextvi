@@ -27,11 +27,11 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1462\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1463\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(qe)
-${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1528\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1529\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	EO(qe),
 ${SEP}b2${SEP}1a static int gettime_ms(void)
 {
@@ -57,7 +57,7 @@ ${SEP}+2a 		case 'j':
 _default:
 ${SEP}b3${SEP}9a #include <time.h>
 ${SEP}%;f> 				k = vc_insert\\\\(c\\\\);
-				ins:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1529\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				ins:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1535\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (xqe)
 					vi_mod |= 2;
 ${SEP}b4${SEP}%;f> 	int p_reg;
@@ -127,10 +127,10 @@ extern int xshape;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 21b22191..e9603bab 100644
+index 37836e80..16f820cb 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -301,7 +301,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -289,7 +289,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
@@ -140,7 +140,7 @@ index 21b22191..e9603bab 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 50b89bc6..3b7dc3b3 100644
+index 7aae6489..d4fe5195 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -148,7 +148,7 @@ index 50b89bc6..3b7dc3b3 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1460,6 +1461,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1461,6 +1462,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -156,7 +156,7 @@ index 50b89bc6..3b7dc3b3 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1526,6 +1528,7 @@ static struct excmd {
+@@ -1527,6 +1529,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -200,7 +200,7 @@ index 163596e2..1747ec7d 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index ed15bfc7..1e840af9 100644
+index f814f5fb..e0baa5ee 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -211,7 +211,7 @@ index ed15bfc7..1e840af9 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1527,6 +1528,8 @@ void vi(int init)
+@@ -1533,6 +1534,8 @@ void vi(int init)
  				k = vc_insert(c);
  				ins:
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;

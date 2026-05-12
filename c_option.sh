@@ -27,17 +27,17 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1731\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1731\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1743\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1732\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1732\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1744\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 ${SEP}b1${SEP}%;f> 
-int main\\\\(int argc${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1833\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+int main\\\\(int argc${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1839\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 ${SEP}.,\$;f> 			else \\\\{
-				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1856\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1862\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -50,10 +50,10 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 					return EXIT_FAILURE;
 				}
 			} else {
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1858\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/\\\\[-a/[-ac/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1858\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
-		term_scrh;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1868\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1868\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1864\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/\\\\[-a/[-ac/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1864\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
+		term_scrh;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1874\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1874\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:479\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'vi.c' 'vi.h'
 
 exit 0
@@ -116,8 +116,8 @@ c 			else if (argv[i][j] == 'c') {
 				}
 			} else {
 GROUP 3
--				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.0 Usage: %s [-acemsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-5.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.1 Usage: %s [-acemsv] [file ...]\n", argv[0]);
 edit_cmd_rel:
 +1
 s/\[-a/[-ac/
@@ -143,10 +143,10 @@ s/n\)/n, char** cmds, int cmdnum)/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 50b89bc6..8f792e1d 100644
+index 7aae6489..5d404c43 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1728,7 +1728,7 @@ void ex(void)
+@@ -1729,7 +1729,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -155,7 +155,7 @@ index 50b89bc6..8f792e1d 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1741,4 +1741,6 @@ void ex_init(char **files, int n)
+@@ -1742,4 +1742,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -163,10 +163,10 @@ index 50b89bc6..8f792e1d 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index ed15bfc7..6ac221aa 100644
+index f814f5fb..7c3cddf9 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1830,7 +1830,8 @@ static void setup_signals(void)
+@@ -1836,7 +1836,8 @@ static void setup_signals(void)
  
  int main(int argc, char *argv[])
  {
@@ -176,7 +176,7 @@ index ed15bfc7..6ac221aa 100644
  	setup_signals();
  	dir_init();
  	syn_init();
-@@ -1853,9 +1854,20 @@ int main(int argc, char *argv[])
+@@ -1859,9 +1860,20 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis = 0;
@@ -194,12 +194,12 @@ index ed15bfc7..6ac221aa 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.0 Usage: %s [-acemsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-5.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.1 Usage: %s [-acemsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
-@@ -1865,7 +1877,7 @@ int main(int argc, char *argv[])
+@@ -1871,7 +1883,7 @@ int main(int argc, char *argv[])
  		term_init();
  	if (xvis & 8)
  		term_scrh;

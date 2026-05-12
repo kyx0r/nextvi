@@ -27,12 +27,12 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c term.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xms = 1;			/* mouse in normal mode */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xms = 1;			/* mouse in normal mode */
 ${SEP}%;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1475\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a _EO(ms,
 	xms = !*arg ? !xms : eo_val(arg);
 	if (xms)
@@ -44,7 +44,7 @@ ${SEP}+2a _EO(ms,
 
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1527\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1528\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(ms),
 ${SEP}b2${SEP}%;f> 	return pos - xleft;
 \\\\}
@@ -316,10 +316,10 @@ i extern int xms;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 21b22191..0b68a5fc 100644
+index 37836e80..74895854 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -301,7 +301,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -289,7 +289,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
@@ -329,7 +329,7 @@ index 21b22191..0b68a5fc 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 50b89bc6..e830a661 100644
+index 7aae6489..50f96801 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -337,7 +337,7 @@ index 50b89bc6..e830a661 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1473,6 +1474,15 @@ _EO(left,
+@@ -1474,6 +1475,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -353,7 +353,7 @@ index 50b89bc6..e830a661 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1525,6 +1535,7 @@ static struct excmd {
+@@ -1526,6 +1536,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -538,7 +538,7 @@ index d75be8f7..6ec836b4 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index ed15bfc7..448fc5da 100644
+index f814f5fb..845d7e7a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -554,6 +554,9 @@ static void vc_status(int type)

@@ -336,7 +336,7 @@ s/et/tr/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 50b89bc6..d5ed6ce4 100644
+index 7aae6489..7fd07dd5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ int xsep = ':';			/* ex command separator */
@@ -712,7 +712,7 @@ index ff88bb41..fc39e70f 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index ed15bfc7..3823b830 100644
+index f814f5fb..8f6f140f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -426,7 +426,7 @@ static void vi_regput(int c, const char *s, int lnmode)

@@ -31,15 +31,15 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> int xhlw;			/\\\\* highlight cu
 int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
 int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:9\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int xhlm;			/* highlight marks */
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1462\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1463\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(hlm)
 ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1560\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(order\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1561\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(hlm),
 ${SEP}b1${SEP}%;f> 				word = cs;
 			\\\\}
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1755\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1761\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";
@@ -67,7 +67,7 @@ EO\(pac\)
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 50b89bc6..b1514967 100644
+index 7aae6489..b9046d28 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -78,7 +78,7 @@ index 50b89bc6..b1514967 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1460,6 +1461,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1461,6 +1462,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -86,7 +86,7 @@ index 50b89bc6..b1514967 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1558,6 +1560,7 @@ static struct excmd {
+@@ -1559,6 +1561,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),
@@ -95,10 +95,10 @@ index 50b89bc6..b1514967 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index ed15bfc7..2d9ef75b 100644
+index f814f5fb..1bad473b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1753,6 +1753,21 @@ void vi(int init)
+@@ -1759,6 +1759,21 @@ void vi(int init)
  				word = cs;
  			}
  		}
