@@ -1,6 +1,6 @@
-.Dd May 10, 2026
+.Dd May 12, 2026
 .Dt Nextvi 1
-.Os Nextvi 5.0
+.Os Nextvi 5.1
 .
 .Sh NAME
 .Nm Nextvi
@@ -539,7 +539,7 @@ with <\\>.
 
 .It Cm \&( \&^ \&] \&-
 Specials in regex "[]" expression
-.It Cm \&( \&) { } + * \&? ^ $ \&[ \&] \&| \e \&. \\\\< \\\\>
+.It Cm \&( \&) { + * \&? ^ $ \&[ \&] \&| \e \&. \\\\< \\\\>
 Specials in regex
 .It Cm \e \&: \&% \&!
 Specials in ex
@@ -1683,15 +1683,15 @@ _
  542 vi.h | definitions/aux
 _
  359 term.c | low level IO
- 376 conf.c | hl/ft/td config
+ 364 conf.c | hl/ft/td config
  433 ren.c | positioning/syntax
  614 uc.c | UTF-8 support
  651 lbuf.c | file/line buffer
  725 led.c | insert mode/output
  766 regex.c | pikevm
- 1744 ex.c | ex options/commands
- 1877 vi.c | normal mode/general
- 7545 total | wc -l *.c\(basort
+ 1745 ex.c | ex options/commands
+ 1883 vi.c | normal mode/general
+ 7540 total | wc -l *.c\(basort
 _
 .TE
 .
