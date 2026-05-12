@@ -637,7 +637,8 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 		end = lbuf_len(lb);
 	}
 	lbuf_region(lb, &obuf, beg, o1, end-1, o2);
-	lbuf_edit(pxb, obuf.s, row, row, 0, 0);
+	if (obuf.s_n)
+		lbuf_edit(pxb, obuf.s, row, row, 0, 0);
 	free(obuf.s);
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [r]", path, end - beg);
 	ex_print(msg, bar_ft)
