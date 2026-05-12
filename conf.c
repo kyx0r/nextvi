@@ -72,7 +72,7 @@ struct highlight hls[] = {
 	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
 
 	{FT(c), NULL, A(CY1 | SYN_BD), 1, 2},
-	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?#-1)(?:(?!^/\\*).)*\\*/(?<\".*\\*/.*(?:\"|\\\\\n$)))",
+	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?#-1)(?<\".*\\*/.*(?:\"|\\\\\n$)))",
 		A(BL | SYN_IT, BL | SYN_BS, BL | SYN_BE)},
 	{FT(c), "\\<(?:signed|unsigned|char|short|int|[a-z0-9_]+_t|FILE|DIR|\
 long|f(?:loat|64|32)|double|void|enum|union|typedef|static|extern|register|struct|\
@@ -106,7 +106,7 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 
 	{FT(tex), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(tex), NULL, A(RE1), 0, 1},
-	{FT(tex), "\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)\\})?",
+	{FT(tex), "\\\\[^[{ \t]+(\\[([^\\]]+)\\])?(\\{([^}]*)})?",
 		A(BL | SYN_BD, IN, YE, IN, MA)},
 	{FT(tex), "\\$[^$]+\\$", A(YE)},
 	{FT(tex), "%.*", A(GR | SYN_IT)},
@@ -136,7 +136,7 @@ default|break|continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(sh), "\"(?:[^\"\\\\]|\\\\.)*\"", A(BL)},
 	{FT(sh), "`(?:[^`\\\\]|\\\\.)*`", A(BL)},
 	{FT(sh), "'[^']*'", A(BL)},
-	{FT(sh), "\\$(?:\\{[^}]+\\}|[a-zA-Z_0-9]+|[!#$?*@-])", A(RE)},
+	{FT(sh), "\\$(?:\\{[^}]+}|[a-zA-Z_0-9]+|[!#$?*@-])", A(RE)},
 	{FT(sh), "^([a-zA-Z_0-9]* *\\(\\)) *\\{", A(IN, SYN_BD)},
 	{FT(sh), "^\\. .*", A(SYN_BD)},
 
@@ -170,67 +170,55 @@ name|Number|Object|prototype|String|toString|undefined|valueOf))\\>", A(BL1, CY 
 	{FT(js), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
 	{FT(js), "`(?:[^`\\\\]|\\\\.)*`", A(MA)},
 
-	{FT(html), NULL, A(CY1 | SYN_BD), 1, 2},
-	{FT(html), "<(/)?[^>]+>", A(YE, MA1), 1},
-	{FT(html), "(\\{)[^}]*|(^[^{]*)?(\\})",
-		A(AY1 | SYN_BP, MA | SYN_BS, AY1, MA | SYN_BE), 1},
-	{FT(html), "([#.][ \t]*[a-zA-Z0-9_\\-]+\
-(?:(?:[, \t]*[#.][a-zA-Z0-9_\\-]+)?)+)(?:.?""?){1,20}\\{", A(IN, SYN_BD), 2},
-	{FT(html), NULL, A(RE1), 0, 1},
+	{FT(html), "<(/)?(?:[^>](?:\".*?\")*(?:'.*?')*(?:<.*?>)*)+>", A(YE, MA1), 1},
+	{FT(html), "^(?:[ \t.,#*:a-zA-Z0-9_-]+(?:\\(.*\\))*(?:\\[.*\\])*[ \t+~>]?)*(?=^\\{)", A(WH1), 2},
 	{FT(html), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/)",
-		A(MA | SYN_IT, MA | SYN_BS, MA | SYN_BE)},
+		A(MA | SYN_IT | SYN_OWR, MA | SYN_BS, MA | SYN_BE)},
 	{FT(html), "(<!--(?:(?!^-->).)*)|((?:(?!^<!--).)*-->)",
-		A(MA | SYN_IT, MA | SYN_BS, MA | SYN_BE)},
-	{FT(html), "\\<(?:accept|accesskey|align|allow|alt|async|\
-auto(?:capitalize|complete|focus|play)|background|\
-bgcolor|border(?:-box)?|buffered|challenge|charset|checked|cite|\
-class|code(?:base)|color|cols|colspan|content(?:editable)|\
-contextmenu|controls|coords|crossorigin|import|url|code|\
-csp|data[a-z-]*|datetime|decoding|def(?:ault|er)|dir|dirname|\
-disabled|download|draggable|dropzone|enctype|enterkeyhint|\
-equiv|for|form|action|headers|height|hidden|high|href|http|\
-icon|id|importance|inputmode|integrity|intrinsicsize|ismap|\
-itemprop|keytype|kind|label|lang|language|list|loading|loop|\
-max|maxlength|media|method|min|minlength|multiple|muted|\
-name|novalidate|open|optimum|pattern|ping|placeholder|\
-poster|preload|property|radiogroup|readonly|referrerpolicy|\
-rel|required|reversed|rows|rowspan|sandbox|scope|scoped|\
-selected|shape|size|sizes|slot|span|spellcheck|src|srcdoc|\
-srclang|srcset|start|step|style|summary|tabindex|target|\
-title|translate|type|usemap|value|width|wrap|low|manifest|\
-(html|base|head|link|meta|body|address|article|\
-aside|footer|header|hgroup|nav|section|blockquote|dd|\
-div|dl|dt|figcaption|figure|hr|li|main|ol|p|pre|ul|a|abbr|\
-b|bdi|bdo|br|dfn|em|i|kbd|mark|q|rb|rp|rt|rtc|\
-ruby|s|samp|small|strong|sub|sup|time|tt|u|var|wbr|area|\
-audio|img|map|track|video|embed|iframe|object|\
-param|picture|source|canvas|noscript|script|del|ins|caption|\
-col|colgroup|table|tbody|td|tfoot|th|thead|tr|button|datalist|\
-fieldset|input|legend|meter|optgroup|option|output|\
-progress|select|textarea|details|dialog|menu|\
-shadow|template|acronym|applet|basefont|\
-bgsound|big|blink|center|command|element|font|\
-frame|frameset|image|isindex|keygen|listing|marquee|menuitem|\
-multicol|nextid|nobr|noembed|noframes|plaintext|spacer|\
-strike|tt|xmp|doctype|h1|h2|h3|h4|h5|h6|\
-(fixed;|absolute;|relative;)))\\>", A(GR, CY, MA1)},
-	{FT(html), "@\\<(?:media|import|keyframes|font-face|charset|supports|page|\
-namespace|document|viewport|counter-style|property|layer|container|scope|\
-starting-style|font-feature-values|color-profile)\\>", A(BL1 | SYN_BD)},
-	{FT(html), "::?\\<[a-z-]+\\>", A(MA1)},
-	{FT(html), "!important\\>", A(RE1 | SYN_BD)},
+		A(MA | SYN_IT | SYN_OWR, MA | SYN_BS, MA | SYN_BE)},
+	{FT(html), "\\<(?#1)(?<^[-.])(?:accept|accept|action|align|alt|async|autocomplete|\
+autofocus|autoplay|bgcolor|border|charset|checked|cite|color|cols|colspan|content|controls|\
+coords|data|datetime|default|defer|dirname|disabled|download|enctype|for|form|formaction|\
+headers|height|high|href|hreflang|http|ismap|kind|label|list|loop|low|max|maxlength|media|\
+method|min|multiple|muted|name|novalidate|onabort|onafterprint|onbeforeprint|onbeforeunload|\
+onblur|oncanplay|oncanplaythrough|onchange|onclick|oncontextmenu|oncopy|oncuechange|oncut|\
+ondblclick|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragstart|ondrop|\
+ondurationchange|onemptied|onended|onerror|onfocus|onhashchange|oninput|oninvalid|\
+onkeydown|onkeypress|onkeyup|onload|onloadeddata|onloadedmetadata|onloadstart|onmousedown|\
+onmousemove|onmouseout|onmouseover|onmouseup|onmousewheel|onoffline|ononline|onpagehide|\
+onpageshow|onpaste|onpause|onplay|onplaying|onpopstate|onprogress|onratechange|onreset|\
+onresize|onscroll|onsearch|onseeked|onseeking|onselect|onstalled|onstorage|onsubmit|\
+onsuspend|ontimeupdate|ontoggle|onunload|onvolumechange|onwaiting|onwheel|open|optimum|\
+pattern|placeholder|popovertarget|popovertargetaction|poster|preload|readonly|rel|\
+required|reversed|rows|rowspan|sandbox|scope|selected|shape|size|sizes|span|src|accesskey|\
+class|contenteditable|data-[a-z]*|dir|draggable|enterkeyhint|hidden|id|inert|inputmode|\
+lang|popover|spellcheck|style(?=^=)|tabindex|title(?=^=)|translate|srcdoc|srclang|srcset|\
+start|step|target|type|usemap|value|width|wrap|([dD](?:octype|OCTYPE)|a|abbr|address|area|\
+article|aside|audio|b|base|bdi|bdo|blockquote|body|br|button|canvas|caption|cite|code|col|\
+colgroup|data|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figcaption|\
+figure|footer|form|h[1-6]|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|\
+legend|li|link|main|map|mark|menu|meta|meter|nav|noscript|object|ol|optgroup|option|output|\
+p|param|picture|pre|progress|q|rp|rt|ruby|s|samp|script|search|section|select|small|source|\
+span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|\
+title|tr|track|u|ul|var|video|wbr))\\>(?!^-)",
+	A(GR | SYN_OATT | SYN_OWR, 1, YE, CY | SYN_OATT | SYN_OWR, 3, YE, GR, WH1)},
+	{FT(html), "^[ \t]*@\\<[a-z-]+\\>", A(BL1 | SYN_BD)},
+	{FT(html), "::?\\<[a-z-]+(?=^[, \t{\\(\\[])", A(MA1 | SYN_OATT | SYN_OWR, 1, WH1)},
 	{FT(html), "\"(?:[^\"\\\\]|\\\\.)*\"", A(BL1)},
 	{FT(html), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
-	{FT(html), "#\\<[A-Fa-f0-9]+\\>", A(RE1)},
-	{FT(html), "[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+(?:\\.[0-9]+)?\
-(?:em|rem|px|pt|pc|cm|mm|in|ch|ex|vw|vh|vmin|vmax|dvh|dvw|svh|svw|lvh|lvw|\
-fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1)},
-	{FT(html), "&[a-zA-Z0-9_]+;", A(MA)},
-	{FT(html), "([^\t -,.-/:-@[-^{-~]+:).+?;",
-		A(IN, YE | SYN_OWR | SYN_EATT, 2, IN, AY1), 3},
-	{FT(html), ">([^<]*)<(?:/|[^>]*>([^<]*)<)",
-		A(SYN_IGN, SYN_OATT | SYN_OWR, 3, GR, CY, YE,
-			SYN_OATT | SYN_OWR, 3, GR, CY, YE), 4},
+	{FT(html), "&[a-zA-Z0-9_#]+;", A(MA)},
+	{FT(html), "(\\{)[^}]*|(^[^{]*)?(}(?#-1)(?<\".*}.*\"))",
+		A(AY1 | SYN_BP, GR1 | SYN_BS, AY1, GR1 | SYN_BE)},
+	{FT(html), "(?:#\\<[A-Fa-f0-9]+\\>)|[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\
+(?:\\.[0-9]+)?(?:em|rem|px|pt|pc|cm|mm|in|ch|ex|vw|vh|vmin|vmax|dvh|dvw|svh|svw|lvh|lvw|\
+fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1 | SYN_ATT, 3, IN, AY1, YE), 1},
+	{FT(html), "^[^{]*(?=^\\{)", A(IN), 3},
+	{FT(html), "((?:^[^\t -,.-/:-@[-^{-~]|[^\t -,.-/:-@[-^{-~](?#2)(?>^[ \t{]))\
+[^\t -,.-/:-@[-^{-~]*:)(?:[ \t]*(fixed|absolute|relative|.+!important)|.+?)(?:;|}\n$)",
+		A(IN | SYN_EATT, 3, IN, AY1, GR1, YE | SYN_OWR | SYN_EATT, 2, IN, AY1, MA1), 3},
+	{FT(html), NULL, A(CY1 | SYN_BD), 1, 2},
+	{FT(html), NULL, A(RE1), 0, 1},
+	{FT(html), NULL, A(AY | SYN_BGMK(RE1)), 0, 3},
 
 	{FT(diff), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(diff), "^-.*", A(RE)},

@@ -1367,8 +1367,9 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 		ph[phlen].cp[1] = strtol(arg, &arg, 0);
 		ph[phlen].wid = strtol(arg, &arg, 0);
 		ph[phlen].l = strtol(arg, &arg, 0);
-		if (strlen(arg) && strlen(arg) < LEN(ph[0].d))
-			strcpy(ph[phlen++].d, arg);
+		int len = strlen(arg);
+		if (len && len < LEN(ph[0].d))
+			memcpy(ph[phlen++].d, arg, len + 1);
 		return NULL;
 	}
 	if (cmd[1] == 'z')
