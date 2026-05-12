@@ -38,7 +38,7 @@ ${SEP}+2a 	{grep_ft, NULL},
 ${SEP}.,\$;f> 		A\\\\(IN, SYN_BGMK\\\\(RE1\\\\), SYN_BGMK\\\\(AY1\\\\), SYN_BGMK\\\\(AY\\\\)\\\\)\\\\},
 	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(IN, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:298\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:286\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
@@ -106,10 +106,11 @@ ${SEP}.a 		} else if (mv == TK_CTL('x')) {
 			lbuf_jump(xb, '[', row, off);
 			*off = 0;
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
-${SEP}.,\$;f> 				char buf\\\\[strlen\\\\(ln\\\\)\\\\+4\\\\];
-				strcpy\\\\(buf, \":e \"\\\\);
-				strcpy\\\\(buf\\\\+3, ln\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 				if (!strcmp(xb_path, \"/grep/\")) {
+${SEP}.,\$;f> 				n = strlen\\\\(ln\\\\);
+				char buf\\\\[n \\\\+ 4\\\\];
+				memcpy\\\\(buf, \":e \", 3\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3,#+1c 				memcpy(buf+3, ln, n + 1);
+				if (!strcmp(xb_path, \"/grep/\")) {
 					int subs[2];
 					rset *rs = rset_make(1, (char*[]){\":[0-9]+:\"}, 0);
 					if (rset_find(rs, buf, subs, 0) >= 0) {
@@ -122,14 +123,14 @@ ${SEP}+3c 				if (!strcmp(xb_path, \"/grep/\")) {
 				term_push(buf, strlen(buf));
 ${SEP}.,\$;f> 					\\\\}
 					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);
-					goto do_excmd; \\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1424\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					goto do_excmd; \\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				case 'x':
 					temp_switch(3, 1);
 					vi_mod = 1;
 					break;
 ${SEP}.,\$;f> 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
 	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);
-	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1839\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1845\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	temp_open(3, \"/grep/\", grep_ft);
 ${SEP}b3${SEP}%;f> extern rset \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
@@ -140,7 +141,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 21b22191..618529e9 100644
+index 37836e80..3808122f 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -159,7 +160,7 @@ index 21b22191..618529e9 100644
  	{ex_ft, NULL},
  	{vs_ft, NULL},
  	{bar_ft, NULL},
-@@ -296,6 +298,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -284,6 +286,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
  	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
  
@@ -170,7 +171,7 @@ index 21b22191..618529e9 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 50b89bc6..d8162a43 100644
+index 7aae6489..290a8872 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,7 +38,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -183,7 +184,7 @@ index 50b89bc6..d8162a43 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index ed15bfc7..80c03928 100644
+index f814f5fb..9e4d4440 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -485,12 +485,12 @@ void dir_calc(char *path)
@@ -280,11 +281,13 @@ index ed15bfc7..80c03928 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1289,7 +1324,17 @@ void vi(int init)
- 				char buf[strlen(ln)+4];
- 				strcpy(buf, ":e ");
- 				strcpy(buf+3, ln);
--				term_push(buf, strlen(ln)+3);
+@@ -1289,8 +1324,18 @@ void vi(int init)
+ 				n = strlen(ln);
+ 				char buf[n + 4];
+ 				memcpy(buf, ":e ", 3);
+-				memcpy(buf+3, ln, n);
+-				term_push(buf, n + 3);
++				memcpy(buf+3, ln, n + 1);
 +				if (!strcmp(xb_path, "/grep/")) {
 +					int subs[2];
 +					rset *rs = rset_make(1, (char*[]){":[0-9]+:"}, 0);
@@ -299,7 +302,7 @@ index ed15bfc7..80c03928 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1422,6 +1467,10 @@ void vi(int init)
+@@ -1426,6 +1471,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
  					goto do_excmd; }
@@ -309,8 +312,8 @@ index ed15bfc7..80c03928 100644
 +					break;
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
- 					char buf[cs ? strlen(cs)+30 : 30];
-@@ -1837,6 +1886,7 @@ int main(int argc, char *argv[])
+ 					n = cs ? strlen(cs) : 0;
+@@ -1843,6 +1892,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
