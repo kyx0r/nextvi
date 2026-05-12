@@ -442,7 +442,7 @@ void dir_calc(char *path)
 	if (!(dp = opendir(path)))
 		return;
 	cpath = emalloc(pathlen + 1024);
-	strcpy(cpath, path);
+	memcpy(cpath, path, pathlen + 1);
 	sbuf_smake(sb, 1024)
 	temp_pos(1, -1, 0, 0);
 	fspos = 0;
@@ -630,7 +630,7 @@ static int vi_motion(int vc, int *row, int *off)
 	case 'T':
 		if (!(cs = led_read(&xkmap, term_read(0))))
 			return -1;
-		strcpy(vi_charlast, cs);
+		snprintf(vi_charlast, sizeof(vi_charlast), "%s", cs);
 		vi_charcmd = mv;
 		if (lbuf_findchar(xb, cs, mv, cnt, row, off))
 			return -1;
@@ -1286,10 +1286,11 @@ void vi(int init)
 				if (!(ln = lbuf_get(xb, xrow)))
 					break;
 				ln += xoff;
-				char buf[strlen(ln)+4];
-				strcpy(buf, ":e ");
-				strcpy(buf+3, ln);
-				term_push(buf, strlen(ln)+3);
+				n = strlen(ln);
+				char buf[n + 4];
+				memcpy(buf, ":e ", 3);
+				memcpy(buf+3, ln, n);
+				term_push(buf, n + 3);
 				break; }
 			case TK_CTL('n'):
 				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
@@ -1385,10 +1386,10 @@ void vi(int init)
 						cmd = restr+6;
 						while (vi_arg--)
 							*cmd++ = ' ';
-						strcpy(cmd, "/g");
+						memcpy(cmd, "/g", sizeof("/g"));
 					} else {
-						strcpy(restr, "%s/^ {");
-						strcpy(itoa(vi_arg, restr+6), "}/\t/g");
+						memcpy(restr, "%s/^ {", sizeof("%s/^ {"));
+						memcpy(itoa(vi_arg, restr+6), "}/\t/g", sizeof("}/\t/g"));
 					}
 					ln = vi_enprompt(":", restr, &k, &n);
 					goto do_excmd;
@@ -1401,34 +1402,39 @@ void vi(int init)
 					goto do_excmd;
 				case '/': {
 					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
-					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, "re ");
+					n = cs ? strlen(cs) : 0;
+					char buf[n + 30];
+					memcpy(buf, "re ", sizeof("re "));
 					if (cs)
-						strcat(buf, cs);
+						memcpy(buf+3, cs, n + 1);
 					free(cs);
 					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				case 't': {
 					vi_drawmsg("arg2:(0|#)");
 					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
-					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, ".,.+");
+					n = cs ? strlen(cs) : 0;
+					char buf[n + 30];
+					memcpy(buf, ".,.+", sizeof(".,.+"));
 					char *buf1 = itoa(vi_arg, buf+4);
-					strcat(buf1, "s/");
+					memcpy(buf1, "s/", sizeof("s/"));
 					if (cs) {
-						strcat(buf1, cs);
-						strcat(buf1, "/");
+						memcpy(buf1+2, cs, n);
+						buf1[n + 2] = '/';
+						buf1[n + 3] = '\0';
 						free(cs);
 					}
 					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
 				case 'r': {
 					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
-					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, "%s/");
+					n = cs ? strlen(cs) : 0;
+					char buf[n + 30];
+					memcpy(buf, "%s/", sizeof("%s/"));
 					if (cs) {
-						strcat(buf, cs);
-						strcat(buf, "/");
+						memcpy(buf+3, cs, n);
+						buf[n + 3] = '/';
+						buf[n + 4] = '\0';
 						free(cs);
 					}
 					ln = vi_enprompt(":", buf, &k, &n);
@@ -1625,7 +1631,7 @@ void vi(int init)
 				} else if (k == 'q') {
 					preserve(int, xled, xled = 0;)
 					char cmd[64] = "g/./& ";
-					strcpy(itoa(vi_arg, cmd+5), "gw");
+					memcpy(itoa(vi_arg, cmd+5), "gw", sizeof("gw"));
 					ex_command(cmd)
 					restore(xled)
 					vi_mod |= 1;
@@ -1855,7 +1861,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-5.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-5.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
