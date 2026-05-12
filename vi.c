@@ -442,7 +442,7 @@ void dir_calc(char *path)
 	if (!(dp = opendir(path)))
 		return;
 	cpath = emalloc(pathlen + 1024);
-	strcpy(cpath, path);
+	memcpy(cpath, path, pathlen + 1);
 	sbuf_smake(sb, 1024)
 	temp_pos(1, -1, 0, 0);
 	fspos = 0;
@@ -630,7 +630,7 @@ static int vi_motion(int vc, int *row, int *off)
 	case 'T':
 		if (!(cs = led_read(&xkmap, term_read(0))))
 			return -1;
-		strcpy(vi_charlast, cs);
+		snprintf(vi_charlast, sizeof(vi_charlast), "%s", cs);
 		vi_charcmd = mv;
 		if (lbuf_findchar(xb, cs, mv, cnt, row, off))
 			return -1;
@@ -1287,8 +1287,8 @@ void vi(int init)
 					break;
 				ln += xoff;
 				char buf[strlen(ln)+4];
-				strcpy(buf, ":e ");
-				strcpy(buf+3, ln);
+				memcpy(buf, ":e ", 3);
+				memcpy(buf+3, ln, strlen(ln)+1);
 				term_push(buf, strlen(ln)+3);
 				break; }
 			case TK_CTL('n'):
@@ -1385,10 +1385,10 @@ void vi(int init)
 						cmd = restr+6;
 						while (vi_arg--)
 							*cmd++ = ' ';
-						strcpy(cmd, "/g");
+						memcpy(cmd, "/g", sizeof("/g"));
 					} else {
-						strcpy(restr, "%s/^ {");
-						strcpy(itoa(vi_arg, restr+6), "}/\t/g");
+						memcpy(restr, "%s/^ {", sizeof("%s/^ {"));
+						memcpy(itoa(vi_arg, restr+6), "}/\t/g", sizeof("}/\t/g"));
 					}
 					ln = vi_enprompt(":", restr, &k, &n);
 					goto do_excmd;
@@ -1402,9 +1402,9 @@ void vi(int init)
 				case '/': {
 					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
 					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, "re ");
+					memcpy(buf, "re ", sizeof("re "));
 					if (cs)
-						strcat(buf, cs);
+						memcpy(buf+3, cs, strlen(cs)+1);
 					free(cs);
 					ln = vi_enprompt(":", buf, &k, &n);
 					goto do_excmd; }
@@ -1412,12 +1412,14 @@ void vi(int init)
 					vi_drawmsg("arg2:(0|#)");
 					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
 					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, ".,.+");
+					memcpy(buf, ".,.+", sizeof(".,.+"));
 					char *buf1 = itoa(vi_arg, buf+4);
-					strcat(buf1, "s/");
+					memcpy(buf1, "s/", sizeof("s/"));
 					if (cs) {
-						strcat(buf1, cs);
-						strcat(buf1, "/");
+						size_t cslen = strlen(cs);
+						memcpy(buf1+2, cs, cslen);
+						buf1[2+cslen] = '/';
+						buf1[3+cslen] = '\0';
 						free(cs);
 					}
 					ln = vi_enprompt(":", buf, &k, &n);
@@ -1425,10 +1427,12 @@ void vi(int init)
 				case 'r': {
 					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
 					char buf[cs ? strlen(cs)+30 : 30];
-					strcpy(buf, "%s/");
+					memcpy(buf, "%s/", sizeof("%s/"));
 					if (cs) {
-						strcat(buf, cs);
-						strcat(buf, "/");
+						size_t cslen = strlen(cs);
+						memcpy(buf+3, cs, cslen);
+						buf[3+cslen] = '/';
+						buf[4+cslen] = '\0';
 						free(cs);
 					}
 					ln = vi_enprompt(":", buf, &k, &n);
@@ -1625,7 +1629,7 @@ void vi(int init)
 				} else if (k == 'q') {
 					preserve(int, xled, xled = 0;)
 					char cmd[64] = "g/./& ";
-					strcpy(itoa(vi_arg, cmd+5), "gw");
+					memcpy(itoa(vi_arg, cmd+5), "gw", sizeof("gw"));
 					ex_command(cmd)
 					restore(xled)
 					vi_mod |= 1;
