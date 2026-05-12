@@ -151,7 +151,7 @@ ${SEP}.a 		lmodified = 1;
 		lmodified = 0;
 ${SEP}.,\$;f> 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
 					break;
-				\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1538\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1544\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				switch (k) {
 				case 'A':	/* ↑ */
 					term_back(!lmodified ? c : 'i');
@@ -185,7 +185,7 @@ ${SEP}+2a 				switch (k) {
 				}
 ${SEP}.,\$;f> 				if \\\\(c != 'A' && c != 'C'\\\\)
 					xoff--;
-				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1541\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1547\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				_break:
 				vi_mod = 0;
 				break;
@@ -372,7 +372,7 @@ index 163596e2..58233091 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index ed15bfc7..474f6034 100644
+index f814f5fb..1c9c3d62 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -844,6 +844,8 @@ static void vi_indents(char *ln, int *l)
@@ -405,7 +405,7 @@ index ed15bfc7..474f6034 100644
  	free(sb->s);
  	return key;
  }
-@@ -1536,9 +1542,43 @@ void vi(int init)
+@@ -1542,9 +1548,43 @@ void vi(int init)
  					term_back(xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a');
  					break;
  				}

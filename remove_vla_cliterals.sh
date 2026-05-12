@@ -175,37 +175,33 @@ ${SEP}.,\$;f> 		restore\\\\(syn_blockhl\\\\)
 		restore\\\\(ftidx\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:167\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		free(tmp);
 		free(snum);
-${SEP}.,\$;f> 				if \\\\(!\\\\(ln = lbuf_get\\\\(xb, xrow\\\\)\\\\)\\\\)
-					break;
-				ln \\\\+= xoff;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1289\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 				char *buf = emalloc(strlen(ln)+4);
-${SEP}.,\$;f> 				strcpy\\\\(buf, \":e \"\\\\);
-				strcpy\\\\(buf\\\\+3, ln\\\\);
-				term_push\\\\(buf, strlen\\\\(ln\\\\)\\\\+3\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$;f> 					break;
+				ln \\\\+= xoff;
+				n = strlen\\\\(ln\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1290\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/buf\\\\[n \\\\+ 4\\\\]/*buf = emalloc(n + 4)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1290\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				memcpy\\\\(buf, \":e \", 3\\\\);
+				memcpy\\\\(buf\\\\+3, ln, n\\\\);
+				term_push\\\\(buf, n \\\\+ 3\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1293\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				free(buf);
-${SEP}.,\$;f> 					goto do_excmd;
-				case '/': \\\\{
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1404\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
-${SEP}.,\$;f> 						strcat\\\\(buf, cs\\\\);
+${SEP}.,\$;f> 				case '/': \\\\{
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);
+					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1406\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1406\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						memcpy\\\\(buf\\\\+3, cs, n \\\\+ 1\\\\);
 					free\\\\(cs\\\\);
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1409\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1411\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
-${SEP}.,\$;f> 				case 't': \\\\{
-					vi_drawmsg\\\\(\"arg2:\\\\(0\\\\|#\\\\)\"\\\\);
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1414\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
-${SEP}.,\$;f> 						free\\\\(cs\\\\);
+${SEP}.,\$;f> 					vi_drawmsg\\\\(\"arg2:\\\\(0\\\\|#\\\\)\"\\\\);
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);
+					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1417\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1417\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1423\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
-${SEP}.,\$;f> 					goto do_excmd; \\\\}
-				case 'r': \\\\{
-					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
-${SEP}.,\$;f> 						free\\\\(cs\\\\);
+${SEP}.,\$;f> 				case 'r': \\\\{
+					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);
+					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1432\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1432\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1434\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1440\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 ${SEP}b7${SEP}%;f> struct highlight \\\\{
 	char \\\\*ft;		/\\\\* the filetype of this pattern \\\\*/
@@ -216,7 +212,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 21b22191..3a36a0e0 100644
+index 37836e80..26c20ef9 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -62,7 +62,7 @@ const int ftslen = LEN(fts);
@@ -229,7 +225,7 @@ index 21b22191..3a36a0e0 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 50b89bc6..87b9d9cf 100644
+index 7aae6489..fae9dba2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -511,7 +511,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -489,7 +485,7 @@ index 86e24e4a..dee00f50 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index ed15bfc7..cdfb602b 100644
+index f814f5fb..396ca1e9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -511,28 +507,28 @@ index ed15bfc7..cdfb602b 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1286,10 +1289,11 @@ void vi(int init)
- 				if (!(ln = lbuf_get(xb, xrow)))
+@@ -1287,10 +1290,11 @@ void vi(int init)
  					break;
  				ln += xoff;
--				char buf[strlen(ln)+4];
-+				char *buf = emalloc(strlen(ln)+4);
- 				strcpy(buf, ":e ");
- 				strcpy(buf+3, ln);
- 				term_push(buf, strlen(ln)+3);
+ 				n = strlen(ln);
+-				char buf[n + 4];
++				char *buf = emalloc(n + 4);
+ 				memcpy(buf, ":e ", 3);
+ 				memcpy(buf+3, ln, n);
+ 				term_push(buf, n + 3);
 +				free(buf);
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1401,17 +1405,18 @@ void vi(int init)
- 					goto do_excmd;
+@@ -1403,18 +1407,19 @@ void vi(int init)
  				case '/': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
--					char buf[cs ? strlen(cs)+30 : 30];
-+					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
- 					strcpy(buf, "re ");
+ 					n = cs ? strlen(cs) : 0;
+-					char buf[n + 30];
++					char *buf = emalloc(n + 30);
+ 					memcpy(buf, "re ", sizeof("re "));
  					if (cs)
- 						strcat(buf, cs);
+ 						memcpy(buf+3, cs, n + 1);
  					free(cs);
  					ln = vi_enprompt(":", buf, &k, &n);
 +					free(buf);
@@ -540,12 +536,13 @@ index ed15bfc7..cdfb602b 100644
  				case 't': {
  					vi_drawmsg("arg2:(0|#)");
  					cs = vi_curword(xb, xrow, xoff, vi_prefix(), 1);
--					char buf[cs ? strlen(cs)+30 : 30];
-+					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
- 					strcpy(buf, ".,.+");
+ 					n = cs ? strlen(cs) : 0;
+-					char buf[n + 30];
++					char *buf = emalloc(n + 30);
+ 					memcpy(buf, ".,.+", sizeof(".,.+"));
  					char *buf1 = itoa(vi_arg, buf+4);
- 					strcat(buf1, "s/");
-@@ -1421,10 +1426,11 @@ void vi(int init)
+ 					memcpy(buf1, "s/", sizeof("s/"));
+@@ -1425,11 +1430,12 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
@@ -553,12 +550,13 @@ index ed15bfc7..cdfb602b 100644
  					goto do_excmd; }
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
--					char buf[cs ? strlen(cs)+30 : 30];
-+					char *buf = emalloc(cs ? strlen(cs)+30 : 30);
- 					strcpy(buf, "%s/");
+ 					n = cs ? strlen(cs) : 0;
+-					char buf[n + 30];
++					char *buf = emalloc(n + 30);
+ 					memcpy(buf, "%s/", sizeof("%s/"));
  					if (cs) {
- 						strcat(buf, cs);
-@@ -1432,6 +1438,7 @@ void vi(int init)
+ 						memcpy(buf+3, cs, n);
+@@ -1438,6 +1444,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);

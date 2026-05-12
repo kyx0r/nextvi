@@ -68,7 +68,7 @@ ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 
 ${SEP}b1${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1443\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1449\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			case TK_CTL('o'):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
@@ -136,10 +136,10 @@ index 0a13ff5a..74171638 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index ed15bfc7..4c42d01d 100644
+index f814f5fb..3b29c0a8 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1441,6 +1441,17 @@ void vi(int init)
+@@ -1447,6 +1447,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;

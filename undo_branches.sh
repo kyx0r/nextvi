@@ -27,11 +27,11 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c lbuf.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:306\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/(u\\\\[.*)\\\\]/\\\\1p]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:306\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return xkwdrs \\\\? NULL : xserr;
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:294\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/(u\\\\[.*)\\\\]/\\\\1p]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:294\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1445\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
@@ -44,7 +44,7 @@ ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	\\\\{\"uc\", ec_setenc\\\\},
 	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1542\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1543\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"up\", ec_undoleafs},
 ${SEP}b2${SEP}%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
@@ -186,10 +186,10 @@ s/(u\[.*)\]/\1p]/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 21b22191..d9a8635e 100644
+index 37836e80..d777b53f 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -303,7 +303,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -291,7 +291,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
@@ -199,10 +199,10 @@ index 21b22191..d9a8635e 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 50b89bc6..bb7a56ad 100644
+index 7aae6489..0f4476d4 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1443,6 +1443,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1444,6 +1444,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -219,7 +219,7 @@ index 50b89bc6..bb7a56ad 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1540,6 +1550,7 @@ static struct excmd {
+@@ -1541,6 +1551,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
