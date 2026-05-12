@@ -949,6 +949,8 @@ static int vc_motion(int cmd)
 	o2 = o1;
 	if ((mv = vi_region(cmd, &r2, &o2)) <= 0)
 		return 0;
+	if (r2 < 0)
+		r2 = 0;
 	lnmode = o2 < 0;
 	if (lnmode) {
 		o1 = 0;
