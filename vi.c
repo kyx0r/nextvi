@@ -1178,10 +1178,10 @@ void vi(int init)
 	while (!xquit) {
 		int nrow = xrow;
 		int noff = xoff;
+		int orow = nrow;
 		int ooff = noff;
 		int otop = xtop;
 		int oleft = xleft;
-		int orow = xrow;
 		icmd_pos = 0;
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf();
@@ -1446,8 +1446,12 @@ void vi(int init)
 			case ':':
 				ln = vi_enprompt(":", NULL, &k, &n);
 				do_excmd:
-				if (k && ln[n])
+				if (k && ln[n]) {
 					ex_command(ln + n)
+					if (xrow != orow && (xrow < xtop ||
+							xrow >= xtop + xrows - !vi_status))
+						xtop = MAX(0, xrow - xrows / 2);
+				}
 				vi_mod |= 1;
 				if (!xmpt)
 					vi_drawmsg(ln);
@@ -1457,8 +1461,6 @@ void vi(int init)
 					continue;
 				} else if (!xmpt)
 					xmpt = 1;
-				if (xrow < xtop || xrow >= xtop + xrows - !vi_status)
-					xtop = MAX(0, xrow - xrows / 2);
 				break;
 			case 'c':
 			case 'd':
