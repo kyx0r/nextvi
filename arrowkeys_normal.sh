@@ -27,50 +27,35 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> \\\\{
-	int var, c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(c\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:347\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	case '\\\\033':	/* Arrow keys */
-		c = term_read(0);
-		if (c == '[') {
-			c = term_read(0);
-			switch (c) {
-			case 'A':	/* ↑ */
-				*row = MAX(*row - cnt, 0);
-				c = 'k';
-				break;
-			case 'B':	/* ↓ */
-				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-				c = 'j';
-				break;
-			default:	/* Not a line motion so we put back all the arrow characters */
-				term_back('\\\\033');
-				term_back('[');
-				term_back(c);
-				return 0;
-			}
-		} else	/* Not an arrow sequence so we abort */
-			return 0;
-		break;
-${SEP}.,\$;f> 	\\\\}
-	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);
-	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:573\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 
+	mv = .*\\\\(.*TK_CTL\\\\('l'\\\\)\\\\);
+	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:519\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {
-			if (!(cs = lbuf_get(xb, *row)))
-				return -1;
-			dir = dir_context(lbuf_get(xb, *row));
 			mv = term_read(0);
 			switch (mv) {
+			case 'A':	/* ↑ */
+				*row = MAX(*row - cnt, 0);
+				mv = 'k';
+				break;
+			case 'B':	/* ↓ */
+				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
+				mv = 'j';
+				break;
 			case 'D':	/* ← */
-				dir = -dir;
 			case 'C':	/* → */
+				if (!(cs = lbuf_get(xb, *row)))
+					return -1;
+				dir = dir_context(lbuf_get(xb, *row));
+				if (mv == 'D')
+					dir = -dir;
 				for (i = 0; i < cnt; i++)
 					if (vi_nextcol(cs, dir, off))
 						break;
+				mv = mv == 'D' ? 'h' : 'l';
 				break;
-			default:	/* Not a motion managed by this function so we abort */
+			default:
 				return 0;
 			}
 		} else	/* Not a 033[X command so we abort */
@@ -80,60 +65,79 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI PATCH ===
-diff --git a/vi.c b/vi.c
-index f814f5fb..4cbc44cf 100644
---- a/vi.c
-+++ b/vi.c
-@@ -345,6 +345,28 @@ static int vi_motionln(int *row, int cmd, int cnt)
- {
- 	int var, c = term_read(TK_CTL('l'));
- 	switch (c) {
+=== DELTA vi.c ===
+GROUP 1
 +	case '\033':	/* Arrow keys */
-+		c = term_read(0);
-+		if (c == '[') {
-+			c = term_read(0);
-+			switch (c) {
++		mv = term_read(0);
++		if (mv == '[') {
++			mv = term_read(0);
++			switch (mv) {
 +			case 'A':	/* ↑ */
 +				*row = MAX(*row - cnt, 0);
-+				c = 'k';
++				mv = 'k';
 +				break;
 +			case 'B':	/* ↓ */
 +				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-+				c = 'j';
++				mv = 'j';
 +				break;
-+			default:	/* Not a line motion so we put back all the arrow characters */
-+				term_back('\033');
-+				term_back('[');
-+				term_back(c);
++			case 'D':	/* ← */
++			case 'C':	/* → */
++				if (!(cs = lbuf_get(xb, *row)))
++					return -1;
++				dir = dir_context(lbuf_get(xb, *row));
++				if (mv == 'D')
++					dir = -dir;
++				for (i = 0; i < cnt; i++)
++					if (vi_nextcol(cs, dir, off))
++						break;
++				mv = mv == 'D' ? 'h' : 'l';
++				break;
++			default:
 +				return 0;
 +			}
-+		} else	/* Not an arrow sequence so we abort */
++		} else	/* Not a 033[X command so we abort */
 +			return 0;
 +		break;
- 	case '\n':
- 	case '+':
- 	case 'j':
-@@ -571,6 +593,27 @@ static int vi_motion(int vc, int *row, int *off)
- 	}
+pattern:
+
+	mv = .*\(.*TK_CTL\('l'\)\);
+	switch \(mv\) \{
+=== END DELTA ===
+=== PATCH2VI PATCH ===
+diff --git a/vi.c b/vi.c
+index 158a716d..ffe075c5 100644
+--- a/vi.c
++++ b/vi.c
+@@ -517,6 +517,37 @@ static int vi_region(int cmd, int *row, int *off)
+ 
  	mv = term_read(TK_CTL('l'));
  	switch (mv) {
 +	case '\033':	/* Arrow keys */
 +		mv = term_read(0);
 +		if (mv == '[') {
-+			if (!(cs = lbuf_get(xb, *row)))
-+				return -1;
-+			dir = dir_context(lbuf_get(xb, *row));
 +			mv = term_read(0);
 +			switch (mv) {
++			case 'A':	/* ↑ */
++				*row = MAX(*row - cnt, 0);
++				mv = 'k';
++				break;
++			case 'B':	/* ↓ */
++				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
++				mv = 'j';
++				break;
 +			case 'D':	/* ← */
-+				dir = -dir;
 +			case 'C':	/* → */
++				if (!(cs = lbuf_get(xb, *row)))
++					return -1;
++				dir = dir_context(lbuf_get(xb, *row));
++				if (mv == 'D')
++					dir = -dir;
 +				for (i = 0; i < cnt; i++)
 +					if (vi_nextcol(cs, dir, off))
 +						break;
++				mv = mv == 'D' ? 'h' : 'l';
 +				break;
-+			default:	/* Not a motion managed by this function so we abort */
++			default:
 +				return 0;
 +			}
 +		} else	/* Not a 033[X command so we abort */
