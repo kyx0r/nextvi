@@ -1446,8 +1446,11 @@ void vi(int init)
 			case ':':
 				ln = vi_enprompt(":", NULL, &k, &n);
 				do_excmd:
-				if (k && ln[n])
+				if (k && ln[n]) {
 					ex_command(ln + n)
+					if (xrow < xtop || xrow >= xtop + xrows - !vi_status)
+						xtop = MAX(0, xrow - xrows / 2);
+				}
 				vi_mod |= 1;
 				if (!xmpt)
 					vi_drawmsg(ln);
@@ -1457,8 +1460,6 @@ void vi(int init)
 					continue;
 				} else if (!xmpt)
 					xmpt = 1;
-				if (xrow < xtop || xrow >= xtop + xrows - !vi_status)
-					xtop = MAX(0, xrow - xrows / 2);
 				break;
 			case 'c':
 			case 'd':
