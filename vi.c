@@ -722,7 +722,8 @@ static int vi_region(int cmd, int *row, int *off)
 	case 'N':
 		if (vi_search(mv, cnt, row, off, 1))
 			return -1;
-		xtop = MAX(0, *row - xrows / 2);
+		if (cmd < 0)
+			xtop = MAX(0, *row - xrows / 2);
 		vi_mod |= mv == '/' || mv == '?';
 		break;
 	case '*':
@@ -735,7 +736,7 @@ static int vi_region(int cmd, int *row, int *off)
 		}
 		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
 			cadir = -cadir;
-		else if (*row < xtop || *row >= xtop + xrows - 1)
+		else if (cmd < 0 && (*row < xtop || *row >= xtop + xrows - 1))
 			xtop = MAX(0, *row - xrows / 2);
 		break;
 	case '\n':
@@ -1158,9 +1159,9 @@ static void vi_argcmd(int arg, char cmd)
 #define topfix() \
 if (xrow < 0 || xrow >= lbuf_len(xb)) \
 	xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0; \
-if (xtop > xrow) \
+if (xrow < xtop) \
 	xtop = xrow; \
-else if (xtop + xrows <= xrow) \
+else if (xrow >= xtop + xrows) \
 	xtop = xrow - xrows + 1; \
 
 void vi(int init)
@@ -1296,7 +1297,7 @@ void vi(int init)
 					goto undo;
 				} else if (!vi_arg)
 					vi_drawmsg_mpt("undo failed")
-				if (xtop > xrow || xtop + xrows <= xrow)
+				else if (xrow < xtop || xrow >= xtop + xrows)
 					xtop = MAX(0, xrow - xrows / 2);
 				break;
 			case TK_CTL('r'):
@@ -1307,7 +1308,7 @@ void vi(int init)
 					goto redo;
 				} else if (!vi_arg)
 					vi_drawmsg_mpt("redo failed")
-				if (xtop > xrow || xtop + xrows <= xrow)
+				else if (xrow < xtop || xrow >= xtop + xrows)
 					xtop = MAX(0, xrow - xrows / 2);
 				break;
 			case TK_CTL('g'):
