@@ -32,7 +32,7 @@ ${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf
 ${SEP}%;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1488\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a _EO(ms,
 	xms = !*arg ? !xms : eo_val(arg);
 	if (xms)
@@ -44,7 +44,7 @@ ${SEP}+2a _EO(ms,
 
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1528\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1540\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(ms),
 ${SEP}b2${SEP}%;f> 	return pos - xleft;
 \\\\}
@@ -182,13 +182,13 @@ int term_try_mouse(void)
 ${SEP}b4${SEP}%;f> 	vi_drawmsg_mpt\\\\(vi_msg\\\\)
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:556\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:507\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
 
-${SEP}.,\$;f> 		return mv;
-	\\\\}
-	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:572\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$;f> 	int mv, i, dir, var;
+
+	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (mv == 27 && xms) {
 		int r = term_try_mouse();
 		if (r == 1) {
@@ -316,7 +316,7 @@ i extern int xms;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..74895854 100644
+index cc881132..68fe02a5 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -289,7 +289,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -329,7 +329,7 @@ index 37836e80..74895854 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 7aae6489..50f96801 100644
+index f3ea18aa..f963d07b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -337,7 +337,7 @@ index 7aae6489..50f96801 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1474,6 +1475,15 @@ _EO(left,
+@@ -1486,6 +1487,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -353,7 +353,7 @@ index 7aae6489..50f96801 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1526,6 +1536,7 @@ static struct excmd {
+@@ -1538,6 +1548,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -538,22 +538,22 @@ index d75be8f7..6ec836b4 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index f814f5fb..845d7e7a 100644
+index 158a716d..ff57f7f9 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -554,6 +554,9 @@ static void vc_status(int type)
+@@ -505,6 +505,9 @@ static void vc_status(int type)
  	vi_drawmsg_mpt(vi_msg)
  }
  
 +static void vi_scrollforward(int cnt);
 +static void vi_scrollbackward(int cnt);
 +
- /* read a motion */
- static int vi_motion(int vc, int *row, int *off)
+ static int vi_region(int cmd, int *row, int *off)
  {
-@@ -570,6 +573,31 @@ static int vi_motion(int vc, int *row, int *off)
- 		return mv;
- 	}
+ 	static sbuf *savepath[5];
+@@ -516,6 +519,31 @@ static int vi_region(int cmd, int *row, int *off)
+ 	int mv, i, dir, var;
+ 
  	mv = term_read(TK_CTL('l'));
 +	if (mv == 27 && xms) {
 +		int r = term_try_mouse();
