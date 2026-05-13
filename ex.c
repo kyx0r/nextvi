@@ -393,15 +393,14 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	ins_init(is)
 	if (*cmd !='f')
 		temp_switch(1, 0);
-	if (ex_vregion(loc, &beg, &end)) {
-		if (*cmd !='f')
-			temp_switch(1, 1);
-		return xrerr;
-	}
 	if (!*loc) {
 		beg = 0;
 		end = lbuf_len(xb);
 		max = xrows ? xrows * 3 : end;
+	} else if (ex_vregion(loc, &beg, &end)) {
+		if (*cmd !='f')
+			temp_switch(1, 1);
+		return xrerr;
 	}
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
 	dwid1 = itoalen(max - 1);
@@ -607,7 +606,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	sbuf obuf, *sb;
 	char msg[512];
 	char *path, *ret = NULL;
-	int beg = 0, end = 0, o1 = 0, o2 = -1;
+	int beg, end, o1 = 0, o2 = -1, e;
 	int row = xrow, off = xoff, fd = -1;
 	struct lbuf *lb = lbuf_make(), *pxb = xb;
 	path = arg[0] ? arg : xb_path;
@@ -629,18 +628,19 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	xb = lb;
 	xrow = 0;
 	xoff = 0;
-	if (lbuf_len(lb) && ex_region(loc, &beg, &end, &o1, &o2)) {
-		ret = xrerr;
-		goto err;
-	} else if (!*loc) {
+	if (!*loc || (e = ex_region(loc, &beg, &end, &o1, &o2))) {
+		if (*loc && e == 1) {
+			ret = xrerr;
+			goto err;
+		}
 		beg = 0;
 		end = lbuf_len(lb);
 	}
 	lbuf_region(lb, &obuf, beg, o1, end-1, o2);
-	lbuf_edit(pxb, obuf.s, row, row, 0, 0);
+	if (obuf.s_n)
+		lbuf_edit(pxb, obuf.s, row, row, 0, 0);
 	free(obuf.s);
-	snprintf(msg, sizeof(msg), "\"%s\" %dL [r]",
-			path, lbuf_len(pxb) - lbuf_len(lb));
+	snprintf(msg, sizeof(msg), "\"%s\" %dL [r]", path, end - beg);
 	ex_print(msg, bar_ft)
 	err:
 	lbuf_free(lb);
@@ -671,13 +671,13 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 {
 	char msg[512], *path;
 	sbuf ibuf;
-	int fd, beg = 0, end = 0, o1 = -1, o2 = -1;
+	int fd, beg, end, o1 = -1, o2 = -1;
 	path = arg[0] ? arg : xb_path;
 	if (cmd[0] == 'x' && !xb->modified)
 		return ec_quit("", cmd, "");
-	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
-		return xrerr;
-	if (!*loc) {
+	if (!*loc || (fd = ex_region(loc, &beg, &end, &o1, &o2))) {
+		if (*loc && fd == 1)
+			return xrerr;
 		beg = 0;
 		end = lbuf_len(xb);
 	}
@@ -757,9 +757,13 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 
 static void *ec_insert(char *loc, char *cmd, char *arg)
 {
-	int key, beg = 0, end = 0, o1 = -1, o2 = -1, ps = 0;
-	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
-		return xrerr;
+	int key, beg, end, o1 = -1, o2 = -1, ps = 0;
+	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
+		if (*loc && key == 1)
+			return xrerr;
+		beg = MAX(0, MIN(lbuf_len(xb), xrow));
+		end = beg + 1;
+	}
 	sbuf _sb, *sb = &_sb;
 	if (xvis & 1 && *arg) {
 		sb->s = arg;
@@ -912,7 +916,7 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 
 static void *ec_put(char *loc, char *cmd, char *arg)
 {
-	int beg = 0, end = 0, i = 0;
+	int beg, end, i = 0;
 	sbuf *buf;
 	if (!*arg || (arg[i] == '!' && arg[i+1] && arg[i+1] != ' '))
 		buf = xregs[i];
@@ -924,9 +928,13 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 	if (arg[i] == '!' && arg[i+1])
 		return ex_pipeout(arg + i + 1, buf);
 	int n = lbuf_len(xb), o1 = -1, o2 = -1;
-	if (n && ex_region(loc, &beg, &end, &o1, &o2))
-		return xrerr;
-	if (o1 >= 0 && n) {
+	if (!*loc || (i = ex_region(loc, &beg, &end, &o1, &o2))) {
+		if (*loc && i == 1)
+			return xrerr;
+		beg = MAX(0, MIN(lbuf_len(xb), xrow));
+		end = beg + 1;
+	}
+	if (o1 >= 0) {
 		char *p = lbuf_joinsb(xb, end-1, end-1, buf, &o1, &o2);
 		lbuf_edit(xb, p, end-1, end, o1, o1);
 		free(p);
@@ -1059,11 +1067,15 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 
 static void *ec_exec(char *loc, char *cmd, char *arg)
 {
-	int beg = 0, end = 0, o1 = 0, o2 = -1;
-	if (!loc[0])
+	if (!*loc)
 		return ex_pipeout(arg, NULL);
-	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
-		return xrerr;
+	int beg, end, o1 = 0, o2 = -1, e;
+	if ((e = ex_region(loc, &beg, &end, &o1, &o2))) {
+		if (e == 1 && lbuf_len(xb))
+			return xrerr;
+		beg = 0;
+		end = 0;
+	}
 	sbuf text;
 	lbuf_region(xb, &text, beg, o1, end-1, o2);
 	sbuf *rep = cmd_pipe(arg, &text, 1, NULL);
@@ -1418,7 +1430,7 @@ void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
 			if (*beg == '\\')
 				sbuf_chr(sb, '\\')
 		}
-		if (strchr("!%{}[]().?\\^$|*/+", *beg))
+		if (strchr("!%{[]().?\\^$|*/+", *beg))
 			sbuf_chr(sb, '\\')
 		sbuf_chr(sb, *beg)
 	}
