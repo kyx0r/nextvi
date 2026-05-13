@@ -188,7 +188,7 @@ static void vi_scrollbackward(int cnt);
 
 ${SEP}.,\$;f> 	int mv, i, dir, var;
 
-	mv = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	mv = .*\\\\(.*\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (mv == 27 && xms) {
 		int r = term_try_mouse();
 		if (r == 1) {
@@ -281,6 +281,38 @@ GROUP 1
 +}
 +
 strategy: abs
+=== END DELTA ===
+=== DELTA vi.c ===
+GROUP 2
++	if (mv == 27 && xms) {
++		int r = term_try_mouse();
++		if (r == 1) {
++			char *mln;
++			int p;
++			*row = xtop + xmouse_row;
++			if (*row >= lbuf_len(xb))
++				*row = lbuf_len(xb) - 1;
++			if (*row < 0)
++				*row = 0;
++			mln = lbuf_get(xb, *row);
++			p = mln ? led_col(mln, MAX(0, xmouse_col - vi_lncol)) : 0;
++			*off = mln ? vi_col2off(xb, *row, MAX(0, p)) : 0;
++			return mv;
++		}
++		if (r == 3 || r == 4) {
++			if (r == 3)
++				vi_scrollbackward(MAX(1, vi_scrolley));
++			else
++				vi_scrollforward(MAX(1, vi_scrolley));
++			vi_mod |= 4;
++			return -1;
++		} else if (r == 2)	/* stray release from a prior click; restart */
++			return -1;
++	}
+pattern:
+	int mv, i, dir, var;
+
+	mv = .*\(.*\);
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
