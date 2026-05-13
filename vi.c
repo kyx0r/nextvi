@@ -1201,7 +1201,7 @@ void vi(int init)
 		if (!vi_ybuf)
 			vi_ybuf = vi_yankbuf();
 		mv = vi_region(-1, &nrow, &noff);
-		if (mv > 0) {
+		if (mv > 0 && nrow >= 0) {
 			if (strchr("|jk", mv)) {
 				noff = vi_col2off(xb, nrow, vi_col);
 			} else {

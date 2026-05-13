@@ -761,8 +761,8 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
 		if (*loc && key == 1)
 			return xrerr;
-		beg = 0;
-		end = 0;
+		beg = MAX(0, MIN(lbuf_len(xb), xrow));
+		end = beg + 1;
 	}
 	sbuf _sb, *sb = &_sb;
 	if (xvis & 1 && *arg) {
@@ -931,8 +931,8 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 	if (!*loc || (i = ex_region(loc, &beg, &end, &o1, &o2))) {
 		if (*loc && i == 1)
 			return xrerr;
-		beg = 0;
-		end = 0;
+		beg = MAX(0, MIN(lbuf_len(xb), xrow));
+		end = beg + 1;
 	}
 	if (o1 >= 0) {
 		char *p = lbuf_joinsb(xb, end-1, end-1, buf, &o1, &o2);
