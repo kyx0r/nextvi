@@ -764,7 +764,7 @@ static int vi_region(int cmd, int *row, int *off)
 	case '`':
 		if (lbuf_jump(xb, term_read(0), row, &var))
 			return -1;
-		if (cmd < 0)
+		if (cmd < 0 && (*row < xtop || *row >= xtop + xrows))
 			xtop = MAX(0, *row - xrows / 2);
 		if (mv == '\'')
 			goto lnregion;
