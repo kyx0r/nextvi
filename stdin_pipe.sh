@@ -39,14 +39,14 @@ ${SEP}+2a 	if (!loc)
 	ret:
 ${SEP}.,\$;f> 
 void ex_init\\\\(.*\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1734\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1734\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
-	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1736\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1746\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1746\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1748\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	int i = n;
 ${SEP}.,\$;f> 	do \\\\{
-		xmpt = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1739\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1739\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1741\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		xmpt = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1751\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1751\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1753\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
@@ -66,7 +66,7 @@ ${SEP}+1a 	if (stdin_fd) {
 		}
 		xmpt = MIN(xmpt, 1);
 	}
-${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1742\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1754\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 ${SEP}b1${SEP}8a int stdin_fd;
 static int isig;
@@ -101,11 +101,11 @@ ${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:
 	waitpid\\\\(pid, status, 0\\\\);
 	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:348\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:348\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
-	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1834\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1823\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
 ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
 			i\\\\+\\\\+;
-			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1850\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1839\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
 ${SEP}b3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:536\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -161,7 +161,7 @@ a extern int stdin_fd;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7aae6489..8877afc3 100644
+index f3ea18aa..c6829017 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -354,7 +354,9 @@ int ex_edit(const char *path, int len)
@@ -185,7 +185,7 @@ index 7aae6489..8877afc3 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1731,15 +1736,36 @@ void ex(void)
+@@ -1743,15 +1748,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -307,10 +307,10 @@ index d75be8f7..395970eb 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index f814f5fb..3a1489b2 100644
+index f0baac1d..9a0c005b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1832,6 +1832,7 @@ static void setup_signals(void)
+@@ -1821,6 +1821,7 @@ static void setup_signals(void)
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
  	sigaction(SIGWINCH, &sa, NULL);
@@ -318,7 +318,7 @@ index f814f5fb..3a1489b2 100644
  }
  
  int main(int argc, char *argv[])
-@@ -1847,7 +1848,8 @@ int main(int argc, char *argv[])
+@@ -1836,7 +1837,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;

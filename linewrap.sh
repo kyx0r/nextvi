@@ -33,7 +33,7 @@ ${SEP}.i int xlw;			/* soft linewrap col */
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1458\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
@@ -53,7 +53,7 @@ ${SEP}+2a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(left\\\\),
 	EO\\\\(lim\\\\),
-	EO\\\\(led\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1569\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(led\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1581\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lw\", ec_linewrap},
 ${SEP}b2${SEP}%;f> \\\\{
 	int i, pos = lo->pos;
@@ -238,7 +238,7 @@ s/\\$/lw|\\/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..5bfee995 100644
+index cc881132..82a5a37a 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -251,7 +251,7 @@ index 37836e80..5bfee995 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7aae6489..e1d13e52 100644
+index f3ea18aa..d7a77c6f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -259,7 +259,7 @@ index 7aae6489..e1d13e52 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1444,6 +1445,23 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1456,6 +1457,23 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -283,7 +283,7 @@ index 7aae6489..e1d13e52 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1567,6 +1585,7 @@ static struct excmd {
+@@ -1579,6 +1597,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -461,7 +461,7 @@ index 0a13ff5a..5c1176ab 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index f814f5fb..257ca242 100644
+index f0baac1d..e0e2b06d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -168,6 +168,22 @@ static void vi_drawrow(int row)

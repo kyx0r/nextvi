@@ -258,11 +258,11 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
 	return vi_prompt(msg, ex_ft, insert, ret, &kmap, mlen);
 }
 
-static int vi_yankbuf(void)
+static int vi_yankbuf(int winch)
 {
-	int c = term_read(TK_CTL('l'));
+	int c = term_read(winch);
 	if (c == '"')
-		return term_read(TK_CTL('l'));
+		return term_read(0);
 	term_dec()
 	return 0;
 }
@@ -270,11 +270,11 @@ static int vi_yankbuf(void)
 static int vi_prefix(void)
 {
 	int n = 0;
-	int c = term_read(TK_CTL('l'));
+	int c = term_read(0);
 	if (c >= '1' && c <= '9') {
 		while (c >= '0' && c <= '9') {
 			n = n * 10 + c - '0';
-			c = term_read(TK_CTL('l'));
+			c = term_read(0);
 		}
 	}
 	return n;
@@ -338,55 +338,6 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		}
 	}
 	return 0;
-}
-
-/* read a line motion */
-static int vi_motionln(int *row, int cmd, int cnt)
-{
-	int var, c = term_read(TK_CTL('l'));
-	switch (c) {
-	case '\n':
-	case '+':
-	case 'j':
-		*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-		break;
-	case 'k':
-	case '-':
-		*row = MAX(*row - cnt, 0);
-		break;
-	case '\'':
-		if (lbuf_jump(xb, term_read(0), row, &var))
-			return -1;
-		break;
-	case 'G':
-		*row = vi_arg ? cnt - 1 : lbuf_len(xb) - 1;
-		break;
-	case 'H':
-		*row = MIN(xtop + cnt - 1, lbuf_len(xb) - 1);
-		break;
-	case 'L':
-		*row = MIN(xtop + xrows - 1 - cnt + 1, lbuf_len(xb) - 1);
-		break;
-	case 'M':
-		*row = MIN(xtop + xrows / 2, lbuf_len(xb) - 1);
-		break;
-	default:
-		if (c == cmd) {
-			*row = MIN(*row + cnt - 1, lbuf_len(xb) - 1);
-			break;
-		}
-		if (c == '%' && vi_arg) {
-			if (cnt > 100)
-				return -1;
-			*row = lbuf_len(xb) * cnt / 100;
-			break;
-		}
-		term_dec()
-		return 0;
-	}
-	if (*row < 0)
-		*row = 0;
-	return c;
 }
 
 static char *vi_curword(struct lbuf *lb, int row, int off, int n, int ex)
@@ -554,8 +505,7 @@ static void vc_status(int type)
 	vi_drawmsg_mpt(vi_msg)
 }
 
-/* read a motion */
-static int vi_motion(int vc, int *row, int *off)
+static int vi_region(int cmd, int *row, int *off)
 {
 	static sbuf *savepath[5];
 	static rset *bre;
@@ -565,11 +515,7 @@ static int vi_motion(int vc, int *row, int *off)
 	int cnt = vi_arg ? vi_arg : 1;
 	int mv, i, dir, var;
 
-	if ((mv = vi_motionln(row, 0, cnt))) {
-		*off = -1;
-		return mv;
-	}
-	mv = term_read(TK_CTL('l'));
+	mv = term_read(0);
 	switch (mv) {
 	case ',':
 	case ';':
@@ -618,7 +564,7 @@ static int vi_motion(int vc, int *row, int *off)
 				cnt -= var;
 			}
 		}
-		if (!vc && dir > 0 && lbuf_get(xb, *row + dir)
+		if (cmd < 0 && dir > 0 && lbuf_get(xb, *row + dir)
 				&& (var < 2 || *off >= var - 1)) {
 			*row += dir;
 			*off = 0;
@@ -776,7 +722,8 @@ static int vi_motion(int vc, int *row, int *off)
 	case 'N':
 		if (vi_search(mv, cnt, row, off, 1))
 			return -1;
-		xtop = MAX(0, *row - xrows / 2);
+		if (cmd < 0)
+			xtop = MAX(0, *row - xrows / 2);
 		vi_mod |= mv == '/' || mv == '?';
 		break;
 	case '*':
@@ -789,19 +736,55 @@ static int vi_motion(int vc, int *row, int *off)
 		}
 		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
 			cadir = -cadir;
-		else if (*row < xtop || *row >= xtop + xrows - 1)
+		else if (cmd < 0 && (*row < xtop || *row >= xtop + xrows - !vi_status))
 			xtop = MAX(0, *row - xrows / 2);
 		break;
+	case '\n':
+	case '+':
+	case 'j':
+		*row = MIN(*row + cnt, lbuf_len(xb) - 1);
+		goto lnregion;
+	case 'k':
+	case '-':
+		*row = MAX(*row - cnt, 0);
+		goto lnregion;
+	case 'G':
+		*row = vi_arg ? cnt - 1 : lbuf_len(xb) - 1;
+		goto lnregion;
+	case 'H':
+		*row = MIN(xtop + cnt - 1, lbuf_len(xb) - 1);
+		goto lnregion;
+	case 'L':
+		*row = MIN(xtop + xrows - 1 - cnt + 1, lbuf_len(xb) - 1);
+		goto lnregion;
+	case 'M':
+		*row = MIN(xtop + xrows / 2, lbuf_len(xb) - 1);
+		goto lnregion;
+	case '\'':
 	case '`':
-		if (lbuf_jump(xb, term_read(0), row, off))
+		if (lbuf_jump(xb, term_read(0), row, &var))
 			return -1;
+		if (cmd < 0 && (*row < xtop || *row >= xtop + xrows))
+			xtop = MAX(0, *row - xrows / 2);
+		if (mv == '\'')
+			goto lnregion;
+		*off = var;
 		break;
 	case '%':
-		if (lbuf_pair(xb, "()[]{}", 6, row, off))
+		if (vi_arg) {
+			if (cnt > 100)
+				return -1;
+			*row = lbuf_len(xb) * cnt / 100;
+			goto lnregion;
+		} else if (lbuf_pair(xb, "()[]{}", 6, row, off))
 			return -1;
 		break;
 	default:
-		return 0;
+		if (mv != cmd)
+			return 0;
+		*row = MIN(*row + cnt - 1, lbuf_len(xb) - 1);
+		lnregion:
+		*off = -1;
 	}
 	return mv;
 }
@@ -965,12 +948,10 @@ static int vc_motion(int cmd)
 		vi_arg = mv;
 	o1 = ren_noeol(lbuf_get(xb, r1), o1);
 	o2 = o1;
-	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
-		o2 = -1;
-	else if (!(mv = vi_motion(1, &r2, &o2)))
+	if ((mv = vi_region(cmd, &r2, &o2)) <= 0)
 		return 0;
-	if (mv < 0)
-		return 0;
+	if (r2 < 0)
+		r2 = 0;
 	lnmode = o2 < 0;
 	if (lnmode) {
 		o1 = 0;
@@ -1178,9 +1159,9 @@ static void vi_argcmd(int arg, char cmd)
 #define topfix() \
 if (xrow < 0 || xrow >= lbuf_len(xb)) \
 	xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0; \
-if (xtop > xrow) \
+if (xrow < xtop) \
 	xtop = xrow; \
-else if (xtop + xrows <= xrow) \
+else if (xrow >= xtop + xrows) \
 	xtop = xrow - xrows + 1; \
 
 void vi(int init)
@@ -1197,13 +1178,13 @@ void vi(int init)
 	while (!xquit) {
 		int nrow = xrow;
 		int noff = xoff;
+		int orow = nrow;
 		int ooff = noff;
 		int otop = xtop;
 		int oleft = xleft;
-		int orow = xrow;
 		icmd_pos = 0;
 		vi_mod = 0;
-		vi_ybuf = vi_yankbuf();
+		vi_ybuf = vi_yankbuf(TK_CTL('l'));
 		vi_arg = vi_prefix();
 		term_dec()
 		if (vi_lnnum == 1) {
@@ -1218,9 +1199,9 @@ void vi(int init)
 		if (led_attsb)
 			sbuf_cut(led_attsb, 0)
 		if (!vi_ybuf)
-			vi_ybuf = vi_yankbuf();
-		mv = vi_motion(0, &nrow, &noff);
-		if (mv > 0) {
+			vi_ybuf = vi_yankbuf(0);
+		mv = vi_region(-1, &nrow, &noff);
+		if (mv > 0 && nrow >= 0) {
 			if (strchr("|jk", mv)) {
 				noff = vi_col2off(xb, nrow, vi_col);
 			} else {
@@ -1316,6 +1297,8 @@ void vi(int init)
 					goto undo;
 				} else if (!vi_arg)
 					vi_drawmsg_mpt("undo failed")
+				else if (xrow < xtop || xrow >= xtop + xrows)
+					xtop = MAX(0, xrow - xrows / 2);
 				break;
 			case TK_CTL('r'):
 				redo:
@@ -1325,6 +1308,8 @@ void vi(int init)
 					goto redo;
 				} else if (!vi_arg)
 					vi_drawmsg_mpt("redo failed")
+				else if (xrow < xtop || xrow >= xtop + xrows)
+					xtop = MAX(0, xrow - xrows / 2);
 				break;
 			case TK_CTL('g'):
 				vi_tsm = 0;
@@ -1461,8 +1446,12 @@ void vi(int init)
 			case ':':
 				ln = vi_enprompt(":", NULL, &k, &n);
 				do_excmd:
-				if (k && ln[n])
+				if (k && ln[n]) {
 					ex_command(ln + n)
+					if (xrow != orow && (xrow < xtop ||
+							xrow >= xtop + xrows - !vi_status))
+						xtop = MAX(0, xrow - xrows / 2);
+				}
 				vi_mod |= 1;
 				if (!xmpt)
 					vi_drawmsg(ln);
@@ -1861,7 +1850,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-5.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-5.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

@@ -29,12 +29,12 @@ LB="0?"
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	case 'w':
 	case 'W':
-		var = mv == 'W';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:654\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		if (vc && cnt == 1)
+		var = mv == 'W';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:600\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 		if (cmd >= 0 && cnt == 1)
 			dir = 2;
 		else
 			dir = vi_nlmode+1;
-		if (vc == 'c') {
+		if (cmd == 'c') {
 			/* vim: cw/cW acts like ce/cE (no trailing whitespace) */
 			int prow = *row, poff = *off;
 			for (i = 0; i < cnt; i++)
@@ -45,36 +45,34 @@ ${SEP}+2a 		if (vc && cnt == 1)
 			*row = prow;
 			*off = poff;
 		}
-${SEP}.,\$f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:656\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:656\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 	else if \\\\(!\\\\(mv = vi_motion\\\\(1, &r2, &o2\\\\)\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:970\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/1/cmd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:970\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
+${SEP}.,\$;f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)
+			if \\\\(lbuf_wordbeg\\\\(xb, var, vi_nlmode\\\\+1, row, off\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:602\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:602\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
-GROUP 3
--	else if (!(mv = vi_motion(1, &r2, &o2)))
-+	else if (!(mv = vi_motion(cmd, &r2, &o2)))
+GROUP 2
+-			if (lbuf_wordbeg(xb, var, vi_nlmode+1, row, off))
++			if (lbuf_wordbeg(xb, var, dir, row, off))
 pattern:
-	else if \(!\(mv = vi_motion\(1, &r2, &o2\)\)\)
-edit_cmd_rel:
-+0
-s/1/cmd/
+		for \(i = 0; i < cnt; i\+\+\)
+			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index f814f5fb..dcc94157 100644
+index f0baac1d..2cd85f49 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -652,8 +652,23 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -598,8 +598,23 @@ static int vi_region(int cmd, int *row, int *off)
  	case 'w':
  	case 'W':
  		var = mv == 'W';
-+		if (vc && cnt == 1)
++		if (cmd >= 0 && cnt == 1)
 +			dir = 2;
 +		else
 +			dir = vi_nlmode+1;
-+		if (vc == 'c') {
++		if (cmd == 'c') {
 +			/* vim: cw/cW acts like ce/cE (no trailing whitespace) */
 +			int prow = *row, poff = *off;
 +			for (i = 0; i < cnt; i++)
@@ -91,12 +89,3 @@ index f814f5fb..dcc94157 100644
  				break;
  		break;
  	case '(':
-@@ -967,7 +982,7 @@ static int vc_motion(int cmd)
- 	o2 = o1;
- 	if ((mv = vi_motionln(&r2, cmd, vi_arg ? vi_arg : 1)))
- 		o2 = -1;
--	else if (!(mv = vi_motion(1, &r2, &o2)))
-+	else if (!(mv = vi_motion(cmd, &r2, &o2)))
- 		return 0;
- 	if (mv < 0)
- 		return 0;

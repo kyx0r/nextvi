@@ -31,7 +31,7 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\
 ${SEP}+3${SEP}s/(u\\\\[.*)\\\\]/\\\\1p]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:294\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1458\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
@@ -44,7 +44,7 @@ ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	\\\\{\"uc\", ec_setenc\\\\},
 	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1543\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1555\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"up\", ec_undoleafs},
 ${SEP}b2${SEP}%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
@@ -186,7 +186,7 @@ s/(u\[.*)\]/\1p]/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..d777b53f 100644
+index cc881132..a5e02bfa 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -291,7 +291,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -199,10 +199,10 @@ index 37836e80..d777b53f 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 7aae6489..0f4476d4 100644
+index f3ea18aa..63b4be74 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1444,6 +1444,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1456,6 +1456,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -219,7 +219,7 @@ index 7aae6489..0f4476d4 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1541,6 +1551,7 @@ static struct excmd {
+@@ -1553,6 +1563,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},

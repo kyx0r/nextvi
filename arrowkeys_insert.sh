@@ -135,23 +135,23 @@ ${SEP}.,\$;f> 			return key;
 ${SEP}+3${SEP}s/f\\\\)/f, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:701\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	\\\\*l = ln - pln;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:846\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:829\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int lmodified;
 
 ${SEP}.,\$;f> 	if \\\\(postn \\\\+ l2 != tlen \\\\|\\\\| memcmp\\\\(ln \\\\+ l1, sb->s \\\\+ l1, tlen - l2 - l1\\\\)\\\\)
 		lbuf_edit\\\\(xb, sb->s, r1, r2 \\\\+ 1, o1, xoff\\\\);
-	free\\\\(sb->s\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:878\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	free\\\\(sb->s\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:861\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lmodified = 1;
 ${SEP}.,\$;f> 	term_room\\\\(cmdo\\\\);
 	sbuf_mem\\\\(sb, ln, l1\\\\)
-	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1049\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1049\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		lbuf_edit\\\\(xb, sb->s, row, row \\\\+ !cmdo, off, xoff\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1050\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1030\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1030\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		lbuf_edit\\\\(xb, sb->s, row, row \\\\+ !cmdo, off, xoff\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1031\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		lmodified = 1;
 	} else
 		lmodified = 0;
 ${SEP}.,\$;f> 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
 					break;
-				\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1544\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1533\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				switch (k) {
 				case 'A':	/* ↑ */
 					term_back(!lmodified ? c : 'i');
@@ -185,7 +185,7 @@ ${SEP}+2a 				switch (k) {
 				}
 ${SEP}.,\$;f> 				if \\\\(c != 'A' && c != 'C'\\\\)
 					xoff--;
-				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1547\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1536\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				_break:
 				vi_mod = 0;
 				break;
@@ -372,10 +372,10 @@ index 163596e2..58233091 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index f814f5fb..1c9c3d62 100644
+index f0baac1d..6883e63b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -844,6 +844,8 @@ static void vi_indents(char *ln, int *l)
+@@ -827,6 +827,8 @@ static void vi_indents(char *ln, int *l)
  	*l = ln - pln;
  }
  
@@ -384,7 +384,7 @@ index f814f5fb..1c9c3d62 100644
  static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *post, *ln = lbuf_get(xb, r1);
-@@ -876,6 +878,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -859,6 +861,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
@@ -392,7 +392,7 @@ index f814f5fb..1c9c3d62 100644
  	return key;
  }
  
-@@ -1046,8 +1049,11 @@ static int vc_insert(int cmd)
+@@ -1027,8 +1030,11 @@ static int vc_insert(int cmd)
  	term_room(cmdo);
  	sbuf_mem(sb, ln, l1)
  	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
@@ -405,7 +405,7 @@ index f814f5fb..1c9c3d62 100644
  	free(sb->s);
  	return key;
  }
-@@ -1542,9 +1548,43 @@ void vi(int init)
+@@ -1531,9 +1537,43 @@ void vi(int init)
  					term_back(xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a');
  					break;
  				}
