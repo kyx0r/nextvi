@@ -28,7 +28,7 @@ LB="0?"
 
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 
-	mv = .*\\\\(.*TK_CTL\\\\('l'\\\\)\\\\);
+	mv = .*\\\\(.*\\\\);
 	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:519\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
@@ -100,7 +100,7 @@ GROUP 1
 +		break;
 pattern:
 
-	mv = .*\(.*TK_CTL\('l'\)\);
+	mv = .*\(.*\);
 	switch \(mv\) \{
 === END DELTA ===
 === PATCH2VI PATCH ===
