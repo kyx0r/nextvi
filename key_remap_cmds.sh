@@ -33,7 +33,7 @@ static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 ${SEP}%;f> 	return NULL;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:550\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:549\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_map(char *loc, char *cmd, char *arg)
 {
 	char **map = cmd[0] == 'n' ? nmaps[xkmap] : imaps[xkmap];
@@ -75,10 +75,10 @@ int map_read(int mode, int winch)
 }
 
 ${SEP}.,\$;f> 	\\\\{\"inc\", ec_setincl\\\\},
-	EO\\\\(ic\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1522\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(ic\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1534\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
-${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1529\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1541\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
 ${SEP}b2${SEP}%;f> 		len = sb->s_n;
@@ -95,34 +95,33 @@ ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${S
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:277\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 
 static int vi_digit\\\\(void\\\\)
 \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:285\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:285\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> /\\\\* read a line motion \\\\*/
-static int vi_motionln\\\\(int \\\\*row, int cmd, int cnt\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:346\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:346\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		\\\\*off = -1;
-		return mv;
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:572\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:572\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			char \\\\*cmd;
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:285\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	int cnt = vi_arg \\\\? vi_arg : 1;
+	int mv, i, dir, var;
+
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			char \\\\*cmd;
 			term_dec\\\\(\\\\)
-			re_motion:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1239\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1239\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
+			re_motion:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1220\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1220\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
+			case 'v':
+				vi_mod \\\\|= 2;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1345\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1345\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
 				switch \\\\(k\\\\) \\\\{
 				case '\\\\.':
-					while \\\\(vi_arg\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1360\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1360\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
-				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1478\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1478\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				if \\\\(k == 'i'\\\\) \\\\{
+					while \\\\(vi_arg\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				if \\\\(k == 'i'\\\\) \\\\{
 					k = term_read\\\\(0\\\\);
-					char pairs\\\\[2\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1480\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1480\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
+					char pairs\\\\[2\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1469\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1469\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
+				break;
+			case 'z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1567\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1567\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
 				switch \\\\(k\\\\) \\\\{
 				case '\\\\\\\\n':
-					xtop = xrow;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1578\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1578\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
-				if \\\\(k == 'g'\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1610\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1610\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 					continue;
-				break;
-			case 'Z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1684\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1684\\${SEP}pr${INTR}${QF}}${SEP}b4${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					xtop = xrow;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1599\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1599\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
+				if \\\\(k == 'g'\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1673\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1673\\${SEP}pr${INTR}${QF}}${SEP}b4${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i int map_read(int mode, int winch);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
 
@@ -182,15 +181,6 @@ edit_cmd_rel:
 +0
 s/term_read\(/map_read(0, /
 GROUP 9
--				k = term_read(0);
-+				k = map_read(0, 0);
-pattern:
-				k = term_read\(0\);
-				if \(k == 'i'\) \{
-edit_cmd_rel:
-+0
-s/term_read\(/map_read(0, /
-GROUP 10
 -					k = term_read(0);
 +					k = map_read(0, 0);
 pattern:
@@ -228,7 +218,7 @@ i int map_read(int mode, int winch);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..16335945 100644
+index cc881132..ae954674 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -241,7 +231,7 @@ index 37836e80..16335945 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7aae6489..5d5f6b7f 100644
+index f3ea18aa..a7981b2d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -250,7 +240,7 @@ index 7aae6489..5d5f6b7f 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -548,6 +550,46 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -547,6 +549,46 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -297,7 +287,7 @@ index 7aae6489..5d5f6b7f 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	if (!arg[0]) {
-@@ -1520,6 +1562,8 @@ static struct excmd {
+@@ -1532,6 +1574,8 @@ static struct excmd {
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
@@ -306,7 +296,7 @@ index 7aae6489..5d5f6b7f 100644
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
-@@ -1527,6 +1571,8 @@ static struct excmd {
+@@ -1539,6 +1583,8 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -329,7 +319,7 @@ index 163596e2..694a0ac2 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index f814f5fb..3bb9e30d 100644
+index 158a716d..97acd5bd 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -364,25 +354,16 @@ index f814f5fb..3bb9e30d 100644
  	if (c >= '0' && c <= '9')
  		return c - '0';
  	return -1;
-@@ -343,7 +343,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
- /* read a line motion */
- static int vi_motionln(int *row, int cmd, int cnt)
- {
--	int var, c = term_read(TK_CTL('l'));
-+	int var, c = map_read(0, TK_CTL('l'));
- 	switch (c) {
- 	case '\n':
- 	case '+':
-@@ -569,7 +569,7 @@ static int vi_motion(int vc, int *row, int *off)
- 		*off = -1;
- 		return mv;
- 	}
+@@ -515,7 +515,7 @@ static int vi_region(int cmd, int *row, int *off)
+ 	int cnt = vi_arg ? vi_arg : 1;
+ 	int mv, i, dir, var;
+ 
 -	mv = term_read(TK_CTL('l'));
 +	mv = map_read(0, TK_CTL('l'));
  	switch (mv) {
  	case ',':
  	case ';':
-@@ -1236,7 +1236,7 @@ void vi(int init)
+@@ -1217,7 +1217,7 @@ void vi(int init)
  			char *cmd;
  			term_dec()
  			re_motion:
@@ -391,7 +372,7 @@ index f814f5fb..3bb9e30d 100644
  			switch (c) {
  			case TK_CTL('b'):
  				vi_scrollbackward(MAX(1, vi_arg) * (xrows - 1));
-@@ -1357,7 +1357,7 @@ void vi(int init)
+@@ -1342,7 +1342,7 @@ void vi(int init)
  				break;
  			case 'v':
  				vi_mod |= 2;
@@ -400,7 +381,7 @@ index f814f5fb..3bb9e30d 100644
  				switch (k) {
  				case '.':
  					while (vi_arg) {
-@@ -1475,9 +1475,9 @@ void vi(int init)
+@@ -1464,9 +1464,9 @@ void vi(int init)
  				break;
  			case 'c':
  			case 'd':
@@ -412,7 +393,7 @@ index f814f5fb..3bb9e30d 100644
  					char pairs[2];
  					switch(k) {
  					case ')': case '(': pairs[0]='('; pairs[1]=')'; break;
-@@ -1575,7 +1575,7 @@ void vi(int init)
+@@ -1564,7 +1564,7 @@ void vi(int init)
  				vi_mod |= vc_put(c);
  				break;
  			case 'z':
@@ -421,7 +402,7 @@ index f814f5fb..3bb9e30d 100644
  				switch (k) {
  				case '\n':
  					xtop = xrow;
-@@ -1607,7 +1607,7 @@ void vi(int init)
+@@ -1596,7 +1596,7 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'g':
@@ -430,7 +411,7 @@ index f814f5fb..3bb9e30d 100644
  				if (k == 'g')
  					term_push("1G", 2);
  				else if (k == 'a') {
-@@ -1681,7 +1681,7 @@ void vi(int init)
+@@ -1670,7 +1670,7 @@ void vi(int init)
  					continue;
  				break;
  			case 'Z':
