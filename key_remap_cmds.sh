@@ -108,8 +108,7 @@ ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${S
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1345\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
 			case 'c':
 			case 'd':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1469\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1469\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
 				break;
 			case 'z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1567\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1567\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 1;
@@ -276,7 +275,7 @@ index 163596e2..694a0ac2 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 158a716d..97acd5bd 100644
+index 158a716d..f38b984f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -338,18 +337,15 @@ index 158a716d..97acd5bd 100644
  				switch (k) {
  				case '.':
  					while (vi_arg) {
-@@ -1464,9 +1464,9 @@ void vi(int init)
+@@ -1464,7 +1464,7 @@ void vi(int init)
  				break;
  			case 'c':
  			case 'd':
 -				k = term_read(0);
 +				k = map_read(0, 0);
  				if (k == 'i') {
--					k = term_read(0);
-+					k = map_read(0, 0);
+ 					k = term_read(0);
  					char pairs[2];
- 					switch(k) {
- 					case ')': case '(': pairs[0]='('; pairs[1]=')'; break;
 @@ -1564,7 +1564,7 @@ void vi(int init)
  				vi_mod |= vc_put(c);
  				break;
