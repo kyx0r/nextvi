@@ -31,7 +31,7 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\
 ${SEP}+3${SEP}s/cd/c[dx]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:294\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return val;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1454\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1466\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
 	int idx, ridx = 0;
@@ -75,7 +75,7 @@ ${SEP}+2a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1556\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1568\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	{\"cx\", ec_closebuf},
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c'
 
@@ -98,7 +98,7 @@ a 	{"cx", ec_closebuf},
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..d87c0c2a 100644
+index cc881132..87b3f2e9 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -291,7 +291,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -111,10 +111,10 @@ index 37836e80..d87c0c2a 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 7aae6489..40aa2a72 100644
+index f3ea18aa..8afe40e6 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1452,6 +1452,49 @@ static int eo_val(char *arg)
+@@ -1464,6 +1464,49 @@ static int eo_val(char *arg)
  	return val;
  }
  
@@ -164,7 +164,7 @@ index 7aae6489..40aa2a72 100644
  #define _EO(opt, inner) \
  static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
-@@ -1554,6 +1597,7 @@ static struct excmd {
+@@ -1566,6 +1609,7 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},

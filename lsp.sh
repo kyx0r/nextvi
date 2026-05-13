@@ -41,7 +41,7 @@ ${SEP}+2a 		if (*xb_path)
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1488\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
@@ -61,7 +61,7 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
 	EO\\\\(hlr\\\\),
-	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1566\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1578\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"lsp\", ec_lsp},
 ${SEP}b2${SEP}i /*
  * MIT License
@@ -1512,7 +1512,7 @@ ${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 
 ${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
 					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					goto rep;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1629\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
@@ -1522,7 +1522,7 @@ ${SEP}+2a 				} else if (k == 'K') {
 					vi_mod |= 1;
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1803\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1792\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
@@ -1530,7 +1530,7 @@ ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 		}
 ${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1842\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1831\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lsp_init();
 ${SEP}b6${SEP}%;f> /\\\\* filesystem \\\\*/
 extern rset \\\\*fsincl;
@@ -1566,7 +1566,7 @@ s/\\$/lsp|\\/
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..892b2bf2 100644
+index cc881132..a031f0f8 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -1579,7 +1579,7 @@ index 37836e80..892b2bf2 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7aae6489..8d6af6b0 100644
+index f3ea18aa..553fb776 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -372,6 +372,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -1600,7 +1600,7 @@ index 7aae6489..8d6af6b0 100644
  	}
  	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
  		ec_quit("", cmd, "");
-@@ -1474,6 +1478,23 @@ _EO(left,
+@@ -1486,6 +1490,23 @@ _EO(left,
  	return NULL;
  )
  
@@ -1624,7 +1624,7 @@ index 7aae6489..8d6af6b0 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1564,6 +1585,7 @@ static struct excmd {
+@@ -1576,6 +1597,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),
@@ -3107,7 +3107,7 @@ index d75be8f7..d0d74ccc 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index f814f5fb..633d3d4d 100644
+index 158a716d..2d9c889c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -3127,7 +3127,7 @@ index f814f5fb..633d3d4d 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
-@@ -1638,6 +1641,13 @@ void vi(int init)
+@@ -1627,6 +1630,13 @@ void vi(int init)
  				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
  					goto rep;
@@ -3141,7 +3141,7 @@ index f814f5fb..633d3d4d 100644
  				}
  				break;
  			case 'x':
-@@ -1801,6 +1811,11 @@ void vi(int init)
+@@ -1790,6 +1800,11 @@ void vi(int init)
  			syn_blockhl = -1;
  			vi_drawrow(xrow);
  		}
@@ -3153,7 +3153,7 @@ index f814f5fb..633d3d4d 100644
  		if (vi_status && xmpt < 1) {
  			xrows -= term_resized != vi_status;
  			vi_status = term_resized;
-@@ -1840,6 +1855,7 @@ int main(int argc, char *argv[])
+@@ -1829,6 +1844,7 @@ int main(int argc, char *argv[])
  	setup_signals();
  	dir_init();
  	syn_init();

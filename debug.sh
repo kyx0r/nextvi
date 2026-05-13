@@ -30,7 +30,7 @@ LB="0?"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1731\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1743\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -76,7 +76,7 @@ void syn_done(void)
 }
 ${SEP}b3${SEP}%;f> 	else
 		vi\\\\(1\\\\);
-	term_done\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1879\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	term_done\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1868\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	ex_done();
 	syn_done();
 	ren_done();
@@ -155,10 +155,10 @@ a void ex_done(void);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7aae6489..d74f8ba5 100644
+index f3ea18aa..bd8bbd23 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1729,6 +1729,22 @@ void ex(void)
+@@ -1741,6 +1741,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -230,10 +230,10 @@ index 86e24e4a..100afba1 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index f814f5fb..431aadab 100644
+index 158a716d..d10308d6 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1877,6 +1877,12 @@ int main(int argc, char *argv[])
+@@ -1866,6 +1866,12 @@ int main(int argc, char *argv[])
  	else
  		vi(1);
  	term_done();

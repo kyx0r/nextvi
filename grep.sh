@@ -48,30 +48,30 @@ struct buf \\\\*bufs;		/\\\\* main buffers \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp
 ${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:41\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%;f> 	free\\\\(sb->s\\\\);
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:488\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(\\\\)/(isbuffer)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:488\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> path\\\\[len\\\\] = '\\\\\\\\0'; \\\\\\\\
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:439\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(\\\\)/(isbuffer)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:439\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> path\\\\[len\\\\] = '\\\\\\\\0'; \\\\\\\\
 ret = ex_edit\\\\(path, len\\\\); \\\\\\\\
-path\\\\[len\\\\] = '\\\\\\\\n'; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:493\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/ret && xrow/isbuffer/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:493\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> if \\\\(!vi_search\\\\(\\\\*row \\\\? 'N' : 'n', cnt, row, off, 0\\\\)\\\\) \\\\\\\\
+path\\\\[len\\\\] = '\\\\\\\\n'; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:444\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/ret && xrow/isbuffer/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:444\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> if \\\\(!vi_search\\\\(\\\\*row \\\\? 'N' : 'n', cnt, row, off, 0\\\\)\\\\) \\\\\\\\
 	return 1; \\\\\\\\
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:504\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/ c/ again, int c/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:504\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> \\\\{
-	char \\\\*path;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:507\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/again = 0, //${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:507\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	wrap:
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:455\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/ c/ again, int c/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:455\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> \\\\{
+	char \\\\*path;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:458\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/again = 0, //${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:458\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	wrap:
 	while \\\\(fspos < lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\) \\\\{
-		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\+\\\\+\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:511\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(\\\\)/(ret && xrow && again != 2)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:511\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	int ret, len;
+		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\+\\\\+\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:462\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(\\\\)/(ret && xrow && again != 2)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:462\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	int ret, len;
 	while \\\\(--fspos >= 0\\\\) \\\\{
-		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:527\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(\\\\)/(ret && xrow)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:527\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
+		path = tempbufs\\\\[1\\\\]\\\\.lb->ln\\\\[fspos\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:478\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(\\\\)/(ret && xrow)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:478\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
 		break;
-	case TK_CTL\\\\('\\\\]'\\\\):	/\\\\* this is also \\\\^5 on some systems \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:707\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	case TK_CTL\\\\('\\\\]'\\\\):	/\\\\* this is also \\\\^5 on some systems \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:653\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case TK_CTL('x'):
 ${SEP}.,\$;f> 			lkwdcnt = xkwdcnt;
 			fspos \\\\+= fsdir < 0 \\\\? 1 : 0;
-			fspos = MIN\\\\(fspos, lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:726\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(1/(0, 1/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:726\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 			fsdir = 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:727\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			fspos = MIN\\\\(fspos, lbuf_len\\\\(tempbufs\\\\[1\\\\]\\\\.lb\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:672\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(1/(0, 1/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:672\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 			fsdir = 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:673\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		} else if (mv == TK_CTL('x')) {
 			term_exec(\"\", 1, '&')
 			temp_pos(3, -1, 0, 0);
@@ -108,7 +108,7 @@ ${SEP}.a 		} else if (mv == TK_CTL('x')) {
 			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
 ${SEP}.,\$;f> 				n = strlen\\\\(ln\\\\);
 				char buf\\\\[n \\\\+ 4\\\\];
-				memcpy\\\\(buf, \":e \", 3\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				memcpy\\\\(buf, \":e \", 3\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1273\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 				memcpy(buf+3, ln, n + 1);
 				if (!strcmp(xb_path, \"/grep/\")) {
 					int subs[2];
@@ -123,14 +123,14 @@ ${SEP}+3,#+1c 				memcpy(buf+3, ln, n + 1);
 				term_push(buf, strlen(buf));
 ${SEP}.,\$;f> 					\\\\}
 					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);
-					goto do_excmd; \\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					goto do_excmd; \\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1413\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				case 'x':
 					temp_switch(3, 1);
 					vi_mod = 1;
 					break;
 ${SEP}.,\$;f> 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
 	temp_open\\\\(1, \"/fm/\", fm_ft\\\\);
-	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1845\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	temp_open\\\\(2, \"/sc/\", _ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1834\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	temp_open(3, \"/grep/\", grep_ft);
 ${SEP}b3${SEP}%;f> extern rset \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
@@ -141,7 +141,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..3808122f 100644
+index cc881132..33adadc4 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -171,7 +171,7 @@ index 37836e80..3808122f 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 7aae6489..290a8872 100644
+index f3ea18aa..8a4da33a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,7 +38,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -184,10 +184,10 @@ index 7aae6489..290a8872 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index f814f5fb..9e4d4440 100644
+index 158a716d..d6cd4193 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -485,12 +485,12 @@ void dir_calc(char *path)
+@@ -436,12 +436,12 @@ void dir_calc(char *path)
  	free(sb->s);
  }
  
@@ -202,7 +202,7 @@ index f814f5fb..9e4d4440 100644
  	*row = xrow; *off = xoff; /* short circuit */ \
  	if (!vi_search('n', cnt, row, off, 0)) \
  		return 1; \
-@@ -501,14 +501,14 @@ if (ret && xrow) { \
+@@ -452,14 +452,14 @@ if (ret && xrow) { \
  if (!vi_search(*row ? 'N' : 'n', cnt, row, off, 0)) \
  	return 1; \
  
@@ -220,7 +220,7 @@ index f814f5fb..9e4d4440 100644
  	}
  	if (fspos == lbuf_len(tempbufs[1].lb) && !again) {
  		fspos = 0;
-@@ -524,7 +524,7 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -475,7 +475,7 @@ static int fs_searchback(int cnt, int *row, int *off)
  	int ret, len;
  	while (--fspos >= 0) {
  		path = tempbufs[1].lb->ln[fspos];
@@ -229,7 +229,7 @@ index f814f5fb..9e4d4440 100644
  	}
  	return 0;
  }
-@@ -705,6 +705,7 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -651,6 +651,7 @@ static int vi_region(int cmd, int *row, int *off)
  				break;
  		break;
  	case TK_CTL(']'):	/* this is also ^5 on some systems */
@@ -237,7 +237,7 @@ index f814f5fb..9e4d4440 100644
  	case TK_CTL('p'):
  		#define open_saved(n) \
  		if (savepath[n]) { \
-@@ -723,8 +724,42 @@ static int vi_motion(int vc, int *row, int *off)
+@@ -669,8 +670,42 @@ static int vi_region(int cmd, int *row, int *off)
  			lkwdcnt = xkwdcnt;
  			fspos += fsdir < 0 ? 1 : 0;
  			fspos = MIN(fspos, lbuf_len(tempbufs[1].lb));
@@ -281,7 +281,7 @@ index f814f5fb..9e4d4440 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1289,8 +1324,18 @@ void vi(int init)
+@@ -1270,8 +1305,18 @@ void vi(int init)
  				n = strlen(ln);
  				char buf[n + 4];
  				memcpy(buf, ":e ", 3);
@@ -302,7 +302,7 @@ index f814f5fb..9e4d4440 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1426,6 +1471,10 @@ void vi(int init)
+@@ -1411,6 +1456,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
  					goto do_excmd; }
@@ -313,7 +313,7 @@ index f814f5fb..9e4d4440 100644
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					n = cs ? strlen(cs) : 0;
-@@ -1843,6 +1892,7 @@ int main(int argc, char *argv[])
+@@ -1832,6 +1881,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);

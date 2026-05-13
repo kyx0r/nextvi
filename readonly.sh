@@ -44,21 +44,21 @@ ${SEP}+2a 			if (ex_buf->readonly)
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1446\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1458\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
-${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1535\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1547\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	{\"ro\", ec_readonly},
 ${SEP}b2${SEP}%;f> 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'a'\\\\)
-				xvis \\\\|= 8;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1859\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				xvis \\\\|= 8;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1848\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1864\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1864\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:404\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1853\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1853\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:404\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	char readonly;			/* read only */
 ${SEP}\$a extern char readonly;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h'
@@ -100,8 +100,8 @@ edit_cmd_rel:
 +1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 GROUP 2
--				fprintf(stderr, "Nextvi-5.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.1 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-5.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.2 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
 pattern:
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
 edit_cmd_rel:
@@ -123,7 +123,7 @@ edit_cmd_abs:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..55cf1278 100644
+index cc881132..54628309 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -291,7 +291,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -136,7 +136,7 @@ index 37836e80..55cf1278 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 7aae6489..020a4c52 100644
+index f3ea18aa..3ea2d620 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -170,7 +170,7 @@ index 7aae6489..020a4c52 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1444,6 +1450,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1456,6 +1462,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -183,7 +183,7 @@ index 7aae6489..020a4c52 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1533,6 +1545,7 @@ static struct excmd {
+@@ -1545,6 +1557,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
@@ -192,10 +192,10 @@ index 7aae6489..020a4c52 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index f814f5fb..919749c2 100644
+index 158a716d..c0a322f0 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1857,11 +1857,13 @@ int main(int argc, char *argv[])
+@@ -1846,11 +1846,13 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'a')
  				xvis |= 8;
@@ -205,8 +205,8 @@ index f814f5fb..919749c2 100644
  				xvis = 0;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-5.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.1 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-5.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.2 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

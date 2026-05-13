@@ -31,7 +31,7 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\
 ${SEP}+3${SEP}s/mj\\\\]/j]|md?/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:293\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1488\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 {
 	int beg = 0, end = 0, o1 = 0, o2 = -1;
@@ -82,7 +82,7 @@ ${SEP}+2a static void *ec_modal(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1528\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1540\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"md\", ec_modal},
 ${SEP}b2${SEP}i #include <stdio.h>
 
@@ -442,7 +442,7 @@ pattern:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 37836e80..9117aefd 100644
+index cc881132..bf4a0e52 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -455,10 +455,10 @@ index 37836e80..9117aefd 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7aae6489..de1cb748 100644
+index f3ea18aa..413dc503 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1474,6 +1474,54 @@ _EO(left,
+@@ -1486,6 +1486,54 @@ _EO(left,
  	return NULL;
  )
  
@@ -513,7 +513,7 @@ index 7aae6489..de1cb748 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1526,6 +1574,7 @@ static struct excmd {
+@@ -1538,6 +1586,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -875,7 +875,7 @@ index 00000000..683c8fe6
 +(out (3 + 9 - 5 + 23 / 10))
 +(out (asd3+9))
 diff --git a/vi.c b/vi.c
-index f814f5fb..4e14512d 100644
+index 158a716d..2bfe8edd 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -15,6 +15,7 @@
