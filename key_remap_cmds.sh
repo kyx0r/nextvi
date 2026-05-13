@@ -106,10 +106,9 @@ ${SEP}.,\$;f> 			char \\\\*cmd;
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1220\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
 			case 'v':
 				vi_mod \\\\|= 2;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1345\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1345\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
-			case 'c':
-			case 'd':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1345\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
+				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
 				break;
 			case 'z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1567\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1567\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 1;
@@ -164,6 +163,17 @@ pattern:
 edit_cmd_rel:
 +1
 s/term_read\(/map_read(1, /
+=== END DELTA ===
+=== DELTA vi.c ===
+GROUP 8
+-				k = term_read(0);
++				k = map_read(0, 0);
+pattern:
+				k = term_read\(0\);
+				if \(k == 'i'\) \{
+edit_cmd_rel:
++0
+s/term_read\(/map_read(0, /
 === END DELTA ===
 === DELTA vi.h ===
 GROUP 1
