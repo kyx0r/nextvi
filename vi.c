@@ -1457,6 +1457,8 @@ void vi(int init)
 					continue;
 				} else if (!xmpt)
 					xmpt = 1;
+				if (xrow < xtop || xrow >= xtop + xrows - 1)
+					xtop = MAX(0, xrow - xrows / 2);
 				break;
 			case 'c':
 			case 'd':
