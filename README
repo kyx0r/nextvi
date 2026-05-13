@@ -112,8 +112,8 @@ VI NORMAL
      [#]<^W>{arg}  Unindent arg region # times
      [#]<{arg}     Indent left arg region # times
      [#]>{arg}     Indent right arg region # times
-     "{<arg>}{arg1}
-                   Operate on arg register according to arg1 motion
+     [#]"{<arg>}{cmd}
+                   Execute normal cmd using register arg. # applies to cmd
      R             Print registers and their contents
      [#]&{<arg>}   Execute arg register macro in non-blocking mode # times
      [#]@{<arg>}   Execute arg register macro in blocking mode # times
@@ -241,10 +241,8 @@ VI MOTIONS
      Commands described with the word "region" consume a region.
      Motions can be prefixed or suffixed by [#].
 
-     <^W> > < ! c d y " g~ gu gU
+     <^W> > < ! c d y g~ gu gU
              All motions
-
-     "       Special motions that consume a motion
 
      dd yy cc g~~ guu gUU >> << <^W><^W> !!
              Special motions that can use [#] as number of lines

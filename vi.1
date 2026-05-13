@@ -198,8 +198,8 @@ Unindent arg region # times
 Indent left arg region # times
 .It Cm [\fI#\fP]>{\fIarg\fP}
 Indent right arg region # times
-.It Cm \&"{<\fIarg\fP>}{\fIarg1\fP}
-Operate on arg register according to arg1 motion
+.It Cm [\fI#\fP]\&"{<\fIarg\fP>}{\fIcmd\fP}
+Execute normal cmd using register arg. # applies to cmd
 .It Cm R
 Print registers and their contents
 .It Cm [\fI#\fP]&{<\fIarg\fP>}
@@ -412,11 +412,8 @@ Motions can be prefixed or suffixed by [#].
 .Ed
 .Bl -tag -width Ds -compact
 
-.It Cm <^W> > < \&! c d y \&" g~ gu gU
+.It Cm <^W> > < \&! c d y g~ gu gU
 All motions
-
-.It Cm \&"
-Special motions that consume a motion
 
 .It Cm dd yy cc g~~ guu gUU >> << <^W><^W> !!
 Special motions that can use [#] as number of lines
