@@ -84,7 +84,7 @@ ${SEP}.i 	{\"nm!\", ec_map},
 ${SEP}b2${SEP}%;f> 		len = sb->s_n;
 		c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:431\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1${SEP}s/term_read\\\\(/map_read(1, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:431\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%;f> 
-static int vi_yankbuf\\\\(void\\\\)
+static int vi_yankbuf\\\\(int winch\\\\)
 \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:263\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:263\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> static int vi_prefix\\\\(void\\\\)
 \\\\{
@@ -99,7 +99,8 @@ ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${S
 	int mv, i, dir, var;
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			char \\\\*cmd;
+${SEP}+3c 	mv = map_read(0, 0);
+${SEP}.,\$;f> 			char \\\\*cmd;
 			term_dec\\\\(\\\\)
 			re_motion:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1220\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1220\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
@@ -275,29 +276,29 @@ index 163596e2..694a0ac2 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 158a716d..f38b984f 100644
+index f0baac1d..eb1965e7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
  
- static int vi_yankbuf(void)
+ static int vi_yankbuf(int winch)
  {
--	int c = term_read(TK_CTL('l'));
-+	int c = map_read(0, TK_CTL('l'));
+-	int c = term_read(winch);
++	int c = map_read(0, winch);
  	if (c == '"')
- 		return term_read(TK_CTL('l'));
+ 		return term_read(0);
  	term_dec()
-@@ -270,11 +270,11 @@ static int vi_yankbuf(void)
+@@ -270,11 +270,11 @@ static int vi_yankbuf(int winch)
  static int vi_prefix(void)
  {
  	int n = 0;
--	int c = term_read(TK_CTL('l'));
-+	int c = map_read(0, TK_CTL('l'));
+-	int c = term_read(0);
++	int c = map_read(0, 0);
  	if (c >= '1' && c <= '9') {
  		while (c >= '0' && c <= '9') {
  			n = n * 10 + c - '0';
--			c = term_read(TK_CTL('l'));
-+			c = map_read(0, TK_CTL('l'));
+-			c = term_read(0);
++			c = map_read(0, 0);
  		}
  	}
  	return n;
@@ -314,8 +315,8 @@ index 158a716d..f38b984f 100644
  	int cnt = vi_arg ? vi_arg : 1;
  	int mv, i, dir, var;
  
--	mv = term_read(TK_CTL('l'));
-+	mv = map_read(0, TK_CTL('l'));
+-	mv = term_read(0);
++	mv = map_read(0, 0);
  	switch (mv) {
  	case ',':
  	case ';':
