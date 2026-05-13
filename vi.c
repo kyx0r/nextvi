@@ -736,7 +736,7 @@ static int vi_region(int cmd, int *row, int *off)
 		}
 		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
 			cadir = -cadir;
-		else if (cmd < 0 && (*row < xtop || *row >= xtop + xrows - 1))
+		else if (cmd < 0 && (*row < xtop || *row >= xtop + xrows - !vi_status))
 			xtop = MAX(0, *row - xrows / 2);
 		break;
 	case '\n':
@@ -1457,7 +1457,7 @@ void vi(int init)
 					continue;
 				} else if (!xmpt)
 					xmpt = 1;
-				if (xrow < xtop || xrow >= xtop + xrows - 1)
+				if (xrow < xtop || xrow >= xtop + xrows - !vi_status)
 					xtop = MAX(0, xrow - xrows / 2);
 				break;
 			case 'c':
