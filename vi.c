@@ -1178,10 +1178,10 @@ void vi(int init)
 	while (!xquit) {
 		int nrow = xrow;
 		int noff = xoff;
+		int orow = nrow;
 		int ooff = noff;
 		int otop = xtop;
 		int oleft = xleft;
-		int orow = xrow;
 		icmd_pos = 0;
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf();
@@ -1448,7 +1448,8 @@ void vi(int init)
 				do_excmd:
 				if (k && ln[n]) {
 					ex_command(ln + n)
-					if (xrow < xtop || xrow >= xtop + xrows - !vi_status)
+					if (xrow != orow && (xrow < xtop ||
+							xrow >= xtop + xrows - !vi_status))
 						xtop = MAX(0, xrow - xrows / 2);
 				}
 				vi_mod |= 1;
