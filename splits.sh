@@ -1534,7 +1534,7 @@ index d75be8f7..5e7d0d41 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 158a716d..966fdf42 100644
+index f0baac1d..ca6ac0ae 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */

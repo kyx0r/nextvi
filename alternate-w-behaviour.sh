@@ -61,7 +61,7 @@ pattern:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 158a716d..8bcb2df5 100644
+index f0baac1d..2cd85f49 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -598,8 +598,23 @@ static int vi_region(int cmd, int *row, int *off)

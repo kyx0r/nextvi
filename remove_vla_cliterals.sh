@@ -485,7 +485,7 @@ index 86e24e4a..dee00f50 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 158a716d..7461a577 100644
+index f0baac1d..c4dd4d40 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
