@@ -258,11 +258,11 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
 	return vi_prompt(msg, ex_ft, insert, ret, &kmap, mlen);
 }
 
-static int vi_yankbuf(void)
+static int vi_yankbuf(int winch)
 {
-	int c = term_read(TK_CTL('l'));
+	int c = term_read(winch);
 	if (c == '"')
-		return term_read(TK_CTL('l'));
+		return term_read(0);
 	term_dec()
 	return 0;
 }
@@ -270,11 +270,11 @@ static int vi_yankbuf(void)
 static int vi_prefix(void)
 {
 	int n = 0;
-	int c = term_read(TK_CTL('l'));
+	int c = term_read(0);
 	if (c >= '1' && c <= '9') {
 		while (c >= '0' && c <= '9') {
 			n = n * 10 + c - '0';
-			c = term_read(TK_CTL('l'));
+			c = term_read(0);
 		}
 	}
 	return n;
@@ -515,7 +515,7 @@ static int vi_region(int cmd, int *row, int *off)
 	int cnt = vi_arg ? vi_arg : 1;
 	int mv, i, dir, var;
 
-	mv = term_read(TK_CTL('l'));
+	mv = term_read(0);
 	switch (mv) {
 	case ',':
 	case ';':
@@ -1184,7 +1184,7 @@ void vi(int init)
 		int oleft = xleft;
 		icmd_pos = 0;
 		vi_mod = 0;
-		vi_ybuf = vi_yankbuf();
+		vi_ybuf = vi_yankbuf(TK_CTL('l'));
 		vi_arg = vi_prefix();
 		term_dec()
 		if (vi_lnnum == 1) {
@@ -1199,7 +1199,7 @@ void vi(int init)
 		if (led_attsb)
 			sbuf_cut(led_attsb, 0)
 		if (!vi_ybuf)
-			vi_ybuf = vi_yankbuf();
+			vi_ybuf = vi_yankbuf(0);
 		mv = vi_region(-1, &nrow, &noff);
 		if (mv > 0 && nrow >= 0) {
 			if (strchr("|jk", mv)) {
