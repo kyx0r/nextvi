@@ -155,12 +155,12 @@ VI NORMAL
      I             Enter insert mode at start of line after indent
      A             Enter insert mode at end of line
      a             Enter insert mode 1 character forward
-     [#]s          Enter insert mode and delete # characters
-     S             Enter insert mode and delete all characters
-     o             Enter insert mode and create a new line down
-     O             Enter insert mode and create a new line up
-     [#]c{arg}     Enter insert mode and delete arg region # times
-     C             Enter insert mode and delete from cursor to end of line
+     o             Create a new line down and enter insert mode
+     O             Create a new line up and enter insert mode
+     [#]s          Delete # characters and enter insert mode
+     [#]S          Delete all across # lines and enter insert mode
+     [#]c{arg}     Delete arg region # times and enter insert mode
+     C             Delete from cursor to end of line and enter insert mode
      [#]d{arg}     Delete arg region # times
      D             Delete from cursor to end of line
      [#]x          Delete # characters from cursor forward
@@ -1378,4 +1378,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.2                       May 13, 2026                       Nextvi 5.2
+Nextvi 5.2                       May 14, 2026                       Nextvi 5.2
