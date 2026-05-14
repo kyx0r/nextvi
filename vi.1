@@ -1,4 +1,4 @@
-.Dd May 13, 2026
+.Dd May 14, 2026
 .Dt Nextvi 1
 .Os Nextvi 5.2
 .
@@ -273,18 +273,18 @@ Enter insert mode at start of line after indent
 Enter insert mode at end of line
 .It Cm a
 Enter insert mode 1 character forward
-.It Cm [\fI#\fP]s
-Enter insert mode and delete # characters
-.It Cm S
-Enter insert mode and delete all characters
 .It Cm o
-Enter insert mode and create a new line down
+Create a new line down and enter insert mode
 .It Cm O
-Enter insert mode and create a new line up
+Create a new line up and enter insert mode
+.It Cm [\fI#\fP]s
+Delete # characters and enter insert mode
+.It Cm [\fI#\fP]S
+Delete all across # lines and enter insert mode
 .It Cm [\fI#\fP]c{\fIarg\fP}
-Enter insert mode and delete arg region # times
+Delete arg region # times and enter insert mode
 .It Cm C
-Enter insert mode and delete from cursor to end of line
+Delete from cursor to end of line and enter insert mode
 .It Cm [\fI#\fP]d{\fIarg\fP}
 Delete arg region # times
 .It Cm D
