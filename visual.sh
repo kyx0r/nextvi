@@ -92,23 +92,23 @@ ${SEP}.,\$;f> 		restore\\\\(ftidx\\\\)
 ${SEP}+2a 	vi_visual_attrib(s, row);
 ${SEP}.,\$;f> 	char cbuf\\\\[8\\\\] = \"\", vi_msg\\\\[512\\\\], \\\\*c;
 	col = vi_off2col\\\\(xb, xrow, xoff\\\\);
-	col = ren_cursor\\\\(lbuf_get\\\\(xb, xrow\\\\), col\\\\) \\\\+ 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:489\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	col = ren_cursor\\\\(lbuf_get\\\\(xb, xrow\\\\), col\\\\) \\\\+ 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:493\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	char *vs = vi_visual == 'V' ? \"-- VISUAL LINE -- \" :
 		   vi_visual == 'b' ? \"-- VISUAL BLOCK -- \" :
 		   vi_visual ? \"-- VISUAL -- \" : \"\";
 ${SEP}.,\$;f> 		c = rstate->chrs\\\\[xoff\\\\];
 		uc_code\\\\(cp, c, l\\\\)
-		memcpy\\\\(cbuf, c, l\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:494\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/d\"/d %s\"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:494\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 			cbuf, cp, cp, cp, l, rstate->wid\\\\[xoff\\\\], c - lbuf_get\\\\(xb, xrow\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:496\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/l\\\\)/l, vs)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:496\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	\\\\} else \\\\{
-		snprintf\\\\(vi_msg, sizeof\\\\(vi_msg\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:499\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/d\"/d %s\"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:499\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			xb_path\\\\[0\\\\] \\\\? xb_path : \"unnamed\",
+		memcpy\\\\(cbuf, c, l\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:498\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/d\"/d %s\"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:498\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 			cbuf, cp, cp, cp, l, rstate->wid\\\\[xoff\\\\], c - lbuf_get\\\\(xb, xrow\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:500\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/l\\\\)/l, vs)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:500\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	\\\\} else \\\\{
+		snprintf\\\\(vi_msg, sizeof\\\\(vi_msg\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:503\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/d\"/d %s\"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:503\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			xb_path\\\\[0\\\\] \\\\? xb_path : \"unnamed\",
 			xb->modified \\\\? \"\\\\* \" : \" \", lbuf_len\\\\(xb\\\\),
-			xrow \\\\* 100 / MAX\\\\(1, lbuf_len\\\\(xb\\\\)-1\\\\), xrow\\\\+1, col,${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:503\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/s\\\\)/s, vs)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:503\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	free\\\\(sb->s\\\\);
+			xrow \\\\* 100 / MAX\\\\(1, lbuf_len\\\\(xb\\\\)-1\\\\), xrow\\\\+1, col,${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:507\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/s\\\\)/s, vs)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:507\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	free\\\\(sb->s\\\\);
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:939\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:943\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int vc_insert(int cmd);
 
 static int vc_block_insert(int vcmd, int r1, int r2, int col)
@@ -310,33 +310,33 @@ static int vc_visual_op(int cmd)
 	return key;
 }
 
-${SEP}.,\$;f> 				lbuf_mark\\\\(xb, '\`', xrow, ooff\\\\);
+${SEP}.,\$;f> 				lbuf_mark\\\\(xb, '\`', orow, ooff\\\\);
 			xrow = nrow;
-			xoff = noff;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1215\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			xoff = noff;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1212\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			if (vi_visual)
 				vi_mod |= 1;
 ${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break;
-			case 'u':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			case 'u':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1289\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (vi_visual) {
 					vc_visual_op('u');
 					break;
 				}
 ${SEP}.,\$;f> 				vi_lncol = 0;
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1342\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1339\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			case 'U':
 				if (vi_visual)
 					vc_visual_op('U');
 				break;
 ${SEP}.,\$;f> 					xmpt = 1;
 				break;
-			case 'c':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			case 'c':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1462\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (vi_visual) {
 					k = vc_visual_op('c');
-					goto ins;
+					goto insert_done;
 				}
-${SEP}.,\$f> 			case 'd':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1466\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 			case 'd':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1463\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 				if (vi_visual) {
 					vc_visual_op('d');
 					break;
@@ -356,26 +356,28 @@ ${SEP}+2a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 					int c_left = MIN(vi_voff, xoff), c_right = MAX(vi_voff, xoff);
 					vi_visual = 0;
 					k = vc_block_insert(c, r1b, r2b, c == 'I' ? c_left : c_right);
-					goto ins;
+					goto insert_done;
 				}
-${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
-					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1629\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 				} else if (k == 'v' || k == 'V' || k == 'b') {
+${SEP}.,\$;f> 					ex_command\\\\(cmd\\\\)
+					restore\\\\(xled\\\\)
+					vi_mod \\\\|= 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 					vc_motion\\\\(k\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1641\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.a 				} else if (k == 'v' || k == 'V' || k == 'b') {
 					vi_visual = vi_visual == k ? 0 : k;
 					vi_vrow = xrow;
 					vi_voff = xoff;
 					vi_mod |= 1;
+				}
 ${SEP}.,\$;f> 				term_push\\\\(\"yy\", 2\\\\);
 				goto motion;
-			case '~':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1644\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			case '~':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1655\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				if (vi_visual) {
 					vc_visual_op('~');
 					break;
 				}
 ${SEP}.,\$;f> 				vc_status\\\\(0\\\\);
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1704\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1716\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			case TK_ESC:
 				if (vi_visual) {
 					vi_visual = 0;
@@ -402,7 +404,7 @@ index cc881132..fd80d993 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index f0baac1d..e3851c6f 100644
+index 74ffc2d3..63497806 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -480,7 +482,7 @@ index f0baac1d..e3851c6f 100644
  	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
  	rstate = rstates;
  }
-@@ -487,20 +534,23 @@ static void vc_status(int type)
+@@ -491,20 +538,23 @@ static void vc_status(int type)
  	char cbuf[8] = "", vi_msg[512], *c;
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -508,7 +510,7 @@ index f0baac1d..e3851c6f 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -937,6 +987,207 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -941,6 +991,207 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
@@ -716,8 +718,8 @@ index f0baac1d..e3851c6f 100644
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1213,6 +1464,8 @@ void vi(int init)
- 				lbuf_mark(xb, '`', xrow, ooff);
+@@ -1210,6 +1461,8 @@ void vi(int init)
+ 				lbuf_mark(xb, '`', orow, ooff);
  			xrow = nrow;
  			xoff = noff;
 +			if (vi_visual)
@@ -725,7 +727,7 @@ index f0baac1d..e3851c6f 100644
  		} else if (mv == 0) {
  			char *cmd;
  			term_dec()
-@@ -1290,6 +1543,10 @@ void vi(int init)
+@@ -1287,6 +1540,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -736,7 +738,7 @@ index f0baac1d..e3851c6f 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1340,6 +1597,10 @@ void vi(int init)
+@@ -1337,6 +1594,10 @@ void vi(int init)
  				vi_lncol = 0;
  				vi_mod |= 1;
  				break;
@@ -747,13 +749,13 @@ index f0baac1d..e3851c6f 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1463,7 +1724,15 @@ void vi(int init)
+@@ -1460,7 +1721,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
 +				if (vi_visual) {
 +					k = vc_visual_op('c');
-+					goto ins;
++					goto insert_done;
 +				}
  			case 'd':
 +				if (vi_visual) {
@@ -773,7 +775,7 @@ index f0baac1d..e3851c6f 100644
 +				}
  				k = vc_motion(c);
  				if (c == 'c')
- 					goto ins;
+ 					goto insert_done;
 @@ -1519,6 +1792,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
@@ -783,24 +785,28 @@ index f0baac1d..e3851c6f 100644
 +					int c_left = MIN(vi_voff, xoff), c_right = MAX(vi_voff, xoff);
 +					vi_visual = 0;
 +					k = vc_block_insert(c, r1b, r2b, c == 'I' ? c_left : c_right);
-+					goto ins;
++					goto insert_done;
 +				}
+ 				insert:
  				k = vc_insert(c);
- 				ins:
- 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-@@ -1627,6 +1907,11 @@ void vi(int init)
- 				} else if (k == '~' || k == 'u' || k == 'U') {
+ 				insert_done:
+@@ -1637,8 +1917,14 @@ void vi(int init)
+ 					ex_command(cmd)
+ 					restore(xled)
+ 					vi_mod |= 1;
+-				} else if (k == '~' || k == 'u' || k == 'U')
++				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
- 					goto rep;
 +				} else if (k == 'v' || k == 'V' || k == 'b') {
 +					vi_visual = vi_visual == k ? 0 : k;
 +					vi_vrow = xrow;
 +					vi_voff = xoff;
 +					vi_mod |= 1;
- 				}
++				}
  				break;
  			case 'x':
-@@ -1642,6 +1927,10 @@ void vi(int init)
+ 				term_push("d ", 2);
+@@ -1653,6 +1939,10 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -811,7 +817,7 @@ index f0baac1d..e3851c6f 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1702,6 +1991,13 @@ void vi(int init)
+@@ -1714,6 +2004,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
