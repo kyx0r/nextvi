@@ -283,7 +283,7 @@ int lbuf_pos2off(struct lbuf *lb, int r1, int o1, int r2, int o2, int row, int o
 		return -1;
 	for (int i = r1; ln && i <= row;) {
 		if (i == row) {
-			if ((i == r1 && off < o1) || (i == r2 && off > o2))
+			if ((i == r1 && off < o1) || (o2 >= 0 && i == r2 && off > o2))
 				return -1;
 			sub = uc_chr(lb->ln[r1], o1) - lb->ln[r1];
 			boff -= boff ? sub : 0;
@@ -309,7 +309,7 @@ int lbuf_off2pos(struct lbuf *lb, int r1, int o1, int r2, int o2, int boff, int 
 		if (acc > boff) {
 			*row = i;
 			*off = uc_off(ln, boff - (acc - (lbuf_i(lb, i)->len + 1)));
-			return i == r2 && *off > o2;
+			return o2 >= 0 && i == r2 && *off > o2;
 		}
 	}
 	return 1;
