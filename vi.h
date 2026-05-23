@@ -324,7 +324,6 @@ int term_read(int winch);
 void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
-void term_back(int c);
 #define term_dec() ibuf_pos--; icmd_pos--;
 #define term_exec(s, n, type) \
 { \
