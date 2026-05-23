@@ -1497,6 +1497,7 @@ void vi(int init)
 							c = 'i';
 							goto insert;
 						}
+						rep_record()
 						vi_mod |= 1;
 					}
 					out:
