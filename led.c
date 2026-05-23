@@ -446,7 +446,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			if (len - pre > 0)
 				sbuf_cut(sb, led_lastword(sb->s + pre) + pre)
 			else if (ai_max >= 0)
-				term_push("bdwi", 5);
+				return c;
 			break;
 		case TK_CTL('t'):
 			cs = uc_dup(sb->s + ps);
