@@ -300,21 +300,17 @@ int lbuf_pos2off(struct lbuf *lb, int r1, int o1, int r2, int o2, int row, int o
 /* convert byte offset within region (r1,o1)-(r2,o2) to (row, off) position */
 int lbuf_off2pos(struct lbuf *lb, int r1, int o1, int r2, int o2, int boff, int *row, int *off)
 {
-	int acc = 0, sub;
 	char *ln = lbuf_get(lb, r1);
 	if (!ln)
 		return 1;
-	sub = uc_chr(ln, o1) - ln;
-	for (int i = r1; ln && i <= r2;) {
-		int lbytes = lbuf_i(lb, i)->len + 1 - sub;
-		if (acc + lbytes > boff) {
+	int acc = -(uc_chr(ln, o1) - ln);
+	for (int i = r1; ln && i <= r2; ln = lbuf_get(lb, ++i)) {
+		acc += lbuf_i(lb, i)->len + 1;
+		if (acc > boff) {
 			*row = i;
-			*off = (i == r1 ? o1 : 0) + uc_off(ln + sub, boff - acc);
+			*off = uc_off(ln, boff - (acc - (lbuf_i(lb, i)->len + 1)));
 			return i == r2 && *off > o2;
 		}
-		acc += lbytes;
-		sub = 0;
-		ln = lbuf_get(lb, ++i);
 	}
 	return 1;
 }
