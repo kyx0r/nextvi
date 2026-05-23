@@ -90,10 +90,10 @@ ${SEP}.,\$;f> \\\\{
 	if \\\\(!term_sbuf\\\\)
 		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:39\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	term_mouse_off();
-${SEP}.,\$;f> 	term_push\\\\(s, 1\\\\);
+${SEP}.,\$;f> 	ibuf_cnt \\\\+= n;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:145\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:139\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a /* Block-read one byte from stdin and append to ibuf.
  * Returns the byte value, or -1 on failure. */
 static int mouse_pull(void)
@@ -182,13 +182,13 @@ int term_try_mouse(void)
 ${SEP}b4${SEP}%;f> 	vi_drawmsg_mpt\\\\(vi_msg\\\\)
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:507\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:511\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
 
 ${SEP}.,\$;f> 	int mv, i, dir, var;
 
-	mv = .*\\\\(.*\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	mv = .*\\\\(.*\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:522\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (mv == 27 && xms) {
 		int r = term_try_mouse();
 		if (r == 1) {
@@ -218,12 +218,12 @@ ${SEP}b5${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}??!${DBG:-ya!p\\${SEP}p
 ${SEP}.a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
-${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:394\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:393\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a int led_col(char *s, int col);
-${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:405\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:404\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i /* mouse state */
 extern int xmouse_col, xmouse_row;
-${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xms;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h'
 
@@ -394,7 +394,7 @@ index f3ea18aa..f963d07b 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index 163596e2..97930696 100644
+index e70d049e..b6df6f5e 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -442,7 +442,7 @@ index 163596e2..97930696 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index d75be8f7..6ec836b4 100644
+index c4fdaed5..4795ff69 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,16 @@
@@ -477,8 +477,8 @@ index d75be8f7..6ec836b4 100644
  	term_commit();
  	sbuf_free(term_sbuf)
  	tcsetattr(0, 0, &termios);
-@@ -143,6 +158,91 @@ void term_back(int c)
- 	term_push(s, 1);
+@@ -137,6 +152,91 @@ void term_push(char *s, unsigned int n)
+ 	ibuf_cnt += n;
  }
  
 +/* Block-read one byte from stdin and append to ibuf.
@@ -570,10 +570,10 @@ index d75be8f7..6ec836b4 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index f0baac1d..b74e91c9 100644
+index 74ffc2d3..7ec2f95b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -505,6 +505,9 @@ static void vc_status(int type)
+@@ -509,6 +509,9 @@ static void vc_status(int type)
  	vi_drawmsg_mpt(vi_msg)
  }
  
@@ -583,7 +583,7 @@ index f0baac1d..b74e91c9 100644
  static int vi_region(int cmd, int *row, int *off)
  {
  	static sbuf *savepath[5];
-@@ -516,6 +519,31 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -520,6 +523,31 @@ static int vi_region(int cmd, int *row, int *off)
  	int mv, i, dir, var;
  
  	mv = term_read(0);
@@ -616,7 +616,7 @@ index f0baac1d..b74e91c9 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 96e23938..19986315 100644
+index eccc142d..6c3f285d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -321,6 +321,9 @@ void term_pos(int r, int c);
@@ -629,7 +629,7 @@ index 96e23938..19986315 100644
  void term_commit(void);
  char *term_att(int att);
  void term_push(char *s, unsigned int n);
-@@ -392,6 +395,7 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -391,6 +394,7 @@ void led_render(char *s0, int cbeg, int cend);
  #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
@@ -637,7 +637,7 @@ index 96e23938..19986315 100644
  void led_done(void);
  
  /* ex.c: command mode */
-@@ -403,6 +407,8 @@ struct buf {
+@@ -402,6 +406,8 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -646,7 +646,7 @@ index 96e23938..19986315 100644
  /* ex options */
  extern int xleft;
  extern int xvis;
-@@ -426,6 +432,7 @@ extern int xpr;
+@@ -425,6 +431,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;
