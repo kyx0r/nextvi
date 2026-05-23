@@ -480,6 +480,10 @@ static int fs_searchback(int cnt, int *row, int *off)
 	return 0;
 }
 
+static char rep_cmd[sizeof(icmd)];	/* the last command */
+static int rep_len;
+#define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
+
 static void vc_status(int type)
 {
 	int l, col;
@@ -986,6 +990,7 @@ static int vc_motion(int cmd)
 			lnmode ? 1 : vi_arg ? vi_arg : 1);
 	else if (cmd == TK_CTL('w'))
 		vi_shift(r1, r2, -1, INT_MAX / 2);
+	rep_record()
 	vi_mod |= r1 != r2 || mv != lbuf_len(xb) ? 1 : 2;
 	return 0;
 }
@@ -1043,6 +1048,7 @@ static int vc_put(int cmd)
 		vi_drawmsg_mpt("yank buffer empty")
 	if (!buf || !buf->s_n)
 		return 0;
+	rep_record()
 	sbuf_smake(sb, 1024)
 	if (buf->s[buf->s_n-1] == '\n' || strchr(buf->s, '\n')) {
 		for (i = 0; i < cnt; i++)
@@ -1110,16 +1116,8 @@ static int vc_replace(void)
 	lbuf_edit(xb, sb->s, xrow, xrow + 1, off, xoff);
 	xrow += cnt * (cs[0] == '\n');
 	free(sb->s);
+	rep_record()
 	return cs[0] == '\n' ? 1 : 2;
-}
-
-static char rep_cmd[sizeof(icmd)];	/* the last command */
-static int rep_len;
-
-static void vc_repeat(void)
-{
-	for (int i = 0; i < MAX(1, vi_arg); i++)
-		term_push(rep_cmd, rep_len);
 }
 
 static void vc_execute(int cmd)
@@ -1208,9 +1206,9 @@ void vi(int init)
 				noff = noff < 0 ? lbuf_indents(xb, nrow) : noff;
 				vi_mod |= 4;
 			}
-			if ((xrow != nrow || ooff != noff) &&
+			if ((orow != nrow || ooff != noff) &&
 					strchr("%'`GHML/?{}[]", mv))
-				lbuf_mark(xb, '`', xrow, ooff);
+				lbuf_mark(xb, '`', orow, ooff);
 			xrow = nrow;
 			xoff = noff;
 		} else if (mv == 0) {
@@ -1533,9 +1531,11 @@ void vi(int init)
 				}
 				if (c != 'A' && c != 'C')
 					xoff--;
+				rep_record()
 				break;
 			case 'J':
 				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
+				rep_record()
 				break;
 			case 'K': {
 				preserve(int, xvis, xvis = 1;)
@@ -1543,6 +1543,7 @@ void vi(int init)
 					ex_exec(";+1c\n:-1");
 				} while (vi_arg--);
 				restore(xvis)
+				rep_record()
 				vi_mod |= 1;
 				break; }
 			case TK_CTL('z'):
@@ -1624,10 +1625,8 @@ void vi(int init)
 					ex_command(cmd)
 					restore(xled)
 					vi_mod |= 1;
-				} else if (k == '~' || k == 'u' || k == 'U') {
+				} else if (k == '~' || k == 'u' || k == 'U')
 					vc_motion(k);
-					goto rep;
-				}
 				break;
 			case 'x':
 				term_push("d ", 2);
@@ -1686,7 +1685,8 @@ void vi(int init)
 				}
 				continue;
 			case '.':
-				vc_repeat();
+				for (k = 0; k < MAX(1, vi_arg); k++)
+					term_push(rep_cmd, rep_len);
 				break;
 			case '@':
 			case '&':
@@ -1704,11 +1704,6 @@ void vi(int init)
 				break;
 			default:
 				continue;
-			}
-			if (strchr("!<>AIJKOPRacdiopry", c)) {
-				rep:
-				memcpy(rep_cmd, icmd, icmd_pos);
-				rep_len = icmd_pos;
 			}
 		}
 		topfix()
@@ -1850,7 +1845,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-5.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
