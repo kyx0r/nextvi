@@ -1081,7 +1081,6 @@ static void vc_join(int spc, int cnt)
 	if (lbuf_join(xb, xrow, xrow + cnt, xoff, &o2, spc))
 		return;
 	xoff = o2;
-	vi_mod |= 1;
 }
 
 static void vi_scrollforward(int cnt)
@@ -1522,23 +1521,32 @@ void vi(int init)
 				insert:
 				k = vc_insert(c);
 				insert_done:
-				vi_mod |= !xpac && xrow == orow ? 8 : 1;
-				if (k == 127) {
+				if (k == 127 || k == TK_CTL('w')) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
 						xrow--;
+						topfix()
 						vc_join(0, 2);
-					} else if (xoff)
-						vi_delete(xrow, xoff - 1, xrow, xoff, 0);
-					term_back(xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a');
-					break;
-				}
-				if (c != 'A' && c != 'C')
+						vi_drawagain(xtop);
+					} else if (xoff) {
+						if (k == TK_CTL('w')) {
+							noff = xoff;
+							lbuf_wordend(xb, 0, -2, &xrow, &noff);
+							vi_delete(xrow, noff, xrow, xoff, 0);
+						} else
+							vi_delete(xrow, xoff - 1, xrow, xoff, 0);
+					}
+					c = xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a';
+					xb->useq += xseq;
+					goto insert;
+				} else if (c != 'A' && c != 'C')
 					xoff--;
 				rep_record()
+				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				break;
 			case 'J':
 				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
 				rep_record()
+				vi_mod |= 1;
 				break;
 			case 'K': {
 				preserve(int, xvis, xvis = 1;)

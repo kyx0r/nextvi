@@ -137,12 +137,6 @@ void term_push(char *s, unsigned int n)
 	ibuf_cnt += n;
 }
 
-void term_back(int c)
-{
-	char s[1] = {c};
-	term_push(s, 1);
-}
-
 int term_read(int winch)
 {
 	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
