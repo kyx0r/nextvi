@@ -50,18 +50,18 @@ ${SEP}.,\$;f> 	if \\\\(rs != xkwdrs\\\\)
 ${SEP}+2a 	free(offs);
 ${SEP}b2${SEP}%;f> 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
-	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:483\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:478\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
 ${SEP}.,\$;f> 				break;
 			\\\\*o = _o;
-			\\\\*r = i;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:508\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			\\\\*r = i;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:503\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 			if (dir > 0) {
 				free(offs);
-${SEP}.,\$f> 				return 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 				return 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:504\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 			}
 ${SEP}.,\$;f> 		\\\\}
 		off = 0;
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:515\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:510\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	free(offs);
 ${SEP}b3${SEP}%;f> 		xic \\\\? REG_ICASE \\\\| REG_NEWLINE : REG_NEWLINE\\\\);
 	if \\\\(!rs\\\\)
@@ -177,36 +177,36 @@ ${SEP}+2a 		free(tmp);
 		free(snum);
 ${SEP}.,\$;f> 					break;
 				ln \\\\+= xoff;
-				n = strlen\\\\(ln\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1271\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/buf\\\\[n \\\\+ 4\\\\]/*buf = emalloc(n + 4)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1271\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				memcpy\\\\(buf, \":e \", 3\\\\);
+				n = strlen\\\\(ln\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1268\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/buf\\\\[n \\\\+ 4\\\\]/*buf = emalloc(n + 4)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1268\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				memcpy\\\\(buf, \":e \", 3\\\\);
 				memcpy\\\\(buf\\\\+3, ln, n\\\\);
-				term_push\\\\(buf, n \\\\+ 3\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1274\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				term_push\\\\(buf, n \\\\+ 3\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1271\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				free(buf);
 ${SEP}.,\$;f> 				case '/': \\\\{
 					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);
-					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1391\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1391\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						memcpy\\\\(buf\\\\+3, cs, n \\\\+ 1\\\\);
+					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1388\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1388\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						memcpy\\\\(buf\\\\+3, cs, n \\\\+ 1\\\\);
 					free\\\\(cs\\\\);
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1396\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1393\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 ${SEP}.,\$;f> 					vi_drawmsg\\\\(\"arg2:\\\\(0\\\\|#\\\\)\"\\\\);
 					cs = vi_curword\\\\(xb, xrow, xoff, vi_prefix\\\\(\\\\), 1\\\\);
-					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1402\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						free\\\\(cs\\\\);
+					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1399\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1399\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1412\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1409\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 ${SEP}.,\$;f> 				case 'r': \\\\{
 					cs = vi_curword\\\\(xb, xrow, xoff, vi_arg, 1\\\\);
-					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1417\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1417\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						free\\\\(cs\\\\);
+					n = cs \\\\? strlen\\\\(cs\\\\) : 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1414\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/buf\\\\[n \\\\+ 30\\\\]/*buf = emalloc(n + 30)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1414\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 						free\\\\(cs\\\\);
 					\\\\}
-					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1425\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					ln = vi_enprompt\\\\(\":\", buf, &k, &n\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1422\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 					free(buf);
 ${SEP}b7${SEP}%;f> struct highlight \\\\{
 	char \\\\*ft;		/\\\\* the filetype of this pattern \\\\*/
-	char \\\\*pat;		/\\\\* regular expression \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:500\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\*att/att[16]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:500\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}b6${SEP}w${SEP}b7${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'led.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h'
+	char \\\\*pat;		/\\\\* regular expression \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:499\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\*att/att[16]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:499\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}b6${SEP}w${SEP}b7${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'led.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
@@ -264,10 +264,10 @@ index f3ea18aa..1ffa4630 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 0a13ff5a..ef87fbdf 100644
+index 7d8ff44a..21ad5262 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -480,7 +480,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+@@ -475,7 +475,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
  		int nskip, int *r, int *o)
  {
  	int r0 = *r, o0 = *o;
@@ -276,7 +276,7 @@ index 0a13ff5a..ef87fbdf 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (pskip >= 0 && s)
-@@ -505,14 +505,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+@@ -500,14 +500,17 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
  				break;
  			*o = _o;
  			*r = i;
@@ -296,7 +296,7 @@ index 0a13ff5a..ef87fbdf 100644
  }
  
 diff --git a/led.c b/led.c
-index 163596e2..439cc721 100644
+index e70d049e..ff64db16 100644
 --- a/led.c
 +++ b/led.c
 @@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
@@ -485,7 +485,7 @@ index 86e24e4a..dee00f50 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index f0baac1d..c4dd4d40 100644
+index 74ffc2d3..5ce8e45c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -507,7 +507,7 @@ index f0baac1d..c4dd4d40 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1268,10 +1271,11 @@ void vi(int init)
+@@ -1265,10 +1268,11 @@ void vi(int init)
  					break;
  				ln += xoff;
  				n = strlen(ln);
@@ -520,7 +520,7 @@ index f0baac1d..c4dd4d40 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1388,18 +1392,19 @@ void vi(int init)
+@@ -1385,18 +1389,19 @@ void vi(int init)
  				case '/': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					n = cs ? strlen(cs) : 0;
@@ -542,7 +542,7 @@ index f0baac1d..c4dd4d40 100644
  					memcpy(buf, ".,.+", sizeof(".,.+"));
  					char *buf1 = itoa(vi_arg, buf+4);
  					memcpy(buf1, "s/", sizeof("s/"));
-@@ -1410,11 +1415,12 @@ void vi(int init)
+@@ -1407,11 +1412,12 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
@@ -556,7 +556,7 @@ index f0baac1d..c4dd4d40 100644
  					memcpy(buf, "%s/", sizeof("%s/"));
  					if (cs) {
  						memcpy(buf+3, cs, n);
-@@ -1423,6 +1429,7 @@ void vi(int init)
+@@ -1420,6 +1426,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
@@ -565,10 +565,10 @@ index f0baac1d..c4dd4d40 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 96e23938..38b894b1 100644
+index eccc142d..b5cdf008 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -497,7 +497,7 @@ extern const int ftslen;
+@@ -496,7 +496,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */

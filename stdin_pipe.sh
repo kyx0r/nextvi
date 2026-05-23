@@ -87,28 +87,28 @@ ${SEP}.,\$;f> 		return;
 	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:42\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/\\\\(0/(stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:42\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			goto ret;
 		\\\\}
-		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:160\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:154\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		ufd.fd = stdin_fd;
 ${SEP}.,\$;f> 		re:
 		/\\\\* read a single input character \\\\*/
-		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:164\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:158\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 ${SEP}.,\$;f> 	fds\\\\[0\\\\]\\\\.events = POLLIN;
 	fds\\\\[1\\\\]\\\\.fd = ifd;
-	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:305\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:305\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		close\\\\(ifd\\\\);
+	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:299\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:299\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		close\\\\(ifd\\\\);
 	waitpid\\\\(pid, status, 0\\\\);
-	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:348\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:348\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
-	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1823\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:342\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:342\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
+	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1830\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	sigaction(SIGINT, &sa, NULL);
 ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
 			i\\\\+\\\\+;
-			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1839\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1846\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
-${SEP}b3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:536\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:535\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a extern int stdin_fd;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'ex.c' 'term.c' 'vi.c' 'vi.h'
 
@@ -225,7 +225,7 @@ index f3ea18aa..c6829017 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index d75be8f7..395970eb 100644
+index c4fdaed5..e0c0dfa9 100644
 --- a/term.c
 +++ b/term.c
 @@ -6,6 +6,8 @@ int term_resized;
@@ -273,7 +273,7 @@ index d75be8f7..395970eb 100644
  }
  
  void term_clean(void)
-@@ -158,11 +164,12 @@ int term_read(int winch)
+@@ -152,11 +158,12 @@ int term_read(int winch)
  			goto ret;
  		}
  		cw = 0;
@@ -288,7 +288,7 @@ index d75be8f7..395970eb 100644
  			if (term_winch && winch && xquit >= 0) {
  				*ibuf = winch;
  				goto ret;
-@@ -302,7 +309,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -296,7 +303,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	fds[0].events = POLLIN;
  	fds[1].fd = ifd;
  	fds[1].events = POLLOUT;
@@ -297,7 +297,7 @@ index d75be8f7..395970eb 100644
  	fds[2].events = POLLIN;
  	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
  		if (fds[0].revents & POLLIN) {
-@@ -345,7 +352,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -339,7 +346,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  		close(ifd);
  	waitpid(pid, status, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -307,10 +307,10 @@ index d75be8f7..395970eb 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index f0baac1d..9a0c005b 100644
+index 74ffc2d3..0ea7d2fb 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1821,6 +1821,7 @@ static void setup_signals(void)
+@@ -1828,6 +1828,7 @@ static void setup_signals(void)
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
  	sigaction(SIGWINCH, &sa, NULL);
@@ -318,7 +318,7 @@ index f0baac1d..9a0c005b 100644
  }
  
  int main(int argc, char *argv[])
-@@ -1836,7 +1837,8 @@ int main(int argc, char *argv[])
+@@ -1843,7 +1844,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;
@@ -329,10 +329,10 @@ index f0baac1d..9a0c005b 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index 96e23938..aa0d04ef 100644
+index eccc142d..cd7c39e0 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -534,6 +534,7 @@ int conf_kmapfind(char *name);
+@@ -533,6 +533,7 @@ int conf_kmapfind(char *name);
  char *conf_digraph(int c1, int c2);
  
  /* vi.c: main */

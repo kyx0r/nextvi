@@ -148,7 +148,7 @@ ${SEP}.,\$;f> 	for \\\\(int i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		long nw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:237\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3${SEP}s/1/(!lbuf_s(ln)->lw_next)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:237\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		lo->ref = 1;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->del;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:396\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_ins, lo->n_del\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:391\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		/* relink chain: restored lines have original pointers */
 		if (xlw) {
 			for (int i = 0; i < lo->n_del; i++) {
@@ -172,7 +172,7 @@ ${SEP}+2a 		/* relink chain: restored lines have original pointers */
 		}
 ${SEP}.,\$;f> 		lo->ref = 2;
 		sb\\\\.s = \\\\(char\\\\*\\\\)lo->ins;
-		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		lbuf_replace\\\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:413\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		/* relink chain: restored lines have their pointers from edit time */
 		if (xlw) {
 			for (int i = 0; i < lo->n_ins; i++) {
@@ -220,7 +220,7 @@ ${SEP}+2a 	char *lw_prev;
 	char *lw_next;
 ${SEP}.,\$;f> extern int xlim;
 extern int xseq;
-extern int xerr;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+extern int xerr;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a extern int xlw;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'vi.c' 'vi.h'
 
@@ -292,7 +292,7 @@ index f3ea18aa..d7a77c6f 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
 diff --git a/lbuf.c b/lbuf.c
-index 0a13ff5a..5c1176ab 100644
+index 7d8ff44a..bcd7ad1d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -82,16 +82,50 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -404,7 +404,7 @@ index 0a13ff5a..5c1176ab 100644
  		while (nw < nl) {
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
-@@ -394,6 +467,27 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
+@@ -389,6 +462,27 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
  		lo->ref = 1;
  		sb.s = (char*)lo->del;
  		lbuf_replace(lb, &sb, NULL, lo, lo->n_ins, lo->n_del);
@@ -432,7 +432,7 @@ index 0a13ff5a..5c1176ab 100644
  	}
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
-@@ -416,6 +510,27 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -411,6 +505,27 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  		lo->ref = 2;
  		sb.s = (char*)lo->ins;
  		lbuf_replace(lb, &sb, NULL, lo, lo->n_del, lo->n_ins);
@@ -461,7 +461,7 @@ index 0a13ff5a..5c1176ab 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index f0baac1d..e0e2b06d 100644
+index 74ffc2d3..48b4f445 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -168,6 +168,22 @@ static void vi_drawrow(int row)
@@ -488,7 +488,7 @@ index f0baac1d..e0e2b06d 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index 96e23938..931d6d59 100644
+index eccc142d..a414f41b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -133,6 +133,8 @@ struct lopt {
@@ -500,7 +500,7 @@ index 96e23938..931d6d59 100644
  };
  struct lbuf {
  	char **ln;			/* buffer lines */
-@@ -426,6 +428,7 @@ extern int xpr;
+@@ -425,6 +427,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

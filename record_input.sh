@@ -35,14 +35,14 @@ ${SEP}.,\$f> 	\\\\{\"q\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p 
 ${SEP}.a 	EO(rec),
 ${SEP}b2${SEP}%;f> 		ret:
 		ibuf_cnt = 1;
-		ibuf_pos = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:178\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		ibuf_pos = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:172\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xrec && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
 			buf[1] = '\\\\0';
 			ex_regput(xrec, buf, 1);
 		}
-${SEP}b3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b3${SEP}%f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xrec;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'term.c' 'vi.h'
 
@@ -118,10 +118,10 @@ index f3ea18aa..9dc4660c 100644
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
 diff --git a/term.c b/term.c
-index d75be8f7..80023a89 100644
+index c4fdaed5..80b5aecd 100644
 --- a/term.c
 +++ b/term.c
-@@ -176,6 +176,12 @@ int term_read(int winch)
+@@ -170,6 +170,12 @@ int term_read(int winch)
  		ret:
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
@@ -135,10 +135,10 @@ index d75be8f7..80023a89 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 96e23938..f96476f6 100644
+index eccc142d..b62fba82 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -426,6 +426,7 @@ extern int xpr;
+@@ -425,6 +425,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

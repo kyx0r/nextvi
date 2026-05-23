@@ -156,10 +156,10 @@ ${SEP}+3,#+1c 		int i = lb->hist_n - lb->hist_u;
 		}
 ${SEP}.,\$;f> void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
 \\\\{
-	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:438\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:433\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		lbuf_freeleafs(lb);
 ${SEP}.,\$;f> 		lb->hist_n = 0;
-		lb->hist_u = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:441\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		lb->hist_u = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:436\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 		sbuf_make(lb->rehist, 128)
 ${SEP}b3${SEP}%;f> struct lbuf \\\\{
 	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
@@ -228,7 +228,7 @@ index f3ea18aa..63b4be74 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index 0a13ff5a..fed676df 100644
+index 7d8ff44a..eee0d7d0 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -3,6 +3,7 @@ struct lbuf *lbuf_make(void)
@@ -359,7 +359,7 @@ index 0a13ff5a..fed676df 100644
  		lb->hist_n = lb->hist_u;
  		if (lb->hist_n == lb->hist_sz) {
  			int sz = lb->hist_sz + (lb->hist_sz ? lb->hist_sz : 128);
-@@ -435,10 +522,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -430,10 +517,10 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  void lbuf_saved(struct lbuf *lb, int clear)
  {
  	if (clear) {
@@ -373,7 +373,7 @@ index 0a13ff5a..fed676df 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index 96e23938..8a7029c9 100644
+index eccc142d..d8ba8a01 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -137,6 +137,7 @@ struct linfo {

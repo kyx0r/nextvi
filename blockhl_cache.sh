@@ -241,7 +241,7 @@ pattern:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index 0a13ff5a..bd86c6f4 100644
+index 7d8ff44a..2629816b 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -81,6 +81,7 @@ static int linelength(char *s)
@@ -433,7 +433,7 @@ index 86e24e4a..a9c8a5e7 100644
  		return;
  	for (j = 0; j < n; j++)
 diff --git a/vi.c b/vi.c
-index f0baac1d..6f2cb346 100644
+index 74ffc2d3..b77c255f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,7 @@ for (i = 0, ret = 0;; i++) { \
@@ -490,7 +490,7 @@ index f0baac1d..6f2cb346 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 96e23938..8c9bcdc4 100644
+index eccc142d..87260ac1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -259,6 +259,8 @@ void syn_reloadft(int hl, int flg);

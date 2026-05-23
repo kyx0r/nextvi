@@ -75,7 +75,7 @@ ${SEP}+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 ${SEP}b1${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:240\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:234\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
@@ -155,10 +155,10 @@ index f3ea18aa..2f74864d 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index d75be8f7..e285e3c0 100644
+index c4fdaed5..461f9ad0 100644
 --- a/term.c
 +++ b/term.c
-@@ -237,7 +237,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -231,7 +231,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}
@@ -171,7 +171,7 @@ index d75be8f7..e285e3c0 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 96e23938..2521b2bd 100644
+index eccc142d..9449a8cd 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

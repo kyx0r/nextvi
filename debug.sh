@@ -76,7 +76,7 @@ void syn_done(void)
 }
 ${SEP}b3${SEP}%;f> 	else
 		vi\\\\(1\\\\);
-	term_done\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1868\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	term_done\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1875\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	ex_done();
 	syn_done();
 	ren_done();
@@ -87,7 +87,7 @@ ${SEP}b4${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\$
 ${SEP}.a void dir_done(void);
 ${SEP}.,\$f> syn_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:261\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void syn_done(void);
-${SEP}.,\$f> ex_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> ex_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:478\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void ex_done(void);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'ex.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h'
 
@@ -230,10 +230,10 @@ index 86e24e4a..100afba1 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index f0baac1d..03be306f 100644
+index 74ffc2d3..c26a100c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1866,6 +1866,12 @@ int main(int argc, char *argv[])
+@@ -1873,6 +1873,12 @@ int main(int argc, char *argv[])
  	else
  		vi(1);
  	term_done();
@@ -247,7 +247,7 @@ index f0baac1d..03be306f 100644
  		term_scrl;
  	return abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 96e23938..ac4ca049 100644
+index eccc142d..18936a4b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -216,6 +216,7 @@ int ren_noeol(char *s, int p);
@@ -266,7 +266,7 @@ index 96e23938..ac4ca049 100644
  
  /* uc.c: utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -477,6 +479,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -476,6 +478,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);

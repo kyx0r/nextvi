@@ -98,26 +98,26 @@ static int vi_digit\\\\(void\\\\)
 ${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:285\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	int cnt = vi_arg \\\\? vi_arg : 1;
 	int mv, i, dir, var;
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:522\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 	mv = map_read(0, 0);
 ${SEP}.,\$;f> 			char \\\\*cmd;
 			term_dec\\\\(\\\\)
-			re_motion:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1220\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1220\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
+			re_motion:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1217\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1217\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
 			case 'v':
-				vi_mod \\\\|= 2;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1345\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1345\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
-				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1467\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
+				vi_mod \\\\|= 2;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1342\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1342\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
+				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1464\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1464\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
 				break;
-			case 'z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1567\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1567\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 1;
+			case 'z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1580\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1580\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 1;
 				break;
-			case 'g':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1599\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1599\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 					continue;
+			case 'g':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1612\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1612\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 					continue;
 				break;
-			case 'Z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1673\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1673\\${SEP}pr${INTR}${QF}}${SEP}b4${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			case 'Z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1684\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1684\\${SEP}pr${INTR}${QF}}${SEP}b4${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:466\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i int map_read(int mode, int winch);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
 
@@ -273,7 +273,7 @@ index f3ea18aa..a7981b2d 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 163596e2..694a0ac2 100644
+index e70d049e..76db4347 100644
 --- a/led.c
 +++ b/led.c
 @@ -428,7 +428,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -286,7 +286,7 @@ index 163596e2..694a0ac2 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index f0baac1d..eb1965e7 100644
+index 74ffc2d3..d0029b10 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -321,7 +321,7 @@ index f0baac1d..eb1965e7 100644
  	if (c >= '0' && c <= '9')
  		return c - '0';
  	return -1;
-@@ -515,7 +515,7 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -519,7 +519,7 @@ static int vi_region(int cmd, int *row, int *off)
  	int cnt = vi_arg ? vi_arg : 1;
  	int mv, i, dir, var;
  
@@ -330,7 +330,7 @@ index f0baac1d..eb1965e7 100644
  	switch (mv) {
  	case ',':
  	case ';':
-@@ -1217,7 +1217,7 @@ void vi(int init)
+@@ -1214,7 +1214,7 @@ void vi(int init)
  			char *cmd;
  			term_dec()
  			re_motion:
@@ -339,7 +339,7 @@ index f0baac1d..eb1965e7 100644
  			switch (c) {
  			case TK_CTL('b'):
  				vi_scrollbackward(MAX(1, vi_arg) * (xrows - 1));
-@@ -1342,7 +1342,7 @@ void vi(int init)
+@@ -1339,7 +1339,7 @@ void vi(int init)
  				break;
  			case 'v':
  				vi_mod |= 2;
@@ -348,7 +348,7 @@ index f0baac1d..eb1965e7 100644
  				switch (k) {
  				case '.':
  					while (vi_arg) {
-@@ -1464,7 +1464,7 @@ void vi(int init)
+@@ -1461,7 +1461,7 @@ void vi(int init)
  				break;
  			case 'c':
  			case 'd':
@@ -357,7 +357,7 @@ index f0baac1d..eb1965e7 100644
  				if (k == 'i') {
  					k = term_read(0);
  					char pairs[2];
-@@ -1564,7 +1564,7 @@ void vi(int init)
+@@ -1577,7 +1577,7 @@ void vi(int init)
  				vi_mod |= vc_put(c);
  				break;
  			case 'z':
@@ -366,7 +366,7 @@ index f0baac1d..eb1965e7 100644
  				switch (k) {
  				case '\n':
  					xtop = xrow;
-@@ -1596,7 +1596,7 @@ void vi(int init)
+@@ -1609,7 +1609,7 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'g':
@@ -375,7 +375,7 @@ index f0baac1d..eb1965e7 100644
  				if (k == 'g')
  					term_push("1G", 2);
  				else if (k == 'a') {
-@@ -1670,7 +1670,7 @@ void vi(int init)
+@@ -1681,7 +1681,7 @@ void vi(int init)
  					continue;
  				break;
  			case 'Z':
@@ -385,10 +385,10 @@ index f0baac1d..eb1965e7 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 96e23938..9664ff32 100644
+index eccc142d..e3a58b98 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -465,6 +465,7 @@ extern struct buf *ex_pbuf;
+@@ -464,6 +464,7 @@ extern struct buf *ex_pbuf;
  #define bufs_switchwft(idx) \
  { if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
  

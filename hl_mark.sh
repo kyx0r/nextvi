@@ -40,7 +40,7 @@ ${SEP}.,\$;f> 	EO\\\\(ts\\\\),
 ${SEP}+2a 	EO(hlm),
 ${SEP}b2${SEP}%;f> 				word = cs;
 			\\\\}
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1750\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1757\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";
@@ -119,10 +119,10 @@ index f3ea18aa..04e1b623 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index f0baac1d..0d0c51c0 100644
+index 74ffc2d3..c9961f7b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1748,6 +1748,21 @@ void vi(int init)
+@@ -1755,6 +1755,21 @@ void vi(int init)
  				word = cs;
  			}
  		}

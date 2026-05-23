@@ -29,7 +29,7 @@ LB="0?"
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 
 	mv = .*\\\\(.*\\\\);
-	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:519\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:523\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {
@@ -105,10 +105,10 @@ pattern:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index f0baac1d..0296f806 100644
+index 74ffc2d3..92e6ea87 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -517,6 +517,37 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -521,6 +521,37 @@ static int vi_region(int cmd, int *row, int *off)
  
  	mv = term_read(0);
  	switch (mv) {

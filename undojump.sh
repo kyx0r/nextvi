@@ -30,7 +30,7 @@ LB="0?"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->ln\\\\[pos\\\\] : NULL;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:379\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
 	struct lopt *lo;
@@ -68,7 +68,7 @@ ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 
 ${SEP}b1${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\\\|= 1;
-				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1434\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1431\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 			case TK_CTL('o'):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
@@ -90,10 +90,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index 0a13ff5a..74171638 100644
+index 7d8ff44a..6f23d1ab 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -377,6 +377,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
+@@ -372,6 +372,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
  	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
  }
  
@@ -136,10 +136,10 @@ index 0a13ff5a..74171638 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index f0baac1d..c5c8cf66 100644
+index 74ffc2d3..43953ed0 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1432,6 +1432,17 @@ void vi(int init)
+@@ -1429,6 +1429,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
@@ -158,7 +158,7 @@ index f0baac1d..c5c8cf66 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 96e23938..c3f85176 100644
+index eccc142d..1b8a2c84 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -165,6 +165,7 @@ char *lbuf_get(struct lbuf *lb, int pos);
