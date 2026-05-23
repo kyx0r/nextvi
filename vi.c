@@ -1494,8 +1494,10 @@ void vi(int init)
 						pair_found = !lbuf_pair(xb, pairs, 2, &r2, &o2);
 					if (pair_found && !lbuf_next(xb, 1, &r1, &o1)) {
 						vi_delete(r1, o1, r2, o2, 0);
-						if (c == 'c')
-							term_back('i');
+						if (c == 'c') {
+							c = 'i';
+							goto insert;
+						}
 						vi_mod |= 1;
 					}
 					out:
@@ -1509,7 +1511,7 @@ void vi(int init)
 			case TK_CTL('w'):
 				k = vc_motion(c);
 				if (c == 'c')
-					goto ins;
+					goto insert_done;
 				break;
 			case 'I':
 			case 'i':
@@ -1517,8 +1519,9 @@ void vi(int init)
 			case 'A':
 			case 'o':
 			case 'O':
+				insert:
 				k = vc_insert(c);
-				ins:
+				insert_done:
 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				if (k == 127) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
