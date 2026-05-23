@@ -277,21 +277,21 @@ void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2)
 /* convert (row, off) position to byte offset within region (r1,o1)-(r2,o2) */
 int lbuf_pos2off(struct lbuf *lb, int r1, int o1, int r2, int o2, int row, int off)
 {
-	int boff = 0, i, sub;
-	char *ln = lbuf_get(lb, r1), *start;
+	int boff = 0, sub;
+	char *ln = lbuf_get(lb, r1);
 	if (!ln || row < r1 || row > r2)
 		return -1;
-	sub = uc_chr(ln, o1) - ln;
-	for (i = r1; ln && i <= row;) {
+	for (int i = r1; ln && i <= row;) {
 		if (i == row) {
-			start = i == r1 ? uc_chr(ln, o1) : ln;
-			if (off < o1 && i == r1)
+			if ((i == r1 && off < o1) || (i == r2 && off > o2))
 				return -1;
-			boff += uc_chr(ln, off) - start;
-			return boff;
+			sub = uc_chr(lb->ln[r1], o1) - lb->ln[r1];
+			boff -= boff ? sub : 0;
+			if (i != r1)
+				sub = 0;
+			return boff + (uc_chr(ln, off) - (ln + sub));
 		}
-		boff += lbuf_i(lb, i)->len + 1 - sub;
-		sub = 0;
+		boff += lbuf_i(lb, i)->len + 1;
 		ln = lbuf_get(lb, ++i);
 	}
 	return -1;
@@ -300,21 +300,20 @@ int lbuf_pos2off(struct lbuf *lb, int r1, int o1, int r2, int o2, int row, int o
 /* convert byte offset within region (r1,o1)-(r2,o2) to (row, off) position */
 int lbuf_off2pos(struct lbuf *lb, int r1, int o1, int r2, int o2, int boff, int *row, int *off)
 {
-	int acc = 0, i, sub, lbytes, coff = o1;
+	int acc = 0, sub;
 	char *ln = lbuf_get(lb, r1);
 	if (!ln)
 		return 1;
 	sub = uc_chr(ln, o1) - ln;
-	for (i = r1; ln && i <= r2;) {
-		lbytes = lbuf_i(lb, i)->len + 1 - sub;
+	for (int i = r1; ln && i <= r2;) {
+		int lbytes = lbuf_i(lb, i)->len + 1 - sub;
 		if (acc + lbytes > boff) {
 			*row = i;
-			*off = coff + uc_off(ln + sub, boff - acc);
-			return 0;
+			*off = (i == r1 ? o1 : 0) + uc_off(ln + sub, boff - acc);
+			return i == r2 && *off > o2;
 		}
 		acc += lbytes;
 		sub = 0;
-		coff = 0;
 		ln = lbuf_get(lb, ++i);
 	}
 	return 1;
