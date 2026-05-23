@@ -1449,10 +1449,10 @@ const char *lsp_diag_for_line(const char *path, int line)
 }
 ${SEP}b4${SEP}%;f> 
 int term_read\\\\(int winch\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:148\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:142\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3d${SEP}.,\$;f> 			goto ret;
 		\\\\}
-		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:161\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:155\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+9c 		re:;
 		{
 			struct pollfd pfds[1 + LSP_NFDS_MAX];
@@ -1484,7 +1484,7 @@ ${SEP}+3,#+9c 		re:;
 					goto ret;
 				}
 ${SEP}.,\$;f> 				goto re;
-			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:173\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:167\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 				if (term_winch && winch && xquit >= 0) {
@@ -1497,7 +1497,7 @@ ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				goto err;
 			}
 			goto ret;
-${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:175\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		err:
 		*ibuf = 0;
 ${SEP}b5${SEP}%;f> #include \"ren\\\\.c\"
@@ -1510,19 +1510,21 @@ ${SEP}.,\$;f> \\\\}
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:104\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 
-${SEP}.,\$;f> 				\\\\} else if \\\\(k == '~' \\\\|\\\\| k == 'u' \\\\|\\\\| k == 'U'\\\\) \\\\{
-					vc_motion\\\\(k\\\\);
-					goto rep;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1629\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 				} else if (k == 'K') {
+${SEP}.,\$;f> 					ex_command\\\\(cmd\\\\)
+					restore\\\\(xled\\\\)
+					vi_mod \\\\|= 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 					vc_motion\\\\(k\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1641\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
 				} else if (k == 'd') {
 					if (xb_path && xb_path[0])
 						lsp_definition(xb_path, xrow, xoff);
 					vi_mod |= 1;
+				}
 ${SEP}.,\$;f> 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1792\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1799\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
@@ -1530,11 +1532,11 @@ ${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
 		}
 ${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1831\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1838\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lsp_init();
 ${SEP}b6${SEP}%;f> /\\\\* filesystem \\\\*/
 extern rset \\\\*fsincl;
-void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:542\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:541\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
@@ -3029,10 +3031,10 @@ index 00000000..1f2c22da
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index d75be8f7..d0d74ccc 100644
+index c4fdaed5..fde10ea4 100644
 --- a/term.c
 +++ b/term.c
-@@ -145,7 +145,6 @@ void term_back(int c)
+@@ -139,7 +139,6 @@ void term_push(char *s, unsigned int n)
  
  int term_read(int winch)
  {
@@ -3040,7 +3042,7 @@ index d75be8f7..d0d74ccc 100644
  	int cw;
  	if (ibuf_pos >= ibuf_cnt) {
  		if (texec) {
-@@ -158,21 +157,53 @@ int term_read(int winch)
+@@ -152,21 +151,53 @@ int term_read(int winch)
  			goto ret;
  		}
  		cw = 0;
@@ -3107,7 +3109,7 @@ index d75be8f7..d0d74ccc 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index f0baac1d..f5aeb7d3 100644
+index 74ffc2d3..22db141a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -3127,10 +3129,13 @@ index f0baac1d..f5aeb7d3 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
-@@ -1627,6 +1630,13 @@ void vi(int init)
- 				} else if (k == '~' || k == 'u' || k == 'U') {
+@@ -1637,8 +1640,16 @@ void vi(int init)
+ 					ex_command(cmd)
+ 					restore(xled)
+ 					vi_mod |= 1;
+-				} else if (k == '~' || k == 'u' || k == 'U')
++				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
- 					goto rep;
 +				} else if (k == 'K') {
 +					if (xb_path && xb_path[0])
 +						lsp_hover(xb_path, xrow, xoff);
@@ -3138,10 +3143,11 @@ index f0baac1d..f5aeb7d3 100644
 +					if (xb_path && xb_path[0])
 +						lsp_definition(xb_path, xrow, xoff);
 +					vi_mod |= 1;
- 				}
++				}
  				break;
  			case 'x':
-@@ -1790,6 +1800,11 @@ void vi(int init)
+ 				term_push("d ", 2);
+@@ -1797,6 +1808,11 @@ void vi(int init)
  			syn_blockhl = -1;
  			vi_drawrow(xrow);
  		}
@@ -3153,7 +3159,7 @@ index f0baac1d..f5aeb7d3 100644
  		if (vi_status && xmpt < 1) {
  			xrows -= term_resized != vi_status;
  			vi_status = term_resized;
-@@ -1829,6 +1844,7 @@ int main(int argc, char *argv[])
+@@ -1836,6 +1852,7 @@ int main(int argc, char *argv[])
  	setup_signals();
  	dir_init();
  	syn_init();
@@ -3162,10 +3168,10 @@ index f0baac1d..f5aeb7d3 100644
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
 diff --git a/vi.h b/vi.h
-index 96e23938..38ae4fda 100644
+index eccc142d..ce25133c 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -540,3 +540,18 @@ extern int vi_lncol;
+@@ -539,3 +539,18 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);
