@@ -222,20 +222,21 @@ void dir_init(void);
 #define SYN_BD		0x10000
 #define SYN_IT		0x20000
 #define SYN_RV		0x40000
-#define SYN_FGMK(f)	(0x100000 | (f))
-#define SYN_BGMK(b)	(0x200000 | (b << 8))
+#define SYN_FGMK(f)	(0x80000 | (f))
+#define SYN_BGMK(b)	(0x100000 | (b << 8))
 #define SYN_FLG		0xff0000
-#define SYN_FGSET(a)	(a & 0x1000ff)
-#define SYN_BGSET(a)	(a & 0x20ff00)
+#define SYN_FGSET(a)	(a & 0x800ff)
+#define SYN_BGSET(a)	(a & 0x10ff00)
 #define SYN_FG(a)	(a & 0xff)
 #define SYN_BG(a)	((a >> 8) & 0xff)
-#define SYN_BLK		0x400000	/* grp block highlight */
-#define SYN_IGN		0x800000	/* grp ignoring highlight attributes */
-#define SYN_SATT	0x1000000	/* grp inclusion check at start offset */
-#define SYN_EATT	0x2000000	/* grp inclusion check at end offset */
-#define SYN_ATT		0x3000000	/* grp inclusion check from start to end */
-#define SYN_OATT	0x4000000	/* grp overwrite of listed attributes only */
-#define SYN_OWR		0x8000000	/* attribute overwrite */
+#define SYN_BLK		0x1000000	/* grp block highlight */
+#define SYN_IGN		0x2000000	/* grp ignoring highlight attributes */
+#define SYN_SATT	0x4000000	/* grp inclusion check at start offset */
+#define SYN_EATT	0x8000000	/* grp inclusion check at end offset */
+#define SYN_ATT		0xc000000	/* grp inclusion check from start to end */
+#define SYN_OATT	0x10000000	/* grp overwrite of listed attributes only */
+#define SYN_OWR		0x20000000	/* attribute overwrite */
+#define SYN_MK		0x40000000	/* marker holds id in color field, not rendered */
 #define SYN_BS		0x1		/* grp starting block highlight */
 #define SYN_BE		0x2		/* grp ending block highlight */
 #define SYN_BSE		0x3		/* grp self terminating block highlight */

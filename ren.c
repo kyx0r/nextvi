@@ -304,7 +304,8 @@ int syn_merge(int old, int new)
 		return new & ~SYN_OWR;
 	int fg = SYN_FGSET(new) ? SYN_FG(new) : SYN_FG(old);
 	int bg = SYN_BGSET(new) ? SYN_BG(new) : SYN_BG(old);
-	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
+	int flg = ((old | new) & SYN_FLG) | (new & SYN_MK);
+	return flg | (bg << 8) | fg;
 }
 
 void syn_highlight(int *att, char *s, int n)
