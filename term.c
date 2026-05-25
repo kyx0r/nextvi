@@ -179,12 +179,10 @@ int term_read(int winch)
 /* return a static string that changes text attributes to att */
 char *term_att(int att)
 {
-	static char buf[128];
-	char *s = buf;
-	int fg = SYN_FG(att);
-	int bg = SYN_BG(att);
-	*s++ = '\x1b';
-	*s++ = '[';
+	if (att & SYN_MK)
+		return "\x1b[m";
+	static char buf[128] = "\x1b[";
+	char *s = buf+2;
 	if (att & SYN_BD)
 		{*s++ = ';'; *s++ = '1';}
 	if (att & SYN_IT)
@@ -192,6 +190,7 @@ char *term_att(int att)
 	else if (att & SYN_RV)
 		{*s++ = ';'; *s++ = '7';}
 	if (SYN_FGSET(att)) {
+		int fg = SYN_FG(att);
 		*s++ = ';';
 		if (fg < 8)
 			s = itoa(30 + fg, s);
@@ -199,6 +198,7 @@ char *term_att(int att)
 			s = itoa(fg, (char*)memcpy(s, "38;5;", 5)+5);
 	}
 	if (SYN_BGSET(att)) {
+		int bg = SYN_BG(att);
 		*s++ = ';';
 		if (bg < 8)
 			s = itoa(40 + bg, s);
