@@ -323,6 +323,7 @@ void syn_highlight(int *att, char *s, int n)
 		for (i = 0, ii = i; ii < sl; ii += 2) {
 			int inc = 1;
 			if (subs[ii] < 0 || SYN_SET(IGN, catt[i])) {
+				skip:
 				if (SYN_SET(ATT, catt[i]))
 					inc += catt[i + 1] + 1;
 				if (SYN_SET(OATT, catt[i]))
@@ -333,6 +334,8 @@ void syn_highlight(int *att, char *s, int n)
 				continue;
 			}
 			cend = MAX(cend, subs[ii + 1]);
+			if (SYN_SET(SKIP, catt[i]))
+				goto skip;
 			int beg = uc_off(s, sidx + subs[ii]);
 			int end = beg + uc_off(s + sidx + subs[ii], subs[ii + 1] - subs[ii]);
 			if (SYN_SET(ATT, catt[i])) {
