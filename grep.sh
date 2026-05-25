@@ -35,11 +35,10 @@ ${SEP}.,\$;f> 	\\\\{n_ft, NULL\\\\},
 	\\\\{nn_ft, NULL\\\\},
 	\\\\{ac_ft, NULL\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:39\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{grep_ft, NULL},
-${SEP}.,\$;f> 		A\\\\(IN, SYN_BGMK\\\\(RE1\\\\), SYN_BGMK\\\\(AY1\\\\), SYN_BGMK\\\\(AY\\\\)\\\\)\\\\},
-	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(IN, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
+${SEP}.,\$;f> 	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(NA, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:286\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
+${SEP}+1a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
 ${SEP}b1${SEP}%;f> rset \\\\*xkwdrs;			/\\\\* the last searched keyword rset \\\\*/
@@ -139,6 +138,19 @@ ${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:445\\${SE
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA conf.c ===
+GROUP 3
++	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
++	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
++
+pattern:
+	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~\]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)\},
+
+edit_cmd_rel:
++1a 	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
+	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
+
+=== END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index cc881132..33adadc4 100644
