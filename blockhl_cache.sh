@@ -127,7 +127,7 @@ static void hl_scan_until(int target_row)
 	int saved_last_scdir = last_scdir;
 	last_scdir = 0;
 	hl_scan_active = 1;
-	for (int r = from; r < target_row; r++) {
+	for (int r = from; r <= target_row; r++) {
 		char *ln = lbuf_get(syn_lb, r);
 		if (!ln)
 			break;
@@ -179,14 +179,19 @@ ${SEP}+3c 	int fti = ftidx, blockhl, blockcont = -1, trusted = 0;
 				e = hl_cache_find(prev_ln);
 			}
 			if (e && e->ftidx == ftidx) {
-				syn_blockhl = e->blockhl;
-				blockatt = e->blockatt;
+				struct hl_cache_entry *cur_e = hl_cache_find(cur_ln);
+				if (cur_e && cur_e->ftidx == ftidx && cur_e->blockhl != e->blockhl) {
+					/* block boundary: direction changed the state */
+				} else {
+					syn_blockhl = e->blockhl;
+					blockatt = e->blockatt;
+					if (blockhl < 0 && e->blockhl >= 0)
+						blockhl = e->blockhl;
+				}
 				trusted = 1;
 			}
 		}
 	}
-	if (trusted && blockhl < 0 && syn_blockhl >= 0 && last_scdir < 0)
-		blockhl = syn_blockhl;
 ${SEP}.,\$;f> 	fti\\\\+\\\\+;
 	if \\\\(ftmidx > fti && ftmap\\\\[fti-1\\\\]\\\\.ft == ftmap\\\\[fti\\\\]\\\\.ft\\\\)
 		goto re;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:390\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -259,7 +264,7 @@ index 7d8ff44a..2629816b 100644
  		for (; *s; n_ins++) {
  			int l = linelength(s);
 diff --git a/ren.c b/ren.c
-index 9b4776c8..f0fafb4f 100644
+index 9b4776c8..6f497355 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -249,6 +249,118 @@ static int blockatt, blockflg;
@@ -358,7 +363,7 @@ index 9b4776c8..f0fafb4f 100644
 +	int saved_last_scdir = last_scdir;
 +	last_scdir = 0;
 +	hl_scan_active = 1;
-+	for (int r = from; r < target_row; r++) {
++	for (int r = from; r <= target_row; r++) {
 +		char *ln = lbuf_get(syn_lb, r);
 +		if (!ln)
 +			break;
@@ -396,7 +401,7 @@ index 9b4776c8..f0fafb4f 100644
  		last_scdir = scdir;
  		syn_blockhl = -1;
  	}
-@@ -310,7 +427,31 @@ int syn_merge(int old, int new)
+@@ -310,7 +427,36 @@ int syn_merge(int old, int new)
  
  void syn_highlight(int *att, char *s, int n)
  {
@@ -418,18 +423,23 @@ index 9b4776c8..f0fafb4f 100644
 +				e = hl_cache_find(prev_ln);
 +			}
 +			if (e && e->ftidx == ftidx) {
-+				syn_blockhl = e->blockhl;
-+				blockatt = e->blockatt;
++				struct hl_cache_entry *cur_e = hl_cache_find(cur_ln);
++				if (cur_e && cur_e->ftidx == ftidx && cur_e->blockhl != e->blockhl) {
++					/* block boundary: direction changed the state */
++				} else {
++					syn_blockhl = e->blockhl;
++					blockatt = e->blockatt;
++					if (blockhl < 0 && e->blockhl >= 0)
++						blockhl = e->blockhl;
++				}
 +				trusted = 1;
 +			}
 +		}
 +	}
-+	if (trusted && blockhl < 0 && syn_blockhl >= 0 && last_scdir < 0)
-+		blockhl = syn_blockhl;
  	re:;
  	rset *rs = ftmap[fti].rs;
  	int subs[rs->nsubc], *catt, *iatt, sl, c;
-@@ -388,6 +529,8 @@ void syn_highlight(int *att, char *s, int n)
+@@ -388,6 +534,8 @@ void syn_highlight(int *att, char *s, int n)
  	fti++;
  	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft)
  		goto re;
