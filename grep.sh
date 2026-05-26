@@ -37,7 +37,7 @@ ${SEP}.,\$;f> 	\\\\{n_ft, NULL\\\\},
 ${SEP}+2a 	{grep_ft, NULL},
 ${SEP}.,\$;f> 	\\\\{ac_ft, \"\\\\[\\\\^ \\\\\\\\t-/:-@\\\\[-\\\\^\\\\{-~\\\\]\\\\+\\\\\$\\\\|\\\\(\\\\.\\\\+\\\\\$\\\\)\", A\\\\(NA, SYN_BGMK\\\\(AY1\\\\)\\\\)\\\\},
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:286\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:289\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
@@ -133,8 +133,8 @@ ${SEP}.,\$;f> 	temp_open\\\\(0, \"/hist/\", _ft\\\\);
 ${SEP}+2a 	temp_open(3, \"/grep/\", grep_ft);
 ${SEP}b3${SEP}%;f> extern rset \\\\*xkwdrs;
 extern sbuf \\\\*xregs\\\\[256\\\\];
-extern struct buf \\\\*bufs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:445\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:445\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h'
+extern struct buf \\\\*bufs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:444\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:444\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
@@ -153,7 +153,7 @@ edit_cmd_rel:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index cc881132..33adadc4 100644
+index f4366df9..fbaa9ebd 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -172,9 +172,9 @@ index cc881132..33adadc4 100644
  	{ex_ft, NULL},
  	{vs_ft, NULL},
  	{bar_ft, NULL},
-@@ -284,6 +286,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
- 		A(IN, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
- 	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(IN, SYN_BGMK(AY1))},
+@@ -287,6 +289,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+ 		A(NA, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
+ 	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(NA, SYN_BGMK(AY1))},
  
 +	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
 +	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
@@ -183,7 +183,7 @@ index cc881132..33adadc4 100644
  	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index f3ea18aa..8a4da33a 100644
+index 0ec68c95..bbd53d0c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -38,7 +38,7 @@ sbuf *xacreg;			/* autocomplete db filter regex */
@@ -334,10 +334,10 @@ index 74ffc2d3..6e2fad2c 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index eccc142d..f03fbb38 100644
+index 79bfc4d4..2e761762 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -442,7 +442,7 @@ extern sbuf *xacreg;
+@@ -441,7 +441,7 @@ extern sbuf *xacreg;
  extern rset *xkwdrs;
  extern sbuf *xregs[256];
  extern struct buf *bufs;

@@ -154,7 +154,7 @@ ${SEP}b4${SEP}%;f> #include <sys/stat\\\\.h>
 #include <sys/ioctl\\\\.h>
 #include <sys/wait\\\\.h>${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:15\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a #include <pthread.h>
-${SEP}b5${SEP}%f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:264\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b5${SEP}%f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:263\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}q" $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h'
@@ -378,10 +378,10 @@ index 74ffc2d3..1a7c6241 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index eccc142d..7ec91574 100644
+index 79bfc4d4..f2e138f1 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -261,7 +261,8 @@ int syn_addhl(char *reg, int id);
+@@ -260,7 +260,8 @@ int syn_addhl(char *reg, int id);
  void syn_init(void);
  
  /* uc.c: utf-8 helper functions */

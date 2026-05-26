@@ -28,14 +28,14 @@ LB="0?"
 
 # Patch: ex.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}i int xexrc = 0;			/* read .exrc from the current directory */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1475\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(exrc)
-${SEP}.,\$f> 	EO\\\\(err\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	EO\\\\(err\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1519\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i 	EO(exrc),
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1743\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1744\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a void ex_script(FILE *fp)
 {
 	char done = 0;
@@ -85,8 +85,8 @@ int load_exrc(char *exrc)
 
 ${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
 	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1755\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1755\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1756\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1756\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1756\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1757\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	} else {
 		char exrc[PATH_MAX];
 		char *homeenv = getenv(\"HOME\");
@@ -131,7 +131,7 @@ i 	EO(exrc),
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f3ea18aa..a2b7dcad 100644
+index 0ec68c95..6c7953fe 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -139,7 +139,7 @@ index f3ea18aa..a2b7dcad 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1473,6 +1474,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1474,6 +1475,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -147,7 +147,7 @@ index f3ea18aa..a2b7dcad 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1516,6 +1518,7 @@ static struct excmd {
+@@ -1517,6 +1519,7 @@ static struct excmd {
  	EO(ai),
  	{"ac", ec_setacreg},
  	{"a", ec_insert},
@@ -155,7 +155,7 @@ index f3ea18aa..a2b7dcad 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1741,6 +1744,53 @@ void ex(void)
+@@ -1742,6 +1745,53 @@ void ex(void)
  	xgrec--;
  }
  
@@ -209,7 +209,7 @@ index f3ea18aa..a2b7dcad 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1752,6 +1802,29 @@ void ex_init(char **files, int n)
+@@ -1753,6 +1803,29 @@ void ex_init(char **files, int n)
  		s = *(++files);
  	} while (--n > 0);
  	xvis &= ~4;

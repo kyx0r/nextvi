@@ -212,7 +212,7 @@ edit_cmd_rel:
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index e70d049e..d9c3d97e 100644
+index eb1eb7dc..c47a62de 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@

@@ -27,11 +27,11 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1475\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
+${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(qe)
-${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1541\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1542\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	EO(qe),
 ${SEP}b2${SEP}1a static int gettime_ms(void)
 {
@@ -63,13 +63,13 @@ ${SEP}+2a 				if (xqe)
 					vi_mod |= 2;
 ${SEP}b4${SEP}%;f> 	int p_reg;
 	int lsug;
-	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:364\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:363\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	int quickexit;
 ${SEP}.,\$;f> is\\\\.p_reg = 0; \\\\\\\\
 is\\\\.lsug = 0; \\\\\\\\
-is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:372\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a is.quickexit = 0; \\\\
-${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:419\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a extern int xqe;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
 
@@ -122,10 +122,10 @@ extern int xshape;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index cc881132..d8e1d996 100644
+index f4366df9..5c087819 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -289,7 +289,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
@@ -135,7 +135,7 @@ index cc881132..d8e1d996 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index f3ea18aa..5cd046c4 100644
+index 0ec68c95..c966c2e9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -143,7 +143,7 @@ index f3ea18aa..5cd046c4 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1473,6 +1474,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1474,6 +1475,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -151,7 +151,7 @@ index f3ea18aa..5cd046c4 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1539,6 +1541,7 @@ static struct excmd {
+@@ -1540,6 +1542,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -160,7 +160,7 @@ index f3ea18aa..5cd046c4 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index e70d049e..6ba0fc1f 100644
+index eb1eb7dc..c7627cdc 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -216,10 +216,10 @@ index 74ffc2d3..b47b3f25 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index eccc142d..060dc372 100644
+index 79bfc4d4..43bffdb7 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -362,6 +362,7 @@ typedef struct {
+@@ -361,6 +361,7 @@ typedef struct {
  	int p_reg;
  	int lsug;
  	int sug_pt;
@@ -227,7 +227,7 @@ index eccc142d..060dc372 100644
  	char *sug;
  	char *_sug;
  } ins_state;
-@@ -370,6 +371,7 @@ is.t_row = -2; \
+@@ -369,6 +370,7 @@ is.t_row = -2; \
  is.p_reg = 0; \
  is.lsug = 0; \
  is.sug_pt = -1; \
@@ -235,7 +235,7 @@ index eccc142d..060dc372 100644
  is.sug = NULL; \
  is._sug = NULL; \
  
-@@ -417,6 +419,7 @@ extern int xtd;
+@@ -416,6 +418,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;

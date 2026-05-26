@@ -39,14 +39,14 @@ ${SEP}+2a 	if (!loc)
 	ret:
 ${SEP}.,\$;f> 
 void ex_init\\\\(.*\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1746\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1746\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
-	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1748\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1747\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1747\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1749\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	int i = n;
 ${SEP}.,\$;f> 	do \\\\{
-		xmpt = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1751\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1751\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1753\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		xmpt = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1752\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2${SEP}s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1752\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+	\\\\} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1754\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+1a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
@@ -66,7 +66,7 @@ ${SEP}+1a 	if (stdin_fd) {
 		}
 		xmpt = MIN(xmpt, 1);
 	}
-${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1754\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> 	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1755\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 ${SEP}b1${SEP}8a int stdin_fd;
 static int isig;
@@ -108,7 +108,7 @@ ${SEP}.,\$;f> 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\
 			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1846\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
-${SEP}b3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:535\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b3${SEP}%f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:534\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a extern int stdin_fd;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'ex.c' 'term.c' 'vi.c' 'vi.h'
 
@@ -161,7 +161,7 @@ a extern int stdin_fd;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f3ea18aa..c6829017 100644
+index 0ec68c95..6e60665a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -354,7 +354,9 @@ int ex_edit(const char *path, int len)
@@ -185,7 +185,7 @@ index f3ea18aa..c6829017 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1743,15 +1748,36 @@ void ex(void)
+@@ -1744,15 +1749,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -225,7 +225,7 @@ index f3ea18aa..c6829017 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index c4fdaed5..e0c0dfa9 100644
+index a49549c5..148203b0 100644
 --- a/term.c
 +++ b/term.c
 @@ -6,6 +6,8 @@ int term_resized;
@@ -329,10 +329,10 @@ index 74ffc2d3..0ea7d2fb 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index eccc142d..cd7c39e0 100644
+index 79bfc4d4..33721037 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -533,6 +533,7 @@ int conf_kmapfind(char *name);
+@@ -532,6 +532,7 @@ int conf_kmapfind(char *name);
  char *conf_digraph(int c1, int c2);
  
  /* vi.c: main */

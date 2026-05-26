@@ -27,8 +27,8 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c term.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:293\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/f!\\\\](.*)\\\\\\\\/qf!]\\\\1vs|sp|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:293\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i struct win *wins;		/* head of window list */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/f!\\\\](.*)\\\\\\\\/qf!]\\\\1vs|sp|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
 ${SEP}%;f> 		ex_buf = &bufs\\\\[idx\\\\];
@@ -62,7 +62,7 @@ ${SEP}+3,#+3c 	/* q! always force quits */
 ${SEP}.,\$;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1488\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1489\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_split(char *loc, char *cmd, char *arg)
 {
 	return win_split(0, arg);
@@ -171,20 +171,20 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(err\\\\),
 	\\\\{\"ef!\", ec_fuzz\\\\},
-	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1521\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\{\"ef\", ec_fuzz\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1522\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"eq\", ec_equalize},
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1560\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1561\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"sp\", ec_split},
 ${SEP}.,\$;f> 	EO\\\\(lim\\\\),
 	EO\\\\(led\\\\),
-	EO\\\\(vis\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1582\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(vis\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1583\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"vs\", ec_vsplit},
 ${SEP}.,\$;f> 	xgrec--;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1743\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1744\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a /* window management functions */
 static void curwin_save(void)
 {
@@ -849,16 +849,16 @@ ${SEP}.,\$;f> 		if \\\\(xhll\\\\) \\\\{
 ${SEP}+2${SEP}s/xrows/win_height()/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1789\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			if \\\\(xmpt > 0\\\\)
 				xmpt = 0;
 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1807\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1807\\${SEP}pr${INTR}${QF}}${SEP}b5${SEP}%f> void term_kill\\\\(void\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:321\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/xrow - xtop,/(curwin ? curwin->y : 0) + xrow - xtop, (curwin ? curwin->x : 0) +/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1807\\${SEP}pr${INTR}${QF}}${SEP}b5${SEP}%f> void term_kill\\\\(void\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:320\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a void term_killn(int n);
 ${SEP}.,\$;f> \\\\} \\\\\\\\
 
-#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:391\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+#define led_prender\\\\(msg, row, col, beg, end\\\\) _led_render\\\\(msg, row, col, beg, end,\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:390\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \\\\
 	if (nwins > 1) term_killn(end - beg); else term_kill();)
 ${SEP}.,\$;f> 	long mtime;			/\\\\* modification time \\\\*/
 	signed char td;			/\\\\* text direction \\\\*/
-\\\\};${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:404\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\};${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:403\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 
 /* window management for splits */
 struct win {
@@ -919,10 +919,10 @@ a void term_killn(int n);
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index cc881132..008fa832 100644
+index f4366df9..353cb4d0 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -290,7 +290,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -293,7 +293,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
@@ -932,7 +932,7 @@ index cc881132..008fa832 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f3ea18aa..f2d22e70 100644
+index 0ec68c95..8f5bb73d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -986,7 +986,7 @@ index f3ea18aa..f2d22e70 100644
  	xquit = !xquit ? 1 : xquit;
  	xqprop = *loc ? atoi(loc) : -1;
  	if (*arg)
-@@ -1486,6 +1504,112 @@ _EO(left,
+@@ -1487,6 +1505,112 @@ _EO(left,
  	return NULL;
  )
  
@@ -1099,7 +1099,7 @@ index f3ea18aa..f2d22e70 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1519,6 +1643,7 @@ static struct excmd {
+@@ -1520,6 +1644,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -1107,7 +1107,7 @@ index f3ea18aa..f2d22e70 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1558,6 +1683,7 @@ static struct excmd {
+@@ -1559,6 +1684,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -1115,7 +1115,7 @@ index f3ea18aa..f2d22e70 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1580,6 +1706,7 @@ static struct excmd {
+@@ -1581,6 +1707,7 @@ static struct excmd {
  	EO(lim),
  	EO(led),
  	EO(vis),
@@ -1123,7 +1123,7 @@ index f3ea18aa..f2d22e70 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
  };
-@@ -1741,6 +1868,244 @@ void ex(void)
+@@ -1742,6 +1869,244 @@ void ex(void)
  	xgrec--;
  }
  
@@ -1369,7 +1369,7 @@ index f3ea18aa..f2d22e70 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index e70d049e..39acdbad 100644
+index eb1eb7dc..ea465d08 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,8 +91,9 @@ static char *kmap_map(int kmap, int c)
@@ -1514,7 +1514,7 @@ index e70d049e..39acdbad 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index c4fdaed5..bdf45213 100644
+index a49549c5..414bab72 100644
 --- a/term.c
 +++ b/term.c
 @@ -85,6 +85,15 @@ void term_kill(void)
@@ -2110,10 +2110,10 @@ index 74ffc2d3..9b9b20de 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index eccc142d..f7ad71e6 100644
+index 79bfc4d4..311405b5 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -319,6 +319,7 @@ void term_suspend(void);
+@@ -318,6 +318,7 @@ void term_suspend(void);
  void term_chr(int ch);
  void term_pos(int r, int c);
  void term_kill(void);
@@ -2121,7 +2121,7 @@ index eccc142d..f7ad71e6 100644
  void term_room(int n);
  int term_read(int winch);
  void term_commit(void);
-@@ -388,7 +389,8 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -387,7 +388,8 @@ void led_render(char *s0, int cbeg, int cend);
  } \
  
  #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end,)
@@ -2131,7 +2131,7 @@ index eccc142d..f7ad71e6 100644
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
  void led_done(void);
-@@ -402,6 +404,26 @@ struct buf {
+@@ -401,6 +403,26 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };

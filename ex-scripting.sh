@@ -32,7 +32,7 @@ ${SEP}.i char **xenvp;
 ${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1458\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
@@ -70,7 +70,7 @@ ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 
 ${SEP}.,\$;f> 	EO\\\\(seq\\\\),
 	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1560\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1561\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 ${SEP}b1${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
@@ -95,7 +95,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f3ea18aa..2f74864d 100644
+index 0ec68c95..36fd51ce 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -103,7 +103,7 @@ index f3ea18aa..2f74864d 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1456,6 +1457,41 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1457,6 +1458,41 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -145,7 +145,7 @@ index f3ea18aa..2f74864d 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1558,6 +1594,8 @@ static struct excmd {
+@@ -1559,6 +1595,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -155,7 +155,7 @@ index f3ea18aa..2f74864d 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index c4fdaed5..461f9ad0 100644
+index a49549c5..2bd6b204 100644
 --- a/term.c
 +++ b/term.c
 @@ -231,7 +231,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -171,7 +171,7 @@ index c4fdaed5..461f9ad0 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index eccc142d..9449a8cd 100644
+index 79bfc4d4..06d4cceb 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

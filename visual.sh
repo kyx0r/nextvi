@@ -29,8 +29,8 @@ LB="0?"
 # Patch: conf.c vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 		A\\\\(SYN_BD, BL1, WH1, YE\\\\)\\\\},
 
-	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:304\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> static int vi_status;			/\\\\* permanent status bar \\\\*/
+	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:307\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:307\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> static int vi_status;			/\\\\* permanent status bar \\\\*/
 static int vi_tsm;			/\\\\* type of the status message \\\\*/
 static int vi_nlmode;			/\\\\* new line mode for vi regions \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:46\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
@@ -391,10 +391,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index cc881132..fd80d993 100644
+index f4366df9..511c1608 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -301,7 +301,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -304,7 +304,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  		A(SYN_BD, BL1, WH1, YE)},
  
  	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},

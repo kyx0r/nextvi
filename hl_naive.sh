@@ -56,7 +56,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index e70d049e..9ed762cb 100644
+index eb1eb7dc..355f3132 100644
 --- a/led.c
 +++ b/led.c
 @@ -114,7 +114,7 @@ for (i = 0; i < cterm;) { \

@@ -27,12 +27,12 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c term.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xms = 1;			/* mouse in normal mode */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xms = 1;			/* mouse in normal mode */
 ${SEP}%;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1488\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1489\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a _EO(ms,
 	xms = !*arg ? !xms : eo_val(arg);
 	if (xms)
@@ -44,7 +44,7 @@ ${SEP}+2a _EO(ms,
 
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1540\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1541\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(ms),
 ${SEP}b2${SEP}%;f> 	return pos - xleft;
 \\\\}
@@ -214,16 +214,16 @@ ${SEP}+2a 	if (mv == 27 && xms) {
 		} else if (r == 2)	/* stray release from a prior click; restart */
 			return -1;
 	}
-${SEP}b5${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:323\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b5${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:322\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
-${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:393\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:392\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a int led_col(char *s, int col);
-${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:404\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:403\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i /* mouse state */
 extern int xmouse_col, xmouse_row;
-${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:426\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xms;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h'
 
@@ -348,10 +348,10 @@ i extern int xms;
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index cc881132..68fe02a5 100644
+index f4366df9..7219c281 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -289,7 +289,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
@@ -361,7 +361,7 @@ index cc881132..68fe02a5 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index f3ea18aa..f963d07b 100644
+index 0ec68c95..eee0cbdd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -369,7 +369,7 @@ index f3ea18aa..f963d07b 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1486,6 +1487,15 @@ _EO(left,
+@@ -1487,6 +1488,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -385,7 +385,7 @@ index f3ea18aa..f963d07b 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1538,6 +1548,7 @@ static struct excmd {
+@@ -1539,6 +1549,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -394,7 +394,7 @@ index f3ea18aa..f963d07b 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index e70d049e..b6df6f5e 100644
+index eb1eb7dc..5d507c85 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -442,7 +442,7 @@ index e70d049e..b6df6f5e 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index c4fdaed5..4795ff69 100644
+index a49549c5..1c6be3c7 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,16 @@
@@ -616,10 +616,10 @@ index 74ffc2d3..7ec2f95b 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index eccc142d..6c3f285d 100644
+index 79bfc4d4..c9ffc083 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -321,6 +321,9 @@ void term_pos(int r, int c);
+@@ -320,6 +320,9 @@ void term_pos(int r, int c);
  void term_kill(void);
  void term_room(int n);
  int term_read(int winch);
@@ -629,7 +629,7 @@ index eccc142d..6c3f285d 100644
  void term_commit(void);
  char *term_att(int att);
  void term_push(char *s, unsigned int n);
-@@ -391,6 +394,7 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -390,6 +393,7 @@ void led_render(char *s0, int cbeg, int cend);
  #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
@@ -637,7 +637,7 @@ index eccc142d..6c3f285d 100644
  void led_done(void);
  
  /* ex.c: command mode */
-@@ -402,6 +406,8 @@ struct buf {
+@@ -401,6 +405,8 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -646,7 +646,7 @@ index eccc142d..6c3f285d 100644
  /* ex options */
  extern int xleft;
  extern int xvis;
-@@ -425,6 +431,7 @@ extern int xpr;
+@@ -424,6 +430,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;
