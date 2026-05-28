@@ -994,6 +994,10 @@ typedef struct {
 	int strategy;
 	int level;         /* 1-4 comparison strictness (0 = default) */
 	int level_regex;   /* 1 = del/add text treated as regex */
+	char **del_lines;
+	int ndel_lines, del_cap;
+	char **add_lines;
+	int nadd_lines, add_cap;
 	char *cmd;
 	char **pattern;
 	int npattern, pat_cap;
@@ -1008,6 +1012,12 @@ typedef struct {
 static void free_parsed_grp(parsed_grp_t *p)
 {
 	free(p->cmd);
+	for (int i = 0; i < p->ndel_lines; i++)
+		free(p->del_lines[i]);
+	free(p->del_lines);
+	for (int i = 0; i < p->nadd_lines; i++)
+		free(p->add_lines[i]);
+	free(p->add_lines);
 	for (int i = 0; i < p->npattern; i++)
 		free(p->pattern[i]);
 	free(p->pattern);
@@ -1141,13 +1151,27 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			continue;
 		}
 
+		/* Capture -/+ lines that appear after GROUP header */
+		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
+		    line[0] == '-' && line[1] != '-') {
+			arr_append(&results[gi].del_lines, &results[gi].ndel_lines,
+				   &results[gi].del_cap, line + 1);
+			continue;
+		}
+		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
+		    line[0] == '+') {
+			arr_append(&results[gi].add_lines, &results[gi].nadd_lines,
+				   &results[gi].add_cap, line + 1);
+			continue;
+		}
+
 		/* Parse level: field (appears after GROUP header, before any section) */
 		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
 		    strncmp(line, "level: ", 7) == 0) {
 			parsed_grp_t *pg = &results[gi];
 			const char *lv = line + 7;
 			int len = strlen(lv);
-			pg->level_regex = (len > 0 && lv[len-1] == '+');
+			pg->level_regex = (len > 0 && lv[len-1] == '*');
 			char tmp[32];
 			if (pg->level_regex) {
 				int n = len - 1;
@@ -1189,7 +1213,7 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 	for (int i = 0; i < gd->nadd_lines; i++)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
 	fprintf(out, "level: %d%s\n", gd->level ? gd->level : 2,
-		gd->level_regex ? "+" : "");
+		gd->level_regex ? "*" : "");
 	if (gd->npre_ctx > 0) {
 		fputs("pre_ctx:\n", out);
 		for (int i = 0; i < gd->npre_ctx; i++)
@@ -1306,14 +1330,21 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		/* Group header */
 		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
-		for (int i = 0; i < g->ndel; i++)
-			fprintf(fp, "-%s\n", g->del_texts[i]);
-		for (int i = 0; i < g->nadd; i++)
-			fprintf(fp, "+%s\n", g->add_texts[i]);
+		if (gd && gd->level_regex) {
+			for (int i = 0; i < gd->ndel_lines; i++)
+				fprintf(fp, "-%s\n", gd->del_lines[i]);
+			for (int i = 0; i < gd->nadd_lines; i++)
+				fprintf(fp, "+%s\n", gd->add_lines[i]);
+		} else {
+			for (int i = 0; i < g->ndel; i++)
+				fprintf(fp, "-%s\n", g->del_texts[i]);
+			for (int i = 0; i < g->nadd; i++)
+				fprintf(fp, "+%s\n", g->add_texts[i]);
+		}
 		{
 			int lvl = (gd && gd->level) ? gd->level : 2;
 			int lr = (gd && gd->level_regex) ? 1 : 0;
-			fprintf(fp, "level: %d%s\n", lvl, lr ? "+" : "");
+			fprintf(fp, "level: %d%s\n", lvl, lr ? "*" : "");
 		}
 
 		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
@@ -1739,10 +1770,15 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 							  og->rel_cmd, og->nrel);
 				int relc_ch = !lines_equal(eg->relc_cmd, eg->nrelc,
 							   og->relc_cmd, og->nrelc);
+				int del_ch = !lines_equal(eg->del_lines, eg->ndel_lines,
+							  og->del_lines, og->ndel_lines);
+				int add_ch = !lines_equal(eg->add_lines, eg->nadd_lines,
+							  og->add_lines, og->nadd_lines);
 				int level_ch = (eg->level != og->level || eg->level_regex != og->level_regex);
 
 				if (!strat_ch && !cmd_ch && !pat_ch &&
-				    !abs_ch && !rel_ch && !relc_ch && !level_ch)
+				    !abs_ch && !rel_ch && !relc_ch && !level_ch &&
+				    !del_ch && !add_ch)
 					continue;
 
 				if (!od) {
@@ -1762,10 +1798,18 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				gout->group_idx = gi + 1;
 				gout->level = eg->level ? eg->level : 2;
 				gout->level_regex = eg->level_regex;
-				arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
-					  active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel);
-				arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
-					  active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd);
+				if (del_ch)
+					arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
+						  eg->del_lines, eg->ndel_lines);
+				else
+					arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
+						  active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel);
+				if (add_ch)
+					arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
+						  eg->add_lines, eg->nadd_lines);
+				else
+					arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
+						  active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd);
 				arr_clone(&gout->pre_ctx, &gout->npre_ctx, &gout->pre_cap,
 					  active[k]->groups[gi].all_pre_ctx, active[k]->groups[gi].nall_pre_ctx);
 				arr_clone(&gout->post_ctx, &gout->npost_ctx, &gout->post_cap,
@@ -2538,7 +2582,7 @@ int main(int argc, char **argv)
 					in_sect = 0;
 					const char *lv = line + 7;
 					int len = strlen(lv);
-					cur_gd->level_regex = (len > 0 && lv[len-1] == '+');
+					cur_gd->level_regex = (len > 0 && lv[len-1] == '*');
 					char tmp[32];
 					if (cur_gd->level_regex) {
 						int n = len - 1;
