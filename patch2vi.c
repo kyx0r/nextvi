@@ -71,7 +71,7 @@ delta_mode;      /* -1=per-group stored levels, 0=off, 1-4=forced level */
 typedef struct {
 	int group_idx;      /* 1-based */
 	int level;          /* 1-4 comparison strictness, default 2 */
-	int level_regex;    /* 1 = use custom del/add as regex (level 2 only) */
+	int has_star;
 	char **del_lines;    /* original patch del lines (used for raw comparison) */
 	int ndel_lines, del_cap;
 	char **add_lines;    /* original patch add lines */
@@ -341,11 +341,10 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 		if (lvl == 1)
 			return gd;
 		if (lvl == 2) {
-			if (gd->level_regex
+			if (gd->has_star && gd->level == 2
 			    && grp_content_regex_matches(gd, del_texts, ndel, add_texts, nadd))
 				return gd;
-			if (!gd->level_regex
-			    && grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
+			if (grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
 				return gd;
 		}
 		if (lvl == 4 && grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
@@ -1035,7 +1034,7 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 typedef struct {
 	int strategy;
 	int level;         /* 1-4 comparison strictness (0 = default) */
-	int level_regex;   /* 1 = del/add text treated as regex */
+	int has_star;
 	char **del_lines;
 	int ndel_lines, del_cap;
 	char **add_lines;
@@ -1222,11 +1221,10 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			parsed_grp_t *pg = &results[gi];
 			const char *lv = line + 7;
 			int len = strlen(lv);
-			int has_star = (len > 0 && lv[len-1] == '*');
+			pg->has_star = (len > 0 && lv[len-1] == '*');
 			pg->level = atoi(lv);
 			if (pg->level < 1)
 				pg->level = 2;
-			pg->level_regex = has_star && pg->level == 2;
 			continue;
 		}
 
@@ -1261,8 +1259,7 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 	for (int i = 0; i < gd->nadd_lines; i++)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
 	int eglvl = gd->level ? gd->level : 2;
-	fprintf(out, "level: %d%s\n", eglvl,
-		(gd->level_regex && eglvl == 2) ? "*" : "");
+	fprintf(out, "level: %d%s\n", eglvl, gd->has_star ? "*" : "");
 	if (gd->ncustom_text > 0) {
 		fputs("custom_text:\n", out);
 		for (int i = 0; i < gd->ncustom_text; i++)
@@ -1384,7 +1381,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		/* Group header */
 		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
-		if (gd && gd->ncustom_text > 0 && gd->level_regex) {
+		if (gd && gd->ncustom_text > 0) {
 			for (int i = 0; i < gd->ncustom_text; i++)
 				fprintf(fp, "%s\n", gd->custom_text[i]);
 		} else {
@@ -1393,11 +1390,8 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			for (int i = 0; i < g->nadd; i++)
 				fprintf(fp, "+%s\n", g->add_texts[i]);
 		}
-		{
-			int lvl = (gd && gd->level) ? gd->level : 2;
-			int lr = (gd && gd->level_regex) ? 1 : 0;
-			fprintf(fp, "level: %d%s\n", lvl, (lr && lvl == 2) ? "*" : "");
-		}
+		int lvl = (gd && gd->level) ? gd->level : 2;
+		fprintf(fp, "level: %d%s\n", lvl, gd && gd->has_star ? "*" : "");
 
 		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
 		int sel_strat = (gd && gd->strategy != STRAT_DEFAULT)
@@ -1660,7 +1654,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					rejected = 0;
 					break;
 				case 2:
-					if (stored->level_regex)
+					if (stored->has_star && stored->level == 2)
 						rejected = !grp_content_regex_matches(stored,
 										      g->del_texts, g->ndel,
 										      g->add_texts, g->nadd);
@@ -1773,7 +1767,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				memset(dst, 0, sizeof(*dst));
 				dst->group_idx = src->group_idx;
 				dst->level = src->level;
-				dst->level_regex = src->level_regex;
+				dst->has_star = src->has_star;
 				dst->strategy = src->strategy;
 				if (src->cmd)
 					dst->cmd = xstrdup(src->cmd);
@@ -1826,7 +1820,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 							   og->relc_cmd, og->nrelc);
 				int custom_ch = !lines_equal(eg->custom_text, eg->ncustom_text,
 							     og->custom_text, og->ncustom_text);
-				int level_ch = (eg->level != og->level || eg->level_regex != og->level_regex);
+				int level_ch = eg->level != og->level;
 
 				if (!strat_ch && !cmd_ch && !pat_ch &&
 				    !abs_ch && !rel_ch && !relc_ch && !level_ch &&
@@ -1849,7 +1843,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				memset(gout, 0, sizeof(*gout));
 				gout->group_idx = gi + 1;
 				gout->level = eg->level ? eg->level : 2;
-				gout->level_regex = eg->level_regex;
+				gout->has_star = eg->has_star;
 				/* original del/add always from patch */
 				arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
 					  active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel);
@@ -2648,11 +2642,10 @@ int main(int argc, char **argv)
 					in_sect = 0;
 					const char *lv = line + 7;
 					int len = strlen(lv);
-					int has_star = (len > 0 && lv[len-1] == '*');
+					cur_gd->has_star = (len > 0 && lv[len-1] == '*');
 					cur_gd->level = atoi(lv);
 					if (cur_gd->level < 1)
 						cur_gd->level = 2;
-					cur_gd->level_regex = has_star && cur_gd->level == 2;
 					continue;
 				}
 				if (strcmp(line, "pre_ctx:") == 0) {
