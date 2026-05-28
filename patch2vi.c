@@ -41,15 +41,20 @@ static int nfiles;
 static const char *cur_file_path;  /* set per-file for error messages */
 static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
-static int delta_mode;      /* 1=re-apply previous delta from script (-d) */
+static int delta_mode;      /* -1=per-group stored levels, 0=off, 1-4=forced level */
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
 	int group_idx;      /* 1-based */
+	int level;          /* 1-4 comparison strictness, default 2 */
 	char **del_lines;
 	int ndel_lines, del_cap;
 	char **add_lines;
 	int nadd_lines, add_cap;
+	char **pre_ctx;     /* context lines before change (for levels 3/4) */
+	int npre_ctx, pre_cap;
+	char **post_ctx;    /* context lines after change (for levels 3/4) */
+	int npost_ctx, post_cap;
 	int strategy;       /* STRAT_DEFAULT = not recorded */
 	char *cmd;
 	char **pattern;
@@ -192,16 +197,61 @@ static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 	       && lines_equal(gd->add_lines, gd->nadd_lines, add, nadd);
 }
 
+/* True if gd's stored full hunk (pre_ctx + del + add + post_ctx) matches the supplied content. */
+static int grp_full_hunk_matches(grp_delta_t *gd,
+				 char **pre_ctx, int npre_ctx,
+				 char **del_texts, int ndel,
+				 char **add_texts, int nadd,
+				 char **post_ctx, int npost_ctx)
+{
+	if (!lines_equal(gd->pre_ctx, gd->npre_ctx, pre_ctx, npre_ctx))
+		return 0;
+	if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
+		return 0;
+	if (!lines_equal(gd->del_lines, gd->ndel_lines, del_texts, ndel))
+		return 0;
+	if (!lines_equal(gd->add_lines, gd->nadd_lines, add_texts, nadd))
+		return 0;
+	if (!lines_equal(gd->post_ctx, gd->npost_ctx, post_ctx, npost_ctx))
+		return 0;
+	return 1;
+}
+
 static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 				   char **del_texts, int ndel,
-				   char **add_texts, int nadd)
+				   char **add_texts, int nadd,
+				   char **pre_ctx, int npre_ctx,
+				   char **post_ctx, int npost_ctx,
+				   int force_level)
 {
 	for (int i = 0; fd && i < fd->ngrps; i++) {
 		grp_delta_t *gd = &fd->grps[i];
+		int lvl = force_level > 0 ? force_level : gd->level;
+		if (lvl == 0) lvl = 2;  /* default for old format deltas */
+
+		if (lvl == 3) {
+			/* Level 3: full hunk match, no index check */
+			if (grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
+						  del_texts, ndel,
+						  add_texts, nadd,
+						  post_ctx, npost_ctx))
+				return gd;
+			continue;
+		}
+
+		/* Levels 1, 2, 4: group index must match first */
 		if (gd->group_idx != idx)
 			continue;
-		return grp_content_matches(gd, del_texts, ndel, add_texts, nadd)
-		       ? gd : NULL;
+
+		if (lvl == 1)
+			return gd;
+		if (lvl == 2 && grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
+			return gd;
+		if (lvl == 4 && grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
+						      del_texts, ndel,
+						      add_texts, nadd,
+						      post_ctx, npost_ctx))
+			return gd;
 	}
 	return NULL;
 }
@@ -883,6 +933,7 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 /* Per-group parsed data from an interactive temp file (raw, no offset stripping) */
 typedef struct {
 	int strategy;
+	int level;         /* 1-4 comparison strictness (0 = default) */
 	char *cmd;
 	char **pattern;
 	int npattern, pat_cap;
@@ -1030,6 +1081,15 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			continue;
 		}
 
+		/* Parse level: field (appears after GROUP header, before any section) */
+		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
+		    strncmp(line, "level: ", 7) == 0) {
+			parsed_grp_t *pg = &results[gi];
+			pg->level = atoi(line + 7);
+			if (pg->level < 1) pg->level = 2;
+			continue;
+		}
+
 		if (in_pat && gi >= 0 && gi < ngroups) {
 			if (strncmp(line, "--- extra", 9) == 0) {
 				skip_extra = 1;
@@ -1054,6 +1114,17 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "-%s\n", gd->del_lines[i]);
 	for (int i = 0; i < gd->nadd_lines; i++)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
+	fprintf(out, "level: %d\n", gd->level ? gd->level : 2);
+	if (gd->npre_ctx > 0) {
+		fputs("pre_ctx:\n", out);
+		for (int i = 0; i < gd->npre_ctx; i++)
+			fprintf(out, "%s\n", gd->pre_ctx[i]);
+	}
+	if (gd->npost_ctx > 0) {
+		fputs("post_ctx:\n", out);
+		for (int i = 0; i < gd->npost_ctx; i++)
+			fprintf(out, "%s\n", gd->post_ctx[i]);
+	}
 	if (gd->strategy != STRAT_DEFAULT) {
 		const char *s = "abs";
 		if (gd->strategy == STRAT_REL)
@@ -1104,7 +1175,10 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 
 		grp_delta_t *gd = find_grp_delta(in_fd, gi + 1,
 						 g->del_texts, g->ndel,
-						 g->add_texts, g->nadd);
+						 g->add_texts, g->nadd,
+						 g->all_pre_ctx, g->nall_pre_ctx,
+						 g->post_ctx, g->npost_ctx,
+						 delta_mode > 0 ? delta_mode : 0);
 
 		int has_anchors = g->nanchors >= 2
 				  || (g->nanchors == 1 && g->anchors[0] && g->anchors[0][0])
@@ -1161,6 +1235,10 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			fprintf(fp, "-%s\n", g->del_texts[i]);
 		for (int i = 0; i < g->nadd; i++)
 			fprintf(fp, "+%s\n", g->add_texts[i]);
+		{
+			int lvl = (gd && gd->level) ? gd->level : 2;
+			fprintf(fp, "level: %d\n", lvl);
+		}
 
 		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
 		int sel_strat = (gd && gd->strategy != STRAT_DEFAULT)
@@ -1416,9 +1494,31 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			int rejected = stored->group_idx > active[k]->ngroups;
 			if (!rejected) {
 				group_t *g = &active[k]->groups[stored->group_idx - 1];
-				rejected = !grp_content_matches(stored,
-								g->del_texts, g->ndel,
-								g->add_texts, g->nadd);
+				int lvl = delta_mode > 0 ? delta_mode
+					 : (stored->level ? stored->level : 2);
+				switch (lvl) {
+				case 1:
+					rejected = 0;
+					break;
+				case 2:
+					rejected = !grp_content_matches(stored,
+							g->del_texts, g->ndel,
+							g->add_texts, g->nadd);
+					break;
+				case 3:
+				case 4:
+					rejected = !grp_full_hunk_matches(stored,
+							g->all_pre_ctx, g->nall_pre_ctx,
+							g->del_texts, g->ndel,
+							g->add_texts, g->nadd,
+							g->post_ctx, g->npost_ctx);
+					break;
+				default:
+					rejected = !grp_content_matches(stored,
+							g->del_texts, g->ndel,
+							g->add_texts, g->nadd);
+					break;
+				}
 			}
 			if (rejected) {
 				if (!rej) {
@@ -1508,6 +1608,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				grp_delta_t *src = &in_fd->grps[gi], *dst = &od->grps[gi];
 				memset(dst, 0, sizeof(*dst));
 				dst->group_idx = src->group_idx;
+				dst->level = src->level;
 				dst->strategy = src->strategy;
 				if (src->cmd)
 					dst->cmd = xstrdup(src->cmd);
@@ -1515,6 +1616,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					  src->ndel_lines);
 				arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap, src->add_lines,
 					  src->nadd_lines);
+				arr_clone(&dst->pre_ctx, &dst->npre_ctx, &dst->pre_cap, src->pre_ctx,
+					  src->npre_ctx);
+				arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap, src->post_ctx,
+					  src->npost_ctx);
 				arr_clone(&dst->pattern, &dst->npattern, &dst->pat_cap, src->pattern,
 					  src->npattern);
 				arr_clone(&dst->abs_cmd, &dst->nabs, &dst->abs_cap, src->abs_cmd,
@@ -1552,9 +1657,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 							  og->rel_cmd, og->nrel);
 				int relc_ch = !lines_equal(eg->relc_cmd, eg->nrelc,
 							   og->relc_cmd, og->nrelc);
+				int level_ch = (eg->level != og->level);
 
 				if (!strat_ch && !cmd_ch && !pat_ch &&
-				    !abs_ch && !rel_ch && !relc_ch)
+				    !abs_ch && !rel_ch && !relc_ch && !level_ch)
 					continue;
 
 				if (!od) {
@@ -1572,10 +1678,15 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				grp_delta_t *gout = &od->grps[od->ngrps++];
 				memset(gout, 0, sizeof(*gout));
 				gout->group_idx = gi + 1;
+				gout->level = eg->level ? eg->level : 2;
 				arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
 					  active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel);
 				arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
 					  active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd);
+				arr_clone(&gout->pre_ctx, &gout->npre_ctx, &gout->pre_cap,
+					  active[k]->groups[gi].all_pre_ctx, active[k]->groups[gi].nall_pre_ctx);
+				arr_clone(&gout->post_ctx, &gout->npost_ctx, &gout->post_cap,
+					  active[k]->groups[gi].post_ctx, active[k]->groups[gi].npost_ctx);
 				if (strat_ch)
 					gout->strategy = eg->strategy;
 				if (cmd_ch && eg->cmd)
@@ -2180,15 +2291,23 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-aridh] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-aridh] [-d[N]] [input.patch]\n", prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
-	fprintf(stderr, "  -a  Use absolute line numbers\n");
-	fprintf(stderr, "  -r  Use relative regex patterns instead of line numbers\n");
-	fprintf(stderr, "  -i  Interactive mode: edit search patterns in $EDITOR\n");
+	fprintf(stderr, "  -a    Use absolute line numbers\n");
+	fprintf(stderr, "  -r    Use relative regex patterns instead of line numbers\n");
+	fprintf(stderr, "  -i    Interactive mode: edit search patterns in $EDITOR\n");
 	fprintf(stderr,
-		"  -d  Delta mode: re-apply previous customizations from script (-d implies -i)\n");
-	fprintf(stderr, "  -h  Show this help\n");
+		"  -d    Delta mode: re-apply previous customizations (-d implies -i)\n");
+	fprintf(stderr,
+		"  -d1   Delta mode: match by group index only\n");
+	fprintf(stderr,
+		"  -d2   Delta mode: match by group index + deleted/inserted text\n");
+	fprintf(stderr,
+		"  -d3   Delta mode: match by entire hunk\n");
+	fprintf(stderr,
+		"  -d4   Delta mode: match by group index + entire hunk (very strict)\n");
+	fprintf(stderr, "  -h    Show this help\n");
 	fprintf(stderr,
 		"Input can be a unified diff or a previously generated patch2vi script\n");
 	exit(1);
@@ -2216,7 +2335,12 @@ int main(int argc, char **argv)
 			else if (argv[i][j] == 'i')
 				interactive_mode = 1;
 			else if (argv[i][j] == 'd') {
-				delta_mode = 1;
+				if (argv[i][j+1] >= '1' && argv[i][j+1] <= '4') {
+					j++;
+					delta_mode = argv[i][j] - '0';
+				} else {
+					delta_mode = -1;
+				}
 				interactive_mode = 1;
 			} else if (argv[i][j] == 'h')
 				usage(argv[0]);
@@ -2326,6 +2450,20 @@ int main(int argc, char **argv)
 					}
 					in_sect = 0;
 				}
+				if (strncmp(line, "level: ", 7) == 0) {
+					in_sect = 0;
+					cur_gd->level = atoi(line + 7);
+					if (cur_gd->level < 1) cur_gd->level = 2;
+					continue;
+				}
+				if (strcmp(line, "pre_ctx:") == 0) {
+					in_sect = 6;
+					continue;
+				}
+				if (strcmp(line, "post_ctx:") == 0) {
+					in_sect = 7;
+					continue;
+				}
 				if (strncmp(line, "strategy: ", 10) == 0) {
 					in_sect = 0;
 					const char *v = line + 10;
@@ -2374,6 +2512,16 @@ int main(int argc, char **argv)
 					arr_append(&cur_gd->relc_cmd,
 						   &cur_gd->nrelc,
 						   &cur_gd->relc_cap, line);
+					break;
+				case 6:
+					arr_append(&cur_gd->pre_ctx,
+						   &cur_gd->npre_ctx,
+						   &cur_gd->pre_cap, line);
+					break;
+				case 7:
+					arr_append(&cur_gd->post_ctx,
+						   &cur_gd->npost_ctx,
+						   &cur_gd->post_cap, line);
 					break;
 				}
 			}
