@@ -1291,18 +1291,18 @@ SPECIAL REGISTERS
 CODE MAP
      +--------------+----------------------+
      | 537 kmap.h   |  keymap translation  |
-     | 541 vi.h     |  definitions/aux     |
+     | 540 vi.h     |  definitions/aux     |
      +--------------+----------------------+
      | 353 term.c   |  low level IO        |
-     | 364 conf.c   |  hl/ft/td config     |
-     | 433 ren.c    |  positioning/syntax  |
+     | 367 conf.c   |  hl/ft/td config     |
+     | 444 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
      | 646 lbuf.c   |  file/line buffer    |
      | 725 led.c    |  insert mode/output  |
      | 766 regex.c  |  pikevm              |
-     | 1757 ex.c    |  ex options/commands |
+     | 1758 ex.c    |  ex options/commands |
      | 1879 vi.c    |  normal mode/general |
-     | 7537 total   |  wc -l *.c|sort      |
+     | 7552 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1381,4 +1381,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.3                       May 23, 2026                       Nextvi 5.3
+Nextvi 5.3                       May 28, 2026                       Nextvi 5.3
