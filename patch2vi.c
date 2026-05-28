@@ -1312,7 +1312,7 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
  * Returns a freshly allocated default_cmds[] array (caller frees entries + array).
  */
 static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
-				   file_delta_t *in_fd)
+				   file_delta_t *in_fd, char *skip_custom)
 {
 	int sim_first_ml = 1;
 	char **default_cmds = calloc(ngroups, sizeof(char *));
@@ -1381,7 +1381,8 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		/* Group header */
 		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
-		if (gd && gd->ncustom_text > 0 && gd->has_star) {
+		if (gd && gd->ncustom_text > 0 && gd->has_star && in_fd
+		    && !(skip_custom && skip_custom[gi])) {
 			for (int i = 0; i < gd->ncustom_text; i++)
 				fprintf(fp, "%s\n", gd->custom_text[i]);
 		} else {
@@ -1607,7 +1608,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		for (int k = 0; k < nactive; k++) {
 			fprintf(orig_fp, "=== FILE: %s ===\n", active[k]->path);
 			char **dc = write_groups_to_file(orig_fp,
-							 active[k]->groups, active[k]->ngroups, NULL);
+							 active[k]->groups, active[k]->ngroups,
+							 NULL, NULL);
 			for (int gi = 0; gi < active[k]->ngroups; gi++)
 				free(dc[gi]);
 			free(dc);
@@ -1615,32 +1617,16 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		fclose(orig_fp);
 	}
 
-	/* Write editor file with stored delta injected */
-	FILE *tmp_fp = fdopen(fd, "w");
-	if (!tmp_fp) {
-		perror("fdopen");
-		close(fd);
-		unlink(tmppath);
-		unlink(tmppath_orig);
-		free(in_fd_per);
-		return;
-	}
-	char ***default_cmds_per = malloc(nactive * sizeof(char **));
-	for (int k = 0; k < nactive; k++) {
-		fprintf(tmp_fp, "=== FILE: %s ===\n", active[k]->path);
-		default_cmds_per[k] = write_groups_to_file(tmp_fp,
-				      active[k]->groups, active[k]->ngroups, in_fd_per[k]);
-	}
-	fclose(tmp_fp);
-
-	/* Write rejection file for stored groups whose index exceeds ngroups
-	 * or whose stored content no longer matches the group at that index */
+	/* Rejection check: before writing editor file so we can skip
+	 * custom_text for groups whose stored delta no longer matches. */
 	int delta_rejected = 0;
 	FILE *rej = NULL;
+	char **skip_custom = calloc(nactive, sizeof(char *));
 	for (int k = 0; k < nactive; k++) {
 		file_delta_t *in_fd = in_fd_per[k];
 		if (!in_fd)
 			continue;
+		skip_custom[k] = calloc(active[k]->ngroups, 1);
 		int file_header_written = 0;
 		for (int gi = 0; gi < in_fd->ngrps; gi++) {
 			grp_delta_t *stored = &in_fd->grps[gi];
@@ -1690,12 +1676,37 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					}
 					emit_grp_delta(rej, stored);
 				}
+				if (stored->group_idx <= active[k]->ngroups)
+					skip_custom[k][stored->group_idx - 1] = 1;
 				delta_rejected = 1;
 			}
 		}
 	}
 	if (rej)
 		fclose(rej);
+
+	/* Write editor file with stored delta injected (skip custom_text for
+	 * rejected groups so they show default +/- lines). */
+	FILE *tmp_fp = fdopen(fd, "w");
+	if (!tmp_fp) {
+		perror("fdopen");
+		close(fd);
+		unlink(tmppath);
+		unlink(tmppath_orig);
+		for (int k = 0; k < nactive; k++)
+			free(skip_custom[k]);
+		free(skip_custom);
+		free(in_fd_per);
+		return;
+	}
+	char ***default_cmds_per = malloc(nactive * sizeof(char **));
+	for (int k = 0; k < nactive; k++) {
+		fprintf(tmp_fp, "=== FILE: %s ===\n", active[k]->path);
+		default_cmds_per[k] = write_groups_to_file(tmp_fp,
+				      active[k]->groups, active[k]->ngroups,
+				      in_fd_per[k], skip_custom[k]);
+	}
+	fclose(tmp_fp);
 
 	/* Record mtime before editor */
 	struct stat st_before;
@@ -1950,6 +1961,9 @@ cleanup_orig:
 		free(default_cmds_per[k]);
 	}
 	free(default_cmds_per);
+	for (int k = 0; k < nactive; k++)
+		free(skip_custom[k]);
+	free(skip_custom);
 	free(in_fd_per);
 }
 
