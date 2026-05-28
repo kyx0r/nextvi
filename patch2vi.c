@@ -15,7 +15,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <sys/stat.h>
+#include "vi.h"
+#include "uc.c"
+#include "regex.c"
+
+void *emalloc(size_t size)
+{
+	void *p;
+	if (!(p = malloc(size))) {
+		fprintf(stderr, "\nmalloc: out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+	return p;
+}
+
+void *erealloc(void *p, size_t size)
+{
+	if (!(p = realloc(p, size))) {
+		fprintf(stderr, "\nrealloc: out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+	return p;
+}
 
 #define MAX_LINE 8192
 #define MAX_OPS 65536
@@ -41,12 +64,14 @@ static int nfiles;
 static const char *cur_file_path;  /* set per-file for error messages */
 static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
-static int delta_mode;      /* -1=per-group stored levels, 0=off, 1-4=forced level */
+static int
+delta_mode;      /* -1=per-group stored levels, 0=off, 1-4=forced level */
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
 	int group_idx;      /* 1-based */
 	int level;          /* 1-4 comparison strictness, default 2 */
+	int level_regex;    /* 1 = del/add text treated as regex (level 2 only) */
 	char **del_lines;
 	int ndel_lines, del_cap;
 	char **add_lines;
@@ -197,6 +222,33 @@ static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 	       && lines_equal(gd->add_lines, gd->nadd_lines, add, nadd);
 }
 
+/* True if gd's stored del/add lines (treated as regex patterns) match the supplied content. */
+static int grp_content_regex_matches(grp_delta_t *gd, char **del, int ndel,
+				     char **add, int nadd)
+{
+	if (gd->ndel_lines == 0 && gd->nadd_lines == 0)
+		return 1;
+	if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
+		return 0;
+	for (int i = 0; i < ndel; i++) {
+		rset *rs = rset_smake(gd->del_lines[i], 0);
+		if (!rs || !rset_match(rs, del[i], 0)) {
+			rset_free(rs);
+			return 0;
+		}
+		rset_free(rs);
+	}
+	for (int i = 0; i < nadd; i++) {
+		rset *rs = rset_smake(gd->add_lines[i], 0);
+		if (!rs || !rset_match(rs, add[i], 0)) {
+			rset_free(rs);
+			return 0;
+		}
+		rset_free(rs);
+	}
+	return 1;
+}
+
 /* True if gd's stored full hunk (pre_ctx + del + add + post_ctx) matches the supplied content. */
 static int grp_full_hunk_matches(grp_delta_t *gd,
 				 char **pre_ctx, int npre_ctx,
@@ -227,7 +279,8 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 	for (int i = 0; fd && i < fd->ngrps; i++) {
 		grp_delta_t *gd = &fd->grps[i];
 		int lvl = force_level > 0 ? force_level : gd->level;
-		if (lvl == 0) lvl = 2;  /* default for old format deltas */
+		if (lvl == 0)
+			lvl = 2;  /* default for old format deltas */
 
 		if (lvl == 3) {
 			/* Level 3: full hunk match, no index check */
@@ -245,8 +298,14 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 
 		if (lvl == 1)
 			return gd;
-		if (lvl == 2 && grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
-			return gd;
+		if (lvl == 2) {
+			if (gd->level_regex
+			    && grp_content_regex_matches(gd, del_texts, ndel, add_texts, nadd))
+				return gd;
+			if (!gd->level_regex
+			    && grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
+				return gd;
+		}
 		if (lvl == 4 && grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
 						      del_texts, ndel,
 						      add_texts, nadd,
@@ -934,6 +993,7 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 typedef struct {
 	int strategy;
 	int level;         /* 1-4 comparison strictness (0 = default) */
+	int level_regex;   /* 1 = del/add text treated as regex */
 	char *cmd;
 	char **pattern;
 	int npattern, pat_cap;
@@ -1085,8 +1145,22 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
 		    strncmp(line, "level: ", 7) == 0) {
 			parsed_grp_t *pg = &results[gi];
-			pg->level = atoi(line + 7);
-			if (pg->level < 1) pg->level = 2;
+			const char *lv = line + 7;
+			int len = strlen(lv);
+			pg->level_regex = (len > 0 && lv[len-1] == '+');
+			char tmp[32];
+			if (pg->level_regex) {
+				int n = len - 1;
+				if (n > 31)
+					n = 31;
+				memcpy(tmp, lv, n);
+				tmp[n] = '\0';
+			} else {
+				snprintf(tmp, sizeof(tmp), "%s", lv);
+			}
+			pg->level = atoi(tmp);
+			if (pg->level < 1)
+				pg->level = 2;
 			continue;
 		}
 
@@ -1114,7 +1188,8 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "-%s\n", gd->del_lines[i]);
 	for (int i = 0; i < gd->nadd_lines; i++)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
-	fprintf(out, "level: %d\n", gd->level ? gd->level : 2);
+	fprintf(out, "level: %d%s\n", gd->level ? gd->level : 2,
+		gd->level_regex ? "+" : "");
 	if (gd->npre_ctx > 0) {
 		fputs("pre_ctx:\n", out);
 		for (int i = 0; i < gd->npre_ctx; i++)
@@ -1237,7 +1312,8 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			fprintf(fp, "+%s\n", g->add_texts[i]);
 		{
 			int lvl = (gd && gd->level) ? gd->level : 2;
-			fprintf(fp, "level: %d\n", lvl);
+			int lr = (gd && gd->level_regex) ? 1 : 0;
+			fprintf(fp, "level: %d%s\n", lvl, lr ? "+" : "");
 		}
 
 		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
@@ -1495,28 +1571,33 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			if (!rejected) {
 				group_t *g = &active[k]->groups[stored->group_idx - 1];
 				int lvl = delta_mode > 0 ? delta_mode
-					 : (stored->level ? stored->level : 2);
+					  : (stored->level ? stored->level : 2);
 				switch (lvl) {
 				case 1:
 					rejected = 0;
 					break;
 				case 2:
-					rejected = !grp_content_matches(stored,
-							g->del_texts, g->ndel,
-							g->add_texts, g->nadd);
+					if (stored->level_regex)
+						rejected = !grp_content_regex_matches(stored,
+										      g->del_texts, g->ndel,
+										      g->add_texts, g->nadd);
+					else
+						rejected = !grp_content_matches(stored,
+										g->del_texts, g->ndel,
+										g->add_texts, g->nadd);
 					break;
 				case 3:
 				case 4:
 					rejected = !grp_full_hunk_matches(stored,
-							g->all_pre_ctx, g->nall_pre_ctx,
-							g->del_texts, g->ndel,
-							g->add_texts, g->nadd,
-							g->post_ctx, g->npost_ctx);
+									  g->all_pre_ctx, g->nall_pre_ctx,
+									  g->del_texts, g->ndel,
+									  g->add_texts, g->nadd,
+									  g->post_ctx, g->npost_ctx);
 					break;
 				default:
 					rejected = !grp_content_matches(stored,
-							g->del_texts, g->ndel,
-							g->add_texts, g->nadd);
+									g->del_texts, g->ndel,
+									g->add_texts, g->nadd);
 					break;
 				}
 			}
@@ -1609,6 +1690,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				memset(dst, 0, sizeof(*dst));
 				dst->group_idx = src->group_idx;
 				dst->level = src->level;
+				dst->level_regex = src->level_regex;
 				dst->strategy = src->strategy;
 				if (src->cmd)
 					dst->cmd = xstrdup(src->cmd);
@@ -1657,7 +1739,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 							  og->rel_cmd, og->nrel);
 				int relc_ch = !lines_equal(eg->relc_cmd, eg->nrelc,
 							   og->relc_cmd, og->nrelc);
-				int level_ch = (eg->level != og->level);
+				int level_ch = (eg->level != og->level || eg->level_regex != og->level_regex);
 
 				if (!strat_ch && !cmd_ch && !pat_ch &&
 				    !abs_ch && !rel_ch && !relc_ch && !level_ch)
@@ -1679,6 +1761,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				memset(gout, 0, sizeof(*gout));
 				gout->group_idx = gi + 1;
 				gout->level = eg->level ? eg->level : 2;
+				gout->level_regex = eg->level_regex;
 				arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
 					  active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel);
 				arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
@@ -2295,7 +2378,8 @@ static void usage(const char *prog)
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
-	fprintf(stderr, "  -r    Use relative regex patterns instead of line numbers\n");
+	fprintf(stderr,
+		"  -r    Use relative regex patterns instead of line numbers\n");
 	fprintf(stderr, "  -i    Interactive mode: edit search patterns in $EDITOR\n");
 	fprintf(stderr,
 		"  -d    Delta mode: re-apply previous customizations (-d implies -i)\n");
@@ -2452,8 +2536,22 @@ int main(int argc, char **argv)
 				}
 				if (strncmp(line, "level: ", 7) == 0) {
 					in_sect = 0;
-					cur_gd->level = atoi(line + 7);
-					if (cur_gd->level < 1) cur_gd->level = 2;
+					const char *lv = line + 7;
+					int len = strlen(lv);
+					cur_gd->level_regex = (len > 0 && lv[len-1] == '+');
+					char tmp[32];
+					if (cur_gd->level_regex) {
+						int n = len - 1;
+						if (n > 31)
+							n = 31;
+						memcpy(tmp, lv, n);
+						tmp[n] = '\0';
+					} else {
+						snprintf(tmp, sizeof(tmp), "%s", lv);
+					}
+					cur_gd->level = atoi(tmp);
+					if (cur_gd->level < 1)
+						cur_gd->level = 2;
 					continue;
 				}
 				if (strcmp(line, "pre_ctx:") == 0) {

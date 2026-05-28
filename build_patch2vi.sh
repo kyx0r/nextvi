@@ -44,8 +44,7 @@ CFLAGS="\
 -pedantic -Wall -Wextra \
 -Wno-implicit-fallthrough \
 -Wno-missing-field-initializers \
--Wno-unused-parameter \
--Wno-unused-result \
+-Wno-unused-function \
 -Wfatal-errors -std=c99 \
 $CFLAGS"
 
