@@ -1383,7 +1383,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		/* Group header */
 		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
-		if (gd && gd->ncustom_text > 0) {
+		if (gd && gd->ncustom_text > 0 && gd->level_regex) {
 			for (int i = 0; i < gd->ncustom_text; i++)
 				fprintf(fp, "%s\n", gd->custom_text[i]);
 		} else {
