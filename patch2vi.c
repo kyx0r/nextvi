@@ -1097,6 +1097,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 	int gi = -1;
 	int file_idx = -1;
 	int in_pat = 0, in_cstrat = 0, in_ecmd = 0;
+	int in_content_section = 0;  /* between GROUP header and first section keyword */
 	int ecmd_strat = STRAT_DEFAULT;
 	int cs_take = 0, cs_want_cmd = 0;
 	int cs_strat = STRAT_DEFAULT;
@@ -1107,6 +1108,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 
 		if (strncmp(line, "=== ", 4) == 0) {
 			in_ecmd = 0;
+			in_content_section = 0;
 			if (in_pat) {
 				in_pat = 0;
 			}
@@ -1133,6 +1135,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		if (strncmp(line, "=== GROUP ", 10) == 0) {
 			gi = atoi(line + 10) - 1;
 			skip_extra = 0;
+			in_content_section = 1;
 			continue;
 		}
 		if (strncmp(line, "=== COMMAND STRATEGY", 20) == 0) {
@@ -1201,19 +1204,19 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		/* Capture lines that appear after GROUP header.
 		 * -/+ prefixed lines go into del_lines/add_lines (backward compat).
 		 * ALL lines (including non-prefixed) go into custom_text as-is. */
-		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
+		if (gi >= 0 && gi < ngroups && in_content_section &&
 		    line[0] == '-' && line[1] != '-') {
 			arr_append(&results[gi].del_lines, &results[gi].ndel_lines,
 				   &results[gi].del_cap, line + 1);
 		}
-		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
+		if (gi >= 0 && gi < ngroups && in_content_section &&
 		    line[0] == '+') {
 			arr_append(&results[gi].add_lines, &results[gi].nadd_lines,
 				   &results[gi].add_cap, line + 1);
 		}
 
 		/* Parse level: field (appears after GROUP header, before any section) */
-		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
+		if (gi >= 0 && gi < ngroups && in_content_section &&
 		    strncmp(line, "level: ", 7) == 0) {
 			parsed_grp_t *pg = &results[gi];
 			const char *lv = line + 7;
@@ -1239,7 +1242,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		}
 
 		/* Catch-all: capture every line in the group section into custom_text as-is */
-		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat) {
+		if (gi >= 0 && gi < ngroups && in_content_section) {
 			arr_append(&results[gi].custom_text, &results[gi].ncustom_text,
 				   &results[gi].custom_text_cap, line);
 		}
