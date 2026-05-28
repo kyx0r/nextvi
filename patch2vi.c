@@ -1381,7 +1381,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		/* Group header */
 		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
-		if (gd && gd->ncustom_text > 0) {
+		if (gd && gd->ncustom_text > 0 && gd->has_star) {
 			for (int i = 0; i < gd->ncustom_text; i++)
 				fprintf(fp, "%s\n", gd->custom_text[i]);
 		} else {
@@ -1645,38 +1645,34 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		for (int gi = 0; gi < in_fd->ngrps; gi++) {
 			grp_delta_t *stored = &in_fd->grps[gi];
 			int rejected = stored->group_idx > active[k]->ngroups;
-			if (!rejected) {
-				group_t *g = &active[k]->groups[stored->group_idx - 1];
-				int lvl = delta_mode > 0 ? delta_mode
-					  : (stored->level ? stored->level : 2);
-				switch (lvl) {
-				case 1:
-					rejected = 0;
+			group_t *g = &active[k]->groups[stored->group_idx - 1];
+			int lvl = delta_mode > 0 ? delta_mode
+				  : (stored->level ? stored->level : 2);
+			switch (lvl) {
+			case 1:
+				break;
+			case 2:
+				if (rejected)
 					break;
-				case 2:
-					if (stored->has_star && stored->level == 2)
-						rejected = !grp_content_regex_matches(stored,
-										      g->del_texts, g->ndel,
-										      g->add_texts, g->nadd);
-					else
-						rejected = !grp_content_matches(stored,
-										g->del_texts, g->ndel,
-										g->add_texts, g->nadd);
-					break;
-				case 3:
-				case 4:
-					rejected = !grp_full_hunk_matches(stored,
-									  g->all_pre_ctx, g->nall_pre_ctx,
-									  g->del_texts, g->ndel,
-									  g->add_texts, g->nadd,
-									  g->post_ctx, g->npost_ctx);
-					break;
-				default:
+				if (stored->has_star && stored->level == 2)
+					rejected = !grp_content_regex_matches(stored,
+									      g->del_texts, g->ndel,
+									      g->add_texts, g->nadd);
+				else
 					rejected = !grp_content_matches(stored,
 									g->del_texts, g->ndel,
 									g->add_texts, g->nadd);
+				break;
+			case 3:
+			case 4:
+				if (lvl == 4 && rejected)
 					break;
-				}
+				rejected = !grp_full_hunk_matches(stored,
+								  g->all_pre_ctx, g->nall_pre_ctx,
+								  g->del_texts, g->ndel,
+								  g->add_texts, g->nadd,
+								  g->post_ctx, g->npost_ctx);
+				break;
 			}
 			if (rejected) {
 				if (!rej) {
