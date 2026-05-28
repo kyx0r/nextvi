@@ -1097,7 +1097,8 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 	int gi = -1;
 	int file_idx = -1;
 	int in_pat = 0, in_cstrat = 0, in_ecmd = 0;
-	int in_content_section = 0;  /* between GROUP header and first section keyword */
+	int in_content_section =
+		0;  /* between GROUP header and first section keyword */
 	int ecmd_strat = STRAT_DEFAULT;
 	int cs_take = 0, cs_want_cmd = 0;
 	int cs_strat = STRAT_DEFAULT;
@@ -1661,12 +1662,12 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				case 2:
 					if (stored->level_regex)
 						rejected = !grp_content_regex_matches(stored,
-								g->del_texts, g->ndel,
-								g->add_texts, g->nadd);
+										      g->del_texts, g->ndel,
+										      g->add_texts, g->nadd);
 					else
 						rejected = !grp_content_matches(stored,
-								g->del_texts, g->ndel,
-								g->add_texts, g->nadd);
+										g->del_texts, g->ndel,
+										g->add_texts, g->nadd);
 					break;
 				case 3:
 				case 4:
@@ -1824,7 +1825,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				int relc_ch = !lines_equal(eg->relc_cmd, eg->nrelc,
 							   og->relc_cmd, og->nrelc);
 				int custom_ch = !lines_equal(eg->custom_text, eg->ncustom_text,
-							      og->custom_text, og->ncustom_text);
+							     og->custom_text, og->ncustom_text);
 				int level_ch = (eg->level != og->level || eg->level_regex != og->level_regex);
 
 				if (!strat_ch && !cmd_ch && !pat_ch &&
@@ -1861,11 +1862,11 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				} else if (in_fd_per[k]) {
 					/* preserve existing customization from stored delta */
 					grp_delta_t *stored = find_grp_delta(in_fd_per[k], gi + 1,
-							active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel,
-							active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd,
-							active[k]->groups[gi].all_pre_ctx, active[k]->groups[gi].nall_pre_ctx,
-							active[k]->groups[gi].post_ctx, active[k]->groups[gi].npost_ctx,
-							delta_mode > 0 ? delta_mode : 0);
+									     active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel,
+									     active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd,
+									     active[k]->groups[gi].all_pre_ctx, active[k]->groups[gi].nall_pre_ctx,
+									     active[k]->groups[gi].post_ctx, active[k]->groups[gi].npost_ctx,
+									     delta_mode > 0 ? delta_mode : 0);
 					if (stored && stored->ncustom_text > 0) {
 						arr_clone(&gout->custom_text, &gout->ncustom_text, &gout->custom_text_cap,
 							  stored->custom_text, stored->ncustom_text);
@@ -2625,24 +2626,24 @@ int main(int argc, char **argv)
 				}
 				if (!cur_gd)
 					continue;
-			if (in_sect == 5) {
-				if (line[0] == '-') {
-					arr_append(&cur_gd->del_lines,
-						   &cur_gd->ndel_lines,
-						   &cur_gd->del_cap, line + 1);
-					continue;
-				} else if (line[0] == '+') {
-					arr_append(&cur_gd->add_lines,
-						   &cur_gd->nadd_lines,
-						   &cur_gd->add_cap, line + 1);
+				if (in_sect == 5) {
+					if (line[0] == '-') {
+						arr_append(&cur_gd->del_lines,
+							   &cur_gd->ndel_lines,
+							   &cur_gd->del_cap, line + 1);
+						continue;
+					} else if (line[0] == '+') {
+						arr_append(&cur_gd->add_lines,
+							   &cur_gd->nadd_lines,
+							   &cur_gd->add_cap, line + 1);
+						continue;
+					}
+					in_sect = 0;
+				}
+				if (strcmp(line, "custom_text:") == 0) {
+					in_sect = 8;
 					continue;
 				}
-				in_sect = 0;
-			}
-			if (strcmp(line, "custom_text:") == 0) {
-				in_sect = 8;
-				continue;
-			}
 				if (strncmp(line, "level: ", 7) == 0) {
 					in_sect = 0;
 					const char *lv = line + 7;
@@ -2654,10 +2655,10 @@ int main(int argc, char **argv)
 					cur_gd->level_regex = has_star && cur_gd->level == 2;
 					continue;
 				}
-			if (strcmp(line, "pre_ctx:") == 0) {
-				in_sect = 6;
-				continue;
-			}
+				if (strcmp(line, "pre_ctx:") == 0) {
+					in_sect = 6;
+					continue;
+				}
 				if (strcmp(line, "post_ctx:") == 0) {
 					in_sect = 7;
 					continue;
