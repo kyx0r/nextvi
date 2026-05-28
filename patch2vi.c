@@ -71,11 +71,15 @@ delta_mode;      /* -1=per-group stored levels, 0=off, 1-4=forced level */
 typedef struct {
 	int group_idx;      /* 1-based */
 	int level;          /* 1-4 comparison strictness, default 2 */
-	int level_regex;    /* 1 = del/add text treated as regex (level 2 only) */
-	char **del_lines;
+	int level_regex;    /* 1 = use custom del/add as regex (level 2 only) */
+	char **del_lines;    /* original patch del lines (used for raw comparison) */
 	int ndel_lines, del_cap;
-	char **add_lines;
+	char **add_lines;    /* original patch add lines */
 	int nadd_lines, add_cap;
+	char **custom_del;   /* user-edited del lines (regex patterns when level_regex) */
+	int ncustom_del, custom_del_cap;
+	char **custom_add;   /* user-edited add lines */
+	int ncustom_add, custom_add_cap;
 	char **pre_ctx;     /* context lines before change (for levels 3/4) */
 	int npre_ctx, pre_cap;
 	char **post_ctx;    /* context lines after change (for levels 3/4) */
@@ -222,16 +226,21 @@ static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 	       && lines_equal(gd->add_lines, gd->nadd_lines, add, nadd);
 }
 
-/* True if gd's stored del/add lines (treated as regex patterns) match the supplied content. */
+/* True if gd's custom del/add lines (treated as regex patterns) match the supplied content.
+ * Falls back to original del_lines/add_lines if no customization stored. */
 static int grp_content_regex_matches(grp_delta_t *gd, char **del, int ndel,
 				     char **add, int nadd)
 {
-	if (gd->ndel_lines == 0 && gd->nadd_lines == 0)
+	char **cdel = gd->ncustom_del > 0 ? gd->custom_del : gd->del_lines;
+	int ncdel = gd->ncustom_del > 0 ? gd->ncustom_del : gd->ndel_lines;
+	char **cadd = gd->ncustom_add > 0 ? gd->custom_add : gd->add_lines;
+	int ncadd = gd->ncustom_add > 0 ? gd->ncustom_add : gd->nadd_lines;
+	if (ncdel == 0 && ncadd == 0)
 		return 1;
-	if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
+	if (ncdel != ndel || ncadd != nadd)
 		return 0;
 	for (int i = 0; i < ndel; i++) {
-		rset *rs = rset_smake(gd->del_lines[i], 0);
+		rset *rs = rset_smake(cdel[i], 0);
 		if (!rs || !rset_match(rs, del[i], 0)) {
 			rset_free(rs);
 			return 0;
@@ -239,7 +248,7 @@ static int grp_content_regex_matches(grp_delta_t *gd, char **del, int ndel,
 		rset_free(rs);
 	}
 	for (int i = 0; i < nadd; i++) {
-		rset *rs = rset_smake(gd->add_lines[i], 0);
+		rset *rs = rset_smake(cadd[i], 0);
 		if (!rs || !rset_match(rs, add[i], 0)) {
 			rset_free(rs);
 			return 0;
@@ -1214,6 +1223,13 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
 	fprintf(out, "level: %d%s\n", gd->level ? gd->level : 2,
 		gd->level_regex ? "*" : "");
+	if (gd->ncustom_del > 0 || gd->ncustom_add > 0) {
+		fputs("custom_text:\n", out);
+		for (int i = 0; i < gd->ncustom_del; i++)
+			fprintf(out, "-%s\n", gd->custom_del[i]);
+		for (int i = 0; i < gd->ncustom_add; i++)
+			fprintf(out, "+%s\n", gd->custom_add[i]);
+	}
 	if (gd->npre_ctx > 0) {
 		fputs("pre_ctx:\n", out);
 		for (int i = 0; i < gd->npre_ctx; i++)
@@ -1330,11 +1346,11 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		/* Group header */
 		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
-		if (gd && gd->level_regex) {
-			for (int i = 0; i < gd->ndel_lines; i++)
-				fprintf(fp, "-%s\n", gd->del_lines[i]);
-			for (int i = 0; i < gd->nadd_lines; i++)
-				fprintf(fp, "+%s\n", gd->add_lines[i]);
+		if (gd && (gd->ncustom_del > 0 || gd->ncustom_add > 0)) {
+			for (int i = 0; i < gd->ncustom_del; i++)
+				fprintf(fp, "-%s\n", gd->custom_del[i]);
+			for (int i = 0; i < gd->ncustom_add; i++)
+				fprintf(fp, "+%s\n", gd->custom_add[i]);
 		} else {
 			for (int i = 0; i < g->ndel; i++)
 				fprintf(fp, "-%s\n", g->del_texts[i]);
@@ -1610,12 +1626,12 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				case 2:
 					if (stored->level_regex)
 						rejected = !grp_content_regex_matches(stored,
-										      g->del_texts, g->ndel,
-										      g->add_texts, g->nadd);
+								g->del_texts, g->ndel,
+								g->add_texts, g->nadd);
 					else
 						rejected = !grp_content_matches(stored,
-										g->del_texts, g->ndel,
-										g->add_texts, g->nadd);
+								g->del_texts, g->ndel,
+								g->add_texts, g->nadd);
 					break;
 				case 3:
 				case 4:
@@ -1729,6 +1745,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					  src->ndel_lines);
 				arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap, src->add_lines,
 					  src->nadd_lines);
+				arr_clone(&dst->custom_del, &dst->ncustom_del, &dst->custom_del_cap,
+					  src->custom_del, src->ncustom_del);
+				arr_clone(&dst->custom_add, &dst->ncustom_add, &dst->custom_add_cap,
+					  src->custom_add, src->ncustom_add);
 				arr_clone(&dst->pre_ctx, &dst->npre_ctx, &dst->pre_cap, src->pre_ctx,
 					  src->npre_ctx);
 				arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap, src->post_ctx,
@@ -1798,18 +1818,34 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				gout->group_idx = gi + 1;
 				gout->level = eg->level ? eg->level : 2;
 				gout->level_regex = eg->level_regex;
-				if (del_ch)
-					arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
-						  eg->del_lines, eg->ndel_lines);
-				else
-					arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
-						  active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel);
-				if (add_ch)
-					arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
-						  eg->add_lines, eg->nadd_lines);
-				else
-					arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
-						  active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd);
+				/* original del/add always from patch */
+				arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
+					  active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel);
+				arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
+					  active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd);
+				/* customization from user's edits */
+				if (del_ch || add_ch) {
+					if (del_ch)
+						arr_clone(&gout->custom_del, &gout->ncustom_del, &gout->custom_del_cap,
+							  eg->del_lines, eg->ndel_lines);
+					if (add_ch)
+						arr_clone(&gout->custom_add, &gout->ncustom_add, &gout->custom_add_cap,
+							  eg->add_lines, eg->nadd_lines);
+				} else if (in_fd_per[k]) {
+					/* preserve existing customization from stored delta */
+					grp_delta_t *stored = find_grp_delta(in_fd_per[k], gi + 1,
+							active[k]->groups[gi].del_texts, active[k]->groups[gi].ndel,
+							active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd,
+							active[k]->groups[gi].all_pre_ctx, active[k]->groups[gi].nall_pre_ctx,
+							active[k]->groups[gi].post_ctx, active[k]->groups[gi].npost_ctx,
+							delta_mode > 0 ? delta_mode : 0);
+					if (stored && (stored->ncustom_del > 0 || stored->ncustom_add > 0)) {
+						arr_clone(&gout->custom_del, &gout->ncustom_del, &gout->custom_del_cap,
+							  stored->custom_del, stored->ncustom_del);
+						arr_clone(&gout->custom_add, &gout->ncustom_add, &gout->custom_add_cap,
+							  stored->custom_add, stored->ncustom_add);
+					}
+				}
 				arr_clone(&gout->pre_ctx, &gout->npre_ctx, &gout->pre_cap,
 					  active[k]->groups[gi].all_pre_ctx, active[k]->groups[gi].nall_pre_ctx);
 				arr_clone(&gout->post_ctx, &gout->npost_ctx, &gout->post_cap,
@@ -2564,20 +2600,34 @@ int main(int argc, char **argv)
 				}
 				if (!cur_gd)
 					continue;
-				if (in_sect == 5) {
-					if (line[0] == '-') {
-						arr_append(&cur_gd->del_lines,
-							   &cur_gd->ndel_lines,
-							   &cur_gd->del_cap, line + 1);
-						continue;
-					} else if (line[0] == '+') {
-						arr_append(&cur_gd->add_lines,
-							   &cur_gd->nadd_lines,
-							   &cur_gd->add_cap, line + 1);
-						continue;
-					}
-					in_sect = 0;
+			if (in_sect == 5) {
+				if (line[0] == '-') {
+					arr_append(&cur_gd->del_lines,
+						   &cur_gd->ndel_lines,
+						   &cur_gd->del_cap, line + 1);
+					continue;
+				} else if (line[0] == '+') {
+					arr_append(&cur_gd->add_lines,
+						   &cur_gd->nadd_lines,
+						   &cur_gd->add_cap, line + 1);
+					continue;
 				}
+				in_sect = 0;
+			}
+			if (in_sect == 8) {
+				if (line[0] == '-') {
+					arr_append(&cur_gd->custom_del,
+						   &cur_gd->ncustom_del,
+						   &cur_gd->custom_del_cap, line + 1);
+					continue;
+				} else if (line[0] == '+') {
+					arr_append(&cur_gd->custom_add,
+						   &cur_gd->ncustom_add,
+						   &cur_gd->custom_add_cap, line + 1);
+					continue;
+				}
+				in_sect = 0;
+			}
 				if (strncmp(line, "level: ", 7) == 0) {
 					in_sect = 0;
 					const char *lv = line + 7;
@@ -2598,10 +2648,14 @@ int main(int argc, char **argv)
 						cur_gd->level = 2;
 					continue;
 				}
-				if (strcmp(line, "pre_ctx:") == 0) {
-					in_sect = 6;
-					continue;
-				}
+			if (strcmp(line, "custom_text:") == 0) {
+				in_sect = 8;
+				continue;
+			}
+			if (strcmp(line, "pre_ctx:") == 0) {
+				in_sect = 6;
+				continue;
+			}
 				if (strcmp(line, "post_ctx:") == 0) {
 					in_sect = 7;
 					continue;
