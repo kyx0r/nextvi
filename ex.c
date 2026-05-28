@@ -1103,7 +1103,8 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
 	if (!(loc = syn_setft(*arg ? arg : xb_ft)))
 		return "filetype not found";
 	xb_ft = loc;
-	ex_print(xb_ft, msg_ft)
+	if (!*arg)
+		ex_print(xb_ft, msg_ft)
 	if (led_attsb) {
 		sbuf_free(led_attsb)
 		led_attsb = NULL;

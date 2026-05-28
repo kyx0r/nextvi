@@ -129,7 +129,7 @@ for (i = 0; i < cterm;) { \
 	} else { \
 		if (cbeg || ctx < 0) { \
 			if (att_new != att_old) \
-				sbuf_str(out, term_att(0)) \
+				sbuf_str(out, "\x1b[m") \
 			sbuf_chr(out, ' ') \
 			i++; \
 		} else \
@@ -250,7 +250,7 @@ void led_render(char *s0, int cbeg, int cend)
 		led_out(term_sbuf, 2)
 	else
 		led_out(term_sbuf, 1)
-	sbufn_str(term_sbuf, term_att(0))
+	sbufn_str(term_sbuf, "\x1b[m")
 	if (r->holelen) {
 		memcpy(chrs[n], r->nullhole, r->holelen);
 		r->holelen = 0;
