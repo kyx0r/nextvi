@@ -262,18 +262,11 @@ static char *build_default_text(char **del, int ndel, char **add, int nadd)
 	return result;
 }
 
-/* True if gd's stored del/add lines match the supplied content (or weren't recorded). */
+/* True if gd's stored del/add lines match the supplied content (or weren't recorded).
+ * Used when * is absent (non-regex path) — always compares del_lines/add_lines. */
 static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 			       char **add, int nadd)
 {
-	if (gd->ncustom_text > 0) {
-		char *custom = join_lines(gd->custom_text, gd->ncustom_text);
-		char *def = build_default_text(del, ndel, add, nadd);
-		int ok = strcmp(custom, def) == 0;
-		free(custom);
-		free(def);
-		return ok;
-	}
 	if (gd->ndel_lines == 0 && gd->nadd_lines == 0)
 		return 1;
 	if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
@@ -282,43 +275,20 @@ static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 	       && lines_equal(gd->add_lines, gd->nadd_lines, add, nadd);
 }
 
-/* True if gd's custom_text (treated as a single regex pattern) matches the supplied
- * patch content (joined into one default-text string). Falls back to original
- * del_lines/add_lines line-by-line if no customization stored. */
+/* Match gd's custom_text as one regex against the combined patch default text. */
 static int grp_content_regex_matches(grp_delta_t *gd, char **del, int ndel,
 				     char **add, int nadd)
 {
-	if (gd->ncustom_text > 0) {
-		char *pat = join_lines(gd->custom_text, gd->ncustom_text);
-		char *target = build_default_text(del, ndel, add, nadd);
-		rset *rs = rset_smake(pat, 0);
-		int ok = rs && rset_match(rs, target, 0);
-		rset_free(rs);
-		free(pat);
-		free(target);
-		return ok;
-	}
-	if (gd->ndel_lines == 0 && gd->nadd_lines == 0)
+	if (gd->ncustom_text == 0)
 		return 1;
-	if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
-		return 0;
-	for (int i = 0; i < ndel; i++) {
-		rset *rs = rset_smake(gd->del_lines[i], 0);
-		if (!rs || !rset_match(rs, del[i], 0)) {
-			rset_free(rs);
-			return 0;
-		}
-		rset_free(rs);
-	}
-	for (int i = 0; i < nadd; i++) {
-		rset *rs = rset_smake(gd->add_lines[i], 0);
-		if (!rs || !rset_match(rs, add[i], 0)) {
-			rset_free(rs);
-			return 0;
-		}
-		rset_free(rs);
-	}
-	return 1;
+	char *pat = join_lines(gd->custom_text, gd->ncustom_text);
+	char *target = build_default_text(del, ndel, add, nadd);
+	rset *rs = rset_smake(pat, 0);
+	int ok = rs && rset_match(rs, target, 0);
+	rset_free(rs);
+	free(pat);
+	free(target);
+	return ok;
 }
 
 /* True if gd's stored full hunk (pre_ctx + del + add + post_ctx) matches the supplied content. */
@@ -1295,8 +1265,9 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "-%s\n", gd->del_lines[i]);
 	for (int i = 0; i < gd->nadd_lines; i++)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
-	fprintf(out, "level: %d%s\n", gd->level ? gd->level : 2,
-		gd->level_regex ? "*" : "");
+	int eglvl = gd->level ? gd->level : 2;
+	fprintf(out, "level: %d%s\n", eglvl,
+		(gd->level_regex && eglvl == 2) ? "*" : "");
 	if (gd->ncustom_text > 0) {
 		fputs("custom_text:\n", out);
 		for (int i = 0; i < gd->ncustom_text; i++)
@@ -1430,7 +1401,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		{
 			int lvl = (gd && gd->level) ? gd->level : 2;
 			int lr = (gd && gd->level_regex) ? 1 : 0;
-			fprintf(fp, "level: %d%s\n", lvl, lr ? "*" : "");
+			fprintf(fp, "level: %d%s\n", lvl, (lr && lvl == 2) ? "*" : "");
 		}
 
 		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
@@ -2682,9 +2653,9 @@ int main(int argc, char **argv)
 					in_sect = 0;
 					const char *lv = line + 7;
 					int len = strlen(lv);
-					cur_gd->level_regex = (len > 0 && lv[len-1] == '*');
+					int has_star = (len > 0 && lv[len-1] == '*');
 					char tmp[32];
-					if (cur_gd->level_regex) {
+					if (has_star) {
 						int n = len - 1;
 						if (n > 31)
 							n = 31;
@@ -2696,6 +2667,7 @@ int main(int argc, char **argv)
 					cur_gd->level = atoi(tmp);
 					if (cur_gd->level < 1)
 						cur_gd->level = 2;
+					cur_gd->level_regex = has_star && cur_gd->level == 2;
 					continue;
 				}
 			if (strcmp(line, "pre_ctx:") == 0) {
