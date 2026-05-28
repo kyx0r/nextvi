@@ -76,10 +76,8 @@ typedef struct {
 	int ndel_lines, del_cap;
 	char **add_lines;    /* original patch add lines */
 	int nadd_lines, add_cap;
-	char **custom_del;   /* user-edited del lines (regex patterns when level_regex) */
-	int ncustom_del, custom_del_cap;
-	char **custom_add;   /* user-edited add lines */
-	int ncustom_add, custom_add_cap;
+	char **custom_text;   /* user-edited text (replaces default -/+ lines as-is) */
+	int ncustom_text, custom_text_cap;
 	char **pre_ctx;     /* context lines before change (for levels 3/4) */
 	int npre_ctx, pre_cap;
 	char **post_ctx;    /* context lines after change (for levels 3/4) */
@@ -214,10 +212,68 @@ static void arr_clone(char ***dst, int *dn, int *dc, char **src, int sn)
 		arr_append(dst, dn, dc, src[i]);
 }
 
+/* Join an array of strings with '\n' into a single allocated string. */
+static char *join_lines(char **lines, int nlines)
+{
+	if (!lines || nlines == 0)
+		return xstrdup("");
+	size_t len = 0;
+	for (int i = 0; i < nlines; i++)
+		len += strlen(lines[i]) + 1;
+	char *result = malloc(len ? len : 1);
+	char *p = result;
+	for (int i = 0; i < nlines; i++) {
+		int slen = strlen(lines[i]);
+		memcpy(p, lines[i], slen);
+		p += slen;
+		*p++ = i < nlines - 1 ? '\n' : '\0';
+	}
+	if (nlines == 0)
+		*result = '\0';
+	return result;
+}
+
+/* Build the default display text (as it appears in the temp file) from patch del/add lines.
+ * Returns e.g. "-line1\n-line2\n+line3\n+line4\n" */
+static char *build_default_text(char **del, int ndel, char **add, int nadd)
+{
+	size_t len = 0;
+	for (int i = 0; i < ndel; i++)
+		len += strlen(del[i]) + 2;
+	for (int i = 0; i < nadd; i++)
+		len += strlen(add[i]) + 2;
+	char *result = malloc(len + 1);
+	char *p = result;
+	for (int i = 0; i < ndel; i++) {
+		*p++ = '-';
+		int slen = strlen(del[i]);
+		memcpy(p, del[i], slen);
+		p += slen;
+		*p++ = '\n';
+	}
+	for (int i = 0; i < nadd; i++) {
+		*p++ = '+';
+		int slen = strlen(add[i]);
+		memcpy(p, add[i], slen);
+		p += slen;
+		*p++ = '\n';
+	}
+	*p = '\0';
+	return result;
+}
+
 /* True if gd's stored del/add lines match the supplied content (or weren't recorded). */
 static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 			       char **add, int nadd)
 {
+	if (gd->ncustom_text > 0) {
+		char *custom = join_lines(gd->custom_text, gd->ncustom_text);
+		char *def = build_default_text(del, ndel, add, nadd);
+		int ok = strcmp(custom, def) == 0;
+		free(custom);
+		free(def);
+		return ok;
+	}
 	if (gd->ndel_lines == 0 && gd->nadd_lines == 0)
 		return 1;
 	if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
@@ -226,21 +282,28 @@ static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 	       && lines_equal(gd->add_lines, gd->nadd_lines, add, nadd);
 }
 
-/* True if gd's custom del/add lines (treated as regex patterns) match the supplied content.
- * Falls back to original del_lines/add_lines if no customization stored. */
+/* True if gd's custom_text (treated as a single regex pattern) matches the supplied
+ * patch content (joined into one default-text string). Falls back to original
+ * del_lines/add_lines line-by-line if no customization stored. */
 static int grp_content_regex_matches(grp_delta_t *gd, char **del, int ndel,
 				     char **add, int nadd)
 {
-	char **cdel = gd->ncustom_del > 0 ? gd->custom_del : gd->del_lines;
-	int ncdel = gd->ncustom_del > 0 ? gd->ncustom_del : gd->ndel_lines;
-	char **cadd = gd->ncustom_add > 0 ? gd->custom_add : gd->add_lines;
-	int ncadd = gd->ncustom_add > 0 ? gd->ncustom_add : gd->nadd_lines;
-	if (ncdel == 0 && ncadd == 0)
+	if (gd->ncustom_text > 0) {
+		char *pat = join_lines(gd->custom_text, gd->ncustom_text);
+		char *target = build_default_text(del, ndel, add, nadd);
+		rset *rs = rset_smake(pat, 0);
+		int ok = rs && rset_match(rs, target, 0);
+		rset_free(rs);
+		free(pat);
+		free(target);
+		return ok;
+	}
+	if (gd->ndel_lines == 0 && gd->nadd_lines == 0)
 		return 1;
-	if (ncdel != ndel || ncadd != nadd)
+	if (gd->ndel_lines != ndel || gd->nadd_lines != nadd)
 		return 0;
 	for (int i = 0; i < ndel; i++) {
-		rset *rs = rset_smake(cdel[i], 0);
+		rset *rs = rset_smake(gd->del_lines[i], 0);
 		if (!rs || !rset_match(rs, del[i], 0)) {
 			rset_free(rs);
 			return 0;
@@ -248,7 +311,7 @@ static int grp_content_regex_matches(grp_delta_t *gd, char **del, int ndel,
 		rset_free(rs);
 	}
 	for (int i = 0; i < nadd; i++) {
-		rset *rs = rset_smake(cadd[i], 0);
+		rset *rs = rset_smake(gd->add_lines[i], 0);
 		if (!rs || !rset_match(rs, add[i], 0)) {
 			rset_free(rs);
 			return 0;
@@ -1007,6 +1070,8 @@ typedef struct {
 	int ndel_lines, del_cap;
 	char **add_lines;
 	int nadd_lines, add_cap;
+	char **custom_text;   /* raw lines from the section (captures everything) */
+	int ncustom_text, custom_text_cap;
 	char *cmd;
 	char **pattern;
 	int npattern, pat_cap;
@@ -1027,6 +1092,9 @@ static void free_parsed_grp(parsed_grp_t *p)
 	for (int i = 0; i < p->nadd_lines; i++)
 		free(p->add_lines[i]);
 	free(p->add_lines);
+	for (int i = 0; i < p->ncustom_text; i++)
+		free(p->custom_text[i]);
+	free(p->custom_text);
 	for (int i = 0; i < p->npattern; i++)
 		free(p->pattern[i]);
 	free(p->pattern);
@@ -1160,18 +1228,18 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			continue;
 		}
 
-		/* Capture -/+ lines that appear after GROUP header */
+		/* Capture lines that appear after GROUP header.
+		 * -/+ prefixed lines go into del_lines/add_lines (backward compat).
+		 * ALL lines (including non-prefixed) go into custom_text as-is. */
 		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
 		    line[0] == '-' && line[1] != '-') {
 			arr_append(&results[gi].del_lines, &results[gi].ndel_lines,
 				   &results[gi].del_cap, line + 1);
-			continue;
 		}
 		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat &&
 		    line[0] == '+') {
 			arr_append(&results[gi].add_lines, &results[gi].nadd_lines,
 				   &results[gi].add_cap, line + 1);
-			continue;
 		}
 
 		/* Parse level: field (appears after GROUP header, before any section) */
@@ -1208,6 +1276,12 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 				arr_append(&pg->pattern, &pg->npattern, &pg->pat_cap, line);
 			}
 		}
+
+		/* Catch-all: capture every line in the group section into custom_text as-is */
+		if (gi >= 0 && gi < ngroups && !in_ecmd && !in_cstrat && !in_pat) {
+			arr_append(&results[gi].custom_text, &results[gi].ncustom_text,
+				   &results[gi].custom_text_cap, line);
+		}
 	}
 
 	fclose(f);
@@ -1223,12 +1297,10 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
 	fprintf(out, "level: %d%s\n", gd->level ? gd->level : 2,
 		gd->level_regex ? "*" : "");
-	if (gd->ncustom_del > 0 || gd->ncustom_add > 0) {
+	if (gd->ncustom_text > 0) {
 		fputs("custom_text:\n", out);
-		for (int i = 0; i < gd->ncustom_del; i++)
-			fprintf(out, "-%s\n", gd->custom_del[i]);
-		for (int i = 0; i < gd->ncustom_add; i++)
-			fprintf(out, "+%s\n", gd->custom_add[i]);
+		for (int i = 0; i < gd->ncustom_text; i++)
+			fprintf(out, "%s\n", gd->custom_text[i]);
 	}
 	if (gd->npre_ctx > 0) {
 		fputs("pre_ctx:\n", out);
@@ -1346,11 +1418,9 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		/* Group header */
 		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
-		if (gd && (gd->ncustom_del > 0 || gd->ncustom_add > 0)) {
-			for (int i = 0; i < gd->ncustom_del; i++)
-				fprintf(fp, "-%s\n", gd->custom_del[i]);
-			for (int i = 0; i < gd->ncustom_add; i++)
-				fprintf(fp, "+%s\n", gd->custom_add[i]);
+		if (gd && gd->ncustom_text > 0) {
+			for (int i = 0; i < gd->ncustom_text; i++)
+				fprintf(fp, "%s\n", gd->custom_text[i]);
 		} else {
 			for (int i = 0; i < g->ndel; i++)
 				fprintf(fp, "-%s\n", g->del_texts[i]);
@@ -1745,10 +1815,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					  src->ndel_lines);
 				arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap, src->add_lines,
 					  src->nadd_lines);
-				arr_clone(&dst->custom_del, &dst->ncustom_del, &dst->custom_del_cap,
-					  src->custom_del, src->ncustom_del);
-				arr_clone(&dst->custom_add, &dst->ncustom_add, &dst->custom_add_cap,
-					  src->custom_add, src->ncustom_add);
+				arr_clone(&dst->custom_text, &dst->ncustom_text, &dst->custom_text_cap,
+					  src->custom_text, src->ncustom_text);
 				arr_clone(&dst->pre_ctx, &dst->npre_ctx, &dst->pre_cap, src->pre_ctx,
 					  src->npre_ctx);
 				arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap, src->post_ctx,
@@ -1790,15 +1858,13 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 							  og->rel_cmd, og->nrel);
 				int relc_ch = !lines_equal(eg->relc_cmd, eg->nrelc,
 							   og->relc_cmd, og->nrelc);
-				int del_ch = !lines_equal(eg->del_lines, eg->ndel_lines,
-							  og->del_lines, og->ndel_lines);
-				int add_ch = !lines_equal(eg->add_lines, eg->nadd_lines,
-							  og->add_lines, og->nadd_lines);
+				int custom_ch = !lines_equal(eg->custom_text, eg->ncustom_text,
+							      og->custom_text, og->ncustom_text);
 				int level_ch = (eg->level != og->level || eg->level_regex != og->level_regex);
 
 				if (!strat_ch && !cmd_ch && !pat_ch &&
 				    !abs_ch && !rel_ch && !relc_ch && !level_ch &&
-				    !del_ch && !add_ch)
+				    !custom_ch)
 					continue;
 
 				if (!od) {
@@ -1824,13 +1890,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
 					  active[k]->groups[gi].add_texts, active[k]->groups[gi].nadd);
 				/* customization from user's edits */
-				if (del_ch || add_ch) {
-					if (del_ch)
-						arr_clone(&gout->custom_del, &gout->ncustom_del, &gout->custom_del_cap,
-							  eg->del_lines, eg->ndel_lines);
-					if (add_ch)
-						arr_clone(&gout->custom_add, &gout->ncustom_add, &gout->custom_add_cap,
-							  eg->add_lines, eg->nadd_lines);
+				if (custom_ch) {
+					arr_clone(&gout->custom_text, &gout->ncustom_text, &gout->custom_text_cap,
+						  eg->custom_text, eg->ncustom_text);
 				} else if (in_fd_per[k]) {
 					/* preserve existing customization from stored delta */
 					grp_delta_t *stored = find_grp_delta(in_fd_per[k], gi + 1,
@@ -1839,11 +1901,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 							active[k]->groups[gi].all_pre_ctx, active[k]->groups[gi].nall_pre_ctx,
 							active[k]->groups[gi].post_ctx, active[k]->groups[gi].npost_ctx,
 							delta_mode > 0 ? delta_mode : 0);
-					if (stored && (stored->ncustom_del > 0 || stored->ncustom_add > 0)) {
-						arr_clone(&gout->custom_del, &gout->ncustom_del, &gout->custom_del_cap,
-							  stored->custom_del, stored->ncustom_del);
-						arr_clone(&gout->custom_add, &gout->ncustom_add, &gout->custom_add_cap,
-							  stored->custom_add, stored->ncustom_add);
+					if (stored && stored->ncustom_text > 0) {
+						arr_clone(&gout->custom_text, &gout->ncustom_text, &gout->custom_text_cap,
+							  stored->custom_text, stored->ncustom_text);
 					}
 				}
 				arr_clone(&gout->pre_ctx, &gout->npre_ctx, &gout->pre_cap,
@@ -2614,19 +2674,9 @@ int main(int argc, char **argv)
 				}
 				in_sect = 0;
 			}
-			if (in_sect == 8) {
-				if (line[0] == '-') {
-					arr_append(&cur_gd->custom_del,
-						   &cur_gd->ncustom_del,
-						   &cur_gd->custom_del_cap, line + 1);
-					continue;
-				} else if (line[0] == '+') {
-					arr_append(&cur_gd->custom_add,
-						   &cur_gd->ncustom_add,
-						   &cur_gd->custom_add_cap, line + 1);
-					continue;
-				}
-				in_sect = 0;
+			if (strcmp(line, "custom_text:") == 0) {
+				in_sect = 8;
+				continue;
 			}
 				if (strncmp(line, "level: ", 7) == 0) {
 					in_sect = 0;
@@ -2648,10 +2698,6 @@ int main(int argc, char **argv)
 						cur_gd->level = 2;
 					continue;
 				}
-			if (strcmp(line, "custom_text:") == 0) {
-				in_sect = 8;
-				continue;
-			}
 			if (strcmp(line, "pre_ctx:") == 0) {
 				in_sect = 6;
 				continue;
@@ -2718,6 +2764,11 @@ int main(int argc, char **argv)
 					arr_append(&cur_gd->post_ctx,
 						   &cur_gd->npost_ctx,
 						   &cur_gd->post_cap, line);
+					break;
+				case 8:
+					arr_append(&cur_gd->custom_text,
+						   &cur_gd->ncustom_text,
+						   &cur_gd->custom_text_cap, line);
 					break;
 				}
 			}
