@@ -1218,20 +1218,11 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			parsed_grp_t *pg = &results[gi];
 			const char *lv = line + 7;
 			int len = strlen(lv);
-			pg->level_regex = (len > 0 && lv[len-1] == '*');
-			char tmp[32];
-			if (pg->level_regex) {
-				int n = len - 1;
-				if (n > 31)
-					n = 31;
-				memcpy(tmp, lv, n);
-				tmp[n] = '\0';
-			} else {
-				snprintf(tmp, sizeof(tmp), "%s", lv);
-			}
-			pg->level = atoi(tmp);
+			int has_star = (len > 0 && lv[len-1] == '*');
+			pg->level = atoi(lv);
 			if (pg->level < 1)
 				pg->level = 2;
+			pg->level_regex = has_star && pg->level == 2;
 			continue;
 		}
 
@@ -2654,17 +2645,7 @@ int main(int argc, char **argv)
 					const char *lv = line + 7;
 					int len = strlen(lv);
 					int has_star = (len > 0 && lv[len-1] == '*');
-					char tmp[32];
-					if (has_star) {
-						int n = len - 1;
-						if (n > 31)
-							n = 31;
-						memcpy(tmp, lv, n);
-						tmp[n] = '\0';
-					} else {
-						snprintf(tmp, sizeof(tmp), "%s", lv);
-					}
-					cur_gd->level = atoi(tmp);
+					cur_gd->level = atoi(lv);
 					if (cur_gd->level < 1)
 						cur_gd->level = 2;
 					cur_gd->level_regex = has_star && cur_gd->level == 2;
