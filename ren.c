@@ -245,7 +245,7 @@ static struct ftmap *ftmap;
 static int ftmidx;
 static rset *syn_ftrs;
 static int last_scdir;
-static int blockatt;
+static int blockatt, blockflg;
 int ftidx;
 int syn_blockhl;
 
@@ -304,12 +304,13 @@ int syn_merge(int old, int new)
 		return new & ~SYN_OWR;
 	int fg = SYN_FGSET(new) ? SYN_FG(new) : SYN_FG(old);
 	int bg = SYN_BGSET(new) ? SYN_BG(new) : SYN_BG(old);
-	return ((old | new) & SYN_FLG) | (bg << 8) | fg;
+	int flg = ((old | new) & SYN_FLG) | (new & SYN_MK);
+	return flg | (bg << 8) | fg;
 }
 
 void syn_highlight(int *att, char *s, int n)
 {
-	int fti = ftidx, blockhl = syn_blockhl, blockca = -1;
+	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;
 	re:;
 	rset *rs = ftmap[fti].rs;
 	int subs[rs->nsubc], *catt, *iatt, sl, c;
@@ -321,32 +322,37 @@ void syn_highlight(int *att, char *s, int n)
 		catt = hls[hl].att;
 		for (i = 0, ii = i; ii < sl; ii += 2) {
 			int inc = 1;
-			if (subs[ii] < 0 || SYN_IGNSET(catt[i])) {
-				if (SYN_ATTSET(catt[i]))
+			if (subs[ii] < 0 || SYN_SET(IGN, catt[i])) {
+				skip:
+				if (SYN_SET(ATT, catt[i]))
 					inc += catt[i + 1] + 1;
-				if (SYN_OATTSET(catt[i]))
+				if (SYN_SET(OATT, catt[i]))
 					inc += catt[i + inc] + 1;
+				if (SYN_SET(BLK, catt[i]))
+					inc++;
 				i += inc;
 				continue;
 			}
 			cend = MAX(cend, subs[ii + 1]);
+			if (SYN_SET(SKIP, catt[i]))
+				goto skip;
 			int beg = uc_off(s, sidx + subs[ii]);
 			int end = beg + uc_off(s + sidx + subs[ii], subs[ii + 1] - subs[ii]);
-			if (SYN_ATTSET(catt[i])) {
+			if (SYN_SET(ATT, catt[i])) {
 				iatt = &catt[i + 1];
 				c = *iatt;
 				inc += c + 1;
-				if (SYN_ATTSET(catt[i]) == SYN_ATT) {
+				if (SYN_SET(ATT, catt[i]) == SYN_ATT) {
 					for (j = beg; c && j < end; j++)
 						for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
-				} else if (SYN_SATTSET(catt[i]))
+				} else if (SYN_SET(SATT, catt[i]))
 					for (; c && (att[beg] & 0xffff) != iatt[c]; c--);
-				else if (SYN_EATTSET(catt[i]))
+				else if (SYN_SET(EATT, catt[i]))
 					for (; c && (att[MAX(0, end-1)] & 0xffff) != iatt[c]; c--);
 				if (!c)
 					break;
 			}
-			if (SYN_OATTSET(catt[i])) {
+			if (SYN_SET(OATT, catt[i])) {
 				iatt = &catt[i + inc];
 				inc += *iatt + 1;
 				for (j = beg; j < end; j++) {
@@ -357,14 +363,21 @@ void syn_highlight(int *att, char *s, int n)
 			} else
 				for (j = beg; j < end; j++)
 					att[j] = syn_merge(att[j], catt[i]);
-			if (SYN_BSESET(catt[i])) {
-				if (syn_blockhl == hl && (SYN_BESET(catt[i]) || last_scdir > 0)) {
-					blockca = -1;
-					syn_blockhl = blockca;
-				} else if (syn_blockhl < 0 && (SYN_BSSET(catt[i]) || last_scdir > 0)) {
-					syn_blockhl = hl;
-					blockca = catt[i];
-					blockatt = catt[0];
+			if (SYN_SET(BLK, catt[i])) {
+				iatt = &catt[i + inc];
+				inc++;
+				j = SYN_SET(BSDP, *iatt) || !!SYN_SET(BSD, *iatt) == (last_scdir > 0);
+				c = SYN_SET(BEDP, *iatt) || !!SYN_SET(BED, *iatt) == (last_scdir > 0);
+				if (syn_blockhl == hl && SYN_SET(BE, *iatt) && c) {
+					blockcont = -1;
+					syn_blockhl = blockcont;
+				} else if (syn_blockhl < 0 && SYN_SET(BS, *iatt)) {
+					if (j && blockcont <= 0) {
+						blockflg = *iatt;
+						blockatt = catt[0];
+						syn_blockhl = hl;
+					}
+					blockcont = hl;
 				}
 			}
 			i += inc;
@@ -375,12 +388,10 @@ void syn_highlight(int *att, char *s, int n)
 	fti++;
 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft)
 		goto re;
-	if (blockca >= 0 && SYN_BSSET(blockca) && !SYN_BESET(blockca) && last_scdir > 0)
-		syn_blockhl = -1;
 	if (syn_blockhl < 0 || blockhl < 0)
 		return;
 	for (j = 0; j < n; j++)
-		if (!att[j] || !SYN_BPSET(blockatt))
+		if (!att[j] || !SYN_SET(BP, blockflg))
 			att[j] = blockatt;
 }
 
