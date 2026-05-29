@@ -64,8 +64,8 @@ static int nfiles;
 static const char *cur_file_path;  /* set per-file for error messages */
 static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
-static int
-delta_mode;      /* -1=per-group stored levels, 0=off, 1-4=forced level */
+/* -1=per-group stored levels, 0=off, 1-4=forced level */
+static int delta_mode;
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
