@@ -171,7 +171,7 @@ length|Math|NaN|name|Number|Object|prototype|String|toString|undefined|valueOf))
 
 	{FT(html), "<(/)?(?:[^>](?:\".*?\")*(?:'.*?')*(?:<.*?>)*)+>", A(YE, MA1), 1},
 	{FT(html), "^(?:[ \t.,#*:a-zA-Z0-9_-]+(?:\\(.*\\))*(?:\\[.*\\])*[ \t+~>]?)*(?=^\\{)", A(WH1), 2},
-	{FT(html), ">([^<]*)<(?:/|[^>]*>([^<]*)<)", A(SYN_IGN, 69 | SYN_MK, 69 | SYN_MK), 2},
+	{FT(html), ">([^<]+)<", A(SYN_SKIP, 69 | SYN_MK), 2},
 	{FT(html), "\\<(?#1)(?<^[-.])(?:accept|accept|action|align|alt|async|autocomplete|\
 autofocus|autoplay|bgcolor|border|charset|checked|cite|color|cols|colspan|content|controls|\
 coords|data|datetime|default|defer|dirname|disabled|download|enctype|for|form|formaction|\
