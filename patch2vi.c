@@ -1217,9 +1217,12 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 
 		/* Parse level: field (appears after GROUP header, before any section) */
 		if (gi >= 0 && gi < ngroups && in_content_section &&
-		    strncmp(line, "level: ", 7) == 0) {
+		    strncmp(line, "=== LEVEL ", 10) == 0) {
 			parsed_grp_t *pg = &results[gi];
-			const char *lv = line + 7;
+			char *lv = line + 10;
+			char *end = strstr(lv, " ===");
+			if (end)
+				*end = '\0';
 			int len = strlen(lv);
 			pg->has_star = (len > 0 && lv[len-1] == '*');
 			pg->level = atoi(lv);
@@ -1391,7 +1394,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				fprintf(fp, "+%s\n", g->add_texts[i]);
 		}
 		int lvl = (gd && gd->level) ? gd->level : 2;
-		fprintf(fp, "level: %d%s\n", lvl, gd && gd->has_star ? "*" : "");
+		fprintf(fp, "=== LEVEL %d%s ===\n", lvl, gd && gd->has_star ? "*" : "");
 
 		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
 		int sel_strat = (gd && gd->strategy != STRAT_DEFAULT)
