@@ -241,7 +241,7 @@ void dir_init(void);
 #define SYN_BS		0x1		/* grp starting block highlight */
 #define SYN_BE		0x2		/* grp ending block highlight */
 #define SYN_BSE		0x3		/* grp self terminating block highlight */
-#define SYN_BP		0x4		/* set is a block attribute passthrough */
+#define SYN_BP		0x4		/* grp is a block attribute passthrough */
 #define SYN_BSD		0x8		/* grp block highlight start direction up */
 #define SYN_BED		0x10		/* grp block highlight end direction up */
 #define SYN_BSDP	0x20		/* grp block highlight start direction pass */
