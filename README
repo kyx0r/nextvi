@@ -1328,16 +1328,18 @@ COMPILING
              Performance bench test 2000 word deletions on vi.c
 
 PHILOSOPHY
-     In most text editors, flexibility is a minor or irrelevant design
-     goal. Nextvi is designed to be flexible where the editor adapts
-     to the user's needs. This flexibility is achieved by heavily
-     chaining basic commands and allowing them to create new ones
-     with completely different functionality. Command reuse keeps
-     the editor small without sacrificing a quick grasp of the codebase.
-     Any customization is achievable using only core commands, or
-     a mix with targeted C code for more difficult tasks. Simple and
-     flexible design allows for straightforward solutions to any problem
-     long term and filters bad inconsistent ideas.
+     Most text editors accumulate significant technical debt. They
+     cannot be quickly mastered, deeply understood, or easily changed.
+     Nextvi is designed around three pillars: fundamental, lean, and
+     flexible. Fundamental means a complete yet minimal command set
+     for unlimited text transformation. Lean means a concise, efficient,
+     coherent implementation with a bus factor of zero. Flexible means
+     deep composability and a versatile, extensible C codebase. By
+     conventional wisdom, these three pillars would be considered
+     oxymoronic. Maintaining all three challenges the notion that
+     a text editor must sacrifice one for another. Nextvi proves that
+     coexistence is not only possible but essential to what a great
+     text editor should be.
 
      "All software sucks, but some do more than others."
              - Kyryl Melekhin
@@ -1381,4 +1383,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.3                       May 28, 2026                       Nextvi 5.3
+Nextvi 5.3                       May 30, 2026                       Nextvi 5.3
