@@ -1259,27 +1259,32 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 /* Emit one group's delta in human-readable structured format */
 static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 {
-	fprintf(out, "GROUP %d\n", gd->group_idx);
+	fprintf(out, "=== GROUP %d ===\n", gd->group_idx);
 	for (int i = 0; i < gd->ndel_lines; i++)
 		fprintf(out, "-%s\n", gd->del_lines[i]);
 	for (int i = 0; i < gd->nadd_lines; i++)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
+	fprintf(out, "%s\n", end_tag);
 	int eglvl = gd->level ? gd->level : 2;
-	fprintf(out, "level: %d%s\n", eglvl, gd->has_star ? "*" : "");
+	fprintf(out, "=== LEVEL %d%s ===\n%s\n", eglvl,
+		gd->has_star ? "*" : "", end_tag);
 	if (gd->ncustom_text > 0) {
-		fputs("custom_text:\n", out);
+		fprintf(out, "=== custom_text ===\n");
 		for (int i = 0; i < gd->ncustom_text; i++)
 			fprintf(out, "%s\n", gd->custom_text[i]);
+		fprintf(out, "%s\n", end_tag);
 	}
 	if (gd->npre_ctx > 0) {
-		fputs("pre_ctx:\n", out);
+		fprintf(out, "=== pre_ctx ===\n");
 		for (int i = 0; i < gd->npre_ctx; i++)
 			fprintf(out, "%s\n", gd->pre_ctx[i]);
+		fprintf(out, "%s\n", end_tag);
 	}
 	if (gd->npost_ctx > 0) {
-		fputs("post_ctx:\n", out);
+		fprintf(out, "=== post_ctx ===\n");
 		for (int i = 0; i < gd->npost_ctx; i++)
 			fprintf(out, "%s\n", gd->post_ctx[i]);
+		fprintf(out, "%s\n", end_tag);
 	}
 	if (gd->strategy != STRAT_DEFAULT) {
 		const char *s = "abs";
@@ -1287,29 +1292,33 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 			s = "rel";
 		else if (gd->strategy == STRAT_RELC)
 			s = "relc";
-		fprintf(out, "strategy: %s\n", s);
+		fprintf(out, "=== strategy ===\n%s\n%s\n", s, end_tag);
 	}
 	if (gd->cmd)
-		fprintf(out, "cmd: %s\n", gd->cmd);
+		fprintf(out, "=== cmd ===\n%s\n%s\n", gd->cmd, end_tag);
 	if (gd->npattern > 0) {
-		fputs("pattern:\n", out);
+		fprintf(out, "=== pattern ===\n");
 		for (int i = 0; i < gd->npattern; i++)
 			fprintf(out, "%s\n", gd->pattern[i]);
+		fprintf(out, "%s\n", end_tag);
 	}
 	if (gd->nabs > 0) {
-		fputs("edit_cmd_abs:\n", out);
+		fprintf(out, "=== edit_cmd_abs ===\n");
 		for (int i = 0; i < gd->nabs; i++)
 			fprintf(out, "%s\n", gd->abs_cmd[i]);
+		fprintf(out, "%s\n", end_tag);
 	}
 	if (gd->nrelc > 0) {
-		fputs("edit_cmd_relc:\n", out);
+		fprintf(out, "=== edit_cmd_relc ===\n");
 		for (int i = 0; i < gd->nrelc; i++)
 			fprintf(out, "%s\n", gd->relc_cmd[i]);
+		fprintf(out, "%s\n", end_tag);
 	}
 	if (gd->nrel > 0) {
-		fputs("edit_cmd_rel:\n", out);
+		fprintf(out, "=== edit_cmd_rel ===\n");
 		for (int i = 0; i < gd->nrel; i++)
 			fprintf(out, "%s\n", gd->rel_cmd[i]);
+		fprintf(out, "%s\n", end_tag);
 	}
 }
 
@@ -2636,20 +2645,74 @@ int main(int argc, char **argv)
 				}
 				if (!delta_mode || !cur_fd)
 					continue;
-				if (strncmp(line, "GROUP", 5) == 0 &&
-				    (line[5] == '\0' || line[5] == ' ')) {
-					if (cur_fd->ngrps >= cur_fd->gcap) {
-						cur_fd->gcap = cur_fd->gcap
-							       ? cur_fd->gcap * 2 : 4;
-						cur_fd->grps = realloc(
-								       cur_fd->grps,
-								       cur_fd->gcap *
-								       sizeof(grp_delta_t));
+				if (line[0] == '=' && strncmp(line, "=== ", 4) == 0) {
+					if (strcmp(line, end_tag) == 0) {
+						in_sect = 0;
+						continue;
 					}
-					cur_gd = &cur_fd->grps[cur_fd->ngrps++];
-					memset(cur_gd, 0, sizeof(*cur_gd));
-					cur_gd->group_idx = (line[5] == ' ') ? atoi(line + 6) : 0;
-					in_sect = 5; /* always read diff lines that follow */
+					if (strncmp(line, "=== GROUP ", 10) == 0) {
+						const char *p = line + 10;
+						int idx = atoi(p);
+						if (cur_fd->ngrps >= cur_fd->gcap) {
+							cur_fd->gcap = cur_fd->gcap
+								       ? cur_fd->gcap * 2 : 4;
+							cur_fd->grps = realloc(
+									       cur_fd->grps,
+									       cur_fd->gcap *
+									       sizeof(grp_delta_t));
+						}
+						cur_gd = &cur_fd->grps[cur_fd->ngrps++];
+						memset(cur_gd, 0, sizeof(*cur_gd));
+						cur_gd->group_idx = idx;
+						in_sect = 5;
+						continue;
+					}
+					if (strncmp(line, "=== LEVEL ", 10) == 0) {
+						const char *lv = line + 10;
+						int llen = strlen(lv);
+						if (llen > 0 && lv[llen-1] == '*')
+							cur_gd->has_star = 1;
+						cur_gd->level = atoi(lv);
+						if (cur_gd->level < 1)
+							cur_gd->level = 2;
+						continue;
+					}
+					if (strcmp(line, "=== custom_text ===") == 0) {
+						in_sect = 8;
+						continue;
+					}
+					if (strcmp(line, "=== pre_ctx ===") == 0) {
+						in_sect = 6;
+						continue;
+					}
+					if (strcmp(line, "=== post_ctx ===") == 0) {
+						in_sect = 7;
+						continue;
+					}
+					if (strcmp(line, "=== strategy ===") == 0) {
+						in_sect = 10;
+						continue;
+					}
+					if (strcmp(line, "=== cmd ===") == 0) {
+						in_sect = 11;
+						continue;
+					}
+					if (strcmp(line, "=== pattern ===") == 0) {
+						in_sect = 1;
+						continue;
+					}
+					if (strcmp(line, "=== edit_cmd_abs ===") == 0) {
+						in_sect = 2;
+						continue;
+					}
+					if (strcmp(line, "=== edit_cmd_relc ===") == 0) {
+						in_sect = 4;
+						continue;
+					}
+					if (strcmp(line, "=== edit_cmd_rel ===") == 0) {
+						in_sect = 3;
+						continue;
+					}
 					continue;
 				}
 				if (!cur_gd)
@@ -2659,63 +2722,22 @@ int main(int argc, char **argv)
 						arr_append(&cur_gd->del_lines,
 							   &cur_gd->ndel_lines,
 							   &cur_gd->del_cap, line + 1);
-						continue;
 					} else if (line[0] == '+') {
 						arr_append(&cur_gd->add_lines,
 							   &cur_gd->nadd_lines,
 							   &cur_gd->add_cap, line + 1);
-						continue;
 					}
+					continue;
+				}
+				if (in_sect == 10) {
+					cur_gd->strategy = strat_from_name(line, strlen(line));
 					in_sect = 0;
-				}
-				if (strcmp(line, "custom_text:") == 0) {
-					in_sect = 8;
 					continue;
 				}
-				if (strncmp(line, "level: ", 7) == 0) {
-					in_sect = 0;
-					const char *lv = line + 7;
-					int len = strlen(lv);
-					cur_gd->has_star = (len > 0 && lv[len-1] == '*');
-					cur_gd->level = atoi(lv);
-					if (cur_gd->level < 1)
-						cur_gd->level = 2;
-					continue;
-				}
-				if (strcmp(line, "pre_ctx:") == 0) {
-					in_sect = 6;
-					continue;
-				}
-				if (strcmp(line, "post_ctx:") == 0) {
-					in_sect = 7;
-					continue;
-				}
-				if (strncmp(line, "strategy: ", 10) == 0) {
-					in_sect = 0;
-					const char *v = line + 10;
-					cur_gd->strategy = strat_from_name(v, strlen(v));
-					continue;
-				}
-				if (strncmp(line, "cmd: ", 5) == 0) {
-					in_sect = 0;
+				if (in_sect == 11) {
 					free(cur_gd->cmd);
-					cur_gd->cmd = xstrdup(line + 5);
-					continue;
-				}
-				if (strcmp(line, "pattern:") == 0) {
-					in_sect = 1;
-					continue;
-				}
-				if (strcmp(line, "edit_cmd_abs:") == 0) {
-					in_sect = 2;
-					continue;
-				}
-				if (strcmp(line, "edit_cmd_rel:") == 0) {
-					in_sect = 3;
-					continue;
-				}
-				if (strcmp(line, "edit_cmd_relc:") == 0) {
-					in_sect = 4;
+					cur_gd->cmd = xstrdup(line);
+					in_sect = 0;
 					continue;
 				}
 				switch (in_sect) {
