@@ -1570,7 +1570,8 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			}
 			fprintf(fp, "%s\n", end_tag);
 		}
-		fputc('\n', fp);
+		if (gi + 1 < ngroups)
+			fputc('\n', fp);
 	}
 	return default_cmds;
 }
@@ -2512,7 +2513,7 @@ static void usage(const char *prog)
 	fprintf(stderr,
 		"  -d4   Delta mode: match by group index + entire hunk (very strict)\n");
 	fprintf(stderr,
-		"  -e TAG  Section end tag (default: \"%s\")\n", end_tag);
+		"  -e    Section end tag (default: \"%s\")\n", end_tag);
 	fprintf(stderr, "  -h    Show this help\n");
 	fprintf(stderr,
 		"Input can be a unified diff or a previously generated patch2vi script\n");
