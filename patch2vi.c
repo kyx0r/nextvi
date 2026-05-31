@@ -1625,6 +1625,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				free(dc[gi]);
 			free(dc);
 			fprintf(orig_fp, "%s\n", end_tag);
+			fputc('\n', orig_fp);
 		}
 		fclose(orig_fp);
 	}
@@ -1690,8 +1691,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				delta_rejected = 1;
 			}
 		}
-		if (file_header_written && rej)
+		if (file_header_written && rej) {
 			fprintf(rej, "%s\n", end_tag);
+			fputc('\n', rej);
+		}
 	}
 	if (rej)
 		fclose(rej);
@@ -1714,6 +1717,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				      active[k]->groups, active[k]->ngroups,
 				      in_fd_per[k]);
 		fprintf(tmp_fp, "%s\n", end_tag);
+		fputc('\n', tmp_fp);
 	}
 	fclose(tmp_fp);
 
