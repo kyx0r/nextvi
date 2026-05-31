@@ -66,6 +66,7 @@ static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
 /* -1=per-group stored levels, 0=off, 1-4=forced level */
 static int delta_mode;
+static const char *end_tag = "=== END ===";
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
@@ -1153,6 +1154,8 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			ecmd_strat = e ? strat_from_name(p, e - p) : STRAT_DEFAULT;
 			continue;
 		}
+		if (strcmp(line, end_tag) == 0)
+			continue;
 
 		if (file_idx < 0)
 			continue;
@@ -1215,8 +1218,8 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 				   &results[gi].add_cap, line + 1);
 		}
 
-		/* Parse level: field (appears after GROUP header, before any section) */
-		if (gi >= 0 && gi < ngroups && in_content_section &&
+		/* Parse level: field (appears after END GROUP, before sections) */
+		if (gi >= 0 && gi < ngroups &&
 		    strncmp(line, "=== LEVEL ", 10) == 0) {
 			parsed_grp_t *pg = &results[gi];
 			char *lv = line + 10;
@@ -1393,6 +1396,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			for (int i = 0; i < g->nadd; i++)
 				fprintf(fp, "+%s\n", g->add_texts[i]);
 		}
+		fprintf(fp, "%s\n", end_tag);
 		int lvl = (gd && gd->level) ? gd->level : 2;
 		fprintf(fp, "=== LEVEL %d%s ===\n", lvl, gd && gd->has_star ? "*" : "");
 
@@ -1411,6 +1415,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				sel_strat == STRAT_REL ? "" : "#", use_cmd);
 
 		/* SEARCH PATTERN: inject stored or auto-generate */
+		fprintf(fp, "%s\n", end_tag);
 		fprintf(fp, "=== SEARCH PATTERN ===\n");
 		int pattern_has_lines = 0;
 		if (gd && gd->npattern > 0) {
@@ -1458,6 +1463,8 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			}
 		}
 
+		fprintf(fp, "%s\n", end_tag);
+
 		/* EDIT COMMAND sections */
 #define WG_CONTENT(fp) do { \
 	if (g->nadd > 0) { \
@@ -1496,6 +1503,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				WG_CONTENT(fp);
 			}
 		}
+		fprintf(fp, "%s\n", end_tag);
 
 		/* relc */
 		int show_relc = has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff;
@@ -1515,6 +1523,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 						g->ldc_start, g->ldc_end,
 						g->ldc_new_text);
 			}
+			fprintf(fp, "%s\n", end_tag);
 		}
 
 		/* rel */
@@ -1559,8 +1568,9 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 					WG_CONTENT(fp);
 				}
 			}
+			fprintf(fp, "%s\n", end_tag);
 		}
-		fprintf(fp, "=== END GROUP ===\n\n");
+		fputc('\n', fp);
 	}
 	return default_cmds;
 }
@@ -1614,6 +1624,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			for (int gi = 0; gi < active[k]->ngroups; gi++)
 				free(dc[gi]);
 			free(dc);
+			fprintf(orig_fp, "%s\n", end_tag);
 		}
 		fclose(orig_fp);
 	}
@@ -1679,6 +1690,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				delta_rejected = 1;
 			}
 		}
+		if (file_header_written && rej)
+			fprintf(rej, "%s\n", end_tag);
 	}
 	if (rej)
 		fclose(rej);
@@ -1700,6 +1713,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		default_cmds_per[k] = write_groups_to_file(tmp_fp,
 				      active[k]->groups, active[k]->ngroups,
 				      in_fd_per[k]);
+		fprintf(tmp_fp, "%s\n", end_tag);
 	}
 	fclose(tmp_fp);
 
@@ -2476,7 +2490,7 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-aridh] [-d[N]] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-aridh] [-d[N]] [-e TAG] [input.patch]\n", prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
@@ -2493,6 +2507,8 @@ static void usage(const char *prog)
 		"  -d3   Delta mode: match by entire hunk\n");
 	fprintf(stderr,
 		"  -d4   Delta mode: match by group index + entire hunk (very strict)\n");
+	fprintf(stderr,
+		"  -e TAG  Section end tag (default: \"%s\")\n", end_tag);
 	fprintf(stderr, "  -h    Show this help\n");
 	fprintf(stderr,
 		"Input can be a unified diff or a previously generated patch2vi script\n");
@@ -2512,6 +2528,17 @@ int main(int argc, char **argv)
 		if (argv[i][1] == '-' && !argv[i][2]) {
 			i++;
 			break;
+		}
+		if (argv[i][1] == 'e') {
+			if (argv[i][2])
+				end_tag = argv[i] + 2;
+			else if (i + 1 < argc)
+				end_tag = argv[++i];
+			else {
+				fprintf(stderr, "Option -e requires an argument\n");
+				usage(argv[0]);
+			}
+			continue;
 		}
 		for (j = 1; argv[i][j]; j++) {
 			if (argv[i][j] == 'a')
