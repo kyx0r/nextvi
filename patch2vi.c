@@ -1266,8 +1266,8 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
 	fprintf(out, "%s\n", end_tag);
 	int eglvl = gd->level ? gd->level : 2;
-	fprintf(out, "=== LEVEL %d%s ===\n%s\n", eglvl,
-		gd->has_star ? "*" : "", end_tag);
+	fprintf(out, "=== LEVEL %d%s ===\n", eglvl,
+		gd->has_star ? "*" : "");
 	if (gd->ncustom_text > 0) {
 		fprintf(out, "=== custom_text ===\n");
 		for (int i = 0; i < gd->ncustom_text; i++)
