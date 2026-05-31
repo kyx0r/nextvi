@@ -230,43 +230,109 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4$
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +((pac|pr|ai|ish|err|ic|grp|mpt|ms|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+(?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+=== END ===
+=== post_ctx ===
+|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+=== END ===
+=== pattern ===
 \(\(.*pac.*\)\\
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0
 s/t\|s/t|ms|s/
+=== END ===
 === END DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 +int xms = 1;			/* mouse in normal mode */
-strategy: abs
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+int xleft;			/* the first visible column */
+int xvis;			/* startup flags */
+int xai = 1;			/* autoindent option */
+=== END ===
+=== strategy ===
+abs
+=== END ===
 === END DELTA ===
 === DELTA led.c ===
-GROUP 3
+=== GROUP 3 ===
 +	term_mouse_on();
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	key = led_line(sb, ps, n, &post, 0, &postref, -1,
+			&off, kmap, is, 0, xrow, xtop, flg);
+	restore(xtd)
+	restore(xleft)
+=== END ===
+=== post_ctx ===
+	if (key == '\n' && flg & 1) {
+		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
+		temp_pos(0, -1, 0, 0);
+=== END ===
+=== pattern ===
 	if \(key == '\\n' && flg & 1\) \{
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i 	term_mouse_on();
-GROUP 4
+=== END ===
+=== GROUP 4 ===
 +	term_mouse_off();
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	int n, key, ps = 0, crow = xrow, ctop = xtop;
+	char *postref = NULL;
 	ins_state is;
-edit_cmd_rel:
+=== END ===
+=== post_ctx ===
+	while (1) {
+		ins_init(is)
+		key = led_line(sb, ps, sb->s_n, &post, postn, &postref,
+=== END ===
+=== pattern ===
+	ins_state is;
+=== END ===
+=== edit_cmd_rel ===
 a 	term_mouse_off();
-GROUP 5
+=== END ===
+=== GROUP 5 ===
 +			term_mouse_on();
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+				sb->s[*pren] = *post;
+			free(postref);
+			xrow = crow;
+=== END ===
+=== post_ctx ===
+			return key;
+		}
+		sbuf_chr(sb, key)
+=== END ===
+=== pattern ===
 			free\(postref\);
 			xrow = crow;
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1a 			term_mouse_on();
+=== END ===
 === END DELTA ===
 === DELTA term.c ===
-GROUP 1
+=== GROUP 1 ===
 +int xmouse_col, xmouse_row;
 +void term_mouse_on(void)
 +{
@@ -280,10 +346,19 @@ GROUP 1
 +		write(1, "\x1b[?1000l\x1b[?1006l", 16);
 +}
 +
-strategy: abs
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+static struct termios termios;
+sbuf *term_sbuf;
+int term_record;
+=== END ===
+=== strategy ===
+abs
+=== END ===
 === END DELTA ===
 === DELTA vi.c ===
-GROUP 2
+=== GROUP 2 ===
 +	if (mv == 27 && xms) {
 +		int r = term_try_mouse();
 +		if (r == 1) {
@@ -309,46 +384,115 @@ GROUP 2
 +		} else if (r == 2)	/* stray release from a prior click; restart */
 +			return -1;
 +	}
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	int mv, i, dir, var;
+
+	mv = term_read(0);
+=== END ===
+=== post_ctx ===
+	switch (mv) {
+	case ',':
+	case ';':
+=== END ===
+=== pattern ===
 	int mv, i, dir, var;
 
 	mv = .*\(.*\);
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 +int term_try_mouse(void);
 +void term_mouse_on(void);
 +void term_mouse_off(void);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+void term_kill(void);
+void term_room(int n);
+int term_read(int winch);
+=== END ===
+=== post_ctx ===
+void term_commit(void);
+char *term_att(int att);
+void term_push(char *s, unsigned int n);
+=== END ===
+=== pattern ===
 int term_read\(int winch\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
-GROUP 2
+=== END ===
+=== GROUP 2 ===
 +int led_col(char *s, int col);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+#define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
+char *led_read(int *kmap, int c);
+int led_pos(char *s, int pos);
+=== END ===
+=== post_ctx ===
+void led_done(void);
+
+/* ex.c: command mode */
+=== END ===
+=== pattern ===
 int led_pos\(char \*s, int pos\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a int led_col(char *s, int col);
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 +/* mouse state */
 +extern int xmouse_col, xmouse_row;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	long mtime;			/* modification time */
+	signed char td;			/* text direction */
+};
+=== END ===
+=== post_ctx ===
+/* ex options */
+extern int xleft;
+extern int xvis;
+=== END ===
+=== pattern ===
 /\* ex options \*/
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i /* mouse state */
 extern int xmouse_col, xmouse_row;
-GROUP 4
+=== END ===
+=== GROUP 4 ===
 +extern int xms;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+extern int xlim;
+extern int xseq;
+extern int xerr;
+=== END ===
+=== post_ctx ===
+/* global variables */
+extern int xquit;
+extern int xrow, xoff, xtop;
+=== END ===
+=== pattern ===
 /\* global variables \*/
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i extern int xms;
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..7219c281 100644
+index 0d346df9..da4d1c53 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -616,7 +760,7 @@ index 74ffc2d3..7ec2f95b 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..c9ffc083 100644
+index 7afa37e4..607eac3d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -320,6 +320,9 @@ void term_pos(int r, int c);

@@ -49,38 +49,101 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +((pac|pr|ai|ish|err|ic|grp|mpt|rec|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+(?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+=== END ===
+=== post_ctx ===
+|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+=== END ===
+=== pattern ===
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
+=== END ===
 === END DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 +int xrec;			/* input recoding register */
-strategy: abs
-GROUP 2
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+int xleft;			/* the first visible column */
+int xvis;			/* startup flags */
+int xai = 1;			/* autoindent option */
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== GROUP 2 ===
 +EO(rec)
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+=== END ===
+=== post_ctx ===
+
+_EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
+
+=== END ===
+=== pattern ===
 EO\(pac\)
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 +	EO(rec),
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	{"m", ec_mark},
+	{"q!", ec_quit},
+	{"q", ec_quit},
+=== END ===
+=== post_ctx ===
+	{"reg+", ec_regprint},
+	{"reg", ec_regprint},
+	{"re", ec_krsset},
+=== END ===
+=== pattern ===
 	\{"q", ec_quit\},
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a 	EO(rec),
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 +extern int xrec;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+extern int xlim;
+extern int xseq;
+extern int xerr;
+=== END ===
+=== post_ctx ===
+/* global variables */
+extern int xquit;
+extern int xrow, xoff, xtop;
+=== END ===
+=== pattern ===
 /\* global variables \*/
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i extern int xrec;
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..8539b118 100644
+index 0d346df9..74c23ff0 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -135,7 +198,7 @@ index a49549c5..893eb040 100644
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..d62633a7 100644
+index 7afa37e4..59780567 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -424,6 +424,7 @@ extern int xpr;

@@ -124,68 +124,160 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4$
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|im!?|i|sc!?|nm!?|\
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+=== END ===
+=== post_ctx ===
+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+=== END ===
+=== pattern ===
 \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
+=== END ===
 === END DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 +static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 +static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
-strategy: abs
-GROUP 3
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+int xleft;			/* the first visible column */
+int xvis;			/* startup flags */
+int xai = 1;			/* autoindent option */
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== GROUP 3 ===
 +	{"im!", ec_map},
 +	{"im", ec_map},
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	EO(ish),
+	{"inc", ec_setincl},
+	EO(ic),
+=== END ===
+=== post_ctx ===
+	{"i", ec_insert},
+	{"d", ec_delete},
+	EO(grp),
+=== END ===
+=== pattern ===
 	\{"inc", ec_setincl\},
 	EO\(ic\),
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1a 	{"im!", ec_map},
 	{"im", ec_map},
-GROUP 4
+=== END ===
+=== GROUP 4 ===
 +	{"nm!", ec_map},
 +	{"nm", ec_map},
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	{"g", ec_glob},
+	EO(mpt),
+	{"m", ec_mark},
+=== END ===
+=== post_ctx ===
+	{"q!", ec_quit},
+	{"q", ec_quit},
+	{"reg+", ec_regprint},
+=== END ===
+=== pattern ===
 	\{"q!", ec_quit\},
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i 	{"nm!", ec_map},
 	{"nm", ec_map},
+=== END ===
 === END DELTA ===
 === DELTA led.c ===
-GROUP 1
+=== GROUP 1 ===
 -		c = term_read(TK_CTL('l'));
 +		c = map_read(1, TK_CTL('l'));
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	do {
+		led_printparts(sb, pre, ps, *post, postn, poff);
+		len = sb->s_n;
+=== END ===
+=== post_ctx ===
+		noredraw:
+		switch (c) {
+		case TK_CTL('h'):
+=== END ===
+=== pattern ===
 		len = sb->s_n;
 		c = term_read\(TK_CTL\('l'\)\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1
 s/term_read\(/map_read(1, /
+=== END ===
 === END DELTA ===
 === DELTA vi.c ===
-GROUP 8
+=== GROUP 8 ===
 -				k = term_read(0);
 +				k = map_read(0, 0);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+				break;
+			case 'c':
+			case 'd':
+=== END ===
+=== post_ctx ===
+				if (k == 'i') {
+					k = term_read(0);
+					char pairs[2];
+=== END ===
+=== pattern ===
 				k = term_read\(0\);
 				if \(k == 'i'\) \{
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0
 s/term_read\(/map_read(0, /
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 +int map_read(int mode, int winch);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+#define bufs_switchwft(idx) \
+{ if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
+
+=== END ===
+=== post_ctx ===
+void bufs_switch(int idx);
+void temp_open(int i, char *name, char *ft);
+void temp_switch(int i, int swap);
+=== END ===
+=== pattern ===
 void bufs_switch\(int idx\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i int map_read(int mode, int winch);
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..96c2c3e7 100644
+index 0d346df9..9b048eae 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -293,7 +293,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -385,7 +477,7 @@ index 74ffc2d3..d0029b10 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..42301513 100644
+index 7afa37e4..809e28f7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -463,6 +463,7 @@ extern struct buf *ex_pbuf;

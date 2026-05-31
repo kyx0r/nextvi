@@ -884,42 +884,90 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4$
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+=== END ===
+=== post_ctx ===
+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+=== END ===
+=== pattern ===
 \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +3
 s/f!\](.*)\\/qf!]\1vs|sp|\\/
+=== END ===
 === END DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 +struct win *wins;		/* head of window list */
 +struct win *curwin;		/* current active window */
 +int nwins;			/* number of windows */
-strategy: abs
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+int xleft;			/* the first visible column */
+int xvis;			/* startup flags */
+int xai = 1;			/* autoindent option */
+=== END ===
+=== strategy ===
+abs
+=== END ===
 === END DELTA ===
 === DELTA led.c ===
-GROUP 5
+=== GROUP 5 ===
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 -	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
 +	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
 +	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	syn_scdir(0);
+=== END ===
+=== post_ctx ===
+	sbufn_cut(sb, psn)
+	rstate -= 2;
+}
+=== END ===
+=== pattern ===
 	syn_scdir
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 +void term_killn(int n);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+void term_chr(int ch);
+void term_pos(int r, int c);
+void term_kill(void);
+=== END ===
+=== post_ctx ===
+void term_room(int n);
+int term_read(int winch);
+void term_commit(void);
+=== END ===
+=== pattern ===
 void term_kill\(void\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a void term_killn(int n);
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..353cb4d0 100644
+index 0d346df9..84792539 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -293,7 +293,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -2110,7 +2158,7 @@ index 74ffc2d3..9b9b20de 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..311405b5 100644
+index 7afa37e4..67db4cd0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -318,6 +318,7 @@ void term_suspend(void);

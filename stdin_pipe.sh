@@ -115,49 +115,127 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 -	int fd, len, rd = 0, cd = 0;
 +	int fd = 0, len, rd = 0, cd = 0;
 +	if (!cmd)
 +		goto ret;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+static void *ec_edit(char *loc, char *cmd, char *arg)
+{
+	char msg[512];
+=== END ===
+=== post_ctx ===
+	if (arg[0] == '.' && arg[1] == '/')
+		cd = 2;
+	len = strlen(arg+cd);
+=== END ===
+=== pattern ===
 static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 -	xbufsalloc = MAX(n, xbufsalloc);
 +	xbufsalloc = MAX(n + !!stdin_fd, xbufsalloc);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+
+void ex_init(char **files, int n)
+{
+=== END ===
+=== post_ctx ===
+	ec_setbufsmax(NULL, NULL, "");
+	char *s = files[0] ? files[0] : "";
+=== END ===
+=== pattern ===
 
 void ex_init\(.*\)
 \{
+=== END ===
 === END DELTA ===
 === DELTA term.c ===
-GROUP 1
+=== GROUP 1 ===
 +int stdin_fd;
 +static int isig;
-strategy: abs
-GROUP 2
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+int xrows, xcols;
+unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
+unsigned char *ibuf, icmd[4096];
+=== END ===
+=== post_ctx ===
+unsigned int texec, tn;
+
+void term_init(void)
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== GROUP 2 ===
 -	tcgetattr(0, &termios);
 +	tcgetattr(stdin_fd, &termios);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	term_winch = 0;
+	term_resized++;
+	sbuf_make(term_sbuf, 2048)
+=== END ===
+=== post_ctx ===
+	newtermios = termios;
+=== END ===
+=== pattern ===
 	sbuf_make\(term_sbuf, 2048\)
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1
 s/0/stdin_fd/
+=== END ===
 === END DELTA ===
 === DELTA vi.c ===
-GROUP 1
+=== GROUP 1 ===
 +	sigaction(SIGINT, &sa, NULL);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = sighandler;
+	sigaction(SIGWINCH, &sa, NULL);
+=== END ===
+=== post_ctx ===
+}
+
+int main(int argc, char *argv[])
+=== END ===
+=== pattern ===
 	memset\(&sa, 0, sizeof\(sa\)\);
 	sa\.sa_handler = sighandler;
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 +extern int stdin_fd;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+char *conf_digraph(int c1, int c2);
+
+/* vi.c: main */
+=== END ===
+=== post_ctx ===
+void vi(int init);
+extern int vi_hidch;
+extern int vi_lncol;
+=== END ===
+=== pattern ===
 /\* vi\.c: main \*/
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a extern int stdin_fd;
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
@@ -329,7 +407,7 @@ index 74ffc2d3..0ea7d2fb 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..33721037 100644
+index 7afa37e4..5566c289 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -532,6 +532,7 @@ int conf_kmapfind(char *name);

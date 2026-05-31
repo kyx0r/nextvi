@@ -239,16 +239,38 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
-GROUP 7
+=== GROUP 7 ===
 +		syn_setrow(NULL, 0);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
+=== END ===
+=== post_ctx ===
+		preserve(int, syn_blockhl, syn_blockhl = -1;)
+		preserve(int, ftidx,)
+		syn_setft(nn_ft);
+=== END ===
+=== pattern ===
 		led_crender\(.*\)
 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
-GROUP 9
+=== END ===
+=== GROUP 9 ===
 +	syn_setrow(NULL, 0);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
+=== END ===
+=== post_ctx ===
+	rstate = rstates;
+}
+
+=== END ===
+=== pattern ===
 	led_crender\(.*\)
 	rstate = rstates;
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
@@ -506,7 +528,7 @@ index 74ffc2d3..b77c255f 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..6f888688 100644
+index 7afa37e4..e4688aac 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -258,6 +258,8 @@ void syn_reloadft(int hl, int flg);

@@ -162,15 +162,29 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4$
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 -extern unsigned char utf8_length[256];
 +extern unsigned char _utf8_length[256];
 +extern unsigned char *utf8_length;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+void syn_init(void);
+
+/* uc.c: utf-8 helper functions */
+=== END ===
+=== post_ctx ===
+extern int zwlen, def_zwlen;
+extern int bclen, def_bclen;
+/* the length of a given utf-8 character */
+=== END ===
+=== pattern ===
 extern unsigned char utf8_length\[256\];
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
@@ -378,7 +392,7 @@ index 74ffc2d3..1a7c6241 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..f2e138f1 100644
+index 7afa37e4..e481b838 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -260,7 +260,8 @@ int syn_addhl(char *reg, int id);

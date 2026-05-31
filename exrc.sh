@@ -115,19 +115,55 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'ex.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 +int xexrc = 0;			/* read .exrc from the current directory */
-strategy: abs
-GROUP 2
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+int xleft;			/* the first visible column */
+int xvis;			/* startup flags */
+int xai = 1;			/* autoindent option */
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== GROUP 2 ===
 +EO(exrc)
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+=== END ===
+=== post_ctx ===
+
+_EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
+
+=== END ===
+=== pattern ===
 EO\(pac\)
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 +	EO(exrc),
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	EO(ai),
+	{"ac", ec_setacreg},
+	{"a", ec_insert},
+=== END ===
+=== post_ctx ===
+	EO(err),
+	{"ef!", ec_fuzz},
+	{"ef", ec_fuzz},
+=== END ===
+=== pattern ===
 	EO\(err\),
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i 	EO(exrc),
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c

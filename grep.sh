@@ -139,21 +139,35 @@ ${SEP}+3${SEP}s/3/4/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:444\\${SE
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 3
+=== GROUP 3 ===
 +	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
 +	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 +
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+		A(NA, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
+	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(NA, SYN_BGMK(AY1))},
+
+=== END ===
+=== post_ctx ===
+	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
+	{ex_ft, ":[ \t]*((((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+(?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+=== END ===
+=== pattern ===
 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~\]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)\},
 
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1a 	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..fbaa9ebd 100644
+index 0d346df9..344c5b1b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -334,7 +348,7 @@ index 74ffc2d3..6e2fad2c 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..2e761762 100644
+index 7afa37e4..25a2ea3b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -441,7 +441,7 @@ extern sbuf *xacreg;

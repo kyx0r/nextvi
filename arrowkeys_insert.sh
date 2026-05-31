@@ -194,21 +194,35 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'led.c' 'vi.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA led.c ===
-GROUP 3
+=== GROUP 3 ===
 -	syn_scdir(0);
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
 +		syn_scdir(0);
 +		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	}
+	if (pos >= xleft + xcols || pos < xleft)
+		xleft = pos < xcols ? 0 : pos - xcols / 2;
+=== END ===
+=== post_ctx ===
+	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
+	sbufn_cut(sb, psn)
+	rstate -= 2;
+=== END ===
+=== pattern ===
 	syn_scdir\(0\);
 	led_crender\(.*\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0,#+1c 	if (print) {
 		syn_scdir(0);
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c

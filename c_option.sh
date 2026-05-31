@@ -59,33 +59,72 @@ ${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}pr
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 -void ex_init(char **files, int n)
 +void ex_init(char **files, int n, char **cmds, int cmdnum)
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	xgrec--;
+}
+
+=== END ===
+=== post_ctx ===
+{
+	xbufsalloc = MAX(n, xbufsalloc);
+	ec_setbufsmax(NULL, NULL, "");
+=== END ===
+=== pattern ===
 void ex_init\(char
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0
 s/n\)/n, char **cmds, int cmdnum)/
-GROUP 2
+=== END ===
+=== GROUP 2 ===
 +	for (int i = 0; i < cmdnum; i++)
 +		ex_command(cmds[i])
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	xvis &= ~4;
+	if ((s = getenv("EXINIT")))
+		ex_command(s)
+=== END ===
+=== post_ctx ===
+}
+=== END ===
+=== pattern ===
 	if \(\(s = getenv\("EXINIT"\)\)\)
 		ex_command\(s\)
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
+=== END ===
 === END DELTA ===
 === DELTA vi.c ===
-GROUP 1
+=== GROUP 1 ===
 -	int i, j;
 +	int i, j, cmdnum = 0;
 +	char *ex_cmds[argc - 1];
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+
+int main(int argc, char *argv[])
+{
+=== END ===
+=== post_ctx ===
+	setup_signals();
+	dir_init();
+	syn_init();
+=== END ===
+=== pattern ===
 
 int main\(int argc
-GROUP 2
+=== END ===
+=== GROUP 2 ===
 -			else {
 +			else if (argv[i][j] == 'c') {
 +				if (argv[i][j+1]) {
@@ -99,10 +138,21 @@ GROUP 2
 +					return EXIT_FAILURE;
 +				}
 +			} else {
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+				xvis |= 8;
+			else if (argv[i][j] == 'v')
+				xvis = 0;
+=== END ===
+=== post_ctx ===
+				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+=== END ===
+=== pattern ===
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -115,31 +165,71 @@ c 			else if (argv[i][j] == 'c') {
 					return EXIT_FAILURE;
 				}
 			} else {
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 -				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 +				fprintf(stderr, "Nextvi-5.3 Usage: %s [-acemsv] [file ...]\n", argv[0]);
-edit_cmd_rel:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+=== END ===
+=== post_ctx ===
+				return EXIT_FAILURE;
+			}
+		}
+=== END ===
+=== edit_cmd_rel ===
 +1
 s/\[-a/[-ac/
-GROUP 4
+=== END ===
+=== GROUP 4 ===
 -	ex_init(argv + i, argc - i);
 +	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+		term_init();
+	if (xvis & 8)
+		term_scrh;
+=== END ===
+=== post_ctx ===
+	if (xvis & 2)
+		ex();
+	else
+=== END ===
+=== pattern ===
 	if \(xvis & 8\)
 		term_scrh;
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +2
 s/i\)/i, ex_cmds, cmdnum)/
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 -void ex_init(char **files, int n);
 +void ex_init(char **files, int n, char** cmds, int cmdnum);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+#define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
+#define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
+=== END ===
+=== post_ctx ===
+void ex_bufpostfix(struct buf *p, int clear);
+int ex_krs(rset **krs, int *dir);
+void ex_krsset(char *kwd, int dir);
+=== END ===
+=== pattern ===
 void ex_init\(char
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0
 s/n\)/n, char** cmds, int cmdnum)/
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
@@ -209,7 +299,7 @@ index 74ffc2d3..68aaa68e 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..29f6d1c3 100644
+index 7afa37e4..96c0ec74 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -474,7 +474,7 @@ void *ex_exec(const char *ln);

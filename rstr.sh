@@ -287,52 +287,122 @@ ${SEP}+3${SEP}s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:539\\${
 exit 0
 === PATCH2VI DELTA ===
 === DELTA ex.c ===
-GROUP 7
+=== GROUP 7 ===
 -		rset_free(rs);
 +		rstr_free(rs);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+				break;
+			}
+		}
+=== END ===
+=== post_ctx ===
+		sbuf_cut(sb, 0)
+		if (pflg) {
+			term_clean();
+=== END ===
+=== pattern ===
 				break;
 			\}
 		\}
 		rset_free\(rs\);
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 2
+=== GROUP 2 ===
 +rstr *rstr_make(char *re, int flg);
 +int rstr_find(rstr *rs, char *s, int *grps, int flg);
 +int rstr_match(rstr *rs, char *s, int flg);
 +void rstr_free(rstr *rs);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+rset *rset_make(int n, char **pat, int flg);
+static rset *rset_smake(char *pat, int flg)
+	{ char *ss[1] = {pat}; return rset_make(1, ss, flg); }
+int rset_find(rset *re, char *s, int *grps, int flg);
+int rset_match(rset *rs, char *s, int flg);
+void rset_free(rset *re);
+=== END ===
+=== post_ctx ===
+char *re_read(char **src, int delim);
+
+/* lbuf.c: line buffer */
+=== END ===
+=== pattern ===
 void rset_free
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 -int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 +int lbuf_search(struct lbuf *lb, rstr *re, int dir, int beg, int end, int pskip,
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+int lbuf_eol(struct lbuf *lb, int r, int state);
+int lbuf_next(struct lbuf *lb, int dir, int *r, int *o);
+int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
+=== END ===
+=== post_ctx ===
+		int nskip, int *r, int *o);
+=== END ===
+=== pattern ===
 int lbuf_search
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0
 s/et/tr/
-GROUP 5
+=== END ===
+=== GROUP 5 ===
 -extern rset *xkwdrs;
 +extern rstr *xkwdrs;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+extern int xesc;
+extern int xexec_dep;
+extern sbuf *xacreg;
+=== END ===
+=== post_ctx ===
+extern sbuf *xregs[256];
+extern struct buf *bufs;
+extern struct buf tempbufs[3];
+=== END ===
+=== pattern ===
 extern rset \*xkwdrs;
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0
 s/et/tr/
-GROUP 6
+=== END ===
+=== GROUP 6 ===
 -int ex_krs(rset **krs, int *dir);
 +int ex_krs(rstr **krs, int *dir);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+#define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
+void ex_init(char **files, int n);
+void ex_bufpostfix(struct buf *p, int clear);
+=== END ===
+=== post_ctx ===
+void ex_krsset(char *kwd, int dir);
+void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
+int ex_edit(const char *path, int len);
+=== END ===
+=== pattern ===
 int ex_krs
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0
 s/et/tr/
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
@@ -734,7 +804,7 @@ index 74ffc2d3..3853906e 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..50882453 100644
+index 7afa37e4..38a5002d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -110,12 +110,24 @@ typedef struct {

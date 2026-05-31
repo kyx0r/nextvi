@@ -94,15 +94,29 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4$
 exit 0
 === PATCH2VI DELTA ===
 === DELTA regex.c ===
-GROUP 1
+=== GROUP 1 ===
 +	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
+	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
+	unsigned int sdense[prog->sparsesz], sparsesz = 0;
+=== END ===
+=== post_ctx ===
+	char nsubs[prog->sub];
+	for (i = 0; i < prog->laidx; i++)
+		lb[i] = NULL;
+=== END ===
+=== pattern ===
 	unsigned int sdense\[prog->sparsesz\], sparsesz = 0;
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+=== END ===
 === END DELTA ===
 === DELTA ren.c ===
-GROUP 1
+=== GROUP 1 ===
 +void ren_done(void)
 +{
 +	rset_free(dir_rslr);
@@ -116,9 +130,22 @@ GROUP 1
 +	}
 +}
 +
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+}
+
+ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
+=== END ===
+=== post_ctx ===
+ren_state *rstate = rstates;
+
+/* specify the screen position of the characters in s */
+=== END ===
+=== pattern ===
 ren_state rstates
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a void ren_done(void)
 {
 	rset_free(dir_rslr);
@@ -132,26 +159,69 @@ a void ren_done(void)
 	}
 }
 
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 +void dir_done(void);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+int ren_off(char *s, int p);
+char *ren_translate(char *s, char *ln);
+/* text direction */
+=== END ===
+=== post_ctx ===
+int dir_context(char *s);
+void dir_init(void);
+/* syntax highlighting */
+=== END ===
+=== pattern ===
 /\* text direction \*/
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a void dir_done(void);
-GROUP 2
+=== END ===
+=== GROUP 2 ===
 +void syn_done(void);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+int syn_findhl(int id);
+int syn_addhl(char *reg, int id);
+void syn_init(void);
+=== END ===
+=== post_ctx ===
+
+/* uc.c: utf-8 helper functions */
+extern unsigned char utf8_length[256];
+=== END ===
+=== pattern ===
 syn_init
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a void syn_done(void);
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 +void ex_done(void);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+#define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
+#define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
+void ex_init(char **files, int n);
+=== END ===
+=== post_ctx ===
+void ex_bufpostfix(struct buf *p, int clear);
+int ex_krs(rset **krs, int *dir);
+void ex_krsset(char *kwd, int dir);
+=== END ===
+=== pattern ===
 ex_init
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a void ex_done(void);
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
@@ -247,7 +317,7 @@ index 74ffc2d3..c26a100c 100644
  		term_scrl;
  	return abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..0698e5ee 100644
+index 7afa37e4..1e1b15eb 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -216,6 +216,7 @@ int ren_noeol(char *s, int p);

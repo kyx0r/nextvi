@@ -61,24 +61,51 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'conf.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwmpr]?|left|lim|led|vis)\
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+(?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+=== END ===
+=== post_ctx ===
+|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+=== END ===
+=== pattern ===
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1
 s/wp/wmp/
+=== END ===
 === END DELTA ===
 === DELTA ex.c ===
-GROUP 2
+=== GROUP 2 ===
 +EO(hlm)
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+=== END ===
+=== post_ctx ===
+
+_EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
+
+=== END ===
+=== pattern ===
 EO\(pac\)
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..1850ec4c 100644
+index 0d346df9..a7ffcafc 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},

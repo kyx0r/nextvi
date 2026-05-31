@@ -210,7 +210,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..06144aa1 100644
+index 0d346df9..fe259f59 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -62,7 +62,7 @@ const int ftslen = LEN(fts);
@@ -561,7 +561,7 @@ index 74ffc2d3..5ce8e45c 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..2635ab4f 100644
+index 7afa37e4..060925cb 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -495,7 +495,7 @@ extern const int ftslen;

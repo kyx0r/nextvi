@@ -66,64 +66,167 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
 +(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|ro|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+=== END ===
+=== post_ctx ===
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
+=== END ===
+=== pattern ===
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+=== END ===
 === END DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 +char readonly = 0;		/* commandline readonly option */
-strategy: abs
-GROUP 2
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+int xleft;			/* the first visible column */
+int xvis;			/* startup flags */
+int xai = 1;			/* autoindent option */
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== GROUP 2 ===
 +	bufs[i].readonly = readonly;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	bufs[i].top = 0;
+	bufs[i].td = +1;
+	bufs[i].mtime = -1;
+=== END ===
+=== post_ctx ===
+	return i;
+}
+
+=== END ===
+=== pattern ===
 	bufs\[i\]\.mtime = -1;
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a 	bufs[i].readonly = readonly;
-GROUP 6
+=== END ===
+=== GROUP 6 ===
 +	{"ro", ec_readonly},
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	{"reg", ec_regprint},
+	{"re", ec_krsset},
+	{"rd", ec_undoredo},
+=== END ===
+=== post_ctx ===
+	{"r", ec_read},
+	{"wq!", ec_write},
+	{"wq", ec_write},
+=== END ===
+=== pattern ===
 	\{"rd", ec_undoredo\},
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a 	{"ro", ec_readonly},
+=== END ===
 === END DELTA ===
 === DELTA vi.c ===
-GROUP 1
+=== GROUP 1 ===
 +			else if (argv[i][j] == 'R')
 +				readonly = 1;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+				xvis |= 4;
+			else if (argv[i][j] == 'a')
+				xvis |= 8;
+=== END ===
+=== post_ctx ===
+			else if (argv[i][j] == 'v')
+				xvis = 0;
+			else {
+=== END ===
+=== pattern ===
 			else if \(argv\[i\]\[j\] == 'a'\)
 				xvis \|= 8;
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1a 			else if (argv[i][j] == 'R')
 				readonly = 1;
-GROUP 2
+=== END ===
+=== GROUP 2 ===
 -				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 +				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+			else if (argv[i][j] == 'v')
+				xvis = 0;
+			else {
+				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+=== END ===
+=== post_ctx ===
+				return EXIT_FAILURE;
+			}
+		}
+=== END ===
+=== pattern ===
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i\]\[j\]\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1
 s/(\[-a.*m)/\1R/
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 +	char readonly;			/* read only */
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	int plen, row, off, top;
+	long mtime;			/* modification time */
+	signed char td;			/* text direction */
+=== END ===
+=== post_ctx ===
+};
+/* ex options */
+extern int xleft;
+=== END ===
+=== pattern ===
 	signed char td;			/\* text direction \*/
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a 	char readonly;			/* read only */
-GROUP 2
+=== END ===
+=== GROUP 2 ===
 +extern char readonly;
-strategy: abs
-edit_cmd_abs:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+/* filesystem */
+extern rset *fsincl;
+void dir_calc(char *path);
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== edit_cmd_abs ===
 \$a extern char readonly;
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..d7c5f194 100644
+index 0d346df9..0bc00994 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -211,7 +314,7 @@ index 74ffc2d3..7a73f38a 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..a75db437 100644
+index 7afa37e4..703e445a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -400,6 +400,7 @@ struct buf {

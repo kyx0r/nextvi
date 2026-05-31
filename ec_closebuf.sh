@@ -82,23 +82,50 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
 +(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|c[dx]?)?",
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+=== END ===
+=== post_ctx ===
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
+=== END ===
+=== pattern ===
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+=== END ===
 === END DELTA ===
 === DELTA ex.c ===
-GROUP 2
+=== GROUP 2 ===
 +	{"cx", ec_closebuf},
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	{"cm!", ec_cmap},
+	{"cm", ec_cmap},
+	{"cd", ec_chdir},
+=== END ===
+=== post_ctx ===
+	{"c", ec_insert},
+	{"j", ec_join},
+	EO(ts),
+=== END ===
+=== pattern ===
 	\{"cd", ec_chdir\},
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a 	{"cx", ec_closebuf},
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..56a193cc 100644
+index 0d346df9..e7f8217c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},

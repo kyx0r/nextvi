@@ -76,29 +76,78 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4$
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +((qe|pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+(?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+=== END ===
+=== post_ctx ===
+|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+=== END ===
+=== pattern ===
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
+=== END ===
 === END DELTA ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 +int xqe = 1000;			/* exit insert via kj (delay in ms) */
-strategy: abs
-GROUP 2
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+int xleft;			/* the first visible column */
+int xvis;			/* startup flags */
+int xai = 1;			/* autoindent option */
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== GROUP 2 ===
 +EO(qe)
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+=== END ===
+=== post_ctx ===
+
+_EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
+
+=== END ===
+=== pattern ===
 EO\(pac\)
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 +	EO(qe),
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	{"g", ec_glob},
+	EO(mpt),
+	{"m", ec_mark},
+=== END ===
+=== post_ctx ===
+	{"q!", ec_quit},
+	{"q", ec_quit},
+	{"reg+", ec_regprint},
+=== END ===
+=== pattern ===
 	\{"m", ec_mark\},
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a 	EO(qe),
+=== END ===
 === END DELTA ===
 === DELTA led.c ===
-GROUP 1
+=== GROUP 1 ===
 +static int gettime_ms(void)
 +{
 +	struct timespec t;
@@ -107,22 +156,61 @@ GROUP 1
 +	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
 +}
 +
-strategy: abs
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+static sbuf *suggestsb;
+=== END ===
+=== post_ctx ===
+static sbuf *acsb;
+sbuf *led_attsb;
+
+=== END ===
+=== strategy ===
+abs
+=== END ===
 === END DELTA ===
 === DELTA vi.c ===
-GROUP 1
+=== GROUP 1 ===
 +#include <time.h>
-strategy: abs
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+#include <dirent.h>
+#include <signal.h>
+#include <unistd.h>
+=== END ===
+=== post_ctx ===
+#include <poll.h>
+#include <termios.h>
+#include <limits.h>
+=== END ===
+=== strategy ===
+abs
+=== END ===
 === END DELTA ===
 === DELTA vi.h ===
-GROUP 3
+=== GROUP 3 ===
 +extern int xqe;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
 extern int xshape;
+extern int xorder;
+extern int xts;
+=== END ===
+=== post_ctx ===
+extern int xish;
+extern int xgrp;
+extern int xpac;
+=== END ===
+=== pattern ===
+extern int xshape;
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index f4366df9..5c087819 100644
+index 0d346df9..892937df 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -216,7 +304,7 @@ index 74ffc2d3..b47b3f25 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 79bfc4d4..43bffdb7 100644
+index 7afa37e4..43972543 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -361,6 +361,7 @@ typedef struct {

@@ -66,7 +66,7 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
-GROUP 1
+=== GROUP 1 ===
 +	case '\033':	/* Arrow keys */
 +		mv = term_read(0);
 +		if (mv == '[') {
@@ -98,10 +98,23 @@ GROUP 1
 +		} else	/* Not a 033[X command so we abort */
 +			return 0;
 +		break;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+
+	mv = term_read(0);
+	switch (mv) {
+=== END ===
+=== post_ctx ===
+	case ',':
+	case ';':
+		if (!vi_charlast[0])
+=== END ===
+=== pattern ===
 
 	mv = .*\(.*\);
 	switch \(mv\) \{
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c

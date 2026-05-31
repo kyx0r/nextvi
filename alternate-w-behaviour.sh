@@ -52,12 +52,23 @@ ${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAI
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
-GROUP 2
+=== GROUP 2 ===
 -			if (lbuf_wordbeg(xb, var, vi_nlmode+1, row, off))
 +			if (lbuf_wordbeg(xb, var, dir, row, off))
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+		for (i = 0; i < cnt; i++)
+=== END ===
+=== post_ctx ===
+				break;
+		break;
+	case '(':
+=== END ===
+=== pattern ===
 		for \(i = 0; i < cnt; i\+\+\)
 			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)
+=== END ===
 === END DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
