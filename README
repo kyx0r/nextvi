@@ -279,6 +279,14 @@ to toggle the mouse support. Clicking positions the cursor
 and mouse wheel scrolls using ^Y or ^E. Terminal mouse selections
 can still be made while holding Shift on most terminal emulators.
 
+detect_indent.sh
+--------------
+Scans up to 500 lines to guess the indentation format.
+Adds 3 new ex options:
+"et" - expandtab. Tabs are replaced with spaces
+"sw" - space width. How many literal spaces are injected for tab
+"idt" - indent detect. Toggle the 500 line indent guessing
+
 My current EXINIT setup:
 --------------
 How it works:
