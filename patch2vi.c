@@ -2936,7 +2936,7 @@ process_line:
 		printf("=== DELTA %s ===\n", od->filepath);
 		for (int j = 0; j < od->ngrps; j++)
 			emit_grp_delta(stdout, &od->grps[j]);
-		fputs(end_tag, stdout);
+		printf("%s\n", end_tag);
 	}
 	printf("=== PATCH2VI PATCH ===\n");
 	for (int i = 0; i < nraw; i++)
