@@ -59,7 +59,7 @@ static void ex_detect_indent(void)
 		for (; *p == ' '; spaces++, p++);
 		if (tabs && !spaces)
 			tab_lines++;
-		else if (spaces && !tabs && spaces <= 128) {
+		if (spaces && spaces <= 128) {
 			space_lines++;
 			hist[spaces]++;
 		}
@@ -218,7 +218,7 @@ abs
 +		for (; *p == ' '; spaces++, p++);
 +		if (tabs && !spaces)
 +			tab_lines++;
-+		else if (spaces && !tabs && spaces <= 128) {
++		if (spaces && spaces <= 128) {
 +			space_lines++;
 +			hist[spaces]++;
 +		}
@@ -385,7 +385,7 @@ index 0d346df9..07ff7490 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 0ec68c95..34324b55 100644
+index 0ec68c95..2d5baf1b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -426,7 +426,7 @@ index 0ec68c95..34324b55 100644
 +		for (; *p == ' '; spaces++, p++);
 +		if (tabs && !spaces)
 +			tab_lines++;
-+		else if (spaces && !tabs && spaces <= 128) {
++		if (spaces && spaces <= 128) {
 +			space_lines++;
 +			hist[spaces]++;
 +		}
