@@ -281,11 +281,12 @@ can still be made while holding Shift on most terminal emulators.
 
 detect_indent.sh
 --------------
-Scans up to 500 lines to guess the indentation format.
+Scans lines to guess the indentation format.
 Adds 3 new ex options:
 "et" - expandtab. Tabs are replaced with spaces
 "sw" - space width. How many literal spaces are injected for tab
-"idt" - indent detect. Toggle the 500 line indent guessing
+"idt" - indent detect. Enables indent guessing and sets the line
+limit (default 500).
 
 My current EXINIT setup:
 --------------
