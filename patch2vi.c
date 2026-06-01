@@ -2669,9 +2669,11 @@ int main(int argc, char **argv)
 					}
 					if (strncmp(line, "=== LEVEL ", 10) == 0) {
 						const char *lv = line + 10;
-						int llen = strlen(lv);
-						if (llen > 0 && lv[llen-1] == '*')
-							cur_gd->has_star = 1;
+						char *end = strstr(lv, " ===");
+						if (end)
+							*end = '\0';
+						int len = strlen(lv);
+						cur_gd->has_star = (len > 0 && lv[len-1] == '*');
 						cur_gd->level = atoi(lv);
 						if (cur_gd->level < 1)
 							cur_gd->level = 2;
