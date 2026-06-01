@@ -169,7 +169,7 @@ static char *escape_chars(const char *s, const char *set)
 	for (const char *p = s; *p; p++)
 		if (strchr(set, *p))
 			extra++;
-	char *result = malloc(strlen(s) + extra + 1);
+	char *result = emalloc(strlen(s) + extra + 1);
 	char *dst = result;
 	for (const char *p = s; *p; p++) {
 		if (strchr(set, *p))
@@ -191,7 +191,7 @@ static void arr_append(char ***arr, int *n, int *cap, const char *s)
 {
 	if (*n >= *cap) {
 		*cap = *cap ? *cap * 2 : 4;
-		*arr = realloc(*arr, *cap * sizeof(char *));
+		*arr = erealloc(*arr, *cap * sizeof(char *));
 	}
 	(*arr)[(*n)++] = xstrdup(s);
 }
@@ -221,7 +221,7 @@ static char *join_lines(char **lines, int nlines)
 	size_t len = 0;
 	for (int i = 0; i < nlines; i++)
 		len += strlen(lines[i]) + 1;
-	char *result = malloc(len ? len : 1);
+	char *result = emalloc(len ? len : 1);
 	char *p = result;
 	for (int i = 0; i < nlines; i++) {
 		int slen = strlen(lines[i]);
@@ -243,7 +243,7 @@ static char *build_default_text(char **del, int ndel, char **add, int nadd)
 		len += strlen(del[i]) + 2;
 	for (int i = 0; i < nadd; i++)
 		len += strlen(add[i]) + 2;
-	char *result = malloc(len + 1);
+	char *result = emalloc(len + 1);
 	char *p = result;
 	for (int i = 0; i < ndel; i++) {
 		*p++ = '-';
@@ -484,12 +484,12 @@ static int find_line_diff(const char *old, const char *new,
 	new_diff_len = new_diff_end - new_diff_start;
 
 	/* Extract the old text */
-	*old_text = malloc(old_diff_len + 1);
+	*old_text = emalloc(old_diff_len + 1);
 	memcpy(*old_text, old + old_diff_start, old_diff_len);
 	(*old_text)[old_diff_len] = '\0';
 
 	/* Extract the new text */
-	*new_text = malloc(new_diff_len + 1);
+	*new_text = emalloc(new_diff_len + 1);
 	memcpy(*new_text, new + new_diff_start, new_diff_len);
 	(*new_text)[new_diff_len] = '\0';
 
@@ -1720,7 +1720,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		free(in_fd_per);
 		return;
 	}
-	char ***default_cmds_per = malloc(nactive * sizeof(char **));
+	char ***default_cmds_per = emalloc(nactive * sizeof(char **));
 	for (int k = 0; k < nactive; k++) {
 		fprintf(tmp_fp, "=== FILE: %s ===\n", active[k]->path);
 		default_cmds_per[k] = write_groups_to_file(tmp_fp,
@@ -1775,7 +1775,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 #endif
 
 	/* Parse the edited file once per file slot */
-	parsed_grp_t **edit_per = malloc(nactive * sizeof(parsed_grp_t *));
+	parsed_grp_t **edit_per = emalloc(nactive * sizeof(parsed_grp_t *));
 	for (int k = 0; k < nactive; k++)
 		edit_per[k] = calloc(active[k]->ngroups, sizeof(parsed_grp_t));
 	parse_tmp_file(tmppath, active, nactive, edit_per);
@@ -1790,7 +1790,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			file_delta_t *od = &out_deltas[nout_deltas++];
 			od->filepath = xstrdup(active[k]->path);
 			od->gcap = in_fd->ngrps;
-			od->grps = malloc(od->gcap * sizeof(grp_delta_t));
+			od->grps = emalloc(od->gcap * sizeof(grp_delta_t));
 			od->ngrps = in_fd->ngrps;
 			for (int gi = 0; gi < in_fd->ngrps; gi++) {
 				grp_delta_t *src = &in_fd->grps[gi], *dst = &od->grps[gi];
@@ -1824,7 +1824,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 	} else {
 		/* Compute structured delta: compare .orig (auto-generated baseline)
 		 * against edited file. Only store changed groups. */
-		parsed_grp_t **orig_per = malloc(nactive * sizeof(parsed_grp_t *));
+		parsed_grp_t **orig_per = emalloc(nactive * sizeof(parsed_grp_t *));
 		for (int k = 0; k < nactive; k++)
 			orig_per[k] = calloc(active[k]->ngroups, sizeof(parsed_grp_t));
 		parse_tmp_file(tmppath_orig, active, nactive, orig_per);
@@ -1866,7 +1866,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				}
 				if (od->ngrps >= od->gcap) {
 					od->gcap = od->gcap ? od->gcap * 2 : 4;
-					od->grps = realloc(od->grps,
+					od->grps = erealloc(od->grps,
 							   od->gcap * sizeof(grp_delta_t));
 				}
 				grp_delta_t *gout = &od->grps[od->ngrps++];
@@ -2065,7 +2065,7 @@ static void build_file_groups(file_patch_t *fp)
 					nall_ctx = 0;
 				if (nall_ctx >= all_ctx_cap) {
 					all_ctx_cap = all_ctx_cap ? all_ctx_cap * 2 : 16;
-					all_ctx = realloc(all_ctx, all_ctx_cap * sizeof(char*));
+					all_ctx = erealloc(all_ctx, all_ctx_cap * sizeof(char*));
 				}
 				all_ctx[nall_ctx++] = fp->ops[i].text;
 			}
@@ -2109,7 +2109,7 @@ static void build_file_groups(file_patch_t *fp)
 			}
 		}
 		g->ndel = i - del_start_idx;
-		g->del_texts = malloc(g->ndel * sizeof(char*));
+		g->del_texts = emalloc(g->ndel * sizeof(char*));
 		for (int j = 0; j < g->ndel; j++)
 			g->del_texts[j] = fp->ops[del_start_idx + j].text;
 
@@ -2119,7 +2119,7 @@ static void build_file_groups(file_patch_t *fp)
 			i++;
 		g->nadd = i - add_start;
 		if (g->nadd > 0) {
-			g->add_texts = malloc(g->nadd * sizeof(char*));
+			g->add_texts = emalloc(g->nadd * sizeof(char*));
 			for (int j = 0; j < g->nadd; j++)
 				g->add_texts[j] = fp->ops[add_start + j].text;
 			if (g->del_start == 0) {
@@ -2149,7 +2149,7 @@ static void build_file_groups(file_patch_t *fp)
 				pi++;
 			}
 			if (post_avail > 0) {
-				g->post_ctx = malloc(post_avail * sizeof(char*));
+				g->post_ctx = emalloc(post_avail * sizeof(char*));
 				g->npost_ctx = post_avail;
 				for (int j = 0; j < post_avail; j++)
 					g->post_ctx[j] = fp->ops[i + j].text;
@@ -2180,7 +2180,7 @@ static void build_file_groups(file_patch_t *fp)
 				g->ldc_start = utf8_char_offset(old, prefix);
 				g->ldc_end = utf8_char_offset(old, olen - suffix);
 				int ns = prefix, ne = nlen - suffix;
-				g->ldc_new_text = malloc(ne - ns + 1);
+				g->ldc_new_text = emalloc(ne - ns + 1);
 				memcpy(g->ldc_new_text, new + ns, ne - ns);
 				g->ldc_new_text[ne - ns] = '\0';
 			}
@@ -2656,7 +2656,7 @@ int main(int argc, char **argv)
 						if (cur_fd->ngrps >= cur_fd->gcap) {
 							cur_fd->gcap = cur_fd->gcap
 								       ? cur_fd->gcap * 2 : 4;
-							cur_fd->grps = realloc(
+							cur_fd->grps = erealloc(
 									       cur_fd->grps,
 									       cur_fd->gcap *
 									       sizeof(grp_delta_t));
