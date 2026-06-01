@@ -115,9 +115,9 @@ ${SEP}+2c 			if (xet) {
 					pre -= _k;
 				}
 			} else if (sb->s[ps] == ' ' || sb->s[ps] == '\\\\t') {
-${SEP}.,\$;f> 				exbuf_load\\\\(ex_buf\\\\)
+${SEP}.,\$;f> 				pre--;
 			\\\\}
-			continue; \\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		case '\\\\t':
 			if (xet)
 				for (int _l = 0; _l < xsw; _l++)
@@ -492,10 +492,10 @@ index 0ec68c95..34324b55 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/led.c b/led.c
-index eb1eb7dc..00775dcf 100644
+index eb1eb7dc..83a50797 100644
 --- a/led.c
 +++ b/led.c
-@@ -451,13 +451,25 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -451,18 +451,37 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('t'):
  			cs = uc_dup(sb->s + ps);
  			sbuf_cut(sb, ps)
@@ -524,10 +524,8 @@ index eb1eb7dc..00775dcf 100644
  				memmove(&sb->s[ps], &sb->s[ps+1], len - ps - 1);
  				sb->s_n--;
  				pre--;
-@@ -636,6 +648,13 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
- 				exbuf_load(ex_buf)
  			}
- 			continue; }
+ 			break;
 +		case '\t':
 +			if (xet)
 +				for (int _l = 0; _l < xsw; _l++)
@@ -535,9 +533,9 @@ index eb1eb7dc..00775dcf 100644
 +			else
 +				sbuf_chr(sb, '\t')
 +			break;
- 		default:
- 			if (c == '\n' || TK_INT(c))
- 				return c;
+ 		case TK_CTL(']'):
+ 		case TK_CTL('\\'):
+ 			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
 index 74ffc2d3..1a745d18 100644
 --- a/vi.c
