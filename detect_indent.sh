@@ -31,7 +31,17 @@ EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(pac\\\\|${SEP}??!${DBG
 ${SEP}.${SEP}s/\\\\|p/|sw|et|idt|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}14a int xet;			/* expandtab - use spaces for indentation */
 int xsw = 8;			/* shiftwidth - indentation step */
 int xidt = 500;			/* auto-detect indent on file open */
-${SEP}%;f> 	return 0;
+${SEP}%;f> 	bufs\\\\[i\\\\]\\\\.off = 0;
+	bufs\\\\[i\\\\]\\\\.top = 0;
+	bufs\\\\[i\\\\]\\\\.td = \\\\+1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:117\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 	bufs[i].et = 0;
+	bufs[i].sw = 8;
+${SEP}.,\$;f> 	tempbufs\\\\[i\\\\]\\\\.off = 0;
+	tempbufs\\\\[i\\\\]\\\\.top = 0;
+	tempbufs\\\\[i\\\\]\\\\.td = \\\\+1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:129\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 	tempbufs[i].et = 0;
+	tempbufs[i].sw = 8;
+${SEP}.,\$;f> 	return 0;
 \\\\}
 
 static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:353\\${SEP}pr${INTR}${QF}}${SEP}${LB}
@@ -41,24 +51,24 @@ ${SEP}+2a static int gcd(int a, int b)
 	return a;
 }
 
-static void ex_detect_indent(void)
+static void ex_detect_indent(struct buf *p)
 {
-	int n = lbuf_len(xb);
+	int n = lbuf_len(p->lb);
 	int max = n < xidt ? n : xidt;
 	int tab_lines = 0, space_lines = 0;
 	int hist[129];
 	memset(hist, 0, sizeof(hist));
 
 	for (int i = 0; i < max; i++) {
-		char *ln = lbuf_get(xb, i);
+		char *ln = lbuf_get(p->lb, i);
 		if (!ln)
 			continue;
 		int tabs = 0, spaces = 0;
-		char *p = ln;
-		for (;; p++) {
-			if (*p == ' ')
+		char *s = ln;
+		for (;; s++) {
+			if (*s == ' ')
 				spaces++;
-			else if (*p == '\\\\t')
+			else if (*s == '\\\\t')
 				tabs++;
 			else
 				break;
@@ -77,18 +87,18 @@ static void ex_detect_indent(void)
 				g = g ? gcd(g, j) : j;
 		if (g < 2 || g > 8)
 			g = 4;
-		xet = 1;
-		xsw = g;
+		p->et = xet = 1;
+		p->sw = xsw = g;
 		xts = g;
 	} else if (tab_lines > space_lines)
-		xet = 0;
+		p->et = xet = 0;
 }
 
 ${SEP}.,\$;f> 	p->mtime = mtime\\\\(p->path\\\\);
 	p->ft = syn_filetype\\\\(p->path\\\\);
 	lbuf_saved\\\\(p->lb, clear\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:593\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (xidt)
-		ex_detect_indent();
+		ex_detect_indent(p);
 ${SEP}.,\$f> EO\\\\(shape\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1477\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(et) EO(idt)
 _EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
@@ -147,10 +157,25 @@ ${SEP}+3,#+2c 				if (xet && *ln == ' ') {
 				} else
 					sbuf_chr(sb, '\\\\t')
 			}
-${SEP}b4${SEP}%f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b4${SEP}%;f> 	int plen, row, off, top;
+	long mtime;			/\\\\* modification time \\\\*/
+	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 	int et;				/* expandtab - use spaces for indentation */
+	int sw;				/* shiftwidth - indentation step */
+${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a extern int xet;
 extern int xsw;
 extern int xidt;
+${SEP}.,\$;f> 	xoff = buf->off; \\\\\\\\
+	xtop = buf->top; \\\\\\\\
+	xtd = buf->td; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:455\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 	xet = buf->et; \\\\
+	xsw = buf->sw; \\\\
+${SEP}.,\$;f> 	buf->off = xoff; \\\\\\\\
+	buf->top = xtop; \\\\\\\\
+	buf->td = xtd; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:461\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 	buf->et = xet; \\\\
+	buf->sw = xsw; \\\\
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
 
 exit 0
@@ -199,31 +224,31 @@ int xpac;			/* print autocomplete options */
 === strategy ===
 abs
 === END ===
-=== GROUP 2 ===
+=== GROUP 4 ===
 +static int gcd(int a, int b)
 +{
 +	while (b) { int t = b; b = a % b; a = t; }
 +	return a;
 +}
 +
-+static void ex_detect_indent(void)
++static void ex_detect_indent(struct buf *p)
 +{
-+	int n = lbuf_len(xb);
++	int n = lbuf_len(p->lb);
 +	int max = n < xidt ? n : xidt;
 +	int tab_lines = 0, space_lines = 0;
 +	int hist[129];
 +	memset(hist, 0, sizeof(hist));
 +
 +	for (int i = 0; i < max; i++) {
-+		char *ln = lbuf_get(xb, i);
++		char *ln = lbuf_get(p->lb, i);
 +		if (!ln)
 +			continue;
 +		int tabs = 0, spaces = 0;
-+		char *p = ln;
-+		for (;; p++) {
-+			if (*p == ' ')
++		char *s = ln;
++		for (;; s++) {
++			if (*s == ' ')
 +				spaces++;
-+			else if (*p == '\t')
++			else if (*s == '\t')
 +				tabs++;
 +			else
 +				break;
@@ -242,11 +267,11 @@ abs
 +				g = g ? gcd(g, j) : j;
 +		if (g < 2 || g > 8)
 +			g = 4;
-+		xet = 1;
-+		xsw = g;
++		p->et = xet = 1;
++		p->sw = xsw = g;
 +		xts = g;
 +	} else if (tab_lines > space_lines)
-+		xet = 0;
++		p->et = xet = 0;
 +}
 +
 === END ===
@@ -267,7 +292,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 
 static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
 === END ===
-=== GROUP 4 ===
+=== GROUP 6 ===
 +EO(et) EO(idt)
 +_EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
 +
@@ -286,7 +311,7 @@ _EO(left,
 === pattern ===
 EO\(shape\)
 === END ===
-=== GROUP 5 ===
+=== GROUP 7 ===
 +	EO(et),
 === END ===
 === LEVEL 2 ===
@@ -303,7 +328,7 @@ EO\(shape\)
 === pattern ===
 	EO\(err\),
 === END ===
-=== GROUP 6 ===
+=== GROUP 8 ===
 +	EO(idt),
 === END ===
 === LEVEL 2 ===
@@ -323,7 +348,7 @@ EO\(shape\)
 === edit_cmd_rel ===
 i 	EO(idt),
 === END ===
-=== GROUP 7 ===
+=== GROUP 9 ===
 +	EO(sw),
 === END ===
 === LEVEL 2 ===
@@ -362,7 +387,7 @@ i 	EO(idt),
 === END ===
 === END ===
 === DELTA vi.h ===
-=== GROUP 1 ===
+=== GROUP 2 ===
 +extern int xet;
 +extern int xsw;
 +extern int xidt;
@@ -397,7 +422,7 @@ index 0d346df9..07ff7490 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 0ec68c95..db85a41a 100644
+index 0ec68c95..991d3741 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -410,7 +435,25 @@ index 0ec68c95..db85a41a 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -351,6 +354,55 @@ int ex_edit(const char *path, int len)
+@@ -115,6 +118,8 @@ static int bufs_open(const char *path, int len)
+ 	bufs[i].off = 0;
+ 	bufs[i].top = 0;
+ 	bufs[i].td = +1;
++	bufs[i].et = 0;
++	bufs[i].sw = 8;
+ 	bufs[i].mtime = -1;
+ 	return i;
+ }
+@@ -127,6 +132,8 @@ void temp_open(int i, char *name, char *ft)
+ 	tempbufs[i].off = 0;
+ 	tempbufs[i].top = 0;
+ 	tempbufs[i].td = +1;
++	tempbufs[i].et = 0;
++	tempbufs[i].sw = 8;
+ 	tempbufs[i].mtime = -1;
+ 	tempbufs[i].ft = ft;
+ }
+@@ -351,6 +358,55 @@ int ex_edit(const char *path, int len)
  	return 0;
  }
  
@@ -420,24 +463,24 @@ index 0ec68c95..db85a41a 100644
 +	return a;
 +}
 +
-+static void ex_detect_indent(void)
++static void ex_detect_indent(struct buf *p)
 +{
-+	int n = lbuf_len(xb);
++	int n = lbuf_len(p->lb);
 +	int max = n < xidt ? n : xidt;
 +	int tab_lines = 0, space_lines = 0;
 +	int hist[129];
 +	memset(hist, 0, sizeof(hist));
 +
 +	for (int i = 0; i < max; i++) {
-+		char *ln = lbuf_get(xb, i);
++		char *ln = lbuf_get(p->lb, i);
 +		if (!ln)
 +			continue;
 +		int tabs = 0, spaces = 0;
-+		char *p = ln;
-+		for (;; p++) {
-+			if (*p == ' ')
++		char *s = ln;
++		for (;; s++) {
++			if (*s == ' ')
 +				spaces++;
-+			else if (*p == '\t')
++			else if (*s == '\t')
 +				tabs++;
 +			else
 +				break;
@@ -456,26 +499,26 @@ index 0ec68c95..db85a41a 100644
 +				g = g ? gcd(g, j) : j;
 +		if (g < 2 || g > 8)
 +			g = 4;
-+		xet = 1;
-+		xsw = g;
++		p->et = xet = 1;
++		p->sw = xsw = g;
 +		xts = g;
 +	} else if (tab_lines > space_lines)
-+		xet = 0;
++		p->et = xet = 0;
 +}
 +
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
-@@ -591,6 +643,8 @@ void ex_bufpostfix(struct buf *p, int clear)
+@@ -591,6 +647,8 @@ void ex_bufpostfix(struct buf *p, int clear)
  	p->mtime = mtime(p->path);
  	p->ft = syn_filetype(p->path);
  	lbuf_saved(p->lb, clear);
 +	if (xidt)
-+		ex_detect_indent();
++		ex_detect_indent(p);
  }
  
  static void *ec_setpath(char *loc, char *cmd, char *arg)
-@@ -1475,6 +1529,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+@@ -1475,6 +1533,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
@@ -485,7 +528,7 @@ index 0ec68c95..db85a41a 100644
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
  _EO(left,
-@@ -1520,6 +1577,7 @@ static struct excmd {
+@@ -1520,6 +1581,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -493,7 +536,7 @@ index 0ec68c95..db85a41a 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1530,6 +1588,7 @@ static struct excmd {
+@@ -1530,6 +1592,7 @@ static struct excmd {
  	{"f>", ec_find},
  	{"f<", ec_find},
  	{"f", ec_fuzz},
@@ -501,7 +544,7 @@ index 0ec68c95..db85a41a 100644
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
-@@ -1559,6 +1618,7 @@ static struct excmd {
+@@ -1559,6 +1622,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -582,10 +625,19 @@ index 74ffc2d3..1a745d18 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index 7afa37e4..b7f86290 100644
+index 7afa37e4..fd96c544 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -416,6 +416,9 @@ extern int xtd;
+@@ -400,6 +400,8 @@ struct buf {
+ 	int plen, row, off, top;
+ 	long mtime;			/* modification time */
+ 	signed char td;			/* text direction */
++	int et;				/* expandtab - use spaces for indentation */
++	int sw;				/* shiftwidth - indentation step */
+ };
+ /* ex options */
+ extern int xleft;
+@@ -416,6 +418,9 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;
@@ -595,3 +647,20 @@ index 7afa37e4..b7f86290 100644
  extern int xish;
  extern int xgrp;
  extern int xpac;
+@@ -453,12 +458,16 @@ extern struct buf *ex_pbuf;
+ 	xoff = buf->off; \
+ 	xtop = buf->top; \
+ 	xtd = buf->td; \
++	xet = buf->et; \
++	xsw = buf->sw; \
+ 
+ #define exbuf_save(buf) \
+ 	buf->row = xrow; \
+ 	buf->off = xoff; \
+ 	buf->top = xtop; \
+ 	buf->td = xtd; \
++	buf->et = xet; \
++	buf->sw = xsw; \
+ 
+ #define bufs_switchwft(idx) \
+ { if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
