@@ -145,10 +145,6 @@ ${SEP}b4${SEP}%f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAI
 ${SEP}+2a extern int xet;
 extern int xsw;
 extern int xidt;
-${SEP}.,\$;f> #define ex_print\\\\(line, ft\\\\) \\\\{ RS\\\\(2, ex_cprint\\\\(line, ft, -1, 0, 0, 1\\\\)\\\\); \\\\}
-void ex_init\\\\(char \\\\*\\\\*files, int n\\\\);
-void ex_bufpostfix\\\\(struct buf \\\\*p, int clear\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:478\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a void ex_detect_indent(void);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
 
 exit 0
@@ -357,14 +353,9 @@ i 	EO(idt),
 === GROUP 1 ===
 +extern int xet;
 +extern int xsw;
-+extern int xidetect;
++extern int xidt;
 === END ===
 === LEVEL 2 ===
-=== custom_text ===
-+extern int xet;
-+extern int xsw;
-+extern int xidtect;
-=== END ===
 === pre_ctx ===
 extern int xshape;
 extern int xorder;
@@ -377,28 +368,6 @@ extern int xpac;
 === END ===
 === pattern ===
 extern int xshape;
-=== END ===
-=== edit_cmd_rel ===
-+2a extern int xet;
-extern int xsw;
-extern int xidt;
-=== END ===
-=== GROUP 2 ===
-+void vi_detect_indent(void);
-=== END ===
-=== LEVEL 2 ===
-=== pre_ctx ===
-#define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
-void ex_init(char **files, int n);
-void ex_bufpostfix(struct buf *p, int clear);
-=== END ===
-=== post_ctx ===
-int ex_krs(rset **krs, int *dir);
-void ex_krsset(char *kwd, int dir);
-void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
-=== END ===
-=== edit_cmd_rel ===
-+2a void ex_detect_indent(void);
 === END ===
 === END ===
 === PATCH2VI PATCH ===
@@ -597,7 +566,7 @@ index 74ffc2d3..1a745d18 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index 7afa37e4..fc24d6f4 100644
+index 7afa37e4..b7f86290 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -416,6 +416,9 @@ extern int xtd;
@@ -606,15 +575,7 @@ index 7afa37e4..fc24d6f4 100644
  extern int xts;
 +extern int xet;
 +extern int xsw;
-+extern int xidetect;
++extern int xidt;
  extern int xish;
  extern int xgrp;
  extern int xpac;
-@@ -476,6 +479,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
- #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
- void ex_init(char **files, int n);
- void ex_bufpostfix(struct buf *p, int clear);
-+void vi_detect_indent(void);
- int ex_krs(rset **krs, int *dir);
- void ex_krsset(char *kwd, int dir);
- void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
