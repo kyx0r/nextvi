@@ -154,7 +154,7 @@ void ex_init(char **files, int n)
 void ex_init\(.*\)
 \{
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA term.c ===
 === GROUP 1 ===
 +int stdin_fd;
@@ -194,7 +194,7 @@ abs
 +1
 s/0/stdin_fd/
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.c ===
 === GROUP 1 ===
 +	sigaction(SIGINT, &sa, NULL);
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
 	memset\(&sa, 0, sizeof\(sa\)\);
 	sa\.sa_handler = sighandler;
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 1 ===
 +extern int stdin_fd;
@@ -236,7 +236,7 @@ extern int vi_lncol;
 === edit_cmd_rel ===
 a extern int stdin_fd;
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 0ec68c95..6e60665a 100644

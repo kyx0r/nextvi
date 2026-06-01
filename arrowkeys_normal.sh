@@ -115,7 +115,7 @@ exit 0
 	mv = .*\(.*\);
 	switch \(mv\) \{
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index 74ffc2d3..92e6ea87 100644

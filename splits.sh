@@ -906,7 +906,7 @@ exit 0
 +3
 s/f!\](.*)\\/qf!]\1vs|sp|\\/
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA ex.c ===
 === GROUP 1 ===
 +struct win *wins;		/* head of window list */
@@ -922,7 +922,7 @@ int xai = 1;			/* autoindent option */
 === strategy ===
 abs
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA led.c ===
 === GROUP 5 ===
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
@@ -942,7 +942,7 @@ abs
 === pattern ===
 	syn_scdir
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 1 ===
 +void term_killn(int n);
@@ -964,7 +964,7 @@ void term_kill\(void\);
 === edit_cmd_rel ===
 a void term_killn(int n);
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..84792539 100644

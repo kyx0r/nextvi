@@ -67,7 +67,7 @@ exit 0
 === pattern ===
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA ex.c ===
 === GROUP 1 ===
 +int xrec;			/* input recoding register */
@@ -118,7 +118,7 @@ EO\(pac\)
 === edit_cmd_rel ===
 a 	EO(rec),
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 1 ===
 +extern int xrec;
@@ -140,7 +140,7 @@ extern int xrow, xoff, xtop;
 === edit_cmd_rel ===
 i extern int xrec;
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..74c23ff0 100644

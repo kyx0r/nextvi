@@ -164,7 +164,7 @@ exit 0
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..344c5b1b 100644

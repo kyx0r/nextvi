@@ -185,7 +185,7 @@ extern unsigned char utf8_length\[256\];
 c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
 index 2372d3b8..3b294bc7 100755

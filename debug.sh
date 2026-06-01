@@ -114,7 +114,7 @@ exit 0
 === edit_cmd_rel ===
 a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA ren.c ===
 === GROUP 1 ===
 +void ren_done(void)
@@ -160,7 +160,7 @@ a void ren_done(void)
 }
 
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 1 ===
 +void dir_done(void);
@@ -222,7 +222,7 @@ ex_init
 === edit_cmd_rel ===
 a void ex_done(void);
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 0ec68c95..f667d762 100644

@@ -102,7 +102,7 @@ s/n\)/n, char **cmds, int cmdnum)/
 +1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.c ===
 === GROUP 1 ===
 -	int i, j;
@@ -206,7 +206,7 @@ s/\[-a/[-ac/
 +2
 s/i\)/i, ex_cmds, cmdnum)/
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 1 ===
 -void ex_init(char **files, int n);
@@ -230,7 +230,7 @@ void ex_init\(char
 +0
 s/n\)/n, char** cmds, int cmdnum)/
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 0ec68c95..a554dfba 100644

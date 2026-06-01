@@ -142,7 +142,7 @@ exit 0
 === pattern ===
 \(\?:\(\[,;\]#\?\)\[ \\t\]\*\(\(\?:\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\(\?:\(\?:<\.\*\?\(\?:\(\?<\^\\\\\\\\\)<\|\$\)\|>\.\*\?\(\?:\(\?<\^\\\\\\\\\)>\|\$\)\)\|\\
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA ex.c ===
 === GROUP 1 ===
 +static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
@@ -202,7 +202,7 @@ abs
 i 	{"nm!", ec_map},
 	{"nm", ec_map},
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA led.c ===
 === GROUP 1 ===
 -		c = term_read(TK_CTL('l'));
@@ -227,7 +227,7 @@ i 	{"nm!", ec_map},
 +1
 s/term_read\(/map_read(1, /
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.c ===
 === GROUP 8 ===
 -				k = term_read(0);
@@ -252,7 +252,7 @@ s/term_read\(/map_read(1, /
 +0
 s/term_read\(/map_read(0, /
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 1 ===
 +int map_read(int mode, int winch);
@@ -274,7 +274,7 @@ void bufs_switch\(int idx\);
 === edit_cmd_rel ===
 i int map_read(int mode, int winch);
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..9b048eae 100644

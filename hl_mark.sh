@@ -83,7 +83,7 @@ exit 0
 +1
 s/wp/wmp/
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA ex.c ===
 === GROUP 2 ===
 +EO(hlm)
@@ -102,7 +102,7 @@ _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
 === pattern ===
 EO\(pac\)
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..a7ffcafc 100644

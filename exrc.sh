@@ -164,7 +164,7 @@ EO\(pac\)
 === edit_cmd_rel ===
 i 	EO(exrc),
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 0ec68c95..6c7953fe 100644

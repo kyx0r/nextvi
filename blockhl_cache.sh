@@ -271,7 +271,7 @@ exit 0
 	led_crender\(.*\)
 	rstate = rstates;
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
 index 7d8ff44a..2629816b 100644

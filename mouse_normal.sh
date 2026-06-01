@@ -252,7 +252,7 @@ exit 0
 +0
 s/t\|s/t|ms|s/
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA ex.c ===
 === GROUP 1 ===
 +int xms = 1;			/* mouse in normal mode */
@@ -266,7 +266,7 @@ int xai = 1;			/* autoindent option */
 === strategy ===
 abs
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA led.c ===
 === GROUP 3 ===
 +	term_mouse_on();
@@ -330,7 +330,7 @@ a 	term_mouse_off();
 === edit_cmd_rel ===
 +1a 			term_mouse_on();
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA term.c ===
 === GROUP 1 ===
 +int xmouse_col, xmouse_row;
@@ -356,7 +356,7 @@ int term_record;
 === strategy ===
 abs
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.c ===
 === GROUP 2 ===
 +	if (mv == 27 && xms) {
@@ -401,7 +401,7 @@ abs
 
 	mv = .*\(.*\);
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 1 ===
 +int term_try_mouse(void);
@@ -489,7 +489,7 @@ extern int xrow, xoff, xtop;
 === edit_cmd_rel ===
 i extern int xms;
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..da4d1c53 100644

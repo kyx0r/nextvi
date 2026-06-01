@@ -69,7 +69,7 @@ exit 0
 		for \(i = 0; i < cnt; i\+\+\)
 			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index 74ffc2d3..a22ace41 100644

@@ -197,7 +197,7 @@ exit 0
 +3
 s/(u\[.*)\]/\1p]/
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..23c43aa1 100644

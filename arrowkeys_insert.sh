@@ -223,7 +223,7 @@ exit 0
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
 index eb1eb7dc..c47a62de 100644

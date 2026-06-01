@@ -308,7 +308,7 @@ exit 0
 		\}
 		rset_free\(rs\);
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 2 ===
 +rstr *rstr_make(char *re, int flg);
@@ -403,7 +403,7 @@ int ex_krs
 +0
 s/et/tr/
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index 0ec68c95..b16a6329 100644

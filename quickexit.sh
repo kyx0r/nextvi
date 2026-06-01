@@ -94,7 +94,7 @@ exit 0
 === pattern ===
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA ex.c ===
 === GROUP 1 ===
 +int xqe = 1000;			/* exit insert via kj (delay in ms) */
@@ -145,7 +145,7 @@ EO\(pac\)
 === edit_cmd_rel ===
 a 	EO(qe),
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA led.c ===
 === GROUP 1 ===
 +static int gettime_ms(void)
@@ -169,7 +169,7 @@ sbuf *led_attsb;
 === strategy ===
 abs
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.c ===
 === GROUP 1 ===
 +#include <time.h>
@@ -188,7 +188,7 @@ abs
 === strategy ===
 abs
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 3 ===
 +extern int xqe;
@@ -207,7 +207,7 @@ extern int xpac;
 === pattern ===
 extern int xshape;
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..892937df 100644

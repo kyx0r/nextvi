@@ -84,7 +84,7 @@ exit 0
 === pattern ===
 \(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA ex.c ===
 === GROUP 1 ===
 +char readonly = 0;		/* commandline readonly option */
@@ -138,7 +138,7 @@ a 	bufs[i].readonly = readonly;
 === edit_cmd_rel ===
 a 	{"ro", ec_readonly},
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.c ===
 === GROUP 1 ===
 +			else if (argv[i][j] == 'R')
@@ -186,7 +186,7 @@ a 	{"ro", ec_readonly},
 +1
 s/(\[-a.*m)/\1R/
 === END ===
-=== END DELTA ===
+=== END ===
 === DELTA vi.h ===
 === GROUP 1 ===
 +	char readonly;			/* read only */
@@ -223,7 +223,7 @@ abs
 === edit_cmd_abs ===
 \$a extern char readonly;
 === END ===
-=== END DELTA ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..0bc00994 100644
