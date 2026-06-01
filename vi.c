@@ -482,7 +482,7 @@ static int fs_searchback(int cnt, int *row, int *off)
 
 static char rep_cmd[sizeof(icmd)];	/* the last command */
 static int rep_len;
-#define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
+#define rep_record() if(icmd_pos <= sizeof(rep_cmd)) { memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos; }
 
 static void vc_status(int type)
 {
@@ -494,7 +494,8 @@ static void vc_status(int type)
 	if (type && lbuf_get(xb, xrow)) {
 		c = rstate->chrs[xoff];
 		uc_code(cp, c, l)
-		memcpy(cbuf, c, l);
+		if (l <= (int)sizeof(cbuf))
+			memcpy(cbuf, c, l);
 		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d",
 			cbuf, cp, cp, cp, l, rstate->wid[xoff], c - lbuf_get(xb, xrow),
 			xoff, col);
