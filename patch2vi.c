@@ -1652,10 +1652,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		int file_header_written = 0;
 		for (int gi = 0; gi < in_fd->ngrps; gi++) {
 			grp_delta_t *stored = &in_fd->grps[gi];
-			int rejected = stored->group_idx > active[k]->ngroups;
-			group_t *g = &active[k]->groups[stored->group_idx - 1];
 			int lvl = delta_mode > 0 ? delta_mode
 				  : (stored->level ? stored->level : 2);
+			int rejected = stored->group_idx > active[k]->ngroups;
+			group_t *g = !rejected ? &active[k]->groups[stored->group_idx - 1] : NULL;
 			switch (lvl) {
 			case 1:
 				break;
@@ -1672,14 +1672,27 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 									g->add_texts, g->nadd);
 				break;
 			case 3:
-			case 4:
-				if (lvl == 3 && rejected)
+				if (rejected)
 					break;
 				rejected = !grp_full_hunk_matches(stored,
 								  g->all_pre_ctx, g->nall_pre_ctx,
 								  g->del_texts, g->ndel,
 								  g->add_texts, g->nadd,
 								  g->post_ctx, g->npost_ctx);
+				break;
+			case 4:
+				rejected = 1;
+				for (int gi2 = 0; gi2 < active[k]->ngroups; gi2++) {
+					group_t *g2 = &active[k]->groups[gi2];
+					if (grp_full_hunk_matches(stored,
+								  g2->all_pre_ctx, g2->nall_pre_ctx,
+								  g2->del_texts, g2->ndel,
+								  g2->add_texts, g2->nadd,
+								  g2->post_ctx, g2->npost_ctx)) {
+						rejected = 0;
+						break;
+					}
+				}
 				break;
 			}
 			if (rejected) {
@@ -2680,7 +2693,7 @@ int main(int argc, char **argv)
 						continue;
 					}
 					if (strncmp(line, "=== LEVEL ", 10) == 0) {
-						const char *lv = line + 10;
+						char *lv = line + 10;
 						char *end = strstr(lv, " ===");
 						if (end)
 							*end = '\0';
