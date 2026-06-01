@@ -326,8 +326,8 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 		if (lvl == 0)
 			lvl = 2;  /* default for old format deltas */
 
-		if (lvl == 3) {
-			/* Level 3: full hunk match, no index check */
+		if (lvl == 4) {
+			/* Level 4: full hunk match, no index check */
 			if (grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
 						  del_texts, ndel,
 						  add_texts, nadd,
@@ -336,7 +336,7 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 			continue;
 		}
 
-		/* Levels 1, 2, 4: group index must match first */
+		/* Levels 1, 2, 3: group index must match first */
 		if (gd->group_idx != idx)
 			continue;
 
@@ -349,7 +349,7 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 			if (grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
 				return gd;
 		}
-		if (lvl == 4 && grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
+		if (lvl == 3 && grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
 						      del_texts, ndel,
 						      add_texts, nadd,
 						      post_ctx, npost_ctx))
@@ -1673,7 +1673,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				break;
 			case 3:
 			case 4:
-				if (lvl == 4 && rejected)
+				if (lvl == 3 && rejected)
 					break;
 				rejected = !grp_full_hunk_matches(stored,
 								  g->all_pre_ctx, g->nall_pre_ctx,
@@ -2519,9 +2519,9 @@ static void usage(const char *prog)
 	fprintf(stderr,
 		"  -d2   Delta mode: match by group index + deleted/inserted text\n");
 	fprintf(stderr,
-		"  -d3   Delta mode: match by entire hunk\n");
+		"  -d3   Delta mode: match by group index + entire hunk\n");
 	fprintf(stderr,
-		"  -d4   Delta mode: match by group index + entire hunk (very strict)\n");
+		"  -d4   Delta mode: match by entire hunk\n");
 	fprintf(stderr,
 		"  -er   Read section end tag (default: \"%s\")\n", end_tag_rd);
 	fprintf(stderr,
