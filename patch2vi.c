@@ -2619,7 +2619,7 @@ int main(int argc, char **argv)
 					break;
 				if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
 					continue;
-				if (strncmp(line, "=== END DELTA ===", 17) == 0) {
+				if (strcmp(line, end_tag) == 0) {
 					cur_fd = NULL;
 					cur_gd = NULL;
 					in_sect = 0;
@@ -2936,7 +2936,7 @@ process_line:
 		printf("=== DELTA %s ===\n", od->filepath);
 		for (int j = 0; j < od->ngrps; j++)
 			emit_grp_delta(stdout, &od->grps[j]);
-		printf("=== END DELTA ===\n");
+		fputs(end_tag, stdout);
 	}
 	printf("=== PATCH2VI PATCH ===\n");
 	for (int i = 0; i < nraw; i++)
