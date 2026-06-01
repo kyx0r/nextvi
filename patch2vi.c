@@ -2731,13 +2731,11 @@ int main(int argc, char **argv)
 				}
 				if (in_sect == 10) {
 					cur_gd->strategy = strat_from_name(line, strlen(line));
-					in_sect = 0;
 					continue;
 				}
 				if (in_sect == 11) {
 					free(cur_gd->cmd);
 					cur_gd->cmd = xstrdup(line);
-					in_sect = 0;
 					continue;
 				}
 				switch (in_sect) {
