@@ -66,7 +66,8 @@ static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
 /* -1=per-group stored levels, 0=off, 1-4=forced level */
 static int delta_mode;
-static const char *end_tag = "=== END ===";
+static const char *end_tag_rd = "=== END ===";
+static const char *end_tag_wr = "=== END ===";
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
@@ -1154,7 +1155,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			ecmd_strat = e ? strat_from_name(p, e - p) : STRAT_DEFAULT;
 			continue;
 		}
-		if (strcmp(line, end_tag) == 0)
+		if (strcmp(line, end_tag_rd) == 0)
 			continue;
 
 		if (file_idx < 0)
@@ -1264,7 +1265,7 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "-%s\n", gd->del_lines[i]);
 	for (int i = 0; i < gd->nadd_lines; i++)
 		fprintf(out, "+%s\n", gd->add_lines[i]);
-	fprintf(out, "%s\n", end_tag);
+	fprintf(out, "%s\n", end_tag_wr);
 	int eglvl = gd->level ? gd->level : 2;
 	fprintf(out, "=== LEVEL %d%s ===\n", eglvl,
 		gd->has_star ? "*" : "");
@@ -1272,19 +1273,19 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "=== custom_text ===\n");
 		for (int i = 0; i < gd->ncustom_text; i++)
 			fprintf(out, "%s\n", gd->custom_text[i]);
-		fprintf(out, "%s\n", end_tag);
+		fprintf(out, "%s\n", end_tag_wr);
 	}
 	if (gd->npre_ctx > 0) {
 		fprintf(out, "=== pre_ctx ===\n");
 		for (int i = 0; i < gd->npre_ctx; i++)
 			fprintf(out, "%s\n", gd->pre_ctx[i]);
-		fprintf(out, "%s\n", end_tag);
+		fprintf(out, "%s\n", end_tag_wr);
 	}
 	if (gd->npost_ctx > 0) {
 		fprintf(out, "=== post_ctx ===\n");
 		for (int i = 0; i < gd->npost_ctx; i++)
 			fprintf(out, "%s\n", gd->post_ctx[i]);
-		fprintf(out, "%s\n", end_tag);
+		fprintf(out, "%s\n", end_tag_wr);
 	}
 	if (gd->strategy != STRAT_DEFAULT) {
 		const char *s = "abs";
@@ -1292,33 +1293,33 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 			s = "rel";
 		else if (gd->strategy == STRAT_RELC)
 			s = "relc";
-		fprintf(out, "=== strategy ===\n%s\n%s\n", s, end_tag);
+		fprintf(out, "=== strategy ===\n%s\n%s\n", s, end_tag_wr);
 	}
 	if (gd->cmd)
-		fprintf(out, "=== cmd ===\n%s\n%s\n", gd->cmd, end_tag);
+		fprintf(out, "=== cmd ===\n%s\n%s\n", gd->cmd, end_tag_wr);
 	if (gd->npattern > 0) {
 		fprintf(out, "=== pattern ===\n");
 		for (int i = 0; i < gd->npattern; i++)
 			fprintf(out, "%s\n", gd->pattern[i]);
-		fprintf(out, "%s\n", end_tag);
+		fprintf(out, "%s\n", end_tag_wr);
 	}
 	if (gd->nabs > 0) {
 		fprintf(out, "=== edit_cmd_abs ===\n");
 		for (int i = 0; i < gd->nabs; i++)
 			fprintf(out, "%s\n", gd->abs_cmd[i]);
-		fprintf(out, "%s\n", end_tag);
+		fprintf(out, "%s\n", end_tag_wr);
 	}
 	if (gd->nrelc > 0) {
 		fprintf(out, "=== edit_cmd_relc ===\n");
 		for (int i = 0; i < gd->nrelc; i++)
 			fprintf(out, "%s\n", gd->relc_cmd[i]);
-		fprintf(out, "%s\n", end_tag);
+		fprintf(out, "%s\n", end_tag_wr);
 	}
 	if (gd->nrel > 0) {
 		fprintf(out, "=== edit_cmd_rel ===\n");
 		for (int i = 0; i < gd->nrel; i++)
 			fprintf(out, "%s\n", gd->rel_cmd[i]);
-		fprintf(out, "%s\n", end_tag);
+		fprintf(out, "%s\n", end_tag_wr);
 	}
 }
 
@@ -1405,7 +1406,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			for (int i = 0; i < g->nadd; i++)
 				fprintf(fp, "+%s\n", g->add_texts[i]);
 		}
-		fprintf(fp, "%s\n", end_tag);
+		fprintf(fp, "%s\n", end_tag_wr);
 		int lvl = (gd && gd->level) ? gd->level : 2;
 		fprintf(fp, "=== LEVEL %d%s ===\n", lvl, gd && gd->has_star ? "*" : "");
 
@@ -1424,7 +1425,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				sel_strat == STRAT_REL ? "" : "#", use_cmd);
 
 		/* SEARCH PATTERN: inject stored or auto-generate */
-		fprintf(fp, "%s\n", end_tag);
+		fprintf(fp, "%s\n", end_tag_wr);
 		fprintf(fp, "=== SEARCH PATTERN ===\n");
 		int pattern_has_lines = 0;
 		if (gd && gd->npattern > 0) {
@@ -1472,7 +1473,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			}
 		}
 
-		fprintf(fp, "%s\n", end_tag);
+		fprintf(fp, "%s\n", end_tag_wr);
 
 		/* EDIT COMMAND sections */
 #define WG_CONTENT(fp) do { \
@@ -1512,7 +1513,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				WG_CONTENT(fp);
 			}
 		}
-		fprintf(fp, "%s\n", end_tag);
+		fprintf(fp, "%s\n", end_tag_wr);
 
 		/* relc */
 		int show_relc = has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff;
@@ -1532,7 +1533,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 						g->ldc_start, g->ldc_end,
 						g->ldc_new_text);
 			}
-			fprintf(fp, "%s\n", end_tag);
+			fprintf(fp, "%s\n", end_tag_wr);
 		}
 
 		/* rel */
@@ -1577,7 +1578,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 					WG_CONTENT(fp);
 				}
 			}
-			fprintf(fp, "%s\n", end_tag);
+			fprintf(fp, "%s\n", end_tag_wr);
 		}
 		if (gi + 1 < ngroups)
 			fputc('\n', fp);
@@ -1634,7 +1635,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			for (int gi = 0; gi < active[k]->ngroups; gi++)
 				free(dc[gi]);
 			free(dc);
-			fprintf(orig_fp, "%s\n", end_tag);
+			fprintf(orig_fp, "%s\n", end_tag_wr);
 			fputc('\n', orig_fp);
 		}
 		fclose(orig_fp);
@@ -1702,7 +1703,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			}
 		}
 		if (file_header_written && rej) {
-			fprintf(rej, "%s\n", end_tag);
+			fprintf(rej, "%s\n", end_tag_wr);
 			fputc('\n', rej);
 		}
 	}
@@ -1726,7 +1727,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		default_cmds_per[k] = write_groups_to_file(tmp_fp,
 				      active[k]->groups, active[k]->ngroups,
 				      in_fd_per[k]);
-		fprintf(tmp_fp, "%s\n", end_tag);
+		fprintf(tmp_fp, "%s\n", end_tag_wr);
 		fputc('\n', tmp_fp);
 	}
 	fclose(tmp_fp);
@@ -2504,7 +2505,7 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-aridh] [-d[N]] [-e TAG] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-aridh] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n", prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
@@ -2522,7 +2523,9 @@ static void usage(const char *prog)
 	fprintf(stderr,
 		"  -d4   Delta mode: match by group index + entire hunk (very strict)\n");
 	fprintf(stderr,
-		"  -e    Section end tag (default: \"%s\")\n", end_tag);
+		"  -er   Read section end tag (default: \"%s\")\n", end_tag_rd);
+	fprintf(stderr,
+		"  -ew   Write section end tag (default: \"%s\")\n", end_tag_wr);
 	fprintf(stderr, "  -h    Show this help\n");
 	fprintf(stderr,
 		"Input can be a unified diff or a previously generated patch2vi script\n");
@@ -2543,13 +2546,24 @@ int main(int argc, char **argv)
 			i++;
 			break;
 		}
-		if (argv[i][1] == 'e') {
-			if (argv[i][2])
-				end_tag = argv[i] + 2;
+		if (argv[i][1] == 'e' && argv[i][2] == 'r') {
+			if (argv[i][3])
+				end_tag_rd = argv[i] + 3;
 			else if (i + 1 < argc)
-				end_tag = argv[++i];
+				end_tag_rd = argv[++i];
 			else {
-				fprintf(stderr, "Option -e requires an argument\n");
+				fprintf(stderr, "Option -er requires an argument\n");
+				usage(argv[0]);
+			}
+			continue;
+		}
+		if (argv[i][1] == 'e' && argv[i][2] == 'w') {
+			if (argv[i][3])
+				end_tag_wr = argv[i] + 3;
+			else if (i + 1 < argc)
+				end_tag_wr = argv[++i];
+			else {
+				fprintf(stderr, "Option -ew requires an argument\n");
 				usage(argv[0]);
 			}
 			continue;
@@ -2619,7 +2633,7 @@ int main(int argc, char **argv)
 					break;
 				if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
 					continue;
-				if (strcmp(line, end_tag) == 0) {
+				if (strcmp(line, end_tag_rd) == 0) {
 					if (!in_sect) {
 						cur_fd = NULL;
 						cur_gd = NULL;
@@ -2932,7 +2946,7 @@ process_line:
 		printf("=== DELTA %s ===\n", od->filepath);
 		for (int j = 0; j < od->ngrps; j++)
 			emit_grp_delta(stdout, &od->grps[j]);
-		printf("%s\n", end_tag);
+		printf("%s\n", end_tag_wr);
 	}
 	printf("=== PATCH2VI PATCH ===\n");
 	for (int i = 0; i < nraw; i++)
