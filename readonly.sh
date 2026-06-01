@@ -167,7 +167,10 @@ a 	{"ro", ec_readonly},
 -				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 +				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
 === END ===
-=== LEVEL 2 ===
+=== LEVEL 2* ===
+=== custom_text ===
+Nextvi-... Usage
+=== END ===
 === pre_ctx ===
 			else if (argv[i][j] == 'v')
 				xvis = 0;
