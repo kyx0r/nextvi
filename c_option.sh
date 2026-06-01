@@ -170,7 +170,10 @@ c 			else if (argv[i][j] == 'c') {
 -				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 +				fprintf(stderr, "Nextvi-5.3 Usage: %s [-acemsv] [file ...]\n", argv[0]);
 === END ===
-=== LEVEL 2 ===
+=== LEVEL 2* ===
+=== custom_text ===
+Nextvi-... Usage
+=== END ===
 === pre_ctx ===
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
 === END ===
