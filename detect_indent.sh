@@ -30,7 +30,7 @@ LB="0?"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(pac\\\\|${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.${SEP}s/\\\\|p/|sw|et|idt|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}14a int xet;			/* expandtab - use spaces for indentation */
 int xsw = 8;			/* shiftwidth - indentation step */
-int xidt = 1;			/* auto-detect indent on file open */
+int xidt = 500;			/* auto-detect indent on file open */
 ${SEP}%;f> 	return 0;
 \\\\}
 
@@ -44,7 +44,7 @@ ${SEP}+2a static int gcd(int a, int b)
 static void ex_detect_indent(void)
 {
 	int n = lbuf_len(xb);
-	int max = n < 500 ? n : 500;
+	int max = n < xidt ? n : xidt;
 	int tab_lines = 0, space_lines = 0;
 	int hist[129];
 	memset(hist, 0, sizeof(hist));
@@ -55,11 +55,17 @@ static void ex_detect_indent(void)
 			continue;
 		int tabs = 0, spaces = 0;
 		char *p = ln;
-		for (; *p == '\\\\t'; tabs++, p++);
-		for (; *p == ' '; spaces++, p++);
+		for (;; p++) {
+			if (*p == ' ')
+				spaces++;
+			else if (*p == '\\\\t')
+				tabs++;
+			else
+				break;
+		}
 		if (tabs && !spaces)
 			tab_lines++;
-		if (spaces && spaces <= 128) {
+		else if (spaces && spaces <= 128) {
 			space_lines++;
 			hist[spaces]++;
 		}
@@ -78,11 +84,11 @@ static void ex_detect_indent(void)
 		xet = 0;
 }
 
-${SEP}.,\$;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
-		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
-		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		if (xidt)
-			ex_detect_indent();
+${SEP}.,\$;f> 	p->mtime = mtime\\\\(p->path\\\\);
+	p->ft = syn_filetype\\\\(p->path\\\\);
+	lbuf_saved\\\\(p->lb, clear\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:593\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2a 	if (xidt)
+		ex_detect_indent();
 ${SEP}.,\$f> EO\\\\(shape\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1477\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a EO(et) EO(idt)
 _EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
@@ -177,7 +183,7 @@ s/\|p/|sw|et|idt|p/
 === GROUP 1 ===
 +int xet;			/* expandtab - use spaces for indentation */
 +int xsw = 8;			/* shiftwidth - indentation step */
-+int xidt = 1;			/* auto-detect indent on file open */
++int xidt = 500;			/* auto-detect indent on file open */
 === END ===
 === LEVEL 2 ===
 === pre_ctx ===
@@ -203,7 +209,7 @@ abs
 +static void ex_detect_indent(void)
 +{
 +	int n = lbuf_len(xb);
-+	int max = n < 500 ? n : 500;
++	int max = n < xidt ? n : xidt;
 +	int tab_lines = 0, space_lines = 0;
 +	int hist[129];
 +	memset(hist, 0, sizeof(hist));
@@ -214,11 +220,17 @@ abs
 +			continue;
 +		int tabs = 0, spaces = 0;
 +		char *p = ln;
-+		for (; *p == '\t'; tabs++, p++);
-+		for (; *p == ' '; spaces++, p++);
++		for (;; p++) {
++			if (*p == ' ')
++				spaces++;
++			else if (*p == '\t')
++				tabs++;
++			else
++				break;
++		}
 +		if (tabs && !spaces)
 +			tab_lines++;
-+		if (spaces && spaces <= 128) {
++		else if (spaces && spaces <= 128) {
 +			space_lines++;
 +			hist[spaces]++;
 +		}
@@ -385,7 +397,7 @@ index 0d346df9..07ff7490 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 0ec68c95..2d5baf1b 100644
+index 0ec68c95..db85a41a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -394,11 +406,11 @@ index 0ec68c95..2d5baf1b 100644
  int xts = 8;			/* number of spaces for tab */
 +int xet;			/* expandtab - use spaces for indentation */
 +int xsw = 8;			/* shiftwidth - indentation step */
-+int xidt = 1;			/* auto-detect indent on file open */
++int xidt = 500;			/* auto-detect indent on file open */
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -351,6 +354,49 @@ int ex_edit(const char *path, int len)
+@@ -351,6 +354,55 @@ int ex_edit(const char *path, int len)
  	return 0;
  }
  
@@ -411,7 +423,7 @@ index 0ec68c95..2d5baf1b 100644
 +static void ex_detect_indent(void)
 +{
 +	int n = lbuf_len(xb);
-+	int max = n < 500 ? n : 500;
++	int max = n < xidt ? n : xidt;
 +	int tab_lines = 0, space_lines = 0;
 +	int hist[129];
 +	memset(hist, 0, sizeof(hist));
@@ -422,11 +434,17 @@ index 0ec68c95..2d5baf1b 100644
 +			continue;
 +		int tabs = 0, spaces = 0;
 +		char *p = ln;
-+		for (; *p == '\t'; tabs++, p++);
-+		for (; *p == ' '; spaces++, p++);
++		for (;; p++) {
++			if (*p == ' ')
++				spaces++;
++			else if (*p == '\t')
++				tabs++;
++			else
++				break;
++		}
 +		if (tabs && !spaces)
 +			tab_lines++;
-+		if (spaces && spaces <= 128) {
++		else if (spaces && spaces <= 128) {
 +			space_lines++;
 +			hist[spaces]++;
 +		}
@@ -448,16 +466,16 @@ index 0ec68c95..2d5baf1b 100644
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
-@@ -372,6 +418,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
- 	if (cd == 3 || (!rd && fd >= 0)) {
- 		ex_bufpostfix(ex_buf, arg[0]);
- 		syn_setft(xb_ft);
-+		if (xidt)
-+			ex_detect_indent();
- 	}
- 	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
- 			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-@@ -1475,6 +1523,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+@@ -591,6 +643,8 @@ void ex_bufpostfix(struct buf *p, int clear)
+ 	p->mtime = mtime(p->path);
+ 	p->ft = syn_filetype(p->path);
+ 	lbuf_saved(p->lb, clear);
++	if (xidt)
++		ex_detect_indent();
+ }
+ 
+ static void *ec_setpath(char *loc, char *cmd, char *arg)
+@@ -1475,6 +1529,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
@@ -467,7 +485,7 @@ index 0ec68c95..2d5baf1b 100644
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
  _EO(left,
-@@ -1520,6 +1571,7 @@ static struct excmd {
+@@ -1520,6 +1577,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -475,7 +493,7 @@ index 0ec68c95..2d5baf1b 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1530,6 +1582,7 @@ static struct excmd {
+@@ -1530,6 +1588,7 @@ static struct excmd {
  	{"f>", ec_find},
  	{"f<", ec_find},
  	{"f", ec_fuzz},
@@ -483,7 +501,7 @@ index 0ec68c95..2d5baf1b 100644
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
-@@ -1559,6 +1612,7 @@ static struct excmd {
+@@ -1559,6 +1618,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
