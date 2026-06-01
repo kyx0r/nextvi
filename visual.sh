@@ -30,10 +30,8 @@ LB="0?"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 		A\\\\(SYN_BD, BL1, WH1, YE\\\\)\\\\},
 
 	\\\\{bar_ft, \"\\\\^\\\\(\\\\\\\\\"\\\\.\\\\*\\\\\\\\\"\\\\)\\\\.\\\\*\\\\(\\\\\\\\\\\\\\\\\\\\[\\\\[wrf\\\\]\\\\\\\\\\\\\\\\\\\\]\\\\)\\\\.\\\\*\\\\\$\", A\\\\(AY1 \\\\| SYN_BD, BL, RE\\\\)\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:307\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:307\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> static int vi_status;			/\\\\* permanent status bar \\\\*/
-static int vi_tsm;			/\\\\* type of the status message \\\\*/
-static int vi_nlmode;			/\\\\* new line mode for vi regions \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:46\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
+${SEP}+3${SEP}s/\\\\)\\\\\$/).*\$/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:307\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%f> static int vi_nlmode;			/\\\\* new line mode for vi regions \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:46\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.a static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
 static int vi_vrow;			/* selection anchor row */
 static int vi_voff;			/* selection anchor column */
 ${SEP}.,\$;f> 	ret = func; \\\\\\\\
@@ -389,6 +387,32 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'conf.c' 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA vi.c ===
+=== GROUP 1 ===
++static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
++static int vi_vrow;			/* selection anchor row */
++static int vi_voff;			/* selection anchor column */
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+static int vi_status;			/* permanent status bar */
+static int vi_tsm;			/* type of the status message */
+static int vi_nlmode;			/* new line mode for vi regions */
+=== END ===
+=== post_ctx ===
+
+void *emalloc(size_t size)
+{
+=== END ===
+=== pattern ===
+static int vi_nlmode;			/\* new line mode for vi regions \*/
+=== END ===
+=== edit_cmd_rel ===
+a static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
+static int vi_vrow;			/* selection anchor row */
+static int vi_voff;			/* selection anchor column */
+=== END ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 0d346df9..cdaf95a7 100644
