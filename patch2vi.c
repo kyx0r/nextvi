@@ -2620,8 +2620,10 @@ int main(int argc, char **argv)
 				if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
 					continue;
 				if (strcmp(line, end_tag) == 0) {
-					cur_fd = NULL;
-					cur_gd = NULL;
+					if (!in_sect) {
+						cur_fd = NULL;
+						cur_gd = NULL;
+					}
 					in_sect = 0;
 					continue;
 				}
@@ -2646,10 +2648,6 @@ int main(int argc, char **argv)
 				if (!delta_mode || !cur_fd)
 					continue;
 				if (line[0] == '=' && strncmp(line, "=== ", 4) == 0) {
-					if (strcmp(line, end_tag) == 0) {
-						in_sect = 0;
-						continue;
-					}
 					if (strncmp(line, "=== GROUP ", 10) == 0) {
 						const char *p = line + 10;
 						int idx = atoi(p);
