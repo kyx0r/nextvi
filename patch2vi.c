@@ -2556,11 +2556,11 @@ static void usage(const char *prog)
 	fprintf(stderr,
 		"  -d1   Delta mode: match by group index only\n");
 	fprintf(stderr,
-		"  -d2   Delta mode: match by group index + deleted/inserted text\n");
+		"  -d2   Delta mode: match by group index + deleted/inserted text or regex if custom\n");
 	fprintf(stderr,
 		"  -d3   Delta mode: match by group index + entire hunk\n");
 	fprintf(stderr,
-		"  -d4   Delta mode: match by deleted/inserted text\n");
+		"  -d4   Delta mode: match by deleted/inserted text or regex if custom\n");
 	fprintf(stderr,
 		"  -d5   Delta mode: match by entire hunk\n");
 	fprintf(stderr,
