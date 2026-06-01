@@ -64,7 +64,7 @@ static int nfiles;
 static const char *cur_file_path;  /* set per-file for error messages */
 static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
-/* -1=per-group stored levels, 0=off, 1-4=forced level */
+/* -1=per-group stored levels, 0=off, 1-5=forced level */
 static int delta_mode;
 static const char *end_tag_rd = "=== END ===";
 static const char *end_tag_wr = "=== END ===";
@@ -72,7 +72,7 @@ static const char *end_tag_wr = "=== END ===";
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
 	int group_idx;      /* 1-based */
-	int level;          /* 1-4 comparison strictness, default 2 */
+	int level;          /* 1-5 comparison strictness, default 2 */
 	int has_star;
 	char **del_lines;    /* original patch del lines (used for raw comparison) */
 	int ndel_lines, del_cap;
@@ -80,9 +80,9 @@ typedef struct {
 	int nadd_lines, add_cap;
 	char **custom_text;   /* user-edited text (replaces default -/+ lines as-is) */
 	int ncustom_text, custom_text_cap;
-	char **pre_ctx;     /* context lines before change (for levels 3/4) */
+	char **pre_ctx;     /* context lines before change (for levels 3/5) */
 	int npre_ctx, pre_cap;
-	char **post_ctx;    /* context lines after change (for levels 3/4) */
+	char **post_ctx;    /* context lines after change (for levels 3/5) */
 	int npost_ctx, post_cap;
 	int strategy;       /* STRAT_DEFAULT = not recorded */
 	char *cmd;
@@ -327,7 +327,17 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 			lvl = 2;  /* default for old format deltas */
 
 		if (lvl == 4) {
-			/* Level 4: full hunk match, no index check */
+			/* Level 4: content match (like lvl 2), no index check */
+			if (gd->has_star && gd->level == 4
+			    && grp_content_regex_matches(gd, del_texts, ndel, add_texts, nadd))
+				return gd;
+			if (grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
+				return gd;
+			continue;
+		}
+
+		if (lvl == 5) {
+			/* Level 5: full hunk match, no index check */
 			if (grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
 						  del_texts, ndel,
 						  add_texts, nadd,
@@ -1035,7 +1045,7 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 /* Per-group parsed data from an interactive temp file (raw, no offset stripping) */
 typedef struct {
 	int strategy;
-	int level;         /* 1-4 comparison strictness (0 = default) */
+	int level;         /* 1-5 comparison strictness (0 = default) */
 	int has_star;
 	char **del_lines;
 	int ndel_lines, del_cap;
@@ -1681,6 +1691,22 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 								  g->post_ctx, g->npost_ctx);
 				break;
 			case 4:
+				rejected = 1;
+				for (int gi2 = 0; gi2 < active[k]->ngroups; gi2++) {
+					group_t *g2 = &active[k]->groups[gi2];
+					if ((stored->has_star && stored->level == 4
+					     && grp_content_regex_matches(stored,
+									   g2->del_texts, g2->ndel,
+									   g2->add_texts, g2->nadd))
+					    || grp_content_matches(stored,
+								   g2->del_texts, g2->ndel,
+								   g2->add_texts, g2->nadd)) {
+						rejected = 0;
+						break;
+					}
+				}
+				break;
+			case 5:
 				rejected = 1;
 				for (int gi2 = 0; gi2 < active[k]->ngroups; gi2++) {
 					group_t *g2 = &active[k]->groups[gi2];
@@ -2534,7 +2560,9 @@ static void usage(const char *prog)
 	fprintf(stderr,
 		"  -d3   Delta mode: match by group index + entire hunk\n");
 	fprintf(stderr,
-		"  -d4   Delta mode: match by entire hunk\n");
+		"  -d4   Delta mode: match by deleted/inserted text\n");
+	fprintf(stderr,
+		"  -d5   Delta mode: match by entire hunk\n");
 	fprintf(stderr,
 		"  -er   Read section end tag (default: \"%s\")\n", end_tag_rd);
 	fprintf(stderr,
@@ -2589,7 +2617,7 @@ int main(int argc, char **argv)
 			else if (argv[i][j] == 'i')
 				interactive_mode = 1;
 			else if (argv[i][j] == 'd') {
-				if (argv[i][j+1] >= '1' && argv[i][j+1] <= '4') {
+				if (argv[i][j+1] >= '1' && argv[i][j+1] <= '5') {
 					j++;
 					delta_mode = argv[i][j] - '0';
 				} else {
