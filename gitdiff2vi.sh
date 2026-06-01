@@ -4,7 +4,7 @@
 # If output.sh is omitted, writes to stdout
 
 if [ -n "$2" ]; then
-	case "$1" in "-d")
+	case "$1" in "-d"*)
 		git diff -- ":!$2" > /tmp/tmp.patch
 		sed '/^=== PATCH2VI PATCH ===$/q' "$2" > /tmp/tmp.sh
 		mv /tmp/tmp.sh "$2"
