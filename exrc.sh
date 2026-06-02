@@ -50,13 +50,15 @@ ${SEP}+2a void ex_script(FILE *fp)
 			}
 			ln[i++] = c;
 		}
-		if (!i) {
+		if (c == EOF) {
 			free(ln);
 			done = 1;
 			break;
 		}
-		ln[i] = '\\\\0';
-		ex_command(ln);
+		if (ln[0] != '#' && ln[0] != '\\\\n') { /* not a comment or empty line */
+			ln[i] = '\\\\0';
+			ex_command(ln);
+		}
 		free(ln);
 	} while(!done);
 }
@@ -167,7 +169,7 @@ i 	EO(exrc),
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 0ec68c95..6c7953fe 100644
+index 0ec68c95..0b991a15 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -191,7 +193,7 @@ index 0ec68c95..6c7953fe 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1742,6 +1745,53 @@ void ex(void)
+@@ -1742,6 +1745,55 @@ void ex(void)
  	xgrec--;
  }
  
@@ -209,13 +211,15 @@ index 0ec68c95..6c7953fe 100644
 +			}
 +			ln[i++] = c;
 +		}
-+		if (!i) {
++		if (c == EOF) {
 +			free(ln);
 +			done = 1;
 +			break;
 +		}
-+		ln[i] = '\0';
-+		ex_command(ln);
++		if (ln[0] != '#' && ln[0] != '\n') { /* not a comment or empty line */
++			ln[i] = '\0';
++			ex_command(ln);
++		}
 +		free(ln);
 +	} while(!done);
 +}
@@ -245,7 +249,7 @@ index 0ec68c95..6c7953fe 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1753,6 +1803,29 @@ void ex_init(char **files, int n)
+@@ -1753,6 +1805,29 @@ void ex_init(char **files, int n)
  		s = *(++files);
  	} while (--n > 0);
  	xvis &= ~4;
