@@ -303,7 +303,7 @@ index 0ec68c95..6e60665a 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index a49549c5..148203b0 100644
+index 65254701..655e3af6 100644
 --- a/term.c
 +++ b/term.c
 @@ -6,6 +6,8 @@ int term_resized;
