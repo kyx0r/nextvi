@@ -54,7 +54,7 @@ ${SEP}+2a static void vi_visual_attrib(char *s, int row)
 		sbuf_make(led_attsb, sizeof(led_att) * 16)
 	led_att la;
 	la.att = SYN_RV;
-	la.s   = s;
+	la.s = s;
 	ren_state *r = ren_position(s);
 	int o_beg, o_end;
 	if (vi_visual == 'V') {
@@ -68,9 +68,11 @@ ${SEP}+2a static void vi_visual_attrib(char *s, int row)
 	} else if (row == ar) {		/* first row: anchor to EOL */
 		o_beg = ao; o_end = lbuf_eol(xb, row, 1);
 	} else if (row == cr) {		/* last row: 0 to cursor */
-		o_beg = 0;  o_end = co;
+		o_beg = 0;
+		o_end = co;
 	} else {			/* middle row: full line */
-		o_beg = 0;  o_end = lbuf_eol(xb, row, 1);
+		o_beg = 0;
+		o_end = lbuf_eol(xb, row, 1);
 	}
 	o_beg = MAX(0, MIN(o_beg, r->n - 1));
 	o_end = MAX(0, MIN(o_end, r->n - 1));
@@ -265,21 +267,20 @@ static int vc_block_op(int cmd, int r1, int r2, int c_left, int c_right)
 static int vc_visual_op(int cmd)
 {
 	int r1 = vi_vrow, o1 = vi_voff;
-	int r2 = xrow,   o2 = xoff;
+	int r2 = xrow, o2 = xoff;
 	if (r1 > r2 || (r1 == r2 && o1 > o2)) {
 		swap(&r1, &r2);
 		swap(&o1, &o2);
 	}
-	if (vi_visual == 'b') {
+	int visual = vi_visual;
+	int lnmode = visual == 'V';
+	vi_visual = 0;
+	vi_mod |= 1;
+	if (visual == 'b') {
 		int c_left  = MIN(vi_voff, xoff);
 		int c_right = MAX(vi_voff, xoff);
-		vi_visual = 0;
-		vi_mod |= 1;
 		return vc_block_op(cmd, r1, r2, c_left, c_right);
 	}
-	int lnmode = (vi_visual == 'V');
-	vi_visual = 0;		/* clear before any operation (vi_change re-enters vi()) */
-	vi_mod |= 1;
 	if (!lnmode) {
 		if (o2 < lbuf_eol(xb, r2, 2))
 			o2++;		/* include char under cursor, like vc_motion */
@@ -290,7 +291,6 @@ static int vc_visual_op(int cmd)
 		o1 = 0;
 		o2 = lbuf_eol(xb, r2, r1 >= r2);
 	}
-	int mv_before = lbuf_len(xb);
 	int key = 0;
 	if (cmd == 'y')
 		vi_yank(r1, o1, r2, o2, lnmode);
@@ -304,7 +304,6 @@ static int vc_visual_op(int cmd)
 		vi_pipe(r1, r2);
 	else if (cmd == '>' || cmd == '<')
 		vi_shift(r1, r2, cmd == '>' ? +1 : -1, 1);
-	vi_mod |= r1 != r2 || mv_before != lbuf_len(xb) ? 1 : 2;
 	return key;
 }
 
@@ -428,7 +427,7 @@ index 0d346df9..cdaf95a7 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..c6459d71 100644
+index 74ffc2d3..e5c1d6e4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -441,7 +440,7 @@ index 74ffc2d3..c6459d71 100644
  
  void *emalloc(size_t size)
  {
-@@ -125,6 +128,48 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,6 +128,50 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
@@ -461,7 +460,7 @@ index 74ffc2d3..c6459d71 100644
 +		sbuf_make(led_attsb, sizeof(led_att) * 16)
 +	led_att la;
 +	la.att = SYN_RV;
-+	la.s   = s;
++	la.s = s;
 +	ren_state *r = ren_position(s);
 +	int o_beg, o_end;
 +	if (vi_visual == 'V') {
@@ -475,9 +474,11 @@ index 74ffc2d3..c6459d71 100644
 +	} else if (row == ar) {		/* first row: anchor to EOL */
 +		o_beg = ao; o_end = lbuf_eol(xb, row, 1);
 +	} else if (row == cr) {		/* last row: 0 to cursor */
-+		o_beg = 0;  o_end = co;
++		o_beg = 0;
++		o_end = co;
 +	} else {			/* middle row: full line */
-+		o_beg = 0;  o_end = lbuf_eol(xb, row, 1);
++		o_beg = 0;
++		o_end = lbuf_eol(xb, row, 1);
 +	}
 +	o_beg = MAX(0, MIN(o_beg, r->n - 1));
 +	o_end = MAX(0, MIN(o_end, r->n - 1));
@@ -490,7 +491,7 @@ index 74ffc2d3..c6459d71 100644
  static void vi_drawrow(int row)
  {
  	int l1, i, i1, lnnum = vi_lnnum;
-@@ -191,6 +236,7 @@ static void vi_drawrow(int row)
+@@ -191,6 +238,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -498,7 +499,7 @@ index 74ffc2d3..c6459d71 100644
  		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
-@@ -210,6 +256,7 @@ static void vi_drawrow(int row)
+@@ -210,6 +258,7 @@ static void vi_drawrow(int row)
  		restore(ftidx)
  		return;
  	}
@@ -506,7 +507,7 @@ index 74ffc2d3..c6459d71 100644
  	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
  	rstate = rstates;
  }
-@@ -491,20 +538,23 @@ static void vc_status(int type)
+@@ -491,20 +540,23 @@ static void vc_status(int type)
  	char cbuf[8] = "", vi_msg[512], *c;
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -534,7 +535,7 @@ index 74ffc2d3..c6459d71 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -941,6 +991,207 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -941,6 +993,204 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
@@ -696,21 +697,20 @@ index 74ffc2d3..c6459d71 100644
 +static int vc_visual_op(int cmd)
 +{
 +	int r1 = vi_vrow, o1 = vi_voff;
-+	int r2 = xrow,   o2 = xoff;
++	int r2 = xrow, o2 = xoff;
 +	if (r1 > r2 || (r1 == r2 && o1 > o2)) {
 +		swap(&r1, &r2);
 +		swap(&o1, &o2);
 +	}
-+	if (vi_visual == 'b') {
++	int visual = vi_visual;
++	int lnmode = visual == 'V';
++	vi_visual = 0;
++	vi_mod |= 1;
++	if (visual == 'b') {
 +		int c_left  = MIN(vi_voff, xoff);
 +		int c_right = MAX(vi_voff, xoff);
-+		vi_visual = 0;
-+		vi_mod |= 1;
 +		return vc_block_op(cmd, r1, r2, c_left, c_right);
 +	}
-+	int lnmode = (vi_visual == 'V');
-+	vi_visual = 0;		/* clear before any operation (vi_change re-enters vi()) */
-+	vi_mod |= 1;
 +	if (!lnmode) {
 +		if (o2 < lbuf_eol(xb, r2, 2))
 +			o2++;		/* include char under cursor, like vc_motion */
@@ -721,7 +721,6 @@ index 74ffc2d3..c6459d71 100644
 +		o1 = 0;
 +		o2 = lbuf_eol(xb, r2, r1 >= r2);
 +	}
-+	int mv_before = lbuf_len(xb);
 +	int key = 0;
 +	if (cmd == 'y')
 +		vi_yank(r1, o1, r2, o2, lnmode);
@@ -735,14 +734,13 @@ index 74ffc2d3..c6459d71 100644
 +		vi_pipe(r1, r2);
 +	else if (cmd == '>' || cmd == '<')
 +		vi_shift(r1, r2, cmd == '>' ? +1 : -1, 1);
-+	vi_mod |= r1 != r2 || mv_before != lbuf_len(xb) ? 1 : 2;
 +	return key;
 +}
 +
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1287,6 +1538,10 @@ void vi(int init)
+@@ -1287,6 +1537,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -753,7 +751,7 @@ index 74ffc2d3..c6459d71 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1337,6 +1592,10 @@ void vi(int init)
+@@ -1337,6 +1591,10 @@ void vi(int init)
  				vi_lncol = 0;
  				vi_mod |= 1;
  				break;
@@ -764,7 +762,7 @@ index 74ffc2d3..c6459d71 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1460,7 +1719,15 @@ void vi(int init)
+@@ -1460,7 +1718,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -780,7 +778,7 @@ index 74ffc2d3..c6459d71 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1509,6 +1776,10 @@ void vi(int init)
+@@ -1509,6 +1775,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -791,7 +789,7 @@ index 74ffc2d3..c6459d71 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1519,6 +1790,13 @@ void vi(int init)
+@@ -1519,6 +1789,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -805,7 +803,7 @@ index 74ffc2d3..c6459d71 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1637,8 +1915,14 @@ void vi(int init)
+@@ -1637,8 +1914,14 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -821,7 +819,7 @@ index 74ffc2d3..c6459d71 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1653,6 +1937,10 @@ void vi(int init)
+@@ -1653,6 +1936,10 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -832,7 +830,7 @@ index 74ffc2d3..c6459d71 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1714,6 +2002,13 @@ void vi(int init)
+@@ -1714,6 +2001,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -846,7 +844,7 @@ index 74ffc2d3..c6459d71 100644
  			default:
  				continue;
  			}
-@@ -1774,6 +2069,8 @@ void vi(int init)
+@@ -1774,6 +2068,8 @@ void vi(int init)
  				}
  			}
  		}
