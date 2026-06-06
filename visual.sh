@@ -112,31 +112,28 @@ ${SEP}+3${SEP}s/s\\\\)/s, vs)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:943\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int vc_insert(int cmd);
 
-static int vc_block_insert(int vcmd, int r1, int r2, int col)
+static int vc_block_insert(int vcmd, int r1, int r2, int ci)
 {
-	int eol = lbuf_eol(xb, r1, 0);
+	int eol = lbuf_eol(xb, r1, 1);
 	xrow = r1;
-	xoff = MIN(col, eol);
+	xoff = MIN(ci, eol);
 	char *old_ln = lbuf_get(xb, r1);
 	int old_nbytes = old_ln ? lbuf_s(old_ln)->len : 0;
-	char *snap = emalloc(old_nbytes + 2);
-	if (old_ln) {
-		memcpy(snap, old_ln, old_nbytes);
-		snap[old_nbytes] = '\\\\n';
+	int off = MIN(ci, eol);
+	if (off > 0) {
+		char *cp = rstate->chrs[off];
+		if (*cp == '\\\\n')
+			off--;
 	}
-	snap[old_nbytes + (old_ln ? 1 : 0)] = '\\\\0';
+	if (vcmd == 'A' && off < rstate->n)
+		off++;
+	int ins_byte = rstate->chrs[off] - rstate->chrs[0];
 	int key = vc_insert(vcmd == 'A' ? 'a' : 'i');
 	char *new_ln = lbuf_get(xb, r1);
 	int new_nbytes = new_ln ? lbuf_s(new_ln)->len : 0;
 	int added = new_nbytes - old_nbytes;
-	if (added <= 0) {
-		free(snap);
+	if (added <= 0)
 		return key;
-	}
-	int suf = 0;
-	while (suf < old_nbytes && snap[old_nbytes - 1 - suf] == new_ln[new_nbytes - 1 - suf])
-		suf++;
-	int ins_byte = old_nbytes - suf;
 	char *ins_text = new_ln + ins_byte;
 	int added_chars = 0;
 	for (char *t = ins_text; t < ins_text + added; t += uc_len(t))
@@ -148,11 +145,11 @@ static int vc_block_insert(int vcmd, int r1, int r2, int col)
 		int n = uc_slen(ln) - 1;	/* index of '\\\\n' = number of content chars */
 		int pos;
 		if (vcmd == 'I') {
-			if (col > n)		/* line too short: skip */
+			if (ci > n)		/* line too short: skip */
 				continue;
-			pos = col;
+			pos = ci;
 		} else {			/* 'A': insert after right edge */
-			pos = MIN(col + 1, n);
+			pos = MIN(ci + 1, n);
 		}
 		char *p = uc_chr(ln, pos);
 		char *nl_p = ln + lbuf_s(ln)->len;	/* pointer to '\\\\n' byte */
@@ -166,7 +163,6 @@ static int vc_block_insert(int vcmd, int r1, int r2, int col)
 		lbuf_edit(xb, new_ln2, r, r + 1, pos, pos + added_chars);
 		free(new_ln2);
 	}
-	free(snap);
 	return key;
 }
 
@@ -405,7 +401,7 @@ index 0d346df9..cdaf95a7 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..8af6be2e 100644
+index 74ffc2d3..9ee6847b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -514,37 +510,34 @@ index 74ffc2d3..8af6be2e 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -941,6 +994,181 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -941,6 +994,177 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
 +static int vc_insert(int cmd);
 +
-+static int vc_block_insert(int vcmd, int r1, int r2, int col)
++static int vc_block_insert(int vcmd, int r1, int r2, int ci)
 +{
-+	int eol = lbuf_eol(xb, r1, 0);
++	int eol = lbuf_eol(xb, r1, 1);
 +	xrow = r1;
-+	xoff = MIN(col, eol);
++	xoff = MIN(ci, eol);
 +	char *old_ln = lbuf_get(xb, r1);
 +	int old_nbytes = old_ln ? lbuf_s(old_ln)->len : 0;
-+	char *snap = emalloc(old_nbytes + 2);
-+	if (old_ln) {
-+		memcpy(snap, old_ln, old_nbytes);
-+		snap[old_nbytes] = '\n';
++	int off = MIN(ci, eol);
++	if (off > 0) {
++		char *cp = rstate->chrs[off];
++		if (*cp == '\n')
++			off--;
 +	}
-+	snap[old_nbytes + (old_ln ? 1 : 0)] = '\0';
++	if (vcmd == 'A' && off < rstate->n)
++		off++;
++	int ins_byte = rstate->chrs[off] - rstate->chrs[0];
 +	int key = vc_insert(vcmd == 'A' ? 'a' : 'i');
 +	char *new_ln = lbuf_get(xb, r1);
 +	int new_nbytes = new_ln ? lbuf_s(new_ln)->len : 0;
 +	int added = new_nbytes - old_nbytes;
-+	if (added <= 0) {
-+		free(snap);
++	if (added <= 0)
 +		return key;
-+	}
-+	int suf = 0;
-+	while (suf < old_nbytes && snap[old_nbytes - 1 - suf] == new_ln[new_nbytes - 1 - suf])
-+		suf++;
-+	int ins_byte = old_nbytes - suf;
 +	char *ins_text = new_ln + ins_byte;
 +	int added_chars = 0;
 +	for (char *t = ins_text; t < ins_text + added; t += uc_len(t))
@@ -556,11 +549,11 @@ index 74ffc2d3..8af6be2e 100644
 +		int n = uc_slen(ln) - 1;	/* index of '\n' = number of content chars */
 +		int pos;
 +		if (vcmd == 'I') {
-+			if (col > n)		/* line too short: skip */
++			if (ci > n)		/* line too short: skip */
 +				continue;
-+			pos = col;
++			pos = ci;
 +		} else {			/* 'A': insert after right edge */
-+			pos = MIN(col + 1, n);
++			pos = MIN(ci + 1, n);
 +		}
 +		char *p = uc_chr(ln, pos);
 +		char *nl_p = ln + lbuf_s(ln)->len;	/* pointer to '\n' byte */
@@ -574,7 +567,6 @@ index 74ffc2d3..8af6be2e 100644
 +		lbuf_edit(xb, new_ln2, r, r + 1, pos, pos + added_chars);
 +		free(new_ln2);
 +	}
-+	free(snap);
 +	return key;
 +}
 +
@@ -696,7 +688,7 @@ index 74ffc2d3..8af6be2e 100644
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1287,6 +1515,10 @@ void vi(int init)
+@@ -1287,6 +1511,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -707,7 +699,7 @@ index 74ffc2d3..8af6be2e 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1337,6 +1569,10 @@ void vi(int init)
+@@ -1337,6 +1565,10 @@ void vi(int init)
  				vi_lncol = 0;
  				vi_mod |= 1;
  				break;
@@ -718,7 +710,7 @@ index 74ffc2d3..8af6be2e 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1460,7 +1696,15 @@ void vi(int init)
+@@ -1460,7 +1692,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -734,7 +726,7 @@ index 74ffc2d3..8af6be2e 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1509,6 +1753,10 @@ void vi(int init)
+@@ -1509,6 +1749,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -745,7 +737,7 @@ index 74ffc2d3..8af6be2e 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1519,6 +1767,13 @@ void vi(int init)
+@@ -1519,6 +1763,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -759,7 +751,7 @@ index 74ffc2d3..8af6be2e 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1637,8 +1892,14 @@ void vi(int init)
+@@ -1637,8 +1888,14 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -775,7 +767,7 @@ index 74ffc2d3..8af6be2e 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1653,6 +1914,10 @@ void vi(int init)
+@@ -1653,6 +1910,10 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -786,7 +778,7 @@ index 74ffc2d3..8af6be2e 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1714,6 +1979,13 @@ void vi(int init)
+@@ -1714,6 +1975,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -800,7 +792,7 @@ index 74ffc2d3..8af6be2e 100644
  			default:
  				continue;
  			}
-@@ -1774,6 +2046,8 @@ void vi(int init)
+@@ -1774,6 +2042,8 @@ void vi(int init)
  				}
  			}
  		}
