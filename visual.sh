@@ -56,26 +56,27 @@ ${SEP}+2a static void vi_visual_attrib(char *s, int row)
 	la.att = SYN_RV;
 	la.s = s;
 	ren_state *r = ren_position(s);
+	int rn1 = r->n - 1;
 	int o_beg, o_end;
 	if (vi_visual == 'V') {
 		o_beg = 0;
-		o_end = r->n - 1;
+		o_end = rn1;
 	} else if (vi_visual == 'b') {
 		o_beg = MIN(vi_voff, xoff);
 		o_end = MAX(vi_voff, xoff);
-	} else if (ar == cr) {		/* single row, char visual */
+	} else if (ar == cr) {
 		o_beg = ao; o_end = co;
-	} else if (row == ar) {		/* first row: anchor to EOL */
+	} else if (row == ar) {
 		o_beg = ao; o_end = lbuf_eol(xb, row, 1);
-	} else if (row == cr) {		/* last row: 0 to cursor */
+	} else if (row == cr) {
 		o_beg = 0;
 		o_end = co;
-	} else {			/* middle row: full line */
+	} else {
 		o_beg = 0;
 		o_end = lbuf_eol(xb, row, 1);
 	}
-	o_beg = MAX(0, MIN(o_beg, r->n - 1));
-	o_end = MAX(0, MIN(o_end, r->n - 1));
+	o_beg = MAX(0, MIN(o_beg, rn1));
+	o_end = MAX(0, MIN(o_end, rn1));
 	for (int o = o_beg; o <= o_end; o++) {
 		la.off = o;
 		sbuf_mem(led_attsb, &la, (int)sizeof(la))
@@ -168,79 +169,61 @@ static int vc_block_insert(int vcmd, int r1, int r2, int col)
 	return key;
 }
 
+#define VCB_BOUNDS \\\\
+	char *ln = lbuf_get(xb, r); \\\\
+	if (!ln) continue; \\\\
+	n = uc_slen(ln) - 1; \\\\
+	left = MIN(c_left, n); \\\\
+	right = MIN(c_right, n - 1); \\\\
+	bp = uc_chr(ln, left); \\\\
+	ep = right >= left ? uc_chr(bp, right - left + 1) : bp; \\\\
+	nlp = ln + lbuf_s(ln)->len; \\\\
+	if (ep > nlp) ep = nlp
+
 static int vc_block_op(int cmd, int r1, int r2, int c_left, int c_right)
 {
-	int r;
+	int r, n, left, right;
+	char *bp, *ep, *nlp;
 	if (cmd == 'y' || cmd == 'd' || cmd == 'c') {
 		sbuf_smake(yb, 256)
 		for (r = r1; r <= r2; r++) {
-			char *ln = lbuf_get(xb, r);
-			if (!ln)
-				continue;
-			int n = uc_slen(ln) - 1;	/* number of content chars before '\\\\n' */
-			int left = MIN(c_left, n);
-			int right = MIN(c_right, n - 1);
-			char *beg_p = uc_chr(ln, left);
-			char *end_p = right >= left ? uc_chr(beg_p, right - left + 1) : beg_p;
-			char *nl_p = ln + lbuf_s(ln)->len;
-			if (end_p > nl_p)
-				end_p = nl_p;
-			if (end_p > beg_p)
-				sbuf_mem(yb, beg_p, (int)(end_p - beg_p))
+			VCB_BOUNDS;
+			if (ep > bp)
+				sbuf_mem(yb, bp, (int)(ep - bp))
+			if ((cmd == 'd' || cmd == 'c') && left <= right && n) {
+				int beg_bytes = (int)(bp - ln);
+				int rest_bytes = (int)(nlp - ep + 1);
+				char *new_ln = emalloc(beg_bytes + rest_bytes + 1);
+				memcpy(new_ln, ln, beg_bytes);
+				memcpy(new_ln + beg_bytes, ep, rest_bytes);
+				new_ln[beg_bytes + rest_bytes] = '\\\\0';
+				lbuf_edit(xb, new_ln, r, r + 1, 0, 0);
+				free(new_ln);
+			}
 			sbuf_chr(yb, '\\\\n')
 		}
 		sbuf_null(yb)
 		vi_regput(vi_ybuf, yb->s, 0);
 		free(yb->s);
-	}
-	if (cmd == 'd' || cmd == 'c') {
-		for (r = r1; r <= r2; r++) {
-			char *ln = lbuf_get(xb, r);
-			if (!ln)
-				continue;
-			int n = uc_slen(ln) - 1;
-			int left = MIN(c_left, n);
-			int right = MIN(c_right, n - 1);
-			if (left > right || n == 0)
-				continue;
-			char *beg_p = uc_chr(ln, left);
-			char *end_p = uc_chr(beg_p, right - left + 1);
-			char *nl_p = ln + lbuf_s(ln)->len;
-			if (end_p > nl_p)
-				end_p = nl_p;
-			int beg_bytes = (int)(beg_p - ln);
-			int rest_bytes = (int)(nl_p - end_p + 1);	/* from end_p through '\\\\n' */
-			char *new_ln = emalloc(beg_bytes + rest_bytes + 1);
-			memcpy(new_ln, ln, beg_bytes);
-			memcpy(new_ln + beg_bytes, end_p, rest_bytes);
-			new_ln[beg_bytes + rest_bytes] = '\\\\0';
-			lbuf_edit(xb, new_ln, r, r + 1, 0, 0);
-			free(new_ln);
+		if (cmd == 'd' || cmd == 'c') {
+			xrow = r1;
+			xoff = c_left;
 		}
-		xrow = r1;
-		xoff = c_left;
+		if (cmd == 'c')
+			return vc_block_insert('I', r1, r2, c_left);
+		return 0;
 	}
 	if (cmd == '~' || cmd == 'u' || cmd == 'U') {
+		int n, left, right; char *bp, *ep, *nlp;
 		for (r = r1; r <= r2; r++) {
-			char *ln = lbuf_get(xb, r);
-			if (!ln)
-				continue;
-			int n = uc_slen(ln) - 1;
-			int left = MIN(c_left, n);
-			int right = MIN(c_right, n - 1);
-			if (left > right || n == 0)
-				continue;
-			char *beg_p = uc_chr(ln, left);
-			char *end_p = uc_chr(beg_p, right - left + 1);
-			char *nl_p = ln + lbuf_s(ln)->len;
-			if (end_p > nl_p)
-				end_p = nl_p;
+			VCB_BOUNDS;
+			if (left > right || !n) continue;
 			int total = lbuf_s(ln)->len + 2;
 			char *new_ln = emalloc(total);
 			memcpy(new_ln, ln, total - 1);
 			new_ln[total - 1] = '\\\\0';
-			char *p = new_ln + (beg_p - ln);
-			char *pe = new_ln + (end_p - ln);
+			char *p = new_ln + (bp - ln);
+			char *pe = new_ln + (ep - ln);
 			while (p < pe) {
 				int ch = (unsigned char)*p;
 				if (ch <= 0x7f) {
@@ -259,8 +242,6 @@ static int vc_block_op(int cmd, int r1, int r2, int c_left, int c_right)
 	}
 	if (cmd == '>' || cmd == '<')
 		vi_shift(r1, r2, cmd == '>' ? +1 : -1, 1);
-	if (cmd == 'c')
-		return vc_block_insert('I', r1, r2, c_left);
 	return 0;
 }
 
@@ -276,11 +257,8 @@ static int vc_visual_op(int cmd)
 	int lnmode = visual == 'V';
 	vi_visual = 0;
 	vi_mod |= 1;
-	if (visual == 'b') {
-		int c_left  = MIN(vi_voff, xoff);
-		int c_right = MAX(vi_voff, xoff);
-		return vc_block_op(cmd, r1, r2, c_left, c_right);
-	}
+	if (visual == 'b')
+		return vc_block_op(cmd, r1, r2, MIN(o1, o2), MAX(o1, o2));
 	if (!lnmode) {
 		if (o2 < lbuf_eol(xb, r2, 2))
 			o2++;		/* include char under cursor, like vc_motion */
@@ -427,7 +405,7 @@ index 0d346df9..cdaf95a7 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..e5c1d6e4 100644
+index 74ffc2d3..64166797 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -440,7 +418,7 @@ index 74ffc2d3..e5c1d6e4 100644
  
  void *emalloc(size_t size)
  {
-@@ -125,6 +128,50 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,6 +128,51 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
@@ -462,26 +440,27 @@ index 74ffc2d3..e5c1d6e4 100644
 +	la.att = SYN_RV;
 +	la.s = s;
 +	ren_state *r = ren_position(s);
++	int rn1 = r->n - 1;
 +	int o_beg, o_end;
 +	if (vi_visual == 'V') {
 +		o_beg = 0;
-+		o_end = r->n - 1;
++		o_end = rn1;
 +	} else if (vi_visual == 'b') {
 +		o_beg = MIN(vi_voff, xoff);
 +		o_end = MAX(vi_voff, xoff);
-+	} else if (ar == cr) {		/* single row, char visual */
++	} else if (ar == cr) {
 +		o_beg = ao; o_end = co;
-+	} else if (row == ar) {		/* first row: anchor to EOL */
++	} else if (row == ar) {
 +		o_beg = ao; o_end = lbuf_eol(xb, row, 1);
-+	} else if (row == cr) {		/* last row: 0 to cursor */
++	} else if (row == cr) {
 +		o_beg = 0;
 +		o_end = co;
-+	} else {			/* middle row: full line */
++	} else {
 +		o_beg = 0;
 +		o_end = lbuf_eol(xb, row, 1);
 +	}
-+	o_beg = MAX(0, MIN(o_beg, r->n - 1));
-+	o_end = MAX(0, MIN(o_end, r->n - 1));
++	o_beg = MAX(0, MIN(o_beg, rn1));
++	o_end = MAX(0, MIN(o_end, rn1));
 +	for (int o = o_beg; o <= o_end; o++) {
 +		la.off = o;
 +		sbuf_mem(led_attsb, &la, (int)sizeof(la))
@@ -491,7 +470,7 @@ index 74ffc2d3..e5c1d6e4 100644
  static void vi_drawrow(int row)
  {
  	int l1, i, i1, lnnum = vi_lnnum;
-@@ -191,6 +238,7 @@ static void vi_drawrow(int row)
+@@ -191,6 +239,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -499,7 +478,7 @@ index 74ffc2d3..e5c1d6e4 100644
  		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
-@@ -210,6 +258,7 @@ static void vi_drawrow(int row)
+@@ -210,6 +259,7 @@ static void vi_drawrow(int row)
  		restore(ftidx)
  		return;
  	}
@@ -507,7 +486,7 @@ index 74ffc2d3..e5c1d6e4 100644
  	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
  	rstate = rstates;
  }
-@@ -491,20 +540,23 @@ static void vc_status(int type)
+@@ -491,20 +541,23 @@ static void vc_status(int type)
  	char cbuf[8] = "", vi_msg[512], *c;
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -535,7 +514,7 @@ index 74ffc2d3..e5c1d6e4 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -941,6 +993,204 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -941,6 +994,181 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
@@ -598,79 +577,61 @@ index 74ffc2d3..e5c1d6e4 100644
 +	return key;
 +}
 +
++#define VCB_BOUNDS \
++	char *ln = lbuf_get(xb, r); \
++	if (!ln) continue; \
++	n = uc_slen(ln) - 1; \
++	left = MIN(c_left, n); \
++	right = MIN(c_right, n - 1); \
++	bp = uc_chr(ln, left); \
++	ep = right >= left ? uc_chr(bp, right - left + 1) : bp; \
++	nlp = ln + lbuf_s(ln)->len; \
++	if (ep > nlp) ep = nlp
++
 +static int vc_block_op(int cmd, int r1, int r2, int c_left, int c_right)
 +{
-+	int r;
++	int r, n, left, right;
++	char *bp, *ep, *nlp;
 +	if (cmd == 'y' || cmd == 'd' || cmd == 'c') {
 +		sbuf_smake(yb, 256)
 +		for (r = r1; r <= r2; r++) {
-+			char *ln = lbuf_get(xb, r);
-+			if (!ln)
-+				continue;
-+			int n = uc_slen(ln) - 1;	/* number of content chars before '\n' */
-+			int left = MIN(c_left, n);
-+			int right = MIN(c_right, n - 1);
-+			char *beg_p = uc_chr(ln, left);
-+			char *end_p = right >= left ? uc_chr(beg_p, right - left + 1) : beg_p;
-+			char *nl_p = ln + lbuf_s(ln)->len;
-+			if (end_p > nl_p)
-+				end_p = nl_p;
-+			if (end_p > beg_p)
-+				sbuf_mem(yb, beg_p, (int)(end_p - beg_p))
++			VCB_BOUNDS;
++			if (ep > bp)
++				sbuf_mem(yb, bp, (int)(ep - bp))
++			if ((cmd == 'd' || cmd == 'c') && left <= right && n) {
++				int beg_bytes = (int)(bp - ln);
++				int rest_bytes = (int)(nlp - ep + 1);
++				char *new_ln = emalloc(beg_bytes + rest_bytes + 1);
++				memcpy(new_ln, ln, beg_bytes);
++				memcpy(new_ln + beg_bytes, ep, rest_bytes);
++				new_ln[beg_bytes + rest_bytes] = '\0';
++				lbuf_edit(xb, new_ln, r, r + 1, 0, 0);
++				free(new_ln);
++			}
 +			sbuf_chr(yb, '\n')
 +		}
 +		sbuf_null(yb)
 +		vi_regput(vi_ybuf, yb->s, 0);
 +		free(yb->s);
-+	}
-+	if (cmd == 'd' || cmd == 'c') {
-+		for (r = r1; r <= r2; r++) {
-+			char *ln = lbuf_get(xb, r);
-+			if (!ln)
-+				continue;
-+			int n = uc_slen(ln) - 1;
-+			int left = MIN(c_left, n);
-+			int right = MIN(c_right, n - 1);
-+			if (left > right || n == 0)
-+				continue;
-+			char *beg_p = uc_chr(ln, left);
-+			char *end_p = uc_chr(beg_p, right - left + 1);
-+			char *nl_p = ln + lbuf_s(ln)->len;
-+			if (end_p > nl_p)
-+				end_p = nl_p;
-+			int beg_bytes = (int)(beg_p - ln);
-+			int rest_bytes = (int)(nl_p - end_p + 1);	/* from end_p through '\n' */
-+			char *new_ln = emalloc(beg_bytes + rest_bytes + 1);
-+			memcpy(new_ln, ln, beg_bytes);
-+			memcpy(new_ln + beg_bytes, end_p, rest_bytes);
-+			new_ln[beg_bytes + rest_bytes] = '\0';
-+			lbuf_edit(xb, new_ln, r, r + 1, 0, 0);
-+			free(new_ln);
++		if (cmd == 'd' || cmd == 'c') {
++			xrow = r1;
++			xoff = c_left;
 +		}
-+		xrow = r1;
-+		xoff = c_left;
++		if (cmd == 'c')
++			return vc_block_insert('I', r1, r2, c_left);
++		return 0;
 +	}
 +	if (cmd == '~' || cmd == 'u' || cmd == 'U') {
++		int n, left, right; char *bp, *ep, *nlp;
 +		for (r = r1; r <= r2; r++) {
-+			char *ln = lbuf_get(xb, r);
-+			if (!ln)
-+				continue;
-+			int n = uc_slen(ln) - 1;
-+			int left = MIN(c_left, n);
-+			int right = MIN(c_right, n - 1);
-+			if (left > right || n == 0)
-+				continue;
-+			char *beg_p = uc_chr(ln, left);
-+			char *end_p = uc_chr(beg_p, right - left + 1);
-+			char *nl_p = ln + lbuf_s(ln)->len;
-+			if (end_p > nl_p)
-+				end_p = nl_p;
++			VCB_BOUNDS;
++			if (left > right || !n) continue;
 +			int total = lbuf_s(ln)->len + 2;
 +			char *new_ln = emalloc(total);
 +			memcpy(new_ln, ln, total - 1);
 +			new_ln[total - 1] = '\0';
-+			char *p = new_ln + (beg_p - ln);
-+			char *pe = new_ln + (end_p - ln);
++			char *p = new_ln + (bp - ln);
++			char *pe = new_ln + (ep - ln);
 +			while (p < pe) {
 +				int ch = (unsigned char)*p;
 +				if (ch <= 0x7f) {
@@ -689,8 +650,6 @@ index 74ffc2d3..e5c1d6e4 100644
 +	}
 +	if (cmd == '>' || cmd == '<')
 +		vi_shift(r1, r2, cmd == '>' ? +1 : -1, 1);
-+	if (cmd == 'c')
-+		return vc_block_insert('I', r1, r2, c_left);
 +	return 0;
 +}
 +
@@ -706,11 +665,8 @@ index 74ffc2d3..e5c1d6e4 100644
 +	int lnmode = visual == 'V';
 +	vi_visual = 0;
 +	vi_mod |= 1;
-+	if (visual == 'b') {
-+		int c_left  = MIN(vi_voff, xoff);
-+		int c_right = MAX(vi_voff, xoff);
-+		return vc_block_op(cmd, r1, r2, c_left, c_right);
-+	}
++	if (visual == 'b')
++		return vc_block_op(cmd, r1, r2, MIN(o1, o2), MAX(o1, o2));
 +	if (!lnmode) {
 +		if (o2 < lbuf_eol(xb, r2, 2))
 +			o2++;		/* include char under cursor, like vc_motion */
@@ -740,7 +696,7 @@ index 74ffc2d3..e5c1d6e4 100644
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1287,6 +1537,10 @@ void vi(int init)
+@@ -1287,6 +1515,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -751,7 +707,7 @@ index 74ffc2d3..e5c1d6e4 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1337,6 +1591,10 @@ void vi(int init)
+@@ -1337,6 +1569,10 @@ void vi(int init)
  				vi_lncol = 0;
  				vi_mod |= 1;
  				break;
@@ -762,7 +718,7 @@ index 74ffc2d3..e5c1d6e4 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1460,7 +1718,15 @@ void vi(int init)
+@@ -1460,7 +1696,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -778,7 +734,7 @@ index 74ffc2d3..e5c1d6e4 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1509,6 +1775,10 @@ void vi(int init)
+@@ -1509,6 +1753,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -789,7 +745,7 @@ index 74ffc2d3..e5c1d6e4 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1519,6 +1789,13 @@ void vi(int init)
+@@ -1519,6 +1767,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -803,7 +759,7 @@ index 74ffc2d3..e5c1d6e4 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1637,8 +1914,14 @@ void vi(int init)
+@@ -1637,8 +1892,14 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -819,7 +775,7 @@ index 74ffc2d3..e5c1d6e4 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1653,6 +1936,10 @@ void vi(int init)
+@@ -1653,6 +1914,10 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -830,7 +786,7 @@ index 74ffc2d3..e5c1d6e4 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1714,6 +2001,13 @@ void vi(int init)
+@@ -1714,6 +1979,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -844,7 +800,7 @@ index 74ffc2d3..e5c1d6e4 100644
  			default:
  				continue;
  			}
-@@ -1774,6 +2068,8 @@ void vi(int init)
+@@ -1774,6 +2046,8 @@ void vi(int init)
  				}
  			}
  		}
