@@ -187,7 +187,7 @@ char *term_att(int att)
 		{*s++ = ';'; *s++ = '1';}
 	if (att & SYN_IT)
 		{*s++ = ';'; *s++ = '3';}
-	else if (att & SYN_RV)
+	if (att & SYN_RV)
 		{*s++ = ';'; *s++ = '7';}
 	if (SYN_FGSET(att)) {
 		int fg = SYN_FG(att);
