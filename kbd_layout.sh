@@ -39,7 +39,7 @@ ${SEP}+1a 	['y'] = \"h\",
 	['l'] = \"o\",
 ${SEP}b1${SEP}%;f> 			err:
 			\\\\*ibuf = 0;
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:175\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'kmap.h' 'term.c'
@@ -66,10 +66,10 @@ index d025f5f1..e549d13b 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index d75be8f7..ecff1b95 100644
+index 65254701..5331191a 100644
 --- a/term.c
 +++ b/term.c
-@@ -173,6 +173,8 @@ int term_read(int winch)
+@@ -167,6 +167,8 @@ int term_read(int winch)
  			err:
  			*ibuf = 0;
  		}

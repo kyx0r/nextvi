@@ -1,6 +1,6 @@
-.Dd May 13, 2026
+.Dd Jun  7, 2026
 .Dt Nextvi 1
-.Os Nextvi 5.2
+.Os Nextvi 5.3
 .
 .Sh NAME
 .Nm Nextvi
@@ -216,7 +216,10 @@ Execute last macro # times, non-blocking
 Execute <:> register as an ex command # times
 .Ed
 .It Cm [\fI#\fP].
-Repeat last normal command # times
+Repeat last normal command # times. Repeatable commands:
+.Bd -compact
+<x X D C s S Y p P r d c ~ gu gU g~ ! > < ^W i I a A o O ci di J K>
+.Ed
 .It Cm [\fI#\fP]v.
 Repeat last normal command moving down across # lines
 .It Cm [\fI#\fP]Q
@@ -273,18 +276,18 @@ Enter insert mode at start of line after indent
 Enter insert mode at end of line
 .It Cm a
 Enter insert mode 1 character forward
-.It Cm [\fI#\fP]s
-Enter insert mode and delete # characters
-.It Cm S
-Enter insert mode and delete all characters
 .It Cm o
-Enter insert mode and create a new line down
+Create a new line down and enter insert mode
 .It Cm O
-Enter insert mode and create a new line up
+Create a new line up and enter insert mode
+.It Cm [\fI#\fP]s
+Delete # characters and enter insert mode
+.It Cm [\fI#\fP]S
+Delete all across # lines and enter insert mode
 .It Cm [\fI#\fP]c{\fIarg\fP}
-Enter insert mode and delete arg region # times
+Delete arg region # times and enter insert mode
 .It Cm C
-Enter insert mode and delete from cursor to end of line
+Delete from cursor to end of line and enter insert mode
 .It Cm [\fI#\fP]d{\fIarg\fP}
 Delete arg region # times
 .It Cm D
@@ -678,6 +681,7 @@ Ranged search
 .Bd -literal
 Horizontal range performs a scoped multi-line search forward.
 In multi-line mode, <Newline> is a regular character.
+Returns error if target not found.
 
 Example: no range given, current line only
 :f>int
@@ -717,6 +721,7 @@ Global command
 .Bd -literal
 Execute an ex command on a range of lines that matches an
 enclosed regex.
+Returns error if no line matches the pattern.
 
 No range evaluates to <%> range or <.> range when nested.
 
@@ -820,6 +825,7 @@ Example: delete from current position to the end of the buffer
 Join line(s)
 .Bd -literal
 Any argument activates padding mode.
+Returns error if there is nothing to join.
 
 Example: join all lines
 :%-1j
@@ -832,6 +838,7 @@ Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
 enclosed regex with an enclosed replacement string.
+Returns error if no substitution is performed.
 
 Example: global replacement
 :%s/term1/term2/g
@@ -852,8 +859,15 @@ this is an example text for subs and has prepreafterafter or prevoidafter
 
 .It Cm ud
 Undo
+.Bd -literal
+Returns error if there is nothing to undo.
+.Ed
+
 .It Cm rd
 Redo
+.Bd -literal
+Returns error if there is nothing to redo.
+.Ed
 
 .It Cm [\fIrange\fP]p[\fIstr\fP]
 Print line(s) from a buffer
@@ -1677,19 +1691,19 @@ tab(|);
 | l | l |.
 _
  537 kmap.h | keymap translation
- 542 vi.h | definitions/aux
+ 540 vi.h | definitions/aux
 _
- 359 term.c | low level IO
- 364 conf.c | hl/ft/td config
- 433 ren.c | positioning/syntax
+ 353 term.c | low level IO
+ 367 conf.c | hl/ft/td config
+ 444 ren.c | positioning/syntax
  614 uc.c | UTF-8 support
- 651 lbuf.c | file/line buffer
+ 646 lbuf.c | file/line buffer
  725 led.c | insert mode/output
  766 regex.c | pikevm
- 1757 ex.c | ex options/commands
- 1872 vi.c | normal mode/general
- 2543 patch2vi.c | patch converter
- 10084 total | wc -l *.c\(basort
+ 1758 ex.c | ex options/commands
+ 1879 vi.c | normal mode/general
+ 2997 patch2vi.c | patch converter
+ 10549 total | wc -l *.c\(basort
 _
 .TE
 .
@@ -1718,16 +1732,18 @@ Performance bench test 2000 word deletions on vi.c
 .
 .Sh PHILOSOPHY
 .Bd -literal -compact
-In most text editors, flexibility is a minor or irrelevant design
-goal. Nextvi is designed to be flexible where the editor adapts
-to the user's needs. This flexibility is achieved by heavily
-chaining basic commands and allowing them to create new ones
-with completely different functionality. Command reuse keeps
-the editor small without sacrificing a quick grasp of the codebase.
-Any customization is achievable using only core commands, or
-a mix with targeted C code for more difficult tasks. Simple and
-flexible design allows for straightforward solutions to any problem
-long term and filters bad inconsistent ideas.
+Most text editors accumulate significant technical debt. They
+cannot be quickly mastered, deeply understood, or easily changed.
+Nextvi is designed around three pillars: fundamental, lean, and
+flexible. Fundamental means a complete yet minimal command set
+for unlimited text transformation. Lean means a concise, efficient,
+coherent implementation with a bus factor of zero. Flexible means
+deep composability and a versatile, extensible C codebase. By
+conventional wisdom, these three pillars would be considered
+oxymoronic. Maintaining all three challenges the notion that
+a text editor must sacrifice one for another. Nextvi proves that
+coexistence is not only possible but essential to what a great
+text editor should be.
 
 .Sy \&"All software sucks, but some do more than others."
 .Em 	- Kyryl Melekhin

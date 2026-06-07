@@ -27,12 +27,12 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c term.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:292\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xms = 1;			/* mouse in normal mode */
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(.*pac.*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.${SEP}s/t\\\\|s/t|ms|s/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xms = 1;			/* mouse in normal mode */
 ${SEP}%;f> 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1488\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1489\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a _EO(ms,
 	xms = !*arg ? !xms : eo_val(arg);
 	if (xms)
@@ -44,7 +44,7 @@ ${SEP}+2a _EO(ms,
 
 ${SEP}.,\$;f> 	\\\\{\"g!\", ec_glob\\\\},
 	\\\\{\"g\", ec_glob\\\\},
-	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1540\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(mpt\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1541\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	EO(ms),
 ${SEP}b2${SEP}%;f> 	return pos - xleft;
 \\\\}
@@ -90,10 +90,10 @@ ${SEP}.,\$;f> \\\\{
 	if \\\\(!term_sbuf\\\\)
 		return;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:39\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	term_mouse_off();
-${SEP}.,\$;f> 	term_push\\\\(s, 1\\\\);
+${SEP}.,\$;f> 	ibuf_cnt \\\\+= n;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:145\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:139\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a /* Block-read one byte from stdin and append to ibuf.
  * Returns the byte value, or -1 on failure. */
 static int mouse_pull(void)
@@ -182,13 +182,13 @@ int term_try_mouse(void)
 ${SEP}b4${SEP}%;f> 	vi_drawmsg_mpt\\\\(vi_msg\\\\)
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:507\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:511\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
 
 ${SEP}.,\$;f> 	int mv, i, dir, var;
 
-	mv = .*\\\\(.*\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	mv = .*\\\\(.*\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:522\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	if (mv == 27 && xms) {
 		int r = term_try_mouse();
 		if (r == 1) {
@@ -214,59 +214,125 @@ ${SEP}+2a 	if (mv == 27 && xms) {
 		} else if (r == 2)	/* stray release from a prior click; restart */
 			return -1;
 	}
-${SEP}b5${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:323\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}b5${SEP}%f> int term_read\\\\(int winch\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:322\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
-${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:394\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> int led_pos\\\\(char \\\\*s, int pos\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:392\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a int led_col(char *s, int col);
-${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:405\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> /\\\\* ex options \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:403\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i /* mouse state */
 extern int xmouse_col, xmouse_row;
-${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:428\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$f> /\\\\* global variables \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:426\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.i extern int xms;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA conf.c ===
-GROUP 1
+=== GROUP 1 ===
 -((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +((pac|pr|ai|ish|err|ic|grp|mpt|ms|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+(?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
+(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+=== END ===
+=== post_ctx ===
+|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+=== END ===
+=== pattern ===
 \(\(.*pac.*\)\\
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0
 s/t\|s/t|ms|s/
-=== END DELTA ===
+=== END ===
+=== END ===
 === DELTA ex.c ===
-GROUP 1
+=== GROUP 1 ===
 +int xms = 1;			/* mouse in normal mode */
-strategy: abs
-=== END DELTA ===
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+int xleft;			/* the first visible column */
+int xvis;			/* startup flags */
+int xai = 1;			/* autoindent option */
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== END ===
 === DELTA led.c ===
-GROUP 3
+=== GROUP 3 ===
 +	term_mouse_on();
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	key = led_line(sb, ps, n, &post, 0, &postref, -1,
+			&off, kmap, is, 0, xrow, xtop, flg);
+	restore(xtd)
+	restore(xleft)
+=== END ===
+=== post_ctx ===
+	if (key == '\n' && flg & 1) {
+		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
+		temp_pos(0, -1, 0, 0);
+=== END ===
+=== pattern ===
 	if \(key == '\\n' && flg & 1\) \{
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i 	term_mouse_on();
-GROUP 4
+=== END ===
+=== GROUP 4 ===
 +	term_mouse_off();
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	int n, key, ps = 0, crow = xrow, ctop = xtop;
+	char *postref = NULL;
 	ins_state is;
-edit_cmd_rel:
+=== END ===
+=== post_ctx ===
+	while (1) {
+		ins_init(is)
+		key = led_line(sb, ps, sb->s_n, &post, postn, &postref,
+=== END ===
+=== pattern ===
+	ins_state is;
+=== END ===
+=== edit_cmd_rel ===
 a 	term_mouse_off();
-GROUP 5
+=== END ===
+=== GROUP 5 ===
 +			term_mouse_on();
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+				sb->s[*pren] = *post;
+			free(postref);
+			xrow = crow;
+=== END ===
+=== post_ctx ===
+			return key;
+		}
+		sbuf_chr(sb, key)
+=== END ===
+=== pattern ===
 			free\(postref\);
 			xrow = crow;
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +1a 			term_mouse_on();
-=== END DELTA ===
+=== END ===
+=== END ===
 === DELTA term.c ===
-GROUP 1
+=== GROUP 1 ===
 +int xmouse_col, xmouse_row;
 +void term_mouse_on(void)
 +{
@@ -280,10 +346,19 @@ GROUP 1
 +		write(1, "\x1b[?1000l\x1b[?1006l", 16);
 +}
 +
-strategy: abs
-=== END DELTA ===
+=== END ===
+=== LEVEL 2 ===
+=== post_ctx ===
+static struct termios termios;
+sbuf *term_sbuf;
+int term_record;
+=== END ===
+=== strategy ===
+abs
+=== END ===
+=== END ===
 === DELTA vi.c ===
-GROUP 2
+=== GROUP 2 ===
 +	if (mv == 27 && xms) {
 +		int r = term_try_mouse();
 +		if (r == 1) {
@@ -309,49 +384,118 @@ GROUP 2
 +		} else if (r == 2)	/* stray release from a prior click; restart */
 +			return -1;
 +	}
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	int mv, i, dir, var;
+
+	mv = term_read(0);
+=== END ===
+=== post_ctx ===
+	switch (mv) {
+	case ',':
+	case ';':
+=== END ===
+=== pattern ===
 	int mv, i, dir, var;
 
 	mv = .*\(.*\);
-=== END DELTA ===
+=== END ===
+=== END ===
 === DELTA vi.h ===
-GROUP 1
+=== GROUP 1 ===
 +int term_try_mouse(void);
 +void term_mouse_on(void);
 +void term_mouse_off(void);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+void term_kill(void);
+void term_room(int n);
+int term_read(int winch);
+=== END ===
+=== post_ctx ===
+void term_commit(void);
+char *term_att(int att);
+void term_push(char *s, unsigned int n);
+=== END ===
+=== pattern ===
 int term_read\(int winch\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
-GROUP 2
+=== END ===
+=== GROUP 2 ===
 +int led_col(char *s, int col);
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+#define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
+char *led_read(int *kmap, int c);
+int led_pos(char *s, int pos);
+=== END ===
+=== post_ctx ===
+void led_done(void);
+
+/* ex.c: command mode */
+=== END ===
+=== pattern ===
 int led_pos\(char \*s, int pos\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 a int led_col(char *s, int col);
-GROUP 3
+=== END ===
+=== GROUP 3 ===
 +/* mouse state */
 +extern int xmouse_col, xmouse_row;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	long mtime;			/* modification time */
+	signed char td;			/* text direction */
+};
+=== END ===
+=== post_ctx ===
+/* ex options */
+extern int xleft;
+extern int xvis;
+=== END ===
+=== pattern ===
 /\* ex options \*/
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i /* mouse state */
 extern int xmouse_col, xmouse_row;
-GROUP 4
+=== END ===
+=== GROUP 4 ===
 +extern int xms;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+extern int xlim;
+extern int xseq;
+extern int xerr;
+=== END ===
+=== post_ctx ===
+/* global variables */
+extern int xquit;
+extern int xrow, xoff, xtop;
+=== END ===
+=== pattern ===
 /\* global variables \*/
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 i extern int xms;
-=== END DELTA ===
+=== END ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index cc881132..68fe02a5 100644
+index 0d346df9..da4d1c53 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -289,7 +289,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
  (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
@@ -361,7 +505,7 @@ index cc881132..68fe02a5 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index f3ea18aa..f963d07b 100644
+index 0ec68c95..eee0cbdd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -369,7 +513,7 @@ index f3ea18aa..f963d07b 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1486,6 +1487,15 @@ _EO(left,
+@@ -1487,6 +1488,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -385,7 +529,7 @@ index f3ea18aa..f963d07b 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1538,6 +1548,7 @@ static struct excmd {
+@@ -1539,6 +1549,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -394,7 +538,7 @@ index f3ea18aa..f963d07b 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index 163596e2..97930696 100644
+index eb1eb7dc..5d507c85 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -442,7 +586,7 @@ index 163596e2..97930696 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index d75be8f7..6ec836b4 100644
+index 65254701..1344d33e 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,16 @@
@@ -477,8 +621,8 @@ index d75be8f7..6ec836b4 100644
  	term_commit();
  	sbuf_free(term_sbuf)
  	tcsetattr(0, 0, &termios);
-@@ -143,6 +158,91 @@ void term_back(int c)
- 	term_push(s, 1);
+@@ -137,6 +152,91 @@ void term_push(char *s, unsigned int n)
+ 	ibuf_cnt += n;
  }
  
 +/* Block-read one byte from stdin and append to ibuf.
@@ -570,10 +714,10 @@ index d75be8f7..6ec836b4 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index f0baac1d..b74e91c9 100644
+index 74ffc2d3..7ec2f95b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -505,6 +505,9 @@ static void vc_status(int type)
+@@ -509,6 +509,9 @@ static void vc_status(int type)
  	vi_drawmsg_mpt(vi_msg)
  }
  
@@ -583,7 +727,7 @@ index f0baac1d..b74e91c9 100644
  static int vi_region(int cmd, int *row, int *off)
  {
  	static sbuf *savepath[5];
-@@ -516,6 +519,31 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -520,6 +523,31 @@ static int vi_region(int cmd, int *row, int *off)
  	int mv, i, dir, var;
  
  	mv = term_read(0);
@@ -616,10 +760,10 @@ index f0baac1d..b74e91c9 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 96e23938..19986315 100644
+index 7afa37e4..607eac3d 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -321,6 +321,9 @@ void term_pos(int r, int c);
+@@ -320,6 +320,9 @@ void term_pos(int r, int c);
  void term_kill(void);
  void term_room(int n);
  int term_read(int winch);
@@ -629,7 +773,7 @@ index 96e23938..19986315 100644
  void term_commit(void);
  char *term_att(int att);
  void term_push(char *s, unsigned int n);
-@@ -392,6 +395,7 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -390,6 +393,7 @@ void led_render(char *s0, int cbeg, int cend);
  #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
@@ -637,7 +781,7 @@ index 96e23938..19986315 100644
  void led_done(void);
  
  /* ex.c: command mode */
-@@ -403,6 +407,8 @@ struct buf {
+@@ -401,6 +405,8 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -646,7 +790,7 @@ index 96e23938..19986315 100644
  /* ex options */
  extern int xleft;
  extern int xvis;
-@@ -426,6 +432,7 @@ extern int xpr;
+@@ -424,6 +430,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

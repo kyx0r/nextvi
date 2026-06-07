@@ -135,26 +135,26 @@ ${SEP}.,\$;f> 			return key;
 ${SEP}+3${SEP}s/f\\\\)/f, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:701\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	\\\\*l = ln - pln;
 \\\\}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:829\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:833\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a static int lmodified;
 
 ${SEP}.,\$;f> 	if \\\\(postn \\\\+ l2 != tlen \\\\|\\\\| memcmp\\\\(ln \\\\+ l1, sb->s \\\\+ l1, tlen - l2 - l1\\\\)\\\\)
 		lbuf_edit\\\\(xb, sb->s, r1, r2 \\\\+ 1, o1, xoff\\\\);
-	free\\\\(sb->s\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:861\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	free\\\\(sb->s\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:865\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	lmodified = 1;
 ${SEP}.,\$;f> 	term_room\\\\(cmdo\\\\);
 	sbuf_mem\\\\(sb, ln, l1\\\\)
-	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1030\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1030\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		lbuf_edit\\\\(xb, sb->s, row, row \\\\+ !cmdo, off, xoff\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1031\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	key = led_input\\\\(sb, post, postn, row, cmdo << 2, &postn\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1035\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1035\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		lbuf_edit\\\\(xb, sb->s, row, row \\\\+ !cmdo, off, xoff\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1036\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}.a 		lmodified = 1;
 	} else
 		lmodified = 0;
-${SEP}.,\$;f> 					term_back\\\\(xoff != lbuf_eol\\\\(xb, xrow, 1\\\\) \\\\? 'i' : 'a'\\\\);
-					break;
-				\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1533\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$;f> 				insert:
+				k = vc_insert\\\\(c\\\\);
+				insert_done:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1524\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				switch (k) {
 				case 'A':	/* ↑ */
-					term_back(!lmodified ? c : 'i');
+					term_push(!lmodified ? (char*)&c : \"i\", 1);
 					if (lmodified)
 						vi_col = vi_off2col(xb, xrow, xoff);
 					xrow--;
@@ -163,7 +163,7 @@ ${SEP}+2a 				switch (k) {
 					lmodified = 0;
 					goto _break;
 				case 'B':	/* ↓ */
-					term_back(!lmodified ? c : 'i');
+					term_push(!lmodified ? (char*)&c : \"i\", 1);
 					if (lmodified)
 						vi_col = vi_off2col(xb, xrow, xoff);
 					xrow++;
@@ -171,21 +171,21 @@ ${SEP}+2a 				switch (k) {
 					lmodified = 0;
 					goto _break;
 				case 'D':	/* ← */
-					term_back('i');
+					term_push(\"i\", 1);
 					xoff--;
 					xoff = xoff < 0 ? 0 : xoff;
 					vi_col = vi_off2col(xb, xrow, xoff);
 					goto _break;
 				case 'C':	/* → */
-					term_back(*uc_chr(lbuf_get(xb, xrow), xoff+2) ? 'i' : 'A');
+					term_push(*uc_chr(lbuf_get(xb, xrow), xoff+2) ? \"i\" : \"A\", 1);
 					xoff++;
 					if (*uc_chr(lbuf_get(xb, xrow), xoff))
 						vi_col = vi_off2col(xb, xrow, xoff);
 					goto _break;
 				}
-${SEP}.,\$;f> 				if \\\\(c != 'A' && c != 'C'\\\\)
-					xoff--;
-				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1536\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}.,\$;f> 				rep_record\\\\(\\\\)
+				vi_mod \\\\|= !xpac && xrow == orow \\\\? 8 : 1;
+				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1546\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 				_break:
 				vi_mod = 0;
 				break;
@@ -194,25 +194,39 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'led.c' 'vi.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA led.c ===
-GROUP 3
+=== GROUP 3 ===
 -	syn_scdir(0);
 -	led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	if (print) {
 +		syn_scdir(0);
 +		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 +	}
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	}
+	if (pos >= xleft + xcols || pos < xleft)
+		xleft = pos < xcols ? 0 : pos - xcols / 2;
+=== END ===
+=== post_ctx ===
+	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
+	sbufn_cut(sb, psn)
+	rstate -= 2;
+=== END ===
+=== pattern ===
 	syn_scdir\(0\);
 	led_crender\(.*\);
-edit_cmd_rel:
+=== END ===
+=== edit_cmd_rel ===
 +0,#+1c 	if (print) {
 		syn_scdir(0);
 		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
 	}
-=== END DELTA ===
+=== END ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 163596e2..58233091 100644
+index eb1eb7dc..c47a62de 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -372,10 +386,10 @@ index 163596e2..58233091 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index f0baac1d..6883e63b 100644
+index 74ffc2d3..2a4a9f82 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -827,6 +827,8 @@ static void vi_indents(char *ln, int *l)
+@@ -831,6 +831,8 @@ static void vi_indents(char *ln, int *l)
  	*l = ln - pln;
  }
  
@@ -384,7 +398,7 @@ index f0baac1d..6883e63b 100644
  static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *post, *ln = lbuf_get(xb, r1);
-@@ -859,6 +861,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -863,6 +865,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
@@ -392,7 +406,7 @@ index f0baac1d..6883e63b 100644
  	return key;
  }
  
-@@ -1027,8 +1030,11 @@ static int vc_insert(int cmd)
+@@ -1032,8 +1035,11 @@ static int vc_insert(int cmd)
  	term_room(cmdo);
  	sbuf_mem(sb, ln, l1)
  	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
@@ -405,13 +419,13 @@ index f0baac1d..6883e63b 100644
  	free(sb->s);
  	return key;
  }
-@@ -1531,9 +1537,43 @@ void vi(int init)
- 					term_back(xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a');
- 					break;
- 				}
+@@ -1522,6 +1528,37 @@ void vi(int init)
+ 				insert:
+ 				k = vc_insert(c);
+ 				insert_done:
 +				switch (k) {
 +				case 'A':	/* ↑ */
-+					term_back(!lmodified ? c : 'i');
++					term_push(!lmodified ? (char*)&c : "i", 1);
 +					if (lmodified)
 +						vi_col = vi_off2col(xb, xrow, xoff);
 +					xrow--;
@@ -420,7 +434,7 @@ index f0baac1d..6883e63b 100644
 +					lmodified = 0;
 +					goto _break;
 +				case 'B':	/* ↓ */
-+					term_back(!lmodified ? c : 'i');
++					term_push(!lmodified ? (char*)&c : "i", 1);
 +					if (lmodified)
 +						vi_col = vi_off2col(xb, xrow, xoff);
 +					xrow++;
@@ -428,24 +442,28 @@ index f0baac1d..6883e63b 100644
 +					lmodified = 0;
 +					goto _break;
 +				case 'D':	/* ← */
-+					term_back('i');
++					term_push("i", 1);
 +					xoff--;
 +					xoff = xoff < 0 ? 0 : xoff;
 +					vi_col = vi_off2col(xb, xrow, xoff);
 +					goto _break;
 +				case 'C':	/* → */
-+					term_back(*uc_chr(lbuf_get(xb, xrow), xoff+2) ? 'i' : 'A');
++					term_push(*uc_chr(lbuf_get(xb, xrow), xoff+2) ? "i" : "A", 1);
 +					xoff++;
 +					if (*uc_chr(lbuf_get(xb, xrow), xoff))
 +						vi_col = vi_off2col(xb, xrow, xoff);
 +					goto _break;
 +				}
- 				if (c != 'A' && c != 'C')
- 					xoff--;
+ 				if (k == 127 || k == TK_CTL('w')) {
+ 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
+ 						xrow--;
+@@ -1544,6 +1581,9 @@ void vi(int init)
+ 				rep_record()
+ 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;
 +				_break:
 +				vi_mod = 0;
 +				break;
  			case 'J':
  				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
- 				break;
+ 				rep_record()

@@ -29,10 +29,10 @@ LB="0?"
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 		break;
 	case '\\\\(':
-	case '\\\\)':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:607\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:607\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	case '\\\\}':
+	case '\\\\)':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:611\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:611\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	case '\\\\}':
 	case '\\\\[':
-	case '\\\\]':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:647\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	case '\\\\]':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:651\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		var = mv == '[' || mv == ']' ? '{' : '\\\\n';
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
@@ -41,10 +41,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index f0baac1d..8d8f3071 100644
+index 74ffc2d3..c4c00c26 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -604,7 +604,7 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -608,7 +608,7 @@ static int vi_region(int cmd, int *row, int *off)
  		break;
  	case '(':
  	case ')':
@@ -53,7 +53,7 @@ index f0baac1d..8d8f3071 100644
  		if (!bre)
  			bre = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
  		int subs[2], org;
-@@ -644,8 +644,8 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -648,8 +648,8 @@ static int vi_region(int cmd, int *row, int *off)
  	case '}':
  	case '[':
  	case ']':

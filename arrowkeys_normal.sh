@@ -29,7 +29,7 @@ LB="0?"
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 
 	mv = .*\\\\(.*\\\\);
-	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:519\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:523\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {
@@ -66,7 +66,7 @@ ${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
-GROUP 1
+=== GROUP 1 ===
 +	case '\033':	/* Arrow keys */
 +		mv = term_read(0);
 +		if (mv == '[') {
@@ -98,17 +98,30 @@ GROUP 1
 +		} else	/* Not a 033[X command so we abort */
 +			return 0;
 +		break;
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+
+	mv = term_read(0);
+	switch (mv) {
+=== END ===
+=== post_ctx ===
+	case ',':
+	case ';':
+		if (!vi_charlast[0])
+=== END ===
+=== pattern ===
 
 	mv = .*\(.*\);
 	switch \(mv\) \{
-=== END DELTA ===
+=== END ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index f0baac1d..0296f806 100644
+index 74ffc2d3..92e6ea87 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -517,6 +517,37 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -521,6 +521,37 @@ static int vi_region(int cmd, int *row, int *off)
  
  	mv = term_read(0);
  	switch (mv) {

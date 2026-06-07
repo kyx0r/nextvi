@@ -29,7 +29,7 @@ LB="0?"
 # Patch: vi.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	case 'w':
 	case 'W':
-		var = mv == 'W';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:600\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		var = mv == 'W';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:604\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2a 		if (cmd >= 0 && cnt == 1)
 			dir = 2;
 		else
@@ -46,25 +46,36 @@ ${SEP}+2a 		if (cmd >= 0 && cnt == 1)
 			*off = poff;
 		}
 ${SEP}.,\$;f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)
-			if \\\\(lbuf_wordbeg\\\\(xb, var, vi_nlmode\\\\+1, row, off\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:602\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:602\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
+			if \\\\(lbuf_wordbeg\\\\(xb, var, vi_nlmode\\\\+1, row, off\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:606\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:606\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === DELTA vi.c ===
-GROUP 2
+=== GROUP 2 ===
 -			if (lbuf_wordbeg(xb, var, vi_nlmode+1, row, off))
 +			if (lbuf_wordbeg(xb, var, dir, row, off))
-pattern:
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+		for (i = 0; i < cnt; i++)
+=== END ===
+=== post_ctx ===
+				break;
+		break;
+	case '(':
+=== END ===
+=== pattern ===
 		for \(i = 0; i < cnt; i\+\+\)
 			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)
-=== END DELTA ===
+=== END ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index f0baac1d..2cd85f49 100644
+index 74ffc2d3..a22ace41 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -598,8 +598,23 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -602,8 +602,23 @@ static int vi_region(int cmd, int *row, int *off)
  	case 'w':
  	case 'W':
  		var = mv == 'W';
