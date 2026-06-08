@@ -1213,9 +1213,10 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
 		if (isdq) {
-			ret = inv ? xpret ? NULL : xuerr : xpret;
+			ret = (xpret != NULL) ^ inv ? xuerr : NULL;
 			branch = ret ? else_cmd : then_cmd;
-			ret = branch ? ex_exec(branch) : NULL;
+			if (branch)
+				ret = ex_exec(branch);
 		} else {
 			int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
 			for (; count && !ret; count--) {
