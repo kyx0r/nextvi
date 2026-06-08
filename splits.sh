@@ -980,7 +980,7 @@ index 0d346df9..84792539 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ec68c95..8f5bb73d 100644
+index 7cbbfc67..6f151ee5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -1582,7 +1582,7 @@ index 65254701..83f04dd3 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..9b9b20de 100644
+index bee5d538..1e33af59 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */

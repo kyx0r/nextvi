@@ -225,7 +225,7 @@ a void ex_done(void);
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 0ec68c95..f667d762 100644
+index 7cbbfc67..c93288b9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1742,6 +1742,22 @@ void ex(void)
@@ -300,7 +300,7 @@ index 9b4776c8..3eb1a39b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..c26a100c 100644
+index bee5d538..916af673 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1873,6 +1873,12 @@ int main(int argc, char *argv[])

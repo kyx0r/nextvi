@@ -239,7 +239,7 @@ a extern int stdin_fd;
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 0ec68c95..6e60665a 100644
+index 7cbbfc67..58e0191e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -354,7 +354,9 @@ int ex_edit(const char *path, int len)
@@ -385,7 +385,7 @@ index 65254701..655e3af6 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..0ea7d2fb 100644
+index bee5d538..4671f372 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1828,6 +1828,7 @@ static void setup_signals(void)

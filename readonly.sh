@@ -164,8 +164,8 @@ a 	{"ro", ec_readonly},
 				readonly = 1;
 === END ===
 === GROUP 2 ===
--				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
 === END ===
 === LEVEL 2* ===
 === custom_text ===
@@ -242,7 +242,7 @@ index 0d346df9..0bc00994 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 0ec68c95..044bc163 100644
+index 7cbbfc67..2db0a67d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -298,7 +298,7 @@ index 0ec68c95..044bc163 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..7a73f38a 100644
+index bee5d538..a1e29221 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1853,11 +1853,13 @@ int main(int argc, char *argv[])
@@ -311,8 +311,8 @@ index 74ffc2d3..7a73f38a 100644
  				xvis = 0;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

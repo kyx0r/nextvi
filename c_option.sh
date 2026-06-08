@@ -167,8 +167,8 @@ c 			else if (argv[i][j] == 'c') {
 			} else {
 === END ===
 === GROUP 3 ===
--				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.3 Usage: %s [-acemsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.4 Usage: %s [-acemsv] [file ...]\n", argv[0]);
 === END ===
 === LEVEL 2* ===
 === custom_text ===
@@ -236,7 +236,7 @@ s/n\)/n, char** cmds, int cmdnum)/
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 0ec68c95..a554dfba 100644
+index 7cbbfc67..0b49fe98 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1742,7 +1742,7 @@ void ex(void)
@@ -256,7 +256,7 @@ index 0ec68c95..a554dfba 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..68aaa68e 100644
+index bee5d538..e6b45f27 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1832,7 +1832,8 @@ static void setup_signals(void)
@@ -287,8 +287,8 @@ index 74ffc2d3..68aaa68e 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.3 Usage: %s [-acemsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-5.4 Usage: %s [-acemsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

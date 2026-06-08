@@ -505,7 +505,7 @@ index 0d346df9..da4d1c53 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 0ec68c95..eee0cbdd 100644
+index 7cbbfc67..249bb8fe 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -714,7 +714,7 @@ index 65254701..1344d33e 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..7ec2f95b 100644
+index bee5d538..b727ce22 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -509,6 +509,9 @@ static void vc_status(int type)

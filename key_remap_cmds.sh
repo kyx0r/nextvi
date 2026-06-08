@@ -290,7 +290,7 @@ index 0d346df9..9b048eae 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ec68c95..4e42a534 100644
+index 7cbbfc67..cf190da4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -378,7 +378,7 @@ index eb1eb7dc..26403937 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..d0029b10 100644
+index bee5d538..670f1626 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)

@@ -169,7 +169,7 @@ i 	EO(exrc),
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 0ec68c95..0b991a15 100644
+index 7cbbfc67..f148ac62 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@

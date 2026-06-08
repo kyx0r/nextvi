@@ -265,7 +265,7 @@ index 0d346df9..e9ba501b 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ec68c95..bc1a503e 100644
+index 7cbbfc67..97b50a2e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -475,7 +475,7 @@ index 7d8ff44a..bcd7ad1d 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/vi.c b/vi.c
-index 74ffc2d3..48b4f445 100644
+index bee5d538..699e8fb0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -168,6 +168,22 @@ static void vi_drawrow(int row)
