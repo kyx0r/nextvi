@@ -914,8 +914,7 @@ EX COMMANDS
 
              Unlike while loop conditional, branching depends on the error
              status of the last command, reducing the number of escapes required.
-             No argument forwards the last error status.
-             Error status of [then] or [else] is forwarded.
+             No prefix forwards the last error status or the result of a branch.
 
              A prefix without arguments captures the current error status
              at that point in a command chain into id tag specified.
