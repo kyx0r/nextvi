@@ -21,6 +21,14 @@
 #include "uc.c"
 #include "regex.c"
 
+/* dummy for vi.h's itoalen(); real itoa lives in vi.c which isn't linked */
+char *itoa(int n, char s[])
+{
+	(void)n;
+	*s = '\0';
+	return s;
+}
+
 void *emalloc(size_t size)
 {
 	void *p;
@@ -693,16 +701,18 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * Relative mode emit functions - use regex patterns instead of line numbers.
  *
  * Forward processing: groups are processed top-to-bottom.
- * Each f>/f+ search starts from current cursor position (xrow)
+ * Each f> search starts from current cursor position (xrow/xoff)
  * and finds the next occurrence forward. After each edit, the cursor
  * advances, so subsequent searches naturally find the correct occurrence.
  *
- * Single-line context: uses %f> (first) or .,$f+ (subsequent) for
- * single-line anchor search. No semicolon prefix.
- *
- * Multi-line context: when 2+ context lines are available, uses %;f>
- * (first) or .,$;f+ (subsequent) for multiline search (semicolon joins
- * lines for horizontal range matching).
+ * Register caching: the default register is reassigned to <b> (98reg)
+ * and the whole buffer is yanked into it (%ya b) after every file open
+ * and after every group's edits. All default searches use the %;0f>
+ * horizontal whole-buffer form: f> then searches the cached register
+ * instead of extracting the region on every search, starting from the
+ * cursor's byte offset, and maps the match back to a buffer position.
+ * Single-line and multi-line anchors both use this one form; in it
+ * <Newline> is a regular character.
  *
  * All search paths use ex_arg escaping uniformly via emit_escaped_regex_exarg.
  *
@@ -752,21 +762,24 @@ static void emit_escaped_text(FILE *out, const char *s)
 	free(exarg_esc);
 }
 
-/* Emit f>/f+ search with error check.
+/* Emit f> search with error check.
+ * Default searches run against the cached default register via %;0f>.
  * pre_escaped: 0 = anchors are raw text (apply regex+exarg escape),
  *              1 = anchors are pre-escaped regex (apply exarg only).
- * multiline: 1 emits "%;f>" / ".,\\$;f>"; 0 emits "%f>" / ".,\\$f>".
- * cmd: if non-NULL, used verbatim instead of default prefix.
- * first: search-from-top flag, cleared after first call. */
+ * cmd: if non-NULL, used verbatim instead of the default prefix.
+ *      Custom commands predate register caching, so the default
+ *      register is restored (0reg) around them and they search the
+ *      buffer directly, then caching is re-enabled (98reg). */
 static void emit_search(FILE *out, char **anchors, int nanchors,
-			int offset, int first, int target_line,
-			int pre_escaped, int multiline, const char *cmd)
+			int offset, int target_line,
+			int pre_escaped, const char *cmd)
 {
-	if (cmd)
+	if (cmd) {
+		fputs("0reg", out);
+		EMIT_SEP(out);
 		fprintf(out, "%s ", cmd);
-	else
-		fprintf(out, "%s%sf> ", first ? "%" : ".,\\$",
-			multiline ? ";" : "");
+	} else
+		fputs("%;0f> ", out);
 	for (int i = 0; i < nanchors; i++) {
 		if (pre_escaped) {
 			char *e = escape_exarg(anchors[i]);
@@ -787,6 +800,10 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 		fputc('\n', out);
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
+	if (cmd) {
+		fputs("98reg", out);
+		EMIT_SEP(out);
+	}
 	fputs("${LB}\n", out);
 	EMIT_SEP(out);
 	/* . needed at offset 0 to avoid empty command between separators */
@@ -849,67 +866,55 @@ static void emit_escaped_exarg_only(FILE *out, const char *s)
 
 /* Emit positioning for a custom-edited group.
  * Returns: 0 = unused, 1 = two-command (search then offset). */
-static int emit_custom_pos(FILE *out, group_t *g, int *first_ml)
+static int emit_custom_pos(FILE *out, group_t *g)
 {
 	int target_line = g->del_start ? g->del_start : g->add_after;
 	if (g->ncustom == 0)
 		return -1;
-	/* Use multiline ";f>" form when 2+ lines, single empty line, or
-	 * custom_cmd is set (cmd overrides prefix anyway). */
-	int multiline = g->ncustom >= 2 || !g->custom_lines[0][0];
 	emit_search(out, g->custom_lines, g->ncustom, g->custom_offset,
-		    *first_ml, target_line, 1, multiline, g->custom_cmd);
-	*first_ml = 0;
+		    target_line, 1, g->custom_cmd);
 	return 1;
 }
 
 /*
  * Emit the search/positioning part for a relative group.
  * Returns: 0 = single-command positioning (pos is part of final cmd),
- *          1 = two-command positioning (f>/f+ then .+offset as separate cmd)
+ *          1 = two-command positioning (f> then .+offset as separate cmd)
  *
- * For single-line: emits "%f> pattern" or ".,$f+ pattern" with error check
- * For multiline:   emits "%;f>ctx1\nctx2" (first) or ";f+" (subsequent)
- * For follow ctx:  emits "%f> follow" or ".,$f> follow" with negative offset
- *
- * *first_ml: pointer to flag, 1 for first search (uses %f>),
- *            cleared to 0 after first use (subsequent use .,$f>)
+ * All anchors emit "%;0f> pattern" against the cached register,
+ * searching forward from the cursor's byte offset.
+ * For follow ctx the offset is negative.
  */
-static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int *first_ml)
+static int emit_rel_pos(FILE *out, rel_ctx_t *rc)
 {
 	char *single[1];
 	char **anchors;
-	int n, off, multi;
+	int n, off;
 	if (rc->nanchors >= 2) {
 		anchors = rc->anchors;
 		n = rc->nanchors;
-		multi = 1;
 		off = rc->nanchors + rc->anchor_offset - 1;
 	} else if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
 		single[0] = rc->anchors[0];
 		anchors = single;
 		n = 1;
-		multi = 0;
 		off = rc->anchor_offset;
 	} else if (rc->follow_ctx && rc->follow_ctx[0]) {
 		single[0] = rc->follow_ctx;
 		anchors = single;
 		n = 1;
-		multi = 0;
 		off = -(rc->follow_offset);
 	} else {
 		return -1;
 	}
-	emit_search(out, anchors, n, off, *first_ml, rc->target_line, 0, multi, NULL);
-	*first_ml = 0;
+	emit_search(out, anchors, n, off, rc->target_line, 0, NULL);
 	return 1;
 }
 
 /* Emit delete using relative pattern */
-static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count,
-				 int *first_ml)
+static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count)
 {
-	int mode = emit_rel_pos(out, rc, first_ml);
+	int mode = emit_rel_pos(out, rc);
 	if (count == 1)
 		fputc('d', out);
 	else
@@ -921,12 +926,12 @@ static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count,
 
 /* Emit insert using relative pattern */
 static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
-				 char **texts, int ntexts, int *first_ml)
+				 char **texts, int ntexts)
 {
 	if (ntexts == 0)
 		return;
 
-	int mode = emit_rel_pos(out, rc, first_ml);
+	int mode = emit_rel_pos(out, rc);
 	fprintf(out, "a ");
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
@@ -936,14 +941,13 @@ static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
 
 /* Emit change using relative pattern */
 static void emit_relative_change(FILE *out, rel_ctx_t *rc,
-				 int del_count, char **texts, int ntexts,
-				 int *first_ml)
+				 int del_count, char **texts, int ntexts)
 {
 	if (ntexts == 0) {
-		emit_relative_delete(out, rc, del_count, first_ml);
+		emit_relative_delete(out, rc, del_count);
 		return;
 	}
-	int mode = emit_rel_pos(out, rc, first_ml);
+	int mode = emit_rel_pos(out, rc);
 	if (del_count == 1)
 		fprintf(out, "c ");
 	else
@@ -997,9 +1001,9 @@ static void emit_substitute_cmd(FILE *out, const char *old_text,
 /* Emit substitute using relative pattern positioning */
 static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
 				     const char *old_text,
-				     const char *new_text, int *first_ml)
+				     const char *new_text)
 {
-	int mode = emit_rel_pos(out, rc, first_ml);
+	int mode = emit_rel_pos(out, rc);
 	/* Separate position from substitute: s/ doesn't move xrow,
 	 * so make position a standalone command to advance cursor first */
 	EMIT_SEP(out);
@@ -1340,7 +1344,6 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				   file_delta_t *in_fd)
 {
-	int sim_first_ml = 1;
 	char **default_cmds = calloc(ngroups, sizeof(char *));
 
 	for (int gi = 0; gi < ngroups; gi++) {
@@ -1363,23 +1366,20 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 
 		int default_offset = 0;
 		const char *dcmd = NULL;
-		const char *single = sim_first_ml ? "%f>" : ".,\\$f>";
 		if (g->nanchors >= 2) {
 			default_offset = g->nanchors + g->anchor_offset - 1;
-			dcmd = sim_first_ml ? "%;f>" : ".,\\$;f>";
+			dcmd = "%;0f>";
 		} else if (g->nanchors == 1) {
 			default_offset = g->anchor_offset;
-			dcmd = single;
+			dcmd = "%;0f>";
 		} else if (g->follow_ctx && g->follow_ctx[0]) {
 			default_offset = -(g->follow_offset);
-			dcmd = single;
+			dcmd = "%;0f>";
 		} else if (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
-			dcmd = single;
+			dcmd = "%;0f>";
 		} else {
 			default_offset = g->block_change_idx;
 		}
-		if (dcmd)
-			sim_first_ml = 0;
 
 		char abs_cmd[64] = "";
 		int from = g->del_start, to = g->del_end, after = g->add_after;
@@ -2257,7 +2257,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 	int gi_end = forward ? ngroups : -1;
 	int gi_step = forward ? 1 : -1;
 
-	int first_ml = 1;  /* first multiline search uses f>, subsequent use f+ */
 	int cum_delta = 0;   /* cumulative line count change from previous groups */
 
 	for (int gi = gi_start; gi != gi_end; gi += gi_step) {
@@ -2316,8 +2315,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		 * Otherwise: direct append to position address. */
 #define EMIT_REL_EDIT(rlines, rnlines, tline) do { \
 		int _mode = has_custom \
-			? emit_custom_pos(out, g, &first_ml) \
-			: emit_rel_pos(out, &rc, &first_ml); \
+			? emit_custom_pos(out, g) \
+			: emit_rel_pos(out, &rc); \
 		if (is_substitute((rlines)[0])) { \
 			EMIT_SEP(out); \
 			if (_mode == 0) \
@@ -2342,10 +2341,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			} else if (strat == STRAT_RELC) {
 				/* Rel search + horizontal ;c edit */
 				if (has_custom) {
-					emit_custom_pos(out, g, &first_ml);
+					emit_custom_pos(out, g);
 					EMIT_SEP(out);
 				} else {
-					int mode = emit_rel_pos(out, &rc, &first_ml);
+					int mode = emit_rel_pos(out, &rc);
 					if (mode == 1)
 						EMIT_SEP(out);
 				}
@@ -2373,7 +2372,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				} else if (g->ndel == 1 && g->nadd == 1 &&
 					   g->has_line_diff) {
 					if (has_custom) {
-						emit_custom_pos(out, g, &first_ml);
+						emit_custom_pos(out, g);
 						EMIT_SEP(out);
 						emit_substitute_cmd(out, g->ld_old_text,
 								    g->ld_new_text);
@@ -2381,12 +2380,11 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 						emit_err_check(out, g->del_start);
 					} else {
 						emit_relative_substitute(out, &rc,
-									 g->ld_old_text, g->ld_new_text,
-									 &first_ml);
+									 g->ld_old_text, g->ld_new_text);
 					}
 				} else {
 					if (has_custom) {
-						int mode = emit_custom_pos(out, g, &first_ml);
+						int mode = emit_custom_pos(out, g);
 						if (g->ndel == 1)
 							fprintf(out, "c ");
 						else
@@ -2397,8 +2395,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 							emit_err_check(out, g->del_start);
 					} else {
 						emit_relative_change(out, &rc,
-								     g->ndel, g->add_texts, g->nadd,
-								     &first_ml);
+								     g->ndel, g->add_texts, g->nadd);
 					}
 				}
 			} else {
@@ -2423,7 +2420,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 					EMIT_REL_EDIT(g->custom_rel_lines,
 						      g->custom_rel_nlines, g->del_start);
 				} else if (has_custom) {
-					int mode = emit_custom_pos(out, g, &first_ml);
+					int mode = emit_custom_pos(out, g);
 					if (g->ndel == 1)
 						fputc('d', out);
 					else
@@ -2432,7 +2429,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 					if (mode == 0)
 						emit_err_check(out, g->del_start);
 				} else {
-					emit_relative_delete(out, &rc, g->ndel, &first_ml);
+					emit_relative_delete(out, &rc, g->ndel);
 				}
 			} else {
 				/* STRAT_ABS */
@@ -2456,7 +2453,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 					} else {
 						icmd = "i ";
 					}
-					int mode = emit_custom_pos(out, g, &first_ml);
+					int mode = emit_custom_pos(out, g);
 					fputs(icmd, out);
 					emit_content(out, g->add_texts, g->nadd);
 					EMIT_SEP(out);
@@ -2480,7 +2477,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 							rc.follow_offset += 1;
 					}
 					if (use_i) {
-						int mode = emit_rel_pos(out, &rc, &first_ml);
+						int mode = emit_rel_pos(out, &rc);
 						fprintf(out, "i ");
 						emit_content(out, g->add_texts, g->nadd);
 						EMIT_SEP(out);
@@ -2488,7 +2485,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 							emit_err_check(out, rc.target_line);
 					} else {
 						emit_relative_insert(out, &rc,
-								     g->add_texts, g->nadd, &first_ml);
+								     g->add_texts, g->nadd);
 					}
 				}
 			} else {
@@ -2498,8 +2495,12 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 						  g->add_texts, g->nadd);
 			}
 		}
-		if (forward)
+		if (forward) {
 			cum_delta += g->nadd - g->ndel;
+			/* resync register cache with the edited buffer */
+			fputs("%ya b", out);
+			EMIT_SEP(out);
+		}
 		free(g->del_texts);
 		free(g->add_texts);
 		free(g->all_pre_ctx);
@@ -2938,7 +2939,7 @@ process_line:
 		      "[ \"$QF\" = \"1\" ] && QF= || QF=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n"
-		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:"
+		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:"
 		      "|sc! \\\\\\\\\\\\${SEP}|:vis 3\\\\${SEP}q1\" || INTR=\n", stdout);
 
 	/* Build groups for every file */
@@ -2962,8 +2963,13 @@ process_line:
 			fprintf(stdout, " %s", active[k]->path);
 		fputc('\n', stdout);
 		fputs("EXINIT=\"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", stdout);
+		/* default register <b> caches the buffer for f> searches */
+		if (relative_mode || interactive_mode)
+			fputs("98reg${SEP}", stdout);
 		for (int k = 0; k < nactive; k++) {
 			fprintf(stdout, "b%d${SEP}", k);
+			if (relative_mode || interactive_mode)
+				fputs("%ya b${SEP}", stdout);
 			cur_file_path = active[k]->path;
 			emit_file_script(stdout, active[k]);
 		}
