@@ -502,32 +502,39 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
-	int pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
-	if (ex_region(loc, &beg, &end, &o1, &o2))
-		return xrerr;
+	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
+	if ((e = ex_region(loc, &beg, &end, &o1, &o2)))
+		if (!xdefreg || (*loc && e == 1))
+			return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
 	ex_krsset(arg, dir);
 	if (!xkwdrs)
 		return xserr;
 	if ((xdefreg || o1 >= 0) && dir > 0) {
-		sbuf *sb = xdefreg ? xregs[xdefreg] : NULL, _sb;
-		int offs[xkwdrs->nsubc], soff = 0;
+		int offs[xkwdrs->nsubc];
 		int r2 = end - 1;
 		int skip = cmd[1] == '+' ? 1 : 0;
-		void *ret = NULL;
-		if (!sb) {
-			sb = &_sb;
-			lbuf_region(xb, &_sb, beg, o1, r2, o2);
+		int soff = o1 >= 0 ? MAX(0, lbuf_pos2off(xb, beg, o1, r2, o2,
+					xrow, xoff + skip)) : 0;
+		if (xdefreg) {
+			sbuf *sb = xregs[xdefreg];
+			if (!sb)
+				return "uninitialized register";
+			if (soff >= sb->s_n || rset_find(xkwdrs, sb->s + soff, offs, 0) < 0
+					|| offs[xgrp] < 0
+					|| (o1 >= 0 && lbuf_off2pos(xb, beg, o1, r2, o2,
+							soff + offs[xgrp], &xrow, &xoff)))
+				return xuerr;
+			return NULL;
 		}
-		if (o1 >= 0)
-			soff = MAX(0, lbuf_pos2off(xb, beg, o1, r2, o2, xrow, xoff + skip));
-		if (soff >= sb->s_n || rset_find(xkwdrs, sb->s + soff, offs, 0) < 0
-				|| offs[xgrp] < 0
-				|| (o1 >= 0 && lbuf_off2pos(xb, beg, o1, r2, o2,
-						soff + offs[xgrp], &xrow, &xoff)))
+		sbuf sb;
+		void *ret = NULL;
+		lbuf_region(xb, &sb, beg, o1, r2, o2);
+		if (rset_find(xkwdrs, sb.s + soff, offs, 0) < 0 || offs[xgrp] < 0
+				|| lbuf_off2pos(xb, beg, o1, r2, o2,
+						soff + offs[xgrp], &xrow, &xoff))
 			ret = xuerr;
-		if (!xdefreg)
-			free(sb->s);
+		free(sb.s);
 		return ret;
 	}
 	off = xoff;
