@@ -366,7 +366,7 @@ typedef struct {
 } ins_state;
 #define ins_init(is) \
 is.t_row = -2; \
-is.p_reg = 0; \
+is.p_reg = xdefreg; \
 is.lsug = 0; \
 is.sug_pt = -1; \
 is.sug = NULL; \
@@ -440,6 +440,7 @@ extern int xexec_dep;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
 extern sbuf *xregs[256];
+extern int xdefreg;
 extern struct buf *bufs;
 extern struct buf tempbufs[3];
 extern struct buf *ex_buf;

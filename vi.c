@@ -264,7 +264,7 @@ static int vi_yankbuf(int winch)
 	if (c == '"')
 		return term_read(0);
 	term_dec()
-	return 0;
+	return xdefreg;
 }
 
 static int vi_prefix(void)

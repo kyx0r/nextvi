@@ -37,6 +37,7 @@ int xexec_dep;			/* ex_exec recursion depth */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 sbuf *xregs[256];		/* string registers */
+int xdefreg;			/* ex default register */
 struct buf *bufs;		/* main buffers */
 struct buf tempbufs[3];		/* temporary buffers, for internal use */
 struct buf *ex_buf;		/* current buffer */
@@ -508,22 +509,25 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	ex_krsset(arg, dir);
 	if (!xkwdrs)
 		return xserr;
-	if (o1 >= 0 && dir > 0) {
-		sbuf sb;
-		int offs[xkwdrs->nsubc], flg = 0, soff = 0;
+	if ((xdefreg || o1 >= 0) && dir > 0) {
+		sbuf *sb = xdefreg ? xregs[xdefreg] : NULL, _sb;
+		int offs[xkwdrs->nsubc], soff = 0;
 		int r2 = end - 1;
 		int skip = cmd[1] == '+' ? 1 : 0;
 		void *ret = NULL;
-		lbuf_region(xb, &sb, beg, o1, r2, o2);
-		if (xrow >= beg && xrow <= r2 && (xrow > beg || xoff >= o1))
-			soff = lbuf_pos2off(xb, beg, o1, r2, o2, xrow, xoff + skip);
-		if (soff < 0)
-			soff = 0;
-		if (rset_find(xkwdrs, sb.s + soff, offs, flg) < 0 || offs[xgrp] < 0
-				|| lbuf_off2pos(xb, beg, o1, r2, o2,
-						soff + offs[xgrp], &xrow, &xoff))
+		if (!sb) {
+			sb = &_sb;
+			lbuf_region(xb, &_sb, beg, o1, r2, o2);
+		}
+		if (o1 >= 0)
+			soff = MAX(0, lbuf_pos2off(xb, beg, o1, r2, o2, xrow, xoff + skip));
+		if (soff >= sb->s_n || rset_find(xkwdrs, sb->s + soff, offs, 0) < 0
+				|| offs[xgrp] < 0
+				|| (o1 >= 0 && lbuf_off2pos(xb, beg, o1, r2, o2,
+						soff + offs[xgrp], &xrow, &xoff)))
 			ret = xuerr;
-		free(sb.s);
+		if (!xdefreg)
+			free(sb->s);
 		return ret;
 	}
 	off = xoff;
@@ -918,8 +922,8 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end, i = 0;
 	sbuf *buf;
-	if (!*arg || (arg[i] == '!' && arg[i+1] && arg[i+1] != ' '))
-		buf = xregs[i];
+	if (!*arg || (*arg == '!' && arg[1] && arg[1] != ' '))
+		buf = xregs[xdefreg];
 	else
 		buf = xregs[(unsigned char)arg[i++]];
 	if (!buf)
@@ -1341,11 +1345,14 @@ static void *ec_setbufsmax(char *loc, char *cmd, char *arg)
 
 static void *ec_regprint(char *loc, char *cmd, char *arg)
 {
-	if (*loc && *arg) {
+	if (*loc) {
 		int reg = atoi(loc);
 		if (reg < 0 || reg > 255)
 			return xserr;
-		ex_regput(reg, arg, cmd[3] == '+');
+		if (*arg)
+			ex_regput(reg, arg, cmd[3] == '+');
+		else
+			xdefreg = reg;
 		return NULL;
 	}
 	static char buf[5] = "  ";
