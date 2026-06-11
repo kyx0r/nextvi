@@ -24,27 +24,41 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c lbuf.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	return key;
-\\\\}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 	return key;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:331\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/k\\\\)/k, init)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:331\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
-if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:334\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
-${SEP}.,\$;f> 		return 1;
-	\\\\}
-	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:350\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:350\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:334\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 0${SEP}%;f+ fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:337\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 		return 1;
+	}
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:353\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 2${SEP}%;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:371\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
-\\\\}
+	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 3${SEP}${LB}
+${SEP}'0s/k\\\\)/k, init)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:334\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'1c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
+${SEP}${LB}
+${SEP}'2s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:353\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'3s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:224\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 0${SEP}%;f+ 			}
+			sz = n \\\\* 2;
+			s = erealloc\\\\(s, sz--\\\\);
+			step = 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:239\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1m 1${SEP}%;f+ 		}
+	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:245\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}m 2${SEP}%;f+ 	}
+	s\\\\[n\\\\] = '\\\\\\\\0';
+	lbuf_edit\\\\(lb, s, beg, end, 0, 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:247\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1m 3${SEP}${LB}
+${SEP}'0,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 {
 	if (!init) {
 		struct stat st;
@@ -66,14 +80,14 @@ ${SEP}+3,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 			} else if (n == sz) {
 				sz++;
 				step = 0;
-${SEP}.,\$f> 			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:218\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1,#+5d${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:224\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 		s[n] = '\\\\0';
+${SEP}${LB}
+${SEP}'1,#+5d${SEP}${LB}
+${SEP}'2a 		s[n] = '\\\\0';
 		lbuf_edit(lb, s, beg, end, 0, 0);
 		free(s);
 		return nr != 0;
-${SEP}.,\$f> 	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:226\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1,#+2c 	long nr, l, nins = 0, nl = 0;
+${SEP}${LB}
+${SEP}'3,#+2c 	long nr, l, nins = 0, nl = 0;
 	struct linfo *n, *cn = NULL;
 	const int rchunk = 4096;
 	char sm[rchunk+1], *s, *ln;
@@ -123,15 +137,125 @@ ${SEP}+1,#+2c 	long nr, l, nins = 0, nl = 0;
 	for (int i = 0; i < nins; i++)
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
-${SEP}b2${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
+${SEP}b2${SEP}%ya b${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
 struct lbuf \\\\*lbuf_make\\\\(void\\\\);
-void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:156\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
+void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:160\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 0${SEP}${LB}
+${SEP}'0c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'lbuf.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA lbuf.c ===
+=== GROUP 2 ===
+-			sz = n * 2;
+-			s = erealloc(s, sz--);
+-			step = 1;
+-		} else if (n == sz) {
+-			sz++;
+-			step = 0;
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+			}
+=== END ===
+=== post_ctx ===
+		}
+=== END ===
+=== pattern ===
+			}
+			sz = n \* 2;
+			s = erealloc\(s, sz--\);
+			step = 1;
+=== END ===
+=== GROUP 3 ===
++		s[n] = '\0';
++		lbuf_edit(lb, s, beg, end, 0, 0);
++		free(s);
++		return nr != 0;
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+		}
+=== END ===
+=== post_ctx ===
+	}
+=== END ===
+=== pattern ===
+		}
+	}
+=== END ===
+=== GROUP 4 ===
+-	s[n] = '\0';
+-	lbuf_edit(lb, s, beg, end, 0, 0);
+-	free(s);
++	long nr, l, nins = 0, nl = 0;
++	struct linfo *n, *cn = NULL;
++	const int rchunk = 4096;
++	char sm[rchunk+1], *s, *ln;
++	sbuf_smake(sb, 0)
++	while ((nr = read(fd, sm, rchunk)) > 0) {
++		s = sm;
++		s[nr] = '\0';
++		for (; *s; nins++) {
++			l = linelength(s);
++			nl = (s[l - !!l] == '\n');
++			int l_nonl = l - nl;
++			if (!cn) {
++				n = emalloc(l_nonl + 5 + sizeof(struct linfo));
++				n->len = l_nonl;
++				n->grec = 0;
++				ln = (char*)(n + 1);
++				memcpy(ln, s, l_nonl);
++				memset(&ln[l_nonl + 1], 0, 4);	/* fault tolerance pad */
++				ln[l_nonl] = '\n';
++			} else {
++				n = erealloc(cn, cn->len + l_nonl + 5 + sizeof(struct linfo));
++				ln = (char*)(n + 1);
++				memcpy(ln + n->len, s, l_nonl);
++				n->len += l_nonl;
++				cn = NULL;
++				memset(&ln[n->len + 1], 0, 4);	/* fault tolerance pad */
++				ln[n->len] = '\n';
++			}
++			sbuf_mem(sb, &ln, (int)sizeof(ln))
++			s += l;
++		}
++		if (s - sm != rchunk) {
++			nr = 0;
++			break;
++		}
++		if (!nl) {
++			cn = n;
++			nins--;
++			sb->s_n -= sizeof(ln);
++		}
++	}
++	sbuf_null(sb)
++	lbuf_edit(lb, sb->s, beg, end, 0, 0);
++	lb->ln_n = nins;
++	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));
++	lb->ln_sz = nins + 512;
++	for (int i = 0; i < nins; i++)
++		lb->ln[i] = *((char**)sb->s + i);
++	free(sb->s);
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	}
+=== END ===
+=== post_ctx ===
+	return nr != 0;
+}
+
+=== END ===
+=== pattern ===
+	}
+	s\[n\] = '\\0';
+	lbuf_edit\(lb, s, beg, end, 0, 0\);
+=== END ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
 index bc6a6269..b2649686 100644
