@@ -32,7 +32,7 @@ ${SEP}+3m 0${SEP}${LB}
 ${SEP}'0s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1542\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}m 1${SEP}${LB}
-${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
+${SEP}1i int xqe = 1000;			/* exit insert via kj (delay in ms) */
 ${SEP}${LB}
 ${SEP}'0a EO(qe)
 ${SEP}${LB}
