@@ -2376,8 +2376,12 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		}
 
 		/* Pure insert: position lands on the line to append after.
-		 * If the offset would go negative, insert (i) instead. */
-		if (!g->del_start && g->nadd) {
+		 * If the offset would go negative, insert (i) instead.
+		 * Custom edit lines carry their own verb and a verb-relative
+		 * offset (the displayed "+Na" already includes the a step),
+		 * so no adjustment is applied for them. */
+		if (!g->del_start && g->nadd
+		    && !(g->custom_rel_lines && g->custom_rel_nlines > 0)) {
 			if (has_custom) {
 				if (g->custom_offset > 0)
 					g->custom_offset -= 1;
