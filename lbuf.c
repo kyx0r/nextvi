@@ -2,7 +2,8 @@ struct lbuf *lbuf_make(void)
 {
 	struct lbuf *lb = emalloc(sizeof(*lb));
 	memset(lb, 0, sizeof(*lb));
-	memset(lb->mark, -1, sizeof(lb->mark) / 2);
+	lb->mark_sb[0] = -1;
+	lb->mark_se[0] = -1;
 	return lb;
 }
 
@@ -19,43 +20,59 @@ static void lopt_done(struct lopt *lo)
 	free(lo->del);
 }
 
-#define _lbuf_movemark(dst, at0, off0, src, at1, off1) \
-{ dst[at0] = src[at1]; dst[at0 + off0] = src[at1 + off1]; } \
+#define lbuf_copymark(dst, src) { dst[0] = src[0]; dst[1] = src[1]; } \
 
-#define lbuf_movemark(dst, at0, src, at1) _lbuf_movemark(dst, at0, NMARKS, src, at1, NMARKS)
-
-#define lbuf_loadmark(dst, at0, src0, src1) \
-{ dst[at0] = src0; dst[at0 + NMARKS] = src1; } \
-
-static int markidx(int mark)
+/* find a mark id, returning its row & off pair */
+static int *mark_find(int *mark, int n, int id)
 {
-	if (mark == '\'' || mark == '`')
-		return 'z' - 'a' + 1;
-	if (mark == '*')
-		return 'z' - 'a' + 2;
-	if (mark == '[')
-		return 'z' - 'a' + 3;
-	if (mark == ']')
-		return 'z' - 'a' + 4;
-	if (islower(mark))
-		return mark - 'a';
-	return -1;
+	for (int i = 0; i < n * 3; i += 3)
+		if (mark[i] == id)
+			return mark + i + 1;
+	return NULL;
 }
 
-void lbuf_mark(struct lbuf *lb, int mark, int pos, int off)
+static void mark_set(int **mark, int *n, int id, int pos, int off)
 {
-	int mk = markidx(mark);
-	if (mk >= 0)
-		lbuf_loadmark(lb->mark, mk, pos, off)
+	int *m = mark_find(*mark, *n, id);
+	if (!m) {
+		*mark = erealloc(*mark, (*n + 1) * 3 * sizeof(int));
+		m = *mark + *n * 3;
+		*m++ = id;
+		(*n)++;
+	}
+	m[0] = pos;
+	m[1] = off;
 }
 
-int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off)
+void lbuf_mark(struct lbuf *lb, int mk, int pos, int off)
 {
-	int mk = markidx(mark);
-	if (mk < 0 || lb->mark[mk] < 0)
+	if (mk == '\'')
+		mk = '`';
+	if (mk == '[') {
+		lb->mark_sb[0] = pos;
+		lb->mark_sb[1] = off;
+	} else if (mk == ']') {
+		lb->mark_se[0] = pos;
+		lb->mark_se[1] = off;
+	} else
+		mark_set(&lb->mark, &lb->mark_n, mk, pos, off);
+}
+
+int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off)
+{
+	int *m;
+	if (mk == '\'')
+		mk = '`';
+	if (mk == '[')
+		m = lb->mark_sb;
+	else if (mk == ']')
+		m = lb->mark_se;
+	else
+		m = mark_find(lb->mark, lb->mark_n, mk);
+	if (!m || m[0] < 0)
 		return 1;
-	*pos = lb->mark[mk];
-	*off = MAX(0, lb->mark[mk + NMARKS]);
+	*pos = m[0];
+	*off = MAX(0, m[1]);
 	return 0;
 }
 
@@ -67,6 +84,7 @@ void lbuf_free(struct lbuf *lb)
 	for (i = 0; i < lb->hist_n; i++)
 		lopt_done(&lb->hist[i]);
 	free(lb->hist);
+	free(lb->mark);
 	free(lb->ln);
 	free(lb);
 }
@@ -111,30 +129,34 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
 	lb->ln_n += n_ins - n_del;
 	for (i = 0; i < n_ins; i++)
 		lb->ln[pos + i] = *((char**)sb->s + i);
-	for (i = 0; i < NMARKS_BASE; i++) {	/* updating marks */
-		if (lb->mark[i] >= pos + n_ins && lb->mark[i] < pos + n_del) {
-			lbuf_movemark(lo->mark, i, lb->mark, i)
-			lb->mark[i] = n_ins ? pos + n_ins - 1 : -1;
-		} else if (lb->mark[i] >= pos + n_del)
-			lb->mark[i] += n_ins - n_del;
-		else if (lo->mark[i] >= 0)
-			lbuf_movemark(lb->mark, i, lo->mark, i)
+	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
+		int *m = lb->mark + i * 3;
+		if (m[1] >= pos + n_ins && m[1] < pos + n_del) {
+			mark_set(&lo->mark, &lo->mark_n, m[0], m[1], m[2]);
+			m[1] = n_ins ? pos + n_ins - 1 : -1;
+		} else if (m[1] >= pos + n_del) {
+			m[1] += n_ins - n_del;
+		} else {
+			int *s = mark_find(lo->mark, lo->mark_n, m[0]);
+			if (s)
+				lbuf_copymark((m + 1), s)
+		}
 	}
 	return n_ins;
 }
 
 void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1)
 {
-	int mk = markidx('[');
-	lbuf_movemark(lo->mark, mk, lb->mark, mk)
-	lbuf_loadmark(lb->mark, mk, beg, o1)
+	lbuf_copymark(lo->mark_sb, lb->mark_sb)
+	lb->mark_sb[0] = beg;
+	lb->mark_sb[1] = o1;
 }
 
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2)
 {
-	int mk = markidx(']');
-	lbuf_movemark(lo->mark, mk, lb->mark, mk)
-	lbuf_loadmark(lb->mark, mk, end, o2)
+	lbuf_copymark(lo->mark_se, lb->mark_se)
+	lb->mark_se[0] = end;
+	lb->mark_se[1] = o2;
 	if (xseq < 0)
 		lopt_done(lo);
 }
@@ -165,8 +187,10 @@ struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del)
 	lo->del = n_del ? emalloc(n_del * sizeof(lo->del[0])) : NULL;
 	for (int i = 0; i < n_del; i++)
 		lo->del[i] = lb->ln[beg + i];
-	lo->mark = emalloc(sizeof(lb->mark));
-	memset(lo->mark, -1, sizeof(lb->mark) / 2);
+	lo->mark = NULL;
+	lo->mark_n = 0;
+	lo->mark_sb[0] = -1;
+	lo->mark_se[0] = -1;
 	lo->pos = beg;
 	lo->pos_off = o1;
 	lo->n_ins = 0;
@@ -378,11 +402,10 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
 		return 1;
 	struct lopt *lo = &lb->hist[lb->hist_u - 1];
 	const int useq = lo->seq;
-	const int m0 = markidx('['), m1 = markidx(']');
 	sbuf sb;
 	if (lb->hist_u == lb->hist_n) {
-		_lbuf_movemark(lb->tmp_mark, 0, 2, lb->mark, m0, NMARKS)
-		_lbuf_movemark(lb->tmp_mark, 1, 2, lb->mark, m1, NMARKS)
+		lbuf_copymark(lb->tmp_mark, lb->mark_sb)
+		lbuf_copymark((lb->tmp_mark + 2), lb->mark_se)
 	}
 	while (lb->hist_u && lb->hist[lb->hist_u - 1].seq == useq) {
 		lo = &lb->hist[--lb->hist_u];
@@ -392,8 +415,8 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
 	}
 	*row = lo->pos;
 	*off = MAX(0, lo->pos_off);
-	lbuf_movemark(lb->mark, m0, lo->mark, m0)
-	lbuf_movemark(lb->mark, m1, lo->mark, m1)
+	lbuf_copymark(lb->mark_sb, lo->mark_sb)
+	lbuf_copymark(lb->mark_se, lo->mark_se)
 	lb->modified = lb->hist_u != lb->saved;
 	return 0;
 }
@@ -404,7 +427,6 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
 		return 1;
 	struct lopt *lo = &lb->hist[lb->hist_u];
 	const int useq = lo->seq;
-	const int m0 = markidx('['), m1 = markidx(']');
 	sbuf sb;
 	while (lb->hist_u < lb->hist_n && lb->hist[lb->hist_u].seq == useq) {
 		lo = &lb->hist[lb->hist_u++];
@@ -416,11 +438,11 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
 	*off = MAX(0, lo->pos_off);
 	if (lb->hist_u < lb->hist_n) {
 		lo++;
-		lbuf_movemark(lb->mark, m0, lo->mark, m0)
-		lbuf_movemark(lb->mark, m1, lo->mark, m1)
+		lbuf_copymark(lb->mark_sb, lo->mark_sb)
+		lbuf_copymark(lb->mark_se, lo->mark_se)
 	} else {
-		_lbuf_movemark(lb->mark, m0, NMARKS, lb->tmp_mark, 0, 2)
-		_lbuf_movemark(lb->mark, m1, NMARKS, lb->tmp_mark, 1, 2)
+		lbuf_copymark(lb->mark_sb, lb->tmp_mark)
+		lbuf_copymark(lb->mark_se, (lb->tmp_mark + 2))
 	}
 	lb->modified = lb->hist_u != lb->saved;
 	return 0;
