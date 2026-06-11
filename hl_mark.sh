@@ -24,24 +24,29 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/wp/wmp/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> int xhlw;			/\\\\* highlight current word \\\\*/
-int xhlp;			/\\\\* highlight \\\\{\\\\}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+1m 0${SEP}${LB}
+${SEP}'0s/wp/wmp/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> int xhlw;			/\\\\* highlight current word \\\\*/
+int xhlp;			/\\\\* highlight \\\\{}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
 int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:9\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a int xhlm;			/* highlight marks */
-${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a EO(hlm)
-${SEP}.,\$;f> 	EO\\\\(ts\\\\),
+${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
 	EO\\\\(order\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1574\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	EO(hlm),
-${SEP}b2${SEP}%;f> 				word = cs;
-			\\\\}
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1757\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		if (xhlm) {
+${SEP}+2m 2${SEP}${LB}
+${SEP}'0a int xhlm;			/* highlight marks */
+${SEP}${LB}
+${SEP}'1a EO(hlm)
+${SEP}${LB}
+${SEP}'2a 	EO(hlm),
+${SEP}b2${SEP}%ya b${SEP}%;f> 				word = cs;
+			}
+		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1757\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = \"abcdefghijklmnopqrstuvwxyz[]\`*\";
 			led_att la;
@@ -77,7 +82,7 @@ exit 0
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 === END ===
 === pattern ===
-\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
 === END ===
 === edit_cmd_rel ===
 +1
