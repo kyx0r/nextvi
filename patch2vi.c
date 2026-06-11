@@ -18,35 +18,9 @@
 #include <ctype.h>
 #include <sys/stat.h>
 #include "vi.h"
+#include "common.c"
 #include "uc.c"
 #include "regex.c"
-
-/* dummy for vi.h's itoalen(); real itoa lives in vi.c which isn't linked */
-char *itoa(int n, char s[])
-{
-	(void)n;
-	*s = '\0';
-	return s;
-}
-
-void *emalloc(size_t size)
-{
-	void *p;
-	if (!(p = malloc(size))) {
-		fprintf(stderr, "\nmalloc: out of memory\n");
-		exit(EXIT_FAILURE);
-	}
-	return p;
-}
-
-void *erealloc(void *p, size_t size)
-{
-	if (!(p = realloc(p, size))) {
-		fprintf(stderr, "\nrealloc: out of memory\n");
-		exit(EXIT_FAILURE);
-	}
-	return p;
-}
 
 #define MAX_LINE 8192
 #define MAX_OPS 65536
@@ -65,6 +39,7 @@ typedef struct {
 	int nops;
 	struct group_s *groups;  /* heap-allocated, set by build_file_groups */
 	int ngroups;
+	int is_new;              /* patch creates this file (--- /dev/null) */
 } file_patch_t;
 
 static file_patch_t files[256];
@@ -2537,10 +2512,15 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 	}
 }
 
+/* set by "--- /dev/null", consumed by the next "+++" */
+static int pending_is_new;
+
 static void new_file(const char *path)
 {
 	files[nfiles].path = xstrdup(path);
 	files[nfiles].nops = 0;
+	files[nfiles].is_new = pending_is_new;
+	pending_is_new = 0;
 	nfiles++;
 	/* path appears in the FAIL <path>:<line> error message inside EXINIT */
 	mark_bytes_used(path);
@@ -2882,9 +2862,13 @@ process_line:
 			continue;
 		}
 
-		/* Skip --- line */
-		if (strncmp(line, "--- ", 4) == 0)
+		/* --- line: /dev/null means the next +++ creates a new file */
+		if (strncmp(line, "--- ", 4) == 0) {
+			const char *p = line + 4;
+			pending_is_new = strncmp(p, "/dev/null", 9) == 0
+					 && (!p[9] || p[9] == '\t' || p[9] == ' ');
 			continue;
+		}
 
 		/* Skip diff line */
 		if (strncmp(line, "diff ", 5) == 0)
@@ -2990,7 +2974,8 @@ process_line:
 			fputs("98reg${SEP}", stdout);
 		for (int k = 0; k < nactive; k++) {
 			fprintf(stdout, "b%d${SEP}", k);
-			if (relative_mode || interactive_mode)
+			/* nothing to cache or search in a brand new file */
+			if ((relative_mode || interactive_mode) && !active[k]->is_new)
 				fputs("%ya b${SEP}", stdout);
 			cur_file_path = active[k]->path;
 			emit_file_script(stdout, active[k]);
