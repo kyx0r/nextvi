@@ -29,18 +29,18 @@ LB="0?"
 # Patch: conf.c ex.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}+3m 0${SEP}${LB}
-${SEP}'0s/rd/ro|rd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:118\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}'0s/rd/ro|rd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:119\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}m 0${SEP}%;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:370\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:373\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2m 1${SEP}%;f+ 		free\\\\(ibuf\\\\.s\\\\);
 	} else \\\\{
-		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:689\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:702\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2m 2${SEP}%;f+ 	return xkwdrs \\\\? NULL : xserr;
 }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2m 3${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1548\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 3${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1568\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}m 4${SEP}${LB}
 ${SEP}1i char readonly = 0;		/* commandline readonly option */
 ${SEP}${LB}
@@ -67,7 +67,7 @@ ${SEP}+1m 1${SEP}${LB}
 ${SEP}'0a 			else if (argv[i][j] == 'R')
 				readonly = 1;
 ${SEP}${LB}
-${SEP}'1s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:402\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}'1s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:406\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}m 0${SEP}${LB}
 ${SEP}'0a 	char readonly;			/* read only */
 ${SEP}${LB}
@@ -83,7 +83,7 @@ exit 0
 === END ===
 === LEVEL 2 ===
 === pre_ctx ===
-(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+(?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 === END ===
@@ -175,8 +175,8 @@ a 	{"ro", ec_readonly},
 				readonly = 1;
 === END ===
 === GROUP 2 ===
--				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-6.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-6.0 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
 === END ===
 === LEVEL 2* ===
 === custom_text ===
@@ -240,11 +240,11 @@ abs
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d346df9..0bc00994 100644
+index d8967839..7755f9d8 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
- (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+ (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 -(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
@@ -253,7 +253,7 @@ index 0d346df9..0bc00994 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..2db0a67d 100644
+index bc6a6269..56013065 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -261,7 +261,7 @@ index 7cbbfc67..2db0a67d 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -116,6 +117,7 @@ static int bufs_open(const char *path, int len)
+@@ -117,6 +118,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -269,7 +269,7 @@ index 7cbbfc67..2db0a67d 100644
  	return i;
  }
  
-@@ -368,6 +370,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -371,6 +373,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -278,7 +278,7 @@ index 7cbbfc67..2db0a67d 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -687,6 +691,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -700,6 +704,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		free(ibuf.s);
  	} else {
  		if (!strchr(cmd, '!')) {
@@ -287,7 +287,7 @@ index 7cbbfc67..2db0a67d 100644
  			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  				return "write failed: file changed";
  			if (arg[0] && mtime(path) >= 0)
-@@ -1457,6 +1463,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1477,6 +1483,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -300,7 +300,7 @@ index 7cbbfc67..2db0a67d 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1546,6 +1558,7 @@ static struct excmd {
+@@ -1566,6 +1578,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
@@ -309,7 +309,7 @@ index 7cbbfc67..2db0a67d 100644
  	{"wq!", ec_write},
  	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index bee5d538..a1e29221 100644
+index d133d031..adff2c0a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1853,11 +1853,13 @@ int main(int argc, char *argv[])
@@ -322,16 +322,16 @@ index bee5d538..a1e29221 100644
  				xvis = 0;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-6.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-6.0 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 7afa37e4..703e445a 100644
+index 98f80e03..0b37fd33 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -400,6 +400,7 @@ struct buf {
+@@ -404,6 +404,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -339,7 +339,7 @@ index 7afa37e4..703e445a 100644
  };
  /* ex options */
  extern int xleft;
-@@ -538,3 +539,4 @@ extern int vi_lncol;
+@@ -543,3 +544,4 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);

@@ -24,30 +24,42 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\(pac\\\\|${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/\\\\|p/|sw|et|idt|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}14a int xet;			/* expandtab - use spaces for indentation */
-int xsw = 8;			/* shiftwidth - indentation step */
-int xidt = 500;			/* auto-detect indent on file open */
-${SEP}%;f> 	bufs\\\\[i\\\\]\\\\.off = 0;
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\(\\\\(pac\\\\|${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}${LB}
+${SEP}'0s/\\\\|p/|sw|et|idt|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 	bufs\\\\[i\\\\]\\\\.off = 0;
 	bufs\\\\[i\\\\]\\\\.top = 0;
-	bufs\\\\[i\\\\]\\\\.td = \\\\+1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:117\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	bufs[i].et = 0;
-	bufs[i].sw = 8;
-	bufs[i].ts = 8;
-${SEP}.,\$;f> 	tempbufs\\\\[i\\\\]\\\\.off = 0;
+	bufs\\\\[i\\\\]\\\\.td = \\\\+1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:118\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}%;f+ 	tempbufs\\\\[i\\\\]\\\\.off = 0;
 	tempbufs\\\\[i\\\\]\\\\.top = 0;
-	tempbufs\\\\[i\\\\]\\\\.td = \\\\+1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:129\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	tempbufs[i].et = 0;
-	tempbufs[i].sw = 8;
-	tempbufs[i].ts = 8;
-${SEP}.,\$;f> 	return 0;
+	tempbufs\\\\[i\\\\]\\\\.td = \\\\+1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:130\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 	return 0;
 \\\\}
 
-static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:353\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a static int gcd(int a, int b)
+static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:356\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 2${SEP}%;f+ 	p->mtime = mtime\\\\(p->path\\\\);
+	p->ft = syn_filetype\\\\(p->path\\\\);
+	lbuf_saved\\\\(p->lb, clear\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:606\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 3${SEP};0${SEP}0reg${SEP}.,\$f+ EO\\\\(shape\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1497\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 4${SEP};0${SEP}0reg${SEP}.,\$f+ 	EO\\\\(err\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1542\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 5${SEP};0${SEP}0reg${SEP}.,\$f+ 	EO\\\\(ish\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1552\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 6${SEP};0${SEP}0reg${SEP}.,\$f+ 	EO\\\\(seq\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1581\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 7${SEP}${LB}
+${SEP}14a int xet;			/* expandtab - use spaces for indentation */
+int xsw = 8;			/* shiftwidth - indentation step */
+int xidt = 500;			/* auto-detect indent on file open */
+${SEP}${LB}
+${SEP}'0a 	bufs[i].et = 0;
+	bufs[i].sw = 8;
+	bufs[i].ts = 8;
+${SEP}${LB}
+${SEP}'1a 	tempbufs[i].et = 0;
+	tempbufs[i].sw = 8;
+	tempbufs[i].ts = 8;
+${SEP}${LB}
+${SEP}'2a static int gcd(int a, int b)
 {
 	while (b) { int t = b; b = a % b; a = t; }
 	return a;
@@ -96,35 +108,39 @@ static void ex_detect_indent(struct buf *p)
 		p->et = xet = 0;
 }
 
-${SEP}.,\$;f> 	p->mtime = mtime\\\\(p->path\\\\);
-	p->ft = syn_filetype\\\\(p->path\\\\);
-	lbuf_saved\\\\(p->lb, clear\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:593\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	if (xidt)
+${SEP}${LB}
+${SEP}'3a 	if (xidt)
 		ex_detect_indent(p);
-${SEP}.,\$f> EO\\\\(shape\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1477\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a EO(et) EO(idt)
+${SEP}${LB}
+${SEP}'4a EO(et) EO(idt)
 _EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
 
-${SEP}.,\$f> 	EO\\\\(err\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1522\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	EO(et),
-${SEP}.,\$f> 	EO\\\\(ish\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1532\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.i 	EO(idt),
-${SEP}.,\$f> 	EO\\\\(seq\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1561\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	EO(sw),
-${SEP}b2${SEP}%;f> 		case TK_CTL\\\\('t'\\\\):
+${SEP}${LB}
+${SEP}'5a 	EO(et),
+${SEP}${LB}
+${SEP}'6i 	EO(idt),
+${SEP}${LB}
+${SEP}'7a 	EO(sw),
+${SEP}b2${SEP}%ya b${SEP}%;f> 		case TK_CTL\\\\('t'\\\\):
 			cs = uc_dup\\\\(sb->s \\\\+ ps\\\\);
 			sbuf_cut\\\\(sb, ps\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:454\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 			if (xet)
+${SEP}+3m 0${SEP}%;f+ 			sbuf_str\\\\(sb, cs\\\\)
+			free\\\\(cs\\\\);
+			pre\\\\+\\\\+;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:457\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 			break;
+		case TK_CTL\\\\('d'\\\\):${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:460\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 2${SEP}%;f+ 				pre--;
+			}
+			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 3${SEP}${LB}
+${SEP}'0c 			if (xet)
 				for (int _k = 0; _k < xsw; _k++)
 					sbuf_chr(sb, ' ')
 			else
 				sbuf_chr(sb, '\\\\t')
-${SEP}.,\$;f> 			sbuf_str\\\\(sb, cs\\\\)
-			free\\\\(cs\\\\);
-			pre\\\\+\\\\+;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:457\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/\\\\+\\\\+/ += xet ? xsw : 1/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:457\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			break;
-		case TK_CTL\\\\('d'\\\\):${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:460\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2c 			if (xet) {
+${SEP}${LB}
+${SEP}'1s/\\\\+\\\\+/ += xet ? xsw : 1/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:457\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'2c 			if (xet) {
 				int _k;
 				for (_k = 0; _k < xsw && sb->s[ps + _k] == ' '; _k++);
 				if (_k) {
@@ -133,20 +149,19 @@ ${SEP}+2c 			if (xet) {
 					pre -= _k;
 				}
 			} else if (sb->s[ps] == ' ' || sb->s[ps] == '\\\\t') {
-${SEP}.,\$;f> 				pre--;
-			\\\\}
-			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		case '\\\\t':
+${SEP}${LB}
+${SEP}'3a 		case '\\\\t':
 			if (xet)
 				for (int _l = 0; _l < xsw; _l++)
 					sbuf_chr(sb, ' ')
 			else
 				sbuf_chr(sb, '\\\\t')
 			break;
-${SEP}b3${SEP}%;f> 			if \\\\(dir < 0\\\\) \\\\{
+${SEP}b3${SEP}%ya b${SEP}%;f> 			if \\\\(dir < 0\\\\) \\\\{
 				if \\\\(\\\\*ln != ' ' && \\\\*ln != '\\\\\\\\t'\\\\)
 					break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:932\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+2c 				if (xet && *ln == ' ') {
+${SEP}+3m 0${SEP}${LB}
+${SEP}'0,#+2c 				if (xet && *ln == ' ') {
 					int k;
 					for (k = 0; k < xsw && *ln == ' '; k++)
 						ln++;
@@ -159,26 +174,30 @@ ${SEP}+3,#+2c 				if (xet && *ln == ' ') {
 				} else
 					sbuf_chr(sb, '\\\\t')
 			}
-${SEP}b4${SEP}%;f> 	int plen, row, off, top;
+${SEP}b4${SEP}%ya b${SEP}%;f> 	int plen, row, off, top;
 	long mtime;			/\\\\* modification time \\\\*/
-	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	int et;				/* expandtab - use spaces for indentation */
+	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:406\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:422\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 	xoff = buf->off; \\\\\\\\
+	xtop = buf->top; \\\\\\\\
+	xtd = buf->td; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:460\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 2${SEP}%;f+ 	buf->off = xoff; \\\\\\\\
+	buf->top = xtop; \\\\\\\\
+	buf->td = xtd; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:466\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 3${SEP}${LB}
+${SEP}'0a 	int et;				/* expandtab - use spaces for indentation */
 	int sw;				/* shiftwidth - indentation step */
 	int ts;				/* tabspace - number of spaces for tab */
-${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a extern int xet;
+${SEP}${LB}
+${SEP}'1a extern int xet;
 extern int xsw;
 extern int xidt;
-${SEP}.,\$;f> 	xoff = buf->off; \\\\\\\\
-	xtop = buf->top; \\\\\\\\
-	xtd = buf->td; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:455\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	xet = buf->et; \\\\
+${SEP}${LB}
+${SEP}'2a 	xet = buf->et; \\\\
 	xsw = buf->sw; \\\\
 	xts = buf->ts; \\\\
-${SEP}.,\$;f> 	buf->off = xoff; \\\\\\\\
-	buf->top = xtop; \\\\\\\\
-	buf->td = xtd; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:461\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	buf->et = xet; \\\\
+${SEP}${LB}
+${SEP}'3a 	buf->et = xet; \\\\
 	buf->sw = xsw; \\\\
 	buf->ts = xts; \\\\
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
@@ -192,9 +211,9 @@ exit 0
 === END ===
 === LEVEL 2 ===
 === pre_ctx ===
-(?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+(?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
 (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
-(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+(?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 === END ===
 === post_ctx ===
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
@@ -414,20 +433,20 @@ extern int xshape;
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d346df9..07ff7490 100644
+index d8967839..9aac735e 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
- (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+ (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
- (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+ (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 -((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +((pac|sw|et|idt|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..ea362e0c 100644
+index bc6a6269..4e5b9eb1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -440,7 +459,7 @@ index 7cbbfc67..ea362e0c 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -115,6 +118,9 @@ static int bufs_open(const char *path, int len)
+@@ -116,6 +119,9 @@ static int bufs_open(const char *path, int len)
  	bufs[i].off = 0;
  	bufs[i].top = 0;
  	bufs[i].td = +1;
@@ -450,7 +469,7 @@ index 7cbbfc67..ea362e0c 100644
  	bufs[i].mtime = -1;
  	return i;
  }
-@@ -127,6 +133,9 @@ void temp_open(int i, char *name, char *ft)
+@@ -128,6 +134,9 @@ void temp_open(int i, char *name, char *ft)
  	tempbufs[i].off = 0;
  	tempbufs[i].top = 0;
  	tempbufs[i].td = +1;
@@ -460,7 +479,7 @@ index 7cbbfc67..ea362e0c 100644
  	tempbufs[i].mtime = -1;
  	tempbufs[i].ft = ft;
  }
-@@ -351,6 +360,55 @@ int ex_edit(const char *path, int len)
+@@ -354,6 +363,55 @@ int ex_edit(const char *path, int len)
  	return 0;
  }
  
@@ -516,7 +535,7 @@ index 7cbbfc67..ea362e0c 100644
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
-@@ -591,6 +649,8 @@ void ex_bufpostfix(struct buf *p, int clear)
+@@ -604,6 +662,8 @@ void ex_bufpostfix(struct buf *p, int clear)
  	p->mtime = mtime(p->path);
  	p->ft = syn_filetype(p->path);
  	lbuf_saved(p->lb, clear);
@@ -525,7 +544,7 @@ index 7cbbfc67..ea362e0c 100644
  }
  
  static void *ec_setpath(char *loc, char *cmd, char *arg)
-@@ -1475,6 +1535,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+@@ -1495,6 +1555,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
@@ -535,7 +554,7 @@ index 7cbbfc67..ea362e0c 100644
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
  _EO(left,
-@@ -1520,6 +1583,7 @@ static struct excmd {
+@@ -1540,6 +1603,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -543,7 +562,7 @@ index 7cbbfc67..ea362e0c 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1530,6 +1594,7 @@ static struct excmd {
+@@ -1550,6 +1614,7 @@ static struct excmd {
  	{"f>", ec_find},
  	{"f<", ec_find},
  	{"f", ec_fuzz},
@@ -551,7 +570,7 @@ index 7cbbfc67..ea362e0c 100644
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
-@@ -1559,6 +1624,7 @@ static struct excmd {
+@@ -1579,6 +1644,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -605,7 +624,7 @@ index eb1eb7dc..83a50797 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index bee5d538..dc8ece3d 100644
+index d133d031..38f0ecf9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -929,9 +929,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
@@ -632,10 +651,10 @@ index bee5d538..dc8ece3d 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index 7afa37e4..c6a9b801 100644
+index 98f80e03..f20b10c6 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -400,6 +400,9 @@ struct buf {
+@@ -404,6 +404,9 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -645,7 +664,7 @@ index 7afa37e4..c6a9b801 100644
  };
  /* ex options */
  extern int xleft;
-@@ -416,6 +419,9 @@ extern int xtd;
+@@ -420,6 +423,9 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;
@@ -655,7 +674,7 @@ index 7afa37e4..c6a9b801 100644
  extern int xish;
  extern int xgrp;
  extern int xpac;
-@@ -453,12 +459,18 @@ extern struct buf *ex_pbuf;
+@@ -458,12 +464,18 @@ extern struct buf *ex_pbuf;
  	xoff = buf->off; \
  	xtop = buf->top; \
  	xtd = buf->td; \

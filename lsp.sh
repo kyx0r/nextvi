@@ -24,25 +24,32 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c jsmn.h lsp.c term.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\\\\\\$/lsp|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+3m 0${SEP}${LB}
+${SEP}'0s/\\\\\\\\\$/lsp|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
-		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		if (*xb_path && xb_ft)
-			lsp_open(xb_path, xb_ft);
-${SEP}.,\$;f> 			ec_setpath\\\\(NULL, NULL, path\\\\);
+		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:377\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}%;f+ 			ec_setpath\\\\(NULL, NULL, path\\\\);
 		lbuf_saved\\\\(xb, 0\\\\);
-		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:713\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		if (*xb_path)
-			lsp_save(xb_path);
-${SEP}.,\$;f> 	return NULL;
+		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:726\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1489\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 2${SEP}%;f+ 	EO\\\\(hlp\\\\),
+	EO\\\\(hlr\\\\),
+	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1599\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 3${SEP}${LB}
+${SEP}'0a 		if (*xb_path && xb_ft)
+			lsp_open(xb_path, xb_ft);
+${SEP}${LB}
+${SEP}'1a 		if (*xb_path)
+			lsp_save(xb_path);
+${SEP}${LB}
+${SEP}'2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
 	int n = 0;
@@ -59,11 +66,10 @@ ${SEP}+2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-${SEP}.,\$;f> 	EO\\\\(hlp\\\\),
-	EO\\\\(hlr\\\\),
-	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1579\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	{\"lsp\", ec_lsp},
-${SEP}b2${SEP}i /*
+${SEP}${LB}
+${SEP}'3a 	{\"lsp\", ec_lsp},
+${SEP}b2${SEP}${LB}
+${SEP}i /*
  * MIT License
  *
  * Copyright (c) 2010 Serge Zaitsev
@@ -534,7 +540,8 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 #endif
 
 #endif /* JSMN_H */
-${SEP}b3${SEP}i /* lsp.c - Language Server Protocol client for nextvi */
+${SEP}b3${SEP}${LB}
+${SEP}i /* lsp.c - Language Server Protocol client for nextvi */
 #include \"jsmn.h\"
 #include <errno.h>
 
@@ -1447,13 +1454,18 @@ const char *lsp_diag_for_line(const char *path, int line)
 	}
 	return NULL;
 }
-${SEP}b4${SEP}%;f> 
+${SEP}b4${SEP}%ya b${SEP}%;f> 
 int term_read\\\\(int winch\\\\)
 \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:142\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3d${SEP}.,\$;f> 			goto ret;
-		\\\\}
+${SEP}+3m 0${SEP}%;f+ 			goto ret;
+		}
 		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:155\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+9c 		re:;
+${SEP}+3m 1${SEP}%;f+ 				goto re;
+			}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:167\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^		}\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 3${SEP}${LB}
+${SEP}'0d${SEP}${LB}
+${SEP}'1,#+9c 		re:;
 		{
 			struct pollfd pfds[1 + LSP_NFDS_MAX];
 			int _nr, _i;
@@ -1483,9 +1495,8 @@ ${SEP}+3,#+9c 		re:;
 					*ibuf = winch;
 					goto ret;
 				}
-${SEP}.,\$;f> 				goto re;
-			\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:167\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
+${SEP}${LB}
+${SEP}'2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 				if (term_winch && winch && xquit >= 0) {
 					*ibuf = winch;
@@ -1497,24 +1508,34 @@ ${SEP}+2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				goto err;
 			}
 			goto ret;
-${SEP}.,\$f> 		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 		err:
+${SEP}${LB}
+${SEP}'3a 		err:
 		*ibuf = 0;
-${SEP}b5${SEP}%;f> #include \"ren\\\\.c\"
+${SEP}b5${SEP}%ya b${SEP}%;f> #include \"ren\\\\.c\"
 #include \"term\\\\.c\"
 #include \"uc\\\\.c\"${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:24\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a #include \"lsp.c\"
-${SEP}.,\$;f> \\\\}
-#define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; \\\\}
+${SEP}+2m 0${SEP}%;f+ }
+#define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; }
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:104\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
-
-${SEP}.,\$;f> 					ex_command\\\\(cmd\\\\)
+${SEP}+2m 1${SEP}%;f+ 					ex_command\\\\(cmd\\\\)
 					restore\\\\(xled\\\\)
 					vi_mod \\\\|= 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 					vc_motion\\\\(k\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1641\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 				} else if (k == 'K') {
+${SEP}+3m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^					vc_motion\\\\(k\\\\);\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1641\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 3${SEP}%;f+ 			syn_blockhl = -1;
+			vi_drawrow\\\\(xrow\\\\);
+		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1799\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 4${SEP}%;f+ 	setup_signals\\\\(\\\\);
+	dir_init\\\\(\\\\);
+	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1838\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 5${SEP}${LB}
+${SEP}'0a #include \"lsp.c\"
+${SEP}${LB}
+${SEP}'1a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
+
+${SEP}${LB}
+${SEP}'2s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'3a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
 				} else if (k == 'd') {
@@ -1522,22 +1543,19 @@ ${SEP}.a 				} else if (k == 'K') {
 						lsp_definition(xb_path, xrow, xoff);
 					vi_mod |= 1;
 				}
-${SEP}.,\$;f> 			syn_blockhl = -1;
-			vi_drawrow\\\\(xrow\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1799\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		if (!xmpt && xb_path && xb_path[0]) {
+${SEP}${LB}
+${SEP}'4a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
 				vi_drawmsg((char *)_ldiag);
 		}
-${SEP}.,\$;f> 	setup_signals\\\\(\\\\);
-	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1838\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	lsp_init();
-${SEP}b6${SEP}%;f> /\\\\* filesystem \\\\*/
+${SEP}${LB}
+${SEP}'5a 	lsp_init();
+${SEP}b6${SEP}%ya b${SEP}%;f> /\\\\* filesystem \\\\*/
 extern rset \\\\*fsincl;
-void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:540\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 
+void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:545\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
 extern int lsp_nfds;
@@ -1564,7 +1582,7 @@ exit 0
 === LEVEL 2 ===
 === pre_ctx ===
 (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
-(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+(?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 === END ===
 === post_ctx ===
@@ -1582,12 +1600,12 @@ s/\\$/lsp|\\/
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d346df9..d65dc3b1 100644
+index d8967839..2e7b503b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -293,7 +293,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
- (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+ (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lsp|\
@@ -1595,10 +1613,10 @@ index 0d346df9..d65dc3b1 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..0e0a0095 100644
+index bc6a6269..1398df6f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -372,6 +372,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -375,6 +375,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
@@ -1607,7 +1625,7 @@ index 7cbbfc67..0e0a0095 100644
  	}
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-@@ -711,6 +713,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -724,6 +726,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  			ec_setpath(NULL, NULL, path);
  		lbuf_saved(xb, 0);
  		ex_buf->mtime = mtime(path);
@@ -1616,7 +1634,7 @@ index 7cbbfc67..0e0a0095 100644
  	}
  	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
  		ec_quit("", cmd, "");
-@@ -1487,6 +1491,23 @@ _EO(left,
+@@ -1507,6 +1511,23 @@ _EO(left,
  	return NULL;
  )
  
@@ -1640,7 +1658,7 @@ index 7cbbfc67..0e0a0095 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1577,6 +1598,7 @@ static struct excmd {
+@@ -1597,6 +1618,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),
@@ -3123,7 +3141,7 @@ index 65254701..374cf77b 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index bee5d538..48bf1b1f 100644
+index d133d031..8fd6f7c0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -3182,10 +3200,10 @@ index bee5d538..48bf1b1f 100644
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
 diff --git a/vi.h b/vi.h
-index 7afa37e4..b7ecf3c0 100644
+index 98f80e03..075db272 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -538,3 +538,18 @@ extern int vi_lncol;
+@@ -543,3 +543,18 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);

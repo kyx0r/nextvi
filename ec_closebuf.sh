@@ -32,8 +32,8 @@ ${SEP}+3m 0${SEP}${LB}
 ${SEP}'0s/cd/c[dx]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 	return val;
 }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1467\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1569\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1487\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"cd\", ec_chdir\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1589\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}m 1${SEP}${LB}
 ${SEP}'0a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
@@ -91,7 +91,7 @@ exit 0
 === END ===
 === LEVEL 2 ===
 === pre_ctx ===
-(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+(?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 === END ===
@@ -128,11 +128,11 @@ a 	{"cx", ec_closebuf},
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d346df9..e7f8217c 100644
+index d8967839..893a46af 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
- (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+ (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 -(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
@@ -141,10 +141,10 @@ index 0d346df9..e7f8217c 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..7f91cc66 100644
+index bc6a6269..4e500040 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1465,6 +1465,49 @@ static int eo_val(char *arg)
+@@ -1485,6 +1485,49 @@ static int eo_val(char *arg)
  	return val;
  }
  
@@ -194,7 +194,7 @@ index 7cbbfc67..7f91cc66 100644
  #define _EO(opt, inner) \
  static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
-@@ -1567,6 +1610,7 @@ static struct excmd {
+@@ -1587,6 +1630,7 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},

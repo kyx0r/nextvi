@@ -24,17 +24,23 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\|sc/m!?|i|sc!?|nm/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
-static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
-${SEP}%;f> 	return NULL;
-\\\\}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+3m 0${SEP}${LB}
+${SEP}'0s/\\\\|sc/m!?|i|sc!?|nm/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 	return NULL;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:549\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a static void *ec_map(char *loc, char *cmd, char *arg)
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:562\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}%;f+ 	\\\\{\"inc\", ec_setincl\\\\},
+	EO\\\\(ic\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1555\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1m 1${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1562\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 2${SEP}${LB}
+${SEP}1i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
+static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
+${SEP}${LB}
+${SEP}'0a static void *ec_map(char *loc, char *cmd, char *arg)
 {
 	char **map = cmd[0] == 'n' ? nmaps[xkmap] : imaps[xkmap];
 	int unmap = !!strchr(cmd, '!');
@@ -74,51 +80,63 @@ int map_read(int mode, int winch)
 	return c;
 }
 
-${SEP}.,\$;f> 	\\\\{\"inc\", ec_setincl\\\\},
-	EO\\\\(ic\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1535\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1a 	{\"im!\", ec_map},
+${SEP}${LB}
+${SEP}'1a 	{\"im!\", ec_map},
 	{\"im\", ec_map},
-${SEP}.,\$f> 	\\\\{\"q!\", ec_quit\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1542\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.i 	{\"nm!\", ec_map},
+${SEP}${LB}
+${SEP}'2i 	{\"nm!\", ec_map},
 	{\"nm\", ec_map},
-${SEP}b2${SEP}%;f> 		len = sb->s_n;
+${SEP}b2${SEP}%ya b${SEP}%;f> 		len = sb->s_n;
 		c = term_read\\\\(TK_CTL\\\\('l'\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:431\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/term_read\\\\(/map_read(1, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:431\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%;f> 
+${SEP}+1m 0${SEP}${LB}
+${SEP}'0s/term_read\\\\(/map_read(1, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:431\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%ya b${SEP}%;f> 
 static int vi_yankbuf\\\\(int winch\\\\)
 \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:263\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:263\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> static int vi_prefix\\\\(void\\\\)
+${SEP}+3m 0${SEP}%;f+ static int vi_prefix\\\\(void\\\\)
 \\\\{
 	int n = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:273\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:273\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(c >= '1' && c <= '9'\\\\) \\\\{
+${SEP}+3m 1${SEP}%;f+ 	if \\\\(c >= '1' && c <= '9'\\\\) \\\\{
 		while \\\\(c >= '0' && c <= '9'\\\\) \\\\{
 			n = n \\\\* 10 \\\\+ c - '0';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:277\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:277\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 
+${SEP}+3m 2${SEP}%;f+ 
 static int vi_digit\\\\(void\\\\)
 \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:285\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:285\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	int cnt = vi_arg \\\\? vi_arg : 1;
+${SEP}+3m 3${SEP}%;f+ 	int cnt = vi_arg \\\\? vi_arg : 1;
 	int mv, i, dir, var;
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:522\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 	mv = map_read(0, 0);
-${SEP}.,\$;f> 			char \\\\*cmd;
+${SEP}+3m 4${SEP}%;f+ 			char \\\\*cmd;
 			term_dec\\\\(\\\\)
 			re_motion:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1217\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1217\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				break;
+${SEP}+3m 5${SEP}%;f+ 				break;
 			case 'v':
 				vi_mod \\\\|= 2;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1342\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1342\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				k = term_read\\\\(0\\\\);
+${SEP}+3m 6${SEP}%;f+ 				k = term_read\\\\(0\\\\);
 				if \\\\(k == 'i'\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1464\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1464\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= vc_put\\\\(c\\\\);
+${SEP}m 7${SEP}%;f+ 				vi_mod \\\\|= vc_put\\\\(c\\\\);
 				break;
 			case 'z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1580\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1580\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				vi_mod \\\\|= 1;
+${SEP}+3m 8${SEP}%;f+ 				vi_mod \\\\|= 1;
 				break;
 			case 'g':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1612\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1612\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 					continue;
+${SEP}+3m 9${SEP}%;f+ 					continue;
 				break;
 			case 'Z':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1684\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1684\\${SEP}pr${INTR}${QF}}${SEP}b4${SEP}%f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.i int map_read(int mode, int winch);
+${SEP}+3m 10${SEP}${LB}
+${SEP}'0s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:263\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'1s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:273\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'2s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:277\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'3s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:285\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'4c 	mv = map_read(0, 0);
+${SEP}${LB}
+${SEP}'5s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1217\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'6s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1342\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'7s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1464\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'8s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1580\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'9s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1612\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'10s/term_read\\\\(/map_read(0, /${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1684\\${SEP}pr${INTR}${QF}}${SEP}b4${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> void bufs_switch\\\\(int idx\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:470\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}${LB}
+${SEP}'0i int map_read(int mode, int winch);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
 
 exit 0
@@ -131,7 +149,7 @@ exit 0
 === LEVEL 2 ===
 === pre_ctx ===
 (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
-(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+(?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 === END ===
 === post_ctx ===
@@ -277,12 +295,12 @@ i int map_read(int mode, int winch);
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d346df9..9b048eae 100644
+index d8967839..df1de649 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -293,7 +293,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
- (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+ (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
  ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|im!?|i|sc!?|nm!?|\
@@ -290,7 +308,7 @@ index 0d346df9..9b048eae 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..cf190da4 100644
+index bc6a6269..2d9d0c70 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -299,7 +317,7 @@ index 7cbbfc67..cf190da4 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -547,6 +549,46 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -560,6 +562,46 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -346,7 +364,7 @@ index 7cbbfc67..cf190da4 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	if (!arg[0]) {
-@@ -1533,6 +1575,8 @@ static struct excmd {
+@@ -1553,6 +1595,8 @@ static struct excmd {
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
@@ -355,7 +373,7 @@ index 7cbbfc67..cf190da4 100644
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
-@@ -1540,6 +1584,8 @@ static struct excmd {
+@@ -1560,6 +1604,8 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -378,7 +396,7 @@ index eb1eb7dc..26403937 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index bee5d538..670f1626 100644
+index d133d031..06142af2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -477,10 +495,10 @@ index bee5d538..670f1626 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 7afa37e4..809e28f7 100644
+index 98f80e03..2c88da83 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -463,6 +463,7 @@ extern struct buf *ex_pbuf;
+@@ -468,6 +468,7 @@ extern struct buf *ex_pbuf;
  #define bufs_switchwft(idx) \
  { if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
  

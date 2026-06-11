@@ -24,14 +24,15 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: lbuf.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->ln\\\\[pos\\\\] : NULL;
-\\\\}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\\\? lb->ln\\\\[pos\\\\] : NULL;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:395\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
 	struct lopt *lo;
 	static int last_hist_u;
@@ -66,10 +67,11 @@ ${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 	return ret;
 }
 
-${SEP}b1${SEP}%;f> 				vi_hidch = !vi_hidch;
+${SEP}b1${SEP}%ya b${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\\\|= 1;
 				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1431\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 			case TK_CTL('o'):
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a 			case TK_CTL('o'):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
 					vi_drawmsg_mpt(\"undo jmp failed\")
@@ -80,20 +82,21 @@ ${SEP}+2a 			case TK_CTL('o'):
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-${SEP}b2${SEP}%;f> void lbuf_smark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int beg, int o1\\\\);
+${SEP}b2${SEP}%ya b${SEP}%;f> void lbuf_smark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int beg, int o1\\\\);
 void lbuf_emark\\\\(struct lbuf \\\\*lb, struct lopt \\\\*lo, int end, int o2\\\\);
-struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:167\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
+struct lopt \\\\*lbuf_opt\\\\(struct lbuf \\\\*lb, int beg, int o1, int n_del\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:171\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'lbuf.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index 7d8ff44a..6f23d1ab 100644
+index e550fa9d..a81a76d1 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -372,6 +372,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
+@@ -393,6 +393,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
  	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
  }
  
@@ -136,7 +139,7 @@ index 7d8ff44a..6f23d1ab 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index bee5d538..e7adeb3e 100644
+index d133d031..8885852a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1429,6 +1429,17 @@ void vi(int init)
@@ -158,14 +161,14 @@ index bee5d538..e7adeb3e 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 7afa37e4..7187e7aa 100644
+index 98f80e03..71830c41 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -165,6 +165,7 @@ char *lbuf_get(struct lbuf *lb, int pos);
+@@ -169,6 +169,7 @@ char *lbuf_get(struct lbuf *lb, int pos);
  void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
  void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
  struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del);
 +int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
- void lbuf_mark(struct lbuf *lb, int mark, int pos, int off);
- int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off);
+ void lbuf_mark(struct lbuf *lb, int mk, int pos, int off);
+ int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off);
  int lbuf_undo(struct lbuf *lb, int *row, int *off);

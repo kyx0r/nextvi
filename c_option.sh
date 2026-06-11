@@ -24,21 +24,28 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1745\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1745\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
-		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1757\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1a 	for (int i = 0; i < cmdnum; i++)
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1763\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}%;f+ 	if \\\\(\\\\(s = getenv\\\\(\"EXINIT\"\\\\)\\\\)\\\\)
+		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1775\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1m 1${SEP}${LB}
+${SEP}'0s/n\\\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1763\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
-${SEP}b1${SEP}%;f> 
+${SEP}b1${SEP}%ya b${SEP}%;f> 
 int main\\\\(int argc${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1835\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 	int i, j, cmdnum = 0;
-	char *ex_cmds[argc - 1];
-${SEP}.,\$;f> 			else \\\\{
+${SEP}+3m 0${SEP}%;f+ 			else \\\\{
 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1858\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.c 			else if (argv[i][j] == 'c') {
+${SEP}m 1${SEP};0${SEP}0reg${SEP}.,\$f+ ^				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+1m 2${SEP}%;f+ 	if \\\\(xvis & 8\\\\)
+		term_scrh;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1870\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 3${SEP}${LB}
+${SEP}'0c 	int i, j, cmdnum = 0;
+	char *ex_cmds[argc - 1];
+${SEP}${LB}
+${SEP}'1c 			else if (argv[i][j] == 'c') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
 					break;
@@ -50,11 +57,11 @@ ${SEP}.c 			else if (argv[i][j] == 'c') {
 					return EXIT_FAILURE;
 				}
 			} else {
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/\\\\[-a/[-ac/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	if \\\\(xvis & 8\\\\)
-		term_scrh;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1870\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1870\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:477\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.${SEP}s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:477\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'vi.c' 'vi.h'
+${SEP}${LB}
+${SEP}'2s/\\\\[-a/[-ac/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'3s/i\\\\)/i, ex_cmds, cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1870\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> void ex_init\\\\(char${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:482\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}${LB}
+${SEP}'0s/n\\\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:482\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
@@ -167,8 +174,8 @@ c 			else if (argv[i][j] == 'c') {
 			} else {
 === END ===
 === GROUP 3 ===
--				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.4 Usage: %s [-acemsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-6.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-6.0 Usage: %s [-acemsv] [file ...]\n", argv[0]);
 === END ===
 === LEVEL 2* ===
 === custom_text ===
@@ -236,10 +243,10 @@ s/n\)/n, char** cmds, int cmdnum)/
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..0b49fe98 100644
+index bc6a6269..9c707149 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1742,7 +1742,7 @@ void ex(void)
+@@ -1760,7 +1760,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -248,7 +255,7 @@ index 7cbbfc67..0b49fe98 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1755,4 +1755,6 @@ void ex_init(char **files, int n)
+@@ -1773,4 +1773,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -256,7 +263,7 @@ index 7cbbfc67..0b49fe98 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index bee5d538..e6b45f27 100644
+index d133d031..35c9661e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1832,7 +1832,8 @@ static void setup_signals(void)
@@ -287,8 +294,8 @@ index bee5d538..e6b45f27 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-5.4 Usage: %s [-acemsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-6.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-6.0 Usage: %s [-acemsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
@@ -302,10 +309,10 @@ index bee5d538..e6b45f27 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 7afa37e4..96c0ec74 100644
+index 98f80e03..6aba0912 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -474,7 +474,7 @@ void *ex_exec(const char *ln);
+@@ -479,7 +479,7 @@ void *ex_exec(const char *ln);
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }

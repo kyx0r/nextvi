@@ -24,18 +24,32 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: cbuild.sh lbuf.c regex.c uc.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> -Wno-unused-parameter \\\\\\\\
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> -Wno-unused-parameter \\\\\\\\
 -Wno-unused-result \\\\\\\\
 -Wfatal-errors -std=c99 \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL cbuild.sh:49\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a -lpthread \\\\
-${SEP}b1${SEP}%;f> 	return n != 0;
-\\\\}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a -lpthread \\\\
+${SEP}b1${SEP}%ya b${SEP}%;f> 	return n != 0;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:474\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+12c struct lsparams
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:493\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 0${SEP}%;f+ 		_o = 0;
+		step = 0;
+		flg = REG_NEWLINE;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 1${SEP}%;f+ 				continue;
+			}
+			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^				break;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:520\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+1m 3${SEP}%;f+ 			step = off \\\\+ g1;
+			off \\\\+= g2 > 0 \\\\? g2 : 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:526\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 4${SEP}%;f+ 		}
+		off = 0;
+	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:530\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 5${SEP}${LB}
+${SEP}'0,#+12c struct lsparams
 {
 	struct lbuf *lb;
 	rset *re;
@@ -56,27 +70,20 @@ static void *lsearch(void *arg)
 	char *s;
 	int off = a->off, g1, g2, _o, step, flg;
 	for (; i >= a->beg && i < a->end; i += a->dir) {
-${SEP}.,\$;f> 		_o = 0;
-		step = 0;
-		flg = REG_NEWLINE;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:490\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+1c 		s = a->lb->ln[i];
+${SEP}${LB}
+${SEP}'1,#+1c 		s = a->lb->ln[i];
 		while (rset_find(a->re, s + off, offs, flg) >= 0) {
-${SEP}.,\$;f> 				continue;
-			\\\\}
-			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:499\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
-${SEP}.,\$f> 				break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:501\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1,#+3c 			*a->o = _o;
+${SEP}${LB}
+${SEP}'2c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
+${SEP}${LB}
+${SEP}'3,#+3c 			*a->o = _o;
 			*a->r = i;
-${SEP}.,\$;f> 			step = off \\\\+ g1;
-			off \\\\+= g2 > 0 \\\\? g2 : 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:507\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2c 			a->end = -1; /* break outer loop efficiently */
+${SEP}${LB}
+${SEP}'4c 			a->end = -1; /* break outer loop efficiently */
 			if (a->dir > 0)
 				return NULL;
-${SEP}.,\$;f> 		\\\\}
-		off = 0;
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:511\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 	return NULL;
+${SEP}${LB}
+${SEP}'5c 	return NULL;
 }
 
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
@@ -135,27 +142,34 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	}
 	utf8_length['\\\\n'] = 1;
 	return 1;
-${SEP}b2${SEP}%;f> 	return 0;
-\\\\}
+${SEP}b2${SEP}%ya b${SEP}%;f> 	return 0;
+}
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(eol_ch/(flg & REG_NEWLINE/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:402\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	char nsubs\\\\[prog->sub\\\\];
+${SEP}+3m 0${SEP}%;f+ 	char nsubs\\\\[prog->sub\\\\];
 	for \\\\(i = 0; i < prog->laidx; i\\\\+\\\\+\\\\)
 		lb\\\\[i\\\\] = NULL;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:642\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/h\\\\)/h && utf8_length[eol_ch])/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:642\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		utf8_length\\\\[eol_ch\\\\] = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:643\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 	else
+${SEP}+3m 1${SEP};0${SEP}0reg${SEP}.,\$f+ ^		utf8_length\\\\[eol_ch\\\\] = 0;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:643\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 2${SEP}${LB}
+${SEP}'0s/\\\\(eol_ch/(flg & REG_NEWLINE/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'1s/h\\\\)/h && utf8_length[eol_ch])/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:642\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'2a 	else
 		flg &= ~REG_NEWLINE;
-${SEP}b3${SEP}%f> 	/\\\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}-1${SEP}s/ u/ _u/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:1\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+${SEP}b3${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ^	/\\\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\\\*/\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:1\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}-1m 0${SEP}%;f+ 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\\\\* F \\\\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
-\\\\};${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:19\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a unsigned char *utf8_length = _utf8_length;
-${SEP}b4${SEP}%;f> #include <sys/stat\\\\.h>
+};${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:19\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}${LB}
+${SEP}'0s/ u/ _u/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'1a unsigned char *utf8_length = _utf8_length;
+${SEP}b4${SEP}%ya b${SEP}%;f> #include <sys/stat\\\\.h>
 #include <sys/ioctl\\\\.h>
 #include <sys/wait\\\\.h>${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:15\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a #include <pthread.h>
-${SEP}b5${SEP}%f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:263\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.c extern unsigned char _utf8_length[256];
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a #include <pthread.h>
+${SEP}b5${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:267\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}${LB}
+${SEP}'0c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}q" $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h'
 
@@ -200,10 +214,10 @@ index 2372d3b8..3b294bc7 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 7d8ff44a..10282a93 100644
+index e550fa9d..38cbd3a3 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -471,24 +471,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -490,24 +490,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -251,7 +265,7 @@ index 7d8ff44a..10282a93 100644
  			flg |= REG_NOTBOL;
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
-@@ -496,19 +504,77 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+@@ -515,19 +523,77 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
  				continue;
  			}
  			_o += uc_off(s + step, off + g1 - step);
@@ -380,7 +394,7 @@ index 875905a8..971996f0 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index bee5d538..b6d2cf00 100644
+index d133d031..21ab88a5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -392,10 +406,10 @@ index bee5d538..b6d2cf00 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 7afa37e4..e481b838 100644
+index 98f80e03..67fd00bb 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -260,7 +260,8 @@ int syn_addhl(char *reg, int id);
+@@ -264,7 +264,8 @@ int syn_addhl(char *reg, int id);
  void syn_init(void);
  
  /* uc.c: utf-8 helper functions */

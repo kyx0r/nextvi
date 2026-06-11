@@ -24,33 +24,48 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: led.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> static sbuf \\\\*suggestsb;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a #define LEDBACK 300
-#define LEDFORW 300
-
-${SEP}.,\$;f> 	if \\\\(!xled\\\\)
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ^static sbuf \\\\*suggestsb;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:1\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}%;f+ 	if \\\\(!xled\\\\)
 		return;
 	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:146\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
-	int fcend = cend + LEDFORW;
-	int fcterm = fcend - fcbeg; /* fake the render dimensions */
-${SEP}.,\$;f> 	char \\\\*bound = NULL;
+${SEP}+2m 1${SEP}%;f+ 	char \\\\*bound = NULL;
 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
 	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:152\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
-	int stt[fcterm+1];	/* stt[i]: remap off indexes */
-	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
-${SEP}.,\$;f> 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
-	\\\\}
+${SEP}+3m 2${SEP}%;f+ 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
+	}
 	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:165\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		c = 0;
-${SEP}.,\$;f> 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
+${SEP}+2m 3${SEP}%;f+ 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
 				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:176\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
+${SEP}+3m 4${SEP}%;f+ 				for \\\\(; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\);
+			}
+		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:181\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 5${SEP}%;f+ 		sbufn_null\\\\(bsb\\\\)
+		bound = bsb->s;
+	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 6${SEP};0${SEP}0reg${SEP}.,\$f+ ^	if \\\\(xhl\\\\)\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:205\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+1m 7${SEP}%;f+ 			if \\\\(!bound\\\\)
+				att\\\\[p->off\\\\] = syn_merge\\\\(att\\\\[p->off\\\\], p->att\\\\);
+			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:215\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 8${SEP}${LB}
+${SEP}'0a #define LEDBACK 300
+#define LEDFORW 300
+
+${SEP}${LB}
+${SEP}'1a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
+	int fcend = cend + LEDFORW;
+	int fcterm = fcend - fcbeg; /* fake the render dimensions */
+${SEP}${LB}
+${SEP}'2,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
+	int stt[fcterm+1];	/* stt[i]: remap off indexes */
+	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
+${SEP}${LB}
+${SEP}'3a 		c = 0;
+${SEP}${LB}
+${SEP}'4c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
 			if (r->pos[l] < cbeg && c < fcterm) {
 				atti++;
@@ -59,24 +74,18 @@ ${SEP}+3c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 			l -= ctx;
 		}
 		for (i = 0; i < cterm;) {
-${SEP}.,\$;f> 				for \\\\(; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\);
-			\\\\}
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:181\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		l = cend <= r->cmax ? r->col[cend] : -1;
+${SEP}${LB}
+${SEP}'5a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
 				att[c++] = l;
 			}
 			l += ctx;
 		}
-${SEP}.,\$;f> 		sbufn_null\\\\(bsb\\\\)
-		bound = bsb->s;
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/ c/ fc/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:203\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 	if \\\\(xhl\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:205\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/ c/ fc/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:205\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			if \\\\(!bound\\\\)
-				att\\\\[p->off\\\\] = syn_merge\\\\(att\\\\[p->off\\\\], p->att\\\\);
-			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:215\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/0/atti/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:215\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'led.c'
+${SEP}${LB}
+${SEP}'6s/ c/ fc/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'7s/ c/ fc/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:205\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'8s/0/atti/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:215\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'led.c'
 
 exit 0
 === PATCH2VI DELTA ===

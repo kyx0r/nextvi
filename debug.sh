@@ -24,14 +24,15 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c regex.c ren.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	xgrec--;
-\\\\}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 	xgrec--;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1744\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a void ex_done(void)
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1762\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
 		if (tempbufs[i].lb) {
@@ -47,10 +48,15 @@ ${SEP}+2a void ex_done(void)
 	free(bufs);
 }
 
-${SEP}b1${SEP}%f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-${SEP}b2${SEP}%f> ren_state rstates${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:88\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a void ren_done(void)
+${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	unsigned int sdense\\\\[prog->sparsesz\\\\], sparsesz = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:638\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}${LB}
+${SEP}'0a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+${SEP}b2${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ren_state rstates${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:88\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}%;f+ 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
+	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
+}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:444\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}${LB}
+${SEP}'0a void ren_done(void)
 {
 	rset_free(dir_rslr);
 	rset_free(dir_rsrl);
@@ -63,10 +69,8 @@ ${SEP}.a void ren_done(void)
 	}
 }
 
-${SEP}.,\$;f> 		pats\\\\[i\\\\] = fts\\\\[i\\\\]\\\\.pat;
-	syn_ftrs = rset_make\\\\(i, pats, 0\\\\);
-\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:444\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 
+${SEP}${LB}
+${SEP}'1a 
 void syn_done(void)
 {
 	for (ftmidx--; ftmidx >= 0; ftmidx--)
@@ -74,21 +78,25 @@ void syn_done(void)
 	free(ftmap);
 	rset_free(syn_ftrs);
 }
-${SEP}b3${SEP}%;f> 	else
+${SEP}b3${SEP}%ya b${SEP}%;f> 	else
 		vi\\\\(1\\\\);
 	term_done\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1875\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	ex_done();
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a 	ex_done();
 	syn_done();
 	ren_done();
 	if (led_attsb)
 		sbuf_free(led_attsb)
 	free(ibuf);
-${SEP}b4${SEP}%f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:218\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a void dir_done(void);
-${SEP}.,\$f> syn_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:260\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a void syn_done(void);
-${SEP}.,\$f> ex_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:477\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a void ex_done(void);
+${SEP}b4${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> /\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:222\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP};0${SEP}0reg${SEP}.,\$f+ syn_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:264\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 1${SEP};0${SEP}0reg${SEP}.,\$f+ ex_init${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:482\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 2${SEP}${LB}
+${SEP}'0a void dir_done(void);
+${SEP}${LB}
+${SEP}'1a void syn_done(void);
+${SEP}${LB}
+${SEP}'2a void ex_done(void);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'ex.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h'
 
 exit 0
@@ -225,10 +233,10 @@ a void ex_done(void);
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..c93288b9 100644
+index bc6a6269..c436026c 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1742,6 +1742,22 @@ void ex(void)
+@@ -1760,6 +1760,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -300,7 +308,7 @@ index 9b4776c8..3eb1a39b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index bee5d538..916af673 100644
+index d133d031..139da88d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1873,6 +1873,12 @@ int main(int argc, char *argv[])
@@ -317,10 +325,10 @@ index bee5d538..916af673 100644
  		term_scrl;
  	return abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 7afa37e4..1e1b15eb 100644
+index 98f80e03..15cf0517 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -216,6 +216,7 @@ int ren_noeol(char *s, int p);
+@@ -220,6 +220,7 @@ int ren_noeol(char *s, int p);
  int ren_off(char *s, int p);
  char *ren_translate(char *s, char *ln);
  /* text direction */
@@ -328,7 +336,7 @@ index 7afa37e4..1e1b15eb 100644
  int dir_context(char *s);
  void dir_init(void);
  /* syntax highlighting */
-@@ -258,6 +259,7 @@ void syn_reloadft(int hl, int flg);
+@@ -262,6 +263,7 @@ void syn_reloadft(int hl, int flg);
  int syn_findhl(int id);
  int syn_addhl(char *reg, int id);
  void syn_init(void);
@@ -336,7 +344,7 @@ index 7afa37e4..1e1b15eb 100644
  
  /* uc.c: utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -475,6 +477,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -480,6 +482,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);

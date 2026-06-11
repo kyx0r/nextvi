@@ -24,13 +24,14 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 			fd < 0 \\\\|\\\\| rd \\\\? 'f' : 'r'\\\\);
 	if \\\\(!\\\\(xvis & 4\\\\)\\\\)
-		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:380\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
+		ex_print\\\\(msg, bar_ft\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:383\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\\\n')
 			adv++;
@@ -53,10 +54,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..3184a8e3 100644
+index bc6a6269..a9ed227c 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -378,6 +378,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -381,6 +381,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  			fd < 0 || rd ? 'f' : 'r');
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)

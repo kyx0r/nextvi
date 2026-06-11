@@ -24,13 +24,16 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	case 'w':
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 	case 'w':
 	case 'W':
 		var = mv == 'W';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:604\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		if (cmd >= 0 && cnt == 1)
+${SEP}+2m 0${SEP}%;f+ 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)
+			if \\\\(lbuf_wordbeg\\\\(xb, var, vi_nlmode\\\\+1, row, off\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:606\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1m 1${SEP}${LB}
+${SEP}'0a 		if (cmd >= 0 && cnt == 1)
 			dir = 2;
 		else
 			dir = vi_nlmode+1;
@@ -45,9 +48,8 @@ ${SEP}+2a 		if (cmd >= 0 && cnt == 1)
 			*row = prow;
 			*off = poff;
 		}
-${SEP}.,\$;f> 		for \\\\(i = 0; i < cnt; i\\\\+\\\\+\\\\)
-			if \\\\(lbuf_wordbeg\\\\(xb, var, vi_nlmode\\\\+1, row, off\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:606\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:606\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
+${SEP}${LB}
+${SEP}'1s/vi_nlmode\\\\+1/dir/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:606\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
@@ -72,7 +74,7 @@ exit 0
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index bee5d538..e87cae23 100644
+index d133d031..58a5d47a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -602,8 +602,23 @@ static int vi_region(int cmd, int *row, int *off)

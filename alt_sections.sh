@@ -24,16 +24,18 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 		break;
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 		break;
 	case '\\\\(':
 	case '\\\\)':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:611\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:611\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 	case '\\\\}':
+${SEP}+3m 0${SEP}%;f+ 	case '}':
 	case '\\\\[':
 	case '\\\\]':${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:651\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
+${SEP}+3m 1${SEP}${LB}
+${SEP}'0s/\\\\(/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:611\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'1,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		var = mv == '[' || mv == ']' ? '{' : '\\\\n';
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
 
@@ -41,7 +43,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index bee5d538..30725365 100644
+index d133d031..35bf100b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -608,7 +608,7 @@ static int vi_region(int cmd, int *row, int *off)

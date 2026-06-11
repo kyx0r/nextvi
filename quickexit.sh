@@ -29,8 +29,8 @@ LB="0?"
 # Patch: conf.c ex.c led.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}+3m 0${SEP}${LB}
-${SEP}'0s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
-${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1542\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}'0s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1496\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1562\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}m 1${SEP}${LB}
 ${SEP}1i int xqe = 1000;			/* exit insert via kj (delay in ms) */
 ${SEP}${LB}
@@ -71,11 +71,11 @@ ${SEP}'0a 				if (xqe)
 					vi_mod |= 2;
 ${SEP}b4${SEP}%ya b${SEP}%;f> 	int p_reg;
 	int lsug;
-	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:363\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:367\\${SEP}pr${INTR}${QF}}${SEP}${LB}
 ${SEP}+2m 0${SEP}%;f+ is\\\\.p_reg .*; \\\\\\\\
 is\\\\.lsug = 0; \\\\\\\\
-is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2m 1${SEP};0${SEP}0reg${SEP}.,\$f+ extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:418\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:375\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP};0${SEP}0reg${SEP}.,\$f+ extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:422\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
 ${SEP}+2m 2${SEP}${LB}
 ${SEP}'0a 	int quickexit;
 ${SEP}${LB}
@@ -93,9 +93,9 @@ exit 0
 === END ===
 === LEVEL 2 ===
 === pre_ctx ===
-(?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+(?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
 (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
-(?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+(?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 === END ===
 === post_ctx ===
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
@@ -206,7 +206,7 @@ abs
 === END ===
 === LEVEL 2 ===
 === pre_ctx ===
-is.p_reg = 0; \
+is.p_reg = xdefreg; \
 is.lsug = 0; \
 is.sug_pt = -1; \
 === END ===
@@ -240,20 +240,20 @@ extern int xshape;
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 0d346df9..892937df 100644
+index d8967839..6cce9bea 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
- (?:'[a-z'`[\\]*])|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
+ (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|.*?(?:(?<^\\\\)\\||$)[ \t]*)*(?:(?:<.*?(?:(?<^\\\\)<|$)|>.*?(?:(?<^\\\\)>|$))|\
- (?:'[a-z'`[\\]*])|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
+ (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|.*?(?:(?<^\\\\)\\||$))*[ \t]*)*)\
 -((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +((qe|pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..2c170b00 100644
+index bc6a6269..f5de148d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -261,7 +261,7 @@ index 7cbbfc67..2c170b00 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1474,6 +1475,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1494,6 +1495,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -269,7 +269,7 @@ index 7cbbfc67..2c170b00 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1540,6 +1542,7 @@ static struct excmd {
+@@ -1560,6 +1562,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -313,7 +313,7 @@ index eb1eb7dc..c7627cdc 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index bee5d538..6a5d0163 100644
+index d133d031..3e675c47 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -334,10 +334,10 @@ index bee5d538..6a5d0163 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 7afa37e4..43972543 100644
+index 98f80e03..c36f9d89 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -361,6 +361,7 @@ typedef struct {
+@@ -365,6 +365,7 @@ typedef struct {
  	int p_reg;
  	int lsug;
  	int sug_pt;
@@ -345,15 +345,15 @@ index 7afa37e4..43972543 100644
  	char *sug;
  	char *_sug;
  } ins_state;
-@@ -369,6 +370,7 @@ is.t_row = -2; \
- is.p_reg = 0; \
+@@ -373,6 +374,7 @@ is.t_row = -2; \
+ is.p_reg = xdefreg; \
  is.lsug = 0; \
  is.sug_pt = -1; \
 +is.quickexit = 0; \
  is.sug = NULL; \
  is._sug = NULL; \
  
-@@ -416,6 +418,7 @@ extern int xtd;
+@@ -420,6 +422,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;

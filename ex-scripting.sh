@@ -24,16 +24,21 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c term.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> int xleft;			/\\\\* the first visible column \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:0\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.i char **xenvp;
-${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
-\\\\}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ^int xleft;			/\\\\* the first visible column \\\\*/\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:0\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}%;f+ 	return xkwdrs \\\\? NULL : xserr;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1479\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 	EO\\\\(seq\\\\),
+	\\\\{\"sc!\", ec_specials},
+	\\\\{\"sc\", ec_specials},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1581\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 2${SEP}${LB}
+${SEP}'0i char **xenvp;
+${SEP}${LB}
+${SEP}'1a static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
 	char buf[100];
@@ -68,20 +73,20 @@ ${SEP}+2a static void *ec_script(char *loc, char *cmd, char *arg)
 	return ret ? xuerr : NULL;
 }
 
-${SEP}.,\$;f> 	EO\\\\(seq\\\\),
-	\\\\{\"sc!\", ec_specials\\\\},
-	\\\\{\"sc\", ec_specials\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1561\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	{\"sr\", ec_script},
+${SEP}${LB}
+${SEP}'2a 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
-${SEP}b1${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
+${SEP}b1${SEP}%ya b${SEP}%;f> 			close\\\\(pipefds1\\\\[0\\\\]\\\\);
 			close\\\\(pipefds1\\\\[1\\\\]\\\\);
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:234\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 		if (xenvp)
+		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:234\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 0${SEP}${LB}
+${SEP}'0c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
-${SEP}b2${SEP}%f> /\\\\* vi\\\\.h: shared definitions across files \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a #ifdef __APPLE__
+${SEP}b2${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ^/\\\\* vi\\\\.h: shared definitions across files \\\\*/\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:1\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}${LB}
+${SEP}'0a #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())
 #else
@@ -95,7 +100,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..06161835 100644
+index bc6a6269..0742cb8a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -103,7 +108,7 @@ index 7cbbfc67..06161835 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1457,6 +1458,41 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1477,6 +1478,41 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -145,7 +150,7 @@ index 7cbbfc67..06161835 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1559,6 +1595,8 @@ static struct excmd {
+@@ -1579,6 +1615,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -171,7 +176,7 @@ index 65254701..eb5c09b4 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 7afa37e4..f476c019 100644
+index 98f80e03..cf3d78f2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

@@ -24,13 +24,14 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 
 	mv = .*\\\\(.*\\\\);
 	switch \\\\(mv\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:523\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	case '\\\\033':	/* Arrow keys */
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a 	case '\\\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {
 			mv = term_read(0);
@@ -118,7 +119,7 @@ exit 0
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index bee5d538..dc949f53 100644
+index d133d031..32e0a8ba 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -521,6 +521,37 @@ static int vi_region(int cmd, int *row, int *off)

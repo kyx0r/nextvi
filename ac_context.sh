@@ -24,56 +24,67 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: led.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> 	return i-s;
-\\\\}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 	return i-s;
+}
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:12\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c static int search(sbuf *sb, int l, int pre)
-${SEP}.,\$f> \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:14\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1c 	if (!sb->s[l])
-${SEP}.,\$;f> 		return 0;
+${SEP}+3m 0${SEP};0${SEP}0reg${SEP}.,\$f+ ^\\\\{\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:14\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+1m 1${SEP}%;f+ 		return 0;
 	sbuf_cut\\\\(suggestsb, 0\\\\)
 	sbuf_smake\\\\(sylsb, 1024\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:18\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 	again:;
-	char *part = strstr(acsb->s, sb->s+l);
-${SEP}.,\$;f> 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
+${SEP}+3m 2${SEP}%;f+ 		while \\\\(\\\\*part != '\\\\\\\\n'\\\\)
 			part--;
 		int len = dstrlen\\\\(\\\\+\\\\+part, '\\\\\\\\n'\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:24\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/ l/ sb->s_n - l/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:24\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 			if \\\\(part == part1\\\\)
+${SEP}+3m 3${SEP}%;f+ 			if \\\\(part == part1\\\\)
 				sbuf_mem\\\\(suggestsb, part, len\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:27\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/se/se if (l >= pre)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:27\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				sbuf_mem\\\\(sylsb, part, len\\\\)
-		\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:30\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2c 		part = strstr(part+len, sb->s+l);
+${SEP}+2m 4${SEP}%;f+ 				sbuf_mem\\\\(sylsb, part, len\\\\)
+		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:30\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 5${SEP}%;f+ \\\\{
+	char \\\\*cs;
+	int len, c, i;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 6${SEP}%;f+ 		case TK_CTL\\\\('n'\\\\):
+			if \\\\(!suggestsb\\\\)
+				continue;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:526\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 7${SEP}%;f+ 				}
+				suggest:
+				\\\\*is->_sug = '\\\\\\\\0';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:537\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 8${SEP}%;f+ 				continue;
+			}
+			lookup:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:543\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 9${SEP}%;f+ 				int r = crow-ctop\\\\+1;
+				if \\\\(is->sug\\\\)
+					goto pac_;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:557\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 10${SEP}${LB}
+${SEP}'0c static int search(sbuf *sb, int l, int pre)
+${SEP}${LB}
+${SEP}'1c 	if (!sb->s[l])
+${SEP}${LB}
+${SEP}'2c 	again:;
+	char *part = strstr(acsb->s, sb->s+l);
+${SEP}${LB}
+${SEP}'3s/ l/ sb->s_n - l/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:24\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'4s/se/se if (l >= pre)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:27\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'5c 		part = strstr(part+len, sb->s+l);
 	}
 	if (l < pre && sb->s[pre]) {
 		l = pre;
 		goto again;
-${SEP}.,\$;f> \\\\{
-	char \\\\*cs;
-	int len, c, i;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	if (ai_max >= 0 && xpac) {
+${SEP}${LB}
+${SEP}'6a 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
 	}
-${SEP}.,\$;f> 		case TK_CTL\\\\('n'\\\\):
-			if \\\\(!suggestsb\\\\)
-				continue;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:526\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/ \\\\+ pre\\\\) \\\\+ pre/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:526\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				\\\\}
-				suggest:
-				\\\\*is->_sug = '\\\\\\\\0';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:537\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
+${SEP}${LB}
+${SEP}'7s/ \\\\+ pre\\\\) \\\\+ pre/)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:526\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'8,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
-${SEP}.,\$;f> 				continue;
-			\\\\}
-			lookup:${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:543\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/->s \\\\+ is->lsug, len - is->lsug/, is->lsug, pre/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:543\\${SEP}pr${INTR}${QF}}${SEP}.,\$;f> 				int r = crow-ctop\\\\+1;
-				if \\\\(is->sug\\\\)
-					goto pac_;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:557\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
+${SEP}${LB}
+${SEP}'9s/->s \\\\+ is->lsug, len - is->lsug/, is->lsug, pre/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:543\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'10,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'led.c'
 

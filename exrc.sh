@@ -24,19 +24,27 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}i int xexrc = 0;			/* read .exrc from the current directory */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a EO(exrc)
-${SEP}.,\$f> 	EO\\\\(err\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1519\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.i 	EO(exrc),
-${SEP}.,\$;f> 	xgrec--;
-\\\\}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1496\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ 	EO\\\\(err\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1539\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 1${SEP}%;f+ 	xgrec--;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1744\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a void ex_script(FILE *fp)
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1762\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 2${SEP}%;f+ 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
+	} while \\\\(--n > 0\\\\);
+	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1774\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 3${SEP};0${SEP}0reg${SEP}.,\$f+ ^		ex_command\\\\(s\\\\)\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1775\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 4${SEP}${LB}
+${SEP}1i int xexrc = 0;			/* read .exrc from the current directory */
+${SEP}${LB}
+${SEP}'0a EO(exrc)
+${SEP}${LB}
+${SEP}'1i 	EO(exrc),
+${SEP}${LB}
+${SEP}'2a void ex_script(FILE *fp)
 {
 	char done = 0;
 	do {
@@ -85,11 +93,9 @@ int load_exrc(char *exrc)
 	return 0;
 }
 
-${SEP}.,\$;f> 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	\\\\} while \\\\(--n > 0\\\\);
-	xvis &= ~4;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1756\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1756\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		ex_command\\\\(s\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1757\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 	} else {
+${SEP}${LB}
+${SEP}'3s/\\\\)\\\\)\\\\)/))) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1774\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'4a 	} else {
 		char exrc[PATH_MAX];
 		char *homeenv = getenv(\"HOME\");
 		char *xdgconfighomeenv = getenv(\"XDG_CONFIG_HOME\");
@@ -169,7 +175,7 @@ i 	EO(exrc),
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7cbbfc67..f148ac62 100644
+index bc6a6269..a027c929 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -177,7 +183,7 @@ index 7cbbfc67..f148ac62 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1474,6 +1475,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1494,6 +1495,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -185,7 +191,7 @@ index 7cbbfc67..f148ac62 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1517,6 +1519,7 @@ static struct excmd {
+@@ -1537,6 +1539,7 @@ static struct excmd {
  	EO(ai),
  	{"ac", ec_setacreg},
  	{"a", ec_insert},
@@ -193,7 +199,7 @@ index 7cbbfc67..f148ac62 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1742,6 +1745,55 @@ void ex(void)
+@@ -1760,6 +1763,55 @@ void ex(void)
  	xgrec--;
  }
  
@@ -249,7 +255,7 @@ index 7cbbfc67..f148ac62 100644
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1753,6 +1805,29 @@ void ex_init(char **files, int n)
+@@ -1771,6 +1823,29 @@ void ex_init(char **files, int n)
  		s = *(++files);
  	} while (--n > 0);
  	xvis &= ~4;

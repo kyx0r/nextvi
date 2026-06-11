@@ -24,18 +24,33 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: lbuf.c ren.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%;f> static int lbuf_replace\\\\(struct lbuf \\\\*lb, sbuf \\\\*sb, char \\\\*s, struct lopt \\\\*lo, int n_del, int n_ins\\\\)
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> static int lbuf_replace\\\\(struct lbuf \\\\*lb, sbuf \\\\*sb, char \\\\*s, struct lopt \\\\*lo, int n_del, int n_ins\\\\)
 \\\\{
-	int i, pos = lo->pos;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:83\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	syn_blockhl_invalidate();
-${SEP}b1${SEP}%;f> int ftidx;
+	int i, pos = lo->pos;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:101\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a 	syn_blockhl_invalidate();
+${SEP}b1${SEP}%ya b${SEP}%;f> int ftidx;
 int syn_blockhl;
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:251\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a /* block-highlight pair cache, keyed by lbuf line pointer */
+${SEP}+2m 0${SEP}%;f+ 	goto default_hl;
+}
+
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ void syn_scdir\\\\(int scdir\\\\)
+\\\\{
+	if \\\\(!scdir \\\\|\\\\| abs\\\\(scdir\\\\) > xrows \\\\|\\\\| \\\\(last_scdir > 0\\\\) != \\\\(scdir > 0\\\\)\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 2${SEP}%;f+ 
+void syn_highlight\\\\(int \\\\*att, char \\\\*s, int n\\\\)
+\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:313\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 3${SEP}%;f+ 	fti\\\\+\\\\+;
+	if \\\\(ftmidx > fti && ftmap\\\\[fti-1\\\\]\\\\.ft == ftmap\\\\[fti\\\\]\\\\.ft\\\\)
+		goto re;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:390\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 4${SEP}${LB}
+${SEP}'0a /* block-highlight pair cache, keyed by lbuf line pointer */
 struct hl_cache_entry {
 	char *ln;
 	int gen;
@@ -147,22 +162,15 @@ static void hl_scan_until(int target_row)
 	last_scdir = saved_last_scdir;
 }
 
-${SEP}.,\$;f> 	goto default_hl;
-\\\\}
+${SEP}${LB}
+${SEP}'1a int sign_changed;
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:292\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a int sign_changed;
-
-${SEP}.,\$;f> void syn_scdir\\\\(int scdir\\\\)
-\\\\{
-	if \\\\(!scdir \\\\|\\\\| abs\\\\(scdir\\\\) > xrows \\\\|\\\\| \\\\(last_scdir > 0\\\\) != \\\\(scdir > 0\\\\)\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		sign_changed = (last_scdir > 0) != (scdir > 0);
+${SEP}${LB}
+${SEP}'2a 		sign_changed = (last_scdir > 0) != (scdir > 0);
 		if (sign_changed)
 			hl_cache_gen++;
-${SEP}.,\$;f> 
-void syn_highlight\\\\(int \\\\*att, char \\\\*s, int n\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:313\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3c 	int fti = ftidx, blockhl, blockcont = -1, trusted = 0;
+${SEP}${LB}
+${SEP}'3c 	int fti = ftidx, blockhl, blockcont = -1, trusted = 0;
 	char *cur_ln = NULL;
 	blockhl = syn_blockhl;
 	if (syn_lb && syn_row >= 0 && syn_row < lbuf_len(syn_lb)) {
@@ -192,47 +200,55 @@ ${SEP}+3c 	int fti = ftidx, blockhl, blockcont = -1, trusted = 0;
 			}
 		}
 	}
-${SEP}.,\$;f> 	fti\\\\+\\\\+;
-	if \\\\(ftmidx > fti && ftmap\\\\[fti-1\\\\]\\\\.ft == ftmap\\\\[fti\\\\]\\\\.ft\\\\)
-		goto re;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ren.c:390\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	if (trusted && cur_ln)
+${SEP}${LB}
+${SEP}'4a 	if (trusted && cur_ln)
 		hl_cache_set(cur_ln, syn_blockhl, blockatt, ftidx);
-${SEP}b2${SEP}%;f> static void vi_drawrow\\\\(int row\\\\)
+${SEP}b2${SEP}%ya b${SEP}%;f> static void vi_drawrow\\\\(int row\\\\)
 \\\\{
 	int l1, i, i1, lnnum = vi_lnnum;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:130\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	int s_row = -1;
-${SEP}.,\$;f> 		if \\\\(row != xrow\\\\+1 \\\\|\\\\| !c \\\\|\\\\| \\\\*c == '\\\\\\\\n'\\\\) \\\\{
+${SEP}+2m 0${SEP}%;f+ 		if \\\\(row != xrow\\\\+1 \\\\|\\\\| !c \\\\|\\\\| \\\\*c == '\\\\\\\\n'\\\\) \\\\{
 			vi_rshift = \\\\(row > xrow\\\\+1 && c && \\\\*c != '\\\\\\\\n'\\\\);
 			s = lbuf_get\\\\(xb, row - vi_rshift\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:140\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 			s_row = row - vi_rshift;
-${SEP}.,\$;f> 		return;
-	\\\\}
+${SEP}+2m 1${SEP}%;f+ 		return;
+	}
 	s = lbuf_get\\\\(xb, row\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:170\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	s_row = row;
-${SEP}.,\$;f> 	skip:
+${SEP}+2m 2${SEP}%;f+ 	skip:
 	rstate \\\\+= row != xrow;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:173\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2${SEP}s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:173\\${SEP}pr${INTR}${QF}}${SEP}.,\$f> 		s = row \\\\? ch : ch\\\\+1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:175\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1c 		s_row = -1;
-	} else if (lnnum && xled) {
-${SEP}.,\$;f> 		vi_lncol = dir_context\\\\(s\\\\) < 0 \\\\? 0 : l1;
+${SEP}+2m 3${SEP};0${SEP}0reg${SEP}.,\$f+ ^		s = row \\\\? ch : ch\\\\+1;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:175\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+1m 4${SEP}%;f+ 		vi_lncol = dir_context\\\\(s\\\\) < 0 \\\\? 0 : l1;
 		memset\\\\(c, ' ', l1 - \\\\(c - tmp\\\\)\\\\);
 		c\\\\[l1 - \\\\(c - tmp\\\\)\\\\] = '\\\\\\\\0';${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:193\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		syn_setrow(xb, s_row);
-${SEP}.,\$;f> 		led_crender\\\\(.*\\\\)
+${SEP}+2m 5${SEP}%;f+ 		led_crender\\\\(.*\\\\)
 		preserve\\\\(int, syn_blockhl, syn_blockhl = -1;\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:194\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 		syn_setrow(NULL, 0);
-${SEP}.,\$;f> 		restore\\\\(ftidx\\\\)
+${SEP}m 6${SEP}%;f+ 		restore\\\\(ftidx\\\\)
 		return;
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:212\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	if (s_row >= 0)
-		syn_setrow(xb, s_row);
-${SEP}.,\$;f> 	led_crender\\\\(.*\\\\)
+	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:212\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 7${SEP}%;f+ 	led_crender\\\\(.*\\\\)
 	rstate = rstates;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:213\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 	syn_setrow(NULL, 0);
-${SEP}b3${SEP}%;f> int syn_findhl\\\\(int id\\\\);
+${SEP}m 8${SEP}${LB}
+${SEP}'0a 	int s_row = -1;
+${SEP}${LB}
+${SEP}'1a 			s_row = row - vi_rshift;
+${SEP}${LB}
+${SEP}'2a 	s_row = row;
+${SEP}${LB}
+${SEP}'3s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:173\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'4c 		s_row = -1;
+	} else if (lnnum && xled) {
+${SEP}${LB}
+${SEP}'5a 		syn_setrow(xb, s_row);
+${SEP}${LB}
+${SEP}'6a 		syn_setrow(NULL, 0);
+${SEP}${LB}
+${SEP}'7a 	if (s_row >= 0)
+		syn_setrow(xb, s_row);
+${SEP}${LB}
+${SEP}'8a 	syn_setrow(NULL, 0);
+${SEP}b3${SEP}%ya b${SEP}%;f> int syn_findhl\\\\(int id\\\\);
 int syn_addhl\\\\(char \\\\*reg, int id\\\\);
-void syn_init\\\\(void\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:260\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a void syn_setrow(struct lbuf *lb, int row);
+void syn_init\\\\(void\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:264\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}'0a void syn_setrow(struct lbuf *lb, int row);
 void syn_blockhl_invalidate(void);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'lbuf.c' 'ren.c' 'vi.c' 'vi.h'
 
@@ -274,10 +290,10 @@ exit 0
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index 7d8ff44a..2629816b 100644
+index e550fa9d..76cec059 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -81,6 +81,7 @@ static int linelength(char *s)
+@@ -99,6 +99,7 @@ static int linelength(char *s)
  static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int n_del, int n_ins)
  {
  	int i, pos = lo->pos;
@@ -471,7 +487,7 @@ index 9b4776c8..6f497355 100644
  		return;
  	for (j = 0; j < n; j++)
 diff --git a/vi.c b/vi.c
-index bee5d538..da2ce3fa 100644
+index d133d031..63fd90ee 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,7 @@ for (i = 0, ret = 0;; i++) { \
@@ -528,10 +544,10 @@ index bee5d538..da2ce3fa 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 7afa37e4..e4688aac 100644
+index 98f80e03..259f4a76 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -258,6 +258,8 @@ void syn_reloadft(int hl, int flg);
+@@ -262,6 +262,8 @@ void syn_reloadft(int hl, int flg);
  int syn_findhl(int id);
  int syn_addhl(char *reg, int id);
  void syn_init(void);
