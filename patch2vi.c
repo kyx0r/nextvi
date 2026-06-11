@@ -616,13 +616,18 @@ static void emit_content(FILE *out, char **texts, int ntexts)
 	}
 }
 
-/* Emit ex commands for inserting text after line N */
-static void emit_insert_after(FILE *out, int line, char **texts, int ntexts)
+/* Emit ex commands for inserting text after line N.
+ * New files have an empty buffer with no addressable line, so the
+ * insert is emitted bare ("i"); otherwise always numbered ("1i"). */
+static void emit_insert_after(FILE *out, int line, char **texts, int ntexts,
+			      int is_new)
 {
 	if (ntexts == 0)
 		return;
 
-	if (line <= 0)
+	if (is_new)
+		fprintf(out, "i ");
+	else if (line <= 0)
 		fprintf(out, "1i ");
 	else
 		fprintf(out, "%da ", line);
@@ -954,13 +959,18 @@ static void emit_mark_delete(FILE *out, int mark_id, int count)
 	EMIT_SEP(out);
 }
 
-/* Phase 2: insert at a mark (a after the mark, i before it) */
+/* Phase 2: insert at a mark (a after the mark, i before it).
+ * mark_id < 0 means a new file's empty buffer: no line to mark,
+ * so the insert is emitted bare. */
 static void emit_mark_insert(FILE *out, int mark_id, int use_i,
 			     char **texts, int ntexts)
 {
 	if (ntexts == 0)
 		return;
-	fprintf(out, "'%d%c ", mark_id, use_i ? 'i' : 'a');
+	if (mark_id < 0)
+		fputs("i ", out);
+	else
+		fprintf(out, "'%d%c ", mark_id, use_i ? 'i' : 'a');
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
 }
@@ -1377,7 +1387,7 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
  * Returns a freshly allocated default_cmds[] array (caller frees entries + array).
  */
 static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
-				   file_delta_t *in_fd)
+				   file_delta_t *in_fd, int is_new)
 {
 	char **default_cmds = calloc(ngroups, sizeof(char *));
 
@@ -1429,8 +1439,10 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			else
 				snprintf(abs_cmd, sizeof(abs_cmd), "%d,%dd", from, to);
 		} else if (g->nadd) {
-			if (after == -1)
+			if (is_new)
 				snprintf(abs_cmd, sizeof(abs_cmd), "i");
+			else if (after == -1)
+				snprintf(abs_cmd, sizeof(abs_cmd), "1i");
 			else
 				snprintf(abs_cmd, sizeof(abs_cmd), "%da", after);
 		}
@@ -1554,8 +1566,10 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				else
 					fprintf(fp, "%d,%dd\n", g->del_start, g->del_end);
 			} else if (g->nadd) {
-				if (g->add_after <= 0)
+				if (is_new)
 					fputs("i", fp);
+				else if (g->add_after <= 0)
+					fputs("1i", fp);
 				else
 					fprintf(fp, "%da", g->add_after);
 				WG_CONTENT(fp);
@@ -1679,7 +1693,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		for (int k = 0; k < nactive; k++) {
 			fprintf(orig_fp, "=== FILE: %s ===\n", active[k]->path);
 			char **dc = write_groups_to_file(orig_fp,
-							 active[k]->groups, active[k]->ngroups, NULL);
+							 active[k]->groups, active[k]->ngroups, NULL,
+							 active[k]->is_new);
 			for (int gi = 0; gi < active[k]->ngroups; gi++)
 				free(dc[gi]);
 			free(dc);
@@ -1803,7 +1818,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		fprintf(tmp_fp, "=== FILE: %s ===\n", active[k]->path);
 		default_cmds_per[k] = write_groups_to_file(tmp_fp,
 				      active[k]->groups, active[k]->ngroups,
-				      in_fd_per[k]);
+				      in_fd_per[k], active[k]->is_new);
 		fprintf(tmp_fp, "%s\n", end_tag_wr);
 		fputc('\n', tmp_fp);
 	}
@@ -2317,7 +2332,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				emit_delete(out, g->del_start, g->del_end);
 			} else if (g->nadd) {
 				emit_insert_after(out, g->add_after,
-						  g->add_texts, g->nadd);
+						  g->add_texts, g->nadd,
+						  fp->is_new);
 			}
 			free_group(g);
 		}
@@ -2390,6 +2406,12 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			/* Custom abs commands carry their own addresses */
 			if (g->custom_abs_lines && g->custom_abs_nlines > 0)
 				continue;
+			/* New file: empty buffer, nothing to mark; phase 2
+			 * emits a bare i (mark_id stays -1) */
+			if (fp->is_new && !g->del_start) {
+				g->insert_i = 1;
+				continue;
+			}
 			int t = target_line;
 			if (!g->del_start && t <= 0) {
 				t = 1;
