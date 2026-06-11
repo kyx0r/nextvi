@@ -24,15 +24,20 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c lbuf.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/(u\\\\[.*)\\\\]/\\\\1p]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%;f> 	return xkwdrs \\\\? NULL : xserr;
-\\\\}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+3m 0${SEP}${LB}
+${SEP}'0s/(u\\\\[.*)\\\\]/\\\\1p]/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 	return xkwdrs \\\\? NULL : xserr;
+}
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+${SEP}+2m 0${SEP}%;f+ 	\\\\{\"uc\", ec_setenc},
+	\\\\{\"uz\", ec_setenc},
+	\\\\{\"ub\", ec_setenc},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1556\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}${LB}
+${SEP}'0a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)
@@ -42,19 +47,31 @@ ${SEP}+2a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-${SEP}.,\$;f> 	\\\\{\"uc\", ec_setenc\\\\},
-	\\\\{\"uz\", ec_setenc\\\\},
-	\\\\{\"ub\", ec_setenc\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1556\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	{\"up\", ec_undoleafs},
-${SEP}b2${SEP}%;f> 	struct lbuf \\\\*lb = emalloc\\\\(sizeof\\\\(\\\\*lb\\\\)\\\\);
-	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);
-	memset\\\\(lb->mark, -1, sizeof\\\\(lb->mark\\\\) / 2\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:5\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	sbuf_make(lb->rehist, 128)
-${SEP}.,\$;f> 	return 0;
-\\\\}
+${SEP}${LB}
+${SEP}'1a 	{\"up\", ec_undoleafs},
+${SEP}b2${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	memset\\\\(lb, 0, sizeof\\\\(\\\\*lb\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:5\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}%;f+ 	return 0;
+}
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:61\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a static void lbuf_freeleafs(struct lbuf *lb)
+void lbuf_free\\\\(struct lbuf \\\\*lb\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:61\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 	for \\\\(i = 0; i < lb->hist_n; i\\\\+\\\\+\\\\)
+		lopt_done\\\\(&lb->hist\\\\[i\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:67\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}m 2${SEP}%;f+ 		lopt_done\\\\(lo\\\\);
+}
+
+${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:141\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 3${SEP}%;f+ 	if \\\\(xseq < 0\\\\)
+		lo = &slo;
+	else \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:150\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 4${SEP}%;f+ void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
+\\\\{
+	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:433\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+3m 5${SEP}%;f+ 		lb->hist_n = 0;
+		lb->hist_u = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:436\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+1m 6${SEP}${LB}
+${SEP}'0a 	sbuf_make(lb->rehist, 128)
+${SEP}${LB}
+${SEP}'1a static void lbuf_freeleafs(struct lbuf *lb)
 {
 	char *ptr = lb->rehist->s;
 	struct lopt *hist;
@@ -81,15 +98,10 @@ ${SEP}+2a static void lbuf_freeleafs(struct lbuf *lb)
 	sbuf_free(freedsb)
 }
 
-${SEP}.,\$;f> 	int i;
-	for \\\\(i = 0; i < lb->ln_n; i\\\\+\\\\+\\\\)
-		free\\\\(lbuf_i\\\\(lb, i\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:67\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+1c 	lbuf_freeleafs(lb);
-${SEP}.,\$;f> 		lopt_done\\\\(lo\\\\);
-\\\\}
-
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:141\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a void lbuf_setleaf(struct lbuf *lb, int leaf)
+${SEP}${LB}
+${SEP}'2,#+1c 	lbuf_freeleafs(lb);
+${SEP}${LB}
+${SEP}'3a void lbuf_setleaf(struct lbuf *lb, int leaf)
 {
 	char *ptr1 = lb->rehist->s, *ptr2;
 	int n, i, off = -1;
@@ -146,29 +158,26 @@ char *lbuf_getleafs(struct lbuf *lb)
 	sbufn_ret(sb, sb->s)
 }
 
-${SEP}.,\$;f> 	if \\\\(xseq < 0\\\\)
-		lo = &slo;
-	else \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:150\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+1c 		int i = lb->hist_n - lb->hist_u;
+${SEP}${LB}
+${SEP}'4,#+1c 		int i = lb->hist_n - lb->hist_u;
 		if (i) {
 			sbuf_mem(lb->rehist, &lb->hist_n, (int)sizeof(lb->hist_n))
 			sbuf_mem(lb->rehist, lb->hist, (int)(lb->hist_n * sizeof(lb->hist[0])));
 		}
-${SEP}.,\$;f> void lbuf_saved\\\\(struct lbuf \\\\*lb, int clear\\\\)
-\\\\{
-	if \\\\(clear\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:433\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3,#+1c 		lbuf_freeleafs(lb);
-${SEP}.,\$;f> 		lb->hist_n = 0;
-		lb->hist_u = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:436\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1a 		sbuf_make(lb->rehist, 128)
-${SEP}b3${SEP}%;f> struct lbuf \\\\{
+${SEP}${LB}
+${SEP}'5,#+1c 		lbuf_freeleafs(lb);
+${SEP}${LB}
+${SEP}'6a 		sbuf_make(lb->rehist, 128)
+${SEP}b3${SEP}%ya b${SEP}%;f> struct lbuf \\\\{
 	char \\\\*\\\\*ln;			/\\\\* buffer lines \\\\*/
 	struct lopt \\\\*hist;		/\\\\* buffer history \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:139\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	sbuf *rehist;		/* alternate redo timelines */
-${SEP}.,\$;f> int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);
+${SEP}+2m 0${SEP}%;f+ int lbuf_findchar\\\\(struct lbuf \\\\*lb, char \\\\*cs, int cmd, int n, int \\\\*r, int \\\\*o\\\\);
 int lbuf_search\\\\(struct lbuf \\\\*lb, rset \\\\*re, int dir, int beg, int end, int pskip,
 		int nskip, int \\\\*r, int \\\\*o\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:178\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a void lbuf_setleaf(struct lbuf *lb, int leaf);
+${SEP}+2m 1${SEP}${LB}
+${SEP}'0a 	sbuf *rehist;		/* alternate redo timelines */
+${SEP}${LB}
+${SEP}'1a void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'vi.h'
 
@@ -191,11 +200,104 @@ exit 0
 	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 === END ===
 === pattern ===
-\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
 === END ===
 === edit_cmd_rel ===
 +3
 s/(u\[.*)\]/\1p]/
+=== END ===
+=== END ===
+=== DELTA lbuf.c ===
+=== GROUP 1 ===
++	sbuf_make(lb->rehist, 128)
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	struct lbuf *lb = emalloc(sizeof(*lb));
+	memset(lb, 0, sizeof(*lb));
+	memset(lb->mark, -1, sizeof(lb->mark) / 2);
+=== END ===
+=== post_ctx ===
+	return lb;
+}
+
+=== END ===
+=== pattern ===
+	memset\(lb, 0, sizeof\(\*lb\)\);
+=== END ===
+=== edit_cmd_rel ===
+a 	sbuf_make(lb->rehist, 128)
+=== END ===
+=== GROUP 2 ===
++static void lbuf_freeleafs(struct lbuf *lb)
++{
++	char *ptr = lb->rehist->s;
++	struct lopt *hist;
++	int n, i, c;
++	sbuf *freedsb; sbuf_make(freedsb, 128)
++	for (i = 0; i < lb->hist_n; i++) {
++		sbuf_mem(freedsb, &lb->hist[i].mark, (int)sizeof(void*))
++		lopt_done(&lb->hist[i]);
++	}
++	while (lb->rehist->s_n > ptr - lb->rehist->s) {
++		n = *(int*)ptr;
++		hist = (struct lopt*)&ptr[sizeof(n)];
++		for (i = 0; i < n; i++) {
++			for (c = 0; c < freedsb->s_n; c+=sizeof(void*))
++				if (*(void**)((char*)freedsb->s + c) == hist[i].mark)
++					goto skip;
++			sbuf_mem(freedsb, &hist[i].mark, (int)sizeof(void*))
++			lopt_done(&hist[i]);
++			skip:;
++		}
++		ptr += n * sizeof(lb->hist[0]) + sizeof(n);
++	}
++	sbuf_free(lb->rehist)
++	sbuf_free(freedsb)
++}
++
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+	return 0;
+}
+
+=== END ===
+=== post_ctx ===
+void lbuf_free(struct lbuf *lb)
+{
+	int i;
+=== END ===
+=== pattern ===
+	return 0;
+}
+
+void lbuf_free\(struct lbuf \*lb\)
+=== END ===
+=== GROUP 3 ===
+-	for (i = 0; i < lb->hist_n; i++)
+-		lopt_done(&lb->hist[i]);
++	lbuf_freeleafs(lb);
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+void lbuf_free(struct lbuf *lb)
+{
+	int i;
+	for (i = 0; i < lb->ln_n; i++)
+		free(lbuf_i(lb, i));
+=== END ===
+=== post_ctx ===
+	free(lb->hist);
+	free(lb->ln);
+	free(lb);
+=== END ===
+=== pattern ===
+	for \(i = 0; i < lb->hist_n; i\+\+\)
+		lopt_done\(&lb->hist\[i\]\);
+=== END ===
+=== edit_cmd_rel ===
++0,#+1c 	lbuf_freeleafs(lb);
 === END ===
 === END ===
 === PATCH2VI PATCH ===
