@@ -687,9 +687,9 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * buffer for the entire phase. Each group's target line is recorded
  * with a line mark ("+<off>m <id>", ids count up from 0 skipping
  * nextvi's special mark ids). Single-line patterns search the buffer
- * directly with ";0 0reg .,$f> ^pattern$ .. 98reg" (.,$f+ for the
- * first search): ;0 resets xoff to the line start and the trailing $
- * anchor disambiguates repeated text. Multi-line
+ * directly with ";0 0reg .,$f> ^pattern$ .. 98reg" (.,$f+ after the
+ * first search): ;0 resets xoff to the line start and the ^...$
+ * anchors disambiguate repeated text. Multi-line
  * patterns use %;f> (first) / %;f+ (subsequent) against the register
  * cache (a bare ";" resolves to the current xoff, so each search
  * continues one char past the previous match start). ABS-strategy
@@ -755,7 +755,8 @@ static void emit_escaped_text(FILE *out, const char *s)
  * Single-line patterns search the buffer directly (0reg .. 98reg)
  * from the cursor's line: ";0" first resets xoff to the line start,
  * then ".,$f> ^pattern$" - the ^...$ anchors plus the .,$ range
- * disambiguate repeated text. The first search of a file uses .,$f+.
+ * disambiguate repeated text. The first search of a file uses
+ * .,$f>, subsequent ones .,$f+.
  * Multi-line patterns run against the cached default register via
  * %;f> (first search of a file) or %;f+ (subsequent: a bare ";"
  * picks up the current xoff and skips one char from the previous
@@ -775,7 +776,7 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 {
 	int disamb = 0;
 	if (!cmd && nanchors == 1) {
-		cmd = first ? ".,$f+" : ".,$f>";
+		cmd = first ? ".,$f>" : ".,$f+";
 		disamb = 1;
 	}
 	if (cmd) {
