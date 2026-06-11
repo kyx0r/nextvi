@@ -686,8 +686,11 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * no edits in between, so the register stays byte-identical to the
  * buffer for the entire phase. Each group's target line is recorded
  * with a line mark ("+<off>m <id>", ids count up from 0 skipping
- * nextvi's special mark ids). The first search uses %;f>, subsequent
- * ones %;f+ (a bare ";" resolves to the current xoff, so each search
+ * nextvi's special mark ids). Single-line patterns search the buffer
+ * directly with "0reg .,$f> ^pattern .. 98reg" (.,$f+ for the first
+ * search) - the ^ anchor disambiguates repeated text. Multi-line
+ * patterns use %;f> (first) / %;f+ (subsequent) against the register
+ * cache (a bare ";" resolves to the current xoff, so each search
  * continues one char past the previous match start). ABS-strategy
  * groups mark their original line number directly - the buffer is
  * pristine in this phase, so no cumulative line-delta correction is
@@ -748,16 +751,20 @@ static void emit_escaped_text(FILE *out, const char *s)
 }
 
 /* Emit f> search with error check, then mark the target line.
- * Default searches run against the cached default register via %;f>
- * (first search of a file) or %;f+ (subsequent: a bare ";" picks up
- * the current xoff and skips one char from the previous match start
- * so identical anchors find the next occurrence).
+ * Single-line patterns search the buffer directly (0reg .. 98reg)
+ * from the cursor's line: ".,$f> ^pattern" - the ^ anchor plus the
+ * .,$ range disambiguate repeated text. The first search of a file
+ * uses .,$f+.
+ * Multi-line patterns run against the cached default register via
+ * %;f> (first search of a file) or %;f+ (subsequent: a bare ";"
+ * picks up the current xoff and skips one char from the previous
+ * match start so identical anchors find the next occurrence).
  * pre_escaped: 0 = anchors are raw text (apply regex+exarg escape),
  *              1 = anchors are pre-escaped regex (apply exarg only).
  * cmd: if non-NULL, used verbatim instead of the default prefix.
- *      Custom commands predate register caching, so the default
- *      register is restored (0reg) around them and they search the
- *      buffer directly, then caching is re-enabled (98reg).
+ *      Custom commands search the buffer directly: the default
+ *      register is disabled (0reg) around them, then caching is
+ *      re-enabled (98reg). No ^ is prepended to custom patterns.
  * After the search, "+<offset>m <mark_id>" marks the target line
  * without moving the cursor. */
 static void emit_search(FILE *out, char **anchors, int nanchors,
@@ -765,10 +772,18 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 			int target_line, int pre_escaped, const char *cmd,
 			int first)
 {
+	int caret = 0;
+	if (!cmd && nanchors == 1) {
+		cmd = first ? ".,$f+" : ".,$f>";
+		caret = 1;
+	}
 	if (cmd) {
 		fputs("0reg", out);
 		EMIT_SEP(out);
-		fprintf(out, "%s ", cmd);
+		emit_escaped_line(out, cmd);  /* shell-escapes the $ in .,$ */
+		fputc(' ', out);
+		if (caret)
+			fputc('^', out);
 	} else
 		fputs(first ? "%;f> " : "%;f+ ", out);
 	for (int i = 0; i < nanchors; i++) {
@@ -884,9 +899,10 @@ static int emit_custom_pos(FILE *out, group_t *g, int first)
  * Phase 1: emit the search + mark for a relative group.
  * Returns 1 on success, -1 if no usable anchor exists.
  *
- * All anchors emit "%;f> pattern" (or f+) against the cached
- * register, searching forward from the cursor's byte offset.
- * For follow ctx the offset is negative.
+ * Multi-line anchors emit "%;f> pattern" (or f+) against the cached
+ * register, searching forward from the cursor's byte offset. Single
+ * anchors get the buffer-direct ".,$f> ^pattern" form (see
+ * emit_search). For follow ctx the offset is negative.
  */
 static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int mark_id, int first)
 {
@@ -1377,12 +1393,12 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			dcmd = "%;f>";
 		} else if (g->nanchors == 1) {
 			default_offset = g->anchor_offset;
-			dcmd = "%;f>";
+			dcmd = ".,$f>";
 		} else if (g->follow_ctx && g->follow_ctx[0]) {
 			default_offset = -(g->follow_offset);
-			dcmd = "%;f>";
+			dcmd = ".,$f>";
 		} else if (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
-			dcmd = "%;f>";
+			dcmd = ".,$f>";
 		} else {
 			default_offset = g->block_change_idx;
 		}
