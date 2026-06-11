@@ -24,16 +24,24 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
-${SEP}%f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a EO(qe)
-${SEP}.,\$f> 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1542\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 	EO(qe),
-${SEP}b2${SEP}1a static int gettime_ms(void)
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\|\\\\(\\\\[\\\\.%\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\[0-9\\\\]\\\\+\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+3m 0${SEP}${LB}
+${SEP}'0s/\\\\(p/(qe|p/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1476\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"m\", ec_mark\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1542\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 1${SEP}${LB}
+${SEP}i int xqe = 1000;			/* exit insert via kj (delay in ms) */
+${SEP}${LB}
+${SEP}'0a EO(qe)
+${SEP}${LB}
+${SEP}'1a 	EO(qe),
+${SEP}b2${SEP}%ya b${SEP}%;f> 				exbuf_load\\\\(ex_buf\\\\)
+			}
+			continue; }${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 0${SEP}${LB}
+${SEP}1a static int gettime_ms(void)
 {
 	struct timespec t;
 	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
@@ -41,10 +49,8 @@ ${SEP}b2${SEP}1a static int gettime_ms(void)
 	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
 }
 
-${SEP}%;f> 				exbuf_load\\\\(ex_buf\\\\)
-			\\\\}
-			continue; \\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:638\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 		case 'j':
+${SEP}${LB}
+${SEP}'0a 		case 'j':
 			if (xqe && (gettime_ms() - is->quickexit) < xqe) {
 				if (len - pre > 0 && sb->s[led_lastchar(sb->s)] == 'k') {
 					term_push(\"\", 2);
@@ -55,22 +61,27 @@ ${SEP}+2a 		case 'j':
 		case 'k':
 			is->quickexit = gettime_ms();
 _default:
-${SEP}b3${SEP}9a #include <time.h>
-${SEP}%;f> 				\\\\} else if \\\\(c != 'A' && c != 'C'\\\\)
+${SEP}b3${SEP}%ya b${SEP}%;f> 				} else if \\\\(c != 'A' && c != 'C'\\\\)
 					xoff--;
 				rep_record\\\\(\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1544\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 				if (xqe)
+${SEP}+2m 0${SEP}${LB}
+${SEP}9a #include <time.h>
+${SEP}${LB}
+${SEP}'0a 				if (xqe)
 					vi_mod |= 2;
-${SEP}b4${SEP}%;f> 	int p_reg;
+${SEP}b4${SEP}%ya b${SEP}%;f> 	int p_reg;
 	int lsug;
 	int sug_pt;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:363\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	int quickexit;
-${SEP}.,\$;f> is\\\\.p_reg = 0; \\\\\\\\
+${SEP}+2m 0${SEP}%;f+ is\\\\.p_reg .*; \\\\\\\\
 is\\\\.lsug = 0; \\\\\\\\
 is\\\\.sug_pt = -1; \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:371\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a is.quickexit = 0; \\\\
-${SEP}.,\$f> extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a extern int xqe;
+${SEP}+2m 1${SEP};0${SEP}0reg${SEP}.,\$f+ extern int xshape;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:418\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+2m 2${SEP}${LB}
+${SEP}'0a 	int quickexit;
+${SEP}${LB}
+${SEP}'1a is.quickexit = 0; \\\\
+${SEP}${LB}
+${SEP}'2a extern int xqe;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h'
 
 exit 0
@@ -92,7 +103,7 @@ exit 0
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 === END ===
 === pattern ===
-\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
+\|\(\[\.%\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\[0-9\]\+\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\[ \\t\]\*\)\*\)\[ \\t\]\*\\
 === END ===
 === END ===
 === DELTA ex.c ===
@@ -190,6 +201,25 @@ abs
 === END ===
 === END ===
 === DELTA vi.h ===
+=== GROUP 2 ===
++is.quickexit = 0; \
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+is.p_reg = 0; \
+is.lsug = 0; \
+is.sug_pt = -1; \
+=== END ===
+=== post_ctx ===
+is.sug = NULL; \
+is._sug = NULL; \
+
+=== END ===
+=== pattern ===
+is\.p_reg .*; \\
+is\.lsug = 0; \\
+is\.sug_pt = -1; \\
+=== END ===
 === GROUP 3 ===
 +extern int xqe;
 === END ===
