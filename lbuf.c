@@ -20,7 +20,7 @@ static void lopt_done(struct lopt *lo)
 	free(lo->del);
 }
 
-#define lbuf_copymark(dst, src) { dst[0] = src[0]; dst[1] = src[1]; } \
+#define lbuf_copymark(dst, src) { dst[0] = src[0]; dst[1] = src[1]; }
 
 /* find a mark id, returning its row & off pair */
 static int *mark_find(int *mark, int n, int id)
@@ -130,17 +130,14 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
 	for (i = 0; i < n_ins; i++)
 		lb->ln[pos + i] = *((char**)sb->s + i);
 	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
-		int *m = lb->mark + i * 3;
+		int *m = lb->mark + i * 3, *lm;
 		if (m[1] >= pos + n_ins && m[1] < pos + n_del) {
 			mark_set(&lo->mark, &lo->mark_n, m[0], m[1], m[2]);
 			m[1] = n_ins ? pos + n_ins - 1 : -1;
 		} else if (m[1] >= pos + n_del) {
 			m[1] += n_ins - n_del;
-		} else {
-			int *s = mark_find(lo->mark, lo->mark_n, m[0]);
-			if (s)
-				lbuf_copymark((m + 1), s)
-		}
+		} else if ((lm = mark_find(lo->mark, lo->mark_n, m[0])))
+			lbuf_copymark((m + 1), lm)
 	}
 	return n_ins;
 }
