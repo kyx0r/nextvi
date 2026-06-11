@@ -778,7 +778,8 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 	if (!cmd && nanchors == 1) {
 		cmd = first ? ".,$f>" : ".,$f+";
 		disamb = 1;
-	}
+	} else if (cmd && (!strcmp(cmd, ".,$f>") || !strcmp(cmd, ".,$f+")))
+		disamb = 1;  /* user kept/typed the disamb cmd: still emit ;0 */
 	if (cmd) {
 		if (disamb) {
 			/* reset xoff to 0 so the .,$ region starts at the
@@ -790,7 +791,9 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 		EMIT_SEP(out);
 		emit_escaped_line(out, cmd);  /* shell-escapes the $ in .,$ */
 		fputc(' ', out);
-		if (disamb)
+		/* pre-escaped (interactive) patterns carry their own ^...$
+		 * from the displayed default; the user may have removed them */
+		if (disamb && !pre_escaped)
 			fputc('^', out);
 	} else
 		fputs(first ? "%;f> " : "%;f+ ", out);
@@ -809,7 +812,7 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 		if (i < nanchors - 1)
 			fputc('\n', out);
 	}
-	if (disamb)
+	if (disamb && !pre_escaped)
 		fputs("\\$", out);  /* $ anchor, shell-escaped */
 	/* Ensure trailing newline when last anchor is empty */
 	if (nanchors > 0 && !anchors[nanchors - 1][0])
@@ -1475,9 +1478,12 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				fprintf(fp, "%s\n", gd->pattern[i]);
 			pattern_has_lines = 1;
 		} else {
+			/* single-line patterns show the ^...$ disamb anchors so
+			 * the user can remove them; emit respects the edit */
+			int wrap = g->nanchors == 1;
 			for (int i = 0; i < g->nanchors; i++) {
 				char *esc = escape_regex(g->anchors[i]);
-				fprintf(fp, "%s\n", esc);
+				fprintf(fp, wrap ? "^%s$\n" : "%s\n", esc);
 				free(esc);
 			}
 			pattern_has_lines = g->nanchors > 0;
@@ -1498,7 +1504,7 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				esc = escape_regex(g->post_ctx[0]);
 				post_extra_start = 1;
 			}
-			fprintf(fp, "%s\n", esc);
+			fprintf(fp, "^%s$\n", esc);
 			free(esc);
 		}
 		if ((g->ndel - del_extra_start) + (g->npost_ctx - post_extra_start) > 0) {
