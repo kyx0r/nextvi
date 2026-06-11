@@ -622,11 +622,14 @@ static void emit_escaped_text(FILE *out, const char *s);
  *   q! (quit)      - ec_quit: quits without saving
  *   sc! (specials) - ec_specials: sets ex separator character
  *   ??! (while)    - ec_while: conditional execution (error check)
+ *   m (mark)       - ec_mark: sets a line mark, does not move xrow.
+ *                    "+2m 0" marks cursor+2 as mark <0>; the mark
+ *                    auto-adjusts in lbuf_replace() when edits above
+ *                    it insert or delete lines.
+ *   'N             - mark address: "'0c" edits the marked line.
  *
  * When emitting relative-mode positions (offset from search result),
  * +N / -N are equivalent to .+N / .-N since +/- default to current line.
- * Offset 0 emits . in search functions to avoid empty commands between
- * consecutive separators (which would trigger ec_print output).
  */
 
 /* Emit content lines for an a/c/i ex command. */
@@ -700,21 +703,28 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
 /*
  * Relative mode emit functions - use regex patterns instead of line numbers.
  *
- * Forward processing: groups are processed top-to-bottom.
- * Each f> search starts from current cursor position (xrow/xoff)
- * and finds the next occurrence forward. After each edit, the cursor
- * advances, so subsequent searches naturally find the correct occurrence.
+ * Two-phase emission per file:
  *
- * Register caching: the default register is reassigned to <b> (98reg)
- * and the whole buffer is yanked into it (%ya b) after every file open
- * and after every group's edits. All default searches use the %;0f>
- * horizontal whole-buffer form: f> then searches the cached register
- * instead of extracting the region on every search, starting from the
- * cursor's byte offset, and maps the match back to a buffer position.
- * Single-line and multi-line anchors both use this one form; in it
- * <Newline> is a regular character.
+ * Phase 1 (resolve): the whole buffer is yanked once into register <b>
+ * (the default register, set by 98reg) right after the file is opened.
+ * All groups' searches then run top-to-bottom against this cache with
+ * no edits in between, so the register stays byte-identical to the
+ * buffer for the entire phase. Each group's target line is recorded
+ * with a line mark ("+<off>m <id>", ids count up from 0 skipping
+ * nextvi's special mark ids). The first search uses %;0f>, subsequent
+ * ones %;0f+ (skip one char) since no edit moves the cursor anymore;
+ * a bare +N address then advances the scan position past the group's
+ * deleted lines. ABS-strategy groups mark their original line number
+ * directly - the buffer is pristine in this phase, so no cumulative
+ * line-delta correction is needed.
  *
- * All search paths use ex_arg escaping uniformly via emit_escaped_regex_exarg.
+ * Phase 2 (commit): edits are emitted addressing the marks ('0c, '0d,
+ * '0,#+Nc, '0s/../../, '0;A;Bc ...). Marks auto-adjust as edits above
+ * them shift lines, so groups apply forward in patch order. Because
+ * every search ran before the first edit, any failed anchor aborts
+ * with the file completely untouched.
+ *
+ * All search paths use ex_arg escaping uniformly.
  *
  * Error checking: each search is followed by ??! to detect failure,
  * print debug info, and quit before corrupting the file.
@@ -762,24 +772,30 @@ static void emit_escaped_text(FILE *out, const char *s)
 	free(exarg_esc);
 }
 
-/* Emit f> search with error check.
- * Default searches run against the cached default register via %;0f>.
+/* Emit f> search with error check, then mark the target line.
+ * Default searches run against the cached default register via %;0f>
+ * (first search of a file) or %;0f+ (subsequent: skip one char from
+ * the previous match so identical anchors find the next occurrence).
  * pre_escaped: 0 = anchors are raw text (apply regex+exarg escape),
  *              1 = anchors are pre-escaped regex (apply exarg only).
  * cmd: if non-NULL, used verbatim instead of the default prefix.
  *      Custom commands predate register caching, so the default
  *      register is restored (0reg) around them and they search the
- *      buffer directly, then caching is re-enabled (98reg). */
+ *      buffer directly, then caching is re-enabled (98reg).
+ * After the search, "+<offset>m <mark_id>" marks the target line
+ * without moving the cursor, and a bare "+<advance>" address moves
+ * the scan position past the group's lines for the next search. */
 static void emit_search(FILE *out, char **anchors, int nanchors,
-			int offset, int target_line,
-			int pre_escaped, const char *cmd)
+			int offset, int advance, int mark_id,
+			int target_line, int pre_escaped, const char *cmd,
+			int first)
 {
 	if (cmd) {
 		fputs("0reg", out);
 		EMIT_SEP(out);
 		fprintf(out, "%s ", cmd);
 	} else
-		fputs("%;0f> ", out);
+		fputs(first ? "%;0f> " : "%;0f+ ", out);
 	for (int i = 0; i < nanchors; i++) {
 		if (pre_escaped) {
 			char *e = escape_exarg(anchors[i]);
@@ -806,11 +822,24 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 	}
 	fputs("${LB}\n", out);
 	EMIT_SEP(out);
-	/* . needed at offset 0 to avoid empty command between separators */
 	if (offset)
 		fprintf(out, "%+d", offset);
-	else
-		fputc('.', out);
+	fprintf(out, "m %d", mark_id);
+	EMIT_SEP(out);
+	if (advance > 0) {
+		fprintf(out, "+%d", advance);
+		EMIT_SEP(out);
+	}
+}
+
+/* Next mark id, skipping nextvi's internal special mark ids:
+ * <'> 39 <*> 42 <[> 91 <]> 93 <`> 96 are rewritten by the editor
+ * itself (<*> on every ex command, <[>/<]> on every change). */
+static int next_mark_id(int *n)
+{
+	while (*n == '\'' || *n == '*' || *n == '[' || *n == ']' || *n == '`')
+		(*n)++;
+	return (*n)++;
 }
 
 typedef struct group_s {
@@ -853,6 +882,10 @@ typedef struct group_s {
 	int custom_abs_nlines;
 	int custom_relc_nlines;
 	int custom_rel_nlines;
+	/* Two-phase emission state, set in phase 1, read in phase 2 */
+	int res_strat;           /* resolved strategy */
+	int mark_id;             /* line mark id, -1 = no mark */
+	int insert_i;            /* pure add: use i (insert) instead of a */
 } group_t;
 
 /* Emit a line with exarg + shell escaping only (no regex escaping).
@@ -864,28 +897,29 @@ static void emit_escaped_exarg_only(FILE *out, const char *s)
 	free(e);
 }
 
-/* Emit positioning for a custom-edited group.
- * Returns: 0 = unused, 1 = two-command (search then offset). */
-static int emit_custom_pos(FILE *out, group_t *g)
+/* Phase 1: emit search + mark for a custom-edited group.
+ * Returns 1 on success, -1 if there is nothing to search. */
+static int emit_custom_pos(FILE *out, group_t *g, int first)
 {
 	int target_line = g->del_start ? g->del_start : g->add_after;
 	if (g->ncustom == 0)
 		return -1;
 	emit_search(out, g->custom_lines, g->ncustom, g->custom_offset,
-		    target_line, 1, g->custom_cmd);
+		    g->custom_offset + g->ndel - 1, g->mark_id,
+		    target_line, 1, g->custom_cmd, first);
 	return 1;
 }
 
 /*
- * Emit the search/positioning part for a relative group.
- * Returns: 0 = single-command positioning (pos is part of final cmd),
- *          1 = two-command positioning (f> then .+offset as separate cmd)
+ * Phase 1: emit the search + mark for a relative group.
+ * Returns 1 on success, -1 if no usable anchor exists.
  *
- * All anchors emit "%;0f> pattern" against the cached register,
- * searching forward from the cursor's byte offset.
+ * All anchors emit "%;0f> pattern" (or f+) against the cached
+ * register, searching forward from the cursor's byte offset.
  * For follow ctx the offset is negative.
  */
-static int emit_rel_pos(FILE *out, rel_ctx_t *rc)
+static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int mark_id, int ndel,
+			int first)
 {
 	char *single[1];
 	char **anchors;
@@ -907,55 +941,46 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc)
 	} else {
 		return -1;
 	}
-	emit_search(out, anchors, n, off, rc->target_line, 0, NULL);
+	emit_search(out, anchors, n, off, off + ndel - 1, mark_id,
+		    rc->target_line, 0, NULL, first);
 	return 1;
 }
 
-/* Emit delete using relative pattern */
-static void emit_relative_delete(FILE *out, rel_ctx_t *rc, int count)
+/* Phase 2: delete at a mark */
+static void emit_mark_delete(FILE *out, int mark_id, int count)
 {
-	int mode = emit_rel_pos(out, rc);
 	if (count == 1)
-		fputc('d', out);
+		fprintf(out, "'%dd", mark_id);
 	else
-		fprintf(out, ",#+%dd", count - 1);
+		fprintf(out, "'%d,#+%dd", mark_id, count - 1);
 	EMIT_SEP(out);
-	if (mode == 0)
-		emit_err_check(out, rc->target_line);
 }
 
-/* Emit insert using relative pattern */
-static void emit_relative_insert(FILE *out, rel_ctx_t *rc,
-				 char **texts, int ntexts)
+/* Phase 2: insert at a mark (a after the mark, i before it) */
+static void emit_mark_insert(FILE *out, int mark_id, int use_i,
+			     char **texts, int ntexts)
 {
 	if (ntexts == 0)
 		return;
-
-	int mode = emit_rel_pos(out, rc);
-	fprintf(out, "a ");
+	fprintf(out, "'%d%c ", mark_id, use_i ? 'i' : 'a');
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
-	if (mode == 0)
-		emit_err_check(out, rc->target_line);
 }
 
-/* Emit change using relative pattern */
-static void emit_relative_change(FILE *out, rel_ctx_t *rc,
-				 int del_count, char **texts, int ntexts)
+/* Phase 2: change lines at a mark */
+static void emit_mark_change(FILE *out, int mark_id,
+			     int del_count, char **texts, int ntexts)
 {
 	if (ntexts == 0) {
-		emit_relative_delete(out, rc, del_count);
+		emit_mark_delete(out, mark_id, del_count);
 		return;
 	}
-	int mode = emit_rel_pos(out, rc);
 	if (del_count == 1)
-		fprintf(out, "c ");
+		fprintf(out, "'%dc ", mark_id);
 	else
-		fprintf(out, ",#+%dc ", del_count - 1);
+		fprintf(out, "'%d,#+%dc ", mark_id, del_count - 1);
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
-	if (mode == 0)
-		emit_err_check(out, rc->target_line);
 }
 
 /* Escape replacement text for substitute command.
@@ -998,20 +1023,32 @@ static void emit_substitute_cmd(FILE *out, const char *old_text,
 	free(pat);
 }
 
-/* Emit substitute using relative pattern positioning */
-static void emit_relative_substitute(FILE *out, rel_ctx_t *rc,
-				     const char *old_text,
-				     const char *new_text)
+/* Phase 2: substitute at a mark. The pattern can fail to match
+ * within the line, so keep the error check. */
+static void emit_mark_substitute(FILE *out, int mark_id,
+				 const char *old_text, const char *new_text,
+				 int target_line)
 {
-	int mode = emit_rel_pos(out, rc);
-	/* Separate position from substitute: s/ doesn't move xrow,
-	 * so make position a standalone command to advance cursor first */
-	EMIT_SEP(out);
-	if (mode == 0)
-		emit_err_check(out, rc->target_line);
+	fprintf(out, "'%d", mark_id);
 	emit_substitute_cmd(out, old_text, new_text);
 	EMIT_SEP(out);
-	emit_err_check(out, rc->target_line);
+	emit_err_check(out, target_line);
+}
+
+/* Phase 2: horizontal ;c / ;d edit tail, emitted after an address
+ * prefix ('N for marks). Uses precomputed minimal diff positions. */
+static void emit_horiz_tail(FILE *out, group_t *g)
+{
+	if (!*g->ldc_new_text && g->ldc_start != g->ldc_end)
+		fprintf(out, ";%d;%dd", g->ldc_start, g->ldc_end);
+	else if (g->ldc_start == g->ldc_end) {
+		fprintf(out, ";%dc ", g->ldc_start);
+		emit_escaped_text(out, g->ldc_new_text);
+	} else {
+		fprintf(out, ";%d;%dc ", g->ldc_start, g->ldc_end);
+		emit_escaped_text(out, g->ldc_new_text);
+	}
+	EMIT_SEP(out);
 }
 
 /* Parse and strip relative offset prefix from custom edit lines (rel/relc).
@@ -2237,6 +2274,22 @@ static void build_file_groups(file_patch_t *fp)
  * Caller must have built fp->groups via build_file_groups() and run
  * interactive editing if applicable.
  */
+/* Free a group's heap data after emission */
+static void free_group(group_t *g)
+{
+	free(g->del_texts);
+	free(g->add_texts);
+	free(g->all_pre_ctx);
+	free(g->post_ctx);
+	for (int k = 0; k < g->ncustom; k++)
+		free(g->custom_lines[k]);
+	free(g->custom_lines);
+	free(g->custom_cmd);
+	free(g->ld_old_text);
+	free(g->ld_new_text);
+	free(g->ldc_new_text);
+}
+
 static void emit_file_script(FILE *out, file_patch_t *fp)
 {
 	if (fp->ngroups == 0)
@@ -2244,23 +2297,46 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 
 	group_t *groups = fp->groups;
 	int ngroups = fp->ngroups;
+	int forward = relative_mode || interactive_mode;
+
+	if (!forward) {
+		/* Absolute mode: reverse order (bottom-to-top) preserves
+		 * line numbers; no searches, no marks. */
+		for (int gi = ngroups - 1; gi >= 0; gi--) {
+			group_t *g = &groups[gi];
+			if (g->del_start && g->nadd) {
+				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff)
+					emit_horizontal_change(out, g->del_start,
+							       g->ldc_start, g->ldc_end,
+							       g->ldc_new_text);
+				else
+					emit_change(out, g->del_start, g->del_end,
+						    g->add_texts, g->nadd);
+			} else if (g->del_start) {
+				emit_delete(out, g->del_start, g->del_end);
+			} else if (g->nadd) {
+				emit_insert_after(out, g->add_after,
+						  g->add_texts, g->nadd);
+			}
+			free_group(g);
+		}
+		return;
+	}
 
 	/*
-	 * Emit groups.
-	 * Absolute mode: reverse order (bottom-to-top) to preserve line numbers.
-	 * Relative/interactive mode: forward order (top-to-bottom).
-	 *   Each f>/f+ search starts from cursor position which advances
-	 *   after each edit, so subsequent searches find the correct occurrence.
+	 * Phase 1 (resolve): run every group's search against the register
+	 * cache yanked once after file open and record the target line in
+	 * a mark. No edits happen here, so the cache never goes stale and
+	 * a failed anchor aborts with the file untouched.
 	 */
-	int forward = relative_mode || interactive_mode;
-	int gi_start = forward ? 0 : ngroups - 1;
-	int gi_end = forward ? ngroups : -1;
-	int gi_step = forward ? 1 : -1;
-
-	int cum_delta = 0;   /* cumulative line count change from previous groups */
-
-	for (int gi = gi_start; gi != gi_end; gi += gi_step) {
+	int next_id = 0;
+	int first_search = 1;
+	for (int gi = 0; gi < ngroups; gi++) {
 		group_t *g = &groups[gi];
+		g->mark_id = -1;
+		g->insert_i = 0;
+		if (!g->del_start && !g->nadd)
+			continue;
 		int target_line = g->del_start ? g->del_start : g->add_after;
 
 		/*
@@ -2272,7 +2348,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		 */
 		int strat = g->strategy;
 
-		/* Check availability of each approach */
 		rel_ctx_t rc = {
 			.target_line = target_line,
 			.anchors = g->anchors, .nanchors = g->nanchors,
@@ -2306,108 +2381,130 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			else if (!(g->ndel == 1 && g->nadd == 1 && g->has_line_diff))
 				strat = STRAT_REL;  /* fall back to s// if no ;c data */
 		}
+		g->res_strat = strat;
 
-		/* Custom interactive path: use edited search pattern */
 		int has_custom = g->custom_lines != NULL && g->ncustom > 0;
 
-		/* Helper: emit rel position then a custom edit command (lines array).
-		 * Substitute (lines[0] starts s+non-alnum): extra SEP before, exarg escaping.
-		 * Otherwise: direct append to position address. */
-#define EMIT_REL_EDIT(rlines, rnlines, tline) do { \
-		int _mode = has_custom \
-			? emit_custom_pos(out, g) \
-			: emit_rel_pos(out, &rc); \
+		if (strat == STRAT_ABS) {
+			/* Custom abs commands carry their own addresses */
+			if (g->custom_abs_lines && g->custom_abs_nlines > 0)
+				continue;
+			int t = target_line;
+			if (!g->del_start && t <= 0) {
+				t = 1;
+				g->insert_i = 1;
+			}
+			g->mark_id = next_mark_id(&next_id);
+			fprintf(out, "%dm %d", t, g->mark_id);
+			EMIT_SEP(out);
+			continue;
+		}
+
+		/* Pure insert: position lands on the line to append after.
+		 * If the offset would go negative, insert (i) instead. */
+		if (!g->del_start && g->nadd) {
+			if (has_custom) {
+				if (g->custom_offset > 0)
+					g->custom_offset -= 1;
+				else
+					g->insert_i = 1;
+			} else if (rc.nanchors > 0) {
+				if (rc.anchor_offset > 0)
+					rc.anchor_offset -= 1;
+				else
+					g->insert_i = 1;
+			} else if (rc.follow_ctx) {
+				if (g->add_after <= 0)
+					g->insert_i = 1;
+				else
+					rc.follow_offset += 1;
+			}
+		}
+
+		g->mark_id = next_mark_id(&next_id);
+		int r = has_custom
+			? emit_custom_pos(out, g, first_search)
+			: emit_rel_pos(out, &rc, g->mark_id, g->ndel, first_search);
+		if (r < 0) {
+			/* No usable anchor: mark the absolute line */
+			fprintf(out, "%dm %d",
+				target_line > 0 ? target_line : 1, g->mark_id);
+			EMIT_SEP(out);
+			continue;
+		}
+		first_search = 0;
+	}
+
+	/*
+	 * Phase 2 (commit): apply edits at the marks, forward order.
+	 * Marks auto-adjust as edits shift lines above them.
+	 */
+
+	/* Helper: emit a custom edit command (lines array) at the mark.
+	 * Substitute (lines[0] starts s+non-alnum): exarg escaping + err check.
+	 * Otherwise: verbs attach directly to the mark address. */
+#define EMIT_MARK_EDIT(rlines, rnlines, tline) do { \
+		fprintf(out, "'%d", g->mark_id); \
 		if (is_substitute((rlines)[0])) { \
-			EMIT_SEP(out); \
-			if (_mode == 0) \
-				emit_err_check(out, (tline)); \
 			emit_escaped_exarg_only(out, (rlines)[0]); \
 			EMIT_SEP(out); \
 			emit_err_check(out, (tline)); \
 		} else { \
 			emit_custom_edit_lines(out, (rlines), (rnlines)); \
 			EMIT_SEP(out); \
-			if (_mode == 0) \
-				emit_err_check(out, (tline)); \
 		} \
 } while (0)
 
-		/* Dispatch per strategy */
+	for (int gi = 0; gi < ngroups; gi++) {
+		group_t *g = &groups[gi];
+		if (!g->del_start && !g->nadd) {
+			free_group(g);
+			continue;
+		}
+		int strat = g->res_strat;
+		fputs("${LB}\n", out);
+		EMIT_SEP(out);
+
 		if (g->del_start && g->nadd) {
 			if (strat == STRAT_ABS && g->custom_abs_lines) {
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
 			} else if (strat == STRAT_RELC) {
-				/* Rel search + horizontal ;c edit */
-				if (has_custom) {
-					emit_custom_pos(out, g);
-					EMIT_SEP(out);
-				} else {
-					int mode = emit_rel_pos(out, &rc);
-					if (mode == 1)
-						EMIT_SEP(out);
-				}
 				if (g->custom_relc_lines && g->custom_relc_nlines > 0) {
-					/* custom relc: lines[0] = ".;N;Mc content" */
+					/* custom relc lines address the current
+					 * line (".;A;Bc"): jump to the mark first */
+					fprintf(out, "'%d", g->mark_id);
+					EMIT_SEP(out);
 					emit_custom_edit_lines(out, g->custom_relc_lines,
 							       g->custom_relc_nlines);
+					EMIT_SEP(out);
 				} else {
-					if (!*g->ldc_new_text && g->ldc_start != g->ldc_end)
-						fprintf(out, ".;%d;%dd", g->ldc_start, g->ldc_end);
-					else if (g->ldc_start == g->ldc_end) {
-						fprintf(out, ".;%dc ", g->ldc_start);
-						emit_escaped_text(out, g->ldc_new_text);
-					} else {
-						fprintf(out, ".;%d;%dc ", g->ldc_start, g->ldc_end);
-						emit_escaped_text(out, g->ldc_new_text);
-					}
+					fprintf(out, "'%d", g->mark_id);
+					emit_horiz_tail(out, g);
 				}
-				EMIT_SEP(out);
 				emit_err_check(out, g->del_start);
 			} else if (strat == STRAT_REL) {
 				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
-					EMIT_REL_EDIT(g->custom_rel_lines,
-						      g->custom_rel_nlines, g->del_start);
+					EMIT_MARK_EDIT(g->custom_rel_lines,
+						       g->custom_rel_nlines, g->del_start);
 				} else if (g->ndel == 1 && g->nadd == 1 &&
 					   g->has_line_diff) {
-					if (has_custom) {
-						emit_custom_pos(out, g);
-						EMIT_SEP(out);
-						emit_substitute_cmd(out, g->ld_old_text,
-								    g->ld_new_text);
-						EMIT_SEP(out);
-						emit_err_check(out, g->del_start);
-					} else {
-						emit_relative_substitute(out, &rc,
-									 g->ld_old_text, g->ld_new_text);
-					}
+					emit_mark_substitute(out, g->mark_id,
+							     g->ld_old_text, g->ld_new_text,
+							     g->del_start);
 				} else {
-					if (has_custom) {
-						int mode = emit_custom_pos(out, g);
-						if (g->ndel == 1)
-							fprintf(out, "c ");
-						else
-							fprintf(out, ",#+%dc ", g->ndel - 1);
-						emit_content(out, g->add_texts, g->nadd);
-						EMIT_SEP(out);
-						if (mode == 0)
-							emit_err_check(out, g->del_start);
-					} else {
-						emit_relative_change(out, &rc,
-								     g->ndel, g->add_texts, g->nadd);
-					}
+					emit_mark_change(out, g->mark_id,
+							 g->ndel, g->add_texts, g->nadd);
 				}
 			} else {
 				/* STRAT_ABS */
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
-					int adj = forward ? cum_delta : 0;
-					emit_horizontal_change(out, g->del_start + adj,
-							       g->ldc_start, g->ldc_end, g->ldc_new_text);
+					fprintf(out, "'%d", g->mark_id);
+					emit_horiz_tail(out, g);
 				} else {
-					int adj = forward ? cum_delta : 0;
-					emit_change(out, g->del_start + adj, g->del_end + adj,
-						    g->add_texts, g->nadd);
+					emit_mark_change(out, g->mark_id,
+							 g->ndel, g->add_texts, g->nadd);
 				}
 			}
 		} else if (g->del_start) {
@@ -2415,103 +2512,28 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
-			} else if (strat == STRAT_REL) {
-				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
-					EMIT_REL_EDIT(g->custom_rel_lines,
-						      g->custom_rel_nlines, g->del_start);
-				} else if (has_custom) {
-					int mode = emit_custom_pos(out, g);
-					if (g->ndel == 1)
-						fputc('d', out);
-					else
-						fprintf(out, ",#+%dd", g->ndel - 1);
-					EMIT_SEP(out);
-					if (mode == 0)
-						emit_err_check(out, g->del_start);
-				} else {
-					emit_relative_delete(out, &rc, g->ndel);
-				}
+			} else if (strat == STRAT_REL && g->custom_rel_lines
+				   && g->custom_rel_nlines > 0) {
+				EMIT_MARK_EDIT(g->custom_rel_lines,
+					       g->custom_rel_nlines, g->del_start);
 			} else {
-				/* STRAT_ABS */
-				int adj = forward ? cum_delta : 0;
-				emit_delete(out, g->del_start + adj, g->del_end + adj);
+				emit_mark_delete(out, g->mark_id, g->ndel);
 			}
 		} else if (g->nadd) {
 			if (strat == STRAT_ABS && g->custom_abs_lines) {
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
-			} else if (strat == STRAT_REL) {
-				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
-					EMIT_REL_EDIT(g->custom_rel_lines,
-						      g->custom_rel_nlines, g->add_after);
-				} else if (has_custom) {
-					const char *icmd;
-					if (g->custom_offset > 0) {
-						g->custom_offset -= 1;
-						icmd = "a ";
-					} else {
-						icmd = "i ";
-					}
-					int mode = emit_custom_pos(out, g);
-					fputs(icmd, out);
-					emit_content(out, g->add_texts, g->nadd);
-					EMIT_SEP(out);
-					if (mode == 0)
-						emit_err_check(out, g->add_after);
-				} else {
-					/* For pure insert, adjust: search goes to anchor,
-					   but insert should be after the anchor line.
-					   If offset would go negative, use insert (i)
-					   instead of append (a). */
-					int use_i = 0;
-					if (rc.nanchors > 0) {
-						if (rc.anchor_offset > 0)
-							rc.anchor_offset -= 1;
-						else
-							use_i = 1;
-					} else if (rc.follow_ctx) {
-						if (g->add_after <= 0)
-							use_i = 1;
-						else
-							rc.follow_offset += 1;
-					}
-					if (use_i) {
-						int mode = emit_rel_pos(out, &rc);
-						fprintf(out, "i ");
-						emit_content(out, g->add_texts, g->nadd);
-						EMIT_SEP(out);
-						if (mode == 0)
-							emit_err_check(out, rc.target_line);
-					} else {
-						emit_relative_insert(out, &rc,
-								     g->add_texts, g->nadd);
-					}
-				}
+			} else if (strat == STRAT_REL && g->custom_rel_lines
+				   && g->custom_rel_nlines > 0) {
+				EMIT_MARK_EDIT(g->custom_rel_lines,
+					       g->custom_rel_nlines, g->add_after);
 			} else {
-				/* STRAT_ABS */
-				int adj = forward ? cum_delta : 0;
-				emit_insert_after(out, g->add_after + adj,
-						  g->add_texts, g->nadd);
+				emit_mark_insert(out, g->mark_id, g->insert_i,
+						 g->add_texts, g->nadd);
 			}
 		}
-		if (forward) {
-			cum_delta += g->nadd - g->ndel;
-			/* resync register cache with the edited buffer */
-			fputs("%ya b", out);
-			EMIT_SEP(out);
-		}
-		free(g->del_texts);
-		free(g->add_texts);
-		free(g->all_pre_ctx);
-		free(g->post_ctx);
-		for (int k = 0; k < g->ncustom; k++)
-			free(g->custom_lines[k]);
-		free(g->custom_lines);
-		free(g->custom_cmd);
-		free(g->ld_old_text);
-		free(g->ld_new_text);
-		free(g->ldc_new_text);
+		free_group(g);
 	}
 }
 
