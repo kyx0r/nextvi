@@ -119,12 +119,13 @@ void rset_free(rset *re);
 char *re_read(char **src, int delim);
 
 /* lbuf.c: line buffer */
-#define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
-#define NMARKS			30	/* adj: '`* nonadj: [] */
 struct lopt {
 	char **ins;		/* inserted lines */
 	char **del;		/* deleted lines */
 	int *mark;		/* saved marks */
+	int mark_n;		/* number of saved marks */
+	int mark_sb[2];		/* saved [ mark row & off */
+	int mark_se[2];		/* saved ] mark row & off */
 	int pos, pos_off;	/* modification location */
 	int n_ins, n_del;	/* modification range */
 	int seq;		/* operation number */
@@ -137,7 +138,10 @@ struct linfo {
 struct lbuf {
 	char **ln;			/* buffer lines */
 	struct lopt *hist;		/* buffer history */
-	int mark[NMARKS * 2];		/* mark rows & offs */
+	int *mark;			/* mark id, row & off triplets */
+	int mark_n;			/* number of marks in mark[] */
+	int mark_sb[2];			/* [ mark row & off */
+	int mark_se[2];			/* ] mark row & off */
 	int tmp_mark[4];		/* aux mark state */
 	int ln_n;			/* number of lines in ln[] */
 	int ln_sz;			/* size of ln[] */
@@ -165,8 +169,8 @@ char *lbuf_get(struct lbuf *lb, int pos);
 void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
 struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del);
-void lbuf_mark(struct lbuf *lb, int mark, int pos, int off);
-int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off);
+void lbuf_mark(struct lbuf *lb, int mk, int pos, int off);
+int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off);
 int lbuf_undo(struct lbuf *lb, int *row, int *off);
 int lbuf_redo(struct lbuf *lb, int *row, int *off);
 void lbuf_saved(struct lbuf *lb, int clear);
