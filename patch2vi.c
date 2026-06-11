@@ -686,14 +686,19 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * no edits in between, so the register stays byte-identical to the
  * buffer for the entire phase. Each group's target line is recorded
  * with a line mark ("+<off>m <id>", ids count up from 0 skipping
- * nextvi's special mark ids). The first search uses %;0f>, subsequent
- * ones %;0f+ (skip one char) since no edit moves the cursor anymore;
- * a bare +N address then advances the scan position past the group's
- * deleted lines. ABS-strategy groups mark their original line number
- * directly - the buffer is pristine in this phase, so no cumulative
- * line-delta correction is needed.
+ * nextvi's special mark ids). The first search uses %;f>, subsequent
+ * ones %;f+ (a bare ";" resolves to the current xoff, so each search
+ * continues from the previous match). To disambiguate repeated
+ * patterns, the last regex atom of every default pattern is wrapped
+ * in a capture group and "grp 1" is active during phase 1: the cursor
+ * lands on the pattern's LAST character, so f+ (skip one char) scans
+ * past the entire matched block, and offsets are relative to the
+ * pattern's last line. ABS-strategy groups mark their original line
+ * number directly - the buffer is pristine in this phase, so no
+ * cumulative line-delta correction is needed.
  *
- * Phase 2 (commit): edits are emitted addressing the marks ('0c, '0d,
+ * Phase 2 (commit): "grp 0" restores the default search group, then
+ * edits are emitted addressing the marks ('0c, '0d,
  * '0,#+Nc, '0s/../../, '0;A;Bc ...). Marks auto-adjust as edits above
  * them shift lines, so groups apply forward in patch order. Because
  * every search ran before the first edit, any failed anchor aborts
@@ -747,52 +752,107 @@ static void emit_escaped_text(FILE *out, const char *s)
 	free(exarg_esc);
 }
 
+/* Start of the last regex atom in s (length n): a possibly
+ * backslash-escaped, possibly multi-byte character. Backslashes in
+ * the input only appear in escape pairs, so an odd run of them
+ * before the final character means the atom includes one. */
+static int last_atom_start(const char *s, int n)
+{
+	int i = n - 1, b = 0;
+	while (i > 0 && ((unsigned char)s[i] & 0xc0) == 0x80)
+		i--;
+	while (i - 1 - b >= 0 && s[i - 1 - b] == '\\')
+		b++;
+	return (b & 1) ? i - 1 : i;
+}
+
+/* Emit a regex-level line with its last atom wrapped in a capture
+ * group (then exarg + shell escaping). With grp 1 active the cursor
+ * lands on the pattern's last character after a successful search. */
+static void emit_grp_wrapped(FILE *out, const char *r)
+{
+	int n = strlen(r);
+	int a = last_atom_start(r, n);
+	char *w = malloc(n + 3);
+	memcpy(w, r, a);
+	w[a] = '(';
+	memcpy(w + a + 1, r + a, n - a);
+	w[n + 1] = ')';
+	w[n + 2] = '\0';
+	char *e = escape_exarg(w);
+	emit_escaped_line(out, e);
+	free(e);
+	free(w);
+}
+
 /* Emit f> search with error check, then mark the target line.
- * Default searches run against the cached default register via %;0f>
- * (first search of a file) or %;0f+ (subsequent: skip one char from
- * the previous match so identical anchors find the next occurrence).
+ * Default searches run against the cached default register via %;f>
+ * (first search of a file) or %;f+ (subsequent: a bare ";" picks up
+ * the current xoff, and skipping one char from the pattern's last
+ * character - see grp wrapping below - moves past the whole match).
+ * The last atom of the pattern is wrapped in a capture group; with
+ * grp 1 active during phase 1 the cursor lands on the pattern's LAST
+ * character, so offsets are relative to the pattern's last line.
  * pre_escaped: 0 = anchors are raw text (apply regex+exarg escape),
  *              1 = anchors are pre-escaped regex (apply exarg only).
  * cmd: if non-NULL, used verbatim instead of the default prefix.
- *      Custom commands predate register caching, so the default
- *      register is restored (0reg) around them and they search the
- *      buffer directly, then caching is re-enabled (98reg).
+ *      Custom commands predate register caching and grp wrapping, so
+ *      the default register (0reg) and search group (grp 0) are
+ *      restored around them and they search the buffer directly with
+ *      cursor-at-match-start semantics, then 98reg/grp 1 re-enable.
  * After the search, "+<offset>m <mark_id>" marks the target line
- * without moving the cursor, and a bare "+<advance>" address moves
- * the scan position past the group's lines for the next search. */
+ * without moving the cursor. */
 static void emit_search(FILE *out, char **anchors, int nanchors,
-			int offset, int advance, int mark_id,
+			int offset, int mark_id,
 			int target_line, int pre_escaped, const char *cmd,
 			int first)
 {
 	if (cmd) {
 		fputs("0reg", out);
 		EMIT_SEP(out);
+		fputs("grp 0", out);
+		EMIT_SEP(out);
 		fprintf(out, "%s ", cmd);
 	} else
-		fputs(first ? "%;0f> " : "%;0f+ ", out);
+		fputs(first ? "%;f> " : "%;f+ ", out);
 	for (int i = 0; i < nanchors; i++) {
+		int last = i == nanchors - 1 && anchors[i][0];
 		if (pre_escaped) {
-			char *e = escape_exarg(anchors[i]);
-			emit_escaped_line(out, e);
-			free(e);
+			if (!cmd && last) {
+				emit_grp_wrapped(out, anchors[i]);
+			} else {
+				char *e = escape_exarg(anchors[i]);
+				emit_escaped_line(out, e);
+				free(e);
+			}
 		} else {
 			char *r = escape_regex(anchors[i]);
-			char *e = escape_exarg(r);
-			emit_escaped_line(out, e);
-			free(e);
+			if (!cmd && last) {
+				emit_grp_wrapped(out, r);
+			} else {
+				char *e = escape_exarg(r);
+				emit_escaped_line(out, e);
+				free(e);
+			}
 			free(r);
 		}
 		if (i < nanchors - 1)
 			fputc('\n', out);
 	}
-	/* Ensure trailing newline when last anchor is empty */
-	if (nanchors > 0 && !anchors[nanchors - 1][0])
-		fputc('\n', out);
+	/* Empty last anchor: the pattern ends with a literal newline;
+	 * that newline is the last atom to wrap. */
+	if (nanchors > 0 && !anchors[nanchors - 1][0]) {
+		if (cmd)
+			fputc('\n', out);
+		else
+			fputs("(\n)", out);
+	}
 	EMIT_SEP(out);
 	emit_err_check(out, target_line);
 	if (cmd) {
 		fputs("98reg", out);
+		EMIT_SEP(out);
+		fputs("grp 1", out);
 		EMIT_SEP(out);
 	}
 	fputs("${LB}\n", out);
@@ -801,10 +861,6 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 		fprintf(out, "%+d", offset);
 	fprintf(out, "m %d", mark_id);
 	EMIT_SEP(out);
-	if (advance > 0) {
-		fprintf(out, "+%d", advance);
-		EMIT_SEP(out);
-	}
 }
 
 /* Next mark id, skipping nextvi's internal special mark ids:
@@ -880,8 +936,7 @@ static int emit_custom_pos(FILE *out, group_t *g, int first)
 	if (g->ncustom == 0)
 		return -1;
 	emit_search(out, g->custom_lines, g->ncustom, g->custom_offset,
-		    g->custom_offset + g->ndel - 1, g->mark_id,
-		    target_line, 1, g->custom_cmd, first);
+		    g->mark_id, target_line, 1, g->custom_cmd, first);
 	return 1;
 }
 
@@ -889,20 +944,20 @@ static int emit_custom_pos(FILE *out, group_t *g, int first)
  * Phase 1: emit the search + mark for a relative group.
  * Returns 1 on success, -1 if no usable anchor exists.
  *
- * All anchors emit "%;0f> pattern" (or f+) against the cached
+ * All anchors emit "%;f> pattern" (or f+) against the cached
  * register, searching forward from the cursor's byte offset.
  * For follow ctx the offset is negative.
  */
-static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int mark_id, int ndel,
-			int first)
+static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int mark_id, int first)
 {
 	char *single[1];
 	char **anchors;
 	int n, off;
 	if (rc->nanchors >= 2) {
+		/* cursor lands on the last anchor line (grp wrapping) */
 		anchors = rc->anchors;
 		n = rc->nanchors;
-		off = rc->nanchors + rc->anchor_offset - 1;
+		off = rc->anchor_offset;
 	} else if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
 		single[0] = rc->anchors[0];
 		anchors = single;
@@ -916,7 +971,7 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int mark_id, int ndel,
 	} else {
 		return -1;
 	}
-	emit_search(out, anchors, n, off, off + ndel - 1, mark_id,
+	emit_search(out, anchors, n, off, mark_id,
 		    rc->target_line, 0, NULL, first);
 	return 1;
 }
@@ -1379,16 +1434,17 @@ static char **write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		int default_offset = 0;
 		const char *dcmd = NULL;
 		if (g->nanchors >= 2) {
-			default_offset = g->nanchors + g->anchor_offset - 1;
-			dcmd = "%;0f>";
+			/* cursor lands on the last anchor line (grp wrapping) */
+			default_offset = g->anchor_offset;
+			dcmd = "%;f>";
 		} else if (g->nanchors == 1) {
 			default_offset = g->anchor_offset;
-			dcmd = "%;0f>";
+			dcmd = "%;f>";
 		} else if (g->follow_ctx && g->follow_ctx[0]) {
 			default_offset = -(g->follow_offset);
-			dcmd = "%;0f>";
+			dcmd = "%;f>";
 		} else if (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
-			dcmd = "%;0f>";
+			dcmd = "%;f>";
 		} else {
 			default_offset = g->block_change_idx;
 		}
@@ -2401,9 +2457,14 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		}
 
 		g->mark_id = next_mark_id(&next_id);
+		/* searches position on the pattern's last char via group 1 */
+		if (first_search) {
+			fputs("grp 1", out);
+			EMIT_SEP(out);
+		}
 		int r = has_custom
 			? emit_custom_pos(out, g, first_search)
-			: emit_rel_pos(out, &rc, g->mark_id, g->ndel, first_search);
+			: emit_rel_pos(out, &rc, g->mark_id, first_search);
 		if (r < 0) {
 			/* No usable anchor: mark the absolute line */
 			fprintf(out, "%dm %d",
@@ -2418,6 +2479,12 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 	 * Phase 2 (commit): apply edits at the marks, forward order.
 	 * Marks auto-adjust as edits shift lines above them.
 	 */
+
+	/* restore the default search group for edit commands (s//, ;c) */
+	if (!first_search) {
+		fputs("grp 0", out);
+		EMIT_SEP(out);
+	}
 
 	/* Helper: emit a custom edit command (lines array) at the mark.
 	 * Substitute (lines[0] starts s+non-alnum): exarg escaping + err check.
