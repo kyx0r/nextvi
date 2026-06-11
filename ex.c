@@ -37,6 +37,7 @@ int xexec_dep;			/* ex_exec recursion depth */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
 sbuf *xregs[256];		/* string registers */
+int xdefreg;			/* ex default register */
 struct buf *bufs;		/* main buffers */
 struct buf tempbufs[3];		/* temporary buffers, for internal use */
 struct buf *ex_buf;		/* current buffer */
@@ -201,10 +202,12 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		++*num;
 		break;
 	case '\'':
-		if (lbuf_jump(xb, (unsigned char)*++(*num),
-				&n, row ? &n : &dir))
+		if (!isdigit((unsigned char)*++(*num)))
 			return -1;
-		++*num;
+		off = atoi(*num);
+		if (lbuf_jump(xb, off, &n, row ? &n : &dir))
+			return -1;
+		*num += itoalen(off);
 		break;
 	case '>':
 	case '<':
@@ -501,25 +504,35 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
-	int pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
-	if (ex_region(loc, &beg, &end, &o1, &o2))
-		return xrerr;
+	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
+	if ((e = ex_region(loc, &beg, &end, &o1, &o2)))
+		if (!xdefreg || (*loc && e == 1))
+			return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
 	ex_krsset(arg, dir);
 	if (!xkwdrs)
 		return xserr;
-	if (o1 >= 0 && dir > 0) {
-		sbuf sb;
-		int offs[xkwdrs->nsubc], flg = 0, soff = 0;
+	if ((xdefreg || o1 >= 0) && dir > 0) {
+		int offs[xkwdrs->nsubc];
 		int r2 = end - 1;
 		int skip = cmd[1] == '+' ? 1 : 0;
+		int soff = o1 >= 0 ? MAX(0, lbuf_pos2off(xb, beg, o1, r2, o2,
+					xrow, xoff + skip)) : 0;
+		if (xdefreg) {
+			sbuf *sb = xregs[xdefreg];
+			if (!sb)
+				return "uninitialized register";
+			if (soff >= sb->s_n || rset_find(xkwdrs, sb->s + soff, offs, 0) < 0
+					|| offs[xgrp] < 0
+					|| (o1 >= 0 && lbuf_off2pos(xb, beg, o1, r2, o2,
+							soff + offs[xgrp], &xrow, &xoff)))
+				return xuerr;
+			return NULL;
+		}
+		sbuf sb;
 		void *ret = NULL;
 		lbuf_region(xb, &sb, beg, o1, r2, o2);
-		if (xrow >= beg && xrow <= r2 && (xrow > beg || xoff >= o1))
-			soff = lbuf_pos2off(xb, beg, o1, r2, o2, xrow, xoff + skip);
-		if (soff < 0)
-			soff = 0;
-		if (rset_find(xkwdrs, sb.s + soff, offs, flg) < 0 || offs[xgrp] < 0
+		if (rset_find(xkwdrs, sb.s + soff, offs, 0) < 0 || offs[xgrp] < 0
 				|| lbuf_off2pos(xb, beg, o1, r2, o2,
 						soff + offs[xgrp], &xrow, &xoff))
 			ret = xuerr;
@@ -918,8 +931,8 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end, i = 0;
 	sbuf *buf;
-	if (!*arg || (arg[i] == '!' && arg[i+1] && arg[i+1] != ' '))
-		buf = xregs[i];
+	if (!*arg || (*arg == '!' && arg[1] && arg[1] != ' '))
+		buf = xregs[xdefreg];
 	else
 		buf = xregs[(unsigned char)arg[i++]];
 	if (!buf)
@@ -982,9 +995,13 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 	int beg, end, o1 = xoff, o2 = xoff;
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	for (int i = 0; *arg; i++)
-		lbuf_mark(xb, (unsigned char)*arg++,
-			i % 2 ? end - 1 : beg, i % 2 ? o2 : o1);
+	for (int i = 0; isdigit((unsigned char)*arg); i++) {
+		int mk = atoi(arg);
+		lbuf_mark(xb, mk, i % 2 ? end - 1 : beg, i % 2 ? o2 : o1);
+		arg += itoalen(mk);
+		while (*arg == ' ')
+			arg++;
+	}
 	return NULL;
 }
 
@@ -1341,11 +1358,14 @@ static void *ec_setbufsmax(char *loc, char *cmd, char *arg)
 
 static void *ec_regprint(char *loc, char *cmd, char *arg)
 {
-	if (*loc && *arg) {
+	if (*loc) {
 		int reg = atoi(loc);
 		if (reg < 0 || reg > 255)
 			return xserr;
-		ex_regput(reg, arg, cmd[3] == '+');
+		if (*arg)
+			ex_regput(reg, arg, cmd[3] == '+');
+		else
+			xdefreg = reg;
 		return NULL;
 	}
 	static char buf[5] = "  ";
@@ -1646,8 +1666,6 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	if ((*src && *src == xsep) || (*idx == LEN(excmds) - 1))
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
-		if (*src == '\'' && src[1])
-			*dst++ = *src++;
 		if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {

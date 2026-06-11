@@ -264,7 +264,7 @@ static int vi_yankbuf(int winch)
 	if (c == '"')
 		return term_read(0);
 	term_dec()
-	return 0;
+	return xdefreg;
 }
 
 static int vi_prefix(void)
@@ -1857,7 +1857,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-5.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-6.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
