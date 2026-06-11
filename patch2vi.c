@@ -164,7 +164,7 @@ static char *escape_chars(const char *s, const char *set)
 	return result;
 }
 
-#define REGEX_META "\\^$.*+?[](){}|"
+#define REGEX_META "\\^$.*+?[](){|"
 static char *escape_regex(const char *s)
 {
 	return escape_chars(s, REGEX_META);
@@ -687,8 +687,9 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * buffer for the entire phase. Each group's target line is recorded
  * with a line mark ("+<off>m <id>", ids count up from 0 skipping
  * nextvi's special mark ids). Single-line patterns search the buffer
- * directly with "0reg .,$f> ^pattern .. 98reg" (.,$f+ for the first
- * search) - the ^ anchor disambiguates repeated text. Multi-line
+ * directly with ";0 0reg .,$f> ^pattern$ .. 98reg" (.,$f+ for the
+ * first search): ;0 resets xoff to the line start and the trailing $
+ * anchor disambiguates repeated text. Multi-line
  * patterns use %;f> (first) / %;f+ (subsequent) against the register
  * cache (a bare ";" resolves to the current xoff, so each search
  * continues one char past the previous match start). ABS-strategy
@@ -752,9 +753,9 @@ static void emit_escaped_text(FILE *out, const char *s)
 
 /* Emit f> search with error check, then mark the target line.
  * Single-line patterns search the buffer directly (0reg .. 98reg)
- * from the cursor's line: ".,$f> ^pattern" - the ^ anchor plus the
- * .,$ range disambiguate repeated text. The first search of a file
- * uses .,$f+.
+ * from the cursor's line: ";0" first resets xoff to the line start,
+ * then ".,$f> ^pattern$" - the ^...$ anchors plus the .,$ range
+ * disambiguate repeated text. The first search of a file uses .,$f+.
  * Multi-line patterns run against the cached default register via
  * %;f> (first search of a file) or %;f+ (subsequent: a bare ";"
  * picks up the current xoff and skips one char from the previous
@@ -764,7 +765,7 @@ static void emit_escaped_text(FILE *out, const char *s)
  * cmd: if non-NULL, used verbatim instead of the default prefix.
  *      Custom commands search the buffer directly: the default
  *      register is disabled (0reg) around them, then caching is
- *      re-enabled (98reg). No ^ is prepended to custom patterns.
+ *      re-enabled (98reg). No ;0 or ^...$ is added for custom commands.
  * After the search, "+<offset>m <mark_id>" marks the target line
  * without moving the cursor. */
 static void emit_search(FILE *out, char **anchors, int nanchors,
@@ -772,17 +773,23 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 			int target_line, int pre_escaped, const char *cmd,
 			int first)
 {
-	int caret = 0;
+	int disamb = 0;
 	if (!cmd && nanchors == 1) {
 		cmd = first ? ".,$f+" : ".,$f>";
-		caret = 1;
+		disamb = 1;
 	}
 	if (cmd) {
+		if (disamb) {
+			/* reset xoff to 0 so the .,$ region starts at the
+			 * current line's first column */
+			fputs(";0", out);
+			EMIT_SEP(out);
+		}
 		fputs("0reg", out);
 		EMIT_SEP(out);
 		emit_escaped_line(out, cmd);  /* shell-escapes the $ in .,$ */
 		fputc(' ', out);
-		if (caret)
+		if (disamb)
 			fputc('^', out);
 	} else
 		fputs(first ? "%;f> " : "%;f+ ", out);
@@ -801,6 +808,8 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 		if (i < nanchors - 1)
 			fputc('\n', out);
 	}
+	if (disamb)
+		fputs("\\$", out);  /* $ anchor, shell-escaped */
 	/* Ensure trailing newline when last anchor is empty */
 	if (nanchors > 0 && !anchors[nanchors - 1][0])
 		fputc('\n', out);
@@ -901,7 +910,7 @@ static int emit_custom_pos(FILE *out, group_t *g, int first)
  *
  * Multi-line anchors emit "%;f> pattern" (or f+) against the cached
  * register, searching forward from the cursor's byte offset. Single
- * anchors get the buffer-direct ".,$f> ^pattern" form (see
+ * anchors get the buffer-direct ";0 .,$f> ^pattern$" form (see
  * emit_search). For follow ctx the offset is negative.
  */
 static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int mark_id, int first)
