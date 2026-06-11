@@ -24,42 +24,53 @@ LB="0?"
 [ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}b0${SEP}%f> \\\\(\\\\?:'\\\\[a-z'\`\\\\[\\\\\\\\\\\\\\\\\\\\]\\\\*\\\\]\\\\)\\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3${SEP}s/rd/ro|rd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}i char readonly = 0;		/* commandline readonly option */
-${SEP}%f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:118\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 	bufs[i].readonly = readonly;
-${SEP}.,\$;f> 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+3m 0${SEP}${LB}
+${SEP}'0s/rd/ro|rd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:297\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	bufs\\\\[i\\\\]\\\\.mtime = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:118\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}%;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	\\\\}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:370\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
-		ex_buf->readonly = 1;
-${SEP}.,\$;f> 		free\\\\(ibuf\\\\.s\\\\);
-	\\\\} else \\\\{
+	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:370\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}+2m 1${SEP}%;f+ 		free\\\\(ibuf\\\\.s\\\\);
+	} else \\\\{
 		if \\\\(!strchr\\\\(cmd, '!'\\\\)\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:689\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a 			if (ex_buf->readonly)
-				return \"write failed: readonly option is set\";
-${SEP}.,\$;f> 	return xkwdrs \\\\? NULL : xserr;
-\\\\}
+${SEP}+2m 2${SEP}%;f+ 	return xkwdrs \\\\? NULL : xserr;
+}
 
 ${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1459\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2a static void *ec_readonly(char *loc, char *cmd, char *arg)
+${SEP}+2m 3${SEP};0${SEP}0reg${SEP}.,\$f+ 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1548\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 4${SEP}${LB}
+${SEP}1i char readonly = 0;		/* commandline readonly option */
+${SEP}${LB}
+${SEP}'0a 	bufs[i].readonly = readonly;
+${SEP}${LB}
+${SEP}'1a 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
+		ex_buf->readonly = 1;
+${SEP}${LB}
+${SEP}'2a 			if (ex_buf->readonly)
+				return \"write failed: readonly option is set\";
+${SEP}${LB}
+${SEP}'3a static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
-${SEP}.,\$f> 	\\\\{\"rd\", ec_undoredo\\\\},${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1548\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 	{\"ro\", ec_readonly},
-${SEP}b2${SEP}%;f> 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'a'\\\\)
+${SEP}${LB}
+${SEP}'4a 	{\"ro\", ec_readonly},
+${SEP}b2${SEP}%ya b${SEP}%;f> 			else if \\\\(argv\\\\[i\\\\]\\\\[j\\\\] == 'a'\\\\)
 				xvis \\\\|= 8;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1855\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1a 			else if (argv[i][j] == 'R')
+${SEP}+1m 0${SEP};0${SEP}0reg${SEP}.,\$f+ 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}+1m 1${SEP}${LB}
+${SEP}'0a 			else if (argv[i][j] == 'R')
 				readonly = 1;
-${SEP}.,\$f> 				fprintf\\\\(stderr, \"Unknown option: -%c\\\\\\\\n\", argv\\\\[i\\\\]\\\\[j\\\\]\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1${SEP}s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}.a 	char readonly;			/* read only */
+${SEP}${LB}
+${SEP}'1s/(\\\\[-a.*m)/\\\\1R/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1860\\${SEP}pr${INTR}${QF}}${SEP}b3${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	signed char td;			/\\\\* text direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:402\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}m 0${SEP}${LB}
+${SEP}'0a 	char readonly;			/* read only */
+${SEP}${LB}
 ${SEP}\$a extern char readonly;
 ${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h'
 
@@ -82,7 +93,7 @@ exit 0
 	{ex_ft, "!(?:[^!\\\\]|\\\\.)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
 === END ===
 === pattern ===
-\(\?:'\[a-z'`\[\\\\\]\*\]\)\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
+\|\(\[\.\$\]\|\[0-9 \\t\]\*\)\?\)\)\(\?:\(\[-\*-\+/%\]\)\[ \\t\]\*\(\[0-9\]\+\)\[ \\t\]\*\)\*\(\?:\[ \\t\]\*\\\\\|\.\*\?\(\?:\(\?<\^\\\\\\\\\)\\\\\|\|\$\)\)\*\[ \\t\]\*\)\*\)\\
 === END ===
 === END ===
 === DELTA ex.c ===
