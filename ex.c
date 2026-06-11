@@ -202,10 +202,12 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		++*num;
 		break;
 	case '\'':
-		if (lbuf_jump(xb, (unsigned char)*++(*num),
-				&n, row ? &n : &dir))
+		if (!isdigit((unsigned char)*++(*num)))
 			return -1;
-		++*num;
+		off = atoi(*num);
+		if (lbuf_jump(xb, off, &n, row ? &n : &dir))
+			return -1;
+		*num += itoalen(off);
 		break;
 	case '>':
 	case '<':
@@ -993,9 +995,13 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 	int beg, end, o1 = xoff, o2 = xoff;
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	for (int i = 0; *arg; i++)
-		lbuf_mark(xb, (unsigned char)*arg++,
-			i % 2 ? end - 1 : beg, i % 2 ? o2 : o1);
+	for (int i = 0; isdigit((unsigned char)*arg); i++) {
+		int mk = atoi(arg);
+		lbuf_mark(xb, mk, i % 2 ? end - 1 : beg, i % 2 ? o2 : o1);
+		arg += itoalen(mk);
+		while (*arg == ' ')
+			arg++;
+	}
 	return NULL;
 }
 
@@ -1660,8 +1666,6 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	if ((*src && *src == xsep) || (*idx == LEN(excmds) - 1))
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
-		if (*src == '\'' && src[1])
-			*dst++ = *src++;
 		if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {
