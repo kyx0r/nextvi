@@ -62,7 +62,7 @@ cc -O2 -o patch2vi patch2vi.c
 
 echo "=== Script content tests ==="
 
-check_script "single anchor uses %;0f>" \
+check_script "single anchor uses .,\$f>" \
 	"ctx1
 old
 end
@@ -71,9 +71,9 @@ end
 new
 end
 " \
-	'%;0f>' '>[^$]*>'
+	'.,\\$f>' '>[^$]*>'
 
-check_script "multiline anchor uses %;0f>" \
+check_script "multiline anchor uses %;f>" \
 	"ctx1
 ctx2
 ctx3
@@ -86,7 +86,7 @@ ctx3
 new
 end
 " \
-	'%;0f>' ''
+	'%;f>' ''
 
 check_script "no backstep in output" \
 	"ctx1
@@ -131,7 +131,7 @@ bbb
 new2
 end
 " \
-	'%ya b' '\\$f>'
+	'%ya b' '\\$;f>'
 
 echo ""
 echo "=== End-to-end apply tests (relative mode) ==="
