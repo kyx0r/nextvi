@@ -1011,8 +1011,9 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 }
 
 /* Phase 1 fallback chain: try each pattern in order, first match wins.
- * Per pattern n (capture tag n):
- *   ?%;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\:1q
+ * All attempts are nested into a single ? conditional, chained with
+ * escaped separators; per pattern n (capture tag n):
+ *   %;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\:1q\:
  * The search's error status is captured into tag <n>; on success the
  * <n>?? branch marks the target and 1q short-circuits out of the
  * block, skipping the remaining attempts and the checks. After the
@@ -1020,8 +1021,10 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 				int mark_id, int target_line, int first)
 {
+	fputc('?', out);
 	for (int n = 0; n < nps; n++) {
-		fputc('?', out);
+		if (n)
+			EMIT_ESCSEP(out);
 		fputs(first ? "%;f> " : "%;f+ ", out);
 		emit_chain_pattern(out, &ps[n]);
 		EMIT_ESCSEP(out);
