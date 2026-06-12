@@ -725,13 +725,14 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * loc: location text in the FAIL message ("path:line" for phase-1
  * searches, "path:line:m<id>" for phase-2 edits at a mark).
  * phase selects the DBG<n>/QF<n> variable set; INTR is shared.
- * tag >= 0 prefixes the conditional with a capture id so it fires
- * on that fallback pattern's recorded status instead of the last
- * command's. */
-static void emit_err_check_loc(FILE *out, const char *loc, int phase, int tag)
+ * tags (optional, may be NULL) prefixes the conditional with a DNF
+ * capture-id expression so it branches on recorded statuses instead
+ * of the last command's. */
+static void emit_err_check_loc(FILE *out, const char *loc, int phase,
+			       const char *tags)
 {
-	if (tag >= 0)
-		fprintf(out, "%d", tag);
+	if (tags)
+		fputs(tags, out);
 	fprintf(out, "?" "?!${DBG%d:-", phase);
 	fprintf(out, "ya!p");
 	EMIT_ESCSEP(out);
@@ -751,17 +752,23 @@ static void emit_err_check(FILE *out, int line)
 	char loc[MAX_LINE];
 	snprintf(loc, sizeof(loc), "%s:%d",
 		 cur_file_path ? cur_file_path : "?", line);
-	emit_err_check_loc(out, loc, 1, -1);
+	emit_err_check_loc(out, loc, 1, NULL);
 }
 
-/* Phase-1 fallback chain check: <tag>??! fires only if the chain ran
- * to completion and that pattern's capture recorded a failure. */
-static void emit_err_check_pat(FILE *out, int tag, int line)
+/* Phase-1 fallback chain check: one <0;1;..>??! over all capture tags
+ * (DNF OR); the inverted branch fires only when every pattern's
+ * capture recorded a failure. */
+static void emit_err_check_pats(FILE *out, int ntags, int line)
 {
 	char loc[MAX_LINE];
+	char tags[16];
+	int p = 0;
+	for (int t = 0; t < ntags; t++)
+		p += snprintf(tags + p, sizeof(tags) - p,
+			      t ? ";%d" : "%d", t);
 	snprintf(loc, sizeof(loc), "%s:%d",
 		 cur_file_path ? cur_file_path : "?", line);
-	emit_err_check_loc(out, loc, 1, tag);
+	emit_err_check_loc(out, loc, 1, tags);
 }
 
 /* Phase-2 error check: FAIL <path>:<line>:m<id> (mark id of the edited
@@ -774,7 +781,7 @@ static void emit_err_check_mark(FILE *out, int line, int mark_id)
 		snprintf(mark, sizeof(mark), "m%d", mark_id);
 	snprintf(loc, sizeof(loc), "%s:%d:%s",
 		 cur_file_path ? cur_file_path : "", line, mark);
-	emit_err_check_loc(out, loc, 2, -1);
+	emit_err_check_loc(out, loc, 2, NULL);
 }
 
 /* Double backslashes for ex_arg level escaping.
@@ -1019,8 +1026,9 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
  *   %;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\\\:1q\:
  * The search's error status is captured into tag <n>; on success the
  * <n>?? branch marks the target and 1q short-circuits out of the
- * block, skipping the remaining attempts and the checks. After the
- * last block (no 1q) one <n>??! check per pattern reports failures. */
+ * block, skipping the remaining attempts and the check. After the
+ * last block (no 1q) a single <0;1;..>??! DNF check over all tags
+ * reports the failure. */
 static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 				int mark_id, int target_line, int first)
 {
@@ -1047,8 +1055,7 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 	EMIT_SEP(out);
 	fputs("${LB}\n", out);
 	EMIT_SEP(out);
-	for (int n = 0; n < nps; n++)
-		emit_err_check_pat(out, n, target_line);
+	emit_err_check_pats(out, nps, target_line);
 	fputs("${LB}\n", out);
 	EMIT_SEP(out);
 }
