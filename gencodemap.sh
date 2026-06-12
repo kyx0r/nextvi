@@ -13,6 +13,7 @@ EXINIT="${EXINIT}:1:>led\.c>:&A | insert mode/output"
 EXINIT="${EXINIT}:1:>\<ex\.c\\\>>:&A | ex options/commands"
 EXINIT="${EXINIT}:1:>vi\.c>:&A | normal mode/general"
 EXINIT="${EXINIT}:1:>patch2vi\.c>:??&A | patch converter"
+EXINIT="${EXINIT}:1:>common\.c>:??&A | shared with patch2vi"
 EXINIT="${EXINIT}:1:>total>:&A | wc -l *.c\(basort"
 EXINIT="${EXINIT}:\$:pu:'97:-1:pu"
 EXINIT="${EXINIT}:led:vis3:1,\$p:vis2:q!" vi -em
