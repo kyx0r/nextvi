@@ -710,7 +710,8 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * All search paths use ex_arg escaping uniformly.
  *
  * Error checking: each search is followed by ??! to detect failure,
- * print debug info, and quit before corrupting the file.
+ * print debug info, and quit before corrupting the file. Each phase-2
+ * edit gets the same check with a FAIL m<mark id> message.
  */
 
 typedef struct {
@@ -722,20 +723,41 @@ typedef struct {
 	int target_line;     /* original line number for error reporting */
 } rel_ctx_t;
 
-/* Emit ??! error check after a command that may fail. */
-static void emit_err_check(FILE *out, int line)
+/* Emit ??! error check after a command that may fail.
+ * loc: location text in the FAIL message ("path:line" for phase-1
+ * searches, "m<id>" for phase-2 edits at a mark). */
+static void emit_err_check_loc(FILE *out, const char *loc)
 {
 	fputs("?" "?!${DBG:-", out);
 	fprintf(out, "ya!p");
 	EMIT_ESCSEP(out);
 	fprintf(out, "prp");
 	EMIT_ESCSEP(out);
-	fprintf(out, "p FAIL %s:%d", cur_file_path ? cur_file_path : "?", line);
+	fprintf(out, "p FAIL %s", loc);
 	EMIT_ESCSEP(out);
 	fprintf(out, "pr");
 	fputs("${INTR}", out);
 	fputs("${QF}}", out);
 	EMIT_SEP(out);
+}
+
+/* Phase-1 error check: FAIL <path>:<line> */
+static void emit_err_check(FILE *out, int line)
+{
+	char loc[MAX_LINE];
+	snprintf(loc, sizeof(loc), "%s:%d",
+		 cur_file_path ? cur_file_path : "?", line);
+	emit_err_check_loc(out, loc);
+}
+
+/* Phase-2 error check: FAIL m<id> (mark id of the edited group).
+ * mark_id < 0 means no mark (new-file insert, custom abs command). */
+static void emit_err_check_mark(FILE *out, int mark_id)
+{
+	char loc[16] = "m?";
+	if (mark_id >= 0)
+		snprintf(loc, sizeof(loc), "m%d", mark_id);
+	emit_err_check_loc(out, loc);
 }
 
 /* Double backslashes for ex_arg level escaping.
@@ -942,6 +964,7 @@ static void emit_mark_delete(FILE *out, int mark_id, int count)
 	else
 		fprintf(out, "'%d,#+%dd", mark_id, count - 1);
 	EMIT_SEP(out);
+	emit_err_check_mark(out, mark_id);
 }
 
 /* Phase 2: insert at a mark (a after the mark, i before it).
@@ -958,6 +981,7 @@ static void emit_mark_insert(FILE *out, int mark_id, int use_i,
 		fprintf(out, "'%d%c ", mark_id, use_i ? 'i' : 'a');
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
+	emit_err_check_mark(out, mark_id);
 }
 
 /* Phase 2: change lines at a mark */
@@ -974,6 +998,7 @@ static void emit_mark_change(FILE *out, int mark_id,
 		fprintf(out, "'%d,#+%dc ", mark_id, del_count - 1);
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
+	emit_err_check_mark(out, mark_id);
 }
 
 /* Escape replacement text for substitute command.
@@ -1019,13 +1044,12 @@ static void emit_substitute_cmd(FILE *out, const char *old_text,
 /* Phase 2: substitute at a mark. The pattern can fail to match
  * within the line, so keep the error check. */
 static void emit_mark_substitute(FILE *out, int mark_id,
-				 const char *old_text, const char *new_text,
-				 int target_line)
+				 const char *old_text, const char *new_text)
 {
 	fprintf(out, "'%d", mark_id);
 	emit_substitute_cmd(out, old_text, new_text);
 	EMIT_SEP(out);
-	emit_err_check(out, target_line);
+	emit_err_check_mark(out, mark_id);
 }
 
 /* Phase 2: horizontal ;c / ;d edit tail, emitted after an address
@@ -2364,18 +2388,18 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 	 */
 
 	/* Helper: emit a custom edit command (lines array) at the mark.
-	 * Substitute (lines[0] starts s+non-alnum): exarg escaping + err check.
+	 * Substitute (lines[0] starts s+non-alnum): exarg escaping.
 	 * Otherwise: verbs attach directly to the mark address. */
-#define EMIT_MARK_EDIT(rlines, rnlines, tline) do { \
+#define EMIT_MARK_EDIT(rlines, rnlines) do { \
 		fprintf(out, "'%d", g->mark_id); \
 		if (is_substitute((rlines)[0])) { \
 			emit_escaped_exarg_only(out, (rlines)[0]); \
 			EMIT_SEP(out); \
-			emit_err_check(out, (tline)); \
 		} else { \
 			emit_custom_edit_lines(out, (rlines), (rnlines)); \
 			EMIT_SEP(out); \
 		} \
+		emit_err_check_mark(out, g->mark_id); \
 } while (0)
 
 	for (int gi = 0; gi < ngroups; gi++) {
@@ -2393,6 +2417,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
+				emit_err_check_mark(out, g->mark_id);
 			} else if (strat == STRAT_RELC) {
 				if (g->custom_relc_lines && g->custom_relc_nlines > 0) {
 					/* custom relc lines address the current
@@ -2406,16 +2431,15 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 					fprintf(out, "'%d", g->mark_id);
 					emit_horiz_tail(out, g);
 				}
-				emit_err_check(out, g->del_start);
+				emit_err_check_mark(out, g->mark_id);
 			} else if (strat == STRAT_REL) {
 				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
 					EMIT_MARK_EDIT(g->custom_rel_lines,
-						       g->custom_rel_nlines, g->del_start);
+						       g->custom_rel_nlines);
 				} else if (g->ndel == 1 && g->nadd == 1 &&
 					   g->has_line_diff) {
 					emit_mark_substitute(out, g->mark_id,
-							     g->ld_old_text, g->ld_new_text,
-							     g->del_start);
+							     g->ld_old_text, g->ld_new_text);
 				} else {
 					emit_mark_change(out, g->mark_id,
 							 g->ndel, g->add_texts, g->nadd);
@@ -2425,6 +2449,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
 					fprintf(out, "'%d", g->mark_id);
 					emit_horiz_tail(out, g);
+					emit_err_check_mark(out, g->mark_id);
 				} else {
 					emit_mark_change(out, g->mark_id,
 							 g->ndel, g->add_texts, g->nadd);
@@ -2435,10 +2460,11 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
+				emit_err_check_mark(out, g->mark_id);
 			} else if (strat == STRAT_REL && g->custom_rel_lines
 				   && g->custom_rel_nlines > 0) {
 				EMIT_MARK_EDIT(g->custom_rel_lines,
-					       g->custom_rel_nlines, g->del_start);
+					       g->custom_rel_nlines);
 			} else {
 				emit_mark_delete(out, g->mark_id, g->ndel);
 			}
@@ -2447,10 +2473,11 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
+				emit_err_check_mark(out, g->mark_id);
 			} else if (strat == STRAT_REL && g->custom_rel_lines
 				   && g->custom_rel_nlines > 0) {
 				EMIT_MARK_EDIT(g->custom_rel_lines,
-					       g->custom_rel_nlines, g->add_after);
+					       g->custom_rel_nlines);
 			} else {
 				emit_mark_insert(out, g->mark_id, g->insert_i,
 						 g->add_texts, g->nadd);
