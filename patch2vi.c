@@ -68,8 +68,8 @@ typedef struct {
 	char **post_ctx;    /* context lines after change (for levels 3/5) */
 	int npost_ctx, post_cap;
 	int strategy;       /* STRAT_DEFAULT = not recorded */
-	char **pattern;
-	int npattern, pat_cap;
+	char **pattern[3];  /* SEARCH PATTERN 1-3 fallbacks */
+	int npattern[3], pat_cap[3];
 	char **abs_cmd;
 	int nabs, abs_cap;
 	char **rel_cmd;
@@ -690,13 +690,17 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * no edits in between, so the register stays byte-identical to the
  * buffer for the entire phase. Each group's target line is recorded
  * with a line mark ("+<off>m <id>", ids count up from 0 skipping
- * nextvi's special mark ids). Single-line patterns search the buffer
- * directly with ";0 0reg .,$f> ^pattern$ .. 98reg" (.,$f+ after the
- * first search): ;0 resets xoff to the line start and the ^...$
- * anchors disambiguate repeated text. Multi-line
- * patterns use %;f> (first) / %;f+ (subsequent) against the register
- * cache (a bare ";" resolves to the current xoff, so each search
- * continues one char past the previous match start). ABS-strategy
+ * nextvi's special mark ids). Each group gets up to three fallback
+ * patterns tried strict-to-loose, first match wins (see
+ * emit_fallback_chain): 1 = whole hunk (pre ctx + deleted lines +
+ * post ctx), 2 = top context anchors only, 3 = deleted lines only.
+ * Searches use %;f> (first search of a file) / %;f+ (subsequent)
+ * against the register cache (a bare ";" resolves to the current
+ * xoff, so each search continues one char past the previous match
+ * start). When only one pattern survives dedup, single-line patterns
+ * search the buffer directly with ";0 0reg .,$f> ^pattern$ .. 98reg"
+ * (.,$f+ after the first search): ;0 resets xoff to the line start
+ * and the ^...$ anchors disambiguate repeated text. ABS-strategy
  * groups mark their original line number directly - the buffer is
  * pristine in this phase, so no cumulative line-delta correction is
  * needed.
@@ -714,21 +718,17 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * edit gets the same check with a FAIL m<mark id> message.
  */
 
-typedef struct {
-	char **anchors;
-	int nanchors;
-	char *follow_ctx;
-	int follow_offset;
-	int anchor_offset;   /* lines from last anchor to first change */
-	int target_line;     /* original line number for error reporting */
-} rel_ctx_t;
-
 /* Emit ??! error check after a command that may fail.
  * loc: location text in the FAIL message ("path:line" for phase-1
  * searches, "path:line:m<id>" for phase-2 edits at a mark).
- * phase selects the DBG<n>/QF<n> variable set; INTR is shared. */
-static void emit_err_check_loc(FILE *out, const char *loc, int phase)
+ * phase selects the DBG<n>/QF<n> variable set; INTR is shared.
+ * tag >= 0 prefixes the conditional with a capture id so it fires
+ * on that fallback pattern's recorded status instead of the last
+ * command's. */
+static void emit_err_check_loc(FILE *out, const char *loc, int phase, int tag)
 {
+	if (tag >= 0)
+		fprintf(out, "%d", tag);
 	fprintf(out, "?" "?!${DBG%d:-", phase);
 	fprintf(out, "ya!p");
 	EMIT_ESCSEP(out);
@@ -748,7 +748,17 @@ static void emit_err_check(FILE *out, int line)
 	char loc[MAX_LINE];
 	snprintf(loc, sizeof(loc), "%s:%d",
 		 cur_file_path ? cur_file_path : "?", line);
-	emit_err_check_loc(out, loc, 1);
+	emit_err_check_loc(out, loc, 1, -1);
+}
+
+/* Phase-1 fallback chain check: <tag>??! fires only if the chain ran
+ * to completion and that pattern's capture recorded a failure. */
+static void emit_err_check_pat(FILE *out, int tag, int line)
+{
+	char loc[MAX_LINE];
+	snprintf(loc, sizeof(loc), "%s:%d",
+		 cur_file_path ? cur_file_path : "?", line);
+	emit_err_check_loc(out, loc, 1, tag);
 }
 
 /* Phase-2 error check: FAIL <path>:<line>:m<id> (mark id of the edited
@@ -761,7 +771,7 @@ static void emit_err_check_mark(FILE *out, int line, int mark_id)
 		snprintf(mark, sizeof(mark), "m%d", mark_id);
 	snprintf(loc, sizeof(loc), "%s:%d:%s",
 		 cur_file_path ? cur_file_path : "", line, mark);
-	emit_err_check_loc(out, loc, 2);
+	emit_err_check_loc(out, loc, 2, -1);
 }
 
 /* Double backslashes for ex_arg level escaping.
@@ -877,9 +887,12 @@ typedef struct group_s {
 	char **post_ctx;         /* post-change context lines (up to 3) */
 	int npost_ctx;
 	int block_change_idx;    /* index of first del/change line in block */
-	char **custom_lines;     /* edited lines from $EDITOR (pre-escaped regex) */
-	int ncustom;
-	int custom_offset;       /* user-edited offset value */
+	/* Edited SEARCH PATTERN 1-3 sections (pre-escaped regex) */
+	char **custom_pat[3];
+	int ncustom_pat[3];
+	int custom_pat_off[3];     /* per-section +N first-line override */
+	int custom_pat_has_off[3];
+	int custom_offset;       /* offset from EDIT COMMAND +N (patterns 1-2) */
 	/* Per-group strategy selection (interactive mode) */
 	int strategy;            /* enum strategy */
 	int has_line_diff;       /* whether find_line_diff() succeeded */
@@ -912,52 +925,124 @@ static void emit_escaped_exarg_only(FILE *out, const char *s)
 	free(e);
 }
 
-/* Phase 1: emit search + mark for a custom-edited group.
- * Returns 1 on success, -1 if there is nothing to search. */
-static int emit_custom_pos(FILE *out, group_t *g, int first)
+/* One fallback search pattern (phase 1) */
+typedef struct {
+	char **lines;
+	int nlines;
+	int pre_escaped;  /* 1 = user regex (exarg only), 0 = raw text */
+	int offset;       /* lines from match start to the target line */
+} pat_spec_t;
+
+/* Default (non-edited) lines for fallback pattern pi:
+ * 0 = whole hunk: pre-ctx anchors + deleted lines + following ctx,
+ * 1 = top context anchors only (the historical single pattern),
+ * 2 = deleted lines only.
+ * raw[] receives borrowed pointers (3 + ndel + 3 entries max).
+ * Returns the line count; *off = lines from match start to target. */
+static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 {
-	int target_line = g->del_start ? g->del_start : g->add_after;
-	if (g->ncustom == 0)
-		return -1;
-	emit_search(out, g->custom_lines, g->ncustom, g->custom_offset,
-		    g->mark_id, target_line, 1, first);
-	return 1;
+	int n = 0;
+	*off = 0;
+	if (pi == 2) {
+		if (g->ndel == 0 || (g->ndel == 1 && !g->del_texts[0][0]))
+			return 0;
+		for (int i = 0; i < g->ndel; i++)
+			raw[n++] = g->del_texts[i];
+		return n;
+	}
+	if (pi == 1) {
+		if (g->nanchors >= 2 ||
+		    (g->nanchors == 1 && g->anchors[0] && g->anchors[0][0])) {
+			for (int i = 0; i < g->nanchors; i++)
+				raw[n++] = g->anchors[i];
+			*off = g->nanchors - 1 + g->anchor_offset;
+		} else if (g->follow_ctx && g->follow_ctx[0]) {
+			raw[n++] = g->follow_ctx;
+			*off = -(g->follow_offset);
+		} else if (g->ndel > 0 && g->del_texts[0][0]) {
+			raw[n++] = g->del_texts[0];
+		}
+		return n;
+	}
+	/* pi == 0: whole hunk */
+	for (int i = 0; i < g->nanchors; i++)
+		raw[n++] = g->anchors[i];
+	int top = n;
+	for (int i = 0; i < g->ndel; i++)
+		raw[n++] = g->del_texts[i];
+	if (g->npost_ctx > 0) {
+		for (int i = 0; i < g->npost_ctx; i++)
+			raw[n++] = g->post_ctx[i];
+	} else if (g->follow_ctx) {
+		raw[n++] = g->follow_ctx;
+	}
+	if (top)
+		*off = g->nanchors - 1 + g->anchor_offset;
+	else if (!g->ndel && n)
+		*off = -(g->follow_offset);
+	return n;
 }
 
-/*
- * Phase 1: emit the search + mark for a relative group.
- * Returns 1 on success, -1 if no usable anchor exists.
- *
- * Multi-line anchors emit "%;f> pattern" (or f+) against the cached
- * register, searching forward from the cursor's byte offset. Single
- * anchors get the buffer-direct ";0 .,$f> ^pattern$" form (see
- * emit_search). For follow ctx the offset is negative.
- */
-static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int mark_id, int first)
+/* Emit one fallback pattern as the f> argument inside a ? conditional.
+ * The conditional nesting consumes one more escape layer than a
+ * top-level search: after exarg escaping, every backslash is doubled
+ * again and ? is escaped (an unescaped ? would end the cond argument). */
+static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 {
-	char *single[1];
-	char **anchors;
-	int n, off;
-	if (rc->nanchors >= 2) {
-		anchors = rc->anchors;
-		n = rc->nanchors;
-		off = rc->nanchors + rc->anchor_offset - 1;
-	} else if (rc->nanchors == 1 && rc->anchors[0] && rc->anchors[0][0]) {
-		single[0] = rc->anchors[0];
-		anchors = single;
-		n = 1;
-		off = rc->anchor_offset;
-	} else if (rc->follow_ctx && rc->follow_ctx[0]) {
-		single[0] = rc->follow_ctx;
-		anchors = single;
-		n = 1;
-		off = -(rc->follow_offset);
-	} else {
-		return -1;
+	int wrap = p->nlines == 1 && !p->pre_escaped;
+	if (wrap)
+		fputc('^', out);
+	for (int i = 0; i < p->nlines; i++) {
+		char *r = p->pre_escaped ? NULL : escape_regex(p->lines[i]);
+		char *e = escape_exarg(r ? r : p->lines[i]);
+		char *x = escape_chars(e, "\\?");
+		emit_escaped_line(out, x);
+		free(x);
+		free(e);
+		free(r);
+		if (i < p->nlines - 1)
+			fputc('\n', out);
 	}
-	emit_search(out, anchors, n, off, mark_id,
-		    rc->target_line, 0, first);
-	return 1;
+	if (wrap)
+		fputs("\\$", out);  /* $ anchor, shell-escaped */
+	/* Ensure trailing newline when last line is empty */
+	if (p->nlines > 0 && !p->lines[p->nlines - 1][0])
+		fputc('\n', out);
+}
+
+/* Phase 1 fallback chain: try each pattern in order, first match wins.
+ * Per pattern n (capture tag n):
+ *   ?%;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\:1q
+ * The search's error status is captured into tag <n>; on success the
+ * <n>?? branch marks the target and 1q short-circuits out of the
+ * block, skipping the remaining attempts and the checks. After the
+ * last block (no 1q) one <n>??! check per pattern reports failures. */
+static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
+				int mark_id, int target_line, int first)
+{
+	for (int n = 0; n < nps; n++) {
+		fputc('?', out);
+		fputs(first ? "%;f> " : "%;f+ ", out);
+		emit_chain_pattern(out, &ps[n]);
+		EMIT_ESCSEP(out);
+		fprintf(out, "%d\\\\?\\\\?", n);
+		EMIT_ESCSEP(out);
+		fprintf(out, "%d\\\\?\\\\?", n);
+		if (ps[n].offset)
+			fprintf(out, "%+d", ps[n].offset);
+		fprintf(out, "m %d", mark_id);
+		if (n < nps - 1) {
+			EMIT_ESCSEP(out);
+			fputs("1q", out);
+		}
+	}
+	EMIT_SEP(out);
+	fputs("${LB}\n", out);
+	EMIT_SEP(out);
+	for (int n = 0; n < nps; n++)
+		emit_err_check_pat(out, n, target_line);
+	fputs("${LB}\n", out);
+	EMIT_SEP(out);
 }
 
 /* Phase 2: delete at a mark */
@@ -1104,6 +1189,20 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 	return offset;
 }
 
+/* Match a SEARCH PATTERN section line that is only a +N/-N offset
+ * override. Real pattern lines starting with + are regex-escaped
+ * (\+), so a bare signed number is unambiguous. */
+static int pat_off_line(const char *s, int *off)
+{
+	if ((s[0] != '+' && s[0] != '-') || !s[1])
+		return 0;
+	for (const char *p = s + 1; *p; p++)
+		if (*p < '0' || *p > '9')
+			return 0;
+	*off = atoi(s);
+	return 1;
+}
+
 /* Per-group parsed data from an interactive temp file (raw, no offset stripping) */
 typedef struct {
 	int strategy;
@@ -1115,8 +1214,8 @@ typedef struct {
 	int nadd_lines, add_cap;
 	char **custom_text;   /* raw lines from the section (captures everything) */
 	int ncustom_text, custom_text_cap;
-	char **pattern;
-	int npattern, pat_cap;
+	char **pattern[3];
+	int npattern[3], pat_cap[3];
 	char **abs_cmd;
 	int nabs, abs_cap;
 	char **rel_cmd;
@@ -1136,9 +1235,11 @@ static void free_parsed_grp(parsed_grp_t *p)
 	for (int i = 0; i < p->ncustom_text; i++)
 		free(p->custom_text[i]);
 	free(p->custom_text);
-	for (int i = 0; i < p->npattern; i++)
-		free(p->pattern[i]);
-	free(p->pattern);
+	for (int k = 0; k < 3; k++) {
+		for (int i = 0; i < p->npattern[k]; i++)
+			free(p->pattern[k][i]);
+		free(p->pattern[k]);
+	}
 	for (int i = 0; i < p->nabs; i++)
 		free(p->abs_cmd[i]);
 	free(p->abs_cmd);
@@ -1211,7 +1312,12 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			continue;
 		}
 		if (strncmp(line, "=== SEARCH PATTERN", 18) == 0) {
-			in_pat = 1;
+			/* "=== SEARCH PATTERN <1-3> ===", bare legacy form
+			 * maps to pattern 2 (the historical single pattern) */
+			const char *p = line + 18;
+			while (*p == ' ')
+				p++;
+			in_pat = (*p >= '1' && *p <= '3') ? *p - '0' : 2;
 			skip_extra = 0;
 			continue;
 		}
@@ -1290,7 +1396,9 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			}
 			if (!skip_extra) {
 				parsed_grp_t *pg = &results[gi];
-				arr_append(&pg->pattern, &pg->npattern, &pg->pat_cap, line);
+				int pi = in_pat - 1;
+				arr_append(&pg->pattern[pi], &pg->npattern[pi],
+					   &pg->pat_cap[pi], line);
 			}
 		}
 
@@ -1342,10 +1450,12 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 			s = "relc";
 		fprintf(out, "=== strategy ===\n%s\n%s\n", s, end_tag_wr);
 	}
-	if (gd->npattern > 0) {
-		fprintf(out, "=== pattern ===\n");
-		for (int i = 0; i < gd->npattern; i++)
-			fprintf(out, "%s\n", gd->pattern[i]);
+	for (int pi = 0; pi < 3; pi++) {
+		if (gd->npattern[pi] == 0)
+			continue;
+		fprintf(out, "=== pattern%d ===\n", pi + 1);
+		for (int i = 0; i < gd->npattern[pi]; i++)
+			fprintf(out, "%s\n", gd->pattern[pi][i]);
 		fprintf(out, "%s\n", end_tag_wr);
 	}
 	if (gd->nabs > 0) {
@@ -1428,59 +1538,30 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		if (has_anchors)
 			fprintf(fp, "%srel\n", sel_strat == STRAT_REL ? "" : "#");
 
-		/* SEARCH PATTERN: inject stored or auto-generate */
+		/* SEARCH PATTERN 1-3 (fallbacks, first match wins):
+		 * 1 = whole hunk, 2 = top context only, 3 = deleted lines.
+		 * Single-line patterns show the ^...$ disamb anchors so the
+		 * user can remove them; emit respects the edit. */
 		fprintf(fp, "%s\n", end_tag_wr);
-		fprintf(fp, "=== SEARCH PATTERN ===\n");
-		int pattern_has_lines = 0;
-		if (gd && gd->npattern > 0) {
-			for (int i = 0; i < gd->npattern; i++)
-				fprintf(fp, "%s\n", gd->pattern[i]);
-			pattern_has_lines = 1;
-		} else {
-			/* single-line patterns show the ^...$ disamb anchors so
-			 * the user can remove them; emit respects the edit */
-			int wrap = g->nanchors == 1;
-			for (int i = 0; i < g->nanchors; i++) {
-				char *esc = escape_regex(g->anchors[i]);
-				fprintf(fp, wrap ? "^%s$\n" : "%s\n", esc);
-				free(esc);
-			}
-			pattern_has_lines = g->nanchors > 0;
-		}
-		int has_extra = g->ndel > 0 || g->npost_ctx > 0;
-		int del_extra_start = 0, post_extra_start = 0;
-		if (!pattern_has_lines && has_extra) {
-			/* promote the same line non-interactive would use as anchor:
-			 * follow_ctx (post_ctx[0]) takes priority, then del_texts[0] */
-			char *esc;
-			if (g->npost_ctx > 0 && g->follow_ctx && g->follow_ctx[0]) {
-				esc = escape_regex(g->post_ctx[0]);
-				post_extra_start = 1;
-			} else if (g->ndel > 0) {
-				esc = escape_regex(g->del_texts[0]);
-				del_extra_start = 1;
+		char **praw = emalloc((g->ndel + 7) * sizeof(char *));
+		for (int pi = 0; pi < 3; pi++) {
+			fprintf(fp, "=== SEARCH PATTERN %d ===\n", pi + 1);
+			if (gd && gd->npattern[pi] > 0) {
+				for (int i = 0; i < gd->npattern[pi]; i++)
+					fprintf(fp, "%s\n", gd->pattern[pi][i]);
 			} else {
-				esc = escape_regex(g->post_ctx[0]);
-				post_extra_start = 1;
+				int doff;
+				int n = default_pat_lines(g, pi, praw, &doff);
+				int wrap = n == 1;
+				for (int i = 0; i < n; i++) {
+					char *esc = escape_regex(praw[i]);
+					fprintf(fp, wrap ? "^%s$\n" : "%s\n", esc);
+					free(esc);
+				}
 			}
-			fprintf(fp, "^%s$\n", esc);
-			free(esc);
+			fprintf(fp, "%s\n", end_tag_wr);
 		}
-		if ((g->ndel - del_extra_start) + (g->npost_ctx - post_extra_start) > 0) {
-			fprintf(fp, "--- extra (delete to include) ---\n");
-			for (int i = del_extra_start; i < g->ndel; i++) {
-				char *esc = escape_regex(g->del_texts[i]);
-				fprintf(fp, "%s\n", esc);
-				free(esc);
-			}
-			for (int i = post_extra_start; i < g->npost_ctx; i++) {
-				char *esc = escape_regex(g->post_ctx[i]);
-				fprintf(fp, "%s\n", esc);
-				free(esc);
-			}
-		}
-
-		fprintf(fp, "%s\n", end_tag_wr);
+		free(praw);
 
 		/* EDIT COMMAND sections */
 #define WG_CONTENT(fp) do { \
@@ -1844,8 +1925,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					  src->npre_ctx);
 				arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap, src->post_ctx,
 					  src->npost_ctx);
-				arr_clone(&dst->pattern, &dst->npattern, &dst->pat_cap, src->pattern,
-					  src->npattern);
+				for (int pi = 0; pi < 3; pi++)
+					arr_clone(&dst->pattern[pi], &dst->npattern[pi],
+						  &dst->pat_cap[pi], src->pattern[pi],
+						  src->npattern[pi]);
 				arr_clone(&dst->abs_cmd, &dst->nabs, &dst->abs_cap, src->abs_cmd,
 					  src->nabs);
 				arr_clone(&dst->rel_cmd, &dst->nrel, &dst->rel_cap, src->rel_cmd,
@@ -1869,8 +1952,11 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				parsed_grp_t *eg = &edit_per[k][gi];
 
 				int strat_ch = (eg->strategy != og->strategy);
-				int pat_ch = !lines_equal(eg->pattern, eg->npattern,
-							  og->pattern, og->npattern);
+				int pat_ch = 0;
+				for (int pi = 0; pi < 3; pi++)
+					if (!lines_equal(eg->pattern[pi], eg->npattern[pi],
+							 og->pattern[pi], og->npattern[pi]))
+						pat_ch = 1;
 				int abs_ch = !lines_equal(eg->abs_cmd, eg->nabs,
 							  og->abs_cmd, og->nabs);
 				int rel_ch = !lines_equal(eg->rel_cmd, eg->nrel,
@@ -1932,8 +2018,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				if (strat_ch)
 					gout->strategy = eg->strategy;
 				if (pat_ch)
-					arr_clone(&gout->pattern, &gout->npattern, &gout->pat_cap,
-						  eg->pattern, eg->npattern);
+					for (int pi = 0; pi < 3; pi++)
+						arr_clone(&gout->pattern[pi], &gout->npattern[pi],
+							  &gout->pat_cap[pi],
+							  eg->pattern[pi], eg->npattern[pi]);
 				if (abs_ch)
 					arr_clone(&gout->abs_cmd, &gout->nabs, &gout->abs_cap,
 						  eg->abs_cmd, eg->nabs);
@@ -1960,12 +2048,27 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			parsed_grp_t *eg = &edit_per[k][gi];
 			group_t *g = &active[k]->groups[gi];
 			g->strategy = eg->strategy;
-			if (eg->npattern > 0) {
-				g->custom_lines = eg->pattern;
-				g->ncustom = eg->npattern;
-				eg->pattern = NULL;
-				eg->npattern = 0;
-				eg->pat_cap = 0;
+			for (int pi = 0; pi < 3; pi++) {
+				if (eg->npattern[pi] == 0)
+					continue;
+				/* a first line of just +N/-N overrides this
+				 * pattern's search offset */
+				int poff;
+				if (pat_off_line(eg->pattern[pi][0], &poff)) {
+					g->custom_pat_has_off[pi] = 1;
+					g->custom_pat_off[pi] = poff;
+					free(eg->pattern[pi][0]);
+					memmove(eg->pattern[pi], eg->pattern[pi] + 1,
+						(eg->npattern[pi] - 1) * sizeof(char *));
+					eg->npattern[pi]--;
+				}
+				if (eg->npattern[pi] > 0) {
+					g->custom_pat[pi] = eg->pattern[pi];
+					g->ncustom_pat[pi] = eg->npattern[pi];
+					eg->pattern[pi] = NULL;
+					eg->npattern[pi] = 0;
+					eg->pat_cap[pi] = 0;
+				}
 			}
 			if (eg->nabs > 0) {
 				g->custom_abs_lines = eg->abs_cmd;
@@ -2222,9 +2325,11 @@ static void free_group(group_t *g)
 	free(g->add_texts);
 	free(g->all_pre_ctx);
 	free(g->post_ctx);
-	for (int k = 0; k < g->ncustom; k++)
-		free(g->custom_lines[k]);
-	free(g->custom_lines);
+	for (int pi = 0; pi < 3; pi++) {
+		for (int k = 0; k < g->ncustom_pat[pi]; k++)
+			free(g->custom_pat[pi][k]);
+		free(g->custom_pat[pi]);
+	}
 	free(g->ld_old_text);
 	free(g->ld_new_text);
 	free(g->ldc_new_text);
@@ -2289,24 +2394,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		 */
 		int strat = g->strategy;
 
-		rel_ctx_t rc = {
-			.target_line = target_line,
-			.anchors = g->anchors, .nanchors = g->nanchors,
-			.follow_ctx = g->follow_ctx, .follow_offset = g->follow_offset,
-			.anchor_offset = g->anchor_offset,
-		};
-		int has_anchors = rc.nanchors >= 2
-				  || (rc.nanchors == 1 && rc.anchors[0] && rc.anchors[0][0])
-				  || (rc.follow_ctx && rc.follow_ctx[0]);
-		/* Fallback: use first deleted line as anchor */
-		if (!has_anchors && g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]) {
-			rc.anchors = g->del_texts;
-			rc.nanchors = 1;
-			rc.anchor_offset = 0;
-			rc.follow_ctx = NULL;
-			rc.follow_offset = 0;
-			has_anchors = 1;
-		}
+		int has_anchors = g->nanchors >= 2
+				  || (g->nanchors == 1 && g->anchors[0] && g->anchors[0][0])
+				  || (g->follow_ctx && g->follow_ctx[0])
+				  || (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]);
 
 		if (!interactive_mode)
 			strat = (relative_mode && has_anchors) ? STRAT_REL : STRAT_ABS;
@@ -2323,8 +2414,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				strat = STRAT_REL;  /* fall back to s// if no ;c data */
 		}
 		g->res_strat = strat;
-
-		int has_custom = g->custom_lines != NULL && g->ncustom > 0;
 
 		if (strat == STRAT_ABS) {
 			/* Custom abs commands carry their own addresses */
@@ -2347,43 +2436,83 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			continue;
 		}
 
+		/* Build the fallback pattern list: edited SEARCH PATTERN
+		 * sections if any, else auto defaults. Duplicates dropped,
+		 * first match wins at apply time. */
+		pat_spec_t ps[3];
+		int nps = 0;
+		char **raw = NULL;
+		for (int pi = 0; pi < 3; pi++) {
+			if (g->ncustom_pat[pi] == 0)
+				continue;
+			ps[nps].lines = g->custom_pat[pi];
+			ps[nps].nlines = g->ncustom_pat[pi];
+			ps[nps].pre_escaped = 1;
+			ps[nps].offset = g->custom_pat_has_off[pi]
+				? g->custom_pat_off[pi]
+				: pi == 2 ? 0 : g->custom_offset;
+			nps++;
+		}
+		if (nps == 0) {
+			int slot_sz = g->ndel + 7;
+			raw = emalloc(3 * slot_sz * sizeof(char *));
+			for (int pi = 0; pi < 3; pi++) {
+				char **slot = raw + pi * slot_sz;
+				int doff;
+				int n = default_pat_lines(g, pi, slot, &doff);
+				if (!n)
+					continue;
+				ps[nps].lines = slot;
+				ps[nps].nlines = n;
+				ps[nps].pre_escaped = 0;
+				ps[nps].offset = doff;
+				nps++;
+			}
+		}
+		int w = 0;
+		for (int pi = 0; pi < nps; pi++) {
+			int dup = 0;
+			for (int pj = 0; pj < w; pj++)
+				if (ps[pi].pre_escaped == ps[pj].pre_escaped &&
+				    lines_equal(ps[pi].lines, ps[pi].nlines,
+						ps[pj].lines, ps[pj].nlines))
+					dup = 1;
+			if (!dup)
+				ps[w++] = ps[pi];
+		}
+		nps = w;
+
 		/* Pure insert: position lands on the line to append after.
-		 * If the offset would go negative, insert (i) instead.
 		 * Custom edit lines carry their own verb and a verb-relative
 		 * offset (the displayed "+Na" already includes the a step),
 		 * so no adjustment is applied for them. */
 		if (!g->del_start && g->nadd
 		    && !(g->custom_rel_lines && g->custom_rel_nlines > 0)) {
-			if (has_custom) {
-				if (g->custom_offset > 0)
-					g->custom_offset -= 1;
-				else
-					g->insert_i = 1;
-			} else if (rc.nanchors > 0) {
-				if (rc.anchor_offset > 0)
-					rc.anchor_offset -= 1;
-				else
-					g->insert_i = 1;
-			} else if (rc.follow_ctx) {
-				if (g->add_after <= 0)
-					g->insert_i = 1;
-				else
-					rc.follow_offset += 1;
-			}
+			if (g->add_after <= 0)
+				g->insert_i = 1;
+			else
+				for (int pi = 0; pi < nps; pi++)
+					ps[pi].offset -= 1;
 		}
 
 		g->mark_id = next_mark_id(&next_id);
-		int r = has_custom
-			? emit_custom_pos(out, g, first_search)
-			: emit_rel_pos(out, &rc, g->mark_id, first_search);
-		if (r < 0) {
+		if (nps == 0) {
 			/* No usable anchor: mark the absolute line */
 			fprintf(out, "%dm %d",
 				target_line > 0 ? target_line : 1, g->mark_id);
 			EMIT_SEP(out);
+			free(raw);
 			continue;
 		}
+		if (nps == 1)
+			emit_search(out, ps[0].lines, ps[0].nlines,
+				    ps[0].offset, g->mark_id, target_line,
+				    ps[0].pre_escaped, first_search);
+		else
+			emit_fallback_chain(out, ps, nps, g->mark_id,
+					    target_line, first_search);
 		first_search = 0;
+		free(raw);
 	}
 
 	/*
@@ -2651,6 +2780,7 @@ int main(int argc, char **argv)
 			file_delta_t *cur_fd = NULL;
 			grp_delta_t *cur_gd = NULL;
 			int in_sect = 0; /* 1=pat 2=abs 3=rel 4=relc */
+			int pat_idx = 1; /* which pattern[] for in_sect 1 */
 			while (fgets(line, sizeof(line), in)) {
 				chomp(line);
 				if (strncmp(line, "=== PATCH2VI PATCH ===", 22) == 0)
@@ -2731,7 +2861,12 @@ int main(int argc, char **argv)
 						in_sect = 10;
 						continue;
 					}
-					if (strcmp(line, "=== pattern ===") == 0) {
+					if (strncmp(line, "=== pattern", 11) == 0) {
+						/* "pattern<1-3>"; legacy bare
+						 * "pattern" maps to pattern 2 */
+						char c = line[11];
+						pat_idx = (c >= '1' && c <= '3')
+							? c - '1' : 1;
 						in_sect = 1;
 						continue;
 					}
@@ -2769,9 +2904,9 @@ int main(int argc, char **argv)
 				}
 				switch (in_sect) {
 				case 1:
-					arr_append(&cur_gd->pattern,
-						   &cur_gd->npattern,
-						   &cur_gd->pat_cap, line);
+					arr_append(&cur_gd->pattern[pat_idx],
+						   &cur_gd->npattern[pat_idx],
+						   &cur_gd->pat_cap[pat_idx], line);
 					break;
 				case 2:
 					arr_append(&cur_gd->abs_cmd,
