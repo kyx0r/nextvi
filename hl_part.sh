@@ -18,53 +18,56 @@ fi
 SEP="$(printf '\001')"
 # Command that handles readability line breaks
 LB="0?"
-# Disable errors
-[ "$DBG" = "1" ] && DBG="0\?" || DBG=
-# Ignore errors
-[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Phase 1 (search/mark): errors disabled by default,
+# DBG1=1 enables error reporting, QF1=1 quits on failure
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0\?"
+[ "$QF1" = "1" ] && QF1="\\${SEP}vis 2\\${SEP}q!1" || QF1=
+# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+[ "$DBG2" = "1" ] && DBG2="0\?" || DBG2=
+[ "$QF2" = "1" ] && QF2= || QF2="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: led.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ^static sbuf \\\\*suggestsb;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:1\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ^static sbuf \\\\*suggestsb;\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:1\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}m 0${SEP}%;f+ 	if \\\\(!xled\\\\)
 		return;
-	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:146\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	ren_state \\\\*r = ren_position\\\\(s0\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:146\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 1${SEP}%;f+ 	char \\\\*bound = NULL;
 	char \\\\*\\\\*chrs = r->chrs;	/\\\\* chrs\\\\[i\\\\]: the i-th character in s0 \\\\*/
-	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:152\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	int off\\\\[cterm\\\\+1\\\\];	/\\\\* off\\\\[i\\\\]: the character at screen position i \\\\*/${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:152\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 2${SEP}%;f+ 			off\\\\[c - cbeg\\\\] = c <= r->cmax \\\\? r->col\\\\[c\\\\] : -1;
 	}
-	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:165\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	if \\\\(r->cmax > cterm \\\\|\\\\| cbeg\\\\) \\\\{${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:165\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 3${SEP}%;f+ 		if \\\\(o >= 0 && r->cmax > cterm && r->pos\\\\[o\\\\] \\\\+ r->wid\\\\[o\\\\] > cend\\\\)
 			while \\\\(off\\\\[i\\\\] == o\\\\)
-				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:176\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				off\\\\[ctx < 0 \\\\? i\\\\+\\\\+ : i--\\\\] = -1;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:176\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 4${SEP}%;f+ 				for \\\\(; off\\\\[i\\\\] == o; i\\\\+\\\\+\\\\);
 			}
-		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:181\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:181\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 5${SEP}%;f+ 		sbufn_null\\\\(bsb\\\\)
 		bound = bsb->s;
-	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3m 6${SEP};0${SEP}0reg${SEP}.,\$f+ ^	if \\\\(xhl\\\\)\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:205\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+	}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:203\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+3m 6${SEP};0${SEP}0reg${SEP}.,\$f+ ^	if \\\\(xhl\\\\)\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:205\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+1m 7${SEP}%;f+ 			if \\\\(!bound\\\\)
 				att\\\\[p->off\\\\] = syn_merge\\\\(att\\\\[p->off\\\\], p->att\\\\);
-			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:215\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			else if \\\\(c && stt\\\\[0\\\\] <= p->off && stt\\\\[c-1\\\\] >= p->off\\\\) \\\\{${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:215\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 8${SEP}${LB}
 ${SEP}'0a #define LEDBACK 300
 #define LEDFORW 300
 
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:1:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:146:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:152:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3a 		c = 0;
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:165:m3\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
 			if (r->pos[l] < cbeg && c < fcterm) {
@@ -74,7 +77,7 @@ ${SEP}'4c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 			l -= ctx;
 		}
 		for (i = 0; i < cterm;) {
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:176:m4\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5a 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
@@ -82,10 +85,10 @@ ${SEP}'5a 		l = cend <= r->cmax ? r->col[cend] : -1;
 			}
 			l += ctx;
 		}
-${SEP}${LB}
-${SEP}'6s/ c/ fc/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:203\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'7s/ c/ fc/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:205\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'8s/0/atti/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:215\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'led.c'
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:181:m5\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'6s/ c/ fc/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:203:m6\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'7s/ c/ fc/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:205:m7\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'8s/0/atti/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL led.c:215:m8\\${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'led.c'
 
 exit 0
 === PATCH2VI DELTA ===

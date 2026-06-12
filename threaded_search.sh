@@ -18,10 +18,13 @@ fi
 SEP="$(printf '\001')"
 # Command that handles readability line breaks
 LB="0?"
-# Disable errors
-[ "$DBG" = "1" ] && DBG="0\?" || DBG=
-# Ignore errors
-[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Phase 1 (search/mark): errors disabled by default,
+# DBG1=1 enables error reporting, QF1=1 quits on failure
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0\?"
+[ "$QF1" = "1" ] && QF1="\\${SEP}vis 2\\${SEP}q!1" || QF1=
+# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+[ "$DBG2" = "1" ] && DBG2="0\?" || DBG2=
+[ "$QF2" = "1" ] && QF2= || QF2="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
@@ -29,25 +32,25 @@ LB="0?"
 # Patch: cbuild.sh lbuf.c regex.c uc.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> -Wno-unused-parameter \\\\\\\\
 -Wno-unused-result \\\\\\\\
--Wfatal-errors -std=c99 \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL cbuild.sh:49\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+-Wfatal-errors -std=c99 \\\\\\\\${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL cbuild.sh:49\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}${LB}
 ${SEP}'0a -lpthread \\\\
-${SEP}b1${SEP}%ya b${SEP}%;f> 	return n != 0;
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL cbuild.sh:49:m0\\${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya b${SEP}%;f> 	return n != 0;
 }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:493\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:493\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ 		_o = 0;
 		step = 0;
-		flg = REG_NEWLINE;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		flg = REG_NEWLINE;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:509\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 1${SEP}%;f+ 				continue;
 			}
-			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:518\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^				break;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:520\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+			_o \\\\+= uc_off\\\\(s \\\\+ step, off \\\\+ g1 - step\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:518\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+3m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^				break;\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:520\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+1m 3${SEP}%;f+ 			step = off \\\\+ g1;
-			off \\\\+= g2 > 0 \\\\? g2 : 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:526\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			off \\\\+= g2 > 0 \\\\? g2 : 1;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:526\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 4${SEP}%;f+ 		}
 		off = 0;
-	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:530\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:530\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 5${SEP}${LB}
 ${SEP}'0,#+12c struct lsparams
 {
@@ -70,19 +73,19 @@ static void *lsearch(void *arg)
 	char *s;
 	int off = a->off, g1, g2, _o, step, flg;
 	for (; i >= a->beg && i < a->end; i += a->dir) {
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:493:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1,#+1c 		s = a->lb->ln[i];
 		while (rset_find(a->re, s + off, offs, flg) >= 0) {
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:509:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:518:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3,#+3c 			*a->o = _o;
 			*a->r = i;
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:520:m3\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4c 			a->end = -1; /* break outer loop efficiently */
 			if (a->dir > 0)
 				return NULL;
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:526:m4\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5c 	return NULL;
 }
 
@@ -142,36 +145,36 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	}
 	utf8_length['\\\\n'] = 1;
 	return 1;
-${SEP}b2${SEP}%ya b${SEP}%;f> 	return 0;
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:530:m5\\${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya b${SEP}%;f> 	return 0;
 }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:402\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ 	char nsubs\\\\[prog->sub\\\\];
 	for \\\\(i = 0; i < prog->laidx; i\\\\+\\\\+\\\\)
-		lb\\\\[i\\\\] = NULL;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:642\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3m 1${SEP};0${SEP}0reg${SEP}.,\$f+ ^		utf8_length\\\\[eol_ch\\\\] = 0;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:643\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+		lb\\\\[i\\\\] = NULL;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:642\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+3m 1${SEP};0${SEP}0reg${SEP}.,\$f+ ^		utf8_length\\\\[eol_ch\\\\] = 0;\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:643\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}m 2${SEP}${LB}
-${SEP}'0s/\\\\(eol_ch/(flg & REG_NEWLINE/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:402\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'1s/h\\\\)/h && utf8_length[eol_ch])/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:642\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'0s/\\\\(eol_ch/(flg & REG_NEWLINE/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:402:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'1s/h\\\\)/h && utf8_length[eol_ch])/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:642:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2a 	else
 		flg &= ~REG_NEWLINE;
-${SEP}b3${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ^	/\\\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\\\*/\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:1\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:643:m2\\${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> ^	/\\\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\\\*/\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:1\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}-1m 0${SEP}%;f+ 	/\\\\* E \\\\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\\\\* F \\\\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
-};${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:19\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+};${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:19\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 1${SEP}${LB}
-${SEP}'0s/ u/ _u/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:1\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'0s/ u/ _u/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:1:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a unsigned char *utf8_length = _utf8_length;
-${SEP}b4${SEP}%ya b${SEP}%;f> #include <sys/stat\\\\.h>
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL uc.c:19:m1\\${SEP}pr${INTR}${QF2}}${SEP}b4${SEP}%ya b${SEP}%;f> #include <sys/stat\\\\.h>
 #include <sys/ioctl\\\\.h>
-#include <sys/wait\\\\.h>${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:15\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+#include <sys/wait\\\\.h>${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:15\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}${LB}
 ${SEP}'0a #include <pthread.h>
-${SEP}b5${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:267\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:15:m0\\${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> extern unsigned char utf8_length\\\\[256\\\\];${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:267\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}m 0${SEP}${LB}
 ${SEP}'0c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
-${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}q" $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h'
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:267:m0\\${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}q" $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

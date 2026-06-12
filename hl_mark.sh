@@ -18,33 +18,36 @@ fi
 SEP="$(printf '\001')"
 # Command that handles readability line breaks
 LB="0?"
-# Disable errors
-[ "$DBG" = "1" ] && DBG="0\?" || DBG=
-# Ignore errors
-[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Phase 1 (search/mark): errors disabled by default,
+# DBG1=1 enables error reporting, QF1=1 quits on failure
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0\?"
+[ "$QF1" = "1" ] && QF1="\\${SEP}vis 2\\${SEP}q!1" || QF1=
+# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+[ "$DBG2" = "1" ] && DBG2="0\?" || DBG2=
+[ "$QF2" = "1" ] && QF2= || QF2="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c vi.c
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\|\\\\(\\\\[\\\\.\\\\\$\\\\]\\\\|\\\\[0-9 \\\\\\\\t\\\\]\\\\*\\\\)\\\\?\\\\)\\\\)\\\\(\\\\?:\\\\(\\\\[-\\\\*-\\\\+/%\\\\]\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\[0-9\\\\]\\\\+\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\[ \\\\\\\\t\\\\]\\\\*\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\)\\\\*\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\)\\\\\\\\${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+1m 0${SEP}${LB}
-${SEP}'0s/wp/wmp/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> int xhlw;			/\\\\* highlight current word \\\\*/
+${SEP}'0s/wp/wmp/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:295:m0\\${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya b${SEP}%;f> int xhlw;			/\\\\* highlight current word \\\\*/
 int xhlp;			/\\\\* highlight \\\\{}\\\\[\\\\]\\\\(\\\\) pair \\\\*/
-int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:9\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ EO\\\\(pac\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1496\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+int xhlr;			/\\\\* highlight text in reverse direction \\\\*/${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:9\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ EO\\\\(pac\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1496\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+2m 1${SEP}%;f+ 	EO\\\\(ts\\\\),
 	EO\\\\(td\\\\),
-	EO\\\\(order\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1594\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(order\\\\),${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1594\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 2${SEP}${LB}
 ${SEP}'0a int xhlm;			/* highlight marks */
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:9:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a EO(hlm)
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1496:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2a 	EO(hlm),
-${SEP}b2${SEP}%ya b${SEP}%;f> 				word = cs;
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1594:m2\\${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya b${SEP}%;f> 				word = cs;
 			}
-		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1757\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1757\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}${LB}
 ${SEP}'0a 		if (xhlm) {
 			int mrow, moff;
@@ -61,7 +64,7 @@ ${SEP}'0a 		if (xhlm) {
 				sbuf_mem(led_attsb, &la, (int)sizeof(la))
 			}
 		}
-${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'vi.c'
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1757:m0\\${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===

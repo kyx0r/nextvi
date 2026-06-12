@@ -18,37 +18,40 @@ fi
 SEP="$(printf '\001')"
 # Command that handles readability line breaks
 LB="0?"
-# Disable errors
-[ "$DBG" = "1" ] && DBG="0\?" || DBG=
-# Ignore errors
-[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Phase 1 (search/mark): errors disabled by default,
+# DBG1=1 enables error reporting, QF1=1 quits on failure
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0\?"
+[ "$QF1" = "1" ] && QF1="\\${SEP}vis 2\\${SEP}q!1" || QF1=
+# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+[ "$DBG2" = "1" ] && DBG2="0\?" || DBG2=
+[ "$QF2" = "1" ] && QF2= || QF2="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c jsmn.h lsp.c term.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> \\\\(\\\\?:\\\\(\\\\[,;\\\\]#\\\\?\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\(\\\\(\\\\?:\\\\\\\\\\\\\\\\\\\\|\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)\\\\\\\\\\\\\\\\\\\\|\\\\|\\\\\$\\\\)\\\\[ \\\\\\\\t\\\\]\\\\*\\\\)\\\\*\\\\(\\\\?:\\\\(\\\\?:<\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)<\\\\|\\\\\$\\\\)\\\\|>\\\\.\\\\*\\\\?\\\\(\\\\?:\\\\(\\\\?<\\\\^\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\)>\\\\|\\\\\$\\\\)\\\\)\\\\|\\\\\\\\${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+3m 0${SEP}${LB}
-${SEP}'0s/\\\\\\\\\$/lsp|\\\\\\\\/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
+${SEP}'0s/\\\\\\\\\$/lsp|\\\\\\\\/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL conf.c:296:m0\\${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya b${SEP}%;f> 	if \\\\(cd == 3 \\\\|\\\\| \\\\(!rd && fd >= 0\\\\)\\\\) \\\\{
 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
-		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:377\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		syn_setft\\\\(xb_ft\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:377\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}%;f+ 			ec_setpath\\\\(NULL, NULL, path\\\\);
 		lbuf_saved\\\\(xb, 0\\\\);
-		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:726\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		ex_buf->mtime = mtime\\\\(path\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:726\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 1${SEP}%;f+ 	return NULL;
 \\\\)
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1509\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1509\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 2${SEP}%;f+ 	EO\\\\(hlp\\\\),
 	EO\\\\(hlr\\\\),
-	EO\\\\(hl\\\\),${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1599\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	EO\\\\(hl\\\\),${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1599\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 3${SEP}${LB}
 ${SEP}'0a 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:377:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a 		if (*xb_path)
 			lsp_save(xb_path);
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:726:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
@@ -66,9 +69,9 @@ ${SEP}'2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1509:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3a 	{\"lsp\", ec_lsp},
-${SEP}b2${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1599:m3\\${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}${LB}
 ${SEP}i /*
  * MIT License
  *
@@ -540,7 +543,7 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 #endif
 
 #endif /* JSMN_H */
-${SEP}b3${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL jsmn.h:-1:m\\${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}${LB}
 ${SEP}i /* lsp.c - Language Server Protocol client for nextvi */
 #include \"jsmn.h\"
 #include <errno.h>
@@ -1454,17 +1457,17 @@ const char *lsp_diag_for_line(const char *path, int line)
 	}
 	return NULL;
 }
-${SEP}b4${SEP}%ya b${SEP}%;f> 
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lsp.c:-1:m\\${SEP}pr${INTR}${QF2}}${SEP}b4${SEP}%ya b${SEP}%;f> 
 int term_read\\\\(int winch\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:142\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:142\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ 			goto ret;
 		}
-		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:155\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		cw = 0;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:155\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 1${SEP}%;f+ 				goto re;
-			}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:167\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^		}\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+			}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:167\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+2m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^		}\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}m 3${SEP}${LB}
-${SEP}'0d${SEP}${LB}
+${SEP}'0d${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:142:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1,#+9c 		re:;
 		{
 			struct pollfd pfds[1 + LSP_NFDS_MAX];
@@ -1495,7 +1498,7 @@ ${SEP}'1,#+9c 		re:;
 					*ibuf = winch;
 					goto ret;
 				}
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:155:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 				if (term_winch && winch && xquit >= 0) {
@@ -1508,33 +1511,33 @@ ${SEP}'2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 				goto err;
 			}
 			goto ret;
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:167:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3a 		err:
 		*ibuf = 0;
-${SEP}b5${SEP}%ya b${SEP}%;f> #include \"ren\\\\.c\"
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169:m3\\${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya b${SEP}%;f> #include \"ren\\\\.c\"
 #include \"term\\\\.c\"
-#include \"uc\\\\.c\"${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:24\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+#include \"uc\\\\.c\"${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:24\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}%;f+ }
 #define vi_drawmsg_mpt\\\\(msg\\\\) \\\\{ vi_drawmsg\\\\(msg\\\\); if \\\\(!xmpt\\\\) xmpt = 1; }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:104\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:104\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 1${SEP}%;f+ 					ex_command\\\\(cmd\\\\)
 					restore\\\\(xled\\\\)
-					vi_mod \\\\|= 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^					vc_motion\\\\(k\\\\);\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1641\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+					vi_mod \\\\|= 1;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+3m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^					vc_motion\\\\(k\\\\);\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1641\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}m 3${SEP}%;f+ 			syn_blockhl = -1;
 			vi_drawrow\\\\(xrow\\\\);
-		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1799\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1799\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 4${SEP}%;f+ 	setup_signals\\\\(\\\\);
 	dir_init\\\\(\\\\);
-	syn_init\\\\(\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1838\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	syn_init\\\\(\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1838\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 5${SEP}${LB}
 ${SEP}'0a #include \"lsp.c\"
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:24:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 
-${SEP}${LB}
-${SEP}'2s/\\\\)/) {/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:104:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2s/\\\\)/) {/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1640:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3a 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
@@ -1543,17 +1546,17 @@ ${SEP}'3a 				} else if (k == 'K') {
 						lsp_definition(xb_path, xrow, xoff);
 					vi_mod |= 1;
 				}
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1641:m3\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4a 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
 				vi_drawmsg((char *)_ldiag);
 		}
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1799:m4\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5a 	lsp_init();
-${SEP}b6${SEP}%ya b${SEP}%;f> /\\\\* filesystem \\\\*/
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1838:m5\\${SEP}pr${INTR}${QF2}}${SEP}b6${SEP}%ya b${SEP}%;f> /\\\\* filesystem \\\\*/
 extern rset \\\\*fsincl;
-void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:545\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+void dir_calc\\\\(char \\\\*path\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:545\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}${LB}
 ${SEP}'0a 
 /* lsp.c */
@@ -1570,7 +1573,7 @@ void lsp_definition(const char *path, int row, int off);
 const char *lsp_diag_for_line(const char *path, int line);
 void lsp_list(void);
 void lsp_show_msg(char *msg);
-${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}b6${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'jsmn.h' 'lsp.c' 'term.c' 'vi.c' 'vi.h'
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:545:m0\\${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}b5${SEP}w${SEP}b6${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'jsmn.h' 'lsp.c' 'term.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

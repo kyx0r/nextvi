@@ -18,10 +18,13 @@ fi
 SEP="$(printf '\001')"
 # Command that handles readability line breaks
 LB="0?"
-# Disable errors
-[ "$DBG" = "1" ] && DBG="0\?" || DBG=
-# Ignore errors
-[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Phase 1 (search/mark): errors disabled by default,
+# DBG1=1 enables error reporting, QF1=1 quits on failure
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0\?"
+[ "$QF1" = "1" ] && QF1="\\${SEP}vis 2\\${SEP}q!1" || QF1=
+# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+[ "$DBG2" = "1" ] && DBG2="0\?" || DBG2=
+[ "$QF2" = "1" ] && QF2= || QF2="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
@@ -29,119 +32,119 @@ LB="0?"
 # Patch: ex.c lbuf.c regex.c vi.c vi.h
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> int xesc = '\\\\\\\\\\\\\\\\';		/\\\\* ex command arg escape character \\\\*/
 int xexec_dep;			/\\\\* ex_exec recursion depth \\\\*/
-sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:38\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+sbuf \\\\*xacreg;			/\\\\* autocomplete db filter regex \\\\*/${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:38\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ \\\\{
 	sbuf \\\\*reg = xregs\\\\['/'\\\\];
-	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	if \\\\(kwd && \\\\*kwd && \\\\(\\\\(!reg \\\\|\\\\| !xkwdrs \\\\|\\\\| strcmp\\\\(kwd, reg->s\\\\)\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:179\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 1${SEP}%;f+ 
 static void \\\\*ec_fuzz\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:389\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:389\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 2${SEP}%;f+ 	while \\\\(1\\\\) \\\\{
 		sbuf_null\\\\(fuzz\\\\)
-		c = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3m 3${SEP};0${SEP}0reg${SEP}.,\$f+ ^		if \\\\(rs\\\\) \\\\{\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:420\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+		c = 0;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:418\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+3m 3${SEP};0${SEP}0reg${SEP}.,\$f+ ^		if \\\\(rs\\\\) \\\\{\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:420\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+1m 4${SEP}%;f+ 			dwid1 = max == INT_MAX \\\\? dwid2 : MIN\\\\(dwid1, dwid2\\\\);
 			for \\\\(pos = beg; c < max && pos < end; pos\\\\+\\\\+\\\\) \\\\{
-				path = xb->ln\\\\[pos\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				path = xb->ln\\\\[pos\\\\];${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:427\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 5${SEP}%;f+ 				break;
 			\\\\}
 		\\\\}
-		rset_free\\\\(rs\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		rset_free\\\\(rs\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:465\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 6${SEP}%;f+ 	free\\\\(sb->s\\\\);
 	path = lbuf_get\\\\(xb, lnum\\\\);
-	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:492\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	if \\\\(\\\\*cmd == 'f' && path\\\\) \\\\{${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:492\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 7${SEP}%;f+ 		path\\\\[lbuf_s\\\\(path\\\\)->len\\\\] = '\\\\\\\\n';
 	} else if \\\\(\\\\*cmd != 'f'\\\\)
-		temp_switch\\\\(1, 1\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:501\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		temp_switch\\\\(1, 1\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:501\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 8${SEP}%;f+ 	if \\\\(!xkwdrs\\\\)
 		return xserr;
-	if \\\\(\\\\(xdefreg \\\\|\\\\| o1 >= 0\\\\) && dir > 0\\\\) \\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:516\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	if \\\\(\\\\(xdefreg \\\\|\\\\| o1 >= 0\\\\) && dir > 0\\\\) \\\\{${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:516\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 9${SEP}%;f+ 			sbuf \\\\*sb = xregs\\\\[xdefreg\\\\];
 			if \\\\(!sb\\\\)
-				return \"uninitialized register\";${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:525\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+				return \"uninitialized register\";${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:525\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 10${SEP}%;f+ 		sbuf sb;
 		void \\\\*ret = NULL;
-		lbuf_region\\\\(xb, &sb, beg, o1, r2, o2\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:535\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		lbuf_region\\\\(xb, &sb, beg, o1, r2, o2\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:535\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 11${SEP}%;f+ 	int beg, end, grp;
 	char \\\\*pat, \\\\*rep = NULL, \\\\*_rep;
-	char \\\\*s = arg;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1013\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	char \\\\*s = arg;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1013\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 12${SEP}%;f+ 		return xrerr;
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1020\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	if \\\\(pat && \\\\(\\\\*pat \\\\|\\\\| !rs\\\\)\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1020\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 13${SEP}%;f+ 		rep = re_read\\\\(&s, 0\\\\);
 	}
-	free\\\\(pat\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1030\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	free\\\\(pat\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1030\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 14${SEP}%;f+ 	for \\\\(i = beg; i < end; i\\\\+\\\\+\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		sbuf \\\\*r = NULL;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1034\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		sbuf \\\\*r = NULL;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1034\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 15${SEP}%;f+ 					}
 					_rep\\\\+\\\\+;
-					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1049\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+					grp = abs\\\\(\\\\(\\\\*_rep - '0'\\\\) \\\\* 2\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1049\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 16${SEP}%;f+ 		lbuf_emark\\\\(xb, lo, last, 0\\\\);
 	}
-	if \\\\(rs != xkwdrs\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1080\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	if \\\\(rs != xkwdrs\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1080\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 17${SEP}%;f+ \\\\{
 	int i, beg, end, not, matched = 0;
-	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1149\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	char \\\\*pat, \\\\*s = arg;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1149\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 18${SEP}%;f+ 	not = !!strchr\\\\(cmd, '!'\\\\);
 	pat = re_read\\\\(&s, 0\\\\);
-	if \\\\(pat && \\\\*pat\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1157\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+3m 19${SEP};0${SEP}0reg${SEP}.,\$f+ ^	else\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1159\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+	if \\\\(pat && \\\\*pat\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1157\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+3m 19${SEP};0${SEP}0reg${SEP}.,\$f+ ^	else\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1159\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+1m 20${SEP}%;f+ 	for \\\\(i = beg; i < lbuf_len\\\\(xb\\\\);\\\\) \\\\{
 		char \\\\*ln = lbuf_get\\\\(xb, i\\\\);
-		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1169\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		lbuf_s\\\\(ln\\\\)->grec &= ~xgdep;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1169\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 21${SEP}%;f+ 		while \\\\(i < lbuf_len\\\\(xb\\\\) && !\\\\(lbuf_i\\\\(xb, i\\\\)->grec & xgdep\\\\)\\\\)
 			i\\\\+\\\\+;
-	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1179\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 22${SEP}%;f+ 
 static void \\\\*ec_setincl\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1320\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1320\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 23${SEP}%;f+ 	if \\\\(!\\\\*arg\\\\)
-		fsincl = NULL;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1323\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		fsincl = NULL;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1323\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 24${SEP}${LB}
-${SEP}'0s/rset \\\\*x/rstr *x/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:38\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'0s/rset \\\\*x/rstr *x/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:38:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
-${SEP}${LB}
-${SEP}'2s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:389\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'3s/et_s/tr_/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:418\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'4s/regex->//${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:420\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'5s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:427\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'6s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:465\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'7s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:492\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'8s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:501\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'9s/nsubc/rs ? xkwdrs->rs->nsubc : 2/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:516\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'10s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:525\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'11s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:535\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'12s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1013\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'13s/et_s/tr_/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1020\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'14s/nsubc/rs ? rs->rs->nsubc : 2/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1030\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'15s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1034\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'16s/rs->nsubc/(rs->rs ? rs->rs->nsubc : 2)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1049\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'17s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1080\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'18s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1149\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'19s/et_s/tr_/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1157\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'20s/et_s/tr_/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1159\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'21s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1169\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'22s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1179\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'23s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1320\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'24s/et_s/tr_/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1323\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 	return n != 0;
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:179:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:389:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'3s/et_s/tr_/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:418:m3\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'4s/regex->//${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:420:m4\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'5s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:427:m5\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'6s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:465:m6\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'7s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:492:m7\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'8s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:501:m8\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'9s/nsubc/rs ? xkwdrs->rs->nsubc : 2/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:516:m9\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'10s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:525:m10\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'11s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:535:m11\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'12s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1013:m12\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'13s/et_s/tr_/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1020:m13\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'14s/nsubc/rs ? rs->rs->nsubc : 2/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1030:m14\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'15s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1034:m15\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'16s/rs->nsubc/(rs->rs ? rs->rs->nsubc : 2)/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1049:m16\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'17s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1080:m17\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'18s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1149:m18\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'19s/et_s/tr_/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1157:m19\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'20s/et_s/tr_/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1159:m20\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'21s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1169:m21\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'22s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1179:m22\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'23s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1320:m23\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'24s/et_s/tr_/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1323:m24\\${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya b${SEP}%;f> 	return n != 0;
 }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:493\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:493\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ 		int nskip, int \\\\*r, int \\\\*o\\\\)
 \\\\{
-	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:497\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	int r0 = \\\\*r, o0 = \\\\*o;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:497\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 1${SEP}%;f+ 		step = 0;
 		flg = REG_NEWLINE;
-		s = lb->ln\\\\[i\\\\];${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:510\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		s = lb->ln\\\\[i\\\\];${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:510\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 2${SEP}${LB}
-${SEP}'0s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:493\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'1s/nsubc/rs ? re->rs->nsubc : 2/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:497\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'2s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:510\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%ya b${SEP}%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
+${SEP}'0s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:493:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'1s/nsubc/rs ? re->rs->nsubc : 2/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:497:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:510:m2\\${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya b${SEP}%;f> 	\\\\*src = \\\\*s \\\\? s \\\\+ 1 : s;
 	sbufn_ret\\\\(sb, sb->s\\\\)
-}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:766\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:766\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}${LB}
 ${SEP}'0a 
 /* return zero if a simple pattern is given */
@@ -283,26 +286,26 @@ void rstr_free(rstr *rs)
 	free(rs->str);
 	free(rs);
 }
-${SEP}b3${SEP}%ya b${SEP}%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL regex.c:766:m0\\${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya b${SEP}%;f> 	ex_regput\\\\(tolower\\\\(c\\\\), s, isupper\\\\(c\\\\)\\\\);
 }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:380\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:380\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ 				memcpy\\\\(cpath, ptrs\\\\[i\\\\], pathlen \\\\+ len\\\\);
 				plen\\\\[i\\\\+\\\\+\\\\] = pathlen \\\\+ len;
-			} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:419\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			} else if \\\\(ret >= 0 && S_ISREG\\\\(statbuf\\\\.st_mode\\\\)\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:419\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 1${SEP}${LB}
-${SEP}'0s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:380\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'1s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:419\\${SEP}pr${INTR}${QF}}${SEP}b4${SEP}%ya b${SEP}%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
+${SEP}'0s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:380:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'1s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:419:m1\\${SEP}pr${INTR}${QF2}}${SEP}b4${SEP}%ya b${SEP}%;f> 	int nsubc;		/\\\\* total sub count \\\\*/
 	int n;			/\\\\* number of regular expressions in this set \\\\*/
-} rset;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:112\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ void rset_free${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:118\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
-${SEP}m 1${SEP};0${SEP}0reg${SEP}.,\$f+ int lbuf_search${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:181\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
-${SEP}m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^		int nskip, int \\\\*r, int \\\\*o\\\\);\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:182\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
-${SEP}m 3${SEP};0${SEP}0reg${SEP}.,\$f+ extern rset \\\\*xkwdrs;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:445\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
-${SEP}m 4${SEP};0${SEP}0reg${SEP}.,\$f+ int ex_krs${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:484\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+} rset;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:112\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+2m 0${SEP};0${SEP}0reg${SEP}.,\$f+ void rset_free${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:118\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
+${SEP}m 1${SEP};0${SEP}0reg${SEP}.,\$f+ int lbuf_search${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:181\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
+${SEP}m 2${SEP};0${SEP}0reg${SEP}.,\$f+ ^		int nskip, int \\\\*r, int \\\\*o\\\\);\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:182\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
+${SEP}m 3${SEP};0${SEP}0reg${SEP}.,\$f+ extern rset \\\\*xkwdrs;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:445\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
+${SEP}m 4${SEP};0${SEP}0reg${SEP}.,\$f+ int ex_krs${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:484\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}m 5${SEP}%;f+ extern int vi_hidch;
 extern int vi_lncol;
-/\\\\* filesystem \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:544\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+/\\\\* filesystem \\\\*/${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:544\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 6${SEP}${LB}
 ${SEP}'0a typedef struct {
 	rset *rs;		/* only for regex patterns */
@@ -312,18 +315,18 @@ ${SEP}'0a typedef struct {
 	int lbeg, lend;		/* match line beg/end */
 	int wbeg, wend;		/* match word beg/end */
 } rstr;
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:112:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a rstr *rstr_make(char *re, int flg);
 int rstr_find(rstr *rs, char *s, int *grps, int flg);
 int rstr_match(rstr *rs, char *s, int flg);
 void rstr_free(rstr *rs);
-${SEP}${LB}
-${SEP}'2s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:181\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:118:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:181:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3a 
-${SEP}${LB}
-${SEP}'4s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:445\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'5s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:484\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'6s/et/tr/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:544\\${SEP}pr${INTR}${QF}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'ex.c' 'lbuf.c' 'regex.c' 'vi.c' 'vi.h'
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:182:m3\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'4s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:445:m4\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'5s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:484:m5\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'6s/et/tr/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:544:m6\\${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}q" $VI -e 'ex.c' 'lbuf.c' 'regex.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

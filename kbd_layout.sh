@@ -18,17 +18,20 @@ fi
 SEP="$(printf '\001')"
 # Command that handles readability line breaks
 LB="0?"
-# Disable errors
-[ "$DBG" = "1" ] && DBG="0\?" || DBG=
-# Ignore errors
-[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Phase 1 (search/mark): errors disabled by default,
+# DBG1=1 enables error reporting, QF1=1 quits on failure
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0\?"
+[ "$QF1" = "1" ] && QF1="\\${SEP}vis 2\\${SEP}q!1" || QF1=
+# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+[ "$DBG2" = "1" ] && DBG2="0\?" || DBG2=
+[ "$QF2" = "1" ] && QF2= || QF2="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: kmap.h term.c
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> static char \\\\*kmap_en\\\\[256\\\\] = \\\\{
-	\\\\[0\\\\] = \"en\",${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL kmap.h:2\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	\\\\[0\\\\] = \"en\",${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL kmap.h:2\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+1m 0${SEP}${LB}
 ${SEP}'0a 	['y'] = \"h\",
 	['n'] = \"j\",
@@ -38,13 +41,13 @@ ${SEP}'0a 	['y'] = \"h\",
 	['j'] = \"n\",
 	['k'] = \"e\",
 	['l'] = \"o\",
-${SEP}b1${SEP}%ya b${SEP}%;f> 			err:
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL kmap.h:2:m0\\${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya b${SEP}%;f> 			err:
 			\\\\*ibuf = 0;
-		}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}${LB}
 ${SEP}'0a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
-${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'kmap.h' 'term.c'
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:169:m0\\${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'kmap.h' 'term.c'
 
 exit 0
 === PATCH2VI DELTA ===

@@ -18,10 +18,13 @@ fi
 SEP="$(printf '\001')"
 # Command that handles readability line breaks
 LB="0?"
-# Disable errors
-[ "$DBG" = "1" ] && DBG="0\?" || DBG=
-# Ignore errors
-[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Phase 1 (search/mark): errors disabled by default,
+# DBG1=1 enables error reporting, QF1=1 quits on failure
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0\?"
+[ "$QF1" = "1" ] && QF1="\\${SEP}vis 2\\${SEP}q!1" || QF1=
+# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+[ "$DBG2" = "1" ] && DBG2="0\?" || DBG2=
+[ "$QF2" = "1" ] && QF2= || QF2="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
@@ -30,33 +33,33 @@ LB="0?"
 EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}%;f> 	return key;
 }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:334\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:334\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ fd = open\\\\(xb_path, O_RDONLY\\\\); \\\\\\\\
-if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:337\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+if \\\\(fd >= 0\\\\) \\\\{ \\\\\\\\${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:337\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 1${SEP}%;f+ 		return 1;
 	}
-	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:353\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	bufs_switch\\\\(bufs_open\\\\(path, len\\\\)\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:353\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 2${SEP}%;f+ 		bufs_switch\\\\(bufs_open\\\\(arg\\\\+cd, len\\\\)\\\\);
 		cd = 3; /\\\\* XXX: quick hack to indicate new lbuf \\\\*/
-	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 3${SEP}${LB}
-${SEP}'0s/k\\\\)/k, init)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:334\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}'0s/k\\\\)/k, init)/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:334:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\\\
-${SEP}${LB}
-${SEP}'2s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:353\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'3s/=\\\\)/=, cd == 3)/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374\\${SEP}pr${INTR}${QF}}${SEP}b1${SEP}%ya b${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:337:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2s/\\\\(\\\\)/(, 1)/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:353:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'3s/=\\\\)/=, cd == 3)/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:374:m3\\${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya b${SEP}%;f> 		lo->ins = \\\\(char\\\\*\\\\*\\\\)sb->s;
 }
 
-${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:224\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:224\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ 			}
 			sz = n \\\\* 2;
 			s = erealloc\\\\(s, sz--\\\\);
-			step = 1;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:239\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			step = 1;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:239\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+1m 1${SEP}%;f+ 		}
-	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:245\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:245\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}m 2${SEP}%;f+ 	}
 	s\\\\[n\\\\] = '\\\\\\\\0';
-	lbuf_edit\\\\(lb, s, beg, end, 0, 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:247\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	lbuf_edit\\\\(lb, s, beg, end, 0, 0\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:247\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+1m 3${SEP}${LB}
 ${SEP}'0,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 {
@@ -80,13 +83,13 @@ ${SEP}'0,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 			} else if (n == sz) {
 				sz++;
 				step = 0;
-${SEP}${LB}
-${SEP}'1,#+5d${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:224:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'1,#+5d${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:239:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2a 		s[n] = '\\\\0';
 		lbuf_edit(lb, s, beg, end, 0, 0);
 		free(s);
 		return nr != 0;
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:245:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3,#+2c 	long nr, l, nins = 0, nl = 0;
 	struct linfo *n, *cn = NULL;
 	const int rchunk = 4096;
@@ -137,13 +140,13 @@ ${SEP}'3,#+2c 	long nr, l, nins = 0, nl = 0;
 	for (int i = 0; i < nins; i++)
 		lb->ln[i] = *((char**)sb->s + i);
 	free(sb->s);
-${SEP}b2${SEP}%ya b${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL lbuf.c:247:m3\\${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya b${SEP}%;f> #define lbuf_i\\\\(lb, pos\\\\) \\\\(\\\\(struct linfo\\\\*\\\\)\\\\(lb->ln\\\\[pos\\\\] - sizeof\\\\(struct linfo\\\\)\\\\)\\\\)
 struct lbuf \\\\*lbuf_make\\\\(void\\\\);
-void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:160\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+void lbuf_free\\\\(struct lbuf \\\\*lb\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:160\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 0${SEP}${LB}
 ${SEP}'0c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
-${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'lbuf.c' 'vi.h'
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:160:m0\\${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'ex.c' 'lbuf.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===

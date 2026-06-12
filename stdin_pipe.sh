@@ -18,42 +18,45 @@ fi
 SEP="$(printf '\001')"
 # Command that handles readability line breaks
 LB="0?"
-# Disable errors
-[ "$DBG" = "1" ] && DBG="0\?" || DBG=
-# Ignore errors
-[ "$QF" = "1" ] && QF= || QF="\\${SEP}vis 2\\${SEP}q!1"
+# Phase 1 (search/mark): errors disabled by default,
+# DBG1=1 enables error reporting, QF1=1 quits on failure
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0\?"
+[ "$QF1" = "1" ] && QF1="\\${SEP}vis 2\\${SEP}q!1" || QF1=
+# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+[ "$DBG2" = "1" ] && DBG2="0\?" || DBG2=
+[ "$QF2" = "1" ] && QF2= || QF2="\\${SEP}vis 2\\${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
 [ "$INTR" = "1" ] && INTR="\\${SEP}|sc|\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! \\\\\\${SEP}|:vis 3\\${SEP}q1" || INTR=
 
 # Patch: ex.c term.c vi.c vi.h
-EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:360\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+EXINIT="|sc! \\\\${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> static void \\\\*ec_edit\\\\(char \\\\*loc, char \\\\*cmd, char \\\\*arg\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:360\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+3m 0${SEP}%;f+ 		ex_bufpostfix\\\\(ex_buf, arg\\\\[0\\\\]\\\\);
 		syn_setft\\\\(xb_ft\\\\);
-	}${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:378\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	}${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:378\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 1${SEP}%;f+ 
 void ex_init\\\\(.*\\\\)
-\\\\{${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1765\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+\\\\{${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1765\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 2${SEP}%;f+ 	ec_setbufsmax\\\\(NULL, NULL, \"\"\\\\);
-	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1767\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	char \\\\*s = files\\\\[0\\\\] \\\\? files\\\\[0\\\\] : \"\";${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1767\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+1m 3${SEP}%;f+ 	do \\\\{
-		xmpt = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1770\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		xmpt = 0;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1770\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 4${SEP}%;f+ 		s = \\\\*\\\\(\\\\+\\\\+files\\\\);
-	} while \\\\(--n > 0\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1772\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}+1m 5${SEP};0${SEP}0reg${SEP}.,\$f+ ^	xvis &= ~4;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1773\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+	} while \\\\(--n > 0\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1772\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}+1m 5${SEP};0${SEP}0reg${SEP}.,\$f+ ^	xvis &= ~4;\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1773\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}m 6${SEP}${LB}
 ${SEP}'0c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:360:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
-${SEP}${LB}
-${SEP}'2s/n,/n + !!stdin_fd,/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1765\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:378:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2s/n,/n + !!stdin_fd,/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1765:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3a 	int i = n;
-${SEP}${LB}
-${SEP}'4s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1770\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1767:m3\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'4s/\\\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1770:m4\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5a 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
@@ -73,63 +76,63 @@ ${SEP}'5a 	if (stdin_fd) {
 		}
 		xmpt = MIN(xmpt, 1);
 	}
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1772:m5\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'6a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
-${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:19\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
-${SEP}+1m 0${SEP};0${SEP}0reg${SEP}.,\$f+ ^	newtermios = termios;\$${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:21\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL ex.c:1773:m6\\${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> 	sbuf_make\\\\(term_sbuf, 2048\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:19\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
+${SEP}+1m 0${SEP};0${SEP}0reg${SEP}.,\$f+ ^	newtermios = termios;\$${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:21\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}+1m 1${SEP}%;f+ 	}
 	xcols = xcols \\\\? xcols : 80;
-	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:33\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	xrows = xrows \\\\? xrows : 25;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:33\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 2${SEP}%;f+ 		return;
 	term_commit\\\\(\\\\);
-	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:42\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	sbuf_free\\\\(term_sbuf\\\\)${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:42\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 3${SEP}%;f+ 			goto ret;
 		}
-		cw = 0;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:154\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		cw = 0;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:154\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 4${SEP}%;f+ 		re:
 		/\\\\* read a single input character \\\\*/
-		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:158\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+		if \\\\(xquit < 0 \\\\|\\\\| poll\\\\(&ufd, 1, -1\\\\) <= 0 \\\\|\\\\|${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:158\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 5${SEP}%;f+ 	fds\\\\[0\\\\]\\\\.events = POLLIN;
 	fds\\\\[1\\\\]\\\\.fd = ifd;
-	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:299\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	fds\\\\[1\\\\]\\\\.events = POLLOUT;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:299\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 6${SEP}%;f+ 		close\\\\(ifd\\\\);
 	waitpid\\\\(pid, status, 0\\\\);
-	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:342\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+	signal\\\\(SIGTTOU, SIG_IGN\\\\);${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:342\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 7${SEP}${LB}
 ${SEP}8a int stdin_fd;
 static int isig;
-${SEP}${LB}
-${SEP}'0s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:19\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:8:m\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'0s/0/stdin_fd/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:19:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1,#+2c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
 	else
 		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
 	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:21:m1\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2a 	isig = 1;
-${SEP}${LB}
-${SEP}'3s/\\\\(0/(stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:42\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:33:m2\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'3s/\\\\(0/(stdin_fd/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:42:m3\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4a 		ufd.fd = stdin_fd;
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:154:m4\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
-${SEP}${LB}
-${SEP}'6s/0/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:299\\${SEP}pr${INTR}${QF}}${SEP}${LB}
-${SEP}'7s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:342\\${SEP}pr${INTR}${QF}}${SEP}b2${SEP}%ya b${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
-	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1830\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:158:m5\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'6s/0/stdin_fd/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:299:m6\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'7s/STDIN_FILENO/stdin_fd/${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL term.c:342:m7\\${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya b${SEP}%;f> 	memset\\\\(&sa, 0, sizeof\\\\(sa\\\\)\\\\);
+	sa\\\\.sa_handler = sighandler;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1830\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+2m 0${SEP}%;f+ 		if \\\\(argv\\\\[i\\\\]\\\\[1\\\\] == '-' && !argv\\\\[i\\\\]\\\\[2\\\\]\\\\) \\\\{
 			i\\\\+\\\\+;
-			break;${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1846\\${SEP}pr${INTR}${QF}}${SEP}${LB}
+			break;${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1846\\${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}+3m 1${SEP}${LB}
 ${SEP}'0a 	sigaction(SIGINT, &sa, NULL);
-${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1830:m0\\${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
-${SEP}b3${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:539\\${SEP}pr${INTR}${QF}}${SEP}98reg${SEP}${LB}
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.c:1846:m1\\${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya b${SEP};0${SEP}0reg${SEP}.,\$f> /\\\\* vi\\\\.c: main \\\\*/${SEP}??!${DBG1:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:539\\${SEP}pr${INTR}${QF1}}${SEP}98reg${SEP}${LB}
 ${SEP}m 0${SEP}${LB}
 ${SEP}'0a extern int stdin_fd;
-${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'ex.c' 'term.c' 'vi.c' 'vi.h'
+${SEP}??!${DBG2:-ya!p\\${SEP}prp\\${SEP}p FAIL vi.h:539:m0\\${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'ex.c' 'term.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
