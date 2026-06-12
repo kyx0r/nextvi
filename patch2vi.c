@@ -756,11 +756,11 @@ static void emit_err_check(FILE *out, int line)
 static void emit_err_check_mark(FILE *out, int line, int mark_id)
 {
 	char loc[MAX_LINE];
-	char mark[16] = "m?";
+	char mark[16] = "m";
 	if (mark_id >= 0)
 		snprintf(mark, sizeof(mark), "m%d", mark_id);
 	snprintf(loc, sizeof(loc), "%s:%d:%s",
-		 cur_file_path ? cur_file_path : "?", line, mark);
+		 cur_file_path ? cur_file_path : "", line, mark);
 	emit_err_check_loc(out, loc, 2);
 }
 
