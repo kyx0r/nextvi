@@ -725,10 +725,11 @@ typedef struct {
 
 /* Emit ??! error check after a command that may fail.
  * loc: location text in the FAIL message ("path:line" for phase-1
- * searches, "m<id>" for phase-2 edits at a mark). */
-static void emit_err_check_loc(FILE *out, const char *loc)
+ * searches, "path:line:m<id>" for phase-2 edits at a mark).
+ * phase selects the DBG<n>/QF<n> variable set; INTR is shared. */
+static void emit_err_check_loc(FILE *out, const char *loc, int phase)
 {
-	fputs("?" "?!${DBG:-", out);
+	fprintf(out, "?" "?!${DBG%d:-", phase);
 	fprintf(out, "ya!p");
 	EMIT_ESCSEP(out);
 	fprintf(out, "prp");
@@ -737,7 +738,7 @@ static void emit_err_check_loc(FILE *out, const char *loc)
 	EMIT_ESCSEP(out);
 	fprintf(out, "pr");
 	fputs("${INTR}", out);
-	fputs("${QF}}", out);
+	fprintf(out, "${QF%d}}", phase);
 	EMIT_SEP(out);
 }
 
@@ -747,20 +748,20 @@ static void emit_err_check(FILE *out, int line)
 	char loc[MAX_LINE];
 	snprintf(loc, sizeof(loc), "%s:%d",
 		 cur_file_path ? cur_file_path : "?", line);
-	emit_err_check_loc(out, loc);
+	emit_err_check_loc(out, loc, 1);
 }
 
-/* Phase-2 error check: FAIL <path>:m<id> (mark id of the edited group).
- * mark_id < 0 means no mark (new-file insert, custom abs command). */
-static void emit_err_check_mark(FILE *out, int mark_id)
+/* Phase-2 error check: FAIL <path>:<line>:m<id> (mark id of the edited
+ * group). mark_id < 0 means no mark (new-file insert, custom abs command). */
+static void emit_err_check_mark(FILE *out, int line, int mark_id)
 {
 	char loc[MAX_LINE];
 	char mark[16] = "m?";
 	if (mark_id >= 0)
 		snprintf(mark, sizeof(mark), "m%d", mark_id);
-	snprintf(loc, sizeof(loc), "%s:%s",
-		 cur_file_path ? cur_file_path : "?", mark);
-	emit_err_check_loc(out, loc);
+	snprintf(loc, sizeof(loc), "%s:%d:%s",
+		 cur_file_path ? cur_file_path : "?", line, mark);
+	emit_err_check_loc(out, loc, 2);
 }
 
 /* Double backslashes for ex_arg level escaping.
@@ -960,20 +961,20 @@ static int emit_rel_pos(FILE *out, rel_ctx_t *rc, int mark_id, int first)
 }
 
 /* Phase 2: delete at a mark */
-static void emit_mark_delete(FILE *out, int mark_id, int count)
+static void emit_mark_delete(FILE *out, int line, int mark_id, int count)
 {
 	if (count == 1)
 		fprintf(out, "'%dd", mark_id);
 	else
 		fprintf(out, "'%d,#+%dd", mark_id, count - 1);
 	EMIT_SEP(out);
-	emit_err_check_mark(out, mark_id);
+	emit_err_check_mark(out, line, mark_id);
 }
 
 /* Phase 2: insert at a mark (a after the mark, i before it).
  * mark_id < 0 means a new file's empty buffer: no line to mark,
  * so the insert is emitted bare. */
-static void emit_mark_insert(FILE *out, int mark_id, int use_i,
+static void emit_mark_insert(FILE *out, int line, int mark_id, int use_i,
 			     char **texts, int ntexts)
 {
 	if (ntexts == 0)
@@ -984,15 +985,15 @@ static void emit_mark_insert(FILE *out, int mark_id, int use_i,
 		fprintf(out, "'%d%c ", mark_id, use_i ? 'i' : 'a');
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
-	emit_err_check_mark(out, mark_id);
+	emit_err_check_mark(out, line, mark_id);
 }
 
 /* Phase 2: change lines at a mark */
-static void emit_mark_change(FILE *out, int mark_id,
+static void emit_mark_change(FILE *out, int line, int mark_id,
 			     int del_count, char **texts, int ntexts)
 {
 	if (ntexts == 0) {
-		emit_mark_delete(out, mark_id, del_count);
+		emit_mark_delete(out, line, mark_id, del_count);
 		return;
 	}
 	if (del_count == 1)
@@ -1001,7 +1002,7 @@ static void emit_mark_change(FILE *out, int mark_id,
 		fprintf(out, "'%d,#+%dc ", mark_id, del_count - 1);
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
-	emit_err_check_mark(out, mark_id);
+	emit_err_check_mark(out, line, mark_id);
 }
 
 /* Escape replacement text for substitute command.
@@ -1046,13 +1047,13 @@ static void emit_substitute_cmd(FILE *out, const char *old_text,
 
 /* Phase 2: substitute at a mark. The pattern can fail to match
  * within the line, so keep the error check. */
-static void emit_mark_substitute(FILE *out, int mark_id,
+static void emit_mark_substitute(FILE *out, int line, int mark_id,
 				 const char *old_text, const char *new_text)
 {
 	fprintf(out, "'%d", mark_id);
 	emit_substitute_cmd(out, old_text, new_text);
 	EMIT_SEP(out);
-	emit_err_check_mark(out, mark_id);
+	emit_err_check_mark(out, line, mark_id);
 }
 
 /* Phase 2: horizontal ;c / ;d edit tail, emitted after an address
@@ -2402,7 +2403,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			emit_custom_edit_lines(out, (rlines), (rnlines)); \
 			EMIT_SEP(out); \
 		} \
-		emit_err_check_mark(out, g->mark_id); \
+		emit_err_check_mark(out, tline, g->mark_id); \
 } while (0)
 
 	for (int gi = 0; gi < ngroups; gi++) {
@@ -2412,6 +2413,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			continue;
 		}
 		int strat = g->res_strat;
+		int tline = g->del_start ? g->del_start : g->add_after;
 		fputs("${LB}\n", out);
 		EMIT_SEP(out);
 
@@ -2420,7 +2422,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
-				emit_err_check_mark(out, g->mark_id);
+				emit_err_check_mark(out, tline, g->mark_id);
 			} else if (strat == STRAT_RELC) {
 				if (g->custom_relc_lines && g->custom_relc_nlines > 0) {
 					/* custom relc lines address the current
@@ -2434,17 +2436,17 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 					fprintf(out, "'%d", g->mark_id);
 					emit_horiz_tail(out, g);
 				}
-				emit_err_check_mark(out, g->mark_id);
+				emit_err_check_mark(out, tline, g->mark_id);
 			} else if (strat == STRAT_REL) {
 				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
 					EMIT_MARK_EDIT(g->custom_rel_lines,
 						       g->custom_rel_nlines);
 				} else if (g->ndel == 1 && g->nadd == 1 &&
 					   g->has_line_diff) {
-					emit_mark_substitute(out, g->mark_id,
+					emit_mark_substitute(out, tline, g->mark_id,
 							     g->ld_old_text, g->ld_new_text);
 				} else {
-					emit_mark_change(out, g->mark_id,
+					emit_mark_change(out, tline, g->mark_id,
 							 g->ndel, g->add_texts, g->nadd);
 				}
 			} else {
@@ -2452,9 +2454,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
 					fprintf(out, "'%d", g->mark_id);
 					emit_horiz_tail(out, g);
-					emit_err_check_mark(out, g->mark_id);
+					emit_err_check_mark(out, tline, g->mark_id);
 				} else {
-					emit_mark_change(out, g->mark_id,
+					emit_mark_change(out, tline, g->mark_id,
 							 g->ndel, g->add_texts, g->nadd);
 				}
 			}
@@ -2463,26 +2465,26 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
-				emit_err_check_mark(out, g->mark_id);
+				emit_err_check_mark(out, tline, g->mark_id);
 			} else if (strat == STRAT_REL && g->custom_rel_lines
 				   && g->custom_rel_nlines > 0) {
 				EMIT_MARK_EDIT(g->custom_rel_lines,
 					       g->custom_rel_nlines);
 			} else {
-				emit_mark_delete(out, g->mark_id, g->ndel);
+				emit_mark_delete(out, tline, g->mark_id, g->ndel);
 			}
 		} else if (g->nadd) {
 			if (strat == STRAT_ABS && g->custom_abs_lines) {
 				emit_custom_edit_lines(out, g->custom_abs_lines,
 						       g->custom_abs_nlines);
 				EMIT_SEP(out);
-				emit_err_check_mark(out, g->mark_id);
+				emit_err_check_mark(out, tline, g->mark_id);
 			} else if (strat == STRAT_REL && g->custom_rel_lines
 				   && g->custom_rel_nlines > 0) {
 				EMIT_MARK_EDIT(g->custom_rel_lines,
 					       g->custom_rel_nlines);
 			} else {
-				emit_mark_insert(out, g->mark_id, g->insert_i,
+				emit_mark_insert(out, tline, g->mark_id, g->insert_i,
 						 g->add_texts, g->nadd);
 			}
 		}
@@ -2908,10 +2910,13 @@ process_line:
 	if (relative_mode || interactive_mode)
 		fputs("# Command that handles readability line breaks\n"
 		      "LB=\"0?\"\n"
-		      "# Disable errors\n"
-		      "[ \"$DBG\" = \"1\" ] && DBG=\"0\\?\" || DBG=\n"
-		      "# Ignore errors\n"
-		      "[ \"$QF\" = \"1\" ] && QF= || QF=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
+		      "# Phase 1 (search/mark): errors disabled by default,\n"
+		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
+		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0\\?\"\n"
+		      "[ \"$QF1\" = \"1\" ] && QF1=\"\\\\${SEP}vis 2\\\\${SEP}q!1\" || QF1=\n"
+		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
+		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0\\?\" || DBG2=\n"
+		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n"
 		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:"
