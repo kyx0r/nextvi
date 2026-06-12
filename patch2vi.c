@@ -1023,7 +1023,8 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 /* Phase 1 fallback chain: try each pattern in order, first match wins.
  * All attempts are nested into a single ? conditional, chained with
  * escaped separators; per pattern n (capture tag n):
- *   %;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\\\:1q\:
+ *   %;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\\\:${OK1}p OK <loc>:a<n>\\\:1q\:
+ * (the ${OK1} success report only on fallback blocks, n >= 1)
  * The search's error status is captured into tag <n>; on success the
  * <n>?? branch marks the target and 1q short-circuits out of the
  * block, skipping the remaining attempts and the check. After the
@@ -1045,6 +1046,14 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 		if (ps[n].offset)
 			fprintf(out, "%+d", ps[n].offset);
 		fprintf(out, "m %d", mark_id);
+		/* fallback (non-primary) match: with DBG1=1, OK1 expands
+		 * empty and reports which anchor resolved the group */
+		if (n) {
+			EMIT_ESC3SEP(out);
+			fprintf(out, "${OK1}p OK %s:%d:a%d",
+				cur_file_path ? cur_file_path : "?",
+				target_line, n);
+		}
 		if (n < nps - 1) {
 			/* 1q sits inside the <n>?? then-arg, one level
 			 * deeper, so its separator needs three escapes */
@@ -2771,7 +2780,7 @@ int main(int argc, char **argv)
 		byte_used[(unsigned char)*p] = 1;
 
 	if (relative_mode || interactive_mode)
-		mark_bytes_used("FAIL");
+		mark_bytes_used("FAIL OK");
 
 	FILE *in = stdin;
 	if (input_file) {
@@ -3064,6 +3073,8 @@ process_line:
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0\\?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"\\\\${SEP}vis 2\\\\${SEP}q!1\" || QF1=\n"
+		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
+		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0\\\\\\\\\\\\?\"\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
 		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0\\?\" || DBG2=\n"
 		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
