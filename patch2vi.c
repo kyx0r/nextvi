@@ -750,13 +750,16 @@ static void emit_err_check(FILE *out, int line)
 	emit_err_check_loc(out, loc);
 }
 
-/* Phase-2 error check: FAIL m<id> (mark id of the edited group).
+/* Phase-2 error check: FAIL <path>:m<id> (mark id of the edited group).
  * mark_id < 0 means no mark (new-file insert, custom abs command). */
 static void emit_err_check_mark(FILE *out, int mark_id)
 {
-	char loc[16] = "m?";
+	char loc[MAX_LINE];
+	char mark[16] = "m?";
 	if (mark_id >= 0)
-		snprintf(loc, sizeof(loc), "m%d", mark_id);
+		snprintf(mark, sizeof(mark), "m%d", mark_id);
+	snprintf(loc, sizeof(loc), "%s:%s",
+		 cur_file_path ? cur_file_path : "?", mark);
 	emit_err_check_loc(out, loc);
 }
 
