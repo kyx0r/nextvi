@@ -571,6 +571,9 @@ static void emit_escaped_text(FILE *out, const char *s);
 #define EMIT_SEP(out) fputs("${SEP}", out)
 /* escaped separator inside ??! block: \<sep> for ex_arg */
 #define EMIT_ESCSEP(out) fputs("\\\\${SEP}", out)
+/* triply-escaped separator inside a ?? then-arg nested in a ? cond:
+ * \\\<sep> */
+#define EMIT_ESC3SEP(out) fputs("\\\\\\\\\\\\${SEP}", out)
 
 /*
  * Ex commands emitted by patch2vi and their default range (no address given):
@@ -1013,7 +1016,7 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 /* Phase 1 fallback chain: try each pattern in order, first match wins.
  * All attempts are nested into a single ? conditional, chained with
  * escaped separators; per pattern n (capture tag n):
- *   %;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\:1q\:
+ *   %;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\\\:1q\:
  * The search's error status is captured into tag <n>; on success the
  * <n>?? branch marks the target and 1q short-circuits out of the
  * block, skipping the remaining attempts and the checks. After the
@@ -1035,7 +1038,9 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 			fprintf(out, "%+d", ps[n].offset);
 		fprintf(out, "m %d", mark_id);
 		if (n < nps - 1) {
-			EMIT_ESCSEP(out);
+			/* 1q sits inside the <n>?? then-arg, one level
+			 * deeper, so its separator needs three escapes */
+			EMIT_ESC3SEP(out);
 			fputs("1q", out);
 		}
 	}
