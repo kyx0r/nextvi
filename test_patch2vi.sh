@@ -62,7 +62,16 @@ cc -O2 -o patch2vi patch2vi.c
 
 echo "=== Script content tests ==="
 
-check_script "single anchor uses .,\$f>" \
+# A one-line file leaves a single deduped search pattern; anything with
+# context emits a multi-pattern fallback chain (%;f>) instead.
+check_script "single pattern uses .,\$f>" \
+	"old
+" \
+	"new
+" \
+	'.,\\$f>' '>[^$]*>'
+
+check_script "anchored change uses fallback chain" \
 	"ctx1
 old
 end
@@ -71,7 +80,7 @@ end
 new
 end
 " \
-	'.,\\$f>' '>[^$]*>'
+	'?%;f>' '\.,\\$f>'
 
 check_script "multiline anchor uses %;f>" \
 	"ctx1

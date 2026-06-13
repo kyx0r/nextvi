@@ -3060,6 +3060,17 @@ process_line:
 		if (parse_hunk_header(line, &os, &oc)) {
 			in_hunk = 1;
 			old_line = os;
+			/* GNU diff -N marks created files with the nonexistent
+			 * path and an epoch timestamp instead of /dev/null, so
+			 * also detect them by their sole "@@ -0,0" hunk: the
+			 * original had no lines. A later hunk addressing real
+			 * lines means the file existed after all. */
+			if (nfiles) {
+				if (os == 0 && oc == 0 && files[nfiles - 1].nops == 0)
+					files[nfiles - 1].is_new = 1;
+				else if (os > 0)
+					files[nfiles - 1].is_new = 0;
+			}
 			continue;
 		}
 
