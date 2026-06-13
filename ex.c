@@ -1669,8 +1669,10 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 		if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
 			do {
+				if (*src == xesc && src[1])
+					src++;
 				*dst++ = *src++;
-			} while (*src && (*src != j || src[-1] == '\\'));
+			} while (*src && *src != j);
 			if (*src)
 				*dst++ = *src++;
 		} else if (*src == ' ' || *src == '\t')
