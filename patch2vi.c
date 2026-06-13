@@ -74,6 +74,8 @@ typedef struct {
 	int strategy;       /* STRAT_DEFAULT = not recorded */
 	char **pattern[3];  /* SEARCH PATTERN 1-3 fallbacks */
 	int npattern[3], pat_cap[3];
+	int pat_off[3];      /* per-pattern OFFSET marker value */
+	int pat_has_off[3];
 	char **abs_cmd;
 	int nabs, abs_cap;
 	char **rel_cmd;
@@ -963,6 +965,7 @@ typedef struct {
 	int nlines;
 	int pre_escaped;  /* 1 = user regex (exarg only), 0 = raw text */
 	int offset;       /* lines from match start to the target line */
+	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
 } pat_spec_t;
 
 /* Default (non-edited) lines for fallback pattern pi:
@@ -1294,6 +1297,8 @@ typedef struct {
 	int ncustom_text, custom_text_cap;
 	char **pattern[3];
 	int npattern[3], pat_cap[3];
+	int pat_off[3];      /* per-pattern OFFSET marker value */
+	int pat_has_off[3];
 	char **abs_cmd;
 	int nabs, abs_cap;
 	char **rel_cmd;
@@ -1354,6 +1359,19 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 
 	while (fgets(line, sizeof(line), f)) {
 		chomp(line);
+
+		/* "=== OFFSET <%+d> ===" marker right after a SEARCH
+		 * PATTERN header: the offset for that pattern. Handled
+		 * before the generic reset so in_pat stays active. */
+		if (strncmp(line, "=== OFFSET ", 11) == 0) {
+			if (in_pat && file_idx >= 0 && gi >= 0 &&
+			    gi < active[file_idx]->ngroups) {
+				parsed_grp_t *pg = &per_file_results[file_idx][gi];
+				pg->pat_off[in_pat - 1] = atoi(line + 11);
+				pg->pat_has_off[in_pat - 1] = 1;
+			}
+			continue;
+		}
 
 		if (strncmp(line, "=== ", 4) == 0) {
 			in_ecmd = 0;
@@ -1529,12 +1547,15 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		fprintf(out, "=== strategy ===\n%s\n%s\n", s, end_tag_wr);
 	}
 	for (int pi = 0; pi < 3; pi++) {
-		if (gd->npattern[pi] == 0)
-			continue;
-		fprintf(out, "=== pattern%d ===\n", pi + 1);
-		for (int i = 0; i < gd->npattern[pi]; i++)
-			fprintf(out, "%s\n", gd->pattern[pi][i]);
-		fprintf(out, "%s\n", end_tag_wr);
+		if (gd->npattern[pi] > 0) {
+			fprintf(out, "=== pattern%d ===\n", pi + 1);
+			for (int i = 0; i < gd->npattern[pi]; i++)
+				fprintf(out, "%s\n", gd->pattern[pi][i]);
+			fprintf(out, "%s\n", end_tag_wr);
+		}
+		if (gd->pat_has_off[pi])
+			fprintf(out, "=== offset%d %+d ===\n",
+				pi + 1, gd->pat_off[pi]);
 	}
 	if (gd->nabs > 0) {
 		fprintf(out, "=== edit_cmd_abs ===\n");
@@ -1590,6 +1611,23 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		else if (!(g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]))
 			default_offset = g->block_change_idx;
 
+		/* Migrate old deltas: a +N stored in the rel/relc EDIT
+		 * COMMAND becomes the pattern 1-2 OFFSET (pattern 3 stays
+		 * 0, matching the old read-back semantics). Mutates gd so
+		 * the .orig and edit copies agree. */
+		if (gd && !gd->pat_has_off[0] && !gd->pat_has_off[1] &&
+		    !gd->pat_has_off[2] && (gd->nrel > 0 || gd->nrelc > 0)) {
+			int mig = 0;
+			if (gd->nrelc > 0)
+				mig = parse_ecmd_offset(gd->relc_cmd, &gd->nrelc);
+			if (gd->nrel > 0)
+				mig = parse_ecmd_offset(gd->rel_cmd, &gd->nrel);
+			gd->pat_off[0] = gd->pat_off[1] = mig;
+			gd->pat_off[2] = 0;
+			gd->pat_has_off[0] = gd->pat_has_off[1] =
+				gd->pat_has_off[2] = 1;
+		}
+
 		/* Group header */
 		fprintf(fp, "=== GROUP %d/%d (line %d) ===\n",
 			gi + 1, ngroups, target);
@@ -1621,15 +1659,26 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		 * Single-line patterns show the ^...$ disamb anchors so the
 		 * user can remove them; emit respects the edit. */
 		fprintf(fp, "%s\n", end_tag_wr);
+		/* Pure adds position on the line to append after, so the
+		 * displayed offsets include the -1 step the a verb implies
+		 * (matching the a/i choice in the rel EDIT COMMAND). */
+		int pure_add = !g->del_start && g->nadd;
+		int add_a = pure_add && default_offset - 1 >= 0;
 		char **praw = emalloc((g->ndel + 7) * sizeof(char *));
 		for (int pi = 0; pi < 3; pi++) {
 			fprintf(fp, "=== SEARCH PATTERN %d ===\n", pi + 1);
+			int doff;
+			int n = default_pat_lines(g, pi, praw, &doff);
+			/* OFFSET marker: lines from match start to the edit
+			 * target when this pattern matches */
+			int poff = (gd && gd->pat_has_off[pi])
+				   ? gd->pat_off[pi]
+				   : doff - (add_a ? 1 : 0);
+			fprintf(fp, "=== OFFSET %+d ===\n", poff);
 			if (gd && gd->npattern[pi] > 0) {
 				for (int i = 0; i < gd->npattern[pi]; i++)
 					fprintf(fp, "%s\n", gd->pattern[pi][i]);
 			} else {
-				int doff;
-				int n = default_pat_lines(g, pi, praw, &doff);
 				int wrap = n == 1;
 				for (int i = 0; i < n; i++) {
 					char *esc = escape_regex(praw[i]);
@@ -1691,8 +1740,6 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				for (int k = 0; k < gd->nrelc; k++)
 					fprintf(fp, "%s\n", gd->relc_cmd[k]);
 			} else if (show_relc) {
-				if (default_offset != 0)
-					fprintf(fp, "%+d\n", default_offset);
 				if (g->ldc_start == g->ldc_end)
 					fprintf(fp, ".;%dc %s\n",
 						g->ldc_start, g->ldc_new_text);
@@ -1714,35 +1761,22 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
 					char *esc_pat = escape_sub_pat(g->ld_old_text, '/');
 					char *esc_rep = escape_sub_repl(g->ld_new_text, '/');
-					if (default_offset != 0)
-						fprintf(fp, "%+d\n", default_offset);
 					fprintf(fp, "s/%s/%s/\n", esc_pat, esc_rep);
 					free(esc_pat);
 					free(esc_rep);
 				} else if (g->del_start && g->nadd) {
-					if (default_offset != 0)
-						fprintf(fp, "%+d", default_offset);
 					if (g->ndel == 1)
 						fputs("c", fp);
 					else
 						fprintf(fp, ",#+%dc", g->ndel - 1);
 					WG_CONTENT(fp);
 				} else if (g->del_start) {
-					if (default_offset != 0)
-						fprintf(fp, "%+d", default_offset);
 					if (g->ndel == 1)
 						fputs("d\n", fp);
 					else
 						fprintf(fp, ",#+%dd\n", g->ndel - 1);
 				} else if (g->nadd) {
-					int aoff = default_offset - 1;
-					if (aoff >= 0) {
-						if (aoff)
-							fprintf(fp, "%+d", aoff);
-						fputs("a", fp);
-					} else {
-						fputs("i", fp);
-					}
+					fputs(add_a ? "a" : "i", fp);
 					WG_CONTENT(fp);
 				}
 			}
@@ -2003,10 +2037,13 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					  src->npre_ctx);
 				arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap, src->post_ctx,
 					  src->npost_ctx);
-				for (int pi = 0; pi < 3; pi++)
+				for (int pi = 0; pi < 3; pi++) {
 					arr_clone(&dst->pattern[pi], &dst->npattern[pi],
 						  &dst->pat_cap[pi], src->pattern[pi],
 						  src->npattern[pi]);
+					dst->pat_off[pi] = src->pat_off[pi];
+					dst->pat_has_off[pi] = src->pat_has_off[pi];
+				}
 				arr_clone(&dst->abs_cmd, &dst->nabs, &dst->abs_cap, src->abs_cmd,
 					  src->nabs);
 				arr_clone(&dst->rel_cmd, &dst->nrel, &dst->rel_cap, src->rel_cmd,
@@ -2033,7 +2070,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				int pat_ch = 0;
 				for (int pi = 0; pi < 3; pi++)
 					if (!lines_equal(eg->pattern[pi], eg->npattern[pi],
-							 og->pattern[pi], og->npattern[pi]))
+							 og->pattern[pi], og->npattern[pi]) ||
+					    eg->pat_has_off[pi] != og->pat_has_off[pi] ||
+					    eg->pat_off[pi] != og->pat_off[pi])
 						pat_ch = 1;
 				int abs_ch = !lines_equal(eg->abs_cmd, eg->nabs,
 							  og->abs_cmd, og->nabs);
@@ -2096,10 +2135,13 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				if (strat_ch)
 					gout->strategy = eg->strategy;
 				if (pat_ch)
-					for (int pi = 0; pi < 3; pi++)
+					for (int pi = 0; pi < 3; pi++) {
 						arr_clone(&gout->pattern[pi], &gout->npattern[pi],
 							  &gout->pat_cap[pi],
 							  eg->pattern[pi], eg->npattern[pi]);
+						gout->pat_off[pi] = eg->pat_off[pi];
+						gout->pat_has_off[pi] = eg->pat_has_off[pi];
+					}
 				if (abs_ch)
 					arr_clone(&gout->abs_cmd, &gout->nabs, &gout->abs_cap,
 						  eg->abs_cmd, eg->nabs);
@@ -2127,14 +2169,22 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			group_t *g = &active[k]->groups[gi];
 			g->strategy = eg->strategy;
 			for (int pi = 0; pi < 3; pi++) {
+				/* OFFSET marker: per-pattern offset, wins over
+				 * the legacy +N first-line override */
+				if (eg->pat_has_off[pi]) {
+					g->custom_pat_has_off[pi] = 1;
+					g->custom_pat_off[pi] = eg->pat_off[pi];
+				}
 				if (eg->npattern[pi] == 0)
 					continue;
 				/* a first line of just +N/-N overrides this
 				 * pattern's search offset */
 				int poff;
 				if (pat_off_line(eg->pattern[pi][0], &poff)) {
-					g->custom_pat_has_off[pi] = 1;
-					g->custom_pat_off[pi] = poff;
+					if (!eg->pat_has_off[pi]) {
+						g->custom_pat_has_off[pi] = 1;
+						g->custom_pat_off[pi] = poff;
+					}
 					free(eg->pattern[pi][0]);
 					memmove(eg->pattern[pi], eg->pattern[pi] + 1,
 						(eg->npattern[pi] - 1) * sizeof(char *));
@@ -2529,6 +2579,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			ps[nps].offset = g->custom_pat_has_off[pi]
 				? g->custom_pat_off[pi]
 				: pi == 2 ? 0 : g->custom_offset;
+			ps[nps].off_final = g->custom_pat_has_off[pi];
 			nps++;
 		}
 		if (nps == 0) {
@@ -2544,6 +2595,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].nlines = n;
 				ps[nps].pre_escaped = 0;
 				ps[nps].offset = doff;
+				ps[nps].off_final = 0;
 				nps++;
 			}
 		}
@@ -2570,7 +2622,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				g->insert_i = 1;
 			else
 				for (int pi = 0; pi < nps; pi++)
-					ps[pi].offset -= 1;
+					if (!ps[pi].off_final)
+						ps[pi].offset -= 1;
 		}
 
 		g->mark_id = next_mark_id(&next_id);
@@ -2946,6 +2999,15 @@ int main(int argc, char **argv)
 						pat_idx = (c >= '1' && c <= '3')
 							? c - '1' : 1;
 						in_sect = 1;
+						continue;
+					}
+					if (strncmp(line, "=== offset", 10) == 0) {
+						/* "=== offset<1-3> <%+d> ===" */
+						char c = line[10];
+						int oi = (c >= '1' && c <= '3')
+							? c - '1' : 1;
+						cur_gd->pat_off[oi] = atoi(line + 11);
+						cur_gd->pat_has_off[oi] = 1;
 						continue;
 					}
 					if (strcmp(line, "=== edit_cmd_abs ===") == 0) {
