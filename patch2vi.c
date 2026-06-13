@@ -134,9 +134,9 @@ static unsigned char byte_used[256];
 /* Dynamic ex escape byte set via :sc (like the separator); exported to
  * the script as $ESC. 0 = no free byte, keep the default backslash
  * escape paths. With a dynamic escape, backslash is no longer special
- * to ex_arg, so content and regex escapes pass through unmodified;
- * only re_read's hardcoded \ (the ? conditional and s/// delimiters)
- * still needs backslash escaping. */
+ * to ex_arg or to the ? conditional's ex_rsubexp, so content and regex
+ * escapes pass through unmodified; only the ? delimiter itself needs
+ * ${ESC} protection inside ? blocks. */
 static int dyn_esc;
 
 static char *xstrdup(const char *s)
@@ -569,6 +569,12 @@ static void emit_escaped_line(FILE *out, const char *s)
 {
 	for (; *s; s++) {
 		unsigned char c = *s;
+		/* the dynamic escape byte never occurs in content; emit it
+		 * as the readable ${ESC} expansion (see escape_chain_dyn) */
+		if (dyn_esc && c == (unsigned char)dyn_esc) {
+			fputs("${ESC}", out);
+			continue;
+		}
 		/* Shell double-quote escapes: $, `, ", \ */
 		if (c == '\\' || c == '$' || c == '`' || c == '"') {
 			fputc('\\', out);
@@ -1014,8 +1020,8 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
  * dynamic escape, stripping <esc> only before its ? delimiter. Every ?
  * gets <esc>-prefixed so it doesn't end the cond argument early: a
  * literal ? (regex "\?") becomes "\<esc>?" and a bare quantifier ?
- * becomes "<esc>?". The raw escape byte is emitted; it round-trips
- * through emit_escaped_line's shell double-quote escaping. */
+ * becomes "<esc>?". The raw escape byte is inserted here;
+ * emit_escaped_line renders it as the readable ${ESC} expansion. */
 static char *escape_chain_dyn(const char *s)
 {
 	sbuf_smake(sb, strlen(s) + 8)
