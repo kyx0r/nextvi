@@ -1010,23 +1010,24 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 }
 
 /* Chain pattern escaping for a dynamic ex escape: ex_arg no longer
- * consumes backslashes, but the ? conditional's re_read still uses a
- * hardcoded \ and can never output a literal "\?". A literal ? (regex
- * "\?") is rewritten as the class "[\?]" and a bare quantifier ? gets
- * \-escaped so neither ends the cond argument early. */
+ * consumes backslashes and the ? conditional's ex_rsubexp honors the
+ * dynamic escape, stripping <esc> only before its ? delimiter. Every ?
+ * gets <esc>-prefixed so it doesn't end the cond argument early: a
+ * literal ? (regex "\?") becomes "\<esc>?" and a bare quantifier ?
+ * becomes "<esc>?". The raw escape byte is emitted; it round-trips
+ * through emit_escaped_line's shell double-quote escaping. */
 static char *escape_chain_dyn(const char *s)
 {
 	sbuf_smake(sb, strlen(s) + 8)
 	while (*s) {
-		if (s[0] == '\\' && s[1] == '?') {
-			sbuf_str(sb, "[\\?]")
-			s += 2;
-		} else if (s[0] == '\\' && s[1]) {
+		if (s[0] == '\\' && s[1]) {
 			sbuf_chr(sb, *s++)
+			if (*s == '?')
+				sbuf_chr(sb, dyn_esc)
 			sbuf_chr(sb, *s++)
 		} else if (s[0] == '?') {
-			sbuf_str(sb, "\\?")
-			s++;
+			sbuf_chr(sb, dyn_esc)
+			sbuf_chr(sb, *s++)
 		} else
 			sbuf_chr(sb, *s++)
 	}
@@ -1087,9 +1088,9 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 		fputs(first ? "%;f> " : "%;f+ ", out);
 		emit_chain_pattern(out, &ps[n]);
 		EMIT_ESCSEP(out);
-		fprintf(out, "%d\\\\?\\\\?", n);
+		fprintf(out, dyn_esc ? "%d${ESC}?${ESC}?" : "%d\\\\?\\\\?", n);
 		EMIT_ESCSEP(out);
-		fprintf(out, "%d\\\\?\\\\?", n);
+		fprintf(out, dyn_esc ? "%d${ESC}?${ESC}?" : "%d\\\\?\\\\?", n);
 		if (ps[n].offset)
 			fprintf(out, "%+d", ps[n].offset);
 		fprintf(out, "m %d", mark_id);
@@ -3140,11 +3141,11 @@ process_line:
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
-		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0\\\\\\\\\\?\"\n"
-		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0\\?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0${ESC}${ESC}${ESC}${ESC}${ESC}${ESC}?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0${ESC}${ESC}?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\" || QF1=\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
-		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0\\?\" || DBG2=\n"
+		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0${ESC}${ESC}?\" || DBG2=\n"
 		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n"
