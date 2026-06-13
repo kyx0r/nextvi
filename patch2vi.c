@@ -3,8 +3,12 @@
  *
  * Usage: patch2vi [input.patch]
  *
- * Uses raw ex mode (:vis 3) with dynamic separator selection via :sc!
- * to avoid conflicts with : % ! characters in patch content.
+ * Uses raw ex mode (:vis 3) with dynamic separator and escape character
+ * selection via :sc! to avoid conflicts with : % ! \ characters in
+ * patch content and to minimize the escaping the script needs. The
+ * escape character is the next unused byte after the separator and is
+ * exported as $ESC next to $SEP; if no byte is free, the default
+ * backslash escape paths are kept.
  *
  * The generated script uses EXINIT with ex commands to apply changes.
  * The user can then modify the script to add regex-based matching for
@@ -126,6 +130,14 @@ static int nraw = 0;
 
 /* Track which bytes appear in patch content */
 static unsigned char byte_used[256];
+
+/* Dynamic ex escape byte set via :sc (like the separator); exported to
+ * the script as $ESC. 0 = no free byte, keep the default backslash
+ * escape paths. With a dynamic escape, backslash is no longer special
+ * to ex_arg, so content and regex escapes pass through unmodified;
+ * only re_read's hardcoded \ (the ? conditional and s/// delimiters)
+ * still needs backslash escaping. */
+static int dyn_esc;
 
 static char *xstrdup(const char *s)
 {
@@ -569,11 +581,13 @@ static void emit_escaped_text(FILE *out, const char *s);
 
 /* separator: shell expands ${SEP} in double-quoted EXINIT */
 #define EMIT_SEP(out) fputs("${SEP}", out)
-/* escaped separator inside ??! block: \<sep> for ex_arg */
-#define EMIT_ESCSEP(out) fputs("\\\\${SEP}", out)
+/* escaped separator inside ??! block: <esc><sep> for ex_arg */
+#define EMIT_ESCSEP(out) \
+	fputs(dyn_esc ? "${ESC}${SEP}" : "\\\\${SEP}", out)
 /* triply-escaped separator inside a ?? then-arg nested in a ? cond:
- * \\\<sep> */
-#define EMIT_ESC3SEP(out) fputs("\\\\\\\\\\\\${SEP}", out)
+ * <esc><esc><esc><sep> */
+#define EMIT_ESC3SEP(out) \
+	fputs(dyn_esc ? "${ESC}${ESC}${ESC}${SEP}" : "\\\\\\\\\\\\${SEP}", out)
 
 /*
  * Ex commands emitted by patch2vi and their default range (no address given):
@@ -785,10 +799,12 @@ static void emit_err_check_mark(FILE *out, int line, int mark_id)
 }
 
 /* Double backslashes for ex_arg level escaping.
- * ex_arg treats \\ as escaped \, so \\\\ is needed to preserve \\. */
+ * ex_arg treats \\ as escaped \, so \\\\ is needed to preserve \\.
+ * With a dynamic escape byte, backslash is not special to ex_arg and
+ * passes through as-is (the escape byte never occurs in content). */
 static char *escape_exarg(const char *s)
 {
-	return escape_chars(s, "\\");
+	return escape_chars(s, dyn_esc ? "" : "\\");
 }
 
 /* Emit text that passes through ex_arg then shell double-quotes.
@@ -993,10 +1009,36 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 	return n;
 }
 
+/* Chain pattern escaping for a dynamic ex escape: ex_arg no longer
+ * consumes backslashes, but the ? conditional's re_read still uses a
+ * hardcoded \ and can never output a literal "\?". A literal ? (regex
+ * "\?") is rewritten as the class "[\?]" and a bare quantifier ? gets
+ * \-escaped so neither ends the cond argument early. */
+static char *escape_chain_dyn(const char *s)
+{
+	sbuf_smake(sb, strlen(s) + 8)
+	while (*s) {
+		if (s[0] == '\\' && s[1] == '?') {
+			sbuf_str(sb, "[\\?]")
+			s += 2;
+		} else if (s[0] == '\\' && s[1]) {
+			sbuf_chr(sb, *s++)
+			sbuf_chr(sb, *s++)
+		} else if (s[0] == '?') {
+			sbuf_str(sb, "\\?")
+			s++;
+		} else
+			sbuf_chr(sb, *s++)
+	}
+	sbufn_ret(sb, sb->s)
+}
+
 /* Emit one fallback pattern as the f> argument inside a ? conditional.
  * The conditional nesting consumes one more escape layer than a
  * top-level search: after exarg escaping, every backslash is doubled
- * again and ? is escaped (an unescaped ? would end the cond argument). */
+ * again and ? is escaped (an unescaped ? would end the cond argument).
+ * With a dynamic escape only the re_read layer remains (see
+ * escape_chain_dyn). */
 static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 {
 	int wrap = p->nlines == 1 && !p->pre_escaped;
@@ -1004,11 +1046,16 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 		fputc('^', out);
 	for (int i = 0; i < p->nlines; i++) {
 		char *r = p->pre_escaped ? NULL : escape_regex(p->lines[i]);
-		char *e = escape_exarg(r ? r : p->lines[i]);
-		char *x = escape_chars(e, "\\?");
+		char *x;
+		if (dyn_esc) {
+			x = escape_chain_dyn(r ? r : p->lines[i]);
+		} else {
+			char *e = escape_exarg(r ? r : p->lines[i]);
+			x = escape_chars(e, "\\?");
+			free(e);
+		}
 		emit_escaped_line(out, x);
 		free(x);
-		free(e);
 		free(r);
 		if (i < p->nlines - 1)
 			fputc('\n', out);
@@ -3050,6 +3097,14 @@ process_line:
 			"error: patch uses all possible byte values, cannot find separator\n");
 		return 1;
 	}
+	/* Next unused byte becomes the ex escape character; if none is
+	 * left, fall back to the default backslash escape paths. */
+	byte_used[sep] = 1;
+	dyn_esc = find_unused_byte();
+	if (dyn_esc < 0)
+		dyn_esc = 0;
+	else
+		byte_used[dyn_esc] = 1;
 
 	/* Emit shell script header */
 	fputs("#!/bin/sh -e\n# Generated by patch2vi from unified diff\n", stdout);
@@ -3066,7 +3121,25 @@ process_line:
 	      "    exit 1\n"
 	      "fi\n\n", stdout);
 	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
-	if (relative_mode || interactive_mode)
+	if (dyn_esc)
+		printf("ESC=\"$(printf '\\%03o')\"\n", dyn_esc);
+	if ((relative_mode || interactive_mode) && dyn_esc)
+		fputs("# Command that handles readability line breaks\n"
+		      "LB=\"0?\"\n"
+		      "# Phase 1 (search/mark): errors disabled by default,\n"
+		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
+		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
+		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0\\\\\\\\?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0\\?\"\n"
+		      "[ \"$QF1\" = \"1\" ] && QF1=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\" || QF1=\n"
+		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
+		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0\\?\" || DBG2=\n"
+		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\"\n"
+		      "# Enters vi at failing code line in this script\n"
+		      "# Designed for state inspection mid execution\n"
+		      "[ \"$INTR\" = \"1\" ] && INTR=\"${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:"
+		      "|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1\" || INTR=\n", stdout);
+	else if (relative_mode || interactive_mode)
 		fputs("# Command that handles readability line breaks\n"
 		      "LB=\"0?\"\n"
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
@@ -3103,7 +3176,10 @@ process_line:
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " %s", active[k]->path);
 		fputc('\n', stdout);
-		fputs("EXINIT=\"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", stdout);
+		if (dyn_esc)
+			fputs("EXINIT=\"|sc! ${ESC}${SEP}|:vis 3${SEP}", stdout);
+		else
+			fputs("EXINIT=\"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", stdout);
 		/* default register <b> caches the buffer for f> searches */
 		if (relative_mode || interactive_mode)
 			fputs("98reg${SEP}", stdout);
