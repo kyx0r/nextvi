@@ -744,11 +744,10 @@ int rset_match(rset *rs, char *s, int flg)
 }
 
 /* read a regular expression enclosed in a delimiter */
-char *re_read(char **src, int delim)
+char *re_read(char **src)
 {
 	char *s = *src;
-	if (!delim)
-		delim = (unsigned char) *s++;
+	int delim = *s++;
 	if (!delim)
 		return NULL;
 	sbuf_smake(sb, 256)
@@ -756,10 +755,9 @@ char *re_read(char **src, int delim)
 		if (delim == '<' || delim == '>') {
 			if (s[0] == '\\' && s[1] == delim)
 				s++;
-		} else if (s[0] == '\\' && s[1])
-			if (*(++s) != delim)
-				sbuf_chr(sb, '\\')
-		sbuf_chr(sb, (unsigned char) *s++)
+		} else if (s[0] == '\\' && s[1] && *(++s) != delim)
+			sbuf_chr(sb, '\\')
+		sbuf_chr(sb, *s++)
 	}
 	*src = *s ? s + 1 : s;
 	sbufn_ret(sb, sb->s)
