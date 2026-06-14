@@ -1243,8 +1243,7 @@ static char *escape_sub_repl(const char *s, char delim)
 static char *escape_sub_pat(const char *s, char delim)
 {
 	char set[sizeof(REGEX_META) + 1];
-	int n = snprintf(set, sizeof(set), "%s%c", REGEX_META, delim);
-	(void)n;
+	snprintf(set, sizeof(set), "%s%c", REGEX_META, delim);
 	return double_trailing_esc(escape_chars(s, set));
 }
 
@@ -1415,7 +1414,6 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 	int in_content_section =
 		0;  /* between GROUP header and first section keyword */
 	int ecmd_strat = STRAT_DEFAULT;
-	int skip_extra = 0;
 
 	while (fgets(line, sizeof(line), f)) {
 		chomp(line);
@@ -1465,7 +1463,6 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		}
 		if (strncmp(line, "=== GROUP ", 10) == 0) {
 			gi = atoi(line + 10) - 1;
-			skip_extra = 0;
 			in_content_section = 1;
 			continue;
 		}
@@ -1480,7 +1477,6 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			while (*p == ' ')
 				p++;
 			in_pat = (*p >= '1' && *p <= '3') ? *p - '0' : 2;
-			skip_extra = 0;
 			continue;
 		}
 		if (strncmp(line, "=== EDIT COMMAND (", 18) == 0) {
@@ -1551,17 +1547,10 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		}
 
 		if (in_pat && gi >= 0 && gi < ngroups) {
-			if (strncmp(line, "--- extra", 9) == 0) {
-				skip_extra = 1;
-				in_pat = 0;
-				continue;
-			}
-			if (!skip_extra) {
-				parsed_grp_t *pg = &results[gi];
-				int pi = in_pat - 1;
-				arr_append(&pg->pattern[pi], &pg->npattern[pi],
-					   &pg->pat_cap[pi], line);
-			}
+			parsed_grp_t *pg = &results[gi];
+			int pi = in_pat - 1;
+			arr_append(&pg->pattern[pi], &pg->npattern[pi],
+				   &pg->pat_cap[pi], line);
 		}
 
 		/* Catch-all: capture every line in the group section into custom_text as-is */
