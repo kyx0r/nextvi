@@ -116,7 +116,8 @@ static rset *rset_smake(char *pat, int flg)
 int rset_find(rset *re, char *s, int *grps, int flg);
 int rset_match(rset *rs, char *s, int flg);
 void rset_free(rset *re);
-char *re_read(char **src, int delim);
+char *re_read(char **src);
+char *re_sread(char **src, int delim, int esc);
 
 /* lbuf.c: line buffer */
 struct lopt {

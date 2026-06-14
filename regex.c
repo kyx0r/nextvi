@@ -743,24 +743,37 @@ int rset_match(rset *rs, char *s, int flg)
 	return re_pikevm(rs->regex, s, NULL, 0, flg);
 }
 
-/* read a regular expression enclosed in a delimiter */
-char *re_read(char **src, int delim)
+/* read a sub expression enclosed in a delimiter */
+char *re_sread(char **src, int delim, int esc)
 {
 	char *s = *src;
-	if (!delim)
-		delim = (unsigned char) *s++;
-	if (!delim)
-		return NULL;
 	sbuf_smake(sb, 256)
 	while (*s && *s != delim) {
-		if (delim == '<' || delim == '>') {
-			if (s[0] == '\\' && s[1] == delim)
-				s++;
-		} else if (s[0] == '\\' && s[1])
-			if (*(++s) != delim)
-				sbuf_chr(sb, '\\')
-		sbuf_chr(sb, (unsigned char) *s++)
+		if (*s == esc) {
+			/* parity rule: delim halves escapes, odd keeps delim literal */
+			int n = 0, keep;
+			for (; s[n] == esc; n++);
+			keep = n;
+			if (s[n] == delim || !s[n])
+				n -= n / 2;
+			sbuf_mem(sb, s, n)
+			if (keep & 1 && s[keep] == delim)
+				sb->s[sb->s_n - 1] = s[keep++];
+			s += keep;
+			continue;
+		}
+		sbuf_chr(sb, *s++)
 	}
 	*src = *s ? s + 1 : s;
 	sbufn_ret(sb, sb->s)
+}
+
+/* read a regular expression enclosed in a delimiter */
+char *re_read(char **src)
+{
+	int delim = **src;
+	if (!delim)
+		return NULL;
+	++*src;
+	return re_sread(src, delim, '\\');
 }

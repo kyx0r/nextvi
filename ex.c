@@ -190,7 +190,7 @@ void ex_krsset(char *kwd, int dir)
 static int ex_range(char *ploc, char **num, int n, int *row)
 {
 	int dir, off, beg, end, adj = 0;
-	switch ((unsigned char)**num) {
+	switch (**num) {
 	case '.':
 		++*num;
 		break;
@@ -217,7 +217,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		end = row ? beg+1 : lbuf_len(xb);
 		if (off < 0 || beg < 0 || beg >= lbuf_len(xb))
 			return -1;
-		char *e = re_read(num, 0);
+		char *e = re_read(num);
 		ex_krsset(e, dir);
 		free(e);
 		if (!xkwdrs) {
@@ -271,7 +271,8 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		*beg = 0;
 	while (*loc) {
 		if (*loc == '|') {
-			cmd = re_read(&loc, 0);
+			loc++;
+			cmd = re_sread(&loc, '|', xesc);
 			void *err = ex_exec(cmd);
 			free(cmd);
 			if (err) {
@@ -1015,7 +1016,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	struct lopt *lo;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
-	pat = re_read(&s, 0);
+	pat = re_read(&s);
 	if (pat && (*pat || !rs))
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	if (!rs) {
@@ -1024,7 +1025,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	if (pat && *s) {
 		s--;
-		rep = re_read(&s, 0);
+		rep = re_read(&s);
 	}
 	free(pat);
 	int offs[rs->nsubc];
@@ -1041,20 +1042,20 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 			if (rep) {
 				for (_rep = rep; *_rep; _rep++) {
 					if (*_rep != '\\' || !_rep[1]) {
-						sbuf_chr(r, (unsigned char)*_rep)
+						sbuf_chr(r, *_rep)
 						continue;
 					}
 					_rep++;
 					grp = abs((*_rep - '0') * 2);
 					if (grp + 1 >= rs->nsubc)
-						sbuf_chr(r, (unsigned char)*_rep)
+						sbuf_chr(r, *_rep)
 					else if (offs[grp] >= 0)
 						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
 				}
 			}
 			ln += offs[xgrp + 1];
 			if (!offs[xgrp + 1])	/* zero-length match */
-				sbuf_chr(r, (unsigned char)*ln++)
+				sbuf_chr(r, *ln++)
 			if (*ln == '\n' || !*ln || !strchr(s, 'g'))
 				break;
 		}
@@ -1152,7 +1153,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	not = !!strchr(cmd, '!');
-	pat = re_read(&s, 0);
+	pat = re_read(&s);
 	if (pat && *pat)
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	else
@@ -1184,7 +1185,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
 	int isdq = cmd[1] == '?';
-	char *cond = isdq ? NULL : re_read(&arg, *cmd);
+	char *cond = isdq ? NULL : re_sread(&arg, *cmd, xesc);
 	char *ret = NULL, *branch;
 	int inv = cmd[1 + isdq] == '!';
 	char *then_cmd, *else_cmd;
@@ -1199,8 +1200,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			return ret;
 		} else if (!xanchor)
 			return ret;
-		then_cmd = re_read(&arg, *cmd);
-		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
+		then_cmd = re_sread(&arg, *cmd, xesc);
+		else_cmd = *arg ? re_sread(&arg, *cmd, xesc) : NULL;
 		int *ap = (int*)xanchor->s, n = xanchor->s_n / sizeof(int);
 		int and_res = 0, or_res = 1;
 		for (int i = n; i >= 2;) {
@@ -1227,8 +1228,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			i = n;
 		}
 	} else {
-		then_cmd = *arg ? re_read(&arg, *cmd) : NULL;
-		else_cmd = *arg ? re_read(&arg, *cmd) : NULL;
+		then_cmd = *arg ? re_sread(&arg, *cmd, xesc) : NULL;
+		else_cmd = *arg ? re_sread(&arg, *cmd, xesc) : NULL;
 		if (isdq) {
 			ret = (xpret != NULL) ^ inv ? xuerr : NULL;
 			branch = ret ? else_cmd : then_cmd;
@@ -1446,12 +1447,14 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
 {
 	for (; beg < end; beg++) {
-		if (ex && (*beg == xsep || *beg == xesc)) {
-			sbuf_chr(sb, xesc)
-			if (*beg == '\\')
-				sbuf_chr(sb, '\\')
+		if (*beg == '\\') {
+			/* class form is safe in any layer */
+			sbuf_str(sb, "[\\\\]")
+			continue;
 		}
-		if (strchr("!%{[]().?\\^$|*/+", *beg))
+		if (ex && (*beg == xsep || *beg == xexp || *beg == xexe))
+			sbuf_chr(sb, xesc)
+		else if (strchr("!%{[]().?^$|*/+", *beg))
 			sbuf_chr(sb, '\\')
 		sbuf_chr(sb, *beg)
 	}
@@ -1632,27 +1635,27 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 					sbuf_mem(sb, pbuf->path, pbuf->plen)
 			}
 		} else if (*src == xexe) {
-			int n = sb->s_n;
 			src++;
-			while (*src && *src != xexe) {
-				if (*src == xesc && src[1] == xexe)
-					src++;
-				sbuf_chr(sb, *src++)
-			}
-			src += *src ? 1 : 0;
-			sbuf_null(sb)
-			sbuf_cut(sb, n)
-			sbuf *str = cmd_pipe(sb->s + n, NULL, 1, NULL);
+			char *e = re_sread((char**)&src, xexe, xesc);
+			sbuf *str = cmd_pipe(e, NULL, 1, NULL);
+			free(e);
 			if (str) {
 				sbuf_mem(sb, str->s, str->s_n)
 				sbuf_free(str)
 			}
-		} else {
-			if (*src == xesc && (src[1] == xsep || src[1] == xexp
-					|| src[1] == xexe || src[1] == xesc) && src[1])
-				src++;
+		} else if (*src == xesc) {
+			int n = 0, keep, d;
+			for (; src[n] == xesc; n++);
+			keep = n;
+			d = src[n] == xsep || src[n] == xexp || src[n] == xexe;
+			if (d || !src[n])
+				n -= n / 2;
+			sbuf_mem(sb, src, n)
+			if (d && keep & 1)
+				sb->s[sb->s_n - 1] = src[keep++];
+			src += keep;
+		} else
 			sbuf_chr(sb, *src++)
-		}
 	}
 	sbuf_null(sb)
 	return src;
@@ -1668,9 +1671,12 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '>' || *src == '<' || *src == '|') {
 			j = *src;
+			i = j == '|' ? xesc : '\\';
 			do {
+				if (*src == i && src[1])
+					*dst++ = *src++;
 				*dst++ = *src++;
-			} while (*src && (*src != j || src[-1] == '\\'));
+			} while (*src && *src != j);
 			if (*src)
 				*dst++ = *src++;
 		} else if (*src == ' ' || *src == '\t')
