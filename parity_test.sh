@@ -1,6 +1,6 @@
 #!/bin/sh
 unset EXINIT
-printf '%s\n' '? \?p\\\:1q\:p:q!' | ./vi -em vi.c
+printf '%s\n' '? \?p\\\:1q\:p BAD:q!' | ./vi -em vi.c
 printf '%s\n' '>\\>:reg:q!' | ./vi -em vi.c
 printf '%s\n' '>\\\>>:reg:q!' | ./vi -em vi.c
 printf '%s\n' '>\\\\>:reg:q!' | ./vi -em vi.c
