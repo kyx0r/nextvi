@@ -71,6 +71,10 @@ check_script "single pattern uses .,\$f>" \
 " \
 	'.,\\$f>' '>[^$]*>'
 
+# A single anchored change emits a fallback chain. The whole-hunk
+# pattern is multi-line (%;f>, mode 0); the single-line fallbacks
+# (top context, deleted line) default to mode 1 and search the live
+# buffer with .,$f> instead.
 check_script "anchored change uses fallback chain" \
 	"ctx1
 old
@@ -80,7 +84,18 @@ end
 new
 end
 " \
-	'?%;f>' '\.,\\$f>'
+	'?%;f>' ''
+
+check_script "single-line chain fallbacks use .,\$f>" \
+	"ctx1
+old
+end
+" \
+	"ctx1
+new
+end
+" \
+	'\.,\\$f>' ''
 
 check_script "multiline anchor uses %;f>" \
 	"ctx1

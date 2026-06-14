@@ -76,6 +76,8 @@ typedef struct {
 	int npattern[3], pat_cap[3];
 	int pat_off[3];      /* per-pattern OFFSET marker value */
 	int pat_has_off[3];
+	int pat_mode[3];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f> */
+	int pat_has_mode[3];
 	char **abs_cmd;
 	int nabs, abs_cap;
 	char **rel_cmd;
@@ -837,13 +839,16 @@ static void emit_escaped_text(FILE *out, const char *s)
  * match start so identical anchors find the next occurrence).
  * pre_escaped: 0 = anchors are raw text (apply regex+exarg escape),
  *              1 = anchors are pre-escaped regex (apply exarg only).
+ * mode: 1 = direct buffer search (.,$f>, 0reg/98reg, ^...$ anchors);
+ *       0 = register-cache search (%;f>). Defaults to 1 for single-line
+ *       patterns, 0 otherwise; the OFFSET MODE marker can override.
  * After the search, "+<offset>m <mark_id>" marks the target line
  * without moving the cursor. */
 static void emit_search(FILE *out, char **anchors, int nanchors,
 			int offset, int mark_id,
-			int target_line, int pre_escaped, int first)
+			int target_line, int pre_escaped, int first, int mode)
 {
-	int single = nanchors == 1;
+	int single = mode == 1;
 	if (single) {
 		/* reset xoff to 0 so the .,$ region starts at the
 		 * current line's first column */
@@ -926,6 +931,8 @@ typedef struct group_s {
 	int ncustom_pat[3];
 	int custom_pat_off[3];     /* per-section +N first-line override */
 	int custom_pat_has_off[3];
+	int custom_pat_mode[3];    /* per-section MODE override (0/1) */
+	int custom_pat_has_mode[3];
 	int custom_offset;       /* offset from EDIT COMMAND +N (patterns 1-2) */
 	/* Per-group strategy selection (interactive mode) */
 	int strategy;            /* enum strategy */
@@ -966,6 +973,7 @@ typedef struct {
 	int pre_escaped;  /* 1 = user regex (exarg only), 0 = raw text */
 	int offset;       /* lines from match start to the target line */
 	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
+	int mode;         /* search mode: 0 = %;f> (register), 1 = .,$f> (buffer) */
 } pat_spec_t;
 
 /* Default (non-edited) lines for fallback pattern pi:
@@ -1086,15 +1094,30 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
  * <n>?? branch marks the target and 1q short-circuits out of the
  * block, skipping the remaining attempts and the check. After the
  * last block (no 1q) a single <0;1;..>??! DNF check over all tags
- * reports the failure. */
+ * reports the failure.
+ * A mode-1 pattern (single-line by default) searches the live buffer
+ * with ";0\:0reg\:.,$f> ^pat$" instead, restoring the register cache
+ * with 98reg on both the success (before 1q) and no-match paths. */
 static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 				int mark_id, int target_line, int first)
 {
 	fputc('?', out);
 	for (int n = 0; n < nps; n++) {
+		int m1 = ps[n].mode == 1;
 		if (n)
 			EMIT_ESCSEP(out);
-		fputs(first ? "%;f> " : "%;f+ ", out);
+		if (m1) {
+			/* Mode 1: search the live buffer directly. ";0"
+			 * resets xoff, "0reg" clears the default register so
+			 * f> reads the buffer (not the cache); the matching
+			 * 98reg below restores the cache for later blocks. */
+			fputs(";0", out);
+			EMIT_ESCSEP(out);
+			fputs("0reg", out);
+			EMIT_ESCSEP(out);
+			fputs(first ? ".,\\$f> " : ".,\\$f+ ", out);
+		} else
+			fputs(first ? "%;f> " : "%;f+ ", out);
 		emit_chain_pattern(out, &ps[n]);
 		EMIT_ESCSEP(out);
 		fprintf(out, dyn_esc ? "%d${ESC}?${ESC}?" : "%d\\\\?\\\\?", n);
@@ -1111,11 +1134,22 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 				cur_file_path ? cur_file_path : "?",
 				target_line, n);
 		}
+		if (m1) {
+			/* restore the register cache on the success path,
+			 * before 1q quits out of the chain */
+			EMIT_ESC3SEP(out);
+			fputs("98reg", out);
+		}
 		if (n < nps - 1) {
 			/* 1q sits inside the <n>?? then-arg, one level
 			 * deeper, so its separator needs three escapes */
 			EMIT_ESC3SEP(out);
 			fputs("1q", out);
+		}
+		if (m1) {
+			/* restore the cache on the no-match fall-through */
+			EMIT_ESCSEP(out);
+			fputs("98reg", out);
 		}
 	}
 	EMIT_SEP(out);
@@ -1299,6 +1333,8 @@ typedef struct {
 	int npattern[3], pat_cap[3];
 	int pat_off[3];      /* per-pattern OFFSET marker value */
 	int pat_has_off[3];
+	int pat_mode[3];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f> */
+	int pat_has_mode[3];
 	char **abs_cmd;
 	int nabs, abs_cap;
 	char **rel_cmd;
@@ -1360,15 +1396,21 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 	while (fgets(line, sizeof(line), f)) {
 		chomp(line);
 
-		/* "=== OFFSET <%+d> ===" marker right after a SEARCH
-		 * PATTERN header: the offset for that pattern. Handled
-		 * before the generic reset so in_pat stays active. */
+		/* "=== OFFSET <%+d> MODE <%d> ===" marker right after a
+		 * SEARCH PATTERN header: the offset and search mode for that
+		 * pattern. Handled before the generic reset so in_pat stays
+		 * active. MODE is optional (older files omit it). */
 		if (strncmp(line, "=== OFFSET ", 11) == 0) {
 			if (in_pat && file_idx >= 0 && gi >= 0 &&
 			    gi < active[file_idx]->ngroups) {
 				parsed_grp_t *pg = &per_file_results[file_idx][gi];
 				pg->pat_off[in_pat - 1] = atoi(line + 11);
 				pg->pat_has_off[in_pat - 1] = 1;
+				char *m = strstr(line + 11, " MODE ");
+				if (m) {
+					pg->pat_mode[in_pat - 1] = atoi(m + 6);
+					pg->pat_has_mode[in_pat - 1] = 1;
+				}
 			}
 			continue;
 		}
@@ -1556,6 +1598,9 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 		if (gd->pat_has_off[pi])
 			fprintf(out, "=== offset%d %+d ===\n",
 				pi + 1, gd->pat_off[pi]);
+		if (gd->pat_has_mode[pi])
+			fprintf(out, "=== mode%d %d ===\n",
+				pi + 1, gd->pat_mode[pi]);
 	}
 	if (gd->nabs > 0) {
 		fprintf(out, "=== edit_cmd_abs ===\n");
@@ -1670,11 +1715,18 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			int doff;
 			int n = default_pat_lines(g, pi, praw, &doff);
 			/* OFFSET marker: lines from match start to the edit
-			 * target when this pattern matches */
+			 * target when this pattern matches. MODE selects the
+			 * search form: 1 = .,$f> (live buffer, default for
+			 * single-line patterns), 0 = %;f> (register cache). */
 			int poff = (gd && gd->pat_has_off[pi])
 				   ? gd->pat_off[pi]
 				   : doff - (add_a ? 1 : 0);
-			fprintf(fp, "=== OFFSET %+d ===\n", poff);
+			int pat_nlines = (gd && gd->npattern[pi] > 0)
+					 ? gd->npattern[pi] : n;
+			int pmode = (gd && gd->pat_has_mode[pi])
+				    ? gd->pat_mode[pi]
+				    : pat_nlines == 1 ? 1 : 0;
+			fprintf(fp, "=== OFFSET %+d MODE %d ===\n", poff, pmode);
 			if (gd && gd->npattern[pi] > 0) {
 				for (int i = 0; i < gd->npattern[pi]; i++)
 					fprintf(fp, "%s\n", gd->pattern[pi][i]);
@@ -2065,6 +2117,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 						  src->npattern[pi]);
 					dst->pat_off[pi] = src->pat_off[pi];
 					dst->pat_has_off[pi] = src->pat_has_off[pi];
+					dst->pat_mode[pi] = src->pat_mode[pi];
+					dst->pat_has_mode[pi] = src->pat_has_mode[pi];
 				}
 				arr_clone(&dst->abs_cmd, &dst->nabs, &dst->abs_cap, src->abs_cmd,
 					  src->nabs);
@@ -2094,7 +2148,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					if (!lines_equal(eg->pattern[pi], eg->npattern[pi],
 							 og->pattern[pi], og->npattern[pi]) ||
 					    eg->pat_has_off[pi] != og->pat_has_off[pi] ||
-					    eg->pat_off[pi] != og->pat_off[pi])
+					    eg->pat_off[pi] != og->pat_off[pi] ||
+					    eg->pat_has_mode[pi] != og->pat_has_mode[pi] ||
+					    eg->pat_mode[pi] != og->pat_mode[pi])
 						pat_ch = 1;
 				int abs_ch = !lines_equal(eg->abs_cmd, eg->nabs,
 							  og->abs_cmd, og->nabs);
@@ -2163,6 +2219,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 							  eg->pattern[pi], eg->npattern[pi]);
 						gout->pat_off[pi] = eg->pat_off[pi];
 						gout->pat_has_off[pi] = eg->pat_has_off[pi];
+						gout->pat_mode[pi] = eg->pat_mode[pi];
+						gout->pat_has_mode[pi] = eg->pat_has_mode[pi];
 					}
 				if (abs_ch)
 					arr_clone(&gout->abs_cmd, &gout->nabs, &gout->abs_cap,
@@ -2196,6 +2254,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				if (eg->pat_has_off[pi]) {
 					g->custom_pat_has_off[pi] = 1;
 					g->custom_pat_off[pi] = eg->pat_off[pi];
+				}
+				if (eg->pat_has_mode[pi]) {
+					g->custom_pat_has_mode[pi] = 1;
+					g->custom_pat_mode[pi] = eg->pat_mode[pi];
 				}
 				if (eg->npattern[pi] == 0)
 					continue;
@@ -2602,6 +2664,9 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				? g->custom_pat_off[pi]
 				: pi == 2 ? 0 : g->custom_offset;
 			ps[nps].off_final = g->custom_pat_has_off[pi];
+			ps[nps].mode = g->custom_pat_has_mode[pi]
+				? g->custom_pat_mode[pi]
+				: g->ncustom_pat[pi] == 1 ? 1 : 0;
 			nps++;
 		}
 		if (nps == 0) {
@@ -2618,6 +2683,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].pre_escaped = 0;
 				ps[nps].offset = doff;
 				ps[nps].off_final = 0;
+				ps[nps].mode = n == 1 ? 1 : 0;
 				nps++;
 			}
 		}
@@ -2660,7 +2726,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		if (nps == 1)
 			emit_search(out, ps[0].lines, ps[0].nlines,
 				    ps[0].offset, g->mark_id, target_line,
-				    ps[0].pre_escaped, first_search);
+				    ps[0].pre_escaped, first_search, ps[0].mode);
 		else
 			emit_fallback_chain(out, ps, nps, g->mark_id,
 					    target_line, first_search);
@@ -3030,6 +3096,15 @@ int main(int argc, char **argv)
 							? c - '1' : 1;
 						cur_gd->pat_off[oi] = atoi(line + 11);
 						cur_gd->pat_has_off[oi] = 1;
+						continue;
+					}
+					if (strncmp(line, "=== mode", 8) == 0) {
+						/* "=== mode<1-3> <%d> ===" */
+						char c = line[8];
+						int mi = (c >= '1' && c <= '3')
+							? c - '1' : 1;
+						cur_gd->pat_mode[mi] = atoi(line + 9);
+						cur_gd->pat_has_mode[mi] = 1;
 						continue;
 					}
 					if (strcmp(line, "=== edit_cmd_abs ===") == 0) {
