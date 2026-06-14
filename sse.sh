@@ -177,7 +177,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index eb1eb7dc..e94c1103 100644
+index 7178cae0..9938c52f 100644
 --- a/led.c
 +++ b/led.c
 @@ -4,9 +4,28 @@ sbuf *led_attsb;

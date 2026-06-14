@@ -366,7 +366,7 @@ index 253b954c..35d17b24 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index eb1eb7dc..26403937 100644
+index 7178cae0..c729ab84 100644
 --- a/led.c
 +++ b/led.c
 @@ -428,7 +428,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po

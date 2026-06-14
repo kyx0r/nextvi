@@ -250,8 +250,8 @@ ${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:257:m4${ESC}${SEP}p
 if \\(freesub\\) \\{ \\\\${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	return 0;
 }
 
-${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:402:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#define _return\\(state\\) \\{ if \\(eol_ch\\) utf8_length\\[eol_ch\\] = 1; return state; } \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:402:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:402${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:409:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#define _return\\(state\\) \\{ if \\(eol_ch\\) utf8_length\\[eol_ch\\] = 1; return state; } \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:409:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:409${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		return 0;
 	flg = prog->flg \\| flg;
 	const char \\*sp = s, \\*_sp = s, \\*s0, \\*s1;
@@ -259,19 +259,19 @@ ${SEP}?%;f+ 		return 0;
 	rsub \\*subs\\[prog->splits\\];
 	rsub \\*nsub, \\*sub, \\*matched = NULL, \\*freesub = NULL;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		return 0;
 	flg = prog->flg \\| flg;
-	const char \\*sp = s, \\*_sp = s, \\*s0, \\*s1;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:628:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	int \\*pcs\\[prog->splits\\], \\*npc, \\*pc, \\*insts = prog->insts;
-	rsub \\*subs\\[prog->splits\\];${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:628:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:628${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	const char \\*sp = s, \\*_sp = s, \\*s0, \\*s1;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:635:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	int \\*pcs\\[prog->splits\\], \\*npc, \\*pc, \\*insts = prog->insts;
+	rsub \\*subs\\[prog->splits\\];${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:635:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:635${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	rsub \\*nsub, \\*sub, \\*matched = NULL, \\*freesub = NULL;
 	rthread _clist\\[prog->len\\], _nlist\\[prog->len\\];
-	rthread \\*clist = _clist, \\*nlist = _nlist, \\*tmp;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+1m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	rsub \\*nsub, \\*sub, \\*matched = NULL, \\*freesub = NULL;\$${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:631:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	rthread _clist\\[prog->len\\], _nlist\\[prog->len\\];\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:631:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:631${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	rthread \\*clist = _clist, \\*nlist = _nlist, \\*tmp;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+1m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	rsub \\*nsub, \\*sub, \\*matched = NULL, \\*freesub = NULL;\$${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:638:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	rthread _clist\\[prog->len\\], _nlist\\[prog->len\\];\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:638:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:638${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	rthread \\*clist = _clist, \\*nlist = _nlist, \\*tmp;
 	const char \\*_subp\\[2\\], \\*lb\\[prog->laidx\\+1\\];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubc \\* sizeof\\(char\\*\\);
-	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+1m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	rthread \\*clist = _clist, \\*nlist = _nlist, \\*tmp;\$${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:633:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	const char \\*_subp\\[2\\], \\*lb\\[prog->laidx\\+1\\];\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:633:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:633${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+1m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	rthread \\*clist = _clist, \\*nlist = _nlist, \\*tmp;\$${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:640:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	const char \\*_subp\\[2\\], \\*lb\\[prog->laidx\\+1\\];\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:640:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:640${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	int cnt, spc, i, c, j, osubp = nsubc \\* sizeof\\(char\\*\\);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \\${ESC}? '\\\\n' : 0;
@@ -281,9 +281,9 @@ ${SEP}?%;f+ 	int cnt, spc, i, c, j, osubp = nsubc \\* sizeof\\(char\\*\\);
 		lb\\[i\\] = NULL;
 	if \\(eol_ch\\)${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	int cnt, spc, i, c, j, osubp = nsubc \\* sizeof\\(char\\*\\);
 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
-	int eol_ch = flg & REG_NEWLINE \\${ESC}? '\\\\n' : 0;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:638:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	unsigned int sdense\\[prog->sparsesz\\], sparsesz = 0;
-	char nsubs\\[prog->sub\\];${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:638:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:638${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	int eol_ch = flg & REG_NEWLINE \\${ESC}? '\\\\n' : 0;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:645:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	unsigned int sdense\\[prog->sparsesz\\], sparsesz = 0;
+	char nsubs\\[prog->sub\\];${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:645:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:645${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ /\\* return the index of the matching regular expression or -1 if none matches \\*/
 int rset_find\\(rset \\*rs, char \\*s, int \\*grps, int flg\\)
 \\{
@@ -292,8 +292,8 @@ int rset_find\\(rset \\*rs, char \\*s, int \\*grps, int flg\\)
 	if \\(re_pikevm\\(rs->regex, s, sub, rs->nsubc, flg\\)\\) \\{
 		subs\\[1\\] = NULL; /\\* make sure sub\\[-1\\] never matches \\*/${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ /\\* return the index of the matching regular expression or -1 if none matches \\*/
 int rset_find\\(rset \\*rs, char \\*s, int \\*grps, int flg\\)
-\\{${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:717:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	const char \\*subs\\[rs->nsubc\\+2\\];\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:717:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:717${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+\\{${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:724:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	const char \\*subs\\[rs->nsubc\\+2\\];\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:724:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:724${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 						grps\\[gi \\+ 1\\] = -1;
 					}
 				}
@@ -301,8 +301,8 @@ ${SEP}?%;f+ 						grps\\[gi \\+ 1\\] = -1;
 			}
 		}${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 						grps\\[gi \\+ 1\\] = -1;
 					}
-				}${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:733:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:733${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+				}${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:740:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:740${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 			}
 		}
 	}
@@ -311,8 +311,8 @@ ${SEP}?%;f+ 			}
 
 ${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 			}
 		}
-	}${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:737:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:737${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	}${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:744:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:744${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \\
 free(pcs); \\
@@ -323,23 +323,23 @@ free(_nlist); \\
 free(nsubs); \\
 free(lb); \\
 return state; } \\
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:402:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:409:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1,#+1c 	int *npc, *pc, *insts = prog->insts;
 	int **pcs = emalloc((prog->splits) * sizeof(int*));
 	rsub **subs = emalloc(prog->splits * sizeof(rsub*));
 	unsigned int *sdense = emalloc(prog->sparsesz * sizeof(unsigned int)), sparsesz = 0;
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:628:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:635:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:631:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3s/lb\\[prog->laidx\\+1\\]/*lb = emalloc(prog->laidx * sizeof(lb[0]))/${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:633:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:638:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'3s/lb\\[prog->laidx\\+1\\]/*lb = emalloc(prog->laidx * sizeof(lb[0]))/${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:640:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4,#+1c 	char *nsubs = emalloc(prog->sub);
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:638:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:645:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5c 	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:717:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:724:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'6a 				free(subs);
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:733:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:740:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'7a 	free(subs);
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:737:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya b${SEP}?%;f> 	if \\(fti >= ftmidx\\)
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:744:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya b${SEP}?%;f> 	if \\(fti >= ftmidx\\)
 		ftmap = erealloc\\(ftmap, \\(fti \\+ 1\\) \\* sizeof\\(\\*ftmap\\)\\);
 	int i = n, set = hls\\[i\\]\\.set;
 	char \\*pats\\[hlslen\\];
@@ -665,7 +665,7 @@ index e550fa9d..b3a57a8c 100644
  }
  
 diff --git a/led.c b/led.c
-index eb1eb7dc..cf0f7764 100644
+index 7178cae0..001af501 100644
 --- a/led.c
 +++ b/led.c
 @@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
@@ -721,10 +721,10 @@ index eb1eb7dc..cf0f7764 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 48aceade..666ed249 100644
+index ec292e93..25067673 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -399,7 +399,15 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
+@@ -406,7 +406,15 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
  	return 0;
  }
  
@@ -741,7 +741,7 @@ index 48aceade..666ed249 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -625,18 +633,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
+@@ -632,18 +640,19 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
  		return 0;
  	flg = prog->flg | flg;
  	const char *sp = s, *_sp = s, *s0, *s1;
@@ -767,7 +767,7 @@ index 48aceade..666ed249 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
  	if (eol_ch)
-@@ -714,7 +723,7 @@ rset *rset_make(int n, char **re, int flg)
+@@ -721,7 +730,7 @@ rset *rset_make(int n, char **re, int flg)
  /* return the index of the matching regular expression or -1 if none matches */
  int rset_find(rset *rs, char *s, int *grps, int flg)
  {
@@ -776,7 +776,7 @@ index 48aceade..666ed249 100644
  	const char **sub = subs+2;
  	if (re_pikevm(rs->regex, s, sub, rs->nsubc, flg)) {
  		subs[1] = NULL; /* make sure sub[-1] never matches */
-@@ -731,10 +740,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
+@@ -738,10 +747,12 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
  						grps[gi + 1] = -1;
  					}
  				}

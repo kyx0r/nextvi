@@ -343,8 +343,8 @@ char \\*re_read\\(char \\*\\*src\\)
 \\{${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	sbufn_ret\\(sb, sb->s\\)
 }
 
-${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:770:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:770${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:777:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:777${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a /* return zero if a simple pattern is given */
 static int rstr_simple(rstr *rs, char *re, int icase)
@@ -486,7 +486,7 @@ void rstr_free(rstr *rs)
 	free(rs);
 }
 
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:770:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya b${SEP}?%;f> 	ex_regput\\(tolower\\(c\\), s, isupper\\(c\\)\\);
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:777:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya b${SEP}?%;f> 	ex_regput\\(tolower\\(c\\), s, isupper\\(c\\)\\);
 }
 
 rset \\*fsincl;
@@ -833,10 +833,10 @@ index e550fa9d..c30b36d4 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 48aceade..7de95777 100644
+index ec292e93..575ffb83 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -768,6 +768,146 @@ char *re_sread(char **src, int delim, int esc)
+@@ -775,6 +775,146 @@ char *re_sread(char **src, int delim, int esc)
  	sbufn_ret(sb, sb->s)
  }
  

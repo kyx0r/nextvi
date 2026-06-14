@@ -430,7 +430,7 @@ index 253b954c..d33b432b 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index eb1eb7dc..5d507c85 100644
+index 7178cae0..3aae74b9 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
