@@ -107,11 +107,11 @@ void lbuf_mark\\(struct lbuf \\*lb, int mk, int pos, int off\\);
 int lbuf_jump\\(struct lbuf \\*lb, int mk, int \\*pos, int \\*off\\);
 int lbuf_undo\\(struct lbuf \\*lb, int \\*row, int \\*off\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
 void lbuf_emark\\(struct lbuf \\*lb, struct lopt \\*lo, int end, int o2\\);
-struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:171:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:171${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:172:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:172${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:171:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'lbuf.c' 'vi.c' 'vi.h'
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:172:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'lbuf.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
@@ -185,10 +185,10 @@ index d133d031..8885852a 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 98f80e03..71830c41 100644
+index 53bc0e72..0c56a987 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -169,6 +169,7 @@ char *lbuf_get(struct lbuf *lb, int pos);
+@@ -170,6 +170,7 @@ char *lbuf_get(struct lbuf *lb, int pos);
  void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
  void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
  struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del);

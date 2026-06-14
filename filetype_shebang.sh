@@ -41,8 +41,8 @@ EXINIT="|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}?%;f> 			fd 
 
 ${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\${ESC}? 'f' : 'r'\\);
 	if \\(!\\(xvis & 4\\)\\)
-		ex_print\\(msg, bar_ft\\)${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:383:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:383${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		ex_print\\(msg, bar_ft\\)${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:384:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:384${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
@@ -61,16 +61,16 @@ ${SEP}'0a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 			xb_ft = syn_setft(lfts[hl].ft);
 		rset_free(rs);
 	}
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:383:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'ex.c'
+${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:384:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'ex.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index bc6a6269..a9ed227c 100644
+index 253b954c..c7ddf00f 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -381,6 +381,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -382,6 +382,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  			fd < 0 || rd ? 'f' : 'r');
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)
