@@ -514,7 +514,7 @@ Parsing follows the structure:
 Ex commands are initiated and separated by <sep>. Fields can be
 padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
 which accepts [range] structure characters. Padding inside [prefix]
-structure is collapsed, except within nested structures. There
+structure is collapsed, except within nested blocks. There
 can only be one pad in between [cmd] and [args]. To avoid ambiguity
 in scripts, it is recommended to always use a pad between [cmd]
 and [args].
@@ -595,7 +595,7 @@ Mark structure
 .It Cm \&%
 Range from first to last line
 .It Cm \&|
-Begin ex command structure
+Begin ex command block
 .It Cm \&,
 Vertical range separator
 .It Cm \&;
@@ -609,9 +609,9 @@ Last line of a buffer or end of line
 .It Cm \&'
 Begin mark structure
 .It Cm \&>
-Begin search forward structure
+Begin search forward block
 .It Cm \&<
-Begin search backward structure
+Begin search backward block
 .It Cm \&-
 Subtract following number
 .It Cm \&+
