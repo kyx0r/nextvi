@@ -64,7 +64,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 	char *re = re_loc, *s, *p;
 	int *code = sizecode ? NULL : prog->insts;
 	int start = PC, term = PC, lb_start = 0;
-	int alt_label = 0, c, l, cnt;
+	int alt_label = 0, c, l;
 	int alt_stack[4096], altc = 0;
 	int cap_stack[4096 * 5], capc = 0;
 
@@ -94,20 +94,19 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			break;
 		case '[':;
 			term = PC;
-			re++;
-			s = re + (*re == '\\');
-			uc_code(c, s, l)
-			if (*re != '^' && *re != ']' && l && s[l] == ']') {
-				re = s + l;  /* degrade a single character to CHAR */
-				goto emit_char;
-			}
-			EMIT(PC++, CLASS);
-			if (*re == '^') {
-				EMIT(PC++, 0);
+			int cnt, neq = *(++re) == '^';
+			if (neq)
 				re++;
-			} else
-				EMIT(PC++, 1);
-			PC++;
+			else if (*re != ']') {
+				s = re + (*re == '\\');
+				l = uc_len(s);
+				if (l && s[l] == ']') {
+					uc_code(c, s, l)
+					re = s + l;  /* degrade a single character to CHAR */
+					goto emit_char;
+				}
+			}
+			PC += 3;
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (*re == '\\')
 					re++;
@@ -126,6 +125,8 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					return -1;
 				re += l;
 			}
+			EMIT(term, CLASS);
+			EMIT(term + 1, neq);
 			EMIT(term + 2, cnt);
 			break;
 		case '(':;
@@ -589,7 +590,7 @@ for (;; sp = _sp) { \
 				if (c >= *pc && c <= pc[1]) \
 					cnt = -1; \
 			} \
-			if ((!cnt && npc[1]) || (cnt < 0 && !npc[1])) \
+			if (!(cnt || npc[1]) || (cnt < 0 && npc[1])) \
 				deccont() \
 			npc += npc[2] * 2 + 3; \
 		} else if (spc == MATCH) { \
