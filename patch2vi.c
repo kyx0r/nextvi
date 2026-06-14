@@ -136,7 +136,7 @@ static unsigned char byte_used[256];
 /* Dynamic ex escape byte set via :sc (like the separator); exported to
  * the script as $ESC. 0 = no free byte, keep the default backslash
  * escape paths. With a dynamic escape, backslash is no longer special
- * to ex_arg or to the ? conditional's ex_rsubexp, so content and regex
+ * to ex_arg or to the ? conditional's re_sread, so content and regex
  * escapes pass through unmodified; only the ? delimiter itself needs
  * ${ESC} protection inside ? blocks. */
 static int dyn_esc;
@@ -1019,7 +1019,7 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 }
 
 /* Chain pattern escaping for a dynamic ex escape: ex_arg no longer
- * consumes backslashes and the ? conditional's ex_rsubexp honors the
+ * consumes backslashes and the ? conditional's re_sread honors the
  * dynamic escape, stripping <esc> only before its ? delimiter. Every ?
  * gets <esc>-prefixed so it doesn't end the cond argument early: a
  * literal ? (regex "\?") becomes "\<esc>?" and a bare quantifier ?
@@ -1047,7 +1047,7 @@ static char *escape_chain_dyn(const char *s)
  * The conditional nesting consumes one more escape layer than a
  * top-level search: after exarg escaping, every backslash is doubled
  * again and ? is escaped (an unescaped ? would end the cond argument).
- * With a dynamic escape only the re_read layer remains (see
+ * With a dynamic escape only the re_sread layer remains (see
  * escape_chain_dyn). */
 static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 {
@@ -3209,7 +3209,7 @@ process_line:
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
-		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0${ESC}${ESC}${ESC}${ESC}${ESC}?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0${ESC}${ESC}${ESC}?\"\n"
 		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0${ESC}?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\" || QF1=\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
