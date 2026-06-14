@@ -300,7 +300,7 @@ EX PARSING
      Ex commands are initiated and separated by <sep>. Fields can be
      padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
      which accepts [range] structure characters. Padding inside [prefix]
-     structure is collapsed, except within nested structures. There
+     structure is collapsed, except within nested blocks. There
      can only be one pad in between [cmd] and [args]. To avoid ambiguity
      in scripts, it is recommended to always use a pad between [cmd]
      and [args].
@@ -367,15 +367,15 @@ EX RANGES
              Mark structure
 
      %       Range from first to last line
-     |       Begin ex command structure
+     |       Begin ex command block
      ,       Vertical range separator
      ;       Horizontal range separator
      #       Rebase to previous value in range structure
      .       Current position
      $       Last line of a buffer or end of line
      '       Begin mark structure
-     >       Begin search forward structure
-     <       Begin search backward structure
+     >       Begin search forward block
+     <       Begin search backward block
      -       Subtract following number
      +       Add following number
      *       Multiply by the following number
