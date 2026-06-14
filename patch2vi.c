@@ -1938,6 +1938,28 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 	if (rej)
 		fclose(rej);
 
+	/* -i (interactive, non-delta): every stored delta is rejected
+	 * wholesale. in_fd_per stays NULL so nothing is injected or
+	 * preserved; the deltas are dumped to .rej so the user can
+	 * re-apply them by hand, mirroring -d's reject flow. */
+	if (!delta_mode && nin_deltas) {
+		FILE *irej = fopen(rejpath, "w");
+		if (irej) {
+			fprintf(irej, "# Rejected: interactive (-i)"
+				      " discards all stored deltas\n\n");
+			for (int di = 0; di < nin_deltas; di++) {
+				file_delta_t *in_fd = &in_deltas[di];
+				fprintf(irej, "=== FILE: %s ===\n", in_fd->filepath);
+				for (int gi = 0; gi < in_fd->ngrps; gi++)
+					emit_grp_delta(irej, &in_fd->grps[gi]);
+				fprintf(irej, "%s\n", end_tag_wr);
+				fputc('\n', irej);
+			}
+			fclose(irej);
+			delta_rejected = 1;
+		}
+	}
+
 	/* Write editor file with stored delta injected (has_star was cleared
 	 * for rejected groups above, so custom_text won't be written). */
 	FILE *tmp_fp = fdopen(fd, "w");
@@ -2929,7 +2951,7 @@ int main(int argc, char **argv)
 				if (strncmp(line, "=== DELTA ", 10) == 0) {
 					in_sect = 0;
 					cur_gd = NULL;
-					if (delta_mode) {
+					if (interactive_mode) {
 						char *p = line + 10;
 						char *end = strstr(p, " ===");
 						if (end)
@@ -2944,7 +2966,7 @@ int main(int argc, char **argv)
 					}
 					continue;
 				}
-				if (!delta_mode || !cur_fd)
+				if (!interactive_mode || !cur_fd)
 					continue;
 				if (line[0] == '=' && strncmp(line, "=== ", 4) == 0) {
 					if (strncmp(line, "=== GROUP ", 10) == 0) {
