@@ -1205,13 +1205,37 @@ static void emit_mark_change(FILE *out, int line, int mark_id,
 	emit_err_check_mark(out, line, mark_id);
 }
 
+/* A trailing run of backslashes sitting immediately before the closing
+ * delimiter is halved by nextvi's re_read parity rule (commit d94cd92):
+ * a run of n escapes before the delim emits ceil(n/2). Our escapers
+ * already doubled each literal backslash (k literals -> 2k here), but
+ * re_read would then halve 2k back to k, leaving a dangling escape. So
+ * double the trailing run once more (-> 4k) so re_read restores the
+ * intended 2k. Only the run adjacent to the delimiter is affected; an
+ * interior escape is followed by an ordinary char and passes through
+ * unchanged, so this must not touch non-trailing backslashes. */
+static char *double_trailing_esc(char *s)
+{
+	int len = strlen(s), t = 0;
+	while (t < len && s[len - 1 - t] == '\\')
+		t++;
+	if (!t)
+		return s;
+	char *r = emalloc(len + t + 1);
+	memcpy(r, s, len);
+	memset(r + len, '\\', t);
+	r[len + t] = '\0';
+	free(s);
+	return r;
+}
+
 /* Escape replacement text for substitute command.
  * In nextvi :s replacement, only \ is special (for backreferences \0-\9).
  * Delimiter must also be escaped. delim is always '/' in current callers. */
 static char *escape_sub_repl(const char *s, char delim)
 {
 	char set[3] = { '\\', delim, 0 };
-	return escape_chars(s, set);
+	return double_trailing_esc(escape_chars(s, set));
 }
 
 /* Escape regex pattern for substitute command.
@@ -1221,7 +1245,7 @@ static char *escape_sub_pat(const char *s, char delim)
 	char set[sizeof(REGEX_META) + 1];
 	int n = snprintf(set, sizeof(set), "%s%c", REGEX_META, delim);
 	(void)n;
-	return escape_chars(s, set);
+	return double_trailing_esc(escape_chars(s, set));
 }
 
 /* Emit the s/old/new/ substitute command (no positioning).
