@@ -81,10 +81,11 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			}
 		default:
 			term = PC;
-			EMIT(PC++, CHAR);
 			uc_code(c, re, l)
+			emit_char:
 			if (flg & REG_ICASE && (unsigned int)c < 128)
 				c = tolower(c);
+			EMIT(PC++, CHAR);
 			EMIT(PC++, c);
 			break;
 		case '.':
@@ -94,6 +95,12 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 		case '[':;
 			term = PC;
 			re++;
+			s = re + (*re == '\\');
+			uc_code(c, s, l)
+			if (*re != '^' && *re != ']' && l && s[l] == ']') {
+				re = s + l;  /* degrade a single character to CHAR */
+				goto emit_char;
+			}
 			EMIT(PC++, CLASS);
 			if (*re == '^') {
 				EMIT(PC++, 0);
