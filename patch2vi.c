@@ -388,6 +388,16 @@ static int count_occurrences(const char *haystack, const char *needle)
 	return count;
 }
 
+/* Count occurrences of s[start..end) as a substring of s. */
+static int range_occurs(const char *s, int start, int end)
+{
+	int len = end - start;
+	char tmp[len + 1];
+	memcpy(tmp, s + start, len);
+	tmp[len] = '\0';
+	return count_occurrences(s, tmp);
+}
+
 /* Step os back 1 byte and over UTF-8 continuation bytes, mirroring on ns. */
 static int diff_expand_left(const char *old, int *os, int *ns)
 {
@@ -468,19 +478,11 @@ static int find_line_diff(const char *old, const char *new,
 	 * Since prefix and suffix are shared between old and new,
 	 * expanding symmetrically keeps both regions aligned. */
 	while (old_diff_end - old_diff_start > 0) {
-		int dlen = old_diff_end - old_diff_start;
-		char tmp[dlen + 1];
-		memcpy(tmp, old + old_diff_start, dlen);
-		tmp[dlen] = '\0';
-		if (count_occurrences(old, tmp) <= 1)
+		if (range_occurs(old, old_diff_start, old_diff_end) <= 1)
 			break;
 		/* Prefer left expansion, then right if still not unique. */
 		int expanded = diff_expand_left(old, &old_diff_start, &new_diff_start);
-		int elen = old_diff_end - old_diff_start;
-		char etmp[elen + 1];
-		memcpy(etmp, old + old_diff_start, elen);
-		etmp[elen] = '\0';
-		if (!expanded || count_occurrences(old, etmp) > 1)
+		if (!expanded || range_occurs(old, old_diff_start, old_diff_end) > 1)
 			expanded |= diff_expand_right(old, old_len, &old_diff_end, &new_diff_end);
 		if (!expanded)
 			break;
@@ -2778,13 +2780,17 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		fputs("${LB}\n", out);
 		EMIT_SEP(out);
 
-		if (g->del_start && g->nadd) {
-			if (strat == STRAT_ABS && g->custom_abs_lines) {
-				emit_custom_edit_lines(out, g->custom_abs_lines,
-						       g->custom_abs_nlines);
-				EMIT_SEP(out);
-				emit_err_check_mark(out, tline, g->mark_id);
-			} else if (strat == STRAT_RELC) {
+		/* Custom abs/rel edit commands apply regardless of del/add shape */
+		if (strat == STRAT_ABS && g->custom_abs_lines) {
+			emit_custom_edit_lines(out, g->custom_abs_lines,
+					       g->custom_abs_nlines);
+			EMIT_SEP(out);
+			emit_err_check_mark(out, tline, g->mark_id);
+		} else if (strat == STRAT_REL && g->custom_rel_lines
+			   && g->custom_rel_nlines > 0) {
+			EMIT_MARK_EDIT(g->custom_rel_lines, g->custom_rel_nlines);
+		} else if (g->del_start && g->nadd) {
+			if (strat == STRAT_RELC) {
 				if (g->custom_relc_lines && g->custom_relc_nlines > 0) {
 					/* custom relc lines address the current
 					 * line (".;A;Bc"): jump to the mark first */
@@ -2798,56 +2804,24 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 					emit_horiz_tail(out, g);
 				}
 				emit_err_check_mark(out, tline, g->mark_id);
-			} else if (strat == STRAT_REL) {
-				if (g->custom_rel_lines && g->custom_rel_nlines > 0) {
-					EMIT_MARK_EDIT(g->custom_rel_lines,
-						       g->custom_rel_nlines);
-				} else if (g->ndel == 1 && g->nadd == 1 &&
-					   g->has_line_diff) {
-					emit_mark_substitute(out, tline, g->mark_id,
-							     g->ld_old_text, g->ld_new_text);
-				} else {
-					emit_mark_change(out, tline, g->mark_id,
-							 g->ndel, g->add_texts, g->nadd);
-				}
+			} else if (strat == STRAT_REL && g->ndel == 1 && g->nadd == 1
+				   && g->has_line_diff) {
+				emit_mark_substitute(out, tline, g->mark_id,
+						     g->ld_old_text, g->ld_new_text);
+			} else if (strat == STRAT_ABS && g->ndel == 1 && g->nadd == 1
+				   && g->has_line_diff) {
+				fprintf(out, "'%d", g->mark_id);
+				emit_horiz_tail(out, g);
+				emit_err_check_mark(out, tline, g->mark_id);
 			} else {
-				/* STRAT_ABS */
-				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
-					fprintf(out, "'%d", g->mark_id);
-					emit_horiz_tail(out, g);
-					emit_err_check_mark(out, tline, g->mark_id);
-				} else {
-					emit_mark_change(out, tline, g->mark_id,
-							 g->ndel, g->add_texts, g->nadd);
-				}
+				emit_mark_change(out, tline, g->mark_id,
+						 g->ndel, g->add_texts, g->nadd);
 			}
 		} else if (g->del_start) {
-			if (strat == STRAT_ABS && g->custom_abs_lines) {
-				emit_custom_edit_lines(out, g->custom_abs_lines,
-						       g->custom_abs_nlines);
-				EMIT_SEP(out);
-				emit_err_check_mark(out, tline, g->mark_id);
-			} else if (strat == STRAT_REL && g->custom_rel_lines
-				   && g->custom_rel_nlines > 0) {
-				EMIT_MARK_EDIT(g->custom_rel_lines,
-					       g->custom_rel_nlines);
-			} else {
-				emit_mark_delete(out, tline, g->mark_id, g->ndel);
-			}
+			emit_mark_delete(out, tline, g->mark_id, g->ndel);
 		} else if (g->nadd) {
-			if (strat == STRAT_ABS && g->custom_abs_lines) {
-				emit_custom_edit_lines(out, g->custom_abs_lines,
-						       g->custom_abs_nlines);
-				EMIT_SEP(out);
-				emit_err_check_mark(out, tline, g->mark_id);
-			} else if (strat == STRAT_REL && g->custom_rel_lines
-				   && g->custom_rel_nlines > 0) {
-				EMIT_MARK_EDIT(g->custom_rel_lines,
-					       g->custom_rel_nlines);
-			} else {
-				emit_mark_insert(out, tline, g->mark_id, g->insert_i,
-						 g->add_texts, g->nadd);
-			}
+			emit_mark_insert(out, tline, g->mark_id, g->insert_i,
+					 g->add_texts, g->nadd);
 		}
 		free_group(g);
 	}
