@@ -278,8 +278,7 @@ void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2)
 			s2 = o2 >= o1 ? uc_chr(s1, o2 - o1) : send;
 			if (s2 > s1)
 				sbuf_mem(sb, s1, s2 - s1)
-			sbuf_null(sb)
-			return;
+			goto ret;
 		}
 		s2 = o1 >= 0 ? uc_chr(s1, o1) : send;
 		if (send > s2)
@@ -292,6 +291,7 @@ void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2)
 		if (s1 > s2)
 			sbuf_mem(sb, s2, s1 - s2)
 	}
+	ret:
 	sbufn_null(sb)
 }
 
