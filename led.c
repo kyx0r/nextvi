@@ -120,7 +120,7 @@ for (i = 0; i < cterm;) { \
 		char *s = ren_translate(chrs[o], s0); \
 		if (s) \
 			sbuf_str(out, s) \
-		else if (uc_isprint(chrs[o])) { \
+		else if (uc_isprint(*chrs[o])) { \
 			l = uc_len(chrs[o]); \
 			print_ch##n(out) \
 		} else { \
@@ -269,7 +269,7 @@ static int led_lastword(char *s)
 {
 	char *r = *s ? uc_beg(s, strchr(s, '\0') - 1) : s;
 	int kind;
-	while (r > s && uc_isspace(r))
+	while (r > s && uc_isspace(*r))
 		r = uc_beg(s, r - 1);
 	kind = r > s ? uc_kind(r) : 0;
 	while (r > s && uc_kind(uc_beg(s, r - 1)) == kind)

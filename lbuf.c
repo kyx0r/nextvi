@@ -464,7 +464,7 @@ int lbuf_indents(struct lbuf *lb, int r)
 	int o;
 	if (!ln)
 		return 0;
-	for (o = 0; uc_isspace(ln); o++)
+	for (o = 0; uc_isspace(*ln); o++)
 		ln += uc_len(ln);
 	return *ln ? o : o - 2;
 }
@@ -600,7 +600,7 @@ int lbuf_wordbeg(struct lbuf *lb, int big, int dir, int *row, int *off)
 	nl = *rstate->chrs[*off] == '\n';
 	if (lbuf_next(lb, dir, row, off))
 		return 1;
-	while (uc_isspace(rstate->chrs[*off])) {
+	while (uc_isspace(*rstate->chrs[*off])) {
 		nl += *rstate->chrs[*off] == '\n';
 		if (nl == 2)
 			return 0;
@@ -616,13 +616,13 @@ int lbuf_wordend(struct lbuf *lb, int big, int dir, int *row, int *off)
 	if (!lbuf_get(lb, *row))
 		return 1;
 	ren_state *r = ren_position(lbuf_get(lb, *row));
-	if (!uc_isspace(r->chrs[*off])) {
+	if (!uc_isspace(*r->chrs[*off])) {
 		if (lbuf_next(lb, dir, row, off))
 			return 1;
 		nl = dir < 0 && *rstate->chrs[*off] == '\n';
 	}
 	nl += dir > 0 && *rstate->chrs[*off] == '\n';
-	while (uc_isspace(rstate->chrs[*off])) {
+	while (uc_isspace(*rstate->chrs[*off])) {
 		if (lbuf_next(lb, dir, row, off))
 			return 1;
 		nl += *rstate->chrs[*off] == '\n';

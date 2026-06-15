@@ -80,9 +80,9 @@ char *uc_dup(const char *s)
 
 int uc_kind(char *c)
 {
-	if (uc_isspace(c))
+	if (uc_isspace(*c))
 		return 0;
-	if (uc_isalpha(c) || uc_isdigit(c) || c[0] == '_')
+	if (uc_isalpha(*c) || uc_isdigit(*c) || c[0] == '_')
 		return 1;
 	return 2;
 }

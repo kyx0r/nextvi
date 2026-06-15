@@ -249,7 +249,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		++*num;
 		break;
 	case '\'':
-		if (!isdigit((unsigned char)*++(*num)))
+		if (!uc_isdigit(*++(*num)))
 			return -1;
 		off = atoi(*num);
 		if (lbuf_jump(xb, off, &n, row ? &n : &dir))
@@ -279,10 +279,10 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		n = row ? off : beg;
 		break;
 	default:
-		if (isdigit((unsigned char)**num)) {
+		if (uc_isdigit(**num)) {
 			adj = !row;
 			n = atoi(*num);
-			while (isdigit((unsigned char)**num))
+			while (uc_isdigit(**num))
 				++*num;
 		}
 	}
@@ -300,7 +300,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 			n %= dir;
 		else
 			break;
-		for (++*num; isdigit((unsigned char)**num);)
+		for (++*num; uc_isdigit(**num);)
 			++*num;
 	}
 	return n - adj;
@@ -503,7 +503,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		}
 		if (TK_INT(inst))
 			goto ret;
-		if (c && c < 11 && isdigit(inst)) {
+		if (c && c < 11 && uc_isdigit(inst)) {
 			inst -= '0';
 			if (inst < c) {
 				fuzz->s_n--;
@@ -790,7 +790,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 	if (xpr > 0) {
 		ex_regput(xpr, line, 1);
 		sbuf *pr = ex_regget(xpr);
-		if (flg & 1 && isupper(xpr) && pr && pr->s_n &&
+		if (flg & 1 && xpr >= 'A' && xpr <= 'Z' && pr && pr->s_n &&
 				pr->s[pr->s_n-1] != '\n')
 			ex_regput(xpr, "\n", 1);
 	}
@@ -984,7 +984,7 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 		return xrerr;
 	sbuf sb;
 	lbuf_region(xb, &sb, beg, o1, end-1, o2);
-	ex_regput(reg, sb.s, *arg && arg[itoalen(reg)]);
+	ex_regput(reg, sb.s, cmd[2] == '+');
 	free(sb.s);
 	return NULL;
 }
@@ -993,13 +993,13 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end, i = 0, reg = xdefreg;
 	sbuf *buf;
-	if (!(!*arg || (*arg == '!' && arg[1] && arg[1] != ' '))) {
+	if (uc_isdigit(*arg)) {
 		reg = atoi(arg);
 		i = itoalen(reg);
 	}
 	if (!(buf = ex_regget(reg)))
 		return "uninitialized register";
-	for (; arg[i] && arg[i] != '!'; i++){}
+	for (; arg[i] && arg[i] != '!'; i++);
 	if (arg[i] == '!' && arg[i+1])
 		return ex_pipeout(arg + i + 1, buf);
 	int n = lbuf_len(xb), o1 = -1, o2 = -1;
@@ -1028,10 +1028,11 @@ static void *ec_num(char *loc, char *cmd, char *arg)
 	char msg[128];
 	int arr[4] = {0, 0, -1, -1};
 	int ret = ex_region(loc, &arr[0], &arr[1], &arr[2], &arr[3]);
-	if (ret && !((*arg && arg[1]) || (*arg && (*arg ^ '0') >= 4)))
+	int d = (unsigned char)*arg ^ '0';
+	if (ret && !((*arg && arg[1]) || (*arg && d >= 4)))
 		return xrerr;
-	if ((*arg ^ '0') < 4)
-		itoa(arr[*arg ^ '0'], msg);
+	if (d < 4)
+		itoa(arr[d], msg);
 	else
 		sprintf(msg, "%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
 	ex_print(msg, msg_ft)
@@ -1057,7 +1058,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 	int beg, end, o1 = xoff, o2 = xoff;
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
-	for (int i = 0; isdigit((unsigned char)*arg); i++) {
+	for (int i = 0; uc_isdigit(*arg); i++) {
 		int mk = atoi(arg);
 		lbuf_mark(xb, mk, i % 2 ? end - 1 : beg, i % 2 ? o2 : o1);
 		arg += itoalen(mk);
@@ -1552,7 +1553,7 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
 static int eo_val(char *arg)
 {
 	int val = atoi(arg);
-	if (!val && !isdigit((unsigned char)*arg))
+	if (!val && !uc_isdigit(*arg))
 		return (unsigned char)*arg;
 	return val;
 }
@@ -1655,6 +1656,7 @@ static struct excmd {
 	{"x!", ec_write},
 	{"x", ec_write},
 	{"ya!", ec_yank},
+	{"ya+", ec_yank},
 	{"ya", ec_yank},
 	{"cm!", ec_cmap},
 	{"cm", ec_cmap},
@@ -1689,7 +1691,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			if (!isreg && *src == '#') {
 				src++;
 				pbuf = ex_pbuf;
-			} else if ((*src ^ '0') < 10) {
+			} else if (uc_isdigit(*src)) {
 				n = atoi(src);
 				src += itoalen(n);
 				if (isreg) {
@@ -1700,7 +1702,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 				}
 				pbuf = &bufs[n];
 			}
-			src += *src == xesc && src[-1] != '#' && (src[1] ^ '0') < 10;
+			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
 			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)
 		} else if (*src == xexe) {
