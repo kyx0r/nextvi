@@ -71,10 +71,9 @@ if (d && keep & 1) \
 p += keep; \
 
 /* read a sub expression enclosed in a delimiter */
-static char *ex_sread(char **src, int delim, int esc)
+static void ex_sread(sbuf *sb, char **src, int delim, int esc)
 {
 	char *s = *src;
-	sbuf_smake(sb, 256)
 	while (*s && *s != delim) {
 		if (*s == esc) {
 			ex_parity(s, sb, esc, s[n] == delim)
@@ -83,17 +82,25 @@ static char *ex_sread(char **src, int delim, int esc)
 		sbuf_chr(sb, *s++)
 	}
 	*src = *s ? s + 1 : s;
-	sbufn_ret(sb, sb->s)
+	sbuf_null(sb)
 }
 
-/* read a regular expression enclosed in a delimiter */
-static char *ex_rread(char **src)
+/* allocate & read a sub expression enclosed in a delimiter */
+static char *ex_se_read(char **src, int delim, int esc)
+{
+	sbuf_smake(sb, 256)
+	ex_sread(sb, src, delim, esc);
+	return sb->s;
+}
+
+/* allocate & read a regular expression enclosed in a delimiter */
+static char *ex_re_read(char **src)
 {
 	int delim = **src;
 	if (!delim)
 		return NULL;
 	++*src;
-	return ex_sread(src, delim, '\\');
+	return ex_se_read(src, delim, '\\');
 }
 
 static int rstrcmp(const char *s1, const char *s2, int l1, int l2)
@@ -256,7 +263,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		end = row ? beg+1 : lbuf_len(xb);
 		if (off < 0 || beg < 0 || beg >= lbuf_len(xb))
 			return -1;
-		char *e = ex_rread(num);
+		char *e = ex_re_read(num);
 		ex_krsset(e, dir);
 		free(e);
 		if (!xkwdrs) {
@@ -311,7 +318,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 	while (*loc) {
 		if (*loc == '|') {
 			loc++;
-			cmd = ex_sread(&loc, '|', xesc);
+			cmd = ex_se_read(&loc, '|', xesc);
 			void *err = ex_exec(cmd);
 			free(cmd);
 			if (err) {
@@ -1055,7 +1062,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	struct lopt *lo;
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
-	pat = ex_rread(&s);
+	pat = ex_re_read(&s);
 	if (pat && (*pat || !rs))
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	if (!rs) {
@@ -1064,7 +1071,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	if (pat && *s) {
 		s--;
-		rep = ex_rread(&s);
+		rep = ex_re_read(&s);
 	}
 	free(pat);
 	int offs[rs->nsubc];
@@ -1192,7 +1199,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	not = !!strchr(cmd, '!');
-	pat = ex_rread(&s);
+	pat = ex_re_read(&s);
 	if (pat && *pat)
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	else
@@ -1224,7 +1231,6 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
 	int isdq = cmd[1] == '?';
-	char *cond = isdq ? NULL : ex_sread(&arg, *cmd, xesc);
 	char *ret = NULL, *branch;
 	int inv = cmd[1 + isdq] == '!';
 	char *then_cmd, *else_cmd;
@@ -1239,8 +1245,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			return ret;
 		} else if (!xanchor)
 			return ret;
-		then_cmd = ex_sread(&arg, *cmd, xesc);
-		else_cmd = *arg ? ex_sread(&arg, *cmd, xesc) : NULL;
+		then_cmd = ex_se_read(&arg, *cmd, xesc);
+		else_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
 		int *ap = (int*)xanchor->s, n = xanchor->s_n / sizeof(int);
 		int and_res = 0, or_res = 1;
 		for (int i = n; i >= 2;) {
@@ -1267,14 +1273,15 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			i = n;
 		}
 	} else {
-		then_cmd = *arg ? ex_sread(&arg, *cmd, xesc) : NULL;
-		else_cmd = *arg ? ex_sread(&arg, *cmd, xesc) : NULL;
+		then_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
+		else_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
 		if (isdq) {
 			ret = (xpret != NULL) ^ inv ? xuerr : NULL;
 			branch = ret ? else_cmd : then_cmd;
 			if (branch)
 				ret = ex_exec(branch);
 		} else {
+			char *cond = ex_se_read(&arg, *cmd, xesc);
 			int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
 			for (; count && !ret; count--) {
 				ret = ex_exec(cond);
@@ -1283,9 +1290,9 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 				if (branch)
 					ex_exec(branch);
 			}
+			free(cond);
 		}
 	}
-	free(cond);
 	free(then_cmd);
 	free(else_cmd);
 	return ret;
@@ -1675,9 +1682,10 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			}
 		} else if (*src == xexe) {
 			src++;
-			char *e = ex_sread((char**)&src, xexe, xesc);
-			sbuf *str = cmd_pipe(e, NULL, 1, NULL);
-			free(e);
+			int n = sb->s_n;
+			ex_sread(sb, (char**)&src, xexe, xesc);
+			sbuf_cut(sb, n)
+			sbuf *str = cmd_pipe(sb->s + n, NULL, 1, NULL);
 			if (str) {
 				sbuf_mem(sb, str->s, str->s_n)
 				sbuf_free(str)
