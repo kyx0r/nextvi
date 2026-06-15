@@ -1273,6 +1273,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			i = n;
 		}
 	} else {
+		char *cond = isdq ? NULL : ex_se_read(&arg, *cmd, xesc);
 		then_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
 		else_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
 		if (isdq) {
@@ -1281,7 +1282,6 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			if (branch)
 				ret = ex_exec(branch);
 		} else {
-			char *cond = ex_se_read(&arg, *cmd, xesc);
 			int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
 			for (; count && !ret; count--) {
 				ret = ex_exec(cond);
