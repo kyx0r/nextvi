@@ -36,7 +36,8 @@ int xesc = '\\';		/* ex command arg escape character */
 int xexec_dep;			/* ex_exec recursion depth */
 sbuf *xacreg;			/* autocomplete db filter regex */
 rset *xkwdrs;			/* the last searched keyword rset */
-sbuf *xregs[256];		/* string registers */
+sbuf **xregs;			/* string registers */
+int xregs_n;			/* allocated register count */
 int xdefreg;			/* ex default register */
 struct buf *bufs;		/* main buffers */
 struct buf tempbufs[3];		/* temporary buffers, for internal use */
@@ -220,7 +221,7 @@ void temp_write(int i, char *str)
 /* set the current search keyword rset if the kwd or flags changed */
 void ex_krsset(char *kwd, int dir)
 {
-	sbuf *reg = xregs['/'];
+	sbuf *reg = ex_regget('/');
 	if (kwd && *kwd && ((!reg || !xkwdrs || strcmp(kwd, reg->s))
 			|| ((xkwdrs->regex->flg & REG_ICASE) != xic))) {
 		rset_free(xkwdrs);
@@ -566,7 +567,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 		int soff = o1 >= 0 ? MAX(0, lbuf_pos2off(xb, beg, o1, r2, o2,
 					xrow, xoff + skip)) : 0;
 		if (xdefreg) {
-			sbuf *sb = xregs[xdefreg];
+			sbuf *sb = ex_regget(xdefreg);
 			if (!sb)
 				return "uninitialized register";
 			if (soff >= sb->s_n || rset_find(xkwdrs, sb->s + soff, offs, 0) < 0
@@ -786,11 +787,11 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
 
 void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 {
-	if (xpr) {
+	if (xpr > 0) {
 		ex_regput(xpr, line, 1);
-		if (flg & 1 && isupper(xpr) &&
-				xregs[xpr] && xregs[xpr]->s_n &&
-				xregs[xpr]->s[xregs[xpr]->s_n-1] != '\n')
+		sbuf *pr = ex_regget(xpr);
+		if (flg & 1 && isupper(xpr) && pr && pr->s_n &&
+				pr->s[pr->s_n-1] != '\n')
 			ex_regput(xpr, "\n", 1);
 	}
 	if (xvis & 1) {
@@ -941,48 +942,62 @@ static void *ec_delete(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-void ex_regput(unsigned char c, const char *s, int append)
+sbuf *ex_regget(int id)
 {
-	sbuf *sb = xregs[c];
-	if (s) {
-		if (!sb) {
-			sbuf_make(sb, 64)
-			xregs[c] = sb;
-		}
-		if (!append)
-			sbuf_cut(sb, 0)
-		sbuf_str(sb, s)
-		sbufn_null(sb)
-	} else if (sb) {
-		sbuf_free(sb)
-		xregs[c] = NULL;
+	return id >= 0 && id < xregs_n ? xregs[id] : NULL;
+}
+
+void ex_regput(int c, const char *s, int append)
+{
+	sbuf *sb;
+	if (c >= xregs_n) {
+		int o = xregs_n;
+		xregs_n = c + 1;
+		xregs = erealloc(xregs, xregs_n * sizeof(xregs[0]));
+		memset(xregs + o, 0, (xregs_n - o) * sizeof(xregs[0]));
 	}
+	sb = xregs[c];
+	if (!sb) {
+		sbuf_make(sb, 64)
+		xregs[c] = sb;
+	}
+	if (!append)
+		sbuf_cut(sb, 0)
+	sbuf_str(sb, s)
+	sbufn_null(sb)
 }
 
 static void *ec_yank(char *loc, char *cmd, char *arg)
 {
 	int beg, end, o1 = 0, o2 = -1;
+	int reg = atoi(arg);
+	if (reg < 0)
+		return xserr;
 	if (cmd[2] == '!') {
-		ex_regput(*arg, NULL, 0);
+		sbuf *sb = ex_regget(reg);
+		if (!sb)
+			return xuerr;
+		sbuf_free(sb)
+		xregs[reg] = NULL;
 		return NULL;
 	} else if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	sbuf sb;
 	lbuf_region(xb, &sb, beg, o1, end-1, o2);
-	ex_regput(*arg, sb.s, *arg && arg[1]);
+	ex_regput(reg, sb.s, *arg && arg[itoalen(reg)]);
 	free(sb.s);
 	return NULL;
 }
 
 static void *ec_put(char *loc, char *cmd, char *arg)
 {
-	int beg, end, i = 0;
+	int beg, end, i = 0, reg = xdefreg;
 	sbuf *buf;
-	if (!*arg || (*arg == '!' && arg[1] && arg[1] != ' '))
-		buf = xregs[xdefreg];
-	else
-		buf = xregs[(unsigned char)arg[i++]];
-	if (!buf)
+	if (!(!*arg || (*arg == '!' && arg[1] && arg[1] != ' '))) {
+		reg = atoi(arg);
+		i = itoalen(reg);
+	}
+	if (!(buf = ex_regget(reg)))
 		return "uninitialized register";
 	for (; arg[i] && arg[i] != '!'; i++){}
 	if (arg[i] == '!' && arg[i+1])
@@ -1203,7 +1218,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	if (pat && *pat)
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 	else
-		rs = rset_smake(xregs['/'] ? xregs['/']->s : "", xic ? REG_ICASE : 0);
+		rs = rset_smake(ex_regget('/') ? ex_regget('/')->s : "", xic ? REG_ICASE : 0);
 	free(pat);
 	if (!rs)
 		return xserr;
@@ -1407,7 +1422,7 @@ static void *ec_regprint(char *loc, char *cmd, char *arg)
 {
 	if (*loc) {
 		int reg = atoi(loc);
-		if (reg < 0 || reg > 255)
+		if (reg < 0)
 			return xserr;
 		if (*arg)
 			ex_regput(reg, arg, cmd[3] == '+');
@@ -1415,14 +1430,22 @@ static void *ec_regprint(char *loc, char *cmd, char *arg)
 			xdefreg = reg;
 		return NULL;
 	}
-	static char buf[5] = "  ";
+	char buf[16];
 	int flg = (xvis & 2) == 0;
+	int wid = itoalen(xregs_n - 1);
 	preserve(int, xtd, xtd = 2;)
-	for (int i = 1; i < LEN(xregs); i++) {
-		if (xregs[i] && i != xpr) {
-			*buf = i;
+	for (int i = 0; i < xregs_n; i++) {
+		if (xregs[i] && !(xpr > 0 && i == xpr)) {
+			char *e = buf;
+			for (int p = itoalen(i); p < wid; p++)
+				*e++ = ' ';
+			e = itoa(i, e);
+			*e++ = ' ';
+			*e++ = i > 0 && i < 256 ? i : ' ';
+			*e++ = ' ';
+			*e = '\0';
 			ex_cprint2(buf, msg_ft, -1, 0, 0, flg)
-			ex_cprint2(xregs[i]->s, msg_ft, -1, xleft ? 0 : 2, xleft, !flg)
+			ex_cprint2(xregs[i]->s, msg_ft, -1, xleft ? 0 : e - buf, xleft, !flg)
 		}
 	}
 	restore(xtd)
@@ -1660,29 +1683,29 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 	*arg = sb->s_n;
 	while (*src && *src != xsep) {
 		if (*src == xexp) {
-			src++;
-			if (*src == '@' && src[1] && src[1] != xesc) {
-				sbuf *reg = xregs[(unsigned char)src[1]];
-				if (reg)
-					sbuf_mem(sb, reg->s, reg->s_n)
-				src += 2;
-			} else {
-				struct buf *pbuf = ex_buf;
-				int n;
-				if (*src == '#') {
-					src++;
-					pbuf = ex_pbuf;
-				} else if ((*src ^ '0') < 10) {
-					pbuf = &bufs[n = atoi(src)];
-					src += itoalen(n);
+			int n, isreg = src[1] == '"';
+			struct buf *pbuf = ex_buf;
+			src += 1 + isreg;
+			if (!isreg && *src == '#') {
+				src++;
+				pbuf = ex_pbuf;
+			} else if ((*src ^ '0') < 10) {
+				n = atoi(src);
+				src += itoalen(n);
+				if (isreg) {
+					sbuf *reg = ex_regget(n);
+					if (reg)
+						sbuf_mem(sb, reg->s, reg->s_n)
+					continue;
 				}
-				src += *src == xesc && src[-1] != '#' && (src[1] ^ '0') < 10;
-				if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
-					sbuf_mem(sb, pbuf->path, pbuf->plen)
+				pbuf = &bufs[n];
 			}
+			src += *src == xesc && src[-1] != '#' && (src[1] ^ '0') < 10;
+			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
+				sbuf_mem(sb, pbuf->path, pbuf->plen)
 		} else if (*src == xexe) {
-			src++;
 			int n = sb->s_n;
+			src++;
 			ex_sread(sb, (char**)&src, xexe, xesc);
 			sbuf_cut(sb, n)
 			sbuf *str = cmd_pipe(sb->s + n, NULL, 1, NULL);
@@ -1791,7 +1814,7 @@ void ex(void)
 		if (ex_read(sb, ":", NULL, 0, 1) == '\n') {
 			if (!strcmp(sb->s, ":") && esc) {
 				xpln = 2;
-				ex_exec(xregs[':']->s);
+				ex_exec(ex_regget(':')->s);
 			} else
 				ex_command(sb->s + !(xvis & 1))
 			xb->useq += xseq;

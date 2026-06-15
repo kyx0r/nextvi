@@ -442,7 +442,8 @@ extern int xesc;
 extern int xexec_dep;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
-extern sbuf *xregs[256];
+extern sbuf **xregs;
+extern int xregs_n;
 extern int xdefreg;
 extern struct buf *bufs;
 extern struct buf tempbufs[3];
@@ -484,7 +485,8 @@ int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
 void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
 int ex_edit(const char *path, int len);
-void ex_regput(unsigned char c, const char *s, int append);
+sbuf *ex_regget(int id);
+void ex_regput(int c, const char *s, int append);
 
 /* conf.c: configuration variables */
 extern const int conf_mode;
