@@ -170,7 +170,7 @@ migrate_deltas() (
 # Usage: run_patches [1|2]
 #   1 = rebuild via ./cbuild.sh after each script
 #   2 = regenerate each script's .patch from the resulting diff
-run_patches() {
+run_patches() (
 	set -e
 	for s in *.sh
 	do
@@ -192,7 +192,7 @@ run_patches() {
 		fi
 		printf "\n"
 	done
-}
+)
 
 # Run every patch2vi-generated script and commit each script's refreshed
 # embedded delta. With arg 1, set EXINIT='wq' and squash all commits back into
