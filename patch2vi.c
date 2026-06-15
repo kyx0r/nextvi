@@ -138,7 +138,7 @@ static unsigned char byte_used[256];
 /* Dynamic ex escape byte set via :sc (like the separator); exported to
  * the script as $ESC. 0 = no free byte, keep the default backslash
  * escape paths. With a dynamic escape, backslash is no longer special
- * to ex_arg or to the ? conditional's re_sread, so content and regex
+ * to ex_arg or to the ? conditional's ex_sread, so content and regex
  * escapes pass through unmodified; only the ? delimiter itself needs
  * ${ESC} protection inside ? blocks. */
 static int dyn_esc;
@@ -1029,7 +1029,7 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 }
 
 /* Chain pattern escaping for a dynamic ex escape: ex_arg no longer
- * consumes backslashes and the ? conditional's re_sread honors the
+ * consumes backslashes and the ? conditional's ex_sread honors the
  * dynamic escape, stripping <esc> only before its ? delimiter. Every ?
  * gets <esc>-prefixed so it doesn't end the cond argument early: a
  * literal ? (regex "\?") becomes "\<esc>?" and a bare quantifier ?
@@ -1057,7 +1057,7 @@ static char *escape_chain_dyn(const char *s)
  * The conditional nesting consumes one more escape layer than a
  * top-level search: after exarg escaping, every backslash is doubled
  * again and ? is escaped (an unescaped ? would end the cond argument).
- * With a dynamic escape only the re_sread layer remains (see
+ * With a dynamic escape only the ex_sread layer remains (see
  * escape_chain_dyn). */
 static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 {
@@ -1208,11 +1208,11 @@ static void emit_mark_change(FILE *out, int line, int mark_id,
 }
 
 /* A trailing run of backslashes sitting immediately before the closing
- * delimiter is halved by nextvi's re_read parity rule (commit d94cd92):
+ * delimiter is halved by nextvi's ex_re_read parity rule (commit d94cd92):
  * a run of n escapes before the delim emits ceil(n/2). Our escapers
  * already doubled each literal backslash (k literals -> 2k here), but
- * re_read would then halve 2k back to k, leaving a dangling escape. So
- * double the trailing run once more (-> 4k) so re_read restores the
+ * ex_re_read would then halve 2k back to k, leaving a dangling escape. So
+ * double the trailing run once more (-> 4k) so ex_re_read restores the
  * intended 2k. Only the run adjacent to the delimiter is affected; an
  * interior escape is followed by an ordinary char and passes through
  * unchanged, so this must not touch non-trailing backslashes. */
@@ -1241,7 +1241,7 @@ static char *escape_sub_repl(const char *s, char delim)
 }
 
 /* Escape regex pattern for substitute command.
- * Like escape_regex() but also escapes the delimiter for re_read. */
+ * Like escape_regex() but also escapes the delimiter for ex_re_read. */
 static char *escape_sub_pat(const char *s, char delim)
 {
 	char set[sizeof(REGEX_META) + 1];
@@ -1251,7 +1251,7 @@ static char *escape_sub_pat(const char *s, char delim)
 
 /* Emit the s/old/new/ substitute command (no positioning).
  * Escapes old_text as regex pattern and new_text as replacement,
- * both through re_read delimiter + ex_arg + shell layers. */
+ * both through ex_re_read delimiter + ex_arg + shell layers. */
 static void emit_substitute_cmd(FILE *out, const char *old_text,
 				const char *new_text)
 {
