@@ -292,10 +292,10 @@ char *uc_subl(char *s, int beg, int end, int *rlen);
 static char *uc_sub(char *s, int beg, int end)
 	{ int l; return uc_subl(s, beg, end, &l); }
 char *uc_dup(const char *s);
-#define uc_isspace(s) ((unsigned char)*s < 0x7f && isspace((unsigned char)*s))
-#define uc_isprint(s) ((unsigned char)*s > 0x7f || isprint((unsigned char)*s))
-#define uc_isdigit(s) ((unsigned char)*s < 0x7f && isdigit((unsigned char)*s))
-#define uc_isalpha(s) ((unsigned char)*s > 0x7f || isalpha((unsigned char)*s))
+#define uc_isspace(c) ((unsigned char)(c) == ' ' || (unsigned char)((unsigned char)(c) - 9) < 5)
+#define uc_isprint(c) ((unsigned char)(c) >= 0x20 && (unsigned char)(c) != 0x7f)
+#define uc_isdigit(c) (((unsigned char)(c) ^ '0') < 10)
+#define uc_isalpha(c) ((unsigned char)(c) > 0x7f || (unsigned char)(((unsigned char)(c) | 0x20) - 'a') < 26)
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
@@ -442,7 +442,8 @@ extern int xesc;
 extern int xexec_dep;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
-extern sbuf *xregs[256];
+extern sbuf **xregs;
+extern int xregs_n;
 extern int xdefreg;
 extern struct buf *bufs;
 extern struct buf tempbufs[3];
@@ -484,7 +485,8 @@ int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
 void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
 int ex_edit(const char *path, int len);
-void ex_regput(unsigned char c, const char *s, int append);
+sbuf *ex_regget(int id);
+void ex_regput(int c, const char *s, int append);
 
 /* conf.c: configuration variables */
 extern const int conf_mode;
