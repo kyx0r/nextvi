@@ -1685,21 +1685,23 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 	*arg = sb->s_n;
 	while (*src && *src != xsep) {
 		if (*src == xexp) {
-			int n, isreg = src[1] == '"';
+			int n;
 			struct buf *pbuf = ex_buf;
-			src += 1 + isreg;
-			if (!isreg && *src == '#') {
+			src++;
+			if (*src == '"' && uc_isdigit(src[1])) {
+				src++;
+				n = atoi(src);
+				src += itoalen(n);
+				sbuf *reg = ex_regget(n);
+				if (reg)
+					sbuf_mem(sb, reg->s, reg->s_n)
+				pbuf = NULL;
+			} else if (*src == '#') {
 				src++;
 				pbuf = ex_pbuf;
 			} else if (uc_isdigit(*src)) {
 				n = atoi(src);
 				src += itoalen(n);
-				if (isreg) {
-					sbuf *reg = ex_regget(n);
-					if (reg)
-						sbuf_mem(sb, reg->s, reg->s_n)
-					continue;
-				}
 				pbuf = &bufs[n];
 			}
 			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
