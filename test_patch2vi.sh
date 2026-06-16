@@ -155,7 +155,7 @@ bbb
 new2
 end
 " \
-	'%ya b' '\\$;f>'
+	'%ya 98' '\\$;f>'
 
 echo ""
 echo "=== End-to-end apply tests (relative mode) ==="
