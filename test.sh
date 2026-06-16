@@ -15,8 +15,8 @@ check() {
 		PASS=$((PASS + 1))
 	else
 		FAIL=$((FAIL + 1))
-		printf 'FAIL: %s\n  expected: |%s|\n  actual:   |%s|\n' \
-			"$name" "$expected" "$actual"
+		printf 'FAIL\n  expected: |%s|\n  actual:   |%s|\n' \
+			"$expected" "$actual"
 	fi
 }
 
@@ -28,8 +28,8 @@ check_exit() {
 		PASS=$((PASS + 1))
 	else
 		FAIL=$((FAIL + 1))
-		printf 'FAIL: %s\n  expected exit: %s\n  actual exit:   %s\n' \
-			"$name" "$expected" "$actual"
+		printf 'FAIL\n  expected exit: %s\n  actual exit:   %s\n' \
+			"$expected" "$actual"
 	fi
 }
 
