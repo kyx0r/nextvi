@@ -120,7 +120,7 @@ for (i = 0; i < cterm;) { \
 		char *s = ren_translate(chrs[o], s0); \
 		if (s) \
 			sbuf_str(out, s) \
-		else if (uc_isprint(chrs[o])) { \
+		else if (uc_isprint(*chrs[o])) { \
 			l = uc_len(chrs[o]); \
 			print_ch##n(out) \
 		} else { \
@@ -269,7 +269,7 @@ static int led_lastword(char *s)
 {
 	char *r = *s ? uc_beg(s, strchr(s, '\0') - 1) : s;
 	int kind;
-	while (r > s && uc_isspace(r))
+	while (r > s && uc_isspace(*r))
 		r = uc_beg(s, r - 1);
 	kind = r > s ? uc_kind(r) : 0;
 	while (r > s && uc_kind(uc_beg(s, r - 1)) == kind)
@@ -425,6 +425,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 {
 	char *cs;
 	int len, c, i;
+	sbuf *reg;
 	do {
 		led_printparts(sb, pre, ps, *post, postn, poff);
 		len = sb->s_n;
@@ -468,17 +469,17 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			if (c == TK_CTL(']')) {
 				if (is->p_reg < '/' || is->p_reg >= '9')
 					is->p_reg = '/';
-				while (is->p_reg < '9' && !xregs[++is->p_reg]);
+				while (is->p_reg < '9' && !ex_regget(++is->p_reg));
 			} else {
 				c = term_read(0);
 				is->p_reg = c == TK_CTL('\\') ? 0 : c;
 			}
-			if (xregs[is->p_reg])
-				led_info(xregs[is->p_reg]->s)
+			if (ex_regget(is->p_reg))
+				led_info(ex_regget(is->p_reg)->s)
 			continue;
 		case TK_CTL('p'):
-			if (xregs[is->p_reg])
-				sbuf_mem(sb, xregs[is->p_reg]->s, xregs[is->p_reg]->s_n)
+			if ((reg = ex_regget(is->p_reg)))
+				sbuf_mem(sb, reg->s, reg->s_n)
 			break;
 		case TK_CTL('g'):
 			if (!suggestsb) {
