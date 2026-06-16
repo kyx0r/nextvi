@@ -307,10 +307,10 @@ out=$(run_ex ':%!tr a-z A-Z:%p:q!')
 check 'pipe through tr a-z A-Z uppercases' 'HELLO WORLD' "$out"
 
 printf 'test\n' > "$TMPFILE"
-out=$(run_ex ':97reg hello:p %"97:q')
-check 'register expansion %"97 in :p' 'hello' "$out"
+out=$(run_ex ':97reg hello:p %@97:q')
+check 'register expansion %@97 in :p' 'hello' "$out"
 
-# % expands to the current buffer path; %"<#> to a register; %<#> to a buffer;
+# % expands to the current buffer path; %@<#> to a register; %<#> to a buffer;
 # %# to the previous buffer. A backslash escapes the following %, and separates a
 # path expansion from trailing literal digits (so they are not read as a buffer #).
 
@@ -332,17 +332,17 @@ check 'C12b \%123 — escaped %, fully literal' '%123' "$out"
 out=$(run_ex ':p %0\132:q')
 check 'C12b %0\132 — buffer 0 path then literal digits' "${TMPFILE}132" "$out"
 
-# %" with a non-digit: not a register ref; emits path plus a literal "
-out=$(run_ex ':p %"asd:q')
-check 'C12b %"asd — non-digit after %\" emits path + literal quote' "${TMPFILE}\"asd" "$out"
+# %@ with a non-digit: not a register ref; emits path plus a literal @
+out=$(run_ex ':p %@asd:q')
+check 'C12b %@asd — non-digit after %@ emits path + literal @' "${TMPFILE}@asd" "$out"
 
 # %\": \ before " stays literal (only %, :, ! are escapable delimiters here)
 out=$(run_ex ':p %\"324:q')
 check 'C12b %\"324 — backslash before quote stays literal' "${TMPFILE}\\\"324" "$out"
 
-# %"<#> register ref; \ separates the register number from trailing literal digits
-out=$(run_ex ':100reg REGVAL:p %"100\75:q')
-check 'C12b %"100\75 — register 100 then literal digits' 'REGVAL75' "$out"
+# %@<#> register ref; \ separates the register number from trailing literal digits
+out=$(run_ex ':100reg REGVAL:p %@100\75:q')
+check 'C12b %@100\75 — register 100 then literal digits' 'REGVAL75' "$out"
 
 printf 'hello world\n' > "$TMPFILE"
 out=$(run_ex ':err 3:s/void/x/:p after:q')
@@ -433,10 +433,10 @@ printf 'hello world\n' > "$TMPFILE"
 out=$(run_vi "$(printf '5lK')")
 check 'vi K: split line at cursor' "$(printf 'hello \nworld')" "$out"
 
-# E1: :& takes raw vi input; to use a register, expand it via %"97
+# E1: :& takes raw vi input; to use a register, expand it via %@97
 printf 'hello world\n' > "$TMPFILE"
-check 'E1 :& %"97 — register expansion used as raw vi input' 'world' \
-	"$(run_mac ":97reg dw:& %\"97:w! $OUTFILE:q!")"
+check 'E1 :& %@97 — register expansion used as raw vi input' 'world' \
+	"$(run_mac ":97reg dw:& %@97:w! $OUTFILE:q!")"
 
 # E2: \:cmd inside & macro; a newline (0x0A) is required to submit the ex cmd
 printf 'hello\n' > "$TMPFILE"
@@ -515,8 +515,8 @@ check "L3 '* = cursor saved before previous ex command" \
 	"$(printf 'c\na')" "$out"
 
 printf 'hello world\n' > "$TMPFILE"
-out=$(run_ex ':f>hello:p %"47:q')
-check 'M1 %"47 expands to the previous regex keyword' 'hello' "$out"
+out=$(run_ex ':f>hello:p %@47:q')
+check 'M1 %@47 expands to the previous regex keyword' 'hello' "$out"
 
 # $*5/10 — navigate to 50% of the file (integer arithmetic on last line)
 printf 'a\nb\nc\nd\ne\nf\ng\nh\ni\nj\n' > "$TMPFILE"
@@ -553,10 +553,10 @@ printf 'hello\n' > "$TMPFILE"
 EXINIT=":f>void:??!1q 5:q" "$VI" -sm "$TMPFILE" </dev/null >/dev/null 2>&1; rc=$?
 check_exit 'Q1 1q in nested ??! scope does not propagate quit to vi' '0' "$rc"
 
-# R1: :re word sets the keyword; %"47 reflects it
+# R1: :re word sets the keyword; %@47 reflects it
 printf 'hello world\n' > "$TMPFILE"
-out=$(run_ex ':re world:p %"47:q')
-check 'R1 :re word — sets keyword; %"47 returns it' 'world' "$out"
+out=$(run_ex ':re world:p %@47:q')
+check 'R1 :re word — sets keyword; %@47 returns it' 'world' "$out"
 
 # R2: :re word sets the keyword; :g// (empty pattern) reuses it
 printf 'hello\nworld\nhello world\n' > "$TMPFILE"
@@ -569,13 +569,13 @@ printf 'foo\nbar\nbaz\n' > "$TMPFILE"
 out=$(run_ex ':3:re bar:.p:q')
 check 'R3 :re does not navigate; cursor stays on current line' 'baz' "$out"
 
-# R4: range form :1re escapes regex-special chars; verify via %"47
+# R4: range form :1re escapes regex-special chars; verify via %@47
 # Buffer line 1 is "a.b"; ex_regesc turns "." into "\.".
-# (The trailing \n from lbuf_region is included so %"47 output is "a\.b"
+# (The trailing \n from lbuf_region is included so %@47 output is "a\.b"
 # after command-substitution strips the trailing newline.)
 printf 'a.b\naXb\n' > "$TMPFILE"
-out=$(run_ex ':1re:p %"47:q')
-check 'R4 range :re — escapes regex chars; %"47 reflects escaped pattern' 'a\.b' "$out"
+out=$(run_ex ':1re:p %@47:q')
+check 'R4 range :re — escapes regex chars; %@47 reflects escaped pattern' 'a\.b' "$out"
 
 printf 'void a;\nint b;\nvoid c;\n' > "$TMPFILE"
 out=$(run_ex ':>int>p:q')
