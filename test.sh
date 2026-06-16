@@ -359,6 +359,41 @@ printf 'test\n' > "$TMPFILE"
 out=$(run_ex ':97reg hello:p %"97:q')
 check 'register expansion %"97 in :p' 'hello' "$out"
 
+# C12b: % expansion variants ────────────────────────────────────────────────────
+# % expands to the current buffer path; %"<#> to a register; %<#> to a buffer;
+# %# to the previous buffer. A backslash escapes the following %, and separates a
+# path expansion from trailing literal digits (so they are not read as a buffer #).
+
+printf 'test\n' > "$TMPFILE"
+
+# %\<digits>: path expansion, then the \ separates literal trailing digits
+out=$(run_ex ':p %\123:q')
+check 'C12b %\123 — path then literal digits' "${TMPFILE}123" "$out"
+
+# %\#: # is not a digit, so the \ stays literal and # is not consumed as %#
+out=$(run_ex ':p %\#:q')
+check 'C12b %\# — path then literal \#' "${TMPFILE}\\#" "$out"
+
+# \%: escaped %, emitted literally with no expansion
+out=$(run_ex ':p \%123:q')
+check 'C12b \%123 — escaped %, fully literal' '%123' "$out"
+
+# %0: explicit buffer 0 (the current file); \ separates trailing digits
+out=$(run_ex ':p %0\132:q')
+check 'C12b %0\132 — buffer 0 path then literal digits' "${TMPFILE}132" "$out"
+
+# %" with a non-digit: not a register ref; emits path plus a literal "
+out=$(run_ex ':p %"asd:q')
+check 'C12b %"asd — non-digit after %\" emits path + literal quote' "${TMPFILE}\"asd" "$out"
+
+# %\": \ before " stays literal (only %, :, ! are escapable delimiters here)
+out=$(run_ex ':p %\"324:q')
+check 'C12b %\"324 — backslash before quote stays literal' "${TMPFILE}\\\"324" "$out"
+
+# %"<#> register ref; \ separates the register number from trailing literal digits
+out=$(run_ex ':100reg REGVAL:p %"100\75:q')
+check 'C12b %"100\75 — register 100 then literal digits' 'REGVAL75' "$out"
+
 # C13: err option ──────────────────────────────────────────────────────────────
 
 printf 'hello world\n' > "$TMPFILE"
