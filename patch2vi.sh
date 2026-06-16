@@ -46,7 +46,13 @@ gitdiff2vi() {
 			sed '/^=== PATCH2VI PATCH ===$/q' "$2" > /tmp/tmp.sh
 			mv /tmp/tmp.sh "$2"
 			cat /tmp/tmp.patch >> "$2"
+			# Revert only real modifications to pre-patch so fuzz can validate
+			# against the original. Exclude $2 (just rewrote it) and new files
+			# (intent-to-add breaks git stash, and they have no pre-patch orig).
+			stashed=$(git diff --name-only --diff-filter=MD -- ":!$2")
+			[ -n "$stashed" ] && git stash push -q -- $stashed
 			./patch2vi "$1" "$2" > "_$2"
+			[ -n "$stashed" ] && git stash pop -q
 			mv "_$2" "$2"
 		;;
 		*)
