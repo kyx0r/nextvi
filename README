@@ -31,7 +31,8 @@ MANPAGE NOTATION
      {x}     A closure where x represents required argument
      "x"     A closure where x represents a string
      <^X>    Represents a ctrl key X
-     < >     Separates alternatives in a closure
+     < >     Space separates alternatives in a closure
+     #       Decimal representation in a closure
      x-y     Range from x to y
 
 VI NORMAL
@@ -328,15 +329,15 @@ EX ESCAPES
 EX EXPANSION
      <%> in [args] expands to current buffer pathname or any buffer
      pathname when followed by a corresponding buffer number.
-     "%#" expands to last swapped buffer pathname.
-     "%@" expands to register specified.
+     %# expands to last swapped buffer pathname.
+     %" expands to register specified.
 
      Example: make a copy of the current file and edit it
      :!cp % %_:e %_
      Example: insert current buffer pathname
      :&i%
      Example: echo the value of <a> register
-     :!echo "%@a"
+     :!echo %"97
 
      <!> in [args] starts and optionally ends a block containing
      external commands. This block executes and expands to stdout
@@ -355,7 +356,7 @@ EX RANGES
      [vrange] prefix implements vertical range and horizontal position.
      Without [cmd], [vrange] replaces [prefix].
 
-     [% |][, ;][#][. $ ' > <][- + * / %][0-9]
+     [% |][, ;][<#>][. $ ' > <][- + * / %][#]
              All ranges structure
      {|}{cmd}[|]
              Ex command structure
@@ -381,7 +382,7 @@ EX RANGES
      *       Multiply by the following number
      /       Divide by the following number
      %       Modulo by the following number
-     0-9     Number or position
+     [#]     Number or position
 
      Examples:
      :1,5p   Print lines 1,5
@@ -446,8 +447,7 @@ EX COMMANDS
              Incrementing ranged search
 
              Equivalent to the :f> and :f< commands, except subsequent commands
-             within range move to the next match just like vi normal [#]n
-             or [#]N commands.
+             advance past match boundary. Cannot match inplace.
 
      [vrange]f[regex]
              Fuzzy search prompt
@@ -638,31 +638,33 @@ EX COMMANDS
 
              Any argument forwards the error status.
 
-     [range]m{marks}
+     [range]m{#marks}
              Set line mark(s)
 
-             Marks are decimal ids separated by spaces, set alternating
-             between start and end of the range.
+             Marks are ids separated by spaces, set alternating between start
+             and end of the range.
 
              Example: store ranges in <a> and <s> for later reuse in :f>
              :>top>,#>bottom>m 97 115:'97,'115f>middle
 
-     [range]ya[<reg>][any]
+     [range]ya[#reg]
              Yank into a register
 
-             Argument value range is 0x1-0xff and 0x0 without.
-             Any extra argument appends to the register.
-             Default register cannot be appended to.
+             No argument yanks into default register.
+
+             Example: yank into <a> using ranges
+             :1,5;5;5ya 97
+
+     [range]ya+[#reg]
+             Yank and append to a register
 
              Example: append to register <1>
-             :ya 1x
-             Example: yank into <a> using ranges
-             :1,5;5;5ya a
+             :ya+ 49
 
-     ya![<reg>]
+     ya![#reg]
              Free a register
 
-     [range]pu[<reg>][any][\!{cmd}]
+     [range]pu[#reg][any][\!{cmd}]
              Paste or pipe a register
 
              Example: paste <a> at line 1 character offset 5
@@ -672,7 +674,7 @@ EX COMMANDS
              Example: copy register <a> to X11 clipboard
              :pu a \!xclip -selection clipboard
 
-     [0-255]reg[str]
+     [#reg]reg[str]
              Print registers or put into a register
 
              Prefix selects a register and argument replaces its contents.
@@ -683,7 +685,7 @@ EX COMMANDS
              Example: put "hello" into register <1>
              :49reg hello
 
-     [0-255]reg+[str]
+     [#reg]reg+[str]
              Print registers or append to a register
 
      e[path]
@@ -1303,18 +1305,18 @@ SPECIAL REGISTERS
 CODE MAP
      +--------------+----------------------+
      | 537 kmap.h   |  keymap translation  |
-     | 544 vi.h     |  definitions/aux     |
+     | 546 vi.h     |  definitions/aux     |
      +--------------+----------------------+
      | 353 term.c   |  low level IO        |
      | 367 conf.c   |  hl/ft/td config     |
      | 444 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
      | 665 lbuf.c   |  file/line buffer    |
-     | 725 led.c    |  insert mode/output  |
-     | 752 regex.c  |  pikevm              |
-     | 1821 ex.c    |  ex options/commands |
-     | 1879 vi.c    |  normal mode/general |
-     | 7620 total   |  wc -l *.c|sort      |
+     | 726 led.c    |  insert mode/output  |
+     | 751 regex.c  |  pikevm              |
+     | 1848 ex.c    |  ex options/commands |
+     | 1878 vi.c    |  normal mode/general |
+     | 7646 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
