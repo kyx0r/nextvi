@@ -85,16 +85,16 @@ ${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 4${ESC}${ESC}${ESC}${S
 	led_attsb = prev_attsb; \\\\
 	c = term_read\\(TK_CTL\\('l'\\)\\); \\\\${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:372:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	led_printparts\\(sb, pre, ps, \\*post, postn, poff\\); \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:372:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:372${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?%;f+ 	char \\*cs;
-	int len, c, i;
+${SEP}?%;f+ 	int len, c, i;
+	sbuf \\*reg;
 	do \\{
 		led_printparts\\(sb, pre, ps, \\*post, postn, poff\\);
 		len = sb->s_n;
 		c = term_read\\(TK_CTL\\('l'\\)\\);
-		noredraw:${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	char \\*cs;
-	int len, c, i;
-	do \\{${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:429:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		led_printparts\\(sb, pre, ps, \\*post, postn, poff\\);\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:429:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:429${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		noredraw:${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	int len, c, i;
+	sbuf \\*reg;
+	do \\{${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:430:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		led_printparts\\(sb, pre, ps, \\*post, postn, poff\\);\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:430:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:430${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 			else if \\(!i\\)
 				term_clean\\(\\);
 			continue;
@@ -102,8 +102,8 @@ ${SEP}?%;f+ 			else if \\(!i\\)
 			if \\(!\\*postref\\)
 				\\*postref = \\*post = uc_dup\\(\\*post\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 			else if \\(!i\\)
 				term_clean\\(\\);
-			continue;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:620:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:620${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+			continue;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:621:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:621${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ int led_prompt\\(sbuf \\*sb, char \\*insert, int \\*kmap, ins_state \\*is, int ps, int flg\\)
 \\{
 	int n = !\\(flg & 2\\) \\${ESC}? sb->s_n : 0, key, off;
@@ -112,8 +112,8 @@ ${SEP}?%;f+ int led_prompt\\(sbuf \\*sb, char \\*insert, int \\*kmap, ins_state 
 	vi_lncol = 0;
 	if \\(insert\\)${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ int led_prompt\\(sbuf \\*sb, char \\*insert, int \\*kmap, ins_state \\*is, int ps, int flg\\)
 \\{
-	int n = !\\(flg & 2\\) \\${ESC}? sb->s_n : 0, key, off;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:656:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	char \\*post = \"\", \\*postref = post;\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:656:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:656${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	int n = !\\(flg & 2\\) \\${ESC}? sb->s_n : 0, key, off;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:657:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	char \\*post = \"\", \\*postref = post;\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:657:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:657${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);
 	restore\\(xtd\\)
 	restore\\(xleft\\)
@@ -121,8 +121,8 @@ ${SEP}?%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);
 		lbuf_dedup\\(tempbufs\\[0\\]\\.lb, sb->s \\+ n, sb->s_n - n\\)
 		temp_pos\\(0, -1, 0, 0\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);
 	restore\\(xtd\\)
-	restore\\(xleft\\)${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:670:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:670${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	restore\\(xleft\\)${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:671:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:671${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 			return key;
 		}
 		sbuf_chr\\(sb, key\\)
@@ -131,8 +131,8 @@ ${SEP}?%;f+ 			return key;
 		term_room\\(1\\);
 		crow\\+\\+;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 			return key;
 		}
-		sbuf_chr\\(sb, key\\)${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:701:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		led_printparts\\(sb, -1, ps, \"\", 0, &xoff\\);\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:701:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:701${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		sbuf_chr\\(sb, key\\)${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:702:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		led_printparts\\(sb, -1, ps, \"\", 0, &xoff\\);\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:702:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:702${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a static int vi_insmov;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:3:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -146,7 +146,7 @@ ${SEP}'3s/f\\)/f, 1)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL le
 ${SEP}'4s/f\\)/f, !vi_insmov)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:372:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5c 		led_printparts(sb, pre, ps, *post, postn, poff, !vi_insmov);
 		vi_insmov = 0;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:429:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:430:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'6a 		case '\\033':;	/* Arrow keys */
 			char cbuf[1];
 			cbuf[0] = '\\0';
@@ -214,12 +214,12 @@ ${SEP}'6a 		case '\\033':;	/* Arrow keys */
 			}
 			fcntl(STDIN_FILENO, F_SETFL, fl);
 			return c;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:620:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'7s/ post/ NULL/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:656:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:621:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'7s/ post/ NULL/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:657:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'8a 	sbufn_str(sb, post)
 	free(postref);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:670:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'9s/f\\)/f, 1)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:701:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 	\\*l = ln - pln;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:671:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'9s/f\\)/f, 1)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:702:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 	\\*l = ln - pln;
 }
 
 static int vi_change\\(int r1, int o1, int r2, int o2, int lnmode\\)
@@ -259,8 +259,8 @@ ${SEP}?%;f+ 				insert:
 					if \\(xrow && !\\(xoff > 0 && lbuf_eol\\(xb, xrow, 1\\)\\)\\) \\{
 						xrow--;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				insert:
 				k = vc_insert\\(c\\);
-				insert_done:${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1524:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1524${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+				insert_done:${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1523:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1523${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				rep_record\\(\\)
 				vi_mod \\|= !xpac && xrow == orow \\${ESC}? 8 : 1;
 				break;
@@ -268,8 +268,8 @@ ${SEP}?%;f+ 				rep_record\\(\\)
 				vc_join\\(1, vi_arg <= 1 \\${ESC}? 2 : vi_arg\\);
 				rep_record\\(\\)${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				rep_record\\(\\)
 				vi_mod \\|= !xpac && xrow == orow \\${ESC}? 8 : 1;
-				break;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1546:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1546${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+				break;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1545:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1545${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a static int lmodified;
 
@@ -312,17 +312,17 @@ ${SEP}'4a 				switch (k) {
 						vi_col = vi_off2col(xb, xrow, xoff);
 					goto _break;
 				}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1524:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1523:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5a 				_break:
 				vi_mod = 0;
 				break;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1546:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'led.c' 'vi.c'
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1545:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}q" $VI -e 'led.c' 'vi.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 7178cae0..8d7712e7 100644
+index 85b112fc..32f5480d 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -370,9 +370,9 @@ index 7178cae0..8d7712e7 100644
  	goto noredraw; \
  } \
  
-@@ -426,7 +429,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
- 	char *cs;
+@@ -427,7 +430,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  	int len, c, i;
+ 	sbuf *reg;
  	do {
 -		led_printparts(sb, pre, ps, *post, postn, poff);
 +		led_printparts(sb, pre, ps, *post, postn, poff, !vi_insmov);
@@ -380,7 +380,7 @@ index 7178cae0..8d7712e7 100644
  		len = sb->s_n;
  		c = term_read(TK_CTL('l'));
  		noredraw:
-@@ -618,6 +622,73 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -619,6 +623,73 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else if (!i)
  				term_clean();
  			continue;
@@ -454,7 +454,7 @@ index 7178cae0..8d7712e7 100644
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -653,7 +724,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -654,7 +725,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
  {
  	int n = !(flg & 2) ? sb->s_n : 0, key, off;
@@ -463,7 +463,7 @@ index 7178cae0..8d7712e7 100644
  	ins_state _is;
  	vi_lncol = 0;
  	if (insert)
-@@ -668,6 +739,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
+@@ -669,6 +740,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  			&off, kmap, is, 0, xrow, xtop, flg);
  	restore(xtd)
  	restore(xleft)
@@ -472,7 +472,7 @@ index 7178cae0..8d7712e7 100644
  	if (key == '\n' && flg & 1) {
  		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
  		temp_pos(0, -1, 0, 0);
-@@ -698,7 +771,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -699,7 +772,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  			return key;
  		}
  		sbuf_chr(sb, key)
@@ -482,7 +482,7 @@ index 7178cae0..8d7712e7 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index d133d031..012aa543 100644
+index e53c93b8..a17eee44 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -831,6 +831,8 @@ static void vi_indents(char *ln, int *l)
@@ -515,7 +515,7 @@ index d133d031..012aa543 100644
  	free(sb->s);
  	return key;
  }
-@@ -1522,6 +1528,37 @@ void vi(int init)
+@@ -1521,6 +1527,37 @@ void vi(int init)
  				insert:
  				k = vc_insert(c);
  				insert_done:
@@ -553,7 +553,7 @@ index d133d031..012aa543 100644
  				if (k == 127 || k == TK_CTL('w')) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1544,6 +1581,9 @@ void vi(int init)
+@@ -1543,6 +1580,9 @@ void vi(int init)
  				rep_record()
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;

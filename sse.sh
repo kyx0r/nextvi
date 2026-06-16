@@ -177,7 +177,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 7178cae0..9938c52f 100644
+index 85b112fc..e69b705e 100644
 --- a/led.c
 +++ b/led.c
 @@ -4,9 +4,28 @@ sbuf *led_attsb;
@@ -259,7 +259,7 @@ index 9b4776c8..b9e46ae5 100644
  	int cpos = 0, wid, *col;
  	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
 diff --git a/uc.c b/uc.c
-index 875905a8..6d0c30b6 100644
+index 583ee5de..d4b8e4a5 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -22,6 +22,34 @@ unsigned char utf8_length[256] = {
@@ -298,7 +298,7 @@ index 875905a8..6d0c30b6 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index d133d031..436ea3ca 100644
+index e53c93b8..43c3f0fb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@

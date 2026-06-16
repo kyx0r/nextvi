@@ -69,18 +69,18 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:39:m1${ESC}${SEP
 ${SEP}'2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:289:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> sbuf \\*xregs\\[256\\];		/\\* string registers \\*/
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:289:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> int xregs_n;			/\\* allocated register count \\*/
 int xdefreg;			/\\* ex default register \\*/
 struct buf \\*bufs;		/\\* main buffers \\*/
 struct buf tempbufs\\[3\\];		/\\* temporary buffers, for internal use \\*/
 struct buf \\*ex_buf;		/\\* current buffer \\*/
 struct buf \\*ex_pbuf;		/\\* prev buffer \\*/
-static struct buf \\*ex_tpbuf;	/\\* temp prev buffer \\*/${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> sbuf \\*xregs\\[256\\];		/\\* string registers \\*/
+static struct buf \\*ex_tpbuf;	/\\* temp prev buffer \\*/${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> int xregs_n;			/\\* allocated register count \\*/
 int xdefreg;			/\\* ex default register \\*/
-struct buf \\*bufs;		/\\* main buffers \\*/${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:42:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^struct buf tempbufs\\[3\\];		/\\* temporary buffers, for internal use \\*/\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:42:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:42${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+struct buf \\*bufs;		/\\* main buffers \\*/${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:43:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^struct buf tempbufs\\[3\\];		/\\* temporary buffers, for internal use \\*/\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:43:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:43${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0s/3/4/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:42:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> 	free\\(sb->s\\);
+${SEP}'0s/3/4/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:43:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> 	free\\(sb->s\\);
 }
 
 #define fssearch\\(\\) \\\\
@@ -170,9 +170,9 @@ ${SEP}?%;f+ 				n = strlen\\(ln\\);
 			case TK_CTL\\('n'\\):
 				vi_cndir = vi_arg \\${ESC}? -vi_cndir : vi_cndir;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				n = strlen\\(ln\\);
 				char buf\\[n \\+ 4\\];
-				memcpy\\(buf, \":e \", 3\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1270:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				memcpy\\(buf\\+3, ln, n\\);
-				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1270:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1270${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+				memcpy\\(buf, \":e \", 3\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				memcpy\\(buf\\+3, ln, n\\);
+				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1269${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 					}
 					ln = vi_enprompt\\(\":\", buf, &k, &n\\);
 					goto do_excmd; }
@@ -180,8 +180,8 @@ ${SEP}?%;f+ 					}
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
 					n = cs \\${ESC}? strlen\\(cs\\) : 0;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 10${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 					}
 					ln = vi_enprompt\\(\":\", buf, &k, &n\\);
-					goto do_excmd; }${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1410:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1410${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+					goto do_excmd; }${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1409:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1409${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	temp_open\\(0, \"/hist/\", _ft\\);
 	temp_open\\(1, \"/fm/\", fm_ft\\);
 	temp_open\\(2, \"/sc/\", _ft\\);
@@ -189,8 +189,8 @@ ${SEP}?%;f+ 	temp_open\\(0, \"/hist/\", _ft\\);
 		if \\(argv\\[i\\]\\[1\\] == '-' && !argv\\[i\\]\\[2\\]\\) \\{
 			i\\+\\+;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 11${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	temp_open\\(0, \"/hist/\", _ft\\);
 	temp_open\\(1, \"/fm/\", fm_ft\\);
-	temp_open\\(2, \"/sc/\", _ft\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1841:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1841${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	temp_open\\(2, \"/sc/\", _ft\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1840:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1840${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/\\(\\)/(isbuffer)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:439:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1s/ret && xrow/isbuffer/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:444:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -248,31 +248,31 @@ ${SEP}'9,#+1c 				memcpy(buf+3, ln, n + 1);
 					rset_free(rs);
 				}
 				term_push(buf, strlen(buf));
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1270:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1269:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'10a 				case 'x':
 					temp_switch(3, 1);
 					vi_mod = 1;
 					break;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1410:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1409:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'11a 	temp_open(3, \"/grep/\", grep_ft);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1841:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?%;f> extern sbuf \\*xregs\\[256\\];
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1840:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?%;f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \\*bufs;
 extern struct buf tempbufs\\[3\\];
 extern struct buf \\*ex_buf;
 extern struct buf \\*ex_pbuf;
-#define istempbuf\\(buf\\) \\(buf >= tempbufs && buf < tempbufs \\+ LEN\\(tempbufs\\)\\)${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> extern sbuf \\*xregs\\[256\\];
+#define istempbuf\\(buf\\) \\(buf >= tempbufs && buf < tempbufs \\+ LEN\\(tempbufs\\)\\)${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> extern int xregs_n;
 extern int xdefreg;
-extern struct buf \\*bufs;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:448:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^extern struct buf tempbufs\\[3\\];\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:448:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:448${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+extern struct buf \\*bufs;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:449:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^extern struct buf tempbufs\\[3\\];\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:449:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:449${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0s/3/4/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:448:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h'
+${SEP}'0s/3/4/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:449:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}q" $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 9ce100bd..f6b8b5d8 100644
+index b1f7ed58..4347687a 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -302,11 +302,11 @@ index 9ce100bd..f6b8b5d8 100644
  	{ex_ft, ":[ \t]*((((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 82854039..498ba6c7 100644
+index 60bc054b..6e98e539 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -39,7 +39,7 @@ rset *xkwdrs;			/* the last searched keyword rset */
- sbuf *xregs[256];		/* string registers */
+@@ -40,7 +40,7 @@ sbuf **xregs;			/* string registers */
+ int xregs_n;			/* allocated register count */
  int xdefreg;			/* ex default register */
  struct buf *bufs;		/* main buffers */
 -struct buf tempbufs[3];		/* temporary buffers, for internal use */
@@ -315,7 +315,7 @@ index 82854039..498ba6c7 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index d133d031..41c89982 100644
+index e53c93b8..debc9e17 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -436,12 +436,12 @@ void dir_calc(char *path)
@@ -412,7 +412,7 @@ index d133d031..41c89982 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1267,8 +1302,18 @@ void vi(int init)
+@@ -1266,8 +1301,18 @@ void vi(int init)
  				n = strlen(ln);
  				char buf[n + 4];
  				memcpy(buf, ":e ", 3);
@@ -433,7 +433,7 @@ index d133d031..41c89982 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1408,6 +1453,10 @@ void vi(int init)
+@@ -1407,6 +1452,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
  					goto do_excmd; }
@@ -444,7 +444,7 @@ index d133d031..41c89982 100644
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					n = cs ? strlen(cs) : 0;
-@@ -1839,6 +1888,7 @@ int main(int argc, char *argv[])
+@@ -1838,6 +1887,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
@@ -453,11 +453,11 @@ index d133d031..41c89982 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 5e9aa927..6f187a2a 100644
+index ca6cca08..251e995a 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -445,7 +445,7 @@ extern rset *xkwdrs;
- extern sbuf *xregs[256];
+@@ -446,7 +446,7 @@ extern sbuf **xregs;
+ extern int xregs_n;
  extern int xdefreg;
  extern struct buf *bufs;
 -extern struct buf tempbufs[3];

@@ -231,27 +231,27 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:530:m5${ESC}${SE
 if \\(freesub\\) \\{ \\\\${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	return 0;
 }
 
-${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:410:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#define _return\\(state\\) \\{ if \\(eol_ch\\) utf8_length\\[eol_ch\\] = 1; return state; } \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:410:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:410${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:409:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#define _return\\(state\\) \\{ if \\(eol_ch\\) utf8_length\\[eol_ch\\] = 1; return state; } \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:409:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:409${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	char nsubs\\[prog->sub\\];
 	for \\(i = 0; i < prog->laidx; i\\+\\+\\)
 		lb\\[i\\] = NULL;
 	if \\(eol_ch\\)
 		utf8_length\\[eol_ch\\] = 0;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	char nsubs\\[prog->sub\\];
 	for \\(i = 0; i < prog->laidx; i\\+\\+\\)
-		lb\\[i\\] = NULL;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:650:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	if \\(eol_ch\\)\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:650:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:650${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		lb\\[i\\] = NULL;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:649:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	if \\(eol_ch\\)\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:649:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:649${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		utf8_length\\[eol_ch\\] = 0;
 	if \\(flg & REG_ICASE\\)
 		goto jmp_start1;
-	goto jmp_start2;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		utf8_length\\[eol_ch\\] = 0;\$${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:651:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:651${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	goto jmp_start2;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		utf8_length\\[eol_ch\\] = 0;\$${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:650:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:650${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0s/\\(eol_ch/(flg & REG_NEWLINE/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:410:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1s/h\\)/h && utf8_length[eol_ch])/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:650:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'0s/\\(eol_ch/(flg & REG_NEWLINE/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:409:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'1s/h\\)/h && utf8_length[eol_ch])/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:649:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2a 	else
 		flg &= ~REG_NEWLINE;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:651:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?%;f> unsigned char utf8_length\\[256\\] = \\{
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:650:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?%;f> unsigned char utf8_length\\[256\\] = \\{
 	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\*/
 	/\\* 0 \\*/ 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	/\\* 1 \\*/ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^	/\\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \\*/\$${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?-1m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:1:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^unsigned char utf8_length\\[256\\] = \\{\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:1:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
@@ -310,7 +310,7 @@ index 2372d3b8..3b294bc7 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index a6554db4..16addad4 100644
+index 75dd0ce8..7a31886a 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -490,24 +490,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -447,10 +447,10 @@ index a6554db4..16addad4 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 668c25d8..358c702d 100644
+index 3c09a752..4440796e 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -407,7 +407,7 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
+@@ -406,7 +406,7 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
  	return 0;
  }
  
@@ -459,7 +459,7 @@ index 668c25d8..358c702d 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -647,8 +647,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
+@@ -646,8 +646,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
  	char nsubs[prog->sub];
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
@@ -472,7 +472,7 @@ index 668c25d8..358c702d 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index 875905a8..971996f0 100644
+index 583ee5de..d5d1a153 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -490,7 +490,7 @@ index 875905a8..971996f0 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index d133d031..21ab88a5 100644
+index e53c93b8..67c40af7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -502,7 +502,7 @@ index d133d031..21ab88a5 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 5e9aa927..fc0aacb2 100644
+index ca6cca08..78d0f49b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -263,7 +263,8 @@ int syn_addhl(char *reg, int id);

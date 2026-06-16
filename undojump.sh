@@ -86,8 +86,8 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395:m0${ESC}${SE
 				vi_arg = \\(vi_wsel % 5\\) \\+ !!\\*vi_word;
 			case TK_CTL\\('c'\\):${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\|= 1;
-				break;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1431:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1431${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+				break;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1430:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1430${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 			case TK_CTL('o'):
 				next_hop:
@@ -100,7 +100,7 @@ ${SEP}'0a 			case TK_CTL('o'):
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1431:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1430:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
 void lbuf_emark\\(struct lbuf \\*lb, struct lopt \\*lo, int end, int o2\\);
 struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);
 void lbuf_mark\\(struct lbuf \\*lb, int mk, int pos, int off\\);
@@ -117,7 +117,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index a6554db4..e4e71c94 100644
+index 75dd0ce8..6498250f 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -393,6 +393,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
@@ -163,10 +163,10 @@ index a6554db4..e4e71c94 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index d133d031..8885852a 100644
+index e53c93b8..37857787 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1429,6 +1429,17 @@ void vi(int init)
+@@ -1428,6 +1428,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
@@ -185,7 +185,7 @@ index d133d031..8885852a 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 5e9aa927..7bcc9303 100644
+index ca6cca08..b96594a0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -168,6 +168,7 @@ char *lbuf_get(struct lbuf *lb, int pos);

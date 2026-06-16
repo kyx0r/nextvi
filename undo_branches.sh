@@ -36,12 +36,12 @@ LB="0?"
 EXINIT="|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> \\(\\${ESC}?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\${ESC}?\\)\\)\\(\\${ESC}?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\${ESC}?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\${ESC}?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\${ESC}?\\)\\*\\\\\\\\\\|\\${ESC}?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\
 \\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\${ESC}?\\|left\\|lim\\|led\\|vis\\)\\\\
 \\|\\[@&!dmj\\]\\|=\\\\\\\\\\${ESC}?\\{0,1}\\|\\\\\\\\\\${ESC}?\\{1,2}\\[\\${ESC}?!\\]\\${ESC}?\\|b\\[psx\\]\\${ESC}?\\|p\\[uh\\]\\${ESC}?\\|ac\\${ESC}?\\|e\\[f!\\]\\${ESC}?!\\${ESC}?\\|f\\[-\\+><tdp\\]\\${ESC}?\\|inc\\|i\\|sc!\\${ESC}?\\|\\\\
-\\(\\${ESC}?:g!\\${ESC}?\\|s\\)\\[ \\\\t\\]\\${ESC}?\\(\\.\\)\\${ESC}?\\|q!\\${ESC}?\\|reg\\${ESC}?\\\\\\\\\\+\\${ESC}?\\|rd\\${ESC}?\\|w\\(\\${ESC}?:q!\\|\\[q!\\]\\)\\${ESC}?\\|u\\[czbd\\]\\|x!\\${ESC}?\\|ya!\\${ESC}?\\|cm!\\${ESC}?\\|cd\\${ESC}?\\)\\${ESC}?\",
+\\(\\${ESC}?:g!\\${ESC}?\\|s\\)\\[ \\\\t\\]\\${ESC}?\\(\\.\\)\\${ESC}?\\|q!\\${ESC}?\\|reg\\${ESC}?\\\\\\\\\\+\\${ESC}?\\|rd\\${ESC}?\\|w\\(\\${ESC}?:q!\\|\\[q!\\]\\)\\${ESC}?\\|u\\[czbd\\]\\|x!\\${ESC}?\\|ya\\[!\\+\\]\\${ESC}?\\|cm!\\${ESC}?\\|cd\\${ESC}?\\)\\${ESC}?\",
 		A\\(BL1 \\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\)},
 	\\{ex_ft, \"\\\\\\\\\\\\\\\\\\(\\.\\)\", A\\(AY1 \\| SYN_BD, YE\\)},
-	\\{ex_ft, \"!\\(\\${ESC}?:\\[\\^!\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\${ESC}?\\)\\*!\\${ESC}?\\|%\\(\\${ESC}?:#\\|\\[0-9\\]\\+\\|@\\(\\[\\^\\\\\\\\\\\\\\\\\\]\\)\\)\\${ESC}?\", A\\(WH1 \\| SYN_BD, CY1\\)},${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> \\(\\${ESC}?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\${ESC}?\\)\\)\\(\\${ESC}?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\${ESC}?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\${ESC}?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\${ESC}?\\)\\*\\\\\\\\\\|\\${ESC}?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\
+	\\{ex_ft, \"!\\(\\${ESC}?:\\[\\^!\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\${ESC}?\\)\\*!\\${ESC}?\\|%\\(\\${ESC}?:#\\|\\[0-9\\]\\+\\|\\\\\"\\(\\[0-9\\]\\+\\)\\)\\${ESC}?\", A\\(WH1 \\| SYN_BD, CY1\\)},${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> \\(\\${ESC}?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\${ESC}?\\)\\)\\(\\${ESC}?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\${ESC}?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\${ESC}?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\${ESC}?\\)\\*\\\\\\\\\\|\\${ESC}?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\
 \\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\${ESC}?\\|left\\|lim\\|led\\|vis\\)\\\\
-\\|\\[@&!dmj\\]\\|=\\\\\\\\\\${ESC}?\\{0,1}\\|\\\\\\\\\\${ESC}?\\{1,2}\\[\\${ESC}?!\\]\\${ESC}?\\|b\\[psx\\]\\${ESC}?\\|p\\[uh\\]\\${ESC}?\\|ac\\${ESC}?\\|e\\[f!\\]\\${ESC}?!\\${ESC}?\\|f\\[-\\+><tdp\\]\\${ESC}?\\|inc\\|i\\|sc!\\${ESC}?\\|\\\\${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^\\(\\${ESC}?:g!\\${ESC}?\\|s\\)\\[ \\\\t\\]\\${ESC}?\\(\\.\\)\\${ESC}?\\|q!\\${ESC}?\\|reg\\${ESC}?\\\\\\\\\\+\\${ESC}?\\|rd\\${ESC}?\\|w\\(\\${ESC}?:q!\\|\\[q!\\]\\)\\${ESC}?\\|u\\[czbd\\]\\|x!\\${ESC}?\\|ya!\\${ESC}?\\|cm!\\${ESC}?\\|cd\\${ESC}?\\)\\${ESC}?\",\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+\\|\\[@&!dmj\\]\\|=\\\\\\\\\\${ESC}?\\{0,1}\\|\\\\\\\\\\${ESC}?\\{1,2}\\[\\${ESC}?!\\]\\${ESC}?\\|b\\[psx\\]\\${ESC}?\\|p\\[uh\\]\\${ESC}?\\|ac\\${ESC}?\\|e\\[f!\\]\\${ESC}?!\\${ESC}?\\|f\\[-\\+><tdp\\]\\${ESC}?\\|inc\\|i\\|sc!\\${ESC}?\\|\\\\${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^\\(\\${ESC}?:g!\\${ESC}?\\|s\\)\\[ \\\\t\\]\\${ESC}?\\(\\.\\)\\${ESC}?\\|q!\\${ESC}?\\|reg\\${ESC}?\\\\\\\\\\+\\${ESC}?\\|rd\\${ESC}?\\|w\\(\\${ESC}?:q!\\|\\[q!\\]\\)\\${ESC}?\\|u\\[czbd\\]\\|x!\\${ESC}?\\|ya\\[!\\+\\]\\${ESC}?\\|cm!\\${ESC}?\\|cd\\${ESC}?\\)\\${ESC}?\",\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/d\\]/dp]/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 	return xkwdrs \\${ESC}? NULL : xserr;
@@ -52,8 +52,8 @@ static int eo_val\\(char \\*arg\\)
 	int val = atoi\\(arg\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	return xkwdrs \\${ESC}? NULL : xserr;
 }
 
-${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1528:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1528${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1551:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1551${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	\\{\"uc\", ec_setenc},
 	\\{\"uz\", ec_setenc},
 	\\{\"ub\", ec_setenc},
@@ -61,8 +61,8 @@ ${SEP}?%;f+ 	\\{\"uc\", ec_setenc},
 	EO\\(shape\\),
 	EO\\(seq\\),${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"uc\", ec_setenc},
 	\\{\"uz\", ec_setenc},
-	\\{\"ub\", ec_setenc},${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1625:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1625${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"ub\", ec_setenc},${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1648:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1648${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
@@ -74,9 +74,9 @@ ${SEP}'0a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1528:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1551:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a 	{\"up\", ec_undoleafs},
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1625:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> \\{
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1648:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> \\{
 	struct lbuf \\*lb = emalloc\\(sizeof\\(\\*lb\\)\\);
 	memset\\(lb, 0, sizeof\\(\\*lb\\)\\);
 	lb->mark_sb\\[0\\] = -1;
@@ -276,23 +276,23 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 9ce100bd..28ae8bdd 100644
+index b1f7ed58..8f0de941 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
  ((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
--(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya!?|cm!?|cd?)?",
-+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbdp]|x!?|ya!?|cm!?|cd?)?",
+-(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
++(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbdp]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
- 	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([^\\\\]))?", A(WH1 | SYN_BD, CY1)},
+ 	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|\"([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 82854039..62a413af 100644
+index 60bc054b..2f8a41a5 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1526,6 +1526,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1549,6 +1549,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -309,7 +309,7 @@ index 82854039..62a413af 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1623,6 +1633,7 @@ static struct excmd {
+@@ -1646,6 +1656,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -318,7 +318,7 @@ index 82854039..62a413af 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index a6554db4..c2df058b 100644
+index 75dd0ce8..fa9a271d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -2,6 +2,7 @@ struct lbuf *lbuf_make(void)
@@ -463,7 +463,7 @@ index a6554db4..c2df058b 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index 5e9aa927..d66b95d4 100644
+index ca6cca08..026f5da3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -137,6 +137,7 @@ struct linfo {

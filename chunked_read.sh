@@ -41,8 +41,8 @@ fd = open\\(xb_path, O_RDONLY\\); \\\\
 if \\(fd >= 0\\) \\{ \\\\${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	return key;
 }
 
-${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:381:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#define readfile\\(errchk\\) \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:381:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:381${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:382:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#define readfile\\(errchk\\) \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:382:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:382${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ fd = open\\(xb_path, O_RDONLY\\); \\\\
 if \\(fd >= 0\\) \\{ \\\\
 	errchk lbuf_rd\\(xb, fd, 0, lbuf_len\\(xb\\)\\); \\\\
@@ -50,8 +50,8 @@ if \\(fd >= 0\\) \\{ \\\\
 } \\\\
 
 ${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ fd = open\\(xb_path, O_RDONLY\\); \\\\
-if \\(fd >= 0\\) \\{ \\\\${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:384:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	errchk lbuf_rd\\(xb, fd, 0, lbuf_len\\(xb\\)\\); \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:384:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:384${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+if \\(fd >= 0\\) \\{ \\\\${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:385:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	errchk lbuf_rd\\(xb, fd, 0, lbuf_len\\(xb\\)\\); \\\\\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:385:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:385${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		return 1;
 	}
 	bufs_switch\\(bufs_open\\(path, len\\)\\);
@@ -61,8 +61,8 @@ ${SEP}?%;f+ 		return 1;
 
 ${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		return 1;
 	}
-	bufs_switch\\(bufs_open\\(path, len\\)\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:400:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	readfile\\(\\)\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:400:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:400${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	bufs_switch\\(bufs_open\\(path, len\\)\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:401:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	readfile\\(\\)\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:401:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:401${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		bufs_switch\\(bufs_open\\(arg\\+cd, len\\)\\);
 		cd = 3; /\\* XXX: quick hack to indicate new lbuf \\*/
 	}
@@ -71,14 +71,14 @@ ${SEP}?%;f+ 		bufs_switch\\(bufs_open\\(arg\\+cd, len\\)\\);
 		ex_bufpostfix\\(ex_buf, arg\\[0\\]\\);
 		syn_setft\\(xb_ft\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		bufs_switch\\(bufs_open\\(arg\\+cd, len\\)\\);
 		cd = 3; /\\* XXX: quick hack to indicate new lbuf \\*/
-	}${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:421:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	readfile\\(rd =\\)\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:421:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:421${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	}${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:422:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	readfile\\(rd =\\)\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:422:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:422${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0s/k\\)/k, init)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:381:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'0s/k\\)/k, init)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:382:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \\
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:384:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2s/\\(\\)/(, 1)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:400:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3s/=\\)/=, cd == 3)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:421:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 		lo->ins = \\(char\\*\\*\\)sb->s;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:385:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2s/\\(\\)/(, 1)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:401:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'3s/=\\)/=, cd == 3)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:422:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 		lo->ins = \\(char\\*\\*\\)sb->s;
 }
 
 int lbuf_rd\\(struct lbuf \\*lb, int fd, int beg, int end\\)
@@ -239,10 +239,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 82854039..3be1271c 100644
+index 60bc054b..29a7edee 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -378,10 +378,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
+@@ -379,10 +379,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
  	return key;
  }
  
@@ -255,7 +255,7 @@ index 82854039..3be1271c 100644
  	close(fd); \
  } \
  
-@@ -397,7 +397,7 @@ int ex_edit(const char *path, int len)
+@@ -398,7 +398,7 @@ int ex_edit(const char *path, int len)
  		return 1;
  	}
  	bufs_switch(bufs_open(path, len));
@@ -264,7 +264,7 @@ index 82854039..3be1271c 100644
  	return 0;
  }
  
-@@ -418,7 +418,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -419,7 +419,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -274,7 +274,7 @@ index 82854039..3be1271c 100644
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
 diff --git a/lbuf.c b/lbuf.c
-index a6554db4..5a76db52 100644
+index 75dd0ce8..a80c43d0 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -221,32 +221,85 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -387,7 +387,7 @@ index a6554db4..5a76db52 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 5e9aa927..2d73fb9c 100644
+index ca6cca08..34d5b9ba 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -156,7 +156,8 @@ struct lbuf {

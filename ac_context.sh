@@ -85,9 +85,9 @@ ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:30${ESC}${SE
 ${SEP}?%;f+ \\{
 	char \\*cs;
 	int len, c, i;
+	sbuf \\*reg;
 	do \\{
-		led_printparts\\(sb, pre, ps, \\*post, postn, poff\\);
-		len = sb->s_n;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ \\{
+		led_printparts\\(sb, pre, ps, \\*post, postn, poff\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ \\{
 	char \\*cs;
 	int len, c, i;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:427:a1${SEP}${LB}
 ${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:427${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
@@ -99,8 +99,8 @@ ${SEP}?%;f+ 		case TK_CTL\\('n'\\):
 				if \\(suggestsb->s_n == is->sug - suggestsb->s\\)
 					continue;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		case TK_CTL\\('n'\\):
 			if \\(!suggestsb\\)
-				continue;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:526:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			is->lsug = is->sug_pt >= 0 \\${ESC}? is->sug_pt : led_lastword\\(sb->s \\+ pre\\) \\+ pre;\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:526:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:526${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+				continue;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:527:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			is->lsug = is->sug_pt >= 0 \\${ESC}? is->sug_pt : led_lastword\\(sb->s \\+ pre\\) \\+ pre;\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:527:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:527${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				}
 				suggest:
 				\\*is->_sug = '\\\\0';
@@ -110,9 +110,9 @@ ${SEP}?%;f+ 				}
 				continue;
 			}${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				}
 				suggest:
-				\\*is->_sug = '\\\\0';${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:537:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				sbuf_cut\\(sb, is->lsug\\)
-				sbuf_str\\(sb, is->sug\\)${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:537:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:537${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+				\\*is->_sug = '\\\\0';${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:538:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				sbuf_cut\\(sb, is->lsug\\)
+				sbuf_str\\(sb, is->sug\\)${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:538:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:538${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				continue;
 			}
 			lookup:
@@ -121,8 +121,8 @@ ${SEP}?%;f+ 				continue;
 				if \\(!\\(is->_sug = strchr\\(is->sug, '\\\\n'\\)\\)\\)
 					continue;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				continue;
 			}
-			lookup:${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:543:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			if \\(search\\(sb->s \\+ is->lsug, len - is->lsug\\)\\) \\{\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:543:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:543${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+			lookup:${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:544:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			if \\(search\\(sb->s \\+ is->lsug, len - is->lsug\\)\\) \\{\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:544:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:544${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				int r = crow-ctop\\+1;
 				if \\(is->sug\\)
 					goto pac_;
@@ -132,9 +132,9 @@ ${SEP}?%;f+ 				int r = crow-ctop\\+1;
 					pac_:;
 					preserve\\(int, xtd, xtd = 2;\\)${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 10${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				int r = crow-ctop\\+1;
 				if \\(is->sug\\)
-					goto pac_;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:557:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				i = is->sug_pt >= 0 \\${ESC}? is->sug_pt : led_lastword\\(sb->s \\+ pre\\) \\+ pre;
-				if \\(suggestsb && search\\(sb->s \\+ i, sb->s_n - i\\)\\) \\{${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:557:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:557${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+					goto pac_;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:558:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				i = is->sug_pt >= 0 \\${ESC}? is->sug_pt : led_lastword\\(sb->s \\+ pre\\) \\+ pre;
+				if \\(suggestsb && search\\(sb->s \\+ i, sb->s_n - i\\)\\) \\{${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:558:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:558${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0c static int search(sbuf *sb, int l, int pre)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:12:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -156,21 +156,21 @@ ${SEP}'6a 	if (ai_max >= 0 && xpac) {
 		goto pac;
 	}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:427:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'7s/ \\+ pre\\) \\+ pre/)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:526:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'7s/ \\+ pre\\) \\+ pre/)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:527:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'8,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:537:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'9s/->s \\+ is->lsug, len - is->lsug/, is->lsug, pre/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:543:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:538:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'9s/->s \\+ is->lsug, len - is->lsug/, is->lsug, pre/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:544:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'10,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:557:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'led.c'
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:558:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'led.c'
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 7178cae0..cc7609f2 100644
+index 85b112fc..3342ee0a 100644
 --- a/led.c
 +++ b/led.c
 @@ -9,25 +9,30 @@ int dstrlen(const char *s, char delim)
@@ -218,10 +218,10 @@ index 7178cae0..cc7609f2 100644
 +		c = 0;
 +		goto pac;
 +	}
+ 	sbuf *reg;
  	do {
  		led_printparts(sb, pre, ps, *post, postn, poff);
- 		len = sb->s_n;
-@@ -523,7 +532,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -524,7 +533,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('n'):
  			if (!suggestsb)
  				continue;
@@ -230,7 +230,7 @@ index 7178cae0..cc7609f2 100644
  			if (is->_sug) {
  				if (suggestsb->s_n == is->sug - suggestsb->s)
  					continue;
-@@ -534,13 +543,14 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -535,13 +544,14 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				}
  				suggest:
  				*is->_sug = '\0';
@@ -248,7 +248,7 @@ index 7178cae0..cc7609f2 100644
  				is->sug = suggestsb->s;
  				if (!(is->_sug = strchr(is->sug, '\n')))
  					continue;
-@@ -554,8 +564,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -555,8 +565,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				int r = crow-ctop+1;
  				if (is->sug)
  					goto pac_;

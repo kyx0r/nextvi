@@ -346,7 +346,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index a6554db4..4a5bdeb4 100644
+index 75dd0ce8..0a2a1edc 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -99,6 +99,7 @@ static int linelength(char *s)
@@ -543,7 +543,7 @@ index 9b4776c8..6f497355 100644
  		return;
  	for (j = 0; j < n; j++)
 diff --git a/vi.c b/vi.c
-index d133d031..63fd90ee 100644
+index e53c93b8..569e7057 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,7 @@ for (i = 0, ret = 0;; i++) { \
@@ -600,7 +600,7 @@ index d133d031..63fd90ee 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 5e9aa927..02bd997e 100644
+index ca6cca08..531ef2cf 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -261,6 +261,8 @@ void syn_reloadft(int hl, int flg);
