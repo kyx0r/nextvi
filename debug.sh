@@ -53,7 +53,7 @@ ${SEP}'0a void ex_done(void)
 		}
 	for (int i = 0; i < xbufcur; i++)
 		bufs_free(i);
-	for (int i = 0; i < LEN(xregs); i++)
+	for (int i = 0; i < xregs_n; i++)
 		if (xregs[i])
 			sbuf_free(xregs[i])
 	rset_free(xkwdrs);
@@ -161,7 +161,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 60bc054b..de50739c 100644
+index 60bc054b..3d05edbf 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1835,6 +1835,22 @@ void ex(void)
@@ -177,7 +177,7 @@ index 60bc054b..de50739c 100644
 +		}
 +	for (int i = 0; i < xbufcur; i++)
 +		bufs_free(i);
-+	for (int i = 0; i < LEN(xregs); i++)
++	for (int i = 0; i < xregs_n; i++)
 +		if (xregs[i])
 +			sbuf_free(xregs[i])
 +	rset_free(xkwdrs);
