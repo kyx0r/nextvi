@@ -760,7 +760,7 @@ static void emit_err_check_loc(FILE *out, const char *loc, int phase,
 	if (tags)
 		fputs(tags, out);
 	fprintf(out, "?" "?!${DBG%d:-", phase);
-	fprintf(out, "ya!p");
+	fprintf(out, "ya!112");
 	EMIT_ESCSEP(out);
 	fprintf(out, "prp");
 	EMIT_ESCSEP(out);
@@ -3301,7 +3301,7 @@ process_line:
 		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n"
-		      "[ \"$INTR\" = \"1\" ] && INTR=\"${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:"
+		      "[ \"$INTR\" = \"1\" ] && INTR=\"${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@p:&Q:b0:"
 		      "|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1\" || INTR=\n", stdout);
 	else if (relative_mode || interactive_mode)
 		fputs("# Command that handles readability line breaks\n"
@@ -3317,7 +3317,7 @@ process_line:
 		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n"
-		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:"
+		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@p:&Q:b0:"
 		      "|sc! \\\\\\\\\\\\${SEP}|:vis 3\\\\${SEP}q1\" || INTR=\n", stdout);
 
 	/* Build groups for every file */
@@ -3351,7 +3351,7 @@ process_line:
 			fprintf(stdout, "b%d${SEP}", k);
 			/* nothing to cache or search in a brand new file */
 			if ((relative_mode || interactive_mode) && !active[k]->is_new)
-				fputs("%ya b${SEP}", stdout);
+				fputs("%ya 98${SEP}", stdout);
 			cur_file_path = active[k]->path;
 			emit_file_script(stdout, active[k]);
 		}
