@@ -48,11 +48,15 @@ gitdiff2vi() {
 			cat /tmp/tmp.patch >> "$2"
 			# Revert only real modifications to pre-patch so fuzz can validate
 			# against the original. Exclude $2 (just rewrote it) and new files
-			# (intent-to-add breaks git stash, and they have no pre-patch orig).
+			# (which have no pre-patch orig). Intent-to-add (git add -N) entries
+			# break both stash push and pop, so unstage them around the stash.
+			ita=$(git diff --name-only --diff-filter=A -- ":!$2")
+			[ -n "$ita" ] && git reset -q -- $ita
 			stashed=$(git diff --name-only --diff-filter=MD -- ":!$2")
 			[ -n "$stashed" ] && git stash push -q -- $stashed
 			./patch2vi "$1" "$2" > "_$2"
 			[ -n "$stashed" ] && git stash pop -q
+			[ -n "$ita" ] && git add -N -- $ita
 			mv "_$2" "$2"
 		;;
 		*)
