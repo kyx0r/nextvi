@@ -251,10 +251,10 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 	case '\'':
 		if (!uc_isdigit(*++(*num)))
 			return -1;
-		off = atoi(*num);
+		for (off = 0; uc_isdigit(**num); ++*num)
+			off = off * 10 + (**num - '0');
 		if (lbuf_jump(xb, off, &n, row ? &n : &dir))
 			return -1;
-		*num += itoalen(off);
 		break;
 	case '>':
 	case '<':
@@ -993,10 +993,8 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end, i = 0, reg = xdefreg;
 	sbuf *buf;
-	if (uc_isdigit(*arg)) {
-		reg = atoi(arg);
-		i = itoalen(reg);
-	}
+	for (; uc_isdigit(arg[i]); i++)
+		reg = i ? reg * 10 + (arg[i] - '0') : arg[i] - '0';
 	if (!(buf = ex_regget(reg)))
 		return "uninitialized register";
 	for (; arg[i] && arg[i] != '!'; i++);
@@ -1059,9 +1057,10 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	for (int i = 0; uc_isdigit(*arg); i++) {
-		int mk = atoi(arg);
+		int mk;
+		for (mk = 0; uc_isdigit(*arg); arg++)
+			mk = mk * 10 + (*arg - '0');
 		lbuf_mark(xb, mk, i % 2 ? end - 1 : beg, i % 2 ? o2 : o1);
-		arg += itoalen(mk);
 		while (*arg == ' ')
 			arg++;
 	}
