@@ -1691,8 +1691,8 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			if (*src == '"') {
 				src++;
 				if (uc_isdigit(*src)) {
-					n = atoi(src);
-					src += itoalen(n);
+					for (n = 0; uc_isdigit(*src); src++)
+						n = n * 10 + (*src - '0');
 					sbuf *reg = ex_regget(n);
 					if (reg)
 						sbuf_mem(sb, reg->s, reg->s_n)
@@ -1702,8 +1702,8 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 				src++;
 				pbuf = ex_pbuf;
 			} else if (uc_isdigit(*src)) {
-				n = atoi(src);
-				src += itoalen(n);
+				for (n = 0; uc_isdigit(*src); src++)
+					n = n * 10 + (*src - '0');
 				pbuf = &bufs[n];
 			}
 			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
