@@ -128,16 +128,16 @@ check 'join all with space padding' 'a b c' "$out"
 # A5: Registers ────────────────────────────────────────────────────────────────
 
 printf 'hello\nworld\n' > "$TMPFILE"
-out=$(run_ex ':1ya a:$pu a:%p:q!')
+out=$(run_ex ':1ya 97:$pu 97:%p:q!')
 check 'yank line and paste at end' "$(printf 'hello\nworld\nhello')" "$out"
 
 printf 'line1\nline2\nline3\n' > "$TMPFILE"
-out=$(run_ex ':1ya a:2ya ax:1pu a:%p:q!')
+out=$(run_ex ':1ya 97:2ya+ 97:1pu 97:%p:q!')
 check 'append to register then paste' \
 	"$(printf 'line1\nline1\nline2\nline2\nline3')" "$out"
 
 printf 'line1\n' > "$TMPFILE"
-out=$(run_ex ':97reg hello:$pu a:%p:q!')
+out=$(run_ex ':97reg hello:$pu 97:%p:q!')
 check 'put string into register via :reg' "$(printf 'line1\nhello')" "$out"
 
 # A6: Global command ───────────────────────────────────────────────────────────
@@ -353,11 +353,11 @@ printf 'hello world\n' > "$TMPFILE"
 out=$(run_ex ':%!tr a-z A-Z:%p:q!')
 check 'pipe through tr a-z A-Z uppercases' 'HELLO WORLD' "$out"
 
-# C12: Register expansion %@a ──────────────────────────────────────────────────
+# C12: Register expansion %"97 ─────────────────────────────────────────────────
 
 printf 'test\n' > "$TMPFILE"
-out=$(run_ex ':97reg hello:p %@a:q')
-check 'register expansion %@a in :p' 'hello' "$out"
+out=$(run_ex ':97reg hello:p %"97:q')
+check 'register expansion %"97 in :p' 'hello' "$out"
 
 # C13: err option ──────────────────────────────────────────────────────────────
 
@@ -396,7 +396,7 @@ check 'range arithmetic ,2+3 prints 5' '5' "$out"
 # C18: Multiple registers ──────────────────────────────────────────────────────
 
 printf 'line1\nline2\nline3\n' > "$TMPFILE"
-out=$(run_ex ':1ya a:3ya b:1pu b:1pu a:%p:q!')
+out=$(run_ex ':1ya 97:3ya 98:1pu 98:1pu 97:%p:q!')
 check 'yank two registers and paste both' \
 	"$(printf 'line1\nline1\nline3\nline2\nline3')" "$out"
 
@@ -464,10 +464,10 @@ check 'vi K: split line at cursor' "$(printf 'hello \nworld')" "$out"
 
 printf '\n%s\n' '─── Section E: Macro system (:& / vi &a / &&) ────────────────────────────────'
 
-# E1: :& takes raw vi input; to use a register, expand it via %@a
+# E1: :& takes raw vi input; to use a register, expand it via %"97
 printf 'hello world\n' > "$TMPFILE"
-check 'E1 :& %@a — register expansion used as raw vi input' 'world' \
-	"$(run_mac ":97reg dw:& %@a:w! $OUTFILE:q!")"
+check 'E1 :& %"97 — register expansion used as raw vi input' 'world' \
+	"$(run_mac ":97reg dw:& %\"97:w! $OUTFILE:q!")"
 
 # E2: \:cmd inside & macro; a newline (0x0A) is required to submit the ex cmd
 printf 'hello\n' > "$TMPFILE"
@@ -486,11 +486,11 @@ check 'E4 vi && — repeats last & macro' 'foo' \
 
 printf '\n%s\n' '─── Section G: ya! — free a named register ───────────────────────────────────'
 
-# ya! a frees register a; pu a on a freed register raises "uninitialized
+# ya! 97 frees register 97; pu 97 on a freed register raises "uninitialized
 # register" — with err 4 (silence+ignore) the paste is skipped silently.
 printf 'line1\nline2\n' > "$TMPFILE"
-out=$(run_ex ':1ya a:ya! a:err 4:$pu a:%p:q!')
-check 'G1 ya! frees named reg; pu a silently skipped (err 4)' \
+out=$(run_ex ':1ya 97:ya! 97:err 4:$pu 97:%p:q!')
+check 'G1 ya! frees reg; pu 97 silently skipped (err 4)' \
 	"$(printf 'line1\nline2')" "$out"
 
 printf '\n%s\n' '─── Section H: ?? id capture ─────────────────────────────────────────────────'
@@ -537,7 +537,7 @@ printf '\n%s\n' '─── Section K: pr — capture :p output into a register �
 
 # pr N redirects :p output to register N; led 0 suppresses double-printing
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':led 0:pr 97:ya! a:p hello captured:pr 0:led:pu a:%p:q!')
+out=$(run_ex ':led 0:pr 97:p hello captured:pr 0:led:pu 97:%p:q!')
 check 'K1 pr+led 0 — :p output captured into register, then pasted' \
 	"$(printf 'hello\nhello captured')" "$out"
 
@@ -557,11 +557,11 @@ out=$(run_ex ":3p:'42p:q")
 check "L3 '* = cursor saved before previous ex command" \
 	"$(printf 'c\na')" "$out"
 
-printf '\n%s\n' '─── Section M: %@/ — previous regex register ─────────────────────────────────'
+printf '\n%s\n' '─── Section M: %"47 — previous regex register ────────────────────────────────'
 
 printf 'hello world\n' > "$TMPFILE"
-out=$(run_ex ':f>hello:p %@/:q')
-check 'M1 %@/ expands to the previous regex keyword' 'hello' "$out"
+out=$(run_ex ':f>hello:p %"47:q')
+check 'M1 %"47 expands to the previous regex keyword' 'hello' "$out"
 
 printf '\n%s\n' '─── Section N: range arithmetic ──────────────────────────────────────────────'
 
@@ -587,8 +587,8 @@ printf '\n%s\n' '─── Section P: :pu and :w with external pipe ────
 
 rm -f "$OUTFILE"
 printf 'test\n' > "$TMPFILE"
-run_ex ":97reg hello world:pu a \!tr a-z A-Z > $OUTFILE:q" >/dev/null 2>/dev/null
-check 'P1 :pu a \!cmd — pipe register content to external command' \
+run_ex ":97reg hello world:pu 97 \!tr a-z A-Z > $OUTFILE:q" >/dev/null 2>/dev/null
+check 'P1 :pu 97 \!cmd — pipe register content to external command' \
 	'HELLO WORLD' "$(cat $OUTFILE 2>/dev/null)"
 
 rm -f "$OUTFILE"
@@ -608,10 +608,10 @@ check_exit 'Q1 1q in nested ??! scope does not propagate quit to vi' '0' "$rc"
 
 printf '\n%s\n' '─── Section R: :re — set search keyword ─────────────────────────────────────'
 
-# R1: :re word sets the keyword; %@/ reflects it
+# R1: :re word sets the keyword; %"47 reflects it
 printf 'hello world\n' > "$TMPFILE"
-out=$(run_ex ':re world:p %@/:q')
-check 'R1 :re word — sets keyword; %@/ returns it' 'world' "$out"
+out=$(run_ex ':re world:p %"47:q')
+check 'R1 :re word — sets keyword; %"47 returns it' 'world' "$out"
 
 # R2: :re word sets the keyword; :g// (empty pattern) reuses it
 printf 'hello\nworld\nhello world\n' > "$TMPFILE"
@@ -624,13 +624,13 @@ printf 'foo\nbar\nbaz\n' > "$TMPFILE"
 out=$(run_ex ':3:re bar:.p:q')
 check 'R3 :re does not navigate; cursor stays on current line' 'baz' "$out"
 
-# R4: range form :1re escapes regex-special chars; verify via %@/
+# R4: range form :1re escapes regex-special chars; verify via %"47
 # Buffer line 1 is "a.b"; ex_regesc turns "." into "\.".
-# (The trailing \n from lbuf_region is included so %@/ output is "a\.b"
+# (The trailing \n from lbuf_region is included so %"47 output is "a\.b"
 # after command-substitution strips the trailing newline.)
 printf 'a.b\naXb\n' > "$TMPFILE"
-out=$(run_ex ':1re:p %@/:q')
-check 'R4 range :re — escapes regex chars; %@/ reflects escaped pattern' 'a\.b' "$out"
+out=$(run_ex ':1re:p %"47:q')
+check 'R4 range :re — escapes regex chars; %"47 reflects escaped pattern' 'a\.b' "$out"
 
 printf '\n%s\n' '─── Section S: Range addresses with inline search ────────────────────────────'
 
@@ -719,10 +719,10 @@ out=$(run_ex ':%!sort:%p:q!')
 check 'U9 :%!sort — pipe buffer through sort; output replaces buffer' \
 	"$(printf 'a\nb\nc')" "$out"
 
-# U10: g/int/ya ax — global appends matching lines to register a
+# U10: g/int/ya+ 97 — global appends matching lines to register 97
 printf 'int a;\nvoid b;\nint c;\n' > "$TMPFILE"
-out=$(run_ex ':led 0:g/int/ya ax:led:1pu a:%p:q!')
-check 'U10 g/int/ya ax — global appends matching lines to register a' \
+out=$(run_ex ':led 0:g/int/ya+ 97:led:1pu 97:%p:q!')
+check 'U10 g/int/ya+ 97 — global appends matching lines to register 97' \
 	"$(printf 'int a;\nint a;\nint c;\nvoid b;\nint c;')" "$out"
 
 # U11: substitution backreference \0 captures first matched group
