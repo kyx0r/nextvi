@@ -738,7 +738,7 @@ Multiple ex commands can be chained in one global command.
 To chain commands, the ex separator <:> must be escaped once.
 
 Example: print and append lines matching "int" to register <a>
-:g/int/p\e:ya ax
+:g/int/p\e:ya+ 97
 
 It is possible to nest global commands inside of global commands.
 The first global command will not be executed on lines that
@@ -942,11 +942,11 @@ Free a register
 Paste or pipe a register
 .Bd -literal
 Example: paste <a> at line 1 character offset 5
-:1;5pu a
+:1;5pu 97
 Example: copy default register to X11 clipboard
 :pu \e!xclip -selection clipboard
 Example: copy register <a> to X11 clipboard
-:pu a \e!xclip -selection clipboard
+:pu 97 \e!xclip -selection clipboard
 .Ed
 
 .It Cm [\fI#reg\fP]reg[\fIstr\fP]
@@ -1296,7 +1296,7 @@ Example: utilize newly set separator in a single command chain
 .It Cm [<\fI0-3\fP>]sc![<\fIesc\fP>][<\fIsep\fP>][<\fIexp\fP>][<\fIexe\fP>]
 Set ex special characters
 .Bd -literal
-Missing arguments default to <0x0>.
+Missing arguments default to <#0>.
 
 Example: disable <exp> and <exe>
 :sc! \e\e\e:
@@ -1486,9 +1486,9 @@ Print register contents cannot be displayed with R or :reg command
 when register is assigned (self-referential problem).
 
 Example: paste current buffer list exactly like from :b command
-:pr A:ya! A: b:pu A
+:pr A:ya! 65: b:pu 65
 Example: store a line printed with :p
-:pr A:ya! A:p
+:pr A:ya! 65:p
 .Ed
 
 .It Cm lim[\fIval=-1\fP]
@@ -1683,7 +1683,7 @@ Position of previous line region
 Previous regex keyword
 .It Cm \&:
 Previous ex command
-.It Cm <0x0>
+.It Cm <#0>
 Default register
 .It Cm <0>
 Previous value of default register (atomic)

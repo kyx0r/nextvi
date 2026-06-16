@@ -481,7 +481,7 @@ EX COMMANDS
              To chain commands, the ex separator <:> must be escaped once.
 
              Example: print and append lines matching "int" to register <a>
-             :g/int/p\:ya ax
+             :g/int/p\:ya+ 97
 
              It is possible to nest global commands inside of global commands.
              The first global command will not be executed on lines that
@@ -668,11 +668,11 @@ EX COMMANDS
              Paste or pipe a register
 
              Example: paste <a> at line 1 character offset 5
-             :1;5pu a
+             :1;5pu 97
              Example: copy default register to X11 clipboard
              :pu \!xclip -selection clipboard
              Example: copy register <a> to X11 clipboard
-             :pu a \!xclip -selection clipboard
+             :pu 97 \!xclip -selection clipboard
 
      [#reg]reg[str]
              Print registers or put into a register
@@ -997,7 +997,7 @@ EX COMMANDS
      [<0-3>]sc![<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
-             Missing arguments default to <0x0>.
+             Missing arguments default to <#0>.
 
              Example: disable <exp> and <exe>
              :sc! \\\:
@@ -1146,9 +1146,9 @@ EX OPTIONS
              when register is assigned (self-referential problem).
 
              Example: paste current buffer list exactly like from :b command
-             :pr A:ya! A: b:pu A
+             :pr A:ya! 65: b:pu 65
              Example: store a line printed with :p
-             :pr A:ya! A:p
+             :pr A:ya! 65:p
 
      lim[val=-1]
              Line length render limit
@@ -1297,7 +1297,7 @@ SPECIAL MARKS
 SPECIAL REGISTERS
      /       Previous regex keyword
      :       Previous ex command
-     <0x0>   Default register
+     <#0>    Default register
      <0>     Previous value of default register (atomic)
              Atomic means the operation did not include a <Newline>.
      <1-9>   Previous value(s) of default register (nonatomic)
