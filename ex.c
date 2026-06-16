@@ -251,10 +251,10 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 	case '\'':
 		if (!uc_isdigit(*++(*num)))
 			return -1;
-		off = atoi(*num);
+		for (off = 0; uc_isdigit(**num); ++*num)
+			off = off * 10 + (**num - '0');
 		if (lbuf_jump(xb, off, &n, row ? &n : &dir))
 			return -1;
-		*num += itoalen(off);
 		break;
 	case '>':
 	case '<':
@@ -993,10 +993,8 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 {
 	int beg, end, i = 0, reg = xdefreg;
 	sbuf *buf;
-	if (uc_isdigit(*arg)) {
-		reg = atoi(arg);
-		i = itoalen(reg);
-	}
+	for (; uc_isdigit(arg[i]); i++)
+		reg = i ? reg * 10 + (arg[i] - '0') : arg[i] - '0';
 	if (!(buf = ex_regget(reg)))
 		return "uninitialized register";
 	for (; arg[i] && arg[i] != '!'; i++);
@@ -1059,9 +1057,10 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	for (int i = 0; uc_isdigit(*arg); i++) {
-		int mk = atoi(arg);
+		int mk;
+		for (mk = 0; uc_isdigit(*arg); arg++)
+			mk = mk * 10 + (*arg - '0');
 		lbuf_mark(xb, mk, i % 2 ? end - 1 : beg, i % 2 ? o2 : o1);
-		arg += itoalen(mk);
 		while (*arg == ' ')
 			arg++;
 	}
@@ -1688,25 +1687,29 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			int n;
 			struct buf *pbuf = ex_buf;
 			src++;
-			if (*src == '"' && uc_isdigit(src[1])) {
+			if (*src == '"') {
 				src++;
-				n = atoi(src);
-				src += itoalen(n);
-				sbuf *reg = ex_regget(n);
-				if (reg)
-					sbuf_mem(sb, reg->s, reg->s_n)
-				pbuf = NULL;
+				if (uc_isdigit(*src)) {
+					for (n = 0; uc_isdigit(*src); src++)
+						n = n * 10 + (*src - '0');
+					sbuf *reg = ex_regget(n);
+					if (reg)
+						sbuf_mem(sb, reg->s, reg->s_n)
+					pbuf = NULL;
+				}
 			} else if (*src == '#') {
 				src++;
 				pbuf = ex_pbuf;
 			} else if (uc_isdigit(*src)) {
-				n = atoi(src);
-				src += itoalen(n);
+				for (n = 0; uc_isdigit(*src); src++)
+					n = n * 10 + (*src - '0');
 				pbuf = &bufs[n];
 			}
-			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
 			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)
+			if (src[-1] == '"')
+				sbuf_chr(sb, '"')
+			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
 		} else if (*src == xexe) {
 			int n = sb->s_n;
 			src++;
