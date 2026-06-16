@@ -322,7 +322,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			vi_drawmsg_mpt("syntax error")
 		free(kw);
 	} else if (msg)
-		ex_krsset(xregs['/'] ? xregs['/']->s : NULL, xkwddir);
+		ex_krsset(ex_regget('/') ? ex_regget('/')->s : NULL, xkwddir);
 	if (!lbuf_len(xb) || (!xkwddir || !xkwdrs))
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
@@ -331,7 +331,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 				msg ? dir : -1, 1, row, off)) {
 			if (msg) {
 				snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found %d/%d",
-						xregs['/'] ? xregs['/']->s : "", i, cnt);
+						ex_regget('/') ? ex_regget('/')->s : "", i, cnt);
 				vi_drawmsg_mpt(vi_msg)
 			}
 			return 1;
@@ -366,14 +366,14 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int ex)
 
 static void vi_regput(int c, const char *s, int lnmode)
 {
+	sbuf *i_s;
 	if (lnmode) {
-		sbuf *i_s;
 		for (int i = 8; i > 0; i--)
-			if ((i_s = xregs['0'+i]))
+			if ((i_s = ex_regget('0'+i)))
 				ex_regput('0' + i + 1, i_s->s, 0);
 		ex_regput('1', s, 0);
-	} else if (xregs[c])
-		ex_regput('0', xregs[c]->s, 0);
+	} else if ((i_s = ex_regget(c)))
+		ex_regput('0', i_s->s, 0);
 	ex_regput(tolower(c), s, isupper(c));
 }
 
@@ -1042,7 +1042,7 @@ static int vc_put(int cmd)
 {
 	int cnt = MAX(1, vi_arg);
 	int i, off;
-	sbuf *buf = xregs[vi_ybuf];
+	sbuf *buf = ex_regget(vi_ybuf);
 	char *ln;
 	if (!buf)
 		vi_drawmsg_mpt("yank buffer empty")
@@ -1123,26 +1123,25 @@ static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
 	int c = term_read(0), i, n = MAX(1, vi_arg);
-	sbuf **buf;
+	sbuf *buf;
 	if (TK_INT(c))
 		return;
 	if (c == cmd && exec_buf >= 0)
 		c = exec_buf;
-	buf = &xregs[c];
-	if (!*buf) {
+	if (!ex_regget(c)) {
 		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
 	exec_buf = c;
 	if (c == ':') {
 		term_pos(xrows, 0);
-		for (i = 0; i < n && *buf; i++)
-			ex_exec((*buf)->s);
+		for (i = 0; i < n && (buf = ex_regget(c)); i++)
+			ex_exec(buf->s);
 		vi_mod |= 1;
 		return;
 	}
-	for (i = 0; i < n && *buf; i++)
-		term_exec((*buf)->s, (*buf)->s_n, cmd)
+	for (i = 0; i < n && (buf = ex_regget(c)); i++)
+		term_exec(buf->s, buf->s_n, cmd)
 }
 
 static void vi_argcmd(int arg, char cmd)
