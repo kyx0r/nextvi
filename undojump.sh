@@ -30,10 +30,10 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@/:%f> %@p:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@p:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: lbuf.c vi.c vi.h
-EXINIT="|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya b${SEP}?%;f> 	return pos >= 0 && pos < lb->ln_n \\${ESC}? lb->ln\\[pos\\] : NULL;
+EXINIT="|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> 	return pos >= 0 && pos < lb->ln_n \\${ESC}? lb->ln\\[pos\\] : NULL;
 }
 
 int lbuf_undo\\(struct lbuf \\*lb, int \\*row, int \\*off\\)
@@ -42,7 +42,7 @@ int lbuf_undo\\(struct lbuf \\*lb, int \\*row, int \\*off\\)
 }
 
 ${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
@@ -79,7 +79,7 @@ ${SEP}'0a int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 	return ret;
 }
 
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya b${SEP}?%;f> 				vi_hidch = !vi_hidch;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\|= 1;
 				break;
 			case TK_CTL\\('v'\\):
@@ -87,7 +87,7 @@ ${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395:m0${ESC}${SEP}
 			case TK_CTL\\('c'\\):${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\|= 1;
 				break;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1431:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1431${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1431${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 			case TK_CTL('o'):
 				next_hop:
@@ -100,7 +100,7 @@ ${SEP}'0a 			case TK_CTL('o'):
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1431:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya b${SEP}?%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1431:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
 void lbuf_emark\\(struct lbuf \\*lb, struct lopt \\*lo, int end, int o2\\);
 struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);
 void lbuf_mark\\(struct lbuf \\*lb, int mk, int pos, int off\\);
@@ -108,10 +108,10 @@ int lbuf_jump\\(struct lbuf \\*lb, int mk, int \\*pos, int \\*off\\);
 int lbuf_undo\\(struct lbuf \\*lb, int \\*row, int \\*off\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
 void lbuf_emark\\(struct lbuf \\*lb, struct lopt \\*lo, int end, int o2\\);
 struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:170:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:170${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:170${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
-${SEP}??!${DBG2:-ya!p${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:170:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'lbuf.c' 'vi.c' 'vi.h'
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:170:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}q" $VI -e 'lbuf.c' 'vi.c' 'vi.h'
 
 exit 0
 === PATCH2VI DELTA ===
