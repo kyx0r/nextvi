@@ -82,15 +82,15 @@ ${SEP}?%;f+ 				sbuf_mem\\(sylsb, part, len\\)
 	free\\(sylsb->s\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				sbuf_mem\\(sylsb, part, len\\)
 		}${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:30:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		part = strstr\\(part\\+len, pattern\\);\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:30:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:30${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?%;f+ \\{
-	char \\*cs;
+${SEP}?%;f+ 	char \\*cs;
 	int len, c, i;
 	sbuf \\*reg;
 	do \\{
-		led_printparts\\(sb, pre, ps, \\*post, postn, poff\\);${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ \\{
-	char \\*cs;
-	int len, c, i;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:427:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:427${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		led_printparts\\(sb, pre, ps, \\*post, postn, poff\\);
+		len = sb->s_n;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	char \\*cs;
+	int len, c, i;
+	sbuf \\*reg;${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:428:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:428${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		case TK_CTL\\('n'\\):
 			if \\(!suggestsb\\)
 				continue;
@@ -155,7 +155,7 @@ ${SEP}'6a 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
 	}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:427:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:428:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'7s/ \\+ pre\\) \\+ pre/)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:527:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'8,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
@@ -170,7 +170,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 85b112fc..3342ee0a 100644
+index 85b112fc..e7201c8b 100644
 --- a/led.c
 +++ b/led.c
 @@ -9,25 +9,30 @@ int dstrlen(const char *s, char delim)
@@ -210,17 +210,17 @@ index 85b112fc..3342ee0a 100644
  	}
  	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
  	free(sylsb->s);
-@@ -425,6 +430,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
- {
+@@ -426,6 +431,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  	char *cs;
  	int len, c, i;
+ 	sbuf *reg;
 +	if (ai_max >= 0 && xpac) {
 +		c = 0;
 +		goto pac;
 +	}
- 	sbuf *reg;
  	do {
  		led_printparts(sb, pre, ps, *post, postn, poff);
+ 		len = sb->s_n;
 @@ -524,7 +533,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('n'):
  			if (!suggestsb)
