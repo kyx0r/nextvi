@@ -272,7 +272,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index b1f7ed58..4347687a 100644
+index c2c5c4b4..8a5ba56b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
