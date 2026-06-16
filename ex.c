@@ -1688,14 +1688,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			int n;
 			struct buf *pbuf = ex_buf;
 			src++;
-			if (*src == '"' && uc_isdigit(src[1])) {
+			if (*src == '"') {
 				src++;
-				n = atoi(src);
-				src += itoalen(n);
-				sbuf *reg = ex_regget(n);
-				if (reg)
-					sbuf_mem(sb, reg->s, reg->s_n)
-				pbuf = NULL;
+				if (uc_isdigit(*src)) {
+					n = atoi(src);
+					src += itoalen(n);
+					sbuf *reg = ex_regget(n);
+					if (reg)
+						sbuf_mem(sb, reg->s, reg->s_n)
+					pbuf = NULL;
+				}
 			} else if (*src == '#') {
 				src++;
 				pbuf = ex_pbuf;
@@ -1704,9 +1706,11 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 				src += itoalen(n);
 				pbuf = &bufs[n];
 			}
-			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
 			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)
+			if (src[-1] == '"')
+				sbuf_chr(sb, '"')
+			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
 		} else if (*src == xexe) {
 			int n = sb->s_n;
 			src++;
