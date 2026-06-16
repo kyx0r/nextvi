@@ -2758,6 +2758,26 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].mode = n == 1 ? 1 : 0;
 				nps++;
 			}
+			/* Order the auto-default chain objectively strict to
+			 * loose: a pattern's matched-line count is its number
+			 * of anchoring constraints, and a superset pattern (e.g.
+			 * whole hunk over del+post) always has strictly more
+			 * lines, so a stable descending sort by line count both
+			 * respects every superset relation and resolves the
+			 * region-incomparable cases (e.g. del+post vs top
+			 * context) by the actual per-hunk line counts. The
+			 * stable tie-break preserves default_pat_lines' curated
+			 * preference among equal-length patterns. Custom patterns
+			 * keep the user's explicit slot order. */
+			for (int i = 1; i < nps; i++) {
+				pat_spec_t key = ps[i];
+				int j = i - 1;
+				while (j >= 0 && ps[j].nlines < key.nlines) {
+					ps[j + 1] = ps[j];
+					j--;
+				}
+				ps[j + 1] = key;
+			}
 		}
 		int w = 0;
 		for (int pi = 0; pi < nps; pi++) {
