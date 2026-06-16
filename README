@@ -356,7 +356,7 @@ EX RANGES
      [vrange] prefix implements vertical range and horizontal position.
      Without [cmd], [vrange] replaces [prefix].
 
-     [% |][, ;][<#>][. $ ' > <][- + * / %][#]
+     [% |][, ;][#][. $ ' > <][- + * / %][#num]
              All ranges structure
      {|}{cmd}[|]
              Ex command structure
@@ -382,7 +382,7 @@ EX RANGES
      *       Multiply by the following number
      /       Divide by the following number
      %       Modulo by the following number
-     [#]     Number or position
+     #num    Number or position
 
      Examples:
      :1,5p   Print lines 1,5
