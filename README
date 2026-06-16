@@ -330,14 +330,14 @@ EX EXPANSION
      <%> in [args] expands to current buffer pathname or any buffer
      pathname when followed by a corresponding buffer number.
      %# expands to last swapped buffer pathname.
-     %" expands to register specified.
+     %@ expands to register specified.
 
      Example: make a copy of the current file and edit it
      :!cp % %_:e %_
      Example: insert current buffer pathname
      :&i%
      Example: echo the value of <a> register
-     :!echo %"97
+     :!echo %@97
 
      <!> in [args] starts and optionally ends a block containing
      external commands. This block executes and expands to stdout

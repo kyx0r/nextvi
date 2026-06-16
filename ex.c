@@ -1687,7 +1687,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			int n;
 			struct buf *pbuf = ex_buf;
 			src++;
-			if (*src == '"') {
+			if (*src == '@') {
 				src++;
 				if (uc_isdigit(*src)) {
 					for (n = 0; uc_isdigit(*src); src++)
@@ -1707,8 +1707,8 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			}
 			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)
-			if (src[-1] == '"')
-				sbuf_chr(sb, '"')
+			if (src[-1] == '@')
+				sbuf_chr(sb, '@')
 			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
 		} else if (*src == xexe) {
 			int n = sb->s_n;
