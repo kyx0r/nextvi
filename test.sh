@@ -926,6 +926,172 @@ out=$(EXINIT="$(printf ':5m 97:2,3c xx\nyy\nzz:ud:'"'"'97=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c before mark (n_ins>n_del) → mark restored' '5' "$out"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Substitute escape behavior — :s/pat/repl/ escapes and delimiter edge cases.
+# The replacement layer drops a backslash before any char (keeping the char
+# literal) EXCEPT digits 0-9 (backreferences; \0 = whole match) and \\ (one \).
+# The delimiter and the ':' command separator are themselves escapable with \.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'a/b end\n' > "$TMPFILE"
+out=$(run_ex ':%s/a\/b/X/:%p:q!')
+check 'X1 \/ — escaped delimiter is literal in pattern' 'X end' "$out"
+
+printf 'x\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a\/b/:%p:q!')
+check 'X2 \/ — escaped delimiter is literal in replacement' 'a/b' "$out"
+
+printf 'x\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a\\b/:%p:q!')
+check 'X3 \\\\ — two backslashes become one literal backslash' 'a\b' "$out"
+
+printf 'x\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a\tb/:%p:q!')
+check 'X4 \\t — backslash before ordinary char drops; no tab expansion' 'atb' "$out"
+
+printf 'x\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a\nb/:%p:q!')
+check 'X5 \\n — no newline expansion in replacement; literal n' 'anb' "$out"
+
+printf 'x\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a\&b/:%p:q!')
+check 'X6 \& — & is literal anyway; backslash drops' 'a&b' "$out"
+
+printf 'ab\n' > "$TMPFILE"
+out=$(run_ex ':%s/ab/&/:%p:q!')
+check 'X7 & — ampersand is literal, not whole-match (nextvi uses \0)' '&' "$out"
+
+printf 'a.b aXb a.b\n' > "$TMPFILE"
+out=$(run_ex ':%s/a\.b/X/g:%p:q!')
+check 'X8 \. — escaped dot matches literal dot only' 'X aXb X' "$out"
+
+printf 'a.b axb\n' > "$TMPFILE"
+out=$(run_ex ':%s/a.b/X/g:%p:q!')
+check 'X9 . — unescaped dot is the any-char metachar' 'X X' "$out"
+
+printf 'a\\b c\n' > "$TMPFILE"
+out=$(run_ex ':%s/a\\b/X/:%p:q!')
+check 'X10 \\\\ in pattern matches one literal backslash' 'X c' "$out"
+
+printf 'ab\n' > "$TMPFILE"
+out=$(run_ex ':%s/(a)(b)/\2\1/:%p:q!')
+check 'X11 \1 \2 — backreference group swap' 'ba' "$out"
+
+printf 'ab\n' > "$TMPFILE"
+out=$(run_ex ':%s/ab/[\0]/:%p:q!')
+check 'X12 \0 — backreference to the whole match' '[ab]' "$out"
+
+printf 'x\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a\1b/:%p:q!')
+check 'X13 \1 with no such group — backslash drops; literal digit' 'a1b' "$out"
+
+printf 'a/b c\n' > "$TMPFILE"
+out=$(run_ex ':%s,a/b,X,:%p:q!')
+check 'X14 , delimiter — / needs no escaping under a comma delimiter' 'X c' "$out"
+
+printf 'a/b/c\n' > "$TMPFILE"
+out=$(run_ex ':%s/\//_/g:%p:q!')
+check 'X15 \/ g — every escaped delimiter replaced' 'a_b_c' "$out"
+
+printf 'x/ z\n' > "$TMPFILE"
+out=$(run_ex ':%s/x\/:%p:q!')
+check 'X16 \/ ends pattern with no replacement section — match deleted' ' z' "$out"
+
+# Delimiter/separator interaction: an unescaped ':' ends the s command; a
+# backslash before ':' escapes the separator into the replacement text.
+printf 'x z\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a:b/:%p:q!')
+check 'X17 : — unescaped separator ends replacement at "a"' 'a z' "$out"
+
+printf 'x z\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a\:b/:%p:q!')
+check 'X18 \: — escaped separator stays literal in replacement' 'a:b z' "$out"
+
+printf 'x z\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/a\\:b/:%p:q!')
+check 'X19 \\\\: — \\ collapses to one \; the bare : still separates' 'a\ z' "$out"
+
+printf 'x z\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/y\\:%p:q!')
+check 'X20 trailing \\ before separator — replacement ends in literal \' 'y\ z' "$out"
+
+printf 'x z\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/y\:%p:q!')
+check 'X21 trailing \ escapes separator — :%p swallowed; nothing printed' '' "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Search-range escape parity
+# Each command leads with an inline-search range address ('>pat>' forward,
+# '?pat?' / '? ...' backward) whose backslash runs sit right next to the search
+# delimiter — the rarest corner of the escape-halving rule. On a backslash-free
+# buffer the signal is whether the address parses to a real (unmatched) search
+# → "invalid range", parses twice → two errors, or is fully absorbed → nothing.
+# ──────────────────────────────────────────────────────────────────────────────
+
+INVRANGE='invalid range'
+INVRANGE2="$(printf 'invalid range\ninvalid range')"
+
+printf 'irrelevant\n' > "$TMPFILE"
+out=$(run_ex ':? \?p\\\:1q\:p BAD:q!')
+check 'P1 ? \?p\\\:1q\:p BAD — escapes absorb :1q/:p; current line printed' \
+	'irrelevant' "$out"
+
+out=$(run_ex ':>\\>:reg:q!')
+check 'P2 >\\> — \\ halves to one \; search runs, no match' "$INVRANGE" "$out"
+
+out=$(run_ex ':>\\\>>:reg:q!')
+check 'P3 >\\\>> — \> kept literal inside delimiter; search runs, no match' \
+	"$INVRANGE" "$out"
+
+out=$(run_ex ':>\\\\>:reg:q!')
+check 'P4 >\\\\> — two backslashes; search runs, no match' "$INVRANGE" "$out"
+
+out=$(run_ex ':>\\\\\>>:reg:q!')
+check 'P5 >\\\\\>> — odd run keeps delimiter literal; search runs, no match' \
+	"$INVRANGE" "$out"
+
+out=$(run_ex ':>\\\\\\>:reg:q!')
+check 'P6 >\\\\\\> — three backslashes; search runs, no match' "$INVRANGE" "$out"
+
+out=$(run_ex ':? >\\\?:reg:q!')
+check 'P7 ? >\\\? — backward delim after \ run; search runs, no match' \
+	"$INVRANGE" "$out"
+
+out=$(run_ex ':? >\\\\?:reg:q!')
+check 'P8 ? >\\\\? — even run before delim; search runs, no match' \
+	"$INVRANGE" "$out"
+
+out=$(run_ex ':? >\\\\\?:reg:q!')
+check 'P9 ? >\\\\\? — odd run keeps ? literal; search runs, no match' \
+	"$INVRANGE" "$out"
+
+out=$(run_ex ':? >\\\\\\?:reg:q!')
+check 'P10 ? >\\\\\\? — even run before delim; search runs, no match' \
+	"$INVRANGE" "$out"
+
+out=$(run_ex ':? \?0\?\:0\?:q!')
+check 'P11 ? \?0\?\:0\? — one address parses; search runs, no match' \
+	"$INVRANGE" "$out"
+
+out=$(run_ex ':? \?0\\?\\:0\\?:q!')
+check 'P12 ? \?0\\?\\:0\\? — two addresses parse; two unmatched searches' \
+	"$INVRANGE2" "$out"
+
+out=$(run_ex ':? \?0\\\?\\\:0\\\?:q!')
+check 'P13 ? \?0\\\?\\\:0\\\? — escapes fully absorb the address; nothing' \
+	'' "$out"
+
+out=$(run_ex ':? \?0\\\\?\\\\:0\\\\?:q!')
+check 'P14 ? \?0\\\\?\\\\:0\\\\? — two addresses parse; two unmatched searches' \
+	"$INVRANGE2" "$out"
+
+out=$(run_ex ':? \? \\\? 0\\\\\\\?\\\\\\\:0\\\\\\\?:q!')
+check 'P15 ? \? \\\? 0... — long escape run fully absorbed; nothing' '' "$out"
+
+out=$(run_ex ':? \? \\\? p \\\\\\\?')
+check 'P16 ? \? \\\? p \\\\\\\? — trailing form leaves a literal ? prompt' \
+	'?' "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
