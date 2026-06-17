@@ -1274,8 +1274,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			if (!*loc) {
 				if (cmd[2] == '?')
 					return or_res ? xuerr : NULL;
-				ret = (or_res ^ inv) ? xuerr : NULL;
-				return !ret && *arg ? ex_exec(arg) : ret;
+				return (or_res ^ inv) ? xuerr : ex_exec(arg);
 			}
 			id = atoi(++loc);
 			i = n;
