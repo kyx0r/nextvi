@@ -1284,13 +1284,12 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	} else if (isdq) {
 		ret = (xpret != NULL) ^ inv ? xuerr : NULL;
 		return !ret && *arg ? ex_exec(arg) : ret;
-	}
+	} else if (!*arg)
+		return ret;
 	char *cond = ex_se_read(&arg, *cmd, xesc);
 	char *then_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
 	char *else_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
 	int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
-	if (!*cond)
-		count = 0;
 	for (; count && !ret; count--) {
 		ret = ex_exec(cond);
 		ret = inv ? ret ? NULL : xuerr : ret;
