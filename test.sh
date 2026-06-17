@@ -93,11 +93,11 @@ out=$(run_ex ':%s/(hello) (world)/\2 \1/:%p:q!')
 check 'substitute backreference' 'world hello' "$out"
 
 printf 'hello world\n' > "$TMPFILE"
-out=$(run_ex ':s/void/x/:??p found?p not found:q')
+out=$(run_ex ':s/void/x/:??!p not found:q')
 check 'conditional else on sub no-match' 'not found' "$out"
 
 printf 'hello world\n' > "$TMPFILE"
-out=$(run_ex ':s/world/x/:??p found?p not found:q!')
+out=$(run_ex ':s/world/x/:??p found:q!')
 check 'conditional then on sub match' 'found' "$out"
 
 printf 'a\nb\nc\nd\ne\n' > "$TMPFILE"
@@ -150,11 +150,11 @@ out=$(run_ex ':g/int/g/a/p:q')
 check 'nested global' 'int a;' "$out"
 
 printf 'test int here\n' > "$TMPFILE"
-out=$(run_ex ':f>int:??p found?p not found:q')
+out=$(run_ex ':f>int:??p found:q')
 check 'conditional then on search found' 'found' "$out"
 
 printf 'test int here\n' > "$TMPFILE"
-out=$(run_ex ':f>void:??p found?p not found:q')
+out=$(run_ex ':f>void:??!p not found:q')
 check 'conditional else on search not found' 'not found' "$out"
 
 printf 'a\nb\nc\nd\ne\n' > "$TMPFILE"
@@ -460,23 +460,24 @@ out=$(run_ex ':1ya 97:ya! 97:err 4:$pu 97:%p:q!')
 check 'G1 ya! frees reg; pu 97 silently skipped (err 4)' \
 	"$(printf 'line1\nline2')" "$out"
 
-# {#id}?? captures the current error status into id; [#id]?? branches on it.
-# An intervening command that changes the error status does NOT override it.
+# {#id}?? captures the current error status into id; [#id]?? fires its branch on it
+# (??! fires on the inverse). An intervening command that changes the error status
+# does NOT override the captured value.
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':f>void:5??:s/hello/world/:5??p found?p notfound:q!')
+out=$(run_ex ':f>void:5??:s/hello/world/:5??!p notfound:q!')
 check 'H1 ?? id captures fail; intervening success does not override' 'notfound' "$out"
 
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':f>hello:5??:f>void:5??p found?p notfound:q')
+out=$(run_ex ':f>hello:5??:f>void:5??p found:q')
 check 'H2 ?? id captures success; intervening fail does not override' 'found' "$out"
 
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':f>void:??!p not found?p found:q')
-check 'I1 ??! — fail takes first branch' 'not found' "$out"
+out=$(run_ex ':f>void:??!p not found:q')
+check 'I1 ??! — fires branch on failure' 'not found' "$out"
 
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':f>hello:??!p not found?p found:q')
-check 'I2 ??! — success takes second branch' 'found' "$out"
+out=$(run_ex ':f>hello:??p found:q')
+check 'I2 ?? — fires branch on success' 'found' "$out"
 
 # ?! runs the body while the condition fails; 1d modifies buffer state and
 # persists across iterations until 'yes' surfaces to line 1.
@@ -623,10 +624,10 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':err 1:s/void/x/:p after:q')
 check 'U3 err=1 — prints error; chain continues' 'after' "$out"
 
-# U4: 2??.=?.= — unset id tag; neither branch executes
+# U4: 2??.= — unset id tag; branch does not execute
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':2??.=?.=:p reached:q')
-check 'U4 2??.=?.= — unset id; neither branch runs; chain continues' 'reached' "$out"
+out=$(run_ex ':2??.=:p reached:q')
+check 'U4 2??.= — unset id; branch does not run; chain continues' 'reached' "$out"
 
 # U5: grp 1:%f+int(.):grp — save char position after "int("
 printf 'void int(x)\n' > "$TMPFILE"
@@ -686,123 +687,123 @@ check 'U13 ;$+1!echo world — cmd output inserted at end; original preserved' \
 
 # V1: AND — both succeed → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1,2??p then?p else:q')
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1,2??p then:q')
 check 'V1 1,2?? AND — both succeed → then' 'then' "$out"
 
 # V2: AND — first fails → else
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:1,2??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:1,2??!p else:q')
 check 'V2 1,2?? AND — first fails → else' 'else' "$out"
 
 # V3: AND — second fails → else
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:f>nomatch:2??:1,2??p then?p else:q')
+out=$(run_ex ':err 1:f>hello:1??:f>nomatch:2??:1,2??!p else:q')
 check 'V3 1,2?? AND — second fails → else' 'else' "$out"
 
 # V4: OR — first succeeds → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:f>nomatch:2??:1;2??p then?p else:q')
+out=$(run_ex ':err 1:f>hello:1??:f>nomatch:2??:1;2??p then:q')
 check 'V4 1;2?? OR — first succeeds → then' 'then' "$out"
 
 # V5: OR — first fails, second succeeds → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:1;2??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:1;2??p then:q')
 check 'V5 1;2?? OR — second succeeds → then' 'then' "$out"
 
 # V6: OR — both fail → else
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:1;2??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:1;2??!p else:q')
 check 'V6 1;2?? OR — both fail → else' 'else' "$out"
 
 # V7: mixed (1,2;3) — AND group fails, id3 succeeds → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:f>hello:3??:1,2;3??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:f>hello:3??:1,2;3??p then:q')
 check 'V7 1,2;3?? — AND group fails, id3 succeeds → then' 'then' "$out"
 
 # V8: mixed (1,2;3) — AND group succeeds, id3 fails → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:f>nomatch:3??:1,2;3??p then?p else:q')
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:f>nomatch:3??:1,2;3??p then:q')
 check 'V8 1,2;3?? — AND group succeeds, id3 fails → then' 'then' "$out"
 
 # V9: mixed (1,2;3) — all fail → else
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:1,2;3??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:1,2;3??!p else:q')
 check 'V9 1,2;3?? — all fail → else' 'else' "$out"
 
 # V10: unset id in AND → nop, chain continues
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:1,99??p then?p else:p reached:q')
+out=$(run_ex ':err 1:f>hello:1??:1,99??p then:p reached:q')
 check 'V10 1,99?? — id 99 unset → nop, chain continues' 'reached' "$out"
 
 # V11: unset id in OR → nop even if other id is set
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:1;99??p then?p else:p reached:q')
+out=$(run_ex ':err 1:f>hello:1??:1;99??p then:p reached:q')
 check 'V11 1;99?? — id 99 unset → nop, chain continues' 'reached' "$out"
 
 # V12: single unset id → nop
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:99??p then?p else:p reached:q')
+out=$(run_ex ':err 1:99??p then:p reached:q')
 check 'V16 99?? — single unset id → nop, chain continues' 'reached' "$out"
 
 # V13: unset id in AND within complex prefix (1,99;2) → nop
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1,99;2??p then?p else:p reached:q')
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1,99;2??p then:p reached:q')
 check 'V17 1,99;2?? — unset id in AND position → nop' 'reached' "$out"
 
 # V14: unset id in first OR position (99;1) → nop
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:99;1??p then?p else:p reached:q')
+out=$(run_ex ':err 1:f>hello:1??:99;1??p then:p reached:q')
 check 'V18 99;1?? — unset id in first OR position → nop' 'reached' "$out"
 
 # V15: unset id in middle OR position (1;99;2) → nop
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1;99;2??p then?p else:p reached:q')
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1;99;2??p then:p reached:q')
 check 'V19 1;99;2?? — unset id in middle OR position → nop' 'reached' "$out"
 
 # V16-V19: interleaved 1,2;3,4,5;6 = (1 AND 2) OR (3 AND 4 AND 5) OR 6
 # V16: first AND group succeeds → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:f>nomatch:3??:f>nomatch:4??:f>nomatch:5??:f>nomatch:6??:1,2;3,4,5;6??p then?p else:q')
+out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:f>nomatch:3??:f>nomatch:4??:f>nomatch:5??:f>nomatch:6??:1,2;3,4,5;6??p then:q')
 check 'V16 1,2;3,4,5;6?? — first group (1 AND 2) succeeds → then' 'then' "$out"
 
 # V17: only middle AND group succeeds → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:f>hello:3??:f>hello:4??:f>hello:5??:f>nomatch:6??:1,2;3,4,5;6??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??:f>hello:2??:f>hello:3??:f>hello:4??:f>hello:5??:f>nomatch:6??:1,2;3,4,5;6??p then:q')
 check 'V17 1,2;3,4,5;6?? — middle group (3 AND 4 AND 5) succeeds → then' 'then' "$out"
 
 # V18: only last OR operand succeeds → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:f>hello:4??:f>hello:5??:f>hello:6??:1,2;3,4,5;6??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:f>hello:4??:f>hello:5??:f>hello:6??:1,2;3,4,5;6??p then:q')
 check 'V18 1,2;3,4,5;6?? — last operand (6) succeeds → then' 'then' "$out"
 
 # V19: all groups fail → else
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:f>nomatch:4??:f>nomatch:5??:f>nomatch:6??:1,2;3,4,5;6??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??:f>nomatch:2??:f>nomatch:3??:f>nomatch:4??:f>nomatch:5??:f>nomatch:6??:1,2;3,4,5;6??!p else:q')
 check 'V19 1,2;3,4,5;6?? — all groups fail → else' 'else' "$out"
 
 # W1: command succeeds, ??! captures as failure → else
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??!:1??p then?p else:q')
+out=$(run_ex ':err 1:f>hello:1??!:1??!p else:q')
 check 'W1 ??! — success captured as failure → else' 'else' "$out"
 
 # W2: command fails, ??! captures as success → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??!:1??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??!:1??p then:q')
 check 'W2 ??! — failure captured as success → then' 'then' "$out"
 
 # W3: inverted capture used in AND with normal capture
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>nomatch:1??!:f>hello:2??:1,2??p then?p else:q')
+out=$(run_ex ':err 1:f>nomatch:1??!:f>hello:2??:1,2??p then:q')
 check 'W3 ??! in AND — NOT(fail) AND success → then' 'then' "$out"
 
 # W4: inverted capture in OR — NOT(success) OR success → then
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??!:f>hello:2??:1;2??p then?p else:q')
+out=$(run_ex ':err 1:f>hello:1??!:f>hello:2??:1;2??p then:q')
 check 'W4 ??! in OR — NOT(success) OR success → then' 'then' "$out"
 
 # W5: both inverted — NOT(success) AND NOT(success) → else
 printf 'hello\n' > "$TMPFILE"
-out=$(run_ex ':err 1:f>hello:1??!:f>hello:2??!:1,2??p then?p else:q')
+out=$(run_ex ':err 1:f>hello:1??!:f>hello:2??!:1,2??!p else:q')
 check 'W5 ??! both inverted — NOT(success) AND NOT(success) → else' 'else' "$out"
 
 # W6: invert the status of last command
