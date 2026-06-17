@@ -44,6 +44,7 @@ typedef struct {
 	struct group_s *groups;  /* heap-allocated, set by build_file_groups */
 	int ngroups;
 	int is_new;              /* patch creates this file (--- /dev/null) */
+	char *orig_path;         /* "---" path, holds pre-patch content (file-aware) */
 } file_patch_t;
 
 static file_patch_t files[256];
@@ -58,8 +59,12 @@ static const char *end_tag_wr = "=== END ===";
 
 /* Number of f> anchor search strategies (SEARCH PATTERN slots), tried
  * strict-to-loose with first match wins. See default_pat_lines() for the
- * per-slot pattern composition. */
+ * per-slot pattern composition. NFUZZ extra slots hold file-validated
+ * relaxed (fuzzed) variants generated after the exact strategies; NSEARCH
+ * is the total SEARCH PATTERN capacity per group. */
 #define NPAT 5
+#define NFUZZ 4   /* max file-validated fuzzed candidates per group */
+#define NSEARCH (NPAT + NFUZZ)   /* must stay <= 9: section numbers are 1 digit */
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
@@ -77,12 +82,12 @@ typedef struct {
 	char **post_ctx;    /* context lines after change (for levels 3/5) */
 	int npost_ctx, post_cap;
 	int strategy;       /* STRAT_DEFAULT = not recorded */
-	char **pattern[NPAT];  /* SEARCH PATTERN 1-NPAT fallbacks */
-	int npattern[NPAT], pat_cap[NPAT];
-	int pat_off[NPAT];      /* per-pattern OFFSET marker value */
-	int pat_has_off[NPAT];
-	int pat_mode[NPAT];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f> */
-	int pat_has_mode[NPAT];
+	char **pattern[NSEARCH];  /* SEARCH PATTERN 1-NPAT fallbacks */
+	int npattern[NSEARCH], pat_cap[NSEARCH];
+	int pat_off[NSEARCH];      /* per-pattern OFFSET marker value */
+	int pat_has_off[NSEARCH];
+	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f> */
+	int pat_has_mode[NSEARCH];
 	char **abs_cmd;
 	int nabs, abs_cap;
 	char **rel_cmd;
@@ -208,6 +213,292 @@ static int lines_equal(char **a, int na, char **b, int nb)
 		if (strcmp(a[i], b[i]) != 0)
 			return 0;
 	return 1;
+}
+
+/*
+ * File-aware anchor validation.
+ *
+ * patch2vi normally compiles blind: it sees only the diff's context, so it
+ * emits a strict-to-loose fallback chain and lets nextvi resolve the anchor
+ * at apply time. When the pre-patch original is readable on disk (it usually
+ * is, since the generated script applies in the same working tree), we can do
+ * better: count how many times each candidate anchor window actually occurs
+ * in the file and which occurrence is the right one, then sort the proven
+ * unique anchor to the front of the chain. We still emit anchor searches (not
+ * absolute line numbers) plus the full fallback chain, so the script stays
+ * portable and drift-tolerant; file access only improves the ordering.
+ */
+static char **orig_lines;   /* pre-patch original, NULL if unreadable */
+static int n_orig_lines;
+
+static void load_orig_file(const char *path)
+{
+	orig_lines = NULL;
+	n_orig_lines = 0;
+	FILE *f = fopen(path, "r");
+	if (!f)
+		return;
+	int cap = 0;
+	char buf[MAX_LINE];
+	while (fgets(buf, sizeof buf, f)) {
+		int len = strlen(buf);
+		if (len && buf[len - 1] == '\n')
+			buf[len - 1] = '\0';
+		arr_append(&orig_lines, &n_orig_lines, &cap, buf);
+	}
+	fclose(f);
+}
+
+static void free_orig_file(void)
+{
+	for (int i = 0; i < n_orig_lines; i++)
+		free(orig_lines[i]);
+	free(orig_lines);
+	orig_lines = NULL;
+	n_orig_lines = 0;
+}
+
+/* True if window[0..n) matches orig_lines exactly at 0-based index idx. */
+static int window_at(char **window, int n, int idx)
+{
+	if (idx < 0 || n <= 0 || idx + n > n_orig_lines)
+		return 0;
+	for (int j = 0; j < n; j++)
+		if (strcmp(orig_lines[idx + j], window[j]) != 0)
+			return 0;
+	return 1;
+}
+
+/* Count exact consecutive-line matches of window[0..n) in orig_lines.
+ * Sets *first to the 0-based start of the first match (-1 if none). */
+static int count_window(char **window, int n, int *first)
+{
+	*first = -1;
+	if (!orig_lines || n <= 0 || n > n_orig_lines)
+		return 0;
+	int cnt = 0;
+	for (int i = 0; i + n <= n_orig_lines; i++) {
+		int ok = 1;
+		for (int j = 0; j < n; j++)
+			if (strcmp(orig_lines[i + j], window[j]) != 0) {
+				ok = 0;
+				break;
+			}
+		if (ok) {
+			if (*first < 0)
+				*first = i;
+			cnt++;
+		}
+	}
+	return cnt;
+}
+
+/*
+ * Specificity of an exact-line anchor window: a measure of how strongly it
+ * discriminates, used to order the fallback chain strict to loose. Contiguous
+ * literal runs disambiguate far better than the same number of characters
+ * scattered between wildcards, so each line (one contiguous run) contributes
+ * its length squared. Per-line length is capped so a pathological line cannot
+ * overflow or swamp the uniqueness bonus added by the caller. */
+#define SPEC_LINE_CAP 1000
+#define SPEC_MAX (1 << 26)
+static int specificity_score(char **lines, int n)
+{
+	long s = 0;
+	for (int i = 0; i < n; i++) {
+		int len = (int)strlen(lines[i]);
+		if (len > SPEC_LINE_CAP)
+			len = SPEC_LINE_CAP;
+		s += (long)len * len;
+		if (s > SPEC_MAX) {
+			s = SPEC_MAX;
+			break;
+		}
+	}
+	return (int)s;
+}
+
+/* Uniqueness bonuses dominate any specificity score so a proven anchor always
+ * sorts ahead of an unproven one of the same shape. */
+#define UNIQUE_BONUS (1 << 28)   /* exactly one match, at the right place */
+#define CORRECT_BONUS (1 << 27)  /* first match is right, but not unique */
+
+/*
+ * File-validated fuzzed (relaxed) anchors.
+ *
+ * When the original file is readable we can safely *relax* an exact anchor into
+ * a regex that tolerates small drift, because we can verify the relaxed form
+ * still resolves to exactly one place - the right one - in the file. A fuzzed
+ * window replaces selected runes of each line with '.', the nextvi wildcard
+ * (one rune; it never has to cross a line here because the literal newlines
+ * between lines pin the structure). The relaxation is length-preserving: each
+ * '.' stands for exactly one rune, so a fuzzed line still matches only lines of
+ * the same rune length - it tolerates in-place character drift (a renamed,
+ * equal-length token, a changed digit) but nothing else. We keep a fuzzed
+ * candidate only when it still matches uniquely at the expected location, so an
+ * over-relaxed, ambiguous pattern is dropped rather than emitted. Without the
+ * file we emit no fuzzed anchors at all (they rely on full-file inspection).
+ */
+
+/* Byte length of the UTF-8 rune starting at s (>= 1). */
+static int rune_len(const char *s)
+{
+	unsigned char c = (unsigned char)*s;
+	if (c < 0x80) return 1;
+	if ((c >> 5) == 0x6) return 2;
+	if ((c >> 4) == 0xe) return 3;
+	if ((c >> 3) == 0x1e) return 4;
+	return 1;
+}
+
+static int rune_count(const char *s)
+{
+	int n = 0;
+	while (*s) { s += rune_len(s); n++; }
+	return n;
+}
+
+/* A fuzzed line: base text plus a per-rune wildcard mask (1 = becomes '.'). */
+typedef struct {
+	const char *base;     /* borrowed plain text */
+	unsigned char *mask;  /* nrune bytes, owned */
+	int nrune;
+} fline_t;
+
+/* True if orig matches the fuzzed line: same rune count, and every unmasked
+ * rune is byte-identical (masked runes match any single rune). */
+static int match_fuzzy_line(const char *orig, const fline_t *f)
+{
+	const char *o = orig, *b = f->base;
+	for (int i = 0; i < f->nrune; i++) {
+		if (!*o)
+			return 0;
+		int ol = rune_len(o), bl = rune_len(b);
+		if (!f->mask[i] && (ol != bl || memcmp(o, b, ol) != 0))
+			return 0;
+		o += ol;
+		b += bl;
+	}
+	return *o == 0;
+}
+
+/* Count consecutive-line matches of a fuzzed window in orig_lines; *first =
+ * 0-based start of the first match (-1 if none). */
+static int count_window_fuzzy(fline_t *win, int n, int *first)
+{
+	*first = -1;
+	if (!orig_lines || n <= 0 || n > n_orig_lines)
+		return 0;
+	int cnt = 0;
+	for (int i = 0; i + n <= n_orig_lines; i++) {
+		int ok = 1;
+		for (int j = 0; j < n; j++)
+			if (!match_fuzzy_line(orig_lines[i + j], &win[j])) {
+				ok = 0;
+				break;
+			}
+		if (ok) {
+			if (*first < 0)
+				*first = i;
+			cnt++;
+		}
+	}
+	return cnt;
+}
+
+/* Specificity of a fuzzed window: contiguous unmasked literal runs (in bytes)
+ * contribute length squared, exactly like specificity_score but skipping
+ * wildcards, so a more relaxed window scores strictly lower. */
+static int fuzzy_spec(fline_t *win, int n)
+{
+	long s = 0;
+	for (int j = 0; j < n; j++) {
+		const char *b = win[j].base;
+		int run = 0;
+		for (int i = 0; i < win[j].nrune; i++) {
+			int bl = rune_len(b);
+			if (!win[j].mask[i]) {
+				run += bl;
+			} else {
+				if (run > SPEC_LINE_CAP) run = SPEC_LINE_CAP;
+				s += (long)run * run;
+				run = 0;
+			}
+			b += bl;
+		}
+		if (run > SPEC_LINE_CAP) run = SPEC_LINE_CAP;
+		s += (long)run * run;
+		if (s > SPEC_MAX) { s = SPEC_MAX; break; }
+	}
+	return (int)s;
+}
+
+/* Build the pre-escaped regex for a fuzzed line: masked runes emit '.', literal
+ * runes are regex-escaped. */
+static char *fuzzy_regex(const fline_t *f)
+{
+	sbuf_smake(sb, strlen(f->base) + 8)
+	const char *b = f->base;
+	for (int i = 0; i < f->nrune; i++) {
+		int bl = rune_len(b);
+		if (f->mask[i]) {
+			sbuf_chr(sb, '.')
+		} else {
+			for (int k = 0; k < bl; k++) {
+				if (b[k] && strchr(REGEX_META, b[k]))
+					sbuf_chr(sb, '\\')
+				sbuf_chr(sb, b[k])
+			}
+		}
+		b += bl;
+	}
+	sbufn_ret(sb, sb->s)
+}
+
+static unsigned hash_str(const char *s, unsigned h)
+{
+	while (*s)
+		h = h * 131u + (unsigned char)*s++;
+	return h;
+}
+
+/* Deterministic per-position pseudo-value, content-seeded so the fuzzing of a
+ * given hunk is reproducible across runs. */
+static unsigned hash_pos(unsigned seed, int i)
+{
+	unsigned h = seed ^ 0x9e3779b9u;
+	h ^= (unsigned)i * 2654435761u;
+	h ^= h >> 13;
+	h *= 0x85ebca6bu;
+	h ^= h >> 16;
+	return h;
+}
+
+/* Fill mask[0..nrune) for fuzz level lvl over a window-global rune index that
+ * starts at *gi (advanced by nrune). Level 0/1 drop odd/even runes; levels >= 2
+ * drop by an increasing content-seeded threshold (looser each step). At least
+ * one rune is always kept literal. */
+static void fuzz_mask(unsigned char *mask, const char *base, int nrune,
+		      int lvl, unsigned seed, int *gi)
+{
+	int thr = lvl >= 2 ? 400 + (lvl - 2) * 100 : 0;
+	int kept = 0;
+	for (int i = 0; i < nrune; i++) {
+		int g = (*gi)++;
+		int drop;
+		if (lvl == 0)
+			drop = (g & 1) == 1;
+		else if (lvl == 1)
+			drop = (g & 1) == 0;
+		else
+			drop = (int)(hash_pos(seed, g) % 1000) < thr;
+		mask[i] = drop ? 1 : 0;
+		if (!drop)
+			kept++;
+	}
+	if (!kept && nrune > 0)
+		mask[0] = 0;  /* never wildcard an entire line away */
+	(void)base;
 }
 
 /* arr_append a slice of src[0..sn) into dst. */
@@ -793,9 +1084,9 @@ static void emit_err_check(FILE *out, int line)
 static void emit_err_check_pats(FILE *out, int ntags, int line)
 {
 	char loc[MAX_LINE];
-	char tags[16];
+	char tags[(NPAT + NFUZZ) * 8];
 	int p = 0;
-	for (int t = 0; t < ntags; t++)
+	for (int t = 0; t < ntags && p < (int)sizeof(tags); t++)
 		p += snprintf(tags + p, sizeof(tags) - p,
 			      t ? ";%d" : "%d", t);
 	snprintf(loc, sizeof(loc), "%s:%d",
@@ -935,12 +1226,12 @@ typedef struct group_s {
 	int npost_ctx;
 	int block_change_idx;    /* index of first del/change line in block */
 	/* Edited SEARCH PATTERN 1-NPAT sections (pre-escaped regex) */
-	char **custom_pat[NPAT];
-	int ncustom_pat[NPAT];
-	int custom_pat_off[NPAT];     /* per-section +N first-line override */
-	int custom_pat_has_off[NPAT];
-	int custom_pat_mode[NPAT];    /* per-section MODE override (0/1) */
-	int custom_pat_has_mode[NPAT];
+	char **custom_pat[NSEARCH];
+	int ncustom_pat[NSEARCH];
+	int custom_pat_off[NSEARCH];     /* per-section +N first-line override */
+	int custom_pat_has_off[NSEARCH];
+	int custom_pat_mode[NSEARCH];    /* per-section MODE override (0/1) */
+	int custom_pat_has_mode[NSEARCH];
 	int custom_offset;       /* offset from EDIT COMMAND +N (patterns 1-2) */
 	/* Per-group strategy selection (interactive mode) */
 	int strategy;            /* enum strategy */
@@ -982,6 +1273,7 @@ typedef struct {
 	int offset;       /* lines from match start to the target line */
 	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
 	int mode;         /* search mode: 0 = %;f> (register), 1 = .,$f> (buffer) */
+	int score;        /* ordering key: specificity (+ uniqueness bonus) */
 } pat_spec_t;
 
 /* Default (non-edited) lines for fallback pattern pi, ordered strict to
@@ -1074,6 +1366,96 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 	else if (!g->ndel && n)
 		*off = -(g->follow_offset);
 	return n;
+}
+
+/* One file-validated fuzzed anchor window: pre-escaped regex lines plus the
+ * offset/mode needed to emit it like an exact pattern. */
+typedef struct {
+	char **lines;   /* owned: nlines malloc'd regex strings */
+	int nlines;
+	int offset;     /* lines from match start to the target line */
+	int mode;       /* 0 = %;f>, 1 = .,$f> */
+	int score;      /* ordering key (specificity + UNIQUE_BONUS) */
+} fuzzwin_t;
+
+/*
+ * Generate up to max file-validated fuzzed (relaxed) anchor windows for group
+ * g into out[]. Relaxes the whole-hunk window at increasing fuzz levels and
+ * keeps each variant the original file proves still resolves to exactly one
+ * place - the right one. Requires orig_lines loaded and the hunk pristine
+ * (its deleted lines sit at their expected position on disk); otherwise none
+ * are produced. Each out[i].lines is owned by the caller. Returns the count.
+ */
+static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
+{
+	if (!orig_lines || max <= 0 || g->del_start <= 0 ||
+	    !window_at(g->del_texts, g->ndel, g->del_start - 1))
+		return 0;
+	char **base = emalloc((g->ndel + 7) * sizeof(char *));
+	int doff0;
+	int bn = default_pat_lines(g, 0, base, &doff0);
+	if (bn <= 0) {
+		free(base);
+		return 0;
+	}
+	int expected = (g->del_start - 1) - doff0;
+	unsigned seed = 0;
+	for (int i = 0; i < bn; i++)
+		seed = hash_str(base[i], seed);
+	fline_t *win = emalloc(bn * sizeof(*win));
+	int nf = 0;
+	for (int lvl = 0; nf < max && lvl <= NFUZZ + 4; lvl++) {
+		int any = 0, gi = 0;
+		for (int j = 0; j < bn; j++) {
+			int nr = rune_count(base[j]);
+			unsigned char *m = emalloc(nr ? nr : 1);
+			fuzz_mask(m, base[j], nr, lvl, seed, &gi);
+			for (int k = 0; k < nr; k++)
+				if (m[k]) any = 1;
+			win[j].base = base[j];
+			win[j].mask = m;
+			win[j].nrune = nr;
+		}
+		int first, cnt = any ? count_window_fuzzy(win, bn, &first) : 0;
+		if (any && cnt == 1 && first == expected) {
+			char **lines = emalloc(bn * sizeof(char *));
+			for (int j = 0; j < bn; j++)
+				lines[j] = fuzzy_regex(&win[j]);
+			int dup = 0;
+			for (int p = 0; p < nf; p++)
+				if (lines_equal(lines, bn, out[p].lines,
+						out[p].nlines)) {
+					dup = 1;
+					break;
+				}
+			if (dup) {
+				for (int j = 0; j < bn; j++)
+					free(lines[j]);
+				free(lines);
+			} else {
+				out[nf].lines = lines;
+				out[nf].nlines = bn;
+				out[nf].offset = doff0;
+				out[nf].mode = bn == 1 ? 1 : 0;
+				out[nf].score = fuzzy_spec(win, bn) + UNIQUE_BONUS;
+				nf++;
+			}
+		}
+		for (int j = 0; j < bn; j++)
+			free(win[j].mask);
+	}
+	free(win);
+	free(base);
+	return nf;
+}
+
+static void free_fuzz_windows(fuzzwin_t *w, int n)
+{
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < w[i].nlines; j++)
+			free(w[i].lines[j]);
+		free(w[i].lines);
+	}
 }
 
 /* Chain pattern escaping for a dynamic ex escape: ex_arg no longer
@@ -1402,12 +1784,12 @@ typedef struct {
 	int nadd_lines, add_cap;
 	char **custom_text;   /* raw lines from the section (captures everything) */
 	int ncustom_text, custom_text_cap;
-	char **pattern[NPAT];
-	int npattern[NPAT], pat_cap[NPAT];
-	int pat_off[NPAT];      /* per-pattern OFFSET marker value */
-	int pat_has_off[NPAT];
-	int pat_mode[NPAT];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f> */
-	int pat_has_mode[NPAT];
+	char **pattern[NSEARCH];
+	int npattern[NSEARCH], pat_cap[NSEARCH];
+	int pat_off[NSEARCH];      /* per-pattern OFFSET marker value */
+	int pat_has_off[NSEARCH];
+	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f> */
+	int pat_has_mode[NSEARCH];
 	char **abs_cmd;
 	int nabs, abs_cap;
 	char **rel_cmd;
@@ -1427,7 +1809,7 @@ static void free_parsed_grp(parsed_grp_t *p)
 	for (int i = 0; i < p->ncustom_text; i++)
 		free(p->custom_text[i]);
 	free(p->custom_text);
-	for (int k = 0; k < NPAT; k++) {
+	for (int k = 0; k < NSEARCH; k++) {
 		for (int i = 0; i < p->npattern[k]; i++)
 			free(p->pattern[k][i]);
 		free(p->pattern[k]);
@@ -1527,7 +1909,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			const char *p = line + 18;
 			while (*p == ' ')
 				p++;
-			in_pat = (*p >= '1' && *p <= '0' + NPAT) ? *p - '0' : 3;
+			in_pat = (*p >= '1' && *p <= '0' + NSEARCH) ? *p - '0' : 3;
 			continue;
 		}
 		if (strncmp(line, "=== EDIT COMMAND (", 18) == 0) {
@@ -1652,7 +2034,7 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 			s = "relc";
 		fprintf(out, "=== strategy ===\n%s\n%s\n", s, end_tag_wr);
 	}
-	for (int pi = 0; pi < NPAT; pi++) {
+	for (int pi = 0; pi < NSEARCH; pi++) {
 		if (gd->npattern[pi] > 0) {
 			fprintf(out, "=== pattern%d ===\n", pi + 1);
 			for (int i = 0; i < gd->npattern[pi]; i++)
@@ -1690,8 +2072,13 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
  * Write all groups to fp, optionally injecting stored delta from in_fd.
  */
 static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
-				 file_delta_t *in_fd, int is_new)
+				 file_delta_t *in_fd, int is_new,
+				 const char *orig_path)
 {
+	/* Load the pre-patch original so the fuzzed SEARCH PATTERN sections
+	 * can be validated against it; freed before returning. */
+	if (orig_path && !is_new)
+		load_orig_file(orig_path);
 	for (int gi = 0; gi < ngroups; gi++) {
 		group_t *g = &groups[gi];
 		if (!g->del_start && !g->nadd)
@@ -1807,6 +2194,35 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		}
 		free(praw);
 
+		/* File-validated fuzzed (relaxed) SEARCH PATTERN sections,
+		 * slots NPAT..NSEARCH. Generated fresh from the original on a
+		 * first pass; a recorded delta (a prior edit) wins, so the
+		 * user's tweaks round-trip. These lines are already regex
+		 * (pre-escaped), so they are written verbatim. */
+		fuzzwin_t fz[NFUZZ];
+		int nfz = gen_fuzz_windows(g, fz, NFUZZ);
+		for (int pi = NPAT; pi < NSEARCH; pi++) {
+			int fi = pi - NPAT;
+			int recorded = gd && gd->npattern[pi] > 0;
+			if (!recorded && fi >= nfz)
+				continue;
+			fprintf(fp, "=== SEARCH PATTERN %d ===\n", pi + 1);
+			int poff = (gd && gd->pat_has_off[pi]) ? gd->pat_off[pi]
+				 : recorded ? 0 : fz[fi].offset;
+			int pmode = (gd && gd->pat_has_mode[pi]) ? gd->pat_mode[pi]
+				  : recorded ? (gd->npattern[pi] == 1) : fz[fi].mode;
+			fprintf(fp, "=== OFFSET %+d MODE %d ===\n", poff, pmode);
+			if (recorded) {
+				for (int i = 0; i < gd->npattern[pi]; i++)
+					fprintf(fp, "%s\n", gd->pattern[pi][i]);
+			} else {
+				for (int i = 0; i < fz[fi].nlines; i++)
+					fprintf(fp, "%s\n", fz[fi].lines[i]);
+			}
+			fprintf(fp, "%s\n", end_tag_wr);
+		}
+		free_fuzz_windows(fz, nfz);
+
 		/* EDIT COMMAND sections */
 #define WG_CONTENT(fp) do { \
 	if (g->nadd > 0) { \
@@ -1902,6 +2318,7 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		if (gi + 1 < ngroups)
 			fputc('\n', fp);
 	}
+	free_orig_file();
 }
 
 /*
@@ -1950,7 +2367,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			fprintf(orig_fp, "=== FILE: %s ===\n", active[k]->path);
 			write_groups_to_file(orig_fp,
 					     active[k]->groups, active[k]->ngroups, NULL,
-					     active[k]->is_new);
+					     active[k]->is_new,
+					     active[k]->orig_path ? active[k]->orig_path
+								  : active[k]->path);
 			fprintf(orig_fp, "%s\n", end_tag_wr);
 			fputc('\n', orig_fp);
 		}
@@ -2092,7 +2511,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		fprintf(tmp_fp, "=== FILE: %s ===\n", active[k]->path);
 		write_groups_to_file(tmp_fp,
 				     active[k]->groups, active[k]->ngroups,
-				     in_fd_per[k], active[k]->is_new);
+				     in_fd_per[k], active[k]->is_new,
+				     active[k]->orig_path ? active[k]->orig_path
+							  : active[k]->path);
 		fprintf(tmp_fp, "%s\n", end_tag_wr);
 		fputc('\n', tmp_fp);
 	}
@@ -2176,7 +2597,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					  src->npre_ctx);
 				arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap, src->post_ctx,
 					  src->npost_ctx);
-				for (int pi = 0; pi < NPAT; pi++) {
+				for (int pi = 0; pi < NSEARCH; pi++) {
 					arr_clone(&dst->pattern[pi], &dst->npattern[pi],
 						  &dst->pat_cap[pi], src->pattern[pi],
 						  src->npattern[pi]);
@@ -2209,7 +2630,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 
 				int strat_ch = (eg->strategy != og->strategy);
 				int pat_ch = 0;
-				for (int pi = 0; pi < NPAT; pi++)
+				for (int pi = 0; pi < NSEARCH; pi++)
 					if (!lines_equal(eg->pattern[pi], eg->npattern[pi],
 							 og->pattern[pi], og->npattern[pi]) ||
 					    eg->pat_has_off[pi] != og->pat_has_off[pi] ||
@@ -2278,7 +2699,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				if (strat_ch)
 					gout->strategy = eg->strategy;
 				if (pat_ch)
-					for (int pi = 0; pi < NPAT; pi++) {
+					for (int pi = 0; pi < NSEARCH; pi++) {
 						arr_clone(&gout->pattern[pi], &gout->npattern[pi],
 							  &gout->pat_cap[pi],
 							  eg->pattern[pi], eg->npattern[pi]);
@@ -2313,7 +2734,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			parsed_grp_t *eg = &edit_per[k][gi];
 			group_t *g = &active[k]->groups[gi];
 			g->strategy = eg->strategy;
-			for (int pi = 0; pi < NPAT; pi++) {
+			for (int pi = 0; pi < NSEARCH; pi++) {
 				/* OFFSET marker: per-pattern offset, wins over
 				 * the legacy +N first-line override */
 				if (eg->pat_has_off[pi]) {
@@ -2602,7 +3023,7 @@ static void free_group(group_t *g)
 	free(g->add_texts);
 	free(g->all_pre_ctx);
 	free(g->post_ctx);
-	for (int pi = 0; pi < NPAT; pi++) {
+	for (int pi = 0; pi < NSEARCH; pi++) {
 		for (int k = 0; k < g->ncustom_pat[pi]; k++)
 			free(g->custom_pat[pi][k]);
 		free(g->custom_pat[pi]);
@@ -2645,6 +3066,13 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		}
 		return;
 	}
+
+	/* Read the pre-patch original (if present) to validate anchor
+	 * uniqueness; new files have no original to read. Prefer the "---"
+	 * path (it names the pre-patch content); fall back to the edit
+	 * target, which holds that same content before the script runs. */
+	if (!fp->is_new)
+		load_orig_file(fp->orig_path ? fp->orig_path : fp->path);
 
 	/*
 	 * Phase 1 (resolve): run every group's search against the register
@@ -2716,10 +3144,12 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		/* Build the fallback pattern list: edited SEARCH PATTERN
 		 * sections if any, else auto defaults. Duplicates dropped,
 		 * first match wins at apply time. */
-		pat_spec_t ps[NPAT];
+		pat_spec_t ps[NSEARCH];
 		int nps = 0;
 		char **raw = NULL;
-		for (int pi = 0; pi < NPAT; pi++) {
+		fuzzwin_t fz[NFUZZ];   /* owned fuzzed windows (plain -r path) */
+		int nfz = 0;
+		for (int pi = 0; pi < NSEARCH; pi++) {
 			if (g->ncustom_pat[pi] == 0)
 				continue;
 			ps[nps].lines = g->custom_pat[pi];
@@ -2742,6 +3172,12 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			nps++;
 		}
 		if (nps == 0) {
+			/* File-aware uniqueness is trustworthy only when the
+			 * on-disk file is the pre-patch original; confirm by
+			 * matching this hunk's deleted lines at their expected
+			 * line. Pure adds (no del_start) keep blind ordering. */
+			int pristine = orig_lines && g->del_start > 0 &&
+				window_at(g->del_texts, g->ndel, g->del_start - 1);
 			int slot_sz = g->ndel + 7;
 			raw = emalloc(NPAT * slot_sz * sizeof(char *));
 			for (int pi = 0; pi < NPAT; pi++) {
@@ -2756,23 +3192,53 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = doff;
 				ps[nps].off_final = 0;
 				ps[nps].mode = n == 1 ? 1 : 0;
+				/* Ordering key: contiguous-literal specificity, plus
+				 * a uniqueness bonus when the file confirms how this
+				 * window resolves. expected = the index where the
+				 * window must start to put the target (del_start - 1)
+				 * at match_start + offset. */
+				int sc = specificity_score(slot, n);
+				if (pristine) {
+					int first;
+					int cnt = count_window(slot, n, &first);
+					int expected = (g->del_start - 1) - doff;
+					if (first == expected)
+						sc += cnt == 1 ? UNIQUE_BONUS
+							       : CORRECT_BONUS;
+				}
+				ps[nps].score = sc;
+				nps++;
+			}
+			/* File-validated fuzzed anchors: relax the whole-hunk
+			 * window and keep each relaxation the file proves still
+			 * resolves uniquely to the right line. Interactive mode
+			 * surfaces these as extra SEARCH PATTERN sections (and so
+			 * arrives here via custom_pat, not this block); this
+			 * covers the plain -r default path. */
+			nfz = gen_fuzz_windows(g, fz, NFUZZ);
+			for (int i = 0; i < nfz && nps < NSEARCH; i++) {
+				ps[nps].lines = fz[i].lines;
+				ps[nps].nlines = fz[i].nlines;
+				ps[nps].pre_escaped = 1;
+				ps[nps].offset = fz[i].offset;
+				ps[nps].off_final = 0;
+				ps[nps].mode = fz[i].mode;
+				ps[nps].score = fz[i].score;
 				nps++;
 			}
 			/* Order the auto-default chain objectively strict to
-			 * loose: a pattern's matched-line count is its number
-			 * of anchoring constraints, and a superset pattern (e.g.
-			 * whole hunk over del+post) always has strictly more
-			 * lines, so a stable descending sort by line count both
-			 * respects every superset relation and resolves the
-			 * region-incomparable cases (e.g. del+post vs top
-			 * context) by the actual per-hunk line counts. The
-			 * stable tie-break preserves default_pat_lines' curated
-			 * preference among equal-length patterns. Custom patterns
+			 * loose by descending score (see specificity_score). A
+			 * superset window (e.g. whole hunk over del+post) always
+			 * scores higher, so this respects every superset relation
+			 * while resolving region-incomparable cases by actual
+			 * content; a file-proven unique anchor outranks every
+			 * unproven one. The stable sort preserves
+			 * default_pat_lines' curated tie-break. Custom patterns
 			 * keep the user's explicit slot order. */
 			for (int i = 1; i < nps; i++) {
 				pat_spec_t key = ps[i];
 				int j = i - 1;
-				while (j >= 0 && ps[j].nlines < key.nlines) {
+				while (j >= 0 && ps[j].score < key.score) {
 					ps[j + 1] = ps[j];
 					j--;
 				}
@@ -2812,6 +3278,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			fprintf(out, "%dm %d",
 				target_line > 0 ? target_line : 1, g->mark_id);
 			EMIT_SEP(out);
+			free_fuzz_windows(fz, nfz);
 			free(raw);
 			continue;
 		}
@@ -2823,6 +3290,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			emit_fallback_chain(out, ps, nps, g->mark_id,
 					    target_line, first_search);
 		first_search = 0;
+		free_fuzz_windows(fz, nfz);
 		free(raw);
 	}
 
@@ -2902,17 +3370,22 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		}
 		free_group(g);
 	}
+	free_orig_file();
 }
 
 /* set by "--- /dev/null", consumed by the next "+++" */
 static int pending_is_new;
+/* "---" path (pre-patch original), consumed by the next "+++" */
+static char *pending_orig_path;
 
 static void new_file(const char *path)
 {
 	files[nfiles].path = xstrdup(path);
 	files[nfiles].nops = 0;
 	files[nfiles].is_new = pending_is_new;
+	files[nfiles].orig_path = pending_orig_path;
 	pending_is_new = 0;
+	pending_orig_path = NULL;
 	nfiles++;
 	/* path appears in the FAIL <path>:<line> error message inside EXINIT */
 	mark_bytes_used(path);
@@ -3149,7 +3622,7 @@ int main(int argc, char **argv)
 						 * "pattern" maps to the top-context
 						 * slot (pattern 3) */
 						char c = line[11];
-						pat_idx = (c >= '1' && c <= '0' + NPAT)
+						pat_idx = (c >= '1' && c <= '0' + NSEARCH)
 							? c - '1' : 2;
 						in_sect = 1;
 						continue;
@@ -3157,7 +3630,7 @@ int main(int argc, char **argv)
 					if (strncmp(line, "=== offset", 10) == 0) {
 						/* "=== offset<1-NPAT> <%+d> ===" */
 						char c = line[10];
-						int oi = (c >= '1' && c <= '0' + NPAT)
+						int oi = (c >= '1' && c <= '0' + NSEARCH)
 							? c - '1' : 2;
 						cur_gd->pat_off[oi] = atoi(line + 11);
 						cur_gd->pat_has_off[oi] = 1;
@@ -3166,7 +3639,7 @@ int main(int argc, char **argv)
 					if (strncmp(line, "=== mode", 8) == 0) {
 						/* "=== mode<1-NPAT> <%d> ===" */
 						char c = line[8];
-						int mi = (c >= '1' && c <= '0' + NPAT)
+						int mi = (c >= '1' && c <= '0' + NSEARCH)
 							? c - '1' : 2;
 						cur_gd->pat_mode[mi] = atoi(line + 9);
 						cur_gd->pat_has_mode[mi] = 1;
@@ -3270,11 +3743,24 @@ process_line:
 			continue;
 		}
 
-		/* --- line: /dev/null means the next +++ creates a new file */
+		/* --- line: /dev/null means the next +++ creates a new file.
+		 * Otherwise stash the original path: on disk it holds the
+		 * pre-patch content the script will run against, used for
+		 * file-aware anchor validation. */
 		if (strncmp(line, "--- ", 4) == 0) {
-			const char *p = line + 4;
+			char *p = line + 4;
 			pending_is_new = strncmp(p, "/dev/null", 9) == 0
 					 && (!p[9] || p[9] == '\t' || p[9] == ' ');
+			free(pending_orig_path);
+			pending_orig_path = NULL;
+			if (!pending_is_new) {
+				if (p[0] && p[1] == '/')
+					p += 2;  /* strip a/ prefix */
+				char *t = strpbrk(p, "\t ");
+				if (t)
+					*t = '\0';
+				pending_orig_path = xstrdup(p);
+			}
 			continue;
 		}
 
