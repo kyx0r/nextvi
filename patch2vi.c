@@ -3881,10 +3881,21 @@ process_line:
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " %s", active[k]->path);
 		fputc('\n', stdout);
+		/* A large patch overflows the EXINIT env var / argv limits, so the
+		 * ex command body is written to a temp file (letting the shell do its
+		 * expansion pass) and passed to vi as the last filename. The fixed
+		 * EXINIT yanks that buffer into register 97 and executes it. */
+		fputs("# Body too large for EXINIT/argv: stage it in a file\n"
+		      "if ( : > /tmp/p2vi.$$ ) 2>/dev/null; then\n"
+		      "    P2VIF=/tmp/p2vi.$$\n"
+		      "else\n"
+		      "    P2VIF=./p2vi.$$\n"
+		      "fi\n"
+		      "trap 'rm -f \"$P2VIF\"' EXIT\n", stdout);
 		if (dyn_esc)
-			fputs("EXINIT=\"|sc! ${ESC}${SEP}|:vis 3${SEP}", stdout);
+			fputs("printf '%s\\n' \"|sc! ${ESC}${SEP}|:vis 3${SEP}", stdout);
 		else
-			fputs("EXINIT=\"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", stdout);
+			fputs("printf '%s\\n' \"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", stdout);
 		/* default register <b> caches the buffer for f> searches */
 		if (relative_mode || interactive_mode)
 			fputs("98reg${SEP}", stdout);
@@ -3900,10 +3911,12 @@ process_line:
 		/* Write all buffers at the end */
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, "b%d${SEP}w${SEP}", k);
-		fputs("q\" $VI -e", stdout);
+		fputs("q\" > \"$P2VIF\"\n"
+		      "EXINIT='%ya 97:? %@97' $VI -e", stdout);
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " '%s'", active[k]->path);
-		fputc('\n', stdout);
+		/* body file is always the last buffer; vi makes it current at startup */
+		fputs(" \"$P2VIF\"\n", stdout);
 	}
 
 	/* Embed delta and original patch after exit 0 */
