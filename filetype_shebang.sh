@@ -33,7 +33,14 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@p:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: ex.c
-EXINIT="|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
+# Body too large for EXINIT/argv: stage it in a file
+if ( : > /tmp/p2vi.$$ ) 2>/dev/null; then
+    P2VIF=/tmp/p2vi.$$
+else
+    P2VIF=./p2vi.$$
+fi
+trap 'rm -f "$P2VIF"' EXIT
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
 	if \\(!\\(xvis & 4\\)\\)
 		ex_print\\(msg, bar_ft\\)
 	return \\(fd < 0 \\|\\| rd\\) && \\*arg \\? xuerr : NULL;
@@ -61,7 +68,8 @@ ${SEP}'0a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 			xb_ft = syn_setft(lfts[hl].ft);
 		rset_free(rs);
 	}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:431:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'ex.c'
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:431:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'ex.c' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===

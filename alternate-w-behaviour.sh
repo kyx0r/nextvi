@@ -33,7 +33,14 @@ LB="0?"
 [ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@p:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: vi.c
-EXINIT="|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> 	case 'w':
+# Body too large for EXINIT/argv: stage it in a file
+if ( : > /tmp/p2vi.$$ ) 2>/dev/null; then
+    P2VIF=/tmp/p2vi.$$
+else
+    P2VIF=./p2vi.$$
+fi
+trap 'rm -f "$P2VIF"' EXIT
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> 	case 'w':
 	case 'W':
 		var = mv == 'W';
 		for \\(i = 0; i < cnt; i\\+\\+\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	case 'w':
@@ -49,8 +56,24 @@ ${SEP}?%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\)
 		break;
 	case '\\(':${ESC}${SEP}1??${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		for \\(i = 0; i < cnt; i\\+\\+\\)\$${ESC}${SEP}2??${ESC}${SEP}2??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\)\$${ESC}${SEP}3??${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 				break;
 		break;
-	case '\\(':${ESC}${SEP}4??${ESC}${SEP}4??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a4${SEP}${LB}
-${SEP}0;1;2;3;4??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	case '\\(':${ESC}${SEP}4??${ESC}${SEP}4??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	.f.r.\\(. . .;.i.<.c.t. .\\+.\\)
+.	.i. .l.u._.o.d.e.\\(.b. .a.,.v._.l.o.e.1. .o.,.o.f.\\)
+.	.	.r.a.;
+.	.r.a.;
+.c.s. .\\(.:${ESC}${SEP}5??${ESC}${SEP}5??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ .	.o. .i.=.0. . . .n.;.i.\\+.
+	.	.f.\\(.b.f.w.r.b.g.x.,.v.r. .i.n.m.d.\\+.,.r.w. .f.\\).
+	.	.b.e.k.
+	.b.e.k.
+	.a.e.'.'.${ESC}${SEP}6??${ESC}${SEP}6??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	.for .. . 0;.....cnt; i\\+\\+.
+..	i. ..b.f_w.rd.eg\\(xb, ..r, .i_n..od.\\+., r... of.\\)\\)
+				bre.k;
+		.reak.
+	case.'.'.${ESC}${SEP}7??${ESC}${SEP}7??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	..or .. . 0;.....c.t; i\\+\\+.
+..	i. ..b.f.w.rd.eg\\(xb. ..r, .i_n..o..\\+., r... of.\\)\\)
+				bre.k.
+	..rea..
+	case.'...${ESC}${SEP}8??${ESC}${SEP}8??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a8${SEP}${LB}
+${SEP}0;1;2;3;4;5;6;7;8??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 		if (cmd >= 0 && cnt == 1)
 			dir = 2;
@@ -68,7 +91,8 @@ ${SEP}'0a 		if (cmd >= 0 && cnt == 1)
 			*off = poff;
 		}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:604:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1s/vi_nlmode\\+1/dir/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}q" $VI -e 'vi.c'
+${SEP}'1s/vi_nlmode\\+1/dir/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===
