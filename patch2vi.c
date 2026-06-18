@@ -3911,7 +3911,7 @@ process_line:
 		/* Write all buffers at the end */
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, "b%d${SEP}w${SEP}", k);
-		fputs("q\" > \"$P2VIF\"\n"
+		fputs("2q\" > \"$P2VIF\"\n"
 		      "EXINIT='%ya 97:? %@97' $VI -e", stdout);
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " '%s'", active[k]->path);
