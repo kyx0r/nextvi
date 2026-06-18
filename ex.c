@@ -1246,9 +1246,8 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
 	int isdq = cmd[1] == '?';
-	char *ret = NULL, *branch;
 	int inv = cmd[1 + isdq] == '!';
-	char *then_cmd, *else_cmd;
+	char *ret = NULL;
 	if (isdq && *loc) {
 		int id = atoi(loc);
 		if (!*arg && cmd[2] != '?') {
@@ -1260,8 +1259,6 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			return ret;
 		} else if (!xanchor)
 			return ret;
-		then_cmd = ex_se_read(&arg, *cmd, xesc);
-		else_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
 		int *ap = (int*)xanchor->s, n = xanchor->s_n / sizeof(int);
 		int and_res = 0, or_res = 1;
 		for (int i = n; i >= 2;) {
@@ -1275,41 +1272,24 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 				 and_res = 0;
 			}
 			if (!*loc) {
-				if (cmd[2] == '?') {
-					ret = or_res ? xuerr : NULL;
-					break;
-				}
-				branch = or_res ^ inv ? else_cmd : then_cmd;
-				if (branch)
-					ret = ex_exec(branch);
-				break;
+				if (cmd[2] == '?')
+					return or_res ? xuerr : NULL;
+				return (or_res ^ inv) ? xuerr : ex_exec(arg);
 			}
 			id = atoi(++loc);
 			i = n;
 		}
-	} else {
-		char *cond = isdq ? NULL : ex_se_read(&arg, *cmd, xesc);
-		then_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
-		else_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
-		if (isdq) {
-			ret = (xpret != NULL) ^ inv ? xuerr : NULL;
-			branch = ret ? else_cmd : then_cmd;
-			if (branch)
-				ret = ex_exec(branch);
-		} else {
-			int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
-			for (; count && !ret; count--) {
-				ret = ex_exec(cond);
-				ret = inv ? ret ? NULL : xuerr : ret;
-				branch = ret ? else_cmd : then_cmd;
-				if (branch)
-					ex_exec(branch);
-			}
-			free(cond);
-		}
+		return ret;
+	} else if (isdq) {
+		ret = (xpret != NULL) ^ inv ? xuerr : NULL;
+		return !ret && *arg ? ex_exec(arg) : ret;
+	} else if (!*arg)
+		return ret;
+	int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
+	for (; count && !ret; count--) {
+		ret = ex_exec(arg);
+		ret = inv ? ret ? NULL : xuerr : ret;
 	}
-	free(then_cmd);
-	free(else_cmd);
 	return ret;
 }
 
@@ -1687,7 +1667,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			int n;
 			struct buf *pbuf = ex_buf;
 			src++;
-			if (*src == '"') {
+			if (*src == '@') {
 				src++;
 				if (uc_isdigit(*src)) {
 					for (n = 0; uc_isdigit(*src); src++)
@@ -1707,8 +1687,8 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			}
 			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)
-			if (src[-1] == '"')
-				sbuf_chr(sb, '"')
+			if (src[-1] == '@')
+				sbuf_chr(sb, '@')
 			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
 		} else if (*src == xexe) {
 			int n = sb->s_n;
