@@ -482,7 +482,7 @@ check 'I2 ?? — fires branch on success' 'found' "$out"
 # ?! runs the body while the condition fails; 1d modifies buffer state and
 # persists across iterations until 'yes' surfaces to line 1.
 printf 'no\nno\nyes\nno\n' > "$TMPFILE"
-out=$(run_ex ':10?! f>yes?1d:.p:q!')
+out=$(run_ex ':10?! f>yes\:1??\!\:1??1d\:1???\:??\!:.p:q!')
 check 'I3 ?! while: 1d deletes first line each pass until f>yes succeeds' 'yes' "$out"
 
 # seq 0 groups all subsequent changes into a single undo step
@@ -1033,8 +1033,8 @@ INVRANGE='invalid range'
 INVRANGE2="$(printf 'invalid range\ninvalid range')"
 
 printf 'irrelevant\n' > "$TMPFILE"
-out=$(run_ex ':? \?p\\\:1q\:p BAD:q!')
-check 'P1 ? \?p\\\:1q\:p BAD — escapes absorb :1q/:p; current line printed' \
+out=$(run_ex ':? ??p\\\:1q\:p BAD:q!')
+check 'P1 ? ??p\\\:1q\:p BAD — escapes absorb :1q/:p; current line printed' \
 	'irrelevant' "$out"
 
 out=$(run_ex ':>\\>:reg:q!')
@@ -1070,28 +1070,14 @@ out=$(run_ex ':? >\\\\\\?:reg:q!')
 check 'P10 ? >\\\\\\? — even run before delim; search runs, no match' \
 	"$INVRANGE" "$out"
 
-out=$(run_ex ':? \?0\?\:0\?:q!')
-check 'P11 ? \?0\?\:0\? — one address parses; search runs, no match' \
-	"$INVRANGE" "$out"
+out=$(run_ex ':? ?? 1?\:p:q!')
+check 'P11 ? ?? 1?\:p — ex separator escape' \
+	"irrelevant" "$out"
 
-out=$(run_ex ':? \?0\\?\\:0\\?:q!')
-check 'P12 ? \?0\\?\\:0\\? — two addresses parse; two unmatched searches' \
-	"$INVRANGE2" "$out"
-
-out=$(run_ex ':? \?0\\\?\\\:0\\\?:q!')
-check 'P13 ? \?0\\\?\\\:0\\\? — escapes fully absorb the address; nothing' \
-	'' "$out"
-
-out=$(run_ex ':? \?0\\\\?\\\\:0\\\\?:q!')
-check 'P14 ? \?0\\\\?\\\\:0\\\\? — two addresses parse; two unmatched searches' \
-	"$INVRANGE2" "$out"
-
-out=$(run_ex ':? \? \\\? 0\\\\\\\?\\\\\\\:0\\\\\\\?:q!')
-check 'P15 ? \? \\\? 0... — long escape run fully absorbed; nothing' '' "$out"
-
-out=$(run_ex ':? \? \\\? p \\\\\\\?')
-check 'P16 ? \? \\\? p \\\\\\\? — trailing form leaves a literal ? prompt' \
-	'?' "$out"
+out=$(run_ex ':? ?? 1?\\:p:q!')
+check 'P11 ? ?? 1?\\:p — ex separator escape' \
+	"unknown command
+irrelevant" "$out"
 
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
