@@ -1252,8 +1252,8 @@ Evaluate prefix tags
 This is a nop command that evaluates a boolean expression
 at prefix and returns the result.
 
-Example: control while loop from its [then] argument
-$?0\e?\e?\e??+1\e:0\e?\e?\e:f>int\e:\e?\e?p
+Example: control while loop
+$? \e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
 .Ed
 
 .It Cm ft[\fIfiletype\fP]
