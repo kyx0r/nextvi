@@ -1285,20 +1285,11 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		return !ret && *arg ? ex_exec(arg) : ret;
 	} else if (!*arg)
 		return ret;
-	char *cond = ex_se_read(&arg, *cmd, xesc);
-	char *then_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
-	char *else_cmd = *arg ? ex_se_read(&arg, *cmd, xesc) : NULL;
 	int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
 	for (; count && !ret; count--) {
-		ret = ex_exec(cond);
+		ret = ex_exec(arg);
 		ret = inv ? ret ? NULL : xuerr : ret;
-		char *branch = ret ? else_cmd : then_cmd;
-		if (branch)
-			ex_exec(branch);
 	}
-	free(cond);
-	free(then_cmd);
-	free(else_cmd);
 	return ret;
 }
 
