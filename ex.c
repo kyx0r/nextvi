@@ -64,7 +64,7 @@ int n = 0, keep, d; \
 for (; p[n] == esc; n++); \
 keep = n; \
 d = dtest; \
-if (d || !p[n]) \
+if (d) \
 	n -= n / 2; \
 sbuf_mem(sb, p, n) \
 if (d && keep & 1) \
