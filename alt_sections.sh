@@ -22,11 +22,11 @@ LB="0?"
 # Phase 1 (search/mark): errors disabled by default,
 # DBG1=1 enables error reporting, QF1=1 quits on failure
 # OK1: with DBG1=1 also report fallback anchor successes
-[ "$DBG1" = "1" ] && OK1= || OK1="0${ESC}${ESC}${ESC}?"
-[ "$DBG1" = "1" ] && DBG1= || DBG1="0${ESC}?"
+[ "$DBG1" = "1" ] && OK1= || OK1="0?"
+[ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
 [ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
 # Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
-[ "$DBG2" = "1" ] && DBG2="0${ESC}?" || DBG2=
+[ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
@@ -36,25 +36,36 @@ LB="0?"
 EXINIT="|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> 		break;
 	case '\\(':
 	case '\\)':
-		dir = mv == '\\(' \\${ESC}? 1 : -1;
+		dir = mv == '\\(' \\? 1 : -1;
 		if \\(!bre\\)
-			bre = rset_smake\\(\"\\^\\[\\.\\${ESC}?!\\]\\+\\['\\\\\\\\\\]\\)\\]\\*\\(\\${ESC}?:\\[ \\\\t\\]\\+\\\\n\\${ESC}?\\|\\\\n\\)\", 0\\);
-		int subs\\[2\\], org;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 		break;
+			bre = rset_smake\\(\"\\^\\[\\.\\?!\\]\\+\\['\\\\\\\\\\]\\)\\]\\*\\(\\?:\\[ \\\\t\\]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);
+		int subs\\[2\\], org;${ESC}${SEP}0??${ESC}${SEP}0??+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 		dir = mv == '\\(' \\? 1 : -1;
+		if \\(!bre\\)
+			bre = rset_smake\\(\"\\^\\[\\.\\?!\\]\\+\\['\\\\\\\\\\]\\)\\]\\*\\(\\?:\\[ \\\\t\\]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);
+		int subs\\[2\\], org;${ESC}${SEP}1??${ESC}${SEP}1??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:611:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 		break;
 	case '\\(':
-	case '\\)':${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:611:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^		dir = mv == '\\(' \\${ESC}? 1 : -1;\$${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:611:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:611${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	case '\\)':${ESC}${SEP}2??${ESC}${SEP}2??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:611:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^		dir = mv == '\\(' \\? 1 : -1;\$${ESC}${SEP}3??${ESC}${SEP}3??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:611:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f> 		if \\(!bre\\)
+			bre = rset_smake\\(\"\\^\\[\\.\\?!\\]\\+\\['\\\\\\\\\\]\\)\\]\\*\\(\\?:\\[ \\\\t\\]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);
+		int subs\\[2\\], org;${ESC}${SEP}4??${ESC}${SEP}4??-1m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:611:a4${SEP}${LB}
+${SEP}0;1;2;3;4??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:611${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	case '}':
 	case '\\[':
 	case '\\]':
-		dir = mv == '\\{' \\|\\| mv == '\\[' \\${ESC}? 1 : -1;
-		var = mv == '\\[' \\|\\| mv == '\\]' \\${ESC}? '\\\\n' : '\\{';
+		dir = mv == '\\{' \\|\\| mv == '\\[' \\? 1 : -1;
+		var = mv == '\\[' \\|\\| mv == '\\]' \\? '\\\\n' : '\\{';
 		for \\(i = 0; i < cnt; i\\+\\+\\)
 			if \\(lbuf_sectionbeg\\(xb, dir, row, off, var\\)\\)
-				break;${ESC}${SEP}0${ESC}?${ESC}?${ESC}${SEP}0${ESC}?${ESC}?+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	case '}':
+				break;${ESC}${SEP}0??${ESC}${SEP}0??+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		dir = mv == '\\{' \\|\\| mv == '\\[' \\? 1 : -1;
+		var = mv == '\\[' \\|\\| mv == '\\]' \\? '\\\\n' : '\\{';
+		for \\(i = 0; i < cnt; i\\+\\+\\)
+			if \\(lbuf_sectionbeg\\(xb, dir, row, off, var\\)\\)
+				break;${ESC}${SEP}1??${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:651:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	case '}':
 	case '\\[':
-	case '\\]':${ESC}${SEP}1${ESC}?${ESC}?${ESC}${SEP}1${ESC}?${ESC}?+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:651:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		dir = mv == '\\{' \\|\\| mv == '\\[' \\${ESC}? 1 : -1;
-		var = mv == '\\[' \\|\\| mv == '\\]' \\${ESC}? '\\\\n' : '\\{';${ESC}${SEP}2${ESC}?${ESC}?${ESC}${SEP}2${ESC}?${ESC}?m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:651:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:651${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	case '\\]':${ESC}${SEP}2??${ESC}${SEP}2??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:651:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		dir = mv == '\\{' \\|\\| mv == '\\[' \\? 1 : -1;
+		var = mv == '\\[' \\|\\| mv == '\\]' \\? '\\\\n' : '\\{';${ESC}${SEP}3??${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:651:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\)
+			if \\(lbuf_sectionbeg\\(xb, dir, row, off, var\\)\\)
+				break;${ESC}${SEP}4??${ESC}${SEP}4??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:651:a4${SEP}${LB}
+${SEP}0;1;2;3;4??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:651${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/\\(/)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:611:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
