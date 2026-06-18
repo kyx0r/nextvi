@@ -957,8 +957,8 @@ EX COMMANDS
              This is a nop command that evaluates a boolean expression
              at prefix and returns the result.
 
-             Example: control while loop from its [then] argument
-             $?0\?\?\??+1\:0\?\?\:f>int\:\?\?p
+             Example: control while loop
+             $? \%f+int\:1??\:\%f+void\:2??\:1,2??p\:1,2???
 
      ft[filetype]
              Set a filetype
