@@ -148,9 +148,10 @@ static unsigned char byte_used[256];
 /* Dynamic ex escape byte set via :sc (like the separator); exported to
  * the script as $ESC. 0 = no free byte, keep the default backslash
  * escape paths. With a dynamic escape, backslash is no longer special
- * to ex_arg or to the ? conditional's ex_sread, so content and regex
- * escapes pass through unmodified; only the ? delimiter itself needs
- * ${ESC} protection inside ? blocks. */
+ * to ex_arg, so content and regex escapes pass through unmodified.
+ * The ? conditional/while no longer delimiter-scans its argument
+ * (it relies on capture tags), so ? never needs escaping inside a
+ * ? block; only the separator does. */
 static int dyn_esc;
 
 static char *xstrdup(const char *s)
@@ -872,7 +873,7 @@ static void emit_escaped_line(FILE *out, const char *s)
 	for (; *s; s++) {
 		unsigned char c = *s;
 		/* the dynamic escape byte never occurs in content; emit it
-		 * as the readable ${ESC} expansion (see escape_chain_dyn) */
+		 * as the readable ${ESC} expansion */
 		if (dyn_esc && c == (unsigned char)dyn_esc) {
 			fputs("${ESC}", out);
 			continue;
@@ -1458,37 +1459,13 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
 	}
 }
 
-/* Chain pattern escaping for a dynamic ex escape: ex_arg no longer
- * consumes backslashes and the ? conditional's ex_sread honors the
- * dynamic escape, stripping <esc> only before its ? delimiter. Every ?
- * gets <esc>-prefixed so it doesn't end the cond argument early: a
- * literal ? (regex "\?") becomes "\<esc>?" and a bare quantifier ?
- * becomes "<esc>?". The raw escape byte is inserted here;
- * emit_escaped_line renders it as the readable ${ESC} expansion. */
-static char *escape_chain_dyn(const char *s)
-{
-	sbuf_smake(sb, strlen(s) + 8)
-	while (*s) {
-		if (s[0] == '\\' && s[1]) {
-			sbuf_chr(sb, *s++)
-			if (*s == '?')
-				sbuf_chr(sb, dyn_esc)
-			sbuf_chr(sb, *s++)
-		} else if (s[0] == '?') {
-			sbuf_chr(sb, dyn_esc)
-			sbuf_chr(sb, *s++)
-		} else
-			sbuf_chr(sb, *s++)
-	}
-	sbufn_ret(sb, sb->s)
-}
-
 /* Emit one fallback pattern as the f> argument inside a ? conditional.
  * The conditional nesting consumes one more escape layer than a
- * top-level search: after exarg escaping, every backslash is doubled
- * again and ? is escaped (an unescaped ? would end the cond argument).
- * With a dynamic escape only the ex_sread layer remains (see
- * escape_chain_dyn). */
+ * top-level search: with the default backslash escape, every backslash
+ * is doubled again for the extra ex_arg layer. The ? conditional no
+ * longer delimiter-scans its argument, so literal/quantifier ? pass
+ * through untouched. With a dynamic escape, backslash is not special to
+ * ex_arg, so the regex needs no extra escaping at all. */
 static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 {
 	int wrap = p->nlines == 1 && !p->pre_escaped;
@@ -1498,10 +1475,10 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 		char *r = p->pre_escaped ? NULL : escape_regex(p->lines[i]);
 		char *x;
 		if (dyn_esc) {
-			x = escape_chain_dyn(r ? r : p->lines[i]);
+			x = xstrdup(r ? r : p->lines[i]);
 		} else {
 			char *e = escape_exarg(r ? r : p->lines[i]);
-			x = escape_chars(e, "\\?");
+			x = escape_chars(e, "\\");
 			free(e);
 		}
 		emit_escaped_line(out, x);
@@ -1520,7 +1497,7 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 /* Phase 1 fallback chain: try each pattern in order, first match wins.
  * All attempts are nested into a single ? conditional, chained with
  * escaped separators; per pattern n (capture tag n):
- *   %;f> <pat>\:<n>\?\?\:<n>\?\?[+off]m <id>\\\:${OK1}p OK <loc>:a<n>\\\:1q\:
+ *   %;f> <pat>\:<n>??\:<n>??[+off]m <id>\\\:${OK1}p OK <loc>:a<n>\\\:1q\:
  * (the ${OK1} success report only on fallback blocks, n >= 1)
  * The search's error status is captured into tag <n>; on success the
  * <n>?? branch marks the target and 1q short-circuits out of the
@@ -1552,9 +1529,9 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 			fputs(first ? "%;f> " : "%;f+ ", out);
 		emit_chain_pattern(out, &ps[n]);
 		EMIT_ESCSEP(out);
-		fprintf(out, dyn_esc ? "%d${ESC}?${ESC}?" : "%d\\\\?\\\\?", n);
+		fprintf(out, "%d??", n);
 		EMIT_ESCSEP(out);
-		fprintf(out, dyn_esc ? "%d${ESC}?${ESC}?" : "%d\\\\?\\\\?", n);
+		fprintf(out, "%d??", n);
 		if (ps[n].offset)
 			fprintf(out, "%+d", ps[n].offset);
 		fprintf(out, "m %d", mark_id);
@@ -3857,11 +3834,11 @@ process_line:
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
-		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0${ESC}${ESC}${ESC}?\"\n"
-		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0${ESC}?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\" || QF1=\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
-		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0${ESC}?\" || DBG2=\n"
+		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0?\" || DBG2=\n"
 		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n"
@@ -3873,11 +3850,11 @@ process_line:
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
-		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0\\\\\\\\\\?\"\n"
-		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0\\?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"\\\\${SEP}vis 2\\\\${SEP}q!1\" || QF1=\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
-		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0\\?\" || DBG2=\n"
+		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0?\" || DBG2=\n"
 		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n"
