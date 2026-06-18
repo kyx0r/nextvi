@@ -169,7 +169,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 2006f30c..845fcbc3 100644
+index 87e26382..864b5c94 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@

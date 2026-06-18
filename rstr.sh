@@ -1529,7 +1529,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 2006f30c..421b2b1d 100644
+index 87e263828..3742aca52 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ int xsep = ':';			/* ex command separator */
@@ -1739,7 +1739,7 @@ index 2006f30c..421b2b1d 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 75dd0ce8..8e9df6df 100644
+index 75dd0ce89..8e9df6df7 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -490,11 +490,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -1766,7 +1766,7 @@ index 75dd0ce8..8e9df6df 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 3c09a752..4db32911 100644
+index 3c09a752f..4db32911a 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -749,3 +749,142 @@ int rset_match(rset *rs, char *s, int flg)
@@ -1913,7 +1913,7 @@ index 3c09a752..4db32911 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index e53c93b8..40e9ca43 100644
+index e53c93b8e..40e9ca431 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -377,7 +377,7 @@ static void vi_regput(int c, const char *s, int lnmode)
@@ -1935,7 +1935,7 @@ index e53c93b8..40e9ca43 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index ca6cca08..6448edc1 100644
+index ca6cca08e..6448edc1c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -110,12 +110,24 @@ typedef struct {

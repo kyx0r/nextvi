@@ -544,7 +544,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 2006f30c..c9a166c3 100644
+index 87e26382..8c75790a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -405,7 +405,9 @@ int ex_edit(const char *path, int len)

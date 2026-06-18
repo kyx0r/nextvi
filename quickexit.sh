@@ -209,7 +209,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c2c5c4b4..c14f3b34 100644
+index c2c5c4b4f..c14f3b348 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -292,7 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -222,7 +222,7 @@ index c2c5c4b4..c14f3b34 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 2006f30c..a4b43809 100644
+index 87e263828..537808c8f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -247,7 +247,7 @@ index 2006f30c..a4b43809 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 85b112fc..fadeaf36 100644
+index 85b112fc7..fadeaf36c 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -282,7 +282,7 @@ index 85b112fc..fadeaf36 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index e53c93b8..18e57146 100644
+index e53c93b8e..18e571469 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -303,7 +303,7 @@ index e53c93b8..18e57146 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index ca6cca08..95f5bed6 100644
+index ca6cca08e..95f5bed60 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -364,6 +364,7 @@ typedef struct {
