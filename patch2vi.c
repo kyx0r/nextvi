@@ -63,7 +63,7 @@ static const char *end_tag_wr = "=== END ===";
  * relaxed (fuzzed) variants generated after the exact strategies; NSEARCH
  * is the total SEARCH PATTERN capacity per group. */
 #define NPAT 5
-#define NFUZZ 4   /* max file-validated fuzzed candidates per group */
+#define NFUZZ 1   /* max file-validated fuzzed candidates per group (loosest kept) */
 #define NSEARCH (NPAT + NFUZZ)   /* must stay <= 9: section numbers are 1 digit */
 
 /* Per-group delta: structured customizations from interactive editing */
@@ -475,24 +475,24 @@ static unsigned hash_pos(unsigned seed, int i)
 	return h;
 }
 
+/* Highest fuzz level tried; level 0 is the lightest relaxation, the top level
+ * approaches the ~80% wildcard budget the anchor is allowed (FUZZ_MASK_MAX). */
+#define FUZZ_MAXLVL 8
+#define FUZZ_MASK_MAX 800   /* per-mille: mask up to ~80% of runes (~20% literal) */
+
 /* Fill mask[0..nrune) for fuzz level lvl over a window-global rune index that
- * starts at *gi (advanced by nrune). Level 0/1 drop odd/even runes; levels >= 2
- * drop by an increasing content-seeded threshold (looser each step). At least
- * one rune is always kept literal. */
+ * starts at *gi (advanced by nrune). Each level drops runes by a content-seeded
+ * threshold that grows with lvl but never past FUZZ_MASK_MAX, so the loosest
+ * variant wildcards ~80% of its runes (~20% kept literal). At least one rune is
+ * always kept literal. */
 static void fuzz_mask(unsigned char *mask, const char *base, int nrune,
 		      int lvl, unsigned seed, int *gi)
 {
-	int thr = lvl >= 2 ? 400 + (lvl - 2) * 100 : 0;
+	int thr = (lvl + 1) * FUZZ_MASK_MAX / (FUZZ_MAXLVL + 1);
 	int kept = 0;
 	for (int i = 0; i < nrune; i++) {
 		int g = (*gi)++;
-		int drop;
-		if (lvl == 0)
-			drop = (g & 1) == 1;
-		else if (lvl == 1)
-			drop = (g & 1) == 0;
-		else
-			drop = (int)(hash_pos(seed, g) % 1000) < thr;
+		int drop = (int)(hash_pos(seed, g) % 1000) < thr;
 		mask[i] = drop ? 1 : 0;
 		if (!drop)
 			kept++;
@@ -1404,28 +1404,39 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 	for (int i = 0; i < bn; i++)
 		seed = hash_str(base[i], seed);
 	fline_t *win = emalloc(bn * sizeof(*win));
-	int nf = 0;
-	for (int lvl = 0; nf < max && lvl <= NFUZZ + 4; lvl++) {
-		int any = 0, gi = 0;
+	/* Collect every distinct file-validated variant, strictest (low fuzz
+	 * level) first, then keep only the last `max` - the loosest ones. The
+	 * level span is fixed (independent of max) so reducing how many we keep
+	 * never narrows how loose we are willing to relax. */
+	fuzzwin_t cand[FUZZ_MAXLVL + 1];
+	int nc = 0;
+	for (int lvl = 0; lvl <= FUZZ_MAXLVL; lvl++) {
+		int any = 0, gi = 0, masked = 0, total = 0;
 		for (int j = 0; j < bn; j++) {
 			int nr = rune_count(base[j]);
 			unsigned char *m = emalloc(nr ? nr : 1);
 			fuzz_mask(m, base[j], nr, lvl, seed, &gi);
 			for (int k = 0; k < nr; k++)
-				if (m[k]) any = 1;
+				if (m[k]) any = 1, masked++;
+			total += nr;
 			win[j].base = base[j];
 			win[j].mask = m;
 			win[j].nrune = nr;
 		}
-		int first, cnt = any ? count_window_fuzzy(win, bn, &first) : 0;
-		if (any && cnt == 1 && first == expected) {
+		/* Keep at least ~20% of runes literal: a window relaxed past
+		 * four runes in five is too thin an anchor to trust, even if it
+		 * still validates uniquely on this particular file. */
+		int too_loose = total > 0 && masked * 5 > total * 4;
+		int first, cnt = any && !too_loose
+			? count_window_fuzzy(win, bn, &first) : 0;
+		if (any && !too_loose && cnt == 1 && first == expected) {
 			char **lines = emalloc(bn * sizeof(char *));
 			for (int j = 0; j < bn; j++)
 				lines[j] = fuzzy_regex(&win[j]);
 			int dup = 0;
-			for (int p = 0; p < nf; p++)
-				if (lines_equal(lines, bn, out[p].lines,
-						out[p].nlines)) {
+			for (int p = 0; p < nc; p++)
+				if (lines_equal(lines, bn, cand[p].lines,
+						cand[p].nlines)) {
 					dup = 1;
 					break;
 				}
@@ -1434,12 +1445,12 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 					free(lines[j]);
 				free(lines);
 			} else {
-				out[nf].lines = lines;
-				out[nf].nlines = bn;
-				out[nf].offset = doff0;
-				out[nf].mode = bn == 1 ? 1 : 0;
-				out[nf].score = fuzzy_spec(win, bn) + UNIQUE_BONUS;
-				nf++;
+				cand[nc].lines = lines;
+				cand[nc].nlines = bn;
+				cand[nc].offset = doff0;
+				cand[nc].mode = bn == 1 ? 1 : 0;
+				cand[nc].score = fuzzy_spec(win, bn) + UNIQUE_BONUS;
+				nc++;
 			}
 		}
 		for (int j = 0; j < bn; j++)
@@ -1447,7 +1458,17 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 	}
 	free(win);
 	free(base);
-	return nf;
+	/* Keep the last `max` (loosest); free the stricter ones we drop. */
+	int keep = nc < max ? nc : max;
+	int drop = nc - keep;
+	for (int i = 0; i < drop; i++) {
+		for (int j = 0; j < cand[i].nlines; j++)
+			free(cand[i].lines[j]);
+		free(cand[i].lines);
+	}
+	for (int i = 0; i < keep; i++)
+		out[i] = cand[drop + i];
+	return keep;
 }
 
 static void free_fuzz_windows(fuzzwin_t *w, int n)
