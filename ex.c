@@ -724,13 +724,16 @@ static void *ex_pipeout(char *cmd, sbuf *buf)
 		term_chr('\n');
 		xpln = 0;
 	}
-	cmd_pipe(cmd, buf, 0, &ret);
+	sbuf *rsb = cmd_pipe(cmd, buf, 0, &ret);
+	if (!rsb)
+		return "fork failed";
+	sbuf_free(rsb)
 	return ret ? xuerr : NULL;
 }
 
 static void *ec_write(char *loc, char *cmd, char *arg)
 {
-	char msg[512], *path;
+	char msg[512], *path, *ret = NULL;
 	sbuf ibuf;
 	int fd, beg, end, o1 = -1, o2 = -1;
 	path = arg[0] ? arg : xb_path;
@@ -744,7 +747,7 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 	}
 	if (arg[0] == '!') {
 		lbuf_region(xb, &ibuf, beg, MAX(0, o1), end-1, o2);
-		ex_pipeout(arg + 1, &ibuf);
+		ret = ex_pipeout(arg + 1, &ibuf);
 		free(ibuf.s);
 	} else {
 		if (!strchr(cmd, '!')) {
@@ -775,7 +778,7 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 	}
 	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
 		ec_quit("", cmd, "");
-	return NULL;
+	return ret;
 }
 
 static void *ec_termexec(char *loc, char *cmd, char *arg)
@@ -1160,7 +1163,7 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 	sbuf *rep = cmd_pipe(arg, &text, 1, NULL);
 	free(text.s);
 	if (!rep)
-		return NULL;
+		return "fork failed";
 	if (o1 > 0) {
 		char *p = lbuf_joinsb(xb, beg, end-1, rep, &o1, &o2);
 		lbuf_edit(xb, p, beg, end, o1, o2);
