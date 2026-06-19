@@ -280,11 +280,8 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	argv[3] = cmd;
 	argv[4] = NULL;
 	int pid = cmd_make(argv+!xish, ibuf ? &ifd : NULL, oproc ? &ofd : NULL);
-	if (pid <= 0) {
-		if (status)
-			*status = 127;
+	if (pid <= 0)
 		return NULL;
-	}
 	sbuf *sb;
 	sbuf_make(sb, sizeof(buf)+1)
 	if (!ibuf) {
@@ -346,8 +343,5 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 			term_init();
 		signal(SIGINT, SIG_DFL);
 	}
-	if (oproc)
-		sbufn_ret(sb, sb)
-	sbuf_free(sb)
-	return NULL;
+	sbufn_ret(sb, sb)
 }
