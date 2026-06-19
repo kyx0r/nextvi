@@ -60,11 +60,14 @@ static const char *end_tag_wr = "=== END ===";
 /* Number of f> anchor search strategies (SEARCH PATTERN slots), tried
  * strict-to-loose with first match wins. See default_pat_lines() for the
  * per-slot pattern composition. NFUZZ extra slots hold file-validated
- * relaxed (fuzzed) variants generated after the exact strategies; NSEARCH
- * is the total SEARCH PATTERN capacity per group. */
+ * relaxed (fuzzed) variants generated after the exact strategies; NGRP holds
+ * the file-validated :grp-capture window (pattern 7, see gen_grp_window).
+ * NSEARCH is the total SEARCH PATTERN capacity per group. */
 #define NPAT 5
 #define NFUZZ 1   /* max file-validated fuzzed candidates per group (loosest kept) */
-#define NSEARCH (NPAT + NFUZZ)   /* must stay <= 9: section numbers are 1 digit */
+#define NGRP 1    /* file-validated :grp-capture window (.*..* + last captured) */
+#define GRP_SLOT (NPAT + NFUZZ)   /* 0-based slot index of the grp window */
+#define NSEARCH (NPAT + NFUZZ + NGRP)   /* must stay <= 9: section numbers are 1 digit */
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
@@ -86,7 +89,7 @@ typedef struct {
 	int npattern[NSEARCH], pat_cap[NSEARCH];
 	int pat_off[NSEARCH];      /* per-pattern OFFSET marker value */
 	int pat_has_off[NSEARCH];
-	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f> */
+	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f>, 2 = grp */
 	int pat_has_mode[NSEARCH];
 	char **abs_cmd;
 	int nabs, abs_cap;
@@ -282,6 +285,33 @@ static int count_window(char **window, int n, int *first)
 		int ok = 1;
 		for (int j = 0; j < n; j++)
 			if (strcmp(orig_lines[i + j], window[j]) != 0) {
+				ok = 0;
+				break;
+			}
+		if (ok) {
+			if (*first < 0)
+				*first = i;
+			cnt++;
+		}
+	}
+	return cnt;
+}
+
+/* Count consecutive-line matches of a substring window in orig_lines: each
+ * win[j] must occur as a substring of the aligned original line (an empty
+ * win[j] matches any line, mirroring ".*.*"). This is the match semantics of
+ * the pattern-7 ".*TEXT.*" window. Sets *first to the 0-based start of the
+ * first match (-1 if none). */
+static int count_window_substr(char **win, int n, int *first)
+{
+	*first = -1;
+	if (!orig_lines || n <= 0 || n > n_orig_lines)
+		return 0;
+	int cnt = 0;
+	for (int i = 0; i + n <= n_orig_lines; i++) {
+		int ok = 1;
+		for (int j = 0; j < n; j++)
+			if (win[j][0] && !strstr(orig_lines[i + j], win[j])) {
 				ok = 0;
 				break;
 			}
@@ -1085,7 +1115,7 @@ static void emit_err_check(FILE *out, int line)
 static void emit_err_check_pats(FILE *out, int ntags, int line)
 {
 	char loc[MAX_LINE];
-	char tags[(NPAT + NFUZZ) * 8];
+	char tags[NSEARCH * 8];
 	int p = 0;
 	for (int t = 0; t < ntags && p < (int)sizeof(tags); t++)
 		p += snprintf(tags + p, sizeof(tags) - p,
@@ -1149,6 +1179,13 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 			int target_line, int pre_escaped, int first, int mode)
 {
 	int single = mode == 1;
+	int grp = mode == 2;
+	if (grp) {
+		/* pattern-7 grp window: bracket the register-cache search with
+		 * "grp 1 .. grp 0" so the find lands on the captured last line */
+		fputs("grp 1", out);
+		EMIT_SEP(out);
+	}
 	if (single) {
 		/* reset xoff to 0 so the .,$ region starts at the
 		 * current line's first column */
@@ -1184,6 +1221,10 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 	if (nanchors > 0 && !anchors[nanchors - 1][0])
 		fputc('\n', out);
 	EMIT_SEP(out);
+	if (grp) {
+		fputs("grp 0", out);
+		EMIT_SEP(out);
+	}
 	emit_err_check(out, target_line);
 	if (single) {
 		fputs("98reg", out);
@@ -1480,6 +1521,68 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
 	}
 }
 
+/*
+ * Pattern 7: a :grp-capture window (mode 2). The top of the hunk - the
+ * preceding context anchors, plus the first deleted line on change/delete
+ * hunks - is wrapped line by line into ".*TEXT.*", with the final line
+ * captured as ".*(TEXT).*". A ":grp 1" search lands on that captured last
+ * line; the ".*" on every line then absorbs text added around the anchors
+ * (an inserted token, a widened line) without shifting the target.
+ *
+ * The captured last line IS the target: a change/delete hunk captures the
+ * first deleted line (mark offset 0), a pure insert captures the last anchor
+ * (offset +1, so the inserted lines land below it). Like the fuzzed windows
+ * this is only trustworthy when the original file is readable, so it is
+ * file-validated: emitted only when the wrapped window resolves to exactly
+ * one place, the expected one. Returns 1 and fills *out (owned lines) on
+ * success, 0 otherwise. mode 2 carries the grp semantics through the
+ * gen/apply round-trip (see emit_fallback_chain / emit_search).
+ */
+static int gen_grp_window(group_t *g, fuzzwin_t *out)
+{
+	if (!orig_lines || g->nanchors < 1 || !g->anchors[g->nanchors - 1])
+		return 0;
+	int has_del = g->ndel > 0 && !(g->ndel == 1 && !g->del_texts[0][0]);
+	int n = g->nanchors + (has_del ? 1 : 0);
+	char **raw = emalloc(n * sizeof(char *));
+	for (int i = 0; i < g->nanchors; i++)
+		raw[i] = g->anchors[i];
+	if (has_del)
+		raw[g->nanchors] = g->del_texts[0];
+	/* The captured last line must land on the target: change/delete -> the
+	 * first deleted line at del_start-1; pure insert -> the last anchor at
+	 * add_after-1. The window starts n-1 lines above it. */
+	int last = has_del ? g->del_start - 1 : g->add_after - 1;
+	int first, cnt;
+	if (last < 0 || last - (n - 1) < 0) {
+		free(raw);
+		return 0;
+	}
+	cnt = count_window_substr(raw, n, &first);
+	if (cnt != 1 || first != last - (n - 1)) {
+		free(raw);
+		return 0;
+	}
+	int sc = specificity_score(raw, n);
+	char **lines = emalloc(n * sizeof(char *));
+	for (int i = 0; i < n; i++) {
+		char *e = escape_regex(raw[i]);
+		int cap = i == n - 1;
+		int len = strlen(e) + 8;   /* ".*(" + ")" + ".*" + NUL */
+		char *s = emalloc(len);
+		snprintf(s, len, cap ? ".*(%s).*" : ".*%s.*", e);
+		lines[i] = s;
+		free(e);
+	}
+	free(raw);
+	out->lines = lines;
+	out->nlines = n;
+	out->offset = has_del ? 0 : 1;
+	out->mode = 2;
+	out->score = sc;
+	return 1;
+}
+
 /* Emit one fallback pattern as the f> argument inside a ? conditional.
  * The conditional nesting consumes one more escape layer than a
  * top-level search: with the default backslash escape, every backslash
@@ -1527,15 +1630,23 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
  * reports the failure.
  * A mode-1 pattern (single-line by default) searches the live buffer
  * with ";0\:0reg\:.,$f> ^pat$" instead, restoring the register cache
- * with 98reg on both the success (before 1q) and no-match paths. */
+ * with 98reg on both the success (before 1q) and no-match paths.
+ * A mode-2 pattern (the pattern-7 grp window) searches the register cache
+ * like mode 0 but brackets the search with "grp 1\:...\:grp 0" so the find
+ * lands on the captured last line, then resets the search group. */
 static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 				int mark_id, int target_line, int first)
 {
 	fputc('?', out);
 	for (int n = 0; n < nps; n++) {
 		int m1 = ps[n].mode == 1;
+		int g2 = ps[n].mode == 2;
 		if (n)
 			EMIT_ESCSEP(out);
+		if (g2) {
+			fputs("grp 1", out);
+			EMIT_ESCSEP(out);
+		}
 		if (m1) {
 			/* Mode 1: search the live buffer directly. ";0"
 			 * resets xoff, "0reg" clears the default register so
@@ -1549,6 +1660,12 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 		} else
 			fputs(first ? "%;f> " : "%;f+ ", out);
 		emit_chain_pattern(out, &ps[n]);
+		if (g2) {
+			/* reset the search group on both match and no-match
+			 * paths before the tag check */
+			EMIT_ESCSEP(out);
+			fputs("grp 0", out);
+		}
 		EMIT_ESCSEP(out);
 		fprintf(out, "%d??", n);
 		EMIT_ESCSEP(out);
@@ -1786,7 +1903,7 @@ typedef struct {
 	int npattern[NSEARCH], pat_cap[NSEARCH];
 	int pat_off[NSEARCH];      /* per-pattern OFFSET marker value */
 	int pat_has_off[NSEARCH];
-	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f> */
+	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f>, 2 = grp */
 	int pat_has_mode[NSEARCH];
 	char **abs_cmd;
 	int nabs, abs_cap;
@@ -2199,7 +2316,7 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		 * (pre-escaped), so they are written verbatim. */
 		fuzzwin_t fz[NFUZZ];
 		int nfz = gen_fuzz_windows(g, fz, NFUZZ);
-		for (int pi = NPAT; pi < NSEARCH; pi++) {
+		for (int pi = NPAT; pi < GRP_SLOT; pi++) {
 			int fi = pi - NPAT;
 			int recorded = gd && gd->npattern[pi] > 0;
 			if (!recorded && fi >= nfz)
@@ -2220,6 +2337,38 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 			fprintf(fp, "%s\n", end_tag_wr);
 		}
 		free_fuzz_windows(fz, nfz);
+
+		/* File-validated :grp-capture SEARCH PATTERN (pattern 7, slot
+		 * GRP_SLOT, mode 2). A recorded delta wins so user tweaks
+		 * round-trip; otherwise generate fresh from the original. */
+		{
+			fuzzwin_t gw;
+			int has_gw = gen_grp_window(g, &gw);
+			int recorded = gd && gd->npattern[GRP_SLOT] > 0;
+			if (recorded || has_gw) {
+				fprintf(fp, "=== SEARCH PATTERN %d ===\n",
+					GRP_SLOT + 1);
+				int poff = (gd && gd->pat_has_off[GRP_SLOT])
+					 ? gd->pat_off[GRP_SLOT]
+					 : recorded ? 0 : gw.offset;
+				int pmode = (gd && gd->pat_has_mode[GRP_SLOT])
+					  ? gd->pat_mode[GRP_SLOT]
+					  : recorded ? 2 : gw.mode;
+				fprintf(fp, "=== OFFSET %+d MODE %d ===\n",
+					poff, pmode);
+				if (recorded) {
+					for (int i = 0; i < gd->npattern[GRP_SLOT]; i++)
+						fprintf(fp, "%s\n",
+							gd->pattern[GRP_SLOT][i]);
+				} else {
+					for (int i = 0; i < gw.nlines; i++)
+						fprintf(fp, "%s\n", gw.lines[i]);
+				}
+				fprintf(fp, "%s\n", end_tag_wr);
+			}
+			if (has_gw)
+				free_fuzz_windows(&gw, 1);
+		}
 
 		/* EDIT COMMAND sections */
 #define WG_CONTENT(fp) do { \
@@ -3147,6 +3296,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		char **raw = NULL;
 		fuzzwin_t fz[NFUZZ];   /* owned fuzzed windows (plain -r path) */
 		int nfz = 0;
+		fuzzwin_t gw;          /* owned grp window (plain -r path) */
+		int has_gw = 0;
 		for (int pi = 0; pi < NSEARCH; pi++) {
 			if (g->ncustom_pat[pi] == 0)
 				continue;
@@ -3224,6 +3375,21 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].score = fz[i].score;
 				nps++;
 			}
+			/* File-validated grp-capture window (pattern 7, mode 2):
+			 * the ".*..*"-wrapped top of the hunk with the captured
+			 * last line as the target. off_final keeps its offset
+			 * (0 for change/delete, +1 for pure insert) intact. */
+			has_gw = nps < NSEARCH && gen_grp_window(g, &gw);
+			if (has_gw) {
+				ps[nps].lines = gw.lines;
+				ps[nps].nlines = gw.nlines;
+				ps[nps].pre_escaped = 1;
+				ps[nps].offset = gw.offset;
+				ps[nps].off_final = 1;
+				ps[nps].mode = gw.mode;
+				ps[nps].score = gw.score;
+				nps++;
+			}
 			/* Order the auto-default chain objectively strict to
 			 * loose by descending score (see specificity_score). A
 			 * superset window (e.g. whole hunk over del+post) always
@@ -3277,6 +3443,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				target_line > 0 ? target_line : 1, g->mark_id);
 			EMIT_SEP(out);
 			free_fuzz_windows(fz, nfz);
+			if (has_gw)
+				free_fuzz_windows(&gw, 1);
 			free(raw);
 			continue;
 		}
@@ -3289,6 +3457,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 					    target_line, first_search);
 		first_search = 0;
 		free_fuzz_windows(fz, nfz);
+		if (has_gw)
+			free_fuzz_windows(&gw, 1);
 		free(raw);
 	}
 
