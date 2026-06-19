@@ -59,8 +59,11 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 ........\\)....\\]..\\....q!.\\|...\\?.\\\\.....\\?\\|.\\(\\?:....q!......c..d.\\|x...y....\\]....!..cd..\\?..
 .	.\\(.L1.\\|...._B....E..R....E......W.1...A1,.....R........RE..G........ .A....
 ...............\\.\\)...A........Y..B....E..,
-...x_.....!..:..!\\\\.............!\\?......\\|..-.\\]\\+\\|..\\[.-...\\)\\).....\\(W.. . ....B., CY.\\)..${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+...x_.....!..:..!\\\\.............!\\?......\\|..-.\\]\\+\\|..\\[.-...\\)\\).....\\(W.. . ....B., CY.\\)..${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> \\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\.*?
+\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\?\\|left\\|lim\\|led\\|vis\\)\\\\.*?
+\\|\\[@&!dmj\\]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!\\]\\?\\|b\\[psx\\]\\?\\|p\\[uh\\]\\?\\|ac\\?\\|e\\[f!\\]\\?!\\?\\|f\\[-\\+><tdp\\]\\?\\|inc\\|i\\|sc!\\?\\|\\\\.*?
+(\\(\\?:g!\\?\\|s\\)\\[ \\\\t\\]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!\\]\\)\\?\\|u\\[czbd\\]\\|x!\\?\\|ya\\[!\\+\\]\\?\\|cm!\\?\\|cd\\?\\)\\?\",)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/cd/c[dx]/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 	return val;
 }
@@ -71,8 +74,10 @@ static void \\*eo_##opt\\(char \\*loc, char \\*cmd, char \\*arg\\) \\{ inner }
 ${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	return val;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1539:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1539${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1539:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	return val;.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1539:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1539${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	\\{\"cm!\", ec_cmap},
 	\\{\"cm\", ec_cmap},
 	\\{\"cd\", ec_chdir},
@@ -80,8 +85,10 @@ ${SEP}?%;f+ 	\\{\"cm!\", ec_cmap},
 	\\{\"j\", ec_join},
 	EO\\(ts\\),${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"cm!\", ec_cmap},
 	\\{\"cm\", ec_cmap},
-	\\{\"cd\", ec_chdir},${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1642:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1642${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"cd\", ec_chdir},${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1642:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"cm!\", ec_cmap},.*?
+	\\{\"cm\", ec_cmap},.*?
+(	\\{\"cd\", ec_chdir},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1642:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1642${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {

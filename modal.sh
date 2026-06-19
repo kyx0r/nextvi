@@ -59,8 +59,11 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 \\|\\[@..d..\\].=\\\\.\\?.0.....\\\\.\\{1....\\?..........\\?........a..\\|.\\[..\\].!....-\\+>.td.\\]\\?......\\|...\\?.\\\\
 \\(....\\?\\|..\\[..t...\\.\\).....\\|.e...\\\\..\\|r.\\?\\|.\\(\\?..!....\\]........d.......a...\\]...m!\\?\\|......,
 ...\\(..1.. .Y..B.....,..E.......E....1...A.,..E..RE.....,.... G.1,..... .A...,
-	.........\\\\.\\\\.....,.........S....D.....}.${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:296:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:296${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	.........\\\\.\\\\.....,.........S....D.....}.${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:296:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> \\(\\?:\\(\\[,;\\]#\\?\\)\\[ \\\\t\\]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\.*?
+\\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\.*?
+\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\?\\|left\\|lim\\|led\\|vis\\)\\\\.*?
+(\\|\\[@&!dmj\\]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!\\]\\?\\|b\\[psx\\]\\?\\|p\\[uh\\]\\?\\|ac\\?\\|e\\[f!\\]\\?!\\?\\|f\\[-\\+><tdp\\]\\?\\|inc\\|i\\|sc!\\?\\|\\\\)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:296:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:296${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/mj\\]/j]|md?/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:296:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 	return NULL;
 \\)
@@ -80,8 +83,10 @@ ${SEP}?%;f+ 	\\{\"g!\", ec_glob},
 	\\{\"q!\", ec_quit},
 	\\{\"q\", ec_quit},${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"g!\", ec_glob},
 	\\{\"g\", ec_glob},
-	EO\\(mpt\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1613:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1613${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	EO\\(mpt\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1613:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"g!\", ec_glob},.*?
+	\\{\"g\", ec_glob},.*?
+(	EO\\(mpt\\),)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1613:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1613${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a static void *ec_modal(char *loc, char *cmd, char *arg)
 {
@@ -483,8 +488,10 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL test:-1:m${ESC}${SEP}pr
 #include \"lbuf\\.c\"
 #include \"led\\.c\"${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> #include <sys/wait\\.h>
 #include \"vi\\.h\"
-#include \"conf\\.c\"${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:17:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:17${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+#include \"conf\\.c\"${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:17:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> #include <sys/wait\\.h>.*?
+#include \"vi\\.h\".*?
+(#include \"conf\\.c\")${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:17:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:17${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a #include \"modal.c\"
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:17:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}2q" > "$P2VIF"

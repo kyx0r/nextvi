@@ -52,8 +52,10 @@ static int eo_val\\(char \\*arg\\)
 	int val = atoi\\(arg\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	return xkwdrs \\? NULL : xserr;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1531${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	return xkwdrs \\? NULL : xserr;.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1531${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(seq\\),
 	\\{\"sc!\", ec_specials},
 	\\{\"sc\", ec_specials},
@@ -61,8 +63,10 @@ ${SEP}?%;f+ 	EO\\(seq\\),
 	\\{\"x!\", ec_write},
 	\\{\"x\", ec_write},${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(seq\\),
 	\\{\"sc!\", ec_specials},
-	\\{\"sc\", ec_specials},${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1633:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1633${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"sc\", ec_specials},${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1633:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(seq\\),.*?
+	\\{\"sc!\", ec_specials},.*?
+(	\\{\"sc\", ec_specials},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1633:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1633${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0i char **xenvp;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -123,8 +127,11 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1633:m2${ESC}${SEP
 ...x...p.a.gv\\[.\\].......;
 .........;
 .}
-.i...if..${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:234${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+.i...if..${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			close\\(pipefds1\\[0\\]\\);.*?
+			close\\(pipefds1\\[1\\]\\);.*?
+		}.*?
+(		execvp\\(argv\\[0\\], argv\\);)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:234${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
@@ -133,8 +140,8 @@ ${SEP}'0c 		if (xenvp)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:234:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> /\\* vi\\.h: shared definitions across files \\*/
 
 /\\* helper macros \\*/
-#define LEN\\(a\\)		\\(int\\)\\(sizeof\\(a\\) / sizeof\\(\\(a\\)\\[0\\]\\)\\)${ESC}${SEP}0??${ESC}${SEP}0??m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^/\\* vi\\.h: shared definitions across files \\*/\$${ESC}${SEP}1??${ESC}${SEP}1??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:1:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:1${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+#define LEN\\(a\\)		\\(int\\)\\(sizeof\\(a\\) / sizeof\\(\\(a\\)\\[0\\]\\)\\)${ESC}${SEP}0??${ESC}${SEP}0??m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^/\\* vi\\.h: shared definitions across files \\*/\$${ESC}${SEP}1??${ESC}${SEP}1??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:1:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}grp 1${ESC}${SEP}%;f> (/\\* vi\\.h: shared definitions across files \\*/)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:1:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:1${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a #ifdef __APPLE__
 #include <crt_externs.h>

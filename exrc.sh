@@ -52,8 +52,10 @@ _EO\\(grp, xgrp = \\(!\\*arg \\? !xgrp : eo_val\\(arg\\)\\) \\* 2; return NULL;\
 
 ${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\)
 EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
-EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1548:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1548${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1548:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\).*?
+EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\).*?
+(EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1548:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1548${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(ai\\),
 	\\{\"ac\", ec_setacreg},
 	\\{\"a\", ec_insert},
@@ -61,8 +63,10 @@ ${SEP}?%;f+ 	EO\\(ai\\),
 	\\{\"ef!\", ec_fuzz},
 	\\{\"ef\", ec_fuzz},${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(ai\\),
 	\\{\"ac\", ec_setacreg},
-	\\{\"a\", ec_insert},${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1591:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1591${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"a\", ec_insert},${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1591:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(ai\\),.*?
+	\\{\"ac\", ec_setacreg},.*?
+(	\\{\"a\", ec_insert},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1591:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1591${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	xgrec--;
 }
 
@@ -71,8 +75,10 @@ void ex_init\\(char \\*\\*files, int n\\)
 	xbufsalloc = MAX\\(n, xbufsalloc\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	xgrec--;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1817:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1817${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1817:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	xgrec--;.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1817:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1817${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		s = \\*\\(\\+\\+files\\);
 	} while \\(--n > 0\\);
 	xvis &= ~4;
@@ -84,11 +90,14 @@ ${SEP}?%;f+ 		s = \\*\\(\\+\\+files\\);
 .. ..i...\\(.-... ...
 ........ .4.
 .....\\(s.=......v..E..NIT...\\)
-...x..omm.n....${ESC}${SEP}5??${ESC}${SEP}5??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1829${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+...x..omm.n....${ESC}${SEP}5??${ESC}${SEP}5??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		s = \\*\\(\\+\\+files\\);.*?
+	} while \\(--n > 0\\);.*?
+	xvis &= ~4;.*?
+(	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1829${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		ex_command\\(s\\)
-}${ESC}${SEP}0??${ESC}${SEP}0??m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		ex_command\\(s\\)\$${ESC}${SEP}1??${ESC}${SEP}1??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1830${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+}${ESC}${SEP}0??${ESC}${SEP}0??m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		ex_command\\(s\\)\$${ESC}${SEP}1??${ESC}${SEP}1??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}grp 1${ESC}${SEP}%;f+ (		ex_command\\(s\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1830${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0i int xexrc = 0;			/* read .exrc from the current directory */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}

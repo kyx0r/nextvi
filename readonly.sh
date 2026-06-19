@@ -59,8 +59,11 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 ........\\)....\\]..\\....q!.\\|...\\?.\\\\.....\\?\\|.\\(\\?:....q!......c..d.\\|x...y....\\]....!..cd..\\?..
 .	.\\(.L1.\\|...._B....E..R....E......W.1...A1,.....R........RE..G........ .A....
 ...............\\.\\)...A........Y..B....E..,
-...x_.....!..:..!\\\\.............!\\?......\\|..-.\\]\\+\\|..\\[.-...\\)\\).....\\(W.. . ....B., CY.\\)..${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+...x_.....!..:..!\\\\.............!\\?......\\|..-.\\]\\+\\|..\\[.-...\\)\\).....\\(W.. . ....B., CY.\\)..${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> \\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\.*?
+\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\?\\|left\\|lim\\|led\\|vis\\)\\\\.*?
+\\|\\[@&!dmj\\]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!\\]\\?\\|b\\[psx\\]\\?\\|p\\[uh\\]\\?\\|ac\\?\\|e\\[f!\\]\\?!\\?\\|f\\[-\\+><tdp\\]\\?\\|inc\\|i\\|sc!\\?\\|\\\\.*?
+(\\(\\?:g!\\?\\|s\\)\\[ \\\\t\\]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!\\]\\)\\?\\|u\\[czbd\\]\\|x!\\?\\|ya\\[!\\+\\]\\?\\|cm!\\?\\|cd\\?\\)\\?\",)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/rd/ro|rd/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> int xleft;			/\\* the first visible column \\*/
 int xvis;			/\\* startup flags \\*/
@@ -74,8 +77,10 @@ ${SEP}?%;f+ 	bufs\\[i\\]\\.top = 0;
 
 ${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	bufs\\[i\\]\\.top = 0;
 	bufs\\[i\\]\\.td = \\+1;
-	bufs\\[i\\]\\.mtime = -1;${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:166:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:166${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	bufs\\[i\\]\\.mtime = -1;${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:166:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	bufs\\[i\\]\\.top = 0;.*?
+	bufs\\[i\\]\\.td = \\+1;.*?
+(	bufs\\[i\\]\\.mtime = -1;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:166:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:166${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		bufs_switch\\(bufs_open\\(arg\\+cd, len\\)\\);
 		cd = 3; /\\* XXX: quick hack to indicate new lbuf \\*/
 	}
@@ -83,8 +88,10 @@ ${SEP}?%;f+ 		bufs_switch\\(bufs_open\\(arg\\+cd, len\\)\\);
 	if \\(cd == 3 \\|\\| \\(!rd && fd >= 0\\)\\) \\{
 		ex_bufpostfix\\(ex_buf, arg\\[0\\]\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		bufs_switch\\(bufs_open\\(arg\\+cd, len\\)\\);
 		cd = 3; /\\* XXX: quick hack to indicate new lbuf \\*/
-	}${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:421:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:421${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	}${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:421:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		bufs_switch\\(bufs_open\\(arg\\+cd, len\\)\\);.*?
+		cd = 3; /\\* XXX: quick hack to indicate new lbuf \\*/.*?
+(	})${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:421:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:421${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		free\\(ibuf\\.s\\);
 	} else \\{
 		if \\(!strchr\\(cmd, '!'\\)\\) \\{
@@ -92,8 +99,10 @@ ${SEP}?%;f+ 		free\\(ibuf\\.s\\);
 				return \"write failed: file changed\";
 			if \\(arg\\[0\\] && mtime\\(path\\) >= 0\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		free\\(ibuf\\.s\\);
 	} else \\{
-		if \\(!strchr\\(cmd, '!'\\)\\) \\{${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:750:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:750${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		if \\(!strchr\\(cmd, '!'\\)\\) \\{${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:750:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		free\\(ibuf\\.s\\);.*?
+	} else \\{.*?
+(		if \\(!strchr\\(cmd, '!'\\)\\) \\{)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:750:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:750${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	return xkwdrs \\? NULL : xserr;
 }
 
@@ -102,8 +111,10 @@ static int eo_val\\(char \\*arg\\)
 	int val = atoi\\(arg\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	return xkwdrs \\? NULL : xserr;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1531${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	return xkwdrs \\? NULL : xserr;.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1531${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	\\{\"reg\", ec_regprint},
 	\\{\"re\", ec_krsset},
 	\\{\"rd\", ec_undoredo},
@@ -111,8 +122,10 @@ ${SEP}?%;f+ 	\\{\"reg\", ec_regprint},
 	\\{\"wq!\", ec_write},
 	\\{\"wq\", ec_write},${ESC}${SEP}0??${ESC}${SEP}0??+2m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"reg\", ec_regprint},
 	\\{\"re\", ec_krsset},
-	\\{\"rd\", ec_undoredo},${ESC}${SEP}1??${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1620:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1620${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"rd\", ec_undoredo},${ESC}${SEP}1??${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1620:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"reg\", ec_regprint},.*?
+	\\{\"re\", ec_krsset},.*?
+(	\\{\"rd\", ec_undoredo},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1620:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1620${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0i char readonly = 0;		/* commandline readonly option */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -139,8 +152,10 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1620:m5${ESC}${SEP
 				xvis = 0;
 			else \\{${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 				xvis \\|= 4;
 			else if \\(argv\\[i\\]\\[j\\] == 'a'\\)
-				xvis \\|= 8;${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1854:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1854${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+				xvis \\|= 8;${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1854:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				xvis \\|= 4;.*?
+			else if \\(argv\\[i\\]\\[j\\] == 'a'\\).*?
+(				xvis \\|= 8;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1854:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1854${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				xvis = 0;
 			else \\{
 				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\\]\\);
@@ -160,8 +175,11 @@ ${SEP}?%;f+ 				xvis = 0;
 .	.....i..f.s.de.., ......i..\\......g.. .......................n\".....v...\\).
 ....re.... .X.._..I..R..
 		..
-	..${ESC}${SEP}5??${ESC}${SEP}5??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1859:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1859${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	..${ESC}${SEP}5??${ESC}${SEP}5??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1859:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				xvis = 0;.*?
+			else \\{.*?
+				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\\]\\);.*?
+(				fprintf\\(stderr, \"Nextvi-6\\.0 Usage: %s \\[-aemsv\\] \\[file \\.\\.\\.\\]\\\\n\", argv\\[0\\]\\);)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1859:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1859${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 			else if (argv[i][j] == 'R')
 				readonly = 1;
@@ -173,12 +191,17 @@ ${SEP}'1s/ms/mRs/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1
 /\\* ex options \\*/
 extern int xleft;${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	int plen, row, off, top;
 	long mtime;			/\\* modification time \\*/
-	signed char td;			/\\* text direction \\*/${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:405:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:405${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}%;f+ /\\* filesystem \\*/
+	signed char td;			/\\* text direction \\*/${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:405:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int plen, row, off, top;.*?
+	long mtime;			/\\* modification time \\*/.*?
+(	signed char td;			/\\* text direction \\*/)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:405:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:405${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?%;f+ /\\* filesystem \\*/
 extern rset \\*fsincl;
-void dir_calc\\(char \\*path\\);${SEP}??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:546${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}+2m 1${SEP}${LB}
+void dir_calc\\(char \\*path\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ /\\* filesystem \\*/.*?
+extern rset \\*fsincl;.*?
+(void dir_calc\\(char \\*path\\);)${ESC}${SEP}grp 0${ESC}${SEP}1??${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:546:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:546${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}${LB}
 ${SEP}'0a 	char readonly;			/* read only */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:405:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a extern char readonly;

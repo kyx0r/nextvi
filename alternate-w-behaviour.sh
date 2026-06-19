@@ -45,8 +45,10 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 		var = mv == 'W';
 		for \\(i = 0; i < cnt; i\\+\\+\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	case 'w':
 	case 'W':
-		var = mv == 'W';${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:604${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		var = mv == 'W';${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	case 'w':.*?
+	case 'W':.*?
+(		var = mv == 'W';)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:604${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\)
 			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\)
 				break;
@@ -60,8 +62,9 @@ ${SEP}?%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\)
 ..	.. ..b...w..d.eg\\(x.....r. .........\\+...r... .f.\\).
 	..	b...k.
 ....e...
-.cas......${ESC}${SEP}5??${ESC}${SEP}5??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+.cas......${ESC}${SEP}5??${ESC}${SEP}5??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\).*?
+(			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 		if (cmd >= 0 && cnt == 1)
 			dir = 2;

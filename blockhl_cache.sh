@@ -47,8 +47,10 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 		for \\(; \\*s; n_ins\\+\\+\\) \\{
 			int l = linelength\\(s\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> static int lbuf_replace\\(struct lbuf \\*lb, sbuf \\*sb, char \\*s, struct lopt \\*lo, int n_del, int n_ins\\)
 \\{
-	int i, pos = lo->pos;${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:101:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:101${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	int i, pos = lo->pos;${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:101:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> static int lbuf_replace\\(struct lbuf \\*lb, sbuf \\*sb, char \\*s, struct lopt \\*lo, int n_del, int n_ins\\).*?
+\\{.*?
+(	int i, pos = lo->pos;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:101:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:101${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 	syn_blockhl_invalidate();
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:101:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> int ftidx;
@@ -59,8 +61,10 @@ static int syn_initft\\(int fti, int n, char \\*name, int flg\\)
 	if \\(fti >= ftmidx\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> int ftidx;
 int syn_blockhl;
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:251:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:251${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:251:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> int ftidx;.*?
+int syn_blockhl;.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:251:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:251${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	goto default_hl;
 }
 
@@ -69,8 +73,10 @@ void syn_scdir\\(int scdir\\)
 	if \\(!scdir \\|\\| abs\\(scdir\\) > xrows \\|\\| \\(last_scdir > 0\\) != \\(scdir > 0\\)\\) \\{${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	goto default_hl;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:292:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:292${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:292:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	goto default_hl;.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:292:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:292${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ void syn_scdir\\(int scdir\\)
 \\{
 	if \\(!scdir \\|\\| abs\\(scdir\\) > xrows \\|\\| \\(last_scdir > 0\\) != \\(scdir > 0\\)\\) \\{
@@ -78,8 +84,10 @@ ${SEP}?%;f+ void syn_scdir\\(int scdir\\)
 		syn_blockhl = -1;
 	}${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ void syn_scdir\\(int scdir\\)
 \\{
-	if \\(!scdir \\|\\| abs\\(scdir\\) > xrows \\|\\| \\(last_scdir > 0\\) != \\(scdir > 0\\)\\) \\{${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:295:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:295${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	if \\(!scdir \\|\\| abs\\(scdir\\) > xrows \\|\\| \\(last_scdir > 0\\) != \\(scdir > 0\\)\\) \\{${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:295:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ void syn_scdir\\(int scdir\\).*?
+\\{.*?
+(	if \\(!scdir \\|\\| abs\\(scdir\\) > xrows \\|\\| \\(last_scdir > 0\\) != \\(scdir > 0\\)\\) \\{)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:295:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:295${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 
 void syn_highlight\\(int \\*att, char \\*s, int n\\)
 \\{
@@ -99,8 +107,11 @@ void syn_highlight\\(int \\*att, char \\*s, int n\\)
 ..n..........idx,........ ...y...lo....,..l....o........
 ..e.;
 .r...........tm.....i..r..
-.i.........s...........c.t....i..t. s...c.${ESC}${SEP}5??${ESC}${SEP}5??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:313${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+.i.........s...........c.t....i..t. s...c.${ESC}${SEP}5??${ESC}${SEP}5??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ .*?
+void syn_highlight\\(int \\*att, char \\*s, int n\\).*?
+\\{.*?
+(	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:313${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	fti\\+\\+;
 	if \\(ftmidx > fti && ftmap\\[fti-1\\]\\.ft == ftmap\\[fti\\]\\.ft\\)
 		goto re;
@@ -108,8 +119,10 @@ ${SEP}?%;f+ 	fti\\+\\+;
 		return;
 	for \\(j = 0; j < n; j\\+\\+\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	fti\\+\\+;
 	if \\(ftmidx > fti && ftmap\\[fti-1\\]\\.ft == ftmap\\[fti\\]\\.ft\\)
-		goto re;${ESC}${SEP}1??${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:390:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:390${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		goto re;${ESC}${SEP}1??${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:390:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	fti\\+\\+;.*?
+	if \\(ftmidx > fti && ftmap\\[fti-1\\]\\.ft == ftmap\\[fti\\]\\.ft\\).*?
+(		goto re;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:390:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:390${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a /* block-highlight pair cache, keyed by lbuf line pointer */
 struct hl_cache_entry {
@@ -271,8 +284,10 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:390:m4${ESC}${SEP
 	static char ch\\[5\\] = \"~\";
 	if \\(xmpt == 1 && !vi_status && row == xtop \\+ xrows - 1\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> static void vi_drawrow\\(int row\\)
 \\{
-	int l1, i, i1, lnnum = vi_lnnum;${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:130:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:130${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	int l1, i, i1, lnnum = vi_lnnum;${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:130:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> static void vi_drawrow\\(int row\\).*?
+\\{.*?
+(	int l1, i, i1, lnnum = vi_lnnum;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:130:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:130${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		if \\(row != xrow\\+1 \\|\\| !c \\|\\| \\*c == '\\\\n'\\) \\{
 			vi_rshift = \\(row > xrow\\+1 && c && \\*c != '\\\\n'\\);
 			s = lbuf_get\\(xb, row - vi_rshift\\);
@@ -280,16 +295,20 @@ ${SEP}?%;f+ 		if \\(row != xrow\\+1 \\|\\| !c \\|\\| \\*c == '\\\\n'\\) \\{
 		}
 		char tmp\\[xcols\\+3\\], snum\\[32\\];${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		if \\(row != xrow\\+1 \\|\\| !c \\|\\| \\*c == '\\\\n'\\) \\{
 			vi_rshift = \\(row > xrow\\+1 && c && \\*c != '\\\\n'\\);
-			s = lbuf_get\\(xb, row - vi_rshift\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:140:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:140${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+			s = lbuf_get\\(xb, row - vi_rshift\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:140:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		if \\(row != xrow\\+1 \\|\\| !c \\|\\| \\*c == '\\\\n'\\) \\{.*?
+			vi_rshift = \\(row > xrow\\+1 && c && \\*c != '\\\\n'\\);.*?
+(			s = lbuf_get\\(xb, row - vi_rshift\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:140:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:140${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		return;
 	}
 	s = lbuf_get\\(xb, row\\);
 	skip:
 	rstate \\+= row != xrow;${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		return;
 	}
-	s = lbuf_get\\(xb, row\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:170${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	s = lbuf_get\\(xb, row\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		return;.*?
+	}.*?
+(	s = lbuf_get\\(xb, row\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:170${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	skip:
 	rstate \\+= row != xrow;
 	if \\(!s\\)
@@ -298,8 +317,10 @@ ${SEP}?%;f+ 	skip:
 	rstate \\+= row != xrow;${ESC}${SEP}2??${ESC}${SEP}2??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:173:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	if \\(!s\\)\$${ESC}${SEP}3??${ESC}${SEP}3??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:173:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		s = row \\? ch : ch\\+1;\$${ESC}${SEP}4??${ESC}${SEP}4??-1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:173:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ .s...:
 	.....e... ... ........
 ......s\\)
-.	. . ... .......c....${ESC}${SEP}5??${ESC}${SEP}5??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:173:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:173${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+.	. . ... .......c....${ESC}${SEP}5??${ESC}${SEP}5??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:173:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	skip:.*?
+	rstate \\+= row != xrow;.*?
+(	if \\(!s\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:173:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:173${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		s = row \\? ch : ch\\+1;
 	else if \\(lnnum && xled\\) \\{
 		char tmp\\[32\\], tmp1\\[32\\], \\*p;
@@ -313,20 +334,23 @@ ${SEP}?%;f+ 		s = row \\? ch : ch\\+1;
 ..... if \\(.n....&&...e....
 ....ar.....3.., ...1....,...;
 ........p............=...
-	... ....u.... .........m....\\)..${ESC}${SEP}5??${ESC}${SEP}5??+1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:175${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	... ....u.... .........m....\\)..${ESC}${SEP}5??${ESC}${SEP}5??+1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		s = row \\? ch : ch\\+1;.*?
+(	else if \\(lnnum && xled\\) \\{)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:175${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		vi_lncol = dir_context\\(s\\) < 0 \\? 0 : l1;
 		memset\\(c, ' ', l1 - \\(c - tmp\\)\\);
 		c\\[l1 - \\(c - tmp\\)\\] = '\\\\0';
 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		vi_lncol = dir_context\\(s\\) < 0 \\? 0 : l1;
 		memset\\(c, ' ', l1 - \\(c - tmp\\)\\);
-		c\\[l1 - \\(c - tmp\\)\\] = '\\\\0';${ESC}${SEP}1??${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:193:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:193${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		c\\[l1 - \\(c - tmp\\)\\] = '\\\\0';${ESC}${SEP}1??${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:193:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		vi_lncol = dir_context\\(s\\) < 0 \\? 0 : l1;.*?
+		memset\\(c, ' ', l1 - \\(c - tmp\\)\\);.*?
+(		c\\[l1 - \\(c - tmp\\)\\] = '\\\\0';)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:193:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:193${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\)
-		syn_setft\\(nn_ft\\);${ESC}${SEP}0??${ESC}${SEP}0??m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)\$${ESC}${SEP}1??${ESC}${SEP}1??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:194:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:194${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		syn_setft\\(nn_ft\\);${ESC}${SEP}0??${ESC}${SEP}0??m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)\$${ESC}${SEP}1??${ESC}${SEP}1??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:194:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}grp 1${ESC}${SEP}%;f+ (		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:194:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:194${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		restore\\(ftidx\\)
 		return;
 	}
@@ -338,8 +362,8 @@ ${SEP}?%;f+ 	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)
 	rstate = rstates;
 }
 
-${ESC}${SEP}0??${ESC}${SEP}0??m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)\$${ESC}${SEP}1??${ESC}${SEP}1??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:213${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}0??${ESC}${SEP}0??m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)\$${ESC}${SEP}1??${ESC}${SEP}1??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}grp 1${ESC}${SEP}%;f+ (	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:213${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 	int s_row = -1;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:130:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -366,8 +390,10 @@ void syn_init\\(void\\);
 /\\* uc\\.c: utf-8 helper functions \\*/
 extern unsigned char utf8_length\\[256\\];${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> int syn_findhl\\(int id\\);
 int syn_addhl\\(char \\*reg, int id\\);
-void syn_init\\(void\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:263:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:263${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+void syn_init\\(void\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:263:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> int syn_findhl\\(int id\\);.*?
+int syn_addhl\\(char \\*reg, int id\\);.*?
+(void syn_init\\(void\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:263:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:263${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a void syn_setrow(struct lbuf *lb, int row);
 void syn_blockhl_invalidate(void);

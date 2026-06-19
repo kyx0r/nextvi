@@ -60,15 +60,20 @@ ${ESC}${SEP}2??${ESC}${SEP}2??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:
 .... .x.i.i....ar ........ .....\\)
 \\{
 ....f...........X\\(n. .b.fs.lloc\\).
-	.c..etb..s....N..L. ......\"..;${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1818${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	.c..etb..s....N..L. ......\"..;${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	xgrec--;.*?
+}.*?
+.*?
+(void ex_init\\(char \\*\\*files, int n\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1818${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	xvis &= ~4;
 	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\)
 		ex_command\\(s\\)
 }${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	xvis &= ~4;
 	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\)
-		ex_command\\(s\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1830${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		ex_command\\(s\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	xvis &= ~4;.*?
+	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\).*?
+(		ex_command\\(s\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1830${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/n\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1818:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a 	for (int i = 0; i < cmdnum; i++)
@@ -92,8 +97,11 @@ int main\\(int argc, char \\*argv\\[\\]\\)
 .... .....
 ...t.p_......s\\(..
 	.i.........
-...n...i..\\).${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1834:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1834${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+...n...i..\\).${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1834:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> .*?
+int main\\(int argc, char \\*argv\\[\\]\\).*?
+\\{.*?
+(	int i, j;)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1834:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1834${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				xvis \\|= 8;
 			else if \\(argv\\[i\\]\\[j\\] == 'v'\\)
 				xvis = 0;
@@ -105,8 +113,11 @@ ${SEP}?%;f+ 				xvis \\|= 8;
 ........i.....g..i..j...=.....
 .	..x.......;
 ....l....
-........nt.\\(.....r...U.k..............%c.....a.......j\\]\\);${ESC}${SEP}5??${ESC}${SEP}5??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1857:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1857${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+........nt.\\(.....r...U.k..............%c.....a.......j\\]\\);${ESC}${SEP}5??${ESC}${SEP}5??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1857:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				xvis \\|= 8;.*?
+			else if \\(argv\\[i\\]\\[j\\] == 'v'\\).*?
+				xvis = 0;.*?
+(			else \\{)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1857:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1857${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\\]\\);
 				fprintf\\(stderr, \"Nextvi-6\\.0 Usage: %s \\[-aemsv\\] \\[file \\.\\.\\.\\]\\\\n\", argv\\[0\\]\\);
 				return EXIT_FAILURE;
@@ -120,8 +131,9 @@ ${SEP}?%;f+ 				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\
 	.......ntf..t...., .............s...:.%...........\\[.i.e......n\"...r...0...
 ...	.et... .......I.....
 	...
-	..${ESC}${SEP}5??${ESC}${SEP}5??+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1859:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1859${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	..${ESC}${SEP}5??${ESC}${SEP}5??+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1859:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				fprintf\\(stderr, \"Unknown option: -%c\\\\n\", argv\\[i\\]\\[j\\]\\);.*?
+(				fprintf\\(stderr, \"Nextvi-6\\.0 Usage: %s \\[-aemsv\\] \\[file \\.\\.\\.\\]\\\\n\", argv\\[0\\]\\);)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1859:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1859${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		term_init\\(\\);
 	if \\(xvis & 8\\)
 		term_scrh;
@@ -141,8 +153,11 @@ ${SEP}?%;f+ 		term_init\\(\\);
 .e...n........\\+ .,..r.. . ...
 	i......s.....
 .....\\).
-	....${ESC}${SEP}5??${ESC}${SEP}5??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1869:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1869${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	....${ESC}${SEP}5??${ESC}${SEP}5??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1869:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		term_init\\(\\);.*?
+	if \\(xvis & 8\\).*?
+		term_scrh;.*?
+(	ex_init\\(argv \\+ i, argc - i\\);)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1869:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1869${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
@@ -180,8 +195,11 @@ void ex_krsset\\(char \\*kwd, int dir\\);${ESC}${SEP}4??${ESC}${SEP}4??-1m 0${ES
 v....e.....t...a...........i....\\).
 v.i...._b.f......x...ru........p,.......e.r..
 ..t .x_..s\\(......\\*..s. ......i..;
-......._k.sset\\(ch....k.., ........;${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:482:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:482${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+......._k.sset\\(ch....k.., ........;${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:482:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> void ex_cprint\\(char \\*line, char \\*ft, int r, int c, int left, int flg\\);.*?
+#define ex_cprint2\\(line, ft, r, c, left, flg\\) \\{ RS\\(2, ex_cprint\\(line, ft, r, c, left, flg\\)\\); }.*?
+#define ex_print\\(line, ft\\) \\{ RS\\(2, ex_cprint\\(line, ft, -1, 0, 0, 1\\)\\); }.*?
+(void ex_init\\(char \\*\\*files, int n\\);)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:482:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:482${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/n\\)/n, char** cmds, int cmdnum)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:482:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF"

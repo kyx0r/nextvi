@@ -59,8 +59,11 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 ...a.\\|......i.h..r...c\\|.r............s.q.......or....h..l..r.\\?\\|.e..\\|..m..e...i.\\).
 \\|....d......\\\\\\?..,.}...........!......s.........\\?...\\?.....\\].!......>............\\|s...\\|.
 .\\?........ ...........\\?.r......\\?..d\\?\\|...:..\\|...\\]...u\\[cz.d.\\|.!.....!.\\]\\?.......d.\\)\\?..
-.	.\\(BL. \\|...N.... ....R.,..E........1....1..RE........1, ... G....C..,.M.....${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:295:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:295${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+.	.\\(BL. \\|...N.... ....R.,..E........1....1..RE........1, ... G....C..,.M.....${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:295:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> \\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.%\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\[0-9\\]\\+\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t\\]\\*\\)\\*\\)\\[ \\\\t\\]\\*\\\\.*?
+\\(\\?:\\(\\[,;\\]#\\?\\)\\[ \\\\t\\]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\.*?
+\\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\.*?
+(\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\?\\|left\\|lim\\|led\\|vis\\)\\\\)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:295:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:295${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/wp/wmp/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:295:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> int xhlw;			/\\* highlight current word \\*/
 int xhlp;			/\\* highlight \\{}\\[\\]\\(\\) pair \\*/
@@ -69,8 +72,10 @@ int xled = 1;			/\\* use the line editor \\*/
 int xtd = \\+1;			/\\* current text direction \\*/
 int xshape = 1;			/\\* perform letter shaping \\*/${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> int xhlw;			/\\* highlight current word \\*/
 int xhlp;			/\\* highlight \\{}\\[\\]\\(\\) pair \\*/
-int xhlr;			/\\* highlight text in reverse direction \\*/${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:9:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:9${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+int xhlr;			/\\* highlight text in reverse direction \\*/${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:9:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> int xhlw;			/\\* highlight current word \\*/.*?
+int xhlp;			/\\* highlight \\{}\\[\\]\\(\\) pair \\*/.*?
+(int xhlr;			/\\* highlight text in reverse direction \\*/)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:9:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:9${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\)
 EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
 EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)
@@ -79,8 +84,10 @@ _EO\\(grp, xgrp = \\(!\\*arg \\? !xgrp : eo_val\\(arg\\)\\) \\* 2; return NULL;\
 
 ${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\)
 EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
-EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1548:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1548${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1548:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\).*?
+EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\).*?
+(EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1548:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1548${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(ts\\),
 	EO\\(td\\),
 	EO\\(order\\),
@@ -88,8 +95,10 @@ ${SEP}?%;f+ 	EO\\(ts\\),
 	EO\\(hlw\\),
 	EO\\(hlp\\),${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(ts\\),
 	EO\\(td\\),
-	EO\\(order\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1647:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1647${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	EO\\(order\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1647:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(ts\\),.*?
+	EO\\(td\\),.*?
+(	EO\\(order\\),)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1647:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1647${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a int xhlm;			/* highlight marks */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:9:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -103,8 +112,10 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1647:m2${ESC}${SEP
 			int row = xrow, off = xoff, row1, off1;
 			led_att la;${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 				word = cs;
 			}
-		}${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1756:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1756${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		}${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1756:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				word = cs;.*?
+			}.*?
+(		})${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1756:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1756${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 		if (xhlm) {
 			int mrow, moff;

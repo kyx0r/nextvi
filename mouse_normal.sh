@@ -59,8 +59,11 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 ...a.\\|......i.h..r...c\\|.r............s.q.......or....h..l..r.\\?\\|.e..\\|..m..e...i.\\).
 \\|....d......\\\\\\?..,.}...........!......s.........\\?...\\?.....\\].!......>............\\|s...\\|.
 .\\?........ ...........\\?.r......\\?..d\\?\\|...:..\\|...\\]...u\\[cz.d.\\|.!.....!.\\]\\?.......d.\\)\\?..
-.	.\\(BL. \\|...N.... ....R.,..E........1....1..RE........1, ... G....C..,.M.....${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:295:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:295${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+.	.\\(BL. \\|...N.... ....R.,..E........1....1..RE........1, ... G....C..,.M.....${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:295:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> \\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.%\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\[0-9\\]\\+\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t\\]\\*\\)\\*\\)\\[ \\\\t\\]\\*\\\\.*?
+\\(\\?:\\(\\[,;\\]#\\?\\)\\[ \\\\t\\]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\.*?
+\\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\.*?
+(\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\?\\|left\\|lim\\|led\\|vis\\)\\\\)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:295:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:295${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/t\\|s/t|ms|s/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:295:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> int xleft;			/\\* the first visible column \\*/
 int xvis;			/\\* startup flags \\*/
@@ -84,8 +87,10 @@ ${SEP}?%;f+ 	\\{\"g!\", ec_glob},
 	\\{\"q!\", ec_quit},
 	\\{\"q\", ec_quit},${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"g!\", ec_glob},
 	\\{\"g\", ec_glob},
-	EO\\(mpt\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1613:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1613${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	EO\\(mpt\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1613:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"g!\", ec_glob},.*?
+	\\{\"g\", ec_glob},.*?
+(	EO\\(mpt\\),)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1613:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1613${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0i int xms = 1;			/* mouse in normal mode */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -109,8 +114,10 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1613:m2${ESC}${SEP
 ${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	return pos - xleft;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:98:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:98${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:98:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	return pos - xleft;.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:98:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:98${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	}
 	preserve\\(int, xleft, xleft = 0;\\)
 	preserve\\(int, xtd, xtd = 2;\\)
@@ -118,8 +125,10 @@ ${SEP}?%;f+ 	}
 			&off, kmap, is, 0, xrow, xtop, flg\\);
 	restore\\(xtd\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	}
 	preserve\\(int, xleft, xleft = 0;\\)
-	preserve\\(int, xtd, xtd = 2;\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:667:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:667${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	preserve\\(int, xtd, xtd = 2;\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:667:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	}.*?
+	preserve\\(int, xleft, xleft = 0;\\).*?
+(	preserve\\(int, xtd, xtd = 2;\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:667:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:667${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);
 	restore\\(xtd\\)
 	restore\\(xleft\\)
@@ -127,8 +136,10 @@ ${SEP}?%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);
 		lbuf_dedup\\(tempbufs\\[0\\]\\.lb, sb->s \\+ n, sb->s_n - n\\)
 		temp_pos\\(0, -1, 0, 0\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);
 	restore\\(xtd\\)
-	restore\\(xleft\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:671:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:671${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	restore\\(xleft\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:671:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);.*?
+	restore\\(xtd\\).*?
+(	restore\\(xleft\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:671:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:671${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \\*postref = NULL;
 	ins_state is;
@@ -136,8 +147,10 @@ ${SEP}?%;f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 		ins_init\\(is\\)
 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,${ESC}${SEP}0??${ESC}${SEP}0??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \\*postref = NULL;
-	ins_state is;${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:685:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:685${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	ins_state is;${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:685:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
+	char \\*postref = NULL;.*?
+(	ins_state is;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:685:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:685${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				sb->s\\[\\*pren\\] = \\*post;
 			free\\(postref\\);
 			xrow = crow;
@@ -145,8 +158,10 @@ ${SEP}?%;f+ 				sb->s\\[\\*pren\\] = \\*post;
 		}
 		sbuf_chr\\(sb, key\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				sb->s\\[\\*pren\\] = \\*post;
 			free\\(postref\\);
-			xrow = crow;${ESC}${SEP}1??${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:698:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:698${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+			xrow = crow;${ESC}${SEP}1??${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:698:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				sb->s\\[\\*pren\\] = \\*post;.*?
+			free\\(postref\\);.*?
+(			xrow = crow;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:698:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:698${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a /* map terminal column number to cursor horizontal position (inverse of led_pos) */
 int led_col(char *s, int col)
@@ -175,8 +190,10 @@ ${SEP}?%;f+ 	}
 
 void term_done\\(void\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	}
 	xcols = xcols \\? xcols : 80;
-	xrows = xrows \\? xrows : 25;${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:33:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:33${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	xrows = xrows \\? xrows : 25;${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:33:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	}.*?
+	xcols = xcols \\? xcols : 80;.*?
+(	xrows = xrows \\? xrows : 25;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:33:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:33${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ \\{
 	if \\(!term_sbuf\\)
 		return;
@@ -184,8 +201,10 @@ ${SEP}?%;f+ \\{
 	sbuf_free\\(term_sbuf\\)
 	tcsetattr\\(0, 0, &termios\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ \\{
 	if \\(!term_sbuf\\)
-		return;${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:39:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:39${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		return;${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:39:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ \\{.*?
+	if \\(!term_sbuf\\).*?
+(		return;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:39:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:39${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	ibuf_cnt \\+= n;
 }
 
@@ -194,8 +213,10 @@ int term_read\\(int winch\\)
 	static struct pollfd ufd = \\{STDIN_FILENO, POLLIN};${ESC}${SEP}0??${ESC}${SEP}0??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	ibuf_cnt \\+= n;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:139:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:139${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:139:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	ibuf_cnt \\+= n;.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:139:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:139${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0i int xmouse_col, xmouse_row;
 void term_mouse_on(void)
@@ -317,8 +338,10 @@ ${SEP}?%;f+ 	int mv, i, dir, var;
 	case ',':
 	case ';':${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	int mv, i, dir, var;
 
-	mv = term_read\\(0\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:522:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:522${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	mv = term_read\\(0\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:522:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	int mv, i, dir, var;.*?
+.*?
+(	mv = term_read\\(0\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:522:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:522${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
@@ -356,8 +379,10 @@ void term_commit\\(void\\);
 char \\*term_att\\(int att\\);
 void term_push\\(char \\*s, unsigned int n\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> void term_kill\\(void\\);
 void term_room\\(int n\\);
-int term_read\\(int winch\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:325:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:325${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+int term_read\\(int winch\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:325:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> void term_kill\\(void\\);.*?
+void term_room\\(int n\\);.*?
+(int term_read\\(int winch\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:325:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:325${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ #define led_crender\\(msg, row, col, beg, end\\) _led_render\\(msg, row, col, beg, end, term_kill\\(\\);\\)
 char \\*led_read\\(int \\*kmap, int c\\);
 int led_pos\\(char \\*s, int pos\\);
@@ -365,8 +390,10 @@ void led_done\\(void\\);
 
 /\\* ex\\.c: command mode \\*/${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ #define led_crender\\(msg, row, col, beg, end\\) _led_render\\(msg, row, col, beg, end, term_kill\\(\\);\\)
 char \\*led_read\\(int \\*kmap, int c\\);
-int led_pos\\(char \\*s, int pos\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:395:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:395${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+int led_pos\\(char \\*s, int pos\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:395:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ #define led_crender\\(msg, row, col, beg, end\\) _led_render\\(msg, row, col, beg, end, term_kill\\(\\);\\).*?
+char \\*led_read\\(int \\*kmap, int c\\);.*?
+(int led_pos\\(char \\*s, int pos\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:395:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:395${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	long mtime;			/\\* modification time \\*/
 	signed char td;			/\\* text direction \\*/
 };
@@ -374,8 +401,10 @@ ${SEP}?%;f+ 	long mtime;			/\\* modification time \\*/
 extern int xleft;
 extern int xvis;${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	long mtime;			/\\* modification time \\*/
 	signed char td;			/\\* text direction \\*/
-};${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:406:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:406${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+};${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:406:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	long mtime;			/\\* modification time \\*/.*?
+	signed char td;			/\\* text direction \\*/.*?
+(};)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:406:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:406${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ extern int xlim;
 extern int xseq;
 extern int xerr;
@@ -383,8 +412,10 @@ extern int xerr;
 extern int xquit;
 extern int xrow, xoff, xtop;${ESC}${SEP}0??${ESC}${SEP}0??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ extern int xlim;
 extern int xseq;
-extern int xerr;${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:429:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:429${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+extern int xerr;${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:429:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ extern int xlim;.*?
+extern int xseq;.*?
+(extern int xerr;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:429:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:429${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a int term_try_mouse(void);
 void term_mouse_on(void);

@@ -59,8 +59,11 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 ........\\)....\\]..\\....q!.\\|...\\?.\\\\.....\\?\\|.\\(\\?:....q!......c..d.\\|x...y....\\]....!..cd..\\?..
 .	.\\(.L1.\\|...._B....E..R....E......W.1...A1,.....R........RE..G........ .A....
 ...............\\.\\)...A........Y..B....E..,
-...x_.....!..:..!\\\\.............!\\?......\\|..-.\\]\\+\\|..\\[.-...\\)\\).....\\(W.. . ....B., CY.\\)..${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+...x_.....!..:..!\\\\.............!\\?......\\|..-.\\]\\+\\|..\\[.-...\\)\\).....\\(W.. . ....B., CY.\\)..${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> \\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\.*?
+\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\?\\|left\\|lim\\|led\\|vis\\)\\\\.*?
+\\|\\[@&!dmj\\]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!\\]\\?\\|b\\[psx\\]\\?\\|p\\[uh\\]\\?\\|ac\\?\\|e\\[f!\\]\\?!\\?\\|f\\[-\\+><tdp\\]\\?\\|inc\\|i\\|sc!\\?\\|\\\\.*?
+(\\(\\?:g!\\?\\|s\\)\\[ \\\\t\\]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!\\]\\)\\?\\|u\\[czbd\\]\\|x!\\?\\|ya\\[!\\+\\]\\?\\|cm!\\?\\|cd\\?\\)\\?\",)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/d\\]/dp]/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 	return xkwdrs \\? NULL : xserr;
 }
@@ -70,8 +73,10 @@ static int eo_val\\(char \\*arg\\)
 	int val = atoi\\(arg\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	return xkwdrs \\? NULL : xserr;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1531${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	return xkwdrs \\? NULL : xserr;.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1531:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1531${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	\\{\"uc\", ec_setenc},
 	\\{\"uz\", ec_setenc},
 	\\{\"ub\", ec_setenc},
@@ -79,8 +84,10 @@ ${SEP}?%;f+ 	\\{\"uc\", ec_setenc},
 	EO\\(shape\\),
 	EO\\(seq\\),${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"uc\", ec_setenc},
 	\\{\"uz\", ec_setenc},
-	\\{\"ub\", ec_setenc},${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1628:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1628${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"ub\", ec_setenc},${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1628:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"uc\", ec_setenc},.*?
+	\\{\"uz\", ec_setenc},.*?
+(	\\{\"ub\", ec_setenc},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1628:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1628${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
@@ -101,8 +108,10 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1628:m1${ESC}${SEP
 	lb->mark_se\\[0\\] = -1;
 	return lb;${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> \\{
 	struct lbuf \\*lb = emalloc\\(sizeof\\(\\*lb\\)\\);
-	memset\\(lb, 0, sizeof\\(\\*lb\\)\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:4:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:4${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	memset\\(lb, 0, sizeof\\(\\*lb\\)\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:4:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> \\{.*?
+	struct lbuf \\*lb = emalloc\\(sizeof\\(\\*lb\\)\\);.*?
+(	memset\\(lb, 0, sizeof\\(\\*lb\\)\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:4:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:4${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	return 0;
 }
 
@@ -136,8 +145,11 @@ ${SEP}?%;f+ 	int i;
 ...o....o..\\(&.....i.t.....
 	..........is...
 ...e.....>......
-..r.e.l.....\\).${ESC}${SEP}5??${ESC}${SEP}5??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:84:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:84${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+..r.e.l.....\\).${ESC}${SEP}5??${ESC}${SEP}5??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:84:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	int i;.*?
+	for \\(i = 0; i < lb->ln_n; i\\+\\+\\).*?
+		free\\(lbuf_i\\(lb, i\\)\\);.*?
+(	for \\(i = 0; i < lb->hist_n; i\\+\\+\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:84:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:84${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		lopt_done\\(lo\\);
 }
 
@@ -146,8 +158,10 @@ struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\)
 \\{${ESC}${SEP}0??${ESC}${SEP}0??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		lopt_done\\(lo\\);
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:160:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:160${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:160:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		lopt_done\\(lo\\);.*?
+}.*?
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:160:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:160${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	if \\(xseq < 0\\)
 		lo = &slo;
 	else \\{
@@ -171,8 +185,11 @@ ${SEP}?%;f+ 	if \\(xseq < 0\\)
 ......._.....&.b->.........
 		..-....._. .........._u;
 	..f.......i....... .b..h.........
-...... s. ....................>.i...s. \\? l.....s...... .....${ESC}${SEP}5??${ESC}${SEP}5??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:169:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:169${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+...... s. ....................>.i...s. \\? l.....s...... .....${ESC}${SEP}5??${ESC}${SEP}5??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:169:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	if \\(xseq < 0\\).*?
+		lo = &slo;.*?
+	else \\{.*?
+(		for \\(int i = lb->hist_u; i < lb->hist_n; i\\+\\+\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:169:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:169${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ void lbuf_saved\\(struct lbuf \\*lb, int clear\\)
 \\{
 	if \\(clear\\) \\{
@@ -192,15 +209,19 @@ ${SEP}?%;f+ void lbuf_saved\\(struct lbuf \\*lb, int clear\\)
 .	....\\(..t . ...... <.l......t_...i.\\+.
 .....p._..................;
 .	.......t...=...
-.......i...u = ..${ESC}${SEP}5??${ESC}${SEP}5??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:452:a5${SEP}${LB}
-${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:452${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+.......i...u = ..${ESC}${SEP}5??${ESC}${SEP}5??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:452:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ void lbuf_saved\\(struct lbuf \\*lb, int clear\\).*?
+\\{.*?
+	if \\(clear\\) \\{.*?
+(		for \\(int i = 0; i < lb->hist_n; i\\+\\+\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:452:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:452${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		lb->hist_n = 0;
 		lb->hist_u = 0;
 	}
 	lb->modified = 0;
 	lb->saved = lb->hist_u;${ESC}${SEP}0??${ESC}${SEP}0??+1m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		lb->hist_n = 0;
-		lb->hist_u = 0;${ESC}${SEP}1??${ESC}${SEP}1??+1m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:455:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:455${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		lb->hist_u = 0;${ESC}${SEP}1??${ESC}${SEP}1??+1m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:455:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		lb->hist_n = 0;.*?
+(		lb->hist_u = 0;)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:455:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:455${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 	sbuf_make(lb->rehist, 128)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:4:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -308,8 +329,10 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:455:m6${ESC}${SE
 	int mark_n;			/\\* number of marks in mark\\[\\] \\*/
 	int mark_sb\\[2\\];			/\\* \\[ mark row & off \\*/${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> struct lbuf \\{
 	char \\*\\*ln;			/\\* buffer lines \\*/
-	struct lopt \\*hist;		/\\* buffer history \\*/${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:139:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:139${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	struct lopt \\*hist;		/\\* buffer history \\*/${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:139:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> struct lbuf \\{.*?
+	char \\*\\*ln;			/\\* buffer lines \\*/.*?
+(	struct lopt \\*hist;		/\\* buffer history \\*/)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:139:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:139${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ int lbuf_findchar\\(struct lbuf \\*lb, char \\*cs, int cmd, int n, int \\*r, int \\*o\\);
 int lbuf_search\\(struct lbuf \\*lb, rset \\*re, int dir, int beg, int end, int pskip,
 		int nskip, int \\*r, int \\*o\\);
@@ -317,8 +340,10 @@ int lbuf_search\\(struct lbuf \\*lb, rset \\*re, int dir, int beg, int end, int 
 \\{ for \\(int i = 0; i < lbuf_len\\(lb\\);\\) \\{ \\\\
 	char \\*s = lbuf_get\\(lb, i\\); \\\\${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ int lbuf_findchar\\(struct lbuf \\*lb, char \\*cs, int cmd, int n, int \\*r, int \\*o\\);
 int lbuf_search\\(struct lbuf \\*lb, rset \\*re, int dir, int beg, int end, int pskip,
-		int nskip, int \\*r, int \\*o\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:181:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:181${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		int nskip, int \\*r, int \\*o\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:181:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ int lbuf_findchar\\(struct lbuf \\*lb, char \\*cs, int cmd, int n, int \\*r, int \\*o\\);.*?
+int lbuf_search\\(struct lbuf \\*lb, rset \\*re, int dir, int beg, int end, int pskip,.*?
+(		int nskip, int \\*r, int \\*o\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:181:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:181${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 	sbuf *rehist;		/* alternate redo timelines */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:139:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
