@@ -99,9 +99,11 @@ ${SEP}'1a static void *ec_script(char *loc, char *cmd, char *arg)
 	xenvp = environ;
 	sbuf *sb = cmd_pipe(arg, NULL, cmd[1] == 'x', &ret);
 	xenvp = NULL;
-	if (sb && cmd[1] == 'x')
+	if (!sb)
+		return \"fork failed\";
+	if (cmd[1] == 'x')
 		ex_exec(sb->s);
-	free(sb);
+	sbuf_free(sb);
 	return ret ? xuerr : NULL;
 }
 
@@ -158,7 +160,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7d15e0d8..5c321411 100644
+index 7d15e0d8..b53701db 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -166,7 +168,7 @@ index 7d15e0d8..5c321411 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1532,6 +1533,41 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1532,6 +1533,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -199,16 +201,18 @@ index 7d15e0d8..5c321411 100644
 +	xenvp = environ;
 +	sbuf *sb = cmd_pipe(arg, NULL, cmd[1] == 'x', &ret);
 +	xenvp = NULL;
-+	if (sb && cmd[1] == 'x')
++	if (!sb)
++		return "fork failed";
++	if (cmd[1] == 'x')
 +		ex_exec(sb->s);
-+	free(sb);
++	sbuf_free(sb);
 +	return ret ? xuerr : NULL;
 +}
 +
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1634,6 +1670,8 @@ static struct excmd {
+@@ -1634,6 +1672,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
