@@ -80,24 +80,12 @@ ${SEP}?%;f+ 		s = \\*\\(\\+\\+files\\);
 		ex_command\\(s\\)${ESC}${SEP}0??${ESC}${SEP}0??+3m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\)
 		ex_command\\(s\\)${ESC}${SEP}1??${ESC}${SEP}1??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		s = \\*\\(\\+\\+files\\);
 	} while \\(--n > 0\\);
-	xvis &= ~4;${ESC}${SEP}2??${ESC}${SEP}2??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\)\$${ESC}${SEP}3??${ESC}${SEP}3??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		ex_command\\(s\\)\$${ESC}${SEP}4??${ESC}${SEP}4??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 	.s.=.\\*.\\+.f.l.s.;
-.}.w.i.e.\\(.-. . .\\).
-	.v.s.&. .4.
-	.f.\\(.s.=.g.t.n.\\(.E.I.I.\".\\).
-	.e._.o.m.n.\\(.\\)${ESC}${SEP}5??${ESC}${SEP}5??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ .	. . .\\(.\\+.i.e.\\).
-	. .h.l. .-.n.>.0.;
-.x.i. .=.~.;
-.i. .\\(. . .e.e.v.\".X.N.T.\\).\\)
-.	.x.c.m.a.d.s.${ESC}${SEP}6??${ESC}${SEP}6??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ ..s = \\*\\(\\+\\+file.\\);
-.. while.\\(--n.> 0..
-	..is .. ~4.
-	if.\\(\\(s.= .e.env..E.INIT..\\)\\)
-.	ex.command...${ESC}${SEP}7??${ESC}${SEP}7??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ ..s.= ..\\+\\+file.\\);
-.. while.\\(.-n.. 0..
-	..i. .. ~4.
-	.f..\\(s.= .e.env..E..NIT...\\)
-.	ex.comman....${ESC}${SEP}8??${ESC}${SEP}8??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a8${SEP}${LB}
-${SEP}0;1;2;3;4;5;6;7;8??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1829${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	xvis &= ~4;${ESC}${SEP}2??${ESC}${SEP}2??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\)\$${ESC}${SEP}3??${ESC}${SEP}3??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		ex_command\\(s\\)\$${ESC}${SEP}4??${ESC}${SEP}4??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ .........\\+.ile..;
+.. ..i...\\(.-... ...
+........ .4.
+.....\\(s.=......v..E..NIT...\\)
+...x..omm.n....${ESC}${SEP}5??${ESC}${SEP}5??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1829:a5${SEP}${LB}
+${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1829${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		ex_command\\(s\\)
 }${ESC}${SEP}0??${ESC}${SEP}0??m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		ex_command\\(s\\)\$${ESC}${SEP}1??${ESC}${SEP}1??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
 ${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1830${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}

@@ -89,28 +89,13 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:9:m1${ESC}${SEP}p
 			ss \\+= l;${ESC}${SEP}1??${ESC}${SEP}1??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 		rstate->holelen = uc_len\\(ss\\);
 		memcpy\\(rstate->nullhole, ss, rstate->holelen\\);
 		memset\\(ss, 0, rstate->holelen\\);${ESC}${SEP}2??${ESC}${SEP}2??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	} else
-		for \\(n = 0; \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)${ESC}${SEP}3??${ESC}${SEP}3??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^			ss \\+= l;\$${ESC}${SEP}4??${ESC}${SEP}4??-2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f> 	.r.t.t.-.h.l.l.n.=.u._.e.\\(.s.;
-.	.e.c.y.r.t.t.-.n.l.h.l.,.s.,.r.t.t.-.h.l.l.n.;
-.	.e.s.t.s.,.0. .s.a.e.>.o.e.e.\\).
-	. .l.e
-.	.o. .n.=.0. .l.=.u._.e.\\(.s.\\). .\\+.\\)
-.	.s. .=.l.${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> .	.s.a.e.>.o.e.e. . .c.l.n.s.\\).
-	.m.m.p.\\(.s.a.e.>.u.l.o.e. .s. .s.a.e.>.o.e.e.\\).
-	.m.m.e.\\(.s. .,.r.t.t.-.h.l.l.n.;
-.}.e.s.
-	.f.r.\\(. . .;.\\(. . .c.l.n.s.\\).;.n.\\+.
-	.	.s.\\+. .;${ESC}${SEP}6??${ESC}${SEP}6??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> ...sta..->ho....n = .c_le.\\(ss\\);
-..memcpy\\(r.tate->n..lh.le...s,...tate-.ho.elen\\).
-	...ms..\\(... .. ..tate.>...e.en..
-	}..lse
-		f.. \\(n.. 0;.\\(. . uc.len..s\\)\\);.n\\+\\+\\)
-.		s......;${ESC}${SEP}7??${ESC}${SEP}7??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> ...sta..->h.....n = .c_le..ss\\);
-..m..c.y\\(r.tate->n..lh.le...s,...tate-.h..e.en..
-	....s...... .. ...ate.>...e.en..
-	}..lse
-		f.. \\(n.. .;... . .c.len..s\\)\\);.n.\\+\\)
-.		s......;${ESC}${SEP}8??${ESC}${SEP}8??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a8${SEP}${LB}
-${SEP}0;1;2;3;4;5;6;7;8??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:111${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		for \\(n = 0; \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)${ESC}${SEP}3??${ESC}${SEP}3??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^			ss \\+= l;\$${ESC}${SEP}4??${ESC}${SEP}4??-2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f> ...s.a....h.....n = .._.e..ss\\).
+..m..c......a.e.>n..l..l..........at.-.h....en..
+	....s...... ................e...
+.}....e
+	.... \\(......... ...c.l.n....\\)..n.\\+\\)
+.	.s......;${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a5${SEP}${LB}
+${SEP}0;1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:111${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 			ss \\+= l;
 	unsigned int b = n \\+ 1, c = 2, i;
 	int cpos = 0, wid, \\*col;
