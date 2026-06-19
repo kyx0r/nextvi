@@ -65,7 +65,7 @@ static const char *end_tag_wr = "=== END ===";
  * NSEARCH is the total SEARCH PATTERN capacity per group. */
 #define NPAT 5
 #define NFUZZ 1   /* max file-validated fuzzed candidates per group (loosest kept) */
-#define NGRP 1    /* file-validated :grp-capture window (.*..* + last captured) */
+#define NGRP 1    /* file-validated :grp-capture window (TEXT.* + last captured) */
 #define GRP_SLOT (NPAT + NFUZZ)   /* 0-based slot index of the grp window */
 #define NSEARCH (NPAT + NFUZZ + NGRP)   /* must stay <= 9: section numbers are 1 digit */
 
@@ -1524,10 +1524,11 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
 /*
  * Pattern 7: a :grp-capture window (mode 2). The top of the hunk - the
  * preceding context anchors, plus the first deleted line on change/delete
- * hunks - is wrapped line by line into ".*TEXT.*", with the final line
- * captured as ".*(TEXT).*". A ":grp 1" search lands on that captured last
- * line; the ".*" on every line then absorbs text added around the anchors
- * (an inserted token, a widened line) without shifting the target.
+ * hunks - becomes "TEXT.*" line by line, with the final line captured as
+ * "(TEXT)". A ":grp 1" search lands on that captured last line; the trailing
+ * ".*" on the leading lines absorbs text added after the anchors (an inserted
+ * token, a widened line) without shifting the target. The search is
+ * unanchored, so no leading ".*" is needed.
  *
  * The captured last line IS the target: a change/delete hunk captures the
  * first deleted line (mark offset 0), a pure insert captures the last anchor
@@ -1568,9 +1569,12 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 	for (int i = 0; i < n; i++) {
 		char *e = escape_regex(raw[i]);
 		int cap = i == n - 1;
-		int len = strlen(e) + 8;   /* ".*(" + ")" + ".*" + NUL */
+		/* The search is unanchored, so a leading ".*" is redundant; each
+		 * non-final line takes a trailing ".*" to absorb text added after
+		 * the anchor, and the captured last line needs nothing extra. */
+		int len = strlen(e) + 4;   /* "(" + ")" or ".*", + NUL */
 		char *s = emalloc(len);
-		snprintf(s, len, cap ? ".*(%s).*" : ".*%s.*", e);
+		snprintf(s, len, cap ? "(%s)" : "%s.*", e);
 		lines[i] = s;
 		free(e);
 	}
