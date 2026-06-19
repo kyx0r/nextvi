@@ -1533,9 +1533,10 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
  * (an inserted token, a widened line) without shifting the target. The search
  * is unanchored, so no leading ".*" is needed.
  *
- * The captured last line IS the target: a change/delete hunk captures the
- * first deleted line (mark offset 0), a pure insert captures the last anchor
- * (offset +1, so the inserted lines land below it). Like the fuzzed windows
+ * The captured last line IS the target, marked at offset 0: a change/delete
+ * hunk captures the first deleted line (edited in place), a pure insert
+ * captures the last anchor (the phase-2 ":a" appends the new lines after it,
+ * so offset 0 is correct - no +1). Like the fuzzed windows
  * this is only trustworthy when the original file is readable, so it is
  * file-validated: emitted only when the wrapped window resolves to exactly
  * one place, the expected one. Returns 1 and fills *out (owned lines) on
@@ -1586,7 +1587,10 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 	free(raw);
 	out->lines = lines;
 	out->nlines = n;
-	out->offset = has_del ? 0 : 1;
+	/* The mark sits on the captured last line (offset 0) in both shapes:
+	 * change/delete edits at del_start, and a pure insert's phase-2 ":a"
+	 * already appends after the marked last anchor, so no +1 is needed. */
+	out->offset = 0;
 	out->mode = 2;   /* grp register search */
 	out->score = sc;
 	return 1;
@@ -3387,8 +3391,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			/* File-validated grp-capture window (pattern 7, mode 2):
 			 * the "TEXT.*?"-wrapped top of the hunk with the captured
 			 * last line as the target. emit brackets mode 2 with
-			 * grp 1 .. grp 0. off_final keeps its offset (0 for
-			 * change/delete, +1 for pure insert) intact. */
+			 * grp 1 .. grp 0. off_final keeps its offset 0 intact (the
+			 * pure-add path would otherwise shift it by -1). */
 			has_gw = nps < NSEARCH && gen_grp_window(g, &gw);
 			if (has_gw) {
 				ps[nps].lines = gw.lines;
