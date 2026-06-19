@@ -152,21 +152,21 @@ ${SEP}?%;f+ 		rep = ex_re_read\\(&s\\);
 		sbuf \\*r = NULL;${ESC}${SEP}0??${ESC}${SEP}0??+3m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	int offs\\[rs->nsubc\\];
 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);
-		sbuf \\*r = NULL;${ESC}${SEP}1??${ESC}${SEP}1??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1092:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		rep = ex_re_read\\(&s\\);
+		sbuf \\*r = NULL;${ESC}${SEP}1??${ESC}${SEP}1??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1095:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		rep = ex_re_read\\(&s\\);
 	}
-	free\\(pat\\);${ESC}${SEP}2??${ESC}${SEP}2??+3m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1092:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	int offs\\[rs->nsubc\\];\$${ESC}${SEP}3??${ESC}${SEP}3??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1092:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 	for \\(i = beg; i < end; i\\+\\+\\) \\{
+	free\\(pat\\);${ESC}${SEP}2??${ESC}${SEP}2??+3m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1095:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	int offs\\[rs->nsubc\\];\$${ESC}${SEP}3??${ESC}${SEP}3??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1095:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);
-		sbuf \\*r = NULL;${ESC}${SEP}4??${ESC}${SEP}4??-1m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1092:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ ...e. . .._re.........;
+		sbuf \\*r = NULL;${ESC}${SEP}4??${ESC}${SEP}4??-1m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1095:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ ...e. . .._re.........;
 	.
 .fr.e......
 .... o...............
 ...r .i = .... . ...n.. ..\\+\\)..
 .	.h.r..l..=......ge.\\(xb...\\).
-...b.........U...${ESC}${SEP}5??${ESC}${SEP}5??+3m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1092:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		rep = ex_re_read\\(&s\\);.*?
+...b.........U...${ESC}${SEP}5??${ESC}${SEP}5??+3m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1095:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		rep = ex_re_read\\(&s\\);.*?
 	}.*?
 	free\\(pat\\);.*?
-(	int offs\\[rs->nsubc\\];)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1092:a6${SEP}${LB}
-${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1092${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	int offs\\[rs->nsubc\\];)${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1095:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1095${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	if \\(rs != xkwdrs\\)
 		rset_free\\(rs\\);
 	free\\(rep\\);
@@ -175,10 +175,10 @@ ${SEP}?%;f+ 	if \\(rs != xkwdrs\\)
 
 ${ESC}${SEP}0??${ESC}${SEP}0??+2m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	if \\(rs != xkwdrs\\)
 		rset_free\\(rs\\);
-	free\\(rep\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1143:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	if \\(rs != xkwdrs\\).*?
+	free\\(rep\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1146:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	if \\(rs != xkwdrs\\).*?
 		rset_free\\(rs\\);.*?
-(	free\\(rep\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1143:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1143${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	free\\(rep\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1146:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1146${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:564:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -196,9 +196,9 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:577:m4${ESC}${SEP}
 ${SEP}'5a 		free(offs);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:587:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'6c 	int *offs = emalloc(rs->nsubc * sizeof(int));
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1092:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1095:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'7a 	free(offs);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1143:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> 		int nskip, int \\*r, int \\*o\\)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1146:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> 		int nskip, int \\*r, int \\*o\\)
 \\{
 	int r0 = \\*r, o0 = \\*o;
 	int offs\\[re->nsubc\\], i = r0;
@@ -931,7 +931,7 @@ index c2c5c4b4..35cf9b92 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 87e26382..0172dccb 100644
+index 7d15e0d8..144cdb08 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -561,20 +561,25 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -971,7 +971,7 @@ index 87e26382..0172dccb 100644
  		return ret;
  	}
  	off = xoff;
-@@ -1089,7 +1095,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1092,7 +1098,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = ex_re_read(&s);
  	}
  	free(pat);
@@ -980,7 +980,7 @@ index 87e26382..0172dccb 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -1141,6 +1147,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1144,6 +1150,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);

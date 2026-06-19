@@ -49,36 +49,36 @@ void ex_init\\(char \\*\\*files, int n\\)
 	ec_setbufsmax\\(NULL, NULL, \"\"\\);${ESC}${SEP}0??${ESC}${SEP}0??+3m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> void ex_init\\(char \\*\\*files, int n\\)
 \\{
 	xbufsalloc = MAX\\(n, xbufsalloc\\);
-	ec_setbufsmax\\(NULL, NULL, \"\"\\);${ESC}${SEP}1??${ESC}${SEP}1??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	xgrec--;
+	ec_setbufsmax\\(NULL, NULL, \"\"\\);${ESC}${SEP}1??${ESC}${SEP}1??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1821:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	xgrec--;
 }
 
-${ESC}${SEP}2??${ESC}${SEP}2??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^void ex_init\\(char \\*\\*files, int n\\)\$${ESC}${SEP}3??${ESC}${SEP}3??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f> \\{
+${ESC}${SEP}2??${ESC}${SEP}2??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1821:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^void ex_init\\(char \\*\\*files, int n\\)\$${ESC}${SEP}3??${ESC}${SEP}3??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1821:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f> \\{
 	xbufsalloc = MAX\\(n, xbufsalloc\\);
-	ec_setbufsmax\\(NULL, NULL, \"\"\\);${ESC}${SEP}4??${ESC}${SEP}4??-1m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> .x...c...
+	ec_setbufsmax\\(NULL, NULL, \"\"\\);${ESC}${SEP}4??${ESC}${SEP}4??-1m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1821:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> .x...c...
 }
 
 .... .x.i.i....ar ........ .....\\)
 \\{
 ....f...........X\\(n. .b.fs.lloc\\).
-	.c..etb..s....N..L. ......\"..;${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	xgrec--;.*?
+	.c..etb..s....N..L. ......\"..;${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1821:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	xgrec--;.*?
 }.*?
 .*?
-(void ex_init\\(char \\*\\*files, int n\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1818:a6${SEP}${LB}
-${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1818${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(void ex_init\\(char \\*\\*files, int n\\))${ESC}${SEP}grp 0${ESC}${SEP}6??${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1821:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1821${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	xvis &= ~4;
 	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\)
 		ex_command\\(s\\)
 }${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	xvis &= ~4;
 	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\)
-		ex_command\\(s\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	xvis &= ~4;.*?
+		ex_command\\(s\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1833:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	xvis &= ~4;.*?
 	if \\(\\(s = getenv\\(\"EXINIT\"\\)\\)\\).*?
-(		ex_command\\(s\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1830:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1830${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(		ex_command\\(s\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1833:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1833${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0s/n\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1818:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'0s/n\\)/n, char **cmds, int cmdnum)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1821:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1a 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1830:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1833:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 
 int main\\(int argc, char \\*argv\\[\\]\\)
 \\{
 	int i, j;
@@ -208,10 +208,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 87e26382..adfc67d2 100644
+index 7d15e0d8..d1b1eecc 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1815,7 +1815,7 @@ void ex(void)
+@@ -1818,7 +1818,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -220,7 +220,7 @@ index 87e26382..adfc67d2 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1828,4 +1828,6 @@ void ex_init(char **files, int n)
+@@ -1831,4 +1831,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)

@@ -127,10 +127,10 @@ _EO\\(grp, xgrp = \\(!\\*arg \\? !xgrp : eo_val\\(arg\\)\\) \\* 2; return NULL;\
 _EO\\(left,${ESC}${SEP}0??${ESC}${SEP}0??+2m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
 EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1549:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\).*?
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1552:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\).*?
 EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\).*?
-()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1549:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1549${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1552:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1552${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(err\\),
 	\\{\"ef!\", ec_fuzz},
 	\\{\"ef\", ec_fuzz},
@@ -138,10 +138,10 @@ ${SEP}?%;f+ 	EO\\(err\\),
 	\\{\"e\", ec_edit},
 	\\{\"ft\", ec_ft},${ESC}${SEP}0??${ESC}${SEP}0??+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(err\\),
 	\\{\"ef!\", ec_fuzz},
-	\\{\"ef\", ec_fuzz},${ESC}${SEP}1??${ESC}${SEP}1??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1594:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(err\\),.*?
+	\\{\"ef\", ec_fuzz},${ESC}${SEP}1??${ESC}${SEP}1??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1597:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(err\\),.*?
 	\\{\"ef!\", ec_fuzz},.*?
-(	\\{\"ef\", ec_fuzz},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1594:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1594${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	\\{\"ef\", ec_fuzz},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1597:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1597${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	\\{\"f>\", ec_find},
 	\\{\"f<\", ec_find},
 	\\{\"f\", ec_fuzz},
@@ -149,10 +149,10 @@ ${SEP}?%;f+ 	\\{\"f>\", ec_find},
 	\\{\"inc\", ec_setincl},
 	EO\\(ic\\),${ESC}${SEP}0??${ESC}${SEP}0??+2m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"f>\", ec_find},
 	\\{\"f<\", ec_find},
-	\\{\"f\", ec_fuzz},${ESC}${SEP}1??${ESC}${SEP}1??+2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1604:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"f>\", ec_find},.*?
+	\\{\"f\", ec_fuzz},${ESC}${SEP}1??${ESC}${SEP}1??+2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1607:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"f>\", ec_find},.*?
 	\\{\"f<\", ec_find},.*?
-(	\\{\"f\", ec_fuzz},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1604:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1604${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	\\{\"f\", ec_fuzz},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1607:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1607${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(seq\\),
 	\\{\"sc!\", ec_specials},
 	\\{\"sc\", ec_specials},
@@ -160,10 +160,10 @@ ${SEP}?%;f+ 	EO\\(seq\\),
 	\\{\"x!\", ec_write},
 	\\{\"x\", ec_write},${ESC}${SEP}0??${ESC}${SEP}0??+2m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(seq\\),
 	\\{\"sc!\", ec_specials},
-	\\{\"sc\", ec_specials},${ESC}${SEP}1??${ESC}${SEP}1??+2m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1633:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(seq\\),.*?
+	\\{\"sc\", ec_specials},${ESC}${SEP}1??${ESC}${SEP}1??+2m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1636:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(seq\\),.*?
 	\\{\"sc!\", ec_specials},.*?
-(	\\{\"sc\", ec_specials},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1633:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1633${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	\\{\"sc\", ec_specials},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1636:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1636${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a int xet;			/* expandtab - use spaces for indentation */
 int xsw = 8;			/* shiftwidth - indentation step */
@@ -233,13 +233,13 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:654:m4${ESC}${SEP}
 ${SEP}'5a EO(et) EO(idt)
 _EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1549:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1552:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'6a 	EO(et),
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1594:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1597:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'7a 	EO(idt),
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1604:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1607:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'8a 	EO(sw),
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1633:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> 		case TK_CTL\\('t'\\):
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1636:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> 		case TK_CTL\\('t'\\):
 			cs = uc_dup\\(sb->s \\+ ps\\);
 			sbuf_cut\\(sb, ps\\)
 			sbuf_chr\\(sb, '\\\\t'\\)
@@ -457,7 +457,7 @@ index c2c5c4b4..6fe862aa 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 87e26382..394d7336 100644
+index 7d15e0d8..8b16f946 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -555,7 +555,7 @@ index 87e26382..394d7336 100644
  }
  
  static void *ec_setpath(char *loc, char *cmd, char *arg)
-@@ -1547,6 +1607,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+@@ -1550,6 +1610,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
@@ -565,7 +565,7 @@ index 87e26382..394d7336 100644
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
  _EO(left,
-@@ -1592,6 +1655,7 @@ static struct excmd {
+@@ -1595,6 +1658,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -573,7 +573,7 @@ index 87e26382..394d7336 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1602,6 +1666,7 @@ static struct excmd {
+@@ -1605,6 +1669,7 @@ static struct excmd {
  	{"f>", ec_find},
  	{"f<", ec_find},
  	{"f", ec_fuzz},
@@ -581,7 +581,7 @@ index 87e26382..394d7336 100644
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
-@@ -1631,6 +1696,7 @@ static struct excmd {
+@@ -1634,6 +1699,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},

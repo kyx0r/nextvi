@@ -136,8 +136,8 @@ ${SEP}?%;f+ 	return NULL;
 ${ESC}${SEP}0??${ESC}${SEP}0??+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	return NULL;
 \\)
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1561:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1561${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1564:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1564${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(err\\),
 	\\{\"ef!\", ec_fuzz},
 	\\{\"ef\", ec_fuzz},
@@ -145,10 +145,10 @@ ${SEP}?%;f+ 	EO\\(err\\),
 	\\{\"e\", ec_edit},
 	\\{\"ft\", ec_ft},${ESC}${SEP}0??${ESC}${SEP}0??+2m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(err\\),
 	\\{\"ef!\", ec_fuzz},
-	\\{\"ef\", ec_fuzz},${ESC}${SEP}1??${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1594:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(err\\),.*?
+	\\{\"ef\", ec_fuzz},${ESC}${SEP}1??${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1597:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(err\\),.*?
 	\\{\"ef!\", ec_fuzz},.*?
-(	\\{\"ef\", ec_fuzz},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1594:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1594${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	\\{\"ef\", ec_fuzz},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1597:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1597${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(seq\\),
 	\\{\"sc!\", ec_specials},
 	\\{\"sc\", ec_specials},
@@ -156,10 +156,10 @@ ${SEP}?%;f+ 	EO\\(seq\\),
 	\\{\"x!\", ec_write},
 	\\{\"x\", ec_write},${ESC}${SEP}0??${ESC}${SEP}0??+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(seq\\),
 	\\{\"sc!\", ec_specials},
-	\\{\"sc\", ec_specials},${ESC}${SEP}1??${ESC}${SEP}1??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1633:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(seq\\),.*?
+	\\{\"sc\", ec_specials},${ESC}${SEP}1??${ESC}${SEP}1??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1636:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(seq\\),.*?
 	\\{\"sc!\", ec_specials},.*?
-(	\\{\"sc\", ec_specials},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1633:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1633${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	\\{\"sc\", ec_specials},)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1636:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1636${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(lim\\),
 	EO\\(led\\),
 	EO\\(vis\\),
@@ -167,10 +167,10 @@ ${SEP}?%;f+ 	EO\\(lim\\),
 	\\{\"\", ec_print}, /\\* do not remove \\*/
 };${ESC}${SEP}0??${ESC}${SEP}0??+2m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(lim\\),
 	EO\\(led\\),
-	EO\\(vis\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1656:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(lim\\),.*?
+	EO\\(vis\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1659:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(lim\\),.*?
 	EO\\(led\\),.*?
-(	EO\\(vis\\),)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1656:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1656${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	EO\\(vis\\),)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1659:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1659${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	xgrec--;
 }
 
@@ -179,10 +179,10 @@ void ex_init\\(char \\*\\*files, int n\\)
 	xbufsalloc = MAX\\(n, xbufsalloc\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	xgrec--;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1817:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	xgrec--;.*?
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1820:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	xgrec--;.*?
 }.*?
-()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1817:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1817${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+()${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1820:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1820${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0i struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
@@ -316,13 +316,13 @@ static void *ec_equalize(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1561:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1564:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5a 	{\"eq\", ec_equalize},
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1594:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1597:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'6a 	{\"sp\", ec_split},
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1633:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1636:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'7a 	{\"vs\", ec_vsplit},
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1656:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1659:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'8a /* window management functions */
 static void curwin_save(void)
 {
@@ -561,7 +561,7 @@ void *win_split(int vertical, char *arg)
 	return NULL;
 }
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1817:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> /\\* map cursor horizontal position to terminal column number \\*/
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1820:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> /\\* map cursor horizontal position to terminal column number \\*/
 int led_pos\\(char \\*s, int pos\\)
 \\{
 	if \\(dir_context\\(s\\) < 0\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> /\\* map cursor horizontal position to terminal column number \\*/
@@ -2427,7 +2427,7 @@ index c2c5c4b4..92a5a018 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 87e26382..2b3f86e2 100644
+index 7d15e0d8..6217be18 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -2481,7 +2481,7 @@ index 87e26382..2b3f86e2 100644
  	xquit = !xquit ? 1 : xquit;
  	xqprop = *loc ? atoi(loc) : -1;
  	if (*arg)
-@@ -1559,6 +1577,112 @@ _EO(left,
+@@ -1562,6 +1580,112 @@ _EO(left,
  	return NULL;
  )
  
@@ -2594,7 +2594,7 @@ index 87e26382..2b3f86e2 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1592,6 +1716,7 @@ static struct excmd {
+@@ -1595,6 +1719,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -2602,7 +2602,7 @@ index 87e26382..2b3f86e2 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1631,6 +1756,7 @@ static struct excmd {
+@@ -1634,6 +1759,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -2610,7 +2610,7 @@ index 87e26382..2b3f86e2 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1654,6 +1780,7 @@ static struct excmd {
+@@ -1657,6 +1783,7 @@ static struct excmd {
  	EO(lim),
  	EO(led),
  	EO(vis),
@@ -2618,7 +2618,7 @@ index 87e26382..2b3f86e2 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
  };
-@@ -1815,6 +1942,244 @@ void ex(void)
+@@ -1818,6 +1945,244 @@ void ex(void)
  	xgrec--;
  }
  
@@ -3009,7 +3009,7 @@ index 85b112fc..e44728c3 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index 65254701..83f04dd3 100644
+index 3ae4769f..ce877cfe 100644
 --- a/term.c
 +++ b/term.c
 @@ -85,6 +85,15 @@ void term_kill(void)
