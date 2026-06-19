@@ -838,6 +838,7 @@ EX COMMANDS
              When a range is specified, the buffer's data is piped to an external
              program. The resulting stdout and stderr are then piped back into the
              buffer, replacing the contents of the original range.
+             No range returns an error if shell exit code is not zero.
 
              Example: infamously sort a buffer
              :%!sort
@@ -1308,16 +1309,16 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      | 546 vi.h     |  definitions/aux     |
      +--------------+----------------------+
-     | 353 term.c   |  low level IO        |
+     | 347 term.c   |  low level IO        |
      | 367 conf.c   |  hl/ft/td config     |
      | 444 ren.c    |  positioning/syntax  |
      | 614 uc.c     |  UTF-8 support       |
      | 665 lbuf.c   |  file/line buffer    |
      | 726 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
-     | 1831 ex.c    |  ex options/commands |
+     | 1834 ex.c    |  ex options/commands |
      | 1878 vi.c    |  normal mode/general |
-     | 7629 total   |  wc -l *.c|sort      |
+     | 7626 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1398,4 +1399,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 6.0                       June 18, 2026                      Nextvi 6.0
+Nextvi 6.0                       June 19, 2026                      Nextvi 6.0
