@@ -149,6 +149,77 @@ printf 'int a;\nvoid b;\nint c;\n' > "$TMPFILE"
 out=$(run_ex ':g/int/g/a/p:q')
 check 'nested global' 'int a;' "$out"
 
+# nested global running a substitute on the doubly-matched line only
+printf 'int a;\nint b;\nvoid a;\n' > "$TMPFILE"
+out=$(run_ex ':g/int/g/a/s/a/X/:%p:q!')
+check 'nested global with substitute' "$(printf 'int X;\nint b;\nvoid a;')" "$out"
+
+# triple nested global: only the line matching int AND a AND x is substituted
+printf 'int a x;\nint a y;\nint b x;\nvoid a x;\n' > "$TMPFILE"
+out=$(run_ex ':g/int/g/a/g/x/s/x/Z/:%p:q!')
+check 'triple nested global with substitute' \
+	"$(printf 'int a Z;\nint a y;\nint b x;\nvoid a x;')" "$out"
+
+# --- escape handling: all governed by ex_parity (ex.c:61) ---
+# A run of k escapes is only touched when it sits immediately before a
+# delimiter; there it emits ceil(k/2) escapes (n -= n/2), and an odd k spends
+# its trailing escape to make the delimiter literal (the keep&1 branch).
+# ex_parity runs once per read pass, at two sites: ex_re_read for the
+# regex/replacement fields (delim '/'), and the command-body reader for the
+# command separators ':' xexp xexe (ex.c:1707). A global re-executes its body,
+# so each nesting level is one more body pass -> escapes before a separator
+# double per level.
+
+# odd run of 1 before the separator -> ':' kept literal, so :p stays in the
+# global body (it is chained, not run on the whole buffer)
+printf 'a/b\nc/d\nx y\n' > "$TMPFILE"
+out=$(run_ex ':g/\//s/\//-/g\:p:q!')
+check 'parity: \: keeps separator literal, chains print in global' \
+	"$(printf 'a-b\nc-d')" "$out"
+
+# odd run of 1 before the sub delimiter '/' in the pattern -> literal '/'
+printf 'a/b\nc/d\nx y\n' > "$TMPFILE"
+out=$(run_ex ':g/\//s/\//-/g:%p:q!')
+check 'parity: \/ in pattern keeps delimiter literal' \
+	"$(printf 'a-b\nc-d\nx y')" "$out"
+
+# same odd-run delimiter protection, this time in the replacement field
+printf 'foo\nbar\n' > "$TMPFILE"
+out=$(run_ex ':g/foo/s/foo/a\/b/:%p:q!')
+check 'parity: \/ in replacement keeps delimiter literal' \
+	"$(printf 'a/b\nbar')" "$out"
+
+# one body pass: \: (run 1, odd) before separator -> literal ':'
+printf 'key val\n' > "$TMPFILE"
+out=$(run_ex ':s/ /\: /:%p:q!')
+check 'parity: 1 pass, \: -> literal colon' 'key: val' "$out"
+
+# two body passes (global): \\\: (run 3) -> outer halves to \: -> inner to ':'
+printf 'key val\nx\n' > "$TMPFILE"
+out=$(run_ex ':g/key/s/ /\\\: /:%p:q!')
+check 'parity: 2 passes, \\\: -> \: -> literal colon' \
+	"$(printf 'key: val\nx')" "$out"
+
+# three body passes (double global): \\\\\\\: (run 7) -> \\\: -> \: -> ':'
+printf 'key val\n' > "$TMPFILE"
+out=$(run_ex ':g/key/g/val/s/ /\\\\\\\: /:%p:q!')
+check 'parity: 3 passes, run-7 colon halves 7->3->1' 'key: val' "$out"
+
+# the sub delimiter '/' is consumed by ex_re_read, not the separator passes, so
+# a literal '/' needs only its own single escape no matter how deep the global
+printf 'foo\n' > "$TMPFILE"
+out=$(run_ex ':g/foo/g/foo/s/foo/a\/b/:%p:q!')
+check 'parity: sub delimiter unaffected by separator depth (1 backslash)' \
+	'a/b' "$out"
+
+# the selector /.../ is read by ex_re_read during the outer parse, so its '\:'
+# is one pass (run 1 -> literal colon); the substitute lives in the body that
+# the global re-executes, so its '\\\:' takes two passes (run 3 -> \: -> ':')
+printf 'a:b\nc d\n' > "$TMPFILE"
+out=$(run_ex ':g/\:/s/\\\:/=/:%p:q!')
+check 'parity: selector colon (1 pass) vs body sub colon (2 passes)' \
+	"$(printf 'a=b\nc d')" "$out"
+
 printf 'test int here\n' > "$TMPFILE"
 out=$(run_ex ':f>int:??p found:q')
 check 'conditional then on search found' 'found' "$out"
