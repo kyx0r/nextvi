@@ -1170,8 +1170,10 @@ static void emit_escaped_text(FILE *out, const char *s)
  * pre_escaped: 0 = anchors are raw text (apply regex+exarg escape),
  *              1 = anchors are pre-escaped regex (apply exarg only).
  * mode: 1 = direct buffer search (.,$f>, 0reg/98reg, ^...$ anchors);
- *       0 = register-cache search (%;f>). Defaults to 1 for single-line
- *       patterns, 0 otherwise; the OFFSET MODE marker can override.
+ *       0 = register-cache search (%;f>); 2 = grp register search, like 0 but
+ *       bracketed with "grp 1 .. grp 0" so the find lands on the captured
+ *       group (pattern 7). Defaults to 1 for single-line patterns, 0
+ *       otherwise; the OFFSET MODE marker can override.
  * After the search, "+<offset>m <mark_id>" marks the target line
  * without moving the cursor. */
 static void emit_search(FILE *out, char **anchors, int nanchors,
@@ -1314,7 +1316,8 @@ typedef struct {
 	int pre_escaped;  /* 1 = user regex (exarg only), 0 = raw text */
 	int offset;       /* lines from match start to the target line */
 	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
-	int mode;         /* search mode: 0 = %;f> (register), 1 = .,$f> (buffer) */
+	int mode;         /* search mode: 0 = %;f> register, 1 = .,$f> buffer,
+			   * 2 = grp register search (bracketed grp 1 .. grp 0) */
 	int score;        /* ordering key: specificity (+ uniqueness bonus) */
 } pat_spec_t;
 
@@ -1522,7 +1525,7 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
 }
 
 /*
- * Pattern 7: a :grp-capture window (mode 2). The top of the hunk - the
+ * Pattern 7: a :grp-capture window. The top of the hunk - the
  * preceding context anchors, plus the first deleted line on change/delete
  * hunks - becomes "TEXT.*" line by line, with the final line captured as
  * "(TEXT)". A ":grp 1" search lands on that captured last line; the trailing
@@ -1536,8 +1539,9 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
  * this is only trustworthy when the original file is readable, so it is
  * file-validated: emitted only when the wrapped window resolves to exactly
  * one place, the expected one. Returns 1 and fills *out (owned lines) on
- * success, 0 otherwise. mode 2 carries the grp semantics through the
- * gen/apply round-trip (see emit_fallback_chain / emit_search).
+ * success, 0 otherwise. It uses search mode 2 (grp register search); any
+ * future pattern can request the same grp bracketing by selecting mode 2
+ * (see emit_fallback_chain / emit_search).
  */
 static int gen_grp_window(group_t *g, fuzzwin_t *out)
 {
@@ -1582,7 +1586,7 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 	out->lines = lines;
 	out->nlines = n;
 	out->offset = has_del ? 0 : 1;
-	out->mode = 2;
+	out->mode = 2;   /* grp register search */
 	out->score = sc;
 	return 1;
 }
@@ -1635,9 +1639,9 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
  * A mode-1 pattern (single-line by default) searches the live buffer
  * with ";0\:0reg\:.,$f> ^pat$" instead, restoring the register cache
  * with 98reg on both the success (before 1q) and no-match paths.
- * A mode-2 pattern (the pattern-7 grp window) searches the register cache
- * like mode 0 but brackets the search with "grp 1\:...\:grp 0" so the find
- * lands on the captured last line, then resets the search group. */
+ * A mode-2 pattern (the pattern-7 grp window) is a register-cache search
+ * bracketed with "grp 1\:...\:grp 0" so the find lands on the captured group,
+ * then resets the search group. */
 static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 				int mark_id, int target_line, int first)
 {
@@ -3380,9 +3384,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				nps++;
 			}
 			/* File-validated grp-capture window (pattern 7, mode 2):
-			 * the ".*..*"-wrapped top of the hunk with the captured
-			 * last line as the target. off_final keeps its offset
-			 * (0 for change/delete, +1 for pure insert) intact. */
+			 * the "TEXT.*"-wrapped top of the hunk with the captured
+			 * last line as the target. emit brackets mode 2 with
+			 * grp 1 .. grp 0. off_final keeps its offset (0 for
+			 * change/delete, +1 for pure insert) intact. */
 			has_gw = nps < NSEARCH && gen_grp_window(g, &gw);
 			if (has_gw) {
 				ps[nps].lines = gw.lines;
