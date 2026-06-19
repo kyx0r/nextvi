@@ -1887,6 +1887,23 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 	return offset;
 }
 
+/* True if lines[0] carries a +N/-N offset prefix that parse_ecmd_offset
+ * would extract. Lets the old-delta migration tell "no prefix" apart from
+ * a legitimately-extracted "+0", so a customized rel/relc command without a
+ * prefix does not get its pattern offsets forced to 0. */
+static int ecmd_has_offset(char **lines, int nlines)
+{
+	if (nlines == 0)
+		return 0;
+	char *first = lines[0];
+	if (first[0] != '+' && first[0] != '-')
+		return 0;
+	int i = 1;
+	while (first[i] >= '0' && first[i] <= '9')
+		i++;
+	return i > 1; /* sign followed by at least one digit */
+}
+
 /* Match a SEARCH PATTERN section line that is only a +N/-N offset
  * override. Real pattern lines starting with + are regex-escaped
  * (\+), so a bare signed number is unambiguous. */
@@ -2241,15 +2258,25 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		 * the .orig and edit copies agree. */
 		if (gd && !gd->pat_has_off[0] && !gd->pat_has_off[1] &&
 		    !gd->pat_has_off[2] && (gd->nrel > 0 || gd->nrelc > 0)) {
-			int mig = 0;
-			if (gd->nrelc > 0)
+			int mig = 0, found = 0;
+			if (gd->nrelc > 0 && ecmd_has_offset(gd->relc_cmd, gd->nrelc)) {
 				mig = parse_ecmd_offset(gd->relc_cmd, &gd->nrelc);
-			if (gd->nrel > 0)
+				found = 1;
+			}
+			if (gd->nrel > 0 && ecmd_has_offset(gd->rel_cmd, gd->nrel)) {
 				mig = parse_ecmd_offset(gd->rel_cmd, &gd->nrel);
-			gd->pat_off[0] = gd->pat_off[1] = mig;
-			gd->pat_off[2] = 0;
-			gd->pat_has_off[0] = gd->pat_has_off[1] =
-				gd->pat_has_off[2] = 1;
+				found = 1;
+			}
+			/* Only migrate when an actual +N/-N prefix existed.
+			 * A customized rel/relc without a prefix must leave the
+			 * pattern offsets unset so emit pulls per-pattern
+			 * defaults instead of forcing them to 0. */
+			if (found) {
+				gd->pat_off[0] = gd->pat_off[1] = mig;
+				gd->pat_off[2] = 0;
+				gd->pat_has_off[0] = gd->pat_has_off[1] =
+					gd->pat_has_off[2] = 1;
+			}
 		}
 
 		/* Group header */
