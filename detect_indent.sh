@@ -177,53 +177,49 @@ ${SEP}'2a 	tempbufs[i].et = 0;
 	tempbufs[i].sw = 8;
 	tempbufs[i].ts = 8;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:177:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a static int gcd(int a, int b)
-{
-	while (b) { int t = b; b = a % b; a = t; }
-	return a;
-}
-
-static void ex_detect_indent(struct buf *p)
+${SEP}'3a static void ex_detect_indent(struct buf *p)
 {
 	int n = lbuf_len(p->lb);
 	int max = n < xidt ? n : xidt;
 	int tab_lines = 0, space_lines = 0;
-	int hist[129];
-	memset(hist, 0, sizeof(hist));
-
+	int prev = 0;			/* previous line's leading spaces */
+	int delta[129];			/* delta[k] = times indent jumped by k */
+	memset(delta, 0, sizeof(delta));
 	for (int i = 0; i < max; i++) {
 		char *ln = lbuf_get(p->lb, i);
 		if (!ln)
-			continue;
+			break;
 		int tabs = 0, spaces = 0;
 		char *s = ln;
-		for (;; s++) {
-			if (*s == ' ')
-				spaces++;
-			else if (*s == '\\t')
-				tabs++;
-			else
-				break;
-		}
-		if (tabs && !spaces)
+		for (; *s == ' ' || *s == '\\t'; s++)
+			*s == '\\t' ? tabs++ : spaces++;
+		if (*s == '\\n' || *s == '\\0')	/* blank line: skip, keep prev */
+			continue;
+		if (tabs && !spaces) {
 			tab_lines++;
-		else if (spaces && spaces <= 128) {
+		} else if (spaces) {
 			space_lines++;
-			hist[spaces]++;
+			int d = spaces - prev;
+			if (d > 0 && d <= 128)
+				delta[d]++;
+			prev = spaces;
+		} else
+			prev = 0;		/* dedent to column 0 */
+	}
+	if (tab_lines > space_lines) {
+		p->et = xet = 0;
+	} else if (space_lines > 0) {
+		int best = 0, bestn = 0;
+		for (int d = 1; d <= 128; d++)
+			if (delta[d] > bestn) {
+				bestn = delta[d];
+				best = d;
+			}
+		if (best) {
+			p->et = xet = 1;
+			p->sw = xsw = best;
 		}
 	}
-	if (tab_lines <= space_lines && space_lines > 0) {
-		int g = 0;
-		for (int j = 1; j <= 128; j++)
-			if (hist[j])
-				g = g ? gcd(g, j) : j;
-		if (g < 2 || g > 8)
-			g = 4;
-		p->et = xet = 1;
-		p->sw = xsw = g;
-		p->ts = xts = g;
-	} else if (tab_lines > space_lines)
-		p->et = xet = 0;
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:404:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -457,7 +453,7 @@ index c2c5c4b4..6fe862aa 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 7d15e0d8..8b16f946 100644
+index 7d15e0d8..c5e1a589 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -490,63 +486,59 @@ index 7d15e0d8..8b16f946 100644
  	tempbufs[i].mtime = -1;
  	tempbufs[i].ft = ft;
  }
-@@ -402,6 +411,55 @@ int ex_edit(const char *path, int len)
+@@ -402,6 +411,51 @@ int ex_edit(const char *path, int len)
  	return 0;
  }
  
-+static int gcd(int a, int b)
-+{
-+	while (b) { int t = b; b = a % b; a = t; }
-+	return a;
-+}
-+
 +static void ex_detect_indent(struct buf *p)
 +{
 +	int n = lbuf_len(p->lb);
 +	int max = n < xidt ? n : xidt;
 +	int tab_lines = 0, space_lines = 0;
-+	int hist[129];
-+	memset(hist, 0, sizeof(hist));
-+
++	int prev = 0;			/* previous line's leading spaces */
++	int delta[129];			/* delta[k] = times indent jumped by k */
++	memset(delta, 0, sizeof(delta));
 +	for (int i = 0; i < max; i++) {
 +		char *ln = lbuf_get(p->lb, i);
 +		if (!ln)
-+			continue;
++			break;
 +		int tabs = 0, spaces = 0;
 +		char *s = ln;
-+		for (;; s++) {
-+			if (*s == ' ')
-+				spaces++;
-+			else if (*s == '\t')
-+				tabs++;
-+			else
-+				break;
-+		}
-+		if (tabs && !spaces)
++		for (; *s == ' ' || *s == '\t'; s++)
++			*s == '\t' ? tabs++ : spaces++;
++		if (*s == '\n' || *s == '\0')	/* blank line: skip, keep prev */
++			continue;
++		if (tabs && !spaces) {
 +			tab_lines++;
-+		else if (spaces && spaces <= 128) {
++		} else if (spaces) {
 +			space_lines++;
-+			hist[spaces]++;
++			int d = spaces - prev;
++			if (d > 0 && d <= 128)
++				delta[d]++;
++			prev = spaces;
++		} else
++			prev = 0;		/* dedent to column 0 */
++	}
++	if (tab_lines > space_lines) {
++		p->et = xet = 0;
++	} else if (space_lines > 0) {
++		int best = 0, bestn = 0;
++		for (int d = 1; d <= 128; d++)
++			if (delta[d] > bestn) {
++				bestn = delta[d];
++				best = d;
++			}
++		if (best) {
++			p->et = xet = 1;
++			p->sw = xsw = best;
 +		}
 +	}
-+	if (tab_lines <= space_lines && space_lines > 0) {
-+		int g = 0;
-+		for (int j = 1; j <= 128; j++)
-+			if (hist[j])
-+				g = g ? gcd(g, j) : j;
-+		if (g < 2 || g > 8)
-+			g = 4;
-+		p->et = xet = 1;
-+		p->sw = xsw = g;
-+		p->ts = xts = g;
-+	} else if (tab_lines > space_lines)
-+		p->et = xet = 0;
 +}
 +
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
-@@ -652,6 +710,8 @@ void ex_bufpostfix(struct buf *p, int clear)
+@@ -652,6 +706,8 @@ void ex_bufpostfix(struct buf *p, int clear)
  	p->mtime = mtime(p->path);
  	p->ft = syn_filetype(p->path);
  	lbuf_saved(p->lb, clear);
@@ -555,7 +547,7 @@ index 7d15e0d8..8b16f946 100644
  }
  
  static void *ec_setpath(char *loc, char *cmd, char *arg)
-@@ -1550,6 +1610,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+@@ -1550,6 +1606,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
@@ -565,7 +557,7 @@ index 7d15e0d8..8b16f946 100644
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
  _EO(left,
-@@ -1595,6 +1658,7 @@ static struct excmd {
+@@ -1595,6 +1654,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -573,7 +565,7 @@ index 7d15e0d8..8b16f946 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1605,6 +1669,7 @@ static struct excmd {
+@@ -1605,6 +1665,7 @@ static struct excmd {
  	{"f>", ec_find},
  	{"f<", ec_find},
  	{"f", ec_fuzz},
@@ -581,7 +573,7 @@ index 7d15e0d8..8b16f946 100644
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
-@@ -1634,6 +1699,7 @@ static struct excmd {
+@@ -1634,6 +1695,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
