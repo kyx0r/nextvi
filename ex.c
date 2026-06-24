@@ -735,7 +735,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 {
 	char msg[512], *path, *ret = NULL;
 	sbuf ibuf;
-	int fd, beg, end, o1 = -1, o2 = -1;
+	int fd, quit = xquit;
+	int beg, end, o1 = -1, o2 = -1;
 	path = arg[0] ? arg : xb_path;
 	if (cmd[0] == 'x' && !xb->modified)
 		return ec_quit("", cmd, "");
@@ -750,6 +751,9 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 		xb->modified = 0;
 		ret = ec_quit("", cmd, "");
 		xb->modified = modified;
+		if (xquit < 0)
+			quit = xquit;
+		swap(&quit, &xquit);
 	}
 	if (arg[0] == '!') {
 		if (ret)
@@ -757,6 +761,7 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 		lbuf_region(xb, &ibuf, beg, MAX(0, o1), end-1, o2);
 		ret = ex_pipeout(arg + 1, &ibuf);
 		free(ibuf.s);
+		xquit = quit;
 		return NULL;
 	} else if (ret)
 		return "other buffers modified";
@@ -785,6 +790,7 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 		ec_setpath(NULL, NULL, path);
 	lbuf_saved(xb, 0);
 	ex_buf->mtime = mtime(path);
+	xquit = quit;
 	return NULL;
 }
 
