@@ -1223,11 +1223,14 @@ static void emit_search(FILE *out, char **anchors, int nanchors,
 	if (nanchors > 0 && !anchors[nanchors - 1][0])
 		fputc('\n', out);
 	EMIT_SEP(out);
+	emit_err_check(out, target_line);
 	if (grp) {
+		/* reset the search group. Must come AFTER the error check:
+		 * grp 0 succeeds and would otherwise overwrite xpret, masking
+		 * a failed f> search from the ??! check above. */
 		fputs("grp 0", out);
 		EMIT_SEP(out);
 	}
-	emit_err_check(out, target_line);
 	if (single) {
 		fputs("98reg", out);
 		EMIT_SEP(out);
@@ -1673,14 +1676,16 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 		} else
 			fputs(first ? "%;f> " : "%;f+ ", out);
 		emit_chain_pattern(out, &ps[n]);
+		EMIT_ESCSEP(out);
+		fprintf(out, "%d??", n);
 		if (g2) {
 			/* reset the search group on both match and no-match
-			 * paths before the tag check */
+			 * paths. Must come AFTER the <n>?? tag capture above,
+			 * otherwise the tag records grp 0's (always-success)
+			 * status instead of the f> search's. */
 			EMIT_ESCSEP(out);
 			fputs("grp 0", out);
 		}
-		EMIT_ESCSEP(out);
-		fprintf(out, "%d??", n);
 		EMIT_ESCSEP(out);
 		fprintf(out, "%d??", n);
 		if (ps[n].offset)
