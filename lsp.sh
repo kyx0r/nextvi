@@ -76,17 +76,17 @@ ${SEP}'0s/\\?\\|\\\\\\\\/?|lsp|\\\\\\\\/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${
 		ex_bufpostfix\\(ex_buf, arg\\[0\\]\\);.*?
 (		syn_setft\\(xb_ft\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:425:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:425${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?%;f+ 			ec_setpath\\(NULL, NULL, path\\);
-		lbuf_saved\\(xb, 0\\);
-		ex_buf->mtime = mtime\\(path\\);
-	}
-	if \\(cmd\\[0\\] == 'x' \\|\\| \\(cmd\\[0\\] == 'w' && cmd\\[1\\] == 'q'\\)\\)
-		ec_quit\\(\"\", cmd, \"\"\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 			ec_setpath\\(NULL, NULL, path\\);
-		lbuf_saved\\(xb, 0\\);
-		ex_buf->mtime = mtime\\(path\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:777:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 			ec_setpath\\(NULL, NULL, path\\);.*?
-		lbuf_saved\\(xb, 0\\);.*?
-(		ex_buf->mtime = mtime\\(path\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:777:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:777${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?%;f+ 		ec_setpath\\(NULL, NULL, path\\);
+	lbuf_saved\\(xb, 0\\);
+	ex_buf->mtime = mtime\\(path\\);
+	xquit = quit;
+	return NULL;
+}${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		ec_setpath\\(NULL, NULL, path\\);
+	lbuf_saved\\(xb, 0\\);
+	ex_buf->mtime = mtime\\(path\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:792:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		ec_setpath\\(NULL, NULL, path\\);.*?
+	lbuf_saved\\(xb, 0\\);.*?
+(	ex_buf->mtime = mtime\\(path\\);)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:792:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:792${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	return NULL;
 \\)
 
@@ -96,8 +96,8 @@ ${SEP}?%;f+ 	return NULL;
 ${ESC}${SEP}0??${ESC}${SEP}0??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	return NULL;
 \\)
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1564:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1564${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1577:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1577${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	EO\\(hlp\\),
 	EO\\(hlr\\),
 	EO\\(hl\\),
@@ -105,17 +105,17 @@ ${SEP}?%;f+ 	EO\\(hlp\\),
 	EO\\(lim\\),
 	EO\\(led\\),${ESC}${SEP}0??${ESC}${SEP}0??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	EO\\(hlp\\),
 	EO\\(hlr\\),
-	EO\\(hl\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1655:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(hlp\\),.*?
+	EO\\(hl\\),${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1668:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	EO\\(hlp\\),.*?
 	EO\\(hlr\\),.*?
-(	EO\\(hl\\),)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1655:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1655${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	EO\\(hl\\),)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1668:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1668${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:425:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 		if (*xb_path)
-			lsp_save(xb_path);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:777:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'1a 	if (*xb_path)
+		lsp_save(xb_path);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:792:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
@@ -133,9 +133,9 @@ ${SEP}'2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1564:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1577:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3a 	{\"lsp\", ec_lsp},
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1655:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1668:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}${LB}
 ${SEP}i /*
  * MIT License
  *
@@ -1801,7 +1801,7 @@ index c2c5c4b4..f73c4fa7 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7d15e0d8..efe3100c 100644
+index e25bd6f5..bdf6b281 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -423,6 +423,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -1813,16 +1813,16 @@ index 7d15e0d8..efe3100c 100644
  	}
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-@@ -775,6 +777,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
- 			ec_setpath(NULL, NULL, path);
- 		lbuf_saved(xb, 0);
- 		ex_buf->mtime = mtime(path);
-+		if (*xb_path)
-+			lsp_save(xb_path);
- 	}
- 	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
- 		ec_quit("", cmd, "");
-@@ -1562,6 +1566,23 @@ _EO(left,
+@@ -790,6 +792,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+ 		ec_setpath(NULL, NULL, path);
+ 	lbuf_saved(xb, 0);
+ 	ex_buf->mtime = mtime(path);
++	if (*xb_path)
++		lsp_save(xb_path);
+ 	xquit = quit;
+ 	return NULL;
+ }
+@@ -1575,6 +1579,23 @@ _EO(left,
  	return NULL;
  )
  
@@ -1846,7 +1846,7 @@ index 7d15e0d8..efe3100c 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1653,6 +1674,7 @@ static struct excmd {
+@@ -1666,6 +1687,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),
