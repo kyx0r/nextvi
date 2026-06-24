@@ -43,7 +43,7 @@ static void file_index(struct lbuf *buf)
 	int ln_n = lbuf_len(buf), n;
 	rset *rs = rset_smake(xacreg ? xacreg->s : reg,
 		xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
-	if (!rs)
+	if (!rs || grp >= rs->nsubc)
 		return;
 	int subs[rs->nsubc];
 	sbuf_smake(ibuf, 1024)
