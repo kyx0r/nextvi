@@ -51,6 +51,7 @@ static int xexp = '%';		/* ex command internal state expand  */
 static int xexe = '!';		/* ex command external command expand */
 static char xuerr[] = "unreported error";
 static char xserr[] = "syntax error";
+static char xgerr[] = "invalid grp";
 static char xirerr[] = "invalid range";
 static char xrnferr[] = "range not found";
 static char *xrerr;
@@ -269,6 +270,9 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		free(e);
 		if (!xkwdrs) {
 			xrerr = xserr;
+			return -1;
+		} else if (xgrp >= xkwdrs->nsubc) {
+			xrerr = xgerr;
 			return -1;
 		}
 		if (lbuf_search(xb, xkwdrs, xkwddir, row ? beg : 0, end,
@@ -560,6 +564,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	ex_krsset(arg, dir);
 	if (!xkwdrs)
 		return xserr;
+	else if (xgrp >= xkwdrs->nsubc)
+		return xgerr;
 	if ((xdefreg || o1 >= 0) && dir > 0) {
 		int offs[xkwdrs->nsubc];
 		int r2 = end - 1;
@@ -1096,9 +1102,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	pat = ex_re_read(&s);
 	if (pat && (*pat || !rs))
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
-	if (!rs) {
+	if (!rs || xgrp >= rs->nsubc) {
+		if (rs != xkwdrs)
+			rset_free(rs);
 		free(pat);
-		return xserr;
+		return rs ? xgerr : xserr;
 	}
 	if (pat && *s) {
 		s--;
