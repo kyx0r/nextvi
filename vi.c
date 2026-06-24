@@ -323,7 +323,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 		free(kw);
 	} else if (msg)
 		ex_krsset(ex_regget('/') ? ex_regget('/')->s : NULL, xkwddir);
-	if (!lbuf_len(xb) || (!xkwddir || !xkwdrs))
+	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || xgrp >= xkwdrs->nsubc)
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
