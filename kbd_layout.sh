@@ -46,7 +46,7 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 
 static char \\*kmap_fa\\[256\\] = \\{${ESC}${SEP}0??${ESC}${SEP}0??+1m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{
 	\\[0\\] = \"en\",${ESC}${SEP}1??${ESC}${SEP}1??+1m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{.*?
-(	\\[0\\] = \"en\",)${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a2${SEP}${LB}
+(	\\[0\\] = \"en\",)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 	['y'] = \"h\",
@@ -66,7 +66,7 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2:m0${ESC}${SEP}
 			\\*ibuf = 0;
 		}${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			err:.*?
 			\\*ibuf = 0;.*?
-(		})${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a2${SEP}${LB}
+(		})${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:169${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])

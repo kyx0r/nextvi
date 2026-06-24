@@ -50,7 +50,7 @@ ${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 		
 	if \\(!\\(xvis & 4\\)\\)
 		ex_print\\(msg, bar_ft\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:431:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);.*?
 	if \\(!\\(xvis & 4\\)\\).*?
-(		ex_print\\(msg, bar_ft\\))${ESC}${SEP}grp 0${ESC}${SEP}2??${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:431:a2${SEP}${LB}
+(		ex_print\\(msg, bar_ft\\))${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:431:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:431${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
@@ -77,7 +77,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7d15e0d8..6245e469 100644
+index e25bd6f5..3c2656ec 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -429,6 +429,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
