@@ -670,7 +670,8 @@ ${SEP}'1,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:227:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2s/>n/>rs->n/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:274:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2c 		} else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2) {
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:274:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:441:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4s/et_s/tr_/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:470:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5s/regex->//${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:472:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -678,13 +679,14 @@ ${SEP}'6s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:47
 ${SEP}'7s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:517:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'8s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:544:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'9s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:553:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'10s/>n/>rs->n/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:567:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'10c 	else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:567:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'11s/nsubc/rs ? xkwdrs->rs->nsubc : 2/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:570:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'12s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:579:m12${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'13s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:589:m13${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'14s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1097:m14${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'15,#+1c 		rs = rstr_make(pat, xic ? REG_ICASE : 0);
-	if (!rs || xgrp >= rs->rs->nsubc) {
+	if (!rs || ((rs->rs && xgrp >= rs->rs->nsubc) || xgrp >= 2)) {
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1104:m15${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'16s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1107:m16${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'17s/nsubc/rs ? rs->rs->nsubc : 2/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1116:m17${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -997,7 +999,7 @@ ${SEP}?%;f+ 				memcpy\\(cpath, ptrs\\[i\\], pathlen \\+ len\\);
 (				if \\(!fsincl \\|\\| rset_match\\(fsincl, cpath, 0\\)\\) \\{)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:419:a6${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:419${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0s/>n/>rs->n/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:326:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'0s/xgrp >= xkwdrs->nsubc/((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:326:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:380:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:419:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b4${SEP}%ya 98${SEP}?%;f> 	int nsubc;		/\\* total sub count \\*/
 	int n;			/\\* number of regular expressions in this set \\*/
@@ -1133,7 +1135,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index ed899f2d..b9f0bcef 100644
+index ed899f2d..6e58c030 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ int xsep = ':';			/* ex command separator */
@@ -1163,7 +1165,7 @@ index ed899f2d..b9f0bcef 100644
  			xrerr = xserr;
  			return -1;
 -		} else if (xgrp >= xkwdrs->nsubc) {
-+		} else if (xgrp >= xkwdrs->rs->nsubc) {
++		} else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2) {
  			xrerr = xgerr;
  			return -1;
  		}
@@ -1228,7 +1230,7 @@ index ed899f2d..b9f0bcef 100644
  	if (!xkwdrs)
  		return xserr;
 -	else if (xgrp >= xkwdrs->nsubc)
-+	else if (xgrp >= xkwdrs->rs->nsubc)
++	else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)
  		return xgerr;
  	if ((xdefreg || o1 >= 0) && dir > 0) {
 -		int offs[xkwdrs->nsubc];
@@ -1269,7 +1271,7 @@ index ed899f2d..b9f0bcef 100644
 -		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 -	if (!rs || xgrp >= rs->nsubc) {
 +		rs = rstr_make(pat, xic ? REG_ICASE : 0);
-+	if (!rs || xgrp >= rs->rs->nsubc) {
++	if (!rs || ((rs->rs && xgrp >= rs->rs->nsubc) || xgrp >= 2)) {
  		if (rs != xkwdrs)
 -			rset_free(rs);
 +			rstr_free(rs);
@@ -1535,7 +1537,7 @@ index 3c09a752..4db32911 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index b674c703..6782a018 100644
+index b674c703..035bb6f7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -323,7 +323,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
@@ -1543,7 +1545,7 @@ index b674c703..6782a018 100644
  	} else if (msg)
  		ex_krsset(ex_regget('/') ? ex_regget('/')->s : NULL, xkwddir);
 -	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || xgrp >= xkwdrs->nsubc)
-+	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || xgrp >= xkwdrs->rs->nsubc)
++	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2))
  		return 1;
  	dir = cmd == 'N' ? -xkwddir : xkwddir;
  	for (i = 0; i < cnt; i++) {
