@@ -97,14 +97,20 @@ redelta() {
 
 	git add .
 	git diff --staged > /tmp/tmp.patch
+	git reset
 	sed '/^=== PATCH2VI PATCH ===$/q' "$1" > /tmp/tmp.sh
 	mv /tmp/tmp.sh "$1"
 	cat /tmp/tmp.patch >> "$1"
+	ita=$(git diff --name-only --diff-filter=A -- ":!$1")
+	[ -n "$ita" ] && git reset -q -- $ita
+	stashed=$(git diff --name-only --diff-filter=MD -- ":!$1")
+	[ -n "$stashed" ] && git stash push -q -- $stashed
 	./patch2vi -d "$1" > "_$1"
+	[ -n "$stashed" ] && git stash pop -q
+	[ -n "$ita" ] && git add -N -- $ita
 	mv "_$1" "$1"
 	chmod +x "$1"
 	echo "Generated: $1" >&2
-	git reset
 }
 
 # Re-run patch2vi-generated script(s) and refresh their embedded delta from the
