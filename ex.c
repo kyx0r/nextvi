@@ -735,7 +735,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 {
 	char msg[512], *path, *ret = NULL;
 	sbuf ibuf;
-	int fd, beg, end, o1 = -1, o2 = -1;
+	int fd, quit = xquit;
+	int beg, end, o1 = -1, o2 = -1;
 	path = arg[0] ? arg : xb_path;
 	if (cmd[0] == 'x' && !xb->modified)
 		return ec_quit("", cmd, "");
@@ -745,40 +746,52 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 		beg = 0;
 		end = lbuf_len(xb);
 	}
+	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q')) {
+		int modified = xb->modified;
+		xb->modified = 0;
+		ret = ec_quit("", cmd, "");
+		xb->modified = modified;
+		if (xquit < 0)
+			quit = xquit;
+		swap(&quit, &xquit);
+	}
 	if (arg[0] == '!') {
+		if (ret)
+			return ret;
 		lbuf_region(xb, &ibuf, beg, MAX(0, o1), end-1, o2);
 		ret = ex_pipeout(arg + 1, &ibuf);
 		free(ibuf.s);
-	} else {
-		if (!strchr(cmd, '!')) {
-			if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
-				return "write failed: file changed";
-			if (arg[0] && mtime(path) >= 0)
-				return "write failed: file exists";
-		}
-		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode);
-		if (fd < 0)
-			return "write failed: cannot create file";
-		if (o1 >= 0) {
-			lbuf_region(xb, &ibuf, beg, o1, end-1, o2);
-			o1 = write(fd, ibuf.s, ibuf.s_n);
-			free(ibuf.s);
-		} else
-			o1 = lbuf_wr(xb, fd, beg, end);
-		close(fd);
-		if (o1 < 0)
-			return "write failed";
-		snprintf(msg, sizeof(msg), "\"%s\" %dL [w]",
-				path, end - beg);
-		ex_print(msg, bar_ft)
-		if (strcmp(xb_path, path))
-			ec_setpath(NULL, NULL, path);
-		lbuf_saved(xb, 0);
-		ex_buf->mtime = mtime(path);
+		xquit = quit;
+		return NULL;
+	} else if (ret)
+		return "other buffers modified";
+	if (!strchr(cmd, '!')) {
+		if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
+			return "write failed: file changed";
+		if (arg[0] && mtime(path) >= 0)
+			return "write failed: file exists";
 	}
-	if (cmd[0] == 'x' || (cmd[0] == 'w' && cmd[1] == 'q'))
-		ec_quit("", cmd, "");
-	return ret;
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, conf_mode);
+	if (fd < 0)
+		return "write failed: cannot create file";
+	if (o1 >= 0) {
+		lbuf_region(xb, &ibuf, beg, o1, end-1, o2);
+		o1 = write(fd, ibuf.s, ibuf.s_n);
+		free(ibuf.s);
+	} else
+		o1 = lbuf_wr(xb, fd, beg, end);
+	close(fd);
+	if (o1 < 0)
+		return "write failed";
+	snprintf(msg, sizeof(msg), "\"%s\" %dL [w]",
+			path, end - beg);
+	ex_print(msg, bar_ft)
+	if (strcmp(xb_path, path))
+		ec_setpath(NULL, NULL, path);
+	lbuf_saved(xb, 0);
+	ex_buf->mtime = mtime(path);
+	xquit = quit;
+	return NULL;
 }
 
 static void *ec_termexec(char *loc, char *cmd, char *arg)
