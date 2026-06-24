@@ -1316,9 +1316,9 @@ CODE MAP
      | 665 lbuf.c   |  file/line buffer    |
      | 726 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
-     | 1847 ex.c    |  ex options/commands |
+     | 1855 ex.c    |  ex options/commands |
      | 1878 vi.c    |  normal mode/general |
-     | 7639 total   |  wc -l *.c|sort      |
+     | 7647 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
