@@ -935,7 +935,8 @@ static void emit_escaped_text(FILE *out, const char *s);
  * per ex_region(): beg = xrow, end = xrow+1 when vaddr == 0.
  *
  * Commands that advance xrow (and thus affect subsequent relative addresses):
- *   a (append)     - ec_insert: xrow = beg + inserted_lines - 1
+ *   i (insert)     - ec_insert: inserts after the addressed line ("0i" is
+ *                    above line 1); xrow = beg + inserted_lines - 1
  *   c (change)     - ec_insert: xrow = end + inserted_lines - deleted - 1
  *   d (delete)     - ec_delete: xrow = beg (or last line if past end)
  *   f>/f+/f- (find)- ec_find: xrow = matched line, xoff = match position
@@ -972,8 +973,9 @@ static void emit_content(FILE *out, char **texts, int ntexts)
 }
 
 /* Emit ex commands for inserting text after line N.
+ * "Ni" inserts after line N; "0i" inserts above the first line.
  * New files have an empty buffer with no addressable line, so the
- * insert is emitted bare ("i"); otherwise always numbered ("1i"). */
+ * insert is emitted bare ("i"). */
 static void emit_insert_after(FILE *out, int line, char **texts, int ntexts,
 			      int is_new)
 {
@@ -983,9 +985,9 @@ static void emit_insert_after(FILE *out, int line, char **texts, int ntexts,
 	if (is_new)
 		fprintf(out, "i ");
 	else if (line <= 0)
-		fprintf(out, "1i ");
+		fprintf(out, "0i ");
 	else
-		fprintf(out, "%da ", line);
+		fprintf(out, "%di ", line);
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
 }
@@ -1300,7 +1302,7 @@ typedef struct group_s {
 	/* Two-phase emission state, set in phase 1, read in phase 2 */
 	int res_strat;           /* resolved strategy */
 	int mark_id;             /* line mark id, -1 = no mark */
-	int insert_i;            /* pure add: use i (insert) instead of a */
+	int insert_i;            /* pure add: insert before mark ('N-1i) vs after ('Ni) */
 } group_t;
 
 /* Emit a line with exarg + shell escaping only (no regex escaping).
@@ -1538,7 +1540,7 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
  *
  * The captured last line IS the target, marked at offset 0: a change/delete
  * hunk captures the first deleted line (edited in place), a pure insert
- * captures the last anchor (the phase-2 ":a" appends the new lines after it,
+ * captures the last anchor (the phase-2 "'Ni" appends the new lines after it,
  * so offset 0 is correct - no +1). Like the fuzzed windows
  * this is only trustworthy when the original file is readable, so it is
  * file-validated: emitted only when the wrapped window resolves to exactly
@@ -1591,7 +1593,7 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 	out->lines = lines;
 	out->nlines = n;
 	/* The mark sits on the captured last line (offset 0) in both shapes:
-	 * change/delete edits at del_start, and a pure insert's phase-2 ":a"
+	 * change/delete edits at del_start, and a pure insert's phase-2 "'Ni"
 	 * already appends after the marked last anchor, so no +1 is needed. */
 	out->offset = 0;
 	out->mode = 2;   /* grp register search */
@@ -1736,7 +1738,7 @@ static void emit_mark_delete(FILE *out, int line, int mark_id, int count)
 	emit_err_check_mark(out, line, mark_id);
 }
 
-/* Phase 2: insert at a mark (a after the mark, i before it).
+/* Phase 2: insert at a mark ("'Ni" after the mark, "'N-1i" before it).
  * mark_id < 0 means a new file's empty buffer: no line to mark,
  * so the insert is emitted bare. */
 static void emit_mark_insert(FILE *out, int line, int mark_id, int use_i,
@@ -1746,8 +1748,10 @@ static void emit_mark_insert(FILE *out, int line, int mark_id, int use_i,
 		return;
 	if (mark_id < 0)
 		fputs("i ", out);
+	else if (use_i)
+		fprintf(out, "'%d-1i ", mark_id);
 	else
-		fprintf(out, "'%d%c ", mark_id, use_i ? 'i' : 'a');
+		fprintf(out, "'%di ", mark_id);
 	emit_content(out, texts, ntexts);
 	EMIT_SEP(out);
 	emit_err_check_mark(out, line, mark_id);
@@ -2317,8 +2321,9 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		 * user can remove them; emit respects the edit. */
 		fprintf(fp, "%s\n", end_tag_wr);
 		/* Pure adds position on the line to append after, so the
-		 * displayed offsets include the -1 step the a verb implies
-		 * (matching the a/i choice in the rel EDIT COMMAND). */
+		 * displayed offsets include the -1 step the append-after "i"
+		 * implies (matching the "i"/"-1i" choice in the rel EDIT
+		 * COMMAND). */
 		int pure_add = !g->del_start && g->nadd;
 		int add_a = pure_add && default_offset - 1 >= 0;
 		char **praw = emalloc((g->ndel + 7) * sizeof(char *));
@@ -2449,9 +2454,9 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				if (is_new)
 					fputs("i", fp);
 				else if (g->add_after <= 0)
-					fputs("1i", fp);
+					fputs("0i", fp);
 				else
-					fprintf(fp, "%da", g->add_after);
+					fprintf(fp, "%di", g->add_after);
 				WG_CONTENT(fp);
 			}
 		}
@@ -2501,7 +2506,7 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 					else
 						fprintf(fp, ",#+%dd\n", g->ndel - 1);
 				} else if (g->nadd) {
-					fputs(add_a ? "a" : "i", fp);
+					fputs(add_a ? "i" : "-1i", fp);
 					WG_CONTENT(fp);
 				}
 			}
@@ -3470,7 +3475,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 
 		/* Pure insert: position lands on the line to append after.
 		 * Custom edit lines carry their own verb and a verb-relative
-		 * offset (the displayed "+Na" already includes the a step),
+		 * offset (the displayed "+Ni" already includes the insert step),
 		 * so no adjustment is applied for them. */
 		if (!g->del_start && g->nadd
 		    && !(g->custom_rel_lines && g->custom_rel_nlines > 0)) {
