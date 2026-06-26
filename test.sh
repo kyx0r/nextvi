@@ -1150,6 +1150,80 @@ check 'P11 ? ?? 1?\\:p — ex separator escape' \
 	"unknown command
 irrelevant" "$out"
 
+# --- line-0 address for edit commands / :a removal --------------------------
+# A line-0 address means "above the first line". Only the absolute 0 resolves
+# there; relative addresses (-1, ., +1) need an existing referent line, so on
+# an empty buffer they error. Insert-family commands (i, pu) accept the line-0
+# region; commands that need a real line (c, and the whole-buffer commands
+# r/w/ef) reject it. :a was removed and folded into i + the line-0 address.
+
+printf 'a\nb\nc\n' > "$TMPFILE"
+out=$(run_ex ':0i TOP:%p:q!')
+check ':0i inserts above first line' "$(printf 'TOP\na\nb\nc')" "$out"
+
+printf 'a\nb\nc\n' > "$TMPFILE"
+out=$(run_ex ':-1i TOP:%p:q!')
+check ':-1i from line 1 inserts above first line' "$(printf 'TOP\na\nb\nc')" "$out"
+
+# :a removed; with no address the unknown command is reported (with an address
+# ex just seeks to it and ignores the rest, so use the no-address form here)
+printf 'a\nb\nc\n' > "$TMPFILE"
+out=$(run_ex ':a X:%p:q!')
+check ':a command removed' "$(printf 'unknown command\na\nb\nc')" "$out"
+
+# :c needs a real line to change -> line-0 rejected
+printf 'a\nb\nc\n' > "$TMPFILE"
+out=$(run_ex ':0c X:%p:q!')
+check ':0c errors (change needs a real line)' "$(printf '%s\na\nb\nc' "$INVRANGE")" "$out"
+
+printf 'x\ny\nz\n' > "$TMPFILE"
+out=$(run_ex ':2ya 97:0pu 97:%p:q!')
+check ':0pu pastes above first line' "$(printf 'y\nx\ny\nz')" "$out"
+
+# empty buffer: only the absolute 0 resolves above the (nonexistent) first line
+printf '' > "$TMPFILE"
+out=$(run_ex ':0i TOP:%p:q!')
+check ':0i bootstraps empty buffer' 'TOP' "$out"
+
+printf '' > "$TMPFILE"
+out=$(run_ex ':-1i TOP:%p:q!')
+check ':-1i errors on empty buffer (no referent)' \
+	"$(printf '%s\n%s' "$INVRANGE" "$INVRANGE")" "$out"
+
+# :! filters existing lines; only the absolute 0 bootstraps an empty buffer
+printf 'a\nb\n' > "$TMPFILE"
+out=$(run_ex ':0!echo HI:%p:q!')
+check ':0! errors on non-empty buffer (no line 0)' \
+	"$(printf '%s\na\nb' "$INVRANGE")" "$out"
+
+printf '' > "$TMPFILE"
+out=$(run_ex ':0!echo HI:%p:q!')
+check ':0! fills empty buffer' 'HI' "$out"
+
+printf '' > "$TMPFILE"
+out=$(run_ex ':-1!echo HI:%p:q!')
+check ':-1! errors on empty buffer (no referent)' \
+	"$(printf '%s\n%s' "$INVRANGE" "$INVRANGE")" "$out"
+
+# whole-buffer commands (r/w/ef) reject line-0 and out-of-range absolute
+# addresses; a rejected :r must leave the current buffer intact
+printf 'a\nb\n' > "$TMPFILE"
+out=$(run_ex ':0r \!printf X:%p:q!')
+check ':0r errors and keeps buffer' "$(printf '%s\na\nb' "$INVRANGE")" "$out"
+
+printf 'a\nb\n' > "$TMPFILE"
+out=$(run_ex ':99r \!printf X:%p:q!')
+check ':99r out-of-range errors and keeps buffer' \
+	"$(printf '%s\na\nb' "$INVRANGE")" "$out"
+
+printf 'a\nb\nc\n' > "$TMPFILE"
+out=$(run_ex ':99w /dev/null:%p:q!')
+check ':99w out-of-range errors' "$(printf '%s\na\nb\nc' "$INVRANGE")" "$out"
+
+printf 'a\nb\nc\n' > "$TMPFILE"
+out=$(run_ex ':0f>b:%p:q!')
+check ':0 fuzz-search errors' "$(printf '%s\na\nb\nc' "$INVRANGE")" "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
