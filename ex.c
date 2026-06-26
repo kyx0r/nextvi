@@ -700,8 +700,10 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	xoff = 0;
 	if (!*loc || (e = ex_region(loc, &beg, &end, &o1, &o2))) {
 		end = lbuf_len(xb);
-		if (!end || (*loc && e != 2))
-			return xrerr;
+		if (!end || (*loc && e != 2)) {
+			ret = xrerr;
+			goto err;
+		}
 		beg = 0;
 	}
 	lbuf_region(lb, &obuf, beg, o1, end-1, o2);
