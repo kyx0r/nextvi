@@ -237,7 +237,7 @@ void ex_krsset(char *kwd, int dir)
 
 static int ex_range(char *ploc, char **num, int n, int *row)
 {
-	int dir, off, beg, end, adj = 0;
+	int dir, off, beg, end;
 	switch (**num) {
 	case '.':
 		++*num;
@@ -284,7 +284,6 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		break;
 	default:
 		if (uc_isdigit(**num)) {
-			adj = !row;
 			n = atoi(*num);
 			while (uc_isdigit(**num))
 				++*num;
@@ -307,7 +306,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		for (++*num; uc_isdigit(**num);)
 			++*num;
 	}
-	return n - adj;
+	return n;
 }
 
 /* parse ex command addresses */
@@ -315,7 +314,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 {
 	int vaddr = *loc == '%', haddr = 0, update = 0;
-	int row = xrow, ooff = xoff, ret = 1;
+	int row = xrow, ooff = xoff, ret = 1, adj = 0;
 	char *ploc = loc, *cmd = NULL;
 	xrerr = xirerr;
 	if (vaddr)
@@ -345,11 +344,12 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 				update = loc[1] == '#';
 				loc += 1 + update;
 			}
+			adj = uc_isdigit(*loc);
 			row = ex_range(ploc, &loc, update ? row : xrow, NULL);
 			if (vaddr++ % 2)
-				*end = row + 1;
+				*end = row + 1 - adj;
 			else
-				*beg = row;
+				*beg = row - adj;
 		}
 		while (*loc && *loc != '|' && *loc != ';' && *loc != ',')
 		        loc++;
@@ -358,8 +358,10 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 		*beg = xrow;
 		*end = MIN(lbuf_len(xb), *beg + 1);
 		ret += cmd && !haddr;
-	} else if (vaddr == 1)
+	} else if (vaddr == 1) {
 		*end = *beg + 1;
+		ret += adj << 1;
+	}
 	return (*beg < 0 || *beg >= lbuf_len(xb) ||
 		*end <= *beg || *end > lbuf_len(xb)) * ret;
 }
@@ -441,21 +443,22 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	rset *rs;
 	char *path, *p, buf[128], trunc[128], *sret = NULL;
 	int c, pos, subs[2], inst = -1, lnum = -1;
-	int beg, end, max = INT_MAX, dwid1, dwid2;
+	int beg, end, max = INT_MAX, dwid1, dwid2, e = 0;
 	int flg = REG_NEWLINE | REG_NOCAP;
 	int pflg = ((xvis & 2) == 0) * 2;
 	ins_state is;
 	ins_init(is)
 	if (*cmd !='f')
 		temp_switch(1, 0);
-	if (!*loc) {
-		beg = 0;
+	if (!*loc || (e = ex_vregion(loc, &beg, &end))) {
 		end = lbuf_len(xb);
+		if (!end || (*loc && e != 2)) {
+			if (*cmd !='f')
+				temp_switch(1, 1);
+			return xrerr;
+		}
+		beg = 0;
 		max = xrows ? xrows * 3 : end;
-	} else if (ex_vregion(loc, &beg, &end)) {
-		if (*cmd !='f')
-			temp_switch(1, 1);
-		return xrerr;
 	}
 	snprintf(trunc, sizeof(trunc), "truncated to %d lines", max);
 	dwid1 = itoalen(max - 1);
@@ -558,7 +561,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 {
 	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
 	if ((e = ex_region(loc, &beg, &end, &o1, &o2)))
-		if (!xdefreg || (*loc && e == 1))
+		if (!xdefreg || (*loc && e != 2))
 			return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
 	ex_krsset(arg, dir);
@@ -696,16 +699,13 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	xrow = 0;
 	xoff = 0;
 	if (!*loc || (e = ex_region(loc, &beg, &end, &o1, &o2))) {
-		if (*loc && e == 1) {
-			ret = xrerr;
-			goto err;
-		}
+		end = lbuf_len(xb);
+		if (!end || (*loc && e != 2))
+			return xrerr;
 		beg = 0;
-		end = lbuf_len(lb);
 	}
 	lbuf_region(lb, &obuf, beg, o1, end-1, o2);
-	if (obuf.s_n)
-		lbuf_edit(pxb, obuf.s, row, row, 0, 0);
+	lbuf_edit(pxb, obuf.s, row, row, 0, 0);
 	free(obuf.s);
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [r]", path, end - beg);
 	ex_print(msg, bar_ft)
@@ -747,7 +747,7 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 	if (cmd[0] == 'x' && !xb->modified)
 		return ec_quit("", cmd, "");
 	if (!*loc || (fd = ex_region(loc, &beg, &end, &o1, &o2))) {
-		if (*loc && fd == 1)
+		if (*loc && fd != 2)
 			return xrerr;
 		beg = 0;
 		end = lbuf_len(xb);
@@ -840,14 +840,19 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 
 static void *ec_insert(char *loc, char *cmd, char *arg)
 {
-	int key, beg, end, o1 = -1, o2 = -1, ps = 0;
-	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
-		if (*loc && key == 1)
-			return xrerr;
-		beg = MAX(0, MIN(lbuf_len(xb), xrow));
-		end = beg + 1;
-	}
+	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
 	sbuf _sb, *sb = &_sb;
+	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
+		if (*loc && cmd[0] != 'c' && beg == -1 && end == 0
+				&& (lbuf_len(xb) || key == 3))
+			beg = 0;
+		else if (*loc && key != 2)
+			return xrerr;
+		else {
+			beg = MAX(0, MIN(lbuf_len(xb), xrow));
+			end = beg + 1;
+		}
+	}
 	if (xvis & 1 && *arg) {
 		sb->s = arg;
 		sb->s_n = 1;
@@ -874,11 +879,8 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			sb->s_n--;
 		sbuf_null(sb)
 	}
-	if (cmd[0] == 'a' && (beg + 1 <= lbuf_len(xb))) {
-		beg++;
-		end = beg;
-	} else if (cmd[0] == 'i')
-		end = beg;
+	if (cmd[0] == 'i')
+		beg = end;
 	if (o1 >= 0 && cmd[0] == 'c') {
 		if (sb->s == arg)
 			sb->s_n = strlen(arg);
@@ -1024,10 +1026,13 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 		return ex_pipeout(arg + i + 1, buf);
 	int n = lbuf_len(xb), o1 = -1, o2 = -1;
 	if (!*loc || (i = ex_region(loc, &beg, &end, &o1, &o2))) {
-		if (*loc && i == 1)
+		if (*loc && i != 2 && !(beg == -1 && end == 0
+				&& (lbuf_len(xb) || i == 3)))
 			return xrerr;
-		beg = MAX(0, MIN(lbuf_len(xb), xrow));
-		end = beg + 1;
+		else if (!*loc || i == 2) {
+			beg = MAX(0, MIN(lbuf_len(xb), xrow));
+			end = beg + 1;
+		}
 	}
 	if (o1 >= 0) {
 		char *p = lbuf_joinsb(xb, end-1, end-1, buf, &o1, &o2);
@@ -1174,10 +1179,9 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 		return ex_pipeout(arg, NULL);
 	int beg, end, o1 = 0, o2 = -1, e;
 	if ((e = ex_region(loc, &beg, &end, &o1, &o2))) {
-		if (e == 1 && lbuf_len(xb))
+		if (lbuf_len(xb) || !(e == 3 && beg == -1 && end == 0))
 			return xrerr;
 		beg = 0;
-		end = 0;
 	}
 	sbuf text;
 	lbuf_region(xb, &text, beg, o1, end-1, o2);
@@ -1612,7 +1616,6 @@ static struct excmd {
 	{"p", ec_print},
 	EO(ai),
 	{"ac", ec_setacreg},
-	{"a", ec_insert},
 	EO(err),
 	{"ef!", ec_fuzz},
 	{"ef", ec_fuzz},
