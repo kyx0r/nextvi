@@ -1224,6 +1224,34 @@ printf 'a\nb\nc\n' > "$TMPFILE"
 out=$(run_ex ':0f>b:%p:q!')
 check ':0 fuzz-search errors' "$(printf '%s\na\nb\nc' "$INVRANGE")" "$out"
 
+# a line-0 address is whole-line only: pairing it with a ; column range is
+# rejected (the line above the first line has no columns to operate on)
+printf 'x\ny\nz\n' > "$TMPFILE"
+out=$(run_ex ':2ya 97:0;pu 97:%p:q!')
+check ':0;pu rejects column range on line 0' "$(printf '%s\nx\ny\nz' "$INVRANGE")" "$out"
+
+printf 'a\nb\n' > "$TMPFILE"
+out=$(run_ex ':0;!echo HI:%p:q!')
+check ':0;! rejects column range on non-empty buffer' \
+	"$(printf '%s\na\nb' "$INVRANGE")" "$out"
+
+# even on an empty buffer where absolute :0! bootstraps, a ; column range fails
+printf '' > "$TMPFILE"
+out=$(run_ex ':0;!echo HI:%p:q!')
+check ':0;! rejects column range bootstrapping empty buffer' \
+	"$(printf '%s\n%s' "$INVRANGE" "$INVRANGE")" "$out"
+
+# :c needs a real line, so line-0 (with or without a column range) is rejected
+printf 'a\nb\nc\n' > "$TMPFILE"
+out=$(run_ex ':0;c X:%p:q!')
+check ':0;c rejects column range on line 0' "$(printf '%s\na\nb\nc' "$INVRANGE")" "$out"
+
+# :i always ignores the column range, so :0;i stays self-consistent with :0i
+printf 'a\nb\nc\n' > "$TMPFILE"
+out=$(run_ex ':0;i TOP:%p:q!')
+check ':0;i ignores column range, inserts above first line' \
+	"$(printf 'TOP\na\nb\nc')" "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
