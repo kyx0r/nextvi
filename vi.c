@@ -900,7 +900,9 @@ static void vi_pipe(int r1, int r2)
 {
 	int mlen, ret;
 	char region[64], *p = region;
-	if (r1 == r2 && !vi_arg)
+	if (!lbuf_get(xb, r1))
+		*p++ = '0';
+	else if (r1 == r2 && !vi_arg)
 		*p++ = '.';
 	else {
 		p = itoa(r1+1, region);
