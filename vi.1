@@ -1,4 +1,4 @@
-.Dd Jun 24, 2026
+.Dd Jun 26, 2026
 .Dt Nextvi 1
 .Os Nextvi 6.0
 .
@@ -768,7 +768,7 @@ Example: set keyword from lines 1 to 3
 .Ed
 
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
-Enter ex insert mode before specified position
+Enter ex insert mode after specified position
 .Bd -literal
 [str] specifies initial input into the insertion buffer.
 [str] in raw ex mode is injected directly and bypasses the
@@ -782,6 +782,8 @@ Example: discard changes in vi/ex
 :i hello<^M><^C>
 Example: immediately insert "hello"
 :i hello<^V><ESC>
+Example: insert "hello" before specified position
+:-1i hello<^V><ESC>
 Example: insert "hello" in raw ex mode
 i hello
 Example: insert two lines in raw ex mode
@@ -789,9 +791,6 @@ i hello<^M>world
 Example: insert "hello" in raw ex mode (interactive)
 i<^M>hello<^M>.<^M>
 .Ed
-
-.It Cm [\fIvrange\fP]a[\fIstr\fP]
-Enter ex insert mode after specified position
 
 .It Cm [\fIrange\fP]c[\fIstr\fP]
 Enter ex change mode
@@ -1712,9 +1711,9 @@ _
  665 lbuf.c | file/line buffer
  726 led.c | insert mode/output
  751 regex.c | pikevm
- 1855 ex.c | ex options/commands
- 1878 vi.c | normal mode/general
- 7647 total | wc -l *.c\(basort
+ 1862 ex.c | ex options/commands
+ 1880 vi.c | normal mode/general
+ 7656 total | wc -l *.c\(basort
 _
 .TE
 .
