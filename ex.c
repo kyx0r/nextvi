@@ -443,16 +443,16 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	rset *rs;
 	char *path, *p, buf[128], trunc[128], *sret = NULL;
 	int c, pos, subs[2], inst = -1, lnum = -1;
-	int beg, end, max = INT_MAX, dwid1, dwid2, e = 0;
+	int beg, end, max = INT_MAX, dwid1, dwid2;
 	int flg = REG_NEWLINE | REG_NOCAP;
 	int pflg = ((xvis & 2) == 0) * 2;
 	ins_state is;
 	ins_init(is)
 	if (*cmd !='f')
 		temp_switch(1, 0);
-	if (!*loc || (e = ex_vregion(loc, &beg, &end))) {
+	if (!*loc || ex_vregion(loc, &beg, &end)) {
 		end = lbuf_len(xb);
-		if (!end || (*loc && e != 2)) {
+		if (!end || *loc) {
 			if (*cmd !='f')
 				temp_switch(1, 1);
 			return xrerr;
@@ -676,7 +676,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	sbuf obuf, *sb;
 	char msg[512];
 	char *path, *ret = NULL;
-	int beg, end, o1 = 0, o2 = -1, e;
+	int beg, end, o1 = 0, o2 = -1;
 	int row = xrow, off = xoff, fd = -1;
 	struct lbuf *lb = lbuf_make(), *pxb = xb;
 	path = arg[0] ? arg : xb_path;
@@ -698,9 +698,9 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	xb = lb;
 	xrow = 0;
 	xoff = 0;
-	if (!*loc || (e = ex_region(loc, &beg, &end, &o1, &o2))) {
+	if (!*loc || ex_region(loc, &beg, &end, &o1, &o2)) {
 		end = lbuf_len(xb);
-		if (!end || (*loc && e != 2)) {
+		if (!end || *loc) {
 			ret = xrerr;
 			goto err;
 		}
