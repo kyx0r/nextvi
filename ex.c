@@ -1028,7 +1028,7 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 		return ex_pipeout(arg + i + 1, buf);
 	int n = lbuf_len(xb), o1 = -1, o2 = -1;
 	if (!*loc || (i = ex_region(loc, &beg, &end, &o1, &o2))) {
-		if (*loc && i != 2 && !(beg == -1 && end == 0
+		if (*loc && i != 2 && !(beg == -1 && end == 0 && o1 < 0
 				&& (lbuf_len(xb) || i == 3)))
 			return xrerr;
 		else if (!*loc || i == 2) {
@@ -1179,12 +1179,14 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 {
 	if (!*loc)
 		return ex_pipeout(arg, NULL);
-	int beg, end, o1 = 0, o2 = -1, e;
+	int beg, end, o1 = -1, o2 = -1, e;
 	if ((e = ex_region(loc, &beg, &end, &o1, &o2))) {
-		if (lbuf_len(xb) || !(e == 3 && beg == -1 && end == 0))
+		if (lbuf_len(xb) || !(e == 3 && beg == -1 && end == 0 && o1 < 0))
 			return xrerr;
 		beg = 0;
 	}
+	if (o1 < 0)
+		o1 = 0;
 	sbuf text;
 	lbuf_region(xb, &text, beg, o1, end-1, o2);
 	sbuf *rep = cmd_pipe(arg, &text, 1, NULL);
