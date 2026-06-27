@@ -1673,16 +1673,34 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
  *   - top is a unique full line (count == 1) so the match anchors deterministically;
  *   - bottom is a unique full line AND carries its text nowhere from its own
  *     line to EOF, so greedy ".*" captures exactly it, not a later duplicate.
- * Only change/delete hunks are supported (del_start > 0); a pure insert has no
- * body to absorb and is left to the other strategies. Returns 1 and fills *out
- * (owned lines) on success, 0 otherwise.
+ * Change/delete hunks mark the first deleted line (del_start); pure inserts mark
+ * the line to append after (add_after), reached by the same offset machinery, and
+ * phase-2 "'Ni" appends after it. Returns 1 and fills *out (owned lines) on
+ * success, 0 otherwise.
  */
 static int gen_win_window(group_t *g, fuzzwin_t *out)
 {
-	if (!orig_lines || g->del_start <= 0 ||
-	    !window_at(g->del_texts, g->ndel, g->del_start - 1))
+	if (!orig_lines)
 		return 0;
-	int hunk_top = g->del_start - 1;   /* 0-based first hunk line (the target) */
+	/* 0-based line the mark must land on (the target). For a change/delete it is
+	 * the first deleted line; for a pure insert it is the existing line the new
+	 * text is appended after. Pristine: the deleted lines must still be present
+	 * (change/delete), or the added lines must NOT yet be present and the
+	 * insertion boundary must match the original (pure insert) - else the file is
+	 * not the pre-patch original and the offset would be wrong. */
+	int hunk_top;
+	if (g->del_start > 0) {
+		if (!window_at(g->del_texts, g->ndel, g->del_start - 1))
+			return 0;
+		hunk_top = g->del_start - 1;
+	} else {
+		if (g->nadd <= 0 || g->add_after < 1 || g->add_after > n_orig_lines ||
+		    g->nanchors < 1 ||
+		    strcmp(orig_lines[g->add_after - 1], g->anchors[g->nanchors - 1]) != 0 ||
+		    window_at(g->add_texts, g->nadd, g->add_after))
+			return 0;
+		hunk_top = g->add_after - 1;
+	}
 	/* The anchors must lie OUTSIDE the diff's shown region, not on its context
 	 * lines (those are exactly what may drift and what the other strategies
 	 * already key on). Skip past the whole enclosing @@ hunk - including all its
@@ -1690,9 +1708,12 @@ static int gen_win_window(group_t *g, fuzzwin_t *out)
 	 * Fall back to the deleted range if the span is unknown. */
 	int span_lo = g->hunk_lo > 0 ? g->hunk_lo - 1 : hunk_top;
 	int span_hi = g->hunk_hi > 0 ? g->hunk_hi - 1
-				     : (g->del_end > 0 ? g->del_end : g->del_start) - 1;
+		    : g->del_end > 0 ? g->del_end - 1
+		    : hunk_top;
 	if (span_lo > hunk_top)
 		span_lo = hunk_top;
+	if (span_hi < hunk_top)
+		span_hi = hunk_top;
 	/* nearest unique non-empty line strictly above the hunk's shown region */
 	int it = -1, first;
 	for (int i = span_lo - 1, d = 0; i >= 0 && d < WIN_SCAN; i--, d++) {
