@@ -653,9 +653,11 @@ ${SEP}'16i 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1522:m16${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'17s/\\)/) {/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1641:m17${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'18i 				} else if (k == 'v' || k == 'V' || k == 'b') {
+					if (!vi_visual) {		/* fresh selection */
+						vi_vrow = xrow;
+						vi_voff = xoff;
+					}
 					vi_visual = vi_visual == k ? 0 : k;
-					vi_vrow = xrow;
-					vi_voff = xoff;
 					vi_mod |= 1;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1642:m18${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -707,7 +709,7 @@ index 1a6b5696..02f12dbb 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 1d2ceed2..b569af65 100644
+index 1d2ceed2..b4712966 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1078,7 +1080,7 @@ index 1d2ceed2..b569af65 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1638,8 +1903,14 @@ void vi(int init)
+@@ -1638,8 +1903,16 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1086,15 +1088,17 @@ index 1d2ceed2..b569af65 100644
 +				} else if (k == '~' || k == 'u' || k == 'U') {
  					vc_motion(k);
 +				} else if (k == 'v' || k == 'V' || k == 'b') {
++					if (!vi_visual) {		/* fresh selection */
++						vi_vrow = xrow;
++						vi_voff = xoff;
++					}
 +					vi_visual = vi_visual == k ? 0 : k;
-+					vi_vrow = xrow;
-+					vi_voff = xoff;
 +					vi_mod |= 1;
 +				}
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1654,16 +1925,25 @@ void vi(int init)
+@@ -1654,16 +1927,25 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1125,7 +1129,7 @@ index 1d2ceed2..b569af65 100644
  				motion:
  				icmd_pos--;
  				goto re_motion;
-@@ -1715,6 +1995,13 @@ void vi(int init)
+@@ -1715,6 +1997,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -1139,7 +1143,7 @@ index 1d2ceed2..b569af65 100644
  			default:
  				continue;
  			}
-@@ -1775,6 +2062,8 @@ void vi(int init)
+@@ -1775,6 +2064,8 @@ void vi(int init)
  				}
  			}
  		}
