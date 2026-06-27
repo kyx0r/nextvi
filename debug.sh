@@ -261,7 +261,7 @@ index 9b4776c8..3eb1a39b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 048290df..cbf38768 100644
+index 1d2ceed2..ab60c01c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1874,6 +1874,12 @@ int main(int argc, char *argv[])

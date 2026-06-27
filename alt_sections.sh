@@ -103,7 +103,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 048290df..62375629 100644
+index 1d2ceed2..56c5f6b0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -608,7 +608,7 @@ static int vi_region(int cmd, int *row, int *off)

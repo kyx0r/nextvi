@@ -575,7 +575,7 @@ index 1a35a776..f8a6f242 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 048290df..2d9d077a 100644
+index 1d2ceed2..270d9305 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -260,7 +260,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
