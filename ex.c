@@ -251,11 +251,11 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		break;
 	case '\'':
 		if (!uc_isdigit(*++(*num)))
-			return -1;
+			return -2;
 		for (off = 0; uc_isdigit(**num); ++*num)
 			off = off * 10 + (**num - '0');
 		if (lbuf_jump(xb, off, &n, row ? &n : &dir))
-			return -1;
+			return -2;
 		break;
 	case '>':
 	case '<':
@@ -264,21 +264,21 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		beg = row ? *row : n + (dir > 0);
 		end = row ? beg+1 : lbuf_len(xb);
 		if (off < 0 || beg < 0 || beg >= lbuf_len(xb))
-			return -1;
+			return -2;
 		char *e = ex_re_read(num);
 		ex_krsset(e, dir);
 		free(e);
 		if (!xkwdrs) {
 			xrerr = xserr;
-			return -1;
+			return -2;
 		} else if (xgrp >= xkwdrs->nsubc) {
 			xrerr = xgerr;
-			return -1;
+			return -2;
 		}
 		if (lbuf_search(xb, xkwdrs, xkwddir, row ? beg : 0, end,
 				MIN(dir, 0), !row, &beg, &off)) {
 			xrerr = xrnferr;
-			return -1;
+			return -2;
 		}
 		n = row ? off : beg;
 		break;
