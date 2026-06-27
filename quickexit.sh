@@ -147,15 +147,15 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:639:m1${ESC}${SEP
 #include <signal\\.h>.*?
 (#include <unistd\\.h>)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:9:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:9${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?%;f+ 				} else if \\(c != 'A' && c != 'C'\\)
-					xoff--;
+${SEP}?%;f+ 				}
+				xoff--;
 				rep_record\\(\\)
 				vi_mod \\|= !xpac && xrow == orow \\? 8 : 1;
 				break;
-			case 'J':${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				} else if \\(c != 'A' && c != 'C'\\)
-					xoff--;
-				rep_record\\(\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1545:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				} else if \\(c != 'A' && c != 'C'\\).*?
-					xoff--;.*?
+			case 'J':${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				}
+				xoff--;
+				rep_record\\(\\)${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1545:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				}.*?
+				xoff--;.*?
 (				rep_record\\(\\))${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1545:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1545${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
@@ -283,7 +283,7 @@ index 1a35a776..a4075e5d 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 048290df..10be8e91 100644
+index 1d2ceed2..b083856d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -295,8 +295,8 @@ index 048290df..10be8e91 100644
  #include <termios.h>
  #include <limits.h>
 @@ -1543,6 +1544,8 @@ void vi(int init)
- 				} else if (c != 'A' && c != 'C')
- 					xoff--;
+ 				}
+ 				xoff--;
  				rep_record()
 +				if (xqe)
 +					vi_mod |= 2;
