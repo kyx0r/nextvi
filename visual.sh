@@ -291,23 +291,71 @@ ${SEP}?%;f+ 				term_push\\(\"yy\", 2\\);
 				goto motion;.*?
 (			case '~':)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1656:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1656${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?%;f+ 				term_push\\(\"g~ \", 3\\);
+				goto motion;
+			case 'C':
+				term_push\\(\"c\\\$\", 2\\);
+				goto motion;
+			case 's':${ESC}${SEP}0??${ESC}${SEP}0??+3m 19${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				term_push\\(\"c\\\$\", 2\\);
+				goto motion;
+			case 's':${ESC}${SEP}1??${ESC}${SEP}1??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1660:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				term_push\\(\"g~ \", 3\\);
+				goto motion;
+			case 'C':${ESC}${SEP}2??${ESC}${SEP}2??+3m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1660:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				term_push\\(\"c\\\$\", 2\\);
+				goto motion;${ESC}${SEP}3??${ESC}${SEP}3??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1660:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			case 's':\$${ESC}${SEP}4??${ESC}${SEP}4??-2m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1660:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ ..	....._..s..\"...\".....
+	.	.............
+......e...':
+.			ter..p..h..c... ...
+.....o.o........
+	.	ca.......${ESC}${SEP}5??${ESC}${SEP}5??+3m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1660:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				term_push\\(\"g~ \", 3\\);.*?
+				goto motion;.*?
+			case 'C':.*?
+(				term_push\\(\"c\\\$\", 2\\);)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1660:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1660${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?%;f+ 			case 's':
+				term_push\\(\"c \", 2\\);
+				goto motion;
+			case 'S':${ESC}${SEP}0??${ESC}${SEP}0??+1m 20${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				term_push\\(\"c \", 2\\);
+				goto motion;
+			case 'S':${ESC}${SEP}1??${ESC}${SEP}1??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1663:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			case 's':\$${ESC}${SEP}2??${ESC}${SEP}2??+1m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1663:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 				term_push\\(\"c \", 2\\);
+				goto motion;${ESC}${SEP}3??${ESC}${SEP}3??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1663:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			case 'S':\$${ESC}${SEP}4??${ESC}${SEP}4??-2m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1663:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 	.	.a.. 's.:
+...	.e.m_p.s.\\(\"c.\", .\\).
+..		.o.o .o.ion.
+....a.e.'.'.${ESC}${SEP}5??${ESC}${SEP}5??+1m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1663:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 			case 's':.*?
+(				term_push\\(\"c \", 2\\);)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1663:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1663${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?%;f+ 			case 'S':
+				term_push\\(\"cc\", 2\\);
+				motion:
+				icmd_pos--;
+				goto re_motion;${ESC}${SEP}0??${ESC}${SEP}0??+1m 21${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				term_push\\(\"cc\", 2\\);
+				motion:
+				icmd_pos--;
+				goto re_motion;${ESC}${SEP}1??${ESC}${SEP}1??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1666:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			case 'S':\$${ESC}${SEP}2??${ESC}${SEP}2??+1m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1666:a2${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^				term_push\\(\"cc\", 2\\);\$${ESC}${SEP}3??${ESC}${SEP}3??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1666:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 				motion:
+				icmd_pos--;
+				goto re_motion;${ESC}${SEP}4??${ESC}${SEP}4??-1m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1666:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	...........
+..	.t.r.......\"..\".....
+....m.....:
+	.........os-..
+.		....o..e_....o.;${ESC}${SEP}5??${ESC}${SEP}5??+1m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1666:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 			case 'S':.*?
+(				term_push\\(\"cc\", 2\\);)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1666:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1666${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				vc_status\\(0\\);
 				vi_mod \\|= 1;
 				break;
 			default:
 				continue;
-			}${ESC}${SEP}0??${ESC}${SEP}0??+2m 19${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				vc_status\\(0\\);
+			}${ESC}${SEP}0??${ESC}${SEP}0??+2m 22${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				vc_status\\(0\\);
 				vi_mod \\|= 1;
-				break;${ESC}${SEP}1??${ESC}${SEP}1??+2m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1717:a1${SEP}${LB}
+				break;${ESC}${SEP}1??${ESC}${SEP}1??+2m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1717:a1${SEP}${LB}
 ${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1717${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 				}
 			}
 		}
 		term_record = 1;
 		if \\(vi_mod & 1 \\|\\| xleft != oleft
-				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 20${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				}
+				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 23${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				}
 			}
-		}${ESC}${SEP}1??${ESC}${SEP}1??+2m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1777:a1${SEP}${LB}
+		}${ESC}${SEP}1??${ESC}${SEP}1??+2m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1777:a1${SEP}${LB}
 ${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1777${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0i static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
@@ -593,17 +641,30 @@ ${SEP}'18i 				if (vi_visual) {
 					break;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1656:m18${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'19i 			case TK_ESC:
+${SEP}'19,#+1d${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1660:m19${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'20,#+1d${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1663:m20${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'21c 				if (vi_visual) {
+					k = vc_visual_op('c');
+					goto insert_done;
+				}
+				if (c == 'C')
+					term_push(\"c\$\", 2);
+				else if (c == 's')
+					term_push(\"c \", 2);
+				else
+					term_push(\"cc\", 2);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1666:m21${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'22i 			case TK_ESC:
 				if (vi_visual) {
 					vi_visual = 0;
 					vi_mod |= 1;
 					break;
 				}
 				continue;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1717:m19${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'20i 		if (vi_visual)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1717:m22${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'23i 		if (vi_visual)
 			vi_mod |= 1;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1777:m20${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1777:m23${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF"
 
 exit 0
@@ -623,7 +684,7 @@ index 1a6b5696..02f12dbb 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 1d2ceed2..2380d890 100644
+index 1d2ceed2..6b5527b8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -992,7 +1053,7 @@ index 1d2ceed2..2380d890 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1654,6 +1914,10 @@ void vi(int init)
+@@ -1654,16 +1914,25 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1003,7 +1064,27 @@ index 1d2ceed2..2380d890 100644
  				term_push("g~ ", 3);
  				goto motion;
  			case 'C':
-@@ -1715,6 +1979,13 @@ void vi(int init)
+-				term_push("c$", 2);
+-				goto motion;
+ 			case 's':
+-				term_push("c ", 2);
+-				goto motion;
+ 			case 'S':
+-				term_push("cc", 2);
++				if (vi_visual) {
++					k = vc_visual_op('c');
++					goto insert_done;
++				}
++				if (c == 'C')
++					term_push("c$", 2);
++				else if (c == 's')
++					term_push("c ", 2);
++				else
++					term_push("cc", 2);
+ 				motion:
+ 				icmd_pos--;
+ 				goto re_motion;
+@@ -1715,6 +1984,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -1017,7 +1098,7 @@ index 1d2ceed2..2380d890 100644
  			default:
  				continue;
  			}
-@@ -1775,6 +2046,8 @@ void vi(int init)
+@@ -1775,6 +2051,8 @@ void vi(int init)
  				}
  			}
  		}
