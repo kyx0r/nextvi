@@ -294,6 +294,12 @@ A hash map implementation for marks which aims to take O(n) mark
 search down to ~O(1). An exercise. Unjustified complexity for
 regular use.
 
+writeall.sh
+--------------
+Adds :wa :wa! :wqa :wqa! :xa :xa! commands to write all buffers
+to the filesystem. q commands always write while x commands only
+write modified buffers.
+
 My current EXINIT setup:
 --------------
 How it works:
