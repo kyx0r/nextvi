@@ -1,4 +1,4 @@
-.Dd Jun 26, 2026
+.Dd Jun 27, 2026
 .Dt Nextvi 1
 .Os Nextvi 6.0
 .
@@ -768,7 +768,7 @@ Example: set keyword from lines 1 to 3
 .Ed
 
 .It Cm [\fIvrange\fP]i[\fIstr\fP]
-Enter ex insert mode after specified position
+Enter ex insert mode
 .Bd -literal
 [str] specifies initial input into the insertion buffer.
 [str] in raw ex mode is injected directly and bypasses the
@@ -784,6 +784,8 @@ Example: immediately insert "hello"
 :i hello<^V><ESC>
 Example: insert "hello" before specified position
 :-1i hello<^V><ESC>
+Example: insert "hello" before line 1 (special case)
+:0i hello<^V><ESC>
 Example: insert "hello" in raw ex mode
 i hello
 Example: insert two lines in raw ex mode
@@ -942,6 +944,8 @@ Paste or pipe a register
 .Bd -literal
 Example: paste <a> at line 1 character offset 5
 :1;5pu 97
+Example: paste <a> before line 1 (special case)
+:0pu 97
 Example: copy default register to X11 clipboard
 :pu \e!xclip -selection clipboard
 Example: copy register <a> to X11 clipboard

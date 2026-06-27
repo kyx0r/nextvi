@@ -509,7 +509,7 @@ EX COMMANDS
              :1,3re
 
      [vrange]i[str]
-             Enter ex insert mode after specified position
+             Enter ex insert mode
 
              [str] specifies initial input into the insertion buffer.
              [str] in raw ex mode is injected directly and bypasses the
@@ -525,6 +525,8 @@ EX COMMANDS
              :i hello<^V><ESC>
              Example: insert "hello" before specified position
              :-1i hello<^V><ESC>
+             Example: insert "hello" before line 1 (special case)
+             :0i hello<^V><ESC>
              Example: insert "hello" in raw ex mode
              i hello
              Example: insert two lines in raw ex mode
@@ -668,6 +670,8 @@ EX COMMANDS
 
              Example: paste <a> at line 1 character offset 5
              :1;5pu 97
+             Example: paste <a> before line 1 (special case)
+             :0pu 97
              Example: copy default register to X11 clipboard
              :pu \!xclip -selection clipboard
              Example: copy register <a> to X11 clipboard
@@ -1398,4 +1402,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 6.0                       June 26, 2026                      Nextvi 6.0
+Nextvi 6.0                       June 27, 2026                      Nextvi 6.0
