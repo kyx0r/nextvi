@@ -288,23 +288,23 @@ ${SEP}?%;f+ 				n = strlen\\(ln\\);
 				term_push\\(buf, n \\+ 3\\);
 				break; }
 			case TK_CTL\\('n'\\):
-				vi_cndir = vi_arg \\? -vi_cndir : vi_cndir;${ESC}${SEP}1??${ESC}${SEP}1??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				n = strlen\\(ln\\);
+				vi_cndir = vi_arg \\? -vi_cndir : vi_cndir;${ESC}${SEP}1??${ESC}${SEP}1??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				n = strlen\\(ln\\);
 				char buf\\[n \\+ 4\\];
-				memcpy\\(buf, \":e \", 3\\);${ESC}${SEP}2??${ESC}${SEP}2??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				memcpy\\(buf\\+3, ln, n\\);
-				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}3??${ESC}${SEP}3??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				break; }
+				memcpy\\(buf, \":e \", 3\\);${ESC}${SEP}2??${ESC}${SEP}2??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				memcpy\\(buf\\+3, ln, n\\);
+				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}3??${ESC}${SEP}3??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 				break; }
 			case TK_CTL\\('n'\\):
-				vi_cndir = vi_arg \\? -vi_cndir : vi_cndir;${ESC}${SEP}4??${ESC}${SEP}4??-2m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ ..... . ....e....\\).
+				vi_cndir = vi_arg \\? -vi_cndir : vi_cndir;${ESC}${SEP}4??${ESC}${SEP}4??-2m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ ..... . ....e....\\).
 .	...h.......n.. ..;
 .			......\\(.u...\".e... 3.;
 			....c.y........l., ...
 ........_pus...... ..\\+..\\).
 	....r.a....
 ....a.e..K_C.L.'.'\\):
-....v..c.... .........\\? .v...n.i..:..._...i.;${ESC}${SEP}5??${ESC}${SEP}5??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				n = strlen\\(ln\\);.*?
+....v..c.... .........\\? .v...n.i..:..._...i.;${ESC}${SEP}5??${ESC}${SEP}5??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				n = strlen\\(ln\\);.*?
 				char buf\\[n \\+ 4\\];.*?
 				memcpy\\(buf, \":e \", 3\\);.*?
-(				memcpy\\(buf\\+3, ln, n\\);)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a6${SEP}${LB}
-${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1269${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(				memcpy\\(buf\\+3, ln, n\\);)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1271${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 					}
 					ln = vi_enprompt\\(\":\", buf, &k, &n\\);
 					goto do_excmd; }
@@ -312,8 +312,8 @@ ${SEP}?%;f+ 					}
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
 					n = cs \\? strlen\\(cs\\) : 0;${ESC}${SEP}0??${ESC}${SEP}0??+2m 10${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 					}
 					ln = vi_enprompt\\(\":\", buf, &k, &n\\);
-					goto do_excmd; }${ESC}${SEP}1??${ESC}${SEP}1??+2m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1409:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1409${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+					goto do_excmd; }${ESC}${SEP}1??${ESC}${SEP}1??+2m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1411:a1${SEP}${LB}
+${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1411${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	temp_open\\(0, \"/hist/\", _ft\\);
 	temp_open\\(1, \"/fm/\", fm_ft\\);
 	temp_open\\(2, \"/sc/\", _ft\\);
@@ -321,10 +321,10 @@ ${SEP}?%;f+ 	temp_open\\(0, \"/hist/\", _ft\\);
 		if \\(argv\\[i\\]\\[1\\] == '-' && !argv\\[i\\]\\[2\\]\\) \\{
 			i\\+\\+;${ESC}${SEP}0??${ESC}${SEP}0??+2m 11${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	temp_open\\(0, \"/hist/\", _ft\\);
 	temp_open\\(1, \"/fm/\", fm_ft\\);
-	temp_open\\(2, \"/sc/\", _ft\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1840:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	temp_open\\(0, \"/hist/\", _ft\\);.*?
+	temp_open\\(2, \"/sc/\", _ft\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1842:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	temp_open\\(0, \"/hist/\", _ft\\);.*?
 	temp_open\\(1, \"/fm/\", fm_ft\\);.*?
-(	temp_open\\(2, \"/sc/\", _ft\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1840:a2${SEP}${LB}
-${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1840${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+(	temp_open\\(2, \"/sc/\", _ft\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1842:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1842${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/\\(\\)/(isbuffer)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:439:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1s/ret && xrow/isbuffer/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:444:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -382,14 +382,14 @@ ${SEP}'9,#+1c 				memcpy(buf+3, ln, n + 1);
 					rset_free(rs);
 				}
 				term_push(buf, strlen(buf));
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1269:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1271:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'10a 				case 'x':
 					temp_switch(3, 1);
 					vi_mod = 1;
 					break;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1409:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1411:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'11a 	temp_open(3, \"/grep/\", grep_ft);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1840:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?%;f> extern int xregs_n;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1842:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?%;f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \\*bufs;
 extern struct buf tempbufs\\[3\\];
@@ -421,7 +421,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c2c5c4b4..8a5ba56b 100644
+index 1a6b5696..82416b31 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -451,7 +451,7 @@ index c2c5c4b4..8a5ba56b 100644
  	{ex_ft, ":[ \t]*((((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index ed899f2d..30eb9529 100644
+index f152a29c..b401c44f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -40,7 +40,7 @@ sbuf **xregs;			/* string registers */
@@ -464,7 +464,7 @@ index ed899f2d..30eb9529 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index b674c703..df08eafd 100644
+index 048290df..3cf3c60c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -436,12 +436,12 @@ void dir_calc(char *path)
@@ -561,7 +561,7 @@ index b674c703..df08eafd 100644
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
-@@ -1266,8 +1301,18 @@ void vi(int init)
+@@ -1268,8 +1303,18 @@ void vi(int init)
  				n = strlen(ln);
  				char buf[n + 4];
  				memcpy(buf, ":e ", 3);
@@ -582,7 +582,7 @@ index b674c703..df08eafd 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1407,6 +1452,10 @@ void vi(int init)
+@@ -1409,6 +1454,10 @@ void vi(int init)
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
  					goto do_excmd; }
@@ -593,7 +593,7 @@ index b674c703..df08eafd 100644
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					n = cs ? strlen(cs) : 0;
-@@ -1838,6 +1887,7 @@ int main(int argc, char *argv[])
+@@ -1840,6 +1889,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
