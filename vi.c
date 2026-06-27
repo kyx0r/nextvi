@@ -1540,8 +1540,8 @@ void vi(int init)
 					c = xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a';
 					xb->useq += xseq;
 					goto insert;
-				} else if (c != 'A' && c != 'C')
-					xoff--;
+				}
+				xoff--;
 				rep_record()
 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				break;
