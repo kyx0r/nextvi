@@ -33,6 +33,8 @@ typedef struct {
 	int type;       /* 'd'=delete, 'a'=add, 'c'=context */
 	int oline;      /* line number in original file */
 	char *text;     /* line content (for add operations) */
+	int hunk_lo;    /* 1-based first original line of the enclosing @@ hunk */
+	int hunk_hi;    /* 1-based last original line of the enclosing @@ hunk */
 } op_t;
 
 struct group_s;
@@ -1343,6 +1345,9 @@ typedef struct group_s {
 	int custom_abs_nlines;
 	int custom_relc_nlines;
 	int custom_rel_nlines;
+	/* Enclosing @@ hunk's original-line span (1-based, 0 if unknown); used by
+	 * gen_win_window to anchor strictly outside the diff's shown region. */
+	int hunk_lo, hunk_hi;
 	/* Two-phase emission state, set in phase 1, read in phase 2 */
 	int res_strat;           /* resolved strategy */
 	int mark_id;             /* line mark id, -1 = no mark */
@@ -1651,11 +1656,14 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 
 /*
  * Pattern 8: a global "top.*(bottom)" straddle window (mode 3). Unlike the
- * pattern-7 grp window, both anchors are picked OUTSIDE the hunk - the nearest
- * unique line above it (top) and the nearest unique line below it (bottom) -
- * and the greedy ".*" absorbs the entire hunk body (and any drift inside it)
- * between them. In multi-line search mode "." matches newlines, so ".*" spans
- * whole lines. The bottom line is captured as "(bottom)"; a ":grp 1" search
+ * pattern-7 grp window, both anchors are picked OUTSIDE the diff's shown region
+ * entirely - the nearest unique line above the enclosing @@ hunk (top) and the
+ * nearest unique line below it (bottom), beyond all of its shown context. These
+ * lines exist only in the original file, never in the diff, so building this
+ * pattern fundamentally requires reading the original. The greedy ".*" absorbs
+ * the whole hunk (context, body, and any drift inside it) between them. In multi-line
+ * search mode "." matches newlines, so ".*" spans whole lines.
+ * The bottom line is captured as "(bottom)"; a ":grp 1" search
  * lands on it, and the target is reached by a negative offset back up to the
  * hunk. Because the anchors lie outside the hunk, the search runs globally from
  * the top of the file (the emit brackets it with a mark-0 save / "1;0" reset /
@@ -1675,10 +1683,19 @@ static int gen_win_window(group_t *g, fuzzwin_t *out)
 	    !window_at(g->del_texts, g->ndel, g->del_start - 1))
 		return 0;
 	int hunk_top = g->del_start - 1;   /* 0-based first hunk line (the target) */
-	int hunk_bot = (g->del_end > 0 ? g->del_end : g->del_start) - 1;
-	/* nearest unique non-empty line strictly above the hunk */
+	/* The anchors must lie OUTSIDE the diff's shown region, not on its context
+	 * lines (those are exactly what may drift and what the other strategies
+	 * already key on). Skip past the whole enclosing @@ hunk - including all its
+	 * shown context - so top/bottom come only from the original file beyond it.
+	 * Fall back to the deleted range if the span is unknown. */
+	int span_lo = g->hunk_lo > 0 ? g->hunk_lo - 1 : hunk_top;
+	int span_hi = g->hunk_hi > 0 ? g->hunk_hi - 1
+				     : (g->del_end > 0 ? g->del_end : g->del_start) - 1;
+	if (span_lo > hunk_top)
+		span_lo = hunk_top;
+	/* nearest unique non-empty line strictly above the hunk's shown region */
 	int it = -1, first;
-	for (int i = hunk_top - 1, d = 0; i >= 0 && d < WIN_SCAN; i--, d++) {
+	for (int i = span_lo - 1, d = 0; i >= 0 && d < WIN_SCAN; i--, d++) {
 		if (!orig_lines[i][0])
 			continue;
 		if (count_window(&orig_lines[i], 1, &first) == 1) {
@@ -1686,10 +1703,11 @@ static int gen_win_window(group_t *g, fuzzwin_t *out)
 			break;
 		}
 	}
-	/* nearest unique non-empty line strictly below the hunk, unambiguous as a
-	 * substring from its position to EOF (so greedy ".*" lands on it) */
+	/* nearest unique non-empty line strictly below the hunk's shown region,
+	 * unambiguous as a substring from its position to EOF (so greedy ".*" lands
+	 * on it) */
 	int ib = -1;
-	for (int i = hunk_bot + 1, d = 0; i < n_orig_lines && d < WIN_SCAN; i++, d++) {
+	for (int i = span_hi + 1, d = 0; i < n_orig_lines && d < WIN_SCAN; i++, d++) {
 		if (!orig_lines[i][0])
 			continue;
 		if (count_window(&orig_lines[i], 1, &first) == 1 &&
@@ -3254,6 +3272,10 @@ static void build_file_groups(file_patch_t *fp)
 			g->nanchors = 1;
 		}
 
+		/* Record the enclosing @@ hunk span (for gen_win_window) */
+		g->hunk_lo = fp->ops[i].hunk_lo;
+		g->hunk_hi = fp->ops[i].hunk_hi;
+
 		/* Collect consecutive deletes */
 		int del_start_idx = i;
 		if (fp->ops[i].type == 'd') {
@@ -3784,6 +3806,9 @@ static void new_file(const char *path)
 	mark_bytes_used(path);
 }
 
+/* Original-line span of the @@ hunk currently being parsed (0 = none yet). */
+static int cur_hunk_lo, cur_hunk_hi;
+
 static void add_op(int type, int oline, const char *text)
 {
 	if (nfiles == 0)
@@ -3796,6 +3821,8 @@ static void add_op(int type, int oline, const char *text)
 	fp->ops[fp->nops].type = type;
 	fp->ops[fp->nops].oline = oline;
 	fp->ops[fp->nops].text = text ? xstrdup(text) : NULL;
+	fp->ops[fp->nops].hunk_lo = cur_hunk_lo;
+	fp->ops[fp->nops].hunk_hi = cur_hunk_hi;
 	fp->nops++;
 
 	/* Track bytes used in patch content */
@@ -4170,6 +4197,8 @@ process_line:
 		if (parse_hunk_header(line, &os, &oc)) {
 			in_hunk = 1;
 			old_line = os;
+			cur_hunk_lo = os;
+			cur_hunk_hi = oc > 0 ? os + oc - 1 : os;
 			/* GNU diff -N marks created files with the nonexistent
 			 * path and an epoch timestamp instead of /dev/null, so
 			 * also detect them by their sole "@@ -0,0" hunk: the
