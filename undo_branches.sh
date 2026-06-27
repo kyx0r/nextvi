@@ -89,7 +89,7 @@ ${SEP}?%;f+ 	\\{\"uc\", ec_setenc},
 (	\\{\"ub\", ec_setenc},)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1659:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1659${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
+${SEP}'0i static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
 	if (*arg)
@@ -100,7 +100,7 @@ ${SEP}'0a static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1563:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 	{\"up\", ec_undoleafs},
+${SEP}'1i 	{\"up\", ec_undoleafs},
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1659:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> \\{
 	struct lbuf \\*lb = emalloc\\(sizeof\\(\\*lb\\)\\);
 	memset\\(lb, 0, sizeof\\(\\*lb\\)\\);
@@ -223,9 +223,9 @@ ${SEP}?%;f+ 		lb->hist_n = 0;
 (		lb->hist_u = 0;)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:455:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:455${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	sbuf_make(lb->rehist, 128)
+${SEP}'0i 	sbuf_make(lb->rehist, 128)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:4:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a static void lbuf_freeleafs(struct lbuf *lb)
+${SEP}'1i static void lbuf_freeleafs(struct lbuf *lb)
 {
 	char *ptr = lb->rehist->s;
 	struct lopt *hist;
@@ -255,7 +255,7 @@ ${SEP}'1a static void lbuf_freeleafs(struct lbuf *lb)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:78:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2,#+1c 	lbuf_freeleafs(lb);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:84:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a void lbuf_setleaf(struct lbuf *lb, int leaf)
+${SEP}'3i void lbuf_setleaf(struct lbuf *lb, int leaf)
 {
 	char *ptr1 = lb->rehist->s, *ptr2;
 	int n, i, off = -1;
@@ -321,7 +321,7 @@ ${SEP}'4,#+1c 		int i = lb->hist_n - lb->hist_u;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:169:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5,#+1c 		lbuf_freeleafs(lb);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:452:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6a 		sbuf_make(lb->rehist, 128)
+${SEP}'6i 		sbuf_make(lb->rehist, 128)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:455:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?%;f> struct lbuf \\{
 	char \\*\\*ln;			/\\* buffer lines \\*/
 	struct lopt \\*hist;		/\\* buffer history \\*/
@@ -345,9 +345,9 @@ int lbuf_search\\(struct lbuf \\*lb, rset \\*re, int dir, int beg, int end, int 
 (		int nskip, int \\*r, int \\*o\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:181:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:181${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	sbuf *rehist;		/* alternate redo timelines */
+${SEP}'0i 	sbuf *rehist;		/* alternate redo timelines */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:139:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a void lbuf_setleaf(struct lbuf *lb, int leaf);
+${SEP}'1i void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:181:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'vi.h' "$P2VIF"

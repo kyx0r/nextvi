@@ -75,11 +75,11 @@ ${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:289
 ()${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:289:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:289${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a char grep_ft[] = \"/g\";	/* grep buffer */
+${SEP}'0i char grep_ft[] = \"/g\";	/* grep buffer */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:15:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 	{grep_ft, NULL},
+${SEP}'1i 	{grep_ft, NULL},
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:39:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2a 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
+${SEP}'2i 	{grep_ft, \"^(.+?):([0-9]+):(.+)\", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:289:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> int xregs_n;			/\\* allocated register count \\*/
@@ -332,10 +332,10 @@ ${SEP}'2s/ c/ again, int c/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p F
 ${SEP}'3s/again = 0, //${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:458:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4s/\\(\\)/(ret && xrow && again != 2)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:462:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5s/\\(\\)/(ret && xrow)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:478:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6a 	case TK_CTL('x'):
+${SEP}'6i 	case TK_CTL('x'):
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:657:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'7s/\\(1/(0, 1/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:676:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'8a 		} else if (mv == TK_CTL('x')) {
+${SEP}'8i 		} else if (mv == TK_CTL('x')) {
 			term_exec(\"\", 1, '&')
 			temp_pos(3, -1, 0, 0);
 			temp_switch(3, 0);
@@ -383,12 +383,12 @@ ${SEP}'9,#+1c 				memcpy(buf+3, ln, n + 1);
 				}
 				term_push(buf, strlen(buf));
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1271:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'10a 				case 'x':
+${SEP}'10i 				case 'x':
 					temp_switch(3, 1);
 					vi_mod = 1;
 					break;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1411:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'11a 	temp_open(3, \"/grep/\", grep_ft);
+${SEP}'11i 	temp_open(3, \"/grep/\", grep_ft);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1842:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?%;f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \\*bufs;

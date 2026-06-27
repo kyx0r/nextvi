@@ -53,7 +53,7 @@ ${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 		
 (		ex_print\\(msg, bar_ft\\))${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:437:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:437${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
+${SEP}'0i 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\\n')
 			adv++;

@@ -110,13 +110,13 @@ ${SEP}?%;f+ 	EO\\(hlp\\),
 (	EO\\(hl\\),)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1683:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1683${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 		if (*xb_path && xb_ft)
+${SEP}'0i 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:431:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 	if (*xb_path)
+${SEP}'1i 	if (*xb_path)
 		lsp_save(xb_path);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:800:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2a static void *ec_lsp(char *loc, char *cmd, char *arg)
+${SEP}'2i static void *ec_lsp(char *loc, char *cmd, char *arg)
 {
 	char ft[32];
 	int n = 0;
@@ -134,7 +134,7 @@ ${SEP}'2a static void *ec_lsp(char *loc, char *cmd, char *arg)
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1593:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 	{\"lsp\", ec_lsp},
+${SEP}'3i 	{\"lsp\", ec_lsp},
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1683:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}${LB}
 ${SEP}i /*
  * MIT License
@@ -1668,7 +1668,7 @@ ${SEP}'2,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
 			}
 			goto ret;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:167:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 		err:
+${SEP}'3i 		err:
 		*ibuf = 0;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:169:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya 98${SEP}?%;f> #include \"ren\\.c\"
 #include \"term\\.c\"
@@ -1737,13 +1737,13 @@ ${SEP}?%;f+ 	setup_signals\\(\\);
 (	syn_init\\(\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1839:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1839${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a #include \"lsp.c\"
+${SEP}'0i #include \"lsp.c\"
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:24:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
+${SEP}'1i void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:104:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2s/\\)/) {/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1641:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 				} else if (k == 'K') {
+${SEP}'3i 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
 				} else if (k == 'd') {
@@ -1752,13 +1752,13 @@ ${SEP}'3a 				} else if (k == 'K') {
 					vi_mod |= 1;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1642:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'4a 		if (!xmpt && xb_path && xb_path[0]) {
+${SEP}'4i 		if (!xmpt && xb_path && xb_path[0]) {
 			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
 			if (_ldiag)
 				vi_drawmsg((char *)_ldiag);
 		}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1800:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'5a 	lsp_init();
+${SEP}'5i 	lsp_init();
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1839:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}b6${SEP}%ya 98${SEP}?%;f> /\\* filesystem \\*/
 extern rset \\*fsincl;
 void dir_calc\\(char \\*path\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> /\\* filesystem \\*/.*?
@@ -1766,7 +1766,7 @@ extern rset \\*fsincl;.*?
 (void dir_calc\\(char \\*path\\);)${ESC}${SEP}1??${ESC}${SEP}grp 0${ESC}${SEP}1??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:546:a1${SEP}${LB}
 ${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:546${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 
+${SEP}'0i 
 /* lsp.c */
 #define LSP_NFDS_MAX	8
 extern int lsp_nfds;

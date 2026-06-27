@@ -66,7 +66,7 @@ ${SEP}?%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\)
 (			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\))${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a6${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 		if (cmd >= 0 && cnt == 1)
+${SEP}'0i 		if (cmd >= 0 && cnt == 1)
 			dir = 2;
 		else
 			dir = vi_nlmode+1;

@@ -49,7 +49,7 @@ static char \\*kmap_fa\\[256\\] = \\{${ESC}${SEP}0??${ESC}${SEP}0??+1m 0${ESC}${
 (	\\[0\\] = \"en\",)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	['y'] = \"h\",
+${SEP}'0i 	['y'] = \"h\",
 	['n'] = \"j\",
 	['e'] = \"k\",
 	['o'] = \"l\",
@@ -69,7 +69,7 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2:m0${ESC}${SEP}
 (		})${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:169${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
+${SEP}'0i 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:169:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'kmap.h' 'term.c' "$P2VIF"

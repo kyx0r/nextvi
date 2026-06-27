@@ -88,7 +88,7 @@ ${SEP}?%;f+ 	\\{\"g!\", ec_glob},
 (	EO\\(mpt\\),)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1644:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1644${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a static void *ec_modal(char *loc, char *cmd, char *arg)
+${SEP}'0i static void *ec_modal(char *loc, char *cmd, char *arg)
 {
 	int beg = 0, end = 0, o1 = 0, o2 = -1;
 	if (lbuf_len(xb) && ex_region(loc, &beg, &end, &o1, &o2))
@@ -137,7 +137,7 @@ ${SEP}'0a static void *ec_modal(char *loc, char *cmd, char *arg)
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1593:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 	{\"md\", ec_modal},
+${SEP}'1i 	{\"md\", ec_modal},
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1644:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}${LB}
 ${SEP}i #include <stdio.h>
 
@@ -493,7 +493,7 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL test:-1:m${ESC}${SEP}pr
 (#include \"conf\\.c\")${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:17:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:17${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a #include \"modal.c\"
+${SEP}'0i #include \"modal.c\"
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:17:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'modal.c' 'test' 'vi.c' "$P2VIF"
 

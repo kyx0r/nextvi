@@ -52,7 +52,7 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 (	switch \\(mv\\) \\{)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:523:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:523${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	case '\\033':	/* Arrow keys */
+${SEP}'0i 	case '\\033':	/* Arrow keys */
 		mv = term_read(0);
 		if (mv == '[') {
 			mv = term_read(0);

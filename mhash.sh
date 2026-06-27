@@ -406,7 +406,7 @@ ${SEP}?%;f+ struct lbuf \\{
 (	int \\*mark;			/\\* mark id, row & off triplets \\*/)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:140:a6${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:140${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a struct mhash {
+${SEP}'0i struct mhash {
 	int sz;			/* capacity, power of 2 */
 	int n;			/* number of used slots */
 	int slot[];		/* mark id, row & off triplets */

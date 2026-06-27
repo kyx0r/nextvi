@@ -192,11 +192,11 @@ ${SEP}?%;f+ 			if \\(!bound\\)
 (				i = p->off - stt\\[0\\];)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a6${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:215${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a #define LEDBACK 300
+${SEP}'0i #define LEDBACK 300
 #define LEDFORW 300
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:1:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
+${SEP}'1i 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:146:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -204,7 +204,7 @@ ${SEP}'2,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:152:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 		c = 0;
+${SEP}'3i 		c = 0;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:165:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
@@ -216,7 +216,7 @@ ${SEP}'4c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		}
 		for (i = 0; i < cterm;) {
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:176:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'5a 		l = cend <= r->cmax ? r->col[cend] : -1;
+${SEP}'5i 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
 				att[c++] = l;

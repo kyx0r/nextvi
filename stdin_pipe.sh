@@ -134,15 +134,15 @@ ${SEP}'0c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:414:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 	if (!loc)
+${SEP}'1i 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:432:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2s/n,/n + !!stdin_fd,/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1851:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 	int i = n;
+${SEP}'3i 	int i = n;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1853:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4s/\\(\"/(!n && stdin_fd ? NULL : \"/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1856:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'5a 	if (stdin_fd) {
+${SEP}'5i 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, \"\", \"\");
 		i = lbuf_rd(xb, STDIN_FILENO, 0, lbuf_len(xb));
@@ -162,7 +162,7 @@ ${SEP}'5a 	if (stdin_fd) {
 		xmpt = MIN(xmpt, 1);
 	}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1858:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6a 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
+${SEP}'6i 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1859:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> int xrows, xcols;
 unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \\*ibuf, icmd\\[4096\\];
@@ -337,7 +337,7 @@ ${SEP}?%;f+ 		close\\(ifd\\);
 (	tcsetpgrp\\(STDIN_FILENO, getpgrp\\(\\)\\);)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:339:a6${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:339${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a int stdin_fd;
+${SEP}'0i int stdin_fd;
 static int isig;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:8:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1s/0/stdin_fd/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:19:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -348,10 +348,10 @@ ${SEP}'2,#+2c 	if (!isig && stdin_fd)
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
 	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:21:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 	isig = 1;
+${SEP}'3i 	isig = 1;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:33:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4s/\\(0/(stdin_fd/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:42:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'5a 		ufd.fd = stdin_fd;
+${SEP}'5i 		ufd.fd = stdin_fd;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:154:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'6,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
@@ -393,7 +393,7 @@ ${SEP}?%;f+ 		if \\(argv\\[i\\]\\[1\\] == '-' && !argv\\[i\\]\\[2\\]\\) \\{
 (		})${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1847:a6${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1847${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	sigaction(SIGINT, &sa, NULL);
+${SEP}'0i 	sigaction(SIGINT, &sa, NULL);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1831:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
@@ -409,7 +409,7 @@ extern int vi_lncol;${ESC}${SEP}0??${ESC}${SEP}0??+2m 0${ESC}${ESC}${ESC}${SEP}1
 (/\\* vi\\.c: main \\*/)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:540:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:540${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a extern int stdin_fd;
+${SEP}'0i extern int stdin_fd;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:540:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 

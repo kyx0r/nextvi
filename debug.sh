@@ -53,7 +53,7 @@ ${ESC}${SEP}1??${ESC}${SEP}1??+2m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1848:
 ()${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1848:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1848${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a void ex_done(void)
+${SEP}'0i void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
 		if (tempbufs[i].lb) {
@@ -81,7 +81,7 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1848:m0${ESC}${SEP
 (	unsigned int sdense\\[prog->sparsesz\\], sparsesz = 0;)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK regex.c:645:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:645${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
+${SEP}'0i 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:645:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> }
 
 ren_state rstates\\[3\\]; /\\* 0 = current line, 1 = all other lines, 2 = aux rendering \\*/
@@ -100,7 +100,7 @@ ${SEP}?%;f+ 		pats\\[i\\] = fts\\[i\\]\\.pat;
 (})${ESC}${SEP}1??${ESC}${SEP}grp 0${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:444:a1${SEP}${LB}
 ${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:444${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a void ren_done(void)
+${SEP}'0i void ren_done(void)
 {
 	rset_free(dir_rslr);
 	rset_free(dir_rsrl);
@@ -114,7 +114,7 @@ ${SEP}'0a void ren_done(void)
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:88:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 
+${SEP}'1i 
 void syn_done(void)
 {
 	for (ftmidx--; ftmidx >= 0; ftmidx--)
@@ -134,7 +134,7 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:444:m1${ESC}${SEP
 (	term_done\\(\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1876:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1876${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	ex_done();
+${SEP}'0i 	ex_done();
 	syn_done();
 	ren_done();
 	if (led_attsb)
@@ -174,11 +174,11 @@ void ex_init\\(char \\*\\*files, int n\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 2${E
 (void ex_init\\(char \\*\\*files, int n\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:482:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:482${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a void dir_done(void);
+${SEP}'0i void dir_done(void);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:221:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a void syn_done(void);
+${SEP}'1i void syn_done(void);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:263:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2a void ex_done(void);
+${SEP}'2i void ex_done(void);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:482:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 

@@ -165,19 +165,19 @@ ${SEP}?%;f+ 	EO\\(seq\\),
 (	\\{\"sc\", ec_specials},)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1664:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1664${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a int xet;			/* expandtab - use spaces for indentation */
+${SEP}'0i int xet;			/* expandtab - use spaces for indentation */
 int xsw = 8;			/* shiftwidth - indentation step */
 int xidt = 500;			/* auto-detect indent on file open */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:14:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 	bufs[i].et = 0;
+${SEP}'1i 	bufs[i].et = 0;
 	bufs[i].sw = 8;
 	bufs[i].ts = 8;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:166:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2a 	tempbufs[i].et = 0;
+${SEP}'2i 	tempbufs[i].et = 0;
 	tempbufs[i].sw = 8;
 	tempbufs[i].ts = 8;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:178:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a static void ex_detect_indent(struct buf *p)
+${SEP}'3i static void ex_detect_indent(struct buf *p)
 {
 	int n = lbuf_len(p->lb);
 	int max = n < xidt ? n : xidt;
@@ -223,18 +223,18 @@ ${SEP}'3a static void ex_detect_indent(struct buf *p)
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:410:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'4a 	if (xidt)
+${SEP}'4i 	if (xidt)
 		ex_detect_indent(p);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:663:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'5a EO(et) EO(idt)
+${SEP}'5i EO(et) EO(idt)
 _EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1581:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6a 	EO(et),
+${SEP}'6i 	EO(et),
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1625:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'7a 	EO(idt),
+${SEP}'7i 	EO(idt),
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1635:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'8a 	EO(sw),
+${SEP}'8i 	EO(sw),
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1664:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> 		case TK_CTL\\('t'\\):
 			cs = uc_dup\\(sb->s \\+ ps\\);
 			sbuf_cut\\(sb, ps\\)
@@ -320,7 +320,7 @@ ${SEP}'2c 			if (xet) {
 				}
 			} else if (sb->s[ps] == ' ' || sb->s[ps] == '\\t') {
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:461:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 		case '\\t':
+${SEP}'3i 		case '\\t':
 			if (xet)
 				for (int _l = 0; _l < xsw; _l++)
 					sbuf_chr(sb, ' ')
@@ -418,19 +418,19 @@ ${SEP}?%;f+ 	buf->off = xoff; \\\\
 (	buf->td = xtd; \\\\)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:466:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:466${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	int et;				/* expandtab - use spaces for indentation */
+${SEP}'0i 	int et;				/* expandtab - use spaces for indentation */
 	int sw;				/* shiftwidth - indentation step */
 	int ts;				/* tabspace - number of spaces for tab */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:405:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a extern int xet;
+${SEP}'1i extern int xet;
 extern int xsw;
 extern int xidt;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:421:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2a 	xet = buf->et; \\
+${SEP}'2i 	xet = buf->et; \\
 	xsw = buf->sw; \\
 	xts = buf->ts; \\
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:460:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 	buf->et = xet; \\
+${SEP}'3i 	buf->et = xet; \\
 	buf->sw = xsw; \\
 	buf->ts = xts; \\
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:466:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}2q" > "$P2VIF"

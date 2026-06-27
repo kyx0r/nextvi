@@ -250,7 +250,7 @@ ${SEP}?%;f+ 			return key;
 (		led_printparts\\(sb, -1, ps, \"\", 0, &xoff\\);)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:702:a6${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:702${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a static int vi_insmov;
+${SEP}'0i static int vi_insmov;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:3:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'1s/f\\)/f, int print)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:281:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2,#+1c 	if (print) {
@@ -263,7 +263,7 @@ ${SEP}'4s/f\\)/f, !vi_insmov)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}
 ${SEP}'5c 		led_printparts(sb, pre, ps, *post, postn, poff, !vi_insmov);
 		vi_insmov = 0;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:430:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6a 		case '\\033':;	/* Arrow keys */
+${SEP}'6i 		case '\\033':;	/* Arrow keys */
 			char cbuf[1];
 			cbuf[0] = '\\0';
 			int fl = fcntl(STDIN_FILENO, F_GETFL);
@@ -332,7 +332,7 @@ ${SEP}'6a 		case '\\033':;	/* Arrow keys */
 			return c;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:621:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'7s/ post/ NULL/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:657:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'8a 	sbufn_str(sb, post)
+${SEP}'8i 	sbufn_str(sb, post)
 	free(postref);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:671:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'9s/f\\)/f, 1)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:702:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 	\\*l = ln - pln;
@@ -403,17 +403,17 @@ ${SEP}?%;f+ 				rep_record\\(\\)
 (				break;)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1547:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1547${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a static int lmodified;
+${SEP}'0i static int lmodified;
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:833:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 	lmodified = 1;
+${SEP}'1i 	lmodified = 1;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:865:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2s/\\)/) {/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1037:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 		lmodified = 1;
+${SEP}'3i 		lmodified = 1;
 	} else
 		lmodified = 0;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1038:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'4a 				switch (k) {
+${SEP}'4i 				switch (k) {
 				case 'A':	/* ↑ */
 					term_push(!lmodified ? (char*)&c : \"i\", 1);
 					if (lmodified)
@@ -445,7 +445,7 @@ ${SEP}'4a 				switch (k) {
 					goto _break;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1525:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'5a 				_break:
+${SEP}'5i 				_break:
 				vi_mod = 0;
 				break;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1547:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"

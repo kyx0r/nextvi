@@ -93,9 +93,9 @@ ${SEP}?%;f+ 	EO\\(left\\),
 (	EO\\(led\\),)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1686:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1686${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0i int xlw;			/* soft linewrap col */
+${SEP}'0-1i int xlw;			/* soft linewrap col */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a static void *ec_linewrap(char *loc, char *cmd, char *arg)
+${SEP}'1i static void *ec_linewrap(char *loc, char *cmd, char *arg)
 {
 	int fd;
 	if (xb->modified)
@@ -113,7 +113,7 @@ ${SEP}'1a static void *ec_linewrap(char *loc, char *cmd, char *arg)
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1563:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2a 	{\"lw\", ec_linewrap},
+${SEP}'2i 	{\"lw\", ec_linewrap},
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1686:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> \\{
 	int i, pos = lo->pos;
 	if \\(s\\) \\{
@@ -216,12 +216,12 @@ ${SEP}?%;f+ 		lo->ref = 2;
 (		lbuf_replace\\(lb, &sb, NULL, lo, lo->n_del, lo->n_ins\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:432:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:432${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 		char *lwp = NULL;
+${SEP}'0i 		char *lwp = NULL;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:102:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a 			n->lw_prev = NULL;
+${SEP}'1i 			n->lw_prev = NULL;
 			n->lw_next = NULL;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:108:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2a 			if (xlw) {
+${SEP}'2i 			if (xlw) {
 				rstate->s = NULL;
 				ren_state *r = ren_position(ln);
 				if (r->cmax > xlw) {
@@ -253,7 +253,7 @@ ${SEP}'2a 			if (xlw) {
 			}
 			too_small:
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:112:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 	/* save chain boundary pointers before edit */
+${SEP}'3i 	/* save chain boundary pointers before edit */
 	char *chain_pred = NULL, *chain_succ = NULL;
 	if (xlw) {
 		if (beg < end) {
@@ -272,7 +272,7 @@ ${SEP}'3a 	/* save chain boundary pointers before edit */
 		}
 	}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:208:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'4a 	/* relink the chain after edit */
+${SEP}'4i 	/* relink the chain after edit */
 	if (xlw && (chain_pred || chain_succ)) {
 		if (lo->n_ins > 0) {
 			char *first_new = lb->ln[beg];
@@ -295,7 +295,7 @@ ${SEP}'4a 	/* relink the chain after edit */
 	}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:211:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5s/1/(!lbuf_s(ln)->lw_next)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:258:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6a 		/* relink chain: restored lines have original pointers */
+${SEP}'6i 		/* relink chain: restored lines have original pointers */
 		if (xlw) {
 			for (int i = 0; i < lo->n_del; i++) {
 				char *ln = lo->del[i];
@@ -317,7 +317,7 @@ ${SEP}'6a 		/* relink chain: restored lines have original pointers */
 			}
 		}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:411:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'7a 		/* relink chain: restored lines have their pointers from edit time */
+${SEP}'7i 		/* relink chain: restored lines have their pointers from edit time */
 		if (xlw) {
 			for (int i = 0; i < lo->n_ins; i++) {
 				char *ln = lo->ins[i];
@@ -350,7 +350,7 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:432:m7${ESC}${SE
 (	s = lbuf_get\\(xb, row\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:170${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	if (xlw && s) {
+${SEP}'0i 	if (xlw && s) {
 		led_att la;
 		if (!led_attsb)
 			sbuf_make(led_attsb, sizeof(la))
@@ -389,10 +389,10 @@ extern int xseq;.*?
 (extern int xerr;)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:429:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:429${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a 	char *lw_prev;
+${SEP}'0i 	char *lw_prev;
 	char *lw_next;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:135:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a extern int xlw;
+${SEP}'1i extern int xlw;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:429:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}b4${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'vi.c' 'vi.h' "$P2VIF"
 

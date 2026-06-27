@@ -310,11 +310,11 @@ ${SEP}?%;f+ 				}
 		}${ESC}${SEP}1??${ESC}${SEP}1??+2m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1777:a1${SEP}${LB}
 ${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1777${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'0a static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
+${SEP}'0i static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
 static int vi_vrow;			/* selection anchor row */
 static int vi_voff;			/* selection anchor column */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:46:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'1a static void vi_visual_attrib(char *s, int row)
+${SEP}'1i static void vi_visual_attrib(char *s, int row)
 {
 	if (!vi_visual || !s)
 		return;
@@ -362,11 +362,11 @@ ${SEP}'1a static void vi_visual_attrib(char *s, int row)
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:127:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2a 		vi_visual_attrib(s, row);
+${SEP}'2i 		vi_visual_attrib(s, row);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:193:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3a 	vi_visual_attrib(s, row);
+${SEP}'3i 	vi_visual_attrib(s, row);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:212:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'4a 	char *vs = vi_visual == 'V' ? \"-- VISUAL LINE -- \" :
+${SEP}'4i 	char *vs = vi_visual == 'V' ? \"-- VISUAL LINE -- \" :
 		   vi_visual == 'b' ? \"-- VISUAL BLOCK -- \" :
 		   vi_visual ? \"-- VISUAL -- \" : \"\";
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:493:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -374,7 +374,7 @@ ${SEP}'5s/d\"/d %s\"/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi
 ${SEP}'6s/l\\)/l, vs)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:500:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'7s/d\"/d %s\"/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:503:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'8s/s\\)/s, vs)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:507:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'9a static int vc_insert(int cmd);
+${SEP}'9i static int vc_insert(int cmd);
 
 static int vc_block_insert(int vcmd, int r1, int r2, int ci)
 {
@@ -547,32 +547,32 @@ static int vc_visual_op(int cmd)
 }
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:945:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'10a 				if (vi_visual) {
+${SEP}'10i 				if (vi_visual) {
 					vc_visual_op('u');
 					break;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1290:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'11a 			case 'U':
+${SEP}'11i 			case 'U':
 				if (vi_visual)
 					vc_visual_op('U');
 				break;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1340:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'12a 				if (vi_visual) {
+${SEP}'12i 				if (vi_visual) {
 					k = vc_visual_op('c');
 					goto insert_done;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1463:m12${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'13a 				if (vi_visual) {
+${SEP}'13i 				if (vi_visual) {
 					vc_visual_op('d');
 					break;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1464:m13${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'14a 				if (vi_visual && c != TK_CTL('w')) {
+${SEP}'14i 				if (vi_visual && c != TK_CTL('w')) {
 					vc_visual_op(c);
 					break;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1512:m14${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'15a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
+${SEP}'15i 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 					int r1b = MIN(vi_vrow, xrow), r2b = MAX(vi_vrow, xrow);
 					int c_left = MIN(vi_voff, xoff), c_right = MAX(vi_voff, xoff);
 					vi_visual = 0;
@@ -581,19 +581,19 @@ ${SEP}'15a 				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1522:m15${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'16s/\\)/) {/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1641:m16${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'17a 				} else if (k == 'v' || k == 'V' || k == 'b') {
+${SEP}'17i 				} else if (k == 'v' || k == 'V' || k == 'b') {
 					vi_visual = vi_visual == k ? 0 : k;
 					vi_vrow = xrow;
 					vi_voff = xoff;
 					vi_mod |= 1;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1642:m17${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'18a 				if (vi_visual) {
+${SEP}'18i 				if (vi_visual) {
 					vc_visual_op('~');
 					break;
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1656:m18${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'19a 			case TK_ESC:
+${SEP}'19i 			case TK_ESC:
 				if (vi_visual) {
 					vi_visual = 0;
 					vi_mod |= 1;
@@ -601,7 +601,7 @@ ${SEP}'19a 			case TK_ESC:
 				}
 				continue;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1717:m19${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'20a 		if (vi_visual)
+${SEP}'20i 		if (vi_visual)
 			vi_mod |= 1;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1777:m20${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF"

@@ -284,7 +284,7 @@ ${SEP}'5c 		part = strstr(part+len, sb->s+l);
 		l = pre;
 		goto again;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:30:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6a 	if (ai_max >= 0 && xpac) {
+${SEP}'6i 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
 	}
