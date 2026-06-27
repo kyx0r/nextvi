@@ -300,6 +300,11 @@ Adds :wa :wa! :wqa :wqa! :xa :xa! commands to write all buffers
 to the filesystem. q commands always write while x commands only
 write modified buffers.
 
+ins_cursor.sh
+--------------
+Changes cursor to a thin vertical bar when in insert mode.
+This is a good indicator for insert mode.
+
 My current EXINIT setup:
 --------------
 How it works:
