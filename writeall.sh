@@ -53,8 +53,17 @@ printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f
 \\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\?\\|left\\|lim\\|led\\|vis\\)\\\\
 \\|\\[@&!dmj\\]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!\\]\\?\\|b\\[psx\\]\\?\\|p\\[uh\\]\\?\\|ac\\|e\\[f!\\]\\?!\\?\\|f\\[-\\+><tdp\\]\\?\\|inc\\|i\\|sc!\\?\\|\\\\${ESC}${SEP}2??${ESC}${SEP}2??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^\\(\\?:g!\\?\\|s\\)\\[ \\\\t\\]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!\\]\\)\\?\\|u\\[czbd\\]\\|x!\\?\\|ya\\[!\\+\\]\\?\\|cm!\\?\\|cd\\?\\)\\?\",\$${ESC}${SEP}3??${ESC}${SEP}3??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f> 		A\\(BL1 \\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\)},
 	\\{ex_ft, \"\\\\\\\\\\\\\\\\\\(\\.\\)\", A\\(AY1 \\| SYN_BD, YE\\)},
-	\\{ex_ft, \"!\\(\\?:\\[\\^!\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*!\\?\\|%\\(\\?:#\\|\\[0-9\\]\\+\\|@\\(\\[0-9\\]\\+\\)\\)\\?\", A\\(WH1 \\| SYN_BD, CY1\\)},${ESC}${SEP}4??${ESC}${SEP}4??-1m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a4${SEP}${LB}
-${SEP}0;1;2;3;4??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{ex_ft, \"!\\(\\?:\\[\\^!\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*!\\?\\|%\\(\\?:#\\|\\[0-9\\]\\+\\|@\\(\\[0-9\\]\\+\\)\\)\\?\", A\\(WH1 \\| SYN_BD, CY1\\)},${ESC}${SEP}4??${ESC}${SEP}4??-1m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> ....\\[.-9.\\+\\).......\\[0.9 .............-\\*../.....\\\\t........\\+...\\\\t.\\*.\\*.\\?.\\[ \\\\.\\]\\*..\\|.\\?.\\[..\\\\..\\\\\\]..\\\\.........\\?.\\*. .t\\]\\*..\\).
+....c......\\|is.\\|.r...c\\|.......\\|s....\\|.....s....o....\\|.l.l...\\]....ft...m\\|......s\\).
+....!....\\|.....0,1.\\|...\\{...}...\\]..b...x..\\|.....\\?.a..e\\[f.\\]\\?....\\[..>...p..\\|..c..\\|......
+.\\?.g!\\?..\\)\\[ .........q............r..\\|..\\?:q.\\|.......u..z.d.\\|x.\\?.....\\+...............
+....BL.....YN.B.,.R.,.........R......, .A.. R.,..E....1..RE....1. .....M.1...
+.\\{e...t,....\\\\........\\(..1.. S...BD.....}.
+	\\{.._f.. ........\\\\...\\]....\\\\\\.....\\?.%.......-9\\]......-9....\\?\",.A\\(... . ..N..D. ..1...${ESC}${SEP}5??${ESC}${SEP}5??+3m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> \\(\\?:'\\[0-9\\]\\+\\)\\|\\(\\[\\.\\\$\\]\\|\\[0-9 \\\\t\\]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%\\]\\)\\[ \\\\t\\]\\*\\(\\[0-9\\]\\+\\)\\[ \\\\t\\]\\*\\)\\*\\(\\?:\\[ \\\\t\\]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t\\]\\*\\)\\*\\)\\\\.*?
+\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr\\]\\?\\|left\\|lim\\|led\\|vis\\)\\\\.*?
+\\|\\[@&!dmj\\]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!\\]\\?\\|b\\[psx\\]\\?\\|p\\[uh\\]\\?\\|ac\\|e\\[f!\\]\\?!\\?\\|f\\[-\\+><tdp\\]\\?\\|inc\\|i\\|sc!\\?\\|\\\\.*?
+(\\(\\?:g!\\?\\|s\\)\\[ \\\\t\\]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!\\]\\)\\?\\|u\\[czbd\\]\\|x!\\?\\|ya\\[!\\+\\]\\?\\|cm!\\?\\|cd\\?\\)\\?\",)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 0${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a6${SEP}${LB}
+${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0s/\\[q!\\]\\)\\?\\|u\\[czbd\\]\\|x/q?a!?|[q!])?|u[czbd]|xa?/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297:m0${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 	return NULL;
 }
@@ -72,15 +81,18 @@ ${SEP}?%;f+ 	\\{\"re\", ec_krsset},
 	\\{\"wq!\", ec_write},
 	\\{\"wq\", ec_write},${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"re\", ec_krsset},
 	\\{\"rd\", ec_undoredo},
-	\\{\"r\", ec_read},${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1652:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1652${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"r\", ec_read},${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1652:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"re\", ec_krsset},.*?
+	\\{\"rd\", ec_undoredo},.*?
+(	\\{\"r\", ec_read},)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1652:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1652${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	\\{\"wq!\", ec_write},
 	\\{\"wq\", ec_write},
 	\\{\"w!\", ec_write},
 	\\{\"w\", ec_write},
 	\\{\"uc\", ec_setenc},${ESC}${SEP}0??${ESC}${SEP}0??+1m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"wq!\", ec_write},
-	\\{\"wq\", ec_write},${ESC}${SEP}1??${ESC}${SEP}1??+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1654:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1654${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"wq\", ec_write},${ESC}${SEP}1??${ESC}${SEP}1??+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1654:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"wq!\", ec_write},.*?
+(	\\{\"wq\", ec_write},)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1654:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1654${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 	\\{\"sc!\", ec_specials},
 	\\{\"sc\", ec_specials},
 	\\{\"s\", ec_substitute},
@@ -88,8 +100,10 @@ ${SEP}?%;f+ 	\\{\"sc!\", ec_specials},
 	\\{\"x\", ec_write},
 	\\{\"ya!\", ec_yank},${ESC}${SEP}0??${ESC}${SEP}0??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 	\\{\"sc!\", ec_specials},
 	\\{\"sc\", ec_specials},
-	\\{\"s\", ec_substitute},${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1665:a1${SEP}${LB}
-${SEP}0;1??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1665${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"s\", ec_substitute},${ESC}${SEP}1??${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1665:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"sc!\", ec_specials},.*?
+	\\{\"sc\", ec_specials},.*?
+(	\\{\"s\", ec_substitute},)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1665:a2${SEP}${LB}
+${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1665${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'0i static void *ec_writeall(char *loc, char *cmd, char *arg)
 {
@@ -143,7 +157,7 @@ index 1a6b5696..daa817d4 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index f152a29c..d4d95763 100644
+index 4dec0615..90cc4130 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -802,6 +802,29 @@ static void *ec_write(char *loc, char *cmd, char *arg)

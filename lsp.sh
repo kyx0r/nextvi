@@ -1801,7 +1801,7 @@ index 1a6b5696..16288f1e 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f152a29c..5bbc3849 100644
+index 4dec0615..121893eb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -429,6 +429,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)

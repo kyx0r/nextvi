@@ -155,7 +155,7 @@ index 1a6b5696..de88d8d4 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index f152a29c..2878589c 100644
+index 4dec0615..de7909d1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1569,6 +1569,49 @@ static int eo_val(char *arg)

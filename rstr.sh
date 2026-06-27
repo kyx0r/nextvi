@@ -98,26 +98,26 @@ ${SEP}?%;f+ \\{
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:227${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 		if \\(!xkwdrs\\) \\{
 			xrerr = xserr;
-			return -1;
+			return -2;
 		} else if \\(xgrp >= xkwdrs->nsubc\\) \\{
 			xrerr = xgerr;
-			return -1;
+			return -2;
 		}${ESC}${SEP}0??${ESC}${SEP}0??+3m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		} else if \\(xgrp >= xkwdrs->nsubc\\) \\{
 			xrerr = xgerr;
-			return -1;
+			return -2;
 		}${ESC}${SEP}1??${ESC}${SEP}1??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		if \\(!xkwdrs\\) \\{
 			xrerr = xserr;
-			return -1;${ESC}${SEP}2??${ESC}${SEP}2??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		} else if \\(xgrp >= xkwdrs->nsubc\\) \\{\$${ESC}${SEP}3??${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 			xrerr = xgerr;
-			return -1;
-		}${ESC}${SEP}4??${ESC}${SEP}4??-1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ 		.f \\(.x........
-.	...e...=.xse...
-	...e........
-.....l.. ...\\(..r..........s...s..c...
-.	.x...r....ge.r.
-		..et......;
-..}${ESC}${SEP}5??${ESC}${SEP}5??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		if \\(!xkwdrs\\) \\{.*?
+			return -2;${ESC}${SEP}2??${ESC}${SEP}2??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		} else if \\(xgrp >= xkwdrs->nsubc\\) \\{\$${ESC}${SEP}3??${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}%;f+ 			xrerr = xgerr;
+			return -2;
+		}${ESC}${SEP}4??${ESC}${SEP}4??-1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f+ ............s\\).\\{
+...x..r..= ......
+.....tur.....
+.	...ls.... .........x.w.rs-....... .
+.........=..g..r.
+.	...........
+.	}${ESC}${SEP}5??${ESC}${SEP}5??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		if \\(!xkwdrs\\) \\{.*?
 			xrerr = xserr;.*?
-			return -1;.*?
+			return -2;.*?
 (		} else if \\(xgrp >= xkwdrs->nsubc\\) \\{)${ESC}${SEP}6??${ESC}${SEP}grp 0${ESC}${SEP}6??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:274:a6${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:274${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?%;f+ 
@@ -1135,7 +1135,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f152a29c..aaad037d 100644
+index 4dec0615..fb53fb2d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ int xsep = ':';			/* ex command separator */
@@ -1163,11 +1163,11 @@ index f152a29c..aaad037d 100644
 @@ -271,7 +271,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  		if (!xkwdrs) {
  			xrerr = xserr;
- 			return -1;
+ 			return -2;
 -		} else if (xgrp >= xkwdrs->nsubc) {
 +		} else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2) {
  			xrerr = xgerr;
- 			return -1;
+ 			return -2;
  		}
 @@ -440,7 +440,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  
