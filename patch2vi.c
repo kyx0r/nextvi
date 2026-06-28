@@ -3853,10 +3853,13 @@ static void build_file_groups(file_patch_t *fp)
 			g->follow_offset = fp->ops[i].oline - first_change_line;
 		}
 
-		/* Interactive mode: collect post-change context and build block */
-		if (interactive_mode && (g->del_start || g->nadd)) {
-			g->all_pre_ctx = all_ctx;
-			g->nall_pre_ctx = nall_ctx;
+		/* Collect post-change context for fallback patterns. Both
+		 * relative and interactive mode use up to 3 following context
+		 * lines (default_pat_lines pi 0/1/4); without this, relative
+		 * mode falls back to the single g->follow_ctx line and the
+		 * lower post-context lines of pattern 1 are lost, drifting from
+		 * the interactive output. */
+		if ((relative_mode || interactive_mode) && (g->del_start || g->nadd)) {
 			/* Peek at up to 3 following context lines */
 			int post_cap = 3;
 			int post_avail = 0;
@@ -3871,6 +3874,12 @@ static void build_file_groups(file_patch_t *fp)
 				for (int j = 0; j < post_avail; j++)
 					g->post_ctx[j] = fp->ops[i + j].text;
 			}
+		}
+		/* Interactive mode: also retain all leading context and the
+		 * block split point for editable SEARCH PATTERN sections. */
+		if (interactive_mode && (g->del_start || g->nadd)) {
+			g->all_pre_ctx = all_ctx;
+			g->nall_pre_ctx = nall_ctx;
 			g->block_change_idx = g->nall_pre_ctx;
 		} else {
 			free(all_ctx);
