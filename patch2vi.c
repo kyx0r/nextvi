@@ -375,10 +375,10 @@ static int specificity_score(char **lines, int n)
 	return (int)s;
 }
 
-/* Uniqueness bonuses dominate any specificity score so a proven anchor always
- * sorts ahead of an unproven one of the same shape. */
+/* Uniqueness bonus dominates any specificity score so a proven anchor always
+ * sorts ahead of an unproven one of the same shape (used when picking the
+ * loosest file-validated fuzz window in gen_fuzz_windows). */
 #define UNIQUE_BONUS (1 << 28)   /* exactly one match, at the right place */
-#define CORRECT_BONUS (1 << 27)  /* first match is right, but not unique */
 
 /*
  * File-validated fuzzed (relaxed) anchors.
@@ -1402,7 +1402,6 @@ typedef struct {
 	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
 	int mode;         /* search mode: 0 = %;f> register, 1 = .,$f> buffer,
 			   * 2 = grp register search (bracketed grp 1 .. grp 0) */
-	int score;        /* ordering key: specificity (+ uniqueness bonus) */
 } pat_spec_t;
 
 /* Default (non-edited) lines for fallback pattern pi, ordered strict to
@@ -4085,12 +4084,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			nps++;
 		}
 		if (nps == 0) {
-			/* File-aware uniqueness is trustworthy only when the
-			 * on-disk file is the pre-patch original; confirm by
-			 * matching this hunk's deleted lines at their expected
-			 * line. Pure adds (no del_start) keep blind ordering. */
-			int pristine = orig_lines && g->del_start > 0 &&
-				window_at(g->del_texts, g->ndel, g->del_start - 1);
 			int slot_sz = g->ndel + 7;
 			raw = emalloc(NPAT * slot_sz * sizeof(char *));
 			for (int pi = 0; pi < NPAT; pi++) {
@@ -4105,21 +4098,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = doff;
 				ps[nps].off_final = 0;
 				ps[nps].mode = n == 1 ? 1 : 0;
-				/* Ordering key: contiguous-literal specificity, plus
-				 * a uniqueness bonus when the file confirms how this
-				 * window resolves. expected = the index where the
-				 * window must start to put the target (del_start - 1)
-				 * at match_start + offset. */
-				int sc = specificity_score(slot, n);
-				if (pristine) {
-					int first;
-					int cnt = count_window(slot, n, &first);
-					int expected = (g->del_start - 1) - doff;
-					if (first == expected)
-						sc += cnt == 1 ? UNIQUE_BONUS
-							       : CORRECT_BONUS;
-				}
-				ps[nps].score = sc;
 				nps++;
 			}
 			/* File-validated fuzzed anchors: relax the whole-hunk
@@ -4136,7 +4114,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = fz[i].offset;
 				ps[nps].off_final = 0;
 				ps[nps].mode = fz[i].mode;
-				ps[nps].score = fz[i].score;
 				nps++;
 			}
 			/* File-validated grp-capture window (pattern 7, mode 2):
@@ -4152,7 +4129,6 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = gw.offset;
 				ps[nps].off_final = 1;
 				ps[nps].mode = gw.mode;
-				ps[nps].score = gw.score;
 				nps++;
 			}
 			/* File-validated global straddle window (pattern 8, mode 3):
@@ -4169,27 +4145,20 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = ww.offset;
 				ps[nps].off_final = 1;
 				ps[nps].mode = ww.mode;
-				ps[nps].score = ww.score;
 				nps++;
 			}
-			/* Order the auto-default chain objectively strict to
-			 * loose by descending score (see specificity_score). A
-			 * superset window (e.g. whole hunk over del+post) always
-			 * scores higher, so this respects every superset relation
-			 * while resolving region-incomparable cases by actual
-			 * content; a file-proven unique anchor outranks every
-			 * unproven one. The stable sort preserves
-			 * default_pat_lines' curated tie-break. Custom patterns
-			 * keep the user's explicit slot order. */
-			for (int i = 1; i < nps; i++) {
-				pat_spec_t key = ps[i];
-				int j = i - 1;
-				while (j >= 0 && ps[j].score < key.score) {
-					ps[j + 1] = ps[j];
-					j--;
-				}
-				ps[j + 1] = key;
-			}
+			/* The auto-default chain is already curated strict to
+			 * loose: default_pat_lines emits the whole-hunk window
+			 * first, then its subsets, and the file-validated fuzz /
+			 * grp / win windows are appended last as the loosest,
+			 * most-absorbing fallbacks. Because every emitted pattern
+			 * is file-proven to resolve to the right line, the order
+			 * only affects which one wins on a drifted apply, and
+			 * this natural order already tries the most-constrained
+			 * first. We deliberately do NOT re-sort here: the
+			 * interactive (-i) chain emits in this same slot order
+			 * (custom patterns keep their explicit order), so sorting
+			 * only the -r chain would make the two modes diverge. */
 		}
 		int w = 0;
 		for (int pi = 0; pi < nps; pi++) {
