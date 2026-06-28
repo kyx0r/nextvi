@@ -2462,8 +2462,8 @@ static int parse_sub_line(const char *line, char **pat, char **repl)
  * test and action: a failed match leaves the line untouched, so the next, looser
  * variant is safe to try; the first success short-circuits with 1q so no later
  * variant can re-edit the (now changed) line. A non-primary success reports via
- * ${OK2} (under DBG1=1). If every variant fails the trailing <0;1;..>??! DNF
- * check reports FAIL. Structure mirrors emit_fallback_chain (phase 1).
+ * ${OK2}. If every variant fails the trailing <0;1;..>??! DNF * check reports FAIL.
+ * Structure mirrors emit_fallback_chain (phase 1).
  *
  * A single-variant chain degrades to a plain addressed s/// + check.
  */
@@ -4839,12 +4839,12 @@ process_line:
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
-		      "# OK2: with DBG1=1 also report fallback substitute successes\n"
 		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
-		      "[ \"$DBG1\" = \"1\" ] && OK2= || OK2=\"0?\"\n"
 		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\" || QF1=\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
+		      "# OK2: with DBG1=1 also report fallback substitute successes\n"
+		      "[ \"$DBG2\" = \"1\" ] && OK2=\"0?\" || OK2=\n"
 		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0?\" || DBG2=\n"
 		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
@@ -4857,12 +4857,12 @@ process_line:
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
-		      "# OK2: with DBG1=1 also report fallback substitute successes\n"
 		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
-		      "[ \"$DBG1\" = \"1\" ] && OK2= || OK2=\"0?\"\n"
 		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"\\\\${SEP}vis 2\\\\${SEP}q!1\" || QF1=\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
+		      "# OK2: with DBG1=1 also report fallback substitute successes\n"
+		      "[ \"$DBG2\" = \"1\" ] && OK2=\"0?\" || OK2=\n"
 		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0?\" || DBG2=\n"
 		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
 		      "# Enters vi at failing code line in this script\n"
