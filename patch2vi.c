@@ -415,6 +415,16 @@ static int rune_count(const char *s)
 	return n;
 }
 
+/* Count runes in the first len bytes of s. */
+static int rune_count_n(const char *s, int len)
+{
+	int n = 0;
+	for (int i = 0; i < len; i++)
+		if ((s[i] & 0xC0) != 0x80)
+			n++;
+	return n;
+}
+
 /* A fuzzed line: base text plus a per-rune wildcard mask (1 = becomes '.'). */
 typedef struct {
 	const char *base;     /* borrowed plain text */
@@ -1164,6 +1174,26 @@ static void emit_err_check_mark(FILE *out, int line, int mark_id)
 	snprintf(loc, sizeof(loc), "%s:%d:%s",
 		 cur_file_path ? cur_file_path : "", line, mark);
 	emit_err_check_loc(out, loc, 2, NULL);
+}
+
+/* Phase-2 substitute-chain check: one <0;1;..>??! over all rung tags (DNF
+ * OR); the inverted branch fires only when every substitute variant in the
+ * progression recorded a match failure. Mirrors emit_err_check_pats but at a
+ * mark (phase 2). */
+static void emit_err_check_subs(FILE *out, int nrungs, int line, int mark_id)
+{
+	char loc[MAX_LINE];
+	char mark[16] = "m";
+	char tags[NSEARCH * 8];
+	int p = 0;
+	if (mark_id >= 0)
+		snprintf(mark, sizeof(mark), "m%d", mark_id);
+	for (int t = 0; t < nrungs && p < (int)sizeof(tags); t++)
+		p += snprintf(tags + p, sizeof(tags) - p,
+			      t ? ";%d" : "%d", t);
+	snprintf(loc, sizeof(loc), "%s:%d:%s",
+		 cur_file_path ? cur_file_path : "", line, mark);
+	emit_err_check_loc(out, loc, 2, tags);
 }
 
 /* Double backslashes for ex_arg level escaping.
@@ -1988,51 +2018,529 @@ static char *double_trailing_esc(char *s)
 /* Escape replacement text for substitute command.
  * In nextvi :s replacement, only \ is special (for backreferences \0-\9).
  * Delimiter must also be escaped. delim is always '/' in current callers. */
-static char *escape_sub_repl(const char *s, char delim)
+/* Raw escapers omit double_trailing_esc so segments can be concatenated with
+ * raw regex (groups, backrefs) before the trailing-run fixup is applied once to
+ * the assembled string. The _raw form is correct for interior segments; the
+ * non-raw wrappers are for a whole standalone field. */
+static char *escape_sub_repl_raw(const char *s, char delim)
 {
 	char set[3] = { '\\', delim, 0 };
-	return double_trailing_esc(escape_chars(s, set));
+	return escape_chars(s, set);
+}
+
+static char *escape_sub_repl(const char *s, char delim)
+{
+	return double_trailing_esc(escape_sub_repl_raw(s, delim));
 }
 
 /* Escape regex pattern for substitute command.
  * Like escape_regex() but also escapes the delimiter for ex_re_read. */
-static char *escape_sub_pat(const char *s, char delim)
+static char *escape_sub_pat_raw(const char *s, char delim)
 {
 	char set[sizeof(REGEX_META) + 1];
 	snprintf(set, sizeof(set), "%s%c", REGEX_META, delim);
-	return double_trailing_esc(escape_chars(s, set));
+	return escape_chars(s, set);
 }
 
-/* Emit the s/old/new/ substitute command (no positioning).
- * Escapes old_text as regex pattern and new_text as replacement,
- * both through ex_re_read delimiter + ex_arg + shell layers. */
-static void emit_substitute_cmd(FILE *out, const char *old_text,
-				const char *new_text)
+static char *escape_sub_pat(const char *s, char delim)
 {
-	char *pat = escape_sub_pat(old_text, '/');
-	char *repl = escape_sub_repl(new_text, '/');
+	return double_trailing_esc(escape_sub_pat_raw(s, delim));
+}
+
+/* Allocate a NUL-terminated copy of n bytes from s. */
+static char *dup_n(const char *s, int n)
+{
+	char *r = emalloc(n + 1);
+	memcpy(r, s, n);
+	r[n] = '\0';
+	return r;
+}
+
+/* Longest common substring of a[0..alen) and b[0..blen). Returns its byte
+ * length and sets ai, bi to the start offsets in a/b. Plain O(alen*blen) DP;
+ * diff lines are short. */
+static int lcs_substr(const char *a, int alen, const char *b, int blen,
+		      int *ai, int *bi)
+{
+	int best = 0;
+	*ai = 0;
+	*bi = 0;
+	int row = blen + 1;
+	int *prev = emalloc(row * sizeof(int));
+	int *cur = emalloc(row * sizeof(int));
+	memset(prev, 0, row * sizeof(int));
+	for (int i = 1; i <= alen; i++) {
+		cur[0] = 0;
+		for (int j = 1; j <= blen; j++) {
+			if (a[i - 1] == b[j - 1]) {
+				cur[j] = prev[j - 1] + 1;
+				if (cur[j] > best) {
+					best = cur[j];
+					*ai = i - cur[j];
+					*bi = j - cur[j];
+				}
+			} else {
+				cur[j] = 0;
+			}
+		}
+		int *t = prev; prev = cur; cur = t;
+	}
+	free(prev);
+	free(cur);
+	return best;
+}
+
+/* A common block: identical run om[oa..oa+len) == nm[na..na+len), trimmed to
+ * UTF-8 rune boundaries. `keep` marks it as a captured "(.*)" island. */
+typedef struct {
+	int oa, na, len;
+	int keep;
+} block_t;
+
+typedef struct {
+	block_t *v;
+	int n, cap;
+} blockvec_t;
+
+static void bv_add(blockvec_t *bv, int oa, int na, int len)
+{
+	if (bv->n == bv->cap) {
+		bv->cap = bv->cap ? bv->cap * 2 : 8;
+		bv->v = erealloc(bv->v, bv->cap * sizeof(block_t));
+	}
+	bv->v[bv->n].oa = oa;
+	bv->v[bv->n].na = na;
+	bv->v[bv->n].len = len;
+	bv->v[bv->n].keep = 0;
+	bv->n++;
+}
+
+/* Recursively decompose om[os..oe)/nm[ns..ne) into in-order common blocks
+ * (difflib-style: longest common substring, then recurse on the two flanks).
+ * Each block is rune-trimmed; the trimmed-off edges and gaps fall through as
+ * changed text. */
+static void collect_blocks(const char *om, int os, int oe,
+			   const char *nm, int ns, int ne, blockvec_t *bv)
+{
+	int alen = oe - os, blen = ne - ns;
+	if (alen <= 0 || blen <= 0)
+		return;
+	int ai, bi;
+	int L = lcs_substr(om + os, alen, nm + ns, blen, &ai, &bi);
+	if (L <= 0)
+		return;
+	int bo = os + ai, bn = ns + bi;
+	int s = 0, e = L;
+	while (s < e && (om[bo + s] & 0xC0) == 0x80) s++;
+	while (e > s && (om[bo + e] & 0xC0) == 0x80) e--;
+	bo += s; bn += s;
+	L = e - s;
+	if (L <= 0)
+		return;   /* whole block was a partial rune; treat as change */
+	collect_blocks(om, os, bo, nm, ns, bn, bv);
+	bv_add(bv, bo, bn, L);
+	collect_blocks(om, bo + L, oe, nm, bn + L, ne, bv);
+}
+
+/* Dynamic string: ds_cat appends, ds_cat_n appends n bytes. */
+typedef struct { char *s; int len, cap; } dstr_t;
+static void ds_cat_n(dstr_t *d, const char *t, int n)
+{
+	if (d->len + n + 1 > d->cap) {
+		d->cap = (d->len + n + 1) * 2;
+		d->s = erealloc(d->s, d->cap);
+	}
+	memcpy(d->s + d->len, t, n);
+	d->len += n;
+	d->s[d->len] = '\0';
+}
+static void ds_cat(dstr_t *d, const char *t) { ds_cat_n(d, t, strlen(t)); }
+
+/* Build the exact (rung 0) substitute: minimal-span old/new fully escaped
+ * (regex+delim, repl+delim, trailing-esc). This is the primary form, unchanged
+ * from the original single-shot substitute. */
+static void build_exact_sub(const char *old, const char *new,
+			    char **pat_out, char **repl_out)
+{
+	*pat_out = escape_sub_pat(old, '/');
+	*repl_out = escape_sub_repl(new, '/');
+}
+
+#define GRP_MIN_ISLAND 3   /* stable run must be >= this many runes to anchor a group */
+
+/* Render mode for a stable run (capture group). */
+enum { GM_LIT, GM_WILD, GM_FUZZ };   /* "(text)" / "(.*)" / "(head.*tail)" */
+
+/* One token of the grp decomposition: a stable common run (a capture group) or
+ * an edit (changed text matched literally on the old side, re-emitted on the
+ * new side). Texts are borrowed slices of old/new. */
+typedef struct {
+	int stable;          /* 1 = stable anchor (group), 0 = edit */
+	const char *o; int olen;   /* old text (pattern side) */
+	const char *n; int nlen;   /* new text (replacement side) */
+	int mode;            /* (stable) GM_LIT / GM_WILD / GM_FUZZ */
+	int hb, tb;          /* (GM_FUZZ) head/tail byte lengths within o */
+} gtok_t;
+
+/* Byte length of the first k runes of [s,len] (clamped to len). */
+static int rune_take(const char *s, int len, int k)
+{
+	int i = 0, n = 0;
+	while (i < len && n < k) { i += rune_len(s + i); n++; }
+	return i < len ? i : len;
+}
+
+/* Number of (overlapping) occurrences of needle in haystack. */
+static int str_count_occ(const char *hay, int hl, const char *ndl, int nl)
+{
+	int c = 0;
+	if (nl <= 0 || nl > hl)
+		return 0;
+	for (int i = 0; i + nl <= hl; i++)
+		if (memcmp(hay + i, ndl, nl) == 0)
+			c++;
+	return c;
+}
+
+/*
+ * For a stable run [o,olen] (a slice of the whole old line [old,oldlen]), pick
+ * the MINIMAL head and tail (in runes) that each occur exactly once in old, so
+ * the pattern "(head.*tail)" matches the run deterministically: the leading
+ * "(.*)" can only end at the sole head position, and the middle ".*" can only
+ * reach the sole tail. Minimal anchors maximize the wildcarded interior. Needs
+ * non-overlapping head/tail leaving >= 1 rune of middle. Returns 1 with byte
+ * lengths written to hb and tb, else 0 (caller falls back to a literal capture).
+ */
+static int fuzz_anchors(const char *old, int oldlen,
+			const char *o, int olen, int *hb, int *tb)
+{
+	int R = rune_count_n(o, olen);
+	int hk = 0, tk = 0, hbytes = 0, tbytes = 0;
+	for (int k = 1; k <= R; k++) {
+		hbytes = rune_take(o, olen, k);
+		if (str_count_occ(old, oldlen, o, hbytes) == 1) { hk = k; break; }
+	}
+	if (!hk)
+		return 0;
+	for (int k = 1; k <= R; k++) {
+		int off = rune_take(o, olen, R - k);
+		tbytes = olen - off;
+		if (str_count_occ(old, oldlen, o + off, tbytes) == 1) { tk = k; break; }
+	}
+	if (!tk || hk + tk >= R)   /* overlap or no interior left to absorb */
+		return 0;
+	*hb = hbytes; *tb = tbytes;
+	return 1;
+}
+
+/*
+ * Grp-capture absorbing substitute (rung 1 of the progression).
+ *
+ * Decompose the changed line into stable common runs and the edits between
+ * them, then build a pattern over the EXACT SPAN ONLY -- from the first edit to
+ * the last edit. The stable runs OUTSIDE that span (the unchanged line prefix
+ * and suffix) are dropped: the substitute matches as an unanchored substring,
+ * so prefix/suffix are already free, and wrapping them in leading/trailing
+ * "(.*)" would just duplicate the exact rung (s/old/new/ over the same span).
+ *
+ * Each in-span stable run becomes a capture group; each edit is matched
+ * literally (old text) and re-emitted (new text). A stable run is wildcarded so
+ * it absorbs drift *inside* itself:
+ *   - full "(.*)" when flanked by non-empty edits whose old-texts are each
+ *     UNIQUE in the old line (the literal separators pin the greedy boundaries),
+ *     e.g. two-spot "X bbbb Y" -> "P bbbb Q": s/X(.*)Y/P\1Q/.
+ *   - else "(head.*tail)" keeping the MINIMAL head/tail runes that are each
+ *     unique in the old line (see fuzz_anchors) -- used when a separator is an
+ *     insertion (empty old) or repeats, where a bare "(.*)" would be ambiguous.
+ *   - else a literal "(text)" capture (no unique anchors / no interior left).
+ *
+ * The variant is emitted only if at least one in-span run is wildcarded
+ * ("(.*)" or "(head.*tail)"); otherwise it reproduces the span verbatim and is
+ * a pure dup of the exact rung, so it returns 0.
+ *
+ * Returns 1 and sets pre-escaped pat/repl (sub layer + trailing fixup), else 0.
+ */
+static int build_grp_variant(const char *old, const char *new,
+			     char **pat_out, char **repl_out)
+{
+	*pat_out = NULL;
+	*repl_out = NULL;
+	int olen = strlen(old), nlen = strlen(new);
+	blockvec_t bv = {0};
+	collect_blocks(old, 0, olen, new, 0, nlen, &bv);
+
+	/* Token stream: edits and substantial stable runs. Small common blocks
+	 * are folded into the surrounding edit (pos not advanced past them). */
+	gtok_t *tk = emalloc((bv.n * 2 + 2) * sizeof(gtok_t));
+	int nt = 0, pos_o = 0, pos_n = 0;
+	for (int i = 0; i < bv.n; i++) {
+		block_t *b = &bv.v[i];
+		/* Fold small INTERIOR common runs into the surrounding edit; keep the
+		 * boundary runs (leftmost/rightmost) regardless of size, since they
+		 * become "(.*)" absorbers where literal length is irrelevant. Folding
+		 * a short trailing/leading anchor would strand an insertion against a
+		 * wildcard and force the whole variant to be rejected. */
+		int boundary = (i == 0 || i == bv.n - 1);
+		if (!boundary && rune_count_n(old + b->oa, b->len) < GRP_MIN_ISLAND)
+			continue;
+		if (b->oa > pos_o || b->na > pos_n) {   /* edit gap before anchor */
+			tk[nt].stable = 0;
+			tk[nt].o = old + pos_o; tk[nt].olen = b->oa - pos_o;
+			tk[nt].n = new + pos_n; tk[nt].nlen = b->na - pos_n;
+			nt++;
+		}
+		tk[nt].stable = 1;
+		tk[nt].o = old + b->oa; tk[nt].olen = b->len;
+		tk[nt].n = new + b->na; tk[nt].nlen = b->len;
+		nt++;
+		pos_o = b->oa + b->len; pos_n = b->na + b->len;
+	}
+	if (olen > pos_o || nlen > pos_n) {   /* trailing edit */
+		tk[nt].stable = 0;
+		tk[nt].o = old + pos_o; tk[nt].olen = olen - pos_o;
+		tk[nt].n = new + pos_n; tk[nt].nlen = nlen - pos_n;
+		nt++;
+	}
+	free(bv.v);
+
+	/* The exact span runs from the first edit to the last edit; only the
+	 * stable runs strictly inside it are emitted (the rest is the unchanged
+	 * prefix/suffix the substring match already skips). */
+	int fe = -1, le = -1;
+	for (int i = 0; i < nt; i++)
+		if (!tk[i].stable) { if (fe < 0) fe = i; le = i; }
+	if (fe < 0) {   /* no edit at all (old == new): nothing to do */
+		free(tk);
+		return 0;
+	}
+	int ns = 0;
+	for (int i = fe + 1; i < le; i++)
+		if (tk[i].stable) ns++;
+	if (ns == 0 || ns > 9) {   /* no in-span run, or > \1..\9 backref limit */
+		free(tk);
+		return 0;
+	}
+
+	/* Per-stable cumulative old-text length of the edit gap immediately to its
+	 * left and right; a non-empty gap is a literal separator that disambiguates
+	 * an adjacent full "(.*)". */
+	int *lgap = emalloc(nt * sizeof(int)), *rgap = emalloc(nt * sizeof(int));
+	int run = 0;
+	for (int i = 0; i < nt; i++) {
+		if (tk[i].stable) { lgap[i] = run; run = 0; }
+		else run += tk[i].olen;
+	}
+	run = 0;
+	for (int i = nt - 1; i >= 0; i--) {
+		if (tk[i].stable) { rgap[i] = run; run = 0; }
+		else run += tk[i].olen;
+	}
+
+	int absorb = 0;
+	for (int i = fe + 1; i < le; i++) {
+		if (!tk[i].stable)
+			continue;
+		if (lgap[i] > 0 && rgap[i] > 0 &&
+		    str_count_occ(old, olen, tk[i-1].o, tk[i-1].olen) == 1 &&
+		    str_count_occ(old, olen, tk[i+1].o, tk[i+1].olen) == 1) {
+			/* Full "(.*)": its boundaries are pinned by the literal edit
+			 * old-text on each side, so both separators must be unique in
+			 * the old line or the greedy ".*" split is ambiguous. */
+			tk[i].mode = GM_WILD;
+			absorb = 1;
+		} else if (fuzz_anchors(old, olen, tk[i].o, tk[i].olen,
+					&tk[i].hb, &tk[i].tb)) {
+			tk[i].mode = GM_FUZZ;       /* head/tail anchored absorber */
+			absorb = 1;
+		} else {
+			tk[i].mode = GM_LIT;        /* no unique minimal anchors */
+		}
+	}
+	free(lgap); free(rgap);
+	if (!absorb) {   /* reproduces the span verbatim: a dup of the exact rung */
+		free(tk);
+		return 0;
+	}
+
+	dstr_t pat = {0}, repl = {0};
+	int g = 0;
+	for (int i = fe; i <= le; i++) {
+		if (tk[i].stable) {
+			char br[16];
+			snprintf(br, sizeof(br), "\\%d", ++g);
+			if (tk[i].mode == GM_WILD) {
+				ds_cat(&pat, "(.*)");
+			} else if (tk[i].mode == GM_FUZZ) {
+				char *h = dup_n(tk[i].o, tk[i].hb);
+				char *t = dup_n(tk[i].o + tk[i].olen - tk[i].tb,
+						tk[i].tb);
+				char *eh = escape_sub_pat_raw(h, '/');
+				char *et = escape_sub_pat_raw(t, '/');
+				ds_cat(&pat, "(");
+				ds_cat(&pat, eh);
+				ds_cat(&pat, ".*");
+				ds_cat(&pat, et);
+				ds_cat(&pat, ")");
+				free(eh); free(et); free(h); free(t);
+			} else {
+				char *tmp = dup_n(tk[i].o, tk[i].olen);
+				char *e = escape_sub_pat_raw(tmp, '/');
+				ds_cat(&pat, "(");
+				ds_cat(&pat, e);
+				ds_cat(&pat, ")");
+				free(e); free(tmp);
+			}
+			ds_cat(&repl, br);
+		} else {
+			char *to = dup_n(tk[i].o, tk[i].olen);
+			char *tn = dup_n(tk[i].n, tk[i].nlen);
+			char *pe = escape_sub_pat_raw(to, '/');
+			char *re = escape_sub_repl_raw(tn, '/');
+			ds_cat(&pat, pe);
+			ds_cat(&repl, re);
+			free(pe); free(re); free(to); free(tn);
+		}
+	}
+	free(tk);
+	*pat_out = double_trailing_esc(pat.s ? pat.s : dup_n("", 0));
+	*repl_out = double_trailing_esc(repl.s ? repl.s : dup_n("", 0));
+	return 1;
+}
+
+/* Emit one s/// field (pattern or replacement): apply the outer ex_arg + shell
+ * layers to an already sub-escaped string and free it. */
+static void emit_sub_field(FILE *out, char *escaped)
+{
+	char *ea = escape_exarg(escaped);
+	emit_escaped_line(out, ea);
+	free(ea);
+	free(escaped);
+}
+
+/* Emit a substitute from pre-escaped pat/repl strings (one progression rung). */
+static void emit_substitute_grp(FILE *out, const char *pat, const char *repl)
+{
 	fputs("s/", out);
-	char *pat_ea = escape_exarg(pat);
-	emit_escaped_line(out, pat_ea);
+	emit_sub_field(out, dup_n(pat, strlen(pat)));
 	fputc('/', out);
-	char *repl_ea = escape_exarg(repl);
-	emit_escaped_line(out, repl_ea);
+	emit_sub_field(out, dup_n(repl, strlen(repl)));
 	fputc('/', out);
-	free(repl_ea);
-	free(pat_ea);
-	free(repl);
-	free(pat);
 }
 
-/* Phase 2: substitute at a mark. The pattern can fail to match
- * within the line, so keep the error check. */
-static void emit_mark_substitute(FILE *out, int line, int mark_id,
-				 const char *old_text, const char *new_text)
+/* One rung of the phase-2 substitute progression: a fully-escaped s/// pair. */
+typedef struct { char *pat; char *repl; } subvar_t;
+
+/* Parse "s/<pat>/<repl>/[flags]" into its (still-escaped) pat/repl substrings,
+ * respecting "\/" escaped delimiters. Only the '/' delimiter is recognized
+ * (the chain emit hardcodes it). Returns 1 and allocates pat/repl on success,
+ * leaving any trailing flags out (the chain has no use for them). */
+static int parse_sub_line(const char *line, char **pat, char **repl)
 {
-	fprintf(out, "'%d", mark_id);
-	emit_substitute_cmd(out, old_text, new_text);
+	if (line[0] != 's' || line[1] != '/')
+		return 0;
+	const char *p = line + 2;
+	const char *ends[2];
+	for (int f = 0; f < 2; f++) {
+		while (*p && *p != '/') {
+			if (*p == '\\' && p[1])
+				p++;
+			p++;
+		}
+		if (*p != '/')
+			return 0;
+		ends[f] = p;
+		p++;
+	}
+	*pat = dup_n(line + 2, ends[0] - (line + 2));
+	*repl = dup_n(ends[0] + 1, ends[1] - (ends[0] + 1));
+	return 1;
+}
+
+/*
+ * Phase 2 substitute progression: try each variant (exact -> grp-absorbing)
+ * in order at the mark, first success wins. The s/// is both
+ * test and action: a failed match leaves the line untouched, so the next, looser
+ * variant is safe to try; the first success short-circuits with 1q so no later
+ * variant can re-edit the (now changed) line. A non-primary success reports via
+ * ${OK2} (under DBG1=1). If every variant fails the trailing <0;1;..>??! DNF
+ * check reports FAIL. Structure mirrors emit_fallback_chain (phase 1).
+ *
+ * A single-variant chain degrades to a plain addressed s/// + check.
+ */
+static void emit_substitute_chain(FILE *out, int line, int mark_id,
+				  subvar_t *v, int nv)
+{
+	if (nv <= 1) {
+		fprintf(out, "'%d", mark_id);
+		emit_substitute_grp(out, v[0].pat, v[0].repl);
+		EMIT_SEP(out);
+		emit_err_check_mark(out, line, mark_id);
+		return;
+	}
+	fputc('?', out);
+	for (int n = 0; n < nv; n++) {
+		if (n)
+			EMIT_ESCSEP(out);
+		/* action: substitute at the mark (status tested below) */
+		fprintf(out, "'%d", mark_id);
+		emit_substitute_grp(out, v[n].pat, v[n].repl);
+		EMIT_ESCSEP(out);
+		fprintf(out, "%d??", n);   /* capture s/// status into tag n */
+		EMIT_ESCSEP(out);
+		fprintf(out, "%d??", n);   /* on success (fire): */
+		if (n) {
+			/* harmless mark jump as the immediate then-arg keeps
+			 * ${OK2} non-immediate (mirrors OK1 after "m id") */
+			fprintf(out, "'%d", mark_id);
+			EMIT_ESC3SEP(out);
+			fprintf(out, "${OK2}p OK %s:%d:s%d",
+				cur_file_path ? cur_file_path : "?", line, n);
+			if (n < nv - 1) {
+				EMIT_ESC3SEP(out);
+				fputs("1q", out);
+			}
+		} else {
+			fputs("1q", out);
+		}
+	}
 	EMIT_SEP(out);
-	emit_err_check_mark(out, line, mark_id);
+	fputs("${LB}\n", out);
+	EMIT_SEP(out);
+	emit_err_check_subs(out, nv, line, mark_id);
+	fputs("${LB}\n", out);
+	EMIT_SEP(out);
+}
+
+/* Build the substitute progression for a single-line change into v[0..1]:
+ * rung 0 exact (minimal-span s/old/new/), rung 1 grp-capture absorbing variant
+ * over the exact span (built from the full hunk line, no original-file reach).
+ * The grp rung is skipped when it would not absorb any interior drift (i.e.
+ * would be a pure dup of the exact rung). Returns the count. Fields are fully
+ * escaped (as displayed in interactive mode). Caller frees. */
+static int build_sub_variants(group_t *g, subvar_t *v)
+{
+	int nv = 0;
+	build_exact_sub(g->ld_old_text, g->ld_new_text, &v[nv].pat, &v[nv].repl);
+	nv++;
+	if (build_grp_variant(g->del_texts[0], g->add_texts[0],
+			      &v[nv].pat, &v[nv].repl))
+		nv++;
+	return nv;
+}
+
+/* Phase 2: substitute at a mark, building the exact -> grp-absorbing
+ * progression. The pattern can fail to match within the (possibly drifted)
+ * line, so each rung is error-checked; see emit_substitute_chain. */
+static void emit_mark_substitute(FILE *out, int line, int mark_id,
+				 group_t *g)
+{
+	subvar_t v[2];
+	int nv = build_sub_variants(g, v);
+	emit_substitute_chain(out, line, mark_id, v, nv);
+	for (int i = 0; i < nv; i++) {
+		free(v[i].pat);
+		free(v[i].repl);
+	}
 }
 
 /* Phase 2: horizontal ;c / ;d edit tail, emitted after an address
@@ -2669,12 +3177,20 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 				for (int k = 0; k < gd->nrel; k++)
 					fprintf(fp, "%s\n", gd->rel_cmd[k]);
 			} else if (has_anchors) {
-				if (g->ndel == 1 && g->nadd == 1 && g->has_line_diff) {
-					char *esc_pat = escape_sub_pat(g->ld_old_text, '/');
-					char *esc_rep = escape_sub_repl(g->ld_new_text, '/');
-					fprintf(fp, "s/%s/%s/\n", esc_pat, esc_rep);
-					free(esc_pat);
-					free(esc_rep);
+				if (g->ndel == 1 && g->nadd == 1 &&
+				    g->has_line_diff) {
+					/* substitute progression: one s/// per rung
+					 * (exact -> grp-absorbing), newline separated.
+					 * All target the same marked line; the emit
+					 * side turns >1 rung into a first-wins chain. */
+					subvar_t v[2];
+					int nv = build_sub_variants(g, v);
+					for (int k = 0; k < nv; k++) {
+						fprintf(fp, "s/%s/%s/\n",
+							v[k].pat, v[k].repl);
+						free(v[k].pat);
+						free(v[k].repl);
+					}
 				} else if (g->del_start && g->nadd) {
 					if (g->ndel == 1)
 						fputs("c", fp);
@@ -3769,7 +4285,31 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			emit_err_check_mark(out, tline, g->mark_id);
 		} else if (strat == STRAT_REL && g->custom_rel_lines
 			   && g->custom_rel_nlines > 0) {
-			EMIT_MARK_EDIT(g->custom_rel_lines, g->custom_rel_nlines);
+			/* A multi-line rel block of pure substitutes is the
+			 * editable substitute progression: rebuild it as a
+			 * first-wins chain. Anything else (single command, or a
+			 * multi-line c with content) emits verbatim at the mark. */
+			subvar_t cv[NSEARCH];
+			int cn = 0, all_sub = g->custom_rel_nlines > 1;
+			for (int k = 0; all_sub && k < g->custom_rel_nlines
+			     && cn < NSEARCH; k++) {
+				if (parse_sub_line(g->custom_rel_lines[k],
+						   &cv[cn].pat, &cv[cn].repl))
+					cn++;
+				else
+					all_sub = 0;
+			}
+			if (all_sub && cn == g->custom_rel_nlines) {
+				emit_substitute_chain(out, tline, g->mark_id,
+						      cv, cn);
+			} else {
+				EMIT_MARK_EDIT(g->custom_rel_lines,
+					       g->custom_rel_nlines);
+			}
+			for (int k = 0; k < cn; k++) {
+				free(cv[k].pat);
+				free(cv[k].repl);
+			}
 		} else if (g->del_start && g->nadd) {
 			if (strat == STRAT_RELC) {
 				if (g->custom_relc_lines && g->custom_relc_nlines > 0) {
@@ -3787,8 +4327,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				emit_err_check_mark(out, tline, g->mark_id);
 			} else if (strat == STRAT_REL && g->ndel == 1 && g->nadd == 1
 				   && g->has_line_diff) {
-				emit_mark_substitute(out, tline, g->mark_id,
-						     g->ld_old_text, g->ld_new_text);
+				emit_mark_substitute(out, tline, g->mark_id, g);
 			} else if (strat == STRAT_ABS && g->ndel == 1 && g->nadd == 1
 				   && g->has_line_diff) {
 				fprintf(out, "'%d", g->mark_id);
@@ -4300,7 +4839,9 @@ process_line:
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
+		      "# OK2: with DBG1=1 also report fallback substitute successes\n"
 		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && OK2= || OK2=\"0?\"\n"
 		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\" || QF1=\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
@@ -4316,7 +4857,9 @@ process_line:
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
+		      "# OK2: with DBG1=1 also report fallback substitute successes\n"
 		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
+		      "[ \"$DBG1\" = \"1\" ] && OK2= || OK2=\"0?\"\n"
 		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n"
 		      "[ \"$QF1\" = \"1\" ] && QF1=\"\\\\${SEP}vis 2\\\\${SEP}q!1\" || QF1=\n"
 		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"

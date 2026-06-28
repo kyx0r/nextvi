@@ -58,6 +58,30 @@ check_script() {
 	fi
 }
 
+# Generate a script from orig->expected, then apply it to a *drifted* file to
+# confirm the substitute progression (exact -> grp-absorbing)
+# absorbs drift.
+# $1=name $2=orig $3=expected(script source) $4=drifted input $5=drifted result
+check_drift() {
+	local name="$1"
+	printf '%s' "$2" > "$TMPDIR/orig.txt"
+	printf '%s' "$3" > "$TMPDIR/expected.txt"
+	diff -u "$TMPDIR/orig.txt" "$TMPDIR/expected.txt" > "$TMPDIR/test.patch" || true
+	./patch2vi -r "$TMPDIR/test.patch" > "$TMPDIR/apply.sh" 2>&1
+	chmod +x "$TMPDIR/apply.sh"
+	printf '%s' "$4" > "$TMPDIR/result.txt"
+	printf '%s' "$5" > "$TMPDIR/drifted.txt"
+	sed -i "s|\$VI -e '[^']*'|\$VI -e '$TMPDIR/result.txt'|" "$TMPDIR/apply.sh"
+	if VI="$VI" "$TMPDIR/apply.sh" >/dev/null 2>&1 &&
+	   diff -q "$TMPDIR/result.txt" "$TMPDIR/drifted.txt" >/dev/null 2>&1; then
+		ok "$name"
+	else
+		fail "$name"
+		echo "    --- want ---"; sed 's/^/    /' "$TMPDIR/drifted.txt"
+		echo "    --- got ---"; sed 's/^/    /' "$TMPDIR/result.txt"
+	fi
+}
+
 cc -O2 -o patch2vi patch2vi.c
 
 echo "=== Script content tests ==="
@@ -503,6 +527,224 @@ ctx2
 ctx3
 café bon thé fin
 end
+"
+
+echo ""
+echo "=== Grp-capture absorbing substitute tests ==="
+
+# Two changed spots with a stable island between. The progression emits, in
+# order: exact (rung 0, the minimal contiguous span) and one grp rung built over
+# that SAME span -- the island is wildcarded so it absorbs drift, with no leading
+# or trailing "(.*)" (those would just dup the unanchored exact rung). Both edit
+# separators X/Y are unique, so the island is a full "(.*)": s/X(.*)Y/P\1Q/.
+check_script "two-spot change emits exact rung first" \
+	"top
+aaaaaaaaaa X bbbbbbbbbb Y cccccccccc
+bot
+" \
+	"top
+aaaaaaaaaa P bbbbbbbbbb Q cccccccccc
+bot
+" \
+	's/X bbbbbbbbbb Y/' ''
+check_script "two-spot change emits absorbing grp rung" \
+	"top
+aaaaaaaaaa X bbbbbbbbbb Y cccccccccc
+bot
+" \
+	"top
+aaaaaaaaaa P bbbbbbbbbb Q cccccccccc
+bot
+" \
+	'X([.][*])Y' '([.][*])X'
+
+# Same shape applies correctly end-to-end (island preserved verbatim).
+check "two-spot grp substitute applies" \
+	"top
+aaaaaaaaaa X bbbbbbbbbb Y cccccccccc
+bot
+" \
+	"top
+aaaaaaaaaa P bbbbbbbbbb Q cccccccccc
+bot
+"
+
+# Inserting characters between stable anchors (the canonical case). The span is
+# "int vi_cn" -> "aint vib_cnc"; the "int vi" run fuzzes to "(in.*vi)" (minimal
+# unique head "in" / tail "vi") so it absorbs drift between them, while "_cn" is
+# too short and stays literal. No leading/trailing "(.*)": s/(in.*vi)(_cn)/a\1b\2c/.
+check_script "insertion between anchors emits absorbing grp" \
+	"static int vi_cndir = 1;
+" \
+	"static aint vib_cncdir = 1;
+" \
+	'(in[.][*]vi)(_cn)' '([.][*])(int'
+check "insertion between anchors applies" \
+	"static int vi_cndir = 1;
+" \
+	"static aint vib_cncdir = 1;
+"
+
+# Regression: two insertions bracketing a stable middle. The span is built over
+# the changed region only; the unchanged prefix and the short trailing run "|\\"
+# are NOT wrapped in "(.*)" absorbers (that would dup the unanchored exact rung).
+# Earlier this emitted an external "(.*)...(.*)" form; now it must not -- the grp
+# is just the span "(f!.*c!?|)" with insertions injected. The line must be long
+# enough that the cost model picks STRAT_REL (s///) over STRAT_RELC (;c).
+check_script "short trailing anchor emits span-only grp" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\\
+line five stays
+line six stays
+line seven stays
+" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\\
+line five stays
+line six stays
+line seven stays
+" \
+	'(f![.][*]' '([.][*])(f'
+check "short trailing anchor grp applies" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\\
+line five stays
+line six stays
+line seven stays
+" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\\
+line five stays
+line six stays
+line seven stays
+"
+
+# The middle anchor is flanked by insertions on both sides ("q" before, "vs|sp"
+# after), so it cannot become a full "(.*)" (ambiguous). The grp instead keeps
+# the MINIMAL head/tail runes that are each unique in the old line (here head
+# "f!", tail "c!?|") and wildcards the middle -- "(f!.*c!?|)" -- which absorbs
+# drift *inside* the stable region ("inc" -> "incZZ" on disk) while still
+# injecting the insertions. The exact rung fails on the drifted interior; only
+# the fuzz grp fires. The "f!.*" marker checks a literal-then-wildcard group.
+check_script "insertion-flanked middle emits fuzz grp" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\\
+line five stays
+line six stays
+line seven stays
+" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\\
+line five stays
+line six stays
+line seven stays
+" \
+	'f![.][*]' ''
+check_drift "fuzz grp absorbs interior drift" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\\
+line five stays
+line six stays
+line seven stays
+" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\\
+line five stays
+line six stays
+line seven stays
+" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|incZZ|i|sc!?|\\
+line five stays
+line six stays
+line seven stays
+" \
+	"line one stays
+line two stays
+line three stays
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[qf!]?!?|f[-+><tdp]?|incZZ|i|sc!?|vs|sp|\\
+line five stays
+line six stays
+line seven stays
+"
+
+# The progression absorbs drift: the exact rung fails when the on-disk island
+# drifted, but the grp rung's interior "(.*)" absorbs it.
+check_drift "grp rung absorbs island drift" \
+	"top
+aaaaaaaaaa X bbbbbbbbbb Y cccccccccc
+bot
+" \
+	"top
+aaaaaaaaaa P bbbbbbbbbb Q cccccccccc
+bot
+" \
+	"top
+aaaaaaaaaa X bbZZbbZZbb Y cccccccccc
+bot
+" \
+	"top
+aaaaaaaaaa P bbZZbbZZbb Q cccccccccc
+bot
+"
+
+# A full "(.*)" interior is only safe when both bordering edit separators are
+# unique in the old line. When the separator repeats (here both edits are "Z"),
+# the bare "Z(.*)Z" split would be ambiguous, so the middle is demoted to a fuzz
+# "( b.*b )" whose literal head/tail pin the repeated "Z": s/Z( b.*b )Z/P\1Q/.
+# The ambiguous middle wild "Z(.*)Z" must NOT appear.
+check_script "repeated separator demotes wild middle" \
+	"c1
+c2
+c3
+aaaaaaaaaa Z bbbbbbbbbb Z cccccccccc
+c5
+c6
+c7
+" \
+	"c1
+c2
+c3
+aaaaaaaaaa P bbbbbbbbbb Q cccccccccc
+c5
+c6
+c7
+" \
+	'Z( b' 'Z([.][*])Z'
+check "repeated separator grp applies" \
+	"c1
+c2
+c3
+aaaaaaaaaa Z bbbbbbbbbb Z cccccccccc
+c5
+c6
+c7
+" \
+	"c1
+c2
+c3
+aaaaaaaaaa P bbbbbbbbbb Q cccccccccc
+c5
+c6
+c7
 "
 
 echo ""
