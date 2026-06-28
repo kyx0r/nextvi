@@ -98,7 +98,10 @@ check_script "single pattern uses .,\$f>" \
 # A single anchored change emits a fallback chain. The whole-hunk
 # pattern is multi-line (%;f>, mode 0); the single-line fallbacks
 # (top context, deleted line) default to mode 1 and search the live
-# buffer with .,$f> instead.
+# buffer with .,$f> instead. The chain opens the ? conditional with a
+# ${LB} readability break before the first search (each attempt starts
+# on its own source line); emit_search (single pattern) never opens
+# with '?', so this stays chain-specific.
 check_script "anchored change uses fallback chain" \
 	"ctx1
 old
@@ -108,7 +111,7 @@ end
 new
 end
 " \
-	'?%;f>' ''
+	'?${ESC}${SEP}${LB}' ''
 
 check_script "single-line chain fallbacks use .,\$f>" \
 	"ctx1

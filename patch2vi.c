@@ -1850,8 +1850,14 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 		int m1 = ps[n].mode == 1;
 		int g3 = ps[n].mode == 3;
 		int g2 = ps[n].mode == 2 || g3;   /* grp bracketing covers both */
-		if (n)
-			EMIT_ESCSEP(out);
+		/* Readability line break before each attempt's search: a leading
+		 * separator (after the '?' for the first attempt, after the
+		 * previous block otherwise), a ${LB} no-op clause and a real
+		 * newline, then the separator before the search setup. Every
+		 * attempt thus starts on its own source line. */
+		EMIT_ESCSEP(out);
+		fputs("${LB}\n", out);
+		EMIT_ESCSEP(out);
 		if (g3) {
 			/* pattern-8 global window: save the cursor and reset to
 			 * the top so the register-cache search scans from offset 0 */
@@ -1880,6 +1886,14 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 		emit_chain_pattern(out, &ps[n]);
 		EMIT_ESCSEP(out);
 		fprintf(out, "%d??", n);
+		/* Readability line break once the search result is captured
+		 * into tag <n>: a ${LB} (no-op) clause and a real newline split
+		 * the long single-line chain so each attempt's match and its
+		 * mark action sit on separate source lines. Placed after the
+		 * tag capture (and before grp 0 / the action re-test) so it
+		 * never separates a tag test from its then-arm. */
+		EMIT_ESCSEP(out);
+		fputs("${LB}\n", out);
 		if (g2) {
 			/* reset the search group on both match and no-match
 			 * paths. Must come AFTER the <n>?? tag capture above,
