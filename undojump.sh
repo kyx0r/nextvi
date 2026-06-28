@@ -26,6 +26,8 @@ LB="0?"
 [ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
 [ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
 # Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+# OK2: with DBG2= also report fallback substitute successes
+[ "$DBG2" = "1" ] && OK2="0?" || OK2=
 [ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
@@ -40,17 +42,25 @@ else
     P2VIF=./p2vi.$$
 fi
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos\\] : NULL;
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos\\] : NULL;
 }
 
 int lbuf_undo\\(struct lbuf \\*lb, int \\*row, int \\*off\\)
 \\{
-	if \\(!lb->hist_u\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos\\] : NULL;
+	if \\(!lb->hist_u\\)${ESC}${SEP}0??${ESC}${SEP}${LB}
+${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos\\] : NULL;
 }
 
-${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos\\] : NULL;.*?
+${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos\\] : NULL;.*?
 }.*?
-()${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> char \\*lbuf_get\\(struct lbuf \\*lb, int pos\\).*(	struct lopt \\*lo = &lb->hist\\[lb->hist_u - 1\\];)${ESC}${SEP}3??${ESC}${SEP}grp 0${ESC}${SEP}3??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a3${ESC}${SEP}'0${SEP}${LB}
+()${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> char \\*lbuf_get\\(struct lbuf \\*lb, int pos\\).*(	struct lopt \\*lo = &lb->hist\\[lb->hist_u - 1\\];)${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a3${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
@@ -88,16 +98,24 @@ ${SEP}'1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 	return ret;
 }
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 				vi_hidch = !vi_hidch;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c:395:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\|= 1;
 				break;
 			case TK_CTL\\('v'\\):
 				vi_arg = \\(vi_wsel % 5\\) \\+ !!\\*vi_word;
-			case TK_CTL\\('c'\\):${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 				vi_hidch = !vi_hidch;
+			case TK_CTL\\('c'\\):${ESC}${SEP}0??${ESC}${SEP}${LB}
+${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 				vi_hidch = !vi_hidch;
 				vi_mod \\|= 1;
-				break;${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1432:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				vi_hidch = !vi_hidch;.*?
+				break;${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1432:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				vi_hidch = !vi_hidch;.*?
 				vi_mod \\|= 1;.*?
-(				break;)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1432:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			case 'V':.*(				if \\(vi_arg && vi_arg <= 5\\) \\{)${ESC}${SEP}3??${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1432:a3${ESC}${SEP}'0${SEP}${LB}
+(				break;)${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1432:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			case 'V':.*(				if \\(vi_arg && vi_arg <= 5\\) \\{)${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1432:a3${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1432${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i 			case TK_CTL('o'):
@@ -111,16 +129,24 @@ ${SEP}'1i 			case TK_CTL('o'):
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1432:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1432:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
 void lbuf_emark\\(struct lbuf \\*lb, struct lopt \\*lo, int end, int o2\\);
 struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);
 void lbuf_mark\\(struct lbuf \\*lb, int mk, int pos, int off\\);
 int lbuf_jump\\(struct lbuf \\*lb, int mk, int \\*pos, int \\*off\\);
-int lbuf_undo\\(struct lbuf \\*lb, int \\*row, int \\*off\\);${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
+int lbuf_undo\\(struct lbuf \\*lb, int \\*row, int \\*off\\);${ESC}${SEP}0??${ESC}${SEP}${LB}
+${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);
 void lbuf_emark\\(struct lbuf \\*lb, struct lopt \\*lo, int end, int o2\\);
-struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:170:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);.*?
+struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:170:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%;f> void lbuf_smark\\(struct lbuf \\*lb, struct lopt \\*lo, int beg, int o1\\);.*?
 void lbuf_emark\\(struct lbuf \\*lb, struct lopt \\*lo, int end, int o2\\);.*?
-(struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:170:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> char \\*lbuf_get\\(struct lbuf \\*lb, int pos\\);.*(int lbuf_redo\\(struct lbuf \\*lb, int \\*row, int \\*off\\);)${ESC}${SEP}3??${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:170:a3${ESC}${SEP}'0${SEP}${LB}
+(struct lopt \\*lbuf_opt\\(struct lbuf \\*lb, int beg, int o1, int n_del\\);)${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:170:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> char \\*lbuf_get\\(struct lbuf \\*lb, int pos\\);.*(int lbuf_redo\\(struct lbuf \\*lb, int \\*row, int \\*off\\);)${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:170:a3${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:170${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off);

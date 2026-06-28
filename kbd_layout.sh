@@ -26,6 +26,8 @@ LB="0?"
 [ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
 [ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
 # Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+# OK2: with DBG2= also report fallback substitute successes
+[ "$DBG2" = "1" ] && OK2="0?" || OK2=
 [ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
@@ -40,13 +42,19 @@ else
     P2VIF=./p2vi.$$
 fi
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> static char \\*kmap_en\\[256\\] = \\{
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{
 	\\[0\\] = \"en\",
 };
 
-static char \\*kmap_fa\\[256\\] = \\{${ESC}${SEP}0??${ESC}${SEP}0??+1m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{
-	\\[0\\] = \"en\",${ESC}${SEP}1??${ESC}${SEP}1??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{.*?
-(	\\[0\\] = \"en\",)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a2${SEP}${LB}
+static char \\*kmap_fa\\[256\\] = \\{${ESC}${SEP}0??${ESC}${SEP}${LB}
+${ESC}${SEP}0??+1m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{
+	\\[0\\] = \"en\",${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{.*?
+(	\\[0\\] = \"en\",)${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a2${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i 	['y'] = \"h\",
@@ -57,16 +65,24 @@ ${SEP}'1i 	['y'] = \"h\",
 	['j'] = \"n\",
 	['k'] = \"e\",
 	['l'] = \"o\",
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?%;f> 			err:
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 			err:
 			\\*ibuf = 0;
 		}
 		ret:
 		ibuf_cnt = 1;
-		ibuf_pos = 0;${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 			err:
+		ibuf_pos = 0;${ESC}${SEP}0??${ESC}${SEP}${LB}
+${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 			err:
 			\\*ibuf = 0;
-		}${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			err:.*?
+		}${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			err:.*?
 			\\*ibuf = 0;.*?
-(		})${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				goto re;.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))${ESC}${SEP}3??${ESC}${SEP}grp 0${ESC}${SEP}3??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a3${ESC}${SEP}'0${SEP}${LB}
+(		})${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				goto re;.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a3${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:169${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])

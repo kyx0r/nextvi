@@ -26,6 +26,8 @@ LB="0?"
 [ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
 [ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
 # Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
+# OK2: with DBG2= also report fallback substitute successes
+[ "$DBG2" = "1" ] && OK2="0?" || OK2=
 [ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
@@ -40,16 +42,24 @@ else
     P2VIF=./p2vi.$$
 fi
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?%;f> 
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 
 	mv = term_read\\(0\\);
 	switch \\(mv\\) \\{
 	case ',':
 	case ';':
-		if \\(!vi_charlast\\[0\\]\\)${ESC}${SEP}0??${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}%;f> 
+		if \\(!vi_charlast\\[0\\]\\)${ESC}${SEP}0??${ESC}${SEP}${LB}
+${ESC}${SEP}0??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 
 	mv = term_read\\(0\\);
-	switch \\(mv\\) \\{${ESC}${SEP}1??${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:523:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}grp 1${ESC}${SEP}%;f> .*?
+	switch \\(mv\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:523:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%;f> .*?
 	mv = term_read\\(0\\);.*?
-(	switch \\(mv\\) \\{)${ESC}${SEP}2??${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:523:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int mv, i, dir, var;.*(		if \\(mv == ','\\))${ESC}${SEP}3??${ESC}${SEP}grp 0${ESC}${SEP}3??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:523:a3${ESC}${SEP}'0${SEP}${LB}
+(	switch \\(mv\\) \\{)${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:523:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int mv, i, dir, var;.*(		if \\(mv == ','\\))${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:523:a3${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:523${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i 	case '\\033':	/* Arrow keys */
