@@ -36,6 +36,23 @@ patch2vi() {
 	echo "Generated: $output"
 }
 
+patch2vi_stashed() {
+	# Revert only real modifications to pre-patch so fuzz can validate
+	# against the original. Exclude $2 (just rewrote it) and new files
+	# (which have no pre-patch orig). Intent-to-add (git add -N) entries
+	# break both stash push and pop, so unstage them around the stash.
+	ita=$(git diff --name-only --diff-filter=A -- ":!$2")
+	[ -n "$ita" ] && git reset -q -- $ita
+	stashed=$(git diff --name-only --diff-filter=MD -- ":!$2")
+	[ -n "$stashed" ] && git stash push -q -- $stashed
+	./patch2vi "$1" "$2" > "_$2"
+	[ -n "$stashed" ] && git stash pop -q
+	[ -n "$ita" ] && git add -N -- $ita
+	mv "_$2" "$2"
+	chmod +x "$2"
+	echo "Generated: $2" >&2
+}
+
 # Convert the current git diff to a nextvi shell script.
 # Usage: gitdiff2vi [flags] [output.sh]
 # If output.sh is omitted, writes to stdout.
@@ -46,25 +63,13 @@ gitdiff2vi() {
 			sed '/^=== PATCH2VI PATCH ===$/q' "$2" > /tmp/tmp.sh
 			mv /tmp/tmp.sh "$2"
 			cat /tmp/tmp.patch >> "$2"
-			# Revert only real modifications to pre-patch so fuzz can validate
-			# against the original. Exclude $2 (just rewrote it) and new files
-			# (which have no pre-patch orig). Intent-to-add (git add -N) entries
-			# break both stash push and pop, so unstage them around the stash.
-			ita=$(git diff --name-only --diff-filter=A -- ":!$2")
-			[ -n "$ita" ] && git reset -q -- $ita
-			stashed=$(git diff --name-only --diff-filter=MD -- ":!$2")
-			[ -n "$stashed" ] && git stash push -q -- $stashed
-			./patch2vi "$1" "$2" > "_$2"
-			[ -n "$stashed" ] && git stash pop -q
-			[ -n "$ita" ] && git add -N -- $ita
-			mv "_$2" "$2"
+			patch2vi_stashed "$1" "$2"
 		;;
 		*)
-			git diff -- ":!$2" | ./patch2vi $1 > "$2"
+			git diff -- ":!$2" > "$2"
+			patch2vi_stashed "$1" "$2"
 		;;
 		esac
-		chmod +x "$2"
-		echo "Generated: $2" >&2
 	else
 		git diff | ./patch2vi $1
 	fi
@@ -101,16 +106,7 @@ redelta() {
 	sed '/^=== PATCH2VI PATCH ===$/q' "$1" > /tmp/tmp.sh
 	mv /tmp/tmp.sh "$1"
 	cat /tmp/tmp.patch >> "$1"
-	ita=$(git diff --name-only --diff-filter=A -- ":!$1")
-	[ -n "$ita" ] && git reset -q -- $ita
-	stashed=$(git diff --name-only --diff-filter=MD -- ":!$1")
-	[ -n "$stashed" ] && git stash push -q -- $stashed
-	./patch2vi -d "$1" > "_$1"
-	[ -n "$stashed" ] && git stash pop -q
-	[ -n "$ita" ] && git add -N -- $ita
-	mv "_$1" "$1"
-	chmod +x "$1"
-	echo "Generated: $1" >&2
+	patch2vi_stashed -d "$1"
 }
 
 # Re-run patch2vi-generated script(s) and refresh their embedded delta from the
