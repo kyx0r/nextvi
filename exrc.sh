@@ -68,8 +68,10 @@ EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(h
 (EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\))${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1580:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	_EO\\(opt, x##opt = !\\*arg \\? !x##opt : eo_val\\(arg\\); return NULL;\\).*(_EO\\(left,)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1580:a3${ESC}${SEP}'0${SEP}${LB}
-${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1580${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1580:a3${ESC}${SEP}'0${ESC}${SEP}3??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> #define EO\\(opt\\) \\\\.*(	if \\(\\*loc\\))${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}4??-5m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1580:a4${ESC}${SEP}'0${SEP}${LB}
+${SEP}0;1;2;3;4??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1580${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	\\{\"p\", ec_print},
 	EO\\(ai\\),
@@ -87,8 +89,10 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	\\{\"p\", ec_print},.*?
 (	\\{\"ac\", ec_setacreg},)${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1622:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	\\{\"ph\", ec_setenc},.*(	\\{\"e!\", ec_edit},)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1622:a3${ESC}${SEP}'0${SEP}${LB}
-${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1622${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1622:a3${ESC}${SEP}'0${ESC}${SEP}3??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	\\{\"pu\", ec_put},.*(	\\{\"e\", ec_edit},)${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}4??-5m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1622:a4${ESC}${SEP}'0${SEP}${LB}
+${SEP}0;1;2;3;4??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1622${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	xgrec--;
 }
@@ -107,8 +111,10 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	xgrec--;.*?
 ()${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1848:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			esc = 0;.*(	ec_setbufsmax\\(NULL, NULL, \"\"\\);)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1848:a3${ESC}${SEP}'0${SEP}${LB}
-${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1848${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1848:a3${ESC}${SEP}'0${ESC}${SEP}3??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			esc = 1;.*(	char \\*s = files\\[0\\] \\? files\\[0\\] : \"\";)${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}4??-5m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1848:a4${ESC}${SEP}'0${SEP}${LB}
+${SEP}0;1;2;3;4??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1848${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		s = \\*\\(\\+\\+files\\);
 	} while \\(--n > 0\\);

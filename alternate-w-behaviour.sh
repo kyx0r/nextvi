@@ -57,8 +57,10 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	case 'w':.*?
 (		var = mv == 'W';)${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			if \\(lbuf_wordend\\(xb, var, vi_nlmode\\+1, row, off\\)\\).*(		dir = mv == '\\(' \\? 1 : -1;)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}3??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a3${ESC}${SEP}'0${SEP}${LB}
-${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:604${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}3??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a3${ESC}${SEP}'0${ESC}${SEP}3??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		var = mv == 'E';.*(		if \\(!bre\\))${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}4??-8m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a4${ESC}${SEP}'0${SEP}${LB}
+${SEP}0;1;2;3;4??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:604${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\)
 			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\)
@@ -89,8 +91,10 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\).*?
 (			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\))${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}6??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			if \\(lbuf_wordend\\(xb, var, vi_nlmode\\+1, row, off\\)\\).*(		dir = mv == '\\(' \\? 1 : -1;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??-5m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a7${ESC}${SEP}'0${SEP}${LB}
-${SEP}0;1;2;3;4;5;6;7??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??-5m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a7${ESC}${SEP}'0${ESC}${SEP}7??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		var = mv == 'E';.*(		if \\(!bre\\))${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a8${ESC}${SEP}'0${SEP}${LB}
+${SEP}0;1;2;3;4;5;6;7;8??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:606${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i 		if (cmd >= 0 && cnt == 1)
 			dir = 2;
