@@ -1730,10 +1730,12 @@ static int anchor_block_at(int s)
  * context. A multi-line block discriminates far better than a single line. These
  *
  * Pattern 9 (NWIN2) reuses this generator with skip=1: it walks past the first
- * qualifying unique line on each side and picks the NEXT one out, yielding a
- * wider straddle window than pattern 8. The wider span survives more drift inside
- * the hunk's immediate surroundings but is looser, so it sits last in the chain.
- * skip=0 reproduces pattern 8 exactly. The two windows differ only in anchor
+ * qualifying unique block on each side - advancing a WHOLE WIN_ANCHOR-line block,
+ * not one line - and picks the NEXT disjoint block out, yielding a wider straddle
+ * window than pattern 8 whose anchors do NOT overlap pattern 8's. The wider span
+ * survives more drift inside the hunk's immediate surroundings but is looser, so it
+ * sits last in the chain. skip=0 reproduces pattern 8 exactly. The two windows
+ * differ only in anchor
  * choice; both emit identically under mode 3. (Continuing pattern 8's note:) these
  * lines exist only in the original file, never in the diff, so building this
  * pattern fundamentally requires reading the original. Each block's lines are
@@ -1798,14 +1800,19 @@ static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 		span_hi = hunk_top;
 	/* nearest unique non-empty WIN_ANCHOR-line block ending strictly above the
 	 * hunk's shown region; skip past the first `skip` qualifying blocks for a
-	 * farther anchor. `it` is the block start (top line). */
+	 * farther anchor. `it` is the block start (top line). When skipping, advance a
+	 * WHOLE block (s -= WIN_ANCHOR - 1, plus the loop's own s--) so pattern 9's
+	 * block does not overlap pattern 8's - they must be disjoint, not shifted by
+	 * one line. */
 	int it = -1, first, seen = 0;
 	for (int s = span_lo - WIN_ANCHOR, d = 0; s >= 0 && d < WIN_SCAN; s--, d++) {
 		if (!anchor_block_at(s))
 			continue;
 		if (count_window(&orig_lines[s], WIN_ANCHOR, &first) == 1) {
-			if (seen++ < skip)
+			if (seen++ < skip) {
+				s -= WIN_ANCHOR - 1;
 				continue;
+			}
 			it = s;
 			break;
 		}
@@ -1813,7 +1820,8 @@ static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 	/* nearest unique non-empty WIN_ANCHOR-line block starting strictly below the
 	 * hunk's shown region, with its captured first line unambiguous as a substring
 	 * from that line to EOF (so greedy ".*" lands on it); skip past the first
-	 * `skip` qualifying blocks for a farther anchor. `ib` is the captured line. */
+	 * `skip` qualifying blocks for a farther anchor (advancing a whole block so the
+	 * windows stay disjoint). `ib` is the captured line. */
 	int ib = -1;
 	seen = 0;
 	for (int s = span_hi + 1, d = 0; s + WIN_ANCHOR <= n_orig_lines && d < WIN_SCAN;
@@ -1822,8 +1830,10 @@ static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 			continue;
 		if (count_window(&orig_lines[s], WIN_ANCHOR, &first) == 1 &&
 		    count_substr_range(orig_lines[s], s + 1, n_orig_lines - 1) == 0) {
-			if (seen++ < skip)
+			if (seen++ < skip) {
+				s += WIN_ANCHOR - 1;
 				continue;
+			}
 			ib = s;
 			break;
 		}
