@@ -233,17 +233,12 @@ static int lines_equal(char **a, int na, char **b, int nb)
 }
 
 /*
- * File-aware anchor validation.
- *
- * patch2vi normally compiles blind: it sees only the diff's context, so it
- * emits a strict-to-loose fallback chain and lets nextvi resolve the anchor
- * at apply time. When the pre-patch original is readable on disk (it usually
- * is, since the generated script applies in the same working tree), we can do
- * better: count how many times each candidate anchor window actually occurs
- * in the file and which occurrence is the right one, then sort the proven
- * unique anchor to the front of the chain. We still emit anchor searches (not
- * absolute line numbers) plus the full fallback chain, so the script stays
- * portable and drift-tolerant; file access only improves the ordering.
+ * File-aware anchor validation. patch2vi normally compiles blind, emitting a
+ * strict-to-loose fallback chain that nextvi resolves at apply time. When the
+ * pre-patch original is readable (it usually is - the script applies in the same
+ * tree), we count each candidate anchor's occurrences and sort the proven-unique
+ * one to the front. The full chain is still emitted, so the script stays portable
+ * and drift-tolerant; file access only improves ordering.
  */
 static char **orig_lines;   /* pre-patch original, NULL if unreadable */
 static int n_orig_lines;
@@ -385,20 +380,14 @@ static int specificity_score(char **lines, int n)
 #define UNIQUE_BONUS (1 << 28)   /* exactly one match, at the right place */
 
 /*
- * File-validated fuzzed (relaxed) anchors.
- *
- * When the original file is readable we can safely *relax* an exact anchor into
- * a regex that tolerates small drift, because we can verify the relaxed form
- * still resolves to exactly one place - the right one - in the file. A fuzzed
- * window replaces selected runes of each line with '.', the nextvi wildcard
- * (one rune; it never has to cross a line here because the literal newlines
- * between lines pin the structure). The relaxation is length-preserving: each
- * '.' stands for exactly one rune, so a fuzzed line still matches only lines of
- * the same rune length - it tolerates in-place character drift (a renamed,
- * equal-length token, a changed digit) but nothing else. We keep a fuzzed
- * candidate only when it still matches uniquely at the expected location, so an
- * over-relaxed, ambiguous pattern is dropped rather than emitted. Without the
- * file we emit no fuzzed anchors at all (they rely on full-file inspection).
+ * File-validated fuzzed (relaxed) anchors. With the original readable we can
+ * relax an exact anchor into a drift-tolerant regex, verifying the relaxed form
+ * still resolves uniquely to the right place. A fuzzed window replaces selected
+ * runes with '.' (the nextvi one-rune wildcard). Length-preserving: each '.' is
+ * one rune, so a fuzzed line matches only same-rune-length lines - it tolerates
+ * in-place character drift (renamed equal-length token, changed digit), nothing
+ * else. A candidate is kept only if it still matches uniquely at the expected
+ * location. Without the file, no fuzzed anchors are emitted.
  */
 
 /* Byte length of the UTF-8 rune starting at s (>= 1). */
@@ -1514,6 +1503,21 @@ typedef struct {
 	int score;      /* ordering key (specificity + UNIQUE_BONUS) */
 } fuzzwin_t;
 
+/* Append file-validated window w to ps[nps] with pid; off_final preserves its
+ * offset through the pure-add shift. Returns the new nps. */
+static int push_win_pat(pat_spec_t *ps, int nps, fuzzwin_t *w, int pid,
+			int off_final)
+{
+	ps[nps].lines = w->lines;
+	ps[nps].nlines = w->nlines;
+	ps[nps].pre_escaped = 1;
+	ps[nps].offset = w->offset;
+	ps[nps].off_final = off_final;
+	ps[nps].mode = w->mode;
+	ps[nps].pid = pid;
+	return nps + 1;
+}
+
 /*
  * Generate up to max file-validated fuzzed (relaxed) anchor windows for group
  * g into out[]. Relaxes the whole-hunk window at increasing fuzz levels and
@@ -1616,29 +1620,22 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
 }
 
 /*
- * Pattern 7: a :grp-capture window. The top of the hunk - the
- * preceding context anchors, plus the first deleted line on change/delete
- * hunks - becomes "TEXT.*?" line by line, with the final line captured as
- * "(TEXT)". A ":grp 1" search lands on that captured last line; the trailing
- * non-greedy ".*?" on the leading lines absorbs text added after the anchors
- * (an inserted token, a widened line) without shifting the target. The search
- * is unanchored, so no leading ".*" is needed.
+ * Pattern 7: a :grp-capture window (mode 2). The top of the hunk - preceding
+ * context anchors plus the first deleted line on change/delete - becomes
+ * "TEXT.*?" line by line, the final line captured "(TEXT)". A ":grp 1" search
+ * lands on that captured line; the trailing non-greedy ".*?" on leading lines
+ * absorbs text added after the anchors (inserted token, widened line) without
+ * shifting the target. Unanchored, so no leading ".*".
  *
- * The window is voided (returns 0) when it would degenerate: fewer than two
- * lines (a bare "(text)" has no ".*?" to absorb anything and merely duplicates
- * the exact single-line strategies), or an empty captured last line (which
- * would emit a zero-width "()" grp match that resolves anywhere).
+ * Voided (returns 0) when degenerate: fewer than two lines (a bare "(text)" just
+ * duplicates the exact single-line strategies), or an empty captured last line
+ * (zero-width "()" resolves anywhere).
  *
- * The captured last line IS the target, marked at offset 0: a change/delete
- * hunk captures the first deleted line (edited in place), a pure insert
- * captures the last anchor (the phase-2 "'Ni" appends the new lines after it,
- * so offset 0 is correct - no +1). Like the fuzzed windows
- * this is only trustworthy when the original file is readable, so it is
- * file-validated: emitted only when the wrapped window resolves to exactly
- * one place, the expected one. Returns 1 and fills *out (owned lines) on
- * success, 0 otherwise. It uses search mode 2 (grp register search); any
- * future pattern can request the same grp bracketing by selecting mode 2
- * (see emit_fallback_chain / emit_search).
+ * The captured last line IS the target at offset 0: change/delete captures the
+ * first deleted line (edited in place), pure insert captures the last anchor
+ * (phase-2 "'Ni" appends after it). File-validated like the fuzzed windows:
+ * emitted only when the wrapped window resolves uniquely to the expected place.
+ * Returns 1, fills *out (owned lines), else 0.
  */
 static int gen_grp_window(group_t *g, fuzzwin_t *out)
 {
@@ -1723,44 +1720,25 @@ static int anchor_block_at(int s)
 }
 
 /*
- * Pattern 8: a global "top.*(bottom)" straddle window (mode 3). Unlike the
- * pattern-7 grp window, both anchors are picked OUTSIDE the diff's shown region
- * entirely - the nearest unique WIN_ANCHOR-line block above the enclosing @@ hunk
- * (top) and the nearest unique block below it (bottom), beyond all of its shown
- * context. A multi-line block discriminates far better than a single line. These
+ * Pattern 8: global "top.*(bottom)" straddle window (mode 3). Both anchors lie
+ * OUTSIDE the diff's shown region: the nearest unique WIN_ANCHOR-line block above
+ * the enclosing @@ hunk (top) and below it (bottom). These lines exist only in
+ * the original, never in the diff, so this requires reading the original. Regex
+ * "t1\nt2\nt3.*(b1)\nb2\nb3": each block's lines newline-joined (consecutive-line
+ * match), one greedy ".*" between them absorbing the whole hunk (in multi-line
+ * mode "." spans newlines). Only b1 is captured, so ":grp 1" lands on it and the
+ * target is a negative offset back up. The search runs globally from the file top
+ * (emit brackets it with mark-0 save / "1;0" reset / "'0" restore).
  *
- * Pattern 9 (NWIN2) reuses this generator with skip=1: it walks past the first
- * qualifying unique block on each side - advancing a WHOLE WIN_ANCHOR-line block,
- * not one line - and picks the NEXT disjoint block out, yielding a wider straddle
- * window than pattern 8 whose anchors do NOT overlap pattern 8's. The wider span
- * survives more drift inside the hunk's immediate surroundings but is looser, so it
- * sits last in the chain. skip=0 reproduces pattern 8 exactly. The two windows
- * differ only in anchor
- * choice; both emit identically under mode 3. (Continuing pattern 8's note:) these
- * lines exist only in the original file, never in the diff, so building this
- * pattern fundamentally requires reading the original. Each block's lines are
- * joined with a literal newline (a consecutive-line match), and a SINGLE greedy
- * ".*" between the two blocks absorbs the whole hunk (context, body, and any drift
- * inside it). The multi-line blocks only strengthen the anchoring; they do not add
- * extra absorbing wildcards. In multi-line search mode "." matches newlines, so the
- * one ".*" spans whole lines. The regex is "t1\nt2\nt3.*(b1)\nb2\nb3": only the
- * FIRST bottom line is captured as "(b1)" (the trailing "\nb2\nb3" just adds
- * specificity), so a ":grp 1" search lands on b1 and the target is reached by a
- * negative offset back up to the hunk. Because
- * the anchors lie outside the hunk, the search runs globally from the top of the
- * file (the emit brackets it with a mark-0 save / "1;0" reset / "'0" restore, see
- * emit_fallback_chain / emit_search).
+ * Pattern 9 reuses this with skip=1: skip the first qualifying block on each side
+ * (advancing a WHOLE block so the windows stay disjoint), giving a wider, looser
+ * straddle that sits last in the chain. skip=0 reproduces pattern 8.
  *
- * File-validated, so only emitted when the original is readable and pristine:
- *   - the top block is a unique line-window (count == 1) so the match anchors
- *     deterministically;
- *   - the bottom block is a unique line-window AND its captured first line carries
- *     its text nowhere from that line to EOF, so greedy ".*" captures exactly it,
- *     not a later duplicate.
- * Change/delete hunks mark the first deleted line (del_start); pure inserts mark
- * the line to append after (add_after), reached by the same offset machinery, and
- * phase-2 "'Ni" appends after it. Returns 1 and fills *out (owned lines) on
- * success, 0 otherwise.
+ * File-validated (original readable and pristine): top block unique; bottom block
+ * unique AND its captured first line carries its text nowhere to EOF, so greedy
+ * ".*" lands on exactly it. Change/delete marks the first deleted line; pure
+ * insert marks add_after (phase-2 "'Ni" appends after it). Returns 1, fills *out
+ * (owned lines), else 0.
  */
 static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 {
@@ -2715,56 +2693,57 @@ static int pat_off_line(const char *s, int *off)
 	return 1;
 }
 
-/* Per-group parsed data from an interactive temp file (raw, no offset stripping) */
-typedef struct {
-	int strategy;
-	int level;         /* 1-5 comparison strictness (0 = default) */
-	int has_star;
-	char **del_lines;
-	int ndel_lines, del_cap;
-	char **add_lines;
-	int nadd_lines, add_cap;
-	char **custom_text;   /* raw lines from the section (captures everything) */
-	int ncustom_text, custom_text_cap;
-	char **pattern[NSEARCH];
-	int npattern[NSEARCH], pat_cap[NSEARCH];
-	int pat_off[NSEARCH];      /* per-pattern OFFSET marker value */
-	int pat_has_off[NSEARCH];
-	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f>, 2 = grp */
-	int pat_has_mode[NSEARCH];
-	char **abs_cmd;
-	int nabs, abs_cap;
-	char **rel_cmd;
-	int nrel, rel_cap;
-	char **relc_cmd;
-	int nrelc, relc_cap;
-} parsed_grp_t;
+/* grp_delta_t doubles as the per-group temp-file parse result; the parse path
+ * just leaves group_idx/pre_ctx/post_ctx unset. */
 
-static void free_parsed_grp(parsed_grp_t *p)
+#define FREE_ARR(p, n) do { for (int _i = 0; _i < (n); _i++) free((p)[_i]); \
+			    free(p); } while (0)
+
+/* Free every array a grp_delta_t owns (scalars need no cleanup). */
+static void free_grp(grp_delta_t *p)
 {
-	for (int i = 0; i < p->ndel_lines; i++)
-		free(p->del_lines[i]);
-	free(p->del_lines);
-	for (int i = 0; i < p->nadd_lines; i++)
-		free(p->add_lines[i]);
-	free(p->add_lines);
-	for (int i = 0; i < p->ncustom_text; i++)
-		free(p->custom_text[i]);
-	free(p->custom_text);
-	for (int k = 0; k < NSEARCH; k++) {
-		for (int i = 0; i < p->npattern[k]; i++)
-			free(p->pattern[k][i]);
-		free(p->pattern[k]);
+	FREE_ARR(p->del_lines, p->ndel_lines);
+	FREE_ARR(p->add_lines, p->nadd_lines);
+	FREE_ARR(p->custom_text, p->ncustom_text);
+	FREE_ARR(p->pre_ctx, p->npre_ctx);
+	FREE_ARR(p->post_ctx, p->npost_ctx);
+	for (int k = 0; k < NSEARCH; k++)
+		FREE_ARR(p->pattern[k], p->npattern[k]);
+	FREE_ARR(p->abs_cmd, p->nabs);
+	FREE_ARR(p->rel_cmd, p->nrel);
+	FREE_ARR(p->relc_cmd, p->nrelc);
+}
+
+/* Deep-copy all of src's arrays and scalars into dst (zeroed first). */
+static void clone_grp(grp_delta_t *dst, const grp_delta_t *src)
+{
+	memset(dst, 0, sizeof(*dst));
+	dst->group_idx = src->group_idx;
+	dst->level = src->level;
+	dst->has_star = src->has_star;
+	dst->strategy = src->strategy;
+	arr_clone(&dst->del_lines, &dst->ndel_lines, &dst->del_cap,
+		  src->del_lines, src->ndel_lines);
+	arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap,
+		  src->add_lines, src->nadd_lines);
+	arr_clone(&dst->custom_text, &dst->ncustom_text, &dst->custom_text_cap,
+		  src->custom_text, src->ncustom_text);
+	arr_clone(&dst->pre_ctx, &dst->npre_ctx, &dst->pre_cap,
+		  src->pre_ctx, src->npre_ctx);
+	arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap,
+		  src->post_ctx, src->npost_ctx);
+	for (int pi = 0; pi < NSEARCH; pi++) {
+		arr_clone(&dst->pattern[pi], &dst->npattern[pi], &dst->pat_cap[pi],
+			  src->pattern[pi], src->npattern[pi]);
+		dst->pat_off[pi] = src->pat_off[pi];
+		dst->pat_has_off[pi] = src->pat_has_off[pi];
+		dst->pat_mode[pi] = src->pat_mode[pi];
+		dst->pat_has_mode[pi] = src->pat_has_mode[pi];
 	}
-	for (int i = 0; i < p->nabs; i++)
-		free(p->abs_cmd[i]);
-	free(p->abs_cmd);
-	for (int i = 0; i < p->nrel; i++)
-		free(p->rel_cmd[i]);
-	free(p->rel_cmd);
-	for (int i = 0; i < p->nrelc; i++)
-		free(p->relc_cmd[i]);
-	free(p->relc_cmd);
+	arr_clone(&dst->abs_cmd, &dst->nabs, &dst->abs_cap, src->abs_cmd, src->nabs);
+	arr_clone(&dst->rel_cmd, &dst->nrel, &dst->rel_cap, src->rel_cmd, src->nrel);
+	arr_clone(&dst->relc_cmd, &dst->nrelc, &dst->relc_cap,
+		  src->relc_cmd, src->nrelc);
 }
 
 /*
@@ -2775,7 +2754,7 @@ static void free_parsed_grp(parsed_grp_t *p)
  * .orig and edited files.
  */
 static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
-			   parsed_grp_t **per_file_results)
+			   grp_delta_t **per_file_results)
 {
 	FILE *f = fopen(path, "r");
 	if (!f)
@@ -2799,7 +2778,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		if (strncmp(line, "=== OFFSET ", 11) == 0) {
 			if (in_pat && file_idx >= 0 && gi >= 0 &&
 			    gi < active[file_idx]->ngroups) {
-				parsed_grp_t *pg = &per_file_results[file_idx][gi];
+				grp_delta_t *pg = &per_file_results[file_idx][gi];
 				pg->pat_off[in_pat - 1] = atoi(line + 11);
 				pg->pat_has_off[in_pat - 1] = 1;
 				char *m = strstr(line + 11, " MODE ");
@@ -2866,10 +2845,10 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		if (file_idx < 0)
 			continue;
 		int ngroups = active[file_idx]->ngroups;
-		parsed_grp_t *results = per_file_results[file_idx];
+		grp_delta_t *results = per_file_results[file_idx];
 
 		if (in_ecmd && gi >= 0 && gi < ngroups) {
-			parsed_grp_t *pg = &results[gi];
+			grp_delta_t *pg = &results[gi];
 			if (ecmd_strat == STRAT_ABS)
 				arr_append(&pg->abs_cmd, &pg->nabs, &pg->abs_cap, line);
 			else if (ecmd_strat == STRAT_REL)
@@ -2908,7 +2887,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		/* Parse level: field (appears after END GROUP, before sections) */
 		if (gi >= 0 && gi < ngroups &&
 		    strncmp(line, "=== LEVEL ", 10) == 0) {
-			parsed_grp_t *pg = &results[gi];
+			grp_delta_t *pg = &results[gi];
 			char *lv = line + 10;
 			char *end = strstr(lv, " ===");
 			if (end)
@@ -2922,7 +2901,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		}
 
 		if (in_pat && gi >= 0 && gi < ngroups) {
-			parsed_grp_t *pg = &results[gi];
+			grp_delta_t *pg = &results[gi];
 			int pi = in_pat - 1;
 			arr_append(&pg->pattern[pi], &pg->npattern[pi],
 				   &pg->pat_cap[pi], line);
@@ -3008,6 +2987,30 @@ static void emit_grp_delta(FILE *out, grp_delta_t *gd)
 			fprintf(out, "%s\n", gd->rel_cmd[i]);
 		fprintf(out, "%s\n", end_tag_wr);
 	}
+}
+
+/* Emit one file-validated window SEARCH PATTERN (fuzz/grp/straddle slots). A
+ * recorded delta wins; else the freshly generated window w (when has). def_mode
+ * is the recorded-delta mode default (consulted only when recorded). */
+static void emit_win_section(FILE *fp, grp_delta_t *gd, int slot,
+			     fuzzwin_t *w, int has, int def_mode)
+{
+	int recorded = gd && gd->npattern[slot] > 0;
+	if (!recorded && !has)
+		return;
+	fprintf(fp, "=== SEARCH PATTERN %d ===\n", slot + 1);
+	int poff = (gd && gd->pat_has_off[slot]) ? gd->pat_off[slot]
+		 : recorded ? 0 : w->offset;
+	int pmode = (gd && gd->pat_has_mode[slot]) ? gd->pat_mode[slot]
+		  : recorded ? def_mode : w->mode;
+	fprintf(fp, "=== OFFSET %+d MODE %d ===\n", poff, pmode);
+	if (recorded)
+		for (int i = 0; i < gd->npattern[slot]; i++)
+			fprintf(fp, "%s\n", gd->pattern[slot][i]);
+	else
+		for (int i = 0; i < w->nlines; i++)
+			fprintf(fp, "%s\n", w->lines[i]);
+	fprintf(fp, "%s\n", end_tag_wr);
 }
 
 /*
@@ -3126,131 +3129,36 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		}
 		free(praw);
 
-		/* File-validated fuzzed (relaxed) SEARCH PATTERN sections,
-		 * slots NPAT..NSEARCH. Generated fresh from the original on a
-		 * first pass; a recorded delta (a prior edit) wins, so the
-		 * user's tweaks round-trip. These lines are already regex
-		 * (pre-escaped), so they are written verbatim. */
+		/* File-validated relaxed SEARCH PATTERN slots (fuzz NPAT..,
+		 * grp 7, straddle 8/9). Generated fresh from the original; a
+		 * recorded delta wins so user tweaks round-trip. Pre-escaped
+		 * regex, written verbatim. */
 		fuzzwin_t fz[NFUZZ];
 		int nfz = gen_fuzz_windows(g, fz, NFUZZ);
 		for (int pi = NPAT; pi < GRP_SLOT; pi++) {
 			int fi = pi - NPAT;
-			int recorded = gd && gd->npattern[pi] > 0;
-			if (!recorded && fi >= nfz)
-				continue;
-			fprintf(fp, "=== SEARCH PATTERN %d ===\n", pi + 1);
-			int poff = (gd && gd->pat_has_off[pi]) ? gd->pat_off[pi]
-				 : recorded ? 0 : fz[fi].offset;
-			int pmode = (gd && gd->pat_has_mode[pi]) ? gd->pat_mode[pi]
-				  : recorded ? (gd->npattern[pi] == 1) : fz[fi].mode;
-			fprintf(fp, "=== OFFSET %+d MODE %d ===\n", poff, pmode);
-			if (recorded) {
-				for (int i = 0; i < gd->npattern[pi]; i++)
-					fprintf(fp, "%s\n", gd->pattern[pi][i]);
-			} else {
-				for (int i = 0; i < fz[fi].nlines; i++)
-					fprintf(fp, "%s\n", fz[fi].lines[i]);
-			}
-			fprintf(fp, "%s\n", end_tag_wr);
+			emit_win_section(fp, gd, pi, fi < nfz ? &fz[fi] : NULL,
+					 fi < nfz, gd && gd->npattern[pi] == 1);
 		}
 		free_fuzz_windows(fz, nfz);
 
-		/* File-validated :grp-capture SEARCH PATTERN (pattern 7, slot
-		 * GRP_SLOT, mode 2). A recorded delta wins so user tweaks
-		 * round-trip; otherwise generate fresh from the original. */
-		{
-			fuzzwin_t gw;
-			int has_gw = gen_grp_window(g, &gw);
-			int recorded = gd && gd->npattern[GRP_SLOT] > 0;
-			if (recorded || has_gw) {
-				fprintf(fp, "=== SEARCH PATTERN %d ===\n",
-					GRP_SLOT + 1);
-				int poff = (gd && gd->pat_has_off[GRP_SLOT])
-					 ? gd->pat_off[GRP_SLOT]
-					 : recorded ? 0 : gw.offset;
-				int pmode = (gd && gd->pat_has_mode[GRP_SLOT])
-					  ? gd->pat_mode[GRP_SLOT]
-					  : recorded ? 2 : gw.mode;
-				fprintf(fp, "=== OFFSET %+d MODE %d ===\n",
-					poff, pmode);
-				if (recorded) {
-					for (int i = 0; i < gd->npattern[GRP_SLOT]; i++)
-						fprintf(fp, "%s\n",
-							gd->pattern[GRP_SLOT][i]);
-				} else {
-					for (int i = 0; i < gw.nlines; i++)
-						fprintf(fp, "%s\n", gw.lines[i]);
-				}
-				fprintf(fp, "%s\n", end_tag_wr);
-			}
-			if (has_gw)
-				free_fuzz_windows(&gw, 1);
-		}
+		fuzzwin_t gw;
+		int has_gw = gen_grp_window(g, &gw);
+		emit_win_section(fp, gd, GRP_SLOT, &gw, has_gw, 2);
+		if (has_gw)
+			free_fuzz_windows(&gw, 1);
 
-		/* File-validated global straddle SEARCH PATTERN (pattern 8,
-		 * slot WIN_SLOT, mode 3). A recorded delta wins so user tweaks
-		 * round-trip; otherwise generate fresh from the original. */
-		{
-			fuzzwin_t ww;
-			int has_ww = gen_win_window(g, &ww, 0);
-			int recorded = gd && gd->npattern[WIN_SLOT] > 0;
-			if (recorded || has_ww) {
-				fprintf(fp, "=== SEARCH PATTERN %d ===\n",
-					WIN_SLOT + 1);
-				int poff = (gd && gd->pat_has_off[WIN_SLOT])
-					 ? gd->pat_off[WIN_SLOT]
-					 : recorded ? 0 : ww.offset;
-				int pmode = (gd && gd->pat_has_mode[WIN_SLOT])
-					  ? gd->pat_mode[WIN_SLOT]
-					  : recorded ? 3 : ww.mode;
-				fprintf(fp, "=== OFFSET %+d MODE %d ===\n",
-					poff, pmode);
-				if (recorded) {
-					for (int i = 0; i < gd->npattern[WIN_SLOT]; i++)
-						fprintf(fp, "%s\n",
-							gd->pattern[WIN_SLOT][i]);
-				} else {
-					for (int i = 0; i < ww.nlines; i++)
-						fprintf(fp, "%s\n", ww.lines[i]);
-				}
-				fprintf(fp, "%s\n", end_tag_wr);
-			}
-			if (has_ww)
-				free_fuzz_windows(&ww, 1);
-		}
+		fuzzwin_t ww;
+		int has_ww = gen_win_window(g, &ww, 0);
+		emit_win_section(fp, gd, WIN_SLOT, &ww, has_ww, 3);
+		if (has_ww)
+			free_fuzz_windows(&ww, 1);
 
-		/* File-validated farther global straddle SEARCH PATTERN (pattern
-		 * 9, slot WIN2_SLOT, mode 3). Same generator with skip=1 so the
-		 * anchors sit one unique line farther out than pattern 8. A
-		 * recorded delta wins so user tweaks round-trip. */
-		{
-			fuzzwin_t ww;
-			int has_ww = gen_win_window(g, &ww, 1);
-			int recorded = gd && gd->npattern[WIN2_SLOT] > 0;
-			if (recorded || has_ww) {
-				fprintf(fp, "=== SEARCH PATTERN %d ===\n",
-					WIN2_SLOT + 1);
-				int poff = (gd && gd->pat_has_off[WIN2_SLOT])
-					 ? gd->pat_off[WIN2_SLOT]
-					 : recorded ? 0 : ww.offset;
-				int pmode = (gd && gd->pat_has_mode[WIN2_SLOT])
-					  ? gd->pat_mode[WIN2_SLOT]
-					  : recorded ? 3 : ww.mode;
-				fprintf(fp, "=== OFFSET %+d MODE %d ===\n",
-					poff, pmode);
-				if (recorded) {
-					for (int i = 0; i < gd->npattern[WIN2_SLOT]; i++)
-						fprintf(fp, "%s\n",
-							gd->pattern[WIN2_SLOT][i]);
-				} else {
-					for (int i = 0; i < ww.nlines; i++)
-						fprintf(fp, "%s\n", ww.lines[i]);
-				}
-				fprintf(fp, "%s\n", end_tag_wr);
-			}
-			if (has_ww)
-				free_fuzz_windows(&ww, 1);
-		}
+		fuzzwin_t ww2;
+		int has_ww2 = gen_win_window(g, &ww2, 1);
+		emit_win_section(fp, gd, WIN2_SLOT, &ww2, has_ww2, 3);
+		if (has_ww2)
+			free_fuzz_windows(&ww2, 1);
 
 		/* EDIT COMMAND sections */
 #define WG_CONTENT(fp) do { \
@@ -3600,9 +3508,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 #endif
 
 	/* Parse the edited file once per file slot */
-	parsed_grp_t **edit_per = emalloc(nactive * sizeof(parsed_grp_t *));
+	grp_delta_t **edit_per = emalloc(nactive * sizeof(grp_delta_t *));
 	for (int k = 0; k < nactive; k++)
-		edit_per[k] = calloc(active[k]->ngroups, sizeof(parsed_grp_t));
+		edit_per[k] = calloc(active[k]->ngroups, sizeof(grp_delta_t));
 	parse_tmp_file(tmppath, active, nactive, edit_per);
 
 	if (unchanged) {
@@ -3617,53 +3525,22 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			od->gcap = in_fd->ngrps;
 			od->grps = emalloc(od->gcap * sizeof(grp_delta_t));
 			od->ngrps = in_fd->ngrps;
-			for (int gi = 0; gi < in_fd->ngrps; gi++) {
-				grp_delta_t *src = &in_fd->grps[gi], *dst = &od->grps[gi];
-				memset(dst, 0, sizeof(*dst));
-				dst->group_idx = src->group_idx;
-				dst->level = src->level;
-				dst->has_star = src->has_star;
-				dst->strategy = src->strategy;
-				arr_clone(&dst->del_lines, &dst->ndel_lines, &dst->del_cap, src->del_lines,
-					  src->ndel_lines);
-				arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap, src->add_lines,
-					  src->nadd_lines);
-				arr_clone(&dst->custom_text, &dst->ncustom_text, &dst->custom_text_cap,
-					  src->custom_text, src->ncustom_text);
-				arr_clone(&dst->pre_ctx, &dst->npre_ctx, &dst->pre_cap, src->pre_ctx,
-					  src->npre_ctx);
-				arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap, src->post_ctx,
-					  src->npost_ctx);
-				for (int pi = 0; pi < NSEARCH; pi++) {
-					arr_clone(&dst->pattern[pi], &dst->npattern[pi],
-						  &dst->pat_cap[pi], src->pattern[pi],
-						  src->npattern[pi]);
-					dst->pat_off[pi] = src->pat_off[pi];
-					dst->pat_has_off[pi] = src->pat_has_off[pi];
-					dst->pat_mode[pi] = src->pat_mode[pi];
-					dst->pat_has_mode[pi] = src->pat_has_mode[pi];
-				}
-				arr_clone(&dst->abs_cmd, &dst->nabs, &dst->abs_cap, src->abs_cmd,
-					  src->nabs);
-				arr_clone(&dst->rel_cmd, &dst->nrel, &dst->rel_cap, src->rel_cmd,
-					  src->nrel);
-				arr_clone(&dst->relc_cmd, &dst->nrelc, &dst->relc_cap,src->relc_cmd,
-					  src->nrelc);
-			}
+			for (int gi = 0; gi < in_fd->ngrps; gi++)
+				clone_grp(&od->grps[gi], &in_fd->grps[gi]);
 		}
 	} else {
 		/* Compute structured delta: compare .orig (auto-generated baseline)
 		 * against edited file. Only store changed groups. */
-		parsed_grp_t **orig_per = emalloc(nactive * sizeof(parsed_grp_t *));
+		grp_delta_t **orig_per = emalloc(nactive * sizeof(grp_delta_t *));
 		for (int k = 0; k < nactive; k++)
-			orig_per[k] = calloc(active[k]->ngroups, sizeof(parsed_grp_t));
+			orig_per[k] = calloc(active[k]->ngroups, sizeof(grp_delta_t));
 		parse_tmp_file(tmppath_orig, active, nactive, orig_per);
 
 		for (int k = 0; k < nactive; k++) {
 			file_delta_t *od = NULL;
 			for (int gi = 0; gi < active[k]->ngroups; gi++) {
-				parsed_grp_t *og = &orig_per[k][gi];
-				parsed_grp_t *eg = &edit_per[k][gi];
+				grp_delta_t *og = &orig_per[k][gi];
+				grp_delta_t *eg = &edit_per[k][gi];
 
 				int strat_ch = (eg->strategy != og->strategy);
 				int pat_ch = 0;
@@ -3759,7 +3636,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 
 		for (int k = 0; k < nactive; k++) {
 			for (int gi = 0; gi < active[k]->ngroups; gi++)
-				free_parsed_grp(&orig_per[k][gi]);
+				free_grp(&orig_per[k][gi]);
 			free(orig_per[k]);
 		}
 		free(orig_per);
@@ -3768,7 +3645,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 	/* Apply edit_per to groups[], transferring ownership of arrays. */
 	for (int k = 0; k < nactive; k++) {
 		for (int gi = 0; gi < active[k]->ngroups; gi++) {
-			parsed_grp_t *eg = &edit_per[k][gi];
+			grp_delta_t *eg = &edit_per[k][gi];
 			group_t *g = &active[k]->groups[gi];
 			g->strategy = eg->strategy;
 			for (int pi = 0; pi < NSEARCH; pi++) {
@@ -3831,7 +3708,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				eg->nrel = 0;
 				eg->rel_cap = 0;
 			}
-			free_parsed_grp(eg);
+			free_grp(eg);
 		}
 		free(edit_per[k]);
 	}
@@ -4248,83 +4125,27 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].pid = pi + 1;
 				nps++;
 			}
-			/* File-validated fuzzed anchors: relax the whole-hunk
-			 * window and keep each relaxation the file proves still
-			 * resolves uniquely to the right line. Interactive mode
-			 * surfaces these as extra SEARCH PATTERN sections (and so
-			 * arrives here via custom_pat, not this block); this
-			 * covers the plain -r default path. */
+			/* File-validated relaxed windows appended loosest-last
+			 * (fuzz, grp 7 mode 2, straddle 8/9 mode 3). off_final on the
+			 * latter three preserves their offsets through the pure-add
+			 * shift. Interactive mode surfaces these as custom_pat instead;
+			 * this is the plain -r path. */
 			nfz = gen_fuzz_windows(g, fz, NFUZZ);
-			for (int i = 0; i < nfz && nps < NSEARCH; i++) {
-				ps[nps].lines = fz[i].lines;
-				ps[nps].nlines = fz[i].nlines;
-				ps[nps].pre_escaped = 1;
-				ps[nps].offset = fz[i].offset;
-				ps[nps].off_final = 0;
-				ps[nps].mode = fz[i].mode;
-				ps[nps].pid = NPAT + i + 1;
-				nps++;
-			}
-			/* File-validated grp-capture window (pattern 7, mode 2):
-			 * the "TEXT.*?"-wrapped top of the hunk with the captured
-			 * last line as the target. emit brackets mode 2 with
-			 * grp 1 .. grp 0. off_final keeps its offset 0 intact (the
-			 * pure-add path would otherwise shift it by -1). */
+			for (int i = 0; i < nfz && nps < NSEARCH; i++)
+				nps = push_win_pat(ps, nps, &fz[i], NPAT + i + 1, 0);
 			has_gw = nps < NSEARCH && gen_grp_window(g, &gw);
-			if (has_gw) {
-				ps[nps].lines = gw.lines;
-				ps[nps].nlines = gw.nlines;
-				ps[nps].pre_escaped = 1;
-				ps[nps].offset = gw.offset;
-				ps[nps].off_final = 1;
-				ps[nps].mode = gw.mode;
-				ps[nps].pid = GRP_SLOT + 1;
-				nps++;
-			}
-			/* File-validated global straddle window (pattern 8, mode 3):
-			 * "top.*(bottom)" with both anchors outside the hunk, the
-			 * greedy ".*" absorbing the body. emit saves the cursor,
-			 * resets to the top for a global search, then restores it.
-			 * off_final keeps its negative offset (target above the
-			 * captured bottom anchor) intact through the pure-add shift. */
+			if (has_gw)
+				nps = push_win_pat(ps, nps, &gw, GRP_SLOT + 1, 1);
 			has_ww = nps < NSEARCH && gen_win_window(g, &ww, 0);
-			if (has_ww) {
-				ps[nps].lines = ww.lines;
-				ps[nps].nlines = ww.nlines;
-				ps[nps].pre_escaped = 1;
-				ps[nps].offset = ww.offset;
-				ps[nps].off_final = 1;
-				ps[nps].mode = ww.mode;
-				ps[nps].pid = WIN_SLOT + 1;
-				nps++;
-			}
-			/* Pattern 9 (mode 3): same straddle window with anchors one
-			 * unique line farther out (skip=1). Loosest of all, appended
-			 * last; the dup filter drops it when it coincides with
-			 * pattern 8 (e.g. only one unique anchor exists). */
+			if (has_ww)
+				nps = push_win_pat(ps, nps, &ww, WIN_SLOT + 1, 1);
 			has_ww2 = nps < NSEARCH && gen_win_window(g, &ww2, 1);
-			if (has_ww2) {
-				ps[nps].lines = ww2.lines;
-				ps[nps].nlines = ww2.nlines;
-				ps[nps].pre_escaped = 1;
-				ps[nps].offset = ww2.offset;
-				ps[nps].off_final = 1;
-				ps[nps].mode = ww2.mode;
-				ps[nps].pid = WIN2_SLOT + 1;
-				nps++;
-			}
-			/* The auto-default chain is already curated strict to
-			 * loose: default_pat_lines emits the whole-hunk window
-			 * first, then its subsets, and the file-validated fuzz /
-			 * grp / win windows are appended last as the loosest,
-			 * most-absorbing fallbacks. Because every emitted pattern
-			 * is file-proven to resolve to the right line, the order
-			 * only affects which one wins on a drifted apply, and
-			 * this natural order already tries the most-constrained
-			 * first. We deliberately do NOT re-sort here: the
-			 * interactive (-i) chain emits in this same slot order
-			 * (custom patterns keep their explicit order), so sorting
-			 * only the -r chain would make the two modes diverge. */
+			if (has_ww2)
+				nps = push_win_pat(ps, nps, &ww2, WIN2_SLOT + 1, 1);
+			/* No re-sort: default_pat_lines already orders strict to loose
+			 * and every pattern is file-proven, so order only picks the
+			 * winner on a drifted apply. The -i chain emits in this same
+			 * slot order, so sorting only -r would diverge the modes. */
 		}
 		int w = 0;
 		for (int pi = 0; pi < nps; pi++) {
