@@ -1154,14 +1154,14 @@ static void emit_err_check(FILE *out, int line)
 /* Phase-1 fallback chain check: one <0;1;..>??! over all capture tags
  * (DNF OR); the inverted branch fires only when every pattern's
  * capture recorded a failure. */
-static void emit_err_check_pats(FILE *out, int ntags, int line)
+static void emit_err_check_pats(FILE *out, const int *pids, int ntags, int line)
 {
 	char loc[MAX_LINE];
 	char tags[NSEARCH * 8];
 	int p = 0;
 	for (int t = 0; t < ntags && p < (int)sizeof(tags); t++)
 		p += snprintf(tags + p, sizeof(tags) - p,
-			      t ? ";%d" : "%d", t);
+			      t ? ";%d" : "%d", pids[t]);
 	snprintf(loc, sizeof(loc), "%s:%d",
 		 cur_file_path ? cur_file_path : "?", line);
 	emit_err_check_loc(out, loc, 1, tags);
@@ -1184,7 +1184,8 @@ static void emit_err_check_mark(FILE *out, int line, int mark_id)
  * OR); the inverted branch fires only when every substitute variant in the
  * progression recorded a match failure. Mirrors emit_err_check_pats but at a
  * mark (phase 2). */
-static void emit_err_check_subs(FILE *out, int nrungs, int line, int mark_id)
+static void emit_err_check_subs(FILE *out, const int *sids, int nrungs,
+				int line, int mark_id)
 {
 	char loc[MAX_LINE];
 	char mark[16] = "m";
@@ -1194,7 +1195,7 @@ static void emit_err_check_subs(FILE *out, int nrungs, int line, int mark_id)
 		snprintf(mark, sizeof(mark), "m%d", mark_id);
 	for (int t = 0; t < nrungs && p < (int)sizeof(tags); t++)
 		p += snprintf(tags + p, sizeof(tags) - p,
-			      t ? ";%d" : "%d", t);
+			      t ? ";%d" : "%d", sids[t]);
 	snprintf(loc, sizeof(loc), "%s:%d:%s",
 		 cur_file_path ? cur_file_path : "", line, mark);
 	emit_err_check_loc(out, loc, 2, tags);
@@ -1406,6 +1407,9 @@ typedef struct {
 	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
 	int mode;         /* search mode: 0 = %;f> register, 1 = .,$f> buffer,
 			   * 2 = grp register search (bracketed grp 1 .. grp 0) */
+	int pid;          /* fixed pattern id (source slot + 1, 1-9): emitted as
+			   * the capture tag and OK1 anchor id so a failure maps
+			   * to its real pattern regardless of which slots survived */
 } pat_spec_t;
 
 /* Default (non-edited) lines for fallback pattern pi, ordered strict to
@@ -1862,6 +1866,7 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 				int mark_id, int target_line, int first)
 {
+	int pids[NSEARCH];
 	fputc('?', out);
 	for (int n = 0; n < nps; n++) {
 		int m1 = ps[n].mode == 1;
@@ -1902,7 +1907,7 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 			fputs((g3 || first) ? "%;f> " : "%;f+ ", out);
 		emit_chain_pattern(out, &ps[n]);
 		EMIT_ESCSEP(out);
-		fprintf(out, "%d??", n);
+		fprintf(out, "%d??", ps[n].pid);
 		/* Readability line break once the search result is captured
 		 * into tag <n>: a ${LB} (no-op) clause and a real newline split
 		 * the long single-line chain so each attempt's match and its
@@ -1920,7 +1925,7 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 			fputs("grp 0", out);
 		}
 		EMIT_ESCSEP(out);
-		fprintf(out, "%d??", n);
+		fprintf(out, "%d??", ps[n].pid);
 		if (ps[n].offset)
 			fprintf(out, "%+d", ps[n].offset);
 		fprintf(out, "m %d", mark_id);
@@ -1930,7 +1935,7 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 			EMIT_ESC3SEP(out);
 			fprintf(out, "${OK1}p OK %s:%d:a%d",
 				cur_file_path ? cur_file_path : "?",
-				target_line, n);
+				target_line, ps[n].pid);
 		}
 		if (m1) {
 			/* restore the register cache on the success path,
@@ -1950,7 +1955,7 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 				/* the unconditional restore split the then-arg, so
 				 * re-test the tag to keep 1q success-gated */
 				EMIT_ESCSEP(out);
-				fprintf(out, "%d??", n);
+				fprintf(out, "%d??", ps[n].pid);
 				EMIT_ESC3SEP(out);
 				fputs("1q", out);
 			} else {
@@ -1969,7 +1974,9 @@ static void emit_fallback_chain(FILE *out, pat_spec_t *ps, int nps,
 	EMIT_SEP(out);
 	fputs("${LB}\n", out);
 	EMIT_SEP(out);
-	emit_err_check_pats(out, nps, target_line);
+	for (int n = 0; n < nps; n++)
+		pids[n] = ps[n].pid;
+	emit_err_check_pats(out, pids, nps, target_line);
 	fputs("${LB}\n", out);
 	EMIT_SEP(out);
 }
@@ -2458,7 +2465,7 @@ static void emit_substitute_grp(FILE *out, const char *pat, const char *repl)
 }
 
 /* One rung of the phase-2 substitute progression: a fully-escaped s/// pair. */
-typedef struct { char *pat; char *repl; } subvar_t;
+typedef struct { char *pat; char *repl; int sid; } subvar_t;
 
 /* Parse "s/<pat>/<repl>/[flags]" into its (still-escaped) pat/repl substrings,
  * respecting "\/" escaped delimiters. Only the '/' delimiter is recognized
@@ -2500,6 +2507,7 @@ static int parse_sub_line(const char *line, char **pat, char **repl)
 static void emit_substitute_chain(FILE *out, int line, int mark_id,
 				  subvar_t *v, int nv)
 {
+	int sids[NSEARCH];
 	if (nv <= 1) {
 		fprintf(out, "'%d", mark_id);
 		emit_substitute_grp(out, v[0].pat, v[0].repl);
@@ -2515,16 +2523,16 @@ static void emit_substitute_chain(FILE *out, int line, int mark_id,
 		fprintf(out, "'%d", mark_id);
 		emit_substitute_grp(out, v[n].pat, v[n].repl);
 		EMIT_ESCSEP(out);
-		fprintf(out, "%d??", n);   /* capture s/// status into tag n */
+		fprintf(out, "%d??", v[n].sid);   /* capture s/// status into tag */
 		EMIT_ESCSEP(out);
-		fprintf(out, "%d??", n);   /* on success (fire): */
+		fprintf(out, "%d??", v[n].sid);   /* on success (fire): */
 		if (n) {
 			/* harmless mark jump as the immediate then-arg keeps
 			 * ${OK2} non-immediate (mirrors OK1 after "m id") */
 			fprintf(out, "'%d", mark_id);
 			EMIT_ESC3SEP(out);
 			fprintf(out, "${OK2}p OK %s:%d:s%d",
-				cur_file_path ? cur_file_path : "?", line, n);
+				cur_file_path ? cur_file_path : "?", line, v[n].sid);
 			if (n < nv - 1) {
 				EMIT_ESC3SEP(out);
 				fputs("1q", out);
@@ -2536,7 +2544,9 @@ static void emit_substitute_chain(FILE *out, int line, int mark_id,
 	EMIT_SEP(out);
 	fputs("${LB}\n", out);
 	EMIT_SEP(out);
-	emit_err_check_subs(out, nv, line, mark_id);
+	for (int n = 0; n < nv; n++)
+		sids[n] = v[n].sid;
+	emit_err_check_subs(out, sids, nv, line, mark_id);
 	fputs("${LB}\n", out);
 	EMIT_SEP(out);
 }
@@ -2551,10 +2561,13 @@ static int build_sub_variants(group_t *g, subvar_t *v)
 {
 	int nv = 0;
 	build_exact_sub(g->ld_old_text, g->ld_new_text, &v[nv].pat, &v[nv].repl);
+	v[nv].sid = 1;
 	nv++;
 	if (build_grp_variant(g->del_texts[0], g->add_texts[0],
-			      &v[nv].pat, &v[nv].repl))
+			      &v[nv].pat, &v[nv].repl)) {
+		v[nv].sid = 2;
 		nv++;
+	}
 	return nv;
 }
 
@@ -4147,6 +4160,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			ps[nps].mode = g->custom_pat_has_mode[pi]
 				? g->custom_pat_mode[pi]
 				: g->ncustom_pat[pi] == 1 ? 1 : 0;
+			ps[nps].pid = pi + 1;
 			nps++;
 		}
 		if (nps == 0) {
@@ -4164,6 +4178,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = doff;
 				ps[nps].off_final = 0;
 				ps[nps].mode = n == 1 ? 1 : 0;
+				ps[nps].pid = pi + 1;
 				nps++;
 			}
 			/* File-validated fuzzed anchors: relax the whole-hunk
@@ -4180,6 +4195,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = fz[i].offset;
 				ps[nps].off_final = 0;
 				ps[nps].mode = fz[i].mode;
+				ps[nps].pid = NPAT + i + 1;
 				nps++;
 			}
 			/* File-validated grp-capture window (pattern 7, mode 2):
@@ -4195,6 +4211,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = gw.offset;
 				ps[nps].off_final = 1;
 				ps[nps].mode = gw.mode;
+				ps[nps].pid = GRP_SLOT + 1;
 				nps++;
 			}
 			/* File-validated global straddle window (pattern 8, mode 3):
@@ -4211,6 +4228,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = ww.offset;
 				ps[nps].off_final = 1;
 				ps[nps].mode = ww.mode;
+				ps[nps].pid = WIN_SLOT + 1;
 				nps++;
 			}
 			/* Pattern 9 (mode 3): same straddle window with anchors one
@@ -4225,6 +4243,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = ww2.offset;
 				ps[nps].off_final = 1;
 				ps[nps].mode = ww2.mode;
+				ps[nps].pid = WIN2_SLOT + 1;
 				nps++;
 			}
 			/* The auto-default chain is already curated strict to
@@ -4356,9 +4375,10 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			for (int k = 0; all_sub && k < g->custom_rel_nlines
 			     && cn < NSEARCH; k++) {
 				if (parse_sub_line(g->custom_rel_lines[k],
-						   &cv[cn].pat, &cv[cn].repl))
+						   &cv[cn].pat, &cv[cn].repl)) {
+					cv[cn].sid = cn + 1;
 					cn++;
-				else
+				} else
 					all_sub = 0;
 			}
 			if (all_sub && cn == g->custom_rel_nlines) {
