@@ -1822,9 +1822,11 @@ ${SEP}'4i 				} else if (k == 'K') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
 				} else if (k == 'd') {
-					if (xb_path && xb_path[0])
+					if (xb_path && xb_path[0]) {
 						lsp_definition(xb_path, xrow, xoff);
-					vi_mod |= 1;
+						vc_status(0);
+						vi_mod |= 1;
+					}
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1642:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5i 		if (!xmpt && xb_path && xb_path[0]) {
@@ -3341,7 +3343,7 @@ index 3ae4769f..e40c4a28 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 1d2ceed2..510a445f 100644
+index 1d2ceed2..d2f131e0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -3361,7 +3363,7 @@ index 1d2ceed2..510a445f 100644
  static int vi_nextcol(char *ln, int dir, int *off)
  {
  	int o = ren_off(ln, ren_next(ln, ren_pos(ln, *off), dir));
-@@ -1638,8 +1641,16 @@ void vi(int init)
+@@ -1638,8 +1641,18 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -3372,14 +3374,16 @@ index 1d2ceed2..510a445f 100644
 +					if (xb_path && xb_path[0])
 +						lsp_hover(xb_path, xrow, xoff);
 +				} else if (k == 'd') {
-+					if (xb_path && xb_path[0])
++					if (xb_path && xb_path[0]) {
 +						lsp_definition(xb_path, xrow, xoff);
-+					vi_mod |= 1;
++						vc_status(0);
++						vi_mod |= 1;
++					}
 +				}
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1798,6 +1809,11 @@ void vi(int init)
+@@ -1798,6 +1811,11 @@ void vi(int init)
  			syn_blockhl = -1;
  			vi_drawrow(xrow);
  		}
