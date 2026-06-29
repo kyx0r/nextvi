@@ -65,14 +65,18 @@ static const char *end_tag_wr = "=== END ===";
  * relaxed (fuzzed) variants generated after the exact strategies; NGRP holds
  * the file-validated :grp-capture window (pattern 7, see gen_grp_window); NWIN
  * holds the file-validated global straddle window (pattern 8, mode 3, see
- * gen_win_window). NSEARCH is the total SEARCH PATTERN capacity per group. */
+ * gen_win_window); NWIN2 holds a second straddle window with anchors one step
+ * farther out (pattern 9, mode 3, same gen_win_window with skip=1). NSEARCH is
+ * the total SEARCH PATTERN capacity per group. */
 #define NPAT 5
 #define NFUZZ 1   /* max file-validated fuzzed candidates per group (loosest kept) */
 #define NGRP 1    /* file-validated :grp-capture window (TEXT.*? + last captured) */
 #define NWIN 1    /* file-validated "top.*(bottom)" straddle window (pattern 8) */
+#define NWIN2 1   /* second straddle window, anchors farther out (pattern 9) */
 #define GRP_SLOT (NPAT + NFUZZ)         /* 0-based slot index of the grp window */
 #define WIN_SLOT (NPAT + NFUZZ + NGRP)  /* 0-based slot index of the straddle window */
-#define NSEARCH (NPAT + NFUZZ + NGRP + NWIN)  /* must stay <= 9: section numbers are 1 digit */
+#define WIN2_SLOT (NPAT + NFUZZ + NGRP + NWIN)  /* 0-based slot index of the farther straddle window */
+#define NSEARCH (NPAT + NFUZZ + NGRP + NWIN + NWIN2)  /* must stay <= 9: section numbers are 1 digit */
 
 /* Scratch line mark reserved for pattern 8's save/restore of the cursor around
  * its global search; edit marks start at 1 (see next_mark_id callers). */
@@ -1688,6 +1692,13 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
  * pattern-7 grp window, both anchors are picked OUTSIDE the diff's shown region
  * entirely - the nearest unique line above the enclosing @@ hunk (top) and the
  * nearest unique line below it (bottom), beyond all of its shown context. These
+ *
+ * Pattern 9 (NWIN2) reuses this generator with skip=1: it walks past the first
+ * qualifying unique line on each side and picks the NEXT one out, yielding a
+ * wider straddle window than pattern 8. The wider span survives more drift inside
+ * the hunk's immediate surroundings but is looser, so it sits last in the chain.
+ * skip=0 reproduces pattern 8 exactly. The two windows differ only in anchor
+ * choice; both emit identically under mode 3. (Continuing pattern 8's note:) these
  * lines exist only in the original file, never in the diff, so building this
  * pattern fundamentally requires reading the original. The greedy ".*" absorbs
  * the whole hunk (context, body, and any drift inside it) between them. In multi-line
@@ -1707,7 +1718,7 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
  * phase-2 "'Ni" appends after it. Returns 1 and fills *out (owned lines) on
  * success, 0 otherwise.
  */
-static int gen_win_window(group_t *g, fuzzwin_t *out)
+static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 {
 	if (!orig_lines)
 		return 0;
@@ -1743,25 +1754,31 @@ static int gen_win_window(group_t *g, fuzzwin_t *out)
 		span_lo = hunk_top;
 	if (span_hi < hunk_top)
 		span_hi = hunk_top;
-	/* nearest unique non-empty line strictly above the hunk's shown region */
-	int it = -1, first;
+	/* nearest unique non-empty line strictly above the hunk's shown region;
+	 * skip past the first `skip` qualifying lines to reach a farther anchor */
+	int it = -1, first, seen = 0;
 	for (int i = span_lo - 1, d = 0; i >= 0 && d < WIN_SCAN; i--, d++) {
 		if (!orig_lines[i][0])
 			continue;
 		if (count_window(&orig_lines[i], 1, &first) == 1) {
+			if (seen++ < skip)
+				continue;
 			it = i;
 			break;
 		}
 	}
 	/* nearest unique non-empty line strictly below the hunk's shown region,
 	 * unambiguous as a substring from its position to EOF (so greedy ".*" lands
-	 * on it) */
+	 * on it); skip past the first `skip` qualifying lines for a farther anchor */
 	int ib = -1;
+	seen = 0;
 	for (int i = span_hi + 1, d = 0; i < n_orig_lines && d < WIN_SCAN; i++, d++) {
 		if (!orig_lines[i][0])
 			continue;
 		if (count_window(&orig_lines[i], 1, &first) == 1 &&
 		    count_substr_range(orig_lines[i], i + 1, n_orig_lines - 1) == 0) {
+			if (seen++ < skip)
+				continue;
 			ib = i;
 			break;
 		}
@@ -3095,7 +3112,7 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 		 * round-trip; otherwise generate fresh from the original. */
 		{
 			fuzzwin_t ww;
-			int has_ww = gen_win_window(g, &ww);
+			int has_ww = gen_win_window(g, &ww, 0);
 			int recorded = gd && gd->npattern[WIN_SLOT] > 0;
 			if (recorded || has_ww) {
 				fprintf(fp, "=== SEARCH PATTERN %d ===\n",
@@ -3112,6 +3129,39 @@ static void write_groups_to_file(FILE *fp, group_t *groups, int ngroups,
 					for (int i = 0; i < gd->npattern[WIN_SLOT]; i++)
 						fprintf(fp, "%s\n",
 							gd->pattern[WIN_SLOT][i]);
+				} else {
+					for (int i = 0; i < ww.nlines; i++)
+						fprintf(fp, "%s\n", ww.lines[i]);
+				}
+				fprintf(fp, "%s\n", end_tag_wr);
+			}
+			if (has_ww)
+				free_fuzz_windows(&ww, 1);
+		}
+
+		/* File-validated farther global straddle SEARCH PATTERN (pattern
+		 * 9, slot WIN2_SLOT, mode 3). Same generator with skip=1 so the
+		 * anchors sit one unique line farther out than pattern 8. A
+		 * recorded delta wins so user tweaks round-trip. */
+		{
+			fuzzwin_t ww;
+			int has_ww = gen_win_window(g, &ww, 1);
+			int recorded = gd && gd->npattern[WIN2_SLOT] > 0;
+			if (recorded || has_ww) {
+				fprintf(fp, "=== SEARCH PATTERN %d ===\n",
+					WIN2_SLOT + 1);
+				int poff = (gd && gd->pat_has_off[WIN2_SLOT])
+					 ? gd->pat_off[WIN2_SLOT]
+					 : recorded ? 0 : ww.offset;
+				int pmode = (gd && gd->pat_has_mode[WIN2_SLOT])
+					  ? gd->pat_mode[WIN2_SLOT]
+					  : recorded ? 3 : ww.mode;
+				fprintf(fp, "=== OFFSET %+d MODE %d ===\n",
+					poff, pmode);
+				if (recorded) {
+					for (int i = 0; i < gd->npattern[WIN2_SLOT]; i++)
+						fprintf(fp, "%s\n",
+							gd->pattern[WIN2_SLOT][i]);
 				} else {
 					for (int i = 0; i < ww.nlines; i++)
 						fprintf(fp, "%s\n", ww.lines[i]);
@@ -4075,6 +4125,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 		int has_gw = 0;
 		fuzzwin_t ww;          /* owned global straddle window (plain -r path) */
 		int has_ww = 0;
+		fuzzwin_t ww2;         /* owned farther straddle window (pattern 9) */
+		int has_ww2 = 0;
 		for (int pi = 0; pi < NSEARCH; pi++) {
 			if (g->ncustom_pat[pi] == 0)
 				continue;
@@ -4151,7 +4203,7 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			 * resets to the top for a global search, then restores it.
 			 * off_final keeps its negative offset (target above the
 			 * captured bottom anchor) intact through the pure-add shift. */
-			has_ww = nps < NSEARCH && gen_win_window(g, &ww);
+			has_ww = nps < NSEARCH && gen_win_window(g, &ww, 0);
 			if (has_ww) {
 				ps[nps].lines = ww.lines;
 				ps[nps].nlines = ww.nlines;
@@ -4159,6 +4211,20 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				ps[nps].offset = ww.offset;
 				ps[nps].off_final = 1;
 				ps[nps].mode = ww.mode;
+				nps++;
+			}
+			/* Pattern 9 (mode 3): same straddle window with anchors one
+			 * unique line farther out (skip=1). Loosest of all, appended
+			 * last; the dup filter drops it when it coincides with
+			 * pattern 8 (e.g. only one unique anchor exists). */
+			has_ww2 = nps < NSEARCH && gen_win_window(g, &ww2, 1);
+			if (has_ww2) {
+				ps[nps].lines = ww2.lines;
+				ps[nps].nlines = ww2.nlines;
+				ps[nps].pre_escaped = 1;
+				ps[nps].offset = ww2.offset;
+				ps[nps].off_final = 1;
+				ps[nps].mode = ww2.mode;
 				nps++;
 			}
 			/* The auto-default chain is already curated strict to
@@ -4212,6 +4278,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 				free_fuzz_windows(&gw, 1);
 			if (has_ww)
 				free_fuzz_windows(&ww, 1);
+			if (has_ww2)
+				free_fuzz_windows(&ww2, 1);
 			free(raw);
 			continue;
 		}
@@ -4228,6 +4296,8 @@ static void emit_file_script(FILE *out, file_patch_t *fp)
 			free_fuzz_windows(&gw, 1);
 		if (has_ww)
 			free_fuzz_windows(&ww, 1);
+		if (has_ww2)
+			free_fuzz_windows(&ww2, 1);
 		free(raw);
 	}
 
