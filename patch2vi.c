@@ -1624,6 +1624,11 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
  * (an inserted token, a widened line) without shifting the target. The search
  * is unanchored, so no leading ".*" is needed.
  *
+ * The window is voided (returns 0) when it would degenerate: fewer than two
+ * lines (a bare "(text)" has no ".*?" to absorb anything and merely duplicates
+ * the exact single-line strategies), or an empty captured last line (which
+ * would emit a zero-width "()" grp match that resolves anywhere).
+ *
  * The captured last line IS the target, marked at offset 0: a change/delete
  * hunk captures the first deleted line (edited in place), a pure insert
  * captures the last anchor (the phase-2 "'Ni" appends the new lines after it,
@@ -1646,6 +1651,15 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 		raw[i] = g->anchors[i];
 	if (has_del)
 		raw[g->nanchors] = g->del_texts[0];
+	/* The grp window only earns its slot when it has at least one leading
+	 * ".*?" anchor to absorb interior drift; a bare "(text)" is just a
+	 * redundant single-line search the exact strategies already cover. An
+	 * empty captured last line would emit "()" - a zero-width grp match that
+	 * resolves anywhere - so reject that too. */
+	if (n < 2 || !raw[n - 1][0]) {
+		free(raw);
+		return 0;
+	}
 	/* The captured last line must land on the target: change/delete -> the
 	 * first deleted line at del_start-1; pure insert -> the last anchor at
 	 * add_after-1. The window starts n-1 lines above it. */
