@@ -2,8 +2,39 @@
 6.0 Surjective
 ------------------
 
-1. Complete — every regex character reachable across layers
-2. Transparent — ex never alters backslash runs, so no doubling and position-independent literal counts.
+This release reworks the escape model, marks and registers from the ground up.
+Two principles drive it:
+1. Complete -- every regex character is reachable across all layers.
+2. Transparent -- ex never alters backslash runs, so there is no doubling and
+   literal counts are position-independent. Escapes are now governed by a
+   single non-POSIX parity rule instead of scattered per-reader logic.
+
+Breaking changes since 5.3:
+1. Marks and registers are now identified by decimal ids, not characters. 'a
+   becomes '97, register <a> becomes 97. This removes the fixed alphabet and
+   special-mark set; any id is now valid.
+2. ya argument no longer appends. Appending is its own command ya+.
+3. The :a ex command (insert after) is removed. :i is now position-based, so
+   :-1i inserts before the position and :0i is the special case for before
+   line 1.
+4. The while loop conditional ? lost its [then]/[else] arguments. ? now repeats
+   [cond] only; all branching lives in the ?? conditional, which keys off the
+   error status of the last command. Fewer escapes, one path per construct.
+5. reg with a prefix and no argument reassigns the default register. f> and f<
+   search the default register's contents when it has been reassigned.
+
+New in core:
+1. Marks are stored as dynamic id/row/off triplets in the line buffer instead
+   of a fixed array; [ and ] marks are tracked as their own fields and saved
+   across undo/redo. m{ids} sets marks alternating between start and end of the
+   range.
+2. Registers are a dynamically grown table with a configurable default register
+   rather than a fixed 256-slot array.
+3. Single-character classes [x] degrade to a plain CHAR at compile time,
+   matching what the escape-parity path emits.
+
+Bug fixes:
+1. Non-ranged ! returns an error when the shell exits non-zero.
 
 ------------------
 5.3 Crescent
