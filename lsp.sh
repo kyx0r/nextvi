@@ -688,7 +688,6 @@ typedef struct {
 	int rbuf_n;
 	int response_ready, pending_id;
 	char *response_json;
-	int response_len;
 	int initialized, next_id;
 	lsp_doc docs[LSP_DOCS_MAX];
 	int ndocs;
@@ -696,23 +695,11 @@ typedef struct {
 
 int lsp_nfds = 0;
 int lsp_fds[LSP_NFDS_MAX];
-void (*lsp_fd_ready)(int fd) = NULL;
 
 static lsp_server lsp_srvs[LSP_SRV_MAX];
 static int lsp_nsrvs = 0;
 static lsp_diagfile lsp_diagfiles[LSP_SRV_MAX * 4];
 static int lsp_ndiagfiles = 0;
-
-/* forward declarations */
-static void _lsp_process_fd(int fd);
-static lsp_server *lsp_find_srv_for_fd(int fd);
-static void lsp_dispatch_messages(lsp_server *srv);
-static void lsp_handle_message(lsp_server *srv, char *json, int len);
-
-void lsp_init(void)
-{
-	lsp_fd_ready = _lsp_process_fd;
-}
 
 void lsp_register(const char *ft, const char *cmd)
 {
@@ -898,6 +885,13 @@ static void lsp_send_sb(lsp_server *srv, sbuf *sb)
 	lsp_send(srv, sb->s, sb->s_n);
 }
 
+static void lsp_sbuf_int(sbuf *sb, int n)
+{
+	char s[32];
+	itoa(n, s);
+	sbuf_str(sb, s)
+}
+
 static void lsp_buf_content(struct lbuf *lb, sbuf *sb)
 {
 	int i;
@@ -910,14 +904,10 @@ static void lsp_buf_content(struct lbuf *lb, sbuf *sb)
 static int lsp_fmt_init(lsp_server *srv, sbuf *sb)
 {
 	int id = ++srv->next_id;
-	char idstr[32];
-	itoa(id, idstr);
-	char pidstr[32];
-	itoa(getpid(), pidstr);
 	sbuf_str(sb, \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":\")
-	sbuf_str(sb, idstr)
+	lsp_sbuf_int(sb, id);
 	sbuf_str(sb, \",\\\"method\\\":\\\"initialize\\\",\\\"params\\\":{\\\"processId\\\":\")
-	sbuf_str(sb, pidstr)
+	lsp_sbuf_int(sb, getpid());
 	sbuf_str(sb, \",\\\"clientInfo\\\":{\\\"name\\\":\\\"nextvi\\\"},\\\"capabilities\\\":{\")
 	sbuf_str(sb, \"\\\"textDocument\\\":{\\\"synchronization\\\":{\\\"didSave\\\":true},\")
 	sbuf_str(sb, \"\\\"hover\\\":{\\\"contentFormat\\\":[\\\"plaintext\\\",\\\"markdown\\\"]},\")
@@ -932,8 +922,8 @@ static void lsp_fmt_initialized(sbuf *sb)
 	sbuf_str(sb, \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"method\\\":\\\"initialized\\\",\\\"params\\\":{}}\")
 }
 
-static void lsp_fmt_didopen(lsp_server *srv, sbuf *sb, const char *path,
-		const char *ft, struct lbuf *lb)
+static void lsp_fmt_didopen(sbuf *sb, const char *path, const char *ft,
+		struct lbuf *lb)
 {
 	char uri[1280];
 	lsp_uri_from_path(path, uri, sizeof(uri));
@@ -945,21 +935,18 @@ static void lsp_fmt_didopen(lsp_server *srv, sbuf *sb, const char *path,
 	sbuf_str(sb, \"\\\",\\\"version\\\":1,\\\"text\\\":\\\"\")
 	lsp_buf_content(lb, sb);
 	sbuf_str(sb, \"\\\"}}}\")
-	(void)srv;
 }
 
 static void lsp_fmt_didchange(sbuf *sb, const char *path, int ver,
 		struct lbuf *lb)
 {
 	char uri[1280];
-	char verstr[32];
 	lsp_uri_from_path(path, uri, sizeof(uri));
-	itoa(ver, verstr);
 	sbuf_str(sb, \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"method\\\":\\\"textDocument/didChange\\\",\")
 	sbuf_str(sb, \"\\\"params\\\":{\\\"textDocument\\\":{\\\"uri\\\":\\\"\")
 	sbuf_str(sb, uri)
 	sbuf_str(sb, \"\\\",\\\"version\\\":\")
-	sbuf_str(sb, verstr)
+	lsp_sbuf_int(sb, ver);
 	sbuf_str(sb, \"},\\\"contentChanges\\\":[{\\\"text\\\":\\\"\")
 	lsp_buf_content(lb, sb);
 	sbuf_str(sb, \"\\\"}]}}\")
@@ -975,46 +962,23 @@ static void lsp_fmt_didsave(sbuf *sb, const char *path)
 	sbuf_str(sb, \"\\\"}}}\")
 }
 
-static int lsp_fmt_hover(lsp_server *srv, sbuf *sb, const char *path,
-		int line, int col)
+/* format a textDocument/<method> request that carries a cursor position */
+static int lsp_fmt_pos(lsp_server *srv, sbuf *sb, const char *method,
+		const char *path, int line, int col)
 {
 	char uri[1280];
-	char idstr[32], linestr[32], colstr[32];
 	int id = ++srv->next_id;
 	lsp_uri_from_path(path, uri, sizeof(uri));
-	itoa(id, idstr);
-	itoa(line, linestr);
-	itoa(col, colstr);
 	sbuf_str(sb, \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":\")
-	sbuf_str(sb, idstr)
-	sbuf_str(sb, \",\\\"method\\\":\\\"textDocument/hover\\\",\\\"params\\\":{\\\"textDocument\\\":{\\\"uri\\\":\\\"\")
+	lsp_sbuf_int(sb, id);
+	sbuf_str(sb, \",\\\"method\\\":\\\"textDocument/\")
+	sbuf_str(sb, method)
+	sbuf_str(sb, \"\\\",\\\"params\\\":{\\\"textDocument\\\":{\\\"uri\\\":\\\"\")
 	sbuf_str(sb, uri)
 	sbuf_str(sb, \"\\\"},\\\"position\\\":{\\\"line\\\":\")
-	sbuf_str(sb, linestr)
+	lsp_sbuf_int(sb, line);
 	sbuf_str(sb, \",\\\"character\\\":\")
-	sbuf_str(sb, colstr)
-	sbuf_str(sb, \"}}}\")
-	return id;
-}
-
-static int lsp_fmt_definition(lsp_server *srv, sbuf *sb, const char *path,
-		int line, int col)
-{
-	char uri[1280];
-	char idstr[32], linestr[32], colstr[32];
-	int id = ++srv->next_id;
-	lsp_uri_from_path(path, uri, sizeof(uri));
-	itoa(id, idstr);
-	itoa(line, linestr);
-	itoa(col, colstr);
-	sbuf_str(sb, \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":\")
-	sbuf_str(sb, idstr)
-	sbuf_str(sb, \",\\\"method\\\":\\\"textDocument/definition\\\",\\\"params\\\":{\\\"textDocument\\\":{\\\"uri\\\":\\\"\")
-	sbuf_str(sb, uri)
-	sbuf_str(sb, \"\\\"},\\\"position\\\":{\\\"line\\\":\")
-	sbuf_str(sb, linestr)
-	sbuf_str(sb, \",\\\"character\\\":\")
-	sbuf_str(sb, colstr)
+	lsp_sbuf_int(sb, col);
 	sbuf_str(sb, \"}}}\")
 	return id;
 }
@@ -1161,16 +1125,11 @@ static void lsp_handle_notification(lsp_server *srv, const char *json,
 		lsp_handle_diagnostics(srv, json, toks, n);
 }
 
-static void lsp_handle_response(lsp_server *srv, const char *json,
-		jsmntok_t *toks, int n, int id)
+static void lsp_handle_response(lsp_server *srv, const char *json, int id)
 {
 	if (srv->pending_id == id) {
 		free(srv->response_json);
-		srv->response_json = malloc(n * sizeof(jsmntok_t) + strlen(json) + 1);
-		if (srv->response_json) {
-			strcpy(srv->response_json, json);
-			srv->response_len = n;
-		}
+		srv->response_json = uc_dup(json);
 		srv->response_ready = 1;
 		srv->pending_id = 0;
 	}
@@ -1209,7 +1168,7 @@ static void lsp_handle_message(lsp_server *srv, char *json, int len)
 			free(sb2->s);
 			srv->initialized = 1;
 		}
-		lsp_handle_response(srv, json, toks, n, id);
+		lsp_handle_response(srv, json, id);
 	} else if (method[0]) {
 		lsp_handle_notification(srv, json, toks, n, method);
 	}
@@ -1260,7 +1219,7 @@ static void lsp_dispatch_messages(lsp_server *srv)
 	}
 }
 
-static void _lsp_process_fd(int fd)
+void lsp_process_fd(int fd)
 {
 	lsp_server *srv = lsp_find_srv_for_fd(fd);
 	if (!srv)
@@ -1286,7 +1245,7 @@ static int lsp_wait_response(lsp_server *srv, int id, int ms)
 		pfd.events = POLLIN;
 		int r = poll(&pfd, 1, 10);
 		if (r > 0 && (pfd.revents & POLLIN))
-			_lsp_process_fd(srv->out_fd);
+			lsp_process_fd(srv->out_fd);
 		if (srv->response_ready)
 			return 1;
 		elapsed += 10;
@@ -1353,7 +1312,7 @@ void lsp_open(const char *path, const char *ft)
 		srv->ndocs++;
 		if (ex_buf && ex_buf->lb) {
 			sbuf_smake(sb, 4096)
-			lsp_fmt_didopen(srv, sb, path, ft, ex_buf->lb);
+			lsp_fmt_didopen(sb, path, ft, ex_buf->lb);
 			lsp_send_sb(srv, sb);
 			free(sb->s);
 		}
@@ -1386,35 +1345,35 @@ static int lsp_byte_offset(struct lbuf *lb, int row, int off)
 	return uc_off(ln, off);
 }
 
-void lsp_hover(const char *path, int row, int off)
+/* send a position request and parse the reply; report and return -1 on error,
+ * else return the \"result\" token index and fill json/toks/n for the caller */
+static int lsp_request(const char *method, const char *path, int row, int off,
+		char **json_out, jsmntok_t *toks, int ntoks, int *n_out)
 {
+	char buf[64];
 	lsp_server *srv = lsp_srv_for_path(path);
 	if (!srv) {
 		lsp_show_msg(\"lsp: no server for file\");
-		return;
+		return -1;
 	}
 	int col = lsp_byte_offset(ex_buf ? ex_buf->lb : NULL, row, off);
 	sbuf_smake(sb, 256)
-	int id = lsp_fmt_hover(srv, sb, path, row, col);
+	int id = lsp_fmt_pos(srv, sb, method, path, row, col);
 	lsp_send_sb(srv, sb);
 	free(sb->s);
-	if (!lsp_wait_response(srv, id, 2000)) {
-		lsp_show_msg(\"lsp: hover timeout\");
-		return;
-	}
-	/* parse response */
-	if (!srv->response_json) {
-		lsp_show_msg(\"lsp: no hover result\");
-		return;
+	if (!lsp_wait_response(srv, id, 2000) || !srv->response_json) {
+		snprintf(buf, sizeof(buf), \"lsp: %s timeout\", method);
+		lsp_show_msg(buf);
+		return -1;
 	}
 	char *json = srv->response_json;
 	jsmn_parser p;
-	jsmntok_t toks[1024];
 	jsmn_init(&p);
-	int n = jsmn_parse(&p, json, strlen(json), toks, 1024);
+	int n = jsmn_parse(&p, json, strlen(json), toks, ntoks);
 	if (n < 1) {
-		lsp_show_msg(\"lsp: hover parse error\");
-		return;
+		snprintf(buf, sizeof(buf), \"lsp: %s parse error\", method);
+		lsp_show_msg(buf);
+		return -1;
 	}
 	int errtok = lsp_find_key(json, toks, n, 0, \"error\");
 	if (errtok >= 0) {
@@ -1423,14 +1382,39 @@ void lsp_hover(const char *path, int row, int off)
 		if (msgtok >= 0)
 			lsp_tok_str(json, &toks[msgtok], errmsg, sizeof(errmsg));
 		lsp_show_msg(errmsg);
-		return;
+		return -1;
 	}
 	int result = lsp_find_key(json, toks, n, 0, \"result\");
 	if (result < 0 || toks[result].type == JSMN_PRIMITIVE) {
-		lsp_show_msg(\"lsp: no hover result\");
-		return;
+		snprintf(buf, sizeof(buf), \"lsp: no %s result\", method);
+		lsp_show_msg(buf);
+		return -1;
 	}
-	/* result.contents */
+	*json_out = json;
+	*n_out = n;
+	return result;
+}
+
+/* strip the cwd prefix so the path matches an already-open buffer */
+static void lsp_relpath(char *path)
+{
+	char cwd[1024];
+	int n;
+	if (path[0] != '/' || !getcwd(cwd, sizeof(cwd)))
+		return;
+	n = strlen(cwd);
+	if (!strncmp(path, cwd, n) && path[n] == '/')
+		memmove(path, path + n + 1, strlen(path + n + 1) + 1);
+}
+
+void lsp_hover(const char *path, int row, int off)
+{
+	char *json;
+	jsmntok_t toks[1024];
+	int n, result = lsp_request(\"hover\", path, row, off,
+		&json, toks, 1024, &n);
+	if (result < 0)
+		return;
 	int contents = lsp_find_key(json, toks, n, result, \"contents\");
 	if (contents < 0) {
 		lsp_show_msg(\"lsp: no hover contents\");
@@ -1461,47 +1445,12 @@ void lsp_hover(const char *path, int row, int off)
 
 void lsp_definition(const char *path, int row, int off)
 {
-	lsp_server *srv = lsp_srv_for_path(path);
-	if (!srv) {
-		lsp_show_msg(\"lsp: no server for file\");
-		return;
-	}
-	int col = lsp_byte_offset(ex_buf ? ex_buf->lb : NULL, row, off);
-	sbuf_smake(sb, 256)
-	int id = lsp_fmt_definition(srv, sb, path, row, col);
-	lsp_send_sb(srv, sb);
-	free(sb->s);
-	if (!lsp_wait_response(srv, id, 2000)) {
-		lsp_show_msg(\"lsp: definition timeout\");
-		return;
-	}
-	if (!srv->response_json) {
-		lsp_show_msg(\"lsp: no definition result\");
-		return;
-	}
-	char *json = srv->response_json;
-	jsmn_parser p;
+	char *json;
 	jsmntok_t toks[1024];
-	jsmn_init(&p);
-	int n = jsmn_parse(&p, json, strlen(json), toks, 1024);
-	if (n < 1) {
-		lsp_show_msg(\"lsp: definition parse error\");
+	int n, result = lsp_request(\"definition\", path, row, off,
+		&json, toks, 1024, &n);
+	if (result < 0)
 		return;
-	}
-	int errtok = lsp_find_key(json, toks, n, 0, \"error\");
-	if (errtok >= 0) {
-		char errmsg[256] = \"lsp: error\";
-		int msgtok = lsp_find_key(json, toks, n, errtok, \"message\");
-		if (msgtok >= 0)
-			lsp_tok_str(json, &toks[msgtok], errmsg, sizeof(errmsg));
-		lsp_show_msg(errmsg);
-		return;
-	}
-	int result = lsp_find_key(json, toks, n, 0, \"result\");
-	if (result < 0 || toks[result].type == JSMN_PRIMITIVE) {
-		lsp_show_msg(\"lsp: no definition result\");
-		return;
-	}
 	char uri[1280] = \"\";
 	int target_line = 0;
 	/* result can be object (Location), array of Location/LocationLink */
@@ -1538,6 +1487,7 @@ void lsp_definition(const char *path, int row, int off)
 	}
 	char fpath[1024];
 	lsp_path_from_uri(uri, fpath, sizeof(fpath));
+	lsp_relpath(fpath);
 	if (strcmp(fpath, path)) {
 		int already_open = ex_edit(fpath, strlen(fpath));
 		if (!already_open) {
@@ -1576,42 +1526,45 @@ int term_read\\(int winch\\)
 	static struct pollfd ufd = \\{STDIN_FILENO, POLLIN};
 	int cw;
 	if \\(ibuf_pos >= ibuf_cnt\\) \\{
-		if \\(texec\\) \\{${ESC}${SEP}0??${ESC}${SEP}${LB}
+		if \\(texec\\) \\{
+			xquit = !xquit \\? 1 : xquit;${ESC}${SEP}0??${ESC}${SEP}${LB}
 ${ESC}${SEP}0??+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 	static struct pollfd ufd = \\{STDIN_FILENO, POLLIN};
 	int cw;
 	if \\(ibuf_pos >= ibuf_cnt\\) \\{
-		if \\(texec\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
+		if \\(texec\\) \\{
+			xquit = !xquit \\? 1 : xquit;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 
 int term_read\\(int winch\\)
 \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^	static struct pollfd ufd = \\{STDIN_FILENO, POLLIN};\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	int cw;
-	if \\(ibuf_pos >= ibuf_cnt\\) \\{
-		if \\(texec\\) \\{${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 	static struct pollfd ufd = \\{STDIN_FILENO, POLLIN};
+	int cw;${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 	if \\(ibuf_pos >= ibuf_cnt\\) \\{
+		if \\(texec\\) \\{
+			xquit = !xquit \\? 1 : xquit;${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 
-.....e.......\\(i......c..
+..t....m...a..... w.....
 \\{
-...a.i.............f..u.d.. ..TD.............L..N}.
-..n.....
-... \\(.......s..=.i......t...
-..if.\\(....c...${ESC}${SEP}5??${ESC}${SEP}${LB}
+....ti. s....t.....f. ....=...T..N.......,...LLI...
+	.......
+	i.....u..po...= ..u.......\\{
+	.............
+	....ui. ...................t.${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f> .*?
 int term_read\\(int winch\\).*?
 \\{.*?
 (	static struct pollfd ufd = \\{STDIN_FILENO, POLLIN};)${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}6??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	ibuf_cnt \\+= n;.*(			xquit = !xquit \\? 1 : xquit;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a7${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	ibuf_cnt \\+= n;.*(			if \\(texec == '&'\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:142:a7${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6;7??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:142${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 			goto ret;
-		}
+${ESC}${SEP}%;f+ 		}
 		cw = 0;
 		re:
 		/\\* read a single input character \\*/
@@ -1626,8 +1579,7 @@ ${ESC}${SEP}%;f+ 			goto ret;
 				goto re;
 			}${ESC}${SEP}0??${ESC}${SEP}${LB}
 ${ESC}${SEP}0??+3m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 		re:
-		/\\* read a single input character \\*/
+${ESC}${SEP}%;f+ 		/\\* read a single input character \\*/
 		if \\(xquit < 0 \\|\\| poll\\(&ufd, 1, -1\\) <= 0 \\|\\|
 				read\\(STDIN_FILENO, ibuf, 1\\) <= 0\\) \\{
 			xquit = !isatty\\(STDIN_FILENO\\) \\? -1 : xquit;
@@ -1638,13 +1590,12 @@ ${ESC}${SEP}%;f+ 		re:
 				cw = term_winch;
 				goto re;
 			}${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:155:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 			goto ret;
-		}
-		cw = 0;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:155:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 		re:
-		/\\* read a single input character \\*/
+${ESC}${SEP}1??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:156:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f+ 		}
+		cw = 0;
+		re:${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}2??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:156:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f+ 		/\\* read a single input character \\*/
 		if \\(xquit < 0 \\|\\| poll\\(&ufd, 1, -1\\) <= 0 \\|\\|
 				read\\(STDIN_FILENO, ibuf, 1\\) <= 0\\) \\{
 			xquit = !isatty\\(STDIN_FILENO\\) \\? -1 : xquit;
@@ -1653,34 +1604,33 @@ ${ESC}${SEP}%;f+ 		re:
 				goto ret;
 			} else if \\(term_winch != cw && !winch && xquit >= 0\\) \\{
 				cw = term_winch;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:155:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:156:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				goto re;
 			}${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??-10m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:155:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ .	....o.....
-	..
-	....=..;
-	..e.
-		.. re.. ...in..e.i.p.............\\*.
-		i. \\(x............po.l....d,.1......<= . .\\|
-.......d......_.I..... ib....1..<. .. .
-.........=.!....t.\\(S...._.IL...\\)....1.....ui..
-......\\(...m...nc......i...........t .......
-......bu..........
-......t.....;
-..	}..... .. ......w.n.......w.&......c..&...q...........
-...	.... .e........;
-...	.... ..;
-.	..${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:155:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 			goto ret;.*?
-		}.*?
+${ESC}${SEP}4??-9m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:156:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%;f+ 	..
+.	.w.. .;
+		...
+.... r... a...ng.. ..... c........ ..
+..i.......... . .\\|.....\\(.u.......-..........
+.................LE..,...........=.0...
+........ =.!......\\(..D.N_......\\)....1.:..q..t.
+............w..ch.&..w.........q..t.>......
+.	.	.i.u....wi....
+..	....o.....
+......ls. .........w.n.h ............n..... ...it... ...\\{
+..	... .....m_......
+....g.......
+	.	.${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:156:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		}.*?
 		cw = 0;.*?
-(		re:)${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}6??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:155:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			\\*ibuf = winch;	/\\* yield until term_winch is cleared \\*/.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??-19m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:155:a7${ESC}${SEP}'0${SEP}${LB}
-${SEP}0;1;2;3;4;5;6;7??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:155${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+		re:.*?
+(		/\\* read a single input character \\*/)${ESC}${SEP}6??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}6??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:156:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			goto ret;.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??-18m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:156:a7${ESC}${SEP}'0${SEP}${LB}
+${SEP}0;1;2;3;4;5;6;7??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:156${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				goto re;
 			}
@@ -1710,7 +1660,7 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				goto re;.*?
 			}.*?
 (			err:)${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}6??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:167:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			\\*ibuf = winch;	/\\* yield until term_winch is cleared \\*/.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			goto ret;.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:167:a7${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2;3;4;5;6;7??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:167${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -1721,54 +1671,40 @@ ${ESC}${SEP}%;f+ 		}
 ${ESC}${SEP}0??m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		}\$${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a1${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			\\*ibuf = winch;	/\\* yield until term_winch is cleared \\*/.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			goto ret;.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}2??-5m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a2${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:169${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'1d${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:142:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2,#+9c 		re:;
-		{
-			struct pollfd pfds[1 + LSP_NFDS_MAX];
-			int _nr, _i;
-			pfds[0].fd = STDIN_FILENO;
-			pfds[0].events = POLLIN;
-			for (_i = 0; _i < lsp_nfds; _i++) {
-				pfds[1+_i].fd = lsp_fds[_i];
-				pfds[1+_i].events = POLLIN;
-			}
-			if (xquit < 0 || (_nr = poll(pfds, 1+lsp_nfds, -1)) <= 0) {
-				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
-				if (term_winch && winch && xquit >= 0) {
-					*ibuf = winch;
-					goto ret;
-				} else if (term_winch != cw && !winch && xquit >= 0) {
-					cw = term_winch;
-					goto re;
-				}
-				goto err;
-			}
-			if (lsp_fd_ready)
-				for (_i = 0; _i < lsp_nfds; _i++)
-					if (pfds[1+_i].revents & POLLIN)
-						lsp_fd_ready(lsp_fds[_i]);
-			if (!(pfds[0].revents & POLLIN)) {
+${SEP}'1,#+1c 	static struct pollfd ufd[1 + LSP_NFDS_MAX];
+	int cw, i;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:142:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2,#+8c 		ufd[0].fd = STDIN_FILENO;
+		ufd[0].events = POLLIN;
+		for (i = 0; i < lsp_nfds; i++) {
+			ufd[i+1].fd = lsp_fds[i];
+			ufd[i+1].events = POLLIN;
+		}
+		/* read a single input character, servicing lsp fds */
+		if (xquit >= 0 && poll(ufd, 1 + lsp_nfds, -1) > 0) {
+			for (i = 0; i < lsp_nfds; i++)
+				if (ufd[i+1].revents & POLLIN)
+					lsp_process_fd(lsp_fds[i]);
+			if (!(ufd[0].revents & POLLIN)) {
 				if (term_winch && winch) {
 					*ibuf = winch;
 					goto ret;
 				}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:155:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3,#+1c 			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
-				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
-				if (term_winch && winch && xquit >= 0) {
-					*ibuf = winch;
-					goto ret;
-				} else if (term_winch != cw && !winch && xquit >= 0) {
-					cw = term_winch;
-					goto re;
-				}
-				goto err;
-			}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:156:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'3,#+1c 			if (read(STDIN_FILENO, ibuf, 1) > 0)
+				goto ret;
+		}
+		xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
+		if (term_winch && winch && xquit >= 0) {
+			*ibuf = winch;
 			goto ret;
+		} else if (term_winch != cw && !winch && xquit >= 0) {
+			cw = term_winch;
+			goto re;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:167:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4i 		err:
 		*ibuf = 0;
@@ -1875,25 +1811,6 @@ ${ESC}${SEP}grp 0${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		} else if \\(vi_mod & 2 && !\\(vi_mod & 1\\)\\) \\{.*(			vc_status\\(vi_tsm\\);)${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a3${ESC}${SEP}'0${SEP}${LB}
 ${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1800${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 	setup_signals\\(\\);
-	dir_init\\(\\);
-	syn_init\\(\\);
-	temp_open\\(0, \"/hist/\", _ft\\);
-	temp_open\\(1, \"/fm/\", fm_ft\\);
-	temp_open\\(2, \"/sc/\", _ft\\);${ESC}${SEP}0??${ESC}${SEP}${LB}
-${ESC}${SEP}0??+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 	setup_signals\\(\\);
-	dir_init\\(\\);
-	syn_init\\(\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1839:a1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	setup_signals\\(\\);.*?
-	dir_init\\(\\);.*?
-(	syn_init\\(\\);)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1839:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int i, j;.*(	for \\(i = 1; i < argc && argv\\[i\\]\\[0\\] == '-'; i\\+\\+\\) \\{)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}3??-4m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1839:a3${ESC}${SEP}'0${SEP}${LB}
-${SEP}0;1;2;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1839${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i #include \"lsp.c\"
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:24:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -1911,13 +1828,11 @@ ${SEP}'4i 				} else if (k == 'K') {
 				}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1642:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5i 		if (!xmpt && xb_path && xb_path[0]) {
-			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
-			if (_ldiag)
-				vi_drawmsg((char *)_ldiag);
+			const char *diag = lsp_diag_for_line(xb_path, xrow);
+			if (diag)
+				vi_drawmsg((char *)diag);
 		}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1800:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6i 	lsp_init();
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1839:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}b6${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1800:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}b6${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> /\\* filesystem \\*/
 extern rset \\*fsincl;
 void dir_calc\\(char \\*path\\);${ESC}${SEP}0??${ESC}${SEP}${LB}
@@ -1933,8 +1848,7 @@ ${SEP}'1i
 #define LSP_NFDS_MAX	8
 extern int lsp_nfds;
 extern int lsp_fds[LSP_NFDS_MAX];
-extern void (*lsp_fd_ready)(int fd);
-void lsp_init(void);
+void lsp_process_fd(int fd);
 void lsp_register(const char *ft, const char *cmd);
 void lsp_open(const char *path, const char *ft);
 void lsp_save(const char *path);
@@ -2495,10 +2409,10 @@ index 00000000..8ac14c1b
 +#endif /* JSMN_H */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..1f2c22da
+index 00000000..61baacf8
 --- /dev/null
 +++ b/lsp.c
-@@ -0,0 +1,913 @@
+@@ -0,0 +1,863 @@
 +/* lsp.c - Language Server Protocol client for nextvi */
 +#include "jsmn.h"
 +#include <errno.h>
@@ -2531,7 +2445,6 @@ index 00000000..1f2c22da
 +	int rbuf_n;
 +	int response_ready, pending_id;
 +	char *response_json;
-+	int response_len;
 +	int initialized, next_id;
 +	lsp_doc docs[LSP_DOCS_MAX];
 +	int ndocs;
@@ -2539,23 +2452,11 @@ index 00000000..1f2c22da
 +
 +int lsp_nfds = 0;
 +int lsp_fds[LSP_NFDS_MAX];
-+void (*lsp_fd_ready)(int fd) = NULL;
 +
 +static lsp_server lsp_srvs[LSP_SRV_MAX];
 +static int lsp_nsrvs = 0;
 +static lsp_diagfile lsp_diagfiles[LSP_SRV_MAX * 4];
 +static int lsp_ndiagfiles = 0;
-+
-+/* forward declarations */
-+static void _lsp_process_fd(int fd);
-+static lsp_server *lsp_find_srv_for_fd(int fd);
-+static void lsp_dispatch_messages(lsp_server *srv);
-+static void lsp_handle_message(lsp_server *srv, char *json, int len);
-+
-+void lsp_init(void)
-+{
-+	lsp_fd_ready = _lsp_process_fd;
-+}
 +
 +void lsp_register(const char *ft, const char *cmd)
 +{
@@ -2741,6 +2642,13 @@ index 00000000..1f2c22da
 +	lsp_send(srv, sb->s, sb->s_n);
 +}
 +
++static void lsp_sbuf_int(sbuf *sb, int n)
++{
++	char s[32];
++	itoa(n, s);
++	sbuf_str(sb, s)
++}
++
 +static void lsp_buf_content(struct lbuf *lb, sbuf *sb)
 +{
 +	int i;
@@ -2753,14 +2661,10 @@ index 00000000..1f2c22da
 +static int lsp_fmt_init(lsp_server *srv, sbuf *sb)
 +{
 +	int id = ++srv->next_id;
-+	char idstr[32];
-+	itoa(id, idstr);
-+	char pidstr[32];
-+	itoa(getpid(), pidstr);
 +	sbuf_str(sb, "{\"jsonrpc\":\"2.0\",\"id\":")
-+	sbuf_str(sb, idstr)
++	lsp_sbuf_int(sb, id);
 +	sbuf_str(sb, ",\"method\":\"initialize\",\"params\":{\"processId\":")
-+	sbuf_str(sb, pidstr)
++	lsp_sbuf_int(sb, getpid());
 +	sbuf_str(sb, ",\"clientInfo\":{\"name\":\"nextvi\"},\"capabilities\":{")
 +	sbuf_str(sb, "\"textDocument\":{\"synchronization\":{\"didSave\":true},")
 +	sbuf_str(sb, "\"hover\":{\"contentFormat\":[\"plaintext\",\"markdown\"]},")
@@ -2775,8 +2679,8 @@ index 00000000..1f2c22da
 +	sbuf_str(sb, "{\"jsonrpc\":\"2.0\",\"method\":\"initialized\",\"params\":{}}")
 +}
 +
-+static void lsp_fmt_didopen(lsp_server *srv, sbuf *sb, const char *path,
-+		const char *ft, struct lbuf *lb)
++static void lsp_fmt_didopen(sbuf *sb, const char *path, const char *ft,
++		struct lbuf *lb)
 +{
 +	char uri[1280];
 +	lsp_uri_from_path(path, uri, sizeof(uri));
@@ -2788,21 +2692,18 @@ index 00000000..1f2c22da
 +	sbuf_str(sb, "\",\"version\":1,\"text\":\"")
 +	lsp_buf_content(lb, sb);
 +	sbuf_str(sb, "\"}}}")
-+	(void)srv;
 +}
 +
 +static void lsp_fmt_didchange(sbuf *sb, const char *path, int ver,
 +		struct lbuf *lb)
 +{
 +	char uri[1280];
-+	char verstr[32];
 +	lsp_uri_from_path(path, uri, sizeof(uri));
-+	itoa(ver, verstr);
 +	sbuf_str(sb, "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",")
 +	sbuf_str(sb, "\"params\":{\"textDocument\":{\"uri\":\"")
 +	sbuf_str(sb, uri)
 +	sbuf_str(sb, "\",\"version\":")
-+	sbuf_str(sb, verstr)
++	lsp_sbuf_int(sb, ver);
 +	sbuf_str(sb, "},\"contentChanges\":[{\"text\":\"")
 +	lsp_buf_content(lb, sb);
 +	sbuf_str(sb, "\"}]}}")
@@ -2818,46 +2719,23 @@ index 00000000..1f2c22da
 +	sbuf_str(sb, "\"}}}")
 +}
 +
-+static int lsp_fmt_hover(lsp_server *srv, sbuf *sb, const char *path,
-+		int line, int col)
++/* format a textDocument/<method> request that carries a cursor position */
++static int lsp_fmt_pos(lsp_server *srv, sbuf *sb, const char *method,
++		const char *path, int line, int col)
 +{
 +	char uri[1280];
-+	char idstr[32], linestr[32], colstr[32];
 +	int id = ++srv->next_id;
 +	lsp_uri_from_path(path, uri, sizeof(uri));
-+	itoa(id, idstr);
-+	itoa(line, linestr);
-+	itoa(col, colstr);
 +	sbuf_str(sb, "{\"jsonrpc\":\"2.0\",\"id\":")
-+	sbuf_str(sb, idstr)
-+	sbuf_str(sb, ",\"method\":\"textDocument/hover\",\"params\":{\"textDocument\":{\"uri\":\"")
++	lsp_sbuf_int(sb, id);
++	sbuf_str(sb, ",\"method\":\"textDocument/")
++	sbuf_str(sb, method)
++	sbuf_str(sb, "\",\"params\":{\"textDocument\":{\"uri\":\"")
 +	sbuf_str(sb, uri)
 +	sbuf_str(sb, "\"},\"position\":{\"line\":")
-+	sbuf_str(sb, linestr)
++	lsp_sbuf_int(sb, line);
 +	sbuf_str(sb, ",\"character\":")
-+	sbuf_str(sb, colstr)
-+	sbuf_str(sb, "}}}")
-+	return id;
-+}
-+
-+static int lsp_fmt_definition(lsp_server *srv, sbuf *sb, const char *path,
-+		int line, int col)
-+{
-+	char uri[1280];
-+	char idstr[32], linestr[32], colstr[32];
-+	int id = ++srv->next_id;
-+	lsp_uri_from_path(path, uri, sizeof(uri));
-+	itoa(id, idstr);
-+	itoa(line, linestr);
-+	itoa(col, colstr);
-+	sbuf_str(sb, "{\"jsonrpc\":\"2.0\",\"id\":")
-+	sbuf_str(sb, idstr)
-+	sbuf_str(sb, ",\"method\":\"textDocument/definition\",\"params\":{\"textDocument\":{\"uri\":\"")
-+	sbuf_str(sb, uri)
-+	sbuf_str(sb, "\"},\"position\":{\"line\":")
-+	sbuf_str(sb, linestr)
-+	sbuf_str(sb, ",\"character\":")
-+	sbuf_str(sb, colstr)
++	lsp_sbuf_int(sb, col);
 +	sbuf_str(sb, "}}}")
 +	return id;
 +}
@@ -3004,16 +2882,11 @@ index 00000000..1f2c22da
 +		lsp_handle_diagnostics(srv, json, toks, n);
 +}
 +
-+static void lsp_handle_response(lsp_server *srv, const char *json,
-+		jsmntok_t *toks, int n, int id)
++static void lsp_handle_response(lsp_server *srv, const char *json, int id)
 +{
 +	if (srv->pending_id == id) {
 +		free(srv->response_json);
-+		srv->response_json = malloc(n * sizeof(jsmntok_t) + strlen(json) + 1);
-+		if (srv->response_json) {
-+			strcpy(srv->response_json, json);
-+			srv->response_len = n;
-+		}
++		srv->response_json = uc_dup(json);
 +		srv->response_ready = 1;
 +		srv->pending_id = 0;
 +	}
@@ -3052,7 +2925,7 @@ index 00000000..1f2c22da
 +			free(sb2->s);
 +			srv->initialized = 1;
 +		}
-+		lsp_handle_response(srv, json, toks, n, id);
++		lsp_handle_response(srv, json, id);
 +	} else if (method[0]) {
 +		lsp_handle_notification(srv, json, toks, n, method);
 +	}
@@ -3103,7 +2976,7 @@ index 00000000..1f2c22da
 +	}
 +}
 +
-+static void _lsp_process_fd(int fd)
++void lsp_process_fd(int fd)
 +{
 +	lsp_server *srv = lsp_find_srv_for_fd(fd);
 +	if (!srv)
@@ -3129,7 +3002,7 @@ index 00000000..1f2c22da
 +		pfd.events = POLLIN;
 +		int r = poll(&pfd, 1, 10);
 +		if (r > 0 && (pfd.revents & POLLIN))
-+			_lsp_process_fd(srv->out_fd);
++			lsp_process_fd(srv->out_fd);
 +		if (srv->response_ready)
 +			return 1;
 +		elapsed += 10;
@@ -3196,7 +3069,7 @@ index 00000000..1f2c22da
 +		srv->ndocs++;
 +		if (ex_buf && ex_buf->lb) {
 +			sbuf_smake(sb, 4096)
-+			lsp_fmt_didopen(srv, sb, path, ft, ex_buf->lb);
++			lsp_fmt_didopen(sb, path, ft, ex_buf->lb);
 +			lsp_send_sb(srv, sb);
 +			free(sb->s);
 +		}
@@ -3229,35 +3102,35 @@ index 00000000..1f2c22da
 +	return uc_off(ln, off);
 +}
 +
-+void lsp_hover(const char *path, int row, int off)
++/* send a position request and parse the reply; report and return -1 on error,
++ * else return the "result" token index and fill json/toks/n for the caller */
++static int lsp_request(const char *method, const char *path, int row, int off,
++		char **json_out, jsmntok_t *toks, int ntoks, int *n_out)
 +{
++	char buf[64];
 +	lsp_server *srv = lsp_srv_for_path(path);
 +	if (!srv) {
 +		lsp_show_msg("lsp: no server for file");
-+		return;
++		return -1;
 +	}
 +	int col = lsp_byte_offset(ex_buf ? ex_buf->lb : NULL, row, off);
 +	sbuf_smake(sb, 256)
-+	int id = lsp_fmt_hover(srv, sb, path, row, col);
++	int id = lsp_fmt_pos(srv, sb, method, path, row, col);
 +	lsp_send_sb(srv, sb);
 +	free(sb->s);
-+	if (!lsp_wait_response(srv, id, 2000)) {
-+		lsp_show_msg("lsp: hover timeout");
-+		return;
-+	}
-+	/* parse response */
-+	if (!srv->response_json) {
-+		lsp_show_msg("lsp: no hover result");
-+		return;
++	if (!lsp_wait_response(srv, id, 2000) || !srv->response_json) {
++		snprintf(buf, sizeof(buf), "lsp: %s timeout", method);
++		lsp_show_msg(buf);
++		return -1;
 +	}
 +	char *json = srv->response_json;
 +	jsmn_parser p;
-+	jsmntok_t toks[1024];
 +	jsmn_init(&p);
-+	int n = jsmn_parse(&p, json, strlen(json), toks, 1024);
++	int n = jsmn_parse(&p, json, strlen(json), toks, ntoks);
 +	if (n < 1) {
-+		lsp_show_msg("lsp: hover parse error");
-+		return;
++		snprintf(buf, sizeof(buf), "lsp: %s parse error", method);
++		lsp_show_msg(buf);
++		return -1;
 +	}
 +	int errtok = lsp_find_key(json, toks, n, 0, "error");
 +	if (errtok >= 0) {
@@ -3266,14 +3139,39 @@ index 00000000..1f2c22da
 +		if (msgtok >= 0)
 +			lsp_tok_str(json, &toks[msgtok], errmsg, sizeof(errmsg));
 +		lsp_show_msg(errmsg);
-+		return;
++		return -1;
 +	}
 +	int result = lsp_find_key(json, toks, n, 0, "result");
 +	if (result < 0 || toks[result].type == JSMN_PRIMITIVE) {
-+		lsp_show_msg("lsp: no hover result");
-+		return;
++		snprintf(buf, sizeof(buf), "lsp: no %s result", method);
++		lsp_show_msg(buf);
++		return -1;
 +	}
-+	/* result.contents */
++	*json_out = json;
++	*n_out = n;
++	return result;
++}
++
++/* strip the cwd prefix so the path matches an already-open buffer */
++static void lsp_relpath(char *path)
++{
++	char cwd[1024];
++	int n;
++	if (path[0] != '/' || !getcwd(cwd, sizeof(cwd)))
++		return;
++	n = strlen(cwd);
++	if (!strncmp(path, cwd, n) && path[n] == '/')
++		memmove(path, path + n + 1, strlen(path + n + 1) + 1);
++}
++
++void lsp_hover(const char *path, int row, int off)
++{
++	char *json;
++	jsmntok_t toks[1024];
++	int n, result = lsp_request("hover", path, row, off,
++		&json, toks, 1024, &n);
++	if (result < 0)
++		return;
 +	int contents = lsp_find_key(json, toks, n, result, "contents");
 +	if (contents < 0) {
 +		lsp_show_msg("lsp: no hover contents");
@@ -3304,47 +3202,12 @@ index 00000000..1f2c22da
 +
 +void lsp_definition(const char *path, int row, int off)
 +{
-+	lsp_server *srv = lsp_srv_for_path(path);
-+	if (!srv) {
-+		lsp_show_msg("lsp: no server for file");
-+		return;
-+	}
-+	int col = lsp_byte_offset(ex_buf ? ex_buf->lb : NULL, row, off);
-+	sbuf_smake(sb, 256)
-+	int id = lsp_fmt_definition(srv, sb, path, row, col);
-+	lsp_send_sb(srv, sb);
-+	free(sb->s);
-+	if (!lsp_wait_response(srv, id, 2000)) {
-+		lsp_show_msg("lsp: definition timeout");
-+		return;
-+	}
-+	if (!srv->response_json) {
-+		lsp_show_msg("lsp: no definition result");
-+		return;
-+	}
-+	char *json = srv->response_json;
-+	jsmn_parser p;
++	char *json;
 +	jsmntok_t toks[1024];
-+	jsmn_init(&p);
-+	int n = jsmn_parse(&p, json, strlen(json), toks, 1024);
-+	if (n < 1) {
-+		lsp_show_msg("lsp: definition parse error");
++	int n, result = lsp_request("definition", path, row, off,
++		&json, toks, 1024, &n);
++	if (result < 0)
 +		return;
-+	}
-+	int errtok = lsp_find_key(json, toks, n, 0, "error");
-+	if (errtok >= 0) {
-+		char errmsg[256] = "lsp: error";
-+		int msgtok = lsp_find_key(json, toks, n, errtok, "message");
-+		if (msgtok >= 0)
-+			lsp_tok_str(json, &toks[msgtok], errmsg, sizeof(errmsg));
-+		lsp_show_msg(errmsg);
-+		return;
-+	}
-+	int result = lsp_find_key(json, toks, n, 0, "result");
-+	if (result < 0 || toks[result].type == JSMN_PRIMITIVE) {
-+		lsp_show_msg("lsp: no definition result");
-+		return;
-+	}
 +	char uri[1280] = "";
 +	int target_line = 0;
 +	/* result can be object (Location), array of Location/LocationLink */
@@ -3381,6 +3244,7 @@ index 00000000..1f2c22da
 +	}
 +	char fpath[1024];
 +	lsp_path_from_uri(uri, fpath, sizeof(fpath));
++	lsp_relpath(fpath);
 +	if (strcmp(fpath, path)) {
 +		int already_open = ex_edit(fpath, strlen(fpath));
 +		if (!already_open) {
@@ -3413,22 +3277,24 @@ index 00000000..1f2c22da
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index 3ae4769f..c02bfcdb 100644
+index 3ae4769f..e40c4a28 100644
 --- a/term.c
 +++ b/term.c
-@@ -139,7 +139,6 @@ void term_push(char *s, unsigned int n)
+@@ -139,8 +139,8 @@ void term_push(char *s, unsigned int n)
  
  int term_read(int winch)
  {
 -	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
- 	int cw;
+-	int cw;
++	static struct pollfd ufd[1 + LSP_NFDS_MAX];
++	int cw, i;
  	if (ibuf_pos >= ibuf_cnt) {
  		if (texec) {
-@@ -152,21 +151,53 @@ int term_read(int winch)
- 			goto ret;
+ 			xquit = !xquit ? 1 : xquit;
+@@ -153,20 +153,37 @@ int term_read(int winch)
  		}
  		cw = 0;
--		re:
+ 		re:
 -		/* read a single input character */
 -		if (xquit < 0 || poll(&ufd, 1, -1) <= 0 ||
 -				read(STDIN_FILENO, ibuf, 1) <= 0) {
@@ -3438,32 +3304,18 @@ index 3ae4769f..c02bfcdb 100644
 -				goto ret;
 -			} else if (term_winch != cw && !winch && xquit >= 0) {
 -				cw = term_winch;
-+		re:;
-+		{
-+			struct pollfd pfds[1 + LSP_NFDS_MAX];
-+			int _nr, _i;
-+			pfds[0].fd = STDIN_FILENO;
-+			pfds[0].events = POLLIN;
-+			for (_i = 0; _i < lsp_nfds; _i++) {
-+				pfds[1+_i].fd = lsp_fds[_i];
-+				pfds[1+_i].events = POLLIN;
-+			}
-+			if (xquit < 0 || (_nr = poll(pfds, 1+lsp_nfds, -1)) <= 0) {
-+				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
-+				if (term_winch && winch && xquit >= 0) {
-+					*ibuf = winch;
-+					goto ret;
-+				} else if (term_winch != cw && !winch && xquit >= 0) {
-+					cw = term_winch;
-+					goto re;
-+				}
-+				goto err;
-+			}
-+			if (lsp_fd_ready)
-+				for (_i = 0; _i < lsp_nfds; _i++)
-+					if (pfds[1+_i].revents & POLLIN)
-+						lsp_fd_ready(lsp_fds[_i]);
-+			if (!(pfds[0].revents & POLLIN)) {
++		ufd[0].fd = STDIN_FILENO;
++		ufd[0].events = POLLIN;
++		for (i = 0; i < lsp_nfds; i++) {
++			ufd[i+1].fd = lsp_fds[i];
++			ufd[i+1].events = POLLIN;
++		}
++		/* read a single input character, servicing lsp fds */
++		if (xquit >= 0 && poll(ufd, 1 + lsp_nfds, -1) > 0) {
++			for (i = 0; i < lsp_nfds; i++)
++				if (ufd[i+1].revents & POLLIN)
++					lsp_process_fd(lsp_fds[i]);
++			if (!(ufd[0].revents & POLLIN)) {
 +				if (term_winch && winch) {
 +					*ibuf = winch;
 +					goto ret;
@@ -3472,18 +3324,16 @@ index 3ae4769f..c02bfcdb 100644
  			}
 -			err:
 -			*ibuf = 0;
-+			if (read(STDIN_FILENO, ibuf, 1) <= 0) {
-+				xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
-+				if (term_winch && winch && xquit >= 0) {
-+					*ibuf = winch;
-+					goto ret;
-+				} else if (term_winch != cw && !winch && xquit >= 0) {
-+					cw = term_winch;
-+					goto re;
-+				}
-+				goto err;
-+			}
++			if (read(STDIN_FILENO, ibuf, 1) > 0)
++				goto ret;
++		}
++		xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
++		if (term_winch && winch && xquit >= 0) {
++			*ibuf = winch;
 +			goto ret;
++		} else if (term_winch != cw && !winch && xquit >= 0) {
++			cw = term_winch;
++			goto re;
  		}
 +		err:
 +		*ibuf = 0;
@@ -3491,7 +3341,7 @@ index 3ae4769f..c02bfcdb 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 1d2ceed2..f58875bf 100644
+index 1d2ceed2..510a445f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -3534,26 +3384,18 @@ index 1d2ceed2..f58875bf 100644
  			vi_drawrow(xrow);
  		}
 +		if (!xmpt && xb_path && xb_path[0]) {
-+			const char *_ldiag = lsp_diag_for_line(xb_path, xrow);
-+			if (_ldiag)
-+				vi_drawmsg((char *)_ldiag);
++			const char *diag = lsp_diag_for_line(xb_path, xrow);
++			if (diag)
++				vi_drawmsg((char *)diag);
 +		}
  		if (vi_status && xmpt < 1) {
  			xrows -= term_resized != vi_status;
  			vi_status = term_resized;
-@@ -1837,6 +1853,7 @@ int main(int argc, char *argv[])
- 	setup_signals();
- 	dir_init();
- 	syn_init();
-+	lsp_init();
- 	temp_open(0, "/hist/", _ft);
- 	temp_open(1, "/fm/", fm_ft);
- 	temp_open(2, "/sc/", _ft);
 diff --git a/vi.h b/vi.h
-index ca6cca08..50f78502 100644
+index ca6cca08..fd00cb61 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -544,3 +544,18 @@ extern int vi_lncol;
+@@ -544,3 +544,17 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);
@@ -3562,8 +3404,7 @@ index ca6cca08..50f78502 100644
 +#define LSP_NFDS_MAX	8
 +extern int lsp_nfds;
 +extern int lsp_fds[LSP_NFDS_MAX];
-+extern void (*lsp_fd_ready)(int fd);
-+void lsp_init(void);
++void lsp_process_fd(int fd);
 +void lsp_register(const char *ft, const char *cmd);
 +void lsp_open(const char *path, const char *ft);
 +void lsp_save(const char *path);
