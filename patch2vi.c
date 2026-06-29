@@ -1701,15 +1701,33 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 	return 1;
 }
 
-/* How far above/below a hunk gen_win_window will look for a unique anchor line
+/* How far above/below a hunk gen_win_window will look for a unique anchor block
  * before giving up. Bounds the O(scan * file) validation cost per group. */
 #define WIN_SCAN 200
+
+/* Lines per straddle anchor block: each side of the window is a block of this
+ * many consecutive non-empty original lines (a 3-line block is far more
+ * discriminating than a single line, so the global search false-matches less). */
+#define WIN_ANCHOR 3
+
+/* True if orig_lines[s .. s+WIN_ANCHOR) are all in-range and non-empty: the
+ * precondition for using that block as a straddle anchor. */
+static int anchor_block_at(int s)
+{
+	if (s < 0 || s + WIN_ANCHOR > n_orig_lines)
+		return 0;
+	for (int j = 0; j < WIN_ANCHOR; j++)
+		if (!orig_lines[s + j][0])
+			return 0;
+	return 1;
+}
 
 /*
  * Pattern 8: a global "top.*(bottom)" straddle window (mode 3). Unlike the
  * pattern-7 grp window, both anchors are picked OUTSIDE the diff's shown region
- * entirely - the nearest unique line above the enclosing @@ hunk (top) and the
- * nearest unique line below it (bottom), beyond all of its shown context. These
+ * entirely - the nearest unique WIN_ANCHOR-line block above the enclosing @@ hunk
+ * (top) and the nearest unique block below it (bottom), beyond all of its shown
+ * context. A multi-line block discriminates far better than a single line. These
  *
  * Pattern 9 (NWIN2) reuses this generator with skip=1: it walks past the first
  * qualifying unique line on each side and picks the NEXT one out, yielding a
@@ -1718,19 +1736,25 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
  * skip=0 reproduces pattern 8 exactly. The two windows differ only in anchor
  * choice; both emit identically under mode 3. (Continuing pattern 8's note:) these
  * lines exist only in the original file, never in the diff, so building this
- * pattern fundamentally requires reading the original. The greedy ".*" absorbs
- * the whole hunk (context, body, and any drift inside it) between them. In multi-line
- * search mode "." matches newlines, so ".*" spans whole lines.
- * The bottom line is captured as "(bottom)"; a ":grp 1" search
- * lands on it, and the target is reached by a negative offset back up to the
- * hunk. Because the anchors lie outside the hunk, the search runs globally from
- * the top of the file (the emit brackets it with a mark-0 save / "1;0" reset /
- * "'0" restore, see emit_fallback_chain / emit_search).
+ * pattern fundamentally requires reading the original. Each block's lines are
+ * joined with a literal newline (a consecutive-line match), and a SINGLE greedy
+ * ".*" between the two blocks absorbs the whole hunk (context, body, and any drift
+ * inside it). The multi-line blocks only strengthen the anchoring; they do not add
+ * extra absorbing wildcards. In multi-line search mode "." matches newlines, so the
+ * one ".*" spans whole lines. The regex is "t1\nt2\nt3.*(b1)\nb2\nb3": only the
+ * FIRST bottom line is captured as "(b1)" (the trailing "\nb2\nb3" just adds
+ * specificity), so a ":grp 1" search lands on b1 and the target is reached by a
+ * negative offset back up to the hunk. Because
+ * the anchors lie outside the hunk, the search runs globally from the top of the
+ * file (the emit brackets it with a mark-0 save / "1;0" reset / "'0" restore, see
+ * emit_fallback_chain / emit_search).
  *
  * File-validated, so only emitted when the original is readable and pristine:
- *   - top is a unique full line (count == 1) so the match anchors deterministically;
- *   - bottom is a unique full line AND carries its text nowhere from its own
- *     line to EOF, so greedy ".*" captures exactly it, not a later duplicate.
+ *   - the top block is a unique line-window (count == 1) so the match anchors
+ *     deterministically;
+ *   - the bottom block is a unique line-window AND its captured first line carries
+ *     its text nowhere from that line to EOF, so greedy ".*" captures exactly it,
+ *     not a later duplicate.
  * Change/delete hunks mark the first deleted line (del_start); pure inserts mark
  * the line to append after (add_after), reached by the same offset machinery, and
  * phase-2 "'Ni" appends after it. Returns 1 and fills *out (owned lines) on
@@ -1772,44 +1796,63 @@ static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 		span_lo = hunk_top;
 	if (span_hi < hunk_top)
 		span_hi = hunk_top;
-	/* nearest unique non-empty line strictly above the hunk's shown region;
-	 * skip past the first `skip` qualifying lines to reach a farther anchor */
+	/* nearest unique non-empty WIN_ANCHOR-line block ending strictly above the
+	 * hunk's shown region; skip past the first `skip` qualifying blocks for a
+	 * farther anchor. `it` is the block start (top line). */
 	int it = -1, first, seen = 0;
-	for (int i = span_lo - 1, d = 0; i >= 0 && d < WIN_SCAN; i--, d++) {
-		if (!orig_lines[i][0])
+	for (int s = span_lo - WIN_ANCHOR, d = 0; s >= 0 && d < WIN_SCAN; s--, d++) {
+		if (!anchor_block_at(s))
 			continue;
-		if (count_window(&orig_lines[i], 1, &first) == 1) {
+		if (count_window(&orig_lines[s], WIN_ANCHOR, &first) == 1) {
 			if (seen++ < skip)
 				continue;
-			it = i;
+			it = s;
 			break;
 		}
 	}
-	/* nearest unique non-empty line strictly below the hunk's shown region,
-	 * unambiguous as a substring from its position to EOF (so greedy ".*" lands
-	 * on it); skip past the first `skip` qualifying lines for a farther anchor */
+	/* nearest unique non-empty WIN_ANCHOR-line block starting strictly below the
+	 * hunk's shown region, with its captured first line unambiguous as a substring
+	 * from that line to EOF (so greedy ".*" lands on it); skip past the first
+	 * `skip` qualifying blocks for a farther anchor. `ib` is the captured line. */
 	int ib = -1;
 	seen = 0;
-	for (int i = span_hi + 1, d = 0; i < n_orig_lines && d < WIN_SCAN; i++, d++) {
-		if (!orig_lines[i][0])
+	for (int s = span_hi + 1, d = 0; s + WIN_ANCHOR <= n_orig_lines && d < WIN_SCAN;
+	     s++, d++) {
+		if (!anchor_block_at(s))
 			continue;
-		if (count_window(&orig_lines[i], 1, &first) == 1 &&
-		    count_substr_range(orig_lines[i], i + 1, n_orig_lines - 1) == 0) {
+		if (count_window(&orig_lines[s], WIN_ANCHOR, &first) == 1 &&
+		    count_substr_range(orig_lines[s], s + 1, n_orig_lines - 1) == 0) {
 			if (seen++ < skip)
 				continue;
-			ib = i;
+			ib = s;
 			break;
 		}
 	}
 	if (it < 0 || ib < 0)
 		return 0;
-	char *te = escape_regex(orig_lines[it]);
-	char *be = escape_regex(orig_lines[ib]);
-	int len = strlen(te) + strlen(be) + 6;   /* ".*(" + ")" + NUL */
-	char *s = emalloc(len);
-	snprintf(s, len, "%s.*(%s)", te, be);
-	free(te);
-	free(be);
+	/* Build "t1\nt2\nt3.*(b1)\nb2\nb3": each block's lines are joined with a
+	 * literal newline (consecutive-line match, in multi-line search mode), so the
+	 * blocks only STRENGTHEN the anchoring - there is exactly ONE ".*", the single
+	 * gap that absorbs the hunk between the two blocks. Only the first bottom line
+	 * is captured "(b1)" so grp lands on it and the offset reference stays at ib. */
+	char *et[WIN_ANCHOR], *eb[WIN_ANCHOR];
+	size_t need = 4;   /* ".*" + "(" + ")" + NUL */
+	for (int j = 0; j < WIN_ANCHOR; j++) {
+		et[j] = escape_regex(orig_lines[it + j]);
+		eb[j] = escape_regex(orig_lines[ib + j]);
+		need += strlen(et[j]) + strlen(eb[j]) + 2;   /* one newline join per line */
+	}
+	char *s = emalloc(need);
+	int p = 0;
+	for (int j = 0; j < WIN_ANCHOR; j++)
+		p += sprintf(s + p, j ? "\n%s" : "%s", et[j]);   /* t1\nt2\nt3 */
+	p += sprintf(s + p, ".*(%s)", eb[0]);                    /* one ".*", capture b1 */
+	for (int j = 1; j < WIN_ANCHOR; j++)
+		p += sprintf(s + p, "\n%s", eb[j]);              /* \nb2\nb3 */
+	for (int j = 0; j < WIN_ANCHOR; j++) {
+		free(et[j]);
+		free(eb[j]);
+	}
 	char **lines = emalloc(sizeof(char *));
 	lines[0] = s;
 	out->lines = lines;
