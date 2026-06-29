@@ -179,7 +179,9 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:20:m1${ESC}${SEP
 ${SEP}'2c 	{msg_ft, NULL},
 	{lsp_ft, NULL}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:44:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3s/\\?\\|\\\\\\\\/?|lsp|\\\\\\\\/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:296:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}?'3s/\\?\\|\\\\\\\\/?|lsp|\\\\\\\\/${ESC}${SEP}0??${ESC}${SEP}0??1q${ESC}${SEP}'3s/\\|\\\\\$/|lsp|\\\\\\\\/${ESC}${SEP}1??${ESC}${SEP}1??'3${ESC}${ESC}${ESC}${SEP}${OK2}p OK conf.c:296:s1${SEP}${LB}
+${SEP}0;1??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:296:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}${LB}
 ${SEP}'4i 
 	{lsp_ft, \"^.*error.*\$\", A(RE1 | SYN_IT)},
 	{lsp_ft, \"^.*warning.*\$\", A(YE1 | SYN_IT)},
@@ -2257,6 +2259,27 @@ EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'jsmn.h' 'lbuf.c' 'lsp.c' 'term.c'
 
 exit 0
 === PATCH2VI DELTA ===
+=== DELTA conf.c ===
+=== GROUP 3 ===
+-|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lsp|\
+=== END ===
+=== LEVEL 2 ===
+=== pre_ctx ===
+(?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
+(?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
+((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+=== END ===
+=== post_ctx ===
+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
+		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+=== END ===
+=== edit_cmd_rel ===
+s/\?\|\\\\/?|lsp|\\\\/
+s/\|\\$/|lsp|\\\\/
+=== END ===
+=== END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 1a6b5696..3d77bb1c 100644
