@@ -2746,6 +2746,64 @@ static void clone_grp(grp_delta_t *dst, const grp_delta_t *src)
 		  src->relc_cmd, src->nrelc);
 }
 
+/* Section codes shared by the temp-file (parse_tmp_file) and embedded-delta
+ * (main) parsers. The two formats carry the same per-group fields under
+ * different header spellings; each section's body appends through gsect_add so
+ * the field set lives in one place. CONTENT (-/+ -> del/add) stays per-parser:
+ * the two formats split it differently. */
+enum {
+	GS_NONE = 0, GS_PAT, GS_ABS, GS_REL, GS_RELC,
+	GS_CONTENT, GS_PRE, GS_POST, GS_CUSTOM, GS_STRAT,
+};
+
+/* Append a body line into the grp_delta_t array selected by sect; pat_idx picks
+ * the pattern slot for GS_PAT. */
+static void gsect_add(grp_delta_t *gd, int sect, int pat_idx, const char *line)
+{
+	switch (sect) {
+	case GS_PAT:
+		arr_append(&gd->pattern[pat_idx], &gd->npattern[pat_idx],
+			   &gd->pat_cap[pat_idx], line);
+		break;
+	case GS_ABS:
+		arr_append(&gd->abs_cmd, &gd->nabs, &gd->abs_cap, line);
+		break;
+	case GS_REL:
+		arr_append(&gd->rel_cmd, &gd->nrel, &gd->rel_cap, line);
+		break;
+	case GS_RELC:
+		arr_append(&gd->relc_cmd, &gd->nrelc, &gd->relc_cap, line);
+		break;
+	case GS_PRE:
+		arr_append(&gd->pre_ctx, &gd->npre_ctx, &gd->pre_cap, line);
+		break;
+	case GS_POST:
+		arr_append(&gd->post_ctx, &gd->npost_ctx, &gd->post_cap, line);
+		break;
+	case GS_CUSTOM:
+		arr_append(&gd->custom_text, &gd->ncustom_text,
+			   &gd->custom_text_cap, line);
+		break;
+	case GS_STRAT:
+		gd->strategy = strat_from_name(line, strlen(line));
+		break;
+	}
+}
+
+/* Parse "=== LEVEL <n>[*] ===" into gd->level / gd->has_star (default 2). */
+static void parse_level(grp_delta_t *gd, char *line)
+{
+	char *lv = line + 10;
+	char *end = strstr(lv, " ===");
+	if (end)
+		*end = '\0';
+	int len = strlen(lv);
+	gd->has_star = (len > 0 && lv[len - 1] == '*');
+	gd->level = atoi(lv);
+	if (gd->level < 1)
+		gd->level = 2;
+}
+
 /*
  * Parse a multi-file interactive temp file. Sections marked by
  * "=== FILE: <path> ===" route subsequent groups to per_file_results[k]
@@ -2848,13 +2906,10 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		grp_delta_t *results = per_file_results[file_idx];
 
 		if (in_ecmd && gi >= 0 && gi < ngroups) {
-			grp_delta_t *pg = &results[gi];
-			if (ecmd_strat == STRAT_ABS)
-				arr_append(&pg->abs_cmd, &pg->nabs, &pg->abs_cap, line);
-			else if (ecmd_strat == STRAT_REL)
-				arr_append(&pg->rel_cmd, &pg->nrel, &pg->rel_cap, line);
-			else if (ecmd_strat == STRAT_RELC)
-				arr_append(&pg->relc_cmd, &pg->nrelc, &pg->relc_cap, line);
+			int s = ecmd_strat == STRAT_ABS ? GS_ABS
+			      : ecmd_strat == STRAT_REL ? GS_REL
+			      : ecmd_strat == STRAT_RELC ? GS_RELC : GS_NONE;
+			gsect_add(&results[gi], s, 0, line);
 			continue;
 		}
 
@@ -2887,31 +2942,16 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		/* Parse level: field (appears after END GROUP, before sections) */
 		if (gi >= 0 && gi < ngroups &&
 		    strncmp(line, "=== LEVEL ", 10) == 0) {
-			grp_delta_t *pg = &results[gi];
-			char *lv = line + 10;
-			char *end = strstr(lv, " ===");
-			if (end)
-				*end = '\0';
-			int len = strlen(lv);
-			pg->has_star = (len > 0 && lv[len-1] == '*');
-			pg->level = atoi(lv);
-			if (pg->level < 1)
-				pg->level = 2;
+			parse_level(&results[gi], line);
 			continue;
 		}
 
-		if (in_pat && gi >= 0 && gi < ngroups) {
-			grp_delta_t *pg = &results[gi];
-			int pi = in_pat - 1;
-			arr_append(&pg->pattern[pi], &pg->npattern[pi],
-				   &pg->pat_cap[pi], line);
-		}
+		if (in_pat && gi >= 0 && gi < ngroups)
+			gsect_add(&results[gi], GS_PAT, in_pat - 1, line);
 
 		/* Catch-all: capture every line in the group section into custom_text as-is */
-		if (gi >= 0 && gi < ngroups && in_content_section) {
-			arr_append(&results[gi].custom_text, &results[gi].ncustom_text,
-				   &results[gi].custom_text_cap, line);
-		}
+		if (gi >= 0 && gi < ngroups && in_content_section)
+			gsect_add(&results[gi], GS_CUSTOM, 0, line);
 	}
 
 	fclose(f);
@@ -4485,8 +4525,8 @@ int main(int argc, char **argv)
 			/* Read structured delta section */
 			file_delta_t *cur_fd = NULL;
 			grp_delta_t *cur_gd = NULL;
-			int in_sect = 0; /* 1=pat 2=abs 3=rel 4=relc */
-			int pat_idx = 1; /* which pattern[] for in_sect 1 */
+			int in_sect = GS_NONE;
+			int pat_idx = 1; /* pattern[] slot for GS_PAT */
 			while (fgets(line, sizeof(line), in)) {
 				chomp(line);
 				if (strncmp(line, "=== PATCH2VI PATCH ===", 22) == 0)
@@ -4536,35 +4576,27 @@ int main(int argc, char **argv)
 						cur_gd = &cur_fd->grps[cur_fd->ngrps++];
 						memset(cur_gd, 0, sizeof(*cur_gd));
 						cur_gd->group_idx = idx;
-						in_sect = 5;
+						in_sect = GS_CONTENT;
 						continue;
 					}
 					if (strncmp(line, "=== LEVEL ", 10) == 0) {
-						char *lv = line + 10;
-						char *end = strstr(lv, " ===");
-						if (end)
-							*end = '\0';
-						int len = strlen(lv);
-						cur_gd->has_star = (len > 0 && lv[len-1] == '*');
-						cur_gd->level = atoi(lv);
-						if (cur_gd->level < 1)
-							cur_gd->level = 2;
+						parse_level(cur_gd, line);
 						continue;
 					}
 					if (strcmp(line, "=== custom_text ===") == 0) {
-						in_sect = 8;
+						in_sect = GS_CUSTOM;
 						continue;
 					}
 					if (strcmp(line, "=== pre_ctx ===") == 0) {
-						in_sect = 6;
+						in_sect = GS_PRE;
 						continue;
 					}
 					if (strcmp(line, "=== post_ctx ===") == 0) {
-						in_sect = 7;
+						in_sect = GS_POST;
 						continue;
 					}
 					if (strcmp(line, "=== strategy ===") == 0) {
-						in_sect = 10;
+						in_sect = GS_STRAT;
 						continue;
 					}
 					if (strncmp(line, "=== pattern", 11) == 0) {
@@ -4574,7 +4606,7 @@ int main(int argc, char **argv)
 						char c = line[11];
 						pat_idx = (c >= '1' && c <= '0' + NSEARCH)
 							? c - '1' : 2;
-						in_sect = 1;
+						in_sect = GS_PAT;
 						continue;
 					}
 					if (strncmp(line, "=== offset", 10) == 0) {
@@ -4596,74 +4628,33 @@ int main(int argc, char **argv)
 						continue;
 					}
 					if (strcmp(line, "=== edit_cmd_abs ===") == 0) {
-						in_sect = 2;
+						in_sect = GS_ABS;
 						continue;
 					}
 					if (strcmp(line, "=== edit_cmd_relc ===") == 0) {
-						in_sect = 4;
+						in_sect = GS_RELC;
 						continue;
 					}
 					if (strcmp(line, "=== edit_cmd_rel ===") == 0) {
-						in_sect = 3;
+						in_sect = GS_REL;
 						continue;
 					}
 					continue;
 				}
 				if (!cur_gd)
 					continue;
-				if (in_sect == 5) {
-					if (line[0] == '-') {
+				if (in_sect == GS_CONTENT) {
+					if (line[0] == '-')
 						arr_append(&cur_gd->del_lines,
 							   &cur_gd->ndel_lines,
 							   &cur_gd->del_cap, line + 1);
-					} else if (line[0] == '+') {
+					else if (line[0] == '+')
 						arr_append(&cur_gd->add_lines,
 							   &cur_gd->nadd_lines,
 							   &cur_gd->add_cap, line + 1);
-					}
 					continue;
 				}
-				if (in_sect == 10) {
-					cur_gd->strategy = strat_from_name(line, strlen(line));
-					continue;
-				}
-				switch (in_sect) {
-				case 1:
-					arr_append(&cur_gd->pattern[pat_idx],
-						   &cur_gd->npattern[pat_idx],
-						   &cur_gd->pat_cap[pat_idx], line);
-					break;
-				case 2:
-					arr_append(&cur_gd->abs_cmd,
-						   &cur_gd->nabs,
-						   &cur_gd->abs_cap, line);
-					break;
-				case 3:
-					arr_append(&cur_gd->rel_cmd,
-						   &cur_gd->nrel,
-						   &cur_gd->rel_cap, line);
-					break;
-				case 4:
-					arr_append(&cur_gd->relc_cmd,
-						   &cur_gd->nrelc,
-						   &cur_gd->relc_cap, line);
-					break;
-				case 6:
-					arr_append(&cur_gd->pre_ctx,
-						   &cur_gd->npre_ctx,
-						   &cur_gd->pre_cap, line);
-					break;
-				case 7:
-					arr_append(&cur_gd->post_ctx,
-						   &cur_gd->npost_ctx,
-						   &cur_gd->post_cap, line);
-					break;
-				case 8:
-					arr_append(&cur_gd->custom_text,
-						   &cur_gd->ncustom_text,
-						   &cur_gd->custom_text_cap, line);
-					break;
-				}
+				gsect_add(cur_gd, in_sect, pat_idx, line);
 			}
 		} else {
 			/* Not a script; store and process this first line */
