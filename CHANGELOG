@@ -1,4 +1,16 @@
 ------------------
+6.1 Surjective
+------------------
+
+Bug fixes:
+1. Limit strtol to base ten as in spec.
+2. Allow an optional space between [#blen] and [str] to remove the
+limitation on numerical [str].
+
+Overall not a huge breaking change. Minor spec oversight. Quick bump
+before I forget. This should have been in 6.0 in all fairness.
+
+------------------
 6.0 Surjective
 ------------------
 
