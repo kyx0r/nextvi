@@ -26,9 +26,7 @@ Breaking changes since 5.3:
 
 New in core:
 1. Marks are stored as dynamic id/row/off triplets in the line buffer instead
-   of a fixed array; [ and ] marks are tracked as their own fields and saved
-   across undo/redo. m{ids} sets marks alternating between start and end of the
-   range.
+   of a fixed array.
 2. Registers are a dynamically grown table with a configurable default register
    rather than a fixed 256-slot array.
 3. Single-character classes [x] degrade to a plain CHAR at compile time,
