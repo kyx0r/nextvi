@@ -1275,6 +1275,23 @@ static int lsp_find_key(const char *json, jsmntok_t *toks, int n,
 	return -1;
 }
 
+/* collapse runs of escaped newlines (\\n / \\r) in place into a single space */
+static void lsp_collapse_nl(char *s)
+{
+	char *w = s, *start = s;
+	while (*s) {
+		if (s[0] == '\\\\' && (s[1] == 'n' || s[1] == 'r')) {
+			while (s[0] == '\\\\' && (s[1] == 'n' || s[1] == 'r'))
+				s += 2;
+			if (w != start && *s)	/* no leading/trailing space */
+				*w++ = ' ';
+		} else {
+			*w++ = *s++;
+		}
+	}
+	*w = '\\0';
+}
+
 static void lsp_handle_diagnostics(lsp_server *srv, const char *json,
 		jsmntok_t *toks, int n)
 {
@@ -1336,10 +1353,11 @@ static void lsp_handle_diagnostics(lsp_server *srv, const char *json,
 			df->d[df->n].line = line;
 			df->d[df->n].col = col;
 			df->d[df->n].severity = sev;
-			if (msg_tok >= 0)
+			if (msg_tok >= 0) {
 				lsp_tok_str(json, &toks[msg_tok],
 					df->d[df->n].msg, sizeof(df->d[0].msg));
-			else
+				lsp_collapse_nl(df->d[df->n].msg);
+			} else
 				df->d[df->n].msg[0] = '\\0';
 			df->n++;
 		}
@@ -3069,10 +3087,10 @@ index 75dd0ce8..1460c2d5 100644
  	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..0dfef860
+index 00000000..932a61bc
 --- /dev/null
 +++ b/lsp.c
-@@ -0,0 +1,904 @@
+@@ -0,0 +1,922 @@
 +/* lsp.c - Language Server Protocol client for nextvi */
 +#include "jsmn.h"
 +#include <errno.h>
@@ -3481,6 +3499,23 @@ index 00000000..0dfef860
 +	return -1;
 +}
 +
++/* collapse runs of escaped newlines (\n / \r) in place into a single space */
++static void lsp_collapse_nl(char *s)
++{
++	char *w = s, *start = s;
++	while (*s) {
++		if (s[0] == '\\' && (s[1] == 'n' || s[1] == 'r')) {
++			while (s[0] == '\\' && (s[1] == 'n' || s[1] == 'r'))
++				s += 2;
++			if (w != start && *s)	/* no leading/trailing space */
++				*w++ = ' ';
++		} else {
++			*w++ = *s++;
++		}
++	}
++	*w = '\0';
++}
++
 +static void lsp_handle_diagnostics(lsp_server *srv, const char *json,
 +		jsmntok_t *toks, int n)
 +{
@@ -3542,10 +3577,11 @@ index 00000000..0dfef860
 +			df->d[df->n].line = line;
 +			df->d[df->n].col = col;
 +			df->d[df->n].severity = sev;
-+			if (msg_tok >= 0)
++			if (msg_tok >= 0) {
 +				lsp_tok_str(json, &toks[msg_tok],
 +					df->d[df->n].msg, sizeof(df->d[0].msg));
-+			else
++				lsp_collapse_nl(df->d[df->n].msg);
++			} else
 +				df->d[df->n].msg[0] = '\0';
 +			df->n++;
 +		}
