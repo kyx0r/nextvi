@@ -1024,7 +1024,7 @@ EX COMMANDS
              Passes multi-codepoint sequences such as emojis to the terminal
              for native rendering rather than substituting placeholders.
 
-     ph[#clow] [#chigh] [#width] [#blen][str]
+     ph[#clow] [#chigh] [#width] [#blen][<Space>][str]
              Redefine placeholders
 
              This command replaces placeholders defined in conf.c
@@ -1320,10 +1320,10 @@ CODE MAP
      | 665 lbuf.c       |  file/line buffer     |
      | 726 led.c        |  insert mode/output   |
      | 751 regex.c      |  pikevm               |
-     | 1862 ex.c        |  ex options/commands  |
+     | 1864 ex.c        |  ex options/commands  |
      | 1880 vi.c        |  normal mode/general  |
      | 4909 patch2vi.c  |  patch converter      |
-     | 12609 total      |  wc -l *.c|sort       |
+     | 12611 total      |  wc -l *.c|sort       |
      +------------------+-----------------------+
 
 COMPILING
@@ -1404,7 +1404,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 6.0                       June 30, 2026                      Nextvi 6.0
+Nextvi 6.1                       June 30, 2026                      Nextvi 6.1
 
 NEXTVI PATCHES
 ==============

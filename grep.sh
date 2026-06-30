@@ -831,7 +831,7 @@ index 1a6b5696..82416b31 100644
  	{ex_ft, ":[ \t]*((((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 4dec0615..56c758fa 100644
+index 48e83e73..b840f502 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -40,7 +40,7 @@ sbuf **xregs;			/* string registers */
@@ -844,7 +844,7 @@ index 4dec0615..56c758fa 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 1d2ceed2..8ce54843 100644
+index 342991b5..410e58f5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -436,12 +436,12 @@ void dir_calc(char *path)

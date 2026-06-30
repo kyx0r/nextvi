@@ -1933,7 +1933,7 @@ index 1a6b5696..befc9429 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 4dec0615..b2dec4c2 100644
+index 48e83e73..5daea61f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -570,20 +570,25 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -2210,7 +2210,7 @@ index 9b4776c8..87cf17fa 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 1d2ceed2..f78aed3c 100644
+index 342991b5..b2b29457 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
