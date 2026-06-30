@@ -1478,10 +1478,12 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 			phlen = 0;
 		}
 		ph = erealloc(ph, sizeof(struct placeholder) * (phlen + 1));
-		ph[phlen].cp[0] = strtol(arg, &arg, 0);
-		ph[phlen].cp[1] = strtol(arg, &arg, 0);
-		ph[phlen].wid = strtol(arg, &arg, 0);
-		ph[phlen].l = strtol(arg, &arg, 0);
+		ph[phlen].cp[0] = strtol(arg, &arg, 10);
+		ph[phlen].cp[1] = strtol(arg, &arg, 10);
+		ph[phlen].wid = strtol(arg, &arg, 10);
+		ph[phlen].l = strtol(arg, &arg, 10);
+		if (*arg == ' ')
+			arg++;
 		int len = strlen(arg);
 		if (len && len < LEN(ph[0].d))
 			memcpy(ph[phlen++].d, arg, len + 1);
