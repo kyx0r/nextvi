@@ -31,7 +31,8 @@ MANPAGE NOTATION
      {x}     A closure where x represents required argument
      "x"     A closure where x represents a string
      <^X>    Represents a ctrl key X
-     < >     Separates alternatives in a closure
+     < >     Space separates alternatives in a closure
+     #       Decimal representation in a closure
      x-y     Range from x to y
 
 VI NORMAL
@@ -74,10 +75,8 @@ VI NORMAL
                    Move # characters backward
      %             Move to closest <] ) } [ ( {> pair
      {#}%          Move to # percent line number
-     '{<a-z ` ' [ ] *>}
-                   Move to a line mark
-     `{<a-z ` ' [ ] *>}
-                   Move to a line mark with cursor position
+     '{<mark>}     Move to a line mark
+     `{<mark>}     Move to a line mark with cursor position
      gg            Goto first line in buffer
      [#]G          Move to last line in buffer or # line
      H             Move to highest line on a screen
@@ -178,8 +177,7 @@ VI NORMAL
                    position # times
      [#]P          Paste default register above current line or before cursor
                    position # times
-     m{<a-z ` ' [ ] *>}
-                   Set buffer local line mark
+     m{<mark>}     Set buffer local line mark
      <^T>          Set global line mark 0. Global marks are always valid
      {<0 2 4 6 8>}<^T>
                    Set a global line mark #
@@ -303,7 +301,7 @@ EX PARSING
      Ex commands are initiated and separated by <sep>. Fields can be
      padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
      which accepts [range] structure characters. Padding inside [prefix]
-     structure is collapsed, except within nested structures. There
+     structure is collapsed, except within nested blocks. There
      can only be one pad in between [cmd] and [args]. To avoid ambiguity
      in scripts, it is recommended to always use a pad between [cmd]
      and [args].
@@ -317,8 +315,9 @@ EX PARSING
              Edit " vi.c". <pad> is required
 
 EX ESCAPES
-     Special characters in [args] will become regular when escaped
-     with <\>.
+     Special characters in [args] and [prefix] blocks will become
+     regular when escaped with <\>. Escapes are governed by a non-POSIX
+     parity rule.
 
      ( ^ ] -
              Specials in regex "[]" expression
@@ -330,15 +329,15 @@ EX ESCAPES
 EX EXPANSION
      <%> in [args] expands to current buffer pathname or any buffer
      pathname when followed by a corresponding buffer number.
-     "%#" expands to last swapped buffer pathname.
-     "%@" expands to register specified.
+     %# expands to last swapped buffer pathname.
+     %@ expands to register specified.
 
      Example: make a copy of the current file and edit it
      :!cp % %_:e %_
      Example: insert current buffer pathname
      :&i%
      Example: echo the value of <a> register
-     :!echo "%@a"
+     :!echo %@97
 
      <!> in [args] starts and optionally ends a block containing
      external commands. This block executes and expands to stdout
@@ -357,7 +356,7 @@ EX RANGES
      [vrange] prefix implements vertical range and horizontal position.
      Without [cmd], [vrange] replaces [prefix].
 
-     [% |][, ;][#][. $ ' > <][- + * / %][0-9]
+     [% |][, ;][#][. $ ' > <][- + * / %][#num]
              All ranges structure
      {|}{cmd}[|]
              Ex command structure
@@ -365,25 +364,25 @@ EX RANGES
              Search forward structure
      {<}[regex][<]
              Search backward structure
-     '{<mark>}
+     '{#mark}
              Mark structure
 
      %       Range from first to last line
-     |       Begin ex command structure
+     |       Begin ex command block
      ,       Vertical range separator
      ;       Horizontal range separator
      #       Rebase to previous value in range structure
      .       Current position
      $       Last line of a buffer or end of line
      '       Begin mark structure
-     >       Begin search forward structure
-     <       Begin search backward structure
+     >       Begin search forward block
+     <       Begin search backward block
      -       Subtract following number
      +       Add following number
      *       Multiply by the following number
      /       Divide by the following number
      %       Modulo by the following number
-     0-9     Number or position
+     #num    Number or position
 
      Examples:
      :1,5p   Print lines 1,5
@@ -398,7 +397,7 @@ EX RANGES
      :<int<,.p
              Print until "int" is found in reverse
      :>      Search using previously set regex keyword
-     :'d,'ap
+     :'100,'97p
              Print lines from mark <d> to mark <a>
      :%p     Print all lines in a buffer
      :$p     Print last line in a buffer
@@ -408,7 +407,8 @@ EX RANGES
      :10;50  Goto line 10 character offset 50
      :10;.+5
              Goto line 10 +5 character offset
-     :'a;'a  Goto line mark <a> offset mark <a>
+     :'97;'97
+             Goto line mark <a> offset mark <a>
      :;$     Goto end of line
      :5;>int>
              Search for "int" on line 5
@@ -430,6 +430,7 @@ EX COMMANDS
 
              Horizontal range performs a scoped multi-line search forward.
              In multi-line mode, <Newline> is a regular character.
+             If the default register is reassigned, searches its contents.
              Returns error if target not found.
 
              Example: no range given, current line only
@@ -446,8 +447,7 @@ EX COMMANDS
              Incrementing ranged search
 
              Equivalent to the :f> and :f< commands, except subsequent commands
-             within range move to the next match just like vi normal [#]n
-             or [#]N commands.
+             advance past match boundary. Cannot match inplace.
 
      [vrange]f[regex]
              Fuzzy search prompt
@@ -481,7 +481,7 @@ EX COMMANDS
              To chain commands, the ex separator <:> must be escaped once.
 
              Example: print and append lines matching "int" to register <a>
-             :g/int/p\:ya ax
+             :g/int/p\:ya+ 97
 
              It is possible to nest global commands inside of global commands.
              The first global command will not be executed on lines that
@@ -509,7 +509,7 @@ EX COMMANDS
              :1,3re
 
      [vrange]i[str]
-             Enter ex insert mode before specified position
+             Enter ex insert mode
 
              [str] specifies initial input into the insertion buffer.
              [str] in raw ex mode is injected directly and bypasses the
@@ -523,15 +523,16 @@ EX COMMANDS
              :i hello<^M><^C>
              Example: immediately insert "hello"
              :i hello<^V><ESC>
+             Example: insert "hello" before specified position
+             :-1i hello<^V><ESC>
+             Example: insert "hello" before line 1 (special case)
+             :0i hello<^V><ESC>
              Example: insert "hello" in raw ex mode
              i hello
              Example: insert two lines in raw ex mode
              i hello<^M>world
              Example: insert "hello" in raw ex mode (interactive)
              i<^M>hello<^M>.<^M>
-
-     [vrange]a[str]
-             Enter ex insert mode after specified position
 
      [range]c[str]
              Enter ex change mode
@@ -629,7 +630,7 @@ EX COMMANDS
              Example: print current character offset only
              :;= 2
              Example: print value of mark <a>
-             :'a=
+             :'97=
              Example: calculate 75 - 100
              :,75-100=1p
 
@@ -638,50 +639,56 @@ EX COMMANDS
 
              Any argument forwards the error status.
 
-     [range]m{marks}
+     [range]m{#marks}
              Set line mark(s)
 
-             Valid marks: <a-z ` ' [ ] *>
+             Marks are ids separated by spaces, set alternating between start
+             and end of the range.
 
              Example: store ranges in <a> and <s> for later reuse in :f>
-             :>top>,#>bottom>m as:'a,'sf>middle
+             :>top>,#>bottom>m 97 115:'97,'115f>middle
 
-     [range]ya[<reg>][any]
+     [range]ya[#reg]
              Yank into a register
 
-             Argument value range is 0x1-0xff and 0x0 without.
-             Any extra argument appends to the register.
-             Default register cannot be appended to.
+             No argument yanks into default register.
+
+             Example: yank into <a> using ranges
+             :1,5;5;5ya 97
+
+     [range]ya+[#reg]
+             Yank and append to a register
 
              Example: append to register <1>
-             :ya 1x
-             Example: yank into <a> using ranges
-             :1,5;5;5ya a
+             :ya+ 49
 
-     ya![<reg>]
+     ya![#reg]
              Free a register
 
-     [range]pu[<reg>][any][\!{cmd}]
+     [range]pu[#reg][any][\!{cmd}]
              Paste or pipe a register
 
              Example: paste <a> at line 1 character offset 5
-             :1;5pu a
+             :1;5pu 97
+             Example: paste <a> before line 1 (special case)
+             :0pu 97
              Example: copy default register to X11 clipboard
              :pu \!xclip -selection clipboard
              Example: copy register <a> to X11 clipboard
-             :pu a \!xclip -selection clipboard
+             :pu 97 \!xclip -selection clipboard
 
-     [0-255]reg[str]
+     [#reg]reg[str]
              Print registers or put into a register
 
              Prefix selects a register and argument replaces its contents.
+             Prefix with no argument reassigns the default register.
 
              Example: shift the printing position to view offscreen register parts
              :1left:reg
              Example: put "hello" into register <1>
              :49reg hello
 
-     [0-255]reg+[str]
+     [#reg]reg+[str]
              Print registers or append to a register
 
      e[path]
@@ -834,6 +841,7 @@ EX COMMANDS
              When a range is specified, the buffer's data is piped to an external
              program. The resulting stdout and stderr are then piped back into the
              buffer, replacing the contents of the original range.
+             No range returns an error if shell exit code is not zero.
 
              Example: infamously sort a buffer
              :%!sort
@@ -842,7 +850,7 @@ EX COMMANDS
              Example: pipe in result of ls command without line replacement
              :;$+1!ls
              Example: capitalize word at current position using tr
-             :;;>\\>>!tr '[\:lower\:]' '[\:upper\:]'
+             :;;>\\\>>!tr '[\:lower\:]' '[\:upper\:]'
 
      &{macro}
              Global non-blocking macro
@@ -884,13 +892,13 @@ EX COMMANDS
              Example: execute vi "dw" command after user exits insert
              :@i:@dw
 
-     [#count <$>]?[cond][<?>][then][<?>][else]
-             While loop conditional
+     [#count <$>]?[cond]
+             While loop
 
              Repeat [cond] [#count] times or infinite with [<$>].
              While loop is broken once [cond] returns an error or count exceeded.
              Error status of [cond] is forwarded.
-             No prefix creates a conditional with [#count] set to 1.
+             No prefix defaults [#count] to 1.
 
              Example: attempt to join every line in file using arbitrary count
              :10000? & J
@@ -898,22 +906,17 @@ EX COMMANDS
              :$? ud
              Example: repeat chain of ex commands 10 times
              :10? 1p\:5p\:10p
-             Example: calculate directory only if :cd succeeded
-             :? cd /blah?fd
-             Example: print a line only if it contains "int" at offset 5
-             :? ;5;#>^int>?p
-             Example: edit vi.c only if it exists
-             :? \![ -f ./vi.c ]?e ./vi.c:mpt1
 
-     [#count <$>]?![cond][<?>][else][<?>][then]
-             Inverted while loop conditional
+     [#count <$>]?![cond]
+             Inverted while loop
 
-     [prefix]??[then][<?>][else]
+     [prefix]??[then]
      {prefix}??
              Conditional
 
-             Unlike while loop conditional, branching depends on the error
-             status of the last command, reducing the number of escapes required.
+             Branching depends on the error status of the last command.
+             Error status of [then] is forwarded.
+             No prefix and no argument forwards the last error status.
 
              A prefix without arguments captures the current error status
              at that point in a command chain into id tag specified.
@@ -928,22 +931,29 @@ EX COMMANDS
              , AND (higher precedence)
              ; OR (lower precedence)
 
+             Example: calculate directory only if :cd succeeded
+             :cd /blah:?? fd
+             Example: print a line only if it contains "int" at offset 5
+             :;5;#>^int>:?? p
+             Example: edit vi.c only if it exists
+             :![ -f ./vi.c ]:??e ./vi.c:mpt1
              Example: capture error status at id 5, branch later
              :>int>:5??:;=:5??p
              Example: skip if tag was never set
-             :2??.=?.=
+             :2??.=
              Example: AND -- branch only if both ids captured success
              :f>int:1??:f>void:2??:1,2??p found both
              Example: OR -- branch if either id captured success
              :f>int:1??:f>void:2??:1;2??p found one
              Example: DNF -- (1 AND 2) OR (3 AND 4)
-             :1,2;3,4??p then?p else
-             Example: inverted capture -- capture NOT of last status
-             :f>int:1??!:1??p int was absent
+             :1,2;3,4??p then
 
-     [prefix]??![else][<?>][then]
+     [prefix]??![then]
      {prefix}??!
              Inverted conditional
+
+             Example: inverted capture
+             :f>int:1??!:1??p int was absent
 
      {prefix}???
              Evaluate prefix tags
@@ -951,8 +961,8 @@ EX COMMANDS
              This is a nop command that evaluates a boolean expression
              at prefix and returns the result.
 
-             Example: control while loop from its [then] argument
-             $?0\?\?\??+1\:0\?\?\:f>int\:\?\?p
+             Example: control while loop
+             $? \%f+int\:1??\:\%f+void\:2??\:1,2??p\:1,2???
 
      ft[filetype]
              Set a filetype
@@ -992,7 +1002,7 @@ EX COMMANDS
      [<0-3>]sc![<esc>][<sep>][<exp>][<exe>]
              Set ex special characters
 
-             Missing arguments default to <0x0>.
+             Missing arguments default to <#0>.
 
              Example: disable <exp> and <exe>
              :sc! \\\:
@@ -1141,9 +1151,9 @@ EX OPTIONS
              when register is assigned (self-referential problem).
 
              Example: paste current buffer list exactly like from :b command
-             :pr A:ya! A: b:pu A
+             :pr A:ya! 65: b:pu 65
              Example: store a line printed with :p
-             :pr A:ya! A:p
+             :pr A:ya! 65:p
 
      lim[val=-1]
              Line length render limit
@@ -1292,28 +1302,29 @@ SPECIAL MARKS
 SPECIAL REGISTERS
      /       Previous regex keyword
      :       Previous ex command
-     <0x0>   Default register
+     <#0>    Default register
      <0>     Previous value of default register (atomic)
              Atomic means the operation did not include a <Newline>.
      <1-9>   Previous value(s) of default register (nonatomic)
 
 CODE MAP
-     +------------------+----------------------+
-     | 537 kmap.h       |  keymap translation  |
-     | 540 vi.h         |  definitions/aux     |
-     +------------------+----------------------+
-     | 353 term.c       |  low level IO        |
-     | 367 conf.c       |  hl/ft/td config     |
-     | 444 ren.c        |  positioning/syntax  |
-     | 614 uc.c         |  UTF-8 support       |
-     | 646 lbuf.c       |  file/line buffer    |
-     | 725 led.c        |  insert mode/output  |
-     | 766 regex.c      |  pikevm              |
-     | 1758 ex.c        |  ex options/commands |
-     | 1879 vi.c        |  normal mode/general |
-     | 2997 patch2vi.c  |  patch converter     |
-     | 10549 total      |  wc -l *.c|sort      |
-     +------------------+----------------------+
+     +------------------+-----------------------+
+     | 537 kmap.h       |  keymap translation   |
+     | 546 vi.h         |  definitions/aux      |
+     +------------------+-----------------------+
+     | 44 common.c      |  shared with patch2vi |
+     | 347 term.c       |  low level IO         |
+     | 367 conf.c       |  hl/ft/td config      |
+     | 444 ren.c        |  positioning/syntax   |
+     | 614 uc.c         |  UTF-8 support        |
+     | 665 lbuf.c       |  file/line buffer     |
+     | 726 led.c        |  insert mode/output   |
+     | 751 regex.c      |  pikevm               |
+     | 1862 ex.c        |  ex options/commands  |
+     | 1880 vi.c        |  normal mode/general  |
+     | 4909 patch2vi.c  |  patch converter      |
+     | 12609 total      |  wc -l *.c|sort       |
+     +------------------+-----------------------+
 
 COMPILING
      export CC='g++ -x c'
@@ -1393,7 +1404,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 5.3                       June 7, 2026                       Nextvi 5.3
+Nextvi 6.0                       June 30, 2026                      Nextvi 6.0
 
 NEXTVI PATCHES
 ==============
@@ -1587,12 +1598,14 @@ NEXTVI_WORD - current word
 :sx runs a command with the environment variables above and
 executes its stdout as ex commands
 
-chunked_read.sh
+chunked_read_write.sh
 --------------
 Allows nextvi to read files in chunks instead of reading the whole
 file into the memory right away. This patch optimizes the reading of
 binary files, since it would be truncated earlier before loading
 the whole file into memory.
+In addition, optimizes the number of write syscalls using chunks
+when writing a file.
 
 record_input.sh
 --------------
@@ -1609,9 +1622,10 @@ The current mode (-- VISUAL --, -- VISUAL LINE --, -- VISUAL BLOCK --)
 appears in the ^g status bar; when the permanent status bar is enabled
 it shows continuously alongside the file information.
 Supported operators applied to the selection:
-  y  yank          d  delete         c  change
+  y  yank          d  delete         c/C/S  change
   >  indent        <  dedent         !  pipe through shell command
   ~  toggle case   u  lowercase      U  uppercase
+  :  enter ex prompt with line-wise range
 Block mode (gb) also supports:
   I  insert at the left edge of the block on every selected line;
      lines shorter than the left edge are skipped
@@ -1664,6 +1678,7 @@ Check that it is running:
 Once the server is up, new normal keybinds can be used:
 gK - show hover documentation for the symbol at cursor
 gd - goto definition of symbol at cursor
+Also supports on the fly hinting.
 
 sse.sh
 --------------
@@ -1685,6 +1700,23 @@ Adds 3 new ex options:
 "idt" - indent detect. Enables indent guessing and sets the line
 limit (default 500).
 
+mhash.sh
+--------------
+A hash map implementation for marks which aims to take O(n) mark
+search down to ~O(1). An exercise. Unjustified complexity for
+regular use.
+
+writeall.sh
+--------------
+Adds :wa :wa! :wqa :wqa! :xa :xa! commands to write all buffers
+to the filesystem. q commands always write while x commands only
+write modified buffers.
+
+ins_cursor.sh
+--------------
+Changes cursor to a thin vertical bar when in insert mode.
+This is a good indicator for insert mode.
+
 My current EXINIT setup:
 --------------
 How it works:
@@ -1693,7 +1725,7 @@ How it works:
 :ish - enable interactive shell
 :inc (^(?:(?!^\.git).)+[^/]+$) always exclude .git folder from :fd
 :pac - print autocomplete options
-:|sc|0? - default special characters
+:|sc|? - default special characters
 
 Macros:
 @q = creates structure like this:
@@ -1723,4 +1755,4 @@ you not saving the file prior to running the macro.
 and goto definition based on the current regex keyword
 @r = goto definition in while being in ./tags file
 
-export EXINIT="$(printf '%b' '|sc!||1sc |:108reg :!cp % %_:w:!git diff --no-index %_ %113reg o{\n}kA\n	115reg i/*A*/119reg A {jo}koa120reg >%<<$%<<122reg :ph1 1 2 1^A:ph2 2 2 1^B:ph3 3 2 1^C:ph4 4 2 1^D:ph5 5 2 1^E:ph6 6 2 1^F:ph7 7 2 1^G:ph8 8 2 1^H:ph9 9 2 1^I:ph10 10 2 1^J:ph11 11 2 1^K:ph12 12 2 1^L:ph13 13 2 1^M:ph14 14 2 1^N:ph15 15 2 1^O:ph16 16 2 1^P:ph17 17 2 1^Q:ph18 18 2 1^R:ph19 19 2 1^S:ph20 20 2 1^T:ph21 21 2 1^U:ph22 22 2 1^V:ph23 23 2 1^W:ph24 24 2 1^X:ph25 25 2 1^Y:ph26 26 2 1^Z:ph27 27 2 1^[:ph28 28 2 1^\\\\:ph29 29 2 1^]:ph30 30 2 1^^:ph31 31 2 1^_102reg :cd !p $c101reg :e !p $c97reg I/*A*/100reg /\/\*\n2x/\*\/\n2x116reg :51reg %@/:e ./tags:1;0:;>unescaped>:??!\%s/\\\\\\\\\\(.)/\\1/g\:1i unescaped:ic:%f>^%@3	:??!p "%@3" not found in tags\:ic\:e %#\:re %@3\:1q:;>	>+1;#>	>ya1:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya2\:\?\?\!p bad format\\\\\:ic\\\\\:e %#\\\\\:re %@3\\\\\:2q\:e %@1\:\?\%@2\:re %@3\:ic\:1q:e %@1:1:%f>:re %@3:ic114reg :51reg %@/:;>	>+1;#>	>ya1:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya2\:\?\?\!p bad format\\\\\:re %@3\\\\\:2q\:e %@1\:\?\%@2\:re %@3\:1q:e %@1:1:ic:%f>:re %@3:icinc (^(?:(?!^\.git).)+[^/]+$)pacish|sc|0?')"
+export EXINIT="$(printf '%b' '|sc!||1sc |:108reg :!cp % %_:w:!git diff --no-index %_ %113reg o{\n}kA\n	115reg i/*A*/119reg A {jo}koa120reg >%<<$%<<122reg :ph1 1 2 1^A:ph2 2 2 1^B:ph3 3 2 1^C:ph4 4 2 1^D:ph5 5 2 1^E:ph6 6 2 1^F:ph7 7 2 1^G:ph8 8 2 1^H:ph9 9 2 1^I:ph10 10 2 1^J:ph11 11 2 1^K:ph12 12 2 1^L:ph13 13 2 1^M:ph14 14 2 1^N:ph15 15 2 1^O:ph16 16 2 1^P:ph17 17 2 1^Q:ph18 18 2 1^R:ph19 19 2 1^S:ph20 20 2 1^T:ph21 21 2 1^U:ph22 22 2 1^V:ph23 23 2 1^W:ph24 24 2 1^X:ph25 25 2 1^Y:ph26 26 2 1^Z:ph27 27 2 1^[:ph28 28 2 1^\\\\:ph29 29 2 1^]:ph30 30 2 1^^:ph31 31 2 1^_102reg :cd !p $c101reg :e !p $c97reg I/*A*/100reg /\/\*\n2x/\*\/\n2x116reg :51reg %@47:e ./tags:1;0:;>unescaped>:??!\%s/[\\\\](.)/\\1/g\:1i unescaped:ic:%f>^%@51	:??!p "%@51" not found in tags\:ic\:e %#\:re %@51\:1q:;>	>+1;#>	>ya49:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya50\:??\!p bad format\\\\\:ic\\\\\:e %#\\\\\:re %@51\\\\\:2q\:e %@49\:?\%@50\:re %@51\:ic\:1q:e %@49:1:%f>:re %@51:ic114reg :51reg %@47:;>	>+1;#>	>ya49:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya50\:??\!p bad format\\\\\:re %@51\\\\\:2q\:e %@49\:?\%@50\:re %@51\:1q:e %@49:1:ic:%f>:re %@51:icinc (^(?:(?!^\.git).)+[^/]+$)pacish|sc|?')"

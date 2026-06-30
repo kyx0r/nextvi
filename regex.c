@@ -1,7 +1,6 @@
 static int isword(const char *s)
 {
-	int c = (unsigned char) s[0];
-	return isalnum(c) || c == '_' || c > 127;
+	return uc_isalpha(*s) || uc_isdigit(*s) || s[0] == '_';
 }
 
 enum
@@ -64,7 +63,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 	char *re = re_loc, *s, *p;
 	int *code = sizecode ? NULL : prog->insts;
 	int start = PC, term = PC, lb_start = 0;
-	int alt_label = 0, c, l, cnt;
+	int alt_label = 0, c, l;
 	int alt_stack[4096], altc = 0;
 	int cap_stack[4096 * 5], capc = 0;
 
@@ -81,10 +80,11 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			}
 		default:
 			term = PC;
-			EMIT(PC++, CHAR);
 			uc_code(c, re, l)
+			emit_char:
 			if (flg & REG_ICASE && (unsigned int)c < 128)
 				c = tolower(c);
+			EMIT(PC++, CHAR);
 			EMIT(PC++, c);
 			break;
 		case '.':
@@ -93,14 +93,19 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 			break;
 		case '[':;
 			term = PC;
-			re++;
-			EMIT(PC++, CLASS);
-			if (*re == '^') {
-				EMIT(PC++, 0);
+			int cnt, neq = *(++re) == '^';
+			if (neq)
 				re++;
-			} else
-				EMIT(PC++, 1);
-			PC++;
+			else if (*re != ']') {
+				s = re + (*re == '\\');
+				l = uc_len(s);
+				if (l && s[l] == ']') {
+					uc_code(c, s, l)
+					re = s + l;  /* degrade a single character to CHAR */
+					goto emit_char;
+				}
+			}
+			PC += 3;
 			for (cnt = 0; *re != ']'; cnt++) {
 				if (*re == '\\')
 					re++;
@@ -119,6 +124,8 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					return -1;
 				re += l;
 			}
+			EMIT(term, CLASS);
+			EMIT(term + 1, neq);
 			EMIT(term + 2, cnt);
 			break;
 		case '(':;
@@ -227,7 +234,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 		case '{':;
 			int i, maxcnt = 0, mincnt = 0, size = PC - term, nojmp = 0;
 			re++;
-			while (isdigit((unsigned char) *re))
+			while (uc_isdigit(*re))
 				mincnt = mincnt * 10 + *re++ - '0';
 			if (*re == ',') {
 				re++;
@@ -238,7 +245,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					maxcnt = mincnt;
 					nojmp = 1;
 				}
-				while (isdigit((unsigned char) *re))
+				while (uc_isdigit(*re))
 					maxcnt = maxcnt * 10 + *re++ - '0';
 			} else
 				maxcnt = mincnt;
@@ -582,7 +589,7 @@ for (;; sp = _sp) { \
 				if (c >= *pc && c <= pc[1]) \
 					cnt = -1; \
 			} \
-			if ((!cnt && npc[1]) || (cnt < 0 && !npc[1])) \
+			if (!(cnt || npc[1]) || (cnt < 0 && npc[1])) \
 				deccont() \
 			npc += npc[2] * 2 + 3; \
 		} else if (spc == MATCH) { \
@@ -741,26 +748,4 @@ int rset_find(rset *rs, char *s, int *grps, int flg)
 int rset_match(rset *rs, char *s, int flg)
 {
 	return re_pikevm(rs->regex, s, NULL, 0, flg);
-}
-
-/* read a regular expression enclosed in a delimiter */
-char *re_read(char **src, int delim)
-{
-	char *s = *src;
-	if (!delim)
-		delim = (unsigned char) *s++;
-	if (!delim)
-		return NULL;
-	sbuf_smake(sb, 256)
-	while (*s && *s != delim) {
-		if (delim == '<' || delim == '>') {
-			if (s[0] == '\\' && s[1] == delim)
-				s++;
-		} else if (s[0] == '\\' && s[1])
-			if (*(++s) != delim)
-				sbuf_chr(sb, '\\')
-		sbuf_chr(sb, (unsigned char) *s++)
-	}
-	*src = *s ? s + 1 : s;
-	sbufn_ret(sb, sb->s)
 }

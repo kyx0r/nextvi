@@ -264,7 +264,7 @@ static int vi_yankbuf(int winch)
 	if (c == '"')
 		return term_read(0);
 	term_dec()
-	return 0;
+	return xdefreg;
 }
 
 static int vi_prefix(void)
@@ -322,8 +322,8 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			vi_drawmsg_mpt("syntax error")
 		free(kw);
 	} else if (msg)
-		ex_krsset(xregs['/'] ? xregs['/']->s : NULL, xkwddir);
-	if (!lbuf_len(xb) || (!xkwddir || !xkwdrs))
+		ex_krsset(ex_regget('/') ? ex_regget('/')->s : NULL, xkwddir);
+	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || xgrp >= xkwdrs->nsubc)
 		return 1;
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
@@ -331,7 +331,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 				msg ? dir : -1, 1, row, off)) {
 			if (msg) {
 				snprintf(vi_msg, sizeof(vi_msg), "\"%s\" not found %d/%d",
-						xregs['/'] ? xregs['/']->s : "", i, cnt);
+						ex_regget('/') ? ex_regget('/')->s : "", i, cnt);
 				vi_drawmsg_mpt(vi_msg)
 			}
 			return 1;
@@ -366,14 +366,14 @@ static char *vi_curword(struct lbuf *lb, int row, int off, int n, int ex)
 
 static void vi_regput(int c, const char *s, int lnmode)
 {
+	sbuf *i_s;
 	if (lnmode) {
-		sbuf *i_s;
 		for (int i = 8; i > 0; i--)
-			if ((i_s = xregs['0'+i]))
+			if ((i_s = ex_regget('0'+i)))
 				ex_regput('0' + i + 1, i_s->s, 0);
 		ex_regput('1', s, 0);
-	} else if (xregs[c])
-		ex_regput('0', xregs[c]->s, 0);
+	} else if ((i_s = ex_regget(c)))
+		ex_regput('0', i_s->s, 0);
 	ex_regput(tolower(c), s, isupper(c));
 }
 
@@ -900,7 +900,9 @@ static void vi_pipe(int r1, int r2)
 {
 	int mlen, ret;
 	char region[64], *p = region;
-	if (r1 == r2 && !vi_arg)
+	if (!lbuf_get(xb, r1))
+		*p++ = '0';
+	else if (r1 == r2 && !vi_arg)
 		*p++ = '.';
 	else {
 		p = itoa(r1+1, region);
@@ -1042,7 +1044,7 @@ static int vc_put(int cmd)
 {
 	int cnt = MAX(1, vi_arg);
 	int i, off;
-	sbuf *buf = xregs[vi_ybuf];
+	sbuf *buf = ex_regget(vi_ybuf);
 	char *ln;
 	if (!buf)
 		vi_drawmsg_mpt("yank buffer empty")
@@ -1123,26 +1125,25 @@ static void vc_execute(int cmd)
 {
 	static int exec_buf = -1;
 	int c = term_read(0), i, n = MAX(1, vi_arg);
-	sbuf **buf;
+	sbuf *buf;
 	if (TK_INT(c))
 		return;
 	if (c == cmd && exec_buf >= 0)
 		c = exec_buf;
-	buf = &xregs[c];
-	if (!*buf) {
+	if (!ex_regget(c)) {
 		vi_drawmsg_mpt("exec buffer empty")
 		return;
 	}
 	exec_buf = c;
 	if (c == ':') {
 		term_pos(xrows, 0);
-		for (i = 0; i < n && *buf; i++)
-			ex_exec((*buf)->s);
+		for (i = 0; i < n && (buf = ex_regget(c)); i++)
+			ex_exec(buf->s);
 		vi_mod |= 1;
 		return;
 	}
-	for (i = 0; i < n && *buf; i++)
-		term_exec((*buf)->s, (*buf)->s_n, cmd)
+	for (i = 0; i < n && (buf = ex_regget(c)); i++)
+		term_exec(buf->s, buf->s_n, cmd)
 }
 
 static void vi_argcmd(int arg, char cmd)
@@ -1539,8 +1540,8 @@ void vi(int init)
 					c = xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a';
 					xb->useq += xseq;
 					goto insert;
-				} else if (c != 'A' && c != 'C')
-					xoff--;
+				}
+				xoff--;
 				rep_record()
 				vi_mod |= !xpac && xrow == orow ? 8 : 1;
 				break;
@@ -1857,7 +1858,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-5.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-6.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

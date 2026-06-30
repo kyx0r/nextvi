@@ -116,15 +116,15 @@ static rset *rset_smake(char *pat, int flg)
 int rset_find(rset *re, char *s, int *grps, int flg);
 int rset_match(rset *rs, char *s, int flg);
 void rset_free(rset *re);
-char *re_read(char **src, int delim);
 
 /* lbuf.c: line buffer */
-#define NMARKS_BASE		28	/* ('z' - 'a' + 2) */
-#define NMARKS			30	/* adj: '`* nonadj: [] */
 struct lopt {
 	char **ins;		/* inserted lines */
 	char **del;		/* deleted lines */
 	int *mark;		/* saved marks */
+	int mark_n;		/* number of saved marks */
+	int mark_sb[2];		/* saved [ mark row & off */
+	int mark_se[2];		/* saved ] mark row & off */
 	int pos, pos_off;	/* modification location */
 	int n_ins, n_del;	/* modification range */
 	int seq;		/* operation number */
@@ -137,7 +137,10 @@ struct linfo {
 struct lbuf {
 	char **ln;			/* buffer lines */
 	struct lopt *hist;		/* buffer history */
-	int mark[NMARKS * 2];		/* mark rows & offs */
+	int *mark;			/* mark id, row & off triplets */
+	int mark_n;			/* number of marks in mark[] */
+	int mark_sb[2];			/* [ mark row & off */
+	int mark_se[2];			/* ] mark row & off */
 	int tmp_mark[4];		/* aux mark state */
 	int ln_n;			/* number of lines in ln[] */
 	int ln_sz;			/* size of ln[] */
@@ -165,8 +168,8 @@ char *lbuf_get(struct lbuf *lb, int pos);
 void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
 void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
 struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del);
-void lbuf_mark(struct lbuf *lb, int mark, int pos, int off);
-int lbuf_jump(struct lbuf *lb, int mark, int *pos, int *off);
+void lbuf_mark(struct lbuf *lb, int mk, int pos, int off);
+int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off);
 int lbuf_undo(struct lbuf *lb, int *row, int *off);
 int lbuf_redo(struct lbuf *lb, int *row, int *off);
 void lbuf_saved(struct lbuf *lb, int clear);
@@ -289,10 +292,10 @@ char *uc_subl(char *s, int beg, int end, int *rlen);
 static char *uc_sub(char *s, int beg, int end)
 	{ int l; return uc_subl(s, beg, end, &l); }
 char *uc_dup(const char *s);
-#define uc_isspace(s) ((unsigned char)*s < 0x7f && isspace((unsigned char)*s))
-#define uc_isprint(s) ((unsigned char)*s > 0x7f || isprint((unsigned char)*s))
-#define uc_isdigit(s) ((unsigned char)*s < 0x7f && isdigit((unsigned char)*s))
-#define uc_isalpha(s) ((unsigned char)*s > 0x7f || isalpha((unsigned char)*s))
+#define uc_isspace(c) ((unsigned char)(c) == ' ' || (unsigned char)((unsigned char)(c) - 9) < 5)
+#define uc_isprint(c) ((unsigned char)(c) >= 0x20 && (unsigned char)(c) != 0x7f)
+#define uc_isdigit(c) (((unsigned char)(c) ^ '0') < 10)
+#define uc_isalpha(c) ((unsigned char)(c) > 0x7f || (unsigned char)(((unsigned char)(c) | 0x20) - 'a') < 26)
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
@@ -366,7 +369,7 @@ typedef struct {
 } ins_state;
 #define ins_init(is) \
 is.t_row = -2; \
-is.p_reg = 0; \
+is.p_reg = xdefreg; \
 is.lsug = 0; \
 is.sug_pt = -1; \
 is.sug = NULL; \
@@ -439,7 +442,9 @@ extern int xesc;
 extern int xexec_dep;
 extern sbuf *xacreg;
 extern rset *xkwdrs;
-extern sbuf *xregs[256];
+extern sbuf **xregs;
+extern int xregs_n;
+extern int xdefreg;
 extern struct buf *bufs;
 extern struct buf tempbufs[3];
 extern struct buf *ex_buf;
@@ -480,7 +485,8 @@ int ex_krs(rset **krs, int *dir);
 void ex_krsset(char *kwd, int dir);
 void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
 int ex_edit(const char *path, int len);
-void ex_regput(unsigned char c, const char *s, int append);
+sbuf *ex_regget(int id);
+void ex_regput(int c, const char *s, int append);
 
 /* conf.c: configuration variables */
 extern const int conf_mode;
