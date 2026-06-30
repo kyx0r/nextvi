@@ -212,9 +212,10 @@ The current mode (-- VISUAL --, -- VISUAL LINE --, -- VISUAL BLOCK --)
 appears in the ^g status bar; when the permanent status bar is enabled
 it shows continuously alongside the file information.
 Supported operators applied to the selection:
-  y  yank          d  delete         c  change
+  y  yank          d  delete         c/C/S  change
   >  indent        <  dedent         !  pipe through shell command
   ~  toggle case   u  lowercase      U  uppercase
+  :  enter ex prompt with line-wise range
 Block mode (gb) also supports:
   I  insert at the left edge of the block on every selected line;
      lines shorter than the left edge are skipped
@@ -267,6 +268,7 @@ Check that it is running:
 Once the server is up, new normal keybinds can be used:
 gK - show hover documentation for the symbol at cursor
 gd - goto definition of symbol at cursor
+Also supports on the fly hinting.
 
 sse.sh
 --------------
