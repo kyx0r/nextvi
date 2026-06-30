@@ -3,7 +3,7 @@
 ------------------
 
 This release reworks the escape model, marks and registers from the ground up.
-Two principles drive it:
+Two principles that drive the escape model:
 1. Complete -- every regex character is reachable across all layers.
 2. Transparent -- ex never alters backslash runs, so there is no doubling and
    literal counts are position-independent. Escapes are now governed by a
@@ -22,6 +22,7 @@ Breaking changes since 5.3:
    error status of the last command. Fewer escapes, one path per construct.
 5. reg with a prefix and no argument reassigns the default register. f> and f<
    search the default register's contents when it has been reassigned.
+6. Escape complexity concentrated at the delimiter, deterministic doubling.
 
 New in core:
 1. Marks are stored as dynamic id/row/off triplets in the line buffer instead
@@ -35,6 +36,50 @@ New in core:
 
 Bug fixes:
 1. Non-ranged ! returns an error when the shell exits non-zero.
+2. Catching and reporting invalid grp user errors.
+3. Reporting fork errors.
+
+Patch2vi changes:
+1. Multi anchor 9 distinct anchor patterns.
+2. 2 Phase redesign: search & mark, edit.
+3. Staging to file for infinite script length
+4. Additional multi edit substitute command. Absorbtion with backrefs
+
+Patch2vi now is so darn powerful, I don't even have to do anything anymore.
+It's paying off because it eliminated a whole set maintenance issues with
+regular diffs. Zero external tool chain, observable and scalable.
+
+I am building a text editor that is designed to be customizable in source
+code. NOBODY in the world is doing that because NOBODY is solving the divergance
+problem of patches. The goal is DECENTRALIZED software as a set
+of patches that automatically apply in arbitrary configuration.
+
+This gives full customization power to the user. Makes the user understand
+the code by looking at the diffs. Makes the user understand
+the core by keeping it minimal and powerful enough to do everything
+imaginable. Stops feature creep and implements only what is strictly necessary.
+
+This is only the beginning of what is possible with Nextvi and my grand vision.
+Next will be beyond fuzzing - advanced conflict resolution, heuristics all
+deterministic encoding, yet generalizable to any programming language.
+
+It will be really hard or close to impossible, it won't stop me from
+trying anyway. Help the cause by doing your own customizations sending
+patches and improving the overall system that I've established here.
+Believe in the system and the philosophy behind it.
+
+LLMs can kind of resolve the divergance problems, but they are not fully
+deterministic or more precisely - not predictable. Deterministic divergance
+encoding layer is what's missing and some form of validation.
+
+Patch changes:
+1. Improved algorithm [detect_indent.sh](https://github.com/kyx0r/nextvi/blob/release/detect_indent.sh)
+2. Improved [visual.sh](https://github.com/kyx0r/nextvi/blob/release/visual.sh)
+3. Improved [lsp.sh](https://github.com/kyx0r/nextvi/blob/release/lsp.sh)
+4. Added write optimization [chunked_read_write.sh](https://github.com/kyx0r/nextvi/blob/release/chunked_read_write.sh)
+5. New [mhash.sh](https://github.com/kyx0r/nextvi/blob/release/mhash.sh)
+6. New [writeall.sh](https://github.com/kyx0r/nextvi/blob/release/writeall.sh)
+7. New [ins_cursor.sh](https://github.com/kyx0r/nextvi/blob/release/ins_cursor.sh)
 
 ------------------
 5.3 Crescent
