@@ -1530,7 +1530,7 @@ ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:167
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:167${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					break;
-				ln \\+= xoff;
+				ln = uc_chr\\(ln, xoff\\);
 				n = strlen\\(ln\\);
 				char buf\\[n \\+ 4\\];
 				memcpy\\(buf, \":e \", 3\\);
@@ -1543,7 +1543,7 @@ ${ESC}${SEP}%;f+ 				char buf\\[n \\+ 4\\];
 				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					break;
-				ln \\+= xoff;
+				ln = uc_chr\\(ln, xoff\\);
 				n = strlen\\(ln\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^				char buf\\[n \\+ 4\\];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
@@ -1552,16 +1552,16 @@ ${ESC}${SEP}%;f+ 				memcpy\\(buf, \":e \", 3\\);
 				memcpy\\(buf\\+3, ln, n\\);
 				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ ...	.......
-...... .=.xof..
-...	....s....n.....
-.....har.b..........
-	......c....... ....., 3..
-	..	.e.cp..b.f... l.,....
-..	.......us.\\(.u...... .\\);${ESC}${SEP}6??${ESC}${SEP}${LB}
+${ESC}${SEP}%;f+ 	...	.re...
+.........uc.....l........;
+...	....s..l...l...
+.....h.......... .\\].
+....me..p.........e .. ...
+.....e.....bu..3, .., ...
+	........pu.....f, .......${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 					break;.*?
-				ln \\+= xoff;.*?
+				ln = uc_chr\\(ln, xoff\\);.*?
 				n = strlen\\(ln\\);.*?
 (				char buf\\[n \\+ 4\\];)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1269:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -1933,7 +1933,7 @@ index 1a6b5696..befc9429 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 48e83e73..5daea61f 100644
+index 32b38d33..26113b3b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -570,20 +570,25 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -2210,7 +2210,7 @@ index 9b4776c8..87cf17fa 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 342991b5..b2b29457 100644
+index f529c4e2..7030fc5a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -2234,7 +2234,7 @@ index 342991b5..b2b29457 100644
  	s = lbuf_get(xb, row);
 @@ -1266,10 +1269,11 @@ void vi(int init)
  					break;
- 				ln += xoff;
+ 				ln = uc_chr(ln, xoff);
  				n = strlen(ln);
 -				char buf[n + 4];
 +				char *buf = emalloc(n + 4);

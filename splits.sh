@@ -3230,7 +3230,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				break;
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1257:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					xtop = MAX\\(0, xtop - n\\);
 				xoff = lbuf_indents\\(xb, xrow\\);
-				vi_mod \\|= 4;.*(				ln \\+= xoff;)
+				vi_mod \\|= 4;.*(				ln = uc_chr\\(ln, xoff\\);)
 				n = strlen\\(ln\\);
 				char buf\\[n \\+ 4\\];${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1257:a9${ESC}${SEP}'0${SEP}${LB}
@@ -3276,7 +3276,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				break;
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1259:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					xtop = MAX\\(0, xtop - n\\);
 				xoff = lbuf_indents\\(xb, xrow\\);
-				vi_mod \\|= 4;.*(				ln \\+= xoff;)
+				vi_mod \\|= 4;.*(				ln = uc_chr\\(ln, xoff\\);)
 				n = strlen\\(ln\\);
 				char buf\\[n \\+ 4\\];${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1259:a9${ESC}${SEP}'0${SEP}${LB}
@@ -4524,7 +4524,7 @@ index 1a6b5696..e55a1688 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 48e83e73..f3023adc 100644
+index 32b38d33..c3c1b740 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -5126,7 +5126,7 @@ index 3ae4769f..ce877cfe 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 342991b5..45bf9afa 100644
+index f529c4e2..00cc2cef 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
