@@ -536,7 +536,9 @@ Edit " vi.c". <pad> is required
 .Bd -literal -compact
 Special characters in [args] and [prefix] blocks will become
 regular when escaped with <\\>. Escapes are governed by a non-POSIX
-parity rule.
+parity rule: escapes directly before a special are halved,
+an odd amount makes the special regular, and escapes anywhere else
+are literal.
 .Ed
 .Bl -tag -width Ds -compact
 
