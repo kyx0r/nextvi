@@ -1537,7 +1537,7 @@ void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
 		}
 		if (ex && (*beg == xsep || *beg == xexp || *beg == xexe))
 			sbuf_chr(sb, xesc)
-		else if (strchr("!%{[]().?^$|*/+", *beg))
+		else if (strchr("!%{[().?^$|*/+", *beg))
 			sbuf_chr(sb, '\\')
 		sbuf_chr(sb, *beg)
 	}
