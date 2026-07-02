@@ -455,7 +455,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		if (!end || *loc) {
 			if (*cmd !='f')
 				temp_switch(1, 1);
-			return xrerr ? xrerr : xirerr;
+			return *loc ? xrerr : xirerr;
 		}
 		beg = 0;
 		max = xrows ? xrows * 3 : end;
@@ -701,7 +701,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	if (!*loc || ex_region(loc, &beg, &end, &o1, &o2)) {
 		end = lbuf_len(xb);
 		if (!end || *loc) {
-			ret = xrerr ? xrerr : xirerr;
+			ret = *loc ? xrerr : xirerr;
 			goto err;
 		}
 		beg = 0;
