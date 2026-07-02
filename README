@@ -464,7 +464,7 @@ EX COMMANDS
              No range evaluates to <%> range.
              No range displays a maximum of xrows * 3 matches.
 
-     [vrange]g[<Any>][regex][<Any>][cmd]
+     [vrange]g[<Delim>][regex][<Delim>][cmd]
              Global command
 
              Execute an ex command on a range of lines that matches an
@@ -497,7 +497,7 @@ EX COMMANDS
              Example: extract/print data enclosed in "()"
              :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
-     [vrange]g![<Any>][regex][<Any>][cmd]
+     [vrange]g![<Delim>][regex][<Delim>][cmd]
              Inverted global command
 
      [range]re[regex]
@@ -576,7 +576,7 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [vrange]s[<Any>][regex][<Any>][str][<Any>][<g>]
+     [vrange]s[<Delim>][regex][<Delim>][str][<Delim>][<g>]
              Substitute
 
              Find and replace text in a range of lines that matches an

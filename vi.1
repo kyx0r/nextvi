@@ -721,7 +721,7 @@ No range evaluates to <%> range.
 No range displays a maximum of xrows * 3 matches.
 .Ed
 
-.It Cm [\fIvrange\fP]g[<\fIAny\fP>][\fIregex\fP][<\fIAny\fP>][\fIcmd\fP]
+.It Cm [\fIvrange\fP]g[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIcmd\fP]
 Global command
 .Bd -literal
 Execute an ex command on a range of lines that matches an
@@ -755,7 +755,7 @@ Example: extract/print data enclosed in "()"
 :grp1:err4:g/./;0\e:;>(\e().+\e)>;#>.+(\e))>+1p:err1:grp
 .Ed
 
-.It Cm [\fIvrange\fP]g![<\fIAny\fP>][\fIregex\fP][<\fIAny\fP>][\fIcmd\fP]
+.It Cm [\fIvrange\fP]g![<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIcmd\fP]
 Inverted global command
 
 .It Cm [\fIrange\fP]re[\fIregex\fP]
@@ -839,7 +839,7 @@ Example: join all lines with space padding
 :%-1j x
 .Ed
 
-.It Cm [\fIvrange\fP]s[<\fIAny\fP>][\fIregex\fP][<\fIAny\fP>][\fIstr\fP][<\fIAny\fP>][<\fIg\fP>]
+.It Cm [\fIvrange\fP]s[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIstr\fP][<\fIDelim\fP>][<\fIg\fP>]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
