@@ -144,14 +144,14 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		rstate->holelen = uc_len\\(ss\\);.*?
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		max = \\(unsigned int\\)xlim;
 		for \\(n = 0; n < max && \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)
-			ss \\+= l;.*(	int \\*off = &pos\\[b\\];)
-	char \\*\\*chrs = \\(char\\*\\*\\)&off\\[b\\];
+			ss \\+= l;.*(	int \\*off = &pos\\[b];)
+	char \\*\\*chrs = \\(char\\*\\*\\)&off\\[b];
 	if \\(xorder && dir_reorder\\(s, ss, off, n, rstate->ctx\\)\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	unsigned int n, max, l;
 	char \\*ss = s;
 	if \\(xlim >= 0 && rstate == rstates\\+1\\) \\{.*(		for \\(i = 0; i < b; i\\+\\+\\) \\{)
-			chrs\\[i\\] = s;
+			chrs\\[i] = s;
 			s \\+= uc_len\\(s\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:111${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
@@ -159,20 +159,20 @@ ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 			ss \\+= l;
 	unsigned int b = n \\+ 1, c = 2, i;
 	int cpos = 0, wid, \\*col;
-	int \\*pos = emalloc\\(\\(b \\* 2 \\* sizeof\\(pos\\[0\\]\\)\\) \\+ b \\* sizeof\\(char\\*\\)\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
+	int \\*pos = emalloc\\(\\(b \\* 2 \\* sizeof\\(pos\\[0]\\)\\) \\+ b \\* sizeof\\(char\\*\\)\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			ss \\+= l;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		max = \\(unsigned int\\)xlim;
 		for \\(n = 0; n < max && \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)
-			ss \\+= l;.*(	int \\*off = &pos\\[b\\];)
-	char \\*\\*chrs = \\(char\\*\\*\\)&off\\[b\\];
+			ss \\+= l;.*(	int \\*off = &pos\\[b];)
+	char \\*\\*chrs = \\(char\\*\\*\\)&off\\[b];
 	if \\(xorder && dir_reorder\\(s, ss, off, n, rstate->ctx\\)\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	unsigned int n, max, l;
 	char \\*ss = s;
 	if \\(xlim >= 0 && rstate == rstates\\+1\\) \\{.*(		for \\(i = 0; i < b; i\\+\\+\\) \\{)
-			chrs\\[i\\] = s;
+			chrs\\[i] = s;
 			s \\+= uc_len\\(s\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:113${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
@@ -231,13 +231,13 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f> int uc_slen\\(char \\*s\\).*?
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:24:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	/\\* E \\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\\* F \\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
-};.*(/\\* find the beginning of the character at s\\[i\\] \\*/)
+};.*(/\\* find the beginning of the character at s\\[i] \\*/)
 char \\*uc_beg\\(char \\*beg, char \\*s\\)
 \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:24:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	/\\* B \\*/ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	/\\* C \\*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	/\\* D \\*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,.*(	if \\(utf8_length\\[0xc0\\] == 1\\))
+	/\\* D \\*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,.*(	if \\(utf8_length\\[0xc0] == 1\\))
 		return s;
 	for \\(; s > beg && \\(\\(unsigned char\\)\\*s & 0xc0\\) == 0x80; s--\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:24:a9${ESC}${SEP}'0${SEP}${LB}

@@ -82,7 +82,7 @@ ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:38:a7
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> int xkwdcnt;			/\\* number of search kwd changes \\*/
 int xpln;			/\\* tracks newline from ex print and pipe stdout \\*/
 int xsep = ':';			/\\* ex command separator \\*/.*(struct buf \\*bufs;		/\\* main buffers \\*/)
-struct buf tempbufs\\[3\\];		/\\* temporary buffers, for internal use \\*/
+struct buf tempbufs\\[3];		/\\* temporary buffers, for internal use \\*/
 struct buf \\*ex_buf;		/\\* current buffer \\*/${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:38:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> int xkmap;			/\\* the current keymap \\*/
@@ -137,15 +137,15 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ \\{.*?
 	if \\(kwd && \\*kwd && \\(\\(!reg \\|\\| !xkwdrs \\|\\| strcmp\\(kwd, reg->s\\)\\).*?
 (			\\|\\| \\(\\(xkwdrs->regex->flg & REG_ICASE\\) != xic\\)\\)\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:227:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		tempbufs\\[i\\]\\.row\\+\\+;
-	lbuf_edit\\(lb, str, tempbufs\\[i\\]\\.row, tempbufs\\[i\\]\\.row, 0, 0\\);
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		tempbufs\\[i]\\.row\\+\\+;
+	lbuf_edit\\(lb, str, tempbufs\\[i]\\.row, tempbufs\\[i]\\.row, 0, 0\\);
 }.*(	if \\(dir == -2 \\|\\| dir == 2\\))
 		xkwddir = dir / 2;
 }${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:227:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		return;
-	struct lbuf \\*lb = tempbufs\\[i\\]\\.lb;
-	if \\(lbuf_get\\(lb, tempbufs\\[i\\]\\.row\\)\\).*(static int ex_range\\(char \\*ploc, char \\*\\*num, int n, int \\*row\\))
+	struct lbuf \\*lb = tempbufs\\[i]\\.lb;
+	if \\(lbuf_get\\(lb, tempbufs\\[i]\\.row\\)\\).*(static int ex_range\\(char \\*ploc, char \\*\\*num, int n, int \\*row\\))
 \\{
 	int dir, off, beg, end;${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:227:a9${ESC}${SEP}'0${SEP}${LB}
@@ -205,13 +205,13 @@ ${ESC}${SEP}%;f+
 static void \\*ec_fuzz\\(char \\*loc, char \\*cmd, char \\*arg\\)
 \\{
 	rset \\*rs;
-	char \\*path, \\*p, buf\\[128\\], trunc\\[128\\], \\*sret = NULL;
-	int c, pos, subs\\[2\\], inst = -1, lnum = -1;
+	char \\*path, \\*p, buf\\[128], trunc\\[128], \\*sret = NULL;
+	int c, pos, subs\\[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	rset \\*rs;
-	char \\*path, \\*p, buf\\[128\\], trunc\\[128\\], \\*sret = NULL;
-	int c, pos, subs\\[2\\], inst = -1, lnum = -1;
+	char \\*path, \\*p, buf\\[128], trunc\\[128], \\*sret = NULL;
+	int c, pos, subs\\[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:443:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 
@@ -220,15 +220,15 @@ static void \\*ec_fuzz\\(char \\*loc, char \\*cmd, char \\*arg\\)
 ${ESC}${SEP}3??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:443:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	rset \\*rs;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:443:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 	char \\*path, \\*p, buf\\[128\\], trunc\\[128\\], \\*sret = NULL;
-	int c, pos, subs\\[2\\], inst = -1, lnum = -1;
+${ESC}${SEP}%;f+ 	char \\*path, \\*p, buf\\[128], trunc\\[128], \\*sret = NULL;
+	int c, pos, subs\\[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:443:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 
 ..at......d...c......c...................,.......a...
 \\{
 ...e.....;
-..............p, b........ t.......8\\]....... ...U...
+..............p, b........ t.......8]....... ...U...
 .... c...o.. ........ .......... .....=....
 .... ..g. ..d. ma. =.I.T....,......, ......${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:443:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -337,7 +337,7 @@ ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:4
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 			dwid1 = max == INT_MAX \\? dwid2 : MIN\\(dwid1, dwid2\\);
 			for \\(pos = beg; c < max && pos < end; pos\\+\\+\\) \\{
-				path = xb->ln\\[pos\\];
+				path = xb->ln\\[pos];
 				if \\(rset_match\\(rs, path, 0\\)\\) \\{
 					sbuf_mem\\(sb, &pos, sizeof\\(pos\\)\\)
 					p = itoa\\(c\\+\\+, buf\\);
@@ -350,7 +350,7 @@ ${ESC}${SEP}%;f+ 				if \\(rset_match\\(rs, path, 0\\)\\) \\{
 ${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:482:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 			dwid1 = max == INT_MAX \\? dwid2 : MIN\\(dwid1, dwid2\\);
 			for \\(pos = beg; c < max && pos < end; pos\\+\\+\\) \\{
-				path = xb->ln\\[pos\\];${ESC}${SEP}3??${ESC}${SEP}${LB}
+				path = xb->ln\\[pos];${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:482:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^				if \\(rset_match\\(rs, path, 0\\)\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:482:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
@@ -368,7 +368,7 @@ ${ESC}${SEP}%;f+ ..	..... ....x... ......X.. ...d2 .....\\(.......d....\\).
 ${ESC}${SEP}6??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:482:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 			dwid1 = max == INT_MAX \\? dwid2 : MIN\\(dwid1, dwid2\\);.*?
 			for \\(pos = beg; c < max && pos < end; pos\\+\\+\\) \\{.*?
-				path = xb->ln\\[pos\\];.*?
+				path = xb->ln\\[pos];.*?
 (				if \\(rset_match\\(rs, path, 0\\)\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:482:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	sbuf_smake\\(cmdbuf, 16\\)
@@ -440,12 +440,12 @@ ${ESC}${SEP}%;f+ 	free\\(sb->s\\);
 	if \\(\\*cmd == 'f' && path\\) \\{
 		rset_find\\(rs, path, subs, 0\\);
 		xrow = lnum;
-		xoff = uc_off\\(path, subs\\[0\\]\\);
+		xoff = uc_off\\(path, subs\\[0]\\);
 	} else if \\(path\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		rset_find\\(rs, path, subs, 0\\);
 		xrow = lnum;
-		xoff = uc_off\\(path, subs\\[0\\]\\);
+		xoff = uc_off\\(path, subs\\[0]\\);
 	} else if \\(path\\) \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:547:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	free\\(sb->s\\);
@@ -455,7 +455,7 @@ ${ESC}${SEP}3??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:547:a3${ESC}${ESC}${
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		rset_find\\(rs, path, subs, 0\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:547:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		xrow = lnum;
-		xoff = uc_off\\(path, subs\\[0\\]\\);
+		xoff = uc_off\\(path, subs\\[0]\\);
 	} else if \\(path\\) \\{${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:547:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ..r...s......
@@ -473,11 +473,11 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	free\\(sb->s\\);.*?
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:547:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
 	free\\(cmdbuf->s\\);
-	free\\(fuzz->s\\);.*(		path\\[lbuf_s\\(path\\)->len\\] = '\\\\0';)
+	free\\(fuzz->s\\);.*(		path\\[lbuf_s\\(path\\)->len] = '\\\\0';)
 		sret = ec_edit\\(loc, cmd, path\\);
-		path\\[lbuf_s\\(path\\)->len\\] = '\\\\n';${ESC}${SEP}8??${ESC}${SEP}${LB}
+		path\\[lbuf_s\\(path\\)->len] = '\\\\n';${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:547:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		lbuf_dedup\\(tempbufs\\[0\\]\\.lb, cmdbuf->s, cmdbuf->s_n\\)
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		lbuf_dedup\\(tempbufs\\[0]\\.lb, cmdbuf->s, cmdbuf->s_n\\)
 		temp_pos\\(0, -1, 0, 0\\);
 		temp_write\\(0, cmdbuf->s\\);.*(	} else if \\(\\*cmd != 'f'\\))
 		temp_switch\\(1, 1\\);
@@ -485,7 +485,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		lbuf_dedup\\(t
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:547:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:547${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 		path\\[lbuf_s\\(path\\)->len\\] = '\\\\n';
+${ESC}${SEP}%;f+ 		path\\[lbuf_s\\(path\\)->len] = '\\\\n';
 	} else if \\(\\*cmd != 'f'\\)
 		temp_switch\\(1, 1\\);
 	rset_free\\(rs\\);
@@ -500,7 +500,7 @@ ${ESC}${SEP}%;f+ 	rset_free\\(rs\\);
 
 ${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:556:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 		path\\[lbuf_s\\(path\\)->len\\] = '\\\\n';
+${ESC}${SEP}%;f+ 		path\\[lbuf_s\\(path\\)->len] = '\\\\n';
 	} else if \\(\\*cmd != 'f'\\)
 		temp_switch\\(1, 1\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:556:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -520,22 +520,22 @@ ${ESC}${SEP}%;f+ 	.p..h.l......p........n.......';
 
 ${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:556:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		path\\[lbuf_s\\(path\\)->len\\] = '\\\\n';.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		path\\[lbuf_s\\(path\\)->len] = '\\\\n';.*?
 	} else if \\(\\*cmd != 'f'\\).*?
 		temp_switch\\(1, 1\\);.*?
 (	rset_free\\(rs\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:556:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	} else if \\(path\\) \\{
-		path\\[lbuf_s\\(path\\)->len\\] = '\\\\0';
+		path\\[lbuf_s\\(path\\)->len] = '\\\\0';
 		sret = ec_edit\\(loc, cmd, path\\);.*(static void \\*ec_find\\(char \\*loc, char \\*cmd, char \\*arg\\))
 \\{
 	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:556:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		rset_find\\(rs, path, subs, 0\\);
 		xrow = lnum;
-		xoff = uc_off\\(path, subs\\[0\\]\\);.*(		if \\(!xdefreg \\|\\| \\(\\*loc && e != 2\\)\\))
+		xoff = uc_off\\(path, subs\\[0]\\);.*(		if \\(!xdefreg \\|\\| \\(\\*loc && e != 2\\)\\))
 			return xrerr;
-	dir = cmd\\[1\\] == '\\+' \\|\\| cmd\\[1\\] == '>' \\? 2 : -2;${ESC}${SEP}9??${ESC}${SEP}${LB}
+	dir = cmd\\[1] == '\\+' \\|\\| cmd\\[1] == '>' \\? 2 : -2;${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:556:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:556${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -573,7 +573,7 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	ex_krsset\\(arg, dir\\);.*?
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:570:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		if \\(!xdefreg \\|\\| \\(\\*loc && e != 2\\)\\)
 			return xrerr;
-	dir = cmd\\[1\\] == '\\+' \\|\\| cmd\\[1\\] == '>' \\? 2 : -2;.*(					xrow, xoff \\+ skip\\)\\) : 0;)
+	dir = cmd\\[1] == '\\+' \\|\\| cmd\\[1] == '>' \\? 2 : -2;.*(					xrow, xoff \\+ skip\\)\\) : 0;)
 		if \\(xdefreg\\) \\{
 			sbuf \\*sb = ex_regget\\(xdefreg\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:570:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -587,23 +587,23 @@ ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:5
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		return xgerr;
 	if \\(\\(xdefreg \\|\\| o1 >= 0\\) && dir > 0\\) \\{
-		int offs\\[xkwdrs->nsubc\\];
+		int offs\\[xkwdrs->nsubc];
 		int r2 = end - 1;
-		int skip = cmd\\[1\\] == '\\+' \\? 1 : 0;
+		int skip = cmd\\[1] == '\\+' \\? 1 : 0;
 		int soff = o1 >= 0 \\? MAX\\(0, lbuf_pos2off\\(xb, beg, o1, r2, o2,${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 12${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 		int offs\\[xkwdrs->nsubc\\];
+${ESC}${SEP}%;f+ 		int offs\\[xkwdrs->nsubc];
 		int r2 = end - 1;
-		int skip = cmd\\[1\\] == '\\+' \\? 1 : 0;
+		int skip = cmd\\[1] == '\\+' \\? 1 : 0;
 		int soff = o1 >= 0 \\? MAX\\(0, lbuf_pos2off\\(xb, beg, o1, r2, o2,${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:573:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		return xgerr;
 	if \\(\\(xdefreg \\|\\| o1 >= 0\\) && dir > 0\\) \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:573:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		int offs\\[xkwdrs->nsubc\\];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		int offs\\[xkwdrs->nsubc];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:573:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		int r2 = end - 1;
-		int skip = cmd\\[1\\] == '\\+' \\? 1 : 0;
+		int skip = cmd\\[1] == '\\+' \\? 1 : 0;
 		int soff = o1 >= 0 \\? MAX\\(0, lbuf_pos2off\\(xb, beg, o1, r2, o2,${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:573:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ..........g.r.;
@@ -615,11 +615,11 @@ ${ESC}${SEP}%;f+ ..........g.r.;
 ${ESC}${SEP}6??+2m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:573:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		return xgerr;.*?
 	if \\(\\(xdefreg \\|\\| o1 >= 0\\) && dir > 0\\) \\{.*?
-(		int offs\\[xkwdrs->nsubc\\];)${ESC}${SEP}7??${ESC}${SEP}${LB}
+(		int offs\\[xkwdrs->nsubc];)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:573:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		if \\(!xdefreg \\|\\| \\(\\*loc && e != 2\\)\\)
 			return xrerr;
-	dir = cmd\\[1\\] == '\\+' \\|\\| cmd\\[1\\] == '>' \\? 2 : -2;.*(					xrow, xoff \\+ skip\\)\\) : 0;)
+	dir = cmd\\[1] == '\\+' \\|\\| cmd\\[1] == '>' \\? 2 : -2;.*(					xrow, xoff \\+ skip\\)\\) : 0;)
 		if \\(xdefreg\\) \\{
 			sbuf \\*sb = ex_regget\\(xdefreg\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:573:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -635,14 +635,14 @@ ${ESC}${SEP}%;f+ 			sbuf \\*sb = ex_regget\\(xdefreg\\);
 			if \\(!sb\\)
 				return \"uninitialized register\";
 			if \\(soff >= sb->s_n \\|\\| rset_find\\(xkwdrs, sb->s \\+ soff, offs, 0\\) < 0
-					\\|\\| offs\\[xgrp\\] < 0
+					\\|\\| offs\\[xgrp] < 0
 					\\|\\| \\(o1 >= 0 && lbuf_off2pos\\(xb, beg, o1, r2, o2,
-							soff \\+ offs\\[xgrp\\], &xrow, &xoff\\)\\)\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
+							soff \\+ offs\\[xgrp], &xrow, &xoff\\)\\)\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 13${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 			if \\(soff >= sb->s_n \\|\\| rset_find\\(xkwdrs, sb->s \\+ soff, offs, 0\\) < 0
-					\\|\\| offs\\[xgrp\\] < 0
+					\\|\\| offs\\[xgrp] < 0
 					\\|\\| \\(o1 >= 0 && lbuf_off2pos\\(xb, beg, o1, r2, o2,
-							soff \\+ offs\\[xgrp\\], &xrow, &xoff\\)\\)\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
+							soff \\+ offs\\[xgrp], &xrow, &xoff\\)\\)\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:582:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 			sbuf \\*sb = ex_regget\\(xdefreg\\);
 			if \\(!sb\\)
@@ -650,9 +650,9 @@ ${ESC}${SEP}%;f+ 			sbuf \\*sb = ex_regget\\(xdefreg\\);
 ${ESC}${SEP}3??+3m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:582:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			if \\(soff >= sb->s_n \\|\\| rset_find\\(xkwdrs, sb->s \\+ soff, offs, 0\\) < 0\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:582:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 					\\|\\| offs\\[xgrp\\] < 0
+${ESC}${SEP}%;f+ 					\\|\\| offs\\[xgrp] < 0
 					\\|\\| \\(o1 >= 0 && lbuf_off2pos\\(xb, beg, o1, r2, o2,
-							soff \\+ offs\\[xgrp\\], &xrow, &xoff\\)\\)\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
+							soff \\+ offs\\[xgrp], &xrow, &xoff\\)\\)\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:582:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ......f \\*sb.=.....e............\\).
 ..	i.....b\\)
@@ -660,7 +660,7 @@ ${ESC}${SEP}%;f+ ......f \\*sb.=.....e............\\).
 ...i. .s... >. .b.>._. \\|..r.....i....k...s..sb..s......., .f... 0\\).< .
 .	.		.\\|...f....rp. ...
 .	.	..\\|.....>....&..l.....f..po...b....., o1,.r.. ...
-............. .....x...\\].....ow. ........${ESC}${SEP}6??${ESC}${SEP}${LB}
+............. .....x...].....ow. ........${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:582:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 			sbuf \\*sb = ex_regget\\(xdefreg\\);.*?
 			if \\(!sb\\).*?
@@ -673,9 +673,9 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		int soff = o1 
 			return NULL;
 		}${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:582:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		int offs\\[xkwdrs->nsubc\\];
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		int offs\\[xkwdrs->nsubc];
 		int r2 = end - 1;
-		int skip = cmd\\[1\\] == '\\+' \\? 1 : 0;.*(		sbuf sb;)
+		int skip = cmd\\[1] == '\\+' \\? 1 : 0;.*(		sbuf sb;)
 		void \\*ret = NULL;
 		lbuf_region\\(xb, &sb, beg, o1, r2, o2\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:582:a9${ESC}${SEP}'0${SEP}${LB}
@@ -684,24 +684,24 @@ ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		sbuf sb;
 		void \\*ret = NULL;
 		lbuf_region\\(xb, &sb, beg, o1, r2, o2\\);
-		if \\(rset_find\\(xkwdrs, sb\\.s \\+ soff, offs, 0\\) < 0 \\|\\| offs\\[xgrp\\] < 0
+		if \\(rset_find\\(xkwdrs, sb\\.s \\+ soff, offs, 0\\) < 0 \\|\\| offs\\[xgrp] < 0
 				\\|\\| lbuf_off2pos\\(xb, beg, o1, r2, o2,
-						soff \\+ offs\\[xgrp\\], &xrow, &xoff\\)\\)
+						soff \\+ offs\\[xgrp], &xrow, &xoff\\)\\)
 			ret = xuerr;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 14${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 		if \\(rset_find\\(xkwdrs, sb\\.s \\+ soff, offs, 0\\) < 0 \\|\\| offs\\[xgrp\\] < 0
+${ESC}${SEP}%;f+ 		if \\(rset_find\\(xkwdrs, sb\\.s \\+ soff, offs, 0\\) < 0 \\|\\| offs\\[xgrp] < 0
 				\\|\\| lbuf_off2pos\\(xb, beg, o1, r2, o2,
-						soff \\+ offs\\[xgrp\\], &xrow, &xoff\\)\\)
+						soff \\+ offs\\[xgrp], &xrow, &xoff\\)\\)
 			ret = xuerr;${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:592:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		sbuf sb;
 		void \\*ret = NULL;
 		lbuf_region\\(xb, &sb, beg, o1, r2, o2\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:592:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		if \\(rset_find\\(xkwdrs, sb\\.s \\+ soff, offs, 0\\) < 0 \\|\\| offs\\[xgrp\\] < 0\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		if \\(rset_find\\(xkwdrs, sb\\.s \\+ soff, offs, 0\\) < 0 \\|\\| offs\\[xgrp] < 0\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:592:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				\\|\\| lbuf_off2pos\\(xb, beg, o1, r2, o2,
-						soff \\+ offs\\[xgrp\\], &xrow, &xoff\\)\\)
+						soff \\+ offs\\[xgrp], &xrow, &xoff\\)\\)
 			ret = xuerr;${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:592:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ...b.f..b.
@@ -709,13 +709,13 @@ ${ESC}${SEP}%;f+ ...b.f..b.
 ...b.f_.....n.................. r.,.....
 	..f.........n..x..d..,....s.\\+..o... ..... .. ................. . .
 ....\\|..l..._...2...\\(.....eg,.....r...o..
-	........f............\\],.&....,......\\).
+	........f............],.&....,......\\).
 ...r.. ........${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:592:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		sbuf sb;.*?
 		void \\*ret = NULL;.*?
 		lbuf_region\\(xb, &sb, beg, o1, r2, o2\\);.*?
-(		if \\(rset_find\\(xkwdrs, sb\\.s \\+ soff, offs, 0\\) < 0 \\|\\| offs\\[xgrp\\] < 0)${ESC}${SEP}7??${ESC}${SEP}${LB}
+(		if \\(rset_find\\(xkwdrs, sb\\.s \\+ soff, offs, 0\\) < 0 \\|\\| offs\\[xgrp] < 0)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:592:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				return xuerr;
 			return NULL;
@@ -723,9 +723,9 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				return xuerr
 		return ret;
 	}${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:592:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					\\|\\| offs\\[xgrp\\] < 0
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					\\|\\| offs\\[xgrp] < 0
 					\\|\\| \\(o1 >= 0 && lbuf_off2pos\\(xb, beg, o1, r2, o2,
-							soff \\+ offs\\[xgrp\\], &xrow, &xoff\\)\\)\\).*(	off = xoff;)
+							soff \\+ offs\\[xgrp], &xrow, &xoff\\)\\)\\).*(	off = xoff;)
 	if \\(xrow < beg \\|\\| xrow >= end\\) \\{
 		off = 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:592:a9${ESC}${SEP}'0${SEP}${LB}
@@ -775,7 +775,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			arg\\+\\+;
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-14m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1104:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			mk = mk \\* 10 \\+ \\(\\*arg - '0'\\);
 		lbuf_mark\\(xb, mk, i % 2 \\? end - 1 : beg, i % 2 \\? o2 : o1\\);
-		while \\(\\*arg == ' '\\).*(	int offs\\[rs->nsubc\\];)
+		while \\(\\*arg == ' '\\).*(	int offs\\[rs->nsubc];)
 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-19m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1104:a9${ESC}${SEP}'0${SEP}${LB}
@@ -821,7 +821,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			arg\\+\\+;
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1111:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			mk = mk \\* 10 \\+ \\(\\*arg - '0'\\);
 		lbuf_mark\\(xb, mk, i % 2 \\? end - 1 : beg, i % 2 \\? o2 : o1\\);
-		while \\(\\*arg == ' '\\).*(	int offs\\[rs->nsubc\\];)
+		while \\(\\*arg == ' '\\).*(	int offs\\[rs->nsubc];)
 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1111:a9${ESC}${SEP}'0${SEP}${LB}
@@ -863,7 +863,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			arg\\+\\+;
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1114:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			mk = mk \\* 10 \\+ \\(\\*arg - '0'\\);
 		lbuf_mark\\(xb, mk, i % 2 \\? end - 1 : beg, i % 2 \\? o2 : o1\\);
-		while \\(\\*arg == ' '\\).*(	int offs\\[rs->nsubc\\];)
+		while \\(\\*arg == ' '\\).*(	int offs\\[rs->nsubc];)
 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1114:a9${ESC}${SEP}'0${SEP}${LB}
@@ -872,12 +872,12 @@ ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		rep = ex_re_read\\(&s\\);
 	}
 	free\\(pat\\);
-	int offs\\[rs->nsubc\\];
+	int offs\\[rs->nsubc];
 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);
 		sbuf \\*r = NULL;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 18${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 	int offs\\[rs->nsubc\\];
+${ESC}${SEP}%;f+ 	int offs\\[rs->nsubc];
 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);
 		sbuf \\*r = NULL;${ESC}${SEP}2??${ESC}${SEP}${LB}
@@ -886,7 +886,7 @@ ${ESC}${SEP}%;f+ 		rep = ex_re_read\\(&s\\);
 	}
 	free\\(pat\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1123:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	int offs\\[rs->nsubc\\];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	int offs\\[rs->nsubc];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1123:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);
@@ -903,19 +903,19 @@ ${ESC}${SEP}6??+3m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1123:a6${ESC}${ESC}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		rep = ex_re_read\\(&s\\);.*?
 	}.*?
 	free\\(pat\\);.*?
-(	int offs\\[rs->nsubc\\];)${ESC}${SEP}7??${ESC}${SEP}${LB}
+(	int offs\\[rs->nsubc];)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1123:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
 	if \\(pat && \\*s\\) \\{
 		s--;.*(			} else if \\(!r\\))
 				sbuf_make\\(r, 256\\)
-			sbuf_mem\\(r, ln, offs\\[xgrp\\]\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
+			sbuf_mem\\(r, ln, offs\\[xgrp]\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1123:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			rset_free\\(rs\\);
 		free\\(pat\\);
 		return rs \\? xgerr : xserr;.*(			if \\(rep\\) \\{)
 				for \\(_rep = rep; \\*_rep; _rep\\+\\+\\) \\{
-					if \\(\\*_rep != '\\\\\\\\' \\|\\| !_rep\\[1\\]\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
+					if \\(\\*_rep != '\\\\\\\\' \\|\\| !_rep\\[1]\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1123:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1123${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -923,13 +923,13 @@ ${ESC}${SEP}%;f+ 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 		char \\*ln = lbuf_get\\(xb, i\\);
 		sbuf \\*r = NULL;
 		while \\(rset_find\\(rs, ln, offs, REG_NEWLINE\\) >= 0\\) \\{
-			if \\(offs\\[xgrp\\] < 0\\) \\{
-				ln \\+= offs\\[1\\] > 0 \\? offs\\[1\\] : 1;
+			if \\(offs\\[xgrp] < 0\\) \\{
+				ln \\+= offs\\[1] > 0 \\? offs\\[1] : 1;
 				continue;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 19${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		while \\(rset_find\\(rs, ln, offs, REG_NEWLINE\\) >= 0\\) \\{
-			if \\(offs\\[xgrp\\] < 0\\) \\{
-				ln \\+= offs\\[1\\] > 0 \\? offs\\[1\\] : 1;
+			if \\(offs\\[xgrp] < 0\\) \\{
+				ln \\+= offs\\[1] > 0 \\? offs\\[1] : 1;
 				continue;${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1127:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	for \\(i = beg; i < end; i\\+\\+\\) \\{
@@ -938,8 +938,8 @@ ${ESC}${SEP}%;f+ 	for \\(i = beg; i < end; i\\+\\+\\) \\{
 ${ESC}${SEP}3??+3m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1127:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		while \\(rset_find\\(rs, ln, offs, REG_NEWLINE\\) >= 0\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1127:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 			if \\(offs\\[xgrp\\] < 0\\) \\{
-				ln \\+= offs\\[1\\] > 0 \\? offs\\[1\\] : 1;
+${ESC}${SEP}%;f+ 			if \\(offs\\[xgrp] < 0\\) \\{
+				ln \\+= offs\\[1] > 0 \\? offs\\[1] : 1;
 				continue;${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1127:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ............g;.i...e..;...\\+...
@@ -959,13 +959,13 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
 	if \\(pat && \\*s\\) \\{
 		s--;.*(			} else if \\(!r\\))
 				sbuf_make\\(r, 256\\)
-			sbuf_mem\\(r, ln, offs\\[xgrp\\]\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
+			sbuf_mem\\(r, ln, offs\\[xgrp]\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1127:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			rset_free\\(rs\\);
 		free\\(pat\\);
 		return rs \\? xgerr : xserr;.*(			if \\(rep\\) \\{)
 				for \\(_rep = rep; \\*_rep; _rep\\+\\+\\) \\{
-					if \\(\\*_rep != '\\\\\\\\' \\|\\| !_rep\\[1\\]\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
+					if \\(\\*_rep != '\\\\\\\\' \\|\\| !_rep\\[1]\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1127:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1127${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -974,13 +974,13 @@ ${ESC}${SEP}%;f+ 					}
 					grp = abs\\(\\(\\*_rep - '0'\\) \\* 2\\);
 					if \\(grp \\+ 1 >= rs->nsubc\\)
 						sbuf_chr\\(r, \\*_rep\\)
-					else if \\(offs\\[grp\\] >= 0\\)
-						sbuf_mem\\(r, ln \\+ offs\\[grp\\], offs\\[grp \\+ 1\\] - offs\\[grp\\]\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
+					else if \\(offs\\[grp] >= 0\\)
+						sbuf_mem\\(r, ln \\+ offs\\[grp], offs\\[grp \\+ 1] - offs\\[grp]\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 20${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					if \\(grp \\+ 1 >= rs->nsubc\\)
 						sbuf_chr\\(r, \\*_rep\\)
-					else if \\(offs\\[grp\\] >= 0\\)
-						sbuf_mem\\(r, ln \\+ offs\\[grp\\], offs\\[grp \\+ 1\\] - offs\\[grp\\]\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
+					else if \\(offs\\[grp] >= 0\\)
+						sbuf_mem\\(r, ln \\+ offs\\[grp], offs\\[grp \\+ 1] - offs\\[grp]\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1142:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					}
 					_rep\\+\\+;
@@ -989,29 +989,29 @@ ${ESC}${SEP}3??+3m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1142:a3${ESC}${ESC}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^					if \\(grp \\+ 1 >= rs->nsubc\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1142:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 						sbuf_chr\\(r, \\*_rep\\)
-					else if \\(offs\\[grp\\] >= 0\\)
-						sbuf_mem\\(r, ln \\+ offs\\[grp\\], offs\\[grp \\+ 1\\] - offs\\[grp\\]\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
+					else if \\(offs\\[grp] >= 0\\)
+						sbuf_mem\\(r, ln \\+ offs\\[grp], offs\\[grp \\+ 1] - offs\\[grp]\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1142:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	..		}
 .........\\+..
 ....	..p.....s..._.........\\).. ...
 ..........r......>..rs........
 .	.....bu.....\\(.,.......
-....	e..........f..g.p\\]..=..\\)
-..			....._..m..,........f.........f.s...p . ............p\\].${ESC}${SEP}6??${ESC}${SEP}${LB}
+....	e..........f..g.p]..=..\\)
+..			....._..m..,........f.........f.s...p . ............p].${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1142:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 					}.*?
 					_rep\\+\\+;.*?
 					grp = abs\\(\\(\\*_rep - '0'\\) \\* 2\\);.*?
 (					if \\(grp \\+ 1 >= rs->nsubc\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1142:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					if \\(\\*_rep != '\\\\\\\\' \\|\\| !_rep\\[1\\]\\) \\{
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					if \\(\\*_rep != '\\\\\\\\' \\|\\| !_rep\\[1]\\) \\{
 						sbuf_chr\\(r, \\*_rep\\)
-						continue;.*(			ln \\+= offs\\[xgrp \\+ 1\\];)
-			if \\(!offs\\[xgrp \\+ 1\\]\\)	/\\* zero-length match \\*/
+						continue;.*(			ln \\+= offs\\[xgrp \\+ 1];)
+			if \\(!offs\\[xgrp \\+ 1]\\)	/\\* zero-length match \\*/
 				sbuf_chr\\(r, \\*ln\\+\\+\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1142:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			sbuf_mem\\(r, ln, offs\\[xgrp\\]\\)
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			sbuf_mem\\(r, ln, offs\\[xgrp]\\)
 			if \\(rep\\) \\{
 				for \\(_rep = rep; \\*_rep; _rep\\+\\+\\) \\{.*(			if \\(\\*ln == '\\\\n' \\|\\| !\\*ln \\|\\| !strchr\\(s, 'g'\\)\\))
 				break;
@@ -1073,12 +1073,12 @@ ${ESC}${SEP}%;f+ \\{
 	int i, beg, end, not, matched = 0;
 	char \\*pat, \\*s = arg;
 	rset \\*rs;
-	if \\(!loc\\[0\\] && !xgdep\\)
+	if \\(!loc\\[0] && !xgdep\\)
 		loc = \"%\";
 	if \\(ex_vregion\\(loc, &beg, &end\\)\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 22${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	rset \\*rs;
-	if \\(!loc\\[0\\] && !xgdep\\)
+	if \\(!loc\\[0] && !xgdep\\)
 		loc = \"%\";
 	if \\(ex_vregion\\(loc, &beg, &end\\)\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1243:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -1088,7 +1088,7 @@ ${ESC}${SEP}%;f+ \\{
 ${ESC}${SEP}3??+3m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1243:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	rset \\*rs;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1243:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 	if \\(!loc\\[0\\] && !xgdep\\)
+${ESC}${SEP}%;f+ 	if \\(!loc\\[0] && !xgdep\\)
 		loc = \"%\";
 	if \\(ex_vregion\\(loc, &beg, &end\\)\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1243:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -1112,8 +1112,8 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		xkmap = xkmap_
 	if \\(pat && \\*pat\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1243:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	else
-		ex_print\\(conf_kmap\\(xkmap\\)\\[0\\], msg_ft\\)
-	if \\(arg\\[0\\] && !strchr\\(cmd, '!'\\)\\).*(		rs = rset_smake\\(pat, xic \\? REG_ICASE : 0\\);)
+		ex_print\\(conf_kmap\\(xkmap\\)\\[0], msg_ft\\)
+	if \\(arg\\[0] && !strchr\\(cmd, '!'\\)\\).*(		rs = rset_smake\\(pat, xic \\? REG_ICASE : 0\\);)
 	else
 		rs = rset_smake\\(ex_regget\\('/'\\) \\? ex_regget\\('/'\\)->s : \"\", xic \\? REG_ICASE : 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1243:a9${ESC}${SEP}'0${SEP}${LB}
@@ -1155,7 +1155,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		loc = \"%\";
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1251:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	char \\*pat, \\*s = arg;
 	rset \\*rs;
-	if \\(!loc\\[0\\] && !xgdep\\).*(	for \\(i = beg; i < lbuf_len\\(xb\\);\\) \\{)
+	if \\(!loc\\[0] && !xgdep\\).*(	for \\(i = beg; i < lbuf_len\\(xb\\);\\) \\{)
 		char \\*ln = lbuf_get\\(xb, i\\);
 		lbuf_s\\(ln\\)->grec &= ~xgdep;${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1251:a9${ESC}${SEP}'0${SEP}${LB}
@@ -1197,7 +1197,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		loc = \"%\";
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1253:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	char \\*pat, \\*s = arg;
 	rset \\*rs;
-	if \\(!loc\\[0\\] && !xgdep\\).*(	for \\(i = beg; i < lbuf_len\\(xb\\);\\) \\{)
+	if \\(!loc\\[0] && !xgdep\\).*(	for \\(i = beg; i < lbuf_len\\(xb\\);\\) \\{)
 		char \\*ln = lbuf_get\\(xb, i\\);
 		lbuf_s\\(ln\\)->grec &= ~xgdep;${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1253:a9${ESC}${SEP}'0${SEP}${LB}
@@ -1293,11 +1293,11 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				break;
 			i = MIN\\(i, xrow\\);
 		}.*(static void \\*ec_while\\(char \\*loc, char \\*cmd, char \\*arg\\))
 \\{
-	int isdq = cmd\\[1\\] == '\\?';${ESC}${SEP}8??${ESC}${SEP}${LB}
+	int isdq = cmd\\[1] == '\\?';${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1273:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			matched = 1;
 			xrow = i;
-			if \\(ex_exec\\(s\\)\\).*(	int inv = cmd\\[1 \\+ isdq\\] == '!';)
+			if \\(ex_exec\\(s\\)\\).*(	int inv = cmd\\[1 \\+ isdq] == '!';)
 	char \\*ret = NULL;
 	if \\(isdq && \\*loc\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1273:a9${ESC}${SEP}'0${SEP}${LB}
@@ -1335,15 +1335,15 @@ static void \\*ec_setincl\\(char \\*loc, char \\*cmd, char \\*arg\\).*?
 \\{.*?
 (	rset_free\\(fsincl\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1394:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		bufs\\[i\\]\\.plen = strlen\\(opath\\);
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		bufs\\[i]\\.plen = strlen\\(opath\\);
 	}
 	return NULL;.*(static void \\*ec_setacreg\\(char \\*loc, char \\*cmd, char \\*arg\\))
 \\{
 	if \\(xacreg\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1394:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		opath = uc_dup\\(opath\\+c\\);
-		free\\(bufs\\[i\\]\\.path\\);
-		bufs\\[i\\]\\.path = opath;.*(		sbuf_free\\(xacreg\\))
+		free\\(bufs\\[i]\\.path\\);
+		bufs\\[i]\\.path = opath;.*(		sbuf_free\\(xacreg\\))
 	if \\(\\*arg\\) \\{
 		sbuf_make\\(xacreg, 128\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1394:a9${ESC}${SEP}'0${SEP}${LB}
@@ -1381,15 +1381,15 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	if \\(!\\*arg\\).*?
 		fsincl = NULL;.*?
 (	else if \\(!\\(fsincl = rset_smake\\(arg, xic \\? REG_ICASE : 0\\)\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1397:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		bufs\\[i\\]\\.plen = strlen\\(opath\\);
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		bufs\\[i]\\.plen = strlen\\(opath\\);
 	}
 	return NULL;.*(static void \\*ec_setacreg\\(char \\*loc, char \\*cmd, char \\*arg\\))
 \\{
 	if \\(xacreg\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1397:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		opath = uc_dup\\(opath\\+c\\);
-		free\\(bufs\\[i\\]\\.path\\);
-		bufs\\[i\\]\\.path = opath;.*(		sbuf_free\\(xacreg\\))
+		free\\(bufs\\[i]\\.path\\);
+		bufs\\[i]\\.path = opath;.*(		sbuf_free\\(xacreg\\))
 	if \\(\\*arg\\) \\{
 		sbuf_make\\(xacreg, 128\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1397:a9${ESC}${SEP}'0${SEP}${LB}
@@ -1475,7 +1475,7 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	return n != 0;.*?
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:493:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
 	if \\(!n && \\(cmd == 't' \\|\\| cmd == 'T'\\)\\)
-		\\*off = MIN\\(MAX\\(0, \\*off - dir\\), r->n-1\\);.*(		off = rstate->s == s \\? rstate->chrs\\[MIN\\(o0 \\+ pskip, rstate->n\\)\\] - s)
+		\\*off = MIN\\(MAX\\(0, \\*off - dir\\), r->n-1\\);.*(		off = rstate->s == s \\? rstate->chrs\\[MIN\\(o0 \\+ pskip, rstate->n\\)] - s)
 					: uc_chr\\(s, o0 \\+ pskip\\) - s;
 	else${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:493:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -1490,12 +1490,12 @@ ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		int nskip, int \\*r, int \\*o\\)
 \\{
 	int r0 = \\*r, o0 = \\*o;
-	int offs\\[re->nsubc\\], i = r0;
+	int offs\\[re->nsubc], i = r0;
 	char \\*s = lbuf_get\\(lb, i\\);
 	int off, g1, g2, _o, step, flg;
 	if \\(pskip >= 0 && s\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 	int offs\\[re->nsubc\\], i = r0;
+${ESC}${SEP}%;f+ 	int offs\\[re->nsubc], i = r0;
 	char \\*s = lbuf_get\\(lb, i\\);
 	int off, g1, g2, _o, step, flg;
 	if \\(pskip >= 0 && s\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
@@ -1504,7 +1504,7 @@ ${ESC}${SEP}%;f+ 		int nskip, int \\*r, int \\*o\\)
 \\{
 	int r0 = \\*r, o0 = \\*o;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:497:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	int offs\\[re->nsubc\\], i = r0;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	int offs\\[re->nsubc], i = r0;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:497:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	char \\*s = lbuf_get\\(lb, i\\);
 	int off, g1, g2, _o, step, flg;
@@ -1521,11 +1521,11 @@ ${ESC}${SEP}6??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:497:a6${ESC}${ESC}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		int nskip, int \\*r, int \\*o\\).*?
 \\{.*?
 	int r0 = \\*r, o0 = \\*o;.*?
-(	int offs\\[re->nsubc\\], i = r0;)${ESC}${SEP}7??${ESC}${SEP}${LB}
+(	int offs\\[re->nsubc], i = r0;)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:497:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
 	if \\(!n && \\(cmd == 't' \\|\\| cmd == 'T'\\)\\)
-		\\*off = MIN\\(MAX\\(0, \\*off - dir\\), r->n-1\\);.*(		off = rstate->s == s \\? rstate->chrs\\[MIN\\(o0 \\+ pskip, rstate->n\\)\\] - s)
+		\\*off = MIN\\(MAX\\(0, \\*off - dir\\), r->n-1\\);.*(		off = rstate->s == s \\? rstate->chrs\\[MIN\\(o0 \\+ pskip, rstate->n\\)] - s)
 					: uc_chr\\(s, o0 \\+ pskip\\) - s;
 	else${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:497:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -1539,25 +1539,25 @@ ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL lbuf.c
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		step = 0;
 		flg = REG_NEWLINE;
-		s = lb->ln\\[i\\];
+		s = lb->ln\\[i];
 		while \\(rset_find\\(re, s \\+ off, offs, flg\\) >= 0\\) \\{
 			flg \\|= REG_NOTBOL;
-			g1 = offs\\[xgrp\\], g2 = offs\\[xgrp \\+ 1\\];
+			g1 = offs\\[xgrp], g2 = offs\\[xgrp \\+ 1];
 			if \\(g1 < 0\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		while \\(rset_find\\(re, s \\+ off, offs, flg\\) >= 0\\) \\{
 			flg \\|= REG_NOTBOL;
-			g1 = offs\\[xgrp\\], g2 = offs\\[xgrp \\+ 1\\];
+			g1 = offs\\[xgrp], g2 = offs\\[xgrp \\+ 1];
 			if \\(g1 < 0\\) \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:510:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		step = 0;
 		flg = REG_NEWLINE;
-		s = lb->ln\\[i\\];${ESC}${SEP}3??${ESC}${SEP}${LB}
+		s = lb->ln\\[i];${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:510:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		while \\(rset_find\\(re, s \\+ off, offs, flg\\) >= 0\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:510:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 			flg \\|= REG_NOTBOL;
-			g1 = offs\\[xgrp\\], g2 = offs\\[xgrp \\+ 1\\];
+			g1 = offs\\[xgrp], g2 = offs\\[xgrp \\+ 1];
 			if \\(g1 < 0\\) \\{${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:510:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ...te..= .;
@@ -1565,21 +1565,21 @@ ${ESC}${SEP}%;f+ ...te..= .;
 ... ..lb..l..i..
 .........rs........re,.. \\+ .ff. ...s,......>......
 	...l.......G_...B...
-.........ff.....p.,... ......\\[.gr.....\\].
+.........ff.....p.,... ......\\[.gr.....].
 ..........< ....${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:510:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		step = 0;.*?
 		flg = REG_NEWLINE;.*?
-		s = lb->ln\\[i\\];.*?
+		s = lb->ln\\[i];.*?
 (		while \\(rset_find\\(re, s \\+ off, offs, flg\\) >= 0\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:510:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		off = 0;
 	for \\(; i >= beg && i < end; i \\+= dir\\) \\{
-		_o = 0;.*(				off \\+= offs\\[1\\] > 0 \\? offs\\[1\\] : 1;)
+		_o = 0;.*(				off \\+= offs\\[1] > 0 \\? offs\\[1] : 1;)
 				continue;
 			}${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:510:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		off = rstate->s == s \\? rstate->chrs\\[MIN\\(o0 \\+ pskip, rstate->n\\)\\] - s
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		off = rstate->s == s \\? rstate->chrs\\[MIN\\(o0 \\+ pskip, rstate->n\\)] - s
 					: uc_chr\\(s, o0 \\+ pskip\\) - s;
 	else.*(			_o \\+= uc_off\\(s \\+ step, off \\+ g1 - step\\);)
 			if \\(dir < 0 && r0 == i && _o > o0 - nskip\\)
@@ -1843,12 +1843,12 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		for \\(int i =
 			if \\(\\(i_s = ex_regget\\('0'\\+i\\)\\)\\)
 				ex_regput\\('0' \\+ i \\+ 1, i_s->s, 0\\);.*(	struct stat statbuf;)
 	int i = 0, ret;
-	char \\*cpath, \\*ptrs\\[1024\\];${ESC}${SEP}9??${ESC}${SEP}${LB}
+	char \\*cpath, \\*ptrs\\[1024];${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:380:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:380${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i\\], pathlen \\+ len\\);
-				plen\\[i\\+\\+\\] = pathlen \\+ len;
+${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i], pathlen \\+ len\\);
+				plen\\[i\\+\\+] = pathlen \\+ len;
 			} else if \\(ret >= 0 && S_ISREG\\(statbuf\\.st_mode\\)\\)
 				if \\(!fsincl \\|\\| rset_match\\(fsincl, cpath, 0\\)\\) \\{
 					sbuf_mem\\(sb, cpath, \\(int\\)\\(pathlen \\+ len\\)\\)
@@ -1860,8 +1860,8 @@ ${ESC}${SEP}%;f+ 				if \\(!fsincl \\|\\| rset_match\\(fsincl, cpath, 0\\)\\) \\
 					sbuf_chr\\(sb, '\\\\n'\\)
 				}${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:419:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i\\], pathlen \\+ len\\);
-				plen\\[i\\+\\+\\] = pathlen \\+ len;
+${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i], pathlen \\+ len\\);
+				plen\\[i\\+\\+] = pathlen \\+ len;
 			} else if \\(ret >= 0 && S_ISREG\\(statbuf\\.st_mode\\)\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:419:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^				if \\(!fsincl \\|\\| rset_match\\(fsincl, cpath, 0\\)\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
@@ -1878,22 +1878,22 @@ ${ESC}${SEP}%;f+ 	............a....p..............n........
 ..	...buf.c..\\(.b,.'..'.
 	....${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:419:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i\\], pathlen \\+ len\\);.*?
-				plen\\[i\\+\\+\\] = pathlen \\+ len;.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i], pathlen \\+ len\\);.*?
+				plen\\[i\\+\\+] = pathlen \\+ len;.*?
 			} else if \\(ret >= 0 && S_ISREG\\(statbuf\\.st_mode\\)\\).*?
 (				if \\(!fsincl \\|\\| rset_match\\(fsincl, cpath, 0\\)\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:419:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				dps\\[i\\] = sdp;
-				ptrs\\[i\\] = cpath;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				dps\\[i] = sdp;
+				ptrs\\[i] = cpath;
 				cpath = emalloc\\(pathlen \\+ 1024\\);.*(		closedir\\(dp\\);)
 		free\\(cpath\\);
 		if \\(i > 0\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:419:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			if \\(ret >= 0 && S_ISDIR\\(statbuf\\.st_mode\\)\\) \\{
 				if \\(!\\(sdp = opendir\\(cpath\\)\\) \\|\\| i >= LEN\\(ptrs\\)\\)
-					break;.*(			dp = dps\\[--i\\];)
-			pathlen = plen\\[i\\];
-			cpath = ptrs\\[i\\];${ESC}${SEP}9??${ESC}${SEP}${LB}
+					break;.*(			dp = dps\\[--i];)
+			pathlen = plen\\[i];
+			cpath = ptrs\\[i];${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:419:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:419${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
@@ -1907,7 +1907,7 @@ ${ESC}${SEP}%;f> 	int nsubc;		/\\* total sub count \\*/
 } rset;
 rset \\*rset_make\\(int n, char \\*\\*pat, int flg\\);
 static rset \\*rset_smake\\(char \\*pat, int flg\\)
-	\\{ char \\*ss\\[1\\] = \\{pat}; return rset_make\\(1, ss, flg\\); }${ESC}${SEP}1??${ESC}${SEP}${LB}
+	\\{ char \\*ss\\[1] = \\{pat}; return rset_make\\(1, ss, flg\\); }${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 	int nsubc;		/\\* total sub count \\*/
 	int n;			/\\* number of regular expressions in this set \\*/
@@ -1926,8 +1926,8 @@ ${ESC}${SEP}grp 0${ESC}${SEP}8??-10m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:11
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> };
 /\\* regular expression set \\*/
 typedef struct \\{.*(	int mark_n;		/\\* number of saved marks \\*/)
-	int mark_sb\\[2\\];		/\\* saved \\[ mark row & off \\*/
-	int mark_se\\[2\\];		/\\* saved \\] mark row & off \\*/${ESC}${SEP}9??${ESC}${SEP}${LB}
+	int mark_sb\\[2];		/\\* saved \\[ mark row & off \\*/
+	int mark_se\\[2];		/\\* saved ] mark row & off \\*/${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-13m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:112:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:112${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -1955,8 +1955,8 @@ ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:118
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> };
 /\\* regular expression set \\*/
 typedef struct \\{.*(	int mark_n;		/\\* number of saved marks \\*/)
-	int mark_sb\\[2\\];		/\\* saved \\[ mark row & off \\*/
-	int mark_se\\[2\\];		/\\* saved \\] mark row & off \\*/${ESC}${SEP}9??${ESC}${SEP}${LB}
+	int mark_sb\\[2];		/\\* saved \\[ mark row & off \\*/
+	int mark_se\\[2];		/\\* saved ] mark row & off \\*/${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:118:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:118${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -2062,7 +2062,7 @@ ${ESC}${SEP}grp 0${ESC}${SEP}7??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:444:a
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> extern int xkwdcnt;
 extern int xpln;
 extern int xsep;.*(extern struct buf \\*bufs;)
-extern struct buf tempbufs\\[3\\];
+extern struct buf tempbufs\\[3];
 extern struct buf \\*ex_buf;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:444:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> extern int xkmap;
@@ -2179,7 +2179,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 32b38d33..2a2e1a89 100644
+index d5f28e9c..969e58e1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -35,7 +35,7 @@ int xsep = ':';			/* ex command separator */
@@ -2434,7 +2434,7 @@ index 75dd0ce8..8e9df6df 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 3c09a752..4db32911 100644
+index 22319b65..e0bbc617 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -749,3 +749,142 @@ int rset_match(rset *rs, char *s, int flg)

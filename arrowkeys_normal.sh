@@ -48,7 +48,7 @@ ${ESC}${SEP}%;f>
 	switch \\(mv\\) \\{
 	case ',':
 	case ';':
-		if \\(!vi_charlast\\[0\\]\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
+		if \\(!vi_charlast\\[0]\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 
 	mv = term_read\\(0\\);
@@ -65,7 +65,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	char \\*cs;
 				\\? tolower\\(vi_charcmd\\) : toupper\\(vi_charcmd\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:523:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	static rset \\*bre;
-	static int srow\\[5\\], soff\\[5\\], lkwdcnt;
+	static int srow\\[5], soff\\[5], lkwdcnt;
 	static int cadir = 1;.*(			mv = vi_charcmd;)
 		if \\(lbuf_findchar\\(xb, vi_charlast, mv, cnt, row, off\\)\\)
 			return -1;${ESC}${SEP}9??${ESC}${SEP}${LB}

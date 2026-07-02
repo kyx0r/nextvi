@@ -149,53 +149,53 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1565:m2${ESC}${SEP
 ${SEP}'3i 	{\"sr\", ec_script},
 	{\"sx\", ec_script},
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1666:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			close\\(pipefds1\\[0\\]\\);
-			close\\(pipefds1\\[1\\]\\);
+${ESC}${SEP}%;f> 			close\\(pipefds1\\[0]\\);
+			close\\(pipefds1\\[1]\\);
 		}
-		execvp\\(argv\\[0\\], argv\\);
+		execvp\\(argv\\[0], argv\\);
 		exit\\(1\\);
 	}
 	if \\(ifd\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 		execvp\\(argv\\[0\\], argv\\);
+${ESC}${SEP}%;f> 		execvp\\(argv\\[0], argv\\);
 		exit\\(1\\);
 	}
 	if \\(ifd\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			close\\(pipefds1\\[0\\]\\);
-			close\\(pipefds1\\[1\\]\\);
+${ESC}${SEP}%;f> 			close\\(pipefds1\\[0]\\);
+			close\\(pipefds1\\[1]\\);
 		}${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^		execvp\\(argv\\[0\\], argv\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^		execvp\\(argv\\[0], argv\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 		exit\\(1\\);
 	}
 	if \\(ifd\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	......e.pi....s.\\[0\\]..
+${ESC}${SEP}%;f> 	......e.pi....s.\\[0]..
 ........\\(....fd......;
 	..
-...x...p.a.gv\\[.\\].......;
+...x...p.a.gv\\[.].......;
 .........;
 .}
 .i...if..${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			close\\(pipefds1\\[0\\]\\);.*?
-			close\\(pipefds1\\[1\\]\\);.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			close\\(pipefds1\\[0]\\);.*?
+			close\\(pipefds1\\[1]\\);.*?
 		}.*?
-(		execvp\\(argv\\[0\\], argv\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
+(		execvp\\(argv\\[0], argv\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		if \\(ofd\\) \\{		/\\* setting up stdout and stderr \\*/
-			dup2\\(pipefds1\\[1\\], 1\\);
-			dup2\\(pipefds1\\[1\\], 2\\);.*(		close\\(pipefds0\\[0\\]\\);)
+			dup2\\(pipefds1\\[1], 1\\);
+			dup2\\(pipefds1\\[1], 2\\);.*(		close\\(pipefds0\\[0]\\);)
 	if \\(ofd\\)
-		close\\(pipefds1\\[1\\]\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
+		close\\(pipefds1\\[1]\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			close\\(pipefds0\\[1\\]\\);
-			close\\(pipefds0\\[0\\]\\);
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			close\\(pipefds0\\[1]\\);
+			close\\(pipefds0\\[0]\\);
 		}.*(	if \\(pid < 0\\) \\{)
 		if \\(ifd\\)
-			close\\(pipefds0\\[1\\]\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
+			close\\(pipefds0\\[1]\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:234:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:234${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
@@ -207,7 +207,7 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:234:m1${ESC}${SE
 ${ESC}${SEP}%;f> /\\* vi\\.h: shared definitions across files \\*/
 
 /\\* helper macros \\*/
-#define LEN\\(a\\)		\\(int\\)\\(sizeof\\(a\\) / sizeof\\(\\(a\\)\\[0\\]\\)\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
+#define LEN\\(a\\)		\\(int\\)\\(sizeof\\(a\\) / sizeof\\(\\(a\\)\\[0]\\)\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^/\\* vi\\.h: shared definitions across files \\*/\$${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:1:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
@@ -228,7 +228,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 32b38d33..59a8d101 100644
+index d5f28e9c..fb56baec 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@

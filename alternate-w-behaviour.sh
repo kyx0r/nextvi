@@ -60,11 +60,11 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			if \\(lbuf_wo
 				break;
 		break;.*(		dir = mv == '\\(' \\? 1 : -1;)
 		if \\(!bre\\)
-			bre = rset_smake\\(\"\\^\\[\\.\\?!\\]\\+\\['\\\\\\\\\\]\\)\\]\\*\\(\\?:\\[ \\\\t\\]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
+			bre = rset_smake\\(\"\\^\\[\\.\\?!]\\+\\['\\\\\\\\]\\)]\\*\\(\\?:\\[ \\\\t]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	case 'E':
 		var = mv == 'E';
-		for \\(i = 0; i < cnt; i\\+\\+\\).*(		int subs\\[2\\], org;)
+		for \\(i = 0; i < cnt; i\\+\\+\\).*(		int subs\\[2], org;)
 		for \\(i = 0; i < cnt; i\\+\\+\\) \\{
 			var = \\*row;${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:604:a9${ESC}${SEP}'0${SEP}${LB}
@@ -102,11 +102,11 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			if \\(lbuf_wo
 				break;
 		break;.*(		dir = mv == '\\(' \\? 1 : -1;)
 		if \\(!bre\\)
-			bre = rset_smake\\(\"\\^\\[\\.\\?!\\]\\+\\['\\\\\\\\\\]\\)\\]\\*\\(\\?:\\[ \\\\t\\]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
+			bre = rset_smake\\(\"\\^\\[\\.\\?!]\\+\\['\\\\\\\\]\\)]\\*\\(\\?:\\[ \\\\t]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	case 'E':
 		var = mv == 'E';
-		for \\(i = 0; i < cnt; i\\+\\+\\).*(		int subs\\[2\\], org;)
+		for \\(i = 0; i < cnt; i\\+\\+\\).*(		int subs\\[2], org;)
 		for \\(i = 0; i < cnt; i\\+\\+\\) \\{
 			var = \\*row;${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:606:a9${ESC}${SEP}'0${SEP}${LB}

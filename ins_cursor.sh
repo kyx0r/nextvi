@@ -54,26 +54,26 @@ ${ESC}${SEP}%;f> /\\* how to highlight text in the reverse direction \\*/
 const int conf_hlrev = SYN_BGMK\\(8\\);
 
 ${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:322:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:325:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	\\{msg_ft, \"\\.\\+\", A\\(AY1 \\| SYN_BD\\)},
 };
-const int hlslen = LEN\\(hls\\);.*(struct dircontext dctxs\\[\\] = \\{)
-	\\{\"\\^\\[\" CR2L \"\\]\", -1},
-	\\{\"\\^\\[a-zA-Z_0-9\\]\", \\+1},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:322:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	\\{bar_ft, \"\\^\\(\\\\\"\\.\\*\\\\\"\\)\\.\\* \\(\\[0-9\\]\\{1,3}%\\) \\(L\\[0-9\\]\\+\\) \\(C\\[0-9\\]\\+\\) \\(B-\\?\\[0-9\\]\\+\\)\\?\\.\\*\\\$\",
+const int hlslen = LEN\\(hls\\);.*(struct dircontext dctxs\\[] = \\{)
+	\\{\"\\^\\[\" CR2L \"]\", -1},
+	\\{\"\\^\\[a-zA-Z_0-9]\", \\+1},${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:325:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	\\{bar_ft, \"\\^\\(\\\\\"\\.\\*\\\\\"\\)\\.\\* \\(\\[0-9]\\{1,3}%\\) \\(L\\[0-9]\\+\\) \\(C\\[0-9]\\+\\) \\(B-\\?\\[0-9]\\+\\)\\?\\.\\*\\\$\",
 		A\\(AY1 \\| SYN_BD, BL, RE1, BL, YE1, GR\\)},
-	\\{bar_ft, \"\\^\\.\\*\\\$\", A\\(AY1 \\| SYN_BD\\)},.*(struct dirmark dmarks\\[\\] = \\{)
-	\\{\"\\[\" CR2L \"\\]\\[\" CNEUT CR2L \"\\]\\*\\[\" CR2L \"\\]\", \\+1, \\{-1}},
-	\\{\"\\^\\(\\[ \\\\t\\]\\+\\)\\?\\(\\[\" CNEUT \"\\]\\*\\[\\^\" CR2L \"\\]\\*\\[\\^\" CR2L CNEUT \"\\]\\(\\?:\\[\" CNEUT \"\\]\\+\\\$\\)\\?\\)\", -1, \\{0, 1, -1}},${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:322:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:322${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{bar_ft, \"\\^\\.\\*\\\$\", A\\(AY1 \\| SYN_BD\\)},.*(struct dirmark dmarks\\[] = \\{)
+	\\{\"\\[\" CR2L \"]\\[\" CNEUT CR2L \"]\\*\\[\" CR2L \"]\", \\+1, \\{-1}},
+	\\{\"\\^\\(\\[ \\\\t]\\+\\)\\?\\(\\[\" CNEUT \"]\\*\\[\\^\" CR2L \"]\\*\\[\\^\" CR2L CNEUT \"]\\(\\?:\\[\" CNEUT \"]\\+\\\$\\)\\?\\)\", -1, \\{0, 1, -1}},${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:325:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:325${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i /* cursor shape escapes (DECSCUSR): set on entering insert, reset on leaving */
 char conf_curins[] = \"\\x1b[5 q\";	/* insert mode: vertical bar */
 char conf_curnorm[] = \"\\x1b[2 q\";	/* normal mode: block */
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:322:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:325:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \\*postref = NULL;
 	ins_state is;
@@ -93,7 +93,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> int led_input\\(
 \\{
 	int ai_max = 128 \\* xai;.*(				sbufn_str\\(sb, post\\))
 			} else
-				sb->s\\[\\*pren\\] = \\*post;${ESC}${SEP}8??${ESC}${SEP}${LB}
+				sb->s\\[\\*pren] = \\*post;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:685:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
 	return key;
@@ -122,7 +122,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> int led_input\\(
 \\{
 	int ai_max = 128 \\* xai;.*(				sbufn_str\\(sb, post\\))
 			} else
-				sb->s\\[\\*pren\\] = \\*post;${ESC}${SEP}8??${ESC}${SEP}${LB}
+				sb->s\\[\\*pren] = \\*post;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:690:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
 	return key;
@@ -153,12 +153,12 @@ extern int phlen;.*?
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:535:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int l;		/\\* the length of the codepoint \\*/
 };
-extern struct placeholder _ph\\[\\];.*(/\\* vi\\.c: main \\*/)
+extern struct placeholder _ph\\[];.*(/\\* vi\\.c: main \\*/)
 void vi\\(int init\\);
 extern int vi_hidch;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:535:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int cp\\[2\\];	/\\* the source character codepoint \\*/
-	char d\\[8\\];	/\\* the placeholder \\*/
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int cp\\[2];	/\\* the source character codepoint \\*/
+	char d\\[8];	/\\* the placeholder \\*/
 	int wid;	/\\* the width of the placeholder \\*/.*(extern int vi_lncol;)
 /\\* filesystem \\*/
 extern rset \\*fsincl;${ESC}${SEP}9??${ESC}${SEP}${LB}
@@ -174,10 +174,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 1a6b5696..79bb3d9b 100644
+index 07dd3aa4..4ff7fc7b 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -320,6 +320,10 @@ const int hlslen = LEN(hls);
+@@ -323,6 +323,10 @@ const int hlslen = LEN(hls);
  /* how to highlight text in the reverse direction */
  const int conf_hlrev = SYN_BGMK(8);
  

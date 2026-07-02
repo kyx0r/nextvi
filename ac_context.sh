@@ -82,7 +82,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> static sbuf \\*s
 static sbuf \\*acsb;
 sbuf \\*led_attsb;.*(static void file_index\\(struct lbuf \\*buf\\))
 \\{
-	char reg\\[\\] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\\\]\\^\`\\{-\\\\x7f\\]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
+	char reg\\[] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\]\\^\`\\{-\\\\x7f]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-26m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:12:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:12${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -124,7 +124,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> static sbuf \\*s
 static sbuf \\*acsb;
 sbuf \\*led_attsb;.*(static void file_index\\(struct lbuf \\*buf\\))
 \\{
-	char reg\\[\\] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\\\]\\^\`\\{-\\\\x7f\\]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
+	char reg\\[] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\]\\^\`\\{-\\\\x7f]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-24m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:14:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:14${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -174,7 +174,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> static sbuf \\*s
 static sbuf \\*acsb;
 sbuf \\*led_attsb;.*(static void file_index\\(struct lbuf \\*buf\\))
 \\{
-	char reg\\[\\] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\\\]\\^\`\\{-\\\\x7f\\]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
+	char reg\\[] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\]\\^\`\\{-\\\\x7f]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-20m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:18:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:18${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -220,7 +220,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> static sbuf \\*s
 static sbuf \\*acsb;
 sbuf \\*led_attsb;.*(static void file_index\\(struct lbuf \\*buf\\))
 \\{
-	char reg\\[\\] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\\\]\\^\`\\{-\\\\x7f\\]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
+	char reg\\[] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\]\\^\`\\{-\\\\x7f]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-14m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:24:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:24${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -262,7 +262,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> static sbuf \\*s
 static sbuf \\*acsb;
 sbuf \\*led_attsb;.*(static void file_index\\(struct lbuf \\*buf\\))
 \\{
-	char reg\\[\\] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\\\]\\^\`\\{-\\\\x7f\\]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
+	char reg\\[] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\]\\^\`\\{-\\\\x7f]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:27:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:27${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -308,7 +308,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> static sbuf \\*s
 static sbuf \\*acsb;
 sbuf \\*led_attsb;.*(static void file_index\\(struct lbuf \\*buf\\))
 \\{
-	char reg\\[\\] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\\\]\\^\`\\{-\\\\x7f\\]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
+	char reg\\[] = \"\\[\\^\\\\t !-/:-@\\[-\\\\\\\\]\\^\`\\{-\\\\x7f]\\+\";${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:30:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:30${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -377,7 +377,7 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		case TK_CTL\\('n'\\):.*?
 				continue;.*?
 (			is->lsug = is->sug_pt >= 0 \\? is->sug_pt : led_lastword\\(sb->s \\+ pre\\) \\+ pre;)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:527:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			char buf\\[100\\];
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			char buf\\[100];
 			itoa\\(is->sug_pt, buf\\);
 			led_info\\(buf\\).*(				redo_suggest:)
 				if \\(!\\(is->_sug = strchr\\(is->sug, '\\\\n'\\)\\)\\) \\{
@@ -545,7 +545,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			}
 			continue;
 		case TK_CTL\\('b'\\):.*(						RS\\(2, led_crender\\(is->sug, r, 0, left, left\\+xcols\\)\\))
 						left \\+= xcols;
-						if \\(left >= rstates\\[2\\]\\.pos\\[rstates\\[2\\]\\.n\\]\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
+						if \\(left >= rstates\\[2]\\.pos\\[rstates\\[2]\\.n]\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:558:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:558${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}

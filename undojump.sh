@@ -43,21 +43,21 @@ else
 fi
 trap 'rm -f "$P2VIF"' EXIT
 printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos\\] : NULL;
+${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos] : NULL;
 }
 
 int lbuf_undo\\(struct lbuf \\*lb, int \\*row, int \\*off\\)
 \\{
 	if \\(!lb->hist_u\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos\\] : NULL;
+${ESC}${SEP}%;f> 	return pos >= 0 && pos < lb->ln_n \\? lb->ln\\[pos] : NULL;
 }
 
 ${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	free\\(sb->s\\);
 	return 0;
-}.*(	struct lopt \\*lo = &lb->hist\\[lb->hist_u - 1\\];)
+}.*(	struct lopt \\*lo = &lb->hist\\[lb->hist_u - 1];)
 	const int useq = lo->seq;
 	sbuf sb;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:395:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}

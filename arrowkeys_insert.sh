@@ -150,15 +150,15 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	}.*?
 		xleft = pos < xcols \\? 0 : pos - xcols / 2;.*?
 (	syn_scdir\\(0\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:307:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		if \\(abs\\(dir\\) > r->wid\\[off-\\(two\\+1\\)\\]\\)
-			pos = ren_cursor\\(r->s, r->pos\\[off-two\\]\\);
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		if \\(abs\\(dir\\) > r->wid\\[off-\\(two\\+1\\)]\\)
+			pos = ren_cursor\\(r->s, r->pos\\[off-two]\\);
 		pos \\+= dir < 0 \\? -1 : 1;.*(/\\* read a character from the terminal \\*/)
 char \\*led_read\\(int \\*kmap, int c\\)
 \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:307:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	if \\(off > 0\\) \\{
 		int two = off > 1 && psn != pre;
-		dir = r->pos\\[off-two\\] - r->pos\\[off-\\(two\\+1\\)\\];.*(	static char buf\\[5\\];)
+		dir = r->pos\\[off-two] - r->pos\\[off-\\(two\\+1\\)];.*(	static char buf\\[5];)
 	int c1, c2, i, n;
 	while \\(!TK_INT\\(c\\)\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:307:a9${ESC}${SEP}'0${SEP}${LB}
@@ -401,7 +401,7 @@ ${ESC}${SEP}%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);
 	restore\\(xtd\\)
 	restore\\(xleft\\)
 	if \\(key == '\\\\n' && flg & 1\\) \\{
-		lbuf_dedup\\(tempbufs\\[0\\]\\.lb, sb->s \\+ n, sb->s_n - n\\)
+		lbuf_dedup\\(tempbufs\\[0]\\.lb, sb->s \\+ n, sb->s_n - n\\)
 		temp_pos\\(0, -1, 0, 0\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 			&off, kmap, is, 0, xrow, xtop, flg\\);
@@ -462,7 +462,7 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 			return key;.*?
 		sbuf_chr\\(sb, key\\).*?
 (		led_printparts\\(sb, -1, ps, \"\", 0, &xoff\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:702:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				sb->s\\[\\*pren\\] = \\*post;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				sb->s\\[\\*pren] = \\*post;
 			free\\(postref\\);
 			xrow = crow;.*(		n = ps;)
 		ps = sb->s_n;
@@ -653,7 +653,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		post = ln \\+ 
 	int cnt = MAX\\(1, vi_arg\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		off = xoff;
-		l1 = rstate->chrs\\[off\\] - ln;
+		l1 = rstate->chrs\\[off] - ln;
 		postn = rstate->n - off;.*(	int i, off;)
 	sbuf \\*buf = ex_regget\\(vi_ybuf\\);
 	char \\*ln;${ESC}${SEP}9??${ESC}${SEP}${LB}
@@ -674,7 +674,7 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		post = ln \\+ 
 	int cnt = MAX\\(1, vi_arg\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1038:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		off = xoff;
-		l1 = rstate->chrs\\[off\\] - ln;
+		l1 = rstate->chrs\\[off] - ln;
 		postn = rstate->n - off;.*(	int i, off;)
 	sbuf \\*buf = ex_regget\\(vi_ybuf\\);
 	char \\*ln;${ESC}${SEP}9??${ESC}${SEP}${LB}
