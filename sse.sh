@@ -373,7 +373,7 @@ index 9b4776c8..b9e46ae5 100644
  	int cpos = 0, wid, *col;
  	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
 diff --git a/uc.c b/uc.c
-index 583ee5de..d4b8e4a5 100644
+index b1002c4e..e1637ca5 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -22,6 +22,34 @@ unsigned char utf8_length[256] = {
@@ -412,7 +412,7 @@ index 583ee5de..d4b8e4a5 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index f529c4e2..d8b183b4 100644
+index e104d236..0e391005 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@
