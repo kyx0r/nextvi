@@ -206,7 +206,7 @@ static char *escape_chars(const char *s, const char *set)
 	return result;
 }
 
-#define REGEX_META "\\^$.*+?[](){|"
+#define REGEX_META "\\^$.*+?[(){|"
 static char *escape_regex(const char *s)
 {
 	return escape_chars(s, REGEX_META);
