@@ -1317,13 +1317,13 @@ CODE MAP
      | 347 term.c   |  low level IO        |
      | 370 conf.c   |  hl/ft/td config     |
      | 444 ren.c    |  positioning/syntax  |
-     | 614 uc.c     |  UTF-8 support       |
+     | 615 uc.c     |  UTF-8 support       |
      | 665 lbuf.c   |  file/line buffer    |
      | 726 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
-     | 1864 ex.c    |  ex options/commands |
-     | 1880 vi.c    |  normal mode/general |
-     | 7661 total   |  wc -l *.c|sort      |
+     | 1865 ex.c    |  ex options/commands |
+     | 1882 vi.c    |  normal mode/general |
+     | 7665 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING

@@ -154,7 +154,9 @@ static void vi_drawrow(int row)
 			vi_drawnum(vi_nextcol(c, -1, &noff))
 		} else
 			vi_drawnum(lbuf_wordend(xb, i1, -2, &nrow, &noff))
-		tmp[ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol] = *vi_word;
+		l1 = ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol;
+		if (l1 >= 0 && l1 <= xcols)
+			tmp[l1] = *vi_word;
 		preserve(int, xorder, xorder = 0;)
 		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
@@ -408,7 +410,7 @@ void dir_calc(char *path)
 			memcpy(&cpath[pathlen+1], dirp->d_name, len);
 			ret = lstat(cpath, &statbuf);
 			if (ret >= 0 && S_ISDIR(statbuf.st_mode)) {
-				if (!(sdp = opendir(cpath)) || i >= LEN(ptrs))
+				if (i >= LEN(ptrs) || !(sdp = opendir(cpath)))
 					break;
 				dps[i] = sdp;
 				ptrs[i] = cpath;
