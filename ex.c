@@ -619,6 +619,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 
 static void *ec_buffer(char *loc, char *cmd, char *arg)
 {
+	int n = atoi(arg);
 	if (!arg[0]) {
 		char ln[512];
 		for (int i = 0; i < xbufcur; i++) {
@@ -629,13 +630,13 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
 			ex_print(ln, msg_ft)
 		}
 		return NULL;
-	} else if (atoi(arg) < 0) {
-		if (abs(atoi(arg)) <= LEN(tempbufs)) {
-			temp_switch(abs(atoi(arg))-1, 1);
+	} else if (n < 0) {
+		if (-n <= LEN(tempbufs)) {
+			temp_switch(-n-1, 1);
 			return NULL;
 		}
-	} else if (atoi(arg) < xbufcur) {
-		bufs_switchwft(atoi(arg))
+	} else if (n < xbufcur) {
+		bufs_switchwft(n)
 		return NULL;
 	}
 	return "no such buffer";
@@ -1424,9 +1425,9 @@ static void *ec_setbufsmax(char *loc, char *cmd, char *arg)
 		bufs_free(xbufcur - 1);
 	bufs = erealloc(bufs, sizeof(struct buf) * xbufsmax);
 	if (!istemp)
-		ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
-	ex_pbuf = pbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+pbufidx;
-	ex_tpbuf = tpbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+tpbufidx;
+		ex_buf = bufidx >= xbufsmax ? bufs : bufs+bufidx;
+	ex_pbuf = pbufidx >= xbufsmax ? bufs : bufs+pbufidx;
+	ex_tpbuf = tpbufidx >= xbufsmax ? bufs : bufs+tpbufidx;
 	return NULL;
 }
 
