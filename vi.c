@@ -1264,7 +1264,7 @@ void vi(int init)
 			case TK_CTL('i'): {
 				if (!(ln = lbuf_get(xb, xrow)))
 					break;
-				ln += xoff;
+				ln = uc_chr(ln, xoff);
 				n = strlen(ln);
 				char buf[n + 4];
 				memcpy(buf, ":e ", 3);
@@ -1473,7 +1473,7 @@ void vi(int init)
 					case '>': case '<': pairs[0]='<'; pairs[1]='>'; break;
 					default: pairs[0] = k; pairs[1] = k; break;
 					}
-					if (TK_INT(pairs[0]))
+					if (TK_INT(pairs[0]) || !lbuf_get(xb, xrow))
 						break;
 					int r1 = xrow, o1 = xoff, r2, o2;
 					int dir = (k == pairs[1] && pairs[0] != pairs[1]) ? -1 : 1;
@@ -1858,7 +1858,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-6.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-6.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
