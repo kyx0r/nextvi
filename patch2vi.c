@@ -1,7 +1,7 @@
 /*
  * patch2vi - Convert unified diff patches to shell scripts using Nextvi ex commands
  *
- * Usage: patch2vi [input.patch]
+ * Usage: patch2vi [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]
  *
  * Uses raw ex mode (:vis 3) with dynamic separator and escape character
  * selection via :sc! to avoid conflicts with : % ! \ characters in
@@ -32,7 +32,8 @@
 typedef struct {
 	int type;       /* 'd'=delete, 'a'=add, 'c'=context */
 	int oline;      /* line number in original file */
-	char *text;     /* line content (for add operations) */
+	char *text;     /* line content (all op types: adds insert it,
+			 * deletes/context anchor searches and diffs) */
 	int hunk_lo;    /* 1-based first original line of the enclosing @@ hunk */
 	int hunk_hi;    /* 1-based last original line of the enclosing @@ hunk */
 } op_t;
@@ -98,11 +99,12 @@ typedef struct {
 	char **post_ctx;    /* context lines after change (for levels 3/5) */
 	int npost_ctx, post_cap;
 	int strategy;       /* STRAT_DEFAULT = not recorded */
-	char **pattern[NSEARCH];  /* SEARCH PATTERN 1-NPAT fallbacks */
+	char **pattern[NSEARCH];  /* SEARCH PATTERN 1-NSEARCH fallbacks */
 	int npattern[NSEARCH], pat_cap[NSEARCH];
 	int pat_off[NSEARCH];      /* per-pattern OFFSET marker value */
 	int pat_has_off[NSEARCH];
-	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f>, 2 = grp */
+	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f>,
+				    * 2 = grp, 3 = global grp straddle */
 	int pat_has_mode[NSEARCH];
 	char **abs_cmd;
 	int nabs, abs_cap;
@@ -178,6 +180,25 @@ static char *xstrdup(const char *s)
 		exit(1);
 	}
 	return p;
+}
+
+static void *ecalloc(size_t n, size_t sz)
+{
+	void *p = calloc(n, sz);
+	if (!p) {
+		fprintf(stderr, "out of memory\n");
+		exit(1);
+	}
+	return p;
+}
+
+static void add_raw(const char *line)
+{
+	if (nraw >= (int)(sizeof(raw_lines) / sizeof(raw_lines[0]))) {
+		fprintf(stderr, "too many input lines\n");
+		exit(1);
+	}
+	raw_lines[nraw++] = xstrdup(line);
 }
 
 /* Remove trailing newline */
@@ -544,8 +565,8 @@ static unsigned hash_pos(unsigned seed, int i)
  * threshold that grows with lvl but never past FUZZ_MASK_MAX, so the loosest
  * variant wildcards ~80% of its runes (~20% kept literal). At least one rune is
  * always kept literal. */
-static void fuzz_mask(unsigned char *mask, const char *base, int nrune,
-		      int lvl, unsigned seed, int *gi)
+static void fuzz_mask(unsigned char *mask, int nrune, int lvl, unsigned seed,
+		      int *gi)
 {
 	int thr = (lvl + 1) * FUZZ_MASK_MAX / (FUZZ_MAXLVL + 1);
 	int kept = 0;
@@ -558,7 +579,6 @@ static void fuzz_mask(unsigned char *mask, const char *base, int nrune,
 	}
 	if (!kept && nrune > 0)
 		mask[0] = 0;  /* never wildcard an entire line away */
-	(void)base;
 }
 
 /* arr_append a slice of src[0..sn) into dst. */
@@ -576,7 +596,7 @@ static char *join_lines(char **lines, int nlines)
 	size_t len = 0;
 	for (int i = 0; i < nlines; i++)
 		len += strlen(lines[i]) + 1;
-	char *result = emalloc(len ? len : 1);
+	char *result = emalloc(len);
 	char *p = result;
 	for (int i = 0; i < nlines; i++) {
 		int slen = strlen(lines[i]);
@@ -584,8 +604,6 @@ static char *join_lines(char **lines, int nlines)
 		p += slen;
 		*p++ = i < nlines - 1 ? '\n' : '\0';
 	}
-	if (nlines == 0)
-		*result = '\0';
 	return result;
 }
 
@@ -720,16 +738,6 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
 			return gd;
 	}
 	return NULL;
-}
-
-/* Get UTF-8 character position for byte offset */
-static int utf8_char_offset(const char *s, int bytepos)
-{
-	int chars = 0;
-	for (int i = 0; i < bytepos && s[i]; i++)
-		if ((s[i] & 0xC0) != 0x80)
-			chars++;
-	return chars;
 }
 
 /* Count how many times substring needle appears in haystack (including overlaps) */
@@ -1077,9 +1085,11 @@ static void emit_change(FILE *out, int from, int to, char **texts, int ntexts)
  * no edits in between, so the register stays byte-identical to the
  * buffer for the entire phase. Each group's target line is recorded
  * with a line mark ("+<off>m <id>", ids count up from 0 skipping
- * nextvi's special mark ids). Each group gets up to NPAT fallback
+ * nextvi's special mark ids). Each group gets up to NSEARCH fallback
  * patterns tried strict-to-loose, first match wins (see
- * emit_fallback_chain and default_pat_lines): 1 = whole hunk (pre ctx +
+ * emit_fallback_chain; slots past NPAT are the file-validated
+ * fuzz/grp/straddle windows). Exact defaults per default_pat_lines():
+ * 1 = whole hunk (pre ctx +
  * deleted lines + post ctx), 2 = deleted lines + post ctx, 3 = top
  * context anchors only, 4 = deleted lines only, 5 = post ctx only.
  * Searches use %;f> (first search of a file) / %;f+ (subsequent)
@@ -1118,8 +1128,8 @@ static void emit_err_check_loc(FILE *out, const char *loc, int phase,
 {
 	if (tags)
 		fputs(tags, out);
-	fprintf(out, "?" "?!${DBG%d:-", phase);
-	fprintf(out, "ya!112");
+	/* "?" "?!" split: "??!" in one literal is the trigraph for '|' */
+	fprintf(out, "?" "?!${DBG%d:-ya!112", phase);
 	EMIT_ESCSEP(out);
 	fprintf(out, "prp");
 	EMIT_ESCSEP(out);
@@ -1344,12 +1354,12 @@ typedef struct group_s {
 	char **post_ctx;         /* post-change context lines (up to 3) */
 	int npost_ctx;
 	int block_change_idx;    /* index of first del/change line in block */
-	/* Edited SEARCH PATTERN 1-NPAT sections (pre-escaped regex) */
+	/* Edited SEARCH PATTERN 1-NSEARCH sections (pre-escaped regex) */
 	char **custom_pat[NSEARCH];
 	int ncustom_pat[NSEARCH];
 	int custom_pat_off[NSEARCH];     /* per-section +N first-line override */
 	int custom_pat_has_off[NSEARCH];
-	int custom_pat_mode[NSEARCH];    /* per-section MODE override (0/1) */
+	int custom_pat_mode[NSEARCH];    /* per-section MODE override (0-3) */
 	int custom_pat_has_mode[NSEARCH];
 	int custom_offset;       /* offset from EDIT COMMAND +N (patterns 1-2) */
 	/* Per-group strategy selection (interactive mode) */
@@ -1395,7 +1405,8 @@ typedef struct {
 	int offset;       /* lines from match start to the target line */
 	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
 	int mode;         /* search mode: 0 = %;f> register, 1 = .,$f> buffer,
-			   * 2 = grp register search (bracketed grp 1 .. grp 0) */
+			   * 2 = grp register search (bracketed grp 1 .. grp 0),
+			   * 3 = global grp straddle (cursor saved/reset/restored) */
 	int pid;          /* fixed pattern id (source slot + 1, 1-9): emitted as
 			   * the capture tag and OK1 anchor id so a failure maps
 			   * to its real pattern regardless of which slots survived */
@@ -1499,7 +1510,7 @@ typedef struct {
 	char **lines;   /* owned: nlines malloc'd regex strings */
 	int nlines;
 	int offset;     /* lines from match start to the target line */
-	int mode;       /* 0 = %;f>, 1 = .,$f> */
+	int mode;       /* 0 = %;f>, 1 = .,$f>, 2 = grp, 3 = global straddle */
 	int score;      /* ordering key (specificity + UNIQUE_BONUS) */
 } fuzzwin_t;
 
@@ -1554,7 +1565,7 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 		for (int j = 0; j < bn; j++) {
 			int nr = rune_count(base[j]);
 			unsigned char *m = emalloc(nr ? nr : 1);
-			fuzz_mask(m, base[j], nr, lvl, seed, &gi);
+			fuzz_mask(m, nr, lvl, seed, &gi);
 			for (int k = 0; k < nr; k++)
 				if (m[k]) any = 1, masked++;
 			total += nr;
@@ -2490,22 +2501,21 @@ static int build_grp_variant(const char *old, const char *new,
 }
 
 /* Emit one s/// field (pattern or replacement): apply the outer ex_arg + shell
- * layers to an already sub-escaped string and free it. */
-static void emit_sub_field(FILE *out, char *escaped)
+ * layers to an already sub-escaped string. */
+static void emit_sub_field(FILE *out, const char *escaped)
 {
 	char *ea = escape_exarg(escaped);
 	emit_escaped_line(out, ea);
 	free(ea);
-	free(escaped);
 }
 
 /* Emit a substitute from pre-escaped pat/repl strings (one progression rung). */
 static void emit_substitute_grp(FILE *out, const char *pat, const char *repl)
 {
 	fputs("s/", out);
-	emit_sub_field(out, dup_n(pat, strlen(pat)));
+	emit_sub_field(out, pat);
 	fputc('/', out);
-	emit_sub_field(out, dup_n(repl, strlen(repl)));
+	emit_sub_field(out, repl);
 	fputc('/', out);
 }
 
@@ -2851,9 +2861,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		if (strncmp(line, "=== ", 4) == 0) {
 			in_ecmd = 0;
 			in_content_section = 0;
-			if (in_pat) {
-				in_pat = 0;
-			}
+			in_pat = 0;
 			in_cstrat = 0;
 		}
 
@@ -2882,7 +2890,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			continue;
 		}
 		if (strncmp(line, "=== SEARCH PATTERN", 18) == 0) {
-			/* "=== SEARCH PATTERN <1-NPAT> ===", bare legacy form
+			/* "=== SEARCH PATTERN <1-NSEARCH> ===", bare legacy form
 			 * maps to the top-context slot (historical single
 			 * pattern), now SEARCH PATTERN 3. */
 			const char *p = line + 18;
@@ -3324,18 +3332,18 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 	char rejpath[260];
 	snprintf(tmptmp, sizeof(tmptmp), "patch2vi_XXXXXX");
 	int fd = mkstemp(tmptmp);
-	snprintf(tmppath, sizeof(tmppath), "%s.diff", tmptmp);
-	if (rename(tmptmp, tmppath) < 0)
-		snprintf(tmppath, sizeof(tmppath), "%s", tmptmp);
 	if (fd < 0) {
 		perror("mkstemp");
 		return;
 	}
+	snprintf(tmppath, sizeof(tmppath), "%s.diff", tmptmp);
+	if (rename(tmptmp, tmppath) < 0)
+		snprintf(tmppath, sizeof(tmppath), "%s", tmptmp);
 	snprintf(tmppath_orig, sizeof(tmppath_orig), "%s.orig", tmppath);
 	snprintf(rejpath, sizeof(rejpath), "%s.rej", tmppath);
 
 	/* Per-file in_fd lookup */
-	file_delta_t **in_fd_per = calloc(nactive, sizeof(file_delta_t *));
+	file_delta_t **in_fd_per = ecalloc(nactive, sizeof(file_delta_t *));
 	if (delta_mode) {
 		for (int k = 0; k < nactive; k++)
 			for (int di = 0; di < nin_deltas; di++)
@@ -3550,7 +3558,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 	/* Parse the edited file once per file slot */
 	grp_delta_t **edit_per = emalloc(nactive * sizeof(grp_delta_t *));
 	for (int k = 0; k < nactive; k++)
-		edit_per[k] = calloc(active[k]->ngroups, sizeof(grp_delta_t));
+		edit_per[k] = ecalloc(active[k]->ngroups, sizeof(grp_delta_t));
 	parse_tmp_file(tmppath, active, nactive, edit_per);
 
 	if (unchanged) {
@@ -3573,7 +3581,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		 * against edited file. Only store changed groups. */
 		grp_delta_t **orig_per = emalloc(nactive * sizeof(grp_delta_t *));
 		for (int k = 0; k < nactive; k++)
-			orig_per[k] = calloc(active[k]->ngroups, sizeof(grp_delta_t));
+			orig_per[k] = ecalloc(active[k]->ngroups, sizeof(grp_delta_t));
 		parse_tmp_file(tmppath_orig, active, nactive, orig_per);
 
 		for (int k = 0; k < nactive; k++) {
@@ -3803,7 +3811,7 @@ static void build_file_groups(file_patch_t *fp)
 	if (fp->nops == 0)
 		return;
 
-	fp->groups = calloc(fp->nops + 1, sizeof(group_t));
+	fp->groups = ecalloc(fp->nops + 1, sizeof(group_t));
 	group_t *groups = fp->groups;
 	int ngroups = 0;
 	int i = 0;
@@ -3963,8 +3971,8 @@ static void build_file_groups(file_patch_t *fp)
 				while (suffix < olen - prefix && suffix < nlen - prefix &&
 				       old[olen-1-suffix] == new[nlen-1-suffix])
 					suffix++;
-				g->ldc_start = utf8_char_offset(old, prefix);
-				g->ldc_end = utf8_char_offset(old, olen - suffix);
+				g->ldc_start = rune_count_n(old, prefix);
+				g->ldc_end = rune_count_n(old, olen - suffix);
 				int ns = prefix, ne = nlen - suffix;
 				g->ldc_new_text = emalloc(ne - ns + 1);
 				memcpy(g->ldc_new_text, new + ns, ne - ns);
@@ -4365,6 +4373,10 @@ static char *pending_orig_path;
 
 static void new_file(const char *path)
 {
+	if (nfiles >= (int)(sizeof(files) / sizeof(files[0]))) {
+		fprintf(stderr, "too many files\n");
+		exit(1);
+	}
 	files[nfiles].path = xstrdup(path);
 	files[nfiles].nops = 0;
 	files[nfiles].is_new = pending_is_new;
@@ -4402,7 +4414,7 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-aridh] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n", prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
@@ -4544,7 +4556,8 @@ int main(int argc, char **argv)
 				if (strncmp(line, "=== DELTA ", 10) == 0) {
 					in_sect = 0;
 					cur_gd = NULL;
-					if (interactive_mode) {
+					if (interactive_mode && nin_deltas <
+					    (int)(sizeof(in_deltas) / sizeof(in_deltas[0]))) {
 						char *p = line + 10;
 						char *end = strstr(p, " ===");
 						if (end)
@@ -4580,7 +4593,8 @@ int main(int argc, char **argv)
 						continue;
 					}
 					if (strncmp(line, "=== LEVEL ", 10) == 0) {
-						parse_level(cur_gd, line);
+						if (cur_gd)
+							parse_level(cur_gd, line);
 						continue;
 					}
 					if (strcmp(line, "=== custom_text ===") == 0) {
@@ -4600,7 +4614,7 @@ int main(int argc, char **argv)
 						continue;
 					}
 					if (strncmp(line, "=== pattern", 11) == 0) {
-						/* "pattern<1-NPAT>"; legacy bare
+						/* "pattern<1-NSEARCH>"; legacy bare
 						 * "pattern" maps to the top-context
 						 * slot (pattern 3) */
 						char c = line[11];
@@ -4610,7 +4624,7 @@ int main(int argc, char **argv)
 						continue;
 					}
 					if (strncmp(line, "=== offset", 10) == 0) {
-						/* "=== offset<1-NPAT> <%+d> ===" */
+						/* "=== offset<1-NSEARCH> <%+d> ===" */
 						char c = line[10];
 						int oi = (c >= '1' && c <= '0' + NSEARCH)
 							? c - '1' : 2;
@@ -4619,7 +4633,7 @@ int main(int argc, char **argv)
 						continue;
 					}
 					if (strncmp(line, "=== mode", 8) == 0) {
-						/* "=== mode<1-NPAT> <%d> ===" */
+						/* "=== mode<1-NSEARCH> <%d> ===" */
 						char c = line[8];
 						int mi = (c >= '1' && c <= '0' + NSEARCH)
 							? c - '1' : 2;
@@ -4658,14 +4672,14 @@ int main(int argc, char **argv)
 			}
 		} else {
 			/* Not a script; store and process this first line */
-			raw_lines[nraw++] = xstrdup(line);
+			add_raw(line);
 			chomp(line);
 			goto process_line;
 		}
 	}
 
 	while (fgets(line, sizeof(line), in)) {
-		raw_lines[nraw++] = xstrdup(line);
+		add_raw(line);
 		chomp(line);
 process_line:
 
@@ -4794,42 +4808,34 @@ process_line:
 	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
 	if (dyn_esc)
 		printf("ESC=\"$(printf '\\%03o')\"\n", dyn_esc);
-	if ((relative_mode || interactive_mode) && dyn_esc)
+	if (relative_mode || interactive_mode) {
+		/* <esc><sep> and <esc><esc><esc><sep> as they appear inside
+		 * the script's double-quoted strings, matching what
+		 * EMIT_ESCSEP / EMIT_ESC3SEP emit into the command body */
+		const char *e1 = dyn_esc ? "${ESC}${SEP}" : "\\\\${SEP}";
+		const char *e3 = dyn_esc ? "${ESC}${ESC}${ESC}${SEP}"
+					 : "\\\\\\\\\\\\${SEP}";
 		fputs("# Command that handles readability line breaks\n"
 		      "LB=\"0?\"\n"
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
 		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
 		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
 		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
-		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n"
-		      "[ \"$QF1\" = \"1\" ] && QF1=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\" || QF1=\n"
-		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
+		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n", stdout);
+		printf("[ \"$QF1\" = \"1\" ] && QF1=\"%svis 2%sq!1\" || QF1=\n",
+		       e1, e1);
+		fputs("# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
 		      "# OK2: with DBG2= also report fallback substitute successes\n"
 		      "[ \"$DBG2\" = \"1\" ] && OK2=\"0?\" || OK2=\n"
-		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0?\" || DBG2=\n"
-		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"${ESC}${SEP}vis 2${ESC}${SEP}q!1\"\n"
-		      "# Enters vi at failing code line in this script\n"
-		      "# Designed for state inspection mid execution\n"
-		      "[ \"$INTR\" = \"1\" ] && INTR=\"${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:"
-		      "|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1\" || INTR=\n", stdout);
-	else if (relative_mode || interactive_mode)
-		fputs("# Command that handles readability line breaks\n"
-		      "LB=\"0?\"\n"
-		      "# Phase 1 (search/mark): errors disabled by default,\n"
-		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
-		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
-		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
-		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n"
-		      "[ \"$QF1\" = \"1\" ] && QF1=\"\\\\${SEP}vis 2\\\\${SEP}q!1\" || QF1=\n"
-		      "# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
-		      "# OK2: with DBG2= also report fallback substitute successes\n"
-		      "[ \"$DBG2\" = \"1\" ] && OK2=\"0?\" || OK2=\n"
-		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0?\" || DBG2=\n"
-		      "[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"\\\\${SEP}vis 2\\\\${SEP}q!1\"\n"
-		      "# Enters vi at failing code line in this script\n"
-		      "# Designed for state inspection mid execution\n"
-		      "[ \"$INTR\" = \"1\" ] && INTR=\"\\\\${SEP}|sc|\\\\${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:"
-		      "|sc! \\\\\\\\\\\\${SEP}|:vis 3\\\\${SEP}q1\" || INTR=\n", stdout);
+		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0?\" || DBG2=\n", stdout);
+		printf("[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"%svis 2%sq!1\"\n",
+		       e1, e1);
+		fputs("# Enters vi at failing code line in this script\n"
+		      "# Designed for state inspection mid execution\n", stdout);
+		printf("[ \"$INTR\" = \"1\" ] && INTR=\"%s|sc|%svis 2:0reg:e $0:83reg "
+		       "%%@47:%%f> %%@112:&Q:b0:|sc! %s|:vis 3%sq1\" || INTR=\n",
+		       e1, e1, e3, e1);
+	}
 
 	/* Build groups for every file */
 	for (int i = 0; i < nfiles; i++)
@@ -4862,10 +4868,8 @@ process_line:
 		      "    P2VIF=./p2vi.$$\n"
 		      "fi\n"
 		      "trap 'rm -f \"$P2VIF\"' EXIT\n", stdout);
-		if (dyn_esc)
-			fputs("printf '%s\\n' \"|sc! ${ESC}${SEP}|:vis 3${SEP}", stdout);
-		else
-			fputs("printf '%s\\n' \"|sc! \\\\\\\\${SEP}|:vis 3${SEP}", stdout);
+		printf("printf '%%s\\n' \"|sc! %s|:vis 3${SEP}",
+		       dyn_esc ? "${ESC}${SEP}" : "\\\\\\\\${SEP}");
 		/* default register <b> caches the buffer for f> searches */
 		if (relative_mode || interactive_mode)
 			fputs("98reg${SEP}", stdout);
