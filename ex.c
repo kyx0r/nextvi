@@ -455,7 +455,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		if (!end || *loc) {
 			if (*cmd !='f')
 				temp_switch(1, 1);
-			return xrerr;
+			return xrerr ? xrerr : xirerr;
 		}
 		beg = 0;
 		max = xrows ? xrows * 3 : end;
@@ -701,7 +701,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	if (!*loc || ex_region(loc, &beg, &end, &o1, &o2)) {
 		end = lbuf_len(xb);
 		if (!end || *loc) {
-			ret = xrerr;
+			ret = xrerr ? xrerr : xirerr;
 			goto err;
 		}
 		beg = 0;
@@ -770,7 +770,7 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 		ret = ex_pipeout(arg + 1, &ibuf);
 		free(ibuf.s);
 		xquit = quit;
-		return NULL;
+		return ret;
 	} else if (ret)
 		return "other buffers modified";
 	if (!strchr(cmd, '!')) {
