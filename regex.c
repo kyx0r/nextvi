@@ -161,7 +161,7 @@ static int compilecode(char *re_loc, rcode *prog, int sizecode, int flg)
 					} else if (*s == ')') {
 						if (--bal == 0)
 							break;
-					} else if (code && la_static && strchr("|.*+?[]{}$", *s))
+					} else if (code && la_static && strchr("|.*+?[{$", *s))
 						la_static = 0;
 					s += uc_len(s);
 				}
