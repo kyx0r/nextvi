@@ -899,6 +899,151 @@ third line
 	"-r"
 
 echo ""
+echo "=== Verbatim PHASE override tests ==="
+
+# -i/-d open $EDITOR on /dev/tty, so these run patch2vi under a pty with a
+# scripted editor. Each group's PHASE 1/PHASE 2 sections hold its verbatim
+# ex-body segment bytes; editing them supersedes the structured sections
+# (latest-edited wins, tie goes to verbatim).
+if command -v python3 >/dev/null 2>&1; then
+
+PTYRUN="$TMPDIR/ptyrun.py"
+cat > "$PTYRUN" <<'PYEOF'
+import os, pty, sys
+pid, fd = pty.fork()
+if pid == 0:
+    out = os.open(sys.argv[1], os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
+    os.dup2(out, 1)
+    os.execvp(sys.argv[2], sys.argv[2:])
+while True:
+    try:
+        data = os.read(fd, 4096)
+    except OSError:
+        break
+    if not data:
+        break
+    sys.stderr.buffer.write(data)
+os.waitpid(pid, 0)
+PYEOF
+
+# Scripted editor: replace OLD with NEW on every line inside sections whose
+# header starts with SECTION ("PHASE 2", "EDIT COMMAND (rel)", ...).
+ED_SUB="$TMPDIR/ed_sub.py"
+cat > "$ED_SUB" <<'PYEOF'
+import sys
+p = sys.argv[1]
+lines = open(p).read().split('\n')
+out, sect = [], None
+for l in lines:
+    if l.startswith('=== ') and l.endswith(' ==='):
+        sect = l[4:-4].strip()
+        out.append(l)
+        continue
+    for sw, old, new in zip(sys.argv[2::3], sys.argv[3::3], sys.argv[4::3]):
+        if sect and sect.startswith(sw):
+            l = l.replace(old, new)
+    out.append(l)
+open(p, 'w').write('\n'.join(out))
+PYEOF
+
+ED_TRUE="$TMPDIR/ed_true.sh"
+printf '#!/bin/sh\nexit 0\n' > "$ED_TRUE"
+chmod +x "$ED_TRUE"
+
+# mked <path> <section> <old> <new> [<section> <old> <new>]: editor wrapper
+mked() {
+	local path="$1"; shift
+	{
+		printf '#!/bin/sh\nexec python3 "%s" "$1"' "$ED_SUB"
+		while [ $# -gt 0 ]; do
+			printf ' "%s" "%s" "%s"' "$1" "$2" "$3"
+			shift 3
+		done
+		printf '\n'
+	} > "$path"
+	chmod +x "$path"
+}
+
+# run_i <script-out> <editor> <flags> <input>: patch2vi under a pty
+run_i() {
+	EDITOR="$2" python3 "$PTYRUN" "$1" ./patch2vi "$3" "$4" \
+		2> "$TMPDIR/i_err.txt"
+	chmod +x "$1"
+	rm -f patch2vi_*.diff patch2vi_*.diff.orig
+}
+
+# apply_i <script> <input-copy> <expected>: run the script on a fresh copy
+apply_i() {
+	cp "$TMPDIR/i_orig.txt" "$TMPDIR/result.txt"
+	sed -i "s|\$VI -e '[^']*'|\$VI -e '$TMPDIR/result.txt'|" "$1"
+	VI="$VI" "$1" >/dev/null 2>&1 &&
+		diff -q "$TMPDIR/result.txt" "$2" >/dev/null 2>&1
+}
+
+printf 'ctx1\nprintf("foo");\nend\n' > "$TMPDIR/i_orig.txt"
+printf 'ctx1\nprintf("bar");\nend\n' > "$TMPDIR/i_bar.txt"
+printf 'ctx1\nprintf("baz");\nend\n' > "$TMPDIR/i_baz.txt"
+printf 'ctx1\nprintf("qux");\nend\n' > "$TMPDIR/i_qux.txt"
+printf 'ctx1\nprintf("BBB");\nend\n' > "$TMPDIR/i_bbb.txt"
+diff -u "$TMPDIR/i_orig.txt" "$TMPDIR/i_bar.txt" > "$TMPDIR/i.patch" || true
+
+# Unedited -i applies like -r
+run_i "$TMPDIR/i1.sh" "$ED_TRUE" -ri "$TMPDIR/i.patch"
+if apply_i "$TMPDIR/i1.sh" "$TMPDIR/i_bar.txt"; then
+	ok "unedited -i applies"
+else
+	fail "unedited -i applies"
+fi
+
+# Editing a PHASE 2 blob overrides the generated segment and is recorded
+# as a verbatim delta
+mked "$TMPDIR/ed1.sh" "PHASE 2" bar baz
+run_i "$TMPDIR/i2.sh" "$TMPDIR/ed1.sh" -ri "$TMPDIR/i.patch"
+if grep -q "verbatim mark" "$TMPDIR/i2.sh" &&
+   apply_i "$TMPDIR/i2.sh" "$TMPDIR/i_baz.txt"; then
+	ok "verbatim PHASE edit applies and is recorded"
+else
+	fail "verbatim PHASE edit applies and is recorded"
+fi
+
+# -d re-applies the stored verbatim override and reaches a fixed point
+run_i "$TMPDIR/i3.sh" "$ED_TRUE" -rd "$TMPDIR/i2.sh"
+run_i "$TMPDIR/i4.sh" "$ED_TRUE" -rd "$TMPDIR/i3.sh"
+if diff -q "$TMPDIR/i3.sh" "$TMPDIR/i4.sh" >/dev/null 2>&1 &&
+   apply_i "$TMPDIR/i3.sh" "$TMPDIR/i_baz.txt"; then
+	ok "-d verbatim fixed point"
+else
+	fail "-d verbatim fixed point"
+fi
+
+# A structured edit on a group holding a stored override discards the
+# override (preserved in .rej) and takes effect itself
+mked "$TMPDIR/ed2.sh" "EDIT COMMAND (rel)" bar qux
+run_i "$TMPDIR/i5.sh" "$TMPDIR/ed2.sh" -rd "$TMPDIR/i3.sh"
+if grep -q "discards verbatim override" "$TMPDIR/i_err.txt" &&
+   ! grep -q "verbatim mark" "$TMPDIR/i5.sh" &&
+   apply_i "$TMPDIR/i5.sh" "$TMPDIR/i_qux.txt"; then
+	ok "structured edit discards stored override"
+else
+	fail "structured edit discards stored override"
+fi
+rm -f patch2vi_*.rej
+
+# Both edited in one session: verbatim wins, structured edit is shadowed
+mked "$TMPDIR/ed3.sh" "EDIT COMMAND (rel)" bar AAA "PHASE 2" bar BBB
+run_i "$TMPDIR/i6.sh" "$TMPDIR/ed3.sh" -ri "$TMPDIR/i.patch"
+if grep -q "shadowed by verbatim" "$TMPDIR/i_err.txt" &&
+   apply_i "$TMPDIR/i6.sh" "$TMPDIR/i_bbb.txt"; then
+	ok "verbatim edit shadows structured edit"
+else
+	fail "verbatim edit shadows structured edit"
+fi
+
+else
+	echo "  SKIP: python3 not available"
+fi
+
+echo ""
 echo "=== Results ==="
 echo "Passed: $PASS"
 echo "Failed: $FAIL"
