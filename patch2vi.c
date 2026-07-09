@@ -2741,44 +2741,6 @@ static void free_grp(grp_delta_t *p)
 	free(p->ph2);
 }
 
-/* Deep-copy all of src's arrays and scalars into dst (zeroed first). */
-static void clone_grp(grp_delta_t *dst, const grp_delta_t *src)
-{
-	memset(dst, 0, sizeof(*dst));
-	dst->group_idx = src->group_idx;
-	dst->level = src->level;
-	dst->has_star = src->has_star;
-	dst->strategy = src->strategy;
-	arr_clone(&dst->del_lines, &dst->ndel_lines, &dst->del_cap,
-		  src->del_lines, src->ndel_lines);
-	arr_clone(&dst->add_lines, &dst->nadd_lines, &dst->add_cap,
-		  src->add_lines, src->nadd_lines);
-	arr_clone(&dst->custom_text, &dst->ncustom_text, &dst->custom_text_cap,
-		  src->custom_text, src->ncustom_text);
-	arr_clone(&dst->pre_ctx, &dst->npre_ctx, &dst->pre_cap,
-		  src->pre_ctx, src->npre_ctx);
-	arr_clone(&dst->post_ctx, &dst->npost_ctx, &dst->post_cap,
-		  src->post_ctx, src->npost_ctx);
-	for (int pi = 0; pi < NSEARCH; pi++) {
-		arr_clone(&dst->pattern[pi], &dst->npattern[pi], &dst->pat_cap[pi],
-			  src->pattern[pi], src->npattern[pi]);
-		dst->pat_off[pi] = src->pat_off[pi];
-		dst->pat_has_off[pi] = src->pat_has_off[pi];
-		dst->pat_mode[pi] = src->pat_mode[pi];
-		dst->pat_has_mode[pi] = src->pat_has_mode[pi];
-	}
-	arr_clone(&dst->abs_cmd, &dst->nabs, &dst->abs_cap, src->abs_cmd, src->nabs);
-	arr_clone(&dst->rel_cmd, &dst->nrel, &dst->rel_cap, src->rel_cmd, src->nrel);
-	arr_clone(&dst->relc_cmd, &dst->nrelc, &dst->relc_cap,
-		  src->relc_cmd, src->nrelc);
-	if (src->ph1)
-		dst->ph1 = uc_dup(src->ph1);
-	if (src->ph2)
-		dst->ph2 = uc_dup(src->ph2);
-	dst->ovr_mark = src->ovr_mark;
-	dst->ovr_esc = src->ovr_esc;
-}
-
 /* Section codes shared by the editor-buffer (parse_grp_blob) and embedded-delta
  * (main) parsers. The two formats carry the same per-group fields under
  * different header spellings; each section's body appends through gsect_add so
