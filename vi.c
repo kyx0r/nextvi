@@ -320,13 +320,15 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			return 1;
 		}
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
-		if (!xkwdrs)
-			vi_drawmsg_mpt("syntax error")
 		free(kw);
 	} else if (msg)
 		ex_krsset(ex_regget('/') ? ex_regget('/')->s : NULL, xkwddir);
-	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || xgrp >= xkwdrs->nsubc)
+	if (!lbuf_len(xb) || !xkwddir)
 		return 1;
+	else if (!xkwdrs || xgrp >= xkwdrs->nsubc) {
+		vi_drawmsg_mpt(xkwdrs ? "invalid grp" : "syntax error")
+		return 1;
+	}
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
 		if (lbuf_search(xb, xkwdrs, dir, 0, lbuf_len(xb),
@@ -1046,12 +1048,12 @@ static int vc_put(int cmd)
 {
 	int cnt = MAX(1, vi_arg);
 	int i, off;
-	sbuf *buf = ex_regget(vi_ybuf);
 	char *ln;
-	if (!buf)
-		vi_drawmsg_mpt("yank buffer empty")
-	if (!buf || !buf->s_n)
+	sbuf *buf = ex_regget(vi_ybuf);
+	if (!buf || !buf->s_n) {
+		vi_drawmsg_mpt(buf ? "empty register" : "uninitialized register")
 		return 0;
+	}
 	rep_record()
 	sbuf_smake(sb, 1024)
 	if (buf->s[buf->s_n-1] == '\n' || strchr(buf->s, '\n')) {
@@ -1133,7 +1135,7 @@ static void vc_execute(int cmd)
 	if (c == cmd && exec_buf >= 0)
 		c = exec_buf;
 	if (!ex_regget(c)) {
-		vi_drawmsg_mpt("exec buffer empty")
+		vi_drawmsg_mpt("uninitialized register")
 		return;
 	}
 	exec_buf = c;
