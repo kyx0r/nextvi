@@ -605,7 +605,7 @@ static char *join_lines(char **lines, int nlines)
 	sbufn_ret(sb, sb->s)
 }
 
-/* Build the default display text (as it appears in the temp file) from patch del/add lines.
+/* Build the default display text (as it appears in the editor buffer) from patch del/add lines.
  * Returns e.g. "-line1\n-line2\n+line3\n+line4\n" */
 static char *build_default_text(char **del, int ndel, char **add, int nadd)
 {
@@ -778,9 +778,8 @@ static int diff_expand_right(const char *old, int olen, int *oe, int *ne)
 /*
  * Compare two lines and find the differing portion.
  * Returns 1 if suitable for horizontal edit, 0 otherwise.
- * Sets *start to first differing UTF-8 char position,
- * *old_end to end position in old string,
- * *new_text to the replacement text (allocated).
+ * Sets *old_text to the differing old-side span and *new_text to its
+ * replacement (both allocated).
  */
 static int find_line_diff(const char *old, const char *new,
 			  char **old_text, char **new_text)
@@ -788,16 +787,22 @@ static int find_line_diff(const char *old, const char *new,
 	int old_len = strlen(old);
 	int new_len = strlen(new);
 
-	/* Find common prefix (in bytes) */
+	/* Find common prefix (in bytes), snapped back to a rune boundary so
+	 * runes sharing lead bytes (e.g. é vs è) are never split */
 	int prefix = 0;
 	while (old[prefix] && new[prefix] && old[prefix] == new[prefix])
 		prefix++;
+	while (prefix > 0 && (old[prefix] & 0xC0) == 0x80)
+		prefix--;
 
-	/* Find common suffix (in bytes), but don't overlap with prefix */
+	/* Find common suffix (in bytes), but don't overlap with prefix;
+	 * snap forward so the cut lands on a rune boundary */
 	int suffix = 0;
 	while (suffix < old_len - prefix && suffix < new_len - prefix &&
 	       old[old_len - 1 - suffix] == new[new_len - 1 - suffix])
 		suffix++;
+	while (suffix > 0 && (old[old_len - suffix] & 0xC0) == 0x80)
+		suffix--;
 
 	/* Calculate the differing regions */
 	int old_diff_start = prefix;
@@ -969,7 +974,8 @@ static void emit_escaped_text(sbuf *out, const char *s);
  *
  * Commands that do NOT advance xrow:
  *   s (substitute) - ec_substitute: does not modify xrow/xoff
- *   p (print)      - ec_print: xrow = end - 1 (but only used for debug)
+ *   p (print)      - ec_print: an explicit command letter skips the
+ *                    xrow = end - 1 bare-address path (only used for debug)
  *
  * Commands used for setup/teardown (no range relevance):
  *   vis (visual)   - ec_print: sets xvis mode
@@ -2712,8 +2718,8 @@ static int pat_off_line(const char *s, int *off)
 	return 1;
 }
 
-/* grp_delta_t doubles as the per-group temp-file parse result; the parse path
- * just leaves group_idx/pre_ctx/post_ctx unset. */
+/* grp_delta_t doubles as the per-group editor-buffer parse result; the parse
+ * path just leaves group_idx/pre_ctx/post_ctx unset. */
 
 #define FREE_ARR(p, n) do { for (int _i = 0; _i < (n); _i++) free((p)[_i]); \
 			    free(p); } while (0)
@@ -2773,7 +2779,7 @@ static void clone_grp(grp_delta_t *dst, const grp_delta_t *src)
 	dst->ovr_esc = src->ovr_esc;
 }
 
-/* Section codes shared by the temp-file (parse_tmp_file) and embedded-delta
+/* Section codes shared by the editor-buffer (parse_grp_blob) and embedded-delta
  * (main) parsers. The two formats carry the same per-group fields under
  * different header spellings; each section's body appends through gsect_add so
  * the field set lives in one place. CONTENT (-/+ -> del/add) stays per-parser:
@@ -4231,13 +4237,20 @@ static void build_file_groups(file_patch_t *fp)
 				const char *old = g->del_texts[0];
 				const char *new = g->add_texts[0];
 				int olen = strlen(old), nlen = strlen(new);
+				/* rune-snapped like find_line_diff: ;c positions
+				 * are rune indexes, so a split rune would shift
+				 * ldc_start/ldc_end and splice invalid UTF-8 */
 				int prefix = 0;
 				while (old[prefix] && new[prefix] && old[prefix] == new[prefix])
 					prefix++;
+				while (prefix > 0 && (old[prefix] & 0xC0) == 0x80)
+					prefix--;
 				int suffix = 0;
 				while (suffix < olen - prefix && suffix < nlen - prefix &&
 				       old[olen-1-suffix] == new[nlen-1-suffix])
 					suffix++;
+				while (suffix > 0 && (old[olen - suffix] & 0xC0) == 0x80)
+					suffix--;
 				g->ldc_start = rune_count_n(old, prefix);
 				g->ldc_end = rune_count_n(old, olen - suffix);
 				int ns = prefix, ne = nlen - suffix;
@@ -4988,8 +5001,10 @@ int main(int argc, char **argv)
 						char c = line[10];
 						int oi = (c >= '1' && c <= '0' + NSEARCH)
 							? c - '1' : 2;
-						cur_gd->pat_off[oi] = atoi(line + 11);
-						cur_gd->pat_has_off[oi] = 1;
+						if (cur_gd) {
+							cur_gd->pat_off[oi] = atoi(line + 11);
+							cur_gd->pat_has_off[oi] = 1;
+						}
 						continue;
 					}
 					if (strncmp(line, "=== mode", 8) == 0) {
@@ -4997,8 +5012,10 @@ int main(int argc, char **argv)
 						char c = line[8];
 						int mi = (c >= '1' && c <= '0' + NSEARCH)
 							? c - '1' : 2;
-						cur_gd->pat_mode[mi] = atoi(line + 9);
-						cur_gd->pat_has_mode[mi] = 1;
+						if (cur_gd) {
+							cur_gd->pat_mode[mi] = atoi(line + 9);
+							cur_gd->pat_has_mode[mi] = 1;
+						}
 						continue;
 					}
 					if (strcmp(line, "=== edit_cmd_abs ===") == 0) {
