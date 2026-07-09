@@ -904,16 +904,17 @@ echo ""
 echo "=== Verbatim PHASE override tests ==="
 
 # -i/-d open the built-in nextvi on /dev/tty, so these run patch2vi under
-# script(1)'s pty. The editor session is driven entirely by EXINIT (nextvi
-# runs it at startup): edits pipe the buffer through an awk filter with
-# ":%!" and save with "wq"; unedited sessions just "q". No keystrokes are
-# sent, so the run is non-interactive and exits as fast as it starts.
-# Each group's PHASE 1/PHASE 2 sections hold its verbatim ex-body segment
-# bytes; editing them supersedes the structured sections (latest-edited
-# wins, tie goes to verbatim).
+# script(1)'s pty. The editor session is driven entirely by P2VI_EX
+# (patch2vi's test hook, run like EXINIT after the in-RAM buffers load):
+# edits pipe the buffer through an awk filter with ":%!" and quit with
+# "q!" - the buffer is read back as-is, there is no file and no saving.
+# No keystrokes are sent, so the run is non-interactive and exits as fast
+# as it starts. Each group's PHASE 1/PHASE 2 sections hold its verbatim
+# ex-body segment bytes; editing them supersedes the structured sections
+# (latest-edited wins, tie goes to verbatim).
 if command -v script >/dev/null 2>&1; then
 
-# Quit without saving: patch2vi treats the unchanged mtime as "unedited"
+# Quit an untouched session: parses back to what was written = unedited
 ED_TRUE="q"
 
 # mkfilter <file> [<section> <old> <new>]...: awk filter that replaces OLD
@@ -930,21 +931,21 @@ mkfilter() {
 	printf '{ print }\n' >> "$f"
 }
 
-# edex <file> [<section> <old> <new>]...: EXINIT that pipes the buffer
-# through a mkfilter awk program, then saves and quits
+# edex <file> [<section> <old> <new>]...: P2VI_EX commands that pipe the
+# buffer through a mkfilter awk program, then quit (discard flag: the
+# edited buffer is read from RAM, never written)
 edex() {
 	mkfilter "$@"
-	printf '%%!awk -f %s:wq' "$1"
+	printf '%%!awk -f %s:q!' "$1"
 }
 
-# run_i <script-out> <exinit> <flags> <input>: patch2vi under a pty with
-# the embedded editor driven by EXINIT
+# run_i <script-out> <excmds> <flags> <input>: patch2vi under a pty with
+# the embedded editor driven by P2VI_EX
 run_i() {
-	EXINIT="$2" script -qec \
+	P2VI_EX="$2" script -qec \
 		"./patch2vi $3 '$4' > '$1' 2> '$TMPDIR/i_err.txt'" \
 		/dev/null >/dev/null 2>&1
 	chmod +x "$1"
-	rm -f patch2vi_*.diff patch2vi_*.diff.orig
 }
 
 # apply_i <script> <input-copy> <expected>: run the script on a fresh copy
@@ -1002,7 +1003,7 @@ if grep -q "discards verbatim override" "$TMPDIR/i_err.txt" &&
 else
 	fail "structured edit discards stored override"
 fi
-rm -f patch2vi_*.rej
+rm -f "$TMPDIR"/*.p2v.rej
 
 # Both edited in one session: verbatim wins, structured edit is shadowed
 run_i "$TMPDIR/i6.sh" \
