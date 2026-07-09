@@ -1742,53 +1742,53 @@ void rstr_free(rstr *rs)
 	free(rs);
 }
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL regex.c:751:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 		free\\(kw\\);
-	} else if \\(msg\\)
-		ex_krsset\\(ex_regget\\('/'\\) \\? ex_regget\\('/'\\)->s : NULL, xkwddir\\);
-	if \\(!lbuf_len\\(xb\\) \\|\\| !xkwddir \\|\\| !xkwdrs \\|\\| xgrp >= xkwdrs->nsubc\\)
+${ESC}${SEP}%;f> 		ex_krsset\\(ex_regget\\('/'\\) \\? ex_regget\\('/'\\)->s : NULL, xkwddir\\);
+	if \\(!lbuf_len\\(xb\\) \\|\\| !xkwddir\\)
 		return 1;
-	dir = cmd == 'N' \\? -xkwddir : xkwddir;
-	for \\(i = 0; i < cnt; i\\+\\+\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
+	else if \\(!xkwdrs \\|\\| xgrp >= xkwdrs->nsubc\\) \\{
+		vi_drawmsg_mpt\\(xkwdrs \\? \"invalid grp\" : \"syntax error\"\\)
+		return 1;
+	}${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	if \\(!lbuf_len\\(xb\\) \\|\\| !xkwddir \\|\\| !xkwdrs \\|\\| xgrp >= xkwdrs->nsubc\\)
+${ESC}${SEP}%;f> 	else if \\(!xkwdrs \\|\\| xgrp >= xkwdrs->nsubc\\) \\{
+		vi_drawmsg_mpt\\(xkwdrs \\? \"invalid grp\" : \"syntax error\"\\)
 		return 1;
-	dir = cmd == 'N' \\? -xkwddir : xkwddir;
-	for \\(i = 0; i < cnt; i\\+\\+\\) \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
+	}${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:328:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 		free\\(kw\\);
-	} else if \\(msg\\)
-		ex_krsset\\(ex_regget\\('/'\\) \\? ex_regget\\('/'\\)->s : NULL, xkwddir\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 		ex_krsset\\(ex_regget\\('/'\\) \\? ex_regget\\('/'\\)->s : NULL, xkwddir\\);
+	if \\(!lbuf_len\\(xb\\) \\|\\| !xkwddir\\)
+		return 1;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:328:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^	if \\(!lbuf_len\\(xb\\) \\|\\| !xkwddir \\|\\| !xkwdrs \\|\\| xgrp >= xkwdrs->nsubc\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^	else if \\(!xkwdrs \\|\\| xgrp >= xkwdrs->nsubc\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:328:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 		return 1;
-	dir = cmd == 'N' \\? -xkwddir : xkwddir;
-	for \\(i = 0; i < cnt; i\\+\\+\\) \\{${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 		vi_drawmsg_mpt\\(xkwdrs \\? \"invalid grp\" : \"syntax error\"\\)
+		return 1;
+	}${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:328:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> ...re..k...
-....... .f.\\(m...
-..e._k.......x.r.g.e.........e................ . ..L.....w.d..\\).
-....\\(..b.._...\\(xb........w.d..... .......... .....>. ..............
-...e..rn.1.
-...r.....d.=. ..'.....kw.di.....k....r;
-.... .i ...... . .n.........${ESC}${SEP}6??${ESC}${SEP}${LB}
+${ESC}${SEP}%;f> 	.e....s.e...._r..ge..'/........r....t.......... ......x.w...r..
+.....!lb.._.en.x...\\|\\|.!...d....
+	..........
+..lse .f .........\\|\\|.........xk...........\\)..
+..v..d.............wd.........a..d .........y.t.. ..r.r..
+...e...n...
+	}${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:328:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		free\\(kw\\);.*?
-	} else if \\(msg\\).*?
-		ex_krsset\\(ex_regget\\('/'\\) \\? ex_regget\\('/'\\)->s : NULL, xkwddir\\);.*?
-(	if \\(!lbuf_len\\(xb\\) \\|\\| !xkwddir \\|\\| !xkwdrs \\|\\| xgrp >= xkwdrs->nsubc\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		ex_krsset\\(ex_regget\\('/'\\) \\? ex_regget\\('/'\\)->s : NULL, xkwddir\\);.*?
+	if \\(!lbuf_len\\(xb\\) \\|\\| !xkwddir\\).*?
+		return 1;.*?
+(	else if \\(!xkwdrs \\|\\| xgrp >= xkwdrs->nsubc\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:328:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		ex_krsset\\(kw \\+ i, cmd == '/' \\? \\+2 : -2\\);
-		if \\(!xkwdrs\\)
-			vi_drawmsg_mpt\\(\"syntax error\"\\).*(		if \\(lbuf_search\\(xb, xkwdrs, dir, 0, lbuf_len\\(xb\\),)
-				msg \\? dir : -1, 1, row, off\\)\\) \\{
-			if \\(msg\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
+		free\\(kw\\);
+	} else if \\(msg\\).*(	dir = cmd == 'N' \\? -xkwddir : xkwddir;)
+	for \\(i = 0; i < cnt; i\\+\\+\\) \\{
+		if \\(lbuf_search\\(xb, xkwdrs, dir, 0, lbuf_len\\(xb\\),${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:328:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			free\\(kw\\);
 			return 1;
-		}.*(				snprintf\\(vi_msg, sizeof\\(vi_msg\\), \"\\\\\"%s\\\\\" not found %d/%d\",)
-						ex_regget\\('/'\\) \\? ex_regget\\('/'\\)->s : \"\", i, cnt\\);
-				vi_drawmsg_mpt\\(vi_msg\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
+		}.*(				msg \\? dir : -1, 1, row, off\\)\\) \\{)
+			if \\(msg\\) \\{
+				snprintf\\(vi_msg, sizeof\\(vi_msg\\), \"\\\\\"%s\\\\\" not found %d/%d\",${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:328:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:328${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -1806,19 +1806,19 @@ static int fspos;
 static int fsdir;
 
 ${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:382:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:384:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	ex_regput\\(tolower\\(c\\), s, isupper\\(c\\)\\);
 }
 
 ${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:382:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:384:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^rset \\*fsincl;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:382:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:384:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ static int fspos;
 static int fsdir;
 
 ${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:382:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:384:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ....r...ut.t...w..\\(... .,..........\\)..
 }
 
@@ -1827,25 +1827,25 @@ ${ESC}${SEP}%;f+ ....r...ut.t...w..\\(... .,..........\\)..
 ...........fs...;
 
 ${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:382:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:384:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	ex_regput\\(tolower\\(c\\), s, isupper\\(c\\)\\);.*?
 }.*?
 .*?
 (rset \\*fsincl;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:382:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:384:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		ex_regput\\('1', s, 0\\);
 	} else if \\(\\(i_s = ex_regget\\(c\\)\\)\\)
 		ex_regput\\('0', i_s->s, 0\\);.*(void dir_calc\\(char \\*path\\))
 \\{
 	struct dirent \\*dirp;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:382:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:384:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		for \\(int i = 8; i > 0; i--\\)
 			if \\(\\(i_s = ex_regget\\('0'\\+i\\)\\)\\)
 				ex_regput\\('0' \\+ i \\+ 1, i_s->s, 0\\);.*(	struct stat statbuf;)
 	int i = 0, ret;
 	char \\*cpath, \\*ptrs\\[1024];${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:382:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:382${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:384:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:384${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i], pathlen \\+ len\\);
 				plen\\[i\\+\\+] = pathlen \\+ len;
@@ -1859,17 +1859,17 @@ ${ESC}${SEP}%;f+ 				if \\(!fsincl \\|\\| rset_match\\(fsincl, cpath, 0\\)\\) \\
 					sbuf_mem\\(sb, cpath, \\(int\\)\\(pathlen \\+ len\\)\\)
 					sbuf_chr\\(sb, '\\\\n'\\)
 				}${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:421:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:423:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i], pathlen \\+ len\\);
 				plen\\[i\\+\\+] = pathlen \\+ len;
 			} else if \\(ret >= 0 && S_ISREG\\(statbuf\\.st_mode\\)\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:421:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:423:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^				if \\(!fsincl \\|\\| rset_match\\(fsincl, cpath, 0\\)\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:421:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:423:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					sbuf_mem\\(sb, cpath, \\(int\\)\\(pathlen \\+ len\\)\\)
 					sbuf_chr\\(sb, '\\\\n'\\)
 				}${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:421:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:423:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	............a....p..............n........
 ....p.e..i......pa....... l.n.
 			}....e.i. ........0... ...........t.u...t_..de..
@@ -1877,31 +1877,31 @@ ${ESC}${SEP}%;f+ 	............a....p..............n........
 .	................cp..h..\\(..t....t.....\\+..e...
 ..	...buf.c..\\(.b,.'..'.
 	....${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:421:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:423:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				memcpy\\(cpath, ptrs\\[i], pathlen \\+ len\\);.*?
 				plen\\[i\\+\\+] = pathlen \\+ len;.*?
 			} else if \\(ret >= 0 && S_ISREG\\(statbuf\\.st_mode\\)\\).*?
 (				if \\(!fsincl \\|\\| rset_match\\(fsincl, cpath, 0\\)\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:421:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:423:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				dps\\[i] = sdp;
 				ptrs\\[i] = cpath;
 				cpath = emalloc\\(pathlen \\+ 1024\\);.*(		closedir\\(dp\\);)
 		free\\(cpath\\);
 		if \\(i > 0\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:421:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:423:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			if \\(ret >= 0 && S_ISDIR\\(statbuf\\.st_mode\\)\\) \\{
 				if \\(i >= LEN\\(ptrs\\) \\|\\| !\\(sdp = opendir\\(cpath\\)\\)\\)
 					break;.*(			dp = dps\\[--i];)
 			pathlen = plen\\[i];
 			cpath = ptrs\\[i];${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:421:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:421${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:423:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:423${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}?'1s/xgrp >= xkwdrs->nsubc/((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'1s/(xg.*->)(ns.*c\\))/((xkwdrs->rs && \\1rs->\\2 || xgrp >= 2))/${ESC}${SEP}2??${ESC}${SEP}2??'1${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:328:s2${SEP}${LB}
+${SEP}?'1s/xgrp >= xkwdrs->nsubc/((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'1s/(xg.*->)(n.*\\) )/((xkwdrs->rs && \\1rs->\\2|| xgrp >= 2)) /${ESC}${SEP}2??${ESC}${SEP}2??'1${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:328:s2${SEP}${LB}
 ${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:328:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'2s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:382:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:421:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b4${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}'2s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:384:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'3s/et/tr/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:423:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b4${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 	int nsubc;		/\\* total sub count \\*/
 	int n;			/\\* number of regular expressions in this set \\*/
 } rset;
@@ -2581,19 +2581,19 @@ index 22319b65..e0bbc617 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index e104d236..70fce08f 100644
+index 703366c1..db5b35a3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -325,7 +325,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
- 		free(kw);
- 	} else if (msg)
  		ex_krsset(ex_regget('/') ? ex_regget('/')->s : NULL, xkwddir);
--	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || xgrp >= xkwdrs->nsubc)
-+	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2))
+ 	if (!lbuf_len(xb) || !xkwddir)
  		return 1;
- 	dir = cmd == 'N' ? -xkwddir : xkwddir;
- 	for (i = 0; i < cnt; i++) {
-@@ -379,7 +379,7 @@ static void vi_regput(int c, const char *s, int lnmode)
+-	else if (!xkwdrs || xgrp >= xkwdrs->nsubc) {
++	else if (!xkwdrs || ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)) {
+ 		vi_drawmsg_mpt(xkwdrs ? "invalid grp" : "syntax error")
+ 		return 1;
+ 	}
+@@ -381,7 +381,7 @@ static void vi_regput(int c, const char *s, int lnmode)
  	ex_regput(tolower(c), s, isupper(c));
  }
  
@@ -2602,7 +2602,7 @@ index e104d236..70fce08f 100644
  static int fspos;
  static int fsdir;
  
-@@ -418,7 +418,7 @@ void dir_calc(char *path)
+@@ -420,7 +420,7 @@ void dir_calc(char *path)
  				memcpy(cpath, ptrs[i], pathlen + len);
  				plen[i++] = pathlen + len;
  			} else if (ret >= 0 && S_ISREG(statbuf.st_mode))
