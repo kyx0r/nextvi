@@ -82,7 +82,9 @@ check_drift() {
 	fi
 }
 
-cc -O2 -o patch2vi patch2vi.c
+# build via the script: it renames vi.c's main() around the compile
+./build_patch2vi.sh clean >/dev/null
+./build_patch2vi.sh build >/dev/null
 
 echo "=== Script content tests ==="
 
@@ -901,73 +903,46 @@ third line
 echo ""
 echo "=== Verbatim PHASE override tests ==="
 
-# -i/-d open $EDITOR on /dev/tty, so these run patch2vi under a pty with a
-# scripted editor. Each group's PHASE 1/PHASE 2 sections hold its verbatim
-# ex-body segment bytes; editing them supersedes the structured sections
-# (latest-edited wins, tie goes to verbatim).
-if command -v python3 >/dev/null 2>&1; then
+# -i/-d open the built-in nextvi on /dev/tty, so these run patch2vi under
+# script(1)'s pty. The editor session is driven entirely by EXINIT (nextvi
+# runs it at startup): edits pipe the buffer through an awk filter with
+# ":%!" and save with "wq"; unedited sessions just "q". No keystrokes are
+# sent, so the run is non-interactive and exits as fast as it starts.
+# Each group's PHASE 1/PHASE 2 sections hold its verbatim ex-body segment
+# bytes; editing them supersedes the structured sections (latest-edited
+# wins, tie goes to verbatim).
+if command -v script >/dev/null 2>&1; then
 
-PTYRUN="$TMPDIR/ptyrun.py"
-cat > "$PTYRUN" <<'PYEOF'
-import os, pty, sys
-pid, fd = pty.fork()
-if pid == 0:
-    out = os.open(sys.argv[1], os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
-    os.dup2(out, 1)
-    os.execvp(sys.argv[2], sys.argv[2:])
-while True:
-    try:
-        data = os.read(fd, 4096)
-    except OSError:
-        break
-    if not data:
-        break
-    sys.stderr.buffer.write(data)
-os.waitpid(pid, 0)
-PYEOF
+# Quit without saving: patch2vi treats the unchanged mtime as "unedited"
+ED_TRUE="q"
 
-# Scripted editor: replace OLD with NEW on every line inside sections whose
-# header starts with SECTION ("PHASE 2", "EDIT COMMAND (rel)", ...).
-ED_SUB="$TMPDIR/ed_sub.py"
-cat > "$ED_SUB" <<'PYEOF'
-import sys
-p = sys.argv[1]
-lines = open(p).read().split('\n')
-out, sect = [], None
-for l in lines:
-    if l.startswith('=== ') and l.endswith(' ==='):
-        sect = l[4:-4].strip()
-        out.append(l)
-        continue
-    for sw, old, new in zip(sys.argv[2::3], sys.argv[3::3], sys.argv[4::3]):
-        if sect and sect.startswith(sw):
-            l = l.replace(old, new)
-    out.append(l)
-open(p, 'w').write('\n'.join(out))
-PYEOF
-
-ED_TRUE="$TMPDIR/ed_true.sh"
-printf '#!/bin/sh\nexit 0\n' > "$ED_TRUE"
-chmod +x "$ED_TRUE"
-
-# mked <path> <section> <old> <new> [<section> <old> <new>]: editor wrapper
-mked() {
-	local path="$1"; shift
-	{
-		printf '#!/bin/sh\nexec python3 "%s" "$1"' "$ED_SUB"
-		while [ $# -gt 0 ]; do
-			printf ' "%s" "%s" "%s"' "$1" "$2" "$3"
-			shift 3
-		done
-		printf '\n'
-	} > "$path"
-	chmod +x "$path"
+# mkfilter <file> [<section> <old> <new>]...: awk filter that replaces OLD
+# with NEW on every line inside sections whose header starts with SECTION
+# ("PHASE 2", "EDIT COMMAND (rel)", ...)
+mkfilter() {
+	local f="$1"; shift
+	printf '/^=== .* ===$/ { sect = substr($0, 5, length($0) - 8); print; next }\n' > "$f"
+	while [ $# -gt 0 ]; do
+		printf 'index(sect, "%s") == 1 { gsub(/%s/, "%s") }\n' \
+			"$1" "$2" "$3" >> "$f"
+		shift 3
+	done
+	printf '{ print }\n' >> "$f"
 }
 
-# run_i <script-out> <editor> <flags> <input>: patch2vi under a pty
+# edex <file> [<section> <old> <new>]...: EXINIT that pipes the buffer
+# through a mkfilter awk program, then saves and quits
+edex() {
+	mkfilter "$@"
+	printf '%%!awk -f %s:wq' "$1"
+}
+
+# run_i <script-out> <exinit> <flags> <input>: patch2vi under a pty with
+# the embedded editor driven by EXINIT
 run_i() {
-	EDITOR="$2" python3 "$PTYRUN" "$1" ./patch2vi "$3" "$4" \
-		2> "$TMPDIR/i_err.txt"
+	EXINIT="$2" script -qec \
+		"./patch2vi $3 '$4' > '$1' 2> '$TMPDIR/i_err.txt'" \
+		/dev/null >/dev/null 2>&1
 	chmod +x "$1"
 	rm -f patch2vi_*.diff patch2vi_*.diff.orig
 }
@@ -997,8 +972,8 @@ fi
 
 # Editing a PHASE 2 blob overrides the generated segment and is recorded
 # as a verbatim delta
-mked "$TMPDIR/ed1.sh" "PHASE 2" bar baz
-run_i "$TMPDIR/i2.sh" "$TMPDIR/ed1.sh" -ri "$TMPDIR/i.patch"
+run_i "$TMPDIR/i2.sh" "$(edex "$TMPDIR/ed1.awk" "PHASE 2" bar baz)" \
+	-ri "$TMPDIR/i.patch"
 if grep -q "verbatim mark" "$TMPDIR/i2.sh" &&
    apply_i "$TMPDIR/i2.sh" "$TMPDIR/i_baz.txt"; then
 	ok "verbatim PHASE edit applies and is recorded"
@@ -1018,8 +993,8 @@ fi
 
 # A structured edit on a group holding a stored override discards the
 # override (preserved in .rej) and takes effect itself
-mked "$TMPDIR/ed2.sh" "EDIT COMMAND (rel)" bar qux
-run_i "$TMPDIR/i5.sh" "$TMPDIR/ed2.sh" -rd "$TMPDIR/i3.sh"
+run_i "$TMPDIR/i5.sh" "$(edex "$TMPDIR/ed2.awk" "EDIT COMMAND (rel)" bar qux)" \
+	-rd "$TMPDIR/i3.sh"
 if grep -q "discards verbatim override" "$TMPDIR/i_err.txt" &&
    ! grep -q "verbatim mark" "$TMPDIR/i5.sh" &&
    apply_i "$TMPDIR/i5.sh" "$TMPDIR/i_qux.txt"; then
@@ -1030,8 +1005,9 @@ fi
 rm -f patch2vi_*.rej
 
 # Both edited in one session: verbatim wins, structured edit is shadowed
-mked "$TMPDIR/ed3.sh" "EDIT COMMAND (rel)" bar AAA "PHASE 2" bar BBB
-run_i "$TMPDIR/i6.sh" "$TMPDIR/ed3.sh" -ri "$TMPDIR/i.patch"
+run_i "$TMPDIR/i6.sh" \
+	"$(edex "$TMPDIR/ed3.awk" "EDIT COMMAND (rel)" bar AAA "PHASE 2" bar BBB)" \
+	-ri "$TMPDIR/i.patch"
 if grep -q "shadowed by verbatim" "$TMPDIR/i_err.txt" &&
    apply_i "$TMPDIR/i6.sh" "$TMPDIR/i_bbb.txt"; then
 	ok "verbatim edit shadows structured edit"
@@ -1042,8 +1018,9 @@ fi
 # A custom_text (group body) edit is kept in the delta even when a verbatim
 # PHASE edit wins the session: custom_text doubles as the group-locator
 # regex for starred LEVEL 2/4 matching, so it must survive the override.
-mked "$TMPDIR/ed4.sh" "GROUP" foo XYZ "PHASE 2" bar BBB
-run_i "$TMPDIR/i7.sh" "$TMPDIR/ed4.sh" -ri "$TMPDIR/i.patch"
+run_i "$TMPDIR/i7.sh" \
+	"$(edex "$TMPDIR/ed4.awk" "GROUP" foo XYZ "PHASE 2" bar BBB)" \
+	-ri "$TMPDIR/i.patch"
 if grep -q "verbatim mark" "$TMPDIR/i7.sh" &&
    grep -q "=== custom_text ===" "$TMPDIR/i7.sh" &&
    apply_i "$TMPDIR/i7.sh" "$TMPDIR/i_bbb.txt"; then
@@ -1063,7 +1040,7 @@ else
 fi
 
 else
-	echo "  SKIP: python3 not available"
+	echo "  SKIP: script(1) not available"
 fi
 
 echo ""

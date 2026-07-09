@@ -45,6 +45,8 @@ CFLAGS="\
 -Wno-implicit-fallthrough \
 -Wno-missing-field-initializers \
 -Wno-unused-function \
+-Wno-unused-parameter \
+-Wno-unused-result \
 -Wfatal-errors -std=c99 \
 $CFLAGS"
 
@@ -55,13 +57,29 @@ case "$OS" in
 *) CFLAGS="$CFLAGS -D_DEFAULT_SOURCE" ;;
 esac
 
+# patch2vi.c embeds the whole editor via #include "vi.c" and drives it
+# through nextvi_main(); rename nextvi's main() for the build and restore it
+# after (both directions run through here, POSIX sed has no -i).
+rename_main() {
+    sed "s/^int $1(int argc, char \*argv\[\])$/int $2(int argc, char *argv[])/" vi.c > vi.c.p2v &&
+    mv -f vi.c.p2v vi.c
+}
+
 build() {
     require "${CC}"
+    require sed
     log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\"\""
+    rename_main main nextvi_main || {
+        log "$R" "Failed to rename main() in vi.c"
+        exit 1
+    }
+    trap 'rename_main nextvi_main main; cd "$cbuild_OPWD"' EXIT
     run "$CC patch2vi.c -o patch2vi $CFLAGS" || {
         log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\""
         exit 1
     }
+    rename_main nextvi_main main
+    trap 'cd "$cbuild_OPWD"' EXIT
 }
 
 install() {

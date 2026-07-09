@@ -13,18 +13,14 @@
  * The generated script uses EXINIT with ex commands to apply changes.
  * The user can then modify the script to add regex-based matching for
  * more robust patch application.
+ *
+ * Nextvi is embedded whole: vi.c (and through it every editor module)
+ * is compiled into this translation unit, and interactive mode drives
+ * the built-in editor via nextvi_main() - build_patch2vi.sh renames
+ * nextvi's main() to nextvi_main for the build and restores it after.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/stat.h>
-#include "vi.h"
-#include "common.c"
-#include "uc.c"
-#include "regex.c"
+#include "vi.c"
 
 #define MAX_LINE 8192
 #define MAX_OPS 65536
@@ -178,16 +174,6 @@ static unsigned char byte_used[256];
  * ? block; only the separator does. */
 static int dyn_esc;
 
-static char *xstrdup(const char *s)
-{
-	char *p = strdup(s);
-	if (!p) {
-		fprintf(stderr, "out of memory\n");
-		exit(1);
-	}
-	return p;
-}
-
 static void *ecalloc(size_t n, size_t sz)
 {
 	void *p = calloc(n, sz);
@@ -204,7 +190,7 @@ static void add_raw(const char *line)
 		fprintf(stderr, "too many input lines\n");
 		exit(1);
 	}
-	raw_lines[nraw++] = xstrdup(line);
+	raw_lines[nraw++] = uc_dup(line);
 }
 
 /* Remove trailing newline */
@@ -218,19 +204,13 @@ static void chomp(char *s)
 /* Backslash-escape every char of s that appears in set. */
 static char *escape_chars(const char *s, const char *set)
 {
-	int extra = 0;
-	for (const char *p = s; *p; p++)
-		if (strchr(set, *p))
-			extra++;
-	char *result = emalloc(strlen(s) + extra + 1);
-	char *dst = result;
-	for (const char *p = s; *p; p++) {
-		if (strchr(set, *p))
-			*dst++ = '\\';
-		*dst++ = *p;
+	sbuf_smake(sb, strlen(s) + 8)
+	for (; *s; s++) {
+		if (strchr(set, *s))
+			sbuf_chr(sb, '\\')
+		sbuf_chr(sb, *s)
 	}
-	*dst = '\0';
-	return result;
+	sbufn_ret(sb, sb->s)
 }
 
 #define REGEX_META "\\^$.*+?[(){|"
@@ -246,7 +226,7 @@ static void arr_append(char ***arr, int *n, int *cap, const char *s)
 		*cap = *cap ? *cap * 2 : 4;
 		*arr = erealloc(*arr, *cap * sizeof(char *));
 	}
-	(*arr)[(*n)++] = xstrdup(s);
+	(*arr)[(*n)++] = uc_dup(s);
 }
 
 static int lines_equal(char **a, int na, char **b, int nb)
@@ -417,24 +397,6 @@ static int specificity_score(char **lines, int n)
  * location. Without the file, no fuzzed anchors are emitted.
  */
 
-/* Byte length of the UTF-8 rune starting at s (>= 1). */
-static int rune_len(const char *s)
-{
-	unsigned char c = (unsigned char)*s;
-	if (c < 0x80) return 1;
-	if ((c >> 5) == 0x6) return 2;
-	if ((c >> 4) == 0xe) return 3;
-	if ((c >> 3) == 0x1e) return 4;
-	return 1;
-}
-
-static int rune_count(const char *s)
-{
-	int n = 0;
-	while (*s) { s += rune_len(s); n++; }
-	return n;
-}
-
 /* Count runes in the first len bytes of s. */
 static int rune_count_n(const char *s, int len)
 {
@@ -460,7 +422,7 @@ static int match_fuzzy_line(const char *orig, const fline_t *f)
 	for (int i = 0; i < f->nrune; i++) {
 		if (!*o)
 			return 0;
-		int ol = rune_len(o), bl = rune_len(b);
+		int ol = uc_len(o), bl = uc_len(b);
 		if (!f->mask[i] && (ol != bl || memcmp(o, b, ol) != 0))
 			return 0;
 		o += ol;
@@ -503,7 +465,7 @@ static int fuzzy_spec(fline_t *win, int n)
 		const char *b = win[j].base;
 		int run = 0;
 		for (int i = 0; i < win[j].nrune; i++) {
-			int bl = rune_len(b);
+			int bl = uc_len(b);
 			if (!win[j].mask[i]) {
 				run += bl;
 			} else {
@@ -527,7 +489,7 @@ static char *fuzzy_regex(const fline_t *f)
 	sbuf_smake(sb, strlen(f->base) + 8)
 	const char *b = f->base;
 	for (int i = 0; i < f->nrune; i++) {
-		int bl = rune_len(b);
+		int bl = uc_len(b);
 		if (f->mask[i]) {
 			sbuf_chr(sb, '.')
 		} else {
@@ -597,49 +559,31 @@ static void arr_clone(char ***dst, int *dn, int *dc, char **src, int sn)
 /* Join an array of strings with '\n' into a single allocated string. */
 static char *join_lines(char **lines, int nlines)
 {
-	if (!lines || nlines == 0)
-		return xstrdup("");
-	size_t len = 0;
-	for (int i = 0; i < nlines; i++)
-		len += strlen(lines[i]) + 1;
-	char *result = emalloc(len);
-	char *p = result;
+	sbuf_smake(sb, 128)
 	for (int i = 0; i < nlines; i++) {
-		int slen = strlen(lines[i]);
-		memcpy(p, lines[i], slen);
-		p += slen;
-		*p++ = i < nlines - 1 ? '\n' : '\0';
+		if (i)
+			sbuf_chr(sb, '\n')
+		sbuf_str(sb, lines[i])
 	}
-	return result;
+	sbufn_ret(sb, sb->s)
 }
 
 /* Build the default display text (as it appears in the temp file) from patch del/add lines.
  * Returns e.g. "-line1\n-line2\n+line3\n+line4\n" */
 static char *build_default_text(char **del, int ndel, char **add, int nadd)
 {
-	size_t len = 0;
-	for (int i = 0; i < ndel; i++)
-		len += strlen(del[i]) + 2;
-	for (int i = 0; i < nadd; i++)
-		len += strlen(add[i]) + 2;
-	char *result = emalloc(len + 1);
-	char *p = result;
+	sbuf_smake(sb, 128)
 	for (int i = 0; i < ndel; i++) {
-		*p++ = '-';
-		int slen = strlen(del[i]);
-		memcpy(p, del[i], slen);
-		p += slen;
-		*p++ = '\n';
+		sbuf_chr(sb, '-')
+		sbuf_str(sb, del[i])
+		sbuf_chr(sb, '\n')
 	}
 	for (int i = 0; i < nadd; i++) {
-		*p++ = '+';
-		int slen = strlen(add[i]);
-		memcpy(p, add[i], slen);
-		p += slen;
-		*p++ = '\n';
+		sbuf_chr(sb, '+')
+		sbuf_str(sb, add[i])
+		sbuf_chr(sb, '\n')
 	}
-	*p = '\0';
-	return result;
+	sbufn_ret(sb, sb->s)
 }
 
 /* True if gd's stored del/add lines match the supplied content (or weren't recorded).
@@ -1599,7 +1543,7 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 	for (int lvl = 0; lvl <= FUZZ_MAXLVL; lvl++) {
 		int any = 0, gi = 0, masked = 0, total = 0;
 		for (int j = 0; j < bn; j++) {
-			int nr = rune_count(base[j]);
+			int nr = uc_slen(base[j]);
 			unsigned char *m = emalloc(nr ? nr : 1);
 			fuzz_mask(m, nr, lvl, seed, &gi);
 			for (int k = 0; k < nr; k++)
@@ -1870,26 +1814,30 @@ static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 	 * blocks only STRENGTHEN the anchoring - there is exactly ONE ".*", the single
 	 * gap that absorbs the hunk between the two blocks. Only the first bottom line
 	 * is captured "(b1)" so grp lands on it and the offset reference stays at ib. */
-	char *et[WIN_ANCHOR], *eb[WIN_ANCHOR];
-	size_t need = 4;   /* ".*" + "(" + ")" + NUL */
-	for (int j = 0; j < WIN_ANCHOR; j++) {
-		et[j] = escape_regex(orig_lines[it + j]);
-		eb[j] = escape_regex(orig_lines[ib + j]);
-		need += strlen(et[j]) + strlen(eb[j]) + 2;   /* one newline join per line */
+	char *e;
+	sbuf_smake(sb, 256)
+	for (int j = 0; j < WIN_ANCHOR; j++) {           /* t1\nt2\nt3 */
+		e = escape_regex(orig_lines[it + j]);
+		if (j)
+			sbuf_chr(sb, '\n')
+		sbuf_str(sb, e)
+		free(e);
 	}
-	char *s = emalloc(need);
-	int p = 0;
-	for (int j = 0; j < WIN_ANCHOR; j++)
-		p += sprintf(s + p, j ? "\n%s" : "%s", et[j]);   /* t1\nt2\nt3 */
-	p += sprintf(s + p, ".*(%s)", eb[0]);                    /* one ".*", capture b1 */
-	for (int j = 1; j < WIN_ANCHOR; j++)
-		p += sprintf(s + p, "\n%s", eb[j]);              /* \nb2\nb3 */
-	for (int j = 0; j < WIN_ANCHOR; j++) {
-		free(et[j]);
-		free(eb[j]);
+	for (int j = 0; j < WIN_ANCHOR; j++) {           /* .*(b1)\nb2\nb3 */
+		e = escape_regex(orig_lines[ib + j]);
+		if (j) {
+			sbuf_chr(sb, '\n')
+			sbuf_str(sb, e)
+		} else {
+			sbuf_str(sb, ".*(")               /* one ".*", capture b1 */
+			sbuf_str(sb, e)
+			sbuf_chr(sb, ')')
+		}
+		free(e);
 	}
+	sbufn_null(sb)
 	char **lines = emalloc(sizeof(char *));
-	lines[0] = s;
+	lines[0] = sb->s;
 	out->lines = lines;
 	out->nlines = 1;
 	out->offset = hunk_top - ib;   /* negative: target sits above the bottom anchor */
@@ -1916,7 +1864,7 @@ static void emit_chain_pattern(FILE *out, pat_spec_t *p)
 		char *r = p->pre_escaped ? NULL : escape_regex(p->lines[i]);
 		char *x;
 		if (dyn_esc) {
-			x = xstrdup(r ? r : p->lines[i]);
+			x = uc_dup(r ? r : p->lines[i]);
 		} else {
 			char *e = escape_exarg(r ? r : p->lines[i]);
 			x = escape_chars(e, "\\");
@@ -2136,12 +2084,11 @@ static char *double_trailing_esc(char *s)
 		t++;
 	if (!t)
 		return s;
-	char *r = emalloc(len + t + 1);
-	memcpy(r, s, len);
-	memset(r + len, '\\', t);
-	r[len + t] = '\0';
+	sbuf_smake(sb, len + t + 1)
+	sbuf_mem(sb, s, len)
+	sbuf_set(sb, '\\', t)
 	free(s);
-	return r;
+	sbufn_ret(sb, sb->s)
 }
 
 /* Escape replacement text for substitute command.
@@ -2271,20 +2218,6 @@ static void collect_blocks(const char *om, int os, int oe,
 	collect_blocks(om, bo + L, oe, nm, bn + L, ne, bv);
 }
 
-/* Dynamic string: ds_cat appends, ds_cat_n appends n bytes. */
-typedef struct { char *s; int len, cap; } dstr_t;
-static void ds_cat_n(dstr_t *d, const char *t, int n)
-{
-	if (d->len + n + 1 > d->cap) {
-		d->cap = (d->len + n + 1) * 2;
-		d->s = erealloc(d->s, d->cap);
-	}
-	memcpy(d->s + d->len, t, n);
-	d->len += n;
-	d->s[d->len] = '\0';
-}
-static void ds_cat(dstr_t *d, const char *t) { ds_cat_n(d, t, strlen(t)); }
-
 /* Build the exact (rung 0) substitute: minimal-span old/new fully escaped
  * (regex+delim, repl+delim, trailing-esc). This is the primary form, unchanged
  * from the original single-shot substitute. */
@@ -2315,7 +2248,7 @@ typedef struct {
 static int rune_take(const char *s, int len, int k)
 {
 	int i = 0, n = 0;
-	while (i < len && n < k) { i += rune_len(s + i); n++; }
+	while (i < len && n < k) { i += uc_len((s + i)); n++; }
 	return i < len ? i : len;
 }
 
@@ -2491,48 +2424,51 @@ static int build_grp_variant(const char *old, const char *new,
 		return 0;
 	}
 
-	dstr_t pat = {0}, repl = {0};
+	sbuf_smake(pat, 128)
+	sbuf_smake(repl, 128)
 	int g = 0;
 	for (int i = fe; i <= le; i++) {
 		if (tk[i].stable) {
 			char br[16];
 			snprintf(br, sizeof(br), "\\%d", ++g);
 			if (tk[i].mode == GM_WILD) {
-				ds_cat(&pat, "(.*)");
+				sbuf_str(pat, "(.*)")
 			} else if (tk[i].mode == GM_FUZZ) {
 				char *h = dup_n(tk[i].o, tk[i].hb);
 				char *t = dup_n(tk[i].o + tk[i].olen - tk[i].tb,
 						tk[i].tb);
 				char *eh = escape_sub_pat_raw(h, '/');
 				char *et = escape_sub_pat_raw(t, '/');
-				ds_cat(&pat, "(");
-				ds_cat(&pat, eh);
-				ds_cat(&pat, ".*");
-				ds_cat(&pat, et);
-				ds_cat(&pat, ")");
+				sbuf_chr(pat, '(')
+				sbuf_str(pat, eh)
+				sbuf_str(pat, ".*")
+				sbuf_str(pat, et)
+				sbuf_chr(pat, ')')
 				free(eh); free(et); free(h); free(t);
 			} else {
 				char *tmp = dup_n(tk[i].o, tk[i].olen);
 				char *e = escape_sub_pat_raw(tmp, '/');
-				ds_cat(&pat, "(");
-				ds_cat(&pat, e);
-				ds_cat(&pat, ")");
+				sbuf_chr(pat, '(')
+				sbuf_str(pat, e)
+				sbuf_chr(pat, ')')
 				free(e); free(tmp);
 			}
-			ds_cat(&repl, br);
+			sbuf_str(repl, br)
 		} else {
 			char *to = dup_n(tk[i].o, tk[i].olen);
 			char *tn = dup_n(tk[i].n, tk[i].nlen);
 			char *pe = escape_sub_pat_raw(to, '/');
 			char *re = escape_sub_repl_raw(tn, '/');
-			ds_cat(&pat, pe);
-			ds_cat(&repl, re);
+			sbuf_str(pat, pe)
+			sbuf_str(repl, re)
 			free(pe); free(re); free(to); free(tn);
 		}
 	}
 	free(tk);
-	*pat_out = double_trailing_esc(pat.s ? pat.s : dup_n("", 0));
-	*repl_out = double_trailing_esc(repl.s ? repl.s : dup_n("", 0));
+	sbufn_null(pat)
+	sbufn_null(repl)
+	*pat_out = double_trailing_esc(pat->s);
+	*repl_out = double_trailing_esc(repl->s);
 	return 1;
 }
 
@@ -2793,9 +2729,9 @@ static void clone_grp(grp_delta_t *dst, const grp_delta_t *src)
 	arr_clone(&dst->relc_cmd, &dst->nrelc, &dst->relc_cap,
 		  src->relc_cmd, src->nrelc);
 	if (src->ph1)
-		dst->ph1 = xstrdup(src->ph1);
+		dst->ph1 = uc_dup(src->ph1);
 	if (src->ph2)
-		dst->ph2 = xstrdup(src->ph2);
+		dst->ph2 = uc_dup(src->ph2);
 	dst->ovr_mark = src->ovr_mark;
 	dst->ovr_esc = src->ovr_esc;
 }
@@ -2880,7 +2816,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		0;  /* between GROUP header and first section keyword */
 	int ecmd_strat = STRAT_DEFAULT;
 	int in_ph = 0;      /* 1/2 = inside a PHASE blob (raw capture) */
-	dstr_t ph = {0};
+	sbuf_smake(ph, MAX_LINE)
 
 	while (fgets(line, sizeof(line), f)) {
 		chomp(line);
@@ -2891,22 +2827,21 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 		 * back off (exact inverse). */
 		if (in_ph) {
 			if (strcmp(line, end_tag_rd) == 0) {
-				if (ph.len > 0 && ph.s[ph.len - 1] == '\n')
-					ph.s[--ph.len] = '\0';
+				if (ph->s_n > 0 && ph->s[ph->s_n - 1] == '\n')
+					ph->s_n--;
+				sbuf_null(ph)
 				if (file_idx >= 0 && gi >= 0 &&
 				    gi < active[file_idx]->ngroups) {
 					grp_delta_t *pg = &per_file_results[file_idx][gi];
 					char **dst = in_ph == 1 ? &pg->ph1 : &pg->ph2;
 					free(*dst);
-					*dst = xstrdup(ph.s ? ph.s : "");
+					*dst = uc_dup(ph->s);
 				}
-				ph.len = 0;
-				if (ph.s)
-					ph.s[0] = '\0';
+				sbufn_cut(ph, 0)
 				in_ph = 0;
 			} else {
-				ds_cat(&ph, line);
-				ds_cat(&ph, "\n");
+				sbuf_str(ph, line)
+				sbuf_chr(ph, '\n')
 			}
 			continue;
 		}
@@ -3049,7 +2984,7 @@ static void parse_tmp_file(const char *path, file_patch_t **active, int nactive,
 			gsect_add(&results[gi], GS_CUSTOM, 0, line);
 	}
 
-	free(ph.s);
+	free(ph->s);
 	fclose(f);
 }
 
@@ -3562,10 +3497,44 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 	g->ovr_esc = 0;
 }
 
+/* Run the embedded nextvi (nextvi_main, nextvi's renamed main) on up to two
+ * files. patch2vi's stdin/stdout may be the patch pipe and the generated
+ * script, so the editor gets the controlling terminal on fds 0/1 for the
+ * session and the original fds are restored afterwards. */
+static int edit_files(char *path, char *rejpath)
+{
+	char *argv[4];
+	int argc = 0, r, in, out;
+	int tty = open("/dev/tty", O_RDWR);
+	if (tty < 0) {
+		perror("/dev/tty");
+		return -1;
+	}
+	fflush(stdout);
+	in = dup(0);
+	out = dup(1);
+	dup2(tty, 0);
+	dup2(tty, 1);
+	close(tty);
+	argv[argc++] = "vi";
+	argv[argc++] = path;
+	if (rejpath)
+		argv[argc++] = rejpath;
+	argv[argc] = NULL;
+	r = nextvi_main(argc, argv);
+	xquit = 0;
+	fflush(stdout);
+	dup2(in, 0);
+	dup2(out, 1);
+	close(in);
+	close(out);
+	return r;
+}
+
 /*
  * Interactive editing of all groups' search patterns in one file.
- * Opens $EDITOR once with all groups. Pattern lines are shown
- * regex-escaped (as they'll appear to the regex engine).
+ * Opens the built-in nextvi once with all groups. Pattern lines are
+ * shown regex-escaped (as they'll appear to the regex engine).
  * If file saved: all groups use the edited patterns.
  * If file not saved (mtime unchanged): all groups use default behavior.
  */
@@ -3793,8 +3762,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 							 delta_mode > 0 ? delta_mode : 0);
 			if (!gd || (!gd->ph1 && !gd->ph2))
 				continue;
-			g->ph1_ovr = gd->ph1 ? xstrdup(gd->ph1) : NULL;
-			g->ph2_ovr = gd->ph2 ? xstrdup(gd->ph2) : NULL;
+			g->ph1_ovr = gd->ph1 ? uc_dup(gd->ph1) : NULL;
+			g->ph2_ovr = gd->ph2 ? uc_dup(gd->ph2) : NULL;
 			g->ovr_mark = gd->ovr_mark;
 			g->ovr_esc = gd->ovr_esc;
 			if (gd->ovr_esc != dyn_esc)
@@ -3832,22 +3801,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		goto cleanup_orig;
 	}
 
-	/* Open editor */
-	const char *editor = getenv("EDITOR");
-	if (!editor)
-		editor = getenv("VISUAL");
-	if (!editor)
-		editor = "vi";
-	char ed_cmd[MAX_LINE];
-	if (delta_rejected)
-		snprintf(ed_cmd, sizeof(ed_cmd),
-			 "%s '%s' '%s' </dev/tty >/dev/tty",
-			 editor, tmppath, rejpath);
-	else
-		snprintf(ed_cmd, sizeof(ed_cmd),
-			 "%s '%s' </dev/tty >/dev/tty",
-			 editor, tmppath);
-	int ed_ret = system(ed_cmd);
+	/* Open the built-in editor */
+	int ed_ret = edit_files(tmppath, delta_rejected ? rejpath : NULL);
 	if (delta_rejected)
 		unlink(rejpath);
 	if (ed_ret != 0) {
@@ -3882,7 +3837,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			if (!in_fd || in_fd->ngrps == 0)
 				continue;
 			file_delta_t *od = &out_deltas[nout_deltas++];
-			od->filepath = xstrdup(active[k]->path);
+			od->filepath = uc_dup(active[k]->path);
 			od->gcap = in_fd->ngrps;
 			od->grps = emalloc(od->gcap * sizeof(grp_delta_t));
 			od->ngrps = in_fd->ngrps;
@@ -3941,8 +3896,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 						fprintf(stderr, "%s group %d: structured "
 							"edit shadowed by verbatim PHASE "
 							"edit\n", active[k]->path, gi + 1);
-					char *n1 = xstrdup(eg->ph1 ? eg->ph1 : (d1 ? d1 : ""));
-					char *n2 = xstrdup(eg->ph2 ? eg->ph2 : (d2 ? d2 : ""));
+					char *n1 = uc_dup(eg->ph1 ? eg->ph1 : (d1 ? d1 : ""));
+					char *n2 = uc_dup(eg->ph2 ? eg->ph2 : (d2 ? d2 : ""));
 					free(g->ph1_ovr);
 					free(g->ph2_ovr);
 					g->ph1_ovr = n1;
@@ -3961,7 +3916,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 
 				if (!od) {
 					od = &out_deltas[nout_deltas++];
-					od->filepath = xstrdup(active[k]->path);
+					od->filepath = uc_dup(active[k]->path);
 					od->grps = NULL;
 					od->ngrps = 0;
 					od->gcap = 0;
@@ -4012,9 +3967,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				 * frozen as one consistent unit) plus its mark and
 				 * escape regime. */
 				if (has_ovr) {
-					gout->ph1 = xstrdup(g->ph1_ovr ? g->ph1_ovr
+					gout->ph1 = uc_dup(g->ph1_ovr ? g->ph1_ovr
 							    : (g->ph1_gen ? g->ph1_gen : ""));
-					gout->ph2 = xstrdup(g->ph2_ovr ? g->ph2_ovr
+					gout->ph2 = uc_dup(g->ph2_ovr ? g->ph2_ovr
 							    : (g->ph2_gen ? g->ph2_gen : ""));
 					gout->ovr_mark = g->ovr_mark > 0 ? g->ovr_mark
 									 : g->mark_id;
@@ -4752,7 +4707,7 @@ static void new_file(const char *path)
 		fprintf(stderr, "too many files\n");
 		exit(1);
 	}
-	files[nfiles].path = xstrdup(path);
+	files[nfiles].path = uc_dup(path);
 	files[nfiles].nops = 0;
 	files[nfiles].is_new = pending_is_new;
 	files[nfiles].orig_path = pending_orig_path;
@@ -4777,7 +4732,7 @@ static void add_op(int type, int oline, const char *text)
 	}
 	fp->ops[fp->nops].type = type;
 	fp->ops[fp->nops].oline = oline;
-	fp->ops[fp->nops].text = text ? xstrdup(text) : NULL;
+	fp->ops[fp->nops].text = text ? uc_dup(text) : NULL;
 	fp->ops[fp->nops].hunk_lo = cur_hunk_lo;
 	fp->ops[fp->nops].hunk_hi = cur_hunk_hi;
 	fp->nops++;
@@ -4795,7 +4750,7 @@ static void usage(const char *prog)
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
 	fprintf(stderr,
 		"  -r    Use relative regex patterns instead of line numbers\n");
-	fprintf(stderr, "  -i    Interactive mode: edit search patterns in $EDITOR\n");
+	fprintf(stderr, "  -i    Interactive mode: edit search patterns in the built-in nextvi\n");
 	fprintf(stderr,
 		"        Each group's PHASE 1/2 sections hold its verbatim ex-body\n"
 		"        bytes; editing them supersedes the structured sections for\n"
@@ -4919,7 +4874,7 @@ int main(int argc, char **argv)
 			int in_sect = GS_NONE;
 			int pat_idx = 1; /* pattern[] slot for GS_PAT */
 			int in_ph = 0;   /* 1/2 = inside a verbatim phase blob */
-			dstr_t ph = {0};
+			sbuf_smake(ph, MAX_LINE)
 			while (fgets(line, sizeof(line), in)) {
 				chomp(line);
 				/* Verbatim blobs are raw: only the end tag
@@ -4928,22 +4883,21 @@ int main(int argc, char **argv)
 				 * collides with the stored segments. */
 				if (in_ph) {
 					if (strcmp(line, end_tag_rd) == 0) {
-						if (ph.len > 0 && ph.s[ph.len - 1] == '\n')
-							ph.s[--ph.len] = '\0';
+						if (ph->s_n > 0 && ph->s[ph->s_n - 1] == '\n')
+							ph->s_n--;
+						sbuf_null(ph)
 						if (cur_gd) {
 							char **dst = in_ph == 1
 								? &cur_gd->ph1 : &cur_gd->ph2;
 							free(*dst);
-							*dst = xstrdup(ph.s ? ph.s : "");
+							*dst = uc_dup(ph->s);
 							mark_bytes_used(*dst);
 						}
-						ph.len = 0;
-						if (ph.s)
-							ph.s[0] = '\0';
+						sbufn_cut(ph, 0)
 						in_ph = 0;
 					} else {
-						ds_cat(&ph, line);
-						ds_cat(&ph, "\n");
+						sbuf_str(ph, line)
+						sbuf_chr(ph, '\n')
 					}
 					continue;
 				}
@@ -4969,7 +4923,7 @@ int main(int argc, char **argv)
 						if (end)
 							*end = '\0';
 						cur_fd = &in_deltas[nin_deltas++];
-						cur_fd->filepath = xstrdup(p);
+						cur_fd->filepath = uc_dup(p);
 						cur_fd->grps = NULL;
 						cur_fd->ngrps = 0;
 						cur_fd->gcap = 0;
@@ -5093,7 +5047,7 @@ int main(int argc, char **argv)
 				}
 				gsect_add(cur_gd, in_sect, pat_idx, line);
 			}
-			free(ph.s);
+			free(ph->s);
 		} else {
 			/* Not a script; store and process this first line */
 			add_raw(line);
@@ -5138,7 +5092,7 @@ process_line:
 				char *t = strpbrk(p, "\t ");
 				if (t)
 					*t = '\0';
-				pending_orig_path = xstrdup(p);
+				pending_orig_path = uc_dup(p);
 			}
 			continue;
 		}
@@ -5272,7 +5226,7 @@ process_line:
 		if (files[i].ngroups > 0)
 			active[nactive++] = &files[i];
 
-	/* Interactive editing: one $EDITOR session for all files */
+	/* Interactive editing: one built-in editor session for all files */
 	if (interactive_mode)
 		interactive_edit_all_files(active, nactive);
 
