@@ -3985,22 +3985,11 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					  active[k]->groups[gi].all_pre_ctx, active[k]->groups[gi].nall_pre_ctx);
 				arr_clone(&gout->post_ctx, &gout->npost_ctx, &gout->post_cap,
 					  active[k]->groups[gi].post_ctx, active[k]->groups[gi].npost_ctx);
-				/* A verbatim override supersedes every structured
-				 * customization for its group: store only the pair
-				 * of blobs (both phases, so the group is frozen as
-				 * one consistent unit) plus its mark and escape
-				 * regime; any shadowed structured edit is dropped. */
-				if (has_ovr) {
-					gout->ph1 = xstrdup(g->ph1_ovr ? g->ph1_ovr
-							    : (g->ph1_gen ? g->ph1_gen : ""));
-					gout->ph2 = xstrdup(g->ph2_ovr ? g->ph2_ovr
-							    : (g->ph2_gen ? g->ph2_gen : ""));
-					gout->ovr_mark = g->ovr_mark > 0 ? g->ovr_mark
-									 : g->mark_id;
-					gout->ovr_esc = g->ovr_esc;
-					continue;
-				}
-				/* customization from user's edits */
+				/* customization from user's edits; kept even under a
+				 * verbatim override — custom_text doubles as the
+				 * group-locator regex for starred LEVEL 2/4 matching,
+				 * so dropping it would degrade re-entry matching to
+				 * index-only (or first-group at level 4). */
 				if (custom_ch) {
 					arr_clone(&gout->custom_text, &gout->ncustom_text, &gout->custom_text_cap,
 						  eg->custom_text, eg->ncustom_text);
@@ -4016,6 +4005,21 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 						arr_clone(&gout->custom_text, &gout->ncustom_text, &gout->custom_text_cap,
 							  stored->custom_text, stored->ncustom_text);
 					}
+				}
+				/* A verbatim override supersedes the structured edit
+				 * customizations (strategy/patterns/commands): store
+				 * the pair of blobs (both phases, so the group is
+				 * frozen as one consistent unit) plus its mark and
+				 * escape regime. */
+				if (has_ovr) {
+					gout->ph1 = xstrdup(g->ph1_ovr ? g->ph1_ovr
+							    : (g->ph1_gen ? g->ph1_gen : ""));
+					gout->ph2 = xstrdup(g->ph2_ovr ? g->ph2_ovr
+							    : (g->ph2_gen ? g->ph2_gen : ""));
+					gout->ovr_mark = g->ovr_mark > 0 ? g->ovr_mark
+									 : g->mark_id;
+					gout->ovr_esc = g->ovr_esc;
+					continue;
 				}
 				if (strat_ch)
 					gout->strategy = eg->strategy;

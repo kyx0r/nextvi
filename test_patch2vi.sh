@@ -1039,6 +1039,29 @@ else
 	fail "verbatim edit shadows structured edit"
 fi
 
+# A custom_text (group body) edit is kept in the delta even when a verbatim
+# PHASE edit wins the session: custom_text doubles as the group-locator
+# regex for starred LEVEL 2/4 matching, so it must survive the override.
+mked "$TMPDIR/ed4.sh" "GROUP" foo XYZ "PHASE 2" bar BBB
+run_i "$TMPDIR/i7.sh" "$TMPDIR/ed4.sh" -ri "$TMPDIR/i.patch"
+if grep -q "verbatim mark" "$TMPDIR/i7.sh" &&
+   grep -q "=== custom_text ===" "$TMPDIR/i7.sh" &&
+   apply_i "$TMPDIR/i7.sh" "$TMPDIR/i_bbb.txt"; then
+	ok "custom_text kept alongside verbatim override"
+else
+	fail "custom_text kept alongside verbatim override"
+fi
+
+# ... and it survives an unedited -d replay together with the override
+run_i "$TMPDIR/i8.sh" "$ED_TRUE" -rd "$TMPDIR/i7.sh"
+if grep -q "verbatim mark" "$TMPDIR/i8.sh" &&
+   grep -q "=== custom_text ===" "$TMPDIR/i8.sh" &&
+   apply_i "$TMPDIR/i8.sh" "$TMPDIR/i_bbb.txt"; then
+	ok "custom_text + override -d fixed point"
+else
+	fail "custom_text + override -d fixed point"
+fi
+
 else
 	echo "  SKIP: python3 not available"
 fi
