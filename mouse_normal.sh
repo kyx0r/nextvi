@@ -539,20 +539,20 @@ ${ESC}${SEP}%;f> 	vi_drawmsg_mpt\\(vi_msg\\)
 }
 
 ${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:513:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:515:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			xrow \\* 100 / MAX\\(1, lbuf_len\\(xb\\)-1\\), xrow\\+1, col,
 			istempbuf\\(ex_buf\\) \\? tempbufs - ex_buf - 1 : ex_buf - bufs\\);
 	}.*(	static rset \\*bre;)
 	static int srow\\[5], soff\\[5], lkwdcnt;
 	static int cadir = 1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:513:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:515:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			\"\\\\\"%s\\\\\"%s%dL %d%% L%d C%d B%td\",
 			xb_path\\[0] \\? xb_path : \"unnamed\",
 			xb->modified \\? \"\\* \" : \" \", lbuf_len\\(xb\\),.*(	char \\*cs;)
 	int cnt = vi_arg \\? vi_arg : 1;
 	int mv, i, dir, var;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:513:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:513${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:515:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:515${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	int mv, i, dir, var;
 
@@ -564,29 +564,29 @@ ${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	int mv, i, dir, var;
 
 	mv = term_read\\(0\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:524:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:526:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	int mv, i, dir, var;.*?
 .*?
 (	mv = term_read\\(0\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:524:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:526:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	static int cadir = 1;
 	char \\*cs;
 	int cnt = vi_arg \\? vi_arg : 1;.*(		if \\(!vi_charlast\\[0]\\))
 			return -1;
 		if \\(mv == ','\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:524:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:526:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	static sbuf \\*savepath\\[5];
 	static rset \\*bre;
 	static int srow\\[5], soff\\[5], lkwdcnt;.*(			mv = vi_charcmd == 'F' \\|\\| vi_charcmd == 'T')
 				\\? tolower\\(vi_charcmd\\) : toupper\\(vi_charcmd\\);
 		else${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:524:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:524${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:526:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:526${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:513:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:515:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2i 	if (mv == 27 && xms) {
 		int r = term_try_mouse();
 		if (r == 1) {
@@ -612,7 +612,7 @@ ${SEP}'2i 	if (mv == 27 && xms) {
 		} else if (r == 2)	/* stray release from a prior click; restart */
 			return -1;
 	}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:524:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:526:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> void term_kill\\(void\\);
 void term_room\\(int n\\);
 int term_read\\(int winch\\);
@@ -968,10 +968,10 @@ index 3ae4769f..635240ae 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index e104d236..bbe24b8c 100644
+index 703366c1..2b5279c9 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -511,6 +511,9 @@ static void vc_status(int type)
+@@ -513,6 +513,9 @@ static void vc_status(int type)
  	vi_drawmsg_mpt(vi_msg)
  }
  
@@ -981,7 +981,7 @@ index e104d236..bbe24b8c 100644
  static int vi_region(int cmd, int *row, int *off)
  {
  	static sbuf *savepath[5];
-@@ -522,6 +525,31 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -524,6 +527,31 @@ static int vi_region(int cmd, int *row, int *off)
  	int mv, i, dir, var;
  
  	mv = term_read(0);

@@ -1541,17 +1541,17 @@ ${ESC}${SEP}%;f+ 				char buf\\[n \\+ 4];
 				memcpy\\(buf, \":e \", 3\\);
 				memcpy\\(buf\\+3, ln, n\\);
 				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1273:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					break;
 				ln = uc_chr\\(ln, xoff\\);
 				n = strlen\\(ln\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1273:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^				char buf\\[n \\+ 4];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1273:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				memcpy\\(buf, \":e \", 3\\);
 				memcpy\\(buf\\+3, ln, n\\);
 				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1273:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	...	.re...
 .........uc.....l........;
 ...	....s..l...l...
@@ -1559,25 +1559,25 @@ ${ESC}${SEP}%;f+ 	...	.re...
 ....me..p.........e .. ...
 .....e.....bu..3, .., ...
 	........pu.....f, .......${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1273:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 					break;.*?
 				ln = uc_chr\\(ln, xoff\\);.*?
 				n = strlen\\(ln\\);.*?
 (				char buf\\[n \\+ 4];)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1273:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				break;
 			case TK_CTL\\('i'\\): \\{
 				if \\(!\\(ln = lbuf_get\\(xb, xrow\\)\\)\\).*(				vi_arg = ex_buf - bufs \\+ vi_cndir;)
 			case TK_CTL\\('_'\\):	/\\* this is also \\^7 on some systems \\*/
 				if \\(vi_arg > 0\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1273:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					xtop = MIN\\(lbuf_len\\(xb\\) - xrows, xtop \\+ n\\);
 				xoff = lbuf_indents\\(xb, xrow\\);
 				vi_mod \\|= 4;.*(					goto switchbuf;)
 				ex_exec\\(\"left0:b:mpt0\"\\);
 				term_chr\\('\\\\n'\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1271:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1271${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1273:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1273${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				memcpy\\(buf, \":e \", 3\\);
 				memcpy\\(buf\\+3, ln, n\\);
@@ -1589,24 +1589,24 @@ ${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				memcpy\\(buf, \":e \", 3\\);
 				memcpy\\(buf\\+3, ln, n\\);
 				term_push\\(buf, n \\+ 3\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1274:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1276:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				memcpy\\(buf, \":e \", 3\\);.*?
 				memcpy\\(buf\\+3, ln, n\\);.*?
 (				term_push\\(buf, n \\+ 3\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1274:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1276:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				break;
 			case TK_CTL\\('i'\\): \\{
 				if \\(!\\(ln = lbuf_get\\(xb, xrow\\)\\)\\).*(				vi_arg = ex_buf - bufs \\+ vi_cndir;)
 			case TK_CTL\\('_'\\):	/\\* this is also \\^7 on some systems \\*/
 				if \\(vi_arg > 0\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1274:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1276:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					xtop = MIN\\(lbuf_len\\(xb\\) - xrows, xtop \\+ n\\);
 				xoff = lbuf_indents\\(xb, xrow\\);
 				vi_mod \\|= 4;.*(					goto switchbuf;)
 				ex_exec\\(\"left0:b:mpt0\"\\);
 				term_chr\\('\\\\n'\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1274:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1274${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1276:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1276${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				case '/': \\{
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
@@ -1620,17 +1620,17 @@ ${ESC}${SEP}%;f+ 					char buf\\[n \\+ 30];
 					memcpy\\(buf, \"re \", sizeof\\(\"re \"\\)\\);
 					if \\(cs\\)
 						memcpy\\(buf\\+3, cs, n \\+ 1\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1391:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1393:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				case '/': \\{
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
 					n = cs \\? strlen\\(cs\\) : 0;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1391:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1393:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^					char buf\\[n \\+ 30];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1391:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1393:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					memcpy\\(buf, \"re \", sizeof\\(\"re \"\\)\\);
 					if \\(cs\\)
 						memcpy\\(buf\\+3, cs, n \\+ 1\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1391:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1393:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ........ ...: \\{
 .....c.....i.cu..o....b..........f.,..._.rg.....
 	..	....... \\?..t............;
@@ -1638,25 +1638,25 @@ ${ESC}${SEP}%;f+ ........ ...: \\{
 .		...e...y...f...........z.o..........
 ......f.....
 ..		.....c....u.......... . 1..${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1391:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1393:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				case '/': \\{.*?
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);.*?
 					n = cs \\? strlen\\(cs\\) : 0;.*?
 (					char buf\\[n \\+ 30];)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1391:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1393:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				case ';':
 					ln = vi_enprompt\\(\":\", \"!\", &k, &n\\);
 					goto do_excmd;.*(						memcpy\\(buf1\\+2, cs, n\\);)
 						buf1\\[n \\+ 2] = '/';
 						buf1\\[n \\+ 3] = '\\\\0';${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-16m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1391:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-16m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1393:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				case 'v':
 					term_push\\(k == 'v' \\? \":\\\\x01\" : \":\\\\x02\", 2\\); /\\* \\^a : \\^b \\*/
 					break;.*(				case 'r': \\{)
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
 					n = cs \\? strlen\\(cs\\) : 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-23m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1391:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1391${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-23m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1393:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1393${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 						memcpy\\(buf\\+3, cs, n \\+ 1\\);
 					free\\(cs\\);
@@ -1668,24 +1668,24 @@ ${ESC}${SEP}1??+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 						memcpy\\(buf\\+3, cs, n \\+ 1\\);
 					free\\(cs\\);
 					ln = vi_enprompt\\(\":\", buf, &k, &n\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1396:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1398:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 						memcpy\\(buf\\+3, cs, n \\+ 1\\);.*?
 					free\\(cs\\);.*?
 (					ln = vi_enprompt\\(\":\", buf, &k, &n\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1396:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1398:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				case ';':
 					ln = vi_enprompt\\(\":\", \"!\", &k, &n\\);
 					goto do_excmd;.*(						memcpy\\(buf1\\+2, cs, n\\);)
 						buf1\\[n \\+ 2] = '/';
 						buf1\\[n \\+ 3] = '\\\\0';${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-11m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1396:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-11m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1398:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				case 'v':
 					term_push\\(k == 'v' \\? \":\\\\x01\" : \":\\\\x02\", 2\\); /\\* \\^a : \\^b \\*/
 					break;.*(				case 'r': \\{)
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
 					n = cs \\? strlen\\(cs\\) : 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-18m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1396:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1396${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-18m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1398:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1398${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					vi_drawmsg\\(\"arg2:\\(0\\|#\\)\"\\);
 					cs = vi_curword\\(xb, xrow, xoff, vi_prefix\\(\\), 1\\);
@@ -1699,17 +1699,17 @@ ${ESC}${SEP}%;f+ 					char buf\\[n \\+ 30];
 					memcpy\\(buf, \"\\.,\\.\\+\", sizeof\\(\"\\.,\\.\\+\"\\)\\);
 					char \\*buf1 = itoa\\(vi_arg, buf\\+4\\);
 					memcpy\\(buf1, \"s/\", sizeof\\(\"s/\"\\)\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1402:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1404:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					vi_drawmsg\\(\"arg2:\\(0\\|#\\)\"\\);
 					cs = vi_curword\\(xb, xrow, xoff, vi_prefix\\(\\), 1\\);
 					n = cs \\? strlen\\(cs\\) : 0;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1402:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1404:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^					char buf\\[n \\+ 30];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1402:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1404:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					memcpy\\(buf, \"\\.,\\.\\+\", sizeof\\(\"\\.,\\.\\+\"\\)\\);
 					char \\*buf1 = itoa\\(vi_arg, buf\\+4\\);
 					memcpy\\(buf1, \"s/\", sizeof\\(\"s/\"\\)\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1402:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1404:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ ...............\\(......\\(...\\)\".;
 .		.	c... v..c........b,....w.............e...\\(....\\).
 ..	.........\\?.s.r.....s\\).. .;
@@ -1717,25 +1717,25 @@ ${ESC}${SEP}%;f+ ...............\\(......\\(...\\)\".;
 ..	.....c.....f. ......,.....o...\\.......;
 .		.....................i..r.,..u.....
 ...	......y...f...\"s.....ize..\\(\"s....;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1402:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1404:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 					vi_drawmsg\\(\"arg2:\\(0\\|#\\)\"\\);.*?
 					cs = vi_curword\\(xb, xrow, xoff, vi_prefix\\(\\), 1\\);.*?
 					n = cs \\? strlen\\(cs\\) : 0;.*?
 (					char buf\\[n \\+ 30];)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1402:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1404:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				case ';':
 					ln = vi_enprompt\\(\":\", \"!\", &k, &n\\);
 					goto do_excmd;.*(						memcpy\\(buf1\\+2, cs, n\\);)
 						buf1\\[n \\+ 2] = '/';
 						buf1\\[n \\+ 3] = '\\\\0';${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1402:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1404:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				case 'v':
 					term_push\\(k == 'v' \\? \":\\\\x01\" : \":\\\\x02\", 2\\); /\\* \\^a : \\^b \\*/
 					break;.*(				case 'r': \\{)
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
 					n = cs \\? strlen\\(cs\\) : 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1402:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1402${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1404:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1404${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 						free\\(cs\\);
 					}
@@ -1747,20 +1747,20 @@ ${ESC}${SEP}1??+2m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 						free\\(cs\\);
 					}
 					ln = vi_enprompt\\(\":\", buf, &k, &n\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1412:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1414:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 						memcpy\\(buf1\\+2, cs, n\\);
 						buf1\\[n \\+ 2] = '/';
 						buf1\\[n \\+ 3] = '\\\\0';.*(						buf\\[n \\+ 3] = '/';)
 						buf\\[n \\+ 4] = '\\\\0';
 						free\\(cs\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-9m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1412:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-9m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1414:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					char \\*buf1 = itoa\\(vi_arg, buf\\+4\\);
 					memcpy\\(buf1, \"s/\", sizeof\\(\"s/\"\\)\\);
 					if \\(cs\\) \\{.*(					ln = vi_enprompt\\(\":\", buf, &k, &n\\);)
 					goto do_excmd; }
 				default:${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-13m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1412:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1412${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-13m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1414:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1414${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				case 'r': \\{
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
@@ -1774,17 +1774,17 @@ ${ESC}${SEP}%;f+ 					char buf\\[n \\+ 30];
 					memcpy\\(buf, \"%s/\", sizeof\\(\"%s/\"\\)\\);
 					if \\(cs\\) \\{
 						memcpy\\(buf\\+3, cs, n\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1417:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1419:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 				case 'r': \\{
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);
 					n = cs \\? strlen\\(cs\\) : 0;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1417:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1419:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^					char buf\\[n \\+ 30];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1417:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1419:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 					memcpy\\(buf, \"%s/\", sizeof\\(\"%s/\"\\)\\);
 					if \\(cs\\) \\{
 						memcpy\\(buf\\+3, cs, n\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1417:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1419:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ .	..........: \\{
 .....c. =.v..c.r...........o., ..... ......, .\\).
 ...	...= c. ............ ....
@@ -1792,25 +1792,25 @@ ${ESC}${SEP}%;f+ .	..........: \\{
 ......em....b............iz....\"../.\\).;
 .........cs\\) .
 		.........................${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1417:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1419:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 				case 'r': \\{.*?
 					cs = vi_curword\\(xb, xrow, xoff, vi_arg, 1\\);.*?
 					n = cs \\? strlen\\(cs\\) : 0;.*?
 (					char buf\\[n \\+ 30];)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1417:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1419:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 						memcpy\\(buf1\\+2, cs, n\\);
 						buf1\\[n \\+ 2] = '/';
 						buf1\\[n \\+ 3] = '\\\\0';.*(						buf\\[n \\+ 3] = '/';)
 						buf\\[n \\+ 4] = '\\\\0';
 						free\\(cs\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1417:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1419:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					char \\*buf1 = itoa\\(vi_arg, buf\\+4\\);
 					memcpy\\(buf1, \"s/\", sizeof\\(\"s/\"\\)\\);
 					if \\(cs\\) \\{.*(					ln = vi_enprompt\\(\":\", buf, &k, &n\\);)
 					goto do_excmd; }
 				default:${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1417:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1417${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1419:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1419${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 						free\\(cs\\);
 					}
@@ -1822,20 +1822,20 @@ ${ESC}${SEP}1??+2m 10${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 						free\\(cs\\);
 					}
 					ln = vi_enprompt\\(\":\", buf, &k, &n\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1425:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1427:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 						memcpy\\(buf\\+3, cs, n\\);
 						buf\\[n \\+ 3] = '/';
 						buf\\[n \\+ 4] = '\\\\0';.*(			case 'V':)
 				vi_hidch = !vi_hidch;
 				vi_mod \\|= 1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1425:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1427:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					char buf\\[n \\+ 30];
 					memcpy\\(buf, \"%s/\", sizeof\\(\"%s/\"\\)\\);
 					if \\(cs\\) \\{.*(			case TK_CTL\\('v'\\):)
 				vi_arg = \\(vi_wsel % 5\\) \\+ !!\\*vi_word;
 			case TK_CTL\\('c'\\):${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1425:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1425${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1427:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1427${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1c 		char *tmp = emalloc(xcols+3);
 		char *snum = emalloc(32);
@@ -1843,26 +1843,26 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:143:m1${ESC}${SEP}
 ${SEP}'2i 		free(tmp);
 		free(snum);
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:169:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}?'3s/buf\\[n \\+ 4]/*buf = emalloc(n + 4)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'3s/(b.*f)\\[(.*)]/*\\1 = emalloc(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'3${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1271:s2${SEP}${LB}
-${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1271:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}?'3s/buf\\[n \\+ 4]/*buf = emalloc(n + 4)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'3s/(b.*f)\\[(.*)]/*\\1 = emalloc(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'3${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1273:s2${SEP}${LB}
+${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1273:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'4i 				free(buf);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1274:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}?'5s/buf\\[n \\+ 30]/*buf = emalloc(n + 30)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'5s/(b.*f)\\[(.*)]/*\\1 = emalloc(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'5${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1391:s2${SEP}${LB}
-${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1391:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1276:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}?'5s/buf\\[n \\+ 30]/*buf = emalloc(n + 30)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'5s/(b.*f)\\[(.*)]/*\\1 = emalloc(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'5${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1393:s2${SEP}${LB}
+${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1393:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'6i 					free(buf);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1396:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}?'7s/buf\\[n \\+ 30]/*buf = emalloc(n + 30)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'7s/(b.*f)\\[(.*)]/*\\1 = emalloc(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'7${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1402:s2${SEP}${LB}
-${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1402:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1398:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}?'7s/buf\\[n \\+ 30]/*buf = emalloc(n + 30)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'7s/(b.*f)\\[(.*)]/*\\1 = emalloc(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'7${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1404:s2${SEP}${LB}
+${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1404:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'8i 					free(buf);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1412:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}?'9s/buf\\[n \\+ 30]/*buf = emalloc(n + 30)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'9s/(b.*f)\\[(.*)]/*\\1 = emalloc(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'9${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1417:s2${SEP}${LB}
-${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1417:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1414:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}?'9s/buf\\[n \\+ 30]/*buf = emalloc(n + 30)/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'9s/(b.*f)\\[(.*)]/*\\1 = emalloc(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'9${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1419:s2${SEP}${LB}
+${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1419:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'10i 					free(buf);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1425:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}b7${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1427:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}b7${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> struct highlight \\{
 	char \\*ft;		/\\* the filetype of this pattern \\*/
 	char \\*pat;		/\\* regular expression \\*/
@@ -2210,7 +2210,7 @@ index 9b4776c8..87cf17fa 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index e104d236..3ceb633d 100644
+index 703366c1..9b9f9275 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -2232,7 +2232,7 @@ index e104d236..3ceb633d 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1268,10 +1271,11 @@ void vi(int init)
+@@ -1270,10 +1273,11 @@ void vi(int init)
  					break;
  				ln = uc_chr(ln, xoff);
  				n = strlen(ln);
@@ -2245,7 +2245,7 @@ index e104d236..3ceb633d 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1388,18 +1392,19 @@ void vi(int init)
+@@ -1390,18 +1394,19 @@ void vi(int init)
  				case '/': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					n = cs ? strlen(cs) : 0;
@@ -2267,7 +2267,7 @@ index e104d236..3ceb633d 100644
  					memcpy(buf, ".,.+", sizeof(".,.+"));
  					char *buf1 = itoa(vi_arg, buf+4);
  					memcpy(buf1, "s/", sizeof("s/"));
-@@ -1410,11 +1415,12 @@ void vi(int init)
+@@ -1412,11 +1417,12 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
@@ -2281,7 +2281,7 @@ index e104d236..3ceb633d 100644
  					memcpy(buf, "%s/", sizeof("%s/"));
  					if (cs) {
  						memcpy(buf+3, cs, n);
-@@ -1423,6 +1429,7 @@ void vi(int init)
+@@ -1425,6 +1431,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);

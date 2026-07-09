@@ -55,17 +55,17 @@ ${ESC}${SEP}%;f> 		dir = mv == '\\(' \\? 1 : -1;
 		if \\(!bre\\)
 			bre = rset_smake\\(\"\\^\\[\\.\\?!]\\+\\['\\\\\\\\]\\)]\\*\\(\\?:\\[ \\\\t]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);
 		int subs\\[2], org;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:613:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:615:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 		break;
 	case '\\(':
 	case '\\)':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:613:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:615:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^		dir = mv == '\\(' \\? 1 : -1;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:613:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:615:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 		if \\(!bre\\)
 			bre = rset_smake\\(\"\\^\\[\\.\\?!]\\+\\['\\\\\\\\]\\)]\\*\\(\\?:\\[ \\\\t]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);
 		int subs\\[2], org;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:613:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:615:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> .	...a..
 .c........
 	.a.e.....
@@ -73,25 +73,25 @@ ${ESC}${SEP}%;f> .	...a..
 .	.f.\\(.....
 ...b.e...r.........\\(..\\[............\\*\\(\\?:\\[.............,..\\).
 .	i.t s..s.....o...${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:613:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:615:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		break;.*?
 	case '\\(':.*?
 	case '\\)':.*?
 (		dir = mv == '\\(' \\? 1 : -1;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:613:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:615:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		for \\(i = 0; i < cnt; i\\+\\+\\)
 			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\)
 				break;.*(		for \\(i = 0; i < cnt; i\\+\\+\\) \\{)
 			var = \\*row;
 			org = \\*off;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:613:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:615:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	case 'w':
 	case 'W':
 		var = mv == 'W';.*(			for \\(; \\(cs = lbuf_get\\(xb, \\*row\\)\\) && \\*cs == '\\\\n'; \\*row \\+= dir\\);)
 			if \\(\\*row != var\\) \\{
 				\\*off = MAX\\(0, lbuf_indents\\(xb, \\*row\\)\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:613:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:613${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:615:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:615${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	case '}':
 	case '\\[':
@@ -107,18 +107,18 @@ ${ESC}${SEP}%;f+ 		dir = mv == '\\{' \\|\\| mv == '\\[' \\? 1 : -1;
 		for \\(i = 0; i < cnt; i\\+\\+\\)
 			if \\(lbuf_sectionbeg\\(xb, dir, row, off, var\\)\\)
 				break;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:653:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:655:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	case '}':
 	case '\\[':
 	case ']':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:653:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:655:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		dir = mv == '\\{' \\|\\| mv == '\\[' \\? 1 : -1;
 		var = mv == '\\[' \\|\\| mv == ']' \\? '\\\\n' : '\\{';${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:653:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:655:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 		for \\(i = 0; i < cnt; i\\+\\+\\)
 			if \\(lbuf_sectionbeg\\(xb, dir, row, off, var\\)\\)
 				break;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:653:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:655:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f+ 	c..e....:
 	c......'.
 .c........
@@ -127,40 +127,40 @@ ${ESC}${SEP}%;f+ 	c..e....:
 	.f...\\(. = ........n.;.i.\\+.
 		......b.f.........e................of.. ...\\).
 	.	..re..;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:653:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:655:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	case '}':.*?
 	case '\\[':.*?
 	case ']':.*?
 (		dir = mv == '\\{' \\|\\| mv == '\\[' \\? 1 : -1;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:653:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:655:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		}
 		return mv;
 	case '\\{':.*(	case TK_CTL\\(']'\\):	/\\* this is also \\^5 on some systems \\*/)
 	case TK_CTL\\('p'\\):
 		#define open_saved\\(n\\) \\\\${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:653:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:655:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 					break;
 				}
 			}.*(		if \\(savepath\\[n]\\) \\{ \\\\)
 			\\*row = srow\\[n]; \\*off = soff\\[n]; \\\\
 			ex_edit\\(savepath\\[n]->s, savepath\\[n]->s_n\\); \\\\${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:653:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:653${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:655:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:655${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'1s/\\(/)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:613:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'1s/\\(/)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:615:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2,#+1c 		dir = mv == '}' || mv == ']' ? 1 : -1;
 		var = mv == '[' || mv == ']' ? '{' : '\\n';
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:653:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:655:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index e104d236..d1a5c3b4 100644
+index 703366c1..c85c660b 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -610,7 +610,7 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -612,7 +612,7 @@ static int vi_region(int cmd, int *row, int *off)
  		break;
  	case '(':
  	case ')':
@@ -169,7 +169,7 @@ index e104d236..d1a5c3b4 100644
  		if (!bre)
  			bre = rset_smake("^[.?!]+['\\])]*(?:[ \t]+\n?|\n)", 0);
  		int subs[2], org;
-@@ -650,8 +650,8 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -652,8 +652,8 @@ static int vi_region(int cmd, int *row, int *off)
  	case '}':
  	case '[':
  	case ']':

@@ -624,19 +624,19 @@ ${ESC}${SEP}%;f> 				ln\\+\\+;
 		}
 		sbufn_str\\(sb, ln\\)
 		lbuf_edit\\(xb, sb->s, i, i \\+ 1, 0, 0\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:936:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:938:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 			if \\(dir < 0\\) \\{
 				if \\(\\*ln != ' ' && \\*ln != '\\\\t'\\)
 					break;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:936:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:938:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 				ln\\+\\+;
 			} else if \\(\\*ln != '\\\\n' \\|\\| r1 == r2\\)
 				sbuf_chr\\(sb, '\\\\t'\\)${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:936:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:938:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 		}
 		sbufn_str\\(sb, ln\\)
 		lbuf_edit\\(xb, sb->s, i, i \\+ 1, 0, 0\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:936:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:938:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> ..	i. ..i... .\\)..
 ..	... \\(... !......&. .l. ........
 .	........;
@@ -646,25 +646,25 @@ ${ESC}${SEP}%;f> ..	i. ..i... .\\)..
 .	.
 .........tr.......\\)
 .	.b...e.i..x.....-.s,.i,.i.. ....,..\\).${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:936:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:938:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			if \\(dir < 0\\) \\{.*?
 				if \\(\\*ln != ' ' && \\*ln != '\\\\t'\\).*?
 					break;.*?
 (				ln\\+\\+;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:936:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:938:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		if \\(!\\(ln = lbuf_get\\(xb, i\\)\\)\\)
 			continue;
 		for \\(c = 0; c < count; c\\+\\+\\) \\{.*(		sbuf_cut\\(sb, 0\\))
 	}
 	xoff = lbuf_indents\\(xb, r1\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:936:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:938:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	char \\*ln;
 	int i, c;
 	for \\(i = r1; i <= r2; i\\+\\+\\) \\{.*(static int vc_motion\\(int cmd\\))
 \\{
 	int r1 = xrow, r2 = xrow;	/\\* region rows \\*/${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:936:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:936${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:938:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:938${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1,#+2c 				if (xet && *ln == ' ') {
 					int k;
@@ -679,7 +679,7 @@ ${SEP}'1,#+2c 				if (xet && *ln == ' ') {
 				} else
 					sbuf_chr(sb, '\\t')
 			}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:936:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b4${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:938:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b4${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> 	int plen, row, off, top;
 	long mtime;			/\\* modification time \\*/
 	signed char td;			/\\* text direction \\*/
@@ -1005,10 +1005,10 @@ index 1a35a776..6795dfe5 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index e104d236..f72bf4af 100644
+index 703366c1..42a08d06 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -933,9 +933,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -935,9 +935,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
  			if (dir < 0) {
  				if (*ln != ' ' && *ln != '\t')
  					break;
