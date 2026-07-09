@@ -3551,7 +3551,7 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 static char *edit_buffers(const char *name, char *text,
 			  const char *rejname, char *rejtext)
 {
-	char *ln;
+	char *ln, msg[512];
 	struct lbuf *lb;
 	int i, in, out;
 	int tty = open("/dev/tty", O_RDWR);
@@ -3578,10 +3578,15 @@ static char *edit_buffers(const char *name, char *text,
 	bufs_switch(bufs_open(name, strlen(name)));
 	lbuf_edit(xb, text, 0, 0, 0, 0);
 	ex_bufpostfix(ex_buf, 1);
+	snprintf(msg, sizeof(msg), "\"%s\" %dL [f]", xb_path, lbuf_len(xb));
+	ex_print(msg, bar_ft)
 	if (rejtext) {
+		xmpt = 0;
 		bufs_switch(bufs_open(rejname, strlen(rejname)));
 		lbuf_edit(xb, rejtext, 0, 0, 0, 0);
 		ex_bufpostfix(ex_buf, 1);
+		snprintf(msg, sizeof(msg), "\"%s\" %dL [f]", xb_path, lbuf_len(xb));
+		ex_print(msg, bar_ft)
 	}
 	syn_setft(xb_ft);
 	if ((ln = getenv("P2VI_EX")))	/* test harness hook */
