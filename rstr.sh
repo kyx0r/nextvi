@@ -1616,7 +1616,7 @@ static int rstr_simple(rstr *rs, char *re, int icase)
 	if (rs->wbeg)
 		re += 2;
 	beg = re;
-	while (re[0] && !strchr(\"\\\\.*+?[]{}()\$\", (unsigned char) re[0]))
+	while (re[0] && !strchr(\"\\\\.*+?[{()\$\", (unsigned char) re[0]))
 		re++;
 	end = re;
 	rs->wend = re[0] == '\\\\' && re[1] == '>';
@@ -2434,7 +2434,7 @@ index 75dd0ce8..8e9df6df 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 22319b65..e0bbc617 100644
+index 22319b65..1535910c 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -749,3 +749,142 @@ int rset_match(rset *rs, char *s, int flg)
@@ -2455,7 +2455,7 @@ index 22319b65..e0bbc617 100644
 +	if (rs->wbeg)
 +		re += 2;
 +	beg = re;
-+	while (re[0] && !strchr("\\.*+?[]{}()$", (unsigned char) re[0]))
++	while (re[0] && !strchr("\\.*+?[{()$", (unsigned char) re[0]))
 +		re++;
 +	end = re;
 +	rs->wend = re[0] == '\\' && re[1] == '>';
