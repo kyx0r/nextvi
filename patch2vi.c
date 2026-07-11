@@ -5279,11 +5279,7 @@ process_line:
 		 * expansion pass) and passed to vi as the last filename. The fixed
 		 * EXINIT yanks that buffer into register 97 and executes it. */
 		fputs("# Body too large for EXINIT/argv: stage it in a file\n"
-		      "if ( : > /tmp/p2vi.$$ ) 2>/dev/null; then\n"
-		      "    P2VIF=/tmp/p2vi.$$\n"
-		      "else\n"
-		      "    P2VIF=./p2vi.$$\n"
-		      "fi\n"
+		      "( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
 		      "trap 'rm -f \"$P2VIF\"' EXIT\n", stdout);
 		printf("printf '%%s\\n' \"|sc! %s|:vis 3${SEP}",
 		       dyn_esc ? "${ESC}${SEP}" : "\\\\\\\\${SEP}");
