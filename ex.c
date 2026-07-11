@@ -561,7 +561,15 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 {
 	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
 	e = ex_region(loc, &beg, &end, &o1, &o2);
+	if (e && (!xdefreg || (*loc && e != 2)))
+		return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
+	if (xdefreg) {
+		if (dir < 0)
+			return "register search is forward only";
+		if (cmd[1] == '+' && (!*loc || e == 2))
+			return "cannot increment without range";
+	}
 	ex_krsset(arg, dir);
 	if (!xkwdrs)
 		return xserr;
@@ -570,18 +578,13 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	if (xdefreg) {
 		int offs[xkwdrs->nsubc];
 		sbuf *sb = ex_regget(xdefreg);
-		if (dir < 0)
-			return "register search is forward only";
 		if (!sb)
 			return "uninitialized register";
 		if (!*loc || e == 2) {
-			if (cmd[1] == '+')
-				return "cannot increment without range";
 			if (rset_find(xkwdrs, sb->s, offs, 0) < 0 || offs[xgrp] < 0)
 				return xuerr;
 			return NULL;
-		} else if (e)
-			return xrerr;
+		}
 		o1 = MAX(o1, 0);
 		off = MAX(0, lbuf_pos2off(xb, beg, o1, end - 1, o2,
 					xrow, xoff + (cmd[1] == '+')));
@@ -591,8 +594,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 						off + offs[xgrp], &xrow, &xoff))
 			return xuerr;
 		return NULL;
-	} else if (e)
-		return xrerr;
+	}
 	off = xoff;
 	if (xrow < beg || xrow >= end) {
 		off = 0;
