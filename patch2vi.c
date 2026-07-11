@@ -54,7 +54,8 @@ static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
 /* -1=per-group stored levels, 0=off, 1-5=forced level */
 static int delta_mode;
-static const char *input_file;  /* patch (or previously generated script) path, NULL = stdin */
+/* patch (or previously generated script) path, NULL = stdin */
+static const char *input_file;
 static const char *end_tag_rd = "=== END ===";
 static const char *end_tag_wr = "=== END ===";
 
@@ -506,15 +507,20 @@ static int fuzzy_spec(fline_t *win, int n)
 			if (!win[j].mask[i]) {
 				run += bl;
 			} else {
-				if (run > SPEC_LINE_CAP) run = SPEC_LINE_CAP;
+				if (run > SPEC_LINE_CAP)
+					run = SPEC_LINE_CAP;
 				s += (long)run * run;
 				run = 0;
 			}
 			b += bl;
 		}
-		if (run > SPEC_LINE_CAP) run = SPEC_LINE_CAP;
+		if (run > SPEC_LINE_CAP)
+			run = SPEC_LINE_CAP;
 		s += (long)run * run;
-		if (s > SPEC_MAX) { s = SPEC_MAX; break; }
+		if (s > SPEC_MAX) {
+			s = SPEC_MAX;
+			break;
+		}
 	}
 	return (int)s;
 }
@@ -1590,7 +1596,8 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 			unsigned char *m = emalloc(nr ? nr : 1);
 			fuzz_mask(m, nr, lvl, seed, &gi);
 			for (int k = 0; k < nr; k++)
-				if (m[k]) any = 1, masked++;
+				if (m[k])
+					any = 1, masked++;
 			total += nr;
 			win[j].base = base[j];
 			win[j].mask = m;
@@ -1601,7 +1608,7 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 		 * still validates uniquely on this particular file. */
 		int too_loose = total > 0 && masked * 5 > total * 4;
 		int first, cnt = any && !too_loose
-			? count_window_fuzzy(win, bn, &first) : 0;
+				 ? count_window_fuzzy(win, bn, &first) : 0;
 		if (any && !too_loose && cnt == 1 && first == expected) {
 			char **lines = emalloc(bn * sizeof(char *));
 			for (int j = 0; j < bn; j++)
@@ -1804,8 +1811,8 @@ static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 	 * Fall back to the deleted range if the span is unknown. */
 	int span_lo = g->hunk_lo > 0 ? g->hunk_lo - 1 : hunk_top;
 	int span_hi = g->hunk_hi > 0 ? g->hunk_hi - 1
-		    : g->del_end > 0 ? g->del_end - 1
-		    : hunk_top;
+		      : g->del_end > 0 ? g->del_end - 1
+		      : hunk_top;
 	if (span_lo > hunk_top)
 		span_lo = hunk_top;
 	if (span_hi < hunk_top)
@@ -2017,8 +2024,8 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		if (n) {
 			EMIT_ESC3SEP(out);
 			sb_printf(out, "${OK1}p OK %s:%d:a%d",
-				cur_file_path ? cur_file_path : "?",
-				target_line, ps[n].pid);
+				  cur_file_path ? cur_file_path : "?",
+				  target_line, ps[n].pid);
 		}
 		if (m1) {
 			/* restore the register cache on the success path,
@@ -2202,7 +2209,9 @@ static int lcs_substr(const char *a, int alen, const char *b, int blen,
 				cur[j] = 0;
 			}
 		}
-		int *t = prev; prev = cur; cur = t;
+		int *t = prev;
+		prev = cur;
+		cur = t;
 	}
 	free(prev);
 	free(cur);
@@ -2250,9 +2259,12 @@ static void collect_blocks(const char *om, int os, int oe,
 		return;
 	int bo = os + ai, bn = ns + bi;
 	int s = 0, e = L;
-	while (s < e && (om[bo + s] & 0xC0) == 0x80) s++;
-	while (e > s && (om[bo + e] & 0xC0) == 0x80) e--;
-	bo += s; bn += s;
+	while (s < e && (om[bo + s] & 0xC0) == 0x80)
+		s++;
+	while (e > s && (om[bo + e] & 0xC0) == 0x80)
+		e--;
+	bo += s;
+	bn += s;
 	L = e - s;
 	if (L <= 0)
 		return;   /* whole block was a partial rune; treat as change */
@@ -2281,8 +2293,10 @@ enum { GM_LIT, GM_WILD, GM_FUZZ };   /* "(text)" / "(.*)" / "(head.*tail)" */
  * new side). Texts are borrowed slices of old/new. */
 typedef struct {
 	int stable;          /* 1 = stable anchor (group), 0 = edit */
-	const char *o; int olen;   /* old text (pattern side) */
-	const char *n; int nlen;   /* new text (replacement side) */
+	const char *o;
+	int olen;   /* old text (pattern side) */
+	const char *n;
+	int nlen;   /* new text (replacement side) */
 	int mode;            /* (stable) GM_LIT / GM_WILD / GM_FUZZ */
 	int hb, tb;          /* (GM_FUZZ) head/tail byte lengths within o */
 } gtok_t;
@@ -2291,7 +2305,10 @@ typedef struct {
 static int rune_take(const char *s, int len, int k)
 {
 	int i = 0, n = 0;
-	while (i < len && n < k) { i += uc_len((s + i)); n++; }
+	while (i < len && n < k) {
+		i += uc_len((s + i));
+		n++;
+	}
 	return i < len ? i : len;
 }
 
@@ -2323,18 +2340,25 @@ static int fuzz_anchors(const char *old, int oldlen,
 	int hk = 0, tk = 0, hbytes = 0, tbytes = 0;
 	for (int k = 1; k <= R; k++) {
 		hbytes = rune_take(o, olen, k);
-		if (str_count_occ(old, oldlen, o, hbytes) == 1) { hk = k; break; }
+		if (str_count_occ(old, oldlen, o, hbytes) == 1) {
+			hk = k;
+			break;
+		}
 	}
 	if (!hk)
 		return 0;
 	for (int k = 1; k <= R; k++) {
 		int off = rune_take(o, olen, R - k);
 		tbytes = olen - off;
-		if (str_count_occ(old, oldlen, o + off, tbytes) == 1) { tk = k; break; }
+		if (str_count_occ(old, oldlen, o + off, tbytes) == 1) {
+			tk = k;
+			break;
+		}
 	}
 	if (!tk || hk + tk >= R)   /* overlap or no interior left to absorb */
 		return 0;
-	*hb = hbytes; *tb = tbytes;
+	*hb = hbytes;
+	*tb = tbytes;
 	return 1;
 }
 
@@ -2390,20 +2414,27 @@ static int build_grp_variant(const char *old, const char *new,
 			continue;
 		if (b->oa > pos_o || b->na > pos_n) {   /* edit gap before anchor */
 			tk[nt].stable = 0;
-			tk[nt].o = old + pos_o; tk[nt].olen = b->oa - pos_o;
-			tk[nt].n = new + pos_n; tk[nt].nlen = b->na - pos_n;
+			tk[nt].o = old + pos_o;
+			tk[nt].olen = b->oa - pos_o;
+			tk[nt].n = new + pos_n;
+			tk[nt].nlen = b->na - pos_n;
 			nt++;
 		}
 		tk[nt].stable = 1;
-		tk[nt].o = old + b->oa; tk[nt].olen = b->len;
-		tk[nt].n = new + b->na; tk[nt].nlen = b->len;
+		tk[nt].o = old + b->oa;
+		tk[nt].olen = b->len;
+		tk[nt].n = new + b->na;
+		tk[nt].nlen = b->len;
 		nt++;
-		pos_o = b->oa + b->len; pos_n = b->na + b->len;
+		pos_o = b->oa + b->len;
+		pos_n = b->na + b->len;
 	}
 	if (olen > pos_o || nlen > pos_n) {   /* trailing edit */
 		tk[nt].stable = 0;
-		tk[nt].o = old + pos_o; tk[nt].olen = olen - pos_o;
-		tk[nt].n = new + pos_n; tk[nt].nlen = nlen - pos_n;
+		tk[nt].o = old + pos_o;
+		tk[nt].olen = olen - pos_o;
+		tk[nt].n = new + pos_n;
+		tk[nt].nlen = nlen - pos_n;
 		nt++;
 	}
 	free(bv.v);
@@ -2413,14 +2444,19 @@ static int build_grp_variant(const char *old, const char *new,
 	 * prefix/suffix the substring match already skips). */
 	int fe = -1, le = -1;
 	for (int i = 0; i < nt; i++)
-		if (!tk[i].stable) { if (fe < 0) fe = i; le = i; }
+		if (!tk[i].stable) {
+			if (fe < 0)
+				fe = i;
+			le = i;
+		}
 	if (fe < 0) {   /* no edit at all (old == new): nothing to do */
 		free(tk);
 		return 0;
 	}
 	int ns = 0;
 	for (int i = fe + 1; i < le; i++)
-		if (tk[i].stable) ns++;
+		if (tk[i].stable)
+			ns++;
 	if (ns == 0 || ns > 9) {   /* no in-span run, or > \1..\9 backref limit */
 		free(tk);
 		return 0;
@@ -2432,13 +2468,19 @@ static int build_grp_variant(const char *old, const char *new,
 	int *lgap = emalloc(nt * sizeof(int)), *rgap = emalloc(nt * sizeof(int));
 	int run = 0;
 	for (int i = 0; i < nt; i++) {
-		if (tk[i].stable) { lgap[i] = run; run = 0; }
-		else run += tk[i].olen;
+		if (tk[i].stable) {
+			lgap[i] = run;
+			run = 0;
+		} else
+			run += tk[i].olen;
 	}
 	run = 0;
 	for (int i = nt - 1; i >= 0; i--) {
-		if (tk[i].stable) { rgap[i] = run; run = 0; }
-		else run += tk[i].olen;
+		if (tk[i].stable) {
+			rgap[i] = run;
+			run = 0;
+		} else
+			run += tk[i].olen;
 	}
 
 	int absorb = 0;
@@ -2461,7 +2503,8 @@ static int build_grp_variant(const char *old, const char *new,
 			tk[i].mode = GM_LIT;        /* no unique minimal anchors */
 		}
 	}
-	free(lgap); free(rgap);
+	free(lgap);
+	free(rgap);
 	if (!absorb) {   /* reproduces the span verbatim: a dup of the exact rung */
 		free(tk);
 		return 0;
@@ -2487,14 +2530,18 @@ static int build_grp_variant(const char *old, const char *new,
 				sbuf_str(pat, ".*")
 				sbuf_str(pat, et)
 				sbuf_chr(pat, ')')
-				free(eh); free(et); free(h); free(t);
+				free(eh);
+				free(et);
+				free(h);
+				free(t);
 			} else {
 				char *tmp = dup_n(tk[i].o, tk[i].olen);
 				char *e = escape_sub_pat_raw(tmp, '/');
 				sbuf_chr(pat, '(')
 				sbuf_str(pat, e)
 				sbuf_chr(pat, ')')
-				free(e); free(tmp);
+				free(e);
+				free(tmp);
 			}
 			sbuf_str(repl, br)
 		} else {
@@ -2504,7 +2551,10 @@ static int build_grp_variant(const char *old, const char *new,
 			char *re = escape_sub_repl_raw(tn, '/');
 			sbuf_str(pat, pe)
 			sbuf_str(repl, re)
-			free(pe); free(re); free(to); free(tn);
+			free(pe);
+			free(re);
+			free(to);
+			free(tn);
 		}
 	}
 	free(tk);
@@ -2535,7 +2585,11 @@ static void emit_substitute_grp(sbuf *out, const char *pat, const char *repl)
 }
 
 /* One rung of the phase-2 substitute progression: a fully-escaped s/// pair. */
-typedef struct { char *pat; char *repl; int sid; } subvar_t;
+typedef struct {
+	char *pat;
+	char *repl;
+	int sid;
+} subvar_t;
 
 /* Parse "s/<pat>/<repl>/[flags]" into its (still-escaped) pat/repl substrings,
  * respecting "\/" escaped delimiters. Only the '/' delimiter is recognized
@@ -2602,7 +2656,7 @@ static void emit_substitute_chain(sbuf *out, int line, int mark_id,
 			sb_printf(out, "'%d", mark_id);
 			EMIT_ESC3SEP(out);
 			sb_printf(out, "${OK2}p OK %s:%d:s%d",
-				cur_file_path ? cur_file_path : "?", line, v[n].sid);
+				  cur_file_path ? cur_file_path : "?", line, v[n].sid);
 			if (n < nv - 1) {
 				EMIT_ESC3SEP(out);
 				sb_str(out, "1q");
@@ -2945,8 +2999,8 @@ static void parse_grp_blob(char *blob, file_patch_t **active, int nactive,
 
 		if (in_ecmd && gi >= 0 && gi < ngroups) {
 			int s = ecmd_strat == STRAT_ABS ? GS_ABS
-			      : ecmd_strat == STRAT_REL ? GS_REL
-			      : ecmd_strat == STRAT_RELC ? GS_RELC : GS_NONE;
+				: ecmd_strat == STRAT_REL ? GS_REL
+				: ecmd_strat == STRAT_RELC ? GS_RELC : GS_NONE;
 			gsect_add(&results[gi], s, 0, line);
 			continue;
 		}
@@ -3006,7 +3060,7 @@ static void emit_grp_delta(sbuf *out, grp_delta_t *gd)
 	sb_printf(out, "%s\n", end_tag_wr);
 	int eglvl = gd->level ? gd->level : 2;
 	sb_printf(out, "=== LEVEL %d%s ===\n", eglvl,
-		gd->has_star ? "*" : "");
+		  gd->has_star ? "*" : "");
 	if (gd->ncustom_text > 0) {
 		sb_printf(out, "=== custom_text ===\n");
 		for (int i = 0; i < gd->ncustom_text; i++)
@@ -3042,10 +3096,10 @@ static void emit_grp_delta(sbuf *out, grp_delta_t *gd)
 		}
 		if (gd->pat_has_off[pi])
 			sb_printf(out, "=== offset%d %+d ===\n",
-				pi + 1, gd->pat_off[pi]);
+				  pi + 1, gd->pat_off[pi]);
 		if (gd->pat_has_mode[pi])
 			sb_printf(out, "=== mode%d %d ===\n",
-				pi + 1, gd->pat_mode[pi]);
+				  pi + 1, gd->pat_mode[pi]);
 	}
 	if (gd->nabs > 0) {
 		sb_printf(out, "=== edit_cmd_abs ===\n");
@@ -3067,11 +3121,11 @@ static void emit_grp_delta(sbuf *out, grp_delta_t *gd)
 	}
 	if (gd->ph1 || gd->ph2) {
 		sb_printf(out, "=== verbatim mark %d esc %d ===\n",
-			gd->ovr_mark, gd->ovr_esc);
+			  gd->ovr_mark, gd->ovr_esc);
 		sb_printf(out, "=== phase1 ===\n%s\n%s\n",
-			gd->ph1 ? gd->ph1 : "", end_tag_wr);
+			  gd->ph1 ? gd->ph1 : "", end_tag_wr);
 		sb_printf(out, "=== phase2 ===\n%s\n%s\n",
-			gd->ph2 ? gd->ph2 : "", end_tag_wr);
+			  gd->ph2 ? gd->ph2 : "", end_tag_wr);
 	}
 }
 
@@ -3086,9 +3140,9 @@ static void emit_win_section(sbuf *fp, grp_delta_t *gd, int slot,
 		return;
 	sb_printf(fp, "=== SEARCH PATTERN %d ===\n", slot + 1);
 	int poff = (gd && gd->pat_has_off[slot]) ? gd->pat_off[slot]
-		 : recorded ? 0 : w->offset;
+		   : recorded ? 0 : w->offset;
 	int pmode = (gd && gd->pat_has_mode[slot]) ? gd->pat_mode[slot]
-		  : recorded ? def_mode : w->mode;
+		    : recorded ? def_mode : w->mode;
 	sb_printf(fp, "=== OFFSET %+d MODE %d ===\n", poff, pmode);
 	if (recorded)
 		for (int i = 0; i < gd->npattern[slot]; i++)
@@ -3151,10 +3205,10 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 		 * blobs reference (edit it when renumbering marks in them) */
 		if (with_phase && g->mark_id >= 0)
 			sb_printf(fp, "=== GROUP %d/%d (line %d) MARK %d ===\n",
-				gi + 1, ngroups, target, g->mark_id);
+				  gi + 1, ngroups, target, g->mark_id);
 		else
 			sb_printf(fp, "=== GROUP %d/%d (line %d) ===\n",
-				gi + 1, ngroups, target);
+				  gi + 1, ngroups, target);
 		if (gd && gd->ncustom_text > 0 && gd->has_star && in_fd) {
 			for (int i = 0; i < gd->ncustom_text; i++)
 				sb_printf(fp, "%s\n", gd->custom_text[i]);
@@ -3306,11 +3360,11 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 			} else if (show_relc) {
 				if (g->ldc_start == g->ldc_end)
 					sb_printf(fp, ".;%dc %s\n",
-						g->ldc_start, g->ldc_new_text);
+						  g->ldc_start, g->ldc_new_text);
 				else
 					sb_printf(fp, ".;%d;%dc %s\n",
-						g->ldc_start, g->ldc_end,
-						g->ldc_new_text);
+						  g->ldc_start, g->ldc_end,
+						  g->ldc_new_text);
 			}
 			sb_printf(fp, "%s\n", end_tag_wr);
 		}
@@ -3332,7 +3386,7 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 					int nv = build_sub_variants(g, v);
 					for (int k = 0; k < nv; k++) {
 						sb_printf(fp, "s/%s/%s/\n",
-							v[k].pat, v[k].repl);
+							  v[k].pat, v[k].repl);
 						free(v[k].pat);
 						free(v[k].repl);
 					}
@@ -3363,9 +3417,9 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 			const char *b1 = g->ph1_ovr ? g->ph1_ovr : g->ph1_gen;
 			const char *b2 = g->ph2_ovr ? g->ph2_ovr : g->ph2_gen;
 			sb_printf(fp, "=== PHASE 1 ===\n%s\n%s\n",
-				b1 ? b1 : "", end_tag_wr);
+				  b1 ? b1 : "", end_tag_wr);
 			sb_printf(fp, "=== PHASE 2 ===\n%s\n%s\n",
-				b2 ? b2 : "", end_tag_wr);
+				  b2 ? b2 : "", end_tag_wr);
 		}
 		if (gi + 1 < ngroups)
 			sb_chr(fp, '\n');
@@ -3478,7 +3532,7 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 				 const char *rejpath)
 {
 	fprintf(stderr, "%s group %d: structured edit discards verbatim "
-		"override (saved to %s)\n", path, idx, rejpath);
+			"override (saved to %s)\n", path, idx, rejpath);
 	FILE *rej = fopen(rejpath, "a");
 	if (rej) {
 		grp_delta_t tmp = {0};
@@ -3621,7 +3675,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				     active[k]->groups, active[k]->ngroups, NULL,
 				     active[k]->is_new,
 				     active[k]->orig_path ? active[k]->orig_path
-							  : active[k]->path, 0);
+				     : active[k]->path, 0);
 		sb_printf(orig_sb, "%s\n\n", end_tag_wr);
 	}
 	sbuf_null(orig_sb)
@@ -3670,8 +3724,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 					group_t *g2 = &active[k]->groups[gi2];
 					if ((stored->has_star && stored->level == 4
 					     && grp_content_regex_matches(stored,
-									   g2->del_texts, g2->ndel,
-									   g2->add_texts, g2->nadd))
+									  g2->del_texts, g2->ndel,
+									  g2->add_texts, g2->nadd))
 					    || grp_content_matches(stored,
 								   g2->del_texts, g2->ndel,
 								   g2->add_texts, g2->nadd)) {
@@ -3722,7 +3776,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 	if (!delta_mode && nin_deltas) {
 		sbuf_make(rej, MAX_LINE)
 		sb_printf(rej, "# Rejected: interactive (-i)"
-			       " discards all stored deltas\n\n");
+			  " discards all stored deltas\n\n");
 		for (int di = 0; di < nin_deltas; di++) {
 			file_delta_t *in_fd = &in_deltas[di];
 			sb_printf(rej, "=== FILE: %s ===\n", in_fd->filepath);
@@ -3746,7 +3800,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				     active[k]->groups, active[k]->ngroups,
 				     in_fd_per[k], active[k]->is_new,
 				     active[k]->orig_path ? active[k]->orig_path
-							  : active[k]->path, 0);
+				     : active[k]->path, 0);
 		sb_printf(tmp_sb, "%s\n\n", end_tag_wr);
 	}
 	sbuf_null(tmp_sb)
@@ -3787,7 +3841,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			g->ovr_esc = gd->ovr_esc;
 			if (gd->ovr_esc != dyn_esc)
 				fprintf(stderr, "%s group %d: verbatim override "
-					"captured under escape byte %d, current is %d\n",
+						"captured under escape byte %d, current is %d\n",
 					active[k]->path, gi + 1, gd->ovr_esc, dyn_esc);
 		}
 	}
@@ -3803,7 +3857,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				     active[k]->groups, active[k]->ngroups,
 				     in_fd_per[k], active[k]->is_new,
 				     active[k]->orig_path ? active[k]->orig_path
-							  : active[k]->path, 1);
+				     : active[k]->path, 1);
 		sb_printf(tmp_sb, "%s\n\n", end_tag_wr);
 	}
 	sbuf_null(tmp_sb)
@@ -3875,8 +3929,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			if (verb_ch) {
 				if (struct_ch)
 					fprintf(stderr, "%s group %d: structured "
-						"edit shadowed by verbatim PHASE "
-						"edit\n", active[k]->path, gi + 1);
+							"edit shadowed by verbatim PHASE "
+							"edit\n", active[k]->path, gi + 1);
 				char *n1 = uc_dup(eg->ph1 ? eg->ph1 : (d1 ? d1 : ""));
 				char *n2 = uc_dup(eg->ph2 ? eg->ph2 : (d2 ? d2 : ""));
 				free(g->ph1_ovr);
@@ -3884,7 +3938,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				g->ph1_ovr = n1;
 				g->ph2_ovr = n2;
 				g->ovr_mark = eg->ovr_mark > 0 ? eg->ovr_mark
-							       : g->mark_id;
+					      : g->mark_id;
 				g->ovr_esc = dyn_esc;
 			} else if (struct_ch && (g->ph1_ovr || g->ph2_ovr)) {
 				discard_verbatim_ovr(active[k]->path, gi + 1,
@@ -3905,7 +3959,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			if (od->ngrps >= od->gcap) {
 				od->gcap = od->gcap ? od->gcap * 2 : 4;
 				od->grps = erealloc(od->grps,
-						   od->gcap * sizeof(grp_delta_t));
+						    od->gcap * sizeof(grp_delta_t));
 			}
 			grp_delta_t *gout = &od->grps[od->ngrps++];
 			memset(gout, 0, sizeof(*gout));
@@ -3949,11 +4003,11 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			 * escape regime. */
 			if (has_ovr) {
 				gout->ph1 = uc_dup(g->ph1_ovr ? g->ph1_ovr
-						    : (g->ph1_gen ? g->ph1_gen : ""));
+						   : (g->ph1_gen ? g->ph1_gen : ""));
 				gout->ph2 = uc_dup(g->ph2_ovr ? g->ph2_ovr
-						    : (g->ph2_gen ? g->ph2_gen : ""));
+						   : (g->ph2_gen ? g->ph2_gen : ""));
 				gout->ovr_mark = g->ovr_mark > 0 ? g->ovr_mark
-								 : g->mark_id;
+						 : g->mark_id;
 				gout->ovr_esc = g->ovr_esc;
 				continue;
 			}
@@ -4394,14 +4448,14 @@ static void gen_group_segments(file_patch_t *fp)
 			 * starts g->ndel lines below it, the rest anchor on
 			 * leading context. */
 			ps[nps].offset = g->custom_pat_has_off[pi]
-				? g->custom_pat_off[pi]
-				: (pi == 1 || pi == 3) ? 0
-				: pi == 4 ? -(g->ndel)
-				: g->custom_offset;
+					 ? g->custom_pat_off[pi]
+					 : (pi == 1 || pi == 3) ? 0
+					 : pi == 4 ? -(g->ndel)
+					 : g->custom_offset;
 			ps[nps].off_final = g->custom_pat_has_off[pi];
 			ps[nps].mode = g->custom_pat_has_mode[pi]
-				? g->custom_pat_mode[pi]
-				: g->ncustom_pat[pi] == 1 ? 1 : 0;
+				       ? g->custom_pat_mode[pi]
+				       : g->ncustom_pat[pi] == 1 ? 1 : 0;
 			ps[nps].pid = pi + 1;
 			nps++;
 		}
@@ -4476,7 +4530,7 @@ static void gen_group_segments(file_patch_t *fp)
 		if (nps == 0) {
 			/* No usable anchor: mark the absolute line */
 			sb_printf(out, "%dm %d",
-				target_line > 0 ? target_line : 1, g->mark_id);
+				  target_line > 0 ? target_line : 1, g->mark_id);
 			EMIT_SEP(out);
 			free_fuzz_windows(fz, nfz);
 			if (has_gw)
@@ -4720,13 +4774,15 @@ static void add_op(int type, int oline, const char *text)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n", prog);
+	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n",
+		prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
 	fprintf(stderr,
 		"  -r    Use relative regex patterns instead of line numbers\n");
-	fprintf(stderr, "  -i    Interactive mode: edit search patterns in the built-in nextvi\n");
+	fprintf(stderr,
+		"  -i    Interactive mode: edit search patterns in the built-in nextvi\n");
 	fprintf(stderr,
 		"        Each group's PHASE 1/2 sections hold its verbatim ex-body\n"
 		"        bytes; editing them supersedes the structured sections for\n"
@@ -4863,7 +4919,7 @@ int main(int argc, char **argv)
 						sbuf_null(ph)
 						if (cur_gd) {
 							char **dst = in_ph == 1
-								? &cur_gd->ph1 : &cur_gd->ph2;
+								     ? &cur_gd->ph1 : &cur_gd->ph2;
 							free(*dst);
 							*dst = uc_dup(ph->s);
 							mark_bytes_used(*dst);
@@ -4954,7 +5010,7 @@ int main(int argc, char **argv)
 						 * slot (pattern 3) */
 						char c = line[11];
 						pat_idx = (c >= '1' && c <= '0' + NSEARCH)
-							? c - '1' : 2;
+							  ? c - '1' : 2;
 						in_sect = GS_PAT;
 						continue;
 					}
@@ -4962,7 +5018,7 @@ int main(int argc, char **argv)
 						/* "=== offset<1-NSEARCH> <%+d> ===" */
 						char c = line[10];
 						int oi = (c >= '1' && c <= '0' + NSEARCH)
-							? c - '1' : 2;
+							 ? c - '1' : 2;
 						if (cur_gd) {
 							cur_gd->pat_off[oi] = atoi(line + 11);
 							cur_gd->pat_has_off[oi] = 1;
@@ -4973,7 +5029,7 @@ int main(int argc, char **argv)
 						/* "=== mode<1-NSEARCH> <%d> ===" */
 						char c = line[8];
 						int mi = (c >= '1' && c <= '0' + NSEARCH)
-							? c - '1' : 2;
+							 ? c - '1' : 2;
 						if (cur_gd) {
 							cur_gd->pat_mode[mi] = atoi(line + 9);
 							cur_gd->pat_has_mode[mi] = 1;
@@ -5175,7 +5231,7 @@ process_line:
 		 * EMIT_ESCSEP / EMIT_ESC3SEP emit into the command body */
 		const char *e1 = dyn_esc ? "${ESC}${SEP}" : "\\\\${SEP}";
 		const char *e3 = dyn_esc ? "${ESC}${ESC}${ESC}${SEP}"
-					 : "\\\\\\\\\\\\${SEP}";
+				 : "\\\\\\\\\\\\${SEP}";
 		fputs("# Command that handles readability line breaks\n"
 		      "LB=\"0?\"\n"
 		      "# Phase 1 (search/mark): errors disabled by default,\n"
