@@ -73,7 +73,7 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define sbuf_mem(sb, s, len) { int __l_ = len; sbuf_(sb, s, __l_, cpy) sb->s_n += __l_; }
 #define sbuf_str(sb, s) { sbuf_mem(sb, s, strlen(s)) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
-/* sbuf functions that null-terminate strings */
+/* sbuf functions that nul-terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
 #define sbufn_null(sb) { sbuf_(sb, '\0', 4, set) }
 #define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
