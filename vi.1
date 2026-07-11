@@ -1,6 +1,6 @@
-.Dd Jul  9, 2026
+.Dd Jul 11, 2026
 .Dt Nextvi 1
-.Os Nextvi 6.2
+.Os Nextvi 7.0
 .
 .Sh NAME
 .Nm Nextvi
@@ -301,7 +301,7 @@ Delete # characters from cursor backward
 .It Cm di{<\fIarg\fP>}
 Delete inside arg pairs
 .It Cm ci{<\fIarg\fP>}
-Change inside arg pairs
+Delete inside arg pairs and enter insert mode
 .It Cm [\fI#\fP]r{\fIarg\fP}
 Replace # characters with arg from cursor forward
 .It Cm [\fI#\fP]K
@@ -544,7 +544,7 @@ are literal.
 
 .It Cm \&( \&^ \&] \&-
 Specials in regex "[]" expression
-.It Cm \&( \&) { + * \&? ^ $ \&[ \&| \e \&. \\\\< \\\\>
+.It Cm \&( \&) { + * \&? ^ $ \&[ \&| \e \&. \e< \e>
 Specials in regex
 .It Cm \e \&: \&% \&!
 Specials in ex
@@ -587,19 +587,19 @@ Without [cmd], [vrange] replaces [prefix].
 
 .It Cm [\fI% |\fP][\fI, ;\fP][\fI#\fP][\fI. $ ' > <\fP][\fI- + * / %\fP][\fI#num\fP]
 All ranges structure
-'It Cm {\fI|\fP}{\fIcmd\fP}[\fI|\fP]
-Ex command structure
+.It Cm {\fI|\fP}{\fIcmd\fP}[\fI|\fP]
+Ex subcommand structure
 .It Cm {\fI>\fP}[\fIregex\fP][\fI>\fP]
 Search forward structure
 .It Cm {\fI<\fP}[\fIregex\fP][\fI<\fP]
 Search backward structure
-'It Cm '{\fI#mark\fP}
+.It Cm '{\fI#mark\fP}
 Mark structure
 
 .It Cm \&%
 Range from first to last line
 .It Cm \&|
-Begin ex command block
+Begin ex subcommand block
 .It Cm \&,
 Vertical range separator
 .It Cm \&;
@@ -684,9 +684,9 @@ Print text enclosed by a non-deterministic pattern "a+"
 .It Cm [\fIvrange\fP]f<[\fIregex\fP]
 Ranged search
 .Bd -literal
-Horizontal range performs a scoped multi-line search forward.
-In multi-line mode, <Newline> is a regular character.
-If the default register is reassigned, searches its contents.
+If the default register is reassigned, performs a multi-line
+search forward on its contents. Range maps the match to a position
+in the current buffer. No range tests for a match inplace.
 Returns error if target not found.
 
 Example: no range given, current line only
@@ -695,8 +695,10 @@ Example: reverse
 :f<int
 Example: range given
 :10,100f>int
+Example: test register <a> for containing "int"
+:97reg:f>int:??p yes:??!p no:0reg
 Example: search for "int" followed by "void" on next line
-:%;0f>int.void
+:%ya97:97reg:%f>int.void:0reg
 .Ed
 
 .It Cm [\fIrange\fP]f+[\fIregex\fP]
@@ -1717,9 +1719,9 @@ _
  665 lbuf.c | file/line buffer
  726 led.c | insert mode/output
  751 regex.c | pikevm
- 1865 ex.c | ex options/commands
+ 1862 ex.c | ex options/commands
  1884 vi.c | normal mode/general
- 7668 total | wc -l *.c\(basort
+ 7665 total | wc -l *.c\(basort
 _
 .TE
 .
@@ -1807,7 +1809,7 @@ Plan 9 regexp(7)
 was written by
 .An Kyryl Melekhin Aq Mt k.melekhin@gmail.com .
 It is based on
-.Xr neatvi 1 Ns ,
+.Xr neatvi 1 ,
 which was written by
 .An Ali Gholami Rudi Aq Mt ali@rudi.ir .
 .\" add more contributors here?
