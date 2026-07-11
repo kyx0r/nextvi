@@ -574,14 +574,13 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 			return "register search is forward only";
 		if (!sb)
 			return "uninitialized register";
-		if (!*loc) {
+		if (!*loc || e == 2) {
 			if (cmd[1] == '+')
 				return "cannot increment without range";
 			if (rset_find(xkwdrs, sb->s, offs, 0) < 0 || offs[xgrp] < 0)
 				return xuerr;
 			return NULL;
-		}
-		if (e)
+		} else if (e)
 			return xrerr;
 		o1 = MAX(o1, 0);
 		off = MAX(0, lbuf_pos2off(xb, beg, o1, end - 1, o2,
@@ -592,8 +591,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 						off + offs[xgrp], &xrow, &xoff))
 			return xuerr;
 		return NULL;
-	}
-	if (e)
+	} else if (e)
 		return xrerr;
 	off = xoff;
 	if (xrow < beg || xrow >= end) {
