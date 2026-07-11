@@ -559,7 +559,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
-	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
+	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = 0, o2 = -1;
 	e = ex_region(loc, &beg, &end, &o1, &o2);
 	if (e && (!xdefreg || (*loc && e != 2)))
 		return xrerr;
@@ -585,7 +585,6 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 				return xuerr;
 			return NULL;
 		}
-		o1 = MAX(o1, 0);
 		off = MAX(0, lbuf_pos2off(xb, beg, o1, end - 1, o2,
 					xrow, xoff + (cmd[1] == '+')));
 		if (off >= sb->s_n || rset_find(xkwdrs, sb->s + off, offs, 0) < 0
