@@ -39,25 +39,25 @@ LB="0?"
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> /\\* how to highlight text in the reverse direction \\*/
+${ESC}${SEP}%f> /\\* how to highlight text in the reverse direction \\*/
 const int conf_hlrev = SYN_BGMK\\(8\\);
 
 /\\* right-to-left characters \\*/
 #define CR2L		\"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ\"
 /\\* neutral characters \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> /\\* how to highlight text in the reverse direction \\*/
+${ESC}${SEP}%f> /\\* how to highlight text in the reverse direction \\*/
 const int conf_hlrev = SYN_BGMK\\(8\\);
 
 ${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:326:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	\\{msg_ft, \"\\.\\+\", A\\(AY1 \\| SYN_BD\\)},
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{msg_ft, \"\\.\\+\", A\\(AY1 \\| SYN_BD\\)},
 };
 const int hlslen = LEN\\(hls\\);.*(struct dircontext dctxs\\[] = \\{)
 	\\{\"\\^\\[\" CR2L \"]\", -1},
 	\\{\"\\^\\[a-zA-Z_0-9]\", \\+1},${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:326:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	\\{bar_ft, \"\\^\\(\\\\\"\\.\\*\\\\\"\\)\\.\\* \\(\\[0-9]\\{1,3}%\\) \\(L\\[0-9]\\+\\) \\(C\\[0-9]\\+\\) \\(B-\\?\\[0-9]\\+\\)\\?\\.\\*\\\$\",
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{bar_ft, \"\\^\\(\\\\\"\\.\\*\\\\\"\\)\\.\\* \\(\\[0-9]\\{1,3}%\\) \\(L\\[0-9]\\+\\) \\(C\\[0-9]\\+\\) \\(B-\\?\\[0-9]\\+\\)\\?\\.\\*\\\$\",
 		A\\(AY1 \\| SYN_BD, BL, RE1, BL, YE1, GR\\)},
 	\\{bar_ft, \"\\^\\.\\*\\\$\", A\\(AY1 \\| SYN_BD\\)},.*(struct dirmark dmarks\\[] = \\{)
 	\\{\"\\[\" CR2L \"]\\[\" CNEUT CR2L \"]\\*\\[\" CR2L \"]\", \\+1, \\{-1}},
@@ -70,28 +70,28 @@ char conf_curins[] = \"\\x1b[5 q\";	/* insert mode: vertical bar */
 char conf_curnorm[] = \"\\x1b[2 q\";	/* normal mode: block */
 
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:326:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
+${ESC}${SEP}%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \\*postref = NULL;
 	ins_state is;
 	while \\(1\\) \\{
 		ins_init\\(is\\)
 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
+${ESC}${SEP}%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \\*postref = NULL;
 	ins_state is;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:685:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
 	char \\*postref = NULL;.*?
 (	ins_state is;)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:685:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> int led_input\\(sbuf \\*sb, char \\*post, int postn, int row, int flg, int \\*pren\\)
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> int led_input\\(sbuf \\*sb, char \\*post, int postn, int row, int flg, int \\*pren\\)
 \\{
 	int ai_max = 128 \\* xai;.*(				sbufn_str\\(sb, post\\))
 			} else
 				sb->s\\[\\*pren] = \\*post;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:685:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	}
 	return key;
 }.*(			free\\(postref\\);)
 			xrow = crow;
@@ -99,28 +99,28 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:685:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:685${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,
+${ESC}${SEP}%f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\\);
 		if \\(key != '\\\\n'\\) \\{
 			\\*pren = sb->s_n;
 			if \\(!xled\\) \\{
 				xoff = uc_slen\\(sb->s\\+ps\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,
+${ESC}${SEP}%f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\\);
 		if \\(key != '\\\\n'\\) \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:690:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,.*?
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\\);.*?
 (		if \\(key != '\\\\n'\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:690:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> int led_input\\(sbuf \\*sb, char \\*post, int postn, int row, int flg, int \\*pren\\)
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> int led_input\\(sbuf \\*sb, char \\*post, int postn, int row, int flg, int \\*pren\\)
 \\{
 	int ai_max = 128 \\* xai;.*(				sbufn_str\\(sb, post\\))
 			} else
 				sb->s\\[\\*pren] = \\*post;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:690:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	}
 	return key;
 }.*(			free\\(postref\\);)
 			xrow = crow;
@@ -132,28 +132,28 @@ ${SEP}'1i 	term_write(conf_curins, sizeof(conf_curins) - 1)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:685:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2i 			term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:690:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> extern struct placeholder \\*ph;
+${ESC}${SEP}%f> extern struct placeholder \\*ph;
 extern int phlen;
 extern const int conf_hlrev;
 char \\*\\*conf_kmap\\(int id\\);
 int conf_kmapfind\\(char \\*name\\);
 char \\*conf_digraph\\(int c1, int c2\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> extern struct placeholder \\*ph;
+${ESC}${SEP}%f> extern struct placeholder \\*ph;
 extern int phlen;
 extern const int conf_hlrev;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:535:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> extern struct placeholder \\*ph;.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> extern struct placeholder \\*ph;.*?
 extern int phlen;.*?
 (extern const int conf_hlrev;)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:535:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int l;		/\\* the length of the codepoint \\*/
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int l;		/\\* the length of the codepoint \\*/
 };
 extern struct placeholder _ph\\[];.*(/\\* vi\\.c: main \\*/)
 void vi\\(int init\\);
 extern int vi_hidch;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:535:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	int cp\\[2];	/\\* the source character codepoint \\*/
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int cp\\[2];	/\\* the source character codepoint \\*/
 	char d\\[8];	/\\* the placeholder \\*/
 	int wid;	/\\* the width of the placeholder \\*/.*(extern int vi_lncol;)
 /\\* filesystem \\*/
@@ -203,7 +203,7 @@ index 1a35a776..499c1d9c 100644
  			if (!xled) {
  				xoff = uc_slen(sb->s+ps);
 diff --git a/vi.h b/vi.h
-index ca6cca08..0817d8d7 100644
+index d035de9a..93e33e61 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -533,6 +533,8 @@ extern struct placeholder _ph[];

@@ -39,28 +39,28 @@ LB="0?"
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 
+${ESC}${SEP}%f> 
 	mv = term_read\\(0\\);
 	switch \\(mv\\) \\{
 	case ',':
 	case ';':
 		if \\(!vi_charlast\\[0]\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 
+${ESC}${SEP}%f> 
 	mv = term_read\\(0\\);
 	switch \\(mv\\) \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:527:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> .*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> .*?
 	mv = term_read\\(0\\);.*?
 (	switch \\(mv\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:527:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	char \\*cs;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	char \\*cs;
 	int cnt = vi_arg \\? vi_arg : 1;
 	int mv, i, dir, var;.*(		if \\(mv == ','\\))
 			mv = vi_charcmd == 'F' \\|\\| vi_charcmd == 'T'
 				\\? tolower\\(vi_charcmd\\) : toupper\\(vi_charcmd\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:527:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	static rset \\*bre;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	static rset \\*bre;
 	static int srow\\[5], soff\\[5], lkwdcnt;
 	static int cadir = 1;.*(			mv = vi_charcmd;)
 		if \\(lbuf_findchar\\(xb, vi_charlast, mv, cnt, row, off\\)\\)
@@ -106,7 +106,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 703366c1..7287aa75 100644
+index 21296e45..70363183 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,37 @@ static int vi_region(int cmd, int *row, int *off)

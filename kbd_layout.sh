@@ -39,16 +39,16 @@ LB="0?"
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> static char \\*kmap_en\\[256] = \\{
+${ESC}${SEP}%f> static char \\*kmap_en\\[256] = \\{
 	\\[0] = \"en\",
 };
 
 static char \\*kmap_fa\\[256] = \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+1m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> static char \\*kmap_en\\[256] = \\{
+${ESC}${SEP}%f> static char \\*kmap_en\\[256] = \\{
 	\\[0] = \"en\",${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> static char \\*kmap_en\\[256] = \\{.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> static char \\*kmap_en\\[256] = \\{.*?
 (	\\[0] = \"en\",)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a7${SEP}${LB}
 ${SEP}1;3;7??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
@@ -62,28 +62,28 @@ ${SEP}'1i 	['y'] = \"h\",
 	['k'] = \"e\",
 	['l'] = \"o\",
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			err:
+${ESC}${SEP}%f> 			err:
 			\\*ibuf = 0;
 		}
 		ret:
 		ibuf_cnt = 1;
 		ibuf_pos = 0;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			err:
+${ESC}${SEP}%f> 			err:
 			\\*ibuf = 0;
 		}${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			err:.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> 			err:.*?
 			\\*ibuf = 0;.*?
 (		})${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				cw = term_winch;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				cw = term_winch;
 				goto re;
 			}.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))
 		icmd\\[icmd_pos\\+\\+] = ibuf\\[ibuf_pos];
 	return ibuf\\[ibuf_pos\\+\\+];${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				\\*ibuf = winch;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				\\*ibuf = winch;
 				goto ret;
 			} else if \\(term_winch != cw && !winch && xquit >= 0\\) \\{.*(/\\* return a static string that changes text attributes to att \\*/)
 char \\*term_att\\(int att\\)

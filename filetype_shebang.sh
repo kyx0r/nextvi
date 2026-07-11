@@ -39,7 +39,7 @@ LB="0?"
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
+${ESC}${SEP}%f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
 	if \\(!\\(xvis & 4\\)\\)
 		ex_print\\(msg, bar_ft\\)
 	return \\(fd < 0 \\|\\| rd\\) && \\*arg \\? xuerr : NULL;
@@ -47,21 +47,21 @@ ${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
 
 ${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
+${ESC}${SEP}%f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
 	if \\(!\\(xvis & 4\\)\\)
 		ex_print\\(msg, bar_ft\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:437:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);.*?
 	if \\(!\\(xvis & 4\\)\\).*?
 (		ex_print\\(msg, bar_ft\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:437:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	}
 	snprintf\\(msg, sizeof\\(msg\\), \"\\\\\"%s\\\\\" %dL \\[%c]\",
 			\\*xb_path \\? xb_path : \"unnamed\", lbuf_len\\(xb\\),.*(static void \\*ec_fuzz\\(char \\*loc, char \\*cmd, char \\*arg\\))
 \\{
 	rset \\*rs;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:437:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	if \\(cd == 3 \\|\\| \\(!rd && fd >= 0\\)\\) \\{
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	if \\(cd == 3 \\|\\| \\(!rd && fd >= 0\\)\\) \\{
 		ex_bufpostfix\\(ex_buf, arg\\[0]\\);
 		syn_setft\\(xb_ft\\);.*(	char \\*path, \\*p, buf\\[128], trunc\\[128], \\*sret = NULL;)
 	int c, pos, subs\\[2], inst = -1, lnum = -1;
@@ -93,7 +93,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index dd58134d..afd0f128 100644
+index dc9371fc..4d4d9e4f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -435,6 +435,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
