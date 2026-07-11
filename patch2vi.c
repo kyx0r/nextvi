@@ -137,7 +137,7 @@ typedef struct {
 	int npattern[NSEARCH], pat_cap[NSEARCH];
 	int pat_off[NSEARCH];      /* per-pattern OFFSET marker value */
 	int pat_has_off[NSEARCH];
-	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %;f>, 1 = .,$f>,
+	int pat_mode[NSEARCH];     /* per-pattern MODE: 0 = %f>, 1 = .,$f>,
 				    * 2 = grp, 3 = global grp straddle */
 	int pat_has_mode[NSEARCH];
 	char **abs_cmd;
@@ -1091,10 +1091,11 @@ static void emit_change(sbuf *out, int from, int to, char **texts, int ntexts)
  * 1 = whole hunk (pre ctx +
  * deleted lines + post ctx), 2 = deleted lines + post ctx, 3 = top
  * context anchors only, 4 = deleted lines only, 5 = post ctx only.
- * Searches use %;f> (first search of a file) / %;f+ (subsequent)
- * against the register cache (a bare ";" resolves to the current
- * xoff, so each search continues one char past the previous match
- * start). When only one pattern survives dedup, single-line patterns
+ * Searches use %f> (first search of a file) / %f+ (subsequent)
+ * against the register cache: with the default register reassigned,
+ * a range maps the match back to a buffer position, and f+ continues
+ * one char past the previous match start (the cursor).
+ * When only one pattern survives dedup, single-line patterns
  * search the buffer directly with ";0 0reg .,$f> ^pattern$ .. 98reg"
  * (.,$f+ after the first search): ;0 resets xoff to the line start
  * and the ^...$ anchors disambiguate repeated text. ABS-strategy
@@ -1225,13 +1226,14 @@ static void emit_escaped_text(sbuf *out, const char *s)
  * disambiguate repeated text. The first search of a file uses
  * .,$f>, subsequent ones .,$f+.
  * Multi-line patterns run against the cached default register via
- * %;f> (first search of a file) or %;f+ (subsequent: a bare ";"
- * picks up the current xoff and skips one char from the previous
- * match start so identical anchors find the next occurrence).
+ * %f> (first search of a file) or %f+ (subsequent: f+ skips one
+ * char from the previous match start so identical anchors find
+ * the next occurrence; the % range maps the match back to a
+ * buffer position).
  * pre_escaped: 0 = anchors are raw text (apply regex+exarg escape),
  *              1 = anchors are pre-escaped regex (apply exarg only).
  * mode: 1 = direct buffer search (.,$f>, 0reg/98reg, ^...$ anchors);
- *       0 = register-cache search (%;f>); 2 = grp register search, like 0 but
+ *       0 = register-cache search (%f>); 2 = grp register search, like 0 but
  *       bracketed with "grp 1 .. grp 0" so the find lands on the captured
  *       group (pattern 7); 3 = global grp straddle window (pattern 8), like 2
  *       but the cursor is saved to mark WIN_SAVE_MARK and reset to the top
@@ -1276,7 +1278,7 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 	} else
 		/* a global window (g3) always searches forward from the reset top,
 		 * so it forces f> regardless of whether it is the file's first search */
-		sb_str(out, (g3 || first) ? "%;f> " : "%;f+ ");
+		sb_str(out, (g3 || first) ? "%f> " : "%f+ ");
 	for (int i = 0; i < nanchors; i++) {
 		if (pre_escaped) {
 			char *e = escape_exarg(anchors[i]);
@@ -1433,7 +1435,7 @@ typedef struct {
 	int pre_escaped;  /* 1 = user regex (exarg only), 0 = raw text */
 	int offset;       /* lines from match start to the target line */
 	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
-	int mode;         /* search mode: 0 = %;f> register, 1 = .,$f> buffer,
+	int mode;         /* search mode: 0 = %f> register, 1 = .,$f> buffer,
 			   * 2 = grp register search (bracketed grp 1 .. grp 0),
 			   * 3 = global grp straddle (cursor saved/reset/restored) */
 	int pid;          /* fixed pattern id (source slot + 1, 1-9): emitted as
@@ -1539,7 +1541,7 @@ typedef struct {
 	char **lines;   /* owned: nlines malloc'd regex strings */
 	int nlines;
 	int offset;     /* lines from match start to the target line */
-	int mode;       /* 0 = %;f>, 1 = .,$f>, 2 = grp, 3 = global straddle */
+	int mode;       /* 0 = %f>, 1 = .,$f>, 2 = grp, 3 = global straddle */
 	int score;      /* ordering key (specificity + UNIQUE_BONUS) */
 } fuzzwin_t;
 
@@ -1936,7 +1938,7 @@ static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
 /* Phase 1 fallback chain: try each pattern in order, first match wins.
  * All attempts are nested into a single ? conditional, chained with
  * escaped separators; per pattern n (capture tag n):
- *   %;f> <pat>\:<n>??\:<n>??[+off]m <id>\\\:${OK1}p OK <loc>:a<n>\\\:1q\:
+ *   %f> <pat>\:<n>??\:<n>??[+off]m <id>\\\:${OK1}p OK <loc>:a<n>\\\:1q\:
  * (the ${OK1} success report only on fallback blocks, n >= 1)
  * The search's error status is captured into tag <n>; on success the
  * <n>?? branch marks the target and 1q short-circuits out of the
@@ -1994,7 +1996,7 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 			sb_str(out, first ? ".,\\$f> " : ".,\\$f+ ");
 		} else
 			/* g3 always searches forward from the reset top */
-			sb_str(out, (g3 || first) ? "%;f> " : "%;f+ ");
+			sb_str(out, (g3 || first) ? "%f> " : "%f+ ");
 		emit_chain_pattern(out, &ps[n]);
 		EMIT_ESCSEP(out);
 		sb_printf(out, "%d??", ps[n].pid);
@@ -3252,7 +3254,7 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 			/* OFFSET marker: lines from match start to the edit
 			 * target when this pattern matches. MODE selects the
 			 * search form: 1 = .,$f> (live buffer, default for
-			 * single-line patterns), 0 = %;f> (register cache). */
+			 * single-line patterns), 0 = %f> (register cache). */
 			int poff = (gd && gd->pat_has_off[pi])
 				   ? gd->pat_off[pi]
 				   : doff - (add_a ? 1 : 0);

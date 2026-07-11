@@ -89,7 +89,7 @@ check_drift() {
 echo "=== Script content tests ==="
 
 # A one-line file leaves a single deduped search pattern; anything with
-# context emits a multi-pattern fallback chain (%;f>) instead.
+# context emits a multi-pattern fallback chain (%f>) instead.
 check_script "single pattern uses .,\$f>" \
 	"old
 " \
@@ -98,7 +98,7 @@ check_script "single pattern uses .,\$f>" \
 	'.,\\$f>' '>[^$]*>'
 
 # A single anchored change emits a fallback chain. The whole-hunk
-# pattern is multi-line (%;f>, mode 0); the single-line fallbacks
+# pattern is multi-line (%f>, mode 0); the single-line fallbacks
 # (top context, deleted line) default to mode 1 and search the live
 # buffer with .,$f> instead. The chain opens the ? conditional with a
 # ${LB} readability break before the first search (each attempt starts
@@ -126,7 +126,7 @@ end
 " \
 	'\.,\\$f>' ''
 
-check_script "multiline anchor uses %;f>" \
+check_script "multiline anchor uses %f>" \
 	"ctx1
 ctx2
 ctx3
@@ -139,7 +139,7 @@ ctx3
 new
 end
 " \
-	'%;f>' ''
+	'%f>' ''
 
 check_script "no backstep in output" \
 	"ctx1
