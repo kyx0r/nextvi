@@ -36,11 +36,7 @@ LB="0?"
 
 # Patch: ex.c term.c vi.h
 # Body too large for EXINIT/argv: stage it in a file
-if ( : > /tmp/p2vi.$$ ) 2>/dev/null; then
-    P2VIF=/tmp/p2vi.$$
-else
-    P2VIF=./p2vi.$$
-fi
+( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%;f> int xleft;			/\\* the first visible column \\*/
