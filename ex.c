@@ -24,7 +24,7 @@ int xerr = 1;			/* error handling -
 int xfr;			/* ec_find register */
 int xrr;			/* record register */
 
-int xquit;			/* exit if positive, force quit if negative */
+int xquit;			/* exit if positive, force quit or unwind if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xbufcur;			/* number of active buffers */
 int xgrec;			/* global vi/ex recursion depth */
@@ -650,10 +650,12 @@ static void *ec_quit(char *loc, char *cmd, char *arg)
 				return "buffers modified";
 	xquit = !xquit ? 1 : xquit;
 	xqprop = *loc ? atoi(loc) : -1;
+	/* recursion unwind: 256 increments preserve the first 8 bits
+	for exit code and -257 is the offset for comparisons. */
 	if (*arg)
 		xquit = (abs(atoi(arg)) & 255) + 1;
 	if (strchr(cmd, '!'))
-		xquit = *loc ? -xqprop - 257 : -xquit;
+		xquit = *loc ? -xqprop * 256 - 257 - (abs(xquit) - 1) : -xquit;
 	return NULL;
 }
 
