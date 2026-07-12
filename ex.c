@@ -21,6 +21,7 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
+int xfr;			/* ec_find register */
 
 int xquit;			/* exit if positive, force quit if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
@@ -561,10 +562,10 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 {
 	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = 0, o2 = -1;
 	e = ex_region(loc, &beg, &end, &o1, &o2);
-	if (e && (!xdefreg || (*loc && e != 2)))
+	if (e && (!xfr || (*loc && e != 2)))
 		return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
-	if (xdefreg) {
+	if (xfr) {
 		if (dir < 0)
 			return "register search is forward only";
 		if (cmd[1] == '+' && (!*loc || e == 2))
@@ -575,9 +576,9 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 		return xserr;
 	else if (xgrp >= xkwdrs->nsubc)
 		return xgerr;
-	if (xdefreg) {
+	if (xfr) {
 		int offs[xkwdrs->nsubc];
-		sbuf *sb = ex_regget(xdefreg);
+		sbuf *sb = ex_regget(xfr);
 		if (!sb)
 			return "uninitialized register";
 		if (!*loc || e == 2) {
@@ -1576,7 +1577,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 #define EO(opt) \
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
-EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
+EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
 EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
@@ -1629,6 +1630,7 @@ static struct excmd {
 	{"ft", ec_ft},
 	{"fd", ec_setdir},
 	{"fp", ec_setdir},
+	EO(fr),
 	{"f+", ec_find},
 	{"f-", ec_find},
 	{"f>", ec_find},
