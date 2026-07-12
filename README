@@ -201,8 +201,9 @@ when writing a file.
 
 record_input.sh
 --------------
-Adds ex option "rec". This option specifies a register in which
-to record all user input. Makes it easier to record macros.
+Adds ex option "rr" (record register). This option specifies
+a register in which to record all user input. Makes it easier
+to record macros.
 
 visual.sh
 --------------
