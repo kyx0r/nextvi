@@ -24,8 +24,7 @@ int xerr = 1;			/* error handling -
 int xfr;			/* ec_find register */
 int xrr;			/* record register */
 
-int xquit;			/* exit if positive, force quit if -1,
-				counted led_modeswap unwind if < -1 */
+int xquit;			/* exit if positive, force quit if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xbufcur;			/* number of active buffers */
 int xgrec;			/* global vi/ex recursion depth */
@@ -652,9 +651,9 @@ static void *ec_quit(char *loc, char *cmd, char *arg)
 	xquit = !xquit ? 1 : xquit;
 	xqprop = *loc ? atoi(loc) : -1;
 	if (*arg)
-		xquit = abs(atoi(arg)) + 1;
+		xquit = (abs(atoi(arg)) & 255) + 1;
 	if (strchr(cmd, '!'))
-		xquit = -1;
+		xquit = -xquit;
 	return NULL;
 }
 
