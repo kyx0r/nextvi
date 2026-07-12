@@ -684,10 +684,7 @@ Print text enclosed by a non-deterministic pattern "a+"
 .It Cm [\fIvrange\fP]f<[\fIregex\fP]
 Ranged search
 .Bd -literal
-If the fr option is set, performs a multi-line search forward
-on the contents of the selected register. Range maps the match
-to a position in the current buffer. No range tests for a match
-inplace. Returns error if target not found.
+Returns error if target not found.
 
 Example: no range given, current line only
 :f>int
@@ -695,10 +692,6 @@ Example: reverse
 :f<int
 Example: range given
 :10,100f>int
-Example: test register <a> for containing "int"
-:fr 97:f>int:??p yes:??!p no:fr
-Example: search for "int" followed by "void" on next line
-:%ya97:fr 97:%f>int.void:fr
 .Ed
 
 .It Cm [\fIrange\fP]f+[\fIregex\fP]
@@ -1505,11 +1498,15 @@ Example: store a line printed with :p
 Find register
 .Bd -literal
 Set a register using a character or a number.
-Once the register is set, the :f> and :f+ commands search
-its contents instead of the current buffer.
+Once the register is set, the :f> and :f+ commands perform a
+multi-line search forward on the contents of the register instead
+of the current buffer. Range maps the match to a position in
+the current buffer. No range tests for a match inplace.
 
 Example: search register <a> for "int"
-:fr a:f>int:fr
+:fr a:f>int:??p yes:??!p no:fr
+Example: search for "int" followed by "void" on next line
+:%ya97:fr 97:%f>int.void:fr
 .Ed
 
 .It Cm lim[\fIval=-1\fP]
