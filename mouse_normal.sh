@@ -32,13 +32,13 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c led.c term.c vi.c vi.h
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.%\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\[0-9]\\+\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\)\\[ \\\\t]\\*\\\\
 \\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\
 \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\(\\[0-9]\\+\\)\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t]\\*\\)\\*\\)\\\\
@@ -56,8 +56,8 @@ ${ESC}${SEP}%f> \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.%\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?
 \\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\
 \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\(\\[0-9]\\+\\)\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t]\\*\\)\\*\\)\\\\${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:296:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:296:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:296:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> \\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\
 \\(\\?:g!\\?\\|s\\)\\[ \\\\t]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!]\\)\\?\\|u\\[czbd]\\|x!\\?\\|ya\\[!\\+]\\?\\|cm!\\?\\|cd\\?\\)\\?\",
 		A\\(BL1 \\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\)},${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -94,8 +94,8 @@ ${ESC}${SEP}%f> int xleft;			/\\* the first visible column \\*/
 int xvis;			/\\* startup flags \\*/
 int xai = 1;			/\\* autoindent option \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^int xleft;			/\\* the first visible column \\*/\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:0:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^int xleft;			/\\* the first visible column \\*/\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:0:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${SEP}fr 98${SEP}${LB}
 ${SEP}1;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	return NULL;
@@ -332,8 +332,8 @@ ${ESC}${SEP}%f> static struct termios termios;
 sbuf \\*term_sbuf;
 int term_record;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^static struct termios termios;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:0:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^static struct termios termios;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:0:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${SEP}fr 98${SEP}${LB}
 ${SEP}1;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:0${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}

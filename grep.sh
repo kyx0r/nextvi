@@ -32,13 +32,13 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c vi.c vi.h
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> char n_ft\\[] = \"/#\";	/\\* numbers highlight for \\^v \\*/
 char nn_ft\\[] = \"/##\";	/\\* numbers highlight for # \\*/
 char ac_ft\\[] = \"/ac\";	/\\* autocomplete dropdown \\*/
@@ -148,8 +148,8 @@ ${ESC}${SEP}%f> int xregs_n;			/\\* allocated register count \\*/
 int xdefreg;			/\\* ex default register \\*/
 struct buf \\*bufs;		/\\* main buffers \\*/${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:43:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^struct buf tempbufs\\[3];		/\\* temporary buffers, for internal use \\*/\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:43:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^struct buf tempbufs\\[3];		/\\* temporary buffers, for internal use \\*/\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:43:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> struct buf \\*ex_buf;		/\\* current buffer \\*/
 struct buf \\*ex_pbuf;		/\\* prev buffer \\*/
 static struct buf \\*ex_tpbuf;	/\\* temp prev buffer \\*/${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -200,8 +200,8 @@ ${ESC}${SEP}%f> 	free\\(sb->s\\);
 
 ${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:443:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#define fssearch\\(\\) \\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:443:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^#define fssearch\\(\\) \\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:443:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> len = lbuf_s\\(path\\)->len; \\\\
 path\\[len] = '\\\\0'; \\\\
 ret = ex_edit\\(path, len\\); \\\\${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -250,8 +250,8 @@ ${ESC}${SEP}%f+ path\\[len] = '\\\\0'; \\\\
 ret = ex_edit\\(path, len\\); \\\\
 path\\[len] = '\\\\n'; \\\\${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:448:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^if \\(ret && xrow\\) \\{ \\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:448:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^if \\(ret && xrow\\) \\{ \\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:448:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	\\*row = xrow; \\*off = xoff; /\\* short circuit \\*/ \\\\
 	if \\(!vi_search\\('n', cnt, row, off, 0\\)\\) \\\\
 		return 1; \\\\${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -299,8 +299,8 @@ ${ESC}${SEP}%f+ if \\(!vi_search\\(\\*row \\? 'N' : 'n', cnt, row, off, 0\\)\\) 
 
 ${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:459:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^static int fs_search\\(int cnt, int \\*row, int \\*off\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:459:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^static int fs_search\\(int cnt, int \\*row, int \\*off\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:459:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ \\{
 	char \\*path;${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:459:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -345,8 +345,8 @@ ${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:462:a2${ESC}${ESC}${ES
 ${ESC}${SEP}%f+ \\{
 	char \\*path;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:462:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	int again = 0, ret, len;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:462:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	int again = 0, ret, len;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:462:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	wrap:
 	while \\(fspos < lbuf_len\\(tempbufs\\[1]\\.lb\\)\\) \\{
 		path = tempbufs\\[1]\\.lb->ln\\[fspos\\+\\+];${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -393,8 +393,8 @@ ${ESC}${SEP}%f+ 	wrap:
 	while \\(fspos < lbuf_len\\(tempbufs\\[1]\\.lb\\)\\) \\{
 		path = tempbufs\\[1]\\.lb->ln\\[fspos\\+\\+];${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:466:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		fssearch\\(\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:466:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		fssearch\\(\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:466:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}
 	if \\(fspos == lbuf_len\\(tempbufs\\[1]\\.lb\\) && !again\\) \\{
 		fspos = 0;${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -443,8 +443,8 @@ ${ESC}${SEP}%f+ 	int ret, len;
 	while \\(--fspos >= 0\\) \\{
 		path = tempbufs\\[1]\\.lb->ln\\[fspos];${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:482:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		fssearch\\(\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:482:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		fssearch\\(\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:482:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}
 	return 0;
 }${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -518,10 +518,10 @@ ${ESC}${SEP}%f+ 			lkwdcnt = xkwdcnt;
 			fspos \\+= fsdir < 0 \\? 1 : 0;
 			fspos = MIN\\(fspos, lbuf_len\\(tempbufs\\[1]\\.lb\\)\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:680:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			fs_search\\(1, row, off\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:680:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			fsdir = 1;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:680:a5${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			fs_search\\(1, row, off\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:680:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			fsdir = 1;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:680:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .	....dc.............
 ......os ...fs....<.....1....;
 		....os =....\\(...... ...f......e.p.u..\\[1]..b...
@@ -552,8 +552,8 @@ ${ESC}${SEP}%f+ 			fsdir = 1;
 			fspos -= fsdir > 0 \\? 1 : 0;
 			if \\(!fs_searchback\\(1, row, off\\)\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			fsdir = 1;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:681:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			fsdir = 1;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:681:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		if \\(mv == TK_CTL\\(']'\\)\\) \\{
 			if \\(vi_arg \\|\\| lkwdcnt != xkwdcnt\\)
 				term_exec\\(\"\", 1, '&'\\).*(				open_saved\\(0\\))
@@ -757,8 +757,8 @@ ${ESC}${SEP}%f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \\*bufs;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:449:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^extern struct buf tempbufs\\[3];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:449:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^extern struct buf tempbufs\\[3];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:449:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> extern struct buf \\*ex_buf;
 extern struct buf \\*ex_pbuf;
 #define istempbuf\\(buf\\) \\(buf >= tempbufs && buf < tempbufs \\+ LEN\\(tempbufs\\)\\)${ESC}${SEP}5??${ESC}${SEP}${LB}

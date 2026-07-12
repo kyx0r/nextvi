@@ -32,13 +32,13 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: led.c
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> 	o = off\\[i]; \\\\
 	if \\(o >= 0\\) \\{ \\\\
 		for \\(l = i; off\\[i] == o; i\\+\\+\\); \\\\
@@ -56,8 +56,8 @@ ${ESC}${SEP}%f> 	o = off\\[i]; \\\\
 	if \\(o >= 0\\) \\{ \\\\
 		for \\(l = i; off\\[i] == o; i\\+\\+\\); \\\\${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:117:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^		att_new = att\\[bound \\? ctt\\[atti\\+\\+] : o]; \\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:117:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^		att_new = att\\[bound \\? ctt\\[atti\\+\\+] : o]; \\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:117:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> 		if \\(att_new != att_old\\) \\\\
 			sbuf_str\\(out, term_att\\(att_new\\)\\) \\\\
 		char \\*s = ren_translate\\(chrs\\[o], s0\\); \\\\${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -322,8 +322,8 @@ ${ESC}${SEP}%f+ 	if \\(r->cmax > cterm \\|\\| cbeg\\) \\{
 	}
 	memset\\(att, 0, MIN\\(n, cterm\\+1\\) \\* sizeof\\(att\\[0]\\)\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:165:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	if \\(xhl\\)\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-39m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:165:a5${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	if \\(xhl\\)\$${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-39m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:165:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ............b.g;.c....en.;...\\+.
 ..	o..\\[c.. ....... ..<=........ . .-.co.......-1.
 	.
@@ -400,8 +400,8 @@ ${ESC}${SEP}%f+ 		syn_highlight\\(att, bound \\? bound : s0, MIN\\(n, cterm\\)\\
 		led_att \\*p = \\(led_att\\*\\)led_attsb->s;
 		for \\(; \\(char\\*\\)p < &led_attsb->s\\[led_attsb->s_n]; p\\+\\+\\) \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	if \\(xhl\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	if \\(xhl\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		syn_highlight\\(att, bound \\? bound : s0, MIN\\(n, cterm\\)\\);
 	free\\(bound\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -572,8 +572,8 @@ ${ESC}${SEP}%f+ 				continue;
 			if \\(r->pos\\[o \\+ 1] \\+ r->wid\\[o \\+ 1] != r->pos\\[o]\\)
 				continue;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:243:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			j = bound \\? ctt\\[l-1] : o;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:243:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			j = bound \\? ctt\\[l-1] : o;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:243:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			att\\[j] = syn_merge\\(att\\[j], conf_hlrev\\);
 			att\\[j\\+1] = syn_merge\\(att\\[j\\+1], conf_hlrev\\);
 		}${ESC}${SEP}5??${ESC}${SEP}${LB}

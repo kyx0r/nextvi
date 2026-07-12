@@ -32,13 +32,13 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: conf.c ex.c
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\(\\[0-9]\\+\\)\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t]\\*\\)\\*\\)\\\\
 \\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\
 \\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\
@@ -56,8 +56,8 @@ ${ESC}${SEP}%f> \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\
 \\(\\(pac\\|pr\\|ai\\|ish\\|err\\|ic\\|grp\\|mpt\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\
 \\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^\\(\\?:g!\\?\\|s\\)\\[ \\\\t]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!]\\)\\?\\|u\\[czbd]\\|x!\\?\\|ya\\[!\\+]\\?\\|cm!\\?\\|cd\\?\\)\\?\",\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^\\(\\?:g!\\?\\|s\\)\\[ \\\\t]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!]\\)\\?\\|u\\[czbd]\\|x!\\?\\|ya\\[!\\+]\\?\\|cm!\\?\\|cd\\?\\)\\?\",\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> 		A\\(BL1 \\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\)},
 	\\{ex_ft, \"\\\\\\\\\\\\\\\\\\(\\.\\)\", A\\(AY1 \\| SYN_BD, YE\\)},
 	\\{ex_ft, \"!\\(\\?:\\[\\^!\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*!\\?\\|%\\(\\?:#\\|\\[0-9]\\+\\|@\\(\\[0-9]\\+\\)\\)\\?\", A\\(WH1 \\| SYN_BD, CY1\\)},${ESC}${SEP}5??${ESC}${SEP}${LB}

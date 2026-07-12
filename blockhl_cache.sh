@@ -32,13 +32,13 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: lbuf.c ren.c vi.c vi.h
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> static int lbuf_replace\\(struct lbuf \\*lb, sbuf \\*sb, char \\*s, struct lopt \\*lo, int n_del, int n_ins\\)
 \\{
 	int i, pos = lo->pos;
@@ -168,8 +168,8 @@ ${ESC}${SEP}%f+
 void syn_highlight\\(int \\*att, char \\*s, int n\\)
 \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	re:;
 	rset \\*rs = ftmap\\[fti]\\.rs;
 	int subs\\[rs->nsubc], \\*catt, \\*iatt, sl, c;${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -481,10 +481,10 @@ ${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a2${ESC}${ESC}${ES
 ${ESC}${SEP}%f+ 	skip:
 	rstate \\+= row != xrow;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	if \\(!s\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		s = row \\? ch : ch\\+1;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a5${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	if \\(!s\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		s = row \\? ch : ch\\+1;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:175:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .s...:
 	.....e... ... ........
 ......s\\)
@@ -519,10 +519,10 @@ ${ESC}${SEP}%f+ 	else if \\(lnnum && xled\\) \\{
 		c = tmp, i = 0, i1 = 0;
 		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:177:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		s = row \\? ch : ch\\+1;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:177:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	else if \\(lnnum && xled\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:177:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		s = row \\? ch : ch\\+1;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:177:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	else if \\(lnnum && xled\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:177:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		char tmp\\[32], tmp1\\[32], \\*p;
 		c = tmp, i = 0, i1 = 0;
 		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -582,8 +582,8 @@ ${ESC}${SEP}%f+ 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\
 		preserve\\(int, ftidx,\\)
 		syn_setft\\(nn_ft\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		\\*c = '\\\\0';
 		l1 = \\(c - tmp\\) \\+ \\(i\\+i1 - \\(strlen\\(tmp\\) - !!i - !!i1\\)\\);.*(		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{)
@@ -627,8 +627,8 @@ ${ESC}${SEP}%f+ 	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)
 
 ${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		RS\\(2, led_prender\\(tmp, row - xtop, 0, 0, l1\\)\\)
 		restore\\(syn_blockhl\\).*(/\\* redraw the screen \\*/)

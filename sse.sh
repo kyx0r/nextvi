@@ -32,13 +32,13 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: led.c ren.c uc.c vi.c
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> 
 int dstrlen\\(const char \\*s, char delim\\)
 \\{
@@ -124,8 +124,8 @@ ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a3${ESC}${ESC}$
 ${ESC}${SEP}%f> 	} else
 		for \\(n = 0; \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^			ss \\+= l;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a5${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^			ss \\+= l;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> ...s.a....h.....n = .._.e..ss\\).
 ..m..c......a.e.>n..l..l..........at.-.h....en..
 	....s...... ................e...
@@ -157,8 +157,8 @@ ${ESC}${SEP}%f+ 			ss \\+= l;
 	int cpos = 0, wid, \\*col;
 	int \\*pos = emalloc\\(\\(b \\* 2 \\* sizeof\\(pos\\[0]\\)\\) \\+ b \\* sizeof\\(char\\*\\)\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			ss \\+= l;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			ss \\+= l;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		max = \\(unsigned int\\)xlim;
 		for \\(n = 0; n < max && \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)
 			ss \\+= l;.*(	int \\*off = &pos\\[b];)
@@ -272,8 +272,8 @@ ${ESC}${SEP}%f> #include <ctype\\.h>
 #include <fcntl\\.h>
 #include <stdio\\.h>${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#include <ctype\\.h>\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:0:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^#include <ctype\\.h>\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:0:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${SEP}fr 98${SEP}${LB}
 ${SEP}1;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:0${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1-1i #ifdef __SSE2__

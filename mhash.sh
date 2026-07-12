@@ -32,13 +32,13 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: lbuf.c vi.h
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> 
 #define lbuf_copymark\\(dst, src\\) \\{ dst\\[0] = src\\[0]; dst\\[1] = src\\[1]; }
 
@@ -58,8 +58,8 @@ ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:25:a3${ESC}${ESC}$
 ${ESC}${SEP}%f> /\\* find a mark id, returning its row & off pair \\*/
 static int \\*mark_find\\(int \\*mark, int n, int id\\)${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:25:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^\\{\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:25:a5${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^\\{\$${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:25:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> 
 .de.... ..u..co.....k\\(.... .... ....t\\[......r..... .s.\\[.. ........;..
 
@@ -103,8 +103,8 @@ ${ESC}${SEP}%f+ 	for \\(int i = 0; i < n \\* 3; i \\+= 3\\)
 
 ${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:28:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^\\{\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:28:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^\\{\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:28:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	for \\(int i = 0; i < n \\* 3; i \\+= 3\\)
 		if \\(mark\\[i] == id\\)
 			return mark \\+ i \\+ 1;
@@ -175,8 +175,8 @@ ${ESC}${SEP}%f+ static void mark_set\\(int \\*\\*mark, int \\*n, int id, int pos
 		\\*m\\+\\+ = id;
 		\\(\\*n\\)\\+\\+;${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:34:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	}\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-8m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:34:a5${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	}\$${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-8m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:34:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ }
 
 .......void.m..._s..\\(.n...\\*.a.k,.............i...i.....s, i.......
@@ -220,8 +220,8 @@ ${ESC}${SEP}%f+ 	m\\[0] = pos;
 
 void lbuf_mark\\(struct lbuf \\*lb, int mk, int pos, int off\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:43:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	}\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:43:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	}\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:43:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	m\\[0] = pos;
 	m\\[1] = off;${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:43:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
@@ -324,8 +324,8 @@ ${ESC}${SEP}%f+ 	else if \\(mk == ']'\\)
 		m = lb->mark_se;
 	else${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:71:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		m = mark_find\\(lb->mark, lb->mark_n, mk\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:71:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		m = mark_find\\(lb->mark, lb->mark_n, mk\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:71:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	if \\(!m \\|\\| m\\[0] < 0\\)
 		return 1;
 	\\*pos = m\\[0];${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -375,8 +375,8 @@ ${ESC}${SEP}3??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:132:a3${ESC}${ESC}
 ${ESC}${SEP}%f+ 	for \\(i = 0; i < lb->mark_n; i\\+\\+\\) \\{	/\\* updating marks \\*/
 		int \\*m = lb->mark \\+ i \\* 3, \\*lm;${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:132:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		if \\(m\\[1] >= pos \\+ n_ins && m\\[1] < pos \\+ n_del\\) \\{\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:132:a5${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		if \\(m\\[1] >= pos \\+ n_ins && m\\[1] < pos \\+ n_del\\) \\{\$${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:132:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .l......n ...n.i.. ....de..
 ....... =... ....._i.s....\\+\\)
 ....-.......................\\*...-.s.\\+....
@@ -414,10 +414,10 @@ ${ESC}${SEP}%f+ 			mark_set\\(&lo->mark, &lo->mark_n, m\\[0], m\\[1], m\\[2]\\);
 		} else if \\(m\\[1] >= pos \\+ n_del\\) \\{
 			m\\[1] \\+= n_ins - n_del;${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:135:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		if \\(m\\[1] >= pos \\+ n_ins && m\\[1] < pos \\+ n_del\\) \\{\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:135:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			mark_set\\(&lo->mark, &lo->mark_n, m\\[0], m\\[1], m\\[2]\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:135:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		if \\(m\\[1] >= pos \\+ n_ins && m\\[1] < pos \\+ n_del\\) \\{\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:135:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			mark_set\\(&lo->mark, &lo->mark_n, m\\[0], m\\[1], m\\[2]\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:135:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			m\\[1] = n_ins \\? pos \\+ n_ins - 1 : -1;
 		} else if \\(m\\[1] >= pos \\+ n_del\\) \\{
 			m\\[1] \\+= n_ins - n_del;${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -462,8 +462,8 @@ ${ESC}${SEP}%f+ 			m\\[1] = n_ins \\? pos \\+ n_ins - 1 : -1;
 		} else if \\(m\\[1] >= pos \\+ n_del\\) \\{
 			m\\[1] \\+= n_ins - n_del;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:139:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^		} else if \\(\\(lm = mark_find\\(lo->mark, lo->mark_n, m\\[0]\\)\\)\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:139:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		} else if \\(\\(lm = mark_find\\(lo->mark, lo->mark_n, m\\[0]\\)\\)\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:139:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			lbuf_copymark\\(\\(m \\+ 1\\), lm\\)
 	}
 	return n_ins;${ESC}${SEP}5??${ESC}${SEP}${LB}
@@ -512,8 +512,8 @@ ${ESC}${SEP}%f+ 	for \\(int i = 0; i < n_del; i\\+\\+\\)
 		lo->del\\[i] = lb->ln\\[beg \\+ i];
 	lo->mark = NULL;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:188:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^	lo->mark_n = 0;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:188:a4${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	lo->mark_n = 0;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK lbuf.c:188:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	lo->mark_sb\\[0] = -1;
 	lo->mark_se\\[0] = -1;
 	lo->pos = beg;${ESC}${SEP}5??${ESC}${SEP}${LB}
