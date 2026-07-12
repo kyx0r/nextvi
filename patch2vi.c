@@ -1079,7 +1079,7 @@ static void emit_change(sbuf *out, int from, int to, char **texts, int ntexts)
  * Two-phase emission per file:
  *
  * Phase 1 (resolve): the whole buffer is yanked once into register <b>
- * (the default register, set by 98reg) right after the file is opened.
+ * (the find register, selected by fr 98) right after the file is opened.
  * All groups' searches then run top-to-bottom against this cache with
  * no edits in between, so the register stays byte-identical to the
  * buffer for the entire phase. Each group's target line is recorded
@@ -1092,11 +1092,11 @@ static void emit_change(sbuf *out, int from, int to, char **texts, int ntexts)
  * deleted lines + post ctx), 2 = deleted lines + post ctx, 3 = top
  * context anchors only, 4 = deleted lines only, 5 = post ctx only.
  * Searches use %f> (first search of a file) / %f+ (subsequent)
- * against the register cache: with the default register reassigned,
+ * against the register cache: with the fr option set,
  * a range maps the match back to a buffer position, and f+ continues
  * one char past the previous match start (the cursor).
  * When only one pattern survives dedup, single-line patterns
- * search the buffer directly with ";0 0reg .,$f> ^pattern$ .. 98reg"
+ * search the buffer directly with ";0 fr .,$f> ^pattern$ .. fr 98"
  * (.,$f+ after the first search): ;0 resets xoff to the line start
  * and the ^...$ anchors disambiguate repeated text. ABS-strategy
  * groups mark their original line number directly - the buffer is
@@ -1220,19 +1220,19 @@ static void emit_escaped_text(sbuf *out, const char *s)
 }
 
 /* Emit f> search with error check, then mark the target line.
- * Single-line patterns search the buffer directly (0reg .. 98reg)
+ * Single-line patterns search the buffer directly (fr .. fr 98)
  * from the cursor's line: ";0" first resets xoff to the line start,
  * then ".,$f> ^pattern$" - the ^...$ anchors plus the .,$ range
  * disambiguate repeated text. The first search of a file uses
  * .,$f>, subsequent ones .,$f+.
- * Multi-line patterns run against the cached default register via
+ * Multi-line patterns run against the cached find register via
  * %f> (first search of a file) or %f+ (subsequent: f+ skips one
  * char from the previous match start so identical anchors find
  * the next occurrence; the % range maps the match back to a
  * buffer position).
  * pre_escaped: 0 = anchors are raw text (apply regex+exarg escape),
  *              1 = anchors are pre-escaped regex (apply exarg only).
- * mode: 1 = direct buffer search (.,$f>, 0reg/98reg, ^...$ anchors);
+ * mode: 1 = direct buffer search (.,$f>, fr/fr 98, ^...$ anchors);
  *       0 = register-cache search (%f>); 2 = grp register search, like 0 but
  *       bracketed with "grp 1 .. grp 0" so the find lands on the captured
  *       group (pattern 7); 3 = global grp straddle window (pattern 8), like 2
@@ -1268,7 +1268,7 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 		 * current line's first column */
 		sb_str(out, ";0");
 		EMIT_SEP(out);
-		sb_str(out, "0reg");
+		sb_str(out, "fr");
 		EMIT_SEP(out);
 		sb_str(out, first ? ".,\\$f> " : ".,\\$f+ ");
 		/* pre-escaped (interactive) patterns carry their own ^...$
@@ -1309,7 +1309,7 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 		EMIT_SEP(out);
 	}
 	if (single) {
-		sb_str(out, "98reg");
+		sb_str(out, "fr 98");
 		EMIT_SEP(out);
 	}
 	sb_str(out, "${LB}\n");
@@ -1946,8 +1946,8 @@ static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
  * last block (no 1q) a single <0;1;..>??! DNF check over all tags
  * reports the failure.
  * A mode-1 pattern (single-line by default) searches the live buffer
- * with ";0\:0reg\:.,$f> ^pat$" instead, restoring the register cache
- * with 98reg on both the success (before 1q) and no-match paths.
+ * with ";0\:fr\:.,$f> ^pat$" instead, restoring the register cache
+ * with fr 98 on both the success (before 1q) and no-match paths.
  * A mode-2 pattern (the pattern-7 grp window) is a register-cache search
  * bracketed with "grp 1\:...\:grp 0" so the find lands on the captured group,
  * then resets the search group.
@@ -1986,12 +1986,12 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		}
 		if (m1) {
 			/* Mode 1: search the live buffer directly. ";0"
-			 * resets xoff, "0reg" clears the default register so
+			 * resets xoff, "fr" clears the find register so
 			 * f> reads the buffer (not the cache); the matching
-			 * 98reg below restores the cache for later blocks. */
+			 * fr 98 below restores the cache for later blocks. */
 			sb_str(out, ";0");
 			EMIT_ESCSEP(out);
-			sb_str(out, "0reg");
+			sb_str(out, "fr");
 			EMIT_ESCSEP(out);
 			sb_str(out, first ? ".,\\$f> " : ".,\\$f+ ");
 		} else
@@ -2033,7 +2033,7 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 			/* restore the register cache on the success path,
 			 * before 1q quits out of the chain */
 			EMIT_ESC3SEP(out);
-			sb_str(out, "98reg");
+			sb_str(out, "fr 98");
 		}
 		if (g3) {
 			/* restore the saved cursor unconditionally (both match
@@ -2060,7 +2060,7 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		if (m1) {
 			/* restore the cache on the no-match fall-through */
 			EMIT_ESCSEP(out);
-			sb_str(out, "98reg");
+			sb_str(out, "fr 98");
 		}
 	}
 	EMIT_SEP(out);
@@ -5251,7 +5251,7 @@ process_line:
 		       e1, e1);
 		fputs("# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n", stdout);
-		printf("[ \"$INTR\" = \"1\" ] && INTR=\"%s|sc|%svis 2:0reg:e $0:83reg "
+		printf("[ \"$INTR\" = \"1\" ] && INTR=\"%s|sc|%svis 2:0reg:fr 0:e $0:83reg "
 		       "%%@47:%%f> %%@112:&Q:b0:|sc! %s|:vis 3%sq1\" || INTR=\n",
 		       e1, e1, e3, e1);
 	}
@@ -5285,9 +5285,9 @@ process_line:
 		      "trap 'rm -f \"$P2VIF\"' EXIT\n", stdout);
 		printf("printf '%%s\\n' \"|sc! %s|:vis 3${SEP}",
 		       dyn_esc ? "${ESC}${SEP}" : "\\\\\\\\${SEP}");
-		/* default register <b> caches the buffer for f> searches */
+		/* register <b> caches the buffer; fr gates f> searches to it */
 		if (relative_mode || interactive_mode)
-			fputs("98reg${SEP}", stdout);
+			fputs("fr 98${SEP}", stdout);
 		for (int k = 0; k < nactive; k++) {
 			fprintf(stdout, "b%d${SEP}", k);
 			/* nothing to cache or search in a brand new file */
