@@ -1693,7 +1693,7 @@ void vi(int init)
 					ex_exec("x");
 					continue;
 				}
-				xquit = vi_arg ? -vi_arg - 257 : 1;
+				xquit = vi_arg ? -vi_arg * 256 - 257 : 1;
 				if (k == 'z')
 					term_push("\n", 1);
 				else if (xgrec == 1) {
@@ -1880,5 +1880,5 @@ int main(int argc, char *argv[])
 	term_done();
 	if (xvis & 8)
 		term_scrl;
-	return xquit < -256 ? 0 : abs(xquit) - 1;
+	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 }
