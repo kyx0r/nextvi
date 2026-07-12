@@ -89,14 +89,35 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{n_ft, \"1\\(\
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:296:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:296${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'1s/t\\|s/t|rec|s/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:296:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> int xleft;			/\\* the first visible column \\*/
-int xvis;			/\\* startup flags \\*/
-int xai = 1;			/\\* autoindent option \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^int xleft;			/\\* the first visible column \\*/\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:0:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${SEP}fr 98${SEP}${LB}
-${SEP}1;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}'1s/t\\|s/t|rr|s/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:296:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f> int xerr = 1;			/\\* error handling -
+				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\*/
+int xfr;			/\\* ec_find register \\*/
+
+int xquit;			/\\* exit if positive, force quit if negative \\*/
+int xrow, xoff, xtop;		/\\* current row, column, and top row \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f> int xerr = 1;			/\\* error handling -
+				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\*/
+int xfr;			/\\* ec_find register \\*/${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:24:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f> int xerr = 1;			/\\* error handling -.*?
+				bit 1: print errors, bit 2: early return, bit 3: ignore errors \\*/.*?
+(int xfr;			/\\* ec_find register \\*/)${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:24:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> int xpr;			/\\* ex_cprint register \\*/
+int xlim = -1;			/\\* rendering cutoff for non cursor lines \\*/
+int xseq = 1;			/\\* undo/redo sequence \\*/.*(int xbufcur;			/\\* number of active buffers \\*/)
+int xgrec;			/\\* global vi/ex recursion depth \\*/
+int xkmap;			/\\* the current keymap \\*/${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:24:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> int xgrp;			/\\* regex search group \\*/
+int xpac;			/\\* print autocomplete options \\*/
+int xmpt;			/\\* whether to prompt after printing > 1 lines in vi \\*/.*(int xkmap_alt = 1;		/\\* the alternate keymap \\*/)
+int xkwddir;			/\\* the last search direction \\*/
+int xkwdcnt;			/\\* number of search kwd changes \\*/${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:24:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:24${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(fr\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\)
 EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
@@ -128,41 +149,41 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> \\{
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1582:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1582${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{\"m\", ec_mark},
-	\\{\"q!\", ec_quit},
-	\\{\"q\", ec_quit},
-	\\{\"reg\\+\", ec_regprint},
-	\\{\"reg\", ec_regprint},
-	\\{\"re\", ec_krsset},${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{\"m\", ec_mark},
-	\\{\"q!\", ec_quit},
-	\\{\"q\", ec_quit},${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1650:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	\\{\"m\", ec_mark},.*?
-	\\{\"q!\", ec_quit},.*?
-(	\\{\"q\", ec_quit},)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1650:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{\"g!\", ec_glob},
-	\\{\"g\", ec_glob},
-	EO\\(mpt\\),.*(	\\{\"rd\", ec_undoredo},)
+${ESC}${SEP}%f+ 	\\{\"reg\", ec_regprint},
+	\\{\"re\", ec_krsset},
+	\\{\"rd\", ec_undoredo},
 	\\{\"r\", ec_read},
-	\\{\"wq!\", ec_write},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1650:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{\"i\", ec_insert},
-	\\{\"d\", ec_delete},
-	EO\\(grp\\),.*(	\\{\"wq\", ec_write},)
-	\\{\"w!\", ec_write},
-	\\{\"w\", ec_write},${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1650:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1650${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+	\\{\"wq!\", ec_write},
+	\\{\"wq\", ec_write},${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	\\{\"reg\", ec_regprint},
+	\\{\"re\", ec_krsset},
+	\\{\"rd\", ec_undoredo},${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1654:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	\\{\"reg\", ec_regprint},.*?
+	\\{\"re\", ec_krsset},.*?
+(	\\{\"rd\", ec_undoredo},)${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1654:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{\"q!\", ec_quit},
+	\\{\"q\", ec_quit},
+	\\{\"reg\\+\", ec_regprint},.*(	\\{\"w!\", ec_write},)
+	\\{\"w\", ec_write},
+	\\{\"uc\", ec_setenc},${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1654:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{\"g\", ec_glob},
+	EO\\(mpt\\),
+	\\{\"m\", ec_mark},.*(	\\{\"uz\", ec_setenc},)
+	\\{\"ub\", ec_setenc},
+	\\{\"ud\", ec_undoredo},${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1654:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1654${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'1-1i int xrec;			/* input recoding register */
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2i EO(rec)
+${SEP}'1i int xrr;			/* input recoding register */
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:24:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2i EO(rr)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1582:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3i 	EO(rec),
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1650:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}'3i 	EO(rr),
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1654:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> 		ret:
 		ibuf_cnt = 1;
 		ibuf_pos = 0;
@@ -192,51 +213,51 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				cw = term_win
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:172:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:172${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'1i 		if (xrec && *ibuf) {
+${SEP}'1i 		if (xrr && *ibuf) {
 			char buf[2];
 			buf[0] = *ibuf;
 			buf[1] = '\\0';
-			ex_regput(xrec, buf, 1);
+			ex_regput(xrr, buf, 1);
 		}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:172:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> extern int xlim;
-extern int xseq;
+${ESC}${SEP}%f> extern int xseq;
 extern int xerr;
 extern int xfr;
 /\\* global variables \\*/
-extern int xquit;${ESC}${SEP}1??${ESC}${SEP}${LB}
+extern int xquit;
+extern int xrow, xoff, xtop;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> extern int xlim;
-extern int xseq;
-extern int xerr;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:429:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f> extern int xlim;.*?
-extern int xseq;.*?
-(extern int xerr;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:429:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> extern int xpac;
-extern int xmpt;
-extern int xpr;.*(extern int xrow, xoff, xtop;)
-extern int xbufcur;
-extern int xgrec;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:429:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> extern int xts;
-extern int xish;
-extern int xgrp;.*(extern int xkmap;)
-extern int xkmap_alt;
-extern int xkwddir;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:429:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:429${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}%f> extern int xseq;
+extern int xerr;
+extern int xfr;${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:430:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f> extern int xseq;.*?
+extern int xerr;.*?
+(extern int xfr;)${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:430:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> extern int xmpt;
+extern int xpr;
+extern int xlim;.*(extern int xbufcur;)
+extern int xgrec;
+extern int xkmap;${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:430:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> extern int xish;
+extern int xgrp;
+extern int xpac;.*(extern int xkmap_alt;)
+extern int xkwddir;
+extern int xkwdcnt;${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:430:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:430${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'1i extern int xrec;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:429:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}2q" > "$P2VIF"
+${SEP}'1i extern int xrr;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:430:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'term.c' 'vi.h' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 23eedcc1..4dfd3693 100644
+index 23eedcc1..3bcfcd3c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -293,7 +293,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -244,61 +265,64 @@ index 23eedcc1..4dfd3693 100644
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+((pac|pr|ai|ish|err|fr|ic|grp|mpt|rec|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 6feec501..74ab92c0 100644
+index 6feec501..e53a44cf 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1,3 +1,4 @@
-+int xrec;			/* input recoding register */
- int xleft;			/* the first visible column */
- int xvis;			/* startup flags */
- int xai = 1;			/* autoindent option */
+@@ -22,6 +22,7 @@ int xseq = 1;			/* undo/redo sequence */
+ int xerr = 1;			/* error handling -
+ 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
+ int xfr;			/* ec_find register */
++int xrr;			/* input recoding register */
+ 
+ int xquit;			/* exit if positive, force quit if negative */
+ int xrow, xoff, xtop;		/* current row, column, and top row */
 @@ -1580,6 +1581,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
-+EO(rec)
++EO(rr)
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1648,6 +1650,7 @@ static struct excmd {
- 	{"m", ec_mark},
- 	{"q!", ec_quit},
- 	{"q", ec_quit},
-+	EO(rec),
- 	{"reg+", ec_regprint},
+@@ -1652,6 +1654,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
+ 	{"rd", ec_undoredo},
++	EO(rr),
+ 	{"r", ec_read},
+ 	{"wq!", ec_write},
+ 	{"wq", ec_write},
 diff --git a/term.c b/term.c
-index 3ae4769f..e0740410 100644
+index 3ae4769f..1dd93387 100644
 --- a/term.c
 +++ b/term.c
 @@ -170,6 +170,12 @@ int term_read(int winch)
  		ret:
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
-+		if (xrec && *ibuf) {
++		if (xrr && *ibuf) {
 +			char buf[2];
 +			buf[0] = *ibuf;
 +			buf[1] = '\0';
-+			ex_regput(xrec, buf, 1);
++			ex_regput(xrr, buf, 1);
 +		}
  	}
  	if (icmd_pos < sizeof(icmd))
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
 diff --git a/vi.h b/vi.h
-index f889876a..1e4543cb 100644
+index f889876a..11a1d1e9 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -427,6 +427,7 @@ extern int xpr;
- extern int xlim;
+@@ -428,6 +428,7 @@ extern int xlim;
  extern int xseq;
  extern int xerr;
-+extern int xrec;
  extern int xfr;
++extern int xrr;
  /* global variables */
  extern int xquit;
+ extern int xrow, xoff, xtop;
