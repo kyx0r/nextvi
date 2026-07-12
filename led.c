@@ -412,8 +412,10 @@ void led_modeswap(void)
 		syn_setft(xb_ft);
 		vi(1);
 	}
-	if (xquit > 0)
+	if (xquit > 0 || xquit == -2)
 		restore(xquit)
+	else if (xquit < -2)
+		xquit++;
 	restore(texec)
 	restore(xvis)
 	restore(xexec_dep)
