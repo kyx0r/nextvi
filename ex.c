@@ -653,7 +653,7 @@ static void *ec_quit(char *loc, char *cmd, char *arg)
 	if (*arg)
 		xquit = (abs(atoi(arg)) & 255) + 1;
 	if (strchr(cmd, '!'))
-		xquit = -xquit;
+		xquit = *loc ? -xqprop - 257 : -xquit;
 	return NULL;
 }
 
@@ -1814,7 +1814,8 @@ void *ex_exec(const char *ln)
 	} while (*ln && !xquit);
 	free(sb->s);
 	xexec_dep--;
-	if (xquit > 0 && (xexec_dep || xqprop >= 0) && --xqprop < 0)
+	if ((xquit > 0 && (xexec_dep || xqprop >= 0) && --xqprop < 0)
+			|| tmpxquit < -256)
 		restore(xquit)
 	if (!xexec_dep) {
 		if (xanchor) {
