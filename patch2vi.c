@@ -5251,7 +5251,7 @@ process_line:
 		       e1, e1);
 		fputs("# Enters vi at failing code line in this script\n"
 		      "# Designed for state inspection mid execution\n", stdout);
-		printf("[ \"$INTR\" = \"1\" ] && INTR=\"%s|sc|%svis 2:0reg:fr 0:e $0:83reg "
+		printf("[ \"$INTR\" = \"1\" ] && INTR=\"%s|sc|%svis 2:fr 0:e $0:83reg "
 		       "%%@47:%%f> %%@112:&Q:b0:|sc! %s|:vis 3%sq1\" || INTR=\n",
 		       e1, e1, e3, e1);
 	}
