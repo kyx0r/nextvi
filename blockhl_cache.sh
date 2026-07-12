@@ -954,7 +954,7 @@ index 21296e45..c058b046 100644
  }
  
 diff --git a/vi.h b/vi.h
-index d035de9a..c5764479 100644
+index f889876a..f4f6eb2c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -261,6 +261,8 @@ void syn_reloadft(int hl, int flg);
