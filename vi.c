@@ -1693,7 +1693,7 @@ void vi(int init)
 					ex_exec("x");
 					continue;
 				}
-				xquit = texec == '&' ? -1 : 1;
+				xquit = vi_arg ? -vi_arg - 2 : 1;
 				if (k == 'z')
 					term_push("\n", 1);
 				else if (xgrec == 1) {
@@ -1880,5 +1880,5 @@ int main(int argc, char *argv[])
 	term_done();
 	if (xvis & 8)
 		term_scrl;
-	return abs(xquit) - 1;
+	return xquit < 0 ? 0 : xquit - 1;
 }
