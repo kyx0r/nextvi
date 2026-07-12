@@ -427,6 +427,7 @@ extern int xpr;
 extern int xlim;
 extern int xseq;
 extern int xerr;
+extern int xfr;
 /* global variables */
 extern int xquit;
 extern int xrow, xoff, xtop;
