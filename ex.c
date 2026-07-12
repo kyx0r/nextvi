@@ -1061,7 +1061,7 @@ static void *ec_num(char *loc, char *cmd, char *arg)
 	if (d < 4)
 		itoa(arr[d], msg);
 	else
-		sprintf(msg, "%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
+		snprintf(msg, sizeof(msg), "%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
 	ex_print(msg, msg_ft)
 	return NULL;
 }
@@ -1355,7 +1355,7 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 	oldpath[sizeof(oldpath)-1] = '\0';
 	if (!getcwd(oldpath, sizeof(oldpath)))
 		if ((opath = getenv("PWD")))
-			strncpy(oldpath, opath, sizeof(oldpath)-1);
+			snprintf(oldpath, sizeof(oldpath), "%s", opath);
 	plen = strlen(oldpath);
 	i = plen == sizeof(oldpath)-1;
 	if (chdir(*arg ? arg : oldpath))
@@ -1374,7 +1374,7 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 			opath = bufs[i].path;
 		} else {
 			opath = oldpath;
-			strncpy(opath+plen, bufs[i].path, sizeof(oldpath)-plen-1);
+			snprintf(opath+plen, sizeof(oldpath)-plen, "%s", bufs[i].path);
 		}
 		for (c = 0; opath[c] && opath[c] == newpath[c]; c++);
 		if (newpath[c] || !opath[c])
