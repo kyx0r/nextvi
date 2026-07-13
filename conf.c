@@ -76,7 +76,8 @@ struct highlight hls[] = {
 		A(BL | SYN_IT, BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD)},
 	{FT(c), "\\<(?:signed|unsigned|char|short|int|[a-z0-9_]+_t|FILE|DIR|long|f(?:loat|64|32)|\
 double|void|enum|union|typedef|static|extern|register|struct|s(?:64|32|16|8)|u(?:64|32|16|8)|b32|\
-bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|malloc|free|realloc|\
+bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|(posix_)?memalign|\
+(m|c|v|re|aligned_)alloc|realloc(f|array)|\
 NULL|std(?:in|out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|default|break|\
 continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(c), "//.*", A(BL | SYN_IT)},
