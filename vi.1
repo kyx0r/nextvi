@@ -1047,7 +1047,7 @@ Write unsaved changes and exit
 .It Cm [\fIrange\fP]x![\fIpath\fP]
 Force write unsaved changes and force quit
 
-.It Cm [\fI#lvl\fP]q[\fI#code\fP]
+.It Cm [\fI#lvl\fP]q[\fI0-255\fP]
 Exit
 .Bd -literal
 Prefix exits [#lvl] ex recursion levels.
@@ -1057,7 +1057,7 @@ Example: conditionally exit this level and 1 above
 :%f>marker:??!p no marker\e:1q:s/old/new/g:w
 .Ed
 
-.It Cm [\fI#lvl\fP]q![\fI#code\fP]
+.It Cm [\fI#lvl\fP]q![\fI0-255\fP]
 Force quit
 .Bd -literal
 Prefix force quits [#lvl] recursion levels.
@@ -1755,7 +1755,7 @@ _
  548 vi.h | definitions/aux
 _
  351 term.c | low level IO
- 371 conf.c | hl/ft/td config
+ 372 conf.c | hl/ft/td config
  444 ren.c | positioning/syntax
  615 uc.c | UTF-8 support
  665 lbuf.c | file/line buffer
@@ -1763,7 +1763,7 @@ _
  751 regex.c | pikevm
  1870 ex.c | ex options/commands
  1884 vi.c | normal mode/general
- 7681 total | wc -l *.c\(basort
+ 7682 total | wc -l *.c\(basort
 _
 .TE
 .
