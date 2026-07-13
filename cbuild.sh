@@ -166,7 +166,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         ;;
     "bench")
         shift
-        export EXINIT="${EXINIT}:&dw1999.Zx"
+        export EXINIT="${EXINIT}:&dw1999.1Zx"
         valgrind --tool=callgrind ./vi vi.c
         valgrind --tool=cachegrind --cache-sim=yes --branch-sim=yes ./vi vi.c
         exit 0
