@@ -304,11 +304,11 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int ai_max, int 
 \\{
 	char \\*cs;.*(		switch \\(c\\) \\{)
 		case TK_CTL\\('h'\\):
-		case 127:${ESC}${SEP}8??${ESC}${SEP}${LB}
+			c = 127;${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:432:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	restore\\(xvis\\)
 	restore\\(xexec_dep\\)
-}.*(			c = 127;)
+}.*(		case 127:)
 			if \\(len - pre > 0\\)
 				sbuf_cut\\(sb, led_lastchar\\(sb->s \\+ pre\\) \\+ pre\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:432:a9${ESC}${SEP}'0${SEP}${LB}
@@ -787,7 +787,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index ed8acf8d..bc0ba26d 100644
+index 96d2e3ba..7aa93d76 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@

@@ -1419,7 +1419,7 @@ ${ESC}${SEP}grp 0${ESC}${SEP}7??m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:597
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			ex_pbuf = pidx >= xbufcur \\? bufs : bufs \\+ pidx;
 			if \\(bidx >= 0\\)
 				ex_buf = bidx >= xbufcur \\? bufs : bufs \\+ bidx;.*(			term_pos\\(xrows, 0\\);)
-			if \\(xquit > 0 \\|\\| \\(xquit <= -257 && xquit >= -512\\)\\)
+			if \\(xquit > 0 \\|\\| \\(xquit < -256 && xquit >= -512\\)\\)
 				restore\\(xquit\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:597:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			vi\\(1\\);
@@ -4957,7 +4957,7 @@ index 67e5e1a6..ec563f4b 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index ed8acf8d..af335cf0 100644
+index 96d2e3ba..e1d19b6e 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,8 +91,9 @@ static char *kmap_map(int kmap, int c)
