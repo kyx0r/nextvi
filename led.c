@@ -435,8 +435,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 		noredraw:
 		switch (c) {
 		case TK_CTL('h'):
-		case 127:
 			c = 127;
+		case 127:
 			if (len - pre > 0)
 				sbuf_cut(sb, led_lastchar(sb->s + pre) + pre)
 			else
