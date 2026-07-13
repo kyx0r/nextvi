@@ -3617,7 +3617,7 @@ static char *edit_buffers(const char *name, char *text,
 		ex_command(ln)
 	vi(1);
 	term_done();
-	i = abs(xquit) - 1;
+	i = xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 	xquit = 0;
 	fflush(stdout);
 	dup2(in, 0);
