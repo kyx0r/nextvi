@@ -199,12 +199,6 @@ the whole file into memory.
 In addition, optimizes the number of write syscalls using chunks
 when writing a file.
 
-record_input.sh
---------------
-Adds ex option "rr" (record register). This option specifies
-a register in which to record all user input. Makes it easier
-to record macros.
-
 visual.sh
 --------------
 Adds character-wise (gv), line-wise (gV), and block (gb) visual selection
