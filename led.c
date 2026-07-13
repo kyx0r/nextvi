@@ -412,7 +412,7 @@ void led_modeswap(void)
 		syn_setft(xb_ft);
 		vi(1);
 	}
-	if (xquit > 0 || (xquit <= -257 && xquit >= -512))
+	if (xquit > 0 || (xquit < -256 && xquit >= -512))
 		restore(xquit)
 	else if (xquit < -512)
 		xquit += 256;
@@ -599,7 +599,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			vi(1); /* redraw past screen */
 			restore(ftidx)
 			term_pos(xrows, 0);
-			if (xquit > 0 || (xquit <= -257 && xquit >= -512))
+			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 				restore(xquit)
 			else if (xquit < -512)
 				xquit += 256;
