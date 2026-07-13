@@ -1,4 +1,4 @@
-.Dd Jul 12, 2026
+.Dd Jul 13, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.0
 .
@@ -225,7 +225,7 @@ Repeat last normal command # times. Repeatable commands:
 .It Cm [\fI#\fP]v.
 Repeat last normal command moving down across # lines
 .It Cm [\fI#\fP]Q
-Enter ex mode. # retains current horizontal scroll
+Enter ex mode recursively. # retains current horizontal scroll
 .It Cm \&:
 Enter ex prompt
 .It Cm [\fI#\fP]!{\fIarg\fP}
@@ -387,10 +387,10 @@ Filesystem regex search backward
 Suspend vi
 .It Cm <^L>
 Force redraw whole screen and update terminal dimensions
-.It Cm Z{<\fIAny\fP>}
-Force exit and clean terminal, force quit in an & macro
-.It Cm Zz
-Force exit and submit history command, force quit in an & macro
+.It Cm [\fI#\fP]Z{<\fIAny\fP>}
+Exit and clean terminal, force quit # recursion levels
+.It Cm [\fI#\fP]Zz
+Exit and submit history command, force quit # recursion levels
 .It Cm ZZ
 Exit and write unsaved changes to a file
 .It Cm <ESC ^C>
@@ -1048,14 +1048,24 @@ Write unsaved changes and exit
 Force write unsaved changes and force quit
 
 .It Cm [\fI#lvl\fP]q[\fI#code\fP]
-.It Cm [\fI#lvl\fP]q![\fI#code\fP]
-Exit or force quit
+Exit
 .Bd -literal
-[#code] specifies shell exit code.
-[#lvl] defines the number of scopes to exit.
+Prefix exits [#lvl] ex recursion levels.
+Argument specifies shell exit code.
 
-Example: conditionally exit this scope and 1 above
+Example: conditionally exit this level and 1 above
 :%f>marker:??!p no marker\e:1q:s/old/new/g:w
+.Ed
+
+.It Cm [\fI#lvl\fP]q![\fI#code\fP]
+Force quit
+.Bd -literal
+Prefix force quits [#lvl] recursion levels.
+No prefix quits all recursion levels.
+
+Example: set register 0 hello 3 levels deep, force quit this level
+and 2 above, print the register outside
+:&Q&Q\e\e\e:&Q0reg hello\e\e\e\e\e\e\e:2q\e\e\e\e\e\e\e!:p %@0
 .Ed
 
 .It Cm b[\fIindex\fP]
@@ -1749,11 +1759,11 @@ _
  444 ren.c | positioning/syntax
  615 uc.c | UTF-8 support
  665 lbuf.c | file/line buffer
- 726 led.c | insert mode/output
+ 730 led.c | insert mode/output
  751 regex.c | pikevm
- 1867 ex.c | ex options/commands
+ 1870 ex.c | ex options/commands
  1884 vi.c | normal mode/general
- 7674 total | wc -l *.c\(basort
+ 7681 total | wc -l *.c\(basort
 _
 .TE
 .
